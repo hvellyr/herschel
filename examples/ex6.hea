@@ -1,0 +1,7 @@
+-- namespace
+
+namespace io("eyestep/heather 1.0:input output")
+namespace ixwick("eyestep/ixwick 0.9")
+
+def f()
+  <io>FilePort(name: comp.<ixwick>filecache.next)

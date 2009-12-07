@@ -1,0 +1,458 @@
+--
+-- dict.orange - base dictionary implementation
+--
+-- This file is part of the heather package
+-- Copyright (c) 2002,2009 by Gregor Klinke
+--
+-- This library is free software; you can redistribute it and/or modify it
+-- under the terms of the GNU Lesser General Public License as published by
+-- the Free Software Foundation; either version 2.1 of the License, or (at
+-- your option) any later version.
+--
+-- This library is distributed in the hope that it will be useful, but
+-- WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
+-- General Public License for more details.
+--
+-- You should have received a copy of the GNU Lesser General Public License
+-- along with this library; if not, write to the Free Software Foundation,
+-- Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+--
+--  $Id: dict.orange,v 1.3 2002/06/27 14:05:37 eyestep Exp $
+--
+
+
+-- New concept here, we've to think about:
+--
+-- Special type notations for building recursive types:
+--
+-- Other useful typenotations:
+-- self.Type <=> Type(self)
+--   get type from a instance
+--
+-- _.Type
+--   automatic type.  Get the type of the surrounding context.  In a type
+--   declaration like
+--
+--     Pair(Int, _.Type)
+--
+--   this refers to the following recursive type declaration:
+--
+--     Pair(Int, Pair(Int, Pair(Int, ...)))
+--
+--   In a assignment like this:
+--
+--     let x : Vector(Byte)
+--
+--     x = _.Type(1024)
+--
+--   this refers to:
+--
+--     x = Vector(Byte)(1024)
+--
+--
+--
+--  "Classmethods":
+--
+--  To define functions on type instances ("class objects") the following
+--  specialization is necessary:
+--
+--    def meth apply(self : @ HashMap.class, ...)
+--
+--  or
+--
+--    def meth apply(self : @ class(HashMap), ...)
+--
+--
+--
+--   def meth put!(self : @HashMap*, key : @self.Type.Key,
+--                                   obj : @self.Type.Value) : self.Type
+--   ...
+--
+-- This self.Type here refers to the *declared* type of the self parameter.
+-- If you actually have a local variable of type HashMap*(String, Int):
+--
+--   let map : HashMap*(String, Int)
+--
+-- calling the function put! on it:
+--
+--   map.put!("id", 5)
+--
+-- is type safe.  The put method (if written like above, i.e. with reference
+-- to self.Type in the signature) is a //generic// method.  Type checks
+-- are done dynamic at compile time.  The code of course can't be optimized
+-- for any specific type (since it accepts all types), but it allows for
+-- type-safety.
+--
+--
+-- DISCUSS: The usage of the un-parametrized version in the type declaration
+-- "@HashMap*" matches all types.  It is not identical to "@HashMap" (when
+-- an according alias has been defined as "def alias HashMap =
+-- HashMap*(Any, Any)".  It automatically accepts whatever the context
+-- gives.
+--
+--
+-- For an optimized version add another specialization:
+--
+--   def meth put!(self : @HashMap*(String, Int), key : @String,
+--                                                obj : @Int) : self.Type
+--     ...
+
+
+
+---------------------------------------------------------------------------
+
+namespace heather("eyestep/heather 1.0:core")
+
+import(io)
+
+
+---------------------------------------------------------------------------
+
+def type Assoc*(Object, Key, Value)
+{
+  slot key, init: 0
+  slot value, init: 1
+}
+
+def alias Assoc = Assoc*(Any, Any)
+
+def meth ->string(self : @Assoc) : String
+  StringBuffer().append(self.key, "->", self.value).->string
+
+
+---------------------------------------------------------------------------
+-- <cat vis='hide'/>
+
+def type Triple*(Object, Key, Value, Tail)
+{
+  slot key,   init: 0
+  slot value, init: 1
+  slot tail,  init: 2
+}
+
+def alias Triple = Triple*(Any, Any, Any)
+
+def meth key?(self : @Triple, other : Triple) : Bool
+  self.key == other
+
+def meth ->string(self : @Triple) : String
+  StringBuffer().append(self.key, "->", self.value).->string
+
+
+
+---------------------------------------------------------------------------
+
+def const %default-size% = 16
+
+def type HashMap*(Object, Key, Elt) : (Comparable, AssocCollection)
+{
+  slot table : Vector(Triple(Key, Elt, _.Type))
+  slot elts : Int = %default-size%, key-init: items
+
+  on init(self) {
+    if (elts > 0)
+      table = _.Type(items: elts)
+  }
+}
+
+def alias HashMap = HashMap*(Any, Any)
+def alias Dictionary = HashMap*(Any, Any)
+
+
+----------------------------------------------------------------------
+-- instanciation and initialization
+----------------------------------------------------------------------
+
+def meth apply(self : @HashMap.class, other : @Collection)
+  let t = self.Type(items: other.num-items)
+  t.add-all(other)
+  t
+
+
+--------------------------------------------------------------------
+-- collection protocol
+--------------------------------------------------------------------
+
+def meth empty?(self : @HashMap) : Bool
+  self.elts == 0
+
+def meth empty!(self : @HashMap) : self.Type
+  self.table = _.Type(%default-size%)
+  self.elts = 0
+  self
+
+def meth size(self : @HashMap) : Int
+  self.table.size
+
+def meth num-items(self : @HashMap) : Int
+  self.elts
+
+def meth iterator(self : @HashMap) : Iterator(Assoc(self.Type.Key, self.Type.Value))
+  HashMapIterator(self.Type.Key, self.Type.Value)(self.table)
+
+def meth key-iterator(self : @HashMap) : Iterator(self.Type.Key)
+  HashMapKeyIterator(self.Type.Key)(self.table)
+
+def meth value-iterator(self : @HashMap) : Iterator(self.Type.Value)
+  HashMapValueIterator(self.Type.Value)(self.table)
+
+
+--------------------------------------------------------------------
+-- adding, removing, finding
+--------------------------------------------------------------------
+
+def meth has-key?(self : @HashMap, key) : Bool
+  let loop(nl) {
+      if (nl == #nil)
+        #f
+      else if (nl.key?(key))
+        #t
+      else
+        loop(nl.tail)
+    }
+
+  loop(self.table[key.hash mod self.table.size])
+
+
+def meth get(self : @HashMap, key : self.Type.Key)
+  let loop(nl) {
+      if (nl == #nil)
+        #nil
+      else if (nl.key?(key))
+        nl.value
+      else
+        loop(nl.tail)
+    }
+
+  loop(self.table[key.hash mod self.table.size])
+
+
+def meth put!(self : @HashMap, key, obj) : HashMap
+  let hash : Int = key.hash mod self.table.size
+  let loop(nl) {
+      if (nl == #nil) {
+        self.table[hash] = Triple(key, obj, self.table[hash])
+        self.elts.incr!
+      }
+      else if (nl.key?(key))
+        nl.value = obj
+      else
+        loop(nl.tail)
+    }
+
+  loop(self.table[hash])
+
+  -- check if a resizement is necessary.  this is a slow method, but it
+  -- uses other, checked functionality.
+  let ts = self.table.size
+
+  if (self.elts >= (ts * 75) / 100) {
+    let t2 = self.type(items: (ts * 15) / 10)
+    -- copy all elements
+    t2.add-all(self)
+
+    -- grap the table and length from the new dictionary
+    self.table = t2.table
+    self.elts = t2.num-items
+  }
+
+  self
+
+
+def meth put!(self : @HashMap, obj : @Assoc) : HashMap
+  self.put!(obj.key, obj.value)
+
+
+def meth remove!(self : @HashMap, key) : HashMap
+  let hash : Int = key.hash mod self.table.size
+  let np = self.table[hash]
+
+  if (np <> #nil) {
+    if (np.key?(key)) {
+      -- special case. if the first element is the key/value pair, than
+      -- remove it directly
+      self.table[hash] = np.tail
+    }
+    else {
+      -- otherwise find the hash entry to delete
+
+      let loop(prev, nl) {
+          if (nl.key?(key)) {
+            prev.tail = nl.tail
+          }
+          else
+            loop(nl, nl.tail)
+        }
+      loop(np, np.tail)
+    }
+    self.elts.decr!
+  }
+
+  -- check if a resizement of the dictionary is appropriate
+  let ts = self.table.size
+
+  if (self.elts <= (ts * 15) / 100) {
+    let t2 = self.type(items: ts / 2)
+    -- copy all elements
+    t2.add-all(self)
+
+    -- grap the table and length from the new dictionary
+    self.table = t2.table
+    self.elts = t2.num-items
+  }
+
+  self
+
+
+def meth keys(self : @HashMap) : Vector(self.Type.Key)
+  let keys = Vector(self.elts)
+  for (k in self.key-iterator)
+    keys.append(k)
+  keys
+
+
+def meth values(self : @HashMap) : Vector(self.Type.Value)
+  let values = Vector(self.elts)
+  for (v in self.value-iterator)
+    values.append(v)
+  values
+
+
+--  has-value?: obj(_ELT_) : (BOOL) |
+--    -- TODO
+--    #f.
+
+
+--  del-value: obj(_ELT_) : (self) |
+--    -- TODO
+--    self.
+
+
+def meth add-all(self : @HashMap, coll : @AssocCollection) : self.Type
+  for (e in coll)
+    self.put!(e.key, e.value)
+  self
+
+
+def meth has-all-keys?(self : @HashMap, keys : @Collection) : Bool
+  for (k in keys) {
+    if (not self.has?(k))
+      return(#f)
+  }
+  #t
+
+
+def meth remove-all-keys(self : @HashMap, keys : @Collection) : self.Type
+  for (k in keys)
+    self.remove(k)
+  self
+
+
+def meth retain-all-keys(self : @HashMap, keys : @Collection) : self.Type
+  for (k in keys) {
+    if (not self.has?(k))
+      self.remove(k)
+  }
+  self
+
+
+
+
+  ----------------------------------------------------------------------
+  -- copy
+  ----------------------------------------------------------------------
+  table : (VECT elt: TRIPLE, priv) |
+    table.
+
+  table!: t(VECT elt: TRIPLE)
+    elts: e(INT) : (self, priv) |
+    table <- t,
+    elts <- e,
+    self.
+
+  copy : (self) |
+    self alloc ' table!: table elts: elts.
+
+  deep-copy : (self) |
+    self alloc ' init-with-cltn: self.
+
+  eq?: obj(lang.ANY) : (lang.BOOL) |
+    obj isa?: DICT ? super eq?: obj
+                   : #f.
+
+  cmp: obj(lang.ANY) : (lang.INT) |
+       -- TODO
+    -1.
+
+  ->string : (STRING)
+  | ( | res(CDATA) <- CDATA cdata |
+      [ e |
+        res append: (e ->string) " "
+        ] for: (self seq),
+      res ->string).
+)
+
+
+
+
+-- sequence implementation for the dict class.  once the orange2c compiler
+-- supports anonymous classes, this should be done in the seq method directly.
+lang.DICT-SEQ <- class : (lang.SEQ) base: _BASE_ (
+| table (VECT elt: TRIPLE) <- nil,
+  curidx(INT) <- 0,
+  np <- nil |
+
+  init-with-table: t(VECT elt: TRIPLE) |
+    super init,
+    table <- t,
+    curidx <- 0,
+    np <- table at: curidx,
+    self.
+
+  next? : (lang.BOOL) |
+    np <> nil or ( | i(INT) <- curidx + 1,
+                     tlen(INT) <- table length,
+                     found(BOOL) <- #f |
+                   [ |
+                     (table at: i) <> nil ? found <- #t
+                                          : i <- i + 1
+                   ] while: (i < tlen and ¬found),
+                   found).
+
+  next : (ASSOC) |
+    ( | retv(ASSOC) |
+
+      -- if np contains has visited a node, try to return the next value in
+      -- the chain
+      np <> nil ? (retv <- ASSOC alloc ' init-with-key: (np key)
+                                                 value: (np value),
+                   np <- np tail)
+                : curidx <- curidx + 1,
+
+      -- if this is nil, go to the next slot in the hash
+      retv = nil ? ( | done(BOOL) <- #f,
+                       tlen(INT) <- table length |
+                     [ |
+                       np <- table at: curidx,
+                       np <> nil ? (retv <- ASSOC alloc
+                                                ' init-with-key: (np key)
+                                                          value: (np value),
+                                    np <- np tail,
+                                    done <- #t)
+                                 : curidx <- curidx + 1
+                     ] while: (curidx < tlen and ¬done)),
+      retv).
+
+
+  del |
+    -- TODO
+    nil.
+
+  reset : (BOOL) |
+    curidx <- 0,
+    np <- table at: curidx,
+    #t.
+)
+
+

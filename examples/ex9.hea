@@ -1,0 +1,15 @@
+def macro incr!
+{
+  { incr!(?place:expr) } -> { ?place = ?place + 1 }
+  { incr!(?place:expr, ?amount:expr) } -> { ?place = ?place + ?amount }
+}
+
+
+def f()
+  let x = 5
+
+  x.incr!()
+  x.incr!(10)
+
+  incr!(x)
+  incr!(x, 10)

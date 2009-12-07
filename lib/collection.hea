@@ -1,0 +1,165 @@
+------------------------------------------------------------------------------
+-- base of all collections
+------------------------------------------------------------------------------
+def abstract type Collection(Object, Elt)
+{
+}
+
+def meth add-all(self : @Collection, other : @Collection) : self.Type ...
+def meth has-all?(self : @Collection, coll : @Collection) : Bool ...
+def meth retain-all(self : @Collection, coll : @Collection) : Bool ...
+def meth remove-all(self : @Collection, coll : @Collection) : Bool ...
+
+def meth size(self : @Collection) : Int ...
+def meth num-items(self : @Collection) : Int ...
+def meth empty?(self : @Collection) : Bool ...
+def meth empty!(self : @Collection) : self.Type ...
+
+def meth contains?(self : @Collection, elt : @self.Type.Elt) : Bool ...
+def meth add(self : @Collection, elt : @self.Type.Elt) : self.Type ...
+def meth remove((self : @Collection, elt : @self.Type.Elt) : self.Type ...
+
+def meth iterator(self : @Collection) : Iterator(self.Type.Elt) ...
+
+def meth for-each(self : @Collection,
+                  func : (Function(elt : self.Type.Elt) : bool)) : self.Type ...
+
+------------------------------------------------------------------------------
+-- all items are always sorted
+------------------------------------------------------------------------------
+def abstract type SortedCollection(Object, Elt) : Collection(Elt)
+{
+}
+
+def meth first(self : @SortedCollection) : self.Type.Elt ...
+def meth last(self : @SortedCollection) : self.Type.Elt ...
+
+
+------------------------------------------------------------------------------
+-- index access
+------------------------------------------------------------------------------
+def abstract type Sequence(Object, Elt) : Collection(Elt)
+{
+}
+
+def meth insert(self : @Sequence,
+                value : @self.Type.Elt,
+                before-index : Int) : self.Type ...
+def meth remove-at(self : @Sequence,
+                   index : Int) : self.Type.Elt ...
+
+def meth swap(self : @Sequence, from-idx : Int, to-idx : Int) : self.Type ...
+
+def meth first(self : @Sequence) : self.Type.Elt ...
+def meth last(self : @Sequence) : self.Type.Elt ...
+
+def meth sort(self : @Sequence) : self.Type ...
+def meth sort!(self : @Sequence) : self.Type ...
+def meth reverse(self : @Sequence) : self.Type ...
+def meth reverse!(self : @Sequence) : self.Type ...
+
+-- operators [] and [] =
+def meth slice(self : @Sequence, index : @Int) : self.Type.Elt ...
+def meth slice!(self : @Sequence,
+                index : @Int,
+                value : @self.Type.Elt) : self.Type ...
+
+
+------------------------------------------------------------------------------
+-- associative collection (key -> value[s])
+------------------------------------------------------------------------------
+
+def type Assoc(Object, Key, Value)
+{
+}
+
+def abstract type AssocCollection(Object, Key, Value) : Collection(Assoc(Key, Value))
+{
+}
+
+def meth key-iterator(self : @AssocCollection) : Iterator(self.Type.Key) ...
+def meth value-iterator(self : @AssocCollection) : Iterator(self.Type.Key) ...
+
+def meth has-key?(self : @AssocCollection, key : @self.Type.Key) : Bool ...
+def meth get(self : @AssocCollection, key : @self.Type.Key) : self.Type.Value ...
+def meth put(self : @AssocCollection,
+             key : @self.Type.Key, value : @self.Type.Value) : self.Type ...
+def meth remove(self : @AssocCollection,
+                key : @self.Type.Key) : self.Type ...
+
+def meth keys(self : @AssocCollection) : Collection(self.Type.Key) ...
+def meth values(self : @AssocCollection) : Collection(self.Type.Key) ...
+
+def meth has-all-keys?(self : @AssocCollection,
+                       keys : @Collection(self.Type.Key)) : Bool ...
+def meth remove-all-keys(self : @AssocCollection,
+                         keys : @Collection(self.Type.Key)) : self.Type ...
+def meth retain-all-keys(self : @AssocCollection,
+                         keys : @Collection(self.Type.Key)) : self.Type ...
+
+
+------------------------------------------------------------------------------
+-- default implementations
+------------------------------------------------------------------------------
+
+def type Set(Object, Elt) : Collection(Elt)
+{
+}
+
+
+-- aka TreeSet
+def type SortedSet(Object, Elt) : SortedCollection(Elt)
+{
+}
+
+
+-- aka MultiSet
+def type Bag(Object, Elt) : Collection(Elt)
+{
+}
+
+
+-- aka MultiTreeSet
+def type SortedBag(Object, Elt) : SortedCollection(Elt)
+{
+}
+
+
+def type Vector(Object, Elt) : Sequence(Elt)
+{
+}
+def meth resize(self : @Vector) : self.Type ...
+
+
+
+def type List(Object, Elt) : Sequence(Elt)
+{
+}
+
+
+def type Deque(Object, Elt) : Sequence(Elt)
+{
+}
+
+
+
+def type HashMap(Object, Key, Value) : AssocCollection(Key, Value)
+{
+}
+
+
+def type Tree(Object, Key, Value) : (AssocCollection(Key, Value),
+                                     SortedCollection(Key))
+{
+}
+
+
+def type MultiMap(Object, Key, Value) : AssocCollection(Key, Value)
+{
+}
+
+
+def type SortedMultiMap(Object, Key, Value) : (AssocCollection(Key, Value),
+                                               SortedCollection(Key, Value))
+{
+}

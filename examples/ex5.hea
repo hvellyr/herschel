@@ -1,0 +1,24 @@
+-- type definitions
+
+def type Point(Object)
+{
+}
+
+def type Atlas(Persona, T1 = Int, T2 = Real) : Copyable
+{
+}
+
+
+def type Point(Object)
+{
+  slot x : Int = 0      , init: 0
+  slot y : Int = 0      , init: 1
+  slot value : Int = 55 , public, transient, key-init: x 
+
+  on init(self)
+  {
+    value = x * y
+  }
+
+  on delete(self) nop()
+}
