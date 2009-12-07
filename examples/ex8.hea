@@ -1,0 +1,28 @@
+  def macro funcvar {
+    { def funcvar ?name:id ?init:opt-expr } ->
+                      { def ?name ## -var = ?init
+                        def ?name () ?name ## -var
+                        def ?name (value) { ?name ## -var = value
+                                            value } }
+
+  opt-expr:
+    { } -> { }
+    { = ?e:expr } ->  { ?e }
+  }
+
+
+def macro x
+{
+  { x(?a:exprlist) } -> { { ?a } }
+}
+
+def macro for
+{
+  { for (?d:exprlist) ?b:expr } -> { }
+  { for ( ; ?c:arglist) ?b:expr } -> { }
+  { for (?d:exprlist ; ?c:arglist) ?b:expr } -> { }
+  { for (?d:exprlist ; ?c:arglist) ?b:expr ?else-branch } -> { }
+  
+  else-branch:
+  { else ?e:expr } -> 
+}

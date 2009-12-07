@@ -1,0 +1,7 @@
+def f()
+  let g = 5
+  let h(x) x + x 
+
+  h(g)
+
+

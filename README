@@ -1,0 +1,23 @@
+What's it
+
+  Heather is general purpose programming language aiming to be easy to use,
+  clear in semantics and syntax, but powerful enough to be used for
+  ambitious projects.
+
+  A list of features:
+
+  - object oriented ("everything's an object")
+  - multi dispatch functions
+  - first class functions, classes
+  - fully lexical scoped
+  - strong functional aproach (while being not fully functional)
+  - garbage collected
+  - returnable exceptions
+  - compiled, though not required by specification
+
+
+Influences:
+
+  - scheme
+  - dylan
+  - cecil

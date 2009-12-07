@@ -1,0 +1,261 @@
+-- This file is part of the heather package 
+--
+-- Copyright (c) 2006, 2007, 2008 Gregor Klinke
+-- All rights reserved.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+-- - Redistributions of source code must retain the above copyright notice,
+--   this list of conditions and the following disclaimer.
+--
+-- - Redistributions in binary form must reproduce the above copyright
+--   notice, this list of conditions and the following disclaimer in the
+--   documentation and/or other materials provided with the distribution.
+--
+-- - Neither the name of the author nor the names of other contributors may
+--   be used to endorse or promote products derived from this software
+--   without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+namespace heather("eyestep/heather 1.0:core")
+
+
+def type Map(Object) : KeyedCollection
+{
+  slot slots : Any[] = #nil
+  slot total : Int = 0 
+}
+
+
+def at-internal!(tslots : Any[], key, value, number-of-items : Int)
+  let hash-val = key.hash mod tslots.size
+  let buckets = tslots[hash-val]
+
+  if (not(buckets == #nil)) {
+    let buck-size = buckets.size
+
+--    for (i : Int = 0 .. buck-size by 2) {
+    for (i = 0 .. buck-size by 2) {
+     if (buckets[i] == key) {
+        buckets[i + 1] = value
+        return(number-of-items)
+      }
+    }
+
+    buckets.append(key).append(value)
+    number-of-items + 1
+  }
+  else {
+    tslots[hash-val] = Vector().append(key).append(value)
+    number-of-items + 1
+  }
+
+
+-- Return the value for /key/ or /#nil/ if not such item is contained.
+def meth at(self : @Map, key)
+  let hash-val = key.hash mod self.slots.size
+
+  if (not(self.slots[hash-val] == #nil)) {
+    let buckets = self.slots[hash-val]
+    let buck-size = buckets.size
+
+--    for (i : Int = 0 .. buck-size by 2) {
+    for (i = 0 .. buck-size by 2) {
+      if (buckets[i] == key)
+        return(buckets[i + 1])
+    }
+  }
+
+  #nil
+
+
+-- Indicates whether the receiver contains /key/.
+def meth has?(self : @Map, key)
+  let hash-val = key.hash mod self.slots.size
+
+  if (not(self.slots[hash-val] == #nil)) {
+    let buckets = self.slots[hash-val]
+    let buck-size = buckets.size
+
+--    for (i : Int = 0 .. buck-size by 2) {
+    for (i = 0 .. buck-size by 2) {
+      if (buckets[i] == key)
+        return(#t)
+    }
+  }
+  #f
+
+
+-- Set /value/ for /key/.  If /key/ has been set already any previous
+-- value is overwritten.  Returns the receiver.
+def meth at!(self : @Map, key, value)
+  self.total = at-internal!(self.slots, key, value, self.total)
+  if (self.total > (self.slots.size * 2) / 3)
+    self.rehash()
+  else
+    self
+
+
+-- Removes /key/ from the receiver.  If /key/ is not contained 
+-- the receiver stays unchanged.  Returns the receiver.
+def meth sub(self : @Map, key)
+  let hash-val = key.hash mod self.slots.size
+
+  if (not(self.slots[hash-val].nil?)) {
+    let buckets = self.slots[hash-val]
+    let buck-size = buckets.size
+
+--    for (i : Int = 0 .. buck-size by 2) {
+    for (i = 0 .. buck-size by 2) {
+      if (buckets[i] == key) {
+        if (buck-size == 2) {
+          self.slots[hash-val] = #nil
+        }
+        else {
+          buckets[i] = buckets[buck-size - 2]
+          buckets[i + 1] = buckets[buck-size - 1]
+          self.slots[hash-val].size = buck-size - 2
+        }
+
+        self.total.decr!(1)
+        if (self.total < (self.slots.size * 3) / 2)
+          self.rehash()
+        return(self)
+      }
+    }
+  }
+
+  self
+
+
+-- returns the number of item pairs in the receiver.
+def meth size(self : @Map)
+  self.total
+
+
+-- iterates over all contained item pairs and applies /func/ to them.
+-- /func/ is required to accept two parameters (key, value).  The
+-- iteration order is unspecified."
+def meth for-each(self : @Map, func)
+  for (i = 0 .. self.slots.size) {
+    let buckets = self.slots[i]
+
+    if (not(buckets == #nil)) {
+      for (j = 0 .. buckets.size by 2)
+        func(buckets[j], buckets[j + 1])
+    }
+  }
+  self
+
+
+-- returns a string representation of the receiver.
+def meth ->string(self : @Map)
+  let first? = #t
+  let port = StringPort()
+
+  port.writes("#{")
+  self.for-each(#function(key, value) {
+                   if (first?)
+                     first? = #f
+                   else
+                     port.writes(", ")
+                   port.writes(key.->string)
+                       .writes(" -> ")
+                       .writes(value.->string)
+                 } )
+  port.writes("}")
+  port.->string
+
+
+-- For internal use only.  Rehashes the receiver.
+def meth rehash(self : @Map)
+  let nsize = if (self.total < 5)
+                5
+              else
+                self.total * 2
+
+  if (nsize <> self.slots.size) {
+    let nslots = Vector().size = nsize * 2
+    self.for-each(#function(key, value) {
+                     at-internal!(nslots, key, value, self.total) 
+                  })
+    self.slots = nslots
+  }
+  self
+
+
+
+
+
+
+
+
+
+
+
+def type ForwardSequence(Object) : NonRewindableSequence
+{
+  slot slot-idx = 0
+  slot buck-idx = 0
+  slot slots : Any[] = #nil; init: 0
+  slot slot-size = 0
+  slot acc = #nil; init: 1
+}
+
+
+def meth next(self : @ForwardSequence)
+  until(self.slot-idx >= self.slot-size) {
+    let buckets = self.slots[self.slot-idx]
+
+    if (not(buckets == #nil)) {
+      if (self.buck-idx < buckets.size) {
+        let t = self.acc(buckets, self.buck-idx)
+        self.buck-idx.incr!(2)
+        return(t)
+      }
+    }
+  
+    self.slot-idx.incr!(1)
+    self.buck-idx = 0
+  }
+  #eof
+
+def meth end?(self : @ForwardSequence)
+  self.slot-idx >= self.slot-size
+
+
+-- Returns a sequence which returns the next item key on each call.
+def meth key-sequence(self : @Map)
+  ForwardSequence(self.slots, #function(buckets, idx) buckets[idx])
+
+
+-- Returns a sequence which returns the next item value on each call.
+-- The order is unspecified.
+def meth value-sequence(self : @Map)
+  ForwardSequence(self.slots, #function(buckets, idx) buckets[idx + 1])
+
+
+-- Returns a sequence which returns pairs of item key and value when
+-- called.  Each return value is a two-slot Vector instance
+-- containing key (as slot 0) and value (as slot 1).  The order of pairs
+-- returned is unspecified.
+def meth sequence(self : @Map)
+  ForwardSequence(self.slots, #function(buckets, idx) {
+                                Vector().append(buckets[idx])
+                                        .append(buckets[idx + 1])
+                              })
+
+-- end of Map

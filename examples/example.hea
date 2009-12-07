@@ -1,0 +1,171 @@
+
+def browser-data-model(self : @ <live-browser-chooser-remoteable>,
+                       browser-type : <int>) : <meta-browser-data-model>
+  let browser-model = self.browser-data-model-class()(browser-type)
+
+  let tag-browser-model = if (self.browser-supports-tags(browser-type))
+                            <tagged-browser-data-model>()
+                          else
+                            #nil
+
+  <meta-browser-data-model>(browser-model, tag-browser-model)
+
+
+
+def class <tag-button-control>(super: <button-control>)
+
+  def tag-index : <int> = 0
+  def parent-view-index : <int> = 0
+  def show-frame? : <bool> = #f
+
+
+def preferred-size(self : @<tag-button-control>) : <point>
+  let preferred-width : <int> = self.control-text.text-field.favoured-size.x + 14
+  let minimum-width : <int> = super.minimum-size.x
+
+  <point>(max(preferred-width, minimum-width), BUTTON-HEIGHT)
+
+
+def maximum-size(self : @<tag-button-control>) : <point>
+  self.preferred-size
+
+def minimum-size(self : @<tag-button-control>) : <point>
+  self.preferred-size
+
+def tag-index!(self : @<tag-button-control>, index : <int>)
+  tag-index = index
+  self
+
+def tag-index(self : @<tag-button-control>) : <int>
+  tag-index
+
+def parent-view-index(self : @<tag-button-control>, index : <int>)
+  parent-view-index = index
+
+def parent-view-index(self : @<tag-button-control>)
+  parent-view-index
+
+def on-mouse-enter(self : @<tag-button-control>,
+                   pos : <point>,
+                   mod : <key-modifier>)
+  show-frame? = #t
+  self.update
+  self
+
+def on-mouse-exit(self : @<tag-button-control>)
+  show-frame? = #f
+  self.update
+  self
+
+def on-draw(self : @<tag-button-control>, gp : <graphport>)
+  if (show-frame?)
+    super.on-draw(gp)
+  self
+
+
+//========================================================================================
+
+MImplementation(ATagButtonControl)
+MEndImplementation
+
+
+//----------------------------------------------------------------------------------------
+
+ATagButtonControl::ATagButtonControl()
+  : mTagIndex(0), 
+    mParentViewIndex(0),
+    mShowFrame(false)
+{
+  MConstructor
+}
+
+
+//----------------------------------------------------------------------------------------
+
+TPoint ATagButtonControl::PreferredSize() const
+{
+  const TInt PreferredWidth = mpControlText->TextField()->FavouredSize().X() + 14;
+  const TInt MinimumWidth = Inherited::MinimumSize().X();
+
+  return TPoint(MMax<TInt>(PreferredWidth, MinimumWidth), KButtonHeight);
+}
+
+
+//----------------------------------------------------------------------------------------
+
+TPoint ATagButtonControl::MaximumSize() const
+{
+  return PreferredSize();
+}
+
+
+//----------------------------------------------------------------------------------------
+
+TPoint ATagButtonControl::MinimumSize() const
+{
+  return PreferredSize();
+}
+
+
+//----------------------------------------------------------------------------------------
+
+void ATagButtonControl::SetTagIndex(TInt Index)
+{
+  mTagIndex = Index;
+}
+
+
+//----------------------------------------------------------------------------------------
+
+TInt ATagButtonControl::TagIndex()
+{
+  return mTagIndex;
+}
+
+
+//----------------------------------------------------------------------------------------
+
+void ATagButtonControl::SetParentViewIndex(TInt Index)
+{
+  mParentViewIndex = Index;
+}
+
+
+//----------------------------------------------------------------------------------------
+
+TInt ATagButtonControl::ParentViewIndex()
+{
+  return mParentViewIndex;
+}
+
+
+//----------------------------------------------------------------------------------------
+
+void ATagButtonControl::OnMouseEnter(TPoint Pos, TKey::TMod Mod)
+{
+  MUnused(Pos);
+  MUnused(Mod);
+
+  mShowFrame = true;
+  Update();
+}
+
+
+//----------------------------------------------------------------------------------------
+
+void ATagButtonControl::OnMouseExit()
+{
+  mShowFrame = false;
+  Update();
+}
+
+
+//----------------------------------------------------------------------------------------
+
+void ATagButtonControl::OnDraw(AGraphPort& GraphPort)
+{
+  if (mShowFrame)
+  {
+    Inherited::OnDraw(GraphPort);
+  }
+}

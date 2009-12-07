@@ -1,0 +1,20 @@
+def f(g, h)
+  on signal(e) {
+    outln(e)
+  }
+  on exit(r) {
+    r
+  }
+
+  g + h
+
+
+def g()
+  #[1, 2, 3, 4]
+
+def h()
+  #(1, 2, 3, 4)
+
+def i()
+  #('a -> 1, 'b -> 2, 'c -> 3, 'd -> 4)
+
