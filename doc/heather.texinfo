@@ -105,6 +105,7 @@ of its features:
 @chapter Specification
 
 @menu
+* Notation::                    Notations
 * Functions::                   Functions
 * Types::                       Types
 * Variables::                   Variables and constants
@@ -112,6 +113,13 @@ of its features:
 * SlotAccess::                  Access to type slots
 * Namespaces::                  Namespaces
 * Import::                      Import
+* Blocks::                      Blocks
+* Loops::                       Loops
+* Conditionals::                Conditionals
+* Ranges and Slices::           Ranges and Slices
+* On-the-fly iterators::        On the fly iterators
+* Conditions::                  Conditions
+* Closures::                    Closures
 * Macros::                      Macros
 * Ideas::                       Ideas
 * ReserverdWords::              Reserved words
@@ -120,7 +128,110 @@ of its features:
 
 
 @c --------------------------------------------------------------------
-@node Functions, Types, Specification, Specification
+@node Notation, Functions, Specification, Specification
+@section Notations
+
+@c ....................................................................
+@subsection Symbols
+
+@example
+*stdout*
+%some-constant%
+-a-string-
+_a_string_
+_a/string_
+@end example
+
+
+@c ....................................................................
+@subsection Chars
+
+@example
+\a
+\space
+\u41h
+\nl
+@end example
+
+
+@c ....................................................................
+@subsection String
+
+@example
+"abc"
+"hello world"
+"Usage: cmd OPTIONS\nl;"
+"a string"
+"a \nl;string"
+"a \tab;string"
+"a \\string"
+"a \"string"
+"a \A;string"
+"a \u41h;string"
+@end example
+
+
+@c ....................................................................
+@subsection Keywords
+
+@example
+'symbol
+'hello-world
+@end example
+
+
+@c ....................................................................
+@subsection Arrays
+
+@example
+a constant arrays: #[1, 2, 3, 4, 5]
+@end example
+
+
+@c ....................................................................
+@subsection Vector
+
+@example
+#(1, 2, 3)
+@end example
+
+
+@c ....................................................................
+@subsection Dictionary
+
+@example
+#("abc" -> #[1, 2, 3],
+  "def" -> 'symbol,            -- symbol
+  "xyz" -> \a,                 -- char
+  "mmm" -> \u41h,              -- char
+  "ch1" -> \space              -- char
+)
+@end example
+
+
+@c ....................................................................
+@subsection Numbers
+
+@example
+1234                           -- decimal
+100h                           -- hexadecimal
+-100y                          -- binary
+100t                           -- octal
+@end example
+
+
+@c ....................................................................
+@subsection Basic constants
+
+@example
+#nil
+#true #t #false #f
+#eof
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Functions, Types, Notation, Specification
 @section Functions
 
 Function are standalone function not bound to any particular type.
@@ -695,49 +806,55 @@ is identical to
 Since methods/functions are not bound to type, access is always to be done
 explicitly to a typed reference:
 
-  def type Point(x = 0, y = 0)
+@example
+def type Point() @{ slot x = 0 slot y = 0 @}
 
-  def add(self : @@Point, val : @@Int)
-    self.x += val
-    self.y += val
-    self
+def add(self : @@Point, val : @@Int)
+  self.x = self.x + val
+  self.y = self.x + val
+  self
 
-  def add(self : @@Point, val : @@Point)
-    self.x += val.x
-    self.y += val.y
-    self
+def add(self : @@Point, val : @@Point)
+  self.x = self.x + val.x
+  self.y = self.x + val.y
+  self
+@end example
 
 How is this .x and .y implemented?  By default the compiler generates the
-relevant access code.  You can overwrite accessors and modifiers by
+relevant access code.  You can overwrite accessors and mutators by
 functions.  To access the slots you have to use the slot() and slot!()
 special forms:
 
-  def x(self : @@Point)
-    self.slot(x)
-    -- identical to slot(self, 'x)
+@example
+def x(self : @@Point)
+  self.slot(x)                    -- identical to slot(self, 'x)
+  
 
-  def x!(self : @@Point, val)
-    self.slot(x) = val
-    -- identical to slot!(self, 'x, val)
+def x!(self : @@Point, val)
+  self.slot(x) = val              -- identical to slot!(self, 'x, val)
+  
+@end example
 
 The "self.x" and "self.x =" syntax forms are translated into
 
-    self.x      ->   x(self)
-    self.x = 5  ->   x!(self, 5)
+@example
+self.x      ->   x(self)
+self.x = 5  ->   x!(self, 5)
+@end example
 
 
 @c --------------------------------------------------------------------
 @node Namespaces, Import, SlotAccess, Specification
 @section Namespaces
 
-Declare and use the namespace of a @sc{compile unit}:
+Declare and use the @dfn{namespace} of a @sc{compile unit}:
 
 @example
 namespace heather("eyestep/heather 1.0:core")
 @end example
 
-This defines in which namespace functions, types, macros, and variables are
-defined.  It is valid until the end of the source file or the next
+This sets the namespace for the following functions, types, macros, and
+variables.  It is valid until the end of the source file or the next
 namespace declaration.
 
 Namespaces have two names, the short (or ``tag'') name and the full id
@@ -757,11 +874,12 @@ equally named functions or types in different namespaces however the fully
 qualified name has to be used:
 
 @example
-<io>Input-Port()
-<zip>Input-Port()
+<io>InputPort()
+<zip>InputPort()
 @end example
 
-gives the Input-Port type from the io and the zip namespace respectively.
+gives the @code{InputPort} type from the @code{io} and the @code{zip}
+namespace respectively.
 
 The namespace have to be given inside of method call chains also if
 necessary:
@@ -776,9 +894,9 @@ A namespace statement without full id data like
 namespace io
 @end example
 
-simply switches the current governing namespace to io.  It requires a
-previous full namespace declaration, and is therefore usefull for source
-files with multiple namespaces.
+simply switches the current governing namespace to @code{io}.  It
+requires a previous full namespace declaration, and is therefore usefull
+for source files with multiple namespaces.
 
 Namespace defines (i.e. tag name to full id mapping) are imported from
 loaded files; the namespace defined in the file does not extend,
@@ -786,7 +904,7 @@ however, into the importing file.
 
 
 @c --------------------------------------------------------------------
-@node Import, Macros, Namespaces, Specification
+@node Import, Blocks, Namespaces, Specification
 @section Import
 
 Importing external modules.  The statement
@@ -799,278 +917,245 @@ will try to look for a module (file) @code{io} in the search path and
 load it.
 
 
-Blocks
-======
+@c --------------------------------------------------------------------
+@node Blocks, Loops, Import, Specification
+@section Blocks
 
 Code blocks are sequences of statements.  The last statement's return value
 gives the return value of the complete block.  Blocks are atomic and
 therefore can be put whereever a single expression is expected (i.e. even
 in default parameter init value places):
 
-  def f(x = @{ let p = Properties()
-              while (p.next?) @{
-                if (not p.nil?)
-                  p.value
-              @}
-              else
-                #f
-            @})
-    ...
-
-Whether this is readable, is another question ...
-
-
-LOOPS
-=====
-
-  for (base, conditions) expr
-  while (test) expr
-  until (test) expr
-
-The returnvalue of expr's last statement gives the return value of the
-complete loop statement.  Each loop form takes an optional "else"
-branch, which is evaluated if the loop's body is never entered:
-
-  let first-name = for (n in values, not n.nil?)
-                     break(n)
-                   else
-                     #nil
-
-if no "else" branch is given the return value of such is a loop is #f.
+@example
+def f(x = @{ let p = Properties()
+            while (p.next?) @{
+              if (not p.nil?)
+                break(p.value)
+            @}
+            else
+              #f
+          @})
+   @emph{body}
+@end example
 
 
-IF & SELECT
-===========
+@c --------------------------------------------------------------------
+@node Loops, Conditionals, Blocks, Specification
+@section Loops
 
-  if (test) expr
-  if (test) expr else expr
+@example
+for (@emph{base}, @emph{conditions}) @emph{expr}
+while (@emph{test}) @emph{expr}
+until (@emph{test}) @emph{expr}
+@end example
+
+The returnvalue of @emph{expr}'s last statement gives the return value
+of the complete loop statement.  Each loop form takes an optional
+@code{else} branch, which is evaluated if the loop's body is never
+entered:
+
+@example
+let first-name = for (n in values, not n.nil?)
+                   break(n)
+                 else
+                   #nil
+@end example
+
+If no @code{else} branch is given the return value of such is a loop is
+@code{#f}.
 
 
-  select (test) @{
-    test -> expr
-    test -> expr
-    otherwise expr
-  @}
+@c --------------------------------------------------------------------
+@node Conditionals, Ranges and Slices, Loops, Specification
+@section Conditionals
 
-Example:
+@deffn Special if (@var{test}) @var{consequent}
+@deffnx Special if (@var{test}) @var{consequent} @code{else} @var{alternate}
+@end deffn
 
-  select (a) @{
-    \a -> if (not done)
-            do-it
-          else
-            do-something-different
-    otherwise outln("nothing applies")
-  @}
+@deffn Special select ([@var{value}]) { @var{tests} }
+@deffnx Special select ([@var{value}]) { @var{tests} } @
+        @code{else} @var{alternate}
+
+@example
+select (test) @{
+  test -> expr
+  test -> expr
+@}
+else
+   expr
+@end example
+
+@example
+select (a) @{
+  \a -> if (not done)
+          do-it
+        else
+          do-something-different
+@}
+else outln("nothing applies")
+@end example
 
 If the parameter list for select is empty each test is expected to be a
 conditional expr:
 
-  select () @{
-    (c == \a or
-     c == \b or
-     c == \c)            -> ...
-    (c in #[\a, \b, \c]) -> ...
-  @}
-
-
-
-RANGES & Slices
-===============
-
-Basic ranges are exclusive, so the range [5, 100) is written as:
-
-  5 .. 100
-
-Whereas [5, 100] is written as:
-
-  5 ... 100
-
-Give the step parameter:
-
-  5 .. 100 by 5
-  => 5, 10, 15, ..., 95
-
-
-Ranges are used for instance to slice vectors and strings:
-
-  "hello world"[3 .. 6]
-  => "lo "
-
-  "hello world"[3 ... 6]
-  => "lo w"
-
-  "hello world"[3 .. 8 by 2]
-  => "l o"
-
-
-On the fly iterators
-====================
-
-The then-while operators are used to express iterators on the fly:
-
-   for (i : Int = 0 then i + 1 while i < 10) ...
-
-   def value-iterators(values : Int[])
-     let i = 0
-     values[i] then values[i.incr!] while i + 1 < values.num-items
-  
-
-
-Conditions
-==========
-
-It's possible to add a hook to a block which is called whenever the block
-is left, either by unroll or by "normal" code flow:
-
-  on exit(value) expr
-
-Value is the return value of the block's last statement.  Normally the exit
-handler will return this without modification.
-
-Not that the "on exit" declaration is actually inside the block for which
-it is declared.  It can therefore access local bindings etc.  On the other
-side in examples like this:
-
-  let stream = File-Input-Port(name)
-  for (i = 0 .. 100) @{
-    on exit(v) @{ stream.close @}
-  @}
-
-The exit hook would be called for each loop step.  The author mostly likely
-meant this:
-
-  let stream = File-Input-Port(name)
-  on exit(v) @{ stream.close @}
-
-  for (i = 0 .. 100) @{
-  @}
-
-
-Similar to "on exit" conditions can be trapped:
-
-  on signal(value : <type>) expr
-
-This declares a condition handler for a condition of type "<type>".
-Whenever a condition raised (using raise()) the first matching condition
-handler is called.  During evaluation of signal-expr two special functions
-are available: "continue(val)" and "raise()" without parameter.
-
-continue(val) returns to the place from which raise() was called injecting
-"val" as new returnvalue to the raise expression.
-
-raise() without parameter propagates condition handling to the next
-matching condition handler.  There's a difference between raise(cond) and
-raise.  "raise" without parameter does not start a new condition signal
-chain, but passed controll upwards.  raise(cond) however starts a new
-signal chain, which can be handled inside the control handler.
-
-If the condition handle is neither left early with continue() or raise()
-its return value becomes the return value of the block in which the
-condition handler has been declared.  If both exit and condition handler
-had been declared, the condition handler is called first and therefore its
-return value is passed as input to the exit handler.
-
-
-
-Anonymous functions and Closures
---------------------------------
-
-#function(a : Real, b : Real) : Int @{ @}
-
-
-
-LITERALS
-========
-
-Symbols
--------
-
-*stdout*
-%some-constant%
--a-string-
-_a_string_
-_a/string_
-
-
-Chars
------
-\a
-\space
-\u41h
-\nl
-
-
-String
-------
-"abc"
-"hello world"
-"Usage: cmd OPTIONS\nl;"
-"a string"
-"a \nl;string"
-"a \tab;string"
-"a \\string"
-"a \"string"
-"a \A;string"
-"a \u41h;string"
-
-
-Keywords
---------
-
-'symbol
-'hello-world
-
-
-Arrays
-------
-
-type declaration for arrays: Byte[]
-
-a constant arrays: #[1, 2, 3, 4, 5]
-
-Vector
-------
-
-type declaration for vectors: Vector*()
-def alias Vector = Vector*(Any)
-
-#(1, 2, 3)
-
-
-Dictionary:
------------
-
-HashMap*(<Key>, <Value>)
-def alias HashMap = HashMap*(Any, Any)
-
-
-#("abc" -> #[1, 2, 3],
-  "def" -> 'symbol,            -- symbol
-  "xyz" -> \a,                 -- char
-  "mmm" -> \u41h,              -- char
-  "ch1" -> \space              -- char
-)
-
-
-Numbers
--------
-
-1234
-100h
--100y
-100t
-
-
-Basic constants
----------------
-
-#nil
-#true #t #false #f
-#eof
+@example
+select () @{
+  (c == \a or
+   c == \b or
+   c == \c)            -> @emph{expr}
+  (c in #[\a, \b, \c]) -> @emph{expr}
+@}
+@end example
+@end deffn
 
 
 @c --------------------------------------------------------------------
-@node Macros, Ideas, Import, Specification
+@node Ranges and Slices, On-the-fly iterators, Conditionals, Specification
+@section Ranges and Slices
+
+Basic ranges are exclusive, so the range [5, 100) is written as:
+
+@example
+5 .. 100
+@end example
+
+Whereas [5, 100] is written as:
+
+@example
+5 ... 100
+@end example
+
+Give the step parameter:
+
+@example
+5 .. 100 by 5
+@result{} 5, 10, 15, ..., 95
+@end example
+
+Ranges are used for instance to slice vectors and strings:
+
+@example
+"hello world"[3 .. 6]
+@result{} "lo "
+
+"hello world"[3 ... 6]
+@result{} "lo w"
+
+"hello world"[3 .. 8 by 2]
+@result{} "l o"
+@end example
+
+
+@c --------------------------------------------------------------------
+@node On-the-fly iterators, Conditions, Ranges and Slices, Specification
+@section On the fly iterators
+
+The @code{then-while} operators are used to express iterators on the
+fly:
+
+@example
+for (i : Int = 0 then i + 1 while i < 10) @emph{body}
+
+def value-iterators(values : Int[])
+  let i = 0
+  values[i] then values[i.incr!] while i + 1 < values.num-items
+@end example
+
+
+
+@c --------------------------------------------------------------------
+@node Conditions, Closures, On-the-fly iterators, Specification
+@section Conditions
+
+It's possible to add a hook to a block which is called whenever the
+block is left, either by unroll or by ``normal'' code flow:
+
+@example
+on exit(@emph{value}) @emph{expr}
+@end example
+
+Value is the return value of the block's last statement.  Normally the
+exit handler will return this without modification.
+
+Not that the @code{on exit} declaration is actually inside the block for
+which it is declared.  It can therefore access local bindings etc.  On
+the other side in examples like this:
+
+@example
+let stream = <io>FileInputPort(name)
+for (i = 0 .. 100) @{
+  on exit(v)
+  @{
+    stream.close
+  @}
+  @emph{do-something}
+@}
+@end example
+
+the exit hook would be called for each loop step.  The author mostly likely
+intended this:
+
+@example
+let stream = <io>FileInputPort(name)
+on exit(v)
+@{
+  stream.close
+@}
+
+for (i = 0 .. 100) @{
+  @emph{do-something}
+@}
+@end example
+
+
+Similar to @code{on exit} conditions can be trapped:
+
+@example
+on signal(@emph{value} : @emph{type}) @emph{signal-expr}
+@end example
+
+This declares a condition handler for a condition of type @emph{type}.
+Whenever a condition raised (using @code{raise()}) the first matching
+condition handler is called.  During evaluation of @emph{signal-expr}
+two special functions are available: @code{continue(val)} and
+@code{raise()} without parameter.
+
+@defun continue (@var{value})
+Returns to the place from which @code{raise()} was
+called injecting @var{value} as new returnvalue to the raise expression.
+@end defun
+
+@defun raise ([@var{condition}])
+When called without parameter propagates the condition handling to the
+next matching condition handler.  @code{raise()} without parameter does
+not start a new condition signal chain, but passes control upwards.
+
+When called with parameter @var{condition} is raised and a new signal
+chain is started, which can be handled inside the control handler.
+@end defun
+
+If the condition handle is neither left early with @code{continue()} or
+@code{raise()} the stack is unrolled and @emph{signal-expr}'s return
+value becomes the return value of the block in which the condition
+handler has been declared.
+
+If both exit and condition handler had been declared, the condition
+handler is called first and its return value is passed as input to the
+exit handler.
+
+
+@c --------------------------------------------------------------------
+@node Closures, Macros, Conditions, Specification
+@section Closures
+
+@example
+#function(a : Real, b : Real) : Int @{ @}
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Macros, Ideas, Closures, Specification
 @section Macros
 
 Different kind of macro styles:
@@ -1285,7 +1370,7 @@ def meth ->string(self : @@Pair) : String
 ----------------------------------------------------------------------
 -- a point class
 
-def type Point(Object>,
+def type Point(Object,
     x : Int
     y : Int)
 
