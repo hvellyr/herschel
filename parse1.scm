@@ -1,4 +1,4 @@
-;;  This file is part of the arc package
+;;  This file is part of the heather package
 ;;  Copyright (C) 2002, 2003, 2009 by Gregor Klinke
 ;;
 ;;  This library is free software: you can redistribute it and/or modify
@@ -13,9 +13,6 @@
 ;;
 ;;  You should have received a copy of the GNU General Public License
 ;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-(load "../cmpmcr.scm")
-(load "../misc.scm")
 
 
 ;;----------------------------------------------------------------------
@@ -485,12 +482,12 @@
                 (if (apt-id-eq? current-token "else")
                     (begin
                       (next-token port)
-                      (apt-seq (apt-id 'if)
+                      (apt-seq (apt-id "if")
                                (apt-nested "(" ")" test-expr)
                                true-expr
-                               (apt-id 'else)
+                               (apt-id "else")
                                (parse-expr port)))
-                    (apt-seq (apt-id 'if)
+                    (apt-seq (apt-id "if")
                              (apt-nested "(" ")" test-expr)
                              true-expr)))
               (syntax-error "Expected ) in if" current-token)))
@@ -1340,7 +1337,7 @@
             (begin
               (next-token port)
               (let ((type (parse-type port)))
-                (apt-seq (apt-id 'alias) sym (apt-punct ":") type)))
+                (apt-seq (apt-id "alias") sym (apt-punct ":") type)))
             (syntax-error "Expected =, got" current-token)))
       (syntax-error "Expected symbol, got" current-token)))
 
@@ -1466,7 +1463,7 @@
 (define (apt-map-scope scope)
   (cond ((eq? scope 'global) (apt-id "def"))
         ((eq? scope 'local) (apt-id "let"))
-        (else (apt-id 'bad))))
+        (else (apt-id "bad"))))
 
 
 (define (apt-function params type body)
@@ -1503,13 +1500,18 @@
 
 
 (define (apt-vardef scope name type modifiers init)
-  (apt-seq (apt-map-scope scope)
-           ;; modifiers
-           name
-           (if type (apt-punct ":") #f)
-           (if type type #f)
-           (if init (apt-punct "=") #f)
-           (if init init #f)))
+  (let ((res '()))
+    (set! res (list (apt-map-scope scope)))
+    (set! res (append res (map (lambda (m)
+                                 (apt-id m))
+                               modifiers)))
+    (set! res (append res (list name)))
+    (if type 
+        (set! res (append res (list (apt-punct ":") type))))
+    (if init 
+        (set! res (append res (list (apt-punct "=") init))))
+
+    (apt-seq* res)))
 
 
 (define (parse-func-or-var-def port scope modifiers)
@@ -1519,7 +1521,6 @@
          (type     (macro-type macro-id)))
     (if macro
         (begin
-          (arc:display "DEF MACRO " type " --- " macro 'nl)
           (let ((expr (parse-make-macro-call port sym '() macro type #t
                                              scope)))
             (if expr
@@ -1587,11 +1588,11 @@
                 (if (apt-punct-eq? current-token ")")
                     (begin
                       (next-token port)
-                      (apt-seq (apt-id 'namespace)
+                      (apt-seq (apt-id "namespace")
                                nsname
                                (apt-nested "(" ")" str)))
                     (syntax-error "Expected ), got" current-token))))
-            (apt-seq (apt-id 'namespace)
+            (apt-seq (apt-id "namespace")
                      nsname)))
       (syntax-error "Expected SYMBOL, got " current-token)))
 
@@ -1623,21 +1624,6 @@
                       (else (loop (append apt (list expr))))))
               (syntax-error "Unexpected token (6)" current-token))))) )
 
-
-(define (parse-file1 filename)
-  (let* ((port (open-input-file filename))
-         (retv (begin
-                 (next-char port)
-                 (next-token port)
-                 (parse-next-top port))))
-    (close-input-port port)
-
-;;;    (arc:display "------- macros ------------------------" 'nl)
-;;;    (for-each (lambda (m)
-;;;                (arc:display m 'nl))
-;;;              *macro-registry*)
-;;;    (arc:display "---------------------------------------" 'nl)
-    retv))
 
 
 ;;Keep this comment at the end of the file
