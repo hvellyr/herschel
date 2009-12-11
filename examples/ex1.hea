@@ -23,19 +23,19 @@ def f(x) : Int
   x()()
   x(1)[1 .. 10 by 2](3)
 
-def h()
-  { a b c }.m
-  { a b c }(1)
-  { a b c }[1]
+--def h()
+--  { a b c }.m
+--  { a b c }(1)
+--  { a b c }[1]
 
-def i()
-  a[5](1).b(1).c[0]
+--def i()
+--  a[5](1).b(1).c[0]
 
 
 def j()
   a[5]
 
-def k()
-  self.a[5] = a[1]
+--def k()
+--  self.a[5] = a[1]
 
 

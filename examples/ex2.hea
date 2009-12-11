@@ -1,7 +1,14 @@
-def f()
-  let g = 5
-  let h(x) x + x 
+namespace heather("eyestep/heather 1.0:core")
+namespace io
 
+def v = 5
+def w : Int = 7 + 2 + 4
+def const k = f(11, v + w)
+
+def f() : Bool
+--  let g = 5
+--  let h(x) x + x 
   h(g)
+  #t
 
 
