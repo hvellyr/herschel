@@ -1,0 +1,1345 @@
+\input texinfo @c -*-texinfo-*-
+@c %**start of header
+@setfilename heather.info
+@settitle heather -- an experimental programming language
+@finalout
+@setchapternewpage odd
+@c %**end of header
+
+@c This file is processed by Arc! Placeholders are surrounded by & 
+@c (amp) and not by @ (at) as normally, since Texinfo uses @ as markup maker!
+@set VERSION 0.0.1
+@set COPYRIGHT 2002, 2003, 2009 Gregor Klinke
+
+@ifinfo
+This file documents @emph{heather}, an experimental programming language tool
+
+Copyright (C)  @value{COPYRIGHT}.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+@end ignore
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for example copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the Foundation.
+@end ifinfo
+
+@titlepage
+@title heather
+@subtitle an experimental programming language
+@subtitle for heather vr. @value{VERSION}
+@author by Gregor Klinke
+
+@page
+@vskip 0pt plus 1filll
+Copyright (C)  @value{COPYRIGHT}.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+@end titlepage
+
+@c All the nodes can be updated using the EMACS command
+@c texinfo-every-node-update, which is normally bound to C-c C-u C-e.
+@node Top, Introduction, (dir), (dir)
+
+@ifinfo
+This manual documents @emph{heather}, an experimental programming
+language.  It refers to version @value{VERSION}.
+@end ifinfo
+
+@c All the menus can be updated with the EMACS command
+@c texinfo-all-menus-update, which is normally bound to C-c C-u C-a.
+
+@menu
+* Introduction::                Introduction
+* Specification::               Specification
+* Copying::                     Copying
+* Function Index::              Index of functions
+* Concept Index::               Index of concepts
+@end menu
+
+
+
+@c ====================================================================
+@node Introduction, Specification, Top, Top
+@chapter Introduction
+
+Heather is an generic multiparadigm programming language.  At short list
+of its features:
+
+@itemize
+@item object oriented ("everything's an object")
+@item multi dispatch functions
+@item first class functions, classes
+@item fully lexical scoped
+@item strong functional aproach (while being not fully functional)
+@item garbage collected
+@item returnable exceptions
+@item compiled, though not required by specification
+@end itemize
+
+
+@c ====================================================================
+@node Specification, Copying, Introduction, Top
+@chapter Specification
+
+@menu
+* Functions::                   Functions
+* Types::                       Types
+* Variables::                   Variables and constants
+* FunctionCalls::               Function calls
+* SlotAccess::                  Access to type slots
+* Namespaces::                  Namespaces
+* Import::                      Import
+* Macros::                      Macros
+* Ideas::                       Ideas
+* ReserverdWords::              Reserved words
+* Examples::                    Examples
+@end menu
+
+
+@c --------------------------------------------------------------------
+@node Functions, Types, Specification, Specification
+@section Functions
+
+Function are standalone function not bound to any particular type.
+Functions are resolved by "name" only.  There's nothing like
+type-overwriting, etc.
+
+@example
+def name()
+  @emph{body}
+@end example
+
+Methods in contrast are generic functions bound by one or multiple
+parameters to certain types.  Methods are resolved by name and specialized
+parameters.  Parameters are specialized by adding the @code{@@} to their type
+declaration.  Only positional parameters can be specialized:
+
+@example
+def meth name(self : @@ MySomething, value : @@ Int)
+  @emph{body}
+@end example
+
+Generics must be defined at least once.  Multiple generic definition
+must be compatible.  A specialization must not be defined before its
+generic.
+
+It's possible to define an empty, i.e. abstract, generic function:
+
+@example
+def meth compare(one : @@ OneType, two : @@ TwoType) : Bool ...
+@end example
+
+Note the ellipsis @code{...} at the end of the line.
+
+
+@c ....................................................................
+@subsection Parameters
+
+Positional parameters:
+
+@example
+def f(a, b, c) @emph{body}
+@end example
+
+are used as:
+
+@example
+f(1, 2, 3)
+@end example
+
+
+@c ....................................................................
+@subsection Keyword parameters
+
+Heather function can use named arguments with @dfn{keyword parameters}.
+These are declared by adding a default value to the parameters name:
+
+@example
+def f(a = 5, b = "hello world", c = @{ let x = 5
+                                      x * x @})
+  @emph{body}
+@end example
+
+The default value can be any valid expression, even complete block (as
+to be seen for the parameter @code{c} in the example above.  This can be
+used like in the following examples:
+
+@example
+f(a: 11, b: "N.N.", c: 255) 
+@result{} a -> 11
+   b -> "N.N."
+   c -> 255
+
+f()
+@result{} a -> 5
+   b -> "hello world"
+   c -> 25
+
+f(c: 7, a: 0)
+@result{} a -> 0
+   b -> "hello world"
+   c -> 7
+@end example
+
+By default the keyword and the parameter name are identical (like @code{a} and
+@code{a:} in the examples above).  It is possible to specify a
+particular keyword name in the declaration however:
+
+@example
+def f(fst: a = 5, snd: b = "hello world", trd: c = @{ let x = 5
+                                                    x * x @})
+  @emph{body}
+
+f(fst: 127, trd: 8, snd: "/")
+@result{} a -> 127
+   b -> "/"
+   c -> 8
+@end example
+
+
+@c ....................................................................
+@subsection Optional parameters
+
+Additionally to positional and keyword parameters it is possible to
+define a @dfn{rest parameter} which takes all arguments additionaly to
+be found in a function call:
+
+@example
+def f(args ...)
+@end example
+
+When called it puts all additional parameters, including all keyword
+arguments which are not matching, into a immutable array:
+
+@example
+f()
+@result{} args -> #[]
+
+f(1, 2, 3, 4)
+@result{} args -> #[1, 2, 3, 4]
+
+f(#[1, 2, 3, 4])
+@result{} args -> #[#[1, 2, 3, 4]]
+
+f(a: 1, b: 2, 3 4)
+@result{} args -> #['a, 1, 'b, 3, 4]
+@end example
+
+
+@c ....................................................................
+@subsection Mixture of the parameter types
+
+When using positional, keywords and optional parameters at the same time
+in a function declaration, they have to appear in the following order:
+
+@enumerate
+@item positional
+@item keyword
+@item optional
+@end enumerate
+
+@example
+def f(a, b, c, d = #t, e = 25, f ...)
+@end example
+
+The same basic order applies to function calls.  Even if keyword
+arguments can be ordered in any way, they always have to follow
+positional arguments.
+
+Keyword arguments are always ordered in lexicographical way when listed
+in an optional argument:
+
+@example
+f(1, 2, 3)
+@result{} a -> 1
+   b -> 2
+   c -> 3
+   d -> #t
+   e -> 25
+   f -> #[]
+
+f(4, 5, 6, e: 127, "hello world", "sic est")
+@result{} a -> 4
+   b -> 5
+   c -> 6
+   d -> #t
+   e -> 127
+   f -> #["hello world", "sic est"]
+
+f(1, 2, 3, z: 1, g: 2, h: 3)
+@result{} a -> 1
+   b -> 2
+   c -> 3
+   d -> #t
+   e -> 25
+   f -> #['g, 2, 'h, 3, 'z, 1]
+@end example
+
+
+
+
+@c --------------------------------------------------------------------
+@node Types, Variables, Functions, Specification
+@section Types
+
+Heather's type system is nominative, i.e. types are identified by name.
+Types can be parameterized, constrained, or sets of types (union
+types).  Types are first class, i.e. types have a runtime representation
+and are objects themselves.
+
+Types are orthogonal to namespaces.  Methods and functions are not
+@sc{members} of types; neither is it possible to define sub-classes or
+enumerations inside of types.  Methods are bound by specialized
+parameters to types, are otherwise self contained however.
+
+Heather supports multiple inheritance.  All inherited types must not
+conflict in slot names, neither in public not private ones.  If two
+inherited types have the exactly same slot (they are identical in name,
+type and initial value), they share the same physical allocation space.
+Cyclic inheritance is not possible (of course).
+
+Every type in heather ultimatively inherits from @code{Object}.  This is
+automatically added to the inheritance list when missing.
+
+Types are commonly declared to be empty.  In this case types are used as
+marker tag for methods:
+
+@example
+def type Comparable() @{ @}
+
+def meth less?(one : @@Comparable, two : @@Comparable) : Bool ...
+def meth less-equal?(one : @@Comparable, two : @@Comparable) : Bool ...
+
+def type Student() : (Person, Comparable)
+@{
+  @emph{slot definitions}
+@}
+
+def less?(one : @@Person, two : @@Person) : Bool ...
+def less-equal?(one : @@Person, two : @@Person) : Bool ...
+@end example
+
+By doing this the methods @code{less?}, @code{less-equal?}, etc. are
+defined as generic function once.  Implementations for @code{Person} or
+@code{Student} are specialization only.  If the method implementation of
+@code{less?} would change later, the compiler will complain.  (This is
+what the @code{overwrite} flag in @code{D} does.)
+
+
+@c ....................................................................
+@subsection Slots
+
+Slots are defined as variables inside the block of a type declaration using
+the special @code{slot} define form:
+
+@example
+def type Point() : Object
+@{
+  slot x : Int = 0
+  slot y : Int = 0
+@}
+@end example
+
+The assign value is the slot's default value which is used when an instance
+of the type is created.
+
+There are no constructors in Heather and they are seldomly needed (since
+slots are initialized by default).  If one needs additional initialization
+code it is possible to add a init hook to the type using the "on init()"
+directive:
+
+@example
+def type ProxyBridge() : Object
+@{
+  on init(self)
+  @{
+  @}
+@}
+@end example
+
+This @code{init} directive is run @emph{after} the slots has been
+initialized.
+
+By default Heather creates the necessary @code{apply()} implementation
+for each type.  Slots can be flagged in a way that they appear as keyed
+parameters in an appropriate generic apply function:
+
+@example
+def type SenseOfLife() : Object
+@{
+  slot x : Int = 6, key-init: 'x
+  slot y : Int = 7, key-init: 'y
+@}
+
+-- the followig method is generated by the compiler
+def meth apply(self : @@SenseOfLife, x : Int = 6, y : Int = 7) @emph{body}
+@end example
+
+Instances of SenseOfLife can be created now like:
+
+@example
+SenseOfLive(x: 6, y: 7)
+SenseOfLive(y: 7)
+SenseOfLive()
+@end example
+
+It is also possible to flag slots to appear as positional arguments in
+the @code{apply} generic:
+
+@example
+def type SenseOfLife() : Object
+@{
+  slot x : Int = 6, init: 1
+  slot y : Int = 7, init: 0
+@}
+
+-- result in
+def meth apply(self : @@SenseOfLife, y : Int, x : Int) @emph{body}
+@end example
+
+Slots appear in the @code{apply} function signature in the order as
+specified by the numerical 0-based index parameter to the @code{init:}
+flag.
+
+For special constructors you can define and implement your own
+@code{apply} methods for your type of course.  Heather will only create
+@code{apply} functions if you don't do it yourself.
+
+
+@c ....................................................................
+@subsection Finalization
+
+It is possible to add special finalization code inside the type
+declaration using the @code{on delete()} directive.  Note that this is
+not a real destructor (which is not necessary in Heather), but a kind of
+finalization which is only necessary to free (external) resources.
+
+@example
+def type ProxyBridge() : Object
+@{
+  on delete(self)
+  @{
+  @}
+@}
+@end example
+
+
+@c ....................................................................
+@subsection Array types
+
+Every type can exist as simple or as @dfn{array type}.  Arrays are
+nevertheless first class objects.
+
+@example
+let buffer : Char[]        [1]
+let tmp : Int[10]          [2]
+@end example
+
+[1] defines @code{buffer} as an array of unspecified size.  The initial
+value is @emph{not} @code{#nil}, but an empty array of characters.  With
+[2] the variable @code{tmp} is initialized to an array of 10 integers.
+Not that the size of an array is not intergral part of the type, nor is
+it a constraint (see below).
+
+
+@c ....................................................................
+@subsection Parameterized types
+
+Types can be parameterized.  The parameters are types themselves.  Other
+than @code{C++} or @code{D} templates there's only type instance in
+heather however.
+
+@example
+def type Pair(One, Two)
+@{
+  slot one : One, init: 0
+  slot two : Two, init: 1
+@}
+@end example
+
+To allocate a new instance of such a class the parameters must
+specified:
+
+@example
+let p = Pair(Int, Real)(5, 7.0)
+@end example
+
+Note the double parantheses in the last example -- the first pair is for
+the type parameters, the second for the values of the instance.  Note
+that with such a definition the type @code{Pair} cannot be allocated as
+instance -- simply the type parameters are required.   It is possible to
+define default values of the types parameters however:
+
+@example
+def type Pair(One = Any, Two = Any)
+@{
+  slot one : One, init: 0
+  slot two : Two, init: 1
+@}
+@end example
+
+Then the following allocation is possible:
+
+@example
+let p = Pair()(5, 7.0)
+@end example
+
+Parameterized types can be used to specialize methods:
+
+@example
+def meth do-y(self : @@Pair(Int, Int)) ...   [1]
+def meth do-y(self : @@Pair()) ...           [2]
+def meth do-y(self : @@Pair) ...             [3]
+@end example
+
+The case [1] will match for and Int-Int-Pair only, the case [2] matches
+for Any-Any-Pair.  
+
+Case [3] is a special case.  Effectively the case [3] implementation
+behaves like [2] (i.e. a Pair(Any, Any)) matches during runtime.  But
+during compilation the calling code of such a method will treat it as if
+it would have been called using proper type parameters.  Take the
+following example:
+
+@example
+def meth distance(self : @@Pair) ...
+
+def x(offset : Int)
+  let p : Pair(Int, Int)
+  distance(p) + offset
+@end example
+
+In the implementation of @code{x()} the compiler does not know about the
+return type of @code{distance()} and cannot optimize or check whether
+the @code{+} operator is used correctly -- since the method definition
+of @code{distance} is incomplete.  Here a special notation on the method
+definition is used:
+
+@example
+def meth distance(value : @@Pair) : value.Type.One ...
+
+def x(offset : Int) : Int
+  let p : Pair(Int, Int)
+  distance(p) + offset
+@end example
+
+Here the definition of @code{distance()} tells the compiler that the
+type of the returnvalue of the method will be the same as the type of
+the @code{One} type parameter of the type of the @code{value} parameter
+of the method.  In the body of @code{x()} @code{distance()} is called
+with a value of type @code{Pair(Int, Int)}, therefore the compile can
+deduce that the call of @code{distance()} will actually return an
+@code{Int}.
+
+This kind of type checking is happening from the caller side of course
+only -- inside of the @code{distance()} method the compiler can only
+deal with an @code{Pair(Any, Any)} type information, unless (as in case
+[1]) the method is specialized with different type parameters.
+
+
+@c ....................................................................
+@subsection Constrain types
+
+A @dfn{Constrain Type} is a type which is constrained a certain subset
+of possible values.  Examples are numerical values only accepting
+specific value ranges, collections only accepting certain values, etc.
+
+@example
+(Bool = #t)
+(Int = -127 .. 127)
+(Keyword = #['apple, 'pear, 'orange, 'banana, 'grapefruit])
+@end example
+
+The constrains are is used during compilation to detect type mismatched
+and for possible optimization, but is not an integral part of the type
+and therefore not used for multiple dispatch.  I.e. two constrain types
+only differing in their contrains won't be treated differently during
+multi dispatch.  The following code is wrong therefore:
+
+@example
+def meth do-x(a : @@(Int = -127 .. 127)) ...
+def meth do-x(a : @@(Int = -16767 .. 16767)) ...
+@end example
+
+
+@c ....................................................................
+@subsection Union types
+
+Union types declare that a variable, parameter or such may be of any
+type defined in the union type.  Union types are most likely usefull
+when defining methods which are appropriate for various types, which are
+not directly related.
+
+@example
+def meth ->xml(val : @@(IntNode, StringNode, BoolNode)) : String
+  StringBuffer().append("<x>")
+                .append(val.->string)
+                .append("</x>")
+                .->string
+@end example
+
+Another common usecase for union types are return values:
+
+@example
+def alias NumberOrFalse = (Number, Bool = #f)
+@end example
+
+Other than constrain types union types influence multiple dispatch.
+
+
+@c --------------------------------------------------------------------
+@node Variables, FunctionCalls, Types, Specification
+@section Variables and Constants
+
+@example
+def const %page-width% = 21
+def port = *stdout*
+@end example
+
+Fluid variables (which ignore lexical scoping):
+
+@example
+def fluid *stdin* = <io>Cport(0)
+def fluid *stdout* = <io>Cport(1)
+def fluid *stderr* = <io>Cport(2)
+@end example
+
+Such fluid variables can be set later with @samp{let fluid x} to change
+temporarily their value:
+
+@example
+def fluid x = 5
+
+def g()
+  outln(x)
+
+def f()
+  outln(x)
+  @{
+    let fluid x = 11
+    g()
+  @}
+  outln(x)
+
+@result{} 5
+   11
+   5
+@end example
+
+
+
+@c --------------------------------------------------------------------
+@node FunctionCalls, SlotAccess, Variables, Specification
+@section Function calls
+
+Function calls:
+
+  f(a, b, c)
+
+Even if calling a generic function this pattern is kept.  To enhance
+readability (and remove parantheses chains) the following form
+
+  a.f(b, c)
+
+is rewritten into
+
+  f(a, b, c)
+
+Additional functions without parameter don't need the parantheses.
+Therefore
+
+  f(g(h(i, j)))
+
+is identical to
+
+  h(i, j).g.f
+
+Or
+
+  self.name.empty?('force)
+
+is identical to
+
+  empty?(name(self), 'force)         by:    self.name.empty?('force)
+                                         => name(self).empty?('force)
+                                         => empty?(name(self), 'force)
+
+
+@c --------------------------------------------------------------------
+@node SlotAccess, Namespaces, FunctionCalls, Specification
+@section Access to type slots
+
+Since methods/functions are not bound to type, access is always to be done
+explicitly to a typed reference:
+
+  def type Point(x = 0, y = 0)
+
+  def add(self : @@Point, val : @@Int)
+    self.x += val
+    self.y += val
+    self
+
+  def add(self : @@Point, val : @@Point)
+    self.x += val.x
+    self.y += val.y
+    self
+
+How is this .x and .y implemented?  By default the compiler generates the
+relevant access code.  You can overwrite accessors and modifiers by
+functions.  To access the slots you have to use the slot() and slot!()
+special forms:
+
+  def x(self : @@Point)
+    self.slot(x)
+    -- identical to slot(self, 'x)
+
+  def x!(self : @@Point, val)
+    self.slot(x) = val
+    -- identical to slot!(self, 'x, val)
+
+The "self.x" and "self.x =" syntax forms are translated into
+
+    self.x      ->   x(self)
+    self.x = 5  ->   x!(self, 5)
+
+
+@c --------------------------------------------------------------------
+@node Namespaces, Import, SlotAccess, Specification
+@section Namespaces
+
+Declare and use the namespace of a @sc{compile unit}:
+
+@example
+namespace heather("eyestep/heather 1.0:core")
+@end example
+
+This defines in which namespace functions, types, macros, and variables are
+defined.  It is valid until the end of the source file or the next
+namespace declaration.
+
+Namespaces have two names, the short (or ``tag'') name and the full id
+(the ``full name'').  The full name is any identifying string; for the
+default heather libraries this is a kind of public id, other projects
+may use URLs, etc.  Namespaces are compared by full id only, but since
+this can be clumsy in code normally the tag name is used.  The common
+tag @code{<io>} is actually defined as:
+
+@example
+namespace io("eyestep/heather 1.0:input-output")
+@end example
+
+If names are unique throughout all namespaces visible in a certain portion
+of code there's no need to indicate the namespace.  If there are multiple
+equally named functions or types in different namespaces however the fully
+qualified name has to be used:
+
+@example
+<io>Input-Port()
+<zip>Input-Port()
+@end example
+
+gives the Input-Port type from the io and the zip namespace respectively.
+
+The namespace have to be given inside of method call chains also if
+necessary:
+
+@example
+self.<io>write()
+@end example
+
+A namespace statement without full id data like
+
+@example
+namespace io
+@end example
+
+simply switches the current governing namespace to io.  It requires a
+previous full namespace declaration, and is therefore usefull for source
+files with multiple namespaces.
+
+Namespace defines (i.e. tag name to full id mapping) are imported from
+loaded files; the namespace defined in the file does not extend,
+however, into the importing file.
+
+
+@c --------------------------------------------------------------------
+@node Import, Macros, Namespaces, Specification
+@section Import
+
+Importing external modules.  The statement
+
+@example
+import(io)
+@end example
+
+will try to look for a module (file) @code{io} in the search path and
+load it.
+
+
+Blocks
+======
+
+Code blocks are sequences of statements.  The last statement's return value
+gives the return value of the complete block.  Blocks are atomic and
+therefore can be put whereever a single expression is expected (i.e. even
+in default parameter init value places):
+
+  def f(x = @{ let p = Properties()
+              while (p.next?) @{
+                if (not p.nil?)
+                  p.value
+              @}
+              else
+                #f
+            @})
+    ...
+
+Whether this is readable, is another question ...
+
+
+LOOPS
+=====
+
+  for (base, conditions) expr
+  while (test) expr
+  until (test) expr
+
+The returnvalue of expr's last statement gives the return value of the
+complete loop statement.  Each loop form takes an optional "else"
+branch, which is evaluated if the loop's body is never entered:
+
+  let first-name = for (n in values, not n.nil?)
+                     break(n)
+                   else
+                     #nil
+
+if no "else" branch is given the return value of such is a loop is #f.
+
+
+IF & SELECT
+===========
+
+  if (test) expr
+  if (test) expr else expr
+
+
+  select (test) @{
+    test -> expr
+    test -> expr
+    otherwise expr
+  @}
+
+Example:
+
+  select (a) @{
+    \a -> if (not done)
+            do-it
+          else
+            do-something-different
+    otherwise outln("nothing applies")
+  @}
+
+If the parameter list for select is empty each test is expected to be a
+conditional expr:
+
+  select () @{
+    (c == \a or
+     c == \b or
+     c == \c)            -> ...
+    (c in #[\a, \b, \c]) -> ...
+  @}
+
+
+
+RANGES & Slices
+===============
+
+Basic ranges are exclusive, so the range [5, 100) is written as:
+
+  5 .. 100
+
+Whereas [5, 100] is written as:
+
+  5 ... 100
+
+Give the step parameter:
+
+  5 .. 100 by 5
+  => 5, 10, 15, ..., 95
+
+
+Ranges are used for instance to slice vectors and strings:
+
+  "hello world"[3 .. 6]
+  => "lo "
+
+  "hello world"[3 ... 6]
+  => "lo w"
+
+  "hello world"[3 .. 8 by 2]
+  => "l o"
+
+
+On the fly iterators
+====================
+
+The then-while operators are used to express iterators on the fly:
+
+   for (i : Int = 0 then i + 1 while i < 10) ...
+
+   def value-iterators(values : Int[])
+     let i = 0
+     values[i] then values[i.incr!] while i + 1 < values.num-items
+  
+
+
+Conditions
+==========
+
+It's possible to add a hook to a block which is called whenever the block
+is left, either by unroll or by "normal" code flow:
+
+  on exit(value) expr
+
+Value is the return value of the block's last statement.  Normally the exit
+handler will return this without modification.
+
+Not that the "on exit" declaration is actually inside the block for which
+it is declared.  It can therefore access local bindings etc.  On the other
+side in examples like this:
+
+  let stream = File-Input-Port(name)
+  for (i = 0 .. 100) @{
+    on exit(v) @{ stream.close @}
+  @}
+
+The exit hook would be called for each loop step.  The author mostly likely
+meant this:
+
+  let stream = File-Input-Port(name)
+  on exit(v) @{ stream.close @}
+
+  for (i = 0 .. 100) @{
+  @}
+
+
+Similar to "on exit" conditions can be trapped:
+
+  on signal(value : <type>) expr
+
+This declares a condition handler for a condition of type "<type>".
+Whenever a condition raised (using raise()) the first matching condition
+handler is called.  During evaluation of signal-expr two special functions
+are available: "continue(val)" and "raise()" without parameter.
+
+continue(val) returns to the place from which raise() was called injecting
+"val" as new returnvalue to the raise expression.
+
+raise() without parameter propagates condition handling to the next
+matching condition handler.  There's a difference between raise(cond) and
+raise.  "raise" without parameter does not start a new condition signal
+chain, but passed controll upwards.  raise(cond) however starts a new
+signal chain, which can be handled inside the control handler.
+
+If the condition handle is neither left early with continue() or raise()
+its return value becomes the return value of the block in which the
+condition handler has been declared.  If both exit and condition handler
+had been declared, the condition handler is called first and therefore its
+return value is passed as input to the exit handler.
+
+
+
+Anonymous functions and Closures
+--------------------------------
+
+#function(a : Real, b : Real) : Int @{ @}
+
+
+
+LITERALS
+========
+
+Symbols
+-------
+
+*stdout*
+%some-constant%
+-a-string-
+_a_string_
+_a/string_
+
+
+Chars
+-----
+\a
+\space
+\u41h
+\nl
+
+
+String
+------
+"abc"
+"hello world"
+"Usage: cmd OPTIONS\nl;"
+"a string"
+"a \nl;string"
+"a \tab;string"
+"a \\string"
+"a \"string"
+"a \A;string"
+"a \u41h;string"
+
+
+Keywords
+--------
+
+'symbol
+'hello-world
+
+
+Arrays
+------
+
+type declaration for arrays: Byte[]
+
+a constant arrays: #[1, 2, 3, 4, 5]
+
+Vector
+------
+
+type declaration for vectors: Vector*()
+def alias Vector = Vector*(Any)
+
+#(1, 2, 3)
+
+
+Dictionary:
+-----------
+
+HashMap*(<Key>, <Value>)
+def alias HashMap = HashMap*(Any, Any)
+
+
+#("abc" -> #[1, 2, 3],
+  "def" -> 'symbol,            -- symbol
+  "xyz" -> \a,                 -- char
+  "mmm" -> \u41h,              -- char
+  "ch1" -> \space              -- char
+)
+
+
+Numbers
+-------
+
+1234
+100h
+-100y
+100t
+
+
+Basic constants
+---------------
+
+#nil
+#true #t #false #f
+#eof
+
+
+@c --------------------------------------------------------------------
+@node Macros, Ideas, Import, Specification
+@section Macros
+
+Different kind of macro styles:
+
+FUNCTION MACROS.
+
+Look exactly and are called like functions:
+
+  def macro min @{
+     @{ min (?a:*, ?b:*) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
+                                 if (tmp-a > tmp2) tmp-b else tmp-a @} @}
+  @}
+
+or in a local scope:
+
+  let macro min @{
+     @{ min (?a:*, ?b:*) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
+                                 if (tmp-a > tmp2) tmp-b else tmp-a @} @}
+  @}
+
+usage:
+
+  min(100, 200)
+
+
+DEFINITION MACROS
+
+Look like a define and/or let:
+
+  def macro functional-variable @{
+      @{ def functional-variable ?name:id = ?e:expr @} ->
+        @{ def ?name ## -var = ?e
+          def ?name () ?name ## -var
+          def ?name (value) @{ ?name ##-var = value
+                                 value @} @}
+      @{ let functional-variable ?name:id = ?e:expr @} ->
+        @{ let ?name ## -var = ?e
+          let ?name () ?name ## -var
+          let ?name (value) @{ ?name ##-var = value
+                              value @} @}
+  @}
+
+STATEMENT MACROS
+
+Look like a statement like for, while, etc.
+
+  def macro unless @{
+      @{ unless (?test:expr) ?b:body @} -> @{ if (not(?test)) ?b @}
+  @}
+
+
+  def macro with-open-file @{
+    @{ with-open-file (?stream:id, ?name:string) ?e:expr @} ->
+      @{
+        let ?stream = FileInputPort(?name, 'read)
+        on exit(value) @{
+          if (?stream.nil?) close(?stream)
+          value
+        @}
+
+        ?e
+      @}
+  @}
+
+
+Multiple variant patterns and subpatterns:
+
+  def macro funcvar @{
+    @{ def funcvar ?name:id @} -> @{ def ?name ## -var = #nil
+                                  def ?name () ?name ## -var
+                                  def ?name (value) @{ ?name ## -var = value
+                                                      value @} @}
+    @{ def funcvar ?name:id = ?e:expr @} ->
+                                @{ def ?name ## -var = ?e
+                                  def ?name () ?name ## -var
+                                  def ?name (value) @{ ?name ## -var = value
+                                                      value @} @}
+  @}
+
+is identical to:
+
+  def macro funcvar @{
+    @{ def funcvar ?name:id #?opt-expr @} ->
+                      @{ def ?name ## -var = ?opt-expr
+                        def ?name () ?name ## -var
+                        def ?name (value) @{ ?name ## -var = value
+                                            value @} @}
+
+  opt-expr:
+    @{ @} -> @{ @}
+    @{ = ?e:expr @} ->  @{ ?e @}
+  @}
+
+
+Conditional evaluation of macros (meta programming):
+
+  def macro compile-only-if @{
+    @{ compile-only-if(?test:bool) ?e:expr @} ->
+      @{
+        #if (?test)
+          ?e
+      @}
+  @}
+
+
+  basic constructs like if, else, let can be set and evaluated during
+  macro-expansion time.  The form is then called: #if, #else, #let.  For
+  the example above ?test **must** be a constant (or another macro
+  expanding to a constant), since runtime code is not evaluated during
+  macro expansion of course.
+
+
+Optional macro parameters:
+
+  def macro xxx @{
+    @{ xxx(x: ?a = 5, y: ?b = 6) @} -> @{ yyy(m: ?a, n: ?b) @}
+    @{ xxx(args ...) @} -> @{ yyy(args) @}
+  @}
+
+
+@c --------------------------------------------------------------------
+@node Ideas, ReserverdWords, Macros, Specification
+@section Ideas
+
+@subsection Multiple returnvalues
+
+@example
+def f()
+   (1, 2, 3, 4)
+
+def g()
+  let (a, b, c, d) = b.<io>Port().read(4)
+@end example
+
+
+@subsection Measures
+@emph{Idea only.}
+
+@example
+21'cm     -> Measure(21, 'cm)
+12.15'ft  -> Measure(12.15, 'ft)
+21'm/s
+
+def measure cm(Length)
+def meth transform(from : @@cm, to : @@mm)
+  from * 100
+@end example
+
+
+@c --------------------------------------------------------------------
+@node ReserverdWords, Examples, Ideas, Specification
+@section Reserved keywords
+
+@example
+and
+by
+const
+def
+else
+fluid
+for
+if
+in
+let
+macro
+meth
+mod
+namespace
+or
+otherwise
+select
+slot
+slot!
+type
+until
+while
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Examples,  , ReserverdWords, Specification
+@section Examples
+
+@example
+namespace heather
+
+----------------------------------------------------------------------
+-- a pair class
+
+def type Pair(Object,
+    car = #nil
+    cdr = #nil ) : (Serializable, Copyable)
+
+def meth init(self : @@Pair, car = 0, cdr = 0)
+  self.car = car
+  self.cdr = cdr
+
+
+def meth ->string(self : @@Pair) : String
+  Stringbuffer().append("#<pair ",
+                        self.car.->string,
+                        " . ",
+                        self.cdr.->string,
+                        ">").->string
+
+-- can be instantiated with
+-- Pair(car: "hello", cdr: "world")
+@end example
+
+
+@example
+----------------------------------------------------------------------
+-- a point class
+
+def type Point(Object>,
+    x : Int
+    y : Int)
+
+def meth distance(p1 : @@Point, p2 : @@Point) : Real
+  let square(n) n ^ 2
+
+  sqrt(square(p2.x - p1.x) + square(p2.y - p1.y))
+
+
+def distance(x1, y1, x2, y2)
+  let square(n) n ^ 2
+
+  sqrt(square(x2 - x1) + square(y2 - y1))
+
+
+-- can be instantiated with
+-- Point(0, 127)
+@end example
+
+
+@example
+----------------------------------------------------------------------
+-- standalone function:
+
+def with-open-input-file(name, proc)
+  let stream = File-Input-Port(name)
+  on exit(value) @{
+    if (stream is nil)
+      close(stream)
+    value
+  @}
+
+  proc(stream)
+@end example
+
+
+@c ====================================================================
+@node Copying, Function Index, Specification, Top
+@include fdl.texinfo
+
+
+@c ====================================================================
+@node Function Index, Concept Index, Copying, Top
+@unnumbered Index of functions
+
+@printindex fn
+
+@c ====================================================================
+@node Concept Index,  , Function Index, Top
+@unnumbered Index of concepts
+
+@printindex cp
+
+@shortcontents
+@contents
+@bye
+
