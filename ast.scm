@@ -118,7 +118,7 @@
 (define-method (debug->xml <apt:const>)
   (call-next-method)
   (case (slot-ref self 'type)
-    ((string) (arc:display "<str>"  (slot-ref self 'value) "</str>"))
+    ((str)    (arc:display "<str>"  (slot-ref self 'value) "</str>"))
     ((int)    (arc:display "<int>"  (slot-ref self 'value) "</int>"))
     ((keyw)   (arc:display "<keyw>" (slot-ref self 'value) "</keyw>"))
     ((char)   (arc:display "<chr>"  (slot-ref self 'value) "</chr>"))
@@ -214,6 +214,61 @@
               (->xml e))
             (slot-ref self 'exprs))
   (arc:display "</block>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:if> (<apt:node>) (test true false))
+
+(define-method (initialise <apt:if> args)
+  (call-next-method)
+  (slot-set! self 'test  (car args))
+  (slot-set! self 'true  (cadr args))
+  (slot-set! self 'false (caddr args))
+  self)
+
+(define-method (debug->xml <apt:if>)
+  (call-next-method)
+  (arc:display "<if><test>")
+  (->xml (slot-ref self 'test))
+  (arc:display "</test><then>")
+  (->xml (slot-ref self 'true))
+  (arc:display "</then>")
+  (if (slot-ref self 'false)
+      (begin
+        (arc:display "<else>")
+        (->xml (slot-ref self 'false))
+        (arc:display "</else>")))
+  (arc:display "</if>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:range> (<apt:node>) (from to by incl?))
+
+(define-method (initialise <apt:range> args)
+  (call-next-method)
+  (slot-set! self 'from  (car args))
+  (slot-set! self 'to    (cadr args))
+  (slot-set! self 'by    (caddr args))
+  (slot-set! self 'incl? (cadddr args))
+  self)
+
+(define-method (debug->xml <apt:range>)
+  (call-next-method)
+  (arc:display "<range type='"
+               (if (slot-ref self 'incl?) "incl" "excl")
+               "'><from>")
+  (->xml (slot-ref self 'from))
+  (arc:display "</from><to>")
+  (->xml (slot-ref self 'to))
+  (arc:display "</to>")
+  (if (slot-ref self 'by)
+      (begin
+        (arc:display "<by>")
+        (->xml (slot-ref self 'by))
+        (arc:display "</by>")))
+  (arc:display "</range>"))
 
 
 ;;Keep this comment at the end of the file

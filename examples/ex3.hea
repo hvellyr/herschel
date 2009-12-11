@@ -1,7 +1,10 @@
-def f()
-  let g = 5
-  let h(x) x + x 
-
-  h(g)
+def f(x, y)
+  if (x + 5 > 0)
+    outln("%d is larger than 5" % x)
+  
+  if (x > y)
+    y .. x by 1
+  else
+    x .. y
 
 
