@@ -26,7 +26,7 @@
 (load "../getopt.scm")
 (load "../misc.scm")
 (load "../tokenizer.scm")
-(load "../parse1.scm")
+(load "../parse.scm")
 
 
 
@@ -86,19 +86,14 @@
 
 
 
-;;(tokenize-file "../next-heather/heather3.txt")
-
 (sys:chdir *working-dir*)
 
 (arc:display *working-dir* 'nl)
-;(if (> (length *list-of-files*) 0)
-;    (tokenize-file (list-ref *list-of-files* 0)))
 
 (if (> (length *list-of-files*) 0)
     (for-each (lambda (x)
                 (arc:display x 'nl))
-              (parse-file1 (list-ref *list-of-files* 0))))
-;;(tokenize-file "../pair.hea")
+              (parse-file (list-ref *list-of-files* 0))))
 
 
 
