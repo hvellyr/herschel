@@ -206,28 +206,87 @@
     (make-object <apt:apply> (list func parsed-args))))
 
 
+(define (parse-if-2p token-list)
+  (if (not (null? token-list))
+      (if (apt-nested? (car token-list))
+          (let ((test-list (apt-nested-body (car token-list))))
+            (if (and test-list
+                     (>= (length test-list) 1))
+                (let ((test (parse-expr-2p (car test-list)))
+                      (nl (cdr token-list)))
+                  (if (not (null? nl))
+                      (let ((consequent (parse-expr-2p (car nl))))
+                        (set! nl (cdr nl))
+                        (if (not (null? nl))
+                            (if (apt-id-eq? (car nl) "else")
+                                (begin
+                                  (set! nl (cdr nl))
+                                  (if (not (null? nl))
+                                      (make-object <apt:if>
+                                                   (list test
+                                                         consequent
+                                                         (parse-expr-2p (car nl))))
+                                      (syntax-error "if: missing alternate node: "
+                                                    token-list)))
+                                (syntax-error "if: expected 'else': " token-list))
+                            (make-object <apt:if> (list test consequent #f))))
+                      (syntax-error "if: missing consequent node: " token-list)))
+                (syntax-error "If: Missing test node: " token-list)))
+          (syntax-error "If: Missing test node: " token-list))
+      (syntax-error "if: missing test node: " token-list)))
+
+
+(define (parse-range-2p token-list by-expr)
+  (let ((from (parse-expr-2p (car token-list)))
+        (incl? (apt-id-eq? (cadr token-list) "..."))
+        (to (parse-expr-2p (caddr token-list)))
+        (nl (cdddr token-list)) )
+    (make-object <apt:range> (list from to by-expr incl?))))
+
+
+(define (parse-range-2p* token-list)
+  (if (apt-seq? (car token-list))
+      (let ((body (apt-seq-body (car token-list))))
+        (if (and (equal? (length body) 3)
+                 (or (apt-id-eq? (cadr body) "..")
+                     (apt-id-eq? (cadr body) "...")))
+            (parse-range-2p body (parse-expr-2p (caddr token-list)))
+            (syntax-error "range: lvalue must be range: " body )))
+      (syntax-error "range: misused 'by' operator: " token-list)))
+
+
 (define (parse-seq-2p elt)
-  (let ((token-list (apt-seq-body elt)))
+  (let* ((token-list (apt-seq-body elt))
+         (node (car token-list)))
     (cond 
-     ((apt-id-eq? (car token-list) "def") (parse-def-2p (cdr token-list) 'global))
-     ((apt-id-eq? (car token-list) "let") (parse-def-2p (cdr token-list) 'local))
-     ((apt-id-eq? (car token-list) "namespace") (parse-namespace-2p (cdr token-list)))
+     ((apt-id-eq? node "def") (parse-def-2p (cdr token-list) 'global))
+     ((apt-id-eq? node "let") (parse-def-2p (cdr token-list) 'local))
+     ((apt-id-eq? node "namespace") (parse-namespace-2p (cdr token-list)))
+     ((apt-id-eq? node "if") (parse-if-2p (cdr token-list)))
 
      (else (if (not (null? (cdr token-list)))
                (cond ((parse-operator-2p? (cadr token-list))
                       (if (not (null? (cddr token-list)))
-                          (if (apt-punct-eq? (cadr token-list) "=")
-                              (parse-assign-2p (parse-expr-2p (car token-list))
-                                               (parse-expr-2p (caddr token-list)))
-                              (parse-binary-2p (parse-expr-2p (car token-list))
-                                               (apt-id-value (cadr token-list))
-                                               (parse-expr-2p (caddr token-list))))
+                          (cond
+                           ((apt-punct-eq? (cadr token-list) "=")
+                            (parse-assign-2p (parse-expr-2p node)
+                                             (parse-expr-2p (caddr token-list))))
+                           ((apt-id-eq? (cadr token-list) "..")
+                            (parse-range-2p token-list #f))
+                           ((apt-id-eq? (cadr token-list) "...")
+                            (parse-range-2p token-list #f))
+                           ((apt-id-eq? (cadr token-list) "by")
+                            (parse-range-2p* token-list))
+                           (else
+                            (parse-binary-2p (parse-expr-2p node)
+                                             (apt-id-value (cadr token-list))
+                                             (parse-expr-2p (caddr token-list)))))
                           (syntax-error "Required a right hand operator: " token-list)))
                      ((apt-nested? (cadr token-list))
-                      (parse-funcall-2p (parse-expr-2p (car token-list))
+                      (parse-funcall-2p (parse-expr-2p node)
                                         (apt-nested-body (cadr token-list))))
                      (else (syntax-error "Unexpected second node: " token-list)) )
-               (parse-expr-2p (car token-list)))) )))
+               (parse-expr-2p node))) )))
 
 
 (define (parse-block-2p token-list)
