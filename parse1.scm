@@ -728,7 +728,6 @@
 
 
 (define (parse-function-call port expr pre-scanned-args parse-parameters?)
-  (next-token port)
   (if parse-parameters?
       (let* ((prms (parse-funcall-params port '())))
         (if prms
@@ -759,7 +758,6 @@
 
 
 (define (parse-slice port expr1)
-  (next-token port)
   (let ((index (parse-expr port)))
     (if (apt-punct-eq? current-token "]")
         (if index
@@ -775,9 +773,13 @@
 (define (parse-access port expr1)
   (cond
    ((apt-punct-eq? current-token "(")
-    (parse-access port (parse-param-call port expr1 #f #t)))
+    (begin
+      (next-token port)
+      (parse-access port (parse-param-call port expr1 #f #t))))
    ((apt-punct-eq? current-token "[")
-    (parse-access port (parse-slice port expr1)))
+    (begin
+      (next-token port)
+      (parse-access port (parse-slice port expr1))))
 
    ((apt-punct-eq? current-token ".")
     (begin
@@ -786,7 +788,9 @@
           (let ((sym current-token))
             (next-token port)
             (cond ((apt-punct-eq? current-token "(")
-                   (parse-access port (parse-param-call port sym expr1 #t)))
+                   (begin
+                     (next-token port)
+                     (parse-access port (parse-param-call port sym expr1 #t))))
 
                   ((or (apt-punct-eq? current-token "[")
                        (apt-punct-eq? current-token "."))
@@ -959,8 +963,8 @@
 (define (apt-assign left right)
   (if (apt-sym-funcall? left)
       (apt-seq (apt-func-name-add-! left)
-               (apt-nested* "(" ")" (append (apt-func-params left)
-                                            (apt-punct ",")
+               (apt-nested* "(" ")" (append (append (apt-func-params left)
+                                                    (list (apt-punct ",")))
                                             (list right))))
       (apt-seq left (apt-punct "=") right)))
 
@@ -1023,7 +1027,9 @@
     (let ((expr1 (parse-atom-expr port)))
       (if expr1
           (let ((op1 (parse-operator port)) )
-            (loop expr1 op1))
+            (if op1
+                (loop expr1 op1)
+                expr1))
           #f))))
 
 
