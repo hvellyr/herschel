@@ -271,6 +271,23 @@
   (arc:display "</range>"))
 
 
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:keyarg> (<apt:node>) (key value))
+
+(define-method (initialise <apt:keyarg> args)
+  (call-next-method)
+  (slot-set! self 'key  (car args))
+  (slot-set! self 'value (cadr args))
+  self)
+
+(define-method (debug->xml <apt:keyarg>)
+  (call-next-method)
+  (arc:display "<key-arg key='" (slot-ref self 'key) "'>")
+  (->xml (slot-ref self 'value))
+  (arc:display "</key-arg>"))
+
+
 ;;Keep this comment at the end of the file
 ;;Local variables:
 ;;mode: scheme
