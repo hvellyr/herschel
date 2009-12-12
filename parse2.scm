@@ -96,10 +96,13 @@
                   (if (not (null? (cdr nl)))
                       (begin
                         (set! type (cadr nl))
-                        (set! nl (cddr nl)))))
-              (if (apt-punct-eq? (car nl) "=")
-                  (if (not (null? (cdr nl)))
-                        (set! init-value (parse-expr-2p (cadr nl)))))))
+                        (if (not (null? (cddr nl)))
+                            (set! nl (cddr nl))
+                            (set! nl '())))))
+              (if (not (null? nl))
+                  (if (apt-punct-eq? (car nl) "=")
+                      (if (not (null? (cdr nl)))
+                          (set! init-value (parse-expr-2p (cadr nl))))))))
         (make-object <apt:vardef> (list sym type init-value
                                         const? fluid?)))
       #f))
@@ -125,14 +128,15 @@
           ((apt-id-eq? node "type")  (parse-typedef-2p (cdr token-list)))
           ((apt-id-eq? node "alias") (parse-const-2p (cdr token-list)))
           ((apt-id? node)
-           (cond ((apt-nested? (cadr token-list))
-                  (parse-funcdef-2p token-list #f))
-                 ((apt-punct-eq? (cadr token-list) "=")
-                  (parse-vardef-2p token-list #f #f))
-                 ((apt-punct-eq? (cadr token-list) ":")
-                  (parse-vardef-2p token-list #f #f))
-                 (else (syntax-error "error: unsupported node: " node)) ))
-
+           (if (not (null? (cdr token-list)))
+               (cond ((apt-nested? (cadr token-list))
+                      (parse-funcdef-2p token-list #f))
+                     ((apt-punct-eq? (cadr token-list) "=")
+                      (parse-vardef-2p token-list #f #f))
+                     ((apt-punct-eq? (cadr token-list) ":")
+                      (parse-vardef-2p token-list #f #f))
+                     (else (syntax-error "error: unsupported node: " node)) )
+               (parse-vardef-2p token-list #f #f)))
           (else (syntax-error "error: unsupported node: " node)) )))
 
 
@@ -197,12 +201,18 @@
                                 (nl args))
                        (if (null? nl)
                            res
-                           (if (apt-punct-eq? (car nl) ",")
-                               (loop res (cdr nl))
-                               (loop (append res
-                                             (list (parse-expr-2p
-                                                    (car nl))))
-                                     (cdr nl))))) ))
+                           (cond ((apt-punct-eq? (car nl) ",")
+                                  (loop res (cdr nl)))
+
+;;                                 ((apt-id-keyarg? (car nl))
+;;                                  (loop (append res
+;;                                                (list (make-object <apt:const>
+;;                                                                   (list 'keyw
+;;                                                                         (apt-id-value (car nl))))))))
+                                 (else (loop (append res
+                                                     (list (parse-expr-2p
+                                                            (car nl))))
+                                             (cdr nl))))) )))
     (make-object <apt:apply> (list func parsed-args))))
 
 
@@ -255,10 +265,18 @@
       (syntax-error "range: misused 'by' operator: " token-list)))
 
 
+(define (parse-keyarg-2p token-list)
+  (if (equal? (length token-list) 2)
+      (make-object <apt:keyarg> (list (apt-id-value (car token-list))
+                                      (parse-expr-2p (cadr token-list))))
+      (syntax-error "key argument: missing second argument: " token-list)))
+
+
 (define (parse-seq-2p elt)
   (let* ((token-list (apt-seq-body elt))
          (node (car token-list)))
     (cond 
+     ((apt-id-keyarg? node) (parse-keyarg-2p token-list))
      ((apt-id-eq? node "def") (parse-def-2p (cdr token-list) 'global))
      ((apt-id-eq? node "let") (parse-def-2p (cdr token-list) 'local))
      ((apt-id-eq? node "namespace") (parse-namespace-2p (cdr token-list)))
