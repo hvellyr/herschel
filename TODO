@@ -1,0 +1,18 @@
+-*-org-*-
+
+* TODO Parse self.Type.X expressions
+
+* TODO Finish parsing to APT 
+** def type
+** type declarations
+** anonymous function
+** type alias
+
+* TODO use namespace info in first pass parse
+
+* TODO Add self.Class stuff to documentation
+
+
+
+
+
