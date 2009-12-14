@@ -5,8 +5,9 @@
 * TODO Finish parsing to APT 
 ** def type
 ** type declarations
-** anonymous function
+** function params
 ** type alias
+** ON
 
 * TODO use namespace info in first pass parse
 
