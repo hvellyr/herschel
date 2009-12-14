@@ -16,7 +16,7 @@
 
 ;;;---------------------------------------------------------------------------
 
-(define-class <apt:node> (<class>) '())
+(define-class <apt:node> (<class>) ())
 
 (define-generic (debug->xml))
 
