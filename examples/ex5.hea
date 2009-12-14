@@ -4,7 +4,11 @@ def type Point(Object)
 {
 }
 
-def type Atlas(Persona, T1 = Int, T2 = Real) : Copyable
+def type Atlas(T1 = Int, T2 = Real) : Copyable
+{
+}
+
+def type Atlas2(T1 = Int, T2 = Real) : (Persona, Copyable)
 {
 }
 
@@ -13,7 +17,7 @@ def type Point(Object)
 {
   slot x : Int = 0      , init: 0
   slot y : Int = 0      , init: 1
-  slot value : Int = 55 , public, transient, key-init: x 
+  slot value : Int = 55 , public, transient, key-init: x
 
   on init(self)
   {
