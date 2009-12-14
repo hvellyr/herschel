@@ -272,6 +272,11 @@
       (syntax-error "key argument: missing second argument: " token-list)))
 
 
+(define (parse-on-2p token-list)
+  (arc:display "Parsing 'ON' not done yet" 'nl)
+  #f)
+
+
 (define (parse-seq-2p elt)
   (let* ((token-list (apt-seq-body elt))
          (node (car token-list)))
@@ -281,6 +286,7 @@
      ((apt-id-eq? node "let") (parse-def-2p (cdr token-list) 'local))
      ((apt-id-eq? node "namespace") (parse-namespace-2p (cdr token-list)))
      ((apt-id-eq? node "if") (parse-if-2p (cdr token-list)))
+     ((apt-id-eq? node "on") (parse-on-2p (cdr token-list)))
 
      (else (if (not (null? (cdr token-list)))
                (cond ((parse-operator-2p? (cadr token-list))
