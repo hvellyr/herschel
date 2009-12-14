@@ -70,24 +70,40 @@
 
 ;;;---------------------------------------------------------------------------
 
-(define-class <apt:funcdef> (<apt:node>) (sym retval params body meth?))
+(define-class <apt:def> (<apt:node>) (scope sym func))
 
-(define-method (initialise <apt:funcdef> args)
+(define-method (initialise <apt:def> args)
   (call-next-method)
-  (slot-set! self 'sym    (car args))
-  (slot-set! self 'retval (cadr args))
-  (slot-set! self 'params (caddr args))
-  (slot-set! self 'body   (car (cdddr args)))
-  (slot-set! self 'meth?  (cadr (cdddr args)))
+  (slot-set! self 'scope  (list-ref args 0))
+  (slot-set! self 'sym    (list-ref args 1))
+  (slot-set! self 'func   (list-ref args 2))
   self)
 
-(define-method (debug->xml <apt:funcdef>)
+(define-method (debug->xml <apt:def>)
   (call-next-method)
-  (arc:display "<def>")
-  (if (slot-ref self 'meth?)
-      (arc:display "<meth name='" (slot-ref self 'sym) "'>")
-      (arc:display "<func name='" (slot-ref self 'sym) "'>"))
+  (arc:display "<def scope='" (slot-ref self 'scope) "' "
+               "name='" (slot-ref self 'sym) "'>")
+  (->xml (slot-ref self 'func))
+  (arc:display "</def>" 'nl))
 
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:function> (<apt:node>) (retval params body meth?))
+
+(define-method (initialise <apt:function> args)
+  (call-next-method)
+  (slot-set! self 'retval (list-ref args 0))
+  (slot-set! self 'params (list-ref args 1))
+  (slot-set! self 'body   (list-ref args 2))
+  (slot-set! self 'meth?  (list-ref args 3))
+  self)
+
+(define-method (debug->xml <apt:function>)
+  (call-next-method)
+  (if (slot-ref self 'meth?)
+      (arc:display "<meth>")
+      (arc:display "<func>"))
   (arc:display "<params>")
   (for-each (lambda (p)
               (->xml p))
@@ -101,8 +117,38 @@
   (arc:display "</body>")
   (if (slot-ref self 'meth?)
       (arc:display "</meth>")
-      (arc:display "</func>"))
-  (arc:display "</def>" 'nl))
+      (arc:display "</func>")))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:param> (<apt:node>) (keyarg sym flag type init-value))
+
+(define-method (initialise <apt:param> args)
+  (call-next-method)
+  (slot-set! self 'keyarg     (list-ref args 0))
+  (slot-set! self 'sym        (list-ref args 1))
+  (slot-set! self 'flag       (list-ref args 2))
+  (slot-set! self 'type       (list-ref args 3))
+  (slot-set! self 'init-value (list-ref args 4))
+  self)
+
+(define-method (debug->xml <apt:param>)
+  (call-next-method)
+  (arc:display "<prm")
+  (if (slot-ref self 'keyarg)
+      (arc:display " key='" (slot-ref self 'keyarg) "'"))
+  (if (eq? (slot-ref self 'flag) 'rest)
+      (arc:display " what='rest'"))
+  (arc:display " name='" (slot-ref self 'sym) "'>")
+  (if (slot-ref self 'type)
+      (begin
+        (arc:display "<type>")
+        (->xml (slot-ref self 'type))
+        (arc:display "</type>")))
+  (if (slot-ref self 'init-value)
+      (->xml (slot-ref self 'init-value)))
+  (arc:display "</prm>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -123,6 +169,8 @@
     ((keyw)   (arc:display "<keyw>" (slot-ref self 'value) "</keyw>"))
     ((char)   (arc:display "<chr>"  (slot-ref self 'value) "</chr>"))
     ((bool)   (arc:display "<bool>" (slot-ref self 'value) "</bool>"))
+    ((nil)    (arc:display "<nil/>"))
+    ((eof)    (arc:display "<eof/>"))
     (else (arc:display "<unknown/>"))))
 
 

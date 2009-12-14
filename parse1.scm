@@ -91,6 +91,17 @@
        (boolean? (apt-lit-value expr))))
 
 
+(define (apt-lit-nil? expr)
+  (and (list? expr)
+       (eq? (car expr) 'lit)
+       (null? (cadr expr))))
+
+
+(define (apt-lit-eof? expr)
+  (and (apt-lit? expr)
+       (eq? (apt-lit-value expr) 'eof)))
+
+
 (define (apt-id id)
   (list 'id id))
 
@@ -676,10 +687,10 @@
   (match-syntax ctx port syntax-table))
 
 
-(define (parse-make-macro-call ctx port expr args macro type 
+(define (parse-make-macro-call ctx port expr args macro type
                                parse-parameters? scope)
   (let* ((syntax-table (vector-ref macro 2))
-         (filtered (cond ((or (eq? type 'func) 
+         (filtered (cond ((or (eq? type 'func)
                               (eq? type 'stmt))
                           (parse-do-match-syntax-func ctx port
                                                       expr args
@@ -698,7 +709,7 @@
               (last-current-token current-token)
               (retval #f))
           (set! current-token (car follows))
-          (set! retval (apt-seq* (parse-exprlist ctx 
+          (set! retval (apt-seq* (parse-exprlist ctx
                                                  (make-tokenport (cdr follows))
                                                  '())))
           (set! current-token last-current-token)
@@ -1097,7 +1108,7 @@
                                        (apt-seq sym (apt-nested* "(" ")"
                                                                  params))))
                    (syntax-error "Expected ), got" current-token)))) )
-          ((and expect-constraint? 
+          ((and expect-constraint?
                 (apt-punct-eq? current-token "="))
            (begin
              (next-token port)
@@ -1382,11 +1393,14 @@
       (syntax-error "Expected symbol, got" current-token)))
 
 
-(define (apt-param sym flag type init-value)
+(define (apt-param keyarg sym flag type init-value)
   (if (eq? flag 'rest)
       (apt-seq sym (apt-id "..."))
       (if (or (eq? flag 'spec) type init-value)
-          (let ((nl (list sym)))
+          (let ((nl '()))
+            (if keyarg
+                (set! nl (append nl (list keyarg))))
+            (set! nl (append nl (list sym)))
             (if (or (eq? flag 'spec) type)
                 (set! nl (append nl (list (apt-punct ":")))))
             (if (eq? flag 'spec)
@@ -1403,94 +1417,103 @@
 (define (parse-functions-params ctx port param-list)
   (cond
    ((apt-id? current-token)
-    (let* ((sym current-token)
+    (let* ((sym #f)
            (type #f)
            (spec? #f)
+           (keyarg #f)
            (init-value #f))
-      (next-token port)
-
-      (if (apt-id-eq? current-token "...")
+      (if (apt-id-keyarg? current-token)
           (begin
+            (set! keyarg current-token)
+            (next-token port)))
+      (if (apt-id? current-token)
+          (begin
+            (set! sym current-token)
             (next-token port)
 
-            (if (apt-punct-eq? current-token ")")
-                (begin
-                  (next-token port)
-                  (append param-list (apt-param sym 'rest type init-value)))
-                (syntax-error "Rest argument must be last in parameter list"
-                              current-token)))
+            (cond
+             ((apt-id-eq? current-token "...")
+              (begin
+                (next-token port)
+                (if (apt-punct-eq? current-token ")")
+                    (begin
+                      (next-token port)
+                      (append param-list (list (apt-param #f sym 'rest type init-value))))
+                    (syntax-error "Rest argument must be last in parameter list"
+                                  current-token))))
 
-          (cond
-           ((apt-punct-eq? current-token ":")
-            (begin
-              (next-token port)
+             ((apt-punct-eq? current-token ":")
+              (begin
+                (next-token port)
 
-              (if (apt-punct-eq? current-token "@")
+                (if (apt-punct-eq? current-token "@")
+                    (begin
+                      (next-token port)
+                      (set! spec? 'spec)))
+
+                (set! type (parse-type ctx port))
+
+                (if (apt-punct-eq? current-token "=")
+                    (begin
+                      (next-token port)
+                      (if (eq? spec? 'spec)
+                          (syntax-error "Keyed parameters can not be specialized"
+                                        current-token))
+                      (set! spec? 'key)
+                      (set! init-value (parse-expr ctx port))))
+
+                (cond
+                 ((apt-punct-eq? current-token ",")
                   (begin
                     (next-token port)
-                    (set! spec? 'spec)))
+                    (parse-functions-params ctx port
+                                            (append param-list
+                                                    (list (apt-param keyarg sym spec? type
+                                                                     init-value))))))
 
-              (set! type (parse-type ctx port))
-
-              (if (apt-punct-eq? current-token "=")
+                 ((apt-punct-eq? current-token ")")
                   (begin
                     (next-token port)
-                    (if (eq? spec? 'spec)
-                        (syntax-error "Keyed parameters can not be specialized"
-                                      current-token))
-                    (set! spec? 'key)
-                    (set! init-value (parse-expr ctx port))))
+                    (append param-list (list (apt-param keyarg sym spec? type init-value)))))
 
-              (cond
-               ((apt-punct-eq? current-token ",")
-                (begin
-                  (next-token port)
-                  (parse-functions-params ctx port
-                                          (append param-list
-                                                  (list (apt-param sym spec? type
-                                                                   init-value))))))
+                 (else (syntax-error "Unexpected token (2)" current-token)) )))
 
-               ((apt-punct-eq? current-token ")")
-                (begin
-                  (next-token port)
-                  (append param-list (list (apt-param sym spec? type init-value)))))
+             ((apt-punct-eq? current-token "=")
+              (begin
+                (next-token port)
+                (set! spec? 'key)
+                (set! init-value (parse-expr ctx port))
 
-               (else (syntax-error "Unexpected token (2)" current-token)) )))
+                (cond
+                 ((apt-punct-eq? current-token ")")
+                  (begin
+                    (next-token port)
+                    (append param-list (list (apt-param keyarg sym spec? type init-value)))))
+                 ((apt-punct-eq? current-token ",")
+                  (begin
+                    (next-token port)
+                    (parse-functions-params ctx port
+                                            (append param-list
+                                                    (list (apt-param keyarg sym spec? type
+                                                                     init-value))))))
+                 (else (syntax-error "Unexpected token (3)" current-token)) )))
 
-           ((apt-punct-eq? current-token "=")
-            (begin
-              (next-token port)
-              (set! spec? 'key)
-              (set! init-value (parse-expr ctx port))
+             ((apt-punct-eq? current-token ",")
+              (begin
+                (next-token port)
+                (parse-functions-params ctx port
+                                        (append param-list
+                                                (list (apt-param #f sym spec? type
+                                                                 init-value))))))
+             
+             ((apt-punct-eq? current-token ")")
+              (begin
+                (next-token port)
+                (append param-list (list (apt-param #f sym spec? type init-value)))))
 
-              (cond
-               ((apt-punct-eq? current-token ")")
-                (begin
-                  (next-token port)
-                  (append param-list (list (apt-param sym spec? type init-value)))))
-               ((apt-punct-eq? current-token ",")
-                (begin
-                  (next-token port)
-                  (parse-functions-params ctx port
-                                          (append param-list
-                                                  (list (apt-param sym spec? type
-                                                                   init-value))))))
-               (else (syntax-error "Unexpected token (3)" current-token)) )))
+             (else (syntax-error "Unexpected token (4)" current-token)) ))
 
-           ((apt-punct-eq? current-token ",")
-            (begin
-              (next-token port)
-              (parse-functions-params ctx port
-                                      (append param-list
-                                              (list (apt-param sym spec? type
-                                                               init-value))))))
-
-           ((apt-punct-eq? current-token ")")
-            (begin
-              (next-token port)
-              (append param-list (list (apt-param sym spec? type init-value)))))
-
-           (else (syntax-error "Unexpected token (4)" current-token)) ))))
+          (syntax-error "expected id" current-token))))
 
    ((apt-punct-eq? current-token ")")
     (begin
@@ -1511,7 +1534,9 @@
            (apt-nested* "(" ")" params)
            (if type (apt-punct ":") #f)
            (if type type #f)
-           (apt-nested* "{" "}" body)))
+           (if (equal? (length body) 1)
+               (car body)
+               (apt-nested* "{" "}" body))))
 
 
 (define (apt-funcdef scope sym params type body)
@@ -1521,7 +1546,9 @@
            (apt-nested* "(" ")" params)
            (if type (apt-punct ":") #f)
            (if type type #f)
-           (apt-nested* "{" "}" body)))
+           (if (equal? (length body) 1)
+               (car body)
+               (apt-nested* "{" "}" body))))
 
 
 (define (parse-func-def ctx port sym modifiers scope)
@@ -1546,9 +1573,9 @@
                                  (apt-id m))
                                modifiers)))
     (set! res (append res (list name)))
-    (if type 
+    (if type
         (set! res (append res (list (apt-punct ":") type))))
-    (if init 
+    (if init
         (set! res (append res (list (apt-punct "=") init))))
 
     (apt-seq* res)))
