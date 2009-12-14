@@ -17,6 +17,7 @@
 (load "../cmpmcr.scm")
 (load "../misc.scm")
 (load "../oop.scm")
+(load "../parctx.scm")
 (load "../ast.scm")
 
 (load "../parse1.scm")
@@ -26,10 +27,11 @@
 
 (define (parse-file filename)
   (let* ((port (open-input-file filename))
+         (ctx (make-object <parse-context> '()))
          (expr1-tree (begin
                        (next-char port)
                        (next-token port)
-                       (parse-next-top port)))
+                       (parse-next-top ctx port)))
          (expr2-tree (parse-next-top-2p expr1-tree)))
 
     (close-input-port port)
@@ -38,7 +40,7 @@
 ;;;    (arc:display "------- macros ------------------------" 'nl)
 ;;;    (for-each (lambda (m)
 ;;;                (arc:display m 'nl))
-;;;              *macro-registry*)
+;;;              (macro-registry ctx))
 ;;;    (arc:display "---------------------------------------" 'nl)
     expr1-tree))
 
