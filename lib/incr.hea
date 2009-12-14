@@ -1,0 +1,22 @@
+--
+-- incr.hea - macro for increment and decrement
+--
+-- This file is part of the heather package
+-- Copyright (c) 2002,2009 by Gregor Klinke
+--
+--
+
+namespace heather ("eyestep/heather 1.0:core")
+
+def macro incr!
+{
+  { incr!(?place:expr) }               -> { ?place = ?place + 1 }
+  { incr!(?place:expr, ?amount:expr) } -> { ?place = ?place + ?amount }
+}
+
+
+def macro decr!
+{
+  { decr!(?place:expr) }               -> { ?place = ?place - 1 }
+  { decr!(?place:expr, ?amount:expr) } -> { ?place = ?place - ?amount }
+}
