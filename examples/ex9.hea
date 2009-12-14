@@ -1,15 +1,13 @@
-def macro incr!
-{
-  { incr!(?place:expr) } -> { ?place = ?place + 1 }
-  { incr!(?place:expr, ?amount:expr) } -> { ?place = ?place + ?amount }
-}
+def f(a : @ (String, Uri)) : (Int, Bool = #f)
+  a
+
+def f(a : @ (Int = -127 .. 127))
+  a
 
 
-def f()
-  let x = 5
+def buffer : Byte[256]
+def buffer2 : Byte[]
 
-  x.incr!()
-  x.incr!(10)
+def buffers : Vector(Byte)[12]
 
-  incr!(x)
-  incr!(x, 10)
+def slots : (Int = -127 .. 127, Bool = #f)[10]
