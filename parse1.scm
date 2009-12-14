@@ -378,9 +378,9 @@
   #f)
 
 
-(define (error-expected-token token)
+(define (error-expected-token where token)
   (arc:display "Syntax error: " (number->string line-count)
-               ": Expected token " token ", got: " current-token 'nl)
+               ": " where ": Expected token " token ", got: " current-token 'nl)
   #f)
 
 
@@ -490,8 +490,8 @@
                     (apt-seq (apt-id "if")
                              (apt-nested "(" ")" test-expr)
                              true-expr)))
-              (syntax-error "Expected ) in if" current-token)))
-        (syntax-error "Expected ( in if" current-token))))
+              (syntax-error "if: Expected ), got " current-token)))
+        (syntax-error "if: Expected (, got " current-token))))
 
 
 (define (parse-on port possible-on-keys)
@@ -508,14 +508,13 @@
                     (if (apt-punct-eq? current-token "(")
                         (begin
                           (next-token port)
-                          (let ((params (parse-functions-params port '()))
-                                (expr (parse-expr port)))
+                          (let* ((params (parse-functions-params port '()))
+                                 (expr (parse-expr port)))
                             (apt-seq (apt-id "on")
                                      sym
                                      (apt-nested* "(" ")" params)
-                                     expr))
-                          (error-expected-token "("))
-                        (syntax-error "Expected (, got " current-token)))
+                                     expr)))
+                        (error-expected-token 'on "(")))
                   (syntax-error "Unexpected 'on' expr:" (apt-id-value sym))))))
       (syntax-error "Unexpected 'on' expr:" current-token)))
 
@@ -820,7 +819,7 @@
       (begin
         (next-token port)
         (parse-func-def port #f '() 'local))
-      (syntax-error "Expected (, got" current-token)))
+      (syntax-error "function: Expected (, got" current-token)))
 
 
 ;;----------------------------------------------------------------------
@@ -1054,37 +1053,87 @@
       params))
 
 
-(define (parse-type port)
-  (if (apt-id? current-token)
-      (let* ((sym current-token))
-        (next-token port)
-        (cond ((apt-punct-eq? current-token "(")
-               (begin
-                 (next-token port)
-                 (let ((params (parse-type-params port
-                                                  (lambda (token)
-                                                    (apt-punct-eq? token ")"))
-                                                  '())))
-                   (if (apt-punct-eq? current-token ")")
-                       (begin
-                         (next-token port)
-                         (apt-seq sym (apt-nested* "(" ")" params)))
-                       (syntax-error "Expected ), got" current-token)))) )
-              ((apt-punct-eq? current-token "[")
-               (begin
-                 (next-token port)
-                 (let ((params (parse-type-params port
-                                                  (lambda (token)
-                                                    (apt-punct-eq? token "]"))
-                                                  '())))
-                   (if (apt-punct-eq? current-token "]")
-                       (begin
-                         (next-token port)
-                         (apt-seq sym (apt-nested* "(" ")" params)))
-                       (syntax-error "Expected ], got" current-token)))))
+(define (parse-complex-type-del port type-list)
+  (cond ((apt-punct-eq? current-token ",")
+         (begin
+           (next-token port)
+           (parse-complex-type port type-list)))
+        ((apt-punct-eq? current-token ")")
+         (begin
+           (next-token port)
+           (apt-seq* type-list)))
+        (else (syntax-error "complex type: expected , or ), got: "
+                            current-token))))
 
-              (else sym) ))
-      (syntax-error "Expected type, got" current-token)))
+
+(define (parse-complex-type port type-list)
+  (cond ((apt-id? current-token)
+         (let ((ty (parse-simple-type port #t)))
+           (if ty
+               (parse-complex-type-del port (append type-list (list ty)))
+               #f)))
+        ((apt-punct-eq? current-token "(")
+         (let ((ty (parse-complex-type port '())))
+           (if ty
+               (parse-complex-type-del port (append type-list (list ty)))
+               #f)))
+        (else (syntax-error "complex type: expected ID or (, got: "
+                            current-token))))
+
+
+(define (parse-array-type port base-type)
+  (if (apt-punct-eq? current-token "[")
+      (let ((size-param #f))
+        (next-token port)
+        (if (not (apt-punct-eq? current-token "]"))
+            (set! size-param (parse-expr port)))
+        (if (apt-punct-eq? current-token "]")
+            (begin
+              (next-token port)
+              (if size-param
+                  (apt-seq base-type (apt-nested "[" "]" size-param))
+                  (apt-seq base-type (apt-nested "[" "]"))))
+            (syntax-error "Expected ], got" current-token)))
+      base-type))
+
+
+(define (parse-simple-type port expect-constraint?)
+  (let* ((sym current-token))
+    (next-token port)
+    (cond ((apt-punct-eq? current-token "(")
+           (begin
+             (next-token port)
+             (let ((params (parse-type-params port
+                                              (lambda (token)
+                                                (apt-punct-eq? token ")"))
+                                              '())))
+               (if (apt-punct-eq? current-token ")")
+                   (begin
+                     (next-token port)
+                     (parse-array-type port
+                                       (apt-seq sym (apt-nested* "(" ")"
+                                                                 params))))
+                   (syntax-error "Expected ), got" current-token)))) )
+          ((and expect-constraint? 
+                (apt-punct-eq? current-token "="))
+           (begin
+             (next-token port)
+             (let ((constraint (parse-expr port)))
+               (if constraint
+                   (apt-seq* (list sym (apt-punct "=") constraint))
+                   #f))))
+          (else (parse-array-type port sym) ))))
+
+
+(define (parse-type port)
+  (cond
+   ((apt-id? current-token) (parse-simple-type port #f))
+   ((apt-punct-eq? current-token "(") (begin
+                                        (next-token port)
+                                        (parse-array-type port 
+                                                          (parse-complex-type port
+                                                                              '()))))
+   (else (syntax-error "Expected type, got" current-token))))
 
 
 ;;----------------------------------------------------------------------
@@ -1192,10 +1241,10 @@
                           (begin
                             (next-token port)
                             (apt-class sym params isatype decls))
-                          (error-expected-token "}")))
-                    (error-expected-token "{"))) )
-            (error-expected-token "(")))
-      (error-expected-token "symbol")))
+                          (error-expected-token 'type-def "}")))
+                    (error-expected-token 'type-def "{"))) )
+            (error-expected-token 'type-def "(")))
+      (error-expected-token 'type-def "symbol")))
 
 
 ;;----------------------------------------------------------------------
@@ -1610,7 +1659,7 @@
         (next-token port)
         (let ((prms (parse-funcall-params port '())))
           (apt-seq (apt-id "import") (apt-nested* "(" ")" prms))))
-      (syntax-error "Expected (, got" current-token)))
+      (syntax-error "import: Expected (, got" current-token)))
 
 
 (define (parse-next-top port)
