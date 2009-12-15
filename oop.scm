@@ -184,7 +184,7 @@
     (let loop ((offset *slot-names-offset*))
       (cond
        ((= offset top)
-        (error "no such slot"))
+        (error (string-append "no such slot: " slot-name)))
        ((equal? slot-name (vector-ref class offset))
         (vector-ref object (+ (- offset *slot-names-offset*) *slots-offset*)))
        (else
@@ -196,7 +196,7 @@
     (let loop ((offset *slot-names-offset*))
       (cond
        ((= offset top)
-        (error "no such slot"))
+        (error (string-append "no such slot: " slot-name)))
        ((equal? slot-name (vector-ref class offset))
         (vector-set! object (+ (- offset *slot-names-offset*)
                                *slots-offset*) value))
@@ -211,7 +211,7 @@
     (let loop ((offset *slot-names-offset*))
       (cond
        ((= offset top)
-        (error "no such slot"))
+        (error (string-append "no such slot: " slot-name)))
        ((equal? slot-name (vector-ref class offset))
         (lambda (object)
           (vector-ref object (+ (- offset *slot-names-offset*)
@@ -224,7 +224,7 @@
     (let loop ((offset *slot-names-offset*))
       (cond
        ((= offset top)
-        (error "no such slot"))
+        (error (string-append "no such slot: " slot-name)))
        ((equal? slot-name (vector-ref class offset))
         (lambda (object value)
           (vector-set! object (+ (- offset *slot-names-offset*)
