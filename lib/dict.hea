@@ -232,7 +232,8 @@ def meth put!(self : @HashMap, key, obj) : HashMap
   let hash : Int = key.hash mod self.table.size
   let loop(nl) {
       if (nl == #nil) {
-        self.table[hash] = Triple(key, obj, self.table[hash])
+        self.table[hash] = Triple(self.Type.Key, self.Type.Elt,
+                                  _.Type)(key, obj, self.table[hash])
         self.elts.incr!
       }
       else if (nl.key?(key))
@@ -357,41 +358,49 @@ def meth retain-all-keys(self : @HashMap, keys : @Collection) : self.Type
   self
 
 
-
-
   ----------------------------------------------------------------------
   -- copy
   ----------------------------------------------------------------------
-  table : (VECT elt: TRIPLE, priv) |
-    table.
+def table!(self : @HashMap, t : Vector(Triple(self.Type.Key, self.Type.Elt,
+                                              _.Type)))
+  slot!(self, 'table, t)
+  slot!(self, 'elts, t.num-items)
+  self
 
-  table!: t(VECT elt: TRIPLE)
-    elts: e(INT) : (self, priv) |
-    table <- t,
-    elts <- e,
-    self.
+def copy(self : @ HashMap) : self.Type
+  self.Type().table!(self.table)
 
-  copy : (self) |
-    self alloc ' table!: table elts: elts.
+def deep-copy(self : @ HashMap) : self.Type
+  self.Type().add-all(self)
 
-  deep-copy : (self) |
-    self alloc ' init-with-cltn: self.
+-- def equal?(one : @ HashMap, two : @ HashMap) : Bool
+--   one == two
 
-  eq?: obj(lang.ANY) : (lang.BOOL) |
-    obj isa?: DICT ? super eq?: obj
-                   : #f.
+--  cmp: obj(lang.ANY) : (lang.INT) |
+--       -- TODO
+--    -1.
 
-  cmp: obj(lang.ANY) : (lang.INT) |
-       -- TODO
-    -1.
+def ->string(self : @ HashMap) : String
+  let sb = StringBuffer()
+  sb.append("#(")
 
-  ->string : (STRING)
-  | ( | res(CDATA) <- CDATA cdata |
-      [ e |
-        res append: (e ->string) " "
-        ] for: (self seq),
-      res ->string).
-)
+  for (e in self)
+    sb.append(e.->string)
+      .append(" ")
+
+  sb.append(")")
+  sb.->string
+
+
+
+
+
+
+
+
+
+
+
 
 
 
