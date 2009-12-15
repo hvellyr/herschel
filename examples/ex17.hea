@@ -1,0 +1,6 @@
+def f(a : Int, b : Byte[], c : (String, Bool), d : (Int = -127 .. 127),
+      e : HashMap(String, Int))
+  a
+
+
+def const xyz : Vector(Byte[])[100] = 17
