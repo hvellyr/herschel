@@ -4,10 +4,11 @@
 
 * TODO Finish parsing to APT 
 ** def type
-** type declarations
-** function params
+** function type declarations
 ** type alias
 ** ON
+** parse #[] array 
+** parse #() vectors & dictionaries
 
 * TODO use namespace info in first pass parse
 
