@@ -722,6 +722,14 @@ Other than constrain types union types influence multiple dispatch.
 
 
 @c --------------------------------------------------------------------
+@subsection Function types
+
+@example
+def f : (Function(a : Int) : Bool)
+@end example
+
+
+@c --------------------------------------------------------------------
 @node Variables, FunctionCalls, Types, Specification
 @section Variables and Constants
 
