@@ -173,6 +173,11 @@
   (cadr expr))
 
 
+(define (apt-nested-left? expr c)
+  (and (apt-nested? expr)
+       (equal? (apt-nested-left expr) c)))
+
+
 (define (apt-nested-right expr)
   (caddr expr))
 

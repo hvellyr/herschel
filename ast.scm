@@ -19,11 +19,22 @@
 (define-class <apt:node> (<class>) ())
 
 (define-generic (debug->xml))
+(define-generic (debug-slot->xml tag slotnm))
 
 (define (->xml x)
   (if (vector? x)
       (debug->xml x)
       (arc:display #f)))
+
+
+(define-method (debug-slot->xml <apt:node> tag slotnm)
+  (call-next-method)
+  (let ((slot (slot-ref self slotnm)))
+    (if slot
+        (begin
+          (arc:display "<" tag ">")
+          (->xml slot)
+          (arc:display "</" tag ">")))))
 
 
 ;;;---------------------------------------------------------------------------
@@ -32,8 +43,8 @@
 
 (define-method (initialise <apt:namespace> args)
   (call-next-method)
-  (slot-set! self 'ns (car args))
-  (slot-set! self 'id (cadr args))
+  (slot-set! self 'ns (list-ref args 0))
+  (slot-set! self 'id (list-ref args 1))
   self)
 
 (define-method (debug->xml <apt:namespace>)
@@ -50,22 +61,19 @@
 
 (define-method (initialise <apt:vardef> args)
   (call-next-method)
-  (slot-set! self 'sym (car args))
-  (slot-set! self 'type (cadr args))
-  (slot-set! self 'init-value (caddr args))
-  (slot-set! self 'const? (car (cdddr args)))
-  (slot-set! self 'fluid? (cadr (cdddr args)))
+  (slot-set! self 'sym (list-ref args 0))
+  (slot-set! self 'type (list-ref args 1))
+  (slot-set! self 'init-value (list-ref args 2))
+  (slot-set! self 'const? (list-ref args 3))
+  (slot-set! self 'fluid? (list-ref args 4))
   self)
 
 (define-method (debug->xml <apt:vardef>)
   (call-next-method)
   (arc:display "<def><var scope='global' name='" (slot-ref self 'sym) "'>" 'nl)
-  (arc:display "<type>")
-  (->xml (slot-ref self 'type))
-  (arc:display "</type>" 'nl)
-  (arc:display "<init-value>")
-  (->xml (slot-ref self 'init-value))
-  (arc:display "</init-value></var></def>" 'nl))
+  (debug-slot->xml self "type" 'type)
+  (debug-slot->xml self "init-value" 'init-value)
+  (arc:display "</var></def>" 'nl))
 
 
 ;;;---------------------------------------------------------------------------
@@ -109,12 +117,8 @@
               (->xml p))
             (slot-ref self 'params))
   (arc:display "</params>")
-  (arc:display "<retval>")
-  (->xml (slot-ref self 'retval))
-  (arc:display "</retval>")
-  (arc:display "<body>")
-  (->xml (slot-ref self 'body))
-  (arc:display "</body>")
+  (debug-slot->xml self "retval" 'retval)
+  (debug-slot->xml self "body" 'body)
   (if (slot-ref self 'meth?)
       (arc:display "</meth>")
       (arc:display "</func>")))
@@ -141,13 +145,8 @@
   (if (eq? (slot-ref self 'flag) 'rest)
       (arc:display " what='rest'"))
   (arc:display " name='" (slot-ref self 'sym) "'>")
-  (if (slot-ref self 'type)
-      (begin
-        (arc:display "<type>")
-        (->xml (slot-ref self 'type))
-        (arc:display "</type>")))
-  (if (slot-ref self 'init-value)
-      (->xml (slot-ref self 'init-value)))
+  (debug-slot->xml self "type" 'type)
+  (debug-slot->xml self "init-value" 'init-value)
   (arc:display "</prm>"))
 
 
@@ -157,8 +156,8 @@
 
 (define-method (initialise <apt:const> args)
   (call-next-method)
-  (slot-set! self 'type (car args))
-  (slot-set! self 'value (cadr args))
+  (slot-set! self 'type (list-ref args 0))
+  (slot-set! self 'value (list-ref args 1))
   self)
 
 (define-method (debug->xml <apt:const>)
@@ -180,7 +179,7 @@
 
 (define-method (initialise <apt:symbol> args)
   (call-next-method)
-  (slot-set! self 'id (car args))
+  (slot-set! self 'id (list-ref args 0))
   self)
 
 (define-method (debug->xml <apt:symbol>)
@@ -194,9 +193,9 @@
 
 (define-method (initialise <apt:binary> args)
   (call-next-method)
-  (slot-set! self 'left  (car args))
-  (slot-set! self 'op    (cadr args))
-  (slot-set! self 'right (caddr args))
+  (slot-set! self 'left  (list-ref args 0))
+  (slot-set! self 'op    (list-ref args 1))
+  (slot-set! self 'right (list-ref args 2))
   self)
 
 (define-method (debug->xml <apt:binary>)
@@ -213,8 +212,8 @@
 
 (define-method (initialise <apt:assign> args)
   (call-next-method)
-  (slot-set! self 'lvalue (car args))
-  (slot-set! self 'rvalue (cadr args))
+  (slot-set! self 'lvalue (list-ref args 0))
+  (slot-set! self 'rvalue (list-ref args 1))
   self)
 
 (define-method (debug->xml <apt:assign>)
@@ -231,8 +230,8 @@
 
 (define-method (initialise <apt:apply> args)
   (call-next-method)
-  (slot-set! self 'func (car args))
-  (slot-set! self 'args (cadr args))
+  (slot-set! self 'func (list-ref args 0))
+  (slot-set! self 'args (list-ref args 1))
   self)
 
 (define-method (debug->xml <apt:apply>)
@@ -252,7 +251,7 @@
 
 (define-method (initialise <apt:block> args)
   (call-next-method)
-  (slot-set! self 'exprs (car args))
+  (slot-set! self 'exprs (list-ref args 0))
   self)
 
 (define-method (debug->xml <apt:block>)
@@ -270,9 +269,9 @@
 
 (define-method (initialise <apt:if> args)
   (call-next-method)
-  (slot-set! self 'test  (car args))
-  (slot-set! self 'true  (cadr args))
-  (slot-set! self 'false (caddr args))
+  (slot-set! self 'test  (list-ref args 0))
+  (slot-set! self 'true  (list-ref args 1))
+  (slot-set! self 'false (list-ref args 2))
   self)
 
 (define-method (debug->xml <apt:if>)
@@ -282,11 +281,7 @@
   (arc:display "</test><then>")
   (->xml (slot-ref self 'true))
   (arc:display "</then>")
-  (if (slot-ref self 'false)
-      (begin
-        (arc:display "<else>")
-        (->xml (slot-ref self 'false))
-        (arc:display "</else>")))
+  (debug-slot->xml self "else" 'false)
   (arc:display "</if>"))
 
 
@@ -296,10 +291,10 @@
 
 (define-method (initialise <apt:range> args)
   (call-next-method)
-  (slot-set! self 'from  (car args))
-  (slot-set! self 'to    (cadr args))
-  (slot-set! self 'by    (caddr args))
-  (slot-set! self 'incl? (cadddr args))
+  (slot-set! self 'from  (list-ref args 0))
+  (slot-set! self 'to    (list-ref args 1))
+  (slot-set! self 'by    (list-ref args 2))
+  (slot-set! self 'incl? (list-ref args 3))
   self)
 
 (define-method (debug->xml <apt:range>)
@@ -311,11 +306,7 @@
   (arc:display "</from><to>")
   (->xml (slot-ref self 'to))
   (arc:display "</to>")
-  (if (slot-ref self 'by)
-      (begin
-        (arc:display "<by>")
-        (->xml (slot-ref self 'by))
-        (arc:display "</by>")))
+  (debug-slot->xml self "by" 'by)
   (arc:display "</range>"))
 
 
@@ -325,8 +316,8 @@
 
 (define-method (initialise <apt:keyarg> args)
   (call-next-method)
-  (slot-set! self 'key  (car args))
-  (slot-set! self 'value (cadr args))
+  (slot-set! self 'key (list-ref args 0))
+  (slot-set! self 'value (list-ref args 1))
   self)
 
 (define-method (debug->xml <apt:keyarg>)
@@ -334,6 +325,107 @@
   (arc:display "<key-arg key='" (slot-ref self 'key) "'>")
   (->xml (slot-ref self 'value))
   (arc:display "</key-arg>"))
+
+
+
+;;;---------------------------------------------------------------------------
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:type> (<apt:node>) ())
+
+(define-method (initialise <apt:type> args)
+  (call-next-method)
+  self)
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:simple-type> (<apt:type>) (sym))
+
+(define-method (initialise <apt:simple-type> args)
+  (call-next-method)
+  (slot-set! self 'sym (list-ref args 0))
+  self)
+
+(define-method (debug->xml <apt:simple-type>)
+  (call-next-method)
+  (arc:display "<simple-type sym='" (slot-ref self 'sym) "'/>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:array-type> (<apt:type>) (base initial-size))
+
+(define-method (initialise <apt:array-type> args)
+  (call-next-method)
+  (slot-set! self 'base (list-ref args 0))
+  (slot-set! self 'initial-size (list-ref args 1))
+  self)
+
+(define-method (debug->xml <apt:array-type>)
+  (call-next-method)
+  (arc:display "<array-type>")
+  (->xml (slot-ref self 'base))
+  (debug-slot->xml self "initial" 'initial-size)
+  (arc:display "</array-type>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:union-type> (<apt:type>) (type-list))
+
+(define-method (initialise <apt:union-type> args)
+  (call-next-method)
+  (slot-set! self 'type-list (list-ref args 0))
+  self)
+
+(define-method (debug->xml <apt:union-type>)
+  (call-next-method)
+  (arc:display "<union-type>")
+  (for-each (lambda (e)
+              (->xml e))
+            (slot-ref self 'type-list))
+  (arc:display "</union-type>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:constraint-type> (<apt:type>) (base constraint))
+
+(define-method (initialise <apt:constraint-type> args)
+  (call-next-method)
+  (slot-set! self 'base (list-ref args 0))
+  (slot-set! self 'constraint (list-ref args 1))
+  self)
+
+(define-method (debug->xml <apt:constraint-type>)
+  (call-next-method)
+  (arc:display "<constraint-type>")
+  (->xml (slot-ref self 'base))
+  (debug-slot->xml self "constraint" 'constraint)
+  (arc:display "</constraint-type>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:param-type> (<apt:type>) (base params))
+
+(define-method (initialise <apt:param-type> args)
+  (call-next-method)
+  (slot-set! self 'base (list-ref args 0))
+  (slot-set! self 'params (list-ref args 1))
+  self)
+
+(define-method (debug->xml <apt:param-type>)
+  (call-next-method)
+  (arc:display "<param-type>")
+  (->xml (slot-ref self 'base))
+  (arc:display "<params>")
+  (for-each (lambda (e)
+              (->xml e))
+            (slot-ref self 'params))
+  (arc:display "</params>")
+  (arc:display "</param-type>"))
 
 
 ;;Keep this comment at the end of the file

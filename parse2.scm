@@ -55,6 +55,85 @@
         (else (syntax-error "Unexpected node: " node))))
 
 
+;;;----------------------------------------------------------------------
+
+;;; parse types
+
+;;; (id "Int")
+;;; (seq (id "HashMap") (nested "(" ")" (id "String") (punct ",") (id "Int")))
+;;; (seq (id "Byte") (nested "[" "]"))
+;;; (seq (id "String") (id "Bool"))
+;;; (seq (seq (id "Int") (punct "=") (seq (lit -127) (id "..") (lit 127))))
+(define (parse-union-type-2p token-list type-list)
+  (let loop ((res type-list)
+             (nl token-list))
+    (if (null? nl)
+        (make-object <apt:union-type> (list res))
+        (if (apt-id? (car nl))
+            (loop (append res (list (parse-type-2p (car nl))))
+                  (cdr nl))
+            (syntax-error "Unexpected node in union type expr" token-list)))))
+
+
+(define (parse-array-type-2p base token-list)
+  (cond ((equal? (length token-list) 1)
+         (make-object <apt:array-type> (list base (parse-expr-2p (car token-list)))))
+        ((equal? (length token-list) 0)
+         (make-object <apt:array-type> (list base #f)))
+        (syntax-error "unexpected nodes in array type size" token-list)))
+
+
+(define (parse-constraint-type-2p base token-list)
+  (if (not (null? token-list))
+      (make-object <apt:constraint-type> (list base (parse-expr-2p (car token-list))))
+      (syntax-error "expected constraint expression" token-list)))
+
+
+(define (parse-param-type-args-2p nl res)
+  (if (null? nl)
+      res
+      (let ((ty (parse-type-2p (car nl))))
+        (if ty
+            (parse-param-type-args-del-2p (cdr nl)
+                                          (append res (list ty)))
+            (syntax-error "Unexpected node in param type" nl)))))
+
+(define (parse-param-type-args-del-2p nl res)
+  (cond ((null? nl) res)
+        ((apt-punct-eq? (car nl) ",")
+         (parse-param-type-args-2p (cdr nl) res))
+        (else (syntax-error "Unexpected node in param type" nl))))
+
+
+(define (parse-param-type-2p base token-list)
+  (make-object <apt:param-type>
+               (list base
+                     (parse-param-type-args-2p token-list '()))))
+
+
+(define (parse-type-seq-2p token-list)
+  (if (not (null? token-list))
+      (let ((first (parse-type-2p (car token-list))))
+        (if (not (null? (cdr token-list)))
+            (cond ((apt-nested-left? (cadr token-list) "(")
+                   (parse-param-type-2p first (apt-nested-body (cadr token-list))))
+                  ((apt-nested-left? (cadr token-list) "[")
+                   (parse-array-type-2p first (apt-nested-body (cadr token-list))))
+                  ((apt-id? (cadr token-list)) (parse-union-type-2p (cdr token-list)
+                                                                    (list first)))
+                  ((apt-punct-eq? (cadr token-list) "=")
+                   (parse-constraint-type-2p first (cddr token-list)))
+                  (else (syntax-error "Unhandled type expression (2)" token-list)))
+            first))
+      (syntax-error "Unhandled type expression (3)" token-list)))
+
+
+(define (parse-type-2p node)
+  (cond ((apt-id? node) (make-object <apt:simple-type> (list (apt-id-value node))))
+        ((apt-seq? node) (parse-type-seq-2p (apt-seq-body node)))
+        (else (syntax-error "Unhandled type expression" node))))
+
+
 (define (parse-func-param-2p node)
   (cond ((apt-id? node) (make-object <apt:param> (list #f (apt-id-value node) 'normal #f
                                                        #f)))
@@ -79,10 +158,11 @@
                                            (init #f)
                                            (param-type 'normal))
                                        (if (apt-punct-eq? (car nl) ":")
-                                           (begin
-                                             ;; TODO
-                                             (set! ty #f)
-                                             (set! nl (cdr nl))))
+                                           (if (not (null? (cdr nl)))
+                                               (begin
+                                                 (set! ty (parse-type-2p (cadr nl)))
+                                                 (set! nl (cddr nl)))
+                                               (syntax-error "Expected type" nl)))
                                        (if (and (not (null? nl))
                                                 (apt-punct-eq? (car nl) "="))
                                            (if (not (null? (cdr nl)))
@@ -124,7 +204,7 @@
           (if (apt-punct-eq? (car nl) ":")
               (if (not (null? (cdr nl)))
                   (begin
-                    (set! retval (cadr nl))
+                    (set! retval (parse-type-2p (cadr nl)))
                     (set! nl (cddr nl)))))
           (set! body (parse-expr-2p (car nl)))
           (if sym
@@ -159,7 +239,7 @@
               (if (apt-punct-eq? (car nl) ":")
                   (if (not (null? (cdr nl)))
                       (begin
-                        (set! type (cadr nl))
+                        (set! type (parse-type-2p (cadr nl)))
                         (if (not (null? (cddr nl)))
                             (set! nl (cddr nl))
                             (set! nl '())))))
