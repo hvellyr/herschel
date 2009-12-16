@@ -175,6 +175,54 @@
 
 ;;;---------------------------------------------------------------------------
 
+(define-class <apt:const-container> (<apt:const>) ())
+
+(define-method (initialise <apt:const-container> args)
+  (call-next-method)
+  self)
+
+(define-method (debug->xml <apt:const-container>)
+  (let ((tag (case (slot-ref self 'type)
+               ((array)  "array")
+               ((vector) "vector")
+               ((dict)   "dict")
+               (else (syntax-error "What's this?" self)))))
+    (arc:display "<" tag ">")
+    (for-each (lambda (e)
+                (->xml e))
+              (slot-ref self 'value))
+    (arc:display "</" tag ">")))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:array> (<apt:const-container>) ())
+
+(define-method (initialise <apt:array> args)
+  (call-next-method)
+  self)
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:vector> (<apt:const-container>) ())
+
+(define-method (initialise <apt:vector> args)
+  (call-next-method)
+  self)
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:dictionary> (<apt:const-container>) ())
+
+(define-method (initialise <apt:dictionary> args)
+  (call-next-method)
+  self)
+
+
+;;;---------------------------------------------------------------------------
+
 (define-class <apt:symbol> (<apt:node>) (id))
 
 (define-method (initialise <apt:symbol> args)
@@ -191,6 +239,8 @@
 
 (define-class <apt:binary> (<apt:node>) (left op right))
 
+(define-generic (operator))
+
 (define-method (initialise <apt:binary> args)
   (call-next-method)
   (slot-set! self 'left  (list-ref args 0))
@@ -204,6 +254,9 @@
   (->xml (slot-ref self 'left))
   (->xml (slot-ref self 'right))
   (arc:display "</bin>"))
+
+(define-method (operator <apt:binary>)
+  (slot-ref self 'op))
 
 
 ;;;---------------------------------------------------------------------------

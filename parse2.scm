@@ -55,6 +55,56 @@
         (else (syntax-error "Unexpected node: " node))))
 
 
+(define (parse-nested-2p node)
+  (cond ((apt-nested-left? node "(")
+         ;; TODO gck
+         ...)
+        ((apt-nested-left? node "{")
+         (parse-block-2p (apt-nested-body node)))
+        ((apt-nested-left? node "#(")
+         (parse-vector-2p (apt-nested-body node)))
+        ((apt-nested-left? node "#[")
+         (parse-array-2p (apt-nested-body node)))
+        (syntax-error "Unknown nested syntax: " node)))
+
+
+(define (parse-vector-2p token-list)
+  (let* ((dict? #f)
+         (parsed-exprs
+          (let loop ((res '())
+                     (nl token-list))
+            (if (null? nl)
+                res
+                (cond ((apt-punct-eq? (car nl) ",")
+                       (loop res (cdr nl)))
+                      (else (let ((expr (parse-expr-2p (car nl))))
+                              (if (and (is-a? expr <apt:binary>)
+                                       (equal? (operator expr) "->"))
+                                  (set! dict? #t)
+                                  (if dict?
+                                      (syntax-error "Inhomogenous dict notation"
+                                                    token-list)))
+                              (loop (append res (list expr))
+                                    (cdr nl)))))) )))
+    (if dict?
+        (make-object <apt:dictionary> (list 'dict parsed-exprs))
+        (make-object <apt:vector> (list 'vector parsed-exprs)))))
+
+
+(define (parse-array-2p token-list)
+  (let ((parsed-exprs (let loop ((res '())
+                                 (nl token-list))
+                        (if (null? nl)
+                            res
+                            (cond ((apt-punct-eq? (car nl) ",")
+                                   (loop res (cdr nl)))
+                                  (else (loop (append res
+                                                      (list (parse-expr-2p
+                                                             (car nl))))
+                                              (cdr nl)))))) ))
+    (make-object <apt:array> (list 'array parsed-exprs))))
+
+
 ;;;----------------------------------------------------------------------
 
 ;;; parse types
@@ -467,15 +517,6 @@
                                  (parse-expr-2p e))
                                token-list)))
         (make-object <apt:block> (list parsed-exprs)))))
-
-
-(define (parse-nested-2p node)
-  (cond ((equal? (apt-nested-left node) "(")
-         ;; TODO gck
-         ...)
-        ((equal? (apt-nested-left node) "{")
-         (parse-block-2p (apt-nested-body node)))
-        (syntax-error "Unknown nested syntax: " node)))
 
 
 (define (parse-next-top-2p expr-tree)
