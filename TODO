@@ -1,5 +1,9 @@
 -*-org-*-
 
+* TODO Tokenizer
+** TODO real
+** TODO Engineering notation of numbers
+
 * TODO Parse self.Type.X expressions
 
 * TODO Finish parsing to APT 
@@ -7,8 +11,6 @@
 ** function type declarations
 ** type alias
 ** ON
-** parse #[] array 
-** parse #() vectors & dictionaries
 
 * TODO use namespace info in first pass parse
 
