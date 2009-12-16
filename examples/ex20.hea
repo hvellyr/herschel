@@ -1,0 +1,5 @@
+def a = #[1, 2, 3, 4]
+
+def b = #('a, 'b, 'c, 'd)
+
+def c = #('name -> "Heinz", 'city -> "Berlin", 'amount -> 125.00)

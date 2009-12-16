@@ -801,16 +801,18 @@
     expr1)))
 
 
-(define (parse-const-container ctx port del-token? type)
+(define (parse-const-container ctx port del-token? left right)
   (let loop ((res '()))
     (if (del-token? current-token)
         (begin
           (next-token port)
-          (list type res))
+          (apt-nested* left right res))
         (let ((expr (parse-expr ctx port)))
           (if (apt-punct-eq? current-token ",")
-              (next-token port))
-          (loop (append res (list expr)))) )))
+              (begin
+                (next-token port)
+                (loop (append res (list expr (apt-punct ",")))))
+              (loop (append res (list expr)))) ))))
 
 
 (define (parse-function ctx port)
@@ -862,14 +864,14 @@
       (next-token port)
       (parse-const-container ctx port
                              (lambda (token) (apt-punct-eq? token ")"))
-                             'vector)))
+                             "#(" ")")))
 
    ((apt-punct-eq? current-token "#[")
     (begin
       (next-token port)
       (parse-const-container ctx port
                              (lambda (token) (apt-punct-eq? token "]"))
-                             'array)))
+                             "#[" "]")))
 
    ((apt-punct-eq? current-token "#function")
     (begin
@@ -1510,7 +1512,7 @@
                                         (append param-list
                                                 (list (apt-param #f sym spec? type
                                                                  init-value))))))
-             
+
              ((apt-punct-eq? current-token ")")
               (begin
                 (next-token port)
