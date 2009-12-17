@@ -6,7 +6,7 @@
 @setchapternewpage odd
 @c %**end of header
 
-@c This file is processed by Arc! Placeholders are surrounded by & 
+@c This file is processed by Arc! Placeholders are surrounded by &
 @c (amp) and not by @ (at) as normally, since Texinfo uses @ as markup maker!
 @set VERSION 0.0.1
 @set COPYRIGHT 2002, 2003, 2009 Gregor Klinke
@@ -184,7 +184,7 @@ _a/string_
 @subsection Arrays
 
 @example
-a constant arrays: #[1, 2, 3, 4, 5]
+a constant array: #[1, 2, 3, 4, 5]
 @end example
 
 
@@ -238,15 +238,55 @@ Function are standalone function not bound to any particular type.
 Functions are resolved by "name" only.  There's nothing like
 type-overwriting, etc.
 
-@example
-def name()
-  @emph{body}
-@end example
+@cindex functions, defining
+@findex def [function]
+@findex let [function]
+@deffn Special def @var{name} ([@var{parameters}]) @
+       [@code{:} @var{return-type}] @
+       @var{function-body}
+@deffnx Special let @var{name} ([@var{parameters}]) @
+        [@code{:} @var{return-type}] @
+        @var{function-body}
 
-Methods in contrast are generic functions bound by one or multiple
-parameters to certain types.  Methods are resolved by name and specialized
-parameters.  Parameters are specialized by adding the @code{@@} to their type
-declaration.  Only positional parameters can be specialized:
+Defines a function with @var{parameters} and the body
+@var{function-body} bound to @var{name}.  The @var{function-body} is
+expected to be a @emph{single} expression, i.e. for a multi expression
+body it must be written as a block.  As an exception function bodies on
+top-level, i.e. where functions are defined with the @code{def} keyword,
+are delimited by the next @code{def} keyword or the file end.
+
+Functions are always defines in recursive mode, i.e. a function
+@var{name} can ``see'' (i.e. call) itself recursively.
+
+For the way to define the @var{parameters} see below.
+
+@example
+def ack(x : Int, y : Int) : Int
+  if (x == 0)
+    y + 1
+  else if (y == 0)
+    ack(x - 1, 1)
+  else
+    ack(x - 1, ack(x, y - 1))
+@end example
+@end deffn
+
+Methods in contrast are generic functions specialized by one or multiple
+parameters to certain types.  They are declared using the @code{meth}
+modifier.
+
+@cindex generic functions, defining
+@findex def meth
+@findex meth
+@deffn Special def @code{meth} @var{name} ([@var{parameters}]) @
+       [@code{:} @var{return-type}] @
+       @var{function-body}
+
+Defines a generic function (a @dfn{method}) named @var{name}.
+
+Methods are resolved by name and specialized parameters.  Parameters are
+specialized by adding the @code{@@} to their type declaration.  Only
+positional parameters can be specialized:
 
 @example
 def meth name(self : @@ MySomething, value : @@ Int)
@@ -254,8 +294,8 @@ def meth name(self : @@ MySomething, value : @@ Int)
 @end example
 
 Generics must be defined at least once.  Multiple generic definition
-must be compatible.  A specialization must not be defined before its
-generic.
+must be compatible.  A method specialization must not be defined before
+its generic method definition.
 
 It's possible to define an empty, i.e. abstract, generic function:
 
@@ -264,6 +304,13 @@ def meth compare(one : @@ OneType, two : @@ TwoType) : Bool ...
 @end example
 
 Note the ellipsis @code{...} at the end of the line.
+@end deffn
+
+
+@defun next-method ()
+Inside generic functions @code{next-method} calls the next overwritten
+method.
+@end defun
 
 
 @c ....................................................................
@@ -299,7 +346,7 @@ to be seen for the parameter @code{c} in the example above.  This can be
 used like in the following examples:
 
 @example
-f(a: 11, b: "N.N.", c: 255) 
+f(a: 11, b: "N.N.", c: 255)
 @result{} a -> 11
    b -> "N.N."
    c -> 255
@@ -417,57 +464,168 @@ f(1, 2, 3, z: 1, g: 2, h: 3)
 @section Types
 
 Heather's type system is nominative, i.e. types are identified by name.
-Types can be parameterized, constrained, or sets of types (union
-types).  Types are first class, i.e. types have a runtime representation
-and are objects themselves.
+Types can be parameterized, constrained, or being complex sets of types
+(union types).  Types are first class, i.e. types have a runtime
+representation and are objects themselves.
 
 Types are orthogonal to namespaces.  Methods and functions are not
 @sc{members} of types; neither is it possible to define sub-classes or
 enumerations inside of types.  Methods are bound by specialized
 parameters to types, are otherwise self contained however.
 
+@cindex multiple inheritance
 Heather supports multiple inheritance.  All inherited types must not
 conflict in slot names, neither in public not private ones.  If two
 inherited types have the exactly same slot (they are identical in name,
 type and initial value), they share the same physical allocation space.
 Cyclic inheritance is not possible (of course).
 
-Every type in heather ultimatively inherits from @code{Object}.  This is
-automatically added to the inheritance list when missing.
-
-Types are commonly declared to be empty.  In this case types are used as
-marker tag for methods:
-
-@example
-def type Comparable() @{ @}
-
-def meth less?(one : @@Comparable, two : @@Comparable) : Bool ...
-def meth less-equal?(one : @@Comparable, two : @@Comparable) : Bool ...
-
-def type Student() : (Person, Comparable)
-@{
-  @emph{slot definitions}
-@}
-
-def less?(one : @@Person, two : @@Person) : Bool ...
-def less-equal?(one : @@Person, two : @@Person) : Bool ...
-@end example
-
-By doing this the methods @code{less?}, @code{less-equal?}, etc. are
-defined as generic function once.  Implementations for @code{Person} or
-@code{Student} are specialization only.  If the method implementation of
-@code{less?} would change later, the compiler will complain.  (This is
-what the @code{overwrite} flag in @code{D} does.)
+@menu
+* Defining types::              Defining types
+* Slots::                       Slots
+* Finalization::                Finalization
+* Array types::                 Array types
+* Parameterized types::         Parameterized types
+* Constraint types::            Constraint types
+* Union types::                 Union types
+* Function types::              Function types
+@end menu
 
 
 @c ....................................................................
+@node Defining types, Slots, Types, Types
+@subsection Defining types
+
+@cindex classes
+@cindex classes, defining
+@cindex types
+@cindex types, defining
+
+Heather distinguishes between @dfn{type} and @dfn{class}.  Every class
+has exactly one type, but not every type is represented by a class.
+A union type for example forms a specific type without a class.  It
+therefore cannot be instantiated.
+
+There are three forms for defining types.  The first, @code{def class},
+is used for defining class, i.e. types which has a defined run-time
+representation with a certain memory layout, and which are
+(ultimatively) intended to be instantiated.  The second, @code{def
+type}, is used to define logical types, which are not supposed to have a
+run-time allocation representation.  The third, @code{def alias}, is a
+shortcut definition, where a type declaration is bound to a new name.
+
+@findex def class
+@findex class
+@deffn Special def @code{class} @var{name} @
+       [(@var{param1}, @var{param2}, ...)] [@code{:} @var{inheritance}] @
+       @{ [ @var{slots} ] @}
+Define a class @var{name} with @var{params}.  The class will have
+derive from @var{inheritance} and have @var{slots} slots.
+
+If @var{params} is a non empty list of variables the resulting type is
+set to be @dfn{parameterized}.  These parameters are @dfn{type
+parameters}, which can be used in type declarations on the slot
+definitions in @var{slots} and from related method definitions.
+
+@var{Inheritance} is either a single type declaration or a list of comma
+separated type declarations.  This gives the full inheritance definition
+of the resulting type.  The order of the types gives their specifity.
+
+For @var{slots} it is valid to be empty.
+
+Every class ultimatively inherits from @code{Object}.  This type is
+automatically added to the inheritance list when missing.
+@end deffn
+
+
+@findex def type
+@findex type
+@deffn Special def @code{type} @var{name} @
+       [(@var{param1}, @var{param2}, ...)] @
+       [@code{:} @var{inheritance}]
+
+Defines a new type @var{name} which is derived from @var{inheritance}.
+@var{inheritance} is either a simple type declarations or a list of type
+declarations.
+
+@example
+def type RandomAccessStream : (InputStream, OutputStream,
+                               RepositionableStream)
+@end example
+
+The resulting type is a new type with its own run-time representation
+which is different to those of its inherited types -- even in case of
+single inheritance.
+
+Other than classes a type does not automatically inherit from
+@code{Object}; it is possible to have types without inheritance at all.
+Such a type is useful for defining type signatures (aka ``interface''s
+in Java) and even mixins:
+
+@example
+def type Comparable
+
+def meth compare(one : @@ Comparable, two : @@ Comparable) : Int ...
+
+def meth less?(one : @@ Comparable, two : @@ Comparable) : Bool
+  (one <=> two) < 0
+
+def meth equal?(one : @@ Comparable,
+                two : @@ Comparable) : Bool
+  (one <=> two) == 0
+
+def meth less-equal?(one : @@ Comparable,
+                     two : @@ Comparable) : Bool
+  (one <=> two) <= 0
+
+def meth greater?(one : @@ Comparable,
+                  two : @@ Comparable) : Bool
+  (one <=> two) > 0
+
+def meth greater-equal?(one : @@ Comparable,
+                        two : @@ Comparable) : Bool
+  (one <=> two) >= 0
+@end example
+
+Every class or type inheriting from @code{Comparable} automatically gets
+the compare operators @code{<}, @code{<=}, @code{>}, etc. and only has
+to specialize the method @code{compare} (as implementation of the
+operator @code{<=>}).  This method is kept as abstract generic function
+but bound to the @code{Comparable} type.
+@end deffn
+
+
+@findex def alias
+@findex alias
+@deffn Special def @code{alias} @var{name} = @var{type}
+Defines an alias for @var{type}.  @var{name} and @var{type} afterwards
+are totally synonym, i.e. @var{name} is not considered a new type.  The
+only purpose of this form is to provide a more readable form for
+@var{type}.
+
+@example
+def alias UserTagMap = HashMap(String, UserTag(String, Int))
+
+def meth add-tags(tags : @@ UserTagMap) ...                    [1]
+def meth add-tags(tags : @@ HashMap(String,
+                                   UserTag(String, Int))) ... [2]
+@end example
+
+The two method declarations at [1] and [2] are completely identical.
+
+(Alias definitions are comparable to @code{typedef}s in C and C++.)
+@end deffn
+
+
+@c ....................................................................
+@node Slots, Finalization, Defining types, Types
 @subsection Slots
 
 Slots are defined as variables inside the block of a type declaration using
 the special @code{slot} define form:
 
 @example
-def type Point() : Object
+def class Point : Object
 @{
   slot x : Int = 0
   slot y : Int = 0
@@ -478,28 +636,34 @@ The assign value is the slot's default value which is used when an instance
 of the type is created.
 
 There are no constructors in Heather and they are seldomly needed (since
-slots are initialized by default).  If one needs additional initialization
-code it is possible to add a init hook to the type using the "on init()"
-directive:
+slots are initialized by default).  If one needs additional
+initialization code it is possible to add a init hook to the type using
+the @code{on init} directive.
+
+@findex on init
+@findex init
+@deffn Handler on @code{init} (@var{self}) @var{expr}
+The @code{on init} hook is called as part of the instance
+initialization.  Directly after instance allocation and binding of
+init values to the instance's slots the init hook is called.  As single
+argument the instance is passed to @var{self}.
 
 @example
-def type ProxyBridge() : Object
+def class ProxyBridge : Object
 @{
   on init(self)
   @{
   @}
 @}
 @end example
-
-This @code{init} directive is run @emph{after} the slots has been
-initialized.
+@end deffn
 
 By default Heather creates the necessary @code{apply()} implementation
 for each type.  Slots can be flagged in a way that they appear as keyed
 parameters in an appropriate generic apply function:
 
 @example
-def type SenseOfLife() : Object
+def class SenseOfLife : Object
 @{
   slot x : Int = 6, key-init: 'x
   slot y : Int = 7, key-init: 'y
@@ -521,7 +685,7 @@ It is also possible to flag slots to appear as positional arguments in
 the @code{apply} generic:
 
 @example
-def type SenseOfLife() : Object
+def class SenseOfLife : Object
 @{
   slot x : Int = 6, init: 1
   slot y : Int = 7, init: 0
@@ -541,24 +705,34 @@ For special constructors you can define and implement your own
 
 
 @c ....................................................................
+@node Finalization, Array types, Slots, Types
 @subsection Finalization
 
+@cindex finalization
+@cindex destructor
+@findex on delete
+@findex delete
+@deffn Handler on @code{delete} (@var{self}) @var{expr}
+
 It is possible to add special finalization code inside the type
-declaration using the @code{on delete()} directive.  Note that this is
-not a real destructor (which is not necessary in Heather), but a kind of
+declaration using the @code{on delete} directive.  Note that this is not
+a real destructor (which is not necessary in Heather), but a kind of
 finalization which is only necessary to free (external) resources.
 
+As single argument the instance is passed to @var{self}.
+
 @example
-def type ProxyBridge() : Object
+def class ProxyBridge : Object
 @{
   on delete(self)
   @{
   @}
 @}
 @end example
-
+@end deffn
 
 @c ....................................................................
+@node Array types, Parameterized types, Finalization, Types
 @subsection Array types
 
 Every type can exist as simple or as @dfn{array type}.  Arrays are
@@ -577,6 +751,7 @@ it a constraint (see below).
 
 
 @c ....................................................................
+@node Parameterized types, Constraint types, Array types, Types
 @subsection Parameterized types
 
 Types can be parameterized.  The parameters are types themselves.  Other
@@ -584,7 +759,7 @@ than @code{C++} or @code{D} templates there's only type instance in
 heather however.
 
 @example
-def type Pair(One, Two)
+def class Pair(One, Two)
 @{
   slot one : One, init: 0
   slot two : Two, init: 1
@@ -605,7 +780,7 @@ instance -- simply the type parameters are required.   It is possible to
 define default values of the types parameters however:
 
 @example
-def type Pair(One = Any, Two = Any)
+def class Pair(One = Any, Two = Any)
 @{
   slot one : One, init: 0
   slot two : Two, init: 1
@@ -627,7 +802,7 @@ def meth do-y(self : @@Pair) ...             [3]
 @end example
 
 The case [1] will match for and Int-Int-Pair only, the case [2] matches
-for Any-Any-Pair.  
+for Any-Any-Pair.
 
 Case [3] is a special case.  Effectively the case [3] implementation
 behaves like [2] (i.e. a Pair(Any, Any)) matches during runtime.  But
@@ -672,9 +847,10 @@ deal with an @code{Pair(Any, Any)} type information, unless (as in case
 
 
 @c ....................................................................
-@subsection Constrain types
+@node Constraint types, Union types, Parameterized types, Types
+@subsection Constraint types
 
-A @dfn{Constrain Type} is a type which is constrained a certain subset
+A @dfn{Constraint Type} is a type which is constrained a certain subset
 of possible values.  Examples are numerical values only accepting
 specific value ranges, collections only accepting certain values, etc.
 
@@ -684,9 +860,9 @@ specific value ranges, collections only accepting certain values, etc.
 (Keyword = #['apple, 'pear, 'orange, 'banana, 'grapefruit])
 @end example
 
-The constrains are is used during compilation to detect type mismatched
+The constraints are is used during compilation to detect type mismatched
 and for possible optimization, but is not an integral part of the type
-and therefore not used for multiple dispatch.  I.e. two constrain types
+and therefore not used for multiple dispatch.  I.e. two constraint types
 only differing in their contrains won't be treated differently during
 multi dispatch.  The following code is wrong therefore:
 
@@ -697,6 +873,7 @@ def meth do-x(a : @@(Int = -16767 .. 16767)) ...
 
 
 @c ....................................................................
+@node Union types, Function types, Constraint types, Types
 @subsection Union types
 
 Union types declare that a variable, parameter or such may be of any
@@ -718,10 +895,11 @@ Another common usecase for union types are return values:
 def alias NumberOrFalse = (Number, Bool = #f)
 @end example
 
-Other than constrain types union types influence multiple dispatch.
+Other than constraint types union types influence multiple dispatch.
 
 
 @c --------------------------------------------------------------------
+@node Function types,  , Union types, Types
 @subsection Function types
 
 @example
@@ -815,7 +993,11 @@ Since methods/functions are not bound to type, access is always to be done
 explicitly to a typed reference:
 
 @example
-def type Point() @{ slot x = 0 slot y = 0 @}
+def class Point
+@{
+  slot x = 0
+  slot y = 0
+@}
 
 def add(self : @@Point, val : @@Int)
   self.x = self.x + val
@@ -836,11 +1018,11 @@ special forms:
 @example
 def x(self : @@Point)
   self.slot(x)                    -- identical to slot(self, 'x)
-  
+
 
 def x!(self : @@Point, val)
   self.slot(x) = val              -- identical to slot!(self, 'x, val)
-  
+
 @end example
 
 The "self.x" and "self.x =" syntax forms are translated into
@@ -1079,14 +1261,15 @@ def value-iterators(values : Int[])
 It's possible to add a hook to a block which is called whenever the
 block is left, either by unroll or by ``normal'' code flow:
 
-@example
-on exit(@emph{value}) @emph{expr}
-@end example
+@cindex exit handler
+@findex on exit
+@findex exit
+@deffn Handler on @code{exit} (@var{value}) @var{expr}
 
 Value is the return value of the block's last statement.  Normally the
 exit handler will return this without modification.
 
-Not that the @code{on exit} declaration is actually inside the block for
+Not that the @code{on exit} handler is actually inside the block for
 which it is declared.  It can therefore access local bindings etc.  On
 the other side in examples like this:
 
@@ -1115,19 +1298,23 @@ for (i = 0 .. 100) @{
   @emph{do-something}
 @}
 @end example
+@end deffn
 
+Similar to @code{on exit} special conditions can be trapped:
 
-Similar to @code{on exit} conditions can be trapped:
+@cindex exception handler
+@findex on signal
+@findex signal
+@deffn Handler on @code{signal} (@var{value} @code{:} @var{type}) @
+       @var{signal-expr}
 
-@example
-on signal(@emph{value} : @emph{type}) @emph{signal-expr}
-@end example
+This declares a condition handler for a condition of type @var{type}.
+Whenever a condition raised (using @code{raise}) the first matching
+condition handler is called.
+@end deffn
 
-This declares a condition handler for a condition of type @emph{type}.
-Whenever a condition raised (using @code{raise()}) the first matching
-condition handler is called.  During evaluation of @emph{signal-expr}
-two special functions are available: @code{continue(val)} and
-@code{raise()} without parameter.
+During evaluation of @var{signal-expr} two special functions are
+available: @code{continue(val)} and @code{raise()} without parameter.
 
 @defun continue (@var{value})
 Returns to the place from which @code{raise()} was
@@ -1143,8 +1330,8 @@ When called with parameter @var{condition} is raised and a new signal
 chain is started, which can be handled inside the control handler.
 @end defun
 
-If the condition handle is neither left early with @code{continue()} or
-@code{raise()} the stack is unrolled and @emph{signal-expr}'s return
+If the condition handle is neither left early with @code{continue} or
+@code{raise} the stack is unrolled and @var{signal-expr}'s return
 value becomes the return value of the block in which the condition
 handler has been declared.
 
@@ -1317,30 +1504,11 @@ def meth transform(from : @@cm, to : @@mm)
 @node ReserverdWords, Examples, Ideas, Specification
 @section Reserved keywords
 
-@example
-and
-by
-const
-def
-else
-fluid
-for
-if
-in
-let
-macro
-meth
-mod
-namespace
-or
-otherwise
-select
-slot
-slot!
-type
-until
-while
-@end example
+@code{alias} @code{and} @code{by} @code{class} @code{const} @code{def}
+@code{else} @code{fluid} @code{for} @code{if} @code{in} @code{let}
+@code{macro} @code{meth} @code{mod} @code{namespace} @code{or}
+@code{select} @code{slot} @code{slot!} @code{type} @code{until}
+@code{while}
 
 
 @c --------------------------------------------------------------------
@@ -1353,16 +1521,13 @@ namespace heather
 ----------------------------------------------------------------------
 -- a pair class
 
-def type Pair(Object,
-    car = #nil
-    cdr = #nil ) : (Serializable, Copyable)
+def class Pair(Car, Cdr) : (Serializable, Copyable)
+@{
+  slot car : Car = #nil
+  slot cdr : Cdr = #nil
+@}
 
-def meth init(self : @@Pair, car = 0, cdr = 0)
-  self.car = car
-  self.cdr = cdr
-
-
-def meth ->string(self : @@Pair) : String
+def meth ->string(self : @@ Pair) : String
   Stringbuffer().append("#<pair ",
                         self.car.->string,
                         " . ",
@@ -1378,7 +1543,7 @@ def meth ->string(self : @@Pair) : String
 ----------------------------------------------------------------------
 -- a point class
 
-def type Point(Object,
+def class Point(Object,
     x : Int
     y : Int)
 
