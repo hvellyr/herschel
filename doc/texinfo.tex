@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2009-10-06}
+\def\texinfoversion{2009-12-17.23}
 %
 % Copyright (C) 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
 % 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
@@ -1932,6 +1932,9 @@ end
   \font#1=\fontprefix#2#3 scaled #4
   \csname cmap#5\endcsname#1%
 }
+% change by eyestep
+\def\setfontx#1#2#3{\font#1=#2 at #3pt}
+
 % This is what gets called when #5 of \setfont is empty.
 \let\cmap\gobble
 % emacs-page end of cmaps
@@ -1966,33 +1969,57 @@ end
 % Text fonts (11.2pt, magstep1).
 \def\textnominalsize{11pt}
 \edef\mainmagstep{\magstephalf}
-\setfont\textrm\rmshape{10}{\mainmagstep}{OT1}
+
+\setfontx\textrm{pplr}{11}
+%\setfontx\texttt{pcrr}{11}
+\setfontx\textbf{pplb}{11}
+\setfontx\textit{pplri}{11}
+\setfontx\textsl{pplro}{11}
+\setfontx\textsf{phvr}{11}
+\setfontx\textsc{pplr}{11}
+%\setfontx\textttsl{pcrro}{11}
+
+%\setfont\textrm\rmshape{10}{\mainmagstep}{OT1}
 \setfont\texttt\ttshape{10}{\mainmagstep}{OT1TT}
-\setfont\textbf\bfshape{10}{\mainmagstep}{OT1}
-\setfont\textit\itshape{10}{\mainmagstep}{OT1IT}
-\setfont\textsl\slshape{10}{\mainmagstep}{OT1}
-\setfont\textsf\sfshape{10}{\mainmagstep}{OT1}
-\setfont\textsc\scshape{10}{\mainmagstep}{OT1}
+%\setfont\textbf\bfshape{10}{\mainmagstep}{OT1}
+%\setfont\textit\itshape{10}{\mainmagstep}{OT1IT}
+%\setfont\textsl\slshape{10}{\mainmagstep}{OT1}
+%\setfont\textsf\sfshape{10}{\mainmagstep}{OT1}
+%\setfont\textsc\scshape{10}{\mainmagstep}{OT1}
 \setfont\textttsl\ttslshape{10}{\mainmagstep}{OT1TT}
 \font\texti=cmmi10 scaled \mainmagstep
 \font\textsy=cmsy10 scaled \mainmagstep
 \def\textecsize{1095}
 
 % A few fonts for @defun names and args.
-\setfont\defbf\bfshape{10}{\magstep1}{OT1}
+% change by eyestep
+\setfontx\defbf{pplb}{11}
+%\setfontx\deftt{pcrr}{11}
+%\setfontx\defttsl{pcrro}{11}
+%
+%\setfont\defbf\bfshape{10}{\magstep1}{OT1}
 \setfont\deftt\ttshape{10}{\magstep1}{OT1TT}
 \setfont\defttsl\ttslshape{10}{\magstep1}{OT1TT}
 \def\df{\let\tentt=\deftt \let\tenbf = \defbf \let\tenttsl=\defttsl \bf}
 
 % Fonts for indices, footnotes, small examples (9pt).
 \def\smallnominalsize{9pt}
-\setfont\smallrm\rmshape{9}{1000}{OT1}
+% change by eyestep
+\setfontx\smallrm{pplr}{9}
+%\setfontx\smalltt{pcrr}{9}
+\setfontx\smallbf{pplb}{9}
+\setfontx\smallit{pplri}{9}
+\setfontx\smallsl{pplro}{9}
+\setfontx\smallsf{phvr}{9}
+\setfontx\smallsc{pplr}{9}
+%\setfontx\smallttsl{pcrro}{9}
+%\setfont\smallrm\rmshape{9}{1000}{OT1}
 \setfont\smalltt\ttshape{9}{1000}{OT1TT}
-\setfont\smallbf\bfshape{10}{900}{OT1}
-\setfont\smallit\itshape{9}{1000}{OT1IT}
-\setfont\smallsl\slshape{9}{1000}{OT1}
-\setfont\smallsf\sfshape{9}{1000}{OT1}
-\setfont\smallsc\scshape{10}{900}{OT1}
+%\setfont\smallbf\bfshape{10}{900}{OT1}
+%\setfont\smallit\itshape{9}{1000}{OT1IT}
+%\setfont\smallsl\slshape{9}{1000}{OT1}
+%\setfont\smallsf\sfshape{9}{1000}{OT1}
+%\setfont\smallsc\scshape{10}{900}{OT1}
 \setfont\smallttsl\ttslshape{10}{900}{OT1TT}
 \font\smalli=cmmi9
 \font\smallsy=cmsy9
@@ -2000,13 +2027,22 @@ end
 
 % Fonts for small examples (8pt).
 \def\smallernominalsize{8pt}
-\setfont\smallerrm\rmshape{8}{1000}{OT1}
+% Change by eyestep
+\setfontx\smallerrm{pplr}{8}
+%\setfontx\smallertt{pcrr}{8}
+\setfontx\smallerbf{pplb}{8}
+\setfontx\smallerit{pplri}{8}
+\setfontx\smallersl{pplro}{8}
+\setfontx\smallersf{phvr}{8}
+\setfontx\smallersc{pplr}{8}
+%\setfontx\smallerttsl{pcrro}{8}
+%\setfont\smallerrm\rmshape{8}{1000}{OT1}
 \setfont\smallertt\ttshape{8}{1000}{OT1TT}
-\setfont\smallerbf\bfshape{10}{800}{OT1}
-\setfont\smallerit\itshape{8}{1000}{OT1IT}
-\setfont\smallersl\slshape{8}{1000}{OT1}
-\setfont\smallersf\sfshape{8}{1000}{OT1}
-\setfont\smallersc\scshape{10}{800}{OT1}
+%\setfont\smallerbf\bfshape{10}{800}{OT1}
+%\setfont\smallerit\itshape{8}{1000}{OT1IT}
+%\setfont\smallersl\slshape{8}{1000}{OT1}
+%\setfont\smallersf\sfshape{8}{1000}{OT1}
+%\setfont\smallersc\scshape{10}{800}{OT1}
 \setfont\smallerttsl\ttslshape{10}{800}{OT1TT}
 \font\smalleri=cmmi8
 \font\smallersy=cmsy8
@@ -2014,14 +2050,23 @@ end
 
 % Fonts for title page (20.4pt):
 \def\titlenominalsize{20pt}
-\setfont\titlerm\rmbshape{12}{\magstep3}{OT1}
-\setfont\titleit\itbshape{10}{\magstep4}{OT1IT}
-\setfont\titlesl\slbshape{10}{\magstep4}{OT1}
-\setfont\titlett\ttbshape{12}{\magstep3}{OT1TT}
-\setfont\titlettsl\ttslshape{10}{\magstep4}{OT1TT}
-\setfont\titlesf\sfbshape{17}{\magstep1}{OT1}
-\let\titlebf=\titlerm
-\setfont\titlesc\scbshape{10}{\magstep4}{OT1}
+% change by eyestep
+\setfontx\titlerm{pplb}{20}
+\setfontx\titlett{pcrb}{20}
+\setfontx\titlebf{pplb}{20}
+\setfontx\titleit{pplbi}{20}
+\setfontx\titlesl{pplbo}{20}
+\setfontx\titlesf{phvb}{20}
+\setfontx\titlesc{pplb}{20}
+\setfontx\titlettsl{pcrbo}{20}
+%\setfont\titlerm\rmbshape{12}{\magstep3}{OT1}
+%\setfont\titleit\itbshape{10}{\magstep4}{OT1IT}
+%\setfont\titlesl\slbshape{10}{\magstep4}{OT1}
+%\setfont\titlett\ttbshape{12}{\magstep3}{OT1TT}
+%\setfont\titlettsl\ttslshape{10}{\magstep4}{OT1TT}
+%\setfont\titlesf\sfbshape{17}{\magstep1}{OT1}
+%\let\titlebf=\titlerm
+%\setfont\titlesc\scbshape{10}{\magstep4}{OT1}
 \font\titlei=cmmi12 scaled \magstep3
 \font\titlesy=cmsy10 scaled \magstep4
 \def\authorrm{\secrm}
@@ -2030,55 +2075,91 @@ end
 
 % Chapter (and unnumbered) fonts (17.28pt).
 \def\chapnominalsize{17pt}
-\setfont\chaprm\rmbshape{12}{\magstep2}{OT1}
-\setfont\chapit\itbshape{10}{\magstep3}{OT1IT}
-\setfont\chapsl\slbshape{10}{\magstep3}{OT1}
-\setfont\chaptt\ttbshape{12}{\magstep2}{OT1TT}
-\setfont\chapttsl\ttslshape{10}{\magstep3}{OT1TT}
-\setfont\chapsf\sfbshape{17}{1000}{OT1}
-\let\chapbf=\chaprm
-\setfont\chapsc\scbshape{10}{\magstep3}{OT1}
+% change by eyestep
+\setfontx\chaprm{pplb}{17}
+\setfontx\chapit{pplbi}{17}
+\setfontx\chapsl{pplbo}{17}
+\setfontx\chaptt{pcrb}{17}
+\setfontx\chapttsl{pcrbo}{17}
+\setfontx\chapsf{phvb}{17}
+\setfontx\chapbf{pplb}{17}
+\setfontx\chapsc{pplb}{17}
+%\setfont\chaprm\rmbshape{12}{\magstep2}{OT1}
+%\setfont\chapit\itbshape{10}{\magstep3}{OT1IT}
+%\setfont\chapsl\slbshape{10}{\magstep3}{OT1}
+%\setfont\chaptt\ttbshape{12}{\magstep2}{OT1TT}
+%\setfont\chapttsl\ttslshape{10}{\magstep3}{OT1TT}
+%\setfont\chapsf\sfbshape{17}{1000}{OT1}
+%\let\chapbf=\chaprm
+%\setfont\chapsc\scbshape{10}{\magstep3}{OT1}
 \font\chapi=cmmi12 scaled \magstep2
 \font\chapsy=cmsy10 scaled \magstep3
 \def\chapecsize{1728}
 
 % Section fonts (14.4pt).
 \def\secnominalsize{14pt}
-\setfont\secrm\rmbshape{12}{\magstep1}{OT1}
-\setfont\secit\itbshape{10}{\magstep2}{OT1IT}
-\setfont\secsl\slbshape{10}{\magstep2}{OT1}
-\setfont\sectt\ttbshape{12}{\magstep1}{OT1TT}
-\setfont\secttsl\ttslshape{10}{\magstep2}{OT1TT}
-\setfont\secsf\sfbshape{12}{\magstep1}{OT1}
-\let\secbf\secrm
-\setfont\secsc\scbshape{10}{\magstep2}{OT1}
+% change by eyestep
+\setfontx\secrm{pplb}{14}
+\setfontx\secbf{pplb}{14}
+\setfontx\secit{pplbi}{14}
+\setfontx\secsl{pplbo}{14}
+\setfontx\sectt{pcrb}{14}
+\setfontx\secttsl{pcrbo}{14}
+\setfontx\secsf{phvb}{14}
+\setfontx\secsc{pplb}{14}
+%\setfont\secrm\rmbshape{12}{\magstep1}{OT1}
+%\setfont\secit\itbshape{10}{\magstep2}{OT1IT}
+%\setfont\secsl\slbshape{10}{\magstep2}{OT1}
+%\setfont\sectt\ttbshape{12}{\magstep1}{OT1TT}
+%\setfont\secttsl\ttslshape{10}{\magstep2}{OT1TT}
+%\setfont\secsf\sfbshape{12}{\magstep1}{OT1}
+%\let\secbf\secrm
+%\setfont\secsc\scbshape{10}{\magstep2}{OT1}
 \font\seci=cmmi12 scaled \magstep1
 \font\secsy=cmsy10 scaled \magstep2
 \def\sececsize{1440}
 
 % Subsection fonts (13.15pt).
 \def\ssecnominalsize{13pt}
-\setfont\ssecrm\rmbshape{12}{\magstephalf}{OT1}
-\setfont\ssecit\itbshape{10}{1315}{OT1IT}
-\setfont\ssecsl\slbshape{10}{1315}{OT1}
-\setfont\ssectt\ttbshape{12}{\magstephalf}{OT1TT}
-\setfont\ssecttsl\ttslshape{10}{1315}{OT1TT}
-\setfont\ssecsf\sfbshape{12}{\magstephalf}{OT1}
-\let\ssecbf\ssecrm
-\setfont\ssecsc\scbshape{10}{1315}{OT1}
+% change by eyestep
+\setfontx\ssecrm{pplb}{13}
+\setfontx\ssecbf{pplb}{13}
+\setfontx\ssecit{pplbi}{13}
+\setfontx\ssecsl{pplbo}{13}
+\setfontx\ssectt{pcrb}{13}
+\setfontx\ssecttsl{pcrbo}{13}
+\setfontx\ssecsf{phvb}{13}
+\setfontx\ssecsc{pplb}{13}
+%\setfont\ssecrm\rmbshape{12}{\magstephalf}{OT1}
+%\setfont\ssecit\itbshape{10}{1315}{OT1IT}
+%\setfont\ssecsl\slbshape{10}{1315}{OT1}
+%\setfont\ssectt\ttbshape{12}{\magstephalf}{OT1TT}
+%\setfont\ssecttsl\ttslshape{10}{1315}{OT1TT}
+%\setfont\ssecsf\sfbshape{12}{\magstephalf}{OT1}
+%\let\ssecbf\ssecrm
+%\setfont\ssecsc\scbshape{10}{1315}{OT1}
 \font\sseci=cmmi12 scaled \magstephalf
 \font\ssecsy=cmsy10 scaled 1315
 \def\ssececsize{1200}
 
 % Reduced fonts for @acro in text (10pt).
 \def\reducednominalsize{10pt}
-\setfont\reducedrm\rmshape{10}{1000}{OT1}
+% change by eyestep
+\setfontx\reducedrm{pplr}{10}
+%\setfontx\reducedtt{pcrr}{10}
+\setfontx\reducedbf{pplb}{10}
+\setfontx\reducedit{pplri}{10}
+\setfontx\reducedsl{pplro}{10}
+\setfontx\reducedsf{phvr}{10}
+\setfontx\reducedsc{pplr}{10}
+%\setfontx\reducedttsl{pcrro}{10}
+%\setfont\reducedrm\rmshape{10}{1000}{OT1}
 \setfont\reducedtt\ttshape{10}{1000}{OT1TT}
-\setfont\reducedbf\bfshape{10}{1000}{OT1}
-\setfont\reducedit\itshape{10}{1000}{OT1IT}
-\setfont\reducedsl\slshape{10}{1000}{OT1}
-\setfont\reducedsf\sfshape{10}{1000}{OT1}
-\setfont\reducedsc\scshape{10}{1000}{OT1}
+%\setfont\reducedbf\bfshape{10}{1000}{OT1}
+%\setfont\reducedit\itshape{10}{1000}{OT1IT}
+%\setfont\reducedsl\slshape{10}{1000}{OT1}
+%\setfont\reducedsf\sfshape{10}{1000}{OT1}
+%\setfont\reducedsc\scshape{10}{1000}{OT1}
 \setfont\reducedttsl\ttslshape{10}{1000}{OT1TT}
 \font\reducedi=cmmi10
 \font\reducedsy=cmsy10
@@ -2177,14 +2258,23 @@ end
 
 % Section fonts (12pt).
 \def\secnominalsize{12pt}
-\setfont\secrm\rmbshape{12}{1000}{OT1}
-\setfont\secit\itbshape{10}{\magstep1}{OT1IT}
-\setfont\secsl\slbshape{10}{\magstep1}{OT1}
-\setfont\sectt\ttbshape{12}{1000}{OT1TT}
-\setfont\secttsl\ttslshape{10}{\magstep1}{OT1TT}
-\setfont\secsf\sfbshape{12}{1000}{OT1}
-\let\secbf\secrm
-\setfont\secsc\scbshape{10}{\magstep1}{OT1}
+% change by eyestep
+\setfontx\secrm{pplb}{12}
+\setfontx\secbf{pplb}{12}
+\setfontx\secit{pplbi}{12}
+\setfontx\secsl{pplbo}{12}
+\setfontx\sectt{pcrb}{12}
+\setfontx\secttsl{pcrbo}{12}
+\setfontx\secsf{phvb}{12}
+\setfontx\secsc{pplb}{12}
+%\setfont\secrm\rmbshape{12}{1000}{OT1}
+%\setfont\secit\itbshape{10}{\magstep1}{OT1IT}
+%\setfont\secsl\slbshape{10}{\magstep1}{OT1}
+%\setfont\sectt\ttbshape{12}{1000}{OT1TT}
+%\setfont\secttsl\ttslshape{10}{\magstep1}{OT1TT}
+%\setfont\secsf\sfbshape{12}{1000}{OT1}
+%\let\secbf\secrm
+%\setfont\secsc\scbshape{10}{\magstep1}{OT1}
 \font\seci=cmmi12 
 \font\secsy=cmsy10 scaled \magstep1
 \def\sececsize{1200}
