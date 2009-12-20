@@ -33,7 +33,7 @@
 namespace heather("eyestep/heather 1.0:core")
 
 
-def type Map(Object) : KeyedCollection
+def class Map(Object) : KeyedCollection
 {
   slot slots : Any[] = #nil
   slot total : Int = 0 
@@ -206,7 +206,7 @@ def meth rehash(self : @Map)
 
 
 
-def type ForwardSequence(Object) : NonRewindableSequence
+def class ForwardSequence(Object) : NonRewindableSequence
 {
   slot slot-idx = 0
   slot buck-idx = 0

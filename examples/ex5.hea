@@ -1,19 +1,19 @@
 -- type definitions
 
-def type Point(Object)
+def class Point(Object)
 {
 }
 
-def type Atlas(T1 = Int, T2 = Real) : Copyable
+def class Atlas(T1 = Int, T2 = Real) : Copyable
 {
 }
 
-def type Atlas2(T1 = Int, T2 = Real) : (Persona, Copyable)
+def class Atlas2(T1 = Int, T2 = Real) : (Persona, Copyable)
 {
 }
 
 
-def type Point(Object)
+def class Point(Object)
 {
   slot x : Int = 0      , init: 0
   slot y : Int = 0      , init: 1
