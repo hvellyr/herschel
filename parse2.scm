@@ -58,7 +58,7 @@
 (define (parse-nested-2p node)
   (cond ((apt-nested-left? node "(")
          ;; TODO gck
-         ...)
+         (syntax-error "Unexpected nested () node" node))
         ((apt-nested-left? node "{")
          (parse-block-2p (apt-nested-body node)))
         ((apt-nested-left? node "#(")
@@ -351,7 +351,7 @@
   #f)
 
 
-(define (parse-classdef-2p token-list)
+(define (parse-classdef-2p token-list parse-decls?)
   (let ((nl token-list)
         (sym #f)
         (params #f)
@@ -371,17 +371,19 @@
                   (begin
                     (set! derives-from (parse-type-2p (cadr nl)))
                     (set! nl (cddr nl)))))
-          (if (and (not (null? nl))
-                   (apt-nested? (car nl)))
-              (let ((decls (parse-class-decls-2p (apt-nested-body (car nl)))))
-                (make-object <apt:classdef> (list sym params derives-from decls)))
-              (syntax-error "Expected class declarations { }" token-list)))
+          (if parse-decls?
+              (if (and (not (null? nl))
+                       (apt-nested? (car nl)))
+                  (let ((decls (parse-class-decls-2p (apt-nested-body (car nl)))))
+                    (make-object <apt:classdef> (list sym params derives-from decls)))
+                  (syntax-error "Expected class declarations { }" token-list))
+              (make-object <apt:typedef> (list sym params derives-from))))
         (syntax-error "Bad class nodes" token-list))))
 
 
 (define (parse-typedef-2p token-list)
-  (arc:display "Parsing 'type' not done yet" 'nl)
-  #f)
+  (parse-classdef-2p token-list #f))
+
 
 (define (parse-alias-2p token-list)
   (arc:display "Parsing 'alias' not done yet" 'nl)
@@ -393,7 +395,7 @@
     (cond ((apt-id-eq? node "meth")  (parse-methdef-2p (cdr token-list)))
           ((apt-id-eq? node "const") (parse-const-2p (cdr token-list)))
           ((apt-id-eq? node "fluid") (parse-fluid-2p (cdr token-list)))
-          ((apt-id-eq? node "class") (parse-classdef-2p (cdr token-list)))
+          ((apt-id-eq? node "class") (parse-classdef-2p (cdr token-list) #t))
           ((apt-id-eq? node "type")  (parse-typedef-2p (cdr token-list)))
           ((apt-id-eq? node "alias") (parse-alias-2p (cdr token-list)))
           ((apt-id? node)
