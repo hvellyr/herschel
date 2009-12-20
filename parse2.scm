@@ -347,8 +347,85 @@
        token-list))
 
 
+(define (parse-slot-seq-prop-2p token-list)
+  (if (equal? (length token-list) 2)
+      (let ((key (car token-list))
+            (value (parse-expr-2p (cadr token-list))))
+        (if (apt-id-keyarg? key)
+            (cond ((equal? (apt-id-value key) "key-init:")
+                   (make-object <apt:slot-init-prop> (list 'key value)))
+                  ((equal? (apt-id-value key) "init:")
+                   (make-object <apt:slot-init-prop> (list 'pos value)))
+                  (else (syntax-error "Unhandled slot prop node" token-list)))
+            (syntax-error "Unhandled slot prop node type" token-list)))
+      (syntax-error "Slot-sequence length node must be 2" token-list)))
+
+
+(define (parse-slot-prop-2p node)
+  (cond ((apt-seq? node) (parse-slot-seq-prop-2p (apt-seq-body node)))
+        ((apt-id? node) (cond ((or (equal? (apt-id-value node) "public") 
+                                   (equal? (apt-id-value node) "private")
+                                   (equal? (apt-id-value node) "transient"))
+                               (make-object <apt:slot-prop>
+                                            (list (apt-id-value node))))))
+        (else (syntax-error "Unexpected slot node" node))))
+
+
+(define (parse-slot-2p token-list)
+  (let ((nl token-list)
+        (sym #f)
+        (type #f)
+        (init #f)
+        (props #f))
+    (if (apt-id? (car nl))
+        (begin
+          (set! sym (apt-id-value (car nl)))
+          (set! nl (cdr nl))
+
+          (if (and (not (null? nl))
+                   (apt-punct-eq? (car nl) ":"))
+              (if (not (null? (cdr nl)))
+                  (begin
+                    (set! type (parse-type-2p (cadr nl)))
+                    (set! nl (cddr nl)))))
+          (if (and (not (null? nl))
+                   (apt-punct-eq? (car nl) "="))
+              (if (not (null? (cdr nl)))
+                  (begin
+                    (set! init (parse-expr-2p (cadr nl)))
+                    (set! nl (cddr nl)))
+                  (syntax-error "expected =" token-list)))
+
+          (set! props (let loop ((res '()))
+                        (if (null? nl)
+                            res
+                            (cond ((apt-punct-eq? (car nl) ",")
+                                   (begin
+                                     (set! nl (cdr nl))
+                                     (loop res)))
+                                  ((or (apt-id? (car nl))
+                                       (apt-seq? (car nl)))
+                                   (let ((node (parse-slot-prop-2p (car nl))))
+                                     (set! nl (cdr nl))
+                                     (loop (append res (list node)))))
+                                  (else (syntax-error "Unexpected slot prop node"
+                                                      token-list))))))
+          (make-object <apt:slotdef> (list sym type props init)) )
+        (syntax-error "Expected id node" token-list))))
+
+
+(define (parse-class-decl-2p token-list)
+  (cond ((apt-id-eq? (car token-list) "slot") (parse-slot-2p (cdr token-list)))
+        ((apt-id-eq? (car token-list) "on") (parse-on-2p (cdr token-list)))
+        (else (syntax-error "Unexpected class declaration node" token-list))))
+
+
 (define (parse-class-decls-2p token-list)
-  #f)
+  (map (lambda (node)
+         (if (apt-seq? node)
+             (parse-class-decl-2p (apt-seq-body node))
+             (syntax-error "Unexpected node in slot decl list" node)))
+       token-list))
 
 
 (define (parse-classdef-2p token-list parse-decls?)
