@@ -546,6 +546,57 @@
   (arc:display "</type-prm>"))
 
 
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:slotdef> (<apt:node>) (sym type props init))
+
+(define-method (initialise <apt:slotdef> args)
+  (call-next-method)
+  (slot-set! self 'sym   (list-ref args 0))
+  (slot-set! self 'type  (list-ref args 1))
+  (slot-set! self 'props (list-ref args 2))
+  (slot-set! self 'init  (list-ref args 3))
+  self)
+
+(define-method (debug->xml <apt:slotdef>)
+  (call-next-method)
+  (arc:display "<slot name='" (slot-ref self 'sym) "'>")
+  (debug-slot->xml self "type" 'type)
+  (debug-slot->xml self "props" 'props)
+  (debug-slot->xml self "init-value" 'init)
+  (arc:display "</slot>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:slot-init-prop> (<apt:node>) (type value))
+
+(define-method (initialise <apt:slot-init-prop> args)
+  (call-next-method)
+  (slot-set! self 'type  (list-ref args 0))
+  (slot-set! self 'value (list-ref args 1))
+  self)
+
+(define-method (debug->xml <apt:slot-init-prop>)
+  (call-next-method)
+  (arc:display "<slot-init type='" (slot-ref self 'type) "'>")
+  (debug-slot->xml self "value" 'value)
+  (arc:display "</slot-init>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:slot-prop> (<apt:node>) (value))
+
+(define-method (initialise <apt:slot-prop> args)
+  (call-next-method)
+  (slot-set! self 'value (list-ref args 0))
+  self)
+
+(define-method (debug->xml <apt:slot-prop>)
+  (call-next-method)
+  (arc:display "<slot-prop value='" (slot-ref self 'value) "'/>"))
+
 
 ;;Keep this comment at the end of the file
 ;;Local variables:
