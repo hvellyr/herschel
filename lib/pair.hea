@@ -38,7 +38,7 @@ import(io)
 -- Simple LISP like pair/list implementation.
 --
 -- You can simulate the basic lisp style (cons a b) in heather with Pair(a, b).
-def type Pair*(Object, Car, Cdr)
+def class Pair*(Object, Car, Cdr)
 {
   slot car : Car = #nil, key-init: car
   slot cdr : Cdr = #nil, key-init: cdr
@@ -75,7 +75,7 @@ def ->string(self : @Pair*(?, ?)) : String
   }
 
 
-def type PairIterator*(Object, Car, Cdr) : UnrewindableSequence
+def class PairIterator*(Object, Car, Cdr) : UnrewindableSequence
 {
   slot current : Pair*(Car, Cdr) = #nil, init: 0
 --  slot acc : (Function(node : Pair*(Car, Cdr)) : String) = #nil, init: 1

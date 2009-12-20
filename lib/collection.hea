@@ -1,9 +1,7 @@
 ------------------------------------------------------------------------------
 -- base of all collections
 ------------------------------------------------------------------------------
-def abstract type Collection(Object, Elt)
-{
-}
+def type Collection(Object, Elt)
 
 def meth add-all(self : @Collection, other : @Collection) : self.Type ...
 def meth has-all?(self : @Collection, coll : @Collection) : Bool ...
@@ -27,9 +25,7 @@ def meth for-each(self : @Collection,
 ------------------------------------------------------------------------------
 -- all items are always sorted
 ------------------------------------------------------------------------------
-def abstract type SortedCollection(Object, Elt) : Collection(Elt)
-{
-}
+def type SortedCollection(Object, Elt) : Collection(Elt)
 
 def meth first(self : @SortedCollection) : self.Type.Elt ...
 def meth last(self : @SortedCollection) : self.Type.Elt ...
@@ -38,9 +34,7 @@ def meth last(self : @SortedCollection) : self.Type.Elt ...
 ------------------------------------------------------------------------------
 -- index access
 ------------------------------------------------------------------------------
-def abstract type Sequence(Object, Elt) : Collection(Elt)
-{
-}
+def type Sequence(Object, Elt) : Collection(Elt)
 
 def meth insert(self : @Sequence,
                 value : @self.Type.Elt,
@@ -69,13 +63,13 @@ def meth slice!(self : @Sequence,
 -- associative collection (key -> value[s])
 ------------------------------------------------------------------------------
 
-def type Assoc(Object, Key, Value)
+def class Assoc(Object, Key, Value)
 {
+  slot key : Key, init: 0
+  slot value : Value, init: 1
 }
 
-def abstract type AssocCollection(Object, Key, Value) : Collection(Assoc(Key, Value))
-{
-}
+def type AssocCollection(Object, Key, Value) : Collection(Assoc(Key, Value))
 
 def meth key-iterator(self : @AssocCollection) : Iterator(self.Type.Key) ...
 def meth value-iterator(self : @AssocCollection) : Iterator(self.Type.Key) ...
@@ -102,64 +96,76 @@ def meth retain-all-keys(self : @AssocCollection,
 -- default implementations
 ------------------------------------------------------------------------------
 
-def type Set(Object, Elt) : Collection(Elt)
+def class Set(Object, Elt) : Collection(Elt)
 {
+  -- todo
 }
 
 
 -- aka TreeSet
-def type SortedSet(Object, Elt) : SortedCollection(Elt)
+def class SortedSet(Object, Elt) : SortedCollection(Elt)
 {
+  -- todo
 }
 
 
 -- aka MultiSet
-def type Bag(Object, Elt) : Collection(Elt)
+def class Bag(Object, Elt) : Collection(Elt)
 {
+  -- todo
 }
 
 
 -- aka MultiTreeSet
-def type SortedBag(Object, Elt) : SortedCollection(Elt)
+def class SortedBag(Object, Elt) : SortedCollection(Elt)
 {
+  -- todo
 }
 
 
-def type Vector(Object, Elt) : Sequence(Elt)
+def class Vector(Object, Elt) : Sequence(Elt)
 {
+  -- todo
 }
+
 def meth resize(self : @Vector) : self.Type ...
 
 
 
-def type List(Object, Elt) : Sequence(Elt)
+def class List(Object, Elt) : Sequence(Elt)
 {
+  -- todo
 }
 
 
-def type Deque(Object, Elt) : Sequence(Elt)
+def class Deque(Object, Elt) : Sequence(Elt)
 {
+  -- todo
 }
 
 
 
-def type HashMap(Object, Key, Value) : AssocCollection(Key, Value)
+def class HashMap(Object, Key, Value) : AssocCollection(Key, Value)
 {
+  -- todo
 }
 
 
-def type Tree(Object, Key, Value) : (AssocCollection(Key, Value),
+def class Tree(Object, Key, Value) : (AssocCollection(Key, Value),
                                      SortedCollection(Key))
 {
+  -- todo
 }
 
 
-def type MultiMap(Object, Key, Value) : AssocCollection(Key, Value)
+def class MultiMap(Object, Key, Value) : AssocCollection(Key, Value)
 {
+  -- todo
 }
 
 
-def type SortedMultiMap(Object, Key, Value) : (AssocCollection(Key, Value),
+def class SortedMultiMap(Object, Key, Value) : (AssocCollection(Key, Value),
                                                SortedCollection(Key, Value))
 {
+  -- todo
 }

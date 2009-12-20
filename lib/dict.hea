@@ -109,7 +109,7 @@ import(io)
 
 ---------------------------------------------------------------------------
 
-def type Assoc*(Object, Key, Value)
+def class Assoc*(Object, Key, Value)
 {
   slot key, init: 0
   slot value, init: 1
@@ -124,7 +124,7 @@ def meth ->string(self : @Assoc) : String
 ---------------------------------------------------------------------------
 -- <cat vis='hide'/>
 
-def type Triple*(Object, Key, Value, Tail)
+def class Triple*(Object, Key, Value, Tail)
 {
   slot key,   init: 0
   slot value, init: 1
@@ -145,7 +145,7 @@ def meth ->string(self : @Triple) : String
 
 def const %default-size% = 16
 
-def type HashMap*(Object, Key, Elt) : (Comparable, AssocCollection)
+def class HashMap*(Object, Key, Elt) : (Comparable, AssocCollection)
 {
   slot table : Vector(Triple(Key, Elt, _.Type))
   slot elts : Int = %default-size%, key-init: items
