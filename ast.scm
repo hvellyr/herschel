@@ -30,11 +30,20 @@
 (define-method (debug-slot->xml <apt:node> tag slotnm)
   (call-next-method)
   (let ((slot (slot-ref self slotnm)))
-    (if slot
-        (begin
-          (arc:display "<" tag ">")
-          (->xml slot)
-          (arc:display "</" tag ">")))))
+    (cond ((and (list? slot)
+                (> (length slot) 0))
+           (begin
+             (arc:display "<" tag ">")
+             (for-each (lambda (p)
+                         (->xml p))
+                       slot)
+             (arc:display "</" tag ">")))
+          ((vector? slot) (begin
+                            (arc:display "<" tag ">")
+                            (->xml slot)
+                            (arc:display "</" tag ">")))
+          )))
+
 
 
 ;;;---------------------------------------------------------------------------
@@ -112,11 +121,7 @@
   (if (slot-ref self 'meth?)
       (arc:display "<meth>")
       (arc:display "<func>"))
-  (arc:display "<params>")
-  (for-each (lambda (p)
-              (->xml p))
-            (slot-ref self 'params))
-  (arc:display "</params>")
+  (debug-slot->xml self "params" 'params)
   (debug-slot->xml self "retval" 'retval)
   (debug-slot->xml self "body" 'body)
   (if (slot-ref self 'meth?)
@@ -473,12 +478,73 @@
   (call-next-method)
   (arc:display "<param-type>")
   (->xml (slot-ref self 'base))
-  (arc:display "<params>")
-  (for-each (lambda (e)
-              (->xml e))
-            (slot-ref self 'params))
-  (arc:display "</params>")
+  (debug-slot->xml self "params" 'params)
   (arc:display "</param-type>"))
+
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:base-typedef> (<apt:node>) (sym params derives))
+
+(define-method (initialise <apt:base-typedef> args)
+  (call-next-method)
+  (slot-set! self 'sym     (list-ref args 0))
+  (slot-set! self 'params  (list-ref args 1))
+  (slot-set! self 'derives (list-ref args 2))
+  self)
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:typedef> (<apt:base-typedef>) ())
+
+(define-method (initialise <apt:typedef> args)
+  (call-next-method)
+  self)
+
+(define-method (debug->xml <apt:typedef>)
+  (call-next-method)
+  (arc:display "<def><type name='" (slot-ref self 'sym) "'>")
+  (debug-slot->xml self "params" 'params)
+  (debug-slot->xml self "derives" 'derives)
+  (arc:display "</type></def>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:classdef> (<apt:base-typedef>) (decls))
+
+(define-method (initialise <apt:classdef> args)
+  (call-next-method)
+  (slot-set! self 'decls   (list-ref args 3))
+  self)
+
+(define-method (debug->xml <apt:classdef>)
+  (call-next-method)
+  (arc:display "<def><class name='" (slot-ref self 'sym) "'>")
+  (debug-slot->xml self "params" 'params)
+  (debug-slot->xml self "derives" 'derives)
+  (debug-slot->xml self "decls" 'decls)
+  (arc:display "</class></def>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:type-param> (<apt:node>) (keyarg sym default))
+
+(define-method (initialise <apt:type-param> args)
+  (call-next-method)
+  (slot-set! self 'sym     (list-ref args 0))
+  (slot-set! self 'default (list-ref args 1))
+  self)
+
+(define-method (debug->xml <apt:type-param>)
+  (call-next-method)
+  (arc:display "<type-prm name='" (slot-ref self 'sym) "'>")
+  (debug-slot->xml self "default-type" 'default)
+  (arc:display "</type-prm>"))
+
 
 
 ;;Keep this comment at the end of the file
