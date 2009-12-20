@@ -310,7 +310,81 @@
   (parse-vardef-2p token-list #f #t))
 
 
+(define (parse-class-param-2p node)
+  (cond ((apt-id? node) (make-object <apt:type-param> (list (apt-id-value node) #f)))
+        ((apt-seq? node)
+         (let* ((token-list (apt-seq-body node))
+                (nl token-list))
+           (if (not (null? nl))
+               (begin
+                 (if (apt-id? (car nl))
+                     (let ((sym (apt-id-value (car nl))))
+                       (set! nl (cdr nl))
+                       (if (not (null? nl))
+                           (let ((ty #f)
+                                 (init #f)
+                                 (param-type 'normal))
+                             (if (apt-punct-eq? (car nl) "=")
+                                 (if (not (null? (cdr nl)))
+                                     (begin
+                                       (set! init (parse-type-2p (cadr nl)))
+                                       (set! nl (cddr nl)))
+                                     (syntax-error "expected default value" node)))
+                             (make-object <apt:type-param> (list sym init)))
+                           ;; else
+                           (make-object <apt:type-param> (list sym #f))))
+                     ;; else
+                     (syntax-error "expected symbol" node)))
+               ;; else
+               (syntax-error "Expected symbol node" node))))
+        ;; else
+        (else (syntax-error "Bad class param node" node))))
+
+
+(define (parse-class-params-2p token-list)
+  (map (lambda (n)
+         (parse-class-param-2p n))
+       token-list))
+
+
+(define (parse-class-decls-2p token-list)
+  #f)
+
+
+(define (parse-classdef-2p token-list)
+  (let ((nl token-list)
+        (sym #f)
+        (params #f)
+        (derives-from #f))
+    (if (not (null? nl))
+        (begin
+          (set! sym (apt-id-value (car nl)))
+          (set! nl (cdr nl))
+          (if (and (not (null? nl))
+                   (apt-nested? (car nl)))
+              (begin
+                (set! params (parse-class-params-2p (apt-nested-body (car nl))))
+                (set! nl (cdr nl))))
+          (if (and (not (null? nl))
+                   (apt-punct-eq? (car nl) ":"))
+              (if (not (null? (cdr nl)))
+                  (begin
+                    (set! derives-from (parse-type-2p (cadr nl)))
+                    (set! nl (cddr nl)))))
+          (if (and (not (null? nl))
+                   (apt-nested? (car nl)))
+              (let ((decls (parse-class-decls-2p (apt-nested-body (car nl)))))
+                (make-object <apt:classdef> (list sym params derives-from decls)))
+              (syntax-error "Expected class declarations { }" token-list)))
+        (syntax-error "Bad class nodes" token-list))))
+
+
 (define (parse-typedef-2p token-list)
+  (arc:display "Parsing 'type' not done yet" 'nl)
+  #f)
+
+(define (parse-alias-2p token-list)
+  (arc:display "Parsing 'alias' not done yet" 'nl)
   #f)
 
 
@@ -319,8 +393,9 @@
     (cond ((apt-id-eq? node "meth")  (parse-methdef-2p (cdr token-list)))
           ((apt-id-eq? node "const") (parse-const-2p (cdr token-list)))
           ((apt-id-eq? node "fluid") (parse-fluid-2p (cdr token-list)))
+          ((apt-id-eq? node "class") (parse-classdef-2p (cdr token-list)))
           ((apt-id-eq? node "type")  (parse-typedef-2p (cdr token-list)))
-          ((apt-id-eq? node "alias") (parse-const-2p (cdr token-list)))
+          ((apt-id-eq? node "alias") (parse-alias-2p (cdr token-list)))
           ((apt-id? node)
            (if (not (null? (cdr token-list)))
                (cond ((apt-nested? (cadr token-list))

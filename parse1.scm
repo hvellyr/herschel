@@ -242,14 +242,15 @@
 ;;;        (vector ':apt 'symbol ':sym sym))))
 
 
-(define (apt-class sym params isatype decls)
+(define (apt-class type sym params isatype decls)
   (let* ((res #f))
-    (set! res (list (apt-id "def") sym
+    (set! res (list (apt-id "def") (apt-id type) sym
                     (apt-nested* "(" ")" params)))
     (if isatype
         (set! res (append res (list (apt-punct ":")
                                     isatype))))
-    (set! res (append res (list (apt-nested* "{" "}" decls))))
+    (if decls
+        (set! res (append res (list (apt-nested* "{" "}" decls)))))
 
     (apt-seq* res)))
 
@@ -1221,31 +1222,34 @@
           (else (syntax-error "Unexpect token:" current-token)))))
 
 
-(define (parse-type-def ctx port modifiers)
+(define (parse-type-def ctx port modifiers type)
   (if (apt-id? current-token)
-      (let ((sym current-token))
+      (let ((sym current-token)
+            (params #f)
+            (derives-from #f)
+            (decls #f))
         (next-token port)
         (if (apt-punct-eq? current-token "(")
             (begin
               (next-token port)
-              (let ((params (parse-functions-params ctx port '()))
-                    (isatype #f)
-                    (decls #f))
-                (if (apt-punct-eq? current-token ":")
-                    (begin
-                      (next-token port)
-                      (set! isatype (parse-type ctx port))))
-                (if (apt-punct-eq? current-token "{")
-                    (begin
-                      (next-token port)
-                      (set! decls (parse-typedef-decls ctx port))
-                      (if (apt-punct-eq? current-token "}")
-                          (begin
-                            (next-token port)
-                            (apt-class sym params isatype decls))
-                          (error-expected-token 'type-def "}")))
-                    (error-expected-token 'type-def "{"))) )
-            (error-expected-token 'type-def "(")))
+              (set! params (parse-functions-params ctx port '()))))
+        (if (apt-punct-eq? current-token ":")
+            (begin
+              (next-token port)
+              (set! derives-from (parse-type ctx port))))
+        (case type
+          ((class) (if (apt-punct-eq? current-token "{")
+                       (begin
+                         (next-token port)
+                         (set! decls (parse-typedef-decls ctx port))
+                         (if (apt-punct-eq? current-token "}")
+                             (begin
+                               (next-token port)
+                               (apt-class "class" sym params derives-from decls))
+                             (error-expected-token 'type-def "}")))
+                       (error-expected-token 'type-def "{")))
+          ((type) (apt-class "type" sym params derives-from #f))
+          (else (syntax-error "programming error" type))))
       (error-expected-token 'type-def "symbol")))
 
 
@@ -1638,15 +1642,19 @@
          ((apt-id-eq? current-token "type")
           (begin
             (next-token port)
-            (parse-type-def ctx port modifiers)))
-         ((apt-id-eq? current-token "macro")
+            (parse-type-def ctx port modifiers 'type)))
+         ((apt-id-eq? current-token "class")
           (begin
             (next-token port)
-            (parse-macro-def ctx port modifiers)))
+            (parse-type-def ctx port modifiers 'class)))
          ((apt-id-eq? current-token "alias")
           (begin
             (next-token port)
             (parse-alias-def ctx port modifiers)))
+         ((apt-id-eq? current-token "macro")
+          (begin
+            (next-token port)
+            (parse-macro-def ctx port modifiers)))
          ((apt-id? current-token)
           (parse-func-or-var-def ctx port scope modifiers))
          (else (syntax-error "Expected symbol, got" current-token)))
