@@ -244,8 +244,9 @@
 
 (define (apt-class type sym params isatype decls)
   (let* ((res #f))
-    (set! res (list (apt-id "def") (apt-id type) sym
-                    (apt-nested* "(" ")" params)))
+    (set! res (list (apt-id "def") (apt-id type) sym))
+    (if params
+        (set! res (append res (list (apt-nested* "(" ")" params)))))
     (if isatype
         (set! res (append res (list (apt-punct ":")
                                     isatype))))
