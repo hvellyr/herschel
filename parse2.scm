@@ -620,9 +620,24 @@
       (syntax-error "key argument: missing second argument: " token-list)))
 
 
+;; (seq (id "on") (id "delete")
+;;      (nested "(" ")" (id "self")) (seq (id "nop") (nested "(" ")")))
 (define (parse-on-2p token-list)
-  (arc:display "Parsing 'ON' not done yet" 'nl)
-  #f)
+  (let ((nl token-list))
+    (if (not (null? nl))
+        (let ((key (apt-id-value (car nl))))
+          (set! nl (cdr nl))
+          (if (and (not (null? nl))
+                   (apt-nested? (car nl)))
+              (let ((params (map (lambda (n)
+                                   (parse-func-param-2p n))
+                                 (apt-nested-body (car nl)))))
+                (set! nl (cdr nl))
+                (if (not (null? nl))
+                    (make-object <apt:on> (list key params (parse-expr-2p (car nl))))
+                    (syntax-error "Expected on-body" token-list)))
+              (syntax-error "Expected () node" token-list)))
+        (syntax-error "Bad on-node construction" token-list))))
 
 
 (define (parse-seq-2p elt)
