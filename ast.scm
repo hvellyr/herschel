@@ -21,6 +21,7 @@
 (define-generic (debug->xml))
 (define-generic (debug-slot->xml tag slotnm))
 
+
 (define (->xml x)
   (if (vector? x)
       (debug->xml x)
@@ -596,6 +597,25 @@
 (define-method (debug->xml <apt:slot-prop>)
   (call-next-method)
   (arc:display "<slot-prop value='" (slot-ref self 'value) "'/>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:on> (<apt:node>) (key params expr))
+
+(define-method (initialise <apt:on> args)
+  (call-next-method)
+  (slot-set! self 'key (list-ref args 0))
+  (slot-set! self 'params (list-ref args 1))
+  (slot-set! self 'expr (list-ref args 2))
+  self)
+
+(define-method (debug->xml <apt:on>)
+  (call-next-method)
+  (arc:display "<on key='" (slot-ref self 'key) "'>")
+  (debug-slot->xml self "params" 'params)
+  (debug-slot->xml self "body" 'expr)
+  (arc:display "</on>"))
 
 
 ;;Keep this comment at the end of the file
