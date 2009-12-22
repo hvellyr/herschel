@@ -26,20 +26,20 @@ def type Comparable
 def meth compare(one : @ Comparable, two : @ Comparable) : Int ...
 
 def meth less?(one : @ Comparable, two : @ Comparable) : Bool
-  (one <=> two) < 0
+  one <=> two < 0
 
 def meth equal?(one : @ Comparable,
                 two : @ Comparable) : Bool
-  (one <=> two) == 0
+  one <=> two == 0
 
 def meth less-equal?(one : @ Comparable,
                      two : @ Comparable) : Bool
-  (one <=> two) <= 0
+  one <=> two <= 0
 
 def meth greater?(one : @ Comparable,
                   two : @ Comparable) : Bool
-  (one <=> two) > 0
+  one <=> two > 0
 
 def meth greater-equal?(one : @ Comparable,
                         two : @ Comparable) : Bool
-  (one <=> two) >= 0
+  one <=> two >= 0

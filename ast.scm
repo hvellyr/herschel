@@ -107,20 +107,26 @@
 
 ;;;---------------------------------------------------------------------------
 
-(define-class <apt:function> (<apt:node>) (retval params body meth?))
+(define-class <apt:function> (<apt:node>) (retval params body meth?
+                                                  abstract?))
 
 (define-method (initialise <apt:function> args)
   (call-next-method)
-  (slot-set! self 'retval (list-ref args 0))
-  (slot-set! self 'params (list-ref args 1))
-  (slot-set! self 'body   (list-ref args 2))
-  (slot-set! self 'meth?  (list-ref args 3))
+  (slot-set! self 'retval    (list-ref args 0))
+  (slot-set! self 'params    (list-ref args 1))
+  (slot-set! self 'body      (list-ref args 2))
+  (slot-set! self 'meth?     (list-ref args 3))
+  (slot-set! self 'abstract? (list-ref args 4))
   self)
 
 (define-method (debug->xml <apt:function>)
   (call-next-method)
   (if (slot-ref self 'meth?)
-      (arc:display "<meth>")
+      (begin
+        (arc:display "<meth")
+        (if (slot-ref self 'abstract?)
+            (arc:display " abstract='true'"))
+        (arc:display ">"))
       (arc:display "<func>"))
   (debug-slot->xml self "params" 'params)
   (debug-slot->xml self "retval" 'retval)
@@ -132,15 +138,17 @@
 
 ;;;---------------------------------------------------------------------------
 
-(define-class <apt:param> (<apt:node>) (keyarg sym flag type init-value))
+(define-class <apt:param> (<apt:node>) (keyarg sym flag type init-value
+                                               specialized?))
 
 (define-method (initialise <apt:param> args)
   (call-next-method)
-  (slot-set! self 'keyarg     (list-ref args 0))
-  (slot-set! self 'sym        (list-ref args 1))
-  (slot-set! self 'flag       (list-ref args 2))
-  (slot-set! self 'type       (list-ref args 3))
-  (slot-set! self 'init-value (list-ref args 4))
+  (slot-set! self 'keyarg       (list-ref args 0))
+  (slot-set! self 'sym          (list-ref args 1))
+  (slot-set! self 'flag         (list-ref args 2))
+  (slot-set! self 'type         (list-ref args 3))
+  (slot-set! self 'init-value   (list-ref args 4))
+  (slot-set! self 'specialized? (list-ref args 5))
   self)
 
 (define-method (debug->xml <apt:param>)
@@ -150,6 +158,8 @@
       (arc:display " key='" (slot-ref self 'keyarg) "'"))
   (if (eq? (slot-ref self 'flag) 'rest)
       (arc:display " what='rest'"))
+  (if (slot-ref self 'specialized?)
+      (arc:display " specialized='true'"))
   (arc:display " name='" (slot-ref self 'sym) "'>")
   (debug-slot->xml self "type" 'type)
   (debug-slot->xml self "init-value" 'init-value)
@@ -616,6 +626,20 @@
   (debug-slot->xml self "params" 'params)
   (debug-slot->xml self "body" 'expr)
   (arc:display "</on>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:alias> (<apt:node>) (key type-equiv))
+
+(define-method (initialise <apt:alias> args)
+  (call-next-method)
+  (slot-set! self 'type-equiv (list-ref args 0))
+  self)
+
+(define-method (debug->xml <apt:alias>)
+  (call-next-method)
+  (debug-slot->xml self "alias" 'type-equiv))
 
 
 ;;Keep this comment at the end of the file
