@@ -1052,7 +1052,7 @@
                (begin
                  (append params (list type))))
 
-              (else (syntax-error "Unexpected token" current-token)) ))
+              (else (syntax-error "Unexpected token (x)" current-token)) ))
       params))
 
 
@@ -1362,7 +1362,7 @@
           ((apt-id-keyarg? current-token) (let ((sym current-token))
                                             (next-token port)
                                             (loop res (apt-id-keyarg-value sym))))
-          (else (syntax-error "Unexpected token:" current-token)))))
+          (else (syntax-error "Unexpected token (y)" current-token)))))
 
 
 (define (parse-macro-def ctx port modifiers)
@@ -1400,7 +1400,7 @@
             (begin
               (next-token port)
               (let ((type (parse-type ctx port)))
-                (apt-seq (apt-id "alias") sym (apt-punct ":") type)))
+                (apt-seq (apt-id "def") (apt-id "alias") sym (apt-punct "=") type)))
             (syntax-error "Expected =, got" current-token)))
       (syntax-error "Expected symbol, got" current-token)))
 
@@ -1551,16 +1551,18 @@
                (apt-nested* "{" "}" body))))
 
 
-(define (apt-funcdef scope sym params type body)
-  (apt-seq (apt-map-scope scope)
-           ;; modifiers
-           sym
-           (apt-nested* "(" ")" params)
-           (if type (apt-punct ":") #f)
-           (if type type #f)
-           (if (equal? (length body) 1)
-               (car body)
-               (apt-nested* "{" "}" body))))
+(define (apt-funcdef scope modifiers sym params type body)
+  (let ((nl (list (apt-map-scope scope))))
+    (if (member "meth" modifiers) 
+        (set! nl (append nl (list (apt-id "meth")))))
+    (set! nl (append nl (list sym
+                              (apt-nested* "(" ")" params))))
+    (if type
+        (set! nl (append nl (list (apt-punct ":") type))))
+    (set! nl (append nl (list (if (equal? (length body) 1)
+                                  (car body)
+                                  (apt-nested* "{" "}" body)))))
+    (apt-seq* nl)))
 
 
 (define (parse-func-def ctx port sym modifiers scope)
@@ -1574,7 +1576,7 @@
                    (parse-exprlist-until-def ctx port '())
                    (list (parse-expr ctx port)))) )
     (if sym
-        (apt-funcdef scope sym params type body)
+        (apt-funcdef scope modifiers sym params type body)
         (apt-function params type body)) ))
 
 

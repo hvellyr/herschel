@@ -114,15 +114,14 @@
 ;;; (seq (id "Byte") (nested "[" "]"))
 ;;; (seq (id "String") (id "Bool"))
 ;;; (seq (seq (id "Int") (punct "=") (seq (lit -127) (id "..") (lit 127))))
+
 (define (parse-union-type-2p token-list type-list)
   (let loop ((res type-list)
              (nl token-list))
     (if (null? nl)
         (make-object <apt:union-type> (list res))
-        (if (apt-id? (car nl))
-            (loop (append res (list (parse-type-2p (car nl))))
-                  (cdr nl))
-            (syntax-error "Unexpected node in union type expr" token-list)))))
+        (loop (append res (list (parse-type-2p (car nl))))
+              (cdr nl)))))
 
 
 (define (parse-array-type-2p base token-list)
@@ -169,8 +168,9 @@
                    (parse-param-type-2p first (apt-nested-body (cadr token-list))))
                   ((apt-nested-left? (cadr token-list) "[")
                    (parse-array-type-2p first (apt-nested-body (cadr token-list))))
-                  ((apt-id? (cadr token-list)) (parse-union-type-2p (cdr token-list)
-                                                                    (list first)))
+                  ((or (apt-id? (cadr token-list))
+                       (apt-seq? (cadr token-list)))
+                   (parse-union-type-2p (cdr token-list) (list first)))
                   ((apt-punct-eq? (cadr token-list) "=")
                    (parse-constraint-type-2p first (cddr token-list)))
                   (else (syntax-error "Unhandled type expression (2)" token-list)))
@@ -184,9 +184,9 @@
         (else (syntax-error "Unhandled type expression" node))))
 
 
-(define (parse-func-param-2p node)
+(define (parse-func-param-2p node expect-spec?)
   (cond ((apt-id? node) (make-object <apt:param> (list #f (apt-id-value node) 'normal #f
-                                                       #f)))
+                                                       #f #f)))
         ((apt-seq? node)
          (let ((token-list (apt-seq-body node)))
            (if (not (null? token-list))
@@ -203,31 +203,48 @@
                              (set! nl (cdr nl))
                              (if (not (null? nl))
                                  (if (apt-id-eq? (car nl) "...")
-                                     (make-object <apt:param> (list #f sym 'rest #f #f))
+                                     (make-object <apt:param> (list #f sym 'rest #f #f #f))
                                      (let ((ty #f)
+                                           (specialized? #f)
                                            (init #f)
                                            (param-type 'normal))
                                        (if (apt-punct-eq? (car nl) ":")
-                                           (if (not (null? (cdr nl)))
-                                               (begin
-                                                 (set! ty (parse-type-2p (cadr nl)))
-                                                 (set! nl (cddr nl)))
-                                               (syntax-error "Expected type" nl)))
+                                           (begin
+                                             (set! nl (cdr nl))
+                                             (if (not (null? nl))
+                                                 (begin
+                                                   (if (apt-punct-eq? (car nl) "@")
+                                                       (begin
+                                                         (if keyarg
+                                                             (syntax-error 
+                                                              "keyed parameter can not be specialized" nl))
+                                                         (set! nl (cdr nl))
+                                                         (set! specialized? #t)))
+                                                   (if (not (null? nl))
+                                                       (begin
+                                                         (set! ty (parse-type-2p (car nl)))
+                                                         (set! nl (cdr nl)))
+                                                       (syntax-error "expected type (1)" nl)))
+                                                 (syntax-error "expected type (2)" nl))))
                                        (if (and (not (null? nl))
                                                 (apt-punct-eq? (car nl) "="))
-                                           (if (not (null? (cdr nl)))
-                                               (begin
-                                                 (set! init (parse-expr-2p (cadr nl)))
-                                                 (set! nl (cddr nl))
-                                                 (set! param-type 'key)
-                                                 (if (not keyarg)
-                                                     (set! keyarg (string-append sym ":"))))
-                                               (syntax-error "expected =" node)))
+                                           (begin
+                                             (if (not (null? (cdr nl)))
+                                                 (begin
+                                                   (set! init (parse-expr-2p (cadr nl)))
+                                                   (set! nl (cddr nl))
+                                                   (set! param-type 'key)
+                                                   (if (not keyarg)
+                                                       (set! keyarg (string-append sym ":"))))
+                                                 (syntax-error "expected =" node))
+                                             (if specialized?
+                                                 (syntax-error 
+                                                  "keyed parameter can not be specialized" nl))))
                                        (make-object <apt:param> (list keyarg sym
                                                                       param-type ty
-                                                                      init))))
+                                                                      init specialized?))))
                                  ;; else
-                                 (make-object <apt:param> (list keyarg sym 'normal #f #f))))
+                                 (make-object <apt:param> (list keyarg sym 'normal #f #f #f))))
                            ;; else
                            (syntax-error "expected symbol" node)))
                      ;; else
@@ -241,11 +258,12 @@
 (define (parse-function-2p token-list sym meth? scope)
   (let* ((retval #f)
          (params '())
+         (abstract? #f)
          (body #f)
          (nl token-list))
     (if (apt-nested? (car nl))
         (set! params (map (lambda (n)
-                            (parse-func-param-2p n))
+                            (parse-func-param-2p n #t))
                           (apt-nested-body (car nl))))
         (syntax-error "Bad node.  Nested expected: " nl))
     (if (not (null? (cdr nl)))
@@ -256,13 +274,21 @@
                   (begin
                     (set! retval (parse-type-2p (cadr nl)))
                     (set! nl (cddr nl)))))
-          (set! body (parse-expr-2p (car nl)))
+          (if (apt-id-eq? (car nl) "...")
+              (if (not meth?)
+                  (syntax-error "Abstract function must be declared as method" token-list)
+                  (if (not sym)
+                      (syntax-error "Anonymous function can not be declared abstract" 
+                                    token-list)
+                      (set! abstract? #t)))
+              (set! body (parse-expr-2p (car nl))))
+
           (if sym
               (make-object <apt:def>
                            (list scope sym
                                  (make-object <apt:function>
-                                              (list retval params body meth?))))
-              (make-object <apt:function> (list retval params body meth?))))
+                                              (list retval params body meth? abstract?))))
+              (make-object <apt:function> (list retval params body meth? #f))))
         (syntax-error "Bad node: " token-list))))
 
 
@@ -462,9 +488,25 @@
   (parse-classdef-2p token-list #f))
 
 
-(define (parse-alias-2p token-list)
-  (arc:display "Parsing 'alias' not done yet" 'nl)
-  #f)
+(define (parse-alias-2p token-list scope)
+  (let ((nl token-list)
+        (sym #f)
+        (type-equiv #f))
+    (if (not (null? nl))
+        (begin
+          (set! sym (apt-id-value (car nl)))
+          (set! nl (cdr nl))
+          (if (and (not (null? nl))
+                   (not (null? (cdr nl)))
+                   (apt-punct-eq? (car nl) "="))
+              (begin
+                (set! nl (cdr nl))
+                (set! type-equiv (parse-type-2p (car nl)))
+                (make-object <apt:def>
+                             (list scope sym
+                                   (make-object <apt:alias> (list type-equiv)))))
+              (syntax-error "Expected type node" token-list)))
+        (syntax-error "Bad alias node construction" token-list))))
 
 
 (define (parse-def-2p token-list scope)
@@ -474,7 +516,7 @@
           ((apt-id-eq? node "fluid") (parse-fluid-2p (cdr token-list)))
           ((apt-id-eq? node "class") (parse-classdef-2p (cdr token-list) #t))
           ((apt-id-eq? node "type")  (parse-typedef-2p (cdr token-list)))
-          ((apt-id-eq? node "alias") (parse-alias-2p (cdr token-list)))
+          ((apt-id-eq? node "alias") (parse-alias-2p (cdr token-list) scope))
           ((apt-id? node)
            (if (not (null? (cdr token-list)))
                (cond ((apt-nested? (cadr token-list))
@@ -630,7 +672,7 @@
           (if (and (not (null? nl))
                    (apt-nested? (car nl)))
               (let ((params (map (lambda (n)
-                                   (parse-func-param-2p n))
+                                   (parse-func-param-2p n #f))
                                  (apt-nested-body (car nl)))))
                 (set! nl (cdr nl))
                 (if (not (null? nl))

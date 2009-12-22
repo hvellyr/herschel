@@ -26,3 +26,8 @@ def class Point(Object)
 
   on delete(self) nop()
 }
+
+
+def alias AtlasX = Atlas(Int, String)
+
+def alias IntOfFalse = (Int, Bool = #f)
