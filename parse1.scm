@@ -1117,6 +1117,19 @@
                                        (apt-seq sym (apt-nested* "(" ")"
                                                                  params))))
                    (syntax-error "Expected ), got" current-token)))) )
+          ((apt-punct-eq? current-token ".")
+           (begin
+             (next-token port)
+             (let loop ((res (list sym)))
+               (cond ((apt-id? current-token)
+                      (let ((sym2 current-token))
+                        (next-token port)
+                        (if (apt-punct-eq? current-token ".")
+                            (begin
+                              (next-token port)
+                              (loop (append res (list (apt-punct ".") sym2))))
+                            (apt-seq* (append res (list (apt-punct ".") sym2))))))
+                     (else (apt-seq* res))))))
           ((and expect-constraint?
                 (apt-punct-eq? current-token "="))
            (begin
