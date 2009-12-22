@@ -7,14 +7,14 @@
 * TODO Parse self.Type.X expressions
 
 * TODO Finish parsing to APT 
-** def type
 ** function type declarations
-** type alias
-** ON
 
 * TODO use namespace info in first pass parse
 
-* TODO Add self.Class stuff to documentation
+* TODO Reference type params
+** TODO Add self.Class stuff to documentation
+** TODO Add self.Type.X stuff to documentation
+** TODO Implement parsing of self.Type.X and such
 
 
 
