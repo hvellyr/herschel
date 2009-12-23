@@ -1049,10 +1049,9 @@
                                     (append params
                                             (list type comma)))))
               ((del-token? current-token)
-               (begin
-                 (append params (list type))))
+               (append params (list type)))
 
-              (else (syntax-error "Unexpected token (x)" current-token)) ))
+              (else (syntax-error "Unexpected token (8)" current-token)) ))
       params))
 
 
@@ -1100,23 +1099,37 @@
       base-type))
 
 
+(define (parse-function-type ctx port)
+  (let ((params (parse-functions-params ctx port '()))
+        (rettype #f))
+    (if (apt-punct-eq? current-token ":")
+        (begin
+          (next-token port)
+          (set! rettype (parse-type ctx port))))
+    (apt-seq* (list (apt-id "Function")
+                    (apt-nested* "(" ")" params)
+                    (apt-punct ":")
+                    rettype))))
+
 (define (parse-simple-type ctx port expect-constraint?)
   (let* ((sym current-token))
     (next-token port)
     (cond ((apt-punct-eq? current-token "(")
            (begin
              (next-token port)
-             (let ((params (parse-type-params ctx port
-                                              (lambda (token)
-                                                (apt-punct-eq? token ")"))
-                                              '())))
-               (if (apt-punct-eq? current-token ")")
-                   (begin
-                     (next-token port)
-                     (parse-array-type ctx port
-                                       (apt-seq sym (apt-nested* "(" ")"
-                                                                 params))))
-                   (syntax-error "Expected ), got" current-token)))) )
+             (if (equal? (apt-id-value sym) "Function")
+                 (parse-function-type ctx port)
+                 (let ((params (parse-type-params ctx port
+                                                  (lambda (token)
+                                                    (apt-punct-eq? token ")"))
+                                                  '())))
+                   (if (apt-punct-eq? current-token ")")
+                       (begin
+                         (next-token port)
+                         (parse-array-type ctx port
+                                           (apt-seq sym (apt-nested* "(" ")"
+                                                                     params))))
+                       (syntax-error "Expected ), got" current-token)))) ))
           ((apt-punct-eq? current-token ".")
            (begin
              (next-token port)
@@ -1375,7 +1388,7 @@
           ((apt-id-keyarg? current-token) (let ((sym current-token))
                                             (next-token port)
                                             (loop res (apt-id-keyarg-value sym))))
-          (else (syntax-error "Unexpected token (y)" current-token)))))
+          (else (syntax-error "Unexpected token (9)" current-token)))))
 
 
 (define (parse-macro-def ctx port modifiers)
