@@ -4,11 +4,6 @@
 ** TODO real
 ** TODO Engineering notation of numbers
 
-* TODO Parse self.Type.X expressions
-
-* TODO Finish parsing to APT 
-** function type declarations
-
 * TODO use namespace info in first pass parse
 
 * TODO Reference type params
