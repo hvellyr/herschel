@@ -15,10 +15,6 @@
 ;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; TODO: read numbers (reals, engnotated ints)
-;;;       read #()       is a list
-;;;            #[]       is a vector
-;;;            #(a -> b) is a dict
-;;;       annotate keywords (abc:)
 ;;;       track file location
 
 
