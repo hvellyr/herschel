@@ -107,12 +107,12 @@
 
 ;;;---------------------------------------------------------------------------
 
-(define-class <apt:function> (<apt:node>) (retval params body meth?
-                                                  abstract?))
+(define-class <apt:function> (<apt:node>) (rettype params body meth?
+                                                   abstract?))
 
 (define-method (initialise <apt:function> args)
   (call-next-method)
-  (slot-set! self 'retval    (list-ref args 0))
+  (slot-set! self 'rettype   (list-ref args 0))
   (slot-set! self 'params    (list-ref args 1))
   (slot-set! self 'body      (list-ref args 2))
   (slot-set! self 'meth?     (list-ref args 3))
@@ -129,7 +129,7 @@
         (arc:display ">"))
       (arc:display "<func>"))
   (debug-slot->xml self "params" 'params)
-  (debug-slot->xml self "retval" 'retval)
+  (debug-slot->xml self "ret-type" 'rettype)
   (debug-slot->xml self "body" 'body)
   (if (slot-ref self 'meth?)
       (arc:display "</meth>")
@@ -492,6 +492,40 @@
   (debug-slot->xml self "params" 'params)
   (arc:display "</param-type>"))
 
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:type-expr> (<apt:type>) (member-expr type))
+
+(define-method (initialise <apt:type-expr> args)
+  (call-next-method)
+  (slot-set! self 'member-expr (list-ref args 0))
+  (slot-set! self 'type        (list-ref args 1))
+  self)
+
+(define-method (debug->xml <apt:type-expr>)
+  (call-next-method)
+  (arc:display "<type-expr member='" (slot-ref self 'member-expr) "'>")
+  (->xml (slot-ref self 'type))
+  (arc:display "</type-expr>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:function-type> (<apt:type>) (params rettype))
+
+(define-method (initialise <apt:function-type> args)
+  (call-next-method)
+  (slot-set! self 'params  (list-ref args 0))
+  (slot-set! self 'rettype (list-ref args 1))
+  self)
+
+(define-method (debug->xml <apt:function-type>)
+  (call-next-method)
+  (arc:display "<func-type>")
+  (debug-slot->xml self "params" 'params)
+  (debug-slot->xml self "ret-type" 'rettype)
+  (arc:display "</func-type>"))
 
 
 ;;;---------------------------------------------------------------------------

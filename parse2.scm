@@ -160,21 +160,65 @@
                      (parse-param-type-args-2p token-list '()))))
 
 
+(define (parse-type-expr-2p first token-list)
+  (let loop ((nl token-list)
+             (res first))
+    (if (null? nl)
+        res
+        (if (apt-id? (car nl))
+            (let ((sym (apt-id-value (car nl))))
+              (cond ((and (not (null? (cdr nl)))
+                          (apt-punct-eq? (cadr nl) "."))
+                     (loop (cddr nl)
+                           (make-object <apt:type-expr> (list sym res))))
+                    ((null? (cdr nl))
+                     (make-object <apt:type-expr> (list sym res)))
+                    (else (syntax-error "Expected '.' in type expression"
+                                        token-list))))
+            (syntax-error "Expected symbols" token-list)))))
+
+
+(define (parse-function-type-2p token-list)
+  (let ((nl token-list)
+        (params #f)
+        (ret-type #f))
+    (if (apt-nested? (car nl))
+        (set! params (map (lambda (n)
+                            (parse-func-param-2p n #t))
+                          (apt-nested-body (car nl))))
+        (syntax-error "Bad function type params.  Nested node expected: " nl))
+    (if (not (null? (cdr nl)))
+        (begin
+          (set! nl (cdr nl))
+          (if (apt-punct-eq? (car nl) ":")
+              (if (not (null? (cdr nl)))
+                  (begin
+                    (set! ret-type (parse-type-2p (cadr nl)))
+                    (set! nl (cddr nl)))))))
+    (make-object <apt:function-type> (list params ret-type))))
+
+
 (define (parse-type-seq-2p token-list)
   (if (not (null? token-list))
-      (let ((first (parse-type-2p (car token-list))))
-        (if (not (null? (cdr token-list)))
-            (cond ((apt-nested-left? (cadr token-list) "(")
-                   (parse-param-type-2p first (apt-nested-body (cadr token-list))))
-                  ((apt-nested-left? (cadr token-list) "[")
-                   (parse-array-type-2p first (apt-nested-body (cadr token-list))))
-                  ((or (apt-id? (cadr token-list))
-                       (apt-seq? (cadr token-list)))
-                   (parse-union-type-2p (cdr token-list) (list first)))
-                  ((apt-punct-eq? (cadr token-list) "=")
-                   (parse-constraint-type-2p first (cddr token-list)))
-                  (else (syntax-error "Unhandled type expression (2)" token-list)))
-            first))
+      (if (apt-id-eq? (car token-list) "Function")
+          (parse-function-type-2p (cdr token-list))
+          (let ((first (parse-type-2p (car token-list))))
+            (if (not (null? (cdr token-list)))
+                (cond ((apt-nested-left? (cadr token-list) "(")
+                       (parse-param-type-2p first (apt-nested-body (cadr token-list))))
+                      ((apt-nested-left? (cadr token-list) "[")
+                       (parse-array-type-2p first (apt-nested-body (cadr token-list))))
+                      ((or (apt-id? (cadr token-list))
+                           (apt-seq? (cadr token-list)))
+                       (parse-union-type-2p (cdr token-list) (list first)))
+                      ((apt-punct-eq? (cadr token-list) "=")
+                       (parse-constraint-type-2p first (cddr token-list)))
+                      ((apt-punct-eq? (cadr token-list) ".")
+                       (if (not (null? (cddr token-list)))
+                           (parse-type-expr-2p first (cddr token-list))
+                           (syntax-error "Expected type after '.'" token-list)))
+                      (else (syntax-error "Unhandled type expression (2)" token-list)))
+                first)))
       (syntax-error "Unhandled type expression (3)" token-list)))
 
 
@@ -185,8 +229,8 @@
 
 
 (define (parse-func-param-2p node expect-spec?)
-  (cond ((apt-id? node) (make-object <apt:param> (list #f (apt-id-value node) 'normal #f
-                                                       #f #f)))
+  (cond ((apt-id? node)
+         (make-object <apt:param> (list #f (apt-id-value node) 'normal #f #f #f)))
         ((apt-seq? node)
          (let ((token-list (apt-seq-body node)))
            (if (not (null? token-list))
@@ -256,7 +300,7 @@
 
 
 (define (parse-function-2p token-list sym meth? scope)
-  (let* ((retval #f)
+  (let* ((ret-type #f)
          (params '())
          (abstract? #f)
          (body #f)
@@ -272,7 +316,7 @@
           (if (apt-punct-eq? (car nl) ":")
               (if (not (null? (cdr nl)))
                   (begin
-                    (set! retval (parse-type-2p (cadr nl)))
+                    (set! ret-type (parse-type-2p (cadr nl)))
                     (set! nl (cddr nl)))))
           (if (apt-id-eq? (car nl) "...")
               (if (not meth?)
@@ -287,8 +331,8 @@
               (make-object <apt:def>
                            (list scope sym
                                  (make-object <apt:function>
-                                              (list retval params body meth? abstract?))))
-              (make-object <apt:function> (list retval params body meth? #f))))
+                                              (list ret-type params body meth? abstract?))))
+              (make-object <apt:function> (list ret-type params body meth? #f))))
         (syntax-error "Bad node: " token-list))))
 
 
@@ -731,10 +775,14 @@
 
 
 (define (parse-next-top-2p expr-tree)
+  (arc:display "<?xml version='1.0'?>" 'nl)
+  (arc:display "<compile-unit>" 'nl)
   (let loop ((res ())
              (nl expr-tree))
     (if (null? nl)
-        res
+        (begin
+          (arc:display "</compile-unit>" 'nl)
+          res)
         (let* ((elt (car nl))
                (expr3 (parse-expr-2p elt)))
           (if expr3
