@@ -180,13 +180,61 @@
   (call-next-method)
   (case (slot-ref self 'type)
     ((str)    (arc:display "<str>"  (slot-ref self 'value) "</str>"))
-    ((int)    (arc:display "<int>"  (slot-ref self 'value) "</int>"))
     ((keyw)   (arc:display "<keyw>" (slot-ref self 'value) "</keyw>"))
     ((char)   (arc:display "<chr>"  (slot-ref self 'value) "</chr>"))
     ((bool)   (arc:display "<bool>" (slot-ref self 'value) "</bool>"))
+
+    ((int)      (arc:display "<int>"  (slot-ref self 'value) "</int>"))
+    ((real)     (arc:display "<real>"  (slot-ref self 'value) "</real>"))
+    ((octet)    (arc:display "<octet>"  (slot-ref self 'value) "</octet>"))
+    ((short)    (arc:display "<short>"  (slot-ref self 'value) "</short>"))
+    ((ushort)   (arc:display "<ushort>"  (slot-ref self 'value) "</ushort>"))
+    ((word)     (arc:display "<word>"  (slot-ref self 'value) "</word>"))
+    ((uword)    (arc:display "<uword>"  (slot-ref self 'value) "</uword>"))
+    ((long)     (arc:display "<long>"  (slot-ref self 'value) "</long>"))
+    ((ulong)    (arc:display "<ulong>"  (slot-ref self 'value) "</ulong>"))
+    ((float)    (arc:display "<float>"  (slot-ref self 'value) "</float>"))
+    ((double)   (arc:display "<double>"  (slot-ref self 'value) "</double>"))
+    ((ldouble)  (arc:display "<ldouble>"  (slot-ref self 'value) "</ldouble>"))
+
     ((nil)    (arc:display "<nil/>"))
     ((eof)    (arc:display "<eof/>"))
     (else (arc:display "<unknown/>"))))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:rational> (<apt:const>) (type numerator denominator))
+
+(define-method (initialise <apt:rational> args)
+  (slot-set! self 'type 'rational)
+  (slot-set! self 'numerator (list-ref args 0))
+  (slot-set! self 'denominator (list-ref args 1))
+  self)
+
+(define-method (debug->xml <apt:rational>)
+  (arc:display "<rational>" 
+               (slot-ref self 'numerator)
+               "/"
+               (slot-ref self 'denominator) "</rational>"))
+
+
+;;;---------------------------------------------------------------------------
+
+(define-class <apt:complex> (<apt:const>) (type real imaginary))
+
+(define-method (initialise <apt:complex> args)
+  (slot-set! self 'type 'complex)
+  (slot-set! self 'real (list-ref args 0))
+  (slot-set! self 'imaginary (list-ref args 1))
+  self)
+
+(define-method (debug->xml <apt:complex>)
+  (arc:display "<complex>")
+  (->xml (slot-ref self 'real))
+  (arc:display "+<img>")
+  (->xml (slot-ref self 'imaginary))
+  (arc:display "</img></complex>"))
 
 
 ;;;---------------------------------------------------------------------------

@@ -33,16 +33,14 @@
 
 
 (define (parse-lit-2p node)
-  (let ((type (cond ((apt-lit-string? node)  'str)
-                    ((apt-lit-keyword? node) 'keyw)
-                    ((apt-lit-int? node)     'int)
-                    ((apt-lit-char? node)    'char)
-                    ((apt-lit-bool? node)    'bool)
-                    ((apt-lit-nil? node)     'nil)
-                    ((apt-lit-eof? node)     'eof)
-                    (else 'unknown)
-                    )))
-    (make-object <apt:const> (list type (apt-lit-value node)))))
+  (let ((type (apt-lit-type node))
+        (value (apt-lit-value node)))
+    (case type
+      ((rational) (make-object <apt:rational> (list (car value) (cdr value))))
+      ((imaginary) (make-object <apt:complex>
+                                (list (make-object <apt:const> (list 'int 0))
+                                      (parse-expr-2p value))))
+      (else (make-object <apt:const> (list type value))) )))
 
 
 (define (parse-expr-2p node)
@@ -637,12 +635,6 @@
                            res
                            (cond ((apt-punct-eq? (car nl) ",")
                                   (loop res (cdr nl)))
-
-;;                                 ((apt-id-keyarg? (car nl))
-;;                                  (loop (append res
-;;                                                (list (make-object <apt:const>
-;;                                                                   (list 'keyw
-;;                                                                         (apt-id-value (car nl))))))))
                                  (else (loop (append res
                                                      (list (parse-expr-2p
                                                             (car nl))))

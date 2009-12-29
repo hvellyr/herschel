@@ -1,4 +1,13 @@
-def a = #[1, 2, 3, 4]
+def ints    = #[12,   0ch,   14o,   1100y]
+def octets  = #[12t,  0cht,  14ot,  1100yt]
+def shorts  = #[12s,  0chs,  14os,  1100ys]
+def ushorts = #[12us, 0chus, 14ous, 1100yus]
+def words   = #[12w,  0chw,  14ow,  1100yw]
+def uwords  = #[12uw, 0chuw, 14ouw, 1100yuw]
+def longs   = #[12l,  0chl,  14ol,  1100yl]
+def ulongs  = #[12ul, 0chul, 14oul, 1100yul]
+
+def rat = 4/5
 
 def b = #('a, 'b, 'c, 'd)
 

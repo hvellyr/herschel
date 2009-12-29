@@ -47,13 +47,13 @@
   (cdr expr))
 
 
-(define (apt-lit value)
-  (list 'lit value))
+(define (apt-lit value type)
+  (list 'lit value type))
 
 
 (define (apt-lit? expr)
   (and (list? expr)
-       (= (length expr) 2)
+       (= (length expr) 3)
        (eq? (car expr) 'lit)))
 
 
@@ -61,45 +61,48 @@
   (cadr expr))
 
 
-(define (apt-lit-eq? lit val)
-  (and (apt-lit? lit)
-       (equal? (apt-lit-value lit) val)))
+(define (apt-lit-type expr)
+  (caddr expr))
 
 
 (define (apt-lit-keyword? expr)
   (and (apt-lit? expr)
-       (symbol? (apt-lit-value expr))))
+       (eq? (apt-lit-type expr) 'keyw)))
 
 
 (define (apt-lit-string? expr)
   (and (apt-lit? expr)
-       (string? (apt-lit-value expr))))
+       (eq? (apt-lit-type expr) 'str)))
 
 
 (define (apt-lit-int? expr)
   (and (apt-lit? expr)
-       (integer? (apt-lit-value expr))))
+       (eq? (apt-lit-type expr) 'int)))
 
 
 (define (apt-lit-char? expr)
   (and (apt-lit? expr)
-       (char? (apt-lit-value expr))))
+       (eq? (apt-lit-type expr) 'char)))
 
 
 (define (apt-lit-bool? expr)
   (and (apt-lit? expr)
-       (boolean? (apt-lit-value expr))))
+       (eq? (apt-lit-type expr) 'bool)))
 
 
 (define (apt-lit-nil? expr)
   (and (list? expr)
-       (eq? (car expr) 'lit)
-       (null? (cadr expr))))
+       (eq? (apt-lit-type expr) 'nil)))
 
 
 (define (apt-lit-eof? expr)
   (and (apt-lit? expr)
-       (eq? (apt-lit-value expr) 'eof)))
+       (eq? (apt-lit-type expr) 'eof)))
+
+
+(define (apt-lit-imaginary? expr)
+  (and (apt-lit? expr)
+       (eq? (apt-lit-type expr) 'imaginary)))
 
 
 (define (apt-id id)
@@ -261,70 +264,87 @@
 (define current-token #f)
 
 
+(define (translate-token token)
+  (cond ((eq? token 'PRO)          (apt-punct "("))
+        ((eq? token 'PRC)          (apt-punct ")"))
+        ((eq? token 'BRO)          (apt-punct "["))
+        ((eq? token 'BRC)          (apt-punct "]"))
+        ((eq? token 'BRCO)         (apt-punct "{"))
+        ((eq? token 'BRCC)         (apt-punct "}"))
+        ((eq? token 'ASSIGN)       (apt-punct "="))
+        ((eq? token 'COMMA)        (apt-punct ","))
+        ((eq? token 'SEMICOLON)    (apt-punct ";"))
+        ((eq? token 'COLON)        (apt-punct ":"))
+        ((eq? token 'MAPTO)        (apt-id "->"))
+        ((eq? token 'ELLIPSIS)     (apt-id "..."))
+        ((eq? token 'RANGE)        (apt-id ".."))
+        ((eq? token 'DOT)          (apt-punct "."))
+        ((eq? token 'QUOTE)        (apt-punct "'"))
+        ((eq? token 'CARRAYOP)     (apt-punct "#["))
+        ((eq? token 'CVECTOP)      (apt-punct "#("))
+        ((eq? token 'SANGHASH)     (apt-punct "##"))
+        ((eq? token 'AT)           (apt-punct "@"))
+
+        ((eq? token 'MULTIPLY)     (apt-id "*"))
+        ((eq? token 'DEVIDE)       (apt-id "/"))
+        ((eq? token 'MODULO)       (apt-id "mod"))
+        ((eq? token 'MINUS)        (apt-id "-"))
+        ((eq? token 'ADD)          (apt-id "+"))
+        ((eq? token 'FOLD)         (apt-id "%"))
+        ((eq? token 'EXP)          (apt-id "**"))
+        ((eq? token 'EQUAL)        (apt-id "=="))
+        ((eq? token 'UNEQUAL)      (apt-id "<>"))
+        ((eq? token 'COMPARE)      (apt-id "<=>"))
+        ((eq? token 'LESS)         (apt-id "<"))
+        ((eq? token 'LESSEQ)       (apt-id "<="))
+        ((eq? token 'GREATER)      (apt-id ">"))
+        ((eq? token 'GREATEREQ)    (apt-id ">="))
+        ((eq? token 'SHIFTLEFT)    (apt-id "<<"))
+        ((eq? token 'SHIFTRIGHT)   (apt-id ">>"))
+        ((eq? token 'AND)          (apt-id "and"))
+        ((eq? token 'OR)           (apt-id "or"))
+        ((eq? token 'IN)           (apt-id "in"))
+        ((eq? token 'BY)           (apt-id "by"))
+        ((eq? token 'BITAND)       (apt-id "&"))
+        ((eq? token 'BITOR)        (apt-id "|"))
+        ((eq? token 'BITXOR)       (apt-id "^"))
+
+        ((keyword-token? token) (let ((x (token-value token)))
+                                  (if (string? x)
+                                      (apt-lit (string->symbol x) 'keyw)
+                                      (apt-lit x 'keyw))))
+        ((symbol-token? token)     (apt-id (token-value token)))
+        ((macroparam-token? token) (apt-macro-param (token-value token)))
+
+        ((integer-token? token)    (apt-lit (token-value token) 'int))
+        ((imaginary-token? token)  (apt-lit (translate-token (token-value token)) 'imaginary))
+        ((real-token? token)       (apt-lit (token-value token) 'real))
+        ((rational-token? token)   (apt-lit (token-value token) 'rational))
+        ((octet-token? token)      (apt-lit (token-value token) 'octet))
+        ((short-token? token)      (apt-lit (token-value token) 'short))
+        ((ushort-token? token)     (apt-lit (token-value token) 'ushort))
+        ((word-token? token)       (apt-lit (token-value token) 'word))
+        ((uword-token? token)      (apt-lit (token-value token) 'uword))
+        ((long-token? token)       (apt-lit (token-value token) 'long))
+        ((ulong-token? token)      (apt-lit (token-value token) 'ulong))
+        ((float-token? token)      (apt-lit (token-value token) 'float))
+        ((double-token? token)     (apt-lit (token-value token) 'double))
+        ((longdouble-token? token) (apt-lit (token-value token) 'ldouble))
+
+        ((char-token? token)       (apt-lit (token-value token) 'char))
+        ((string-token? token)     (apt-lit (token-value token) 'str))
+        ((bool-token? token)       (apt-lit (token-value token) 'bool))
+
+        ((eq? token 'FUNCTION)     (apt-punct "#function"))
+        ((nil-token? token)        (apt-lit '() 'nil))
+        ((eof-token? token)        (apt-lit 'EOF-TOKEN 'eof))
+
+        (else token)))
+
+
 (define (next-token-port port)
-  (let* ((token (tokenize-next-token port))
-         (apt (cond ((eq? token 'PRO)          (apt-punct "("))
-                    ((eq? token 'PRC)          (apt-punct ")"))
-                    ((eq? token 'BRO)          (apt-punct "["))
-                    ((eq? token 'BRC)          (apt-punct "]"))
-                    ((eq? token 'BRCO)         (apt-punct "{"))
-                    ((eq? token 'BRCC)         (apt-punct "}"))
-                    ((eq? token 'ASSIGN)       (apt-punct "="))
-                    ((eq? token 'COMMA)        (apt-punct ","))
-                    ((eq? token 'SEMICOLON)    (apt-punct ";"))
-                    ((eq? token 'COLON)        (apt-punct ":"))
-                    ((eq? token 'MAPTO)        (apt-id "->"))
-                    ((eq? token 'ELLIPSIS)     (apt-id "..."))
-                    ((eq? token 'RANGE)        (apt-id ".."))
-                    ((eq? token 'DOT)          (apt-punct "."))
-                    ((eq? token 'QUOTE)        (apt-punct "'"))
-                    ((eq? token 'CARRAYOP)     (apt-punct "#["))
-                    ((eq? token 'CVECTOP)      (apt-punct "#("))
-                    ((eq? token 'SANGHASH)     (apt-punct "##"))
-                    ((eq? token 'AT)           (apt-punct "@"))
-
-                    ((eq? token 'MULTIPLY)     (apt-id "*"))
-                    ((eq? token 'DEVIDE)       (apt-id "/"))
-                    ((eq? token 'MODULO)       (apt-id "mod"))
-                    ((eq? token 'MINUS)        (apt-id "-"))
-                    ((eq? token 'ADD)          (apt-id "+"))
-                    ((eq? token 'FOLD)         (apt-id "%"))
-                    ((eq? token 'EXP)          (apt-id "**"))
-                    ((eq? token 'EQUAL)        (apt-id "=="))
-                    ((eq? token 'UNEQUAL)      (apt-id "<>"))
-                    ((eq? token 'COMPARE)      (apt-id "<=>"))
-                    ((eq? token 'LESS)         (apt-id "<"))
-                    ((eq? token 'LESSEQ)       (apt-id "<="))
-                    ((eq? token 'GREATER)      (apt-id ">"))
-                    ((eq? token 'GREATEREQ)    (apt-id ">="))
-                    ((eq? token 'SHIFTLEFT)    (apt-id "<<"))
-                    ((eq? token 'SHIFTRIGHT)   (apt-id ">>"))
-                    ((eq? token 'AND)          (apt-id "and"))
-                    ((eq? token 'OR)           (apt-id "or"))
-                    ((eq? token 'IN)           (apt-id "in"))
-                    ((eq? token 'BY)           (apt-id "by"))
-                    ((eq? token 'BITAND)       (apt-id "&"))
-                    ((eq? token 'BITOR)        (apt-id "|"))
-                    ((eq? token 'BITXOR)       (apt-id "^"))
-
-                    ((keyword-token? token) (let ((x (token-value token)))
-                                              (if (string? x)
-                                                  (apt-lit (string->symbol x))
-                                                  (apt-lit x))))
-                    ((symbol-token? token)     (apt-id (token-value token)))
-                    ((macroparam-token? token) (apt-macro-param (token-value token)))
-
-                    ((or (integer-token? token)
-                         (char-token? token)
-                         (string-token? token)
-                         (bool-token? token))  (apt-lit (token-value token)))
-
-                    ((eq? token 'FUNCTION)     (apt-punct "#function"))
-                    ((nil-token? token)        (apt-lit '()))
-                    ((eof-token? token)        (apt-lit 'EOF-TOKEN))
-
-                    (else token))) )
-    apt))
+  (let* ((token (tokenize-next-token port)))
+    (translate-token token)))
 
 
 (define (make-tokenport tokenlist)
@@ -1579,7 +1599,7 @@
 
 (define (apt-funcdef scope modifiers sym params type body)
   (let ((nl (list (apt-map-scope scope))))
-    (if (member "meth" modifiers) 
+    (if (member "meth" modifiers)
         (set! nl (append nl (list (apt-id "meth")))))
     (set! nl (append nl (list sym
                               (apt-nested* "(" ")" params))))

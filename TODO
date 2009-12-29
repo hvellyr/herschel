@@ -1,15 +1,10 @@
 -*-org-*-
 
-* TODO Tokenizer
-** TODO real
-** TODO Engineering notation of numbers
-
 * TODO use namespace info in first pass parse
 
 * TODO Reference type params
 ** TODO Add self.Class stuff to documentation
 ** TODO Add self.Type.X stuff to documentation
-** TODO Implement parsing of self.Type.X and such
 
 
 
