@@ -36,18 +36,24 @@
             (next-char port)
             (loop (next-char port))))))
 
+(define (in-char-range? c from to)
+  (and (char>=? c from)
+       (char<=? c to)))
+
 (define (is-whitespace c)
   (or (char=? c #\space)
       (char=? c #\newline)
       (char=? c #\tab)))
 
 (define (is-digit c)
-  (and (char>=? c #\0)
-       (char<=? c #\9)))
+  (in-char-range? c #\0 #\9))
+
 
 (define (is-hex-digit c)
-  (and (char>=? c #\0)
-       (char<=? c #\9)))
+  (or (in-char-range? c #\0 #\9)
+      (in-char-range? c #\a #\f)
+      (in-char-range? c #\A #\F)))
+
 
 (define (is-alpha c)
   (or (and (char>=? c #\a)
@@ -74,6 +80,7 @@
 (define (is-delimiter c)
   (or (is-whitespace c)
       (char=? c #\")
+      (char=? c #\')
       (char=? c #\() (char=? c #\))
       (char=? c #\[) (char=? c #\])
       (char=? c #\{) (char=? c #\})
@@ -100,24 +107,217 @@
     (cond
      ( (or (char=? lastc #\h)
            (char=? lastc #\H)) (string->number (substring str 0 (- l 1)) 16) )
-     ( (or (char=? lastc #\t)
-           (char=? lastc #\T)) (string->number (substring str 0 (- l 1)) 8) )
+     ( (or (char=? lastc #\o)
+           (char=? lastc #\O)) (string->number (substring str 0 (- l 1)) 8) )
      ( (or (char=? lastc #\y)
            (char=? lastc #\Y)) (string->number (substring str 0 (- l 1)) 2) )
      ( else (string->number str 10)))))
 
-(define (read-number port neg?)
+
+(define (read-int-number-part port pred)
   (let loop ((res '()))
     (if (or (eof-object? current-char)
-            (is-delimiter current-char))
-        (let* ((numstr (list->string (reverse res)))
-               (num (translate-number numstr)))
-          (if (not num)
-              (cons 'ERROR (string-append "not a number: " numstr))
-              (cons 'INT (if neg? (* num -1) num))))
+            (not (pred current-char)))
+        (list->string (reverse res))
         (let ((c current-char))
           (next-char port)
           (loop (cons c res))))))
+
+
+(define (make-number-string first second exp-sign exp)
+  (let ((tmp (string-append first (if (string? second)
+                                      (string-append 
+                                       "."
+                                       second)))))
+    (if (and exp-sign exp)
+        (cond ((equal? exp-sign 1)
+               (string-append tmp "e+" exp))
+              ((equal? exp-sign -1)
+               (string-append tmp "e-" exp))
+              (else tmp))
+        tmp)))
+
+
+(define (read-number port neg?)
+  (let ((first #f)
+        (second #f)
+        (exp-sign #f)
+        (exp #f)
+        (type 'int)
+        (radix 10)
+        (imaginary? #f)
+        (expr #f))
+    (set! first (read-int-number-part port is-hex-digit))
+    (cond ((char=? current-char #\.)
+           (begin
+             (next-char port)
+             (set! second (read-int-number-part port is-digit))
+             (set! type 'real)
+             (if (or (char=? current-char #\e)
+                     (char=? current-char #\E))
+                 (begin
+                   (next-char port)
+                   (cond ((char=? current-char #\-) 
+                          (begin
+                            (next-char port)
+                            (set! exp-sign -1)
+                            (set! exp (read-int-number-part port is-digit))))
+                         ((char=? current-char #\+)
+                          (begin
+                            (next-char port)
+                            (set! exp-sign 1)
+                            (set! exp (read-int-number-part port is-digit))))
+                         (else (syntax-error "Bad number notation (0)" current-char)))))))
+          ((char=? current-char #\/)
+           (begin
+             (next-char port)
+             (set! second (read-int-number-part port is-digit))
+             (set! type 'rational)))
+          )
+    ;;;
+    (cond ((or (char=? current-char #\h)
+               (char=? current-char #\H))
+           (begin
+             (if (not (eq? type 'int))
+                 (syntax-error "Unexpected integer notation char" current-char))
+             (next-char port)
+             (set! radix 16)))
+          ((or (char=? current-char #\o)
+               (char=? current-char #\O))
+           (begin
+             (if (not (eq? type 'int))
+                 (syntax-error "Unexpected integer notation char" current-char))
+             (next-char port)
+             (set! radix 8)))
+          ((or (char=? current-char #\y)
+               (char=? current-char #\Y))
+           (begin
+             (if (not (eq? type 'int))
+                 (syntax-error "Unexpected integer notation char" current-char))
+             (next-char port)
+             (set! radix 2))) )
+    ;;;
+    (cond ((or (char=? current-char #\f)
+               (char=? current-char #\F))
+           (begin
+             (next-char port)
+             (set! type 'float)))
+          ((or (char=? current-char #\d)
+               (char=? current-char #\D))
+           (begin
+             (next-char port)
+             (cond ((char=? current-char #\l)
+                    (begin
+                      (next-char port)
+                      (set! type 'long-double)))
+                   ((is-delimiter current-char)
+                    (set! type 'double))
+                   ((eof-object? current-char)
+                    (set! type 'double))
+                   (else (syntax-error "Bad number notation (1)" current-char)))))
+          ((or (char=? current-char #\u)
+               (char=? current-char #\U))
+           (begin
+             (next-char port)
+             (cond ((or (char=? current-char #\s)
+                        (char=? current-char #\S))
+                    (begin
+                      (next-char port)
+                      (set! type 'unsigned-short)))
+                   ((or (char=? current-char #\w)
+                        (char=? current-char #\W))
+                    (begin
+                      (next-char port)
+                      (set! type 'unsigned-word)))
+                   ((or (char=? current-char #\l)
+                        (char=? current-char #\L))
+                    (begin
+                      (next-char port)
+                      (set! type 'unsigned-long)))
+                   (else (syntax-error "Bad number notation (3)" current-char)))))
+          ((or (char=? current-char #\t)
+               (char=? current-char #\T))
+           (begin
+             (next-char port)
+             (set! type 'octet)))
+          ((or (char=? current-char #\s)
+               (char=? current-char #\S))
+           (begin
+             (next-char port)
+             (set! type 'short)))
+          ((or (char=? current-char #\w)
+               (char=? current-char #\W))
+           (begin
+             (next-char port)
+             (set! type 'word)))
+          ((or (char=? current-char #\l)
+               (char=? current-char #\L))
+           (begin
+             (next-char port)
+             (set! type 'long)))
+          ((eof-object? current-char) 'ok)
+          ((is-delimiter current-char) 'ok)
+          ((or (char=? current-char #\j) (char=? current-char #\J)
+               (char=? current-char #\i) (char=? current-char #\I)) 'ok)
+          (else (syntax-error "Bad number notation (2)" current-char)))
+    ;;;
+    (if (or (char=? current-char #\j) (char=? current-char #\J)
+            (char=? current-char #\i) (char=? current-char #\I))
+        (begin
+          (next-char port)
+          (set! imaginary? #t)))
+    ;;;
+    (set! expr
+          (case type
+            ((int) (let ((num (string->number first radix)))
+                     (cons 'INT (if neg? (* num -1) num))))
+            ((real) (let* ((numstr (make-number-string first second exp-sign exp))
+                           (num (string->number numstr)))
+                      (cons 'REAL (if neg? (* num -1) num))))
+            ((rational) (let ((n1 (string->number first 10))
+                              (n2 (string->number second 10)))
+                          (cons 'RATIONAL (cons n1 n2))))
+            ((float) (let* ((numstr (make-number-string first second exp-sign exp))
+                            (num (string->number numstr)))
+                       (cons 'FLOAT (if neg? (* num -1) num))))
+            ((double) (let* ((numstr (make-number-string first second exp-sign exp))
+                             (num (string->number numstr)))
+                        (cons 'DOUBLE (if neg? (* num -1) num))))
+            ((long-double) (let* ((numstr (make-number-string first second exp-sign exp))
+                                  (num (string->number numstr)))
+                             (cons 'LONGDOUBLE (if neg? (* num -1) num))))
+            ((octet) (let ((num (string->number first radix)))
+                       (if neg?
+                           (syntax-error
+                            "Misplaced '-'.  Octets cannot be negative" neg?))
+                       (cons 'OCTET num)))
+            ((short) (let ((num (string->number first radix)))
+                       (cons 'SHORT (if neg? (* num -1) num))))
+            ((unsigned-short) (let ((num (string->number first radix)))
+                                (if neg?
+                                    (syntax-error
+                                     "Misplaced '-'.  Unsigned shorts cannot be negative"
+                                     neg?))
+                                (cons 'USHORT num)))
+            ((word) (let ((num (string->number first radix)))
+                      (cons 'WORD (if neg? (* num -1) num))))
+            ((unsigned-word) (let ((num (string->number first radix)))
+                               (if neg?
+                                   (syntax-error
+                                    "Misplaced '-'.  Unsigned words cannot be negative"
+                                    neg?))
+                               (cons 'UWORD num)))
+            ((long) (let ((num (string->number first radix)))
+                      (cons 'LONG (if neg? (* num -1) num))))
+            ((unsigned-long) (let ((num (string->number first radix)))
+                               (if neg?
+                                   (syntax-error
+                                    "Misplaced '-'.  Unsigned longs cannot be negative" neg?))
+                               (cons 'ULONG num)))
+            (else (syntax-error "How this?" type))))
+    (if imaginary?
+        (cons 'IMAGINARY expr)
+        expr)))
 
 
 (define (read-string separator port)
@@ -407,8 +607,59 @@
 
 
 (define (integer-token? token)
-  (and (pair? token)
-       (eq? (car token) 'INT)))
+  (and (pair? token) (eq? (car token) 'INT)))
+
+
+(define (imaginary-token? token)
+  (and (pair? token) (eq? (car token) 'IMAGINARY)))
+
+
+(define (real-token? token)
+  (and (pair? token) (eq? (car token) 'REAL)))
+
+
+(define (rational-token? token)
+  (and (pair? token) (eq? (car token) 'RATIONAL)))
+
+
+(define (octet-token? token)
+  (and (pair? token) (eq? (car token) 'OCTET)))
+
+
+(define (short-token? token)
+  (and (pair? token) (eq? (car token) 'SHORT)))
+
+
+(define (ushort-token? token)
+  (and (pair? token) (eq? (car token) 'USHORT)))
+
+
+(define (word-token? token)
+  (and (pair? token) (eq? (car token) 'WORD)))
+
+
+(define (uword-token? token)
+  (and (pair? token) (eq? (car token) 'UWORD)))
+
+
+(define (long-token? token)
+  (and (pair? token) (eq? (car token) 'LONG)))
+
+
+(define (ulong-token? token)
+  (and (pair? token) (eq? (car token) 'ULONG)))
+
+
+(define (float-token? token)
+  (and (pair? token) (eq? (car token) 'FLOAT)))
+
+
+(define (double-token? token)
+  (and (pair? token) (eq? (car token) 'DOUBLE)))
+
+
+(define (longdouble-token? token)
+  (and (pair? token) (eq? (car token) 'LONGDOUBLE)))
 
 
 (define (char-token? token)
