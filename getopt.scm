@@ -33,7 +33,7 @@
 ;; the table
 ;; '((argument "-a" "--argument" #t)
 ;;   (scheme "-s" "--scheme" #t))
-;; 
+;;
 (define (arc:getopt argv table)
   (if (>= *arc:optind* (length argv))
       #f
@@ -63,7 +63,7 @@
             (car arg)) )))
 
 
-;;Keep this comment at the end of the file 
+;;Keep this comment at the end of the file
 ;;Local variables:
 ;;mode: scheme
 ;;End:

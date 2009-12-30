@@ -82,7 +82,7 @@
         (slot-set! self 'macro-registry
                    (append (slot-ref self 'macro-registry
                            (list (cons name (cons type macro)))))))))
-  
+
 
 (define-method (lookup-macro <parse-context> name)
   (let ((mp (assoc name (slot-ref self 'macro-registry))))

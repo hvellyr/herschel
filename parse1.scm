@@ -696,12 +696,12 @@
           ((apt-id-eq? curtok "..")      'range)
           ((apt-id-eq? curtok "by")      'by)
           ((apt-id-eq? curtok "...")     'ellipsis)
-          
+
           ((apt-id-eq? curtok "<<")      'shiftleft)
           ((apt-id-eq? curtok ">>")      'shiftright)
           ((apt-id-eq? curtok "in")      'in)
           ((apt-punct-eq? curtok ".")    'dot)
-          
+
           ((eq? curtok 'EOF)      #f)
           (else #f))))
 

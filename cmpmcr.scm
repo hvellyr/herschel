@@ -26,7 +26,7 @@
 ;; { for (?abcs) } -> 1
 ;; abcs:
 ;; { abc } -> $1
-;; { abc, abcs } -> 
+;; { abc, abcs } ->
 ;;
 ;; 0 for  -> get-next -> 1
 ;; 1 (    -> get-next -> 3
