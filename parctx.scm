@@ -23,6 +23,7 @@
 (define-generic (current-token-set! token))
 (define-generic (push-port port))
 (define-generic (pop-port))
+(define-generic (current-port))
 
 
 ;;----------------------------------------------------------------------
@@ -182,6 +183,10 @@
     (if p
         (unread-token p token)
         #f)))
+
+
+(define-method (current-port <parse-context>)
+  (slot-ref self 'port))
 
 
 ;;Keep this comment at the end of the file

@@ -33,7 +33,8 @@
          (ctx (make-object <parse-context> '()))
          (expr1-tree (begin
                        (next-token port)
-                       (parse-next-top ctx port)))
+                       (push-port ctx port)
+                       (parse-next-top ctx)))
          (expr2-tree (parse-next-top-2p expr1-tree)))
     (close-input-port file-port)
     (arc:display 'nl 'nl)
