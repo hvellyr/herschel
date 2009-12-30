@@ -139,8 +139,6 @@
             (cadar nl)
             (loop (cdr nl))))))
 
-(define (st-find-macro-param node)
-  (st-find-node node (apt-macro-param "*:expr")))
 
 (define (st-has-eof-set? node)
   (let loop ((nl (vector-ref node 0)))
@@ -150,8 +148,10 @@
             #t
             (loop (cdr nl))))))
 
+
 (define (st-find-macro-param node)
   (st-find-node node (apt-macro-param "*:expr")))
+
 
 (define (st-extract-macro-param node)
   (let ((token (apt-macro-param "*:expr")))
@@ -165,6 +165,7 @@
 
 (define (st-replacement node)
   (vector-ref node 1))
+
 
 (define (syntax-table-mixin-pattern-part tree src-pattern replc)
   (let loop ((res tree)

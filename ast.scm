@@ -250,7 +250,7 @@
                ((array)  "array")
                ((vector) "vector")
                ((dict)   "dict")
-               (else (syntax-error "What's this?" self)))))
+               (else (arc:display "ERROR: What's this?" self 'nl)))))
     (arc:display "<" tag ">")
     (for-each (lambda (e)
                 (->xml e))

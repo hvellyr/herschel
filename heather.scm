@@ -25,7 +25,6 @@
 (load "../string.scm")
 (load "../getopt.scm")
 (load "../misc.scm")
-(load "../tokenizer.scm")
 (load "../parse.scm")
 
 

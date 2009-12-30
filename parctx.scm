@@ -16,11 +16,55 @@
 
 ;;----------------------------------------------------------------------
 
-(define-class <parse-context> (<class>) (macro-registry))
+(define-class <hea:token-port> (<class>) (current-token unread-stack))
+
+(define-generic (next-token))
+(define-generic (fetch-next-token))
+(define-generic (unread-token token))
+(define-generic (current-token))
+(define-generic (current-token-set! token))
+
+
+(define-method (initialise <hea:token-port> args)
+  (call-next-method)
+  (slot-set! self 'current-token '())
+  (slot-set! self 'unread-stack '())
+  self)
+
+
+(define-method (current-token <hea:token-port>)
+  (slot-ref self 'current-token))
+
+
+(define-method (current-token-set! <hea:token-port> token)
+  (slot-set! self 'current-token token))
+
+
+(define-method (unread-token <hea:token-port> token)
+  (slot-set! self 'unread-stack
+             (cons token (slot-ref self 'unread-stack))))
+
+
+(define-method (next-token <hea:token-port>)
+  (let* ((urs (slot-ref self 'unread-stack))
+         (token (if (not (null? urs))
+                    (let ((val (car urs)))
+                      (slot-set! self 'unread-stack (cdr urs))
+                      val)
+                    (fetch-next-token self))))
+    (slot-set! self 'current-token token)
+    token))
+
+
+;;----------------------------------------------------------------------
+
+(define-class <parse-context> (<class>) (macro-registry port
+                                                        unread-stack))
 
 (define-method (initialise <parse-context> args)
   (call-next-method)
   (slot-set! self 'macro-registry '())
+  (slot-set! self 'port #f)
   self)
 
 (define-generic (macro-registry))
@@ -53,6 +97,35 @@
         (cadr mp)
         #f)))
 
+
+;;;----------------------------------------------------------------------
+
+(define-method (current-token <parse-context>)
+  (let ((p (slot-ref self 'port)))
+    (if p
+        (current-token p)
+        'EOF)))
+
+
+(define-method (current-token-set! <parse-context> token)
+  (let ((p (slot-ref self 'port)))
+    (if p
+        (current-token-set! p token)
+        #f)))
+
+
+(define-method (next-token <parse-context>)
+  (let ((p (slot-ref self 'port)))
+    (if p
+        (next-token p)
+        'EOF)))
+
+
+(define-method (unread-token <parse-context> token)
+  (let ((p (slot-ref self 'port)))
+    (if p
+        (unread-token p token)
+        #f)))
 
 
 ;;Keep this comment at the end of the file

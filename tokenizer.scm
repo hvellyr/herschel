@@ -21,6 +21,12 @@
 (define current-char #f)
 (define line-count 1)
 
+(define (parse-error msg detail)
+  (arc:display "Notation error:" (number->string line-count) ": "
+               msg ": " detail 'nl)
+  #f)
+
+
 (define (next-char port)
   (set! current-char (read-char port))
   (if (or (eq? current-char #\newline)
@@ -167,7 +173,7 @@
                             (next-char port)
                             (set! exp-sign 1)
                             (set! exp (read-int-number-part port is-digit))))
-                         (else (syntax-error "Bad number notation (0)" current-char)))))))
+                         (else (parse-error "Bad number notation (0)" current-char)))))))
           ((char=? current-char #\/)
            (begin
              (next-char port)
@@ -179,21 +185,21 @@
                (char=? current-char #\H))
            (begin
              (if (not (eq? type 'int))
-                 (syntax-error "Unexpected integer notation char" current-char))
+                 (parse-error "Unexpected integer notation char" current-char))
              (next-char port)
              (set! radix 16)))
           ((or (char=? current-char #\o)
                (char=? current-char #\O))
            (begin
              (if (not (eq? type 'int))
-                 (syntax-error "Unexpected integer notation char" current-char))
+                 (parse-error "Unexpected integer notation char" current-char))
              (next-char port)
              (set! radix 8)))
           ((or (char=? current-char #\y)
                (char=? current-char #\Y))
            (begin
              (if (not (eq? type 'int))
-                 (syntax-error "Unexpected integer notation char" current-char))
+                 (parse-error "Unexpected integer notation char" current-char))
              (next-char port)
              (set! radix 2))) )
     ;;;
@@ -214,7 +220,7 @@
                     (set! type 'double))
                    ((eof-object? current-char)
                     (set! type 'double))
-                   (else (syntax-error "Bad number notation (1)" current-char)))))
+                   (else (parse-error "Bad number notation (1)" current-char)))))
           ((or (char=? current-char #\u)
                (char=? current-char #\U))
            (begin
@@ -234,7 +240,7 @@
                     (begin
                       (next-char port)
                       (set! type 'unsigned-long)))
-                   (else (syntax-error "Bad number notation (3)" current-char)))))
+                   (else (parse-error "Bad number notation (3)" current-char)))))
           ((or (char=? current-char #\t)
                (char=? current-char #\T))
            (begin
@@ -259,7 +265,7 @@
           ((is-delimiter current-char) 'ok)
           ((or (char=? current-char #\j) (char=? current-char #\J)
                (char=? current-char #\i) (char=? current-char #\I)) 'ok)
-          (else (syntax-error "Bad number notation (2)" current-char)))
+          (else (parse-error "Bad number notation (2)" current-char)))
     ;;;
     (if (or (char=? current-char #\j) (char=? current-char #\J)
             (char=? current-char #\i) (char=? current-char #\I))
@@ -288,14 +294,14 @@
                              (cons 'LONGDOUBLE (if neg? (* num -1) num))))
             ((octet) (let ((num (string->number first radix)))
                        (if neg?
-                           (syntax-error
+                           (parse-error
                             "Misplaced '-'.  Octets cannot be negative" neg?))
                        (cons 'OCTET num)))
             ((short) (let ((num (string->number first radix)))
                        (cons 'SHORT (if neg? (* num -1) num))))
             ((unsigned-short) (let ((num (string->number first radix)))
                                 (if neg?
-                                    (syntax-error
+                                    (parse-error
                                      "Misplaced '-'.  Unsigned shorts cannot be negative"
                                      neg?))
                                 (cons 'USHORT num)))
@@ -303,7 +309,7 @@
                       (cons 'WORD (if neg? (* num -1) num))))
             ((unsigned-word) (let ((num (string->number first radix)))
                                (if neg?
-                                   (syntax-error
+                                   (parse-error
                                     "Misplaced '-'.  Unsigned words cannot be negative"
                                     neg?))
                                (cons 'UWORD num)))
@@ -311,10 +317,10 @@
                       (cons 'LONG (if neg? (* num -1) num))))
             ((unsigned-long) (let ((num (string->number first radix)))
                                (if neg?
-                                   (syntax-error
+                                   (parse-error
                                     "Misplaced '-'.  Unsigned longs cannot be negative" neg?))
                                (cons 'ULONG num)))
-            (else (syntax-error "How this?" type))))
+            (else (parse-error "How this?" type))))
     (if imaginary?
         (cons 'IMAGINARY expr)
         expr)))
