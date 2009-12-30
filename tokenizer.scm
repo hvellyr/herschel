@@ -139,7 +139,7 @@
 
 (define (make-number-string first second exp-sign exp)
   (let ((tmp (string-append first (if (string? second)
-                                      (string-append 
+                                      (string-append
                                        "."
                                        second)))))
     (if (and exp-sign exp)
@@ -170,7 +170,7 @@
                      (char=? current-char #\E))
                  (begin
                    (next-char port)
-                   (cond ((char=? current-char #\-) 
+                   (cond ((char=? current-char #\-)
                           (begin
                             (next-char port)
                             (set! exp-sign -1)
@@ -709,7 +709,7 @@
   (and (pair? token)
        (eq? (car token) 'MACROPARAM)))
 
-;;Keep this comment at the end of the file 
+;;Keep this comment at the end of the file
 ;;Local variables:
 ;;mode: scheme
 ;;End:

@@ -116,7 +116,7 @@
        (apply initialise (list object args ...))
        object)) ))
 
-     
+
 ;;; The generic function interface depends on each class (*not* each
 ;;; object) carrying around its own methods.  This could possibly be made
 ;;; faster using hash tables instead of a-lists, but I don't know whether
@@ -127,7 +127,7 @@
 (define-syntax define-generic
   (syntax-rules ()
     ((define-generic (generic-name args ...))
-     (define generic-name 
+     (define generic-name
        (letrec ((this-function
                  (lambda (object args ...)
                    (let* ((class (vector-ref object *class-offset*))

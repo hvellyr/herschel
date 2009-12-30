@@ -47,7 +47,7 @@
               (substring str (+ pos 1) (string-length str)))
         #f)))
 
-;;Keep this comment at the end of the file 
+;;Keep this comment at the end of the file
 ;;Local variables:
 ;;mode: scheme
 ;;End:

@@ -213,7 +213,7 @@
   self)
 
 (define-method (debug->xml <apt:rational>)
-  (arc:display "<rational>" 
+  (arc:display "<rational>"
                (slot-ref self 'numerator)
                "/"
                (slot-ref self 'denominator) "</rational>"))

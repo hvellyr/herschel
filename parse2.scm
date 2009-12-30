@@ -258,7 +258,7 @@
                                                    (if (apt-punct-eq? (car nl) "@")
                                                        (begin
                                                          (if keyarg
-                                                             (syntax-error 
+                                                             (syntax-error
                                                               "keyed parameter can not be specialized" nl))
                                                          (set! nl (cdr nl))
                                                          (set! specialized? #t)))
@@ -280,7 +280,7 @@
                                                        (set! keyarg (string-append sym ":"))))
                                                  (syntax-error "expected =" node))
                                              (if specialized?
-                                                 (syntax-error 
+                                                 (syntax-error
                                                   "keyed parameter can not be specialized" nl))))
                                        (make-object <apt:param> (list keyarg sym
                                                                       param-type ty
@@ -320,7 +320,7 @@
               (if (not meth?)
                   (syntax-error "Abstract function must be declared as method" token-list)
                   (if (not sym)
-                      (syntax-error "Anonymous function can not be declared abstract" 
+                      (syntax-error "Anonymous function can not be declared abstract"
                                     token-list)
                       (set! abstract? #t)))
               (set! body (parse-expr-2p (car nl))))
@@ -431,7 +431,7 @@
 
 (define (parse-slot-prop-2p node)
   (cond ((apt-seq? node) (parse-slot-seq-prop-2p (apt-seq-body node)))
-        ((apt-id? node) (cond ((or (equal? (apt-id-value node) "public") 
+        ((apt-id? node) (cond ((or (equal? (apt-id-value node) "public")
                                    (equal? (apt-id-value node) "private")
                                    (equal? (apt-id-value node) "transient"))
                                (make-object <apt:slot-prop>
