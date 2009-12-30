@@ -50,8 +50,9 @@ def f()
 --  with-break(a = #function(x) { x } ) {
 --    outln(1)
 --  }
---  abc()
---  x.decr!(5)
---  x.incr!(5)
+  abc()
+  x.decr!(5)
+  x.incr!(5)
+
   a.bbb(1).ccc
   n.ccc

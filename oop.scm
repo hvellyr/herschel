@@ -141,7 +141,7 @@
                                  (if (null? my-classes)
                                      (if have-specialised
                                          *unspecific*
-                                         (error "method  not specialised"))
+                                         (error "method not specialised"))
                                      (let* ((class (car my-classes))
                                             (specialised-methods (vector-ref
                                                                   class *specialised-methods-offset*))
@@ -158,7 +158,7 @@
                        (set! have-specialised #f)
                        (set! my-classes classes)
                        (call-next-method))))))
-         this-function)))
+         this-function)) )
     ))
 
 
