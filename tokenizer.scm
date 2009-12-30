@@ -34,6 +34,7 @@
       (set! line-count (+ line-count 1)))
   current-char)
 
+
 (define (read-comment-line port)
   (let loop ((c current-char))
     (if (or (eof-object? c))
@@ -42,14 +43,17 @@
             (next-char port)
             (loop (next-char port))))))
 
+
 (define (in-char-range? c from to)
   (and (char>=? c from)
        (char<=? c to)))
+
 
 (define (is-whitespace c)
   (or (char=? c #\space)
       (char=? c #\newline)
       (char=? c #\tab)))
+
 
 (define (is-digit c)
   (in-char-range? c #\0 #\9))
@@ -67,6 +71,7 @@
       (and (char>=? c #\A)
            (char<=? c #\Z))))
 
+
 (define (is-alpha-spec c)
   (or (char=? c #\-)
       (char=? c #\_)
@@ -78,10 +83,12 @@
       (char=? c #\?)
       (char=? c #\/)))
 
+
 (define (is-symbol-char c)
   (or (is-alpha c)
       (is-digit c)
       (is-alpha-spec c)))
+
 
 (define (is-delimiter c)
   (or (is-whitespace c)
@@ -443,6 +450,7 @@
          ( else (cons 'ERROR "unknown hash-notation")))
         (cons 'ERROR "unknown hash-notation"))))
 
+
 (define (dispatch-id-operator-read port)
   (let* ((token (read-identifier "" port 'SYM)))
     (if (and (pair? token)
@@ -477,9 +485,11 @@
          (else token))
         token)))
 
+
 (define (return-and-next port type)
   (next-char port)
   type)
+
 
 (define (tokenize-next-token port)
   (if (eof-object? current-char)
@@ -570,6 +580,7 @@
                (else (return-and-next port (cons 'UNKNOWN current-char)))))
         )))
 
+
 (define (tokenize-port port)
   (next-char port)
   (let loop ((token (tokenize-next-token port)))
@@ -580,6 +591,7 @@
         (begin
           (display token) (display " ") (newline)
           (loop (tokenize-next-token port))))) )
+
 
 (define (tokenize-file filename)
   (let ((port (open-input-file filename)))
@@ -603,9 +615,11 @@
        (let ((val (token-value token)))
          (equal? (string-ref val (- (string-length val) 1)) #\:))))
 
+
 (define (keyarg-token-value token)
   (let ((val (cdr token)))
     (substring val 0 (- (string-length val) 1))))
+
 
 (define (keyword-token? token)
   (and (pair? token)
