@@ -14,27 +14,28 @@
 ;;  You should have received a copy of the GNU General Public License
 ;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+(load "../apt.scm")
 (load "../cmpmcr.scm")
 (load "../misc.scm")
 (load "../oop.scm")
 (load "../parctx.scm")
+(load "../tokenizer.scm")
 (load "../ast.scm")
 
 (load "../parse1.scm")
 (load "../parse2.scm")
 
 
-
 (define (parse-file filename)
-  (let* ((port (open-input-file filename))
+  (let* ((file-port (open-input-file filename))
+         (port (make-object <hea:file-token-port> (list file-port)))
          (ctx (make-object <parse-context> '()))
          (expr1-tree (begin
-                       (next-char port)
                        (next-token port)
                        (parse-next-top ctx port)))
          (expr2-tree (parse-next-top-2p expr1-tree)))
 
-    (close-input-port port)
+    (close-input-port file-port)
 
     (arc:display 'nl 'nl)
 ;;;    (arc:display "------- macros ------------------------" 'nl)
