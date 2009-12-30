@@ -104,7 +104,7 @@
   self)
 
 
-(define-method (fetch-next-token <hea:internal-token-port>)
+(define-method (next-token <hea:internal-token-port>)
   (let ((tl (slot-ref self 'tokenlist)))
     (if (not (null? tl))
         (let ((token (car tl)))
@@ -121,7 +121,7 @@
   self)
 
 
-(define-method (fetch-next-token <hea:file-token-port>)
+(define-method (next-token <hea:file-token-port>)
   (let* ((token (tokenize-next-token (slot-ref self 'file-port))))
     (translate-token token)))
 
@@ -362,6 +362,7 @@
   (let check-next ((node (cadar (vector-ref syntax-table 1)))
                    (token (current-token port))
                    (bindings '()))
+    ;;(arc:display "x5 node " token 'nl)
     (let ((follow-set (st-find-node node (current-token port))))
       (cond (follow-set
              (check-next follow-set (next-token port) bindings))
@@ -407,16 +408,18 @@
 
 (define (parse-do-match-syntax-func ctx port expr args syntax-table
                                     parse-parameters?)
+  ;;(arc:display "x3 " (current-token port) " - " parse-parameters? " - " args 'nl)
   (let ((old-current-token (current-token port)))
     (if parse-parameters?
         (begin
+          (unread-token port old-current-token)
           (if args
               (let ((next-tk (next-token port)))
                 (unread-token port next-tk)
                 (if (not (apt-punct-eq? next-tk ")"))
                     (unread-token port (apt-punct ",")))
                 (unread-token port args)))
-          (unread-token port old-current-token))
+          (unread-token port (apt-punct "(")))
         (begin
           (unread-token port old-current-token)
           (unread-token port (apt-punct ")"))
@@ -432,6 +435,7 @@
                                 (cons (apt-punct ",") res))
                           (cons (car nl) res)))))
           (unread-token port (apt-punct "(")) ))
+    ;;(arc:display "x4 " expr " - " (current-token port) 'nl)
     (current-token-set! port expr)
     (match-syntax ctx port syntax-table)) )
 
@@ -452,6 +456,7 @@
 
 (define (parse-make-macro-call ctx port expr args macro type
                                parse-parameters? scope)
+  ;;(arc:display "x1 " (current-token port) " - " type 'nl)
   (let* ((syntax-table (vector-ref macro 2))
          (filtered (cond ((or (eq? type 'func)
                               (eq? type 'stmt))
@@ -466,17 +471,18 @@
                           (parse-do-match-syntax-on ctx port
                                                     syntax-table scope))
                          (else #f))) )
+    ;;;(arc:display "x2 " filtered 'nl)
     (if (and (list? filtered)
              (> (length filtered) 0))
-        (let ((follows filtered)
-              (last-current-token (current-token port))
-              (retval #f))
+        (let* ((follows filtered)
+               (last-current-token (current-token port))
+               (retval #f)
+               (temp-port (make-object <hea:internal-token-port>
+                                       (list (cdr follows)))))
+          (push-port port temp-port)
           (current-token-set! port (car follows))
-          (set! retval
-                (apt-seq* (parse-exprlist ctx
-                                          (make-object <hea:internal-token-port>
-                                                       (list (cdr follows)))
-                                          '())))
+          (set! retval (apt-seq* (parse-exprlist ctx port '())))
+          (pop-port port)
           (current-token-set! port last-current-token)
           retval)
         #f)))

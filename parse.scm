@@ -28,15 +28,14 @@
 
 (define (parse-file filename)
   (let* ((file-port (open-input-file filename))
-         (port (make-object <hea:file-token-port> (list file-port)))
+         (ftport (make-object <hea:file-token-port> (list file-port)))
+         (port (make-object <hea:parse-port> (list ftport)))
          (ctx (make-object <parse-context> '()))
          (expr1-tree (begin
                        (next-token port)
                        (parse-next-top ctx port)))
          (expr2-tree (parse-next-top-2p expr1-tree)))
-
     (close-input-port file-port)
-
     (arc:display 'nl 'nl)
 ;;;    (arc:display "------- macros ------------------------" 'nl)
 ;;;    (for-each (lambda (m)
