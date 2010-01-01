@@ -17,6 +17,12 @@
 
 ;;----------------------------------------------------------------------
 
+(define (apt? apt)
+  (and (list? apt)
+       (>= (length apt) 1)
+       (symbol? (car apt))))
+
+
 (define (apt-append-list dst src)
   (append dst (arc:reduce (lambda (o nl)
                             (if o
