@@ -202,7 +202,6 @@
 
 
 (define (qualified-id-for-lookup ctx id)
-  (arc:display "Namespaces: " (slot-ref ctx 'ns-mappings) 'nl)
   (let ((qual-id (qualified-id* id '*)))
     (if (not (eq? (cdr qual-id) '*))
         (let ((ns (lookup-namespace ctx (cdr qual-id))))
