@@ -67,23 +67,22 @@
 
 ;;;---------------------------------------------------------------------------
 
-(define-class <apt:vardef> (<apt:node>) (sym type init-value const? fluid?))
+(define-class <apt:vardef> (<apt:node>) (type init-value const? fluid?))
 
 (define-method (initialise <apt:vardef> args)
   (call-next-method)
-  (slot-set! self 'sym (list-ref args 0))
-  (slot-set! self 'type (list-ref args 1))
-  (slot-set! self 'init-value (list-ref args 2))
-  (slot-set! self 'const? (list-ref args 3))
-  (slot-set! self 'fluid? (list-ref args 4))
+  (slot-set! self 'type (list-ref args 0))
+  (slot-set! self 'init-value (list-ref args 1))
+  (slot-set! self 'const? (list-ref args 2))
+  (slot-set! self 'fluid? (list-ref args 3))
   self)
 
 (define-method (debug->xml <apt:vardef>)
   (call-next-method)
-  (arc:display "<def><var scope='global' name='" (slot-ref self 'sym) "'>" 'nl)
+  (arc:display "<var>")
   (debug-slot->xml self "type" 'type)
   (debug-slot->xml self "init-value" 'init-value)
-  (arc:display "</var></def>" 'nl))
+  (arc:display "</var>"))
 
 
 ;;;---------------------------------------------------------------------------

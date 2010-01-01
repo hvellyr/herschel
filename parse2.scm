@@ -347,7 +347,7 @@
   (parse-funcdef-2p token-list #t 'global))
 
 
-(define (parse-vardef-2p token-list const? fluid?)
+(define (parse-vardef-2p token-list const? fluid? scope)
   (if (apt-id? (car token-list))
       (let* ((sym (apt-id-value (car token-list)))
              (type #f)
@@ -365,17 +365,19 @@
                   (if (apt-punct-eq? (car nl) "=")
                       (if (not (null? (cdr nl)))
                           (set! init-value (parse-expr-2p (cadr nl))))))))
-        (make-object <apt:vardef> (list sym type init-value
-                                        const? fluid?)))
+        (make-object <apt:def>
+                     (list scope sym
+                           (make-object <apt:vardef> (list type init-value
+                                                           const? fluid?)))))
       #f))
 
 
-(define (parse-const-2p token-list)
-  (parse-vardef-2p token-list #t #f))
+(define (parse-const-2p token-list scope)
+  (parse-vardef-2p token-list #t #f scope))
 
 
-(define (parse-fluid-2p token-list)
-  (parse-vardef-2p token-list #f #t))
+(define (parse-fluid-2p token-list scope)
+  (parse-vardef-2p token-list #f #t scope))
 
 
 (define (parse-class-param-2p node)
@@ -554,8 +556,8 @@
 (define (parse-def-2p token-list scope)
   (let ((node (car token-list)))
     (cond ((apt-id-eq? node "meth")  (parse-methdef-2p (cdr token-list)))
-          ((apt-id-eq? node "const") (parse-const-2p (cdr token-list)))
-          ((apt-id-eq? node "fluid") (parse-fluid-2p (cdr token-list)))
+          ((apt-id-eq? node "const") (parse-const-2p (cdr token-list) scope))
+          ((apt-id-eq? node "fluid") (parse-fluid-2p (cdr token-list) scope))
           ((apt-id-eq? node "class") (parse-classdef-2p (cdr token-list) #t))
           ((apt-id-eq? node "type")  (parse-typedef-2p (cdr token-list)))
           ((apt-id-eq? node "alias") (parse-alias-2p (cdr token-list) scope))
@@ -564,11 +566,11 @@
                (cond ((apt-nested? (cadr token-list))
                       (parse-funcdef-2p token-list #f scope))
                      ((apt-punct-eq? (cadr token-list) "=")
-                      (parse-vardef-2p token-list #f #f))
+                      (parse-vardef-2p token-list #f #f scope))
                      ((apt-punct-eq? (cadr token-list) ":")
-                      (parse-vardef-2p token-list #f #f))
+                      (parse-vardef-2p token-list #f #f scope))
                      (else (syntax-error "error: unsupported node: " node)) )
-               (parse-vardef-2p token-list #f #f)))
+               (parse-vardef-2p token-list #f #f scope)))
           (else (syntax-error "error: unsupported node: " node)) )))
 
 
