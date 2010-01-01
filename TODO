@@ -16,7 +16,6 @@
 *** DONE Def var macro usage
 *** DONE Def macro usage
 *** TODO Symbol usage?
-* BUG replace <vardef> by <def><vardef>
 
 * TODO macro hygiene
   especially with import and namespaces
