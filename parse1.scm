@@ -188,7 +188,8 @@
    (else (let ((expr (parse-proc ctx)))
            (if expr
                (begin
-                 (parse-exprlist ctx (append exprlist (list expr))))
+                 (parse-exprlist* ctx (append exprlist (list expr))
+                                  parse-proc))
                exprlist))) ))
 
 
@@ -339,28 +340,59 @@
           #f))))
 
 
+(define (replace-sanghash-ids tokens)
+  (let sanghash-loop ((nl tokens)
+                      (res '()))
+    (if (null? nl)
+        (begin
+         (arc:display "---> " res 'nl)
+         res)
+        (let ((token (car nl)))
+          (if (apt-id? token)
+              (let ((operand1 token))
+                (if (and (not (null? (cdr nl)))
+                         (not (null? (cddr nl))))
+                    (if (apt-punct-eq? (cadr nl) "##")
+                        (if (apt-id? (caddr nl))
+                            (sanghash-loop
+                             (cdddr nl)
+                             (append res
+                                     (list (apt-id (string-append
+                                                    (apt-id-value token)
+                                                    (apt-id-value (caddr nl)))))))
+                            (syntax-error "## requires right hand id value"
+                                          tokens))
+                        (sanghash-loop (cdr nl)
+                                       (append res (list token))))
+                    (sanghash-loop (cdr nl)
+                                   (append res (list token)))))
+              (sanghash-loop (cdr nl) (append res (list token))))))
+    ))
+
+
 (define (replace-match-bindings template bindings)
   (let bindings-loop ((nl template)
                       (res '()))
     (if (null? nl)
-        res
+        (replace-sanghash-ids res)
         (let* ((token (car nl))
-               (replc-token (cond ((apt-punct? token) token)
-                                  ((apt-lit? token) token)
-                                  ((apt-id? token) token)
+               (replc-token
+                (cond ((apt-punct? token) token)
+                      ((apt-lit? token) token)
+                      ((apt-id? token) token)
 
-                                  ((apt-nested? token)
-                                   (apt-nested* (apt-nested-left token)
-                                                (apt-nested-right token)
-                                                (replace-match-bindings
-                                                 (apt-nested-body token)
-                                                 bindings)))
-                                  ((apt-seq? token)
-                                   (apt-seq* (replace-match-bindings
-                                              (apt-seq-body token) bindings)))
-                                  ((apt-macro-param? token)
-                                   (apt-find-replace-token token bindings))
-                                  (else #f))))
+                      ((apt-nested? token)
+                       (apt-nested* (apt-nested-left token)
+                                    (apt-nested-right token)
+                                    (replace-match-bindings
+                                     (apt-nested-body token)
+                                     bindings)))
+                      ((apt-seq? token)
+                       (apt-seq* (replace-match-bindings
+                                  (apt-seq-body token) bindings)))
+                      ((apt-macro-param? token)
+                       (apt-find-replace-token token bindings))
+                      (else #f))))
           (if replc-token
               (bindings-loop (cdr nl) (append res (list replc-token)))
               (bindings-loop (cdr nl) res)) ))))
@@ -497,7 +529,7 @@
                 (cond ((eq? scope 'local)
                        (apt-seq* (parse-exprlist ctx '())))
                       ((eq? scope 'global)
-                       (apt-seq* (parse-top-exprlist ctx '())))
+                       (parse-top-exprlist ctx '()))
                       (else (syntax-error "Unknown scope" expr))))
           (pop-port (current-port ctx))
           (current-token-set! ctx last-current-token)
@@ -1179,7 +1211,7 @@
 
 
 (define (parse-macro-def ctx scope modifiers)
-  (arc:assert (eq? scope 'local) "TODO.  Local macro def not supported yet")
+  (arc:assert (eq? scope 'global) "TODO.  Local macro def not supported yet")
   (if (apt-id? (current-token ctx))
       (let ((sym (apt-id-value (current-token ctx))))
         (next-token ctx)
@@ -1543,7 +1575,18 @@
     (if (eq? (current-token ctx) 'EOF)
         apt
         (let ((expr (parse-top-expr ctx)))
-          (cond ((eq? expr 'ignore) (nt-loop apt))
+          (cond ((and (list? expr)
+                      (not (apt? expr)))
+                 (let nt2-loop ((nl expr))
+                   (arc:display "NT2 " nl 'nl)
+                   (if (null? nl)
+                       (nt-loop apt)
+                       (cond ((eq? (car nl) 'ignore) (nt2-loop (cdr nl)))
+                             ((not expr) (nt2-loop (cdr nl)))
+                             (else (begin
+                                     (set! apt (append apt (list (car nl))))
+                                     (nt2-loop (cdr nl))))))))
+                ((eq? expr 'ignore) (nt-loop apt))
                 ((not expr) #f)
                 (else (nt-loop (append apt (list expr)))))))))
 
