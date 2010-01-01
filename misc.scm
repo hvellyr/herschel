@@ -22,22 +22,22 @@
 
 
 (define (arc:display . values)
-  (let loop ((v values))
+  (let display-loop ((v values))
     (if (null? v)
         #t
         (begin
           (case (car v)
             ((nl) (newline))
             (else (display (car v))))
-          (loop (cdr v))))))
+          (display-loop (cdr v))))))
 
 
 (define (string-find str c start-idx)
   (let ((len (string-length str)))
-    (let loop ((idx start-idx))
+    (let strfind-loop ((idx start-idx))
       (cond ((>= idx len) #f)
             ((char=? (string-ref str idx) c) idx)
-            (else (loop (+ idx 1)))))))
+            (else (strfind-loop (+ idx 1)))))))
 
 
 (define (string-split str c)
@@ -46,6 +46,15 @@
         (list (substring str 0 pos)
               (substring str (+ pos 1) (string-length str)))
         #f)))
+
+
+(define (arc:assert test . comment)
+  (if (not test)
+      (if (null? comment)
+          (arc:display "Assertion failed: " test 'nl)
+          (arc:display "Assertion failed: " (car comment) 'nl "  " test 'nl))
+      #t))
+
 
 ;;Keep this comment at the end of the file
 ;;Local variables:

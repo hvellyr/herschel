@@ -1,12 +1,45 @@
 -*-org-*-
 
 * TODO use namespace info in first pass parse
+** defines
+*** DONE alias
+*** DONE type
+*** DONE class
+*** DONE macro
+*** TODO macro replacement
+    (see hygiene)
+*** DONE functions
+*** DONE variables
+** Usage
+*** DONE Function macro usage
+*** DONE On macro usage
+*** DONE Def var macro usage
+*** DONE Def macro usage
+*** TODO Symbol usage?
+* BUG replace <vardef> by <def><vardef>
+
+* TODO macro hygiene
+  especially with import and namespaces
 
 * TODO Reference type params
 ** TODO Add self.Class stuff to documentation
 ** TODO Add self.Type.X stuff to documentation
+** TODO review/rewrite macro specification
 
+* Macros
+** BUG Symbols in "def" macros are not defined in namespace
+   When applying the following macro
 
+     def macro ff
+     {
+       { def ff ?a:name () ?body:expr } -> { def ?a (self) ?body }
+     }
 
+   with
 
+     def ff m() "hello"
+
+   "m" is not defined in the current namespace, but in #f.  The replacement
+   text is not interpreted as "def" at all.
+** TODO Implement ## name construction in macro replacement
 

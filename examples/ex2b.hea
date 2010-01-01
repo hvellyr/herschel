@@ -1,0 +1,76 @@
+namespace heather("eyestep/heather 1.0:core")
+namespace io("eyestep/heather 1.0:io")
+
+
+namespace mo("de.sijo.heather.test")
+
+def alias T = Int
+
+def type N : (Int, String) 
+
+def const x = 11
+
+def f(x)
+  x ** 2
+
+def macro abc
+{
+  { abc(?x:expr) } -> { xyz(?x) }
+}
+
+def macro tool
+{
+  { on tool(?x:name) ?body:expr } -> { { let ?x = #f ?body } }
+}
+
+def macro cvar
+{
+  { def cvar ?a:name = ?init:expr } -> { def const ?a = ?init }
+}
+
+def macro ff
+{
+  { def ff ?a:name () ?body:expr } -> { def ?a (self, x, y) ?body }
+}
+
+
+
+namespace arh("ixwick/graphics 0.9b:external")
+
+def macro abc
+{
+  { abc(?x:expr) } -> { uvw(?x) }
+}
+
+def macro tool
+{
+  { on tool(?x:name, ?y:name) ?body:expr } -> { { let ?x = #f
+                                                  let ?y = #t 
+                                                  ?body } }
+}
+
+def macro cvar
+{
+  { def cvar ?a:name = ?init:expr } -> { def ?a = ?init * 2 }
+}
+
+def macro ff
+{
+  { def ff ?a:name () ?body:expr } -> { def ?a (self) ?body }
+}
+
+
+namespace mo
+
+def <arh>cvar x = 127
+def <mo>cvar y = 5555
+
+def <arh>ff m()  "hello"
+
+--def g()
+--  on <mo>tool(a)
+--    <arh>abc(55) + <mo>abc(111)
+--
+--  on <arh>tool(a, b)
+--    a + b
+--

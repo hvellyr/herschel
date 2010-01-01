@@ -46,7 +46,7 @@
         (set! *arc:optarg* '())
         (set! *arc:optopt* (car arg))
         (if cmpf
-            (let loop ((t table))
+            (let opt-loop ((t table))
               (if (null? t)
                   #\?
                   (if (string=? (car arg) (apply cmpf (list (car t))))
@@ -59,7 +59,7 @@
                                 (car (car t)))
                               #\:)
                           (car (car t)))
-                      (loop (cdr t)))))
+                      (opt-loop (cdr t)))))
             (car arg)) )))
 
 

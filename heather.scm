@@ -19,7 +19,8 @@
 
 (define %arc:version% "0.1")
 
-(define %arc:verbose% #f)
+(define %hea:verbose% #f)
+(define (hea:verbose) %hea:verbose%)
 
 
 (load "../string.scm")
@@ -32,7 +33,7 @@
 ;;----------------------------------------------------------------------
 
 ;; display a help text
-(define (arc:display-help)
+(define (hea:display-help)
   (arc:display
    "arc - a scheme based make and config system" 'nl
    "usage:" 'nl
@@ -62,14 +63,14 @@
                    (dir       "-d" "--dir" #t)
                    (help      "-h" "--help" #f)
                    (version   "-V" "--version" #f)))
-(let loop ((opt (arc:getopt %arc:argv% arc:opts)))
+(let heaopt-loop ((opt (arc:getopt %arc:argv% arc:opts)))
   (if (not opt)
       #f
       (let ((done #f))
         (case opt
-          ((verbose) (set! %arc:verbose% #t))
+          ((verbose) (set! %hea:verbose% #t))
           ((help) (begin
-                    (arc:display-help)
+                    (hea:display-help)
                     (set! done #t)))
           ((version) (begin
                        (arc:display-version)
@@ -81,7 +82,7 @@
           (else (begin
                   (set! *list-of-files* (append *list-of-files* (list opt)))) ))
         (if (not done)
-            (loop (arc:getopt %arc:argv% arc:opts)))) ))
+            (heaopt-loop (arc:getopt %arc:argv% arc:opts)))) ))
 
 
 

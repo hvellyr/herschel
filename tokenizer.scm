@@ -36,12 +36,12 @@
 
 
 (define (read-comment-line port)
-  (let loop ((c current-char))
+  (let rcom-loop ((c current-char))
     (if (or (eof-object? c))
         #f
         (if (equal? c #\newline)
             (next-char port)
-            (loop (next-char port))))))
+            (rcom-loop (next-char port))))))
 
 
 (define (in-char-range? c from to)
@@ -104,14 +104,14 @@
 
 
 (define (read-identifier prefix port type)
-  (let loop ((res '()))
+  (let id-loop ((res '()))
     (if (or (eof-object? current-char)
             (is-delimiter current-char))
         (cons type (string-append prefix (list->string (reverse res))))
 
         (let ((c current-char))
           (next-char port)
-          (loop (cons c res))) )))
+          (id-loop (cons c res))) )))
 
 
 (define (translate-number str)
@@ -128,13 +128,13 @@
 
 
 (define (read-int-number-part port pred)
-  (let loop ((res '()))
+  (let num-loop ((res '()))
     (if (or (eof-object? current-char)
             (not (pred current-char)))
         (list->string (reverse res))
         (let ((c current-char))
           (next-char port)
-          (loop (cons c res))))))
+          (num-loop (cons c res))))))
 
 
 (define (make-number-string first second exp-sign exp)
@@ -335,7 +335,7 @@
 
 (define (read-string separator port)
   (next-char port)                      ; ignore the leading "
-  (let loop ((res '()))
+  (let rstr-loop ((res '()))
     (if (eof-object? current-char)
         (cons 'ERROR "unfinished string")
         (if (char=? current-char separator)
@@ -348,11 +348,11 @@
                   (let ((token (read-character port #t)))
                     (if (and (pair? token)
                              (eq? (car token) 'CHAR))
-                        (loop (cons (cdr token) res))
+                        (rstr-loop (cons (cdr token) res))
                         token))
                   (begin
                     (next-char port)
-                    (loop (cons c res)))) )))))
+                    (rstr-loop (cons c res)))) )))))
 
 
 (define (map-charnm->char name)
@@ -583,14 +583,14 @@
 
 (define (tokenize-port port)
   (next-char port)
-  (let loop ((token (tokenize-next-token port)))
+  (let tp-loop ((token (tokenize-next-token port)))
     (if (eq? token 'EOF)
         (begin
           (newline)
           #t)
         (begin
           (display token) (display " ") (newline)
-          (loop (tokenize-next-token port))))) )
+          (tp-loop (tokenize-next-token port))))) )
 
 
 (define (tokenize-file filename)

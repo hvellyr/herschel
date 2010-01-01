@@ -10,11 +10,11 @@
 ;;; generics and multiple inheritance.
 
 (define (fold op base list)
-  (let loop ((result base)
+  (let fold-loop ((result base)
              (list list))
     (if (null? list)
         result
-        (loop (op (car list) result) (cdr list)))))
+        (fold-loop (op (car list) result) (cdr list)))))
 
 ;;; Slot names should come last in the vector which represents a class.
 
@@ -34,18 +34,18 @@
 ;;; which is hard to do).
 
 (define (flatten superclasses)
-  (let loop ((new-superclasses '())
-             (superclasses superclasses))
+  (let flatten-loop ((new-superclasses '())
+                     (superclasses superclasses))
     (if (null? superclasses)
         new-superclasses
-        (loop (append new-superclasses
-                      (let ((superclass (car superclasses)))
-                        (if (equal? superclass <class>)
-                            (list superclass)
-                            (cons superclass
-                                  (vector-ref superclass
-                                              *superclasses-offset*)))))
-              (cdr superclasses)))))
+        (flatten-loop (append new-superclasses
+                              (let ((superclass (car superclasses)))
+                                (if (equal? superclass <class>)
+                                    (list superclass)
+                                    (cons superclass
+                                          (vector-ref superclass
+                                                      *superclasses-offset*)))))
+                      (cdr superclasses)))))
 
 (define (remove-from elt list)
   (cond
@@ -80,9 +80,9 @@
     (vector-set! class-vector *superclasses-offset* (uniquify (flatten superclasses)))
     (vector-set! class-vector *specialised-methods-offset* '())
     (vector-set! class-vector *name-offset* name)
-    (let loop ((slots slots)
-               (slot-offset *slot-names-offset*)
-               (vector-offset *slot-names-offset*))
+    (let makcl-loop ((slots slots)
+                     (slot-offset *slot-names-offset*)
+                     (vector-offset *slot-names-offset*))
       (if (null? slots)
           class-vector
           (let ((slot (car slots)))
@@ -90,8 +90,8 @@
                 (begin
                   (vector-set! class-vector vector-offset
                                (vector-ref slot slot-offset))
-                  (loop slots (+ 1 slot-offset) (+ 1 vector-offset)))
-                (loop (cdr slots) *slot-names-offset* vector-offset)))))))
+                  (makcl-loop slots (+ 1 slot-offset) (+ 1 vector-offset)))
+                (makcl-loop (cdr slots) *slot-names-offset* vector-offset)))))))
 
 ;;; The root class must contain entries for everything *except* slots.
 
@@ -181,19 +181,19 @@
 (define (slot-ref object slot-name)
   (let* ((class (vector-ref object *class-offset*))
          (top (vector-length class)))
-    (let loop ((offset *slot-names-offset*))
+    (let sltref-loop ((offset *slot-names-offset*))
       (cond
        ((= offset top)
         (error (string-append "no such slot: " slot-name)))
        ((equal? slot-name (vector-ref class offset))
         (vector-ref object (+ (- offset *slot-names-offset*) *slots-offset*)))
        (else
-        (loop (+ 1 offset)))))))
+        (sltref-loop (+ 1 offset)))))))
 
 (define (slot-set! object slot-name value)
   (let* ((class (vector-ref object *class-offset*))
          (top (vector-length class)))
-    (let loop ((offset *slot-names-offset*))
+    (let sltst-loop ((offset *slot-names-offset*))
       (cond
        ((= offset top)
         (error (string-append "no such slot: " slot-name)))
@@ -201,14 +201,14 @@
         (vector-set! object (+ (- offset *slot-names-offset*)
                                *slots-offset*) value))
        (else
-        (loop (+ 1 offset)))))))
+        (sltst-loop (+ 1 offset)))))))
 
 ;;; For the static safety diehards, here are faster and `safer' variants of
 ;;; the above, which return closures to do the necessary work.
 
 (define (member-accessor class slot-name)
   (let ((top (vector-length class)))
-    (let loop ((offset *slot-names-offset*))
+    (let macc-loop ((offset *slot-names-offset*))
       (cond
        ((= offset top)
         (error (string-append "no such slot: " slot-name)))
@@ -217,11 +217,11 @@
           (vector-ref object (+ (- offset *slot-names-offset*)
                                 *slots-offset*))))
        (else
-        (loop (+ 1 offset)))))))
+        (macc-loop (+ 1 offset)))))))
 
 (define (member-mutator class slot-name)
   (let ((top (vector-length class)))
-    (let loop ((offset *slot-names-offset*))
+    (let mmut-loop ((offset *slot-names-offset*))
       (cond
        ((= offset top)
         (error (string-append "no such slot: " slot-name)))
@@ -230,7 +230,7 @@
           (vector-set! object (+ (- offset *slot-names-offset*)
                                  *slots-offset*) value)))
        (else
-        (loop (+ 1 offset)))))))
+        (mmut-loop (+ 1 offset)))))))
 
 ;;; I have no idea whether this may be useful or not (I've never used such
 ;;; a thing myself), but it was easy to write and Every Object System
@@ -239,12 +239,12 @@
 (define (is-a? object class)
   (let ((real-class (vector-ref object *class-offset*)))
     (or (eq? real-class class)
-        (let loop ((superclasses (vector-ref real-class
+        (let isa-loop ((superclasses (vector-ref real-class
                                              *superclasses-offset*)))
           (cond
            ((null? superclasses) #f)
            ((eq? (car superclasses) class) #t)
-           (else (loop (cdr superclasses))))))))
+           (else (isa-loop (cdr superclasses))))))))
 
 (define (class-of object)
   (vector-ref object *class-offset*))
@@ -321,7 +321,7 @@
   (if (not (eq? class <class>))
       (begin
         (apply display (cons ": " output-port))
-        (let loop ((superclasses (vector-ref class *superclasses-offset*)))
+        (let wcl-loop ((superclasses (vector-ref class *superclasses-offset*)))
           (if (not (null? superclasses))
               (if (null? (cdr superclasses))
                   (apply display (cons (vector-ref (car superclasses) *name-offset*)
@@ -330,7 +330,7 @@
                     (apply display (cons (vector-ref (car superclasses) *name-offset*)
                                          output-port))
                     (apply write-char (cons #\space output-port))
-                    (loop (cdr superclasses))))))))
+                    (wcl-loop (cdr superclasses))))))))
   (apply display (cons ", " output-port))
   (let ((length (vector-length class)))
     (if (= length *slot-names-offset*)
