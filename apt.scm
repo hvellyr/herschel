@@ -102,17 +102,29 @@
 
 
 (define (apt-id id)
-  (list 'id id))
+  (list 'id id #f))
+
+
+(define (apt-id* id ns)
+  (list 'id id ns))
 
 
 (define (apt-id? id)
   (and (list? id)
-       (= (length id) 2)
+       (>= (length id) 2)
        (eq? (car id) 'id)))
 
 
 (define (apt-id-value id)
   (cadr id))
+
+
+(define (apt-id-ns id)
+  (caddr id))
+
+
+(define (apt-id-set-ns! id ns)
+  (set-car! (cddr id) ns))
 
 
 (define (apt-id-eq? id val)
@@ -129,6 +141,41 @@
 (define (apt-id-keyarg-value id)
   (let ((val (apt-id-value id)))
     (substring val 0 (- (string-length val) 1))))
+
+
+(define (apt-symbol value)
+  (let* ((ns-pos (if (char=? (string-ref value 0) #\<)
+                     (string-find value #\> 1)
+                     #f))
+         (ns (if ns-pos
+                 (substring value 1 ns-pos)
+                 #f))
+         (sym (if ns-pos
+                  (substring value (+ ns-pos 1) (string-length value))
+                  value)))
+    (if ns
+        (apt-id* sym ns)
+        (apt-id sym))))
+
+
+(define (qualified-id* id fallback-ns)
+  (let* ((value (apt-id-value id))
+         (ns-pos (if (char=? (string-ref value 0) #\<)
+                     (string-find value #\> 1)
+                     #f))
+         (ns (if ns-pos
+                 (substring value 1 ns-pos)
+                 #f))
+         (name (if ns-pos
+                   (substring value (+ ns-pos 1) (string-length value))
+                   value)))
+    (if ns
+        (cons name ns)
+        (cons name fallback-ns))))
+
+
+(define (qualified-id id)
+  (qualified-id* id ""))
 
 
 (define (apt-punct val)
@@ -155,7 +202,8 @@
 
 
 (define (apt-nested* left right contained)
-  (apt-append-list (list 'nested left right) contained))
+  (apt-append-list (list 'nested left right)
+                   (if contained contained '())))
 
 
 (define (apt-nested? expr)
@@ -224,21 +272,6 @@
 ;; higher order functions
 (define (apt-funcall expr1 args)
   (apt-seq expr1 (apt-nested* "(" ")" args)))
-
-
-;;;(define (apt-symbol value)
-;;;  (let* ((ns-pos (if (char=? (string-ref value 0) #\<)
-;;;                     (string-find value #\> 1)
-;;;                     #f))
-;;;         (ns (if ns-pos
-;;;                 (substring value 1 ns-pos)
-;;;                 #f))
-;;;         (sym (if ns-pos
-;;;                  (substring value (+ ns-pos 1) (string-length value))
-;;;                  value)))
-;;;    (if ns
-;;;        (vector ':apt 'symbol ':ns ns ':sym sym)
-;;;        (vector ':apt 'symbol ':sym sym))))
 
 
 (define (apt-class type sym params isatype decls)

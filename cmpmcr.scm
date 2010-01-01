@@ -75,14 +75,14 @@
 
 
 (define (macro-get-prods-by-name macr name)
-  (let loop ((res '())
+  (let pbn-loop ((res '())
              (nl (macro-patterns macr)))
     (if (null? nl)
         res
         (if (equal? (macro-prod-name (car nl)) name)
-            (loop (append res (list (car nl)))
-                  (cdr nl))
-            (loop res (cdr nl))))) )
+            (pbn-loop (append res (list (car nl)))
+                      (cdr nl))
+            (pbn-loop res (cdr nl))))) )
 
 
 (define (macro-split-macroparam str)
@@ -132,21 +132,21 @@
 
 
 (define (st-find-node node token)
-  (let loop ((nl (vector-ref node 0)))
+  (let fn-loop ((nl (vector-ref node 0)))
     (if (null? nl)
         #f
         (if (token=? (caar nl) token)
             (cadar nl)
-            (loop (cdr nl))))))
+            (fn-loop (cdr nl))))))
 
 
 (define (st-has-eof-set? node)
-  (let loop ((nl (vector-ref node 0)))
+  (let he-loop ((nl (vector-ref node 0)))
     (if (null? nl)
         #f
         (if (eq? (caar nl) 'END)
             #t
-            (loop (cdr nl))))))
+            (he-loop (cdr nl))))))
 
 
 (define (st-find-macro-param node)
@@ -155,12 +155,12 @@
 
 (define (st-extract-macro-param node)
   (let ((token (apt-macro-param "*:expr")))
-    (let loop ((nl (vector-ref node 0)))
+    (let exmp-loop ((nl (vector-ref node 0)))
       (if (null? nl)
           #f
           (if (token=? (caar nl) token)
               (caar nl)
-              (loop (cdr nl)))))))
+              (exmp-loop (cdr nl)))))))
 
 
 (define (st-replacement node)
@@ -168,9 +168,9 @@
 
 
 (define (syntax-table-mixin-pattern-part tree src-pattern replc)
-  (let loop ((res tree)
-             (node tree)
-             (nl src-pattern))
+  (let mixpp-loop ((res tree)
+                   (node tree)
+                   (nl src-pattern))
     (if (null? nl)
         (begin
           (vector-set! node 0 (append (vector-ref node 0)
@@ -188,7 +188,7 @@
                   (set! step (vector '() 'NONE))
                   (vector-set! node 0 (append (vector-ref node 0)
                                               (list (list token step))))))
-            (loop res step (cdr nl))) ))))
+            (mixpp-loop res step (cdr nl))) ))))
 
 
 (define (syntax-table-mixin-pattern! st name pattern replc)
@@ -200,8 +200,8 @@
 
 
 (define (macro-compile macr)
-  (let loop ((res (syntax-table-alloc))
-             (nl (macro-patterns macr)))
+  (let maccmp-loop ((res (syntax-table-alloc))
+                    (nl (macro-patterns macr)))
     (if (null? nl)
         res
         (let* ((prod    (car nl))
@@ -210,7 +210,7 @@
                (replc   (macro-prod-replacement prod)))
           ;;(display "Compile: ") (display name) (newline)
           (syntax-table-mixin-pattern! res name pattern replc)
-          (loop res (cdr nl))))))
+          (maccmp-loop res (cdr nl))))))
 
 ;(display (member ':patterns mcr)) (newline)
 

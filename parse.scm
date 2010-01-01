@@ -30,19 +30,24 @@
   (let* ((file-port (open-input-file filename))
          (ftport (make-object <hea:file-token-port> (list file-port)))
          (port (make-object <hea:parse-port> (list ftport)))
-         (ctx (make-object <parse-context> '()))
+         (ctx (make-object <hea:parse-context> '()))
          (expr1-tree (begin
                        (next-token port)
                        (push-port ctx port)
                        (parse-next-top ctx)))
-         (expr2-tree (parse-next-top-2p expr1-tree)))
+         (expr2-tree (if expr1-tree 
+                         (parse-next-top-2p expr1-tree)
+                         #f)))
     (close-input-port file-port)
-    (arc:display 'nl 'nl)
-;;;    (arc:display "------- macros ------------------------" 'nl)
-;;;    (for-each (lambda (m)
-;;;                (arc:display m 'nl))
-;;;              (macro-registry ctx))
-;;;    (arc:display "---------------------------------------" 'nl)
+
+    (if (hea:verbose)
+        (begin
+          (arc:display 'nl 'nl)
+          (arc:display "------- macros ------------------------" 'nl)
+          (for-each (lambda (m)
+                      (arc:display m 'nl))
+                    (macro-registry ctx))
+          (arc:display "---------------------------------------" 'nl)))
     expr1-tree))
 
 

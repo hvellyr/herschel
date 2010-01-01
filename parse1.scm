@@ -179,26 +179,34 @@
                #f))) ))
 
 
-(define (parse-exprlist ctx exprlist)
+(define (parse-exprlist* ctx exprlist parse-proc)
   (cond
    ((eq? (current-token ctx) 'EOF) exprlist)
    ((apt-punct-eq? (current-token ctx) "}") exprlist)
    ((apt-punct-eq? (current-token ctx) ")") exprlist)
 
-   (else (let ((expr (parse-expr ctx)))
+   (else (let ((expr (parse-proc ctx)))
            (if expr
                (begin
                  (parse-exprlist ctx (append exprlist (list expr))))
                exprlist))) ))
 
 
+(define (parse-exprlist ctx exprlist)
+  (parse-exprlist* ctx exprlist parse-expr))
+
+
+(define (parse-top-exprlist ctx exprlist)
+  (parse-exprlist* ctx exprlist parse-top-expr))
+
+
 (define (parse-modifiers ctx possible-mods)
-  (let loop ((res '()))
+  (let modifier-loop ((res '()))
     (if (and (apt-id? (current-token ctx))
              (member (apt-id-value (current-token ctx)) possible-mods))
         (let* ((sym (apt-id-value (current-token ctx))))
           (next-token ctx)
-          (loop (append res (list sym))))
+          (modifier-loop (append res (list sym))))
         res)))
 
 
@@ -254,11 +262,12 @@
 (define (parse-on ctx possible-on-keys)
   (if (apt-id? (current-token ctx))
       (let ((sym (current-token ctx)))
-        (let* ((macro-id (apt-id-value sym))
+        (let* ((macro-id (qualified-id-for-lookup ctx sym))
                (macro    (lookup-macro ctx macro-id))
-               (type     (lookup-macro-type ctx macro-id)))
+               (type     (lookup-macro-type ctx macro-id))
+               (name     (apt-id (car macro-id))))
           (if macro
-              (parse-make-macro-call ctx sym '()
+              (parse-make-macro-call ctx name '()
                                      macro type #t 'local)
               (if (member (apt-id-value sym) possible-on-keys)
                   (begin
@@ -331,8 +340,8 @@
 
 
 (define (replace-match-bindings template bindings)
-  (let loop ((nl template)
-             (res '()))
+  (let bindings-loop ((nl template)
+                      (res '()))
     (if (null? nl)
         res
         (let* ((token (car nl))
@@ -353,8 +362,8 @@
                                    (apt-find-replace-token token bindings))
                                   (else #f))))
           (if replc-token
-              (loop (cdr nl) (append res (list replc-token)))
-              (loop (cdr nl) res)) ))))
+              (bindings-loop (cdr nl) (append res (list replc-token)))
+              (bindings-loop (cdr nl) res)) ))))
 
 
 (define (match-syntax ctx syntax-table)
@@ -399,7 +408,8 @@
                                     (check-next follow-set (next-token ctx) new-bindings)))
                                 (syntax-error "Expected an symbol got a "
                                               (current-token ctx))))
-                           (else (syntax-error "Expected ?*:expr or ?*:name"))))
+                           (else (syntax-error "Expected ?*:expr or ?*:name"
+                                               (current-token ctx)))))
                    #f)
                ) ))
       )))
@@ -422,40 +432,44 @@
         (begin
           (unread-token ctx old-current-token)
           (unread-token ctx (apt-punct ")"))
-          (let loop ((nl args)
-                     (res '()))
+          (let syntax-loop ((nl args)
+                            (res '()))
             (if (null? nl)
                 (for-each (lambda (x)
                             (unread-token ctx x) )
                           res)
-                (loop (cdr nl)
-                      (if (not (null? (cdr nl)))
-                          (cons (car nl)
-                                (cons (apt-punct ",") res))
-                          (cons (car nl) res)))))
+                (syntax-loop (cdr nl)
+                             (if (not (null? (cdr nl)))
+                                 (cons (car nl)
+                                       (cons (apt-punct ",") res))
+                                 (cons (car nl) res)))))
           (unread-token ctx (apt-punct "(")) ))
     ;;(arc:display "x4 " expr " - " (current-token ctx) 'nl)
     (current-token-set! ctx expr)
     (match-syntax ctx syntax-table)) )
 
 
-(define (parse-do-match-syntax-def ctx syntax-table scope)
-  (unread-token ctx (current-token ctx))
-  (current-token-set! ctx (cond ((eq? scope 'local) (apt-id "let"))
-                                ((eq? scope 'global) (apt-id "def"))
-                                (else (apt-id "unknown"))))
+(define (apt-map-scope scope)
+  (cond ((eq? scope 'global) (apt-id "def"))
+        ((eq? scope 'local) (apt-id "let"))
+        (else (apt-id "bad"))))
+
+
+(define (parse-do-match-syntax-def ctx on-sym syntax-table scope)
+  (unread-token ctx on-sym)
+  (current-token-set! ctx (apt-map-scope scope))
   (match-syntax ctx syntax-table))
 
 
-(define (parse-do-match-syntax-on ctx syntax-table scope)
-  (unread-token ctx (current-token ctx))
+(define (parse-do-match-syntax-on ctx on-sym syntax-table scope)
+  (unread-token ctx on-sym)
   (current-token-set! ctx (apt-id "on"))
   (match-syntax ctx syntax-table))
 
 
 (define (parse-make-macro-call ctx expr args macro type
                                parse-parameters? scope)
-  ;;(arc:display "x1 " (current-token ctx) " - " type 'nl)
+  ;;(arc:display "x1 " (current-token ctx) " - " type " - " args " -- " scope 'nl)
   (let* ((syntax-table (vector-ref macro 2))
          (filtered (cond ((or (eq? type 'func)
                               (eq? type 'stmt))
@@ -464,13 +478,12 @@
                                                       syntax-table
                                                       parse-parameters?))
                          ((eq? type 'def)
-                          (parse-do-match-syntax-def ctx
+                          (parse-do-match-syntax-def ctx expr
                                                      syntax-table scope))
                          ((eq? type 'on)
-                          (parse-do-match-syntax-on ctx
+                          (parse-do-match-syntax-on ctx expr
                                                     syntax-table scope))
                          (else #f))) )
-    ;;;(arc:display "x2 " filtered 'nl)
     (if (and (list? filtered)
              (> (length filtered) 0))
         (let* ((follows filtered)
@@ -480,7 +493,12 @@
                                        (list (cdr follows)))))
           (push-port (current-port ctx) temp-port)
           (current-token-set! ctx (car follows))
-          (set! retval (apt-seq* (parse-exprlist ctx '())))
+          (set! retval
+                (cond ((eq? scope 'local)
+                       (apt-seq* (parse-exprlist ctx '())))
+                      ((eq? scope 'global)
+                       (apt-seq* (parse-top-exprlist ctx '())))
+                      (else (syntax-error "Unknown scope" expr))))
           (pop-port (current-port ctx))
           (current-token-set! ctx last-current-token)
           retval)
@@ -506,14 +524,17 @@
 
 (define (parse-param-call ctx expr pre-scanned-args parse-parameters?)
   (if (apt-id? expr)
-      (let* ((macro-id (apt-id-value expr))
+      (let* ((macro-id (qualified-id-for-lookup ctx expr))
              (macro    (lookup-macro ctx macro-id))
-             (type     (lookup-macro-type ctx macro-id)))
+             (type     (lookup-macro-type ctx macro-id))
+             (sym      (apt-id (car macro-id))))
         (if macro
-            (parse-make-macro-call ctx expr
-                                   pre-scanned-args macro type
-                                   parse-parameters? 'local)
-            (parse-function-call ctx expr pre-scanned-args
+            (begin
+              (arc:assert type "Something wrong with the macro facility?")
+              (parse-make-macro-call ctx sym
+                                     pre-scanned-args macro type
+                                     parse-parameters? 'local))
+            (parse-function-call ctx sym pre-scanned-args
                                  parse-parameters?)))
       (parse-function-call ctx expr pre-scanned-args
                            parse-parameters?)))
@@ -567,7 +588,7 @@
 
 
 (define (parse-const-container ctx del-token? left right)
-  (let loop ((res '()))
+  (let constcont-loop ((res '()))
     (if (del-token? (current-token ctx))
         (begin
           (next-token ctx)
@@ -576,8 +597,8 @@
           (if (apt-punct-eq? (current-token ctx) ",")
               (begin
                 (next-token ctx)
-                (loop (append res (list expr (apt-punct ",")))))
-              (loop (append res (list expr)))) ))))
+                (constcont-loop (append res (list expr (apt-punct ",")))))
+              (constcont-loop (append res (list expr)))) ))))
 
 
 (define (parse-function ctx)
@@ -618,11 +639,9 @@
        ((equal? sym "on") (begin
                             (next-token ctx)
                             (parse-on ctx '("signal" "exit"))))
-
-       (else (begin
+       (else (let ((id (current-token ctx)))
                (next-token ctx)
-               (parse-access ctx (apt-id sym)))) )
-      ))
+               (parse-access ctx id))) )))
 
    ((apt-punct-eq? (current-token ctx) "#(")
     (begin
@@ -772,29 +791,31 @@
 
 
 (define (parse-expr ctx)
-  (letrec ((loop (lambda (expr1 op1)
-                   (let ((expr2 #f))
-                     (if (not op1)
-                         expr1
-                         (begin
-                           (next-token ctx)
-                           (set! expr2 (parse-atom-expr ctx))
+  (letrec ((expr-loop (lambda (expr1 op1)
+                        (let ((expr2 #f))
+                          (if (not op1)
+                              expr1
+                              (begin
+                                (next-token ctx)
+                                (set! expr2 (parse-atom-expr ctx))
 
-                           (if expr2
-                               (let ((op2 (parse-operator ctx)))
-                                 (if (not op2)
-                                     (apt-operator expr1 op1 expr2)
-                                     (if (and (not (operator-right? op1))
+                                (if expr2
+                                    (let ((op2 (parse-operator ctx)))
+                                      (if (not op2)
+                                          (apt-operator expr1 op1 expr2)
+                                          (if (and (not (operator-right? op1))
                                              (operator>? op1 op2) )
-                                         (loop (apt-operator expr1 op1 expr2) op2)
-                                         (apt-operator expr1 op1 (loop expr2 op2)))))
-                               #f)
-                           ))) )))
+                                              (expr-loop (apt-operator expr1 op1
+                                                                       expr2) op2)
+                                              (apt-operator expr1 op1
+                                                            (expr-loop expr2 op2)))))
+                                    #f)
+                                ))) )))
     (let ((expr1 (parse-atom-expr ctx)))
       (if expr1
           (let ((op1 (parse-operator ctx)) )
             (if op1
-                (loop expr1 op1)
+                (expr-loop expr1 op1)
                 expr1))
           #f))))
 
@@ -897,14 +918,14 @@
           ((apt-punct-eq? (current-token ctx) ".")
            (begin
              (next-token ctx)
-             (let loop ((res (list sym)))
+             (let st-loop ((res (list sym)))
                (cond ((apt-id? (current-token ctx))
                       (let ((sym2 (current-token ctx)))
                         (next-token ctx)
                         (if (apt-punct-eq? (current-token ctx) ".")
                             (begin
                               (next-token ctx)
-                              (loop (append res (list (apt-punct ".") sym2))))
+                              (st-loop (append res (list (apt-punct ".") sym2))))
                             (apt-seq* (append res (list (apt-punct ".") sym2))))))
                      (else (apt-seq* res))))))
           ((and expect-constraint?
@@ -994,7 +1015,7 @@
 
 
 (define (parse-typedef-decls ctx)
-  (let loop ((res '()))
+  (let typedef-loop ((res '()))
     (cond ((apt-id? (current-token ctx))
            (let* ((sym (apt-id-value (current-token ctx)))
                   (expr (cond ((equal? sym "slot")
@@ -1007,7 +1028,7 @@
                                  (parse-on ctx '("init" "delete"))))
                               (else (syntax-error "Unexpected symbol:" (current-token ctx))))))
              (if expr
-                 (loop (append res (list expr)))
+                 (typedef-loop (append res (list expr)))
                  #f)))
           ((apt-punct-eq? (current-token ctx) "}") res)
           (else (syntax-error "Unexpect token:" (current-token ctx))))))
@@ -1015,7 +1036,8 @@
 
 (define (parse-type-def ctx modifiers type)
   (if (apt-id? (current-token ctx))
-      (let ((sym (current-token ctx))
+      (let ((sym (apt-id* (apt-id-value (current-token ctx))
+                          (current-namespace ctx)))
             (params #f)
             (derives-from #f)
             (decls #f))
@@ -1049,9 +1071,9 @@
 ;;----------------------------------------------------------------------
 
 (define (macro-determine-pattern-type pattern)
-  (let loop ((nl pattern)
-             (state 'init)
-             (prc-count 0))
+  (let pattern-loop ((nl pattern)
+                     (state 'init)
+                     (prc-count 0))
     (if (null? nl)
         (if (eq? state 'scan-for-expr)
             'func
@@ -1062,20 +1084,20 @@
                         (cond ((or (apt-id-eq? elt "def")
                                    (apt-id-eq? elt "let")) 'def)
                               ((apt-id-eq? elt "on") 'on)
-                              (else (loop (cdr nl) 'scan-syms prc-count)))
+                              (else (pattern-loop (cdr nl) 'scan-syms prc-count)))
                         'any))
             ((scan-syms) (cond ((apt-id? elt)
-                                (loop (cdr nl) 'scan-syms prc-count))
+                                (pattern-loop (cdr nl) 'scan-syms prc-count))
                                ((and (apt-punct? elt)
                                      (equal? (apt-punct-value elt) "("))
-                                (loop (cdr nl) 'scan-for-prc (+ prc-count 1)))
+                                (pattern-loop (cdr nl) 'scan-for-prc (+ prc-count 1)))
                                (else 'any)))
             ((scan-for-prc) (if (and (apt-punct? elt)
                                      (equal? (apt-punct-value elt) ")"))
                                 (if (equal? prc-count 1)
-                                    (loop (cdr nl) 'scan-for-expr 0)
-                                    (loop (cdr nl) 'scan-for-prc (- prc-count 1)))
-                                (loop (cdr nl) 'scan-for-prc prc-count)))
+                                    (pattern-loop (cdr nl) 'scan-for-expr 0)
+                                    (pattern-loop (cdr nl) 'scan-for-prc (- prc-count 1)))
+                                (pattern-loop (cdr nl) 'scan-for-prc prc-count)))
             ((scan-for-expr) 'stmt)
 
             (else 'any))) )))
@@ -1101,25 +1123,25 @@
   (if (apt-punct-eq? (current-token ctx) "{")
       (begin
         (next-token ctx)
-        (let loop ((res '())
-                   (brace-count 1))
+        (let maccmp-loop ((res '())
+                          (brace-count 1))
           (let ((token (current-token ctx)))
             (cond ((apt-punct-eq? (current-token ctx) "}")
                    (let ((count (- brace-count 1)))
                      (next-token ctx)
                      (if (<= count 0)
                          res
-                         (loop (append res (list token))
-                               count))))
+                         (maccmp-loop (append res (list token))
+                                      count))))
                   ((apt-punct-eq? (current-token ctx) "{")
                    (let ((count (+ brace-count 1)))
                      (next-token ctx)
-                     (loop (append res (list token))
-                           count)))
+                     (maccmp-loop (append res (list token))
+                                  count)))
                   (else (begin
                           (next-token ctx)
-                          (loop (append res (list token))
-                                brace-count)) )))))
+                          (maccmp-loop (append res (list token))
+                                       brace-count)) )))))
       (syntax-error "Expected {, got" (current-token ctx))))
 
 
@@ -1139,23 +1161,25 @@
 
 
 (define (parse-macro-patterns ctx)
-  (let loop ((res '())
+  (let mp-loop ((res '())
              (last-pattern-name #f))
     (cond ((apt-punct-eq? (current-token ctx) "}")  res)
           ((apt-punct-eq? (current-token ctx) "{")
            (let ((expr (parse-macro-basic-pattern ctx
                                                   last-pattern-name)))
              (if expr
-                 (loop (append res (list expr))
+                 (mp-loop (append res (list expr))
                        last-pattern-name)
                  #f)))
-          ((apt-id-keyarg? (current-token ctx)) (let ((sym (current-token ctx)))
-                                            (next-token ctx)
-                                            (loop res (apt-id-keyarg-value sym))))
+          ((apt-id-keyarg? (current-token ctx))
+           (let ((sym (current-token ctx)))
+             (next-token ctx)
+             (mp-loop res (apt-id-keyarg-value sym))))
           (else (syntax-error "Unexpected token (9)" (current-token ctx))))))
 
 
-(define (parse-macro-def ctx modifiers)
+(define (parse-macro-def ctx scope modifiers)
+  (arc:assert (eq? scope 'local) "TODO.  Local macro def not supported yet")
   (if (apt-id? (current-token ctx))
       (let ((sym (apt-id-value (current-token ctx))))
         (next-token ctx)
@@ -1170,7 +1194,7 @@
                       (if patterns
                           (begin
                             (register-macro ctx
-                                            macro-type sym
+                                            macro-type sym (current-namespace ctx)
                                             (vector ':macro
                                                     patterns
                                                     (macro-compile (list 'macro
@@ -1182,15 +1206,19 @@
       (syntax-error "Expected symbol, got" (current-token ctx))))
 
 
-(define (parse-alias-def ctx modifiers)
+(define (parse-alias-def ctx scope modifiers)
   (if (apt-id? (current-token ctx))
-      (let* ((sym (current-token ctx)))
+      (let* ((sym (if (eq? scope 'global)
+                      (apt-id* (apt-id-value (current-token ctx))
+                               (current-namespace ctx))
+                      (current-token ctx))))
         (next-token ctx)
         (if (apt-punct-eq? (current-token ctx) "=")
             (begin
               (next-token ctx)
               (let ((type (parse-type ctx)))
-                (apt-seq (apt-id "def") (apt-id "alias") sym (apt-punct "=") type)))
+                (apt-seq (apt-map-scope scope)
+                         (apt-id "alias") sym (apt-punct "=") type)))
             (syntax-error "Expected =, got" (current-token ctx))))
       (syntax-error "Expected symbol, got" (current-token ctx))))
 
@@ -1325,12 +1353,6 @@
    (else (syntax-error "Unexpected token (5)" (current-token ctx))) ))
 
 
-(define (apt-map-scope scope)
-  (cond ((eq? scope 'global) (apt-id "def"))
-        ((eq? scope 'local) (apt-id "let"))
-        (else (apt-id "bad"))))
-
-
 (define (apt-function params type body)
   (apt-seq (apt-punct "#function")
            (apt-nested* "(" ")" params)
@@ -1341,11 +1363,14 @@
                (apt-nested* "{" "}" body))))
 
 
-(define (apt-funcdef scope modifiers sym params type body)
+(define (apt-funcdef ctx scope modifiers sym params type body)
   (let ((nl (list (apt-map-scope scope))))
     (if (member "meth" modifiers)
         (set! nl (append nl (list (apt-id "meth")))))
-    (set! nl (append nl (list sym
+    (set! nl (append nl (list (if (eq? scope 'global)
+                                  (apt-id* (apt-id-value sym)
+                                           (current-namespace ctx))
+                                  sym)
                               (apt-nested* "(" ")" params))))
     (if type
         (set! nl (append nl (list (apt-punct ":") type))))
@@ -1366,17 +1391,20 @@
                    (parse-exprlist-until-def ctx '())
                    (list (parse-expr ctx)))) )
     (if sym
-        (apt-funcdef scope modifiers sym params type body)
+        (apt-funcdef ctx scope modifiers sym params type body)
         (apt-function params type body)) ))
 
 
-(define (apt-vardef scope name type modifiers init)
+(define (apt-vardef ctx scope name type modifiers init)
   (let ((res '()))
     (set! res (list (apt-map-scope scope)))
     (set! res (append res (map (lambda (m)
                                  (apt-id m))
                                modifiers)))
-    (set! res (append res (list name)))
+    (set! res (append res (list (if (eq? scope 'global)
+                                    (apt-id* (apt-id-value name)
+                                             (current-namespace ctx))
+                                    name))))
     (if type
         (set! res (append res (list (apt-punct ":") type))))
     (if init
@@ -1387,12 +1415,13 @@
 
 (define (parse-func-or-var-def ctx scope modifiers)
   (let* ((sym (current-token ctx))
-         (macro-id (apt-id-value sym))
+         (macro-id (qualified-id-for-lookup ctx sym))
          (macro    (lookup-macro ctx macro-id))
-         (type     (lookup-macro-type ctx macro-id)))
+         (type     (lookup-macro-type ctx macro-id))
+         (name     (apt-id (car macro-id))))
     (if macro
         (begin
-          (let ((expr (parse-make-macro-call ctx sym '()
+          (let ((expr (parse-make-macro-call ctx name '()
                                              macro type #t scope)))
             (if expr
                 expr
@@ -1413,45 +1442,50 @@
                     (begin
                       (next-token ctx)
                       (let ((init-value (parse-expr ctx)))
-                        (apt-vardef scope sym type modifiers init-value)))
-                    (apt-vardef scope sym type modifiers #f)))
+                        (apt-vardef ctx scope sym type modifiers init-value)))
+                    (apt-vardef ctx scope sym type modifiers #f)))
               ))
 
            ((apt-punct-eq? (current-token ctx) "=")
             (begin
               (next-token ctx)
               (let ((init-value (parse-expr ctx)))
-                (apt-vardef scope sym #f modifiers init-value))))
+                (apt-vardef ctx scope sym #f modifiers init-value))))
 
-           (else (apt-vardef scope sym #f modifiers #f))
+           (else (apt-vardef ctx scope sym #f modifiers #f))
            )))))
 
 
 (define (parse-def ctx scope)
   (next-token ctx)
-  (let* ((modifiers (parse-modifiers ctx '("meth" "fluid" "const"))))
-    (if (apt-id? (current-token ctx))
+  (let* ((modifiers (parse-modifiers ctx '("meth" "fluid" "const")))
+         (curtok (current-token ctx)))
+    (if (apt-id? curtok)
         (cond
-         ((apt-id-eq? (current-token ctx) "type")
+         ((apt-id-eq? curtok "type")
+          (if (eq? scope 'global)
+              (begin
+                (next-token ctx)
+                (parse-type-def ctx modifiers 'type))
+              (syntax-error "Local type defs are not supported" curtok)))
+         ((apt-id-eq? curtok "class")
+          (if (eq? scope 'global)
+              (begin
+                (next-token ctx)
+                (parse-type-def ctx modifiers 'class))
+              (syntax-error "Local class defs are not supported" curtok)))
+         ((apt-id-eq? curtok "alias")
           (begin
             (next-token ctx)
-            (parse-type-def ctx modifiers 'type)))
-         ((apt-id-eq? (current-token ctx) "class")
+            (parse-alias-def ctx scope modifiers)))
+         ((apt-id-eq? curtok "macro")
           (begin
             (next-token ctx)
-            (parse-type-def ctx modifiers 'class)))
-         ((apt-id-eq? (current-token ctx) "alias")
-          (begin
-            (next-token ctx)
-            (parse-alias-def ctx modifiers)))
-         ((apt-id-eq? (current-token ctx) "macro")
-          (begin
-            (next-token ctx)
-            (parse-macro-def ctx modifiers)))
-         ((apt-id? (current-token ctx))
+            (parse-macro-def ctx scope modifiers)))
+         ((apt-id? curtok)
           (parse-func-or-var-def ctx scope modifiers))
-         (else (syntax-error "Expected symbol, got" (current-token ctx))))
-        (syntax-error "Expected symbol, got" (current-token ctx)))
+         (else (syntax-error "Expected symbol, got" curtok)))
+        (syntax-error "Expected symbol, got" curtok))
      ))
 
 
@@ -1465,14 +1499,20 @@
               (next-token ctx)
               (let ((str (parse-expr ctx)))
                 (if (apt-punct-eq? (current-token ctx) ")")
-                    (begin
+                    (let ((ns (apt-lit-value str)))
                       (next-token ctx)
+                      (register-namespace-mapping ctx (apt-id-value nsname) ns)
+                      (set-current-namespace! ctx ns)
                       (apt-seq (apt-id "namespace")
                                nsname
                                (apt-nested "(" ")" str)))
                     (syntax-error "Expected ), got" (current-token ctx)))))
-            (apt-seq (apt-id "namespace")
-                     nsname)))
+            (let ((str (lookup-namespace ctx (apt-id-value nsname))))
+              (if str
+                  (set-current-namespace! ctx str)
+                  (syntax-error "Undefined namespace abbreviation" nsname))
+              (apt-seq (apt-id "namespace")
+                       nsname))))
       (syntax-error "Expected SYMBOL, got " (current-token ctx))))
 
 
@@ -1486,23 +1526,26 @@
       (syntax-error "import: Expected (, got" (current-token ctx))))
 
 
+(define (parse-top-expr ctx)
+  (if (apt-id? (current-token ctx))
+      (let ((sym (apt-id-value (current-token ctx))))
+        (cond
+         ((equal? sym "def") (parse-def ctx 'global))
+         ((equal? sym "namespace") (parse-namespace ctx))
+         ((equal? sym "import") (parse-import ctx))
+         (else (syntax-error "Unexpected symbol"
+                             (current-token ctx)))))
+      (syntax-error "Unexpected token (6)" (current-token ctx))))
+
+
 (define (parse-next-top ctx)
-  (let loop ((apt (list)))
+  (let nt-loop ((apt (list)))
     (if (eq? (current-token ctx) 'EOF)
         apt
-        (begin
-          (if (apt-id? (current-token ctx))
-              (let* ((sym (apt-id-value (current-token ctx)))
-                     (expr (cond
-                            ((equal? sym "def") (parse-def ctx 'global))
-                            ((equal? sym "namespace") (parse-namespace ctx))
-                            ((equal? sym "import") (parse-import ctx))
-                            (else (syntax-error "Unexpected symbol"
-                                                (current-token ctx))))) )
-                (cond ((eq? expr 'ignore) (loop apt))
-                      ((not expr) #f)
-                      (else (loop (append apt (list expr))))))
-              (syntax-error "Unexpected token (6)" (current-token ctx)))))) )
+        (let ((expr (parse-top-expr ctx)))
+          (cond ((eq? expr 'ignore) (nt-loop apt))
+                ((not expr) #f)
+                (else (nt-loop (append apt (list expr)))))))))
 
 
 

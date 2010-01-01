@@ -18,7 +18,7 @@
 (define (arc:split-string str sep)
   (let* ((res '())
          (strl (string-length str)))
-    (let loop ((lp 0) (cp 0))
+    (let strsplit-loop ((lp 0) (cp 0))
       (if (>= cp strl)
           (if (> cp lp)
               (set! res (append res (list (substring str lp cp)))))
@@ -30,7 +30,7 @@
                                  (iloop (+ lp2 1))))) ) )
             (if (> npos lp)
                 (set! res (append res (list (substring str lp npos)))))
-            (loop (+ npos 1) (+ npos 1)))
+            (strsplit-loop (+ npos 1) (+ npos 1)))
           ))
     res))
 

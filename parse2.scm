@@ -69,12 +69,12 @@
 (define (parse-vector-2p token-list)
   (let* ((dict? #f)
          (parsed-exprs
-          (let loop ((res '())
-                     (nl token-list))
+          (let vect-loop ((res '())
+                          (nl token-list))
             (if (null? nl)
                 res
                 (cond ((apt-punct-eq? (car nl) ",")
-                       (loop res (cdr nl)))
+                       (vect-loop res (cdr nl)))
                       (else (let ((expr (parse-expr-2p (car nl))))
                               (if (and (is-a? expr <apt:binary>)
                                        (equal? (operator expr) "->"))
@@ -82,24 +82,24 @@
                                   (if dict?
                                       (syntax-error "Inhomogenous dict notation"
                                                     token-list)))
-                              (loop (append res (list expr))
-                                    (cdr nl)))))) )))
+                              (vect-loop (append res (list expr))
+                                         (cdr nl)))))) )))
     (if dict?
         (make-object <apt:dictionary> (list 'dict parsed-exprs))
         (make-object <apt:vector> (list 'vector parsed-exprs)))))
 
 
 (define (parse-array-2p token-list)
-  (let ((parsed-exprs (let loop ((res '())
-                                 (nl token-list))
+  (let ((parsed-exprs (let array-loop ((res '())
+                                       (nl token-list))
                         (if (null? nl)
                             res
                             (cond ((apt-punct-eq? (car nl) ",")
-                                   (loop res (cdr nl)))
-                                  (else (loop (append res
-                                                      (list (parse-expr-2p
-                                                             (car nl))))
-                                              (cdr nl)))))) ))
+                                   (array-loop res (cdr nl)))
+                                  (else (array-loop (append res
+                                                            (list (parse-expr-2p
+                                                                   (car nl))))
+                                                    (cdr nl)))))) ))
     (make-object <apt:array> (list 'array parsed-exprs))))
 
 
@@ -114,12 +114,12 @@
 ;;; (seq (seq (id "Int") (punct "=") (seq (lit -127) (id "..") (lit 127))))
 
 (define (parse-union-type-2p token-list type-list)
-  (let loop ((res type-list)
-             (nl token-list))
+  (let union-loop ((res type-list)
+                   (nl token-list))
     (if (null? nl)
         (make-object <apt:union-type> (list res))
-        (loop (append res (list (parse-type-2p (car nl))))
-              (cdr nl)))))
+        (union-loop (append res (list (parse-type-2p (car nl))))
+                    (cdr nl)))))
 
 
 (define (parse-array-type-2p base token-list)
@@ -159,16 +159,16 @@
 
 
 (define (parse-type-expr-2p first token-list)
-  (let loop ((nl token-list)
-             (res first))
+  (let expr2-loop ((nl token-list)
+                   (res first))
     (if (null? nl)
         res
         (if (apt-id? (car nl))
             (let ((sym (apt-id-value (car nl))))
               (cond ((and (not (null? (cdr nl)))
                           (apt-punct-eq? (cadr nl) "."))
-                     (loop (cddr nl)
-                           (make-object <apt:type-expr> (list sym res))))
+                     (expr2-loop (cddr nl)
+                                 (make-object <apt:type-expr> (list sym res))))
                     ((null? (cdr nl))
                      (make-object <apt:type-expr> (list sym res)))
                     (else (syntax-error "Expected '.' in type expression"
@@ -464,18 +464,18 @@
                     (set! nl (cddr nl)))
                   (syntax-error "expected =" token-list)))
 
-          (set! props (let loop ((res '()))
+          (set! props (let slot-loop ((res '()))
                         (if (null? nl)
                             res
                             (cond ((apt-punct-eq? (car nl) ",")
                                    (begin
                                      (set! nl (cdr nl))
-                                     (loop res)))
+                                     (slot-loop res)))
                                   ((or (apt-id? (car nl))
                                        (apt-seq? (car nl)))
                                    (let ((node (parse-slot-prop-2p (car nl))))
                                      (set! nl (cdr nl))
-                                     (loop (append res (list node)))))
+                                     (slot-loop (append res (list node)))))
                                   (else (syntax-error "Unexpected slot prop node"
                                                       token-list))))))
           (make-object <apt:slotdef> (list sym type props init)) )
@@ -629,16 +629,16 @@
 
 
 (define (parse-funcall-2p func args)
-  (let ((parsed-args (let loop ((res '())
-                                (nl args))
+  (let ((parsed-args (let funcall-loop ((res '())
+                                        (nl args))
                        (if (null? nl)
                            res
                            (cond ((apt-punct-eq? (car nl) ",")
-                                  (loop res (cdr nl)))
-                                 (else (loop (append res
-                                                     (list (parse-expr-2p
-                                                            (car nl))))
-                                             (cdr nl))))) )))
+                                  (funcall-loop res (cdr nl)))
+                                 (else (funcall-loop (append res
+                                                             (list (parse-expr-2p
+                                                                    (car nl))))
+                                                     (cdr nl))))) )))
     (make-object <apt:apply> (list func parsed-args))))
 
 
@@ -769,8 +769,8 @@
 (define (parse-next-top-2p expr-tree)
   (arc:display "<?xml version='1.0'?>" 'nl)
   (arc:display "<compile-unit>" 'nl)
-  (let loop ((res ())
-             (nl expr-tree))
+  (let nexttop-loop ((res ())
+                     (nl expr-tree))
     (if (null? nl)
         (begin
           (arc:display "</compile-unit>" 'nl)
@@ -780,8 +780,9 @@
           (if expr3
               (->xml expr3))
           (if expr3
-              (loop (append res (list expr3)) (cdr nl))
-              (loop res (cdr nl)))))))
+              (nexttop-loop (append res (list expr3)) (cdr nl))
+              (nexttop-loop res (cdr nl)))) )))
+
 
 
 ;;Keep this comment at the end of the file

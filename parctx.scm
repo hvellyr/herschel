@@ -96,44 +96,74 @@
 
 ;;----------------------------------------------------------------------
 
-(define-class <parse-context> (<class>) (macro-registry
-                                         port
-                                         port-stack ))
+(define-class <hea:parse-context> (<class>) (macro-registry
+                                             port
+                                             port-stack
+                                             ns-mappings
+                                             current-namespace))
 
-(define-method (initialise <parse-context> args)
+(define-method (initialise <hea:parse-context> args)
   (call-next-method)
   (slot-set! self 'macro-registry '())
   (slot-set! self 'port #f)
+  (slot-set! self 'port-stack '())
+  (slot-set! self 'ns-mappings '())
+  (slot-set! self 'current-namespace "")
   self)
 
 (define-generic (macro-registry))
-(define-generic (register-macro type name macro))
-(define-generic (lookup-macro name))
-(define-generic (lookup-macro-type name))
+(define-generic (register-macro type name ns macro))
+(define-generic (lookup-macro qual-name))
+(define-generic (lookup-macro-type qual-name))
 
 
-(define-method (macro-registry <parse-context>)
+(define-method (macro-registry <hea:parse-context>)
   (slot-ref self 'macro-registry))
 
 
-(define-method (register-macro <parse-context> type name macro)
-  (let* ((mp (assoc name (slot-ref self 'macro-registry))))
+(define (macro-assoc pattern reg)
+  (let macasc-loop ((nl reg)
+                    (res '()))
+    ;;(arc:display "MACRO=? " pattern " ->? " nl 'nl)
+    (if (null? nl)
+        (cond ((= (length res) 1) (begin ;;(arc:display "XXX " (cddr (car res)) 'nl)
+                                         (car res)))
+              ((= (length res) 0) #f)
+              (else (begin
+                      (arc:display "Ambigous macro name usage: " (car pattern) 'nl)
+                      #f)))
+        (begin
+          ;;(arc:display "          ->? " (caar nl) " --- " (caaar nl) 'nl)
+          (if (equal? (car pattern) (caaar nl))
+              (begin
+                ;;(arc:display "      x55 " (cdr pattern) 'nl)
+                (cond ((equal? (cdr pattern) '*)
+                       (macasc-loop (cdr nl) (append res (list (car nl)))))
+                      ((equal? (cdr pattern) (cdaar nl))
+                       (car nl))
+                      (else (macasc-loop (cdr nl) res))))
+              (macasc-loop (cdr nl) res))))))
+
+
+(define-method (register-macro <hea:parse-context> type name ns macro)
+  (let* ((macro-id (cons name ns))
+         (mp (macro-assoc macro-id (slot-ref self 'macro-registry))))
     (if mp
         (set-cdr! mp (cons type macro))
         (slot-set! self 'macro-registry
                    (append (slot-ref self 'macro-registry)
-                           (list (cons name (cons type macro))))))))
+                           (list (cons macro-id (cons type macro))))))))
 
 
-(define-method (lookup-macro <parse-context> name)
-  (let ((mp (assoc name (slot-ref self 'macro-registry))))
+(define-method (lookup-macro <hea:parse-context> qual-name)
+  (let ((mp (macro-assoc qual-name (slot-ref self 'macro-registry))))
     (if mp
         (cddr mp)
         #f)))
 
 
-(define-method (lookup-macro-type <parse-context> name)
-  (let ((mp (assoc name (slot-ref self 'macro-registry))))
+(define-method (lookup-macro-type <hea:parse-context> qual-name)
+  (let ((mp (macro-assoc qual-name (slot-ref self 'macro-registry))))
     (if mp
         (cadr mp)
         #f)))
@@ -141,13 +171,55 @@
 
 ;;;----------------------------------------------------------------------
 
-(define-method (push-port <parse-context> port)
+(define-generic (register-namespace-mapping abbrv ns))
+(define-generic (set-current-namespace! ns))
+(define-generic (current-namespace))
+(define-generic (lookup-namespace abbrv))
+
+(define-method (register-namespace-mapping <hea:parse-context> abbrv ns)
+  (let* ((nsp (assoc abbrv (slot-ref self 'ns-mappings))))
+    (if nsp
+        (set-cdr! nsp ns)
+        (slot-set! self 'ns-mappings
+                   (append (slot-ref self 'ns-mappings)
+                           (list (cons abbrv ns)))))))
+
+
+(define-method (set-current-namespace! <hea:parse-context> ns)
+  (arc:display "Current namespace: " ns 'nl)
+  (slot-set! self 'current-namespace ns))
+
+
+(define-method (current-namespace <hea:parse-context>)
+  (slot-ref self 'current-namespace))
+
+
+(define-method (lookup-namespace <hea:parse-context> abbrv)
+  (let ((nsp (assoc abbrv (slot-ref self 'ns-mappings))))
+    (if nsp
+        (cdr nsp)
+        #f)))
+
+
+(define (qualified-id-for-lookup ctx id)
+  (arc:display "Namespaces: " (slot-ref ctx 'ns-mappings) 'nl)
+  (let ((qual-id (qualified-id* id '*)))
+    (if (not (eq? (cdr qual-id) '*))
+        (let ((ns (lookup-namespace ctx (cdr qual-id))))
+          (arc:display "((" (cdr qual-id) " -- " ns "))" 'nl)
+          (cons (car qual-id) ns))
+        qual-id)))
+
+
+;;;----------------------------------------------------------------------
+
+(define-method (push-port <hea:parse-context> port)
   (slot-set! self 'port-stack (cons (slot-ref self 'port)
                                     (slot-ref self 'port-stack)))
   (slot-set! self 'port port))
 
 
-(define-method (pop-port <parse-context>)
+(define-method (pop-port <hea:parse-context>)
   (let ((ps (slot-ref self 'port-stack))
         (old-port (slot-ref self 'port)))
     (slot-set! self 'port (car ps))
@@ -157,35 +229,35 @@
 
 ;;;----------------------------------------------------------------------
 
-(define-method (current-token <parse-context>)
+(define-method (current-token <hea:parse-context>)
   (let ((p (slot-ref self 'port)))
     (if p
         (current-token p)
         'EOF)))
 
 
-(define-method (current-token-set! <parse-context> token)
+(define-method (current-token-set! <hea:parse-context> token)
   (let ((p (slot-ref self 'port)))
     (if p
         (current-token-set! p token)
         #f)))
 
 
-(define-method (next-token <parse-context>)
+(define-method (next-token <hea:parse-context>)
   (let ((p (slot-ref self 'port)))
     (if p
         (next-token p)
         'EOF)))
 
 
-(define-method (unread-token <parse-context> token)
+(define-method (unread-token <hea:parse-context> token)
   (let ((p (slot-ref self 'port)))
     (if p
         (unread-token p token)
         #f)))
 
 
-(define-method (current-port <parse-context>)
+(define-method (current-port <hea:parse-context>)
   (slot-ref self 'port))
 
 
