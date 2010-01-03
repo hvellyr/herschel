@@ -293,12 +293,10 @@
     (let ((comma (current-token ctx)))
       (next-token ctx)
       (parse-funcall-params ctx (append params (list comma)))))
-
    ((apt-punct-eq? (current-token ctx) ")")
     (begin
       (next-token ctx)
       params))
-
    (else (syntax-error "Expect , or ), got" (current-token ctx)))))
 
 
@@ -306,7 +304,6 @@
   (cond
    ((eq? (current-token ctx) 'EOF)
     (syntax-error "Unterminated argument list" (current-token ctx)))
-
    ((apt-id-keyarg? (current-token ctx))
     (let* ((key (current-token ctx))
            (val #f))
@@ -317,12 +314,10 @@
                                     (append params
                                             (list (apt-seq key val))))
           #f)))
-
    ((apt-punct-eq? (current-token ctx) ")")
     (begin
       (next-token ctx)
       params))
-
    (else (let ((expr (parse-expr ctx)))
            (if expr
                (parse-funcall-params-del ctx
@@ -404,13 +399,11 @@
     (let ((follow-set (st-find-node node (current-token ctx))))
       (cond (follow-set
              (check-next follow-set (next-token ctx) bindings))
-
             ((st-has-eof-set? node)
              (begin
                (let ((replcment (replace-match-bindings (st-replacement node)
                                                         bindings)))
                  replcment)))
-
             (else
              (begin
                (set! follow-set (st-find-macro-param node))
@@ -425,7 +418,6 @@
                                                     bindings
                                                     (list (cons param-name (list expr)))) ))
                                 (check-next follow-set (current-token ctx) new-bindings))))
-
                            ((eq? macro-prm-type 'name)
                             (if (apt-id? (current-token ctx))
                                 (begin
@@ -593,7 +585,6 @@
     (begin
       (next-token ctx)
       (parse-access ctx (parse-slice ctx expr1))))
-
    ((apt-punct-eq? (current-token ctx) ".")
     (begin
       (next-token ctx)
@@ -613,8 +604,7 @@
                   (else (parse-param-call ctx sym
                                           (list expr1) #f))))
           (syntax-error "Expected symbol, got" (current-token ctx)) )))
-   (else
-    expr1)))
+   (else expr1)))
 
 
 (define (parse-const-container ctx del-token? left right)
