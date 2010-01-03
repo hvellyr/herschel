@@ -1,4 +1,4 @@
-;;  This file is part of the arc package
+;;  This file is part of the heather package
 ;;  Copyright (C) 2002, 2003, 2009 by Gregor Klinke
 ;;
 ;;  This library is free software: you can redistribute it and/or modify
@@ -21,8 +21,9 @@
 (define current-char #f)
 (define line-count 1)
 
+
 (define (parse-error msg detail)
-  (arc:display "Notation error:" (number->string line-count) ": "
+  (hea:display "Notation error:" (number->string line-count) ": "
                msg ": " detail 'nl)
   #f)
 
@@ -180,7 +181,8 @@
                             (next-char port)
                             (set! exp-sign 1)
                             (set! exp (read-int-number-part port is-digit))))
-                         (else (parse-error "Bad number notation (0)" current-char)))))))
+                         (else (parse-error "Bad number notation (0)"
+                                            current-char)))))))
           ((char=? current-char #\/)
            (begin
              (next-char port)
@@ -192,21 +194,24 @@
                (char=? current-char #\H))
            (begin
              (if (not (eq? type 'int))
-                 (parse-error "Unexpected integer notation char" current-char))
+                 (parse-error "Unexpected integer notation char"
+                              current-char))
              (next-char port)
              (set! radix 16)))
           ((or (char=? current-char #\o)
                (char=? current-char #\O))
            (begin
              (if (not (eq? type 'int))
-                 (parse-error "Unexpected integer notation char" current-char))
+                 (parse-error "Unexpected integer notation char"
+                              current-char))
              (next-char port)
              (set! radix 8)))
           ((or (char=? current-char #\y)
                (char=? current-char #\Y))
            (begin
              (if (not (eq? type 'int))
-                 (parse-error "Unexpected integer notation char" current-char))
+                 (parse-error "Unexpected integer notation char"
+                              current-char))
              (next-char port)
              (set! radix 2))) )
     ;;;
@@ -227,7 +232,8 @@
                     (set! type 'double))
                    ((eof-object? current-char)
                     (set! type 'double))
-                   (else (parse-error "Bad number notation (1)" current-char)))))
+                   (else (parse-error "Bad number notation (1)"
+                                      current-char)))))
           ((or (char=? current-char #\u)
                (char=? current-char #\U))
            (begin
@@ -247,7 +253,8 @@
                     (begin
                       (next-char port)
                       (set! type 'unsigned-long)))
-                   (else (parse-error "Bad number notation (3)" current-char)))))
+                   (else (parse-error "Bad number notation (3)"
+                                      current-char)))))
           ((or (char=? current-char #\t)
                (char=? current-char #\T))
            (begin
@@ -396,14 +403,15 @@
 
 (define (read-named-character port needs-terminator?)
   (cond
-    ( (or (is-whitespace current-char)
-          (eof-object? current-char)) (cons 'ERROR "unterminated char notation"))
-    ( (or (is-alpha current-char)
-          (is-digit current-char)) (read-symbol-character port
-                                                          needs-terminator?) )
-    ( else (let ((c current-char))
-             (next-char port)
-             (cons 'CHAR c)) )))
+    ((or (is-whitespace current-char)
+         (eof-object? current-char))
+     (cons 'ERROR "unterminated char notation"))
+    ((or (is-alpha current-char)
+         (is-digit current-char))
+     (read-symbol-character port needs-terminator?) )
+    (else (let ((c current-char))
+            (next-char port)
+            (cons 'CHAR c)) )))
 
 
 (define (read-numeric-character port needs-terminator?)

@@ -124,19 +124,19 @@
 (define (macro-assoc pattern reg)
   (let macasc-loop ((nl reg)
                     (res '()))
-    ;;(arc:display "MACRO=? " pattern " ->? " nl 'nl)
+    ;;(hea:display "MACRO=? " pattern " ->? " nl 'nl)
     (if (null? nl)
-        (cond ((= (length res) 1) (begin ;;(arc:display "XXX " (cddr (car res)) 'nl)
+        (cond ((= (length res) 1) (begin ;;(hea:display "XXX " (cddr (car res)) 'nl)
                                          (car res)))
               ((= (length res) 0) #f)
               (else (begin
-                      (arc:display "Ambigous macro name usage: " (car pattern) 'nl)
+                      (hea:display "Ambigous macro name usage: " (car pattern) 'nl)
                       #f)))
         (begin
-          ;;(arc:display "          ->? " (caar nl) " --- " (caaar nl) 'nl)
+          ;;(hea:display "          ->? " (caar nl) " --- " (caaar nl) 'nl)
           (if (equal? (car pattern) (caaar nl))
               (begin
-                ;;(arc:display "      x55 " (cdr pattern) 'nl)
+                ;;(hea:display "      x55 " (cdr pattern) 'nl)
                 (cond ((equal? (cdr pattern) '*)
                        (macasc-loop (cdr nl) (append res (list (car nl)))))
                       ((equal? (cdr pattern) (cdaar nl))
@@ -186,7 +186,7 @@
 
 
 (define-method (set-current-namespace! <hea:parse-context> ns)
-  (arc:display "Current namespace: " ns 'nl)
+  (hea:display "Current namespace: " ns 'nl)
   (slot-set! self 'current-namespace ns))
 
 
@@ -205,7 +205,7 @@
   (let ((qual-id (qualified-id* id '*)))
     (if (not (eq? (cdr qual-id) '*))
         (let ((ns (lookup-namespace ctx (cdr qual-id))))
-          (arc:display "((" (cdr qual-id) " -- " ns "))" 'nl)
+          (hea:display "((" (cdr qual-id) " -- " ns "))" 'nl)
           (cons (car qual-id) ns))
         qual-id)))
 

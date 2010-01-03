@@ -24,7 +24,7 @@
 
 
 (define (apt-append-list dst src)
-  (append dst (arc:reduce (lambda (o nl)
+  (append dst (hea:reduce (lambda (o nl)
                             (if o
                                 (cons o nl)
                                 nl))

@@ -42,12 +42,12 @@
 
     (if (hea:verbose)
         (begin
-          (arc:display 'nl 'nl)
-          (arc:display "------- macros ------------------------" 'nl)
+          (hea:display 'nl 'nl)
+          (hea:display "------- macros ------------------------" 'nl)
           (for-each (lambda (m)
-                      (arc:display m 'nl))
+                      (hea:display m 'nl))
                     (macro-registry ctx))
-          (arc:display "---------------------------------------" 'nl)))
+          (hea:display "---------------------------------------" 'nl)))
     expr1-tree))
 
 

@@ -1,4 +1,4 @@
-;;  This file is part of the arc package
+;;  This file is part of the heather package
 ;;  Copyright (C) 2002, 2003, 2009 by Gregor Klinke
 ;;
 ;;  This library is free software: you can redistribute it and/or modify
@@ -14,14 +14,14 @@
 ;;  You should have received a copy of the GNU General Public License
 ;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(define (arc:reduce fn base-value lst)
+(define (hea:reduce fn base-value lst)
   (if (null? lst)
       base-value
       (fn (car lst)
-          (arc:reduce fn base-value (cdr lst)))))
+          (hea:reduce fn base-value (cdr lst)))))
 
 
-(define (arc:display . values)
+(define (hea:display . values)
   (let display-loop ((v values))
     (if (null? v)
         #t
@@ -48,11 +48,11 @@
         #f)))
 
 
-(define (arc:assert test . comment)
+(define (hea:assert test . comment)
   (if (not test)
       (if (null? comment)
-          (arc:display "Assertion failed: " test 'nl)
-          (arc:display "Assertion failed: " (car comment) 'nl "  " test 'nl))
+          (hea:display "Assertion failed: " test 'nl)
+          (hea:display "Assertion failed: " (car comment) 'nl "  " test 'nl))
       #t))
 
 

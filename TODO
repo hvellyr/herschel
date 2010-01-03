@@ -24,7 +24,3 @@
 ** TODO Add self.Class stuff to documentation
 ** TODO Add self.Type.X stuff to documentation
 ** TODO review/rewrite macro specification
-
-* Macros
-** TODO Implement ## name construction in macro replacement
-

@@ -1,52 +1,25 @@
+;;  This file is part of the heather package
+;;  Copyright (C) 2002, 2003, 2009 by Gregor Klinke
+;;
+;;  This library is free software: you can redistribute it and/or modify
+;;  it under the terms of the GNU Lesser General Public License as published
+;;  by the Free Software Foundation, either version 3 of the License, or
+;;  (at your option) any later version.
+;;
+;;  This library is distributed in the hope that it will be useful,
+;;  but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;  GNU Lesser General Public License for more details.
+;;
+;;  You should have received a copy of the GNU General Public License
+;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;----------------------------------------------------------------------
+
 (load "../string.scm")
 
 
-;;;(define mcr '(macro :patterns
-;;;               ((prod :name #f
-;;;                      :pattern ((SYM . "incr!") PRO (MACROPARAM . "place:expr") PRC)
-;;;                      :replc ((MACROPARAM . "place") ASSIGN
-;;;                              (MACROPARAM . "place") ADD (INT . 1)))
-;;;                (prod :name #f
-;;;                      :pattern ((SYM . "incr!") PRO (MACROPARAM . "place:expr") COMMA
-;;;                                (MACROPARAM . "amount:expr") PRC)
-;;;                      :replc ((MACROPARAM . "place") ASSIGN
-;;;                              (MACROPARAM . "place") ADD (MACROPARAM . "amount"))))))
-;;;
-;;;(define mcr2 '(macro :patterns ((prod :name #f
-;;;                                      :pattern ((SYM . "def") (SYM . "funcvar") (MACROPARAM . "name:id") (MACROPARAM . "init:opt-expr"))
-;;;                                      :replc ((SYM . "def") (MACROPARAM . "name") SANGHASH (SYM . "-var") ASSIGN (MACROPARAM . "init") (SYM . "def") (MACROPARAM . "name") PRO PRC (MACROPARAM . "name") SANGHASH (SYM . "-var") (SYM . "def") (MACROPARAM . "name") PRO (SYM . "value") PRC BRCO (MACROPARAM . "name") SANGHASH (SYM . "-var") ASSIGN (SYM . "value") (SYM . "value") BRCC))
-;;;                                (prod :name "opt-expr"
-;;;                                      :pattern ()
-;;;                                      :replc ())
-;;;                                (prod :name "opt-expr"
-;;;                                      :pattern (ASSIGN (MACROPARAM . "e:expr"))
-;;;                                      :replc ((MACROPARAM . "e"))))))
-;;;
-
-;; { for (?abcs) } -> 1
-;; abcs:
-;; { abc } -> $1
-;; { abc, abcs } ->
-;;
-;; 0 for  -> get-next -> 1
-;; 1 (    -> get-next -> 3
-;; 2 )    -> DONE
-;; 3 abc  -> get-next -> 4
-;; 4 ,    -> get-next -> 3
-;;   ?    -> 2
-
-(define mcr3 '(macro :patterns
-               ((prod :name #f
-                      :pattern ((SYM . "hello") PRO PRC)
-                      :replc ((SYM . "world")))
-                (prod :name #f
-                      :pattern ((SYM . "hallo") PRO (SYM . "then") PRC)
-                      :replc ((SYM . "world")))
-                (prod :name #f
-                      :pattern ((SYM . "hello") (SYM . "I") (SYM . "like") (SYM . "you"))
-                      :replc ((STR . "hello I like you")))
-                )))
-
+;;----------------------------------------------------------------------
 
 (define (macro-patterns macr)
   (let ((p (member ':patterns macr)))
@@ -54,11 +27,13 @@
         (cadr p)
         '())))
 
+
 (define (macro-prod-name prod)
   (let ((n (member ':name prod)))
     (if n
         (cadr n)
         #f)))
+
 
 (define (macro-prod-pattern prod)
   (let ((n (member ':pattern prod)))
@@ -66,12 +41,12 @@
         (cadr n)
         #f)))
 
+
 (define (macro-prod-replacement prod)
   (let ((n (member ':replc prod)))
     (if n
         (cadr n)
         #f)))
-
 
 
 (define (macro-get-prods-by-name macr name)
@@ -86,8 +61,9 @@
 
 
 (define (macro-split-macroparam str)
-  (let ((res (arc:split-string str #\:)))
+  (let ((res (hea:split-string str #\:)))
     res))
+
 
 (define (macro-builtin-matchtype type)
   (or (equal? type "expr")
@@ -108,6 +84,7 @@
         (cadr tree)
         (vector '() 'NONE))))
 
+
 (define (syntax-table-set-pattern! st name pattern)
   (let ((tree (assoc name (vector-ref st 1))))
     (if tree
@@ -120,6 +97,7 @@
 (define (macroparam? token)
   (and (pair? token)
        (equal? (car token) 'MACROPARAM)))
+
 
 (define (token=? tok1 tok2)
   (if (and (pair? tok1) (pair? tok2))
@@ -181,7 +159,6 @@
           (if (macroparam? token)
               (let ((smt (macro-split-macroparam (cdr token))))
                 (set! token (list 'MP (cadr smt) (car smt)))))
-
           (let ((step (st-find-node node token)))
             (if (not step)
                 (begin
@@ -212,9 +189,7 @@
           (syntax-table-mixin-pattern! res name pattern replc)
           (maccmp-loop res (cdr nl))))))
 
-;(display (member ':patterns mcr)) (newline)
-
-;(display (macro-compile mcr)) (newline)
-
-
-
+;;Keep this comment at the end of the file
+;;Local variables:
+;;mode: scheme
+;;End:
