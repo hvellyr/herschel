@@ -1,4 +1,4 @@
-;;  This file is part of the arc package
+;;  This file is part of the heather package
 ;;  Copyright (C) 2002, 2003, 2009 by Gregor Klinke
 ;;
 ;;  This library is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
 ;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;; splits a string into its tokens divided by a separator
-(define (arc:split-string str sep)
+(define (hea:split-string str sep)
   (let* ((res '())
          (strl (string-length str)))
     (let strsplit-loop ((lp 0) (cp 0))
@@ -36,7 +36,7 @@
 
 
 ;; indicates whether a string is a suffix of another string
-(define (arc:string-suffix? str suffix)
+(define (hea:string-suffix? str suffix)
   (let* ((strl (string-length str))
          (sfxl (string-length suffix)))
     (and (<= sfxl strl)
@@ -44,7 +44,7 @@
                                    (- strl sfxl)
                                    strl)))))
 
-(define (arc:string-prefix? str prefix)
+(define (hea:string-prefix? str prefix)
   (let* ((strl (string-length str))
          (pfxl (string-length prefix)))
     (and (<= pfxl strl)
@@ -53,7 +53,7 @@
                                    pfxl)))))
 
 
-(define (arc:to-str . d)
+(define (hea:to-str . d)
   (apply string-append (map (lambda (x)
                               (cond
                                ((string? x) x)

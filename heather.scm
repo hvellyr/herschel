@@ -1,4 +1,4 @@
-;;  This file is part of the arc package
+;;  This file is part of the heather package
 ;;  Copyright (C) 2002, 2003, 2009 by Gregor Klinke
 ;;
 ;;  This library is free software: you can redistribute it and/or modify
@@ -15,9 +15,9 @@
 ;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-(define %arc:argv% (vector->list *args*))
+(define %hea:argv% (vector->list *args*))
 
-(define %arc:version% "0.1")
+(define %hea:version% "0.1")
 
 (define %hea:verbose% #f)
 (define (hea:verbose) %hea:verbose%)
@@ -34,7 +34,7 @@
 
 ;; display a help text
 (define (hea:display-help)
-  (arc:display
+  (hea:display
    "arc - a scheme based make and config system" 'nl
    "usage:" 'nl
    "  arc [options] [statement]" 'nl
@@ -48,9 +48,9 @@
    "as stated in the defproject statement in the build script used." 'nl
    'nl 'nl))
 
-(define (arc:display-version)
-  (arc:display
-   "Arc version " %arc:version% 'nl
+(define (hea:display-version)
+  (hea:display
+   "Arc version " %hea:version% 'nl
    "Copyright (C) 2002, 2003 Gregor Klinke" 'nl
    "This is free software; see the source for copying conditions." 'nl
    "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A" 'nl
@@ -59,11 +59,11 @@
 (define *list-of-files* '())
 (define *working-dir* "")
 
-(define arc:opts '((verbose   "-v" "--verbose" #f)
+(define hea:opts '((verbose   "-v" "--verbose" #f)
                    (dir       "-d" "--dir" #t)
                    (help      "-h" "--help" #f)
                    (version   "-V" "--version" #f)))
-(let heaopt-loop ((opt (arc:getopt %arc:argv% arc:opts)))
+(let heaopt-loop ((opt (hea:getopt %hea:argv% hea:opts)))
   (if (not opt)
       #f
       (let ((done #f))
@@ -73,26 +73,26 @@
                     (hea:display-help)
                     (set! done #t)))
           ((version) (begin
-                       (arc:display-version)
+                       (hea:display-version)
                        (set! done #t)))
-          ((dir) (set! *working-dir* *arc:optarg*))
-          ((#\?) (arc:display "ERROR: bad option: " *arc:optopt*))
+          ((dir) (set! *working-dir* *hea:optarg*))
+          ((#\?) (hea:display "ERROR: bad option: " *hea:optopt*))
           ((#\:) (begin
-                   (arc:display "ERROR: missing arg " *arc:optopt*)))
+                   (hea:display "ERROR: missing arg " *hea:optopt*)))
           (else (begin
                   (set! *list-of-files* (append *list-of-files* (list opt)))) ))
         (if (not done)
-            (heaopt-loop (arc:getopt %arc:argv% arc:opts)))) ))
+            (heaopt-loop (hea:getopt %hea:argv% hea:opts)))) ))
 
 
 
 (sys:chdir *working-dir*)
 
-(arc:display *working-dir* 'nl)
+(hea:display *working-dir* 'nl)
 
 (if (> (length *list-of-files*) 0)
     (for-each (lambda (x)
-                (arc:display x 'nl))
+                (hea:display x 'nl))
               (parse-file (list-ref *list-of-files* 0))))
 
 

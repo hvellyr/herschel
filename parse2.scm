@@ -769,13 +769,13 @@
 
 
 (define (parse-next-top-2p expr-tree)
-  (arc:display "<?xml version='1.0'?>" 'nl)
-  (arc:display "<compile-unit>" 'nl)
+  (hea:display "<?xml version='1.0'?>" 'nl)
+  (hea:display "<compile-unit>" 'nl)
   (let nexttop-loop ((res ())
                      (nl expr-tree))
     (if (null? nl)
         (begin
-          (arc:display "</compile-unit>" 'nl)
+          (hea:display "</compile-unit>" 'nl)
           res)
         (let* ((elt (car nl))
                (expr3 (parse-expr-2p elt)))

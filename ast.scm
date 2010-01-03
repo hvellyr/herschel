@@ -25,7 +25,7 @@
 (define (->xml x)
   (if (vector? x)
       (debug->xml x)
-      (arc:display #f)))
+      (hea:display #f)))
 
 
 (define-method (debug-slot->xml <apt:node> tag slotnm)
@@ -34,15 +34,15 @@
     (cond ((and (list? slot)
                 (> (length slot) 0))
            (begin
-             (arc:display "<" tag ">")
+             (hea:display "<" tag ">")
              (for-each (lambda (p)
                          (->xml p))
                        slot)
-             (arc:display "</" tag ">")))
+             (hea:display "</" tag ">")))
           ((vector? slot) (begin
-                            (arc:display "<" tag ">")
+                            (hea:display "<" tag ">")
                             (->xml slot)
-                            (arc:display "</" tag ">")))
+                            (hea:display "</" tag ">")))
           )))
 
 
@@ -59,10 +59,10 @@
 
 (define-method (debug->xml <apt:namespace>)
   (call-next-method)
-  (arc:display "<namespace name='" (slot-ref self 'ns) "'")
+  (hea:display "<namespace name='" (slot-ref self 'ns) "'")
   (if (slot-ref self 'id)
-      (arc:display " id='" (slot-ref self 'id) "'"))
-  (arc:display "/>" 'nl))
+      (hea:display " id='" (slot-ref self 'id) "'"))
+  (hea:display "/>" 'nl))
 
 
 ;;;---------------------------------------------------------------------------
@@ -79,10 +79,10 @@
 
 (define-method (debug->xml <apt:vardef>)
   (call-next-method)
-  (arc:display "<var>")
+  (hea:display "<var>")
   (debug-slot->xml self "type" 'type)
   (debug-slot->xml self "init-value" 'init-value)
-  (arc:display "</var>"))
+  (hea:display "</var>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -98,10 +98,10 @@
 
 (define-method (debug->xml <apt:def>)
   (call-next-method)
-  (arc:display "<def scope='" (slot-ref self 'scope) "' "
+  (hea:display "<def scope='" (slot-ref self 'scope) "' "
                "name='" (slot-ref self 'sym) "'>")
   (->xml (slot-ref self 'func))
-  (arc:display "</def>" 'nl))
+  (hea:display "</def>" 'nl))
 
 
 ;;;---------------------------------------------------------------------------
@@ -122,17 +122,17 @@
   (call-next-method)
   (if (slot-ref self 'meth?)
       (begin
-        (arc:display "<meth")
+        (hea:display "<meth")
         (if (slot-ref self 'abstract?)
-            (arc:display " abstract='true'"))
-        (arc:display ">"))
-      (arc:display "<func>"))
+            (hea:display " abstract='true'"))
+        (hea:display ">"))
+      (hea:display "<func>"))
   (debug-slot->xml self "params" 'params)
   (debug-slot->xml self "ret-type" 'rettype)
   (debug-slot->xml self "body" 'body)
   (if (slot-ref self 'meth?)
-      (arc:display "</meth>")
-      (arc:display "</func>")))
+      (hea:display "</meth>")
+      (hea:display "</func>")))
 
 
 ;;;---------------------------------------------------------------------------
@@ -152,17 +152,17 @@
 
 (define-method (debug->xml <apt:param>)
   (call-next-method)
-  (arc:display "<prm")
+  (hea:display "<prm")
   (if (slot-ref self 'keyarg)
-      (arc:display " key='" (slot-ref self 'keyarg) "'"))
+      (hea:display " key='" (slot-ref self 'keyarg) "'"))
   (if (eq? (slot-ref self 'flag) 'rest)
-      (arc:display " what='rest'"))
+      (hea:display " what='rest'"))
   (if (slot-ref self 'specialized?)
-      (arc:display " specialized='true'"))
-  (arc:display " name='" (slot-ref self 'sym) "'>")
+      (hea:display " specialized='true'"))
+  (hea:display " name='" (slot-ref self 'sym) "'>")
   (debug-slot->xml self "type" 'type)
   (debug-slot->xml self "init-value" 'init-value)
-  (arc:display "</prm>"))
+  (hea:display "</prm>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -178,27 +178,27 @@
 (define-method (debug->xml <apt:const>)
   (call-next-method)
   (case (slot-ref self 'type)
-    ((str)    (arc:display "<str>"  (slot-ref self 'value) "</str>"))
-    ((keyw)   (arc:display "<keyw>" (slot-ref self 'value) "</keyw>"))
-    ((char)   (arc:display "<chr>"  (slot-ref self 'value) "</chr>"))
-    ((bool)   (arc:display "<bool>" (slot-ref self 'value) "</bool>"))
+    ((str)    (hea:display "<str>"  (slot-ref self 'value) "</str>"))
+    ((keyw)   (hea:display "<keyw>" (slot-ref self 'value) "</keyw>"))
+    ((char)   (hea:display "<chr>"  (slot-ref self 'value) "</chr>"))
+    ((bool)   (hea:display "<bool>" (slot-ref self 'value) "</bool>"))
 
-    ((int)      (arc:display "<int>"  (slot-ref self 'value) "</int>"))
-    ((real)     (arc:display "<real>"  (slot-ref self 'value) "</real>"))
-    ((octet)    (arc:display "<octet>"  (slot-ref self 'value) "</octet>"))
-    ((short)    (arc:display "<short>"  (slot-ref self 'value) "</short>"))
-    ((ushort)   (arc:display "<ushort>"  (slot-ref self 'value) "</ushort>"))
-    ((word)     (arc:display "<word>"  (slot-ref self 'value) "</word>"))
-    ((uword)    (arc:display "<uword>"  (slot-ref self 'value) "</uword>"))
-    ((long)     (arc:display "<long>"  (slot-ref self 'value) "</long>"))
-    ((ulong)    (arc:display "<ulong>"  (slot-ref self 'value) "</ulong>"))
-    ((float)    (arc:display "<float>"  (slot-ref self 'value) "</float>"))
-    ((double)   (arc:display "<double>"  (slot-ref self 'value) "</double>"))
-    ((ldouble)  (arc:display "<ldouble>"  (slot-ref self 'value) "</ldouble>"))
+    ((int)      (hea:display "<int>"  (slot-ref self 'value) "</int>"))
+    ((real)     (hea:display "<real>"  (slot-ref self 'value) "</real>"))
+    ((octet)    (hea:display "<octet>"  (slot-ref self 'value) "</octet>"))
+    ((short)    (hea:display "<short>"  (slot-ref self 'value) "</short>"))
+    ((ushort)   (hea:display "<ushort>"  (slot-ref self 'value) "</ushort>"))
+    ((word)     (hea:display "<word>"  (slot-ref self 'value) "</word>"))
+    ((uword)    (hea:display "<uword>"  (slot-ref self 'value) "</uword>"))
+    ((long)     (hea:display "<long>"  (slot-ref self 'value) "</long>"))
+    ((ulong)    (hea:display "<ulong>"  (slot-ref self 'value) "</ulong>"))
+    ((float)    (hea:display "<float>"  (slot-ref self 'value) "</float>"))
+    ((double)   (hea:display "<double>"  (slot-ref self 'value) "</double>"))
+    ((ldouble)  (hea:display "<ldouble>"  (slot-ref self 'value) "</ldouble>"))
 
-    ((nil)    (arc:display "<nil/>"))
-    ((eof)    (arc:display "<eof/>"))
-    (else (arc:display "<unknown/>"))))
+    ((nil)    (hea:display "<nil/>"))
+    ((eof)    (hea:display "<eof/>"))
+    (else (hea:display "<unknown/>"))))
 
 
 ;;;---------------------------------------------------------------------------
@@ -212,7 +212,7 @@
   self)
 
 (define-method (debug->xml <apt:rational>)
-  (arc:display "<rational>"
+  (hea:display "<rational>"
                (slot-ref self 'numerator)
                "/"
                (slot-ref self 'denominator) "</rational>"))
@@ -229,11 +229,11 @@
   self)
 
 (define-method (debug->xml <apt:complex>)
-  (arc:display "<complex>")
+  (hea:display "<complex>")
   (->xml (slot-ref self 'real))
-  (arc:display "+<img>")
+  (hea:display "+<img>")
   (->xml (slot-ref self 'imaginary))
-  (arc:display "</img></complex>"))
+  (hea:display "</img></complex>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -249,12 +249,12 @@
                ((array)  "array")
                ((vector) "vector")
                ((dict)   "dict")
-               (else (arc:display "ERROR: What's this?" self 'nl)))))
-    (arc:display "<" tag ">")
+               (else (hea:display "ERROR: What's this?" self 'nl)))))
+    (hea:display "<" tag ">")
     (for-each (lambda (e)
                 (->xml e))
               (slot-ref self 'value))
-    (arc:display "</" tag ">")))
+    (hea:display "</" tag ">")))
 
 
 ;;;---------------------------------------------------------------------------
@@ -295,7 +295,7 @@
 
 (define-method (debug->xml <apt:symbol>)
   (call-next-method)
-  (arc:display "<symbol id='" (slot-ref self 'id) "'/>"))
+  (hea:display "<symbol id='" (slot-ref self 'id) "'/>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -313,10 +313,10 @@
 
 (define-method (debug->xml <apt:binary>)
   (call-next-method)
-  (arc:display "<bin op='" (slot-ref self 'op) "'>")
+  (hea:display "<bin op='" (slot-ref self 'op) "'>")
   (->xml (slot-ref self 'left))
   (->xml (slot-ref self 'right))
-  (arc:display "</bin>"))
+  (hea:display "</bin>"))
 
 (define-method (operator <apt:binary>)
   (slot-ref self 'op))
@@ -334,10 +334,10 @@
 
 (define-method (debug->xml <apt:assign>)
   (call-next-method)
-  (arc:display "<assign>")
+  (hea:display "<assign>")
   (->xml (slot-ref self 'lvalue))
   (->xml (slot-ref self 'rvalue))
-  (arc:display "</assign>"))
+  (hea:display "</assign>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -352,13 +352,13 @@
 
 (define-method (debug->xml <apt:apply>)
   (call-next-method)
-  (arc:display "<apply>")
+  (hea:display "<apply>")
   (->xml (slot-ref self 'func))
-  (arc:display "<args>")
+  (hea:display "<args>")
   (for-each (lambda (a)
               (->xml a))
             (slot-ref self 'args))
-  (arc:display "</args></apply>"))
+  (hea:display "</args></apply>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -372,11 +372,11 @@
 
 (define-method (debug->xml <apt:block>)
   (call-next-method)
-  (arc:display "<block>")
+  (hea:display "<block>")
   (for-each (lambda (e)
               (->xml e))
             (slot-ref self 'exprs))
-  (arc:display "</block>"))
+  (hea:display "</block>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -392,13 +392,13 @@
 
 (define-method (debug->xml <apt:if>)
   (call-next-method)
-  (arc:display "<if><test>")
+  (hea:display "<if><test>")
   (->xml (slot-ref self 'test))
-  (arc:display "</test><then>")
+  (hea:display "</test><then>")
   (->xml (slot-ref self 'true))
-  (arc:display "</then>")
+  (hea:display "</then>")
   (debug-slot->xml self "else" 'false)
-  (arc:display "</if>"))
+  (hea:display "</if>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -415,15 +415,15 @@
 
 (define-method (debug->xml <apt:range>)
   (call-next-method)
-  (arc:display "<range type='"
+  (hea:display "<range type='"
                (if (slot-ref self 'incl?) "incl" "excl")
                "'><from>")
   (->xml (slot-ref self 'from))
-  (arc:display "</from><to>")
+  (hea:display "</from><to>")
   (->xml (slot-ref self 'to))
-  (arc:display "</to>")
+  (hea:display "</to>")
   (debug-slot->xml self "by" 'by)
-  (arc:display "</range>"))
+  (hea:display "</range>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -438,9 +438,9 @@
 
 (define-method (debug->xml <apt:keyarg>)
   (call-next-method)
-  (arc:display "<key-arg key='" (slot-ref self 'key) "'>")
+  (hea:display "<key-arg key='" (slot-ref self 'key) "'>")
   (->xml (slot-ref self 'value))
-  (arc:display "</key-arg>"))
+  (hea:display "</key-arg>"))
 
 
 
@@ -465,7 +465,7 @@
 
 (define-method (debug->xml <apt:simple-type>)
   (call-next-method)
-  (arc:display "<simple-type sym='" (slot-ref self 'sym) "'/>"))
+  (hea:display "<simple-type sym='" (slot-ref self 'sym) "'/>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -480,10 +480,10 @@
 
 (define-method (debug->xml <apt:array-type>)
   (call-next-method)
-  (arc:display "<array-type>")
+  (hea:display "<array-type>")
   (->xml (slot-ref self 'base))
   (debug-slot->xml self "initial" 'initial-size)
-  (arc:display "</array-type>"))
+  (hea:display "</array-type>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -497,11 +497,11 @@
 
 (define-method (debug->xml <apt:union-type>)
   (call-next-method)
-  (arc:display "<union-type>")
+  (hea:display "<union-type>")
   (for-each (lambda (e)
               (->xml e))
             (slot-ref self 'type-list))
-  (arc:display "</union-type>"))
+  (hea:display "</union-type>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -516,10 +516,10 @@
 
 (define-method (debug->xml <apt:constraint-type>)
   (call-next-method)
-  (arc:display "<constraint-type>")
+  (hea:display "<constraint-type>")
   (->xml (slot-ref self 'base))
   (debug-slot->xml self "constraint" 'constraint)
-  (arc:display "</constraint-type>"))
+  (hea:display "</constraint-type>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -534,10 +534,10 @@
 
 (define-method (debug->xml <apt:param-type>)
   (call-next-method)
-  (arc:display "<param-type>")
+  (hea:display "<param-type>")
   (->xml (slot-ref self 'base))
   (debug-slot->xml self "params" 'params)
-  (arc:display "</param-type>"))
+  (hea:display "</param-type>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -552,9 +552,9 @@
 
 (define-method (debug->xml <apt:type-expr>)
   (call-next-method)
-  (arc:display "<type-expr member='" (slot-ref self 'member-expr) "'>")
+  (hea:display "<type-expr member='" (slot-ref self 'member-expr) "'>")
   (->xml (slot-ref self 'type))
-  (arc:display "</type-expr>"))
+  (hea:display "</type-expr>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -569,10 +569,10 @@
 
 (define-method (debug->xml <apt:function-type>)
   (call-next-method)
-  (arc:display "<func-type>")
+  (hea:display "<func-type>")
   (debug-slot->xml self "params" 'params)
   (debug-slot->xml self "ret-type" 'rettype)
-  (arc:display "</func-type>"))
+  (hea:display "</func-type>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -597,10 +597,10 @@
 
 (define-method (debug->xml <apt:typedef>)
   (call-next-method)
-  (arc:display "<def><type name='" (slot-ref self 'sym) "'>")
+  (hea:display "<def><type name='" (slot-ref self 'sym) "'>")
   (debug-slot->xml self "params" 'params)
   (debug-slot->xml self "derives" 'derives)
-  (arc:display "</type></def>"))
+  (hea:display "</type></def>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -614,11 +614,11 @@
 
 (define-method (debug->xml <apt:classdef>)
   (call-next-method)
-  (arc:display "<def><class name='" (slot-ref self 'sym) "'>")
+  (hea:display "<def><class name='" (slot-ref self 'sym) "'>")
   (debug-slot->xml self "params" 'params)
   (debug-slot->xml self "derives" 'derives)
   (debug-slot->xml self "decls" 'decls)
-  (arc:display "</class></def>"))
+  (hea:display "</class></def>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -633,9 +633,9 @@
 
 (define-method (debug->xml <apt:type-param>)
   (call-next-method)
-  (arc:display "<type-prm name='" (slot-ref self 'sym) "'>")
+  (hea:display "<type-prm name='" (slot-ref self 'sym) "'>")
   (debug-slot->xml self "default-type" 'default)
-  (arc:display "</type-prm>"))
+  (hea:display "</type-prm>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -652,11 +652,11 @@
 
 (define-method (debug->xml <apt:slotdef>)
   (call-next-method)
-  (arc:display "<slot name='" (slot-ref self 'sym) "'>")
+  (hea:display "<slot name='" (slot-ref self 'sym) "'>")
   (debug-slot->xml self "type" 'type)
   (debug-slot->xml self "props" 'props)
   (debug-slot->xml self "init-value" 'init)
-  (arc:display "</slot>"))
+  (hea:display "</slot>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -671,9 +671,9 @@
 
 (define-method (debug->xml <apt:slot-init-prop>)
   (call-next-method)
-  (arc:display "<slot-init type='" (slot-ref self 'type) "'>")
+  (hea:display "<slot-init type='" (slot-ref self 'type) "'>")
   (debug-slot->xml self "value" 'value)
-  (arc:display "</slot-init>"))
+  (hea:display "</slot-init>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -687,7 +687,7 @@
 
 (define-method (debug->xml <apt:slot-prop>)
   (call-next-method)
-  (arc:display "<slot-prop value='" (slot-ref self 'value) "'/>"))
+  (hea:display "<slot-prop value='" (slot-ref self 'value) "'/>"))
 
 
 ;;;---------------------------------------------------------------------------
@@ -703,10 +703,10 @@
 
 (define-method (debug->xml <apt:on>)
   (call-next-method)
-  (arc:display "<on key='" (slot-ref self 'key) "'>")
+  (hea:display "<on key='" (slot-ref self 'key) "'>")
   (debug-slot->xml self "params" 'params)
   (debug-slot->xml self "body" 'expr)
-  (arc:display "</on>"))
+  (hea:display "</on>"))
 
 
 ;;;---------------------------------------------------------------------------

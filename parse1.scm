@@ -129,13 +129,13 @@
 ;;----------------------------------------------------------------------
 
 (define (syntax-error msg token)
-  (arc:display "Syntax error:" (number->string line-count) ": "
+  (hea:display "Syntax error:" (number->string line-count) ": "
                msg ": " token 'nl)
   #f)
 
 
 (define (error-expected-token ctx where token)
-  (arc:display "Syntax error: " (number->string line-count)
+  (hea:display "Syntax error: " (number->string line-count)
                ": " where ": Expected token " token ", got: "
                (current-token ctx) 'nl)
   #f)
@@ -344,9 +344,7 @@
   (let sanghash-loop ((nl tokens)
                       (res '()))
     (if (null? nl)
-        (begin
-         (arc:display "---> " res 'nl)
-         res)
+        res
         (let ((token (car nl)))
           (if (apt-id? token)
               (let ((operand1 token))
@@ -402,7 +400,7 @@
   (let check-next ((node (cadar (vector-ref syntax-table 1)))
                    (token (current-token ctx))
                    (bindings '()))
-    ;;(arc:display "x5 node " token 'nl)
+    ;;(hea:display "x5 node " token 'nl)
     (let ((follow-set (st-find-node node (current-token ctx))))
       (cond (follow-set
              (check-next follow-set (next-token ctx) bindings))
@@ -449,7 +447,7 @@
 
 (define (parse-do-match-syntax-func ctx expr args syntax-table
                                     parse-parameters?)
-  ;;(arc:display "x3 " (current-token ctx) " - " parse-parameters? " - " args 'nl)
+  ;;(hea:display "x3 " (current-token ctx) " - " parse-parameters? " - " args 'nl)
   (let ((old-current-token (current-token ctx)))
     (if parse-parameters?
         (begin
@@ -476,7 +474,7 @@
                                        (cons (apt-punct ",") res))
                                  (cons (car nl) res)))))
           (unread-token ctx (apt-punct "(")) ))
-    ;;(arc:display "x4 " expr " - " (current-token ctx) 'nl)
+    ;;(hea:display "x4 " expr " - " (current-token ctx) 'nl)
     (current-token-set! ctx expr)
     (match-syntax ctx syntax-table)) )
 
@@ -501,7 +499,7 @@
 
 (define (parse-make-macro-call ctx expr args macro type
                                parse-parameters? scope)
-  ;;(arc:display "x1 " (current-token ctx) " - " type " - " args " -- " scope 'nl)
+  ;;(hea:display "x1 " (current-token ctx) " - " type " - " args " -- " scope 'nl)
   (let* ((syntax-table (vector-ref macro 2))
          (filtered (cond ((or (eq? type 'func)
                               (eq? type 'stmt))
@@ -562,7 +560,7 @@
              (sym      (apt-id (car macro-id))))
         (if macro
             (begin
-              (arc:assert type "Something wrong with the macro facility?")
+              (hea:assert type "Something wrong with the macro facility?")
               (parse-make-macro-call ctx sym
                                      pre-scanned-args macro type
                                      parse-parameters? 'local))
@@ -1146,7 +1144,7 @@
                   (eq? last-type pattern-type))
               (pattern-loop (cdr pnl) pattern-type)
               (begin
-                (arc:display "Macro has inconsistent patterns: "
+                (hea:display "Macro has inconsistent patterns: "
                              (car pnl) 'nl)
                 'any)))) ))
 
@@ -1211,7 +1209,7 @@
 
 
 (define (parse-macro-def ctx scope modifiers)
-  (arc:assert (eq? scope 'global) "TODO.  Local macro def not supported yet")
+  (hea:assert (eq? scope 'global) "TODO.  Local macro def not supported yet")
   (if (apt-id? (current-token ctx))
       (let ((sym (apt-id-value (current-token ctx))))
         (next-token ctx)
@@ -1578,7 +1576,7 @@
           (cond ((and (list? expr)
                       (not (apt? expr)))
                  (let nt2-loop ((nl expr))
-                   (arc:display "NT2 " nl 'nl)
+                   (hea:display "NT2 " nl 'nl)
                    (if (null? nl)
                        (nt-loop apt)
                        (cond ((eq? (car nl) 'ignore) (nt2-loop (cdr nl)))
