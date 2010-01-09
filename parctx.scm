@@ -205,9 +205,12 @@
   (let ((qual-id (qualified-id* id '*)))
     (if (not (eq? (cdr qual-id) '*))
         (let ((ns (lookup-namespace ctx (cdr qual-id))))
-          (hea:display "((" (cdr qual-id) " -- " ns "))" 'nl)
           (cons (car qual-id) ns))
         qual-id)))
+
+
+(define (clone-namespace-mapping <hea:parse-context>)
+  (slot-ref self 'ns-mappings))
 
 
 ;;;----------------------------------------------------------------------

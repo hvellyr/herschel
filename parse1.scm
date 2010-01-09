@@ -698,7 +698,6 @@
       shiftleft shiftright)    8)
     ((add min)                 9)
     ((mul div mod)            10)
-
     ((dot)                    20)
     (else 999999)))
 
@@ -811,26 +810,26 @@
 
 
 (define (parse-expr ctx)
-  (letrec ((expr-loop (lambda (expr1 op1)
-                        (let ((expr2 #f))
-                          (if (not op1)
-                              expr1
-                              (begin
-                                (next-token ctx)
-                                (set! expr2 (parse-atom-expr ctx))
-
-                                (if expr2
-                                    (let ((op2 (parse-operator ctx)))
-                                      (if (not op2)
-                                          (apt-operator expr1 op1 expr2)
-                                          (if (and (not (operator-right? op1))
-                                             (operator>? op1 op2) )
-                                              (expr-loop (apt-operator expr1 op1
-                                                                       expr2) op2)
-                                              (apt-operator expr1 op1
-                                                            (expr-loop expr2 op2)))))
-                                    #f)
-                                ))) )))
+  (letrec ((expr-loop
+            (lambda (expr1 op1)
+              (let ((expr2 #f))
+                (if (not op1)
+                    expr1
+                    (begin
+                      (next-token ctx)
+                      (set! expr2 (parse-atom-expr ctx))
+                      (if expr2
+                          (let ((op2 (parse-operator ctx)))
+                            (if (not op2)
+                                (apt-operator expr1 op1 expr2)
+                                (if (and (not (operator-right? op1))
+                                         (operator>? op1 op2) )
+                                    (expr-loop (apt-operator expr1 op1
+                                                             expr2) op2)
+                                    (apt-operator expr1 op1
+                                                  (expr-loop expr2 op2)))))
+                          #f)
+                      ))) )))
     (let ((expr1 (parse-atom-expr ctx)))
       (if expr1
           (let ((op1 (parse-operator ctx)) )
@@ -915,6 +914,7 @@
                     (apt-nested* "(" ")" params)
                     (apt-punct ":")
                     rettype))))
+
 
 (define (parse-simple-type ctx expect-constraint?)
   (let* ((sym (current-token ctx)))
@@ -1213,12 +1213,14 @@
                       (next-token ctx)
                       (if patterns
                           (begin
-                            (register-macro ctx
-                                            macro-type sym (current-namespace ctx)
-                                            (vector ':macro
-                                                    patterns
-                                                    (macro-compile (list 'macro
-                                                                         ':patterns patterns))))
+                            (register-macro
+                             ctx
+                             macro-type sym (current-namespace ctx)
+                             (vector ':macro
+                                     patterns
+                                     (macro-compile (list 'macro
+                                                          ':patterns patterns))
+                                     (clone-namespace-mapping ctx)))
                             'ignore)
                           #f))
                     (syntax-error "Expected }, got" (current-token ctx))) ))
@@ -1288,7 +1290,8 @@
                 (if (apt-punct-eq? (current-token ctx) ")")
                     (begin
                       (next-token ctx)
-                      (append param-list (list (apt-param #f sym 'rest type init-value))))
+                      (append param-list
+                              (list (apt-param #f sym 'rest type init-value))))
                     (syntax-error "Rest argument must be last in parameter list"
                                   (current-token ctx)))))
 
@@ -1316,15 +1319,17 @@
                  ((apt-punct-eq? (current-token ctx) ",")
                   (begin
                     (next-token ctx)
-                    (parse-functions-params ctx
-                                            (append param-list
-                                                    (list (apt-param keyarg sym spec? type
-                                                                     init-value))))))
+                    (parse-functions-params
+                     ctx
+                     (append param-list
+                             (list (apt-param keyarg sym spec? type
+                                              init-value))))))
 
                  ((apt-punct-eq? (current-token ctx) ")")
                   (begin
                     (next-token ctx)
-                    (append param-list (list (apt-param keyarg sym spec? type init-value)))))
+                    (append param-list
+                            (list (apt-param keyarg sym spec? type init-value)))))
 
                  (else (syntax-error "Unexpected token (2)" (current-token ctx))) )))
 
@@ -1338,14 +1343,16 @@
                  ((apt-punct-eq? (current-token ctx) ")")
                   (begin
                     (next-token ctx)
-                    (append param-list (list (apt-param keyarg sym spec? type init-value)))))
+                    (append param-list (list (apt-param keyarg sym spec?
+                                                        type init-value)))))
                  ((apt-punct-eq? (current-token ctx) ",")
                   (begin
                     (next-token ctx)
-                    (parse-functions-params ctx
-                                            (append param-list
-                                                    (list (apt-param keyarg sym spec? type
-                                                                     init-value))))))
+                    (parse-functions-params
+                     ctx
+                     (append param-list
+                             (list (apt-param keyarg sym spec? type
+                                              init-value))))))
                  (else (syntax-error "Unexpected token (3)" (current-token ctx))) )))
 
              ((apt-punct-eq? (current-token ctx) ",")
@@ -1359,9 +1366,11 @@
              ((apt-punct-eq? (current-token ctx) ")")
               (begin
                 (next-token ctx)
-                (append param-list (list (apt-param #f sym spec? type init-value)))))
+                (append param-list (list (apt-param #f sym spec? type
+                                                    init-value)))))
 
-             (else (syntax-error "Unexpected token (4)" (current-token ctx))) ))
+             (else (syntax-error "Unexpected token (4)"
+                                 (current-token ctx))) ))
 
           (syntax-error "expected id" (current-token ctx)))))
 
@@ -1566,7 +1575,6 @@
           (cond ((and (list? expr)
                       (not (apt? expr)))
                  (let nt2-loop ((nl expr))
-                   (hea:display "NT2 " nl 'nl)
                    (if (null? nl)
                        (nt-loop apt)
                        (cond ((eq? (car nl) 'ignore) (nt2-loop (cdr nl)))
@@ -1577,7 +1585,6 @@
                 ((eq? expr 'ignore) (nt-loop apt))
                 ((not expr) #f)
                 (else (nt-loop (append apt (list expr)))))))))
-
 
 
 ;;Keep this comment at the end of the file
