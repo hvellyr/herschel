@@ -1,0 +1,25 @@
+namespace fibonacci("eyestep/heather:examples")
+
+def meth fib(n : @ Any) ...
+
+def fib(n : @ (Int = 0))
+  0
+
+def fib(n : @ (Int = 1))
+  1
+
+def fib(n : @ (Int > 1))
+  fib(n - 1) + fib(n - 2)
+
+
+def fib2(n)
+  select n {
+    0 -> 0
+    1 -> 1
+    otherwise fib2(n - 1) + fib(n - 2)
+  }
+
+
+n = 28.
+outln("Fib(%d): %d" % #(n, fib(n))).
+
