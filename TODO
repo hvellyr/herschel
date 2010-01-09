@@ -19,6 +19,7 @@
 
 * TODO macro hygiene
   especially with import and namespaces
+** BUG namespace must terminate def body
 
 * TODO Reference type params
 ** TODO Add self.Class stuff to documentation

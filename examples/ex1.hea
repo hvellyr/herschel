@@ -4,7 +4,7 @@ def a = 5
 def b
 -- def c : Int
 
-def g(x : @Int, y : <real>, m = 34, n = 11, o, args ...)
+def g(x : @Int, y : Real, m = 34, n = 11, o, args ...)
   x * y + m * { n m }
   if (a + a) {
     b.c.d

@@ -149,12 +149,25 @@
     (substring val 0 (- (string-length val) 1))))
 
 
+;(define (apt-symbol* value)
+;  (let* ((ns-pos (if (char=? (string-ref value 0) #\<)
+;                     (string-find value #\> 1)
+;                     #f))
+;         (ns (if ns-pos
+;                 (substring value 1 ns-pos)
+;                 #f))
+;         (sym (if ns-pos
+;                  (substring value (+ ns-pos 1) (string-length value))
+;                  value)))
+;    (if ns
+;        (apt-id* sym ns)
+;        (apt-id sym))))
+;
+
 (define (apt-symbol value)
-  (let* ((ns-pos (if (char=? (string-ref value 0) #\<)
-                     (string-find value #\> 1)
-                     #f))
+  (let* ((ns-pos (string-find value #\| 0))
          (ns (if ns-pos
-                 (substring value 1 ns-pos)
+                 (substring value 0 ns-pos)
                  #f))
          (sym (if ns-pos
                   (substring value (+ ns-pos 1) (string-length value))
@@ -164,13 +177,27 @@
         (apt-id sym))))
 
 
+;(define (qualified-id** id fallback-ns)
+;  (let* ((value (apt-id-value id))
+;         (ns-pos (if (char=? (string-ref value 0) #\<)
+;                     (string-find value #\> 1)
+;                     #f))
+;         (ns (if ns-pos
+;                 (substring value 1 ns-pos)
+;                 #f))
+;         (name (if ns-pos
+;                   (substring value (+ ns-pos 1) (string-length value))
+;                   value)))
+;    (if ns
+;        (cons name ns)
+;        (cons name fallback-ns))))
+;
+
 (define (qualified-id* id fallback-ns)
   (let* ((value (apt-id-value id))
-         (ns-pos (if (char=? (string-ref value 0) #\<)
-                     (string-find value #\> 1)
-                     #f))
+         (ns-pos (string-find value #\| 0))
          (ns (if ns-pos
-                 (substring value 1 ns-pos)
+                 (substring value 0 ns-pos)
                  #f))
          (name (if ns-pos
                    (substring value (+ ns-pos 1) (string-length value))

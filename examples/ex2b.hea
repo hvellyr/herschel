@@ -62,15 +62,15 @@ def macro ff
 
 namespace mo
 
-def <arh>cvar x = 127
-def <mo>cvar y = 5555
+def arh|cvar x = 127
+def mo|cvar y = 5555
 
-def <arh>ff m()  "hello"
+def arh|ff m()  "hello"
 
 --def g()
---  on <mo>tool(a)
---    <arh>abc(55) + <mo>abc(111)
+--  on mo|tool(a)
+--    arh|abc(55) + mo|abc(111)
 --
---  on <arh>tool(a, b)
+--  on arh|tool(a, b)
 --    a + b
 --

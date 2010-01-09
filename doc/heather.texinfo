@@ -109,17 +109,9 @@ of its features:
 * Functions::                   Functions
 * Types::                       Types
 * Variables::                   Variables and constants
-* FunctionCalls::               Function calls
-* SlotAccess::                  Access to type slots
-* Namespaces::                  Namespaces
-* Import::                      Import
-* Blocks::                      Blocks
-* Loops::                       Loops
-* Conditionals::                Conditionals
-* Ranges and Slices::           Ranges and Slices
-* On-the-fly iterators::        On the fly iterators
-* Conditions::                  Conditions
-* Closures::                    Closures
+* Expressions::                 Expressions
+* Program control::             Program Control
+* Program structure::           Program Structure
 * Macros::                      Macros
 * Ideas::                       Ideas
 * ReserverdWords::              Reserved words
@@ -398,6 +390,18 @@ def meth compare(one : @@ OneType, two : @@ TwoType) : Bool ...
 @end example
 
 Note the ellipsis @code{...} at the end of the line.
+
+To put it another way: defining a generic function with a body
+implementation is like defining an abstract generic function with
+certain parameters specialized to @code{Any} @emph{and} adding a
+default implementation:
+
+@example
+def meth add-x(self : @@ Any, value : @@ Any) ...
+
+def add-x(self : @@ XMap, value : @@ Int)
+  self.insert(value, -1)
+@end example
 @end deffn
 
 
@@ -842,8 +846,8 @@ let tmp : Int[10]          [2]
 [1] defines @code{buffer} as an array of unspecified size.  The initial
 value is @emph{not} @code{#nil}, but an empty array of characters.  With
 [2] the variable @code{tmp} is initialized to an array of 10 integers.
-Not that the size of an array is not intergral part of the type, nor is
-it a constraint (see below).
+Note that an array's size is not an integral part of the type, nor is it
+a constraint (see below).
 
 
 @c ....................................................................
@@ -946,26 +950,52 @@ deal with an @code{Pair(Any, Any)} type information, unless (as in case
 @node Constraint types, Union types, Parameterized types, Types
 @subsection Constraint types
 
-A @dfn{Constraint Type} is a type which is constrained a certain subset
-of possible values.  Examples are numerical values only accepting
+@cindex Constraint types
+@cindex Enumeration
+@findex = (constraint operator)
+@findex in (constraint operator)
+@findex >= (constraint operator)
+
+A @dfn{Constraint Type} is a type which is constrained by a certain
+subset of possible values.  Examples are numerical values only accepting
 specific value ranges, collections only accepting certain values, etc.
 
 @example
 (Bool = #t)
-(Int = -127 .. 127)
-(Keyword = #['apple, 'pear, 'orange, 'banana, 'grapefruit])
+(Int in -127 .. 127)
+(Keyword in #['apple, 'pear, 'orange, 'banana, 'grapefruit])
 @end example
 
-The constraints are is used during compilation to detect type mismatched
-and for possible optimization, but is not an integral part of the type
-and therefore not used for multiple dispatch.  I.e. two constraint types
-only differing in their contrains won't be treated differently during
-multi dispatch.  The following code is wrong therefore:
+The constraints are not integral part of the type, they are used however
+during compilation to detect type mismatch and for possible optimization.
+They are furthermore honoured for multiple dispatch.  I.e. two constraint types
+only differing in their contraints are treated differently during
+multi dispatch.  The following example:
 
 @example
-def meth do-x(a : @@ (Int = -127 .. 127)) ...
-def meth do-x(a : @@ (Int = -16767 .. 16767)) ...
+def meth add-value(self : @@ Cont, value, index : Int)
+  if (index == -1)
+     self.append(value)
+  else
+     self.insert(value, index)
 @end example
+
+can be rewritten to
+
+@example
+def meth add-value(self : @@ Cont, value, index : @@ (Int = -1))
+  self.append(value)
+
+def meth add-value(self : @@ Cont, value, index : @@ (Int >= 0))
+  self.insert(value, before-index)
+@end example
+
+@findex MethodNotImplemented
+In this example there's no method specialization for negative numbers
+other than -1.  Unless a catch-all fallback implementation is
+implemented somewhere calling @code{add-value} with such a negative
+value would lead therefore to a @code{MethodNotImplemented} runtime
+exception.
 
 
 @c ....................................................................
@@ -994,7 +1024,7 @@ def alias NumberOrFalse = (Number, Bool = #f)
 Other than constraint types union types influence multiple dispatch.
 
 
-@c --------------------------------------------------------------------
+@c ....................................................................
 @node Function types,  , Union types, Types
 @subsection Function types
 
@@ -1004,7 +1034,7 @@ def f : (Function(a : Int) : Bool)
 
 
 @c --------------------------------------------------------------------
-@node Variables, FunctionCalls, Types, Specification
+@node Variables, Expressions, Types, Specification
 @section Variables and Constants
 
 @example
@@ -1015,9 +1045,9 @@ def port = *stdout*
 Fluid variables (which ignore lexical scoping):
 
 @example
-def fluid *stdin* = <io>Cport(0)
-def fluid *stdout* = <io>Cport(1)
-def fluid *stderr* = <io>Cport(2)
+def fluid *stdin* = io|Cport(0)
+def fluid *stdout* = io|Cport(1)
+def fluid *stderr* = io|Cport(2)
 @end example
 
 Such fluid variables can be set later with @samp{let fluid x} to change
@@ -1045,8 +1075,23 @@ def f()
 
 
 @c --------------------------------------------------------------------
-@node FunctionCalls, SlotAccess, Variables, Specification
-@section Function calls
+@node Expressions, Program control, Variables, Specification
+@section Basic expressions
+
+@menu
+* FunctionCalls::               Function calls
+* SlotAccess::                  Access to type slots
+* Operators::                   Operators
+* Assignment::                  Assignment
+* Ranges and Slices::           Ranges and Slices
+* On-the-fly iterators::        On the fly iterators
+* Closures::                    Closures
+@end menu
+
+
+@c ....................................................................
+@node FunctionCalls, SlotAccess, Expressions, Expressions
+@subsection Function calls
 
 Function calls:
 
@@ -1081,9 +1126,9 @@ is identical to
                                          => empty?(name(self), 'force)
 
 
-@c --------------------------------------------------------------------
-@node SlotAccess, Namespaces, FunctionCalls, Specification
-@section Access to type slots
+@c ....................................................................
+@node SlotAccess, Operators, FunctionCalls, Expressions
+@subsection Access to type slots
 
 Since methods/functions are not bound to type, access is always to be done
 explicitly to a typed reference:
@@ -1129,83 +1174,245 @@ self.x = 5  ->   x!(self, 5)
 @end example
 
 
+@c ....................................................................
+@node Operators, Assignment, SlotAccess, Expressions
+@subsection Operators
+
+Heather's operators are rewritten by the compiler into method calls.  To
+implement operator support for custom types and classes implement these
+methods.
+
+@table @code
+@item +
+add
+@item -
+subtract
+@item /
+divide
+@item *
+multiply
+@item **
+exponent
+@item mod
+modulo
+@item and
+and
+@item or
+or
+@item %
+fold
+@item &
+bitand
+@item |
+bitor
+@item ^
+bitxor
+@item <<
+shift-left
+@item >>
+shift-right
+@end table
+
+@deftypefn Method Number add (@var{op1}, @var{op2})
+Addition; defined on numbers
+@end deftypefn
+
+@deftypefn Method Number subtract (@var{op1}, @var{op2})
+Subtraction; defined on numbers
+@end deftypefn
+
+@deftypefn Method Number divide (@var{op1}, @var{op2})
+On Integers and inexact non floating point numbers defined as integer
+division; on real and inexact floating point numbers division
+@end deftypefn
+
+@deftypefn Method Number multiply (@var{op1}, @var{op2})
+Multiplication; defined on Numbers
+@end deftypefn
+
+@deftypefn Method Number exponent (@var{op1}, @var{op2})
+Computes the exponent
+@end deftypefn
+
+@deftypefn Method Number modulo (@var{op1}, @var{op2})
+Modulo arithmetic.  Only defined on integers and inexact non floating
+point numbers
+@end deftypefn
+
+@deftypefn Method Number logand (@var{op1}, @var{op2})
+Logical AND; defined on @code{Bool} only
+@end deftypefn
+
+@deftypefn Method Number logor (@var{op1}, @var{op2})
+Logical OR; defined on @code{Bool} only
+@end deftypefn
+
+@deftypefn Method Number fold (@var{op1}, @var{op2})
+Fold operator; defined on @code{String} and alike
+@end deftypefn
+
+@deftypefn Method Number bitand (@var{op1}, @var{op2})
+Bitwise AND; defined on inexact integer's only
+@end deftypefn
+
+@deftypefn Method Number bitor (@var{op1}, @var{op2})
+Bitwise OR; defined on inexact integer's only
+@end deftypefn
+
+@deftypefn Method Number bitxor (@var{op1}, @var{op2})
+Bitwise XOR; defined on inexact integer's only
+@end deftypefn
+
+@deftypefn Method Number shift-left (@var{op1}, @var{op2})
+Bitwise shift left; defined on inexact integer's only
+@end deftypefn
+
+@deftypefn Method Number shift-right (@var{op1}, @var{op2})
+Bitwise shift right; defined on inexact integer's only
+@end deftypefn
+
+
+Comparision operators:
+
+@table @code
+@item ==
+equal?
+@item <>
+unequal?
+@item >
+greater?
+@item >=
+greater-equal?
+@item <
+less?
+@item <=
+less-equal?
+@item <=>
+compare
+@end table
+
+@deftypefn Method Bool equal? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} and @var{operand2} are equal.  If
+operand1 and operand2 does not have the same type they are not equal by
+definition.
+
+TBD.  Numeric values can be equal, even they don't have the same type.
+@end deftypefn
+
+@deftypefn Method Bool unequal? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} and @var{operand2} are not equal.
+@end deftypefn
+
+@deftypefn Method Bool greater? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} is greater than @var{operand2}.
+@end deftypefn
+
+@deftypefn Method Bool greater-equal? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} is greater than or equal to @var{operand2}.
+@end deftypefn
+
+@deftypefn Method Bool less? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} is less than @var{operand2}.
+@end deftypefn
+
+@deftypefn Method Bool less-equal? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} is less than or equal to @var{operand2}.
+@end deftypefn
+
+@deftypefn Method Int compare (@var{operand1}, @var{operand2})
+Compares @var{operand1} with @var{operand2} and returns a negative
+integer if @var{operand1} is less than @var{operand2}, a zero if it is
+equal and a positive integer if is greater.
+@end deftypefn
+
+
+@c ....................................................................
+@node Assignment, Ranges and Slices, Operators, Expressions
+@subsection Assignment
+
+tbd.
+
+
+@c ....................................................................
+@node Ranges and Slices, On-the-fly iterators, Assignment, Expressions
+@subsection Ranges and Slices
+
+Basic ranges are exclusive, so the range [5, 100) is written as:
+
+@example
+5 .. 100
+@end example
+
+Whereas [5, 100] is written as:
+
+@example
+5 ... 100
+@end example
+
+Give the step parameter:
+
+@example
+5 .. 100 by 5
+@result{} 5, 10, 15, ..., 95
+@end example
+
+Ranges are used for instance to slice vectors and strings:
+
+@example
+"hello world"[3 .. 6]
+@result{} "lo "
+
+"hello world"[3 ... 6]
+@result{} "lo w"
+
+"hello world"[3 .. 8 by 2]
+@result{} "l o"
+@end example
+
+
+@c ....................................................................
+@node On-the-fly iterators, Closures, Ranges and Slices, Expressions
+@subsection On the fly iterators
+
+The @code{then-while} operators are used to express iterators on the
+fly:
+
+@example
+for (i : Int = 0 then i + 1 while i < 10) @emph{body}
+
+def value-iterators(values : Int[])
+  let i = 0
+  values[i] then values[i.incr!] while i + 1 < values.num-items
+@end example
+
+
+
+@c ....................................................................
+@node Closures,  , On-the-fly iterators, Expressions
+@subsection Closures
+
+@example
+#function(a : Real, b : Real) : Int @{ @}
+@end example
+
+
+
+
 @c --------------------------------------------------------------------
-@node Namespaces, Import, SlotAccess, Specification
-@section Namespaces
+@node Program control, Program structure, Expressions, Specification
+@section Program control
 
-Declare and use the @dfn{namespace} of a @sc{compile unit}:
-
-@example
-namespace heather("eyestep/heather 1.0:core")
-@end example
-
-This sets the namespace for the following functions, types, macros, and
-variables.  It is valid until the end of the source file or the next
-namespace declaration.
-
-Namespaces have two names, the short (or ``tag'') name and the full id
-(the ``full name'').  The full name is any identifying string; for the
-default heather libraries this is a kind of public id, other projects
-may use URLs, etc.  Namespaces are compared by full id only, but since
-this can be clumsy in code normally the tag name is used.  The common
-tag @code{<io>} is actually defined as:
-
-@example
-namespace io("eyestep/heather 1.0:input-output")
-@end example
-
-If names are unique throughout all namespaces visible in a certain portion
-of code there's no need to indicate the namespace.  If there are multiple
-equally named functions or types in different namespaces however the fully
-qualified name has to be used:
-
-@example
-<io>InputPort()
-<zip>InputPort()
-@end example
-
-gives the @code{InputPort} type from the @code{io} and the @code{zip}
-namespace respectively.
-
-The namespace have to be given inside of method call chains also if
-necessary:
-
-@example
-self.<io>write()
-@end example
-
-A namespace statement without full id data like
-
-@example
-namespace io
-@end example
-
-simply switches the current governing namespace to @code{io}.  It
-requires a previous full namespace declaration, and is therefore usefull
-for source files with multiple namespaces.
-
-Namespace defines (i.e. tag name to full id mapping) are imported from
-loaded files; the namespace defined in the file does not extend,
-however, into the importing file.
+@menu
+* Blocks::                      Blocks
+* Loops::                       Loops
+* Conditionals::                Conditionals
+* Conditions::                  Conditions
+@end menu
 
 
-@c --------------------------------------------------------------------
-@node Import, Blocks, Namespaces, Specification
-@section Import
-
-Importing external modules.  The statement
-
-@example
-import(io)
-@end example
-
-will try to look for a module (file) @code{io} in the search path and
-load it.
-
-
-@c --------------------------------------------------------------------
-@node Blocks, Loops, Import, Specification
-@section Blocks
+@c ....................................................................
+@node Blocks, Loops, Program control, Program control
+@subsection Blocks
 
 Code blocks are sequences of statements.  The last statement's return value
 gives the return value of the complete block.  Blocks are atomic and
@@ -1225,9 +1432,9 @@ def f(x = @{ let p = Properties()
 @end example
 
 
-@c --------------------------------------------------------------------
-@node Loops, Conditionals, Blocks, Specification
-@section Loops
+@c ....................................................................
+@node Loops, Conditionals, Blocks, Program control
+@subsection Loops
 
 @example
 for (@emph{base}, @emph{conditions}) @emph{expr}
@@ -1251,9 +1458,9 @@ If no @code{else} branch is given the return value of such is a loop is
 @code{#f}.
 
 
-@c --------------------------------------------------------------------
-@node Conditionals, Ranges and Slices, Loops, Specification
-@section Conditionals
+@c ....................................................................
+@node Conditionals, Conditions, Loops, Program control
+@subsection Conditionals
 
 @deffn Special if (@var{test}) @var{consequent}
 @deffnx Special if (@var{test}) @var{consequent} @code{else} @var{alternate}
@@ -1296,63 +1503,9 @@ select () @{
 @end deffn
 
 
-@c --------------------------------------------------------------------
-@node Ranges and Slices, On-the-fly iterators, Conditionals, Specification
-@section Ranges and Slices
-
-Basic ranges are exclusive, so the range [5, 100) is written as:
-
-@example
-5 .. 100
-@end example
-
-Whereas [5, 100] is written as:
-
-@example
-5 ... 100
-@end example
-
-Give the step parameter:
-
-@example
-5 .. 100 by 5
-@result{} 5, 10, 15, ..., 95
-@end example
-
-Ranges are used for instance to slice vectors and strings:
-
-@example
-"hello world"[3 .. 6]
-@result{} "lo "
-
-"hello world"[3 ... 6]
-@result{} "lo w"
-
-"hello world"[3 .. 8 by 2]
-@result{} "l o"
-@end example
-
-
-@c --------------------------------------------------------------------
-@node On-the-fly iterators, Conditions, Ranges and Slices, Specification
-@section On the fly iterators
-
-The @code{then-while} operators are used to express iterators on the
-fly:
-
-@example
-for (i : Int = 0 then i + 1 while i < 10) @emph{body}
-
-def value-iterators(values : Int[])
-  let i = 0
-  values[i] then values[i.incr!] while i + 1 < values.num-items
-@end example
-
-
-
-@c --------------------------------------------------------------------
-@node Conditions, Closures, On-the-fly iterators, Specification
-@section Conditions
+@c ....................................................................
+@node Conditions,  , Conditionals, Program control
+@subsection Conditions
 
 It's possible to add a hook to a block which is called whenever the
 block is left, either by unroll or by ``normal'' code flow:
@@ -1370,7 +1523,7 @@ which it is declared.  It can therefore access local bindings etc.  On
 the other side in examples like this:
 
 @example
-let stream = <io>FileInputPort(name)
+let stream = io|FileInputPort(name)
 for (i = 0 .. 100) @{
   on exit(v)
   @{
@@ -1384,7 +1537,7 @@ the exit hook would be called for each loop step.  The author mostly likely
 intended this:
 
 @example
-let stream = <io>FileInputPort(name)
+let stream = io|FileInputPort(name)
 on exit(v)
 @{
   stream.close
@@ -1437,16 +1590,91 @@ exit handler.
 
 
 @c --------------------------------------------------------------------
-@node Closures, Macros, Conditions, Specification
-@section Closures
+@node Program structure, Macros, Program control, Specification
+@section Program structure
+
+@menu
+* Namespaces::                  Namespaces
+* Import::                      Importing modules
+@end menu
+
+
+@c ....................................................................
+@node Namespaces, Import, Program structure, Program structure
+@subsection Namespaces
+
+Declare and use the @dfn{namespace} of a @sc{compile unit}:
 
 @example
-#function(a : Real, b : Real) : Int @{ @}
+namespace heather("eyestep/heather 1.0:core")
 @end example
+
+This sets the namespace for the following functions, types, macros, and
+variables.  It is valid until the end of the source file or the next
+namespace declaration.
+
+Namespaces have two names, the short (or ``tag'') name and the full id
+(the ``full name'').  The full name is any identifying string; for the
+default heather libraries this is a kind of public id, other projects
+may use URLs, etc.  Namespaces are compared by full id only, but since
+this can be clumsy in code normally the tag name is used.  The common
+tag @code{io} is actually defined as:
+
+@example
+namespace io("eyestep/heather 1.0:input-output")
+@end example
+
+If names are unique throughout all namespaces visible in a certain portion
+of code there's no need to indicate the namespace.  If there are multiple
+equally named functions or types in different namespaces however the fully
+qualified name has to be used:
+
+@example
+io|InputPort()
+zip|InputPort()
+@end example
+
+gives the @code{InputPort} type from the @code{io} and the @code{zip}
+namespace respectively.
+
+The namespace have to be given inside of method call chains also if
+necessary:
+
+@example
+self.io|write()
+@end example
+
+A namespace statement without full id data like
+
+@example
+namespace io
+@end example
+
+simply switches the current governing namespace to @code{io}.  It
+requires a previous full namespace declaration, and is therefore usefull
+for source files with multiple namespaces.
+
+Namespace defines (i.e. tag name to full id mapping) are imported from
+loaded files; the namespace defined in the file does not extend,
+however, into the importing file.
+
+
+@c ....................................................................
+@node Import,  , Namespaces, Program structure
+@subsection Import
+
+Importing external modules.  The statement
+
+@example
+import(io)
+@end example
+
+will try to look for a module (file) @code{io} in the search path and
+load it.
 
 
 @c --------------------------------------------------------------------
-@node Macros, Ideas, Closures, Specification
+@node Macros, Ideas, Program structure, Specification
 @section Macros
 
 Different kind of macro styles:
@@ -1456,14 +1684,14 @@ FUNCTION MACROS.
 Look exactly and are called like functions:
 
   def macro min @{
-     @{ min (?a:*, ?b:*) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
+     @{ min (?a:expr, ?b:expr) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
                                  if (tmp-a > tmp2) tmp-b else tmp-a @} @}
   @}
 
 or in a local scope:
 
   let macro min @{
-     @{ min (?a:*, ?b:*) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
+     @{ min (?a:expr, ?b:expr) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
                                  if (tmp-a > tmp2) tmp-b else tmp-a @} @}
   @}
 
@@ -1476,18 +1704,19 @@ DEFINITION MACROS
 
 Look like a define and/or let:
 
-  def macro functional-variable @{
-      @{ def functional-variable ?name:id = ?e:expr @} ->
+  def macro func-variable @{
+      @{ def func-variable ?name:name = ?e:expr @} ->
         @{ def ?name ## -var = ?e
           def ?name () ?name ## -var
           def ?name (value) @{ ?name ##-var = value
                                  value @} @}
-      @{ let functional-variable ?name:id = ?e:expr @} ->
+      @{ let func-variable ?name:name = ?e:expr @} ->
         @{ let ?name ## -var = ?e
           let ?name () ?name ## -var
           let ?name (value) @{ ?name ##-var = value
                               value @} @}
   @}
+
 
 STATEMENT MACROS
 
@@ -1499,7 +1728,7 @@ Look like a statement like for, while, etc.
 
 
   def macro with-open-file @{
-    @{ with-open-file (?stream:id, ?name:string) ?e:expr @} ->
+    @{ with-open-file (?stream:name, ?name:string) ?e:expr @} ->
       @{
         let ?stream = FileInputPort(?name, 'read)
         on exit(value) @{
@@ -1515,11 +1744,11 @@ Look like a statement like for, while, etc.
 Multiple variant patterns and subpatterns:
 
   def macro funcvar @{
-    @{ def funcvar ?name:id @} -> @{ def ?name ## -var = #nil
+    @{ def funcvar ?name:name @} -> @{ def ?name ## -var = #nil
                                   def ?name () ?name ## -var
                                   def ?name (value) @{ ?name ## -var = value
                                                       value @} @}
-    @{ def funcvar ?name:id = ?e:expr @} ->
+    @{ def funcvar ?name:name = ?e:expr @} ->
                                 @{ def ?name ## -var = ?e
                                   def ?name () ?name ## -var
                                   def ?name (value) @{ ?name ## -var = value
@@ -1578,7 +1807,7 @@ def f()
    (1, 2, 3, 4)
 
 def g()
-  let (a, b, c, d) = b.<io>Port().read(4)
+  let (a, b, c, d) = b.io|Port().read(4)
 @end example
 
 
@@ -1591,9 +1820,22 @@ def g()
 21'm/s
 412'px
 
-def measure cm
-def meth transform(from : @@ Measure(cm), to : @@ Measure(mm))
-  Measure(from.value * 100, mm)
+def measure Length
+-- scalar definition; no default transformation
+def measure Meter ('m) : Length
+-- derived definition; basic measure is Meter with a factor of 100
+def measure Centimeter ('cm, Meter, 100) : Length
+-- derived definition; basic measure is Meter with a factor of 1000
+def measure Millimeter ('mm, Meter, 1000) : Length
+
+def measure Inch ('in) : Length
+
+-- additional transformations
+def meth transform(from : @@ Centimeter, to : @@ Millimeter)
+  Millimeter(from.value * 10)
+
+def meth transform(from : @@ Millimeter, to : @@ Inch)
+  Inch(from.value * 25.4)
 @end example
 
 

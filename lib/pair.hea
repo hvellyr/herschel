@@ -58,7 +58,7 @@ def ->string(self : @Pair*(?, ?)) : String
   if (self.car == nil? and self.cdr == nil?)
     "()"
   else {
-    let port = <io>StringPort()
+    let port = io|StringPort()
     let printer(p : Pair*(?, ?)) {
         port.writes(p.car.->string)
 
