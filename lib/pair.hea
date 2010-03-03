@@ -38,76 +38,77 @@ import(io)
 -- Simple LISP like pair/list implementation.
 --
 -- You can simulate the basic lisp style (cons a b) in heather with Pair(a, b).
-def class Pair*(Object, Car, Cdr)
+def class Pair<Car, Cdr>(car: _car : Car = #nil,
+                         cdr: _cdr : Cdr = #nil)
 {
-  slot car : Car = #nil, key-init: car
-  slot cdr : Cdr = #nil, key-init: cdr
+  slot car : Car = _car
+  slot cdr : Cdr = _cdr
 }
 
-def alias Pair = Pair*(Any, Any)
-
-def meth pair-cell->string(node : @Any, port, func)
+def meth pair-cell-to-string(node : @Any, port, func)
   port.writes(" . ")
-  port.writes(node.->string)
+  port.writes(node.to-string)
 
-def pair-cell->string(node : @Pair*(?, ?), port, func)
+def pair-cell-to-string(node : @Pair, port, func)
   port.writes(" ")
   func(node)
 
-def ->string(self : @Pair*(?, ?)) : String
+def to-string(self : @Pair) : String
   if (self.car == nil? and self.cdr == nil?)
     "()"
   else {
     let port = io|StringPort()
-    let printer(p : Pair*(?, ?)) {
-        port.writes(p.car.->string)
+    let printer(p : Pair) {
+        port.writes(p.car.to-string)
 
         let pcdr = p.cdr
         if (not(pcdr == nil?))
-          pcdr.pair-cell->string(port, printer)
+          pcdr.pair-cell-to-string(port, printer)
       }
 
     port.writes("(")
     printer(self)
     port.writes(")")
 
-    port.->string
+    port.to-string
   }
 
 
-def class PairIterator*(Object, Car, Cdr) : UnrewindableSequence
+def class PairIterator<Elt,
+                       AccessorType = (Function(node : Pair<Elt, _.Type>)>(_root, acc)
+    : Iterator<Elt>
 {
-  slot current : Pair*(Car, Cdr) = #nil, init: 0
---  slot acc : (Function(node : Pair*(Car, Cdr)) : String) = #nil, init: 1
-  slot acc = #nil, init: 1
+  slot current : Pair<PairType, _.Type> = _root
+  slot accessor : AccessorType) = acc
 }
 
-def alias PairIterator = PairIterator*(Any, Any)
 
-def next(self : @PairIterator*(?, ?)) : self.Type.Car
+def next(self : @PairIterator) : self.Type.Car
    if (not(self.end?)) {
-     let value = self.acc(self.current)
+     let value = self.accessor(self.current)
      self.current = self.current.cdr
      value
    }
    else
      #eof
 
-def end?(self : @PairIterator*(?, ?))
-   self.current == nil? or not(self.current.kind-of?(Pair))
+def end?(self : @PairIterator) : Bool
+   self.current == #nil or not(self.current.kind-of?(Pair))
 
 
 
--- Returns a sequence which enumerates over the CARs of the 
--- nested list.
-def values(self : @Pair*(?, ?))
-  PairIterator(self, #function(node) { node.car })
+--! Returns an iterator over the car branches of a linked nodes
+def meth value-iterator(self : @Pair)
+  PairIterator<self.Type.Elt,
+               AccessorType: (Function(node : self.Type) : self.Type.Elt)>(
+    self, #function(node) { node.car })
 
 
--- Returns a sequence which enumerates over the pairs as if
--- following the cdr chain.
-def sequence(self : @Pair*(?, ?))
-  PairIterator(self, #function(node) { node })
+--! Returns an iterator over all linked nodes by following the cdr chain
+def meth iterator(self : @Pair)
+  PairIterator<self.Type.Elt,
+               AccessorType: (Function(node : self.Type) : self.Type)>(
+    self, #function(node) { node })
 
 
 -- end of Pair
