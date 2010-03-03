@@ -1,171 +1,248 @@
 ------------------------------------------------------------------------------
 -- base of all collections
 ------------------------------------------------------------------------------
-def type Collection(Object, Elt)
 
-def meth add-all(self : @Collection, other : @Collection) : self.Type ...
-def meth has-all?(self : @Collection, coll : @Collection) : Bool ...
-def meth retain-all(self : @Collection, coll : @Collection) : Bool ...
-def meth remove-all(self : @Collection, coll : @Collection) : Bool ...
+def alias ForEachVisitor = Function(elt)
 
-def meth size(self : @Collection) : Int ...
-def meth num-items(self : @Collection) : Int ...
-def meth empty?(self : @Collection) : Bool ...
-def meth empty!(self : @Collection) : self.Type ...
+--! @code{Collection} is the base type for all collection classes in the
+--! heather collection framework.  It provides an API of implementation
+--! independant functionality available for each container class
+def type Collection<Elt>
+{
+  def meth add-all(self : @, other : @Collection) : self.Type ...
+  def meth has-all?(self : @, coll : @Collection) : Bool ...
+  def meth retain-all(self : @, coll : @Collection) : self.Type ...
+  def meth remove-all(self : @, coll : @Collection) : self.Type ...
 
-def meth contains?(self : @Collection, elt : @self.Type.Elt) : Bool ...
-def meth add(self : @Collection, elt : @self.Type.Elt) : self.Type ...
-def meth remove(self : @Collection, elt : @self.Type.Elt) : self.Type ...
+  --! Returns the allocation size of @var{self} in octets
+  --!
+  --! This method must sum up the allocations size of all contained elements
+  --! and its own allocation size.  Note that this methods can never return 0
+  def meth size(self : @) : Int ...
 
-def meth iterator(self : @Collection) : Iterator(self.Type.Elt) ...
+  --! Returns the number of contained elements of @var{self}
+  def meth num-items(self : @ ) : Int ...
 
-def meth for-each(self : @Collection,
-                  func : (Function(elt : self.Type.Elt) : bool)) : self.Type ...
+  --! Indicates whether @var{self} is empty, i.e. does not contain any element
+  def meth empty?(self : @) : Bool ...
+
+  --! Removes all contained elements from @var{self}
+  --!
+  --! => @var{self}
+  def meth empty!(self : @) : self.Type ...
+
+  --! Indicates whether @var{self} contains the element @var{elt}
+  --!
+  --! @var{elt} is compared to each contained element using 
+  --!
+  --!   equal(contained-element, @var{elt})
+  def meth contains?(self : @, elt : @self.Type.Elt) : Bool ...
+
+  --! Adds @var{elt} to @var{self}
+  --!
+  --! It is implementation dependant what happens when @var{elt} is already
+  --! contained in @var{self}.
+  --!
+  --! => @var{self}
+  def meth add(self : @, elt : @self.Type.Elt) : self.Type ...
+
+  --! Remove @var{elt} from @var{self}
+  --!
+  --! The method ignore silently if @var{elt} is not contained in @var{self} at
+  --! all.
+  --!
+  --! => @var{self}
+  def meth remove(self : @, elt : @self.Type.Elt) : self.Type ...
+
+  --! Returns an iterator over the contained elements in @var{self}
+  --!
+  --! The order of elements delivered by the returned iterator dependants on
+  --! the algorithm used by @var{self}.
+  def meth iterator(self : @) : Iterator<self.Type.Elt> ...
+
+
+  --! Apply @var{functor} on ach contained element in @var{self}
+  --!
+  --! => @var{self}
+  def meth for-each(self : @, func : ForEachVisitor) : self.Type ...
+}
+
 
 ------------------------------------------------------------------------------
 -- all items are always sorted
 ------------------------------------------------------------------------------
-def type SortedCollection(Object, Elt) : Collection(Elt)
+def type OrderedCollection<Elt> : Collection<Elt>
+{
+  def meth first(self : @) : self.Type.Elt ...
+  def meth last(self : @) : self.Type.Elt ...
+}
 
-def meth first(self : @SortedCollection) : self.Type.Elt ...
-def meth last(self : @SortedCollection) : self.Type.Elt ...
+
+------------------------------------------------------------------------------
+-- slice access
+------------------------------------------------------------------------------
+def type SliceableCollection<Key, Elt>
+{
+  def meth slice(self : @, key : @self.Type.Key) : self.Type.Elt ...
+  def meth slice!(self : @,
+                  key : @self.Type.Key,
+                  value : @self.Type.Elt) : self.Type ...
+}
+
+
+------------------------------------------------------------------------------
+-- slice access with range
+------------------------------------------------------------------------------
+def type OrderedSliceableCollection<Key, Elt> : SliceableCollection<Key, Elt>
+{
+  def meth slice(self : @,
+                 from : @self.Type.Key,
+                to : @self.Type.Key) : Collection<self.Type.Elt> ...
+}
 
 
 ------------------------------------------------------------------------------
 -- index access
 ------------------------------------------------------------------------------
-def type Sequence(Object, Elt) : Collection(Elt)
+def type Sequence<Elt> : (Collection<Elt>,
+                          OrderedCollection<Elt>,
+                          OrderedSliceableCollection<Int, Elt> )
+{
+  def meth insert(self : @,
+                  value : @self.Type.Elt,
+                  before-index : Int) : self.Type ...
+  def meth remove-at(self : @,
+                     index : Int) : self.Type.Elt ...
 
-def meth insert(self : @Sequence,
-                value : @self.Type.Elt,
-                before-index : Int) : self.Type ...
-def meth remove-at(self : @Sequence,
-                   index : Int) : self.Type.Elt ...
+  def meth swap(self : @, from-idx : Int, to-idx : Int) : self.Type ...
 
-def meth swap(self : @Sequence, from-idx : Int, to-idx : Int) : self.Type ...
+  def meth sort(self : @) : self.Type ...
+  def meth sort!(self : @) : self.Type ...
+  def meth reverse(self : @) : self.Type ...
+  def meth reverse!(self : @) : self.Type ...
 
-def meth first(self : @Sequence) : self.Type.Elt ...
-def meth last(self : @Sequence) : self.Type.Elt ...
-
-def meth sort(self : @Sequence) : self.Type ...
-def meth sort!(self : @Sequence) : self.Type ...
-def meth reverse(self : @Sequence) : self.Type ...
-def meth reverse!(self : @Sequence) : self.Type ...
-
--- operators [] and [] =
-def meth slice(self : @Sequence, index : @Int) : self.Type.Elt ...
-def meth slice!(self : @Sequence,
-                index : @Int,
-                value : @self.Type.Elt) : self.Type ...
+  def meth index-of(self : @, elt : @self.Type.Elt) : Int ...
+}
 
 
 ------------------------------------------------------------------------------
 -- associative collection (key -> value[s])
 ------------------------------------------------------------------------------
 
-def class Assoc(Object, Key, Value)
+def class Assoc<Key, Value>(_key : Key, _val : Value)
 {
-  slot key : Key, init: 0
-  slot value : Value, init: 1
+  slot key : Key = _key
+  slot value : Value = _val
 }
 
-def type AssocCollection(Object, Key, Value) : Collection(Assoc(Key, Value))
+def type AssocCollection<Key, Value> : Collection<Assoc<Key, Value> >
+{
+  def meth key-iterator(self : @) : Iterator<self.Type.Key> ...
+  def meth value-iterator(self : @) : Iterator<self.Type.Key> ...
 
-def meth key-iterator(self : @AssocCollection) : Iterator(self.Type.Key) ...
-def meth value-iterator(self : @AssocCollection) : Iterator(self.Type.Key) ...
+  def meth has-key?(self : @, key : @self.Type.Key) : Bool ...
+  def meth get(self : @, key : @self.Type.Key) : self.Type.Value ...
+  def meth put(self : @,
+               key : @self.Type.Key, value : @self.Type.Value) : self.Type ...
+  def meth remove(self : @,
+                  key : @self.Type.Key) : self.Type ...
 
-def meth has-key?(self : @AssocCollection, key : @self.Type.Key) : Bool ...
-def meth get(self : @AssocCollection, key : @self.Type.Key) : self.Type.Value ...
-def meth put(self : @AssocCollection,
-             key : @self.Type.Key, value : @self.Type.Value) : self.Type ...
-def meth remove(self : @AssocCollection,
-                key : @self.Type.Key) : self.Type ...
+  def meth keys(self : @) : Collection<self.Type.Key> ...
+  def meth values(self : @) : Collection<self.Type.Key> ...
 
-def meth keys(self : @AssocCollection) : Collection(self.Type.Key) ...
-def meth values(self : @AssocCollection) : Collection(self.Type.Key) ...
-
-def meth has-all-keys?(self : @AssocCollection,
-                       keys : @Collection(self.Type.Key)) : Bool ...
-def meth remove-all-keys(self : @AssocCollection,
-                         keys : @Collection(self.Type.Key)) : self.Type ...
-def meth retain-all-keys(self : @AssocCollection,
-                         keys : @Collection(self.Type.Key)) : self.Type ...
+  def meth has-all-keys?(self : @,
+                         keys : @Collection<self.Type.Key>) : Bool ...
+  def meth remove-all-keys(self : @,
+                           keys : @Collection<self.Type.Key>) : self.Type ...
+  def meth retain-all-keys(self : @,
+                           keys : @Collection<self.Type.Key>) : self.Type ...
+}
 
 
 ------------------------------------------------------------------------------
 -- default implementations
 ------------------------------------------------------------------------------
 
-def class Set(Object, Elt) : Collection(Elt)
+def class Set<Elt> : Collection<Elt>
 {
   -- todo
 }
 
 
 -- aka TreeSet
-def class SortedSet(Object, Elt) : SortedCollection(Elt)
+def class SortedSet<Elt> : (OrderedCollection<Elt>,
+                            OrderedSliceableCollection<Elt, Elt>)
 {
   -- todo
 }
 
 
 -- aka MultiSet
-def class Bag(Object, Elt) : Collection(Elt)
+def class Bag<Elt> : Collection<Elt>
 {
   -- todo
 }
 
 
 -- aka MultiTreeSet
-def class SortedBag(Object, Elt) : SortedCollection(Elt)
+def class SortedBag<Elt> : (OrderedCollection<Elt>,
+                            OrderedSliceableCollection<Elt, Elt>)
 {
   -- todo
 }
 
 
-def class Vector(Object, Elt) : Sequence(Elt)
+def class Vector<Elt> : Sequence<Elt>
 {
   -- todo
-}
 
-def meth resize(self : @Vector) : self.Type ...
-
-
-
-def class List(Object, Elt) : Sequence(Elt)
-{
-  -- todo
+  def meth resize(self : @) : self.Type ...
 }
 
 
-def class Deque(Object, Elt) : Sequence(Elt)
+
+
+def class List<Elt> : Sequence<Elt>
 {
   -- todo
 }
 
 
-
-def class HashMap(Object, Key, Value) : AssocCollection(Key, Value)
+def class Deque<Elt> : Sequence<Elt>
 {
   -- todo
 }
 
 
-def class Tree(Object, Key, Value) : (AssocCollection(Key, Value),
-                                     SortedCollection(Key))
+
+def class HashMap<Key, Value> : (AssocCollection<Key, Value>,
+                                 SliceableCollection<Key, Value>)
 {
   -- todo
 }
 
 
-def class MultiMap(Object, Key, Value) : AssocCollection(Key, Value)
+def class Tree<Key, Value> : (AssocCollection<Key, Value>,
+                              OrderedCollection<Key>,
+                              OrderedSliceableCollection<Key, Value>)
 {
   -- todo
 }
 
 
-def class SortedMultiMap(Object, Key, Value) : (AssocCollection(Key, Value),
-                                               SortedCollection(Key, Value))
+def class MultiMap<Key, Value> : (AssocCollection<Key, Value>,
+                                  SliceableCollection<Key, Value>)
 {
   -- todo
 }
+
+
+def class SortedMultiMap<Key, Value> : (AssocCollection<Key, Value>,
+                                        OrderedCollection<Key, Value>,
+                                        OrderedSliceableCollection<Key, Value>)
+{
+  -- todo
+}
+
+
+-- end of collection

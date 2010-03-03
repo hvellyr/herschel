@@ -39,13 +39,13 @@
 --
 --   In a assignment like this:
 --
---     let x : Vector(Byte)
+--     let x : Vector<Byte>
 --
 --     x = _.Type(1024)
 --
 --   this refers to:
 --
---     x = Vector(Byte)(1024)
+--     x = Vector<Byte>(1024)
 --
 --
 --
@@ -106,35 +106,31 @@ import(io)
 
 ---------------------------------------------------------------------------
 
-def class Assoc*(Object, Key, Value)
+def class Assoc<Key, Value>(_key, _val)
 {
-  slot key, init: 0
-  slot value, init: 1
+  slot key : Key = _key
+  slot value : Value = _val
 }
 
-def alias Assoc = Assoc*(Any, Any)
-
-def meth ->string(self : @Assoc) : String
-  StringBuffer().append(self.key, "->", self.value).->string
+def meth to-string(self : @Assoc) : String
+  StringBuffer().append(self.key, "->", self.value).to-string
 
 
 ---------------------------------------------------------------------------
 -- <cat vis='hide'/>
 
-def class Triple*(Object, Key, Value, Tail)
+def class Triple<Key, Value, Tail>(_key, _val, _tail)
 {
-  slot key,   init: 0
-  slot value, init: 1
-  slot tail,  init: 2
+  slot key : Key = _key
+  slot value : Value = _val
+  slot tail : Tail = _tail
 }
-
-def alias Triple = Triple*(Any, Any, Any)
 
 def meth key?(self : @Triple, other : Triple) : Bool
   self.key == other
 
-def meth ->string(self : @Triple) : String
-  StringBuffer().append(self.key, "->", self.value).->string
+def meth to-string(self : @Triple) : String
+  StringBuffer().append(self.key, "->", self.value).to-string
 
 
 
@@ -142,19 +138,17 @@ def meth ->string(self : @Triple) : String
 
 def const %default-size% = 16
 
-def class HashMap*(Object, Key, Elt) : (Comparable, AssocCollection)
+def class HashMap<Key, Elt>(items : Int = %default-size%)
+                 : (Comparable, AssocCollection<Key, Elt>)
 {
-  slot table : Vector(Triple(Key, Elt, _.Type))
-  slot elts : Int = %default-size%, key-init: items
+  slot table : Vector<Triple<Key, Elt, _.Type> >
+  slot elts : Int = items
 
   on init(self) {
     if (elts > 0)
       table = _.Type(items: elts)
   }
 }
-
-def alias HashMap = HashMap*(Any, Any)
-def alias Dictionary = HashMap*(Any, Any)
 
 
 ----------------------------------------------------------------------
@@ -175,7 +169,7 @@ def meth empty?(self : @HashMap) : Bool
   self.elts == 0
 
 def meth empty!(self : @HashMap) : self.Type
-  self.table = _.Type(%default-size%)
+  self.table = _.Type(items: %default-size%)
   self.elts = 0
   self
 
@@ -185,14 +179,14 @@ def meth size(self : @HashMap) : Int
 def meth num-items(self : @HashMap) : Int
   self.elts
 
-def meth iterator(self : @HashMap) : Iterator(Assoc(self.Type.Key, self.Type.Value))
-  HashMapIterator(self.Type.Key, self.Type.Value)(self.table)
+def meth iterator(self : @HashMap) : Iterator<Assoc<self.Type.Key, self.Type.Value> >
+  HashMapIterator<self.Type.Key, self.Type.Value>(self.table)
 
-def meth key-iterator(self : @HashMap) : Iterator(self.Type.Key)
-  HashMapKeyIterator(self.Type.Key)(self.table)
+def meth key-iterator(self : @HashMap) : Iterator<self.Type.Key>
+  HashMapKeyIterator<self.Type.Key>(self.table)
 
-def meth value-iterator(self : @HashMap) : Iterator(self.Type.Value)
-  HashMapValueIterator(self.Type.Value)(self.table)
+def meth value-iterator(self : @HashMap) : Iterator<self.Type.Value>
+  HashMapValueIterator<self.Type.Value>(self.table)
 
 
 --------------------------------------------------------------------
@@ -208,7 +202,6 @@ def meth has-key?(self : @HashMap, key) : Bool
       else
         loop(nl.tail)
     }
-
   loop(self.table[key.hash mod self.table.size])
 
 
@@ -221,7 +214,6 @@ def meth get(self : @HashMap, key : self.Type.Key)
       else
         loop(nl.tail)
     }
-
   loop(self.table[key.hash mod self.table.size])
 
 
@@ -229,8 +221,8 @@ def meth put!(self : @HashMap, key, obj) : HashMap
   let hash : Int = key.hash mod self.table.size
   let loop(nl) {
       if (nl == #nil) {
-        self.table[hash] = Triple(self.Type.Key, self.Type.Elt,
-                                  _.Type)(key, obj, self.table[hash])
+        self.table[hash] = Triple<self.Type.Key, self.Type.Elt,
+                                  _.Type>(key, obj, self.table[hash])
         self.elts.incr!
       }
       else if (nl.key?(key))
@@ -238,7 +230,6 @@ def meth put!(self : @HashMap, key, obj) : HashMap
       else
         loop(nl.tail)
     }
-
   loop(self.table[hash])
 
   -- check if a resizement is necessary.  this is a slow method, but it
@@ -274,7 +265,6 @@ def meth remove!(self : @HashMap, key) : HashMap
     }
     else {
       -- otherwise find the hash entry to delete
-
       let loop(prev, nl) {
           if (nl.key?(key)) {
             prev.tail = nl.tail
@@ -303,14 +293,14 @@ def meth remove!(self : @HashMap, key) : HashMap
   self
 
 
-def meth keys(self : @HashMap) : Vector(self.Type.Key)
+def meth keys(self : @HashMap) : Vector<self.Type.Key>
   let keys = Vector(self.elts)
   for (k in self.key-iterator)
     keys.append(k)
   keys
 
 
-def meth values(self : @HashMap) : Vector(self.Type.Value)
+def meth values(self : @HashMap) : Vector<self.Type.Value>
   let values = Vector(self.elts)
   for (v in self.value-iterator)
     values.append(v)
@@ -335,7 +325,7 @@ def meth add-all(self : @HashMap, coll : @AssocCollection) : self.Type
 
 def meth has-all-keys?(self : @HashMap, keys : @Collection) : Bool
   for (k in keys) {
-    if (not self.has?(k))
+    if (not(self.has?(k)))
       return(#f)
   }
   #t
@@ -349,7 +339,7 @@ def meth remove-all-keys(self : @HashMap, keys : @Collection) : self.Type
 
 def meth retain-all-keys(self : @HashMap, keys : @Collection) : self.Type
   for (k in keys) {
-    if (not self.has?(k))
+    if (not(self.has?(k)))
       self.remove(k)
   }
   self
@@ -358,8 +348,9 @@ def meth retain-all-keys(self : @HashMap, keys : @Collection) : self.Type
 ----------------------------------------------------------------------
 -- copy
 ----------------------------------------------------------------------
-def table!(self : @HashMap, t : Vector(Triple(self.Type.Key, self.Type.Elt,
-                                              _.Type)))
+def table!(self : @HashMap, t : Vector<Triple<self.Type.Key,
+                                              self.Type.Elt,
+                                              _.Type> >)
   slot!(self, 'table, t)
   slot!(self, 'elts, t.num-items)
   self
@@ -378,16 +369,16 @@ def deep-copy(self : @ HashMap) : self.Type
 --    -1.
 
 -- Returns a string representation of /self/ 
-def ->string(self : @ HashMap) : String
+def to-string(self : @ HashMap) : String
   let sb = StringBuffer()
   sb.append("#(")
 
   for (e in self)
-    sb.append(e.->string)
+    sb.append(e.to-string)
       .append(" ")
 
   sb.append(")")
-  sb.->string
+  sb.to-string
 
 
 

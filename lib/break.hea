@@ -1,0 +1,54 @@
+--
+-- incr.hea - macro for increment and decrement
+--
+-- This file is part of the heather package
+-- Copyright (c) 2002,2009 by Gregor Klinke
+--
+--
+
+namespace heather ("eyestep/heather 1.0:core")
+
+
+def class BreakSignal(val)
+{
+  slot return-value = val
+}
+
+
+def macro with-break
+{
+  { with-break() ?body:expr } -> {
+    {
+      on signal(break-signal : BreakSignal) {
+        break-signal.return-value
+      }
+      let break(retval) {
+        BreakSignal(retval).raise
+      }
+      ?body
+    }
+  }
+  { with-break(?break:name) ?body:expr } -> {
+    {
+      on signal(break-signal : BreakSignal) {
+        break-signal.return-value
+      }
+      let ?break (retval) {
+        BreakSignal(retval).raise
+      }
+      ?body
+    }
+  }
+
+  { with-break(?break:name = ?func:expr) ?body:expr } -> {
+    {
+      on signal(break-signal : BreakSignal) {
+        break-signal.return-value
+      }
+      let ?break (retval) {
+        BreakSignal(?func (retval)).raise
+      }
+      ?body
+    }
+  }
+}
