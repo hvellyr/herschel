@@ -1,0 +1,59 @@
+
+
+def generic to-string(self : @Any) : String ...
+
+
+def type Student(name: _name = "", subjects: _subj = #[])
+{
+  slot name = _name
+  slot subjects = _subj
+}
+
+def meth to-string(self)
+  name + subjects.to-string
+
+
+
+
+What happens if two source files (which somehow see each other) define the
+same generic:
+
+  def generic setup(self : @Person) ...
+
+  def generic setup(self : @Vehicle) ...
+
+is this a problem?  Does it only poses a problem if we define concrete methods:
+
+  def meth setup(self : @Car) ...
+
+  def meth setup(self : @Manager) ...
+
+Does it only pose a problem if the types are actually mixed?:
+
+  def type ManMachine : (Person, Vehicle) { }
+
+  def meth setup(self : @ManMachine) ...
+
+which setup generic is to be used now?
+
+
+
+
+----------------------------------------------------------------------
+
+def module collection
+
+def type List
+{}
+
+def add(self : @List, obj)
+
+....
+
+  self.collection|add(obj)
+
+
+
+def namespace collection
+
+  self.collection|add(obj)

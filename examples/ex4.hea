@@ -1,4 +1,4 @@
-def alias Vector = Vector*(Int)
+def alias Vector = Vector<Int>
 def alias Point = Point*
 
-def alias KeyMap = Map*(String, Record*(Int, Vector*(Byte), Real))
+def alias KeyMap = Map<String, Record<Int, Vector<Byte>, Real> >

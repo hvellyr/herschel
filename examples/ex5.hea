@@ -1,23 +1,24 @@
 -- type definitions
 
-def class Point(Object)
+def class Point : Object
 {
 }
 
-def class Atlas(T1 = Int, T2 = Real) : Copyable
+def class Atlas<T1 = Int, T2 = Real> : Copyable
 {
 }
 
-def class Atlas2(T1 = Int, T2 = Real) : (Persona, Copyable)
+def class Atlas2<T1 = Int, T2 = Real> : (Persona, Copyable)
 {
 }
 
 
-def class Point(Object)
+def class Point(_x, _y, value: _val = 55) : Object
 {
-  slot x : Int = 0      , init: 0
-  slot y : Int = 0      , init: 1
-  slot value : Int = 55 , public, transient, key-init: x
+  slot x : Int = _x
+  slot y : Int = _y
+  slot value : Int = _val
+--  slot public transient value : Int = _val , public, transient
 
   on init(self)
   {
@@ -28,6 +29,6 @@ def class Point(Object)
 }
 
 
-def alias AtlasX = Atlas(Int, String)
+def alias AtlasX = Atlas<Int, String>
 
 def alias IntOfFalse = (Int, Bool = #f)
