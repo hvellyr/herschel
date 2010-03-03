@@ -302,12 +302,13 @@ Key bindings:
     "Long" "ULong" "Float" "Double" "LongDouble"
     "String"
     "Vector"
+    "Number" "ExactNumber" "ApproxNumber" "Ordered" "Unordered"
     )
   "List of Heather predefined types.")
 
 (defconst heather-builtin
   '(
-    "for" "select" "until" "while"
+    "for" "select" "until" "then" "while"
     )
   "List of heather special forms.")
 
@@ -315,7 +316,7 @@ Key bindings:
   '(
     "and" "or" "mod" "by" "in" "not"
     ".." "..." "<" ">" "==" "<>" "<=" ">=" "<=>"
-    "%" 
+    "%"
     )
   "List of heather operators.")
 
@@ -390,33 +391,37 @@ Key bindings:
    (list heather-keywords-regexp 1 'font-lock-keyword-face)
 
    ;; highlight keywords (begining with ')
-   '("\\('[a-zA-Z-_$?!&%<>]+[a-zA-Z0-9-_$?!&%*+<>]*\\)"
+   '("\\('[a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
      (1 font-lock-constant-face))
 
    ;; highlight parameter names (ending with ':')
-   '("\\<\\([a-zA-Z-_$?!&%<>]+[a-zA-Z0-9-_$?!&%*+<>]*\\)\\>:"
+   '("\\<\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\>:"
      (1 heather-font-lock-param-name-face))
 
    ;; highlight function, method, hook declarations.
-   '("\\(def\\|let\\|on\\)\\s-+\\([a-zA-Z-_$?!&%<>]+[a-zA-Z0-9-_$?!&%*+<>]*\\)\\s-*("
+   '("\\(def\\|let\\|on\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-*("
      (2 font-lock-function-name-face))
-   '("def\\s-+meth\\s-+\\([a-zA-Z-_$?!&%<>]+[a-zA-Z0-9-_$?!&%*+<>]*\\)\\s-*("
+   '("def\\s-+meth\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-*("
      (1 font-lock-function-name-face))
 
+   ;; highlight type parameters
+   ;; '("#<\\([^>]*\\)>"
+   ;; (1 heather-font-lock-type-def-face))
+
    ;; highlight type and class declarations.
-   '("def\\s-+\\(type\\|class\\|alias\\)\\s-+\\([a-zA-Z-_$?!&%<>]+[a-zA-Z0-9-_$?!&%*+<>]*\\)\\s-*"
-     (2 font-lock-type-face))
+   '("def\\s-+\\(type\\|class\\|alias\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-*"
+     (2 heather-font-lock-type-def-face))
 
    ;; highlight variable declarations.
-   '("\\(def\\|let\\)\\s-+\\([a-zA-Z-_$?!&%<>|]+[a-zA-Z0-9-_$?!&%*+<>|]*\\)\\s-*"
+   '("\\(def\\|let\\)\\s-+\\([a-zA-Z-_$?!&%|]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*"
      (2 font-lock-variable-name-face))
-   '("\\(def\\|let\\)\\s-+\\(fluid\\|const\\)\\s-+\\([a-zA-Z-_$?!&%<>|]+[a-zA-Z0-9-_$?!&%*+<>|]*\\)\\s-*"
+   '("\\(def\\|let\\)\\s-+\\(fluid\\|const\\)\\s-+\\([a-zA-Z-_$?!&%|]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*"
      (3 font-lock-variable-name-face))
-   '("slot\\s-+\\([a-zA-Z-_$?!&%<>]+[a-zA-Z0-9-_$?!&%*+<>]*\\)\\s-*"
+   '("slot\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-*"
      (1 font-lock-variable-name-face))
 
    ;; highlight parameters and types
-   '("\\([a-zA-Z-_$?!&%<>]+[a-zA-Z0-9-_$?!&%*+<>]*\\)\\s-+:\\s-*\\(@\\)?\\s-*\\([a-zA-Z-_$?!&%<>]+[a-zA-Z0-9-_$?!&%*+<>]*\\)"
+   '("\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-+:\\s-*\\(@\\)?\\s-*\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
      (1 font-lock-variable-name-face)
      (3 font-lock-type-face))
 
@@ -446,27 +451,37 @@ Key bindings:
 (defvar heather-font-lock-param-name-face 'heather-font-lock-param-name-face
   "Face name to use for parameter names.")
 
+(defvar heather-font-lock-type-def-face 'heather-font-lock-type-def-face
+  "Face name for type definition names.")
+
 (defface heather-font-lock-operator-face
   '((((class color) (background light)) (:foreground "Gold4"))
     (((class color) (background dark)) (:foreground "BurlyWood1"))
 ;   '((((class color) (background light)) (:foreground "SaddleBrown"))
 ;     (((class color) (background dark)) (:foreground "BurlyWood"))
-    (t (:italic t :bold t)))
+    (t (:weight bold)))
   "Font lock mode face used to highlight @ definitions."
   :group 'font-lock-highlighting-faces)
 
 (defface heather-font-lock-function-face
   '((((class color) (background light)) (:foreground "DarkCyan"))
     (((class color) (background dark)) (:foreground "Orchid1"))
-    (t (:italic t :bold t)))
+    (t (:weight bold)))
   "Font lock mode face used to highlight predefined functions and tasks."
   :group 'font-lock-highlighting-faces)
 
 (defface heather-font-lock-param-name-face
   '((((class color) (background light)) (:foreground "DarkBlue"))
     (((class color) (background dark)) (:foreground "White"))
-    (t (:bold t)))
+    (t (:weight bold)))
   "Font lock mode face used for parameter names."
+  :group 'font-lock-highlighting-faces)
+
+(defface heather-font-lock-type-def-face
+  '((((class color) (background light)) (:foreground "DarkGreen"))
+    (((class color) (background dark)) (:foreground "Green"))
+    (t (:weight bold)))
+  "Face name for type definition names."
   :group 'font-lock-highlighting-faces)
 
 (defun heather-fontify-buffer ()

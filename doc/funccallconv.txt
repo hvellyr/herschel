@@ -1,0 +1,79 @@
+C Convention
+----------------------------------------------------------------------
+
+    void f(int a, ...)
+      ...
+
+    f(1, 2, 3, NULL)
+
+CALLER:
+
+...
+push NULL
+push 3
+push 2
+push 1
+call <f>
+sub  %esp, 12
+...
+
+IN f:
+push %ebp
+...
+; mov %eax, 8(%ebp)       ;; 'a'
+; add %eax, 12(%ebp)      ;; variadic arg 1
+; add %eax, 16(%ebp)      ;; variadic arg 2 ...
+...
+pop %ebp
+ret
+
+-> the function has to use special macros and calling convention to 
+   detect variadic arguments.
+
+Heather Convention
+----------------------------------------------------------------------
+
+    def f(a, b, c = 12, d ...)
+      ...  
+
+    f(1, 2, c: 3, 4, 5, 6)
+
+
+CALLER:
+
+push 6
+push 5
+push 4
+push 3
+push 'c'
+push 2
+push 1
+push 7                  ;; number of arguments
+call <f>
+...                     ;; no cleanup necessary in heather
+
+
+IN F:
+
+push %ebp
+add %esp, 8             ;; reserve space for 'c' and 'd'
+
+cmp 12(%ebp), 'c'
+je :store_c
+mov -4(%ebp), 12        ;; add 'c' default-value
+jmp :handle_d
+mov -4(%ebp), 16(%ebp)  ;; store the parameter for 'c' in local var
+:handle_d
+allocate_tuple(-8(%ebp))
+for (i = 4; i < -8(%ebp); i++)
+  copy_value_to_tuple(-8(%ebp), %ebp - 4 * i)
+...
+
+sub %esp, 4 * -8(%ebp)  ;; stack cleanup
+pop %ebp
+ret
+
+The calling convention for variadic functions is to push the number of
+actual arguments as first (silent) argument onto the stack.  The function
+itself can use this to evaluate optional and keyed arguments AND to do the
+final cleanup.

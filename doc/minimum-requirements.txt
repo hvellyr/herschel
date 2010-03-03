@@ -1,0 +1,95 @@
+Motivation
+
+The following points are things I would like to see in a mainstream
+programming language for daily use:
+
+  - compile to native code
+  - exceptions/conditions
+  - first class classes
+  - first class functions ("closures")
+  - foster functional programming
+  - garbage collection
+  - lexical scoped
+  - macros
+  - multi dispatch functions
+  - named parameters
+  - namespaces
+  - object oriented
+  - parameterized classes
+  - subtyping vs. subclassing (support for interfaces, protocols)
+  - simpler concurrency
+
+
+
+Multiple returnvalues
+
+  The basic syntax
+
+    let x, y, z = function() { #[1, 2, 3] )
+
+    x, y, z = f()
+
+  Also possible:
+
+    x, y, z = #[1, 2, 3]
+
+    def f(val : Vector)
+      x, y, z = val
+  
+  The last expression will fail if val has less or more elements than 3, so
+  better to write:
+
+    def f(val : Vector)
+      x, y, z = val[0 .. 3]
+
+
+  The return type for such a function is 
+
+    : (Int, Int, Int)
+
+  or
+
+    : Tuple(Int, Int, Int)
+
+
+Concurrency
+
+Simplify concurrent programming.  Offer simple but powerful support for
+splitting up code flow.
+
+Example "on sync"
+
+  let f1 = task compute1()
+  let f2 = task compute2()
+  let f3 = task compute3()
+
+  on sync(f1, f2, f3)
+    f1 + f2 + f3
+
+Example manual mutexes "on mutex"
+
+  def f(m1 : Mutex)
+    on mutex(m1)
+      compute1()
+
+
+Condition variables
+
+  def f(c1 : Condition)
+    on wait(c1)
+      compute1()
+    else
+      #f
+
+
+  let pipe1 <- task #function() compute1()
+
+  let pipe2 <- task #function() compute2(pipe1)
+
+  on sync(task function(inport : Port) {
+            while (not(eof(inport))) {
+              let x = inport.read
+              outln(x)
+            }
+          }) {
+  }
