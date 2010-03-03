@@ -22,7 +22,7 @@ def macro for
   { for ( ; ?c:arglist) ?b:expr } -> { }
   { for (?d:exprlist ; ?c:arglist) ?b:expr } -> { }
   { for (?d:exprlist ; ?c:arglist) ?b:expr ?else-branch } -> { }
-  
+
   else-branch:
-  { else ?e:expr } -> 
+  { else ?e:expr } ->
 }

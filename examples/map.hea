@@ -33,7 +33,7 @@
 namespace heather("eyestep/heather 1.0:core")
 
 
-def class Map(Object) : KeyedCollection
+def class Map : Object : KeyedCollection
 {
   slot slots : Any[] = #nil
   slot total : Int = 0 
@@ -148,7 +148,7 @@ def meth size(self : @Map)
 
 -- iterates over all contained item pairs and applies /func/ to them.
 -- /func/ is required to accept two parameters (key, value).  The
--- iteration order is unspecified."
+-- iteration order is unspecified.
 def meth for-each(self : @Map, func)
   for (i = 0 .. self.slots.size) {
     let buckets = self.slots[i]
@@ -162,7 +162,7 @@ def meth for-each(self : @Map, func)
 
 
 -- returns a string representation of the receiver.
-def meth ->string(self : @Map)
+def meth to-string(self : @Map)
   let first? = #t
   let port = StringPort()
 
@@ -172,12 +172,12 @@ def meth ->string(self : @Map)
                      first? = #f
                    else
                      port.writes(", ")
-                   port.writes(key.->string)
+                   port.writes(key.to-string)
                        .writes(" -> ")
-                       .writes(value.->string)
+                       .writes(value.to-string)
                  } )
   port.writes("}")
-  port.->string
+  port.to-string
 
 
 -- For internal use only.  Rehashes the receiver.

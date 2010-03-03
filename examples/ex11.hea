@@ -4,7 +4,7 @@ import(io)
 
 def const %default-size% = 5
 
-def some-container : HashMap(String, Int) = Vector(Int)(11)
+def some-container : HashMap<String, Int> = Vector<Int>(11)
 
 
 def reduce(fn, base-value, lst)
