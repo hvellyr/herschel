@@ -148,14 +148,14 @@ Form (EBNF):
 
 @cartouche
 @verbatim
-production  := PRODUCTION-NAME ':=' expression
-expression  := alternative { '|' alternative }
+production  := PRODUCTION-NAME `:=' expression
+expression  := alternative { `|' alternative }
 alternative := term { term }
-term        := PRODUCTION-NAME | TOKEN [ '...' TOKEN ] | group | option
+term        := PRODUCTION-NAME | TOKEN [ `...' TOKEN ] | group | option
                | repetition
-group       := '(' expression ')'
-option      := '[' expression ']'
-repetition  := '{' expression '}'
+group       := `(' expression `)'
+option      := `[' expression `]'
+repetition  := `{' expression `}'
 @end verbatim
 @end cartouche
 
@@ -187,7 +187,18 @@ printed manual).
 @c --------------------------------------------------------------------
 @section Source code representation
 
-@c todo
+Heather code is written in source files, normally taking the suffix of
+@file{.hea}.  These files can take any number of class, type, and
+function definitions.  Technically the language does not impose and
+constraint on the way a source file is to be named or where it is to be
+located; there's especially no coupling of namespace or folder
+structure.
+
+Source files are expected to be encoded in UTF-8 encoding.  Note that
+the text is taken as is, i.e. no normalization is expected or applied.
+Note furthermore that identifiers are restricted to a less narrower set
+of characters.
+
 
 
 @c ====================================================================
@@ -210,18 +221,20 @@ therefore indispensable.
 Identifier in Heather are case sensitive.
 
 @cartouche
+@smallformat
 @verbatim
 identifier  := first-char { other-char }
 first-char  := letter | first-other
 other-char  := letter | digit | other
-letter      := 'a' ... 'z' | 'A' ... 'Z'
-digit       := '0' ... '9'
-first-other := '_' | '*' | '+' | '%' | '?' | '!' | '/'
-other       := '-' | first-other
+letter      := `a' ... `z' | `A' ... `Z'
+digit       := `0' ... `9'
+first-other := `_' | `*' | `+' | `%' | `?' | `!' | `/'
+other       := `-' | first-other
 @end verbatim
+@end smallformat
 @end cartouche
 
-Note especially the special characters '+', '+', '-', and '/' as part of
+Note especially the special characters `+', `+', `-', and `/' as part of
 names.
 
 @example
@@ -233,7 +246,7 @@ _a/string_
 @end example
 
 Note that identifiers are not allowed to contain arbitrary unicode
-characters even though the source code itself is encoded in utf-8.
+characters even though the source code itself is encoded in UTF-8.
 
 
 @c ....................................................................
@@ -242,11 +255,13 @@ characters even though the source code itself is encoded in utf-8.
 The following identifiers are reserved and have a special meaning:
 
 @verbatim
-alias      and     by     class      const  def
-else       fluid   for    if         in     let
-macro      meth    mod    namespace  or
-otherwise  select  slot   slot!      then
-type       until   while
+alias      fluid       mod             select
+and        for         namespace       slot
+by         if          or              slot!
+class      in          otherwise       then
+const      let         public          type
+def        macro       private         until
+else       meth        protected       while
 @end verbatim
 
 
@@ -887,6 +902,7 @@ allocation representation.  The third, @code{def alias}, is a shortcut
 definition, where a type declaration is bound to a new name.
 
 @cartouche
+@smallformat
 @verbatim
 class-def   := `def' [ visibility ] `class' identifier
                [ `<' type-param { `,' type-aram } `>' ]
@@ -897,7 +913,9 @@ type-param  := parameter
 init-param  := parameter
 inheritance := type-clause
 @end verbatim
+@end smallformat
 @end cartouche
+
 
 @c todo generics
 @findex def class
@@ -932,6 +950,7 @@ type.  See @ref{Required Functions} for details.
 
 
 @cartouche
+@smallformat
 @verbatim
 type-def    := `def' [ visibility ] `type' identifier
                [ `<' type-param { `,' type-aram } `>' ]
@@ -940,6 +959,7 @@ type-def    := `def' [ visibility ] `type' identifier
 type-param  := parameter
 inheritance := type-clause
 @end verbatim
+@end smallformat
 @end cartouche
 
 @c todo generics
@@ -1002,9 +1022,11 @@ type.  See @ref{Required Functions} for details.
 @end deffn
 
 @cartouche
+@smallformat
 @verbatim
 alias-def   := `def' [ visibility ] `alias' identifier `=' type
 @end verbatim
+@end smallformat
 @end cartouche
 
 @findex def alias
@@ -1362,11 +1384,11 @@ when defining methods which are appropriate for various types, which are
 not directly related.
 
 @example
-def meth ->xml(val : @@ (IntNode, StringNode, BoolNode)) : String
+def meth to-xml(val : @@ (IntNode, StringNode, BoolNode)) : String
   StringBuffer().append("<x>")
-                .append(val.->string)
+                .append(val.to-string)
                 .append("</x>")
-                .->string
+                .to-string
 @end example
 
 Other common usecases for union types are return values:
@@ -1458,13 +1480,15 @@ function returned from the scope (@dfn{closure}) the bindings continues
 to exist.
 
 @cartouche
+@smallformat
 @verbatim
 variable-def   := global-var-def | local-var-def
 global-var-def := `def' [ visibility ] var-def-clause
 local-var-def  := `def' var-def-clause
-var-def-clause := var-name [ ':' type-clause ] [ `=' init-value ]
+var-def-clause := var-name [ `:' type-clause ] [ `=' init-value ]
 init-value     := expression
 @end verbatim
+@end smallformat
 @end cartouche
 
 
@@ -1481,13 +1505,15 @@ Init expressions of immutable bindings are evaluated in the same order
 as other bindings, and can contain functions with side-effects, etc.
 
 @cartouche
+@smallformat
 @verbatim
 const-def        := global-const-def | local-const-def
 global-const-def := `def' [ visibility ] const-def-clause
 local-const-def  := `let' const-def-clause
-const-def-clause := `const' identifier [ ':' type-clause ] `=' init-value
+const-def-clause := `const' identifier [ `:' type-clause ] `=' init-value
 init-value       := expression
 @end verbatim
+@end smallformat
 @end cartouche
 
 
