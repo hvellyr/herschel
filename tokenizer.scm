@@ -79,9 +79,10 @@
       (char=? c #\*)
       (char=? c #\+)
       (char=? c #\%)
-      (char=? c #\>)
-      (char=? c #\<)
+;      (char=? c #\>)
+;      (char=? c #\<)
       (char=? c #\?)
+      (char=? c #\!)
       (char=? c #\/)))
 
 
@@ -98,21 +99,42 @@
       (char=? c #\() (char=? c #\))
       (char=? c #\[) (char=? c #\])
       (char=? c #\{) (char=? c #\})
+      (char=? c #\<) (char=? c #\>)
       (char=? c #\.)
       (char=? c #\,)
       (char=? c #\;)
+      (char=? c #\#)
       (char=? c #\@)))
 
 
-(define (read-identifier prefix port type)
+(define (is-operator-delimiter c)
+  (or (is-whitespace c)
+      (char=? c #\")
+      (char=? c #\')
+      (char=? c #\() (char=? c #\))
+      (char=? c #\[) (char=? c #\])
+      (char=? c #\{) (char=? c #\})
+      (char=? c #\.)
+      (char=? c #\,)
+      (char=? c #\;)
+      (char=? c #\#)
+      (char=? c #\@)))
+
+
+(define (read-identifier* prefix port type del-proc)
   (let id-loop ((res '()))
     (if (or (eof-object? current-char)
-            (is-delimiter current-char))
+            (del-proc current-char))
         (cons type (string-append prefix (list->string (reverse res))))
 
         (let ((c current-char))
           (next-char port)
           (id-loop (cons c res))) )))
+
+
+(define (read-identifier prefix port type)
+  (read-identifier* prefix port type
+                    is-delimiter))
 
 
 (define (translate-number str)
@@ -459,8 +481,8 @@
         (cons 'ERROR "unknown hash-notation"))))
 
 
-(define (dispatch-id-operator-read port)
-  (let* ((token (read-identifier "" port 'SYM)))
+(define (dispatch-id-operator-read port del-proc)
+  (let* ((token (read-identifier* "" port 'SYM del-proc)))
     (if (and (pair? token)
              (eq? (car token) 'SYM))
         (cond
@@ -472,8 +494,8 @@
          ((string=? (cdr token) "%")   'FOLD)
          ((string=? (cdr token) "=")   'ASSIGN)
          ((string=? (cdr token) "**")  'EXP)
-
          ((string=? (cdr token) "==")  'EQUAL)
+
          ((string=? (cdr token) "<>")  'UNEQUAL)
          ((string=? (cdr token) "<=>") 'COMPARE)
          ((string=? (cdr token) "<")   'LESS)
@@ -549,13 +571,13 @@
         ( (#\|) (return-and-next port 'BITOR))
         ( (#\^) (return-and-next port 'BITXOR))
 
-        ( (#\+) (dispatch-id-operator-read port))
-        ( (#\/) (dispatch-id-operator-read port))
-        ( (#\*) (dispatch-id-operator-read port))
-        ( (#\%) (dispatch-id-operator-read port))
-        ( (#\<) (dispatch-id-operator-read port))
-        ( (#\>) (dispatch-id-operator-read port))
-        ( (#\=) (dispatch-id-operator-read port))
+        ( (#\+) (dispatch-id-operator-read port is-operator-delimiter))
+        ( (#\/) (dispatch-id-operator-read port is-operator-delimiter))
+        ( (#\*) (dispatch-id-operator-read port is-operator-delimiter))
+        ( (#\%) (dispatch-id-operator-read port is-operator-delimiter))
+        ( (#\<) (dispatch-id-operator-read port is-operator-delimiter))
+        ( (#\>) (dispatch-id-operator-read port is-operator-delimiter))
+        ( (#\=) (dispatch-id-operator-read port is-operator-delimiter))
 
         ( (#\#) (begin
                   (next-char port)
@@ -563,6 +585,7 @@
                     ((#\#) (return-and-next port 'SANGHASH))
                     ((#\[) (return-and-next port 'CARRAYOP))
                     ((#\() (return-and-next port 'CVECTOP))
+                    ((#\<) (return-and-next port 'TYPEOP))
                     ((#\t #\f #\n #\e) (read-hash port))
                     (else (cons 'ERROR "unknown hash-notation")))))
 
@@ -581,8 +604,10 @@
                   (read-identifier "" port 'MACROPARAM)))
 
         (else (cond
-               ((is-alpha current-char) (dispatch-id-operator-read port))
-               ((is-alpha-spec current-char) (dispatch-id-operator-read port))
+               ((is-alpha current-char) (dispatch-id-operator-read port
+                                                                   is-delimiter))
+               ((is-alpha-spec current-char) (dispatch-id-operator-read port
+                                                                        is-delimiter))
                ((is-digit current-char) (read-number port #f))
 
                (else (return-and-next port (cons 'UNKNOWN current-char)))))

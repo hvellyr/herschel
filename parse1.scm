@@ -38,6 +38,7 @@
         ((eq? token 'QUOTE)        (apt-punct "'"))
         ((eq? token 'CARRAYOP)     (apt-punct "#["))
         ((eq? token 'CVECTOP)      (apt-punct "#("))
+        ((eq? token 'TYPEOP)       (apt-punct "#<"))
         ((eq? token 'SANGHASH)     (apt-punct "##"))
         ((eq? token 'AT)           (apt-punct "@"))
 
@@ -109,6 +110,7 @@
     (if (not (null? tl))
         (let ((token (car tl)))
           (slot-set! self 'tokenlist (cdr tl))
+          (hea:display "TOKEN: " token 'nl)
           token)
         'EOF)))
 
@@ -123,6 +125,7 @@
 
 (define-method (next-token <hea:file-token-port>)
   (let* ((token (tokenize-next-token (slot-ref self 'file-port))))
+          (hea:display "TOKEN: " token 'nl)
     (translate-token token)))
 
 
@@ -919,22 +922,25 @@
 (define (parse-simple-type ctx expect-constraint?)
   (let* ((sym (current-token ctx)))
     (next-token ctx)
-    (cond ((apt-punct-eq? (current-token ctx) "(")
+    (cond ((apt-punct-eq? (current-token ctx) "#<")
            (begin
              (next-token ctx)
-             (if (equal? (apt-id-value sym) "Function")
-                 (parse-function-type ctx)
-                 (let ((params (parse-type-params ctx
-                                                  (lambda (token)
-                                                    (apt-punct-eq? token ")"))
-                                                  '())))
-                   (if (apt-punct-eq? (current-token ctx) ")")
-                       (begin
-                         (next-token ctx)
-                         (parse-array-type ctx
-                                           (apt-seq sym (apt-nested* "(" ")"
-                                                                     params))))
-                       (syntax-error "Expected ), got" (current-token ctx))))) ))
+             (let ((params (parse-type-params ctx
+                                              (lambda (token)
+                                                (apt-id-eq? token ">"))
+                                              '())))
+               (if (apt-id-eq? (current-token ctx) ">")
+                   (begin
+                     (next-token ctx)
+                     (parse-array-type ctx
+                                       (apt-seq sym (apt-nested* "(" ")"
+                                                                 params))))
+                   (syntax-error "Expected >, got" (current-token ctx))))) )
+          ((and (equal? (apt-id-value sym) "Function")
+                (apt-punct-eq? (current-token ctx) "("))
+           (begin
+             (next-token ctx)
+             (parse-function-type ctx)))
           ((apt-punct-eq? (current-token ctx) ".")
            (begin
              (next-token ctx)
