@@ -30,10 +30,9 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+namespace coll ("eyestep/heather 1.0:collections")
 
-namespace heather("eyestep/heather 1.0:core")
-
-import(io)
+import(core)
 
 -- Simple LISP like pair/list implementation.
 --
@@ -53,6 +52,7 @@ def pair-cell-to-string(node : @Pair, port, func)
   port.writes(" ")
   func(node)
 
+namespace core
 def to-string(self : @Pair) : String
   if (self.car == nil? and self.cdr == nil?)
     "()"
@@ -73,6 +73,8 @@ def to-string(self : @Pair) : String
     port.to-string
   }
 
+
+namespace coll
 
 def class PairIterator<Elt,
                        AccessorType = (Function(node : Pair<Elt, _.Type>)>(_root, acc)
