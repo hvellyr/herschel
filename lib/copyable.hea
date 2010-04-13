@@ -31,52 +31,23 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module core ("eyestep/heather 1.0:core")
-export public(with-break)
+export public(Copyable, deep-copy)
 
-
-def class BreakSignal(val)
+def type Copyable
 {
-  slot return-value = val
+  -- returns a shallow copy of @var{obj}.
+  def generic copy(obj @ 'T) : 'T
+      where T isa Copyable ...
+
+  -- copies all child objects using @code{copy} and @code{deepen} on them
+  def generic deepen(obj @ 'T) : 'T
+      where T isa Copyable ...
 }
 
 
-def macro with-break
-{
-  { with-break() ?body:expr } -> {
-    {
-      on signal(break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let break(retval) {
-        BreakSignal(retval).raise
-      }
-      ?body
-    }
-  }
-  { with-break(?break:name) ?body:expr } -> {
-    {
-      on signal(break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let ?break (retval) {
-        BreakSignal(retval).raise
-      }
-      ?body
-    }
-  }
+def generic deep-copy(obj @ 'T) : 'T
+    where T isa Copyable
+  obj.copy.deepen
 
-  { with-break(?break:name = ?func:expr) ?body:expr } -> {
-    {
-      on signal(break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let ?break (retval) {
-        BreakSignal(?func (retval)).raise
-      }
-      ?body
-    }
-  }
-}
-
--- end of break
+-- end of copyable
 

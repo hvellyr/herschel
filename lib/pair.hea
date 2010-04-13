@@ -30,41 +30,45 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace coll ("eyestep/heather 1.0:collections")
+module coll ("eyestep/heather 1.0:collections")
+export public(Pair, value-iterator)
 
 import(core)
 
 -- Simple LISP like pair/list implementation.
 --
 -- You can simulate the basic lisp style (cons a b) in heather with Pair(a, b).
-def class Pair<Car, Cdr>(car: _car : Car = #nil,
-                         cdr: _cdr : Cdr = #nil)
+def class Pair<Car, Cdr>(car: _car : Car = nil,
+                         cdr: _cdr : Cdr = nil)
 {
-  slot car : Car = _car
-  slot cdr : Cdr = _cdr
+  public slot car : Car = _car
+  public slot cdr : Cdr = _cdr
 }
 
-def meth pair-cell-to-string(node : @Any, port, func)
+def alias NodePrinterFunc<L, R> = Function(node : Pair<L, R>) : Unspecified
+
+def generic pair-cell-to-string(node @ Any, port,
+                                func : NodePrinterFunc<'L, 'R>)
   port.writes(" . ")
   port.writes(node.to-string)
 
-def pair-cell-to-string(node : @Pair, port, func)
+def pair-cell-to-string(node @ Pair<'L, 'R>, port,
+                        func : NodePrinterFunc<'L, 'R>)
   port.writes(" ")
   func(node)
 
-namespace core
-def to-string(self : @Pair) : String
-  if (self.car == nil? and self.cdr == nil?)
+def core|to-string(self @ Pair<'L, 'R>) : String
+  if (self.car.nil? and self.cdr.nil?)
     "()"
   else {
     let port = io|StringPort()
-    let printer(p : Pair) {
-        port.writes(p.car.to-string)
+    let printer(p : Pair<'L, 'R>) : Unspecified {
+      port.writes(p.car.to-string)
 
-        let pcdr = p.cdr
-        if (not(pcdr == nil?))
-          pcdr.pair-cell-to-string(port, printer)
-      }
+      let pcdr = p.cdr
+      if (pcdr <> nil))
+        pcdr.pair-cell-to-string(port, printer)
+    }
 
     port.writes("(")
     printer(self)
@@ -74,43 +78,39 @@ def to-string(self : @Pair) : String
   }
 
 
-namespace coll
+def alias PairIteratorAccessorFunc<T> = Function(node : Pair<T, _>) : T
 
-def class PairIterator<Elt,
-                       AccessorType = (Function(node : Pair<Elt, _.Type>)>(_root, acc)
-    : Iterator<Elt>
+def class PairIterator<T, Accessor<T> >(_root, acc)
+    : Iterator<T>
 {
-  slot current : Pair<PairType, _.Type> = _root
-  slot accessor : AccessorType) = acc
+  public slot current : Pair<T, _> = _root
+  private slot accessor : Accessor = acc
 }
 
 
-def next(self : @PairIterator) : self.Type.Car
-   if (not(self.end?)) {
+def core|next(self @ PairIterator<'Elt, 'AccType>) : 'Elt
+   if (not self.end?) {
      let value = self.accessor(self.current)
      self.current = self.current.cdr
      value
    }
    else
-     #eof
+     eof
 
-def end?(self : @PairIterator) : Bool
-   self.current == #nil or not(self.current.kind-of?(Pair))
+
+def core|end?(pair @ PairIterator<'Elt, 'AccType>) : Bool
+   pair.current.nil? or not pair.current.kind-of?(Pair)
 
 
 
 --! Returns an iterator over the car branches of a linked nodes
-def meth value-iterator(self : @Pair)
-  PairIterator<self.Type.Elt,
-               AccessorType: (Function(node : self.Type) : self.Type.Elt)>(
-    self, #function(node) { node.car })
+def value-iterator(pair @ Pair<'Elt, 'AccType>) : Iterator<'Elt>
+  PairIterator<'Elt, 'AccType>(pair, function(node) { node.car })
 
 
 --! Returns an iterator over all linked nodes by following the cdr chain
-def meth iterator(self : @Pair)
-  PairIterator<self.Type.Elt,
-               AccessorType: (Function(node : self.Type) : self.Type)>(
-    self, #function(node) { node })
+def iterator(pair @ Pair<'Elt, 'AccType>) : Iterator<'Elt>
+  PairIterator<'Elt, 'AccType>(pair, function(node) { node })
 
 
 -- end of Pair

@@ -31,52 +31,42 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module core ("eyestep/heather 1.0:core")
-export public(with-break)
+export public(nil?)
 
-
-def class BreakSignal(val)
+-- if (abc.nil?) ...
+-- if (abc == nil) ...
+def macro nil?
 {
-  slot return-value = val
+  { nil?(?val:expr) } -> { ?val == nil }
 }
 
 
-def macro with-break
+-- enforces that a value is not nil before continuing.
+-- Otherwise it raises an exception with a given message
+--
+-- Instead to write
+--
+-- @example
+-- let p = foo()
+-- if (p.nil?)
+--   Exception("foo() failed").raise
+-- p.bar
+-- @end example
+--
+-- you can write
+--
+-- @example
+--   enforce(foo(), "foo() failed").bar
+-- -- or:
+--   foo().enforce("foo() failed").bar
+-- @end example
+def macro enforce
 {
-  { with-break() ?body:expr } -> {
-    {
-      on signal(break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let break(retval) {
-        BreakSignal(retval).raise
-      }
-      ?body
-    }
-  }
-  { with-break(?break:name) ?body:expr } -> {
-    {
-      on signal(break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let ?break (retval) {
-        BreakSignal(retval).raise
-      }
-      ?body
-    }
-  }
-
-  { with-break(?break:name = ?func:expr) ?body:expr } -> {
-    {
-      on signal(break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let ?break (retval) {
-        BreakSignal(?func (retval)).raise
-      }
-      ?body
-    }
-  }
+  { enforce(?val:expr, ?msg:expr) } -> { if (?val == nil)
+                                           Exception(?msg).raise
+                                         else
+                                           ?val
+                                       }
 }
 
--- end of break
-
+-- end of utils

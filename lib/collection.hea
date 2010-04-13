@@ -30,47 +30,71 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace coll ("eyestep/heather 1.0:collections")
+interface coll ("eyestep/heather 1.0:collections")
+export public(ForEachVisitor,
+              Collection,
+              OrderedCollection,
+              SliceableCollection,
+              OrderedSliceableCollection,
+              Sequence,
+              Assoc,
+              AssocCollection,
+              Set, SortedSet,
+              Bag, SortedBag,
+              Vector,
+              List, Deque,
+              HashMap, Tree,
+              MultiMap, SortedMultiMap)
+
 
 ------------------------------------------------------------------------------
 -- base of all collections
 ------------------------------------------------------------------------------
 
-def alias ForEachVisitor = Function(elt)
+def alias ForEachVisitor<T> = Function(elt @ T) : Bool
 
 --! @code{Collection} is the base type for all collection classes in the
 --! heather collection framework.  It provides an API of implementation
 --! independant functionality available for each container class
-def type Collection<Elt>
+def type Collection<T>
 {
-  def meth add-all(self : @, other : @Collection) : self.Type ...
-  def meth has-all?(self : @, coll : @Collection) : Bool ...
-  def meth retain-all(self : @, coll : @Collection) : self.Type ...
-  def meth remove-all(self : @, coll : @Collection) : self.Type ...
+  def generic add-all(self @ 'C, other @ 'C) : 'C
+      where C isa Collection<T> ...
+  def generic has-all?(self @ 'C, coll @ 'C) : Bool
+      where C isa Collection<T> ...
+  def generic retain-all(self @ 'C, coll @ 'C) : 'C
+      where C isa Collection<T> ...
+  def generic remove-all(self @ 'C, coll @ 'C) : 'C
+      where C isa Collection<T> ...
 
   --! Returns the allocation size of @var{self} in octets
   --!
   --! This method must sum up the allocations size of all contained elements
   --! and its own allocation size.  Note that this methods can never return 0
-  def meth size(self : @) : Int ...
+  def generic size(self @ 'C) : Ordinal
+      where C isa Collection<T> ...
 
   --! Returns the number of contained elements of @var{self}
-  def meth num-items(self : @ ) : Int ...
+  def generic num-items(self @ 'C) : Ordinal
+      where C isa Collection<T> ...
 
   --! Indicates whether @var{self} is empty, i.e. does not contain any element
-  def meth empty?(self : @) : Bool ...
+  def generic empty?(self @ 'C) : Bool
+      where C isa Collection<T> ...
 
   --! Removes all contained elements from @var{self}
   --!
   --! => @var{self}
-  def meth empty!(self : @) : self.Type ...
+  def generic empty!(self @ 'C) : 'C
+      where C isa Collection<T> ...
 
   --! Indicates whether @var{self} contains the element @var{elt}
   --!
   --! @var{elt} is compared to each contained element using 
   --!
   --!   equal(contained-element, @var{elt})
-  def meth contains?(self : @, elt : @self.Type.Elt) : Bool ...
+  def generic contains?(self @ 'C, elt @ T) : Bool
+      where C isa Collection<T> ...
 
   --! Adds @var{elt} to @var{self}
   --!
@@ -78,7 +102,8 @@ def type Collection<Elt>
   --! contained in @var{self}.
   --!
   --! => @var{self}
-  def meth add(self : @, elt : @self.Type.Elt) : self.Type ...
+  def generic add(self @ 'C, elt @ T) : 'C
+      where C isa Collection<T> ...
 
   --! Remove @var{elt} from @var{self}
   --!
@@ -86,76 +111,84 @@ def type Collection<Elt>
   --! all.
   --!
   --! => @var{self}
-  def meth remove(self : @, elt : @self.Type.Elt) : self.Type ...
+  def generic remove(self @ 'C, elt @ T) : 'C
+      where C isa Collection<T> ...
 
   --! Returns an iterator over the contained elements in @var{self}
   --!
   --! The order of elements delivered by the returned iterator dependants on
   --! the algorithm used by @var{self}.
-  def meth iterator(self : @) : Iterator<self.Type.Elt> ...
+  def generic iterator(self @ 'C) : Iterator<T>
+      where C isa Collection<T> ...
 
 
   --! Apply @var{functor} on ach contained element in @var{self}
   --!
   --! => @var{self}
-  def meth for-each(self : @, func : ForEachVisitor) : self.Type ...
+  def generic for-each(self @ 'C, func : ForEachVisitor<T>) : 'C
+      where C isa Collection<T> ...
 }
-
 
 ------------------------------------------------------------------------------
 -- all items are always sorted
 ------------------------------------------------------------------------------
-def type OrderedCollection<Elt> : Collection<Elt>
+def type OrderedCollection<T> : Collection<T>
 {
-  def meth first(self : @) : self.Type.Elt ...
-  def meth last(self : @) : self.Type.Elt ...
+  def generic first(self @ 'C) : T
+      where C isa OrderedCollection<T> ...
+  def generic last(self @ 'C) : T
+      where C isa OrderedCollection<T> ...
 }
 
 
 ------------------------------------------------------------------------------
 -- slice access
 ------------------------------------------------------------------------------
-def type SliceableCollection<Key, Elt>
+def type SliceableCollection<K, E>
 {
-  def meth slice(self : @, key : @self.Type.Key) : self.Type.Elt ...
-  def meth slice!(self : @,
-                  key : @self.Type.Key,
-                  value : @self.Type.Elt) : self.Type ...
+  def generic slice(self @ 'S, key @ K) : E
+      where S isa SliceableCollection<K, E> ...
+  def generic slice!(self @ 'S, key @ K, value @ E) : 'S
+      where S isa SliceableCollection<K, E> ...
 }
 
 
 ------------------------------------------------------------------------------
 -- slice access with range
 ------------------------------------------------------------------------------
-def type OrderedSliceableCollection<Key, Elt> : SliceableCollection<Key, Elt>
+def type OrderedSliceableCollection<K, E> : SliceableCollection<K, E>
 {
-  def meth slice(self : @,
-                 from : @self.Type.Key,
-                to : @self.Type.Key) : Collection<self.Type.Elt> ...
+  def generic slice(self @ 'C, from @ K, to @ K) : Collection<E>
+      where C isa OrderedSliceableCollection<K, E> ...
 }
 
 
 ------------------------------------------------------------------------------
 -- index access
 ------------------------------------------------------------------------------
-def type Sequence<Elt> : (Collection<Elt>,
-                          OrderedCollection<Elt>,
-                          OrderedSliceableCollection<Int, Elt> )
+def type Sequence<T> : (Collection<T>,
+                        OrderedCollection<T>,
+                        OrderedSliceableCollection<Ordinal, T> )
 {
-  def meth insert(self : @,
-                  value : @self.Type.Elt,
-                  before-index : Int) : self.Type ...
-  def meth remove-at(self : @,
-                     index : Int) : self.Type.Elt ...
+  def generic insert(self @ 'S, value @ T, before-index : Ordinal) : 'S
+      where S isa Sequence<T> ...
+  def generic remove-at(self @ 'S, index : Ordinal) : T
+      where S isa Sequence<T> ...
 
-  def meth swap(self : @, from-idx : Int, to-idx : Int) : self.Type ...
+  def generic swap(self @ 'S, from-idx : Ordinal, to-idx : Ordinal) : 'S
+      where S isa Sequence<T> ...
 
-  def meth sort(self : @) : self.Type ...
-  def meth sort!(self : @) : self.Type ...
-  def meth reverse(self : @) : self.Type ...
-  def meth reverse!(self : @) : self.Type ...
+  def generic sort(self @ 'S) : 'S
+      where S isa Sequence<T> ...
+  def generic sort!(self @ 'S) : 'S
+      where S isa Sequence<T> ...
+  def generic reverse(self @ 'S) : 'S
+      where S isa Sequence<T> ...
+  def generic reverse!(self @ 'S) : 'S
+      where S isa Sequence<T> ...
 
-  def meth index-of(self : @, elt : @self.Type.Elt) : Int ...
+  def generic index-of(self @ 'S, elt @ T) : OrdinalOrEof
+      where S isa Sequence<T> ...
 }
 
 
@@ -163,33 +196,39 @@ def type Sequence<Elt> : (Collection<Elt>,
 -- associative collection (key -> value[s])
 ------------------------------------------------------------------------------
 
-def class Assoc<Key, Value>(_key : Key, _val : Value)
+def class Assoc<K, V>(_key : K, _val : V)
 {
-  slot key : Key = _key
-  slot value : Value = _val
+  slot key : K = _key
+  slot value : V = _val
 }
 
-def type AssocCollection<Key, Value> : Collection<Assoc<Key, Value> >
+def type AssocCollection<K, V> : Collection<Assoc<K, V> >
 {
-  def meth key-iterator(self : @) : Iterator<self.Type.Key> ...
-  def meth value-iterator(self : @) : Iterator<self.Type.Key> ...
+  def generic key-iterator(self @ 'C) : Iterator<K>
+      where C isa AssocCollection<K, V> ...
+  def generic value-iterator(self @ 'C) : Iterator<K>
+      where C isa AssocCollection<K, V> ...
 
-  def meth has-key?(self : @, key : @self.Type.Key) : Bool ...
-  def meth get(self : @, key : @self.Type.Key) : self.Type.Value ...
-  def meth put(self : @,
-               key : @self.Type.Key, value : @self.Type.Value) : self.Type ...
-  def meth remove(self : @,
-                  key : @self.Type.Key) : self.Type ...
+  def generic has-key?(self @ 'C, key @ K) : Bool
+      where C isa AssocCollection<K, V> ...
+  def generic get(self @ 'C, key @ K) : Value
+      where C isa AssocCollection<K, V> ...
+  def generic put(self @ 'C, key @ K, value @ V) : 'C
+      where C isa AssocCollection<K, V> ...
+  def generic remove(self @ 'C, key @ K) : 'C
+      where C isa AssocCollection<K, V> ...
 
-  def meth keys(self : @) : Collection<self.Type.Key> ...
-  def meth values(self : @) : Collection<self.Type.Key> ...
+  def generic keys(self @ 'C) : Collection<K>
+      where C isa AssocCollection<K, V> ...
+  def generic values(self @ 'C) : Collection<K>
+      where C isa AssocCollection<K, V> ...
 
-  def meth has-all-keys?(self : @,
-                         keys : @Collection<self.Type.Key>) : Bool ...
-  def meth remove-all-keys(self : @,
-                           keys : @Collection<self.Type.Key>) : self.Type ...
-  def meth retain-all-keys(self : @,
-                           keys : @Collection<self.Type.Key>) : self.Type ...
+  def generic has-all-keys?(self @ 'A, keys @ Collection<K>) : Bool
+      where C isa AssocCollection<K, V> ...             ...
+  def generic remove-all-keys(self @ 'C, keys @ Collection<K>) : 'C
+      where C isa AssocCollection<K, V> ...
+  def generic retain-all-keys(self @ 'C, keys @ Collection<K>) : 'C
+      where C isa AssocCollection<K, V> ...
 }
 
 
@@ -197,83 +236,83 @@ def type AssocCollection<Key, Value> : Collection<Assoc<Key, Value> >
 -- default implementations
 ------------------------------------------------------------------------------
 
-def class Set<Elt> : Collection<Elt>
+def class Set<T> : Collection<T>
 {
   -- todo
 }
 
 
 -- aka TreeSet
-def class SortedSet<Elt> : (OrderedCollection<Elt>,
-                            OrderedSliceableCollection<Elt, Elt>)
+def class SortedSet<T> : (OrderedCollection<T>,
+                          OrderedSliceableCollection<T, T>)
 {
   -- todo
 }
 
 
 -- aka MultiSet
-def class Bag<Elt> : Collection<Elt>
+def class Bag<T> : Collection<T>
 {
   -- todo
 }
 
 
 -- aka MultiTreeSet
-def class SortedBag<Elt> : (OrderedCollection<Elt>,
-                            OrderedSliceableCollection<Elt, Elt>)
+def class SortedBag<T> : (OrderedCollection<T>,
+                          OrderedSliceableCollection<T, T>)
 {
   -- todo
 }
 
 
-def class Vector<Elt> : Sequence<Elt>
+def class Vector<T> : Sequence<T>
 {
   -- todo
 
-  def meth resize(self : @) : self.Type ...
+  def generic resize(self @ Vector<T>) : Vector<T> ...
 }
 
 
 
 
-def class List<Elt> : Sequence<Elt>
+def class List<T> : Sequence<T>
 {
   -- todo
 }
 
 
-def class Deque<Elt> : Sequence<Elt>
+def class Deque<T> : Sequence<T>
 {
   -- todo
 }
 
 
 
-def class HashMap<Key, Value> : (AssocCollection<Key, Value>,
-                                 SliceableCollection<Key, Value>)
+def class HashMap<K, V> : (AssocCollection<K, V>,
+                           SliceableCollection<K, V>)
 {
   -- todo
 }
 
 
-def class Tree<Key, Value> : (AssocCollection<Key, Value>,
-                              OrderedCollection<Key>,
-                              OrderedSliceableCollection<Key, Value>)
+def class Tree<K, V> : (AssocCollection<K, V>,
+                        OrderedCollection<K>,
+                        OrderedSliceableCollection<K, V>)
 {
   -- todo
 }
 
 
-def class MultiMap<Key, Value> : (AssocCollection<Key, Value>,
-                                  SliceableCollection<Key, Value>)
+def class MultiMap<K, V> : (AssocCollection<K, V>,
+                            SliceableCollection<K, V>)
 {
   -- todo
 }
 
 
-def class SortedMultiMap<Key, Value> : (AssocCollection<Key, Value>,
-                                        OrderedCollection<Key, Value>,
-                                        OrderedSliceableCollection<Key, Value>)
+def class SortedMultiMap<K, V> : (AssocCollection<K, V>,
+                                  OrderedCollection<K, V>,
+                                  OrderedSliceableCollection<K, V>)
 {
   -- todo
 }

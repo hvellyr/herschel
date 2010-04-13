@@ -30,23 +30,25 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+module core ("eyestep/heather 1.0:core")
+export public(Iterator, RewindableIterator>
 
-def type Iterator<Elt>
+def type Iterator<T>
 {
   --! Indicates whether @var{iter} is at the end
   --!
   --! => false if there are more elements to be returned by @code{next}
-  def meth end?(iter : @Iterator) : Bool ...
+  def generic end?(iter @ Iterator<T>) : Bool ...
 
   --! Returns the next element from @var{iter}
   --!
   --! => #eof if all elements has been delivered.  Repeated calling of
   --! @code{next} returns #eof
-  def meth next(iter : @Iterator) : iter.Type.Elt ...
+  def generic next(iter @ Iterator<T>) : T ...
 }
 
 
-def type RewindableIterator<Elt> : Iterator<Elt>
+def type RewindableIterator<T> : Iterator<T>
 {
   --! Rewinds @var{iter} to restart with the first item
   --!
@@ -54,7 +56,8 @@ def type RewindableIterator<Elt> : Iterator<Elt>
   --! reset @var{iter} to deliver that element it returned first.
   --!
   --! => @var{iter}
-  def meth rewind(iter : @RewindableIterator) : iter.Type ...
+  def generic rewind(iter @ 'R) : 'R
+      where R isa RewindableIterator<T> ...
 }
 
 -- end of iterator
