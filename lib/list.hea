@@ -30,32 +30,26 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace coll ("eyestep/heather 1.0:collections")
-
-export public(List,
-              add, add-all, contains?, empty!, empty?, first, for-each,
-              has-all?, index-of, insert, iterator, last, num-items,
-              remove, remove-all, remove-at, retain-all, reverse,
-              reverse!, size, slice, slice, slice!, sort, sort!, swap,
-              to-string)
-
-
 import(collection)
 
-def private find-last-node(node : @Pair) : node.Type
+module coll ("eyestep/heather 1.0:collections")
+export public(List)
+
+
+def find-last-node(node @ Pair<'L, 'R>) : Pair<'L, 'R>
   let p = node
-  if (p <> #nil) {
-    while (p.cdr <> #nil)
+  if (p <> nil) {
+    while (p.cdr <> nil)
       p = p.cdr
   }
   p
 
 
-def class List<Elt>(root: _root : Pair<car: Elt, cdr: _.Type> = #nil)
+def class List<Elt>(root: _root : Pair<Elt, _> = nil)
     : Sequence<Elt>
 {
-  slot root : Pair<car: Elt, cdr: _.Type> = _root
-  slot last : Pair<car: Elt, cdr: _.Type> = #nil
+  slot root : Pair<Elt, _> = _root
+  slot last : Pair<Elt, _> = nil
 
   on init(self) {
     -- set self.last to the last element in the list
@@ -64,13 +58,11 @@ def class List<Elt>(root: _root : Pair<car: Elt, cdr: _.Type> = #nil)
 }
 
 
-def insert(self : @List,
-           value : @self.Type.Elt,
-           before-index : Int) : self.Type
+def insert(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
   select () {
-    (before-index == -1) -> {
-      let nl = Pair<car: self.Type.Elt>(car: value)
-      if (self.last == #nil)
+    (before-index == self.num-items) -> {
+      let nl = Pair<'T, _>(car: value)
+      if (self.last.nil?)
         self.root = self.last = nl
       else {
         self.last.cdr = nl
@@ -79,23 +71,23 @@ def insert(self : @List,
       self
     }
 
-    (before-index == 0 and self.root == #nil) -> {
-      self.root = self.last = Pair<car: self.Type.Elt>(car: value)
+    (before-index == 0 and self.root.nil?) -> {
+      self.root = self.last = Pair<'T, _>(car: value)
       self
     }
 
     otherwise -> {
       let p = self.root
-      let prev = #nil
+      let prev = nil
       let n = 0
 
-      while (p <> #nil) {
+      while (p <> nil) {
         if (n == before-index) {
-          if (prev <> #nil)
-            prev.cdr = Pair<car: self.Type.Elt>(car: value, cdr: p)
+          if (prev <> nil)
+            prev.cdr = Pair<'T, _>(car: value, cdr: p)
           else
-            self.root = Pair<car: self.Type.Elt>(car: value, cdr: p)
-          return(self)
+            self.root = Pair<'T, _>(car: value, cdr: p)
+          return self
         }
 
         prev = p
@@ -109,25 +101,25 @@ def insert(self : @List,
   }
 
 
-def remove-at(self : @List, index : Int) : self.Type.Elt
+def remove-at(self @ List<'T>, index : Ordinal) : 'T
   let p = self.root
-  let prev = #nil
+  let prev = nil
   let n = 0
 
-  while (p <> #nil) {
+  while (p <> nil) {
     if (n == index) {
-      if (prev <> #nil) {
+      if (prev <> nil) {
         prev.cdr = p.cdr
-        if (p.cdr == #nil)
+        if (p.cdr.nil?)
           self.last = prev
       }
       else {
         self.root = p.cdr
-        if (p.cdr == #nil)
-          self.last = #nil
+        if (p.cdr.nil?)
+          self.last = nil
       }
 
-      return(self)
+      return self
     }
 
     prev = p
@@ -139,115 +131,119 @@ def remove-at(self : @List, index : Int) : self.Type.Elt
                                                   self.num-items]).raise
 
 
-def add(self : @List, elt : @self.Type.Elt) : self.Type
+def add(self @ List<'T>, elt @ 'T) : List<'T>
   self.insert(elt, -1)
 
 
-def remove(self : @List, elt : @self.Type.Elt) : self.Type
-  let idx = self.index-of(elt)
-  if (idx >= 0)
-    self.remove-at(idx)
-  self
+def remove(self @ List<'T>, elt @ 'T) : List<'T>
+  match (self.index-of(elt)) {
+    e : Eof       -> self
+    idx : Ordinal -> {
+                       self.remove-at(idx)
+                       self
+                     }
+  }
 
 
-def index-of(self : @List, elt : @self.Type.Elt) : Int
+def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrEof
   let p = self.root
-  let n : Int = 0
+  let n : Ordinal = 0
 
-  while (p <> #nil) {
+  while (p <> nil) {
     if (p.cdr == elt)
       return(n)
     p = p.cdr
     n.incr!
   }
-  return(-1)
+  eof
 
 
-def contains?(self : @List, elt : @self.Type.Elt) : Bool
-  self.index-of(elt) >= 0
+def contains?(self @ List<'T>, elt @ 'T) : Bool
+  self.index-of(elt) isa Ordinal
 
 
-def size(self : @List) : Int
-  let n : Int = 0
-  for (p = self.root then p.cdr while p <> #nil)
+def size(self @ List<'T>) : Ordinal
+  let n : Ordinal = 0
+  for (p = self.root then p.cdr while p <> nil)
     n.incr!(p.car.size)
   n
 
 
-def num-items(self : @List) : Int ...
-  let n : Int = 0
-  for (p = self.root then p.cdr while p <> #nil)
+def num-items(self @ List<'T>) : Ordinal ...
+  let n : Ordinal = 0
+  for (p = self.root then p.cdr while p <> nil)
     n.incr!
   n
 
 
-def empty?(self : @List) : Bool
-  self.root == #nil
+def empty?(self @ List<'T>) : Bool
+  self.root.nil?
 
 
-def empty!(self : @List) : self.Type
-  self.root = self.last = #nil
+def empty!(self @ List<'T>) : List<'T>
+  self.root = self.last = nil
   self
 
 
-def first(self : @List) : self.Type.Elt
-  if (self.root <> #nil)
+def first(self @ List<'T>) : 'T
+  if (self.root <> nil)
     self.root.car
   else
-    #eof
+    eof
 
 
-def last(self : @List) : self.Type.Elt
-  if (self.last <> #nil)
+def last(self @ List<'T>) : 'T
+  if (self.last <> nil)
     self.last.car
   else
-    #eof
+    eof
 
 
-def for-each(self : @Collection, func : ForEachVisitor) : self.Type
-  for (p = self.root then p.cdr while p <> #nil)
+def for-each(self @ Collection<'T>,
+             func : ForEachVisitor<'T>) : List<'T>
+  for (p = self.root then p.cdr while p <> nil)
     func(p.car)
   self
 
 
-def iterator(self : @List) : Iterator(self.Type.Elt) ...
-  PairIterator<self.Type.Elt,
-               AccessorType: (Function(node : self.Type) : self.Type.Elt)>(
-    self.root, #function(node) { node.car })
+def iterator(self @ List<'T>) : Iterator<'T>
+  PairIterator<'T,
+               Function(node : Pair<'T, _>) : 'T>(
+    self.root, function(node) { node.car })
 
 
-def meth add-all(self : @List, other : @Collection) : self.Type
+def add-all(self @ List<'T>, other @ Collection<'T>) : List<'T>
   for (e = other.iterator)
     self.add(e)
   self
 
 
-def meth has-all?(self : @List, other : @Collection) : Bool
+def has-all?(self @ List<'T>, other @ Collection<'T>) : Bool
   for (e = other.iterator) {
-    if (not(self.contains?(e)))
-      return(#f)
+    if (not self.contains?(e))
+      return false
   }
-  #t
+  true
 
 
-def meth retain-all(self : @List, other : @Collection) : self.Type ...
+def retain-all(self @ List<'T>, other @ Collection<'T>) : List<'T> ...
   -- TODO
 
 
-def meth remove-all(self : @List, other : @Collection) : self.Type
+def remove-all(self @ List<'T>, other @ Collection<'T>) : List<'T>
   for (e = other.iterator) {
     self.remove(e)
   }
   self
 
 
-def meth swap(self : @List, from-idx : Int, to-idx : Int) : self.Type ...
+def swap(self @ List<'T>, from-idx : Ordinal, to-idx : Ordinal) : List<'T> ...
   -- TODO
 
 
-def private merge-split(nl : Pair) : Pair
+def merge-split(nl : Pair<'T, _>) : Pair<'T, _>
   let split-h(nl, nl1, nl2) {
-    if (nl == #nil or nl.cdr == #nil)
+    if (nl.nil? or nl.cdr.nil?)
       Pair(car: nl2.reverse, cdr: nl1)
     else
       split-h(nl.cdr.cdr, nl1.cdr, Pair(car: nl1.car, cdr: nl2))
@@ -256,80 +252,82 @@ def private merge-split(nl : Pair) : Pair
   split-h(nl, nl, Pair())
 
 
-def private merge(pred : (Function(left, right) : Bool),
-                  nl1 : Pair, nl2 : Pair) : Pair
+def merge(pred : (Function(left, right) : Bool),
+          nl1 : Pair<'T, _>,
+          nl2 : Pair<'T, _>) : Pair<'T, _>
   select () {
-    (nl1 == #nil) -> nl2
-    (nl2 == #nil) -> nl1
-    pred(nl1.car, nl2.car) -> Pair(car: nl1.car,
-                                   cdr: merge(pred, nl1.cdr, nl2))
-    otherwise -> Pair(car: nl2.car,
-                      cdr: merge(pred, nl1, nl2.cdr))
+    (nl1.nil?) -> nl2
+    (nl2.nil?) -> nl1
+    pred(nl1.car, nl2.car) -> Pair<'T, _>(car: nl1.car,
+                                          cdr: merge(pred, nl1.cdr, nl2))
+    otherwise -> Pair<'T, _>(car: nl2.car,
+                             cdr: merge(pred, nl1, nl2.cdr))
   }
 
 
-def private merge-sort(nl : Pair,
-                       pred : (Function(left, right) : Bool)) : Pair
+def merge-sort(nl : Pair<'T, _>,
+               pred : (Function(left, right) : Bool)) : Pair<'T, _>
   select () {
-    (nl == #nil) -> nl
-    (nl.cdr == #nil) -> nl
-    otherwise -> {
-                   let splits = merge-split(nl)
-                   merge(pred, merge-sort(splits.car, pred),
-                               merge-sort(splits.cdr, pred))
-                 }
+    (nl.nil?)     -> nl
+    (nl.cdr.nil?) -> nl
+    otherwise     -> {
+                       let splits = merge-split(nl)
+                       merge(pred, merge-sort(splits.car, pred),
+                                   merge-sort(splits.cdr, pred))
+                     }
   }
 
 
-def meth sort(self : @List, pred : @(Function(left, right) : Bool)) : self.Type
-  self.Type(root: merge-sort(self.root, <=))
+def sort(self @ List<'T>,
+         pred @ (Function(left, right) : Bool)) : List<'T>
+  List<'T>(root: merge-sort(self.root, <=))
 
 
-def meth sort!(self : @List) : self.Type ...
+def sort!(self @ List<'T>) : List<'T> ...
   self.root = merge-sort(self.root, <=)
   self.last = find-last-node(self.root)
   self
 
 
-def reverse(self : @List) : self.Type
-  let newlist = self.Type()
-  for (p = self.root then p.cdr while p <> #nil)
+def reverse(self @ List<'T>) : List<'T>
+  let newlist = List<'T>()
+  for (p = self.root then p.cdr while p <> nil)
     newlist.insert(p.car, 0)
   newlist
 
 
-def reverse!(self : @List) : self.Type
-  let newroot = #nil
-  if (self.root <> #nil) {
-    newroot = self.last = Pair<self.Type.Elt>(car: self.root.car, cdr: #nil)
+def reverse!(self @ List<'T>) : List<'T>
+  let newroot = nil
+  if (self.root <> nil) {
+    newroot = self.last = Pair<'T, _>(car: self.root.car, cdr: nil)
 
-    for (p = self.root.cdr then p.cdr while p <> #nil)
-      newroot = Pair<self.Type.Elt>(car: p.car, cdr: newroot)
+    for (p = self.root.cdr then p.cdr while p <> nil)
+      newroot = Pair<'T, _>(car: p.car, cdr: newroot)
     self.root = newroot
   }
   self
 
 
 -- operators [] and [] =
-def slice(self : @List, index : @Int) : self.Type.Elt
-  let n : Int = 0
-  for (p = self.root then p.cdr while p <> #nil) {
+def slice(self @ List<'T>, index @ Ordinal) : 'T
+  let n : Ordinal = 0
+  for (p = self.root then p.cdr while p <> nil) {
     if (n == index)
-      return(p.car)
+      return p.car
     n.incr!
   }
   OutOfRangeException("index %d is beyond %d" % #[index, n]).raise
 
 
-def slice(self : @List, from : @Int, to : @Int) : Collection<self.Type.Elt>
-  let n : Int = 0
-  let result = self.Type()
+def slice(self @ List<'T>, from @ Ordinal, to @ Ordinal) : Collection<'T>
+  let n : Ordinal = 0
+  let result = List<'T>()
 
-  for (p = self.root then p.cdr while p <> #nil) {
+  for (p = self.root then p.cdr while p <> nil) {
     if (n >= from) {
       result.add(p.car)
       if (n >= to)
-        return(p.car)
+        return p.car
     }
     n.incr!
   }
@@ -337,22 +335,22 @@ def slice(self : @List, from : @Int, to : @Int) : Collection<self.Type.Elt>
                                                   self.num-items]).raise
 
 
-def slice!(self : @Sequence,
-           index : @Int,
-           value : @self.Type.Elt) : self.Type
-  let n : Int = 0
-  for (p = self.root then p.cdr while p <> #nil) {
+def slice!(self @ List<'T>,
+           index @ Ordinal,
+           value @ 'T) : List<'T>
+  let n : Ordinal = 0
+  for (p = self.root then p.cdr while p <> nil) {
     if (n == index) {
       p.car = value
-      return(self)
+      return self
     }
   }
   OutOfRangeException("index %d is beyond %d" % #[index,
                                                   self.num-items]).raise
 
 
-def to-string(self : @List) : String
-  if (self.root == #nil)
+def to-string(self @ List<'T>) : String
+  if (self.root.nil?)
     "()"
   else
     self.root.to-string

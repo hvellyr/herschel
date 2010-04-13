@@ -1,23 +1,34 @@
---
--- dict.hea - base dictionary implementation
---
 -- This file is part of the heather package
--- Copyright (c) 2002,2009 by Gregor Klinke
 --
--- This library is free software; you can redistribute it and/or modify it
--- under the terms of the GNU Lesser General Public License as published by
--- the Free Software Foundation; either version 2.1 of the License, or (at
--- your option) any later version.
+-- Copyright (c) 2010 Gregor Klinke
+-- All rights reserved.
 --
--- This library is distributed in the hope that it will be useful, but
--- WITHOUT ANY WARRANTY; without even the implied warranty of
--- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
--- General Public License for more details.
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
 --
--- You should have received a copy of the GNU Lesser General Public License
--- along with this library; if not, write to the Free Software Foundation,
--- Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+-- - Redistributions of source code must retain the above copyright notice,
+--   this list of conditions and the following disclaimer.
 --
+-- - Redistributions in binary form must reproduce the above copyright
+--   notice, this list of conditions and the following disclaimer in the
+--   documentation and/or other materials provided with the distribution.
+--
+-- - Neither the name of the author nor the names of other contributors may
+--   be used to endorse or promote products derived from this software
+--   without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -- New concept here, we've to think about:
 --
@@ -60,76 +71,37 @@
 --
 --    def meth apply(self : @ class(HashMap), ...)
 --
---
---
---   def meth put!(self : @HashMap*, key : @self.Type.Key,
---                                   obj : @self.Type.Value) : self.Type
---   ...
---
--- This self.Type here refers to the *declared* type of the self parameter.
--- If you actually have a local variable of type HashMap*(String, Int):
---
---   let map : HashMap*(String, Int)
---
--- calling the function put! on it:
---
---   map.put!("id", 5)
---
--- is type safe.  The put method (if written like above, i.e. with reference
--- to self.Type in the signature) is a //generic// method.  Type checks
--- are done dynamic at compile time.  The code of course can't be optimized
--- for any specific type (since it accepts all types), but it allows for
--- type-safety.
---
---
--- DISCUSS: The usage of the un-parametrized version in the type declaration
--- "@HashMap*" matches all types.  It is not identical to "@HashMap" (when
--- an according alias has been defined as "def alias HashMap =
--- HashMap*(Any, Any)".  It automatically accepts whatever the context
--- gives.
---
---
--- For an optimized version add another specialization:
---
---   def meth put!(self : @HashMap*(String, Int), key : @String,
---                                                obj : @Int) : self.Type
---     ...
-
-
 
 ---------------------------------------------------------------------------
 
-namespace heather("eyestep/heather 1.0:core")
+import "core"
 
-import(io)
+module coll ("eyestep/heather 1.0:collections")
+public(HashMap)
 
+import "io"
+import "collection"
 
 ---------------------------------------------------------------------------
 
-def class Assoc<Key, Value>(_key, _val)
-{
-  slot key : Key = _key
-  slot value : Value = _val
-}
-
-def meth to-string(self : @Assoc) : String
+def core|to-string(self @ Assoc<'K, 'V>) : String
   StringBuffer().append(self.key, "->", self.value).to-string
 
 
 ---------------------------------------------------------------------------
 -- <cat vis='hide'/>
 
-def class Triple<Key, Value, Tail>(_key, _val, _tail)
+def class Triple<Key, Value, Tail>(_key : Key, _val : Value, _tail : Tail)
 {
   slot key : Key = _key
   slot value : Value = _val
   slot tail : Tail = _tail
 }
 
-def meth key?(self : @Triple, other : Triple) : Bool
+def generic key?(self @ Triple<'K, 'V, 'T>, other : 'K) : Bool
   self.key == other
 
-def meth to-string(self : @Triple) : String
+def core|to-string(self @ Triple<'K, 'V, 'T>) : String
   StringBuffer().append(self.key, "->", self.value).to-string
 
 
@@ -138,11 +110,11 @@ def meth to-string(self : @Triple) : String
 
 def const %default-size% = 16
 
-def class HashMap<Key, Elt>(items : Int = %default-size%)
-                 : (Comparable, AssocCollection<Key, Elt>)
+def class HashMap<Key, Elt>(items : Ordinal = %default-size%)
+    : (Comparable, AssocCollection<Key, Elt>)
 {
-  slot table : Vector<Triple<Key, Elt, _.Type> >
-  slot elts : Int = items
+  slot table : Vector<Triple<Key, Elt, _> >
+  slot elts : Ordinal = items
 
   on init(self) {
     if (elts > 0)
@@ -151,64 +123,54 @@ def class HashMap<Key, Elt>(items : Int = %default-size%)
 }
 
 
-----------------------------------------------------------------------
--- instanciation and initialization
-----------------------------------------------------------------------
-
-def meth apply(self : @HashMap.class, other : @Collection)
-  let t = self.Type(items: other.num-items)
-  t.add-all(other)
-  t
-
-
 --------------------------------------------------------------------
 -- collection protocol
 --------------------------------------------------------------------
 
-def meth empty?(self : @HashMap) : Bool
+def empty?(self @ HashMap<'K, 'T>) : Bool
   self.elts == 0
 
-def meth empty!(self : @HashMap) : self.Type
-  self.table = _.Type(items: %default-size%)
+def empty!(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
+  self.table = _.Type()(items: %default-size%)
   self.elts = 0
   self
 
-def meth size(self : @HashMap) : Int
+def size(self @ HashMap<'K, 'T>) : Ordinal
   self.table.size
 
-def meth num-items(self : @HashMap) : Int
+def num-items(self @ HashMap<'K, 'T>) : Ordinal
   self.elts
 
-def meth iterator(self : @HashMap) : Iterator<Assoc<self.Type.Key, self.Type.Value> >
-  HashMapIterator<self.Type.Key, self.Type.Value>(self.table)
+def iterator(self @ HashMap<'K, 'T>) : Iterator<Assoc<'K, 'T> >
+  HashMapIterator<'K, 'T>(self.table)
 
-def meth key-iterator(self : @HashMap) : Iterator<self.Type.Key>
-  HashMapKeyIterator<self.Type.Key>(self.table)
+def key-iterator(self @ HashMap<'K, 'T>) : Iterator<'K>
+  HashMapKeyIterator<'K>(self.table)
 
-def meth value-iterator(self : @HashMap) : Iterator<self.Type.Value>
-  HashMapValueIterator<self.Type.Value>(self.table)
+def value-iterator(self @ HashMap<'K, 'T>) : Iterator<'T>
+  HashMapValueIterator<'T>(self.table)
 
 
 --------------------------------------------------------------------
 -- adding, removing, finding
 --------------------------------------------------------------------
 
-def meth has-key?(self : @HashMap, key) : Bool
+def has-key?(self @ HashMap<'K, 'T>, key @ 'K) : Bool
   let loop(nl) {
-      if (nl == #nil)
-        #f
+      if (nl.nil?)
+        false
       else if (nl.key?(key))
-        #t
+        true
       else
         loop(nl.tail)
     }
   loop(self.table[key.hash mod self.table.size])
 
 
-def meth get(self : @HashMap, key : self.Type.Key)
+def get(self @ HashMap<'K, 'T>, key @ 'K)
   let loop(nl) {
-      if (nl == #nil)
-        #nil
+      if (nl.nil?)
+        nil
       else if (nl.key?(key))
         nl.value
       else
@@ -217,12 +179,11 @@ def meth get(self : @HashMap, key : self.Type.Key)
   loop(self.table[key.hash mod self.table.size])
 
 
-def meth put!(self : @HashMap, key, obj) : HashMap
-  let hash : Int = key.hash mod self.table.size
+def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) : HashMap
+  let hash = (key.hash mod self.table.size) as Ordinal
   let loop(nl) {
-      if (nl == #nil) {
-        self.table[hash] = Triple<self.Type.Key, self.Type.Elt,
-                                  _.Type>(key, obj, self.table[hash])
+      if (nl.nil?) {
+        self.table[hash] = Triple<'K, 'T, _>(key, obj, self.table[hash])
         self.elts.incr!
       }
       else if (nl.key?(key))
@@ -237,7 +198,7 @@ def meth put!(self : @HashMap, key, obj) : HashMap
   let ts = self.table.size
 
   if (self.elts >= (ts * 75) / 100) {
-    let t2 = self.type(items: (ts * 15) / 10)
+    let t2 = self.Type()(items: (ts * 15) / 10)
     -- copy all elements
     t2.add-all(self)
 
@@ -249,15 +210,15 @@ def meth put!(self : @HashMap, key, obj) : HashMap
   self
 
 
-def meth put!(self : @HashMap, obj : @Assoc) : HashMap
+def put!(self @ HashMap<'K, 'T>, obj @ Assoc<'K, 'T>) : HashMap<'K, 'T>
   self.put!(obj.key, obj.value)
 
 
-def meth remove!(self : @HashMap, key) : HashMap
-  let hash : Int = key.hash mod self.table.size
+def remove!(self @ HashMap<'K, 'T>, key @ 'K) : HashMap<'K, 'T>
+  let hash = (key.hash mod self.table.size) as Ordinal
   let np = self.table[hash]
 
-  if (np <> #nil) {
+  if (np <> nil) {
     if (np.key?(key)) {
       -- special case. if the first element is the key/value pair, than
       -- remove it directly
@@ -281,7 +242,7 @@ def meth remove!(self : @HashMap, key) : HashMap
   let ts = self.table.size
 
   if (self.elts <= (ts * 15) / 100) {
-    let t2 = self.type(items: ts / 2)
+    let t2 = self.Type()(items: ts / 2)
     -- copy all elements
     t2.add-all(self)
 
@@ -293,15 +254,15 @@ def meth remove!(self : @HashMap, key) : HashMap
   self
 
 
-def meth keys(self : @HashMap) : Vector<self.Type.Key>
-  let keys = Vector(self.elts)
+def keys(self @ HashMap<'K, 'T>) : Vector<'K>
+  let keys = Vector<'K>(self.elts)
   for (k in self.key-iterator)
     keys.append(k)
   keys
 
 
-def meth values(self : @HashMap) : Vector<self.Type.Value>
-  let values = Vector(self.elts)
+def values(self @ HashMap<'K, 'T>) : Vector<'T>
+  let values = Vector<'T>(self.elts)
   for (v in self.value-iterator)
     values.append(v)
   values
@@ -309,7 +270,7 @@ def meth values(self : @HashMap) : Vector<self.Type.Value>
 
 --  has-value?: obj(_ELT_) : (BOOL) |
 --    -- TODO
---    #f.
+--    false.
 
 
 --  del-value: obj(_ELT_) : (self) |
@@ -317,29 +278,32 @@ def meth values(self : @HashMap) : Vector<self.Type.Value>
 --    self.
 
 
-def meth add-all(self : @HashMap, coll : @AssocCollection) : self.Type
+def add-all(self @ HashMap<'K, 'T>,
+            coll @ AssocCollection<'K, 'T>) : HashMap<'K, 'T>
   for (e in coll)
     self.put!(e.key, e.value)
   self
 
 
-def meth has-all-keys?(self : @HashMap, keys : @Collection) : Bool
+def has-all-keys?(self @ HashMap<'K, 'T>, keys @ Collection<'K>) : Bool
   for (k in keys) {
-    if (not(self.has?(k)))
-      return(#f)
+    if (not self.has?(k))
+      return false
   }
-  #t
+  true
 
 
-def meth remove-all-keys(self : @HashMap, keys : @Collection) : self.Type
+def remove-all-keys(self @ HashMap<'K, 'T>,
+                    keys @ Collection<'K>) : HashMap<'K, 'T>
   for (k in keys)
     self.remove(k)
   self
 
 
-def meth retain-all-keys(self : @HashMap, keys : @Collection) : self.Type
+def retain-all-keys(self @ HashMap<'K, 'T>,
+                    keys @ Collection<'K>) : HashMap<'K, 'T>
   for (k in keys) {
-    if (not(self.has?(k)))
+    if (not self.has?(k))
       self.remove(k)
   }
   self
@@ -348,28 +312,32 @@ def meth retain-all-keys(self : @HashMap, keys : @Collection) : self.Type
 ----------------------------------------------------------------------
 -- copy
 ----------------------------------------------------------------------
-def table!(self : @HashMap, t : Vector<Triple<self.Type.Key,
-                                              self.Type.Elt,
-                                              _.Type> >)
-  slot!(self, 'table, t)
-  slot!(self, 'elts, t.num-items)
+
+def table!(self : HashMap<'K, 'T>,
+           new-table : Vector<Triple<'K, 'T, _> >)
+  slot!(self, #table, new-table)
+  slot!(self, #elts, new-table.num-items)
   self
 
-def copy(self : @ HashMap) : self.Type
-  self.Type().table!(self.table)
+extend module core
+{
+def copy(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
+  self.Type()().table!(self.table)
 
-def deep-copy(self : @ HashMap) : self.Type
-  self.Type().add-all(self)
+def deepen(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
+  self.table!(self.table.deep-copy)
+  self
+}
 
 -- def equal?(one : @ HashMap, two : @ HashMap) : Bool
 --   one == two
 
 --  cmp: obj(lang.ANY) : (lang.INT) |
 --       -- TODO
---    -1.
+--    -1
 
 -- Returns a string representation of /self/ 
-def to-string(self : @ HashMap) : String
+def core|to-string(self @ HashMap<'K, 'T>) : String
   let sb = StringBuffer()
   sb.append("#(")
 
@@ -379,6 +347,11 @@ def to-string(self : @ HashMap) : String
 
   sb.append(")")
   sb.to-string
+
+
+
+
+
 
 
 
@@ -411,9 +384,9 @@ lang.DICT-SEQ <- class : (lang.SEQ) base: _BASE_ (
   next? : (lang.BOOL) |
     np <> nil or ( | i(INT) <- curidx + 1,
                      tlen(INT) <- table length,
-                     found(BOOL) <- #f |
+                     found(BOOL) <- false |
                    [ |
-                     (table at: i) <> nil ? found <- #t
+                     (table at: i) <> nil ? found <- true
                                           : i <- i + 1
                    ] while: (i < tlen and ¬found),
                    found).
@@ -429,7 +402,7 @@ lang.DICT-SEQ <- class : (lang.SEQ) base: _BASE_ (
                 : curidx <- curidx + 1,
 
       -- if this is nil, go to the next slot in the hash
-      retv = nil ? ( | done(BOOL) <- #f,
+      retv = nil ? ( | done(BOOL) <- false,
                        tlen(INT) <- table length |
                      [ |
                        np <- table at: curidx,
@@ -437,7 +410,7 @@ lang.DICT-SEQ <- class : (lang.SEQ) base: _BASE_ (
                                                 ' init-with-key: (np key)
                                                           value: (np value),
                                     np <- np tail,
-                                    done <- #t)
+                                    done <- true)
                                  : curidx <- curidx + 1
                      ] while: (curidx < tlen and ¬done)),
       retv).
@@ -450,7 +423,7 @@ lang.DICT-SEQ <- class : (lang.SEQ) base: _BASE_ (
   reset : (BOOL) |
     curidx <- 0,
     np <- table at: curidx,
-    #t.
+    true.
 )
 
 
