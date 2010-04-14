@@ -30,14 +30,16 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(incr!, decr!)
+interface core ("eyestep/heather 1.0:core")
+export public(incr!, post-incr!,
+              decr!, post-decr!)
 
 def macro incr!
 {
   { incr!(?place:expr) }               -> { ?place = ?place + 1 }
   { incr!(?place:expr, ?amount:expr) } -> { ?place = ?place + ?amount }
 }
+
 
 def macro post-incr!
 {
@@ -56,6 +58,7 @@ def macro decr!
   { decr!(?place:expr) }               -> { ?place = ?place - 1 }
   { decr!(?place:expr, ?amount:expr) } -> { ?place = ?place - ?amount }
 }
+
 
 def macro post-decr!
 {
