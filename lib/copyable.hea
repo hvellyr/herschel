@@ -31,23 +31,15 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module core ("eyestep/heather 1.0:core")
-export public(Copyable, deep-copy)
+export public(*)
 
-def type Copyable
-{
-  -- returns a shallow copy of @var{obj}.
-  def generic copy(obj @ 'T) : 'T
-      where T isa Copyable ...
+import "copyable.head"
 
-  -- copies all child objects using @code{copy} and @code{deepen} on them
-  def generic deepen(obj @ 'T) : 'T
-      where T isa Copyable ...
-}
-
+-- Default implementation for @fun{deep-copy}
 
 def generic deep-copy(obj @ 'T) : 'T
     where T isa Copyable
   obj.copy.deepen
 
--- end of copyable
+-- end of copyable.hea
 
