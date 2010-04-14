@@ -30,30 +30,52 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(*)
+interface core ("eyestep/heather 1.0:core")
+export public(nil?, enforce)
 
-import "comparable.head"
+-- Indicates whether its argument is @const{nil}.
+--
+-- @example
+-- if (abc.nil?) ...
+-- @end example
+def macro nil?
+{
+  { nil?(?val:expr) } -> { ?val == nil }
+}
 
--- Default implementations for the standard compare operators in terms of
--- the designated @fun{compare} function of @type{Comparable}.
 
-def equal?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) == 0
+-- Enforces that a value is not @const{nil} before continuing.  Otherwise
+-- it raises an @type{NilException} with a given message.
+--
+-- Instead of writing:
+--
+-- @example
+-- let p = foo()
+-- if (p.nil?)
+--   NilException("foo() failed").raise
+-- p.bar
+-- @end example
+--
+-- you can write
+--
+-- @example
+-- enforce(foo(), "foo() failed").bar
+-- @end example
+--
+-- or simply:
+--
+-- @example
+-- foo().enforce("foo() failed").bar
+-- @end example
+def macro enforce
+{
+  { enforce(?val:expr, ?msg:expr) } -> { { let tmp = ?val
+                                           if (tmp.nil?)
+                                             Exception(?msg).raise
+                                           else
+                                             tmp
+                                         } }
+}
 
-def unequal?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) <> 0
 
-def less?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) < 0
-
-def less-equal?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) <= 0
-
-def greater?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) > 0
-
-def greater-equal?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) >= 0
-
--- end of comparable
+-- end of utils

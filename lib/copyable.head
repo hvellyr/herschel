@@ -30,30 +30,23 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(*)
+interface core ("eyestep/heather 1.0:core")
+export public(Copyable, deep-copy)
 
-import "comparable.head"
+def type Copyable
+{
+  -- Returns a shallow copy of @var{obj}.
+  def generic copy(obj @ 'T) : 'T
+      where T isa Copyable ...
 
--- Default implementations for the standard compare operators in terms of
--- the designated @fun{compare} function of @type{Comparable}.
+  -- Copies all child objects using @code{copy} and @code{deepen} on them.
+  def generic deepen(obj @ 'T) : 'T
+      where T isa Copyable ...
+}
 
-def equal?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) == 0
+-- Returns a deep copy of @var{obj}.
+def generic deep-copy(obj @ 'T) : 'T ...
+    where T isa Copyable
 
-def unequal?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) <> 0
+-- end of copyable.head
 
-def less?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) < 0
-
-def less-equal?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) <= 0
-
-def greater?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) > 0
-
-def greater-equal?(one @ Comparable, two @ Comparable) : Bool
-  (one <=> two) >= 0
-
--- end of comparable

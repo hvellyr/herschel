@@ -1,4 +1,4 @@
--- This file is part of the heather package
+-- This file is part of the heather package 
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -30,43 +30,34 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(nil?)
+interface core ("eyestep/heather 1.0:core")
+export public(Comparable)
 
--- if (abc.nil?) ...
--- if (abc == nil) ...
-def macro nil?
+def type Comparable
 {
-  { nil?(?val:expr) } -> { ?val == nil }
+  -- Compare value @var{one} with @var{two}.
+  --
+  -- => 0 if @var{one} and @var{two} are equal; a value > 0 if @var{one} is
+  -- greater than @var{two}, and a value below 0 if @var{one} is less.
+  def generic compare(one @ 'S, two @ 'T) : Int ...
 }
 
+-- Indicate whether @var{one} is equal to @var{two}.
+def generic equal?(one @ 'S, two @ 'T) : Bool ...
 
--- enforces that a value is not nil before continuing.
--- Otherwise it raises an exception with a given message
---
--- Instead to write
---
--- @example
--- let p = foo()
--- if (p.nil?)
---   Exception("foo() failed").raise
--- p.bar
--- @end example
---
--- you can write
---
--- @example
---   enforce(foo(), "foo() failed").bar
--- -- or:
---   foo().enforce("foo() failed").bar
--- @end example
-def macro enforce
-{
-  { enforce(?val:expr, ?msg:expr) } -> { if (?val == nil)
-                                           Exception(?msg).raise
-                                         else
-                                           ?val
-                                       }
-}
+-- Indicate whether @var{one} is not equal to @var{two}.
+def generic unequal?(one @ 'S, two @ 'T) : Bool ...
 
--- end of utils
+-- Indicate whether @var{one} is less than @var{two}.
+def generic less?(one @ 'S, two @ 'T) : Bool ...
+
+-- Indicate whether @var{one} is less than or equal to @var{two}.
+def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
+
+-- Indicate whether @var{one} is greater than @var{two}.
+def generic greater?(one @ 'S, two @ 'T) : Bool ...
+
+-- Indicate whether @var{one} is greater than or equal to @var{two}.
+def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
+
+-- end of comparable.head

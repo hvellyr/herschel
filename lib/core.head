@@ -1,6 +1,6 @@
--- This file is part of the heather package
+-- This file is part of the heather package 
 --
--- Copyright (c) 2010 Gregor Klinke
+-- Copyright (c) 2006, 2007, 2008 Gregor Klinke
 -- All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -30,53 +30,19 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(with-break)
+import "charnm.head"
+import "si-units.head"
+
+import "common.head"
+import "break.head"
+
+import "iterator.head"
+import "incr.head"
+
+import "comparable.head"
+import "copyable.head"
+
+import "utils.head"
 
 
-def class BreakSignal(val)
-{
-  slot return-value = val
-}
-
-
-def macro with-break
-{
-  { with-break() ?body:expr } -> {
-    {
-      on signal(break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let break(retval) {
-        BreakSignal(retval).raise
-      }
-      ?body
-    }
-  }
-  { with-break(?break:name) ?body:expr } -> {
-    {
-      on signal(break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let ?break (retval) {
-        BreakSignal(retval).raise
-      }
-      ?body
-    }
-  }
-
-  { with-break(?break:name = ?func:expr) ?body:expr } -> {
-    {
-      on signal(break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let ?break (retval) {
-        BreakSignal(?func (retval)).raise
-      }
-      ?body
-    }
-  }
-}
-
--- end of break
-
+-- end of core.head
