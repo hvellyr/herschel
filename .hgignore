@@ -9,6 +9,8 @@ doc/.*\.pg
 doc/.*\.toc
 doc/.*\.tp
 doc/.*\.vr
+doc/.DS_Store
+.DS_Store
 .*~
 scheme/.*\.o
 scheme/.*\.dylib
