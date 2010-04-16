@@ -1,4 +1,4 @@
-namespace heather
+module examples
 
 def h()
   { a b c }.m

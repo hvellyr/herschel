@@ -30,7 +30,7 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace heather("eyestep/heather 1.0:core")
+module example ("eyestep/heather 1.0:example")
 
 
 def class Map : Object : KeyedCollection

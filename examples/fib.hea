@@ -1,26 +1,14 @@
-namespace fibonacci("eyestep/heather:examples")
+module fibonacci("eyestep/heather:examples")
 
-def meth fib(n : @ Any) ...
-
-def fib(n : @ (Int = 0))
-  0
-
-def fib(n : @ (Int = 1))
-  1
-
-def fib(n : @ (Int > 1))
-  fib(n - 1) + fib(n - 2)
-
-
-def fib2(n)
+def fib(n @ 'T)
   select n {
     0 -> 0
     1 -> 1
+    otherwise -> fib(n - 1) + fib(n - 2)
   }
-  else
-    fib2(n - 1) + fib(n - 2)
 
 
-n = 28.
-outln("Fib(%d): %d" % #(n, fib(n))).
+def main()
+  let const n = 28
+  outln("Fib(%d): %d" % #[n, fib(n)])
 

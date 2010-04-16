@@ -69,7 +69,7 @@
 --- for (i in names.all-keys)
 ---   outln(i)
 --- else
----   #f
+---   false
 --- 
 --- for (i from 0 below 100 by 2)              for (i = 0 .. 100 by 2)
 ---   outln(i)                                   outln(i)

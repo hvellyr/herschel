@@ -1,7 +1,7 @@
 def macro wait
 {
   { on wait(?n:name, ?x:name) ?b:expr } -> { { let ?n = 7
-                                               let ?x = #t
+                                               let ?x = true
                                                ?b } }
 }
 

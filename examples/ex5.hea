@@ -18,7 +18,6 @@ def class Point(_x, _y, value: _val = 55) : Object
   slot x : Int = _x
   slot y : Int = _y
   slot value : Int = _val
---  slot public transient value : Int = _val , public, transient
 
   on init(self)
   {
@@ -31,4 +30,4 @@ def class Point(_x, _y, value: _val = 55) : Object
 
 def alias AtlasX = Atlas<Int, String>
 
-def alias IntOfFalse = (Int, Bool = #f)
+def alias IntOfFalse = (Int, Bool = false)

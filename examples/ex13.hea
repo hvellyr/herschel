@@ -47,7 +47,7 @@ def macro ccc
 }
 
 def f()
---  with-break(a = #function(x) { x } ) {
+--  with-break(a = function(x) { x } ) {
 --    outln(1)
 --  }
 --  abc()

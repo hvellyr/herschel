@@ -3,7 +3,7 @@ def macro _x-with-value
   { _x-with-value(?x:name = ?val:expr, ?body:expr, ?else:expr) }
     -> { {
            let ?x = ?val
-           if (?x == #nil)
+           if (?x == nil)
              ?body
            else
              ?else
@@ -13,7 +13,7 @@ def macro _x-with-value
 def macro with-value
 {
   { with-value(?x:name = ?val:expr) ?body:expr }
-    -> { _x-with-value(?x = ?val, ?body, #f) }
+    -> { _x-with-value(?x = ?val, ?body, false) }
   { with-value(?x:name = ?val:expr) ?body:expr otherwise ?e:expr }
     -> { _x-with-value(?x = ?val, ?body, ?e) }
 }
@@ -35,7 +35,7 @@ def f(x, y)
     outln(a)
 
 def g()
-   #t
+   true
 
 def h()
   foreach(a in 5 .. 7) outln(a)

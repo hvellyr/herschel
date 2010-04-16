@@ -1,14 +1,14 @@
-def ints    = #[12,   0ch,   14o,   1100y]
-def octets  = #[12t,  0cht,  14ot,  1100yt]
-def shorts  = #[12s,  0chs,  14os,  1100ys]
-def ushorts = #[12us, 0chus, 14ous, 1100yus]
-def words   = #[12w,  0chw,  14ow,  1100yw]
-def uwords  = #[12uw, 0chuw, 14ouw, 1100yuw]
-def longs   = #[12l,  0chl,  14ol,  1100yl]
-def ulongs  = #[12ul, 0chul, 14oul, 1100yul]
+def ints    = #[12,          0ch,          14t,          1100y         ]
+def octets  = #[12 : Octet,  0ch : Octet,  14t : Octet,  1100y : Octet ]
+def shorts  = #[12 : Short,  0ch : Short,  14t : Short,  1100y : Short ]
+def ushorts = #[12 : UShort, 0ch : UShort, 14t : UShort, 1100y : UShort]
+def words   = #[12 : Word,   0ch : Word,   14t : Word,   1100y : Word  ]
+def uwords  = #[12 : UWord,  0ch : UWord,  14t : UWord,  1100y : UWord ]
+def longs   = #[12 : Long,   0ch : Long,   14t : Long,   1100y : Long  ]
+def ulongs  = #[12 : ULong,  0ch : ULong,  14t : ULong,  1100y : ULong ]
 
 def rat = 4/5
 
-def b = #('a, 'b, 'c, 'd)
+def b = #(#a, #b, #c, #d)
 
-def c = #('name -> "Heinz", 'city -> "Berlin", 'amount -> 125.00)
+def c = #(#name -> "Heinz", #city -> "Berlin", #amount -> 125.00)

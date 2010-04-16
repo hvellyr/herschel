@@ -1,4 +1,4 @@
-namespace heather ("eyestep/heather 1.0:core")
+module examples ("eyestep/heather 1.0:examples")
 
 import(io)
 
@@ -8,14 +8,14 @@ def some-container : HashMap<String, Int> = Vector<Int>(11)
 
 
 def reduce(fn, base-value, lst)
-  if (lst == #nil)
+  if (lst == nil)
      base-value
   else
     fn(lst.car, reduce(fn, base-value, lst.cdr))
 
 
 def f(lst)
-  reduce(#function(o, nl) {
+  reduce(function(o, nl) {
               if (o)
                  Pair(o, nl)
               else
