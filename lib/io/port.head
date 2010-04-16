@@ -34,86 +34,88 @@ interface io ("eyestep/heather 1.0:io")
 export public(*)
 
 
-------------------------------------------------------------------------------
-
--- A generic input-ouput port.
---
--- Ports are parametrized to the basic object to be read or written.  Most
--- commonly these are Octets or Characters, but technical complex objects
--- are possible, too, of course.
---
--- Ports has a @dfn{cursor} pointing to the next element to be read or
--- written.  Operations like read, write, and skip implicitely move the
--- cursor; operations like cursor! or reset explicitely set the cursor.
+--! A generic input-ouput port.
+--!
+--! Ports are parametrized to the basic object to be read or written.  Most
+--! commonly these are Octets or Characters, but technical complex objects
+--! are possible, too, of course.
+--!
+--! Ports has a @dfn{cursor} pointing to the next element to be read or
+--! written.  Operations like read, write, and skip implicitely move the
+--! cursor; operations like cursor! or reset explicitely set the cursor.
 def type Port<T>
 {
-  -- Indicate whether @var{port} is open for reading or writing
+  --! Indicate whether @var{port} is open for reading or writing
   def generic open?(port @ Port<T>) : Bool ...
-  -- Close @var{port} if open.
-  -- @return{} @var{port}
+
+  --! Close @var{port} if open.
+  --!
+  --! @return{} @var{port}
   def generic close(port @ Port<T>) : Port<T> ...
 
-  -- Flush any cached data to or from @var{port}.  If @var{port} is not a
-  -- buffering port this is a no-op.
-  -- @return{} @var{port}
+  --! Flush any cached data to or from @var{port}.  If @var{port} is not a
+  --! buffering port this is a no-op.
+  --!
+  --! @return{} @var{port}
   def generic flush(port @ Port<T>) : Port<T> ...
 }
 
 
--- An input port which reads information from a source.
+--! An input port which reads information from a source.
 def type InPort<T> : Port<T>
 {
-  -- Indicate whether @var{port} has reached its end.
+  --! Indicate whether @var{port} has reached its end.
   def generic eof?(port @ InPort<T>) : Bool ...
 
-  -- Read the next element from the current port cursor position.  If
-  -- successfull the cursor is moved to the next object which may be the
-  -- @const{eof} end-of-file marker.
-  --
-  -- The method blocks if @var{port} has currently no further element
-  -- available.
-  --
-  -- @return{} the read element or @const{eof} if no further element could
-  -- be read.
+  --! Read the next element from the current port cursor position.  If
+  --! successfull the cursor is moved to the next object which may be the
+  --! @const{eof} end-of-file marker.
+  --!
+  --! The method blocks if @var{port} has currently no further element
+  --! available.
+  --!
+  --! @return{} the read element or @const{eof} if no further element could
+  --! be read.
   def generic read(port @ InPort<T>) : &(T, Eof) ...
 
-  -- Read @var{num-items} elements from @var{port} from the current port
-  -- cursor position and store them into @var{buffer} beginning from offset
-  -- @var{offset}.  @var{buffer} must be large enough to hold all read
-  -- elements, otherwise an @type{OutOfBoundsException} is thrown.
-  --
-  -- The port cursor is moved ahead by the number of read elements.
-  --
-  -- @return{} the number of items read, 0 if no elements are (currently)
-  -- available, or @const{eof} if the stream has reached its end.
+  --! Read @var{num-items} elements from @var{port} from the current port
+  --! cursor position and store them into @var{buffer} beginning from offset
+  --! @var{offset}.  @var{buffer} must be large enough to hold all read
+  --! elements, otherwise an @type{OutOfBoundsException} is thrown.
+  --!
+  --! The port cursor is moved ahead by the number of read elements.
+  --!
+  --! @return{} the number of items read, 0 if no elements are (currently)
+  --! available, or @const{eof} if the stream has reached its end.
   def generic read*(port @ InPort<T>,
                     buffer @ T[], offset : Ordinal,
                     num-items : Ordinal)
       : OrdinalOrEof ...
 
-  -- Skip @var{num-items} elements from @var{port} beginning from the
-  -- current port cursor position.
-  --
-  -- @return{} the number of items skipped, 0 if no elements are
-  -- (currently) available to skip, or @const{eof} if the stream has
-  -- reached its end.
+  --! Skip @var{num-items} elements from @var{port} beginning from the
+  --! current port cursor position.
+  --!
+  --! @return{} the number of items skipped, 0 if no elements are
+  --! (currently) available to skip, or @const{eof} if the stream has
+  --! reached its end.
   def generic skip(port @ InPort<T>) : OrdinalOrEof ...
 }
 
 
--- A port which outputs elements.
+--! A port which outputs elements.
 def type OutPort<T> : Port<T>
 {
-  -- Write one element @var{item} to @var{port} at the current port cursor
-  -- position.
-  -- @return{} the number of items written (i.e. always 1)
+  --! Write one element @var{item} to @var{port} at the current port cursor
+  --! position.
+  --!
+  --! @return{} the number of items written (i.e. always 1)
   def generic write(port @ OutPort<T>, item @ T) : Ordinal ...
 
-  -- Write @var{num-items} elements from @var{buffer} starting at offset
-  -- @var{offset} to @var{port}.
-  --
-  -- @return{} the number of items written.  Any value other than
-  -- @var{num-items} may indicate an error.
+  --! Write @var{num-items} elements from @var{buffer} starting at offset
+  --! @var{offset} to @var{port}.
+  --!
+  --! @return{} the number of items written.  Any value other than
+  --! @var{num-items} may indicate an error.
   def generic write*(port @ OutPort<T>,
                      buffer @ T[], offset : Ordinal,
                      num-items : Ordinal) : Ordinal ...
@@ -121,14 +123,14 @@ def type OutPort<T> : Port<T>
 
 
 
--- A PortCursor is an abstraction of a position in a port.
+--! A PortCursor is an abstraction of a position in a port.
 def type PortCursor<T>
 {
-  -- Returns the offset from the port start in octets.
+  --! Returns the offset from the port start in octets.
   def generic octet-offset(cursor @ PortCursor<T>) : Ordinal ...
 
-  -- Returns the offset from the port start in number of elements.  If
-  -- @code{T == Octet} this is equal to @fun{octet-offset}.
+  --! Returns the offset from the port start in number of elements.  If
+  --! @code{T == Octet} this is equal to @fun{octet-offset}.
   def generic position(cursor @ PortCursor<T>) : Ordinal ...
 }
 
@@ -141,42 +143,42 @@ def enum PortCursorWhenceType : Int
 }
 
 
--- A SeekablePort can request and set the file cursor.  Ports have exactly
--- one cursor shared for reading and writing.
+--! A SeekablePort can request and set the file cursor.  Ports have exactly
+--! one cursor shared for reading and writing.
 def type SeekablePort<T> : Port<T>
 {
-  -- Set the cursor of @var{port} to @var{offset}, where @var{offset} is
-  -- measured in elements T relative to the file start (for @var{whence} ==
-  -- PortCursorWhenceType.begin), relative to the file end (for
-  -- @var{whence} == PortCursorWhenceType.end), or relative to the current
-  -- port cursor position (for @var{whence} ==
-  -- PortCursorWhenceType.current).
-  --
-  -- @return{} the new cursor position
+  --! Set the cursor of @var{port} to @var{offset}, where @var{offset} is
+  --! measured in elements T relative to the file start (for @var{whence} ==
+  --! PortCursorWhenceType.begin), relative to the file end (for
+  --! @var{whence} == PortCursorWhenceType.end), or relative to the current
+  --! port cursor position (for @var{whence} ==
+  --! PortCursorWhenceType.current).
+  --!
+  --! @return{} the new cursor position
   def generic cursor!(port @ SeekablePort<T>,
                       offset @ Ordinal,
                       whence : PortCursorWhenceType) : PortCursor<T> ...
 
-  -- Set the cursor of @var{port} to @var{cursor}
+  --! Set the cursor of @var{port} to @var{cursor}
   def generic cursor!(port @ SeekablePort<T>,
                       cursor @ PortCursor<T>) : PortCursor<T> ...
 
-  -- Returns the current cursor of @var{port}.
+  --! Returns the current cursor of @var{port}.
   def generic cursor(port @ SeekablePort<T>) : PortCursor<T> ...
 
-  -- Reset the cursor of port @var{port} to the port start.  This is a
-  -- shortcut for @code{cursor!(port, 0, PortCursorWhenceType.begin)}
+  --! Reset the cursor of port @var{port} to the port start.  This is a
+  --! shortcut for @code{cursor!(port, 0, PortCursorWhenceType.begin)}
   def generic reset(port @ SeekablePort<T>) : PortCursor<T> ...
 }
 
 
--- A port type with full support for input, output and free cursor setting.
+--! A port type with full support for input, output and free cursor setting.
 def type RandomAccessPort<T> : (InPort<T>, OutPort<T>, SeekablePort<T>)
 {
-  -- Truncate @var{port}'s underlying representation to the first
-  -- @var{num-items} elements.
-  --
-  -- @return{} @var{port}
+  --! Truncate @var{port}'s underlying representation to the first
+  --! @var{num-items} elements.
+  --!
+  --! @return{} @var{port}
   def generic truncate(port @ SeekablePort<T>,
                        num-items @ Ordinal) : SeekablePort<T> ...
 }
@@ -195,7 +197,7 @@ def enum FileModeType : UWord
 }
 
 
--- A FilePort is the base abstraction of a file stream.
+--! A FilePort is the base abstraction of a file stream.
 def class FilePort(file : StringOrUri = nil,
                    mode : FileModeType = FileModeType.read,
                    umask : UWord = 0)
@@ -237,16 +239,16 @@ def class BufferedPort<T>(port : RandomAccessPort<T>,
 
 ------------------------------------------------------------------------------
 
--- typical usage:
---
--- @example
--- let port = CharInPort(
---   BufferedInPort<Octet>(
---     FilePort(file: fname, mode: FileModeType.read)),
---   encoding: "utf-8")
--- for (c in port)
---   display(c)
--- @end example
+--! typical usage:
+--!
+--! @example
+--! let port = CharInPort(
+--!   BufferedInPort<Octet>(
+--!     FilePort(file: fname, mode: FileModeType.read)),
+--!   encoding: "utf-8")
+--! for (c in port)
+--!   display(c)
+--! @end example
 def class CharInPort(port : InPort<Char>,
                      encoding : String = "auto") : InPort<Char>
 {

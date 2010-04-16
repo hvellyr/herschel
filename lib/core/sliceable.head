@@ -1,4 +1,4 @@
--- This file is part of the heather package
+-- This file is part of the heather package 
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -31,22 +31,46 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 interface core ("eyestep/heather 1.0:core")
-export public(Copyable, deep-copy)
+export public(*)
 
-def type Copyable
+--! A @type{Sliceable} represents types which support single-key slice
+--! access, i.e. index access.  Typical candidates are containers, strings,
+--! etc.
+def type Sliceable<K, E>
 {
-  -- Returns a shallow copy of @var{obj}.
-  def generic copy(obj @ 'T) : 'T
-      where T isa Copyable ...
-
-  -- Copies all child objects using @code{copy} and @code{deepen} on them.
-  def generic deepen(obj @ 'T) : 'T
-      where T isa Copyable ...
+  --! Returns the element from @var{obj} at position @var{key}.  It may be
+  --! an error if @var{key} points to non-existing element or (depending on
+  --! the implementing class) out of bounds of @var{obj}.
+  def generic slice(obj @ 'S, key @ K) : 'E
+      where S isa Sliceable<K, E> ...
 }
 
--- Returns a deep copy of @var{obj}.
-def generic deep-copy(obj @ 'T) : 'T ...
-    where T isa Copyable
 
--- end of copyable.head
+--! An @type{OrderedSliceable} represents types which support range-slices.
+def type OrderedSliceable<K, E> : Sliceable<K, E>
+{
+  --! Returns a new ordered sliceable instance (probably of different type
+  --! than @var{obj}) containing the elements from @var{from} to @var{to}
+  --! exclusive, i.e. [@var{from}, @var{to}).
+  --!
+  --! An @type{OutOfBoundsException} should be raised when either
+  --! @var{from} or @var{to} are too large.  When @var{from} is >= @var{to}
+  --! the resulting sliceable is empty.
+  def generic slice(obj @ 'S, from @ K, to @ K) : 'T
+      where S isa OrderedSliceable<K, E>,
+            T isa OrderedSliceable<K, E> ...
+}
+
+
+--! @type{Sliceable!} represents mutable types with index-access.
+def type Sliceable!<E, K> : Sliceable<E, K>
+{
+  --! Sets @var{value} into @var{obj} at position @var{key}.
+  --!
+  --! => @var{obj}
+  def generic slice!(obj @ 'S, key @ K, value @ E) : 'S
+      where S isa Sliceable!<K, E> ...
+}
+
+-- end of sliceable.head
 

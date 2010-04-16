@@ -88,9 +88,6 @@ def core|to-string(self @ Assoc<'K, 'V>) : String
   StringBuffer().append(self.key, "->", self.value).to-string
 
 
----------------------------------------------------------------------------
--- <cat vis='hide'/>
-
 def class Triple<Key, Value, Tail>(_key : Key, _val : Value, _tail : Tail)
 {
   slot key : Key = _key
@@ -135,7 +132,7 @@ def empty!(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
   self.elts = 0
   self
 
-def size(self @ HashMap<'K, 'T>) : Ordinal
+def core|size(self @ HashMap<'K, 'T>) : Ordinal
   self.table.size
 
 def num-items(self @ HashMap<'K, 'T>) : Ordinal
@@ -164,7 +161,7 @@ def has-key?(self @ HashMap<'K, 'T>, key @ 'K) : Bool
       else
         loop(nl.tail)
     }
-  loop(self.table[key.hash mod self.table.size])
+  loop(self.table[key.hash mod self.table.num-items])
 
 
 def get(self @ HashMap<'K, 'T>, key @ 'K)
@@ -176,11 +173,11 @@ def get(self @ HashMap<'K, 'T>, key @ 'K)
       else
         loop(nl.tail)
     }
-  loop(self.table[key.hash mod self.table.size])
+  loop(self.table[key.hash mod self.table.num-items])
 
 
 def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) : HashMap
-  let hash = (key.hash mod self.table.size) as Ordinal
+  let hash = (key.hash mod self.table.num-items) as Ordinal
   let loop(nl) {
       if (nl.nil?) {
         self.table[hash] = Triple<'K, 'T, _>(key, obj, self.table[hash])
@@ -195,7 +192,7 @@ def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) : HashMap
 
   -- check if a resizement is necessary.  this is a slow method, but it
   -- uses other, checked functionality.
-  let ts = self.table.size
+  let ts = self.table.num-items
 
   if (self.elts >= (ts * 75) / 100) {
     let t2 = self.Type()(items: (ts * 15) / 10)
@@ -215,7 +212,7 @@ def put!(self @ HashMap<'K, 'T>, obj @ Assoc<'K, 'T>) : HashMap<'K, 'T>
 
 
 def remove!(self @ HashMap<'K, 'T>, key @ 'K) : HashMap<'K, 'T>
-  let hash = (key.hash mod self.table.size) as Ordinal
+  let hash = (key.hash mod self.table.num-items) as Ordinal
   let np = self.table[hash]
 
   if (np <> nil) {
@@ -239,7 +236,7 @@ def remove!(self @ HashMap<'K, 'T>, key @ 'K) : HashMap<'K, 'T>
   }
 
   -- check if a resizement of the dictionary is appropriate
-  let ts = self.table.size
+  let ts = self.table.num-items
 
   if (self.elts <= (ts * 15) / 100) {
     let t2 = self.Type()(items: ts / 2)
@@ -336,12 +333,12 @@ def deepen(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
 --       -- TODO
 --    -1
 
--- Returns a string representation of /self/ 
-def core|to-string(self @ HashMap<'K, 'T>) : String
+--! Returns a string representation of @var{map}
+def core|to-string(map @ HashMap<'K, 'T>) : String
   let sb = StringBuffer()
   sb.append("#(")
 
-  for (e in self)
+  for (e in map)
     sb.append(e.to-string)
       .append(" ")
 

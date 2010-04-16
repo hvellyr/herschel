@@ -6,7 +6,7 @@ def macro funcvar
                       def ?name (value) { ?name ## -var = value
                                           value } }
   { def funcvar ?name:name } ->
-                    { def ?name ## -var = #f
+                    { def ?name ## -var = false
                       def ?name () ?name ## -var
                       def ?name (value) { ?name ## -var = value
                                           value } }

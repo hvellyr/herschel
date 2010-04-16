@@ -137,7 +137,7 @@ def add(self @ List<'T>, elt @ 'T) : List<'T>
 
 def remove(self @ List<'T>, elt @ 'T) : List<'T>
   match (self.index-of(elt)) {
-    e : Eof       -> self
+    e : Bool      -> self
     idx : Ordinal -> {
                        self.remove-at(idx)
                        self
@@ -145,7 +145,7 @@ def remove(self @ List<'T>, elt @ 'T) : List<'T>
   }
 
 
-def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrEof
+def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrFalse
   let p = self.root
   let n : Ordinal = 0
 
@@ -155,14 +155,14 @@ def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrEof
     p = p.cdr
     n.incr!
   }
-  eof
+  false
 
 
 def contains?(self @ List<'T>, elt @ 'T) : Bool
   self.index-of(elt) isa Ordinal
 
 
-def size(self @ List<'T>) : Ordinal
+def core|size(self @ List<'T>) : Ordinal
   let n : Ordinal = 0
   for (p = self.root then p.cdr while p <> nil)
     n.incr!(p.car.size)

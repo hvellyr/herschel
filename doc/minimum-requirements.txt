@@ -3,21 +3,72 @@ Motivation
 The following points are things I would like to see in a mainstream
 programming language for daily use:
 
+  - common syntax (prob. C-like)
   - compile to native code
   - exceptions/conditions
   - first class classes
-  - first class functions ("closures")
+  - first class functions and closures
   - foster functional programming
   - garbage collection
-  - lexical scoped
+  - proper lexical scoped
+  - multiple return values
   - macros
   - multi dispatch functions
   - named parameters
   - namespaces
-  - object oriented
+  - object oriented, class-based, interfaces, polymorphism
   - parameterized classes
-  - subtyping vs. subclassing (support for interfaces, protocols)
   - simpler concurrency
+  - namespaces and modules
+  - operator overloading
+  - Keyword and rest parameters
+
+Here's what
+(http://steve-yegge.blogspot.com/2007/02/next-big-language.html) thinks the
+Next-Big-Thing will contain:
+
+
+Here's a short list of programming-language features that have become
+ad-hoc standards that everyone expects:
+
+                                                                        Heather?
+- Object-literal syntax for arrays and hashes                           yes
+- Array slicing and other intelligent collection operators              yes
+- Perl 5 compatible regular expression literals
++ Destructuring bind (e.g. x, y = returnTwoValues())                    yes
++ Function literals and first-class, non-broken closures                yes
++ Standard OOP with classes, instances, interfaces, polymorphism, etc.  (yes)
+- Visibility quantifiers (public/private/protected)
+- Iterators and generators                                              yes
+- List comprehensions                                                   yes
++ Namespaces and packages                                               yes
+- Cross-platform GUI                                                    future
++ Operator overloading                                                  yes
++ Keyword and rest parameters                                           yes
+- First-class parser and AST support                                    yes
+- Static typing and duck typing                                         yes
+- Type expressions and statically checkable semantics
+- Solid string and collection libraries                                 yes
+- Strings and streams act like collections                              yes
+ 
+Additionally, NBL will have first-class continuations and call/cc. I hear
+it may even (eventually) have a hygienic macro system, although not in any
+near-term release.
+
+Not sure about threads. I tend to think you need them, although of course
+they can be simulated with call/cc. I've also noticed that languages with
+poor threading support tend to use multiprocessing, which makes them more
+scalable across machines, since by the time you've set up IPC, distributing
+across machines isn't much of an architectural change. But I think threads
+(or equivalent) are still useful. Hopefully NBL has a story here.
+
+
+
+
+
+
+
+
 
 
 

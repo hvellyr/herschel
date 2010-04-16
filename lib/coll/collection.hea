@@ -34,8 +34,6 @@ interface coll ("eyestep/heather 1.0:collections")
 export public(ForEachVisitor,
               Collection,
               OrderedCollection,
-              SliceableCollection,
-              OrderedSliceableCollection,
               Sequence,
               Assoc,
               AssocCollection,
@@ -46,6 +44,7 @@ export public(ForEachVisitor,
               HashMap, Tree,
               MultiMap, SortedMultiMap)
 
+import "core/sliceable.head"
 
 ------------------------------------------------------------------------------
 -- base of all collections
@@ -58,74 +57,69 @@ def alias ForEachVisitor<T> = Function(elt @ T) : Bool
 --! independant functionality available for each container class
 def type Collection<T>
 {
-  def generic add-all(self @ 'C, other @ 'C) : 'C
+  def generic add-all(cltn @ 'C, other @ 'X) : 'C
       where C isa Collection<T> ...
-  def generic has-all?(self @ 'C, coll @ 'C) : Bool
+  def generic has-all?(cltn @ 'C, coll @ 'X) : Bool
       where C isa Collection<T> ...
-  def generic retain-all(self @ 'C, coll @ 'C) : 'C
+  def generic retain-all(cltn @ 'C, coll @ 'X) : 'C
       where C isa Collection<T> ...
-  def generic remove-all(self @ 'C, coll @ 'C) : 'C
-      where C isa Collection<T> ...
-
-  --! Returns the allocation size of @var{self} in octets
-  --!
-  --! This method must sum up the allocations size of all contained elements
-  --! and its own allocation size.  Note that this methods can never return 0
-  def generic size(self @ 'C) : Ordinal
+  def generic remove-all(cltn @ 'C, coll @ 'X) : 'C
       where C isa Collection<T> ...
 
-  --! Returns the number of contained elements of @var{self}
-  def generic num-items(self @ 'C) : Ordinal
+  --! Returns the number of contained elements of @var{cltn}
+  def generic num-items(cltn @ 'C) : Ordinal
       where C isa Collection<T> ...
 
-  --! Indicates whether @var{self} is empty, i.e. does not contain any element
-  def generic empty?(self @ 'C) : Bool
+  --! Indicates whether @var{cltn} is empty, i.e. does not contain any element
+  def generic empty?(cltn @ 'C) : Bool
       where C isa Collection<T> ...
 
   --! Removes all contained elements from @var{self}
   --!
-  --! => @var{self}
-  def generic empty!(self @ 'C) : 'C
+  --! => @var{cltn}
+  def generic empty!(cltn @ 'C) : 'C
       where C isa Collection<T> ...
 
-  --! Indicates whether @var{self} contains the element @var{elt}
+  --! Indicates whether @var{cltn} contains the element @var{elt}.
   --!
-  --! @var{elt} is compared to each contained element using 
+  --! @var{elt} is compared to each contained element using
   --!
-  --!   equal(contained-element, @var{elt})
-  def generic contains?(self @ 'C, elt @ T) : Bool
+  --! @example
+  --! equal(contained-element, @var{elt})
+  --! @end example
+  def generic contains?(cltn @ 'C, elt @ T) : Bool
       where C isa Collection<T> ...
 
-  --! Adds @var{elt} to @var{self}
+  --! Adds @var{elt} to @var{cltn}
   --!
   --! It is implementation dependant what happens when @var{elt} is already
-  --! contained in @var{self}.
+  --! contained in @var{cltn}.
   --!
-  --! => @var{self}
-  def generic add(self @ 'C, elt @ T) : 'C
+  --! => @var{cltn}
+  def generic add(cltn @ 'C, elt @ T) : 'C
       where C isa Collection<T> ...
 
-  --! Remove @var{elt} from @var{self}
+  --! Remove @var{elt} from @var{cltn}
   --!
-  --! The method ignore silently if @var{elt} is not contained in @var{self} at
-  --! all.
+  --! The method ignore silently if @var{elt} is not contained in
+  --! @var{cltn} at all.
   --!
-  --! => @var{self}
-  def generic remove(self @ 'C, elt @ T) : 'C
+  --! => @var{cltn}
+  def generic remove(cltn @ 'C, elt @ T) : 'C
       where C isa Collection<T> ...
 
-  --! Returns an iterator over the contained elements in @var{self}
+  --! Returns an iterator over the contained elements in @var{cltn}
   --!
-  --! The order of elements delivered by the returned iterator dependants on
-  --! the algorithm used by @var{self}.
-  def generic iterator(self @ 'C) : Iterator<T>
+  --! The order of elements delivered by the returned iterator dependants
+  --! on the algorithm used by @var{cltn}.
+  def generic iterator(cltn @ 'C) : Iterator<T>
       where C isa Collection<T> ...
 
 
-  --! Apply @var{functor} on ach contained element in @var{self}
+  --! Apply @var{functor} on ach contained element in @var{cltn}
   --!
-  --! => @var{self}
-  def generic for-each(self @ 'C, func : ForEachVisitor<T>) : 'C
+  --! => @var{cltn}
+  def generic for-each(cltn @ 'C, func : ForEachVisitor<T>) : 'C
       where C isa Collection<T> ...
 }
 
@@ -134,32 +128,10 @@ def type Collection<T>
 ------------------------------------------------------------------------------
 def type OrderedCollection<T> : Collection<T>
 {
-  def generic first(self @ 'C) : T
+  def generic first(cltn @ 'C) : T
       where C isa OrderedCollection<T> ...
-  def generic last(self @ 'C) : T
+  def generic last(cltn @ 'C) : T
       where C isa OrderedCollection<T> ...
-}
-
-
-------------------------------------------------------------------------------
--- slice access
-------------------------------------------------------------------------------
-def type SliceableCollection<K, E>
-{
-  def generic slice(self @ 'S, key @ K) : E
-      where S isa SliceableCollection<K, E> ...
-  def generic slice!(self @ 'S, key @ K, value @ E) : 'S
-      where S isa SliceableCollection<K, E> ...
-}
-
-
-------------------------------------------------------------------------------
--- slice access with range
-------------------------------------------------------------------------------
-def type OrderedSliceableCollection<K, E> : SliceableCollection<K, E>
-{
-  def generic slice(self @ 'C, from @ K, to @ K) : Collection<E>
-      where C isa OrderedSliceableCollection<K, E> ...
 }
 
 
@@ -168,26 +140,27 @@ def type OrderedSliceableCollection<K, E> : SliceableCollection<K, E>
 ------------------------------------------------------------------------------
 def type Sequence<T> : (Collection<T>,
                         OrderedCollection<T>,
-                        OrderedSliceableCollection<Ordinal, T> )
+                        Sliceable!<Ordinal, T>,
+                        OrderedSliceable<Ordinal, T> )
 {
-  def generic insert(self @ 'S, value @ T, before-index : Ordinal) : 'S
+  def generic insert(cltn @ 'S, value @ T, before-index : Ordinal) : 'S
       where S isa Sequence<T> ...
-  def generic remove-at(self @ 'S, index : Ordinal) : T
-      where S isa Sequence<T> ...
-
-  def generic swap(self @ 'S, from-idx : Ordinal, to-idx : Ordinal) : 'S
+  def generic remove-at(cltn @ 'S, index : Ordinal) : T
       where S isa Sequence<T> ...
 
-  def generic sort(self @ 'S) : 'S
-      where S isa Sequence<T> ...
-  def generic sort!(self @ 'S) : 'S
-      where S isa Sequence<T> ...
-  def generic reverse(self @ 'S) : 'S
-      where S isa Sequence<T> ...
-  def generic reverse!(self @ 'S) : 'S
+  def generic swap(cltn @ 'S, from-idx : Ordinal, to-idx : Ordinal) : 'S
       where S isa Sequence<T> ...
 
-  def generic index-of(self @ 'S, elt @ T) : OrdinalOrEof
+  def generic sort(cltn @ 'S) : 'S
+      where S isa Sequence<T> ...
+  def generic sort!(cltn @ 'S) : 'S
+      where S isa Sequence<T> ...
+  def generic reverse(cltn @ 'S) : 'S
+      where S isa Sequence<T> ...
+  def generic reverse!(cltn @ 'S) : 'S
+      where S isa Sequence<T> ...
+
+  def generic index-of(cltn @ 'S, elt @ T) : OrdinalOrFalse
       where S isa Sequence<T> ...
 }
 
@@ -204,30 +177,30 @@ def class Assoc<K, V>(_key : K, _val : V)
 
 def type AssocCollection<K, V> : Collection<Assoc<K, V> >
 {
-  def generic key-iterator(self @ 'C) : Iterator<K>
+  def generic key-iterator(cltn @ 'C) : Iterator<K>
       where C isa AssocCollection<K, V> ...
-  def generic value-iterator(self @ 'C) : Iterator<K>
-      where C isa AssocCollection<K, V> ...
-
-  def generic has-key?(self @ 'C, key @ K) : Bool
-      where C isa AssocCollection<K, V> ...
-  def generic get(self @ 'C, key @ K) : Value
-      where C isa AssocCollection<K, V> ...
-  def generic put(self @ 'C, key @ K, value @ V) : 'C
-      where C isa AssocCollection<K, V> ...
-  def generic remove(self @ 'C, key @ K) : 'C
+  def generic value-iterator(cltn @ 'C) : Iterator<K>
       where C isa AssocCollection<K, V> ...
 
-  def generic keys(self @ 'C) : Collection<K>
+  def generic has-key?(cltn @ 'C, key @ K) : Bool
       where C isa AssocCollection<K, V> ...
-  def generic values(self @ 'C) : Collection<K>
+  def generic get(cltn @ 'C, key @ K) : Value
+      where C isa AssocCollection<K, V> ...
+  def generic put(cltn @ 'C, key @ K, value @ V) : 'C
+      where C isa AssocCollection<K, V> ...
+  def generic remove(cltn @ 'C, key @ K) : 'C
       where C isa AssocCollection<K, V> ...
 
-  def generic has-all-keys?(self @ 'A, keys @ Collection<K>) : Bool
+  def generic keys(cltn @ 'C) : Collection<K>
+      where C isa AssocCollection<K, V> ...
+  def generic values(cltn @ 'C) : Collection<K>
+      where C isa AssocCollection<K, V> ...
+
+  def generic has-all-keys?(cltn @ 'A, keys @ Collection<K>) : Bool
       where C isa AssocCollection<K, V> ...             ...
-  def generic remove-all-keys(self @ 'C, keys @ Collection<K>) : 'C
+  def generic remove-all-keys(cltn @ 'C, keys @ Collection<K>) : 'C
       where C isa AssocCollection<K, V> ...
-  def generic retain-all-keys(self @ 'C, keys @ Collection<K>) : 'C
+  def generic retain-all-keys(cltn @ 'C, keys @ Collection<K>) : 'C
       where C isa AssocCollection<K, V> ...
 }
 
@@ -244,7 +217,8 @@ def class Set<T> : Collection<T>
 
 -- aka TreeSet
 def class SortedSet<T> : (OrderedCollection<T>,
-                          OrderedSliceableCollection<T, T>)
+                          Sliceable!<T, T>,
+                          OrderedSliceable<T, T>)
 {
   -- todo
 }
@@ -259,7 +233,8 @@ def class Bag<T> : Collection<T>
 
 -- aka MultiTreeSet
 def class SortedBag<T> : (OrderedCollection<T>,
-                          OrderedSliceableCollection<T, T>)
+                          Sliceable!<T, T>,
+                          OrderedSliceable<T, T>)
 {
   -- todo
 }
@@ -269,7 +244,7 @@ def class Vector<T> : Sequence<T>
 {
   -- todo
 
-  def generic resize(self @ Vector<T>) : Vector<T> ...
+  def generic resize(cltn @ Vector<T>) : Vector<T> ...
 }
 
 
@@ -289,7 +264,7 @@ def class Deque<T> : Sequence<T>
 
 
 def class HashMap<K, V> : (AssocCollection<K, V>,
-                           SliceableCollection<K, V>)
+                           Sliceable!<K, V>)
 {
   -- todo
 }
@@ -297,14 +272,15 @@ def class HashMap<K, V> : (AssocCollection<K, V>,
 
 def class Tree<K, V> : (AssocCollection<K, V>,
                         OrderedCollection<K>,
-                        OrderedSliceableCollection<K, V>)
+                        Sliceable!<K, V>,
+                        OrderedSliceable<K, V>)
 {
   -- todo
 }
 
 
 def class MultiMap<K, V> : (AssocCollection<K, V>,
-                            SliceableCollection<K, V>)
+                            Sliceable!<K, V>)
 {
   -- todo
 }
@@ -312,7 +288,8 @@ def class MultiMap<K, V> : (AssocCollection<K, V>,
 
 def class SortedMultiMap<K, V> : (AssocCollection<K, V>,
                                   OrderedCollection<K, V>,
-                                  OrderedSliceableCollection<K, V>)
+                                  Sliceable!<K, V>,
+                                  OrderedSliceable<K, V>)
 {
   -- todo
 }

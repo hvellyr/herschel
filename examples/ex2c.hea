@@ -1,4 +1,4 @@
-namespace abc("de.sijo.abc")
+module abc("de.sijo.abc")
 
 def macro cvar
 {
@@ -7,7 +7,7 @@ def macro cvar
 }
 
 
-namespace xyz("de.sijo.xyz")
+module xyz("de.sijo.xyz")
 
 def f()
   let cvar y = 11

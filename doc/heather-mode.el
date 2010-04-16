@@ -54,6 +54,7 @@
 ;;
 ;;   (autoload 'heather-mode "heather-mode" "Heather Mode" t)
 ;;   (setq auto-mode-alist (cons '("\\.hea\\'" . heather-mode) auto-mode-alist))
+;;   (setq auto-mode-alist (cons '("\\.head\\'" . heather-mode) auto-mode-alist))
 
 
 ;; ----------------------------------------------------------------------
@@ -150,19 +151,20 @@
 (modify-syntax-entry ?\@ "."	  heather-mode-syntax-table)
 ;; string
 (modify-syntax-entry ?\' "."    heather-mode-syntax-table)
+(modify-syntax-entry ?\` "."    heather-mode-syntax-table)
 (modify-syntax-entry ?\" "\""   heather-mode-syntax-table)
 ;; words and symbols
 (modify-syntax-entry ?\% "w"    heather-mode-syntax-table)
 (modify-syntax-entry ?\/ "w"    heather-mode-syntax-table)
 (modify-syntax-entry ?\+ "."    heather-mode-syntax-table)
-(modify-syntax-entry ?\- "."    heather-mode-syntax-table)
+;(modify-syntax-entry ?\- "."    heather-mode-syntax-table)
 (modify-syntax-entry ?\* "."    heather-mode-syntax-table)
 (modify-syntax-entry ?\: "."    heather-mode-syntax-table)
 (modify-syntax-entry ?\! "w"    heather-mode-syntax-table)
 (modify-syntax-entry ?\? "w"    heather-mode-syntax-table)
 (modify-syntax-entry ?\_ "w"	  heather-mode-syntax-table)
-(modify-syntax-entry ?\# "w"	  heather-mode-syntax-table)
-(modify-syntax-entry ?\& "w"	  heather-mode-syntax-table)
+(modify-syntax-entry ?\# "."	  heather-mode-syntax-table)
+(modify-syntax-entry ?\& "."	  heather-mode-syntax-table)
 (modify-syntax-entry ?\$ "w"  	heather-mode-syntax-table)
 ;; parentheses to match
 (modify-syntax-entry ?\( "()"   heather-mode-syntax-table)
@@ -172,7 +174,7 @@
 (modify-syntax-entry ?\{ "(}"   heather-mode-syntax-table)
 (modify-syntax-entry ?\} "){"   heather-mode-syntax-table)
 
-;;(modify-syntax-entry ?\; "<"    heather-mode-syntax-table)
+(modify-syntax-entry ?\- ". 12" heather-mode-syntax-table)
 (modify-syntax-entry ?\n ">"    heather-mode-syntax-table)
 
 
@@ -236,6 +238,7 @@ Key bindings:
   (set-syntax-table heather-mode-syntax-table)
 
   ;; set local variables
+  (set (make-local-variable 'comment-start-skip) "\\(--[!]?\\) *")
   (set (make-local-variable 'comment-start) "--")
   (set (make-local-variable 'comment-end) "")
   (set (make-local-variable 'comment-column) 40)
@@ -287,10 +290,16 @@ Key bindings:
 ;; ----------------------------------------------------------------------
 (defconst heather-keywords
   '(
-    "namespace" "import" "def" "let"
-    "type" "class" "macro" "meth" "alias" "fluid" "const"
+    "module" "interface" "import" "export" "extend"
+    "def" "let"
+    "type" "class" "macro" "alias" "fluid" "const" "generic" "enum" "char"
+    "measure" "unit"
     "slot" "slot!"
-    "if" "else" "on"
+    "if" "else" "on" "otherwise"
+    "public" "private" "protected" "final"
+    "where"
+    "function"
+    "init" "delete" "signal" "exit" "sync"
     )
   "List of Heather keywords.")
 
@@ -299,30 +308,35 @@ Key bindings:
     "Any"
     "Bool" "Char"
     "Int" "Rational" "Real" "Complex" "Short" "UShort" "Word" "UWord"
-    "Long" "ULong" "Float" "Double" "LongDouble"
+    "Long" "ULong" "Float" "Double" "LongDouble" "Octet" "Ordinal"
     "String"
     "Vector"
     "Number" "ExactNumber" "ApproxNumber" "Ordered" "Unordered"
+    "ApproxInt" "ApproxFloat"
+    "Function"
+    "Nil" "Eof" "Unspecified"
     )
   "List of Heather predefined types.")
 
 (defconst heather-builtin
   '(
-    "for" "select" "until" "then" "while"
+    "for" "until" "while" "then"
+    "select" "match"
+    "nil" "eof" "true" "false" "unspecified"
+    "return" "break" "continue"
     )
   "List of heather special forms.")
 
 (defconst heather-operator
   '(
-    "and" "or" "mod" "by" "in" "not"
+    "and" "or" "mod" "by" "in" "not" "isa" "xor" "as" "AND" "OR" "XOR"
     ".." "..." "<" ">" "==" "<>" "<=" ">=" "<=>"
-    "%"
+    "%" "<<" ">>" "->"
     )
   "List of heather operators.")
 
 (defconst heather-constants
   '(
-    "#nil" "#t" "#f" "#eof" "#true" "#false" "#function" "#func"
     )
   "List of heather predefined constants.")
 
@@ -384,51 +398,57 @@ Key bindings:
 
 (defvar heather-font-lock-keywords
   (list
-   ;; highlight comments
-   '("\\(--.*\\)" (1 font-lock-comment-face))
-
    ;; highlight keywords
    (list heather-keywords-regexp 1 'font-lock-keyword-face)
 
-   ;; highlight keywords (begining with ')
+   ;; highlight generics parameter (begining with ')
    '("\\('[a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
+     (1 heather-font-lock-type-def-face))
+
+   ;; highlight keywords (begining with ')
+   '("\\(#[a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
      (1 font-lock-constant-face))
+
+   ;; highlight parameters and types
+   '("\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-+\\(:\\|@\\)\\s-*\\(`\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
+     (1 font-lock-variable-name-face)
+     (4 font-lock-type-face))
+   ;; highlight generics
+   '("`\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
+     (1 font-lock-type-face))
 
    ;; highlight parameter names (ending with ':')
    '("\\<\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\>:"
      (1 heather-font-lock-param-name-face))
 
    ;; highlight function, method, hook declarations.
-   '("\\(def\\|let\\|on\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-*("
+   '("on\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*("
      (2 font-lock-function-name-face))
-   '("def\\s-+meth\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-*("
-     (1 font-lock-function-name-face))
 
-   ;; highlight type parameters
-   ;; '("#<\\([^>]*\\)>"
-   ;; (1 heather-font-lock-type-def-face))
+   '("def\\s-+\\(\\(final\\|abstract\\)\\s-+\\)?\\(\\(generic\\)\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*("
+     (5 font-lock-function-name-face))
 
    ;; highlight type and class declarations.
-   '("def\\s-+\\(type\\|class\\|alias\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-*"
-     (2 heather-font-lock-type-def-face))
+   '("def\\s-+\\(\\(final\\|abstract\\|singleton\\)\\s-+\\)?\\(type\\|class\\|alias\\|enum\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)"
+     (4 heather-font-lock-type-def-face))
+
+   ;; highlight local declarations.
+   '("let\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*("
+     (1 font-lock-function-name-face))
+
 
    ;; highlight variable declarations.
-   '("\\(def\\|let\\)\\s-+\\([a-zA-Z-_$?!&%|]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*"
-     (2 font-lock-variable-name-face))
-   '("\\(def\\|let\\)\\s-+\\(fluid\\|const\\)\\s-+\\([a-zA-Z-_$?!&%|]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*"
-     (3 font-lock-variable-name-face))
+   '("\\(def\\|let\\)\\s-+\\(\\(const\\|fluid\\)\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*\\(:\\|=\\)"
+     (4 font-lock-variable-name-face))
+
    '("slot\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-*"
      (1 font-lock-variable-name-face))
 
-   ;; highlight parameters and types
-   '("\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-+:\\s-*\\(@\\)?\\s-*\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
-     (1 font-lock-variable-name-face)
-     (3 font-lock-type-face))
 
    ;; highlight types
    (list heather-types-regexp 1 'font-lock-type-face)
    ;; highlight constants
-   (list heather-constants-regexp 1 'font-lock-constant-face)
+   ;(list heather-constants-regexp 1 'font-lock-constant-face)
    ;; highlight predefined functions, tasks and methods
    (list heather-builtin-regexp 1 'font-lock-builtin-face)
    ;; highlight predefined operators
@@ -483,6 +503,7 @@ Key bindings:
     (t (:weight bold)))
   "Face name for type definition names."
   :group 'font-lock-highlighting-faces)
+
 
 (defun heather-fontify-buffer ()
   "Fontify buffer."
@@ -1109,7 +1130,7 @@ Calls `indent-region' for whole buffer."
 (defvar heather-abbrev-list
   (append
    (list nil) heather-keywords
-;;	  (list nil) heather-types
+	  (list nil) heather-types
 	  (list nil) heather-builtin
 	  (list nil) heather-constants)
   "Predefined abbreviations for Heather.")

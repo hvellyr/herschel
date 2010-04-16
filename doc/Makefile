@@ -1,13 +1,15 @@
-PDF: heather.pdf
+pdf: heather.pdf
 
-HTML: html/heather.html
+html: html/heather.html
 
-heather.pdf: heather.texinfo
+info: heather.info
+
+heather.pdf: heather.texinfo texinfo.tex
 	texi2pdf heather.texinfo
 
-heather.info: heather.texinfo
+heather.info: heather.texinfo texinfo.tex
 	makeinfo heather.texinfo
 
-html/heather.html: heather.texinfo
+html/heather.html: heather.texinfo texinfo.tex
 	if test ! -d html; then mkdir html; fi; \
 	texi2html --output=html --noheader --nomenu --split=chapter heather.texinfo

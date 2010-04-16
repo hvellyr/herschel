@@ -35,9 +35,10 @@ export public(Pair, value-iterator)
 
 import(core)
 
--- Simple LISP like pair/list implementation.
---
--- You can simulate the basic lisp style (cons a b) in heather with Pair(a, b).
+--! Simple LISP like pair/list implementation.
+--!
+--! You can simulate the basic lisp style (cons a b) in heather with
+--! Pair(a, b).
 def class Pair<Car, Cdr>(car: _car : Car = nil,
                          cdr: _cdr : Cdr = nil)
 {
@@ -103,12 +104,13 @@ def core|end?(pair @ PairIterator<'Elt, 'AccType>) : Bool
 
 
 
---! Returns an iterator over the car branches of a linked nodes
+--! Returns an iterator over the car branches of @var{pair}.
 def value-iterator(pair @ Pair<'Elt, 'AccType>) : Iterator<'Elt>
   PairIterator<'Elt, 'AccType>(pair, function(node) { node.car })
 
 
---! Returns an iterator over all linked nodes by following the cdr chain
+--! Returns an iterator over all linked nodes of @var{pair} by following
+--! the cdr chain.
 def iterator(pair @ Pair<'Elt, 'AccType>) : Iterator<'Elt>
   PairIterator<'Elt, 'AccType>(pair, function(node) { node })
 

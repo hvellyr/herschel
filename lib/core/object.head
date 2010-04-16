@@ -31,33 +31,18 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 interface core ("eyestep/heather 1.0:core")
-export public(Comparable)
+export public(*)
 
-def type Comparable
-{
-  -- Compare value @var{one} with @var{two}.
-  --
-  -- => 0 if @var{one} and @var{two} are equal; a value > 0 if @var{one} is
-  -- greater than @var{two}, and a value below 0 if @var{one} is less.
-  def generic compare(one @ 'S, two @ 'T) : Int ...
-}
 
--- Indicate whether @var{one} is equal to @var{two}.
-def generic equal?(one @ 'S, two @ 'T) : Bool ...
+--! Returns the allocation size of @var{self} in octets.
+--!
+--! This method returns the sum of the allocations size of the base
+--! instance plus all slots which are treated as composition (i.e. which
+--! @var{self} owns).
+--!
+--! Note that this methods can never return 0
+def generic size(obj @ Any) : Ordinal ...
 
--- Indicate whether @var{one} is not equal to @var{two}.
-def generic unequal?(one @ 'S, two @ 'T) : Bool ...
+def generic hash-code(obj @ Any) : UWord ...
 
--- Indicate whether @var{one} is less than @var{two}.
-def generic less?(one @ 'S, two @ 'T) : Bool ...
-
--- Indicate whether @var{one} is less than or equal to @var{two}.
-def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
-
--- Indicate whether @var{one} is greater than @var{two}.
-def generic greater?(one @ 'S, two @ 'T) : Bool ...
-
--- Indicate whether @var{one} is greater than or equal to @var{two}.
-def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
-
--- end of comparable.head
+-- end of object.head
