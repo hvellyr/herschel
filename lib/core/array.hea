@@ -37,14 +37,13 @@ export public(*)
 --! otherwise returns the comparison result between the first two differing
 --! elements.  Zero-length arrays are always identical.
 def compare(one @ Sliceable<Ordinal, 'T>, two @ Sliceable<Ordinal, 'T>) : Int
---  also-as (one @ 'T[], two @ 'T[]) : Int,
---          (one @ 'T[], two @ Slice<Ordinal, 'T>) : Int
+    reify (one @ 'T[], two @ 'T[]) : Int,
+          (one @ 'T[], two @ Slice<Ordinal, 'T>) : Int
   let n = one.num-items
   if (n == two.num-items) {
-    for (i1 : Ordinal = 0 then i1 + 1 while i1 < n,
-         i2 : Ordinal = 0 then i2 + 1)
+    for (i : Ordinal = 0 then i + 1 while i < n)
     {
-      let cmpval = one[i1] <=> two[i2]
+      let cmpval = one[i] <=> two[i]
       if (cmpval <> 0)
         break(cmpval)
     }
