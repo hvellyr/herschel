@@ -297,7 +297,7 @@ Key bindings:
     "slot" "slot!"
     "if" "else" "on" "otherwise"
     "public" "private" "protected" "final"
-    "where"
+    "reify" "where"
     "function"
     "init" "delete" "signal" "exit" "sync"
     )
@@ -410,7 +410,7 @@ Key bindings:
      (1 font-lock-constant-face))
 
    ;; highlight parameters and types
-   '("\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-+\\(:\\|@\\)\\s-*\\(`\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
+   '("\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-+\\(:\\|@\\)\\s-*\\('\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
      (1 font-lock-variable-name-face)
      (4 font-lock-type-face))
    ;; highlight generics
@@ -427,6 +427,9 @@ Key bindings:
 
    '("def\\s-+\\(\\(final\\|abstract\\)\\s-+\\)?\\(\\(generic\\)\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*("
      (5 font-lock-function-name-face))
+
+   '("\\(module\\|interface\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)"
+     (2 font-lock-function-name-face))
 
    ;; highlight type and class declarations.
    '("def\\s-+\\(\\(final\\|abstract\\|singleton\\)\\s-+\\)?\\(type\\|class\\|alias\\|enum\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)"

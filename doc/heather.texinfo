@@ -322,9 +322,9 @@ extend    false     final     fluid     for       Function  function
 generic   if        ignore    import    in        init      interface
 isa       let       macro     match     measure   mod       module
 nil       not       on        OR        or        otherwise protected
-public    select    slot      slot!     sync      then      true
-type      unit      until     version   when      where     while
-XOR
+public    reify     select    slot      slot!     sync      then
+true      type      unit      until     version   when      where
+while     XOR
 @end verbatim
 
 
@@ -586,16 +586,18 @@ system.
 
 @menu
 * Standalone Functions::        Standalone Functions
-* Generic Functions::           Generic Functions
 * Positional Parameters::       Positional Parameters
 * Named parameters::            Named parameters
 * Optional parameters::         Optional parameters
 * Mixed parameters::            Mixed parameters
+* Generic Functions::           Generic Functions
+* Method lookup::               Method lookup
+* Method reification::          Explicit Method Reification
 @end menu
 
 
 @c --------------------------------------------------------------------
-@node Standalone Functions, Generic Functions, Functions, Functions
+@node Standalone Functions, Positional Parameters, Functions, Functions
 @section Standalone Functions
 
 Standalone functions are not bound to any particular type.  They are
@@ -651,109 +653,7 @@ def ack(x : Int, y : Int) : Int ...
 
 
 @c --------------------------------------------------------------------
-@node Generic Functions, Positional Parameters, Standalone Functions, Functions
-@section Generic Functions
-
-Generic functions are specialized by one or more parameters to certain
-types.  They are declared using the @code{generic} modifier.
-
-@cindex generic functions, defining
-@findex def generic
-@findex generic
-@deffn Special def @code{generic} @var{name} ([@var{parameters}]) @
-       [@code{:} @var{return-type}] ...
-@deffnx Special def @code{generic} @var{name} ([@var{parameters}]) @
-       [@code{:} @var{return-type}] @
-       @var{function-body}
-
-@findex ... @r{(abstract function notation)}
-Defines a generic function named @var{name}.  The first form (with the
-left out body) defines an abstract generic function signature without
-specialization.  The second form (incl. the body) defines the generic
-function and provides a default specialization.
-
-@findex @@ @r{(specialization marker)}
-Parameters are specialized by adding their type using the `@@'
-delimiter.  Only positional parameters can be specialized.  It is an
-error if a function is declared as generic using the @code{generic}
-keyword but no parameter is marked as specializable.
-
-Generic functions must be defined at least once.  Multiple generic
-definitions must be compatible in return type (co-variant) and the types
-of non-specialized parameters.  A generic function specialization (a
-@dfn{method}) must not be defined before its generic method definition
-has been seen.
-
-It's possible to define an empty, i.e.@ abstract, generic function:
-
-@example
-def generic compare(one @@ OneType, two @@ TwoType) : Bool ...
-@end example
-
-Note the ellipsis @code{...} at the end of the line.
-
-To put it another way: defining a generic function with a body
-implementation is like defining an abstract generic function with
-certain parameters specialized to @code{Any} @emph{and} adding a
-default implementation:
-
-@example
-def generic add-x(self @@ Any, value @@ Any) ...
-
-def add-x(self @@ XMap, value @@ Int)
-  self.insert(value, -1)
-@end example
-
-Implementing a specialized function may re-state the @code{generic}
-keyword; the specialized parameters must be marked as specialized
-however (using the @@ marker).  Re-stating the @code{generic} keyword is
-generally not recommend, since it may hide overwrite
-ambiguities.@footnote{A specialized method @code{m()} requires a
-matching generic function @code{g()} begin declared somewhere before.
-If the generic function is later changed during maintenance the compiler
-will complain about the method not matching any known generic function.
-This is comparable to the @code{overwrite} modifier in languages like
-@acronym{D} or @acronym{C#}.}
-
-When applying (i.e.@ calling) a generic function the method is looked up
-by name (like a normal standalone function) and matching the parameter
-types to specialized parameters.  Resolve order is always from first to
-last parameter.  For each parameter the most specific type matches.
-
-Method specialization must be co-variant with their generic function:
-
-@example
-def generic f(x @@ Any) : Number ...
-
-def f(x @@ Int) : Int ...                @result{} ok
-def f(x @@ Real) : Real ...              @result{} ok
-def f(x @@ String) : String ...          @result{} error
-@end example
-
-@end deffn
-
-
-@deffn Special next-method ()
-Inside generic functions @code{next-method} calls the next overwritten
-method with exactly the same parameters as the current active function.
-This resembles somewhat a call to @code{super} in other programming
-languages.
-
-@example
-def generic before-open(self @@ Document) : Bool
-  if (next-method()) @{
-    self.fill-in-dsp-tables
-    true
-  @}
-  else
-    false
-@end example
-
-@end deffn
-
-
-@c --------------------------------------------------------------------
-@node Positional Parameters, Named parameters, Generic Functions, Functions
+@node Positional Parameters, Named parameters, Standalone Functions, Functions
 @section Positional Parameters
 
 Positional parameters:
@@ -871,7 +771,7 @@ def f(args : &(String, Uri, Boolean)[] ...) ...
 
 
 @c --------------------------------------------------------------------
-@node Mixed parameters,  , Optional parameters, Functions
+@node Mixed parameters, Generic Functions, Optional parameters, Functions
 @section Mixture of the parameter types
 
 When using positional, keywords and optional parameters at the same time
@@ -919,6 +819,200 @@ f(1, 2, 3, z: 1, g: 2, h: 3)
    e -> 25
    f -> #[#g, 2, #h, 3, #z, 1]
 @end example
+
+
+@c --------------------------------------------------------------------
+@node Generic Functions, Method lookup, Mixed parameters, Functions
+@section Generic Functions
+
+Generic functions are specialized by one or more parameters to certain
+types.  They are declared using the @code{generic} modifier.
+
+@cindex generic functions, defining
+@findex def generic
+@findex generic
+@deffn Special def @code{generic} @var{name} ([@var{parameters}]) @
+       [@code{:} @var{return-type}] ...
+@deffnx Special def @code{generic} @var{name} ([@var{parameters}]) @
+       [@code{:} @var{return-type}] @
+       @var{function-body}
+
+@findex ... @r{(abstract function notation)}
+Defines a generic function named @var{name}.  The first form (with the
+left out body) defines an abstract generic function signature without
+specialization.  The second form (incl. the body) defines the generic
+function and provides a default specialization.
+
+@findex @@ @r{(specialization marker)}
+Parameters are specialized by adding their type using the `@@'
+delimiter.  Only positional parameters can be specialized.  It is an
+error if a function is declared as generic using the @code{generic}
+keyword but no parameter is marked as specializable.
+
+Generic functions must be defined at least once.  Multiple generic
+definitions must be compatible in return type (co-variant) and the types
+of non-specialized parameters.  A generic function specialization (a
+@dfn{method}) must not be defined before its generic method definition
+has been seen.
+
+It's possible to define an empty, i.e.@ abstract, generic function:
+
+@example
+def generic compare(one @@ OneType, two @@ TwoType) : Bool ...
+@end example
+
+Note the ellipsis @code{...} at the end of the line.
+
+To put it another way: defining a generic function with a body
+implementation is like defining an abstract generic function with
+certain parameters specialized to @code{Any} @emph{and} adding a
+default implementation:
+
+@example
+def generic add-x(self @@ Any, value @@ Any) ...
+
+def add-x(self @@ XMap, value @@ Int)
+  self.insert(value, -1)
+@end example
+
+Implementing a specialized function may restate the @code{generic}
+keyword; the specialized parameters must be marked as specialized
+however (using the @@ marker).  Restating the @code{generic} keyword is
+generally not recommend, since it may hide overwrite
+ambiguities.@footnote{A specialized method @code{m()} requires a
+matching generic function @code{g()} being declared somewhere before.
+If the generic function is later changed during maintenance the compiler
+will complain about the method not matching any known generic function.
+This is comparable to the @code{overwrite} modifier in languages like
+@acronym{D} or @acronym{C#}.}
+
+Method specialization must be co-variant with their generic function:
+
+@example
+def generic f(x @@ Any) : Number ...
+
+def f(x @@ Int) : Int ...                @result{} ok
+def f(x @@ Real) : Real ...              @result{} ok
+def f(x @@ String) : String ...          @result{} error
+@end example
+
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Method lookup, Method reification, Generic Functions, Functions
+@section Method lookup
+
+When applying (i.e.@ calling) a generic function the method is looked up
+by name (like a normal standalone function) and matching the parameter
+types to specialized parameters.  Resolve order is always from first to
+last parameter.  For each parameter the most specific type matches.
+
+@verbatim
+Extend
+@end verbatim
+
+When a matching function is called it can propagate the function call to
+the next function using the @code{next-method} call.
+
+@deffn Special next-method ()
+Inside generic functions @code{next-method} calls the next overwritten
+method with exactly the same parameters as the current active function.
+Since methods have a defined matching order the next method is the one
+which matches less precise than the current called one.
+
+This resembles somewhat a call to @code{super} in other programming
+languages.
+
+@example
+def generic before-open(self @@ Document) : Bool
+  if (next-method()) @{
+    self.fill-in-dsp-tables
+    true
+  @}
+  else
+    false
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Method reification,  , Method lookup, Functions
+@section Explicit Method Reification
+
+Normaly methods are implemented in a very general; i.e.@ special
+implementation for different types are normaly avoided to prevent code
+duplication.  In most cases functions can be written in a very general
+way in heather.  This could lead to suboptimal performance since the
+compiler can't generate code optimized for special type properties.
+
+For example:
+
+@example
+def compare(one @@ Sliceable<Ordinal, 'T>,
+            two @@ Sliceable<Ordinal, 'T>) : Int
+  let n = one.num-items
+  if (n == two.num-items) @{
+    for (i : Ordinal = 0 then i + 1 while i < n) @{
+      let cmpval = one[i] <=> two[i]
+      if (cmpval <> 0)
+        break(cmpval)
+    @}
+    else
+      0
+  @}
+  else if (one.num-items < two.num-items)
+    1
+  else
+    -1
+@end example
+
+This @code{compare} function matches for all sliceable types, i.e.@
+arrays, collections, and even strings.  The compiler can't use optimized
+arrays access however for the expressions @code{one[i]} or @code{two[i]}
+-- since it can't assume @code{one} or @code{two} being arrays.
+
+@deffn Special reify
+The @code{reify} extension to method definition can be used to hint the
+compiler to treat the method declaration as if it would have been
+declared in addition to the explicitly written form also with the
+signatures listed by the @code{reify} extension.
+
+The @code{reify} extension as the form:
+
+@example
+def @var{name}(@var{function-parameters}) : @var{return-type}
+  reify (@var{alt-func-params1}) : @var{alt-return-type1},
+        (@var{alt-func-params2}) : @var{alt-return-type2},
+        ...
+  @var{function-body}
+@end example
+
+All signatures (@var{function-parameters}, @var{alt-func-params1},
+@var{alt-func-params2}) must have the parameter layout, i.e.@ the number
+of positional and named parameters must be identical, etc.
+
+For the example above this could look like:
+
+@example
+def compare(one @@ Sliceable<Ordinal, 'T>,
+            two @@ Sliceable<Ordinal, 'T>) : Int
+    reify (one @ 'T[], two @ 'T[]) : Int,
+          (one @ 'T[], two @ Slice<Ordinal, 'T>) : Int
+  let n = one.num-items
+  if (n == two.num-items) @{
+    for (i : Ordinal = 0 then i + 1 while i < n)
+    @{
+      ...
+@end example
+
+This hints the compiler to compile (and optimize) the code for three
+different type combination.
+
+The @code{reify} declaration is only possible for implementations, i.e.@
+an abstract function declaration can not be explicitly reified as
+different specializations.
+@end deffn
 
 
 @c ====================================================================
@@ -1496,6 +1590,11 @@ def add-from-vector(dst @@ Container<'T>,
 
 Here the type parameter @code{T} is required to be at least a
 @code{Comparable} and @code{K} is only allowed to be a positive number.
+
+The @code{where} clause is only a syntactic variation of the constraints
+explicitly annotated on the type declaration.  It's most useful to
+abbreviate recurring constraint type parameter is used in numerious
+places in a signature.
 
 
 @c --------------------------------------------------------------------
@@ -3695,20 +3794,23 @@ like local, global, closure definition, etc.}
 @verbatim
 func-decl       := [ `generic' ] IDENTIFIER fundef-clause
 
-fundef-clause   := `(' fun-param-list `)'
-                   [ `:' return-type ]
-                   [ generics-const ]
-                   fun-body
+func-signature  := `(' fun-param-list `)' [ `:' return-type ]
+fundef-clause   := func-signature [ reify-decl ] [ generics-const ] fun-body
+
 fun-param-list  := [ fun-param { `,' fun-param } ]
+
 fun-param       := spec-param | pos-param | key-param | rest-param
 spec-param      := param-name `@' type-clause
 pos-param       := param-name [ `:' type-clause ]
 key-param       := [ KEY-SYMBOL ] param-name [ `:' type-clause ]
                    `=' param-default
 param-default   := expression
+
 rest-param      := param-name `...'
 param-name      := SYMBOL
+
 return-type     := type-clause
+
 fun-body        := abstract-body | fun-impl
 abstract-body   := `...'
 fun-impl        := expr-list
@@ -3847,6 +3949,16 @@ character names.}
 @smallformat
 @verbatim
 char-clause     := `char' CHAR-NAME = int-number
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The @code{reify} declaration binds additional specialization
+declarations to a given method implementation.}
+@smallformat
+@verbatim
+reify-decl      := `reify' func-signature { `,' func-signature }
 @end verbatim
 @end smallformat
 
