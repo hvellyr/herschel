@@ -51,9 +51,9 @@ def compare(one @ Sliceable<Ordinal, 'T>, two @ Sliceable<Ordinal, 'T>) : Int
       0
   }
   else if (one.num-items < two.num-items)
-    1
-  else
     -1
+  else
+    1
 
 
 -- end of array.hea
