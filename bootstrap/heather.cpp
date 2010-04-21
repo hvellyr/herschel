@@ -6,14 +6,12 @@
 #include "common.h"
 #include "str.h"
 #include "option.h"
+#include "properties.h"
 
 #define VERSION "0.0.1"
 #define COPYRIGHT "2010"
 
 using namespace heather;
-
-static String outdir;
-static bool isVerbose = false;
 
 
 static void
@@ -69,11 +67,11 @@ main(int argc, char** argv)
         break;
 
       case 3:                   // outdir
-        outdir = option.fArgument;
+        Properties::setOutdir(option.fArgument);
         break;
 
       case 4:                   // verbose
-        isVerbose = true;
+        Properties::setIsVerbose(true);
         break;
       }
       break;

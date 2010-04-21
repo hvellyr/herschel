@@ -78,6 +78,11 @@ namespace heather
   String fromInt(int value);
   String fromFloat(float value);
   String fromBool(bool value);
+
+
+  int str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems);
+  int str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems);
+
 };
 
 #endif  // bootstrap_str_h

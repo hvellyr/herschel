@@ -27,10 +27,6 @@ static int str_str(const Char* haystack, int hslen,
                    const Char* needle, int nlen);
 static int str_rstr(const Char* haystack, int hslen, int ofs,
                     const Char* needle, int nlen);
-static int str_utf8_to_wcs(const char* src, int items, Char* dst,
-                           int maxItems);
-static int str_wcs_to_utf8(const Char* src, int items, Octet* dst,
-                           int maxItems);
 
 
 namespace heather
@@ -516,8 +512,8 @@ str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle, int nlen)
 }
 
 
-static int
-str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems)
+int
+heather::str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems)
 {
   Octet* sp = (Octet*)src;
   const Octet* end = (Octet*)src + items;
@@ -599,8 +595,8 @@ str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems)
 }
 
 
-static int
-str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
+int
+heather::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
 {
   const Char* sp = src;
 
