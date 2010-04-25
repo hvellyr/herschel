@@ -16,3 +16,5 @@ scheme/.*\.o
 scheme/.*\.dylib
 scheme/chibi-scheme
 scheme/arc
+bootstrap/.*.o
+bootstrap/heather
