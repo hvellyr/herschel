@@ -11,6 +11,9 @@
 
 #include "common.h"
 
+#include <vector>
+
+
 //----------------------------------------------------------------------------
 
 namespace heather
@@ -52,6 +55,8 @@ namespace heather
     int lastIndexOf(Char c, int offset = -1) const;
 
     String operator+(const String &second) const;
+    String operator+(Char c) const;
+    String operator+(char c) const;
     Char operator[] (int atIndex) const;
 
     //! Transforms receiver to 0-terminated utf8 into dst and returns
@@ -66,6 +71,12 @@ namespace heather
     //! index where c has been found or -1.
     int split(Char c, String& before, String& after) const;
     int split(const String& needle, String& before, String& after) const;
+
+    //! returns the substring from [from, to)
+    String part(int from, int to) const;
+
+    int toInt(int radix = 10) const;
+    double toDouble() const;
 
   private:
     StringImpl* fImpl;
@@ -83,6 +94,30 @@ namespace heather
   int str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems);
   int str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems);
 
+  class StrHelper
+  {
+  public:
+    StrHelper(const String& str)
+    {
+      int reqLen = str.toUtf8(NULL, str.length() * 5);
+      fBuffer.resize(reqLen + 1);
+      fLength = str.toUtf8(&fBuffer[0], reqLen + 1);
+    }
+
+    int length() const
+    {
+      return fLength;
+    }
+
+    operator const char*() const
+    {
+      return &fBuffer[0];
+    }
+
+  private:
+    std::vector<char> fBuffer;
+    int fLength;
+  };
 };
 
 #endif  // bootstrap_str_h
