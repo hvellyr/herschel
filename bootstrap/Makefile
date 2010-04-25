@@ -1,4 +1,4 @@
-heather: heather.o str.o port.o option.o properties.o
+heather: heather.o str.o port.o option.o properties.o tokenizer.o
 	$(CXX) -o $@ $^
 
 str.o: str.cpp str.h common.h refcountable.h
@@ -14,5 +14,8 @@ heather.o: heather.cpp
 	$(CXX) -g -c -Wall -o $@ $<
 
 properties.o: properties.cpp properties.h str.h
+	$(CXX) -g -c -Wall -o $@ $<
+
+tokenizer.o: tokenizer.cpp tokenizer.h port.h str.h
 	$(CXX) -g -c -Wall -o $@ $<
 

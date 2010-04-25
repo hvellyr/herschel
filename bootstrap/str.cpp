@@ -15,6 +15,7 @@
 
 #include "str.h"
 #include "refcountable.h"
+#include "exception.h"
 
 using namespace heather;
 
@@ -163,9 +164,9 @@ String::String()
 
 
 String::String(const String& other)
+  : fImpl(NULL)
 {
   other.fImpl->incRef();
-  fImpl->decRef();
   fImpl = other.fImpl;
 }
 
@@ -359,6 +360,24 @@ String::operator+(const String &second) const
 }
 
 
+String
+String::operator+(Char c) const
+{
+  String tmp;
+  tmp.fImpl->reallocate(fImpl->fLength + 1);
+  tmp.fImpl->copyFromWcs(0, fImpl->fData, fImpl->fLength);
+  tmp.fImpl->fData[fImpl->fLength] = c;
+  return tmp;
+}
+
+
+String
+String::operator+(char c) const
+{
+  return operator+(Char(c));
+}
+
+
 Char
 String::operator[] (int atIndex) const
 {
@@ -408,6 +427,50 @@ String::split(const String& needle, String& before, String& after) const
   }
 
   return -1;
+}
+
+
+String
+String::part(int from, int to) const
+{
+  if (from == 0 && to >= fImpl->fLength)
+    return *this;
+
+  if (from >= 0 && from < to && from < fImpl->fLength) {
+    int items = (to < fImpl->fLength ? to : fImpl->fLength) - from;
+    return String(fImpl->fData + from, items);
+  }
+  return String();
+}
+
+
+int
+String::toInt(int radix) const
+{
+  char tmp[128];
+  char *endptr = NULL;
+
+  toUtf8(tmp, 128);
+
+  int val = strtol(tmp, &endptr, radix);
+  if (endptr != NULL && strlen(endptr) > 0)
+    throw NotANumberException(String("Is not a number: ") + tmp);
+  return val;
+}
+
+
+double
+String::toDouble() const
+{
+  char tmp[128];
+  char *endptr = NULL;
+
+  toUtf8(tmp, 128);
+
+  double val = strtod(tmp, &endptr);
+  if (endptr != NULL && strlen(endptr) > 0)
+    throw NotANumberException(String("Is not a number: ") + tmp);
+  return val;
 }
 
 
@@ -745,6 +808,13 @@ public:
     assert(String("midi?: ") + fromBool(true) == String("midi?: true"));
 
     {
+      String t = String("hello") + Char(',') + ' ' + String("world") + Char('!');
+      char tmp[256];
+      t.toUtf8(tmp, 256);
+      assert(t == String("hello, world!"));
+    }
+
+    {
       String t("hello, world!");
       char tmp[128];
       assert(t.toUtf8(NULL, 128) == 13);
@@ -815,6 +885,21 @@ public:
       assert(String().split(String(), before, after) == 0);
       assert(before == String());
       assert(after == String());
+
+      assert(t.part(0, t.length()) == t);
+      assert(t.part(0, 1) == String("h"));
+      assert(t.part(0, 5) == String("hello"));
+      assert(t.part(7, 12) == String("world"));
+      assert(t.part(13, 20) == String());
+    }
+
+    {
+      assert(String("123456").toInt() == 123456);
+      assert(String("123456").toInt(16) == 0x123456);
+      assert(String("123456").toInt(8) == 0123456);
+      assert(String("0").toInt() == 0);
+
+      assert(String("3.1415").toDouble() == 3.1415);
     }
   }
 };

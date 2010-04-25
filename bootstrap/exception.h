@@ -24,8 +24,22 @@ namespace heather
       : fMsg(msg)
     { }
 
+    const String& message() const
+    {
+      return fMsg;
+    }
+
   protected:
     String fMsg;
+  };
+
+
+  class NotANumberException : public Exception
+  {
+  public:
+    NotANumberException(const String& msg)
+      : Exception(msg)
+    { }
   };
 
 };                              // namespace
