@@ -9,8 +9,6 @@
 @syncodeindex fn cp
 @c %**end of header
 
-@c This file is processed by Arc! Placeholders are surrounded by &
-@c (amp) and not by @ (at) as normally, since Texinfo uses @ as markup maker!
 @set VERSION 0.2.1
 @set COPYRIGHT 2002, 2003, 2009, 2010 Gregor C.@ Klinke
 
@@ -336,7 +334,8 @@ The following identifiers are reserved and handled as operators:
 @verbatim
 %    *    **   +    -    ->   ..   ...  /
 <    <<   <=   <=>  <>   ==   >    >=   >>
-and  by   in   mod  or   AND  OR   XOR
+and  by   in   mod  or   AND  OR   XOR  isa
+as
 @end verbatim
 
 Note that operators are really identifiers @emph{not} delimiters.
