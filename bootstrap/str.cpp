@@ -67,7 +67,7 @@ namespace heather
 
     Char* dataFromEnd(int offset)
     {
-      assert(offset >= 0 && offset < fLength);
+      assert(offset >= 0 && offset <= fLength);
       return &fData[fLength - offset];
     }
 
@@ -758,6 +758,10 @@ public:
 
       assert(t.endsWith(String("world!")));
       assert(t.endsWith(String()));
+
+      assert(String("a").endsWith(String("a")));
+      assert(!String().endsWith(String("a")));
+      assert(String("a").endsWith(String()));
 
       assert(t[6] == ' ');
       assert(t[0] == 'h');
