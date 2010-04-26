@@ -135,6 +135,7 @@ OptionsParser::nextOption(Option* option)
 
 
 
+#if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
 class OptionsParserUnitTest
@@ -297,6 +298,4 @@ public:
 
 static OptionsParserUnitTest unitTest;
 
-//****************************************************************************************
-//                                     E O F
-//****************************************************************************************
+#endif  // #if defined(UNITTESTS)

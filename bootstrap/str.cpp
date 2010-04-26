@@ -724,6 +724,7 @@ heather::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
 
 
 
+#if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
 class StringUnitTest
@@ -910,3 +911,5 @@ public:
 
 
 static StringUnitTest unitTest;
+
+#endif  // #if defined(UNITTESTS)
