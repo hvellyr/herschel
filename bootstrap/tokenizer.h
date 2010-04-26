@@ -88,6 +88,8 @@ namespace heather
     kBracketClose,
     kBraceOpen,
     kBraceClose,
+    kGenericOpen,
+    kGenericClose,
     kComma,
     kSemicolon,
     kColon,
@@ -95,7 +97,6 @@ namespace heather
     kAt,
     kAmpersand,
     kPipe,
-    kCaret,
     kBackQuote,
     kQuote,
     kEllipsis,
@@ -105,9 +106,6 @@ namespace heather
     kLiteralVectorOpen,
     kLiteralArrayOpen,
     kSangHash,
-
-    kFunction,
-    kFUNCTION,
   };
 
 
@@ -239,6 +237,8 @@ namespace heather
     Ptr<Port<Char> > fPort;
     int fLineCount;
     int fCC;
+    bool fNextCharIsGenericOpen;
+    int fInGenericContext;
   };
 };
 
