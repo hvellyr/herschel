@@ -17,7 +17,9 @@ using namespace heather;
 Tokenizer::Tokenizer(Port<Char>* port)
   : fPort(port),
     fLineCount(1),
-    fCC(EOF)
+    fCC(EOF),
+    fNextCharIsGenericOpen(false),
+    fInGenericContext(0)
 {
   assert(port != NULL);
 
@@ -85,7 +87,8 @@ Tokenizer::isDelimiter(Char c) const
     c == '(' || c == ')' ||
     c == '[' || c == ']' ||
     c == '{' || c == '}' ||
-    c == '.' || c == ',' || c == ';' || c == '#' || c == '@';
+    c == '.' || c == ',' || c == ';' || c == '#' || c == '@' ||
+    c == '|';
 }
 
 
@@ -133,6 +136,14 @@ Tokenizer::readIdentifier(const String& prefix, TokenType type,
 
   while (fCC != EOF && !isDelimiter(fCC))
   {
+    if (acceptGenerics) {
+      if (fCC == '<') {
+        fNextCharIsGenericOpen = true;
+        break;
+      }
+      else if (fCC == '>')
+        break;
+    }
     identifier = identifier + Char(fCC);
     nextChar();
   }
@@ -212,10 +223,6 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       return Token(kAs);
     else if (token.fStrValue == String("by"))
       return Token(kBy);
-    else if (token.fStrValue == String("function"))
-      return Token(kFunction);
-    else if (token.fStrValue == String("Function"))
-      return Token(kFUNCTION);
   }
   return token;
 }
@@ -493,13 +500,24 @@ Tokenizer::nextToken()
     case '@': return makeTokenAndNext(kAt);
     case '&': return makeTokenAndNext(kAmpersand);
     case '|': return makeTokenAndNext(kPipe);
-    case '^': return makeTokenAndNext(kCaret);
     case '\'': return makeTokenAndNext(kQuote);
     case '`': return makeTokenAndNext(kBackQuote);
 
     case '+': case '/': case '*': case '%': case '=':
       return readSymbolOrOperator(true);
-    case '<': case '>':
+    case '<':
+      if (fNextCharIsGenericOpen) {
+        fNextCharIsGenericOpen = false;
+        fInGenericContext++;
+        return makeTokenAndNext(kGenericOpen);
+      }
+      return readSymbolOrOperator(false);
+
+    case '>':
+      if (fInGenericContext > 0) {
+        fInGenericContext--;
+        return makeTokenAndNext(kGenericClose);
+      }
       return readSymbolOrOperator(false);
 
     case '-':
@@ -708,13 +726,14 @@ Token::c_str() const
   case kBracketClose:       strcpy(buffer, "]"); break;
   case kBraceOpen:          strcpy(buffer, "{"); break;
   case kBraceClose:         strcpy(buffer, "}"); break;
+  case kGenericOpen:        strcpy(buffer, "<"); break;
+  case kGenericClose:       strcpy(buffer, ">"); break;
   case kComma:              strcpy(buffer, ","); break;
   case kSemicolon:          strcpy(buffer, ";"); break;
   case kColon:              strcpy(buffer, ":"); break;
   case kAt:                 strcpy(buffer, "@"); break;
   case kAmpersand:          strcpy(buffer, "&"); break;
   case kPipe:               strcpy(buffer, "|"); break;
-  case kCaret:              strcpy(buffer, "^"); break;
   case kBackQuote:          strcpy(buffer, "`"); break;
   case kQuote:              strcpy(buffer, "'"); break;
   case kEllipsis:           strcpy(buffer, "..."); break;
@@ -724,9 +743,6 @@ Token::c_str() const
   case kLiteralVectorOpen:  strcpy(buffer, "#("); break;
   case kLiteralArrayOpen:   strcpy(buffer, "#["); break;
   case kSangHash:           strcpy(buffer, "##"); break;
-
-  case kFunction:           strcpy(buffer, "function"); break;
-  case kFUNCTION:           strcpy(buffer, "Function"); break;
   };
   
   return buffer;
@@ -738,51 +754,9 @@ Token::c_str() const
 //    kEOF,
 //    kInvalid,
 //
-//    kPlus,
-//    kMinus,
-//    kDivide,
-//    kMultiply,
-//    kExponent,
-//    kFold,
-//    kCompare,
-//    kEqual,
-//    kUnequal,
-//    kLess,
-//    kLessEqual,
-//    kGreater,
-//    kGreaterEqual,
-//    kMapTo,
-//    kIn,
-//    kMod,
-//    kIsa,
-//    kAs,
-//    kLogicalAnd,
-//    kLogicalOr,
-//    kBitAnd,
-//    kBitOr,
-//    kBitXor,
-//    kShiftLeft,
-//    kShiftRight,
-//
-//    kChar,
-//
 //    kMacroParam,
-//    kKeyword,
 //
-//    kSemicolon,
-//
-//    kPipe,
-//    kCaret,
-//    kBackQuote,
-//    kQuote,
-//    kDot,
-//
-//    kLiteralVectorOpen,
-//    kLiteralArrayOpen,
 //    kSangHash,
-//
-//    kFunction,
-//    kFUNCTION,
 //
 class TokenizerUnitTest
 {
@@ -796,7 +770,7 @@ public:
         "-- a simple portable class\n"
         "def class Portable<T>(x @ Int) : (Copyable, Comparable)\n"
         "{\n"
-        "  slot first : T = x\n"
+        "  slot first : T = x ;\n"
         "  slot data : Octet[]\n"
         "}\n";
 
@@ -818,7 +792,10 @@ public:
 
         assert(tnz.nextToken() == Token(kSymbol, String("def")));
         assert(tnz.nextToken() == Token(kSymbol, String("class")));
-        assert(tnz.nextToken() == Token(kSymbol, String("Portable<T>")));
+        assert(tnz.nextToken() == Token(kSymbol, String("Portable")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(kSymbol, String("T")));
+        assert(tnz.nextToken() == Token(kGenericClose));
         assert(tnz.nextToken() == Token(kParanOpen));
         assert(tnz.nextToken() == Token(kSymbol, String("x")));
         assert(tnz.nextToken() == Token(kAt));
@@ -839,6 +816,8 @@ public:
         assert(tnz.nextToken() == Token(kAssign));
         assert(tnz.nextToken() == Token(kSymbol, String("x")));
 
+        assert(tnz.nextToken() == Token(kSemicolon));
+
         assert(tnz.nextToken() == Token(kSymbol, String("slot")));
         assert(tnz.nextToken() == Token(kSymbol, String("data")));
         assert(tnz.nextToken() == Token(kColon));
@@ -855,8 +834,7 @@ public:
       }
       catch (const NotationException& ne)
       {
-        StrHelper Buf(ne.message());
-        fprintf(stderr, "ERROR: %s\n", (const char*)Buf);
+        fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
 
@@ -894,8 +872,30 @@ public:
       }
       catch (const Exception& ne)
       {
-        StrHelper Buf(ne.message());
-        fprintf(stderr, "ERROR: %s\n", (const char*)Buf);
+        fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      }
+    }
+
+    {
+      static const char* test =
+        "\\space  \\u60h  \\( \\newline \\cr"
+        "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n";
+      Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
+
+      try
+      {
+        assert(tnz.nextToken() == Token(kChar, 0x20));
+        assert(tnz.nextToken() == Token(kChar, 0x60));
+        assert(tnz.nextToken() == Token(kChar, '('));
+        assert(tnz.nextToken() == Token(kChar, 0x0a));
+        assert(tnz.nextToken() == Token(kChar, 0x0d));
+
+        assert(tnz.nextToken() == Token(kString, String("hello,\nworld!")));
+        assert(tnz.nextToken() == Token(kString, String("\033a(;;")));
+      }
+      catch (const Exception& ne)
+      {
+        fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
 
@@ -941,8 +941,7 @@ public:
       }
       catch (const Exception& ne)
       {
-        StrHelper Buf(ne.message());
-        fprintf(stderr, "ERROR: %s\n", (const char*)Buf);
+        fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
 
@@ -978,12 +977,211 @@ public:
       }
       catch (const Exception& ne)
       {
-        StrHelper Buf(ne.message());
-        fprintf(stderr, "ERROR: %s\n", (const char*)Buf);
+        fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
 
+    {
+      static const char* test =
+        "Buffer<Int>()[i] < 10 and true or false\n"
+        "T<S<Y>>  T<S<Y> >  a < b\n"
+        "val << 5 val >> 2\n"
+        "2 < 1  2 <= 1  2 > 1  2 >= 1  2 <=> 1  2 <> 1  2 == 1\n"
+        "a + b  a - b  a * b  a / b  a ** 2  a mod 5\n"
+        "1 XOR 2  1 OR 2  1 AND 2\n"
+        "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n";
+      Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
+
+      try
+      {
+        assert(tnz.nextToken() == Token(kSymbol, String("Buffer")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(kSymbol, String("Int")));
+        assert(tnz.nextToken() == Token(kGenericClose));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(kParanClose));
+        assert(tnz.nextToken() == Token(kBracketOpen));
+        assert(tnz.nextToken() == Token(kSymbol, String("i")));
+        assert(tnz.nextToken() == Token(kBracketClose));
+        assert(tnz.nextToken() == Token(kLess));
+        assert(tnz.nextToken() == Token(kInteger, 10));
+        assert(tnz.nextToken() == Token(kLogicalAnd));
+        assert(tnz.nextToken() == Token(kSymbol, String("true")));
+        assert(tnz.nextToken() == Token(kLogicalOr));
+        assert(tnz.nextToken() == Token(kSymbol, String("false")));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("T")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(kSymbol, String("S")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(kSymbol, String("Y")));
+        assert(tnz.nextToken() == Token(kGenericClose));
+        assert(tnz.nextToken() == Token(kGenericClose));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("T")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(kSymbol, String("S")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(kSymbol, String("Y")));
+        assert(tnz.nextToken() == Token(kGenericClose));
+        assert(tnz.nextToken() == Token(kGenericClose));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("a")));
+        assert(tnz.nextToken() == Token(kLess));
+        assert(tnz.nextToken() == Token(kSymbol, String("b")));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("val")));
+        assert(tnz.nextToken() == Token(kShiftLeft));
+        assert(tnz.nextToken() == Token(kInteger, 5));
+        assert(tnz.nextToken() == Token(kSymbol, String("val")));
+        assert(tnz.nextToken() == Token(kShiftRight));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kLess));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kLessEqual));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kGreater));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kGreaterEqual));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kCompare));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kUnequal));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kEqual));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("a")));
+        assert(tnz.nextToken() == Token(kPlus));
+        assert(tnz.nextToken() == Token(kSymbol, String("b")));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("a")));
+        assert(tnz.nextToken() == Token(kMinus));
+        assert(tnz.nextToken() == Token(kSymbol, String("b")));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("a")));
+        assert(tnz.nextToken() == Token(kMultiply));
+        assert(tnz.nextToken() == Token(kSymbol, String("b")));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("a")));
+        assert(tnz.nextToken() == Token(kDivide));
+        assert(tnz.nextToken() == Token(kSymbol, String("b")));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("a")));
+        assert(tnz.nextToken() == Token(kExponent));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("a")));
+        assert(tnz.nextToken() == Token(kMod));
+        assert(tnz.nextToken() == Token(kInteger, 5));
+
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kBitXor));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kBitOr));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kBitAnd));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kFold));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kMapTo));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kIn));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kIsa));
+        assert(tnz.nextToken() == Token(kSymbol, String("Number")));
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kAs));
+        assert(tnz.nextToken() == Token(kSymbol, String("Octet")));
+
+      }
+      catch (const Exception& ne)
+      {
+        fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      }
+    }
+
+    {
+      static const char* test =
+        "io|File  self.io|val.display\n"
+        "f('T)  12`mm\n";
+      Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
+
+      try
+      {
+        assert(tnz.nextToken() == Token(kSymbol, String("io")));
+        assert(tnz.nextToken() == Token(kPipe));
+        assert(tnz.nextToken() == Token(kSymbol, String("File")));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("self")));
+        assert(tnz.nextToken() == Token(kDot));
+        assert(tnz.nextToken() == Token(kSymbol, String("io")));
+        assert(tnz.nextToken() == Token(kPipe));
+        assert(tnz.nextToken() == Token(kSymbol, String("val")));
+        assert(tnz.nextToken() == Token(kDot));
+        assert(tnz.nextToken() == Token(kSymbol, String("display")));
+
+        assert(tnz.nextToken() == Token(kSymbol, String("f")));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(kQuote));
+        assert(tnz.nextToken() == Token(kSymbol, String("T")));
+        assert(tnz.nextToken() == Token(kParanClose));
+
+        assert(tnz.nextToken() == Token(kInteger, 12));
+        assert(tnz.nextToken() == Token(kBackQuote));
+        assert(tnz.nextToken() == Token(kSymbol, String("mm")));
+      }
+      catch (const Exception& ne)
+      {
+        fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      }
+    }
+
+    {
+      static const char* test =
+        "##  ?val:name";
+      Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
+
+      try
+      {
+        assert(tnz.nextToken() == Token(kSangHash));
+        assert(tnz.nextToken() == Token(kMacroParam, String("val:name")));
+      }
+      catch (const Exception& ne)
+      {
+        fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      }
+    }
   }
 };
 
-static TokenizerUnitTest tonizerUnitTest;
+static TokenizerUnitTest tokenizerUnitTest;
