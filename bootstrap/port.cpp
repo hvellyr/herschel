@@ -426,6 +426,7 @@ CharPort::cursor()
 }
 
 
+#if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
 class DataPortUnitTest
@@ -571,3 +572,5 @@ public:
   }
 };
 static FilePortUnitTest filePortUnitTest;
+
+#endif  // #if defined(UNITTESTS)

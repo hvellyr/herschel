@@ -749,15 +749,9 @@ Token::c_str() const
 }
 
 
+#if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-//    kEOF,
-//    kInvalid,
-//
-//    kMacroParam,
-//
-//    kSangHash,
-//
 class TokenizerUnitTest
 {
 public:
@@ -1185,3 +1179,6 @@ public:
 };
 
 static TokenizerUnitTest tokenizerUnitTest;
+
+#endif  // #if defined(UNITTESTS)
+
