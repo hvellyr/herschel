@@ -102,11 +102,19 @@ Tokenizer::isEOL(Char c) const
 int
 Tokenizer::nextChar()
 {
-  int c = fPort->read();
-  if (c == '\n' || c == '\r')
-    fLineCount++;
-  fCC = c;
-  return c;
+  try
+  {
+    int c = fPort->read();
+    if (c == '\n' || c == '\r')
+      fLineCount++;
+    fCC = c;
+    return c;
+  }
+  catch (const EofException& )
+  {
+    fCC = EOF;
+    return EOF;
+  }
 }
 
 

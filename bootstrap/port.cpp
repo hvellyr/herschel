@@ -82,13 +82,17 @@ FilePort::read(Octet* buffer, size_t items)
 }
 
 
-int
+Octet
 FilePort::read()
 {
   if (fStream != NULL) {
     int retval = ::fgetc(fStream);
-    if (retval == EOF && ::ferror(fStream) != 0)
-      throw IOException(String("read failed"), errno);
+    if (retval == EOF) {
+      if (::ferror(fStream) != 0)
+        throw IOException(String("read failed"), errno);
+      else
+        throw EofException();
+    }
     return retval;
   }
   throw IOException(String("port is not open"), EBADF);
@@ -238,16 +242,16 @@ DataPort::read(Octet* buffer, size_t items)
     return step;
   }
 
-  return EOF;
+  return 0;
 }
 
 
-int
+Octet
 DataPort::read()
 {
   if (fPos < fLength)
     return (int)fData[fPos++];
-  return EOF;
+  throw EofException();
 }
 
 
@@ -355,7 +359,7 @@ CharPort::read(Char* buffer, size_t items)
 }
 
 
-int
+Char
 CharPort::read()
 {
   int c0 = fSlave->read();
@@ -394,7 +398,7 @@ CharPort::read()
     return 0xffff;
   }
 
-  return EOF;
+  throw EofException();
 }
 
 
@@ -492,6 +496,22 @@ public:
       }
     }
 
+    {
+      Octet tmp[] = { 'a', '\0' };
+      Ptr<DataPort> dp = new DataPort(tmp, strlen((char*)tmp));
+
+      assert(dp->read() == 'a');
+
+      try
+      {
+        dp->read();
+        assert(0);              // must not come here
+      }
+      catch (const EofException& )
+      {
+      }
+    }
+
 #undef BUFSIZE
 #undef PAGESIZE
   }
@@ -557,6 +577,22 @@ public:
       assert(clen == 9);
 
       assert(::memcmp(result, cs, sizeof(Char) * 9) == 0);
+    }
+
+    {
+      Octet tmp[] = { 'a', '\0' };
+      Ptr<CharPort> cp = new CharPort(new DataPort(tmp, strlen((char*)tmp)));
+
+      assert(cp->read() == 'a');
+
+      try
+      {
+        cp->read();
+        assert(0);              // must not come here
+      }
+      catch (const EofException& )
+      {
+      }
     }
   }
 };

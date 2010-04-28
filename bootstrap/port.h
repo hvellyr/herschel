@@ -43,7 +43,17 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  //! T must be castable to int (for read())
+  class EofException : public Exception
+  {
+  public:
+    EofException()
+      : Exception(String("End of file reached"))
+    { }
+  };
+
+
+  //--------------------------------------------------------------------------
+
   template <typename T>
   class Port : public RefCountable
   {
@@ -55,7 +65,7 @@ namespace heather
     virtual int write(T item) = 0;
 
     virtual size_t read(T* buffer, size_t items) = 0;
-    virtual int read() = 0;
+    virtual T read() = 0;
 
     virtual void flush() = 0;
 
@@ -89,7 +99,7 @@ namespace heather
     virtual int write(Octet byte);
 
     virtual size_t read(Octet* buffer, size_t items);
-    virtual int read();
+    virtual Octet read();
 
     virtual void flush();
 
@@ -118,7 +128,7 @@ namespace heather
     virtual int write(Octet byte);
 
     virtual size_t read(Octet* buffer, size_t items);
-    virtual int read();
+    virtual Octet read();
 
     virtual void flush();
 
@@ -152,7 +162,7 @@ namespace heather
     virtual int write(Char c);
 
     virtual size_t read(Char* buffer, size_t items);
-    virtual int read();
+    virtual Char read();
 
     virtual void flush();
 
