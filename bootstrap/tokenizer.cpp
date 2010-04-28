@@ -30,6 +30,13 @@ Tokenizer::Tokenizer(Port<Char>* port)
 
 
 bool
+Tokenizer::isEof() const
+{
+  return fPort == NULL || fPort->isEof();
+}
+
+
+bool
 Tokenizer::isInCharRange(Char c, Char from, Char to) const
 {
   return c >= from && c <= to;

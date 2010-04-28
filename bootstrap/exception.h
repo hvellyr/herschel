@@ -34,6 +34,8 @@ namespace heather
   };
 
 
+  //--------------------------------------------------------------------------
+
   class NotANumberException : public Exception
   {
   public:
@@ -42,6 +44,16 @@ namespace heather
     { }
   };
 
+
+  //--------------------------------------------------------------------------
+
+  class NotSupportedException : public Exception
+  {
+  public:
+    NotSupportedException(const char* functionName)
+      : Exception(String("Method ") + functionName + " is not supported")
+    { }
+  };
 };                              // namespace
 
 #endif                          // bootstrap_exception_h

@@ -24,9 +24,32 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
+PortNotOpenException::PortNotOpenException()
+  : IOException(String("port is not open"), EBADF)
+{ }
+
+
+//----------------------------------------------------------------------------
+
 FilePort::FilePort(const String& fileName, const char* mode)
   : fStream(NULL)
 {
+}
+
+
+FilePort::~FilePort()
+{
+  close();
+}
+
+
+void
+FilePort::close()
+{
+  if (fStream != NULL) {
+    ::fclose(fStream);
+    fStream = NULL;
+  }
 }
 
 
@@ -40,74 +63,75 @@ FilePort::isOpen() const
 bool
 FilePort::isEof() const
 {
-  if (fStream != NULL)
-    return ::feof(fStream) != 0;
-  throw IOException(String("port is not open"), EBADF);
+  if (fStream == NULL)
+    throw PortNotOpenException();
+
+  return ::feof(fStream) != 0;
 }
 
 
 size_t
 FilePort::write(Octet* data, size_t items)
 {
-  if (fStream != NULL) {
-    size_t retval = ::fwrite(data, 1, items, fStream);
-    if (retval != items)
-      throw IOException(String("write failed"), errno);
-  }
-  throw IOException(String("port is not open"), EBADF);
+  if (fStream == NULL)
+    throw PortNotOpenException();
+
+  size_t retval = ::fwrite(data, 1, items, fStream);
+  if (retval != items)
+    throw IOException(String("write failed"), errno);
+  return items;
 }
 
 
 int
 FilePort::write(Octet byte)
 {
-  if (fStream != NULL) {
-    int retval = ::fputc(byte, fStream);
-    if (retval != 1)
-      throw IOException(String("write failed"), errno);
-  }
-  throw IOException(String("port is not open"), EBADF);
+  if (fStream == NULL)
+    throw PortNotOpenException();
+
+  int retval = ::fputc(byte, fStream);
+  if (retval != 1)
+    throw IOException(String("write failed"), errno);
+  return 1;
 }
 
 
 size_t
 FilePort::read(Octet* buffer, size_t items)
 {
-  if (fStream != NULL) {
-    size_t retval = ::fread(buffer, 1, items, fStream);
-    if (retval == 0 && ::ferror(fStream) != 0)
-      throw IOException(String("read failed"), errno);
-    return retval;
-  }
-  throw IOException(String("port is not open"), EBADF);
+  if (fStream == NULL)
+    throw PortNotOpenException();
+
+  size_t retval = ::fread(buffer, 1, items, fStream);
+  if (retval == 0 && ::ferror(fStream) != 0)
+    throw IOException(String("read failed"), errno);
+  return retval;
 }
 
 
 Octet
 FilePort::read()
 {
-  if (fStream != NULL) {
-    int retval = ::fgetc(fStream);
-    if (retval == EOF) {
-      if (::ferror(fStream) != 0)
-        throw IOException(String("read failed"), errno);
-      else
-        throw EofException();
-    }
-    return retval;
+  if (fStream == NULL)
+    throw PortNotOpenException();
+
+  int retval = ::fgetc(fStream);
+  if (retval == EOF) {
+    if (::ferror(fStream) != 0)
+      throw IOException(String("read failed"), errno);
+    else
+      throw EofException();
   }
-  throw IOException(String("port is not open"), EBADF);
+  return retval;
 }
 
 
 void
 FilePort::flush()
 {
-  if (fStream != NULL) {
-    ::fflush(fStream);
-  }
-  else
-    throw IOException(String("port is not open"), EBADF);
+  if (fStream == NULL)
+    throw PortNotOpenException();
+  ::fflush(fStream);
 }
 
 
@@ -121,24 +145,24 @@ FilePort::canSetCursor() const
 void
 FilePort::setCursor(size_t cursor)
 {
-  if (fStream != NULL) {
-    if (fseek(fStream, cursor, SEEK_SET) != 0)
-      throw IOException(String("seek failed"), errno);
-  }
-  throw IOException(String("port is not open"), EBADF);
+  if (fStream == NULL)
+    throw PortNotOpenException();
+
+  if (fseek(fStream, cursor, SEEK_SET) != 0)
+    throw IOException(String("seek failed"), errno);
 }
 
 
 long
 FilePort::cursor()
 {
-  if (fStream != NULL) {
-    long pos = ftell(fStream);
-    if (pos < 0)
-      throw IOException(String("tell failed"), errno);
-    return pos;
-  }
-  throw IOException(String("port is not open"), EBADF);
+  if (fStream != NULL)
+    throw PortNotOpenException();
+
+  long pos = ftell(fStream);
+  if (pos < 0)
+    throw IOException(String("tell failed"), errno);
+  return pos;
 }
 
 
@@ -343,20 +367,6 @@ CharPort::write(Char c)
 
   fSlave->write(tmp, clen);
   return 1;
-}
-
-
-size_t
-CharPort::read(Char* buffer, size_t items)
-{
-  for (size_t i = 0; i < items; i++) {
-    int c = this->read();
-    if (c != EOF)
-      buffer[i] = c;
-    else
-      return i;
-  }
-  return items;
 }
 
 
