@@ -43,6 +43,15 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class PortNotOpenException : public IOException
+  {
+  public:
+    PortNotOpenException();
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class EofException : public Exception
   {
   public:
@@ -61,10 +70,29 @@ namespace heather
     virtual bool isOpen() const = 0;
     virtual bool isEof() const = 0;
 
-    virtual size_t write(T* data, size_t items) = 0;
+    virtual size_t write(T* data, size_t items)
+    {
+      for (size_t i = 0; i < items; i++) {
+        int rv = this->write(data[i]);
+        if (rv != 1)
+          return rv;
+      }
+      return items;
+    }
     virtual int write(T item) = 0;
 
-    virtual size_t read(T* buffer, size_t items) = 0;
+    virtual size_t read(T* buffer, size_t items)
+    {
+      size_t i = 0;
+      try {
+        for ( ; i < items; i++)
+          buffer[i] = this->read();
+      }
+      catch (const EofException& )
+      {
+      }
+      return i;
+    }
     virtual T read() = 0;
 
     virtual void flush() = 0;
@@ -91,6 +119,9 @@ namespace heather
   {
   public:
     FilePort(const String& fileName, const char* mode);
+    ~FilePort();
+
+    void close();
 
     virtual bool isOpen() const;
     virtual bool isEof() const;
@@ -161,7 +192,7 @@ namespace heather
     virtual size_t write(Char* data, size_t items);
     virtual int write(Char c);
 
-    virtual size_t read(Char* buffer, size_t items);
+    using Port<Char>::read;
     virtual Char read();
 
     virtual void flush();

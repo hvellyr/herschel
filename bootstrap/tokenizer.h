@@ -197,6 +197,8 @@ namespace heather
   public:
     Tokenizer(Port<Char>* port);
 
+    bool isEof() const;
+
     Token nextToken();
     Token nextTokenImpl();
 
