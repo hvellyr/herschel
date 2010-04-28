@@ -198,7 +198,8 @@ namespace heather
     Tokenizer(Port<Char>* port);
 
     Token nextToken();
-    
+    Token nextTokenImpl();
+
   private:
     void readCommentLine();
     Token readIdentifier(const String& prefix, TokenType type,

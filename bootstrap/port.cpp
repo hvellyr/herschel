@@ -17,6 +17,7 @@
 #include "str.h"
 #include "refcountable.h"
 #include "port.h"
+#include "unittests.h"
 
 using namespace heather;
 
@@ -433,13 +434,13 @@ CharPort::cursor()
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class DataPortUnitTest
+class DataPortUnitTest : public UnitTest
 {
 public:
-  DataPortUnitTest()
-  {
-    fprintf(stderr, "Run data port unit tests ...\n");
+  DataPortUnitTest() : UnitTest("DataPort") {}
 
+  virtual void run()
+  {
 #define PAGESIZE 243            // take a odd number to test chunking
 #define PAGENUM    8
 #define BUFSIZE  PAGENUM * PAGESIZE
@@ -519,13 +520,13 @@ public:
 static DataPortUnitTest dataPortUnitTest;
 
 
-class CharPortUnitTest
+class CharPortUnitTest : public UnitTest
 {
 public:
-  CharPortUnitTest()
-  {
-    fprintf(stderr, "Run char port unit tests ...\n");
+  CharPortUnitTest() : UnitTest("CharPort") {}
 
+  virtual void run()
+  {
     {
       Char src[] = { 'a',       // 61
                      0x424,     // d0 a4
@@ -599,12 +600,13 @@ public:
 static CharPortUnitTest charPortUnitTest;
 
 
-class FilePortUnitTest
+class FilePortUnitTest : public UnitTest
 {
 public:
-  FilePortUnitTest()
+  FilePortUnitTest() : UnitTest("FilePort") {}
+
+  virtual void run()
   {
-    fprintf(stderr, "Run file port unit tests ...\n");
   }
 };
 static FilePortUnitTest filePortUnitTest;

@@ -16,6 +16,7 @@
 #include "str.h"
 #include "refcountable.h"
 #include "exception.h"
+#include "unittests.h"
 
 using namespace heather;
 
@@ -727,13 +728,13 @@ heather::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class StringUnitTest
+class StringUnitTest : public UnitTest
 {
 public:
-  StringUnitTest()
-  {
-    fprintf(stderr, "Run string unit tests ...\n");
+  StringUnitTest() : UnitTest("String") {}
 
+  virtual void run()
+  {
     assert(String().length() == 0);
     assert(String("").length() == 0);
     assert(String("hello, world!").length() == 13);

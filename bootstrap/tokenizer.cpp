@@ -9,6 +9,8 @@
 #include "common.h"
 #include "str.h"
 #include "tokenizer.h"
+#include "properties.h"
+#include "unittests.h"
 
 
 using namespace heather;
@@ -102,8 +104,7 @@ Tokenizer::isEOL(Char c) const
 int
 Tokenizer::nextChar()
 {
-  try
-  {
+  try {
     int c = fPort->read();
     if (c == '\n' || c == '\r')
       fLineCount++;
@@ -113,7 +114,7 @@ Tokenizer::nextChar()
   catch (const EofException& )
   {
     fCC = EOF;
-    return EOF;
+    throw;
   }
 }
 
@@ -128,11 +129,8 @@ Tokenizer::parseError(const String& msg) throw (NotationException)
 void
 Tokenizer::readCommentLine()
 {
-  while (fCC != EOF) {
-    if (isEOL(fCC))
-      break;
+  while (!isEOL(fCC))
     nextChar();
-  }
 }
 
 
@@ -142,18 +140,23 @@ Tokenizer::readIdentifier(const String& prefix, TokenType type,
 {
   String identifier = prefix;
 
-  while (fCC != EOF && !isDelimiter(fCC))
-  {
-    if (acceptGenerics) {
-      if (fCC == '<') {
-        fNextCharIsGenericOpen = true;
-        break;
+  try {
+    while (!isDelimiter(fCC))
+    {
+      if (acceptGenerics) {
+        if (fCC == '<') {
+          fNextCharIsGenericOpen = true;
+          break;
+        }
+        else if (fCC == '>')
+          break;
       }
-      else if (fCC == '>')
-        break;
+      identifier = identifier + Char(fCC);
+      nextChar();
     }
-    identifier = identifier + Char(fCC);
-    nextChar();
+  }
+  catch (const EofException& )
+  {
   }
 
   if (type == kSymbol && identifier.endsWith(String(":")))
@@ -425,7 +428,7 @@ Tokenizer::readSymbolCharacter(bool needsTerminator)
 Token
 Tokenizer::readNamedCharacter(bool needsTerminator)
 {
-  if (isWhitespace(fCC) || fCC == EOF)
+  if (isWhitespace(fCC))
     parseError(String("unterminated char notation"));
   else if (isAlpha(fCC) || isDigit(fCC))
     return readSymbolCharacter(needsTerminator);
@@ -453,10 +456,8 @@ Tokenizer::readString()
   String result;
   int prevlc = fLineCount;
 
-  while (true) {
-    if (fCC == EOF)
-      parseError(String("unfinished string, began at line ") + prevlc);
-    else {
+  try {
+    for ( ; ; ) {
       if (fCC == '"') {
         nextChar();
         return Token(kString, result);
@@ -475,6 +476,11 @@ Tokenizer::readString()
       }
     }
   }
+  catch (const EofException& )
+  {
+    parseError(String("unfinished string, began at line ") + prevlc);
+    throw;
+  }
 
   // todo
   return Token();
@@ -484,8 +490,19 @@ Tokenizer::readString()
 Token
 Tokenizer::nextToken()
 {
-  bool done = false;
-  while (!done) {
+  Token t = nextTokenImpl();
+  if (Properties::isTraceTokenizer()) {
+    printf("%s ", t.c_str());
+    fflush(stdout);
+  }
+  return t;
+}
+
+
+Token
+Tokenizer::nextTokenImpl()
+{
+  for ( ; ; ) {
     if (fCC == EOF)
       return Token(kEOF);
 
@@ -760,10 +777,12 @@ Token::c_str() const
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class TokenizerUnitTest
+class TokenizerUnitTest : public UnitTest
 {
 public:
-  TokenizerUnitTest()
+  TokenizerUnitTest() : UnitTest("Tokenizer") {}
+
+  virtual void run()
   {
     {
       static const char* test =
@@ -827,12 +846,6 @@ public:
         assert(tnz.nextToken() == Token(kBracketOpen));
         assert(tnz.nextToken() == Token(kBracketClose));
         assert(tnz.nextToken() == Token(kBraceClose));
-
-        Token t;
-        while ((t = tnz.nextToken()) != Token(kEOF)) {
-          printf("%s\n", t.c_str());
-        }
-        // assert(t.nextToken() == Token(kSymbol, String("def")));
       }
       catch (const NotationException& ne)
       {

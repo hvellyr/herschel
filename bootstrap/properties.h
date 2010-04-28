@@ -21,6 +21,12 @@ namespace heather
 
     static void setOutdir(const String& outdir);
     static String outdir();
+
+    static void setTrace(const String& key, bool value);
+    static void setTraces(const String& argument);
+
+    static bool isTraceTokenizer();
+    static bool isTraceParser();
   };
 };                              // namespace
 

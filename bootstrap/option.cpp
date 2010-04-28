@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include "option.h"
+#include "unittests.h"
 
 using namespace heather;
 
@@ -81,9 +82,10 @@ OptionsParser::nextOption(Option* option)
 
   const OptionsDefine* optDefine = NULL;
   if (optType == kShortForm) {
+    option->fOption = arg;
+
     if ((optDefine = findOption(arg, true)) != NULL) {
       option->fId = optDefine->fId;
-      option->fOption = arg;
 
       if (optDefine->fExpectsArgument) {
         if (fArgp < fArgc) {
@@ -138,13 +140,13 @@ OptionsParser::nextOption(Option* option)
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class OptionsParserUnitTest
+class OptionsParserUnitTest : public UnitTest
 {
 public:
-  OptionsParserUnitTest()
-  {
-    fprintf(stderr, "Run options parser tests ...\n");
+  OptionsParserUnitTest() : UnitTest("OptionsParser") {}
 
+  virtual void run()
+  {
     static const OptionsParser::OptionsDefine options[] = {
       { 1, "-h", "--help",    false },
       { 2, "-v", "--version", false },
@@ -269,8 +271,9 @@ public:
       static const char* args[] = { "heather",
                                     "--port=7111", "--host=www.eyestep.org",
                                     "--output",
-                                    "--level=DEBUG" };
-      OptionsParser p(options, 5, args);
+                                    "--level=DEBUG",
+                                    "-XYZ" };
+      OptionsParser p(options, 6, args);
       assert(p.nextOption(&option) == OptionsParser::kUnknownOption);
       assert(option.fId == -1);
       assert(option.fOption == String("--port"));
@@ -290,6 +293,11 @@ public:
       assert(option.fId == 6);
       assert(option.fOption == String("--level"));
       assert(option.fArgument == String("DEBUG"));
+
+      assert(p.nextOption(&option) == OptionsParser::kUnknownOption);
+      assert(option.fId == -1);
+      assert(option.fOption == String("-XYZ"));
+      assert(option.fArgument.isEmpty());
 
       assert(p.nextOption(&option) == OptionsParser::kNoMoreArgs);
     }

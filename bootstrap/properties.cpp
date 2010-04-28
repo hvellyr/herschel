@@ -13,6 +13,8 @@
 using namespace heather;
 
 static bool sVerbose = false;
+static bool sIsTokenizerTracing = false;
+static bool sIsParserTracing = false;
 static String sOutdir;
 
 
@@ -41,4 +43,43 @@ String
 Properties::outdir()
 {
   return sOutdir;
+}
+
+
+void
+Properties::setTrace(const String& key, bool value)
+{
+  if (key == String("tokenizer"))
+    sIsTokenizerTracing = value;
+  else if (key == String("parser"))
+    sIsParserTracing = value;
+}
+
+
+void
+Properties::setTraces(const String& argument)
+{
+  String tmp = argument;
+  String key;
+
+  while (tmp.split(',', key, tmp) >= 0) {
+    // String key = first.trim();
+    setTrace(key, true);
+  }
+  if (!tmp.isEmpty())
+    setTrace(tmp, true);
+}
+
+
+bool
+Properties::isTraceTokenizer()
+{
+  return sIsTokenizerTracing;
+}
+
+
+bool
+Properties::isTraceParser()
+{
+  return sIsParserTracing;
 }
