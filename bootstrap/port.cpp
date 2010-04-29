@@ -34,6 +34,9 @@ PortNotOpenException::PortNotOpenException()
 FilePort::FilePort(const String& fileName, const char* mode)
   : fStream(NULL)
 {
+  fStream = ::fopen((const char*)StrHelper(fileName), mode);
+  if (fStream == NULL)
+    throw IOException(String("Could not open file '") + fileName + "'", errno);
 }
 
 
@@ -156,7 +159,7 @@ FilePort::setCursor(size_t cursor)
 long
 FilePort::cursor()
 {
-  if (fStream != NULL)
+  if (fStream == NULL)
     throw PortNotOpenException();
 
   long pos = ftell(fStream);
@@ -513,13 +516,11 @@ public:
 
       assert(dp->read() == 'a');
 
-      try
-      {
+      try {
         dp->read();
         assert(0);              // must not come here
       }
-      catch (const EofException& )
-      {
+      catch (const EofException& ) {
       }
     }
 
@@ -596,13 +597,11 @@ public:
 
       assert(cp->read() == 'a');
 
-      try
-      {
+      try {
         cp->read();
         assert(0);              // must not come here
       }
-      catch (const EofException& )
-      {
+      catch (const EofException& ) {
       }
     }
   }
@@ -617,6 +616,48 @@ public:
 
   virtual void run()
   {
+    {
+      static const Octet tmp[] = "Hamlet:\n"
+        "Alas, poor Yorick! I knew him, Horatio, a fellow of infinite\n"
+        "jest, of most excellent fancy. He hath bore me on his back a\n"
+        "thousand times, and now how abhorr'd in my imagination it is!\n"
+        "My gorge rises at it.\n";
+
+      Ptr<FilePort> port = new FilePort(String("../tests/raw/01.bin"), "rb");
+
+      const Octet* p = (Octet*)"\0";
+      try {
+        for (p = tmp; *p; p++) {
+          Octet c = port->read();
+          assert(c == *p);
+        }
+        // try to read beyond the end
+        port->read();
+        assert(0);
+      }
+      catch (const EofException& ) {
+        assert(!*p);
+      }
+      int explen = strlen((const char*)tmp);
+      assert(port->cursor() == explen);
+
+      port->setCursor(0);
+
+      Octet buffer[512];
+      int readlen = port->read(buffer, explen);
+      assert(readlen == explen);
+      assert(memcmp(tmp, buffer, explen) == 0);
+
+      port->close();
+      assert(!port->isOpen());
+
+      try {
+        (void)port->isEof();
+        assert(0);
+      }
+      catch (const PortNotOpenException& ) {
+      }
+    }
   }
 };
 static FilePortUnitTest filePortUnitTest;
