@@ -31,7 +31,7 @@ namespace heather
         fErrCode(errCode)
     { }
 
-    int errCode()
+    int errCode() const
     {
       return fErrCode;
     }
