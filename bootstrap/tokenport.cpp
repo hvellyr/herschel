@@ -146,8 +146,7 @@ public:
         "}\n";
       Ptr<TokenPort> p = new FileTokenPort(new DataPort((Octet*)test, strlen(test)));
 
-      try
-      {
+      try {
         assert(p->read() == Token(kSymbol, String("interface")));
         assert(p->read() == Token(kSymbol, String("zero")));
         assert(p->read() == Token(kParanOpen));
@@ -198,8 +197,7 @@ public:
 
         assert(p->isEof());
       }
-      catch (const NotationException& ne)
-      {
+      catch (const NotationException& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
@@ -225,8 +223,7 @@ public:
 
     Ptr<TokenPort> p = new InternalTokenPort(tokens);
 
-    try
-    {
+    try {
       assert(p->read() == Token(kSymbol, String("def")));
       assert(p->read() == Token(kSymbol, String("const")));
       assert(p->read() == Token(kSymbol, String("x")));
@@ -235,8 +232,7 @@ public:
 
       assert(p->isEof());
     }
-    catch (const NotationException& ne)
-    {
+    catch (const NotationException& ne) {
       fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
     }
   };
