@@ -658,6 +658,16 @@ public:
       catch (const PortNotOpenException& ) {
       }
     }
+
+    {
+      try {
+        Ptr<FilePort> port = new FilePort(String("../tests/raw/does-not-exist.bin"), "rb");
+        assert(0);
+      }
+      catch (const IOException& e) {
+        assert(e.errCode() == ENOENT);
+      }
+    }
   }
 };
 static FilePortUnitTest filePortUnitTest;
