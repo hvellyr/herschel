@@ -118,8 +118,7 @@ Tokenizer::nextChar()
     fCC = c;
     return c;
   }
-  catch (const EofException& )
-  {
+  catch (const EofException& ) {
     fCC = EOF;
     throw;
   }
@@ -148,8 +147,7 @@ Tokenizer::readIdentifier(const String& prefix, TokenType type,
   String identifier = prefix;
 
   try {
-    while (!isDelimiter(fCC))
-    {
+    while (!isDelimiter(fCC)) {
       if (acceptGenerics) {
         if (fCC == '<') {
           fNextCharIsGenericOpen = true;
@@ -162,8 +160,7 @@ Tokenizer::readIdentifier(const String& prefix, TokenType type,
       nextChar();
     }
   }
-  catch (const EofException& )
-  {
+  catch (const EofException& ) {
   }
 
   if (type == kSymbol && identifier.endsWith(String(":")))
@@ -483,8 +480,7 @@ Tokenizer::readString()
       }
     }
   }
-  catch (const EofException& )
-  {
+  catch (const EofException& ) {
     parseError(String("unfinished string, began at line ") + prevlc);
     throw;
   }
@@ -804,8 +800,7 @@ public:
 
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
-      try
-      {
+      try {
         assert(tnz.nextToken() == Token(kSymbol, String("interface")));
         assert(tnz.nextToken() == Token(kSymbol, String("zero")));
         assert(tnz.nextToken() == Token(kParanOpen));
@@ -854,8 +849,7 @@ public:
         assert(tnz.nextToken() == Token(kBracketClose));
         assert(tnz.nextToken() == Token(kBraceClose));
       }
-      catch (const NotationException& ne)
-      {
+      catch (const NotationException& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
@@ -868,8 +862,7 @@ public:
         "5i  3.1415i\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
-      try
-      {
+      try {
         assert(tnz.nextToken() == Token(kInteger, 12345));
         assert(tnz.nextToken() == Token(kInteger, 0xaaaa));
         assert(tnz.nextToken() == Token(kInteger, 0xabcdef));
@@ -892,8 +885,7 @@ public:
         assert(tnz.nextToken() == Token(kInteger, 5).setIsImaginary(true));
         assert(tnz.nextToken() == Token(kReal, 3.1415).setIsImaginary(true));
       }
-      catch (const Exception& ne)
-      {
+      catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
@@ -904,8 +896,7 @@ public:
         "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
-      try
-      {
+      try {
         assert(tnz.nextToken() == Token(kChar, 0x20));
         assert(tnz.nextToken() == Token(kChar, 0x60));
         assert(tnz.nextToken() == Token(kChar, '('));
@@ -915,8 +906,7 @@ public:
         assert(tnz.nextToken() == Token(kString, String("hello,\nworld!")));
         assert(tnz.nextToken() == Token(kString, String("\033a(;;")));
       }
-      catch (const Exception& ne)
-      {
+      catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
@@ -927,8 +917,7 @@ public:
         "def f(arg: _x = 0 .. 20 by 2)\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
-      try
-      {
+      try {
         assert(tnz.nextToken() == Token(kSymbol, String("def")));
         assert(tnz.nextToken() == Token(kSymbol, String("f")));
         assert(tnz.nextToken() == Token(kParanOpen));
@@ -961,8 +950,7 @@ public:
         assert(tnz.nextToken() == Token(kInteger, 2));
         assert(tnz.nextToken() == Token(kParanClose));
       }
-      catch (const Exception& ne)
-      {
+      catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
@@ -974,8 +962,7 @@ public:
         "#(1 -> 2) #()\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
-      try
-      {
+      try {
         assert(tnz.nextToken() == Token(kKeyword, String("abc")));
         assert(tnz.nextToken() == Token(kKeyword, String("delft")));
 
@@ -997,8 +984,7 @@ public:
         assert(tnz.nextToken() == Token(kLiteralVectorOpen));
         assert(tnz.nextToken() == Token(kParanClose));
       }
-      catch (const Exception& ne)
-      {
+      catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
@@ -1014,8 +1000,7 @@ public:
         "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
-      try
-      {
+      try {
         assert(tnz.nextToken() == Token(kSymbol, String("Buffer")));
         assert(tnz.nextToken() == Token(kGenericOpen));
         assert(tnz.nextToken() == Token(kSymbol, String("Int")));
@@ -1146,8 +1131,7 @@ public:
         assert(tnz.nextToken() == Token(kSymbol, String("Octet")));
 
       }
-      catch (const Exception& ne)
-      {
+      catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
@@ -1158,8 +1142,7 @@ public:
         "f('T)  12`mm\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
-      try
-      {
+      try {
         assert(tnz.nextToken() == Token(kSymbol, String("io")));
         assert(tnz.nextToken() == Token(kPipe));
         assert(tnz.nextToken() == Token(kSymbol, String("File")));
@@ -1182,8 +1165,7 @@ public:
         assert(tnz.nextToken() == Token(kBackQuote));
         assert(tnz.nextToken() == Token(kSymbol, String("mm")));
       }
-      catch (const Exception& ne)
-      {
+      catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
@@ -1193,13 +1175,11 @@ public:
         "##  ?val:name";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
-      try
-      {
+      try {
         assert(tnz.nextToken() == Token(kSangHash));
         assert(tnz.nextToken() == Token(kMacroParam, String("val:name")));
       }
-      catch (const Exception& ne)
-      {
+      catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
       }
     }
