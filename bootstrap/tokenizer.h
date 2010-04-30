@@ -142,6 +142,15 @@ namespace heather
         fIsImaginary(false)
     { }
 
+    Token(TokenType type, const char* value)
+      : fType(type),
+        fStrValue(String(value)),
+        fIntValue(0),
+        fInt2Value(0),
+        fDoubleValue(0.0),
+        fIsImaginary(false)
+    { }
+
     Token(TokenType type, int value)
       : fType(type),
         fIntValue(value),

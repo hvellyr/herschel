@@ -1,0 +1,9 @@
+module core ("sijo/ixwick 0.1: core")
+
+module red ("sijo/ixwick 0.1: red")
+{
+}
+
+module blue ("sijo/ixwick 0.1: blue")
+{
+}
