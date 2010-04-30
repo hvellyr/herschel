@@ -70,7 +70,7 @@ namespace heather
     virtual bool isOpen() const = 0;
     virtual bool isEof() const = 0;
 
-    virtual size_t write(T* data, size_t items)
+    virtual size_t write(const T* data, size_t items)
     {
       for (size_t i = 0; i < items; i++) {
         int rv = this->write(data[i]);
@@ -119,6 +119,7 @@ namespace heather
   {
   public:
     FilePort(const String& fileName, const char* mode);
+    FilePort(FILE* stream);
     ~FilePort();
 
     void close();
@@ -126,7 +127,7 @@ namespace heather
     virtual bool isOpen() const;
     virtual bool isEof() const;
 
-    virtual size_t write(Octet* data, size_t items);
+    virtual size_t write(const Octet* data, size_t items);
     virtual int write(Octet byte);
 
     virtual size_t read(Octet* buffer, size_t items);
@@ -139,6 +140,7 @@ namespace heather
     virtual long cursor();
 
   private:
+    bool fOwnsStream;
     FILE* fStream;
   };
 
@@ -155,7 +157,7 @@ namespace heather
     virtual bool isOpen() const;
     virtual bool isEof() const;
 
-    virtual size_t write(Octet* data, size_t items);
+    virtual size_t write(const Octet* data, size_t items);
     virtual int write(Octet byte);
 
     virtual size_t read(Octet* buffer, size_t items);
@@ -189,7 +191,7 @@ namespace heather
     virtual bool isOpen() const;
     virtual bool isEof() const;
 
-    virtual size_t write(Char* data, size_t items);
+    virtual size_t write(const Char* data, size_t items);
     virtual int write(Char c);
 
     using Port<Char>::read;
@@ -205,6 +207,15 @@ namespace heather
     Ptr<Port<Octet> > fSlave;
     std::vector<Octet> fEncBuffer;
   };
+
+
+  //--------------------------------------------------------------------------
+
+  void display(Port<Octet>* port, const char* value);
+  void displayln(Port<Octet>* port, const char* value);
+  void display(Port<Octet>* port, const String& value);
+  void displayln(Port<Octet>* port, const String& value);
+
 };                              // namespace
 
 #endif                          // bootstrap_port_h

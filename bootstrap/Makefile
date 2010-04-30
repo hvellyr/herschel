@@ -1,6 +1,6 @@
 CXXFLAGS = -DUNITTESTS
 
-heather: heather.o str.o port.o option.o properties.o tokenizer.o unittests.o tokenport.o
+heather: heather.o str.o port.o option.o properties.o tokenizer.o unittests.o tokenport.o apt.o parser.o
 	$(CXX) -o $@ $^
 
 str.o: str.cpp str.h common.h refcountable.h unittests.h
@@ -25,6 +25,12 @@ unittests.o: unittests.cpp unittests.h str.h
 	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
 
 tokenport.o: tokenport.cpp tokenport.h unittests.h str.h exception.h
+	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
+
+apt.o: apt.cpp apt.h unittests.h str.h exception.h
+	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
+
+parser.o: parser.cpp parser.h unittests.h apt.h str.h exception.h
 	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
 
 

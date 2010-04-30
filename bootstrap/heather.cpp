@@ -8,14 +8,12 @@
 #include "option.h"
 #include "properties.h"
 #include "unittests.h"
+#include "ptr.h"
+#include "apt.h"
+#include "parser.h"
 
 #define VERSION "0.0.1"
 #define COPYRIGHT "2010"
-
-#if defined(UNITTESTS)
-static bool sRunUnitTests = false;
-#endif
-
 
 using namespace heather;
 
@@ -33,7 +31,7 @@ displayHelp()
 {
   displayVersion();
   printf("\n");
-  printf("Usage: heather [options] file...\n");
+  printf("Usage: heather [options] files...\n");
   printf("Options:\n");
   printf("  --help            Display this information\n");
   printf("  --version         Display the version\n");
@@ -43,8 +41,17 @@ displayHelp()
 #if defined(UNITTESTS)
   printf("  --run-unit-tests  Run unit tests for the compiler\n");
 #endif
+  printf("  --parse           Only parse the source files\n");
 }
 
+
+enum CompileFunction {
+  kDisplayHelp,
+#if defined(UNITTESTS)
+  kRunUnitTests,
+#endif
+  kParseFiles,
+};
 
 int
 main(int argc, char** argv)
@@ -58,9 +65,11 @@ main(int argc, char** argv)
 #if defined(UNITTESTS)
     { 6, "-UT", "--run-unit-tests", false },
 #endif
+    { 7, "-P",  "--parse",          false },
     { NULL }                    // sentinel
   };
 
+  CompileFunction func = kDisplayHelp;
   std::vector<String> files;
   OptionsParser::ArgumentType type;
   OptionsParser::Option option;
@@ -94,9 +103,12 @@ main(int argc, char** argv)
 
 #if defined(UNITTESTS)
       case 6:                   // unittests
-        sRunUnitTests = true;
+        func = kRunUnitTests;
         break;
 #endif
+      case 7:                   // parse
+        func = kParseFiles;
+        break;
       }
       break;
 
@@ -116,10 +128,43 @@ main(int argc, char** argv)
     }
   }
 
+
+  switch (func) {
+  case kDisplayHelp:
+    displayHelp();
+    break;
+
 #if defined(UNITTESTS)
-  if (sRunUnitTests)
+  case kRunUnitTests:
     UnitTest::runUnitTests();
+    break;
 #endif
+
+  case kParseFiles:
+    for (std::vector<String>::iterator it = files.begin();
+         it != files.end();
+         it++)
+    {
+      try {
+        Ptr<Parser> parser = new Parser;
+        Ptr<AptNode> apt = parser->parse(new CharPort(new FilePort(*it, "rb")));
+
+        if (apt != NULL) {
+          Ptr<FilePort> stream = new FilePort(stdout);
+          apt->display(stream);
+          displayln(stream, "");
+        }
+        else
+          fprintf(stdout, "null\n");
+      }
+      catch (const Exception& e) {
+        fprintf(stderr, "ERROR: compilation of '%s' failed: %s\n",
+                (const char*)StrHelper(*it),
+                (const char*)StrHelper(e.message()));
+      }
+    }
+    break;
+  }
 
   return 0;
 }

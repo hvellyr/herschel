@@ -32,12 +32,19 @@ PortNotOpenException::PortNotOpenException()
 //----------------------------------------------------------------------------
 
 FilePort::FilePort(const String& fileName, const char* mode)
-  : fStream(NULL)
+  : fOwnsStream(true),
+    fStream(NULL)
 {
   fStream = ::fopen((const char*)StrHelper(fileName), mode);
   if (fStream == NULL)
     throw IOException(String("Could not open file '") + fileName + "'", errno);
 }
+
+
+FilePort::FilePort(FILE* stream)
+  : fOwnsStream(false),
+    fStream(stream)
+{ }
 
 
 FilePort::~FilePort()
@@ -49,7 +56,7 @@ FilePort::~FilePort()
 void
 FilePort::close()
 {
-  if (fStream != NULL) {
+  if (fStream != NULL && fOwnsStream) {
     ::fclose(fStream);
     fStream = NULL;
   }
@@ -74,7 +81,7 @@ FilePort::isEof() const
 
 
 size_t
-FilePort::write(Octet* data, size_t items)
+FilePort::write(const Octet* data, size_t items)
 {
   if (fStream == NULL)
     throw PortNotOpenException();
@@ -214,7 +221,7 @@ DataPort::isEof() const
 
 
 size_t
-DataPort::write(Octet* data, size_t items)
+DataPort::write(const Octet* data, size_t items)
 {
   if (!fOwnsData)
     throw IOException(String("Can't write this port"), EPERM);
@@ -352,7 +359,7 @@ CharPort::isEof() const
 
 
 size_t
-CharPort::write(Char* data, size_t items)
+CharPort::write(const Char* data, size_t items)
 {
   int clen = str_wcs_to_utf8(data, items, NULL, items * 6 + 1);
   fEncBuffer.reserve(clen + 1);
@@ -441,6 +448,41 @@ long
 CharPort::cursor()
 {
   return fSlave->cursor();
+}
+
+
+//----------------------------------------------------------------------------
+
+void
+heather::display(Port<Octet>* port, const char* value)
+{
+  if (value != NULL)
+    port->write((const Octet*)value, strlen(value));
+  else
+    port->write((const Octet*)"(null)", 6);
+}
+
+
+void
+heather::displayln(Port<Octet>* port, const char* value)
+{
+  display(port, value);
+  display(port, "\n");
+}
+
+
+void
+heather::display(Port<Octet>* port, const String& value)
+{
+  display(port, StrHelper(value));
+}
+
+
+void
+heather::displayln(Port<Octet>* port, const String& value)
+{
+  display(port, value);
+  display(port, "\n");
 }
 
 
