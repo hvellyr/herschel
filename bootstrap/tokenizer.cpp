@@ -16,12 +16,13 @@
 using namespace heather;
 
 
-Tokenizer::Tokenizer(Port<Char>* port)
+Tokenizer::Tokenizer(Port<Char>* port, CharRegistry* charRegistry)
   : fPort(port),
     fLineCount(1),
     fCC(EOF),
     fNextCharIsGenericOpen(false),
-    fInGenericContext(0)
+    fInGenericContext(0),
+    fCharRegistry(charRegistry)
 {
   assert(port != NULL);
 
@@ -392,6 +393,11 @@ Tokenizer::mapCharNameToChar(const String& charnm)
     return Char('\t');
   else if (charnm == String("esc") || charnm == String("escape"))
     return Char('\e');
+  else if (fCharRegistry != NULL) {
+    int cp = fCharRegistry->lookupChar(charnm);
+    if (cp >= 0 && cp <= 0x10ffff)
+      return Char(cp);
+  }
 
   parseError(String("Unknown char name: ") + charnm);
   return ' ';
@@ -777,6 +783,25 @@ Token::c_str() const
 }
 
 
+//----------------------------------------------------------------------------
+
+void
+CharRegistry::registerChar(const String& charName, int codePoint)
+{
+  fCharMap.insert(std::make_pair(charName, codePoint));
+}
+
+
+int
+CharRegistry::lookupChar(const String& charName) const
+{
+  std::map<String, int>::const_iterator it = fCharMap.find(charName);
+  if (it != fCharMap.end())
+    return it->second;
+  return -1;
+}
+
+
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
@@ -892,9 +917,14 @@ public:
 
     {
       static const char* test =
-        "\\space  \\u60h  \\( \\newline \\cr"
-        "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n";
-      Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
+        "\\space  \\u60h  \\( \\newline \\cr\n"
+        "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n"
+        "\\ga \\gong";
+      Ptr<CharRegistry> cr = new CharRegistry;
+      Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
+                    cr);
+      cr->registerChar(String("ga"), 0xac00);
+      cr->registerChar(String("gong"), 0xacf5);
 
       try {
         assert(tnz.nextToken() == Token(kChar, 0x20));
@@ -905,6 +935,9 @@ public:
 
         assert(tnz.nextToken() == Token(kString, String("hello,\nworld!")));
         assert(tnz.nextToken() == Token(kString, String("\033a(;;")));
+
+        assert(tnz.nextToken() == Token(kChar, 0xac00));
+        assert(tnz.nextToken() == Token(kChar, 0xacf5));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));

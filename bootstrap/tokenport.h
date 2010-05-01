@@ -35,10 +35,8 @@ namespace heather
   class FileTokenPort : public TokenPort
   {
   public:
-    FileTokenPort(Port<Octet>* port);
-    FileTokenPort(Port<Char>* port);
-
-    ~FileTokenPort();
+    FileTokenPort(Port<Octet>* port, CharRegistry* charRegistry = NULL);
+    FileTokenPort(Port<Char>* port, CharRegistry* charRegistry = NULL);
 
     virtual bool isOpen() const;
     virtual bool isEof() const;

@@ -10,6 +10,7 @@
 #define bootstrap_apt_h
 
 #include <list>
+#include <map>
 
 #include "refcountable.h"
 #include "port.h"
@@ -23,6 +24,8 @@ namespace heather
   //--------------------------------------------------------------------------
 
   typedef std::list<Ptr<AptNode> > NodeList;
+  typedef std::list<String> StringList;
+  typedef std::map<String, String> StringStringMap;
 
 
   //--------------------------------------------------------------------------
@@ -35,10 +38,6 @@ namespace heather
     virtual void appendNode(AptNode* node);
 
   protected:
-    void displayNodeList(Port<Octet>* port,
-                         const char* tagName,
-                         const NodeList& nodelist) const;
-
     NodeList fChildren;
   };
 
@@ -100,6 +99,36 @@ namespace heather
     bool   fIsModule;
     String fModName;
     String fPublicId;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class ExportNode : public AptNode
+  {
+  public:
+    ExportNode(const StringList& flags,
+               const StringList& symbols);
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    StringList fFlags;
+    StringList fSymbols;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class ImportNode : public AptNode
+  {
+  public:
+    ImportNode(const String& codeFile,
+               const StringStringMap& renames);
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    String fCodeFile;
+    StringStringMap fRenames;
   };
 };
 

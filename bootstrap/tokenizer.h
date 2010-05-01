@@ -9,6 +9,8 @@
 #ifndef bootstrap_tokenizer_h
 #define bootstrap_tokenizer_h
 
+#include <map>
+
 #include "port.h"
 
 namespace heather
@@ -32,6 +34,19 @@ namespace heather
 
   private:
     int fLine;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class CharRegistry : public RefCountable
+  {
+  public:
+    void registerChar(const String& charName, int codePoint);
+    int lookupChar(const String& charName) const;
+
+  private:
+    std::map<String, int> fCharMap;
   };
 
 
@@ -204,7 +219,7 @@ namespace heather
   class Tokenizer : public RefCountable
   {
   public:
-    Tokenizer(Port<Char>* port);
+    Tokenizer(Port<Char>* port, CharRegistry* charRegistry = NULL);
 
     bool isEof() const;
 
@@ -251,6 +266,7 @@ namespace heather
     int fCC;
     bool fNextCharIsGenericOpen;
     int fInGenericContext;
+    Ptr<CharRegistry> fCharRegistry;
   };
 };
 
