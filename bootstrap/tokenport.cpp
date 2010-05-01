@@ -44,15 +44,15 @@ TokenPort::canSetCursor() const
 
 //----------------------------------------------------------------------------
 
-FileTokenPort::FileTokenPort(Port<Octet>* port)
+FileTokenPort::FileTokenPort(Port<Octet>* port, CharRegistry* charRegistry)
 {
-  setTokenizer(new Tokenizer(new CharPort(port)));
+  setTokenizer(new Tokenizer(new CharPort(port), charRegistry));
 }
 
 
-FileTokenPort::FileTokenPort(Port<Char>* port)
+FileTokenPort::FileTokenPort(Port<Char>* port, CharRegistry* charRegistry)
 {
-  setTokenizer(new Tokenizer(port));
+  setTokenizer(new Tokenizer(port, charRegistry));
 }
 
 
@@ -60,10 +60,6 @@ void
 FileTokenPort::setTokenizer(Tokenizer* tokenizer)
 {
   fTokenizer = tokenizer;
-}
-
-FileTokenPort::~FileTokenPort()
-{
 }
 
 
