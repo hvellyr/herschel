@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><import><file>red</file></import><import><file>blue</file><renames><rename><from>blue</from><to>green</to></rename></renames></import><import><file>blue</file><renames><rename><from>blue</from><to>green</to></rename><rename><from>orange</from><to>yellow</to></rename></renames></import></compile-unit>
