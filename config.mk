@@ -9,7 +9,7 @@ srcdir = .
 # ----------------------------------------------------------------------
 
 PACKAGE = heather
-VERSION = 0.0.1
+VERSION = 0.1
 COPYRIGHTYEAR = 2010
 # human readable package name, used for Mac packages, etc.
 HR_PACKAGE = Heather

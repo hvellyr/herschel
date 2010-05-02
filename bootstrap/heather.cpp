@@ -12,17 +12,14 @@
 #include "apt.h"
 #include "parser.h"
 
-#define VERSION "0.0.1"
-#define COPYRIGHT "2010"
 
 using namespace heather;
-
 
 static void
 displayVersion()
 {
   printf("%s %s - heather compiler\n", "heather", VERSION);
-  printf("Copyright (c) %s Gregor Klinke\n", COPYRIGHT);
+  printf("Copyright (c) %s Gregor Klinke\n", COPYRIGHTYEAR);
 }
 
 
