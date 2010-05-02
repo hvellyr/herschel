@@ -1,0 +1,5 @@
+def const a = #(1 -> 2, 3 -> 4)
+def const b = #()
+def const c = #(name -> "Yukie Itoh", #city -> "Tokyo")
+def const d = #(#(1 -> 2), #(3), #())
+

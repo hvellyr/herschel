@@ -12,6 +12,8 @@
 #include <map>
 
 #include "port.h"
+#include "numbers.h"
+
 
 namespace heather
 {
@@ -130,7 +132,6 @@ namespace heather
     Token()
       : fType(kInvalid),
         fIntValue(0),
-        fInt2Value(0),
         fDoubleValue(0.0),
         fIsImaginary(false)
     { }
@@ -143,7 +144,6 @@ namespace heather
     Token(TokenType type)
       : fType(type),
         fIntValue(0),
-        fInt2Value(0),
         fDoubleValue(0.0),
         fIsImaginary(false)
     { }
@@ -152,7 +152,6 @@ namespace heather
       : fType(type),
         fStrValue(value),
         fIntValue(0),
-        fInt2Value(0),
         fDoubleValue(0.0),
         fIsImaginary(false)
     { }
@@ -161,7 +160,6 @@ namespace heather
       : fType(type),
         fStrValue(String(value)),
         fIntValue(0),
-        fInt2Value(0),
         fDoubleValue(0.0),
         fIsImaginary(false)
     { }
@@ -169,15 +167,14 @@ namespace heather
     Token(TokenType type, int value)
       : fType(type),
         fIntValue(value),
-        fInt2Value(0),
         fDoubleValue(0.0),
         fIsImaginary(false)
     { }
 
-    Token(TokenType type, int first, int second)
+    Token(TokenType type, const Rational& rat)
       : fType(type),
-        fIntValue(first),
-        fInt2Value(second),
+        fIntValue(0),
+        fRationalValue(rat),
         fDoubleValue(0.0),
         fIsImaginary(false)
     { }
@@ -208,7 +205,7 @@ namespace heather
     TokenType fType;
     String    fStrValue;
     int       fIntValue;
-    int       fInt2Value;
+    Rational  fRationalValue;
     double    fDoubleValue;
     bool      fIsImaginary;
   };

@@ -124,10 +124,10 @@ namespace heather
   }
 
 
-  String operator+(const String& one, float value)
+  String operator+(const String& one, double value)
   {
     char tmp[32];
-    sprintf(tmp, "%f", value);
+    sprintf(tmp, "%lf", value);
     return one + tmp;
   }
 

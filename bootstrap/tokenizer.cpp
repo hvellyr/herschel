@@ -341,7 +341,7 @@ Tokenizer::readNumber(int sign)
     {
       int fval = first.toInt(10);
       int sval = second.toInt(10);
-      token = Token(kRational, fval * sign, sval);
+      token = Token(kRational, Rational(fval * sign, sval));
     }
     break;
 
@@ -631,12 +631,12 @@ Tokenizer::nextTokenImpl()
 
 Token& Token::operator=(const Token& other)
 {
-  fType = other.fType;
-  fStrValue = other.fStrValue;
-  fIntValue = other.fIntValue;
-  fInt2Value = other.fInt2Value;
-  fDoubleValue = other.fDoubleValue;
-  fIsImaginary = other.fIsImaginary;
+  fType          = other.fType;
+  fStrValue      = other.fStrValue;
+  fIntValue      = other.fIntValue;
+  fRationalValue = other.fRationalValue;
+  fDoubleValue   = other.fDoubleValue;
+  fIsImaginary   = other.fIsImaginary;
 
   return *this;
 }
@@ -658,15 +658,14 @@ Token::operator==(const Token& other) const
       return fIntValue == other.fIntValue;
 
     case kInteger:
-      return fIntValue == other.fIntValue &&
-        fIsImaginary == other.fIsImaginary;
+      return ( fIntValue == other.fIntValue &&
+               fIsImaginary == other.fIsImaginary );
     case kReal:
-      return fDoubleValue == other.fDoubleValue &&
-        fIsImaginary == other.fIsImaginary;
+      return ( fDoubleValue == other.fDoubleValue &&
+               fIsImaginary == other.fIsImaginary );
     case kRational:
-      return fIntValue == other.fIntValue &&
-        fInt2Value == other.fInt2Value &&
-        fIsImaginary == other.fIsImaginary;
+      return ( fRationalValue == other.fRationalValue &&
+               fIsImaginary == other.fIsImaginary );
 
     default:
       return true;
@@ -749,7 +748,8 @@ Token::c_str() const
       strcat(buffer, "i");
     break;
   case kRational:
-    sprintf(buffer, "%d/%d", fIntValue, fInt2Value);
+    sprintf(buffer, "%d/%d",
+            fRationalValue.numerator(), fRationalValue.denominator());
     if (fIsImaginary)
       strcat(buffer, "i");
     break;
@@ -904,9 +904,9 @@ public:
         assert(tnz.nextToken() == Token(kReal, 0.000123456)); // normalized
         assert(tnz.nextToken() == Token(kReal, -3.1315));
 
-        assert(tnz.nextToken() == Token(kRational, 2, 3));
-        assert(tnz.nextToken() == Token(kRational, 120, 33));
-        assert(tnz.nextToken() == Token(kRational, 1, 1024));
+        assert(tnz.nextToken() == Token(kRational, Rational(2, 3)));
+        assert(tnz.nextToken() == Token(kRational, Rational(120, 33)));
+        assert(tnz.nextToken() == Token(kRational, Rational(1, 1024)));
         assert(tnz.nextToken() == Token(kInteger, 5).setIsImaginary(true));
         assert(tnz.nextToken() == Token(kReal, 3.1415).setIsImaginary(true));
       }
