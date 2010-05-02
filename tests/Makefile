@@ -22,6 +22,7 @@ syntax-tests: $(testtemp_dir)
 		xmlf=`dirname $$testf`/`basename $$testf .hea`.xml; \
 	  $(BUILDDIR)/$(BUILDSTYLE)/heather -P $$testf > $(testtemp_dir)/tmp_0000.xml; \
 		python comparexml.py $$xmlf $(testtemp_dir)/tmp_0000.xml; \
+	 	rm -f $(testtemp_dir)/tmp_0000.xml; \
   done
 
 
