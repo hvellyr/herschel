@@ -501,7 +501,7 @@ Tokenizer::nextToken()
 {
   Token t = nextTokenImpl();
   if (Properties::isTraceTokenizer()) {
-    printf("%s ", t.c_str());
+    printf("%s ", (const char*)StrHelper(t.toString()));
     fflush(stdout);
   }
   return t;
@@ -675,111 +675,100 @@ Token::operator==(const Token& other) const
 }
 
 
-const char*
-Token::c_str() const
+String
+Token::toString() const
 {
-  static char buffer[512];
-  buffer[0] = '\0';
-
   switch (fType) {
-  case kEOF:              strcpy(buffer, "EOF"); break;
-  case kInvalid:          strcpy(buffer, "INVALID"); break;
-  case kPlus:             strcpy(buffer, "+"); break;
-  case kMinus:            strcpy(buffer, "-"); break;
-  case kDivide:           strcpy(buffer, "/"); break;
-  case kMultiply:         strcpy(buffer, "*"); break;
-  case kExponent:         strcpy(buffer, "**"); break;
-  case kFold:             strcpy(buffer, "%"); break;
-  case kCompare:          strcpy(buffer, "<=>"); break;
-  case kEqual:            strcpy(buffer, "=="); break;
-  case kUnequal:          strcpy(buffer, "<>"); break;
-  case kLess:             strcpy(buffer, "<"); break;
-  case kLessEqual:        strcpy(buffer, "<="); break;
-  case kGreater:          strcpy(buffer, ">"); break;
-  case kGreaterEqual:     strcpy(buffer, ">="); break;
-  case kAssign:           strcpy(buffer, "="); break;
-  case kMapTo:            strcpy(buffer, "->"); break;
-  case kIn:               strcpy(buffer, "in"); break;
-  case kMod:              strcpy(buffer, "mod"); break;
-  case kIsa:              strcpy(buffer, "isa"); break;
-  case kAs:               strcpy(buffer, "as"); break;
-  case kBy:               strcpy(buffer, "by"); break;
-  case kLogicalAnd:       strcpy(buffer, "and"); break;
-  case kLogicalOr:        strcpy(buffer, "or"); break;
-  case kBitAnd:           strcpy(buffer, "AND"); break;
-  case kBitOr:            strcpy(buffer, "OR"); break;
-  case kBitXor:           strcpy(buffer, "XOR"); break;
-  case kShiftLeft:        strcpy(buffer, "<<"); break;
-  case kShiftRight:       strcpy(buffer, ">>"); break;
+  case kEOF:              return String("EOF");
+  case kInvalid:          return String("INVALID");
+  case kPlus:             return String("+");
+  case kMinus:            return String("-");
+  case kDivide:           return String("/");
+  case kMultiply:         return String("*");
+  case kExponent:         return String("**");
+  case kFold:             return String("%");
+  case kCompare:          return String("<=>");
+  case kEqual:            return String("==");
+  case kUnequal:          return String("<>");
+  case kLess:             return String("<");
+  case kLessEqual:        return String("<=");
+  case kGreater:          return String(">");
+  case kGreaterEqual:     return String(">=");
+  case kAssign:           return String("=");
+  case kMapTo:            return String("->");
+  case kIn:               return String("in");
+  case kMod:              return String("mod");
+  case kIsa:              return String("isa");
+  case kAs:               return String("as");
+  case kBy:               return String("by");
+  case kLogicalAnd:       return String("and");
+  case kLogicalOr:        return String("or");
+  case kBitAnd:           return String("AND");
+  case kBitOr:            return String("OR");
+  case kBitXor:           return String("XOR");
+  case kShiftLeft:        return String("<<");
+  case kShiftRight:       return String(">>");
 
-  case kString:
-    buffer[0] = '"';
-    fStrValue.toUtf8(buffer + 1, 510);
-    strcat(buffer, "\"");
-    break;
-      
+  case kString:           return String("\"") + fStrValue + "\"";
+  case kSymbol:           return fStrValue;
+  case kKeyarg:           return fStrValue + ":";
+  case kMacroParam:       return String("?") + fStrValue;
+  case kKeyword:          return String("#") + fStrValue;
+
   case kChar:
-    sprintf(buffer, "\\u0%x;", fIntValue);
-    break;
-  case kSymbol:
-    fStrValue.toUtf8(buffer, 510);
-    break;
-  case kKeyarg:
-    fStrValue.toUtf8(buffer, 510);
-    strcat(buffer, ":");
-    break;
-  case kMacroParam:
-    buffer[0] = '?';
-    fStrValue.toUtf8(buffer + 1, 510);
-    break;
-  case kKeyword:
-    buffer[0] = '#';
-    fStrValue.toUtf8(buffer + 1, 510);
-    break;
+    {
+      char buffer[32];
+      sprintf(buffer, "\\u0%x;", fIntValue);
+      return String(buffer);
+    }
 
-  case kInteger:  
-    sprintf(buffer, "%d", fIntValue);
-    if (fIsImaginary)
-      strcat(buffer, "i");
-    break;
+  case kInteger:
+    return !fIsImaginary ? fromInt(fIntValue) : (fromInt(fIntValue) + "i");
   case kReal:
-    sprintf(buffer, "%lf", fDoubleValue);
-    if (fIsImaginary)
-      strcat(buffer, "i");
-    break;
+    return !fIsImaginary ? fromDouble(fDoubleValue) : (fromDouble(fDoubleValue) + "i");
   case kRational:
-    sprintf(buffer, "%d/%d",
-            fRationalValue.numerator(), fRationalValue.denominator());
-    if (fIsImaginary)
-      strcat(buffer, "i");
-    break;
+    {
+      char buffer[128];
+      sprintf(buffer, "%d/%d",
+              fRationalValue.numerator(), fRationalValue.denominator());
+      if (fIsImaginary)
+        strcat(buffer, "i");
+      return String(buffer);
+    }
 
-  case kParanOpen:          strcpy(buffer, "("); break;
-  case kParanClose:         strcpy(buffer, ")"); break;
-  case kBracketOpen:        strcpy(buffer, "["); break;
-  case kBracketClose:       strcpy(buffer, "]"); break;
-  case kBraceOpen:          strcpy(buffer, "{"); break;
-  case kBraceClose:         strcpy(buffer, "}"); break;
-  case kGenericOpen:        strcpy(buffer, "<"); break;
-  case kGenericClose:       strcpy(buffer, ">"); break;
-  case kComma:              strcpy(buffer, ","); break;
-  case kSemicolon:          strcpy(buffer, ";"); break;
-  case kColon:              strcpy(buffer, ":"); break;
-  case kAt:                 strcpy(buffer, "@"); break;
-  case kAmpersand:          strcpy(buffer, "&"); break;
-  case kPipe:               strcpy(buffer, "|"); break;
-  case kBackQuote:          strcpy(buffer, "`"); break;
-  case kQuote:              strcpy(buffer, "'"); break;
-  case kEllipsis:           strcpy(buffer, "..."); break;
-  case kRange:              strcpy(buffer, ".."); break;
-  case kDot:                strcpy(buffer, "."); break;
+  case kParanOpen:          return String("(");
+  case kParanClose:         return String(")");
+  case kBracketOpen:        return String("[");
+  case kBracketClose:       return String("]");
+  case kBraceOpen:          return String("{");
+  case kBraceClose:         return String("}");
+  case kGenericOpen:        return String("<");
+  case kGenericClose:       return String(">");
+  case kComma:              return String(",");
+  case kSemicolon:          return String(";");
+  case kColon:              return String(":");
+  case kAt:                 return String("@");
+  case kAmpersand:          return String("&");
+  case kPipe:               return String("|");
+  case kBackQuote:          return String("`");
+  case kQuote:              return String("'");
+  case kEllipsis:           return String("...");
+  case kRange:              return String("..");
+  case kDot:                return String(".");
 
-  case kLiteralVectorOpen:  strcpy(buffer, "#("); break;
-  case kLiteralArrayOpen:   strcpy(buffer, "#["); break;
-  case kSangHash:           strcpy(buffer, "##"); break;
+  case kLiteralVectorOpen:  return String("#(");
+  case kLiteralArrayOpen:   return String("#[");
+  case kSangHash:           return String("##");
   };
-  
-  return buffer;
+
+  return String("??");
+}
+
+
+String
+heather::operator+(const String& one, const Token& two)
+{
+  return one + two.toString();
 }
 
 
@@ -804,6 +793,62 @@ CharRegistry::lookupChar(const String& charName) const
 
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
+
+class TokenUnitTest : public UnitTest
+{
+public:
+  TokenUnitTest() : UnitTest("Token") {}
+
+  virtual void run()
+  {
+    assert(Token(kReal, 3.1415).fDoubleValue == 3.1415);
+    assert(Token(kReal, 1.2345).fType == kReal);
+    assert(Token(kInteger, 0x10000).fIntValue == 0x10000);
+    assert(Token(kRational, Rational(23, 27)).fRationalValue == Rational(23, 27));
+
+    assert(Token(kSymbol, String("abc")).fStrValue == String("abc"));
+    assert(Token(kString, String("abc")).fStrValue == String("abc"));
+    assert(Token(kKeyword, String("abc")).fStrValue == String("abc"));
+    assert(Token(kMacroParam, String("abc")).fStrValue == String("abc"));
+
+    assert(Token(kSymbol, "abc").fStrValue == String("abc"));
+    assert(Token(kString, "abc").fStrValue == String("abc"));
+    assert(Token(kKeyword, "abc").fStrValue == String("abc"));
+    assert(Token(kMacroParam, "abc").fStrValue == String("abc"));
+
+#define TEST_ASSIGNOP2(_type, _value, _member)          \
+    {                                                   \
+      Token t = Token(_type, _value);                   \
+      assert(t.fType == _type && t._member == _value);  \
+    }
+
+    TEST_ASSIGNOP2(kReal, 3.1415, fDoubleValue);
+    TEST_ASSIGNOP2(kInteger, 0x20000, fIntValue);
+    TEST_ASSIGNOP2(kRational, Rational(1, 127), fRationalValue);
+    TEST_ASSIGNOP2(kString, String("abc"), fStrValue);
+#undef TEST_ASSIGNOP2
+
+#define TEST_COPYCTOR2(_type, _value, _member)          \
+    {                                                   \
+      Token t(Token(_type, _value));                    \
+      assert(t.fType == _type && t._member == _value);  \
+    }
+
+    TEST_COPYCTOR2(kReal, 3.1415, fDoubleValue);
+    TEST_COPYCTOR2(kInteger, 0x20000, fIntValue);
+    TEST_COPYCTOR2(kRational, Rational(1, 127), fRationalValue);
+    TEST_COPYCTOR2(kString, String("abc"), fStrValue);
+#undef TEST_COPYCTOR2
+    
+    {
+      Token t(Token(kReal, 12.345).setIsImaginary(true));
+      assert(t.fType == kReal && t.fDoubleValue == 12.345 &&
+             t.fIsImaginary);
+    }
+  }
+};
+static TokenUnitTest tokenUnitTest;
+
 
 class TokenizerUnitTest : public UnitTest
 {
@@ -902,7 +947,7 @@ public:
         assert(tnz.nextToken() == Token(kReal, 0.12345e+10));
         assert(tnz.nextToken() == Token(kReal, 0.12345e+10)); // normalized 123.45e+7
         assert(tnz.nextToken() == Token(kReal, 0.000123456)); // normalized
-        assert(tnz.nextToken() == Token(kReal, -3.1315));
+        assert(tnz.nextToken() == Token(kReal, -3.1415));
 
         assert(tnz.nextToken() == Token(kRational, Rational(2, 3)));
         assert(tnz.nextToken() == Token(kRational, Rational(120, 33)));

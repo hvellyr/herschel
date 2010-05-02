@@ -34,19 +34,19 @@ namespace heather
   {
   public:
     UnexpectedTokenException(const Token& t)
-      : SyntaxException(String("Unexpected token: ") + t.c_str())
+      : SyntaxException(String("Unexpected token: ") + t)
     { }
 
     UnexpectedTokenException(const Token& t, const String& msg)
-      : SyntaxException(String("Unexpected token: ") + t.c_str() + " " + msg)
+      : SyntaxException(String("Unexpected token: ") + t + " " + msg)
     { }
 
     UnexpectedTokenException(const Token& t, const char* msg)
-      : SyntaxException(String("Unexpected token: ") + t.c_str() + " " + msg)
+      : SyntaxException(String("Unexpected token: ") + t + " " + msg)
     { }
 
     UnexpectedTokenException(const Token& t, const Token& expected)
-      : SyntaxException(String("Unexpected token: ") + t.c_str() + " expected: " + expected.c_str())
+      : SyntaxException(String("Unexpected token: ") + t + " expected: " + expected)
     { }
   };
 
