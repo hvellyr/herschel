@@ -88,6 +88,7 @@ namespace heather
 
   String fromInt(int value);
   String fromFloat(float value);
+  String fromDouble(double value);
   String fromBool(bool value);
 
 

@@ -148,6 +148,14 @@ namespace heather
   }
 
 
+  String fromDouble(double value)
+  {
+    char tmp[32];
+    sprintf(tmp, "%lf", value);
+    return String(tmp);
+  }
+
+
   String fromBool(bool value)
   {
     return value ? String("true") : String("false");

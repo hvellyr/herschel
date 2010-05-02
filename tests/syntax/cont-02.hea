@@ -1,5 +1,5 @@
 def const a = #(1, 2, 3, 4)
 def const b = #()
 def const c = #("hello", ", ", "world", "!")
-def const d = #(#(1, 2), #(3), #())
+def const d = #(#(1, 3.1415i), #(3/4), #())
 

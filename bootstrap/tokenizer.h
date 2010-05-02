@@ -171,6 +171,13 @@ namespace heather
         fIsImaginary(false)
     { }
 
+    Token(TokenType type, double value)
+      : fType(type),
+        fIntValue(0),
+        fDoubleValue(value),
+        fIsImaginary(false)
+    { }
+
     Token(TokenType type, const Rational& rat)
       : fType(type),
         fIntValue(0),
@@ -192,7 +199,7 @@ namespace heather
       return fType == kSymbol;
     }
 
-    const char* c_str() const;
+    String toString() const;
 
     Token& setIsImaginary(bool value)
     {
@@ -209,6 +216,8 @@ namespace heather
     double    fDoubleValue;
     bool      fIsImaginary;
   };
+
+  String operator+(const String& one, const Token& two);
 
 
   //--------------------------------------------------------------------------
