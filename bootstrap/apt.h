@@ -15,6 +15,7 @@
 #include "refcountable.h"
 #include "port.h"
 #include "ptr.h"
+#include "numbers.h"
 
 
 namespace heather
@@ -57,22 +58,84 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class NumberNode : public AptNode
+  class KeywordNode : public AptNode
   {
   public:
+    KeywordNode(const String& value);
+
+    virtual void display(Port<Octet>* port) const;
+  private:
+    String fValue;
   };
 
 
   //--------------------------------------------------------------------------
 
-  class IntNode : public NumberNode
+  class SymbolNode : public AptNode
+  {
+  public:
+    SymbolNode(const String& value);
+
+    virtual void display(Port<Octet>* port) const;
+  private:
+    String fValue;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  template<typename T>
+  class NumberNode : public AptNode
+  {
+  public:
+  protected:
+    NumberNode(T value)
+      : fValue(value)
+    { }
+
+    T fValue;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class IntNode : public NumberNode<int>
   {
   public:
     IntNode(int value);
     virtual void display(Port<Octet>* port) const;
+  };
 
+
+  //--------------------------------------------------------------------------
+
+  class RealNode : public NumberNode<double>
+  {
+  public:
+    RealNode(double value);
+    virtual void display(Port<Octet>* port) const;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class RationalNode : public NumberNode<Rational>
+  {
+  public:
+    RationalNode(const Rational& value);
+    virtual void display(Port<Octet>* port) const;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class CharNode : public AptNode
+  {
+  public:
+    CharNode(Char value);
+    virtual void display(Port<Octet>* port) const;
   private:
-    int fValue;
+    Char fValue;
   };
 
 
@@ -129,6 +192,108 @@ namespace heather
   private:
     String fCodeFile;
     StringStringMap fRenames;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  enum VardefFlags {
+    kNoFlags,
+    kIsFluid,
+    kIsConst
+  };
+
+  class VardefNode : public AptNode
+  {
+  public:
+    VardefNode(const String& symbolName, VardefFlags flags,
+               AptNode* type, AptNode* initExpr);
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    String fSymbolName;
+    VardefFlags fFlags;
+    Ptr<AptNode> fType;
+    Ptr<AptNode> fInitExpr;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class ArrayNode : public AptNode
+  {
+  public:
+    virtual void display(Port<Octet>* port) const;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class VectorNode : public AptNode
+  {
+  public:
+    virtual void display(Port<Octet>* port) const;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class DictNode : public AptNode
+  {
+  public:
+    virtual void display(Port<Octet>* port) const;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  enum BinOperatorType
+  {
+    kOpPlus,
+    kOpMinus,
+    kOpDivide,
+    kOpMultiply,
+    kOpExponent,
+    kOpFold,
+    kOpCompare,
+    kOpEqual,
+    kOpUnequal,
+    kOpLess,
+    kOpLessEqual,
+    kOpGreater,
+    kOpGreaterEqual,
+    kOpMapTo,
+    kOpIn,
+    kOpMod,
+    kOpIsa,
+    kOpAs,
+    kOpLogicalAnd,
+    kOpLogicalOr,
+    kOpBitAnd,
+    kOpBitOr,
+    kOpBitXor,
+    kOpShiftLeft,
+    kOpShiftRight,
+  };
+
+
+  class BinaryNode : public AptNode
+  {
+  public:
+    BinaryNode(AptNode* left, BinOperatorType op, AptNode* right);
+
+    virtual void display(Port<Octet>* port) const;
+
+    BinOperatorType op() const;
+    AptNode* left() const;
+    AptNode* right() const;
+
+    bool isMapTo() const;
+
+  private:
+    Ptr<AptNode>    fLeft;
+    Ptr<AptNode>    fRight;
+    BinOperatorType fOp;
   };
 };
 

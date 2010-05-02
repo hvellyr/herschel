@@ -92,6 +92,11 @@ namespace heather
     AptNode* parseImport();
     AptNode* parseDef();
     AptNode* parseCharDef();
+    AptNode* parseVarDef(VardefFlags flags);
+    AptNode* parseExpr();
+    AptNode* parseTypeSpec();
+    AptNode* parseLiteralVector();
+    AptNode* parseLiteralArray();
 
     Token nextToken();
 

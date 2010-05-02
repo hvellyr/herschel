@@ -197,6 +197,169 @@ Parser::parseImport()
 
 
 AptNode*
+Parser::parseTypeSpec()
+{
+  // TODO
+  return NULL;
+}
+
+
+AptNode*
+Parser::parseLiteralVector()
+{
+  bool isDict = false;
+  Ptr<AptNode> cont;
+
+  while (fToken.fType != kParanClose) {
+    if (fToken.fType == kEOF)
+      throw PrematureEndOfFileException();
+
+    Ptr<AptNode> node = parseExpr();
+
+    if (cont == NULL) {
+      BinaryNode* bin = dynamic_cast<BinaryNode*>(node.obj());
+      if (bin != NULL && bin->isMapTo()) {
+        isDict = true;
+        cont = new DictNode;
+      }
+      else
+        cont = new VectorNode;
+
+      cont->appendNode(node);
+    }
+    else if (isDict) {
+      BinaryNode* bin = dynamic_cast<BinaryNode*>(node.obj());
+      if (bin == NULL || bin->isMapTo())
+        throw SyntaxException(String("For literal dictionaries all elements "
+                                     "must be MAPTO pairs"));
+      cont->appendNode(node);
+    }
+    else
+      cont->appendNode(node);
+
+    if (fToken.fType == kComma)
+      nextToken();
+    else if (fToken.fType != kParanClose)
+      throw UnexpectedTokenException(fToken, String("expected ] or ,"));
+  }
+
+  if (fToken.fType == kParanClose)
+    nextToken();
+
+  if (cont == NULL)
+    cont = new VectorNode;
+
+  return cont.release();
+}
+
+
+AptNode*
+Parser::parseLiteralArray()
+{
+  Ptr<ArrayNode> cont = new ArrayNode;
+
+  while (fToken.fType != kBracketClose) {
+    if (fToken.fType == kEOF)
+      throw PrematureEndOfFileException();
+
+    Ptr<AptNode> n = parseExpr();
+    cont->appendNode(n);
+
+    if (fToken.fType == kComma)
+      nextToken();
+    else if (fToken.fType != kBracketClose)
+      throw UnexpectedTokenException(fToken, String("expected ] or ,"));
+  }
+
+  if (fToken.fType == kBracketClose)
+    nextToken();
+
+  return cont.release();
+}
+
+
+AptNode*
+Parser::parseExpr()
+{
+  Ptr<AptNode> n;
+  switch (fToken.fType) {
+  case kInteger:
+    n = new IntNode(fToken.fIntValue);
+    nextToken();
+    return n.release();
+
+  case kReal:
+    n = new RealNode(fToken.fDoubleValue);
+    nextToken();
+    return n.release();
+
+  case kRational:
+    n = new RationalNode(fToken.fRationalValue);
+    nextToken();
+    return n.release();
+
+  case kString:
+    n = new StringNode(fToken.fStrValue);
+    nextToken();
+    return n.release();
+
+  case kChar:
+    n = new CharNode(fToken.fIntValue);
+    nextToken();
+    return n.release();
+
+  case kKeyword:
+    n = new KeywordNode(fToken.fStrValue);
+    nextToken();
+    return n.release();
+
+  case kSymbol:
+    n = new SymbolNode(fToken.fStrValue);
+    nextToken();
+    return n.release();
+
+  case kLiteralVectorOpen:
+    nextToken();
+    return parseLiteralVector();
+
+  case kLiteralArrayOpen:
+    nextToken();
+    return parseLiteralArray();
+
+  default:
+    assert(0);
+  }
+
+  return NULL;
+}
+
+
+AptNode*
+Parser::parseVarDef(VardefFlags flags)
+{
+  if (fToken.fType != kSymbol)
+    throw UnexpectedTokenException(fToken, "expected SYMBOL");
+  String symbolName = fToken.fStrValue;
+  Ptr<AptNode> type;
+
+  nextToken();
+  if (fToken.fType == kColon) {
+    nextToken();
+    type = parseTypeSpec();
+  }
+
+  Ptr<AptNode> initExpr;
+  if (fToken.fType == kAssign) {
+    nextToken();
+
+    initExpr = parseExpr();
+  }
+
+  return new VardefNode(symbolName, flags, type, initExpr);
+}
+
+
+AptNode*
 Parser::parseCharDef()
 {
   if (fToken.fType != kSymbol)
@@ -244,10 +407,12 @@ Parser::parseDef()
     // TODO
   }
   else if (fToken == Token(kSymbol, "const")) {
-    // TODO
+    nextToken();
+    return parseVarDef(kIsConst);
   }
   else if (fToken == Token(kSymbol, "fluid")) {
-    // TODO
+    nextToken();
+    return parseVarDef(kIsFluid);
   }
   else if (fToken == Token(kSymbol, "generic")) {
     // TODO
@@ -260,7 +425,7 @@ Parser::parseDef()
     // TODO
   }
   else {
-    // lookup macro
+    // variable, function, or lookup macro
     throw UndefinedSymbolException(fToken.fStrValue);
   }
 

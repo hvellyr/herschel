@@ -84,7 +84,7 @@ namespace heather
 
   String operator+(const String& one, const char* two);
   String operator+(const String& one, int value);
-  String operator+(const String& one, float value);
+  String operator+(const String& one, double value);
 
   String fromInt(int value);
   String fromFloat(float value);

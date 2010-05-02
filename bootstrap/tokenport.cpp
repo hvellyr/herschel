@@ -215,7 +215,7 @@ public:
     tokens.push_back(Token(kSymbol, String("const")));
     tokens.push_back(Token(kSymbol, String("x")));
     tokens.push_back(Token(kAssign));
-    tokens.push_back(Token(kRational, 2, 3));
+    tokens.push_back(Token(kRational, Rational(2, 3)));
 
     Ptr<TokenPort> p = new InternalTokenPort(tokens);
 
@@ -224,7 +224,7 @@ public:
       assert(p->read() == Token(kSymbol, String("const")));
       assert(p->read() == Token(kSymbol, String("x")));
       assert(p->read() == Token(kAssign));
-      assert(p->read() == Token(kRational, 2, 3));
+      assert(p->read() == Token(kRational, Rational(2, 3)));
 
       assert(p->isEof());
     }
