@@ -72,12 +72,12 @@ typedef unsigned __int64 UInt64;
 #define SIZEOF_LONG_DOUBLE  16
 #define SIZEOF_VOID_P       4
 
-#define CHIM_INT_MIN (-2147483647 - 1)
-#define CHIM_INT_MAX 2147483647
+#define HEA_INT_MIN (-2147483647 - 1)
+#define HEA_INT_MAX 2147483647
 
 #if defined(USE_LLONG)
-#define CHIM_LLONG_MIN (-0x7fffffffffffffffLL-1)
-#define CHIM_LLONG_MAX 0x7fffffffffffffffLL
+#define HEA_LLONG_MIN (-0x7fffffffffffffffLL-1)
+#define HEA_LLONG_MAX 0x7fffffffffffffffLL
 #endif
 
 

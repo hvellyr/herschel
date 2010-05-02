@@ -27,11 +27,11 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>Chimi</string>
+	<string>Heather</string>
 	<key>CFBundleIconFile</key>
-	<string>Chimi.icns</string>
+	<string>Heather.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.eyestep.chimi</string>
+	<string>org.eyestep.heather</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
