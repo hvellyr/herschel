@@ -665,7 +665,7 @@ public:
         "thousand times, and now how abhorr'd in my imagination it is!\n"
         "My gorge rises at it.\n";
 
-      Ptr<FilePort> port = new FilePort(String("../tests/raw/01.bin"), "rb");
+      Ptr<FilePort> port = new FilePort(String("tests/raw/01.bin"), "rb");
 
       const Octet* p = (Octet*)"\0";
       try {
@@ -703,7 +703,7 @@ public:
 
     {
       try {
-        Ptr<FilePort> port = new FilePort(String("../tests/raw/does-not-exist.bin"), "rb");
+        Ptr<FilePort> port = new FilePort(String("tests/raw/does-not-exist.bin"), "rb");
         assert(0);
       }
       catch (const IOException& e) {
