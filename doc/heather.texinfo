@@ -159,7 +159,7 @@ inheritance just as a separation of types (``protocols'',
 ``interfaces'') and classes.
 
 The grammar is regular, small, and context free.  In particular it can
-be parsed without symbol tables, and does not required a special
+be parsed without symbol tables, and does not require a special
 preprocessor since it offers powerful hygienic macros as part of the
 language and special support for conditional compilation.
 
