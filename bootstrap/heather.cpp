@@ -148,6 +148,7 @@ main(int argc, char** argv)
 
         if (apt != NULL) {
           Ptr<FilePort> stream = new FilePort(stdout);
+          display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
           apt->display(stream);
           displayln(stream, "");
         }
