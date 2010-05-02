@@ -1,15 +1,65 @@
-pdf: heather.pdf
+#  This file is part of the heather package 
+#
+#  Copyright (c) 2010 Gregor Klinke
+#  All rights reserved.
+#
 
-html: html/heather.html
+top_srcdir=..
 
-info: heather.info
+include $(top_srcdir)/config.mk
 
-heather.pdf: heather.texinfo texinfo.tex
-	texi2pdf heather.texinfo
+TEXINFO_FILES = heather.texinfo
 
-heather.info: heather.texinfo texinfo.tex
-	makeinfo heather.texinfo
+DISTFILES = Makefile       \
+	heather-mode.el          \
+	heather-logo.eps         \
+	copyright.head           \
+	copyright.cpp            \
+	minimum-requirements.txt \
+	patterns.txt             \
+	texinfo.tex              \
+	artwork/heather-logo.eps \
+	artwork/heather-logo.png \
+	artwork/heather.jpg      \
+	fonts/Makefile           \
+	fonts/OcrB.afm           \
+	fonts/OcrB.map           \
+	fonts/fobr.tfm           \
+	fonts/fobr.vf            \
+	fonts/fobr.vpl           \
+	fonts/fobro.tfm          \
+	fonts/fobro.vf           \
+	fonts/fobro.vpl          \
+	fonts/ocrb.sfd           \
+	fonts/ocrb.ttf           \
+	fonts/rfobr.tfm          \
+	fonts/rfobro.tfm         \
+	CHANGES
 
-html/heather.html: heather.texinfo texinfo.tex
-	if test ! -d html; then mkdir html; fi; \
-	texi2html --output=html --noheader --nomenu --split=chapter heather.texinfo
+include $(top_srcdir)/build/pre.mk
+
+all-local: pdf info
+
+PDFS =  $(TEXINFO_FILES:%.texinfo=$(BUILDDIR)/%.pdf)
+
+pdf: $(PDFS)
+
+$(BUILDDIR)/%.pdf : %.texinfo
+	texi2pdf -o $@ $<
+
+
+INFOS =  $(TEXINFO_FILES:%.texinfo=$(BUILDDIR)/%.info)
+
+info: $(INFOS)
+
+$(BUILDDIR)/%.info : %.texinfo
+	makeinfo -o $@ $<
+
+
+clean-local:
+
+distclean-local: clean-local
+
+include $(top_srcdir)/build/generic.mk
+
+
