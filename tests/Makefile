@@ -20,9 +20,9 @@ $(testtemp_dir):
 syntax-tests: $(testtemp_dir)
 	for testf in syntax/*.hea; do \
 		xmlf=`dirname $$testf`/`basename $$testf .hea`.xml; \
-	  $(BUILDDIR)/$(BUILDSTYLE)/heather -P $$testf > $(testtemp_dir)/tmp_0000.xml; \
-		python comparexml.py $$xmlf $(testtemp_dir)/tmp_0000.xml; \
-	 	rm -f $(testtemp_dir)/tmp_0000.xml; \
+		destf=$(testtemp_dir)/`basename $$testf .hea`.xml; \
+	  $(BUILDDIR)/$(BUILDSTYLE)/heather -P $$testf > $$destf; \
+		python comparexml.py $$xmlf $$destf; \
   done
 
 
