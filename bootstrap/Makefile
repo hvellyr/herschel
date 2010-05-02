@@ -1,39 +1,104 @@
-CXXFLAGS = -DUNITTESTS
+#  This file is part of the heather package
+#
+#  Copyright (c) 2010 Gregor Klinke
+#  All rights reserved.
+#
 
-heather: heather.o str.o port.o option.o properties.o tokenizer.o unittests.o tokenport.o apt.o parser.o
-	$(CXX) -o $@ $^
+top_srcdir=..
 
-str.o: str.cpp str.h common.h refcountable.h unittests.h
-	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
+include $(top_srcdir)/config.mk
 
-port.o: port.cpp port.h common.h refcountable.h ptr.h unittests.h
-	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
+CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src
 
-option.o: option.cpp option.h common.h str.h unittests.h
-	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
+SOURCES =        \
+	apt.cpp        \
+	heather.cpp    \
+	option.cpp     \
+	parser.cpp     \
+	port.cpp       \
+	properties.cpp \
+	str.cpp        \
+	tokenizer.cpp  \
+	tokenport.cpp  \
+	unittests.cpp
 
-heather.o: heather.cpp unittests.h
-	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
-
-properties.o: properties.cpp properties.h str.h
-	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
-
-tokenizer.o: tokenizer.cpp tokenizer.h port.h str.h unittests.h
-	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
-
-unittests.o: unittests.cpp unittests.h str.h
-	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
-
-tokenport.o: tokenport.cpp tokenport.h unittests.h str.h exception.h
-	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
-
-apt.o: apt.cpp apt.h unittests.h str.h exception.h
-	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
-
-parser.o: parser.cpp parser.h unittests.h apt.h str.h exception.h
-	$(CXX) $(CXXFLAGS) -g -c -Wall -o $@ $<
+HEADERS =        \
+	apt.h          \
+	common.h       \
+	exception.h    \
+	numbers.h      \
+	option.h       \
+	parser.h       \
+	port.h         \
+	properties.h   \
+	ptr.h          \
+	refcountable.h \
+	str.h          \
+	tokenizer.h    \
+	tokenport.h    \
+	unittests.h
 
 
+# ifeq ($(TARGET_OS),mac)
+# HEADERS +=
+# endif
 
-clean:
-	rm *.o heather
+# ifeq ($(TARGET_OS),linux)
+# HEADERS +=
+# endif
+
+# ifeq ($(TARGET_OS),win)
+# HEADERS +=
+# endif
+
+CPP_OBJS =  $(SOURCES:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
+
+OBJS = $(CPP_OBJS)
+
+DISTFILES = Makefile \
+	$(SOURCES) $(HEADERS)
+
+
+
+include $(top_srcdir)/build/pre.mk
+
+all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) APPX
+
+APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/heather$(APPEXT)
+APPX: $(APPBINARY)
+
+$(APPBINARY): $(OBJS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+
+
+clean-local:
+	rm -f $(BUILDDIR)/$(BUILDSTYLE)/*$(OBJEXT) $(APP) $(DISTAPP)
+
+distclean-local: clean-local
+	-rm -rf $(DEPS_DIR) TAGS
+
+
+# dist-local:
+# 	for d in . lang sys; do \
+# 		mkdir $(top_distdir)/src/$$d ; \
+# 		for f in $$d/*.xxx; do \
+# 			cp -p $$f $(top_distdir)/src/$$f >/dev/null 2>&1; \
+# 		done; \
+# 	done
+
+
+rebuild: clean all
+
+
+TAGS: $(HEADERS) $(SOURCES)
+	find -E . -regex ".*\.mm$$|.*\.cpp$$|.*\.h$$" -print | etags --members -
+
+
+DEPS = $(patsubst %.cpp,$(DEPS_DIR)/%.d,$(SOURCES))
+
+.PRECIOUS: $(DEPS_DIR)/%.d
+
+-include $(DEPS)
+
+include $(top_srcdir)/build/generic.mk

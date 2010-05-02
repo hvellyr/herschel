@@ -9,8 +9,9 @@
 #ifndef bootstrap_common_h
 #define bootstrap_common_h
 
-
-// #include "sysconf.h"
+#include "config-local.h"
+#include "version.h"
+#include "sysconf.h"
 
 typedef unsigned char Octet;
 typedef unsigned short Char;

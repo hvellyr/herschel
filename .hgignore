@@ -1,3 +1,4 @@
+temp/
 doc/.*\.aux
 doc/.*\.cp
 doc/.*\.fn
@@ -10,11 +11,8 @@ doc/.*\.toc
 doc/.*\.tp
 doc/.*\.vr
 doc/.DS_Store
+doc/version.texinfo
 .DS_Store
 .*~
-scheme/.*\.o
-scheme/.*\.dylib
-scheme/chibi-scheme
-scheme/arc
-bootstrap/.*.o
-bootstrap/heather
+version.h
+config-local.h
