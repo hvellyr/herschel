@@ -284,17 +284,17 @@ Parser::parseExpr()
   Ptr<AptNode> n;
   switch (fToken.fType) {
   case kInteger:
-    n = new IntNode(fToken.fIntValue);
+    n = new IntNode(fToken.fIntValue, fToken.fIsImaginary);
     nextToken();
     return n.release();
 
   case kReal:
-    n = new RealNode(fToken.fDoubleValue);
+    n = new RealNode(fToken.fDoubleValue, fToken.fIsImaginary);
     nextToken();
     return n.release();
 
   case kRational:
-    n = new RationalNode(fToken.fRationalValue);
+    n = new RationalNode(fToken.fRationalValue, fToken.fIsImaginary);
     nextToken();
     return n.release();
 

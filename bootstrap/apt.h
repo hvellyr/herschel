@@ -89,11 +89,13 @@ namespace heather
   {
   public:
   protected:
-    NumberNode(T value)
-      : fValue(value)
+    NumberNode(T value, bool isImaginary)
+      : fValue(value),
+        fIsImaginary(isImaginary)
     { }
 
     T fValue;
+    bool fIsImaginary;
   };
 
 
@@ -102,7 +104,7 @@ namespace heather
   class IntNode : public NumberNode<int>
   {
   public:
-    IntNode(int value);
+    IntNode(int value, bool isImaginary);
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -112,7 +114,7 @@ namespace heather
   class RealNode : public NumberNode<double>
   {
   public:
-    RealNode(double value);
+    RealNode(double value, bool isImaginary);
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -122,7 +124,7 @@ namespace heather
   class RationalNode : public NumberNode<Rational>
   {
   public:
-    RationalNode(const Rational& value);
+    RationalNode(const Rational& value, bool isImaginary);
     virtual void display(Port<Octet>* port) const;
   };
 

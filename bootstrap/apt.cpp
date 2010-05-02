@@ -15,7 +15,21 @@ static void
 displayOpenTag(Port<Octet>* port, const char* tagName)
 {
   if (tagName != NULL)
-    heather::display(port, String() + "<" + tagName + ">");
+    display(port, String() + "<" + tagName + ">");
+}
+
+
+static void
+displayOpenTagAttrs(Port<Octet>* port, const char* tagName,
+                    const char* attrs)
+{
+  if (tagName != NULL) {
+    display(port, String() + "<" + tagName);
+    if (attrs != NULL)
+      display(port, String() + " " + attrs + ">");
+    else
+      display(port, ">");
+  }
 }
 
 
@@ -31,6 +45,17 @@ static void
 displayTag(Port<Octet>* port, const char* tagName, const String& value)
 {
   displayOpenTag(port, tagName);
+  display(port, value);
+  displayCloseTag(port, tagName);
+}
+
+
+static void
+displayTagAttr(Port<Octet>* port, const char* tagName,
+               const char* attrs,
+               const String& value)
+{
+  displayOpenTagAttrs(port, tagName, attrs);
   display(port, value);
   displayCloseTag(port, tagName);
 }
@@ -172,8 +197,8 @@ SymbolNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-IntNode::IntNode(int value)
-  : NumberNode<int>(value)
+IntNode::IntNode(int value, bool isImaginary)
+  : NumberNode<int>(value, isImaginary)
 {
 }
 
@@ -181,14 +206,17 @@ IntNode::IntNode(int value)
 void
 IntNode::display(Port<Octet>* port) const
 {
-  displayTag(port, "int", String() + fValue);
+  if (fIsImaginary)
+    displayTagAttr(port, "int", "imag='true'", String() + fValue);
+  else
+    displayTag(port, "int", String() + fValue);
 }
 
 
 //----------------------------------------------------------------------------
 
-RealNode::RealNode(double value)
-  : NumberNode<double>(value)
+RealNode::RealNode(double value, bool isImaginary)
+  : NumberNode<double>(value, isImaginary)
 {
 }
 
@@ -196,14 +224,17 @@ RealNode::RealNode(double value)
 void
 RealNode::display(Port<Octet>* port) const
 {
-  displayTag(port, "real", String() + fValue);
+  if (fIsImaginary)
+    displayTagAttr(port, "real", "imag='true'", String() + fValue);
+  else
+    displayTag(port, "real", String() + fValue);
 }
 
 
 //----------------------------------------------------------------------------
 
-RationalNode::RationalNode(const Rational& value)
-  : NumberNode<Rational>(value)
+RationalNode::RationalNode(const Rational& value, bool isImaginary)
+  : NumberNode<Rational>(value, isImaginary)
 {
 }
 
@@ -211,8 +242,11 @@ RationalNode::RationalNode(const Rational& value)
 void
 RationalNode::display(Port<Octet>* port) const
 {
-  displayTag(port, "rational", ( String() + fValue.numerator()
-                                 + "/" + fValue.denominator()) );
+  String val = String() + fValue.numerator() + "/" + fValue.denominator();
+  if (fIsImaginary)
+    displayTagAttr(port, "rational", "imag='true'", val);
+  else
+    displayTag(port, "rational", val);
 }
 
 
