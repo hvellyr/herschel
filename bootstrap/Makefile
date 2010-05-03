@@ -15,6 +15,9 @@ SOURCES =        \
 	heather.cpp    \
 	option.cpp     \
 	parser.cpp     \
+	pass1.cpp      \
+	pass2.cpp      \
+	pexpr.cpp      \
 	port.cpp       \
 	properties.cpp \
 	str.cpp        \
@@ -29,6 +32,9 @@ HEADERS =        \
 	numbers.h      \
 	option.h       \
 	parser.h       \
+	pass1.h        \
+	pass2.h        \
+	pexpr.h        \
 	port.h         \
 	properties.h   \
 	ptr.h          \
