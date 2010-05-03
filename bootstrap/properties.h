@@ -26,7 +26,8 @@ namespace heather
     static void setTraces(const String& argument);
 
     static bool isTraceTokenizer();
-    static bool isTraceParser();
+    static bool isTracePass1();
+    static bool isTracePass2();
   };
 };                              // namespace
 

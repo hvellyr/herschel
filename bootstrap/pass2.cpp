@@ -16,12 +16,29 @@
 
 using namespace heather;
 
-
 //----------------------------------------------------------------------------
 
 SecondPass::SecondPass(Parser* parser)
   : fParser(parser)
 { }
+
+
+void
+SecondPass::parseTopExprlist(AptNode* rootNode, const Pexpr& expr)
+{
+  for (std::vector<Pexpr>::const_iterator it = expr.children().begin();
+       it != expr.children().end();
+       it++)
+  {
+    Ptr<AptNode> targetNode = ( !fLastModules.empty()
+                                ? fLastModules.front().obj()
+                                : rootNode );
+    
+    Ptr<AptNode> n = parseExpr(*it);
+    if (n != NULL)
+      targetNode->appendNode(n);
+  }
+}
 
 
 AptNode*
@@ -31,19 +48,83 @@ SecondPass::parseModule(const Pexpr& expr, bool isModule)
   assert(expr[0].isId("module") || expr[0].isId("interface"));
   assert(expr[1].isId());
 
-  String modName = expr[1].strValue();
+  String modName = expr[1].idValue();
   String publicId;
 
   if (expr.count() > 2) {
-    assert(expr[2].isNested());
+    assert(expr[2].isNested() && expr[2].leftToken() == kParanOpen);
     assert(expr[2].count() == 1);
-    assert(expr[2][0].isLit());
-    assert(expr[2][0].tokenValue().fType == kString);
+    assert(expr[2][0].isStringLit());
 
     publicId = expr[2][0].tokenValue().fStrValue;
   }
 
-  return new ModuleNode(modName, publicId, isModule);
+  Ptr<ModuleNode> modNode = new ModuleNode(modName, publicId, isModule);
+
+  if (expr.count() > 3) {
+    assert(expr[3].isNested() && expr[3].leftToken() == kBraceOpen);
+
+    fLastModules.push_front(modNode.obj());
+    parseTopExprlist(modNode, expr[3]);
+    fLastModules.pop_front();
+  }
+  else
+    fLastModules.push_front(modNode.obj());
+
+  return modNode.release();
+}
+
+
+AptNode*
+SecondPass::parseExport(const Pexpr& expr)
+{
+  assert(expr.isSeq() && expr.count() >= 2);
+  assert(expr[0].isId("export"));
+  assert(expr[expr.count() - 1].isNested());
+  
+  StringList flags;
+  for (int i = 1; i < expr.count() - 1; i++) {
+    assert(expr[i].isId());
+    flags.push_back(expr[i].idValue());
+  }
+
+  StringList symbols;
+  Pexpr symbolExprs = expr[expr.count() - 1];
+  for (int j = 0; j < symbolExprs.count(); j++) {
+    assert(symbolExprs[j].isId());
+    symbols.push_back(symbolExprs[j].idValue());
+  }
+
+  return new ExportNode(flags, symbols);
+}
+
+
+AptNode*
+SecondPass::parseImport(const Pexpr& expr)
+{
+  assert(expr.isSeq() && expr.count() >= 2);
+  assert(expr[0].isId("import"));
+  assert(expr[1].isStringLit());
+
+  String codeFile = expr[1].tokenValue().fStrValue;
+  StringStringMap renames;
+
+  if (expr.count() >= 3) {
+    assert(expr[2].isNested() && expr[2].leftToken() == kParanOpen);
+
+    Pexpr renExprs = expr[2];
+    for (int i = 0; i < renExprs.count(); i++) {
+      Pexpr renExpr = renExprs[i];
+      assert(renExpr.isBinarySeq(kMapTo));
+      assert(renExpr[0].isId());
+      assert(renExpr[2].isId());
+
+      renames.insert(std::make_pair(
+                       renExpr[0].idValue(), renExpr[2].idValue()));
+    }
+  }
+
+  return new ImportNode(codeFile, renames);
 }
 
 
@@ -59,6 +140,10 @@ SecondPass::parseSeq(const Pexpr& expr)
     return parseModule(expr, true);
   else if (first.isId(String("interface")))
     return parseModule(expr, false);
+  else if (first.isId(String("export")))
+    return parseExport(expr);
+  else if (first.isId(String("import")))
+    return parseImport(expr);
 
   // TODO
   return NULL;
@@ -89,14 +174,7 @@ SecondPass::parse(const Pexpr& exprs)
 
   Ptr<CompileUnitNode> node = new CompileUnitNode;
 
-  for (std::vector<Pexpr>::const_iterator it = exprs.children().begin();
-       it != exprs.children().end();
-       it++)
-  {
-    Ptr<AptNode> n = parseExpr(*it);
-    if (n != NULL)
-      node->appendNode(n);
-  }
+  parseTopExprlist(node, exprs);
 
   return node.release();
 }
