@@ -33,9 +33,15 @@ namespace heather
     AptNode* parseSeq(const Pexpr& expr);
 
     AptNode* parseModule(const Pexpr& expr, bool isModule);
+    AptNode* parseExport(const Pexpr& expr);
+    AptNode* parseImport(const Pexpr& expr);
+
+
+    void parseTopExprlist(AptNode* rootNode, const Pexpr& expr);
 
     //-------- data member
     Ptr<Parser> fParser;
+    std::list<Ptr<AptNode> > fLastModules;
   };
 };
 

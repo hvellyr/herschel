@@ -92,11 +92,15 @@ namespace heather
     Pexpr& operator=(const Pexpr& other);
 
     TokenType punctValue() const;
-    String strValue() const;
+    String idValue() const;
     Token tokenValue() const;
+    TokenType leftToken() const;
+    TokenType rightToken() const;
 
     //! useful predicates
     bool isBinarySeq(TokenType op) const;
+    bool isStringLit() const;
+
     bool isId(const char* sym) const;
     bool isId(const String& sym) const;
 

@@ -27,6 +27,9 @@ include $(top_srcdir)/build/pre.mk
 
 all-local: version.h config-local.h doc/version.texinfo $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 
+run-tests: 
+	(cd tests/; make syntax-tests)
+
 TAGS:
 	find -E . -regex ".*\.mm$$|.*\.cpp$$|.*\.h$$" -print | etags -o TAGS -
 

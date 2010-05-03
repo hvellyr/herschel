@@ -12,6 +12,7 @@
 #include "tokenizer.h"
 #include "pass1.h"
 #include "pass2.h"
+#include "properties.h"
 
 using namespace heather;
 
@@ -61,13 +62,24 @@ Parser::parse(Port<Char>* port)
 
     Pexpr parsedExprs = firstPass.parse();
 
-    Ptr<FilePort> stream = new FilePort(stdout);
-    display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
-    parsedExprs.toPort(stream);
-    printf("\n");
+    if (Properties::isTracePass1()) {
+      Ptr<FilePort> stream = new FilePort(stdout);
+      display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
+      parsedExprs.toPort(stream);
+      displayln(stream, "");
+    }
 
     SecondPass secondPass(this);
-    return secondPass.parse(parsedExprs);
+
+    Ptr<AptNode> apt = secondPass.parse(parsedExprs);
+    if (Properties::isTracePass2() && apt != NULL) {
+      Ptr<FilePort> stream = new FilePort(stdout);
+      display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
+      apt->display(stream);
+      displayln(stream, "");
+    }
+
+    return apt.release();
   }
   catch (const Exception& e) {
     fprintf(stderr, "Parse error: %s\n", (const char*)StrHelper(e.message()));

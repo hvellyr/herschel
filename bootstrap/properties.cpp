@@ -14,7 +14,8 @@ using namespace heather;
 
 static bool sVerbose = false;
 static bool sIsTokenizerTracing = false;
-static bool sIsParserTracing = false;
+static bool sIsPass1Tracing = false;
+static bool sIsPass2Tracing = false;
 static String sOutdir;
 
 
@@ -51,8 +52,10 @@ Properties::setTrace(const String& key, bool value)
 {
   if (key == String("tokenizer"))
     sIsTokenizerTracing = value;
-  else if (key == String("parser"))
-    sIsParserTracing = value;
+  else if (key == String("pass1"))
+    sIsPass1Tracing = value;
+  else if (key == String("pass2"))
+    sIsPass2Tracing = value;
 }
 
 
@@ -79,7 +82,14 @@ Properties::isTraceTokenizer()
 
 
 bool
-Properties::isTraceParser()
+Properties::isTracePass1()
 {
-  return sIsParserTracing;
+  return sIsPass1Tracing;
+}
+
+
+bool
+Properties::isTracePass2()
+{
+  return sIsPass2Tracing;
 }

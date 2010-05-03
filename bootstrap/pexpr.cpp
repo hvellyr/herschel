@@ -45,7 +45,7 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      display(port, String("<id sym='") + fStr + "'/>");
+      display(port, String("<id>") + fStr + "</id>");
     }
 
     //-------- data members
@@ -64,7 +64,35 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      display(port, String("<lit>") + fToken + "</lit>");
+      switch (fToken.fType) {
+      case kString:
+        display(port, String("<lit type='str'>") + fToken.fStrValue + "</lit>");
+        break;
+      case kChar:
+        display(port, String("<lit type='char'>") + fToken + "</lit>");
+        break;
+      case kKeyarg:
+        display(port, String("<lit type='keyarg'>") + fToken + "</lit>");
+        break;
+      case kMacroParam:
+        display(port, String("<lit type='mparm'>") + fToken + "</lit>");
+        break;
+      case kKeyword:
+        display(port, String("<lit type='keyw'>") + fToken + "</lit>");
+        break;
+      case kInteger:
+        display(port, String("<lit type='int'>") + fToken + "</lit>");
+        break;
+      case kReal:
+        display(port, String("<lit type='real'>") + fToken + "</lit>");
+        break;
+      case kRational:
+        display(port, String("<lit type='ratio'>") + fToken + "</lit>");
+        break;
+
+      default:
+        assert(0);
+      }
     }
 
     //-------- data members
@@ -124,6 +152,7 @@ namespace heather
     TokenType fRight;
   };
 };
+
 
 
 using namespace heather;
@@ -316,7 +345,7 @@ Pexpr::punctValue() const
 
 
 String
-Pexpr::strValue() const
+Pexpr::idValue() const
 {
   if (type() != kId)
     throw NotSupportedException(__FUNCTION__);
@@ -333,11 +362,36 @@ Pexpr::tokenValue() const
 }
 
 
+TokenType
+Pexpr::leftToken() const
+{
+  if (type() != kNested)
+    throw NotSupportedException(__FUNCTION__);
+  return dynamic_cast<const NestedPexprImpl*>(fImpl.obj())->fLeft;
+}
+
+
+TokenType
+Pexpr::rightToken() const
+{
+  if (type() != kNested)
+    throw NotSupportedException(__FUNCTION__);
+  return dynamic_cast<const NestedPexprImpl*>(fImpl.obj())->fRight;
+}
+
+
 bool
 Pexpr::isBinarySeq(TokenType op) const
 {
   return (isSeq() && children().size() == 3 &&
           (*this)[1].isPunct() && (*this)[1].punctValue() == op);
+}
+
+
+bool
+Pexpr::isStringLit() const
+{
+  return isLit() && tokenValue().fType == kString;
 }
 
 

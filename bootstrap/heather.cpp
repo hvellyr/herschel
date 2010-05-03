@@ -27,13 +27,15 @@ static void
 displayHelp()
 {
   displayVersion();
+  /*      123456789012345678901234567890123456789012345678901234567890123456789012*/
+  /*               1         2         3         4         5         6         7  */
   printf("\n");
   printf("Usage: heather [options] files...\n");
   printf("Options:\n");
   printf("  --help            Display this information\n");
   printf("  --version         Display the version\n");
   printf("  --verbose         Be verbose\n");
-  printf("  --trace=KEYS      Trace various aspects: { tokenizer | parser }\n");
+  printf("  --trace=KEYS      Trace various aspects: {tokenizer|pass1|pass2}\n");
   printf("  --outdir=DIR      Output all generated files to DIR\n");
 #if defined(UNITTESTS)
   printf("  --run-unit-tests  Run unit tests for the compiler\n");
@@ -145,15 +147,6 @@ main(int argc, char** argv)
       try {
         Ptr<Parser> parser = new Parser;
         Ptr<AptNode> apt = parser->parse(new CharPort(new FilePort(*it, "rb")));
-
-        if (apt != NULL) {
-          Ptr<FilePort> stream = new FilePort(stdout);
-          display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
-          apt->display(stream);
-          displayln(stream, "");
-        }
-        else
-          fprintf(stdout, "null\n");
       }
       catch (const Exception& e) {
         fprintf(stderr, "ERROR: compilation of '%s' failed: %s\n",
