@@ -2804,7 +2804,7 @@ the special form @code{spawn}.
 
 @deffn Special spawn
 
-The @code{spawn} expression as the following form:
+The @code{spawn} expression has the following form:
 
 @example
 spawn(@var{function-call})
@@ -3244,7 +3244,7 @@ inside of functions).  It is possible to import from inside macro
 expansion of course (if the macro expands to a module level construct).
 
 @deffn Special import
-The @code{import} expression the following form:
+The @code{import} expression has the following form:
 
 @example
 import @var{code-file} @r{[} ( @var{rename-clauses} ) @r{]}
@@ -3423,7 +3423,7 @@ language's point of view.  It supports the conditional compilation of
 complete code sections, however, with the @code{when} expression.
 
 @deffn Special when
-The @code{when} expression one of following forms:
+The @code{when} expression has one of the following forms:
 
 @example
 when version(@var{version-id})
@@ -3460,9 +3460,8 @@ when version(Linux) @{
 
 Similar is the more general @code{when @var{compare-operator}} form.  It
 can be used to constant variables for certain values.  The variables to
-check must be defined before as global constant binding and must be
-visible in the scope.  A compiler is free to set the value of such
-variables from the command line.
+check must be defined before as a global constant binding and must be
+visible in the scope.
 
 @example
 def const RENDER-DIALOG-TYPE = 5
@@ -3482,8 +3481,8 @@ when ignore @{
 @end example
 
 The @code{when} expressions can appear on all levels (top-level and
-inside of functions).  They expression must always contain valid code
-even if currently not active.
+inside of functions).  The enclosed expressions must always be valid
+code even if the when expression would not include it.
 @end deffn
 
 
