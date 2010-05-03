@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -13,6 +13,7 @@
 #include "apt.h"
 #include "port.h"
 #include "tokenport.h"
+#include "pexpr.h"
 
 
 namespace heather
@@ -82,21 +83,12 @@ namespace heather
     Parser(Parser* parent);
 
     virtual AptNode* parse(Port<Char>* port);
-    
+
     CharRegistry* charRegistry() const;
 
   private:
-    AptNode* parseTop();
-    AptNode* parseModule(bool isModule);
-    AptNode* parseExport();
-    AptNode* parseImport();
-    AptNode* parseDef();
-    AptNode* parseCharDef();
-    AptNode* parseVarDef(VardefFlags flags);
-    AptNode* parseExpr();
-    AptNode* parseTypeSpec();
-    AptNode* parseLiteralVector();
-    AptNode* parseLiteralArray();
+    friend class FirstPass;
+    friend class SecondPass;
 
     Token nextToken();
 
@@ -105,7 +97,6 @@ namespace heather
     Ptr<Parser>    fParent;
     Ptr<TokenPort> fPort;
     Token          fToken;
-    std::list<Ptr<AptNode> > fLastModules;
 
     Ptr<CharRegistry> fCharRegistry;
   };
