@@ -35,14 +35,39 @@ namespace heather
     Pexpr parseModule(bool isModule);
     Pexpr parseExport();
     Pexpr parseImport();
-    Pexpr parseDef();
+    Pexpr parseDef(bool isLocal);
     void parseCharDef();
-    Pexpr parseVarDef(VardefFlags flags);
+    Pexpr parseVarDef(VardefFlags flags, bool isLocal);
+    Pexpr parseVarDef2(const String& symbolName, VardefFlags flags,
+                       bool isLocal);
+    Pexpr parseFunction(const String& sym, bool isGeneric, bool isLocal);
+    Pexpr parseFunctionOrVar(bool isLocal);
+
     Pexpr parseExpr();
     Pexpr parseAtomicExpr();
+    Pexpr parseExprRec(const Pexpr& expr1, TokenType op1);
+
     Pexpr parseTypeSpec();
     Pexpr parseLiteralVector();
     Pexpr parseLiteralArray();
+
+    Pexpr parseIf();
+    Pexpr parseOn();
+    Pexpr parseAccess(const Pexpr& expr);
+    Pexpr parseGroup();
+    Pexpr parseBlock();
+    Pexpr parseAnonFun();
+
+
+    TokenType mapOperator(const Token& token) const;
+    Pexpr makeBinaryPexpr(const Pexpr& expr1, TokenType op1,
+                          const Pexpr& expr2) const;
+    Pexpr makeAssignPexpr(const Pexpr& expr1, const Pexpr& expr2) const;
+
+    bool isRightOperator(TokenType op1) const;
+    bool isOpWeightAbove(TokenType op1, TokenType op2) const;
+    int weightOperator(TokenType op1) const;
+
 
   private:
     Ptr<Parser> fParser;
