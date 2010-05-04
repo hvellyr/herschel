@@ -270,7 +270,7 @@ FirstPass::parseLiteralArray()
 
 
 Pexpr
-FirstPass::parseAtomicExpr()
+FirstPass::parseIf()
 {
   // TODO
   return Pexpr();
@@ -278,7 +278,47 @@ FirstPass::parseAtomicExpr()
 
 
 Pexpr
-FirstPass::parseExpr()
+FirstPass::parseOn()
+{
+  // TODO
+  return Pexpr();
+}
+
+
+Pexpr
+FirstPass::parseAccess(const Pexpr& expr)
+{
+  // TODO
+  return expr;
+}
+
+
+Pexpr
+FirstPass::parseGroup()
+{
+  // TODO
+  return Pexpr();
+}
+
+
+Pexpr
+FirstPass::parseBlock()
+{
+  // TODO
+  return Pexpr();
+}
+
+
+Pexpr
+FirstPass::parseAnonFun()
+{
+  // TODO
+  return Pexpr();
+}
+
+
+Pexpr
+FirstPass::parseAtomicExpr()
 {
   switch (fToken.fType) {
   case kInteger:
@@ -294,8 +334,23 @@ FirstPass::parseExpr()
     }
 
   case kSymbol:
-    // id expression
-    return Pexpr(fToken.fStrValue);
+    if (fToken == Token(kSymbol, "if")) {
+      return parseIf();
+    }
+    else if (fToken == Token(kSymbol, "let")) {
+      return parseDef(false);
+    }
+    else if (fToken == Token(kSymbol, "on")) {
+      return parseOn();
+    }
+    else if (fToken == Token(kSymbol, "function")) {
+      return parseAnonFun();
+    }
+    else {
+      Token t = fToken;
+      nextToken();
+      return parseAccess(Pexpr(t.fStrValue));
+    }
 
   case kLiteralVectorOpen:
     nextToken();
@@ -305,6 +360,11 @@ FirstPass::parseExpr()
     nextToken();
     return parseLiteralArray();
 
+  case kParanOpen:
+    return parseAccess(parseGroup());
+  case kBraceOpen:
+    return parseAccess(parseBlock());
+    
   default:
     assert(0);
   }
@@ -313,8 +373,136 @@ FirstPass::parseExpr()
 }
 
 
+TokenType
+FirstPass::mapOperator(const Token& token) const
+{
+  switch (token.fType) {
+  case kPlus:         case kMinus:     case kDivide:    case kMultiply:
+  case kExponent:     case kFold:      case kCompare:   case kEqual:
+  case kUnequal:      case kLess:      case kLessEqual: case kGreater:
+  case kGreaterEqual: case kAssign:    case kMapTo:     case kIn:
+  case kMod:          case kIsa:       case kAs:        case kBy:
+  case kLogicalAnd:   case kLogicalOr: case kBitAnd:    case kBitOr:
+  case kBitXor:       case kShiftLeft: case kShiftRight: case kRange:
+    return token.fType;
+  default:
+    return kInvalid;
+  }
+}
+
+
 Pexpr
-FirstPass::parseVarDef(VardefFlags flags)
+FirstPass::makeAssignPexpr(const Pexpr& expr1, const Pexpr& expr2) const
+{
+  if (expr1.isSymFuncall()) {
+    // rename the function call in expr1 to name! and append expr2 as last
+    // parameter to expr1's parameter list
+    return Pexpr() << Pexpr(expr1[0].idValue() + "!")
+                   << ( Pexpr(kParanOpen, kParanClose)
+                        << expr1.children()
+                        << Pexpr(kComma)
+                        << expr2 );
+  }
+  else
+    return Pexpr() << expr1 << Pexpr(kAssign) << expr2;
+}
+
+
+Pexpr
+FirstPass::makeBinaryPexpr(const Pexpr& expr1, TokenType op1,
+                           const Pexpr& expr2) const
+{
+  if (op1 == kAssign)
+    return makeAssignPexpr(expr1, expr2);
+  else
+    return Pexpr() << expr1 << Pexpr(op1) << expr2;
+}
+
+
+bool
+FirstPass::isRightOperator(TokenType op1) const
+{
+  return (op1 == kAssign);
+}
+
+
+int
+FirstPass::weightOperator(TokenType op1) const
+{
+  switch (op1) {
+  case kFold: case kMapTo: case kBy: case kIn: return  1;
+  case kRange: case kEllipsis:                 return  2;
+  case kLogicalAnd: case kLogicalOr:           return  3;
+  case kBitAnd: case kBitOr: case kBitXor:     return  4;
+  case kEqual: case kUnequal: case kLess:
+  case kLessEqual: case kGreater:
+  case kGreaterEqual: case kCompare:           return  5;
+  case kExponent: 
+  case kShiftLeft: case kShiftRight:           return  8;
+  case kPlus: case kMinus:                     return  9;
+  case kMultiply: case kDivide: case kMod:     return 10;
+  case kDot:                                   return 20;
+  default:
+    assert(0);
+    return 999999;
+  }
+}
+
+
+bool
+FirstPass::isOpWeightAbove(TokenType op1, TokenType op2) const
+{
+  return weightOperator(op1) > weightOperator(op2);
+}
+
+
+Pexpr
+FirstPass::parseExprRec(const Pexpr& expr1, TokenType op1)
+{
+  if (op1 == kInvalid)
+    return expr1;
+
+  nextToken();
+  Pexpr expr2 = parseAtomicExpr();
+  if (!expr2.isEmpty()) {
+    TokenType op2 = mapOperator(fToken);
+    if (op2 == kInvalid) {
+      if (op1 == kAssign)
+        return makeAssignPexpr(expr1, expr2);
+      else
+        return Pexpr() << expr1 << Pexpr(op1) << expr2;
+    }
+    else {
+      if (!isRightOperator(op1) && isOpWeightAbove(op1, op2))
+        return parseExprRec(makeBinaryPexpr(expr1, op1, expr2), op2);
+      else
+        return makeBinaryPexpr(expr1, op1, parseExprRec(expr2, op2));
+    }
+  }
+
+  return Pexpr();
+}
+
+
+Pexpr
+FirstPass::parseExpr()
+{
+  Pexpr expr1 = parseAtomicExpr();
+  if (!expr1.isEmpty()) {
+    TokenType op1 = mapOperator(fToken);
+    if (op1 != kInvalid)
+      return parseExprRec(expr1, op1);
+    else
+      return expr1;
+  }
+  else
+    return Pexpr();
+  // throw UnexpectedTokenException(fToken);
+}
+
+
+Pexpr
+FirstPass::parseVarDef(VardefFlags flags, bool isLocal)
 {
   if (fToken.fType != kSymbol)
     throw UnexpectedTokenException(fToken, "expected SYMBOL");
@@ -322,6 +510,14 @@ FirstPass::parseVarDef(VardefFlags flags)
 
   nextToken();
 
+  return parseVarDef2(symbolName, flags, isLocal);
+}
+
+
+Pexpr
+FirstPass::parseVarDef2(const String& symbolName, VardefFlags flags,
+                        bool isLocal)
+{
   Pexpr type;
   if (fToken.fType == kColon) {
     nextToken();
@@ -331,12 +527,11 @@ FirstPass::parseVarDef(VardefFlags flags)
   Pexpr initExpr;
   if (fToken.fType == kAssign) {
     nextToken();
-
     initExpr = parseExpr();
   }
 
   Pexpr vardefExpr;
-  vardefExpr << Pexpr("def");
+  vardefExpr << Pexpr(isLocal ? "let" : "def");
   if (flags == kIsConst)
     vardefExpr << Pexpr("const");
   else if (flags == kIsFluid)
@@ -379,7 +574,47 @@ FirstPass::parseCharDef()
 
 
 Pexpr
-FirstPass::parseDef()
+FirstPass::parseFunction(const String& sym, bool isGeneric,
+                         bool isLocal)
+{
+  // TODO
+  return Pexpr();
+}
+
+
+Pexpr
+FirstPass::parseFunctionOrVar(bool isLocal)
+{
+  assert(fToken.fType == kSymbol);
+
+  String sym = fToken.fStrValue;
+
+#if 0
+  MacroId macroId = qualifiedIdForLookup(sym);
+  Ptr<Macro> macro = lookupMacro(macroId);
+  MacroType mtype = lookupMacroType(macroId);
+  String mname = Pexpr(macroId.name());
+
+  if (macro != NULL) {
+    Pexpr expr= parseMakeMacroCall(mname, NULL, macro, mtype, true, scope);
+    if (expr.isEmpty())
+      throw IncompleteMacroException(macroId);
+  }
+  else
+#endif
+  {
+    nextToken();
+    if (fToken.fType == kParanOpen)
+      return parseFunction(sym, false, isLocal);
+
+    return parseVarDef2(sym, kNoFlags, isLocal);
+  }
+  return Pexpr();
+}
+
+
+Pexpr
+FirstPass::parseDef(bool isLocal)
 {
   if (fToken == Token(kSymbol, "type")) {
     // TODO
@@ -401,14 +636,22 @@ FirstPass::parseDef()
   }
   else if (fToken == Token(kSymbol, "const")) {
     nextToken();
-    return parseVarDef(kIsConst);
+    return parseVarDef(kIsConst, isLocal);
   }
   else if (fToken == Token(kSymbol, "fluid")) {
     nextToken();
-    return parseVarDef(kIsFluid);
+    return parseVarDef(kIsFluid, false);
   }
   else if (fToken == Token(kSymbol, "generic")) {
-    // TODO
+    nextToken();
+    if (fToken.fType != kSymbol)
+      throw UnexpectedTokenException(fToken, String("expected SYMBOL"));
+    String sym = fToken.fStrValue;
+
+    nextToken();
+    if (fToken.fType != kParanOpen)
+      throw UnexpectedTokenException(fToken, String("expected ("));
+    return parseFunction(sym, true, isLocal);
   }
   else if (fToken == Token(kSymbol, "char")) {
     nextToken();
@@ -417,10 +660,10 @@ FirstPass::parseDef()
   else if (fToken == Token(kSymbol, "macro")) {
     // TODO
   }
-  else {
-    // variable, function, or lookup macro
-    throw UndefinedSymbolException(fToken.fStrValue);
-  }
+  else if (fToken.fType == kSymbol)
+    return parseFunctionOrVar(isLocal);
+  else
+    throw UnexpectedTokenException(fToken);
 
   return Pexpr();
 }
@@ -448,7 +691,7 @@ FirstPass::parseTop()
   else if (fToken == Token(kSymbol, "def")) {
     nextToken();
 
-    return parseDef();
+    return parseDef(false);
   }
   else if (fToken == Token(kSymbol, "when")) {
     // TODO

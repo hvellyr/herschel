@@ -313,6 +313,26 @@ Pexpr::operator<<(const Pexpr& expr)
 }
 
 
+Pexpr&
+Pexpr::operator<<(const std::vector<Pexpr>& exprs)
+{
+  if (fImpl->type() != kSeq && fImpl->type() != kNested)
+    throw NotSupportedException(__FUNCTION__);
+
+  unshare();
+
+  SeqPexprImpl* seq = dynamic_cast<SeqPexprImpl*>(fImpl.obj());
+  for (std::vector<Pexpr>::const_iterator it = exprs.begin();
+       it != exprs.end();
+       it++)
+  {
+    seq->fChildren.push_back(*it);
+  }
+
+  return *this;
+}
+
+
 const Pexpr&
 Pexpr::operator[](int idx) const
 {
@@ -392,6 +412,15 @@ bool
 Pexpr::isStringLit() const
 {
   return isLit() && tokenValue().fType == kString;
+}
+
+
+bool
+Pexpr::isSymFuncall() const
+{
+  return isSeq() && count() == 2 &&
+    (*this)[0].isId() && (*this)[1].isNested() &&
+    (*this)[1].leftToken() == kParanOpen;
 }
 
 

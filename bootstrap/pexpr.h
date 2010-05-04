@@ -82,6 +82,7 @@ namespace heather
     void addExpr(const Pexpr& expr);
 
     Pexpr& operator<<(const Pexpr& expr);
+    Pexpr& operator<<(const std::vector<Pexpr>& exprs);
     const Pexpr& operator[](int idx) const;
     Pexpr& operator[](int idx);
 
@@ -100,6 +101,9 @@ namespace heather
     //! useful predicates
     bool isBinarySeq(TokenType op) const;
     bool isStringLit() const;
+
+    //! indicates whether the pexpr is a symbol-function call (e.g. abc())
+    bool isSymFuncall() const;
 
     bool isId(const char* sym) const;
     bool isId(const String& sym) const;
