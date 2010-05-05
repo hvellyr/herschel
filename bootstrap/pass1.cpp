@@ -58,10 +58,10 @@ FirstPass::parseModule(bool isModule)
                  << Pexpr(publicId) );
         }
         else
-          throw UnexpectedTokenException(fToken, String("expected )"));
+          throw UnexpectedTokenException(fToken, "expected )");
       }
       else
-        throw UnexpectedTokenException(fToken, String("expected string"));
+        throw UnexpectedTokenException(fToken, "expected string");
     }
     else
       modExpr = Pexpr() << Pexpr(isModule ? "module" : "interface")
@@ -85,7 +85,7 @@ FirstPass::parseModule(bool isModule)
         nextToken();
       }
       else
-        throw UnexpectedTokenException(fToken, String("expected }"));
+        throw UnexpectedTokenException(fToken, "expected }");
 
       modExpr << defines;
     }
@@ -108,7 +108,7 @@ FirstPass::parseExport()
   }
 
   if (fToken.fType != kParanOpen)
-    throw UnexpectedTokenException(fToken, String("expected ("));
+    throw UnexpectedTokenException(fToken, "expected (");
 
   if (fToken.fType == kParanOpen) {
     Pexpr symbols = Pexpr(kParanOpen, kParanClose);
@@ -123,13 +123,13 @@ FirstPass::parseExport()
       else if (fToken.fType == kMultiply)
         symbols << Pexpr("*");
       else
-        throw UnexpectedTokenException(fToken, String("expected SYMBOL or *"));
+        throw UnexpectedTokenException(fToken, "expected SYMBOL or *");
       nextToken();
 
       if (fToken.fType == kComma)
         nextToken();
       else if (fToken.fType != kParanClose)
-        throw UnexpectedTokenException(fToken, String("expected ) or ,"));
+        throw UnexpectedTokenException(fToken, "expected ) or ,");
     }
 
     if (fToken.fType == kParanClose)
@@ -138,7 +138,7 @@ FirstPass::parseExport()
     expr << symbols;
   }
   else
-    throw UnexpectedTokenException(fToken, String("expected ("));
+    throw UnexpectedTokenException(fToken, "expected (");
 
   return expr;
 }
@@ -148,7 +148,7 @@ Pexpr
 FirstPass::parseImport()
 {
   if (fToken.fType != kString)
-    throw UnexpectedTokenException(fToken, String("expected STRING"));
+    throw UnexpectedTokenException(fToken, "expected STRING");
 
   Pexpr expr;
   expr << Pexpr("import");
@@ -163,16 +163,16 @@ FirstPass::parseImport()
       if (fToken.fType == kEOF)
         throw PrematureEndOfFileException();
       if (fToken.fType != kSymbol)
-        throw UnexpectedTokenException(fToken, String("expected SYMBOL"));
+        throw UnexpectedTokenException(fToken, "expected SYMBOL");
       String first = fToken.fStrValue;
 
       nextToken();
       if (fToken.fType != kMapTo)
-        throw UnexpectedTokenException(fToken, String("expected ->"));
+        throw UnexpectedTokenException(fToken, "expected ->");
 
       nextToken();
       if (fToken.fType != kSymbol)
-        throw UnexpectedTokenException(fToken, String("expected SYMBOL"));
+        throw UnexpectedTokenException(fToken, "expected SYMBOL");
       String second = fToken.fStrValue;
 
       renames << ( Pexpr() << Pexpr(first)
@@ -183,7 +183,7 @@ FirstPass::parseImport()
       if (fToken.fType == kComma)
         nextToken();
       else if (fToken.fType != kParanClose)
-        throw UnexpectedTokenException(fToken, String("expected ) or ,"));
+        throw UnexpectedTokenException(fToken, "expected ) or ,");
     }
 
     if (fToken.fType == kParanClose)
@@ -234,7 +234,7 @@ FirstPass::parseLiteralVector()
     if (fToken.fType == kComma)
       nextToken();
     else if (fToken.fType != kParanClose)
-      throw UnexpectedTokenException(fToken, String("expected ] or ,"));
+      throw UnexpectedTokenException(fToken, "expected ] or ,");
   }
 
   if (fToken.fType == kParanClose)
@@ -259,7 +259,7 @@ FirstPass::parseLiteralArray()
     if (fToken.fType == kComma)
       nextToken();
     else if (fToken.fType != kBracketClose)
-      throw UnexpectedTokenException(fToken, String("expected ] or ,"));
+      throw UnexpectedTokenException(fToken, "expected ] or ,");
   }
 
   if (fToken.fType == kBracketClose)
@@ -272,13 +272,49 @@ FirstPass::parseLiteralArray()
 Pexpr
 FirstPass::parseIf()
 {
+  if (fToken.fType != kParanOpen)
+    throw UnexpectedTokenException(fToken, "expected (");
+  nextToken();
+
+  Pexpr test = parseExpr();
+  if (fToken.fType != kParanClose)
+    throw UnexpectedTokenException(fToken, "expected )");
+  nextToken();
+
+  Pexpr consequent = parseExpr();
+
+  Pexpr result = Pexpr()
+    << Pexpr("if");
+  if (test.isSeq())
+    result << ( Pexpr(kParanOpen, kParanClose)
+                << test.children() );
+  else
+    result << ( Pexpr(kParanOpen, kParanClose)
+                << test );
+  result << consequent;
+
+  if (fToken == Token(kSymbol, "else")) {
+    nextToken();
+
+    Pexpr alternate = parseExpr();
+
+    result << Pexpr("else") << alternate;
+  }
+
+  return result;
+}
+
+
+Pexpr
+FirstPass::parseOn()
+{
   // TODO
   return Pexpr();
 }
 
 
 Pexpr
-FirstPass::parseOn()
+FirstPass::parseAnonFun()
 {
   // TODO
   return Pexpr();
@@ -296,24 +332,52 @@ FirstPass::parseAccess(const Pexpr& expr)
 Pexpr
 FirstPass::parseGroup()
 {
-  // TODO
-  return Pexpr();
+  Pexpr expr = parseExpr();
+  if (fToken.fType != kParanClose)
+    throw UnexpectedTokenException(fToken, "expected )");
+
+  nextToken();
+  return expr;
+}
+
+
+void
+FirstPass::parseExprListUntilBrace(std::vector<Pexpr>* result)
+{
+  for ( ; ; ) {
+    if (fToken == Token(kSymbol, "def")) {
+      nextToken();
+      Pexpr expr = parseDef(false);
+      result->push_back(expr);
+    }
+    else if (fToken.fType == kBraceClose) {
+      return;
+    }
+    else if (fToken.fType == kEOF) {
+      return;
+    }
+    else if (fToken.fType == kSemicolon) {
+      nextToken();
+    }
+    else {
+      Pexpr expr = parseExpr();
+      result->push_back(expr);
+    }
+  }
 }
 
 
 Pexpr
 FirstPass::parseBlock()
 {
-  // TODO
-  return Pexpr();
-}
+  std::vector<Pexpr> exprlist;
+  parseExprListUntilBrace(&exprlist);
 
+  if (fToken.fType != kBraceClose)
+    throw UnexpectedTokenException(fToken, "expected }");
+  nextToken();
 
-Pexpr
-FirstPass::parseAnonFun()
-{
-  // TODO
-  return Pexpr();
+  return Pexpr(kBraceOpen, kBraceClose) << exprlist;
 }
 
 
@@ -335,10 +399,11 @@ FirstPass::parseAtomicExpr()
 
   case kSymbol:
     if (fToken == Token(kSymbol, "if")) {
+      nextToken();
       return parseIf();
     }
     else if (fToken == Token(kSymbol, "let")) {
-      return parseDef(false);
+      return parseDef(true);
     }
     else if (fToken == Token(kSymbol, "on")) {
       return parseOn();
@@ -361,8 +426,10 @@ FirstPass::parseAtomicExpr()
     return parseLiteralArray();
 
   case kParanOpen:
+    nextToken();
     return parseAccess(parseGroup());
   case kBraceOpen:
+    nextToken();
     return parseAccess(parseBlock());
     
   default:
@@ -373,21 +440,85 @@ FirstPass::parseAtomicExpr()
 }
 
 
-TokenType
-FirstPass::mapOperator(const Token& token) const
+OperatorType
+FirstPass::tokenTypeToOperator(TokenType type) const
 {
-  switch (token.fType) {
-  case kPlus:         case kMinus:     case kDivide:    case kMultiply:
-  case kExponent:     case kFold:      case kCompare:   case kEqual:
-  case kUnequal:      case kLess:      case kLessEqual: case kGreater:
-  case kGreaterEqual: case kAssign:    case kMapTo:     case kIn:
-  case kMod:          case kIsa:       case kAs:        case kBy:
-  case kLogicalAnd:   case kLogicalOr: case kBitAnd:    case kBitOr:
-  case kBitXor:       case kShiftLeft: case kShiftRight: case kRange:
-    return token.fType;
+  switch (type) {
+  case kPlus:          return kOpPlus;
+  case kMinus:         return kOpMinus;
+  case kDivide:        return kOpDivide;
+  case kMultiply:      return kOpMultiply;
+  case kExponent:      return kOpExponent;
+  case kFold:          return kOpFold;
+  case kCompare:       return kOpCompare;
+  case kEqual:         return kOpEqual;
+  case kUnequal:       return kOpUnequal;
+  case kLess:          return kOpLess;
+  case kLessEqual:     return kOpLessEqual;
+  case kGreater:       return kOpGreater;
+  case kGreaterEqual:  return kOpGreaterEqual;
+  case kAssign:        return kOpAssign;
+  case kMapTo:         return kOpMapTo;
+  case kIn:            return kOpIn;
+  case kMod:           return kOpMod;
+  case kIsa:           return kOpIsa;
+  case kAs:            return kOpAs;
+  case kBy:            return kOpBy;
+  case kLogicalAnd:    return kOpLogicalAnd;
+  case kLogicalOr:     return kOpLogicalOr;
+  case kBitAnd:        return kOpBitAnd;
+  case kBitOr:         return kOpBitOr;
+  case kBitXor:        return kOpBitXor;
+  case kShiftLeft:     return kOpShiftLeft;
+  case kShiftRight:    return kOpShiftRight;
+  case kRange:         return kOpRange;
+  case kEllipsis:      return kOpEllipsis;
+
   default:
-    return kInvalid;
+    return kOpInvalid;
   }
+}
+
+
+TokenType
+FirstPass::operatorToTokenType(OperatorType op) const
+{
+  switch (op) {
+  case kOpPlus:          return kPlus;
+  case kOpMinus:         return kMinus;
+  case kOpDivide:        return kDivide;
+  case kOpMultiply:      return kMultiply;
+  case kOpExponent:      return kExponent;
+  case kOpFold:          return kFold;
+  case kOpCompare:       return kCompare;
+  case kOpEqual:         return kEqual;
+  case kOpUnequal:       return kUnequal;
+  case kOpLess:          return kLess;
+  case kOpLessEqual:     return kLessEqual;
+  case kOpGreater:       return kGreater;
+  case kOpGreaterEqual:  return kGreaterEqual;
+  case kOpAssign:        return kAssign;
+  case kOpMapTo:         return kMapTo;
+  case kOpIn:            return kIn;
+  case kOpMod:           return kMod;
+  case kOpIsa:           return kIsa;
+  case kOpAs:            return kAs;
+  case kOpBy:            return kBy;
+  case kOpLogicalAnd:    return kLogicalAnd;
+  case kOpLogicalOr:     return kLogicalOr;
+  case kOpBitAnd:        return kBitAnd;
+  case kOpBitOr:         return kBitOr;
+  case kOpBitXor:        return kBitXor;
+  case kOpShiftLeft:     return kShiftLeft;
+  case kOpShiftRight:    return kShiftRight;
+  case kOpRange:         return kRange;
+  case kOpEllipsis:      return kEllipsis;
+
+  case kOpInvalid:
+    assert(0);
+  }
+
+  return kInvalid;
 }
 
 
@@ -409,68 +540,98 @@ FirstPass::makeAssignPexpr(const Pexpr& expr1, const Pexpr& expr2) const
 
 
 Pexpr
-FirstPass::makeBinaryPexpr(const Pexpr& expr1, TokenType op1,
+FirstPass::makeBinaryPexpr(const Pexpr& expr1, OperatorType op1,
                            const Pexpr& expr2) const
 {
-  if (op1 == kAssign)
+  if (op1 == kOpAssign)
     return makeAssignPexpr(expr1, expr2);
   else
-    return Pexpr() << expr1 << Pexpr(op1) << expr2;
+    return Pexpr() << expr1 << Pexpr(operatorToTokenType(op1)) << expr2;
 }
 
 
 bool
-FirstPass::isRightOperator(TokenType op1) const
+FirstPass::isRightOperator(OperatorType op1) const
 {
-  return (op1 == kAssign);
+  return (op1 == kOpAssign);
 }
 
 
 int
-FirstPass::weightOperator(TokenType op1) const
+FirstPass::weightOperator(OperatorType op1) const
 {
   switch (op1) {
-  case kFold: case kMapTo: case kBy: case kIn: return  1;
-  case kRange: case kEllipsis:                 return  2;
-  case kLogicalAnd: case kLogicalOr:           return  3;
-  case kBitAnd: case kBitOr: case kBitXor:     return  4;
-  case kEqual: case kUnequal: case kLess:
-  case kLessEqual: case kGreater:
-  case kGreaterEqual: case kCompare:           return  5;
-  case kExponent: 
-  case kShiftLeft: case kShiftRight:           return  8;
-  case kPlus: case kMinus:                     return  9;
-  case kMultiply: case kDivide: case kMod:     return 10;
-  case kDot:                                   return 20;
-  default:
+  case kOpFold:
+  case kOpMapTo:
+  case kOpBy:             return  10;
+
+  case kOpRange:
+  case kOpEllipsis:       return  20;
+
+  case kOpLogicalAnd:
+  case kOpLogicalOr:      return  30;
+
+  case kOpIsa:            return  35;
+
+  case kOpIn:
+  case kOpEqual:
+  case kOpUnequal:
+  case kOpLess:
+  case kOpLessEqual:
+  case kOpGreater:
+  case kOpGreaterEqual:
+  case kOpCompare:        return  40;
+
+  case kOpBitAnd:
+  case kOpBitOr:
+  case kOpBitXor:         return  50;
+
+  case kOpShiftLeft:
+  case kOpShiftRight:     return  80;
+
+  case kOpPlus:
+  case kOpMinus:          return  90;
+
+  case kOpMultiply:
+  case kOpDivide:
+  case kOpMod:            return 100;
+
+  case kOpExponent:       return 110;
+
+  case kOpAs:             return 200;
+
+  case kOpAssign:         return 999999;
+
+  case kOpInvalid:
     assert(0);
-    return 999999;
   }
+
+  return 999999;
 }
 
 
 bool
-FirstPass::isOpWeightAbove(TokenType op1, TokenType op2) const
+FirstPass::isOpWeightAbove(OperatorType op1, OperatorType op2) const
 {
   return weightOperator(op1) > weightOperator(op2);
 }
 
 
 Pexpr
-FirstPass::parseExprRec(const Pexpr& expr1, TokenType op1)
+FirstPass::parseExprRec(const Pexpr& expr1, OperatorType op1)
 {
-  if (op1 == kInvalid)
+  if (op1 == kOpInvalid)
     return expr1;
 
   nextToken();
   Pexpr expr2 = parseAtomicExpr();
   if (!expr2.isEmpty()) {
-    TokenType op2 = mapOperator(fToken);
-    if (op2 == kInvalid) {
-      if (op1 == kAssign)
+    OperatorType op2 = tokenTypeToOperator(fToken.fType);
+    if (op2 == kOpInvalid) {
+      if (op1 == kOpAssign)
         return makeAssignPexpr(expr1, expr2);
       else
-        return Pexpr() << expr1 << Pexpr(op1) << expr2;
+        return Pexpr() << expr1 << Pexpr(operatorToTokenType(op1)) << expr2;
     }
     else {
       if (!isRightOperator(op1) && isOpWeightAbove(op1, op2))
@@ -489,15 +650,14 @@ FirstPass::parseExpr()
 {
   Pexpr expr1 = parseAtomicExpr();
   if (!expr1.isEmpty()) {
-    TokenType op1 = mapOperator(fToken);
-    if (op1 != kInvalid)
+    OperatorType op1 = tokenTypeToOperator(fToken.fType);
+    if (op1 != kOpInvalid)
       return parseExprRec(expr1, op1);
     else
       return expr1;
   }
   else
-    return Pexpr();
-  // throw UnexpectedTokenException(fToken);
+    throw UnexpectedTokenException(fToken);
 }
 
 
@@ -645,12 +805,12 @@ FirstPass::parseDef(bool isLocal)
   else if (fToken == Token(kSymbol, "generic")) {
     nextToken();
     if (fToken.fType != kSymbol)
-      throw UnexpectedTokenException(fToken, String("expected SYMBOL"));
+      throw UnexpectedTokenException(fToken, "expected SYMBOL");
     String sym = fToken.fStrValue;
 
     nextToken();
     if (fToken.fType != kParanOpen)
-      throw UnexpectedTokenException(fToken, String("expected ("));
+      throw UnexpectedTokenException(fToken, "expected (");
     return parseFunction(sym, true, isLocal);
   }
   else if (fToken == Token(kSymbol, "char")) {

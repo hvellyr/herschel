@@ -1,4 +1,8 @@
 def a = 5 + 11
 def b = 5 + 11 * 2
+def b2 = (5 + 11) * 2
 def c = 0 .. 100 by 2
 
+def d = 1 in #[1, 2] and value isa Key
+def e = 1 + 2 as UInt
+def e2 = (1 + 2) as UInt

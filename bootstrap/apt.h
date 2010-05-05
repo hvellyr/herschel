@@ -249,53 +249,58 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  enum BinOperatorType
+  enum OperatorType
   {
-    kOpPlus,
-    kOpMinus,
-    kOpDivide,
-    kOpMultiply,
-    kOpExponent,
-    kOpFold,
-    kOpCompare,
-    kOpEqual,
-    kOpUnequal,
-    kOpLess,
-    kOpLessEqual,
-    kOpGreater,
-    kOpGreaterEqual,
-    kOpMapTo,
-    kOpIn,
-    kOpMod,
-    kOpIsa,
+    kOpInvalid,
     kOpAs,
-    kOpLogicalAnd,
-    kOpLogicalOr,
+    kOpAssign,
     kOpBitAnd,
     kOpBitOr,
     kOpBitXor,
+    kOpBy,
+    kOpCompare,
+    kOpDivide,
+    kOpEllipsis,
+    kOpEqual,
+    kOpExponent,
+    kOpFold,
+    kOpGreater,
+    kOpGreaterEqual,
+    kOpIn,
+    kOpIsa,
+    kOpLess,
+    kOpLessEqual,
+    kOpLogicalAnd,
+    kOpLogicalOr,
+    kOpMapTo,
+    kOpMinus,
+    kOpMod,
+    kOpMultiply,
+    kOpPlus,
+    kOpRange,
     kOpShiftLeft,
     kOpShiftRight,
+    kOpUnequal,
   };
 
 
   class BinaryNode : public AptNode
   {
   public:
-    BinaryNode(AptNode* left, BinOperatorType op, AptNode* right);
+    BinaryNode(AptNode* left, OperatorType op, AptNode* right);
 
     virtual void display(Port<Octet>* port) const;
 
-    BinOperatorType op() const;
+    OperatorType op() const;
     AptNode* left() const;
     AptNode* right() const;
 
     bool isMapTo() const;
 
   private:
-    Ptr<AptNode>    fLeft;
-    Ptr<AptNode>    fRight;
-    BinOperatorType fOp;
+    Ptr<AptNode> fLeft;
+    Ptr<AptNode> fRight;
+    OperatorType fOp;
   };
 };
 
