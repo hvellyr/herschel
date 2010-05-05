@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>def</id><id>a</id><punct type='='/><seq><id>if</id><nested left='(' right=')'><id>true</id></nested><lit type='int'>11</lit><id>else</id><seq><id>if</id><nested left='(' right=')'><lit type='int'>5</lit><punct type='>'/><lit type='int'>2</lit></nested><lit type='int'>42</lit><id>else</id><lit type='int'>127</lit></seq></seq></seq></seq>

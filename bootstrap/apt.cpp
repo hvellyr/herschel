@@ -416,14 +416,14 @@ DictNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-BinaryNode::BinaryNode(AptNode* left, BinOperatorType op, AptNode* right)
+BinaryNode::BinaryNode(AptNode* left, OperatorType op, AptNode* right)
   : fLeft(left),
     fRight(right),
     fOp(op)
 { }
 
 
-BinOperatorType
+OperatorType
 BinaryNode::op() const
 {
   return fOp;
@@ -452,34 +452,40 @@ BinaryNode::isMapTo() const
 
 
 static const char*
-operatorName(BinOperatorType type)
+operatorName(OperatorType type)
 {
   switch (type) {
-  case kOpPlus:         return "+";
-  case kOpMinus:        return "-";
-  case kOpDivide:       return "/";
-  case kOpMultiply:     return "*";
-  case kOpExponent:     return "**";
-  case kOpFold:         return "%";
-  case kOpCompare:      return "<=>";
-  case kOpEqual:        return "==";
-  case kOpUnequal:      return "<>";
-  case kOpLess:         return "<";
-  case kOpLessEqual:    return "<=";
-  case kOpGreater:      return ">";
-  case kOpGreaterEqual: return ">=";
-  case kOpMapTo:        return "->";
-  case kOpIn:           return "in";
-  case kOpMod:          return "mod";
-  case kOpIsa:          return "isa";
   case kOpAs:           return "as";
-  case kOpLogicalAnd:   return "and";
-  case kOpLogicalOr:    return "or";
+  case kOpAssign:       return "=";
   case kOpBitAnd:       return "AND";
   case kOpBitOr:        return "OR";
   case kOpBitXor:       return "XOR";
+  case kOpBy:           return "by";
+  case kOpCompare:      return "<=>";
+  case kOpDivide:       return "/";
+  case kOpEllipsis:     return "...";
+  case kOpEqual:        return "==";
+  case kOpExponent:     return "**";
+  case kOpFold:         return "%";
+  case kOpGreater:      return ">";
+  case kOpGreaterEqual: return ">=";
+  case kOpIn:           return "in";
+  case kOpIsa:          return "isa";
+  case kOpLess:         return "<";
+  case kOpLessEqual:    return "<=";
+  case kOpLogicalAnd:   return "and";
+  case kOpLogicalOr:    return "or";
+  case kOpMapTo:        return "->";
+  case kOpMinus:        return "-";
+  case kOpMod:          return "mod";
+  case kOpMultiply:     return "*";
+  case kOpPlus:         return "+";
+  case kOpRange:        return "..";
   case kOpShiftLeft:    return "<<";
   case kOpShiftRight:   return ">>";
+  case kOpUnequal:      return "<>";
+  case kOpInvalid:
+    assert(0);
   }
 
   return NULL;

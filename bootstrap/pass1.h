@@ -45,7 +45,7 @@ namespace heather
 
     Pexpr parseExpr();
     Pexpr parseAtomicExpr();
-    Pexpr parseExprRec(const Pexpr& expr1, TokenType op1);
+    Pexpr parseExprRec(const Pexpr& expr1, OperatorType op1);
 
     Pexpr parseTypeSpec();
     Pexpr parseLiteralVector();
@@ -59,15 +59,18 @@ namespace heather
     Pexpr parseAnonFun();
 
 
-    TokenType mapOperator(const Token& token) const;
-    Pexpr makeBinaryPexpr(const Pexpr& expr1, TokenType op1,
+    OperatorType tokenTypeToOperator(TokenType type) const;
+    TokenType operatorToTokenType(OperatorType op) const;
+
+    Pexpr makeBinaryPexpr(const Pexpr& expr1, OperatorType op1,
                           const Pexpr& expr2) const;
     Pexpr makeAssignPexpr(const Pexpr& expr1, const Pexpr& expr2) const;
 
-    bool isRightOperator(TokenType op1) const;
-    bool isOpWeightAbove(TokenType op1, TokenType op2) const;
-    int weightOperator(TokenType op1) const;
+    bool isRightOperator(OperatorType op1) const;
+    bool isOpWeightAbove(OperatorType op1, OperatorType op2) const;
+    int weightOperator(OperatorType op1) const;
 
+    void parseExprListUntilBrace(std::vector<Pexpr>* exprlist);
 
   private:
     Ptr<Parser> fParser;
