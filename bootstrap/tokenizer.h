@@ -199,6 +199,12 @@ namespace heather
       return fType == kSymbol;
     }
 
+    bool isKeyArg() const
+    {
+      return (fType == kSymbol && fStrValue.length() > 1 &&
+              fStrValue[fStrValue.length() - 1] == ':');
+    }
+
     String toString() const;
 
     Token& setIsImaginary(bool value)

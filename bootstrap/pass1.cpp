@@ -77,7 +77,7 @@ FirstPass::parseModule(bool isModule)
           throw PrematureEndOfFileException();
 
         Pexpr n = parseTop();
-        if (!n.isEmpty())
+        if (n.isSet())
           defines << n;
       }
 
@@ -216,7 +216,7 @@ FirstPass::parseLiteralVector()
 
     Pexpr expr = parseExpr();
 
-    if (nested.isEmpty()) {
+    if (!nested.isSet()) {
       if (expr.isBinarySeq(kMapTo))
         isDict = true;
 
@@ -305,11 +305,57 @@ FirstPass::parseIf()
 }
 
 
+void
+FirstPass::parseFunctionsParams(std::vector<Pexpr>* exprlist)
+{
+  if (fToken.fType == kParanClose) {
+    nextToken();
+    return;
+  }
+}
+
+
 Pexpr
 FirstPass::parseOn()
 {
-  // TODO
-  return Pexpr();
+  if (fToken.fType != kSymbol)
+    throw UnexpectedTokenException(fToken, "expected a SYMBOL");
+
+  String key = fToken.fStrValue;
+
+#if 0
+  MacroId macroId = qualifiedIdForLookup(key);
+  Ptr<Macro> macro = lookupMacro(macroId);
+  MacroType mtype = lookupMacroType(macroId);
+  String mname = Pexpr(macroId.name());
+
+  if (macro != NULL) {
+    Pexpr expr= parseMakeMacroCall(mname, NULL, macro, mtype, true, kIsLocal);
+    if (!expr.isSet())
+      throw IncompleteMacroException(macroId);
+  }
+  else
+#endif
+  {
+    if (key != String("sync") && key != String("init") &&
+        key != String("delete") && key != String("exit") &&
+        key != String("signal"))
+      throw UnexpectedTokenException(Token(kSymbol, key));
+    nextToken();
+    if (fToken.fType != kParanOpen)
+      throw UnexpectedTokenException(fToken, "expected (");
+    nextToken();
+
+    std::vector<Pexpr> params;
+    parseFunctionsParams(&params);
+
+    Pexpr body = parseExpr();
+
+    return Pexpr() << Pexpr("on") << Pexpr(key)
+                   << ( Pexpr(kParanOpen, kParanClose)
+                        << params )
+                   << body;
+  }
 }
 
 
@@ -321,10 +367,139 @@ FirstPass::parseAnonFun()
 }
 
 
+void
+FirstPass::parseFuncallParams(std::vector<Pexpr>* params)
+{
+  while (fToken.fType != kParanClose) {
+    if (fToken.fType == kEOF)
+      throw PrematureEndOfFileException();
+    if (fToken.isKeyArg()) {
+      String key = fToken.fStrValue;
+      nextToken();
+
+      Pexpr val = parseExpr();
+      params->push_back(key);
+      params->push_back(val);
+    }
+    else {
+      Pexpr val = parseExpr();
+      params->push_back(val);
+    }
+
+    if (fToken.fType == kComma) {
+      params->push_back(Pexpr(kComma));
+      nextToken();
+    }
+    else if (fToken.fType != kParanClose)
+      throw UnexpectedTokenException(fToken, "expected ) or ,");
+  }
+
+  if (fToken.fType == kParanClose)
+    nextToken();
+}
+
+
+Pexpr
+FirstPass::parseFunctionCall(const Pexpr& expr,
+                             const std::vector<Pexpr>& preScannedArgs,
+                             bool parseParams)
+{
+  std::vector<Pexpr> effParams;
+  if (!preScannedArgs.empty())
+    effParams.assign(preScannedArgs.begin(), preScannedArgs.end());
+
+  if (parseParams) {
+    std::vector<Pexpr> params;
+    parseFuncallParams(&params);
+
+    if (!params.empty()) {
+      if (!effParams.empty())
+        effParams.push_back(Pexpr(kComma));
+      effParams.insert(effParams.end(),
+                       params.begin(), params.end());
+    }
+  }
+
+  return Pexpr() << expr
+                 << ( Pexpr(kParanOpen, kParanClose)
+                      << effParams );
+}
+
+
+Pexpr
+FirstPass::parseParamCall(const Pexpr& expr,
+                          const std::vector<Pexpr>& preScannedArgs,
+                          bool parseParams)
+{
+  if (expr.isId()) {
+#if 0
+  MacroId macroId  = qualifiedIdForLookup(sym);
+  Ptr<Macro> macro = lookupMacro(macroId);
+  MacroType mtype  = lookupMacroType(macroId);
+  String mname     = Pexpr(macroId.name());
+
+  if (macro != NULL) {
+    Pexpr expr= parseMakeMacroCall(mname, &preScannedArgs, macro, mtype,
+                                   parseParams, false);
+    if (!expr.isSet())
+      throw IncompleteMacroException(macroId);
+  }
+#endif
+  }
+
+  return parseFunctionCall(expr, preScannedArgs, parseParams);
+}
+
+
+Pexpr
+FirstPass::parseSlice(const Pexpr& expr)
+{
+  Pexpr idx = parseExpr();
+  if (fToken.fType != kBracketClose)
+    throw UnexpectedTokenException(fToken, "expected ]");
+  nextToken();
+
+  return Pexpr() << Pexpr("slice")
+                 << ( Pexpr(kParanOpen, kParanClose)
+                      << expr
+                      << Pexpr(kComma)
+                      << idx );
+}
+
+
 Pexpr
 FirstPass::parseAccess(const Pexpr& expr)
 {
-  // TODO
+  std::vector<Pexpr> args;
+  if (fToken.fType == kParanOpen) {
+    nextToken();
+    return parseAccess(parseParamCall(expr, args, true));
+  }
+  else if (fToken.fType == kBracketOpen) {
+    nextToken();
+    return parseAccess(parseSlice(expr));
+  }
+  else if (fToken.fType == kDot) {
+    nextToken();
+    if (fToken.fType != kSymbol)
+      throw UnexpectedTokenException(fToken, "expected SYMBOL");
+    String sym = fToken.fStrValue;
+
+    nextToken();
+    args.push_back(expr);
+    if (fToken.fType == kParanOpen) {
+      nextToken();
+      return parseAccess(parseParamCall(sym, args, true));
+    }
+    else if (fToken.fType == kBracketOpen ||
+             fToken.fType == kDot) {
+      return parseAccess(parseParamCall(sym, args, false));
+    }
+    else {
+      return parseParamCall(sym, args, false);
+    }
+  }
+
   return expr;
 }
 
@@ -406,6 +581,7 @@ FirstPass::parseAtomicExpr()
       return parseDef(true);
     }
     else if (fToken == Token(kSymbol, "on")) {
+      nextToken();
       return parseOn();
     }
     else if (fToken == Token(kSymbol, "function")) {
@@ -431,7 +607,7 @@ FirstPass::parseAtomicExpr()
   case kBraceOpen:
     nextToken();
     return parseAccess(parseBlock());
-    
+
   default:
     assert(0);
   }
@@ -573,7 +749,6 @@ FirstPass::weightOperator(OperatorType op1) const
 
   case kOpIsa:            return  35;
 
-  case kOpIn:
   case kOpEqual:
   case kOpUnequal:
   case kOpLess:
@@ -581,6 +756,8 @@ FirstPass::weightOperator(OperatorType op1) const
   case kOpGreater:
   case kOpGreaterEqual:
   case kOpCompare:        return  40;
+
+  case kOpIn:             return  45;
 
   case kOpBitAnd:
   case kOpBitOr:
@@ -625,23 +802,19 @@ FirstPass::parseExprRec(const Pexpr& expr1, OperatorType op1)
 
   nextToken();
   Pexpr expr2 = parseAtomicExpr();
-  if (!expr2.isEmpty()) {
-    OperatorType op2 = tokenTypeToOperator(fToken.fType);
-    if (op2 == kOpInvalid) {
-      if (op1 == kOpAssign)
-        return makeAssignPexpr(expr1, expr2);
-      else
-        return Pexpr() << expr1 << Pexpr(operatorToTokenType(op1)) << expr2;
-    }
-    else {
-      if (!isRightOperator(op1) && isOpWeightAbove(op1, op2))
-        return parseExprRec(makeBinaryPexpr(expr1, op1, expr2), op2);
-      else
-        return makeBinaryPexpr(expr1, op1, parseExprRec(expr2, op2));
-    }
+  OperatorType op2 = tokenTypeToOperator(fToken.fType);
+  if (op2 == kOpInvalid) {
+    if (op1 == kOpAssign)
+      return makeAssignPexpr(expr1, expr2);
+    else
+      return Pexpr() << expr1 << Pexpr(operatorToTokenType(op1)) << expr2;
   }
-
-  return Pexpr();
+  else {
+    if (!isRightOperator(op1) && isOpWeightAbove(op1, op2))
+      return parseExprRec(makeBinaryPexpr(expr1, op1, expr2), op2);
+    else
+      return makeBinaryPexpr(expr1, op1, parseExprRec(expr2, op2));
+  }
 }
 
 
@@ -649,15 +822,10 @@ Pexpr
 FirstPass::parseExpr()
 {
   Pexpr expr1 = parseAtomicExpr();
-  if (!expr1.isEmpty()) {
-    OperatorType op1 = tokenTypeToOperator(fToken.fType);
-    if (op1 != kOpInvalid)
-      return parseExprRec(expr1, op1);
-    else
-      return expr1;
-  }
-  else
-    throw UnexpectedTokenException(fToken);
+  OperatorType op1 = tokenTypeToOperator(fToken.fType);
+  if (op1 != kOpInvalid)
+    return parseExprRec(expr1, op1);
+  return expr1;
 }
 
 
@@ -699,9 +867,9 @@ FirstPass::parseVarDef2(const String& symbolName, VardefFlags flags,
 
   vardefExpr << Pexpr(symbolName);
 
-  if (!type.isEmpty())
+  if (type.isSet())
     vardefExpr << Pexpr(kColon) << type;
-  if (!initExpr.isEmpty())
+  if (initExpr.isSet())
     vardefExpr << Pexpr(kAssign) << initExpr;
 
   return vardefExpr;
@@ -756,8 +924,8 @@ FirstPass::parseFunctionOrVar(bool isLocal)
   String mname = Pexpr(macroId.name());
 
   if (macro != NULL) {
-    Pexpr expr= parseMakeMacroCall(mname, NULL, macro, mtype, true, scope);
-    if (expr.isEmpty())
+    Pexpr expr= parseMakeMacroCall(mname, NULL, macro, mtype, true, isLocal);
+    if (!expr.isSet())
       throw IncompleteMacroException(macroId);
   }
   else
@@ -871,7 +1039,7 @@ FirstPass::parse()
   nextToken();
   while (fToken != Token(kEOF)) {
     Pexpr n = parseTop();
-    if (!n.isEmpty())
+    if (n.isSet())
       seq << n;
   }
 

@@ -53,11 +53,21 @@ namespace heather
 
     Pexpr parseIf();
     Pexpr parseOn();
-    Pexpr parseAccess(const Pexpr& expr);
+
     Pexpr parseGroup();
     Pexpr parseBlock();
     Pexpr parseAnonFun();
 
+    Pexpr parseAccess(const Pexpr& expr);
+    Pexpr parseSlice(const Pexpr& expr);
+
+    Pexpr parseParamCall(const Pexpr& expr,
+                         const std::vector<Pexpr>& preScannedArgs,
+                         bool parseParams);
+    Pexpr parseFunctionCall(const Pexpr& expr,
+                            const std::vector<Pexpr>& preScannedArgs,
+                            bool parseParams);
+    void parseFuncallParams(std::vector<Pexpr>* params);
 
     OperatorType tokenTypeToOperator(TokenType type) const;
     TokenType operatorToTokenType(OperatorType op) const;
@@ -71,6 +81,8 @@ namespace heather
     int weightOperator(OperatorType op1) const;
 
     void parseExprListUntilBrace(std::vector<Pexpr>* exprlist);
+    void parseFunctionsParams(std::vector<Pexpr>* exprlist);
+
 
   private:
     Ptr<Parser> fParser;

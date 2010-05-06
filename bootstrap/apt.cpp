@@ -45,7 +45,7 @@ static void
 displayTag(Port<Octet>* port, const char* tagName, const String& value)
 {
   displayOpenTag(port, tagName);
-  display(port, value);
+  display(port, xmlEncode(value));
   displayCloseTag(port, tagName);
 }
 
@@ -56,7 +56,7 @@ displayTagAttr(Port<Octet>* port, const char* tagName,
                const String& value)
 {
   displayOpenTagAttrs(port, tagName, attrs);
-  display(port, value);
+  display(port, xmlEncode(value));
   displayCloseTag(port, tagName);
 }
 
