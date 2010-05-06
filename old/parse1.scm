@@ -290,12 +290,12 @@
       (syntax-error "Unexpected 'on' expr:" (current-token ctx))))
 
 
-(define (parse-funcall-params-del ctx params)
+(define (parse-funcall-args-del ctx params)
   (cond
    ((apt-punct-eq? (current-token ctx) ",")
     (let ((comma (current-token ctx)))
       (next-token ctx)
-      (parse-funcall-params ctx (append params (list comma)))))
+      (parse-funcall-args ctx (append params (list comma)))))
    ((apt-punct-eq? (current-token ctx) ")")
     (begin
       (next-token ctx)
@@ -303,7 +303,7 @@
    (else (syntax-error "Expect , or ), got" (current-token ctx)))))
 
 
-(define (parse-funcall-params ctx params)
+(define (parse-funcall-args ctx params)
   (cond
    ((eq? (current-token ctx) 'EOF)
     (syntax-error "Unterminated argument list" (current-token ctx)))
@@ -313,7 +313,7 @@
       (next-token ctx)
       (set! val (parse-expr ctx))
       (if val
-          (parse-funcall-params-del ctx
+          (parse-funcall-args-del ctx
                                     (append params
                                             (list (apt-seq key val))))
           #f)))
@@ -323,7 +323,7 @@
       params))
    (else (let ((expr (parse-expr ctx)))
            (if expr
-               (parse-funcall-params-del ctx
+               (parse-funcall-args-del ctx
                                          (append params (list expr)))
                #f))) ))
 
@@ -533,7 +533,7 @@
 (define (parse-function-call ctx expr pre-scanned-args
                              parse-parameters?)
   (if parse-parameters?
-      (let* ((prms (parse-funcall-params ctx '())))
+      (let* ((prms (parse-funcall-args ctx '())))
         (if prms
             (let ((prms2 (if pre-scanned-args
                              (if (and (list prms)
@@ -1556,7 +1556,7 @@
   (if (apt-punct-eq? (current-token ctx) "(")
       (begin
         (next-token ctx)
-        (let ((prms (parse-funcall-params ctx '())))
+        (let ((prms (parse-funcall-args ctx '())))
           (apt-seq (apt-id "import") (apt-nested* "(" ")" prms))))
       (syntax-error "import: Expected (, got" (current-token ctx))))
 

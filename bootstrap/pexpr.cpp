@@ -26,7 +26,7 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      display(port, String("<punct type='") + Token(fType) + "'/>");
+      display(port, String("<punct type='") + xmlEncode(Token(fType).toString()) + "'/>");
     }
 
     //-------- data members
@@ -45,7 +45,7 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      display(port, String("<id>") + fStr + "</id>");
+      display(port, String("<id>") + xmlEncode(fStr) + "</id>");
     }
 
     //-------- data members
@@ -64,30 +64,32 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
+      String tokstr = xmlEncode(fToken.toString());
+
       switch (fToken.fType) {
       case kString:
-        display(port, String("<lit type='str'>") + fToken.fStrValue + "</lit>");
+        display(port, String("<lit type='str'>") + xmlEncode(fToken.fStrValue) + "</lit>");
         break;
       case kChar:
-        display(port, String("<lit type='char'>") + fToken + "</lit>");
+        display(port, String("<lit type='char'>") + tokstr + "</lit>");
         break;
       case kKeyarg:
-        display(port, String("<lit type='keyarg'>") + fToken + "</lit>");
+        display(port, String("<lit type='keyarg'>") + tokstr + "</lit>");
         break;
       case kMacroParam:
-        display(port, String("<lit type='mparm'>") + fToken + "</lit>");
+        display(port, String("<lit type='mparm'>") + tokstr + "</lit>");
         break;
       case kKeyword:
-        display(port, String("<lit type='keyw'>") + fToken + "</lit>");
+        display(port, String("<lit type='keyw'>") + tokstr + "</lit>");
         break;
       case kInteger:
-        display(port, String("<lit type='int'>") + fToken + "</lit>");
+        display(port, String("<lit type='int'>") + tokstr + "</lit>");
         break;
       case kReal:
-        display(port, String("<lit type='real'>") + fToken + "</lit>");
+        display(port, String("<lit type='real'>") + tokstr + "</lit>");
         break;
       case kRational:
-        display(port, String("<lit type='ratio'>") + fToken + "</lit>");
+        display(port, String("<lit type='ratio'>") + tokstr + "</lit>");
         break;
 
       default:
@@ -140,11 +142,16 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      display(port, ( String("<nested left='") + Token(fLeft) 
-                      + "' right='" + Token(fRight) + "'>"));
-      for (unsigned int i = 0; i < fChildren.size(); i++)
-        fChildren[i].toPort(port);
-      display(port, "</nested>");
+      display(port, ( String("<nested left='") + xmlEncode(Token(fLeft).toString())
+                      + "' right='" + xmlEncode(Token(fRight).toString()) + "'"));
+      if (!fChildren.empty()) {
+        display(port, ">");
+        for (unsigned int i = 0; i < fChildren.size(); i++)
+          fChildren[i].toPort(port);
+        display(port, "</nested>");
+      }
+      else
+        display(port, "/>");
     }
 
     //-------- data members

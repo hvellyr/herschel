@@ -74,6 +74,11 @@ namespace heather
     bool isId() const;
     bool isPunct() const;
 
+    bool isSet() const
+    {
+      return !isSeq() || !isEmpty();
+    }
+
     bool isEmpty() const;
 
     const std::vector<Pexpr>& children() const;

@@ -119,6 +119,10 @@ namespace heather
     std::vector<char> fBuffer;
     int fLength;
   };
+
+
+  String xmlEncode(const String& str);
+  String xmlEncode(const char* str);
 };
 
 #endif  // bootstrap_str_h

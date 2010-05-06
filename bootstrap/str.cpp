@@ -732,6 +732,41 @@ heather::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
 }
 
 
+String
+heather::xmlEncode(const String& str)
+{
+  std::vector<Char> buffer;
+  buffer.reserve(str.length());
+
+  for (int i = 0; i < str.length(); i++) {
+    Char c = str[i];
+    if (c == '<') {
+      buffer.push_back('&');
+      buffer.push_back('l');
+      buffer.push_back('t');
+      buffer.push_back(';');
+    }
+    else if (c == '&') {
+      buffer.push_back('&');
+      buffer.push_back('a');
+      buffer.push_back('m');
+      buffer.push_back('p');
+      buffer.push_back(';');
+    }
+    else
+      buffer.push_back(c);
+  }
+
+  return String(&buffer[0], buffer.size());
+}
+
+
+String
+heather::xmlEncode(const char* str)
+{
+  return xmlEncode(String(str));
+}
+
 
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
