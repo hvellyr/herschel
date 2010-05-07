@@ -47,6 +47,8 @@ namespace heather
   };
 
 
+  typedef std::vector<Pexpr> PexprVector;
+
   class Pexpr
   {
   public:
@@ -81,13 +83,13 @@ namespace heather
 
     bool isEmpty() const;
 
-    const std::vector<Pexpr>& children() const;
-    std::vector<Pexpr>& children();
+    const PexprVector& children() const;
+    PexprVector& children();
 
     void addExpr(const Pexpr& expr);
 
     Pexpr& operator<<(const Pexpr& expr);
-    Pexpr& operator<<(const std::vector<Pexpr>& exprs);
+    Pexpr& operator<<(const PexprVector& exprs);
     const Pexpr& operator[](int idx) const;
     Pexpr& operator[](int idx);
 

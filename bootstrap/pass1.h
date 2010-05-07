@@ -40,8 +40,8 @@ namespace heather
     Pexpr parseVarDef(VardefFlags flags, bool isLocal);
     Pexpr parseVarDef2(const String& symbolName, VardefFlags flags,
                        bool isLocal);
-    Pexpr parseFunction(const String& sym, bool isGeneric, bool isLocal);
-    Pexpr parseFunctionOrVar(bool isLocal);
+    Pexpr parseFunctionDef(const String& sym, bool isGeneric, bool isLocal);
+    Pexpr parseFunctionOrVarDef(bool isLocal);
 
     Pexpr parseExpr();
     Pexpr parseAtomicExpr();
@@ -62,12 +62,12 @@ namespace heather
     Pexpr parseSlice(const Pexpr& expr);
 
     Pexpr parseParamCall(const Pexpr& expr,
-                         const std::vector<Pexpr>& preScannedArgs,
+                         const PexprVector& preScannedArgs,
                          bool parseParams);
     Pexpr parseFunctionCall(const Pexpr& expr,
-                            const std::vector<Pexpr>& preScannedArgs,
+                            const PexprVector& preScannedArgs,
                             bool parseParams);
-    void parseFuncallParams(std::vector<Pexpr>* params);
+    void parseFuncallParams(PexprVector* params);
 
     OperatorType tokenTypeToOperator(TokenType type) const;
     TokenType operatorToTokenType(OperatorType op) const;
@@ -80,9 +80,13 @@ namespace heather
     bool isOpWeightAbove(OperatorType op1, OperatorType op2) const;
     int weightOperator(OperatorType op1) const;
 
-    void parseExprListUntilBrace(std::vector<Pexpr>* exprlist);
-    void parseFunctionsParams(std::vector<Pexpr>* exprlist);
+    void parseExprListUntilBrace(PexprVector* exprlist);
+    void parseTopExprUntilBrace(PexprVector* result);
+    Pexpr parseTopOrExprList(bool isTopLevel);
 
+    void parseFunctionsParams(PexprVector* exprlist);
+
+    Pexpr parseWhen(bool isTopLevel);
 
   private:
     Ptr<Parser> fParser;
