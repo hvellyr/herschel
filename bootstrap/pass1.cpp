@@ -306,7 +306,7 @@ FirstPass::parseIf()
 
 
 void
-FirstPass::parseFunctionsParams(std::vector<Pexpr>* exprlist)
+FirstPass::parseFunctionsParams(PexprVector* exprlist)
 {
   if (fToken.fType == kParanClose) {
     nextToken();
@@ -346,7 +346,7 @@ FirstPass::parseOn()
       throw UnexpectedTokenException(fToken, "expected (");
     nextToken();
 
-    std::vector<Pexpr> params;
+    PexprVector params;
     parseFunctionsParams(&params);
 
     Pexpr body = parseExpr();
@@ -368,7 +368,7 @@ FirstPass::parseAnonFun()
 
 
 void
-FirstPass::parseFuncallParams(std::vector<Pexpr>* params)
+FirstPass::parseFuncallParams(PexprVector* params)
 {
   while (fToken.fType != kParanClose) {
     if (fToken.fType == kEOF)
@@ -401,15 +401,15 @@ FirstPass::parseFuncallParams(std::vector<Pexpr>* params)
 
 Pexpr
 FirstPass::parseFunctionCall(const Pexpr& expr,
-                             const std::vector<Pexpr>& preScannedArgs,
+                             const PexprVector& preScannedArgs,
                              bool parseParams)
 {
-  std::vector<Pexpr> effParams;
+  PexprVector effParams;
   if (!preScannedArgs.empty())
     effParams.assign(preScannedArgs.begin(), preScannedArgs.end());
 
   if (parseParams) {
-    std::vector<Pexpr> params;
+    PexprVector params;
     parseFuncallParams(&params);
 
     if (!params.empty()) {
@@ -428,7 +428,7 @@ FirstPass::parseFunctionCall(const Pexpr& expr,
 
 Pexpr
 FirstPass::parseParamCall(const Pexpr& expr,
-                          const std::vector<Pexpr>& preScannedArgs,
+                          const PexprVector& preScannedArgs,
                           bool parseParams)
 {
   if (expr.isId()) {
@@ -470,7 +470,7 @@ FirstPass::parseSlice(const Pexpr& expr)
 Pexpr
 FirstPass::parseAccess(const Pexpr& expr)
 {
-  std::vector<Pexpr> args;
+  PexprVector args;
   if (fToken.fType == kParanOpen) {
     nextToken();
     return parseAccess(parseParamCall(expr, args, true));
@@ -517,7 +517,7 @@ FirstPass::parseGroup()
 
 
 void
-FirstPass::parseExprListUntilBrace(std::vector<Pexpr>* result)
+FirstPass::parseExprListUntilBrace(PexprVector* result)
 {
   for ( ; ; ) {
     if (fToken == Token(kSymbol, "def")) {
@@ -542,10 +542,25 @@ FirstPass::parseExprListUntilBrace(std::vector<Pexpr>* result)
 }
 
 
+void
+FirstPass::parseTopExprUntilBrace(PexprVector* result)
+{
+  while (fToken.fType != kBraceClose) {
+    if (fToken.fType == kEOF)
+      throw PrematureEndOfFileException();
+    Pexpr topexpr = parseTop();
+    result->push_back(topexpr);
+  }
+
+  if (fToken.fType == kBraceClose)
+    nextToken();
+}
+
+
 Pexpr
 FirstPass::parseBlock()
 {
-  std::vector<Pexpr> exprlist;
+  PexprVector exprlist;
   parseExprListUntilBrace(&exprlist);
 
   if (fToken.fType != kBraceClose)
@@ -578,6 +593,7 @@ FirstPass::parseAtomicExpr()
       return parseIf();
     }
     else if (fToken == Token(kSymbol, "let")) {
+      nextToken();
       return parseDef(true);
     }
     else if (fToken == Token(kSymbol, "on")) {
@@ -585,7 +601,12 @@ FirstPass::parseAtomicExpr()
       return parseOn();
     }
     else if (fToken == Token(kSymbol, "function")) {
+      nextToken();
       return parseAnonFun();
+    }
+    else if (fToken == Token(kSymbol, "when")) {
+      nextToken();
+      return parseWhen(false);
     }
     else {
       Token t = fToken;
@@ -830,6 +851,99 @@ FirstPass::parseExpr()
 
 
 Pexpr
+FirstPass::parseTopOrExprList(bool isTopLevel)
+{
+  if (isTopLevel) {
+    if (fToken.fType == kBraceOpen) {
+      nextToken();
+      PexprVector exprs;
+      parseTopExprUntilBrace(&exprs);
+
+      return Pexpr(kBraceOpen, kBraceClose) << exprs;
+    }
+    else
+      return parseTop();
+  }
+  else
+    return parseExpr();
+}
+
+
+Pexpr
+FirstPass::parseWhen(bool isTopLevel)
+{
+  Pexpr result;
+  result << Pexpr("when");
+
+  bool inclConsequent = true;
+  bool inclAlternate = true;
+
+  if (fToken.fType == kSymbol) {
+    if (fToken == Token(kSymbol, "version")) {
+      nextToken();
+      if (fToken.fType != kParanOpen)
+        throw UnexpectedTokenException(fToken, "expected (");
+      nextToken();
+      if (fToken.fType != kSymbol)
+        throw UnexpectedTokenException(fToken, "expected SYMBOL");
+
+      result << Pexpr("version")
+             << ( Pexpr(kParanOpen, kParanClose) << Pexpr(fToken.fStrValue) );
+
+      nextToken();
+      if (fToken.fType != kParanClose)
+        throw UnexpectedTokenException(fToken, "expected )");
+      nextToken();
+    }
+    else if (fToken == Token(kSymbol, "ignore")) {
+      nextToken();
+      inclConsequent = false;
+    }
+    else if (fToken == Token(kSymbol, "include")) {
+      nextToken();
+      inclAlternate = false;
+    }
+    else
+      throw UnexpectedTokenException(fToken, "expected 'version' or 'ignore'");
+  }
+  else if (fToken.fType == kParanOpen) {
+    nextToken();
+    Pexpr test = parseExpr();
+    if (fToken.fType != kParanClose)
+      throw UnexpectedTokenException(fToken, "expected )");
+    nextToken();
+
+    result << ( Pexpr(kParanOpen, kParanClose) << test );
+  }
+  else
+    throw UnexpectedTokenException(fToken, "expected (");
+
+  Pexpr consequent = parseTopOrExprList(isTopLevel);
+  Pexpr alternate;
+
+  if (fToken == Token(kSymbol, "else")) {
+    nextToken();
+    alternate = parseTopOrExprList(isTopLevel);
+  }
+
+  if (inclConsequent && inclAlternate) {
+    result << consequent;
+    if (alternate.isSet())
+      result << Pexpr("else") << alternate;
+
+    return result;
+  }
+  else if (inclConsequent)
+    return consequent;
+  else if (inclAlternate)
+    return alternate;
+
+  assert(0);
+  return Pexpr();
+}
+
+
+Pexpr
 FirstPass::parseVarDef(VardefFlags flags, bool isLocal)
 {
   if (fToken.fType != kSymbol)
@@ -902,8 +1016,8 @@ FirstPass::parseCharDef()
 
 
 Pexpr
-FirstPass::parseFunction(const String& sym, bool isGeneric,
-                         bool isLocal)
+FirstPass::parseFunctionDef(const String& sym, bool isGeneric,
+                            bool isLocal)
 {
   // TODO
   return Pexpr();
@@ -911,7 +1025,7 @@ FirstPass::parseFunction(const String& sym, bool isGeneric,
 
 
 Pexpr
-FirstPass::parseFunctionOrVar(bool isLocal)
+FirstPass::parseFunctionOrVarDef(bool isLocal)
 {
   assert(fToken.fType == kSymbol);
 
@@ -933,7 +1047,7 @@ FirstPass::parseFunctionOrVar(bool isLocal)
   {
     nextToken();
     if (fToken.fType == kParanOpen)
-      return parseFunction(sym, false, isLocal);
+      return parseFunctionDef(sym, false, isLocal);
 
     return parseVarDef2(sym, kNoFlags, isLocal);
   }
@@ -979,7 +1093,7 @@ FirstPass::parseDef(bool isLocal)
     nextToken();
     if (fToken.fType != kParanOpen)
       throw UnexpectedTokenException(fToken, "expected (");
-    return parseFunction(sym, true, isLocal);
+    return parseFunctionDef(sym, true, isLocal);
   }
   else if (fToken == Token(kSymbol, "char")) {
     nextToken();
@@ -989,7 +1103,7 @@ FirstPass::parseDef(bool isLocal)
     // TODO
   }
   else if (fToken.fType == kSymbol)
-    return parseFunctionOrVar(isLocal);
+    return parseFunctionOrVarDef(isLocal);
   else
     throw UnexpectedTokenException(fToken);
 
@@ -1018,16 +1132,16 @@ FirstPass::parseTop()
   }
   else if (fToken == Token(kSymbol, "def")) {
     nextToken();
-
     return parseDef(false);
   }
   else if (fToken == Token(kSymbol, "when")) {
-    // TODO
+    nextToken();
+    return parseWhen(true);
   }
   else
     throw UnexpectedTokenException(fToken);
 
-  return NULL;
+  return Pexpr();
 }
 
 

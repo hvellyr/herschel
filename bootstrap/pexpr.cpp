@@ -126,7 +126,7 @@ namespace heather
     }
 
     //-------- data members
-    std::vector<Pexpr> fChildren;
+    PexprVector fChildren;
   };
 
 
@@ -262,7 +262,7 @@ Pexpr::isPunct() const
 }
 
 
-const std::vector<Pexpr>&
+const PexprVector&
 Pexpr::children() const
 {
   switch (fImpl->type()) {
@@ -276,7 +276,7 @@ Pexpr::children() const
 }
 
 
-std::vector<Pexpr>&
+PexprVector&
 Pexpr::children()
 {
   switch (fImpl->type()) {
@@ -321,7 +321,7 @@ Pexpr::operator<<(const Pexpr& expr)
 
 
 Pexpr&
-Pexpr::operator<<(const std::vector<Pexpr>& exprs)
+Pexpr::operator<<(const PexprVector& exprs)
 {
   if (fImpl->type() != kSeq && fImpl->type() != kNested)
     throw NotSupportedException(__FUNCTION__);
@@ -329,7 +329,7 @@ Pexpr::operator<<(const std::vector<Pexpr>& exprs)
   unshare();
 
   SeqPexprImpl* seq = dynamic_cast<SeqPexprImpl*>(fImpl.obj());
-  for (std::vector<Pexpr>::const_iterator it = exprs.begin();
+  for (PexprVector::const_iterator it = exprs.begin();
        it != exprs.end();
        it++)
   {

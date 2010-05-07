@@ -26,7 +26,7 @@ SecondPass::SecondPass(Parser* parser)
 void
 SecondPass::parseTopExprlist(AptNode* rootNode, const Pexpr& expr)
 {
-  for (std::vector<Pexpr>::const_iterator it = expr.children().begin();
+  for (PexprVector::const_iterator it = expr.children().begin();
        it != expr.children().end();
        it++)
   {
@@ -155,10 +155,13 @@ SecondPass::parseExpr(const Pexpr& expr)
 {
   switch (expr.type()) {
   case kId:                     // TODO
+    return NULL;
   case kLit:                    // TODO
+    return NULL;
   case kSeq:
     return parseSeq(expr);
   case kNested:                 // TODO
+    return NULL;
   case kPunct:                  // TODO
     throw UnexpectedTokenException(Token(expr.punctValue()));
   }
