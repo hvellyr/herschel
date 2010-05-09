@@ -15,7 +15,7 @@
 #include "ptr.h"
 #include "tokenizer.h"
 #include "port.h"
-
+#include "parsertypes.h"
 
 namespace heather
 {
@@ -104,10 +104,24 @@ namespace heather
     Token tokenValue() const;
     TokenType leftToken() const;
     TokenType rightToken() const;
+    bool boolLitValue() const;
+    int intLitValue() const;
+    double realLitValue() const;
+    Rational rationalLitValue() const;
+    String stringLitValue() const;
+    Char charLitValue() const;
 
     //! useful predicates
+    bool isBinarySeq() const;
     bool isBinarySeq(TokenType op) const;
+    OperatorType binarySeqOperator() const;
+
     bool isStringLit() const;
+    bool isBoolLit() const;
+    bool isIntLit() const;
+    bool isRealLit() const;
+    bool isRationalLit() const;
+    bool isCharLit() const;
 
     //! indicates whether the pexpr is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;

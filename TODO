@@ -32,3 +32,6 @@ Documentation
 
 Bootstrap compiler
 
+  continue with pexpreval (more operator support)
+
+  unittests for Rational() class.

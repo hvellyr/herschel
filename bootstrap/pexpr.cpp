@@ -82,6 +82,9 @@ namespace heather
       case kKeyword:
         display(port, String("<lit type='keyw'>") + tokstr + "</lit>");
         break;
+      case kBool:
+        display(port, String("<lit type='bool'>") + tokstr + "</lit>");
+        break;
       case kInteger:
         display(port, String("<lit type='int'>") + tokstr + "</lit>");
         break;
@@ -389,6 +392,60 @@ Pexpr::tokenValue() const
 }
 
 
+bool
+Pexpr::boolLitValue() const
+{
+  if (tokenValue().fType != kBool)
+    throw NotSupportedException(__FUNCTION__);
+  return tokenValue().fBoolValue;
+}
+
+
+int
+Pexpr::intLitValue() const
+{
+  if (tokenValue().fType != kInteger)
+    throw NotSupportedException(__FUNCTION__);
+  return tokenValue().fIntValue;
+}
+
+
+double
+Pexpr::realLitValue() const
+{
+  if (tokenValue().fType != kReal)
+    throw NotSupportedException(__FUNCTION__);
+  return tokenValue().fDoubleValue;
+}
+
+
+Rational
+Pexpr::rationalLitValue() const
+{
+  if (tokenValue().fType != kRational)
+    throw NotSupportedException(__FUNCTION__);
+  return tokenValue().fRationalValue;
+}
+
+
+String
+Pexpr::stringLitValue() const
+{
+  if (tokenValue().fType != kString)
+    throw NotSupportedException(__FUNCTION__);
+  return tokenValue().fStrValue;
+}
+
+
+Char
+Pexpr::charLitValue() const
+{
+  if (tokenValue().fType != kChar)
+    throw NotSupportedException(__FUNCTION__);
+  return Char(tokenValue().fIntValue);
+}
+
+
 TokenType
 Pexpr::leftToken() const
 {
@@ -416,9 +473,60 @@ Pexpr::isBinarySeq(TokenType op) const
 
 
 bool
+Pexpr::isBinarySeq() const
+{
+  return (isSeq() && children().size() == 3 && (*this)[1].isPunct());
+}
+
+
+OperatorType
+Pexpr::binarySeqOperator() const
+{
+  if (isSeq() && children().size() == 3 && (*this)[1].isPunct())
+    return tokenTypeToOperator((*this)[1].punctValue());
+  return kOpInvalid;
+}
+
+
+bool
 Pexpr::isStringLit() const
 {
   return isLit() && tokenValue().fType == kString;
+}
+
+
+bool
+Pexpr::isBoolLit() const
+{
+  return isLit() && tokenValue().fType == kBool;
+}
+
+
+bool
+Pexpr::isIntLit() const
+{
+  return isLit() && tokenValue().fType == kInteger;
+}
+
+
+bool
+Pexpr::isRealLit() const
+{
+  return isLit() && tokenValue().fType == kReal;
+}
+
+
+bool
+Pexpr::isRationalLit() const
+{
+  return isLit() && tokenValue().fType == kRational;
+}
+
+
+bool
+Pexpr::isCharLit() const
+{
+  return isLit() && tokenValue().fType == kChar;
 }
 
 

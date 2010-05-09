@@ -12,6 +12,7 @@
 #include "pass1.h"
 #include "tokenizer.h"
 #include "valuesaver.h"
+#include "pexpreval.h"
 
 
 //----------------------------------------------------------------------------
@@ -577,6 +578,7 @@ Pexpr
 FirstPass::parseAtomicExpr()
 {
   switch (fToken.fType) {
+  case kBool:
   case kInteger:
   case kReal:
   case kRational:
@@ -636,88 +638,6 @@ FirstPass::parseAtomicExpr()
   }
 
   return Pexpr();
-}
-
-
-OperatorType
-FirstPass::tokenTypeToOperator(TokenType type) const
-{
-  switch (type) {
-  case kPlus:          return kOpPlus;
-  case kMinus:         return kOpMinus;
-  case kDivide:        return kOpDivide;
-  case kMultiply:      return kOpMultiply;
-  case kExponent:      return kOpExponent;
-  case kFold:          return kOpFold;
-  case kCompare:       return kOpCompare;
-  case kEqual:         return kOpEqual;
-  case kUnequal:       return kOpUnequal;
-  case kLess:          return kOpLess;
-  case kLessEqual:     return kOpLessEqual;
-  case kGreater:       return kOpGreater;
-  case kGreaterEqual:  return kOpGreaterEqual;
-  case kAssign:        return kOpAssign;
-  case kMapTo:         return kOpMapTo;
-  case kIn:            return kOpIn;
-  case kMod:           return kOpMod;
-  case kIsa:           return kOpIsa;
-  case kAs:            return kOpAs;
-  case kBy:            return kOpBy;
-  case kLogicalAnd:    return kOpLogicalAnd;
-  case kLogicalOr:     return kOpLogicalOr;
-  case kBitAnd:        return kOpBitAnd;
-  case kBitOr:         return kOpBitOr;
-  case kBitXor:        return kOpBitXor;
-  case kShiftLeft:     return kOpShiftLeft;
-  case kShiftRight:    return kOpShiftRight;
-  case kRange:         return kOpRange;
-  case kEllipsis:      return kOpEllipsis;
-
-  default:
-    return kOpInvalid;
-  }
-}
-
-
-TokenType
-FirstPass::operatorToTokenType(OperatorType op) const
-{
-  switch (op) {
-  case kOpPlus:          return kPlus;
-  case kOpMinus:         return kMinus;
-  case kOpDivide:        return kDivide;
-  case kOpMultiply:      return kMultiply;
-  case kOpExponent:      return kExponent;
-  case kOpFold:          return kFold;
-  case kOpCompare:       return kCompare;
-  case kOpEqual:         return kEqual;
-  case kOpUnequal:       return kUnequal;
-  case kOpLess:          return kLess;
-  case kOpLessEqual:     return kLessEqual;
-  case kOpGreater:       return kGreater;
-  case kOpGreaterEqual:  return kGreaterEqual;
-  case kOpAssign:        return kAssign;
-  case kOpMapTo:         return kMapTo;
-  case kOpIn:            return kIn;
-  case kOpMod:           return kMod;
-  case kOpIsa:           return kIsa;
-  case kOpAs:            return kAs;
-  case kOpBy:            return kBy;
-  case kOpLogicalAnd:    return kLogicalAnd;
-  case kOpLogicalOr:     return kLogicalOr;
-  case kOpBitAnd:        return kBitAnd;
-  case kOpBitOr:         return kBitOr;
-  case kOpBitXor:        return kBitXor;
-  case kOpShiftLeft:     return kShiftLeft;
-  case kOpShiftRight:    return kShiftRight;
-  case kOpRange:         return kRange;
-  case kOpEllipsis:      return kEllipsis;
-
-  case kOpInvalid:
-    assert(0);
-  }
-
-  return kInvalid;
 }
 
 
@@ -881,23 +801,7 @@ FirstPass::parseWhen(bool isTopLevel)
   bool inclAlternate = true;
 
   if (fToken.fType == kSymbol) {
-    if (fToken == Token(kSymbol, "version")) {
-      nextToken();
-      if (fToken.fType != kParanOpen)
-        throw UnexpectedTokenException(fToken, "expected (");
-      nextToken();
-      if (fToken.fType != kSymbol)
-        throw UnexpectedTokenException(fToken, "expected SYMBOL");
-
-      result << Pexpr("version")
-             << ( Pexpr(kParanOpen, kParanClose) << Pexpr(fToken.fStrValue) );
-
-      nextToken();
-      if (fToken.fType != kParanClose)
-        throw UnexpectedTokenException(fToken, "expected )");
-      nextToken();
-    }
-    else if (fToken == Token(kSymbol, "ignore")) {
+    if (fToken == Token(kSymbol, "ignore")) {
       nextToken();
       inclConsequent = false;
     }
@@ -906,7 +810,7 @@ FirstPass::parseWhen(bool isTopLevel)
       inclAlternate = false;
     }
     else
-      throw UnexpectedTokenException(fToken, "expected 'version' or 'ignore'");
+      throw UnexpectedTokenException(fToken, "expected 'ignore' or 'include'");
   }
   else if (fToken.fType == kParanOpen) {
     nextToken();
@@ -915,7 +819,22 @@ FirstPass::parseWhen(bool isTopLevel)
       throw UnexpectedTokenException(fToken, "expected )");
     nextToken();
 
-    result << ( Pexpr(kParanOpen, kParanClose) << test );
+    if (fEvaluateExprs) {
+      PexprEvalContext ctx(fParser->configVarRegistry());
+      Pexpr p = ctx.evalPexpr(test);
+      if (p.isBoolLit()) {
+        inclConsequent = p.boolLitValue();
+        inclAlternate = !p.boolLitValue();
+      }
+      else {
+        fprintf(stderr, "ERROR: when-expression did not evaluate to boolean. "
+                "Treat it as false\n");
+        inclConsequent = false;
+        inclAlternate = true;
+      }
+    }
+    else
+      result << ( Pexpr(kParanOpen, kParanClose) << test );
   }
   else
     throw UnexpectedTokenException(fToken, "expected (");
@@ -967,6 +886,14 @@ FirstPass::parseVarDef(VardefFlags flags, bool isLocal)
 
 
 Pexpr
+FirstPass::evaluateConfigExpr(const Pexpr& initExpr)
+{
+  PexprEvalContext ctx(fParser->configVarRegistry());
+  return ctx.evalPexpr(initExpr);
+}
+
+
+Pexpr
 FirstPass::parseVarDef2(const String& symbolName, VardefFlags flags,
                         bool isLocal)
 {
@@ -992,6 +919,15 @@ FirstPass::parseVarDef2(const String& symbolName, VardefFlags flags,
     vardefExpr << Pexpr("config");
   else
     assert(0);
+
+  if (fEvaluateExprs) {
+    if (!initExpr.isSet())
+      throw SyntaxException(String("Config variable '") + symbolName +
+                            "' without default value");
+    fParser->configVarRegistry()->registerValue(symbolName,
+                                                evaluateConfigExpr(initExpr));
+    return Pexpr();
+  }
 
   vardefExpr << Pexpr(symbolName);
 
@@ -1026,7 +962,7 @@ FirstPass::parseCharDef()
   nextToken();
 
   if (fEvaluateExprs) {
-    fParser->charRegistry()->registerChar(charName, codePoint);
+    fParser->charRegistry()->registerValue(charName, codePoint);
     return Pexpr();
   }
   else

@@ -9,8 +9,12 @@
 #ifndef bootstrap_properties_h
 #define bootstrap_properties_h
 
+#include "parsertypes.h"
+
+
 namespace heather
 {
+  class Pexpr;
   class String;
 
   class Properties
@@ -28,6 +32,10 @@ namespace heather
     static bool isTraceTokenizer();
     static bool isTracePass1();
     static bool isTracePass2();
+
+    static void setConfigVar(const String& keyValuePair);
+    static ConfigVarRegistry* globalConfigVarRegistry();
+
   };
 };                              // namespace
 

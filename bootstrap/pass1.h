@@ -69,9 +69,6 @@ namespace heather
                             bool parseParams);
     void parseFuncallParams(PexprVector* params);
 
-    OperatorType tokenTypeToOperator(TokenType type) const;
-    TokenType operatorToTokenType(OperatorType op) const;
-
     Pexpr makeBinaryPexpr(const Pexpr& expr1, OperatorType op1,
                           const Pexpr& expr2) const;
     Pexpr makeAssignPexpr(const Pexpr& expr1, const Pexpr& expr2) const;
@@ -87,6 +84,8 @@ namespace heather
     void parseFunctionsParams(PexprVector* exprlist);
 
     Pexpr parseWhen(bool isTopLevel);
+
+    Pexpr evaluateConfigExpr(const Pexpr& initExpr);
 
   private:
     Ptr<Parser> fParser;

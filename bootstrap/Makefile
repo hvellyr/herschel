@@ -10,41 +10,46 @@ include $(top_srcdir)/config.mk
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src
 
-SOURCES =        \
-	apt.cpp        \
-	heather.cpp    \
-	option.cpp     \
-	parser.cpp     \
-	pass1.cpp      \
-	pass2.cpp      \
-	pexpr.cpp      \
-	port.cpp       \
-	properties.cpp \
-	str.cpp        \
-	tokenizer.cpp  \
-	tokenport.cpp  \
-	unittests.cpp  \
+SOURCES =         \
+	apt.cpp         \
+	heather.cpp     \
+	option.cpp      \
+	parser.cpp      \
+	parsertypes.cpp \
+	pass1.cpp       \
+	pass2.cpp       \
+	pexpr.cpp       \
+	pexpreval.cpp   \
+	port.cpp        \
+	properties.cpp  \
+	str.cpp         \
+	tokenizer.cpp   \
+	tokenport.cpp   \
+	unittests.cpp   \
 	valuesaver.cpp
 
-HEADERS =        \
-	apt.h          \
-	common.h       \
-	exception.h    \
-	numbers.h      \
-	option.h       \
-	parser.h       \
-	pass1.h        \
-	pass2.h        \
-	pexpr.h        \
-	port.h         \
-	properties.h   \
-	ptr.h          \
-	refcountable.h \
-	valuesaver.h   \
-	str.h          \
-	tokenizer.h    \
-	tokenport.h    \
-	unittests.h
+HEADERS =         \
+	apt.h           \
+	common.h        \
+	exception.h     \
+	numbers.h       \
+	option.h        \
+	parser.h        \
+	parsertypes.h   \
+	pass1.h         \
+	pass2.h         \
+	pexpr.h         \
+	pexpreval.h     \
+	port.h          \
+	properties.h    \
+	ptr.h           \
+	refcountable.h  \
+	registry.h      \
+	str.h           \
+	tokenizer.h     \
+	tokenport.h     \
+	unittests.h     \
+	valuesaver.h
 
 
 # ifeq ($(TARGET_OS),mac)
