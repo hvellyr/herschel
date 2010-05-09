@@ -1,31 +1,34 @@
 -*-org-*-
 
-* TODO use namespace info in first pass parse
-** defines
-*** DONE alias
-*** DONE type
-*** DONE class
-*** DONE macro
-*** TODO macro replacement
-    (see hygiene)
-*** DONE functions
-*** DONE variables
-** Usage
-*** DONE Function macro usage
-*** DONE On macro usage
-*** DONE Def var macro usage
-*** DONE Def macro usage
-*** TODO Symbol usage?
 
-* TODO macro hygiene
-  especially with import and namespaces
-** BUG namespace must terminate def body
+Language and ideas:
 
-* TODO Reference type params
-** TODO Add self.Class stuff to documentation
-** TODO Add self.Type.X stuff to documentation
-** TODO review/rewrite macro specification
+  Think about non-gc objects.
 
-* Requirements for standard library
-** Collections framework
-*** early failure iterators
+  Think about lazy evaluation.
+
+  Think about: all objects are passed by value (i.e. even for vectors);
+  values passed to spawned functions are actually copied, otherwise
+  internal refcounted.  It is possible to explicitely use references:
+
+    def f(a : ^Int, b : ^Vector<Octet>)
+
+  Embedding of C/C++ fragments
+
+
+Documentation
+
+  Write nested modules section.
+
+  Write/extending exporting and visibility section on modules
+
+  Mention explicitely: no coercing.  Where?
+
+  Write assignment section.
+
+  Rewrite the "def xxx" to the new deffn-form-example style.
+
+
+
+Bootstrap compiler
+
