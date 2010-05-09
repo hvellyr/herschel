@@ -36,7 +36,7 @@ namespace heather
     Pexpr parseExport();
     Pexpr parseImport();
     Pexpr parseDef(bool isLocal);
-    void parseCharDef();
+    Pexpr parseCharDef();
     Pexpr parseVarDef(VardefFlags flags, bool isLocal);
     Pexpr parseVarDef2(const String& symbolName, VardefFlags flags,
                        bool isLocal);
@@ -91,6 +91,7 @@ namespace heather
   private:
     Ptr<Parser> fParser;
     Token       fToken;
+    bool        fEvaluateExprs;
   };
 };
 

@@ -11,6 +11,7 @@
 #include "parser.h"
 #include "pass1.h"
 #include "tokenizer.h"
+#include "valuesaver.h"
 
 
 //----------------------------------------------------------------------------
@@ -20,7 +21,8 @@ using namespace heather;
 
 FirstPass::FirstPass(Parser* parser, Token currentToken)
   : fParser(parser),
-    fToken(currentToken)
+    fToken(currentToken),
+    fEvaluateExprs(true)
 { }
 
 
@@ -918,12 +920,20 @@ FirstPass::parseWhen(bool isTopLevel)
   else
     throw UnexpectedTokenException(fToken, "expected (");
 
-  Pexpr consequent = parseTopOrExprList(isTopLevel);
+  Pexpr consequent;
   Pexpr alternate;
+
+  {
+    ValueSaver<bool> keep(fEvaluateExprs, inclConsequent);
+    consequent = parseTopOrExprList(isTopLevel);
+  }
 
   if (fToken == Token(kSymbol, "else")) {
     nextToken();
-    alternate = parseTopOrExprList(isTopLevel);
+    {
+      ValueSaver<bool> keep(fEvaluateExprs, inclAlternate);
+      alternate = parseTopOrExprList(isTopLevel);
+    }
   }
 
   if (inclConsequent && inclAlternate) {
@@ -978,6 +988,10 @@ FirstPass::parseVarDef2(const String& symbolName, VardefFlags flags,
     vardefExpr << Pexpr("const");
   else if (flags == kIsFluid)
     vardefExpr << Pexpr("fluid");
+  else if (flags == kIsConfig)
+    vardefExpr << Pexpr("config");
+  else
+    assert(0);
 
   vardefExpr << Pexpr(symbolName);
 
@@ -990,7 +1004,7 @@ FirstPass::parseVarDef2(const String& symbolName, VardefFlags flags,
 }
 
 
-void
+Pexpr
 FirstPass::parseCharDef()
 {
   if (fToken.fType != kSymbol)
@@ -1009,9 +1023,15 @@ FirstPass::parseCharDef()
   if (codePoint < 0 || codePoint > 0x10FFFF)
     throw SyntaxException(String("invalid expected INTEGER"));
 
-  fParser->charRegistry()->registerChar(charName, codePoint);
-
   nextToken();
+
+  if (fEvaluateExprs) {
+    fParser->charRegistry()->registerChar(charName, codePoint);
+    return Pexpr();
+  }
+  else
+    return Pexpr() << Pexpr("def") << Pexpr("char") << Pexpr(charName)
+                   << Pexpr(kAssign) << Pexpr(Token(kInteger, codePoint));
 }
 
 
@@ -1084,6 +1104,10 @@ FirstPass::parseDef(bool isLocal)
     nextToken();
     return parseVarDef(kIsFluid, false);
   }
+  else if (fToken == Token(kSymbol, "config")) {
+    nextToken();
+    return parseVarDef(kIsConfig, false);
+  }
   else if (fToken == Token(kSymbol, "generic")) {
     nextToken();
     if (fToken.fType != kSymbol)
@@ -1097,7 +1121,7 @@ FirstPass::parseDef(bool isLocal)
   }
   else if (fToken == Token(kSymbol, "char")) {
     nextToken();
-    parseCharDef();
+    return parseCharDef();
   }
   else if (fToken == Token(kSymbol, "macro")) {
     // TODO
