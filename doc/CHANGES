@@ -1,31 +1,6 @@
 reread diesel things and I think, yes, I'm on the right way.  Redesign
 certain things however:
 
-Think about:
-
-  Write nested modules section.
-
-  Write/extending exporting and visibility section on modules
-
-|  Rewrite measures chapter.  measures vs. units.
-
-  Mention explicitely: no coercing.  Where?
-
-  Write assignment section.
-
-|  Move all grammar productions to appendix.  Rewrite the affected sections
-|  to the new deffn-form-example style.
-|
-  Rewrite the "def xxx" to the new deffn-form-example style.
-
-|  Extend and annotate the grammar productions in the appendix
-
-  Think about non-gc objects.
-
-  Think about lazy evaluation.
-
-
-
 | Defless again?
 |
 |   no...
@@ -496,7 +471,7 @@ A-Z digits                              digits
 []  slicing                             array
     arrays
 \   char constants                      escaping
-^   operator (bit xor)                  operator (xor)
+^   [----------]                        operator (xor)
 _   identifier                          identifier
     current type notifier
 `   measure types                       [----------]
