@@ -16,6 +16,7 @@
 #include "pexpr.h"
 
 
+
 namespace heather
 {
   //--------------------------------------------------------------------------
@@ -85,6 +86,7 @@ namespace heather
     virtual AptNode* parse(Port<Char>* port);
 
     CharRegistry* charRegistry() const;
+    ConfigVarRegistry* configVarRegistry() const;
 
   private:
     friend class FirstPass;
@@ -99,6 +101,7 @@ namespace heather
     Token          fToken;
 
     Ptr<CharRegistry> fCharRegistry;
+    Ptr<ConfigVarRegistry> fConfigVarRegistry;
   };
 };
 

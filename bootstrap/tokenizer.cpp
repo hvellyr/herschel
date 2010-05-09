@@ -11,6 +11,7 @@
 #include "tokenizer.h"
 #include "properties.h"
 #include "unittests.h"
+#include "registry.h"
 
 
 using namespace heather;
@@ -239,6 +240,10 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       return Token(kAs);
     else if (token.fStrValue == String("by"))
       return Token(kBy);
+    else if (token.fStrValue == String("true"))
+      return Token(kBool, true);
+    else if (token.fStrValue == String("false"))
+      return Token(kBool, false);
   }
   return token;
 }
@@ -394,9 +399,11 @@ Tokenizer::mapCharNameToChar(const String& charnm)
   else if (charnm == String("esc") || charnm == String("escape"))
     return Char('\e');
   else if (fCharRegistry != NULL) {
-    int cp = fCharRegistry->lookupChar(charnm);
-    if (cp >= 0 && cp <= 0x10ffff)
-      return Char(cp);
+    int cp;
+    if (fCharRegistry->lookup(charnm, &cp)) {
+      if (cp >= 0 && cp <= 0x10ffff)
+        return Char(cp);
+    }
   }
 
   parseError(String("Unknown char name: ") + charnm);
@@ -633,6 +640,7 @@ Token& Token::operator=(const Token& other)
 {
   fType          = other.fType;
   fStrValue      = other.fStrValue;
+  fBoolValue     = other.fBoolValue;
   fIntValue      = other.fIntValue;
   fRationalValue = other.fRationalValue;
   fDoubleValue   = other.fDoubleValue;
@@ -656,6 +664,9 @@ Token::operator==(const Token& other) const
 
     case kChar:
       return fIntValue == other.fIntValue;
+
+    case kBool:
+      return fBoolValue == other.fBoolValue;
 
     case kInteger:
       return ( fIntValue == other.fIntValue &&
@@ -722,6 +733,8 @@ Token::toString() const
       return String(buffer);
     }
 
+  case kBool:
+    return fBoolValue ? String("true") : String("false");
   case kInteger:
     return !fIsImaginary ? fromInt(fIntValue) : (fromInt(fIntValue) + "i");
   case kReal:
@@ -772,29 +785,6 @@ heather::operator+(const String& one, const Token& two)
 }
 
 
-//----------------------------------------------------------------------------
-
-void
-CharRegistry::registerChar(const String& charName, int codePoint)
-{
-  std::map<String, int>::iterator it = fCharMap.find(charName);
-  if (it == fCharMap.end())
-    fCharMap.insert(std::make_pair(charName, codePoint));
-  else
-    it->second = codePoint;
-}
-
-
-int
-CharRegistry::lookupChar(const String& charName) const
-{
-  std::map<String, int>::const_iterator it = fCharMap.find(charName);
-  if (it != fCharMap.end())
-    return it->second;
-  return -1;
-}
-
-
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
@@ -807,6 +797,7 @@ public:
   {
     assert(Token(kReal, 3.1415).fDoubleValue == 3.1415);
     assert(Token(kReal, 1.2345).fType == kReal);
+    assert(Token(kBool, true).fBoolValue == true);
     assert(Token(kInteger, 0x10000).fIntValue == 0x10000);
     assert(Token(kRational, Rational(23, 27)).fRationalValue == Rational(23, 27));
 
@@ -827,6 +818,7 @@ public:
     }
 
     TEST_ASSIGNOP2(kReal, 3.1415, fDoubleValue);
+    TEST_ASSIGNOP2(kBool, true, fBoolValue);
     TEST_ASSIGNOP2(kInteger, 0x20000, fIntValue);
     TEST_ASSIGNOP2(kRational, Rational(1, 127), fRationalValue);
     TEST_ASSIGNOP2(kString, String("abc"), fStrValue);
@@ -839,6 +831,7 @@ public:
     }
 
     TEST_COPYCTOR2(kReal, 3.1415, fDoubleValue);
+    TEST_COPYCTOR2(kBool, true, fBoolValue);
     TEST_COPYCTOR2(kInteger, 0x20000, fIntValue);
     TEST_COPYCTOR2(kRational, Rational(1, 127), fRationalValue);
     TEST_COPYCTOR2(kString, String("abc"), fStrValue);
@@ -930,6 +923,7 @@ public:
 
     {
       static const char* test =
+        "true false\n"
         "12345 0aaaah 0aBcDeFh 07123t 101101y 1y 2t 3h 4\n"
         "12.34 0.12345e+10 123.45e+7 12.3456e-5 -3.1415\n"
         "2/3 120/33 1/1024\n"
@@ -937,6 +931,8 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
       try {
+        assert(tnz.nextToken() == Token(kBool, true));
+        assert(tnz.nextToken() == Token(kBool, false));
         assert(tnz.nextToken() == Token(kInteger, 12345));
         assert(tnz.nextToken() == Token(kInteger, 0xaaaa));
         assert(tnz.nextToken() == Token(kInteger, 0xabcdef));
@@ -972,8 +968,8 @@ public:
       Ptr<CharRegistry> cr = new CharRegistry;
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     cr);
-      cr->registerChar(String("ga"), 0xac00);
-      cr->registerChar(String("gong"), 0xacf5);
+      cr->registerValue(String("ga"), 0xac00);
+      cr->registerValue(String("gong"), 0xacf5);
 
       try {
         assert(tnz.nextToken() == Token(kChar, 0x20));
@@ -1095,9 +1091,9 @@ public:
         assert(tnz.nextToken() == Token(kLess));
         assert(tnz.nextToken() == Token(kInteger, 10));
         assert(tnz.nextToken() == Token(kLogicalAnd));
-        assert(tnz.nextToken() == Token(kSymbol, String("true")));
+        assert(tnz.nextToken() == Token(kBool, true));
         assert(tnz.nextToken() == Token(kLogicalOr));
-        assert(tnz.nextToken() == Token(kSymbol, String("false")));
+        assert(tnz.nextToken() == Token(kBool, false));
 
         assert(tnz.nextToken() == Token(kSymbol, String("T")));
         assert(tnz.nextToken() == Token(kGenericOpen));

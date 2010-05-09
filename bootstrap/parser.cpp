@@ -20,14 +20,17 @@ using namespace heather;
 //----------------------------------------------------------------------------
 
 Parser::Parser()
-  : fCharRegistry(new CharRegistry)
+  : fCharRegistry(new CharRegistry),
+    fConfigVarRegistry(
+      new ConfigVarRegistry(Properties::globalConfigVarRegistry()))
 {
 }
 
 
 Parser::Parser(Parser* parent)
   : fParent(parent),
-    fCharRegistry(parent->charRegistry())
+    fCharRegistry(parent->charRegistry()),
+    fConfigVarRegistry(parent->configVarRegistry())
 {
 }
 
@@ -36,6 +39,13 @@ CharRegistry*
 Parser::charRegistry() const
 {
   return fCharRegistry;
+}
+
+
+ConfigVarRegistry*
+Parser::configVarRegistry() const
+{
+  return fConfigVarRegistry;
 }
 
 

@@ -49,6 +49,26 @@ namespace heather
         fDenominator != other.fDenominator;
     }
 
+    bool operator>(const Rational& other) const
+    {
+      return (fNumerator * other.fDenominator -
+              other.fNumerator * fDenominator > 0);
+    }
+
+    bool operator<(const Rational& other) const
+    {
+      return (fNumerator * other.fDenominator -
+              other.fNumerator * fDenominator < 0);
+    }
+
+    Rational operator+(const Rational& other) const
+    {
+      int otherDen = other.denominator();
+      int n = fNumerator * otherDen;
+      int na = other.numerator() * fDenominator;
+      return Rational(n + na, fDenominator * otherDen);
+    }
+
     int numerator() const
     {
       return fNumerator;
@@ -57,6 +77,12 @@ namespace heather
     int denominator() const
     {
       return fDenominator;
+    }
+
+
+    double toReal() const
+    {
+      return double(fNumerator) / double(fDenominator);
     }
 
   private:

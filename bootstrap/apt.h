@@ -16,7 +16,7 @@
 #include "port.h"
 #include "ptr.h"
 #include "numbers.h"
-
+#include "parsertypes.h"
 
 namespace heather
 {
@@ -249,41 +249,6 @@ namespace heather
 
 
   //--------------------------------------------------------------------------
-
-  enum OperatorType
-  {
-    kOpInvalid,
-    kOpAs,
-    kOpAssign,
-    kOpBitAnd,
-    kOpBitOr,
-    kOpBitXor,
-    kOpBy,
-    kOpCompare,
-    kOpDivide,
-    kOpEllipsis,
-    kOpEqual,
-    kOpExponent,
-    kOpFold,
-    kOpGreater,
-    kOpGreaterEqual,
-    kOpIn,
-    kOpIsa,
-    kOpLess,
-    kOpLessEqual,
-    kOpLogicalAnd,
-    kOpLogicalOr,
-    kOpMapTo,
-    kOpMinus,
-    kOpMod,
-    kOpMultiply,
-    kOpPlus,
-    kOpRange,
-    kOpShiftLeft,
-    kOpShiftRight,
-    kOpUnequal,
-  };
-
 
   class BinaryNode : public AptNode
   {

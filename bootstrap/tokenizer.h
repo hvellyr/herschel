@@ -9,10 +9,9 @@
 #ifndef bootstrap_tokenizer_h
 #define bootstrap_tokenizer_h
 
-#include <map>
-
 #include "port.h"
 #include "numbers.h"
+#include "registry.h"
 
 
 namespace heather
@@ -41,15 +40,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class CharRegistry : public RefCountable
-  {
-  public:
-    void registerChar(const String& charName, int codePoint);
-    int lookupChar(const String& charName) const;
-
-  private:
-    std::map<String, int> fCharMap;
-  };
+  typedef Registry<int> CharRegistry;
 
 
   //--------------------------------------------------------------------------
@@ -89,15 +80,15 @@ namespace heather
 
     kString,
     kChar,
+    kBool,
+    kInteger,
+    kReal,
+    kRational,
 
     kSymbol,
     kKeyarg,
     kMacroParam,
     kKeyword,
-
-    kInteger,
-    kReal,
-    kRational,
 
     kParanOpen,
     kParanClose,
@@ -131,6 +122,7 @@ namespace heather
   public:
     Token()
       : fType(kInvalid),
+        fBoolValue(false),
         fIntValue(0),
         fDoubleValue(0.0),
         fIsImaginary(false)
@@ -143,6 +135,7 @@ namespace heather
 
     Token(TokenType type)
       : fType(type),
+        fBoolValue(false),
         fIntValue(0),
         fDoubleValue(0.0),
         fIsImaginary(false)
@@ -151,6 +144,7 @@ namespace heather
     Token(TokenType type, const String& value)
       : fType(type),
         fStrValue(value),
+        fBoolValue(false),
         fIntValue(0),
         fDoubleValue(0.0),
         fIsImaginary(false)
@@ -159,6 +153,7 @@ namespace heather
     Token(TokenType type, const char* value)
       : fType(type),
         fStrValue(String(value)),
+        fBoolValue(false),
         fIntValue(0),
         fDoubleValue(0.0),
         fIsImaginary(false)
@@ -166,13 +161,28 @@ namespace heather
 
     Token(TokenType type, int value)
       : fType(type),
+        fBoolValue(false),
         fIntValue(value),
         fDoubleValue(0.0),
         fIsImaginary(false)
-    { }
+    {
+      assert(type == kInteger);
+    }
+
+
+    Token(TokenType type, bool value)
+      : fType(type),
+        fBoolValue(value),
+        fIntValue(0),
+        fDoubleValue(0.0),
+        fIsImaginary(false)
+    {
+      assert(type == kBool);
+    }
 
     Token(TokenType type, double value)
       : fType(type),
+        fBoolValue(false),
         fIntValue(0),
         fDoubleValue(value),
         fIsImaginary(false)
@@ -180,6 +190,7 @@ namespace heather
 
     Token(TokenType type, const Rational& rat)
       : fType(type),
+        fBoolValue(false),
         fIntValue(0),
         fRationalValue(rat),
         fDoubleValue(0.0),
@@ -217,6 +228,7 @@ namespace heather
     //-------- data members
     TokenType fType;
     String    fStrValue;
+    bool      fBoolValue;
     int       fIntValue;
     Rational  fRationalValue;
     double    fDoubleValue;

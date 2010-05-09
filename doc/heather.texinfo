@@ -317,11 +317,11 @@ The following identifiers are reserved and have a special meaning:
 alias     AND       and       as        by        char      class
 const     def       else      enum      eof       exit      export
 extend    false     final     fluid     for       Function  function
-generic   if        ignore    import    in        init      interface
+generic   if        import    in        init      interface
 isa       let       macro     match     measure   mod       module
 nil       not       on        OR        or        otherwise protected
 public    reify     select    slot      slot!     sync      then
-true      type      unit      until     version   when      where
+true      type      unit      until     when      where
 while     XOR
 @end verbatim
 
@@ -1873,6 +1873,7 @@ let tmp = self.ack(n)
 * Variable bindings::           Variable bindings
 * Immutable bindings::          Immutable Bindings
 * Fluid bindings::              Fluid bindings
+* Config bindings::             Config bindings
 @end menu
 
 
@@ -1940,7 +1941,7 @@ Adding the keyword @code{const} to a declaration makes the binding
 
 
 @c --------------------------------------------------------------------
-@node Fluid bindings,  , Immutable bindings, Bindings
+@node Fluid bindings, Config bindings, Immutable bindings, Bindings
 @section Fluid Bindings
 
 Fluid variables (which drill wholes into lexical scoping):
@@ -1976,6 +1977,23 @@ def f()
 
 Variables not being declared @code{fluid} globally before a local
 @code{let fluid} is an error.
+
+
+@c --------------------------------------------------------------------
+@node Config bindings,  , Fluid bindings, Bindings
+@section Config Bindings
+
+A rather special type of bindings are @dfn{Config bindings}.  They
+behave like ordinary const bindings (i.e.@ they are immutable), but are
+used as constant flags for conditional compiling.  They can be checked
+in @code{when} expressions (@ref{Conditional compiling}).
+
+@example
+def config os = "unknown"
+def config version-str = "1.2.3"
+def config version = 10203
+@end example
+
 
 
 @c ====================================================================
@@ -3420,18 +3438,13 @@ interface x11
 
 Heather does not include a preprocessor, at least not from the base
 language's point of view.  It supports the conditional compilation of
-complete code sections, however, with the @code{when} expression.
+complete code sections with the @code{when} expression, however.
 
 @deffn Special when
 The @code{when} expression has one of the following forms:
 
 @example
-when version(@var{version-id})
-  expr
-@r{[} else
-  expr @r{]}
-
-when (@var{identifier} @var{compare-operator} @var{constant})
+when (@var{boolean-expr})
   expr
 @r{[} else
   expr @r{]}
@@ -3440,17 +3453,22 @@ when ignore
   expr
 @r{[} else
   expr @r{]}
+
+when include
+  expr
+@r{[} else
+  expr @r{]}
 @end example
 
-The @code{when version} expression can replace typical applications of
+The @code{when} expression can replace typical applications of
 @code{#ifdef() ... #endif} in C or C++:
 
 @example
-when version(Linux) @{
-  when version(CPU_LittleEndian) @{
+when (os == "linux") @{
+  when (cpu == "LittleEndian") @{
     -- little endian specific code
   @}
-  else when version(CPU_BigEndian) @{
+  else when (cpu == "BigEndian") @{
     -- big endian specific code
   @}
   else @{
@@ -3458,18 +3476,9 @@ when version(Linux) @{
 @}
 @end example
 
-Similar is the more general @code{when @var{compare-operator}} form.  It
-can be used to constant variables for certain values.  The variables to
-check must be defined before as a global constant binding and must be
-visible in the scope.
-
-@example
-def const RENDER-DIALOG-TYPE = 5
-
-when (RENDER-DIALOG-TYPE == 5) @{
-  -- code to compile only in this case
-@}
-@end example
+It can be used to compare config variables for certain values.  The
+variables to check must be defined before as a global config binding and
+must be visible in the scope (see @ref{Config bindings}).
 
 Sometimes it is helpful to disable a code block completely.  The
 @code{when ignore} form unconditionally removes the enclosed code from
@@ -3479,6 +3488,10 @@ compilation.
 when ignore @{
 @}
 @end example
+
+The @code{when include} form unconditionally includes the enclosed
+code.  The @code{include} form is useful when switching between @code{ignore}
+and @code{include} during development.
 
 The @code{when} expressions can appear on all levels (top-level and
 inside of functions).  The enclosed expressions must always be valid
@@ -4132,15 +4145,12 @@ closure-def     := `function' fundef-clause
 @verbatim
 when-stmt       := `when' when-condition expr
                    [ `else' expr ]
-when-condition  := version-cond | incl-cond | ignore-cond
+when-condition  := cond-when | cond-incl
 
-version-cond    := `version' `(' version-spec `)'
-version-spec    := SYMBOL | NUMBER
+cond-when       := `(' cond-spec `)'
+cond-spec       := expr
 
-incl-cond       := `(' incl-spec `)'
-incl-spec       := SYMBOL [ COMPARE-OP const-expr ]
-
-ignore-cond     := `ignore'
+cond-incl       := `ignore' | `include'
 @end verbatim
 @end smallformat
 

@@ -32,15 +32,18 @@ displayHelp()
   printf("\n");
   printf("Usage: heather [options] files...\n");
   printf("Options:\n");
-  printf("  --help            Display this information\n");
-  printf("  --version         Display the version\n");
-  printf("  --verbose         Be verbose\n");
-  printf("  --trace=KEYS      Trace various aspects: {tokenizer|pass1|pass2}\n");
-  printf("  --outdir=DIR      Output all generated files to DIR\n");
+  printf("  -h,      --help            Display this information\n");
+  printf("  -v,      --version         Display the version\n");
+  printf("           --verbose         Be verbose\n");
+  printf("  -D VAR=VALUE               Define config VAR to be VALUE\n");
+  printf("     --define=VAR=VALUE\n");
+  printf("  -T KEYS, --trace=KEYS      Trace various aspects:\n");
+  printf("                             {tokenizer|pass1|pass2}\n");
+  printf("  -d DIR,  --outdir=DIR      Output all generated files to DIR\n");
 #if defined(UNITTESTS)
-  printf("  --run-unit-tests  Run unit tests for the compiler\n");
+  printf("  -UT,     --run-unit-tests  Run unit tests for the compiler\n");
 #endif
-  printf("  --parse           Only parse the source files\n");
+  printf("  -P,      --parse           Only parse the source files\n");
 }
 
 
@@ -65,6 +68,7 @@ main(int argc, char** argv)
     { 6, "-UT", "--run-unit-tests", false },
 #endif
     { 7, "-P",  "--parse",          false },
+    { 8, "-D",  "--define",         true  },
     { NULL }                    // sentinel
   };
 
@@ -107,6 +111,10 @@ main(int argc, char** argv)
 #endif
       case 7:                   // parse
         func = kParseFiles;
+        break;
+
+      case 8:                   // define config var
+        Properties::setConfigVar(option.fArgument);
         break;
       }
       break;
