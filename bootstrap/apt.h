@@ -202,7 +202,8 @@ namespace heather
   enum VardefFlags {
     kNoFlags,
     kIsFluid,
-    kIsConst
+    kIsConst,
+    kIsConfig
   };
 
   class VardefNode : public AptNode

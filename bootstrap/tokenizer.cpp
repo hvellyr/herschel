@@ -777,7 +777,11 @@ heather::operator+(const String& one, const Token& two)
 void
 CharRegistry::registerChar(const String& charName, int codePoint)
 {
-  fCharMap.insert(std::make_pair(charName, codePoint));
+  std::map<String, int>::iterator it = fCharMap.find(charName);
+  if (it == fCharMap.end())
+    fCharMap.insert(std::make_pair(charName, codePoint));
+  else
+    it->second = codePoint;
 }
 
 

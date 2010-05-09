@@ -370,6 +370,9 @@ VardefNode::display(Port<Octet>* port) const
   case kIsConst:
     heather::display(port, "<is-const/>");
     break;
+  case kIsConfig:
+    heather::display(port, "<is-config/>");
+    break;
   }
 
   displayTag(port, "sym", fSymbolName);

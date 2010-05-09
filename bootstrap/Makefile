@@ -23,7 +23,8 @@ SOURCES =        \
 	str.cpp        \
 	tokenizer.cpp  \
 	tokenport.cpp  \
-	unittests.cpp
+	unittests.cpp  \
+	valuesaver.cpp
 
 HEADERS =        \
 	apt.h          \
@@ -39,6 +40,7 @@ HEADERS =        \
 	properties.h   \
 	ptr.h          \
 	refcountable.h \
+	valuesaver.h   \
 	str.h          \
 	tokenizer.h    \
 	tokenport.h    \
