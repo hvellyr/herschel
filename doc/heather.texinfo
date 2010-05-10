@@ -332,7 +332,7 @@ while     XOR
 The following identifiers are reserved and handled as operators:
 
 @verbatim
-%    *    **   +    -    ->   ..   ...  /
+%    *    **   +    -    ->   ..   ...  /    ++
 <    <<   <=   <=>  <>   ==   >    >=   >>
 and  by   in   mod  or   AND  OR   XOR  isa
 as
@@ -1558,10 +1558,10 @@ treated as the same type during dispatch.  In the following example:
 
 @example
 def generic add-value(self @@ Cont, value, index @@ (Int = -1))
-  self.append(value)
+  self.append!(value)
 
 def generic add-value(self @@ Cont, value, index @@ (Int >= 0))
-  self.insert(value, before-index)
+  self.insert!(value, before-index)
 @end example
 
 the compiler will complain about a generic function redefinition.
@@ -1607,8 +1607,9 @@ directly related.
 
 @example
 def generic to-xml(val @@ &(IntNode, StringNode, BoolNode)) : String
-  StringBuffer().append("<x>")
-                .append(val.to-string).append("</x>").to-string
+  (StringBuffer() ++ "<x>"
+                  ++ val.to-string
+                  ++ "</x>").to-string
 @end example
 
 The function in the example is specialized for three various types:
@@ -1618,16 +1619,16 @@ to the example above:
 
 @example
 def generic to-xml(val @@ IntNode) : String
-  StringBuffer().append("<x>")
-                .append(val.to-string).append("</x>").to-string
+  (StringBuffer() ++ "<x>"
+                  ++ val.to-string ++ "</x>").to-string
 
 def generic to-xml(val @@ StringNode) : String
-  StringBuffer().append("<x>")
-                .append(val.to-string).append("</x>").to-string
+  (StringBuffer() ++ "<x>"
+                  ++ val.to-string ++ "</x>").to-string
 
 def generic to-xml(val @@ BoolNode) : String
-  StringBuffer().append("<x>")
-                .append(val.to-string).append("</x>").to-string
+  (StringBuffer() ++ "<x>"
+                  ++ val.to-string ++ "</x>").to-string
 @end example
 
 A common use case for union types is a return value with some given error
@@ -2140,6 +2141,7 @@ implement operator support for custom types and classes implement these
 methods.
 
 @findex +
+@findex ++
 @findex -
 @findex /
 @findex *
@@ -2158,6 +2160,8 @@ methods.
 @table @code
 @item +
 @code{add}
+@item ++
+@code{append}
 @item -
 @code{subtract}
 @item /
@@ -2264,6 +2268,11 @@ of type @var{type}.  If @var{op1} is a class or type indicates whether
 Return @var{op1} transformed into type @var{type} (cast operator).  If
 @var{op1} can not be casted into @var{type} the method has to throw a
 @code{TypeCastException}.
+@end deftypefn
+
+@deftypefn Method @var{type} append (@var{op1}, @var{op2})
+Append @var{op2} to @var{op1}.  As such the @code{++} operator returns a
+new and modified copy of @var{op1}.
 @end deftypefn
 
 
@@ -2896,7 +2905,7 @@ element to consume.
 on sync(pending-ticket-list-mutex,
         database-mutex)
 @{
-  pending-ticket-list.append(something)
+  pending-ticket-list.append!(something)
   database.update
 @}
 @end example
