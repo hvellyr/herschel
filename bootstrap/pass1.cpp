@@ -702,6 +702,8 @@ FirstPass::weightOperator(OperatorType op1) const
 
   case kOpIn:             return  45;
 
+  case kOpAppend:         return  47;
+
   case kOpBitAnd:
   case kOpBitOr:
   case kOpBitXor:         return  50;
@@ -917,16 +919,18 @@ FirstPass::parseVarDef2(const String& symbolName, VardefFlags flags,
     vardefExpr << Pexpr("fluid");
   else if (flags == kIsConfig)
     vardefExpr << Pexpr("config");
-  else
+  else if (flags != 0)
     assert(0);
 
-  if (fEvaluateExprs) {
-    if (!initExpr.isSet())
-      throw SyntaxException(String("Config variable '") + symbolName +
-                            "' without default value");
-    fParser->configVarRegistry()->registerValue(symbolName,
-                                                evaluateConfigExpr(initExpr));
-    return Pexpr();
+  if (flags == kIsConfig) {
+    if (fEvaluateExprs) {
+      if (!initExpr.isSet())
+        throw SyntaxException(String("Config variable '") + symbolName +
+                              "' without default value");
+      fParser->configVarRegistry()->registerValue(symbolName,
+                                                  evaluateConfigExpr(initExpr));
+      return Pexpr();
+    }
   }
 
   vardefExpr << Pexpr(symbolName);

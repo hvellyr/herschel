@@ -458,6 +458,7 @@ static const char*
 operatorName(OperatorType type)
 {
   switch (type) {
+  case kOpAppend:       return "++";
   case kOpAs:           return "as";
   case kOpAssign:       return "=";
   case kOpBitAnd:       return "AND";

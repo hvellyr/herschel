@@ -387,12 +387,12 @@ PexprEvalContext::evalLogical(const Pexpr& lexpr, const Pexpr& rexpr,
 
   if (p.isIntLit()) {
     switch (op) {
-    case kOpEqual:      result = p.intLitValue() == 0;
-    case kOpUnequal:    result = p.intLitValue() != 0;
-    case kOpGreater:    result = p.intLitValue() > 0;
-    case kOpGreaterEqual: result = p.intLitValue() >= 0;
-    case kOpLess:         result = p.intLitValue() < 0;
-    case kOpLessEqual:    result = p.intLitValue() <= 0;
+    case kOpEqual:      result = p.intLitValue() == 0; break;
+    case kOpUnequal:    result = p.intLitValue() != 0; break;
+    case kOpGreater:    result = p.intLitValue() > 0; break;
+    case kOpGreaterEqual: result = p.intLitValue() >= 0; break;
+    case kOpLess:         result = p.intLitValue() < 0; break;
+    case kOpLessEqual:    result = p.intLitValue() <= 0; break;
     default:
       assert(0);
     }
@@ -444,6 +444,19 @@ PexprEvalContext::evalOr(const Pexpr& lexpr, const Pexpr& rexpr) const
 
 
 Pexpr
+PexprEvalContext::evalAppend(const Pexpr& lexpr, const Pexpr& rexpr) const
+{
+  Pexpr left = evalPexpr(lexpr);
+  Pexpr right = evalPexpr(rexpr);
+  
+  if (left.isStringLit() && right.isStringLit()) {
+    return Pexpr(Token(kString, left.stringLitValue() + right.stringLitValue()));
+  }
+  throw BadExpressionException(fromInt(__LINE__));
+}
+
+
+Pexpr
 PexprEvalContext::evalBinaryPexpr(const Pexpr& lexpr,
                                   OperatorType op,
                                   const Pexpr& rexpr) const
@@ -483,6 +496,9 @@ PexprEvalContext::evalBinaryPexpr(const Pexpr& lexpr,
     return evalAnd(lexpr, rexpr);
   case kOpLogicalOr:
     return evalOr(lexpr, rexpr);
+
+  case kOpAppend:
+    return evalAppend(lexpr, rexpr);
 
   case kOpEllipsis:
     // TODO
@@ -596,6 +612,8 @@ public:
             << Pexpr(_op)                                       \
             << Pexpr(Token(_rtype, _rvalue))
 
+    //-------- test add
+
     t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kPlus, kInteger, 17));
     assert(t.isIntLit() && t.intLitValue() == 42);
 
@@ -624,7 +642,251 @@ public:
 
     t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus,
                                       kRational, Rational(3, 4)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(24, 16));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(6, 4));
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus,
+                                      kRational, Rational(2, 5)));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(23, 20));
+
+
+    //-------- test minus
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kMinus, kInteger, 17));
+    assert(t.isIntLit() && t.intLitValue() == 8);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kMinus, kReal, 3.1415));
+    assert(t.isRealLit() && t.realLitValue() == 21.8585);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kMinus, kRational, Rational(3, 4)));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(97, 4));
+
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kInteger, 25));
+    assert(t.isRealLit() && t.realLitValue() == -21.8585);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kReal, 3.1415));
+    assert(t.isRealLit() && int(t.realLitValue() * 1000) == 0.0);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kRational, Rational(3, 4)));
+    assert(t.isRealLit() && t.realLitValue() == 2.3915);
+
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kInteger, 25));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(-97, 4));
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kReal, 3.1415));
+    assert(t.isRealLit() && t.realLitValue() == -2.3915);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus,
+                                      kRational, Rational(3, 4)));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(0, 4));
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus,
+                                      kRational, Rational(2, 5)));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(7, 20));
+
+    //-------- test multiply
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kMultiply, kInteger, 17));
+    assert(t.isIntLit() && t.intLitValue() == 425);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kMultiply, kReal, 3.1415));
+    assert(t.isRealLit() && int(t.realLitValue() * 10000) == 785375);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kMultiply, kRational, Rational(3, 4)));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(75, 4));
+
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kInteger, 25));
+    assert(t.isRealLit() && int(t.realLitValue() * 10000) == 785375);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kReal, 3.1415));
+    assert(t.isRealLit() && int(t.realLitValue() * 100000000) == 986902225);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kRational, Rational(3, 4)));
+    assert(t.isRealLit() && int(t.realLitValue() * 1000000) == 2356125);
+
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kInteger, 25));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(75, 4));
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kReal, 3.1415));
+    assert(t.isRealLit() && int(t.realLitValue() * 1000000) == 2356125);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply,
+                                      kRational, Rational(3, 4)));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(9, 16));
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply,
+                                      kRational, Rational(2, 5)));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(6, 20));
+
+    //-------- test divide
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kDivide, kInteger, 17));
+    assert(t.isIntLit() && t.intLitValue() == 1);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kDivide, kReal, 3.1415));
+    assert(t.isRealLit() && int(t.realLitValue() * 100000000) == 795798185);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kDivide, kRational, Rational(3, 4)));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(100, 3));
+
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kInteger, 25));
+    assert(t.isRealLit() && int(t.realLitValue() * 100000) == 12566);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kReal, 3.1415));
+    assert(t.isRealLit() && t.realLitValue() == 1.0);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kRational, Rational(3, 4)));
+    assert(t.isRealLit() && int(t.realLitValue() * 100000000) == 418866666);
+
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kInteger, 25));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(3, 100));
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kReal, 3.1415));
+    assert(t.isRealLit() && int(t.realLitValue() * 100000000) == 23873945);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide,
+                                      kRational, Rational(3, 4)));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(12, 12));
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide,
+                                      kRational, Rational(2, 5)));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(15, 8));
+
+
+    //-------- test modulo
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kMod, kInteger, 3));
+    assert(t.isIntLit() && t.intLitValue() == 1);
+
+    //-------- test exponent
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 2, kExponent, kInteger, 16));
+    assert(t.isIntLit() && t.intLitValue() == 65536);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kReal, 3.1415, kExponent, kInteger, 4));
+    assert(t.isRealLit() && int(t.realLitValue() * 10000) == 973976);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kExponent,
+                                      kInteger, 4));
+    assert(t.isRationalLit() && t.rationalLitValue() == Rational(81, 256));
+
+    //-------- test bitAND
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 0xacde, kBitAnd, kInteger, 0x0ff0));
+    assert(t.isIntLit() && t.intLitValue() == 0x0cd0);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 0xacde, kBitAnd, kInteger, 0xf0f0));
+    assert(t.isIntLit() && t.intLitValue() == 0xa0d0);
+
+    //-------- test bitOR
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 0xa0d0, kBitOr, kInteger, 0x0c0e));
+    assert(t.isIntLit() && t.intLitValue() == 0xacde);
+
+    //-------- test bitXOR
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 0xacde, kBitXor, kInteger, 0xffff));
+    assert(t.isIntLit() && t.intLitValue() == 0x5321);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 0x0000, kBitXor, kInteger, 0xfefe));
+    assert(t.isIntLit() && t.intLitValue() == 0xfefe);
+
+    //-------- test shiftLeft
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 0xabcd, kShiftLeft, kInteger, 3));
+    assert(t.isIntLit() && t.intLitValue() == 0x55e68);
+
+    //-------- test shiftRight
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 0x55e68, kShiftRight, kInteger, 3));
+    assert(t.isIntLit() && t.intLitValue() == 0xabcd);
+
+    //-------- test kOpCompare:
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kCompare, kInteger, 17));
+    assert(t.isIntLit() && t.intLitValue() > 0);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 17, kCompare, kInteger, 25));
+    assert(t.isIntLit() && t.intLitValue() < 0);
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 17, kCompare, kInteger, 17));
+    assert(t.isIntLit() && t.intLitValue() == 0);
+
+    //-------- test kOpEqual:
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kEqual, kInteger, 17));
+    assert(t.isBoolLit() && !t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kEqual, kInteger, 25));
+    assert(t.isBoolLit() && t.boolLitValue());
+
+    //-------- test kOpUnequal:
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kUnequal, kInteger, 17));
+    assert(t.isBoolLit() && t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kUnequal, kInteger, 25));
+    assert(t.isBoolLit() && !t.boolLitValue());
+
+    //-------- test kOpGreater:
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kGreater, kInteger, 17));
+    assert(t.isBoolLit() && t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kGreater, kInteger, 25));
+    assert(t.isBoolLit() && !t.boolLitValue());
+
+    //-------- test kOpGreaterEqual:
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kGreaterEqual, kInteger, 17));
+    assert(t.isBoolLit() && t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kGreaterEqual, kInteger, 25));
+    assert(t.isBoolLit() && t.boolLitValue());
+
+    //-------- test kOpLess:
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kLess, kInteger, 17));
+    assert(t.isBoolLit() && !t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kLess, kInteger, 25));
+    assert(t.isBoolLit() && !t.boolLitValue());
+
+    //-------- test kOpLessEqual:
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kLessEqual, kInteger, 17));
+    assert(t.isBoolLit() && !t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kInteger, 25, kLessEqual, kInteger, 25));
+    assert(t.isBoolLit() && t.boolLitValue());
+
+    //-------- test kOpLogicalAnd:
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kBool, true, kLogicalAnd, kBool, true));
+    assert(t.isBoolLit() && t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kBool, true, kLogicalAnd, kBool, false));
+    assert(t.isBoolLit() && !t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kBool, false, kLogicalAnd, kBool, true));
+    assert(t.isBoolLit() && !t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kBool, false, kLogicalAnd, kBool, false));
+    assert(t.isBoolLit() && !t.boolLitValue());
+
+    //-------- test kOpLogicalOr:
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kBool, true, kLogicalOr, kBool, true));
+    assert(t.isBoolLit() && t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kBool, true, kLogicalOr, kBool, false));
+    assert(t.isBoolLit() && t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kBool, false, kLogicalOr, kBool, true));
+    assert(t.isBoolLit() && t.boolLitValue());
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kBool, false, kLogicalOr, kBool, false));
+    assert(t.isBoolLit() && !t.boolLitValue());
+
+    //-------- test kOpAppend:
+
+    t = ctx.evalPexpr(MAKE_BINARY_SEQ(kString, String("hello "), kAppend,
+                                      kString, String("world")));
+    assert(t.isStringLit() && t.stringLitValue() == String("hello world"));
+
   }
 };
 

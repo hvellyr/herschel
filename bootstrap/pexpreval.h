@@ -65,6 +65,8 @@ namespace heather
     Pexpr evalAnd(const Pexpr& lexpr, const Pexpr& rexpr) const;
     Pexpr evalOr(const Pexpr& lexpr, const Pexpr& rexpr) const;
 
+    Pexpr evalAppend(const Pexpr& lexpr, const Pexpr& rexpr) const;
+
     Pexpr evalBinaryPexpr(const Pexpr& lexpr,
                           OperatorType op,
                           const Pexpr& rexpr) const;
