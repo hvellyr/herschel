@@ -1,0 +1,9 @@
+def a = if (true) {
+          11
+          if (5 > 2)
+            42
+          else
+            7
+        }
+        else
+          127

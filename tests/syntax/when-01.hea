@@ -1,0 +1,12 @@
+when version(linux) {
+  import "boot-linux.head"
+}
+else when version (win32) {
+  import "boot-win32.head"
+}
+else when version (mac-osx) {
+  import "boot-macosx.head"
+}
+else
+  import "boot-general.head"
+

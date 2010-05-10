@@ -1,0 +1,12 @@
+def const version = 1021
+
+def a = if (7 * 4 == 42) {
+          when (version >= 1010)
+            display("1.1")
+          else when (version >= 1020)
+            display("1.2")
+          else
+            display("1.0")
+        }
+        else
+          display("< 1.0")

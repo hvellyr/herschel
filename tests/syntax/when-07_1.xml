@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><nested left='{' right='}'><nested left='{' right='}'><seq><id>import</id><lit type='str'>linux1.1.head</lit></seq></nested></nested></seq>
