@@ -29,6 +29,17 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class DivisionByZeroException : public Exception
+  {
+  public:
+    DivisionByZeroException()
+      : Exception(String("Division by zero"))
+    { }
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class PexprEvalContext
   {
   public:
@@ -38,7 +49,22 @@ namespace heather
 
   private:
     Pexpr evalAdd(const Pexpr& lexpr, const Pexpr& rexpr) const;
+    Pexpr evalMinus(const Pexpr& lexpr, const Pexpr& rexpr) const;
+    Pexpr evalMultiply(const Pexpr& lexpr, const Pexpr& rexpr) const;
+    Pexpr evalDivide(const Pexpr& lexpr, const Pexpr& rexpr) const;
+    Pexpr evalModulo(const Pexpr& lexpr, const Pexpr& rexpr) const;
+    Pexpr evalExponent(const Pexpr& lexpr, const Pexpr& rexpr) const;
+
+    Pexpr evalBitOp(const Pexpr& lexpr, const Pexpr& rexpr,
+                    OperatorType op) const;
+
     Pexpr evalCompare(const Pexpr& lexpr, const Pexpr& rexpr) const;
+    Pexpr evalLogical(const Pexpr& lexpr, const Pexpr& rexpr,
+                      OperatorType op) const;
+
+    Pexpr evalAnd(const Pexpr& lexpr, const Pexpr& rexpr) const;
+    Pexpr evalOr(const Pexpr& lexpr, const Pexpr& rexpr) const;
+
     Pexpr evalBinaryPexpr(const Pexpr& lexpr,
                           OperatorType op,
                           const Pexpr& rexpr) const;

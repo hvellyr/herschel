@@ -13,6 +13,7 @@ CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src
 SOURCES =         \
 	apt.cpp         \
 	heather.cpp     \
+	numbers.cpp     \
 	option.cpp      \
 	parser.cpp      \
 	parsertypes.cpp \
