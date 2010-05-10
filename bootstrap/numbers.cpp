@@ -58,6 +58,9 @@ Rational::operator<(const Rational& other) const
 Rational
 Rational::operator+(const Rational& other) const
 {
+  if (fDenominator == other.denominator())
+    return Rational(fNumerator + other.numerator(), fDenominator);
+
   int otherDen = other.denominator();
   int n = fNumerator * otherDen;
   int na = other.numerator() * fDenominator;
@@ -68,6 +71,9 @@ Rational::operator+(const Rational& other) const
 Rational
 Rational::operator-(const Rational& other) const
 {
+  if (fDenominator == other.denominator())
+    return Rational(fNumerator - other.numerator(), fDenominator);
+
   int otherDen = other.denominator();
   int n = fNumerator * otherDen;
   int na = other.numerator() * fDenominator;

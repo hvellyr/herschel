@@ -77,6 +77,7 @@ namespace heather
     kBitXor,
     kShiftLeft,
     kShiftRight,
+    kAppend,
 
     kString,
     kChar,
@@ -166,7 +167,7 @@ namespace heather
         fDoubleValue(0.0),
         fIsImaginary(false)
     {
-      assert(type == kInteger);
+      assert(type != kBool);
     }
 
 

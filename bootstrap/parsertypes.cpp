@@ -47,6 +47,7 @@ heather::tokenTypeToOperator(TokenType type)
   case kShiftRight:    return kOpShiftRight;
   case kRange:         return kOpRange;
   case kEllipsis:      return kOpEllipsis;
+  case kAppend:        return kOpAppend;
 
   default:
     return kOpInvalid;
@@ -87,6 +88,7 @@ heather::operatorToTokenType(OperatorType op)
   case kOpShiftRight:    return kShiftRight;
   case kOpRange:         return kRange;
   case kOpEllipsis:      return kEllipsis;
+  case kOpAppend:        return kAppend;
 
   case kOpInvalid:
     assert(0);

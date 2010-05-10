@@ -244,6 +244,8 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       return Token(kBool, true);
     else if (token.fStrValue == String("false"))
       return Token(kBool, false);
+    else if (token.fStrValue == String("++"))
+      return Token(kAppend);
   }
   return token;
 }
@@ -693,6 +695,7 @@ Token::toString() const
   case kEOF:              return String("EOF");
   case kInvalid:          return String("INVALID");
   case kPlus:             return String("+");
+  case kAppend:           return String("++");
   case kMinus:            return String("-");
   case kDivide:           return String("/");
   case kMultiply:         return String("*");
@@ -1073,7 +1076,7 @@ public:
         "T<S<Y>>  T<S<Y> >  a < b\n"
         "val << 5 val >> 2\n"
         "2 < 1  2 <= 1  2 > 1  2 >= 1  2 <=> 1  2 <> 1  2 == 1\n"
-        "a + b  a - b  a * b  a / b  a ** 2  a mod 5\n"
+        "a + b  \"a\" ++ \"b\" a - b  a * b  a / b  a ** 2  a mod 5\n"
         "1 XOR 2  1 OR 2  1 AND 2\n"
         "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
@@ -1153,6 +1156,10 @@ public:
         assert(tnz.nextToken() == Token(kSymbol, String("a")));
         assert(tnz.nextToken() == Token(kPlus));
         assert(tnz.nextToken() == Token(kSymbol, String("b")));
+
+        assert(tnz.nextToken() == Token(kString, String("a")));
+        assert(tnz.nextToken() == Token(kAppend));
+        assert(tnz.nextToken() == Token(kString, String("b")));
 
         assert(tnz.nextToken() == Token(kSymbol, String("a")));
         assert(tnz.nextToken() == Token(kMinus));

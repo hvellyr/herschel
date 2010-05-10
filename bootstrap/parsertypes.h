@@ -38,6 +38,7 @@ namespace heather
   enum OperatorType
   {
     kOpInvalid,
+    kOpAppend,
     kOpAs,
     kOpAssign,
     kOpBitAnd,
