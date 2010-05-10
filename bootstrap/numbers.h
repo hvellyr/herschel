@@ -12,6 +12,20 @@
 
 namespace heather
 {
+  //--------------------------------------------------------------------------
+
+  template<typename T>
+  T exponent(T value, int exp)
+  {
+    T result = 1;
+    for (int i = 0; i < exp; i++)
+      result *= value;
+    return result;
+  }
+
+
+  //--------------------------------------------------------------------------
+
   class Rational
   {
   public:
@@ -30,44 +44,19 @@ namespace heather
         fDenominator(other.fDenominator)
       { }
     
-    Rational& operator=(const Rational& other)
-    {
-      fNumerator = other.fNumerator;
-      fDenominator = other.fDenominator;
-      return *this;
-    }
+    Rational& operator=(const Rational& other);
 
-    bool operator==(const Rational& other) const
-    {
-      return fNumerator == other.fNumerator &&
-        fDenominator == other.fDenominator;
-    }
+    bool operator==(const Rational& other) const;
+    bool operator!=(const Rational& other) const;
+    bool operator>(const Rational& other) const;
+    bool operator<(const Rational& other) const;
 
-    bool operator!=(const Rational& other) const
-    {
-      return fNumerator != other.fNumerator ||
-        fDenominator != other.fDenominator;
-    }
+    Rational operator+(const Rational& other) const;
+    Rational operator-(const Rational& other) const;
+    Rational operator*(const Rational& other) const;
+    Rational operator/(const Rational& other) const;
+    Rational exponent(int exp) const;
 
-    bool operator>(const Rational& other) const
-    {
-      return (fNumerator * other.fDenominator -
-              other.fNumerator * fDenominator > 0);
-    }
-
-    bool operator<(const Rational& other) const
-    {
-      return (fNumerator * other.fDenominator -
-              other.fNumerator * fDenominator < 0);
-    }
-
-    Rational operator+(const Rational& other) const
-    {
-      int otherDen = other.denominator();
-      int n = fNumerator * otherDen;
-      int na = other.numerator() * fDenominator;
-      return Rational(n + na, fDenominator * otherDen);
-    }
 
     int numerator() const
     {
