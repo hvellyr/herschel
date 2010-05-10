@@ -9,7 +9,6 @@
 #include "pexpr.h"
 #include "str.h"
 #include "exception.h"
-#include "unittests.h"
 
 
 namespace heather
@@ -23,18 +22,7 @@ namespace heather
       : fType(type)
     { }
 
-
-    virtual PexprType type() const
-    {
-      return kPunct;
-    }
-
-
-    virtual bool operator==(const Pexpr& other) const
-    {
-      return fType == other.punctValue();
-    }
-
+    virtual PexprType type() const { return kPunct; }
 
     virtual void toPort(Port<Octet>* port) const
     {
@@ -46,8 +34,6 @@ namespace heather
   };
 
 
-  //--------------------------------------------------------------------------
-
   class IdPexprImpl : public PexprImpl
   {
   public:
@@ -55,17 +41,7 @@ namespace heather
       : fStr(str)
     { }
 
-    virtual PexprType type() const
-    {
-      return kId;
-    }
-
-
-    virtual bool operator==(const Pexpr& other) const
-    {
-      return fStr == other.idValue();
-    }
-
+    virtual PexprType type() const { return kId; }
 
     virtual void toPort(Port<Octet>* port) const
     {
@@ -77,8 +53,6 @@ namespace heather
   };
 
 
-  //--------------------------------------------------------------------------
-
   class LitPexprImpl : public PexprImpl
   {
   public:
@@ -86,17 +60,7 @@ namespace heather
       : fToken(token)
     {}
 
-    virtual PexprType type() const
-    {
-      return kLit;
-    }
-
-
-    virtual bool operator==(const Pexpr& other) const
-    {
-      return fToken == other.tokenValue();
-    }
-
+    virtual PexprType type() const { return kLit; }
 
     virtual void toPort(Port<Octet>* port) const
     {
@@ -141,31 +105,13 @@ namespace heather
   };
 
 
-  //--------------------------------------------------------------------------
-
   class SeqPexprImpl : public PexprImpl
   {
   public:
     SeqPexprImpl()
     { }
 
-    virtual PexprType type() const
-    {
-      return kSeq;
-    }
-
-    virtual bool operator==(const Pexpr& other) const
-    {
-      if (fChildren.size() == other.children().size()) {
-        for (size_t i = 0; i < fChildren.size(); i++) {
-          if (fChildren[i] != other[i])
-            return false;
-        }
-        return true;
-      }
-      return false;
-    }
-
+    virtual PexprType type() const { return kSeq; }
 
     virtual PexprImpl* unshare()
     {
@@ -187,8 +133,6 @@ namespace heather
   };
 
 
-  //--------------------------------------------------------------------------
-
   class NestedPexprImpl : public SeqPexprImpl
   {
   public:
@@ -197,20 +141,7 @@ namespace heather
         fRight(right)
     { }
 
-    virtual PexprType type() const
-    {
-      return kNested;
-    }
-
-
-    virtual bool operator==(const Pexpr& other) const
-    {
-      if (fLeft == other.leftToken() &&
-          fRight == other.rightToken())
-        return SeqPexprImpl::operator==(other);
-      return false;
-    }
-
+    virtual PexprType type() const { return kNested; }
 
     virtual void toPort(Port<Octet>* port) const
     {
@@ -233,8 +164,6 @@ namespace heather
 };
 
 
-
-//----------------------------------------------------------------------------
 
 using namespace heather;
 
@@ -278,23 +207,6 @@ Pexpr::operator=(const Pexpr& other)
 {
   fImpl = other.fImpl;
   return *this;
-}
-
-
-bool
-Pexpr::operator==(const Pexpr& other) const
-{
-  if (fImpl == other.fImpl)
-    return true;
-  return ( type() == other.type() &&
-           (*fImpl.obj()) == other);
-}
-
-
-bool
-Pexpr::operator!=(const Pexpr& other) const
-{
-  return !(operator==(other));
 }
 
 
@@ -350,13 +262,6 @@ bool
 Pexpr::isPunct() const
 {
   return fImpl != NULL && fImpl->type() == kPunct;
-}
-
-
-bool
-Pexpr::isSet() const
-{
-  return !isSeq() || !isEmpty();
 }
 
 
@@ -626,15 +531,6 @@ Pexpr::isCharLit() const
 
 
 bool
-Pexpr::isKeyArgLit() const
-{
-  return (isLit() && tokenValue().fType == kSymbol &&
-          tokenValue().fStrValue.length() > 1 &&
-          tokenValue().fStrValue[tokenValue().fStrValue.length() - 1] == ':');
-}
-
-
-bool
 Pexpr::isSymFuncall() const
 {
   return isSeq() && count() == 2 &&
@@ -662,86 +558,3 @@ Pexpr::toPort(Port<Octet>* port) const
 {
   fImpl->toPort(port);
 }
-
-
-#if defined(UNITTESTS)
-//----------------------------------------------------------------------------
-
-class PexprUnitTest : public UnitTest
-{
-public:
-  PexprUnitTest() : UnitTest("Pexpr") {}
-
-  virtual void run()
-  {
-    assert(Pexpr(Token(kReal,     3.1415))         == Pexpr(Token(kReal,     3.1415)));
-    assert(Pexpr(Token(kInteger,  12345))          == Pexpr(Token(kInteger,  12345)));
-    assert(Pexpr(Token(kChar,     0xac00))         == Pexpr(Token(kChar,     0xac00)));
-    assert(Pexpr(Token(kString,   "abc"))          == Pexpr(Token(kString,   "abc")));
-    assert(Pexpr(Token(kSymbol,   "abc"))          == Pexpr(Token(kSymbol,   "abc")));
-    assert(Pexpr(Token(kRational, Rational(7, 4))) == Pexpr(Token(kRational, Rational(7, 4))));
-
-    assert(Pexpr() == Pexpr());
-    assert(Pexpr(kParanOpen, kParanClose) == Pexpr(kParanOpen, kParanClose));
-    assert(Pexpr() << Pexpr(Token(kInteger, 25)) == Pexpr() << Pexpr(Token(kInteger, 25)));
-    assert(( Pexpr(kParanOpen, kParanClose) << Pexpr(Token(kInteger, 25)) ) ==
-           ( Pexpr(kParanOpen, kParanClose) << Pexpr(Token(kInteger, 25)) ));
-
-    assert(Pexpr(Token(kReal, 3.1415)).realLitValue() == 3.1415);
-    assert(Pexpr(Token(kReal, 1.2345)).tokenValue().fType == kReal);
-    assert(Pexpr(Token(kBool, true)).boolLitValue() == true);
-    assert(Pexpr(Token(kInteger, 0x10000)).intLitValue() == 0x10000);
-    assert(Pexpr(Token(kRational, Rational(23, 27))).rationalLitValue() == Rational(23, 27));
-
-    // assert(Pexpr(Token(kSymbol, "abc")).stringLitValue() == String("abc"));
-    assert(Pexpr(Token(kString, String("abc"))).stringLitValue() == String("abc"));
-    // assert(Pexpr(Token(kKeyword, String("abc"))).stringLitValue() == String("abc"));
-    // assert(Pexpr(Token(kMacroParam, String("abc"))).stringLitValue() == String("abc"));
-
-    // assert(Pexpr(Token(kSymbol, "abc")).stringLitValue() == String("abc"));
-    assert(Pexpr(Token(kString, "abc")).stringLitValue() == String("abc"));
-    // assert(Pexpr(Token(kKeyword, "abc")).stringLitValue() == String("abc"));
-    // assert(Pexpr(Token(kMacroParam, "abc")).stringLitValue() == String("abc"));
-    assert(Pexpr(Token(kSymbol, "abc:")).isKeyArgLit());
-
-#define TEST_ASSIGNOP2(_type, _value, _member)          \
-    {                                                   \
-      Pexpr t = Pexpr(Token(_type, _value));            \
-      assert(t.tokenValue().fType == _type &&           \
-             t.tokenValue()._member == _value);         \
-    }
-
-    TEST_ASSIGNOP2(kReal, 3.1415, fDoubleValue);
-    TEST_ASSIGNOP2(kBool, true, fBoolValue);
-    TEST_ASSIGNOP2(kInteger, 0x20000, fIntValue);
-    TEST_ASSIGNOP2(kRational, Rational(1, 127), fRationalValue);
-    TEST_ASSIGNOP2(kString, String("abc"), fStrValue);
-#undef TEST_ASSIGNOP2
-
-#define TEST_COPYCTOR2(_type, _value, _member)          \
-    {                                                   \
-      Pexpr t(Pexpr(Token(_type, _value)));             \
-      assert(t.tokenValue().fType == _type &&           \
-             t.tokenValue()._member == _value);         \
-    }
-
-    TEST_COPYCTOR2(kReal, 3.1415, fDoubleValue);
-    TEST_COPYCTOR2(kBool, true, fBoolValue);
-    TEST_COPYCTOR2(kInteger, 0x20000, fIntValue);
-    TEST_COPYCTOR2(kRational, Rational(1, 127), fRationalValue);
-    TEST_COPYCTOR2(kString, String("abc"), fStrValue);
-#undef TEST_COPYCTOR2
-    
-    {
-      Pexpr t(Pexpr(Token(kReal, 12.345).setIsImaginary(true)));
-      assert(t.tokenValue().fType == kReal &&
-             t.tokenValue().fDoubleValue == 12.345 &&
-             t.tokenValue().fIsImaginary);
-    }
-  }
-};
-static PexprUnitTest tokenUnitTest;
-
-
-#endif  // #if defined(UNITTESTS)
-

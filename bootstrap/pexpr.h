@@ -37,8 +37,6 @@ namespace heather
   public:
     virtual PexprType type() const = 0;
 
-    virtual bool operator==(const Pexpr& other) const = 0;
-
     virtual PexprImpl* unshare()
     {
       // for immutable types unshare is a nop
@@ -70,15 +68,6 @@ namespace heather
     // a literal expression
     Pexpr(const Token& token);
 
-    // copy ctor
-    Pexpr(const Pexpr& other);
-    Pexpr& operator=(const Pexpr& other);
-
-    bool operator==(const Pexpr& other) const;
-    bool operator!=(const Pexpr& other) const;
-
-
-
     PexprType type() const;
 
     bool isSeq() const;
@@ -86,7 +75,11 @@ namespace heather
     bool isLit() const;
     bool isId() const;
     bool isPunct() const;
-    bool isSet() const;
+
+    bool isSet() const
+    {
+      return !isSeq() || !isEmpty();
+    }
 
     bool isEmpty() const;
 
@@ -101,6 +94,10 @@ namespace heather
     Pexpr& operator[](int idx);
 
     int count() const;
+
+    // copy ctor
+    Pexpr(const Pexpr& other);
+    Pexpr& operator=(const Pexpr& other);
 
     TokenType punctValue() const;
     String idValue() const;
@@ -125,7 +122,6 @@ namespace heather
     bool isRealLit() const;
     bool isRationalLit() const;
     bool isCharLit() const;
-    bool isKeyArgLit() const;
 
     //! indicates whether the pexpr is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;
