@@ -1,10 +1,12 @@
-when version(linux) {
+def config os = ""
+
+when (os == "linux") {
   import "boot-linux.head"
 }
-else when version (win32) {
+else when (os == "win32") {
   import "boot-win32.head"
 }
-else when version (mac-osx) {
+else when (os == "mac-osx") {
   import "boot-macosx.head"
 }
 else
