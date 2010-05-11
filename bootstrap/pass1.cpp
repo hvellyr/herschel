@@ -294,12 +294,13 @@ FirstPass::parseIf()
                 << test );
   result << consequent;
 
-  if (fToken.isId("else")) {
+  if (fToken.isSymbol("else")) {
+    Token elseToken = fToken;
     nextToken();
 
     Token alternate = parseExpr();
 
-    result << Token("else") << alternate;
+    result << elseToken << alternate;
   }
 
   return result;
@@ -374,8 +375,8 @@ FirstPass::parseFuncallParams(TokenVector* params)
   while (fToken.tokenType() != kParanClose) {
     if (fToken.tokenType() == kEOF)
       throw PrematureEndOfFileException();
-    if (fToken.isKeyArgLit()) {
-      String key = fToken.idValue();
+    if (fToken.isKeyArg()) {
+      Token key = fToken;
       nextToken();
 
       Token val = parseExpr();
@@ -432,7 +433,7 @@ FirstPass::parseParamCall(const Token& expr,
                           const TokenVector& preScannedArgs,
                           bool parseParams)
 {
-  if (expr.isId()) {
+  if (expr.isSymbol()) {
 #if 0
   MacroId macroId  = qualifiedIdForLookup(sym);
   Ptr<Macro> macro = lookupMacro(macroId);
@@ -521,7 +522,7 @@ void
 FirstPass::parseExprListUntilBrace(TokenVector* result)
 {
   for ( ; ; ) {
-    if (fToken.isId("def")) {
+    if (fToken.isSymbol("def")) {
       nextToken();
       Token expr = parseDef(false);
       result->push_back(expr);
@@ -590,23 +591,23 @@ FirstPass::parseAtomicExpr()
     }
 
   case kSymbol:
-    if (fToken.isId("if")) {
+    if (fToken.isSymbol("if")) {
       nextToken();
       return parseIf();
     }
-    else if (fToken.isId("let")) {
+    else if (fToken.isSymbol("let")) {
       nextToken();
       return parseDef(true);
     }
-    else if (fToken.isId("on")) {
+    else if (fToken.isSymbol("on")) {
       nextToken();
       return parseOn();
     }
-    else if (fToken.isId("function")) {
+    else if (fToken.isSymbol("function")) {
       nextToken();
       return parseAnonFun();
     }
-    else if (fToken.isId("when")) {
+    else if (fToken.isSymbol("when")) {
       nextToken();
       return parseWhen(false);
     }
@@ -800,12 +801,12 @@ FirstPass::parseWhen(bool isTopLevel)
   bool inclConsequent = true;
   bool inclAlternate = true;
 
-  if (fToken.isId()) {
-    if (fToken.isId("ignore")) {
+  if (fToken.isSymbol()) {
+    if (fToken.isSymbol("ignore")) {
       nextToken();
       inclConsequent = false;
     }
-    else if (fToken.isId("include")) {
+    else if (fToken.isSymbol("include")) {
       nextToken();
       inclAlternate = false;
     }
@@ -847,7 +848,7 @@ FirstPass::parseWhen(bool isTopLevel)
     consequent = parseTopOrExprList(isTopLevel);
   }
 
-  if (fToken.isId("else")) {
+  if (fToken.isSymbol("else")) {
     nextToken();
     {
       ValueSaver<bool> keep(fEvaluateExprs, inclAlternate);
@@ -1016,37 +1017,37 @@ FirstPass::parseFunctionOrVarDef(bool isLocal)
 Token
 FirstPass::parseDef(bool isLocal)
 {
-  if (fToken.isId("type")) {
+  if (fToken.isSymbol("type")) {
     // TODO
   }
-  else if (fToken.isId("alias")) {
+  else if (fToken.isSymbol("alias")) {
     // TODO
   }
-  else if (fToken.isId("class")) {
+  else if (fToken.isSymbol("class")) {
     // TODO
   }
-  else if (fToken.isId("enum")) {
+  else if (fToken.isSymbol("enum")) {
     // TODO
   }
-  else if (fToken.isId("measure")) {
+  else if (fToken.isSymbol("measure")) {
     // TODO
   }
-  else if (fToken.isId("unit")) {
+  else if (fToken.isSymbol("unit")) {
     // TODO
   }
-  else if (fToken.isId("const")) {
+  else if (fToken.isSymbol("const")) {
     nextToken();
     return parseVarDef(kIsConst, isLocal);
   }
-  else if (fToken.isId("fluid")) {
+  else if (fToken.isSymbol("fluid")) {
     nextToken();
     return parseVarDef(kIsFluid, false);
   }
-  else if (fToken.isId("config")) {
+  else if (fToken.isSymbol("config")) {
     nextToken();
     return parseVarDef(kIsConfig, false);
   }
-  else if (fToken.isId("generic")) {
+  else if (fToken.isSymbol("generic")) {
     nextToken();
     if (fToken.tokenType() != kSymbol)
       throw UnexpectedTokenException(fToken, "expected SYMBOL");
@@ -1057,11 +1058,11 @@ FirstPass::parseDef(bool isLocal)
       throw UnexpectedTokenException(fToken, "expected (");
     return parseFunctionDef(sym, true, isLocal);
   }
-  else if (fToken.isId("char")) {
+  else if (fToken.isSymbol("char")) {
     nextToken();
     return parseCharDef();
   }
-  else if (fToken.isId("macro")) {
+  else if (fToken.isSymbol("macro")) {
     // TODO
   }
   else if (fToken.tokenType() == kSymbol)
@@ -1076,27 +1077,27 @@ FirstPass::parseDef(bool isLocal)
 Token
 FirstPass::parseTop()
 {
-  if (fToken.isId("module")) {
+  if (fToken.isSymbol("module")) {
     nextToken();
     return parseModule(true);
   }
-  else if (fToken.isId("interface")) {
+  else if (fToken.isSymbol("interface")) {
     nextToken();
     return parseModule(false);
   }
-  else if (fToken.isId("export")) {
+  else if (fToken.isSymbol("export")) {
     nextToken();
     return parseExport();
   }
-  else if (fToken.isId("import")) {
+  else if (fToken.isSymbol("import")) {
     nextToken();
     return parseImport();
   }
-  else if (fToken.isId("def")) {
+  else if (fToken.isSymbol("def")) {
     nextToken();
     return parseDef(false);
   }
-  else if (fToken.isId("when")) {
+  else if (fToken.isSymbol("when")) {
     nextToken();
     return parseWhen(true);
   }

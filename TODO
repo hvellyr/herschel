@@ -32,8 +32,6 @@ Documentation
 
 Bootstrap compiler
 
-  review tokenType() == kSymbol vs. isId()
-
   continue with pexpreval (add the missing operators)
 
   unittests for Rational() class.

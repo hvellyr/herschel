@@ -45,8 +45,8 @@ AptNode*
 SecondPass::parseModule(const Token& expr, bool isModule)
 {
   assert(expr.isSeq() && expr.count() >= 2);
-  assert(expr[0].isId("module") || expr[0].isId("interface"));
-  assert(expr[1].isId());
+  assert(expr[0].isSymbol("module") || expr[0].isSymbol("interface"));
+  assert(expr[1].isSymbol());
 
   String modName = expr[1].idValue();
   String publicId;
@@ -79,19 +79,19 @@ AptNode*
 SecondPass::parseExport(const Token& expr)
 {
   assert(expr.isSeq() && expr.count() >= 2);
-  assert(expr[0].isId("export"));
+  assert(expr[0].isSymbol("export"));
   assert(expr[expr.count() - 1].isNested());
   
   StringList flags;
   for (int i = 1; i < expr.count() - 1; i++) {
-    assert(expr[i].isId());
+    assert(expr[i].isSymbol());
     flags.push_back(expr[i].idValue());
   }
 
   StringList symbols;
   Token symbolExprs = expr[expr.count() - 1];
   for (int j = 0; j < symbolExprs.count(); j++) {
-    assert(symbolExprs[j].isId());
+    assert(symbolExprs[j].isSymbol());
     symbols.push_back(symbolExprs[j].idValue());
   }
 
@@ -103,7 +103,7 @@ AptNode*
 SecondPass::parseImport(const Token& expr)
 {
   assert(expr.isSeq() && expr.count() >= 2);
-  assert(expr[0].isId("import"));
+  assert(expr[0].isSymbol("import"));
   assert(expr[1].isStringLit());
 
   String codeFile = expr[1].stringLitValue();
@@ -116,8 +116,8 @@ SecondPass::parseImport(const Token& expr)
     for (int i = 0; i < renExprs.count(); i++) {
       Token renExpr = renExprs[i];
       assert(renExpr.isBinarySeq(kMapTo));
-      assert(renExpr[0].isId());
-      assert(renExpr[2].isId());
+      assert(renExpr[0].isSymbol());
+      assert(renExpr[2].isSymbol());
 
       renames.insert(std::make_pair(
                        renExpr[0].idValue(), renExpr[2].idValue()));
@@ -136,13 +136,13 @@ SecondPass::parseSeq(const Token& expr)
     return NULL;
 
   Token first = expr[0];
-  if (first.isId(String("module")))
+  if (first.isSymbol("module"))
     return parseModule(expr, true);
-  else if (first.isId(String("interface")))
+  else if (first.isSymbol("interface"))
     return parseModule(expr, false);
-  else if (first.isId(String("export")))
+  else if (first.isSymbol("export"))
     return parseExport(expr);
-  else if (first.isId(String("import")))
+  else if (first.isSymbol("import"))
     return parseImport(expr);
 
   // TODO
