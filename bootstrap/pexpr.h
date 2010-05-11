@@ -136,7 +136,7 @@ namespace heather
     kString,
     kChar,
     kBool,
-    kInteger,
+    kInt,
     kReal,
     kRational,
     kKeyword,
@@ -217,7 +217,7 @@ namespace heather
     bool isPunct() const;
     bool isSet() const;
 
-    bool isLitImaginary() const;
+    bool isImaginary() const;
     Token& setIsImaginary(bool value);
 
     bool isEmpty() const;
@@ -239,24 +239,24 @@ namespace heather
     String idValue() const;
     TokenType leftToken() const;
     TokenType rightToken() const;
-    bool boolLitValue() const;
-    int intLitValue() const;
-    double realLitValue() const;
-    Rational rationalLitValue() const;
-    String stringLitValue() const;
-    Char charLitValue() const;
+    bool boolValue() const;
+    int intValue() const;
+    double realValue() const;
+    Rational rationalValue() const;
+    String stringValue() const;
+    Char charValue() const;
 
     //! useful predicates
     bool isBinarySeq() const;
     bool isBinarySeq(TokenType op) const;
     OperatorType binarySeqOperator() const;
 
-    bool isStringLit() const;
-    bool isBoolLit() const;
-    bool isIntLit() const;
-    bool isRealLit() const;
-    bool isRationalLit() const;
-    bool isCharLit() const;
+    bool isString() const;
+    bool isBool() const;
+    bool isInt() const;
+    bool isReal() const;
+    bool isRational() const;
+    bool isChar() const;
     bool isKeyArg() const;
 
     //! indicates whether the pexpr is a symbol-function call (e.g. abc())

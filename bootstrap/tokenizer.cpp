@@ -269,7 +269,7 @@ Tokenizer::readIntNumberPart(bool acceptHex)
 Token
 Tokenizer::readNumber(int sign)
 {
-  TokenType type = kInteger;
+  TokenType type = kInt;
 
   String first = readIntNumberPart(true);
   String second;
@@ -305,19 +305,19 @@ Tokenizer::readNumber(int sign)
   }
 
   if (fCC == 'h' || fCC == 'H') {
-    if (type != kInteger)
+    if (type != kInt)
       parseError(String("hexadecimal notation for unappropriate number type"));
     nextChar();
     radix = 16;
   }
   else if (fCC == 't' || fCC == 'T') {
-    if (type != kInteger)
+    if (type != kInt)
       parseError(String("hexadecimal notation for unappropriate number type"));
     nextChar();
     radix = 8;
   }
   if (fCC == 'y' || fCC == 'Y') {
-    if (type != kInteger)
+    if (type != kInt)
       parseError(String("hexadecimal notation for unappropriate number type"));
     nextChar();
     radix = 2;
@@ -330,8 +330,8 @@ Tokenizer::readNumber(int sign)
 
   Token token;
   switch (type) {
-  case kInteger:
-    token = Token(kInteger, first.toInt(radix) * sign);
+  case kInt:
+    token = Token(kInt, first.toInt(radix) * sign);
     break;
 
   case kReal:
@@ -366,8 +366,8 @@ Token
 Tokenizer::readNumericCharacter(bool needsTerminator)
 {
   Token token = readNumber(1);
-  if (token.isIntLit()) {
-    int readc = token.intLitValue();
+  if (token.isInt()) {
+    int readc = token.intValue();
 
     if (needsTerminator) {
       if (fCC == ';') {
@@ -485,7 +485,7 @@ Tokenizer::readString()
         nextChar();
         Token ct = readCharacter(true); // needs terminator
         if (ct.tokenType() == kChar)
-          result = result + ct.charLitValue();
+          result = result + ct.charValue();
         else
           parseError(String("Char expected"));
       }
@@ -725,15 +725,15 @@ public:
       try {
         assert(tnz.nextToken() == Token(kBool, true));
         assert(tnz.nextToken() == Token(kBool, false));
-        assert(tnz.nextToken() == Token(kInteger, 12345));
-        assert(tnz.nextToken() == Token(kInteger, 0xaaaa));
-        assert(tnz.nextToken() == Token(kInteger, 0xabcdef));
-        assert(tnz.nextToken() == Token(kInteger, 07123));
-        assert(tnz.nextToken() == Token(kInteger, 45));
-        assert(tnz.nextToken() == Token(kInteger, 1));
-        assert(tnz.nextToken() == Token(kInteger, 2));
-        assert(tnz.nextToken() == Token(kInteger, 3));
-        assert(tnz.nextToken() == Token(kInteger, 4));
+        assert(tnz.nextToken() == Token(kInt, 12345));
+        assert(tnz.nextToken() == Token(kInt, 0xaaaa));
+        assert(tnz.nextToken() == Token(kInt, 0xabcdef));
+        assert(tnz.nextToken() == Token(kInt, 07123));
+        assert(tnz.nextToken() == Token(kInt, 45));
+        assert(tnz.nextToken() == Token(kInt, 1));
+        assert(tnz.nextToken() == Token(kInt, 2));
+        assert(tnz.nextToken() == Token(kInt, 3));
+        assert(tnz.nextToken() == Token(kInt, 4));
 
         assert(tnz.nextToken() == Token(kReal, 12.34));
         assert(tnz.nextToken() == Token(kReal, 0.12345e+10));
@@ -744,7 +744,7 @@ public:
         assert(tnz.nextToken() == Token(kRational, Rational(2, 3)));
         assert(tnz.nextToken() == Token(kRational, Rational(120, 33)));
         assert(tnz.nextToken() == Token(kRational, Rational(1, 1024)));
-        assert(tnz.nextToken() == Token(kInteger, 5).setIsImaginary(true));
+        assert(tnz.nextToken() == Token(kInt, 5).setIsImaginary(true));
         assert(tnz.nextToken() == Token(kReal, 3.1415).setIsImaginary(true));
       }
       catch (const Exception& ne) {
@@ -813,11 +813,11 @@ public:
         assert(tnz.nextToken() == Token(kKeyarg, String("arg")));
         assert(tnz.nextToken() == Token(String("_x")));
         assert(tnz.nextToken() == Token(kAssign));
-        assert(tnz.nextToken() == Token(kInteger, 0));
+        assert(tnz.nextToken() == Token(kInt, 0));
         assert(tnz.nextToken() == Token(kRange));
-        assert(tnz.nextToken() == Token(kInteger, 20));
+        assert(tnz.nextToken() == Token(kInt, 20));
         assert(tnz.nextToken() == Token(kBy));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
         assert(tnz.nextToken() == Token(kParanClose));
       }
       catch (const Exception& ne) {
@@ -837,18 +837,18 @@ public:
         assert(tnz.nextToken() == Token(kKeyword, String("delft")));
 
         assert(tnz.nextToken() == Token(kLiteralArrayOpen));
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
         assert(tnz.nextToken() == Token(kComma));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
         assert(tnz.nextToken() == Token(kBracketClose));
 
         assert(tnz.nextToken() == Token(kLiteralArrayOpen));
         assert(tnz.nextToken() == Token(kBracketClose));
 
         assert(tnz.nextToken() == Token(kLiteralVectorOpen));
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
         assert(tnz.nextToken() == Token(kMapTo));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
         assert(tnz.nextToken() == Token(kParanClose));
 
         assert(tnz.nextToken() == Token(kLiteralVectorOpen));
@@ -881,7 +881,7 @@ public:
         assert(tnz.nextToken() == Token(String("i")));
         assert(tnz.nextToken() == Token(kBracketClose));
         assert(tnz.nextToken() == Token(kLess));
-        assert(tnz.nextToken() == Token(kInteger, 10));
+        assert(tnz.nextToken() == Token(kInt, 10));
         assert(tnz.nextToken() == Token(kLogicalAnd));
         assert(tnz.nextToken() == Token(kBool, true));
         assert(tnz.nextToken() == Token(kLogicalOr));
@@ -909,38 +909,38 @@ public:
 
         assert(tnz.nextToken() == Token(String("val")));
         assert(tnz.nextToken() == Token(kShiftLeft));
-        assert(tnz.nextToken() == Token(kInteger, 5));
+        assert(tnz.nextToken() == Token(kInt, 5));
         assert(tnz.nextToken() == Token(String("val")));
         assert(tnz.nextToken() == Token(kShiftRight));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
 
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
         assert(tnz.nextToken() == Token(kLess));
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
 
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
         assert(tnz.nextToken() == Token(kLessEqual));
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
 
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
         assert(tnz.nextToken() == Token(kGreater));
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
 
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
         assert(tnz.nextToken() == Token(kGreaterEqual));
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
 
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
         assert(tnz.nextToken() == Token(kCompare));
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
 
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
         assert(tnz.nextToken() == Token(kUnequal));
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
 
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
         assert(tnz.nextToken() == Token(kEqual));
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
 
         assert(tnz.nextToken() == Token(String("a")));
         assert(tnz.nextToken() == Token(kPlus));
@@ -964,43 +964,43 @@ public:
 
         assert(tnz.nextToken() == Token(String("a")));
         assert(tnz.nextToken() == Token(kExponent));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
 
         assert(tnz.nextToken() == Token(String("a")));
         assert(tnz.nextToken() == Token(kMod));
-        assert(tnz.nextToken() == Token(kInteger, 5));
+        assert(tnz.nextToken() == Token(kInt, 5));
 
 
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
         assert(tnz.nextToken() == Token(kBitXor));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
 
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
         assert(tnz.nextToken() == Token(kBitOr));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
 
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
         assert(tnz.nextToken() == Token(kBitAnd));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
 
 
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
         assert(tnz.nextToken() == Token(kFold));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
 
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
         assert(tnz.nextToken() == Token(kMapTo));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
 
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
         assert(tnz.nextToken() == Token(kIn));
-        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInt, 2));
 
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
         assert(tnz.nextToken() == Token(kIsa));
         assert(tnz.nextToken() == Token(String("Number")));
 
-        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInt, 1));
         assert(tnz.nextToken() == Token(kAs));
         assert(tnz.nextToken() == Token(String("Octet")));
 
@@ -1035,7 +1035,7 @@ public:
         assert(tnz.nextToken() == Token(String("T")));
         assert(tnz.nextToken() == Token(kParanClose));
 
-        assert(tnz.nextToken() == Token(kInteger, 12));
+        assert(tnz.nextToken() == Token(kInt, 12));
         assert(tnz.nextToken() == Token(kBackQuote));
         assert(tnz.nextToken() == Token(String("mm")));
       }

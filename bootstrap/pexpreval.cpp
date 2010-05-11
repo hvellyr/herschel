@@ -25,36 +25,36 @@ TokenEvalContext::evalAdd(const Token& lexpr, const Token& rexpr) const
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
 
-  if (left.isIntLit()) {
-    int value = left.intLitValue();
-    if (right.isIntLit())
-      return Token(kInteger, value + right.intLitValue());
-    else if (right.isRealLit())
-      return Token(kReal, double(value) + right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kRational, Rational(value, 1) + right.rationalLitValue());
+  if (left.isInt()) {
+    int value = left.intValue();
+    if (right.isInt())
+      return Token(kInt, value + right.intValue());
+    else if (right.isReal())
+      return Token(kReal, double(value) + right.realValue());
+    else if (right.isRational())
+      return Token(kRational, Rational(value, 1) + right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isRealLit()) {
-    double value = left.realLitValue();
-    if (right.isIntLit())
-      return Token(kReal, value + double(right.intLitValue()));
-    else if (right.isRealLit())
-      return Token(kReal, value + right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kReal, value + right.rationalLitValue().toReal());
+  else if (left.isReal()) {
+    double value = left.realValue();
+    if (right.isInt())
+      return Token(kReal, value + double(right.intValue()));
+    else if (right.isReal())
+      return Token(kReal, value + right.realValue());
+    else if (right.isRational())
+      return Token(kReal, value + right.rationalValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isRationalLit()) {
-    Rational value = left.rationalLitValue();
-    if (right.isIntLit())
-      return Token(kRational, value + Rational(right.intLitValue(), 1));
-    else if (right.isRealLit())
-      return Token(kReal, value.toReal() + right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kRational, value + right.rationalLitValue());
+  else if (left.isRational()) {
+    Rational value = left.rationalValue();
+    if (right.isInt())
+      return Token(kRational, value + Rational(right.intValue(), 1));
+    else if (right.isReal())
+      return Token(kReal, value.toReal() + right.realValue());
+    else if (right.isRational())
+      return Token(kRational, value + right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -69,36 +69,36 @@ TokenEvalContext::evalMinus(const Token& lexpr, const Token& rexpr) const
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
 
-  if (left.isIntLit()) {
-    int value = left.intLitValue();
-    if (right.isIntLit())
-      return Token(kInteger, value - right.intLitValue());
-    else if (right.isRealLit())
-      return Token(kReal, double(value) - right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kRational, Rational(value, 1) - right.rationalLitValue());
+  if (left.isInt()) {
+    int value = left.intValue();
+    if (right.isInt())
+      return Token(kInt, value - right.intValue());
+    else if (right.isReal())
+      return Token(kReal, double(value) - right.realValue());
+    else if (right.isRational())
+      return Token(kRational, Rational(value, 1) - right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isRealLit()) {
-    double value = left.realLitValue();
-    if (right.isIntLit())
-      return Token(kReal, value - double(right.intLitValue()));
-    else if (right.isRealLit())
-      return Token(kReal, value - right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kReal, value - right.rationalLitValue().toReal());
+  else if (left.isReal()) {
+    double value = left.realValue();
+    if (right.isInt())
+      return Token(kReal, value - double(right.intValue()));
+    else if (right.isReal())
+      return Token(kReal, value - right.realValue());
+    else if (right.isRational())
+      return Token(kReal, value - right.rationalValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isRationalLit()) {
-    Rational value = left.rationalLitValue();
-    if (right.isIntLit())
-      return Token(kRational, value - Rational(right.intLitValue(), 1));
-    else if (right.isRealLit())
-      return Token(kReal, value.toReal() - right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kRational, value - right.rationalLitValue());
+  else if (left.isRational()) {
+    Rational value = left.rationalValue();
+    if (right.isInt())
+      return Token(kRational, value - Rational(right.intValue(), 1));
+    else if (right.isReal())
+      return Token(kReal, value.toReal() - right.realValue());
+    else if (right.isRational())
+      return Token(kRational, value - right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -113,36 +113,36 @@ TokenEvalContext::evalMultiply(const Token& lexpr, const Token& rexpr) const
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
 
-  if (left.isIntLit()) {
-    int value = left.intLitValue();
-    if (right.isIntLit())
-      return Token(kInteger, value * right.intLitValue());
-    else if (right.isRealLit())
-      return Token(kReal, double(value) * right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kRational, Rational(value, 1) * right.rationalLitValue());
+  if (left.isInt()) {
+    int value = left.intValue();
+    if (right.isInt())
+      return Token(kInt, value * right.intValue());
+    else if (right.isReal())
+      return Token(kReal, double(value) * right.realValue());
+    else if (right.isRational())
+      return Token(kRational, Rational(value, 1) * right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isRealLit()) {
-    double value = left.realLitValue();
-    if (right.isIntLit())
-      return Token(kReal, value * double(right.intLitValue()));
-    else if (right.isRealLit())
-      return Token(kReal, value * right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kReal, value * right.rationalLitValue().toReal());
+  else if (left.isReal()) {
+    double value = left.realValue();
+    if (right.isInt())
+      return Token(kReal, value * double(right.intValue()));
+    else if (right.isReal())
+      return Token(kReal, value * right.realValue());
+    else if (right.isRational())
+      return Token(kReal, value * right.rationalValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isRationalLit()) {
-    Rational value = left.rationalLitValue();
-    if (right.isIntLit())
-      return Token(kRational, value * Rational(right.intLitValue(), 1));
-    else if (right.isRealLit())
-      return Token(kReal, value.toReal() * right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kRational, value * right.rationalLitValue());
+  else if (left.isRational()) {
+    Rational value = left.rationalValue();
+    if (right.isInt())
+      return Token(kRational, value * Rational(right.intValue(), 1));
+    else if (right.isReal())
+      return Token(kReal, value.toReal() * right.realValue());
+    else if (right.isRational())
+      return Token(kRational, value * right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -157,45 +157,45 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
 
-  if (left.isIntLit()) {
-    int value = left.intLitValue();
+  if (left.isInt()) {
+    int value = left.intValue();
     if (value == 0)
       throw DivisionByZeroException();
 
-    if (right.isIntLit())
-      return Token(kInteger, value / right.intLitValue());
-    else if (right.isRealLit())
-      return Token(kReal, double(value) / right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kRational, Rational(value, 1) / right.rationalLitValue());
+    if (right.isInt())
+      return Token(kInt, value / right.intValue());
+    else if (right.isReal())
+      return Token(kReal, double(value) / right.realValue());
+    else if (right.isRational())
+      return Token(kRational, Rational(value, 1) / right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isRealLit()) {
-    double value = left.realLitValue();
+  else if (left.isReal()) {
+    double value = left.realValue();
     if (value == 0)
       throw DivisionByZeroException();
 
-    if (right.isIntLit())
-      return Token(kReal, value / double(right.intLitValue()));
-    else if (right.isRealLit())
-      return Token(kReal, value / right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kReal, value / right.rationalLitValue().toReal());
+    if (right.isInt())
+      return Token(kReal, value / double(right.intValue()));
+    else if (right.isReal())
+      return Token(kReal, value / right.realValue());
+    else if (right.isRational())
+      return Token(kReal, value / right.rationalValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isRationalLit()) {
-    Rational value = left.rationalLitValue();
+  else if (left.isRational()) {
+    Rational value = left.rationalValue();
     if (value.numerator() == 0)
       throw DivisionByZeroException();
 
-    if (right.isIntLit())
-      return Token(kRational, value / Rational(right.intLitValue(), 1));
-    else if (right.isRealLit())
-      return Token(kReal, value.toReal() / right.realLitValue());
-    else if (right.isRationalLit())
-      return Token(kRational, value / right.rationalLitValue());
+    if (right.isInt())
+      return Token(kRational, value / Rational(right.intValue(), 1));
+    else if (right.isReal())
+      return Token(kReal, value.toReal() / right.realValue());
+    else if (right.isRational())
+      return Token(kRational, value / right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -210,13 +210,13 @@ TokenEvalContext::evalModulo(const Token& lexpr, const Token& rexpr) const
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
 
-  if (left.isIntLit()) {
-    int value = left.intLitValue();
+  if (left.isInt()) {
+    int value = left.intValue();
     if (value == 0)
       throw DivisionByZeroException();
 
-    if (right.isIntLit())
-      return Token(kInteger, value % right.intLitValue());
+    if (right.isInt())
+      return Token(kInt, value % right.intValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -231,31 +231,31 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
 
-  if (left.isIntLit()) {
-    int value = left.intLitValue();
+  if (left.isInt()) {
+    int value = left.intValue();
 
-    if (right.isIntLit())
-      return Token(kInteger, heather::exponent(value, right.intLitValue()));
+    if (right.isInt())
+      return Token(kInt, heather::exponent(value, right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isRealLit()) {
-    double value = left.realLitValue();
+  else if (left.isReal()) {
+    double value = left.realValue();
     if (value == 0)
       throw DivisionByZeroException();
 
-    if (right.isIntLit())
-      return Token(kReal, heather::exponent(value, right.intLitValue()));
+    if (right.isInt())
+      return Token(kReal, heather::exponent(value, right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isRationalLit()) {
-    Rational value = left.rationalLitValue();
+  else if (left.isRational()) {
+    Rational value = left.rationalValue();
     if (value.numerator() == 0)
       throw DivisionByZeroException();
 
-    if (right.isIntLit())
-      return Token(kRational, value.exponent(right.intLitValue()));
+    if (right.isInt())
+      return Token(kRational, value.exponent(right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -271,9 +271,9 @@ TokenEvalContext::evalBitOp(const Token& lexpr, const Token& rexpr,
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
 
-  if (left.isIntLit() && right.isIntLit()) {
-    int lvalue = left.intLitValue();
-    int rvalue = right.intLitValue();
+  if (left.isInt() && right.isInt()) {
+    int lvalue = left.intValue();
+    int rvalue = right.intValue();
 
     int result = 0;
     switch (op) {
@@ -285,7 +285,7 @@ TokenEvalContext::evalBitOp(const Token& lexpr, const Token& rexpr,
     default:
       assert(0);
     }
-    return Token(kInteger, result);
+    return Token(kInt, result);
   }
   
   throw BadExpressionException(fromInt(__LINE__));
@@ -301,37 +301,37 @@ TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
   if (left.tokenType() == right.tokenType()) {
     switch (left.tokenType()) {
     case kString:
-      return Token(kInteger, left.stringLitValue().compare(right.stringLitValue()));
+      return Token(kInt, left.stringValue().compare(right.stringValue()));
     case kBool:
-      if (left.boolLitValue() == right.boolLitValue())
-        return Token(kInteger, 0);
+      if (left.boolValue() == right.boolValue())
+        return Token(kInt, 0);
       else
-        return Token(kInteger, -1);
-    case kInteger:
-      return Token(kInteger, left.intLitValue() - right.intLitValue());
+        return Token(kInt, -1);
+    case kInt:
+      return Token(kInt, left.intValue() - right.intValue());
     case kReal:
-      if (left.realLitValue() < right.realLitValue())
-        return Token(kInteger, -1);
-      else if (left.realLitValue() > right.realLitValue())
-        return Token(kInteger, 1);
+      if (left.realValue() < right.realValue())
+        return Token(kInt, -1);
+      else if (left.realValue() > right.realValue())
+        return Token(kInt, 1);
       else
-        return Token(kInteger, 0);
+        return Token(kInt, 0);
     case kRational:
-      if (left.rationalLitValue() < right.rationalLitValue())
-        return Token(kInteger, -1);
-      else if (left.rationalLitValue() > right.rationalLitValue())
-        return Token(kInteger, 1);
+      if (left.rationalValue() < right.rationalValue())
+        return Token(kInt, -1);
+      else if (left.rationalValue() > right.rationalValue())
+        return Token(kInt, 1);
       else
-        return Token(kInteger, 0);
+        return Token(kInt, 0);
     case kChar:
-      return Token(kInteger, left.intLitValue() - right.intLitValue());
+      return Token(kInt, left.intValue() - right.intValue());
 
     default:
       throw BadExpressionException(fromInt(__LINE__));
     }
   }
 
-  return Token(kInteger, -1);
+  return Token(kInt, -1);
 }
 
 
@@ -342,14 +342,14 @@ TokenEvalContext::evalLogical(const Token& lexpr, const Token& rexpr,
   Token p = evalCompare(lexpr, rexpr);
   bool result = false;
 
-  if (p.isIntLit()) {
+  if (p.isInt()) {
     switch (op) {
-    case kOpEqual:      result = p.intLitValue() == 0; break;
-    case kOpUnequal:    result = p.intLitValue() != 0; break;
-    case kOpGreater:    result = p.intLitValue() > 0; break;
-    case kOpGreaterEqual: result = p.intLitValue() >= 0; break;
-    case kOpLess:         result = p.intLitValue() < 0; break;
-    case kOpLessEqual:    result = p.intLitValue() <= 0; break;
+    case kOpEqual:      result = p.intValue() == 0; break;
+    case kOpUnequal:    result = p.intValue() != 0; break;
+    case kOpGreater:    result = p.intValue() > 0; break;
+    case kOpGreaterEqual: result = p.intValue() >= 0; break;
+    case kOpLess:         result = p.intValue() < 0; break;
+    case kOpLessEqual:    result = p.intValue() <= 0; break;
     default:
       assert(0);
     }
@@ -363,11 +363,11 @@ Token
 TokenEvalContext::evalAnd(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
-  if (left.isBoolLit()) {
-    if (left.boolLitValue()) {
+  if (left.isBool()) {
+    if (left.boolValue()) {
       Token right = evalToken(rexpr);
-      if (right.isBoolLit()) {
-        return Token(kBool, right.boolLitValue());
+      if (right.isBool()) {
+        return Token(kBool, right.boolValue());
       }
 
       throw BadExpressionException(fromInt(__LINE__));
@@ -384,12 +384,12 @@ Token
 TokenEvalContext::evalOr(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
-  if (left.isBoolLit()) {
-    if (left.boolLitValue())
+  if (left.isBool()) {
+    if (left.boolValue())
       return Token(kBool, true);
 
     Token right = evalToken(rexpr);
-    if (right.isBoolLit())
+    if (right.isBool())
       return right;
 
     throw BadExpressionException(fromInt(__LINE__));
@@ -405,8 +405,8 @@ TokenEvalContext::evalAppend(const Token& lexpr, const Token& rexpr) const
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
   
-  if (left.isStringLit() && right.isStringLit()) {
-    return Token(kString, left.stringLitValue() + right.stringLitValue());
+  if (left.isString() && right.isString()) {
+    return Token(kString, left.stringValue() + right.stringValue());
   }
   throw BadExpressionException(fromInt(__LINE__));
 }
@@ -507,7 +507,7 @@ TokenEvalContext::evalToken(const Token& expr) const
     case kKeyword:
     case kChar:
     case kBool:
-    case kInteger:
+    case kInt:
     case kReal:
     case kRational:
       return expr;
@@ -548,20 +548,20 @@ public:
 
     Token t;
 
-    t = ctx.evalToken(Token(kInteger, 25));
-    assert(t.isIntLit() && t.intLitValue() == 25);
+    t = ctx.evalToken(Token(kInt, 25));
+    assert(t.isInt() && t.intValue() == 25);
 
     t = ctx.evalToken(Token(kReal, 3.1415));
-    assert(t.isRealLit() && t.realLitValue() == 3.1415);
+    assert(t.isReal() && t.realValue() == 3.1415);
 
     t = ctx.evalToken(Token(kRational, Rational(101, 127)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(101, 127));
+    assert(t.isRational() && t.rationalValue() == Rational(101, 127));
 
     t = ctx.evalToken(Token(kString, "hello world"));
-    assert(t.isStringLit() && t.stringLitValue() == String("hello world"));
+    assert(t.isString() && t.stringValue() == String("hello world"));
 
     t = ctx.evalToken(Token(kChar, 0xac00));
-    assert(t.isCharLit() && t.charLitValue() == Char(0xac00));
+    assert(t.isChar() && t.charValue() == Char(0xac00));
 
 
 #define MAKE_BINARY_SEQ(_ltype, _lvalue, _op, _rtype, _rvalue)  \
@@ -571,278 +571,278 @@ public:
 
     //-------- test add
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kPlus, kInteger, 17));
-    assert(t.isIntLit() && t.intLitValue() == 42);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kPlus, kInt, 17));
+    assert(t.isInt() && t.intValue() == 42);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kPlus, kReal, 3.1415));
-    assert(t.isRealLit() && t.realLitValue() == 28.1415);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kPlus, kReal, 3.1415));
+    assert(t.isReal() && t.realValue() == 28.1415);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kPlus, kRational, Rational(3, 4)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(103, 4));
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kPlus, kRational, Rational(3, 4)));
+    assert(t.isRational() && t.rationalValue() == Rational(103, 4));
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kPlus, kInteger, 25));
-    assert(t.isRealLit() && t.realLitValue() == 28.1415);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kPlus, kInt, 25));
+    assert(t.isReal() && t.realValue() == 28.1415);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kPlus, kReal, 3.1415));
-    assert(t.isRealLit() && int(t.realLitValue() * 1000) == 6283);
+    assert(t.isReal() && int(t.realValue() * 1000) == 6283);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kPlus, kRational, Rational(3, 4)));
-    assert(t.isRealLit() && t.realLitValue() == 3.8915);
+    assert(t.isReal() && t.realValue() == 3.8915);
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kInteger, 25));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(103, 4));
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kInt, 25));
+    assert(t.isRational() && t.rationalValue() == Rational(103, 4));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kReal, 3.1415));
-    assert(t.isRealLit() && t.realLitValue() == 3.8915);
+    assert(t.isReal() && t.realValue() == 3.8915);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus,
                                       kRational, Rational(3, 4)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(6, 4));
+    assert(t.isRational() && t.rationalValue() == Rational(6, 4));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus,
                                       kRational, Rational(2, 5)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(23, 20));
+    assert(t.isRational() && t.rationalValue() == Rational(23, 20));
 
 
     //-------- test minus
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kMinus, kInteger, 17));
-    assert(t.isIntLit() && t.intLitValue() == 8);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMinus, kInt, 17));
+    assert(t.isInt() && t.intValue() == 8);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kMinus, kReal, 3.1415));
-    assert(t.isRealLit() && t.realLitValue() == 21.8585);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMinus, kReal, 3.1415));
+    assert(t.isReal() && t.realValue() == 21.8585);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kMinus, kRational, Rational(3, 4)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(97, 4));
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMinus, kRational, Rational(3, 4)));
+    assert(t.isRational() && t.rationalValue() == Rational(97, 4));
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kInteger, 25));
-    assert(t.isRealLit() && t.realLitValue() == -21.8585);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kInt, 25));
+    assert(t.isReal() && t.realValue() == -21.8585);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kReal, 3.1415));
-    assert(t.isRealLit() && int(t.realLitValue() * 1000) == 0.0);
+    assert(t.isReal() && int(t.realValue() * 1000) == 0.0);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kRational, Rational(3, 4)));
-    assert(t.isRealLit() && t.realLitValue() == 2.3915);
+    assert(t.isReal() && t.realValue() == 2.3915);
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kInteger, 25));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(-97, 4));
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kInt, 25));
+    assert(t.isRational() && t.rationalValue() == Rational(-97, 4));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kReal, 3.1415));
-    assert(t.isRealLit() && t.realLitValue() == -2.3915);
+    assert(t.isReal() && t.realValue() == -2.3915);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus,
                                       kRational, Rational(3, 4)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(0, 4));
+    assert(t.isRational() && t.rationalValue() == Rational(0, 4));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus,
                                       kRational, Rational(2, 5)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(7, 20));
+    assert(t.isRational() && t.rationalValue() == Rational(7, 20));
 
     //-------- test multiply
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kMultiply, kInteger, 17));
-    assert(t.isIntLit() && t.intLitValue() == 425);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMultiply, kInt, 17));
+    assert(t.isInt() && t.intValue() == 425);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kMultiply, kReal, 3.1415));
-    assert(t.isRealLit() && int(t.realLitValue() * 10000) == 785375);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMultiply, kReal, 3.1415));
+    assert(t.isReal() && int(t.realValue() * 10000) == 785375);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kMultiply, kRational, Rational(3, 4)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(75, 4));
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMultiply, kRational, Rational(3, 4)));
+    assert(t.isRational() && t.rationalValue() == Rational(75, 4));
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kInteger, 25));
-    assert(t.isRealLit() && int(t.realLitValue() * 10000) == 785375);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kInt, 25));
+    assert(t.isReal() && int(t.realValue() * 10000) == 785375);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kReal, 3.1415));
-    assert(t.isRealLit() && int(t.realLitValue() * 100000000) == 986902225);
+    assert(t.isReal() && int(t.realValue() * 100000000) == 986902225);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kRational, Rational(3, 4)));
-    assert(t.isRealLit() && int(t.realLitValue() * 1000000) == 2356125);
+    assert(t.isReal() && int(t.realValue() * 1000000) == 2356125);
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kInteger, 25));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(75, 4));
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kInt, 25));
+    assert(t.isRational() && t.rationalValue() == Rational(75, 4));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kReal, 3.1415));
-    assert(t.isRealLit() && int(t.realLitValue() * 1000000) == 2356125);
+    assert(t.isReal() && int(t.realValue() * 1000000) == 2356125);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply,
                                       kRational, Rational(3, 4)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(9, 16));
+    assert(t.isRational() && t.rationalValue() == Rational(9, 16));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply,
                                       kRational, Rational(2, 5)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(6, 20));
+    assert(t.isRational() && t.rationalValue() == Rational(6, 20));
 
     //-------- test divide
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kDivide, kInteger, 17));
-    assert(t.isIntLit() && t.intLitValue() == 1);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kDivide, kInt, 17));
+    assert(t.isInt() && t.intValue() == 1);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kDivide, kReal, 3.1415));
-    assert(t.isRealLit() && int(t.realLitValue() * 100000000) == 795798185);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kDivide, kReal, 3.1415));
+    assert(t.isReal() && int(t.realValue() * 100000000) == 795798185);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kDivide, kRational, Rational(3, 4)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(100, 3));
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kDivide, kRational, Rational(3, 4)));
+    assert(t.isRational() && t.rationalValue() == Rational(100, 3));
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kInteger, 25));
-    assert(t.isRealLit() && int(t.realLitValue() * 100000) == 12566);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kInt, 25));
+    assert(t.isReal() && int(t.realValue() * 100000) == 12566);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kReal, 3.1415));
-    assert(t.isRealLit() && t.realLitValue() == 1.0);
+    assert(t.isReal() && t.realValue() == 1.0);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kRational, Rational(3, 4)));
-    assert(t.isRealLit() && int(t.realLitValue() * 100000000) == 418866666);
+    assert(t.isReal() && int(t.realValue() * 100000000) == 418866666);
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kInteger, 25));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(3, 100));
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kInt, 25));
+    assert(t.isRational() && t.rationalValue() == Rational(3, 100));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kReal, 3.1415));
-    assert(t.isRealLit() && int(t.realLitValue() * 100000000) == 23873945);
+    assert(t.isReal() && int(t.realValue() * 100000000) == 23873945);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide,
                                       kRational, Rational(3, 4)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(12, 12));
+    assert(t.isRational() && t.rationalValue() == Rational(12, 12));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide,
                                       kRational, Rational(2, 5)));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(15, 8));
+    assert(t.isRational() && t.rationalValue() == Rational(15, 8));
 
 
     //-------- test modulo
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kMod, kInteger, 3));
-    assert(t.isIntLit() && t.intLitValue() == 1);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMod, kInt, 3));
+    assert(t.isInt() && t.intValue() == 1);
 
     //-------- test exponent
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 2, kExponent, kInteger, 16));
-    assert(t.isIntLit() && t.intLitValue() == 65536);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 2, kExponent, kInt, 16));
+    assert(t.isInt() && t.intValue() == 65536);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kExponent, kInteger, 4));
-    assert(t.isRealLit() && int(t.realLitValue() * 10000) == 973976);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kExponent, kInt, 4));
+    assert(t.isReal() && int(t.realValue() * 10000) == 973976);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kExponent,
-                                      kInteger, 4));
-    assert(t.isRationalLit() && t.rationalLitValue() == Rational(81, 256));
+                                      kInt, 4));
+    assert(t.isRational() && t.rationalValue() == Rational(81, 256));
 
     //-------- test bitAND
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 0xacde, kBitAnd, kInteger, 0x0ff0));
-    assert(t.isIntLit() && t.intLitValue() == 0x0cd0);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0xacde, kBitAnd, kInt, 0x0ff0));
+    assert(t.isInt() && t.intValue() == 0x0cd0);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 0xacde, kBitAnd, kInteger, 0xf0f0));
-    assert(t.isIntLit() && t.intLitValue() == 0xa0d0);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0xacde, kBitAnd, kInt, 0xf0f0));
+    assert(t.isInt() && t.intValue() == 0xa0d0);
 
     //-------- test bitOR
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 0xa0d0, kBitOr, kInteger, 0x0c0e));
-    assert(t.isIntLit() && t.intLitValue() == 0xacde);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0xa0d0, kBitOr, kInt, 0x0c0e));
+    assert(t.isInt() && t.intValue() == 0xacde);
 
     //-------- test bitXOR
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 0xacde, kBitXor, kInteger, 0xffff));
-    assert(t.isIntLit() && t.intLitValue() == 0x5321);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0xacde, kBitXor, kInt, 0xffff));
+    assert(t.isInt() && t.intValue() == 0x5321);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 0x0000, kBitXor, kInteger, 0xfefe));
-    assert(t.isIntLit() && t.intLitValue() == 0xfefe);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0x0000, kBitXor, kInt, 0xfefe));
+    assert(t.isInt() && t.intValue() == 0xfefe);
 
     //-------- test shiftLeft
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 0xabcd, kShiftLeft, kInteger, 3));
-    assert(t.isIntLit() && t.intLitValue() == 0x55e68);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0xabcd, kShiftLeft, kInt, 3));
+    assert(t.isInt() && t.intValue() == 0x55e68);
 
     //-------- test shiftRight
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 0x55e68, kShiftRight, kInteger, 3));
-    assert(t.isIntLit() && t.intLitValue() == 0xabcd);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0x55e68, kShiftRight, kInt, 3));
+    assert(t.isInt() && t.intValue() == 0xabcd);
 
     //-------- test kOpCompare:
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kCompare, kInteger, 17));
-    assert(t.isIntLit() && t.intLitValue() > 0);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kCompare, kInt, 17));
+    assert(t.isInt() && t.intValue() > 0);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 17, kCompare, kInteger, 25));
-    assert(t.isIntLit() && t.intLitValue() < 0);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 17, kCompare, kInt, 25));
+    assert(t.isInt() && t.intValue() < 0);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 17, kCompare, kInteger, 17));
-    assert(t.isIntLit() && t.intLitValue() == 0);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 17, kCompare, kInt, 17));
+    assert(t.isInt() && t.intValue() == 0);
 
     //-------- test kOpEqual:
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kEqual, kInteger, 17));
-    assert(t.isBoolLit() && !t.boolLitValue());
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kEqual, kInteger, 25));
-    assert(t.isBoolLit() && t.boolLitValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kEqual, kInt, 17));
+    assert(t.isBool() && !t.boolValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kEqual, kInt, 25));
+    assert(t.isBool() && t.boolValue());
 
     //-------- test kOpUnequal:
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kUnequal, kInteger, 17));
-    assert(t.isBoolLit() && t.boolLitValue());
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kUnequal, kInteger, 25));
-    assert(t.isBoolLit() && !t.boolLitValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kUnequal, kInt, 17));
+    assert(t.isBool() && t.boolValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kUnequal, kInt, 25));
+    assert(t.isBool() && !t.boolValue());
 
     //-------- test kOpGreater:
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kGreater, kInteger, 17));
-    assert(t.isBoolLit() && t.boolLitValue());
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kGreater, kInteger, 25));
-    assert(t.isBoolLit() && !t.boolLitValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kGreater, kInt, 17));
+    assert(t.isBool() && t.boolValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kGreater, kInt, 25));
+    assert(t.isBool() && !t.boolValue());
 
     //-------- test kOpGreaterEqual:
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kGreaterEqual, kInteger, 17));
-    assert(t.isBoolLit() && t.boolLitValue());
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kGreaterEqual, kInteger, 25));
-    assert(t.isBoolLit() && t.boolLitValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kGreaterEqual, kInt, 17));
+    assert(t.isBool() && t.boolValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kGreaterEqual, kInt, 25));
+    assert(t.isBool() && t.boolValue());
 
     //-------- test kOpLess:
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kLess, kInteger, 17));
-    assert(t.isBoolLit() && !t.boolLitValue());
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kLess, kInteger, 25));
-    assert(t.isBoolLit() && !t.boolLitValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kLess, kInt, 17));
+    assert(t.isBool() && !t.boolValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kLess, kInt, 25));
+    assert(t.isBool() && !t.boolValue());
 
     //-------- test kOpLessEqual:
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kLessEqual, kInteger, 17));
-    assert(t.isBoolLit() && !t.boolLitValue());
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInteger, 25, kLessEqual, kInteger, 25));
-    assert(t.isBoolLit() && t.boolLitValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kLessEqual, kInt, 17));
+    assert(t.isBool() && !t.boolValue());
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kLessEqual, kInt, 25));
+    assert(t.isBool() && t.boolValue());
 
     //-------- test kOpLogicalAnd:
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, true, kLogicalAnd, kBool, true));
-    assert(t.isBoolLit() && t.boolLitValue());
+    assert(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, true, kLogicalAnd, kBool, false));
-    assert(t.isBoolLit() && !t.boolLitValue());
+    assert(t.isBool() && !t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, false, kLogicalAnd, kBool, true));
-    assert(t.isBoolLit() && !t.boolLitValue());
+    assert(t.isBool() && !t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, false, kLogicalAnd, kBool, false));
-    assert(t.isBoolLit() && !t.boolLitValue());
+    assert(t.isBool() && !t.boolValue());
 
     //-------- test kOpLogicalOr:
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, true, kLogicalOr, kBool, true));
-    assert(t.isBoolLit() && t.boolLitValue());
+    assert(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, true, kLogicalOr, kBool, false));
-    assert(t.isBoolLit() && t.boolLitValue());
+    assert(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, false, kLogicalOr, kBool, true));
-    assert(t.isBoolLit() && t.boolLitValue());
+    assert(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, false, kLogicalOr, kBool, false));
-    assert(t.isBoolLit() && !t.boolLitValue());
+    assert(t.isBool() && !t.boolValue());
 
     //-------- test kOpAppend:
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kString, String("hello "), kAppend,
                                       kString, String("world")));
-    assert(t.isStringLit() && t.stringLitValue() == String("hello world"));
+    assert(t.isString() && t.stringValue() == String("hello world"));
 
   }
 };
