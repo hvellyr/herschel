@@ -10,10 +10,71 @@
 #include "str.h"
 #include "exception.h"
 #include "unittests.h"
+#include "parsertypes.h"
 
 
 namespace heather
 {
+  String tokenTypeToString(TokenType type)
+  {
+    switch (type) {
+    case kPlus:              return String("+");
+    case kAppend:            return String("++");
+    case kMinus:             return String("-");
+    case kDivide:            return String("/");
+    case kMultiply:          return String("*");
+    case kExponent:          return String("**");
+    case kFold:              return String("%");
+    case kCompare:           return String("<=>");
+    case kEqual:             return String("==");
+    case kUnequal:           return String("<>");
+    case kLess:              return String("<");
+    case kLessEqual:         return String("<=");
+    case kGreater:           return String(">");
+    case kGreaterEqual:      return String(">=");
+    case kAssign:            return String("=");
+    case kMapTo:             return String("->");
+    case kIn:                return String("in");
+    case kMod:               return String("mod");
+    case kIsa:               return String("isa");
+    case kAs:                return String("as");
+    case kBy:                return String("by");
+    case kLogicalAnd:        return String("and");
+    case kLogicalOr:         return String("or");
+    case kBitAnd:            return String("AND");
+    case kBitOr:             return String("OR");
+    case kBitXor:            return String("XOR");
+    case kShiftLeft:         return String("<<");
+    case kShiftRight:        return String(">>");
+    case kParanOpen:         return String("(");
+    case kParanClose:        return String(")");
+    case kBracketOpen:       return String("[");
+    case kBracketClose:      return String("]");
+    case kBraceOpen:         return String("{");
+    case kBraceClose:        return String("}");
+    case kGenericOpen:       return String("<");
+    case kGenericClose:      return String(">");
+    case kComma:             return String(",");
+    case kSemicolon:         return String(";");
+    case kColon:             return String(":");
+    case kAt:                return String("@");
+    case kAmpersand:         return String("&");
+    case kPipe:              return String("|");
+    case kBackQuote:         return String("`");
+    case kQuote:             return String("'");
+    case kEllipsis:          return String("...");
+    case kRange:             return String("..");
+    case kDot:               return String(".");
+    case kLiteralVectorOpen: return String("#(");
+    case kLiteralArrayOpen:  return String("#[");
+    case kSangHash:          return String("##");
+    default:
+      assert(0);
+    }
+    return String("??");
+  }
+
+
   //--------------------------------------------------------------------------
 
   class PunctPexprImpl : public PexprImpl
@@ -36,9 +97,15 @@ namespace heather
     }
 
 
+    String toString() const
+    {
+      return tokenTypeToString(fType);
+    }
+
+
     virtual void toPort(Port<Octet>* port) const
     {
-      display(port, String("<punct type='") + xmlEncode(Token(fType).toString()) + "'/>");
+      display(port, String("<punct type='") + xmlEncode(toString()) + "'/>");
     }
 
     //-------- data members
@@ -82,9 +149,61 @@ namespace heather
   class LitPexprImpl : public PexprImpl
   {
   public:
-    LitPexprImpl(const Token& token)
-      : fToken(token)
-    {}
+    LitPexprImpl(TokenType type, const String& value)
+      : fType(type),
+        fStrValue(value),
+        fBoolValue(false),
+        fIntValue(0),
+        fDoubleValue(0.0),
+        fIsImaginary(false)
+      { }
+
+    LitPexprImpl(TokenType type, const char* value)
+      : fType(type),
+        fStrValue(String(value)),
+        fBoolValue(false),
+        fIntValue(0),
+        fDoubleValue(0.0),
+        fIsImaginary(false)
+      { }
+
+    LitPexprImpl(TokenType type, int value)
+      : fType(type),
+        fBoolValue(false),
+        fIntValue(value),
+        fDoubleValue(0.0),
+        fIsImaginary(false)
+      {
+        assert(type != kBool);
+      }
+
+
+    LitPexprImpl(TokenType type, bool value)
+      : fType(type),
+        fBoolValue(value),
+        fIntValue(0),
+        fDoubleValue(0.0),
+        fIsImaginary(false)
+      {
+        assert(type == kBool);
+      }
+
+    LitPexprImpl(TokenType type, double value)
+      : fType(type),
+        fBoolValue(false),
+        fIntValue(0),
+        fDoubleValue(value),
+        fIsImaginary(false)
+      { }
+    
+    LitPexprImpl(TokenType type, const Rational& rat)
+      : fType(type),
+        fBoolValue(false),
+        fIntValue(0),
+        fRationalValue(rat),
+        fDoubleValue(0.0),
+        fIsImaginary(false)
+      { }
 
     virtual PexprType type() const
     {
@@ -94,17 +213,44 @@ namespace heather
 
     virtual bool operator==(const Pexpr& other) const
     {
-      return fToken == other.tokenValue();
+      if (fType == other.tokenType()) {
+        switch (fType) {
+        case kString:
+          return fStrValue == other.stringLitValue();
+        case kKeyword:
+          return fStrValue == other.keywLitValue();
+
+        case kChar:
+          return fIntValue == int(other.charLitValue());
+
+        case kBool:
+          return fBoolValue == other.boolLitValue();
+          
+        case kInteger:
+          return ( fIntValue == other.intLitValue() &&
+                   fIsImaginary == other.isLitImaginary() );
+        case kReal:
+          return ( fDoubleValue == other.realLitValue() &&
+                   fIsImaginary == other.isLitImaginary() );
+        case kRational:
+          return ( fRationalValue == other.rationalLitValue() &&
+                   fIsImaginary == other.isLitImaginary() );
+
+        default:
+          return true;
+        }
+      }
+      return false;
     }
 
 
     virtual void toPort(Port<Octet>* port) const
     {
-      String tokstr = xmlEncode(fToken.toString());
+      String tokstr = xmlEncode(toString());
 
-      switch (fToken.fType) {
+      switch (fType) {
       case kString:
-        display(port, String("<lit type='str'>") + xmlEncode(fToken.fStrValue) + "</lit>");
+        display(port, String("<lit type='str'>") + xmlEncode(fStrValue) + "</lit>");
         break;
       case kChar:
         display(port, String("<lit type='char'>") + tokstr + "</lit>");
@@ -137,7 +283,13 @@ namespace heather
     }
 
     //-------- data members
-    Token fToken;
+    TokenType fType;
+    String    fStrValue;
+    bool      fBoolValue;
+    int       fIntValue;
+    Rational  fRationalValue;
+    double    fDoubleValue;
+    bool      fIsImaginary;
   };
 
 
@@ -214,8 +366,8 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      display(port, ( String("<nested left='") + xmlEncode(Token(fLeft).toString())
-                      + "' right='" + xmlEncode(Token(fRight).toString()) + "'"));
+      display(port, ( String("<nested left='") + xmlEncode(tokenTypeToString(fLeft))
+                      + "' right='" + xmlEncode(tokenTypeToString(fRight)) + "'"));
       if (!fChildren.empty()) {
         display(port, ">");
         for (unsigned int i = 0; i < fChildren.size(); i++)
@@ -263,9 +415,46 @@ Pexpr::Pexpr(const char* str)
 { }
 
 
-Pexpr::Pexpr(const Token& token)
-  : fImpl(new LitPexprImpl(token))
-{ }
+Pexpr::Pexpr(TokenType type, const String& str)
+{
+  if (type == kSymbol)
+    fImpl = new IdPexprImpl(str);
+  else
+    fImpl = new LitPexprImpl(type, str);
+}
+
+
+Pexpr::Pexpr(TokenType type, const char* str)
+{
+  if (type == kSymbol)
+    fImpl = new IdPexprImpl(String(str));
+  else
+    fImpl = new LitPexprImpl(type, String(str));
+}
+
+
+Pexpr::Pexpr(TokenType type, int value)
+  : fImpl(new LitPexprImpl(type, value))
+{
+}
+
+
+Pexpr::Pexpr(TokenType type, double value)
+  : fImpl(new LitPexprImpl(type, value))
+{
+}
+
+
+Pexpr::Pexpr(TokenType type, Rational value)
+  : fImpl(new LitPexprImpl(type, value))
+{
+}
+
+
+Pexpr::Pexpr(TokenType type, bool value)
+  : fImpl(new LitPexprImpl(type, value))
+{
+}
 
 
 Pexpr::Pexpr(const Pexpr& other)
@@ -295,6 +484,29 @@ bool
 Pexpr::operator!=(const Pexpr& other) const
 {
   return !(operator==(other));
+}
+
+
+TokenType
+Pexpr::tokenType() const
+{
+  switch (fImpl->type()) {
+  case kSeq:    return kSeqToken;
+  case kNested: return kNestedToken;
+  case kId:     return kSymbol;
+  case kLit:    return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fType;
+  case kPunct:  return dynamic_cast<const PunctPexprImpl*>(fImpl.obj())->fType;
+  }
+  return kInvalid;
+}
+
+
+
+String
+Pexpr::toString() const
+{
+  // TODO
+  return String();
 }
 
 
@@ -478,66 +690,85 @@ Pexpr::idValue() const
 }
 
 
-Token
-Pexpr::tokenValue() const
-{
-  if (type() != kLit)
-    throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fToken;
-}
-
-
 bool
 Pexpr::boolLitValue() const
 {
-  if (tokenValue().fType != kBool)
+  if (tokenType() != kBool)
     throw NotSupportedException(__FUNCTION__);
-  return tokenValue().fBoolValue;
+  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fBoolValue;
 }
 
 
 int
 Pexpr::intLitValue() const
 {
-  if (tokenValue().fType != kInteger)
+  if (tokenType() != kInteger)
     throw NotSupportedException(__FUNCTION__);
-  return tokenValue().fIntValue;
+  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fIntValue;
 }
 
 
 double
 Pexpr::realLitValue() const
 {
-  if (tokenValue().fType != kReal)
+  if (tokenType() != kReal)
     throw NotSupportedException(__FUNCTION__);
-  return tokenValue().fDoubleValue;
+  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fDoubleValue;
 }
 
 
 Rational
 Pexpr::rationalLitValue() const
 {
-  if (tokenValue().fType != kRational)
+  if (tokenType() != kRational)
     throw NotSupportedException(__FUNCTION__);
-  return tokenValue().fRationalValue;
+  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fRationalValue;
+}
+
+
+bool
+Pexpr::isLitImaginary() const
+{
+  if (type() != kLit)
+    throw NotSupportedException(__FUNCTION__);
+  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fIsImaginary;
+}
+
+
+Pexpr&
+Pexpr::setIsImaginary(bool value)
+{
+  if (type() != kLit)
+    throw NotSupportedException(__FUNCTION__);
+  dynamic_cast<LitPexprImpl*>(fImpl.obj())->fIsImaginary = value;
+  return *this;
 }
 
 
 String
 Pexpr::stringLitValue() const
 {
-  if (tokenValue().fType != kString)
+  if (tokenType() != kString)
     throw NotSupportedException(__FUNCTION__);
-  return tokenValue().fStrValue;
+  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fStrValue;
+}
+
+
+String
+Pexpr::keywLitValue() const
+{
+  if (tokenType() != kKeyword)
+    throw NotSupportedException(__FUNCTION__);
+  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fStrValue;
 }
 
 
 Char
 Pexpr::charLitValue() const
 {
-  if (tokenValue().fType != kChar)
+  if (tokenType() != kChar)
     throw NotSupportedException(__FUNCTION__);
-  return Char(tokenValue().fIntValue);
+  return Char(dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fIntValue);
 }
 
 
@@ -586,51 +817,51 @@ Pexpr::binarySeqOperator() const
 bool
 Pexpr::isStringLit() const
 {
-  return isLit() && tokenValue().fType == kString;
+  return isLit() && tokenType() == kString;
 }
 
 
 bool
 Pexpr::isBoolLit() const
 {
-  return isLit() && tokenValue().fType == kBool;
+  return isLit() && tokenType() == kBool;
 }
 
 
 bool
 Pexpr::isIntLit() const
 {
-  return isLit() && tokenValue().fType == kInteger;
+  return isLit() && tokenType() == kInteger;
 }
 
 
 bool
 Pexpr::isRealLit() const
 {
-  return isLit() && tokenValue().fType == kReal;
+  return isLit() && tokenType() == kReal;
 }
 
 
 bool
 Pexpr::isRationalLit() const
 {
-  return isLit() && tokenValue().fType == kRational;
+  return isLit() && tokenType() == kRational;
 }
 
 
 bool
 Pexpr::isCharLit() const
 {
-  return isLit() && tokenValue().fType == kChar;
+  return isLit() && tokenType() == kChar;
 }
 
 
 bool
 Pexpr::isKeyArgLit() const
 {
-  return (isLit() && tokenValue().fType == kSymbol &&
-          tokenValue().fStrValue.length() > 1 &&
-          tokenValue().fStrValue[tokenValue().fStrValue.length() - 1] == ':');
+  return (isId() && 
+          idValue().length() > 1 &&
+          idValue()[idValue().length() - 1] == ':');
 }
 
 
@@ -664,6 +895,15 @@ Pexpr::toPort(Port<Octet>* port) const
 }
 
 
+//----------------------------------------------------------------------------
+
+String
+heather::operator+(const String& one, const Pexpr& two)
+{
+  return one + two.toString();
+}
+
+
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
@@ -674,69 +914,69 @@ public:
 
   virtual void run()
   {
-    assert(Pexpr(Token(kReal,     3.1415))         == Pexpr(Token(kReal,     3.1415)));
-    assert(Pexpr(Token(kInteger,  12345))          == Pexpr(Token(kInteger,  12345)));
-    assert(Pexpr(Token(kChar,     0xac00))         == Pexpr(Token(kChar,     0xac00)));
-    assert(Pexpr(Token(kString,   "abc"))          == Pexpr(Token(kString,   "abc")));
-    assert(Pexpr(Token(kSymbol,   "abc"))          == Pexpr(Token(kSymbol,   "abc")));
-    assert(Pexpr(Token(kRational, Rational(7, 4))) == Pexpr(Token(kRational, Rational(7, 4))));
+    assert(Pexpr(kReal,     3.1415)         == Pexpr(kReal,     3.1415));
+    assert(Pexpr(kInteger,  12345)          == Pexpr(kInteger,  12345));
+    assert(Pexpr(kChar,     0xac00)         == Pexpr(kChar,     0xac00));
+    assert(Pexpr(kString,   "abc")          == Pexpr(kString,   "abc"));
+    assert(Pexpr(kSymbol,   "abc")          == Pexpr(kSymbol,   "abc"));
+    assert(Pexpr(kRational, Rational(7, 4)) == Pexpr(kRational, Rational(7, 4)));
 
     assert(Pexpr() == Pexpr());
     assert(Pexpr(kParanOpen, kParanClose) == Pexpr(kParanOpen, kParanClose));
-    assert(Pexpr() << Pexpr(Token(kInteger, 25)) == Pexpr() << Pexpr(Token(kInteger, 25)));
-    assert(( Pexpr(kParanOpen, kParanClose) << Pexpr(Token(kInteger, 25)) ) ==
-           ( Pexpr(kParanOpen, kParanClose) << Pexpr(Token(kInteger, 25)) ));
+    assert(Pexpr() << Pexpr(kInteger, 25) == Pexpr() << Pexpr(kInteger, 25));
+    assert(( Pexpr(kParanOpen, kParanClose) << Pexpr(kInteger, 25) ) ==
+           ( Pexpr(kParanOpen, kParanClose) << Pexpr(kInteger, 25) ));
 
-    assert(Pexpr(Token(kReal, 3.1415)).realLitValue() == 3.1415);
-    assert(Pexpr(Token(kReal, 1.2345)).tokenValue().fType == kReal);
-    assert(Pexpr(Token(kBool, true)).boolLitValue() == true);
-    assert(Pexpr(Token(kInteger, 0x10000)).intLitValue() == 0x10000);
-    assert(Pexpr(Token(kRational, Rational(23, 27))).rationalLitValue() == Rational(23, 27));
+    assert(Pexpr(kReal, 3.1415).realLitValue() == 3.1415);
+    assert(Pexpr(kReal, 1.2345).tokenType() == kReal);
+    assert(Pexpr(kBool, true).boolLitValue() == true);
+    assert(Pexpr(kInteger, 0x10000).intLitValue() == 0x10000);
+    assert(Pexpr(kRational, Rational(23, 27)).rationalLitValue() == Rational(23, 27));
 
-    // assert(Pexpr(Token(kSymbol, "abc")).stringLitValue() == String("abc"));
-    assert(Pexpr(Token(kString, String("abc"))).stringLitValue() == String("abc"));
-    // assert(Pexpr(Token(kKeyword, String("abc"))).stringLitValue() == String("abc"));
-    // assert(Pexpr(Token(kMacroParam, String("abc"))).stringLitValue() == String("abc"));
+    // assert(Pexpr(kSymbol, "abc").idValue() == String("abc"));
+    assert(Pexpr(kString, String("abc")).stringLitValue() == String("abc"));
+    // assert(Pexpr(kKeyword, String("abc")).idValue() == String("abc"));
+    // assert(Pexpr(kMacroParam, String("abc")).idValue() == String("abc"));
 
-    // assert(Pexpr(Token(kSymbol, "abc")).stringLitValue() == String("abc"));
-    assert(Pexpr(Token(kString, "abc")).stringLitValue() == String("abc"));
-    // assert(Pexpr(Token(kKeyword, "abc")).stringLitValue() == String("abc"));
-    // assert(Pexpr(Token(kMacroParam, "abc")).stringLitValue() == String("abc"));
-    assert(Pexpr(Token(kSymbol, "abc:")).isKeyArgLit());
+    // assert(Pexpr(kSymbol, "abc").idValue() == String("abc"));
+    assert(Pexpr(kString, "abc").stringLitValue() == String("abc"));
+    // assert(Pexpr(kKeyword, "abc").idValue() == String("abc"));
+    // assert(Pexpr(kMacroParam, "abc").idValue() == String("abc"));
+    assert(Pexpr(kSymbol, "abc:").isKeyArgLit());
 
 #define TEST_ASSIGNOP2(_type, _value, _member)          \
     {                                                   \
-      Pexpr t = Pexpr(Token(_type, _value));            \
-      assert(t.tokenValue().fType == _type &&           \
-             t.tokenValue()._member == _value);         \
+      Pexpr t = Pexpr(_type, _value);                   \
+      assert(t.tokenType() == _type &&                  \
+             t._member() == _value);                    \
     }
 
-    TEST_ASSIGNOP2(kReal, 3.1415, fDoubleValue);
-    TEST_ASSIGNOP2(kBool, true, fBoolValue);
-    TEST_ASSIGNOP2(kInteger, 0x20000, fIntValue);
-    TEST_ASSIGNOP2(kRational, Rational(1, 127), fRationalValue);
-    TEST_ASSIGNOP2(kString, String("abc"), fStrValue);
+    TEST_ASSIGNOP2(kReal, 3.1415, realLitValue);
+    TEST_ASSIGNOP2(kBool, true, boolLitValue);
+    TEST_ASSIGNOP2(kInteger, 0x20000, intLitValue);
+    TEST_ASSIGNOP2(kRational, Rational(1, 127), rationalLitValue);
+    TEST_ASSIGNOP2(kString, String("abc"), stringLitValue);
 #undef TEST_ASSIGNOP2
 
 #define TEST_COPYCTOR2(_type, _value, _member)          \
     {                                                   \
-      Pexpr t(Pexpr(Token(_type, _value)));             \
-      assert(t.tokenValue().fType == _type &&           \
-             t.tokenValue()._member == _value);         \
+      Pexpr t(Pexpr(_type, _value));                    \
+      assert(t.tokenType() == _type &&                  \
+             t._member() == _value);                    \
     }
 
-    TEST_COPYCTOR2(kReal, 3.1415, fDoubleValue);
-    TEST_COPYCTOR2(kBool, true, fBoolValue);
-    TEST_COPYCTOR2(kInteger, 0x20000, fIntValue);
-    TEST_COPYCTOR2(kRational, Rational(1, 127), fRationalValue);
-    TEST_COPYCTOR2(kString, String("abc"), fStrValue);
+    TEST_COPYCTOR2(kReal, 3.1415, realLitValue);
+    TEST_COPYCTOR2(kBool, true, boolLitValue);
+    TEST_COPYCTOR2(kInteger, 0x20000, intLitValue);
+    TEST_COPYCTOR2(kRational, Rational(1, 127), rationalLitValue);
+    TEST_COPYCTOR2(kString, String("abc"), stringLitValue);
 #undef TEST_COPYCTOR2
     
     {
-      Pexpr t(Pexpr(Token(kReal, 12.345).setIsImaginary(true)));
-      assert(t.tokenValue().fType == kReal &&
-             t.tokenValue().fDoubleValue == 12.345 &&
-             t.tokenValue().fIsImaginary);
+      Pexpr t(Pexpr(kReal, 12.345).setIsImaginary(true));
+      assert(t.tokenType() == kReal &&
+             t.realLitValue() == 12.345 &&
+             t.isLitImaginary());
     }
   }
 };

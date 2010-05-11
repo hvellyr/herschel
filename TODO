@@ -32,6 +32,12 @@ Documentation
 
 Bootstrap compiler
 
-  continue with pexpreval (more operator support)
+  implement toString in pexpr
+  rename Pexpr back to Token
+  review tokenType() == kSymbol vs. isId()
+
+  continue with pexpreval (add the missing operators)
 
   unittests for Rational() class.
+
+  fast StringBuffer() implementation for the tokenizer.

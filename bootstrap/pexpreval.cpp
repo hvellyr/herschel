@@ -28,42 +28,33 @@ PexprEvalContext::evalAdd(const Pexpr& lexpr, const Pexpr& rexpr) const
   if (left.isIntLit()) {
     int value = left.intLitValue();
     if (right.isIntLit())
-      return Pexpr(Token(kInteger,
-                         value + right.intLitValue()));
+      return Pexpr(kInteger, value + right.intLitValue());
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         double(value) + right.realLitValue()));
+      return Pexpr(kReal, double(value) + right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kRational,
-                         Rational(value, 1) + right.rationalLitValue()));
+      return Pexpr(kRational, Rational(value, 1) + right.rationalLitValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRealLit()) {
     double value = left.realLitValue();
     if (right.isIntLit())
-      return Pexpr(Token(kReal,
-                         value + double(right.intLitValue())));
+      return Pexpr(kReal, value + double(right.intLitValue()));
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         value + right.realLitValue()));
+      return Pexpr(kReal, value + right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kReal,
-                         value + right.rationalLitValue().toReal()));
+      return Pexpr(kReal, value + right.rationalLitValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRationalLit()) {
     Rational value = left.rationalLitValue();
     if (right.isIntLit())
-      return Pexpr(Token(kRational,
-                         value + Rational(right.intLitValue(), 1)));
+      return Pexpr(kRational, value + Rational(right.intLitValue(), 1));
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         value.toReal() + right.realLitValue()));
+      return Pexpr(kReal, value.toReal() + right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kRational,
-                         value + right.rationalLitValue()));
+      return Pexpr(kRational, value + right.rationalLitValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -81,42 +72,33 @@ PexprEvalContext::evalMinus(const Pexpr& lexpr, const Pexpr& rexpr) const
   if (left.isIntLit()) {
     int value = left.intLitValue();
     if (right.isIntLit())
-      return Pexpr(Token(kInteger,
-                         value - right.intLitValue()));
+      return Pexpr(kInteger, value - right.intLitValue());
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         double(value) - right.realLitValue()));
+      return Pexpr(kReal, double(value) - right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kRational,
-                         Rational(value, 1) - right.rationalLitValue()));
+      return Pexpr(kRational, Rational(value, 1) - right.rationalLitValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRealLit()) {
     double value = left.realLitValue();
     if (right.isIntLit())
-      return Pexpr(Token(kReal,
-                         value - double(right.intLitValue())));
+      return Pexpr(kReal, value - double(right.intLitValue()));
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         value - right.realLitValue()));
+      return Pexpr(kReal, value - right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kReal,
-                         value - right.rationalLitValue().toReal()));
+      return Pexpr(kReal, value - right.rationalLitValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRationalLit()) {
     Rational value = left.rationalLitValue();
     if (right.isIntLit())
-      return Pexpr(Token(kRational,
-                         value - Rational(right.intLitValue(), 1)));
+      return Pexpr(kRational, value - Rational(right.intLitValue(), 1));
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         value.toReal() - right.realLitValue()));
+      return Pexpr(kReal, value.toReal() - right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kRational,
-                         value - right.rationalLitValue()));
+      return Pexpr(kRational, value - right.rationalLitValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -134,42 +116,33 @@ PexprEvalContext::evalMultiply(const Pexpr& lexpr, const Pexpr& rexpr) const
   if (left.isIntLit()) {
     int value = left.intLitValue();
     if (right.isIntLit())
-      return Pexpr(Token(kInteger,
-                         value * right.intLitValue()));
+      return Pexpr(kInteger, value * right.intLitValue());
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         double(value) * right.realLitValue()));
+      return Pexpr(kReal, double(value) * right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kRational,
-                         Rational(value, 1) * right.rationalLitValue()));
+      return Pexpr(kRational, Rational(value, 1) * right.rationalLitValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRealLit()) {
     double value = left.realLitValue();
     if (right.isIntLit())
-      return Pexpr(Token(kReal,
-                         value * double(right.intLitValue())));
+      return Pexpr(kReal, value * double(right.intLitValue()));
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         value * right.realLitValue()));
+      return Pexpr(kReal, value * right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kReal,
-                         value * right.rationalLitValue().toReal()));
+      return Pexpr(kReal, value * right.rationalLitValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRationalLit()) {
     Rational value = left.rationalLitValue();
     if (right.isIntLit())
-      return Pexpr(Token(kRational,
-                         value * Rational(right.intLitValue(), 1)));
+      return Pexpr(kRational, value * Rational(right.intLitValue(), 1));
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         value.toReal() * right.realLitValue()));
+      return Pexpr(kReal, value.toReal() * right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kRational,
-                         value * right.rationalLitValue()));
+      return Pexpr(kRational, value * right.rationalLitValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -190,14 +163,11 @@ PexprEvalContext::evalDivide(const Pexpr& lexpr, const Pexpr& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isIntLit())
-      return Pexpr(Token(kInteger,
-                         value / right.intLitValue()));
+      return Pexpr(kInteger, value / right.intLitValue());
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         double(value) / right.realLitValue()));
+      return Pexpr(kReal, double(value) / right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kRational,
-                         Rational(value, 1) / right.rationalLitValue()));
+      return Pexpr(kRational, Rational(value, 1) / right.rationalLitValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -207,14 +177,11 @@ PexprEvalContext::evalDivide(const Pexpr& lexpr, const Pexpr& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isIntLit())
-      return Pexpr(Token(kReal,
-                         value / double(right.intLitValue())));
+      return Pexpr(kReal, value / double(right.intLitValue()));
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         value / right.realLitValue()));
+      return Pexpr(kReal, value / right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kReal,
-                         value / right.rationalLitValue().toReal()));
+      return Pexpr(kReal, value / right.rationalLitValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -224,14 +191,11 @@ PexprEvalContext::evalDivide(const Pexpr& lexpr, const Pexpr& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isIntLit())
-      return Pexpr(Token(kRational,
-                         value / Rational(right.intLitValue(), 1)));
+      return Pexpr(kRational, value / Rational(right.intLitValue(), 1));
     else if (right.isRealLit())
-      return Pexpr(Token(kReal,
-                         value.toReal() / right.realLitValue()));
+      return Pexpr(kReal, value.toReal() / right.realLitValue());
     else if (right.isRationalLit())
-      return Pexpr(Token(kRational,
-                         value / right.rationalLitValue()));
+      return Pexpr(kRational, value / right.rationalLitValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -252,7 +216,7 @@ PexprEvalContext::evalModulo(const Pexpr& lexpr, const Pexpr& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isIntLit())
-      return Pexpr(Token(kInteger, value % right.intLitValue()));
+      return Pexpr(kInteger, value % right.intLitValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -271,8 +235,7 @@ PexprEvalContext::evalExponent(const Pexpr& lexpr, const Pexpr& rexpr) const
     int value = left.intLitValue();
 
     if (right.isIntLit())
-      return Pexpr(Token(kInteger,
-                         heather::exponent(value, right.intLitValue())));
+      return Pexpr(kInteger, heather::exponent(value, right.intLitValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -282,8 +245,7 @@ PexprEvalContext::evalExponent(const Pexpr& lexpr, const Pexpr& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isIntLit())
-      return Pexpr(Token(kReal,
-                         heather::exponent(value, right.intLitValue())));
+      return Pexpr(kReal, heather::exponent(value, right.intLitValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -293,8 +255,7 @@ PexprEvalContext::evalExponent(const Pexpr& lexpr, const Pexpr& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isIntLit())
-      return Pexpr(Token(kRational,
-                         value.exponent(right.intLitValue())));
+      return Pexpr(kRational, value.exponent(right.intLitValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -324,7 +285,7 @@ PexprEvalContext::evalBitOp(const Pexpr& lexpr, const Pexpr& rexpr,
     default:
       assert(0);
     }
-    return Pexpr(Token(kInteger, result));
+    return Pexpr(kInteger, result);
   }
   
   throw BadExpressionException(fromInt(__LINE__));
@@ -338,43 +299,40 @@ PexprEvalContext::evalCompare(const Pexpr& lexpr, const Pexpr& rexpr) const
   Pexpr right = evalPexpr(rexpr);
 
   if (left.isLit() && right.isLit() &&
-      left.tokenValue().fType == right.tokenValue().fType) {
-    switch (left.tokenValue().fType) {
+      left.tokenType() == right.tokenType()) {
+    switch (left.tokenType()) {
     case kString:
-      return Pexpr(Token(kInteger,
-                         left.stringLitValue().compare(right.stringLitValue())));
+      return Pexpr(kInteger, left.stringLitValue().compare(right.stringLitValue()));
     case kBool:
       if (left.boolLitValue() == right.boolLitValue())
-        return Pexpr(Token(kInteger, 0));
+        return Pexpr(kInteger, 0);
       else
-        return Pexpr(Token(kInteger, -1));
+        return Pexpr(kInteger, -1);
     case kInteger:
-      return Pexpr(Token(kInteger,
-                         left.intLitValue() - right.intLitValue()));
+      return Pexpr(kInteger, left.intLitValue() - right.intLitValue());
     case kReal:
       if (left.realLitValue() < right.realLitValue())
-        return Pexpr(Token(kInteger, -1));
+        return Pexpr(kInteger, -1);
       else if (left.realLitValue() > right.realLitValue())
-        return Pexpr(Token(kInteger, 1));
+        return Pexpr(kInteger, 1);
       else
-        return Pexpr(Token(kInteger, 0));
+        return Pexpr(kInteger, 0);
     case kRational:
       if (left.rationalLitValue() < right.rationalLitValue())
-        return Pexpr(Token(kInteger, -1));
+        return Pexpr(kInteger, -1);
       else if (left.rationalLitValue() > right.rationalLitValue())
-        return Pexpr(Token(kInteger, 1));
+        return Pexpr(kInteger, 1);
       else
-        return Pexpr(Token(kInteger, 0));
+        return Pexpr(kInteger, 0);
     case kChar:
-      return Pexpr(Token(kInteger,
-                         left.intLitValue() - right.intLitValue()));
+      return Pexpr(kInteger, left.intLitValue() - right.intLitValue());
 
     default:
       throw BadExpressionException(fromInt(__LINE__));
     }
   }
 
-  return Pexpr(Token(kInteger, -1));
+  return Pexpr(kInteger, -1);
 }
 
 
@@ -398,7 +356,7 @@ PexprEvalContext::evalLogical(const Pexpr& lexpr, const Pexpr& rexpr,
     }
   }
 
-  return Pexpr(Token(kBool, result));
+  return Pexpr(kBool, result);
 }
 
 
@@ -410,13 +368,13 @@ PexprEvalContext::evalAnd(const Pexpr& lexpr, const Pexpr& rexpr) const
     if (left.boolLitValue()) {
       Pexpr right = evalPexpr(rexpr);
       if (right.isBoolLit()) {
-        return Pexpr(Token(kBool, right.boolLitValue()));
+        return Pexpr(kBool, right.boolLitValue());
       }
 
       throw BadExpressionException(fromInt(__LINE__));
     }
 
-    return Pexpr(Token(kBool, false));
+    return Pexpr(kBool, false);
   }
 
   throw BadExpressionException(fromInt(__LINE__));
@@ -429,12 +387,11 @@ PexprEvalContext::evalOr(const Pexpr& lexpr, const Pexpr& rexpr) const
   Pexpr left = evalPexpr(lexpr);
   if (left.isBoolLit()) {
     if (left.boolLitValue())
-      return Pexpr(Token(kBool, true));
+      return Pexpr(kBool, true);
 
     Pexpr right = evalPexpr(rexpr);
-    if (right.isBoolLit()) {
-      return Pexpr(Token(kBool, right.boolLitValue()));
-    }
+    if (right.isBoolLit())
+      return right;
 
     throw BadExpressionException(fromInt(__LINE__));
   }
@@ -450,7 +407,7 @@ PexprEvalContext::evalAppend(const Pexpr& lexpr, const Pexpr& rexpr) const
   Pexpr right = evalPexpr(rexpr);
   
   if (left.isStringLit() && right.isStringLit()) {
-    return Pexpr(Token(kString, left.stringLitValue() + right.stringLitValue()));
+    return Pexpr(kString, left.stringLitValue() + right.stringLitValue());
   }
   throw BadExpressionException(fromInt(__LINE__));
 }
@@ -543,11 +500,12 @@ PexprEvalContext::evalPexpr(const Pexpr& expr) const
     throw NotSupportedException(__FUNCTION__);
 
   case kPunct:
-    throw BadExpressionException(expr.tokenValue().toString());
+    throw BadExpressionException(expr.toString());
 
   case kLit:
-    switch (expr.tokenValue().fType) {
+    switch (expr.tokenType()) {
     case kString:
+    case kKeyword:
     case kChar:
     case kBool:
     case kInteger:
@@ -555,7 +513,7 @@ PexprEvalContext::evalPexpr(const Pexpr& expr) const
     case kRational:
       return expr;
     default:
-      throw BadExpressionException(expr.tokenValue().toString());
+      throw BadExpressionException(expr.toString());
     }
     break;
 
@@ -591,26 +549,26 @@ public:
 
     Pexpr t;
 
-    t = ctx.evalPexpr(Pexpr(Token(kInteger, 25)));
+    t = ctx.evalPexpr(Pexpr(kInteger, 25));
     assert(t.isIntLit() && t.intLitValue() == 25);
 
-    t = ctx.evalPexpr(Pexpr(Token(kReal, 3.1415)));
+    t = ctx.evalPexpr(Pexpr(kReal, 3.1415));
     assert(t.isRealLit() && t.realLitValue() == 3.1415);
 
-    t = ctx.evalPexpr(Pexpr(Token(kRational, Rational(101, 127))));
+    t = ctx.evalPexpr(Pexpr(kRational, Rational(101, 127)));
     assert(t.isRationalLit() && t.rationalLitValue() == Rational(101, 127));
 
-    t = ctx.evalPexpr(Pexpr(Token(kString, "hello world")));
+    t = ctx.evalPexpr(Pexpr(kString, "hello world"));
     assert(t.isStringLit() && t.stringLitValue() == String("hello world"));
 
-    t = ctx.evalPexpr(Pexpr(Token(kChar, 0xac00)));
+    t = ctx.evalPexpr(Pexpr(kChar, 0xac00));
     assert(t.isCharLit() && t.charLitValue() == Char(0xac00));
 
 
 #define MAKE_BINARY_SEQ(_ltype, _lvalue, _op, _rtype, _rvalue)  \
-    Pexpr() << Pexpr(Token(_ltype, _lvalue))                    \
+    Pexpr() << Pexpr(_ltype, _lvalue)                           \
             << Pexpr(_op)                                       \
-            << Pexpr(Token(_rtype, _rvalue))
+            << Pexpr(_rtype, _rvalue)
 
     //-------- test add
 

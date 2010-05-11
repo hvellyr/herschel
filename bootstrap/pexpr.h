@@ -13,12 +13,50 @@
 
 #include "refcountable.h"
 #include "ptr.h"
-#include "tokenizer.h"
 #include "port.h"
-#include "parsertypes.h"
+#include "numbers.h"
+
 
 namespace heather
 {
+  //--------------------------------------------------------------------------
+
+  enum OperatorType
+  {
+    kOpInvalid,
+    kOpAppend,
+    kOpAs,
+    kOpAssign,
+    kOpBitAnd,
+    kOpBitOr,
+    kOpBitXor,
+    kOpBy,
+    kOpCompare,
+    kOpDivide,
+    kOpEllipsis,
+    kOpEqual,
+    kOpExponent,
+    kOpFold,
+    kOpGreater,
+    kOpGreaterEqual,
+    kOpIn,
+    kOpIsa,
+    kOpLess,
+    kOpLessEqual,
+    kOpLogicalAnd,
+    kOpLogicalOr,
+    kOpMapTo,
+    kOpMinus,
+    kOpMod,
+    kOpMultiply,
+    kOpPlus,
+    kOpRange,
+    kOpShiftLeft,
+    kOpShiftRight,
+    kOpUnequal,
+  };
+
+
   //--------------------------------------------------------------------------
 
   class Pexpr;
@@ -29,6 +67,82 @@ namespace heather
     kPunct,
     kLit,
     kId
+  };
+
+
+  enum TokenType
+  {
+    kEOF,
+    kInvalid,
+
+    kSeqToken,                  // prescanned token
+    kNestedToken,               // prescanned token
+
+    kPlus,
+    kMinus,
+    kDivide,
+    kMultiply,
+    kExponent,
+    kFold,
+    kCompare,
+    kEqual,
+    kUnequal,
+    kLess,
+    kLessEqual,
+    kGreater,
+    kGreaterEqual,
+    kAssign,
+    kMapTo,
+    kIn,
+    kMod,
+    kIsa,
+    kAs,
+    kBy,
+    kLogicalAnd,
+    kLogicalOr,
+    kBitAnd,
+    kBitOr,
+    kBitXor,
+    kShiftLeft,
+    kShiftRight,
+    kAppend,
+
+    kString,
+    kChar,
+    kBool,
+    kInteger,
+    kReal,
+    kRational,
+
+    kSymbol,
+    kKeyarg,
+    kMacroParam,
+    kKeyword,
+
+    kParanOpen,
+    kParanClose,
+    kBracketOpen,
+    kBracketClose,
+    kBraceOpen,
+    kBraceClose,
+    kGenericOpen,
+    kGenericClose,
+    kComma,
+    kSemicolon,
+    kColon,
+
+    kAt,
+    kAmpersand,
+    kPipe,
+    kBackQuote,
+    kQuote,
+    kEllipsis,
+    kRange,
+    kDot,
+
+    kLiteralVectorOpen,
+    kLiteralArrayOpen,
+    kSangHash,
   };
 
 
@@ -46,6 +160,7 @@ namespace heather
     }
 
     virtual void toPort(Port<Octet>* port) const = 0;
+    virtual String toString() const { /* TODO */ return String(); }
   };
 
 
@@ -67,8 +182,21 @@ namespace heather
     Pexpr(const String& str);
     Pexpr(const char* str);
 
-    // a literal expression
-    Pexpr(const Token& token);
+    // a literal typed constructor for string values
+    Pexpr(TokenType type, const String& str);
+    Pexpr(TokenType type, const char* str);
+
+    // a literal typed constructor for int values
+    Pexpr(TokenType type, int value);
+
+    // a literal typed constructor for double values
+    Pexpr(TokenType type, double value);
+
+    // a literal typed constructor for rational values
+    Pexpr(TokenType type, Rational value);
+
+    // a literal typed constructor for bool values
+    Pexpr(TokenType type, bool value);
 
     // copy ctor
     Pexpr(const Pexpr& other);
@@ -78,7 +206,7 @@ namespace heather
     bool operator!=(const Pexpr& other) const;
 
 
-
+    TokenType tokenType() const;
     PexprType type() const;
 
     bool isSeq() const;
@@ -87,6 +215,9 @@ namespace heather
     bool isId() const;
     bool isPunct() const;
     bool isSet() const;
+
+    bool isLitImaginary() const;
+    Pexpr& setIsImaginary(bool value);
 
     bool isEmpty() const;
 
@@ -102,9 +233,9 @@ namespace heather
 
     int count() const;
 
+    //-------- accessing the values and types
     TokenType punctValue() const;
     String idValue() const;
-    Token tokenValue() const;
     TokenType leftToken() const;
     TokenType rightToken() const;
     bool boolLitValue() const;
@@ -112,6 +243,7 @@ namespace heather
     double realLitValue() const;
     Rational rationalLitValue() const;
     String stringLitValue() const;
+    String keywLitValue() const;
     Char charLitValue() const;
 
     //! useful predicates
@@ -135,12 +267,18 @@ namespace heather
 
     void toPort(Port<Octet>* port) const;
 
+    String toString() const;
+
   private:
     void unshare();
 
     //-------- data members
     Ptr<PexprImpl> fImpl;
   };
+
+
+  String operator+(const String& one, const Pexpr& two);
+
 };
 
 

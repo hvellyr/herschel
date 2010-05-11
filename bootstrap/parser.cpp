@@ -49,14 +49,14 @@ Parser::configVarRegistry() const
 }
 
 
-Token
+Pexpr
 Parser::nextToken()
 {
   try {
     fToken = fPort->read();
   }
   catch (const EofException& e) {
-    fToken = Token(kEOF);
+    fToken = Pexpr(kEOF);
   }
   return fToken;
 }

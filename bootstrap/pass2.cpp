@@ -56,7 +56,7 @@ SecondPass::parseModule(const Pexpr& expr, bool isModule)
     assert(expr[2].count() == 1);
     assert(expr[2][0].isStringLit());
 
-    publicId = expr[2][0].tokenValue().fStrValue;
+    publicId = expr[2][0].stringLitValue();
   }
 
   Ptr<ModuleNode> modNode = new ModuleNode(modName, publicId, isModule);
@@ -106,7 +106,7 @@ SecondPass::parseImport(const Pexpr& expr)
   assert(expr[0].isId("import"));
   assert(expr[1].isStringLit());
 
-  String codeFile = expr[1].tokenValue().fStrValue;
+  String codeFile = expr[1].stringLitValue();
   StringStringMap renames;
 
   if (expr.count() >= 3) {
@@ -163,7 +163,7 @@ SecondPass::parseExpr(const Pexpr& expr)
   case kNested:                 // TODO
     return NULL;
   case kPunct:                  // TODO
-    throw UnexpectedTokenException(Token(expr.punctValue()));
+    throw UnexpectedTokenException(expr);
   }
 
   return NULL;

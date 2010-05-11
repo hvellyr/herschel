@@ -9,7 +9,7 @@
 #ifndef bootstrap_parsertypes_h
 #define bootstrap_parsertypes_h
 
-#include "tokenizer.h"
+#include "pexpr.h"
 #include "registry.h"
 
 
@@ -32,43 +32,6 @@ namespace heather
     Ptr<ConfigVarRegistry> fParent;
   };
 
-
-  //--------------------------------------------------------------------------
-
-  enum OperatorType
-  {
-    kOpInvalid,
-    kOpAppend,
-    kOpAs,
-    kOpAssign,
-    kOpBitAnd,
-    kOpBitOr,
-    kOpBitXor,
-    kOpBy,
-    kOpCompare,
-    kOpDivide,
-    kOpEllipsis,
-    kOpEqual,
-    kOpExponent,
-    kOpFold,
-    kOpGreater,
-    kOpGreaterEqual,
-    kOpIn,
-    kOpIsa,
-    kOpLess,
-    kOpLessEqual,
-    kOpLogicalAnd,
-    kOpLogicalOr,
-    kOpMapTo,
-    kOpMinus,
-    kOpMod,
-    kOpMultiply,
-    kOpPlus,
-    kOpRange,
-    kOpShiftLeft,
-    kOpShiftRight,
-    kOpUnequal,
-  };
 
   OperatorType tokenTypeToOperator(TokenType type);
   TokenType operatorToTokenType(OperatorType op);

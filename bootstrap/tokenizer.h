@@ -12,6 +12,7 @@
 #include "port.h"
 #include "numbers.h"
 #include "registry.h"
+#include "pexpr.h"
 
 
 namespace heather
@@ -45,198 +46,125 @@ namespace heather
 
   //--------------------------------------------------------------------------
   
-  enum TokenType
-  {
-    kEOF,
-    kInvalid,
+  // class Token
+  // {
+  // public:
+  //   Token()
+  //     : fType(kInvalid),
+  //       fBoolValue(false),
+  //       fIntValue(0),
+  //       fDoubleValue(0.0),
+  //       fIsImaginary(false)
+  //   { }
 
-    kPlus,
-    kMinus,
-    kDivide,
-    kMultiply,
-    kExponent,
-    kFold,
-    kCompare,
-    kEqual,
-    kUnequal,
-    kLess,
-    kLessEqual,
-    kGreater,
-    kGreaterEqual,
-    kAssign,
-    kMapTo,
-    kIn,
-    kMod,
-    kIsa,
-    kAs,
-    kBy,
-    kLogicalAnd,
-    kLogicalOr,
-    kBitAnd,
-    kBitOr,
-    kBitXor,
-    kShiftLeft,
-    kShiftRight,
-    kAppend,
+  //   Token(const Token& other)
+  //   {
+  //     *this = other;
+  //   }
 
-    kString,
-    kChar,
-    kBool,
-    kInteger,
-    kReal,
-    kRational,
+  //   Token(TokenType type)
+  //     : fType(type),
+  //       fBoolValue(false),
+  //       fIntValue(0),
+  //       fDoubleValue(0.0),
+  //       fIsImaginary(false)
+  //   { }
 
-    kSymbol,
-    kKeyarg,
-    kMacroParam,
-    kKeyword,
+  //   Token(TokenType type, const String& value)
+  //     : fType(type),
+  //       fStrValue(value),
+  //       fBoolValue(false),
+  //       fIntValue(0),
+  //       fDoubleValue(0.0),
+  //       fIsImaginary(false)
+  //   { }
 
-    kParanOpen,
-    kParanClose,
-    kBracketOpen,
-    kBracketClose,
-    kBraceOpen,
-    kBraceClose,
-    kGenericOpen,
-    kGenericClose,
-    kComma,
-    kSemicolon,
-    kColon,
+  //   Token(TokenType type, const char* value)
+  //     : fType(type),
+  //       fStrValue(String(value)),
+  //       fBoolValue(false),
+  //       fIntValue(0),
+  //       fDoubleValue(0.0),
+  //       fIsImaginary(false)
+  //   { }
 
-    kAt,
-    kAmpersand,
-    kPipe,
-    kBackQuote,
-    kQuote,
-    kEllipsis,
-    kRange,
-    kDot,
-
-    kLiteralVectorOpen,
-    kLiteralArrayOpen,
-    kSangHash,
-  };
+  //   Token(TokenType type, int value)
+  //     : fType(type),
+  //       fBoolValue(false),
+  //       fIntValue(value),
+  //       fDoubleValue(0.0),
+  //       fIsImaginary(false)
+  //   {
+  //     assert(type != kBool);
+  //   }
 
 
-  class Token
-  {
-  public:
-    Token()
-      : fType(kInvalid),
-        fBoolValue(false),
-        fIntValue(0),
-        fDoubleValue(0.0),
-        fIsImaginary(false)
-    { }
+  //   Token(TokenType type, bool value)
+  //     : fType(type),
+  //       fBoolValue(value),
+  //       fIntValue(0),
+  //       fDoubleValue(0.0),
+  //       fIsImaginary(false)
+  //   {
+  //     assert(type == kBool);
+  //   }
 
-    Token(const Token& other)
-    {
-      *this = other;
-    }
+  //   Token(TokenType type, double value)
+  //     : fType(type),
+  //       fBoolValue(false),
+  //       fIntValue(0),
+  //       fDoubleValue(value),
+  //       fIsImaginary(false)
+  //   { }
 
-    Token(TokenType type)
-      : fType(type),
-        fBoolValue(false),
-        fIntValue(0),
-        fDoubleValue(0.0),
-        fIsImaginary(false)
-    { }
+  //   Token(TokenType type, const Rational& rat)
+  //     : fType(type),
+  //       fBoolValue(false),
+  //       fIntValue(0),
+  //       fRationalValue(rat),
+  //       fDoubleValue(0.0),
+  //       fIsImaginary(false)
+  //   { }
 
-    Token(TokenType type, const String& value)
-      : fType(type),
-        fStrValue(value),
-        fBoolValue(false),
-        fIntValue(0),
-        fDoubleValue(0.0),
-        fIsImaginary(false)
-    { }
+  //   Token& operator=(const Token& other);
 
-    Token(TokenType type, const char* value)
-      : fType(type),
-        fStrValue(String(value)),
-        fBoolValue(false),
-        fIntValue(0),
-        fDoubleValue(0.0),
-        fIsImaginary(false)
-    { }
+  //   bool operator==(const Token& other) const;
+  //   bool operator!=(const Token& other) const
+  //   {
+  //     return !(operator==(other));
+  //   }
 
-    Token(TokenType type, int value)
-      : fType(type),
-        fBoolValue(false),
-        fIntValue(value),
-        fDoubleValue(0.0),
-        fIsImaginary(false)
-    {
-      assert(type != kBool);
-    }
+  //   bool isSymbol() const
+  //   {
+  //     return fType == kSymbol;
+  //   }
 
+  //   bool isKeyArg() const
+  //   {
+  //     return (fType == kSymbol && fStrValue.length() > 1 &&
+  //             fStrValue[fStrValue.length() - 1] == ':');
+  //   }
 
-    Token(TokenType type, bool value)
-      : fType(type),
-        fBoolValue(value),
-        fIntValue(0),
-        fDoubleValue(0.0),
-        fIsImaginary(false)
-    {
-      assert(type == kBool);
-    }
+  //   String toString() const;
 
-    Token(TokenType type, double value)
-      : fType(type),
-        fBoolValue(false),
-        fIntValue(0),
-        fDoubleValue(value),
-        fIsImaginary(false)
-    { }
-
-    Token(TokenType type, const Rational& rat)
-      : fType(type),
-        fBoolValue(false),
-        fIntValue(0),
-        fRationalValue(rat),
-        fDoubleValue(0.0),
-        fIsImaginary(false)
-    { }
-
-    Token& operator=(const Token& other);
-
-    bool operator==(const Token& other) const;
-    bool operator!=(const Token& other) const
-    {
-      return !(operator==(other));
-    }
-
-    bool isSymbol() const
-    {
-      return fType == kSymbol;
-    }
-
-    bool isKeyArg() const
-    {
-      return (fType == kSymbol && fStrValue.length() > 1 &&
-              fStrValue[fStrValue.length() - 1] == ':');
-    }
-
-    String toString() const;
-
-    Token& setIsImaginary(bool value)
-    {
-      fIsImaginary = value;
-      return *this;
-    }
+  //   Token& setIsImaginary(bool value)
+  //   {
+  //     fIsImaginary = value;
+  //     return *this;
+  //   }
 
 
-    //-------- data members
-    TokenType fType;
-    String    fStrValue;
-    bool      fBoolValue;
-    int       fIntValue;
-    Rational  fRationalValue;
-    double    fDoubleValue;
-    bool      fIsImaginary;
-  };
+  //   //-------- data members
+  //   TokenType fType;
+  //   String    fStrValue;
+  //   bool      fBoolValue;
+  //   int       fIntValue;
+  //   Rational  fRationalValue;
+  //   double    fDoubleValue;
+  //   bool      fIsImaginary;
+  // };
 
-  String operator+(const String& one, const Token& two);
+//  String operator+(const String& one, const Token& two);
 
 
   //--------------------------------------------------------------------------
@@ -248,12 +176,12 @@ namespace heather
 
     bool isEof() const;
 
-    Token nextToken();
-    Token nextTokenImpl();
+    Pexpr nextToken();
+    Pexpr nextTokenImpl();
 
   private:
     void readCommentLine();
-    Token readIdentifier(const String& prefix, TokenType type,
+    Pexpr readIdentifier(const String& prefix, TokenType type,
                          bool acceptGenerics);
 
     bool isEOL(Char c) const;
@@ -270,16 +198,16 @@ namespace heather
       throw (NotationException);
 
     int nextChar();
-    Token makeTokenAndNext(TokenType type);
+    Pexpr makeTokenAndNext(TokenType type);
 
-    Token readSymbolOrOperator(bool acceptGenerics);
-    Token readNumber(int sign);
-    Token readCharacter(bool needsTerminator);
-    Token readString();
-    Token readNamedCharacter(bool needsTerminator);
-    Token readNumericCharacter(bool needsTerminator);
-    Token readSymbolCharacter(bool needsTerminator);
-    Token translateChar(const String& charnm);
+    Pexpr readSymbolOrOperator(bool acceptGenerics);
+    Pexpr readNumber(int sign);
+    Pexpr readCharacter(bool needsTerminator);
+    Pexpr readString();
+    Pexpr readNamedCharacter(bool needsTerminator);
+    Pexpr readNumericCharacter(bool needsTerminator);
+    Pexpr readSymbolCharacter(bool needsTerminator);
+    Pexpr translateChar(const String& charnm);
     Char mapCharNameToChar(const String& charnm);
     String readIntNumberPart(bool acceptHex);
 

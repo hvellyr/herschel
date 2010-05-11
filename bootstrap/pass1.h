@@ -24,9 +24,9 @@ namespace heather
   class FirstPass
   {
   public:
-    FirstPass(Parser* parser, Token currentToken);
+    FirstPass(Parser* parser, const Pexpr& currentToken);
 
-    Token nextToken();
+    Pexpr nextToken();
 
     //! first pass parse
     Pexpr parse();
@@ -89,7 +89,7 @@ namespace heather
 
   private:
     Ptr<Parser> fParser;
-    Token       fToken;
+    Pexpr       fToken;
     bool        fEvaluateExprs;
   };
 };

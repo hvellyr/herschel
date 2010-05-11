@@ -115,7 +115,7 @@ Properties::setConfigVar(const String& keyValuePair)
   if (idx >= 0) {
     if (sConfigVarRegistry == NULL)
       sConfigVarRegistry = new ConfigVarRegistry;
-    sConfigVarRegistry->registerValue(key, Pexpr(Token(kString, value)));
+    sConfigVarRegistry->registerValue(key, Pexpr(kString, value));
   }
   else
     fprintf(stderr, "ERROR: bad key-value pair for config key.  Ignored\n");

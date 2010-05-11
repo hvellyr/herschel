@@ -9,6 +9,7 @@
 #include "common.h"
 #include "tokenport.h"
 #include "unittests.h"
+#include "pexpr.h"
 
 using namespace heather;
 
@@ -16,14 +17,14 @@ using namespace heather;
 //----------------------------------------------------------------------------
 
 size_t
-TokenPort::write(Token* /* data */, size_t /* items */)
+TokenPort::write(Pexpr* /* data */, size_t /* items */)
 {
   throw NotSupportedException(__FUNCTION__);
 }
 
 
 int
-TokenPort::write(Token item)
+TokenPort::write(Pexpr item)
 {
   throw NotSupportedException(__FUNCTION__);
 }
@@ -77,7 +78,7 @@ FileTokenPort::isEof() const
 }
 
 
-Token
+Pexpr
 FileTokenPort::read()
 {
   if (fTokenizer == NULL)
@@ -88,7 +89,7 @@ FileTokenPort::read()
 
 //----------------------------------------------------------------------------
 
-InternalTokenPort::InternalTokenPort(const std::list<Token>& tokens)
+InternalTokenPort::InternalTokenPort(const std::list<Pexpr>& tokens)
 {
   fTokens.assign(tokens.begin(), tokens.end());
 }
@@ -108,13 +109,13 @@ InternalTokenPort::isEof() const
 }
 
 
-Token
+Pexpr
 InternalTokenPort::read()
 {
   if (fTokens.empty())
     throw EofException();
 
-  Token t = fTokens.front();
+  Pexpr t = fTokens.front();
   fTokens.pop_front();
   return t;
 }
@@ -143,53 +144,53 @@ public:
       Ptr<TokenPort> p = new FileTokenPort(new DataPort((Octet*)test, strlen(test)));
 
       try {
-        assert(p->read() == Token(kSymbol, String("interface")));
-        assert(p->read() == Token(kSymbol, String("zero")));
-        assert(p->read() == Token(kParanOpen));
-        assert(p->read() == Token(kString, String("eyestep/zero 1.0:portables")));
-        assert(p->read() == Token(kParanClose));
+        assert(p->read() == Pexpr(kSymbol, String("interface")));
+        assert(p->read() == Pexpr(kSymbol, String("zero")));
+        assert(p->read() == Pexpr(kParanOpen));
+        assert(p->read() == Pexpr(kString, String("eyestep/zero 1.0:portables")));
+        assert(p->read() == Pexpr(kParanClose));
 
-        assert(p->read() == Token(kSymbol, String("export")));
-        assert(p->read() == Token(kSymbol, String("public")));
-        assert(p->read() == Token(kParanOpen));
-        assert(p->read() == Token(kMultiply));
-        assert(p->read() == Token(kParanClose));
+        assert(p->read() == Pexpr(kSymbol, String("export")));
+        assert(p->read() == Pexpr(kSymbol, String("public")));
+        assert(p->read() == Pexpr(kParanOpen));
+        assert(p->read() == Pexpr(kMultiply));
+        assert(p->read() == Pexpr(kParanClose));
 
-        assert(p->read() == Token(kSymbol, String("def")));
-        assert(p->read() == Token(kSymbol, String("class")));
-        assert(p->read() == Token(kSymbol, String("Portable")));
-        assert(p->read() == Token(kGenericOpen));
-        assert(p->read() == Token(kSymbol, String("T")));
-        assert(p->read() == Token(kGenericClose));
-        assert(p->read() == Token(kParanOpen));
-        assert(p->read() == Token(kSymbol, String("x")));
-        assert(p->read() == Token(kAt));
-        assert(p->read() == Token(kSymbol, String("Int")));
-        assert(p->read() == Token(kParanClose));
-        assert(p->read() == Token(kColon));
-        assert(p->read() == Token(kParanOpen));
-        assert(p->read() == Token(kSymbol, String("Copyable")));
-        assert(p->read() == Token(kComma));
-        assert(p->read() == Token(kSymbol, String("Comparable")));
-        assert(p->read() == Token(kParanClose));
+        assert(p->read() == Pexpr(kSymbol, String("def")));
+        assert(p->read() == Pexpr(kSymbol, String("class")));
+        assert(p->read() == Pexpr(kSymbol, String("Portable")));
+        assert(p->read() == Pexpr(kGenericOpen));
+        assert(p->read() == Pexpr(kSymbol, String("T")));
+        assert(p->read() == Pexpr(kGenericClose));
+        assert(p->read() == Pexpr(kParanOpen));
+        assert(p->read() == Pexpr(kSymbol, String("x")));
+        assert(p->read() == Pexpr(kAt));
+        assert(p->read() == Pexpr(kSymbol, String("Int")));
+        assert(p->read() == Pexpr(kParanClose));
+        assert(p->read() == Pexpr(kColon));
+        assert(p->read() == Pexpr(kParanOpen));
+        assert(p->read() == Pexpr(kSymbol, String("Copyable")));
+        assert(p->read() == Pexpr(kComma));
+        assert(p->read() == Pexpr(kSymbol, String("Comparable")));
+        assert(p->read() == Pexpr(kParanClose));
 
-        assert(p->read() == Token(kBraceOpen));
-        assert(p->read() == Token(kSymbol, String("slot")));
-        assert(p->read() == Token(kSymbol, String("first")));
-        assert(p->read() == Token(kColon));
-        assert(p->read() == Token(kSymbol, String("T")));
-        assert(p->read() == Token(kAssign));
-        assert(p->read() == Token(kSymbol, String("x")));
+        assert(p->read() == Pexpr(kBraceOpen));
+        assert(p->read() == Pexpr(kSymbol, String("slot")));
+        assert(p->read() == Pexpr(kSymbol, String("first")));
+        assert(p->read() == Pexpr(kColon));
+        assert(p->read() == Pexpr(kSymbol, String("T")));
+        assert(p->read() == Pexpr(kAssign));
+        assert(p->read() == Pexpr(kSymbol, String("x")));
 
-        assert(p->read() == Token(kSemicolon));
+        assert(p->read() == Pexpr(kSemicolon));
 
-        assert(p->read() == Token(kSymbol, String("slot")));
-        assert(p->read() == Token(kSymbol, String("data")));
-        assert(p->read() == Token(kColon));
-        assert(p->read() == Token(kSymbol, String("Octet")));
-        assert(p->read() == Token(kBracketOpen));
-        assert(p->read() == Token(kBracketClose));
-        assert(p->read() == Token(kBraceClose));
+        assert(p->read() == Pexpr(kSymbol, String("slot")));
+        assert(p->read() == Pexpr(kSymbol, String("data")));
+        assert(p->read() == Pexpr(kColon));
+        assert(p->read() == Pexpr(kSymbol, String("Octet")));
+        assert(p->read() == Pexpr(kBracketOpen));
+        assert(p->read() == Pexpr(kBracketClose));
+        assert(p->read() == Pexpr(kBraceClose));
 
         assert(p->isEof());
       }
@@ -210,21 +211,21 @@ public:
 
   virtual void run()
   {
-    std::list<Token> tokens;
-    tokens.push_back(Token(kSymbol, String("def")));
-    tokens.push_back(Token(kSymbol, String("const")));
-    tokens.push_back(Token(kSymbol, String("x")));
-    tokens.push_back(Token(kAssign));
-    tokens.push_back(Token(kRational, Rational(2, 3)));
+    std::list<Pexpr> tokens;
+    tokens.push_back(Pexpr(kSymbol, String("def")));
+    tokens.push_back(Pexpr(kSymbol, String("const")));
+    tokens.push_back(Pexpr(kSymbol, String("x")));
+    tokens.push_back(Pexpr(kAssign));
+    tokens.push_back(Pexpr(kRational, Rational(2, 3)));
 
     Ptr<TokenPort> p = new InternalTokenPort(tokens);
 
     try {
-      assert(p->read() == Token(kSymbol, String("def")));
-      assert(p->read() == Token(kSymbol, String("const")));
-      assert(p->read() == Token(kSymbol, String("x")));
-      assert(p->read() == Token(kAssign));
-      assert(p->read() == Token(kRational, Rational(2, 3)));
+      assert(p->read() == Pexpr(kSymbol, String("def")));
+      assert(p->read() == Pexpr(kSymbol, String("const")));
+      assert(p->read() == Pexpr(kSymbol, String("x")));
+      assert(p->read() == Pexpr(kAssign));
+      assert(p->read() == Pexpr(kRational, Rational(2, 3)));
 
       assert(p->isEof());
     }
