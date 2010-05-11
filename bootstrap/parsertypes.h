@@ -9,7 +9,7 @@
 #ifndef bootstrap_parsertypes_h
 #define bootstrap_parsertypes_h
 
-#include "pexpr.h"
+#include "token.h"
 #include "registry.h"
 
 

@@ -19,11 +19,11 @@ SOURCES =         \
 	parsertypes.cpp \
 	pass1.cpp       \
 	pass2.cpp       \
-	pexpr.cpp       \
-	pexpreval.cpp   \
 	port.cpp        \
 	properties.cpp  \
 	str.cpp         \
+	token.cpp       \
+	tokeneval.cpp   \
 	tokenizer.cpp   \
 	tokenport.cpp   \
 	unittests.cpp   \
@@ -39,14 +39,14 @@ HEADERS =         \
 	parsertypes.h   \
 	pass1.h         \
 	pass2.h         \
-	pexpr.h         \
-	pexpreval.h     \
 	port.h          \
 	properties.h    \
 	ptr.h           \
 	refcountable.h  \
 	registry.h      \
 	str.h           \
+	token.h         \
+	tokeneval.h     \
 	tokenizer.h     \
 	tokenport.h     \
 	unittests.h     \
