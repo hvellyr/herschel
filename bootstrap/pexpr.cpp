@@ -77,56 +77,12 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class PunctTokenImpl : public TokenImpl
-  {
-  public:
-    PunctTokenImpl(TokenType type)
-      : fType(type)
-    { }
-
-
-    virtual PexprType type() const
-    {
-      return kPunct;
-    }
-
-
-    virtual bool operator==(const Token& other) const
-    {
-      return fType == other.punctValue();
-    }
-
-
-    String toString() const
-    {
-      return tokenTypeToString(fType);
-    }
-
-
-    virtual void toPort(Port<Octet>* port) const
-    {
-      display(port, String("<punct type='") + xmlEncode(toString()) + "'/>");
-    }
-
-    //-------- data members
-    TokenType fType;
-  };
-
-
-  //--------------------------------------------------------------------------
-
   class IdTokenImpl : public TokenImpl
   {
   public:
     IdTokenImpl(const String& str)
       : fStr(str)
     { }
-
-
-    virtual PexprType type() const
-    {
-      return kId;
-    }
 
 
     virtual bool operator==(const Token& other) const
@@ -154,28 +110,10 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class LitTokenImpl : public TokenImpl
+  class NumberTokenImpl : public TokenImpl
   {
   public:
-    LitTokenImpl(TokenType type, const String& value)
-      : fType(type),
-        fStrValue(value),
-        fBoolValue(false),
-        fIntValue(0),
-        fDoubleValue(0.0),
-        fIsImaginary(false)
-      { }
-
-    LitTokenImpl(TokenType type, const char* value)
-      : fType(type),
-        fStrValue(String(value)),
-        fBoolValue(false),
-        fIntValue(0),
-        fDoubleValue(0.0),
-        fIsImaginary(false)
-      { }
-
-    LitTokenImpl(TokenType type, int value)
+    NumberTokenImpl(TokenType type, int value)
       : fType(type),
         fBoolValue(false),
         fIntValue(value),
@@ -186,7 +124,7 @@ namespace heather
       }
 
 
-    LitTokenImpl(TokenType type, bool value)
+    NumberTokenImpl(TokenType type, bool value)
       : fType(type),
         fBoolValue(value),
         fIntValue(0),
@@ -196,15 +134,15 @@ namespace heather
         assert(type == kBool);
       }
 
-    LitTokenImpl(TokenType type, double value)
+    NumberTokenImpl(TokenType type, double value)
       : fType(type),
         fBoolValue(false),
         fIntValue(0),
         fDoubleValue(value),
         fIsImaginary(false)
       { }
-    
-    LitTokenImpl(TokenType type, const Rational& rat)
+
+    NumberTokenImpl(TokenType type, const Rational& rat)
       : fType(type),
         fBoolValue(false),
         fIntValue(0),
@@ -213,27 +151,16 @@ namespace heather
         fIsImaginary(false)
       { }
 
-    virtual PexprType type() const
-    {
-      return kLit;
-    }
-
-
     virtual bool operator==(const Token& other) const
     {
       if (fType == other.tokenType()) {
         switch (fType) {
-        case kString:
-          return fStrValue == other.stringLitValue();
-        case kKeyword:
-          return fStrValue == other.keywLitValue();
-
         case kChar:
           return fIntValue == int(other.charLitValue());
 
         case kBool:
           return fBoolValue == other.boolLitValue();
-          
+
         case kInteger:
           return ( fIntValue == other.intLitValue() &&
                    fIsImaginary == other.isLitImaginary() );
@@ -257,20 +184,8 @@ namespace heather
       String tokstr = xmlEncode(toString());
 
       switch (fType) {
-      case kString:
-        display(port, String("<lit type='str'>") + xmlEncode(fStrValue) + "</lit>");
-        break;
       case kChar:
         display(port, String("<lit type='char'>") + tokstr + "</lit>");
-        break;
-      case kKeyarg:
-        display(port, String("<lit type='keyarg'>") + tokstr + "</lit>");
-        break;
-      case kMacroParam:
-        display(port, String("<lit type='mparm'>") + tokstr + "</lit>");
-        break;
-      case kKeyword:
-        display(port, String("<lit type='keyw'>") + tokstr + "</lit>");
         break;
       case kBool:
         display(port, String("<lit type='bool'>") + tokstr + "</lit>");
@@ -290,20 +205,20 @@ namespace heather
       }
     }
 
+
     virtual String toString() const
     {
       switch (fType) {
-      case kString:     return String("\"") + fStrValue + "\"";
-      case kKeyarg:     return fStrValue + ":";
-      case kMacroParam: return String("?") + fStrValue;
-      case kKeyword:    return String("#") + fStrValue;
-      case kBool:       return fBoolValue ? String("true") : String("false");
-      case kInteger:    return ( !fIsImaginary 
-                                 ? fromInt(fIntValue) 
-                                 : (fromInt(fIntValue) + "i") );
-      case kReal:       return ( !fIsImaginary 
-                                 ? fromDouble(fDoubleValue)
-                                 : (fromDouble(fDoubleValue) + "i") );
+      case kBool:
+        return fBoolValue ? String("true") : String("false");
+      case kInteger:
+        return ( !fIsImaginary
+                 ? fromInt(fIntValue)
+                 : (fromInt(fIntValue) + "i") );
+      case kReal:
+        return ( !fIsImaginary
+                 ? fromDouble(fDoubleValue)
+                 : (fromDouble(fDoubleValue) + "i") );
       case kRational:
       {
         char buffer[128];
@@ -324,12 +239,11 @@ namespace heather
       default:
         assert(0);
       }
-    }      
+    }
 
 
     //-------- data members
     TokenType fType;
-    String    fStrValue;
     bool      fBoolValue;
     int       fIntValue;
     Rational  fRationalValue;
@@ -340,16 +254,61 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class StringTokenImpl : public TokenImpl
+  {
+  public:
+    StringTokenImpl(TokenType type, const String& value)
+      : fType(type),
+        fStrValue(value)
+      { }
+
+    virtual bool operator==(const Token& other) const
+    {
+      return ( fType == other.tokenType() &&
+               fStrValue == other.stringLitValue() );
+    }
+
+
+    virtual void toPort(Port<Octet>* port) const
+    {
+      String tokstr = xmlEncode(toString());
+
+      switch (fType) {
+      case kString:
+        display(port, String("<lit type='str'>") + xmlEncode(fStrValue) + "</lit>");
+        break;
+      case kKeyword:
+        display(port, String("<lit type='keyw'>") + tokstr + "</lit>");
+        break;
+      default:
+        assert(0);
+      }
+    }
+
+    virtual String toString() const
+    {
+      switch (fType) {
+      case kString:     return String("\"") + fStrValue + "\"";
+      case kKeyword:    return String("#") + fStrValue;
+      default:
+        assert(0);
+      }
+    }
+
+
+    //-------- data members
+    TokenType fType;
+    String    fStrValue;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class SeqTokenImpl : public TokenImpl
   {
   public:
     SeqTokenImpl()
     { }
-
-    virtual PexprType type() const
-    {
-      return kSeq;
-    }
 
     virtual bool operator==(const Token& other) const
     {
@@ -412,11 +371,6 @@ namespace heather
         fRight(right)
     { }
 
-    virtual PexprType type() const
-    {
-      return kNested;
-    }
-
 
     virtual bool operator==(const Token& other) const
     {
@@ -471,80 +425,100 @@ namespace heather
 using namespace heather;
 
 Token::Token()
-  : fImpl(new SeqTokenImpl)
+  : fType(kSeqExpr),
+    fImpl(new SeqTokenImpl)
 { }
 
 
 Token::Token(TokenType left, TokenType right)
-  : fImpl(new NestedTokenImpl(left, right))
+  : fType(kNestedExpr),
+    fImpl(new NestedTokenImpl(left, right))
 { }
 
 
-Token::Token(TokenType type)
-  : fImpl(new PunctTokenImpl(type))
-{ }
+Token::Token(TokenType ttype)
+  : fType(ttype)
+{
+  assert(type() == kPunct);
+}
 
 
 Token::Token(const String& str)
-  : fImpl(new IdTokenImpl(str))
+  : fType(kSymbol),
+    fImpl(new IdTokenImpl(str))
 { }
 
 
 Token::Token(const char* str)
-  : fImpl(new IdTokenImpl(String(str)))
+  : fType(kSymbol),
+    fImpl(new IdTokenImpl(String(str)))
 { }
 
 
-Token::Token(TokenType type, const String& str)
+Token::Token(TokenType ttype, const String& str)
+  : fType(ttype)
 {
-  if (type == kSymbol)
+  if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam)
     fImpl = new IdTokenImpl(str);
   else
-    fImpl = new LitTokenImpl(type, str);
+    fImpl = new StringTokenImpl(ttype, str);
+  assert(type() == kId || type() == kLit);
 }
 
 
-Token::Token(TokenType type, const char* str)
+Token::Token(TokenType ttype, const char* str)
+  : fType(ttype)
 {
-  if (type == kSymbol)
+  if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam)
     fImpl = new IdTokenImpl(String(str));
   else
-    fImpl = new LitTokenImpl(type, String(str));
+    fImpl = new StringTokenImpl(ttype, String(str));
+  assert(type() == kId || type() == kLit);
 }
 
 
-Token::Token(TokenType type, int value)
-  : fImpl(new LitTokenImpl(type, value))
+Token::Token(TokenType ttype, int value)
+  : fType(ttype),
+    fImpl(new NumberTokenImpl(ttype, value))
 {
+  assert(type() == kLit);
 }
 
 
-Token::Token(TokenType type, double value)
-  : fImpl(new LitTokenImpl(type, value))
+Token::Token(TokenType ttype, double value)
+  : fType(ttype),
+    fImpl(new NumberTokenImpl(ttype, value))
 {
+  assert(type() == kLit);
 }
 
 
-Token::Token(TokenType type, Rational value)
-  : fImpl(new LitTokenImpl(type, value))
+Token::Token(TokenType ttype, Rational value)
+  : fType(ttype),
+    fImpl(new NumberTokenImpl(ttype, value))
 {
+  assert(type() == kLit);
 }
 
 
-Token::Token(TokenType type, bool value)
-  : fImpl(new LitTokenImpl(type, value))
+Token::Token(TokenType ttype, bool value)
+  : fType(ttype),
+    fImpl(new NumberTokenImpl(ttype, value))
 {
+  assert(type() == kLit);
 }
 
 
 Token::Token(const Token& other)
-  : fImpl(other.fImpl)
+  : fType(other.fType),
+    fImpl(other.fImpl)
 { }
 
 
 Token&
 Token::operator=(const Token& other)
 {
+  fType = other.fType;
   fImpl = other.fImpl;
   return *this;
 }
@@ -553,10 +527,12 @@ Token::operator=(const Token& other)
 bool
 Token::operator==(const Token& other) const
 {
-  if (fImpl == other.fImpl)
-    return true;
-  return ( type() == other.type() &&
-           (*fImpl.obj()) == other);
+  if (fType == other.fType) {
+    if (fImpl == other.fImpl)
+      return true;
+    return (*fImpl.obj()) == other;
+  }
+  return false;
 }
 
 
@@ -570,14 +546,7 @@ Token::operator!=(const Token& other) const
 TokenType
 Token::tokenType() const
 {
-  switch (fImpl->type()) {
-  case kSeq:    return kSeqToken;
-  case kNested: return kNestedToken;
-  case kId:     return kSymbol;
-  case kLit:    return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fType;
-  case kPunct:  return dynamic_cast<const PunctTokenImpl*>(fImpl.obj())->fType;
-  }
-  return kInvalid;
+  return fType;
 }
 
 
@@ -585,22 +554,121 @@ Token::tokenType() const
 String
 Token::toString() const
 {
-  return fImpl->toString();
+  switch (type()) {
+  case kSeq:
+  case kNested:
+  case kLit:
+    assert(fImpl != NULL);
+    return fImpl->toString();
+
+  case kId:
+    switch (fType) {
+    case kSymbol:
+      return fImpl->toString();
+    case kMacroParam:
+      return String("?") + dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr;
+    case kKeyarg:
+      return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + ":";
+    default:
+      assert(0);
+    }
+
+  case kPunct:
+    return tokenTypeToString(fType);
+  }
+
+  return String("??");
 }
 
 
-PexprType
+ExprType
 Token::type() const
 {
-  assert(fImpl != NULL);
-  return fImpl->type();
+  switch (fType) {
+  case kSeqExpr:                // kSeqExpr
+    return kSeq;
+  case kNestedExpr:             // kNestedExpr
+    return kNested;
+
+  case kPlus:                   // kPunctExpr
+  case kMinus:
+  case kDivide:
+  case kMultiply:
+  case kExponent:
+  case kFold:
+  case kCompare:
+  case kEqual:
+  case kUnequal:
+  case kLess:
+  case kLessEqual:
+  case kGreater:
+  case kGreaterEqual:
+  case kAssign:
+  case kMapTo:
+  case kIn:
+  case kMod:
+  case kIsa:
+  case kAs:
+  case kBy:
+  case kLogicalAnd:
+  case kLogicalOr:
+  case kBitAnd:
+  case kBitOr:
+  case kBitXor:
+  case kShiftLeft:
+  case kShiftRight:
+  case kAppend:
+  case kParanOpen:
+  case kParanClose:
+  case kBracketOpen:
+  case kBracketClose:
+  case kBraceOpen:
+  case kBraceClose:
+  case kGenericOpen:
+  case kGenericClose:
+  case kComma:
+  case kSemicolon:
+  case kColon:
+  case kAt:
+  case kAmpersand:
+  case kPipe:
+  case kBackQuote:
+  case kQuote:
+  case kEllipsis:
+  case kRange:
+  case kDot:
+  case kLiteralVectorOpen:
+  case kLiteralArrayOpen:
+  case kSangHash:
+  case kEOF:
+  case kInvalid:
+    return kPunct;
+
+  case kString:                 // kLitExpr
+  case kChar:
+  case kBool:
+  case kInteger:
+  case kReal:
+  case kRational:
+  case kKeyword:
+    return kLit;
+
+  case kSymbol:                 // kIdExpr
+  case kKeyarg:
+  case kMacroParam:
+    return kId;
+
+  default:
+    fprintf(stderr, "Type: %d\n", fType);
+    assert(0);
+  }
 }
 
 
 bool
 Token::isEmpty() const
 {
-  switch (fImpl->type()) {
+  switch (type()) {
   case kSeq:
   case kNested:
     return children().empty();
@@ -613,34 +681,41 @@ Token::isEmpty() const
 bool
 Token::isSeq() const
 {
-  return fImpl != NULL && fImpl->type() == kSeq;
+  return fType == kSeqExpr && fImpl != NULL;
 }
 
 
 bool
 Token::isNested() const
 {
-  return fImpl != NULL && fImpl->type() == kNested;
+  return fType == kNestedExpr && fImpl != NULL;
 }
 
 bool
 Token::isLit() const
 {
-  return fImpl != NULL && fImpl->type() == kLit;
+  return type() == kLit && fImpl != NULL;
 }
 
 
 bool
 Token::isId() const
 {
-  return fImpl != NULL && fImpl->type() == kId;
+  return type() == kId && fImpl != NULL;
+}
+
+
+bool
+Token::isSymbol() const
+{
+  return fType == kSymbol;
 }
 
 
 bool
 Token::isPunct() const
 {
-  return fImpl != NULL && fImpl->type() == kPunct;
+  return type() == kPunct;
 }
 
 
@@ -654,9 +729,10 @@ Token::isSet() const
 const TokenVector&
 Token::children() const
 {
-  switch (fImpl->type()) {
+  switch (type()) {
   case kSeq:
   case kNested:
+    assert(fImpl != NULL);
     return dynamic_cast<const SeqTokenImpl*>(fImpl.obj())->fChildren;
 
   default:
@@ -668,9 +744,10 @@ Token::children() const
 TokenVector&
 Token::children()
 {
-  switch (fImpl->type()) {
+  switch (type()) {
   case kSeq:
   case kNested:
+    assert(fImpl != NULL);
     unshare();
     return dynamic_cast<SeqTokenImpl*>(fImpl.obj())->fChildren;
 
@@ -692,11 +769,10 @@ Token::unshare()
 void
 Token::addExpr(const Token& expr)
 {
-  if (fImpl->type() != kSeq && fImpl->type() != kNested)
+  if (type() != kSeq && type() != kNested)
     throw NotSupportedException(__FUNCTION__);
 
   unshare();
-
   dynamic_cast<SeqTokenImpl*>(fImpl.obj())->fChildren.push_back(expr);
 }
 
@@ -712,7 +788,7 @@ Token::operator<<(const Token& expr)
 Token&
 Token::operator<<(const TokenVector& exprs)
 {
-  if (fImpl->type() != kSeq && fImpl->type() != kNested)
+  if (type() != kSeq && type() != kNested)
     throw NotSupportedException(__FUNCTION__);
 
   unshare();
@@ -756,7 +832,7 @@ Token::punctValue() const
 {
   if (type() != kPunct)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const PunctTokenImpl*>(fImpl.obj())->fType;
+  return fType;
 }
 
 
@@ -772,54 +848,54 @@ Token::idValue() const
 bool
 Token::boolLitValue() const
 {
-  if (tokenType() != kBool)
+  if (fType != kBool)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fBoolValue;
+  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fBoolValue;
 }
 
 
 int
 Token::intLitValue() const
 {
-  if (tokenType() != kInteger)
+  if (fType != kInteger)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fIntValue;
+  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIntValue;
 }
 
 
 double
 Token::realLitValue() const
 {
-  if (tokenType() != kReal)
+  if (fType != kReal)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fDoubleValue;
+  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fDoubleValue;
 }
 
 
 Rational
 Token::rationalLitValue() const
 {
-  if (tokenType() != kRational)
+  if (fType != kRational)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fRationalValue;
+  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fRationalValue;
 }
 
 
 bool
 Token::isLitImaginary() const
 {
-  if (type() != kLit)
+  if (type() != kLit && fType != kString && fType != kKeyword)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fIsImaginary;
+  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIsImaginary;
 }
 
 
 Token&
 Token::setIsImaginary(bool value)
 {
-  if (type() != kLit)
+  if (type() != kLit && fType != kString && fType != kKeyword)
     throw NotSupportedException(__FUNCTION__);
-  dynamic_cast<LitTokenImpl*>(fImpl.obj())->fIsImaginary = value;
+  dynamic_cast<NumberTokenImpl*>(fImpl.obj())->fIsImaginary = value;
   return *this;
 }
 
@@ -827,34 +903,25 @@ Token::setIsImaginary(bool value)
 String
 Token::stringLitValue() const
 {
-  if (tokenType() != kString)
+  if (fType != kString && fType != kKeyword)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fStrValue;
-}
-
-
-String
-Token::keywLitValue() const
-{
-  if (tokenType() != kKeyword)
-    throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fStrValue;
+  return dynamic_cast<const StringTokenImpl*>(fImpl.obj())->fStrValue;
 }
 
 
 Char
 Token::charLitValue() const
 {
-  if (tokenType() != kChar)
+  if (fType != kChar)
     throw NotSupportedException(__FUNCTION__);
-  return Char(dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fIntValue);
+  return Char(dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIntValue);
 }
 
 
 TokenType
 Token::leftToken() const
 {
-  if (type() != kNested)
+  if (fType != kNestedExpr)
     throw NotSupportedException(__FUNCTION__);
   return dynamic_cast<const NestedTokenImpl*>(fImpl.obj())->fLeft;
 }
@@ -863,7 +930,7 @@ Token::leftToken() const
 TokenType
 Token::rightToken() const
 {
-  if (type() != kNested)
+  if (fType != kNestedExpr)
     throw NotSupportedException(__FUNCTION__);
   return dynamic_cast<const NestedTokenImpl*>(fImpl.obj())->fRight;
 }
@@ -896,49 +963,49 @@ Token::binarySeqOperator() const
 bool
 Token::isStringLit() const
 {
-  return isLit() && tokenType() == kString;
+  return fType == kString;
 }
 
 
 bool
 Token::isBoolLit() const
 {
-  return isLit() && tokenType() == kBool;
+  return fType == kBool;
 }
 
 
 bool
 Token::isIntLit() const
 {
-  return isLit() && tokenType() == kInteger;
+  return fType == kInteger;
 }
 
 
 bool
 Token::isRealLit() const
 {
-  return isLit() && tokenType() == kReal;
+  return fType == kReal;
 }
 
 
 bool
 Token::isRationalLit() const
 {
-  return isLit() && tokenType() == kRational;
+  return fType == kRational;
 }
 
 
 bool
 Token::isCharLit() const
 {
-  return isLit() && tokenType() == kChar;
+  return fType == kChar;
 }
 
 
 bool
 Token::isKeyArgLit() const
 {
-  return (isId() && 
+  return (isId() &&
           idValue().length() > 1 &&
           idValue()[idValue().length() - 1] == ':');
 }
@@ -970,7 +1037,33 @@ Token::isId(const String& sym) const
 void
 Token::toPort(Port<Octet>* port) const
 {
-  fImpl->toPort(port);
+  switch (type()) {
+  case kSeq:
+  case kNested:
+  case kLit:
+    assert(fImpl != NULL);
+    fImpl->toPort(port);
+    break;
+  case kId:
+    switch (fType) {
+    case kSymbol:
+      return fImpl->toPort(port);
+    case kMacroParam:
+      display(port, String("<lit type='mparm'>") +
+              dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</lit>");
+      break;
+    case kKeyarg:
+      display(port, String("<lit type='keyarg'>") +
+              dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</lit>");
+      break;
+    default:
+      assert(0);
+    }
+  case kPunct:
+    display(port, ( String("<punct type='") +
+                    xmlEncode(tokenTypeToString(fType)) + "'/>") );
+    break;
+  }
 }
 
 
@@ -1050,7 +1143,7 @@ public:
     TEST_COPYCTOR2(kRational, Rational(1, 127), rationalLitValue);
     TEST_COPYCTOR2(kString, String("abc"), stringLitValue);
 #undef TEST_COPYCTOR2
-    
+
     {
       Token t(Token(kReal, 12.345).setIsImaginary(true));
       assert(t.tokenType() == kReal &&
