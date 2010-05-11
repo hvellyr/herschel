@@ -17,7 +17,9 @@ testtemp_dir = $(BUILDDIR)/temp
 $(testtemp_dir): 
 	@if [ ! -d "$@" ]; then mkdir $@; fi
 
-syntax-tests: pass1-tests pass2-tests
+syntax-tests: pass1-tests
+
+# pass2-tests
 
 pass1-tests: $(testtemp_dir)
 	for testf in syntax/*.hea; do \

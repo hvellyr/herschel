@@ -32,7 +32,6 @@ Documentation
 
 Bootstrap compiler
 
-  implement toString in pexpr
   rename Pexpr back to Token
   review tokenType() == kSymbol vs. isId()
 

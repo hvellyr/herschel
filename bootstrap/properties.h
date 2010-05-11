@@ -14,7 +14,7 @@
 
 namespace heather
 {
-  class Pexpr;
+  class Token;
   class String;
 
   class Properties

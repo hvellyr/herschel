@@ -24,9 +24,9 @@ SecondPass::SecondPass(Parser* parser)
 
 
 void
-SecondPass::parseTopExprlist(AptNode* rootNode, const Pexpr& expr)
+SecondPass::parseTopExprlist(AptNode* rootNode, const Token& expr)
 {
-  for (PexprVector::const_iterator it = expr.children().begin();
+  for (TokenVector::const_iterator it = expr.children().begin();
        it != expr.children().end();
        it++)
   {
@@ -42,7 +42,7 @@ SecondPass::parseTopExprlist(AptNode* rootNode, const Pexpr& expr)
 
 
 AptNode*
-SecondPass::parseModule(const Pexpr& expr, bool isModule)
+SecondPass::parseModule(const Token& expr, bool isModule)
 {
   assert(expr.isSeq() && expr.count() >= 2);
   assert(expr[0].isId("module") || expr[0].isId("interface"));
@@ -76,7 +76,7 @@ SecondPass::parseModule(const Pexpr& expr, bool isModule)
 
 
 AptNode*
-SecondPass::parseExport(const Pexpr& expr)
+SecondPass::parseExport(const Token& expr)
 {
   assert(expr.isSeq() && expr.count() >= 2);
   assert(expr[0].isId("export"));
@@ -89,7 +89,7 @@ SecondPass::parseExport(const Pexpr& expr)
   }
 
   StringList symbols;
-  Pexpr symbolExprs = expr[expr.count() - 1];
+  Token symbolExprs = expr[expr.count() - 1];
   for (int j = 0; j < symbolExprs.count(); j++) {
     assert(symbolExprs[j].isId());
     symbols.push_back(symbolExprs[j].idValue());
@@ -100,7 +100,7 @@ SecondPass::parseExport(const Pexpr& expr)
 
 
 AptNode*
-SecondPass::parseImport(const Pexpr& expr)
+SecondPass::parseImport(const Token& expr)
 {
   assert(expr.isSeq() && expr.count() >= 2);
   assert(expr[0].isId("import"));
@@ -112,9 +112,9 @@ SecondPass::parseImport(const Pexpr& expr)
   if (expr.count() >= 3) {
     assert(expr[2].isNested() && expr[2].leftToken() == kParanOpen);
 
-    Pexpr renExprs = expr[2];
+    Token renExprs = expr[2];
     for (int i = 0; i < renExprs.count(); i++) {
-      Pexpr renExpr = renExprs[i];
+      Token renExpr = renExprs[i];
       assert(renExpr.isBinarySeq(kMapTo));
       assert(renExpr[0].isId());
       assert(renExpr[2].isId());
@@ -129,13 +129,13 @@ SecondPass::parseImport(const Pexpr& expr)
 
 
 AptNode*
-SecondPass::parseSeq(const Pexpr& expr)
+SecondPass::parseSeq(const Token& expr)
 {
   assert(expr.isSeq());
   if (expr.isEmpty())
     return NULL;
 
-  Pexpr first = expr[0];
+  Token first = expr[0];
   if (first.isId(String("module")))
     return parseModule(expr, true);
   else if (first.isId(String("interface")))
@@ -151,7 +151,7 @@ SecondPass::parseSeq(const Pexpr& expr)
 
 
 AptNode*
-SecondPass::parseExpr(const Pexpr& expr)
+SecondPass::parseExpr(const Token& expr)
 {
   switch (expr.type()) {
   case kId:                     // TODO
@@ -171,7 +171,7 @@ SecondPass::parseExpr(const Pexpr& expr)
 
 
 AptNode*
-SecondPass::parse(const Pexpr& exprs)
+SecondPass::parse(const Token& exprs)
 {
   assert(exprs.isSeq());
 

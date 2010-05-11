@@ -24,72 +24,72 @@ namespace heather
   class FirstPass
   {
   public:
-    FirstPass(Parser* parser, const Pexpr& currentToken);
+    FirstPass(Parser* parser, const Token& currentToken);
 
-    Pexpr nextToken();
+    Token nextToken();
 
     //! first pass parse
-    Pexpr parse();
+    Token parse();
 
-    Pexpr parseTop();
-    Pexpr parseModule(bool isModule);
-    Pexpr parseExport();
-    Pexpr parseImport();
-    Pexpr parseDef(bool isLocal);
-    Pexpr parseCharDef();
-    Pexpr parseVarDef(VardefFlags flags, bool isLocal);
-    Pexpr parseVarDef2(const String& symbolName, VardefFlags flags,
+    Token parseTop();
+    Token parseModule(bool isModule);
+    Token parseExport();
+    Token parseImport();
+    Token parseDef(bool isLocal);
+    Token parseCharDef();
+    Token parseVarDef(VardefFlags flags, bool isLocal);
+    Token parseVarDef2(const String& symbolName, VardefFlags flags,
                        bool isLocal);
-    Pexpr parseFunctionDef(const String& sym, bool isGeneric, bool isLocal);
-    Pexpr parseFunctionOrVarDef(bool isLocal);
+    Token parseFunctionDef(const String& sym, bool isGeneric, bool isLocal);
+    Token parseFunctionOrVarDef(bool isLocal);
 
-    Pexpr parseExpr();
-    Pexpr parseAtomicExpr();
-    Pexpr parseExprRec(const Pexpr& expr1, OperatorType op1);
+    Token parseExpr();
+    Token parseAtomicExpr();
+    Token parseExprRec(const Token& expr1, OperatorType op1);
 
-    Pexpr parseTypeSpec();
-    Pexpr parseLiteralVector();
-    Pexpr parseLiteralArray();
+    Token parseTypeSpec();
+    Token parseLiteralVector();
+    Token parseLiteralArray();
 
-    Pexpr parseIf();
-    Pexpr parseOn();
+    Token parseIf();
+    Token parseOn();
 
-    Pexpr parseGroup();
-    Pexpr parseBlock();
-    Pexpr parseAnonFun();
+    Token parseGroup();
+    Token parseBlock();
+    Token parseAnonFun();
 
-    Pexpr parseAccess(const Pexpr& expr);
-    Pexpr parseSlice(const Pexpr& expr);
+    Token parseAccess(const Token& expr);
+    Token parseSlice(const Token& expr);
 
-    Pexpr parseParamCall(const Pexpr& expr,
-                         const PexprVector& preScannedArgs,
+    Token parseParamCall(const Token& expr,
+                         const TokenVector& preScannedArgs,
                          bool parseParams);
-    Pexpr parseFunctionCall(const Pexpr& expr,
-                            const PexprVector& preScannedArgs,
+    Token parseFunctionCall(const Token& expr,
+                            const TokenVector& preScannedArgs,
                             bool parseParams);
-    void parseFuncallParams(PexprVector* params);
+    void parseFuncallParams(TokenVector* params);
 
-    Pexpr makeBinaryPexpr(const Pexpr& expr1, OperatorType op1,
-                          const Pexpr& expr2) const;
-    Pexpr makeAssignPexpr(const Pexpr& expr1, const Pexpr& expr2) const;
+    Token makeBinaryToken(const Token& expr1, OperatorType op1,
+                          const Token& expr2) const;
+    Token makeAssignToken(const Token& expr1, const Token& expr2) const;
 
     bool isRightOperator(OperatorType op1) const;
     bool isOpWeightAbove(OperatorType op1, OperatorType op2) const;
     int weightOperator(OperatorType op1) const;
 
-    void parseExprListUntilBrace(PexprVector* exprlist);
-    void parseTopExprUntilBrace(PexprVector* result);
-    Pexpr parseTopOrExprList(bool isTopLevel);
+    void parseExprListUntilBrace(TokenVector* exprlist);
+    void parseTopExprUntilBrace(TokenVector* result);
+    Token parseTopOrExprList(bool isTopLevel);
 
-    void parseFunctionsParams(PexprVector* exprlist);
+    void parseFunctionsParams(TokenVector* exprlist);
 
-    Pexpr parseWhen(bool isTopLevel);
+    Token parseWhen(bool isTopLevel);
 
-    Pexpr evaluateConfigExpr(const Pexpr& initExpr);
+    Token evaluateConfigExpr(const Token& initExpr);
 
   private:
     Ptr<Parser> fParser;
-    Pexpr       fToken;
+    Token       fToken;
     bool        fEvaluateExprs;
   };
 };

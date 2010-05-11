@@ -26,18 +26,18 @@ namespace heather
   public:
     SecondPass(Parser* parser);
 
-    AptNode* parse(const Pexpr& exprs);
+    AptNode* parse(const Token& exprs);
 
   private:
-    AptNode* parseExpr(const Pexpr& expr);
-    AptNode* parseSeq(const Pexpr& expr);
+    AptNode* parseExpr(const Token& expr);
+    AptNode* parseSeq(const Token& expr);
 
-    AptNode* parseModule(const Pexpr& expr, bool isModule);
-    AptNode* parseExport(const Pexpr& expr);
-    AptNode* parseImport(const Pexpr& expr);
+    AptNode* parseModule(const Token& expr, bool isModule);
+    AptNode* parseExport(const Token& expr);
+    AptNode* parseImport(const Token& expr);
 
 
-    void parseTopExprlist(AptNode* rootNode, const Pexpr& expr);
+    void parseTopExprlist(AptNode* rootNode, const Token& expr);
 
     //-------- data member
     Ptr<Parser> fParser;

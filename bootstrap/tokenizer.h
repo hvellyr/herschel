@@ -53,12 +53,12 @@ namespace heather
 
     bool isEof() const;
 
-    Pexpr nextToken();
-    Pexpr nextTokenImpl();
+    Token nextToken();
+    Token nextTokenImpl();
 
   private:
     void readCommentLine();
-    Pexpr readIdentifier(const String& prefix, TokenType type,
+    Token readIdentifier(const String& prefix, TokenType type,
                          bool acceptGenerics);
 
     bool isEOL(Char c) const;
@@ -75,16 +75,16 @@ namespace heather
       throw (NotationException);
 
     int nextChar();
-    Pexpr makeTokenAndNext(TokenType type);
+    Token makeTokenAndNext(TokenType type);
 
-    Pexpr readSymbolOrOperator(bool acceptGenerics);
-    Pexpr readNumber(int sign);
-    Pexpr readCharacter(bool needsTerminator);
-    Pexpr readString();
-    Pexpr readNamedCharacter(bool needsTerminator);
-    Pexpr readNumericCharacter(bool needsTerminator);
-    Pexpr readSymbolCharacter(bool needsTerminator);
-    Pexpr translateChar(const String& charnm);
+    Token readSymbolOrOperator(bool acceptGenerics);
+    Token readNumber(int sign);
+    Token readCharacter(bool needsTerminator);
+    Token readString();
+    Token readNamedCharacter(bool needsTerminator);
+    Token readNumericCharacter(bool needsTerminator);
+    Token readSymbolCharacter(bool needsTerminator);
+    Token translateChar(const String& charnm);
     Char mapCharNameToChar(const String& charnm);
     String readIntNumberPart(bool acceptHex);
 

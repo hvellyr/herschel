@@ -35,19 +35,19 @@ namespace heather
   class UnexpectedTokenException : public SyntaxException
   {
   public:
-    UnexpectedTokenException(const Pexpr& t)
+    UnexpectedTokenException(const Token& t)
       : SyntaxException(String("Unexpected token: ") + t)
     { }
 
-    UnexpectedTokenException(const Pexpr& t, const String& msg)
+    UnexpectedTokenException(const Token& t, const String& msg)
       : SyntaxException(String("Unexpected token: ") + t + " " + msg)
     { }
 
-    UnexpectedTokenException(const Pexpr& t, const char* msg)
+    UnexpectedTokenException(const Token& t, const char* msg)
       : SyntaxException(String("Unexpected token: ") + t + " " + msg)
     { }
 
-    UnexpectedTokenException(const Pexpr& t, const Pexpr& expected)
+    UnexpectedTokenException(const Token& t, const Token& expected)
       : SyntaxException(String("Unexpected token: ") + t + " expected: " + expected)
     { }
   };
@@ -92,13 +92,13 @@ namespace heather
     friend class FirstPass;
     friend class SecondPass;
 
-    Pexpr nextToken();
+    Token nextToken();
 
     //-------- data members
 
     Ptr<Parser>    fParent;
     Ptr<TokenPort> fPort;
-    Pexpr          fToken;
+    Token          fToken;
 
     Ptr<CharRegistry> fCharRegistry;
     Ptr<ConfigVarRegistry> fConfigVarRegistry;

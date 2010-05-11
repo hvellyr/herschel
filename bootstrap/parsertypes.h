@@ -15,18 +15,18 @@
 
 namespace heather
 {
-  class Pexpr;
+  class Token;
 
 
   //--------------------------------------------------------------------------
 
-  class ConfigVarRegistry : public Registry<Pexpr>
+  class ConfigVarRegistry : public Registry<Token>
   {
   public:
     ConfigVarRegistry();
     ConfigVarRegistry(ConfigVarRegistry* parent);
 
-    virtual bool lookup(const String& name, Pexpr* out) const;
+    virtual bool lookup(const String& name, Token* out) const;
 
   private:
     Ptr<ConfigVarRegistry> fParent;

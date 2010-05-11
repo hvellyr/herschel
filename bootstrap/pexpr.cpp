@@ -77,10 +77,10 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class PunctPexprImpl : public PexprImpl
+  class PunctTokenImpl : public TokenImpl
   {
   public:
-    PunctPexprImpl(TokenType type)
+    PunctTokenImpl(TokenType type)
       : fType(type)
     { }
 
@@ -91,7 +91,7 @@ namespace heather
     }
 
 
-    virtual bool operator==(const Pexpr& other) const
+    virtual bool operator==(const Token& other) const
     {
       return fType == other.punctValue();
     }
@@ -115,10 +115,10 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class IdPexprImpl : public PexprImpl
+  class IdTokenImpl : public TokenImpl
   {
   public:
-    IdPexprImpl(const String& str)
+    IdTokenImpl(const String& str)
       : fStr(str)
     { }
 
@@ -129,7 +129,7 @@ namespace heather
     }
 
 
-    virtual bool operator==(const Pexpr& other) const
+    virtual bool operator==(const Token& other) const
     {
       return fStr == other.idValue();
     }
@@ -154,10 +154,10 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class LitPexprImpl : public PexprImpl
+  class LitTokenImpl : public TokenImpl
   {
   public:
-    LitPexprImpl(TokenType type, const String& value)
+    LitTokenImpl(TokenType type, const String& value)
       : fType(type),
         fStrValue(value),
         fBoolValue(false),
@@ -166,7 +166,7 @@ namespace heather
         fIsImaginary(false)
       { }
 
-    LitPexprImpl(TokenType type, const char* value)
+    LitTokenImpl(TokenType type, const char* value)
       : fType(type),
         fStrValue(String(value)),
         fBoolValue(false),
@@ -175,7 +175,7 @@ namespace heather
         fIsImaginary(false)
       { }
 
-    LitPexprImpl(TokenType type, int value)
+    LitTokenImpl(TokenType type, int value)
       : fType(type),
         fBoolValue(false),
         fIntValue(value),
@@ -186,7 +186,7 @@ namespace heather
       }
 
 
-    LitPexprImpl(TokenType type, bool value)
+    LitTokenImpl(TokenType type, bool value)
       : fType(type),
         fBoolValue(value),
         fIntValue(0),
@@ -196,7 +196,7 @@ namespace heather
         assert(type == kBool);
       }
 
-    LitPexprImpl(TokenType type, double value)
+    LitTokenImpl(TokenType type, double value)
       : fType(type),
         fBoolValue(false),
         fIntValue(0),
@@ -204,7 +204,7 @@ namespace heather
         fIsImaginary(false)
       { }
     
-    LitPexprImpl(TokenType type, const Rational& rat)
+    LitTokenImpl(TokenType type, const Rational& rat)
       : fType(type),
         fBoolValue(false),
         fIntValue(0),
@@ -219,7 +219,7 @@ namespace heather
     }
 
 
-    virtual bool operator==(const Pexpr& other) const
+    virtual bool operator==(const Token& other) const
     {
       if (fType == other.tokenType()) {
         switch (fType) {
@@ -340,10 +340,10 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class SeqPexprImpl : public PexprImpl
+  class SeqTokenImpl : public TokenImpl
   {
   public:
-    SeqPexprImpl()
+    SeqTokenImpl()
     { }
 
     virtual PexprType type() const
@@ -351,7 +351,7 @@ namespace heather
       return kSeq;
     }
 
-    virtual bool operator==(const Pexpr& other) const
+    virtual bool operator==(const Token& other) const
     {
       if (fChildren.size() == other.children().size()) {
         for (size_t i = 0; i < fChildren.size(); i++) {
@@ -364,9 +364,9 @@ namespace heather
     }
 
 
-    virtual PexprImpl* unshare()
+    virtual TokenImpl* unshare()
     {
-      Ptr<SeqPexprImpl> copy = new SeqPexprImpl;
+      Ptr<SeqTokenImpl> copy = new SeqTokenImpl;
       copy->fChildren.assign(fChildren.begin(), fChildren.end());
       return copy.release();
     }
@@ -398,16 +398,16 @@ namespace heather
 
 
     //-------- data members
-    PexprVector fChildren;
+    TokenVector fChildren;
   };
 
 
   //--------------------------------------------------------------------------
 
-  class NestedPexprImpl : public SeqPexprImpl
+  class NestedTokenImpl : public SeqTokenImpl
   {
   public:
-    NestedPexprImpl(TokenType left, TokenType right)
+    NestedTokenImpl(TokenType left, TokenType right)
       : fLeft(left),
         fRight(right)
     { }
@@ -418,11 +418,11 @@ namespace heather
     }
 
 
-    virtual bool operator==(const Pexpr& other) const
+    virtual bool operator==(const Token& other) const
     {
       if (fLeft == other.leftToken() &&
           fRight == other.rightToken())
-        return SeqPexprImpl::operator==(other);
+        return SeqTokenImpl::operator==(other);
       return false;
     }
 
@@ -470,80 +470,80 @@ namespace heather
 
 using namespace heather;
 
-Pexpr::Pexpr()
-  : fImpl(new SeqPexprImpl)
+Token::Token()
+  : fImpl(new SeqTokenImpl)
 { }
 
 
-Pexpr::Pexpr(TokenType left, TokenType right)
-  : fImpl(new NestedPexprImpl(left, right))
+Token::Token(TokenType left, TokenType right)
+  : fImpl(new NestedTokenImpl(left, right))
 { }
 
 
-Pexpr::Pexpr(TokenType type)
-  : fImpl(new PunctPexprImpl(type))
+Token::Token(TokenType type)
+  : fImpl(new PunctTokenImpl(type))
 { }
 
 
-Pexpr::Pexpr(const String& str)
-  : fImpl(new IdPexprImpl(str))
+Token::Token(const String& str)
+  : fImpl(new IdTokenImpl(str))
 { }
 
 
-Pexpr::Pexpr(const char* str)
-  : fImpl(new IdPexprImpl(String(str)))
+Token::Token(const char* str)
+  : fImpl(new IdTokenImpl(String(str)))
 { }
 
 
-Pexpr::Pexpr(TokenType type, const String& str)
+Token::Token(TokenType type, const String& str)
 {
   if (type == kSymbol)
-    fImpl = new IdPexprImpl(str);
+    fImpl = new IdTokenImpl(str);
   else
-    fImpl = new LitPexprImpl(type, str);
+    fImpl = new LitTokenImpl(type, str);
 }
 
 
-Pexpr::Pexpr(TokenType type, const char* str)
+Token::Token(TokenType type, const char* str)
 {
   if (type == kSymbol)
-    fImpl = new IdPexprImpl(String(str));
+    fImpl = new IdTokenImpl(String(str));
   else
-    fImpl = new LitPexprImpl(type, String(str));
+    fImpl = new LitTokenImpl(type, String(str));
 }
 
 
-Pexpr::Pexpr(TokenType type, int value)
-  : fImpl(new LitPexprImpl(type, value))
+Token::Token(TokenType type, int value)
+  : fImpl(new LitTokenImpl(type, value))
 {
 }
 
 
-Pexpr::Pexpr(TokenType type, double value)
-  : fImpl(new LitPexprImpl(type, value))
+Token::Token(TokenType type, double value)
+  : fImpl(new LitTokenImpl(type, value))
 {
 }
 
 
-Pexpr::Pexpr(TokenType type, Rational value)
-  : fImpl(new LitPexprImpl(type, value))
+Token::Token(TokenType type, Rational value)
+  : fImpl(new LitTokenImpl(type, value))
 {
 }
 
 
-Pexpr::Pexpr(TokenType type, bool value)
-  : fImpl(new LitPexprImpl(type, value))
+Token::Token(TokenType type, bool value)
+  : fImpl(new LitTokenImpl(type, value))
 {
 }
 
 
-Pexpr::Pexpr(const Pexpr& other)
+Token::Token(const Token& other)
   : fImpl(other.fImpl)
 { }
 
 
-Pexpr&
-Pexpr::operator=(const Pexpr& other)
+Token&
+Token::operator=(const Token& other)
 {
   fImpl = other.fImpl;
   return *this;
@@ -551,7 +551,7 @@ Pexpr::operator=(const Pexpr& other)
 
 
 bool
-Pexpr::operator==(const Pexpr& other) const
+Token::operator==(const Token& other) const
 {
   if (fImpl == other.fImpl)
     return true;
@@ -561,21 +561,21 @@ Pexpr::operator==(const Pexpr& other) const
 
 
 bool
-Pexpr::operator!=(const Pexpr& other) const
+Token::operator!=(const Token& other) const
 {
   return !(operator==(other));
 }
 
 
 TokenType
-Pexpr::tokenType() const
+Token::tokenType() const
 {
   switch (fImpl->type()) {
   case kSeq:    return kSeqToken;
   case kNested: return kNestedToken;
   case kId:     return kSymbol;
-  case kLit:    return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fType;
-  case kPunct:  return dynamic_cast<const PunctPexprImpl*>(fImpl.obj())->fType;
+  case kLit:    return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fType;
+  case kPunct:  return dynamic_cast<const PunctTokenImpl*>(fImpl.obj())->fType;
   }
   return kInvalid;
 }
@@ -583,14 +583,14 @@ Pexpr::tokenType() const
 
 
 String
-Pexpr::toString() const
+Token::toString() const
 {
   return fImpl->toString();
 }
 
 
 PexprType
-Pexpr::type() const
+Token::type() const
 {
   assert(fImpl != NULL);
   return fImpl->type();
@@ -598,7 +598,7 @@ Pexpr::type() const
 
 
 bool
-Pexpr::isEmpty() const
+Token::isEmpty() const
 {
   switch (fImpl->type()) {
   case kSeq:
@@ -611,53 +611,53 @@ Pexpr::isEmpty() const
 
 
 bool
-Pexpr::isSeq() const
+Token::isSeq() const
 {
   return fImpl != NULL && fImpl->type() == kSeq;
 }
 
 
 bool
-Pexpr::isNested() const
+Token::isNested() const
 {
   return fImpl != NULL && fImpl->type() == kNested;
 }
 
 bool
-Pexpr::isLit() const
+Token::isLit() const
 {
   return fImpl != NULL && fImpl->type() == kLit;
 }
 
 
 bool
-Pexpr::isId() const
+Token::isId() const
 {
   return fImpl != NULL && fImpl->type() == kId;
 }
 
 
 bool
-Pexpr::isPunct() const
+Token::isPunct() const
 {
   return fImpl != NULL && fImpl->type() == kPunct;
 }
 
 
 bool
-Pexpr::isSet() const
+Token::isSet() const
 {
   return !isSeq() || !isEmpty();
 }
 
 
-const PexprVector&
-Pexpr::children() const
+const TokenVector&
+Token::children() const
 {
   switch (fImpl->type()) {
   case kSeq:
   case kNested:
-    return dynamic_cast<const SeqPexprImpl*>(fImpl.obj())->fChildren;
+    return dynamic_cast<const SeqTokenImpl*>(fImpl.obj())->fChildren;
 
   default:
     throw NotSupportedException(__FUNCTION__);
@@ -665,14 +665,14 @@ Pexpr::children() const
 }
 
 
-PexprVector&
-Pexpr::children()
+TokenVector&
+Token::children()
 {
   switch (fImpl->type()) {
   case kSeq:
   case kNested:
     unshare();
-    return dynamic_cast<SeqPexprImpl*>(fImpl.obj())->fChildren;
+    return dynamic_cast<SeqTokenImpl*>(fImpl.obj())->fChildren;
 
   default:
     throw NotSupportedException(__FUNCTION__);
@@ -681,7 +681,7 @@ Pexpr::children()
 
 
 void
-Pexpr::unshare()
+Token::unshare()
 {
   // Write barrier
   if (fImpl != NULL && fImpl->refCount() > 1)
@@ -690,35 +690,35 @@ Pexpr::unshare()
 
 
 void
-Pexpr::addExpr(const Pexpr& expr)
+Token::addExpr(const Token& expr)
 {
   if (fImpl->type() != kSeq && fImpl->type() != kNested)
     throw NotSupportedException(__FUNCTION__);
 
   unshare();
 
-  dynamic_cast<SeqPexprImpl*>(fImpl.obj())->fChildren.push_back(expr);
+  dynamic_cast<SeqTokenImpl*>(fImpl.obj())->fChildren.push_back(expr);
 }
 
 
-Pexpr&
-Pexpr::operator<<(const Pexpr& expr)
+Token&
+Token::operator<<(const Token& expr)
 {
   addExpr(expr);
   return *this;
 }
 
 
-Pexpr&
-Pexpr::operator<<(const PexprVector& exprs)
+Token&
+Token::operator<<(const TokenVector& exprs)
 {
   if (fImpl->type() != kSeq && fImpl->type() != kNested)
     throw NotSupportedException(__FUNCTION__);
 
   unshare();
 
-  SeqPexprImpl* seq = dynamic_cast<SeqPexprImpl*>(fImpl.obj());
-  for (PexprVector::const_iterator it = exprs.begin();
+  SeqTokenImpl* seq = dynamic_cast<SeqTokenImpl*>(fImpl.obj());
+  for (TokenVector::const_iterator it = exprs.begin();
        it != exprs.end();
        it++)
   {
@@ -729,15 +729,15 @@ Pexpr::operator<<(const PexprVector& exprs)
 }
 
 
-const Pexpr&
-Pexpr::operator[](int idx) const
+const Token&
+Token::operator[](int idx) const
 {
   return children()[idx];
 }
 
 
-Pexpr&
-Pexpr::operator[](int idx)
+Token&
+Token::operator[](int idx)
 {
   unshare();
   return children()[idx];
@@ -745,132 +745,132 @@ Pexpr::operator[](int idx)
 
 
 int
-Pexpr::count() const
+Token::count() const
 {
   return int(children().size());
 }
 
 
 TokenType
-Pexpr::punctValue() const
+Token::punctValue() const
 {
   if (type() != kPunct)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const PunctPexprImpl*>(fImpl.obj())->fType;
+  return dynamic_cast<const PunctTokenImpl*>(fImpl.obj())->fType;
 }
 
 
 String
-Pexpr::idValue() const
+Token::idValue() const
 {
   if (type() != kId)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const IdPexprImpl*>(fImpl.obj())->fStr;
+  return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr;
 }
 
 
 bool
-Pexpr::boolLitValue() const
+Token::boolLitValue() const
 {
   if (tokenType() != kBool)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fBoolValue;
+  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fBoolValue;
 }
 
 
 int
-Pexpr::intLitValue() const
+Token::intLitValue() const
 {
   if (tokenType() != kInteger)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fIntValue;
+  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fIntValue;
 }
 
 
 double
-Pexpr::realLitValue() const
+Token::realLitValue() const
 {
   if (tokenType() != kReal)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fDoubleValue;
+  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fDoubleValue;
 }
 
 
 Rational
-Pexpr::rationalLitValue() const
+Token::rationalLitValue() const
 {
   if (tokenType() != kRational)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fRationalValue;
+  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fRationalValue;
 }
 
 
 bool
-Pexpr::isLitImaginary() const
+Token::isLitImaginary() const
 {
   if (type() != kLit)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fIsImaginary;
+  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fIsImaginary;
 }
 
 
-Pexpr&
-Pexpr::setIsImaginary(bool value)
+Token&
+Token::setIsImaginary(bool value)
 {
   if (type() != kLit)
     throw NotSupportedException(__FUNCTION__);
-  dynamic_cast<LitPexprImpl*>(fImpl.obj())->fIsImaginary = value;
+  dynamic_cast<LitTokenImpl*>(fImpl.obj())->fIsImaginary = value;
   return *this;
 }
 
 
 String
-Pexpr::stringLitValue() const
+Token::stringLitValue() const
 {
   if (tokenType() != kString)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fStrValue;
+  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fStrValue;
 }
 
 
 String
-Pexpr::keywLitValue() const
+Token::keywLitValue() const
 {
   if (tokenType() != kKeyword)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fStrValue;
+  return dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fStrValue;
 }
 
 
 Char
-Pexpr::charLitValue() const
+Token::charLitValue() const
 {
   if (tokenType() != kChar)
     throw NotSupportedException(__FUNCTION__);
-  return Char(dynamic_cast<const LitPexprImpl*>(fImpl.obj())->fIntValue);
+  return Char(dynamic_cast<const LitTokenImpl*>(fImpl.obj())->fIntValue);
 }
 
 
 TokenType
-Pexpr::leftToken() const
+Token::leftToken() const
 {
   if (type() != kNested)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const NestedPexprImpl*>(fImpl.obj())->fLeft;
+  return dynamic_cast<const NestedTokenImpl*>(fImpl.obj())->fLeft;
 }
 
 
 TokenType
-Pexpr::rightToken() const
+Token::rightToken() const
 {
   if (type() != kNested)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const NestedPexprImpl*>(fImpl.obj())->fRight;
+  return dynamic_cast<const NestedTokenImpl*>(fImpl.obj())->fRight;
 }
 
 
 bool
-Pexpr::isBinarySeq(TokenType op) const
+Token::isBinarySeq(TokenType op) const
 {
   return (isSeq() && children().size() == 3 &&
           (*this)[1].isPunct() && (*this)[1].punctValue() == op);
@@ -878,14 +878,14 @@ Pexpr::isBinarySeq(TokenType op) const
 
 
 bool
-Pexpr::isBinarySeq() const
+Token::isBinarySeq() const
 {
   return (isSeq() && children().size() == 3 && (*this)[1].isPunct());
 }
 
 
 OperatorType
-Pexpr::binarySeqOperator() const
+Token::binarySeqOperator() const
 {
   if (isSeq() && children().size() == 3 && (*this)[1].isPunct())
     return tokenTypeToOperator((*this)[1].punctValue());
@@ -894,49 +894,49 @@ Pexpr::binarySeqOperator() const
 
 
 bool
-Pexpr::isStringLit() const
+Token::isStringLit() const
 {
   return isLit() && tokenType() == kString;
 }
 
 
 bool
-Pexpr::isBoolLit() const
+Token::isBoolLit() const
 {
   return isLit() && tokenType() == kBool;
 }
 
 
 bool
-Pexpr::isIntLit() const
+Token::isIntLit() const
 {
   return isLit() && tokenType() == kInteger;
 }
 
 
 bool
-Pexpr::isRealLit() const
+Token::isRealLit() const
 {
   return isLit() && tokenType() == kReal;
 }
 
 
 bool
-Pexpr::isRationalLit() const
+Token::isRationalLit() const
 {
   return isLit() && tokenType() == kRational;
 }
 
 
 bool
-Pexpr::isCharLit() const
+Token::isCharLit() const
 {
   return isLit() && tokenType() == kChar;
 }
 
 
 bool
-Pexpr::isKeyArgLit() const
+Token::isKeyArgLit() const
 {
   return (isId() && 
           idValue().length() > 1 &&
@@ -945,7 +945,7 @@ Pexpr::isKeyArgLit() const
 
 
 bool
-Pexpr::isSymFuncall() const
+Token::isSymFuncall() const
 {
   return isSeq() && count() == 2 &&
     (*this)[0].isId() && (*this)[1].isNested() &&
@@ -954,21 +954,21 @@ Pexpr::isSymFuncall() const
 
 
 bool
-Pexpr::isId(const char* sym) const
+Token::isId(const char* sym) const
 {
   return isId(String(sym));
 }
 
 
 bool
-Pexpr::isId(const String& sym) const
+Token::isId(const String& sym) const
 {
-  return isId() && dynamic_cast<const IdPexprImpl*>(fImpl.obj())->fStr == sym;
+  return isId() && dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr == sym;
 }
 
 
 void
-Pexpr::toPort(Port<Octet>* port) const
+Token::toPort(Port<Octet>* port) const
 {
   fImpl->toPort(port);
 }
@@ -977,7 +977,7 @@ Pexpr::toPort(Port<Octet>* port) const
 //----------------------------------------------------------------------------
 
 String
-heather::operator+(const String& one, const Pexpr& two)
+heather::operator+(const String& one, const Token& two)
 {
   return one + two.toString();
 }
@@ -986,46 +986,46 @@ heather::operator+(const String& one, const Pexpr& two)
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class PexprUnitTest : public UnitTest
+class TokenUnitTest : public UnitTest
 {
 public:
-  PexprUnitTest() : UnitTest("Pexpr") {}
+  TokenUnitTest() : UnitTest("Token") {}
 
   virtual void run()
   {
-    assert(Pexpr(kReal,     3.1415)         == Pexpr(kReal,     3.1415));
-    assert(Pexpr(kInteger,  12345)          == Pexpr(kInteger,  12345));
-    assert(Pexpr(kChar,     0xac00)         == Pexpr(kChar,     0xac00));
-    assert(Pexpr(kString,   "abc")          == Pexpr(kString,   "abc"));
-    assert(Pexpr(kSymbol,   "abc")          == Pexpr(kSymbol,   "abc"));
-    assert(Pexpr(kRational, Rational(7, 4)) == Pexpr(kRational, Rational(7, 4)));
+    assert(Token(kReal,     3.1415)         == Token(kReal,     3.1415));
+    assert(Token(kInteger,  12345)          == Token(kInteger,  12345));
+    assert(Token(kChar,     0xac00)         == Token(kChar,     0xac00));
+    assert(Token(kString,   "abc")          == Token(kString,   "abc"));
+    assert(Token(kSymbol,   "abc")          == Token(kSymbol,   "abc"));
+    assert(Token(kRational, Rational(7, 4)) == Token(kRational, Rational(7, 4)));
 
-    assert(Pexpr() == Pexpr());
-    assert(Pexpr(kParanOpen, kParanClose) == Pexpr(kParanOpen, kParanClose));
-    assert(Pexpr() << Pexpr(kInteger, 25) == Pexpr() << Pexpr(kInteger, 25));
-    assert(( Pexpr(kParanOpen, kParanClose) << Pexpr(kInteger, 25) ) ==
-           ( Pexpr(kParanOpen, kParanClose) << Pexpr(kInteger, 25) ));
+    assert(Token() == Token());
+    assert(Token(kParanOpen, kParanClose) == Token(kParanOpen, kParanClose));
+    assert(Token() << Token(kInteger, 25) == Token() << Token(kInteger, 25));
+    assert(( Token(kParanOpen, kParanClose) << Token(kInteger, 25) ) ==
+           ( Token(kParanOpen, kParanClose) << Token(kInteger, 25) ));
 
-    assert(Pexpr(kReal, 3.1415).realLitValue() == 3.1415);
-    assert(Pexpr(kReal, 1.2345).tokenType() == kReal);
-    assert(Pexpr(kBool, true).boolLitValue() == true);
-    assert(Pexpr(kInteger, 0x10000).intLitValue() == 0x10000);
-    assert(Pexpr(kRational, Rational(23, 27)).rationalLitValue() == Rational(23, 27));
+    assert(Token(kReal, 3.1415).realLitValue() == 3.1415);
+    assert(Token(kReal, 1.2345).tokenType() == kReal);
+    assert(Token(kBool, true).boolLitValue() == true);
+    assert(Token(kInteger, 0x10000).intLitValue() == 0x10000);
+    assert(Token(kRational, Rational(23, 27)).rationalLitValue() == Rational(23, 27));
 
-    // assert(Pexpr(kSymbol, "abc").idValue() == String("abc"));
-    assert(Pexpr(kString, String("abc")).stringLitValue() == String("abc"));
-    // assert(Pexpr(kKeyword, String("abc")).idValue() == String("abc"));
-    // assert(Pexpr(kMacroParam, String("abc")).idValue() == String("abc"));
+    // assert(Token(kSymbol, "abc").idValue() == String("abc"));
+    assert(Token(kString, String("abc")).stringLitValue() == String("abc"));
+    // assert(Token(kKeyword, String("abc")).idValue() == String("abc"));
+    // assert(Token(kMacroParam, String("abc")).idValue() == String("abc"));
 
-    // assert(Pexpr(kSymbol, "abc").idValue() == String("abc"));
-    assert(Pexpr(kString, "abc").stringLitValue() == String("abc"));
-    // assert(Pexpr(kKeyword, "abc").idValue() == String("abc"));
-    // assert(Pexpr(kMacroParam, "abc").idValue() == String("abc"));
-    assert(Pexpr(kSymbol, "abc:").isKeyArgLit());
+    // assert(Token(kSymbol, "abc").idValue() == String("abc"));
+    assert(Token(kString, "abc").stringLitValue() == String("abc"));
+    // assert(Token(kKeyword, "abc").idValue() == String("abc"));
+    // assert(Token(kMacroParam, "abc").idValue() == String("abc"));
+    assert(Token(kSymbol, "abc:").isKeyArgLit());
 
 #define TEST_ASSIGNOP2(_type, _value, _member)          \
     {                                                   \
-      Pexpr t = Pexpr(_type, _value);                   \
+      Token t = Token(_type, _value);                   \
       assert(t.tokenType() == _type &&                  \
              t._member() == _value);                    \
     }
@@ -1039,7 +1039,7 @@ public:
 
 #define TEST_COPYCTOR2(_type, _value, _member)          \
     {                                                   \
-      Pexpr t(Pexpr(_type, _value));                    \
+      Token t(Token(_type, _value));                    \
       assert(t.tokenType() == _type &&                  \
              t._member() == _value);                    \
     }
@@ -1052,14 +1052,14 @@ public:
 #undef TEST_COPYCTOR2
     
     {
-      Pexpr t(Pexpr(kReal, 12.345).setIsImaginary(true));
+      Token t(Token(kReal, 12.345).setIsImaginary(true));
       assert(t.tokenType() == kReal &&
              t.realLitValue() == 12.345 &&
              t.isLitImaginary());
     }
   }
 };
-static PexprUnitTest tokenUnitTest;
+static TokenUnitTest tokenUnitTest;
 
 
 #endif  // #if defined(UNITTESTS)
