@@ -122,6 +122,7 @@ namespace heather
       : fStr(str)
     { }
 
+
     virtual PexprType type() const
     {
       return kId;
@@ -138,6 +139,13 @@ namespace heather
     {
       display(port, String("<id>") + xmlEncode(fStr) + "</id>");
     }
+
+
+    virtual String toString() const
+    {
+      return fStr;
+    }
+
 
     //-------- data members
     String fStr;
@@ -282,6 +290,43 @@ namespace heather
       }
     }
 
+    virtual String toString() const
+    {
+      switch (fType) {
+      case kString:     return String("\"") + fStrValue + "\"";
+      case kKeyarg:     return fStrValue + ":";
+      case kMacroParam: return String("?") + fStrValue;
+      case kKeyword:    return String("#") + fStrValue;
+      case kBool:       return fBoolValue ? String("true") : String("false");
+      case kInteger:    return ( !fIsImaginary 
+                                 ? fromInt(fIntValue) 
+                                 : (fromInt(fIntValue) + "i") );
+      case kReal:       return ( !fIsImaginary 
+                                 ? fromDouble(fDoubleValue)
+                                 : (fromDouble(fDoubleValue) + "i") );
+      case kRational:
+      {
+        char buffer[128];
+        sprintf(buffer, "%d/%d",
+                fRationalValue.numerator(), fRationalValue.denominator());
+        if (fIsImaginary)
+          strcat(buffer, "i");
+        return String(buffer);
+      }
+
+      case kChar:
+      {
+        char buffer[32];
+        sprintf(buffer, "\\u0%x;", fIntValue);
+        return String(buffer);
+      }
+
+      default:
+        assert(0);
+      }
+    }      
+
+
     //-------- data members
     TokenType fType;
     String    fStrValue;
@@ -326,6 +371,7 @@ namespace heather
       return copy.release();
     }
 
+
     virtual void toPort(Port<Octet>* port) const
     {
       display(port, "<seq>");
@@ -333,6 +379,23 @@ namespace heather
         fChildren[i].toPort(port);
       display(port, "</seq>");
     }
+
+
+    virtual String toString() const
+    {
+      String result;
+
+      result = result + "(";
+
+      for (unsigned int i = 0; i < fChildren.size(); i++) {
+        String childstr = fChildren[i].toString();
+        result = result + childstr + " ";
+      }
+      result = result + ")";
+
+      return result;
+    }
+
 
     //-------- data members
     PexprVector fChildren;
@@ -377,6 +440,23 @@ namespace heather
       else
         display(port, "/>");
     }
+
+
+    virtual String toString() const
+    {
+      String result;
+
+      result = result + "{";
+
+      for (unsigned int i = 0; i < fChildren.size(); i++) {
+        String childstr = fChildren[i].toString();
+        result = result + childstr + " ";
+      }
+      result = result + "}";
+
+      return result;
+    }
+
 
     //-------- data members
     TokenType fLeft;
@@ -505,8 +585,7 @@ Pexpr::tokenType() const
 String
 Pexpr::toString() const
 {
-  // TODO
-  return String();
+  return fImpl->toString();
 }
 
 
