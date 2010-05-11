@@ -257,13 +257,13 @@ namespace heather
     bool isRealLit() const;
     bool isRationalLit() const;
     bool isCharLit() const;
-    bool isKeyArgLit() const;
+    bool isKeyArg() const;
 
     //! indicates whether the pexpr is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;
 
-    bool isId(const char* sym) const;
-    bool isId(const String& sym) const;
+    bool isSymbol(const char* sym) const;
+    bool isSymbol(const String& sym) const;
 
     void toPort(Port<Octet>* port) const;
 

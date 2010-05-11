@@ -713,6 +713,21 @@ Token::isSymbol() const
 
 
 bool
+Token::isSymbol(const char* sym) const
+{
+  return isSymbol(String(sym));
+}
+
+
+bool
+Token::isSymbol(const String& sym) const
+{
+  return fType == kSymbol &&
+    dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr == sym;
+}
+
+
+bool
 Token::isPunct() const
 {
   return type() == kPunct;
@@ -1003,11 +1018,9 @@ Token::isCharLit() const
 
 
 bool
-Token::isKeyArgLit() const
+Token::isKeyArg() const
 {
-  return (isId() &&
-          idValue().length() > 1 &&
-          idValue()[idValue().length() - 1] == ':');
+  return fType == kKeyarg;
 }
 
 
@@ -1015,22 +1028,8 @@ bool
 Token::isSymFuncall() const
 {
   return isSeq() && count() == 2 &&
-    (*this)[0].isId() && (*this)[1].isNested() &&
+    (*this)[0].isSymbol() && (*this)[1].isNested() &&
     (*this)[1].leftToken() == kParanOpen;
-}
-
-
-bool
-Token::isId(const char* sym) const
-{
-  return isId(String(sym));
-}
-
-
-bool
-Token::isId(const String& sym) const
-{
-  return isId() && dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr == sym;
 }
 
 
@@ -1114,7 +1113,7 @@ public:
     assert(Token(kString, "abc").stringLitValue() == String("abc"));
     // assert(Token(kKeyword, "abc").idValue() == String("abc"));
     // assert(Token(kMacroParam, "abc").idValue() == String("abc"));
-    assert(Token(kSymbol, "abc:").isKeyArgLit());
+    assert(Token(kKeyarg, "abc").isKeyArg());
 
 #define TEST_ASSIGNOP2(_type, _value, _member)          \
     {                                                   \
