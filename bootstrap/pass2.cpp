@@ -54,9 +54,9 @@ SecondPass::parseModule(const Token& expr, bool isModule)
   if (expr.count() > 2) {
     assert(expr[2].isNested() && expr[2].leftToken() == kParanOpen);
     assert(expr[2].count() == 1);
-    assert(expr[2][0].isStringLit());
+    assert(expr[2][0].isString());
 
-    publicId = expr[2][0].stringLitValue();
+    publicId = expr[2][0].stringValue();
   }
 
   Ptr<ModuleNode> modNode = new ModuleNode(modName, publicId, isModule);
@@ -104,9 +104,9 @@ SecondPass::parseImport(const Token& expr)
 {
   assert(expr.isSeq() && expr.count() >= 2);
   assert(expr[0].isSymbol("import"));
-  assert(expr[1].isStringLit());
+  assert(expr[1].isString());
 
-  String codeFile = expr[1].stringLitValue();
+  String codeFile = expr[1].stringValue();
   StringStringMap renames;
 
   if (expr.count() >= 3) {

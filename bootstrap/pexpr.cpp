@@ -156,20 +156,20 @@ namespace heather
       if (fType == other.tokenType()) {
         switch (fType) {
         case kChar:
-          return fIntValue == int(other.charLitValue());
+          return fIntValue == int(other.charValue());
 
         case kBool:
-          return fBoolValue == other.boolLitValue();
+          return fBoolValue == other.boolValue();
 
-        case kInteger:
-          return ( fIntValue == other.intLitValue() &&
-                   fIsImaginary == other.isLitImaginary() );
+        case kInt:
+          return ( fIntValue == other.intValue() &&
+                   fIsImaginary == other.isImaginary() );
         case kReal:
-          return ( fDoubleValue == other.realLitValue() &&
-                   fIsImaginary == other.isLitImaginary() );
+          return ( fDoubleValue == other.realValue() &&
+                   fIsImaginary == other.isImaginary() );
         case kRational:
-          return ( fRationalValue == other.rationalLitValue() &&
-                   fIsImaginary == other.isLitImaginary() );
+          return ( fRationalValue == other.rationalValue() &&
+                   fIsImaginary == other.isImaginary() );
 
         default:
           return true;
@@ -190,7 +190,7 @@ namespace heather
       case kBool:
         display(port, String("<lit type='bool'>") + tokstr + "</lit>");
         break;
-      case kInteger:
+      case kInt:
         display(port, String("<lit type='int'>") + tokstr + "</lit>");
         break;
       case kReal:
@@ -211,7 +211,7 @@ namespace heather
       switch (fType) {
       case kBool:
         return fBoolValue ? String("true") : String("false");
-      case kInteger:
+      case kInt:
         return ( !fIsImaginary
                  ? fromInt(fIntValue)
                  : (fromInt(fIntValue) + "i") );
@@ -265,7 +265,7 @@ namespace heather
     virtual bool operator==(const Token& other) const
     {
       return ( fType == other.tokenType() &&
-               fStrValue == other.stringLitValue() );
+               fStrValue == other.stringValue() );
     }
 
 
@@ -647,7 +647,7 @@ Token::type() const
   case kString:                 // kLitExpr
   case kChar:
   case kBool:
-  case kInteger:
+  case kInt:
   case kReal:
   case kRational:
   case kKeyword:
@@ -861,7 +861,7 @@ Token::idValue() const
 
 
 bool
-Token::boolLitValue() const
+Token::boolValue() const
 {
   if (fType != kBool)
     throw NotSupportedException(__FUNCTION__);
@@ -870,16 +870,16 @@ Token::boolLitValue() const
 
 
 int
-Token::intLitValue() const
+Token::intValue() const
 {
-  if (fType != kInteger)
+  if (fType != kInt)
     throw NotSupportedException(__FUNCTION__);
   return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIntValue;
 }
 
 
 double
-Token::realLitValue() const
+Token::realValue() const
 {
   if (fType != kReal)
     throw NotSupportedException(__FUNCTION__);
@@ -888,7 +888,7 @@ Token::realLitValue() const
 
 
 Rational
-Token::rationalLitValue() const
+Token::rationalValue() const
 {
   if (fType != kRational)
     throw NotSupportedException(__FUNCTION__);
@@ -897,7 +897,7 @@ Token::rationalLitValue() const
 
 
 bool
-Token::isLitImaginary() const
+Token::isImaginary() const
 {
   if (type() != kLit && fType != kString && fType != kKeyword)
     throw NotSupportedException(__FUNCTION__);
@@ -916,7 +916,7 @@ Token::setIsImaginary(bool value)
 
 
 String
-Token::stringLitValue() const
+Token::stringValue() const
 {
   if (fType != kString && fType != kKeyword)
     throw NotSupportedException(__FUNCTION__);
@@ -925,7 +925,7 @@ Token::stringLitValue() const
 
 
 Char
-Token::charLitValue() const
+Token::charValue() const
 {
   if (fType != kChar)
     throw NotSupportedException(__FUNCTION__);
@@ -976,42 +976,42 @@ Token::binarySeqOperator() const
 
 
 bool
-Token::isStringLit() const
+Token::isString() const
 {
   return fType == kString;
 }
 
 
 bool
-Token::isBoolLit() const
+Token::isBool() const
 {
   return fType == kBool;
 }
 
 
 bool
-Token::isIntLit() const
+Token::isInt() const
 {
-  return fType == kInteger;
+  return fType == kInt;
 }
 
 
 bool
-Token::isRealLit() const
+Token::isReal() const
 {
   return fType == kReal;
 }
 
 
 bool
-Token::isRationalLit() const
+Token::isRational() const
 {
   return fType == kRational;
 }
 
 
 bool
-Token::isCharLit() const
+Token::isChar() const
 {
   return fType == kChar;
 }
@@ -1086,7 +1086,7 @@ public:
   virtual void run()
   {
     assert(Token(kReal,     3.1415)         == Token(kReal,     3.1415));
-    assert(Token(kInteger,  12345)          == Token(kInteger,  12345));
+    assert(Token(kInt,      12345)          == Token(kInt,      12345));
     assert(Token(kChar,     0xac00)         == Token(kChar,     0xac00));
     assert(Token(kString,   "abc")          == Token(kString,   "abc"));
     assert(Token(kSymbol,   "abc")          == Token(kSymbol,   "abc"));
@@ -1094,23 +1094,23 @@ public:
 
     assert(Token() == Token());
     assert(Token(kParanOpen, kParanClose) == Token(kParanOpen, kParanClose));
-    assert(Token() << Token(kInteger, 25) == Token() << Token(kInteger, 25));
-    assert(( Token(kParanOpen, kParanClose) << Token(kInteger, 25) ) ==
-           ( Token(kParanOpen, kParanClose) << Token(kInteger, 25) ));
+    assert(Token() << Token(kInt, 25) == Token() << Token(kInt, 25));
+    assert(( Token(kParanOpen, kParanClose) << Token(kInt, 25) ) ==
+           ( Token(kParanOpen, kParanClose) << Token(kInt, 25) ));
 
-    assert(Token(kReal, 3.1415).realLitValue() == 3.1415);
+    assert(Token(kReal, 3.1415).realValue() == 3.1415);
     assert(Token(kReal, 1.2345).tokenType() == kReal);
-    assert(Token(kBool, true).boolLitValue() == true);
-    assert(Token(kInteger, 0x10000).intLitValue() == 0x10000);
-    assert(Token(kRational, Rational(23, 27)).rationalLitValue() == Rational(23, 27));
+    assert(Token(kBool, true).boolValue() == true);
+    assert(Token(kInt, 0x10000).intValue() == 0x10000);
+    assert(Token(kRational, Rational(23, 27)).rationalValue() == Rational(23, 27));
 
     // assert(Token(kSymbol, "abc").idValue() == String("abc"));
-    assert(Token(kString, String("abc")).stringLitValue() == String("abc"));
+    assert(Token(kString, String("abc")).stringValue() == String("abc"));
     // assert(Token(kKeyword, String("abc")).idValue() == String("abc"));
     // assert(Token(kMacroParam, String("abc")).idValue() == String("abc"));
 
     // assert(Token(kSymbol, "abc").idValue() == String("abc"));
-    assert(Token(kString, "abc").stringLitValue() == String("abc"));
+    assert(Token(kString, "abc").stringValue() == String("abc"));
     // assert(Token(kKeyword, "abc").idValue() == String("abc"));
     // assert(Token(kMacroParam, "abc").idValue() == String("abc"));
     assert(Token(kKeyarg, "abc").isKeyArg());
@@ -1122,11 +1122,11 @@ public:
              t._member() == _value);                    \
     }
 
-    TEST_ASSIGNOP2(kReal, 3.1415, realLitValue);
-    TEST_ASSIGNOP2(kBool, true, boolLitValue);
-    TEST_ASSIGNOP2(kInteger, 0x20000, intLitValue);
-    TEST_ASSIGNOP2(kRational, Rational(1, 127), rationalLitValue);
-    TEST_ASSIGNOP2(kString, String("abc"), stringLitValue);
+    TEST_ASSIGNOP2(kReal, 3.1415, realValue);
+    TEST_ASSIGNOP2(kBool, true, boolValue);
+    TEST_ASSIGNOP2(kInt, 0x20000, intValue);
+    TEST_ASSIGNOP2(kRational, Rational(1, 127), rationalValue);
+    TEST_ASSIGNOP2(kString, String("abc"), stringValue);
 #undef TEST_ASSIGNOP2
 
 #define TEST_COPYCTOR2(_type, _value, _member)          \
@@ -1136,18 +1136,18 @@ public:
              t._member() == _value);                    \
     }
 
-    TEST_COPYCTOR2(kReal, 3.1415, realLitValue);
-    TEST_COPYCTOR2(kBool, true, boolLitValue);
-    TEST_COPYCTOR2(kInteger, 0x20000, intLitValue);
-    TEST_COPYCTOR2(kRational, Rational(1, 127), rationalLitValue);
-    TEST_COPYCTOR2(kString, String("abc"), stringLitValue);
+    TEST_COPYCTOR2(kReal, 3.1415, realValue);
+    TEST_COPYCTOR2(kBool, true, boolValue);
+    TEST_COPYCTOR2(kInt, 0x20000, intValue);
+    TEST_COPYCTOR2(kRational, Rational(1, 127), rationalValue);
+    TEST_COPYCTOR2(kString, String("abc"), stringValue);
 #undef TEST_COPYCTOR2
 
     {
       Token t(Token(kReal, 12.345).setIsImaginary(true));
       assert(t.tokenType() == kReal &&
-             t.realLitValue() == 12.345 &&
-             t.isLitImaginary());
+             t.realValue() == 12.345 &&
+             t.isImaginary());
     }
   }
 };

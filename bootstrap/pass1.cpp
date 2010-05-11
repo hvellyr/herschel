@@ -578,7 +578,7 @@ FirstPass::parseAtomicExpr()
 {
   switch (fToken.tokenType()) {
   case kBool:
-  case kInteger:
+  case kInt:
   case kReal:
   case kRational:
   case kString:
@@ -823,9 +823,9 @@ FirstPass::parseWhen(bool isTopLevel)
     if (fEvaluateExprs) {
       TokenEvalContext ctx(fParser->configVarRegistry());
       Token p = ctx.evalToken(test);
-      if (p.isBoolLit()) {
-        inclConsequent = p.boolLitValue();
-        inclAlternate = !p.boolLitValue();
+      if (p.isBool()) {
+        inclConsequent = p.boolValue();
+        inclAlternate = !p.boolValue();
       }
       else {
         fprintf(stderr, "ERROR: when-expression did not evaluate to boolean. "
@@ -955,10 +955,10 @@ FirstPass::parseCharDef()
     throw UnexpectedTokenException(fToken, "expected =");
 
   nextToken();
-  if (fToken.tokenType() != kInteger)
+  if (fToken.tokenType() != kInt)
     throw UnexpectedTokenException(fToken, "expected INTEGER");
 
-  int codePoint = fToken.intLitValue();
+  int codePoint = fToken.intValue();
   if (codePoint < 0 || codePoint > 0x10FFFF)
     throw SyntaxException(String("invalid expected INTEGER"));
 
@@ -970,7 +970,7 @@ FirstPass::parseCharDef()
   }
   else
     return Token() << Token("def") << Token("char") << Token(charName)
-                   << Token(kAssign) << Token(kInteger, codePoint);
+                   << Token(kAssign) << Token(kInt, codePoint);
 }
 
 
