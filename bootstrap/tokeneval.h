@@ -6,10 +6,10 @@
    All rights reserved.
 */
 
-#ifndef bootstrap_pexpreval_h
-#define bootstrap_pexpreval_h
+#ifndef bootstrap_tokeneval_h
+#define bootstrap_tokeneval_h
 
-#include "pexpr.h"
+#include "token.h"
 #include "parser.h"
 #include "ptr.h"
 
@@ -76,4 +76,4 @@ namespace heather
   };
 };
 
-#endif  // bootstrap_pexpreval_h
+#endif  // bootstrap_tokeneval_h

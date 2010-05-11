@@ -13,7 +13,7 @@
 #include "properties.h"
 #include "str.h"
 #include "ptr.h"
-#include "pexpr.h"
+#include "token.h"
 #include "parsertypes.h"
 #include "registry.h"
 

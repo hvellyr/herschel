@@ -6,8 +6,8 @@
    All rights reserved.
 */
 
-#ifndef bootstrap_pexpr_h
-#define bootstrap_pexpr_h
+#ifndef bootstrap_token_h
+#define bootstrap_token_h
 
 #include <vector>
 
@@ -259,7 +259,7 @@ namespace heather
     bool isChar() const;
     bool isKeyArg() const;
 
-    //! indicates whether the pexpr is a symbol-function call (e.g. abc())
+    //! indicates whether the token is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;
 
     bool isSymbol(const char* sym) const;
@@ -283,4 +283,4 @@ namespace heather
 };
 
 
-#endif  // bootstrap_pexpr_h
+#endif  // bootstrap_token_h
