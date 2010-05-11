@@ -1,0 +1,10 @@
+def config os = ""
+
+when (os == "linux") {
+  when (os == "BE") {
+    import "linux/big-endian.head"
+  }
+  else {
+    import "linux/little-endian.head"
+  }
+}

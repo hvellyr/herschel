@@ -1,0 +1,58 @@
+def macro incr!
+{
+  { incr!(?place:expr) } -> { ?place = ?place + 1 }
+  { incr!(?place:expr, ?amount:expr) } -> { ?place = ?place + ?amount }
+}
+
+def macro decr!
+{
+  { decr!(?place:expr) } -> { ?place = ?place - 1 }
+  { decr!(?place:expr, ?amount:expr) } -> { ?place = ?place - ?amount }
+}
+
+def macro abc
+{
+  { abc() } -> { xyz(5) }
+  { abc(?a:expr) } -> { xyz() + ?a }
+}
+
+def macro xyz
+{
+  { xyz() } -> { uvw(1) }
+  { xyz(?a:expr) } -> { uvw(?a, abc(?a)) }
+}
+
+def macro with-break
+{
+  { with-break(?func:expr) expr } -> { {
+                                         let ?func
+                                         expr
+                                       } }
+}
+
+def macro fluidx
+{
+  { def fluidx ?n:name() = ?e:value } -> { def ?n = register-fluidx(?n, ?e) }
+}
+
+
+def macro bbb
+{
+  { bbb(?x:expr, ?y:expr) } -> { xxx(?x, ?y) }
+}
+
+def macro ccc
+{
+  { ccc(?x:expr) } -> { yyy(?x) }
+}
+
+def f()
+--  with-break(a = function(x) { x } ) {
+--    outln(1)
+--  }
+--  abc()
+  x.decr!(5)
+  x.incr!(5)
+
+  a.bbb(1).ccc
+  n.ccc

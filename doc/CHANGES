@@ -1,0 +1,485 @@
+reread diesel things and I think, yes, I'm on the right way.  Redesign
+certain things however:
+
+| Defless again?
+|
+|   no...
+|
+|     def generic name(prm @ type) : type        -- a generic function
+|     def name(prm) : type                       -- a simple function
+|     def [meth] name(prm @ type) : type         -- a method
+|
+|     def name : type = value                    -- a (global) variable
+|     def const name : type = value                  -- a (global) constant
+|
+|     slot name : type = value                   -- a (class local) slot
+|
+|     def class name<>(prm) : isa                -- a (global) class
+|     def type name<> : isa                      -- a (global) type
+|     def alias name<> = type                    -- a (global) type alias
+|
+|     def module name(spec)                      -- a module
+|
+|     let name(prm) : type                       -- a (local) function
+|     let name : type = value                    -- a (local) variable
+|     let const name : type = value              -- a (local) constant
+|     let alias name = type                      -- a (local) type alias
+
+
+| Only positional type parameters
+
+
+| Keyword changes
+|
+|   Call it generic function in the source code also:
+|
+|     def generic name(prm @ type) : type
+
+
+| Specialization
+|
+|   Don't use "prm : @ type"; use "prm @ type" only.  Specialization is a
+|   special case of type declaration (and it's shorter).
+
+
+| Function types
+| 
+|   Return types of methods be covariant with the return type declared in the
+|   generic function:
+| 
+|     def generic f(x @ Any) : Number ...
+| 
+|     def f(x @ Int) : Int ...                -- ok
+|     def f(x @ Real) : Real ...              -- ok
+|     def f(x @ String) : String ...          -- FALSE
+| 
+
+| Call it modules, not namespace
+| 
+|   Modules are first class entities.  There's special notation for looking
+|   up members from modules (the | notation).
+| 
+|   Modules are defined not merely stated:
+| 
+|     def module core
+| 
+|   Extending a module is an activate thing, you don't add simply to a
+|   namespace by name matching:
+| 
+|     extend module core
+| 
+|   Extending modules can be prevented by finalizing a module:
+| 
+|     def final module core
+| 
+|   The module name becomes more important:
+| 
+|     module-spec ::= 'def' 'module' modname [ public-spec ]
+|     modname     ::= identifier
+|     public-spec ::= '(' string ')'
+| 
+|   When importing modules the modname can be renamed to avoid name clashes:
+| 
+|     import "core.hea" (core -> hc)
+| 
+|   Internally the modules are addressed by the public-spec not the modname,
+|   which can be renamed.
+| 
+|   Modules can be nested.  The obvious accessor to nested modules members is
+|   modname1|modname2|name.
+| 
+|   Modules can be bracketed:
+| 
+|     def module name {
+|       definitions
+|     }
+| 
+|   This simplifies putting multiple modules in one file
+| 
+|   It's possible to export all symbols in the module to the
+|   outside:
+| 
+|     def module core export public(*)
+| 
+|   Its possible to specify the "modname|" in definitions also:
+| 
+|     def core|to-string(self @ type) : String ...
+| 
+|   This helps in extending single generic functions of other modules.  It's
+|   syntactic sugar for
+| 
+|     extend module core {
+|       def to-string(self @ type) : String ...
+|     }
+| 
+|   Only symbols export to public can be extended from outside.  Export
+|   symbols as final (i.e. not extensible):
+| 
+|     def module core export final public(*)
+| 
+
+Visibility and finalization for modules.
+
+  Toplevel modules are always visible to the public.  Unless any class or
+  methods is export however this information is worthless.  Every
+  identifier must be exported to the public or protected domain, either
+  final or open.
+
+  The same applies to nested (i.e. inner) module:
+
+  def module printer("sijo/ixwick:printer") {
+    -- exporting the inner module:
+    export final public(printer-driver, DriverSettings)
+
+    def class DriverSettings() { ... {
+
+    def module printer-driver("sijo/ixwick:printer-driver") {
+      export public (init-driver, get-driver-settings)
+
+      def generic init-driver() ...
+      def generic get-driver-settings() : DriverSettings ...
+    }
+  }
+
+  Identifier from inner modules are seen by direct parent modules; if
+  protected they are seen by all ancestor modules until the top-module; if
+  public they are seen by all modules in the top-level module even in
+  siblings.  Symbols from inner modules must be explictely exported to the
+  outside from the top-level module if this is required:
+
+    def module printer("sijo/ixwick:printer") {
+      export final public(printer-driver|get-driver-settings, DriverSettings)
+
+    }
+
+
+| Import
+| 
+|   Other modules are imported into the current compile unit using the import
+|   expression.  "import" is only possible on module level (i.e. not inside
+|   of functions).  It is possible to import from inside macro expansion of
+|   course (if the macro expands to a module level construct).
+| 
+|   Basic syntax:
+| 
+|     import-stmt    ::= 'import' code-file [ rename-clauses ]
+|     code-file      ::= string
+|     rename-clauses ::= '(' rename-clause { ',' rename-clause } ')'
+|     rename-clause  ::= modname '->' modname
+|     modname        ::= identifier
+| 
+|   The unit to be imported is referenced by the source file name
+|   (code-file), which may include a partial path part.  The name is resolved
+|   relative to the current compile units file location.  There's no
+|   difference between system and local include files.
+| 
+|   Files are imported once per compile unit only, i.e. the import is not a
+|   general include facility.
+| 
+|   If rename-clauses are specific modules during import are renamed.  This
+|   can be used to avoid name clashes.
+| 
+
+| Conditional compiling
+|
+|   Heather does include a preprocessor.
+|
+|     when version(MacOSX) {
+|     }
+|     else {
+|     }
+|
+|   Basic syntax:
+|
+|     when-stmt         ::= 'when' when-condition expr [ when-else-clause ]
+|     when-condition    ::= version-condition | incl-condition | ignore-condition
+|     version-condition ::= 'version' '(' version-spec ')'
+|     version-spec      ::= identifier | number
+|     incl-condition    ::= 'include' '(' incl-spec ')'
+|     incl-spec         ::= identifier [ cmp-op const-value ]
+|     cmp-op            ::= '<' | '>' | '==' | '<>' | '<=' | '>='
+|     const-value       ::= number | string
+|     ignore-condition  ::= 'ignore'
+|     when-else-clause  ::= 'else' expr
+|
+|   Examples:
+|
+|     // replaces #if defined(Linux) ... #endif
+|     when version(Linux) {
+|       when version(LE) {
+|       }
+|       else when version(BE) {
+|       }
+|       else {
+|       }
+|     }
+|
+|     // include code.  Replaces #if RenderDialog == 5 ... #endif
+|     when include(RenderDialog == 5) {
+|     }
+|
+|     // unconditionally ignore code.  Replaces #if 0 ... #endif
+|     when ignore {
+|     }
+|
+|
+|   Such conditional expressions can appear on all levels (top-level and
+|   inside of functions).  The conditional expression must always be valid
+|   code even if currently not active.
+|
+
+| Better notations for union types:
+|
+|   Union type: &(type, type)
+|
+|   Example:
+|
+|     def f(x @ &(String, Bool)) : (Int, String)
+|
+
+| Multiple return values:
+|
+|   Declare a function to return multiple values:
+|
+|     def treefold() : (Int, Char, Bool)
+|
+|   Return multiple values as constant array:
+|
+|     def treefold(f : Bool) : (Int, Char, Bool)
+|       if (f)
+|         return #[100, \a, true]
+|       else
+|         return #[0, \0, false]
+|
+|   Number of values and types must match of course.
+|
+|   Multiple return values behave like real multiple values:
+|
+|     def g(a @ Int, b @ Char, c @ Bool)
+|       display("%d %c %b" % #[a, b, c])
+|
+|     def app|main()
+|       g(treefold(true))
+|
+|     => 100 a true
+|
+|
+|   Assign to variables:
+|
+|     let a, b, c = treefold(false)
+|     a, b, c = treefold(false)
+|
+|   Also possible:
+|
+|     x, y, z = #[1, 2, 3]
+|
+|     def f(val : Vector)
+|       x, y, z = val
+|
+|   The last expression will fail if val has less or more elements than 3, so
+|   better to write:
+|
+|     def f(val : Vector)
+|       x, y, z = val[0 .. 3]
+|
+
+| Parameterization:
+|
+|     def generic add-item(self @ List<'T>, obj @ 'T) : List<'T> ...
+|
+|   and with constraints:
+|
+|     def generic add-item(self @ List<'T>, obj @ 'T) : List<'T>
+|       where T <= 100 and
+|             T isa Comparable<T>
+|
+
+| Constraint vs. typed parameterization:
+|
+|   The following generic function declaration:
+|
+|     def generic f(one @ (Int <= 100)) ...
+|
+|   is specialized on the constraint type "Int <= 100".  An call "f(150)"
+|   will fail.  The following declaration however:
+|
+|     def generic f(one @ 'T) where T <= 100 ...
+|
+|   is specialized on ANY type, the compile however will check as compile
+|   time that only types are passed to f which has a value constraint "<=
+|   100".  This could be any Int, Word, Octet, Float or even complex number.
+|
+|   Similarly the following function xyz
+|
+|     def generic xyz(a @ 'T) : 'T where T isa Comparable<T> ...
+|
+|   is spezialed on Any, but the compile will check than every type passed in
+|   for T is a list of type Comparable.
+
+
+| Standalone function notation:
+|
+|   function(x) : type { x + x }
+|
+|   and as type declaration:
+|
+|   Function(x) : type
+|
+
+| Unary operators and expressions:
+| 
+|   The following unary operators and commands are defined:
+| 
+| ??    return expr         (return)
+|     not expr            (logical not)
+|     - expr              (negate)
+|     spawn expr          (stark thread)
+| 
+
+| Header vs. Source file
+| 
+|   Normally header files are not necessary.  The compiler takes the source
+|   files directly and declaration and implementation is in the same file.
+| 
+|   For distributed libraries however a set of header files is required which
+|   contains the public API for the library.  These header files follow the
+|   normal implementation files but
+| 
+|     - function and generic functions are written as abstracted signatures
+|       only:
+| 
+|       def fun(a : Int, b = 5, args ...) : Bool ...
+| 
+|     - class must list their slots, but can must not give any "on init()" or
+|       "on delete()" specification.  Required methods must be in the class
+|       body like with implementation files.
+| 
+
+| Program main entry point
+| 
+|   The compiler will start the program at a function called "main()" in the
+|   "app" module.  This must be declared by the user.  Hello world in heather
+|   is therefore:
+| 
+|   def app|main()
+|     display("hello, world!", \nl)
+ 
+
+Lazy evaluation
+
+  The typical log problem.  The string is created before we decide whether
+  we should log.  Either use macros:
+
+    def macro log
+    {
+      { log(?level:expr, ?msg:expr) } -> { if (should-log(?level))
+                                             log-impl(?msg)
+                                         }
+    }
+
+  Or support lazy evaluation.  Since we will have the notion of "promises"
+  anyway (for spawn and synchronization), this can be made first class:
+
+    def log(level : Keyword, lazy msg : String)
+      if (should-log(level))
+        do-whatever-is-necessary(msg)
+
+  Technically this can be done by the compiler as such.  The following
+  example:
+
+    log(#debug, StringBuffer().append("error ")
+                              .append(exc.to-string)
+                              .append("(").append(exc.details).append(")")
+                              .to-string)
+
+  can be compile as:
+
+    log(#debug, function() : String {
+                  StringBuffer().append("error ")
+                                .append(exc.to-string)
+                                .append("(").append(exc.details).append(")")
+                                .to-string
+                })
+
+  The log-implementation would look like:
+
+    def log(level : Keyword, lazy msg : String)
+      if (should-log(level))
+        do-whatever-is-necessary(msg())
+
+
+
+Embedding C and C++ fragments.
+
+  In the C extern it is only allowed to embed function definitions.  In the
+  C++ embed it is possible also to embed class definitions ... but no code.
+
+  extern ("C") {
+    size_t fprintf(FILE* stream, const char* format, ...);
+  }
+
+  extern ("C++") {
+    ...
+  }
+
+
+
+Used character in the Ascii table:
+
+    Heather                             C
+-------------------------------------------------------------
+!   identifier                          not
+"   string separator                    string
+#   keyword notation                    preproc
+    constant array notation
+$   identifier                          [----------]
+%   identifier                          operator (mod)
+    operator (mod)
+&   operator (bit and)                  operator (&, &&)
+    Complex type notationx               pointer ref op.
+'   Implicit type generics              char
+()  arguments                           arguments
+    grouping
+*   operator (*, **)                    operator(*)
+    identifier                          pointer ref op.
++   operator (+)                        operator(+)
+    identifier
+,   parameter separator                 prm separator
+-   identifier                          operator (-)
+    operator (-)
+    negative numbers
+    comment starter (--)
+.   function call                       struct member
+    float notation                      float notation
+/   operator (div)                      operator(div)
+    identifier
+0-9 digits                              digits
+    identifier                          identifier
+:   keyword arguments                   ternary operator
+    type separator
+;   [----------]                        stmt terminator
+<>  operator (<, >, <=, >=, <>, ->)     operator(...)
+    parametrization
+=   operator (==, <=, >=)               operator(==)
+    assignment                          assignment
+    parameter default
+?   identifier                          ternary operator
+    macro variable marker
+@   specialize marker                   [----------]
+A-Z digits                              digits
+    identifier                          identifier
+[]  slicing                             array
+    arrays
+\   char constants                      escaping
+^   [----------]                        operator (xor)
+_   identifier                          identifier
+    current type notifier
+`   measure types                       [----------]
+a-z digits                              digits
+    identifier                          identifier
+{}  code block                          code block
+|   operator (bit or)                   operator (|, ||)
+    modname separator
+~   [----------]                        operator (bit not)
+
+

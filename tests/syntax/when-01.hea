@@ -1,0 +1,14 @@
+def config os = ""
+
+when (os == "linux") {
+  import "boot-linux.head"
+}
+else when (os == "win32") {
+  import "boot-win32.head"
+}
+else when (os == "mac-osx") {
+  import "boot-macosx.head"
+}
+else
+  import "boot-general.head"
+

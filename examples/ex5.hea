@@ -1,0 +1,33 @@
+-- type definitions
+
+def class Point : Object
+{
+}
+
+def class Atlas<T1 = Int, T2 = Real> : Copyable
+{
+}
+
+def class Atlas2<T1 = Int, T2 = Real> : (Persona, Copyable)
+{
+}
+
+
+def class Point(_x, _y, value: _val = 55) : Object
+{
+  slot x : Int = _x
+  slot y : Int = _y
+  slot value : Int = _val
+
+  on init(self)
+  {
+    value = x * y
+  }
+
+  on delete(self) nop()
+}
+
+
+def alias AtlasX = Atlas<Int, String>
+
+def alias IntOfFalse = (Int, Bool = false)
