@@ -32,7 +32,6 @@ Documentation
 
 Bootstrap compiler
 
-  rename Pexpr back to Token
   review tokenType() == kSymbol vs. isId()
 
   continue with pexpreval (add the missing operators)

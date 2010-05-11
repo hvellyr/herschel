@@ -298,8 +298,7 @@ TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
 
-  if (left.isLit() && right.isLit() &&
-      left.tokenType() == right.tokenType()) {
+  if (left.tokenType() == right.tokenType()) {
     switch (left.tokenType()) {
     case kString:
       return Token(kInteger, left.stringLitValue().compare(right.stringLitValue()));

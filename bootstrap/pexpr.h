@@ -61,7 +61,7 @@ namespace heather
 
   class Token;
 
-  enum PexprType {
+  enum ExprType {
     kSeq,
     kNested,
     kPunct,
@@ -75,9 +75,12 @@ namespace heather
     kEOF,
     kInvalid,
 
-    kSeqToken,                  // prescanned token
-    kNestedToken,               // prescanned token
+    // kSeqExpr
+    kSeqExpr,                   // prescanned token
+    // kNestedExpr
+    kNestedExpr,                // prescanned token
 
+    // kPunctExpr
     kPlus,
     kMinus,
     kDivide,
@@ -106,19 +109,6 @@ namespace heather
     kShiftLeft,
     kShiftRight,
     kAppend,
-
-    kString,
-    kChar,
-    kBool,
-    kInteger,
-    kReal,
-    kRational,
-
-    kSymbol,
-    kKeyarg,
-    kMacroParam,
-    kKeyword,
-
     kParanOpen,
     kParanClose,
     kBracketOpen,
@@ -130,7 +120,6 @@ namespace heather
     kComma,
     kSemicolon,
     kColon,
-
     kAt,
     kAmpersand,
     kPipe,
@@ -139,18 +128,29 @@ namespace heather
     kEllipsis,
     kRange,
     kDot,
-
     kLiteralVectorOpen,
     kLiteralArrayOpen,
     kSangHash,
+
+    // kLitExpr
+    kString,
+    kChar,
+    kBool,
+    kInteger,
+    kReal,
+    kRational,
+    kKeyword,
+
+    // kIdExpr
+    kSymbol,
+    kKeyarg,
+    kMacroParam,
   };
 
 
   class TokenImpl : public RefCountable
   {
   public:
-    virtual PexprType type() const = 0;
-
     virtual bool operator==(const Token& other) const = 0;
 
     virtual TokenImpl* unshare()
@@ -207,12 +207,13 @@ namespace heather
 
 
     TokenType tokenType() const;
-    PexprType type() const;
+    ExprType type() const;
 
     bool isSeq() const;
     bool isNested() const;
     bool isLit() const;
     bool isId() const;
+    bool isSymbol() const;
     bool isPunct() const;
     bool isSet() const;
 
@@ -243,7 +244,6 @@ namespace heather
     double realLitValue() const;
     Rational rationalLitValue() const;
     String stringLitValue() const;
-    String keywLitValue() const;
     Char charLitValue() const;
 
     //! useful predicates
@@ -273,6 +273,7 @@ namespace heather
     void unshare();
 
     //-------- data members
+    TokenType      fType;
     Ptr<TokenImpl> fImpl;
   };
 
