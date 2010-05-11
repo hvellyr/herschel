@@ -18,11 +18,11 @@ namespace heather
 {
   //--------------------------------------------------------------------------
 
-  class TokenPort : public Port<Pexpr>
+  class TokenPort : public Port<Token>
   {
   public:
-    virtual size_t write(Pexpr* data, size_t items);
-    virtual int write(Pexpr item);
+    virtual size_t write(Token* data, size_t items);
+    virtual int write(Token item);
 
     virtual void flush();
 
@@ -41,7 +41,7 @@ namespace heather
     virtual bool isOpen() const;
     virtual bool isEof() const;
 
-    virtual Pexpr read();
+    virtual Token read();
 
   private:
     void setTokenizer(Tokenizer* tokenizer);
@@ -55,15 +55,15 @@ namespace heather
   class InternalTokenPort : public TokenPort
   {
   public:
-    InternalTokenPort(const std::list<Pexpr>& tokens);
+    InternalTokenPort(const std::list<Token>& tokens);
 
     virtual bool isOpen() const;
     virtual bool isEof() const;
 
-    virtual Pexpr read();
+    virtual Token read();
 
   private:
-    std::list<Pexpr> fTokens;
+    std::list<Token> fTokens;
   };
 };                              // namespace
 

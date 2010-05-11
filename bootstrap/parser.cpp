@@ -49,14 +49,14 @@ Parser::configVarRegistry() const
 }
 
 
-Pexpr
+Token
 Parser::nextToken()
 {
   try {
     fToken = fPort->read();
   }
   catch (const EofException& e) {
-    fToken = Pexpr(kEOF);
+    fToken = Token(kEOF);
   }
   return fToken;
 }
@@ -70,7 +70,7 @@ Parser::parse(Port<Char>* port)
   try {
     FirstPass firstPass(this, fToken);
 
-    Pexpr parsedExprs = firstPass.parse();
+    Token parsedExprs = firstPass.parse();
 
     if (Properties::isTracePass1()) {
       Ptr<FilePort> stream = new FilePort(stdout);

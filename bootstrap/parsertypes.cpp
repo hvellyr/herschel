@@ -108,9 +108,9 @@ ConfigVarRegistry::ConfigVarRegistry(ConfigVarRegistry* parent)
 
 
 bool
-ConfigVarRegistry::lookup(const String& name, Pexpr* out) const
+ConfigVarRegistry::lookup(const String& name, Token* out) const
 {
   if (fParent != NULL && fParent->lookup(name, out))
     return true;
-  return Registry<Pexpr>::lookup(name, out);
+  return Registry<Token>::lookup(name, out);
 }

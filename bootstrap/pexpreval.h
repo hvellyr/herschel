@@ -40,36 +40,36 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class PexprEvalContext
+  class TokenEvalContext
   {
   public:
-    PexprEvalContext(ConfigVarRegistry* registry);
+    TokenEvalContext(ConfigVarRegistry* registry);
 
-    Pexpr evalPexpr(const Pexpr& expr) const;
+    Token evalToken(const Token& expr) const;
 
   private:
-    Pexpr evalAdd(const Pexpr& lexpr, const Pexpr& rexpr) const;
-    Pexpr evalMinus(const Pexpr& lexpr, const Pexpr& rexpr) const;
-    Pexpr evalMultiply(const Pexpr& lexpr, const Pexpr& rexpr) const;
-    Pexpr evalDivide(const Pexpr& lexpr, const Pexpr& rexpr) const;
-    Pexpr evalModulo(const Pexpr& lexpr, const Pexpr& rexpr) const;
-    Pexpr evalExponent(const Pexpr& lexpr, const Pexpr& rexpr) const;
+    Token evalAdd(const Token& lexpr, const Token& rexpr) const;
+    Token evalMinus(const Token& lexpr, const Token& rexpr) const;
+    Token evalMultiply(const Token& lexpr, const Token& rexpr) const;
+    Token evalDivide(const Token& lexpr, const Token& rexpr) const;
+    Token evalModulo(const Token& lexpr, const Token& rexpr) const;
+    Token evalExponent(const Token& lexpr, const Token& rexpr) const;
 
-    Pexpr evalBitOp(const Pexpr& lexpr, const Pexpr& rexpr,
+    Token evalBitOp(const Token& lexpr, const Token& rexpr,
                     OperatorType op) const;
 
-    Pexpr evalCompare(const Pexpr& lexpr, const Pexpr& rexpr) const;
-    Pexpr evalLogical(const Pexpr& lexpr, const Pexpr& rexpr,
+    Token evalCompare(const Token& lexpr, const Token& rexpr) const;
+    Token evalLogical(const Token& lexpr, const Token& rexpr,
                       OperatorType op) const;
 
-    Pexpr evalAnd(const Pexpr& lexpr, const Pexpr& rexpr) const;
-    Pexpr evalOr(const Pexpr& lexpr, const Pexpr& rexpr) const;
+    Token evalAnd(const Token& lexpr, const Token& rexpr) const;
+    Token evalOr(const Token& lexpr, const Token& rexpr) const;
 
-    Pexpr evalAppend(const Pexpr& lexpr, const Pexpr& rexpr) const;
+    Token evalAppend(const Token& lexpr, const Token& rexpr) const;
 
-    Pexpr evalBinaryPexpr(const Pexpr& lexpr,
+    Token evalBinaryToken(const Token& lexpr,
                           OperatorType op,
-                          const Pexpr& rexpr) const;
+                          const Token& rexpr) const;
 
     //-------- data members
     Ptr<ConfigVarRegistry> fRegistry;

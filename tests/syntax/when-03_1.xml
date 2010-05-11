@@ -1,2 +1,2 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>when</id><id>version</id><nested left='(' right=')'><id>linux</id></nested><nested left='{' right='}'><seq><id>when</id><id>version</id><nested left='(' right=')'><id>BE</id></nested><nested left='{' right='}'><seq><id>import</id><lit type='str'>linux/big-endian.head</lit></seq></nested><id>else</id><nested left='{' right='}'><seq><id>import</id><lit type='str'>linux/little-endian.head</lit></seq></nested></seq></nested></seq></seq>
+<seq><nested left='{' right='}'><nested left='{' right='}'><seq><id>import</id><lit type='str'>linux/little-endian.head</lit></seq></nested></nested></seq>

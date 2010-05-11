@@ -59,7 +59,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class Pexpr;
+  class Token;
 
   enum PexprType {
     kSeq,
@@ -146,14 +146,14 @@ namespace heather
   };
 
 
-  class PexprImpl : public RefCountable
+  class TokenImpl : public RefCountable
   {
   public:
     virtual PexprType type() const = 0;
 
-    virtual bool operator==(const Pexpr& other) const = 0;
+    virtual bool operator==(const Token& other) const = 0;
 
-    virtual PexprImpl* unshare()
+    virtual TokenImpl* unshare()
     {
       // for immutable types unshare is a nop
       return this;
@@ -164,46 +164,46 @@ namespace heather
   };
 
 
-  typedef std::vector<Pexpr> PexprVector;
+  typedef std::vector<Token> TokenVector;
 
-  class Pexpr
+  class Token
   {
   public:
     // a sequence expression
-    Pexpr();
+    Token();
 
     // a nested expression
-    Pexpr(TokenType left, TokenType right);
+    Token(TokenType left, TokenType right);
 
     // a punctation expression
-    Pexpr(TokenType type);
+    Token(TokenType type);
 
     // an id expression
-    Pexpr(const String& str);
-    Pexpr(const char* str);
+    Token(const String& str);
+    Token(const char* str);
 
     // a literal typed constructor for string values
-    Pexpr(TokenType type, const String& str);
-    Pexpr(TokenType type, const char* str);
+    Token(TokenType type, const String& str);
+    Token(TokenType type, const char* str);
 
     // a literal typed constructor for int values
-    Pexpr(TokenType type, int value);
+    Token(TokenType type, int value);
 
     // a literal typed constructor for double values
-    Pexpr(TokenType type, double value);
+    Token(TokenType type, double value);
 
     // a literal typed constructor for rational values
-    Pexpr(TokenType type, Rational value);
+    Token(TokenType type, Rational value);
 
     // a literal typed constructor for bool values
-    Pexpr(TokenType type, bool value);
+    Token(TokenType type, bool value);
 
     // copy ctor
-    Pexpr(const Pexpr& other);
-    Pexpr& operator=(const Pexpr& other);
+    Token(const Token& other);
+    Token& operator=(const Token& other);
 
-    bool operator==(const Pexpr& other) const;
-    bool operator!=(const Pexpr& other) const;
+    bool operator==(const Token& other) const;
+    bool operator!=(const Token& other) const;
 
 
     TokenType tokenType() const;
@@ -217,19 +217,19 @@ namespace heather
     bool isSet() const;
 
     bool isLitImaginary() const;
-    Pexpr& setIsImaginary(bool value);
+    Token& setIsImaginary(bool value);
 
     bool isEmpty() const;
 
-    const PexprVector& children() const;
-    PexprVector& children();
+    const TokenVector& children() const;
+    TokenVector& children();
 
-    void addExpr(const Pexpr& expr);
+    void addExpr(const Token& expr);
 
-    Pexpr& operator<<(const Pexpr& expr);
-    Pexpr& operator<<(const PexprVector& exprs);
-    const Pexpr& operator[](int idx) const;
-    Pexpr& operator[](int idx);
+    Token& operator<<(const Token& expr);
+    Token& operator<<(const TokenVector& exprs);
+    const Token& operator[](int idx) const;
+    Token& operator[](int idx);
 
     int count() const;
 
@@ -273,11 +273,11 @@ namespace heather
     void unshare();
 
     //-------- data members
-    Ptr<PexprImpl> fImpl;
+    Ptr<TokenImpl> fImpl;
   };
 
 
-  String operator+(const String& one, const Pexpr& two);
+  String operator+(const String& one, const Token& two);
 
 };
 

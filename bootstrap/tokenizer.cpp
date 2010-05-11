@@ -142,7 +142,7 @@ Tokenizer::readCommentLine()
 }
 
 
-Pexpr
+Token
 Tokenizer::readIdentifier(const String& prefix, TokenType type,
                           bool acceptGenerics)
 {
@@ -166,86 +166,86 @@ Tokenizer::readIdentifier(const String& prefix, TokenType type,
   }
 
   if (type == kSymbol && identifier.endsWith(String(":")))
-    return Pexpr(kKeyarg, identifier.part(0, identifier.length() - 1));
+    return Token(kKeyarg, identifier.part(0, identifier.length() - 1));
   else
-    return Pexpr(type, identifier);
+    return Token(type, identifier);
 }
 
 
-Pexpr
+Token
 Tokenizer::makeTokenAndNext(TokenType type)
 {
-  Pexpr t = Pexpr(type);
+  Token t = Token(type);
   nextChar();
   return t;
 }
 
 
-Pexpr
+Token
 Tokenizer::readSymbolOrOperator(bool acceptGenerics)
 {
   Char currentChar = fCC;
   nextChar();
   if (isDelimiter(fCC)) {
     switch (currentChar) {
-    case '+': return Pexpr(kPlus);
-    case '/': return Pexpr(kDivide);
-    case '*': return Pexpr(kMultiply);
-    case '%': return Pexpr(kFold);
-    case '<': return Pexpr(kLess);
-    case '>': return Pexpr(kGreater);
-    case '=': return Pexpr(kAssign);
+    case '+': return Token(kPlus);
+    case '/': return Token(kDivide);
+    case '*': return Token(kMultiply);
+    case '%': return Token(kFold);
+    case '<': return Token(kLess);
+    case '>': return Token(kGreater);
+    case '=': return Token(kAssign);
     default:
-      return Pexpr(String() + currentChar);
+      return Token(String() + currentChar);
     }
   }
 
-  Pexpr token = readIdentifier(String() + currentChar, kSymbol, acceptGenerics);
+  Token token = readIdentifier(String() + currentChar, kSymbol, acceptGenerics);
   if (token.tokenType() == kSymbol) {
     if (token.idValue() == String("**"))
-      return Pexpr(kExponent);
+      return Token(kExponent);
     else if (token.idValue() == String("<=>"))
-      return Pexpr(kCompare);
+      return Token(kCompare);
     else if (token.idValue() == String("=="))
-      return Pexpr(kEqual);
+      return Token(kEqual);
     else if (token.idValue() == String("<>"))
-      return Pexpr(kUnequal);
+      return Token(kUnequal);
     else if (token.idValue() == String("<>"))
-      return Pexpr(kUnequal);
+      return Token(kUnequal);
     else if (token.idValue() == String("<="))
-      return Pexpr(kLessEqual);
+      return Token(kLessEqual);
     else if (token.idValue() == String(">="))
-      return Pexpr(kGreaterEqual);
+      return Token(kGreaterEqual);
     else if (token.idValue() == String("in"))
-      return Pexpr(kIn);
+      return Token(kIn);
     else if (token.idValue() == String("and"))
-      return Pexpr(kLogicalAnd);
+      return Token(kLogicalAnd);
     else if (token.idValue() == String("or"))
-      return Pexpr(kLogicalOr);
+      return Token(kLogicalOr);
     else if (token.idValue() == String("mod"))
-      return Pexpr(kMod);
+      return Token(kMod);
     else if (token.idValue() == String("AND"))
-      return Pexpr(kBitAnd);
+      return Token(kBitAnd);
     else if (token.idValue() == String("OR"))
-      return Pexpr(kBitOr);
+      return Token(kBitOr);
     else if (token.idValue() == String("XOR"))
-      return Pexpr(kBitXor);
+      return Token(kBitXor);
     else if (token.idValue() == String("<<"))
-      return Pexpr(kShiftLeft);
+      return Token(kShiftLeft);
     else if (token.idValue() == String(">>"))
-      return Pexpr(kShiftRight);
+      return Token(kShiftRight);
     else if (token.idValue() == String("isa"))
-      return Pexpr(kIsa);
+      return Token(kIsa);
     else if (token.idValue() == String("as"))
-      return Pexpr(kAs);
+      return Token(kAs);
     else if (token.idValue() == String("by"))
-      return Pexpr(kBy);
+      return Token(kBy);
     else if (token.idValue() == String("true"))
-      return Pexpr(kBool, true);
+      return Token(kBool, true);
     else if (token.idValue() == String("false"))
-      return Pexpr(kBool, false);
+      return Token(kBool, false);
     else if (token.idValue() == String("++"))
-      return Pexpr(kAppend);
+      return Token(kAppend);
   }
   return token;
 }
@@ -266,7 +266,7 @@ Tokenizer::readIntNumberPart(bool acceptHex)
 }
 
 
-Pexpr
+Token
 Tokenizer::readNumber(int sign)
 {
   TokenType type = kInteger;
@@ -328,10 +328,10 @@ Tokenizer::readNumber(int sign)
     isImaginary = true;
   }
 
-  Pexpr token;
+  Token token;
   switch (type) {
   case kInteger:
-    token = Pexpr(kInteger, first.toInt(radix) * sign);
+    token = Token(kInteger, first.toInt(radix) * sign);
     break;
 
   case kReal:
@@ -340,7 +340,7 @@ Tokenizer::readNumber(int sign)
       if (!exponent.isEmpty())
         tmp = tmp + "e" + (expSign < 0 ? '-' : '+') + exponent;
 
-      token = Pexpr(kReal, tmp.toDouble() * sign);
+      token = Token(kReal, tmp.toDouble() * sign);
     }
     break;
 
@@ -348,7 +348,7 @@ Tokenizer::readNumber(int sign)
     {
       int fval = first.toInt(10);
       int sval = second.toInt(10);
-      token = Pexpr(kRational, Rational(fval * sign, sval));
+      token = Token(kRational, Rational(fval * sign, sval));
     }
     break;
 
@@ -362,28 +362,28 @@ Tokenizer::readNumber(int sign)
 }
 
 
-Pexpr
+Token
 Tokenizer::readNumericCharacter(bool needsTerminator)
 {
-  Pexpr token = readNumber(1);
+  Token token = readNumber(1);
   if (token.isIntLit()) {
     int readc = token.intLitValue();
 
     if (needsTerminator) {
       if (fCC == ';') {
         nextChar();
-        return Pexpr(kChar, readc);
+        return Token(kChar, readc);
       }
       else
         parseError(String("unterminated char"));
     }
     else
-      return Pexpr(kChar, readc);
+      return Token(kChar, readc);
   }
   else
     parseError(String("unterminated char"));
 
-  return Pexpr();
+  return Token();
 }
 
 
@@ -413,23 +413,23 @@ Tokenizer::mapCharNameToChar(const String& charnm)
 }
 
 
-Pexpr
+Token
 Tokenizer::translateChar(const String& charnm)
 {
   Char c = mapCharNameToChar(charnm);
-  return Pexpr(kChar, c);
+  return Token(kChar, c);
 }
 
 
-Pexpr
+Token
 Tokenizer::readSymbolCharacter(bool needsTerminator)
 {
-  Pexpr sym = readIdentifier(String(), kSymbol, false); // don't accept generics
+  Token sym = readIdentifier(String(), kSymbol, false); // don't accept generics
   if (sym.type() != kId)
     parseError(String("expected character symbol"));
 
-  Pexpr ct = (sym.idValue().length() == 1
-              ? Pexpr(kChar, sym.idValue()[0])
+  Token ct = (sym.idValue().length() == 1
+              ? Token(kChar, sym.idValue()[0])
               : translateChar(sym.idValue()));
   if (needsTerminator) {
     if (fCC == ';') {
@@ -444,7 +444,7 @@ Tokenizer::readSymbolCharacter(bool needsTerminator)
 }
 
 
-Pexpr
+Token
 Tokenizer::readNamedCharacter(bool needsTerminator)
 {
   if (isWhitespace(fCC))
@@ -453,11 +453,11 @@ Tokenizer::readNamedCharacter(bool needsTerminator)
     return readSymbolCharacter(needsTerminator);
   int c = fCC;
   nextChar();
-  return Pexpr(kChar, c);
+  return Token(kChar, c);
 }
 
 
-Pexpr
+Token
 Tokenizer::readCharacter(bool needsTerminator)
 {
   if (fCC == 'u') {
@@ -469,7 +469,7 @@ Tokenizer::readCharacter(bool needsTerminator)
 
 
 
-Pexpr
+Token
 Tokenizer::readString()
 {
   String result;
@@ -479,11 +479,11 @@ Tokenizer::readString()
     for ( ; ; ) {
       if (fCC == '"') {
         nextChar();
-        return Pexpr(kString, result);
+        return Token(kString, result);
       }
       else if (fCC == '\\') {
         nextChar();
-        Pexpr ct = readCharacter(true); // needs terminator
+        Token ct = readCharacter(true); // needs terminator
         if (ct.tokenType() == kChar)
           result = result + ct.charLitValue();
         else
@@ -501,14 +501,14 @@ Tokenizer::readString()
   }
 
   // todo
-  return Pexpr();
+  return Token();
 }
 
 
-Pexpr
+Token
 Tokenizer::nextToken()
 {
-  Pexpr t = nextTokenImpl();
+  Token t = nextTokenImpl();
   if (Properties::isTraceTokenizer()) {
     printf("%s ", (const char*)StrHelper(t.toString()));
     fflush(stdout);
@@ -517,12 +517,12 @@ Tokenizer::nextToken()
 }
 
 
-Pexpr
+Token
 Tokenizer::nextTokenImpl()
 {
   for ( ; ; ) {
     if (fCC == EOF)
-      return Pexpr(kEOF);
+      return Token(kEOF);
 
     switch (fCC) {
     case ' ': case '\n': case '\r': case '\t':
@@ -574,14 +574,14 @@ Tokenizer::nextTokenImpl()
         if (isSymbolChar(fCC))
           return readIdentifier(String("->"), kSymbol, true);
         else
-          return Pexpr(kMapTo);
+          return Token(kMapTo);
       default:
         if (isDigit(fCC))
           return readNumber(-1);
         else if (isSymbolChar(fCC))
           return readIdentifier(String("-"), kSymbol, true);
         else
-          return Pexpr(kMinus);
+          return Token(kMinus);
       }
 
     case '?':
@@ -595,10 +595,10 @@ Tokenizer::nextTokenImpl()
         if (fCC == '.')
           return makeTokenAndNext(kEllipsis);
         else
-          return Pexpr(kRange);
+          return Token(kRange);
       }
       else
-        return Pexpr(kDot);
+        return Token(kDot);
 
     case '#':
       nextChar();
@@ -632,7 +632,7 @@ Tokenizer::nextTokenImpl()
     }
   }
 
-  return Pexpr();
+  return Token();
 }
 
 
@@ -660,53 +660,53 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
       try {
-        assert(tnz.nextToken() == Pexpr(String("interface")));
-        assert(tnz.nextToken() == Pexpr(String("zero")));
-        assert(tnz.nextToken() == Pexpr(kParanOpen));
-        assert(tnz.nextToken() == Pexpr(kString, String("eyestep/zero 1.0:portables")));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
+        assert(tnz.nextToken() == Token(String("interface")));
+        assert(tnz.nextToken() == Token(String("zero")));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(kString, String("eyestep/zero 1.0:portables")));
+        assert(tnz.nextToken() == Token(kParanClose));
 
-        assert(tnz.nextToken() == Pexpr(String("export")));
-        assert(tnz.nextToken() == Pexpr(String("public")));
-        assert(tnz.nextToken() == Pexpr(kParanOpen));
-        assert(tnz.nextToken() == Pexpr(kMultiply));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
+        assert(tnz.nextToken() == Token(String("export")));
+        assert(tnz.nextToken() == Token(String("public")));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(kMultiply));
+        assert(tnz.nextToken() == Token(kParanClose));
 
-        assert(tnz.nextToken() == Pexpr(String("def")));
-        assert(tnz.nextToken() == Pexpr(String("class")));
-        assert(tnz.nextToken() == Pexpr(String("Portable")));
-        assert(tnz.nextToken() == Pexpr(kGenericOpen));
-        assert(tnz.nextToken() == Pexpr(String("T")));
-        assert(tnz.nextToken() == Pexpr(kGenericClose));
-        assert(tnz.nextToken() == Pexpr(kParanOpen));
-        assert(tnz.nextToken() == Pexpr(String("x")));
-        assert(tnz.nextToken() == Pexpr(kAt));
-        assert(tnz.nextToken() == Pexpr(String("Int")));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
-        assert(tnz.nextToken() == Pexpr(kColon));
-        assert(tnz.nextToken() == Pexpr(kParanOpen));
-        assert(tnz.nextToken() == Pexpr(String("Copyable")));
-        assert(tnz.nextToken() == Pexpr(kComma));
-        assert(tnz.nextToken() == Pexpr(String("Comparable")));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
+        assert(tnz.nextToken() == Token(String("def")));
+        assert(tnz.nextToken() == Token(String("class")));
+        assert(tnz.nextToken() == Token(String("Portable")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(String("T")));
+        assert(tnz.nextToken() == Token(kGenericClose));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(String("x")));
+        assert(tnz.nextToken() == Token(kAt));
+        assert(tnz.nextToken() == Token(String("Int")));
+        assert(tnz.nextToken() == Token(kParanClose));
+        assert(tnz.nextToken() == Token(kColon));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(String("Copyable")));
+        assert(tnz.nextToken() == Token(kComma));
+        assert(tnz.nextToken() == Token(String("Comparable")));
+        assert(tnz.nextToken() == Token(kParanClose));
 
-        assert(tnz.nextToken() == Pexpr(kBraceOpen));
-        assert(tnz.nextToken() == Pexpr(String("slot")));
-        assert(tnz.nextToken() == Pexpr(String("first")));
-        assert(tnz.nextToken() == Pexpr(kColon));
-        assert(tnz.nextToken() == Pexpr(String("T")));
-        assert(tnz.nextToken() == Pexpr(kAssign));
-        assert(tnz.nextToken() == Pexpr(String("x")));
+        assert(tnz.nextToken() == Token(kBraceOpen));
+        assert(tnz.nextToken() == Token(String("slot")));
+        assert(tnz.nextToken() == Token(String("first")));
+        assert(tnz.nextToken() == Token(kColon));
+        assert(tnz.nextToken() == Token(String("T")));
+        assert(tnz.nextToken() == Token(kAssign));
+        assert(tnz.nextToken() == Token(String("x")));
 
-        assert(tnz.nextToken() == Pexpr(kSemicolon));
+        assert(tnz.nextToken() == Token(kSemicolon));
 
-        assert(tnz.nextToken() == Pexpr(String("slot")));
-        assert(tnz.nextToken() == Pexpr(String("data")));
-        assert(tnz.nextToken() == Pexpr(kColon));
-        assert(tnz.nextToken() == Pexpr(String("Octet")));
-        assert(tnz.nextToken() == Pexpr(kBracketOpen));
-        assert(tnz.nextToken() == Pexpr(kBracketClose));
-        assert(tnz.nextToken() == Pexpr(kBraceClose));
+        assert(tnz.nextToken() == Token(String("slot")));
+        assert(tnz.nextToken() == Token(String("data")));
+        assert(tnz.nextToken() == Token(kColon));
+        assert(tnz.nextToken() == Token(String("Octet")));
+        assert(tnz.nextToken() == Token(kBracketOpen));
+        assert(tnz.nextToken() == Token(kBracketClose));
+        assert(tnz.nextToken() == Token(kBraceClose));
       }
       catch (const NotationException& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
@@ -723,29 +723,29 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
       try {
-        assert(tnz.nextToken() == Pexpr(kBool, true));
-        assert(tnz.nextToken() == Pexpr(kBool, false));
-        assert(tnz.nextToken() == Pexpr(kInteger, 12345));
-        assert(tnz.nextToken() == Pexpr(kInteger, 0xaaaa));
-        assert(tnz.nextToken() == Pexpr(kInteger, 0xabcdef));
-        assert(tnz.nextToken() == Pexpr(kInteger, 07123));
-        assert(tnz.nextToken() == Pexpr(kInteger, 45));
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kInteger, 3));
-        assert(tnz.nextToken() == Pexpr(kInteger, 4));
+        assert(tnz.nextToken() == Token(kBool, true));
+        assert(tnz.nextToken() == Token(kBool, false));
+        assert(tnz.nextToken() == Token(kInteger, 12345));
+        assert(tnz.nextToken() == Token(kInteger, 0xaaaa));
+        assert(tnz.nextToken() == Token(kInteger, 0xabcdef));
+        assert(tnz.nextToken() == Token(kInteger, 07123));
+        assert(tnz.nextToken() == Token(kInteger, 45));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInteger, 3));
+        assert(tnz.nextToken() == Token(kInteger, 4));
 
-        assert(tnz.nextToken() == Pexpr(kReal, 12.34));
-        assert(tnz.nextToken() == Pexpr(kReal, 0.12345e+10));
-        assert(tnz.nextToken() == Pexpr(kReal, 0.12345e+10)); // normalized 123.45e+7
-        assert(tnz.nextToken() == Pexpr(kReal, 0.000123456)); // normalized
-        assert(tnz.nextToken() == Pexpr(kReal, -3.1415));
+        assert(tnz.nextToken() == Token(kReal, 12.34));
+        assert(tnz.nextToken() == Token(kReal, 0.12345e+10));
+        assert(tnz.nextToken() == Token(kReal, 0.12345e+10)); // normalized 123.45e+7
+        assert(tnz.nextToken() == Token(kReal, 0.000123456)); // normalized
+        assert(tnz.nextToken() == Token(kReal, -3.1415));
 
-        assert(tnz.nextToken() == Pexpr(kRational, Rational(2, 3)));
-        assert(tnz.nextToken() == Pexpr(kRational, Rational(120, 33)));
-        assert(tnz.nextToken() == Pexpr(kRational, Rational(1, 1024)));
-        assert(tnz.nextToken() == Pexpr(kInteger, 5).setIsImaginary(true));
-        assert(tnz.nextToken() == Pexpr(kReal, 3.1415).setIsImaginary(true));
+        assert(tnz.nextToken() == Token(kRational, Rational(2, 3)));
+        assert(tnz.nextToken() == Token(kRational, Rational(120, 33)));
+        assert(tnz.nextToken() == Token(kRational, Rational(1, 1024)));
+        assert(tnz.nextToken() == Token(kInteger, 5).setIsImaginary(true));
+        assert(tnz.nextToken() == Token(kReal, 3.1415).setIsImaginary(true));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
@@ -764,17 +764,17 @@ public:
       cr->registerValue(String("gong"), 0xacf5);
 
       try {
-        assert(tnz.nextToken() == Pexpr(kChar, 0x20));
-        assert(tnz.nextToken() == Pexpr(kChar, 0x60));
-        assert(tnz.nextToken() == Pexpr(kChar, '('));
-        assert(tnz.nextToken() == Pexpr(kChar, 0x0a));
-        assert(tnz.nextToken() == Pexpr(kChar, 0x0d));
+        assert(tnz.nextToken() == Token(kChar, 0x20));
+        assert(tnz.nextToken() == Token(kChar, 0x60));
+        assert(tnz.nextToken() == Token(kChar, '('));
+        assert(tnz.nextToken() == Token(kChar, 0x0a));
+        assert(tnz.nextToken() == Token(kChar, 0x0d));
 
-        assert(tnz.nextToken() == Pexpr(kString, String("hello,\nworld!")));
-        assert(tnz.nextToken() == Pexpr(kString, String("\033a(;;")));
+        assert(tnz.nextToken() == Token(kString, String("hello,\nworld!")));
+        assert(tnz.nextToken() == Token(kString, String("\033a(;;")));
 
-        assert(tnz.nextToken() == Pexpr(kChar, 0xac00));
-        assert(tnz.nextToken() == Pexpr(kChar, 0xacf5));
+        assert(tnz.nextToken() == Token(kChar, 0xac00));
+        assert(tnz.nextToken() == Token(kChar, 0xacf5));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
@@ -788,37 +788,37 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
       try {
-        assert(tnz.nextToken() == Pexpr(String("def")));
-        assert(tnz.nextToken() == Pexpr(String("f")));
-        assert(tnz.nextToken() == Pexpr(kParanOpen));
-        assert(tnz.nextToken() == Pexpr(String("args")));
-        assert(tnz.nextToken() == Pexpr(kColon));
-        assert(tnz.nextToken() == Pexpr(kAmpersand));
-        assert(tnz.nextToken() == Pexpr(kParanOpen));
-        assert(tnz.nextToken() == Pexpr(String("String")));
-        assert(tnz.nextToken() == Pexpr(kComma));
-        assert(tnz.nextToken() == Pexpr(String("Uri")));
-        assert(tnz.nextToken() == Pexpr(kComma));
-        assert(tnz.nextToken() == Pexpr(String("Boolean")));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
-        assert(tnz.nextToken() == Pexpr(kBracketOpen));
-        assert(tnz.nextToken() == Pexpr(kBracketClose));
-        assert(tnz.nextToken() == Pexpr(kEllipsis));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
-        assert(tnz.nextToken() == Pexpr(kEllipsis));
+        assert(tnz.nextToken() == Token(String("def")));
+        assert(tnz.nextToken() == Token(String("f")));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(String("args")));
+        assert(tnz.nextToken() == Token(kColon));
+        assert(tnz.nextToken() == Token(kAmpersand));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(String("String")));
+        assert(tnz.nextToken() == Token(kComma));
+        assert(tnz.nextToken() == Token(String("Uri")));
+        assert(tnz.nextToken() == Token(kComma));
+        assert(tnz.nextToken() == Token(String("Boolean")));
+        assert(tnz.nextToken() == Token(kParanClose));
+        assert(tnz.nextToken() == Token(kBracketOpen));
+        assert(tnz.nextToken() == Token(kBracketClose));
+        assert(tnz.nextToken() == Token(kEllipsis));
+        assert(tnz.nextToken() == Token(kParanClose));
+        assert(tnz.nextToken() == Token(kEllipsis));
 
-        assert(tnz.nextToken() == Pexpr(String("def")));
-        assert(tnz.nextToken() == Pexpr(String("f")));
-        assert(tnz.nextToken() == Pexpr(kParanOpen));
-        assert(tnz.nextToken() == Pexpr(kKeyarg, String("arg")));
-        assert(tnz.nextToken() == Pexpr(String("_x")));
-        assert(tnz.nextToken() == Pexpr(kAssign));
-        assert(tnz.nextToken() == Pexpr(kInteger, 0));
-        assert(tnz.nextToken() == Pexpr(kRange));
-        assert(tnz.nextToken() == Pexpr(kInteger, 20));
-        assert(tnz.nextToken() == Pexpr(kBy));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
+        assert(tnz.nextToken() == Token(String("def")));
+        assert(tnz.nextToken() == Token(String("f")));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(kKeyarg, String("arg")));
+        assert(tnz.nextToken() == Token(String("_x")));
+        assert(tnz.nextToken() == Token(kAssign));
+        assert(tnz.nextToken() == Token(kInteger, 0));
+        assert(tnz.nextToken() == Token(kRange));
+        assert(tnz.nextToken() == Token(kInteger, 20));
+        assert(tnz.nextToken() == Token(kBy));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kParanClose));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
@@ -833,26 +833,26 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
       try {
-        assert(tnz.nextToken() == Pexpr(kKeyword, String("abc")));
-        assert(tnz.nextToken() == Pexpr(kKeyword, String("delft")));
+        assert(tnz.nextToken() == Token(kKeyword, String("abc")));
+        assert(tnz.nextToken() == Token(kKeyword, String("delft")));
 
-        assert(tnz.nextToken() == Pexpr(kLiteralArrayOpen));
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kComma));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kBracketClose));
+        assert(tnz.nextToken() == Token(kLiteralArrayOpen));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kComma));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kBracketClose));
 
-        assert(tnz.nextToken() == Pexpr(kLiteralArrayOpen));
-        assert(tnz.nextToken() == Pexpr(kBracketClose));
+        assert(tnz.nextToken() == Token(kLiteralArrayOpen));
+        assert(tnz.nextToken() == Token(kBracketClose));
 
-        assert(tnz.nextToken() == Pexpr(kLiteralVectorOpen));
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kMapTo));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
+        assert(tnz.nextToken() == Token(kLiteralVectorOpen));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kMapTo));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kParanClose));
 
-        assert(tnz.nextToken() == Pexpr(kLiteralVectorOpen));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
+        assert(tnz.nextToken() == Token(kLiteralVectorOpen));
+        assert(tnz.nextToken() == Token(kParanClose));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
@@ -871,138 +871,138 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
       try {
-        assert(tnz.nextToken() == Pexpr(String("Buffer")));
-        assert(tnz.nextToken() == Pexpr(kGenericOpen));
-        assert(tnz.nextToken() == Pexpr(String("Int")));
-        assert(tnz.nextToken() == Pexpr(kGenericClose));
-        assert(tnz.nextToken() == Pexpr(kParanOpen));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
-        assert(tnz.nextToken() == Pexpr(kBracketOpen));
-        assert(tnz.nextToken() == Pexpr(String("i")));
-        assert(tnz.nextToken() == Pexpr(kBracketClose));
-        assert(tnz.nextToken() == Pexpr(kLess));
-        assert(tnz.nextToken() == Pexpr(kInteger, 10));
-        assert(tnz.nextToken() == Pexpr(kLogicalAnd));
-        assert(tnz.nextToken() == Pexpr(kBool, true));
-        assert(tnz.nextToken() == Pexpr(kLogicalOr));
-        assert(tnz.nextToken() == Pexpr(kBool, false));
+        assert(tnz.nextToken() == Token(String("Buffer")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(String("Int")));
+        assert(tnz.nextToken() == Token(kGenericClose));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(kParanClose));
+        assert(tnz.nextToken() == Token(kBracketOpen));
+        assert(tnz.nextToken() == Token(String("i")));
+        assert(tnz.nextToken() == Token(kBracketClose));
+        assert(tnz.nextToken() == Token(kLess));
+        assert(tnz.nextToken() == Token(kInteger, 10));
+        assert(tnz.nextToken() == Token(kLogicalAnd));
+        assert(tnz.nextToken() == Token(kBool, true));
+        assert(tnz.nextToken() == Token(kLogicalOr));
+        assert(tnz.nextToken() == Token(kBool, false));
 
-        assert(tnz.nextToken() == Pexpr(String("T")));
-        assert(tnz.nextToken() == Pexpr(kGenericOpen));
-        assert(tnz.nextToken() == Pexpr(String("S")));
-        assert(tnz.nextToken() == Pexpr(kGenericOpen));
-        assert(tnz.nextToken() == Pexpr(String("Y")));
-        assert(tnz.nextToken() == Pexpr(kGenericClose));
-        assert(tnz.nextToken() == Pexpr(kGenericClose));
+        assert(tnz.nextToken() == Token(String("T")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(String("S")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(String("Y")));
+        assert(tnz.nextToken() == Token(kGenericClose));
+        assert(tnz.nextToken() == Token(kGenericClose));
 
-        assert(tnz.nextToken() == Pexpr(String("T")));
-        assert(tnz.nextToken() == Pexpr(kGenericOpen));
-        assert(tnz.nextToken() == Pexpr(String("S")));
-        assert(tnz.nextToken() == Pexpr(kGenericOpen));
-        assert(tnz.nextToken() == Pexpr(String("Y")));
-        assert(tnz.nextToken() == Pexpr(kGenericClose));
-        assert(tnz.nextToken() == Pexpr(kGenericClose));
+        assert(tnz.nextToken() == Token(String("T")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(String("S")));
+        assert(tnz.nextToken() == Token(kGenericOpen));
+        assert(tnz.nextToken() == Token(String("Y")));
+        assert(tnz.nextToken() == Token(kGenericClose));
+        assert(tnz.nextToken() == Token(kGenericClose));
 
-        assert(tnz.nextToken() == Pexpr(String("a")));
-        assert(tnz.nextToken() == Pexpr(kLess));
-        assert(tnz.nextToken() == Pexpr(String("b")));
+        assert(tnz.nextToken() == Token(String("a")));
+        assert(tnz.nextToken() == Token(kLess));
+        assert(tnz.nextToken() == Token(String("b")));
 
-        assert(tnz.nextToken() == Pexpr(String("val")));
-        assert(tnz.nextToken() == Pexpr(kShiftLeft));
-        assert(tnz.nextToken() == Pexpr(kInteger, 5));
-        assert(tnz.nextToken() == Pexpr(String("val")));
-        assert(tnz.nextToken() == Pexpr(kShiftRight));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
+        assert(tnz.nextToken() == Token(String("val")));
+        assert(tnz.nextToken() == Token(kShiftLeft));
+        assert(tnz.nextToken() == Token(kInteger, 5));
+        assert(tnz.nextToken() == Token(String("val")));
+        assert(tnz.nextToken() == Token(kShiftRight));
+        assert(tnz.nextToken() == Token(kInteger, 2));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kLess));
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kLess));
+        assert(tnz.nextToken() == Token(kInteger, 1));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kLessEqual));
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kLessEqual));
+        assert(tnz.nextToken() == Token(kInteger, 1));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kGreater));
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kGreater));
+        assert(tnz.nextToken() == Token(kInteger, 1));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kGreaterEqual));
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kGreaterEqual));
+        assert(tnz.nextToken() == Token(kInteger, 1));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kCompare));
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kCompare));
+        assert(tnz.nextToken() == Token(kInteger, 1));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kUnequal));
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kUnequal));
+        assert(tnz.nextToken() == Token(kInteger, 1));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-        assert(tnz.nextToken() == Pexpr(kEqual));
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+        assert(tnz.nextToken() == Token(kEqual));
+        assert(tnz.nextToken() == Token(kInteger, 1));
 
-        assert(tnz.nextToken() == Pexpr(String("a")));
-        assert(tnz.nextToken() == Pexpr(kPlus));
-        assert(tnz.nextToken() == Pexpr(String("b")));
+        assert(tnz.nextToken() == Token(String("a")));
+        assert(tnz.nextToken() == Token(kPlus));
+        assert(tnz.nextToken() == Token(String("b")));
 
-        assert(tnz.nextToken() == Pexpr(kString, String("a")));
-        assert(tnz.nextToken() == Pexpr(kAppend));
-        assert(tnz.nextToken() == Pexpr(kString, String("b")));
+        assert(tnz.nextToken() == Token(kString, String("a")));
+        assert(tnz.nextToken() == Token(kAppend));
+        assert(tnz.nextToken() == Token(kString, String("b")));
 
-        assert(tnz.nextToken() == Pexpr(String("a")));
-        assert(tnz.nextToken() == Pexpr(kMinus));
-        assert(tnz.nextToken() == Pexpr(String("b")));
+        assert(tnz.nextToken() == Token(String("a")));
+        assert(tnz.nextToken() == Token(kMinus));
+        assert(tnz.nextToken() == Token(String("b")));
 
-        assert(tnz.nextToken() == Pexpr(String("a")));
-        assert(tnz.nextToken() == Pexpr(kMultiply));
-        assert(tnz.nextToken() == Pexpr(String("b")));
+        assert(tnz.nextToken() == Token(String("a")));
+        assert(tnz.nextToken() == Token(kMultiply));
+        assert(tnz.nextToken() == Token(String("b")));
 
-        assert(tnz.nextToken() == Pexpr(String("a")));
-        assert(tnz.nextToken() == Pexpr(kDivide));
-        assert(tnz.nextToken() == Pexpr(String("b")));
+        assert(tnz.nextToken() == Token(String("a")));
+        assert(tnz.nextToken() == Token(kDivide));
+        assert(tnz.nextToken() == Token(String("b")));
 
-        assert(tnz.nextToken() == Pexpr(String("a")));
-        assert(tnz.nextToken() == Pexpr(kExponent));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
+        assert(tnz.nextToken() == Token(String("a")));
+        assert(tnz.nextToken() == Token(kExponent));
+        assert(tnz.nextToken() == Token(kInteger, 2));
 
-        assert(tnz.nextToken() == Pexpr(String("a")));
-        assert(tnz.nextToken() == Pexpr(kMod));
-        assert(tnz.nextToken() == Pexpr(kInteger, 5));
-
-
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kBitXor));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kBitOr));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
-
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kBitAnd));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
+        assert(tnz.nextToken() == Token(String("a")));
+        assert(tnz.nextToken() == Token(kMod));
+        assert(tnz.nextToken() == Token(kInteger, 5));
 
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kFold));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kBitXor));
+        assert(tnz.nextToken() == Token(kInteger, 2));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kMapTo));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kBitOr));
+        assert(tnz.nextToken() == Token(kInteger, 2));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kIn));
-        assert(tnz.nextToken() == Pexpr(kInteger, 2));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kBitAnd));
+        assert(tnz.nextToken() == Token(kInteger, 2));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kIsa));
-        assert(tnz.nextToken() == Pexpr(String("Number")));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 1));
-        assert(tnz.nextToken() == Pexpr(kAs));
-        assert(tnz.nextToken() == Pexpr(String("Octet")));
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kFold));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kMapTo));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kIn));
+        assert(tnz.nextToken() == Token(kInteger, 2));
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kIsa));
+        assert(tnz.nextToken() == Token(String("Number")));
+
+        assert(tnz.nextToken() == Token(kInteger, 1));
+        assert(tnz.nextToken() == Token(kAs));
+        assert(tnz.nextToken() == Token(String("Octet")));
 
       }
       catch (const Exception& ne) {
@@ -1017,27 +1017,27 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
       try {
-        assert(tnz.nextToken() == Pexpr(String("io")));
-        assert(tnz.nextToken() == Pexpr(kPipe));
-        assert(tnz.nextToken() == Pexpr(String("File")));
+        assert(tnz.nextToken() == Token(String("io")));
+        assert(tnz.nextToken() == Token(kPipe));
+        assert(tnz.nextToken() == Token(String("File")));
 
-        assert(tnz.nextToken() == Pexpr(String("self")));
-        assert(tnz.nextToken() == Pexpr(kDot));
-        assert(tnz.nextToken() == Pexpr(String("io")));
-        assert(tnz.nextToken() == Pexpr(kPipe));
-        assert(tnz.nextToken() == Pexpr(String("val")));
-        assert(tnz.nextToken() == Pexpr(kDot));
-        assert(tnz.nextToken() == Pexpr(String("display")));
+        assert(tnz.nextToken() == Token(String("self")));
+        assert(tnz.nextToken() == Token(kDot));
+        assert(tnz.nextToken() == Token(String("io")));
+        assert(tnz.nextToken() == Token(kPipe));
+        assert(tnz.nextToken() == Token(String("val")));
+        assert(tnz.nextToken() == Token(kDot));
+        assert(tnz.nextToken() == Token(String("display")));
 
-        assert(tnz.nextToken() == Pexpr(String("f")));
-        assert(tnz.nextToken() == Pexpr(kParanOpen));
-        assert(tnz.nextToken() == Pexpr(kQuote));
-        assert(tnz.nextToken() == Pexpr(String("T")));
-        assert(tnz.nextToken() == Pexpr(kParanClose));
+        assert(tnz.nextToken() == Token(String("f")));
+        assert(tnz.nextToken() == Token(kParanOpen));
+        assert(tnz.nextToken() == Token(kQuote));
+        assert(tnz.nextToken() == Token(String("T")));
+        assert(tnz.nextToken() == Token(kParanClose));
 
-        assert(tnz.nextToken() == Pexpr(kInteger, 12));
-        assert(tnz.nextToken() == Pexpr(kBackQuote));
-        assert(tnz.nextToken() == Pexpr(String("mm")));
+        assert(tnz.nextToken() == Token(kInteger, 12));
+        assert(tnz.nextToken() == Token(kBackQuote));
+        assert(tnz.nextToken() == Token(String("mm")));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
@@ -1050,8 +1050,8 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))));
 
       try {
-        assert(tnz.nextToken() == Pexpr(kSangHash));
-        assert(tnz.nextToken() == Pexpr(kMacroParam, String("val:name")));
+        assert(tnz.nextToken() == Token(kSangHash));
+        assert(tnz.nextToken() == Token(kMacroParam, String("val:name")));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
