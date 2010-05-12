@@ -35,5 +35,3 @@ Bootstrap compiler
   continue with pexpreval (add the missing operators)
 
   unittests for Rational() class.
-
-  fast StringBuffer() implementation for the tokenizer.

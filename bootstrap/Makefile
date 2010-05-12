@@ -22,6 +22,7 @@ SOURCES =         \
 	port.cpp        \
 	properties.cpp  \
 	str.cpp         \
+	strbuf.cpp      \
 	token.cpp       \
 	tokeneval.cpp   \
 	tokenizer.cpp   \
@@ -45,6 +46,7 @@ HEADERS =         \
 	refcountable.h  \
 	registry.h      \
 	str.h           \
+	strbuf.h        \
 	token.h         \
 	tokeneval.h     \
 	tokenizer.h     \

@@ -12,6 +12,7 @@
 #include "properties.h"
 #include "unittests.h"
 #include "registry.h"
+#include "strbuf.h"
 
 
 using namespace heather;
@@ -146,7 +147,7 @@ Token
 Tokenizer::readIdentifier(const String& prefix, TokenType type,
                           bool acceptGenerics)
 {
-  String identifier = prefix;
+  StringBuffer idBuffer(prefix);
 
   try {
     while (!isDelimiter(fCC)) {
@@ -158,13 +159,14 @@ Tokenizer::readIdentifier(const String& prefix, TokenType type,
         else if (fCC == '>')
           break;
       }
-      identifier = identifier + Char(fCC);
+      idBuffer << Char(fCC);
       nextChar();
     }
   }
   catch (const EofException& ) {
   }
 
+  String identifier = idBuffer.toString();
   if (type == kSymbol && identifier.endsWith(String(":")))
     return Token(kKeyarg, identifier.part(0, identifier.length() - 1));
   else
@@ -254,15 +256,15 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
 String
 Tokenizer::readIntNumberPart(bool acceptHex)
 {
-  String result;
+  StringBuffer result;
 
   while ((acceptHex && isHexDigit(fCC)) ||
          isDigit(fCC)) {
-    result = result + Char(fCC);
+    result << Char(fCC);
     nextChar();
   }
 
-  return result;
+  return result.toString();
 }
 
 
@@ -336,11 +338,12 @@ Tokenizer::readNumber(int sign)
 
   case kReal:
     {
-      String tmp = first + "." + second;
+      StringBuffer tmp(first);
+      tmp << "." << second;
       if (!exponent.isEmpty())
-        tmp = tmp + "e" + (expSign < 0 ? '-' : '+') + exponent;
+        tmp << "e" << (expSign < 0 ? '-' : '+') << exponent;
 
-      token = Token(kReal, tmp.toDouble() * sign);
+      token = Token(kReal, tmp.toString().toDouble() * sign);
     }
     break;
 
@@ -472,25 +475,25 @@ Tokenizer::readCharacter(bool needsTerminator)
 Token
 Tokenizer::readString()
 {
-  String result;
+  StringBuffer result;
   int prevlc = fLineCount;
 
   try {
     for ( ; ; ) {
       if (fCC == '"') {
         nextChar();
-        return Token(kString, result);
+        return Token(kString, result.toString());
       }
       else if (fCC == '\\') {
         nextChar();
         Token ct = readCharacter(true); // needs terminator
         if (ct.tokenType() == kChar)
-          result = result + ct.charValue();
+          result << ct.charValue();
         else
           parseError(String("Char expected"));
       }
       else {
-        result = result + Char(fCC);
+        result << Char(fCC);
         nextChar();
       }
     }

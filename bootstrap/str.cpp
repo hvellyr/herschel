@@ -73,6 +73,13 @@ namespace heather
     }
 
 
+    const Char* data(int offset) const
+    {
+      assert(offset >= 0 && offset < fLength);
+      return &fData[offset];
+    }
+
+
     Char* data(int offset)
     {
       assert(offset >= 0 && offset < fLength);
@@ -210,6 +217,13 @@ String::String(const Char* str, int items)
 String::~String()
 {
   fImpl->decRef();
+}
+
+
+const Char*
+String::data() const
+{
+  return fImpl->data(0);
 }
 
 

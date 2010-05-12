@@ -79,6 +79,11 @@ namespace heather
     double toDouble() const;
 
   private:
+    friend class StringBuffer;
+
+    const Char* data() const;
+
+    //-------- data member
     StringImpl* fImpl;
   };
 
