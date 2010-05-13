@@ -118,6 +118,8 @@ namespace heather
     static const Token typeToken;
     static const Token unitToken;
     static const Token whenToken;
+    static const Token onToken;
+    static const Token functionToken;
 
   private:
     friend class FirstPass;
