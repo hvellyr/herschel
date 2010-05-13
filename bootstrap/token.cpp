@@ -757,21 +757,6 @@ Token::isSymbol() const
 
 
 bool
-Token::isSymbol(const char* sym) const
-{
-  return isSymbol(String(sym));
-}
-
-
-bool
-Token::isSymbol(const String& sym) const
-{
-  return fType == kSymbol &&
-    dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr == sym;
-}
-
-
-bool
 Token::isPunct() const
 {
   return type() == kPunct;
