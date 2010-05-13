@@ -28,33 +28,42 @@ TokenEvalContext::evalAdd(const Token& lexpr, const Token& rexpr) const
   if (left.isInt()) {
     int value = left.intValue();
     if (right.isInt())
-      return Token(kInt, value + right.intValue());
+      return Token(left.srcpos(),
+                   kInt, value + right.intValue());
     else if (right.isReal())
-      return Token(kReal, double(value) + right.realValue());
+      return Token(left.srcpos(),
+                   kReal, double(value) + right.realValue());
     else if (right.isRational())
-      return Token(kRational, Rational(value, 1) + right.rationalValue());
+      return Token(left.srcpos(),
+                   kRational, Rational(value, 1) + right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isReal()) {
     double value = left.realValue();
     if (right.isInt())
-      return Token(kReal, value + double(right.intValue()));
+      return Token(left.srcpos(),
+                   kReal, value + double(right.intValue()));
     else if (right.isReal())
-      return Token(kReal, value + right.realValue());
+      return Token(left.srcpos(),
+                   kReal, value + right.realValue());
     else if (right.isRational())
-      return Token(kReal, value + right.rationalValue().toReal());
+      return Token(left.srcpos(),
+                   kReal, value + right.rationalValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRational()) {
     Rational value = left.rationalValue();
     if (right.isInt())
-      return Token(kRational, value + Rational(right.intValue(), 1));
+      return Token(left.srcpos(),
+                   kRational, value + Rational(right.intValue(), 1));
     else if (right.isReal())
-      return Token(kReal, value.toReal() + right.realValue());
+      return Token(left.srcpos(),
+                   kReal, value.toReal() + right.realValue());
     else if (right.isRational())
-      return Token(kRational, value + right.rationalValue());
+      return Token(left.srcpos(),
+                   kRational, value + right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -72,33 +81,42 @@ TokenEvalContext::evalMinus(const Token& lexpr, const Token& rexpr) const
   if (left.isInt()) {
     int value = left.intValue();
     if (right.isInt())
-      return Token(kInt, value - right.intValue());
+      return Token(left.srcpos(),
+                   kInt, value - right.intValue());
     else if (right.isReal())
-      return Token(kReal, double(value) - right.realValue());
+      return Token(left.srcpos(),
+                   kReal, double(value) - right.realValue());
     else if (right.isRational())
-      return Token(kRational, Rational(value, 1) - right.rationalValue());
+      return Token(left.srcpos(),
+                   kRational, Rational(value, 1) - right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isReal()) {
     double value = left.realValue();
     if (right.isInt())
-      return Token(kReal, value - double(right.intValue()));
+      return Token(left.srcpos(),
+                   kReal, value - double(right.intValue()));
     else if (right.isReal())
-      return Token(kReal, value - right.realValue());
+      return Token(left.srcpos(),
+                   kReal, value - right.realValue());
     else if (right.isRational())
-      return Token(kReal, value - right.rationalValue().toReal());
+      return Token(left.srcpos(),
+                   kReal, value - right.rationalValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRational()) {
     Rational value = left.rationalValue();
     if (right.isInt())
-      return Token(kRational, value - Rational(right.intValue(), 1));
+      return Token(left.srcpos(),
+                   kRational, value - Rational(right.intValue(), 1));
     else if (right.isReal())
-      return Token(kReal, value.toReal() - right.realValue());
+      return Token(left.srcpos(),
+                   kReal, value.toReal() - right.realValue());
     else if (right.isRational())
-      return Token(kRational, value - right.rationalValue());
+      return Token(left.srcpos(),
+                   kRational, value - right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -116,33 +134,42 @@ TokenEvalContext::evalMultiply(const Token& lexpr, const Token& rexpr) const
   if (left.isInt()) {
     int value = left.intValue();
     if (right.isInt())
-      return Token(kInt, value * right.intValue());
+      return Token(left.srcpos(),
+                   kInt, value * right.intValue());
     else if (right.isReal())
-      return Token(kReal, double(value) * right.realValue());
+      return Token(left.srcpos(),
+                   kReal, double(value) * right.realValue());
     else if (right.isRational())
-      return Token(kRational, Rational(value, 1) * right.rationalValue());
+      return Token(left.srcpos(),
+                   kRational, Rational(value, 1) * right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isReal()) {
     double value = left.realValue();
     if (right.isInt())
-      return Token(kReal, value * double(right.intValue()));
+      return Token(left.srcpos(),
+                   kReal, value * double(right.intValue()));
     else if (right.isReal())
-      return Token(kReal, value * right.realValue());
+      return Token(left.srcpos(),
+                   kReal, value * right.realValue());
     else if (right.isRational())
-      return Token(kReal, value * right.rationalValue().toReal());
+      return Token(left.srcpos(),
+                   kReal, value * right.rationalValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRational()) {
     Rational value = left.rationalValue();
     if (right.isInt())
-      return Token(kRational, value * Rational(right.intValue(), 1));
+      return Token(left.srcpos(),
+                   kRational, value * Rational(right.intValue(), 1));
     else if (right.isReal())
-      return Token(kReal, value.toReal() * right.realValue());
+      return Token(left.srcpos(),
+                   kReal, value.toReal() * right.realValue());
     else if (right.isRational())
-      return Token(kRational, value * right.rationalValue());
+      return Token(left.srcpos(),
+                   kRational, value * right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -163,11 +190,14 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(kInt, value / right.intValue());
+      return Token(left.srcpos(),
+                   kInt, value / right.intValue());
     else if (right.isReal())
-      return Token(kReal, double(value) / right.realValue());
+      return Token(left.srcpos(),
+                   kReal, double(value) / right.realValue());
     else if (right.isRational())
-      return Token(kRational, Rational(value, 1) / right.rationalValue());
+      return Token(left.srcpos(),
+                   kRational, Rational(value, 1) / right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -177,11 +207,14 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(kReal, value / double(right.intValue()));
+      return Token(left.srcpos(),
+                   kReal, value / double(right.intValue()));
     else if (right.isReal())
-      return Token(kReal, value / right.realValue());
+      return Token(left.srcpos(),
+                   kReal, value / right.realValue());
     else if (right.isRational())
-      return Token(kReal, value / right.rationalValue().toReal());
+      return Token(left.srcpos(),
+                   kReal, value / right.rationalValue().toReal());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -191,11 +224,14 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(kRational, value / Rational(right.intValue(), 1));
+      return Token(left.srcpos(),
+                   kRational, value / Rational(right.intValue(), 1));
     else if (right.isReal())
-      return Token(kReal, value.toReal() / right.realValue());
+      return Token(left.srcpos(),
+                   kReal, value.toReal() / right.realValue());
     else if (right.isRational())
-      return Token(kRational, value / right.rationalValue());
+      return Token(left.srcpos(),
+                   kRational, value / right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -216,7 +252,8 @@ TokenEvalContext::evalModulo(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(kInt, value % right.intValue());
+      return Token(left.srcpos(),
+                   kInt, value % right.intValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -235,7 +272,8 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
     int value = left.intValue();
 
     if (right.isInt())
-      return Token(kInt, heather::exponent(value, right.intValue()));
+      return Token(left.srcpos(),
+                   kInt, heather::exponent(value, right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -245,7 +283,8 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(kReal, heather::exponent(value, right.intValue()));
+      return Token(left.srcpos(),
+                   kReal, heather::exponent(value, right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -255,7 +294,8 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(kRational, value.exponent(right.intValue()));
+      return Token(left.srcpos(),
+                   kRational, value.exponent(right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -285,9 +325,9 @@ TokenEvalContext::evalBitOp(const Token& lexpr, const Token& rexpr,
     default:
       assert(0);
     }
-    return Token(kInt, result);
+    return Token(left.srcpos(), kInt, result);
   }
-  
+
   throw BadExpressionException(fromInt(__LINE__));
 }
 
@@ -301,37 +341,39 @@ TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
   if (left.tokenType() == right.tokenType()) {
     switch (left.tokenType()) {
     case kString:
-      return Token(kInt, left.stringValue().compare(right.stringValue()));
+      return Token(left.srcpos(),
+                   kInt, left.stringValue().compare(right.stringValue()));
     case kBool:
       if (left.boolValue() == right.boolValue())
-        return Token(kInt, 0);
+        return Token(left.srcpos(), kInt, 0);
       else
-        return Token(kInt, -1);
+        return Token(left.srcpos(), kInt, -1);
     case kInt:
-      return Token(kInt, left.intValue() - right.intValue());
+      return Token(left.srcpos(), kInt, left.intValue() - right.intValue());
     case kReal:
       if (left.realValue() < right.realValue())
-        return Token(kInt, -1);
+        return Token(left.srcpos(), kInt, -1);
       else if (left.realValue() > right.realValue())
-        return Token(kInt, 1);
+        return Token(left.srcpos(), kInt, 1);
       else
-        return Token(kInt, 0);
+        return Token(left.srcpos(), kInt, 0);
     case kRational:
       if (left.rationalValue() < right.rationalValue())
-        return Token(kInt, -1);
+        return Token(left.srcpos(), kInt, -1);
       else if (left.rationalValue() > right.rationalValue())
-        return Token(kInt, 1);
+        return Token(left.srcpos(), kInt, 1);
       else
-        return Token(kInt, 0);
+        return Token(left.srcpos(), kInt, 0);
     case kChar:
-      return Token(kInt, left.intValue() - right.intValue());
+      return Token(left.srcpos(),
+                   kInt, left.intValue() - right.intValue());
 
     default:
       throw BadExpressionException(fromInt(__LINE__));
     }
   }
 
-  return Token(kInt, -1);
+  return Token(left.srcpos(), kInt, -1);
 }
 
 
@@ -355,7 +397,7 @@ TokenEvalContext::evalLogical(const Token& lexpr, const Token& rexpr,
     }
   }
 
-  return Token(kBool, result);
+  return Token(p.srcpos(), kBool, result);
 }
 
 
@@ -367,13 +409,13 @@ TokenEvalContext::evalAnd(const Token& lexpr, const Token& rexpr) const
     if (left.boolValue()) {
       Token right = evalToken(rexpr);
       if (right.isBool()) {
-        return Token(kBool, right.boolValue());
+        return Token(left.srcpos(), kBool, right.boolValue());
       }
 
       throw BadExpressionException(fromInt(__LINE__));
     }
 
-    return Token(kBool, false);
+    return Token(left.srcpos(), kBool, false);
   }
 
   throw BadExpressionException(fromInt(__LINE__));
@@ -386,7 +428,7 @@ TokenEvalContext::evalOr(const Token& lexpr, const Token& rexpr) const
   Token left = evalToken(lexpr);
   if (left.isBool()) {
     if (left.boolValue())
-      return Token(kBool, true);
+      return Token(left.srcpos(), kBool, true);
 
     Token right = evalToken(rexpr);
     if (right.isBool())
@@ -404,9 +446,10 @@ TokenEvalContext::evalAppend(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
-  
+
   if (left.isString() && right.isString()) {
-    return Token(kString, left.stringValue() + right.stringValue());
+    return Token(left.srcpos(),
+                 kString, left.stringValue() + right.stringValue());
   }
   throw BadExpressionException(fromInt(__LINE__));
 }
@@ -545,29 +588,30 @@ public:
   {
     Ptr<ConfigVarRegistry> reg = new ConfigVarRegistry;
     TokenEvalContext ctx(reg);
+    SrcPos sp;
 
     Token t;
 
-    t = ctx.evalToken(Token(kInt, 25));
+    t = ctx.evalToken(Token(sp, kInt, 25));
     assert(t.isInt() && t.intValue() == 25);
 
-    t = ctx.evalToken(Token(kReal, 3.1415));
+    t = ctx.evalToken(Token(sp, kReal, 3.1415));
     assert(t.isReal() && t.realValue() == 3.1415);
 
-    t = ctx.evalToken(Token(kRational, Rational(101, 127)));
+    t = ctx.evalToken(Token(sp, kRational, Rational(101, 127)));
     assert(t.isRational() && t.rationalValue() == Rational(101, 127));
 
-    t = ctx.evalToken(Token(kString, "hello world"));
+    t = ctx.evalToken(Token(sp, kString, "hello world"));
     assert(t.isString() && t.stringValue() == String("hello world"));
 
-    t = ctx.evalToken(Token(kChar, 0xac00));
+    t = ctx.evalToken(Token(sp, kChar, 0xac00));
     assert(t.isChar() && t.charValue() == Char(0xac00));
 
 
 #define MAKE_BINARY_SEQ(_ltype, _lvalue, _op, _rtype, _rvalue)  \
-    Token() << Token(_ltype, _lvalue)                           \
-            << Token(_op)                                       \
-            << Token(_rtype, _rvalue)
+    Token() << Token(sp, _ltype, _lvalue)                           \
+            << Token(sp, _op)                                       \
+            << Token(sp, _rtype, _rvalue)
 
     //-------- test add
 

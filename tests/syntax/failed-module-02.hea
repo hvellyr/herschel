@@ -1,0 +1,11 @@
+module core ("sijo/ixwick 0.1"
+{
+  def i = 0
+
+
+module xyz ("sijo/xyz 0.2")
+{
+  def e = 2
+
+
+interface o

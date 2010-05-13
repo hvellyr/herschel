@@ -154,7 +154,8 @@ main(int argc, char** argv)
     {
       try {
         Ptr<Parser> parser = new Parser;
-        Ptr<AptNode> apt = parser->parse(new CharPort(new FilePort(*it, "rb")));
+        Ptr<AptNode> apt = parser->parse(new CharPort(new FilePort(*it, "rb")),
+                                         *it);
       }
       catch (const Exception& e) {
         fprintf(stderr, "ERROR: compilation of '%s' failed: %s\n",

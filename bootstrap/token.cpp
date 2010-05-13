@@ -68,6 +68,9 @@ namespace heather
     case kLiteralVectorOpen: return String("#(");
     case kLiteralArrayOpen:  return String("#[");
     case kSangHash:          return String("##");
+
+    case kEOF:     return String("EOF");
+    case kInvalid: return String("INVALID");
     default:
       assert(0);
     }
@@ -430,33 +433,38 @@ Token::Token()
 { }
 
 
-Token::Token(TokenType left, TokenType right)
+Token::Token(const SrcPos& where, TokenType left, TokenType right)
   : fType(kNestedExpr),
-    fImpl(new NestedTokenImpl(left, right))
+    fImpl(new NestedTokenImpl(left, right)),
+    fSrcPos(where)
 { }
 
 
-Token::Token(TokenType ttype)
-  : fType(ttype)
+Token::Token(const SrcPos& where, TokenType ttype)
+  : fType(ttype),
+    fSrcPos(where)
 {
   assert(type() == kPunct);
 }
 
 
-Token::Token(const String& str)
+Token::Token(const SrcPos& where, const String& str)
   : fType(kSymbol),
-    fImpl(new IdTokenImpl(str))
+    fImpl(new IdTokenImpl(str)),
+    fSrcPos(where)
 { }
 
 
-Token::Token(const char* str)
+Token::Token(const SrcPos& where, const char* str)
   : fType(kSymbol),
-    fImpl(new IdTokenImpl(String(str)))
+    fImpl(new IdTokenImpl(String(str))),
+    fSrcPos(where)
 { }
 
 
-Token::Token(TokenType ttype, const String& str)
-  : fType(ttype)
+Token::Token(const SrcPos& where, TokenType ttype, const String& str)
+  : fType(ttype),
+    fSrcPos(where)
 {
   if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam)
     fImpl = new IdTokenImpl(str);
@@ -466,8 +474,9 @@ Token::Token(TokenType ttype, const String& str)
 }
 
 
-Token::Token(TokenType ttype, const char* str)
-  : fType(ttype)
+Token::Token(const SrcPos& where, TokenType ttype, const char* str)
+  : fType(ttype),
+    fSrcPos(where)
 {
   if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam)
     fImpl = new IdTokenImpl(String(str));
@@ -477,33 +486,37 @@ Token::Token(TokenType ttype, const char* str)
 }
 
 
-Token::Token(TokenType ttype, int value)
+Token::Token(const SrcPos& where, TokenType ttype, int value)
   : fType(ttype),
-    fImpl(new NumberTokenImpl(ttype, value))
+    fImpl(new NumberTokenImpl(ttype, value)),
+    fSrcPos(where)
 {
   assert(type() == kLit);
 }
 
 
-Token::Token(TokenType ttype, double value)
+Token::Token(const SrcPos& where, TokenType ttype, double value)
   : fType(ttype),
-    fImpl(new NumberTokenImpl(ttype, value))
+    fImpl(new NumberTokenImpl(ttype, value)),
+    fSrcPos(where)
 {
   assert(type() == kLit);
 }
 
 
-Token::Token(TokenType ttype, Rational value)
+Token::Token(const SrcPos& where, TokenType ttype, Rational value)
   : fType(ttype),
-    fImpl(new NumberTokenImpl(ttype, value))
+    fImpl(new NumberTokenImpl(ttype, value)),
+    fSrcPos(where)
 {
   assert(type() == kLit);
 }
 
 
-Token::Token(TokenType ttype, bool value)
+Token::Token(const SrcPos& where, TokenType ttype, bool value)
   : fType(ttype),
-    fImpl(new NumberTokenImpl(ttype, value))
+    fImpl(new NumberTokenImpl(ttype, value)),
+    fSrcPos(where)
 {
   assert(type() == kLit);
 }
@@ -511,7 +524,8 @@ Token::Token(TokenType ttype, bool value)
 
 Token::Token(const Token& other)
   : fType(other.fType),
-    fImpl(other.fImpl)
+    fImpl(other.fImpl),
+    fSrcPos(other.fSrcPos)
 { }
 
 
@@ -520,6 +534,7 @@ Token::operator=(const Token& other)
 {
   fType = other.fType;
   fImpl = other.fImpl;
+  fSrcPos = other.fSrcPos;
   return *this;
 }
 
@@ -537,9 +552,38 @@ Token::operator==(const Token& other) const
 
 
 bool
+Token::operator==(TokenType type) const
+{
+  return fType == type;
+}
+
+
+bool
+Token::operator!=(TokenType type) const
+{
+  return fType != type;
+}
+
+
+bool
 Token::operator!=(const Token& other) const
 {
   return !(operator==(other));
+}
+
+
+const SrcPos&
+Token::srcpos() const
+{
+  return fSrcPos;
+}
+
+
+Token&
+Token::setSrcpos(const SrcPos& srcpos)
+{
+  fSrcPos = srcpos;
+  return *this;
 }
 
 
@@ -1085,39 +1129,41 @@ public:
 
   virtual void run()
   {
-    assert(Token(kReal,     3.1415)         == Token(kReal,     3.1415));
-    assert(Token(kInt,      12345)          == Token(kInt,      12345));
-    assert(Token(kChar,     0xac00)         == Token(kChar,     0xac00));
-    assert(Token(kString,   "abc")          == Token(kString,   "abc"));
-    assert(Token(kSymbol,   "abc")          == Token(kSymbol,   "abc"));
-    assert(Token(kRational, Rational(7, 4)) == Token(kRational, Rational(7, 4)));
+    SrcPos sp;
+
+    assert(Token(sp, kReal,     3.1415)         == Token(sp, kReal,     3.1415));
+    assert(Token(sp, kInt,      12345)          == Token(sp, kInt,      12345));
+    assert(Token(sp, kChar,     0xac00)         == Token(sp, kChar,     0xac00));
+    assert(Token(sp, kString,   "abc")          == Token(sp, kString,   "abc"));
+    assert(Token(sp, kSymbol,   "abc")          == Token(sp, kSymbol,   "abc"));
+    assert(Token(sp, kRational, Rational(7, 4)) == Token(sp, kRational, Rational(7, 4)));
 
     assert(Token() == Token());
-    assert(Token(kParanOpen, kParanClose) == Token(kParanOpen, kParanClose));
-    assert(Token() << Token(kInt, 25) == Token() << Token(kInt, 25));
-    assert(( Token(kParanOpen, kParanClose) << Token(kInt, 25) ) ==
-           ( Token(kParanOpen, kParanClose) << Token(kInt, 25) ));
+    assert(Token(sp, kParanOpen, kParanClose) == Token(sp, kParanOpen, kParanClose));
+    assert(Token() << Token(sp, kInt, 25) == Token() << Token(sp, kInt, 25));
+    assert(( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ) ==
+           ( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ));
 
-    assert(Token(kReal, 3.1415).realValue() == 3.1415);
-    assert(Token(kReal, 1.2345).tokenType() == kReal);
-    assert(Token(kBool, true).boolValue() == true);
-    assert(Token(kInt, 0x10000).intValue() == 0x10000);
-    assert(Token(kRational, Rational(23, 27)).rationalValue() == Rational(23, 27));
+    assert(Token(sp, kReal, 3.1415).realValue() == 3.1415);
+    assert(Token(sp, kReal, 1.2345).tokenType() == kReal);
+    assert(Token(sp, kBool, true).boolValue() == true);
+    assert(Token(sp, kInt, 0x10000).intValue() == 0x10000);
+    assert(Token(sp, kRational, Rational(23, 27)).rationalValue() == Rational(23, 27));
 
-    // assert(Token(kSymbol, "abc").idValue() == String("abc"));
-    assert(Token(kString, String("abc")).stringValue() == String("abc"));
-    // assert(Token(kKeyword, String("abc")).idValue() == String("abc"));
-    // assert(Token(kMacroParam, String("abc")).idValue() == String("abc"));
+    // assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
+    assert(Token(sp, kString, String("abc")).stringValue() == String("abc"));
+    // assert(Token(sp, kKeyword, String("abc")).idValue() == String("abc"));
+    // assert(Token(sp, kMacroParam, String("abc")).idValue() == String("abc"));
 
-    // assert(Token(kSymbol, "abc").idValue() == String("abc"));
-    assert(Token(kString, "abc").stringValue() == String("abc"));
-    // assert(Token(kKeyword, "abc").idValue() == String("abc"));
-    // assert(Token(kMacroParam, "abc").idValue() == String("abc"));
-    assert(Token(kKeyarg, "abc").isKeyArg());
+    // assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
+    assert(Token(sp, kString, "abc").stringValue() == String("abc"));
+    // assert(Token(sp, kKeyword, "abc").idValue() == String("abc"));
+    // assert(Token(sp, kMacroParam, "abc").idValue() == String("abc"));
+    assert(Token(sp, kKeyarg, "abc").isKeyArg());
 
 #define TEST_ASSIGNOP2(_type, _value, _member)          \
     {                                                   \
-      Token t = Token(_type, _value);                   \
+      Token t = Token(sp, _type, _value);                   \
       assert(t.tokenType() == _type &&                  \
              t._member() == _value);                    \
     }
@@ -1131,7 +1177,7 @@ public:
 
 #define TEST_COPYCTOR2(_type, _value, _member)          \
     {                                                   \
-      Token t(Token(_type, _value));                    \
+      Token t(Token(sp, _type, _value));                    \
       assert(t.tokenType() == _type &&                  \
              t._member() == _value);                    \
     }
@@ -1144,7 +1190,7 @@ public:
 #undef TEST_COPYCTOR2
 
     {
-      Token t(Token(kReal, 12.345).setIsImaginary(true));
+      Token t(Token(sp, kReal, 12.345).setIsImaginary(true));
       assert(t.tokenType() == kReal &&
              t.realValue() == 12.345 &&
              t.isImaginary());

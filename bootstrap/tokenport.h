@@ -14,6 +14,7 @@
 #include "port.h"
 #include "tokenizer.h"
 
+
 namespace heather
 {
   //--------------------------------------------------------------------------
@@ -35,8 +36,10 @@ namespace heather
   class FileTokenPort : public TokenPort
   {
   public:
-    FileTokenPort(Port<Octet>* port, CharRegistry* charRegistry = NULL);
-    FileTokenPort(Port<Char>* port, CharRegistry* charRegistry = NULL);
+    FileTokenPort(Port<Octet>* port, const String& srcName, 
+                  CharRegistry* charRegistry = NULL);
+    FileTokenPort(Port<Char>* port, const String& srcName,
+                  CharRegistry* charRegistry = NULL);
 
     virtual bool isOpen() const;
     virtual bool isEof() const;
@@ -46,6 +49,7 @@ namespace heather
   private:
     void setTokenizer(Tokenizer* tokenizer);
 
+    String         fSrcName;
     Ptr<Tokenizer> fTokenizer;
   };
 
