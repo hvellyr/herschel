@@ -646,20 +646,20 @@ FirstPass::parseAtomicExpr()
     }
 
   case kSymbol:
-    if (fToken.isSymbol("if")) {
+    if (fToken == Parser::ifToken) {
       return parseIf();
     }
     else if (fToken == Parser::letToken) {
       return parseDef(true);
     }
-    else if (fToken.isSymbol("on")) {
+    else if (fToken == Parser::onToken) {
       return parseOn();
     }
-    else if (fToken.isSymbol("function")) {
+    else if (fToken == Parser::functionToken) {
       nextToken();
       return parseAnonFun();
     }
-    else if (fToken.isSymbol("when")) {
+    else if (fToken == Parser::whenToken) {
       return parseWhen(false);
     }
     else {
