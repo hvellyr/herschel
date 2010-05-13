@@ -83,10 +83,41 @@ namespace heather
     Parser();
     Parser(Parser* parent);
 
-    virtual AptNode* parse(Port<Char>* port);
+    virtual AptNode* parse(Port<Char>* port, const String& srcName);
 
     CharRegistry* charRegistry() const;
     ConfigVarRegistry* configVarRegistry() const;
+
+
+    // predefined symbol tokens to speed up parsing
+    static const Token aliasToken;
+    static const Token charToken;
+    static const Token classToken;
+    static const Token configToken;
+    static const Token constToken;
+    static const Token defToken;
+    static const Token deleteToken;
+    static const Token elseToken;
+    static const Token enumToken;
+    static const Token exitToken;
+    static const Token exportToken;
+    static const Token fluidToken;
+    static const Token genericToken;
+    static const Token ifToken;
+    static const Token ignoreToken;
+    static const Token importToken;
+    static const Token includeToken;
+    static const Token initToken;
+    static const Token interfaceToken;
+    static const Token letToken;
+    static const Token macroToken;
+    static const Token measureToken;
+    static const Token moduleToken;
+    static const Token signalToken;
+    static const Token syncToken;
+    static const Token typeToken;
+    static const Token unitToken;
+    static const Token whenToken;
 
   private:
     friend class FirstPass;

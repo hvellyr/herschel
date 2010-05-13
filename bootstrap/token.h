@@ -15,6 +15,7 @@
 #include "ptr.h"
 #include "port.h"
 #include "numbers.h"
+#include "srcpos.h"
 
 
 namespace heather
@@ -173,30 +174,30 @@ namespace heather
     Token();
 
     // a nested expression
-    Token(TokenType left, TokenType right);
+    Token(const SrcPos& where, TokenType left, TokenType right);
 
     // a punctation expression
-    Token(TokenType type);
+    Token(const SrcPos& where, TokenType ttype);
 
     // an id expression
-    Token(const String& str);
-    Token(const char* str);
+    Token(const SrcPos& where, const String& str);
+    Token(const SrcPos& where, const char* str);
 
     // a literal typed constructor for string values
-    Token(TokenType type, const String& str);
-    Token(TokenType type, const char* str);
+    Token(const SrcPos& where, TokenType type, const String& str);
+    Token(const SrcPos& where, TokenType type, const char* str);
 
     // a literal typed constructor for int values
-    Token(TokenType type, int value);
+    Token(const SrcPos& where, TokenType type, int value);
 
     // a literal typed constructor for double values
-    Token(TokenType type, double value);
+    Token(const SrcPos& where, TokenType type, double value);
 
     // a literal typed constructor for rational values
-    Token(TokenType type, Rational value);
+    Token(const SrcPos& where, TokenType type, Rational value);
 
     // a literal typed constructor for bool values
-    Token(TokenType type, bool value);
+    Token(const SrcPos& where, TokenType type, bool value);
 
     // copy ctor
     Token(const Token& other);
@@ -204,6 +205,12 @@ namespace heather
 
     bool operator==(const Token& other) const;
     bool operator!=(const Token& other) const;
+
+    bool operator==(TokenType type) const;
+    bool operator!=(TokenType type) const;
+
+    const SrcPos& srcpos() const;
+    Token& setSrcpos(const SrcPos& srcpos);
 
 
     TokenType tokenType() const;
@@ -275,6 +282,7 @@ namespace heather
     //-------- data members
     TokenType      fType;
     Ptr<TokenImpl> fImpl;
+    SrcPos         fSrcPos;
   };
 
 

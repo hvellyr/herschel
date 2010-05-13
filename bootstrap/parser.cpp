@@ -19,6 +19,38 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
+const Token Parser::aliasToken     = Token(SrcPos(), kSymbol, "alias");
+const Token Parser::charToken      = Token(SrcPos(), kSymbol, "char");
+const Token Parser::classToken     = Token(SrcPos(), kSymbol, "class");
+const Token Parser::configToken    = Token(SrcPos(), kSymbol, "config");
+const Token Parser::constToken     = Token(SrcPos(), kSymbol, "const");
+const Token Parser::defToken       = Token(SrcPos(), kSymbol, "def");
+const Token Parser::deleteToken    = Token(SrcPos(), kSymbol, "delete");
+const Token Parser::elseToken      = Token(SrcPos(), kSymbol, "else");
+const Token Parser::enumToken      = Token(SrcPos(), kSymbol, "enum");
+const Token Parser::exitToken      = Token(SrcPos(), kSymbol, "exit");
+const Token Parser::exportToken    = Token(SrcPos(), kSymbol, "export");
+const Token Parser::fluidToken     = Token(SrcPos(), kSymbol, "fluid");
+const Token Parser::genericToken   = Token(SrcPos(), kSymbol, "generic");
+const Token Parser::ifToken        = Token(SrcPos(), kSymbol, "if");
+const Token Parser::ignoreToken    = Token(SrcPos(), kSymbol, "ignore");
+const Token Parser::importToken    = Token(SrcPos(), kSymbol, "import");
+const Token Parser::includeToken   = Token(SrcPos(), kSymbol, "include");
+const Token Parser::initToken      = Token(SrcPos(), kSymbol, "init");
+const Token Parser::interfaceToken = Token(SrcPos(), kSymbol, "interface");
+const Token Parser::letToken       = Token(SrcPos(), kSymbol, "let");
+const Token Parser::macroToken     = Token(SrcPos(), kSymbol, "macro");
+const Token Parser::measureToken   = Token(SrcPos(), kSymbol, "measure");
+const Token Parser::moduleToken    = Token(SrcPos(), kSymbol, "module");
+const Token Parser::signalToken    = Token(SrcPos(), kSymbol, "signal");
+const Token Parser::syncToken      = Token(SrcPos(), kSymbol, "sync");
+const Token Parser::typeToken      = Token(SrcPos(), kSymbol, "type");
+const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
+const Token Parser::whenToken      = Token(SrcPos(), kSymbol, "when");
+
+
+//----------------------------------------------------------------------------
+
 Parser::Parser()
   : fCharRegistry(new CharRegistry),
     fConfigVarRegistry(
@@ -55,17 +87,21 @@ Parser::nextToken()
   try {
     fToken = fPort->read();
   }
+  catch (const AnnotatedEofException& ae) {
+    fToken = Token(ae.srcpos(), kEOF);
+  }
   catch (const EofException& e) {
-    fToken = Token(kEOF);
+    printf("FOUND EOF HERE: %s %d\n", __FILE__, __LINE__);
+    fToken = Token(SrcPos(), kEOF);
   }
   return fToken;
 }
 
 
 AptNode*
-Parser::parse(Port<Char>* port)
+Parser::parse(Port<Char>* port, const String& srcName)
 {
-  fPort = new FileTokenPort(port, fCharRegistry);
+  fPort = new FileTokenPort(port, srcName, fCharRegistry);
 
   try {
     FirstPass firstPass(this, fToken);

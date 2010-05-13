@@ -36,16 +36,20 @@ namespace heather
     Token parseExport();
     Token parseImport();
     Token parseDef(bool isLocal);
-    Token parseCharDef();
-    Token parseVarDef(VardefFlags flags, bool isLocal);
-    Token parseVarDef2(const String& symbolName, VardefFlags flags,
+    Token parseCharDef(const Token& defToken);
+    Token parseVarDef(const Token& defToken, VardefFlags flags, bool isLocal);
+    Token parseVarDef2(const Token& defToken, const Token& tagToken,
+                       const Token& symbolToken, VardefFlags flags,
                        bool isLocal);
-    Token parseFunctionDef(const String& sym, bool isGeneric, bool isLocal);
-    Token parseFunctionOrVarDef(bool isLocal);
+    Token parseFunctionDef(const Token& defToken, const Token& tagToken, 
+                           const Token& symToken,
+                           bool isGeneric, bool isLocal);
+    Token parseFunctionOrVarDef(const Token& defToken, bool isLocal);
 
     Token parseExpr();
     Token parseAtomicExpr();
-    Token parseExprRec(const Token& expr1, OperatorType op1);
+    Token parseExprRec(const Token& expr1, OperatorType op1,
+                       const SrcPos& op1Srcpos);
 
     Token parseTypeSpec();
     Token parseLiteralVector();
@@ -70,8 +74,10 @@ namespace heather
     void parseFuncallParams(TokenVector* params);
 
     Token makeBinaryToken(const Token& expr1, OperatorType op1,
-                          const Token& expr2) const;
-    Token makeAssignToken(const Token& expr1, const Token& expr2) const;
+                          const Token& expr2,
+                          const SrcPos& op1Srcpos) const;
+    Token makeAssignToken(const Token& expr1, const Token& expr2,
+                          const SrcPos& op1Srcpos) const;
 
     bool isRightOperator(OperatorType op1) const;
     bool isOpWeightAbove(OperatorType op1, OperatorType op2) const;
@@ -86,6 +92,10 @@ namespace heather
     Token parseWhen(bool isTopLevel);
 
     Token evaluateConfigExpr(const Token& initExpr);
+
+
+    // resume functions after (syntax) error
+    Token scanUntilTopExprAndResume();
 
   private:
     Ptr<Parser> fParser;

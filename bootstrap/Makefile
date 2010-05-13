@@ -13,6 +13,7 @@ CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src
 SOURCES =         \
 	apt.cpp         \
 	heather.cpp     \
+	log.cpp         \
 	numbers.cpp     \
 	option.cpp      \
 	parser.cpp      \
@@ -21,6 +22,7 @@ SOURCES =         \
 	pass2.cpp       \
 	port.cpp        \
 	properties.cpp  \
+	srcpos.cpp      \
 	str.cpp         \
 	strbuf.cpp      \
 	token.cpp       \
@@ -34,6 +36,7 @@ HEADERS =         \
 	apt.h           \
 	common.h        \
 	exception.h     \
+	log.h           \
 	numbers.h       \
 	option.h        \
 	parser.h        \
@@ -45,6 +48,7 @@ HEADERS =         \
 	ptr.h           \
 	refcountable.h  \
 	registry.h      \
+	srcpos.h        \
 	str.h           \
 	strbuf.h        \
 	token.h         \

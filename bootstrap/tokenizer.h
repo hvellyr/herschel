@@ -41,6 +41,26 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class AnnotatedEofException : public EofException
+  {
+  public:
+    AnnotatedEofException(const SrcPos& srcpos)
+      : EofException(),
+        fSrcPos(srcpos)
+    { }
+
+    const SrcPos& srcpos() const
+    {
+      return fSrcPos;
+    }
+
+  private:
+    SrcPos fSrcPos;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   typedef Registry<int> CharRegistry;
 
 
@@ -49,16 +69,20 @@ namespace heather
   class Tokenizer : public RefCountable
   {
   public:
-    Tokenizer(Port<Char>* port, CharRegistry* charRegistry = NULL);
+    Tokenizer(Port<Char>* port, const String& srcName,
+              CharRegistry* charRegistry = NULL);
 
     bool isEof() const;
 
     Token nextToken();
     Token nextTokenImpl();
 
+    SrcPos srcpos() const;
+
   private:
     void readCommentLine();
-    Token readIdentifier(const String& prefix, TokenType type,
+    Token readIdentifier(const SrcPos& startPos,
+                         const String& prefix, TokenType type,
                          bool acceptGenerics);
 
     bool isEOL(Char c) const;
@@ -75,16 +99,16 @@ namespace heather
       throw (NotationException);
 
     int nextChar();
-    Token makeTokenAndNext(TokenType type);
+    Token makeTokenAndNext(const SrcPos& where, TokenType type);
 
     Token readSymbolOrOperator(bool acceptGenerics);
-    Token readNumber(int sign);
-    Token readCharacter(bool needsTerminator);
-    Token readString();
-    Token readNamedCharacter(bool needsTerminator);
-    Token readNumericCharacter(bool needsTerminator);
-    Token readSymbolCharacter(bool needsTerminator);
-    Token translateChar(const String& charnm);
+    Token readNumber(const SrcPos& startPos, int sign);
+    Token readCharacter(const SrcPos& startPos, bool needsTerminator);
+    Token readString(const SrcPos& startPos);
+    Token readNamedCharacter(const SrcPos& startPos, bool needsTerminator);
+    Token readNumericCharacter(const SrcPos& startPos, bool needsTerminator);
+    Token readSymbolCharacter(const SrcPos& startPos, bool needsTerminator);
+    Token translateChar(const SrcPos& startPos, const String& charnm);
     Char mapCharNameToChar(const String& charnm);
     String readIntNumberPart(bool acceptHex);
 
@@ -92,10 +116,11 @@ namespace heather
 
     //-------- data member
     Ptr<Port<Char> > fPort;
-    int fLineCount;
-    int fCC;
-    bool fNextCharIsGenericOpen;
-    int fInGenericContext;
+    String fSrcName;
+    int    fLineCount;
+    int    fCC;
+    bool   fNextCharIsGenericOpen;
+    int    fInGenericContext;
     Ptr<CharRegistry> fCharRegistry;
   };
 };
