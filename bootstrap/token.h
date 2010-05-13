@@ -269,9 +269,6 @@ namespace heather
     //! indicates whether the token is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;
 
-    bool isSymbol(const char* sym) const;
-    bool isSymbol(const String& sym) const;
-
     void toPort(Port<Octet>* port) const;
 
     String toString() const;
