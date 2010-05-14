@@ -21,7 +21,7 @@ def isEqualElement(a, b):
     return True
 
 def compareXMLfiles(file1, file2):
-    da, db= minidom.parse(file1), minidom.parse(file2)
+    da, db = minidom.parse(file1), minidom.parse(file2)
     return isEqualElement(da.documentElement, db.documentElement)
 
 

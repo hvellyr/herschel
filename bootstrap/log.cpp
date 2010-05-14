@@ -28,7 +28,7 @@ static char* levelStr[] = {
 static void
 logImpl(const SrcPos& where, LogLevel level, const char* msg)
 {
-  fprintf(stdout, "%s:%d: %s: %s\n",
+  fprintf(stderr, "%s:%d: %s: %s\n",
           (const char*)StrHelper(where.file()),
           where.lineNumber(),
           levelStr[level],
