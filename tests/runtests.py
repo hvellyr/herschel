@@ -26,20 +26,22 @@ class TestRunner:
                 dom1 = minidom.parseString(test_str)
             except Exception, e:
                 print "FAILED: %s: not a valid XML file: %s" % (test_name, e)
-                return
+                return False
 
             try:
                 dom2 = minidom.parse(expected_file)
             except Exception, e:
                 print "FAILED: %s: not a valid XML file: %s" % (test_name, e)
-                return
+                return False
 
             if not comparexml.compareXML(dom1, dom2):
                 print "FAILED: %s: differs from expected data" % (test_name)
+                return False
             else:
-                print "OK: %s: test succeeds" % (test_name)
+                return True
         except Exception, e:
             print "FAILED: %s: comparing results failed with exception: %s" % (test_name, e)
+            return False
 
 
     def find_expected_xml(self, test_file, passid):
@@ -51,19 +53,27 @@ class TestRunner:
         return False
 
 
-    def run_pass_test_impl(self, test_file, traces, passid):
+    #----------------------------------------------------------------------------
+
+    def run_pass_test_impl(self, test_file, traces, passid,
+                           errtest_func=None):
         output, erroutput = self.run_heather_on_test(test_file, traces)
 
         what_tag = "[%s] %s" % (passid, test_file)
         if erroutput:
-            print "FAILED: %s: %s" % (what_tag, erroutput)
-            return
+            if errtest_func == None:
+                print "FAILED: %s: %s" % (what_tag, erroutput)
+                return
+            errtest_func(what_tag, passid, erroutput)
 
         expected_file = self.find_expected_xml(test_file, "_%s" % (passid))
         if expected_file:
-            self.compare_XML_result_with_file(what_tag, output, expected_file)
+            if not self.compare_XML_result_with_file(what_tag, output, expected_file):
+                return
 #        else:
 #            print "INFO: %s: No expected xml file for pass %s found" % (what_tag, passid)
+
+        print "OK: %s: test succeeds" % (what_tag)
 
 
     def run_pass_test(self, test_file):
@@ -71,9 +81,25 @@ class TestRunner:
         self.run_pass_test_impl(test_file, "pass2", "2")
 
 
-    def run_pass_failed_test(self, test_file):
-        print "????: %s: not tested yet" % (test_file)
 
+    #----------------------------------------------------------------------------
+
+    def run_pass_failed_test_impl(self, test_file):
+        pass
+        
+
+    def check_for_errors(self, test_name, passid, erroutput):
+        eo = erroutput.strip()
+        if eo == None or len(eo) == 0:
+            print "FAILED: %s: expected errors" % (test_name)
+            return
+
+
+    def run_pass_failed_test(self, test_file):
+        self.run_pass_test_impl(test_file, "pass1", "1", self.check_for_errors)
+
+
+    #----------------------------------------------------------------------------
 
     def run_all_tests(self, test_dir):
         for f in os.listdir(test_dir):
