@@ -947,9 +947,9 @@ FirstPass::parseWhen(bool isTopLevel)
 
 
 Token
-FirstPass::parseVarDef(const Token& defToken, VardefFlags flags, bool isLocal)
+FirstPass::parseVarDef(const Token& defToken, const Token& tagToken, bool isLocal)
 {
-  Token tagToken = fToken;
+  Token keepTagToken = tagToken;
 
   nextToken();
 
@@ -961,7 +961,7 @@ FirstPass::parseVarDef(const Token& defToken, VardefFlags flags, bool isLocal)
 
   nextToken();
 
-  return parseVarDef2(defToken, tagToken, symbolToken, flags, isLocal);
+  return parseVarDef2(defToken, keepTagToken, symbolToken, isLocal);
 }
 
 
@@ -976,7 +976,7 @@ FirstPass::evaluateConfigExpr(const Token& initExpr)
 Token
 FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
                         const Token& symbolToken,
-                        VardefFlags flags, bool isLocal)
+                        bool isLocal)
 {
   Token type;
   Token colonToken, assignToken;
@@ -996,25 +996,8 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
 
   Token vardefExpr;
   vardefExpr << defToken;
-  if (flags == kIsConst)
+  if (tagToken.isSet())
     vardefExpr << tagToken;
-  else if (flags == kIsFluid)
-    vardefExpr << tagToken;
-  else if (flags == kIsConfig)
-    vardefExpr << tagToken;
-  else if (flags != 0)
-    assert(0);
-
-  if (flags == kIsConfig) {
-    if (fEvaluateExprs) {
-      if (!initExpr.isSet())
-        throw SyntaxException(String("Config variable '") + symbolToken +
-                              "' without default value");
-      fParser->configVarRegistry()->registerValue(symbolToken.idValue(),
-                                                  evaluateConfigExpr(initExpr));
-      return Token();
-    }
-  }
 
   vardefExpr << symbolToken;
 
@@ -1022,6 +1005,19 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
     vardefExpr << colonToken << type;
   if (initExpr.isSet())
     vardefExpr << assignToken << initExpr;
+
+  if (tagToken == Parser::configToken) {
+    if (fEvaluateExprs) {
+      if (!initExpr.isSet())
+        throw SyntaxException(String("Config variable '") + symbolToken +
+                              "' without default value");
+      fParser->configVarRegistry()->registerValue(symbolToken.idValue(),
+                                                  evaluateConfigExpr(initExpr));
+      // even if we have to evaluate the config var expression, we have to
+      // keep the constructed expr since config-vars can be used like
+      // normal const-vars by code
+    }
+  }
 
   return vardefExpr;
 }
@@ -1102,7 +1098,7 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
     if (fToken.tokenType() == kParanOpen)
       return parseFunctionDef(defToken, Token(), symToken, false, isLocal);
 
-    return parseVarDef2(defToken, Token(), symToken, kNoFlags, isLocal);
+    return parseVarDef2(defToken, Token(), symToken, isLocal);
   }
   return Token();
 }
@@ -1132,14 +1128,10 @@ FirstPass::parseDef(bool isLocal)
   else if (fToken == Parser::unitToken) {
     // TODO
   }
-  else if (fToken == Parser::constToken) {
-    return parseVarDef(defToken, kIsConst, isLocal);
-  }
-  else if (fToken == Parser::fluidToken) {
-    return parseVarDef(defToken, kIsFluid, false);
-  }
-  else if (fToken == Parser::configToken) {
-    return parseVarDef(defToken, kIsConfig, false);
+  else if (fToken == Parser::constToken ||
+           fToken == Parser::fluidToken ||
+           fToken == Parser::configToken) {
+    return parseVarDef(defToken, fToken, isLocal);
   }
   else if (fToken == Parser::genericToken) {
     Token tagToken = fToken;
