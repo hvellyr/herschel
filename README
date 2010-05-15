@@ -2,9 +2,9 @@ What's it
 
   Heather is an general-purpose multiparadigm programming language.  It is
   strongly typed, offering type inference and parametric polymorphism
-  ("generics").  It is consequently object oriented (everything is a
-  object), while its consequent multiple dispatch approach gives it a
-  strong functional touch.  The object model is class-oriented, supporting
+  ("generics").  It is thoroughly object oriented (everything is a object),
+  while its consequent multiple dispatch approach gives it a strong
+  functional touch.  The object model is class-oriented, supporting
   multiple inheritance just as a separation of types ("protocols",
   "interfaces") and classes.
 
