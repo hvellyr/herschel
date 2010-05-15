@@ -56,6 +56,18 @@ FirstPass::scanUntilTopExprAndResume()
 
 
 Token
+FirstPass::scanUntilNextParameter()
+{
+  while (fToken != kEOF &&
+         fToken != kComma &&
+         fToken != kParanClose)
+    nextToken();
+
+  return Token();
+}
+
+
+Token
 FirstPass::parseModule(bool isModule)
 {
   Token tagToken = fToken;
@@ -173,15 +185,13 @@ FirstPass::parseExport()
     }
     else {
       errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL or '*'");
-      nextToken();
+      scanUntilNextParameter();
     }
 
     if (fToken == kComma)
       nextToken();
-    else if (fToken.tokenType() != kParanClose) {
+    else if (fToken.tokenType() != kParanClose)
       errorf(fToken.srcpos(), E_BadParameterList, "expected ')' or ','");
-      nextToken();
-    }
   }
 
   if (fToken.tokenType() == kParanClose) {
@@ -206,10 +216,12 @@ FirstPass::parseImport()
   expr << fToken;
   nextToken();
 
-  if (fToken.tokenType() != kString)
-    throw UnexpectedTokenException(fToken, "expected STRING");
+  if (fToken.tokenType() != kString) {
+    errorf(fToken.srcpos(), E_StringExpected, "expected STRING");
+    return scanUntilTopExprAndResume();
+  }
 
-  expr << Token(fToken);
+  expr << fToken;
 
   nextToken();
   if (fToken.tokenType() == kParanOpen) {
@@ -218,32 +230,52 @@ FirstPass::parseImport()
     nextToken();
     while (fToken != kParanClose) {
       if (fToken == kEOF)
-        throw PrematureEndOfFileException();
-      if (fToken != kSymbol)
-        throw UnexpectedTokenException(fToken, "expected SYMBOL");
-      Token first = fToken;
+        break;
 
-      nextToken();
-      if (fToken != kMapTo)
-        throw UnexpectedTokenException(fToken, "expected ->");
-      Token maptoToken = fToken;
+      if (fToken != kSymbol) {
+        errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+        scanUntilNextParameter();
+      }
+      else {
+        Token first = fToken;
 
-      nextToken();
-      if (fToken != kSymbol)
-        throw UnexpectedTokenException(fToken, "expected SYMBOL");
-      Token second = fToken;
+        nextToken();
+        if (fToken != kMapTo) {
+          errorf(fToken.srcpos(), E_MapToExpected, "expected '->'");
+          scanUntilNextParameter();
+        }
+        else {
+          Token maptoToken = fToken;
 
-      renames << ( Token() << first << maptoToken << second );
+          nextToken();
+          if (fToken != kSymbol) {
+            errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+            scanUntilNextParameter();
+          }
+          else {
+            Token second = fToken;
 
-      nextToken();
+            renames << ( Token() << first << maptoToken << second );
+
+            nextToken();
+          }
+        }
+      }
+
       if (fToken == kComma)
         nextToken();
       else if (fToken != kParanClose)
-        throw UnexpectedTokenException(fToken, "expected ) or ,");
+        errorf(fToken.srcpos(), E_BadParameterList, "expected ')' or ','");
     }
 
-    if (fToken == kParanClose)
+    if (fToken == kParanClose) {
       nextToken();
+    }
+    else {
+      errorf(fToken.srcpos(), E_ParamMissParanClose,
+             "unbalanced parameters, expected ')'");
+      scanUntilTopExprAndResume();
+    }
 
     expr << renames;
   }
