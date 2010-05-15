@@ -37,10 +37,10 @@ namespace heather
     Token parseImport();
     Token parseDef(bool isLocal);
     Token parseCharDef(const Token& defToken);
-    Token parseVarDef(const Token& defToken, VardefFlags flags, bool isLocal);
+    Token parseVarDef(const Token& defToken, const Token& tagToken,
+                      bool isLocal);
     Token parseVarDef2(const Token& defToken, const Token& tagToken,
-                       const Token& symbolToken, VardefFlags flags,
-                       bool isLocal);
+                       const Token& symbolToken, bool isLocal);
     Token parseFunctionDef(const Token& defToken, const Token& tagToken, 
                            const Token& symToken,
                            bool isGeneric, bool isLocal);
