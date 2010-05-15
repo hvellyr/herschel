@@ -75,19 +75,19 @@ FirstPass::parseModule(bool isModule)
 
   Token modExpr;
 
-  if (fToken.tokenType() == kSymbol) {
+  if (fToken == kSymbol) {
     Token modName = fToken;
 
     nextToken();
-    if (fToken.tokenType() == kParanOpen) {
+    if (fToken == kParanOpen) {
       SrcPos begSp = fToken.srcpos();
       nextToken();
 
-      if (fToken.tokenType() == kString) {
+      if (fToken == kString) {
         Token publicId = fToken;
 
         nextToken();
-        if (fToken.tokenType() != kParanClose) {
+        if (fToken != kParanClose) {
           errorf(fToken.srcpos(), E_ParamMissParanClose,
                  "Syntax error, missing ')'");
           if (fToken == kBraceOpen) {
@@ -116,7 +116,7 @@ FirstPass::parseModule(bool isModule)
                         << modName;
 
 
-    if (fToken.tokenType() == kBraceOpen) {
+    if (fToken == kBraceOpen) {
       SrcPos begSp = fToken.srcpos();
       nextToken();
 
@@ -130,7 +130,7 @@ FirstPass::parseModule(bool isModule)
           defines << n;
       }
 
-      if (fToken.tokenType() == kBraceClose) {
+      if (fToken == kBraceClose) {
         nextToken();
       }
       else {
@@ -157,12 +157,12 @@ FirstPass::parseExport()
 
   nextToken();
 
-  while (fToken.tokenType() == kSymbol) {
+  while (fToken == kSymbol) {
     expr << fToken;
     nextToken();
   }
 
-  if (fToken.tokenType() != kParanOpen) {
+  if (fToken != kParanOpen) {
     errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
     scanUntilTopExprAndResume();
     return Token();
@@ -171,7 +171,7 @@ FirstPass::parseExport()
   Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
 
   nextToken();
-  while (fToken.tokenType() != kParanClose) {
+  while (fToken != kParanClose) {
     if (fToken == kEOF)
       break;
 
@@ -190,11 +190,11 @@ FirstPass::parseExport()
 
     if (fToken == kComma)
       nextToken();
-    else if (fToken.tokenType() != kParanClose)
+    else if (fToken != kParanClose)
       errorf(fToken.srcpos(), E_BadParameterList, "expected ')' or ','");
   }
 
-  if (fToken.tokenType() == kParanClose) {
+  if (fToken == kParanClose) {
     nextToken();
   }
   else {
@@ -216,7 +216,7 @@ FirstPass::parseImport()
   expr << fToken;
   nextToken();
 
-  if (fToken.tokenType() != kString) {
+  if (fToken != kString) {
     errorf(fToken.srcpos(), E_StringExpected, "expected STRING");
     return scanUntilTopExprAndResume();
   }
@@ -224,7 +224,7 @@ FirstPass::parseImport()
   expr << fToken;
 
   nextToken();
-  if (fToken.tokenType() == kParanOpen) {
+  if (fToken == kParanOpen) {
     Token renames = Token(fToken.srcpos(), kParanOpen, kParanClose);
 
     nextToken();
@@ -300,7 +300,7 @@ FirstPass::parseLiteralVector()
 
   nextToken();
 
-  while (fToken.tokenType() != kParanClose) {
+  while (fToken != kParanClose) {
     if (fToken == kEOF)
       throw PrematureEndOfFileException();
 
@@ -321,13 +321,13 @@ FirstPass::parseLiteralVector()
     else
       nested << expr;
 
-    if (fToken.tokenType() == kComma)
+    if (fToken == kComma)
       nextToken();
-    else if (fToken.tokenType() != kParanClose)
+    else if (fToken != kParanClose)
       throw UnexpectedTokenException(fToken, "expected ] or ,");
   }
 
-  if (fToken.tokenType() == kParanClose)
+  if (fToken == kParanClose)
     nextToken();
 
   return nested;
@@ -348,13 +348,13 @@ FirstPass::parseLiteralArray()
     Token n = parseExpr();
     nested << n;
 
-    if (fToken.tokenType() == kComma)
+    if (fToken == kComma)
       nextToken();
-    else if (fToken.tokenType() != kBracketClose)
+    else if (fToken != kBracketClose)
       throw UnexpectedTokenException(fToken, "expected ] or ,");
   }
 
-  if (fToken.tokenType() == kBracketClose)
+  if (fToken == kBracketClose)
     nextToken();
 
   return nested;
@@ -368,13 +368,13 @@ FirstPass::parseIf()
 
   nextToken();
 
-  if (fToken.tokenType() != kParanOpen)
+  if (fToken != kParanOpen)
     throw UnexpectedTokenException(fToken, "expected (");
   SrcPos poSp = fToken.srcpos();
   nextToken();
 
   Token test = parseExpr();
-  if (fToken.tokenType() != kParanClose)
+  if (fToken != kParanClose)
     throw UnexpectedTokenException(fToken, "expected )");
   nextToken();
 
@@ -407,7 +407,7 @@ FirstPass::parseIf()
 void
 FirstPass::parseFunctionsParams(TokenVector* exprlist)
 {
-  if (fToken.tokenType() == kParanClose) {
+  if (fToken == kParanClose) {
     nextToken();
     return;
   }
@@ -420,7 +420,7 @@ FirstPass::parseOn()
   Token tagToken = fToken;
   nextToken();
 
-  if (fToken.tokenType() != kSymbol)
+  if (fToken != kSymbol)
     throw UnexpectedTokenException(fToken, "expected a SYMBOL");
 
   Token keyToken = fToken;
@@ -446,7 +446,7 @@ FirstPass::parseOn()
         keyToken != Parser::signalToken)
       throw UnexpectedTokenException(keyToken);
     nextToken();
-    if (fToken.tokenType() != kParanOpen)
+    if (fToken != kParanOpen)
       throw UnexpectedTokenException(fToken, "expected (");
     SrcPos posp = fToken.srcpos();
     nextToken();
@@ -495,11 +495,11 @@ FirstPass::parseFuncallParams(TokenVector* params)
       params->push_back(fToken);
       nextToken();
     }
-    else if (fToken.tokenType() != kParanClose)
+    else if (fToken != kParanClose)
       throw UnexpectedTokenException(fToken, "expected ) or ,");
   }
 
-  if (fToken.tokenType() == kParanClose)
+  if (fToken == kParanClose)
     nextToken();
 }
 
@@ -561,7 +561,7 @@ Token
 FirstPass::parseSlice(const Token& expr)
 {
   Token idx = parseExpr();
-  if (fToken.tokenType() != kBracketClose)
+  if (fToken != kBracketClose)
     throw UnexpectedTokenException(fToken, "expected ]");
   SrcPos bcsp = fToken.srcpos();
   nextToken();
@@ -578,28 +578,28 @@ Token
 FirstPass::parseAccess(const Token& expr)
 {
   TokenVector args;
-  if (fToken.tokenType() == kParanOpen) {
+  if (fToken == kParanOpen) {
     nextToken();
     return parseAccess(parseParamCall(expr, args, true));
   }
-  else if (fToken.tokenType() == kBracketOpen) {
+  else if (fToken == kBracketOpen) {
     nextToken();
     return parseAccess(parseSlice(expr));
   }
-  else if (fToken.tokenType() == kDot) {
+  else if (fToken == kDot) {
     nextToken();
-    if (fToken.tokenType() != kSymbol)
+    if (fToken != kSymbol)
       throw UnexpectedTokenException(fToken, "expected SYMBOL");
     Token symToken = fToken;
 
     nextToken();
     args.push_back(expr);
-    if (fToken.tokenType() == kParanOpen) {
+    if (fToken == kParanOpen) {
       nextToken();
       return parseAccess(parseParamCall(symToken, args, true));
     }
-    else if (fToken.tokenType() == kBracketOpen ||
-             fToken.tokenType() == kDot) {
+    else if (fToken == kBracketOpen ||
+             fToken == kDot) {
       return parseAccess(parseParamCall(symToken, args, false));
     }
     else {
@@ -615,7 +615,7 @@ Token
 FirstPass::parseGroup()
 {
   Token expr = parseExpr();
-  if (fToken.tokenType() != kParanClose)
+  if (fToken != kParanClose)
     throw UnexpectedTokenException(fToken, "expected )");
 
   nextToken();
@@ -669,7 +669,7 @@ FirstPass::parseBlock()
   TokenVector exprlist;
   parseExprListUntilBrace(&exprlist);
 
-  if (fToken.tokenType() != kBraceClose)
+  if (fToken != kBraceClose)
     throw UnexpectedTokenException(fToken, "expected }");
   SrcPos bosp = fToken.srcpos();
   nextToken();
@@ -891,7 +891,7 @@ Token
 FirstPass::parseTopOrExprList(bool isTopLevel)
 {
   if (isTopLevel) {
-    if (fToken.tokenType() == kBraceOpen) {
+    if (fToken == kBraceOpen) {
       SrcPos bosp = fToken.srcpos();
       nextToken();
       TokenVector exprs;
@@ -933,7 +933,7 @@ FirstPass::parseWhen(bool isTopLevel)
     nextToken();
 
     Token test = parseExpr();
-    if (fToken.tokenType() != kParanClose)
+    if (fToken != kParanClose)
       throw UnexpectedTokenException(fToken, "expected )");
     nextToken();
 
@@ -999,7 +999,7 @@ FirstPass::parseVarDef(const Token& defToken, const Token& tagToken, bool isLoca
 
   nextToken();
 
-  if (fToken.tokenType() != kSymbol) {
+  if (fToken != kSymbol) {
     errorf(fToken.srcpos(), E_MissingDefName, "Missing name");
     return scanUntilTopExprAndResume();
   }
@@ -1027,14 +1027,14 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
   Token type;
   Token colonToken, assignToken;
 
-  if (fToken.tokenType() == kColon) {
+  if (fToken == kColon) {
     colonToken = fToken;
     nextToken();
     type = parseTypeSpec();
   }
 
   Token initExpr;
-  if (fToken.tokenType() == kAssign) {
+  if (fToken == kAssign) {
     assignToken = fToken;
     nextToken();
     initExpr = parseExpr();
@@ -1088,7 +1088,7 @@ FirstPass::parseCharDef(const Token& defToken)
   Token assignToken = fToken;
 
   nextToken();
-  if (fToken.tokenType() != kInt)
+  if (fToken != kInt)
     throw UnexpectedTokenException(fToken, "expected INTEGER");
   Token codePointToken = fToken;
 
@@ -1122,7 +1122,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 Token
 FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
 {
-  assert(fToken.tokenType() == kSymbol);
+  assert(fToken == kSymbol);
 
   Token symToken = fToken;
 
@@ -1141,7 +1141,7 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
 #endif
   {
     nextToken();
-    if (fToken.tokenType() == kParanOpen)
+    if (fToken == kParanOpen)
       return parseFunctionDef(defToken, Token(), symToken, false, isLocal);
 
     return parseVarDef2(defToken, Token(), symToken, isLocal);
@@ -1183,12 +1183,12 @@ FirstPass::parseDef(bool isLocal)
     Token tagToken = fToken;
 
     nextToken();
-    if (fToken.tokenType() != kSymbol)
+    if (fToken != kSymbol)
       throw UnexpectedTokenException(fToken, "expected SYMBOL");
     Token symToken = fToken;
 
     nextToken();
-    if (fToken.tokenType() != kParanOpen)
+    if (fToken != kParanOpen)
       throw UnexpectedTokenException(fToken, "expected (");
 
     return parseFunctionDef(defToken, tagToken, symToken, true, isLocal);
@@ -1199,7 +1199,7 @@ FirstPass::parseDef(bool isLocal)
   else if (fToken == Parser::macroToken) {
     // TODO
   }
-  else if (fToken.tokenType() == kSymbol)
+  else if (fToken == kSymbol)
     return parseFunctionOrVarDef(defToken, isLocal);
   else {
     errorf(fToken.srcpos(), E_DefInitValueUnexpectedToken,
