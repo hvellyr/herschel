@@ -16,8 +16,10 @@ namespace heather
   enum ErrCodes {
     // general punctuation error codes
     E_ParamMissParanClose = 0x0001,
-    E_ParamMissBraceClose = 0x0002,
+    E_MissingBraceClose   = 0x0002,
     E_UnexpectedToken     = 0x0003,
+    E_MissingParanOpen    = 0x0004,
+    E_BadParameterList    = 0x0005,
 
     // notation errors
     E_UnexpectedChar      = 0x0100,
@@ -35,6 +37,9 @@ namespace heather
     // module parsing
     E_MissingModName      = 0xa000,
     E_MissingDefName      = 0xa001,
+
+    // export
+    E_SymbolExpected      = 0xa101,
   };
 };
 

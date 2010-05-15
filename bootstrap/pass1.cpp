@@ -122,8 +122,10 @@ FirstPass::parseModule(bool isModule)
         nextToken();
       }
       else {
-        errorf(fToken.srcpos(), E_ParamMissBraceClose,
-               "Syntax error, missing '}'");
+        assert(fToken == kEOF);
+        errorf(fToken.srcpos(), E_MissingBraceClose,
+               "unbalanced braces, expected '}'");
+        errorf(begSp, E_MissingBraceClose, "beginning '{' was here");
         scanUntilTopExprAndResume();
       }
 
@@ -148,38 +150,50 @@ FirstPass::parseExport()
     nextToken();
   }
 
-  if (fToken.tokenType() != kParanOpen)
-    throw UnexpectedTokenException(fToken, "expected (");
+  if (fToken.tokenType() != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    scanUntilTopExprAndResume();
+    return Token();
+  }
 
-  if (fToken.tokenType() == kParanOpen) {
-    Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
+  Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
 
-    nextToken();
-    while (fToken.tokenType() != kParanClose) {
-      if (fToken == kEOF)
-        throw PrematureEndOfFileException();
+  nextToken();
+  while (fToken.tokenType() != kParanClose) {
+    if (fToken == kEOF)
+      break;
 
-      if (fToken.isSymbol())
-        symbols << fToken;
-      else if (fToken == kMultiply)
-        symbols << Token(fToken.srcpos(), "*");
-      else
-        throw UnexpectedTokenException(fToken, "expected SYMBOL or *");
+    if (fToken.isSymbol()) {
+      symbols << fToken;
       nextToken();
-
-      if (fToken == kComma)
-        nextToken();
-      else if (fToken.tokenType() != kParanClose)
-        throw UnexpectedTokenException(fToken, "expected ) or ,");
+    }
+    else if (fToken == kMultiply) {
+      symbols << Token(fToken.srcpos(), "*");
+      nextToken();
+    }
+    else {
+      errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL or '*'");
+      nextToken();
     }
 
-    if (fToken.tokenType() == kParanClose)
+    if (fToken == kComma)
       nextToken();
-
-    expr << symbols;
+    else if (fToken.tokenType() != kParanClose) {
+      errorf(fToken.srcpos(), E_BadParameterList, "expected ')' or ','");
+      nextToken();
+    }
   }
-  else
-    throw UnexpectedTokenException(fToken, "expected (");
+
+  if (fToken.tokenType() == kParanClose) {
+    nextToken();
+  }
+  else {
+    errorf(fToken.srcpos(), E_ParamMissParanClose,
+           "unbalanced parameters, expected ')'");
+    scanUntilTopExprAndResume();
+  }
+
+  expr << symbols;
 
   return expr;
 }

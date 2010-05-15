@@ -35,6 +35,7 @@ SOURCES =         \
 HEADERS =         \
 	apt.h           \
 	common.h        \
+	errcodes.h      \
 	exception.h     \
 	log.h           \
 	numbers.h       \
