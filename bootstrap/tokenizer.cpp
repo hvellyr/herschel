@@ -53,7 +53,8 @@ Tokenizer::isInCharRange(Char c, Char from, Char to) const
 bool
 Tokenizer::isWhitespace(Char c) const
 {
-  return c == ' ' || c == '\n' || c == '\r' || c == '\t';
+  return ( c == ' ' || c == '\n' || c == '\r' || c == '\t' ||
+           c == '\f' || c == '\v' );
 }
 
 
@@ -132,17 +133,18 @@ Tokenizer::nextChar()
 }
 
 
+void
+Tokenizer::scanUntilDelimiter()
+{
+  while (fCC != EOF && !isDelimiter(fCC))
+    nextChar();
+}
+
+
 SrcPos
 Tokenizer::srcpos() const
 {
   return SrcPos(fSrcName, fLineCount);
-}
-
-
-void
-Tokenizer::parseError(const String& msg) throw (NotationException)
-{
-  throw NotationException(fLineCount, msg);
 }
 
 
@@ -296,6 +298,8 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
   int radix = 10;
   bool isImaginary = false;
 
+  assert(!first.isEmpty());
+
   if (fCC == '.') {
     type = kReal;
     nextChar();
@@ -303,15 +307,16 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
 
     if (fCC == 'e' || fCC == 'E') {
       nextChar();
-      if (fCC == '-')
-        expSign = -1;
-      else if (fCC == '+')
-        expSign = 1;
-      else
-        parseError(String("bad scientific notation: ") + Char(fCC));
-
-      nextChar();
-      exponent = readIntNumberPart(false);
+      if (fCC == '-' || fCC == '+') {
+        expSign = fCC == '-' ? -1 : 1;
+        nextChar();
+        exponent = readIntNumberPart(false);
+      } 
+      else {
+        errorf(srcpos(), E_BadNumberNotation,
+               "bad scientific notation: \\u0%x;", fCC);
+        scanUntilDelimiter();
+      }
     }
   }
   else if (fCC == '/') {
@@ -322,27 +327,34 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
 
   if (fCC == 'h' || fCC == 'H') {
     if (type != kInt)
-      parseError(String("hexadecimal notation for unappropriate number type"));
+      errorf(srcpos(), E_BadNumberNotation,
+             "hexadecimal notation for unappropriate number type");
+    else
+      radix = 16;
     nextChar();
-    radix = 16;
   }
   else if (fCC == 't' || fCC == 'T') {
     if (type != kInt)
-      parseError(String("hexadecimal notation for unappropriate number type"));
+      errorf(srcpos(), E_BadNumberNotation,
+             "hexadecimal notation for unappropriate number type");
+    else
+      radix = 8;
     nextChar();
-    radix = 8;
   }
   if (fCC == 'y' || fCC == 'Y') {
     if (type != kInt)
-      parseError(String("hexadecimal notation for unappropriate number type"));
+      errorf(srcpos(), E_BadNumberNotation,
+             "hexadecimal notation for unappropriate number type");
+    else
+      radix = 2;
     nextChar();
-    radix = 2;
   }
 
   if (fCC == 'i' || fCC == 'I') {
     nextChar();
     isImaginary = true;
   }
+
 
   Token token;
   switch (type) {
@@ -386,26 +398,34 @@ Tokenizer::readNumericCharacter(const SrcPos& startPos, bool needsTerminator)
   if (token.isInt()) {
     int readc = token.intValue();
 
+    Token ct = Token(startPos, kChar, readc);
     if (needsTerminator) {
       if (fCC == ';') {
         nextChar();
-        return Token(startPos, kChar, readc);
+        return ct;
       }
-      else
-        parseError(String("unterminated char"));
+      else if (fCC == EOF) {
+        errorf(startPos, E_UnterminatedChar, "file ended before char end");
+        return ct;
+      }
+      else {
+        errorf(startPos, E_UnterminatedChar, "unterminated char");
+      }
     }
     else
       return Token(startPos, kChar, readc);
   }
-  else
-    parseError(String("unterminated char"));
+  else {
+    errorf(startPos, E_BadCharNotation, "expected integer notation for codepoint");
+    return Token(startPos, kChar, 0xffff);
+  }
 
   return Token();
 }
 
 
 Char
-Tokenizer::mapCharNameToChar(const String& charnm)
+Tokenizer::mapCharNameToChar(const SrcPos& startPos, const String& charnm)
 {
   if (charnm == String("sp") || charnm == String("space"))
     return Char(' ');
@@ -425,15 +445,15 @@ Tokenizer::mapCharNameToChar(const String& charnm)
     }
   }
 
-  parseError(String("Unknown char name: ") + charnm);
-  return ' ';
+  error(startPos, E_UnknownCharName, String("Unknown char name: ") + charnm);
+  return 0xffff;
 }
 
 
 Token
 Tokenizer::translateChar(const SrcPos& startPos, const String& charnm)
 {
-  Char c = mapCharNameToChar(charnm);
+  Char c = mapCharNameToChar(startPos, charnm);
   return Token(startPos, kChar, c);
 }
 
@@ -443,8 +463,10 @@ Tokenizer::readSymbolCharacter(const SrcPos& startPos, bool needsTerminator)
 {
   Token sym = readIdentifier(startPos, String(), kSymbol,
                              false /* don't accept generics */);
-  if (sym.type() != kId)
-    parseError(String("expected character symbol"));
+  if (sym.type() != kId) {
+    errorf(startPos, E_ExpectedCharName, "expected character symbol");
+    return sym;
+  }
 
   Token ct = (sym.idValue().length() == 1
               ? Token(startPos, kChar, sym.idValue()[0])
@@ -454,8 +476,13 @@ Tokenizer::readSymbolCharacter(const SrcPos& startPos, bool needsTerminator)
       nextChar();
       return ct;
     }
-    else
-      parseError(String("unterminated char"));
+    else if (fCC == EOF) {
+      errorf(startPos, E_UnterminatedChar, "file ended before char end");
+      return ct;
+    }
+    else {
+      errorf(startPos, E_UnterminatedChar, "unterminated char");
+    }
   }
 
   return ct;
@@ -465,9 +492,7 @@ Tokenizer::readSymbolCharacter(const SrcPos& startPos, bool needsTerminator)
 Token
 Tokenizer::readNamedCharacter(const SrcPos& startPos, bool needsTerminator)
 {
-  if (isWhitespace(fCC))
-    parseError(String("unterminated char notation"));
-  else if (isAlpha(fCC) || isDigit(fCC))
+  if (isAlpha(fCC) || isDigit(fCC))
     return readSymbolCharacter(startPos, needsTerminator);
   int c = fCC;
   nextChar();
@@ -480,9 +505,23 @@ Tokenizer::readCharacter(const SrcPos& startPos, bool needsTerminator)
 {
   if (fCC == 'u') {
     nextChar();
-    return readNumericCharacter(startPos, needsTerminator);
+    if (isDigit(fCC))
+      return readNumericCharacter(startPos, needsTerminator);
+    else if (!isDelimiter(fCC)) {
+      errorf(startPos, E_UnterminatedChar, "expected numerical char notation");
+      scanUntilDelimiter();
+      // assume any character, simply to allow continue parsing
+      return Token(startPos, kChar, 0xffff);
+    }
+    else
+      return Token(startPos, kChar, 'u');
   }
-  return readNamedCharacter(startPos, needsTerminator);
+  else if (!isWhitespace(fCC))
+    return readNamedCharacter(startPos, needsTerminator);
+  else {
+    errorf(startPos, E_UnterminatedChar, "incomplete char notation");
+    return Token(startPos, kChar, 0xffff);
+  }
 }
 
 
@@ -491,7 +530,6 @@ Token
 Tokenizer::readString(const SrcPos& startPos)
 {
   StringBuffer result;
-  int prevlc = fLineCount;
 
   try {
     for ( ; ; ) {
@@ -505,8 +543,6 @@ Tokenizer::readString(const SrcPos& startPos)
         Token ct = readCharacter(charSp, true /* needs terminator */);
         if (ct == kChar)
           result << ct.charValue();
-        else
-          parseError(String("Char expected"));
       }
       else {
         result << Char(fCC);
@@ -514,12 +550,14 @@ Tokenizer::readString(const SrcPos& startPos)
       }
     }
   }
-  catch (const EofException& ) {
-    parseError(String("unfinished string, began at line ") + prevlc);
+  catch (const AnnotatedEofException& ae) {
+    errorf(ae.srcpos(), E_UnterminatedString,
+           "File ended before end of string.  Began on line %d",
+           startPos.lineNumber());
+    errorf(startPos, 0, "String started here");
     throw;
   }
 
-  // todo
   return Token();
 }
 
@@ -547,7 +585,9 @@ Tokenizer::nextTokenImpl()
 
     beginSrcpos = srcpos();
     switch (fCC) {
+      // whitespace
     case ' ': case '\n': case '\r': case '\t':
+    case '\f': case '\v':
       nextChar();
       continue;
 
@@ -644,16 +684,24 @@ Tokenizer::nextTokenImpl()
       return readString(beginSrcpos);
 
     case '\\':
-      nextChar();
-      return readCharacter(beginSrcpos, false); // need a terminator?
+      {
+        nextChar();
+        Token ct = readCharacter(beginSrcpos, false); // need a terminator?
+        if (ct.isSet())
+          return ct;
+        continue;
+      }
 
     default:
       if (isAlpha(fCC) || isAlphaSpec(fCC))
         return readSymbolOrOperator(true);
       else if (isDigit(fCC))
         return readNumber(beginSrcpos, 1);
-      else
-        parseError(String("unexpected char: ") + Char(fCC));
+      else {
+        errorf(beginSrcpos, E_UnexpectedChar,
+               "unexpected char: \\u0%x", fCC);
+        nextChar();
+      }
     }
   }
 
@@ -687,58 +735,53 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 
-      try {
-        assert(tnz.nextToken() == Token(sp, String("interface")));
-        assert(tnz.nextToken() == Token(sp, String("zero")));
-        assert(tnz.nextToken() == Token(sp, kParanOpen));
-        assert(tnz.nextToken() == Token(sp, kString, String("eyestep/zero 1.0:portables")));
-        assert(tnz.nextToken() == Token(sp, kParanClose));
+      assert(tnz.nextToken() == Token(sp, String("interface")));
+      assert(tnz.nextToken() == Token(sp, String("zero")));
+      assert(tnz.nextToken() == Token(sp, kParanOpen));
+      assert(tnz.nextToken() == Token(sp, kString, String("eyestep/zero 1.0:portables")));
+      assert(tnz.nextToken() == Token(sp, kParanClose));
 
-        assert(tnz.nextToken() == Token(sp, String("export")));
-        assert(tnz.nextToken() == Token(sp, String("public")));
-        assert(tnz.nextToken() == Token(sp, kParanOpen));
-        assert(tnz.nextToken() == Token(sp, kMultiply));
-        assert(tnz.nextToken() == Token(sp, kParanClose));
+      assert(tnz.nextToken() == Token(sp, String("export")));
+      assert(tnz.nextToken() == Token(sp, String("public")));
+      assert(tnz.nextToken() == Token(sp, kParanOpen));
+      assert(tnz.nextToken() == Token(sp, kMultiply));
+      assert(tnz.nextToken() == Token(sp, kParanClose));
 
-        assert(tnz.nextToken() == Token(sp, String("def")));
-        assert(tnz.nextToken() == Token(sp, String("class")));
-        assert(tnz.nextToken() == Token(sp, String("Portable")));
-        assert(tnz.nextToken() == Token(sp, kGenericOpen));
-        assert(tnz.nextToken() == Token(sp, String("T")));
-        assert(tnz.nextToken() == Token(sp, kGenericClose));
-        assert(tnz.nextToken() == Token(sp, kParanOpen));
-        assert(tnz.nextToken() == Token(sp, String("x")));
-        assert(tnz.nextToken() == Token(sp, kAt));
-        assert(tnz.nextToken() == Token(sp, String("Int")));
-        assert(tnz.nextToken() == Token(sp, kParanClose));
-        assert(tnz.nextToken() == Token(sp, kColon));
-        assert(tnz.nextToken() == Token(sp, kParanOpen));
-        assert(tnz.nextToken() == Token(sp, String("Copyable")));
-        assert(tnz.nextToken() == Token(sp, kComma));
-        assert(tnz.nextToken() == Token(sp, String("Comparable")));
-        assert(tnz.nextToken() == Token(sp, kParanClose));
+      assert(tnz.nextToken() == Token(sp, String("def")));
+      assert(tnz.nextToken() == Token(sp, String("class")));
+      assert(tnz.nextToken() == Token(sp, String("Portable")));
+      assert(tnz.nextToken() == Token(sp, kGenericOpen));
+      assert(tnz.nextToken() == Token(sp, String("T")));
+      assert(tnz.nextToken() == Token(sp, kGenericClose));
+      assert(tnz.nextToken() == Token(sp, kParanOpen));
+      assert(tnz.nextToken() == Token(sp, String("x")));
+      assert(tnz.nextToken() == Token(sp, kAt));
+      assert(tnz.nextToken() == Token(sp, String("Int")));
+      assert(tnz.nextToken() == Token(sp, kParanClose));
+      assert(tnz.nextToken() == Token(sp, kColon));
+      assert(tnz.nextToken() == Token(sp, kParanOpen));
+      assert(tnz.nextToken() == Token(sp, String("Copyable")));
+      assert(tnz.nextToken() == Token(sp, kComma));
+      assert(tnz.nextToken() == Token(sp, String("Comparable")));
+      assert(tnz.nextToken() == Token(sp, kParanClose));
 
-        assert(tnz.nextToken() == Token(sp, kBraceOpen));
-        assert(tnz.nextToken() == Token(sp, String("slot")));
-        assert(tnz.nextToken() == Token(sp, String("first")));
-        assert(tnz.nextToken() == Token(sp, kColon));
-        assert(tnz.nextToken() == Token(sp, String("T")));
-        assert(tnz.nextToken() == Token(sp, kAssign));
-        assert(tnz.nextToken() == Token(sp, String("x")));
+      assert(tnz.nextToken() == Token(sp, kBraceOpen));
+      assert(tnz.nextToken() == Token(sp, String("slot")));
+      assert(tnz.nextToken() == Token(sp, String("first")));
+      assert(tnz.nextToken() == Token(sp, kColon));
+      assert(tnz.nextToken() == Token(sp, String("T")));
+      assert(tnz.nextToken() == Token(sp, kAssign));
+      assert(tnz.nextToken() == Token(sp, String("x")));
 
-        assert(tnz.nextToken() == Token(sp, kSemicolon));
+      assert(tnz.nextToken() == Token(sp, kSemicolon));
 
-        assert(tnz.nextToken() == Token(sp, String("slot")));
-        assert(tnz.nextToken() == Token(sp, String("data")));
-        assert(tnz.nextToken() == Token(sp, kColon));
-        assert(tnz.nextToken() == Token(sp, String("Octet")));
-        assert(tnz.nextToken() == Token(sp, kBracketOpen));
-        assert(tnz.nextToken() == Token(sp, kBracketClose));
-        assert(tnz.nextToken() == Token(sp, kBraceClose));
-      }
-      catch (const NotationException& ne) {
-        fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
-      }
+      assert(tnz.nextToken() == Token(sp, String("slot")));
+      assert(tnz.nextToken() == Token(sp, String("data")));
+      assert(tnz.nextToken() == Token(sp, kColon));
+      assert(tnz.nextToken() == Token(sp, String("Octet")));
+      assert(tnz.nextToken() == Token(sp, kBracketOpen));
+      assert(tnz.nextToken() == Token(sp, kBracketClose));
+      assert(tnz.nextToken() == Token(sp, kBraceClose));
     }
 
     {

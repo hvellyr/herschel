@@ -150,60 +150,55 @@ public:
       Ptr<TokenPort> p = new FileTokenPort(new DataPort((Octet*)test, strlen(test)),
                                            String("test"));
 
-      try {
-        assert(p->read() == Token(sp, kSymbol, String("interface")));
-        assert(p->read() == Token(sp, kSymbol, String("zero")));
-        assert(p->read() == Token(sp, kParanOpen));
-        assert(p->read() == Token(sp, kString, String("eyestep/zero 1.0:portables")));
-        assert(p->read() == Token(sp, kParanClose));
+      assert(p->read() == Token(sp, kSymbol, String("interface")));
+      assert(p->read() == Token(sp, kSymbol, String("zero")));
+      assert(p->read() == Token(sp, kParanOpen));
+      assert(p->read() == Token(sp, kString, String("eyestep/zero 1.0:portables")));
+      assert(p->read() == Token(sp, kParanClose));
 
-        assert(p->read() == Token(sp, kSymbol, String("export")));
-        assert(p->read() == Token(sp, kSymbol, String("public")));
-        assert(p->read() == Token(sp, kParanOpen));
-        assert(p->read() == Token(sp, kMultiply));
-        assert(p->read() == Token(sp, kParanClose));
+      assert(p->read() == Token(sp, kSymbol, String("export")));
+      assert(p->read() == Token(sp, kSymbol, String("public")));
+      assert(p->read() == Token(sp, kParanOpen));
+      assert(p->read() == Token(sp, kMultiply));
+      assert(p->read() == Token(sp, kParanClose));
 
-        assert(p->read() == Token(sp, kSymbol, String("def")));
-        assert(p->read() == Token(sp, kSymbol, String("class")));
-        assert(p->read() == Token(sp, kSymbol, String("Portable")));
-        assert(p->read() == Token(sp, kGenericOpen));
-        assert(p->read() == Token(sp, kSymbol, String("T")));
-        assert(p->read() == Token(sp, kGenericClose));
-        assert(p->read() == Token(sp, kParanOpen));
-        assert(p->read() == Token(sp, kSymbol, String("x")));
-        assert(p->read() == Token(sp, kAt));
-        assert(p->read() == Token(sp, kSymbol, String("Int")));
-        assert(p->read() == Token(sp, kParanClose));
-        assert(p->read() == Token(sp, kColon));
-        assert(p->read() == Token(sp, kParanOpen));
-        assert(p->read() == Token(sp, kSymbol, String("Copyable")));
-        assert(p->read() == Token(sp, kComma));
-        assert(p->read() == Token(sp, kSymbol, String("Comparable")));
-        assert(p->read() == Token(sp, kParanClose));
+      assert(p->read() == Token(sp, kSymbol, String("def")));
+      assert(p->read() == Token(sp, kSymbol, String("class")));
+      assert(p->read() == Token(sp, kSymbol, String("Portable")));
+      assert(p->read() == Token(sp, kGenericOpen));
+      assert(p->read() == Token(sp, kSymbol, String("T")));
+      assert(p->read() == Token(sp, kGenericClose));
+      assert(p->read() == Token(sp, kParanOpen));
+      assert(p->read() == Token(sp, kSymbol, String("x")));
+      assert(p->read() == Token(sp, kAt));
+      assert(p->read() == Token(sp, kSymbol, String("Int")));
+      assert(p->read() == Token(sp, kParanClose));
+      assert(p->read() == Token(sp, kColon));
+      assert(p->read() == Token(sp, kParanOpen));
+      assert(p->read() == Token(sp, kSymbol, String("Copyable")));
+      assert(p->read() == Token(sp, kComma));
+      assert(p->read() == Token(sp, kSymbol, String("Comparable")));
+      assert(p->read() == Token(sp, kParanClose));
 
-        assert(p->read() == Token(sp, kBraceOpen));
-        assert(p->read() == Token(sp, kSymbol, String("slot")));
-        assert(p->read() == Token(sp, kSymbol, String("first")));
-        assert(p->read() == Token(sp, kColon));
-        assert(p->read() == Token(sp, kSymbol, String("T")));
-        assert(p->read() == Token(sp, kAssign));
-        assert(p->read() == Token(sp, kSymbol, String("x")));
+      assert(p->read() == Token(sp, kBraceOpen));
+      assert(p->read() == Token(sp, kSymbol, String("slot")));
+      assert(p->read() == Token(sp, kSymbol, String("first")));
+      assert(p->read() == Token(sp, kColon));
+      assert(p->read() == Token(sp, kSymbol, String("T")));
+      assert(p->read() == Token(sp, kAssign));
+      assert(p->read() == Token(sp, kSymbol, String("x")));
 
-        assert(p->read() == Token(sp, kSemicolon));
+      assert(p->read() == Token(sp, kSemicolon));
 
-        assert(p->read() == Token(sp, kSymbol, String("slot")));
-        assert(p->read() == Token(sp, kSymbol, String("data")));
-        assert(p->read() == Token(sp, kColon));
-        assert(p->read() == Token(sp, kSymbol, String("Octet")));
-        assert(p->read() == Token(sp, kBracketOpen));
-        assert(p->read() == Token(sp, kBracketClose));
-        assert(p->read() == Token(sp, kBraceClose));
+      assert(p->read() == Token(sp, kSymbol, String("slot")));
+      assert(p->read() == Token(sp, kSymbol, String("data")));
+      assert(p->read() == Token(sp, kColon));
+      assert(p->read() == Token(sp, kSymbol, String("Octet")));
+      assert(p->read() == Token(sp, kBracketOpen));
+      assert(p->read() == Token(sp, kBracketClose));
+      assert(p->read() == Token(sp, kBraceClose));
 
-        assert(p->isEof());
-      }
-      catch (const NotationException& ne) {
-        fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
-      }
+      assert(p->isEof());
     }
   }
 };
@@ -229,18 +224,13 @@ public:
 
     Ptr<TokenPort> p = new InternalTokenPort(tokens);
 
-    try {
-      assert(p->read() == Token(sp, kSymbol, String("def")));
-      assert(p->read() == Token(sp, kSymbol, String("const")));
-      assert(p->read() == Token(sp, kSymbol, String("x")));
-      assert(p->read() == Token(sp, kAssign));
-      assert(p->read() == Token(sp, kRational, Rational(2, 3)));
+    assert(p->read() == Token(sp, kSymbol, String("def")));
+    assert(p->read() == Token(sp, kSymbol, String("const")));
+    assert(p->read() == Token(sp, kSymbol, String("x")));
+    assert(p->read() == Token(sp, kAssign));
+    assert(p->read() == Token(sp, kRational, Rational(2, 3)));
 
-      assert(p->isEof());
-    }
-    catch (const NotationException& ne) {
-      fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
-    }
+    assert(p->isEof());
   };
 };
 

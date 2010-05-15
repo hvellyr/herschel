@@ -21,26 +21,6 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class NotationException : public Exception
-  {
-  public:
-    NotationException(int line, const String& msg)
-      : Exception(msg),
-        fLine(line)
-    { }
-
-    int line() const
-    {
-      return fLine;
-    }
-
-  private:
-    int fLine;
-  };
-
-
-  //--------------------------------------------------------------------------
-
   class AnnotatedEofException : public EofException
   {
   public:
@@ -95,10 +75,8 @@ namespace heather
     bool isSymbolChar(Char c) const;
     bool isDelimiter(Char c) const;
 
-    void parseError(const String& msg)
-      throw (NotationException);
-
     int nextChar();
+    void scanUntilDelimiter();
     Token makeTokenAndNext(const SrcPos& where, TokenType type);
 
     Token readSymbolOrOperator(bool acceptGenerics);
@@ -109,7 +87,7 @@ namespace heather
     Token readNumericCharacter(const SrcPos& startPos, bool needsTerminator);
     Token readSymbolCharacter(const SrcPos& startPos, bool needsTerminator);
     Token translateChar(const SrcPos& startPos, const String& charnm);
-    Char mapCharNameToChar(const String& charnm);
+    Char mapCharNameToChar(const SrcPos& startPos, const String& charnm);
     String readIntNumberPart(bool acceptHex);
 
 
