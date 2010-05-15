@@ -1,0 +1,4 @@
+def k1 = #.abc
+def k2 = #,abc
+def k3 = #abc
+

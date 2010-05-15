@@ -14,6 +14,7 @@
 #include "valuesaver.h"
 #include "tokeneval.h"
 #include "log.h"
+#include "errcodes.h"
 
 
 //----------------------------------------------------------------------------
@@ -75,7 +76,8 @@ FirstPass::parseModule(bool isModule)
 
         nextToken();
         if (fToken.tokenType() != kParanClose) {
-          logf(fToken.srcpos(), kError, "Syntax error, missing ')'");
+          errorf(fToken.srcpos(), E_ParamMissParanClose,
+                 "Syntax error, missing ')'");
           if (fToken == kBraceOpen) {
             // try to continue with this
           }
@@ -92,7 +94,8 @@ FirstPass::parseModule(bool isModule)
                << publicId );
       }
       else {
-        logf(fToken.srcpos(), kError, "Syntax error, missing module name");
+        errorf(fToken.srcpos(), E_MissingModName,
+               "Syntax error, missing module name");
         return scanUntilTopExprAndResume();
       }
     }
@@ -119,7 +122,8 @@ FirstPass::parseModule(bool isModule)
         nextToken();
       }
       else {
-        logf(fToken.srcpos(), kError, "Syntax error, missing '}'");
+        errorf(fToken.srcpos(), E_ParamMissBraceClose,
+               "Syntax error, missing '}'");
         scanUntilTopExprAndResume();
       }
 
@@ -682,7 +686,7 @@ FirstPass::parseAtomicExpr()
     return parseAccess(parseBlock());
 
   default:
-    assert(0);
+    ;
   }
 
   return Token();
@@ -949,8 +953,10 @@ FirstPass::parseVarDef(const Token& defToken, VardefFlags flags, bool isLocal)
 
   nextToken();
 
-  if (fToken.tokenType() != kSymbol)
-    throw UnexpectedTokenException(fToken, "expected SYMBOL");
+  if (fToken.tokenType() != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "Missing name");
+    return scanUntilTopExprAndResume();
+  }
   Token symbolToken = fToken;
 
   nextToken();
@@ -1028,8 +1034,10 @@ FirstPass::parseCharDef(const Token& defToken)
 
   nextToken();
 
-  if (fToken != kSymbol)
-    throw UnexpectedTokenException(fToken, "expected SYMBOL");
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "Missing name");
+    return scanUntilTopExprAndResume();
+  }
   Token charNameToken = fToken;
 
   nextToken();
@@ -1060,7 +1068,7 @@ FirstPass::parseCharDef(const Token& defToken)
 
 
 Token
-FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken, 
+FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
                             const Token& symToken,
                             bool isGeneric, bool isLocal)
 {
@@ -1155,8 +1163,11 @@ FirstPass::parseDef(bool isLocal)
   }
   else if (fToken.tokenType() == kSymbol)
     return parseFunctionOrVarDef(defToken, isLocal);
-  else
-    throw UnexpectedTokenException(fToken);
+  else {
+    errorf(fToken.srcpos(), E_DefInitValueUnexpectedToken,
+           "Bad init value: %s", (const char*)StrHelper(fToken.toString()));
+    return scanUntilTopExprAndResume();
+  }
 
   return Token();
 }
@@ -1184,8 +1195,11 @@ FirstPass::parseTop()
   else if (fToken == Parser::whenToken) {
     return parseWhen(true);
   }
-  else
-    throw UnexpectedTokenException(fToken);
+  else {
+    errorf(fToken.srcpos(), E_UnexpectedToken,
+           "Unexpected token: %s", (const char*)StrHelper(fToken.toString()));
+    return scanUntilTopExprAndResume();
+  }
 
   return Token();
 }

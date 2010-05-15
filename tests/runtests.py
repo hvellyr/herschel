@@ -109,9 +109,9 @@ class TestRunner:
 
     def split_experr_line(self, errline):
         values = errline.split(' ; ')
-        line_no = 0
+        line_no = ''
         level = ''
-        error_code = 0
+        error_code = ''
 
         if values:
             if len(values) > 0:
@@ -139,7 +139,10 @@ class TestRunner:
             line_no, level, error_code = self.split_experr_line(experr)
 
             if len(line_no) > 0:
-                pattern = '%s:%s: %s: (.*?)' % (test_file, line_no, level)
+                if len(error_code) > 0:
+                    pattern = '%s:%s: %s: \(%s\)' % (test_file, line_no, level, error_code)
+                else:
+                    pattern = '%s:%s: %s:' % (test_file, line_no, level)
                 # print "  PATTERN: ", pattern
                 error_re = re.compile(pattern)
                 m = error_re.search(eo)
