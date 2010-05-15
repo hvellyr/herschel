@@ -7,13 +7,14 @@
 */
 
 #include "common.h"
-#include "str.h"
-#include "tokenizer.h"
-#include "properties.h"
-#include "unittests.h"
-#include "registry.h"
-#include "strbuf.h"
+#include "errcodes.h"
 #include "log.h"
+#include "properties.h"
+#include "registry.h"
+#include "str.h"
+#include "strbuf.h"
+#include "tokenizer.h"
+#include "unittests.h"
 
 
 using namespace heather;
@@ -631,7 +632,8 @@ Tokenizer::nextTokenImpl()
         if (isSymbolChar(fCC))
           return readIdentifier(beginSrcpos, String(), kKeyword, false);
         else {
-          logf(beginSrcpos, kError, "Unknown #-notation: %C", Char(fCC));
+          errorf(beginSrcpos, E_BadHashNotation,
+                 "Unknown #-notation: %C", Char(fCC));
           continue;
         }
       }
