@@ -32,6 +32,9 @@ Documentation
 
 Bootstrap compiler
 
+  replace all throw *Exception in pass1 etc. by proper
+  log-message-and-try-to-continue code
+
   continue with pexpreval (add the missing operators)
 
   unittests for Rational() class.
