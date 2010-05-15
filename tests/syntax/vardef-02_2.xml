@@ -1,2 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<compile-unit><vardef><is-const/><sym>a</sym><init><int>5</int></init></vardef><vardef><is-const/><sym>name</sym><init><str>hello, world!</str></init></vardef></compile-unit>

@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>export</id><id>public</id><nested left='(' right=')'><id>abc</id></nested></seq><seq><id>export</id><id>public</id><nested left='(' right=')'><id>abc</id><id>fff</id></nested></seq><seq><id>export</id><id>public</id><nested left='(' right=')'><id>abc</id><id>xyz</id><id>fff</id></nested></seq></seq>

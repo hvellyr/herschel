@@ -21,6 +21,9 @@ namespace heather
     E_MissingParanOpen    = 0x0004,
     E_BadParameterList    = 0x0005,
 
+    E_SymbolExpected      = 0x1001,
+    E_StringExpected      = 0x1002,
+
     // notation errors
     E_UnexpectedChar      = 0x0100,
     E_BadHashNotation     = 0x0101,
@@ -38,8 +41,8 @@ namespace heather
     E_MissingModName      = 0xa000,
     E_MissingDefName      = 0xa001,
 
-    // export
-    E_SymbolExpected      = 0xa101,
+    // import
+    E_MapToExpected       = 0xa101,
   };
 };
 

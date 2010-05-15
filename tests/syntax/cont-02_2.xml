@@ -1,2 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<compile-unit><vardef><is-const/><sym>a</sym><init><vector><int>1</int><int>2</int><int>3</int><int>4</int></vector></init></vardef><vardef><is-const/><sym>b</sym><init><vector></vector></init></vardef><vardef><is-const/><sym>c</sym><init><vector><str>hello</str><str>, </str><str>world</str><str>!</str></vector></init></vardef><vardef><is-const/><sym>d</sym><init><vector><vector><int>1</int><real imag='true'>3.141500</real></vector><vector><rational>3/4</rational></vector><vector></vector></vector></init></vardef></compile-unit>

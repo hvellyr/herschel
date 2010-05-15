@@ -96,6 +96,7 @@ namespace heather
 
     // resume functions after (syntax) error
     Token scanUntilTopExprAndResume();
+    Token scanUntilNextParameter();
 
   private:
     Ptr<Parser> fParser;
