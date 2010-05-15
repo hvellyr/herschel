@@ -575,6 +575,8 @@ Token::operator!=(const Token& other) const
 const SrcPos&
 Token::srcpos() const
 {
+  if (fType == kSeqExpr && !isEmpty())
+    return children()[0].srcpos();
   return fSrcPos;
 }
 

@@ -296,39 +296,46 @@ Token
 FirstPass::parseLiteralVector()
 {
   bool isDict = false;
-  Token nested = Token(fToken.srcpos(), kLiteralVectorOpen, kParanClose);
+  SrcPos startPos = fToken.srcpos();
+  Token nested = Token(startPos, kLiteralVectorOpen, kParanClose);
 
   nextToken();
 
   while (fToken != kParanClose) {
     if (fToken == kEOF)
-      throw PrematureEndOfFileException();
+      break;
 
     Token expr = parseExpr();
 
     if (!nested.isSet()) {
       if (expr.isBinarySeq(kMapTo))
         isDict = true;
-
       nested << expr;
     }
     else if (isDict) {
       if (!expr.isBinarySeq(kMapTo))
-        throw SyntaxException(String("For literal dictionaries all elements "
-                                     "must be MAPTO pairs"));
-      nested << expr;
+        errorf(expr.srcpos(), E_InconsistentArgs,
+               "For literal dictionaries all elements must be '->' pairs");
+      else
+        nested << expr;
     }
-    else
+    else if (expr.isSet())
       nested << expr;
 
     if (fToken == kComma)
       nextToken();
     else if (fToken != kParanClose)
-      throw UnexpectedTokenException(fToken, "expected ] or ,");
+      errorf(fToken.srcpos(), E_BadParameterList, "expected ')' or ','");
   }
 
   if (fToken == kParanClose)
     nextToken();
+  else {
+    errorf(fToken.srcpos(), E_MissingParanClose,
+           "unterminated literal vector, expected ')'");
+    errorf(startPos, E_MissingParanClose, "vector was start here");
+    scanUntilTopExprAndResume();
+  }
 
   return nested;
 }
@@ -337,13 +344,14 @@ FirstPass::parseLiteralVector()
 Token
 FirstPass::parseLiteralArray()
 {
-  Token nested = Token(fToken.srcpos(), kLiteralArrayOpen, kBracketClose);
+  SrcPos startPos = fToken.srcpos();
+  Token nested = Token(startPos, kLiteralArrayOpen, kBracketClose);
 
   nextToken();
 
   while (fToken != kBracketClose) {
     if (fToken == kEOF)
-      throw PrematureEndOfFileException();
+      break;
 
     Token n = parseExpr();
     nested << n;
@@ -351,11 +359,17 @@ FirstPass::parseLiteralArray()
     if (fToken == kComma)
       nextToken();
     else if (fToken != kBracketClose)
-      throw UnexpectedTokenException(fToken, "expected ] or ,");
+      errorf(fToken.srcpos(), E_BadParameterList, "expected ']' or ','");
   }
 
   if (fToken == kBracketClose)
     nextToken();
+  else {
+    errorf(fToken.srcpos(), E_MissingBracketClose,
+           "unterminated literal array, expected ']'");
+    errorf(startPos, E_MissingBracketClose, "array was start here");
+    scanUntilTopExprAndResume();
+  }
 
   return nested;
 }
@@ -851,9 +865,15 @@ FirstPass::parseExprRec(const Token& expr1,
     return expr1;
 
   nextToken();
+  SrcPos before2ndPos = fToken.srcpos();
   Token expr2 = parseAtomicExpr();
   OperatorType op2 = tokenTypeToOperator(fToken.tokenType());
   SrcPos op2Srcpos = fToken.srcpos();
+
+  if (!expr2.isSet()) {
+    errorf(before2ndPos, E_MissingRHExpr, "no right hand expression");
+    return expr1;
+  }
 
   if (op2 == kOpInvalid) {
     if (op1 == kOpAssign)
@@ -918,24 +938,35 @@ FirstPass::parseWhen(bool isTopLevel)
 
   if (fToken.isSymbol()) {
     if (fToken == Parser::ignoreToken) {
-      nextToken();
       inclConsequent = false;
     }
     else if (fToken == Parser::includeToken) {
-      nextToken();
       inclAlternate = false;
     }
-    else
-      throw UnexpectedTokenException(fToken, "expected 'ignore' or 'include'");
+    else {
+      errorf(fToken.srcpos(), E_UnexpectedToken,
+             "only 'ignore' or 'include' are valid symbols here");
+      errorf(fToken.srcpos(), E_UnexpectedToken, "assume 'ignore'");
+
+      inclConsequent = false;
+    }
+    nextToken();
   }
   else if (fToken == kParanOpen) {
     SrcPos posp = fToken.srcpos();
     nextToken();
 
     Token test = parseExpr();
-    if (fToken != kParanClose)
-      throw UnexpectedTokenException(fToken, "expected )");
-    nextToken();
+    if (fToken != kParanClose) {
+      errorf(fToken.srcpos(), E_ParamMissParanClose, "missing ')'");
+      if (fToken == kBraceOpen) {
+        // try to continue with this
+      }
+      else
+        return scanUntilTopExprAndResume();
+    }
+    else
+      nextToken();
 
     if (fEvaluateExprs) {
       TokenEvalContext ctx(fParser->configVarRegistry());
@@ -954,8 +985,20 @@ FirstPass::parseWhen(bool isTopLevel)
     else
       result << ( Token(posp, kParanOpen, kParanClose) << test );
   }
-  else
-    throw UnexpectedTokenException(fToken, "expected (");
+  else if (fToken == kBraceOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "missing parameters or key for 'when' clause");
+    errorf(fToken.srcpos(), E_MissingParanOpen, "assume 'ignore' here");
+    // try to continue with this
+
+    inclConsequent = false;
+    inclAlternate = true;
+  }
+  else {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    scanUntilTopExprAndResume();
+    return Token();
+  }
+
 
   Token consequent;
   Token alternate;
@@ -1037,7 +1080,11 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
   if (fToken == kAssign) {
     assignToken = fToken;
     nextToken();
+
+    SrcPos pos = fToken.srcpos();
     initExpr = parseExpr();
+    if (!initExpr.isSet())
+      errorf(pos, E_MissingRHExpr, "no value in var init");
   }
 
   Token vardefExpr;
@@ -1049,14 +1096,19 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
 
   if (type.isSet())
     vardefExpr << colonToken << type;
-  if (initExpr.isSet())
-    vardefExpr << assignToken << initExpr;
 
   if (tagToken == Parser::configToken) {
     if (fEvaluateExprs) {
-      if (!initExpr.isSet())
-        throw SyntaxException(String("Config variable '") + symbolToken +
-                              "' without default value");
+      if (!initExpr.isSet()) {
+        error(symbolToken.srcpos(), E_DefNoInitValue,
+              ( String("Config variable '") + symbolToken +
+                "' without default value") );
+
+        // if no default value is given assume ''
+        initExpr = Token(symbolToken.srcpos(), kString, "");
+        if (!assignToken.isSet())
+          assignToken = Token(symbolToken.srcpos(), kAssign);
+      }
       fParser->configVarRegistry()->registerValue(symbolToken.idValue(),
                                                   evaluateConfigExpr(initExpr));
       // even if we have to evaluate the config var expression, we have to
@@ -1064,6 +1116,9 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
       // normal const-vars by code
     }
   }
+
+  if (initExpr.isSet())
+    vardefExpr << assignToken << initExpr;
 
   return vardefExpr;
 }
