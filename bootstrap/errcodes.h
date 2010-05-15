@@ -20,6 +20,8 @@ namespace heather
     E_UnexpectedToken     = 0x0003,
     E_MissingParanOpen    = 0x0004,
     E_BadParameterList    = 0x0005,
+    E_MissingParanClose   = 0x0006,
+    E_MissingBracketClose = 0x0007,
 
     E_SymbolExpected      = 0x1001,
     E_StringExpected      = 0x1002,
@@ -36,6 +38,10 @@ namespace heather
 
     // def parsing
     E_DefInitValueUnexpectedToken = 0x4001,
+    E_DefNoInitValue      = 0x4002,
+
+    // expressions
+    E_MissingRHExpr       = 0x6001,
 
     // module parsing
     E_MissingModName      = 0xa000,
@@ -43,6 +49,9 @@ namespace heather
 
     // import
     E_MapToExpected       = 0xa101,
+
+    // literals
+    E_InconsistentArgs    = 0xa201,
   };
 };
 

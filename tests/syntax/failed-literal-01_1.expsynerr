@@ -1,0 +1,4 @@
+3 ; error ; 6001
+3 ; error ; 0005
+3 ; error ; 0006
+1 ; error ; 0006
