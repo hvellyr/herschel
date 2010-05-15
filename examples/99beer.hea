@@ -16,7 +16,7 @@ def beer(n : Int, port : Port)
     outln(port: port, "Take one down, pass it around")
     display-bottles(n - 1) outln(port: port, " on the wall")
     outln(port: port)
-    beer(- n 1)
+    beer(n - 1)
   }
 
 def app|main()
