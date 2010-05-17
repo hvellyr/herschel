@@ -15,6 +15,7 @@
 #include "tokenport.h"
 #include "token.h"
 #include "parser.h"
+#include "errcodes.h"
 
 
 namespace heather
@@ -99,6 +100,16 @@ namespace heather
     Token scanUntilNextParameter();
 
   private:
+    friend class ExportParser;
+
+    template<typename ParseFunctor>
+    void parseSequence(ParseFunctor functor,
+                       TokenType startToken, TokenType endToken,
+                       bool acceptsComma,
+                       ErrCodes errorCode,
+                       Token& result);
+
+    //-------- data members
     Ptr<Parser> fParser;
     Token       fToken;
     bool        fEvaluateExprs;

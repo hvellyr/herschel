@@ -67,6 +67,51 @@ FirstPass::scanUntilNextParameter()
 }
 
 
+template<typename ParseFunctor>
+void
+FirstPass::parseSequence(ParseFunctor functor,
+                         TokenType startToken, TokenType endToken,
+                         bool acceptsComma,
+                         ErrCodes errorCode,
+                         Token& result)
+{
+  SrcPos startPos = fToken.srcpos();
+  nextToken();
+  while (fToken != endToken) {
+    if (fToken == kEOF)
+      break;
+
+    functor(this, result);
+
+    if (acceptsComma && fToken == kComma)
+      nextToken();
+    else if (fToken != endToken) {
+      String msg = String("expected '") + Token(SrcPos(), endToken).toString() + "'";
+      if (acceptsComma)
+        msg = msg + " or ','";
+      error(fToken.srcpos(), errorCode, msg);
+    }
+  }
+
+  if (fToken == endToken) {
+    nextToken();
+  }
+  else {
+    String msg = String("expected '") + Token(SrcPos(), endToken).toString() + "'";
+    error(fToken.srcpos(), errorCode, msg);
+
+    if (startToken != kInvalid && startPos != fToken.srcpos()) {
+      String msg = String("beginning '") + Token(SrcPos(), startToken).toString()
+        + "' was here";
+      error(startPos, errorCode, msg);
+    }
+    scanUntilTopExprAndResume();
+  }
+}
+
+
+//----------------------------------------------------------------------------
+
 Token
 FirstPass::parseModule(bool isModule)
 {
@@ -149,6 +194,27 @@ FirstPass::parseModule(bool isModule)
 }
 
 
+class heather::ExportParser
+{
+public:
+  void operator() (FirstPass* pass, Token& result)
+  {
+    if (pass->fToken.isSymbol()) {
+      result << pass->fToken;
+      pass->nextToken();
+    }
+    else if (pass->fToken == kMultiply) {
+      result << Token(pass->fToken.srcpos(), "*");
+      pass->nextToken();
+    }
+    else {
+      errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL or '*'");
+      pass->scanUntilNextParameter();
+    }
+  }
+};
+
+
 Token
 FirstPass::parseExport()
 {
@@ -169,39 +235,9 @@ FirstPass::parseExport()
   }
 
   Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
-
-  nextToken();
-  while (fToken != kParanClose) {
-    if (fToken == kEOF)
-      break;
-
-    if (fToken.isSymbol()) {
-      symbols << fToken;
-      nextToken();
-    }
-    else if (fToken == kMultiply) {
-      symbols << Token(fToken.srcpos(), "*");
-      nextToken();
-    }
-    else {
-      errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL or '*'");
-      scanUntilNextParameter();
-    }
-
-    if (fToken == kComma)
-      nextToken();
-    else if (fToken != kParanClose)
-      errorf(fToken.srcpos(), E_BadParameterList, "expected ')' or ','");
-  }
-
-  if (fToken == kParanClose) {
-    nextToken();
-  }
-  else {
-    errorf(fToken.srcpos(), E_ParamMissParanClose,
-           "unbalanced parameters, expected ')'");
-    scanUntilTopExprAndResume();
-  }
+  parseSequence<ExportParser>(ExportParser(),
+                              kParanOpen, kParanClose, true, E_BadParameterList,
+                              symbols);
 
   expr << symbols;
 
@@ -629,10 +665,12 @@ Token
 FirstPass::parseGroup()
 {
   Token expr = parseExpr();
-  if (fToken != kParanClose)
-    throw UnexpectedTokenException(fToken, "expected )");
+  if (fToken != kParanClose) {
+    errorf(fToken.srcpos(), E_MissingParanClose, "expected closing ')'");
+  }
+  else
+    nextToken();
 
-  nextToken();
   return expr;
 }
 

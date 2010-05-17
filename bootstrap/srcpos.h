@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -41,6 +41,17 @@ namespace heather
       fFile = other.fFile;
       fLineNo = other.fLineNo;
       return *this;
+    }
+
+    bool operator==(const SrcPos& other) const
+    {
+      return (fFile == other.fFile &&
+              fLineNo == other.fLineNo);
+    }
+
+    bool operator!=(const SrcPos& other) const
+    {
+      return !(operator==(other));
     }
 
     const String& file() const
