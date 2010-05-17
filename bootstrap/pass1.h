@@ -100,12 +100,16 @@ namespace heather
     Token scanUntilNextParameter();
 
   private:
-    friend class ExportParser;
+    friend struct ModuleParser;
+    friend struct ExportParser;
+    friend struct ImportRenameParser;
+    friend struct LiteralVectorParser;
+    friend struct LiteralArrayParser;
 
     template<typename ParseFunctor>
     void parseSequence(ParseFunctor functor,
                        TokenType startToken, TokenType endToken,
-                       bool acceptsComma,
+                       bool hasSeparator,
                        ErrCodes errorCode,
                        Token& result);
 

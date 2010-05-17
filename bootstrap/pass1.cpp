@@ -15,6 +15,7 @@
 #include "tokeneval.h"
 #include "log.h"
 #include "errcodes.h"
+#include "strbuf.h"
 
 
 //----------------------------------------------------------------------------
@@ -71,7 +72,7 @@ template<typename ParseFunctor>
 void
 FirstPass::parseSequence(ParseFunctor functor,
                          TokenType startToken, TokenType endToken,
-                         bool acceptsComma,
+                         bool hasSeparator,
                          ErrCodes errorCode,
                          Token& result)
 {
@@ -81,15 +82,16 @@ FirstPass::parseSequence(ParseFunctor functor,
     if (fToken == kEOF)
       break;
 
-    functor(this, result);
+    if (!functor(this, result))
+      break;
 
-    if (acceptsComma && fToken == kComma)
-      nextToken();
-    else if (fToken != endToken) {
-      String msg = String("expected '") + Token(SrcPos(), endToken).toString() + "'";
-      if (acceptsComma)
-        msg = msg + " or ','";
-      error(fToken.srcpos(), errorCode, msg);
+    if (hasSeparator) {
+      if (fToken == kComma)
+        nextToken();
+      else if (fToken != endToken)
+        error(fToken.srcpos(), errorCode,
+              (StringBuffer() << "expected '" 
+               << Token(SrcPos(), endToken).toString() << "' or ','").toString());
     }
   }
 
@@ -97,20 +99,38 @@ FirstPass::parseSequence(ParseFunctor functor,
     nextToken();
   }
   else {
-    String msg = String("expected '") + Token(SrcPos(), endToken).toString() + "'";
-    error(fToken.srcpos(), errorCode, msg);
+    error(fToken.srcpos(), errorCode,
+          (StringBuffer() << "expected '" 
+           << Token(SrcPos(), endToken).toString() << "'").toString());
 
-    if (startToken != kInvalid && startPos != fToken.srcpos()) {
-      String msg = String("beginning '") + Token(SrcPos(), startToken).toString()
-        + "' was here";
-      error(startPos, errorCode, msg);
-    }
+    if (startToken != kInvalid && startPos != fToken.srcpos())
+      error(startPos, errorCode,
+            (StringBuffer() << "beginning '" << Token(SrcPos(), startToken).toString()
+             << "' was here").toString());
     scanUntilTopExprAndResume();
   }
 }
 
 
 //----------------------------------------------------------------------------
+
+struct heather::ModuleParser
+{
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    Token n = pass->parseTop();
+    if (n.isSet())
+      result << n;
+    else {
+      errorf(pass->fToken.srcpos(), E_UnexpectedToken,
+             "Unexpected token: %s",
+             (const char*)StrHelper(pass->fToken.toString()));
+      return false;
+    }
+
+    return true;
+  }
+};
 
 Token
 FirstPass::parseModule(bool isModule)
@@ -162,30 +182,10 @@ FirstPass::parseModule(bool isModule)
 
 
     if (fToken == kBraceOpen) {
-      SrcPos begSp = fToken.srcpos();
-      nextToken();
-
-      Token defines = Token(begSp, kBraceOpen, kBraceClose);
-      while (fToken != kBraceClose) {
-        if (fToken == kEOF)
-          break;
-
-        Token n = parseTop();
-        if (n.isSet())
-          defines << n;
-      }
-
-      if (fToken == kBraceClose) {
-        nextToken();
-      }
-      else {
-        assert(fToken == kEOF);
-        errorf(fToken.srcpos(), E_MissingBraceClose,
-               "unbalanced braces, expected '}'");
-        errorf(begSp, E_MissingBraceClose, "beginning '{' was here");
-        scanUntilTopExprAndResume();
-      }
-
+      Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
+      parseSequence(ModuleParser(),
+                    kBraceOpen, kBraceClose, false, E_MissingBraceClose,
+                    defines);
       modExpr << defines;
     }
   }
@@ -194,10 +194,9 @@ FirstPass::parseModule(bool isModule)
 }
 
 
-class heather::ExportParser
+struct heather::ExportParser
 {
-public:
-  void operator() (FirstPass* pass, Token& result)
+  bool operator() (FirstPass* pass, Token& result)
   {
     if (pass->fToken.isSymbol()) {
       result << pass->fToken;
@@ -211,6 +210,8 @@ public:
       errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL or '*'");
       pass->scanUntilNextParameter();
     }
+
+    return true;
   }
 };
 
@@ -235,14 +236,53 @@ FirstPass::parseExport()
   }
 
   Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
-  parseSequence<ExportParser>(ExportParser(),
-                              kParanOpen, kParanClose, true, E_BadParameterList,
-                              symbols);
+  parseSequence(ExportParser(),
+                kParanOpen, kParanClose, true, E_BadParameterList,
+                symbols);
 
   expr << symbols;
 
   return expr;
 }
+
+
+struct heather::ImportRenameParser
+{
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    if (pass->fToken != kSymbol) {
+      errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+      pass->scanUntilNextParameter();
+    }
+    else {
+      Token first = pass->fToken;
+
+      pass->nextToken();
+      if (pass->fToken != kMapTo) {
+        errorf(pass->fToken.srcpos(), E_MapToExpected, "expected '->'");
+        pass->scanUntilNextParameter();
+      }
+      else {
+        Token maptoToken = pass->fToken;
+
+        pass->nextToken();
+        if (pass->fToken != kSymbol) {
+          errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+          pass->scanUntilNextParameter();
+        }
+        else {
+          Token second = pass->fToken;
+
+          result << ( Token() << first << maptoToken << second );
+
+          pass->nextToken();
+        }
+      }
+    }
+
+    return true;
+  }
+};
 
 
 Token
@@ -263,55 +303,9 @@ FirstPass::parseImport()
   if (fToken == kParanOpen) {
     Token renames = Token(fToken.srcpos(), kParanOpen, kParanClose);
 
-    nextToken();
-    while (fToken != kParanClose) {
-      if (fToken == kEOF)
-        break;
-
-      if (fToken != kSymbol) {
-        errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
-        scanUntilNextParameter();
-      }
-      else {
-        Token first = fToken;
-
-        nextToken();
-        if (fToken != kMapTo) {
-          errorf(fToken.srcpos(), E_MapToExpected, "expected '->'");
-          scanUntilNextParameter();
-        }
-        else {
-          Token maptoToken = fToken;
-
-          nextToken();
-          if (fToken != kSymbol) {
-            errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
-            scanUntilNextParameter();
-          }
-          else {
-            Token second = fToken;
-
-            renames << ( Token() << first << maptoToken << second );
-
-            nextToken();
-          }
-        }
-      }
-
-      if (fToken == kComma)
-        nextToken();
-      else if (fToken != kParanClose)
-        errorf(fToken.srcpos(), E_BadParameterList, "expected ')' or ','");
-    }
-
-    if (fToken == kParanClose) {
-      nextToken();
-    }
-    else {
-      errorf(fToken.srcpos(), E_ParamMissParanClose,
-             "unbalanced parameters, expected ')'");
-      scanUntilTopExprAndResume();
-    }
+    parseSequence(ImportRenameParser(),
+                  kParanOpen, kParanClose, true, E_BadParameterList,
+                  renames);
 
     expr << renames;
   }
@@ -328,86 +322,75 @@ FirstPass::parseTypeSpec()
 }
 
 
-Token
-FirstPass::parseLiteralVector()
+struct heather::LiteralVectorParser
 {
-  bool isDict = false;
-  SrcPos startPos = fToken.srcpos();
-  Token nested = Token(startPos, kLiteralVectorOpen, kParanClose);
+  LiteralVectorParser()
+    : fIsDict(false)
+  { }
 
-  nextToken();
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    Token expr = pass->parseExpr();
 
-  while (fToken != kParanClose) {
-    if (fToken == kEOF)
-      break;
-
-    Token expr = parseExpr();
-
-    if (!nested.isSet()) {
+    if (result.isEmpty()) {
       if (expr.isBinarySeq(kMapTo))
-        isDict = true;
-      nested << expr;
+        fIsDict = true;
+      result << expr;
     }
-    else if (isDict) {
+    else if (fIsDict) {
       if (!expr.isBinarySeq(kMapTo))
         errorf(expr.srcpos(), E_InconsistentArgs,
                "For literal dictionaries all elements must be '->' pairs");
       else
-        nested << expr;
+        result << expr;
     }
     else if (expr.isSet())
-      nested << expr;
+      result << expr;
 
-    if (fToken == kComma)
-      nextToken();
-    else if (fToken != kParanClose)
-      errorf(fToken.srcpos(), E_BadParameterList, "expected ')' or ','");
+    return true;
   }
 
-  if (fToken == kParanClose)
-    nextToken();
-  else {
-    errorf(fToken.srcpos(), E_MissingParanClose,
-           "unterminated literal vector, expected ')'");
-    errorf(startPos, E_MissingParanClose, "vector was start here");
-    scanUntilTopExprAndResume();
-  }
+  bool fIsDict;
+};
 
+
+Token
+FirstPass::parseLiteralVector()
+{
+  Token nested = Token(fToken.srcpos(), kLiteralVectorOpen, kParanClose);
+  parseSequence(LiteralVectorParser(),
+                kLiteralVectorOpen, kParanClose, true, E_BadParameterList,
+                nested);
   return nested;
 }
+
+
+struct heather::LiteralArrayParser
+{
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    Token n = pass->parseExpr();
+    if (n.isSet())
+      result << n;
+    else {
+      errorf(pass->fToken.srcpos(), E_UnexpectedToken,
+             "Unexpected token: %s", (const char*)StrHelper(pass->fToken.toString()));
+      return false;
+    }
+
+    return true;
+  }
+};
 
 
 Token
 FirstPass::parseLiteralArray()
 {
-  SrcPos startPos = fToken.srcpos();
-  Token nested = Token(startPos, kLiteralArrayOpen, kBracketClose);
-
-  nextToken();
-
-  while (fToken != kBracketClose) {
-    if (fToken == kEOF)
-      break;
-
-    Token n = parseExpr();
-    nested << n;
-
-    if (fToken == kComma)
-      nextToken();
-    else if (fToken != kBracketClose)
-      errorf(fToken.srcpos(), E_BadParameterList, "expected ']' or ','");
-  }
-
-  if (fToken == kBracketClose)
-    nextToken();
-  else {
-    errorf(fToken.srcpos(), E_MissingBracketClose,
-           "unterminated literal array, expected ']'");
-    errorf(startPos, E_MissingBracketClose, "array was start here");
-    scanUntilTopExprAndResume();
-  }
-
-  return nested;
+  Token array = Token(fToken.srcpos(), kLiteralArrayOpen, kBracketClose);
+  parseSequence(LiteralArrayParser(),
+                kLiteralArrayOpen, kBracketClose, true, E_BadParameterList,
+                array);
+  return array;
 }
 
 
@@ -703,9 +686,10 @@ FirstPass::parseExprListUntilBrace(TokenVector* result)
 void
 FirstPass::parseTopExprUntilBrace(TokenVector* result)
 {
+  // TODO: this does not handle nested scopes!
   while (fToken != kBraceClose) {
     if (fToken == kEOF)
-      throw PrematureEndOfFileException();
+      break;
     Token topexpr = parseTop();
     result->push_back(topexpr);
   }
@@ -763,6 +747,13 @@ FirstPass::parseAtomicExpr()
     }
     else if (fToken == Parser::whenToken) {
       return parseWhen(false);
+    }
+    else if (fToken == Parser::defToken ||
+             fToken == Parser::moduleToken ||
+             fToken == Parser::interfaceToken ||
+             fToken == Parser::exportToken ||
+             fToken == Parser::importToken) {
+      return Token();
     }
     else {
       Token t = fToken;

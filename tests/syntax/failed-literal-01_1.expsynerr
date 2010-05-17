@@ -1,4 +1,4 @@
 3 ; error ; 6001
+2 ; error ; a201
 3 ; error ; 0005
-3 ; error ; 0006
-1 ; error ; 0006
+1 ; error ; 0005
