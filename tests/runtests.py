@@ -17,6 +17,7 @@ class TestRunner:
         self.heather_path = "../temp/debug/heather"
         self.verbose = False
 
+
     def run_heather_on_test(self, test_file, traces):
         return subprocess.Popen([self.heather_path, "-T", traces, "-P", test_file],
                                 stdout=subprocess.PIPE,

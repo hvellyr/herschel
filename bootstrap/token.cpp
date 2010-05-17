@@ -986,7 +986,7 @@ bool
 Token::isBinarySeq(TokenType op) const
 {
   return (isSeq() && children().size() == 3 &&
-          (*this)[1].isPunct() && (*this)[1].punctValue() == op);
+          (*this)[1].fType == op);
 }
 
 

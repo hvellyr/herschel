@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>def</id><id>x</id><punct type='='/><nested left='#[' right=']'><lit type='str'>a</lit><lit type='int'>1</lit><lit type='str'>b</lit></nested></seq><seq><id>def</id><id>y</id><punct type='='/><lit type='int'>5</lit></seq><seq><id>def</id><id>z</id><punct type='='/><nested left='#[' right=']'><lit type='int'>1</lit><lit type='int'>2</lit><lit type='int'>3</lit></nested></seq></seq>
