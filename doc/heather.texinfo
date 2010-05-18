@@ -318,7 +318,7 @@ AND       and       as        by        def       else      eof
 export    extend    false     for       Function  function  if
 import    in        interface isa       let       match     mod
 module    nil       not       on        OR        or        otherwise
-reify     select    then      true      unti      when      where
+reify     select    then      true      until     when      where
 while     XOR
 @end verbatim
 
@@ -331,9 +331,9 @@ class) and as the name of a function, which returns the implementing
 class for an object.}:
 
 @verbatim
-alias     char      class     const     enum      exit      final
-fluid     generic   init      macro     measure   protected public
-type      unit
+alias     char      class     config    const     enum      exit
+final     fluid     generic   ignore    include   init      macro
+measure   protected public    signal    sync      type      unit
 @end verbatim
 
 
