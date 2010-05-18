@@ -45,7 +45,7 @@ AptNode*
 SecondPass::parseModule(const Token& expr, bool isModule)
 {
   assert(expr.isSeq() && expr.count() >= 2);
-  assert(expr[0] == Parser::moduleToken || expr[0] == Parser::interfaceToken);
+  assert(expr[0] == kModuleId || expr[0] == kInterfaceId);
   assert(expr[1].isSymbol());
 
   String modName = expr[1].idValue();
@@ -79,7 +79,7 @@ AptNode*
 SecondPass::parseExport(const Token& expr)
 {
   assert(expr.isSeq() && expr.count() >= 2);
-  assert(expr[0] == Parser::exportToken);
+  assert(expr[0] == kExportId);
   assert(expr[expr.count() - 1].isNested());
   
   StringList flags;
@@ -103,7 +103,7 @@ AptNode*
 SecondPass::parseImport(const Token& expr)
 {
   assert(expr.isSeq() && expr.count() >= 2);
-  assert(expr[0] == Parser::importToken);
+  assert(expr[0] == kImportId);
   assert(expr[1].isString());
 
   String codeFile = expr[1].stringValue();
@@ -136,13 +136,13 @@ SecondPass::parseSeq(const Token& expr)
     return NULL;
 
   Token first = expr[0];
-  if (first == Parser::moduleToken)
+  if (first == kModuleId)
     return parseModule(expr, true);
-  else if (first == Parser::interfaceToken)
+  else if (first == kInterfaceId)
     return parseModule(expr, false);
-  else if (first == Parser::exportToken)
+  else if (first == kExportId)
     return parseExport(expr);
-  else if (first == Parser::importToken)
+  else if (first == kImportId)
     return parseImport(expr);
 
   // TODO

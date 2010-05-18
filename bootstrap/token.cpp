@@ -444,7 +444,6 @@ Token::Token(const SrcPos& where, TokenType ttype)
   : fType(ttype),
     fSrcPos(where)
 {
-  assert(type() == kPunct);
 }
 
 
@@ -615,6 +614,33 @@ Token::toString() const
       return String("?") + dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr;
     case kKeyarg:
       return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + ":";
+
+    case kDefId:       return String(MID_DefId);
+    case kElseId:      return String(MID_ElseId);
+    case kEofId:       return String(MID_EofId);
+    case kExportId:    return String(MID_ExportId);
+    case kExtendId:    return String(MID_ExtendId);
+    case kForId:       return String(MID_ForId);
+    case kFUNCTIONId:  return String(MID_FUNCTIONId);
+    case kFunctionId:  return String(MID_FunctionId);
+    case kIfId:        return String(MID_IfId);
+    case kImportId:    return String(MID_ImportId);
+    case kInterfaceId: return String(MID_InterfaceId);
+    case kLetId:       return String(MID_LetId);
+    case kMatchId:     return String(MID_MatchId);
+    case kModuleId:    return String(MID_ModuleId);
+    case kNilId:       return String(MID_NilId);
+    case kNotId:       return String(MID_NotId);
+    case kOnId:        return String(MID_OnId);
+    case kOtherwiseId: return String(MID_OtherwiseId);
+    case kReifyId:     return String(MID_ReifyId);
+    case kSelectId:    return String(MID_SelectId);
+    case kThenId:      return String(MID_ThenId);
+    case kUntilId:     return String(MID_UntilId);
+    case kWhenId:      return String(MID_WhenId);
+    case kWhereId:     return String(MID_WhereId);
+    case kWhileId:     return String(MID_WhileId);
+
     default:
       assert(0);
     }
@@ -702,6 +728,31 @@ Token::type() const
   case kSymbol:                 // kIdExpr
   case kKeyarg:
   case kMacroParam:
+  case kDefId:
+  case kElseId:
+  case kEofId:
+  case kExportId:
+  case kExtendId:
+  case kForId:
+  case kFUNCTIONId:
+  case kFunctionId:
+  case kIfId:
+  case kImportId:
+  case kInterfaceId:
+  case kLetId:
+  case kMatchId:
+  case kModuleId:
+  case kNilId:
+  case kNotId:
+  case kOnId:
+  case kOtherwiseId:
+  case kReifyId:
+  case kSelectId:
+  case kThenId:
+  case kUntilId:
+  case kWhenId:
+  case kWhereId:
+  case kWhileId:
     return kId;
 
   default:
@@ -747,7 +798,7 @@ Token::isLit() const
 bool
 Token::isId() const
 {
-  return type() == kId && fImpl != NULL;
+  return type() == kId;
 }
 
 
@@ -887,7 +938,41 @@ Token::idValue() const
 {
   if (type() != kId)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr;
+
+  switch (fType) {
+  case kDefId:
+  case kElseId:
+  case kEofId:
+  case kExportId:
+  case kExtendId:
+  case kForId:
+  case kFUNCTIONId:
+  case kFunctionId:
+  case kIfId:
+  case kImportId:
+  case kInterfaceId:
+  case kLetId:
+  case kMatchId:
+  case kModuleId:
+  case kNilId:
+  case kNotId:
+  case kOnId:
+  case kOtherwiseId:
+  case kReifyId:
+  case kSelectId:
+  case kThenId:
+  case kUntilId:
+  case kWhenId:
+  case kWhereId:
+  case kWhileId:
+    return toString();
+  case kSymbol:
+  case kMacroParam:
+  case kKeyarg:
+    return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr;
+  default:
+    assert(0);
+  }
 }
 
 
@@ -1079,16 +1164,45 @@ Token::toPort(Port<Octet>* port) const
     case kSymbol:
       return fImpl->toPort(port);
     case kMacroParam:
-      display(port, String("<lit type='mparm'>") +
-              dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</lit>");
+      display(port, String("<id type='mparm'>") +
+              dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</id>");
       break;
     case kKeyarg:
-      display(port, String("<lit type='keyarg'>") +
-              dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</lit>");
+      display(port, String("<id type='keyarg'>") +
+              dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</id>");
+      break;
+    case kDefId:
+    case kElseId:
+    case kEofId:
+    case kExportId:
+    case kExtendId:
+    case kForId:
+    case kFUNCTIONId:
+    case kFunctionId:
+    case kIfId:
+    case kImportId:
+    case kInterfaceId:
+    case kLetId:
+    case kMatchId:
+    case kModuleId:
+    case kNilId:
+    case kNotId:
+    case kOnId:
+    case kOtherwiseId:
+    case kReifyId:
+    case kSelectId:
+    case kThenId:
+    case kUntilId:
+    case kWhenId:
+    case kWhereId:
+    case kWhileId:
+      display(port, String("<id>") + toString() + "</id>");
       break;
     default:
       assert(0);
     }
+    break;
+
   case kPunct:
     display(port, ( String("<punct type='") +
                     xmlEncode(tokenTypeToString(fType)) + "'/>") );
@@ -1123,6 +1237,7 @@ public:
     assert(Token(sp, kChar,     0xac00)         == Token(sp, kChar,     0xac00));
     assert(Token(sp, kString,   "abc")          == Token(sp, kString,   "abc"));
     assert(Token(sp, kSymbol,   "abc")          == Token(sp, kSymbol,   "abc"));
+    assert(Token(sp, kDefId)                    == Token(sp, kDefId));
     assert(Token(sp, kRational, Rational(7, 4)) == Token(sp, kRational, Rational(7, 4)));
 
     assert(Token() == Token());

@@ -198,6 +198,12 @@ Tokenizer::makeTokenAndNext(const SrcPos& where, TokenType type)
 }
 
 
+struct ReservedId
+{
+  String fName;
+  TokenType   fType;
+};
+
 Token
 Tokenizer::readSymbolOrOperator(bool acceptGenerics)
 {
@@ -222,50 +228,65 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
                                String() + currentChar, kSymbol,
                                acceptGenerics);
   if (token.tokenType() == kSymbol) {
-    if (token.idValue() == String("**"))
-      return Token(startPos, kExponent);
-    else if (token.idValue() == String("<=>"))
-      return Token(startPos, kCompare);
-    else if (token.idValue() == String("=="))
-      return Token(startPos, kEqual);
-    else if (token.idValue() == String("<>"))
-      return Token(startPos, kUnequal);
-    else if (token.idValue() == String("<>"))
-      return Token(startPos, kUnequal);
-    else if (token.idValue() == String("<="))
-      return Token(startPos, kLessEqual);
-    else if (token.idValue() == String(">="))
-      return Token(startPos, kGreaterEqual);
-    else if (token.idValue() == String("in"))
-      return Token(startPos, kIn);
-    else if (token.idValue() == String("and"))
-      return Token(startPos, kLogicalAnd);
-    else if (token.idValue() == String("or"))
-      return Token(startPos, kLogicalOr);
-    else if (token.idValue() == String("mod"))
-      return Token(startPos, kMod);
-    else if (token.idValue() == String("AND"))
-      return Token(startPos, kBitAnd);
-    else if (token.idValue() == String("OR"))
-      return Token(startPos, kBitOr);
-    else if (token.idValue() == String("XOR"))
-      return Token(startPos, kBitXor);
-    else if (token.idValue() == String("<<"))
-      return Token(startPos, kShiftLeft);
-    else if (token.idValue() == String(">>"))
-      return Token(startPos, kShiftRight);
-    else if (token.idValue() == String("isa"))
-      return Token(startPos, kIsa);
-    else if (token.idValue() == String("as"))
-      return Token(startPos, kAs);
-    else if (token.idValue() == String("by"))
-      return Token(startPos, kBy);
-    else if (token.idValue() == String("true"))
+    if (token.idValue() == String("true"))
       return Token(startPos, kBool, true);
     else if (token.idValue() == String("false"))
       return Token(startPos, kBool, false);
-    else if (token.idValue() == String("++"))
-      return Token(startPos, kAppend);
+
+    static const ReservedId reservedIds[] = {
+      { String("**"),     kExponent     },
+      { String("<=>"),           kCompare      },
+      { String("=="),            kEqual        },
+      { String("<>"),            kUnequal      },
+      { String("<="),            kLessEqual    },
+      { String(">="),            kGreaterEqual },
+      { String("in"),            kIn           },
+      { String("and"),           kLogicalAnd   },
+      { String("or"),            kLogicalOr    },
+      { String("mod"),           kMod          },
+      { String("AND"),           kBitAnd       },
+      { String("OR"),            kBitOr        },
+      { String("XOR"),           kBitXor       },
+      { String("<<"),            kShiftLeft    },
+      { String(">>"),            kShiftRight   },
+      { String("isa"),           kIsa          },
+      { String("as"),            kAs           },
+      { String("by"),            kBy           },
+      { String("++"),            kAppend       },
+      { String(MID_DefId),       kDefId        },
+      { String(MID_ElseId),      kElseId       },
+      { String(MID_EofId),       kEofId        },
+      { String(MID_ExportId),    kExportId     },
+      { String(MID_ExtendId),    kExtendId     },
+      { String(MID_ForId),       kForId        },
+      { String(MID_FUNCTIONId),  kFUNCTIONId   },
+      { String(MID_FunctionId),  kFunctionId   },
+      { String(MID_IfId),        kIfId         },
+      { String(MID_ImportId),    kImportId     },
+      { String(MID_InterfaceId), kInterfaceId  },
+      { String(MID_LetId),       kLetId        },
+      { String(MID_MatchId),     kMatchId      },
+      { String(MID_ModuleId),    kModuleId     },
+      { String(MID_NilId),       kNilId        },
+      { String(MID_NotId),       kNotId        },
+      { String(MID_OnId),        kOnId         },
+      { String(MID_OtherwiseId), kOtherwiseId  },
+      { String(MID_ReifyId),     kReifyId      },
+      { String(MID_SelectId),    kSelectId     },
+      { String(MID_ThenId),      kThenId       },
+      { String(MID_UntilId),     kUntilId      },
+      { String(MID_WhenId),      kWhenId       },
+      { String(MID_WhereId),     kWhereId      },
+      { String(MID_WhileId),     kWhileId      },
+
+      { String(),  kInvalid },      // sentinel
+    };
+
+    String tokenid = token.idValue();
+    for (const ReservedId* p = &reservedIds[0]; p->fType != kInvalid; p++) {
+      if (tokenid == p->fName)
+        return Token(startPos, p->fType);
+    }
   }
   return token;
 }
@@ -311,7 +332,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
         expSign = fCC == '-' ? -1 : 1;
         nextChar();
         exponent = readIntNumberPart(false);
-      } 
+      }
       else {
         errorf(srcpos(), E_BadNumberNotation,
                "bad scientific notation: \\u0%x;", fCC);

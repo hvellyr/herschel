@@ -95,31 +95,20 @@ namespace heather
     static const Token classToken;
     static const Token configToken;
     static const Token constToken;
-    static const Token defToken;
     static const Token deleteToken;
-    static const Token elseToken;
     static const Token enumToken;
     static const Token exitToken;
-    static const Token exportToken;
     static const Token fluidToken;
     static const Token genericToken;
-    static const Token ifToken;
     static const Token ignoreToken;
-    static const Token importToken;
     static const Token includeToken;
     static const Token initToken;
-    static const Token interfaceToken;
-    static const Token letToken;
     static const Token macroToken;
     static const Token measureToken;
-    static const Token moduleToken;
     static const Token signalToken;
     static const Token syncToken;
     static const Token typeToken;
     static const Token unitToken;
-    static const Token whenToken;
-    static const Token onToken;
-    static const Token functionToken;
 
   private:
     friend class FirstPass;

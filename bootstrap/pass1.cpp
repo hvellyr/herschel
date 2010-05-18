@@ -44,12 +44,13 @@ Token
 FirstPass::scanUntilTopExprAndResume()
 {
   while (fToken != kEOF &&
-         fToken != Parser::defToken &&
-         fToken != Parser::moduleToken &&
-         fToken != Parser::interfaceToken &&
-         fToken != Parser::exportToken &&
-         fToken != Parser::importToken &&
-         fToken != Parser::whenToken)
+         fToken != kDefId &&
+         fToken != kModuleId &&
+         fToken != kInterfaceId &&
+         fToken != kExportId &&
+         fToken != kImportId &&
+         fToken != kWhenId &&
+         fToken != kExtendId)
     nextToken();
 
   return Token();
@@ -155,11 +156,6 @@ FirstPass::parseModule(bool isModule)
         if (fToken != kParanClose) {
           errorf(fToken.srcpos(), E_ParamMissParanClose,
                  "Syntax error, missing ')'");
-          if (fToken == kBraceOpen) {
-            // try to continue with this
-          }
-          else
-            return scanUntilTopExprAndResume();
         }
         else
           nextToken();
@@ -401,15 +397,20 @@ FirstPass::parseIf()
 
   nextToken();
 
-  if (fToken != kParanOpen)
-    throw UnexpectedTokenException(fToken, "expected (");
-  SrcPos poSp = fToken.srcpos();
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected (");
+    return scanUntilTopExprAndResume();
+  }
+  SrcPos posp = fToken.srcpos();
   nextToken();
 
   Token test = parseExpr();
-  if (fToken != kParanClose)
-    throw UnexpectedTokenException(fToken, "expected )");
-  nextToken();
+  if (fToken != kParanClose) {
+    errorf(fToken.srcpos(), E_ParamMissParanClose,
+           "Syntax error, missing ')'");
+  }
+  else
+    nextToken();
 
   Token consequent = parseExpr();
 
@@ -417,14 +418,14 @@ FirstPass::parseIf()
   result << ifToken;
 
   if (test.isSeq())
-    result << ( Token(poSp, kParanOpen, kParanClose)
+    result << ( Token(posp, kParanOpen, kParanClose)
                 << test.children() );
   else
-    result << ( Token(poSp, kParanOpen, kParanClose)
+    result << ( Token(posp, kParanOpen, kParanClose)
                 << test );
   result << consequent;
 
-  if (fToken == Parser::elseToken) {
+  if (fToken == kElseId) {
     Token elseToken = fToken;
     nextToken();
 
@@ -500,7 +501,9 @@ FirstPass::parseOn()
 Token
 FirstPass::parseAnonFun()
 {
+  nextToken();
   // TODO
+
   return Token();
 }
 
@@ -508,9 +511,12 @@ FirstPass::parseAnonFun()
 void
 FirstPass::parseFuncallParams(TokenVector* params)
 {
+  SrcPos startPos = fToken.srcpos();
+
   while (fToken != kParanClose) {
     if (fToken == kEOF)
-      throw PrematureEndOfFileException();
+      break;
+
     if (fToken.isKeyArg()) {
       Token key = fToken;
       nextToken();
@@ -528,12 +534,22 @@ FirstPass::parseFuncallParams(TokenVector* params)
       params->push_back(fToken);
       nextToken();
     }
-    else if (fToken != kParanClose)
-      throw UnexpectedTokenException(fToken, "expected ) or ,");
+    else if (fToken != kParanClose) {
+      error(fToken.srcpos(), E_BadParameterList,
+            String("expected ')' or ','"));
+    }
   }
 
-  if (fToken == kParanClose)
+  if (fToken == kParanClose) {
     nextToken();
+  }
+  else {
+    error(fToken.srcpos(), E_BadParameterList, String("expected ')'"));
+
+    if (startPos != fToken.srcpos())
+      error(startPos, E_BadParameterList, String("beginning ')' was here"));
+    scanUntilTopExprAndResume();
+  }
 }
 
 
@@ -593,14 +609,18 @@ FirstPass::parseParamCall(const Token& expr,
 Token
 FirstPass::parseSlice(const Token& expr)
 {
-  Token idx = parseExpr();
-  if (fToken != kBracketClose)
-    throw UnexpectedTokenException(fToken, "expected ]");
-  SrcPos bcsp = fToken.srcpos();
+  SrcPos startPos = fToken.srcpos();
   nextToken();
 
-  return Token() << Token(expr.srcpos(), "slice")
-                 << ( Token(bcsp, kParanOpen, kParanClose)
+  Token idx = parseExpr();
+
+  if (fToken != kBracketClose)
+    errorf(fToken.srcpos(), E_MissingBracketClose, "expected ']'");
+  else
+    nextToken();
+
+  return Token() << Token(startPos, "slice")
+                 << ( Token(startPos, kParanOpen, kParanClose)
                       << expr
                       << Token(idx.srcpos(), kComma)
                       << idx );
@@ -616,13 +636,14 @@ FirstPass::parseAccess(const Token& expr)
     return parseAccess(parseParamCall(expr, args, true));
   }
   else if (fToken == kBracketOpen) {
-    nextToken();
     return parseAccess(parseSlice(expr));
   }
   else if (fToken == kDot) {
     nextToken();
-    if (fToken != kSymbol)
-      throw UnexpectedTokenException(fToken, "expected SYMBOL");
+    if (fToken != kSymbol) {
+      errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+      return scanUntilTopExprAndResume();
+    }
     Token symToken = fToken;
 
     nextToken();
@@ -631,13 +652,10 @@ FirstPass::parseAccess(const Token& expr)
       nextToken();
       return parseAccess(parseParamCall(symToken, args, true));
     }
-    else if (fToken == kBracketOpen ||
-             fToken == kDot) {
+    else if (fToken == kBracketOpen || fToken == kDot)
       return parseAccess(parseParamCall(symToken, args, false));
-    }
-    else {
+    else
       return parseParamCall(symToken, args, false);
-    }
   }
 
   return expr;
@@ -662,7 +680,7 @@ void
 FirstPass::parseExprListUntilBrace(TokenVector* result)
 {
   for ( ; ; ) {
-    if (fToken == Parser::defToken) {
+    if (fToken == kDefId) {
       Token expr = parseDef(false);
       result->push_back(expr);
     }
@@ -724,37 +742,41 @@ FirstPass::parseAtomicExpr()
   case kString:
   case kChar:
   case kKeyword:
+  case kNilId:
+  case kEofId:
     {
       Token t = fToken;
       nextToken();
       return t;
     }
 
+  case kIfId:
+    return parseIf();
+  case kLetId:
+    return parseDef(true);
+  case kOnId:
+    return parseOn();
+  case kFunctionId:
+    return parseAnonFun();
+  case kNotId:
+    // TODO
+  case kSelectId:
+    // TODO
+  case kUntilId:
+    // TODO
+    break;
+  case kWhenId:
+    return parseWhen(false);
+  case kWhileId:
+    // TODO
+  case kForId:
+    // TODO
+  case kMatchId:
+    // TODO
+    break;
+
   case kSymbol:
-    if (fToken == Parser::ifToken) {
-      return parseIf();
-    }
-    else if (fToken == Parser::letToken) {
-      return parseDef(true);
-    }
-    else if (fToken == Parser::onToken) {
-      return parseOn();
-    }
-    else if (fToken == Parser::functionToken) {
-      nextToken();
-      return parseAnonFun();
-    }
-    else if (fToken == Parser::whenToken) {
-      return parseWhen(false);
-    }
-    else if (fToken == Parser::defToken ||
-             fToken == Parser::moduleToken ||
-             fToken == Parser::interfaceToken ||
-             fToken == Parser::exportToken ||
-             fToken == Parser::importToken) {
-      return Token();
-    }
-    else {
+    {
       Token t = fToken;
       nextToken();
       return parseAccess(t);
@@ -1037,7 +1059,7 @@ FirstPass::parseWhen(bool isTopLevel)
     consequent = parseTopOrExprList(isTopLevel);
   }
 
-  if (fToken == Parser::elseToken) {
+  if (fToken == kElseId) {
     elseToken = fToken;
     nextToken();
     {
@@ -1297,24 +1319,27 @@ FirstPass::parseDef(bool isLocal)
 Token
 FirstPass::parseTop()
 {
-  if (fToken == Parser::moduleToken) {
+  if (fToken == kModuleId) {
     return parseModule(true);
   }
-  else if (fToken == Parser::interfaceToken) {
+  else if (fToken == kInterfaceId) {
     nextToken();
     return parseModule(false);
   }
-  else if (fToken == Parser::exportToken) {
+  else if (fToken == kExportId) {
     return parseExport();
   }
-  else if (fToken == Parser::importToken) {
+  else if (fToken == kImportId) {
     return parseImport();
   }
-  else if (fToken == Parser::defToken) {
+  else if (fToken == kDefId) {
     return parseDef(false);
   }
-  else if (fToken == Parser::whenToken) {
+  else if (fToken == kWhenId) {
     return parseWhen(true);
+  }
+  else if (fToken == kExtendId) {
+    // TODO
   }
   else {
     errorf(fToken.srcpos(), E_UnexpectedToken,
