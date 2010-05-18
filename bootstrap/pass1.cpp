@@ -686,7 +686,6 @@ FirstPass::parseExprListUntilBrace(TokenVector* result)
 void
 FirstPass::parseTopExprUntilBrace(TokenVector* result)
 {
-  // TODO: this does not handle nested scopes!
   while (fToken != kBraceClose) {
     if (fToken == kEOF)
       break;
