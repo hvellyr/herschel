@@ -314,15 +314,26 @@ The following identifiers are reserved and have a special meaning:
 
 @c 1234567890123456789012345678901234567890123456789012345678901234567890
 @verbatim
-alias     AND       and       as        by        char      class
-const     def       else      enum      eof       exit      export
-extend    false     final     fluid     for       Function  function
-generic   if        import    in        init      interface
-isa       let       macro     match     measure   mod       module
-nil       not       on        OR        or        otherwise protected
-public    reify     select    slot      slot!     sync      then
-true      type      unit      until     when      where
+AND       and       as        by        def       else      eof
+export    extend    false     for       Function  function  if
+import    in        interface isa       let       match     mod
+module    nil       not       on        OR        or        otherwise
+reify     select    then      true      unti      when      where
 while     XOR
+@end verbatim
+
+The following identifiers are predefined and used by the language
+specification.  The can be used as function and/or variable names
+under certain situation, but this is seldomly recommended@footnote{As
+an example where a reused is useful take the @code{class} identifier
+-- it is at the same time used as @code{def} modifier (to define a
+class) and as the name of a function, which returns the implementing
+class for an object.}:
+
+@verbatim
+alias     char      class     const     enum      exit      final
+fluid     generic   init      macro     measure   protected public
+type      unit
 @end verbatim
 
 
