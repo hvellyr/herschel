@@ -773,6 +773,23 @@ FirstPass::parseBlock()
 
 
 Token
+FirstPass::parseUnaryOp(const Token& inOpToken)
+{
+  Token opToken = inOpToken;
+  nextToken();
+
+  Token t = parseAtomicExpr();
+  if (!t.isSet()) {
+    errorf(opToken.srcpos(), E_UnexpectedToken, "expected expression");
+    return Token();
+  }
+  return Token() << opToken
+                 << ( Token(opToken.srcpos(), kParanOpen, kParanClose)
+                      << t );
+}
+
+
+Token
 FirstPass::parseAtomicExpr()
 {
   switch (fToken.tokenType()) {
@@ -797,15 +814,10 @@ FirstPass::parseAtomicExpr()
     return parseOn();
   case kFunctionId:
     return parseAnonFun();
-  case kNotId:
-    {
-      Token notToken = fToken;
-      nextToken();
-      Token t = parseAtomicExpr();
-      return Token() << notToken
-                     << ( Token(notToken.srcpos(), kParanOpen, kParanClose)
-                          << t );
-    }
+  case kNotId:                  // unary not operator
+  case kMinus:                  // unary negate
+    return parseUnaryOp(fToken);
+
   case kSelectId:
     // TODO
   case kUntilId:
@@ -998,10 +1010,13 @@ Token
 FirstPass::parseExpr()
 {
   Token expr1 = parseAtomicExpr();
-  OperatorType op1 = tokenTypeToOperator(fToken.tokenType());
-  SrcPos opSrcpos = fToken.srcpos();
-  if (op1 != kOpInvalid)
-    return parseExprRec(expr1, op1, opSrcpos);
+  if (expr1.isSet()) {
+    OperatorType op1 = tokenTypeToOperator(fToken.tokenType());
+    SrcPos opSrcpos = fToken.srcpos();
+  
+    if (op1 != kOpInvalid)
+      return parseExprRec(expr1, op1, opSrcpos);
+  }
   return expr1;
 }
 

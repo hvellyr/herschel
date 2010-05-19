@@ -33,6 +33,12 @@ namespace heather
     Token parse();
 
   private:
+    friend struct ModuleParser;
+    friend struct ExportParser;
+    friend struct ImportRenameParser;
+    friend struct LiteralVectorParser;
+    friend struct LiteralArrayParser;
+
     Token parseTop();
     Token parseModule(bool isModule);
     Token parseExport();
@@ -101,11 +107,8 @@ namespace heather
 
     Token parseGenericFunctionDef(const Token& defToken, bool isLocal);
 
-    friend struct ModuleParser;
-    friend struct ExportParser;
-    friend struct ImportRenameParser;
-    friend struct LiteralVectorParser;
-    friend struct LiteralArrayParser;
+    Token parseUnaryOp(const Token& inOpToken);
+
 
     template<typename ParseFunctor>
     void parseSequence(ParseFunctor functor,
