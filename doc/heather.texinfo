@@ -542,7 +542,7 @@ More complex notations exist for complex and rational numbers:
 12/34                          -- precise rational
 12 + 34i                       -- precise complex
 12.3+34j                       -- precise complex
-1.23e-45                       -- precise integer (exp. not.)
+1.23e-45                       -- precise integer (exp.@ not.)
 @end example
 
 To give a specific type for approximate numbers the constant itself can
