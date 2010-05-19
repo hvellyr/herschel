@@ -661,8 +661,6 @@ Tokenizer::nextTokenImpl()
       default:
         if (isDigit(fCC))
           return readNumber(beginSrcpos, -1);
-        else if (isSymbolChar(fCC))
-          return readIdentifier(beginSrcpos, String("-"), kSymbol, true);
         else
           return Token(beginSrcpos, kMinus);
       }
