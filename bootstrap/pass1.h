@@ -84,7 +84,7 @@ namespace heather
     bool isOpWeightAbove(OperatorType op1, OperatorType op2) const;
     int weightOperator(OperatorType op1) const;
 
-    void parseExprListUntilBrace(TokenVector* exprlist);
+    void parseExprListUntilBrace(TokenVector* exprlist, bool endAtToplevelId);
     void parseTopExprUntilBrace(TokenVector* result);
     Token parseTopOrExprList(bool isTopLevel);
 
