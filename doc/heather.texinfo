@@ -298,10 +298,13 @@ to-string
 list-of-values!
 *stdout*
 %some-constant%
--a-string-
 _a_string_
 _a/string_
+->xyz
 @end example
+
+Not that a minus (`-') at the beginning of an identifier is only
+accepted if it directly is followed by a greater (`>') char.
 
 Even though the source code itself is encoded in UTF-8 identifiers are
 not allowed to contain arbitrary Unicode characters.
@@ -4332,7 +4335,7 @@ module-name     := symbol
 keywords.}
 @smallformat
 @verbatim
-symbol          := first-char { other-char }
+symbol          := [ '->' ] first-char { other-char }
 first-char      := letter | first-other
 other-char      := letter | dec-digit | other
 first-other     := `_' | `*' | `+' | `%' | `?' | `!' | `/' | `$'
