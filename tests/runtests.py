@@ -16,7 +16,8 @@ class TestRunner:
     def __init__(self):
         self.heather_path = "../temp/debug/heather"
         self.verbose = False
-
+        self.test_succeeded = 0
+        self.test_run = 0
 
     def run_heather_on_test(self, test_file, traces):
         return subprocess.Popen([self.heather_path, "-T", traces, "-P", test_file],
@@ -66,6 +67,7 @@ class TestRunner:
 
     def run_pass_test_impl(self, test_file, traces, passid,
                            errtest_func=None):
+        self.test_run += 1
         output, erroutput = self.run_heather_on_test(test_file, traces)
         what_tag = "[%s] %s" % (passid, test_file)
         if erroutput:
@@ -83,6 +85,7 @@ class TestRunner:
                 print "INFO: %s: No expected xml file found" % (what_tag)
 
         print "OK: %s: test succeeds" % (what_tag)
+        self.test_succeeded += 1
 
 
     def run_pass_test(self, test_file):
@@ -162,6 +165,7 @@ class TestRunner:
 
     def run_test(self, test_dir, src_file):
         test_file = os.path.join(test_dir, src_file)
+
         if src_file.startswith("failed-"):
             self.run_pass_failed_test(test_file)
         else:
@@ -173,6 +177,12 @@ class TestRunner:
             if f.endswith(".hea"):
                 self.run_test(test_dir, f)
 
+        if self.test_succeeded <> self.test_run:
+            print "SUMMARY: %d tests of %d failed" % (self.test_run - self.test_succeeded,
+                                                      self.test_run)
+        else:
+            print "SUMMARY: %d tests succeeded" % (self.test_succeeded)
+
 
 #----------------------------------------------------------------------------
 
@@ -180,7 +190,7 @@ def main():
     parser = OptionParser()
     parser.add_option("-e", "--executable", dest="executable",
                       help="sets the path to the compiler to use", metavar="FILE")
-    parser.add_option("-V", "--verbose", action="store_true", 
+    parser.add_option("-V", "--verbose", action="store_true",
                       dest="verbose", default=False,
                       help="be more verbose")
 
