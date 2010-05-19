@@ -32,6 +32,7 @@ namespace heather
     //! first pass parse
     Token parse();
 
+  private:
     Token parseTop();
     Token parseModule(bool isModule);
     Token parseExport();
@@ -43,8 +44,7 @@ namespace heather
     Token parseVarDef2(const Token& defToken, const Token& tagToken,
                        const Token& symbolToken, bool isLocal);
     Token parseFunctionDef(const Token& defToken, const Token& tagToken, 
-                           const Token& symToken,
-                           bool isGeneric, bool isLocal);
+                           const Token& symToken, bool isLocal);
     Token parseFunctionOrVarDef(const Token& defToken, bool isLocal);
 
     Token parseExpr();
@@ -88,7 +88,7 @@ namespace heather
     void parseTopExprUntilBrace(TokenVector* result);
     Token parseTopOrExprList(bool isTopLevel);
 
-    void parseFunctionsParams(TokenVector* exprlist);
+    bool parseFunctionsParams(TokenVector* exprlist);
 
     Token parseWhen(bool isTopLevel);
 
@@ -99,7 +99,8 @@ namespace heather
     Token scanUntilTopExprAndResume();
     Token scanUntilNextParameter();
 
-  private:
+    Token parseGenericFunctionDef(const Token& defToken, bool isLocal);
+
     friend struct ModuleParser;
     friend struct ExportParser;
     friend struct ImportRenameParser;

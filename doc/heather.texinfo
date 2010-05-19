@@ -764,8 +764,8 @@ f(a: 1, b: 2, 3, 4)
 
 The rest parameter is by default to be a @code{Any[]}.  It is possible
 however to give a specific type.  The function in the following example
-accepts any number of @code{String} arguments, but not number of other
-object:
+accepts any number of @code{String} arguments, but no other types of
+objects:
 
 @example
 def f(args : String[] ...) ...
