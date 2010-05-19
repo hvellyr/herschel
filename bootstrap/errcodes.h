@@ -41,6 +41,7 @@ namespace heather
     E_DefInitValueUnexpectedToken = 0x4001,
     E_DefNoInitValue      = 0x4002,
     E_LocalGenericFunc    = 0x4010,
+    E_BadCharValue        = 0x4011,
 
     // expressions
     E_MissingRHExpr       = 0x6001,
