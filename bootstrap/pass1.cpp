@@ -398,7 +398,7 @@ FirstPass::parseIf()
   nextToken();
 
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected (");
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
     return scanUntilTopExprAndResume();
   }
   SrcPos posp = fToken.srcpos();
@@ -438,12 +438,23 @@ FirstPass::parseIf()
 }
 
 
-void
+bool
 FirstPass::parseFunctionsParams(TokenVector* exprlist)
 {
+  SrcPos startPos = fToken.srcpos();
+
+  // TODO
   if (fToken == kParanClose) {
     nextToken();
-    return;
+    return true;
+  }
+  else {
+    error(fToken.srcpos(), E_BadParameterList, String("expected ')'"));
+
+    if (startPos != fToken.srcpos())
+      error(startPos, E_BadParameterList, String("beginning ')' was here"));
+    scanUntilTopExprAndResume();
+    return false;
   }
 }
 
@@ -454,8 +465,10 @@ FirstPass::parseOn()
   Token tagToken = fToken;
   nextToken();
 
-  if (fToken != kSymbol)
-    throw UnexpectedTokenException(fToken, "expected a SYMBOL");
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+    return scanUntilTopExprAndResume();
+  }
 
   Token keyToken = fToken;
 
@@ -473,27 +486,40 @@ FirstPass::parseOn()
   else
 #endif
   {
+    bool ignoreStmt = false;
+
     if (keyToken != Parser::syncToken &&
         keyToken != Parser::initToken &&
         keyToken != Parser::deleteToken &&
         keyToken != Parser::exitToken &&
-        keyToken != Parser::signalToken)
-      throw UnexpectedTokenException(keyToken);
+        keyToken != Parser::signalToken) {
+      errorf(keyToken.srcpos(), E_UnknownOnKey, "unknown 'on'-keyword.");
+      ignoreStmt = true;
+    }
+
     nextToken();
-    if (fToken != kParanOpen)
-      throw UnexpectedTokenException(fToken, "expected (");
+    if (fToken != kParanOpen) {
+      errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+      return scanUntilTopExprAndResume();
+    }
     SrcPos posp = fToken.srcpos();
     nextToken();
 
     TokenVector params;
-    parseFunctionsParams(&params);
+    
+    if (parseFunctionsParams(&params)) {
+      Token body = parseExpr();
 
-    Token body = parseExpr();
+      if (!ignoreStmt)
+        return Token() << tagToken << keyToken
+                       << ( Token(posp, kParanOpen, kParanClose)
+                            << params )
+                       << body;
+      else
+        return Token() << Token(tagToken.srcpos(), "unspecified");
+    }
 
-    return Token() << tagToken << keyToken
-                   << ( Token(posp, kParanOpen, kParanClose)
-                        << params )
-                   << body;
+    return Token();
   }
 }
 
@@ -1216,8 +1242,7 @@ FirstPass::parseCharDef(const Token& defToken)
 
 Token
 FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
-                            const Token& symToken,
-                            bool isGeneric, bool isLocal)
+                            const Token& symToken, bool isLocal)
 {
   // TODO
   return Token();
@@ -1247,11 +1272,39 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
   {
     nextToken();
     if (fToken == kParanOpen)
-      return parseFunctionDef(defToken, Token(), symToken, false, isLocal);
+      return parseFunctionDef(defToken, Token(), symToken, isLocal);
 
     return parseVarDef2(defToken, Token(), symToken, isLocal);
   }
   return Token();
+}
+
+
+Token
+FirstPass::parseGenericFunctionDef(const Token& defToken, bool isLocal)
+{
+  Token tagToken;
+  if (isLocal) {
+    errorf(fToken.srcpos(), E_LocalGenericFunc,
+           "inner generic functions are not supported.  'generic' ignored");
+  }
+  else
+    tagToken = fToken;
+
+  nextToken();
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "expected function name");
+    return scanUntilTopExprAndResume();
+  }
+  Token symToken = fToken;
+
+  nextToken();
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    return scanUntilTopExprAndResume();
+  }
+
+  return parseFunctionDef(defToken, tagToken, symToken, isLocal);
 }
 
 
@@ -1285,18 +1338,7 @@ FirstPass::parseDef(bool isLocal)
     return parseVarDef(defToken, fToken, isLocal);
   }
   else if (fToken == Parser::genericToken) {
-    Token tagToken = fToken;
-
-    nextToken();
-    if (fToken != kSymbol)
-      throw UnexpectedTokenException(fToken, "expected SYMBOL");
-    Token symToken = fToken;
-
-    nextToken();
-    if (fToken != kParanOpen)
-      throw UnexpectedTokenException(fToken, "expected (");
-
-    return parseFunctionDef(defToken, tagToken, symToken, true, isLocal);
+    return parseGenericFunctionDef(defToken, isLocal);
   }
   else if (fToken == Parser::charToken) {
     return parseCharDef(defToken);

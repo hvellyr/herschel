@@ -39,6 +39,7 @@ namespace heather
     // def parsing
     E_DefInitValueUnexpectedToken = 0x4001,
     E_DefNoInitValue      = 0x4002,
+    E_LocalGenericFunc    = 0x4010,
 
     // expressions
     E_MissingRHExpr       = 0x6001,
@@ -52,6 +53,9 @@ namespace heather
 
     // literals
     E_InconsistentArgs    = 0xa201,
+
+    // on
+    E_UnknownOnKey        = 0xa301,
   };
 };
 
