@@ -57,13 +57,13 @@ def alias ForEachVisitor<T> = Function(elt @ T) : Bool
 --! independant functionality available for each container class
 def type Collection<T>
 {
-  def generic add-all(cltn @ 'C, other @ 'X) : 'C
+  def generic add-all!(cltn @ 'C, other @ 'X) : 'C
       where C isa Collection<T> ...
   def generic has-all?(cltn @ 'C, coll @ 'X) : Bool
       where C isa Collection<T> ...
-  def generic retain-all(cltn @ 'C, coll @ 'X) : 'C
+  def generic retain-all!(cltn @ 'C, coll @ 'X) : 'C
       where C isa Collection<T> ...
-  def generic remove-all(cltn @ 'C, coll @ 'X) : 'C
+  def generic remove-all!(cltn @ 'C, coll @ 'X) : 'C
       where C isa Collection<T> ...
 
   --! Returns the number of contained elements of @var{cltn}
@@ -96,7 +96,7 @@ def type Collection<T>
   --! contained in @var{cltn}.
   --!
   --! => @var{cltn}
-  def generic add(cltn @ 'C, elt @ T) : 'C
+  def generic add!(cltn @ 'C, elt @ T) : 'C
       where C isa Collection<T> ...
 
   --! Remove @var{elt} from @var{cltn}
@@ -105,7 +105,7 @@ def type Collection<T>
   --! @var{cltn} at all.
   --!
   --! => @var{cltn}
-  def generic remove(cltn @ 'C, elt @ T) : 'C
+  def generic remove!(cltn @ 'C, elt @ T) : 'C
       where C isa Collection<T> ...
 
   --! Returns an iterator over the contained elements in @var{cltn}
@@ -143,12 +143,12 @@ def type Sequence<T> : (Collection<T>,
                         Sliceable!<Ordinal, T>,
                         OrderedSliceable<Ordinal, T> )
 {
-  def generic insert(cltn @ 'S, value @ T, before-index : Ordinal) : 'S
+  def generic insert!(cltn @ 'S, value @ T, before-index : Ordinal) : 'S
       where S isa Sequence<T> ...
-  def generic remove-at(cltn @ 'S, index : Ordinal) : T
+  def generic remove-at!(cltn @ 'S, index : Ordinal) : T
       where S isa Sequence<T> ...
 
-  def generic swap(cltn @ 'S, from-idx : Ordinal, to-idx : Ordinal) : 'S
+  def generic swap!(cltn @ 'S, from-idx : Ordinal, to-idx : Ordinal) : 'S
       where S isa Sequence<T> ...
 
   def generic sort(cltn @ 'S) : 'S
@@ -186,9 +186,9 @@ def type AssocCollection<K, V> : Collection<Assoc<K, V> >
       where C isa AssocCollection<K, V> ...
   def generic get(cltn @ 'C, key @ K) : Value
       where C isa AssocCollection<K, V> ...
-  def generic put(cltn @ 'C, key @ K, value @ V) : 'C
+  def generic put!(cltn @ 'C, key @ K, value @ V) : 'C
       where C isa AssocCollection<K, V> ...
-  def generic remove(cltn @ 'C, key @ K) : 'C
+  def generic remove!(cltn @ 'C, key @ K) : 'C
       where C isa AssocCollection<K, V> ...
 
   def generic keys(cltn @ 'C) : Collection<K>
@@ -198,9 +198,9 @@ def type AssocCollection<K, V> : Collection<Assoc<K, V> >
 
   def generic has-all-keys?(cltn @ 'A, keys @ Collection<K>) : Bool
       where C isa AssocCollection<K, V> ...             ...
-  def generic remove-all-keys(cltn @ 'C, keys @ Collection<K>) : 'C
+  def generic remove-all-keys!(cltn @ 'C, keys @ Collection<K>) : 'C
       where C isa AssocCollection<K, V> ...
-  def generic retain-all-keys(cltn @ 'C, keys @ Collection<K>) : 'C
+  def generic retain-all-keys!(cltn @ 'C, keys @ Collection<K>) : 'C
       where C isa AssocCollection<K, V> ...
 }
 
@@ -244,7 +244,7 @@ def class Vector<T> : Sequence<T>
 {
   -- todo
 
-  def generic resize(cltn @ Vector<T>) : Vector<T> ...
+  def generic resize!(cltn @ Vector<T>) : Vector<T> ...
 }
 
 

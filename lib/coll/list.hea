@@ -58,7 +58,7 @@ def class List<Elt>(root: _root : Pair<Elt, _> = nil)
 }
 
 
-def insert(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
+def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
   select () {
     (before-index == self.num-items) -> {
       let nl = Pair<'T, _>(car: value)
@@ -101,7 +101,7 @@ def insert(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
   }
 
 
-def remove-at(self @ List<'T>, index : Ordinal) : 'T
+def remove-at!(self @ List<'T>, index : Ordinal) : 'T
   let p = self.root
   let prev = nil
   let n = 0
@@ -131,15 +131,15 @@ def remove-at(self @ List<'T>, index : Ordinal) : 'T
                                                   self.num-items]).raise
 
 
-def add(self @ List<'T>, elt @ 'T) : List<'T>
-  self.insert(elt, -1)
+def add!(self @ List<'T>, elt @ 'T) : List<'T>
+  self.insert!(elt, -1)
 
 
-def remove(self @ List<'T>, elt @ 'T) : List<'T>
+def remove!(self @ List<'T>, elt @ 'T) : List<'T>
   match (self.index-of(elt)) {
     e : Bool      -> self
     idx : Ordinal -> {
-                       self.remove-at(idx)
+                       self.remove-at!(idx)
                        self
                      }
   }
@@ -212,9 +212,9 @@ def iterator(self @ List<'T>) : Iterator<'T>
     self.root, function(node) { node.car })
 
 
-def add-all(self @ List<'T>, other @ Collection<'T>) : List<'T>
+def add-all!(self @ List<'T>, other @ Collection<'T>) : List<'T>
   for (e = other.iterator)
-    self.add(e)
+    self.add!(e)
   self
 
 
@@ -226,18 +226,18 @@ def has-all?(self @ List<'T>, other @ Collection<'T>) : Bool
   true
 
 
-def retain-all(self @ List<'T>, other @ Collection<'T>) : List<'T> ...
+def retain-all!(self @ List<'T>, other @ Collection<'T>) : List<'T> ...
   -- TODO
 
 
-def remove-all(self @ List<'T>, other @ Collection<'T>) : List<'T>
+def remove-all!(self @ List<'T>, other @ Collection<'T>) : List<'T>
   for (e = other.iterator) {
-    self.remove(e)
+    self.remove!(e)
   }
   self
 
 
-def swap(self @ List<'T>, from-idx : Ordinal, to-idx : Ordinal) : List<'T> ...
+def swap!(self @ List<'T>, from-idx : Ordinal, to-idx : Ordinal) : List<'T> ...
   -- TODO
 
 
@@ -292,7 +292,7 @@ def sort!(self @ List<'T>) : List<'T> ...
 def reverse(self @ List<'T>) : List<'T>
   let newlist = List<'T>()
   for (p = self.root then p.cdr while p <> nil)
-    newlist.insert(p.car, 0)
+    newlist.insert!(p.car, 0)
   newlist
 
 
@@ -325,7 +325,7 @@ def slice(self @ List<'T>, from @ Ordinal, to @ Ordinal) : Collection<'T>
 
   for (p = self.root then p.cdr while p <> nil) {
     if (n >= from) {
-      result.add(p.car)
+      result.add!(p.car)
       if (n >= to)
         return p.car
     }

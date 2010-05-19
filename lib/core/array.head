@@ -33,6 +33,7 @@
 interface core ("eyestep/heather 1.0:core")
 export public(*)
 
-def compare(one @ Sliceable<Ordinal, 'T>, two @ Sliceable<Ordinal, 'T>) : Int ...
+def compare(one @ Sliceable<Ordinal, 'T>,
+            two @ Sliceable<Ordinal, 'T>) : Int ...
 
 -- end of array.hea

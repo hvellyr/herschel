@@ -35,27 +35,20 @@ export public(*)
 
 -- Character names from the ASCII-range.
 
-def char nul     = 0000h
-  def char null = 0000h
+def char nul     = 0000h      def char null = 0000h
 def char soh     = 0001h
 def char stx     = 0002h
 def char etc     = 0003h
 def char eot     = 0004h
 def char enq     = 0005h
 def char ack     = 0006h
-def char bel     = 0007h
-  def char bell = 0007h
-def char bs      = 0008h
-  def char backspace = 0008h
-def char ht      = 0009h
-  def char tab = 0009h
-def char nl      = 000ah
-  def char newline = 000ah
+def char bel     = 0007h      def char bell = 0007h
+def char bs      = 0008h      def char backspace = 0008h
+def char ht      = 0009h      def char tab = 0009h
+def char nl      = 000ah      def char newline = 000ah
 def char vt      = 000bh
-def char np      = 000ch
-  def char formfeed = 000ch
-def char cr      = 000dh
-  def char return = 000dh
+def char np      = 000ch      def char formfeed = 000ch
+def char cr      = 000dh      def char return = 000dh
 def char so      = 000eh
 def char si      = 000fh
 
@@ -70,14 +63,12 @@ def char etb     = 0017h
 def char can     = 0018h
 def char em      = 0019h
 def char sub     = 001ah
-def char esc     = 001bh
-  def char escape = 001bh
+def char esc     = 001bh      def char escape = 001bh
 def char fs      = 001ch
 def char gs      = 001dh
 def char rs      = 001eh
 def char us      = 001fh
-def char sp      = 0020h
-  def char space = 0020h
+def char sp      = 0020h      def char space = 0020h
 def char excl    = 0021h
 def char quot    = 0022h
 def char num     = 0023h
@@ -112,8 +103,7 @@ def char quest   = 003fh
 def char at      = 0040h
 
 def char lsqb    = 005bh
-def char bsol    = 005ch
-  def char backslash = 005ch
+def char bsol    = 005ch      def char backslash = 005ch
 def char rsqb    = 005dh
 def char circ    = 005eh
 def char lowbar  = 005fh
@@ -123,8 +113,7 @@ def char lcurlyb = 007bh
 def char verbar  = 007ch
 def char rcurlyb = 007dh
 def char tilde   = 007eh
-def char del     = 007fh
-  def char delete = 007fh
+def char del     = 007fh      def char delete = 007fh
 
 -- Characters from the Latin-1 Supplement range (u-00a1 .. u-00ff)
 
@@ -140,7 +129,7 @@ def char uml     = 00a8h
 def char copy    = 00a9h
 def char ordf    = 00aah
 def char laquo   = 00abh
-def char not     = 00ach
+def char nott    = 00ach
 def char shy     = 00adh
 def char reg     = 00aeh
 def char macr    = 00afh

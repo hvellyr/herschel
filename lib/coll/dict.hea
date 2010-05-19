@@ -85,7 +85,7 @@ import "collection"
 ---------------------------------------------------------------------------
 
 def core|to-string(self @ Assoc<'K, 'V>) : String
-  StringBuffer().append(self.key, "->", self.value).to-string
+  (StringBuffer() ++ self.key ++ "->" ++ self.value).to-string
 
 
 def class Triple<Key, Value, Tail>(_key : Key, _val : Value, _tail : Tail)
@@ -99,7 +99,7 @@ def generic key?(self @ Triple<'K, 'V, 'T>, other : 'K) : Bool
   self.key == other
 
 def core|to-string(self @ Triple<'K, 'V, 'T>) : String
-  StringBuffer().append(self.key, "->", self.value).to-string
+  (StringBuffer() ++ self.key ++ "->" ++ self.value).to-string
 
 
 
@@ -197,7 +197,7 @@ def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) : HashMap
   if (self.elts >= (ts * 75) / 100) {
     let t2 = self.Type()(items: (ts * 15) / 10)
     -- copy all elements
-    t2.add-all(self)
+    t2.add-all!(self)
 
     -- grap the table and length from the new dictionary
     self.table = t2.table
@@ -241,7 +241,7 @@ def remove!(self @ HashMap<'K, 'T>, key @ 'K) : HashMap<'K, 'T>
   if (self.elts <= (ts * 15) / 100) {
     let t2 = self.Type()(items: ts / 2)
     -- copy all elements
-    t2.add-all(self)
+    t2.add-all!(self)
 
     -- grap the table and length from the new dictionary
     self.table = t2.table
@@ -254,14 +254,14 @@ def remove!(self @ HashMap<'K, 'T>, key @ 'K) : HashMap<'K, 'T>
 def keys(self @ HashMap<'K, 'T>) : Vector<'K>
   let keys = Vector<'K>(self.elts)
   for (k in self.key-iterator)
-    keys.append(k)
+    keys.append!(k)
   keys
 
 
 def values(self @ HashMap<'K, 'T>) : Vector<'T>
   let values = Vector<'T>(self.elts)
   for (v in self.value-iterator)
-    values.append(v)
+    values.append!(v)
   values
 
 
@@ -275,8 +275,8 @@ def values(self @ HashMap<'K, 'T>) : Vector<'T>
 --    self.
 
 
-def add-all(self @ HashMap<'K, 'T>,
-            coll @ AssocCollection<'K, 'T>) : HashMap<'K, 'T>
+def add-all!(self @ HashMap<'K, 'T>,
+             coll @ AssocCollection<'K, 'T>) : HashMap<'K, 'T>
   for (e in coll)
     self.put!(e.key, e.value)
   self
@@ -290,18 +290,18 @@ def has-all-keys?(self @ HashMap<'K, 'T>, keys @ Collection<'K>) : Bool
   true
 
 
-def remove-all-keys(self @ HashMap<'K, 'T>,
-                    keys @ Collection<'K>) : HashMap<'K, 'T>
+def remove-all-keys!(self @ HashMap<'K, 'T>,
+                     keys @ Collection<'K>) : HashMap<'K, 'T>
   for (k in keys)
-    self.remove(k)
+    self.remove!(k)
   self
 
 
-def retain-all-keys(self @ HashMap<'K, 'T>,
-                    keys @ Collection<'K>) : HashMap<'K, 'T>
+def retain-all-keys!(self @ HashMap<'K, 'T>,
+                     keys @ Collection<'K>) : HashMap<'K, 'T>
   for (k in keys) {
     if (not self.has?(k))
-      self.remove(k)
+      self.remove!(k)
   }
   self
 
@@ -336,33 +336,23 @@ def deepen(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
 --! Returns a string representation of @var{map}
 def core|to-string(map @ HashMap<'K, 'T>) : String
   let sb = StringBuffer()
-  sb.append("#(")
+  sb ++ "#("
 
   for (e in map)
-    sb.append(e.to-string)
-      .append(" ")
+    sb ++ e.to-string
+       ++ " "
 
-  sb.append(")")
+  sb ++ ")"
   sb.to-string
 
 
 
 
 
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+when ignore {
 
 -- sequence implementation for the dict class.  once the orange2c compiler
 -- supports anonymous classes, this should be done in the seq method directly.
@@ -424,3 +414,6 @@ lang.DICT-SEQ <- class : (lang.SEQ) base: _BASE_ (
 )
 
 
+} -- when
+
+-- end of dict.hea

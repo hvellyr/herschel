@@ -44,7 +44,7 @@ def macro with-break
 {
   { with-break() ?body:expr } -> {
     {
-      on signal(break-signal : BreakSignal) {
+      on signal (break-signal : BreakSignal) {
         break-signal.return-value
       }
       let break(retval) {
@@ -55,10 +55,10 @@ def macro with-break
   }
   { with-break(?break:name) ?body:expr } -> {
     {
-      on signal(break-signal : BreakSignal) {
+      on signal (break-signal : BreakSignal) {
         break-signal.return-value
       }
-      let ?break (retval) {
+      let ?break(retval) {
         BreakSignal(retval).raise
       }
       ?body
@@ -67,10 +67,10 @@ def macro with-break
 
   { with-break(?break:name = ?func:expr) ?body:expr } -> {
     {
-      on signal(break-signal : BreakSignal) {
+      on signal (break-signal : BreakSignal) {
         break-signal.return-value
       }
-      let ?break (retval) {
+      let ?break(retval) {
         BreakSignal(?func (retval)).raise
       }
       ?body
@@ -79,4 +79,3 @@ def macro with-break
 }
 
 -- end of break
-
