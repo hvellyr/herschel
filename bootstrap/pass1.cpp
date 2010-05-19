@@ -798,7 +798,14 @@ FirstPass::parseAtomicExpr()
   case kFunctionId:
     return parseAnonFun();
   case kNotId:
-    // TODO
+    {
+      Token notToken = fToken;
+      nextToken();
+      Token t = parseAtomicExpr();
+      return Token() << notToken
+                     << ( Token(notToken.srcpos(), kParanOpen, kParanClose)
+                          << t );
+    }
   case kSelectId:
     // TODO
   case kUntilId:
@@ -1239,26 +1246,38 @@ FirstPass::parseCharDef(const Token& defToken)
   nextToken();
 
   if (fToken != kSymbol) {
-    errorf(fToken.srcpos(), E_MissingDefName, "Missing name");
+    errorf(fToken.srcpos(), E_MissingDefName, "missing char name");
     return scanUntilTopExprAndResume();
   }
   Token charNameToken = fToken;
 
   nextToken();
-  if (fToken != kAssign)
-    throw UnexpectedTokenException(fToken, "expected =");
   Token assignToken = fToken;
+  if (fToken != kAssign) {
+    errorf(fToken.srcpos(), E_DefNoInitValue, "expected '='");
+    assignToken = Token(fToken.srcpos(), kAssign);
+  }
+  else
+    nextToken();
 
-  nextToken();
-  if (fToken != kInt)
-    throw UnexpectedTokenException(fToken, "expected INTEGER");
   Token codePointToken = fToken;
+  int codePoint = 0xffff;
 
-  int codePoint = fToken.intValue();
-  if (codePoint < 0 || codePoint > 0x10FFFF)
-    throw SyntaxException(String("invalid expected INTEGER"));
+  if (fToken != kInt) {
+    errorf(fToken.srcpos(), E_DefInitValueUnexpectedToken,
+           "expected INTEGER");
+    codePointToken = Token(fToken.srcpos(), kInt, 0xffff);
+  }
+  else {
+    codePoint = fToken.intValue();
+    if (codePoint < 0 || codePoint > 0x10FFFF) {
+      errorf(fToken.srcpos(), E_BadCharValue, "invalid expected INTEGER");
 
-  nextToken();
+      codePointToken = Token(fToken.srcpos(), kInt, 0xffff);
+      codePoint = 0xffff;
+    }
+    nextToken();
+  }
 
   if (fEvaluateExprs) {
     fParser->charRegistry()->registerValue(charNameToken.idValue(),
@@ -1396,7 +1415,6 @@ FirstPass::parseTop()
     return parseModule(true);
   }
   else if (fToken == kInterfaceId) {
-    nextToken();
     return parseModule(false);
   }
   else if (fToken == kExportId) {
