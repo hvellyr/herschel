@@ -25,6 +25,7 @@ namespace heather
 
     E_SymbolExpected      = 0x1001,
     E_StringExpected      = 0x1002,
+    E_UnexpectedTopExpr   = 0x1003,
 
     // notation errors
     E_UnexpectedChar      = 0x0100,

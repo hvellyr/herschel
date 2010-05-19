@@ -91,7 +91,7 @@ FirstPass::parseSequence(ParseFunctor functor,
         nextToken();
       else if (fToken != endToken)
         error(fToken.srcpos(), errorCode,
-              (StringBuffer() << "expected '" 
+              (StringBuffer() << "expected '"
                << Token(SrcPos(), endToken).toString() << "' or ','").toString());
     }
   }
@@ -101,7 +101,7 @@ FirstPass::parseSequence(ParseFunctor functor,
   }
   else {
     error(fToken.srcpos(), errorCode,
-          (StringBuffer() << "expected '" 
+          (StringBuffer() << "expected '"
            << Token(SrcPos(), endToken).toString() << "'").toString());
 
     if (startToken != kInvalid && startPos != fToken.srcpos())
@@ -506,7 +506,7 @@ FirstPass::parseOn()
     nextToken();
 
     TokenVector params;
-    
+
     if (parseFunctionsParams(&params)) {
       Token body = parseExpr();
 
@@ -703,12 +703,28 @@ FirstPass::parseGroup()
 
 
 void
-FirstPass::parseExprListUntilBrace(TokenVector* result)
+FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelId)
 {
   for ( ; ; ) {
-    if (fToken == kDefId) {
-      Token expr = parseDef(false);
-      result->push_back(expr);
+    Token expr;
+
+    if (fToken == kDefId ||
+        fToken == kExtendId ||
+        fToken == kExportId ||
+        fToken == kImportId ||
+        fToken == kInterfaceId ||
+        fToken == kModuleId)
+    {
+      if (!endAtToplevelId) {
+        error(fToken.srcpos(), E_UnexpectedTopExpr,
+              String("unexpected top level expression: ") + fToken.toString());
+        return;
+      }
+      else
+        return;
+    }
+    else if (fToken == kLetId) {
+      expr = parseDef(true);
     }
     else if (fToken == kBraceClose) {
       return;
@@ -718,40 +734,39 @@ FirstPass::parseExprListUntilBrace(TokenVector* result)
     }
     else if (fToken == kSemicolon) {
       nextToken();
+      continue;
+    }
+    else if (fToken == kWhenId) {
+      expr = parseWhen(false);
     }
     else {
-      Token expr = parseExpr();
-      result->push_back(expr);
+      expr = parseExpr();
     }
+
+    if (expr.isSet())
+      result->push_back(expr);
   }
-}
-
-
-void
-FirstPass::parseTopExprUntilBrace(TokenVector* result)
-{
-  while (fToken != kBraceClose) {
-    if (fToken == kEOF)
-      break;
-    Token topexpr = parseTop();
-    result->push_back(topexpr);
-  }
-
-  if (fToken == kBraceClose)
-    nextToken();
 }
 
 
 Token
 FirstPass::parseBlock()
 {
-  TokenVector exprlist;
-  parseExprListUntilBrace(&exprlist);
-
-  if (fToken != kBraceClose)
-    throw UnexpectedTokenException(fToken, "expected }");
-  SrcPos bosp = fToken.srcpos();
+  SrcPos startPos = fToken.srcpos();
   nextToken();
+
+  TokenVector exprlist;
+  parseExprListUntilBrace(&exprlist, false);
+
+  SrcPos bosp = fToken.srcpos();
+  if (fToken != kBraceClose) {
+    errorf(fToken.srcpos(), E_MissingBraceClose, "expected '}'");
+
+    if (startPos != fToken.srcpos())
+      error(startPos, E_MissingBraceClose, String("beginning '{' was here"));
+  }
+  else
+    nextToken();
 
   return Token(bosp, kBraceOpen, kBraceClose) << exprlist;
 }
@@ -778,8 +793,6 @@ FirstPass::parseAtomicExpr()
 
   case kIfId:
     return parseIf();
-  case kLetId:
-    return parseDef(true);
   case kOnId:
     return parseOn();
   case kFunctionId:
@@ -801,6 +814,10 @@ FirstPass::parseAtomicExpr()
     // TODO
     break;
 
+  case kLetId:
+    assert(0);
+    break;
+
   case kSymbol:
     {
       Token t = fToken;
@@ -818,7 +835,6 @@ FirstPass::parseAtomicExpr()
     nextToken();
     return parseAccess(parseGroup());
   case kBraceOpen:
-    nextToken();
     return parseAccess(parseBlock());
 
   default:
@@ -980,6 +996,21 @@ FirstPass::parseExpr()
   if (op1 != kOpInvalid)
     return parseExprRec(expr1, op1, opSrcpos);
   return expr1;
+}
+
+
+void
+FirstPass::parseTopExprUntilBrace(TokenVector* result)
+{
+  while (fToken != kBraceClose) {
+    if (fToken == kEOF)
+      break;
+    Token topexpr = parseTop();
+    result->push_back(topexpr);
+  }
+
+  if (fToken == kBraceClose)
+    nextToken();
 }
 
 
