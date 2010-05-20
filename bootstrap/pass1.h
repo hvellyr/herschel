@@ -38,6 +38,7 @@ namespace heather
     friend struct ImportRenameParser;
     friend struct LiteralVectorParser;
     friend struct LiteralArrayParser;
+    friend struct ParseFuncParamsParser;
 
     Token parseTop();
     Token parseModule(bool isModule);
@@ -59,6 +60,8 @@ namespace heather
                        const SrcPos& op1Srcpos);
 
     Token parseTypeSpec();
+    Token parseSimpleType();
+
     Token parseLiteralVector();
     Token parseLiteralArray();
 
@@ -78,7 +81,7 @@ namespace heather
     Token parseFunctionCall(const Token& expr,
                             const TokenVector& preScannedArgs,
                             bool parseParams);
-    void parseFuncallParams(TokenVector* params);
+    void parseFuncallArgs(TokenVector* args);
 
     Token makeBinaryToken(const Token& expr1, OperatorType op1,
                           const Token& expr2,
@@ -90,7 +93,9 @@ namespace heather
     bool isOpWeightAbove(OperatorType op1, OperatorType op2) const;
     int weightOperator(OperatorType op1) const;
 
-    void parseExprListUntilBrace(TokenVector* exprlist, bool endAtToplevelId);
+    bool parseExprListUntilBrace(TokenVector* exprlist,
+                                 bool endAtToplevelId,
+                                 bool isLocal);
     void parseTopExprUntilBrace(TokenVector* result);
     Token parseTopOrExprList(bool isTopLevel);
 
@@ -100,6 +105,8 @@ namespace heather
 
     Token evaluateConfigExpr(const Token& initExpr);
 
+    Token parseWhereClause();
+    Token parseReifyClause();
 
     // resume functions after (syntax) error
     Token scanUntilTopExprAndResume();

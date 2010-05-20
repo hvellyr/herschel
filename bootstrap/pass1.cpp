@@ -311,8 +311,64 @@ FirstPass::parseImport()
 
 
 Token
+FirstPass::parseSimpleType()
+{
+  assert(fToken == kSymbol);
+
+  Token typeName = fToken;
+  nextToken();
+
+  if (fToken == kGenericOpen) {
+    nextToken();
+
+    // TODO
+    if (fToken != kGenericClose) {
+      errorf(fToken.srcpos(), E_MissingGenericClose, "expected '>'");
+    }
+
+    typeName = Token() << typeName << Token(fToken.srcpos(),
+                                            kGenericOpen, kGenericClose);
+  }
+
+  if (fToken == kBracketOpen) {
+    Token arrayType = Token(fToken.srcpos(), kBracketOpen, kBracketClose);
+    nextToken();
+
+    Token idxExpr;
+    if (fToken != kBracketClose) {
+      idxExpr = parseTypeSpec();
+      if (!idxExpr.isSet()) {
+        // TODO
+      }
+      arrayType << idxExpr;
+    }
+
+    if (fToken != kBracketClose) {
+      // errorf();
+      // TODO
+    }
+    else
+      nextToken();
+
+    if (arrayType.isSet()) {
+      if (!typeName.isSeq())
+        typeName = Token() << typeName;
+
+      typeName << arrayType;
+    }
+  }
+
+  // TODO
+  return typeName;
+}
+
+
+Token
 FirstPass::parseTypeSpec()
 {
+  if (fToken == kSymbol)
+    return parseSimpleType();
+
   // TODO
   return Token();
 }
@@ -438,24 +494,127 @@ FirstPass::parseIf()
 }
 
 
+struct heather::ParseFuncParamsParser
+{
+  enum ParamType {
+    kPositional,
+    kNamed,
+    kRest
+  };
+
+  ParamType fExpected;
+
+  ParseFuncParamsParser()
+    : fExpected(kPositional)
+  { }
+
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    Token paramSeq;
+    ParamType paramType = kPositional;
+
+    if (pass->fToken == kKeyarg) {
+      paramSeq << pass->fToken;
+      pass->nextToken();
+      paramType = kNamed;
+    }
+
+    if (pass->fToken != kSymbol) {
+      errorf(pass->fToken.srcpos(), E_SymbolExpected,
+             "parameter name expected");
+      pass->scanUntilNextParameter();
+    }
+    else {
+      paramSeq << pass->fToken;
+      pass->nextToken();
+
+      Token typeIntroToken = pass->fToken;
+      if (pass->fToken == kColon ||
+          pass->fToken == kAt)
+      {
+        pass->nextToken();
+
+        SrcPos pos = pass->fToken.srcpos();
+        Token type = pass->parseTypeSpec();
+        if (!type.isSet()) {
+          errorf(pos, E_MissingType,
+                 "type expression expected");
+          paramSeq << typeIntroToken << Token(pos, kSymbol, "Any");
+        }
+        else
+          paramSeq << typeIntroToken << type;
+      }
+      else
+        paramSeq << Token(typeIntroToken.srcpos(), kColon)
+                 << Token(typeIntroToken.srcpos(), kSymbol, "Any");
+
+      if (pass->fToken == kAssign) {
+        Token assignToken = pass->fToken;
+        pass->nextToken();
+
+        SrcPos pos = pass->fToken.srcpos();
+        Token initExpr = pass->parseExpr();
+        if (!initExpr.isSet())
+          errorf(pos, E_MissingRHExpr, "no value in keyed argument");
+        else {
+          paramSeq << assignToken << initExpr;
+          paramType = kNamed;
+        }
+      }
+      else if (pass->fToken == kEllipsis) {
+        Token restToken = pass->fToken;
+        pass->nextToken();
+
+        if (paramType != kPositional) {
+          errorf(restToken.srcpos(), E_InvalidRestParam,
+                 "orphaned rest parameter");
+        }
+        else {
+          paramSeq << restToken;
+          paramType = kRest;
+        }
+      }
+    }
+
+    if (fExpected == kPositional) {
+      fExpected = paramType;
+      result << paramSeq;
+    }
+    else if (fExpected == kNamed) {
+      if (paramType == kPositional)
+        errorf(paramSeq.srcpos(), E_ParamOrder,
+               "out of order (positional) parameter");
+      else {
+        fExpected = paramType;
+        result << paramSeq;
+      }
+    }
+    else if (fExpected == kRest) {
+      errorf(paramSeq.srcpos(), E_ParamOrder,
+             "no parameter after rest parameter");
+    }
+
+    return true;
+  }
+};
+
+
 bool
 FirstPass::parseFunctionsParams(TokenVector* exprlist)
 {
   SrcPos startPos = fToken.srcpos();
 
-  // TODO
-  if (fToken == kParanClose) {
-    nextToken();
+  Token params;
+  parseSequence(ParseFuncParamsParser(),
+                kParanOpen, kParanClose, true, E_BadParameterList,
+                params);
+
+  if (params.isSeq()) {
+    *exprlist = params.children();
     return true;
   }
-  else {
-    error(fToken.srcpos(), E_BadParameterList, String("expected ')'"));
 
-    if (startPos != fToken.srcpos())
-      error(startPos, E_BadParameterList, String("beginning ')' was here"));
-    scanUntilTopExprAndResume();
-    return false;
-  }
+  return false;
 }
 
 
@@ -503,10 +662,8 @@ FirstPass::parseOn()
       return scanUntilTopExprAndResume();
     }
     SrcPos posp = fToken.srcpos();
-    nextToken();
 
     TokenVector params;
-
     if (parseFunctionsParams(&params)) {
       Token body = parseExpr();
 
@@ -535,7 +692,7 @@ FirstPass::parseAnonFun()
 
 
 void
-FirstPass::parseFuncallParams(TokenVector* params)
+FirstPass::parseFuncallArgs(TokenVector* args)
 {
   SrcPos startPos = fToken.srcpos();
 
@@ -548,16 +705,16 @@ FirstPass::parseFuncallParams(TokenVector* params)
       nextToken();
 
       Token val = parseExpr();
-      params->push_back(key);
-      params->push_back(val);
+      args->push_back(key);
+      args->push_back(val);
     }
     else {
       Token val = parseExpr();
-      params->push_back(val);
+      args->push_back(val);
     }
 
     if (fToken == kComma) {
-      params->push_back(fToken);
+      args->push_back(fToken);
       nextToken();
     }
     else if (fToken != kParanClose) {
@@ -584,26 +741,25 @@ FirstPass::parseFunctionCall(const Token& expr,
                              const TokenVector& preScannedArgs,
                              bool parseParams)
 {
-  TokenVector effParams;
+  TokenVector effArgs;
   if (!preScannedArgs.empty())
-    effParams.assign(preScannedArgs.begin(), preScannedArgs.end());
+    effArgs.assign(preScannedArgs.begin(), preScannedArgs.end());
 
   if (parseParams) {
-    TokenVector params;
-    parseFuncallParams(&params);
+    TokenVector args;
+    parseFuncallArgs(&args);
 
-    if (!params.empty()) {
-      if (!effParams.empty())
-        effParams.push_back(Token(params.front().srcpos(), kComma));
+    if (!args.empty()) {
+      if (!effArgs.empty())
+        effArgs.push_back(Token(args.front().srcpos(), kComma));
 
-      effParams.insert(effParams.end(),
-                       params.begin(), params.end());
+      effArgs.insert(effArgs.end(), args.begin(), args.end());
     }
   }
 
   return Token() << expr
                  << ( Token(expr.srcpos(), kParanOpen, kParanClose)
-                      << effParams );
+                      << effArgs );
 }
 
 
@@ -702,8 +858,10 @@ FirstPass::parseGroup()
 }
 
 
-void
-FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelId)
+bool
+FirstPass::parseExprListUntilBrace(TokenVector* result,
+                                   bool endAtToplevelId,
+                                   bool isLocal)
 {
   for ( ; ; ) {
     Token expr;
@@ -718,34 +876,46 @@ FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelId)
       if (!endAtToplevelId) {
         error(fToken.srcpos(), E_UnexpectedTopExpr,
               String("unexpected top level expression: ") + fToken.toString());
-        return;
+        return false;
       }
       else
-        return;
+        return true;
     }
     else if (fToken == kLetId) {
-      expr = parseDef(true);
+      if (!isLocal) {
+        errorf(fToken.srcpos(), E_GlobalLet, "'let' is not allowed here");
+        parseDef(isLocal);
+        continue;
+      }
+      expr = parseDef(isLocal);
     }
     else if (fToken == kBraceClose) {
-      return;
+      return true;
     }
     else if (fToken == kEOF) {
-      return;
+      return true;
     }
     else if (fToken == kSemicolon) {
       nextToken();
       continue;
     }
     else if (fToken == kWhenId) {
-      expr = parseWhen(false);
+      expr = parseWhen(!isLocal);
     }
     else {
+      SrcPos startPos = fToken.srcpos();
       expr = parseExpr();
+      if (!expr.isSet()) {
+        errorf(startPos, E_UnexpectedToken, "unexpected token");
+        return false;
+      }
     }
 
     if (expr.isSet())
       result->push_back(expr);
   }
+
+  return false;
 }
 
 
@@ -756,7 +926,7 @@ FirstPass::parseBlock()
   nextToken();
 
   TokenVector exprlist;
-  parseExprListUntilBrace(&exprlist, false);
+  parseExprListUntilBrace(&exprlist, false, true);
 
   SrcPos bosp = fToken.srcpos();
   if (fToken != kBraceClose) {
@@ -1013,7 +1183,7 @@ FirstPass::parseExpr()
   if (expr1.isSet()) {
     OperatorType op1 = tokenTypeToOperator(fToken.tokenType());
     SrcPos opSrcpos = fToken.srcpos();
-  
+
     if (op1 != kOpInvalid)
       return parseExprRec(expr1, op1, opSrcpos);
   }
@@ -1306,10 +1476,112 @@ FirstPass::parseCharDef(const Token& defToken)
 
 
 Token
+FirstPass::parseWhereClause()
+{
+// generics-const  := `where' constraint-expr { `,' constraint-expr }
+
+// constraint-expr := type-constraint | logic-const | group-const
+
+// type-constraint := subtype-const | sign-constraint
+// subtype-const   := type-id subtype-op const-expr
+// subtype-op      := COMPARE-OP
+// const-expr      := expression
+// sign-constraint := type-id `isa' type-clause
+
+// logic-const     := constraint-expr constraint-op constraint-expr
+// constraint-op   := `and' | `or'
+
+// group-const     := `(' constraint-expr `)'
+
+  // TODO
+  return Token();
+}
+
+
+Token
+FirstPass::parseReifyClause()
+{
+  // TODO
+  return Token();
+}
+
+
+Token
 FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
                             const Token& symToken, bool isLocal)
 {
-  // TODO
+  assert(fToken == kParanOpen);
+  Token paranOpenToken = fToken;
+
+  Token result;
+  result << defToken;
+  if (tagToken.isSet())
+    result << tagToken;
+  result << symToken;
+
+  TokenVector params;
+  if (parseFunctionsParams(&params)) {
+    Token colonToken;
+    Token returnType;
+    Token reifyToken;
+    Token reifyClause;
+    Token whereToken;
+    Token whereClause;
+
+    if (fToken == kColon) {
+      colonToken = fToken;
+      nextToken();
+      returnType = parseTypeSpec();
+    }
+    else {
+      colonToken = Token(fToken.srcpos(), kColon);
+      returnType = Token(fToken.srcpos(), kSymbol, "Any");
+    }
+
+    if (fToken == kReifyId) {
+      reifyToken = fToken;
+      nextToken();
+      reifyClause = parseReifyClause();
+    }
+
+    if (fToken == kWhereId) {
+      whereToken = fToken;
+      nextToken();
+      whereClause = parseWhereClause();
+    }
+
+    SrcPos bodyPos = fToken.srcpos();
+    Token body;
+    if (isLocal) {
+      body = parseExpr();
+      if (!body.isSet()) {
+        errorf(bodyPos, E_MissingBody, "expected function body");
+        return Token();
+      }
+    }
+    else {
+      TokenVector bodyExprs;
+      parseExprListUntilBrace(&bodyExprs, !isLocal, isLocal);
+
+      body = Token(bodyPos, kBraceOpen, kBraceClose) << bodyExprs;
+    }
+
+    result << ( Token(paranOpenToken.srcpos(), kParanOpen, kParanClose)
+                << params );
+    if (colonToken.isSet())
+      result << colonToken << returnType;
+
+    if (reifyToken.isSet())
+      result << reifyToken << reifyClause;
+
+    if (whereToken.isSet())
+      result << whereToken << whereClause;
+
+    result << body;
+
+    return result;
+  }
+
   return Token();
 }
 

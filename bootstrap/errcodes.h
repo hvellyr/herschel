@@ -22,6 +22,7 @@ namespace heather
     E_BadParameterList    = 0x0005,
     E_MissingParanClose   = 0x0006,
     E_MissingBracketClose = 0x0007,
+    E_MissingGenericClose = 0x0008,
 
     E_SymbolExpected      = 0x1001,
     E_StringExpected      = 0x1002,
@@ -42,6 +43,14 @@ namespace heather
     E_DefNoInitValue      = 0x4002,
     E_LocalGenericFunc    = 0x4010,
     E_BadCharValue        = 0x4011,
+    E_GlobalLet           = 0x4012,
+
+    E_MissingType         = 0x4013,
+
+    // functions
+    E_MissingBody         = 0x4100,
+    E_InvalidRestParam    = 0x4101,
+    E_ParamOrder          = 0x4102,
 
     // expressions
     E_MissingRHExpr       = 0x6001,
