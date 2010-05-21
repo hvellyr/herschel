@@ -4060,7 +4060,7 @@ constraint-op   := COMPARE-OP
 type-clause and the @code{`<'} is no whitespace.}
 @smallformat
 @verbatim
-param-type      := type-clause `<' type-params `>'
+param-type      := type-id `<' type-params `>'
 type-params     := type-clause { `,' type-clause }
 @end verbatim
 @end smallformat
