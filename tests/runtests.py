@@ -67,6 +67,8 @@ class TestRunner:
 
     def run_pass_test_impl(self, test_file, traces, passid,
                            errtest_func=None):
+        if self.verbose:
+            print "Run test '%s'" % (test_file)
         self.test_run += 1
         output, erroutput = self.run_heather_on_test(test_file, traces)
         what_tag = "[%s] %s" % (passid, test_file)
