@@ -23,10 +23,12 @@ namespace heather
     E_MissingParanClose   = 0x0006,
     E_MissingBracketClose = 0x0007,
     E_MissingGenericClose = 0x0008,
+    E_GenericTypeList     = 0x0009,
 
     E_SymbolExpected      = 0x1001,
     E_StringExpected      = 0x1002,
     E_UnexpectedTopExpr   = 0x1003,
+    E_ConstExprExpected   = 0x1004,
 
     // notation errors
     E_UnexpectedChar      = 0x0100,

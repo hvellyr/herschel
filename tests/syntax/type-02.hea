@@ -1,0 +1,3 @@
+def generic f(a @ 'T) : 'T
+  a
+

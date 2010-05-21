@@ -624,10 +624,15 @@ Tokenizer::nextTokenImpl()
     case ':': return makeTokenAndNext(srcpos(), kColon);
 
     case '@': return makeTokenAndNext(srcpos(), kAt);
-    case '&': return makeTokenAndNext(srcpos(), kAmpersand);
     case '|': return makeTokenAndNext(srcpos(), kPipe);
     case '\'': return makeTokenAndNext(srcpos(), kQuote);
     case '`': return makeTokenAndNext(srcpos(), kBackQuote);
+
+    case '&':
+      nextChar();
+      if (fCC == '(')
+        return makeTokenAndNext(beginSrcpos, kUnionOpen);
+      return Token(beginSrcpos, kAmpersand);
 
     case '+': case '/': case '*': case '%': case '=':
       return readSymbolOrOperator(true);
@@ -754,19 +759,19 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 
-      assert(tnz.nextToken() == Token(sp, String("interface")));
+      assert(tnz.nextToken() == Token(sp, kInterfaceId));
       assert(tnz.nextToken() == Token(sp, String("zero")));
       assert(tnz.nextToken() == Token(sp, kParanOpen));
       assert(tnz.nextToken() == Token(sp, kString, String("eyestep/zero 1.0:portables")));
       assert(tnz.nextToken() == Token(sp, kParanClose));
 
-      assert(tnz.nextToken() == Token(sp, String("export")));
+      assert(tnz.nextToken() == Token(sp, kExportId));
       assert(tnz.nextToken() == Token(sp, String("public")));
       assert(tnz.nextToken() == Token(sp, kParanOpen));
       assert(tnz.nextToken() == Token(sp, kMultiply));
       assert(tnz.nextToken() == Token(sp, kParanClose));
 
-      assert(tnz.nextToken() == Token(sp, String("def")));
+      assert(tnz.nextToken() == Token(sp, kDefId));
       assert(tnz.nextToken() == Token(sp, String("class")));
       assert(tnz.nextToken() == Token(sp, String("Portable")));
       assert(tnz.nextToken() == Token(sp, kGenericOpen));
@@ -880,13 +885,12 @@ public:
                     String("n.n."));
 
       try {
-        assert(tnz.nextToken() == Token(sp, String("def")));
+        assert(tnz.nextToken() == Token(sp, kDefId));
         assert(tnz.nextToken() == Token(sp, String("f")));
         assert(tnz.nextToken() == Token(sp, kParanOpen));
         assert(tnz.nextToken() == Token(sp, String("args")));
         assert(tnz.nextToken() == Token(sp, kColon));
-        assert(tnz.nextToken() == Token(sp, kAmpersand));
-        assert(tnz.nextToken() == Token(sp, kParanOpen));
+        assert(tnz.nextToken() == Token(sp, kUnionOpen));
         assert(tnz.nextToken() == Token(sp, String("String")));
         assert(tnz.nextToken() == Token(sp, kComma));
         assert(tnz.nextToken() == Token(sp, String("Uri")));
@@ -899,7 +903,7 @@ public:
         assert(tnz.nextToken() == Token(sp, kParanClose));
         assert(tnz.nextToken() == Token(sp, kEllipsis));
 
-        assert(tnz.nextToken() == Token(sp, String("def")));
+        assert(tnz.nextToken() == Token(sp, kDefId));
         assert(tnz.nextToken() == Token(sp, String("f")));
         assert(tnz.nextToken() == Token(sp, kParanOpen));
         assert(tnz.nextToken() == Token(sp, kKeyarg, String("arg")));
@@ -921,7 +925,8 @@ public:
       static const char* test =
         "#abc #delft\n"
         "#[1, 2] #[]\n"
-        "#(1 -> 2) #()\n";
+        "#(1 -> 2) #()\n"
+        "&(1, 2)\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 
@@ -945,6 +950,12 @@ public:
         assert(tnz.nextToken() == Token(sp, kParanClose));
 
         assert(tnz.nextToken() == Token(sp, kLiteralVectorOpen));
+        assert(tnz.nextToken() == Token(sp, kParanClose));
+
+        assert(tnz.nextToken() == Token(sp, kUnionOpen));
+        assert(tnz.nextToken() == Token(sp, kInt, 1));
+        assert(tnz.nextToken() == Token(sp, kComma));
+        assert(tnz.nextToken() == Token(sp, kInt, 2));
         assert(tnz.nextToken() == Token(sp, kParanClose));
       }
       catch (const Exception& ne) {

@@ -150,19 +150,19 @@ public:
       Ptr<TokenPort> p = new FileTokenPort(new DataPort((Octet*)test, strlen(test)),
                                            String("test"));
 
-      assert(p->read() == Token(sp, kSymbol, String("interface")));
+      assert(p->read() == Token(sp, kInterfaceId));
       assert(p->read() == Token(sp, kSymbol, String("zero")));
       assert(p->read() == Token(sp, kParanOpen));
       assert(p->read() == Token(sp, kString, String("eyestep/zero 1.0:portables")));
       assert(p->read() == Token(sp, kParanClose));
 
-      assert(p->read() == Token(sp, kSymbol, String("export")));
+      assert(p->read() == Token(sp, kExportId));
       assert(p->read() == Token(sp, kSymbol, String("public")));
       assert(p->read() == Token(sp, kParanOpen));
       assert(p->read() == Token(sp, kMultiply));
       assert(p->read() == Token(sp, kParanClose));
 
-      assert(p->read() == Token(sp, kSymbol, String("def")));
+      assert(p->read() == Token(sp, kDefId));
       assert(p->read() == Token(sp, kSymbol, String("class")));
       assert(p->read() == Token(sp, kSymbol, String("Portable")));
       assert(p->read() == Token(sp, kGenericOpen));
