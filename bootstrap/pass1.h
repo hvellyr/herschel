@@ -39,6 +39,9 @@ namespace heather
     friend struct LiteralVectorParser;
     friend struct LiteralArrayParser;
     friend struct ParseFuncParamsParser;
+    friend struct TypeParser;
+    friend struct FuncallArgsParser;
+
 
     Token parseTop();
     Token parseModule(bool isModule);
@@ -59,8 +62,14 @@ namespace heather
     Token parseExprRec(const Token& expr1, OperatorType op1,
                        const SrcPos& op1Srcpos);
 
-    Token parseTypeSpec();
+    Token parseTypeSpec(bool onlyNestedConstraints);
     Token parseSimpleType();
+    Token parseUnionType();
+    Token parseGroupType();
+    Token parseFunctionType();
+    Token parseQuotedType();
+    Token parseArrayExtend(const Token& baseType);
+    Token parseConstraintExtend(const Token& baseType);
 
     Token parseLiteralVector();
     Token parseLiteralArray();
@@ -122,7 +131,8 @@ namespace heather
                        TokenType startToken, TokenType endToken,
                        bool hasSeparator,
                        ErrCodes errorCode,
-                       Token& result);
+                       Token& result,
+                       bool skipFirst = true);
 
     //-------- data members
     Ptr<Parser> fParser;

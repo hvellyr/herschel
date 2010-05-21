@@ -75,20 +75,34 @@ FirstPass::parseSequence(ParseFunctor functor,
                          TokenType startToken, TokenType endToken,
                          bool hasSeparator,
                          ErrCodes errorCode,
-                         Token& result)
+                         Token& result,
+                         bool skipFirst)
 {
   SrcPos startPos = fToken.srcpos();
-  nextToken();
+  if (skipFirst)
+    nextToken();
+
+  Token delayedCommaToken;
   while (fToken != endToken) {
     if (fToken == kEOF)
       break;
 
-    if (!functor(this, result))
+    Token tmp;
+    if (!functor(this, tmp))
       break;
 
+    if (tmp.isSet()) {
+      if (delayedCommaToken == kComma)
+        result << delayedCommaToken;
+      result << tmp.children();
+      delayedCommaToken = Token();
+    }
+
     if (hasSeparator) {
-      if (fToken == kComma)
+      if (fToken == kComma) {
+        delayedCommaToken = fToken;
         nextToken();
+      }
       else if (fToken != endToken)
         error(fToken.srcpos(), errorCode,
               (StringBuffer() << "expected '"
@@ -227,8 +241,7 @@ FirstPass::parseExport()
 
   if (fToken != kParanOpen) {
     errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
-    scanUntilTopExprAndResume();
-    return Token();
+    return scanUntilTopExprAndResume();
   }
 
   Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
@@ -310,6 +323,18 @@ FirstPass::parseImport()
 }
 
 
+struct heather::TypeParser
+{
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    Token type = pass->parseTypeSpec(false);
+    if (type.isSet())
+      result << type;
+    return true;
+  }
+};
+
+
 Token
 FirstPass::parseSimpleType()
 {
@@ -319,57 +344,152 @@ FirstPass::parseSimpleType()
   nextToken();
 
   if (fToken == kGenericOpen) {
-    nextToken();
-
-    // TODO
-    if (fToken != kGenericClose) {
-      errorf(fToken.srcpos(), E_MissingGenericClose, "expected '>'");
-    }
-
-    typeName = Token() << typeName << Token(fToken.srcpos(),
-                                            kGenericOpen, kGenericClose);
+    Token generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
+    parseSequence(TypeParser(),
+                  kGenericOpen, kGenericClose, true, E_GenericTypeList,
+                  generics);
+    return Token() << typeName << generics;
   }
 
+  return typeName;
+}
+
+
+Token
+FirstPass::parseGroupType()
+{
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "missing '('");
+    return scanUntilTopExprAndResume();
+  }
+
+  Token nested = Token(fToken.srcpos(), kParanOpen, kParanClose);
+  parseSequence(TypeParser(),
+                kParanOpen, kParanClose, true, E_BadParameterList,
+                nested);
+
+  return nested;
+}
+
+
+Token
+FirstPass::parseUnionType()
+{
+  Token nested = Token(fToken.srcpos(), kUnionOpen, kParanClose);
+  parseSequence(TypeParser(),
+                kUnionOpen, kParanClose, true, E_BadParameterList,
+                nested);
+  return nested;
+}
+
+
+Token
+FirstPass::parseArrayExtend(const Token& baseType)
+{
   if (fToken == kBracketOpen) {
     Token arrayType = Token(fToken.srcpos(), kBracketOpen, kBracketClose);
     nextToken();
 
     Token idxExpr;
     if (fToken != kBracketClose) {
-      idxExpr = parseTypeSpec();
-      if (!idxExpr.isSet()) {
-        // TODO
-      }
-      arrayType << idxExpr;
+      SrcPos idxPos = fToken.srcpos();
+      idxExpr = parseTypeSpec(false);
+      if (!idxExpr.isSet())
+        errorf(idxPos, E_UnexpectedToken, "expected index expression");
+      else
+        arrayType << idxExpr;
     }
 
     if (fToken != kBracketClose) {
-      // errorf();
-      // TODO
+      errorf(fToken.srcpos(), E_MissingBracketClose, "expected ']'");
     }
     else
       nextToken();
 
-    if (arrayType.isSet()) {
-      if (!typeName.isSeq())
-        typeName = Token() << typeName;
-
-      typeName << arrayType;
-    }
+    return Token() << baseType << arrayType;
   }
 
-  // TODO
-  return typeName;
+  return baseType;
 }
 
 
 Token
-FirstPass::parseTypeSpec()
+FirstPass::parseConstraintExtend(const Token& baseType)
 {
-  if (fToken == kSymbol)
-    return parseSimpleType();
+  if (fToken == kEqual || fToken == kUnequal || fToken == kLess ||
+      fToken == kGreater || fToken == kLessEqual || fToken == kGreaterEqual ||
+      fToken == kCompare || fToken == kIn)
+  {
+    Token op = fToken;
+    nextToken();
 
+    Token constExpr = parseExpr();
+    if ( !(constExpr.isLit() || constExpr.isSymbol() ||
+           constExpr.isConstRange()))
+    {
+      error(constExpr.srcpos(), E_ConstExprExpected,
+             String("constraint types only accept constant expressions") + constExpr.toString());
+      return baseType;
+    }
+
+    return Token() << baseType << op << constExpr;
+  }
+
+  return baseType;
+}
+
+
+Token
+FirstPass::parseFunctionType()
+{
   // TODO
+  return Token();
+}
+
+
+Token
+FirstPass::parseQuotedType()
+{
+  assert(fToken == kQuote);
+  Token quote = fToken;
+  nextToken();
+
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_SymbolExpected, "missing type name");
+    return Token();
+  }
+
+  Token result = Token() << quote << fToken;
+  nextToken();
+
+  return result;
+}
+
+
+Token
+FirstPass::parseTypeSpec(bool onlyNestedConstraints)
+{
+  if (fToken == kSymbol) {
+    return ( onlyNestedConstraints 
+             ? parseArrayExtend(parseSimpleType())
+             : parseConstraintExtend(parseArrayExtend(parseSimpleType())) );
+  }
+  else if (fToken == kFUNCTIONId) {
+    return parseArrayExtend(parseFunctionType());
+  }
+  else if (fToken == kQuote) {
+    // no constraints for generics
+    return parseArrayExtend(parseQuotedType());
+  }
+  else if (fToken == kUnionOpen) {
+    // no constraints for union types
+    return parseArrayExtend(parseUnionType());
+  }
+  else if (fToken == kParanOpen) {
+    // no constraints for sequence types
+    return parseArrayExtend(parseGroupType());
+  }
+
   return Token();
 }
 
@@ -377,17 +497,19 @@ FirstPass::parseTypeSpec()
 struct heather::LiteralVectorParser
 {
   LiteralVectorParser()
-    : fIsDict(false)
+    : fIsDict(false),
+      fIsFirst(true)
   { }
 
   bool operator() (FirstPass* pass, Token& result)
   {
     Token expr = pass->parseExpr();
 
-    if (result.isEmpty()) {
+    if (fIsFirst) {
       if (expr.isBinarySeq(kMapTo))
         fIsDict = true;
       result << expr;
+      fIsFirst = false;
     }
     else if (fIsDict) {
       if (!expr.isBinarySeq(kMapTo))
@@ -403,6 +525,7 @@ struct heather::LiteralVectorParser
   }
 
   bool fIsDict;
+  bool fIsFirst;
 };
 
 
@@ -535,7 +658,7 @@ struct heather::ParseFuncParamsParser
         pass->nextToken();
 
         SrcPos pos = pass->fToken.srcpos();
-        Token type = pass->parseTypeSpec();
+        Token type = pass->parseTypeSpec(true);
         if (!type.isSet()) {
           errorf(pos, E_MissingType,
                  "type expression expected");
@@ -602,8 +725,6 @@ struct heather::ParseFuncParamsParser
 bool
 FirstPass::parseFunctionsParams(TokenVector* exprlist)
 {
-  SrcPos startPos = fToken.srcpos();
-
   Token params;
   parseSequence(ParseFuncParamsParser(),
                 kParanOpen, kParanClose, true, E_BadParameterList,
@@ -691,48 +812,38 @@ FirstPass::parseAnonFun()
 }
 
 
-void
-FirstPass::parseFuncallArgs(TokenVector* args)
+struct heather::FuncallArgsParser
 {
-  SrcPos startPos = fToken.srcpos();
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    if (pass->fToken.isKeyArg()) {
+      Token key = pass->fToken;
+      pass->nextToken();
 
-  while (fToken != kParanClose) {
-    if (fToken == kEOF)
-      break;
-
-    if (fToken.isKeyArg()) {
-      Token key = fToken;
-      nextToken();
-
-      Token val = parseExpr();
-      args->push_back(key);
-      args->push_back(val);
+      Token val = pass->parseExpr();
+      result << key;
+      result << val;
     }
     else {
-      Token val = parseExpr();
-      args->push_back(val);
+      Token val = pass->parseExpr();
+      result << val;
     }
 
-    if (fToken == kComma) {
-      args->push_back(fToken);
-      nextToken();
-    }
-    else if (fToken != kParanClose) {
-      error(fToken.srcpos(), E_BadParameterList,
-            String("expected ')' or ','"));
-    }
+    return true;
   }
+};
 
-  if (fToken == kParanClose) {
-    nextToken();
-  }
-  else {
-    error(fToken.srcpos(), E_BadParameterList, String("expected ')'"));
 
-    if (startPos != fToken.srcpos())
-      error(startPos, E_BadParameterList, String("beginning ')' was here"));
-    scanUntilTopExprAndResume();
-  }
+void
+FirstPass::parseFuncallArgs(TokenVector* argsVector)
+{
+  Token args;
+  parseSequence(FuncallArgsParser(),
+                kParanOpen, kParanClose, true, E_BadParameterList,
+                args, false);
+
+  if (args.isSeq())
+    *argsVector = args.children();
 }
 
 
@@ -1061,6 +1172,22 @@ FirstPass::makeBinaryToken(const Token& expr1, OperatorType op1,
 {
   if (op1 == kOpAssign)
     return makeAssignToken(expr1, expr2, op1Srcpos);
+  else if ( (op1 == kOpRange || op1 == kOpEllipsis) &&
+            expr2.isBinarySeq(kBy) ) {
+    return Token() << expr1
+                   << Token(op1Srcpos, operatorToTokenType(op1))
+                   << expr2[0]
+                   << expr2[1]
+                   << expr2[2];
+  }
+  else if ( op1 == kOpBy && ( expr1.isBinarySeq(kRange) ||
+                              expr1.isBinarySeq(kEllipsis) )) {
+    return Token() << expr1[0]
+                   << expr1[1]
+                   << expr1[2]
+                   << Token(op1Srcpos, operatorToTokenType(op1))
+                   << expr2;
+  }
   else
     return Token() << expr1
                    << Token(op1Srcpos, operatorToTokenType(op1))
@@ -1079,17 +1206,12 @@ int
 FirstPass::weightOperator(OperatorType op1) const
 {
   switch (op1) {
-  case kOpFold:
-  case kOpMapTo:
-  case kOpBy:             return  10;
-
-  case kOpRange:
-  case kOpEllipsis:       return  20;
+  case kOpMapTo:          return  10;
 
   case kOpLogicalAnd:
-  case kOpLogicalOr:      return  30;
+  case kOpLogicalOr:      return  20;
 
-  case kOpIsa:            return  35;
+  case kOpIsa:            return  30;
 
   case kOpEqual:
   case kOpUnequal:
@@ -1099,17 +1221,21 @@ FirstPass::weightOperator(OperatorType op1) const
   case kOpGreaterEqual:
   case kOpCompare:        return  40;
 
-  case kOpIn:             return  45;
+  case kOpIn:             return  50;
 
-  case kOpAppend:         return  47;
+  case kOpRange:
+  case kOpEllipsis:
+  case kOpBy:
+  case kOpAppend:         return  60;
 
   case kOpBitAnd:
   case kOpBitOr:
-  case kOpBitXor:         return  50;
+  case kOpBitXor:         return  70;
 
   case kOpShiftLeft:
   case kOpShiftRight:     return  80;
 
+  case kOpFold:
   case kOpPlus:
   case kOpMinus:          return  90;
 
@@ -1182,10 +1308,10 @@ FirstPass::parseExpr()
   Token expr1 = parseAtomicExpr();
   if (expr1.isSet()) {
     OperatorType op1 = tokenTypeToOperator(fToken.tokenType());
-    SrcPos opSrcpos = fToken.srcpos();
+    SrcPos op1Srcpos = fToken.srcpos();
 
     if (op1 != kOpInvalid)
-      return parseExprRec(expr1, op1, opSrcpos);
+      return parseExprRec(expr1, op1, op1Srcpos);
   }
   return expr1;
 }
@@ -1372,7 +1498,7 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
   if (fToken == kColon) {
     colonToken = fToken;
     nextToken();
-    type = parseTypeSpec();
+    type = parseTypeSpec(true);
   }
 
   Token initExpr;
@@ -1531,7 +1657,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
     if (fToken == kColon) {
       colonToken = fToken;
       nextToken();
-      returnType = parseTypeSpec();
+      returnType = parseTypeSpec(true);
     }
     else {
       colonToken = Token(fToken.srcpos(), kColon);

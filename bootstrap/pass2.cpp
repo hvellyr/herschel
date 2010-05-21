@@ -91,8 +91,8 @@ SecondPass::parseExport(const Token& expr)
   StringList symbols;
   Token symbolExprs = expr[expr.count() - 1];
   for (int j = 0; j < symbolExprs.count(); j++) {
-    assert(symbolExprs[j].isSymbol());
-    symbols.push_back(symbolExprs[j].idValue());
+    if (symbolExprs[j].isSymbol())
+      symbols.push_back(symbolExprs[j].idValue());
   }
 
   return new ExportNode(flags, symbols);
@@ -115,12 +115,13 @@ SecondPass::parseImport(const Token& expr)
     Token renExprs = expr[2];
     for (int i = 0; i < renExprs.count(); i++) {
       Token renExpr = renExprs[i];
-      assert(renExpr.isBinarySeq(kMapTo));
-      assert(renExpr[0].isSymbol());
-      assert(renExpr[2].isSymbol());
+      if (renExpr.isBinarySeq(kMapTo)) {
+        assert(renExpr[0].isSymbol());
+        assert(renExpr[2].isSymbol());
 
-      renames.insert(std::make_pair(
-                       renExpr[0].idValue(), renExpr[2].idValue()));
+        renames.insert(std::make_pair(
+                         renExpr[0].idValue(), renExpr[2].idValue()));
+      }
     }
   }
 

@@ -67,6 +67,7 @@ namespace heather
     case kDot:               return String(".");
     case kLiteralVectorOpen: return String("#(");
     case kLiteralArrayOpen:  return String("#[");
+    case kUnionOpen:         return String("&(");
     case kSangHash:          return String("##");
 
     case kEOF:     return String("EOF");
@@ -711,6 +712,7 @@ Token::type() const
   case kDot:
   case kLiteralVectorOpen:
   case kLiteralArrayOpen:
+  case kUnionOpen:
   case kSangHash:
   case kEOF:
   case kInvalid:
@@ -1149,6 +1151,27 @@ Token::isSymFuncall() const
 }
 
 
+bool
+Token::isConstRange() const
+{
+  if (isSeq()) {
+    const TokenVector& cc = children();
+
+    if (count() == 3) {
+      return ( (cc[1].fType == kRange || cc[1].fType == kEllipsis)
+               && cc[0].isLit() && cc[2].isLit() );
+    }
+    else if (count() == 5) {
+      return ( (cc[1].fType == kRange || cc[1].fType == kEllipsis)
+               && cc[0].isLit() && cc[2].isLit() && cc[4].isLit()
+               && cc[3].fType == kBy);
+    }
+  }
+
+  return false;
+}
+
+
 void
 Token::toPort(Port<Octet>* port) const
 {
@@ -1240,6 +1263,8 @@ public:
     assert(Token(sp, kDefId)                    == Token(sp, kDefId));
     assert(Token(sp, kRational, Rational(7, 4)) == Token(sp, kRational, Rational(7, 4)));
 
+    assert(Token(sp, kUnionOpen).type() == kPunct);
+
     assert(Token() == Token());
     assert(Token(sp, kParanOpen, kParanClose) == Token(sp, kParanOpen, kParanClose));
     assert(Token() << Token(sp, kInt, 25) == Token() << Token(sp, kInt, 25));
@@ -1252,16 +1277,46 @@ public:
     assert(Token(sp, kInt, 0x10000).intValue() == 0x10000);
     assert(Token(sp, kRational, Rational(23, 27)).rationalValue() == Rational(23, 27));
 
-    // assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
+    assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
+    assert(Token(sp, kMacroParam, String("abc")).idValue() == String("abc"));
     assert(Token(sp, kString, String("abc")).stringValue() == String("abc"));
-    // assert(Token(sp, kKeyword, String("abc")).idValue() == String("abc"));
-    // assert(Token(sp, kMacroParam, String("abc")).idValue() == String("abc"));
+    assert(Token(sp, kKeyword, String("abc")).stringValue() == String("abc"));
 
-    // assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
+    assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
+    assert(Token(sp, kMacroParam, "abc").idValue() == String("abc"));
     assert(Token(sp, kString, "abc").stringValue() == String("abc"));
-    // assert(Token(sp, kKeyword, "abc").idValue() == String("abc"));
-    // assert(Token(sp, kMacroParam, "abc").idValue() == String("abc"));
+    assert(Token(sp, kKeyword, "abc").stringValue() == String("abc"));
     assert(Token(sp, kKeyarg, "abc").isKeyArg());
+
+    
+#define MAKE_RANGE(_fromty, _fromv, _toty, _tov)  \
+    (Token() << Token(sp, _fromty, _fromv)        \
+             << Token(sp, kRange)                 \
+             << Token(sp, _toty, _tov))
+#define MAKE_RANGE_2(_fromty, _fromv, _toty, _tov, _stepty, _stepv) \
+    (Token() << Token(sp, _fromty, _fromv)                          \
+             << Token(sp, kRange)                                   \
+             << Token(sp, _toty, _tov)                              \
+             << Token(sp, kBy)                                      \
+             << Token(sp, _stepty, _stepv))
+
+    assert(MAKE_RANGE(kInt,     0,     kInt,     25).isConstRange());
+    assert(MAKE_RANGE(kReal,    0.0,   kReal,    25.0).isConstRange());
+    assert(MAKE_RANGE(kChar,    'a',   kChar,    'z').isConstRange());
+    assert(MAKE_RANGE(kBool,    false, kBool,    true).isConstRange());
+    assert(MAKE_RANGE(kString,  "a",   kString,  "z").isConstRange());
+    assert(MAKE_RANGE(kKeyword, "a",   kKeyword, "z").isConstRange());
+
+    assert(MAKE_RANGE_2(kInt,     0,     kInt,     25,   kInt,  2).isConstRange());
+    assert(MAKE_RANGE_2(kReal,    0.0,   kReal,    25.0, kReal, 0.2).isConstRange());
+    assert(MAKE_RANGE_2(kChar,    'a',   kChar,    'z',  kInt,  1).isConstRange());
+    assert(MAKE_RANGE_2(kString,  "a",   kString,  "z",  kInt,  1).isConstRange());
+    assert(MAKE_RANGE_2(kKeyword, "a",   kKeyword, "z",  kInt,  2).isConstRange());
+
+    assert(!(Token(sp, kInt, 5).isConstRange()));
+    assert(!(Token() << Token(sp, kSymbol, "abc") << Token(sp, kRange)
+             << Token(sp, kInt, 27)).isConstRange());
+
 
 #define TEST_ASSIGNOP2(_type, _value, _member)          \
     {                                                   \

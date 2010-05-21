@@ -132,6 +132,7 @@ namespace heather
     kDot,
     kLiteralVectorOpen,
     kLiteralArrayOpen,
+    kUnionOpen,
     kSangHash,
 
     // kLitExpr
@@ -296,6 +297,10 @@ namespace heather
 
     //! indicates whether the token is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;
+
+    //! indicates whether the token is a constant range (i.e. a range where
+    //! from, to, and step are constant literal values only
+    bool isConstRange() const;
 
     void toPort(Port<Octet>* port) const;
 
