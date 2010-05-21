@@ -767,6 +767,14 @@ heather::xmlEncode(const String& str)
       buffer.push_back('p');
       buffer.push_back(';');
     }
+    else if (c == '\'') {
+      buffer.push_back('&');
+      buffer.push_back('q');
+      buffer.push_back('u');
+      buffer.push_back('o');
+      buffer.push_back('t');
+      buffer.push_back(';');
+    }
     else
       buffer.push_back(c);
   }
