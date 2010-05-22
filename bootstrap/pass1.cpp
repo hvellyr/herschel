@@ -1535,6 +1535,14 @@ FirstPass::parseWhen(bool isTopLevel)
 
 
 Token
+FirstPass::parseExtend()
+{
+  // TODO
+  return Token();
+}
+
+
+Token
 FirstPass::parseVarDef(const Token& defToken, const Token& tagToken, bool isLocal)
 {
   Token keepTagToken = tagToken;
@@ -1958,7 +1966,7 @@ FirstPass::parseTop()
     return parseWhen(true);
   }
   else if (fToken == kExtendId) {
-    // TODO
+    return parseExtend();
   }
   else {
     errorf(fToken.srcpos(), E_UnexpectedToken,
