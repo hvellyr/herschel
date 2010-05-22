@@ -467,7 +467,6 @@ operatorName(OperatorType type)
   case kOpBy:           return "by";
   case kOpCompare:      return "<=>";
   case kOpDivide:       return "/";
-  case kOpEllipsis:     return "...";
   case kOpEqual:        return "==";
   case kOpExponent:     return "**";
   case kOpFold:         return "%";

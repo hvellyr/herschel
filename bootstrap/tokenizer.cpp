@@ -84,8 +84,9 @@ Tokenizer::isAlpha(Char c) const
 bool
 Tokenizer::isAlphaSpec(Char c) const
 {
-  return c == '-' || c == '_' || c == '*' || c == '+'
-    || c == '%' || c == '?' || c == '!' || c == '/';
+  return ( c == '-' || c == '_' || c == '*' || c == '+' ||
+           c == '%' || c == '?' || c == '!' || c == '/' ||
+           c == '|');
 }
 
 
@@ -99,13 +100,12 @@ Tokenizer::isSymbolChar(Char c) const
 bool
 Tokenizer::isDelimiter(Char c) const
 {
-  return isWhitespace(c) ||
-    c == '"' || c == '\'' ||
-    c == '(' || c == ')' ||
-    c == '[' || c == ']' ||
-    c == '{' || c == '}' ||
-    c == '.' || c == ',' || c == ';' || c == '#' || c == '@' ||
-    c == '|';
+  return ( isWhitespace(c) ||
+           c == '"' || c == '\'' ||
+           c == '(' || c == ')' ||
+           c == '[' || c == ']' ||
+           c == '{' || c == '}' ||
+           c == '.' || c == ',' || c == ';' || c == '#' || c == '@' );
 }
 
 
@@ -1123,15 +1123,11 @@ public:
                     String("n.n."));
 
       try {
-        assert(tnz.nextToken() == Token(sp, String("io")));
-        assert(tnz.nextToken() == Token(sp, kPipe));
-        assert(tnz.nextToken() == Token(sp, String("File")));
+        assert(tnz.nextToken() == Token(sp, String("io|File")));
 
         assert(tnz.nextToken() == Token(sp, String("self")));
         assert(tnz.nextToken() == Token(sp, kDot));
-        assert(tnz.nextToken() == Token(sp, String("io")));
-        assert(tnz.nextToken() == Token(sp, kPipe));
-        assert(tnz.nextToken() == Token(sp, String("val")));
+        assert(tnz.nextToken() == Token(sp, String("io|val")));
         assert(tnz.nextToken() == Token(sp, kDot));
         assert(tnz.nextToken() == Token(sp, String("display")));
 
