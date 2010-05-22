@@ -33,7 +33,7 @@ SecondPass::parseTopExprlist(AptNode* rootNode, const Token& expr)
     Ptr<AptNode> targetNode = ( !fLastModules.empty()
                                 ? fLastModules.front().obj()
                                 : rootNode );
-    
+
     Ptr<AptNode> n = parseExpr(*it);
     if (n != NULL)
       targetNode->appendNode(n);
@@ -81,7 +81,7 @@ SecondPass::parseExport(const Token& expr)
   assert(expr.isSeq() && expr.count() >= 2);
   assert(expr[0] == kExportId);
   assert(expr[expr.count() - 1].isNested());
-  
+
   StringList flags;
   for (int i = 1; i < expr.count() - 1; i++) {
     assert(expr[i].isSymbol());

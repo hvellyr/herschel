@@ -1534,7 +1534,33 @@ FirstPass::parseWhen(bool isTopLevel)
 Token
 FirstPass::parseExtend()
 {
-  // TODO
+  assert(fToken == kExtendId);
+  Token extendToken = fToken;
+  nextToken();
+
+  if (fToken != kModuleId) {
+    errorf(fToken.srcpos(), E_UnexpectedToken, "expected 'module'");
+    return scanUntilTopExprAndResume();
+  }
+
+  Token moduleToken = fToken;
+  nextToken();
+
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+    return scanUntilTopExprAndResume();
+  }
+
+  Token modNameToken = fToken;
+  nextToken();
+
+  if (fToken == kBraceOpen) {
+    Token code = parseTopOrExprList(true);
+    if (code.isSet())
+      return Token() << extendToken << moduleToken
+                     << modNameToken << code;
+  }
+
   return Token();
 }
 
