@@ -24,6 +24,7 @@ namespace heather
     E_MissingBracketClose = 0x0007,
     E_MissingGenericClose = 0x0008,
     E_GenericTypeList     = 0x0009,
+    E_UnexpectedEOF       = 0x000a,
 
     E_SymbolExpected      = 0x1001,
     E_StringExpected      = 0x1002,
