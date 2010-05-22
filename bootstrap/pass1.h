@@ -67,6 +67,7 @@ namespace heather
     Token parseUnionType();
     Token parseGroupType();
     Token parseFunctionType();
+    Token parseFunctionSignature();
     Token parseQuotedType();
     Token parseArrayExtend(const Token& baseType);
     Token parseConstraintExtend(const Token& baseType);

@@ -953,11 +953,11 @@ def generic before-open(self @@ Document) : Bool
 @node Method reification,  , Method lookup, Functions
 @section Explicit Method Reification
 
-Normaly methods are implemented in a very general; i.e.@ special
-implementation for different types are normaly avoided to prevent code
-duplication.  In most cases functions can be written in a very general
-way in heather.  This could lead to suboptimal performance since the
-compiler can't generate code optimized for special type properties.
+Normaly methods should be implemented in a very general way, i.e.@
+special implementations for different types are normaly avoided to
+prevent code duplication.  This could lead however sometimes to
+suboptimal performance since the compiler can't generate code
+optimized for special type properties.
 
 For example:
 
@@ -986,12 +986,12 @@ arrays access however for the expressions @code{one[i]} or @code{two[i]}
 -- since it can't assume @code{one} or @code{two} being arrays.
 
 @deffn Special reify
-The @code{reify} extension to method definition can be used to hint the
+The @code{reify} clauses on method definitions can be used to hint the
 compiler to treat the method declaration as if it would have been
 declared in addition to the explicitly written form also with the
-signatures listed by the @code{reify} extension.
+signatures listed by the @code{reify} clause.
 
-The @code{reify} extension as the form:
+The @code{reify} extension has the form:
 
 @example
 def @var{name}(@var{function-parameters}) : @var{return-type}
