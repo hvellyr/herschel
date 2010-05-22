@@ -112,6 +112,8 @@ namespace heather
     bool parseFunctionsParams(TokenVector* exprlist);
 
     Token parseWhen(bool isTopLevel);
+    Token parseExtend();
+
 
     Token evaluateConfigExpr(const Token& initExpr);
 
