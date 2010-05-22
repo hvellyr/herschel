@@ -769,10 +769,10 @@ heather::xmlEncode(const String& str)
     }
     else if (c == '\'') {
       buffer.push_back('&');
-      buffer.push_back('q');
-      buffer.push_back('u');
+      buffer.push_back('a');
+      buffer.push_back('p');
       buffer.push_back('o');
-      buffer.push_back('t');
+      buffer.push_back('s');
       buffer.push_back(';');
     }
     else
