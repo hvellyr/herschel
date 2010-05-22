@@ -1,0 +1,11 @@
+
+def generic f(a @ 'T) : 'T
+    reify Function(a @ Octet) : Octet,
+          Function(a @ Bool) : Bool
+  a
+
+def generic put(value @ 'V, key @ 'K) : ('V, 'T)
+    reify Function(value @ 'V, key @ String) : ('V, String)
+    where V isa Serializable,
+          K >= 0
+  #[value, key]

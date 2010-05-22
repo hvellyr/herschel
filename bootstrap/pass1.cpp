@@ -1708,7 +1708,39 @@ FirstPass::parseWhereClause()
 Token
 FirstPass::parseReifyClause()
 {
-  // TODO
+  assert(fToken == kReifyId);
+  Token reifyToken = fToken;
+
+  nextToken();
+
+  TokenVector funcDefs;
+  Token delayedCommaToken;
+
+  for ( ; ; ) {
+    if (fToken == kEOF) {
+      errorf(fToken.srcpos(), E_UnexpectedEOF, "unexpected eof while scanning 'reify' clause");
+      return Token();
+    }
+
+    Token funcDefExpr = parseTypeSpec(false);
+    if (funcDefExpr.isSet()) {
+      if (delayedCommaToken.isSet()) {
+        funcDefs.push_back(delayedCommaToken);
+        delayedCommaToken = Token();
+      }
+      funcDefs.push_back(funcDefExpr);
+    }
+
+    if (fToken == kComma) {
+      delayedCommaToken = fToken;
+      nextToken();
+    }
+    else
+      break;
+  }
+
+  if (!funcDefs.empty())
+    return Token() << reifyToken << funcDefs;
   return Token();
 }
 
@@ -1730,7 +1762,6 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
   if (parseFunctionsParams(&params)) {
     Token colonToken;
     Token returnType;
-    Token reifyToken;
     Token reifyClause;
     Token whereClause;
 
@@ -1744,11 +1775,8 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       returnType = Token(fToken.srcpos(), kSymbol, "Any");
     }
 
-    if (fToken == kReifyId) {
-      reifyToken = fToken;
-      nextToken();
+    if (fToken == kReifyId)
       reifyClause = parseReifyClause();
-    }
 
     if (fToken == kWhereId)
       whereClause = parseWhereClause();
@@ -1774,8 +1802,8 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
     if (colonToken.isSet())
       result << colonToken << returnType;
 
-    if (reifyToken.isSet())
-      result << reifyToken << reifyClause;
+    if (reifyClause.isSet())
+      result << reifyClause;
 
     if (whereClause.isSet())
       result << whereClause;
