@@ -515,7 +515,7 @@ Token
 FirstPass::parseTypeSpec(bool onlyNestedConstraints)
 {
   if (fToken == kSymbol) {
-    return ( onlyNestedConstraints 
+    return ( onlyNestedConstraints
              ? parseArrayExtend(parseSimpleType())
              : parseConstraintExtend(parseArrayExtend(parseSimpleType())) );
   }
@@ -1200,10 +1200,10 @@ FirstPass::parseAtomicExpr()
     }
 
   case kLiteralVectorOpen:
-    return parseLiteralVector();
+    return parseAccess(parseLiteralVector());
 
   case kLiteralArrayOpen:
-    return parseLiteralArray();
+    return parseAccess(parseLiteralArray());
 
   case kParanOpen:
     nextToken();
@@ -1246,16 +1246,14 @@ FirstPass::makeBinaryToken(const Token& expr1, OperatorType op1,
 {
   if (op1 == kOpAssign)
     return makeAssignToken(expr1, expr2, op1Srcpos);
-  else if ( (op1 == kOpRange || op1 == kOpEllipsis) &&
-            expr2.isBinarySeq(kBy) ) {
+  else if ( op1 == kOpRange && expr2.isBinarySeq(kBy) ) {
     return Token() << expr1
                    << Token(op1Srcpos, operatorToTokenType(op1))
                    << expr2[0]
                    << expr2[1]
                    << expr2[2];
   }
-  else if ( op1 == kOpBy && ( expr1.isBinarySeq(kRange) ||
-                              expr1.isBinarySeq(kEllipsis) )) {
+  else if (op1 == kOpBy && expr1.isBinarySeq(kRange)) {
     return Token() << expr1[0]
                    << expr1[1]
                    << expr1[2]
@@ -1298,7 +1296,6 @@ FirstPass::weightOperator(OperatorType op1) const
   case kOpIn:             return  50;
 
   case kOpRange:
-  case kOpEllipsis:
   case kOpBy:
   case kOpAppend:         return  60;
 
@@ -1801,18 +1798,24 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 
     SrcPos bodyPos = fToken.srcpos();
     Token body;
-    if (isLocal) {
-      body = parseExpr();
-      if (!body.isSet()) {
-        errorf(bodyPos, E_MissingBody, "expected function body");
-        return Token();
-      }
+    if (fToken == kEllipsis) {
+      body = fToken;
+      nextToken();
     }
     else {
-      TokenVector bodyExprs;
-      parseExprListUntilBrace(&bodyExprs, !isLocal, isLocal);
+      if (isLocal) {
+        body = parseExpr();
+        if (!body.isSet()) {
+          errorf(bodyPos, E_MissingBody, "expected function body");
+          return Token();
+        }
+      }
+      else {
+        TokenVector bodyExprs;
+        parseExprListUntilBrace(&bodyExprs, !isLocal, isLocal);
 
-      body = Token(bodyPos, kBraceOpen, kBraceClose) << bodyExprs;
+        body = Token(bodyPos, kBraceOpen, kBraceClose) << bodyExprs;
+      }
     }
 
     result << ( Token(paranOpenToken.srcpos(), kParanOpen, kParanClose)

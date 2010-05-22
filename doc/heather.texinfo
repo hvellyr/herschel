@@ -2379,39 +2379,26 @@ Numerical negate; returns the @var{op1} with changed sign.
 @section Ranges and Slices
 
 @findex ..
-@findex ... @r{(range operator)}
 @findex by
 
-Basic ranges are exclusive, so the range [5, 100) is written as:
-
-@example
-5 .. 100
-@end example
-
-Whereas [5, 100] is written as:
-
-@example
-5 ... 100
-@end example
+Basic ranges are inclusive, so the expression @code{5 .. 100} denotes
+the range [5, 100].
 
 Give the step parameter:
 
 @example
 5 .. 100 by 5
-@result{} 5, 10, 15, ..., 95
+@result{} 5, 10, 15, ..., 100
 @end example
 
 Ranges are used for instance to slice vectors and strings:
 
 @example
 "hello world"[3 .. 6]
-@result{} "lo "
-
-"hello world"[3 ... 6]
 @result{} "lo w"
 
-"hello world"[3 .. 8 by 2]
-@result{} "l o"
+#(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31)[3 .. 6 by 2]
+@result{} #(7, 13, 19)
 @end example
 
 

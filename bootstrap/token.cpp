@@ -1158,17 +1158,53 @@ Token::isConstRange() const
     const TokenVector& cc = children();
 
     if (count() == 3) {
-      return ( (cc[1].fType == kRange || cc[1].fType == kEllipsis)
-               && cc[0].isLit() && cc[2].isLit() );
+      return ( cc[1].fType == kRange && cc[0].isLit() && cc[2].isLit() );
     }
     else if (count() == 5) {
-      return ( (cc[1].fType == kRange || cc[1].fType == kEllipsis)
+      return ( cc[1].fType == kRange
                && cc[0].isLit() && cc[2].isLit() && cc[4].isLit()
                && cc[3].fType == kBy);
     }
   }
 
   return false;
+}
+
+
+bool
+Token::isQualifiedId() const
+{
+  if (fType != kSymbol)
+    throw NotSupportedException(__FUNCTION__);
+  return idValue().indexOf('|') != -1;
+}
+
+
+String
+Token::baseName() const
+{
+  if (fType != kSymbol)
+    throw NotSupportedException(__FUNCTION__);
+
+  String str = idValue();
+  int idx = str.lastIndexOf('|');
+  if (idx >= 0)
+    return str.part(idx + 1, str.length());
+  return str;
+}
+
+
+String
+Token::nsName() const
+{
+  if (fType != kSymbol)
+    throw NotSupportedException(__FUNCTION__);
+
+  String str = idValue();
+  int idx = str.lastIndexOf('|');
+  if (idx >= 0)
+    return str.part(0, idx);
+  return String();
 }
 
 
@@ -1351,6 +1387,28 @@ public:
       assert(t.tokenType() == kReal &&
              t.realValue() == 12.345 &&
              t.isImaginary());
+    }
+
+
+    {
+      Token t = Token(sp, kSymbol, "File");
+      assert(!t.isQualifiedId());
+      assert(t.baseName() == String("File"));
+      assert(t.nsName() == String());
+    }
+
+    {
+      Token t = Token(sp, kSymbol, "io|File");
+      assert(t.isQualifiedId());
+      assert(t.baseName() == String("File"));
+      assert(t.nsName() == String("io"));
+    }
+
+    {
+      Token t = Token(sp, kSymbol, "core|rubitz|packs|Package");
+      assert(t.isQualifiedId());
+      assert(t.baseName() == String("Package"));
+      assert(t.nsName() == String("core|rubitz|packs"));
     }
   }
 };

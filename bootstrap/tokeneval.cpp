@@ -499,8 +499,6 @@ TokenEvalContext::evalBinaryToken(const Token& lexpr,
   case kOpAppend:
     return evalAppend(lexpr, rexpr);
 
-  case kOpEllipsis:
-    // TODO
   case kOpRange:
     // TODO
   case kOpBy:

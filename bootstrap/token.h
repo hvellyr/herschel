@@ -34,7 +34,6 @@ namespace heather
     kOpBy,
     kOpCompare,
     kOpDivide,
-    kOpEllipsis,
     kOpEqual,
     kOpExponent,
     kOpFold,
@@ -305,6 +304,11 @@ namespace heather
     void toPort(Port<Octet>* port) const;
 
     String toString() const;
+
+
+    bool isQualifiedId() const;
+    String baseName() const;
+    String nsName() const;
 
   private:
     void unshare();
