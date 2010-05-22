@@ -447,11 +447,8 @@ FirstPass::parseConstraintExtend(const Token& baseType)
 
 
 Token
-FirstPass::parseFunctionType()
+FirstPass::parseFunctionSignature()
 {
-  Token funcToken = fToken;
-  nextToken();
-
   if (fToken != kParanOpen) {
     errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
     return scanUntilTopExprAndResume();
@@ -473,11 +470,24 @@ FirstPass::parseFunctionType()
       returnType = Token(fToken.srcpos(), kSymbol, "Any");
     }
 
-    return Token() << funcToken
-                   << ( Token(posp, kParanOpen, kParanClose)
+    return Token() << ( Token(posp, kParanOpen, kParanClose)
                         << params )
                    << colonToken << returnType;
   }
+  return Token();
+}
+
+
+Token
+FirstPass::parseFunctionType()
+{
+  Token funcToken = fToken;
+  nextToken();
+
+  Token signature = parseFunctionSignature();
+  if (signature.isSet())
+    return Token() << funcToken
+                   << signature.children();
   return Token();
 }
 
@@ -1722,7 +1732,7 @@ FirstPass::parseReifyClause()
       return Token();
     }
 
-    Token funcDefExpr = parseTypeSpec(false);
+    Token funcDefExpr = parseFunctionSignature();
     if (funcDefExpr.isSet()) {
       if (delayedCommaToken.isSet()) {
         funcDefs.push_back(delayedCommaToken);
