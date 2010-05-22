@@ -1,0 +1,5 @@
+def f(self, 
+      proc = function(item : Item) {
+               item
+             })
+  self.for-each(proc)

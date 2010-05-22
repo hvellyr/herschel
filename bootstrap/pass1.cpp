@@ -788,7 +788,7 @@ FirstPass::parseOn()
     if (parseFunctionsParams(&params)) {
       Token body = parseExpr();
 
-      if (!ignoreStmt)
+      if (!ignoreStmt && body.isSet())
         return Token() << tagToken << keyToken
                        << ( Token(posp, kParanOpen, kParanClose)
                             << params )
@@ -805,9 +805,38 @@ FirstPass::parseOn()
 Token
 FirstPass::parseAnonFun()
 {
+  Token funcToken = fToken;
   nextToken();
-  // TODO
 
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    return scanUntilTopExprAndResume();
+  }
+
+  SrcPos posp = fToken.srcpos();
+  TokenVector params;
+  if (parseFunctionsParams(&params)) {
+    Token colonToken;
+    Token returnType;
+
+    if (fToken == kColon) {
+      colonToken = fToken;
+      nextToken();
+      returnType = parseTypeSpec(true);
+    }
+    else {
+      colonToken = Token(fToken.srcpos(), kColon);
+      returnType = Token(fToken.srcpos(), kSymbol, "Any");
+    }
+
+    Token body = parseExpr();
+    if (body.isSet())
+      return Token() << funcToken
+                     << ( Token(posp, kParanOpen, kParanClose)
+                          << params )
+                     << colonToken << returnType
+                     << body;
+  }
   return Token();
 }
 
