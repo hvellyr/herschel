@@ -134,6 +134,8 @@ namespace heather
                        Token& result,
                        bool skipFirst = true);
 
+    bool isConstraintOperator(const Token& token) const;
+
     //-------- data members
     Ptr<Parser> fParser;
     Token       fToken;

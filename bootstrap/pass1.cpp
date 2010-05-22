@@ -413,12 +413,19 @@ FirstPass::parseArrayExtend(const Token& baseType)
 }
 
 
+bool
+FirstPass::isConstraintOperator(const Token& token) const
+{
+  return  (token == kEqual   || token == kUnequal   || token == kLess ||
+           token == kGreater || token == kLessEqual || token == kGreaterEqual ||
+           token == kIn      || token == kIsa);
+}
+
+
 Token
 FirstPass::parseConstraintExtend(const Token& baseType)
 {
-  if (fToken == kEqual || fToken == kUnequal || fToken == kLess ||
-      fToken == kGreater || fToken == kLessEqual || fToken == kGreaterEqual ||
-      fToken == kCompare || fToken == kIn)
+  if (isConstraintOperator(fToken))
   {
     Token op = fToken;
     nextToken();
@@ -1661,22 +1668,39 @@ FirstPass::parseCharDef(const Token& defToken)
 Token
 FirstPass::parseWhereClause()
 {
-// generics-const  := `where' constraint-expr { `,' constraint-expr }
+  assert(fToken == kWhereId);
 
-// constraint-expr := type-constraint | logic-const | group-const
+  Token whereToken = fToken;
+  nextToken();
 
-// type-constraint := subtype-const | sign-constraint
-// subtype-const   := type-id subtype-op const-expr
-// subtype-op      := COMPARE-OP
-// const-expr      := expression
-// sign-constraint := type-id `isa' type-clause
+  TokenVector constraints;
+  Token delayedCommaToken;
 
-// logic-const     := constraint-expr constraint-op constraint-expr
-// constraint-op   := `and' | `or'
+  for ( ; ; ) {
+    if (fToken == kEOF) {
+      errorf(fToken.srcpos(), E_UnexpectedEOF, "unexpected eof while scanning 'where' clause");
+      return Token();
+    }
 
-// group-const     := `(' constraint-expr `)'
+    Token constrExpr = parseExpr();
+    if (constrExpr.isSet()) {
+      if (delayedCommaToken.isSet()) {
+        constraints.push_back(delayedCommaToken);
+        delayedCommaToken = Token();
+      }
+      constraints.push_back(constrExpr);
+    }
 
-  // TODO
+    if (fToken == kComma) {
+      delayedCommaToken = fToken;
+      nextToken();
+    }
+    else
+      break;
+  }
+
+  if (!constraints.empty())
+    return Token() << whereToken << constraints;
   return Token();
 }
 
@@ -1708,7 +1732,6 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
     Token returnType;
     Token reifyToken;
     Token reifyClause;
-    Token whereToken;
     Token whereClause;
 
     if (fToken == kColon) {
@@ -1727,11 +1750,8 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       reifyClause = parseReifyClause();
     }
 
-    if (fToken == kWhereId) {
-      whereToken = fToken;
-      nextToken();
+    if (fToken == kWhereId)
       whereClause = parseWhereClause();
-    }
 
     SrcPos bodyPos = fToken.srcpos();
     Token body;
@@ -1757,8 +1777,8 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
     if (reifyToken.isSet())
       result << reifyToken << reifyClause;
 
-    if (whereToken.isSet())
-      result << whereToken << whereClause;
+    if (whereClause.isSet())
+      result << whereClause;
 
     result << body;
 
