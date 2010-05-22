@@ -442,7 +442,35 @@ FirstPass::parseConstraintExtend(const Token& baseType)
 Token
 FirstPass::parseFunctionType()
 {
-  // TODO
+  Token funcToken = fToken;
+  nextToken();
+
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    return scanUntilTopExprAndResume();
+  }
+
+  SrcPos posp = fToken.srcpos();
+  TokenVector params;
+  if (parseFunctionsParams(&params)) {
+    Token colonToken;
+    Token returnType;
+
+    if (fToken == kColon) {
+      colonToken = fToken;
+      nextToken();
+      returnType = parseTypeSpec(true);
+    }
+    else {
+      colonToken = Token(fToken.srcpos(), kColon);
+      returnType = Token(fToken.srcpos(), kSymbol, "Any");
+    }
+
+    return Token() << funcToken
+                   << ( Token(posp, kParanOpen, kParanClose)
+                        << params )
+                   << colonToken << returnType;
+  }
   return Token();
 }
 
