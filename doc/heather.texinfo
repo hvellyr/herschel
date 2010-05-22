@@ -4475,7 +4475,7 @@ defined.}
 
 @sp 1
 
-Characters names are not defined by the language but defined with the
+Character names are not defined by the language but defined with the
 @code{def char} expression:
 
 @deffn Special {def char}
