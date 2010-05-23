@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-from __future__ import with_statement
+#!/usr/bin/env python2.5
 
 from optparse import OptionParser
 import xml.dom.minidom as minidom
@@ -107,9 +105,12 @@ class TestRunner:
         expected_file = path + "_" + passid + ".expsynerr"
 
         if os.path.isfile(expected_file):
-            with open(expected_file, "rb") as fd:
+            try:
+                fd = open(expected_file, "rb")
                 expected_lines = fd.read().split('\n')
-                return expected_lines
+            finally:
+                fd.close()
+            return expected_lines
         return []
 
 
