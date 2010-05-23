@@ -18,7 +18,7 @@ $(testtemp_dir):
 	@if [ ! -d "$@" ]; then mkdir $@; fi
 
 syntax-tests:
-	python runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather syntax/ 
+	python2.5 runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather syntax/ 
 
 
 
