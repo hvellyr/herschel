@@ -56,6 +56,7 @@ namespace heather
     Token parseFunctionDef(const Token& defToken, const Token& tagToken, 
                            const Token& symToken, bool isLocal);
     Token parseFunctionOrVarDef(const Token& defToken, bool isLocal);
+    Token parseSimpleLoop(const Token& inToken);
 
     Token parseExpr();
     Token parseAtomicExpr();

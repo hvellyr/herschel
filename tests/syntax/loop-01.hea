@@ -1,0 +1,15 @@
+def f(i) 
+  while (i < 100)
+    i.incr!
+  
+
+def g(j)
+  until (j > 100)
+    j.incr!
+
+
+def h()
+  while (true)
+    until (false)
+      outln("hello world!")
+
