@@ -1,0 +1,13 @@
+def f(i) 
+  while (i < 100)
+    i.incr!
+  else
+    0
+
+def g(j)
+  until (j > 100)
+    j.incr!
+  else
+    while (n > 0)
+      n.decr!
+
