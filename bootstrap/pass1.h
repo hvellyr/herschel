@@ -136,6 +136,7 @@ namespace heather
                        bool hasSeparator,
                        ErrCodes errorCode,
                        Token& result,
+                       const char* ctx,
                        bool skipFirst = true);
 
     bool isConstraintOperator(const Token& token) const;

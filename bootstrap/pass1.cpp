@@ -76,6 +76,7 @@ FirstPass::parseSequence(ParseFunctor functor,
                          bool hasSeparator,
                          ErrCodes errorCode,
                          Token& result,
+                         const char* ctx,
                          bool skipFirst)
 {
   SrcPos startPos = fToken.srcpos();
@@ -105,7 +106,7 @@ FirstPass::parseSequence(ParseFunctor functor,
       }
       else if (fToken != endToken)
         error(fToken.srcpos(), errorCode,
-              (StringBuffer() << "expected '"
+              (StringBuffer() << ctx << ": expected '"
                << Token(SrcPos(), endToken).toString() << "' or ','").toString());
     }
   }
@@ -115,12 +116,13 @@ FirstPass::parseSequence(ParseFunctor functor,
   }
   else {
     error(fToken.srcpos(), errorCode,
-          (StringBuffer() << "expected '"
+          (StringBuffer() << ctx << ": expected '"
            << Token(SrcPos(), endToken).toString() << "'").toString());
 
     if (startToken != kInvalid && startPos != fToken.srcpos())
       error(startPos, errorCode,
-            (StringBuffer() << "beginning '" << Token(SrcPos(), startToken).toString()
+            (StringBuffer() << ctx << ": beginning '"
+             << Token(SrcPos(), startToken).toString()
              << "' was here").toString());
     scanUntilTopExprAndResume();
   }
@@ -195,7 +197,8 @@ FirstPass::parseModule(bool isModule)
       Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
       parseSequence(ModuleParser(),
                     kBraceOpen, kBraceClose, false, E_MissingBraceClose,
-                    defines);
+                    defines,
+                    "module-body");
       modExpr << defines;
     }
   }
@@ -247,7 +250,8 @@ FirstPass::parseExport()
   Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
   parseSequence(ExportParser(),
                 kParanOpen, kParanClose, true, E_BadParameterList,
-                symbols);
+                symbols,
+                "export-symbols");
 
   expr << symbols;
 
@@ -314,7 +318,8 @@ FirstPass::parseImport()
 
     parseSequence(ImportRenameParser(),
                   kParanOpen, kParanClose, true, E_BadParameterList,
-                  renames);
+                  renames,
+                  "import-renames");
 
     expr << renames;
   }
@@ -347,7 +352,8 @@ FirstPass::parseSimpleType()
     Token generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
     parseSequence(TypeParser(),
                   kGenericOpen, kGenericClose, true, E_GenericTypeList,
-                  generics);
+                  generics,
+                  "type-params");
     return Token() << typeName << generics;
   }
 
@@ -366,7 +372,8 @@ FirstPass::parseGroupType()
   Token nested = Token(fToken.srcpos(), kParanOpen, kParanClose);
   parseSequence(TypeParser(),
                 kParanOpen, kParanClose, true, E_BadParameterList,
-                nested);
+                nested,
+                "group-type");
 
   return nested;
 }
@@ -378,7 +385,8 @@ FirstPass::parseUnionType()
   Token nested = Token(fToken.srcpos(), kUnionOpen, kParanClose);
   parseSequence(TypeParser(),
                 kUnionOpen, kParanClose, true, E_BadParameterList,
-                nested);
+                nested,
+                "union-type");
   return nested;
 }
 
@@ -550,22 +558,42 @@ struct heather::LiteralVectorParser
   {
     Token expr = pass->parseExpr();
 
-    if (fIsFirst) {
-      if (expr.isBinarySeq(kMapTo))
-        fIsDict = true;
-      result << expr;
-      fIsFirst = false;
+    if (!expr.isSet()) {
+      pass->scanUntilNextParameter();
     }
-    else if (fIsDict) {
-      if (!expr.isBinarySeq(kMapTo))
-        errorf(expr.srcpos(), E_InconsistentArgs,
-               "For literal dictionaries all elements must be '->' pairs");
-      else
-        result << expr;
-    }
-    else if (expr.isSet())
-      result << expr;
+    else {
+      if (pass->fToken == kMapTo) {
+        if (fIsFirst)
+          fIsDict = true;
+        else if (!fIsDict) {
+          errorf(pass->fToken.srcpos(), E_InconsistentArgs,
+                 "For literal dictionaries all elements must be '->' pairs");
+          pass->scanUntilNextParameter();
+          return true;
+        }
 
+        Token mapToken = pass->fToken;
+        pass->nextToken();
+
+        Token toValue = pass->parseExpr();
+        if (!toValue.isSet()) {
+          errorf(mapToken.srcpos(), E_MissingRHExpr,
+                 "'->' requires a second expression");
+          pass->scanUntilNextParameter();
+        }
+        else
+          result << ( Token() << expr << mapToken << toValue );
+      }
+      else {
+        if (fIsDict)
+          errorf(expr.srcpos(), E_InconsistentArgs,
+                 "For literal dictionaries all elements must be '->' pairs");
+        else
+          result << expr;
+      }
+    }
+
+    fIsFirst = false;
     return true;
   }
 
@@ -580,7 +608,8 @@ FirstPass::parseLiteralVector()
   Token nested = Token(fToken.srcpos(), kLiteralVectorOpen, kParanClose);
   parseSequence(LiteralVectorParser(),
                 kLiteralVectorOpen, kParanClose, true, E_BadParameterList,
-                nested);
+                nested,
+                "literal-vector");
   return nested;
 }
 
@@ -609,7 +638,8 @@ FirstPass::parseLiteralArray()
   Token array = Token(fToken.srcpos(), kLiteralArrayOpen, kBracketClose);
   parseSequence(LiteralArrayParser(),
                 kLiteralArrayOpen, kBracketClose, true, E_BadParameterList,
-                array);
+                array,
+                "literal-array");
   return array;
 }
 
@@ -773,7 +803,8 @@ FirstPass::parseFunctionsParams(TokenVector* exprlist)
   Token params;
   parseSequence(ParseFuncParamsParser(),
                 kParanOpen, kParanClose, true, E_BadParameterList,
-                params);
+                params,
+                "func-params");
 
   if (params.isSeq()) {
     *exprlist = params.children();
@@ -914,7 +945,7 @@ FirstPass::parseFuncallArgs(TokenVector* argsVector)
   Token args;
   parseSequence(FuncallArgsParser(),
                 kParanOpen, kParanClose, true, E_BadParameterList,
-                args, false);
+                args, "funcall-args", false);
 
   if (args.isSeq())
     *argsVector = args.children();
