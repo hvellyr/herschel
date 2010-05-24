@@ -1185,7 +1185,28 @@ FirstPass::parseUnaryOp(const Token& inOpToken)
 }
 
 
-struct heather::SelectPatternParser
+class heather::BasePatternParser
+{
+protected:
+  TokenVector parseConsequent(FirstPass* pass)
+  {
+    TokenVector result;
+
+    assert(pass->fToken == kMapTo);
+    Token mapToToken = pass->fToken;
+    pass->nextToken();
+
+    Token body = pass->parseExpr();
+    if (body.isSet()) {
+      result.push_back(mapToToken);
+      result.push_back(body);
+    }
+    return result;
+  }
+};
+
+
+struct heather::SelectPatternParser : public BasePatternParser
 {
   SelectPatternParser()
     : fOtherwiseSeen(false)
@@ -1251,23 +1272,6 @@ struct heather::SelectPatternParser
     return true;
   }
 
-
-  TokenVector parseConsequent(FirstPass* pass)
-  {
-    TokenVector result;
-
-    assert(pass->fToken == kMapTo);
-    Token mapToToken = pass->fToken;
-    pass->nextToken();
-
-    Token body = pass->parseExpr();
-    if (body.isSet()) {
-      result.push_back(mapToToken);
-      result.push_back(body);
-    }
-    return result;
-  }
-
   bool fOtherwiseSeen;
 };
 
@@ -1301,6 +1305,86 @@ FirstPass::parseSelect()
 
   return Token() << selectToken << ( Token(paranPos, kParanOpen, kParanClose)
                                      << args )
+                 << patterns;
+}
+
+
+struct heather::MatchPatternParser : public BasePatternParser
+{
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    if (pass->fToken != kSymbol) {
+      errorf(pass->fToken.srcpos(), E_SymbolExpected,
+             "variable name expected");
+      pass->scanUntilBrace();
+      return false;
+    }
+    Token varToken = pass->fToken;
+    pass->nextToken();
+
+    if (pass->fToken != kColon) {
+      errorf(pass->fToken.srcpos(), E_ColonExpected,
+             "match pattern require a type specification");
+      pass->scanUntilBrace();
+      return false;
+    }
+    Token colonToken = pass->fToken;
+    pass->nextToken();
+
+    Token matchType = pass->parseTypeSpec(true);
+    if (!matchType.isSet()) {
+      pass->scanUntilBrace();
+      return false;
+    }
+
+    if (pass->fToken != kMapTo) {
+      errorf(pass->fToken.srcpos(), E_BadPatternList,
+             "expected '->'");
+      pass->scanUntilBrace();
+      return false;
+    }
+
+    TokenVector consq = parseConsequent(pass);
+    if (varToken.isSet() && colonToken.isSet() &&
+        matchType.isSet() && !consq.empty())
+      result << ( Token()
+                  << ( Token() << varToken << colonToken << matchType )
+                  << consq );
+
+    return true;
+  }
+};
+
+
+Token
+FirstPass::parseMatch()
+{
+  assert(fToken == kMatchId);
+  Token matchToken = fToken;
+  nextToken();
+
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    return scanUntilTopExprAndResume();
+  }
+  SrcPos paranPos = fToken.srcpos();
+  nextToken();
+
+  TokenVector args;
+  parseFuncallArgs(&args);
+
+  if (fToken != kBraceOpen) {
+    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+    return scanUntilTopExprAndResume();
+  }
+
+  Token patterns = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
+  parseSequence(MatchPatternParser(),
+                kBraceOpen, kBraceClose, false, E_BadPatternList,
+                patterns, "match-pattern");
+
+  return Token() << matchToken << ( Token(paranPos, kParanOpen, kParanClose)
+                                    << args )
                  << patterns;
 }
 
@@ -1375,16 +1459,16 @@ FirstPass::parseAtomicExpr()
   case kMinus:                  // unary negate
     return parseUnaryOp(fToken);
 
-  case kSelectId:
-    return parseSelect();
   case kUntilId:
   case kWhileId:
     return parseSimpleLoop(fToken);
   case kWhenId:
     return parseWhen(false);
-  case kForId:
-    // TODO
+  case kSelectId:
+    return parseSelect();
   case kMatchId:
+    return parseMatch();
+  case kForId:
     // TODO
     break;
 

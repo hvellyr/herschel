@@ -42,6 +42,8 @@ namespace heather
     friend struct TypeParser;
     friend struct FuncallArgsParser;
     friend struct SelectPatternParser;
+    friend struct MatchPatternParser;
+    friend class BasePatternParser;
 
     Token parseTop();
     Token parseModule(bool isModule);
@@ -57,6 +59,8 @@ namespace heather
                            const Token& symToken, bool isLocal);
     Token parseFunctionOrVarDef(const Token& defToken, bool isLocal);
     Token parseSelect();
+    Token parseMatch();
+
     Token parseSimpleLoop(const Token& inToken);
 
     Token parseExpr();
