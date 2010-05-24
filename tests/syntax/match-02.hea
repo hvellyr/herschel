@@ -1,0 +1,8 @@
+def remove!(self @ List<'T>, elt @ 'T) : List<'T>
+  match (self.index-of(elt)) {
+    e : Bool      -> self
+    idx : Ordinal -> {
+                       self.remove-at!(idx)
+                       self
+                     }
+  }

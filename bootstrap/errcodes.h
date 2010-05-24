@@ -75,6 +75,7 @@ namespace heather
     // select, match
     E_BadPatternList      = 0xa401,
     E_RedefinedPattern    = 0xa402,
+    E_ColonExpected       = 0xa403,
   };
 };
 
