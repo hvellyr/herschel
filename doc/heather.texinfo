@@ -1728,7 +1728,7 @@ def enum MidiController : (Ordinal in 0 .. 127)
 
 def set-clip-details(self @@ Clip,
                      color @@ Colors, mctrl @@ MidiController)
-  switch (mctrl) @{
+  select (mctrl) @{
     MidiController.bank-select -> ...
     MidiController.modulation -> ...
     MidiController.breath -> ...
@@ -2620,6 +2620,19 @@ value of the complete @code{select} expression.  If none of the tests
 succeed the @var{alternate} expression to the (optional)
 @code{otherwise} is evaluated.  If there's no @code{otherwise} case the
 return value of the @code{select} expression is @code{unspecified}.
+
+If multiple test values should lead to the same consequent they can be
+given as comma separated values:
+
+@example
+select (a) @{
+1, 2, 3 -> ...
+@}
+@end example
+
+The @var{comparator} is a two-parameter function returning a boolean.
+It is called with the @var{antecedent} as first argument.  In case of
+multiple test values it is called for each value.
 
 If the @var{comparator} is not specified @code{equal?} is assumed.
 
@@ -4225,7 +4238,9 @@ select-expr     := `select' `(' test-expr [ `,' select-comptor ] `)'
                    `{' select-tests `}'
 select-comptor  := expression
 select-tests    := { select-test } [ `otherwise' alternate ]
-select-test     := constant `->' consequent
+select-test     := constants `->' consequent
+
+constants       := constant { `,' constant }
 
 match-expr      := `match' `(' test-expr `)' `{' { match-test } `}'
 match-test      := var-name `:' type-clause `->' consequent
