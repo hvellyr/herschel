@@ -32,7 +32,6 @@ heather::tokenTypeToOperator(TokenType type)
   case kGreater:       return kOpGreater;
   case kGreaterEqual:  return kOpGreaterEqual;
   case kAssign:        return kOpAssign;
-  case kMapTo:         return kOpMapTo;
   case kIn:            return kOpIn;
   case kMod:           return kOpMod;
   case kIsa:           return kOpIsa;
@@ -72,7 +71,6 @@ heather::operatorToTokenType(OperatorType op)
   case kOpGreater:       return kGreater;
   case kOpGreaterEqual:  return kGreaterEqual;
   case kOpAssign:        return kAssign;
-  case kOpMapTo:         return kMapTo;
   case kOpIn:            return kIn;
   case kOpMod:           return kMod;
   case kOpIsa:           return kIsa;
@@ -87,6 +85,9 @@ heather::operatorToTokenType(OperatorType op)
   case kOpShiftRight:    return kShiftRight;
   case kOpRange:         return kRange;
   case kOpAppend:        return kAppend;
+
+  case kOpMapTo:
+    return kInvalid;
 
   case kOpInvalid:
     assert(0);
