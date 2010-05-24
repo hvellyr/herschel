@@ -2665,7 +2665,7 @@ def f(c : Char)
 @deffn Special match
 
 @findex Any
-A @code{match} expression, a kind of type select, has the form:
+The @code{match} expression, a kind of type select, has the form:
 
 @example
 match (@var{expr}) @{
@@ -2676,7 +2676,7 @@ match (@var{expr}) @{
 @}
 @end example
 
-where @var{id-1}, @var{id-2}, etc.@ are identifier typed as
+where @var{id-1}, @var{id-2}, etc.@ are identifiers typed as
 @var{type-1}, @var{type-2}, etc.  @var{expr} is evaluated and the type
 of its value matched against the types @var{type-1}, @var{type-2}, etc.
 @var{expr}'s value is bound to the identifier for the best matching type
@@ -2685,7 +2685,7 @@ multiple type case are considered equally good matches the first in the
 given order is taken.  @var{id-n} is visible only inside of the
 consequent.
 
-There must only be one type case which is typed to @code{Any}; these
+There must only be one type case which is typed to @code{Any}; this
 acts as a `otherwise' case.
 
 The evaluated consequent's value becomes the value of the complete
