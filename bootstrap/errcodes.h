@@ -25,6 +25,7 @@ namespace heather
     E_MissingGenericClose = 0x0008,
     E_GenericTypeList     = 0x0009,
     E_UnexpectedEOF       = 0x000a,
+    E_MissingBraceOpen    = 0x000b,
 
     E_SymbolExpected      = 0x1001,
     E_StringExpected      = 0x1002,
@@ -70,6 +71,10 @@ namespace heather
 
     // on
     E_UnknownOnKey        = 0xa301,
+
+    // select, match
+    E_BadPatternList      = 0xa401,
+    E_RedefinedPattern    = 0xa402,
   };
 };
 

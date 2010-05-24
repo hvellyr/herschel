@@ -69,6 +69,16 @@ FirstPass::scanUntilNextParameter()
 }
 
 
+Token
+FirstPass::scanUntilBrace()
+{
+  while (fToken != kEOF &&
+         fToken != kBraceClose)
+    nextToken();
+  return Token();
+}
+
+
 template<typename ParseFunctor>
 void
 FirstPass::parseSequence(ParseFunctor functor,
@@ -1175,6 +1185,126 @@ FirstPass::parseUnaryOp(const Token& inOpToken)
 }
 
 
+struct heather::SelectPatternParser
+{
+  SelectPatternParser()
+    : fOtherwiseSeen(false)
+  {}
+
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    if (pass->fToken == kOtherwiseId) {
+      bool ignore = false;
+      Token otherwiseToken = pass->fToken;
+
+      if (fOtherwiseSeen) {
+        errorf(pass->fToken.srcpos(), E_RedefinedPattern,
+               "'otherwise' pattern redefined");
+        ignore = true;
+      }
+      fOtherwiseSeen = true;
+      pass->nextToken();
+
+      if (pass->fToken != kMapTo) {
+        errorf(pass->fToken.srcpos(), E_BadPatternList,
+               "expected '->'");
+        pass->scanUntilBrace();
+        return false;
+      }
+
+      TokenVector consq = parseConsequent(pass);
+      if (!ignore && !consq.empty())
+        result << ( Token() << otherwiseToken << consq );
+    }
+    else {
+      TokenVector pattern;
+      for ( ; ; ) {
+        if (pass->fToken == kEOF)
+          return false;
+
+        Token test = pass->parseExpr();
+        if (test.isSet()) {
+          pattern.push_back(test);
+
+          if (pass->fToken == kComma) {
+            pattern.push_back(pass->fToken);
+            pass->nextToken();
+          }
+          else if (pass->fToken == kMapTo) 
+            break;
+          else {
+            errorf(pass->fToken.srcpos(), E_BadPatternList,
+                   "unexpected token");
+            return false;
+          }
+        }
+      }
+
+      TokenVector consq = parseConsequent(pass);
+      if (!pattern.empty() && !consq.empty())
+        result << ( Token() << ( pattern.size() == 1
+                                 ? pattern[0]
+                                 : ( Token() << pattern ) )
+                    << consq );
+    }
+
+    return true;
+  }
+
+
+  TokenVector parseConsequent(FirstPass* pass)
+  {
+    TokenVector result;
+
+    assert(pass->fToken == kMapTo);
+    Token mapToToken = pass->fToken;
+    pass->nextToken();
+
+    Token body = pass->parseExpr();
+    if (body.isSet()) {
+      result.push_back(mapToToken);
+      result.push_back(body);
+    }
+    return result;
+  }
+
+  bool fOtherwiseSeen;
+};
+
+
+Token
+FirstPass::parseSelect()
+{
+  assert(fToken == kSelectId);
+  Token selectToken = fToken;
+  nextToken();
+
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    return scanUntilTopExprAndResume();
+  }
+  SrcPos paranPos = fToken.srcpos();
+  nextToken();
+
+  TokenVector args;
+  parseFuncallArgs(&args);
+
+  if (fToken != kBraceOpen) {
+    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+    return scanUntilTopExprAndResume();
+  }
+
+  Token patterns = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
+  parseSequence(SelectPatternParser(),
+                kBraceOpen, kBraceClose, false, E_BadPatternList,
+                patterns, "select-pattern");
+
+  return Token() << selectToken << ( Token(paranPos, kParanOpen, kParanClose)
+                                     << args )
+                 << patterns;
+}
+
+
 Token
 FirstPass::parseSimpleLoop(const Token& inToken)
 {
@@ -1246,7 +1376,7 @@ FirstPass::parseAtomicExpr()
     return parseUnaryOp(fToken);
 
   case kSelectId:
-    // TODO
+    return parseSelect();
   case kUntilId:
   case kWhileId:
     return parseSimpleLoop(fToken);
