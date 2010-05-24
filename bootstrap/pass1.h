@@ -41,7 +41,7 @@ namespace heather
     friend struct ParseFuncParamsParser;
     friend struct TypeParser;
     friend struct FuncallArgsParser;
-
+    friend struct SelectPatternParser;
 
     Token parseTop();
     Token parseModule(bool isModule);
@@ -56,6 +56,7 @@ namespace heather
     Token parseFunctionDef(const Token& defToken, const Token& tagToken, 
                            const Token& symToken, bool isLocal);
     Token parseFunctionOrVarDef(const Token& defToken, bool isLocal);
+    Token parseSelect();
     Token parseSimpleLoop(const Token& inToken);
 
     Token parseExpr();
@@ -124,6 +125,8 @@ namespace heather
     // resume functions after (syntax) error
     Token scanUntilTopExprAndResume();
     Token scanUntilNextParameter();
+    Token scanUntilBrace();
+
 
     Token parseGenericFunctionDef(const Token& defToken, bool isLocal);
 

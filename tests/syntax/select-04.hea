@@ -1,0 +1,5 @@
+def f(a)
+  select (a, function(one, two) { one in two }) {
+  1 .. 3 -> outln("a")
+  4 .. 6 -> outln("b")
+  }
