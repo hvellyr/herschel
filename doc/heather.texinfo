@@ -2526,11 +2526,11 @@ Multiple Loop expressions are possible of course:
 @example
 def count-until(root : Node, element : Node) : OrdinalOrEof
   for (n : Node = root then n.tail while n <> nil,
-       i : Ordinal = 0 then i + i,
+       i : Ordinal = 0 then i + 1,
        n <> element)
     i
   else
-    Eof
+    eof
 @end example
 @end deffn
 
@@ -2797,8 +2797,7 @@ the fly.  Its most common usage is in for loops:
 @example
 for (i : Int = 0 then i + 1 while i < 10) @emph{body}
 
-def value-iterators(root : Pair<String, _))
-  let i = 0
+def value-iterators(root : Pair<String, _>)
   root then root.cdr while root <> nil
 @end example
 
