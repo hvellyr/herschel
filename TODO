@@ -32,8 +32,9 @@ Documentation
 
 Bootstrap compiler
 
-  replace all throw *Exception in pass1 etc. by proper
-  log-message-and-try-to-continue code
+  implement the missing first pass parsing of type defs
+
+  implement the missing first pass parsing of macros
 
   continue with pexpreval (add the missing operators)
 
