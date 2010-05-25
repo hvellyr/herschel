@@ -487,6 +487,9 @@ operatorName(OperatorType type)
   case kOpShiftLeft:    return "<<";
   case kOpShiftRight:   return ">>";
   case kOpUnequal:      return "<>";
+  case kOpThen:         return "then";
+  case kOpWhile:        return "while";
+
   case kOpInvalid:
     assert(0);
   }

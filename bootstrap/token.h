@@ -25,6 +25,7 @@ namespace heather
   enum OperatorType
   {
     kOpInvalid,
+
     kOpAppend,
     kOpAs,
     kOpAssign,
@@ -53,7 +54,9 @@ namespace heather
     kOpRange,
     kOpShiftLeft,
     kOpShiftRight,
+    kOpThen,
     kOpUnequal,
+    kOpWhile,
   };
 
 

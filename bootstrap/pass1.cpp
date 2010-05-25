@@ -472,7 +472,7 @@ FirstPass::parseFunctionSignature()
     return scanUntilTopExprAndResume();
   }
 
-  SrcPos posp = fToken.srcpos();
+  SrcPos paranPos = fToken.srcpos();
   TokenVector params;
   if (parseFunctionsParams(&params)) {
     Token colonToken;
@@ -488,7 +488,7 @@ FirstPass::parseFunctionSignature()
       returnType = Token(fToken.srcpos(), kSymbol, "Any");
     }
 
-    return Token() << ( Token(posp, kParanOpen, kParanClose)
+    return Token() << ( Token(paranPos, kParanOpen, kParanClose)
                         << params )
                    << colonToken << returnType;
   }
@@ -665,7 +665,7 @@ FirstPass::parseIf()
     errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
     return scanUntilTopExprAndResume();
   }
-  SrcPos posp = fToken.srcpos();
+  SrcPos paranPos = fToken.srcpos();
   nextToken();
 
   Token test = parseExpr();
@@ -682,10 +682,10 @@ FirstPass::parseIf()
   result << ifToken;
 
   if (test.isSeq())
-    result << ( Token(posp, kParanOpen, kParanClose)
+    result << ( Token(paranPos, kParanOpen, kParanClose)
                 << test.children() );
   else
-    result << ( Token(posp, kParanOpen, kParanClose)
+    result << ( Token(paranPos, kParanOpen, kParanClose)
                 << test );
   result << consequent;
 
@@ -868,7 +868,7 @@ FirstPass::parseOn()
       errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
       return scanUntilTopExprAndResume();
     }
-    SrcPos posp = fToken.srcpos();
+    SrcPos paranPos = fToken.srcpos();
 
     TokenVector params;
     if (parseFunctionsParams(&params)) {
@@ -876,7 +876,7 @@ FirstPass::parseOn()
 
       if (!ignoreStmt && body.isSet())
         return Token() << tagToken << keyToken
-                       << ( Token(posp, kParanOpen, kParanClose)
+                       << ( Token(paranPos, kParanOpen, kParanClose)
                             << params )
                        << body;
       else
@@ -899,7 +899,7 @@ FirstPass::parseAnonFun()
     return scanUntilTopExprAndResume();
   }
 
-  SrcPos posp = fToken.srcpos();
+  SrcPos paranPos = fToken.srcpos();
   TokenVector params;
   if (parseFunctionsParams(&params)) {
     Token colonToken;
@@ -918,7 +918,7 @@ FirstPass::parseAnonFun()
     Token body = parseExpr();
     if (body.isSet())
       return Token() << funcToken
-                     << ( Token(posp, kParanOpen, kParanClose)
+                     << ( Token(paranPos, kParanOpen, kParanClose)
                           << params )
                      << colonToken << returnType
                      << body;
@@ -936,11 +936,23 @@ struct heather::FuncallArgsParser
       pass->nextToken();
 
       Token val = pass->parseExpr();
+      if (!val.isSet()) {
+        error(pass->fToken.srcpos(), E_UnexpectedToken,
+              String("unexpected token: ") + pass->fToken.toString());
+        pass->scanUntilNextParameter();
+        return true;
+      }
       result << key;
       result << val;
     }
     else {
       Token val = pass->parseExpr();
+      if (!val.isSet()) {
+        error(pass->fToken.srcpos(), E_UnexpectedToken,
+              String("unexpected token: ") + pass->fToken.toString());
+        pass->scanUntilNextParameter();
+        return true;
+      }
       result << val;
     }
 
@@ -1251,7 +1263,7 @@ struct heather::SelectPatternParser : public BasePatternParser
             pattern.push_back(pass->fToken);
             pass->nextToken();
           }
-          else if (pass->fToken == kMapTo) 
+          else if (pass->fToken == kMapTo)
             break;
           else {
             errorf(pass->fToken.srcpos(), E_BadPatternList,
@@ -1389,6 +1401,165 @@ FirstPass::parseMatch()
 }
 
 
+struct heather::ForClauseParser
+{
+  bool parseInCollClause(FirstPass* pass, Token& result,
+                         const Token& symToken,
+                         const Token& colonToken,
+                         const Token& type)
+  {
+    assert(pass->fToken == kIn);
+    Token inToken = pass->fToken;
+    pass->nextToken();
+
+    Token collToken = pass->parseExpr();
+    if (!collToken.isSet()) {
+      error(pass->fToken.srcpos(), E_MissingRHExpr,
+            String("unexpected token: ") + pass->fToken.toString());
+      pass->scanUntilNextParameter();
+      return true;
+    }
+
+    Token subexpr = Token() << symToken;
+    if (colonToken.isSet() && type.isSet())
+      subexpr << colonToken << type;
+    subexpr << inToken << collToken;
+
+    result << subexpr;
+    return true;
+  }
+
+
+  bool parseExplicitClause(FirstPass* pass, Token& result,
+                           const Token& symToken,
+                           const Token& colonToken,
+                           const Token& type)
+  {
+    assert(pass->fToken == kAssign);
+    Token assignToken = pass->fToken;
+    pass->nextToken();
+
+    Token iterator = pass->parseExpr();
+    if (!iterator.isSet()) {
+      error(pass->fToken.srcpos(), E_MissingRHExpr,
+            String("unexpected token: ") + pass->fToken.toString());
+      pass->scanUntilNextParameter();
+      return true;
+    }
+
+    Token subexpr = Token() << symToken;
+    if (colonToken.isSet() && type.isSet())
+      subexpr << colonToken << type;
+    subexpr << assignToken << iterator;
+
+    result << subexpr;
+    return true;
+  }
+
+
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    if (pass->fToken == kSymbol) {
+      bool allowNormalExpr = true;
+
+      Token symToken = pass->fToken;
+      pass->nextToken();
+
+      Token type;
+      Token colonToken;
+
+      if (pass->fToken == kColon) {
+        colonToken = pass->fToken;
+        pass->nextToken();
+        type = pass->parseTypeSpec(true);
+        allowNormalExpr = false;
+      }
+
+      if (pass->fToken == kIn) {
+        return parseInCollClause(pass, result, symToken, colonToken, type);
+      }
+      else if (pass->fToken == kAssign) {
+        return parseExplicitClause(pass, result,
+                                   symToken, colonToken, type);
+      }
+      else {
+        if (allowNormalExpr) {
+          OperatorType op1 = tokenTypeToOperator(pass->fToken.tokenType());
+          SrcPos op1Srcpos = pass->fToken.srcpos();
+
+          if (op1 != kOpInvalid) {
+            Token expr = pass->parseExprRec(symToken, op1, op1Srcpos);
+            if (expr.isSet()) {
+              result << expr;
+              return true;
+            }
+          }
+        }
+
+        error(pass->fToken.srcpos(), E_UnexpectedToken,
+              String("unexpected token: ") + pass->fToken.toString());
+        pass->scanUntilNextParameter();
+      }
+    }
+    else {
+      Token expr = pass->parseExpr();
+      if (expr.isSet()) {
+        result << expr;
+        return true;
+      }
+
+      error(pass->fToken.srcpos(), E_UnexpectedToken,
+            String("unexpected token: ") + pass->fToken.toString());
+      pass->scanUntilNextParameter();
+    }
+
+    return true;
+  }
+};
+
+
+Token
+FirstPass::parseFor()
+{
+  assert(fToken == kForId);
+  Token forToken = fToken;
+  nextToken();
+
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    return scanUntilTopExprAndResume();
+  }
+  SrcPos paranPos = fToken.srcpos();
+  nextToken();
+
+  Token args = Token(paranPos, kParanOpen, kParanClose);
+  parseSequence(ForClauseParser(),
+                kParanOpen, kParanClose, true, E_BadParameterList,
+                args, "for-clauses", false);
+
+  Token body = parseExpr();
+
+  Token elseToken;
+  Token alternate;
+  if (fToken == kElseId) {
+    elseToken = fToken;
+    nextToken();
+
+    alternate = parseExpr();
+  }
+
+  if (body.isSet()) {
+    Token result = Token() << forToken
+                           << args
+                           << body;
+    if (elseToken.isSet() && alternate.isSet())
+      result << elseToken << alternate;
+    return result;
+  }
+  return Token() << Token(forToken.srcpos(), "unspecified");
+}
+
+
 Token
 FirstPass::parseSimpleLoop(const Token& inToken)
 {
@@ -1400,7 +1571,7 @@ FirstPass::parseSimpleLoop(const Token& inToken)
     errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
     return scanUntilTopExprAndResume();
   }
-  SrcPos posp = fToken.srcpos();
+  SrcPos paranPos = fToken.srcpos();
   nextToken();
 
   TokenVector args;
@@ -1419,7 +1590,7 @@ FirstPass::parseSimpleLoop(const Token& inToken)
 
   if (body.isSet()) {
     Token result = Token() << tagToken
-                           << ( Token(posp, kParanOpen, kParanClose)
+                           << ( Token(paranPos, kParanOpen, kParanClose)
                                 << args )
                            << body;
     if (elseToken.isSet() && alternate.isSet())
@@ -1469,8 +1640,7 @@ FirstPass::parseAtomicExpr()
   case kMatchId:
     return parseMatch();
   case kForId:
-    // TODO
-    break;
+    return parseFor();
 
   case kLetId:
     assert(0);
@@ -1544,6 +1714,20 @@ FirstPass::makeBinaryToken(const Token& expr1, OperatorType op1,
                    << Token(op1Srcpos, operatorToTokenType(op1))
                    << expr2;
   }
+  else if (op1 == kOpThen && expr2.isBinarySeq(kWhileId)) {
+    return Token() << expr1
+                   << Token(op1Srcpos, operatorToTokenType(op1))
+                   << expr2[0]
+                   << expr2[1]
+                   << expr2[2];
+  }
+  else if (op1 == kOpWhile && expr1.isBinarySeq(kThenId)) {
+    return Token() << expr1[0]
+                   << expr1[1]
+                   << expr1[2]
+                   << Token(op1Srcpos, operatorToTokenType(op1))
+                   << expr2;
+  }
   else
     return Token() << expr1
                    << Token(op1Srcpos, operatorToTokenType(op1))
@@ -1562,7 +1746,9 @@ int
 FirstPass::weightOperator(OperatorType op1) const
 {
   switch (op1) {
-  case kOpMapTo:          return  10;
+  case kOpMapTo:
+  case kOpThen:
+  case kOpWhile:          return  10;
 
   case kOpLogicalAnd:
   case kOpLogicalOr:      return  20;
@@ -1733,7 +1919,7 @@ FirstPass::parseWhen(bool isTopLevel)
     nextToken();
   }
   else if (fToken == kParanOpen) {
-    SrcPos posp = fToken.srcpos();
+    SrcPos paranPos = fToken.srcpos();
     nextToken();
 
     Token test = parseExpr();
@@ -1763,7 +1949,7 @@ FirstPass::parseWhen(bool isTopLevel)
       }
     }
     else
-      result << ( Token(posp, kParanOpen, kParanClose) << test );
+      result << ( Token(paranPos, kParanOpen, kParanClose) << test );
   }
   else if (fToken == kBraceOpen) {
     errorf(fToken.srcpos(), E_MissingParanOpen, "missing parameters or key for 'when' clause");

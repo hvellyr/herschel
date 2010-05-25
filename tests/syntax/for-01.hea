@@ -1,0 +1,24 @@
+def f0()
+  for (i in collection)
+    outln(i)
+
+
+def f1()
+  for (i : Int in collection) {
+    outln(i)
+  }
+
+
+def f2()
+  for (i : Int in collection)
+    outln(i)
+  else
+    false
+
+
+def f3(k)
+  for (i : Int in 0 .. k - 1) {
+    outln(i)
+  }
+  else
+    false

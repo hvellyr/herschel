@@ -76,6 +76,10 @@ namespace heather
     E_BadPatternList      = 0xa401,
     E_RedefinedPattern    = 0xa402,
     E_ColonExpected       = 0xa403,
+
+    // loops
+    E_BadForLoopClause    = 0xa501,
+    BadExplicitForClause  = 0xa502,
   };
 };
 
