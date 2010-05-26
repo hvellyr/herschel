@@ -342,8 +342,14 @@ struct heather::TypeParser
 {
   bool operator() (FirstPass* pass, Token& result)
   {
+    SrcPos pos = pass->fToken.srcpos();
     Token type = pass->parseTypeSpec(false);
-    if (type.isSet())
+    if (!type.isSet()) {
+      error(pos, E_UnexpectedToken,
+            String("returntype expression expected: ") + pass->fToken.toString());
+      pass->scanUntilNextParameter();
+    }
+    else 
       result << type;
     return true;
   }
@@ -351,11 +357,11 @@ struct heather::TypeParser
 
 
 Token
-FirstPass::parseSimpleType()
+FirstPass::parseSimpleType(const Token& baseType)
 {
   assert(fToken == kSymbol);
 
-  Token typeName = fToken;
+  Token typeName = baseType;
   nextToken();
 
   if (fToken == kGenericOpen) {
@@ -481,7 +487,12 @@ FirstPass::parseFunctionSignature()
     if (fToken == kColon) {
       colonToken = fToken;
       nextToken();
+      SrcPos pos = fToken.srcpos();
       returnType = parseTypeSpec(true);
+      if (!returnType.isSet()) {
+        errorf(pos, E_MissingType, "returntype expression expected");
+        returnType = Token(pos, kSymbol, "Any");
+      }
     }
     else {
       colonToken = Token(fToken.srcpos(), kColon);
@@ -534,8 +545,8 @@ FirstPass::parseTypeSpec(bool onlyNestedConstraints)
 {
   if (fToken == kSymbol) {
     return ( onlyNestedConstraints
-             ? parseArrayExtend(parseSimpleType())
-             : parseConstraintExtend(parseArrayExtend(parseSimpleType())) );
+             ? parseArrayExtend(parseSimpleType(fToken))
+             : parseConstraintExtend(parseArrayExtend(parseSimpleType(fToken))) );
   }
   else if (fToken == kFUNCTIONId) {
     return parseArrayExtend(parseFunctionType());
@@ -908,7 +919,12 @@ FirstPass::parseAnonFun()
     if (fToken == kColon) {
       colonToken = fToken;
       nextToken();
+      SrcPos pos = fToken.srcpos();
       returnType = parseTypeSpec(true);
+      if (!returnType.isSet()) {
+        errorf(pos, E_MissingType, "returntype expression expected");
+        returnType = Token(pos, kSymbol, "Any");
+      }
     }
     else {
       colonToken = Token(fToken.srcpos(), kColon);
@@ -1471,7 +1487,12 @@ struct heather::ForClauseParser
       if (pass->fToken == kColon) {
         colonToken = pass->fToken;
         pass->nextToken();
+        SrcPos pos = pass->fToken.srcpos();
         type = pass->parseTypeSpec(true);
+        if (!type.isSet()) {
+          errorf(pos, E_MissingType, "type expression expected");
+          type = Token(pos, kSymbol, "Any");
+        }
         allowNormalExpr = false;
       }
 
@@ -1603,11 +1624,7 @@ FirstPass::parseAtomicExpr()
     break;
 
   case kSymbol:
-    {
-      Token t = fToken;
-      nextToken();
-      return parseAccess(t);
-    }
+    return parseAccess(parseSimpleType(fToken));
 
   case kLiteralVectorOpen:
     return parseAccess(parseLiteralVector());
@@ -1834,12 +1851,13 @@ FirstPass::parseTopOrExprList(bool isTopLevel)
 {
   if (isTopLevel) {
     if (fToken == kBraceOpen) {
-      SrcPos bosp = fToken.srcpos();
+      SrcPos bracePos = fToken.srcpos();
       nextToken();
+
       TokenVector exprs;
       parseTopExprUntilBrace(&exprs);
 
-      return Token(bosp, kBraceOpen, kBraceClose) << exprs;
+      return Token(bracePos, kBraceOpen, kBraceClose) << exprs;
     }
     return parseTop();
   }
@@ -2029,7 +2047,12 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
   if (fToken == kColon) {
     colonToken = fToken;
     nextToken();
+    SrcPos pos = fToken.srcpos();
     type = parseTypeSpec(true);
+    if (!type.isSet()) {
+      errorf(pos, E_MissingType, "type expression expected");
+      type = Token(pos, kSymbol, "Any");
+    }
   }
 
   Token initExpr;
@@ -2235,7 +2258,12 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
     if (fToken == kColon) {
       colonToken = fToken;
       nextToken();
+      SrcPos pos = fToken.srcpos();
       returnType = parseTypeSpec(true);
+      if (!returnType.isSet()) {
+        errorf(pos, E_MissingType, "type expression expected");
+        returnType = Token(pos, kSymbol, "Any");
+      }
     }
     else {
       colonToken = Token(fToken.srcpos(), kColon);
@@ -2388,8 +2416,10 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
   Token assignToken = fToken;
   nextToken();
 
+  SrcPos pos = fToken.srcpos();
   Token type = parseTypeSpec(false);
   if (!type.isSet()) {
+    errorf(pos, E_MissingType, "type expression expected");
     return scanUntilTopExprAndResume();
   }
 
@@ -2403,13 +2433,86 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
 
 
 Token
+FirstPass::parseTypeDef(const Token& defToken, bool isLocal)
+{
+  assert(fToken == Parser::typeToken);
+
+  Token tagToken;
+  if (isLocal) {
+    errorf(fToken.srcpos(), E_LocalTypeDef,
+           "inner type definitions are not supported.");
+    return scanUntilTopExprAndResume();
+  }
+  else
+    tagToken = fToken;
+  nextToken();
+
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "expected alias name");
+    return scanUntilTopExprAndResume();
+  }
+  Token symToken = fToken;
+  nextToken();
+
+  Token generics;
+  if (fToken == kGenericOpen) {
+    generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
+    parseSequence(TypeParser(),
+                  kGenericOpen, kGenericClose, true, E_GenericTypeList,
+                  generics,
+                  "typedef-params");
+  }
+
+  Token colonToken;
+  Token isaType;
+  if (fToken == kColon) {
+    colonToken = fToken;
+    nextToken();
+    SrcPos pos = fToken.srcpos();
+    isaType = parseTypeSpec(true);
+    if (!isaType.isSet()) {
+      errorf(pos, E_MissingType, "type expression expected");
+      isaType = Token(fToken.srcpos(), kSymbol, "Any");
+    }
+  }
+
+  Token whereClause;
+  if (fToken == kWhereId)
+    whereClause = parseWhereClause();
+
+  Token requiredProtocol;
+  if (fToken == kBraceOpen) {
+    requiredProtocol = parseTopOrExprList(true);
+    if (!requiredProtocol.isSet())
+      return scanUntilTopExprAndResume();
+  }
+
+  Token result = Token() << defToken << tagToken << symToken;
+  if (generics.isSet())
+    result << generics;
+
+  if (colonToken.isSet() && isaType.isSet())
+    result << colonToken << isaType;
+
+  if (whereClause.isSet())
+    result << whereClause;
+
+  if (requiredProtocol.isSet())
+    result << requiredProtocol;
+
+  return result;
+}
+
+
+
+Token
 FirstPass::parseDef(bool isLocal)
 {
   Token defToken = fToken;
   nextToken();
 
   if (fToken == Parser::typeToken) {
-    // TODO
+    return parseTypeDef(defToken, isLocal);
   }
   else if (fToken == Parser::aliasToken) {
     return parseAliasDef(defToken, isLocal);

@@ -52,6 +52,7 @@ namespace heather
 
     E_MissingType         = 0x4013,
     E_LocalAliasDef       = 0x4020,
+    E_LocalTypeDef        = 0x4021,
 
     // functions
     E_MissingBody         = 0x4100,

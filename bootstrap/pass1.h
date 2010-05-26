@@ -69,7 +69,7 @@ namespace heather
                        const SrcPos& op1Srcpos);
 
     Token parseTypeSpec(bool onlyNestedConstraints);
-    Token parseSimpleType();
+    Token parseSimpleType(const Token& baseType);
     Token parseUnionType();
     Token parseGroupType();
     Token parseFunctionType();
@@ -137,6 +137,7 @@ namespace heather
     Token parseUnaryOp(const Token& inOpToken);
 
     Token parseAliasDef(const Token& defToken, bool isLocal);
+    Token parseTypeDef(const Token& defToken, bool isLocal);
 
     template<typename ParseFunctor>
     void parseSequence(ParseFunctor functor,
