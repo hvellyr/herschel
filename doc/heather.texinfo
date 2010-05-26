@@ -1488,7 +1488,7 @@ Parametrized types can be used to specialize methods:
 def do-y(self @@ Pair<Int, Int>) ...
 @end example
 
-This method will be matched for Int-Int-Pairs only.
+This method will match for Int-Int-Pairs only.
 
 
 @c --------------------------------------------------------------------
@@ -1523,7 +1523,8 @@ def class MyContainer<T>(items : T[]) : (Vector<T>, Comparable)
 If a method or function is defined as standalone or outside of a class
 or type context it is necessary to parametrize the declaration
 explicitly.  The types which are to be parametrized are notated with a
-leading @emph{quote}.  All quoted types equal refer to the same type.
+leading @emph{quote}.  All quoted types with the same name refer to
+the same type.
 
 @example
 -- for all type @@var@{T@} copies all elements from @@var@{src@} into
@@ -1559,7 +1560,7 @@ only specific value ranges, collections that accept only certain values,
 etc.
 
 @example
-(Bool = true)
+(Bool == true)
 (Int in -127 .. 127)
 (Keyword in #[#apple, #pear, #orange, #banana, #grapefruit])
 @end example
@@ -1571,7 +1572,7 @@ I.e.@ two constraint types only differing in their constraints are
 treated as the same type during dispatch.  In the following example:
 
 @example
-def generic add-value(self @@ Cont, value, index @@ (Int = -1))
+def generic add-value(self @@ Cont, value, index @@ (Int == -1))
   self.append!(value)
 
 def generic add-value(self @@ Cont, value, index @@ (Int >= 0))
@@ -1584,9 +1585,8 @@ the compiler will complain about a generic function redefinition.
 @findex where
 @findex isa
 @cindex type constraints
-Another form of type constraint is used when constraining parametrized
-types.  Sometimes it is useful to further specify a type parameter,
-e.g.@ to limit possibly accepted subtypes or certain expected signatures
+Sometimes it is useful to further specify a type parameter, e.g.@ to
+limit possibly accepted subtypes or certain expected signatures
 (protocols).
 
 This limitation can be achieved by the @code{where} special clause on
@@ -1604,9 +1604,9 @@ def add-from-vector(dst @@ Container<'T>,
 Here the type parameter @code{T} is required to be at least a
 @code{Comparable} and @code{K} is only allowed to be a positive number.
 
-The @code{where} clause is only a syntactic variation of the constraints
-explicitly annotated on the type declaration.  It's most useful to
-abbreviate recurring constraint type parameter is used in numerious
+The @code{where} clause is only a syntactic variation of the
+constraints explicitly annotated on the type declaration.  It's most
+useful to abbreviate constraint type parameters used in multiple
 places in a signature.
 
 
@@ -2137,6 +2137,7 @@ def x!(self @@ Point, val)
 @node Assignment, Operators, SlotAccess, Expressions
 @section Assignment
 
+@findex =
 @c todo
 @emph{To write}
 
@@ -3592,7 +3593,7 @@ STATEMENT MACROS
 Look like a statement like for, select, etc.
 
   def macro unless @{
-      @{ unless (?test:expr) ?b:body @} -> @{ if (not(?test)) ?b @}
+      @{ unless (?test:expr) ?b:body @} -> @{ if (not ?test) ?b @}
   @}
 
 
@@ -4111,6 +4112,7 @@ expression      := local-def
                 |  on-expr
                 |  apply-expr
                 |  IDENTIFIER
+                |  param-type
                 |  selector
                 |  slice
                 |  dot-notation
