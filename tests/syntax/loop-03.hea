@@ -1,5 +1,5 @@
 def f(i)
-  while (i < 100)
+  for (i < 100)
     if (i.odd?)
       i.incr!
     else

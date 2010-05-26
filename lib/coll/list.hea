@@ -39,7 +39,7 @@ export public(List)
 def find-last-node(node @ Pair<'L, 'R>) : Pair<'L, 'R>
   let p = node
   if (p <> nil) {
-    while (p.cdr <> nil)
+    for (p.cdr <> nil)
       p = p.cdr
   }
   p
@@ -81,7 +81,7 @@ def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
       let prev = nil
       let n = 0
 
-      while (p <> nil) {
+      for (p <> nil) {
         if (n == before-index) {
           if (prev <> nil)
             prev.cdr = Pair<'T, _>(car: value, cdr: p)
@@ -106,7 +106,7 @@ def remove-at!(self @ List<'T>, index : Ordinal) : 'T
   let prev = nil
   let n = 0
 
-  while (p <> nil) {
+  for (p <> nil) {
     if (n == index) {
       if (prev <> nil) {
         prev.cdr = p.cdr
@@ -149,7 +149,7 @@ def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrFalse
   let p = self.root
   let n : Ordinal = 0
 
-  while (p <> nil) {
+  for (p <> nil) {
     if (p.cdr == elt)
       return(n)
     p = p.cdr

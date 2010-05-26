@@ -62,7 +62,6 @@ namespace heather
     Token parseSelect();
     Token parseMatch();
     Token parseFor();
-    Token parseSimpleLoop(const Token& inToken);
 
     Token parseExpr();
     Token parseAtomicExpr();

@@ -173,7 +173,6 @@ namespace heather
     kReifyId,
     kSelectId,
     kThenId,
-    kUntilId,
     kWhenId,
     kWhereId,
     kWhileId,
@@ -349,7 +348,6 @@ namespace heather
 #define MID_ReifyId     "reify"
 #define MID_SelectId    "select"
 #define MID_ThenId      "then"
-#define MID_UntilId     "until"
 #define MID_WhenId      "when"
 #define MID_WhereId     "where"
 #define MID_WhileId     "while"

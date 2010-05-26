@@ -274,7 +274,6 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       { String(MID_ReifyId),     kReifyId      },
       { String(MID_SelectId),    kSelectId     },
       { String(MID_ThenId),      kThenId       },
-      { String(MID_UntilId),     kUntilId      },
       { String(MID_WhenId),      kWhenId       },
       { String(MID_WhereId),     kWhereId      },
       { String(MID_WhileId),     kWhileId      },
