@@ -1561,47 +1561,6 @@ FirstPass::parseFor()
 
 
 Token
-FirstPass::parseSimpleLoop(const Token& inToken)
-{
-  assert(inToken == kWhileId || inToken == kUntilId);
-  Token tagToken = inToken;
-  nextToken();
-
-  if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
-    return scanUntilTopExprAndResume();
-  }
-  SrcPos paranPos = fToken.srcpos();
-  nextToken();
-
-  TokenVector args;
-  parseFuncallArgs(&args);
-
-  Token body = parseExpr();
-
-  Token elseToken;
-  Token alternate;
-  if (fToken == kElseId) {
-    elseToken = fToken;
-    nextToken();
-
-    alternate = parseExpr();
-  }
-
-  if (body.isSet()) {
-    Token result = Token() << tagToken
-                           << ( Token(paranPos, kParanOpen, kParanClose)
-                                << args )
-                           << body;
-    if (elseToken.isSet() && alternate.isSet())
-      result << elseToken << alternate;
-    return result;
-  }
-  return Token() << Token(tagToken.srcpos(), "unspecified");
-}
-
-
-Token
 FirstPass::parseAtomicExpr()
 {
   switch (fToken.tokenType()) {
@@ -1630,9 +1589,6 @@ FirstPass::parseAtomicExpr()
   case kMinus:                  // unary negate
     return parseUnaryOp(fToken);
 
-  case kUntilId:
-  case kWhileId:
-    return parseSimpleLoop(fToken);
   case kWhenId:
     return parseWhen(false);
   case kSelectId:

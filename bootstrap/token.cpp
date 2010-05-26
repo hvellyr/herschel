@@ -637,7 +637,6 @@ Token::toString() const
     case kReifyId:     return String(MID_ReifyId);
     case kSelectId:    return String(MID_SelectId);
     case kThenId:      return String(MID_ThenId);
-    case kUntilId:     return String(MID_UntilId);
     case kWhenId:      return String(MID_WhenId);
     case kWhereId:     return String(MID_WhereId);
     case kWhileId:     return String(MID_WhileId);
@@ -751,7 +750,6 @@ Token::type() const
   case kReifyId:
   case kSelectId:
   case kThenId:
-  case kUntilId:
   case kWhenId:
   case kWhereId:
   case kWhileId:
@@ -963,7 +961,6 @@ Token::idValue() const
   case kReifyId:
   case kSelectId:
   case kThenId:
-  case kUntilId:
   case kWhenId:
   case kWhereId:
   case kWhileId:
@@ -1251,7 +1248,6 @@ Token::toPort(Port<Octet>* port) const
     case kReifyId:
     case kSelectId:
     case kThenId:
-    case kUntilId:
     case kWhenId:
     case kWhereId:
     case kWhileId:

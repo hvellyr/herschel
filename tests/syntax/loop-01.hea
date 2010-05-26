@@ -1,15 +1,15 @@
 def f(i) 
-  while (i < 100)
+  for (i < 100)
     i.incr!
   
 
 def g(j)
-  until (j > 100)
+  for (j > 100)
     j.incr!
 
 
 def h()
-  while (true)
-    until (false)
+  for (true)
+    for (false)
       outln("hello world!")
 

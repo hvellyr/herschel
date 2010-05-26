@@ -321,8 +321,8 @@ AND       and       as        by        def       else      eof
 export    extend    false     for       Function  function  if
 import    in        interface isa       let       match     mod
 module    nil       not       on        OR        or        otherwise
-reify     select    then      true      until     when      where
-while     XOR
+reify     select    then      true      when      where     while
+XOR
 @end verbatim
 
 The following identifiers are predefined and used by the language
@@ -2414,8 +2414,8 @@ in default parameter init value places):
 @example
 def f(x = @{
             let p = Properties()
-            while (p.next?) @{
-              if (not(p.nil?))
+            for (p.next?) @{
+              if (not p.nil?)
                 break(p.value)
             @}
             else
@@ -2429,12 +2429,16 @@ def f(x = @{
 @node Loops, Conditionals, Blocks, Expressions
 @section Loops
 
-Heather provides three major loop expressions: @code{for}, @code{while},
-and @code{until}.
+With the @code{for} expression Heather provides only one (builtin)
+loop construct.  It can express natively however comparable constructs
+like @code{while}, @code{until}, or @code{do} in other languages.
 
+@findex else
 The return value of the loop body gives the value of the complete loop
-statement.  Each loop form takes an optional @code{else} branch, which
-is evaluated if the loop's body expression is never entered:
+statement.  It takes an optional @code{else} branch, which is
+evaluated if the loop's body expression is never entered.  In the
+following example the return value is @code{nil} if @code{values} is
+an empty collection:
 
 @example
 let first-name = for (n in values)
@@ -2443,7 +2447,6 @@ let first-name = for (n in values)
                    nil
 @end example
 
-@findex else
 If no @code{else} expression is given and the loop body is not entered
 the value of a loop expression is @code{unspecified}.
 
@@ -2458,14 +2461,16 @@ for (@var{test-1}, @var{test-2})
 @r{[} else @var{alternate} @r{]}
 @end example
 
-This is Heather's most general loop construct.  Any number of comma
-separated tests @var{test-1}, @var{test-2}, etc.@ can be given, and
-@code{for} re-evaluates @var{expr} until at least one of these tests
-fail.  If the tests list is empty the @code{for} expression repeats to
-evaluate @var{expr} unless it is terminated by other means (e.g.@ early
-@code{return}, a break statement, or an exception).
+Any number of comma separated tests @var{test-1}, @var{test-2}, etc.@
+can be given, and @code{for} re-evaluates @var{expr} until at least
+one of these tests fail.  The order of tests is significant, i.e.@
+they are evaluated as if @code{and}-combined.
 
-The test are either Boolean expressions or any of the following binding
+If the tests list is empty the @code{for} expression repeats to
+evaluate @var{expr} unless it is terminated by other means (e.g.@
+early @code{return}, a break statement, or an signal).
+
+The test are either boolean expressions or any of the following binding
 constructs:
 
 @sp 1
@@ -2473,30 +2478,40 @@ constructs:
 @var{var} @r{[} : @var{type} @r{]} in @var{collection}
 @end example
 
-@var{collection} is evaluated and stored in a (temporary invisible)
-fresh binding.  Its result must implement the @code{Iteratable} type.  A
-new binding @var{var} (of @var{type}) is created and re-bound on each
-loop iteration to the next available value from @var{collection}'s
-return value.  If @var{collection} is exhausted (i.e.@ its @code{next?}
-method returns @code{false}) this loop expression stops the loop.
+@var{collection} is evaluated and stored in a temporary (invisible)
+fresh binding.  Its result must implement the @code{Iteratable} type.
+A new binding @var{var} (of @var{type}) is created and re-bound on
+each loop iteration to the next available value from
+@var{collection}'s return value.  If @var{collection} is exhausted
+(i.e.@ its @code{next?} method returns @code{false}) this loop
+expression fail (and therefore stops the loop).
 
 A common application of this pattern is to give an literal range
 expression as @var{collection} (for an example see below).
 
 @sp 1
+@findex then
+@findex while
 @example
 @var{var} @r{[} : @var{type} @r{]} = @var{first} then @var{step} @r{[} while @var{test} @r{]}
 @end example
 
-@var{first} is evaluated and bound to a fresh variable @var{var}.  Then
-@var{test} is evaluated and if true the complete loop expression is said
-to be successful.  On the next iteration @var{step} is evaluated and its
-value is bound to @var{var}; @var{test} is evaluated again and if true
-the loop expression is successful.  If the @code{while} test is missing
-the loop expression has no explicit termination and therefore (as loop
-expression) always succeeds.
+@var{first} is evaluated and bound to a fresh variable @var{var}.
+Then @var{test} is evaluated and, if returning @code{true}, the
+complete loop expression is said to be successful.  On the next
+iteration @var{step} is evaluated and @var{var} is rebound to its
+returnvalue; @var{test} is evaluated again and, if returning
+@code{true}, the loop expression is successful.
+
+If the @code{while} test is missing the loop expression has no
+explicit termination and therefore (as loop expression) always
+succeeds.  It needs other tests or means (e.g.@ signals or a
+@code{break}) to exit the loop.
 
 @sp 1
+
+The following examples show some typical patterns of the @code{for}
+expression usage.
 
 To iterate over all elements of a collection:
 
@@ -2534,32 +2549,15 @@ def count-until(root : Node, element : Node) : OrdinalOrEof
 @end example
 @end deffn
 
-
-@deffn Special while
-
-The @code{while} loop expression has the form:
+The @code{for} expression in a `while'-like construct:
 
 @example
-while (@var{test}) @var{expr}
-  @r{[} else @var{alternate} @r{]}
+let p = Properties()
+for (p.next?) @{
+  if (not p.nil?)
+    break(p.value)
+@}
 @end example
-
-where @var{test} is a Boolean expression.  The loop evaluates @var{expr}
-while @var{test} is true.  The last @var{expr}'s value becomes the value
-of the complete construct.
-@end deffn
-
-
-@deffn Special until
-@example
-until (@var{test}) @var{expr}
-  @r{[} else @var{alternate} @r{]}
-@end example
-
-where @var{test} is a Boolean expression.  The loop evaluates @var{expr}
-until @var{test} is true (i.e.@ while @var{test} is true).  The last
-@var{expr}'s value becomes the value of the complete construct.
-@end deffn
 
 
 @c --------------------------------------------------------------------
@@ -3591,7 +3589,7 @@ Look like a define and/or let:
 
 STATEMENT MACROS
 
-Look like a statement like for, while, etc.
+Look like a statement like for, select, etc.
 
   def macro unless @{
       @{ unless (?test:expr) ?b:body @} -> @{ if (not(?test)) ?b @}
@@ -4117,8 +4115,6 @@ expression      := local-def
                 |  slice
                 |  dot-notation
                 |  loop-expr
-                |  while-loop-expr
-                |  until-loop-expr
                 |  if-expr
                 |  select-expr
                 |  match-expr
@@ -4205,8 +4201,7 @@ operand         := expression
 
 ternary         := iterator-expr | range-expr
 
-iterator-expr   := init-step `then' next-step
-                   [ `while' while-test ]
+iterator-expr   := init-step `then' next-step [ `while' while-test ]
 init-step       := expression
 next-step       := expression
 while-test      := expression
@@ -4253,20 +4248,12 @@ match-test      := var-name `:' type-clause `->' consequent
 @verbatim
 loop-expr       := `for' `(' [ loop-test { `,' loop-test } ] `)'
                    loop-body [ `else' alternate ]
-loop-test       := incoll-expr | explicit-expr | while-test | until-test
+loop-test       := incoll-expr | explicit-expr | while-test
 incoll-expr     := var-name [ `:' type-clause ] `in' collection-expr
 collection-expr := expression
 explicit-expr   := var-name [ `:' type-clause ] `='
                    init-step `then' next-step [ `while' while-test ]
-while-test      := `while' `(' test-expr `)'
-until-test      := `until' `(' test-expr `)'
 loop-body       := expression
-
-while-loop-expr := `while' `(' test-expr `)'
-                   loop-body [ `else' alternate ]
-
-until-loop-expr := `until' `(' test-expr `)'
-                   loop-body [ `else' alternate ]
 @end verbatim
 @end smallformat
 
