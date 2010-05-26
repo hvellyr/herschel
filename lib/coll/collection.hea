@@ -50,7 +50,7 @@ import "core/sliceable.head"
 -- base of all collections
 ------------------------------------------------------------------------------
 
-def alias ForEachVisitor<T> = Function(elt @ T) : Bool
+def alias ForEachVisitor<T> = Function(elt : T) : Bool
 
 --! @code{Collection} is the base type for all collection classes in the
 --! heather collection framework.  It provides an API of implementation

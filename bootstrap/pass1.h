@@ -136,6 +136,7 @@ namespace heather
 
     Token parseUnaryOp(const Token& inOpToken);
 
+    Token parseAliasDef(const Token& defToken, bool isLocal);
 
     template<typename ParseFunctor>
     void parseSequence(ParseFunctor functor,

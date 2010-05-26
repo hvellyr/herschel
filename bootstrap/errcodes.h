@@ -26,6 +26,7 @@ namespace heather
     E_GenericTypeList     = 0x0009,
     E_UnexpectedEOF       = 0x000a,
     E_MissingBraceOpen    = 0x000b,
+    E_AssignExpected      = 0x000c,
 
     E_SymbolExpected      = 0x1001,
     E_StringExpected      = 0x1002,
@@ -50,6 +51,7 @@ namespace heather
     E_GlobalLet           = 0x4012,
 
     E_MissingType         = 0x4013,
+    E_LocalAliasDef       = 0x4020,
 
     // functions
     E_MissingBody         = 0x4100,

@@ -2350,6 +2350,59 @@ FirstPass::parseGenericFunctionDef(const Token& defToken, bool isLocal)
 
 
 Token
+FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
+{
+  assert(fToken == Parser::aliasToken);
+
+  Token tagToken;
+  if (isLocal) {
+    errorf(fToken.srcpos(), E_LocalAliasDef,
+           "inner alias definitions are not supported.");
+    return scanUntilTopExprAndResume();
+  }
+  else
+    tagToken = fToken;
+  nextToken();
+
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "expected alias name");
+    return scanUntilTopExprAndResume();
+  }
+  Token symToken = fToken;
+  nextToken();
+
+  Token generics;
+  if (fToken == kGenericOpen) {
+    generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
+    parseSequence(TypeParser(),
+                  kGenericOpen, kGenericClose, true, E_GenericTypeList,
+                  generics,
+                  "alias-params");
+  }
+
+
+  if (fToken != kAssign) {
+    errorf(fToken.srcpos(), E_AssignExpected, "expected '='");
+    return scanUntilTopExprAndResume();
+  }
+  Token assignToken = fToken;
+  nextToken();
+
+  Token type = parseTypeSpec(false);
+  if (!type.isSet()) {
+    return scanUntilTopExprAndResume();
+  }
+
+  Token result = Token() << defToken << tagToken
+                         << symToken;
+  if (generics.isSet())
+    result << generics;
+  result << assignToken << type;
+  return result;
+}
+
+
+Token
 FirstPass::parseDef(bool isLocal)
 {
   Token defToken = fToken;
@@ -2359,7 +2412,7 @@ FirstPass::parseDef(bool isLocal)
     // TODO
   }
   else if (fToken == Parser::aliasToken) {
-    // TODO
+    return parseAliasDef(defToken, isLocal);
   }
   else if (fToken == Parser::classToken) {
     // TODO
