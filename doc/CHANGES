@@ -18,7 +18,7 @@ certain things however:
 |     def type name<> : isa                      -- a (global) type
 |     def alias name<> = type                    -- a (global) type alias
 |
-|     def module name(spec)                      -- a module
+|     module name(spec)                          -- a module
 |
 |     let name(prm) : type                       -- a (local) function
 |     let name : type = value                    -- a (local) variable
@@ -26,97 +26,74 @@ certain things however:
 |     let alias name = type                      -- a (local) type alias
 
 
-| Only positional type parameters
+
+Slot definitions
+
+  we need
+
+  - control accessor/mutator function generation
+  - slots should be annotatable ('transient')
+  - why is a slot defined without `def' keyword?
 
 
-| Keyword changes
-|
-|   Call it generic function in the source code also:
-|
-|     def generic name(prm @ type) : type
+  Annotating style:
+
+    def slot name : String = _name ; transient, readonly
+
+  Modifier style:
+
+    def slot transient readonly name : String = _name
 
 
-| Specialization
-|
-|   Don't use "prm : @ type"; use "prm @ type" only.  Specialization is a
-|   special case of type declaration (and it's shorter).
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    public slot current : Pair<T, _> = _root
+    private slot accessor : Accessor = acc
+    transient readonly slot maxcount : Int = 4000 : Int
+  }
 
 
-| Function types
-| 
-|   Return types of methods be covariant with the return type declared in the
-|   generic function:
-| 
-|     def generic f(x @ Any) : Number ...
-| 
-|     def f(x @ Int) : Int ...                -- ok
-|     def f(x @ Real) : Real ...              -- ok
-|     def f(x @ String) : String ...          -- FALSE
-| 
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    slot public current : Pair<T, _> = _root
+    slot private accessor : Accessor = acc
+    slot transient readonly maxcount : Int = 4000 : Int
+  }
 
-| Call it modules, not namespace
-| 
-|   Modules are first class entities.  There's special notation for looking
-|   up members from modules (the | notation).
-| 
-|   Modules are defined not merely stated:
-| 
-|     def module core
-| 
-|   Extending a module is an activate thing, you don't add simply to a
-|   namespace by name matching:
-| 
-|     extend module core
-| 
-|   Extending modules can be prevented by finalizing a module:
-| 
-|     def final module core
-| 
-|   The module name becomes more important:
-| 
-|     module-spec ::= 'def' 'module' modname [ public-spec ]
-|     modname     ::= identifier
-|     public-spec ::= '(' string ')'
-| 
-|   When importing modules the modname can be renamed to avoid name clashes:
-| 
-|     import "core.hea" (core -> hc)
-| 
-|   Internally the modules are addressed by the public-spec not the modname,
-|   which can be renamed.
-| 
-|   Modules can be nested.  The obvious accessor to nested modules members is
-|   modname1|modname2|name.
-| 
-|   Modules can be bracketed:
-| 
-|     def module name {
-|       definitions
-|     }
-| 
-|   This simplifies putting multiple modules in one file
-| 
-|   It's possible to export all symbols in the module to the
-|   outside:
-| 
-|     def module core export public(*)
-| 
-|   Its possible to specify the "modname|" in definitions also:
-| 
-|     def core|to-string(self @ type) : String ...
-| 
-|   This helps in extending single generic functions of other modules.  It's
-|   syntactic sugar for
-| 
-|     extend module core {
-|       def to-string(self @ type) : String ...
-|     }
-| 
-|   Only symbols export to public can be extended from outside.  Export
-|   symbols as final (i.e. not extensible):
-| 
-|     def module core export final public(*)
-| 
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    def slot current : Pair<T, _> = _root ; public
+    def slot accessor : Accessor = acc ; private
+    def slot maxcount : Int = 4000 : Int ; transient, readonly
+  }
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    slot current : Pair<T, _> = _root ; public
+    slot accessor : Accessor = acc ; private
+    slot maxcount : Int = 4000 : Int ; transient, readonly
+  }
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    slot current : Pair<T, _> = _root :: public
+    slot accessor : Accessor = acc :: private
+    slot maxcount : Int = 4000 : Int :: transient, readonly
+  }
+
+
+
+
+
+
 
 Visibility and finalization for modules.
 
@@ -153,217 +130,7 @@ Visibility and finalization for modules.
     }
 
 
-| Import
-| 
-|   Other modules are imported into the current compile unit using the import
-|   expression.  "import" is only possible on module level (i.e. not inside
-|   of functions).  It is possible to import from inside macro expansion of
-|   course (if the macro expands to a module level construct).
-| 
-|   Basic syntax:
-| 
-|     import-stmt    ::= 'import' code-file [ rename-clauses ]
-|     code-file      ::= string
-|     rename-clauses ::= '(' rename-clause { ',' rename-clause } ')'
-|     rename-clause  ::= modname '->' modname
-|     modname        ::= identifier
-| 
-|   The unit to be imported is referenced by the source file name
-|   (code-file), which may include a partial path part.  The name is resolved
-|   relative to the current compile units file location.  There's no
-|   difference between system and local include files.
-| 
-|   Files are imported once per compile unit only, i.e. the import is not a
-|   general include facility.
-| 
-|   If rename-clauses are specific modules during import are renamed.  This
-|   can be used to avoid name clashes.
-| 
 
-| Conditional compiling
-|
-|   Heather does include a preprocessor.
-|
-|     when version(MacOSX) {
-|     }
-|     else {
-|     }
-|
-|   Basic syntax:
-|
-|     when-stmt         ::= 'when' when-condition expr [ when-else-clause ]
-|     when-condition    ::= version-condition | incl-condition | ignore-condition
-|     version-condition ::= 'version' '(' version-spec ')'
-|     version-spec      ::= identifier | number
-|     incl-condition    ::= 'include' '(' incl-spec ')'
-|     incl-spec         ::= identifier [ cmp-op const-value ]
-|     cmp-op            ::= '<' | '>' | '==' | '<>' | '<=' | '>='
-|     const-value       ::= number | string
-|     ignore-condition  ::= 'ignore'
-|     when-else-clause  ::= 'else' expr
-|
-|   Examples:
-|
-|     // replaces #if defined(Linux) ... #endif
-|     when version(Linux) {
-|       when version(LE) {
-|       }
-|       else when version(BE) {
-|       }
-|       else {
-|       }
-|     }
-|
-|     // include code.  Replaces #if RenderDialog == 5 ... #endif
-|     when include(RenderDialog == 5) {
-|     }
-|
-|     // unconditionally ignore code.  Replaces #if 0 ... #endif
-|     when ignore {
-|     }
-|
-|
-|   Such conditional expressions can appear on all levels (top-level and
-|   inside of functions).  The conditional expression must always be valid
-|   code even if currently not active.
-|
-
-| Better notations for union types:
-|
-|   Union type: &(type, type)
-|
-|   Example:
-|
-|     def f(x @ &(String, Bool)) : (Int, String)
-|
-
-| Multiple return values:
-|
-|   Declare a function to return multiple values:
-|
-|     def treefold() : (Int, Char, Bool)
-|
-|   Return multiple values as constant array:
-|
-|     def treefold(f : Bool) : (Int, Char, Bool)
-|       if (f)
-|         return #[100, \a, true]
-|       else
-|         return #[0, \0, false]
-|
-|   Number of values and types must match of course.
-|
-|   Multiple return values behave like real multiple values:
-|
-|     def g(a @ Int, b @ Char, c @ Bool)
-|       display("%d %c %b" % #[a, b, c])
-|
-|     def app|main()
-|       g(treefold(true))
-|
-|     => 100 a true
-|
-|
-|   Assign to variables:
-|
-|     let a, b, c = treefold(false)
-|     a, b, c = treefold(false)
-|
-|   Also possible:
-|
-|     x, y, z = #[1, 2, 3]
-|
-|     def f(val : Vector)
-|       x, y, z = val
-|
-|   The last expression will fail if val has less or more elements than 3, so
-|   better to write:
-|
-|     def f(val : Vector)
-|       x, y, z = val[0 .. 3]
-|
-
-| Parameterization:
-|
-|     def generic add-item(self @ List<'T>, obj @ 'T) : List<'T> ...
-|
-|   and with constraints:
-|
-|     def generic add-item(self @ List<'T>, obj @ 'T) : List<'T>
-|       where T <= 100 and
-|             T isa Comparable<T>
-|
-
-| Constraint vs. typed parameterization:
-|
-|   The following generic function declaration:
-|
-|     def generic f(one @ (Int <= 100)) ...
-|
-|   is specialized on the constraint type "Int <= 100".  An call "f(150)"
-|   will fail.  The following declaration however:
-|
-|     def generic f(one @ 'T) where T <= 100 ...
-|
-|   is specialized on ANY type, the compile however will check as compile
-|   time that only types are passed to f which has a value constraint "<=
-|   100".  This could be any Int, Word, Octet, Float or even complex number.
-|
-|   Similarly the following function xyz
-|
-|     def generic xyz(a @ 'T) : 'T where T isa Comparable<T> ...
-|
-|   is spezialed on Any, but the compile will check than every type passed in
-|   for T is a list of type Comparable.
-
-
-| Standalone function notation:
-|
-|   function(x) : type { x + x }
-|
-|   and as type declaration:
-|
-|   Function(x) : type
-|
-
-| Unary operators and expressions:
-| 
-|   The following unary operators and commands are defined:
-| 
-| ??    return expr         (return)
-|     not expr            (logical not)
-|     - expr              (negate)
-|     spawn expr          (stark thread)
-| 
-
-| Header vs. Source file
-| 
-|   Normally header files are not necessary.  The compiler takes the source
-|   files directly and declaration and implementation is in the same file.
-| 
-|   For distributed libraries however a set of header files is required which
-|   contains the public API for the library.  These header files follow the
-|   normal implementation files but
-| 
-|     - function and generic functions are written as abstracted signatures
-|       only:
-| 
-|       def fun(a : Int, b = 5, args ...) : Bool ...
-| 
-|     - class must list their slots, but can must not give any "on init()" or
-|       "on delete()" specification.  Required methods must be in the class
-|       body like with implementation files.
-| 
-
-| Program main entry point
-| 
-|   The compiler will start the program at a function called "main()" in the
-|   "app" module.  This must be declared by the user.  Hello world in heather
-|   is therefore:
-| 
-|   def app|main()
-|     display("hello, world!", \nl)
- 
 
 Lazy evaluation
 
@@ -471,7 +238,7 @@ A-Z digits                              digits
 []  slicing                             array
     arrays
 \   char constants                      escaping
-^   [----------]                        operator (xor)
+^   [----------] *)                     operator (xor)
 _   identifier                          identifier
     current type notifier
 `   measure types                       [----------]
@@ -483,3 +250,4 @@ a-z digits                              digits
 ~   [----------]                        operator (bit not)
 
 
+*) reserved for call-by-reference/call-by-value experiments
