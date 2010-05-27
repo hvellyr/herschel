@@ -171,8 +171,8 @@ def type Sequence<T> : (Collection<T>,
 
 def class Assoc<K, V>(_key : K, _val : V)
 {
-  slot key : K = _key
-  slot value : V = _val
+  def slot key : K = _key
+  def slot value : V = _val
 }
 
 def type AssocCollection<K, V> : Collection<Assoc<K, V> >

@@ -90,9 +90,9 @@ def core|to-string(self @ Assoc<'K, 'V>) : String
 
 def class Triple<Key, Value, Tail>(_key : Key, _val : Value, _tail : Tail)
 {
-  slot key : Key = _key
-  slot value : Value = _val
-  slot tail : Tail = _tail
+  def slot key : Key = _key
+  def slot value : Value = _val
+  def slot tail : Tail = _tail
 }
 
 def generic key?(self @ Triple<'K, 'V, 'T>, other : 'K) : Bool
@@ -110,8 +110,8 @@ def const %default-size% = 16
 def class HashMap<Key, Elt>(items : Ordinal = %default-size%)
     : (Comparable, AssocCollection<Key, Elt>)
 {
-  slot table : Vector<Triple<Key, Elt, _> >
-  slot elts : Ordinal = items
+  def slot table : Vector<Triple<Key, Elt, _> >
+  def slot elts : Ordinal = items
 
   on init(self) {
     if (elts > 0)
