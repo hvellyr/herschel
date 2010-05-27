@@ -1,0 +1,11 @@
+def f(self, 
+      proc : Function(item : Item) : Bool = function(item : Item) : Bool {
+               item
+             })
+  self.for-each(proc)
+
+def g(self, 
+      proc : (Function(item : Item) : Bool) = function(item : Item) : Bool {
+               item
+             })
+  self.for-each(proc)

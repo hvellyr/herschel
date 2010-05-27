@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>def</id><id>value-iterators</id><nested left='(' right=')'><seq><id>root</id><punct type=':'/><seq><id>Pair</id><nested left='&lt;' right='>'><id>String</id><punct type=','/><id>_</id></nested></seq></seq></nested><punct type=':'/><id>Any</id><nested left='{' right='}'><seq><id>root</id><id>then</id><seq><id>cdr</id><nested left='(' right=')'><id>root</id></nested></seq><id>while</id><seq><id>root</id><punct type='&lt;>'/><id>nil</id></seq></seq></nested></seq></seq>
