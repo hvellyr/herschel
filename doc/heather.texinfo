@@ -1431,11 +1431,11 @@ def type Collection<Elt>
 @end example
 
 Such defined required functions must be defined without body (i.e.@
-require the ellipsis on the line end) and are by default defined as
-generic functions.  The keyword @code{generic} is optional here.
-Functions declared in this way must be compatible with generic functions
-of same name defined in other places (independent whether defined as
-standalone or required generic functions).
+require the ellipsis on the line end) and must by default be defined
+as generic functions.  Functions declared in this way must be
+compatible with generic functions of same name defined in other places
+(independent whether defined as standalone or required generic
+functions).
 
 @c For required functions specialized parameters which refer to the
 @c enclosing type can be abbreviated with a simple `@@' marker.
