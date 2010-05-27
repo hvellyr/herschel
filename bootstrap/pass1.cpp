@@ -79,6 +79,28 @@ FirstPass::scanUntilBrace()
 }
 
 
+Token
+FirstPass::scanUntilEndOfParameters()
+{
+  int paranLevel = 0;
+  while (fToken != kEOF) {
+    if (fToken == kParanOpen)
+      paranLevel++;
+    else if (fToken == kParanClose) {
+      if (paranLevel > 0)
+        paranLevel--;
+      else {
+        nextToken();
+        break;
+      }
+    }
+    nextToken();
+  }
+
+  return Token();
+}
+
+
 template<typename ParseFunctor>
 void
 FirstPass::parseSequence(ParseFunctor functor,
@@ -349,7 +371,7 @@ struct heather::TypeParser
             String("returntype expression expected: ") + pass->fToken.toString());
       pass->scanUntilNextParameter();
     }
-    else 
+    else
       result << type;
     return true;
   }
@@ -1148,10 +1170,6 @@ FirstPass::parseExprListUntilBrace(TokenVector* result,
     }
     else if (fToken == kEOF) {
       return true;
-    }
-    else if (fToken == kSemicolon) {
-      nextToken();
-      continue;
     }
     else if (fToken == kWhenId) {
       expr = parseWhen(!isLocal);
@@ -2433,14 +2451,15 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
 
 
 Token
-FirstPass::parseTypeDef(const Token& defToken, bool isLocal)
+FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 {
-  assert(fToken == Parser::typeToken);
+  assert((isClass && fToken == Parser::classToken) ||
+         (!isClass && fToken == Parser::typeToken) );
 
   Token tagToken;
   if (isLocal) {
     errorf(fToken.srcpos(), E_LocalTypeDef,
-           "inner type definitions are not supported.");
+           "inner type/class definitions are not supported.");
     return scanUntilTopExprAndResume();
   }
   else
@@ -2461,6 +2480,24 @@ FirstPass::parseTypeDef(const Token& defToken, bool isLocal)
                   kGenericOpen, kGenericClose, true, E_GenericTypeList,
                   generics,
                   "typedef-params");
+  }
+
+  Token ctorParams;
+  if (fToken == kParanOpen) {
+    SrcPos paranPos = fToken.srcpos();
+    if (isClass) {
+      TokenVector params;
+      if (!parseFunctionsParams(&params))
+        return scanUntilTopExprAndResume();
+
+      ctorParams = Token(paranPos, kParanOpen, kParanClose) << params;
+    }
+    else {
+      errorf(paranPos, E_CtorNotInTypes,
+             "ctor parameters are not allowed in 'type' def");
+      nextToken();
+      scanUntilEndOfParameters();
+    }
   }
 
   Token colonToken;
@@ -2490,6 +2527,8 @@ FirstPass::parseTypeDef(const Token& defToken, bool isLocal)
   Token result = Token() << defToken << tagToken << symToken;
   if (generics.isSet())
     result << generics;
+  if (ctorParams.isSet())
+    result << ctorParams;
 
   if (colonToken.isSet() && isaType.isSet())
     result << colonToken << isaType;
@@ -2512,12 +2551,15 @@ FirstPass::parseDef(bool isLocal)
   nextToken();
 
   if (fToken == Parser::typeToken) {
-    return parseTypeDef(defToken, isLocal);
+    return parseTypeDef(defToken, false, isLocal);
+  }
+  else if (fToken == Parser::classToken) {
+    return parseTypeDef(defToken, true, isLocal);
   }
   else if (fToken == Parser::aliasToken) {
     return parseAliasDef(defToken, isLocal);
   }
-  else if (fToken == Parser::classToken) {
+  else if (fToken == Parser::slotToken) {
     // TODO
   }
   else if (fToken == Parser::enumToken) {

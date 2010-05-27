@@ -35,6 +35,7 @@ const Token Parser::initToken      = Token(SrcPos(), kSymbol, "init");
 const Token Parser::macroToken     = Token(SrcPos(), kSymbol, "macro");
 const Token Parser::measureToken   = Token(SrcPos(), kSymbol, "measure");
 const Token Parser::signalToken    = Token(SrcPos(), kSymbol, "signal");
+const Token Parser::slotToken      = Token(SrcPos(), kSymbol, "slot");
 const Token Parser::syncToken      = Token(SrcPos(), kSymbol, "sync");
 const Token Parser::typeToken      = Token(SrcPos(), kSymbol, "type");
 const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
