@@ -51,7 +51,7 @@ import "common.head"
 --! (as far as representable as Unicode characters).
 def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
 {
-  slot data : Char[]
+  def slot data : Char[]
 
   --! Returns the length of @var{str} in characters
   def generic length(str @ String) : Ordinal ...

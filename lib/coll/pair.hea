@@ -42,8 +42,8 @@ import(core)
 def class Pair<Car, Cdr>(car: _car : Car = nil,
                          cdr: _cdr : Cdr = nil)
 {
-  public slot car : Car = _car
-  public slot cdr : Cdr = _cdr
+  def slot car : Car = _car ; public
+  def slot cdr : Cdr = _cdr ; public
 }
 
 def alias NodePrinterFunc<L, R> = Function(node : Pair<L, R>) : Unspecified
@@ -84,8 +84,8 @@ def alias PairIteratorAccessorFunc<T> = Function(node : Pair<T, _>) : T
 def class PairIterator<T, Accessor<T> >(_root, acc)
     : Iterator<T>
 {
-  public slot current : Pair<T, _> = _root
-  private slot accessor : Accessor = acc
+  def slot current : Pair<T, _> = _root ; public
+  def slot accessor : Accessor = acc ; private
 }
 
 

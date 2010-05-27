@@ -43,9 +43,9 @@ def class StringSlice(_str : String,
                       _from : Ordinal,
                       _to : Ordinal) : Slice<Ordinal, Char>
 {
-  slot str = _str
-  slot from = _from
-  slot to = _to
+  def slot str = _str
+  def slot from = _from
+  def slot to = _to
 }
 
 

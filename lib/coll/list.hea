@@ -48,8 +48,8 @@ def find-last-node(node @ Pair<'L, 'R>) : Pair<'L, 'R>
 def class List<Elt>(root: _root : Pair<Elt, _> = nil)
     : Sequence<Elt>
 {
-  slot root : Pair<Elt, _> = _root
-  slot last : Pair<Elt, _> = nil
+  def slot root : Pair<Elt, _> = _root
+  def slot last : Pair<Elt, _> = nil
 
   on init(self) {
     -- set self.last to the last element in the list
