@@ -167,7 +167,7 @@ struct heather::ModuleParser
 {
   bool operator() (FirstPass* pass, Token& result)
   {
-    Token n = pass->parseTop();
+    Token n = pass->parseTop(FirstPass::kNonScopedDef);
     if (n.isSet())
       result << n;
     else {
@@ -1160,10 +1160,10 @@ FirstPass::parseExprListUntilBrace(TokenVector* result,
     else if (fToken == kLetId) {
       if (!isLocal) {
         errorf(fToken.srcpos(), E_GlobalLet, "'let' is not allowed here");
-        parseDef(isLocal);
+        parseDef(isLocal, kNonScopedDef);
         continue;
       }
-      expr = parseDef(isLocal);
+      expr = parseDef(isLocal, kNonScopedDef);
     }
     else if (fToken == kBraceClose) {
       return true;
@@ -1172,7 +1172,7 @@ FirstPass::parseExprListUntilBrace(TokenVector* result,
       return true;
     }
     else if (fToken == kWhenId) {
-      expr = parseWhen(!isLocal);
+      expr = parseWhen(!isLocal, kNonScopedDef);
     }
     else {
       SrcPos startPos = fToken.srcpos();
@@ -1629,7 +1629,7 @@ FirstPass::parseAtomicExpr()
     return parseUnaryOp(fToken);
 
   case kWhenId:
-    return parseWhen(false);
+    return parseWhen(false, kNonScopedDef);
   case kSelectId:
     return parseSelect();
   case kMatchId:
@@ -1850,12 +1850,12 @@ FirstPass::parseExpr()
 
 
 void
-FirstPass::parseTopExprUntilBrace(TokenVector* result)
+FirstPass::parseTopExprUntilBrace(TokenVector* result, ScopeType scope)
 {
   while (fToken != kBraceClose) {
     if (fToken == kEOF)
       break;
-    Token topexpr = parseTop();
+    Token topexpr = parseTop(scope);
     result->push_back(topexpr);
   }
 
@@ -1865,7 +1865,7 @@ FirstPass::parseTopExprUntilBrace(TokenVector* result)
 
 
 Token
-FirstPass::parseTopOrExprList(bool isTopLevel)
+FirstPass::parseTopOrExprList(bool isTopLevel, ScopeType scope)
 {
   if (isTopLevel) {
     if (fToken == kBraceOpen) {
@@ -1873,18 +1873,18 @@ FirstPass::parseTopOrExprList(bool isTopLevel)
       nextToken();
 
       TokenVector exprs;
-      parseTopExprUntilBrace(&exprs);
+      parseTopExprUntilBrace(&exprs, scope);
 
       return Token(bracePos, kBraceOpen, kBraceClose) << exprs;
     }
-    return parseTop();
+    return parseTop(scope);
   }
   return parseExpr();
 }
 
 
 Token
-FirstPass::parseWhen(bool isTopLevel)
+FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
 {
   Token result;
   result << fToken;
@@ -1964,7 +1964,7 @@ FirstPass::parseWhen(bool isTopLevel)
 
   {
     ValueSaver<bool> keep(fEvaluateExprs, inclConsequent);
-    consequent = parseTopOrExprList(isTopLevel);
+    consequent = parseTopOrExprList(isTopLevel, scope);
   }
 
   if (fToken == kElseId) {
@@ -1972,7 +1972,7 @@ FirstPass::parseWhen(bool isTopLevel)
     nextToken();
     {
       ValueSaver<bool> keep(fEvaluateExprs, inclAlternate);
-      alternate = parseTopOrExprList(isTopLevel);
+      alternate = parseTopOrExprList(isTopLevel, scope);
     }
   }
 
@@ -1994,7 +1994,7 @@ FirstPass::parseWhen(bool isTopLevel)
 
 
 Token
-FirstPass::parseExtend()
+FirstPass::parseExtend(ScopeType scope)
 {
   assert(fToken == kExtendId);
   Token extendToken = fToken;
@@ -2017,7 +2017,7 @@ FirstPass::parseExtend()
   nextToken();
 
   if (fToken == kBraceOpen) {
-    Token code = parseTopOrExprList(true);
+    Token code = parseTopOrExprList(true, scope);
     if (code.isSet())
       return Token() << extendToken << moduleToken
                      << modNameToken << code;
@@ -2147,7 +2147,7 @@ FirstPass::parseCharDef(const Token& defToken)
   int codePoint = 0xffff;
 
   if (fToken != kInt) {
-    errorf(fToken.srcpos(), E_DefInitValueUnexpectedToken,
+    errorf(fToken.srcpos(), E_DefInitUnexpToken,
            "expected INTEGER");
     codePointToken = Token(fToken.srcpos(), kInt, 0xffff);
   }
@@ -2519,7 +2519,9 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 
   Token requiredProtocol;
   if (fToken == kBraceOpen) {
-    requiredProtocol = parseTopOrExprList(true);
+    requiredProtocol = parseTopOrExprList(true, (isClass
+                                                 ? kInClassDef
+                                                 : kInTypeDef) );
     if (!requiredProtocol.isSet())
       return scanUntilTopExprAndResume();
   }
@@ -2543,54 +2545,169 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 }
 
 
+Token
+FirstPass::parseSlotDef(const Token& defToken)
+{
+  assert(fToken == Parser::slotToken);
+  Token tagToken = fToken;
+  nextToken();
+
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "expected slot name");
+    return scanUntilTopExprAndResume();
+  }
+  Token symToken = fToken;
+  nextToken();
+
+  Token colonToken;
+  Token isaType;
+  if (fToken == kColon) {
+    colonToken = fToken;
+    nextToken();
+    SrcPos pos = fToken.srcpos();
+    isaType = parseTypeSpec(true);
+    if (!isaType.isSet()) {
+      errorf(pos, E_MissingType, "type expression expected");
+      isaType = Token(fToken.srcpos(), kSymbol, "Any");
+    }
+  }
+
+  Token assignToken;
+  Token initExpr;
+  if (fToken == kAssign) {
+    assignToken = fToken;
+    nextToken();
+
+    SrcPos pos = fToken.srcpos();
+    initExpr = parseExpr();
+    if (!initExpr.isSet())
+      errorf(pos, E_MissingRHExpr, "no value in var init");
+  }
+
+  Token semiToken;
+  TokenVector annotations;
+  if (fToken == kSemicolon) {
+    semiToken = fToken;
+    nextToken();
+
+    Token delayedComma;
+    while (fToken != kEOF) {
+      if (fToken == kSymbol) {
+        if (delayedComma.isSet())
+          annotations.push_back(delayedComma);
+        annotations.push_back(fToken);
+        nextToken();
+
+        if (fToken == kComma) {
+          delayedComma = fToken;
+          nextToken();
+        }
+        else
+          break;
+      }
+      else if (!annotations.empty())
+        break;
+      else {
+        errorf(fToken.srcpos(), E_UnexpectedToken, "expected SYMBOL");
+        scanUntilTopExprAndResume();
+        break;
+      }
+    }
+  }
+
+
+  Token slotDefToken = Token() << defToken << tagToken << symToken;
+  if (colonToken.isSet() && isaType.isSet())
+    slotDefToken << colonToken << isaType;
+  if (assignToken.isSet() && initExpr.isSet())
+    slotDefToken << assignToken << initExpr;
+  if (semiToken.isSet() && !annotations.empty())
+    slotDefToken << semiToken << annotations;
+
+  return slotDefToken;
+}
+
 
 Token
-FirstPass::parseDef(bool isLocal)
+FirstPass::parseDef(bool isLocal, ScopeType scope)
 {
   Token defToken = fToken;
   nextToken();
 
-  if (fToken == Parser::typeToken) {
-    return parseTypeDef(defToken, false, isLocal);
-  }
-  else if (fToken == Parser::classToken) {
-    return parseTypeDef(defToken, true, isLocal);
-  }
-  else if (fToken == Parser::aliasToken) {
-    return parseAliasDef(defToken, isLocal);
-  }
-  else if (fToken == Parser::slotToken) {
-    // TODO
-  }
-  else if (fToken == Parser::enumToken) {
-    // TODO
-  }
-  else if (fToken == Parser::measureToken) {
-    // TODO
-  }
-  else if (fToken == Parser::unitToken) {
-    // TODO
-  }
-  else if (fToken == Parser::constToken ||
-           fToken == Parser::fluidToken ||
-           fToken == Parser::configToken) {
-    return parseVarDef(defToken, fToken, isLocal);
-  }
-  else if (fToken == Parser::genericToken) {
-    return parseGenericFunctionDef(defToken, isLocal);
-  }
-  else if (fToken == Parser::charToken) {
-    return parseCharDef(defToken);
-  }
-  else if (fToken == Parser::macroToken) {
-    // TODO
-  }
-  else if (fToken == kSymbol)
-    return parseFunctionOrVarDef(defToken, isLocal);
-  else {
-    errorf(fToken.srcpos(), E_DefInitValueUnexpectedToken,
-           "Bad init value: %s", (const char*)StrHelper(fToken.toString()));
-    return scanUntilTopExprAndResume();
+  switch (scope) {
+  case kInTypeDef:
+    if (fToken == Parser::genericToken) {
+      return parseGenericFunctionDef(defToken, isLocal);
+    }
+    else {
+      error(fToken.srcpos(), E_UnexpDefInClass,
+            ( String("unexpected definition type '") + fToken.toString()
+              + "'in class") );
+      return scanUntilTopExprAndResume();
+    }
+    break;
+
+  case kInClassDef:
+    if (fToken == Parser::slotToken) {
+      return parseSlotDef(defToken);
+    }
+    else if (fToken == Parser::genericToken) {
+      return parseGenericFunctionDef(defToken, isLocal);
+    }
+    else {
+      error(fToken.srcpos(), E_UnexpDefInClass,
+            ( String("unexpected definition type '") + fToken.toString()
+              + "'in class") );
+      return scanUntilTopExprAndResume();
+    }
+    break;
+
+  case kNonScopedDef:
+    if (fToken == Parser::typeToken) {
+      return parseTypeDef(defToken, false, isLocal);
+    }
+    else if (fToken == Parser::classToken) {
+      return parseTypeDef(defToken, true, isLocal);
+    }
+    else if (fToken == Parser::aliasToken) {
+      return parseAliasDef(defToken, isLocal);
+    }
+    else if (fToken == Parser::slotToken) {
+      errorf(fToken.srcpos(), E_SlotNotInClassDef,
+             "slot definitions only allowed in class defs.");
+      return scanUntilTopExprAndResume();
+    }
+    else if (fToken == Parser::enumToken) {
+      // TODO
+    }
+    else if (fToken == Parser::measureToken) {
+      // TODO
+    }
+    else if (fToken == Parser::unitToken) {
+      // TODO
+    }
+    else if (fToken == Parser::constToken ||
+             fToken == Parser::fluidToken ||
+             fToken == Parser::configToken) {
+      return parseVarDef(defToken, fToken, isLocal);
+    }
+    else if (fToken == Parser::genericToken) {
+      return parseGenericFunctionDef(defToken, isLocal);
+    }
+    else if (fToken == Parser::charToken) {
+      return parseCharDef(defToken);
+    }
+    else if (fToken == Parser::macroToken) {
+      // TODO
+    }
+    else if (fToken == kSymbol)
+      return parseFunctionOrVarDef(defToken, isLocal);
+    else {
+      errorf(fToken.srcpos(), E_DefInitUnexpToken,
+             "Bad init value: %s", (const char*)StrHelper(fToken.toString()));
+      return scanUntilTopExprAndResume();
+    }
+    break;
   }
 
   return Token();
@@ -2598,7 +2715,7 @@ FirstPass::parseDef(bool isLocal)
 
 
 Token
-FirstPass::parseTop()
+FirstPass::parseTop(ScopeType scope)
 {
   if (fToken == kModuleId) {
     return parseModule(true);
@@ -2613,13 +2730,22 @@ FirstPass::parseTop()
     return parseImport();
   }
   else if (fToken == kDefId) {
-    return parseDef(false);
+    return parseDef(false, scope);
   }
   else if (fToken == kWhenId) {
-    return parseWhen(true);
+    return parseWhen(true, scope);
   }
   else if (fToken == kExtendId) {
-    return parseExtend();
+    return parseExtend(scope);
+  }
+  else if (fToken == kOnId) {
+    if (scope == kInClassDef)
+      return parseOn();
+    else {
+      errorf(fToken.srcpos(), E_UnexpectedToken,
+             "Unexpected token: %s", (const char*)StrHelper(fToken.toString()));
+      return scanUntilTopExprAndResume();
+    }
   }
   else {
     errorf(fToken.srcpos(), E_UnexpectedToken,
@@ -2638,7 +2764,7 @@ FirstPass::parse()
 
   nextToken();
   while (fToken != kEOF) {
-    Token n = parseTop();
+    Token n = parseTop(kNonScopedDef);
     if (n.isSet())
       seq << n;
   }

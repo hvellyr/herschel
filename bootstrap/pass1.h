@@ -46,11 +46,17 @@ namespace heather
     friend class BasePatternParser;
     friend struct ForClauseParser;
 
-    Token parseTop();
+    enum ScopeType {
+      kNonScopedDef,
+      kInTypeDef,
+      kInClassDef
+    };
+
+    Token parseTop(ScopeType scope);
     Token parseModule(bool isModule);
     Token parseExport();
     Token parseImport();
-    Token parseDef(bool isLocal);
+    Token parseDef(bool isLocal, ScopeType scope);
     Token parseCharDef(const Token& defToken);
     Token parseVarDef(const Token& defToken, const Token& tagToken,
                       bool isLocal);
@@ -112,13 +118,13 @@ namespace heather
     bool parseExprListUntilBrace(TokenVector* exprlist,
                                  bool endAtToplevelId,
                                  bool isLocal);
-    void parseTopExprUntilBrace(TokenVector* result);
-    Token parseTopOrExprList(bool isTopLevel);
+    void parseTopExprUntilBrace(TokenVector* result, ScopeType scope);
+    Token parseTopOrExprList(bool isTopLevel, ScopeType scope);
 
     bool parseFunctionsParams(TokenVector* exprlist);
 
-    Token parseWhen(bool isTopLevel);
-    Token parseExtend();
+    Token parseWhen(bool isTopLevel, ScopeType scope);
+    Token parseExtend(ScopeType scope);
 
 
     Token evaluateConfigExpr(const Token& initExpr);
@@ -139,6 +145,7 @@ namespace heather
 
     Token parseAliasDef(const Token& defToken, bool isLocal);
     Token parseTypeDef(const Token& defToken, bool isClass, bool isLocal);
+    Token parseSlotDef(const Token& defToken);
 
     template<typename ParseFunctor>
     void parseSequence(ParseFunctor functor,

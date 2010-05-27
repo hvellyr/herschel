@@ -44,7 +44,7 @@ namespace heather
     E_BadNumberNotation   = 0x0107,
 
     // def parsing
-    E_DefInitValueUnexpectedToken = 0x4001,
+    E_DefInitUnexpToken   = 0x4001,
     E_DefNoInitValue      = 0x4002,
     E_LocalGenericFunc    = 0x4010,
     E_BadCharValue        = 0x4011,
@@ -55,6 +55,9 @@ namespace heather
     E_LocalAliasDef       = 0x4020,
     E_LocalTypeDef        = 0x4021,
     E_CtorNotInTypes      = 0x4022,
+    E_NestedTypeDef       = 0x4023,
+    E_SlotNotInClassDef   = 0x4024,
+    E_UnexpDefInClass     = 0x4025,
 
     // functions
     E_MissingBody         = 0x4100,
