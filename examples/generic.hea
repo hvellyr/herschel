@@ -2,8 +2,8 @@ def generic to-string(self @ Any) : String ...
 
 def type Student(name: _name = "", subjects: _subj = #[])
 {
-  slot name = _name
-  slot subjects = _subj
+  def slot name = _name
+  def slot subjects = _subj
 }
 
 def to-string(self) : String
