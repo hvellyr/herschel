@@ -130,6 +130,7 @@ namespace heather
     Token scanUntilTopExprAndResume();
     Token scanUntilNextParameter();
     Token scanUntilBrace();
+    Token scanUntilEndOfParameters();
 
 
     Token parseGenericFunctionDef(const Token& defToken, bool isLocal);
@@ -137,7 +138,7 @@ namespace heather
     Token parseUnaryOp(const Token& inOpToken);
 
     Token parseAliasDef(const Token& defToken, bool isLocal);
-    Token parseTypeDef(const Token& defToken, bool isLocal);
+    Token parseTypeDef(const Token& defToken, bool isClass, bool isLocal);
 
     template<typename ParseFunctor>
     void parseSequence(ParseFunctor functor,

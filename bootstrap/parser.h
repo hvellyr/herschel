@@ -106,6 +106,7 @@ namespace heather
     static const Token macroToken;
     static const Token measureToken;
     static const Token signalToken;
+    static const Token slotToken;
     static const Token syncToken;
     static const Token typeToken;
     static const Token unitToken;

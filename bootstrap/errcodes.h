@@ -50,9 +50,11 @@ namespace heather
     E_BadCharValue        = 0x4011,
     E_GlobalLet           = 0x4012,
 
+    // typedef parsing
     E_MissingType         = 0x4013,
     E_LocalAliasDef       = 0x4020,
     E_LocalTypeDef        = 0x4021,
+    E_CtorNotInTypes      = 0x4022,
 
     // functions
     E_MissingBody         = 0x4100,
