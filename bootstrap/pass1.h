@@ -77,7 +77,7 @@ namespace heather
                        const SrcPos& op1Srcpos);
 
     Token parseTypeSpec(bool onlyNestedConstraints);
-    Token parseSimpleType(const Token& baseType);
+    Token parseSimpleType(const Token& baseType, bool nextIsParsedYet = false);
     Token parseUnionType();
     Token parseGroupType();
     Token parseFunctionType();

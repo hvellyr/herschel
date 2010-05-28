@@ -379,12 +379,13 @@ struct heather::TypeParser
 
 
 Token
-FirstPass::parseSimpleType(const Token& baseType)
+FirstPass::parseSimpleType(const Token& baseToken, bool nextIsParsedYet)
 {
-  assert(fToken == kSymbol);
+  assert(baseToken == kSymbol);
 
-  Token typeName = baseType;
-  nextToken();
+  Token typeName = baseToken;
+  if (!nextIsParsedYet)
+    nextToken();
 
   if (fToken == kGenericOpen) {
     Token generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
@@ -1527,16 +1528,21 @@ struct heather::ForClauseParser
                                    symToken, colonToken, type);
       }
       else {
+        Token first = pass->parseAccess(pass->parseSimpleType(symToken, true));
         if (allowNormalExpr) {
           OperatorType op1 = tokenTypeToOperator(pass->fToken.tokenType());
           SrcPos op1Srcpos = pass->fToken.srcpos();
 
           if (op1 != kOpInvalid) {
-            Token expr = pass->parseExprRec(symToken, op1, op1Srcpos);
+            Token expr = pass->parseExprRec(first, op1, op1Srcpos);
             if (expr.isSet()) {
               result << expr;
               return true;
             }
+          }
+          else {
+            result << first;
+            return true;
           }
         }
 
