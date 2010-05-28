@@ -49,21 +49,21 @@ def class StringSlice(_str : String,
 }
 
 
-def num-items(slice @ StringSlice) : Ordinal
-  slice.str.length
+def num-items(sl @ StringSlice) : Ordinal
+  sl.str.length
 
 
-def empty?(slice @ StringSlice) : Bool
-  slice.str.empty?
+def empty?(sl @ StringSlice) : Bool
+  sl.str.empty?
 
 
-def slice(slice @ StringSlice, idx @ Ordinal) : Char
-  slice.str[idx]
+def slice(sl @ StringSlice, idx @ Ordinal) : Char
+  sl.str[idx]
 
 
-def slice(slice @ StringSlice, from @ Ordinal, to @ Ordinal)
+def slice(sl @ StringSlice, from @ Ordinal, to @ Ordinal)
           : Slice<Ordinal, Char>
-  slice.str[idx, from, to]
+  sl.str.slice(from, to)
 
 
 ------------------------------------------------------------------------------
