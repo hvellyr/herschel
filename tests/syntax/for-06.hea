@@ -1,0 +1,16 @@
+def find-last-node(node @ Pair<'L, 'R>) : Pair<'L, 'R>
+  let p = node
+  if (p <> nil) {
+    for (p.cdr <> nil)
+      p = p.cdr
+  }
+  p
+
+
+def f0(p, k)
+  for (p[0])
+    k
+
+def f1(p, k)
+  for (T<A>().do(p[0]))
+    k
