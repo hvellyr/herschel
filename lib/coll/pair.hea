@@ -33,7 +33,7 @@
 module coll ("eyestep/heather 1.0:collections")
 export public(Pair, value-iterator)
 
-import(core)
+import "core"
 
 --! Simple LISP like pair/list implementation.
 --!
@@ -67,7 +67,7 @@ def core|to-string(self @ Pair<'L, 'R>) : String
       port.writes(p.car.to-string)
 
       let pcdr = p.cdr
-      if (pcdr <> nil))
+      if (pcdr <> nil)
         pcdr.pair-cell-to-string(port, printer)
     }
 
