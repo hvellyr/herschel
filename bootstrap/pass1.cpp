@@ -1600,13 +1600,38 @@ FirstPass::parseFor()
 
 
 Token
+FirstPass::parseUnitNumber(const Token& token)
+{
+  Token number = token;
+  nextToken();
+  if (fToken == kBackQuote) {
+    Token bqToken = fToken;
+    nextToken();
+
+    if (fToken != kSymbol) {
+      errorf(fToken.srcpos(), E_UnitExpected, "unit name expected");
+      return number;
+    }
+
+    Token symToken = fToken;
+    nextToken();
+
+    return Token() << number << bqToken << symToken;
+  }
+  return number;
+}
+
+
+Token
 FirstPass::parseAtomicExpr()
 {
   switch (fToken.tokenType()) {
-  case kBool:
   case kInt:
   case kReal:
   case kRational:
+    return parseUnitNumber(fToken);
+
+  case kBool:
   case kString:
   case kChar:
   case kKeyword:

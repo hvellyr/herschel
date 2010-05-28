@@ -71,6 +71,7 @@ namespace heather
 
     Token parseExpr();
     Token parseAtomicExpr();
+    Token parseUnitNumber(const Token& token);
     Token parseExprRec(const Token& expr1, OperatorType op1,
                        const SrcPos& op1Srcpos);
 
