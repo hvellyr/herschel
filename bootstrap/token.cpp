@@ -1266,6 +1266,15 @@ Token::toPort(Port<Octet>* port) const
 }
 
 
+Token 
+Token::unwrapSingleton() const
+{
+  return (isSeq() && children().size() == 1
+          ? children()[0]
+          : *this);
+}
+
+
 //----------------------------------------------------------------------------
 
 String
@@ -1405,6 +1414,18 @@ public:
       assert(t.isQualifiedId());
       assert(t.baseName() == String("Package"));
       assert(t.nsName() == String("core|rubitz|packs"));
+    }
+
+    {
+      assert((Token() << Token(sp, kSymbol, "abc")).unwrapSingleton() ==
+             Token(sp, kSymbol, "abc"));
+
+      Token t = Token() << Token(sp, kSymbol, "abc")
+                        << Token(sp, kInt, 27);
+      assert(t.unwrapSingleton() == t);
+
+      assert(Token().unwrapSingleton() == Token());
+      assert(Token(sp, kInt, 4).unwrapSingleton() == Token(sp, kInt, 4));
     }
   }
 };

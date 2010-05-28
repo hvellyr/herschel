@@ -744,9 +744,11 @@ struct heather::ParseFuncParamsParser
   };
 
   ParamType fExpected;
+  bool      fAutoCompleteTypes;
 
-  ParseFuncParamsParser()
-    : fExpected(kPositional)
+  ParseFuncParamsParser(bool autoCompleteTypes)
+    : fExpected(kPositional),
+      fAutoCompleteTypes(autoCompleteTypes)
   { }
 
   bool operator() (FirstPass* pass, Token& result)
@@ -764,6 +766,7 @@ struct heather::ParseFuncParamsParser
       errorf(pass->fToken.srcpos(), E_SymbolExpected,
              "parameter name expected");
       pass->scanUntilNextParameter();
+      return true;
     }
     else {
       paramSeq << pass->fToken;
@@ -780,12 +783,13 @@ struct heather::ParseFuncParamsParser
         if (!type.isSet()) {
           errorf(pos, E_MissingType,
                  "type expression expected");
-          paramSeq << typeIntroToken << Token(pos, kSymbol, "Any");
+          if (fAutoCompleteTypes)
+            paramSeq << typeIntroToken << Token(pos, kSymbol, "Any");
         }
         else
           paramSeq << typeIntroToken << type;
       }
-      else
+      else if (fAutoCompleteTypes)
         paramSeq << Token(typeIntroToken.srcpos(), kColon)
                  << Token(typeIntroToken.srcpos(), kSymbol, "Any");
 
@@ -819,7 +823,7 @@ struct heather::ParseFuncParamsParser
 
     if (fExpected == kPositional) {
       fExpected = paramType;
-      result << paramSeq;
+      result << paramSeq.unwrapSingleton();
     }
     else if (fExpected == kNamed) {
       if (paramType == kPositional)
@@ -827,7 +831,7 @@ struct heather::ParseFuncParamsParser
                "out of order (positional) parameter");
       else {
         fExpected = paramType;
-        result << paramSeq;
+        result << paramSeq.unwrapSingleton();
       }
     }
     else if (fExpected == kRest) {
@@ -841,15 +845,16 @@ struct heather::ParseFuncParamsParser
 
 
 bool
-FirstPass::parseFunctionsParams(TokenVector* exprlist)
+FirstPass::parseFunctionsParams(TokenVector* exprlist, bool autoCompleteType,
+                                bool exceptEmptyList)
 {
   Token params;
-  parseSequence(ParseFuncParamsParser(),
+  parseSequence(ParseFuncParamsParser(autoCompleteType),
                 kParanOpen, kParanClose, true, E_BadParameterList,
                 params,
                 "func-params");
 
-  if (params.isSeq()) {
+  if (params.isSet() || exceptEmptyList) {
     *exprlist = params.children();
     return true;
   }
@@ -2654,6 +2659,55 @@ FirstPass::parseSlotDef(const Token& defToken)
 
 
 Token
+FirstPass::parseMeasure(const Token& defToken, bool isLocal)
+{
+  assert(fToken == Parser::measureToken);
+  Token tagToken = fToken;
+  nextToken();
+
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "expected slot name");
+    return scanUntilTopExprAndResume();
+  }
+  Token symToken = fToken;
+  nextToken();
+
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingUnitTag, "expected unit tag definition");
+    return scanUntilTopExprAndResume();
+  }
+
+  SrcPos paranPos = fToken.srcpos();
+  TokenVector unitParams;
+  if (!parseFunctionsParams(&unitParams, false, false) ||
+      unitParams.empty()) {
+    errorf(paranPos, E_MissingUnitTag, "empty unit parameter definition");
+    return scanUntilTopExprAndResume();
+  }
+
+  if (fToken != kColon) {
+    errorf(fToken.srcpos(), E_MissingBaseType,
+           "expected base type for measure");
+    return scanUntilTopExprAndResume();
+  }
+
+  Token colonToken = fToken;
+  nextToken();
+
+  SrcPos pos = fToken.srcpos();
+  Token isaType = parseTypeSpec(true);
+  if (!isaType.isSet()) {
+    errorf(pos, E_MissingType, "type expression expected");
+    isaType = Token(fToken.srcpos(), kSymbol, "Any");
+  }
+
+  return Token() << defToken << tagToken << symToken
+                 << (Token(paranPos, kParanOpen, kParanClose) << unitParams)
+                 << colonToken << isaType;
+}
+
+
+Token
 FirstPass::parseDef(bool isLocal, ScopeType scope)
 {
   Token defToken = fToken;
@@ -2706,7 +2760,7 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
       // TODO
     }
     else if (fToken == Parser::measureToken) {
-      // TODO
+      return parseMeasure(defToken, isLocal);
     }
     else if (fToken == Parser::unitToken) {
       // TODO

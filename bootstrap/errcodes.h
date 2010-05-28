@@ -59,6 +59,8 @@ namespace heather
     E_NestedTypeDef       = 0x4023,
     E_SlotNotInClassDef   = 0x4024,
     E_UnexpDefInClass     = 0x4025,
+    E_MissingUnitTag      = 0x4026,
+    E_MissingBaseType     = 0x4027,
 
     // functions
     E_MissingBody         = 0x4100,
