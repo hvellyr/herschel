@@ -193,7 +193,7 @@ def enum FileModeType : UWord
   append    =  4h,
   create    =  8h,
   exclusive = 16h,
-  readwrite = read | write
+  readwrite = read OR write
 }
 
 
