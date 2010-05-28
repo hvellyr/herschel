@@ -58,11 +58,11 @@ FirstPass::scanUntilTopExprAndResume()
 
 
 Token
-FirstPass::scanUntilNextParameter()
+FirstPass::scanUntilNextParameter(TokenType endTokenType)
 {
   while (fToken != kEOF &&
          fToken != kComma &&
-         fToken != kParanClose)
+         fToken != endTokenType)
     nextToken();
 
   return Token();
@@ -2754,6 +2754,92 @@ FirstPass::parseUnit(const Token& defToken, bool isLocal)
 }
 
 
+struct heather::EnumItemParser
+{
+  bool operator() (FirstPass* pass, Token& result)
+  {
+    if (pass->fToken != kSymbol) {
+      errorf(pass->fToken.srcpos(), E_SymbolExpected, 
+             "expected enum item name");
+      pass->scanUntilNextParameter(kBraceClose);
+      return true;
+    }
+
+    Token itemName = pass->fToken;
+    pass->nextToken();
+
+    TokenVector enumValue;
+    if (pass->fToken == kAssign) {
+      Token assignToken = pass->fToken;
+      pass->nextToken();
+
+      Token value = pass->parseExpr();
+      if (!value.isLit() && !value.isSymbol()) {
+        errorf(value.srcpos(), E_ConstExprExpected,
+               "enum items can be initialized to const expr only");
+      }
+      else {
+        enumValue.push_back(assignToken);
+        enumValue.push_back(value);
+      }
+    }
+
+    if (enumValue.empty())
+      result << itemName;
+    else
+      result << ( Token() << itemName << enumValue );
+
+    return true;
+  }
+};
+
+
+Token
+FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
+{
+  assert(fToken == Parser::enumToken);
+  Token tagToken = fToken;
+  nextToken();
+
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "expected enum name");
+    return scanUntilTopExprAndResume();
+  }
+  Token enumToken = fToken;
+  nextToken();
+
+  Token colonToken;
+  Token isaType;
+  if (fToken == kColon) {
+    colonToken = fToken;
+    nextToken();
+    SrcPos pos = fToken.srcpos();
+    isaType = parseTypeSpec(true);
+    if (!isaType.isSet()) {
+      errorf(pos, E_MissingType, "type expression expected");
+      isaType = Token(fToken.srcpos(), kSymbol, "Any");
+    }
+  }
+
+  if (fToken != kBraceOpen) {
+    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+    return scanUntilTopExprAndResume();
+  }
+
+  Token items = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
+  parseSequence(EnumItemParser(),
+                kBraceOpen, kBraceClose, true, E_BadEnumItemList,
+                items, "enum-items");
+
+  Token enumDefToken = Token() << defToken << tagToken << enumToken;
+  if (colonToken.isSet() && isaType.isSet())
+    enumDefToken << colonToken << isaType;
+  enumDefToken << items;
+
+  return enumDefToken;
+}
+
+
 Token
 FirstPass::parseDef(bool isLocal, ScopeType scope)
 {
@@ -2804,7 +2890,7 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
       return scanUntilTopExprAndResume();
     }
     else if (fToken == Parser::enumToken) {
-      // TODO
+      return parseEnumDef(defToken, isLocal);
     }
     else if (fToken == Parser::measureToken) {
       return parseMeasure(defToken, isLocal);

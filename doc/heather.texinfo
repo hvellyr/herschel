@@ -4005,7 +4005,7 @@ enumdef-clause  := `enum' enum-name [ `:' base-type ]
                    `{' enum-value-spec { `,' enum-value-spec } `}'
 enum-name       := type-name
 base-type       := type-clause
-enum-value-spec := enum-name `=' const-value
+enum-value-spec := enum-name [ `=' const-value ]
 enum-name       := SYMBOL
 @end verbatim
 @end smallformat
