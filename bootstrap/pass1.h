@@ -136,6 +136,7 @@ namespace heather
     Token parseReifyClause();
 
     Token parseMeasure(const Token& defToken, bool isLocal);
+    Token parseUnit(const Token& defToken, bool isLocal);
 
 
     // resume functions after (syntax) error
