@@ -92,6 +92,9 @@ namespace heather
     // loops
     E_BadForLoopClause    = 0xa501,
     BadExplicitForClause  = 0xa502,
+
+    // enums
+    E_BadEnumItemList     = 0xa600,
   };
 };
 

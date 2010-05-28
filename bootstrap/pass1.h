@@ -45,6 +45,7 @@ namespace heather
     friend struct MatchPatternParser;
     friend class BasePatternParser;
     friend struct ForClauseParser;
+    friend struct EnumItemParser;
 
     enum ScopeType {
       kNonScopedDef,
@@ -137,11 +138,12 @@ namespace heather
 
     Token parseMeasure(const Token& defToken, bool isLocal);
     Token parseUnit(const Token& defToken, bool isLocal);
+    Token parseEnumDef(const Token& defToken, bool isLocal);
 
 
     // resume functions after (syntax) error
     Token scanUntilTopExprAndResume();
-    Token scanUntilNextParameter();
+    Token scanUntilNextParameter(TokenType endTokenType = kParanClose);
     Token scanUntilBrace();
     Token scanUntilEndOfParameters();
 
