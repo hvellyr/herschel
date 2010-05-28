@@ -42,6 +42,7 @@ namespace heather
     E_UnterminatedString  = 0x0105,
     E_BadCharNotation     = 0x0106,
     E_BadNumberNotation   = 0x0107,
+    E_UnitExpected        = 0x0108,
 
     // def parsing
     E_DefInitUnexpToken   = 0x4001,
