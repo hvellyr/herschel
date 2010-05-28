@@ -234,7 +234,7 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       return Token(startPos, kBool, false);
 
     static const ReservedId reservedIds[] = {
-      { String("**"),     kExponent     },
+      { String("**"),            kExponent     },
       { String("<=>"),           kCompare      },
       { String("=="),            kEqual        },
       { String("<>"),            kUnequal      },
