@@ -1613,15 +1613,16 @@ FirstPass::parseUnitNumber(const Token& token)
     Token bqToken = fToken;
     nextToken();
 
-    if (fToken != kSymbol) {
+    if (!fToken.isCharOrUnitName()) {
       errorf(fToken.srcpos(), E_UnitExpected, "unit name expected");
       return number;
     }
-
-    Token symToken = fToken;
+    Token unitToken = ( fToken == kSymbol
+                        ? fToken
+                        : Token(fToken.srcpos(), kSymbol, fToken.toString()) );
     nextToken();
 
-    return Token() << number << bqToken << symToken;
+    return Token() << number << bqToken << unitToken;
   }
   return number;
 }
@@ -2158,11 +2159,13 @@ FirstPass::parseCharDef(const Token& defToken)
 
   nextToken();
 
-  if (fToken != kSymbol) {
+  if (!fToken.isCharOrUnitName()) {
     errorf(fToken.srcpos(), E_MissingDefName, "missing char name");
     return scanUntilTopExprAndResume();
   }
-  Token charNameToken = fToken;
+  Token charNameToken = ( fToken == kSymbol 
+                          ? fToken
+                          : Token(fToken.srcpos(), kSymbol, fToken.toString()) );
 
   nextToken();
   Token assignToken = fToken;
@@ -2340,7 +2343,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       }
       else {
         TokenVector bodyExprs;
-        parseExprListUntilBrace(&bodyExprs, !isLocal, isLocal);
+        parseExprListUntilBrace(&bodyExprs, !isLocal, true);
 
         body = Token(bodyPos, kBraceOpen, kBraceClose) << bodyExprs;
       }
@@ -2676,14 +2679,24 @@ FirstPass::parseMeasure(const Token& defToken, bool isLocal)
     errorf(fToken.srcpos(), E_MissingUnitTag, "expected unit tag definition");
     return scanUntilTopExprAndResume();
   }
-
   SrcPos paranPos = fToken.srcpos();
-  TokenVector unitParams;
-  if (!parseFunctionsParams(&unitParams, false, false) ||
-      unitParams.empty()) {
+  nextToken();
+
+  if (!fToken.isCharOrUnitName()) {
     errorf(paranPos, E_MissingUnitTag, "empty unit parameter definition");
     return scanUntilTopExprAndResume();
   }
+  Token unitToken = ( fToken == kSymbol
+                      ? fToken
+                      : Token(fToken.srcpos(), kSymbol, fToken.toString()) );
+  nextToken();
+  
+  if (fToken != kParanClose) {
+    errorf(fToken.srcpos(), E_MissingParanClose, "expected ')'");
+  }
+  else
+    nextToken();
+
 
   if (fToken != kColon) {
     errorf(fToken.srcpos(), E_MissingBaseType,
@@ -2702,7 +2715,7 @@ FirstPass::parseMeasure(const Token& defToken, bool isLocal)
   }
 
   return Token() << defToken << tagToken << symToken
-                 << (Token(paranPos, kParanOpen, kParanClose) << unitParams)
+                 << (Token(paranPos, kParanOpen, kParanClose) << unitToken)
                  << colonToken << isaType;
 }
 
@@ -2714,11 +2727,13 @@ FirstPass::parseUnit(const Token& defToken, bool isLocal)
   Token tagToken = fToken;
   nextToken();
 
-  if (fToken != kSymbol) {
+  if (!fToken.isCharOrUnitName()) {
     errorf(fToken.srcpos(), E_MissingDefName, "expected unit name");
     return scanUntilTopExprAndResume();
   }
-  Token newUnitToken = fToken;
+  Token newUnitToken = ( fToken == kSymbol
+                         ? fToken
+                         : Token(fToken.srcpos(), kSymbol, fToken.toString()) );
   nextToken();
 
   if (fToken != kMapTo) {
@@ -2726,11 +2741,13 @@ FirstPass::parseUnit(const Token& defToken, bool isLocal)
   Token mapToToken = fToken;
   nextToken();
 
-  if (fToken != kSymbol) {
+  if (!fToken.isCharOrUnitName()) {
     errorf(fToken.srcpos(), E_MissingDefName, "expected reference unit name");
     return scanUntilTopExprAndResume();
   }
-  Token refUnitToken = fToken;
+  Token refUnitToken = ( fToken == kSymbol
+                         ? fToken
+                         : Token(fToken.srcpos(), kSymbol, fToken.toString()) );
   nextToken();
 
   SrcPos signPos = fToken.srcpos();
@@ -2774,11 +2791,7 @@ struct heather::EnumItemParser
       pass->nextToken();
 
       Token value = pass->parseExpr();
-      if (!value.isLit() && !value.isSymbol()) {
-        errorf(value.srcpos(), E_ConstExprExpected,
-               "enum items can be initialized to const expr only");
-      }
-      else {
+      if (value.isSet()) {
         enumValue.push_back(assignToken);
         enumValue.push_back(value);
       }

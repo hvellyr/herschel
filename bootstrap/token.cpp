@@ -1266,12 +1266,53 @@ Token::toPort(Port<Octet>* port) const
 }
 
 
-Token 
+Token
 Token::unwrapSingleton() const
 {
   return (isSeq() && children().size() == 1
           ? children()[0]
           : *this);
+}
+
+
+bool
+Token::isCharOrUnitName() const
+{
+  return (fType == kSymbol ||
+          fType == kIn ||
+          fType == kLogicalAnd ||
+          fType == kLogicalOr ||
+          fType == kMod ||
+          fType == kBitAnd ||
+          fType == kBitOr ||
+          fType == kBitXor ||
+          fType == kIsa ||
+          fType == kAs ||
+          fType == kBy ||
+          fType == kDefId ||
+          fType == kElseId ||
+          fType == kEofId ||
+          fType == kExportId ||
+          fType == kExtendId ||
+          fType == kForId ||
+          fType == kFUNCTIONId ||
+          fType == kFunctionId ||
+          fType == kIfId ||
+          fType == kImportId ||
+          fType == kInterfaceId ||
+          fType == kLetId ||
+          fType == kMatchId ||
+          fType == kModuleId ||
+          fType == kNilId ||
+          fType == kNotId ||
+          fType == kOnId ||
+          fType == kOtherwiseId ||
+          fType == kReifyId ||
+          fType == kSelectId ||
+          fType == kThenId ||
+          fType == kWhenId ||
+          fType == kWhereId ||
+          fType == kWhileId);
 }
 
 
@@ -1329,7 +1370,7 @@ public:
     assert(Token(sp, kKeyword, "abc").stringValue() == String("abc"));
     assert(Token(sp, kKeyarg, "abc").isKeyArg());
 
-    
+
 #define MAKE_RANGE(_fromty, _fromv, _toty, _tov)  \
     (Token() << Token(sp, _fromty, _fromv)        \
              << Token(sp, kRange)                 \

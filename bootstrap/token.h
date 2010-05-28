@@ -316,6 +316,11 @@ namespace heather
     //! otherwise the receiver itself.
     Token unwrapSingleton() const;
 
+
+    //! indicates whether the receiver is an identifier which can be used
+    //! as charname or unit name.
+    bool isCharOrUnitName() const;
+
   private:
     void unshare();
 
