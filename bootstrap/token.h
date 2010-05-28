@@ -242,7 +242,6 @@ namespace heather
     const SrcPos& srcpos() const;
     Token& setSrcpos(const SrcPos& srcpos);
 
-
     TokenType tokenType() const;
     ExprType type() const;
 
@@ -311,6 +310,11 @@ namespace heather
     bool isQualifiedId() const;
     String baseName() const;
     String nsName() const;
+
+
+    //! if the token is a singleton token sequence, return children[0],
+    //! otherwise the receiver itself.
+    Token unwrapSingleton() const;
 
   private:
     void unshare();

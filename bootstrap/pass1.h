@@ -122,7 +122,9 @@ namespace heather
     void parseTopExprUntilBrace(TokenVector* result, ScopeType scope);
     Token parseTopOrExprList(bool isTopLevel, ScopeType scope);
 
-    bool parseFunctionsParams(TokenVector* exprlist);
+    bool parseFunctionsParams(TokenVector* exprlist,
+                              bool autoCompleteType = true,
+                              bool exceptEmptyList = true);
 
     Token parseWhen(bool isTopLevel, ScopeType scope);
     Token parseExtend(ScopeType scope);
@@ -132,6 +134,9 @@ namespace heather
 
     Token parseWhereClause();
     Token parseReifyClause();
+
+    Token parseMeasure(const Token& defToken, bool isLocal);
+
 
     // resume functions after (syntax) error
     Token scanUntilTopExprAndResume();
