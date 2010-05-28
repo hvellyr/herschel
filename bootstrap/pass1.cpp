@@ -2666,7 +2666,7 @@ FirstPass::parseMeasure(const Token& defToken, bool isLocal)
   nextToken();
 
   if (fToken != kSymbol) {
-    errorf(fToken.srcpos(), E_MissingDefName, "expected slot name");
+    errorf(fToken.srcpos(), E_MissingDefName, "expected measure name");
     return scanUntilTopExprAndResume();
   }
   Token symToken = fToken;
@@ -2704,6 +2704,53 @@ FirstPass::parseMeasure(const Token& defToken, bool isLocal)
   return Token() << defToken << tagToken << symToken
                  << (Token(paranPos, kParanOpen, kParanClose) << unitParams)
                  << colonToken << isaType;
+}
+
+
+Token
+FirstPass::parseUnit(const Token& defToken, bool isLocal)
+{
+  assert(fToken == Parser::unitToken);
+  Token tagToken = fToken;
+  nextToken();
+
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "expected unit name");
+    return scanUntilTopExprAndResume();
+  }
+  Token newUnitToken = fToken;
+  nextToken();
+
+  if (fToken != kMapTo) {
+  }
+  Token mapToToken = fToken;
+  nextToken();
+
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "expected reference unit name");
+    return scanUntilTopExprAndResume();
+  }
+  Token refUnitToken = fToken;
+  nextToken();
+
+  SrcPos signPos = fToken.srcpos();
+  Token signature = parseFunctionSignature();
+  if (!signature.isSet()) {
+    errorf(signPos, E_MissingUnitSign, "expected function signature");
+    return scanUntilTopExprAndResume();
+  }
+
+  SrcPos bodyPos = fToken.srcpos();
+  Token body = parseExpr();
+  if (!body.isSet()) {
+    errorf(bodyPos, E_MissingBody, "expected unit def function body");
+    return Token();
+  }
+
+  return Token() << defToken << tagToken
+                 << newUnitToken << mapToToken << refUnitToken
+                 << signature.children()
+                 << body;
 }
 
 
@@ -2763,7 +2810,7 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
       return parseMeasure(defToken, isLocal);
     }
     else if (fToken == Parser::unitToken) {
-      // TODO
+      return parseUnit(defToken, isLocal);
     }
     else if (fToken == Parser::constToken ||
              fToken == Parser::fluidToken ||

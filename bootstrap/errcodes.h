@@ -61,6 +61,7 @@ namespace heather
     E_UnexpDefInClass     = 0x4025,
     E_MissingUnitTag      = 0x4026,
     E_MissingBaseType     = 0x4027,
+    E_MissingUnitSign     = 0x4028,
 
     // functions
     E_MissingBody         = 0x4100,
