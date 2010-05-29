@@ -36,7 +36,7 @@ Bootstrap compiler
 
     - macros
     - access values from enums as Enum.item
-    
+    - type numbers (like 4500h : UWord)
 
   continue with pexpreval (add the missing operators)
 
