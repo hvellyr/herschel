@@ -362,14 +362,21 @@ FirstPass::parseImport()
 
 struct heather::TypeParser
 {
+  TokenType fEndToken;
+
+  TypeParser(TokenType endToken)
+    : fEndToken(endToken)
+  { }
+
   bool operator() (FirstPass* pass, Token& result)
   {
     SrcPos pos = pass->fToken.srcpos();
     Token type = pass->parseTypeSpec(false);
     if (!type.isSet()) {
       error(pos, E_UnexpectedToken,
-            String("returntype expression expected: ") + pass->fToken.toString());
-      pass->scanUntilNextParameter();
+            String("returntype expression expected, but found: ") + pass->fToken.toString());
+      pass->scanUntilNextParameter(fEndToken);
+      return true;
     }
     else
       result << type;
@@ -389,7 +396,7 @@ FirstPass::parseSimpleType(const Token& baseToken, bool nextIsParsedYet)
 
   if (fToken == kGenericOpen) {
     Token generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
-    parseSequence(TypeParser(),
+    parseSequence(TypeParser(kGenericClose),
                   kGenericOpen, kGenericClose, true, E_GenericTypeList,
                   generics,
                   "type-params");
@@ -409,7 +416,7 @@ FirstPass::parseGroupType()
   }
 
   Token nested = Token(fToken.srcpos(), kParanOpen, kParanClose);
-  parseSequence(TypeParser(),
+  parseSequence(TypeParser(kParanClose),
                 kParanOpen, kParanClose, true, E_BadParameterList,
                 nested,
                 "group-type");
@@ -422,7 +429,7 @@ Token
 FirstPass::parseUnionType()
 {
   Token nested = Token(fToken.srcpos(), kUnionOpen, kParanClose);
-  parseSequence(TypeParser(),
+  parseSequence(TypeParser(kParanClose),
                 kUnionOpen, kParanClose, true, E_BadParameterList,
                 nested,
                 "union-type");
@@ -2484,7 +2491,7 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
   Token generics;
   if (fToken == kGenericOpen) {
     generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
-    parseSequence(TypeParser(),
+    parseSequence(TypeParser(kGenericClose),
                   kGenericOpen, kGenericClose, true, E_GenericTypeList,
                   generics,
                   "alias-params");
@@ -2540,7 +2547,7 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
   Token generics;
   if (fToken == kGenericOpen) {
     generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
-    parseSequence(TypeParser(),
+    parseSequence(TypeParser(kGenericClose),
                   kGenericOpen, kGenericClose, true, E_GenericTypeList,
                   generics,
                   "typedef-params");
