@@ -4,11 +4,11 @@ def class Point : Object
 {
 }
 
-def class Atlas<T1 = Int, T2 = Real> : Copyable
+def class Atlas<T1, T2> : Copyable
 {
 }
 
-def class Atlas2<T1 = Int, T2 = Real> : (Persona, Copyable)
+def class Atlas2<T1, T2> : (Persona, Copyable)
 {
 }
 
@@ -30,4 +30,4 @@ def class Point(_x, _y, value: _val = 55) : Object
 
 def alias AtlasX = Atlas<Int, String>
 
-def alias IntOfFalse = (Int, Bool = false)
+def alias IntOfFalse = (Int, Bool == false)

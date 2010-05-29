@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>def</id><id>slots</id><punct type=':'/><seq><nested left='(' right=')'><id>Int</id><punct type=','/><id>Bool</id></nested><nested left='[' right=']'/><lit type='int'>10</lit></seq></seq></seq>

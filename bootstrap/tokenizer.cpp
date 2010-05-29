@@ -25,7 +25,7 @@ Tokenizer::Tokenizer(Port<Char>* port, const String& srcName,
   : fPort(port),
     fSrcName(srcName),
     fLineCount(1),
-    fCC(EOF),
+    fCC(0xffff),
     fNextCharIsGenericOpen(false),
     fInGenericContext(0),
     fCharRegistry(charRegistry)
@@ -119,17 +119,19 @@ Tokenizer::isEOL(Char c) const
 int
 Tokenizer::nextChar()
 {
+  if (fCC == EOF)
+    throw AnnotatedEofException(srcpos());
+
   try {
     int c = fPort->read();
     if (c == '\n' || c == '\r')
       fLineCount++;
     fCC = c;
-    return c;
   }
   catch (const EofException& ) {
     fCC = EOF;
-    throw AnnotatedEofException(srcpos());
   }
+  return fCC;
 }
 
 
