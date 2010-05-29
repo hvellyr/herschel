@@ -60,44 +60,44 @@ def class List<Elt>(root: _root : Pair<Elt, _> = nil)
 
 def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
   select () {
-    (before-index == self.num-items) -> {
-      let nl = Pair<'T, _>(car: value)
-      if (self.last.nil?)
-        self.root = self.last = nl
-      else {
-        self.last.cdr = nl
-        self.last = nl
+    | (before-index == self.num-items) -> {
+        let nl = Pair<'T, _>(car: value)
+        if (self.last.nil?)
+          self.root = self.last = nl
+        else {
+          self.last.cdr = nl
+          self.last = nl
+        }
+        self
       }
-      self
-    }
 
-    (before-index == 0 and self.root.nil?) -> {
-      self.root = self.last = Pair<'T, _>(car: value)
-      self
-    }
+    | (before-index == 0 and self.root.nil?) -> {
+        self.root = self.last = Pair<'T, _>(car: value)
+        self
+      }
 
-    otherwise -> {
-      let p = self.root
-      let prev = nil
-      let n = 0
+    | otherwise -> {
+        let p = self.root
+        let prev = nil
+        let n = 0
 
-      for (p <> nil) {
-        if (n == before-index) {
-          if (prev <> nil)
-            prev.cdr = Pair<'T, _>(car: value, cdr: p)
-          else
-            self.root = Pair<'T, _>(car: value, cdr: p)
-          return self
+        for (p <> nil) {
+          if (n == before-index) {
+            if (prev <> nil)
+              prev.cdr = Pair<'T, _>(car: value, cdr: p)
+            else
+              self.root = Pair<'T, _>(car: value, cdr: p)
+            return self
+          }
+
+          prev = p
+          p = p.cdr
+          n.incr!
         }
 
-        prev = p
-        p = p.cdr
-        n.incr!
+        OutOfRangeException("index %d is beyond %d" % #[index,
+                                                        self.num-items]).raise
       }
-
-      OutOfRangeException("index %d is beyond %d" % #[index,
-                                                      self.num-items]).raise
-    }
   }
 
 
@@ -137,11 +137,11 @@ def add!(self @ List<'T>, elt @ 'T) : List<'T>
 
 def remove!(self @ List<'T>, elt @ 'T) : List<'T>
   match (self.index-of(elt)) {
-    e : Bool      -> self
-    idx : Ordinal -> {
-                       self.remove-at!(idx)
-                       self
-                     }
+    | e : Bool      -> self
+    | idx : Ordinal -> {
+                         self.remove-at!(idx)
+                         self
+                       }
   }
 
 
@@ -169,7 +169,7 @@ def core|size(self @ List<'T>) : Ordinal
   n
 
 
-def num-items(self @ List<'T>) : Ordinal ...
+def num-items(self @ List<'T>) : Ordinal
   let n : Ordinal = 0
   for (p = self.root then p.cdr while p <> nil)
     n.incr!
@@ -247,7 +247,6 @@ def merge-split(nl : Pair<'T, _>) : Pair<'T, _>
       Pair(car: nl2.reverse, cdr: nl1)
     else
       split-h(nl.cdr.cdr, nl1.cdr, Pair(car: nl1.car, cdr: nl2))
-    }
   }
   split-h(nl, nl, Pair())
 
@@ -256,35 +255,35 @@ def merge(pred : (Function(left, right) : Bool),
           nl1 : Pair<'T, _>,
           nl2 : Pair<'T, _>) : Pair<'T, _>
   select () {
-    (nl1.nil?) -> nl2
-    (nl2.nil?) -> nl1
-    pred(nl1.car, nl2.car) -> Pair<'T, _>(car: nl1.car,
-                                          cdr: merge(pred, nl1.cdr, nl2))
-    otherwise -> Pair<'T, _>(car: nl2.car,
-                             cdr: merge(pred, nl1, nl2.cdr))
+    | (nl1.nil?) -> nl2
+    | (nl2.nil?) -> nl1
+    | pred(nl1.car, nl2.car) -> Pair<'T, _>(car: nl1.car,
+                                            cdr: merge(pred, nl1.cdr, nl2))
+    | otherwise -> Pair<'T, _>(car: nl2.car,
+                               cdr: merge(pred, nl1, nl2.cdr))
   }
 
 
 def merge-sort(nl : Pair<'T, _>,
                pred : (Function(left, right) : Bool)) : Pair<'T, _>
   select () {
-    (nl.nil?)     -> nl
-    (nl.cdr.nil?) -> nl
-    otherwise     -> {
-                       let splits = merge-split(nl)
-                       merge(pred, merge-sort(splits.car, pred),
-                                   merge-sort(splits.cdr, pred))
-                     }
+    | (nl.nil?)     -> nl
+    | (nl.cdr.nil?) -> nl
+    | otherwise     -> {
+                         let splits = merge-split(nl)
+                         merge(pred, merge-sort(splits.car, pred),
+                                     merge-sort(splits.cdr, pred))
+                       }
   }
 
 
 def sort(self @ List<'T>,
          pred @ (Function(left, right) : Bool)) : List<'T>
-  List<'T>(root: merge-sort(self.root, <=))
+  List<'T>(root: merge-sort(self.root, less-equal?))
 
 
-def sort!(self @ List<'T>) : List<'T> ...
-  self.root = merge-sort(self.root, <=)
+def sort!(self @ List<'T>) : List<'T>
+  self.root = merge-sort(self.root, less-equal?)
   self.last = find-last-node(self.root)
   self
 
