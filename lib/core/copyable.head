@@ -45,8 +45,8 @@ def type Copyable
 }
 
 --! Returns a deep copy of @var{obj}.
-def generic deep-copy(obj @ 'T) : 'T ...
-    where T isa Copyable
+def generic deep-copy(obj @ 'T) : 'T
+    where T isa Copyable ...
 
 -- end of copyable.head
 
