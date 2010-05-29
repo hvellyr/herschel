@@ -1266,6 +1266,15 @@ struct heather::SelectPatternParser : public BasePatternParser
 
   bool operator() (FirstPass* pass, Token& result)
   {
+    if (pass->fToken != kPipe) {
+      errorf(pass->fToken.srcpos(), E_ExpectedPipe,
+             "expect '|'");
+      pass->scanUntilBrace();
+      return false;
+    }
+    Token pipeToken = pass->fToken;
+    pass->nextToken();
+
     if (pass->fToken == kOtherwiseId) {
       bool ignore = false;
       Token otherwiseToken = pass->fToken;
@@ -1287,7 +1296,7 @@ struct heather::SelectPatternParser : public BasePatternParser
 
       TokenVector consq = parseConsequent(pass);
       if (!ignore && !consq.empty())
-        result << ( Token() << otherwiseToken << consq );
+        result << ( Token() << pipeToken << otherwiseToken << consq );
     }
     else {
       TokenVector pattern;
@@ -1311,14 +1320,20 @@ struct heather::SelectPatternParser : public BasePatternParser
             return false;
           }
         }
+        else {
+          error(pass->fToken.srcpos(), E_UnexpectedToken,
+                String("unexpected token in select: ") + pass->fToken.toString());
+          return false;
+        }
       }
 
       TokenVector consq = parseConsequent(pass);
-      if (!pattern.empty() && !consq.empty())
-        result << ( Token() << ( pattern.size() == 1
-                                 ? pattern[0]
-                                 : ( Token() << pattern ) )
+      if (!pattern.empty() && !consq.empty()) {
+        result << ( Token() << pipeToken << ( pattern.size() == 1
+                                              ? pattern[0]
+                                              : ( Token() << pattern ) )
                     << consq );
+      }
     }
 
     return true;
@@ -1365,6 +1380,15 @@ struct heather::MatchPatternParser : public BasePatternParser
 {
   bool operator() (FirstPass* pass, Token& result)
   {
+    if (pass->fToken != kPipe) {
+      errorf(pass->fToken.srcpos(), E_ExpectedPipe,
+             "expect '|'");
+      pass->scanUntilBrace();
+      return false;
+    }
+    Token pipeToken = pass->fToken;
+    pass->nextToken();
+
     if (pass->fToken != kSymbol) {
       errorf(pass->fToken.srcpos(), E_SymbolExpected,
              "variable name expected");
@@ -1400,6 +1424,7 @@ struct heather::MatchPatternParser : public BasePatternParser
     if (varToken.isSet() && colonToken.isSet() &&
         matchType.isSet() && !consq.empty())
       result << ( Token()
+                  << pipeToken
                   << ( Token() << varToken << colonToken << matchType )
                   << consq );
 
@@ -2169,7 +2194,7 @@ FirstPass::parseCharDef(const Token& defToken)
     errorf(fToken.srcpos(), E_MissingDefName, "missing char name");
     return scanUntilTopExprAndResume();
   }
-  Token charNameToken = ( fToken == kSymbol 
+  Token charNameToken = ( fToken == kSymbol
                           ? fToken
                           : Token(fToken.srcpos(), kSymbol, fToken.toString()) );
 
@@ -2696,7 +2721,7 @@ FirstPass::parseMeasure(const Token& defToken, bool isLocal)
                       ? fToken
                       : Token(fToken.srcpos(), kSymbol, fToken.toString()) );
   nextToken();
-  
+
   if (fToken != kParanClose) {
     errorf(fToken.srcpos(), E_MissingParanClose, "expected ')'");
   }
@@ -2782,7 +2807,7 @@ struct heather::EnumItemParser
   bool operator() (FirstPass* pass, Token& result)
   {
     if (pass->fToken != kSymbol) {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected, 
+      errorf(pass->fToken.srcpos(), E_SymbolExpected,
              "expected enum item name");
       pass->scanUntilNextParameter(kBraceClose);
       return true;

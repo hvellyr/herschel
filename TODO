@@ -32,9 +32,11 @@ Documentation
 
 Bootstrap compiler
 
-  implement the missing first pass parsing of type defs
+  Implement last missing pass1 stuff:
 
-  implement the missing first pass parsing of macros
+    - macros
+    - access values from enums as Enum.item
+    
 
   continue with pexpreval (add the missing operators)
 

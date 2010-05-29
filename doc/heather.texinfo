@@ -1786,10 +1786,10 @@ def enum MidiController : (Ordinal in 0 .. 127)
 def set-clip-details(self @@ Clip,
                      color @@ Colors, mctrl @@ MidiController)
   select (mctrl) @{
-    MidiController.bank-select -> ...
-    MidiController.modulation -> ...
-    MidiController.breath -> ...
-    ...
+    | MidiController.bank-select -> ...
+    | MidiController.modulation -> ...
+    | MidiController.breath -> ...
+    | ...
   @}
 
   if (color == Colors.none)
@@ -2660,14 +2660,15 @@ expressions}; the grouping of the statements in the example above is a
 @deffn Special select
 
 @findex otherwise
+@findex |
 A @code{select} expression has the form:
 
 @example
 select (@r{[} @var{antecedent} @r{[} , @var{comparator}@r{]]}) @{
-  @var{test-1} -> @var{consequent-1}
-  @var{test-2} -> @var{consequent-2}
+  | @var{test-1} -> @var{consequent-1}
+  | @var{test-2} -> @var{consequent-2}
   @r{@dots{}}
-  @r{[} otherwise -> @var{alternate} @r{]}
+  | @r{[} otherwise -> @var{alternate} @r{]}
 @}
 @end example
 
@@ -2684,7 +2685,7 @@ given as comma separated values:
 
 @example
 select (a) @{
-1, 2, 3 -> ...
+  | 1, 2, 3 -> ...
 @}
 @end example
 
@@ -2696,11 +2697,11 @@ If the @var{comparator} is not specified @code{equal?} is assumed.
 
 @example
 select (a) @{
-  \a -> if (not done)
-          do-it
-        else
-          do-something-different()
-  otherwise -> outln("nothing applies")
+  | \a -> if (not done)
+            do-it
+          else
+            do-something-different()
+  | otherwise -> outln("nothing applies")
 @}
 @end example
 
@@ -2711,10 +2712,10 @@ until one succeeds.
 @example
 def f(c : Char)
   select () @{
-    (c == \a or
-     c == \b or
-     c == \c)            -> outln("Begin of alphabet")
-    (c in #[\x, \y, \z]) -> outln("End of alphabet")
+    | (c == \a or
+       c == \b or
+       c == \c)            -> outln("Begin of alphabet")
+    | (c in #[\x, \y, \z]) -> outln("End of alphabet")
   @}
 @end example
 @end deffn
@@ -2723,14 +2724,15 @@ def f(c : Char)
 @deffn Special match
 
 @findex Any
+@findex |
 The @code{match} expression, a kind of type select, has the form:
 
 @example
 match (@var{expr}) @{
-  @var{id-1} : @var{type-1} -> @var{consequent-1}
-  @var{id-2} : @var{type-2} -> @var{consequent-2}
+  | @var{id-1} : @var{type-1} -> @var{consequent-1}
+  | @var{id-2} : @var{type-2} -> @var{consequent-2}
   @r{@dots{}}
-  @r{[} @var{id-3} : Any -> @var{alternate} @r{]}
+  | @r{[} @var{id-3} : Any -> @var{alternate} @r{]}
 @}
 @end example
 
@@ -4295,12 +4297,14 @@ alternate       := expression
 select-expr     := `select' `(' test-expr [ `,' select-comptor ] `)'
                    `{' select-tests `}'
 select-comptor  := expression
-select-tests    := { select-test } [ `otherwise' alternate ]
-select-test     := constants `->' consequent
+select-tests    := { `|' select-test } 
+select-test     := constants `->' consequent 
+                |  `otherwise' alternate
 
 constants       := constant { `,' constant }
 
-match-expr      := `match' `(' test-expr `)' `{' { match-test } `}'
+match-expr      := `match' `(' test-expr `)' `{' match-tests `}'
+match-tests     := { `|' match-test }
 match-test      := var-name `:' type-clause `->' consequent
 @end verbatim
 @end smallformat
