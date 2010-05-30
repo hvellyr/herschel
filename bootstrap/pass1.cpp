@@ -1667,13 +1667,35 @@ FirstPass::parseUnitNumber(const Token& token)
 
 
 Token
+FirstPass::parseExplicitTypedNumber(const Token& token)
+{
+  Token number = token;
+
+  if (fToken == kColon) {
+    Token colonToken = fToken;
+    nextToken();
+
+    SrcPos typePos = fToken.srcpos();
+    Token type = parseTypeSpec(true);
+    if (!type.isSet()) {
+      errorf(typePos, E_MissingType, "expected type specifier");
+      return number;
+    }
+
+    return Token() << number << colonToken << type;
+  }
+  return number;
+}
+
+
+Token
 FirstPass::parseAtomicExpr()
 {
   switch (fToken.tokenType()) {
   case kInt:
   case kReal:
   case kRational:
-    return parseUnitNumber(fToken);
+    return parseExplicitTypedNumber(parseUnitNumber(fToken));
 
   case kBool:
   case kString:
