@@ -1,14 +1,14 @@
 module fibonacci("eyestep/heather:examples")
 
 def fib(n @ 'T)
-  select n {
-    0 -> 0
-    1 -> 1
-    otherwise -> fib(n - 1) + fib(n - 2)
+  select (n) {
+    | 0 -> 0
+    | 1 -> 1
+    | otherwise -> fib(n - 1) + fib(n - 2)
   }
 
 
-def main()
+def app|main()
   let const n = 28
   outln("Fib(%d): %d" % #[n, fib(n)])
 
