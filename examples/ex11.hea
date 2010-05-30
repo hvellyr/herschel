@@ -1,6 +1,6 @@
 module examples ("eyestep/heather 1.0:examples")
 
-import(io)
+import "io"
 
 def const %default-size% = 5
 

@@ -3,9 +3,9 @@ module beer99 ("sijo/99beer")
 
 def display-bottles(n : Int, port : Port)
   select (n) {
-    0 -> out(port: port, "No more bottles")
-    1 -> outn(port: port, "One bottle")
-    otherwise -> out(port: port, "%d bottles" % #[n.to-string])
+    | 0 -> out(port: port, "No more bottles")
+    | 1 -> outn(port: port, "One bottle")
+    | otherwise -> out(port: port, "%d bottles" % #[n.to-string])
   }
   out(port: port, " of beer")
 
