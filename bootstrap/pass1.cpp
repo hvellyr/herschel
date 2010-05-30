@@ -447,7 +447,7 @@ FirstPass::parseArrayExtend(const Token& baseType)
     Token idxExpr;
     if (fToken != kBracketClose) {
       SrcPos idxPos = fToken.srcpos();
-      idxExpr = parseTypeSpec(false);
+      idxExpr = parseExpr();
       if (!idxExpr.isSet())
         errorf(idxPos, E_UnexpectedToken, "expected index expression");
       else
