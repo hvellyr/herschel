@@ -12,6 +12,8 @@
 #include "tokenizer.h"
 #include "pass2.h"
 #include "token.h"
+#include "errcodes.h"
+#include "log.h"
 
 
 using namespace heather;
@@ -164,7 +166,9 @@ SecondPass::parseExpr(const Token& expr)
   case kNested:                 // TODO
     return NULL;
   case kPunct:                  // TODO
-    throw UnexpectedTokenException(expr);
+    errorf(expr.srcpos(), E_UnexpectedToken,
+           "Unexpected token");
+    return NULL;
   }
 
   return NULL;

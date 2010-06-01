@@ -32,29 +32,6 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class UnexpectedTokenException : public SyntaxException
-  {
-  public:
-    UnexpectedTokenException(const Token& t)
-      : SyntaxException(String("Unexpected token: ") + t)
-    { }
-
-    UnexpectedTokenException(const Token& t, const String& msg)
-      : SyntaxException(String("Unexpected token: ") + t + " " + msg)
-    { }
-
-    UnexpectedTokenException(const Token& t, const char* msg)
-      : SyntaxException(String("Unexpected token: ") + t + " " + msg)
-    { }
-
-    UnexpectedTokenException(const Token& t, const Token& expected)
-      : SyntaxException(String("Unexpected token: ") + t + " expected: " + expected)
-    { }
-  };
-
-
-  //--------------------------------------------------------------------------
-
   class PrematureEndOfFileException : public SyntaxException
   {
   public:
