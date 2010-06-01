@@ -1,0 +1,10 @@
+def generic to-string(self @ Any) : String ...
+
+def class Student(name: _name = "", subjects: _subj = #[])
+{
+  def slot name = _name
+  def slot subjects = _subj
+}
+
+def to-string(self) : String
+  name + subjects.to-string

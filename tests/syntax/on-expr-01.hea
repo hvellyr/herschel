@@ -1,0 +1,3 @@
+def a = on exit () {
+          5
+        }

@@ -1,0 +1,8 @@
+def x = on abc () {
+          5 + 6
+        }
+def y = 27
+
+def z = on signal ( {
+          5 + 6
+        }
