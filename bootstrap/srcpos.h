@@ -43,6 +43,11 @@ namespace heather
       return *this;
     }
 
+    bool isValid() const
+    {
+      return !fFile.isEmpty() && fLineNo != 0;
+    }
+
     bool operator==(const SrcPos& other) const
     {
       return (fFile == other.fFile &&

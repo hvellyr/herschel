@@ -32,10 +32,15 @@ namespace heather
     static bool isTraceTokenizer();
     static bool isTracePass1();
     static bool isTracePass2();
+    static bool isTraceImportFile();
 
     static void setConfigVar(const String& keyValuePair);
     static ConfigVarRegistry* globalConfigVarRegistry();
 
+#if defined(UNITTESTS)
+    static void test_setDontImport(bool value);
+    static bool test_dontImport();
+#endif
   };
 };                              // namespace
 

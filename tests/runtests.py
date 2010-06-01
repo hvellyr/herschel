@@ -17,8 +17,17 @@ class TestRunner:
         self.test_succeeded = 0
         self.test_run = 0
 
-    def run_heather_on_test(self, test_file, traces):
-        return subprocess.Popen([self.heather_path, "-T", traces, "-P", test_file],
+        self.SYNTAX_PASS1_OPT = ["-T", "pass1", "-P", "--dont-import" ]
+        self.SYNTAX_PASS2_OPT = ["-T", "pass2", "-P", "--dont-import" ]
+        self.IMPORT_PASS1_OPT = ["-T", "pass1", "-P" ]
+        self.IMPORT_PASS2_OPT = ["-T", "pass2", "-P" ]
+
+
+    def run_heather_on_test(self, test_file, options):
+        cmd = [self.heather_path]
+        cmd.extend(options)
+        cmd.append(test_file)
+        return subprocess.Popen(cmd,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE).communicate()
 
@@ -63,21 +72,23 @@ class TestRunner:
 
     #----------------------------------------------------------------------------
 
-    def run_pass_test_impl(self, test_file, traces, passid,
+    def run_pass_test_impl(self, test_file, options, passid,
                            errtest_func=None):
+        test_count = 0
         if self.verbose:
             print "Run test '%s'" % (test_file)
-        self.test_run += 1
-        output, erroutput = self.run_heather_on_test(test_file, traces)
+        output, erroutput = self.run_heather_on_test(test_file, options)
         what_tag = "[%s] %s" % (passid, test_file)
         if erroutput:
             if errtest_func == None:
                 print "FAILED: %s: %s" % (what_tag, erroutput)
                 return
             errtest_func(test_file, what_tag, passid, erroutput)
+            test_count += 1
 
         expected_file = self.find_expected_xml(test_file, "_%s" % (passid))
         if expected_file:
+            test_count += 1
             if not self.compare_XML_result_with_file(what_tag, output, expected_file):
                 return
         else:
@@ -85,12 +96,24 @@ class TestRunner:
                 print "INFO: %s: No expected xml file found" % (what_tag)
 
         print "OK: %s: test succeeds" % (what_tag)
-        self.test_succeeded += 1
+        self.test_succeeded += test_count
+        self.test_run += test_count
 
 
-    def run_pass_test(self, test_file):
-        self.run_pass_test_impl(test_file, "pass1", "1")
-        self.run_pass_test_impl(test_file, "pass2", "2")
+    def run_pass_test(self, test_file, domain):
+        if domain == "syntax":
+            opts1 = self.SYNTAX_PASS1_OPT
+            opts2 = self.SYNTAX_PASS2_OPT
+
+        elif domain == "import":
+            opts1 = self.IMPORT_PASS1_OPT
+            opts2 = self.IMPORT_PASS2_OPT
+
+        else:
+            assert(0)
+
+        self.run_pass_test_impl(test_file, opts1, "1")
+        self.run_pass_test_impl(test_file, opts2, "2")
 
 
 
@@ -160,25 +183,34 @@ class TestRunner:
                     # print "  PATTERN: ", pattern
 
 
-    def run_pass_failed_test(self, test_file):
-        self.run_pass_test_impl(test_file, "pass1", "1", self.check_for_errors)
+    def run_pass_failed_test(self, test_file, domain):
+        if domain == "syntax":
+            opts = self.SYNTAX_PASS1_OPT
+        elif domain == "import":
+            opts = self.IMPORT_PASS1_OPT
+        else:
+            assert(0)
+
+        self.run_pass_test_impl(test_file, opts, "1", self.check_for_errors)
 
 
     #----------------------------------------------------------------------------
 
-    def run_test(self, test_dir, src_file):
+    def run_test(self, test_dir, src_file, domain):
         test_file = os.path.join(test_dir, src_file)
 
         if src_file.startswith("failed-"):
-            self.run_pass_failed_test(test_file)
+            self.run_pass_failed_test(test_file, domain)
+        elif src_file.startswith("ignore-"):
+            pass
         else:
-            self.run_pass_test(test_file)
+            self.run_pass_test(test_file, domain)
 
 
-    def run_all_tests(self, test_dir):
+    def run_all_tests(self, test_dir, domain):
         for f in os.listdir(test_dir):
             if f.endswith(".hea"):
-                self.run_test(test_dir, f)
+                self.run_test(test_dir, f, domain)
 
         if self.test_succeeded <> self.test_run:
             print "SUMMARY: %d tests of %d failed" % (self.test_run - self.test_succeeded,
@@ -196,6 +228,9 @@ def main():
     parser.add_option("-V", "--verbose", action="store_true",
                       dest="verbose", default=False,
                       help="be more verbose")
+    parser.add_option("-D", "--domain",
+                      dest="domain", default="syntax",
+                      help="select the domain of tests to run")
 
     (options, args) = parser.parse_args()
 
@@ -209,10 +244,10 @@ def main():
 
     for arg in args:
         if os.path.isdir(arg):
-            tr.run_all_tests(arg)
+            tr.run_all_tests(arg, options.domain)
         else:
             d, f = os.path.split(arg)
-            tr.run_test(d, f)
+            tr.run_test(d, f, options.domain)
 
 
 if __name__ == "__main__":

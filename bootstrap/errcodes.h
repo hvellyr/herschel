@@ -96,6 +96,9 @@ namespace heather
 
     // enums
     E_BadEnumItemList     = 0xa600,
+
+    // import
+    E_UnknownInputFile    = 0xb000,
   };
 };
 

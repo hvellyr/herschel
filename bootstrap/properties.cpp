@@ -24,6 +24,8 @@ static bool sVerbose = false;
 static bool sIsTokenizerTracing = false;
 static bool sIsPass1Tracing = false;
 static bool sIsPass2Tracing = false;
+static bool sIsImportFileTracing = false;
+static bool sDontImport = false;
 static String sOutdir;
 static Ptr<ConfigVarRegistry> sConfigVarRegistry;
 
@@ -64,6 +66,8 @@ Properties::setTrace(const String& key, bool value)
     sIsPass1Tracing = value;
   else if (key == String("pass2"))
     sIsPass2Tracing = value;
+  else if (key == String("import"))
+    sIsImportFileTracing = value;
 }
 
 
@@ -103,6 +107,13 @@ Properties::isTracePass2()
 }
 
 
+bool
+Properties::isTraceImportFile()
+{
+  return sIsImportFileTracing;
+}
+
+
 void
 Properties::setConfigVar(const String& keyValuePair)
 {
@@ -130,3 +141,19 @@ Properties::globalConfigVarRegistry()
     sConfigVarRegistry = new ConfigVarRegistry;
   return sConfigVarRegistry;
 }
+
+
+#if defined(UNITTESTS)
+void
+Properties::test_setDontImport(bool value)
+{
+  sDontImport = value;
+}
+
+
+bool
+Properties::test_dontImport()
+{
+  return sDontImport;
+}
+#endif

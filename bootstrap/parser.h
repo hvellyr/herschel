@@ -58,13 +58,15 @@ namespace heather
   {
   public:
     Parser();
-    Parser(Parser* parent);
 
     virtual AptNode* parse(Port<Char>* port, const String& srcName);
 
     CharRegistry* charRegistry() const;
     ConfigVarRegistry* configVarRegistry() const;
 
+    Token importFile(Port<Char>* port, const String& srcName);
+    String lookupFile(const String& srcName, bool isPublic);
+    Port<Char>* lookupFileAndOpen(const String& srcName, bool isPublic);
 
     // predefined symbol tokens to speed up parsing
     static const Token aliasToken;
@@ -94,14 +96,35 @@ namespace heather
 
     Token nextToken();
 
+    class ParserState
+    {
+    public:
+      ParserState(CharRegistry* charReg,
+                  ConfigVarRegistry* configReg);
+      ParserState(const ParserState& item);
+      ParserState& operator=(const ParserState& item);
+
+      Ptr<TokenPort>         fPort;
+      Token                  fToken;
+      Ptr<CharRegistry>      fCharRegistry;
+      Ptr<ConfigVarRegistry> fConfigVarRegistry;
+    };
+
+
+    class PortStackHelper
+    {
+    public:
+      PortStackHelper(Parser* parser);
+      ~PortStackHelper();
+
+      Parser* fParser;
+    };
+
+
     //-------- data members
 
-    Ptr<Parser>    fParent;
-    Ptr<TokenPort> fPort;
-    Token          fToken;
-
-    Ptr<CharRegistry> fCharRegistry;
-    Ptr<ConfigVarRegistry> fConfigVarRegistry;
+    ParserState            fState;
+    std::list<ParserState> fParserStates;
   };
 };
 

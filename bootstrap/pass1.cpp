@@ -8,14 +8,15 @@
 
 #include <map>
 
+#include "errcodes.h"
+#include "log.h"
 #include "parser.h"
 #include "pass1.h"
+#include "properties.h"
+#include "strbuf.h"
+#include "tokeneval.h"
 #include "tokenizer.h"
 #include "valuesaver.h"
-#include "tokeneval.h"
-#include "log.h"
-#include "errcodes.h"
-#include "strbuf.h"
 
 
 //----------------------------------------------------------------------------
@@ -342,7 +343,8 @@ FirstPass::parseImport()
     return scanUntilTopExprAndResume();
   }
 
-  expr << fToken;
+  Token importFile = fToken;
+  expr << importFile;
 
   nextToken();
   if (fToken == kParanOpen) {
@@ -354,6 +356,30 @@ FirstPass::parseImport()
                   "import-renames");
 
     expr << renames;
+  }
+
+  bool canImport = true;
+#if defined(UNITTESTS)
+  canImport = !Properties::test_dontImport();
+#endif
+
+  if (fEvaluateExprs && canImport) {
+    try
+    {
+      bool isPublic = false;
+      String srcName = importFile.stringValue();
+      Ptr<Port<Char> > file = fParser->lookupFileAndOpen(srcName, isPublic);
+      Token imported = fParser->importFile(file, srcName);
+
+      file->close();
+
+      return imported;
+    }
+    catch (const Exception& e) {
+      error(importFile.srcpos(), E_UnknownInputFile, e.message());
+    }
+
+    return Token();
   }
 
   return expr;

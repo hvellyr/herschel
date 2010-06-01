@@ -853,7 +853,7 @@ public:
       static const char* test =
         "\\space  \\u60h  \\( \\newline \\cr\n"
         "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n"
-        "\\ga \\gong";
+        "\\ga \\gong ";
       Ptr<CharRegistry> cr = new CharRegistry;
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."), cr);
@@ -1149,7 +1149,7 @@ public:
 
     {
       static const char* test =
-        "##  ?val:name";
+        "##  ?val:name ";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 

@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -70,6 +70,11 @@ namespace heather
     virtual bool isOpen() const = 0;
     virtual bool isEof() const = 0;
 
+    virtual void close()
+    {
+      // NOP
+    }
+
     virtual size_t write(const T* data, size_t items)
     {
       for (size_t i = 0; i < items; i++) {
@@ -122,7 +127,7 @@ namespace heather
     FilePort(FILE* stream);
     ~FilePort();
 
-    void close();
+    virtual void close();
 
     virtual bool isOpen() const;
     virtual bool isEof() const;

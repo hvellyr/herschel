@@ -13,6 +13,7 @@
 #include "pass1.h"
 #include "pass2.h"
 #include "properties.h"
+#include "log.h"
 
 using namespace heather;
 
@@ -44,17 +45,9 @@ const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
 //----------------------------------------------------------------------------
 
 Parser::Parser()
-  : fCharRegistry(new CharRegistry),
-    fConfigVarRegistry(
-      new ConfigVarRegistry(Properties::globalConfigVarRegistry()))
-{
-}
-
-
-Parser::Parser(Parser* parent)
-  : fParent(parent),
-    fCharRegistry(parent->charRegistry()),
-    fConfigVarRegistry(parent->configVarRegistry())
+  : fState(ParserState(
+             new CharRegistry,
+             new ConfigVarRegistry(Properties::globalConfigVarRegistry())))
 {
 }
 
@@ -62,14 +55,14 @@ Parser::Parser(Parser* parent)
 CharRegistry*
 Parser::charRegistry() const
 {
-  return fCharRegistry;
+  return fState.fCharRegistry;
 }
 
 
 ConfigVarRegistry*
 Parser::configVarRegistry() const
 {
-  return fConfigVarRegistry;
+  return fState.fConfigVarRegistry;
 }
 
 
@@ -77,26 +70,25 @@ Token
 Parser::nextToken()
 {
   try {
-    fToken = fPort->read();
+    fState.fToken = fState.fPort->read();
   }
   catch (const AnnotatedEofException& ae) {
-    fToken = Token(ae.srcpos(), kEOF);
+    fState.fToken = Token(ae.srcpos(), kEOF);
   }
   catch (const EofException& e) {
-    printf("FOUND EOF HERE: %s %d\n", __FILE__, __LINE__);
-    fToken = Token(SrcPos(), kEOF);
+    fState.fToken = Token(SrcPos(), kEOF);
   }
-  return fToken;
+  return fState.fToken;
 }
 
 
 AptNode*
 Parser::parse(Port<Char>* port, const String& srcName)
 {
-  fPort = new FileTokenPort(port, srcName, fCharRegistry);
+  fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
 
   try {
-    FirstPass firstPass(this, fToken);
+    FirstPass firstPass(this, fState.fToken);
 
     Token parsedExprs = firstPass.parse();
 
@@ -120,8 +112,98 @@ Parser::parse(Port<Char>* port, const String& srcName)
     return apt.release();
   }
   catch (const Exception& e) {
-    fprintf(stderr, "Parse error: %s\n", (const char*)StrHelper(e.message()));
+    logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
   }
 
   return NULL;
+}
+
+
+Token
+Parser::importFile(Port<Char>* port, const String& srcName)
+{
+  PortStackHelper helper(this);
+
+  fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
+
+  try {
+    FirstPass firstPass(this, fState.fToken);
+
+    Token parsedExprs = firstPass.parse();
+
+    if (Properties::isTraceImportFile())
+      logf(kDebug, "Import file '%s'", (const char*)StrHelper(srcName));
+
+    return parsedExprs;
+  }
+  catch (const Exception& e) {
+    logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
+  }
+
+  return Token();
+}
+
+
+String
+Parser::lookupFile(const String& srcName, bool isPublic)
+{
+  return srcName;
+}
+
+
+Port<Char>*
+Parser::lookupFileAndOpen(const String& srcName, bool isPublic)
+{
+  String absPath = lookupFile(srcName, isPublic);
+  return new CharPort(new FilePort(absPath, "rb"));
+}
+
+
+//==============================================================================
+
+Parser::ParserState::ParserState(CharRegistry* charReg,
+                                 ConfigVarRegistry* configReg)
+  : fCharRegistry(charReg),
+    fConfigVarRegistry(configReg)
+{
+}
+
+
+Parser::ParserState::ParserState(const ParserState& item)
+{
+  *this = item;
+}
+
+
+Parser::ParserState&
+Parser::ParserState::operator=(const ParserState& item)
+{
+  fPort              = item.fPort;
+  fToken             = item.fToken;
+  fCharRegistry      = item.fCharRegistry;
+  fConfigVarRegistry = item.fConfigVarRegistry;
+  return *this;
+}
+
+//==============================================================================
+
+Parser::PortStackHelper::PortStackHelper(Parser* parser)
+  : fParser(parser)
+{
+  fParser->fParserStates.push_front(fParser->fState);
+  fParser->fState = ParserState(
+    new CharRegistry,
+    new ConfigVarRegistry(Properties::globalConfigVarRegistry()));
+}
+
+
+Parser::PortStackHelper::~PortStackHelper()
+{
+  assert(!fParser->fParserStates.empty());
+
+  ParserState current = fParser->fState;
+  fParser->fState = fParser->fParserStates.front();
+  fParser->fParserStates.pop_front();
+
+  // merge current.fCharRegistry into fParser->fState; same for configVarReg
 }

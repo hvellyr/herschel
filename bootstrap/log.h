@@ -26,6 +26,9 @@ namespace heather
   void log(const SrcPos& where, LogLevel level, const String& msg);
   void logf(const SrcPos& where, LogLevel level, const char* format, ...);
 
+  void log(LogLevel level, const String& msg);
+  void logf(LogLevel level, const char* format, ...);
+
   void error(const SrcPos& where, int errorCode, const String& msg);
   void errorf(const SrcPos& where, int errorCode, const char* format, ...);
 };

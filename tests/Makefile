@@ -10,7 +10,7 @@ include $(top_srcdir)/config.mk
 
 include $(top_srcdir)/build/pre.mk
 
-all-local: syntax-tests
+all-local: syntax-tests import-tests
 
 testtemp_dir = $(BUILDDIR)/temp
 
@@ -18,7 +18,10 @@ $(testtemp_dir):
 	@if [ ! -d "$@" ]; then mkdir $@; fi
 
 syntax-tests:
-	python2.5 runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather syntax/ 
+	python2.5 runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather -D syntax syntax/ 
+
+import-tests:
+	python2.5 runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather -D import import/ 
 
 
 

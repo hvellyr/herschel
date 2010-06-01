@@ -38,7 +38,7 @@ displayHelp()
   printf("  -D VAR=VALUE               Define config VAR to be VALUE\n");
   printf("     --define=VAR=VALUE\n");
   printf("  -T KEYS, --trace=KEYS      Trace various aspects:\n");
-  printf("                             {tokenizer|pass1|pass2}\n");
+  printf("                             {tokenizer|pass1|pass2|import}\n");
   printf("  -d DIR,  --outdir=DIR      Output all generated files to DIR\n");
 #if defined(UNITTESTS)
   printf("  -UT,     --run-unit-tests  Run unit tests for the compiler\n");
@@ -66,6 +66,7 @@ main(int argc, char** argv)
     { 5, "-T",  "--trace",          true  },
 #if defined(UNITTESTS)
     { 6, "-UT", "--run-unit-tests", false },
+    { 9, NULL,  "--dont-import",    false },
 #endif
     { 7, "-P",  "--parse",          false },
     { 8, "-D",  "--define",         true  },
@@ -104,11 +105,6 @@ main(int argc, char** argv)
         Properties::setTraces(option.fArgument);
         break;
 
-#if defined(UNITTESTS)
-      case 6:                   // unittests
-        func = kRunUnitTests;
-        break;
-#endif
       case 7:                   // parse
         func = kParseFiles;
         break;
@@ -116,6 +112,15 @@ main(int argc, char** argv)
       case 8:                   // define config var
         Properties::setConfigVar(option.fArgument);
         break;
+
+#if defined(UNITTESTS)
+      case 6:                   // unittests
+        func = kRunUnitTests;
+        break;
+      case 9:                   // dontImport
+        Properties::test_setDontImport(true);
+        break;
+#endif
       }
       break;
 
