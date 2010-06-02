@@ -1,6 +1,21 @@
+export (*)
+export (abc, xyz)
+export (*) as final
+export (abc, xyz) as final
+
+export outer (*)
+export outer (abc, xyz)
+export outer (*) as final
+export outer (abc, xyz) as final
+
+export inner (*)
+export inner (abc, xyz)
+export inner (*) as final
+export inner (abc, xyz) as final
+
+export public (*)
 export public (abc)
 export public (abc, xyz)
 export public (abc, mno, xyz)
-export public ()
-export final public (*)
-export final public (abc, mno, xyz)
+export public (*) as final
+export public (abc, mno, xyz) as final

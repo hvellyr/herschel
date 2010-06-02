@@ -1,30 +1,114 @@
-reread diesel things and I think, yes, I'm on the right way.  Redesign
-certain things however:
+Visibility, export
 
-| Defless again?
-|
-|   no...
-|
-|     def generic name(prm @ type) : type        -- a generic function
-|     def name(prm) : type                       -- a simple function
-|     def [meth] name(prm @ type) : type         -- a method
-|
-|     def name : type = value                    -- a (global) variable
-|     def const name : type = value                  -- a (global) constant
-|
-|     slot name : type = value                   -- a (class local) slot
-|
-|     def class name<>(prm) : isa                -- a (global) class
-|     def type name<> : isa                      -- a (global) type
-|     def alias name<> = type                    -- a (global) type alias
-|
-|     module name(spec)                          -- a module
-|
-|     let name(prm) : type                       -- a (local) function
-|     let name : type = value                    -- a (local) variable
-|     let const name : type = value              -- a (local) constant
-|     let alias name = type                      -- a (local) type alias
+  - Review module vs. interface again.
+    Why do we need the "interface" specification?
 
+  - What does "exporting" mean?  What does "public", "protected", "final"
+    mean?
+
+  - import outside or inside of "module" scope and effects on visibility
+
+
+  Basic findings:
+
+  - definitions from the embedding file are not visible in the embedded
+    file.  I.e. embedded files are closures against the embedding context,
+    the include their embedded files however.  I.e. also that exporting
+    works always upwards (i.e. to the embedding context, not to the
+    embedded context).
+
+  - file imported inside a module scope are never visible to the outside of
+    the module scope, even with exports in effect.  This is the way to
+    encapsulate "private" imports from polluting public interface space.
+
+  - importing into a module scope does not affect the overall namespace or
+    module scope of the imported definitions; importing is about visibility
+    not about inclusion.  For example import a module "b" inside of module
+    "a" does not result in definitions of effective module scope "a.b", but
+    only in definitions of module "b" being visible in module "a", without
+    a file "c" necessarily deal with "b" definitions when importing "a".
+
+  - exports are used to make definitions from inside the module scope
+    visible to the outside.
+
+    public -> import to all
+    protected -> import to outer modules (if any, otherwise an error)
+    private -> ?
+
+    export public(...)
+    export outer(...)
+    export inner(...)
+
+      Makes the listed symbols (or all if *) visible to the outer or inner
+      scope resp. of the module.  The outer/inner scopes are defined as in
+      the following chart:
+
+      +--------------------------------------------+
+      |Embedding file A                            |
+      |                                            |
+      |   +--------------------------------------+ |
+      |   |File B                                | |
+      |   | +----------------------------------+ | |
+      |   | |module m1                         | | |
+      |   | | +--------------------------------+ | |
+      |   | | |module m11                      | | |
+      |   | | |                                | | |
+      |   | | |                                | | |
+      |   | +-+--------------------------------+ | |
+      |   |                                    | | |
+      |   | +----------------------------------+ | |
+      |   | |module m2                         | | |
+      |   | | +--------------------------------+ | |
+      |   | | |module m21                      | | |
+      |   | | | +------------------------------+ | |
+      |   | | | |module m211                   | | |
+      |   | | | |                              | | |
+      |   | | | |                              | | |
+      |   | | +-+------------------------------+ | |
+      |   | |                                  | | |
+      |   | | +--------------------------------+ | |
+      |   | | |module m22                      | | |
+      |   | | |                                | | |
+      |   | +----------------------------------+ | |
+      |   +--------------------------------------+ |
+      +--------------------------------------------+
+
+      Definitions of "m11" is visible to module "m1" by default, i.e. even
+      without "export" (rationale: there would be nothing in defining a
+      submodule, if you wouldn't want to access anything from it).  The
+      same applies to m21-m2, m211-m21, and m22-m2.  m211 is not visible to
+      m2 however.  m22 is not visible to m21, to m211, to m11, or to m1,
+      neither is m2 visible to m1.
+
+      To make definitions visible to sibling modules (and their submodules)
+      only export to "inner".  To make definitions visible to all modules
+      up to the file (compile unit level) export to "outer".  To make
+      definition visible to all export to "public".
+
+
+  - file imported behave by definition as "interface", i.e. included
+    implementations are **not** part of the importing compile unit.  Only
+    the definitions of the imported file are actually imported.  (Note:
+    macros are however imported as "code", since macros are evaluated
+    directly.  The same applies for char name and config variable
+    definitions.)
+
+    In this way we don't really need the "interface" keyword, since a
+    module behaves silently as interface if imported.  The compiler must
+    make sure however that two type/class definitions match if coming from
+    **interface** (i.e. imported) and module definition.  The interface
+    version may be reduced however (no "on init", no "on delete", not slot
+    init values, only abstract generic functions, etc.).
+
+  - exporting as "final" declares a symbol to be not extensible.  It can be
+    combined with any of the visible keywords:
+
+      export public (init) as final
+
+    Definitions from a submodule can be exported as final to enclosing
+    modules without changing visibility like this:
+
+      export (init) as final
 
 
 Slot definitions

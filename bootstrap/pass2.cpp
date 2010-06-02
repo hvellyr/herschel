@@ -80,24 +80,25 @@ SecondPass::parseModule(const Token& expr, bool isModule)
 AptNode*
 SecondPass::parseExport(const Token& expr)
 {
-  assert(expr.isSeq() && expr.count() >= 2);
-  assert(expr[0] == kExportId);
-  assert(expr[expr.count() - 1].isNested());
+  return NULL;
+  // assert(expr.isSeq() && expr.count() >= 2);
+  // assert(expr[0] == kExportId);
+  // assert(expr[expr.count() - 1].isNested());
 
-  StringList flags;
-  for (int i = 1; i < expr.count() - 1; i++) {
-    assert(expr[i].isSymbol());
-    flags.push_back(expr[i].idValue());
-  }
+  // StringList flags;
+  // for (int i = 1; i < expr.count() - 1; i++) {
+  //   assert(expr[i].isSymbol());
+  //   flags.push_back(expr[i].idValue());
+  // }
 
-  StringList symbols;
-  Token symbolExprs = expr[expr.count() - 1];
-  for (int j = 0; j < symbolExprs.count(); j++) {
-    if (symbolExprs[j].isSymbol())
-      symbols.push_back(symbolExprs[j].idValue());
-  }
+  // StringList symbols;
+  // Token symbolExprs = expr[expr.count() - 1];
+  // for (int j = 0; j < symbolExprs.count(); j++) {
+  //   if (symbolExprs[j].isSymbol())
+  //     symbols.push_back(symbolExprs[j].idValue());
+  // }
 
-  return new ExportNode(flags, symbols);
+  // return new ExportNode(flags, symbols);
 }
 
 

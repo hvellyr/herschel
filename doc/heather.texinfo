@@ -3259,7 +3259,7 @@ extend module core
 
 Normally all declared identifiers from a module are restricted in
 visibility to the module and the compile unit they are defined in, i.e.@
-they defined as @dfn{private}.  If other compile units in the same module
+they're defined as @dfn{private}.  If other compile units in the same module
 or in other modules identifiers have to be @dfn{exported}.
 
 @deffn Special export
@@ -3417,7 +3417,7 @@ only, i.e.@ without body (notated using @code{...}).
 @item types, classes, aliases, etc.@ must be declared with their complete
 type parameters, default parameter declarations and inheritance
 information.
-@item classes must declare their slots and their types, but does need to
+@item classes must declare their slots and their types, but does not need to
 declare any init values on them.
 @item @code{on init} or @code{on delete} hooks must not be declared in an
 interface.
