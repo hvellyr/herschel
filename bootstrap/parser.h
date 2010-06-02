@@ -77,13 +77,17 @@ namespace heather
     static const Token deleteToken;
     static const Token enumToken;
     static const Token exitToken;
+    static const Token finalToken;
     static const Token fluidToken;
     static const Token genericToken;
     static const Token ignoreToken;
     static const Token includeToken;
     static const Token initToken;
+    static const Token innerToken;
     static const Token macroToken;
     static const Token measureToken;
+    static const Token outerToken;
+    static const Token publicToken;
     static const Token signalToken;
     static const Token slotToken;
     static const Token syncToken;

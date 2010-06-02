@@ -77,6 +77,8 @@ namespace heather
 
     // import
     E_MapToExpected       = 0xa101,
+    E_ExportVisibility    = 0xa140,
+    E_EmptyExportList     = 0xa141,
 
     // literals
     E_InconsistentArgs    = 0xa201,

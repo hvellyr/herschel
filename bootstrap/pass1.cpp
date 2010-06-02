@@ -270,8 +270,16 @@ FirstPass::parseExport()
 
   nextToken();
 
-  while (fToken == kSymbol) {
-    expr << fToken;
+  if (fToken == kSymbol) {
+    if (fToken == Parser::publicToken ||
+        fToken == Parser::innerToken ||
+        fToken == Parser::outerToken) {
+      expr << fToken;
+    }
+    else
+      errorf(fToken.srcpos(), E_ExportVisibility,
+             "unknown visibility type '%s'", (const char*)StrHelper(fToken.toString()));
+
     nextToken();
   }
 
@@ -280,15 +288,34 @@ FirstPass::parseExport()
     return scanUntilTopExprAndResume();
   }
 
+  bool ignore = false;
   Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
   parseSequence(ExportParser(),
                 kParanOpen, kParanClose, true, E_BadParameterList,
                 symbols,
                 "export-symbols");
+  if (symbols.isEmpty()) {
+    errorf(fToken.srcpos(), E_EmptyExportList,
+           "empty export list");
+    ignore = true;
+  }
+  else
+    expr << symbols;
 
-  expr << symbols;
+  if (fToken == kAs) {
+    Token asToken = fToken;
+    nextToken();
 
-  return expr;
+    if (fToken != Parser::finalToken) {
+      errorf(fToken.srcpos(), E_UnexpectedToken, "expected 'final'");
+      return expr;
+    }
+
+    expr << asToken << fToken;
+    nextToken();
+  }
+
+  return ignore ? Token() : expr;
 }
 
 
