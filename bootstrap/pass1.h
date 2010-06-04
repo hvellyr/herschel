@@ -23,8 +23,10 @@ namespace heather
   class MacroPattern
   {
   public:
-    MacroPattern(const TokenVector& pattern, const TokenVector& replc)
-      : fPattern(pattern),
+    MacroPattern(const SrcPos& srcpos,
+                 const TokenVector& pattern, const TokenVector& replc)
+      : fSrcPos(srcpos),
+        fPattern(pattern),
         fReplacement(replc)
     { }
 
@@ -36,16 +38,30 @@ namespace heather
 
     MacroPattern& operator=(const MacroPattern& other)
     {
-      fPattern = other.fPattern;
+      fSrcPos      = other.fSrcPos;
+      fPattern     = other.fPattern;
       fReplacement = other.fReplacement;
       return *this;
     }
 
+    SrcPos      fSrcPos;
     TokenVector fPattern;
     TokenVector fReplacement;
   };
 
   typedef std::vector<MacroPattern> MacroPatternVector;
+
+  enum MacroType
+  {
+    kMacro_Invalid,
+    kMacro_Any,
+    kMacro_Def,
+    kMacro_On,
+    kMacro_Stmt,
+    kMacro_Function
+  };
+
+  String toString(MacroType type);
 
 
   //--------------------------------------------------------------------------
@@ -91,7 +107,7 @@ namespace heather
                       bool isLocal);
     Token parseVarDef2(const Token& defToken, const Token& tagToken,
                        const Token& symbolToken, bool isLocal);
-    Token parseFunctionDef(const Token& defToken, const Token& tagToken, 
+    Token parseFunctionDef(const Token& defToken, const Token& tagToken,
                            const Token& symToken, bool isLocal);
     Token parseFunctionOrVarDef(const Token& defToken, bool isLocal);
     Token parseSelect();
@@ -200,6 +216,12 @@ namespace heather
     Token parseMacroDef(const Token& defToken);
     bool parseMacroPatterns(MacroPatternVector* patterns);
     bool parseMacroComponent(TokenVector* component);
+
+    MacroType dertermineMacroPatternType(const Token& macroName,
+                                         const SrcPos& patternPos,
+                                         const TokenVector& pattern);
+    MacroType determineMacroType(const Token& macroName,
+                                 const MacroPatternVector& patterns);
 
     //-------- data members
     Ptr<Parser> fParser;
