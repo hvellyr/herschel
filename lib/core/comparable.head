@@ -31,7 +31,7 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 interface core ("eyestep/heather 1.0:core")
-export public(Comparable)
+export public(*)
 
 def type Comparable
 {

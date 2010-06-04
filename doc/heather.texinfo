@@ -319,10 +319,9 @@ The following identifiers are reserved and have a special meaning:
 @verbatim
 AND       and       as        by        def       else      eof
 export    extend    false     for       Function  function  if
-import    in        interface isa       let       match     mod
-module    nil       not       on        OR        or        otherwise
-reify     select    then      true      when      where     while
-XOR
+import    in        isa       let       match     mod       module
+nil       not       on        OR        or        otherwise reify
+select    then      true      when      where     while     XOR
 @end verbatim
 
 The following identifiers are predefined and used by the language
@@ -335,9 +334,9 @@ class for an object.}:
 
 @verbatim
 alias     char      class     config    const     enum      exit
-final     fluid     generic   ignore    include   init      macro
-measure   protected public    signal    slot      sync      type
-unit
+final     fluid     generic   ignore    include   init      inner
+macro     measure   outer     public    private   signal    slot
+sync      type      unit
 @end verbatim
 
 
@@ -1278,12 +1277,16 @@ separated by a @code{;}.  The following annotations are defined:
 @findex transient
 @findex public
 @findex private
+@findex outer
+@findex inner
 @findex observable
 @findex Observable
 @findex slot!
 @table @code
 @item public
 @itemx private
+@itemx outer
+@itemx inner
 This controls the automatic export of autocreated accessor and/or
 mutator functions for the slot.
 @item transient

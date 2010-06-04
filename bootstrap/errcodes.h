@@ -79,6 +79,7 @@ namespace heather
     E_MapToExpected       = 0xa101,
     E_ExportVisibility    = 0xa140,
     E_EmptyExportList     = 0xa141,
+    E_UnknownInputFile    = 0xa142,
 
     // literals
     E_InconsistentArgs    = 0xa201,
@@ -99,8 +100,9 @@ namespace heather
     // enums
     E_BadEnumItemList     = 0xa600,
 
-    // import
-    E_UnknownInputFile    = 0xb000,
+    // macro
+    E_BadMacroPattern     = 0xb000,
+    E_BadMacroReplcment   = 0xb001,
   };
 };
 
