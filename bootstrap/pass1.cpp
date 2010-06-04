@@ -2966,6 +2966,154 @@ FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
 }
 
 
+bool
+FirstPass::parseMacroComponent(TokenVector* component)
+{
+  SrcPos startPos = fToken.srcpos();
+
+  int braceCount = 1;
+  for ( ; ; ) {
+    if (fToken == kEOF) {
+      errorf(fToken.srcpos(), E_UnexpectedEOF, "unfinished macro component");
+      if (startPos != fToken.srcpos())
+        errorf(startPos, E_MissingBraceClose, "beginning '{' was here");
+      return false;
+    }
+
+    if (fToken == kBraceOpen) {
+      braceCount++;
+      component->push_back(fToken);
+      nextToken();
+    }
+    else if (fToken == kBraceClose) {
+      braceCount--;
+      if (braceCount > 0) {
+        component->push_back(fToken);
+        nextToken();
+      }
+      else {
+        nextToken();
+        return true;
+      }
+    }
+    else {
+      component->push_back(fToken);
+      nextToken();
+    }
+  }
+
+  assert(0);
+  return true;
+}
+
+
+bool
+FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
+{
+  SrcPos startPos = fToken.srcpos();
+
+  while (true) {
+    if (fToken == kEOF)
+      break;
+
+    if (fToken != kBraceOpen) {
+      errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+      scanUntilTopExprAndResume();
+      return false;
+    }
+    nextToken();
+
+    TokenVector pattern;
+    TokenVector replacement;
+    if (parseMacroComponent(&pattern)) {
+      if (fToken == kMapTo) {
+        nextToken();
+
+        if (fToken == kBraceOpen) {
+          nextToken();
+          SrcPos pos = fToken.srcpos();
+          if (parseMacroComponent(&replacement)) {
+            patterns->push_back(MacroPattern(pattern, replacement));
+          }
+          else {
+            errorf(pos, E_BadMacroReplcment, "bad macro replacement");
+            scanUntilTopExprAndResume();
+            return false;
+          }
+        }
+        else {
+          errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+          scanUntilTopExprAndResume();
+          return false;
+        }
+      }
+      else {
+        errorf(fToken.srcpos(), E_MapToExpected, "expected '->'");
+        scanUntilTopExprAndResume();
+        return false;
+      }
+    }
+    else {
+      errorf(fToken.srcpos(), E_BadMacroPattern, "bad macro pattern");
+      scanUntilTopExprAndResume();
+      return false;
+    }
+
+    if (fToken == kBraceOpen)
+      continue;
+    else if (fToken != kBraceClose) {
+      errorf(fToken.srcpos(), E_UnexpectedToken,"expected '}' or '{'");
+      nextToken();
+    }
+    else if (fToken == kBraceClose)
+      break;
+  }
+
+  if (fToken == kBraceClose) {
+    nextToken();
+  }
+  else {
+    errorf(fToken.srcpos(), E_UnexpectedToken, "expected '}'");
+
+    if (startPos != fToken.srcpos())
+      errorf(startPos, E_MissingBraceClose, "beginning '{' was here");
+    scanUntilTopExprAndResume();
+    return false;
+  }
+
+  return true;
+}
+
+
+Token
+FirstPass::parseMacroDef(const Token& defToken)
+{
+  assert(fToken == Parser::macroToken);
+  Token tagToken = fToken;
+  nextToken();
+
+  if (fToken != kSymbol) {
+    errorf(fToken.srcpos(), E_MissingDefName, "expected macro name");
+    return scanUntilTopExprAndResume();
+  }
+  Token macroNameToken = fToken;
+  nextToken();
+
+  if (fToken != kBraceOpen) {
+    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+    return scanUntilTopExprAndResume();
+  }
+
+  SrcPos bracePos = fToken.srcpos();
+  nextToken();
+
+  MacroPatternVector patterns;
+  parseMacroPatterns(&patterns);
+
+  return Token();
+}
+
+
 Token
 FirstPass::parseDef(bool isLocal, ScopeType scope)
 {
@@ -3036,7 +3184,7 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
       return parseCharDef(defToken);
     }
     else if (fToken == Parser::macroToken) {
-      // TODO
+      return parseMacroDef(defToken);
     }
     else if (fToken == kSymbol)
       return parseFunctionOrVarDef(defToken, isLocal);

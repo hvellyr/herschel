@@ -20,6 +20,34 @@
 
 namespace heather
 {
+  class MacroPattern
+  {
+  public:
+    MacroPattern(const TokenVector& pattern, const TokenVector& replc)
+      : fPattern(pattern),
+        fReplacement(replc)
+    { }
+
+    MacroPattern(const MacroPattern& other)
+    {
+      *this = other;
+    }
+
+
+    MacroPattern& operator=(const MacroPattern& other)
+    {
+      fPattern = other.fPattern;
+      fReplacement = other.fReplacement;
+      return *this;
+    }
+
+    TokenVector fPattern;
+    TokenVector fReplacement;
+  };
+
+  typedef std::vector<MacroPattern> MacroPatternVector;
+
+
   //--------------------------------------------------------------------------
 
   class FirstPass
@@ -167,6 +195,11 @@ namespace heather
                        bool skipFirst = true);
 
     bool isConstraintOperator(const Token& token) const;
+
+
+    Token parseMacroDef(const Token& defToken);
+    bool parseMacroPatterns(MacroPatternVector* patterns);
+    bool parseMacroComponent(TokenVector* component);
 
     //-------- data members
     Ptr<Parser> fParser;
