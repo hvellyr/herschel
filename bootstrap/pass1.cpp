@@ -2966,6 +2966,109 @@ FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
 }
 
 
+MacroType
+FirstPass::dertermineMacroPatternType(const Token& macroName,
+                                      const SrcPos& patternPos,
+                                      const TokenVector& pattern)
+{
+  if (pattern.size() == 1) {
+    if (pattern[0] == macroName)
+      return kMacro_Any;
+
+    errorf(pattern[1].srcpos(), E_PatternNameMismatch,
+           "macro name and pattern mismatch");
+    return kMacro_Invalid;
+  }
+  else if (pattern.size() > 1) {
+    if (pattern[0] == kDefId ||
+        pattern[0] == kLetId)
+    {
+      if (pattern[1] == macroName)
+        return kMacro_Def;
+
+      errorf(pattern[1].srcpos(), E_PatternNameMismatch,
+             "macro name and pattern mismatch");
+      return kMacro_Invalid;
+    }
+    else if (pattern[0] == kOnId) {
+      if (pattern[1] == macroName)
+        return kMacro_On;
+
+      errorf(pattern[1].srcpos(), E_PatternNameMismatch,
+             "macro name and pattern mismatch");
+      return kMacro_Invalid;
+    }
+
+    TokenVector::const_iterator it = pattern.begin();
+    if (*it != macroName) {
+      errorf(pattern[1].srcpos(), E_PatternNameMismatch,
+             "macro name and pattern mismatch");
+      return kMacro_Invalid;
+    }
+    it++;
+
+    if (*it == kParanOpen) {
+      int paranCount = 0;
+      SrcPos paranOpenPos = it->srcpos();
+
+      for ( ; it != pattern.end(); it++) {
+        if (*it == kParanOpen)
+          paranCount++;
+        else if (*it == kParanClose) {
+          paranCount--;
+          if (paranCount == 0) {
+            it++;
+            if (it == pattern.end())
+              return kMacro_Function;
+            else
+              return kMacro_Stmt;
+          }
+        }
+      }
+
+      errorf(paranOpenPos, E_BadMacroPattern,
+             "Unbalanced paranthesis in macro pattern");
+      return kMacro_Invalid;
+    }
+    return kMacro_Any;
+  }
+
+  errorf(patternPos, E_BadMacroPattern, "empty macro pattern");
+  return kMacro_Invalid;
+}
+
+
+MacroType
+FirstPass::determineMacroType(const Token& macroName,
+                              const MacroPatternVector& patterns)
+{
+  MacroType lastType = kMacro_Any;
+
+  for (MacroPatternVector::const_iterator it = patterns.begin();
+       it != patterns.end();
+       it++)
+  {
+    MacroType pType = dertermineMacroPatternType(macroName,
+                                                 it->fSrcPos, it->fPattern);
+    if (pType == kMacro_Invalid)
+      return pType;
+
+    if (lastType == kMacro_Any ||
+        lastType == pType)
+    {
+      lastType = pType;
+    }
+    else {
+      errorf(it->fSrcPos, E_MacroInconsistency,
+             "Macro has inconsistent patterns");
+      return kMacro_Invalid;
+    }
+  }
+
+  return lastType;
+}
+
+
 bool
 FirstPass::parseMacroComponent(TokenVector* component)
 {
@@ -3023,6 +3126,7 @@ FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
     }
     nextToken();
 
+    SrcPos patternPos = fToken.srcpos();
     TokenVector pattern;
     TokenVector replacement;
     if (parseMacroComponent(&pattern)) {
@@ -3033,7 +3137,8 @@ FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
           nextToken();
           SrcPos pos = fToken.srcpos();
           if (parseMacroComponent(&replacement)) {
-            patterns->push_back(MacroPattern(pattern, replacement));
+            patterns->push_back(MacroPattern(patternPos,
+                                             pattern, replacement));
           }
           else {
             errorf(pos, E_BadMacroReplcment, "bad macro replacement");
@@ -3062,8 +3167,9 @@ FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
     if (fToken == kBraceOpen)
       continue;
     else if (fToken != kBraceClose) {
-      errorf(fToken.srcpos(), E_UnexpectedToken,"expected '}' or '{'");
-      nextToken();
+      errorf(fToken.srcpos(), E_UnexpectedToken,"expected '{' or '}'");
+      scanUntilTopExprAndResume();
+      return false;
     }
     else if (fToken == kBraceClose)
       break;
@@ -3108,7 +3214,10 @@ FirstPass::parseMacroDef(const Token& defToken)
   nextToken();
 
   MacroPatternVector patterns;
-  parseMacroPatterns(&patterns);
+  if (parseMacroPatterns(&patterns)) {
+    MacroType mType = determineMacroType(macroNameToken, patterns);
+    printf("MacroType is: %s\n", (const char*)StrHelper(toString(mType)));
+  }
 
   return Token();
 }
@@ -3259,3 +3368,20 @@ FirstPass::parse()
 }
 
 
+
+//------------------------------------------------------------------------------
+
+String
+heather::toString(MacroType type)
+{
+  switch (type) {
+  case kMacro_Invalid:  return String("--invalid--");
+  case kMacro_Any:      return String("Any");
+  case kMacro_Def:      return String("Def");
+  case kMacro_On:       return String("On");
+  case kMacro_Stmt:     return String("Stmt");
+  case kMacro_Function: return String("Function");
+  }
+
+  return String("???");
+}

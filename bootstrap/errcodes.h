@@ -70,6 +70,9 @@ namespace heather
     // macro
     E_BadMacroPattern     = 0x4080,
     E_BadMacroReplcment   = 0x4081,
+    E_MacroInconsistency  = 0x4082,
+    E_InvalidPatternType  = 0x4083,
+    E_PatternNameMismatch = 0x4084,
 
     // functions
     E_MissingBody         = 0x4100,
