@@ -27,6 +27,7 @@ namespace heather
     E_UnexpectedEOF       = 0x000a,
     E_MissingBraceOpen    = 0x000b,
     E_AssignExpected      = 0x000c,
+    E_MapToExpected       = 0x000d,
 
     E_SymbolExpected      = 0x1001,
     E_StringExpected      = 0x1002,
@@ -63,46 +64,45 @@ namespace heather
     E_MissingBaseType     = 0x4027,
     E_MissingUnitSign     = 0x4028,
 
+    // enums
+    E_BadEnumItemList     = 0x4050,
+
+    // macro
+    E_BadMacroPattern     = 0x4080,
+    E_BadMacroReplcment   = 0x4081,
+
     // functions
     E_MissingBody         = 0x4100,
     E_InvalidRestParam    = 0x4101,
     E_ParamOrder          = 0x4102,
 
-    // expressions
-    E_MissingRHExpr       = 0x6001,
-
-    // module parsing
-    E_MissingModName      = 0xa000,
-    E_MissingDefName      = 0xa001,
-
-    // import
-    E_MapToExpected       = 0xa101,
-    E_ExportVisibility    = 0xa140,
-    E_EmptyExportList     = 0xa141,
-    E_UnknownInputFile    = 0xa142,
+    // loops
+    E_BadForLoopClause    = 0x4200,
+    BadExplicitForClause  = 0x4201,
 
     // literals
-    E_InconsistentArgs    = 0xa201,
+    E_InconsistentArgs    = 0x4250,
 
     // on
-    E_UnknownOnKey        = 0xa301,
+    E_UnknownOnKey        = 0x4301,
+
+    // expressions
+    E_MissingRHExpr       = 0x4400,
 
     // select, match
-    E_BadPatternList      = 0xa401,
-    E_RedefinedPattern    = 0xa402,
-    E_ColonExpected       = 0xa403,
-    E_ExpectedPipe        = 0xa404,
+    E_BadPatternList      = 0x4401,
+    E_RedefinedPattern    = 0x4402,
+    E_ColonExpected       = 0x4403,
+    E_ExpectedPipe        = 0x4404,
 
-    // loops
-    E_BadForLoopClause    = 0xa501,
-    BadExplicitForClause  = 0xa502,
+    // module parsing
+    E_MissingModName      = 0x4500,
+    E_MissingDefName      = 0x4501,
 
-    // enums
-    E_BadEnumItemList     = 0xa600,
-
-    // macro
-    E_BadMacroPattern     = 0xb000,
-    E_BadMacroReplcment   = 0xb001,
+    // import, export
+    E_ExportVisibility    = 0x4540,
+    E_EmptyExportList     = 0x4541,
+    E_UnknownInputFile    = 0x4542,
   };
 };
 
