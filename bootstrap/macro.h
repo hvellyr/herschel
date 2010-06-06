@@ -18,6 +18,7 @@
 #include "srcpos.h"
 #include "str.h"
 #include "token.h"
+#include "registry.h"
 
 namespace heather
 {
@@ -118,6 +119,48 @@ namespace heather
   private:
     PatternMap fItems;
   };
+
+  //----------------------------------------------------------------------------
+
+  class MacroRegItem
+  {
+  public:
+    MacroRegItem(SyntaxTable* table, MacroType type)
+      : fSyntaxTable(table),
+        fMacroType(type)
+    { }
+
+
+    MacroRegItem(const MacroRegItem& other)
+    {
+      *this = other;
+    }
+
+
+    MacroRegItem& operator=(const MacroRegItem& other)
+    {
+      fSyntaxTable = other.fSyntaxTable;
+      fMacroType   = other.fMacroType;
+      return *this;
+    }
+
+    //-------- data members
+
+    Ptr<SyntaxTable> fSyntaxTable;
+    MacroType        fMacroType;
+  };
+
+
+  class MacroRegistry : public Registry<MacroRegItem>
+  {
+  public:
+    void registerMacro(const String& macroName, MacroType macroType,
+                       SyntaxTable* table)
+    {
+      registerValue(macroName, MacroRegItem(table, macroType));
+    }
+  };
+
 };                              // namespace
 
 #endif                          // macro
