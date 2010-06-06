@@ -38,7 +38,7 @@ displayHelp()
   printf("  -D VAR=VALUE               Define config VAR to be VALUE\n");
   printf("     --define=VAR=VALUE\n");
   printf("  -T KEYS, --trace=KEYS      Trace various aspects:\n");
-  printf("                             {tokenizer|pass1|pass2|import}\n");
+  printf("                             {tokenizer|pass1|pass2|import|macro}\n");
   printf("  -d DIR,  --outdir=DIR      Output all generated files to DIR\n");
 #if defined(UNITTESTS)
   printf("  -UT,     --run-unit-tests  Run unit tests for the compiler\n");

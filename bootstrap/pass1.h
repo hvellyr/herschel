@@ -9,61 +9,18 @@
 #ifndef bootstrap_pass1_h
 #define bootstrap_pass1_h
 
-#include "refcountable.h"
 #include "apt.h"
-#include "port.h"
-#include "tokenport.h"
-#include "token.h"
-#include "parser.h"
 #include "errcodes.h"
+#include "macro.h"
+#include "parser.h"
+#include "port.h"
+#include "refcountable.h"
+#include "token.h"
+#include "tokenport.h"
 
 
 namespace heather
 {
-  class MacroPattern
-  {
-  public:
-    MacroPattern(const SrcPos& srcpos,
-                 const TokenVector& pattern, const TokenVector& replc)
-      : fSrcPos(srcpos),
-        fPattern(pattern),
-        fReplacement(replc)
-    { }
-
-    MacroPattern(const MacroPattern& other)
-    {
-      *this = other;
-    }
-
-
-    MacroPattern& operator=(const MacroPattern& other)
-    {
-      fSrcPos      = other.fSrcPos;
-      fPattern     = other.fPattern;
-      fReplacement = other.fReplacement;
-      return *this;
-    }
-
-    SrcPos      fSrcPos;
-    TokenVector fPattern;
-    TokenVector fReplacement;
-  };
-
-  typedef std::vector<MacroPattern> MacroPatternVector;
-
-  enum MacroType
-  {
-    kMacro_Invalid,
-    kMacro_Any,
-    kMacro_Def,
-    kMacro_On,
-    kMacro_Stmt,
-    kMacro_Function
-  };
-
-  String toString(MacroType type);
-
-
   //--------------------------------------------------------------------------
 
   class FirstPass
@@ -224,6 +181,7 @@ namespace heather
                                  const MacroPatternVector& patterns);
 
     //-------- data members
+
     Ptr<Parser> fParser;
     Token       fToken;
     bool        fEvaluateExprs;

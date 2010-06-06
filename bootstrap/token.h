@@ -183,6 +183,7 @@ namespace heather
   {
   public:
     virtual bool operator==(const Token& other) const = 0;
+    virtual bool operator<(const Token& other) const = 0;
 
     virtual TokenImpl* unshare()
     {
@@ -238,6 +239,8 @@ namespace heather
 
     bool operator==(TokenType type) const;
     bool operator!=(TokenType type) const;
+
+    bool operator<(const Token& other) const;
 
     const SrcPos& srcpos() const;
     Token& setSrcpos(const SrcPos& srcpos);
@@ -323,6 +326,10 @@ namespace heather
 
   private:
     void unshare();
+
+    friend class IdTokenImpl;
+    friend class StringTokenImpl;
+    friend class NumberTokenImpl;
 
     //-------- data members
     TokenType      fType;
