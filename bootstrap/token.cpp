@@ -95,6 +95,13 @@ namespace heather
     }
 
 
+    virtual bool operator<(const Token& other) const
+    {
+      assert(other.type() == kId);
+      return fStr < dynamic_cast<const IdTokenImpl*>(other.fImpl.obj())->fStr;
+    }
+
+
     virtual void toPort(Port<Octet>* port) const
     {
       display(port, String("<id>") + xmlEncode(fStr) + "</id>");
@@ -123,9 +130,9 @@ namespace heather
         fIntValue(value),
         fDoubleValue(0.0),
         fIsImaginary(false)
-      {
-        assert(type != kBool);
-      }
+    {
+      assert(type != kBool);
+    }
 
 
     NumberTokenImpl(TokenType type, bool value)
@@ -134,9 +141,9 @@ namespace heather
         fIntValue(0),
         fDoubleValue(0.0),
         fIsImaginary(false)
-      {
-        assert(type == kBool);
-      }
+    {
+      assert(type == kBool);
+    }
 
     NumberTokenImpl(TokenType type, double value)
       : fType(type),
@@ -144,7 +151,7 @@ namespace heather
         fIntValue(0),
         fDoubleValue(value),
         fIsImaginary(false)
-      { }
+    { }
 
     NumberTokenImpl(TokenType type, const Rational& rat)
       : fType(type),
@@ -153,7 +160,8 @@ namespace heather
         fRationalValue(rat),
         fDoubleValue(0.0),
         fIsImaginary(false)
-      { }
+    { }
+
 
     virtual bool operator==(const Token& other) const
     {
@@ -174,6 +182,37 @@ namespace heather
         case kRational:
           return ( fRationalValue == other.rationalValue() &&
                    fIsImaginary == other.isImaginary() );
+
+        default:
+          return true;
+        }
+      }
+      return false;
+    }
+
+
+    virtual bool operator<(const Token& other) const
+    {
+      if (fType == other.tokenType()) {
+        switch (fType) {
+        case kChar:
+          return fIntValue < int(other.charValue());
+
+        case kBool:
+          return fBoolValue < other.boolValue();
+
+        case kInt:
+          return ( fIsImaginary == other.isImaginary()
+                   ? fIntValue < other.intValue()
+                   : false );
+        case kReal:
+          return ( fIsImaginary == other.isImaginary()
+                   ? fDoubleValue < other.realValue()
+                   : false );
+        case kRational:
+          return ( fIsImaginary == other.isImaginary()
+                   ? fRationalValue < other.rationalValue()
+                   : false );
 
         default:
           return true;
@@ -247,6 +286,7 @@ namespace heather
 
 
     //-------- data members
+
     TokenType fType;
     bool      fBoolValue;
     int       fIntValue;
@@ -264,12 +304,19 @@ namespace heather
     StringTokenImpl(TokenType type, const String& value)
       : fType(type),
         fStrValue(value)
-      { }
+    { }
 
     virtual bool operator==(const Token& other) const
     {
       return ( fType == other.tokenType() &&
                fStrValue == other.stringValue() );
+    }
+
+
+    virtual bool operator<(const Token& other) const
+    {
+      return fStrValue < dynamic_cast<const StringTokenImpl*>(
+        other.fImpl.obj())->fStrValue;
     }
 
 
@@ -288,6 +335,7 @@ namespace heather
         assert(0);
       }
     }
+
 
     virtual String toString() const
     {
@@ -327,6 +375,12 @@ namespace heather
     }
 
 
+    virtual bool operator<(const Token& other) const
+    {
+      return toString() < other.stringValue();
+    }
+
+
     virtual TokenImpl* unshare()
     {
       Ptr<SeqTokenImpl> copy = new SeqTokenImpl;
@@ -361,6 +415,7 @@ namespace heather
 
 
     //-------- data members
+
     TokenVector fChildren;
   };
 
@@ -382,6 +437,12 @@ namespace heather
           fRight == other.rightToken())
         return SeqTokenImpl::operator==(other);
       return false;
+    }
+
+
+    virtual bool operator<(const Token& other) const
+    {
+      return toString() < other.stringValue();
     }
 
 
@@ -417,6 +478,7 @@ namespace heather
 
 
     //-------- data members
+
     TokenType fLeft;
     TokenType fRight;
   };
@@ -444,8 +506,7 @@ Token::Token(const SrcPos& where, TokenType left, TokenType right)
 Token::Token(const SrcPos& where, TokenType ttype)
   : fType(ttype),
     fSrcPos(where)
-{
-}
+{ }
 
 
 Token::Token(const SrcPos& where, const String& str)
@@ -548,6 +609,62 @@ Token::operator==(const Token& other) const
     return (*fImpl.obj()) == other;
   }
   return false;
+}
+
+
+bool
+Token::operator<(const Token& other) const
+{
+  if (fType == other.fType) {
+    switch (type()) {
+    case kSeq:
+    case kNested:
+    case kLit:
+      assert(fImpl != NULL);
+      return fImpl->operator<(other);
+      break;
+    case kId:
+      switch (fType) {
+      case kSymbol:
+      case kMacroParam:
+      case kKeyarg:
+        return fImpl->operator<(other);
+      case kDefId:
+      case kElseId:
+      case kEofId:
+      case kExportId:
+      case kExtendId:
+      case kForId:
+      case kFUNCTIONId:
+      case kFunctionId:
+      case kIfId:
+      case kImportId:
+      case kInterfaceId:
+      case kLetId:
+      case kMatchId:
+      case kModuleId:
+      case kNilId:
+      case kNotId:
+      case kOnId:
+      case kOtherwiseId:
+      case kReifyId:
+      case kSelectId:
+      case kThenId:
+      case kWhenId:
+      case kWhereId:
+      case kWhileId:
+        return fType < other.fType;
+      default:
+        assert(0);
+      }
+      break;
+
+    case kPunct:
+      return fType < other.fType;
+    }
+  }
+
+  return fType < other.fType;
 }
 
 
@@ -787,6 +904,7 @@ Token::isNested() const
 {
   return fType == kNestedExpr && fImpl != NULL;
 }
+
 
 bool
 Token::isLit() const

@@ -14,6 +14,7 @@ SOURCES =         \
 	apt.cpp         \
 	heather.cpp     \
 	log.cpp         \
+	macro.cpp       \
 	numbers.cpp     \
 	option.cpp      \
 	parser.cpp      \
@@ -38,6 +39,7 @@ HEADERS =         \
 	errcodes.h      \
 	exception.h     \
 	log.h           \
+	macro.h         \
 	numbers.h       \
 	option.h        \
 	parser.h        \

@@ -17,6 +17,7 @@
 #include "tokeneval.h"
 #include "tokenizer.h"
 #include "valuesaver.h"
+#include "macro.h"
 
 
 //----------------------------------------------------------------------------
@@ -3215,10 +3216,18 @@ FirstPass::parseMacroDef(const Token& defToken)
 
   MacroPatternVector patterns;
   if (parseMacroPatterns(&patterns)) {
-    MacroType mType = determineMacroType(macroNameToken, patterns);
-    printf("MacroType is: %s\n", (const char*)StrHelper(toString(mType)));
+    if (fEvaluateExprs) {
+      MacroType mType = determineMacroType(macroNameToken, patterns);
+      printf("MacroType is: %s\n", (const char*)StrHelper(toString(mType)));
+
+      Ptr<SyntaxTable> syn = SyntaxTable::compile(String(""), patterns);
+      if (Properties::isTraceMacro()) {
+        fprintf(stderr, "%s\n", (const char*)StrHelper(syn->toString()));
+      }
+    }
   }
 
+  // always ignore macros
   return Token();
 }
 
@@ -3369,19 +3378,3 @@ FirstPass::parse()
 
 
 
-//------------------------------------------------------------------------------
-
-String
-heather::toString(MacroType type)
-{
-  switch (type) {
-  case kMacro_Invalid:  return String("--invalid--");
-  case kMacro_Any:      return String("Any");
-  case kMacro_Def:      return String("Def");
-  case kMacro_On:       return String("On");
-  case kMacro_Stmt:     return String("Stmt");
-  case kMacro_Function: return String("Function");
-  }
-
-  return String("???");
-}

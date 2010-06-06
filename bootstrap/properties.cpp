@@ -25,6 +25,7 @@ static bool sIsTokenizerTracing = false;
 static bool sIsPass1Tracing = false;
 static bool sIsPass2Tracing = false;
 static bool sIsImportFileTracing = false;
+static bool sIsMacroTracing = false;
 static bool sDontImport = false;
 static String sOutdir;
 static Ptr<ConfigVarRegistry> sConfigVarRegistry;
@@ -68,6 +69,8 @@ Properties::setTrace(const String& key, bool value)
     sIsPass2Tracing = value;
   else if (key == String("import"))
     sIsImportFileTracing = value;
+  else if (key == String("macro"))
+    sIsMacroTracing = value;
 }
 
 
@@ -111,6 +114,13 @@ bool
 Properties::isTraceImportFile()
 {
   return sIsImportFileTracing;
+}
+
+
+bool
+Properties::isTraceMacro()
+{
+  return sIsMacroTracing;
 }
 
 

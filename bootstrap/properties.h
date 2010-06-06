@@ -33,6 +33,7 @@ namespace heather
     static bool isTracePass1();
     static bool isTracePass2();
     static bool isTraceImportFile();
+    static bool isTraceMacro();
 
     static void setConfigVar(const String& keyValuePair);
     static ConfigVarRegistry* globalConfigVarRegistry();
