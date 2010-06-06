@@ -11,6 +11,7 @@
 
 #include "refcountable.h"
 #include "apt.h"
+#include "macro.h"
 #include "port.h"
 #include "tokenport.h"
 #include "token.h"
@@ -63,6 +64,7 @@ namespace heather
 
     CharRegistry* charRegistry() const;
     ConfigVarRegistry* configVarRegistry() const;
+    MacroRegistry* macroRegistry() const;
 
     Token importFile(Port<Char>* port, const String& srcName);
     String lookupFile(const String& srcName, bool isPublic);
@@ -104,7 +106,8 @@ namespace heather
     {
     public:
       ParserState(CharRegistry* charReg,
-                  ConfigVarRegistry* configReg);
+                  ConfigVarRegistry* configReg,
+                  MacroRegistry* macroReg);
       ParserState(const ParserState& item);
       ParserState& operator=(const ParserState& item);
 
@@ -112,6 +115,7 @@ namespace heather
       Token                  fToken;
       Ptr<CharRegistry>      fCharRegistry;
       Ptr<ConfigVarRegistry> fConfigVarRegistry;
+      Ptr<MacroRegistry>     fMacroRegistry;
     };
 
 

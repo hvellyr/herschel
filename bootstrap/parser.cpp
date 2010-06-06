@@ -51,7 +51,8 @@ const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
 Parser::Parser()
   : fState(ParserState(
              new CharRegistry,
-             new ConfigVarRegistry(Properties::globalConfigVarRegistry())))
+             new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
+             new MacroRegistry))
 {
 }
 
@@ -67,6 +68,13 @@ ConfigVarRegistry*
 Parser::configVarRegistry() const
 {
   return fState.fConfigVarRegistry;
+}
+
+
+MacroRegistry*
+Parser::macroRegistry() const
+{
+  return fState.fMacroRegistry;
 }
 
 
@@ -166,9 +174,11 @@ Parser::lookupFileAndOpen(const String& srcName, bool isPublic)
 //==============================================================================
 
 Parser::ParserState::ParserState(CharRegistry* charReg,
-                                 ConfigVarRegistry* configReg)
+                                 ConfigVarRegistry* configReg,
+                                 MacroRegistry* macroReg)
   : fCharRegistry(charReg),
-    fConfigVarRegistry(configReg)
+    fConfigVarRegistry(configReg),
+    fMacroRegistry(macroReg)
 {
 }
 
@@ -186,6 +196,7 @@ Parser::ParserState::operator=(const ParserState& item)
   fToken             = item.fToken;
   fCharRegistry      = item.fCharRegistry;
   fConfigVarRegistry = item.fConfigVarRegistry;
+  fMacroRegistry     = item.fMacroRegistry;
   return *this;
 }
 
@@ -197,7 +208,8 @@ Parser::PortStackHelper::PortStackHelper(Parser* parser)
   fParser->fParserStates.push_front(fParser->fState);
   fParser->fState = ParserState(
     new CharRegistry,
-    new ConfigVarRegistry(Properties::globalConfigVarRegistry()));
+    new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
+    new MacroRegistry);
 }
 
 
@@ -209,5 +221,6 @@ Parser::PortStackHelper::~PortStackHelper()
   fParser->fState = fParser->fParserStates.front();
   fParser->fParserStates.pop_front();
 
-  // merge current.fCharRegistry into fParser->fState; same for configVarReg
+  // merge current.fCharRegistry into fParser->fState; same for
+  // configVarReg and fMacroRegistry
 }

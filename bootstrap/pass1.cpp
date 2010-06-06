@@ -3220,9 +3220,13 @@ FirstPass::parseMacroDef(const Token& defToken)
       MacroType mType = determineMacroType(macroNameToken, patterns);
       printf("MacroType is: %s\n", (const char*)StrHelper(toString(mType)));
 
-      Ptr<SyntaxTable> syn = SyntaxTable::compile(String(""), patterns);
+      Ptr<SyntaxTable> synTable = SyntaxTable::compile(String(""), patterns);
+      fParser->macroRegistry()->registerMacro(macroNameToken.idValue(),
+                                              mType,
+                                              synTable);
+
       if (Properties::isTraceMacro()) {
-        fprintf(stderr, "%s\n", (const char*)StrHelper(syn->toString()));
+        fprintf(stderr, "%s\n", (const char*)StrHelper(synTable->toString()));
       }
     }
   }
