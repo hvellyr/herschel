@@ -1,0 +1,5 @@
+def f(a, b)
+  select () {
+    | (a == b) -> { a + b }
+    | (a < b) -> { a + b }
+  }

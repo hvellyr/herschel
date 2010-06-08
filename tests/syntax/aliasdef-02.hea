@@ -1,0 +1,5 @@
+def alias ForEachVisitor<T> = Function(elt : T) : Bool
+
+def alias NodePrinterFunc<L, R> = Function(node : Pair<L, R>) : Unspecified
+
+def alias PairIteratorAccessorFunc<T> = Function(node : Pair<T, _>) : T

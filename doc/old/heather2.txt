@@ -1,0 +1,577 @@
+Syntax Productions
+------------------
+
+program             ::= { top-expr }
+
+top-expr            ::= classdef
+                        | funcdef √
+                        | constdef
+                        | fluiddef
+                        | type-aliasdef
+
+expr                ::= atomic √
+                        | binary √
+                        | assign
+                        | class
+                        | function
+                        | if-expr
+                        | select-expr
+                        | for-expr
+                        | while-expr
+                        | until-expr
+                        | range-expr √
+
+atomic              ::= symbol √
+                        | literal √
+                        | group √
+                        | block √
+                        | unary √
+                        | tuple √
+                        | methv √
+                        | atomic '.' symbol √
+                        | atomic '[' expr ']' √   
+                        | atomic '(' [ arglist ] ')' √
+
+stmt                ::= expr √
+                        | localbind √
+                        | onsignal √
+                        | onexit √
+
+group  √            ::= '(' expr ')'
+block  √            ::= '{' stmtlist '}'
+
+arglist √           ::= expr { ',' expr }
+
+
+binary √            ::= operand operator operand
+operand √           ::= expr √
+operator √          ::= '+' √
+                        | '-' √
+                        | '*' √
+                        | '/' √
+                        | '//' √
+                        | '**' √ 
+                        | 'mod' √
+                        | 'and' √
+                        | 'or' √
+                        | '%'
+                        | 'AND' √
+                        | 'OR' √
+                        | 'XOR' √
+                        | '<<' √
+                        | '>>' √
+                        | '==' √
+                        | '<>' √
+                        | '<' √
+                        | '<=' √
+                        | '>' √
+                        | '>=' √
+                        | '<=>' √
+                        | '->' √
+
+unary √             ::= not | neg | bitnot
+not √               ::= 'not' '(' expr ')'
+not √               ::= 'neg' '(' expr ')' | '-' atomic
+bitnot √            ::= 'NOT' '(' expr ')' | '~' atomic
+
+assign √            ::= lvalue assignop expr
+assignop √          ::= '=' √
+                        | '+=' √
+                        | '-=' √
+                        | '*=' √
+                        | '/=' √
+                        | 'MOD=' √
+                        | '**=' √
+                        | 'AND=' √
+                        | 'OR=' √
+                        | 'XOR=' √
+                        | '<<=' √
+                        | '>>=' √
+
+lvalue √            ::= symbol √
+                        | atomic '[' expr ']'√
+                        | atomic '.' symbol√
+
+
+function √          ::= '#{' [ paramlist ] '=>' stmtlist '}'
+
+classdef √          ::= 'def' class-head [ '=>' '{' classdefs '}' ]
+
+class √             ::= class-head '=>' '{' classdefs '}'
+
+class-head √        ::= 'class' symbol [ '(' [ classparams ] ')' ] [ typespec ]
+                        { inheritspec }
+inheritspec √       ::= 'from' qsymbol [ '(' arglist ')' ]
+classparams √       ::= paramlist
+
+classdefs √         ::= slotdef √
+                        | classdef √
+                        | funcdef √
+                        | methdef √
+                        | type-aliasdef √
+
+slotdef √           ::= 'def' 'slot' symbol [ flags ] [ typespec ] '=' expr
+
+funcdef             ::= 'def' symbol '(' [ paramlist ] ')' 
+                        [ { flags } ] [ typespec ] '=>' stmtlist
+
+methdef             ::= 'def' 'meth' symbol '(' [ paramlist ] ')' 
+                        [ { flags } ] [ typespec ] '=>' stmtlist
+
+paramlist √         ::= param { ',' param }
+param √             ::= symbol [ typespec ]
+
+flags √             ::= 'on' 'class' √
+                        | 'private' √
+                        | 'public' √
+                        | 'final' √
+                        | 'abstract' √
+                        | 'overwrite' √
+
+constdef √          ::= 'def' 'const' symbol [ typespec ] '=' expr
+fluiddef √          ::= 'def' 'fluid' symbol [ typespec ] '=' expr
+
+stmtlist √          ::= stmt { stmt }
+
+localbind √         ::= '|' binding { binding } '|'
+binding             ::= var-binding √
+                        | fluid-binding √
+                        | const-binding √
+                        | func-binding √
+                        | type-alias-binding
+var-binding √       ::= symbol [ typespec ] [ '=' expr ]
+fluid-binding √     ::= 'fluid' symbol [ typespec ] [ '=' expr ]
+const-binding √     ::= 'const' symbol [ typespec ] [ '=' expr ]
+func-binding √      ::= symbol '(' [ paramlist ] ')' [ { flags } ] [ typespec ]
+                        '=>' expr
+class-binding √     ::= class √
+type-alias-binding  ::= type-alias-spec
+
+onsignal √          ::= 'on' 'signal' '(' symbol [ typespec ] ')' expr
+onexit √            ::= 'on' 'exit' '(' ')' expr
+
+range-expr √        ::= expr '..' expr [ 'by' expr ]
+
+if-expr √           ::= 'if' '(' test ')' if-consequent [ 'else' if-alternate ]
+test √              ::= expr
+if-consequent √     ::= expr
+if-alternate √      ::= expr
+
+select-expr         ::= 'select' '(' arg [ ',' comparator ] ')'
+                        match-clauses
+match-clauses       ::= key-clauses { key-clauses } [ otherwise-clause ]
+                        | otherwise-clause
+key-clauses         ::= keys '->' expr
+keys                ::= key { ',' key }
+key                 ::= literal
+otherwise-clause    ::= 'otherwise' '->' expr
+arg                 ::= expr
+comparator          ::= expr
+
+for-expr            ::= 'for' '(' for-clauses ')' expr
+for-clauses         ::= for-clause { ',' for-clause } [ ',' predicates ]
+                        | predicates
+for-clause          ::= numeric-clause 
+                        | collection-clause 
+                        | explicit-clause
+
+explicit-clause     ::= symbol '=' init-expr 'then' step-expr
+init-expr           ::= expr
+step-expr           ::= expr
+
+collection-clause   ::= symbol 'in' collection
+collection          ::= expr
+numeric-clause      ::= symbol '=' range-expr
+
+predicates          ::= until-pred
+                        | while-pred
+until-pred          ::= 'until' '(' test ')'
+while-pred          ::= 'while' '(' test ')'
+
+while-expr          ::= 'while' '(' test ')' expr
+until-expr          ::= 'until' '(' test ')' expr
+
+
+
+typespec            ::= ':' type
+                        | ':' '&' type
+                        | '&'
+type                ::= simple-type
+                        | param-type
+                        | union-type
+                        | constraint-type
+
+simple-type         ::= qsymbol
+param-type          ::= qsymbol '(' type-list ')'
+type-list           ::= type { ',' type }
+union-type          ::= 'union' '(' type-list ')'
+constraint-type     ::= qsymbol '=' literal
+                        | qsymbol 'in' literal-range-expr
+                        | qsymbol 'in' literal-tuple
+
+literal-range-expr  ::= number '..' number
+                        | char '..' char
+literal-tuple       ::= '#(' [ literal { ',' literal } ] ')'
+
+type-aliasdef       ::= 'def' type-alias-spec
+type-alias-spec     ::= 'alias' symbol '(' [ aliasparams ] ')' '=' type
+aliasparams         ::= alias-param { ',' alias-param
+alias-param         ::= symbol
+
+
+
+
+tuple               ::= '#(' [ expr { ',' expr } ')'
+
+literal             ::= number | string | char | keyword | bool | nil | eof | unspecified
+qsymbol             ::= symbol { '.' symbol }
+symbol              ::= IDENTIFIER
+
+number              ::= [`-'] integer [ signed-ind ] [ size-ind ]
+                        | [`-'] real [ real-size-ind ]
+                        | ireal
+
+integer             ::= decimal-number | hex-number | oct-number
+                        | exp-number
+
+signed-ind          ::= 'u'
+size-ind            ::= 'l' | 's'
+real-size-ind       ::= 'l' | 'f'
+decimal-number      ::= digit { digit }
+hex-number          ::= digit { hex-digit } 'h'
+oct-number          ::= oct-digit { oct-digit } 't'
+
+exp-number          ::= real [ `e' ( `+' | `-' ) decimal-number ]
+
+real                ::= decimal-number `.' decimal-number
+
+ireal               ::= (integer | real) ('i' | 'j' )
+
+digit               ::= '0'-'9'
+hex-digit           ::= digit | 'a'-'f' | 'A'-'F'
+oct-digit           ::= '0'-'7'
+
+string              ::= '"' { str-char | esc-char } '"' |
+str-char            ::= [^"\]
+esc-char            ::= char `;' | '\"'
+
+char                ::= '\' identifier
+                        | '\' PRINTABLE-CHAR
+                        | '\u' decimal-number
+                        | '\u' hex-number
+                        | '\u' oct-number
+
+keyword             ::= ''' identifier
+
+bool                ::= '#t' | '#f' | '#true' | '#false'
+nil                 ::= '#nil'
+eof                 ::= '#eof'            
+unspecified         ::= '#unspecified'
+
+identifier              ::= [ '->' ] first-id-char { more-id-char }
+first-id-char           ::= alpha-letter | first-other-letter
+more-id-char            ::= { alpha-letter | other-letter | digit }
+alpha-letter            ::= 'a'-'z' | 'A'-'Z'
+first-other-letter      ::= '_' | '$' | '%' | '<' | '>' | '?' | '!' 
+                            | '*'
+other-letter            ::= '_' | '$' | '%' | '<' | '>' | '?' | '!' 
+                            | '+' | '*' | '/' | '-'
+
+IDENTIFIER    ...
+
+
+Notational Summary
+------------------
+
+123             integer
+123h            integer hex notation
+12.345          real
+
+""              strings
+'xxx            keywords
+
+xxx : yyy       type spec
+xxx : &yyy      dispatch type spec
+xxx : &         dispatch type spec to current receiver's class
+xxx&            dispatch type spec to current receiver's class
+
+xxx = yyy       assignment
+
+()              grouping expressions
+                parameter list
+                argument lists
+                class environment
+{}              block
+xxx[]           array slot access
+
+| |             local bindings
+#{ x => y }     lambda
+
+#( x, y )       tuple
+
+#\x             char
+#\space         named char (from db)
+#\u123          unicode char notation
+#\u123h         unicode char hex notation
+
+=>              method spec
+                function spec
+                class spec
+                lambda spec
+
+#"0367267"      binary (octect vector)
+
+xxx.yyy         subdef access
+
+#t #true        fixed builtin values
+#f #false
+#eof
+#nil
+#unspecified
+
+,               argument separator
+                parameter separator
+
+--              line comment
+(-- --)         block comment
+
++ - * / **      operators
+<< >> == <>
+< <= >= <=>
+->
++= -= *= /= 
+<<= >>=
+
+#!              special syntax for scripts (shell support)
+
+
+
+Unused:
+;
+#[]
+#<>
+@
+%
+^
+
+
+Reserved Symbols:
+
+AND
+AND=
+NOT
+OR
+OR=
+XOR
+XOR=
+abstract
+and
+class
+const
+def
+else
+exit
+final
+fluid
+for
+from
+if
+in
+mod
+neg
+not
+on
+or
+otherwise
+overwrite
+private
+public
+select
+signal
+slot
+then
+union
+until
+while
+
+
+
+
+
+expressions:
+
+  x + y                 -> add(x, y)
+  x - y                 -> subtract(x, y)
+  x * y                 -> multiply(x, y)
+  x / y                 -> divide(x, y)
+  x ^ y                 -> exponent(x, y)
+  x mod y               -> modulo(x, y)
+  (x + y) * z           -> multiply(add(x, y), z)
+
+  x and y               -> bitand(x, y)
+  x or y                -> bitor(x, y)
+  x xor y               -> bitxor(x, y)
+
+  x >> y                -> shiftleft(x, y)
+  x << y                -> shiftright(x, y)
+
+  x == y                -> equal?(x, y)
+  x <> y                -> unequal?(x, y)
+  x < y                 -> less?(x, y)
+  x <= y                -> less-equal?(x,y)
+  x > y                 -> greater?(x, y)
+  x >= y                -> greater-equal?(x, y)
+  x <=> y               -> compare(x, y)
+
+
+function call:
+
+  f(p0, p1, pn)
+
+  p0.f(p1, pn)          -> f(p0, p1, pn)
+
+
+arrays:
+
+  a[i]
+  a[i] = v
+
+  a["k"]
+
+  a[n .. m]
+
+
+if tests:
+  if (t) x else y
+
+  select (v)
+    k0, k1, kn -> e0
+    k2, k3, kn -> e1
+    otherwise -> e2
+
+
+block:
+  { e1 e2 e3 }
+
+
+declarations and init:
+  let v = e
+  let f(p0, p1, pn) = body
+
+
+global (constant) definitions:
+
+  def v = e
+  def const v = e
+
+
+funcion definitions:
+
+  def f(p0, p1, pn) = body
+
+
+exceptions:
+
+  on signal(s) e
+  on exit e
+
+
+class definitions:
+
+  def class C isa D = (
+    ...
+  )
+
+  def class X(p0, p1, pn) isa C(p1) = (
+  )
+
+  inside a class:
+
+  def slot v = e            slot definition
+  def f() = body            function definition
+  def class C' = ()         nested class definition -> class act as
+                            namespaces 
+
+
+loops:
+
+  for (v in coll) e
+
+  for (v = n .. m) e
+
+  for (v = first then step) e
+
+  for (..., unless(t2)) e
+  for (..., while(t2)) e
+
+
+  while(t) e           -> for (while(t)) e
+  unless(t) e          -> for (unless(t)) e
+
+
+
+Multidispatch:
+
+  parameters can be defined for multidispatch:
+
+  def add(x : &int, y : &int) =
+    x + y
+
+  def class X = (
+    def equal?(self : &X, o)
+      ...
+  )
+
+
+  since "f(self : &self ..."   is very often written for message
+  implementation, there's a short form for this:
+
+  def f(self : &, ...) =
+
+  or even:
+
+  def f(self&, ...) =
+  
+
+
+Nested classes and namespace:
+
+  This is true even in classes:
+
+  def class Collections = (
+    def class OrderedCollection = (
+      def () on class = 
+        make(Vector)
+    )
+
+    
+  )
+
+
+  ...   
+
+  OrderedCollection(Collections)()
+
+  <=> Collections.OrderedCollection()
+
+
+Complex types:
+
+  def alias Bool-or(T) = union(T, Bool)
+  def alias False-or(T) = union(T, Bool = #f)
+
+  def meth students() : union(OrderedSet(Student),
+                              Bool)
+  def meth students() : Bool-or(OrderedSet(Student))
+  def meth students() : False-or(OrderedSet(Student))
+
+  def meth xyz() : Int in 5 .. 10 =>
+
+  def alias False-or-readflags = union(Keyword in #('read, 'write, 'create),
+                                       Bool = #f)
+  def meth xyz() : Keyword in #('read, 'write, 'create) =>
+  def meth xyz() : False-or-readflags =>
+    
+
+
+

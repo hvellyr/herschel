@@ -1,0 +1,12 @@
+def f(a)
+  select (a) {
+    | \a -> if (not done)
+              do-it
+            else
+              do-something-different()
+    | \b -> {
+              outln("x")
+              return(22)
+            }
+    | otherwise -> outln("nothing applies")
+  }
