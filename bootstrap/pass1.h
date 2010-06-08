@@ -168,6 +168,8 @@ namespace heather
 
     bool isConstraintOperator(const Token& token) const;
 
+    Token parseOptDocString();
+
     //-------- data members
     Ptr<Parser> fParser;
     Token       fToken;

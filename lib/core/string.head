@@ -1,4 +1,4 @@
--- This file is part of the heather package 
+-- This file is part of the heather package
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -35,29 +35,30 @@ export public(*)
 
 import "common.head"
 
---! The @type{String} class represents character strings.  This is the
---! basic string type of which all literal strings in Heather, like
---! @code{"hello world"} are instances.
---!
---! Instances of @type{String} are immutable.  Once created they can not be
---! changed anymore.
---!
---! Strings are always encoded in unicode.  The API is consequently
---! character oriented and users should not assume any particular internal
---! layout.
---!
---! Strings are 0-based and can be of arbitrary length.  They are
---! @emph{not} 0-terminated, i.e. strings can easily contain binary data
---! (as far as representable as Unicode characters).
 def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
+    ~ The @type{String} class represents character strings.
+
+    This is the basic string type of which all literal strings in Heather,
+    like @code{"hello world"} are instances.
+
+    Instances of @type{String} are immutable.  Once created they can not be
+    changed anymore.
+
+    Strings are always encoded in unicode.  The API is consequently
+    character oriented and users should not assume any particular internal
+    layout.
+
+    Strings are 0-based and can be of arbitrary length.  They are
+    @emph{not} 0-terminated, i.e. strings can easily contain binary data
+    (as far as representable as Unicode characters).~
 {
   def slot data : Char[]
 
-  --! Returns the length of @var{str} in characters
   def generic length(str @ String) : Ordinal ...
+    ~ Returns the length of @var{str} in characters~
 
-  --! Indicate whether @var{str} is an empty string.
   def generic empty?(str @ String) : Bool ...
+    ~ Indicate whether @var{str} is an empty string.~
 
   def generic starts-with?(haystack @ String, needle @ String,
                            start-from : Ordinal = 0) : Bool ...
@@ -72,8 +73,8 @@ def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
                             start-from : Ordinal = 0) : OrdinalOrFalse ...
   def generic matches(str @ String, re : Regex) : Bool ...
 
-  -- case insensitive comparing
   def generic compare-ci(one @ String, two @ String) : Int ...
+    ~ Case insensitive comparing.~
 
 
 
@@ -83,14 +84,14 @@ def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
   def generic to-lowercase(str @ String, loc : Locale = nil) : String ...
   def generic trim(str @ String) : String ...
 
-  --! Splits @var{str} around the parts matches by the regular expression
-  --! @var{re}.
   def generic split(str @ String, re : Regex) : String[] ...
+    ~ Splits @var{str} around the parts matches by the regular expression
+    @var{re}.~
 
-  --! Returns a copy of @var{str} where all occurances of @var{old} are
-  --! replaced by @var{new}.
   def generic replace(str @ String,
                       old @ 'T, new @ 'T) : String ...
+    ~ Returns a copy of @var{str} where all occurances of @var{old} are
+    replaced by @var{new}. ~
 }
 
 

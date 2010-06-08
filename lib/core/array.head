@@ -35,5 +35,21 @@ export public(*)
 
 def compare(one @ Sliceable<Ordinal, 'T>,
             two @ Sliceable<Ordinal, 'T>) : Int ...
+      ~ Comparing sliceables returns zero if the two arrays are identical,
+      otherwise returns the comparison result between the first two differing
+      elements.  Zero-length arrays are always identical.
+
+      And a second paragraph.
+
+      @example
+      some example code here
+      @end example
+
+      Markup is basically texinfo markup.  Refer to parameters inline like
+      this: @prm value refers to a single symbol reference. Whereas
+      @prm{value} is the full and more clear form.
+
+      Inline comments are enclosed by tripple quotes; single quotes inside
+      the documentation are simply taken as chars in the documentation. ~
 
 -- end of array.hea

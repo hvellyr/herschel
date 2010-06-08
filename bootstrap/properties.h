@@ -36,6 +36,8 @@ namespace heather
     static void setConfigVar(const String& keyValuePair);
     static ConfigVarRegistry* globalConfigVarRegistry();
 
+    static bool shouldIgnoreDocStrings();
+    static void setShouldIgnoreDocStrings(bool value);
   };
 };                              // namespace
 

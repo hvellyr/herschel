@@ -549,15 +549,15 @@ Tokenizer::readCharacter(const SrcPos& startPos, bool needsTerminator)
 
 
 Token
-Tokenizer::readString(const SrcPos& startPos)
+Tokenizer::readString(const SrcPos& startPos, int endChar, TokenType type)
 {
   StringBuffer result;
 
   try {
     for ( ; ; ) {
-      if (fCC == '"') {
+      if (fCC == endChar) {
         nextChar();
-        return Token(startPos, kString, result.toString());
+        return Token(startPos, type, result.toString());
       }
       else if (fCC == '\\') {
         SrcPos charSp = srcpos();
@@ -706,7 +706,11 @@ Tokenizer::nextTokenImpl()
 
     case '"':
       nextChar();
-      return readString(beginSrcpos);
+      return readString(beginSrcpos, '"', kString);
+
+    case '~':
+      nextChar();
+      return readString(beginSrcpos, '~', kDocString);
 
     case '\\':
       {
@@ -853,7 +857,7 @@ public:
       static const char* test =
         "\\space  \\u60h  \\( \\newline \\cr\n"
         "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n"
-        "\\ga \\gong";
+        "\\ga \\gong ";
       Ptr<CharRegistry> cr = new CharRegistry;
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."), cr);
@@ -881,6 +885,7 @@ public:
     {
       static const char* test =
         "def f(args : &(String, Uri, Boolean)[] ...) ...\n"
+        "  ~ Some function f, does not contain \\~ or similar Spuk.~\n"
         "def f(arg: _x = 0 .. 20 by 2)\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
@@ -903,6 +908,9 @@ public:
         assert(tnz.nextToken() == Token(sp, kEllipsis));
         assert(tnz.nextToken() == Token(sp, kParanClose));
         assert(tnz.nextToken() == Token(sp, kEllipsis));
+
+        assert(tnz.nextToken() == Token(sp, kDocString,
+                                        " Some function f, does not contain ~ or similar Spuk."));
 
         assert(tnz.nextToken() == Token(sp, kDefId));
         assert(tnz.nextToken() == Token(sp, String("f")));
@@ -1149,7 +1157,7 @@ public:
 
     {
       static const char* test =
-        "##  ?val:name";
+        "##  ?val:name ";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 

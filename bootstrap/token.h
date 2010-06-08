@@ -139,6 +139,7 @@ namespace heather
 
     // kLitExpr
     kString,
+    kDocString,
     kChar,
     kBool,
     kInt,
@@ -288,6 +289,7 @@ namespace heather
     OperatorType binarySeqOperator() const;
 
     bool isString() const;
+    bool isDocString() const;
     bool isBool() const;
     bool isInt() const;
     bool isReal() const;

@@ -16,6 +16,7 @@
 #include "log.h"
 #include "errcodes.h"
 #include "strbuf.h"
+#include "properties.h"
 
 
 //----------------------------------------------------------------------------
@@ -2389,11 +2390,16 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 
     SrcPos bodyPos = fToken.srcpos();
     Token body;
+    Token docString;
     if (fToken == kEllipsis) {
       body = fToken;
       nextToken();
+
+      docString = parseOptDocString();
     }
     else {
+      docString = parseOptDocString();
+
       if (isLocal) {
         body = parseExpr();
         if (!body.isSet()) {
@@ -2419,6 +2425,9 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 
     if (whereClause.isSet())
       result << whereClause;
+    
+    if (docString.isSet())
+      result << docString;
 
     result << body;
 
@@ -2544,6 +2553,19 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
 
 
 Token
+FirstPass::parseOptDocString()
+{
+  Token docString;
+  if (fToken == kDocString) {
+    if (!Properties::shouldIgnoreDocStrings())
+      docString = fToken;
+    nextToken();
+  }
+  return docString;
+}
+
+
+Token
 FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 {
   assert((isClass && fToken == Parser::classToken) ||
@@ -2610,6 +2632,8 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
   if (fToken == kWhereId)
     whereClause = parseWhereClause();
 
+  Token docString = parseOptDocString();
+
   Token requiredProtocol;
   if (fToken == kBraceOpen) {
     requiredProtocol = parseTopOrExprList(true, (isClass
@@ -2630,6 +2654,9 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 
   if (whereClause.isSet())
     result << whereClause;
+
+  if (docString.isSet())
+    result << docString;
 
   if (requiredProtocol.isSet())
     result << requiredProtocol;

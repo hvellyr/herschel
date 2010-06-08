@@ -247,7 +247,7 @@ a-z digits                              digits
 {}  code block                          code block
 |   operator (bit or)                   operator (|, ||)
     modname separator
-~   [----------]                        operator (bit not)
+~   docstring limiter                   operator (bit not)
 
 
 *) reserved for call-by-reference/call-by-value experiments

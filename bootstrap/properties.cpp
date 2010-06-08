@@ -24,6 +24,7 @@ static bool sVerbose = false;
 static bool sIsTokenizerTracing = false;
 static bool sIsPass1Tracing = false;
 static bool sIsPass2Tracing = false;
+static bool sShouldIgnoreDocStrings = true;
 static String sOutdir;
 static Ptr<ConfigVarRegistry> sConfigVarRegistry;
 
@@ -129,4 +130,18 @@ Properties::globalConfigVarRegistry()
   if (sConfigVarRegistry == NULL)
     sConfigVarRegistry = new ConfigVarRegistry;
   return sConfigVarRegistry;
+}
+
+
+bool
+Properties::shouldIgnoreDocStrings()
+{
+  return sShouldIgnoreDocStrings;
+}
+
+
+void
+Properties::setShouldIgnoreDocStrings(bool value)
+{
+  sShouldIgnoreDocStrings = value;
 }
