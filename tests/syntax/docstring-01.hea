@@ -27,11 +27,6 @@ def config OS
     ~ define the operating system to build for ~
     = "mac-os-x"
 
--- def class
--- def type
--- def alias
--- def slot
-
 def enum FileMode
 {
   read
