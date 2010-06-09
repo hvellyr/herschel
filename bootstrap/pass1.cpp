@@ -2544,6 +2544,10 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
                   "alias-params");
   }
 
+  Token whereClause;
+  if (fToken == kWhereId)
+    whereClause = parseWhereClause();
+
   Token docString = parseOptDocString();
 
   if (fToken != kAssign) {
@@ -2564,8 +2568,14 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
                          << symToken;
   if (generics.isSet())
     result << generics;
+
+  if (whereClause.isSet())
+    result << whereClause;
+
+
   if (docString.isSet())
     result << docString;
+
   result << assignToken << type;
   return result;
 }
