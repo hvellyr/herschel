@@ -92,7 +92,7 @@ namespace heather
     Token parseLiteralArray();
 
     Token parseIf();
-    Token parseOn();
+    Token parseOn(ScopeType scopeType);
 
     Token parseGroup();
     Token parseBlock();
@@ -179,6 +179,31 @@ namespace heather
                                          const TokenVector& pattern);
     MacroType determineMacroType(const Token& macroName,
                                  const MacroPatternVector& patterns);
+
+    String qualifiedIdForLookup(const String& id) const;
+
+    //-------- macro calls
+
+    Token parseMakeMacroCall(const Token& expr, const TokenVector& args,
+                             Macro* macro,
+                             bool shouldParseParams,
+                             bool isLocal,
+                             ScopeType scopeType);
+
+    bool parseDoMatchSyntaxDef(TokenVector* result,
+                               const Token& expr, SyntaxTable* syntaxTable,
+                               bool isLocal);
+    bool parseDoMatchSyntaxOn(TokenVector* filtered,
+                              const Token& expr, SyntaxTable* syntaxTable,
+                              bool isLocal);
+    bool parseDoMatchSyntaxFunc(TokenVector* filtered,
+                                const Token& expr,
+                                const TokenVector& args,
+                                SyntaxTable* syntaxTable,
+                                bool shouldParseParams);
+
+    bool parseExprStream(TokenVector* result, bool isTopLevel,
+                         ScopeType scopeType);
 
     //-------- data members
 

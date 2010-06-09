@@ -165,6 +165,16 @@ FirstPass::parseSequence(ParseFunctor functor,
 
 //----------------------------------------------------------------------------
 
+String
+FirstPass::qualifiedIdForLookup(const String& id) const
+{
+  // TODO
+  return id;
+}
+
+
+//----------------------------------------------------------------------------
+
 struct heather::ModuleParser
 {
   bool operator() (FirstPass* pass, Token& result)
@@ -926,7 +936,7 @@ FirstPass::parseFunctionsParams(TokenVector* exprlist, bool autoCompleteType,
 
 
 Token
-FirstPass::parseOn()
+FirstPass::parseOn(ScopeType scopeType)
 {
   Token tagToken = fToken;
   nextToken();
@@ -938,19 +948,19 @@ FirstPass::parseOn()
 
   Token keyToken = fToken;
 
-#if 0
-  MacroId macroId = qualifiedIdForLookup(keyToken.idValue());
-  Ptr<Macro> macro = lookupMacro(macroId);
-  MacroType mtype = lookupMacroType(macroId);
-  String mname = Token(keyToken.srcpos(), macroId.name());
+  String macroId = qualifiedIdForLookup(keyToken.idValue());
+  Ptr<Macro> macro = fParser->macroRegistry()->lookupMacro(macroId);
+  Token macroName = Token(keyToken.srcpos(), keyToken.idValue());
 
   if (macro != NULL) {
-    Token expr= parseMakeMacroCall(mname, NULL, macro, mtype, true, kIsLocal);
-    if (!expr.isSet())
-      throw IncompleteMacroException(macroId);
+    TokenVector dummyArgs;
+    Token expr= parseMakeMacroCall(macroName, dummyArgs, macro,
+                                   true /* parseParams */, true /* is local
+                                                                 * */,
+                                   scopeType);
+    return expr;
   }
   else
-#endif
   {
     bool ignoreStmt = false;
 
@@ -1109,25 +1119,23 @@ FirstPass::parseFunctionCall(const Token& expr,
 Token
 FirstPass::parseParamCall(const Token& expr,
                           const TokenVector& preScannedArgs,
-                          bool parseParams)
+                          bool shouldParseParams)
 {
   if (expr.isSymbol()) {
-#if 0
-    MacroId macroId  = qualifiedIdForLookup(expr.idValue());
-    Ptr<Macro> macro = lookupMacro(macroId);
-    MacroType mtype  = lookupMacroType(macroId);
-    String mname     = Token(expr.srcpos(), macroId.name());
+    String macroId  = qualifiedIdForLookup(expr.idValue());
+    Ptr<Macro> macro = fParser->macroRegistry()->lookupMacro(macroId);
+    Token macroName = Token(expr.srcpos(), expr.idValue());
 
     if (macro != NULL) {
-      Token expr= parseMakeMacroCall(mname, &preScannedArgs, macro, mtype,
-                                     parseParams, false);
-      if (!expr.isSet())
-        throw IncompleteMacroException(macroId);
+      Token expr= parseMakeMacroCall(macroName, preScannedArgs,
+                                     macro,
+                                     shouldParseParams, false,
+                                     kNonScopedDef);
+      return expr;
     }
-#endif
   }
 
-  return parseFunctionCall(expr, preScannedArgs, parseParams);
+  return parseFunctionCall(expr, preScannedArgs, shouldParseParams);
 }
 
 
@@ -1766,7 +1774,7 @@ FirstPass::parseAtomicExpr()
   case kIfId:
     return parseIf();
   case kOnId:
-    return parseOn();
+    return parseOn(kNonScopedDef);
   case kFunctionId:
     return parseAnonFun();
   case kNotId:                  // unary not operator
@@ -2490,19 +2498,18 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
 
   Token symToken = fToken;
 
-#if 0
-  MacroId macroId = qualifiedIdForLookup(symToken.idValue());
-  Ptr<Macro> macro = lookupMacro(macroId);
-  MacroType mtype = lookupMacroType(macroId);
-  String mname = Token(macroId.name());
+  String macroId = qualifiedIdForLookup(symToken.idValue());
+  Ptr<Macro> macro = fParser->macroRegistry()->lookupMacro(macroId);
+  Token macroName = Token(symToken.srcpos(), symToken.idValue());
 
   if (macro != NULL) {
-    Token expr= parseMakeMacroCall(mname, NULL, macro, mtype, true, isLocal);
-    if (!expr.isSet())
-      throw IncompleteMacroException(macroId);
+    TokenVector dummyArgs;
+    Token expr= parseMakeMacroCall(macroName, dummyArgs, macro,
+                                   true /* parseParams */, isLocal,
+                                   kNonScopedDef);
+    return expr;
   }
   else
-#endif
   {
     nextToken();
     if (fToken == kParanOpen)
@@ -3218,12 +3225,10 @@ FirstPass::parseMacroDef(const Token& defToken)
   if (parseMacroPatterns(&patterns)) {
     if (fEvaluateExprs) {
       MacroType mType = determineMacroType(macroNameToken, patterns);
-      printf("MacroType is: %s\n", (const char*)StrHelper(toString(mType)));
 
       Ptr<SyntaxTable> synTable = SyntaxTable::compile(String(""), patterns);
       fParser->macroRegistry()->registerMacro(macroNameToken.idValue(),
-                                              mType,
-                                              synTable);
+                                              new Macro(synTable, mType));
 
       if (Properties::isTraceMacro()) {
         fprintf(stderr, "%s\n", (const char*)StrHelper(synTable->toString()));
@@ -3348,7 +3353,7 @@ FirstPass::parseTop(ScopeType scope)
   }
   else if (fToken == kOnId) {
     if (scope == kInClassDef)
-      return parseOn();
+      return parseOn(kInClassDef);
     else {
       errorf(fToken.srcpos(), E_UnexpectedToken,
              "Unexpected token: %s", (const char*)StrHelper(fToken.toString()));
@@ -3382,3 +3387,133 @@ FirstPass::parse()
 
 
 
+//------------------------------------------------------------------------------
+
+bool
+FirstPass::parseDoMatchSyntaxDef(TokenVector* result,
+                                 const Token& expr, SyntaxTable* syntaxTable,
+                                 bool isLocal)
+{
+  return false;
+}
+
+
+bool
+FirstPass::parseDoMatchSyntaxOn(TokenVector* filtered,
+                                const Token& expr, SyntaxTable* syntaxTable,
+                                bool isLocal)
+{
+  return false;
+}
+
+
+bool
+FirstPass::parseDoMatchSyntaxFunc(TokenVector* filtered,
+                                  const Token& expr,
+                                  const TokenVector& args,
+                                  SyntaxTable* syntaxTable,
+                                  bool shouldParseParams)
+{
+  return false;
+}
+
+
+bool
+FirstPass::parseExprStream(TokenVector* result, bool isTopLevel,
+                           ScopeType scopeType)
+{
+  for ( ; ; ) {
+    if (fToken == kEOF)
+      return true;
+    else if (fToken == kBraceClose)
+      return true;
+    else if (fToken == kParanClose)
+      return true;
+    else if (fToken == kBracketClose)
+      return true;
+
+    SrcPos pos = fToken.srcpos();
+    Token expr;
+    if (isTopLevel)
+      expr = parseTop(scopeType);
+    else
+      expr = parseExpr();
+
+    if (expr.isSet())
+      result->push_back(expr);
+    else {
+      errorf(pos, E_UnexpectedToken,
+             "???: %s", (const char*)StrHelper(fToken.toString()));
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+Token
+FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
+                              Macro* macro,
+                              bool shouldParseParams,
+                              bool isLocal,
+                              ScopeType scopeType)
+{
+  Ptr<SyntaxTable> syntaxTable = macro->syntaxTable();
+
+  TokenVector filtered;
+  switch (macro->type()) {
+  case kMacro_Invalid:
+    assert(0);
+    return Token();
+
+  case kMacro_Any:
+    return Token();
+
+  case kMacro_Def:
+    parseDoMatchSyntaxDef(&filtered, expr, syntaxTable, isLocal);
+    break;
+
+  case kMacro_On:
+    parseDoMatchSyntaxOn(&filtered, expr, syntaxTable, isLocal);
+    break;
+
+  case kMacro_Stmt:
+  case kMacro_Function:
+    parseDoMatchSyntaxFunc(&filtered, expr, args, syntaxTable, shouldParseParams);
+    break;
+  }
+
+  if (filtered.size() > 0) {
+    Token lastCurrentToken = fToken;
+
+    std::list<Token> follows;
+
+    // skip the first item here.
+    TokenVector::iterator it = filtered.begin();
+    it++;
+    follows.assign(it, filtered.end());
+
+    // ... and store it in the current fToken
+    fToken = filtered[0];
+
+    Token retval;
+    Ptr<InternalTokenPort> tempPort = new InternalTokenPort(follows);
+
+    {
+      Parser::PortStackHelper(fParser, tempPort);
+
+      TokenVector result;
+      if (parseExprStream(&result, !isLocal, scopeType))
+        retval = Token() << result;
+      else
+        return Token();
+    }
+
+    fToken = lastCurrentToken;
+
+    return retval;
+  }
+
+  return Token();
+}

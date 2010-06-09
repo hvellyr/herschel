@@ -200,16 +200,32 @@ Parser::ParserState::operator=(const ParserState& item)
   return *this;
 }
 
+
 //==============================================================================
 
 Parser::PortStackHelper::PortStackHelper(Parser* parser)
-  : fParser(parser)
+  : fParser(parser),
+    fPortOnly(false)
 {
   fParser->fParserStates.push_front(fParser->fState);
   fParser->fState = ParserState(
     new CharRegistry,
     new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
     new MacroRegistry);
+}
+
+
+Parser::PortStackHelper::PortStackHelper(Parser* parser, TokenPort* port)
+  : fParser(parser),
+    fPortOnly(true)
+{
+  fParser->fParserStates.push_front(fParser->fState);
+  fParser->fState = ParserState(
+    parser->charRegistry(),
+    new ConfigVarRegistry(parser->configVarRegistry()),
+    parser->macroRegistry());
+
+  fParser->fState.fPort = port;
 }
 
 
@@ -221,6 +237,8 @@ Parser::PortStackHelper::~PortStackHelper()
   fParser->fState = fParser->fParserStates.front();
   fParser->fParserStates.pop_front();
 
-  // merge current.fCharRegistry into fParser->fState; same for
-  // configVarReg and fMacroRegistry
+  if (!fPortOnly) {
+    // merge current.fCharRegistry into fParser->fState; same for
+    // configVarReg and fMacroRegistry
+  }
 }
