@@ -1,0 +1,6 @@
+export public (abc)
+export public (abc, xyz)
+export public (abc, mno, xyz)
+export public ()
+export final public (*)
+export final public (abc, mno, xyz)

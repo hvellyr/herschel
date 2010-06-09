@@ -1,0 +1,102 @@
+-- This file is part of the heather package
+--
+-- Copyright (c) 2010 Gregor Klinke
+-- All rights reserved.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+-- - Redistributions of source code must retain the above copyright notice,
+--   this list of conditions and the following disclaimer.
+--
+-- - Redistributions in binary form must reproduce the above copyright
+--   notice, this list of conditions and the following disclaimer in the
+--   documentation and/or other materials provided with the distribution.
+--
+-- - Neither the name of the author nor the names of other contributors may
+--   be used to endorse or promote products derived from this software
+--   without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+interface core ("eyestep/heather 1.0:core")
+export public(*)
+
+import "common.head"
+
+def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
+    ~ The @type{String} class represents character strings.
+
+    This is the basic string type of which all literal strings in Heather,
+    like @code{"hello world"} are instances.
+
+    Instances of @type{String} are immutable.  Once created they can not be
+    changed anymore.
+
+    Strings are always encoded in unicode.  The API is consequently
+    character oriented and users should not assume any particular internal
+    layout.
+
+    Strings are 0-based and can be of arbitrary length.  They are
+    @emph{not} 0-terminated, i.e. strings can easily contain binary data
+    (as far as representable as Unicode characters).~
+{
+  def slot data : Char[]
+
+  def generic length(str @ String) : Ordinal ...
+    ~ Returns the length of @var{str} in characters~
+
+  def generic empty?(str @ String) : Bool ...
+    ~ Indicate whether @var{str} is an empty string.~
+
+  def generic starts-with?(haystack @ String, needle @ String,
+                           start-from : Ordinal = 0) : Bool ...
+  def generic ends-with?(haystack @ String, needle @ String,
+                         start-from : Ordinal = 0) : Bool ...
+  def generic contains?(haystack @ String, needle @ String,
+                        start-from : Ordinal = 0) : Bool ...
+
+  def generic index-of(haystack @ String, str @ needle,
+                       start-from : Ordinal = 0) : OrdinalOrFalse ...
+  def generic last-index-of(haystack @ String, str @ needle,
+                            start-from : Ordinal = 0) : OrdinalOrFalse ...
+  def generic matches(str @ String, re : Regex) : Bool ...
+
+  def generic compare-ci(one @ String, two @ String) : Int ...
+    ~ Case insensitive comparing.~
+
+
+
+
+  def generic to-char-array(str @ String) : Char[] ...
+  def generic to-uppercase(str @ String, loc : Locale = nil) : String ...
+  def generic to-lowercase(str @ String, loc : Locale = nil) : String ...
+  def generic trim(str @ String) : String ...
+
+  def generic split(str @ String, re : Regex) : String[] ...
+    ~ Splits @var{str} around the parts matches by the regular expression
+    @var{re}.~
+
+  def generic replace(str @ String,
+                      old @ 'T, new @ 'T) : String ...
+    ~ Returns a copy of @var{str} where all occurances of @var{old} are
+    replaced by @var{new}. ~
+}
+
+
+def slice(str @ String, n @ Ordinal) : Char ...
+def slice(str @ String, from @ Ordinal, to @ Ordinal) : Slice<Ordinal, Char> ...
+def compare(one @ String, two @ String) : Int ...
+
+-- end of string.head

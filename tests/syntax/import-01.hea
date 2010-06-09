@@ -1,0 +1,3 @@
+import "red"
+import "blue" (blue -> green)
+import "blue" (blue -> green, orange -> yellow)

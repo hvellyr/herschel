@@ -1,0 +1,25 @@
+-- 99 Bottles of Beer in Heather (v1)
+module beer99 ("sijo/99beer")
+
+def display-bottles(n : Int, port : Port)
+  select (n) {
+    | 0 -> out(port: port, "No more bottles")
+    | 1 -> outn(port: port, "One bottle")
+    | otherwise -> out(port: port, "%d bottles" % #[n.to-string])
+  }
+  out(port: port, " of beer")
+
+def beer(n : Int, port : Port)
+  if (n > 0) {
+    display-bottles(n, port) outln(port: port, " on the wall")
+    display-bottles(n, port) outln(port: port)
+    outln(port: port, "Take one down, pass it around")
+    display-bottles(n - 1) outln(port: port, " on the wall")
+    outln(port: port)
+    beer(n - 1)
+  }
+
+def app|main()
+  beer(99)
+
+-- end of 99beer

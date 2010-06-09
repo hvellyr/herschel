@@ -1,0 +1,253 @@
+reread diesel things and I think, yes, I'm on the right way.  Redesign
+certain things however:
+
+| Defless again?
+|
+|   no...
+|
+|     def generic name(prm @ type) : type        -- a generic function
+|     def name(prm) : type                       -- a simple function
+|     def [meth] name(prm @ type) : type         -- a method
+|
+|     def name : type = value                    -- a (global) variable
+|     def const name : type = value                  -- a (global) constant
+|
+|     slot name : type = value                   -- a (class local) slot
+|
+|     def class name<>(prm) : isa                -- a (global) class
+|     def type name<> : isa                      -- a (global) type
+|     def alias name<> = type                    -- a (global) type alias
+|
+|     module name(spec)                          -- a module
+|
+|     let name(prm) : type                       -- a (local) function
+|     let name : type = value                    -- a (local) variable
+|     let const name : type = value              -- a (local) constant
+|     let alias name = type                      -- a (local) type alias
+
+
+
+Slot definitions
+
+  we need
+
+  - control accessor/mutator function generation
+  - slots should be annotatable ('transient')
+  - why is a slot defined without `def' keyword?
+
+
+  Annotating style:
+
+    def slot name : String = _name ; transient, readonly
+
+  Modifier style:
+
+    def slot transient readonly name : String = _name
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    public slot current : Pair<T, _> = _root
+    private slot accessor : Accessor = acc
+    transient readonly slot maxcount : Int = 4000 : Int
+  }
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    slot public current : Pair<T, _> = _root
+    slot private accessor : Accessor = acc
+    slot transient readonly maxcount : Int = 4000 : Int
+  }
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    def slot current : Pair<T, _> = _root ; public
+    def slot accessor : Accessor = acc ; private
+    def slot maxcount : Int = 4000 : Int ; transient, readonly
+  }
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    slot current : Pair<T, _> = _root ; public
+    slot accessor : Accessor = acc ; private
+    slot maxcount : Int = 4000 : Int ; transient, readonly
+  }
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    slot current : Pair<T, _> = _root :: public
+    slot accessor : Accessor = acc :: private
+    slot maxcount : Int = 4000 : Int :: transient, readonly
+  }
+
+
+
+
+
+
+
+Visibility and finalization for modules.
+
+  Toplevel modules are always visible to the public.  Unless any class or
+  methods is export however this information is worthless.  Every
+  identifier must be exported to the public or protected domain, either
+  final or open.
+
+  The same applies to nested (i.e. inner) module:
+
+  def module printer("sijo/ixwick:printer") {
+    -- exporting the inner module:
+    export final public(printer-driver, DriverSettings)
+
+    def class DriverSettings() { ... {
+
+    def module printer-driver("sijo/ixwick:printer-driver") {
+      export public (init-driver, get-driver-settings)
+
+      def generic init-driver() ...
+      def generic get-driver-settings() : DriverSettings ...
+    }
+  }
+
+  Identifier from inner modules are seen by direct parent modules; if
+  protected they are seen by all ancestor modules until the top-module; if
+  public they are seen by all modules in the top-level module even in
+  siblings.  Symbols from inner modules must be explictely exported to the
+  outside from the top-level module if this is required:
+
+    def module printer("sijo/ixwick:printer") {
+      export final public(printer-driver|get-driver-settings, DriverSettings)
+
+    }
+
+
+
+
+Lazy evaluation
+
+  The typical log problem.  The string is created before we decide whether
+  we should log.  Either use macros:
+
+    def macro log
+    {
+      { log(?level:expr, ?msg:expr) } -> { if (should-log(?level))
+                                             log-impl(?msg)
+                                         }
+    }
+
+  Or support lazy evaluation.  Since we will have the notion of "promises"
+  anyway (for spawn and synchronization), this can be made first class:
+
+    def log(level : Keyword, lazy msg : String)
+      if (should-log(level))
+        do-whatever-is-necessary(msg)
+
+  Technically this can be done by the compiler as such.  The following
+  example:
+
+    log(#debug, StringBuffer().append("error ")
+                              .append(exc.to-string)
+                              .append("(").append(exc.details).append(")")
+                              .to-string)
+
+  can be compile as:
+
+    log(#debug, function() : String {
+                  StringBuffer().append("error ")
+                                .append(exc.to-string)
+                                .append("(").append(exc.details).append(")")
+                                .to-string
+                })
+
+  The log-implementation would look like:
+
+    def log(level : Keyword, lazy msg : String)
+      if (should-log(level))
+        do-whatever-is-necessary(msg())
+
+
+
+Embedding C and C++ fragments.
+
+  In the C extern it is only allowed to embed function definitions.  In the
+  C++ embed it is possible also to embed class definitions ... but no code.
+
+  extern ("C") {
+    size_t fprintf(FILE* stream, const char* format, ...);
+  }
+
+  extern ("C++") {
+    ...
+  }
+
+
+
+Used character in the Ascii table:
+
+    Heather                             C
+-------------------------------------------------------------
+!   identifier                          not
+"   string separator                    string
+#   keyword notation                    preproc
+    constant array notation
+$   identifier                          [----------]
+%   identifier                          operator (mod)
+    operator (mod)
+&   operator (bit and)                  operator (&, &&)
+    Complex type notationx               pointer ref op.
+'   Implicit type generics              char
+()  arguments                           arguments
+    grouping
+*   operator (*, **)                    operator(*)
+    identifier                          pointer ref op.
++   operator (+)                        operator(+)
+    identifier
+,   parameter separator                 prm separator
+-   identifier                          operator (-)
+    operator (-)
+    negative numbers
+    comment starter (--)
+.   function call                       struct member
+    float notation                      float notation
+/   operator (div)                      operator(div)
+    identifier
+0-9 digits                              digits
+    identifier                          identifier
+:   keyword arguments                   ternary operator
+    type separator
+;   [----------]                        stmt terminator
+<>  operator (<, >, <=, >=, <>, ->)     operator(...)
+    parametrization
+=   operator (==, <=, >=)               operator(==)
+    assignment                          assignment
+    parameter default
+?   identifier                          ternary operator
+    macro variable marker
+@   specialize marker                   [----------]
+A-Z digits                              digits
+    identifier                          identifier
+[]  slicing                             array
+    arrays
+\   char constants                      escaping
+^   [----------] *)                     operator (xor)
+_   identifier                          identifier
+    current type notifier
+`   measure types                       [----------]
+a-z digits                              digits
+    identifier                          identifier
+{}  code block                          code block
+|   operator (bit or)                   operator (|, ||)
+    modname separator
+~   docstring limiter                   operator (bit not)
+
+
+*) reserved for call-by-reference/call-by-value experiments

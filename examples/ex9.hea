@@ -1,0 +1,13 @@
+def f(a @ &(String, Uri)) : (Int, Bool == false)
+  a
+
+def f(a @ (Int in -127 .. 127))
+  a
+
+
+def buffer : Byte[256]
+def buffer2 : Byte[]
+
+def buffers : Vector<Byte>[12]
+
+def slots : (Int in -127 .. 127, Bool == false)[10]

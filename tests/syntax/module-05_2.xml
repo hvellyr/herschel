@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><module><mod-name>core</mod-name><public-id>sijo/ixwick 0.1: core</public-id><defines><module><mod-name>red</mod-name><public-id>sijo/ixwick 0.1: red</public-id></module><module><mod-name>blue</mod-name><public-id>sijo/ixwick 0.1: blue</public-id><defines><module><mod-name>violet</mod-name><public-id>sijo/ixwick 0.1: violet</public-id></module><module><mod-name>pink</mod-name><public-id>sijo/ixwick 0.1: pink</public-id></module></defines></module></defines></module></compile-unit>

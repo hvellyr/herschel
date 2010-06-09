@@ -1,0 +1,7 @@
+def alias Word = Int32
+
+def alias OrdinalOrEof = &(Ordinal, Eof)
+
+def alias IntSet = HashSet<Int>
+
+def alias Everything = (Copyable, Serializable, Iteratable)

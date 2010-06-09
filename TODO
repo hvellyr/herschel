@@ -1,0 +1,43 @@
+-*-org-*-
+
+Language and ideas:
+
+  Think about non-gc objects.
+
+  Think about lazy evaluation.
+
+  Think about: all objects are passed by value (i.e. even for vectors);
+  values passed to spawned functions are actually copied, otherwise
+  internal refcounted.  It is possible to explicitely use references:
+
+    def f(a : ^Int, b : ^Vector<Octet>)
+
+  Embedding of C/C++ fragments
+
+
+Documentation
+
+  Write nested modules section.
+
+  Write/extending exporting and visibility section on modules
+
+  Mention explicitely: no coercing.  Where?
+
+  Write assignment section.
+
+  Rewrite the "def xxx" to the new deffn-form-example style.
+
+
+
+Bootstrap compiler
+
+  Implement last missing pass1 stuff:
+
+    - macros
+    - docstring for macros
+    - access values from enums as Enum.item
+    - type numbers (like 4500h : UWord)
+
+  continue with pexpreval (add the missing operators)
+
+  unittests for Rational() class.
