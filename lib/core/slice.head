@@ -33,23 +33,24 @@
 interface core ("eyestep/heather 1.0:core")
 export public(Slice)
 
---! A @type{Slice} is a view on a collection of elements.  Like iterators
---! it does (normaly) not contain the elements itself.  It is itself
---! sliceable again.
---!
---! Since a slice is a view and 0-based it translates sub element access
---! into the key position metric of the referenced collection.
 def class Slice<K, T> : OrderedSliceable<K, T>
+    ~ A @type{Slice} is a view on a collection of elements of type @var{T}
+    addressed by indices of type @var{K}.  Like an iterator it does
+    (normaly) not contain the elements itself.  It is itself sliceable
+    again.
+
+    Since a slice is a view and 0-based it translates sub element access
+    into the key position metric of the referenced collection.~
 {
-  --! Returns the number of items in @var{slice}.
   def generic num-items(slice @ Slice<K, T>) : Ordinal ...
+      ~ Returns the number of items in @var{slice}.~
 
-  --! Indicates whether @var{slice} is empty.
   def generic empty?(slice @ Slice<K, T>) : Bool ...
+      ~ Indicates whether @var{slice} is empty.~
 
-  --! Returns the outer range of @var{slice} against the referenced
-  --! container.
   def generic slice-range(slice @ Slice<K, T>) : Range<K> ...
+      ~ Returns the outer range of @var{slice} against the referenced
+      container.~
 }
 
 -- end of iterator

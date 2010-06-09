@@ -35,30 +35,30 @@ export public(Comparable)
 
 def type Comparable
 {
-  --! Compare value @var{one} with @var{two}.
-  --!
-  --! => 0 if @var{one} and @var{two} are equal; a value > 0 if @var{one}
-  --!    is greater than @var{two}, and a value below 0 if @var{one} is
-  --!    less.
   def generic compare(one @ 'S, two @ 'T) : Int ...
+      ~ Compare value @var{one} with @var{two}.
+
+      @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
+               @var{one} is greater than @var{two}, and a value below 0 if
+               @var{one} is less.~
 }
 
---! Indicates whether @var{one} is equal to @var{two}.
 def generic equal?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is equal to @var{two}.~
 
---! Indicates whether @var{one} is not equal to @var{two}.
 def generic unequal?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is not equal to @var{two}.~
 
---! Indicates whether @var{one} is less than @var{two}.
 def generic less?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is less than @var{two}.~
 
---! Indicates whether @var{one} is less than or equal to @var{two}.
 def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is less than or equal to @var{two}.~
 
---! Indicates whether @var{one} is greater than @var{two}.
 def generic greater?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is greater than @var{two}.~
 
---! Indicates whether @var{one} is greater than or equal to @var{two}.
 def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is greater than or equal to @var{two}.~
 
 -- end of comparable.head

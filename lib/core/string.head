@@ -55,7 +55,7 @@ def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
   def slot data : Char[]
 
   def generic length(str @ String) : Ordinal ...
-    ~ Returns the length of @var{str} in characters~
+    ~ Returns the length of @var{str} in characters.~
 
   def generic empty?(str @ String) : Bool ...
     ~ Indicate whether @var{str} is an empty string.~

@@ -79,7 +79,7 @@ def type Collection<T>
       where C isa Collection<T> ...
       ~ Removes all contained elements from @var{self}
 
-      => @var{cltn}~
+      @returns @var{cltn}~
 
   def generic contains?(cltn @ 'C, elt @ T) : Bool
       where C isa Collection<T> ...
@@ -98,7 +98,7 @@ def type Collection<T>
       It is implementation dependant what happens when @var{elt} is already
       contained in @var{cltn}.
 
-      => @var{cltn} ~
+      @returns @var{cltn} ~
 
   def generic remove!(cltn @ 'C, elt @ T) : 'C
       where C isa Collection<T> ...
@@ -107,7 +107,7 @@ def type Collection<T>
       The method ignore silently if @var{elt} is not contained in
       @var{cltn} at all.
 
-      => @var{cltn} ~
+      @returns @var{cltn} ~
 
   def generic iterator(cltn @ 'C) : Iterator<T>
       where C isa Collection<T> ...
@@ -121,7 +121,7 @@ def type Collection<T>
       where C isa Collection<T> ...
       ~ Apply @var{functor} on ach contained element in @var{cltn}
 
-      => @var{cltn} ~
+      @returns @var{cltn} ~
 }
 
 ------------------------------------------------------------------------------

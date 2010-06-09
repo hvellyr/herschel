@@ -333,8 +333,8 @@ def deepen(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
 --       -- TODO
 --    -1
 
---! Returns a string representation of @var{map}
 def core|to-string(map @ HashMap<'K, 'T>) : String
+    ~ Returns a string representation of @var{map}.~
   let sb = StringBuffer()
   sb ++ "#("
 

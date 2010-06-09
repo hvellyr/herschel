@@ -45,9 +45,8 @@ def macro nil?
 
 
 def macro enforce
-    ~ Enforces that a value is not @const{nil} before continuing.
-
-    Otherwise it raises an @type{NilException} with a given message.
+    ~ Enforces that a value is not @const{nil} before continuing. Otherwise
+    it raises an @type{NilException} with a given message.
 
     Instead of writing:
 
@@ -72,7 +71,7 @@ def macro enforce
 {
   { enforce(?val:expr, ?msg:expr) } -> { { let tmp = ?val
                                            if (tmp.nil?)
-                                             Exception(?msg).raise
+                                             NilException(?msg).raise
                                            else
                                              tmp
                                          } }
