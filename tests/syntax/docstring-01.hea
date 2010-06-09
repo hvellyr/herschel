@@ -63,8 +63,16 @@ def enum Color : Keyword
   white  ~ Web #ffffff ~
 }
 
--- def measure
--- def unit
+def measure Duration(s) : Real
+    ~ Denotes durations in time; its base unit is seconds (s) ~
+
+def unit h -> s (x)
+    ~ Unit hour ~
+    x * 60 * 60
+
+def unit min -> s (x)
+    ~ Unit minute ~
+    x * 60
 
 def char gspace ~ General Space char ~
     = 32
