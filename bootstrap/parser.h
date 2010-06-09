@@ -96,6 +96,20 @@ namespace heather
     static const Token typeToken;
     static const Token unitToken;
 
+
+    class PortStackHelper
+    {
+    public:
+      PortStackHelper(Parser* parser);
+      PortStackHelper(Parser* parser, TokenPort* port);
+      ~PortStackHelper();
+
+    private:
+      Parser* fParser;
+      bool fPortOnly;
+    };
+
+
   private:
     friend class FirstPass;
     friend class SecondPass;
@@ -116,16 +130,6 @@ namespace heather
       Ptr<CharRegistry>      fCharRegistry;
       Ptr<ConfigVarRegistry> fConfigVarRegistry;
       Ptr<MacroRegistry>     fMacroRegistry;
-    };
-
-
-    class PortStackHelper
-    {
-    public:
-      PortStackHelper(Parser* parser);
-      ~PortStackHelper();
-
-      Parser* fParser;
     };
 
 

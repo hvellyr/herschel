@@ -120,30 +120,28 @@ namespace heather
     PatternMap fItems;
   };
 
+
   //----------------------------------------------------------------------------
 
-  class MacroRegItem
+  class Macro : public RefCountable
   {
   public:
-    MacroRegItem(SyntaxTable* table, MacroType type)
+    Macro(SyntaxTable* table, MacroType type)
       : fSyntaxTable(table),
         fMacroType(type)
     { }
 
-
-    MacroRegItem(const MacroRegItem& other)
+    SyntaxTable* syntaxTable() const
     {
-      *this = other;
+      return fSyntaxTable;
     }
 
-
-    MacroRegItem& operator=(const MacroRegItem& other)
+    MacroType type() const
     {
-      fSyntaxTable = other.fSyntaxTable;
-      fMacroType   = other.fMacroType;
-      return *this;
+      return fMacroType;
     }
 
+  private:
     //-------- data members
 
     Ptr<SyntaxTable> fSyntaxTable;
@@ -151,13 +149,26 @@ namespace heather
   };
 
 
-  class MacroRegistry : public Registry<MacroRegItem>
+  class MacroRegistry : public Registry<Ptr<Macro> >
   {
   public:
-    void registerMacro(const String& macroName, MacroType macroType,
-                       SyntaxTable* table)
+    void registerMacro(const String& id, Macro* macro)
     {
-      registerValue(macroName, MacroRegItem(table, macroType));
+      Ptr<Macro> keep = macro;
+      registerValue(id, macro);
+    }
+
+
+    Macro* lookupMacro(const String& id) const
+    {
+      Ptr<Macro> macro;
+      // deal with qualified ids and context
+      if (lookup(id, &macro))
+      {
+        return macro;
+      }
+
+      return NULL;
     }
   };
 

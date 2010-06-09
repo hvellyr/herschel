@@ -491,7 +491,7 @@
   (current-token-set! ctx (apt-id "on"))
   (match-syntax ctx syntax-table))
 
-
+;; DONE
 (define (parse-make-macro-call ctx expr args macro type
                                parse-parameters? scope)
   ;;(hea:display "x1 " (current-token ctx) " - " type " - " args " -- " scope 'nl)
@@ -1096,6 +1096,7 @@
 ;; macros
 ;;----------------------------------------------------------------------
 
+;; DONE
 (define (macro-determine-pattern-type pattern)
   (let pattern-loop ((nl pattern)
                      (state 'init)
@@ -1129,6 +1130,7 @@
             (else 'any))) )))
 
 
+;; DONE
 (define (macro-determine-type macro-patterns)
   (let pattern-loop ((pnl macro-patterns)
                      (last-type 'any))
@@ -1145,6 +1147,7 @@
                 'any)))) ))
 
 
+;; DONE
 (define (parse-macro-comp ctx)
   (if (apt-punct-eq? (current-token ctx) "{")
       (begin
@@ -1171,6 +1174,7 @@
       (syntax-error "Expected {, got" (current-token ctx))))
 
 
+;; DONE
 (define (parse-macro-basic-pattern ctx pattern-name)
   (let ((pattern (parse-macro-comp ctx))
         (replc #f))
@@ -1186,6 +1190,7 @@
         #f)))
 
 
+;; DONE
 (define (parse-macro-patterns ctx)
   (let mp-loop ((res '())
              (last-pattern-name #f))
@@ -1204,6 +1209,7 @@
           (else (syntax-error "Unexpected token (9)" (current-token ctx))))))
 
 
+;; DONE
 (define (parse-macro-def ctx scope modifiers)
   (hea:assert (eq? scope 'global) "TODO.  Local macro def not supported yet")
   (if (apt-id? (current-token ctx))
