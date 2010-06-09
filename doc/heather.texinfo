@@ -1765,20 +1765,20 @@ Enumeration can be used to specialize methods.
 @example
 def enum Colors : Keyword
 @{
-  none   = #transparent,
-  red    = #red,
-  orange = #orange,
-  blue   = #blue,
-  green  = #green,
+  none   = #transparent
+  red    = #red
+  orange = #orange
+  blue   = #blue
+  green  = #green
   yellow = #yellow
 @}
 
 def enum MidiController : (Ordinal in 0 .. 127)
 @{
-  bank-select    = 0,
-  modulation     = 1,
-  breath         = 2,
-  foot-pedal     = 3,
+  bank-select    = 0
+  modulation     = 1
+  breath         = 2
+  foot-pedal     = 3
   ...
   poly-operation = 127
 @}
@@ -4087,7 +4087,7 @@ values.}
 @verbatim
 enumdef-clause  := `enum' enum-name [ `:' base-type ]
                    [ DOCSTRING ]
-                   `{' enum-value-spec { `,' enum-value-spec } `}'
+                   `{' enum-value-spec { enum-value-spec } `}'
 enum-name       := type-name
 base-type       := type-clause
 enum-value-spec := enum-name
