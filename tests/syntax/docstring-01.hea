@@ -54,16 +54,21 @@ def enum FileMode
     = 1 << 4
 }
 
--- def enum Color : Keyword
--- {
---   red    = #red,
---   orange = #orange,
---   yellow = #yellow,
---   green  = #green
--- }
+def enum Color : Keyword
+{
+  black  ~ Web #000000 ~,
+  blue   ~ Web #0000ff ~,
+  green  ~ Web #00ff00 ~,
+  red    ~ Web #ff0000 ~,
+  white  ~ Web #ffffff ~
+}
 
---   x ... =
 -- def measure
 -- def unit
--- def char
+
+def char gspace ~ General Space char ~
+    = 32
+def char sol    ~ Solidus, slash ~
+    = 2fh
+ 
 -- def macro
