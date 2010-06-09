@@ -138,8 +138,8 @@ def type PortCursor<T>
 
 def enum PortCursorWhenceType : Int
 {
-  current = 0,
-  begin   = 1,
+  current = 0
+  begin   = 1
   end     = 2
 }
 
@@ -190,11 +190,11 @@ def type RandomAccessPort<T> : (InPort<T>, OutPort<T>, SeekablePort<T>)
 
 def enum FileModeType : UWord
 {
-  read      =  1h,
-  write     =  2h,
-  append    =  4h,
-  create    =  8h,
-  exclusive = 16h,
+  read      =  1 << 0
+  write     =  1 << 1
+  append    =  1 << 2
+  create    =  1 << 3
+  exclusive =  1 << 4
   readwrite = read OR write
 }
 

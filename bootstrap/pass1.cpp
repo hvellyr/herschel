@@ -2901,7 +2901,7 @@ struct heather::EnumItemParser
     if (pass->fToken != kSymbol) {
       errorf(pass->fToken.srcpos(), E_SymbolExpected,
              "expected enum item name");
-      pass->scanUntilNextParameter(kBraceClose);
+      pass->scanUntilBrace();
       return true;
     }
 
@@ -2972,7 +2972,7 @@ FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
 
   Token items = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
   parseSequence(EnumItemParser(),
-                kBraceOpen, kBraceClose, true, E_BadEnumItemList,
+                kBraceOpen, kBraceClose, false, E_BadEnumItemList,
                 items, "enum-items");
 
   Token enumDefToken = Token() << defToken << tagToken << enumToken;
