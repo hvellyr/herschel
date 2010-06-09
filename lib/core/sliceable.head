@@ -70,7 +70,7 @@ def type Sliceable!<E, K> : Sliceable<E, K>
       where S isa Sliceable!<K, E> ...
       ~ Sets @var{value} into @var{obj} at position @var{key}.
 
-      => @var{obj}~
+      @returns @var{obj}.~
 }
 
 -- end of sliceable.head
