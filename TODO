@@ -1,6 +1,5 @@
 -*-org-*-
 
-
 Language and ideas:
 
   Think about non-gc objects.
@@ -35,6 +34,7 @@ Bootstrap compiler
   Implement last missing pass1 stuff:
 
     - macros
+    - docstring for macros
     - access values from enums as Enum.item
     - type numbers (like 4500h : UWord)
 
