@@ -207,6 +207,10 @@ namespace heather
                          ScopeType scopeType);
 
     bool matchSyntax(TokenVector* result, SyntaxTable* syntaxTable);
+    bool replaceMatchBindings(TokenVector* result,
+                              const TokenVector& replacement,
+                              const std::map<String, Token>& bindings);
+
 
     //-------- data members
 

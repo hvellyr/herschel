@@ -73,6 +73,8 @@ namespace heather
     E_MacroInconsistency  = 0x4082,
     E_InvalidPatternType  = 0x4083,
     E_PatternNameMismatch = 0x4084,
+    E_MacroParamType      = 0x4085,
+    E_MacroParamMismatch  = 0x4086,
 
     // functions
     E_MissingBody         = 0x4100,

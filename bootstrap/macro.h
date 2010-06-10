@@ -80,12 +80,18 @@ namespace heather
 
     SyntaxTreeNode();
 
-    SyntaxTreeNode* findNode(const Token& token);
+    SyntaxTreeNode* findNode(const Token& token) const;
+
+    //! find the first macro parameter's node and return the macro parameter
+    SyntaxTreeNode* findMacroParam(Token* macroParam) const;
+
     void setNode(const Token& token, SyntaxTreeNode* node);
     void setEndNode(const TokenVector& replacement);
     bool hasEndSet() const;
 
     String toString() const;
+
+    const TokenVector& replacement() const;
 
   private:
     NodeMap     fNodes;
@@ -93,6 +99,18 @@ namespace heather
     TokenVector fEndReplacement;
   };
 
+
+  //----------------------------------------------------------------------------
+
+  enum MacroParamType
+  {
+    kMacro_unknown,
+    kMacro_expr,
+    kMacro_body,
+    kMacro_name
+  };
+
+  MacroParamType macroParamType(const Token& token, String* paramName);
 
   //----------------------------------------------------------------------------
 
@@ -104,7 +122,8 @@ namespace heather
     static SyntaxTable* compile(const String& macroName,
                                 const MacroPatternVector& patterns);
 
-    SyntaxTreeNode* findPattern(const String& name);
+    SyntaxTreeNode* rootNode() const;
+    SyntaxTreeNode* findPattern(const String& name) const;
     void setPattern(const String& name, SyntaxTreeNode* node);
 
     void mixinPatternPart(SyntaxTreeNode* patternTree,

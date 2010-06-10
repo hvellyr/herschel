@@ -24,11 +24,28 @@ SyntaxTreeNode::SyntaxTreeNode()
 
 
 SyntaxTreeNode*
-SyntaxTreeNode::findNode(const Token& token)
+SyntaxTreeNode::findNode(const Token& token) const
 {
-  NodeMap::iterator it = fNodes.find(token);
+  NodeMap::const_iterator it = fNodes.find(token);
   if (it != fNodes.end())
     return it->second.obj();
+  return NULL;
+}
+
+
+SyntaxTreeNode*
+SyntaxTreeNode::findMacroParam(Token* macroParam) const
+{
+  for (NodeMap::const_iterator it = fNodes.begin();
+       it != fNodes.end();
+       it++)
+  {
+    if (it->first.tokenType() == kMacroParam) {
+      *macroParam = it->first;
+      return it->second.obj();
+    }
+  }
+
   return NULL;
 }
 
@@ -56,6 +73,14 @@ bool
 SyntaxTreeNode::hasEndSet() const
 {
   return fHasEndPattern;
+}
+
+
+const TokenVector&
+SyntaxTreeNode::replacement() const
+{
+  assert(fHasEndPattern);
+  return fEndReplacement;
 }
 
 
@@ -93,9 +118,16 @@ SyntaxTreeNode::toString() const
 //------------------------------------------------------------------------------
 
 SyntaxTreeNode*
-SyntaxTable::findPattern(const String& name)
+SyntaxTable::rootNode() const
 {
-  PatternMap::iterator it = fItems.find(name);
+  return findPattern(String(""));
+}
+
+
+SyntaxTreeNode*
+SyntaxTable::findPattern(const String& name) const
+{
+  PatternMap::const_iterator it = fItems.find(name);
   if (it != fItems.end())
     return it->second.obj();
   return NULL;
@@ -207,4 +239,28 @@ heather::toString(MacroType type)
   }
 
   return String("???");
+}
+
+
+//------------------------------------------------------------------------------
+
+MacroParamType
+heather::macroParamType(const Token& token, String* paramName)
+{
+  assert(token.tokenType() == kMacroParam);
+
+  String str = token.idValue();
+  String name;
+  String type;
+
+  if (str.split(':', name, type) >= 0) {
+    *paramName = name;
+    if (type == String("expr"))
+      return kMacro_expr;
+    else if (type == String("name"))
+      return kMacro_name;
+    if (type == String("body"))
+      return kMacro_body;
+  }
+  return kMacro_unknown;
 }
