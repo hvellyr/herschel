@@ -78,7 +78,7 @@ FileTokenPort::isOpen() const
 bool
 FileTokenPort::isEof() const
 {
-  return fTokenizer == NULL || fTokenizer->isEof();
+  return !hasUnreadData() && (fTokenizer == NULL || fTokenizer->isEof());
 }
 
 
@@ -87,6 +87,11 @@ FileTokenPort::read()
 {
   if (fTokenizer == NULL)
     throw PortNotOpenException();
+
+  Token value;
+  if (readFromUnreadBuffer(&value, 1) == 1)
+    return value;
+
   return fTokenizer->nextToken();
 }
 
@@ -109,13 +114,17 @@ InternalTokenPort::isOpen() const
 bool
 InternalTokenPort::isEof() const
 {
-  return fTokens.empty();
+  return !hasUnreadData() && fTokens.empty();
 }
 
 
 Token
 InternalTokenPort::read()
 {
+  Token value;
+  if (readFromUnreadBuffer(&value, 1) == 1)
+    return value;
+
   if (fTokens.empty())
     throw EofException();
 
@@ -179,6 +188,14 @@ public:
       assert(p->read() == Token(sp, kComma));
       assert(p->read() == Token(sp, kSymbol, String("Comparable")));
       assert(p->read() == Token(sp, kParanClose));
+
+      p->unread(Token(sp, kSymbol, "xyz"));
+      p->unread(Token(sp, kAssign));
+      p->unread(Token(sp, kInt, 1234));
+      assert(p->read() == Token(sp, kInt, 1234));
+      assert(p->read() == Token(sp, kAssign));
+      assert(p->read() == Token(sp, kSymbol, "xyz"));
+      assert(!p->hasUnreadData());
 
       assert(p->read() == Token(sp, kBraceOpen));
       assert(p->read() == Token(sp, kSymbol, String("slot")));
