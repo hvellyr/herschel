@@ -76,7 +76,7 @@ FilePort::isEof() const
   if (fStream == NULL)
     throw PortNotOpenException();
 
-  return ::feof(fStream) != 0;
+  return !hasUnreadData() && ::feof(fStream) != 0;
 }
 
 
@@ -85,6 +85,8 @@ FilePort::write(const Octet* data, size_t items)
 {
   if (fStream == NULL)
     throw PortNotOpenException();
+
+  resetUnreadBuffer();
 
   size_t retval = ::fwrite(data, 1, items, fStream);
   if (retval != items)
@@ -99,6 +101,8 @@ FilePort::write(Octet byte)
   if (fStream == NULL)
     throw PortNotOpenException();
 
+  resetUnreadBuffer();
+
   int retval = ::fputc(byte, fStream);
   if (retval != 1)
     throw IOException(String("write failed"), errno);
@@ -112,9 +116,16 @@ FilePort::read(Octet* buffer, size_t items)
   if (fStream == NULL)
     throw PortNotOpenException();
 
-  size_t retval = ::fread(buffer, 1, items, fStream);
-  if (retval == 0 && ::ferror(fStream) != 0)
-    throw IOException(String("read failed"), errno);
+  size_t retval = readFromUnreadBuffer(buffer, items);
+
+  size_t step = items - retval;
+  if (step > 0) {
+    size_t bytesread = ::fread(buffer + retval, 1, step, fStream);
+    if (bytesread == 0 && ::ferror(fStream) != 0)
+      throw IOException(String("read failed"), errno);
+    retval += bytesread;
+  }
+
   return retval;
 }
 
@@ -124,6 +135,10 @@ FilePort::read()
 {
   if (fStream == NULL)
     throw PortNotOpenException();
+
+  Octet value;
+  if (readFromUnreadBuffer(&value, 1) == 1)
+    return value;
 
   int retval = ::fgetc(fStream);
   if (retval == EOF) {
@@ -141,6 +156,7 @@ FilePort::flush()
 {
   if (fStream == NULL)
     throw PortNotOpenException();
+  resetUnreadBuffer();
   ::fflush(fStream);
 }
 
@@ -157,6 +173,8 @@ FilePort::setCursor(size_t cursor)
 {
   if (fStream == NULL)
     throw PortNotOpenException();
+
+  resetUnreadBuffer();
 
   if (fseek(fStream, cursor, SEEK_SET) != 0)
     throw IOException(String("seek failed"), errno);
@@ -216,7 +234,7 @@ DataPort::isOpen() const
 bool
 DataPort::isEof() const
 {
-  return fPos == fLength;
+  return !hasUnreadData() && fPos == fLength;
 }
 
 
@@ -225,6 +243,8 @@ DataPort::write(const Octet* data, size_t items)
 {
   if (!fOwnsData)
     throw IOException(String("Can't write this port"), EPERM);
+
+  resetUnreadBuffer();
 
   if (fPos + items >= fAllocated) {
     if (fAllocated == 0)
@@ -252,6 +272,9 @@ DataPort::write(Octet byte)
 {
   if (!fOwnsData)
     throw IOException(String("Can't write this port"), EPERM);
+
+  resetUnreadBuffer();
+
   return this->write(&byte, 1);
 }
 
@@ -260,21 +283,25 @@ size_t
 DataPort::read(Octet* buffer, size_t items)
 {
   size_t bytesRead = 0;
-  Octet* dst = (Octet*)buffer;
   size_t noctets = items;
 
   if (noctets == 0)
     return bytesRead;
 
-  size_t avail2 = fLength - fPos;
-  if (avail2 > 0)
-  {
-    size_t step = avail2 > noctets ? noctets : avail2;
+  size_t retval = readFromUnreadBuffer(buffer, noctets);
 
-    ::memcpy(dst, fData + fPos, step);
-    fPos += step;
+  noctets -= retval;
+  if (noctets > 0) {
+    size_t avail2 = fLength - fPos;
+    if (avail2 > 0)
+    {
+      size_t step = avail2 > noctets ? noctets : avail2;
 
-    return step;
+      ::memcpy(buffer + retval, fData + fPos, step);
+      fPos += step;
+
+      return step + retval;
+    }
   }
 
   return 0;
@@ -284,6 +311,10 @@ DataPort::read(Octet* buffer, size_t items)
 Octet
 DataPort::read()
 {
+  Octet value;
+  if (readFromUnreadBuffer(&value, 1) == 1)
+    return value;
+
   if (fPos < fLength)
     return (int)fData[fPos++];
   throw EofException();
@@ -293,7 +324,7 @@ DataPort::read()
 void
 DataPort::flush()
 {
-  // NOP
+  resetUnreadBuffer();
 }
 
 
@@ -307,8 +338,10 @@ DataPort::canSetCursor() const
 void
 DataPort::setCursor(size_t cursor)
 {
-  if (cursor >= 0)
+  if (cursor >= 0) {
+    resetUnreadBuffer();
     fPos = cursor;
+  }
   else
     throw IOException(String("Negative cursor"), ENOTSUP);
 }
@@ -354,13 +387,15 @@ CharPort::isOpen() const
 bool
 CharPort::isEof() const
 {
-  return fSlave->isEof();
+  return !hasUnreadData() && fSlave->isEof();
 }
 
 
 size_t
 CharPort::write(const Char* data, size_t items)
 {
+  resetUnreadBuffer();
+
   int clen = str_wcs_to_utf8(data, items, NULL, items * 6 + 1);
   fEncBuffer.reserve(clen + 1);
   clen = str_wcs_to_utf8(data, items, &fEncBuffer[0], clen + 1);
@@ -372,6 +407,8 @@ CharPort::write(const Char* data, size_t items)
 int
 CharPort::write(Char c)
 {
+  resetUnreadBuffer();
+
   Octet tmp[10];
   int clen = str_wcs_to_utf8(&c, 1, tmp, 10);
 
@@ -383,6 +420,10 @@ CharPort::write(Char c)
 Char
 CharPort::read()
 {
+  Char value;
+  if (readFromUnreadBuffer(&value, 1) == 1)
+    return value;
+
   int c0 = fSlave->read();
   if (c0 != EOF) {
     if (!(c0 & 0x80))
@@ -426,6 +467,7 @@ CharPort::read()
 void
 CharPort::flush()
 {
+  resetUnreadBuffer();
   fSlave->flush();
 }
 
@@ -440,6 +482,7 @@ CharPort::canSetCursor() const
 void
 CharPort::setCursor(size_t cursor)
 {
+  resetUnreadBuffer();
   fSlave->setCursor(cursor);
 }
 

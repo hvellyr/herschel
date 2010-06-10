@@ -10,6 +10,7 @@
 #define bootstrap_port_h
 
 #include <vector>
+#include <list>
 
 #include "refcountable.h"
 #include "exception.h"
@@ -77,6 +78,8 @@ namespace heather
 
     virtual size_t write(const T* data, size_t items)
     {
+      resetUnreadBuffer();
+
       for (size_t i = 0; i < items; i++) {
         int rv = this->write(data[i]);
         if (rv != 1)
@@ -90,12 +93,15 @@ namespace heather
     {
       size_t i = 0;
       try {
+        i = readFromUnreadBuffer(buffer, items);
+
         for ( ; i < items; i++)
           buffer[i] = this->read();
       }
       catch (const EofException& )
       {
       }
+
       return i;
     }
     virtual T read() = 0;
@@ -109,12 +115,49 @@ namespace heather
 
     virtual void setCursor(size_t /* cursor */)
     {
+      resetUnreadBuffer();
     }
 
     virtual long cursor()
     {
       return 0;
     }
+
+    virtual void unread(T item)
+    {
+      fUnreadBuffer.push_front(item);
+    }
+
+    bool hasUnreadData() const
+    {
+      return !fUnreadBuffer.empty();
+    }
+
+  protected:
+
+    void resetUnreadBuffer()
+    {
+      fUnreadBuffer.clear();
+    }
+
+    size_t readFromUnreadBuffer(T* dstbuffer, int items)
+    {
+#if defined(IS_DEBUG)
+      size_t oldsize = fUnreadBuffer.size();
+#endif
+      size_t step = items;
+      size_t first = fUnreadBuffer.size() > step ? step : fUnreadBuffer.size();
+      for (size_t i = 0; i < first; i++) {
+        dstbuffer[i] = fUnreadBuffer.front();
+        fUnreadBuffer.pop_front();
+      }
+      assert(fUnreadBuffer.size() + first == oldsize);
+      return first;
+    }
+
+
+    //-------- data members
+    std::list<T> fUnreadBuffer;
   };
 
 
