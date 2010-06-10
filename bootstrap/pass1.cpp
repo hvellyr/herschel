@@ -3393,13 +3393,98 @@ FirstPass::parse()
 }
 
 
+//------------------------------------------------------------------------------
+
+bool
+FirstPass::replaceMatchBindings(TokenVector* result,
+                                const TokenVector& replacement,
+                                const std::map<String, Token>& bindings)
+{
+  // TODO
+  return false;
+}
+
 
 //------------------------------------------------------------------------------
 
 bool
 FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
 {
-  // TODO
+  SyntaxTreeNode* node = syntaxTable->rootNode();
+  assert(node != NULL);
+
+  std::map<String, Token> bindings;
+
+  for ( ; ; ) {
+    SyntaxTreeNode* followSet = node->findNode(fToken);
+    if (followSet != NULL) {
+      node = followSet;
+      nextToken();
+      continue;
+    }
+
+    else if (node->hasEndSet()) {
+      return replaceMatchBindings(result, node->replacement(), bindings);
+    }
+
+    else {
+      Token macroParam;
+      followSet = node->findMacroParam(&macroParam);
+      if (followSet != NULL) {
+        String paramName;
+        MacroParamType macroPrmType = macroParamType(macroParam, &paramName);
+        switch (macroPrmType) {
+        case kMacro_expr:
+          {
+            SrcPos pos = fToken.srcpos();
+            Token expr = parseExpr();
+            if (!expr.isSet()) {
+              errorf(pos, E_MacroParamMismatch,
+                     "Macro parameter %s requires expression",
+                     (const char*)StrHelper(macroParam.toString()));
+              return false;
+            }
+
+            bindings.insert(std::make_pair(paramName, expr));
+            node = followSet;
+            nextToken();
+            continue;
+          }
+          break;
+
+        case kMacro_name:
+          {
+            if (fToken == kSymbol) {
+              bindings.insert(std::make_pair(paramName, fToken));
+              node = followSet;
+              nextToken();
+              continue;
+            }
+            else {
+              errorf(fToken.srcpos(), E_MacroParamMismatch,
+                     "Macro parameter %s requires identifier",
+                     (const char*)StrHelper(macroParam.toString()));
+              return false;
+            }
+          }
+          break;
+
+        case kMacro_body:
+          // TODO
+          // break;
+
+        default:
+          errorf(macroParam.srcpos(), E_MacroParamType,
+                 "Unknown macro parameter type: %s",
+                 (const char*)StrHelper(macroParam.toString()));
+          return false;
+        }
+      }
+
+      return false;
+    }
+  }
+
   return false;
 }
 
