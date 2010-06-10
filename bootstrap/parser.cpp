@@ -94,6 +94,13 @@ Parser::nextToken()
 }
 
 
+void
+Parser::unreadToken(const Token& token)
+{
+  fState.fPort->unread(token);
+}
+
+
 AptNode*
 Parser::parse(Port<Char>* port, const String& srcName)
 {
