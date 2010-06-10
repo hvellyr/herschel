@@ -115,6 +115,7 @@ namespace heather
     friend class SecondPass;
 
     Token nextToken();
+    void unreadToken(const Token& token);
 
     class ParserState
     {

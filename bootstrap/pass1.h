@@ -29,6 +29,7 @@ namespace heather
     FirstPass(Parser* parser, const Token& currentToken);
 
     Token nextToken();
+    void unreadToken(const Token& token);
 
     //! first pass parse
     Token parse();
@@ -204,6 +205,8 @@ namespace heather
 
     bool parseExprStream(TokenVector* result, bool isTopLevel,
                          ScopeType scopeType);
+
+    bool matchSyntax(TokenVector* result, SyntaxTable* syntaxTable);
 
     //-------- data members
 

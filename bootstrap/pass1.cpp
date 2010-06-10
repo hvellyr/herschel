@@ -42,6 +42,13 @@ FirstPass::nextToken()
 }
 
 
+void
+FirstPass::unreadToken(const Token& token)
+{
+  fParser->unreadToken(token);
+}
+
+
 Token
 FirstPass::scanUntilTopExprAndResume()
 {
@@ -3390,31 +3397,88 @@ FirstPass::parse()
 //------------------------------------------------------------------------------
 
 bool
+FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
+{
+  // TODO
+  return false;
+}
+
+bool
 FirstPass::parseDoMatchSyntaxDef(TokenVector* result,
                                  const Token& expr, SyntaxTable* syntaxTable,
                                  bool isLocal)
 {
-  return false;
+  unreadToken(expr);
+
+  if (isLocal)
+    fToken = Token(expr.srcpos(), kLetId);
+  else
+    fToken = Token(expr.srcpos(), kDefId);
+
+  return matchSyntax(result, syntaxTable);
 }
 
 
 bool
-FirstPass::parseDoMatchSyntaxOn(TokenVector* filtered,
+FirstPass::parseDoMatchSyntaxOn(TokenVector* result,
                                 const Token& expr, SyntaxTable* syntaxTable,
                                 bool isLocal)
 {
-  return false;
+  unreadToken(expr);
+  fToken = Token(expr.srcpos(), kOnId);
+  return matchSyntax(result, syntaxTable);
 }
 
 
 bool
-FirstPass::parseDoMatchSyntaxFunc(TokenVector* filtered,
+FirstPass::parseDoMatchSyntaxFunc(TokenVector* result,
                                   const Token& expr,
                                   const TokenVector& args,
                                   SyntaxTable* syntaxTable,
                                   bool shouldParseParams)
 {
-  return false;
+  Token oldCurrentToken = fToken;
+
+  if (shouldParseParams) {
+    unreadToken(oldCurrentToken);
+
+    if (!args.empty()) {
+      Token nextTk = nextToken();
+      unreadToken(nextTk);
+      if (nextTk != kParanClose)
+        unreadToken(Token(nextTk.srcpos(), kComma));
+      assert(args.size() == 1);
+      unreadToken(args[0]);
+    }
+
+    unreadToken(Token(oldCurrentToken.srcpos(), kParanOpen));
+  }
+  else {
+    unreadToken(oldCurrentToken);
+    unreadToken(Token(oldCurrentToken.srcpos(), kParanClose));
+
+    std::list<Token> res;
+    for (size_t i = 0; i < args.size(); i++) {
+      Token arg = args[i];
+      if (i + 1 < args.size()) {
+        res.push_front(arg);
+        res.push_front(Token(arg.srcpos(), kComma));
+      }
+      else
+        res.push_front(arg);
+    }
+    for (std::list<Token>::iterator it = res.begin();
+         it != res.end();
+         it++)
+    {
+      unreadToken(*it);
+    }
+
+    unreadToken(Token(oldCurrentToken.srcpos(), kParanOpen));
+  }
+
+  fToken = expr;
+  return matchSyntax(result, syntaxTable);
 }
 
 
