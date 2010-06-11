@@ -1434,6 +1434,34 @@ Token::isCharOrUnitName() const
 }
 
 
+String
+Token::macroParamName() const
+{
+  if (fType != kMacroParam)
+    throw NotSupportedException(__FUNCTION__);
+
+  String str = idValue();
+  int idx = str.indexOf(':');
+  if (idx >= 0)
+    return str.part(0, idx);
+  return str;
+}
+
+
+String
+Token::macroParamType() const
+{
+  if (fType != kMacroParam)
+    throw NotSupportedException(__FUNCTION__);
+
+  String str = idValue();
+  int idx = str.indexOf(':');
+  if (idx >= 0)
+    return str.part(idx + 1, str.length());
+  return String();
+}
+
+
 //----------------------------------------------------------------------------
 
 String
@@ -1585,6 +1613,27 @@ public:
 
       assert(Token().unwrapSingleton() == Token());
       assert(Token(sp, kInt, 4).unwrapSingleton() == Token(sp, kInt, 4));
+    }
+
+    {
+      Token t = Token(sp, kMacroParam, "abc:name");
+      assert(t == kMacroParam);
+      assert(t.macroParamName() == String("abc"));
+      assert(t.macroParamType() == String("name"));
+    }
+
+    {
+      Token t = Token(sp, kMacroParam, "*:expr");
+      assert(t == kMacroParam);
+      assert(t.macroParamName() == String("*"));
+      assert(t.macroParamType() == String("expr"));
+    }
+
+    {
+      Token t = Token(sp, kMacroParam, "abc");
+      assert(t == kMacroParam);
+      assert(t.macroParamName() == String("abc"));
+      assert(t.macroParamType() == String());
     }
   }
 };

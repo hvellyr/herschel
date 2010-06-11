@@ -314,6 +314,8 @@ namespace heather
     String baseName() const;
     String nsName() const;
 
+    String macroParamName() const;
+    String macroParamType() const;
 
     //! if the token is a singleton token sequence, return children[0],
     //! otherwise the receiver itself.
