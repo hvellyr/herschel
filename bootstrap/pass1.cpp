@@ -3723,7 +3723,7 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
   TokenVector filtered;
   switch (macro->type()) {
   case kMacro_Invalid:
-    assert(0);
+    // assert(0);
     return Token();
 
   case kMacro_Any:
