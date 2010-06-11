@@ -75,6 +75,8 @@ namespace heather
     E_PatternNameMismatch = 0x4084,
     E_MacroParamType      = 0x4085,
     E_MacroParamMismatch  = 0x4086,
+    E_UnknownMacroParam   = 0x4087,
+    E_OrphanedSangHash    = 0x4088,
 
     // functions
     E_MissingBody         = 0x4100,

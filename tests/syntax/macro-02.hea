@@ -1,0 +1,7 @@
+def macro ghi
+{
+  { ghi(?a:expr) } -> { ?a }
+}
+
+def g()
+  ghi(1)

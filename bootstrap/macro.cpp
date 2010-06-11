@@ -26,9 +26,22 @@ SyntaxTreeNode::SyntaxTreeNode()
 SyntaxTreeNode*
 SyntaxTreeNode::findNode(const Token& token) const
 {
-  NodeMap::const_iterator it = fNodes.find(token);
-  if (it != fNodes.end())
-    return it->second.obj();
+  if (token.tokenType() == kMacroParam) {
+    for (NodeMap::const_iterator it = fNodes.begin();
+         it != fNodes.end();
+         it++)
+    {
+      if (it->first.tokenType() == kMacroParam)
+        return it->second.obj();
+      else if (it->first == token)
+        return it->second.obj();
+    }
+  }
+  else {
+    NodeMap::const_iterator it = fNodes.find(token);
+    if (it != fNodes.end())
+      return it->second.obj();
+  }
   return NULL;
 }
 

@@ -210,6 +210,9 @@ namespace heather
     bool replaceMatchBindings(TokenVector* result,
                               const TokenVector& replacement,
                               const std::map<String, Token>& bindings);
+    bool replaceSangHashIds(TokenVector* result, const TokenVector& source);
+    Token findReplaceToken(const Token& token,
+                           const std::map<String, Token>& bindings);
 
 
     //-------- data members
