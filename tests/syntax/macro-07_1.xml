@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><seq><id>def</id><id>aaa</id><punct type='='/><seq><id>register-fluidx</id><nested left='(' right=')'><id>aaa</id><punct type=','/><lit type='int'>11</lit></nested></seq></seq></seq></seq>
