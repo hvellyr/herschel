@@ -149,14 +149,13 @@ POSSIBILITY OF SUCH DAMAGE.
 @node Introduction, Basic concepts, Top, Top
 @chapter Introduction
 
-Heather is an general-purpose multiparadigm programming language.  It is
-strongly typed, offering type inference and parametric polymorphism
+Heather is an general-purpose multiparadigm programming language.  It
+is strongly typed, offering type inference and parametric polymorphism
 (``generics'').  It is consequently object oriented (everything is a
-object, even functions are instances of the type @code{Callable}), while
-its consequent multiple dispatch approach gives it a strong functional
-touch.  The object model is class-oriented, supporting multiple
-inheritance just as a separation of types (``protocols'',
-``interfaces'') and classes.
+object, even functions), while its consequent multiple dispatch
+approach keeps a strong functional touch.  The object model is
+class-oriented, supporting multiple inheritance as well as the
+separation of types (``protocols'', ``interfaces'') and classes.
 
 The grammar is regular, small, and context free.  In particular it can
 be parsed without symbol tables, and does not require a special
