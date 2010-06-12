@@ -3,30 +3,48 @@
 
 Language and ideas:
 
-  Think about non-gc objects.
+  - review 'when' requirement that enclosed code must be valid code.  This
+    does not go properly with macros: macros in when section must than be
+    fully workable, otherwise macro-using code can't be scanned.  Reduce
+    the requirement to braces must be balanced?
 
-  Think about lazy evaluation.
+  - Redesign accessing items from enum types.  Parsing as Enum.item does
+    not work, since this would require symboltables during parsing (how to
+    distinguish between param.func and Enum.item ?).  Idea: Maybe use a new
+    item-operator ::? E.g. Enum::item.
 
-  Think about: all objects are passed by value (i.e. even for vectors);
-  values passed to spawned functions are actually copied, otherwise
-  internal refcounted.  It is possible to explicitely use references:
+  - Think about non-gc objects.
 
-    def f(a : ^Int, b : ^Vector<Octet>)
+  - Think about lazy evaluation (generalize the 'promise' concept
+    introduced en passent with sync).
 
-  Embedding of C/C++ fragments
+  - Think about: all objects are passed by value (i.e. even for vectors);
+    values passed to spawned functions are actually copied, otherwise
+    internal refcounted.  It is possible to explicitely use references:
+
+      def f(a : ^Int, b : ^Vector<Octet>)
+
+    Note this, of course, would require to write all typical oo-functions
+    as
+
+      def generic f(self @ ^MyType, ...)
+
+    if the function is to be non-const.
+
+  - Embedding of C/C++ fragments
 
 
 Documentation
 
-  Write nested modules section.
+  - Write nested modules section.
 
-  Write/extending exporting and visibility section on modules
+  - rewrite exporting and visibility section on modules
 
-  Mention explicitely: no coercing.  Where?
+  - Mention explicitely: no coercing.  Where?
 
-  Write assignment section.
+  - Write assignment section.
 
-  Rewrite the "def xxx" to the new deffn-form-example style.
+  - Rewrite the "def xxx" to the new deffn-form-example style.
 
 
 
@@ -35,8 +53,17 @@ Bootstrap compiler
   Implement last missing pass1 stuff:
 
     - macros
-    - access values from enums as Enum.item
-    - type numbers (like 4500h : UWord)
+
+    - pass2
+
+    - export of defs (esp. macros)
+
+    - import 
+
+    - access values from enums as Enum::item
+
+    - extend macro parameter types (like ?a:paramlist, ?a:param)
+    
 
   continue with pexpreval (add the missing operators)
 
