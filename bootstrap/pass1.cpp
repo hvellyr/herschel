@@ -3352,6 +3352,8 @@ FirstPass::parseMacroDef(const Token& defToken)
   Token macroNameToken = fToken;
   nextToken();
 
+  Token docString = parseOptDocString();
+
   if (fToken != kBraceOpen) {
     errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
     return scanUntilTopExprAndResume();

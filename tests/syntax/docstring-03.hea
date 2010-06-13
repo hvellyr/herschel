@@ -1,0 +1,13 @@
+def macro nil?
+    ~ Indicates whether its argument is @const{nil}.
+
+    @example
+    if (abc.nil?) ...
+    @end example ~
+{
+  { nil?(?val:expr) } -> { ?val == nil }
+}
+
+
+def f(x)
+  x.nil?
