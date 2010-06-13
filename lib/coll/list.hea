@@ -76,7 +76,7 @@ def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
         self
       }
 
-    | otherwise -> {
+    | else {
         let p = self.root
         let prev = nil
         let n = 0
@@ -259,8 +259,8 @@ def merge(pred : (Function(left, right) : Bool),
     | (nl2.nil?) -> nl1
     | pred(nl1.car, nl2.car) -> Pair<'T, _>(car: nl1.car,
                                             cdr: merge(pred, nl1.cdr, nl2))
-    | otherwise -> Pair<'T, _>(car: nl2.car,
-                               cdr: merge(pred, nl1, nl2.cdr))
+    | else Pair<'T, _>(car: nl2.car,
+                       cdr: merge(pred, nl1, nl2.cdr))
   }
 
 
@@ -269,11 +269,11 @@ def merge-sort(nl : Pair<'T, _>,
   select () {
     | (nl.nil?)     -> nl
     | (nl.cdr.nil?) -> nl
-    | otherwise     -> {
-                         let splits = merge-split(nl)
-                         merge(pred, merge-sort(splits.car, pred),
-                                     merge-sort(splits.cdr, pred))
-                       }
+    | else {
+        let splits = merge-split(nl)
+        merge(pred, merge-sort(splits.car, pred),
+              merge-sort(splits.cdr, pred))
+      }
   }
 
 
