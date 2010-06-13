@@ -1251,17 +1251,21 @@ FirstPass::parseUnaryOp(const Token& inOpToken)
 class heather::BasePatternParser
 {
 protected:
-  TokenVector parseConsequent(FirstPass* pass)
+  TokenVector parseConsequent(FirstPass* pass, bool mapToReq)
   {
     TokenVector result;
 
-    assert(pass->fToken == kMapTo);
-    Token mapToToken = pass->fToken;
-    pass->nextToken();
+    Token mapToToken;
+    if (mapToReq) {
+      assert(pass->fToken == kMapTo);
+      mapToToken = pass->fToken;
+      pass->nextToken();
+    }
 
     Token body = pass->parseExpr();
     if (body.isSet()) {
-      result.push_back(mapToToken);
+      if (mapToReq)
+        result.push_back(mapToToken);
       result.push_back(body);
     }
     return result;
@@ -1272,7 +1276,7 @@ protected:
 struct heather::SelectPatternParser : public BasePatternParser
 {
   SelectPatternParser()
-    : fOtherwiseSeen(false)
+    : fElseSeen(false)
   {}
 
   bool operator() (FirstPass* pass, Token& result)
@@ -1286,28 +1290,21 @@ struct heather::SelectPatternParser : public BasePatternParser
     Token pipeToken = pass->fToken;
     pass->nextToken();
 
-    if (pass->fToken == kOtherwiseId) {
+    if (pass->fToken == kElseId) {
       bool ignore = false;
-      Token otherwiseToken = pass->fToken;
+      Token elseToken = pass->fToken;
 
-      if (fOtherwiseSeen) {
+      if (fElseSeen) {
         errorf(pass->fToken.srcpos(), E_RedefinedPattern,
-               "'otherwise' pattern redefined");
+               "'else' pattern redefined");
         ignore = true;
       }
-      fOtherwiseSeen = true;
+      fElseSeen = true;
       pass->nextToken();
 
-      if (pass->fToken != kMapTo) {
-        errorf(pass->fToken.srcpos(), E_BadPatternList,
-               "expected '->'");
-        pass->scanUntilBrace();
-        return false;
-      }
-
-      TokenVector consq = parseConsequent(pass);
+      TokenVector consq = parseConsequent(pass, false);
       if (!ignore && !consq.empty())
-        result << ( Token() << pipeToken << otherwiseToken << consq );
+        result << ( Token() << pipeToken << elseToken << consq );
     }
     else {
       TokenVector pattern;
@@ -1338,7 +1335,7 @@ struct heather::SelectPatternParser : public BasePatternParser
         }
       }
 
-      TokenVector consq = parseConsequent(pass);
+      TokenVector consq = parseConsequent(pass, true);
       if (!pattern.empty() && !consq.empty()) {
         result << ( Token() << pipeToken << ( pattern.size() == 1
                                               ? pattern[0]
@@ -1350,7 +1347,7 @@ struct heather::SelectPatternParser : public BasePatternParser
     return true;
   }
 
-  bool fOtherwiseSeen;
+  bool fElseSeen;
 };
 
 
@@ -1431,7 +1428,7 @@ struct heather::MatchPatternParser : public BasePatternParser
       return false;
     }
 
-    TokenVector consq = parseConsequent(pass);
+    TokenVector consq = parseConsequent(pass, true);
     if (varToken.isSet() && colonToken.isSet() &&
         matchType.isSet() && !consq.empty())
       result << ( Token()

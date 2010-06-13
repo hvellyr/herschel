@@ -321,9 +321,8 @@ The following identifiers are reserved and have a special meaning:
 AND       and       as        by        def       else      eof
 export    extend    false     for       Function  function  if
 import    in        interface isa       let       match     mod
-module    nil       not       on        OR        or        otherwise
-reify     select    then      true      when      where     while
-XOR
+module    nil       not       on        OR        or        reify
+select    then      true      when      where     while     XOR
 @end verbatim
 
 The following identifiers are predefined and used by the language
@@ -2660,7 +2659,7 @@ expressions}; the grouping of the statements in the example above is a
 
 @deffn Special select
 
-@findex otherwise
+@findex else
 @findex |
 A @code{select} expression has the form:
 
@@ -2669,7 +2668,7 @@ select (@r{[} @var{antecedent} @r{[} , @var{comparator}@r{]]}) @{
   | @var{test-1} -> @var{consequent-1}
   | @var{test-2} -> @var{consequent-2}
   @r{@dots{}}
-  | @r{[} otherwise -> @var{alternate} @r{]}
+  | @r{[} else @var{alternate} @r{]}
 @}
 @end example
 
@@ -2677,9 +2676,9 @@ The @var{antecedent} is compared to the tests @var{test-1},
 @var{test-2}, etc.@ using @var{comparator}.  The consequent for the
 first succeeding test is evaluated and its value becomes the return
 value of the complete @code{select} expression.  If none of the tests
-succeed the @var{alternate} expression to the (optional)
-@code{otherwise} is evaluated.  If there's no @code{otherwise} case the
-return value of the @code{select} expression is @code{unspecified}.
+succeed the @var{alternate} expression to the (optional) @code{else}
+case is evaluated.  If there's no @code{else} case the return value of
+the @code{select} expression is @code{unspecified}.
 
 If multiple test values should lead to the same consequent they can be
 given as comma separated values:
@@ -2702,7 +2701,7 @@ select (a) @{
             do-it
           else
             do-something-different()
-  | otherwise -> outln("nothing applies")
+  | else outln("nothing applies")
 @}
 @end example
 
@@ -2747,7 +2746,7 @@ given order is taken.  @var{id-n} is visible only inside of the
 consequent.
 
 There must only be one type case which is typed to @code{Any}; this
-acts as a `otherwise' case.
+acts as an `else' case.
 
 The evaluated consequent's value becomes the value of the complete
 expression.  If no type case matches (and there's no @code{Any} case)
@@ -4389,7 +4388,7 @@ select-expr     := `select' `(' test-expr [ `,' select-comptor ] `)'
 select-comptor  := expression
 select-tests    := { `|' select-test } 
 select-test     := constants `->' consequent 
-                |  `otherwise' alternate
+                |  `else' alternate
 
 constants       := constant { `,' constant }
 

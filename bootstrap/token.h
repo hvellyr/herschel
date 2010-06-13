@@ -170,7 +170,6 @@ namespace heather
     kNilId,
     kNotId,
     kOnId,
-    kOtherwiseId,
     kReifyId,
     kSelectId,
     kThenId,
@@ -355,7 +354,6 @@ namespace heather
 #define MID_NilId       "nil"
 #define MID_NotId       "not"
 #define MID_OnId        "on"
-#define MID_OtherwiseId "otherwise"
 #define MID_ReifyId     "reify"
 #define MID_SelectId    "select"
 #define MID_ThenId      "then"
