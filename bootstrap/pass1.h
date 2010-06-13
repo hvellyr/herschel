@@ -21,6 +21,8 @@
 
 namespace heather
 {
+  class SyntaxTreeNode;
+
   //--------------------------------------------------------------------------
 
   class FirstPass
@@ -51,7 +53,8 @@ namespace heather
 
     friend struct ExprParamSyntaxMatcher;
     friend struct NameParamSyntaxMatcher;
-    friend struct ParamParamSyntaxMatcher;
+    friend struct AnyParamParamSyntaxMatcher;
+    friend struct SpecParamParamSyntaxMatcher;
     friend struct ParamListParamSyntax;
 
     enum ScopeType {
@@ -137,6 +140,12 @@ namespace heather
     void parseTopExprUntilBrace(TokenVector* result, ScopeType scope);
     Token parseTopOrExprList(bool isTopLevel, ScopeType scope);
 
+    bool parseFunctionsParamsFull(TokenVector* exprlist,
+                                  TokenType startToken, TokenType endToken,
+                                  bool autoCompleteType,
+                                  bool exceptEmptyList,
+                                  bool skipFirst,
+                                  bool eatLast);
     bool parseFunctionsParams(TokenVector* exprlist,
                               bool autoCompleteType = true,
                               bool exceptEmptyList = true);
@@ -178,7 +187,8 @@ namespace heather
                        ErrCodes errorCode,
                        Token& result,
                        const char* ctx,
-                       bool skipFirst = true);
+                       bool skipFirst = true,
+                       bool eatLast = true);
 
     bool isConstraintOperator(const Token& token) const;
 
@@ -227,9 +237,9 @@ namespace heather
     Token findReplaceToken(const Token& token,
                            const std::map<String, Token>& bindings);
 
-    bool matchParameter(const String& paramName,
-                        MacroParamType type,
-                        std::map<String, Token>* bindings);
+    bool matchParameter(const Token& macroParam,
+                        std::map<String, Token>* bindings,
+                        SyntaxTreeNode* followSet);
 
     Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 

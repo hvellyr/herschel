@@ -118,7 +118,8 @@ FirstPass::parseSequence(ParseFunctor functor,
                          ErrCodes errorCode,
                          Token& result,
                          const char* ctx,
-                         bool skipFirst)
+                         bool skipFirst,
+                         bool eatLast)
 {
   SrcPos startPos = fToken.srcpos();
   if (skipFirst)
@@ -153,7 +154,8 @@ FirstPass::parseSequence(ParseFunctor functor,
   }
 
   if (fToken == endToken) {
-    nextToken();
+    if (eatLast)
+      nextToken();
   }
   else {
     error(fToken.srcpos(), errorCode,
@@ -955,14 +957,18 @@ namespace heather
 
 
 bool
-FirstPass::parseFunctionsParams(TokenVector* exprlist, bool autoCompleteType,
-                                bool exceptEmptyList)
+FirstPass::parseFunctionsParamsFull(TokenVector* exprlist,
+                                    TokenType startToken, TokenType endToken,
+                                    bool autoCompleteType,
+                                    bool exceptEmptyList,
+                                    bool skipFirst, bool eatLast)
 {
   Token params;
   parseSequence(ParseFuncParamsParser(autoCompleteType),
-                kParanOpen, kParanClose, true, E_BadParameterList,
+                startToken, endToken, true, E_BadParameterList,
                 params,
-                "func-params");
+                "func-params",
+                skipFirst, eatLast);
 
   if (params.isSet() || exceptEmptyList) {
     *exprlist = params.children();
@@ -970,6 +976,18 @@ FirstPass::parseFunctionsParams(TokenVector* exprlist, bool autoCompleteType,
   }
 
   return false;
+}
+
+
+bool
+FirstPass::parseFunctionsParams(TokenVector* exprlist, bool autoCompleteType,
+                                bool exceptEmptyList)
+{
+  return parseFunctionsParamsFull(exprlist,
+                                  kParanOpen, kParanClose,
+                                  autoCompleteType,
+                                  exceptEmptyList,
+                                  true, true);
 }
 
 
@@ -3707,8 +3725,10 @@ namespace heather {
 
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings)
+                       std::map<String, Token>* bindings,
+                       SyntaxTreeNode* followSet)
     {
+      assert(0);
       return false;
     }
   };
@@ -3718,7 +3738,8 @@ namespace heather {
   {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings)
+                       std::map<String, Token>* bindings,
+                       SyntaxTreeNode* followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
       Token expr = pass->parseExpr();
@@ -3739,7 +3760,8 @@ namespace heather {
   {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings)
+                       std::map<String, Token>* bindings,
+                       SyntaxTreeNode* followSet)
     {
       if (pass->fToken == kSymbol) {
         bindings->insert(std::make_pair(paramName, pass->fToken));
@@ -3755,11 +3777,12 @@ namespace heather {
   };
 
 
-  struct ParamParamSyntaxMatcher : public ParameterSyntaxMatcher
+  struct AnyParamParamSyntaxMatcher : public ParameterSyntaxMatcher
   {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings)
+                       std::map<String, Token>* bindings,
+                       SyntaxTreeNode* followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
       FirstPass::ParamType expected = FirstPass::kPositional;
@@ -3778,13 +3801,73 @@ namespace heather {
   };
 
 
+  struct SpecParamParamSyntaxMatcher : public ParameterSyntaxMatcher
+  {
+    FirstPass::ParamType fReqType;
+
+    SpecParamParamSyntaxMatcher(FirstPass::ParamType reqType)
+      : fReqType(reqType)
+    { }
+
+    virtual bool match(FirstPass* pass,
+                       const String& paramName,
+                       std::map<String, Token>* bindings,
+                       SyntaxTreeNode* followSet)
+    {
+      SrcPos pos = pass->fToken.srcpos();
+      FirstPass::ParamType expected = FirstPass::kPositional;
+      Token param = pass->parseParameter(&expected, false);
+
+      if (expected != fReqType || !param.isSet()) {
+        errorf(pos, E_MacroParamMismatch,
+               "Macro parameter %s requires positional parameter",
+               (const char*)StrHelper(paramName));
+        return false;
+      }
+
+      bindings->insert(std::make_pair(paramName, param));
+      return true;
+    }
+  };
+
+
   struct ParamListParamSyntax : public ParameterSyntaxMatcher
   {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings)
+                       std::map<String, Token>* bindings,
+                       SyntaxTreeNode* followSet)
     {
-      return false;
+      SrcPos pos = pass->fToken.srcpos();
+      TokenVector params;
+
+      // TODO: extract the set of possible end token types from followSet and
+      // pass it to parseFunctionsParamsFull.
+      TokenType endTokenType = kParanClose;
+      if (!pass->parseFunctionsParamsFull(&params,
+                                          kParanOpen, endTokenType,
+                                          true /* autoCompleteType */,
+                                          true /* exceptEmptyList */,
+                                          false /* skipFirst */,
+                                          false /* don't eat last */)) {
+        return false;
+      }
+
+      // flatten the parameter declarations generated (as sequence) from
+      // parseFunctionsParamsFull
+      Token result;
+      for (TokenVector::iterator it = params.begin();
+           it != params.end();
+           it++)
+      {
+        if (it->isSeq())
+          result << it->children();
+        else
+          result << *it;
+      }
+      
+      bindings->insert(std::make_pair(paramName, result));
+      return true;
     }
   };
 };
@@ -3793,23 +3876,41 @@ namespace heather {
 typedef std::map<MacroParamType, Ptr<ParameterSyntaxMatcher> > ParamFuncMap;
 
 bool
-FirstPass::matchParameter(const String& paramName,
-                          MacroParamType type,
-                          std::map<String, Token>* bindings)
+FirstPass::matchParameter(const Token& macroParam,
+                          std::map<String, Token>* bindings,
+                          SyntaxTreeNode* followSet)
 {
-  static ParamFuncMap paramFuncMap;
-  if (paramFuncMap.empty()) {
-    paramFuncMap.insert(std::make_pair(kMacro_expr,      new ExprParamSyntaxMatcher));
-    paramFuncMap.insert(std::make_pair(kMacro_name,      new NameParamSyntaxMatcher));
-    paramFuncMap.insert(std::make_pair(kMacro_param,     new ParamParamSyntaxMatcher));
-    paramFuncMap.insert(std::make_pair(kMacro_paramlist, new ParamListParamSyntax));
+  static ParamFuncMap paramsMap;
+  if (paramsMap.empty()) {
+    paramsMap.insert(std::make_pair(kMacro_expr,
+                                    new ExprParamSyntaxMatcher));
+    paramsMap.insert(std::make_pair(kMacro_name,
+                                    new NameParamSyntaxMatcher));
+    paramsMap.insert(std::make_pair(kMacro_param,
+                                    new AnyParamParamSyntaxMatcher));
+    paramsMap.insert(std::make_pair(kMacro_paramlist,
+                                    new ParamListParamSyntax));
+    paramsMap.insert(std::make_pair(kMacro_posParam,
+                                    new SpecParamParamSyntaxMatcher(kPositional)));
+    paramsMap.insert(std::make_pair(kMacro_namedParam,
+                                    new SpecParamParamSyntaxMatcher(kNamed)));
+    paramsMap.insert(std::make_pair(kMacro_restParam,
+                                    new SpecParamParamSyntaxMatcher(kRest)));
   }
 
-  ParamFuncMap::iterator it = paramFuncMap.find(type);
-  if (it != paramFuncMap.end())
-    return it->second->match(this, paramName, bindings);
+  String paramName;
+  MacroParamType macroPrmType = macroParamType(macroParam, &paramName);
 
-  return false;
+  ParamFuncMap::iterator it = paramsMap.find(macroPrmType);
+  if (it != paramsMap.end()) {
+    return it->second->match(this, paramName, bindings, followSet);
+  }
+  else {
+    errorf(macroParam.srcpos(), E_MacroParamType,
+           "Unknown macro parameter type: %s",
+           (const char*)StrHelper(macroParam.toString()));
+    return false;
+  }
 }
 
 
@@ -3838,18 +3939,9 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
       Token macroParam;
       followSet = node->findMacroParam(&macroParam);
       if (followSet != NULL) {
-        String paramName;
-        MacroParamType macroPrmType = macroParamType(macroParam, &paramName);
-
-        if (matchParameter(paramName, macroPrmType, &bindings)) {
+        if (matchParameter(macroParam, &bindings, followSet)) {
           node = followSet;
           continue;
-        }
-        else {
-          errorf(macroParam.srcpos(), E_MacroParamType,
-                 "Unknown macro parameter type: %s",
-                 (const char*)StrHelper(macroParam.toString()));
-          return false;
         }
       }
 
