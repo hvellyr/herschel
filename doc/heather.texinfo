@@ -3738,6 +3738,54 @@ def app|main()
 @c @end display
 @c 
 
+Special macro parameter types:
+
+@deffn {Macro type} :name
+Expects a single (probably fully qualified) identifier.  The
+replacement is a single token.
+@end deffn
+
+@deffn {Macro type} :expr
+Expects any valid expression.
+@end deffn
+
+@deffn {Macro type} :param
+Expects a single valid (function) parameter declaration.  The
+parameter can be a positional, named, or rest parameter.  The optional
+type specification and keyarg prefix (for named parameters) are
+automatically scanned.  The result is a sequence of tokens.
+
+If more control over the type of parameter is required see the macro
+parameter types @code{pos-param}, @code{named-param}, and
+@code{rest-param}.
+@end deffn
+
+@deffn {Macro type} :pos-param
+Expects a single valid positional parameter declaration.  The optional
+type specification is automatically scanned.  The result is a sequence
+of tokens.
+@end deffn
+
+@deffn {Macro type} :named-param
+Expects a single valid named parameter declaration.  The optional type
+specification, keyarg prefix and init value are automatically scanned.
+The result is a sequence of tokens.
+@end deffn
+
+@deffn {Macro type} :rest-param
+Expects a single valid rest parameter declaration.  The optional
+parameter name and type specification is automatically scanned.  The
+result is a sequence of tokens.
+@end deffn
+
+@deffn {Macro type} :paramlist
+Expects a full parameter list declaration as defined for functions,
+i.e.@ including positional, named, and rest parameters.  Parameters
+must be in proper order.  The result is a sequence of tokens.
+@end deffn
+
+
+
 @c ====================================================================
 @node Inline documentation, Syntax, Macros, Top
 @chapter Inline documentation
