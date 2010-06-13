@@ -3528,20 +3528,26 @@ complete code sections with the @code{when} expression, however.
 The @code{when} expression has one of the following forms:
 
 @example
-when (@var{boolean-expr})
+when (@var{boolean-expr}) @{
   expr
-@r{[} else
+@}
+@r{[} else @{
   expr @r{]}
+@}
 
-when ignore
+when ignore @{
   expr
-@r{[} else
+@}
+@r{[} else @{
   expr @r{]}
+@}
 
-when include
+when include @{
   expr
-@r{[} else
+@}
+@r{[} else @{
   expr @r{]}
+@}
 @end example
 
 The @code{when} expression can replace typical applications of
@@ -3578,8 +3584,9 @@ code.  The @code{include} form is useful when switching between @code{ignore}
 and @code{include} during development.
 
 The @code{when} expressions can appear on all levels (top-level and
-inside of functions).  The enclosed expressions must always be valid
-code even if the when expression would not include it.
+inside of functions).  The enclosed expressions don't need to be valid
+code (unless included of course), but the number of braces must be
+properly nested.
 @end deffn
 
 

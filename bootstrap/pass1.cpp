@@ -2048,6 +2048,45 @@ FirstPass::parseTopOrExprList(bool isTopLevel, ScopeType scope)
 }
 
 
+bool
+FirstPass::scanBlock(bool isTopLevel, ScopeType scope)
+{
+  if (fToken == kBraceOpen) {
+    SrcPos startPos = fToken.srcpos();
+    int braceCount = 0;
+    for ( ; ; ) {
+      if (fToken == kEOF) {
+        errorf(fToken.srcpos(), E_UnexpectedEOF, "unfinished when component");
+        if (startPos != fToken.srcpos())
+          errorf(startPos, E_MissingBraceClose, "beginning '{' was here");
+        return false;
+      }
+
+      if (fToken == kBraceOpen) {
+        braceCount++;
+      }
+      else if (fToken == kBraceClose) {
+        braceCount--;
+        if (braceCount == 0) {
+          nextToken();
+          return true;
+        }
+      }
+
+      nextToken();
+    }
+
+    return true;
+  }
+
+  if (isTopLevel)
+    parseTop(scope);
+  else
+    parseExpr();
+  return true;
+}
+
+
 Token
 FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
 {
@@ -2127,17 +2166,26 @@ FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
   Token alternate;
   Token elseToken;
 
-  {
+  if (inclConsequent) {
     ValueSaver<bool> keep(fEvaluateExprs, inclConsequent);
     consequent = parseTopOrExprList(isTopLevel, scope);
+  }
+  else {
+    if (!scanBlock(isTopLevel, scope))
+      return Token();
   }
 
   if (fToken == kElseId) {
     elseToken = fToken;
     nextToken();
-    {
+
+    if (inclAlternate) {
       ValueSaver<bool> keep(fEvaluateExprs, inclAlternate);
       alternate = parseTopOrExprList(isTopLevel, scope);
+    }
+    else {
+      if (!scanBlock(isTopLevel, scope))
+        return Token();
     }
   }
 

@@ -133,6 +133,7 @@ namespace heather
     Token parseWhen(bool isTopLevel, ScopeType scope);
     Token parseExtend(ScopeType scope);
 
+    bool scanBlock(bool isTopLevel, ScopeType scope);
 
     Token evaluateConfigExpr(const Token& initExpr);
 
