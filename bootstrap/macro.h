@@ -107,7 +107,12 @@ namespace heather
     kMacro_unknown,
     kMacro_expr,
     kMacro_body,
-    kMacro_name
+    kMacro_name,
+    kMacro_param,
+    kMacro_posParam,
+    kMacro_namedParam,
+    kMacro_restParam,
+    kMacro_paramlist
   };
 
   MacroParamType macroParamType(const Token& token, String* paramName);

@@ -819,110 +819,114 @@ FirstPass::parseIf()
 }
 
 
+Token
+FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
+{
+  Token paramSeq;
+  ParamType paramType = kPositional;
+
+  if (fToken == kKeyarg) {
+    paramSeq << fToken;
+    nextToken();
+    paramType = kNamed;
+  }
+
+  if (fToken != kSymbol) {
+    error(fToken.srcpos(), E_SymbolExpected,
+          String("parameter name expected: ") + fToken);
+    scanUntilNextParameter();
+    return Token();
+  }
+  else {
+    paramSeq << fToken;
+    nextToken();
+
+    Token typeIntroToken = fToken;
+    if (fToken == kColon ||
+        fToken == kAt)
+    {
+      nextToken();
+
+      SrcPos pos = fToken.srcpos();
+      Token type = parseTypeSpec(true);
+      if (!type.isSet()) {
+        errorf(pos, E_MissingType,
+               "type expression expected");
+        if (autoCompleteTypes)
+          paramSeq << typeIntroToken << Token(pos, kSymbol, "Any");
+      }
+      else
+        paramSeq << typeIntroToken << type;
+    }
+    else if (autoCompleteTypes)
+      paramSeq << Token(typeIntroToken.srcpos(), kColon)
+               << Token(typeIntroToken.srcpos(), kSymbol, "Any");
+
+    if (fToken == kAssign) {
+      Token assignToken = fToken;
+      nextToken();
+
+      SrcPos pos = fToken.srcpos();
+      Token initExpr = parseExpr();
+      if (!initExpr.isSet())
+        errorf(pos, E_MissingRHExpr, "no value in keyed argument");
+      else {
+        paramSeq << assignToken << initExpr;
+        paramType = kNamed;
+      }
+    }
+    else if (fToken == kEllipsis) {
+      Token restToken = fToken;
+      nextToken();
+
+      if (paramType != kPositional) {
+        errorf(restToken.srcpos(), E_InvalidRestParam,
+               "orphaned rest parameter");
+      }
+      else {
+        paramSeq << restToken;
+        paramType = kRest;
+      }
+    }
+  }
+
+  if (*expected == kPositional) {
+    *expected = paramType;
+    return paramSeq.unwrapSingleton();
+  }
+  else if (*expected == kNamed) {
+    if (paramType == kPositional)
+      errorf(paramSeq.srcpos(), E_ParamOrder,
+             "out of order (positional) parameter");
+    else {
+      *expected = paramType;
+      return paramSeq.unwrapSingleton();
+    }
+  }
+  else if (*expected == kRest) {
+    errorf(paramSeq.srcpos(), E_ParamOrder,
+           "no parameter after rest parameter");
+  }
+
+  return Token();
+}
+
+
 struct heather::ParseFuncParamsParser
 {
-  enum ParamType {
-    kPositional,
-    kNamed,
-    kRest
-  };
-
-  ParamType fExpected;
-  bool      fAutoCompleteTypes;
+  FirstPass::ParamType fExpected;
+  bool                 fAutoCompleteTypes;
 
   ParseFuncParamsParser(bool autoCompleteTypes)
-    : fExpected(kPositional),
+    : fExpected(FirstPass::kPositional),
       fAutoCompleteTypes(autoCompleteTypes)
   { }
 
   bool operator() (FirstPass* pass, Token& result)
   {
-    Token paramSeq;
-    ParamType paramType = kPositional;
-
-    if (pass->fToken == kKeyarg) {
-      paramSeq << pass->fToken;
-      pass->nextToken();
-      paramType = kNamed;
-    }
-
-    if (pass->fToken != kSymbol) {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected,
-             "parameter name expected");
-      pass->scanUntilNextParameter();
-      return true;
-    }
-    else {
-      paramSeq << pass->fToken;
-      pass->nextToken();
-
-      Token typeIntroToken = pass->fToken;
-      if (pass->fToken == kColon ||
-          pass->fToken == kAt)
-      {
-        pass->nextToken();
-
-        SrcPos pos = pass->fToken.srcpos();
-        Token type = pass->parseTypeSpec(true);
-        if (!type.isSet()) {
-          errorf(pos, E_MissingType,
-                 "type expression expected");
-          if (fAutoCompleteTypes)
-            paramSeq << typeIntroToken << Token(pos, kSymbol, "Any");
-        }
-        else
-          paramSeq << typeIntroToken << type;
-      }
-      else if (fAutoCompleteTypes)
-        paramSeq << Token(typeIntroToken.srcpos(), kColon)
-                 << Token(typeIntroToken.srcpos(), kSymbol, "Any");
-
-      if (pass->fToken == kAssign) {
-        Token assignToken = pass->fToken;
-        pass->nextToken();
-
-        SrcPos pos = pass->fToken.srcpos();
-        Token initExpr = pass->parseExpr();
-        if (!initExpr.isSet())
-          errorf(pos, E_MissingRHExpr, "no value in keyed argument");
-        else {
-          paramSeq << assignToken << initExpr;
-          paramType = kNamed;
-        }
-      }
-      else if (pass->fToken == kEllipsis) {
-        Token restToken = pass->fToken;
-        pass->nextToken();
-
-        if (paramType != kPositional) {
-          errorf(restToken.srcpos(), E_InvalidRestParam,
-                 "orphaned rest parameter");
-        }
-        else {
-          paramSeq << restToken;
-          paramType = kRest;
-        }
-      }
-    }
-
-    if (fExpected == kPositional) {
-      fExpected = paramType;
-      result << paramSeq.unwrapSingleton();
-    }
-    else if (fExpected == kNamed) {
-      if (paramType == kPositional)
-        errorf(paramSeq.srcpos(), E_ParamOrder,
-               "out of order (positional) parameter");
-      else {
-        fExpected = paramType;
-        result << paramSeq.unwrapSingleton();
-      }
-    }
-    else if (fExpected == kRest) {
-      errorf(paramSeq.srcpos(), E_ParamOrder,
-             "no parameter after rest parameter");
-    }
-
+    Token param = pass->parseParameter(&fExpected, fAutoCompleteTypes);
+    if (param.isSet())
+      result << param;
     return true;
   }
 };
@@ -2562,7 +2566,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 
     if (whereClause.isSet())
       result << whereClause;
-    
+
     if (docString.isSet())
       result << docString;
 
@@ -3607,8 +3611,17 @@ FirstPass::replaceMatchBindings(TokenVector* result,
     case kId:
       if (token.tokenType() == kMacroParam) {
         Token replToken = findReplaceToken(token, bindings);
-        if (replToken.isSet())
-          replacement.push_back(replToken);
+        // printf("REPL.TOKEN: %s\n", (const char*)StrHelper(replToken.toString()));
+
+        if (replToken.isSet()) {
+          if (replToken.isSeq()) {
+            const TokenVector& tmp = replToken.children();
+            replacement.insert(replacement.end(),
+                               tmp.begin(), tmp.end());
+          }
+          else
+            replacement.push_back(replToken);
+        }
         else
           errorf(token.srcpos(), E_UnknownMacroParam,
                  "Undefined macro parameter %s",
@@ -3685,6 +3698,34 @@ FirstPass::matchNameParamSyntax(const String& paramName,
 
 
 bool
+FirstPass::matchParamParamSyntax(const String& paramName,
+                                 std::map<String, Token>* bindings)
+{
+  SrcPos pos = fToken.srcpos();
+  ParamType expected = kPositional;
+  Token param = parseParameter(&expected, false);
+
+  if (!param.isSet()) {
+    errorf(pos, E_MacroParamMismatch,
+           "Macro parameter %s requires parameter",
+           (const char*)StrHelper(paramName));
+    return false;
+  }
+
+  bindings->insert(std::make_pair(paramName, param));
+  return true;
+}
+
+
+bool
+FirstPass::matchParamListParamSyntax(const String& paramName,
+                                     std::map<String, Token>* bindings)
+{
+  return false;
+}
+
+
+bool
 FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
 {
   SyntaxTreeNode* node = syntaxTable->rootNode();
@@ -3723,6 +3764,18 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
           node = followSet;
           continue;
 
+        case kMacro_param:
+          if (!matchParamParamSyntax(paramName, &bindings))
+            return false;
+          node = followSet;
+          continue;
+
+        case kMacro_paramlist:
+          if (!matchParamListParamSyntax(paramName, &bindings))
+            return false;
+          node = followSet;
+          continue;
+
         case kMacro_body:
           // TODO
           // break;
@@ -3741,6 +3794,7 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
 
   return false;
 }
+
 
 bool
 FirstPass::parseDoMatchSyntaxDef(TokenVector* result,
@@ -3908,8 +3962,13 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
       Parser::PortStackHelper portStack(fParser, tempPort);
 
       TokenVector result;
-      if (parseExprStream(&result, !isLocal, scopeType))
-        retval = Token() << result;
+      if (parseExprStream(&result, !isLocal, scopeType)) {
+        // printf("RESULT: %s\n", (const char*)StrHelper(String() + result));
+        if (result.size() == 1)
+          retval = result[0];
+        else if (result.size() > 1)
+          retval = Token() << result;
+      }
       else
         return Token();
     }
