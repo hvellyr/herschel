@@ -1,0 +1,7 @@
+def macro factor
+{
+  { def factor ?n:name (?p:expr) ?b:expr } -> { def ?n () ?b * ?p }
+}
+
+def factor x(24)
+  7 + 11

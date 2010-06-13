@@ -11,6 +11,7 @@
 #include "exception.h"
 #include "unittests.h"
 #include "parsertypes.h"
+#include "strbuf.h"
 
 
 namespace heather
@@ -1477,6 +1478,40 @@ heather::operator+(const String& one, const Token& two)
 {
   return one + two.toString();
 }
+
+
+String
+heather::operator+(const String& one, const TokenVector& vect)
+{
+  StringBuffer buf;
+  for (TokenVector::const_iterator it = vect.begin();
+       it != vect.end();
+       it++)
+  {
+    buf << it->toString() << " ";
+  }
+
+  return one + buf.toString();
+}
+
+
+String
+heather::operator+(const String& one, const std::map<String, Token>& bindings)
+{
+  StringBuffer buf;
+  buf << "{";
+
+  for (std::map<String, Token>::const_iterator it = bindings.begin();
+       it != bindings.end();
+       it++)
+  {
+    buf << it->first << " -> " << it->second.toString() << "; ";
+  }
+  buf << "}";
+
+  return one + buf.toString();
+}
+
 
 
 #if defined(UNITTESTS)
