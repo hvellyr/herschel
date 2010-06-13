@@ -1,2 +1,2 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>f</id><nested left='(' right=')'><seq><id>a</id><punct type=':'/><id>Any</id></seq></nested><punct type=':'/><id>Any</id><nested left='{' right='}'><seq><id>select</id><nested left='(' right=')'><id>a</id></nested><nested left='{' right='}'><seq><punct type='|'/><id>otherwise</id><punct type='->'/><id>a</id></seq></nested></seq></nested></seq></seq>
+<seq><seq><id>def</id><id>f</id><nested left='(' right=')'><seq><id>a</id><punct type=':'/><id>Any</id></seq></nested><punct type=':'/><id>Any</id><nested left='{' right='}'><seq><id>select</id><nested left='(' right=')'><id>a</id></nested><nested left='{' right='}'><seq><punct type='|'/><id>else</id><id>a</id></seq></nested></seq></nested></seq></seq>

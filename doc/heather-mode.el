@@ -71,7 +71,7 @@
   :type 'integer
   :group 'heather)
 
-(defconst heather-version "0.0.1"
+(defconst heather-version "0.0.2"
   "Heather Mode version number.")
 
 ;; XEmacs handling
@@ -174,6 +174,8 @@
 (modify-syntax-entry ?\{ "(}"   heather-mode-syntax-table)
 (modify-syntax-entry ?\} "){"   heather-mode-syntax-table)
 
+(modify-syntax-entry ?\~ "!"    heather-mode-syntax-table)
+
 (modify-syntax-entry ?\- ". 12" heather-mode-syntax-table)
 (modify-syntax-entry ?\n ">"    heather-mode-syntax-table)
 
@@ -244,8 +246,8 @@ Key bindings:
   (set (make-local-variable 'comment-column) 40)
   (set (make-local-variable 'comment-indent-function) 'c-comment-indent) ;; TODO
   (set (make-local-variable 'end-comment-column) 79)
-  (set (make-local-variable 'paragraph-start) "^$")
-  (set (make-local-variable 'paragraph-separate) paragraph-start)
+  (set (make-local-variable 'paragraph-start) "^\s*~\\|def\\|module\\|export\\|import\\|on\\|when\\|where")
+  (set (make-local-variable 'paragraph-separate) "[ \t\f]*$\\|^\s*{\\|^\s*}")
   (set (make-local-variable 'require-final-newline) t)
   (set (make-local-variable 'indent-tabs-mode) nil)
   (set (make-local-variable 'indent-line-function) 'indent-relative);; 'heather-indent-line)
@@ -477,6 +479,9 @@ Key bindings:
 (defvar heather-font-lock-type-def-face 'heather-font-lock-type-def-face
   "Face name for type definition names.")
 
+(defvar heather-docstring-face 'heather-docstring-face
+  "Face name for documentation strings.")
+
 (defface heather-font-lock-operator-face
   '((((class color) (background light)) (:foreground "Gold4"))
     (((class color) (background dark)) (:foreground "BurlyWood1"))
@@ -505,6 +510,13 @@ Key bindings:
     (((class color) (background dark)) (:foreground "Green"))
     (t (:weight bold)))
   "Face name for type definition names."
+  :group 'font-lock-highlighting-faces)
+
+(defface heather-docstring-face
+  '((((class color) (background light)) (:foreground "MediumOrchid4"))
+    (((class color) (background dark)) (:foreground "LightSteelBlue"))
+    )
+  "Face name for documentation strings."
   :group 'font-lock-highlighting-faces)
 
 
@@ -942,39 +954,6 @@ try to increase performance by using this macro."
       syntax)))
 
 
-
-
-
-;; ----------------------------------------------------------------------
-;; indentation functions
-;; indenting heather syntax is fairly simple, the algorithm is:
-;;
-;; 1) does the cur line begin with a + -
-;;       -> regard it as method start
-;;
-;; 2) does the cur line begin with ident := class|type|decl
-;;       -> regard it as a declaration start
-;;
-;; 3) does the line look like "string" load
-;;       -> regard it as include line
-;;
-;; 4) does the preceding line contains
-;;
-;
-;name := class
-;    <type>
-;    &elt _type
-;(
-;    + name <type> &key parm <type>
-;                  &key parm <type> |
-;        self value,
-;	abc slkfjsd,
-;	sdgsdf sdfhskf
-;	     ' fhsdfhwez
-;	     ' asgasg hasd
-;	self.
-;
-;)
 
 (defun heather-forward-comment ()
   "ashddhaksdasldashk"

@@ -1,4 +1,4 @@
--- This file is part of the heather package 
+-- This file is part of the heather package
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -34,14 +34,14 @@ interface core ("eyestep/heather 1.0:core")
 export public(*)
 
 
---! Returns the allocation size of @var{self} in octets.
---!
---! This method returns the sum of the allocations size of the base
---! instance plus all slots which are treated as composition (i.e. which
---! @var{self} owns).
---!
---! Note that this methods can never return 0
 def generic size(obj @ Any) : Ordinal ...
+    ~ Returns the allocation size of @var{self} in octets.
+
+    This method returns the sum of the allocations size of the base
+    instance plus all slots which are treated as composition (i.e. which
+    @var{self} owns).
+
+    Note that this methods must never return 0.~
 
 def generic hash-code(obj @ Any) : UWord ...
 

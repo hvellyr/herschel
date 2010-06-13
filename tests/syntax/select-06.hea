@@ -2,5 +2,5 @@ def f(a, b)
   select () {
     | a > b -> outln("greater")
     | a == b -> outln("equal")
-    | otherwise -> outln("less")
+    | else outln("less")
   }

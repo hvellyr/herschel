@@ -1,4 +1,4 @@
--- This file is part of the heather package 
+-- This file is part of the heather package
 --
 -- Copyright (c) 2006, 2007, 2008 Gregor Klinke
 -- All rights reserved.
@@ -33,88 +33,106 @@
 interface core ("eyestep/heather 1.0:core")
 export public(*)
 
-----------------------------------------------------------------------
+------------------------------------------------------------------------------
 -- base quantities and their SI base units
-----------------------------------------------------------------------
+------------------------------------------------------------------------------
 
--- base unit: metre
 def measure Length(m) : Real
+    ~ Denotes length, base unit is meter (m). ~
 
--- base unit: kilogram
 def measure Mass(kg) : Real
+    ~ Denotes mass, base unit is kilogram (kg). ~
 
--- base unit: second
 def measure Duration(s) : Real
+    ~ Denotes duration in time, base unit is seconds (s). ~
 
--- base unit: Ampere
 def measure ElectricCurrent(A) : Real
+    ~ Denotes electric currency, base unit is Ampere (A). ~
 
--- base unit: Kelvin
 def measure Temperature(K) : Real
+    ~ Denotes temperature, base unit is Kelvin (K). ~
 
--- base unit: Mole
 def measure AmountOfSubstance(mol) : Real
+    ~ Denotes the amount of substance; base unit is Mole (mol). ~
 
--- base unit: Candela
 def measure LuminousIntensity(cd) : Real
+    ~ Denotes the Intensity of light, base unit is Candela (cd). ~
 
-
+------------------------------------------------------------------------------
 -- Additional units
+------------------------------------------------------------------------------
 
--- unit: centimeter
-def unit cm -> m (x) { x * 100 }
--- unit: millimeter
-def unit mm -> m (x) { x * 1000 }
--- unit: inch
-def unit in -> m (x) { x * 25.4-e10 }
+def unit cm -> m (x)
+    ~ Centimeter. ~
+     { x / 100 }
 
--- unit: gram
-def unit g -> kg (x) { x * 1000 }
--- unit: ton
-def unit t -> kg (x) { x / 1000 }
+def unit mm -> m (x)
+    ~ Millimeter. ~
+    { x / 1000 }
+
+def unit in -> m (x)
+    ~ Inch. ~
+    { x / 25.4-e10 }
+
+def unit g -> kg (x)
+    ~ Gram. ~
+    { x / 1000 }
+
+def unit t -> kg (x)
+    ~ Ton ~
+    { x * 1000 }
+
 
 ----------------------------------------------------------------------
 -- Derived quantities and their SI coherent derived units
 ----------------------------------------------------------------------
 
--- base unit: SquareMetre
 def measure Area(m2) : Real
+    ~ Denotes areas, base unit is square metres (m2). ~
 
--- base unit: CubicMetre
 def measure Volume(m3) : Real
+    ~ Denotes the volume, base unit is cubic metre (m3). ~
 
--- base unit: MetrePerSecond
 def measure Velocity(m/s) : Real
+    ~ Measures velocity, base unit is metre per second (m/s). ~
 
--- base unit: MetrePerSecondSquared
 def measure Acceleration(m/s2) : Real
+    ~ Denotes the acceleration, base unit is metre per square second
+    (m/s2). ~
 
--- base unit: ReciprocalMetre
-def measure Wavenumber(m-1) : Real
+def measure WaveNumber(m-1) : Real
+    ~ Base unit is reciprocal metre (m-1). ~
 
--- base unit: KilogramPerCubicMetre
 def measure MassDensity(kg/m3) : Real
+    ~ Measures mass densisty, base unit is kilogram per cubic metre
+    (kg/m3). ~
 
--- base unit: KilogramPerSquareMetre
 def measure SurfaceDensity(kg/m2) : Real
+    ~ Measures the surface density, base unit is kilogram per square metre
+    (kg/m2). ~
 
--- base unit: CubicMetrePerKilogram
 def measure SpecificVolume(m3/kg) : Real
+    ~ Base unit is cubic metre per kilogram (m3/kg) ~
 
--- base unit: AmperePerSquareMetre
 def measure CurrentDensity(A/m2) : Real
+    ~ Measures the current density (A/m2) ~
 
--- base unit: AmperePerMetre
 def measure MagneticFieldStrength(A/m) : Real
+    ~ Measures magentic field strength, base unit is Ampere per metre
+    (A/m). ~
 
--- base unit: MolePerCubicMetre
 def measure AmountConcentration(mol/m3) : Real
+    ~ Measures amount of concentration, base unit is mole per cubic metre
+    (mol/m3). ~
 
--- base unit: KilogramPerCubicMetre
 def measure MassConcentration(kg/m3) : Real
+    ~ Measures the mass concentration, base unit is kilogram per cubic
+    metre (kg/m3). ~
 
--- base unit: CandelaPerSquareMetre
 def measure Luminance(cd/m2) : Real
+    ~ Measures the luminance; base unit is candela per square metre
+    (cd/m2). ~
+
 
 
 -- Coherent derived units in the SI with special names and symbols
@@ -196,8 +214,13 @@ def measure PersonalDoseEquivalent(Sv) : Real
 def measure CatalyticActivity(kat) : Real
 
 
-def unit oC -> K (x) { x - 273.15 }
+-- Unit 'C' is taken by electric charge.
+def unit oC -> K (x)
+    ~ Unit: Degree Celsius. ~
+    { x + 273.15 }
 
-def unit kHz -> Hz (x) { x / 1000 }
+def unit kHz -> Hz (x)
+    ~ Unit: kilo Hertz. ~
+    { x * 1000 }
 
 -- end of SI-units.head

@@ -171,6 +171,7 @@ namespace heather
 
     bool isConstraintOperator(const Token& token) const;
 
+    Token parseOptDocString();
 
     Token parseMacroDef(const Token& defToken);
     bool parseMacroPatterns(MacroPatternVector* patterns);
