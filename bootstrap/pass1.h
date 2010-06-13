@@ -45,9 +45,14 @@ namespace heather
     friend struct FuncallArgsParser;
     friend struct SelectPatternParser;
     friend struct MatchPatternParser;
-    friend class BasePatternParser;
+    friend struct BasePatternParser;
     friend struct ForClauseParser;
     friend struct EnumItemParser;
+
+    friend struct ExprParamSyntaxMatcher;
+    friend struct NameParamSyntaxMatcher;
+    friend struct ParamParamSyntaxMatcher;
+    friend struct ParamListParamSyntax;
 
     enum ScopeType {
       kNonScopedDef,
@@ -222,14 +227,9 @@ namespace heather
     Token findReplaceToken(const Token& token,
                            const std::map<String, Token>& bindings);
 
-    bool matchExprParamSyntax(const String& paramName,
-                              std::map<String, Token>* bindings);
-    bool matchNameParamSyntax(const String& paramName,
-                              std::map<String, Token>* bindings);
-    bool matchParamParamSyntax(const String& paramName,
-                               std::map<String, Token>* bindings);
-    bool matchParamListParamSyntax(const String& paramName,
-                                   std::map<String, Token>* bindings);
+    bool matchParameter(const String& paramName,
+                        MacroParamType type,
+                        std::map<String, Token>* bindings);
 
     Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 

@@ -182,23 +182,27 @@ FirstPass::qualifiedIdForLookup(const String& id) const
 
 //----------------------------------------------------------------------------
 
-struct heather::ModuleParser
+namespace heather
 {
-  bool operator() (FirstPass* pass, Token& result)
+  struct ModuleParser
   {
-    Token n = pass->parseTop(FirstPass::kNonScopedDef);
-    if (n.isSet())
-      result << n;
-    else {
-      errorf(pass->fToken.srcpos(), E_UnexpectedToken,
-             "Parsing module definitions found unexpected token: %s",
-             (const char*)StrHelper(pass->fToken.toString()));
-      return false;
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      Token n = pass->parseTop(FirstPass::kNonScopedDef);
+      if (n.isSet())
+        result << n;
+      else {
+        errorf(pass->fToken.srcpos(), E_UnexpectedToken,
+               "Parsing module definitions found unexpected token: %s",
+               (const char*)StrHelper(pass->fToken.toString()));
+        return false;
+      }
+      
+      return true;
     }
-
-    return true;
-  }
+  };
 };
+
 
 Token
 FirstPass::parseModule(bool isModule)
@@ -261,25 +265,28 @@ FirstPass::parseModule(bool isModule)
 }
 
 
-struct heather::ExportParser
+namespace heather
 {
-  bool operator() (FirstPass* pass, Token& result)
+  struct ExportParser
   {
-    if (pass->fToken.isSymbol()) {
-      result << pass->fToken;
-      pass->nextToken();
-    }
-    else if (pass->fToken == kMultiply) {
-      result << Token(pass->fToken.srcpos(), "*");
-      pass->nextToken();
-    }
-    else {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL or '*'");
-      pass->scanUntilNextParameter();
-    }
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      if (pass->fToken.isSymbol()) {
+        result << pass->fToken;
+        pass->nextToken();
+      }
+      else if (pass->fToken == kMultiply) {
+        result << Token(pass->fToken.srcpos(), "*");
+        pass->nextToken();
+      }
+      else {
+        errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL or '*'");
+        pass->scanUntilNextParameter();
+      }
 
-    return true;
-  }
+      return true;
+    }
+  };
 };
 
 
@@ -340,42 +347,45 @@ FirstPass::parseExport()
 }
 
 
-struct heather::ImportRenameParser
+namespace heather
 {
-  bool operator() (FirstPass* pass, Token& result)
+  struct ImportRenameParser
   {
-    if (pass->fToken != kSymbol) {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
-      pass->scanUntilNextParameter();
-    }
-    else {
-      Token first = pass->fToken;
-
-      pass->nextToken();
-      if (pass->fToken != kMapTo) {
-        errorf(pass->fToken.srcpos(), E_MapToExpected, "expected '->'");
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      if (pass->fToken != kSymbol) {
+        errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
         pass->scanUntilNextParameter();
       }
       else {
-        Token maptoToken = pass->fToken;
+        Token first = pass->fToken;
 
         pass->nextToken();
-        if (pass->fToken != kSymbol) {
-          errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+        if (pass->fToken != kMapTo) {
+          errorf(pass->fToken.srcpos(), E_MapToExpected, "expected '->'");
           pass->scanUntilNextParameter();
         }
         else {
-          Token second = pass->fToken;
-
-          result << ( Token() << first << maptoToken << second );
+          Token maptoToken = pass->fToken;
 
           pass->nextToken();
+          if (pass->fToken != kSymbol) {
+            errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+            pass->scanUntilNextParameter();
+          }
+          else {
+            Token second = pass->fToken;
+
+            result << ( Token() << first << maptoToken << second );
+
+            pass->nextToken();
+          }
         }
       }
-    }
 
-    return true;
-  }
+      return true;
+    }
+  };
 };
 
 
@@ -434,29 +444,32 @@ FirstPass::parseImport()
 }
 
 
-struct heather::TypeParser
+namespace heather
 {
-  TokenType fEndToken;
-
-  TypeParser(TokenType endToken)
-    : fEndToken(endToken)
-  { }
-
-  bool operator() (FirstPass* pass, Token& result)
+  struct TypeParser
   {
-    SrcPos pos = pass->fToken.srcpos();
-    Token type = pass->parseTypeSpec(false);
-    if (!type.isSet()) {
-      errorf(pos, E_UnexpectedToken,
-             "returntype expression expected, but found: %s",
-             (const char*)StrHelper(pass->fToken.toString()));
-      pass->scanUntilNextParameter(fEndToken);
+    TokenType fEndToken;
+
+    TypeParser(TokenType endToken)
+      : fEndToken(endToken)
+    { }
+
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      SrcPos pos = pass->fToken.srcpos();
+      Token type = pass->parseTypeSpec(false);
+      if (!type.isSet()) {
+        errorf(pos, E_UnexpectedToken,
+               "returntype expression expected, but found: %s",
+               (const char*)StrHelper(pass->fToken.toString()));
+        pass->scanUntilNextParameter(fEndToken);
+        return true;
+      }
+      else
+        result << type;
       return true;
     }
-    else
-      result << type;
-    return true;
-  }
+  };
 };
 
 
@@ -673,59 +686,62 @@ FirstPass::parseTypeSpec(bool onlyNestedConstraints)
 }
 
 
-struct heather::LiteralVectorParser
+namespace heather
 {
-  LiteralVectorParser()
-    : fIsDict(false),
-      fIsFirst(true)
-  { }
-
-  bool operator() (FirstPass* pass, Token& result)
+  struct LiteralVectorParser
   {
-    Token expr = pass->parseExpr();
+    LiteralVectorParser()
+      : fIsDict(false),
+        fIsFirst(true)
+    { }
 
-    if (!expr.isSet()) {
-      pass->scanUntilNextParameter();
-    }
-    else {
-      if (pass->fToken == kMapTo) {
-        if (fIsFirst)
-          fIsDict = true;
-        else if (!fIsDict) {
-          errorf(pass->fToken.srcpos(), E_InconsistentArgs,
-                 "For literal dictionaries all elements must be '->' pairs");
-          pass->scanUntilNextParameter();
-          return true;
-        }
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      Token expr = pass->parseExpr();
 
-        Token mapToken = pass->fToken;
-        pass->nextToken();
-
-        Token toValue = pass->parseExpr();
-        if (!toValue.isSet()) {
-          errorf(mapToken.srcpos(), E_MissingRHExpr,
-                 "'->' requires a second expression");
-          pass->scanUntilNextParameter();
-        }
-        else
-          result << ( Token() << expr << mapToken << toValue );
+      if (!expr.isSet()) {
+        pass->scanUntilNextParameter();
       }
       else {
-        if (fIsDict)
-          errorf(expr.srcpos(), E_InconsistentArgs,
-                 "For literal dictionaries all elements must be '->' pairs");
-        else
-          result << expr;
+        if (pass->fToken == kMapTo) {
+          if (fIsFirst)
+            fIsDict = true;
+          else if (!fIsDict) {
+            errorf(pass->fToken.srcpos(), E_InconsistentArgs,
+                   "For literal dictionaries all elements must be '->' pairs");
+            pass->scanUntilNextParameter();
+            return true;
+          }
+
+          Token mapToken = pass->fToken;
+          pass->nextToken();
+
+          Token toValue = pass->parseExpr();
+          if (!toValue.isSet()) {
+            errorf(mapToken.srcpos(), E_MissingRHExpr,
+                   "'->' requires a second expression");
+            pass->scanUntilNextParameter();
+          }
+          else
+            result << ( Token() << expr << mapToken << toValue );
+        }
+        else {
+          if (fIsDict)
+            errorf(expr.srcpos(), E_InconsistentArgs,
+                   "For literal dictionaries all elements must be '->' pairs");
+          else
+            result << expr;
+        }
       }
+
+      fIsFirst = false;
+      return true;
     }
 
-    fIsFirst = false;
-    return true;
-  }
-
-  bool fIsDict;
-  bool fIsFirst;
-};
+    bool fIsDict;
+    bool fIsFirst;
+  };
+}
 
 
 Token
@@ -740,23 +756,26 @@ FirstPass::parseLiteralVector()
 }
 
 
-struct heather::LiteralArrayParser
+namespace heather
 {
-  bool operator() (FirstPass* pass, Token& result)
+  struct LiteralArrayParser
   {
-    Token n = pass->parseExpr();
-    if (n.isSet())
-      result << n;
-    else {
-      errorf(pass->fToken.srcpos(), E_UnexpectedToken,
-             "Unexpected token while parsing array: %s",
-             (const char*)StrHelper(pass->fToken.toString()));
-      return false;
-    }
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      Token n = pass->parseExpr();
+      if (n.isSet())
+        result << n;
+      else {
+        errorf(pass->fToken.srcpos(), E_UnexpectedToken,
+               "Unexpected token while parsing array: %s",
+               (const char*)StrHelper(pass->fToken.toString()));
+        return false;
+      }
 
-    return true;
-  }
-};
+      return true;
+    }
+  };
+}
 
 
 Token
@@ -912,23 +931,26 @@ FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
 }
 
 
-struct heather::ParseFuncParamsParser
+namespace heather
 {
-  FirstPass::ParamType fExpected;
-  bool                 fAutoCompleteTypes;
-
-  ParseFuncParamsParser(bool autoCompleteTypes)
-    : fExpected(FirstPass::kPositional),
-      fAutoCompleteTypes(autoCompleteTypes)
-  { }
-
-  bool operator() (FirstPass* pass, Token& result)
+  struct ParseFuncParamsParser
   {
-    Token param = pass->parseParameter(&fExpected, fAutoCompleteTypes);
-    if (param.isSet())
-      result << param;
-    return true;
-  }
+    FirstPass::ParamType fExpected;
+    bool                 fAutoCompleteTypes;
+
+    ParseFuncParamsParser(bool autoCompleteTypes)
+      : fExpected(FirstPass::kPositional),
+        fAutoCompleteTypes(autoCompleteTypes)
+    { }
+
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      Token param = pass->parseParameter(&fExpected, fAutoCompleteTypes);
+      if (param.isSet())
+        result << param;
+      return true;
+    }
+  };
 };
 
 
@@ -1058,39 +1080,42 @@ FirstPass::parseAnonFun()
 }
 
 
-struct heather::FuncallArgsParser
+namespace heather
 {
-  bool operator() (FirstPass* pass, Token& result)
+  struct FuncallArgsParser
   {
-    if (pass->fToken.isKeyArg()) {
-      Token key = pass->fToken;
-      pass->nextToken();
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      if (pass->fToken.isKeyArg()) {
+        Token key = pass->fToken;
+        pass->nextToken();
 
-      Token val = pass->parseExpr();
-      if (!val.isSet()) {
-        errorf(pass->fToken.srcpos(), E_UnexpectedToken,
-               "Unexpected token while parsing function keyed argument's expr:",
-               (const char*)StrHelper(pass->fToken.toString()));
-        pass->scanUntilNextParameter();
-        return true;
+        Token val = pass->parseExpr();
+        if (!val.isSet()) {
+          errorf(pass->fToken.srcpos(), E_UnexpectedToken,
+                 "Unexpected token while parsing function keyed argument's expr:",
+                 (const char*)StrHelper(pass->fToken.toString()));
+          pass->scanUntilNextParameter();
+          return true;
+        }
+        result << key;
+        result << val;
       }
-      result << key;
-      result << val;
-    }
-    else {
-      Token val = pass->parseExpr();
-      if (!val.isSet()) {
-        errorf(pass->fToken.srcpos(), E_UnexpectedToken,
-               "unexpected token while parsing function arguments: ",
-               (const char*)StrHelper(pass->fToken.toString()));
-        pass->scanUntilNextParameter();
-        return true;
+      else {
+        Token val = pass->parseExpr();
+        if (!val.isSet()) {
+          errorf(pass->fToken.srcpos(), E_UnexpectedToken,
+                 "unexpected token while parsing function arguments: ",
+                 (const char*)StrHelper(pass->fToken.toString()));
+          pass->scanUntilNextParameter();
+          return true;
+        }
+        result << val;
       }
-      result << val;
-    }
 
-    return true;
-  }
+      return true;
+    }
+  };
 };
 
 
@@ -1326,106 +1351,109 @@ FirstPass::parseUnaryOp(const Token& inOpToken)
 }
 
 
-class heather::BasePatternParser
+namespace heather
 {
-protected:
-  TokenVector parseConsequent(FirstPass* pass, bool mapToReq)
+  struct BasePatternParser
   {
-    TokenVector result;
+  protected:
+    TokenVector parseConsequent(FirstPass* pass, bool mapToReq)
+    {
+      TokenVector result;
 
-    Token mapToToken;
-    if (mapToReq) {
-      assert(pass->fToken == kMapTo);
-      mapToToken = pass->fToken;
-      pass->nextToken();
-    }
-
-    Token body = pass->parseExpr();
-    if (body.isSet()) {
-      if (mapToReq)
-        result.push_back(mapToToken);
-      result.push_back(body);
-    }
-    return result;
-  }
-};
-
-
-struct heather::SelectPatternParser : public BasePatternParser
-{
-  SelectPatternParser()
-    : fElseSeen(false)
-  {}
-
-  bool operator() (FirstPass* pass, Token& result)
-  {
-    if (pass->fToken != kPipe) {
-      errorf(pass->fToken.srcpos(), E_ExpectedPipe,
-             "expect '|'");
-      pass->scanUntilBrace();
-      return false;
-    }
-    Token pipeToken = pass->fToken;
-    pass->nextToken();
-
-    if (pass->fToken == kElseId) {
-      bool ignore = false;
-      Token elseToken = pass->fToken;
-
-      if (fElseSeen) {
-        errorf(pass->fToken.srcpos(), E_RedefinedPattern,
-               "'else' pattern redefined");
-        ignore = true;
+      Token mapToToken;
+      if (mapToReq) {
+        assert(pass->fToken == kMapTo);
+        mapToToken = pass->fToken;
+        pass->nextToken();
       }
-      fElseSeen = true;
+
+      Token body = pass->parseExpr();
+      if (body.isSet()) {
+        if (mapToReq)
+          result.push_back(mapToToken);
+        result.push_back(body);
+      }
+      return result;
+    }
+  };
+
+
+  struct SelectPatternParser : public BasePatternParser
+  {
+    SelectPatternParser()
+      : fElseSeen(false)
+    {}
+
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      if (pass->fToken != kPipe) {
+        errorf(pass->fToken.srcpos(), E_ExpectedPipe,
+               "expect '|'");
+        pass->scanUntilBrace();
+        return false;
+      }
+      Token pipeToken = pass->fToken;
       pass->nextToken();
 
-      TokenVector consq = parseConsequent(pass, false);
-      if (!ignore && !consq.empty())
-        result << ( Token() << pipeToken << elseToken << consq );
-    }
-    else {
-      TokenVector pattern;
-      for ( ; ; ) {
-        if (pass->fToken == kEOF)
-          return false;
+      if (pass->fToken == kElseId) {
+        bool ignore = false;
+        Token elseToken = pass->fToken;
 
-        Token test = pass->parseExpr();
-        if (test.isSet()) {
-          pattern.push_back(test);
+        if (fElseSeen) {
+          errorf(pass->fToken.srcpos(), E_RedefinedPattern,
+                 "'else' pattern redefined");
+          ignore = true;
+        }
+        fElseSeen = true;
+        pass->nextToken();
 
-          if (pass->fToken == kComma) {
-            pattern.push_back(pass->fToken);
-            pass->nextToken();
+        TokenVector consq = parseConsequent(pass, false);
+        if (!ignore && !consq.empty())
+          result << ( Token() << pipeToken << elseToken << consq );
+      }
+      else {
+        TokenVector pattern;
+        for ( ; ; ) {
+          if (pass->fToken == kEOF)
+            return false;
+
+          Token test = pass->parseExpr();
+          if (test.isSet()) {
+            pattern.push_back(test);
+
+            if (pass->fToken == kComma) {
+              pattern.push_back(pass->fToken);
+              pass->nextToken();
+            }
+            else if (pass->fToken == kMapTo)
+              break;
+            else {
+              errorf(pass->fToken.srcpos(), E_BadPatternList,
+                     "unexpected token");
+              return false;
+            }
           }
-          else if (pass->fToken == kMapTo)
-            break;
           else {
-            errorf(pass->fToken.srcpos(), E_BadPatternList,
-                   "unexpected token");
+            error(pass->fToken.srcpos(), E_UnexpectedToken,
+                  String("unexpected token in select: ") + pass->fToken.toString());
             return false;
           }
         }
-        else {
-          error(pass->fToken.srcpos(), E_UnexpectedToken,
-                String("unexpected token in select: ") + pass->fToken.toString());
-          return false;
+
+        TokenVector consq = parseConsequent(pass, true);
+        if (!pattern.empty() && !consq.empty()) {
+          result << ( Token() << pipeToken << ( pattern.size() == 1
+                                                ? pattern[0]
+                                                : ( Token() << pattern ) )
+                      << consq );
         }
       }
 
-      TokenVector consq = parseConsequent(pass, true);
-      if (!pattern.empty() && !consq.empty()) {
-        result << ( Token() << pipeToken << ( pattern.size() == 1
-                                              ? pattern[0]
-                                              : ( Token() << pattern ) )
-                    << consq );
-      }
+      return true;
     }
 
-    return true;
-  }
-
-  bool fElseSeen;
+    bool fElseSeen;
+  };
 };
 
 
@@ -1462,60 +1490,63 @@ FirstPass::parseSelect()
 }
 
 
-struct heather::MatchPatternParser : public BasePatternParser
+namespace heather
 {
-  bool operator() (FirstPass* pass, Token& result)
+  struct MatchPatternParser : public BasePatternParser
   {
-    if (pass->fToken != kPipe) {
-      errorf(pass->fToken.srcpos(), E_ExpectedPipe,
-             "expect '|'");
-      pass->scanUntilBrace();
-      return false;
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      if (pass->fToken != kPipe) {
+        errorf(pass->fToken.srcpos(), E_ExpectedPipe,
+               "expect '|'");
+        pass->scanUntilBrace();
+        return false;
+      }
+      Token pipeToken = pass->fToken;
+      pass->nextToken();
+
+      if (pass->fToken != kSymbol) {
+        errorf(pass->fToken.srcpos(), E_SymbolExpected,
+               "variable name expected");
+        pass->scanUntilBrace();
+        return false;
+      }
+      Token varToken = pass->fToken;
+      pass->nextToken();
+
+      if (pass->fToken != kColon) {
+        errorf(pass->fToken.srcpos(), E_ColonExpected,
+               "match pattern require a type specification");
+        pass->scanUntilBrace();
+        return false;
+      }
+      Token colonToken = pass->fToken;
+      pass->nextToken();
+
+      Token matchType = pass->parseTypeSpec(true);
+      if (!matchType.isSet()) {
+        pass->scanUntilBrace();
+        return false;
+      }
+
+      if (pass->fToken != kMapTo) {
+        errorf(pass->fToken.srcpos(), E_BadPatternList,
+               "expected '->'");
+        pass->scanUntilBrace();
+        return false;
+      }
+
+      TokenVector consq = parseConsequent(pass, true);
+      if (varToken.isSet() && colonToken.isSet() &&
+          matchType.isSet() && !consq.empty())
+        result << ( Token()
+                    << pipeToken
+                    << ( Token() << varToken << colonToken << matchType )
+                    << consq );
+
+      return true;
     }
-    Token pipeToken = pass->fToken;
-    pass->nextToken();
-
-    if (pass->fToken != kSymbol) {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected,
-             "variable name expected");
-      pass->scanUntilBrace();
-      return false;
-    }
-    Token varToken = pass->fToken;
-    pass->nextToken();
-
-    if (pass->fToken != kColon) {
-      errorf(pass->fToken.srcpos(), E_ColonExpected,
-             "match pattern require a type specification");
-      pass->scanUntilBrace();
-      return false;
-    }
-    Token colonToken = pass->fToken;
-    pass->nextToken();
-
-    Token matchType = pass->parseTypeSpec(true);
-    if (!matchType.isSet()) {
-      pass->scanUntilBrace();
-      return false;
-    }
-
-    if (pass->fToken != kMapTo) {
-      errorf(pass->fToken.srcpos(), E_BadPatternList,
-             "expected '->'");
-      pass->scanUntilBrace();
-      return false;
-    }
-
-    TokenVector consq = parseConsequent(pass, true);
-    if (varToken.isSet() && colonToken.isSet() &&
-        matchType.isSet() && !consq.empty())
-      result << ( Token()
-                  << pipeToken
-                  << ( Token() << varToken << colonToken << matchType )
-                  << consq );
-
-    return true;
-  }
+  };
 };
 
 
@@ -1552,130 +1583,133 @@ FirstPass::parseMatch()
 }
 
 
-struct heather::ForClauseParser
+namespace heather
 {
-  bool parseInCollClause(FirstPass* pass, Token& result,
-                         const Token& symToken,
-                         const Token& colonToken,
-                         const Token& type)
+  struct ForClauseParser
   {
-    assert(pass->fToken == kIn);
-    Token inToken = pass->fToken;
-    pass->nextToken();
-
-    Token collToken = pass->parseExpr();
-    if (!collToken.isSet()) {
-      error(pass->fToken.srcpos(), E_MissingRHExpr,
-            String("unexpected token: ") + pass->fToken.toString());
-      pass->scanUntilNextParameter();
-      return true;
-    }
-
-    Token subexpr = Token() << symToken;
-    if (colonToken.isSet() && type.isSet())
-      subexpr << colonToken << type;
-    subexpr << inToken << collToken;
-
-    result << subexpr;
-    return true;
-  }
-
-
-  bool parseExplicitClause(FirstPass* pass, Token& result,
+    bool parseInCollClause(FirstPass* pass, Token& result,
                            const Token& symToken,
                            const Token& colonToken,
                            const Token& type)
-  {
-    assert(pass->fToken == kAssign);
-    Token assignToken = pass->fToken;
-    pass->nextToken();
-
-    Token iterator = pass->parseExpr();
-    if (!iterator.isSet()) {
-      error(pass->fToken.srcpos(), E_MissingRHExpr,
-            String("unexpected token: ") + pass->fToken.toString());
-      pass->scanUntilNextParameter();
-      return true;
-    }
-
-    Token subexpr = Token() << symToken;
-    if (colonToken.isSet() && type.isSet())
-      subexpr << colonToken << type;
-    subexpr << assignToken << iterator;
-
-    result << subexpr;
-    return true;
-  }
-
-
-  bool operator() (FirstPass* pass, Token& result)
-  {
-    if (pass->fToken == kSymbol) {
-      bool allowNormalExpr = true;
-
-      Token symToken = pass->fToken;
+    {
+      assert(pass->fToken == kIn);
+      Token inToken = pass->fToken;
       pass->nextToken();
 
-      Token type;
-      Token colonToken;
-
-      if (pass->fToken == kColon) {
-        colonToken = pass->fToken;
-        pass->nextToken();
-        SrcPos pos = pass->fToken.srcpos();
-        type = pass->parseTypeSpec(true);
-        if (!type.isSet()) {
-          errorf(pos, E_MissingType, "type expression expected");
-          type = Token(pos, kSymbol, "Any");
-        }
-        allowNormalExpr = false;
-      }
-
-      if (pass->fToken == kIn) {
-        return parseInCollClause(pass, result, symToken, colonToken, type);
-      }
-      else if (pass->fToken == kAssign) {
-        return parseExplicitClause(pass, result,
-                                   symToken, colonToken, type);
-      }
-      else {
-        Token first = pass->parseAccess(pass->parseSimpleType(symToken, true));
-        if (allowNormalExpr) {
-          OperatorType op1 = tokenTypeToOperator(pass->fToken.tokenType());
-          SrcPos op1Srcpos = pass->fToken.srcpos();
-
-          if (op1 != kOpInvalid) {
-            Token expr = pass->parseExprRec(first, op1, op1Srcpos);
-            if (expr.isSet()) {
-              result << expr;
-              return true;
-            }
-          }
-          else {
-            result << first;
-            return true;
-          }
-        }
-
-        error(pass->fToken.srcpos(), E_UnexpectedToken,
-              String("unexpected token in for clause (1): ") + pass->fToken.toString());
+      Token collToken = pass->parseExpr();
+      if (!collToken.isSet()) {
+        error(pass->fToken.srcpos(), E_MissingRHExpr,
+              String("unexpected token: ") + pass->fToken.toString());
         pass->scanUntilNextParameter();
-      }
-    }
-    else {
-      Token expr = pass->parseExpr();
-      if (expr.isSet()) {
-        result << expr;
         return true;
       }
 
-      error(pass->fToken.srcpos(), E_UnexpectedToken,
-            String("unexpected token in for clause (2): ") + pass->fToken.toString());
-      pass->scanUntilNextParameter();
+      Token subexpr = Token() << symToken;
+      if (colonToken.isSet() && type.isSet())
+        subexpr << colonToken << type;
+      subexpr << inToken << collToken;
+
+      result << subexpr;
+      return true;
     }
 
-    return true;
-  }
+
+    bool parseExplicitClause(FirstPass* pass, Token& result,
+                             const Token& symToken,
+                             const Token& colonToken,
+                             const Token& type)
+    {
+      assert(pass->fToken == kAssign);
+      Token assignToken = pass->fToken;
+      pass->nextToken();
+
+      Token iterator = pass->parseExpr();
+      if (!iterator.isSet()) {
+        error(pass->fToken.srcpos(), E_MissingRHExpr,
+              String("unexpected token: ") + pass->fToken.toString());
+        pass->scanUntilNextParameter();
+        return true;
+      }
+
+      Token subexpr = Token() << symToken;
+      if (colonToken.isSet() && type.isSet())
+        subexpr << colonToken << type;
+      subexpr << assignToken << iterator;
+
+      result << subexpr;
+      return true;
+    }
+
+
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      if (pass->fToken == kSymbol) {
+        bool allowNormalExpr = true;
+
+        Token symToken = pass->fToken;
+        pass->nextToken();
+
+        Token type;
+        Token colonToken;
+
+        if (pass->fToken == kColon) {
+          colonToken = pass->fToken;
+          pass->nextToken();
+          SrcPos pos = pass->fToken.srcpos();
+          type = pass->parseTypeSpec(true);
+          if (!type.isSet()) {
+            errorf(pos, E_MissingType, "type expression expected");
+            type = Token(pos, kSymbol, "Any");
+          }
+          allowNormalExpr = false;
+        }
+
+        if (pass->fToken == kIn) {
+          return parseInCollClause(pass, result, symToken, colonToken, type);
+        }
+        else if (pass->fToken == kAssign) {
+          return parseExplicitClause(pass, result,
+                                     symToken, colonToken, type);
+        }
+        else {
+          Token first = pass->parseAccess(pass->parseSimpleType(symToken, true));
+          if (allowNormalExpr) {
+            OperatorType op1 = tokenTypeToOperator(pass->fToken.tokenType());
+            SrcPos op1Srcpos = pass->fToken.srcpos();
+
+            if (op1 != kOpInvalid) {
+              Token expr = pass->parseExprRec(first, op1, op1Srcpos);
+              if (expr.isSet()) {
+                result << expr;
+                return true;
+              }
+            }
+            else {
+              result << first;
+              return true;
+            }
+          }
+
+          error(pass->fToken.srcpos(), E_UnexpectedToken,
+                String("unexpected token in for clause (1): ") + pass->fToken.toString());
+          pass->scanUntilNextParameter();
+        }
+      }
+      else {
+        Token expr = pass->parseExpr();
+        if (expr.isSet()) {
+          result << expr;
+          return true;
+        }
+
+        error(pass->fToken.srcpos(), E_UnexpectedToken,
+              String("unexpected token in for clause (2): ") + pass->fToken.toString());
+        pass->scanUntilNextParameter();
+      }
+
+      return true;
+    }
+  };
 };
 
 
@@ -3028,45 +3062,48 @@ FirstPass::parseUnit(const Token& defToken, bool isLocal)
 }
 
 
-struct heather::EnumItemParser
+namespace heather
 {
-  bool operator() (FirstPass* pass, Token& result)
+  struct EnumItemParser
   {
-    if (pass->fToken != kSymbol) {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected,
-             "expected enum item name");
-      pass->scanUntilBrace();
-      return true;
-    }
+    bool operator() (FirstPass* pass, Token& result)
+    {
+      if (pass->fToken != kSymbol) {
+        errorf(pass->fToken.srcpos(), E_SymbolExpected,
+               "expected enum item name");
+        pass->scanUntilBrace();
+        return true;
+      }
 
-    Token itemName = pass->fToken;
-    pass->nextToken();
-
-    TokenVector resultValue;
-    resultValue.push_back(itemName);
-
-    Token docString = pass->parseOptDocString();
-    if (docString.isSet())
-      resultValue.push_back(docString);
-
-    if (pass->fToken == kAssign) {
-      Token assignToken = pass->fToken;
+      Token itemName = pass->fToken;
       pass->nextToken();
 
-      Token value = pass->parseExpr();
-      if (value.isSet()) {
-        resultValue.push_back(assignToken);
-        resultValue.push_back(value);
+      TokenVector resultValue;
+      resultValue.push_back(itemName);
+
+      Token docString = pass->parseOptDocString();
+      if (docString.isSet())
+        resultValue.push_back(docString);
+
+      if (pass->fToken == kAssign) {
+        Token assignToken = pass->fToken;
+        pass->nextToken();
+
+        Token value = pass->parseExpr();
+        if (value.isSet()) {
+          resultValue.push_back(assignToken);
+          resultValue.push_back(value);
+        }
       }
+
+      if (resultValue.size() == 1)
+        result << resultValue[0];
+      else
+        result << (Token() << resultValue);
+
+      return true;
     }
-
-    if (resultValue.size() == 1)
-      result << resultValue[0];
-    else
-      result << (Token() << resultValue);
-
-    return true;
-  }
+  };
 };
 
 
@@ -3662,65 +3699,116 @@ FirstPass::replaceMatchBindings(TokenVector* result,
 
 //------------------------------------------------------------------------------
 
+namespace heather {
+
+  struct ParameterSyntaxMatcher : public RefCountable
+  {
+    virtual ~ParameterSyntaxMatcher() { }
+
+    virtual bool match(FirstPass* pass,
+                       const String& paramName,
+                       std::map<String, Token>* bindings)
+    {
+      return false;
+    }
+  };
+
+
+  struct ExprParamSyntaxMatcher : public ParameterSyntaxMatcher
+  {
+    virtual bool match(FirstPass* pass,
+                       const String& paramName,
+                       std::map<String, Token>* bindings)
+    {
+      SrcPos pos = pass->fToken.srcpos();
+      Token expr = pass->parseExpr();
+      if (!expr.isSet()) {
+        errorf(pos, E_MacroParamMismatch,
+               "Macro parameter %s requires expression",
+               (const char*)StrHelper(paramName));
+        return false;
+      }
+
+      bindings->insert(std::make_pair(paramName, expr));
+      return true;
+    }
+  };
+
+
+  struct NameParamSyntaxMatcher : public ParameterSyntaxMatcher
+  {
+    virtual bool match(FirstPass* pass,
+                       const String& paramName,
+                       std::map<String, Token>* bindings)
+    {
+      if (pass->fToken == kSymbol) {
+        bindings->insert(std::make_pair(paramName, pass->fToken));
+        pass->nextToken();
+        return true;
+      }
+
+      errorf(pass->fToken.srcpos(), E_MacroParamMismatch,
+             "Macro parameter %s requires identifier",
+             (const char*)StrHelper(paramName));
+      return false;
+    }
+  };
+
+
+  struct ParamParamSyntaxMatcher : public ParameterSyntaxMatcher
+  {
+    virtual bool match(FirstPass* pass,
+                       const String& paramName,
+                       std::map<String, Token>* bindings)
+    {
+      SrcPos pos = pass->fToken.srcpos();
+      FirstPass::ParamType expected = FirstPass::kPositional;
+      Token param = pass->parseParameter(&expected, false);
+
+      if (!param.isSet()) {
+        errorf(pos, E_MacroParamMismatch,
+               "Macro parameter %s requires parameter",
+               (const char*)StrHelper(paramName));
+        return false;
+      }
+
+      bindings->insert(std::make_pair(paramName, param));
+      return true;
+    }
+  };
+
+
+  struct ParamListParamSyntax : public ParameterSyntaxMatcher
+  {
+    virtual bool match(FirstPass* pass,
+                       const String& paramName,
+                       std::map<String, Token>* bindings)
+    {
+      return false;
+    }
+  };
+};
+
+
+typedef std::map<MacroParamType, Ptr<ParameterSyntaxMatcher> > ParamFuncMap;
+
 bool
-FirstPass::matchExprParamSyntax(const String& paramName,
-                                std::map<String, Token>* bindings)
+FirstPass::matchParameter(const String& paramName,
+                          MacroParamType type,
+                          std::map<String, Token>* bindings)
 {
-  SrcPos pos = fToken.srcpos();
-  Token expr = parseExpr();
-  if (!expr.isSet()) {
-    errorf(pos, E_MacroParamMismatch,
-           "Macro parameter %s requires expression",
-           (const char*)StrHelper(paramName));
-    return false;
+  static ParamFuncMap paramFuncMap;
+  if (paramFuncMap.empty()) {
+    paramFuncMap.insert(std::make_pair(kMacro_expr,      new ExprParamSyntaxMatcher));
+    paramFuncMap.insert(std::make_pair(kMacro_name,      new NameParamSyntaxMatcher));
+    paramFuncMap.insert(std::make_pair(kMacro_param,     new ParamParamSyntaxMatcher));
+    paramFuncMap.insert(std::make_pair(kMacro_paramlist, new ParamListParamSyntax));
   }
 
-  bindings->insert(std::make_pair(paramName, expr));
-  return true;
-}
+  ParamFuncMap::iterator it = paramFuncMap.find(type);
+  if (it != paramFuncMap.end())
+    return it->second->match(this, paramName, bindings);
 
-
-bool
-FirstPass::matchNameParamSyntax(const String& paramName,
-                               std::map<String, Token>* bindings)
-{
-  if (fToken == kSymbol) {
-    bindings->insert(std::make_pair(paramName, fToken));
-    nextToken();
-    return true;
-  }
-
-  errorf(fToken.srcpos(), E_MacroParamMismatch,
-         "Macro parameter %s requires identifier",
-         (const char*)StrHelper(paramName));
-  return false;
-}
-
-
-bool
-FirstPass::matchParamParamSyntax(const String& paramName,
-                                 std::map<String, Token>* bindings)
-{
-  SrcPos pos = fToken.srcpos();
-  ParamType expected = kPositional;
-  Token param = parseParameter(&expected, false);
-
-  if (!param.isSet()) {
-    errorf(pos, E_MacroParamMismatch,
-           "Macro parameter %s requires parameter",
-           (const char*)StrHelper(paramName));
-    return false;
-  }
-
-  bindings->insert(std::make_pair(paramName, param));
-  return true;
-}
-
-
-bool
-FirstPass::matchParamListParamSyntax(const String& paramName,
-                                     std::map<String, Token>* bindings)
-{
   return false;
 }
 
@@ -3728,6 +3816,7 @@ FirstPass::matchParamListParamSyntax(const String& paramName,
 bool
 FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
 {
+
   SyntaxTreeNode* node = syntaxTable->rootNode();
   assert(node != NULL);
 
@@ -3751,36 +3840,12 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
       if (followSet != NULL) {
         String paramName;
         MacroParamType macroPrmType = macroParamType(macroParam, &paramName);
-        switch (macroPrmType) {
-        case kMacro_expr:
-          if (!matchExprParamSyntax(paramName, &bindings))
-            return false;
+
+        if (matchParameter(paramName, macroPrmType, &bindings)) {
           node = followSet;
           continue;
-
-        case kMacro_name:
-          if (!matchNameParamSyntax(paramName, &bindings))
-            return false;
-          node = followSet;
-          continue;
-
-        case kMacro_param:
-          if (!matchParamParamSyntax(paramName, &bindings))
-            return false;
-          node = followSet;
-          continue;
-
-        case kMacro_paramlist:
-          if (!matchParamListParamSyntax(paramName, &bindings))
-            return false;
-          node = followSet;
-          continue;
-
-        case kMacro_body:
-          // TODO
-          // break;
-
-        default:
+        }
+        else {
           errorf(macroParam.srcpos(), E_MacroParamType,
                  "Unknown macro parameter type: %s",
                  (const char*)StrHelper(macroParam.toString()));
