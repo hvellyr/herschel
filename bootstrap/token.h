@@ -10,6 +10,7 @@
 #define bootstrap_token_h
 
 #include <vector>
+#include <map>
 
 #include "refcountable.h"
 #include "ptr.h"
@@ -343,6 +344,8 @@ namespace heather
 
   String operator+(const String& one, const Token& two);
 
+  String operator+(const String& one, const TokenVector& vect);
+  String operator+(const String& one, const std::map<String, Token>& bindings);
 
   //--------------------------------------------------------------------------
   // definitions of the reserved keywords

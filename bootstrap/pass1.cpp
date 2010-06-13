@@ -1264,11 +1264,12 @@ FirstPass::parseExprListUntilBrace(TokenVector* result,
       expr = parseWhen(!isLocal, kNonScopedDef);
     }
     else {
+      Token before = fToken;
       SrcPos startPos = fToken.srcpos();
       expr = parseExpr();
       if (!expr.isSet()) {
-        errorf(startPos, E_UnexpectedToken,
-               "unexpected token while scanning block");
+        error(startPos, E_UnexpectedToken,
+               String("unexpected token while scanning block: ") + before);
         return false;
       }
     }
@@ -1777,6 +1778,8 @@ FirstPass::parseAtomicExpr()
   case kKeyword:
   case kNilId:
   case kEofId:
+  case kSeqExpr:
+  case kNestedExpr:
     {
       Token t = fToken;
       nextToken();
