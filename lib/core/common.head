@@ -33,41 +33,41 @@
 interface core ("eyestep/heather 1.0:core")
 export public(*)
 
---! A union type as typically used to either return the number of
---! successful processed items or the end of the resource.  A typical usage
---! in code looks like
---!
---! @example
---! match(port.read(buffer, 0)) {
---!   e : Eof -> outln("reading done")
---!   n : Ordinal -> outln("%d items read" % #[n])
---! }
---! @end example
 def type OrdinalOrEof : &(Ordinal, Eof)
+    ~ A union type as typically used to either return the number of
+    successful processed items or the end of the resource.  A typical usage
+    in code looks like
 
---! A union type as typically used by find or lookup functions to either
---! return the index of an element or indicate failure.
+    @example
+    match(port.read(buffer, 0)) @{
+      | e : Eof -> outln("reading done")
+      | n : Ordinal -> outln("%d items read" % #[n])
+    @}
+    @end example ~
+
 def type OrdinalOrFalse : &(Ordinal, Bool == false)
+    ~ A union type as typically used by find or lookup functions to either
+    return the index of an element or indicate failure.~
 
---! A union type as typically used to refer to external resource as files
---! or URLs.
 def type StringOrUri : &(String, Uri)
+    ~ A union type as typically used to refer to external resource as files
+    or URLs.~
 
 
 ------------------------------------------------------------------------------
 -- Common exceptions
 ------------------------------------------------------------------------------
 
---! An @type{OutOfBoundsException} is typically raised when trying to
---! access (or writes) elements outside of the range of a container.
 def class OutOfBoundsException : Exception
+    ~ An @type{OutOfBoundsException} is typically raised when trying to
+    access (or writes) elements outside of the range of a container.~
 {
 }
 
 
---! A NilException is raised when code tries to dereference a @const{nil}
---! pointer.
 def class NilException : Exception
+    ~ A NilException is raised when code tries to dereference a @const{nil}
+    pointer.~
 {
 }
 

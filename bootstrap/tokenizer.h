@@ -82,7 +82,7 @@ namespace heather
     Token readSymbolOrOperator(bool acceptGenerics);
     Token readNumber(const SrcPos& startPos, int sign);
     Token readCharacter(const SrcPos& startPos, bool needsTerminator);
-    Token readString(const SrcPos& startPos);
+    Token readString(const SrcPos& startPos, int endChar, TokenType type);
     Token readNamedCharacter(const SrcPos& startPos, bool needsTerminator);
     Token readNumericCharacter(const SrcPos& startPos, bool needsTerminator);
     Token readSymbolCharacter(const SrcPos& startPos, bool needsTerminator);

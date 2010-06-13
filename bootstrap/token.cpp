@@ -328,6 +328,9 @@ namespace heather
       case kString:
         display(port, String("<lit type='str'>") + xmlEncode(fStrValue) + "</lit>");
         break;
+      case kDocString:
+        display(port, String("<lit type='docstr'>") + xmlEncode(fStrValue) + "</lit>");
+        break;
       case kKeyword:
         display(port, String("<lit type='keyw'>") + tokstr + "</lit>");
         break;
@@ -341,6 +344,7 @@ namespace heather
     {
       switch (fType) {
       case kString:     return String("\"") + fStrValue + "\"";
+      case kDocString:  return String("~") + fStrValue + "~";
       case kKeyword:    return String("#") + fStrValue;
       default:
         assert(0);
@@ -646,7 +650,6 @@ Token::operator<(const Token& other) const
       case kNilId:
       case kNotId:
       case kOnId:
-      case kOtherwiseId:
       case kReifyId:
       case kSelectId:
       case kThenId:
@@ -750,7 +753,6 @@ Token::toString() const
     case kNilId:       return String(MID_NilId);
     case kNotId:       return String(MID_NotId);
     case kOnId:        return String(MID_OnId);
-    case kOtherwiseId: return String(MID_OtherwiseId);
     case kReifyId:     return String(MID_ReifyId);
     case kSelectId:    return String(MID_SelectId);
     case kThenId:      return String(MID_ThenId);
@@ -835,6 +837,7 @@ Token::type() const
     return kPunct;
 
   case kString:                 // kLitExpr
+  case kDocString:
   case kChar:
   case kBool:
   case kInt:
@@ -863,7 +866,6 @@ Token::type() const
   case kNilId:
   case kNotId:
   case kOnId:
-  case kOtherwiseId:
   case kReifyId:
   case kSelectId:
   case kThenId:
@@ -1075,7 +1077,6 @@ Token::idValue() const
   case kNilId:
   case kNotId:
   case kOnId:
-  case kOtherwiseId:
   case kReifyId:
   case kSelectId:
   case kThenId:
@@ -1132,7 +1133,8 @@ Token::rationalValue() const
 bool
 Token::isImaginary() const
 {
-  if (type() != kLit && fType != kString && fType != kKeyword)
+  if (type() != kLit &&
+      fType != kString && fType != kKeyword && fType != kDocString)
     throw NotSupportedException(__FUNCTION__);
   return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIsImaginary;
 }
@@ -1141,7 +1143,8 @@ Token::isImaginary() const
 Token&
 Token::setIsImaginary(bool value)
 {
-  if (type() != kLit && fType != kString && fType != kKeyword)
+  if (type() != kLit &&
+      fType != kString && fType != kKeyword && fType != kDocString)
     throw NotSupportedException(__FUNCTION__);
   dynamic_cast<NumberTokenImpl*>(fImpl.obj())->fIsImaginary = value;
   return *this;
@@ -1151,7 +1154,7 @@ Token::setIsImaginary(bool value)
 String
 Token::stringValue() const
 {
-  if (fType != kString && fType != kKeyword)
+  if (fType != kString && fType != kKeyword && fType != kDocString)
     throw NotSupportedException(__FUNCTION__);
   return dynamic_cast<const StringTokenImpl*>(fImpl.obj())->fStrValue;
 }
@@ -1212,6 +1215,13 @@ bool
 Token::isString() const
 {
   return fType == kString;
+}
+
+
+bool
+Token::isDocString() const
+{
+  return fType == kDocString;
 }
 
 
@@ -1362,7 +1372,6 @@ Token::toPort(Port<Octet>* port) const
     case kNilId:
     case kNotId:
     case kOnId:
-    case kOtherwiseId:
     case kReifyId:
     case kSelectId:
     case kThenId:
@@ -1424,7 +1433,6 @@ Token::isCharOrUnitName() const
           fType == kNilId ||
           fType == kNotId ||
           fType == kOnId ||
-          fType == kOtherwiseId ||
           fType == kReifyId ||
           fType == kSelectId ||
           fType == kThenId ||
@@ -1487,6 +1495,7 @@ public:
     assert(Token(sp, kInt,      12345)          == Token(sp, kInt,      12345));
     assert(Token(sp, kChar,     0xac00)         == Token(sp, kChar,     0xac00));
     assert(Token(sp, kString,   "abc")          == Token(sp, kString,   "abc"));
+    assert(Token(sp, kDocString, "abc")         == Token(sp, kDocString, "abc"));
     assert(Token(sp, kSymbol,   "abc")          == Token(sp, kSymbol,   "abc"));
     assert(Token(sp, kDefId)                    == Token(sp, kDefId));
     assert(Token(sp, kRational, Rational(7, 4)) == Token(sp, kRational, Rational(7, 4)));
@@ -1508,11 +1517,13 @@ public:
     assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
     assert(Token(sp, kMacroParam, String("abc")).idValue() == String("abc"));
     assert(Token(sp, kString, String("abc")).stringValue() == String("abc"));
+    assert(Token(sp, kDocString, String("abc")).stringValue() == String("abc"));
     assert(Token(sp, kKeyword, String("abc")).stringValue() == String("abc"));
 
     assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
     assert(Token(sp, kMacroParam, "abc").idValue() == String("abc"));
     assert(Token(sp, kString, "abc").stringValue() == String("abc"));
+    assert(Token(sp, kDocString, "abc").stringValue() == String("abc"));
     assert(Token(sp, kKeyword, "abc").stringValue() == String("abc"));
     assert(Token(sp, kKeyarg, "abc").isKeyArg());
 

@@ -107,6 +107,7 @@ language.  It refers to version @value{VERSION}.
 * Expressions::                 Expressions
 * Program structure::           Program structure
 * Macros::                      Macros
+* Inline documentation::        Inline documentation
 * Syntax::                      Syntax
 * Concept Index::               Index of concepts
 @end menu
@@ -318,18 +319,18 @@ The following identifiers are reserved and have a special meaning:
 @verbatim
 AND       and       as        by        def       else      eof
 export    extend    false     for       Function  function  if
-import    in        isa       let       match     mod       module
-nil       not       on        OR        or        otherwise reify
+import    in        interface isa       let       match     mod
+module    nil       not       on        OR        or        reify
 select    then      true      when      where     while     XOR
 @end verbatim
 
 The following identifiers are predefined and used by the language
-specification.  The can be used as function and/or variable names
+specification.  They can be used as function and/or variable names
 under certain situation, but this is seldomly recommended@footnote{As
-an example where a reused is useful take the @code{class} identifier
--- it is at the same time used as @code{def} modifier (to define a
-class) and as the name of a function, which returns the implementing
-class for an object.}:
+an example where reusing predefined symbol can be useful take the
+@code{class} identifier -- it is at the same time used as @code{def}
+modifier (to define a class) and as the name of a function, which
+returns the implementing class for an object.}:
 
 @verbatim
 alias     char      class     config    const     enum      exit
@@ -345,10 +346,9 @@ sync      type      unit
 The following identifiers are reserved and handled as operators:
 
 @verbatim
-%    *    **   +    -    ->   ..   ...  /    ++
-<    <<   <=   <=>  <>   ==   >    >=   >>
-and  by   in   mod  or   AND  OR   XOR  isa
-as
+%    *    **   +    -    ->   ..   ...  /    ++   <    <<   <=
+<=>  <>   ==   >    >=   >>   and  by   in   mod  or   AND  OR
+XOR  isa  as
 @end verbatim
 
 Note that operators are really identifiers @emph{not} delimiters.
@@ -408,10 +408,11 @@ equally used for ``end of list'', or ``end of iterator'').  It is
 logically realized by the singleton instance of the class @code{Eof}.
 
 There's a special constant @code{unspecified} which is a singleton
-instance of the type @code{Unspecified}.  This value can not be compared
-or transformed.  Its sole purpose is to be returned from expressions or
-functions where no reasonable return value exists.@footnote{The
-@code{Unspecified} type can be compared to @code{void} in Java or C.}
+instance of the type @code{Unspecified}.  This value can not be
+compared or transformed.  Its sole purpose is to be returned from
+expressions or functions where no reasonable return value
+exists.@footnote{The effect of the @code{Unspecified} type can be
+compared to @code{void} in Java or C.}
 
 
 @c ....................................................................
@@ -454,7 +455,7 @@ functions where no reasonable return value exists.@footnote{The
 @section Keywords
 
 @findex # @r{(keyword notation)}
-@cindex Keywords
+@cindex keywords
 Keywords denote a global unique identity.  This holds true even if
 keywords are imported from a dynamic linked object (e.g.@ @acronym{DLL})
 which has been compiled and linked on a different machine.
@@ -1612,7 +1613,7 @@ declaration, but does not influence other declarations.
 @node Type Constraints, Union types, Implicit type parameters, Types
 @section Type Constraints
 
-@cindex Constraint types
+@cindex constraint types
 A @dfn{Constraint Type} is a type which is constrained by a certain
 subset of possible values.  Examples are numerical values that accept
 only specific value ranges, collections that accept only certain values,
@@ -1766,20 +1767,20 @@ Enumeration can be used to specialize methods.
 @example
 def enum Colors : Keyword
 @{
-  none   = #transparent,
-  red    = #red,
-  orange = #orange,
-  blue   = #blue,
-  green  = #green,
+  none   = #transparent
+  red    = #red
+  orange = #orange
+  blue   = #blue
+  green  = #green
   yellow = #yellow
 @}
 
 def enum MidiController : (Ordinal in 0 .. 127)
 @{
-  bank-select    = 0,
-  modulation     = 1,
-  breath         = 2,
-  foot-pedal     = 3,
+  bank-select    = 0
+  modulation     = 1
+  breath         = 2
+  foot-pedal     = 3
   ...
   poly-operation = 127
 @}
@@ -2661,7 +2662,7 @@ expressions}; the grouping of the statements in the example above is a
 
 @deffn Special select
 
-@findex otherwise
+@findex else
 @findex |
 A @code{select} expression has the form:
 
@@ -2670,7 +2671,7 @@ select (@r{[} @var{antecedent} @r{[} , @var{comparator}@r{]]}) @{
   | @var{test-1} -> @var{consequent-1}
   | @var{test-2} -> @var{consequent-2}
   @r{@dots{}}
-  | @r{[} otherwise -> @var{alternate} @r{]}
+  | @r{[} else @var{alternate} @r{]}
 @}
 @end example
 
@@ -2678,9 +2679,9 @@ The @var{antecedent} is compared to the tests @var{test-1},
 @var{test-2}, etc.@ using @var{comparator}.  The consequent for the
 first succeeding test is evaluated and its value becomes the return
 value of the complete @code{select} expression.  If none of the tests
-succeed the @var{alternate} expression to the (optional)
-@code{otherwise} is evaluated.  If there's no @code{otherwise} case the
-return value of the @code{select} expression is @code{unspecified}.
+succeed the @var{alternate} expression to the (optional) @code{else}
+case is evaluated.  If there's no @code{else} case the return value of
+the @code{select} expression is @code{unspecified}.
 
 If multiple test values should lead to the same consequent they can be
 given as comma separated values:
@@ -2703,7 +2704,7 @@ select (a) @{
             do-it
           else
             do-something-different()
-  | otherwise -> outln("nothing applies")
+  | else outln("nothing applies")
 @}
 @end example
 
@@ -2748,7 +2749,7 @@ given order is taken.  @var{id-n} is visible only inside of the
 consequent.
 
 There must only be one type case which is typed to @code{Any}; this
-acts as a `otherwise' case.
+acts as an `else' case.
 
 The evaluated consequent's value becomes the value of the complete
 expression.  If no type case matches (and there's no @code{Any} case)
@@ -2764,7 +2765,7 @@ block is left, either by unroll or by ``normal'' code flow.  Not that
 all handlers are actually inside the block for which they're declared.
 They can therefore access local bindings of the scope, etc.
 
-@cindex Exit handler
+@cindex exit handler
 @findex on exit
 @findex exit
 @findex on
@@ -2796,8 +2797,8 @@ def f(name)
 @end example
 @end deffn
 
-@cindex Catching exceptions
-@cindex Exceptions (Conditions)
+@cindex catching exceptions
+@cindex exceptions (Conditions)
 @findex on signal
 @findex signal
 @findex on
@@ -3518,7 +3519,7 @@ interface x11
 @node Conditional compiling, Program entry, Source code organization, Program structure
 @section Conditional compiling
 @findex when
-@cindex Conditional compiling
+@cindex conditional compiling
 
 Heather does not include a preprocessor, at least not from the base
 language's point of view.  It supports the conditional compilation of
@@ -3594,7 +3595,7 @@ properly nested.
 @node Program entry,  , Conditional compiling, Program structure
 @section Program main entry point
 @cindex main function
-@cindex Program main entry point
+@cindex program main entry point
 @findex app|main
 
 The compiler will start the program at a function called @code{main()}
@@ -3610,135 +3611,205 @@ def app|main()
 
 
 @c ====================================================================
-@node Macros, Syntax, Program structure, Top
+@node Macros, Inline documentation, Program structure, Top
 @chapter Macros
 
 @c todo
 @emph{To write}
 
-@display
-Different kind of macro styles:
-
-FUNCTION MACROS.
-
-Look exactly and are called like functions:
-
-  def macro min @{
-     @{ min (?a:expr, ?b:expr) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
-                                 if (tmp-a > tmp2) tmp-b else tmp-a @} @}
-  @}
-
-or in a local scope:
-
-  let macro min @{
-     @{ min (?a:expr, ?b:expr) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
-                                 if (tmp-a > tmp2) tmp-b else tmp-a @} @}
-  @}
-
-usage:
-
-  min(100, 200)
-
-
-DEFINITION MACROS
-
-Look like a define and/or let:
-
-  def macro func-variable @{
-      @{ def func-variable ?name:name = ?e:expr @} ->
-        @{ def ?name ## -var = ?e
-          def ?name () ?name ## -var
-          def ?name (value) @{ ?name ##-var = value
-                                 value @} @}
-      @{ let func-variable ?name:name = ?e:expr @} ->
-        @{ let ?name ## -var = ?e
-          let ?name () ?name ## -var
-          let ?name (value) @{ ?name ##-var = value
-                              value @} @}
-  @}
-
-
-STATEMENT MACROS
-
-Look like a statement like for, select, etc.
-
-  def macro unless @{
-      @{ unless (?test:expr) ?b:body @} -> @{ if (not ?test) ?b @}
-  @}
-
-
-  def macro with-open-file @{
-    @{ with-open-file (?stream:name, ?name:string) ?e:expr @} ->
-      @{
-        let ?stream = FileInputPort(?name, 'read)
-        on exit(value) @{
-          if (?stream.nil?) close(?stream)
-          value
-        @}
-
-        ?e
-      @}
-  @}
-
-
-Multiple variant patterns and sub-patterns:
-
-  def macro funcvar @{
-    @{ def funcvar ?name:name @} -> @{ def ?name ## -var = #nil
-                                  def ?name () ?name ## -var
-                                  def ?name (value) @{ ?name ## -var = value
-                                                      value @} @}
-    @{ def funcvar ?name:name = ?e:expr @} ->
-                                @{ def ?name ## -var = ?e
-                                  def ?name () ?name ## -var
-                                  def ?name (value) @{ ?name ## -var = value
-                                                      value @} @}
-  @}
-
-is identical to:
-
-  def macro funcvar @{
-    @{ def funcvar ?name:id #?opt-expr @} ->
-                      @{ def ?name ## -var = ?opt-expr
-                        def ?name () ?name ## -var
-                        def ?name (value) @{ ?name ## -var = value
-                                            value @} @}
-
-  opt-expr:
-    @{ @} -> @{ @}
-    @{ = ?e:expr @} ->  @{ ?e @}
-  @}
-
-
-Conditional evaluation of macros (meta programming):
-
-  def macro compile-only-if @{
-    @{ compile-only-if(?test:bool) ?e:expr @} ->
-      @{
-        #if (?test)
-          ?e
-      @}
-  @}
-
-
-  basic constructs like if, else, let can be set and evaluated during
-  macro-expansion time.  The form is then called: #if, #else, #let.  For
-  the example above ?test **must** be a constant (or another macro
-  expanding to a constant), since runtime code is not evaluated during
-  macro expansion of course.
-
-
-Optional macro parameters:
-
-  def macro xxx @{
-    @{ xxx(x: ?a = 5, y: ?b = 6) @} -> @{ yyy(m: ?a, n: ?b) @}
-    @{ xxx(args ...) @} -> @{ yyy(args) @}
-  @}
-@end display
-
+@c @display
+@c Different kind of macro styles:
+@c 
+@c FUNCTION MACROS.
+@c 
+@c Look exactly and are called like functions:
+@c 
+@c   def macro min @{
+@c      @{ min (?a:expr, ?b:expr) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
+@c                                  if (tmp-a > tmp2) tmp-b else tmp-a @} @}
+@c   @}
+@c 
+@c or in a local scope:
+@c 
+@c   let macro min @{
+@c      @{ min (?a:expr, ?b:expr) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
+@c                                  if (tmp-a > tmp2) tmp-b else tmp-a @} @}
+@c   @}
+@c 
+@c usage:
+@c 
+@c   min(100, 200)
+@c 
+@c 
+@c DEFINITION MACROS
+@c 
+@c Look like a define and/or let:
+@c 
+@c   def macro func-variable @{
+@c       @{ def func-variable ?name:name = ?e:expr @} ->
+@c         @{ def ?name ## -var = ?e
+@c           def ?name () ?name ## -var
+@c           def ?name (value) @{ ?name ##-var = value
+@c                                  value @} @}
+@c       @{ let func-variable ?name:name = ?e:expr @} ->
+@c         @{ let ?name ## -var = ?e
+@c           let ?name () ?name ## -var
+@c           let ?name (value) @{ ?name ##-var = value
+@c                               value @} @}
+@c   @}
+@c 
+@c 
+@c STATEMENT MACROS
+@c 
+@c Look like a statement like for, select, etc.
+@c 
+@c   def macro unless @{
+@c       @{ unless (?test:expr) ?b:body @} -> @{ if (not ?test) ?b @}
+@c   @}
+@c 
+@c 
+@c   def macro with-open-file @{
+@c     @{ with-open-file (?stream:name, ?name:string) ?e:expr @} ->
+@c       @{
+@c         let ?stream = FileInputPort(?name, 'read)
+@c         on exit(value) @{
+@c           if (?stream.nil?) close(?stream)
+@c           value
+@c         @}
+@c 
+@c         ?e
+@c       @}
+@c   @}
+@c 
+@c 
+@c Multiple variant patterns and sub-patterns:
+@c 
+@c   def macro funcvar @{
+@c     @{ def funcvar ?name:name @} -> @{ def ?name ## -var = #nil
+@c                                   def ?name () ?name ## -var
+@c                                   def ?name (value) @{ ?name ## -var = value
+@c                                                       value @} @}
+@c     @{ def funcvar ?name:name = ?e:expr @} ->
+@c                                 @{ def ?name ## -var = ?e
+@c                                   def ?name () ?name ## -var
+@c                                   def ?name (value) @{ ?name ## -var = value
+@c                                                       value @} @}
+@c   @}
+@c 
+@c is identical to:
+@c 
+@c   def macro funcvar @{
+@c     @{ def funcvar ?name:id #?opt-expr @} ->
+@c                       @{ def ?name ## -var = ?opt-expr
+@c                         def ?name () ?name ## -var
+@c                         def ?name (value) @{ ?name ## -var = value
+@c                                             value @} @}
+@c 
+@c   opt-expr:
+@c     @{ @} -> @{ @}
+@c     @{ = ?e:expr @} ->  @{ ?e @}
+@c   @}
+@c 
+@c 
+@c Conditional evaluation of macros (meta programming):
+@c 
+@c   def macro compile-only-if @{
+@c     @{ compile-only-if(?test:bool) ?e:expr @} ->
+@c       @{
+@c         #if (?test)
+@c           ?e
+@c       @}
+@c   @}
+@c 
+@c 
+@c   basic constructs like if, else, let can be set and evaluated during
+@c   macro-expansion time.  The form is then called: #if, #else, #let.  For
+@c   the example above ?test **must** be a constant (or another macro
+@c   expanding to a constant), since runtime code is not evaluated during
+@c   macro expansion of course.
+@c 
+@c 
+@c Optional macro parameters:
+@c 
+@c   def macro xxx @{
+@c     @{ xxx(x: ?a = 5, y: ?b = 6) @} -> @{ yyy(m: ?a, n: ?b) @}
+@c     @{ xxx(args ...) @} -> @{ yyy(args) @}
+@c   @}
+@c @end display
+@c 
 
 @c ====================================================================
-@node Syntax, Concept Index, Macros, Top
+@node Inline documentation, Syntax, Macros, Top
+@chapter Inline documentation
+
+@findex ~
+@cindex inline documentation
+@cindex documentation
+
+Code can be documentated in multiple ways; one way is to put comments
+into the source and header files.  These comments are ignored by the
+compiler however and are normally only useful for the maintainers or
+developers of the source code.  Users of a particular API expect a
+distilled and probably nicely formated documentation.
+
+In Heather definitions can be annotated by @dfn{document strings}.
+This inline documentation is parsed and checked for validity in normal
+compiler runs, but ignored for code generation.  It can be extracted
+however into a format which secondary tools can format into online or
+printed documentation.
+
+Document strings can be attached to the following definitions and
+declarations:
+
+@itemize
+@item @code{module} and @code{interface}
+@item function definitions
+@item variable definitions
+@item class and type definitions
+@item slot definitions
+@item alias definitions
+@item enum definitions
+@item enum value declarations
+@item measure and unit definitions
+@item character definitions
+@item macro definitions
+@end itemize
+
+The exact syntax of the document string is not part of this language
+specification.  Some example show how this looks like:
+
+@example
+def class Pair<Car, Cdr>(car: _car : Car = nil,
+                         cdr: _cdr : Cdr = nil)
+    ~ Simple LISP like pair/list implementation.
+
+    You can simulate the basic lisp style @@code@{(cons a b)@} in
+    heather with @@code@{Pair(a, b)@}.
+
+    @@author gck
+    @@version 1.0 ~
+@{
+  def slot car : Car
+      ~ The left side of a cell. ~
+      = _car ; public
+  def slot cdr : Cdr
+      ~ The right side of a cell. ~
+      = _cdr ; public
+@}
+
+def alias StringCell
+    ~ A Pair defined for string lists.
+    @@deprecated ~
+    = Pair<String, _>
+
+def generic for-each(cltn @@ 'C, func : ForEachVisitor<T>) : 'C
+    where C isa Collection<T> ...
+    ~ Apply @@var@{functor@} on ach contained element in @@var@{cltn@}.
+    @@returns @@var@{cltn@} ~
+@end example
+
+@c ====================================================================
+@node Syntax, Concept Index, Inline documentation, Top
 @appendix Syntax
 
 @menu
@@ -3870,10 +3941,12 @@ missing the module extends until the end of the file.}
 @smallformat
 @verbatim
 module-stmt     := `module' mod-name [ `(' PUBLIC-ID `)' ]
+                   [ DOCSTRING ]
                    [ mod-decls ]
 mod-name        := SYMBOL
 
 interf-stmt     := `interface' mod-name [ `(' PUBLIC-ID `)' ]
+                   [ DOCSTRING ]
                    [ mod-decls ]
 
 mod-decls       := `{' { declaration } `}'
@@ -3897,7 +3970,9 @@ like local, global, closure definition, etc.}
 func-decl       := [ `generic' ] IDENTIFIER fundef-clause
 
 func-signature  := `(' fun-param-list `)' [ `:' return-type ]
-fundef-clause   := func-signature [ reify-decl ] [ generics-const ] fun-body
+fundef-clause   := func-signature [ reify-decl ] [ generics-const ]
+                   [ DOCSTRING ]
+                   fun-body
 
 fun-param-list  := [ fun-param { `,' fun-param } ]
 
@@ -3923,15 +3998,17 @@ fun-impl        := expr-list
 
 @smallformat
 @verbatim
-vardef-clause   := vardef-bindings `=' varinit-value
+vardef-clause   := vardef-bindings [ `=' varinit-value ]
 vardef-bindings := vardef-binding { `,' vardef-binding } [ rest-ind ]
 rest-ind        := `...'
 vardef-binding  := [ `const' ] var-name [ `:' type-clause ]
+                   [ DOCSTRING ]
 
 var-name        := SYMBOL
 varinit-value   := expression
 
 fluiddef-clause := `fluid' var-name [ `:' type-clause ]
+                   [ DOCSTRING ]
                    `=' varinit-value
 @end verbatim
 @end smallformat
@@ -3943,13 +4020,17 @@ fluiddef-clause := `fluid' var-name [ `:' type-clause ]
 classdef-clause := `class' type-name
                    [ generics-spec ] [ ctor-clause ] [ `:' inheritance ]
                    [ generics-const ]
+                   [ DOCSTRING ]
                    [ `{' { slot-def } { protocol-decl } `}' ]
 typedef-clause  := `type' type-name
                    [ generics-spec ] [ `:' inheritance ]
                    [ generics-const ]
+                   [ DOCSTRING ]
                    [ `{' { protocol-decl } `}' ]
 
-aliasdef-clause := `alias' type-name [ generics-spec ] `=' type-clause
+aliasdef-clause := `alias' type-name [ generics-spec ]
+                   [ DOCSTRING ]
+                   `=' type-clause
 @end verbatim
 @end smallformat
 
@@ -3981,6 +4062,7 @@ generics-param  := type-name
 @smallformat
 @verbatim
 slot-def        := `def' `slot' slot-name [ `:' type-clause ]
+                   [ DOCSTRING ]
                    [ `=' slotinit-value ] [ `;' slot-annos ]
 slot-name       := SYMBOL
 slotinit-value  := expression
@@ -4013,10 +4095,13 @@ values.}
 @smallformat
 @verbatim
 enumdef-clause  := `enum' enum-name [ `:' base-type ]
-                   `{' enum-value-spec { `,' enum-value-spec } `}'
+                   [ DOCSTRING ]
+                   `{' enum-value-spec { enum-value-spec } `}'
 enum-name       := type-name
 base-type       := type-clause
-enum-value-spec := enum-name [ `=' const-value ]
+enum-value-spec := enum-name
+                   [ DOCSTRING ]
+                   [ `=' const-value ]
 enum-name       := SYMBOL
 @end verbatim
 @end smallformat
@@ -4030,6 +4115,7 @@ accompanied by related unit declarations.}
 @verbatim
 measure-clause  := `measure' type-name
                    `(' UNIT-TAG `)' `:' inheritance
+                   [ DOCSTRING ]
 @end verbatim
 @end smallformat
 
@@ -4053,7 +4139,9 @@ derived-unittag := UNIT-TAG
 character names.}
 @smallformat
 @verbatim
-char-clause     := `char' CHAR-NAME = int-number
+char-clause     := `char' CHAR-NAME
+                   [ DOCSTRING ]
+                   `=' int-number
 @end verbatim
 @end smallformat
 
@@ -4097,7 +4185,9 @@ only it's outer syntax production is given, for details of the pattern
 and replacement form see @ref{Macros}.}
 @smallformat
 @verbatim
-macro-clause    := `macro' macro-name `{' { macro-pattern } `}'
+macro-clause    := `macro' macro-name
+                   [ DOCSTRING ]
+                   `{' { macro-pattern } `}'
 macro-pattern   := `{' pattern-def `}' `->' `{' rplc-text `}'
 pattern-def     := { any token }
 rplc-text       := { any token }
@@ -4308,7 +4398,7 @@ select-expr     := `select' `(' test-expr [ `,' select-comptor ] `)'
 select-comptor  := expression
 select-tests    := { `|' select-test } 
 select-test     := constants `->' consequent 
-                |  `otherwise' alternate
+                |  `else' alternate
 
 constants       := constant { `,' constant }
 
@@ -4451,6 +4541,16 @@ escaped-char    := `\' CHAR-ID `;'
 keyword         := `#' SYMBOL
 
 boolean         := `false' | `true'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The docstring is an embedded documentation attached to definitions.}
+@smallformat
+@verbatim
+docstring       := `~' { ANY-DOCCHAR | ESCAPED-CHAR } `~'
+any-docchar     := any char except for `~'
 @end verbatim
 @end smallformat
 

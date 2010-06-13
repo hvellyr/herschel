@@ -1,4 +1,4 @@
--- This file is part of the heather package 
+-- This file is part of the heather package
 --
 -- Copyright (c) 2006, 2007, 2008 Gregor Klinke
 -- All rights reserved.
@@ -52,10 +52,10 @@ import "core/sliceable.head"
 
 def alias ForEachVisitor<T> = Function(elt : T) : Bool
 
---! @code{Collection} is the base type for all collection classes in the
---! heather collection framework.  It provides an API of implementation
---! independant functionality available for each container class
 def type Collection<T>
+    ~ Base type for all collection classes in the heather collection
+    framework.  It provides an API of implementation independant
+    functionality available for each container class.~
 {
   def generic add-all!(cltn @ 'C, other @ 'X) : 'C
       where C isa Collection<T> ...
@@ -66,61 +66,62 @@ def type Collection<T>
   def generic remove-all!(cltn @ 'C, coll @ 'X) : 'C
       where C isa Collection<T> ...
 
-  --! Returns the number of contained elements of @var{cltn}
   def generic num-items(cltn @ 'C) : Ordinal
       where C isa Collection<T> ...
+      ~ Returns the number of contained elements of @var{cltn}.~
 
-  --! Indicates whether @var{cltn} is empty, i.e. does not contain any element
   def generic empty?(cltn @ 'C) : Bool
       where C isa Collection<T> ...
+      ~ Indicates whether @var{cltn} is empty, i.e. does not contain
+      any element.~
 
-  --! Removes all contained elements from @var{self}
-  --!
-  --! => @var{cltn}
   def generic empty!(cltn @ 'C) : 'C
       where C isa Collection<T> ...
+      ~ Removes all contained elements from @var{self}
 
-  --! Indicates whether @var{cltn} contains the element @var{elt}.
-  --!
-  --! @var{elt} is compared to each contained element using
-  --!
-  --! @example
-  --! equal(contained-element, @var{elt})
-  --! @end example
+      @returns @var{cltn}~
+
   def generic contains?(cltn @ 'C, elt @ T) : Bool
       where C isa Collection<T> ...
+      ~ Indicates whether @var{cltn} contains the element @var{elt}.
 
-  --! Adds @var{elt} to @var{cltn}
-  --!
-  --! It is implementation dependant what happens when @var{elt} is already
-  --! contained in @var{cltn}.
-  --!
-  --! => @var{cltn}
+      @var{elt} is compared to each contained element using
+
+      @example
+      equal(contained-element, @var{elt})
+      @end example ~
+
   def generic add!(cltn @ 'C, elt @ T) : 'C
       where C isa Collection<T> ...
+      ~ Adds @var{elt} to @var{cltn}
 
-  --! Remove @var{elt} from @var{cltn}
-  --!
-  --! The method ignore silently if @var{elt} is not contained in
-  --! @var{cltn} at all.
-  --!
-  --! => @var{cltn}
+      It is implementation dependant what happens when @var{elt} is already
+      contained in @var{cltn}.
+
+      @returns @var{cltn} ~
+
   def generic remove!(cltn @ 'C, elt @ T) : 'C
       where C isa Collection<T> ...
+      ~ Remove @var{elt} from @var{cltn}
 
-  --! Returns an iterator over the contained elements in @var{cltn}
-  --!
-  --! The order of elements delivered by the returned iterator dependants
-  --! on the algorithm used by @var{cltn}.
+      The method ignore silently if @var{elt} is not contained in
+      @var{cltn} at all.
+
+      @returns @var{cltn} ~
+
   def generic iterator(cltn @ 'C) : Iterator<T>
       where C isa Collection<T> ...
+      ~ Returns an iterator over the contained elements in @var{cltn}
+
+      The order of elements delivered by the returned iterator dependants
+      on the algorithm used by @var{cltn}. ~
 
 
-  --! Apply @var{functor} on ach contained element in @var{cltn}
-  --!
-  --! => @var{cltn}
   def generic for-each(cltn @ 'C, func : ForEachVisitor<T>) : 'C
       where C isa Collection<T> ...
+      ~ Apply @var{functor} on ach contained element in @var{cltn}
+
+      @returns @var{cltn} ~
 }
 
 ------------------------------------------------------------------------------

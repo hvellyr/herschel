@@ -27,6 +27,7 @@ static bool sIsPass2Tracing = false;
 static bool sIsImportFileTracing = false;
 static bool sIsMacroTracing = false;
 static bool sDontImport = false;
+static bool sShouldIgnoreDocStrings = true;
 static String sOutdir;
 static Ptr<ConfigVarRegistry> sConfigVarRegistry;
 
@@ -160,10 +161,22 @@ Properties::test_setDontImport(bool value)
   sDontImport = value;
 }
 
-
 bool
 Properties::test_dontImport()
 {
   return sDontImport;
 }
 #endif
+
+
+bool
+Properties::shouldIgnoreDocStrings()
+{
+  return sShouldIgnoreDocStrings;
+}
+
+void
+Properties::setShouldIgnoreDocStrings(bool value)
+{
+  sShouldIgnoreDocStrings = value;
+}

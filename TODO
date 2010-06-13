@@ -1,6 +1,5 @@
 -*-org-*-
 
-
 Language and ideas:
 
   - write up about module/interface.  Review import, export, module, etc.
@@ -66,7 +65,8 @@ Bootstrap compiler
     - access values from enums as Enum::item
 
     - extend macro parameter types (like ?a:paramlist, ?a:param)
-    
+
+    - docstring for macros
 
   continue with pexpreval (add the missing operators)
 

@@ -42,6 +42,9 @@ namespace heather
     static void test_setDontImport(bool value);
     static bool test_dontImport();
 #endif
+
+    static bool shouldIgnoreDocStrings();
+    static void setShouldIgnoreDocStrings(bool value);
   };
 };                              // namespace
 

@@ -8,5 +8,5 @@ def f(a)
               outln("x")
               return(22)
             }
-    | otherwise -> outln("nothing applies")
+    | else outln("nothing applies")
   }

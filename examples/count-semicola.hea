@@ -69,8 +69,7 @@ def app|main(args @ String[])
              let file = args[1]
              outln("%s: %d" % #[file, count-semicola(file)])
            }
-    | otherwise ->
-           {
+    | else {
              outln(port: io|stderr,
                    "Usage: count-semicola.hea FILE")
            }

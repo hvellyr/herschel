@@ -33,12 +33,12 @@
 module core ("eyestep/heather 1.0:core")
 export public(*)
 
---! Comparing sliceables returns zero if the two arrays are identical,
---! otherwise returns the comparison result between the first two differing
---! elements.  Zero-length arrays are always identical.
 def compare(one @ Sliceable<Ordinal, 'T>, two @ Sliceable<Ordinal, 'T>) : Int
     reify (one @ 'T[], two @ 'T[]) : Int,
           (one @ 'T[], two @ Slice<Ordinal, 'T>) : Int
+    ~ Comparing sliceables returns zero if the two arrays are identical,
+    otherwise returns the comparison result between the first two differing
+    elements.  Zero-length arrays are always identical.~
   let n = one.num-items
   if (n == two.num-items) {
     for (i : Ordinal = 0 then i + 1 while i < n)

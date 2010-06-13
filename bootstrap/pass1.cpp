@@ -10,6 +10,7 @@
 
 #include "errcodes.h"
 #include "log.h"
+#include "macro.h"
 #include "parser.h"
 #include "pass1.h"
 #include "properties.h"
@@ -17,7 +18,6 @@
 #include "tokeneval.h"
 #include "tokenizer.h"
 #include "valuesaver.h"
-#include "macro.h"
 
 
 //----------------------------------------------------------------------------
@@ -243,6 +243,9 @@ FirstPass::parseModule(bool isModule)
       modExpr = Token() << tagToken
                         << modName;
 
+    Token docString = parseOptDocString();
+    if (docString.isSet())
+      modExpr << docString;
 
     if (fToken == kBraceOpen) {
       Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
@@ -1321,17 +1324,21 @@ FirstPass::parseUnaryOp(const Token& inOpToken)
 class heather::BasePatternParser
 {
 protected:
-  TokenVector parseConsequent(FirstPass* pass)
+  TokenVector parseConsequent(FirstPass* pass, bool mapToReq)
   {
     TokenVector result;
 
-    assert(pass->fToken == kMapTo);
-    Token mapToToken = pass->fToken;
-    pass->nextToken();
+    Token mapToToken;
+    if (mapToReq) {
+      assert(pass->fToken == kMapTo);
+      mapToToken = pass->fToken;
+      pass->nextToken();
+    }
 
     Token body = pass->parseExpr();
     if (body.isSet()) {
-      result.push_back(mapToToken);
+      if (mapToReq)
+        result.push_back(mapToToken);
       result.push_back(body);
     }
     return result;
@@ -1342,7 +1349,7 @@ protected:
 struct heather::SelectPatternParser : public BasePatternParser
 {
   SelectPatternParser()
-    : fOtherwiseSeen(false)
+    : fElseSeen(false)
   {}
 
   bool operator() (FirstPass* pass, Token& result)
@@ -1356,28 +1363,21 @@ struct heather::SelectPatternParser : public BasePatternParser
     Token pipeToken = pass->fToken;
     pass->nextToken();
 
-    if (pass->fToken == kOtherwiseId) {
+    if (pass->fToken == kElseId) {
       bool ignore = false;
-      Token otherwiseToken = pass->fToken;
+      Token elseToken = pass->fToken;
 
-      if (fOtherwiseSeen) {
+      if (fElseSeen) {
         errorf(pass->fToken.srcpos(), E_RedefinedPattern,
-               "'otherwise' pattern redefined");
+               "'else' pattern redefined");
         ignore = true;
       }
-      fOtherwiseSeen = true;
+      fElseSeen = true;
       pass->nextToken();
 
-      if (pass->fToken != kMapTo) {
-        errorf(pass->fToken.srcpos(), E_BadPatternList,
-               "expected '->'");
-        pass->scanUntilBrace();
-        return false;
-      }
-
-      TokenVector consq = parseConsequent(pass);
+      TokenVector consq = parseConsequent(pass, false);
       if (!ignore && !consq.empty())
-        result << ( Token() << pipeToken << otherwiseToken << consq );
+        result << ( Token() << pipeToken << elseToken << consq );
     }
     else {
       TokenVector pattern;
@@ -1408,7 +1408,7 @@ struct heather::SelectPatternParser : public BasePatternParser
         }
       }
 
-      TokenVector consq = parseConsequent(pass);
+      TokenVector consq = parseConsequent(pass, true);
       if (!pattern.empty() && !consq.empty()) {
         result << ( Token() << pipeToken << ( pattern.size() == 1
                                               ? pattern[0]
@@ -1420,7 +1420,7 @@ struct heather::SelectPatternParser : public BasePatternParser
     return true;
   }
 
-  bool fOtherwiseSeen;
+  bool fElseSeen;
 };
 
 
@@ -1501,7 +1501,7 @@ struct heather::MatchPatternParser : public BasePatternParser
       return false;
     }
 
-    TokenVector consq = parseConsequent(pass);
+    TokenVector consq = parseConsequent(pass, true);
     if (varToken.isSet() && colonToken.isSet() &&
         matchType.isSet() && !consq.empty())
       result << ( Token()
@@ -2286,6 +2286,8 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
     }
   }
 
+  Token docString = parseOptDocString();
+
   Token initExpr;
   if (fToken == kAssign) {
     assignToken = fToken;
@@ -2327,6 +2329,9 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
     }
   }
 
+  if (docString.isSet())
+    vardefExpr << docString;
+
   if (initExpr.isSet())
     vardefExpr << assignToken << initExpr;
 
@@ -2350,6 +2355,9 @@ FirstPass::parseCharDef(const Token& defToken)
                           : Token(fToken.srcpos(), kSymbol, fToken.toString()) );
 
   nextToken();
+
+  Token docString = parseOptDocString();
+
   Token assignToken = fToken;
   if (fToken != kAssign) {
     errorf(fToken.srcpos(), E_DefNoInitValue, "expected '='");
@@ -2382,9 +2390,14 @@ FirstPass::parseCharDef(const Token& defToken)
                                            codePoint);
     return Token();
   }
-  else
-    return Token() << defToken << tagToken << charNameToken
-                   << assignToken << codePointToken;
+  else {
+    Token result = Token() << defToken << tagToken << charNameToken;
+    if (docString.isSet())
+      result << docString;
+
+    result << assignToken << codePointToken;
+    return result;
+  }
 }
 
 
@@ -2511,11 +2524,16 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 
     SrcPos bodyPos = fToken.srcpos();
     Token body;
+    Token docString;
     if (fToken == kEllipsis) {
       body = fToken;
       nextToken();
+
+      docString = parseOptDocString();
     }
     else {
+      docString = parseOptDocString();
+
       if (isLocal) {
         body = parseExpr();
         if (!body.isSet()) {
@@ -2541,6 +2559,9 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 
     if (whereClause.isSet())
       result << whereClause;
+    
+    if (docString.isSet())
+      result << docString;
 
     result << body;
 
@@ -2640,6 +2661,11 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
                   "alias-params");
   }
 
+  Token whereClause;
+  if (fToken == kWhereId)
+    whereClause = parseWhereClause();
+
+  Token docString = parseOptDocString();
 
   if (fToken != kAssign) {
     errorf(fToken.srcpos(), E_AssignExpected, "expected '='");
@@ -2659,8 +2685,29 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
                          << symToken;
   if (generics.isSet())
     result << generics;
+
+  if (whereClause.isSet())
+    result << whereClause;
+
+
+  if (docString.isSet())
+    result << docString;
+
   result << assignToken << type;
   return result;
+}
+
+
+Token
+FirstPass::parseOptDocString()
+{
+  Token docString;
+  if (fToken == kDocString) {
+    if (!Properties::shouldIgnoreDocStrings())
+      docString = fToken;
+    nextToken();
+  }
+  return docString;
 }
 
 
@@ -2731,6 +2778,8 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
   if (fToken == kWhereId)
     whereClause = parseWhereClause();
 
+  Token docString = parseOptDocString();
+
   Token requiredProtocol;
   if (fToken == kBraceOpen) {
     requiredProtocol = parseTopOrExprList(true, (isClass
@@ -2751,6 +2800,9 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 
   if (whereClause.isSet())
     result << whereClause;
+
+  if (docString.isSet())
+    result << docString;
 
   if (requiredProtocol.isSet())
     result << requiredProtocol;
@@ -2785,6 +2837,8 @@ FirstPass::parseSlotDef(const Token& defToken)
       isaType = Token(fToken.srcpos(), kSymbol, "Any");
     }
   }
+
+  Token docString = parseOptDocString();
 
   Token assignToken;
   Token initExpr;
@@ -2833,6 +2887,8 @@ FirstPass::parseSlotDef(const Token& defToken)
   Token slotDefToken = Token() << defToken << tagToken << symToken;
   if (colonToken.isSet() && isaType.isSet())
     slotDefToken << colonToken << isaType;
+  if (docString.isSet())
+    slotDefToken << docString;
   if (assignToken.isSet() && initExpr.isSet())
     slotDefToken << assignToken << initExpr;
   if (semiToken.isSet() && !annotations.empty())
@@ -2895,9 +2951,15 @@ FirstPass::parseMeasure(const Token& defToken, bool isLocal)
     isaType = Token(fToken.srcpos(), kSymbol, "Any");
   }
 
-  return Token() << defToken << tagToken << symToken
-                 << (Token(paranPos, kParanOpen, kParanClose) << unitToken)
-                 << colonToken << isaType;
+  Token docString = parseOptDocString();
+
+  Token result = Token() << defToken << tagToken << symToken
+                         << (Token(paranPos, kParanOpen, kParanClose) << unitToken)
+                         << colonToken << isaType;
+  if (docString.isSet())
+    result << docString;
+
+  return result;
 }
 
 
@@ -2938,6 +3000,8 @@ FirstPass::parseUnit(const Token& defToken, bool isLocal)
     return scanUntilTopExprAndResume();
   }
 
+  Token docString = parseOptDocString();
+
   SrcPos bodyPos = fToken.srcpos();
   Token body = parseExpr();
   if (!body.isSet()) {
@@ -2945,10 +3009,15 @@ FirstPass::parseUnit(const Token& defToken, bool isLocal)
     return Token();
   }
 
-  return Token() << defToken << tagToken
-                 << newUnitToken << mapToToken << refUnitToken
-                 << signature.children()
-                 << body;
+  Token result = Token() << defToken << tagToken
+                         << newUnitToken << mapToToken << refUnitToken;
+  if (docString.isSet())
+    result << docString;
+
+  result << signature.children()
+         << body;
+
+  return result;
 }
 
 
@@ -2959,29 +3028,35 @@ struct heather::EnumItemParser
     if (pass->fToken != kSymbol) {
       errorf(pass->fToken.srcpos(), E_SymbolExpected,
              "expected enum item name");
-      pass->scanUntilNextParameter(kBraceClose);
+      pass->scanUntilBrace();
       return true;
     }
 
     Token itemName = pass->fToken;
     pass->nextToken();
 
-    TokenVector enumValue;
+    TokenVector resultValue;
+    resultValue.push_back(itemName);
+
+    Token docString = pass->parseOptDocString();
+    if (docString.isSet())
+      resultValue.push_back(docString);
+
     if (pass->fToken == kAssign) {
       Token assignToken = pass->fToken;
       pass->nextToken();
 
       Token value = pass->parseExpr();
       if (value.isSet()) {
-        enumValue.push_back(assignToken);
-        enumValue.push_back(value);
+        resultValue.push_back(assignToken);
+        resultValue.push_back(value);
       }
     }
 
-    if (enumValue.empty())
-      result << itemName;
+    if (resultValue.size() == 1)
+      result << resultValue[0];
     else
-      result << ( Token() << itemName << enumValue );
+      result << (Token() << resultValue);
 
     return true;
   }
@@ -3015,6 +3090,8 @@ FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
     }
   }
 
+  Token docString = parseOptDocString();
+
   if (fToken != kBraceOpen) {
     errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
     return scanUntilTopExprAndResume();
@@ -3022,12 +3099,14 @@ FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
 
   Token items = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
   parseSequence(EnumItemParser(),
-                kBraceOpen, kBraceClose, true, E_BadEnumItemList,
+                kBraceOpen, kBraceClose, false, E_BadEnumItemList,
                 items, "enum-items");
 
   Token enumDefToken = Token() << defToken << tagToken << enumToken;
   if (colonToken.isSet() && isaType.isSet())
     enumDefToken << colonToken << isaType;
+  if (docString.isSet())
+    enumDefToken << docString;
   enumDefToken << items;
 
   return enumDefToken;
