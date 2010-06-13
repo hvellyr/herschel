@@ -55,6 +55,12 @@ namespace heather
       kInClassDef
     };
 
+    enum ParamType {
+      kPositional,
+      kNamed,
+      kRest
+    };
+
     Token parseTop(ScopeType scope);
     Token parseModule(bool isModule);
     Token parseExport();
@@ -220,6 +226,12 @@ namespace heather
                               std::map<String, Token>* bindings);
     bool matchNameParamSyntax(const String& paramName,
                               std::map<String, Token>* bindings);
+    bool matchParamParamSyntax(const String& paramName,
+                               std::map<String, Token>* bindings);
+    bool matchParamListParamSyntax(const String& paramName,
+                                   std::map<String, Token>* bindings);
+
+    Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 
     //-------- data members
 

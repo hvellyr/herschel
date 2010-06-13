@@ -60,6 +60,7 @@ namespace heather
   {
   public:
     InternalTokenPort(const std::list<Token>& tokens);
+    InternalTokenPort(const TokenVector& tokens);
 
     virtual bool isOpen() const;
     virtual bool isEof() const;

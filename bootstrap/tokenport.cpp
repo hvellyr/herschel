@@ -104,6 +104,12 @@ InternalTokenPort::InternalTokenPort(const std::list<Token>& tokens)
 }
 
 
+InternalTokenPort::InternalTokenPort(const TokenVector& tokens)
+{
+  fTokens.assign(tokens.begin(), tokens.end());
+}
+
+
 bool
 InternalTokenPort::isOpen() const
 {

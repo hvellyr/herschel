@@ -272,7 +272,17 @@ heather::macroParamType(const Token& token, String* paramName)
       return kMacro_expr;
     else if (type == String("name"))
       return kMacro_name;
-    if (type == String("body"))
+    else if (type == String("param"))
+      return kMacro_param;
+    else if (type == String("pos-param"))
+      return kMacro_posParam;
+    else if (type == String("named-param"))
+      return kMacro_namedParam;
+    else if (type == String("rest-param"))
+      return kMacro_restParam;
+    else if (type == String("paramlist"))
+      return kMacro_paramlist;
+    else if (type == String("body"))
       return kMacro_body;
   }
   return kMacro_unknown;
