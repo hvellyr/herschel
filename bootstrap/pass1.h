@@ -216,6 +216,10 @@ namespace heather
     Token findReplaceToken(const Token& token,
                            const std::map<String, Token>& bindings);
 
+    bool matchExprParamSyntax(const String& paramName,
+                              std::map<String, Token>* bindings);
+    bool matchNameParamSyntax(const String& paramName,
+                              std::map<String, Token>* bindings);
 
     //-------- data members
 

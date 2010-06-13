@@ -3650,6 +3650,41 @@ FirstPass::replaceMatchBindings(TokenVector* result,
 //------------------------------------------------------------------------------
 
 bool
+FirstPass::matchExprParamSyntax(const String& paramName,
+                                std::map<String, Token>* bindings)
+{
+  SrcPos pos = fToken.srcpos();
+  Token expr = parseExpr();
+  if (!expr.isSet()) {
+    errorf(pos, E_MacroParamMismatch,
+           "Macro parameter %s requires expression",
+           (const char*)StrHelper(paramName));
+    return false;
+  }
+
+  bindings->insert(std::make_pair(paramName, expr));
+  return true;
+}
+
+
+bool
+FirstPass::matchNameParamSyntax(const String& paramName,
+                               std::map<String, Token>* bindings)
+{
+  if (fToken == kSymbol) {
+    bindings->insert(std::make_pair(paramName, fToken));
+    nextToken();
+    return true;
+  }
+
+  errorf(fToken.srcpos(), E_MacroParamMismatch,
+         "Macro parameter %s requires identifier",
+         (const char*)StrHelper(paramName));
+  return false;
+}
+
+
+bool
 FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
 {
   SyntaxTreeNode* node = syntaxTable->rootNode();
@@ -3677,38 +3712,16 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
         MacroParamType macroPrmType = macroParamType(macroParam, &paramName);
         switch (macroPrmType) {
         case kMacro_expr:
-          {
-            SrcPos pos = fToken.srcpos();
-            Token expr = parseExpr();
-            if (!expr.isSet()) {
-              errorf(pos, E_MacroParamMismatch,
-                     "Macro parameter %s requires expression",
-                     (const char*)StrHelper(macroParam.toString()));
-              return false;
-            }
-
-            bindings.insert(std::make_pair(paramName, expr));
-            node = followSet;
-            continue;
-          }
-          break;
+          if (!matchExprParamSyntax(paramName, &bindings))
+            return false;
+          node = followSet;
+          continue;
 
         case kMacro_name:
-          {
-            if (fToken == kSymbol) {
-              bindings.insert(std::make_pair(paramName, fToken));
-              node = followSet;
-              nextToken();
-              continue;
-            }
-            else {
-              errorf(fToken.srcpos(), E_MacroParamMismatch,
-                     "Macro parameter %s requires identifier",
-                     (const char*)StrHelper(macroParam.toString()));
-              return false;
-            }
-          }
-          break;
+          if (!matchNameParamSyntax(paramName, &bindings))
+            return false;
+          node = followSet;
+          continue;
 
         case kMacro_body:
           // TODO
