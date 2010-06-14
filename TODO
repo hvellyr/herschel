@@ -15,10 +15,29 @@ Language and ideas:
     distinguish between param.func and Enum.item ?).  Idea: Maybe use a new
     item-operator ::? E.g. Enum::item.
 
+  - structs ?  Contrary to classes do not support inheritance, but provide
+    fixed layout.
+
   - Think about non-gc objects.
 
   - Think about lazy evaluation (generalize the 'promise' concept
-    introduced en passent with sync).
+    introduced en passent with sync).  See x10 -> futures.
+
+  - checked exceptions.  Declare as
+
+      def generic f() : 'X
+          throws 'B
+          reify () : N, () : P
+          where B isa Throwable
+        ...
+
+    additionally
+
+      def generic f() : 'X
+          no-throws
+          reify ....
+
+    to document that a function does not let exceptions through.
 
   - Think about: all objects are passed by value (i.e. even for vectors);
     values passed to spawned functions are actually copied, otherwise
@@ -56,17 +75,25 @@ Bootstrap compiler
 
     - macros
 
+      - subpatterns
+
+      - fix: 'a ## b ## c' does not work
+
+      - ?"abc" make a String from the value of ?abc
+
     - pass2
 
     - export of defs (esp. macros)
 
-    - import 
+    - import
 
     - access values from enums as Enum::item
 
-    - extend macro parameter types (like ?a:paramlist, ?a:param)
+    - extend macro parameter types (like ?a:type-spec)
 
-    - docstring for macros
+    - macros
+
+      - subpatterns
 
   continue with pexpreval (add the missing operators)
 
