@@ -241,8 +241,7 @@ inherit from @code{Number << Approximate << ApproxFloat}.
 
 All standard types and their properties:
 
-@smallformat
-@example
+@smallexample
 Type         Description                           Value range
 
 Number       (abstract)
@@ -262,8 +261,7 @@ ULong        unsigned 64bit                             0 .. 2^64-1
 Float        32bit ieee754 float                    +/- 3.4E +/- 38
 Double       64bit ieee754 float                    +/- 1.7E +/- 308
 LongDouble   128bit ieee754 float                   +/- 1.18 +/- 4932
-@end example
-@end smallformat
+@end smallexample
 
 
 @c --------------------------------------------------------------------
@@ -360,18 +358,8 @@ Note that operators are really identifiers @emph{not} delimiters.
 General delimiters in Heather.
 
 @verbatim
-"    '    .    ,    ;    #    @    (    )    [    ]    {    }
+"    '    .    ,    ;    #    @    (    )    [    ]    {    }    ~
 @end verbatim
-
-@c The semicolon (@code{;}) has a special role.  Even if not necessary
-@c normally the semicolon can be used to explicitely separate expression in
-@c code blocks.  Note the ambiguous syntax between the two statement which
-@c need an explicit separation:
-@c 
-@c @example
-@c   let nol = self.number-of-lines ;
-@c   (nol + 1) * 2
-@c @end example
 
 
 @c ....................................................................
@@ -3614,131 +3602,188 @@ def app|main()
 @node Macros, Inline documentation, Program structure, Top
 @chapter Macros
 
-@c todo
-@emph{To write}
+@menu
+* Macro Intro::                 Introduction
+* Types of Macros::             Types of Macros
+* Macro Syntax::                Defining macros
+* Pattern variables::           Pattern variables
+* Macro templates::             Macro templates
+* Macro examples::              Macro Examples
+@end menu
 
-@c @display
-@c Different kind of macro styles:
-@c 
-@c FUNCTION MACROS.
-@c 
-@c Look exactly and are called like functions:
-@c 
-@c   def macro min @{
-@c      @{ min (?a:expr, ?b:expr) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
-@c                                  if (tmp-a > tmp2) tmp-b else tmp-a @} @}
-@c   @}
-@c 
-@c or in a local scope:
-@c 
-@c   let macro min @{
-@c      @{ min (?a:expr, ?b:expr) @} -> @{ @{ let tmp-a = ?a tmp-b = ?b
-@c                                  if (tmp-a > tmp2) tmp-b else tmp-a @} @}
-@c   @}
-@c 
-@c usage:
-@c 
-@c   min(100, 200)
-@c 
-@c 
-@c DEFINITION MACROS
-@c 
-@c Look like a define and/or let:
-@c 
-@c   def macro func-variable @{
-@c       @{ def func-variable ?name:name = ?e:expr @} ->
-@c         @{ def ?name ## -var = ?e
-@c           def ?name () ?name ## -var
-@c           def ?name (value) @{ ?name ##-var = value
-@c                                  value @} @}
-@c       @{ let func-variable ?name:name = ?e:expr @} ->
-@c         @{ let ?name ## -var = ?e
-@c           let ?name () ?name ## -var
-@c           let ?name (value) @{ ?name ##-var = value
-@c                               value @} @}
-@c   @}
-@c 
-@c 
-@c STATEMENT MACROS
-@c 
-@c Look like a statement like for, select, etc.
-@c 
-@c   def macro unless @{
-@c       @{ unless (?test:expr) ?b:body @} -> @{ if (not ?test) ?b @}
-@c   @}
-@c 
-@c 
-@c   def macro with-open-file @{
-@c     @{ with-open-file (?stream:name, ?name:string) ?e:expr @} ->
-@c       @{
-@c         let ?stream = FileInputPort(?name, 'read)
-@c         on exit(value) @{
-@c           if (?stream.nil?) close(?stream)
-@c           value
-@c         @}
-@c 
-@c         ?e
-@c       @}
-@c   @}
-@c 
-@c 
-@c Multiple variant patterns and sub-patterns:
-@c 
-@c   def macro funcvar @{
-@c     @{ def funcvar ?name:name @} -> @{ def ?name ## -var = #nil
-@c                                   def ?name () ?name ## -var
-@c                                   def ?name (value) @{ ?name ## -var = value
-@c                                                       value @} @}
-@c     @{ def funcvar ?name:name = ?e:expr @} ->
-@c                                 @{ def ?name ## -var = ?e
-@c                                   def ?name () ?name ## -var
-@c                                   def ?name (value) @{ ?name ## -var = value
-@c                                                       value @} @}
-@c   @}
-@c 
-@c is identical to:
-@c 
-@c   def macro funcvar @{
-@c     @{ def funcvar ?name:id #?opt-expr @} ->
-@c                       @{ def ?name ## -var = ?opt-expr
-@c                         def ?name () ?name ## -var
-@c                         def ?name (value) @{ ?name ## -var = value
-@c                                             value @} @}
-@c 
-@c   opt-expr:
-@c     @{ @} -> @{ @}
-@c     @{ = ?e:expr @} ->  @{ ?e @}
-@c   @}
-@c 
-@c 
-@c Conditional evaluation of macros (meta programming):
-@c 
-@c   def macro compile-only-if @{
-@c     @{ compile-only-if(?test:bool) ?e:expr @} ->
-@c       @{
-@c         #if (?test)
-@c           ?e
-@c       @}
-@c   @}
-@c 
-@c 
-@c   basic constructs like if, else, let can be set and evaluated during
-@c   macro-expansion time.  The form is then called: #if, #else, #let.  For
-@c   the example above ?test **must** be a constant (or another macro
-@c   expanding to a constant), since runtime code is not evaluated during
-@c   macro expansion of course.
-@c 
-@c 
-@c Optional macro parameters:
-@c 
-@c   def macro xxx @{
-@c     @{ xxx(x: ?a = 5, y: ?b = 6) @} -> @{ yyy(m: ?a, n: ?b) @}
-@c     @{ xxx(args ...) @} -> @{ yyy(args) @}
-@c   @}
-@c @end display
-@c 
+@c --------------------------------------------------------------------
+@node Macro Intro, Types of Macros, Macros, Macros
+@section Introduction
 
-Special macro parameter types:
+Macros allow to define new syntax or logical expressions as extensions
+to the core language.  Macros are transformations of one construct by
+another one.  Macros are neither intended to optimize code by inlining
+(though they can be used for that), nor to ``generate'' generic code
+(though this can be done).  Since macros apply to a logical expression
+level they fit nicely into the overall language -- they are a core
+part of the language specification.
+
+Macros are defined as rewrite rules systems.  They consist of a
+sequence of patterns that match token sequences in the incoming stream
+and a corresponding replacement template.  The rules can contain
+variables (``macro arguments''), which can match certain predefined
+pattern or constructs in the heather language.  They can be inserted
+into the replacement template.  Macro expansion is always recursive,
+i.e.@ the output of a replacement transformation is scanned for macro
+expansion again.
+
+Compilation of a source is processed in the following steps:
+
+@enumerate
+@item
+The @dfn{tokenizer} splits the incoming stream of characters into
+@dfn{tokens};
+@item
+The tokens are parsed into a basic program, composed of so called
+@dfn{parsed expressions}.  During this phase macros are
+parsed and expanded;
+@item
+The token stream is transformed into a compile-time model (``the
+abstract syntax tree'');
+@item
+Only now the code is optimized and compiled into machine code.
+@end enumerate
+
+
+Macros are only visible in the compile units they are defined in.
+They are especially never part of compiled code.
+
+
+@c --------------------------------------------------------------------
+@node Types of Macros, Macro Syntax, Macro Intro, Macros
+@section Types of Macros
+
+Macros are integrated into the core language.  Unlike an independant
+preprocessor macros apply only to certain basic forms in the language.
+The following 4 constructs can be extended: function calls, statements
+(see below), @code{on}-statements, and definitions.  Other constructs are
+not macro-extensible (e.g. the @code{module} or @code{extend}
+clauses).
+
+@deffn {Macro form} {Function calls}
+Function calls have the basic form:
+
+@example
+@var{function-name} ( @r{[} @var{parameters} @r{]} )
+@end example
+
+Note that the dot notation are transformed into function calls @emph{before}
+macro expansion, i.e@ dot-notated functions calls are subject to the
+same macro definition as `ordinary' notated functions.
+@end deffn
+
+
+@deffn {Macro form} Statements
+Statements are similar to function calls except that they take and
+additional body or further expressions which form a kind of body to
+the opening statement:
+
+@example
+@var{stmt-name} ( @r{[} @var{parameters} @r{]} ) @var{body}
+@end example
+
+Where @var{body} can be any number of pattern variables or other
+tokens.
+@end deffn
+
+
+@deffn {Macro form} @code{on}-statements
+@code{on}-statements extend the builtin `on'-syntax by further
+keywords:
+
+@example
+on @var{on-tag} @var{on-body}
+@end example
+
+where @var{on-tag} is the discriminating token by which a macro is
+detected.
+@end deffn
+
+
+@deffn {Macro form} Definitions
+Like @code{on}-statement macros definitions macros extend the reserved
+number of definition tags:
+
+@example
+def @var{def-tag} @var{def-body}
+let @var{def-tag} @var{def-body}
+@end example
+
+The @code{def} form is detected on top level, the @code{let} form on
+local definition level only.
+@end deffn
+
+
+The discriminating token (the @var{function-name}, the
+@var{stmt-name}, the @var{on-tag}, the @var{def-tag}) must be
+identical to the macro name.
+
+
+@c --------------------------------------------------------------------
+@node Macro Syntax, Pattern variables, Types of Macros, Macros
+@section Defining macros
+
+@deffn Special {def macro}
+The form for creating all kinds of macros is the following:
+
+@example
+def macro @var{macro-name}
+@{
+  @{ @var{pattern-1} @} -> @{ @var{replacement-1} @}
+  @{ @var{pattern-2} @} -> @{ @var{replacement-2} @}
+  ...
+  @{ @var{pattern-n} @} -> @{ @var{replacement-n} @}
+@}
+@end example
+
+where @var{pattern-1}, @var{pattern-2}, etc.@ are the patterns that,
+when matching, are replaced by the corresponding @var{replacement-1},
+@var{replacement-2}, etc.  Each pattern must re-state the complete
+syntactic form, i.e.@ a definition macro must start with a @code{def}
+or @code{let}.  The @var{replacement} are free to take any content,
+including to be empty.
+
+Each -- patterns and replacements -- must be ``self-contained'', i.e.@
+contained parantheses and braces must be balanced.  The enclosing
+braces around patterns and replacements are not part of the respective
+clause.
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Pattern variables, Macro templates, Macro Syntax, Macros
+@section Pattern variables
+
+@cindex Pattern variables
+
+Pattern variables are automatic sub rules in the left hand side of a
+rewrite rule.  They take the general form:
+
+@example
+?@var{name}:@var{type}
+@end example
+
+where @var{name} is the variable identifier, and @var{type} one of a
+set of predefined sub pattern.  The variable @code{?counter:expr}, for
+instance, detects and parses a complete heather expression and stores
+the found token sequence into a variable @code{counter}.  When given
+in the replacement templates variables must be written without their
+type:
+
+@example
+@{ let ?var = ?init @}
+@end example
+
+They are replaced here, when expanded, by their token sequence found
+during parsing.
+
+
+The following macro parameter types are defined:
 
 @deffn {Macro type} :name
 Expects a single (probably fully qualified) identifier.  The
@@ -3785,6 +3830,136 @@ must be in proper order.  The result is a sequence of tokens.
 @end deffn
 
 
+@c --------------------------------------------------------------------
+@node Macro templates, Macro examples, Pattern variables, Macros
+@section Macro templates
+
+@deffn {Macro operator} ##
+Inside macro templates the special operator @code{##} between two
+symbol tokens can be used to concate both into one new symbol.  It is
+an error if @code{##} appears outside of this combination.
+
+The symbol concatination is applied after pattern variable expansion,
+but before recursive macro expansion.
+
+@example
+@{ let ?name ## -var = ?init @}
+@end example
+@end deffn
+
+
+@deffn {Macro operator} ?""
+When a pattern variable is given inside a macro template enclosed by
+quotes, in the form
+
+@example
+?"@var{variable-name}"
+@end example
+
+then the variable content is inserted as constant string.  Note that,
+in case the variable contains a complex token sequence, the string
+generated may not be identical to the parsed input.  It will be rather
+a serialized token sequence.
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Macro examples,  , Macro templates, Macros
+@section Macro Examples
+
+A function macro and its appliance:
+
+@smallexample
+def macro min
+@{
+   @{ min (?a:expr, ?b:expr) @} -> @{ @{ let tmp-a = ?a
+                                     let tmp-b = ?b
+                                     if (tmp-a > tmp-b)
+                                       tmp-b
+                                     else
+                                       tmp-a @} @}
+@}
+
+def f()
+  let i = min(100, 200)
+  outln(i)
+
+@result{} 100
+@end smallexample
+
+A definition macro:
+
+@smallexample
+def macro func-variable
+@{
+  @{ def func-variable ?name:name = ?e:expr @} ->
+    @{ def ?name ## -var = ?e
+      def ?name () ?name ## -var
+      def ?name ## ! (value) @{ ?name ## -var = value
+                               value @} @}
+  @{ let func-variable ?name:name = ?e:expr @} ->
+    @{ let ?name ## -var = ?e
+      let ?name () ?name ## -var
+      let ?name ## ! (value) @{ ?name ## -var = value
+                               value @} @}
+@}
+
+def func-variable foo = 42
+
+@result{} def foo-var = 42
+  def foo () foo-var
+  def foo! (value) @{ foo-var = value
+                     value @}
+@end smallexample
+
+A statement macro:
+
+@smallexample
+def macro with-write-to-file
+@{
+  @{ with-write-to-file (?stream:name, ?name:string)
+       ?e:expr
+     finally
+       ?f:expr @} ->
+    @{
+      let ?stream = FileInputPort(?name, FileModeType::append)
+      on exit(value) @{
+        if (?stream.nil?) close(?stream)
+        ?f
+        value
+      @}
+
+      ?e
+    @}
+@}
+
+def f()
+  with-write-to-file (port, "test.log") @{
+    outln(port: port, "hello world!")
+  @}
+  finally
+    outln("log file has been closed")
+@end smallexample
+
+An @code{on}-statement macro:
+
+@smallexample
+def macro ui-msg
+@{
+  @{ on ui-msg mouse (?x:pos-param, ?y:pos-param) ?handler:expr @} ->
+     @{ parent.register-mouse-msg(self,
+                                 function(?x, ?y) @{ ?handler @}) @}
+  @{ on ui-msg file  (?f:pos-param) ?handler:expr @} ->
+     @{ parent.register-file-msg(self,
+                                function(?f) @{ ?handler @}) @}
+@}
+
+def process-calls(parent)
+  on ui-msg mouse (x, y) @{
+    registry.lookup-view(x, y).do-mouse-click(x, y)
+  @}
+@end smallexample
+
 
 @c ====================================================================
 @node Inline documentation, Syntax, Macros, Top
@@ -3826,7 +4001,7 @@ declarations:
 The exact syntax of the document string is not part of this language
 specification.  Some example show how this looks like:
 
-@example
+@smallexample
 def class Pair<Car, Cdr>(car: _car : Car = nil,
                          cdr: _cdr : Cdr = nil)
     ~ Simple LISP like pair/list implementation.
@@ -3854,7 +4029,7 @@ def generic for-each(cltn @@ 'C, func : ForEachVisitor<T>) : 'C
     where C isa Collection<T> ...
     ~ Apply @@var@{functor@} on ach contained element in @@var@{cltn@}.
     @@returns @@var@{cltn@} ~
-@end example
+@end smallexample
 
 @c ====================================================================
 @node Syntax, Concept Index, Inline documentation, Top
@@ -4444,8 +4619,8 @@ alternate       := expression
 select-expr     := `select' `(' test-expr [ `,' select-comptor ] `)'
                    `{' select-tests `}'
 select-comptor  := expression
-select-tests    := { `|' select-test } 
-select-test     := constants `->' consequent 
+select-tests    := { `|' select-test }
+select-test     := constants `->' consequent
                 |  `else' alternate
 
 constants       := constant { `,' constant }
