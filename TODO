@@ -5,11 +5,6 @@ Language and ideas:
   - write up about module/interface.  Review import, export, module, etc.
     See CHANGES.
 
-  - review 'when' requirement that enclosed code must be valid code.  This
-    does not go properly with macros: macros in when section must than be
-    fully workable, otherwise macro-using code can't be scanned.  Reduce
-    the requirement to braces must be balanced?
-
   - Redesign accessing items from enum types.  Parsing as Enum.item does
     not work, since this would require symboltables during parsing (how to
     distinguish between param.func and Enum.item ?).  Idea: Maybe use a new
@@ -74,10 +69,6 @@ Bootstrap compiler
   Implement last missing pass1 stuff:
 
     - macros
-
-      - subpatterns
-
-      - fix: 'a ## b ## c' does not work
 
       - ?"abc" make a String from the value of ?abc
 

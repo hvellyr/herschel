@@ -1,0 +1,7 @@
+def macro abc2
+{
+  { def abc2 ?a:name } -> { def ## ?a }
+}
+
+
+def abc2 xyz
