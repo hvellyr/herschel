@@ -3594,38 +3594,73 @@ FirstPass::parse()
 bool
 FirstPass::replaceSangHashIds(TokenVector* result, const TokenVector& source)
 {
-  for (size_t idx = 0; idx < source.size(); ) {
+  const size_t srcSize = source.size();
+
+  if (srcSize > 0) {
+    size_t idx = 0;
     Token token = source[idx];
-    if (token == kSymbol) {
-      if (idx + 1 < source.size()) {
-        if (source[idx + 1] == kSangHash) {
-          if (idx + 2 < source.size()) {
-            if (source[idx + 2] == kSymbol) {
-              result->push_back(
-                Token(source[idx].srcpos(),
-                      source[idx].idValue() + source[idx + 2].idValue()));
-              idx += 3;
-              continue;
+    bool hasFreeToken = true;
+
+    while (idx < srcSize) {
+      if (token == kSymbol) {
+        if (idx + 1 < srcSize) {
+          if (source[idx + 1] == kSangHash) {
+            if (idx + 2 < srcSize) {
+              if (source[idx + 2] == kSymbol) {
+                token = Token(token.srcpos(),
+                              token.idValue() + source[idx + 2].idValue());
+                hasFreeToken = true;
+                idx += 2;
+                continue;
+              }
+              else {
+                errorf(source[idx + 2].srcpos(), E_OrphanedSangHash,
+                       "## requires right hand symbol");
+                result->push_back(token);
+
+                idx += 3;
+                if (idx < srcSize) {
+                  token = source[idx];
+                  hasFreeToken = true;
+                }
+                continue;
+              }
             }
             else {
-              errorf(source[idx + 2].srcpos(), E_OrphanedSangHash,
-                     "## requires right hand id value");
-              idx += 3;
+              errorf(source[idx + 1].srcpos(), E_OrphanedSangHash,
+                     "Orphaned ## without following ID");
+              result->push_back(token);
+              idx += 2;
+              if (idx < srcSize) {
+                token = source[idx];
+                hasFreeToken = true;
+              }
               continue;
             }
-          }
-          else {
-            errorf(source[idx + 1].srcpos(), E_OrphanedSangHash,
-                   "Orphaned ## without following ID");
-            idx += 2;
-            continue;
           }
         }
       }
+      else if (token == kSangHash) {
+        errorf(token.srcpos(), E_OrphanedSangHash, "Unexpected ##");
+        idx++;
+        if (idx < srcSize) {
+          token = source[idx];
+          hasFreeToken = true;
+        }
+        continue;
+      }
+
+      result->push_back(token);
+      hasFreeToken = false;
+      idx++;
+      if (idx < srcSize) {
+        token = source[idx];
+        hasFreeToken = true;
+      }
     }
 
-    result->push_back(token);
-    idx++;
+    if (hasFreeToken)
+      result->push_back(token);
   }
 
   return true;
