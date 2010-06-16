@@ -44,9 +44,12 @@ PDFS =  $(TEXINFO_FILES:%.texinfo=$(BUILDDIR)/%.pdf)
 
 pdf: $(PDFS)
 
-$(BUILDDIR)/%.pdf : %.texinfo
-	texi2pdf -o $@ $<
+$(BUILDDIR)/%.pdf : $(BUILDDIR)/pdf %.texinfo
+	texi2pdf --build-dir=$(BUILDDIR)/pdf \
+			     -I $(top_srcdir)/doc -o $@ heather.texinfo
 
+$(BUILDDIR)/pdf: $(BUILDDIR)
+	@if [ ! -d "$@" ]; then mkdir $@; fi
 
 INFOS =  $(TEXINFO_FILES:%.texinfo=$(BUILDDIR)/%.info)
 
@@ -59,6 +62,7 @@ $(BUILDDIR)/%.info : %.texinfo
 clean-local:
 
 distclean-local: clean-local
+	-rm -rf $(BUILDDIR)/pdf $(BUILDDIR)/*.pdf $(BUILDDIR)/*.info
 
 include $(top_srcdir)/build/generic.mk
 
