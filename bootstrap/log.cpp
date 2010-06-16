@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -13,9 +13,61 @@
 #include "log.h"
 #include "str.h"
 #include "srcpos.h"
+#include "unittests.h"
 
 
 using namespace heather;
+
+//------------------------------------------------------------------------------
+
+static bool sBeSilent = false;
+
+LogSurpressor::LogSurpressor()
+  : fOldValue(sBeSilent)
+{
+  sBeSilent = true;
+}
+
+
+LogSurpressor::~LogSurpressor()
+{
+  sBeSilent = fOldValue;
+}
+
+
+#if defined(UNITTESTS)
+//----------------------------------------------------------------------------
+
+class LogSurpressorUnitTest : public UnitTest
+{
+public:
+  LogSurpressorUnitTest() : UnitTest("LogSurpressor") {}
+
+  virtual void run()
+  {
+    assert(!sBeSilent);
+
+    {
+      LogSurpressor beSilent;
+      assert(sBeSilent);
+
+      {
+        LogSurpressor beSilent2;
+        assert(sBeSilent);
+      }
+      assert(sBeSilent);
+    }
+
+    assert(!sBeSilent);
+  }
+};
+
+static LogSurpressorUnitTest logSurpressorUnitTest;
+
+#endif  // #if defined(UNITTESTS)
+
+
+//------------------------------------------------------------------------------
 
 static char* levelStr[] = {
   "debug",
@@ -29,6 +81,9 @@ static void
 logImpl(const SrcPos& where, LogLevel level, int errorCode, FILE* stream,
         const char* msg)
 {
+  if (sBeSilent)
+    return;
+
   if (where.isValid()) {
     if (errorCode == 0)
       fprintf(stream, "%s:%d: %s: %s\n",

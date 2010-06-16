@@ -3699,7 +3699,8 @@ FirstPass::replaceMatchBindings(TokenVector* result,
       break;
 
     case kId:
-      if (token.tokenType() == kMacroParam) {
+      if (token == kMacroParam ||
+          token == kMacroParamAsStr) {
         Token replToken = findReplaceToken(token, bindings);
         // printf("REPL.TOKEN: %s\n", (const char*)StrHelper(replToken.toString()));
 

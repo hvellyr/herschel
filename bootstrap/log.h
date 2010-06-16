@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -22,6 +22,18 @@ namespace heather
     kWarn,
     kError
   };
+
+
+  class LogSurpressor
+  {
+  public:
+    LogSurpressor();
+    ~LogSurpressor();
+
+  private:
+    bool fOldValue;
+  };
+
 
   void log(const SrcPos& where, LogLevel level, const String& msg);
   void logf(const SrcPos& where, LogLevel level, const char* format, ...);

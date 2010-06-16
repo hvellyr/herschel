@@ -152,6 +152,7 @@ namespace heather
     kSymbol,
     kKeyarg,
     kMacroParam,
+    kMacroParamAsStr,
 
     // reserved identifiers
     kDefId,

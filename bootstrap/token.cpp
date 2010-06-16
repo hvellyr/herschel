@@ -532,7 +532,8 @@ Token::Token(const SrcPos& where, TokenType ttype, const String& str)
   : fType(ttype),
     fSrcPos(where)
 {
-  if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam)
+  if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam ||
+      ttype == kMacroParamAsStr)
     fImpl = new IdTokenImpl(str);
   else
     fImpl = new StringTokenImpl(ttype, str);
@@ -544,7 +545,8 @@ Token::Token(const SrcPos& where, TokenType ttype, const char* str)
   : fType(ttype),
     fSrcPos(where)
 {
-  if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam)
+  if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam ||
+      ttype == kMacroParamAsStr)
     fImpl = new IdTokenImpl(String(str));
   else
     fImpl = new StringTokenImpl(ttype, String(str));
@@ -632,6 +634,7 @@ Token::operator<(const Token& other) const
       switch (fType) {
       case kSymbol:
       case kMacroParam:
+      case kMacroParamAsStr:
       case kKeyarg:
         return fImpl->operator<(other);
       case kDefId:
@@ -733,6 +736,7 @@ Token::toString() const
     case kSymbol:
       return fImpl->toString();
     case kMacroParam:
+    case kMacroParamAsStr:
       return String("?") + dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr;
     case kKeyarg:
       return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + ":";
@@ -850,6 +854,7 @@ Token::type() const
   case kSymbol:                 // kIdExpr
   case kKeyarg:
   case kMacroParam:
+  case kMacroParamAsStr:
   case kDefId:
   case kElseId:
   case kEofId:
@@ -1087,6 +1092,7 @@ Token::idValue() const
     return toString();
   case kSymbol:
   case kMacroParam:
+  case kMacroParamAsStr:
   case kKeyarg:
     return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr;
   default:
@@ -1349,7 +1355,11 @@ Token::toPort(Port<Octet>* port) const
     case kSymbol:
       return fImpl->toPort(port);
     case kMacroParam:
-      display(port, String("<id type='mparm'>") +
+      display(port, String("<id type='macparm'>") +
+              dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</id>");
+      break;
+    case kMacroParamAsStr:
+      display(port, String("<id type='strparm'>") +
               dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</id>");
       break;
     case kKeyarg:
@@ -1446,7 +1456,7 @@ Token::isCharOrUnitName() const
 String
 Token::macroParamName() const
 {
-  if (fType != kMacroParam)
+  if (fType != kMacroParam && fType != kMacroParamAsStr)
     throw NotSupportedException(__FUNCTION__);
 
   String str = idValue();
@@ -1460,7 +1470,7 @@ Token::macroParamName() const
 String
 Token::macroParamType() const
 {
-  if (fType != kMacroParam)
+  if (fType != kMacroParam && fType != kMacroParamAsStr)
     throw NotSupportedException(__FUNCTION__);
 
   String str = idValue();
@@ -1551,12 +1561,14 @@ public:
 
     assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
     assert(Token(sp, kMacroParam, String("abc")).idValue() == String("abc"));
+    assert(Token(sp, kMacroParamAsStr, String("abc")).idValue() == String("abc"));
     assert(Token(sp, kString, String("abc")).stringValue() == String("abc"));
     assert(Token(sp, kDocString, String("abc")).stringValue() == String("abc"));
     assert(Token(sp, kKeyword, String("abc")).stringValue() == String("abc"));
 
     assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
     assert(Token(sp, kMacroParam, "abc").idValue() == String("abc"));
+    assert(Token(sp, kMacroParamAsStr, "abc").idValue() == String("abc"));
     assert(Token(sp, kString, "abc").stringValue() == String("abc"));
     assert(Token(sp, kDocString, "abc").stringValue() == String("abc"));
     assert(Token(sp, kKeyword, "abc").stringValue() == String("abc"));
@@ -1678,6 +1690,13 @@ public:
     {
       Token t = Token(sp, kMacroParam, "abc");
       assert(t == kMacroParam);
+      assert(t.macroParamName() == String("abc"));
+      assert(t.macroParamType() == String());
+    }
+
+    {
+      Token t = Token(sp, kMacroParamAsStr, "abc");
+      assert(t == kMacroParamAsStr);
       assert(t.macroParamName() == String("abc"));
       assert(t.macroParamType() == String());
     }

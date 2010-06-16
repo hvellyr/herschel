@@ -28,6 +28,7 @@ namespace heather
     E_MissingBraceOpen    = 0x000b,
     E_AssignExpected      = 0x000c,
     E_MapToExpected       = 0x000d,
+    E_MissingApos         = 0x000e,
 
     E_SymbolExpected      = 0x1001,
     E_StringExpected      = 0x1002,
