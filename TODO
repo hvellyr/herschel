@@ -68,10 +68,6 @@ Bootstrap compiler
 
   Implement last missing pass1 stuff:
 
-    - macros
-
-      - ?"abc" make a String from the value of ?abc
-
     - pass2
 
     - export of defs (esp. macros)
