@@ -407,13 +407,13 @@ namespace heather
     {
       String result;
 
-      result = result + "(";
+      result = result + "%(";
 
       for (unsigned int i = 0; i < fChildren.size(); i++) {
         String childstr = fChildren[i].toString();
         result = result + childstr + " ";
       }
-      result = result + ")";
+      result = result + "%)";
 
       return result;
     }
@@ -470,13 +470,13 @@ namespace heather
     {
       String result;
 
-      result = result + "{";
+      result = result + tokenTypeToString(fLeft);
 
       for (unsigned int i = 0; i < fChildren.size(); i++) {
         String childstr = fChildren[i].toString();
         result = result + childstr + " ";
       }
-      result = result + "}";
+      result = result + tokenTypeToString(fRight);
 
       return result;
     }
