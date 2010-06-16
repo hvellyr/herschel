@@ -672,6 +672,21 @@ Tokenizer::nextTokenImpl()
 
     case '?':
       nextChar();
+      if (fCC == '"') {
+        nextChar();
+        Token param = readIdentifier(beginSrcpos, String(), kMacroParamAsStr, false);
+        if (fCC != '"') {
+          errorf(srcpos(), E_MissingApos, "Missing \" in ?\"-notation");
+        }
+        else
+          nextChar();
+        if (param.idValue().isEmpty()) {
+          errorf(beginSrcpos, E_BadMacroPattern, "empty macro parameter");
+          return Token();
+        }
+
+        return param;
+      }
       return readIdentifier(beginSrcpos, String(), kMacroParam, false);
 
     case '.':
@@ -1156,13 +1171,20 @@ public:
 
     {
       static const char* test =
-        "##  ?val:name ";
+        "##  ?val:name ?\"abc\" ?\"\" ";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 
       try {
         assert(tnz.nextToken() == Token(sp, kSangHash));
-        assert(tnz.nextToken() == Token(sp, kMacroParam, String("val:name")));
+        assert(tnz.nextToken() == Token(sp, kMacroParam, "val:name"));
+        assert(tnz.nextToken() == Token(sp, kMacroParamAsStr, "abc"));
+
+        {
+          LogSurpressor beSilent;
+          // ?"" is not allowed.
+          assert(tnz.nextToken() == Token());
+        }
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));

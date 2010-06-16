@@ -26,12 +26,14 @@ SyntaxTreeNode::SyntaxTreeNode()
 SyntaxTreeNode*
 SyntaxTreeNode::findNode(const Token& token) const
 {
-  if (token.tokenType() == kMacroParam) {
+  if (token == kMacroParam ||
+      token == kMacroParamAsStr) {
     for (NodeMap::const_iterator it = fNodes.begin();
          it != fNodes.end();
          it++)
     {
-      if (it->first.tokenType() == kMacroParam)
+      if (it->first == kMacroParam ||
+          it->first == kMacroParamAsStr)
         return it->second.obj();
       else if (it->first == token)
         return it->second.obj();
@@ -53,7 +55,8 @@ SyntaxTreeNode::findMacroParam(Token* macroParam) const
        it != fNodes.end();
        it++)
   {
-    if (it->first.tokenType() == kMacroParam) {
+    if (it->first == kMacroParam ||
+        it->first == kMacroParamAsStr) {
       *macroParam = it->first;
       return it->second.obj();
     }
@@ -260,7 +263,8 @@ heather::toString(MacroType type)
 MacroParamType
 heather::macroParamType(const Token& token, String* paramName)
 {
-  assert(token.tokenType() == kMacroParam);
+  assert(token == kMacroParam ||
+         token == kMacroParamAsStr);
 
   String str = token.idValue();
   String name;
