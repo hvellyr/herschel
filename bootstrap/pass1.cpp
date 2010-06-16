@@ -3705,7 +3705,12 @@ FirstPass::replaceMatchBindings(TokenVector* result,
         // printf("REPL.TOKEN: %s\n", (const char*)StrHelper(replToken.toString()));
 
         if (replToken.isSet()) {
-          if (replToken.isSeq()) {
+          if (token == kMacroParamAsStr) {
+            replacement.push_back(Token(replToken.srcpos(),
+                                        kString,
+                                        replToken.toString()));
+          }
+          else if (replToken.isSeq()) {
             const TokenVector& tmp = replToken.children();
             replacement.insert(replacement.end(),
                                tmp.begin(), tmp.end());
