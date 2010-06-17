@@ -165,7 +165,6 @@ namespace heather
     kFunctionId,
     kIfId,
     kImportId,
-    kInterfaceId,
     kLetId,
     kMatchId,
     kModuleId,
@@ -360,7 +359,6 @@ namespace heather
 #define MID_FunctionId  "function"
 #define MID_IfId        "if"
 #define MID_ImportId    "import"
-#define MID_InterfaceId "interface"
 #define MID_LetId       "let"
 #define MID_MatchId     "match"
 #define MID_ModuleId    "module"

@@ -44,10 +44,10 @@ SecondPass::parseTopExprlist(AptNode* rootNode, const Token& expr)
 
 
 AptNode*
-SecondPass::parseModule(const Token& expr, bool isModule)
+SecondPass::parseModule(const Token& expr)
 {
   assert(expr.isSeq() && expr.count() >= 2);
-  assert(expr[0] == kModuleId || expr[0] == kInterfaceId);
+  assert(expr[0] == kModuleId);
   assert(expr[1].isSymbol());
 
   String modName = expr[1].idValue();
@@ -61,7 +61,8 @@ SecondPass::parseModule(const Token& expr, bool isModule)
     publicId = expr[2][0].stringValue();
   }
 
-  Ptr<ModuleNode> modNode = new ModuleNode(modName, publicId, isModule);
+  Ptr<ModuleNode> modNode = new ModuleNode(expr[1].srcpos(),
+                                           modName, publicId);
 
   if (expr.count() > 3) {
     assert(expr[3].isNested() && expr[3].leftToken() == kBraceOpen);
@@ -141,9 +142,7 @@ SecondPass::parseSeq(const Token& expr)
 
   Token first = expr[0];
   if (first == kModuleId)
-    return parseModule(expr, true);
-  else if (first == kInterfaceId)
-    return parseModule(expr, false);
+    return parseModule(expr);
   else if (first == kExportId)
     return parseExport(expr);
   else if (first == kImportId)

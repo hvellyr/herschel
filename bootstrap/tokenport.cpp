@@ -154,7 +154,7 @@ public:
 
     {
       static const char* test =
-        "interface zero (\"eyestep/zero 1.0:portables\")\n"
+        "module zero (\"eyestep/zero 1.0:portables\")\n"
         "  export public(*)\n"
         "-- a simple portable class\n"
         "def class Portable<T>(x @ Int) : (Copyable, Comparable)\n"
@@ -165,7 +165,7 @@ public:
       Ptr<TokenPort> p = new FileTokenPort(new DataPort((Octet*)test, strlen(test)),
                                            String("test"));
 
-      assert(p->read() == Token(sp, kInterfaceId));
+      assert(p->read() == Token(sp, kModuleId));
       assert(p->read() == Token(sp, kSymbol, String("zero")));
       assert(p->read() == Token(sp, kParanOpen));
       assert(p->read() == Token(sp, kString, String("eyestep/zero 1.0:portables")));

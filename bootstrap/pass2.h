@@ -32,7 +32,7 @@ namespace heather
     AptNode* parseExpr(const Token& expr);
     AptNode* parseSeq(const Token& expr);
 
-    AptNode* parseModule(const Token& expr, bool isModule);
+    AptNode* parseModule(const Token& expr);
     AptNode* parseExport(const Token& expr);
     AptNode* parseImport(const Token& expr);
 

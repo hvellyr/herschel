@@ -30,7 +30,7 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-interface core ("eyestep/heather 1.0:core")
+module core ("eyestep/heather 1.0:core")
 export public(*)
 
 def compare(one @ Sliceable<Ordinal, 'T>,

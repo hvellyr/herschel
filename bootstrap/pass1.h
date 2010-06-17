@@ -70,7 +70,7 @@ namespace heather
     };
 
     Token parseTop(ScopeType scope);
-    Token parseModule(bool isModule);
+    Token parseModule();
     Token parseExport();
     Token parseImport();
     Token parseDef(bool isLocal, ScopeType scope);

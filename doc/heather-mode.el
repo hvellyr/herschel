@@ -292,12 +292,12 @@ Key bindings:
 ;; ----------------------------------------------------------------------
 (defconst heather-keywords
   '(
-    "module" "interface" "import" "export" "extend"
+    "module" "import" "export" "extend" "when"
     "def" "let"
     "type" "class" "macro" "alias" "fluid" "const" "generic" "enum" "char"
     "measure" "unit"
     "slot" "slot!"
-    "if" "else" "on" "otherwise"
+    "if" "else" "on"
     "public" "private" "protected" "final"
     "reify" "where"
     "function"
@@ -322,7 +322,7 @@ Key bindings:
 
 (defconst heather-builtin
   '(
-    "for" "until" "while" "then"
+    "for" "while" "then"
     "select" "match"
     "nil" "eof" "true" "false" "unspecified"
     "return" "break" "continue"
@@ -430,7 +430,7 @@ Key bindings:
    '("def\\s-+\\(\\(final\\|abstract\\)\\s-+\\)?\\(\\(generic\\)\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*("
      (5 font-lock-function-name-face))
 
-   '("\\(module\\|interface\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)"
+   '("module\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)"
      (2 font-lock-function-name-face))
 
    ;; highlight type and class declarations.
