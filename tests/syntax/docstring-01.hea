@@ -1,8 +1,6 @@
 module theatre ("eyestep/theatre 1.0")
   ~ The @code{theatre} module contains the public theatre API. ~
 
--- interface
-
 def f0(x) : Int
   ~ some blabla ~
   x * 2

@@ -265,7 +265,6 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       { String(MID_FunctionId),  kFunctionId   },
       { String(MID_IfId),        kIfId         },
       { String(MID_ImportId),    kImportId     },
-      { String(MID_InterfaceId), kInterfaceId  },
       { String(MID_LetId),       kLetId        },
       { String(MID_MatchId),     kMatchId      },
       { String(MID_ModuleId),    kModuleId     },
@@ -766,7 +765,7 @@ public:
 
     {
       static const char* test =
-        "interface zero (\"eyestep/zero 1.0:portables\")\n"
+        "module zero (\"eyestep/zero 1.0:portables\")\n"
         "  export public(*)\n"
         "-- a simple portable class\n"
         "def class Portable<T>(x @ Int) : (Copyable, Comparable)\n"
@@ -778,7 +777,7 @@ public:
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 
-      assert(tnz.nextToken() == Token(sp, kInterfaceId));
+      assert(tnz.nextToken() == Token(sp, kModuleId));
       assert(tnz.nextToken() == Token(sp, String("zero")));
       assert(tnz.nextToken() == Token(sp, kParanOpen));
       assert(tnz.nextToken() == Token(sp, kString, String("eyestep/zero 1.0:portables")));

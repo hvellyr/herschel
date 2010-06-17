@@ -8,4 +8,4 @@ module xyz ("sijo/xyz 0.2")
   def e = 2
 
 
-interface o
+module o

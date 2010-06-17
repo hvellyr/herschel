@@ -317,9 +317,9 @@ The following identifiers are reserved and have a special meaning:
 @verbatim
 AND       and       as        by        def       else      eof
 export    extend    false     for       Function  function  if
-import    in        interface isa       let       match     mod
-module    nil       not       on        OR        or        reify
-select    then      true      when      where     while     XOR
+import    in        isa       let       match     mod       module
+nil       not       on        OR        or        reify     select
+then      true      when      where     while     XOR
 @end verbatim
 
 The following identifiers are predefined and used by the language
@@ -3266,8 +3266,7 @@ comma separated list all identifiers from the module which should be
 exported in the export domain specified by @var{keywords}.
 
 The @code{export} declaration is normally given inside a @code{module}
-(or @code{interface}) declaration and refers to the declarations in the
-module only.
+declaration and refers to the declarations in the module only.
 
 @example
 module xxx ("de.sijo.what")
@@ -3441,7 +3440,7 @@ public API (aka "header" file) only the modules interface are declared and
 the necessary symbols published:
 
 @example
-interface stack ("eyestep/heather 1.0:stack")
+module stack ("eyestep/heather 1.0:stack")
 
 def type Stack<T>
 @{
@@ -3491,7 +3490,7 @@ files, which make all public symbols available for a complete subsystem)
 symbols must be explicitly exported with the @code{export} statement.
 
 @example
-interface x11
+module x11
 @{
   export public (*)
 
@@ -3985,7 +3984,7 @@ Document strings can be attached to the following definitions and
 declarations:
 
 @itemize
-@item @code{module} and @code{interface}
+@item module declarations
 @item function definitions
 @item variable definitions
 @item class and type definitions
@@ -4109,7 +4108,6 @@ declaration     := define-decl
                 |  when-stmt
                 |  extend-stmt
                 |  module-stmt
-                |  interf-stmt
 @end verbatim
 @end smallformat
 
@@ -4167,11 +4165,6 @@ module-stmt     := `module' mod-name [ `(' PUBLIC-ID `)' ]
                    [ DOCSTRING ]
                    [ mod-decls ]
 mod-name        := SYMBOL
-
-interf-stmt     := `interface' mod-name [ `(' PUBLIC-ID `)' ]
-                   [ DOCSTRING ]
-                   [ mod-decls ]
-
 mod-decls       := `{' { declaration } `}'
 @end verbatim
 @end smallformat

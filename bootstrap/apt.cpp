@@ -279,10 +279,8 @@ CompileUnitNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-ModuleNode::ModuleNode(const String& modName, const String& publicId,
-                       bool isModule)
-  : fIsModule(isModule),
-    fModName(modName),
+ModuleNode::ModuleNode(const String& modName, const String& publicId)
+  : fModName(modName),
     fPublicId(publicId)
 {
 }
@@ -291,16 +289,14 @@ ModuleNode::ModuleNode(const String& modName, const String& publicId,
 void
 ModuleNode::display(Port<Octet>* port) const
 {
-  const char* tagName = fIsModule ? "module" : "interface";
-
-  displayOpenTag(port, tagName);
+  displayOpenTag(port, "module");
 
   displayTag(port, "mod-name", fModName);
   displayTag(port, "public-id", fPublicId);
 
   displayNodeList(port, "defines", fChildren);
 
-  displayCloseTag(port, tagName);
+  displayCloseTag(port, "module");
 }
 
 

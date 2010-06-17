@@ -647,7 +647,6 @@ Token::operator<(const Token& other) const
       case kFunctionId:
       case kIfId:
       case kImportId:
-      case kInterfaceId:
       case kLetId:
       case kMatchId:
       case kModuleId:
@@ -751,7 +750,6 @@ Token::toString() const
     case kFunctionId:  return String(MID_FunctionId);
     case kIfId:        return String(MID_IfId);
     case kImportId:    return String(MID_ImportId);
-    case kInterfaceId: return String(MID_InterfaceId);
     case kLetId:       return String(MID_LetId);
     case kMatchId:     return String(MID_MatchId);
     case kModuleId:    return String(MID_ModuleId);
@@ -865,7 +863,6 @@ Token::type() const
   case kFunctionId:
   case kIfId:
   case kImportId:
-  case kInterfaceId:
   case kLetId:
   case kMatchId:
   case kModuleId:
@@ -1076,7 +1073,6 @@ Token::idValue() const
   case kFunctionId:
   case kIfId:
   case kImportId:
-  case kInterfaceId:
   case kLetId:
   case kMatchId:
   case kModuleId:
@@ -1376,7 +1372,6 @@ Token::toPort(Port<Octet>* port) const
     case kFunctionId:
     case kIfId:
     case kImportId:
-    case kInterfaceId:
     case kLetId:
     case kMatchId:
     case kModuleId:
@@ -1437,7 +1432,6 @@ Token::isCharOrUnitName() const
           fType == kFunctionId ||
           fType == kIfId ||
           fType == kImportId ||
-          fType == kInterfaceId ||
           fType == kLetId ||
           fType == kMatchId ||
           fType == kModuleId ||

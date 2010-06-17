@@ -156,12 +156,10 @@ namespace heather
   class ModuleNode : public AptNode
   {
   public:
-    ModuleNode(const String& modName, const String& publicId,
-               bool isModule);
+    ModuleNode(const String& modName, const String& publicId);
     virtual void display(Port<Octet>* port) const;
 
   private:
-    bool   fIsModule;
     String fModName;
     String fPublicId;
   };

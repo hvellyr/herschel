@@ -55,7 +55,6 @@ FirstPass::scanUntilTopExprAndResume()
   while (fToken != kEOF &&
          fToken != kDefId &&
          fToken != kModuleId &&
-         fToken != kInterfaceId &&
          fToken != kExportId &&
          fToken != kImportId &&
          fToken != kWhenId &&
@@ -207,7 +206,7 @@ namespace heather
 
 
 Token
-FirstPass::parseModule(bool isModule)
+FirstPass::parseModule()
 {
   Token tagToken = fToken;
   nextToken();
@@ -1282,7 +1281,6 @@ FirstPass::parseExprListUntilBrace(TokenVector* result,
         fToken == kExtendId ||
         fToken == kExportId ||
         fToken == kImportId ||
-        fToken == kInterfaceId ||
         fToken == kModuleId)
     {
       if (!endAtToplevelId) {
@@ -3534,10 +3532,7 @@ Token
 FirstPass::parseTop(ScopeType scope)
 {
   if (fToken == kModuleId) {
-    return parseModule(true);
-  }
-  else if (fToken == kInterfaceId) {
-    return parseModule(false);
+    return parseModule();
   }
   else if (fToken == kExportId) {
     return parseExport();

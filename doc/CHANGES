@@ -13,11 +13,11 @@ Visibility, export
 
   - definitions from the embedding file are not visible in the embedded
     file.  I.e. embedded files are closures against the embedding context,
-    the include their embedded files however.  I.e. also that exporting
+    they include their embedded files however.  I.e. also that exporting
     works always upwards (i.e. to the embedding context, not to the
     embedded context).
 
-  - file imported inside a module scope are never visible to the outside of
+  - files imported inside a module scope are never visible to the outside of
     the module scope, even with exports in effect.  This is the way to
     encapsulate "private" imports from polluting public interface space.
 
@@ -40,7 +40,7 @@ Visibility, export
     export inner(...)
 
       Makes the listed symbols (or all if *) visible to the outer or inner
-      scope resp. of the module.  The outer/inner scopes are defined as in
+      scope of the module, resp.  The outer/inner scopes are defined as in
       the following chart:
 
       +--------------------------------------------+
@@ -73,32 +73,34 @@ Visibility, export
       |   +--------------------------------------+ |
       +--------------------------------------------+
 
-      Definitions of "m11" is visible to module "m1" by default, i.e. even
-      without "export" (rationale: there would be nothing in defining a
-      submodule, if you wouldn't want to access anything from it).  The
-      same applies to m21-m2, m211-m21, and m22-m2.  m211 is not visible to
-      m2 however.  m22 is not visible to m21, to m211, to m11, or to m1,
-      neither is m2 visible to m1.
+      Definitions of "m11" are not visible to anybody unless exported
+      (simply as export (*), for instance).  The same applies to m21-m2,
+      m211-m21, and m22-m2.  m211 is not visible to m2 however.  m22 is not
+      visible to m21, to m211, to m11, or to m1, neither is m2 visible to
+      m1.
 
       To make definitions visible to sibling modules (and their submodules)
-      only export to "inner".  To make definitions visible to all modules
-      up to the file (compile unit level) export to "outer".  To make
-      definition visible to all export to "public".
+      only export to "inner" (the inner circle of relations).  To make
+      definitions visible to all modules up to the file (compile unit
+      level) export to "outer" (the outer circle).  To make definitions
+      visible to all export to "public".
 
 
-  - file imported behave by definition as "interface", i.e. included
+  - files imported behave by definition as "interface", i.e. included
     implementations are **not** part of the importing compile unit.  Only
     the definitions of the imported file are actually imported.  (Note:
-    macros are however imported as "code", since macros are evaluated
+    macros are imported as "code", however, since macros are evaluated
     directly.  The same applies for char name and config variable
     definitions.)
 
     In this way we don't really need the "interface" keyword, since a
     module behaves silently as interface if imported.  The compiler must
     make sure however that two type/class definitions match if coming from
-    **interface** (i.e. imported) and module definition.  The interface
-    version may be reduced however (no "on init", no "on delete", not slot
-    init values, only abstract generic functions, etc.).
+    **interface** (i.e. imported) and module definition.  The rule is than
+    that if the compiler finds a symbol redefinition only must come from a
+    compile unit, all others must origin from imported files.  The
+    interface version may be reduced however (no "on init", no "on delete",
+    not slot init values, only abstract generic functions, etc.).
 
   - exporting as "final" declares a symbol to be not extensible.  It can be
     combined with any of the visible keywords:
