@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>def</id><id>g</id><nested left='(' right=')'/><punct type=':'/><id>Any</id><nested left='{' right='}'><lit type='int'>1</lit></nested></seq></seq>

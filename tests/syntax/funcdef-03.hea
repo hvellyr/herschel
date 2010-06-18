@@ -1,0 +1,126 @@
+def f0()
+  "no parameters"
+
+def f1(a)
+  "one positional parameter"
+
+def f2(a, b, c)
+  "multiple positional parameters"
+
+
+def f3(a : Int)
+  "one pos. parameter with type"
+
+def f4(a : Int, b : Char, c : String)
+  "multi pos. parameter with type"
+
+def f5(a : Int, b, c : String)
+  "multi pos. parameter with mixed type"
+
+
+def f6() : Bool
+  "no. parameters, + returntype"
+
+def f7(a) : Bool
+  "one positional parameter, + returntype"
+
+def f8(a, b, c) : Bool
+  "multiple positional parameters, + returntype"
+
+
+def f9(a : Int) : Bool
+  "one pos. parameter with type, + returntype"
+
+def f10(a : Int, b : Char, c : String) : Bool
+  "multi pos. parameter with type, + returntype"
+
+def f11(a : Int, b, c : String) : Bool
+  "multi pos. parameter with mixed type, + returntype"
+
+
+
+def f12(a = 11)
+  "one named parameter"
+
+def f13(x: a = 11) 
+  "one explicitly named parameter"
+
+def f14(x: a : Int = 11) 
+  "one explicitly named, typed parameter"
+
+def f15(x: a : Int = { 
+                       on sync ()
+                         11
+                     }) 
+  "one explicitly named, typed parameter with complex init value"
+
+
+def f16(a = 11, b = "hello world", c = \space) : Bool
+  "multiple named parameters"
+
+def f17(x: a = 11, y: b = "hello world", z: c = \space) : Bool
+  "multiple explicitly named parameters"
+
+def f18(x: a : Int = 11,
+        y: b : String = "hello world",
+        z: c : Char = \space) : Bool
+  "multiple explicitly named, typed parameters"
+
+
+def f19(x: a : Int = 11,
+        b : String = "hello world",
+        c = \space) : Bool
+  "variations of mixed parameters"
+
+def f19b(x: a : Int = 11,
+         b = "hello world",
+         c : Char = \space) : Bool
+  "variations of mixed parameters"
+
+def f19c(a : Int = 11,
+         y: b = "hello world",
+         z: c : Char = \space) : Bool
+  "variations of mixed parameters"
+
+
+def f20(a, c = "hello world")
+  "mixed pos. and named parameters"
+
+def f21(a, b, c = "hello world", d = 11)
+  "mixed pos. and named parameters"
+
+def f22(a, b, x: c = "hello world", y: d = 11)
+  "mixed pos. and named parameters"
+
+def f23(a : Int, b : Bool,
+        x: c : String = "hello world", y: d : Char = 11)
+  "mixed pos. and named parameters"
+
+
+def f30(r ...)
+  "rest parameter"
+
+def f31(a, r ...)
+  "pos. + rest parameter"
+
+def f32(a, b, r ...)
+  "pos. + rest parameter"
+
+def f33(a : Int, b : Bool, r ...)
+  "pos. + rest parameter"
+
+def f34(a : Int, b : Bool, c = 11, d = \space, r ...)
+  "pos., named & rest parameter"
+
+def f35(a : Int, b : Bool, x: c = 11, y: d = \space, r ...)
+  "pos., named & rest parameter"
+
+def f36(a : Int, b : Bool, x: c : Int = 11, y: d : Char = \space, r ...)
+  "pos., named & rest parameter"
+
+
+def f37(a : String[] ...)
+  "typed rest parameter"
+
+def f38(a : Int, x: c : Int = 11, r : String[] ...)
+  "mixed parameters"

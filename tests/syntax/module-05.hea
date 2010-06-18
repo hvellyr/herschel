@@ -1,0 +1,16 @@
+module core ("sijo/ixwick 0.1: core")
+
+module red ("sijo/ixwick 0.1: red")
+{
+}
+
+module blue ("sijo/ixwick 0.1: blue")
+{
+  module violet ("sijo/ixwick 0.1: violet")
+  {
+  }
+
+  module pink ("sijo/ixwick 0.1: pink")
+  {
+  }
+}

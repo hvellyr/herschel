@@ -1,0 +1,339 @@
+Visibility, export
+
+  - Review module vs. interface again.
+    Why do we need the "interface" specification?
+
+  - What does "exporting" mean?  What does "public", "protected", "final"
+    mean?
+
+  - import outside or inside of "module" scope and effects on visibility
+
+
+  Basic findings:
+
+  - definitions from the embedding file are not visible in the embedded
+    file.  I.e. embedded files are closures against the embedding context,
+    they include their embedded files however.  I.e. also that exporting
+    works always upwards (i.e. to the embedding context, not to the
+    embedded context).
+
+  - files imported inside a module scope are never visible to the outside of
+    the module scope, even with exports in effect.  This is the way to
+    encapsulate "private" imports from polluting public interface space.
+
+  - importing into a module scope does not affect the overall namespace or
+    module scope of the imported definitions; importing is about visibility
+    not about inclusion.  For example import a module "b" inside of module
+    "a" does not result in definitions of effective module scope "a.b", but
+    only in definitions of module "b" being visible in module "a", without
+    a file "c" necessarily deal with "b" definitions when importing "a".
+
+  - exports are used to make definitions from inside the module scope
+    visible to the outside.
+
+    public -> import to all
+    protected -> import to outer modules (if any, otherwise an error)
+    private -> ?
+
+    export public(...)
+    export outer(...)
+    export inner(...)
+
+      Makes the listed symbols (or all if *) visible to the outer or inner
+      scope of the module, resp.  The outer/inner scopes are defined as in
+      the following chart:
+
+      +--------------------------------------------+
+      |Embedding file A                            |
+      |                                            |
+      |   +--------------------------------------+ |
+      |   |File B                                | |
+      |   | +----------------------------------+ | |
+      |   | |module m1                         | | |
+      |   | | +--------------------------------+ | |
+      |   | | |module m11                      | | |
+      |   | | |                                | | |
+      |   | | |                                | | |
+      |   | +-+--------------------------------+ | |
+      |   |                                    | | |
+      |   | +----------------------------------+ | |
+      |   | |module m2                         | | |
+      |   | | +--------------------------------+ | |
+      |   | | |module m21                      | | |
+      |   | | | +------------------------------+ | |
+      |   | | | |module m211                   | | |
+      |   | | | |                              | | |
+      |   | | | |                              | | |
+      |   | | +-+------------------------------+ | |
+      |   | |                                  | | |
+      |   | | +--------------------------------+ | |
+      |   | | |module m22                      | | |
+      |   | | |                                | | |
+      |   | +----------------------------------+ | |
+      |   +--------------------------------------+ |
+      +--------------------------------------------+
+
+      Definitions of "m11" are not visible to anybody unless exported
+      (simply as export (*), for instance).  The same applies to m21-m2,
+      m211-m21, and m22-m2.  m211 is not visible to m2 however.  m22 is not
+      visible to m21, to m211, to m11, or to m1, neither is m2 visible to
+      m1.
+
+      To make definitions visible to sibling modules (and their submodules)
+      only export to "inner" (the inner circle of relations).  To make
+      definitions visible to all modules up to the file (compile unit
+      level) export to "outer" (the outer circle).  To make definitions
+      visible to all export to "public".
+
+
+  - files imported behave by definition as "interface", i.e. included
+    implementations are **not** part of the importing compile unit.  Only
+    the definitions of the imported file are actually imported.  (Note:
+    macros are imported as "code", however, since macros are evaluated
+    directly.  The same applies for char name and config variable
+    definitions.)
+
+    In this way we don't really need the "interface" keyword, since a
+    module behaves silently as interface if imported.  The compiler must
+    make sure however that two type/class definitions match if coming from
+    **interface** (i.e. imported) and module definition.  The rule is than
+    that if the compiler finds a symbol redefinition only must come from a
+    compile unit, all others must origin from imported files.  The
+    interface version may be reduced however (no "on init", no "on delete",
+    not slot init values, only abstract generic functions, etc.).
+
+  - exporting as "final" declares a symbol to be not extensible.  It can be
+    combined with any of the visible keywords:
+
+      export public (init) as final
+
+    Definitions from a submodule can be exported as final to enclosing
+    modules without changing visibility like this:
+
+      export (init) as final
+
+
+Slot definitions
+
+  we need
+
+  - control accessor/mutator function generation
+  - slots should be annotatable ('transient')
+  - why is a slot defined without `def' keyword?
+
+
+  Annotating style:
+
+    def slot name : String = _name ; transient, readonly
+
+  Modifier style:
+
+    def slot transient readonly name : String = _name
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    public slot current : Pair<T, _> = _root
+    private slot accessor : Accessor = acc
+    transient readonly slot maxcount : Int = 4000 : Int
+  }
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    slot public current : Pair<T, _> = _root
+    slot private accessor : Accessor = acc
+    slot transient readonly maxcount : Int = 4000 : Int
+  }
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    def slot current : Pair<T, _> = _root ; public
+    def slot accessor : Accessor = acc ; private
+    def slot maxcount : Int = 4000 : Int ; transient, readonly
+  }
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    slot current : Pair<T, _> = _root ; public
+    slot accessor : Accessor = acc ; private
+    slot maxcount : Int = 4000 : Int ; transient, readonly
+  }
+
+
+  def class PairIterator<T, Accessor<T> >(_root, acc)
+      : Iterator<T>
+  {
+    slot current : Pair<T, _> = _root :: public
+    slot accessor : Accessor = acc :: private
+    slot maxcount : Int = 4000 : Int :: transient, readonly
+  }
+
+
+
+
+
+
+
+Visibility and finalization for modules.
+
+  Toplevel modules are always visible to the public.  Unless any class or
+  methods is export however this information is worthless.  Every
+  identifier must be exported to the public or protected domain, either
+  final or open.
+
+  The same applies to nested (i.e. inner) module:
+
+  def module printer("sijo/ixwick:printer") {
+    -- exporting the inner module:
+    export final public(printer-driver, DriverSettings)
+
+    def class DriverSettings() { ... {
+
+    def module printer-driver("sijo/ixwick:printer-driver") {
+      export public (init-driver, get-driver-settings)
+
+      def generic init-driver() ...
+      def generic get-driver-settings() : DriverSettings ...
+    }
+  }
+
+  Identifier from inner modules are seen by direct parent modules; if
+  protected they are seen by all ancestor modules until the top-module; if
+  public they are seen by all modules in the top-level module even in
+  siblings.  Symbols from inner modules must be explictely exported to the
+  outside from the top-level module if this is required:
+
+    def module printer("sijo/ixwick:printer") {
+      export final public(printer-driver|get-driver-settings, DriverSettings)
+
+    }
+
+
+
+
+Lazy evaluation
+
+  The typical log problem.  The string is created before we decide whether
+  we should log.  Either use macros:
+
+    def macro log
+    {
+      { log(?level:expr, ?msg:expr) } -> { if (should-log(?level))
+                                             log-impl(?msg)
+                                         }
+    }
+
+  Or support lazy evaluation.  Since we will have the notion of "promises"
+  anyway (for spawn and synchronization), this can be made first class:
+
+    def log(level : Keyword, lazy msg : String)
+      if (should-log(level))
+        do-whatever-is-necessary(msg)
+
+  Technically this can be done by the compiler as such.  The following
+  example:
+
+    log(#debug, StringBuffer().append("error ")
+                              .append(exc.to-string)
+                              .append("(").append(exc.details).append(")")
+                              .to-string)
+
+  can be compile as:
+
+    log(#debug, function() : String {
+                  StringBuffer().append("error ")
+                                .append(exc.to-string)
+                                .append("(").append(exc.details).append(")")
+                                .to-string
+                })
+
+  The log-implementation would look like:
+
+    def log(level : Keyword, lazy msg : String)
+      if (should-log(level))
+        do-whatever-is-necessary(msg())
+
+
+
+Embedding C and C++ fragments.
+
+  In the C extern it is only allowed to embed function definitions.  In the
+  C++ embed it is possible also to embed class definitions ... but no code.
+
+  extern ("C") {
+    size_t fprintf(FILE* stream, const char* format, ...);
+  }
+
+  extern ("C++") {
+    ...
+  }
+
+
+
+Used character in the Ascii table:
+
+    Heather                             C
+-------------------------------------------------------------
+!   identifier                          not
+"   string separator                    string
+#   keyword notation                    preproc
+    constant array notation
+$   identifier                          [----------]
+%   identifier                          operator (mod)
+    operator (mod)
+&   operator (bit and)                  operator (&, &&)
+    Complex type notationx               pointer ref op.
+'   Implicit type generics              char
+()  arguments                           arguments
+    grouping
+*   operator (*, **)                    operator(*)
+    identifier                          pointer ref op.
++   operator (+)                        operator(+)
+    identifier
+,   parameter separator                 prm separator
+-   identifier                          operator (-)
+    operator (-)
+    negative numbers
+    comment starter (--)
+.   function call                       struct member
+    float notation                      float notation
+/   operator (div)                      operator(div)
+    identifier
+0-9 digits                              digits
+    identifier                          identifier
+:   keyword arguments                   ternary operator
+    type separator
+;   [----------]                        stmt terminator
+<>  operator (<, >, <=, >=, <>, ->)     operator(...)
+    parametrization
+=   operator (==, <=, >=)               operator(==)
+    assignment                          assignment
+    parameter default
+?   identifier                          ternary operator
+    macro variable marker
+@   specialize marker                   [----------]
+A-Z digits                              digits
+    identifier                          identifier
+[]  slicing                             array
+    arrays
+\   char constants                      escaping
+^   [----------] *)                     operator (xor)
+_   identifier                          identifier
+    current type notifier
+`   measure types                       [----------]
+a-z digits                              digits
+    identifier                          identifier
+{}  code block                          code block
+|   operator (bit or)                   operator (|, ||)
+    modname separator
+~   docstring limiter                   operator (bit not)
+
+
+*) reserved for call-by-reference/call-by-value experiments

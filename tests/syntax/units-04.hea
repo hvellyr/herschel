@@ -1,0 +1,5 @@
+def measure Temperature(K) : Real
+def measure Frequency(Hz) : Real
+
+def unit oC -> K (x) { x - 273.15 }
+def unit kHz -> Hz (x) { x / 1000 }

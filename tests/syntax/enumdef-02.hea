@@ -1,0 +1,17 @@
+def enum PortCursorWhenceType
+{
+  current
+  begin
+  end
+}
+
+
+def enum Colors : Keyword
+{
+  none
+  red
+  orange
+  blue
+  green
+  yellow
+}

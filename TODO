@@ -1,0 +1,106 @@
+-*-org-*-
+
+Language and ideas:
+
+  - write up about module/interface.  Review import, export, module, etc.
+    See CHANGES.
+
+  - Redesign accessing items from enum types.  Parsing as Enum.item does
+    not work, since this would require symboltables during parsing (how to
+    distinguish between param.func and Enum.item ?).  Idea: Maybe use a new
+    item-operator ::? E.g. Enum::item.
+
+  - structs ?  Contrary to classes do not support inheritance, but provide
+    fixed layout.
+
+  - Think about non-gc objects.
+
+  - Think about lazy evaluation (generalize the 'promise' concept
+    introduced en passent with sync).  See x10 -> futures.
+
+  - checked exceptions.  Declare as
+
+      def generic f() : 'X
+          raises 'B
+          reify () : N, () : P
+          where B isa Throwable
+        ...
+
+    additionally
+
+      def generic f() : 'X
+          no-raise
+          reify ....
+
+    to document that a function does not let exceptions through.
+
+  - Think about: all objects are passed by value (i.e. even for vectors);
+    values passed to spawned functions are actually copied, otherwise
+    internal refcounted.  It is possible to explicitely use references:
+
+      def f(a : ^Int, b : ^Vector<Octet>)
+
+    Note this, of course, would require to write all typical oo-functions
+    as
+
+      def generic f(self @ ^MyType, ...)
+
+    if the function is to be non-const.
+
+  - Embedding of C/C++ fragments
+
+
+Documentation
+
+  - Write nested modules section.
+
+  - rewrite exporting, visibility, and importing section
+
+  - Mention explicitely: no coercing.  Where?
+
+  - Write assignment section.
+
+  - Rewrite the "def xxx" to the new deffn-form-example style.
+
+
+
+Bootstrap compiler
+
+  Implement last missing pass1 stuff:
+
+    - pass2
+
+      - 'export', 'import', 'extend', 'when' (top) should not appear in the
+        apt-tree at all.  think twice whether 'module' should
+
+        'when': is filtered during pass1 already.  should not show up in
+           pass2 at all
+
+        'import': is handled during pass1 already.  the result of 'import'
+           is directly passed into symbol tables, etc.
+
+        'export': which symbols are to be exported is directly put into the
+           enclosing 'module' node.  Or: is stored in the symbol tables
+           generated for a file during import
+
+        'extend': after the pass1 run all 'def' symbols should be annotated
+           as qualified symbols, i.e. including namespace info.  Extend
+           simply shortcuts this, so that extend is not required in
+           apt-tree anymore.
+
+
+    - export of defs (esp. macros)
+
+    - import
+
+    - access values from enums as Enum::item
+
+    - extend macro parameter types (like ?a:type-spec)
+
+    - macros
+
+      - subpatterns
+
+  continue with pexpreval (add the missing operators)
+
+  unittests for Rational() class.
