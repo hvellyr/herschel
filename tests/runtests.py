@@ -17,9 +17,9 @@ class TestRunner:
         self.test_succeeded = 0
         self.test_run = 0
 
-        self.SYNTAX_PASS1_OPT = ["-T", "pass1", "-P", "--dont-import" ]
+        self.SYNTAX_PASS1_OPT = ["-T", "pass1", "-P", "--dont-import", "--parse-1" ]
         self.SYNTAX_PASS2_OPT = ["-T", "pass2", "-P", "--dont-import" ]
-        self.IMPORT_PASS1_OPT = ["-T", "pass1", "-P" ]
+        self.IMPORT_PASS1_OPT = ["-T", "pass1", "-P", "--parse-1" ]
         self.IMPORT_PASS2_OPT = ["-T", "pass2", "-P" ]
 
 

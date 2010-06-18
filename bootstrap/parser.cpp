@@ -118,17 +118,25 @@ Parser::parse(Port<Char>* port, const String& srcName)
       displayln(stream, "");
     }
 
-    SecondPass secondPass(this);
+    bool doPass2 = true;
+#if defined(UNITTESTS)
+    doPass2 = !Properties::test_pass1Only();
+#endif
 
-    Ptr<AptNode> apt = secondPass.parse(parsedExprs);
-    if (Properties::isTracePass2() && apt != NULL) {
-      Ptr<FilePort> stream = new FilePort(stdout);
-      display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
-      apt->display(stream);
-      displayln(stream, "");
+    if (doPass2) {
+      SecondPass secondPass(this);
+
+      Ptr<AptNode> apt = secondPass.parse(parsedExprs);
+      if (Properties::isTracePass2() && apt != NULL) {
+        Ptr<FilePort> stream = new FilePort(stdout);
+        display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
+        apt->display(stream);
+        displayln(stream, "");
+      }
+      return apt.release();
     }
 
-    return apt.release();
+    return NULL;
   }
   catch (const Exception& e) {
     logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
