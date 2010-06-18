@@ -34,11 +34,22 @@ namespace heather
   class AptNode : public RefCountable
   {
   public:
+    AptNode(const SrcPos& srcpos)
+      : fSrcPos(srcpos)
+    { }
+
+    const SrcPos& srcpos() const
+    {
+      return fSrcPos;
+    }
+
+
     virtual void display(Port<Octet>* port) const = 0;
 
     virtual void appendNode(AptNode* node);
 
   protected:
+    SrcPos   fSrcPos;
     NodeList fChildren;
   };
 
@@ -48,7 +59,7 @@ namespace heather
   class StringNode : public AptNode
   {
   public:
-    StringNode(const String& value);
+    StringNode(const SrcPos& srcpos, const String& value);
 
     virtual void display(Port<Octet>* port) const;
   private:
@@ -61,7 +72,7 @@ namespace heather
   class KeywordNode : public AptNode
   {
   public:
-    KeywordNode(const String& value);
+    KeywordNode(const SrcPos& srcpos, const String& value);
 
     virtual void display(Port<Octet>* port) const;
   private:
@@ -74,7 +85,7 @@ namespace heather
   class SymbolNode : public AptNode
   {
   public:
-    SymbolNode(const String& value);
+    SymbolNode(const SrcPos& srcpos, const String& value);
 
     virtual void display(Port<Octet>* port) const;
   private:
@@ -89,8 +100,9 @@ namespace heather
   {
   public:
   protected:
-    NumberNode(T value, bool isImaginary)
-      : fValue(value),
+    NumberNode(const SrcPos& srcpos, T value, bool isImaginary)
+      : AptNode(srcpos),
+        fValue(value),
         fIsImaginary(isImaginary)
     { }
 
@@ -104,7 +116,7 @@ namespace heather
   class IntNode : public NumberNode<int>
   {
   public:
-    IntNode(int value, bool isImaginary);
+    IntNode(const SrcPos& srcpos, int value, bool isImaginary);
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -114,7 +126,7 @@ namespace heather
   class RealNode : public NumberNode<double>
   {
   public:
-    RealNode(double value, bool isImaginary);
+    RealNode(const SrcPos& srcpos, double value, bool isImaginary);
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -124,7 +136,8 @@ namespace heather
   class RationalNode : public NumberNode<Rational>
   {
   public:
-    RationalNode(const Rational& value, bool isImaginary);
+    RationalNode(const SrcPos& srcpos,
+                 const Rational& value, bool isImaginary);
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -134,7 +147,7 @@ namespace heather
   class CharNode : public AptNode
   {
   public:
-    CharNode(Char value);
+    CharNode(const SrcPos& srcpos, Char value);
     virtual void display(Port<Octet>* port) const;
   private:
     Char fValue;
@@ -146,7 +159,7 @@ namespace heather
   class CompileUnitNode : public AptNode
   {
   public:
-    CompileUnitNode();
+    CompileUnitNode(const SrcPos& srcpos);
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -156,7 +169,8 @@ namespace heather
   class ModuleNode : public AptNode
   {
   public:
-    ModuleNode(const String& modName, const String& publicId);
+    ModuleNode(const SrcPos& srcpos,
+               const String& modName, const String& publicId);
     virtual void display(Port<Octet>* port) const;
 
   private:
@@ -170,12 +184,24 @@ namespace heather
   class ExportNode : public AptNode
   {
   public:
-    ExportNode(const StringList& flags,
+    enum VizType {
+      kPrivate,
+      kInner,
+      kOuter,
+      kPublic,
+    };
+
+    ExportNode(const SrcPos& srcpos,
+               VizType viz,
+               bool isFinal,
                const StringList& symbols);
     virtual void display(Port<Octet>* port) const;
 
+    const char* vizAttr(VizType viz) const;
+
   private:
-    StringList fFlags;
+    VizType fViz;
+    bool    fIsFinal;
     StringList fSymbols;
   };
 
@@ -185,7 +211,8 @@ namespace heather
   class ImportNode : public AptNode
   {
   public:
-    ImportNode(const String& codeFile,
+    ImportNode(const SrcPos& srcpos,
+               const String& codeFile,
                const StringStringMap& renames);
     virtual void display(Port<Octet>* port) const;
 
@@ -197,25 +224,90 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  enum VardefFlags {
-    kNoFlags,
-    kIsFluid,
-    kIsConst,
-    kIsConfig
-  };
-
-  class VardefNode : public AptNode
+  class BindingNode : public AptNode
   {
   public:
-    VardefNode(const String& symbolName, VardefFlags flags,
+    BindingNode(const SrcPos& srcpos,
+                const String& symbolName, AptNode* type, AptNode* initExpr);
+
+  protected:
+    String fSymbolName;
+    Ptr<AptNode> fType;
+    Ptr<AptNode> fInitExpr;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class BaseDefNode : public AptNode
+  {
+  public:
+    BaseDefNode(const SrcPos& srcpos, AptNode* defined);
+
+  protected:
+    Ptr<AptNode> fDefined;
+  };
+
+
+  class LetNode : public BaseDefNode
+  {
+  public:
+    LetNode(AptNode* node);
+    virtual void display(Port<Octet>* port) const;
+  };
+
+
+  class DefNode : public BaseDefNode
+  {
+  public:
+    DefNode(AptNode* node);
+    virtual void display(Port<Octet>* port) const;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  enum VardefFlags {
+    kNormalVar,
+    kFluidVar,
+    kConstVar,
+    kConfigVar
+  };
+
+  class VardefNode : public BindingNode
+  {
+  public:
+    VardefNode(const SrcPos& srcpos,
+               const String& symbolName, VardefFlags flags,
                AptNode* type, AptNode* initExpr);
+
     virtual void display(Port<Octet>* port) const;
 
   private:
-    String fSymbolName;
     VardefFlags fFlags;
-    Ptr<AptNode> fType;
-    Ptr<AptNode> fInitExpr;
+  };
+
+
+  enum ParamFlags {
+    kPosArg,
+    kSpecArg,
+    kNamedArg,
+    kRestArg
+  };
+
+  class ParamNode : public BindingNode
+  {
+  public:
+    ParamNode(const SrcPos& srcpos,
+              const String& keyName,
+              const String& symbolName, ParamFlags flags,
+              AptNode* type, AptNode* initExpr);
+
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    String fKey;
+    ParamFlags fFlags;
   };
 
 
@@ -251,7 +343,8 @@ namespace heather
   class BinaryNode : public AptNode
   {
   public:
-    BinaryNode(AptNode* left, OperatorType op, AptNode* right);
+    BinaryNode(const SrcPos& srcpos,
+               AptNode* left, OperatorType op, AptNode* right);
 
     virtual void display(Port<Octet>* port) const;
 
@@ -266,6 +359,82 @@ namespace heather
     Ptr<AptNode> fRight;
     OperatorType fOp;
   };
+
+
+  //--------------------------------------------------------------------------
+
+  class RangeNode : public AptNode
+  {
+  public:
+    RangeNode(const SrcPos& srcpos,
+              AptNode* from, AptNode* to, AptNode* by);
+    virtual void display(Port<Octet>* port) const;
+
+    AptNode* from() const;
+    AptNode* to() const;
+    AptNode* by() const;
+
+  private:
+    Ptr<AptNode> fFrom;
+    Ptr<AptNode> fTo;
+    Ptr<AptNode> fBy;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class AssignNode : public AptNode
+  {
+  public:
+    AssignNode(const SrcPos& srcpos, AptNode* lvalue, AptNode* rvalue);
+    virtual void display(Port<Octet>* port) const;
+
+    AptNode* lvalue() const;
+    AptNode* rvalue() const;
+
+  private:
+    Ptr<AptNode> fLValue;
+    Ptr<AptNode> fRValue;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class IfNode : public AptNode
+  {
+  public:
+    IfNode(const SrcPos& srcpos,
+           AptNode* test, AptNode* consequent, AptNode* alternate);
+
+    virtual void display(Port<Octet>* port) const;
+
+    AptNode* test() const;
+    AptNode* consequent() const;
+    AptNode* alternate() const;
+
+  private:
+    Ptr<AptNode> fTest;
+    Ptr<AptNode> fConsequent;
+    Ptr<AptNode> fAlternate;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class OnNode : public AptNode
+  {
+  public:
+    OnNode(const SrcPos& srcpos,
+           const String& key, const NodeList& params, AptNode* body);
+
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    String       fKey;
+    NodeList     fParams;
+    Ptr<AptNode> fBody;
+  };
 };
+
 
 #endif  // bootstrap_apt_h

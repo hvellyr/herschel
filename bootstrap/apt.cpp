@@ -7,6 +7,7 @@
 */
 
 #include "apt.h"
+#include "strbuf.h"
 
 using namespace heather;
 
@@ -39,6 +40,14 @@ displayCloseTag(Port<Octet>* port, const char* tagName)
   if (tagName != NULL)
     heather::display(port, String() + "</" + tagName + ">");
 }
+
+
+// static void
+// displayEmptyTag(Port<Octet>* port, const char* tagName)
+// {
+//   if (tagName != NULL && ::strlen(tagName) > 0)
+//     heather::display(port, String() + "<" + tagName + "/>");
+// }
 
 
 static void
@@ -152,8 +161,9 @@ AptNode::appendNode(AptNode* node)
 
 //----------------------------------------------------------------------------
 
-StringNode::StringNode(const String& value)
-  : fValue(value)
+StringNode::StringNode(const SrcPos& srcpos, const String& value)
+  : AptNode(srcpos),
+    fValue(value)
 {
 }
 
@@ -167,8 +177,9 @@ StringNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-KeywordNode::KeywordNode(const String& value)
-  :fValue(value)
+KeywordNode::KeywordNode(const SrcPos& srcpos, const String& value)
+  :AptNode(srcpos),
+   fValue(value)
 {
 }
 
@@ -182,8 +193,9 @@ KeywordNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-SymbolNode::SymbolNode(const String& value)
-  :fValue(value)
+SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value)
+  : AptNode(srcpos),
+    fValue(value)
 {
 }
 
@@ -197,8 +209,8 @@ SymbolNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-IntNode::IntNode(int value, bool isImaginary)
-  : NumberNode<int>(value, isImaginary)
+IntNode::IntNode(const SrcPos& srcpos, int value, bool isImaginary)
+  : NumberNode<int>(srcpos, value, isImaginary)
 {
 }
 
@@ -215,8 +227,8 @@ IntNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-RealNode::RealNode(double value, bool isImaginary)
-  : NumberNode<double>(value, isImaginary)
+RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary)
+  : NumberNode<double>(srcpos, value, isImaginary)
 {
 }
 
@@ -233,8 +245,9 @@ RealNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-RationalNode::RationalNode(const Rational& value, bool isImaginary)
-  : NumberNode<Rational>(value, isImaginary)
+RationalNode::RationalNode(const SrcPos& srcpos,
+                           const Rational& value, bool isImaginary)
+  : NumberNode<Rational>(srcpos, value, isImaginary)
 {
 }
 
@@ -252,8 +265,9 @@ RationalNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-CharNode::CharNode(Char value)
-  : fValue(value)
+CharNode::CharNode(const SrcPos& srcpos, Char value)
+  : AptNode(srcpos),
+    fValue(value)
 { }
 
 
@@ -266,7 +280,8 @@ CharNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-CompileUnitNode::CompileUnitNode()
+CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
+  : AptNode(srcpos)
 {}
 
 
@@ -279,8 +294,10 @@ CompileUnitNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-ModuleNode::ModuleNode(const String& modName, const String& publicId)
-  : fModName(modName),
+ModuleNode::ModuleNode(const SrcPos& srcpos,
+                       const String& modName, const String& publicId)
+  : AptNode(srcpos),
+    fModName(modName),
     fPublicId(publicId)
 {
 }
@@ -302,19 +319,44 @@ ModuleNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-ExportNode::ExportNode(const std::list<String>& flags,
-                       const std::list<String>& symbols)
+ExportNode::ExportNode(const SrcPos& srcpos,
+                       VizType viz,
+                       bool isFinal,
+                       const StringList& symbols)
+  : AptNode(srcpos),
+    fViz(viz),
+    fIsFinal(isFinal)
 {
-  fFlags.assign(flags.begin(), flags.end());
   fSymbols.assign(symbols.begin(), symbols.end());
+}
+
+
+const char* ExportNode::vizAttr(VizType viz) const
+{
+  switch (viz) {
+  case kPrivate:
+    return "";
+  case kInner:
+    return "viz='inner'";
+  case kOuter:
+    return "viz='outer'";
+  case kPublic:
+    return "viz='public'";
+  }
+  return "";
 }
 
 
 void
 ExportNode::display(Port<Octet>* port) const
 {
-  displayOpenTag(port, "export");
-  displayStringList(port, "flags", "flag", fFlags);
+  StringBuffer attrs;
+  attrs << vizAttr(fViz);
+  if (fIsFinal)
+    attrs << " final='true'";
+
+  displayOpenTagAttrs(port, "export", StrHelper(attrs.toString()));
+
   displayStringList(port, "symbols", "sym", fSymbols);
   displayCloseTag(port, "export");
 }
@@ -322,9 +364,11 @@ ExportNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-ImportNode::ImportNode(const String& codeFile,
+ImportNode::ImportNode(const SrcPos& srcpos,
+                       const String& codeFile,
                        const StringStringMap& renames)
-  : fCodeFile(codeFile)
+  : AptNode(srcpos),
+    fCodeFile(codeFile)
 {
   fRenames.insert(renames.begin(), renames.end());
 }
@@ -342,12 +386,59 @@ ImportNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-VardefNode::VardefNode(const String& symbolName, VardefFlags flags,
-                       AptNode* type, AptNode* initExpr)
-  : fSymbolName(symbolName),
-    fFlags(flags),
+BaseDefNode::BaseDefNode(const SrcPos& srcpos, AptNode* defined)
+  : AptNode(srcpos),
+    fDefined(defined)
+{ }
+
+
+LetNode::LetNode(AptNode* node)
+  : BaseDefNode(node->srcpos(), node)
+{ }
+
+
+void
+LetNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "let");
+  displayNode(port, NULL, fDefined);
+  displayCloseTag(port, "let");
+}
+
+
+DefNode::DefNode(AptNode* node)
+  : BaseDefNode(node->srcpos(), node)
+{ }
+
+
+void
+DefNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "def");
+  displayNode(port, NULL, fDefined);
+  displayCloseTag(port, "def");
+}
+
+
+//----------------------------------------------------------------------------
+
+BindingNode::BindingNode(const SrcPos& srcpos,
+                         const String& symbolName, AptNode* type,
+                         AptNode* initExpr)
+  : AptNode(srcpos),
+    fSymbolName(symbolName),
     fType(type),
     fInitExpr(initExpr)
+{ }
+
+
+//----------------------------------------------------------------------------
+
+VardefNode::VardefNode(const SrcPos& srcpos,
+                       const String& symbolName, VardefFlags flags,
+                       AptNode* type, AptNode* initExpr)
+  : BindingNode(srcpos, symbolName, type, initExpr),
+    fFlags(flags)
 {
 }
 
@@ -355,28 +446,75 @@ VardefNode::VardefNode(const String& symbolName, VardefFlags flags,
 void
 VardefNode::display(Port<Octet>* port) const
 {
-  displayOpenTag(port, "vardef");
+  StringBuffer attrs;
+
+  attrs << "sym='" << fSymbolName << "'";
 
   switch (fFlags) {
-  case kNoFlags:
+  case kNormalVar:
     break;
-  case kIsFluid:
-    heather::display(port, "<is-fluid/>");
+  case kFluidVar:
+    attrs << " type='fluid'";
     break;
-  case kIsConst:
-    heather::display(port, "<is-const/>");
+  case kConstVar:
+    attrs << " type='const'";
     break;
-  case kIsConfig:
-    heather::display(port, "<is-config/>");
+  case kConfigVar:
+    attrs << " type='config'";
     break;
   }
 
-  displayTag(port, "sym", fSymbolName);
+  displayOpenTagAttrs(port, "vardef", StrHelper(attrs.toString()));
 
   displayNode(port, "type", fType);
   displayNode(port, "init", fInitExpr);
 
   displayCloseTag(port, "vardef");
+}
+
+
+//----------------------------------------------------------------------------
+
+ParamNode::ParamNode(const SrcPos& srcpos,
+                     const String& keyName,
+                     const String& symbolName, ParamFlags flags,
+                     AptNode* type, AptNode* initExpr)
+  : BindingNode(srcpos, symbolName, type, initExpr),
+    fKey(keyName),
+    fFlags(flags)
+{
+  assert(heaImplies(fFlags != kNamedArg, !fKey.isEmpty()));
+}
+
+
+void
+ParamNode::display(Port<Octet>* port) const
+{
+  StringBuffer attrs;
+
+  attrs << "sym='" << fSymbolName << "'";
+
+  switch (fFlags) {
+  case kPosArg:
+    attrs << " type='pos'";
+    break;
+  case kSpecArg:
+    attrs << " type='spec'";
+    break;
+  case kNamedArg:
+    attrs << " type='key' key='" << fKey << "'";
+    break;
+  case kRestArg:
+    attrs << " type='rest'";
+    break;
+  }
+
+  displayOpenTagAttrs(port, "param", StrHelper(attrs.toString()));
+
+  displayNode(port, "type", fType);
+  displayNode(port, "init", fInitExpr);
+
+  displayCloseTag(port, "param");
 }
 
 
@@ -415,8 +553,10 @@ DictNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
-BinaryNode::BinaryNode(AptNode* left, OperatorType op, AptNode* right)
-  : fLeft(left),
+BinaryNode::BinaryNode(const SrcPos& srcpos,
+                       AptNode* left, OperatorType op, AptNode* right)
+  : AptNode(srcpos),
+    fLeft(left),
     fRight(right),
     fOp(op)
 { }
@@ -502,4 +642,148 @@ BinaryNode::display(Port<Octet>* port) const
   heather::display(port, operatorName(fOp));
   displayNode(port, NULL, fRight);
   displayCloseTag(port, "binary");
+}
+
+
+//------------------------------------------------------------------------------
+
+RangeNode::RangeNode(const SrcPos& srcpos,
+                     AptNode* from, AptNode* to, AptNode* by)
+  : AptNode(srcpos),
+    fFrom(from),
+    fTo(to),
+    fBy(by)
+{ }
+
+
+void
+RangeNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "range");
+  displayNode(port, NULL, fFrom);
+  displayNode(port, NULL, fTo);
+  displayNode(port, NULL, fBy);
+  displayCloseTag(port, "range");
+}
+
+
+AptNode*
+RangeNode::from() const
+{
+  return fFrom;
+}
+
+
+AptNode*
+RangeNode::to() const
+{
+  return fTo;
+}
+
+
+AptNode*
+RangeNode::by() const
+{
+  return fBy;
+}
+
+
+//--------------------------------------------------------------------------
+
+AssignNode::AssignNode(const SrcPos& srcpos,
+                       AptNode* lvalue, AptNode* rvalue)
+  : AptNode(srcpos),
+    fLValue(lvalue),
+    fRValue(rvalue)
+{ }
+
+
+void
+AssignNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "assign");
+  displayNode(port, NULL, fLValue);
+  displayNode(port, NULL, fRValue);
+  displayCloseTag(port, "assign");
+}
+
+
+AptNode*
+AssignNode::lvalue() const
+{
+  return fLValue;
+}
+
+
+AptNode*
+AssignNode::rvalue() const
+{
+  return fRValue;
+}
+
+
+//------------------------------------------------------------------------------
+
+IfNode::IfNode(const SrcPos& srcpos,
+               AptNode* test, AptNode* consequent, AptNode* alternate)
+  : AptNode(srcpos),
+    fTest(test),
+    fConsequent(consequent),
+    fAlternate(alternate)
+{ }
+
+
+void
+IfNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "if");
+  displayNode(port, "test", fTest);
+  displayNode(port, "then", fConsequent);
+  displayNode(port, "else", fAlternate);
+  displayCloseTag(port, "if");
+}
+
+
+AptNode*
+IfNode::test() const
+{
+  return fTest;
+}
+
+
+AptNode*
+IfNode::consequent() const
+{
+  return fConsequent;
+}
+
+
+AptNode*
+IfNode::alternate() const
+{
+  return fAlternate;
+}
+
+
+//------------------------------------------------------------------------------
+
+OnNode::OnNode(const SrcPos& srcpos,
+               const String& key, const NodeList& params, AptNode* body)
+  : AptNode(srcpos),
+    fKey(key),
+    fBody(body)
+{
+  fParams.assign(params.begin(), params.end());
+}
+
+
+void
+OnNode::display(Port<Octet>* port) const
+{
+  StringBuffer attrs;
+  attrs << "key='" << fKey << "'";
+  displayOpenTagAttrs(port, "on", StrHelper(attrs.toString()));
+  displayNodeList(port, "params", fParams);
+  displayNode(port, "body", fBody);
+  displayCloseTag(port, "on");
 }
