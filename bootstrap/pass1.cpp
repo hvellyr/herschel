@@ -1776,7 +1776,7 @@ FirstPass::parseUnitNumber(const Token& token)
 {
   Token number = token;
   nextToken();
-  if (fToken == kBackQuote) {
+  if (fToken == kQuote) {
     Token bqToken = fToken;
     nextToken();
 

@@ -2,7 +2,7 @@ def measure Pixel : Real
 def measure AmountOfSubstance[mol] : Real
 def measure SurfaceDensity(kg/m2)
 def measure abc xyz 
-def measure Meter(`xyz) : Rational
+def measure Meter('xyz) : Rational
 
 def measure Alraune() : Int
 

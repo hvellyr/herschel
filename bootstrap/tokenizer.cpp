@@ -625,7 +625,6 @@ Tokenizer::nextTokenImpl()
     case '@': return makeTokenAndNext(srcpos(), kAt);
     case '|': return makeTokenAndNext(srcpos(), kPipe);
     case '\'': return makeTokenAndNext(srcpos(), kQuote);
-    case '`': return makeTokenAndNext(srcpos(), kBackQuote);
 
     case '&':
       nextChar();
@@ -1140,7 +1139,7 @@ public:
     {
       static const char* test =
         "io|File  self.io|val.display\n"
-        "f('T)  12`mm\n";
+        "f('T)  12'mm\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 
@@ -1160,7 +1159,7 @@ public:
         assert(tnz.nextToken() == Token(sp, kParanClose));
 
         assert(tnz.nextToken() == Token(sp, kInt, 12));
-        assert(tnz.nextToken() == Token(sp, kBackQuote));
+        assert(tnz.nextToken() == Token(sp, kQuote));
         assert(tnz.nextToken() == Token(sp, String("mm")));
       }
       catch (const Exception& ne) {
