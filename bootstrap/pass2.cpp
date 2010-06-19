@@ -61,8 +61,7 @@ SecondPass::parseModule(const Token& expr)
     publicId = expr[2][0].stringValue();
   }
 
-  Ptr<ModuleNode> modNode = new ModuleNode(expr[1].srcpos(),
-                                           modName, publicId);
+  Ptr<ModuleNode> modNode = new ModuleNode(modName, publicId);
 
   if (expr.count() > 3) {
     assert(expr[3].isNested() && expr[3].leftToken() == kBraceOpen);
