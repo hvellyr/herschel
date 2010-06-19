@@ -67,6 +67,9 @@ namespace heather
     AptNode* parseBlock(const Token& expr);
     AptNode* parseNested(const Token& expr);
 
+
+    AptNode* parseTypeSpec(const Token& expr);
+
     //-------- data member
 
     Ptr<Parser> fParser;
