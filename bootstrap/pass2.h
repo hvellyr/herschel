@@ -42,6 +42,9 @@ namespace heather
     AptNode* parseDef(const Token& expr);
     AptNode* parseIf(const Token& expr);
     AptNode* parseOn(const Token& expr);
+    AptNode* parseFor(const Token& expr);
+    AptNode* parseSelect(const Token& expr);
+    AptNode* parseMatch(const Token& expr);
     AptNode* parseClosure(const Token& expr);
     AptNode* parseBinary(const Token& expr);
     AptNode* parseFunCall(const Token& expr);
@@ -60,6 +63,9 @@ namespace heather
     AptNode* parseFunctionDef(const Token& expr);
 
     AptNode* newDefNode(AptNode* node, bool isLet);
+
+    AptNode* parseBlock(const Token& expr);
+    AptNode* parseNested(const Token& expr);
 
     //-------- data member
 

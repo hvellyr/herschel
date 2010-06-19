@@ -787,3 +787,17 @@ OnNode::display(Port<Octet>* port) const
   displayNode(port, "body", fBody);
   displayCloseTag(port, "on");
 }
+
+
+//----------------------------------------------------------------------------
+
+BlockNode::BlockNode(const SrcPos& srcpos)
+  : AptNode(srcpos)
+{ }
+
+
+void
+BlockNode::display(Port<Octet>* port) const
+{
+  displayNodeList(port, "block", fChildren);
+}
