@@ -291,6 +291,7 @@ $   identifier                          [----------]
 &   operator (bit and)                  operator (&, &&)
     Complex type notationx               pointer ref op.
 '   Implicit type generics              char
+    Units
 ()  arguments                           arguments
     grouping
 *   operator (*, **)                    operator(*)
@@ -310,7 +311,7 @@ $   identifier                          [----------]
     identifier                          identifier
 :   keyword arguments                   ternary operator
     type separator
-;   [----------]                        stmt terminator
+;   Extended slot params                stmt terminator
 <>  operator (<, >, <=, >=, <>, ->)     operator(...)
     parametrization
 =   operator (==, <=, >=)               operator(==)
@@ -327,7 +328,7 @@ A-Z digits                              digits
 ^   [----------] *)                     operator (xor)
 _   identifier                          identifier
     current type notifier
-`   measure types                       [----------]
+`   [----------]                        [----------]
 a-z digits                              digits
     identifier                          identifier
 {}  code block                          code block

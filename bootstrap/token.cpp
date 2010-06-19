@@ -61,7 +61,6 @@ namespace heather
     case kAt:                return String("@");
     case kAmpersand:         return String("&");
     case kPipe:              return String("|");
-    case kBackQuote:         return String("`");
     case kQuote:             return String("'");
     case kEllipsis:          return String("...");
     case kRange:             return String("..");
@@ -826,7 +825,6 @@ Token::type() const
   case kAt:
   case kAmpersand:
   case kPipe:
-  case kBackQuote:
   case kQuote:
   case kEllipsis:
   case kRange:

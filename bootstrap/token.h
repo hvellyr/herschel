@@ -128,7 +128,6 @@ namespace heather
     kAt,
     kAmpersand,
     kPipe,
-    kBackQuote,
     kQuote,
     kEllipsis,
     kRange,
