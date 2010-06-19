@@ -489,6 +489,30 @@ SecondPass::parseFunCall(const Token& expr)
 }
 
 
+AptNode*
+SecondPass::parseFor(const Token& expr)
+{
+  // TODO
+  return NULL;
+}
+
+
+AptNode*
+SecondPass::parseSelect(const Token& expr)
+{
+  // TODO
+  return NULL;
+}
+
+
+AptNode*
+SecondPass::parseMatch(const Token& expr)
+{
+  // TODO
+  return NULL;
+}
+
+
 //------------------------------------------------------------------------------
 
 AptNode*
@@ -527,6 +551,12 @@ SecondPass::parseSeq(const Token& expr)
     return parseOn(expr);
   else if (first == kFunctionId)
     return parseClosure(expr);
+  else if (first == kForId)
+    return parseFor(expr);
+  else if (first == kSelectId)
+    return parseSelect(expr);
+  else if (first == kMatchId)
+    return parseMatch(expr);
   else if (expr.isBinarySeq())
     return parseBinary(expr);
   else if (expr.count() == 2) {
@@ -535,6 +565,58 @@ SecondPass::parseSeq(const Token& expr)
   }
 
   return parseExpr(expr[0]);
+}
+
+
+AptNode*
+SecondPass::parseBlock(const Token& expr)
+{
+  if (expr.count() == 0) {
+    return new SymbolNode(expr.srcpos(), String("unspecified"));
+  }
+  else if (expr.count() == 1) {
+    return parseExpr(expr[0]);
+  }
+  else {
+    const TokenVector& seq = expr.children();
+    Ptr<BlockNode> block = new BlockNode(expr.srcpos());
+    for (size_t i = 0; i < seq.size(); i++) {
+      Ptr<AptNode> item = parseExpr(seq[i]);
+      if (item != NULL)
+        block->appendNode(item);
+    }
+
+    return block.release();
+  }
+}
+
+
+AptNode*
+SecondPass::parseNested(const Token& expr)
+{
+  assert(expr.isNested());
+
+  switch (expr.leftToken()) {
+  case kBraceOpen:
+    assert(expr.rightToken() == kBraceClose);
+    return parseBlock(expr);
+
+  case kLiteralVectorOpen:
+    assert(expr.rightToken() == kParanClose);
+    return NULL;
+  case kLiteralArrayOpen:
+    assert(expr.rightToken() == kBracketClose);
+    return NULL;
+
+  case kParanOpen:
+  case kBracketOpen:
+  case kGenericOpen:
+
+  default:
+    assert(0);                  // you should not be here.
+  }
+
+  return NULL;
 }
 
 
@@ -574,7 +656,7 @@ SecondPass::parseExpr(const Token& expr)
     return parseSeq(expr);
 
   case kNested:                 // TODO
-    return NULL;
+    return parseNested(expr);
 
   case kPunct:                  // TODO
     errorf(expr.srcpos(), E_UnexpectedToken,

@@ -434,6 +434,16 @@ namespace heather
     NodeList     fParams;
     Ptr<AptNode> fBody;
   };
+
+
+  //--------------------------------------------------------------------------
+
+  class BlockNode : public AptNode
+  {
+  public:
+    BlockNode(const SrcPos& srcpos);
+    virtual void display(Port<Octet>* port) const;
+  };
 };
 
 
