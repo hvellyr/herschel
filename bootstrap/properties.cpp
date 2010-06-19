@@ -26,7 +26,9 @@ static bool sIsPass1Tracing = false;
 static bool sIsPass2Tracing = false;
 static bool sIsImportFileTracing = false;
 static bool sIsMacroTracing = false;
+#if defined(UNITTESTS)
 static bool sDontImport = false;
+#endif
 static bool sShouldIgnoreDocStrings = true;
 static bool sPass1Only = false;
 static String sOutdir;

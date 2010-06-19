@@ -62,7 +62,7 @@ SecondPass::parseModule(const Token& expr)
     publicId = expr[2][0].stringValue();
   }
 
-  Ptr<ModuleNode> modNode = new ModuleNode(expr[1].srcpos(),
+  Ptr<ModuleNode> modNode = new ModuleNode(expr.srcpos(),
                                            modName, publicId);
 
   if (expr.count() > 3) {

@@ -9,8 +9,7 @@
 @syncodeindex fn cp
 @c %**end of header
 
-@set VERSION 0.2.1
-@set COPYRIGHT 2002, 2003, 2009, 2010 Gregor C.@ Klinke
+@include version.texinfo
 
 @c @shorttitlepage Heather
 
@@ -45,7 +44,9 @@ by @emph{Gregor C. Klinke}
 @c @author by Gregor C. Klinke
 @page
 @vskip 0pt plus 1filll
-Copyright (C) @value{COPYRIGHT}. All rights reserved.
+Compiled from base revision `@value{BASEREVISION}'.
+@vskip 20pt
+Copyright (C) @value{COPYRIGHTYEAR}, @value{COPYRIGHTOWNER}. All rights reserved.
 
 Redistribution and use in source (@acronym{GNU} texinfo) and `compiled'
 forms (@acronym{SGML}, @acronym{HTML}, @acronym{PDF}, PostScript,
@@ -113,7 +114,9 @@ language.  It refers to version @value{VERSION}.
 @end menu
 
 @ifinfo
-Copyright (C) @value{COPYRIGHT}. All rights reserved.
+Compiled from base revision `@value{BASEREVISION}'.
+
+Copyright (C) @value{COPYRIGHTYEAR}, @value{COPYRIGHTOWNER}. All rights reserved.
 
 Redistribution and use in source (@acronym{GNU} texinfo) and `compiled'
 forms (@acronym{SGML}, @acronym{HTML}, @acronym{PDF}, PostScript,
@@ -568,11 +571,11 @@ In combination with different notations, the typing is always last:
 Heather supports numerical constants with @dfn{units}.  Units are tags
 which are bound to types and automatically type a numerical constant to
 the associated type (see @ref{Measure types} for details).  The tags are
-user definable and are notated using a backquote:
+user definable and are notated using a quote:
 
 @example
-12`px      -- 12 pixel
-56.4`cm    -- 56.4 centimeter
+12'px      -- 12 pixel
+56.4'cm    -- 56.4 centimeter
 @end example
 
 
@@ -1297,8 +1300,8 @@ Some examples:
 @example
 def class Point : Object
 @{
-  def slot x = 0`px
-  def slot y = 0`px
+  def slot x = 0'px
+  def slot y = 0'px
 @}
 @end example
 
@@ -1795,16 +1798,16 @@ def set-clip-details(self @@ Clip,
 
 @findex def measure
 @cindex measures
-@findex ` @r{(measure type notation)}
+@findex ' @r{(unit type notation)}
 Measures define numerical types and define a default @dfn{unit tag}.
 Unit tags are attached to constant numerical values and automatically
 set the types of this constants:
 
 @example
-let page-length : Length = 21`cm
-let distance : Length = 12.15`ft
-let speed : Speed = 21`m/s
-let width : Pixel = 412`px
+let page-length : Length = 21'cm
+let distance : Length = 12.15'ft
+let speed : Speed = 21'm/s
+let width : Pixel = 412'px
 @end example
 
 Contrary to enumeration types measures don't limit the possible values
@@ -1854,8 +1857,8 @@ local bindings (@code{page-height} and @code{left-margin}) are
 implicitely of type @code{Length} and have a value properly normalized:
 
 @example
-let page-height = 21`cm
-let left-margin = 11`mm
+let page-height = 21'cm
+let left-margin = 11'mm
 
 outln(page-height.value)
 @print{} 0.21
@@ -2143,8 +2146,8 @@ explicitly to a typed reference:
 @example
 def class Point
 @{
-  def slot x = 0`px
-  def slot y = 0`px
+  def slot x = 0'px
+  def slot y = 0'px
 @}
 
 def add(self @@ Point, val @@ Pixel)
@@ -4728,7 +4731,7 @@ key-symbol      := SYMBOL `:'
 @verbatim
 number          := [ `-' ]
                    ( SIMPLE-NUMBER | COMPLEX-NUMBER | RATIONAL )
-                   [ ``' UNIT-TAG ]
+                   [ `'' UNIT-TAG ]
 unit-tag        := SYMBOL
 
 simple-number   := INT-NUMBER | REAL-NUMBER
@@ -4799,7 +4802,7 @@ compare-op      := `==' | `<>' | `<' | `>' | `<=' | `>='
                 |  `<=>' | `in'
 misc-op         := `%' | `isa'
 
-range-op        := `..' | `...'
+range-op        := `..'
 @end verbatim
 @end smallformat
 

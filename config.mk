@@ -10,9 +10,12 @@ srcdir = .
 
 PACKAGE = heather
 VERSION = 0.1
-COPYRIGHTYEAR = 2010
+COPYRIGHTYEAR = 2002, 2003, 2009, 2010
+COPYRIGHTOWNER = Gregor C. Klinke
 # human readable package name, used for Mac packages, etc.
 HR_PACKAGE = Heather
+
+LANG_VERSION = 0.2.1
 
 # ----------------------------------------------------------------------
 # plattfrom settings
@@ -46,6 +49,7 @@ TAR = tar
 
 CC_VERSION ?= $(shell CC=$(CC) $(SHELL) $(top_srcdir)/build/gccver.sh)
 
+BASE_REVISION = $(shell $(SHELL) $(top_srcdir)/build/reprevision.sh)
 
 # ----------------------------------------------------------------------
 # Features:
@@ -65,7 +69,7 @@ CC_VERSION ?= $(shell CC=$(CC) $(SHELL) $(top_srcdir)/build/gccver.sh)
 
 #CDEBUG += -g
 #COPT += -O0
-CWARNING += -Winline
+#CWARNING += -Winline
 #CXXADDS =
 #LDADDS
 
