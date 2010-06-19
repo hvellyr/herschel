@@ -142,7 +142,7 @@ namespace heather
 
     size_t readFromUnreadBuffer(T* dstbuffer, int items)
     {
-#if defined(IS_DEBUG)
+#if !defined(NDEBUG)
       size_t oldsize = fUnreadBuffer.size();
 #endif
       size_t step = items;
