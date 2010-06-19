@@ -83,6 +83,7 @@ namespace heather
     E_MissingBody         = 0x4100,
     E_InvalidRestParam    = 0x4101,
     E_ParamOrder          = 0x4102,
+    E_SpecNamedParam      = 0x4103,
 
     // loops
     E_BadForLoopClause    = 0x4200,
@@ -111,6 +112,7 @@ namespace heather
     E_ExportVisibility    = 0x4540,
     E_EmptyExportList     = 0x4541,
     E_UnknownInputFile    = 0x4542,
+    E_UnknownVisibility   = 0x4543,
   };
 };
 
