@@ -63,6 +63,7 @@ clean-local:
 
 distclean-local: clean-local
 	-rm -rf $(BUILDDIR)/pdf $(BUILDDIR)/*.pdf $(BUILDDIR)/*.info
+	-rm -rf version.texinfo
 
 include $(top_srcdir)/build/generic.mk
 

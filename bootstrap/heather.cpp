@@ -19,7 +19,8 @@ static void
 displayVersion()
 {
   printf("%s %s - heather compiler\n", "heather", VERSION);
-  printf("Copyright (c) %s Gregor Klinke\n", COPYRIGHTYEAR);
+  printf("Copyright (c) %s, %s\n", COPYRIGHTYEAR, COPYRIGHTOWNER);
+  printf("(base revision: %s)\n", HEA_BASE_REVISION);
 }
 
 

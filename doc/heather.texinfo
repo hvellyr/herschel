@@ -9,8 +9,7 @@
 @syncodeindex fn cp
 @c %**end of header
 
-@set VERSION 0.2.1
-@set COPYRIGHT 2002, 2003, 2009, 2010 Gregor C.@ Klinke
+@include version.texinfo
 
 @c @shorttitlepage Heather
 
@@ -45,7 +44,9 @@ by @emph{Gregor C. Klinke}
 @c @author by Gregor C. Klinke
 @page
 @vskip 0pt plus 1filll
-Copyright (C) @value{COPYRIGHT}. All rights reserved.
+Compiled from base revision `@value{BASEREVISION}'.
+@vskip 20pt
+Copyright (C) @value{COPYRIGHTYEAR}, @value{COPYRIGHTOWNER}. All rights reserved.
 
 Redistribution and use in source (@acronym{GNU} texinfo) and `compiled'
 forms (@acronym{SGML}, @acronym{HTML}, @acronym{PDF}, PostScript,
@@ -113,7 +114,9 @@ language.  It refers to version @value{VERSION}.
 @end menu
 
 @ifinfo
-Copyright (C) @value{COPYRIGHT}. All rights reserved.
+Compiled from base revision `@value{BASEREVISION}'.
+
+Copyright (C) @value{COPYRIGHTYEAR}, @value{COPYRIGHTOWNER}. All rights reserved.
 
 Redistribution and use in source (@acronym{GNU} texinfo) and `compiled'
 forms (@acronym{SGML}, @acronym{HTML}, @acronym{PDF}, PostScript,
