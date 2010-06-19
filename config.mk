@@ -69,7 +69,7 @@ BASE_REVISION = $(shell $(SHELL) $(top_srcdir)/build/reprevision.sh)
 
 #CDEBUG += -g
 #COPT += -O0
-CWARNING += -Winline
+#CWARNING += -Winline
 #CXXADDS =
 #LDADDS
 
