@@ -157,6 +157,16 @@ SecondPass::parseImport(const Token& expr)
 //------------------------------------------------------------------------------
 
 AptNode*
+SecondPass::parseTypeSpec(const Token& expr)
+{
+  // TODO
+  return NULL;
+}
+
+
+//------------------------------------------------------------------------------
+
+AptNode*
 SecondPass::parseTypeDef(const Token& expr, bool isType)
 {
   // TODO
@@ -217,8 +227,7 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs)
 
   Ptr<AptNode> type;
   if (ofs + 1 < expr.count() && seq[ofs] == kColon) {
-    // TODO
-    // type = parseTypeSpec(seq[ofs + 1]);
+    type = parseTypeSpec(seq[ofs + 1]);
     ofs += 2;
   }
 
@@ -236,8 +245,62 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs)
 AptNode*
 SecondPass::parseFunctionDef(const Token& expr)
 {
-  // TODO
-  return NULL;
+  assert(expr.isSeq());
+  assert(expr.count() >= 3);
+  assert(expr[0] == kDefId || expr[0] == kLetId);
+
+  int ofs = 1;
+  bool isGeneric = false;
+  if (expr[ofs] == Parser::genericToken) {
+    isGeneric = true;
+    ofs++;
+  }
+
+  assert(expr[ofs] == kSymbol);
+  String sym = expr[ofs].idValue();
+  ofs++;
+
+  assert(expr[ofs].isNested());
+  NodeList params;
+  parseParameters(&params, expr[ofs].children());
+  ofs++;
+
+  Ptr<AptNode> type;
+  if (ofs < expr.count()) {
+    if (expr[ofs] == kColon) {
+      type = parseTypeSpec(expr[ofs + 1]);
+      ofs += 2;
+    }
+  }
+
+  Ptr<AptNode> reify;
+  if (ofs < expr.count()) {
+    if (expr[ofs].isSeq() && expr[ofs].count() > 1 &&
+        expr[ofs][0] == kReifyId)
+    {
+      // TODO
+      ofs++;
+    }
+  }
+
+  Ptr<AptNode> where;
+  if (ofs < expr.count()) {
+    if (expr[ofs].isSeq() && expr[ofs].count() > 1 &&
+        expr[ofs][0] == kWhereId)
+    {
+      // TODO
+      ofs++;
+    }
+  }
+
+  Ptr<AptNode> body;
+  if (ofs < expr.count()) {
+    body = parseExpr(expr[ofs]);
+    ofs++;
+  }
+
+  return new FuncDefNode(expr.srcpos(),
+                         sym, isGeneric, params, body);
 }
 
 
@@ -299,7 +362,7 @@ SecondPass::parseDef(const Token& expr)
   }
 
   else if (expr[1] == kSymbol) {
-    if (expr.count() == 3) {
+    if (expr.count() >= 3) {
       if (expr[2].isNested())
         return parseFunctionDef(expr);
 
@@ -370,13 +433,11 @@ SecondPass::parseParameter(const Token& expr)
   Ptr<AptNode> type;
   if (ofs + 1 < expr.count()) {
     if (seq[ofs] == kColon) {
-      // TODO
-      // type = parseTypeSpec(seq[ofs + 1]);
+      type = parseTypeSpec(seq[ofs + 1]);
       ofs += 2;
     }
     else if (seq[ofs] == kAt) {
-      // TODO
-      // type = parseTypeSpec(seq[ofs + 1]);
+      type = parseTypeSpec(seq[ofs + 1]);
       ofs += 2;
 
       if (paramType == kNamedArg)
@@ -415,6 +476,9 @@ void
 SecondPass::parseParameters(NodeList* parameters, const TokenVector& seq)
 {
   for (size_t i = 0; i < seq.size(); i++) {
+    if (seq[i] == kComma)
+      continue;
+
     Ptr<AptNode> param = parseParameter(seq[i]);
     if (param)
       parameters->push_back(param);

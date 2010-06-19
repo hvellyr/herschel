@@ -483,7 +483,7 @@ ParamNode::ParamNode(const SrcPos& srcpos,
     fKey(keyName),
     fFlags(flags)
 {
-  assert(heaImplies(fFlags != kNamedArg, !fKey.isEmpty()));
+  assert(heaImplies(fFlags == kNamedArg, !fKey.isEmpty()));
 }
 
 
@@ -800,4 +800,35 @@ void
 BlockNode::display(Port<Octet>* port) const
 {
   displayNodeList(port, "block", fChildren);
+}
+
+
+//----------------------------------------------------------------------------
+
+FuncDefNode::FuncDefNode(const SrcPos& srcpos,
+                         const String& sym,
+                         bool isGeneric,
+                         const NodeList& params,
+                         AptNode* body)
+  : AptNode(srcpos),
+    fSym(sym),
+    fIsGeneric(isGeneric),
+    fBody(body)
+{
+  fParams.assign(params.begin(), params.end());
+}
+
+
+void
+FuncDefNode::display(Port<Octet>* port) const
+{
+  const char* tag = fIsGeneric ? "method" : "func";
+
+  StringBuffer attrs;
+  attrs << "sym='" << fSym << "'";
+
+  displayOpenTagAttrs(port, tag, StrHelper(attrs.toString()));
+  displayNodeList(port, "params", fParams);
+  displayNode(port, "body", fBody);
+  displayCloseTag(port, tag);
 }

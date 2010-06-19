@@ -444,6 +444,27 @@ namespace heather
     BlockNode(const SrcPos& srcpos);
     virtual void display(Port<Octet>* port) const;
   };
+
+
+  //--------------------------------------------------------------------------
+
+  class FuncDefNode : public AptNode
+  {
+  public:
+    FuncDefNode(const SrcPos& srcpos,
+                const String& sym,
+                bool isGeneric,
+                const NodeList& params,
+                AptNode* body);
+
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    String       fSym;
+    bool         fIsGeneric;
+    NodeList     fParams;
+    Ptr<AptNode> fBody;
+  };
 };
 
 
