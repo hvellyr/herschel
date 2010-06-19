@@ -152,13 +152,17 @@ version.h: Makefile config.mk
 	@echo "#define PACKAGE \"$(PACKAGE)\"" >> $@
 	@echo "#define VERSION \"$(VERSION)\"" >> $@
 	@echo "#define COPYRIGHTYEAR \"$(COPYRIGHTYEAR)\"" >> $@
+	@echo "#define COPYRIGHTOWNER \"$(COPYRIGHTOWNER)\"" >> $@
 	@echo "#define HEA_HOSTTYPE \"$(HEA_TARGET_DESC)\"" >> $@
+	@echo "#define HEA_BASE_REVISION \"$(BASE_REVISION)\"" >> $@
 	@echo "#endif" >> $@
 
 doc/version.texinfo: Makefile config.mk
 	@echo "@c Don't edit this file.  It has been created automatically." > $@
-	@echo "@set VERSION $(VERSION) " > $@
+	@echo "@set VERSION $(LANG_VERSION) " > $@
 	@echo "@set COPYRIGHTYEAR $(COPYRIGHTYEAR) " >> $@
+	@echo "@set COPYRIGHTOWNER $(COPYRIGHTOWNER) " >> $@
+	@echo "@set BASEREVISION $(BASE_REVISION) " >> $@
 
 config-local.h: Makefile config.mk 
 	@echo "/* Don't edit this file.  It has been created automatically. */" > $@
