@@ -156,6 +156,18 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class BoolNode : public AptNode
+  {
+  public:
+    BoolNode(const SrcPos& srcpos, bool value);
+    virtual void display(Port<Octet>* port) const;
+  private:
+    bool fValue;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class CompileUnitNode : public AptNode
   {
   public:
@@ -492,6 +504,21 @@ namespace heather
 
   private:
     Ptr<AptNode> fBase;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class KeyargNode : public AptNode
+  {
+  public:
+    KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value);
+
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    String       fKey;
+    Ptr<AptNode> fValue;
   };
 };
 

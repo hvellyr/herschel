@@ -42,12 +42,12 @@ displayCloseTag(Port<Octet>* port, const char* tagName)
 }
 
 
-// static void
-// displayEmptyTag(Port<Octet>* port, const char* tagName)
-// {
-//   if (tagName != NULL && ::strlen(tagName) > 0)
-//     heather::display(port, String() + "<" + tagName + "/>");
-// }
+static void
+displayEmptyTag(Port<Octet>* port, const char* tagName)
+{
+  if (tagName != NULL && ::strlen(tagName) > 0)
+    heather::display(port, String() + "<" + tagName + "/>");
+}
 
 
 static void
@@ -275,6 +275,21 @@ void
 CharNode::display(Port<Octet>* port) const
 {
   displayTag(port, "char", fromInt(int(fValue)));
+}
+
+
+//----------------------------------------------------------------------------
+
+BoolNode::BoolNode(const SrcPos& srcpos, bool value)
+  : AptNode(srcpos),
+    fValue(value)
+{ }
+
+
+void
+BoolNode::display(Port<Octet>* port) const
+{
+  displayEmptyTag(port, (fValue ? "true" : "false"));
 }
 
 
@@ -862,4 +877,25 @@ ApplyNode::display(Port<Octet>* port) const
   displayNodeList(port, NULL, fChildren);
   displayCloseTag(port, "args");
   displayCloseTag(port, "apply");
+}
+
+
+//----------------------------------------------------------------------------
+
+KeyargNode::KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value)
+  : AptNode(srcpos),
+    fKey(key),
+    fValue(value)
+{ }
+
+
+void
+KeyargNode::display(Port<Octet>* port) const
+{
+  StringBuffer attrs;
+  attrs << "key='" << fKey << "'";
+
+  displayOpenTagAttrs(port, "arg", StrHelper(attrs.toString()));
+  displayNode(port, NULL, fValue);
+  displayCloseTag(port, "arg");
 }
