@@ -879,13 +879,13 @@ FunctionNode::display(Port<Octet>* port) const
 
 FuncDefNode::FuncDefNode(const SrcPos& srcpos,
                          const String& sym,
-                         bool isGeneric,
+                         unsigned int flags,
                          const NodeList& params,
                          AptNode* retType,
                          AptNode* body)
   : FunctionNode(srcpos, params, retType, body),
     fSym(sym),
-    fIsGeneric(isGeneric)
+    fFlags(flags)
 {
 }
 
@@ -893,15 +893,32 @@ FuncDefNode::FuncDefNode(const SrcPos& srcpos,
 void
 FuncDefNode::display(Port<Octet>* port) const
 {
-  const char* tag = fIsGeneric ? "method" : "func";
+  const char* tag = isGeneric() ? "method" : "func";
 
   StringBuffer attrs;
   attrs << "sym='" << fSym << "'";
+
+  if (isAbstract())
+    attrs << " abstract='true'";
 
   displayOpenTagAttrs(port, tag, StrHelper(attrs.toString()));
   displayNodeList(port, "params", fParams);
   displayNode(port, "body", fBody);
   displayCloseTag(port, tag);
+}
+
+
+bool
+FuncDefNode::isGeneric() const
+{
+  return (fFlags & kFuncIsGeneric) != 0;
+}
+
+
+bool
+FuncDefNode::isAbstract() const
+{
+  return (fFlags & kFuncIsAbstract) != 0;
 }
 
 

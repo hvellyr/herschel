@@ -507,21 +507,29 @@ namespace heather
   };
 
 
+  enum {
+    kFuncIsGeneric = 1 << 0,
+    kFuncIsAbstract = 1 << 1,
+  };
+
   class FuncDefNode : public FunctionNode
   {
   public:
     FuncDefNode(const SrcPos& srcpos,
                 const String& sym,
-                bool isGeneric,
+                unsigned int flags,
                 const NodeList& params,
                 AptNode* retType,
                 AptNode* body);
 
     virtual void display(Port<Octet>* port) const;
 
+    bool isGeneric() const;
+    bool isAbstract() const;
+
   private:
     String       fSym;
-    bool         fIsGeneric;
+    unsigned int fFlags;
   };
 
 
