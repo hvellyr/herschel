@@ -562,7 +562,17 @@ SecondPass::parseFunCall(const Token& expr)
   for (size_t i = 0; i < seq.size(); i++) {
     if (seq[i] == kComma)
       continue;
-    Ptr<AptNode> arg = parseExpr(seq[i]);
+
+    Ptr<AptNode> arg;
+    if (seq[i] == kKeyarg) {
+      assert(i + 1 < seq.size());
+
+      Ptr<AptNode> value = parseExpr(seq[i + 1]);
+      arg = new KeyargNode(seq[i].srcpos(), seq[i].idValue(), value);
+      i++;
+    }
+    else
+      arg = parseExpr(seq[i]);
 
     funcall->appendNode(arg);
   }
@@ -785,6 +795,7 @@ SecondPass::parseExpr(const Token& expr)
   case kLit:
     switch (expr.tokenType()) {
     case kBool:
+      return new BoolNode(expr.srcpos(), expr.boolValue());
     case kInt:
       return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary());
     case kRational:

@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><def><func sym='f'><params><param sym='a' type='pos'></param><param sym='b' type='key' key='b'><init><true/></init></param><param sym='r' type='rest'></param></params><body><apply><symbol>outln</symbol><args><symbol>a</symbol><symbol>b</symbol><symbol>r</symbol></args></apply></body></func></def><def><func sym='g'><body><apply><symbol>f</symbol><args><symbol>a</symbol><arg key='b'><false/></arg><int>2</int><int>3</int><int>4</int></args></apply></body></func></def></compile-unit>
