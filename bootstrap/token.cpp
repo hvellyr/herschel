@@ -1203,6 +1203,17 @@ Token::isBinarySeq() const
 }
 
 
+bool
+Token::isTernarySeq() const
+{
+  if (isSeq() && children().size() == 5) {
+    return ( ((*this)[1].isPunct() && (*this)[3].isPunct()) ||
+             ( (*this)[1] == kThenId && (*this)[3] == kWhileId ) );
+  }
+  return false;
+}
+
+
 OperatorType
 Token::binarySeqOperator() const
 {

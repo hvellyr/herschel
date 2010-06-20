@@ -409,6 +409,22 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class ThenWhileNode : public AptNode
+  {
+  public:
+    ThenWhileNode(const SrcPos& srcpos,
+                  AptNode* first, AptNode* step, AptNode* test);
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    Ptr<AptNode> fFirst;
+    Ptr<AptNode> fStep;
+    Ptr<AptNode> fTest;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class AssignNode : public AptNode
   {
   public:
@@ -474,13 +490,31 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class FuncDefNode : public AptNode
+  class FunctionNode : public AptNode
+  {
+  public:
+    FunctionNode(const SrcPos& srcpos,
+                 const NodeList& params,
+                 AptNode* retType,
+                 AptNode* body);
+
+    virtual void display(Port<Octet>* port) const;
+
+  protected:
+    NodeList     fParams;
+    Ptr<AptNode> fRetType;
+    Ptr<AptNode> fBody;
+  };
+
+
+  class FuncDefNode : public FunctionNode
   {
   public:
     FuncDefNode(const SrcPos& srcpos,
                 const String& sym,
                 bool isGeneric,
                 const NodeList& params,
+                AptNode* retType,
                 AptNode* body);
 
     virtual void display(Port<Octet>* port) const;
@@ -488,8 +522,6 @@ namespace heather
   private:
     String       fSym;
     bool         fIsGeneric;
-    NodeList     fParams;
-    Ptr<AptNode> fBody;
   };
 
 
