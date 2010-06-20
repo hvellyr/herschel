@@ -316,6 +316,10 @@ namespace heather
   class ArrayNode : public AptNode
   {
   public:
+    ArrayNode(const SrcPos& srcpos)
+      : AptNode(srcpos)
+    { }
+
     virtual void display(Port<Octet>* port) const;
   };
 
