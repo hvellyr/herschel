@@ -40,8 +40,8 @@ HEA_TARGET_DESC ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh)
 #INSTALL     = /usr/bin/install -c
 #INSTALLDATA = /usr/bin/install -c -m 644
 
-ZIP = zip
-TAR = tar
+# ZIP = zip
+# TAR = tar
 
 # Give the CC version. Known values:
 # gcc3
@@ -49,7 +49,8 @@ TAR = tar
 
 CC_VERSION ?= $(shell CC=$(CC) $(SHELL) $(top_srcdir)/build/gccver.sh)
 
-BASE_REVISION = $(shell $(SHELL) $(top_srcdir)/build/reprevision.sh)
+BASE_REVISION = $(shell $(PYTHON) $(top_srcdir)/build/reprevision.py --hg=$(HG))
+
 
 # ----------------------------------------------------------------------
 # Features:
