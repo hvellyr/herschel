@@ -145,7 +145,7 @@ dist-macosx: $(PKGDIR)
 dist-all: dist-src dist-doc
 
 
-version.h: Makefile config.mk 
+version.h: Makefile config.mk
 	@echo "/* Don't edit this file.  It has been created automatically. */" > $@
 	@echo "#ifndef heather_version_h" >> $@
 	@echo "#define heather_version_h" >> $@

@@ -6,6 +6,6 @@
 #  All rights reserved.
 #
 
-REP_ID=`hg id | awk '{print $1}'` || REP_ID=unknown
+REP_ID=`hg id --debug | awk '{print $1}'` || REP_ID=unknown
 
 echo "$REP_ID"
