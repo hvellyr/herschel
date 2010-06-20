@@ -551,6 +551,16 @@ DictNode::display(Port<Octet>* port) const
 }
 
 
+void
+DictNode::addPair(AptNode* key, AptNode* value)
+{
+  assert(key != NULL);
+  assert(value != NULL);
+
+  appendNode(new BinaryNode(key->srcpos(), key, kOpMapTo, value));
+}
+
+
 //----------------------------------------------------------------------------
 
 BinaryNode::BinaryNode(const SrcPos& srcpos,
