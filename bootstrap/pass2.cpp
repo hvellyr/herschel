@@ -377,7 +377,6 @@ SecondPass::parseDef(const Token& expr)
 
   assert(0);
 
-  // TODO
   return NULL;
 }
 
@@ -522,14 +521,14 @@ SecondPass::parseBinary(const Token& expr)
   case kAssign:
     return new AssignNode(expr.srcpos(),
                           parseExpr(expr[0]),
-                          parseExpr(expr[1]));
+                          parseExpr(expr[2]));
   case kRange:
     if (expr.count() >= 5) {
       assert(expr[3] == kBy);
       return new RangeNode(expr.srcpos(),
                            parseExpr(expr[0]),
-                           parseExpr(expr[1]),
-                           parseExpr(expr[3]));
+                           parseExpr(expr[2]),
+                           parseExpr(expr[4]));
     }
     else
       return new RangeNode(expr.srcpos(),
@@ -543,15 +542,32 @@ SecondPass::parseBinary(const Token& expr)
   return new BinaryNode(expr.srcpos(),
                         parseExpr(expr[0]),
                         tokenTypeToOperator(expr[1].tokenType()),
-                        parseExpr(expr[1]));
+                        parseExpr(expr[2]));
 }
 
 
 AptNode*
 SecondPass::parseFunCall(const Token& expr)
 {
-  // TODO
-  return NULL;
+  assert(expr.isSeq());
+  assert(expr.count() == 2);
+  assert(expr[1].isNested());
+  assert(expr[1].leftToken() == kParanOpen);
+  assert(expr[1].rightToken() == kParanClose);
+
+  Ptr<AptNode> first = parseExpr(expr[0]);
+  Ptr<AptNode> funcall = new ApplyNode(expr.srcpos(), first);
+
+  const TokenVector& seq = expr[1].children();
+  for (size_t i = 0; i < seq.size(); i++) {
+    if (seq[i] == kComma)
+      continue;
+    Ptr<AptNode> arg = parseExpr(seq[i]);
+
+    funcall->appendNode(arg);
+  }
+
+  return funcall.release();
 }
 
 

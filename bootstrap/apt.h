@@ -479,6 +479,20 @@ namespace heather
     NodeList     fParams;
     Ptr<AptNode> fBody;
   };
+
+
+  //--------------------------------------------------------------------------
+
+  class ApplyNode : public AptNode
+  {
+  public:
+    ApplyNode(const SrcPos& srcpos, AptNode* base);
+
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    Ptr<AptNode> fBase;
+  };
 };
 
 
