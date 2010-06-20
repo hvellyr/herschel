@@ -288,7 +288,9 @@ SecondPass::parseFunctionDef(const Token& expr)
     if (expr[ofs].isSeq() && expr[ofs].count() > 1 &&
         expr[ofs][0] == kWhereId)
     {
-      // TODO
+      // TODO.  Don't parse the where clause into apt nodes here, but enrich a
+      // passed in context.  The 'Where' information is used to transform
+      // quoted types into full type spec.
       ofs++;
     }
   }
@@ -635,6 +637,10 @@ SecondPass::parseSeq(const Token& expr)
 AptNode*
 SecondPass::parseBlock(const Token& expr)
 {
+  assert(expr.isNested());
+  assert(expr.leftToken() == kBraceOpen);
+  assert(expr.rightToken() == kBraceClose);
+
   if (expr.count() == 0) {
     return new SymbolNode(expr.srcpos(), String("unspecified"));
   }
@@ -652,6 +658,27 @@ SecondPass::parseBlock(const Token& expr)
 
     return block.release();
   }
+}
+
+
+AptNode*
+SecondPass::parseLiteralVector(const Token& expr)
+{
+  assert(expr.isNested());
+  assert(expr.leftToken() == kLiteralVectorOpen);
+  assert(expr.rightToken() == kParanClose);
+
+  Ptr<AptNode> vector = new VectorNode(expr.srcpos());
+  const TokenVector& seq = expr.children();
+
+  for (size_t i = 0; i < seq.size(); i++) {
+    if (seq[i] == kComma)
+      continue;
+    Ptr<AptNode> item = parseExpr(seq[i]);
+    vector->appendNode(item);
+  }
+
+  return vector.release();
 }
 
 
@@ -677,18 +704,46 @@ SecondPass::parseLiteralArray(const Token& expr)
 
 
 AptNode*
+SecondPass::parseLiteralDict(const Token& expr)
+{
+  assert(expr.isNested());
+  assert(expr.leftToken() == kLiteralVectorOpen);
+  assert(expr.rightToken() == kParanClose);
+
+  Ptr<DictNode> dict = new DictNode(expr.srcpos());
+  const TokenVector& seq = expr.children();
+
+  for (size_t i = 0; i < seq.size(); i++) {
+    if (seq[i] == kComma)
+      continue;
+
+    assert(seq[i].isBinarySeq(kMapTo));
+
+    Ptr<AptNode> key = parseExpr(seq[i][0]);
+    Ptr<AptNode> value = parseExpr(seq[i][2]);
+
+    dict->addPair(key, value);
+  }
+
+  return dict.release();
+}
+
+
+AptNode*
 SecondPass::parseNested(const Token& expr)
 {
   assert(expr.isNested());
 
   switch (expr.leftToken()) {
   case kBraceOpen:
-    assert(expr.rightToken() == kBraceClose);
     return parseBlock(expr);
 
   case kLiteralVectorOpen:
-    assert(expr.rightToken() == kParanClose);
-    return NULL;
+    if (expr.count() > 0 && expr[0].isBinarySeq(kMapTo))
+      return parseLiteralDict(expr);
+    else
+      return parseLiteralVector(expr);
+
   case kLiteralArrayOpen:
     return parseLiteralArray(expr);
 

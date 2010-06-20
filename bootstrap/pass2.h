@@ -61,7 +61,10 @@ namespace heather
     AptNode* parseUnitDef(const Token& expr);
     AptNode* parseVarDef(const Token& expr, VardefFlags flags, int ofs);
     AptNode* parseFunctionDef(const Token& expr);
+
     AptNode* parseLiteralArray(const Token& expr);
+    AptNode* parseLiteralVector(const Token& expr);
+    AptNode* parseLiteralDict(const Token& expr);
 
     AptNode* newDefNode(AptNode* node, bool isLet);
 

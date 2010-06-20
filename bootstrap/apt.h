@@ -329,6 +329,10 @@ namespace heather
   class VectorNode : public AptNode
   {
   public:
+    VectorNode(const SrcPos& srcpos)
+      : AptNode(srcpos)
+    { }
+
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -338,7 +342,13 @@ namespace heather
   class DictNode : public AptNode
   {
   public:
+    DictNode(const SrcPos& srcpos)
+      : AptNode(srcpos)
+    { }
+
     virtual void display(Port<Octet>* port) const;
+
+    void addPair(AptNode* key, AptNode* value);
   };
 
 
