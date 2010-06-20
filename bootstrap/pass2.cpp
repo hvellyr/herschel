@@ -302,7 +302,7 @@ SecondPass::parseFunctionDef(const Token& expr)
   }
 
   return new FuncDefNode(expr.srcpos(),
-                         sym, isGeneric, params, body);
+                         sym, isGeneric, params, type, body);
 }
 
 
@@ -507,8 +507,30 @@ SecondPass::parseOn(const Token& expr)
 AptNode*
 SecondPass::parseClosure(const Token& expr)
 {
-  // TODO
-  return NULL;
+  assert(expr.isSeq());
+  assert(expr.count() >= 3);
+  assert(expr[0] == kFunctionId);
+  assert(expr[1].isNested());
+
+  int ofs = 1;
+  assert(expr[ofs].isNested());
+
+  NodeList params;
+  parseParameters(&params, expr[1].children());
+  ofs++;
+
+  Ptr<AptNode> type;
+  if (ofs + 1 < expr.count()) {
+    if (expr[ofs] == kColon) {
+      type = parseTypeSpec(expr[ofs + 1]);
+      ofs += 2;
+    }
+  }
+
+  assert(ofs < expr.count());
+  Ptr<AptNode> body = parseExpr(expr[ofs]);;
+
+  return new FunctionNode(expr.srcpos(), params, type, body);
 }
 
 
@@ -519,30 +541,50 @@ SecondPass::parseBinary(const Token& expr)
 
   switch (expr[1].tokenType()) {
   case kAssign:
-    return new AssignNode(expr.srcpos(),
-                          parseExpr(expr[0]),
-                          parseExpr(expr[2]));
+    {
+      Ptr<AptNode> lvalue = parseExpr(expr[0]);
+      Ptr<AptNode> rvalue = parseExpr(expr[2]);
+      return new AssignNode(expr.srcpos(), lvalue, rvalue);
+    }
+
   case kRange:
     if (expr.count() >= 5) {
       assert(expr[3] == kBy);
-      return new RangeNode(expr.srcpos(),
-                           parseExpr(expr[0]),
-                           parseExpr(expr[2]),
-                           parseExpr(expr[4]));
+      Ptr<AptNode> from = parseExpr(expr[0]);
+      Ptr<AptNode> to   = parseExpr(expr[2]);
+      Ptr<AptNode> step = parseExpr(expr[4]);
+      return new RangeNode(expr.srcpos(), from, to, step);
     }
-    else
-      return new RangeNode(expr.srcpos(),
-                           parseExpr(expr[0]),
-                           parseExpr(expr[1]),
-                           NULL);
+    else {
+      Ptr<AptNode> from = parseExpr(expr[0]);
+      Ptr<AptNode> to   = parseExpr(expr[2]);
+      return new RangeNode(expr.srcpos(), from, to, NULL);
+    }
+
+  case kThenId:
+    if (expr.count() >= 5) {
+      assert(expr[3] == kWhileId);
+      Ptr<AptNode> first = parseExpr(expr[0]);
+      Ptr<AptNode> step = parseExpr(expr[2]);
+      Ptr<AptNode> test = parseExpr(expr[4]);
+      return new ThenWhileNode(expr.srcpos(), first, step, test);
+    }
+    else {
+      Ptr<AptNode> first = parseExpr(expr[0]);
+      Ptr<AptNode> step = parseExpr(expr[2]);
+      return new ThenWhileNode(expr.srcpos(), first, step, NULL);
+    }
+
   default:
     ;
   }
 
+  Ptr<AptNode> left = parseExpr(expr[0]);
+  Ptr<AptNode> right = parseExpr(expr[2]);
   return new BinaryNode(expr.srcpos(),
-                        parseExpr(expr[0]),
+                        left,
                         tokenTypeToOperator(expr[1].tokenType()),
-                        parseExpr(expr[2]));
+                        right);
 }
 
 
@@ -649,7 +691,7 @@ SecondPass::parseSeq(const Token& expr)
     return parseSelect(expr);
   else if (first == kMatchId)
     return parseMatch(expr);
-  else if (expr.isBinarySeq())
+  else if (expr.isBinarySeq() || expr.isTernarySeq())
     return parseBinary(expr);
   else if (expr.count() == 2) {
     if (expr[1].isNested())
@@ -821,10 +863,10 @@ SecondPass::parseExpr(const Token& expr)
   case kSeq:
     return parseSeq(expr);
 
-  case kNested:                 // TODO
+  case kNested:
     return parseNested(expr);
 
-  case kPunct:                  // TODO
+  case kPunct:
     errorf(expr.srcpos(), E_UnexpectedToken,
            "Unexpected token");
     return NULL;

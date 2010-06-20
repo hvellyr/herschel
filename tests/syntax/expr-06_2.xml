@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><def><func sym='value-iterators'><params><param sym='root' type='pos'></param></params><body><then-while><symbol>root</symbol><apply><symbol>cdr</symbol><args><symbol>root</symbol></args></apply><binary op='&lt;>'><symbol>root</symbol><symbol>nil</symbol></binary></then-while></body></func></def></compile-unit>

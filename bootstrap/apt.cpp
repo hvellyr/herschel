@@ -716,6 +716,28 @@ RangeNode::by() const
 
 //--------------------------------------------------------------------------
 
+ThenWhileNode::ThenWhileNode(const SrcPos& srcpos,
+              AptNode* first, AptNode* step, AptNode* test)
+  : AptNode(srcpos),
+    fFirst(first),
+    fStep(step),
+    fTest(test)
+{ }
+
+
+void
+ThenWhileNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "then-while");
+  displayNode(port, NULL, fFirst);
+  displayNode(port, NULL, fStep);
+  displayNode(port, NULL, fTest);
+  displayCloseTag(port, "then-while");
+}
+
+
+//--------------------------------------------------------------------------
+
 AssignNode::AssignNode(const SrcPos& srcpos,
                        AptNode* lvalue, AptNode* rvalue)
   : AptNode(srcpos),
@@ -831,17 +853,40 @@ BlockNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
+FunctionNode::FunctionNode(const SrcPos& srcpos,
+                           const NodeList& params,
+                           AptNode* retType,
+                           AptNode* body)
+  : AptNode(srcpos),
+    fRetType(retType),
+    fBody(body)
+{
+  fParams.assign(params.begin(), params.end());
+}
+
+
+void
+FunctionNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "function");
+  displayNodeList(port, "params", fParams);
+  displayNode(port, "body", fBody);
+  displayCloseTag(port, "function");
+}
+
+
+//----------------------------------------------------------------------------
+
 FuncDefNode::FuncDefNode(const SrcPos& srcpos,
                          const String& sym,
                          bool isGeneric,
                          const NodeList& params,
+                         AptNode* retType,
                          AptNode* body)
-  : AptNode(srcpos),
+  : FunctionNode(srcpos, params, retType, body),
     fSym(sym),
-    fIsGeneric(isGeneric),
-    fBody(body)
+    fIsGeneric(isGeneric)
 {
-  fParams.assign(params.begin(), params.end());
 }
 
 
