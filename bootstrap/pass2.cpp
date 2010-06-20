@@ -249,10 +249,11 @@ SecondPass::parseFunctionDef(const Token& expr)
   assert(expr.count() >= 3);
   assert(expr[0] == kDefId || expr[0] == kLetId);
 
+  unsigned int flags = 0;
   int ofs = 1;
-  bool isGeneric = false;
+
   if (expr[ofs] == Parser::genericToken) {
-    isGeneric = true;
+    flags |= kFuncIsGeneric;
     ofs++;
   }
 
@@ -297,12 +298,15 @@ SecondPass::parseFunctionDef(const Token& expr)
 
   Ptr<AptNode> body;
   if (ofs < expr.count()) {
-    body = parseExpr(expr[ofs]);
+    if (expr[ofs] == kEllipsis)
+      flags |= kFuncIsAbstract;
+    else
+      body = parseExpr(expr[ofs]);
     ofs++;
   }
 
   return new FuncDefNode(expr.srcpos(),
-                         sym, isGeneric, params, type, body);
+                         sym, flags, params, type, body);
 }
 
 
