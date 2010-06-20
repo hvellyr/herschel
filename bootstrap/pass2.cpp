@@ -656,6 +656,27 @@ SecondPass::parseBlock(const Token& expr)
 
 
 AptNode*
+SecondPass::parseLiteralArray(const Token& expr)
+{
+  assert(expr.isNested());
+  assert(expr.leftToken() == kLiteralArrayOpen);
+  assert(expr.rightToken() == kBracketClose);
+
+  Ptr<AptNode> array = new ArrayNode(expr.srcpos());
+  const TokenVector& seq = expr.children();
+
+  for (size_t i = 0; i < seq.size(); i++) {
+    if (seq[i] == kComma)
+      continue;
+    Ptr<AptNode> item = parseExpr(seq[i]);
+    array->appendNode(item);
+  }
+
+  return array.release();
+}
+
+
+AptNode*
 SecondPass::parseNested(const Token& expr)
 {
   assert(expr.isNested());
@@ -669,8 +690,7 @@ SecondPass::parseNested(const Token& expr)
     assert(expr.rightToken() == kParanClose);
     return NULL;
   case kLiteralArrayOpen:
-    assert(expr.rightToken() == kBracketClose);
-    return NULL;
+    return parseLiteralArray(expr);
 
   case kParanOpen:
   case kBracketOpen:
