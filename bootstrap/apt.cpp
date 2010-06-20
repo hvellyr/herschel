@@ -647,9 +647,10 @@ operatorName(OperatorType type)
 void
 BinaryNode::display(Port<Octet>* port) const
 {
-  displayOpenTag(port, "binary");
+  StringBuffer attrs;
+  attrs << "op='" << xmlEncode(operatorName(fOp)) << "'";
+  displayOpenTagAttrs(port, "binary", StrHelper(attrs.toString()));
   displayNode(port, NULL, fLeft);
-  heather::display(port, operatorName(fOp));
   displayNode(port, NULL, fRight);
   displayCloseTag(port, "binary");
 }
@@ -841,4 +842,24 @@ FuncDefNode::display(Port<Octet>* port) const
   displayNodeList(port, "params", fParams);
   displayNode(port, "body", fBody);
   displayCloseTag(port, tag);
+}
+
+
+//----------------------------------------------------------------------------
+
+ApplyNode::ApplyNode(const SrcPos& srcpos, AptNode* base)
+  : AptNode(srcpos),
+    fBase(base)
+{ }
+
+
+void
+ApplyNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "apply");
+  displayNode(port, NULL, fBase);
+  displayOpenTag(port, "args");
+  displayNodeList(port, NULL, fChildren);
+  displayCloseTag(port, "args");
+  displayCloseTag(port, "apply");
 }
