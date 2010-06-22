@@ -844,68 +844,112 @@ FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
 {
   Token paramSeq;
   ParamType paramType = kPositional;
+  bool doScanOn = true;
 
-  if (fToken == kKeyarg) {
-    paramSeq << fToken;
-    nextToken();
-    paramType = kNamed;
-  }
-
-  if (fToken != kSymbol) {
-    error(fToken.srcpos(), E_SymbolExpected,
-          String("parameter name expected: ") + fToken);
-    scanUntilNextParameter();
-    return Token();
-  }
-  else {
-    paramSeq << fToken;
-    nextToken();
-
-    Token typeIntroToken = fToken;
-    if (fToken == kColon ||
-        fToken == kAt)
-    {
-      nextToken();
-
-      SrcPos pos = fToken.srcpos();
-      Token type = parseTypeSpec(true);
-      if (!type.isSet()) {
-        errorf(pos, E_MissingType,
-               "type expression expected");
-        if (autoCompleteTypes)
-          paramSeq << typeIntroToken << Token(pos, kSymbol, "Any");
-      }
-      else
-        paramSeq << typeIntroToken << type;
-    }
-    else if (autoCompleteTypes)
-      paramSeq << Token(typeIntroToken.srcpos(), kColon)
-               << Token(typeIntroToken.srcpos(), kSymbol, "Any");
-
-    if (fToken == kAssign) {
-      Token assignToken = fToken;
-      nextToken();
-
-      SrcPos pos = fToken.srcpos();
-      Token initExpr = parseExpr();
-      if (!initExpr.isSet())
-        errorf(pos, E_MissingRHExpr, "no value in keyed argument");
-      else {
-        paramSeq << assignToken << initExpr;
+  if (fToken.isSeq() && fToken.count() >= 1) {
+    int ofs = 0;
+    if (ofs < fToken.count()) {
+      if (fToken[ofs] == kKeyarg) {
         paramType = kNamed;
+        ofs++;
+        doScanOn = false;
       }
     }
-    else if (fToken == kEllipsis) {
-      Token restToken = fToken;
+
+    if (ofs < fToken.count()) {
+      if (fToken[ofs] == kSymbol) {
+        ofs++;
+        if (ofs + 1 < fToken.count() && fToken[ofs] == kColon) {
+          ofs += 2;
+        }
+        if (ofs + 1 < fToken.count() && fToken[ofs] == kAssign) {
+          paramSeq << fToken;
+          nextToken();
+          paramType = kNamed;
+          ofs += 2;
+          doScanOn = false;
+        }
+        else if (ofs < fToken.count() && fToken[ofs] == kEllipsis) {
+          paramSeq << fToken;
+          nextToken();
+          paramType = kRest;
+          ofs++;
+          doScanOn = false;
+        }
+        else if (ofs == fToken.count()) {
+          paramSeq << fToken;
+          nextToken();
+          paramType = kPositional;
+          doScanOn = false;
+        }
+      }
+    }
+  }
+
+
+  if (doScanOn) {
+    if (fToken == kKeyarg) {
+      paramSeq << fToken;
+      nextToken();
+      paramType = kNamed;
+    }
+
+    if (fToken != kSymbol) {
+      error(fToken.srcpos(), E_SymbolExpected,
+            String("parameter name expected: ") + fToken);
+      scanUntilNextParameter();
+      return Token();
+    }
+    else {
+      paramSeq << fToken;
       nextToken();
 
-      if (paramType != kPositional) {
-        errorf(restToken.srcpos(), E_InvalidRestParam,
-               "orphaned rest parameter");
+      Token typeIntroToken = fToken;
+      if (fToken == kColon ||
+          fToken == kAt)
+      {
+        nextToken();
+      
+        SrcPos pos = fToken.srcpos();
+        Token type = parseTypeSpec(true);
+        if (!type.isSet()) {
+          errorf(pos, E_MissingType,
+                 "type expression expected");
+          if (autoCompleteTypes)
+            paramSeq << typeIntroToken << Token(pos, kSymbol, "Any");
+        }
+        else
+          paramSeq << typeIntroToken << type;
       }
-      else {
-        paramSeq << restToken;
-        paramType = kRest;
+      else if (autoCompleteTypes)
+        paramSeq << Token(typeIntroToken.srcpos(), kColon)
+                 << Token(typeIntroToken.srcpos(), kSymbol, "Any");
+      
+      if (fToken == kAssign) {
+        Token assignToken = fToken;
+        nextToken();
+      
+        SrcPos pos = fToken.srcpos();
+        Token initExpr = parseExpr();
+        if (!initExpr.isSet())
+          errorf(pos, E_MissingRHExpr, "no value in keyed argument");
+        else {
+          paramSeq << assignToken << initExpr;
+          paramType = kNamed;
+        }
+      }
+      else if (fToken == kEllipsis) {
+        Token restToken = fToken;
+        nextToken();
+
+        if (paramType != kPositional) {
+          errorf(restToken.srcpos(), E_InvalidRestParam,
+                 "orphaned rest parameter");
+        }
+        else {
+          paramSeq << restToken;
+          paramType = kRest;
+        }
       }
     }
   }
@@ -1620,10 +1664,14 @@ namespace heather
         return true;
       }
 
-      Token subexpr = Token() << symToken;
+      Token varClause;
       if (colonToken.isSet() && type.isSet())
-        subexpr << colonToken << type;
-      subexpr << inToken << collToken;
+        varClause = Token() << symToken << colonToken << type;
+      else
+        varClause = symToken;
+
+      Token subexpr;
+      subexpr << varClause << inToken << collToken;
 
       result << subexpr;
       return true;
@@ -1647,10 +1695,14 @@ namespace heather
         return true;
       }
 
-      Token subexpr = Token() << symToken;
+      Token varClause;
       if (colonToken.isSet() && type.isSet())
-        subexpr << colonToken << type;
-      subexpr << assignToken << iterator;
+        varClause = Token() << symToken << colonToken << type;
+      else
+        varClause = symToken;
+
+      Token subexpr;
+      subexpr << varClause << assignToken << iterator;
 
       result << subexpr;
       return true;
@@ -3662,24 +3714,31 @@ FirstPass::replaceSangHashIds(TokenVector* result, const TokenVector& source)
 }
 
 
-Token
+const TokenVector&
 FirstPass::findReplaceToken(const Token& token,
-                            const std::map<String, Token>& bindings)
+                            const NamedReplacementMap& bindings,
+                            bool& found)
 {
   String paramName = token.macroParamName();
-  std::map<String, Token>::const_iterator it = bindings.find(paramName);
-  if (it != bindings.end())
+  NamedReplacementMap::const_iterator it = bindings.find(paramName);
+  if (it != bindings.end()) {
+    found = true;
     return it->second;
+  }
 
-  return Token();
+  found = false;
+  static TokenVector sEmpty;
+  return sEmpty;
 }
 
 
 bool
 FirstPass::replaceMatchBindings(TokenVector* result,
                                 const TokenVector& templ,
-                                const std::map<String, Token>& bindings)
+                                const NamedReplacementMap& bindings)
 {
+//  printf("REPLACEMENT IS: %s\n", (const char*)StrHelper(String() + bindings));
+
   TokenVector replacement;
   for (TokenVector::const_iterator it = templ.begin();
        it != templ.end();
@@ -3696,22 +3755,23 @@ FirstPass::replaceMatchBindings(TokenVector* result,
     case kId:
       if (token == kMacroParam ||
           token == kMacroParamAsStr) {
-        Token replToken = findReplaceToken(token, bindings);
-        // printf("REPL.TOKEN: %s\n", (const char*)StrHelper(replToken.toString()));
+        bool found = false;
+        const TokenVector& replTokens = findReplaceToken(token, bindings, found);
 
-        if (replToken.isSet()) {
-          if (token == kMacroParamAsStr) {
-            replacement.push_back(Token(replToken.srcpos(),
-                                        kString,
-                                        replToken.toString()));
+        if (found) {
+          if (replTokens.size() == 1) {
+            if (token == kMacroParamAsStr) {
+              replacement.push_back(Token(replTokens[0].srcpos(),
+                                          kString,
+                                          replTokens[0].toString()));
+            }
+            else
+              replacement.push_back(replTokens[0]);
           }
-          else if (replToken.isSeq()) {
-            const TokenVector& tmp = replToken.children();
+          else if (replTokens.size() > 1) {
             replacement.insert(replacement.end(),
-                               tmp.begin(), tmp.end());
+                               replTokens.begin(), replTokens.end());
           }
-          else
-            replacement.push_back(replToken);
         }
         else
           errorf(token.srcpos(), E_UnknownMacroParam,
@@ -3725,9 +3785,8 @@ FirstPass::replaceMatchBindings(TokenVector* result,
     case kSeq:
       {
         TokenVector temp2;
-        if (!replaceMatchBindings(&temp2, token.children(), bindings)) {
+        if (!replaceMatchBindings(&temp2, token.children(), bindings))
           return false;
-        }
 
         replacement.push_back(Token() << temp2);
       }
@@ -3761,7 +3820,7 @@ namespace heather {
 
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings,
+                       NamedReplacementMap* bindings,
                        SyntaxTreeNode* followSet)
     {
       assert(0);
@@ -3774,7 +3833,7 @@ namespace heather {
   {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings,
+                       NamedReplacementMap* bindings,
                        SyntaxTreeNode* followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
@@ -3786,7 +3845,9 @@ namespace heather {
         return false;
       }
 
-      bindings->insert(std::make_pair(paramName, expr));
+      TokenVector tokens;
+      tokens.push_back(expr);
+      bindings->insert(std::make_pair(paramName, tokens));
       return true;
     }
   };
@@ -3796,11 +3857,13 @@ namespace heather {
   {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings,
+                       NamedReplacementMap* bindings,
                        SyntaxTreeNode* followSet)
     {
       if (pass->fToken == kSymbol) {
-        bindings->insert(std::make_pair(paramName, pass->fToken));
+        TokenVector tokens;
+        tokens.push_back(pass->fToken);
+        bindings->insert(std::make_pair(paramName, tokens));
         pass->nextToken();
         return true;
       }
@@ -3817,7 +3880,7 @@ namespace heather {
   {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings,
+                       NamedReplacementMap* bindings,
                        SyntaxTreeNode* followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
@@ -3831,7 +3894,9 @@ namespace heather {
         return false;
       }
 
-      bindings->insert(std::make_pair(paramName, param));
+      TokenVector tokens;
+      tokens.push_back(param);
+      bindings->insert(std::make_pair(paramName, tokens));
       return true;
     }
   };
@@ -3847,7 +3912,7 @@ namespace heather {
 
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings,
+                       NamedReplacementMap* bindings,
                        SyntaxTreeNode* followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
@@ -3861,7 +3926,9 @@ namespace heather {
         return false;
       }
 
-      bindings->insert(std::make_pair(paramName, param));
+      TokenVector tokens;
+      tokens.push_back(param);
+      bindings->insert(std::make_pair(paramName, tokens));
       return true;
     }
   };
@@ -3871,7 +3938,7 @@ namespace heather {
   {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
-                       std::map<String, Token>* bindings,
+                       NamedReplacementMap* bindings,
                        SyntaxTreeNode* followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
@@ -3889,20 +3956,7 @@ namespace heather {
         return false;
       }
 
-      // flatten the parameter declarations generated (as sequence) from
-      // parseFunctionsParamsFull
-      Token result;
-      for (TokenVector::iterator it = params.begin();
-           it != params.end();
-           it++)
-      {
-        if (it->isSeq())
-          result << it->children();
-        else
-          result << *it;
-      }
-      
-      bindings->insert(std::make_pair(paramName, result));
+      bindings->insert(std::make_pair(paramName, params));
       return true;
     }
   };
@@ -3913,7 +3967,7 @@ typedef std::map<MacroParamType, Ptr<ParameterSyntaxMatcher> > ParamFuncMap;
 
 bool
 FirstPass::matchParameter(const Token& macroParam,
-                          std::map<String, Token>* bindings,
+                          NamedReplacementMap* bindings,
                           SyntaxTreeNode* followSet)
 {
   static ParamFuncMap paramsMap;
@@ -3957,7 +4011,7 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
   SyntaxTreeNode* node = syntaxTable->rootNode();
   assert(node != NULL);
 
-  std::map<String, Token> bindings;
+  NamedReplacementMap bindings;
 
   for ( ; ; ) {
     SyntaxTreeNode* followSet = node->findNode(fToken);

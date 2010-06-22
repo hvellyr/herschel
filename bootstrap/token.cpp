@@ -1509,12 +1509,12 @@ heather::operator+(const String& one, const TokenVector& vect)
 
 
 String
-heather::operator+(const String& one, const std::map<String, Token>& bindings)
+heather::operator+(const String& one, const NamedTokenMap& bindings)
 {
   StringBuffer buf;
   buf << "{";
 
-  for (std::map<String, Token>::const_iterator it = bindings.begin();
+  for (NamedTokenMap::const_iterator it = bindings.begin();
        it != bindings.end();
        it++)
   {
