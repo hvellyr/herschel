@@ -196,7 +196,8 @@ namespace heather
   };
 
 
-  typedef std::vector<Token> TokenVector;
+  typedef std::vector<Token>      TokenVector;
+  typedef std::map<String, Token> NamedTokenMap;
 
   class Token
   {
@@ -345,7 +346,7 @@ namespace heather
   String operator+(const String& one, const Token& two);
 
   String operator+(const String& one, const TokenVector& vect);
-  String operator+(const String& one, const std::map<String, Token>& bindings);
+  String operator+(const String& one, const NamedTokenMap& bindings);
 
   //--------------------------------------------------------------------------
   // definitions of the reserved keywords
