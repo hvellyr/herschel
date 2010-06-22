@@ -25,10 +25,18 @@ DISTFILES = \
 
 include $(top_srcdir)/build/pre.mk
 
-all-local: version.h config-local.h doc/version.texinfo $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 
-run-tests: 
-	(cd tests/; make syntax-tests)
+build: version.h config-local.h $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
+	(cd bootstrap && $(MAKE) all)
+
+tests: build
+	(cd tests/ && $(MAKE) all)
+
+docs: doc/version.texinfo $(BUILDDIR) 
+	(cd doc/ && $(MAKE) all)
+
+
+all-local: version.h config-local.h doc/version.texinfo $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 
 TAGS:
 	find -E . -regex ".*\.mm$$|.*\.cpp$$|.*\.h$$" -print | etags -o TAGS -
@@ -46,7 +54,7 @@ dist-doc-info-prepare: $(BUILDDIR)
 	-chmod -R a+w $(BUILDDIR)/$(info-distdir) >/dev/null 2>&1; rm -rf $(BUILDDIR)/$(info-distdir)
 	mkdir $(BUILDDIR)/$(info-distdir)
 	(cd doc/; \
-	 make -k info; \
+	 $(MAKE) -k info; \
 	 cp -f README.dist-info ../$(BUILDDIR)/$(info-distdir)/README >/dev/null 2>&1; \
 	 cp -f -r *.info-[0-9] ../$(BUILDDIR)/$(info-distdir) >/dev/null 2>&1; \
 	 cp -f -r *.info ../$(BUILDDIR)/$(info-distdir) >/dev/null 2>&1)
@@ -55,7 +63,7 @@ dist-doc-pdf-prepare: $(BUILDDIR)
 	-chmod -R a+w $(BUILDDIR)/$(pdf-distdir) >/dev/null 2>&1; rm -rf $(BUILDDIR)/$(pdf-distdir)
 	mkdir $(BUILDDIR)/$(pdf-distdir)
 	(cd doc/; \
-	 make -k pdf; \
+	 $(MAKE) -k pdf; \
 	 cp -f README.dist-pdf ../$(BUILDDIR)/$(pdf-distdir)/README >/dev/null 2>&1; \
 	 cp -f -r *.pdf ../$(BUILDDIR)/$(pdf-distdir) >/dev/null 2>&1)
 
@@ -84,10 +92,7 @@ dist-doc: dist-doc-info dist-doc-pdf
 
 #--- src distribution ------------------------------
 
-$(LEMONAPP): 
-	  (cd tools && $(MAKE) lemon.app)
-
-dist-src-prepare: $(BUILDDIR) $(LEMONAPP) distdir
+dist-src-prepare: $(BUILDDIR) distdir
 
 dist-src-zip: $(PKGDIR) dist-src-prepare
 	(cd $(BUILDDIR); \
