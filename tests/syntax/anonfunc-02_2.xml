@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><def><func sym='f'><params><param sym='self' type='pos'></param><param sym='proc' type='key' key='proc'><init><function><params><param sym='item' type='pos'></param></params><body><symbol>item</symbol></body></function></init></param></params><body><apply><symbol>for-each</symbol><args><symbol>self</symbol><symbol>proc</symbol></args></apply></body></func></def></compile-unit>

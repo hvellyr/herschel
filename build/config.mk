@@ -1,11 +1,11 @@
-#  This file is part of the heather package 
+#  This file is part of the heather package
 #
 #  Copyright (c) 2010 Gregor Klinke
 #  All rights reserved.
 #
 
 CDEBUG ?= -g
-COPT ?= -O3 
+COPT ?= -O3
 CWARNING += -Wall
 
 CC ?= gcc
@@ -14,7 +14,14 @@ MAKE ?= make
 AR ?= ar
 RANLIB ?= ranlib
 SHELL ?= /bin/sh
-DYLD = gcc 
+DYLD ?= gcc
+
+PYTHON ?= python2.5
+
+ZIP ?= zip
+TAR ?= tar
+
+HG ?= hg
 
 INSTALL     = /usr/bin/install -c
 INSTALLDATA = /usr/bin/install -c -m 644
@@ -24,7 +31,7 @@ DYLIBEXT = .so
 LYOEXT = .lo
 LIBEXT = .a
 OBJEXT = .o
-APPEXT = 
+APPEXT =
 
 PIC =
 

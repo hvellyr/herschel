@@ -289,6 +289,7 @@ namespace heather
     bool isBinarySeq() const;
     bool isBinarySeq(TokenType op) const;
     OperatorType binarySeqOperator() const;
+    bool isTernarySeq() const;
 
     bool isString() const;
     bool isDocString() const;

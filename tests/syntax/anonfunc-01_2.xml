@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><def><vardef sym='a'><init><function><params><param sym='a' type='pos'></param></params><body><symbol>a</symbol></body></function></init></vardef></def><def><vardef sym='b'><init><function><params><param sym='b' type='pos'></param></params><body><symbol>b</symbol></body></function></init></vardef></def></compile-unit>
