@@ -203,7 +203,8 @@ namespace heather
 
     Token parseMacroDef(const Token& defToken);
     bool parseMacroPatterns(MacroPatternVector* patterns);
-    bool parseMacroComponent(TokenVector* component);
+    bool parseMacroComponent(TokenVector* component,
+                             TokenType beginTokenType, TokenType endTokenType);
 
     MacroType dertermineMacroPatternType(const Token& macroName,
                                          const SrcPos& patternPos,

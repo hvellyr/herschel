@@ -105,6 +105,7 @@ Tokenizer::isDelimiter(Char c) const
            c == '(' || c == ')' ||
            c == '[' || c == ']' ||
            c == '{' || c == '}' ||
+           c == 0x300c || c == 0x300d ||
            c == '.' || c == ',' || c == ';' || c == '#' || c == '@' );
 }
 
@@ -617,6 +618,11 @@ Tokenizer::nextTokenImpl()
     case ']': return makeTokenAndNext(srcpos(), kBracketClose);
     case '{': return makeTokenAndNext(srcpos(), kBraceOpen);
     case '}': return makeTokenAndNext(srcpos(), kBraceClose);
+
+      // utf8: e3 80 8c | 343 200 214
+    case 0x300c: return makeTokenAndNext(srcpos(), kMacroOpen);
+      // utf8: e3 80 8d | 343 200 215
+    case 0x300d: return makeTokenAndNext(srcpos(), kMacroClose);
 
     case ',': return makeTokenAndNext(srcpos(), kComma);
     case ';': return makeTokenAndNext(srcpos(), kSemicolon);
@@ -1169,7 +1175,8 @@ public:
 
     {
       static const char* test =
-        "##  ?val:name ?\"abc\" ?\"\" ";
+        "##  ?val:name ?\"abc\" ?\"\" "
+        "\343\200\214 xyz \343\200\215 ";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 
@@ -1183,6 +1190,10 @@ public:
           // ?"" is not allowed.
           assert(tnz.nextToken() == Token());
         }
+
+        assert(tnz.nextToken() == Token(sp, kMacroOpen));
+        assert(tnz.nextToken() == Token(sp, kSymbol, "xyz"));
+        assert(tnz.nextToken() == Token(sp, kMacroClose));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));

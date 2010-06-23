@@ -55,6 +55,8 @@ namespace heather
     case kBraceClose:        return String("}");
     case kGenericOpen:       return String("<");
     case kGenericClose:      return String(">");
+    case kMacroOpen:         return String("\343\200\214");
+    case kMacroClose:        return String("\343\200\215");
     case kComma:             return String(",");
     case kSemicolon:         return String(";");
     case kColon:             return String(":");
@@ -819,6 +821,8 @@ Token::type() const
   case kBraceClose:
   case kGenericOpen:
   case kGenericClose:
+  case kMacroOpen:
+  case kMacroClose:
   case kComma:
   case kSemicolon:
   case kColon:
@@ -1552,9 +1556,12 @@ public:
 
     assert(Token() == Token());
     assert(Token(sp, kParanOpen, kParanClose) == Token(sp, kParanOpen, kParanClose));
+    assert(Token(sp, kMacroOpen, kMacroClose) == Token(sp, kMacroOpen, kMacroClose));
     assert(Token() << Token(sp, kInt, 25) == Token() << Token(sp, kInt, 25));
     assert(( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ) ==
            ( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ));
+    assert(( Token(sp, kMacroOpen, kMacroClose) << Token(sp, kInt, 25) ) ==
+           ( Token(sp, kMacroOpen, kMacroClose) << Token(sp, kInt, 25) ));
 
     assert(Token(sp, kReal, 3.1415).realValue() == 3.1415);
     assert(Token(sp, kReal, 1.2345).tokenType() == kReal);

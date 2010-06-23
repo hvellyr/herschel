@@ -630,6 +630,27 @@ SecondPass::parseFunCall(const Token& expr)
 AptNode*
 SecondPass::parseFor(const Token& expr)
 {
+  // TODO: before doing anything on a for-loop rewrite it as laid down in
+  // doc/loop-rewrite.txt
+  assert(expr.isSeq());
+  assert(expr.count() == 3 || expr.count() == 5);
+  assert(expr[0] == kForId);
+  assert(expr[1].isNested());
+  assert(heaImplies(expr.count() == 5, expr[3] == kElseId));
+
+  Ptr<AptNode> body = parseExpr(expr[2]);
+  Ptr<AptNode> alternate;
+
+  if (expr.count() == 5)
+    alternate = parseExpr(expr[4]);
+
+  NodeList tests;
+  const TokenVector& seq = expr[1].children();
+  for (size_t i = 0; i < seq.size(); i++) {
+    if (seq[i] == kComma)
+      continue;
+  }
+  
   // TODO
   return NULL;
 }
