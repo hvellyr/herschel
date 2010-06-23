@@ -3329,12 +3329,15 @@ FirstPass::determineMacroType(const Token& macroName,
 
 
 bool
-FirstPass::parseMacroComponent(TokenVector* component)
+FirstPass::parseMacroComponent(TokenVector* component,
+                               TokenType beginTokenType, TokenType endTokenType)
 {
   SrcPos startPos = fToken.srcpos();
 
   int braceCount = 1;
   for ( ; ; ) {
+//    printf("TOKEN: %s %x\n", (const char*)StrHelper(fToken.toString()), endTokenType);
+
     if (fToken == kEOF) {
       errorf(fToken.srcpos(), E_UnexpectedEOF, "unfinished macro component");
       if (startPos != fToken.srcpos())
@@ -3342,12 +3345,12 @@ FirstPass::parseMacroComponent(TokenVector* component)
       return false;
     }
 
-    if (fToken == kBraceOpen) {
+    if (fToken == beginTokenType) {
       braceCount++;
       component->push_back(fToken);
       nextToken();
     }
-    else if (fToken == kBraceClose) {
+    else if (fToken == endTokenType) {
       braceCount--;
       if (braceCount > 0) {
         component->push_back(fToken);
@@ -3375,11 +3378,22 @@ FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
   SrcPos startPos = fToken.srcpos();
 
   while (true) {
+    TokenType beginTokenType = kBraceOpen;
+    TokenType endTokenType = kBraceClose;
+
     if (fToken == kEOF)
       break;
 
-    if (fToken != kBraceOpen) {
-      errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+    if (fToken == kBraceOpen) {
+      beginTokenType = kBraceOpen;
+      endTokenType = kBraceClose;
+    }
+    else if (fToken == kMacroOpen) {
+      beginTokenType = kMacroOpen;
+      endTokenType = kMacroClose;
+    }
+    else {
+      errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{' or '\343\200\214'");
       scanUntilTopExprAndResume();
       return false;
     }
@@ -3388,14 +3402,16 @@ FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
     SrcPos patternPos = fToken.srcpos();
     TokenVector pattern;
     TokenVector replacement;
-    if (parseMacroComponent(&pattern)) {
+    if (parseMacroComponent(&pattern, beginTokenType, endTokenType)) {
       if (fToken == kMapTo) {
         nextToken();
 
-        if (fToken == kBraceOpen) {
+        if (fToken == kBraceOpen || fToken == kMacroOpen) {
+          TokenType beginTT = fToken.tokenType();
+          TokenType endTT = beginTT == kBraceOpen ? kBraceClose : kMacroClose;
           nextToken();
           SrcPos pos = fToken.srcpos();
-          if (parseMacroComponent(&replacement)) {
+          if (parseMacroComponent(&replacement, beginTT, endTT)) {
             patterns->push_back(MacroPattern(patternPos,
                                              pattern, replacement));
           }
@@ -3423,10 +3439,10 @@ FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
       return false;
     }
 
-    if (fToken == kBraceOpen)
+    if (fToken == kBraceOpen || fToken == kMacroOpen)
       continue;
     else if (fToken != kBraceClose) {
-      errorf(fToken.srcpos(), E_UnexpectedToken,"expected '{' or '}'");
+      errorf(fToken.srcpos(), E_UnexpectedToken, "expected '{', '\343\200\214' or '}'");
       scanUntilTopExprAndResume();
       return false;
     }
