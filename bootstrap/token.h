@@ -238,6 +238,9 @@ namespace heather
     Token(const Token& other);
     Token& operator=(const Token& other);
 
+    static Token newUniqueSymbolToken(const SrcPos& where,
+                                      const char* prefix);
+
     bool operator==(const Token& other) const;
     bool operator!=(const Token& other) const;
 
@@ -294,6 +297,12 @@ namespace heather
     bool isBinarySeq(TokenType op) const;
     OperatorType binarySeqOperator() const;
     bool isTernarySeq() const;
+    bool isThenWhileSeq() const;
+    //! indicates whether the expression is a (possible) variable declaration;
+    //! possible accepted forms are:
+    //!   symbol
+    //!   %(symbol : type)
+    bool isVariableDecl() const;
 
     bool isString() const;
     bool isDocString() const;
@@ -306,7 +315,9 @@ namespace heather
 
     //! indicates whether the token is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;
-
+    
+    //! indicates whether the token is a range
+    bool isRange() const;
     //! indicates whether the token is a constant range (i.e. a range where
     //! from, to, and step are constant literal values only
     bool isConstRange() const;

@@ -159,6 +159,13 @@ AptNode::appendNode(AptNode* node)
 }
 
 
+void
+AptNode::appendNodes(const NodeList& nodes)
+{
+  fChildren.insert(fChildren.end(), nodes.begin(), nodes.end());
+}
+
+
 //----------------------------------------------------------------------------
 
 StringNode::StringNode(const SrcPos& srcpos, const String& value)
@@ -601,10 +608,24 @@ BinaryNode::left() const
 }
 
 
+void
+BinaryNode::setLeft(AptNode* node)
+{
+  fLeft = node;
+}
+
+
 AptNode*
 BinaryNode::right() const
 {
   return fRight;
+}
+
+
+void
+BinaryNode::setRight(AptNode* node)
+{
+  fRight = node;
 }
 
 
@@ -960,4 +981,22 @@ KeyargNode::display(Port<Octet>* port) const
   displayOpenTagAttrs(port, "arg", StrHelper(attrs.toString()));
   displayNode(port, NULL, fValue);
   displayCloseTag(port, "arg");
+}
+
+
+//----------------------------------------------------------------------------
+
+WhileNode::WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body)
+  : AptNode(srcpos),
+    fTest(test),
+    fBody(body)
+{ }
+
+void
+WhileNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "while");
+  displayNode(port, "test", fTest);
+  displayNode(port, "body", fBody);
+  displayCloseTag(port, "while");
 }

@@ -496,6 +496,16 @@ namespace heather
 
 using namespace heather;
 
+Token
+Token::newUniqueSymbolToken(const SrcPos& where, const char* prefix)
+{
+  static int counter = 0;
+  StringBuffer buffer;
+  buffer << "__" << prefix << "_" << fromInt(counter++);
+  return Token(where, kSymbol, buffer.toString());
+}
+
+
 Token::Token()
   : fType(kSeqExpr),
     fImpl(new SeqTokenImpl)
@@ -1214,6 +1224,41 @@ Token::isTernarySeq() const
     return ( ((*this)[1].isPunct() && (*this)[3].isPunct()) ||
              ( (*this)[1] == kThenId && (*this)[3] == kWhileId ) );
   }
+  return false;
+}
+
+
+bool
+Token::isThenWhileSeq() const
+{
+  if (isSeq()) {
+    if ( (children().size() == 3 && (*this)[1] == kThenId) ||
+         (children().size() == 5 && (*this)[1] == kThenId &&
+          (*this)[3] == kWhileId) )
+      return true;
+  }
+  return false;
+}
+
+
+bool
+Token::isVariableDecl() const
+{
+  return (tokenType() == kSymbol ||
+          ( isSeq() && count() == 3 &&
+            (*this)[0] == kSymbol &&
+            (*this)[1] == kColon));
+}
+
+
+bool
+Token::isRange() const
+{
+  if (isSeq()) {
+    return ( (count() == 3 && (*this)[1] == kRange) ||
+             (count() == 5 && (*this)[1] == kRange && (*this)[3] == kBy) );
+  }
+
   return false;
 }
 

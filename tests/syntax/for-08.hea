@@ -1,0 +1,25 @@
+def f()
+  let count = 0
+  let e = root()
+  let _seq = names.iterator
+  let name = unspecified
+  let _result = unspecified
+
+  for ({if (_seq.end?)
+           false
+         else {
+           name = _seq.next
+           true
+         }
+       } and
+       not e.nil? and
+       name.empty?)
+  {
+    _result = X
+
+    count = count + 1
+    e = e.cdr
+  }
+
+  _result
+
