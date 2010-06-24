@@ -74,6 +74,12 @@ namespace heather
 
     AptNode* parseTypeSpec(const Token& expr);
 
+
+    void transformCollForClause(const Token& token,
+                                NodeList* loopDefines,
+                                NodeList* testExprs,
+                                bool* requiresReturnValue);
+
     //-------- data member
 
     Ptr<Parser> fParser;

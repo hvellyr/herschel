@@ -10,6 +10,7 @@
 #define bootstrap_apt_h
 
 #include <list>
+#include <vector>
 #include <map>
 
 #include "refcountable.h"
@@ -24,7 +25,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  typedef std::list<Ptr<AptNode> > NodeList;
+  typedef std::vector<Ptr<AptNode> > NodeList;
   typedef std::list<String> StringList;
   typedef std::map<String, String> StringStringMap;
 
@@ -47,6 +48,7 @@ namespace heather
     virtual void display(Port<Octet>* port) const = 0;
 
     virtual void appendNode(AptNode* node);
+    virtual void appendNodes(const NodeList& nodes);
 
   protected:
     SrcPos   fSrcPos;
@@ -378,6 +380,10 @@ namespace heather
     AptNode* left() const;
     AptNode* right() const;
 
+    void setLeft(AptNode* node);
+    void setRight(AptNode* node);
+
+
     bool isMapTo() const;
 
   private:
@@ -559,6 +565,21 @@ namespace heather
   private:
     String       fKey;
     Ptr<AptNode> fValue;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class WhileNode : public AptNode
+  {
+  public:
+    WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body);
+
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    Ptr<AptNode> fTest;
+    Ptr<AptNode> fBody;
   };
 };
 

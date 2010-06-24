@@ -627,6 +627,93 @@ SecondPass::parseFunCall(const Token& expr)
 }
 
 
+static bool
+isExplicitForClause(const Token& expr)
+{
+  return (expr.isSeq() && expr.count() >= 3 &&
+          expr[0].isVariableDecl() &&
+          expr[1] == kAssign &&
+          expr[2].isThenWhileSeq());
+}
+
+
+static bool
+isRangeForClause(const Token& expr)
+{
+  return (expr.isSeq() && expr.count() >= 3 &&
+          expr[0].isVariableDecl() &&
+          expr[1] == kIn &&
+          expr[2].isRange());
+}
+
+
+static bool
+isCollForClause(const Token& expr)
+{
+  return (expr.isSeq() && expr.count() >= 3 &&
+          expr[0].isVariableDecl() &&
+          expr[1] == kIn);
+}
+
+
+void
+SecondPass::transformCollForClause(const Token& token,
+                                   NodeList* loopDefines,
+                                   NodeList* testExprs,
+                                   bool* requiresReturnValue)
+{
+  assert(token.count() >= 3);
+
+  SrcPos srcpos = token.srcpos();
+
+  Token sym = Token::newUniqueSymbolToken(srcpos, "seq");
+
+  // ------------------------------ let _seq = names
+  Ptr<AptNode> loopTypeNode;    // TODO
+  Ptr<AptNode> seqInitNode = parseExpr(token[2]);
+  Ptr<AptNode> loopDefNode = new LetNode(
+    new VardefNode(srcpos,
+                   sym.idValue(), kNormalVar, loopTypeNode,
+                   seqInitNode));
+  loopDefines->push_back(loopDefNode);
+
+
+  // ------------------------------ let name = unspecified
+  Token stepSym = token[0].isSeq() ? token[0][0] : token[0];
+  assert(stepSym == kSymbol);
+  Ptr<AptNode> stepTypeNode;    // TODO
+  Ptr<AptNode> stepDefNode = new LetNode(
+    new VardefNode(srcpos,
+                   stepSym.idValue(), kNormalVar, stepTypeNode,
+                   new SymbolNode(srcpos, String("unspecified"))));
+  loopDefines->push_back(stepDefNode);
+
+
+  // ------------------------------ if (_seq.end?)
+  Ptr<AptNode> testNode = new ApplyNode(srcpos, new SymbolNode(srcpos, String("end?")));
+  testNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
+
+  // --- then false
+  Ptr<AptNode> consNode = new BoolNode(srcpos, false);
+
+  // --- else { name = _seq.next true }
+  Ptr<AptNode> altNode = new BlockNode(srcpos);
+
+  Ptr<AptNode> stepVarNode = new SymbolNode(srcpos, stepSym.idValue());
+  Ptr<AptNode> nextSeqNode = new ApplyNode(srcpos, new SymbolNode(srcpos, String("next")));  nextSeqNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
+  Ptr<AptNode> stepNextNode = new AssignNode(srcpos, stepVarNode, nextSeqNode);
+  altNode->appendNode(nextSeqNode);
+  altNode->appendNode(new BoolNode(srcpos, true));
+
+  Ptr<AptNode> ifNode = new IfNode(srcpos,
+                                   testNode, consNode, altNode);
+
+  testExprs->push_back(ifNode);
+
+  *requiresReturnValue = true;
+}
+
+
 AptNode*
 SecondPass::parseFor(const Token& expr)
 {
@@ -644,15 +731,93 @@ SecondPass::parseFor(const Token& expr)
   if (expr.count() == 5)
     alternate = parseExpr(expr[4]);
 
+  NodeList loopDefines;
+  NodeList testExprs;
+  NodeList stepExprs;
+  bool requiresReturnValue = false;
+
   NodeList tests;
   const TokenVector& seq = expr[1].children();
   for (size_t i = 0; i < seq.size(); i++) {
     if (seq[i] == kComma)
       continue;
+
+    if (isExplicitForClause(seq[i])) {
+      // printf("Explicit for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
+    }
+    else if (isRangeForClause(seq[i])) {
+      // printf("Range for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
+    }
+    else if (isCollForClause(seq[i])) {
+      // printf("Coll for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
+      transformCollForClause(seq[i],
+                             &loopDefines,
+                             &testExprs,
+                             &requiresReturnValue);
+    }
+    else {
+      // printf("Other test for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
+      Ptr<AptNode> exprNode = parseExpr(seq[i]);
+      testExprs.push_back(exprNode);
+    }
   }
-  
-  // TODO
-  return NULL;
+
+  Token returnSym = Token::newUniqueSymbolToken(expr.srcpos(), "return");
+
+  if (requiresReturnValue) {
+    Ptr<AptNode> retType;       // TODO?
+    Ptr<AptNode> defReturnNode = new LetNode(
+      new VardefNode(expr.srcpos(),
+                     returnSym.idValue(), kNormalVar, retType,
+                     new SymbolNode(expr.srcpos(), String("unspecified"))));
+    loopDefines.push_back(defReturnNode);
+  }
+
+  Ptr<BlockNode> block = new BlockNode(expr.srcpos());
+  block->appendNodes(loopDefines);
+
+  Ptr<AptNode> testNode;
+  for (size_t i = 0; i < testExprs.size(); i++) {
+    if (testNode != NULL) {
+      Ptr<BinaryNode> prevBin = dynamic_cast<BinaryNode*>(testNode.obj());
+      if (prevBin != NULL) {
+        Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
+                                              prevBin->right(),
+                                              kOpLogicalAnd, testExprs[i]);
+        prevBin->setRight(binNode);
+      }
+      else {
+        Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
+                                              testNode, kOpLogicalAnd, testExprs[i]);
+        testNode = binNode;
+      }
+    }
+    else
+      testNode = testExprs[i];
+  }
+
+  Ptr<BlockNode> bodyNode = new BlockNode(expr.srcpos());
+
+  if (requiresReturnValue) {
+    Ptr<AptNode> retNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
+    Ptr<AptNode> saveRetNode = new AssignNode(expr.srcpos(), retNode, body);
+    bodyNode->appendNode(saveRetNode);
+  }
+  else
+    bodyNode->appendNode(body);
+  bodyNode->appendNodes(stepExprs);
+
+  Ptr<AptNode> returnNode;
+  if (requiresReturnValue)
+    returnNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
+
+  Ptr<WhileNode> whileNode = new WhileNode(expr.srcpos(), testNode, bodyNode);
+  block->appendNode(whileNode);
+
+  if (returnNode != NULL)
+    block->appendNode(returnNode);
+
+  return block.release();
 }
 
 
@@ -845,6 +1010,7 @@ SecondPass::parseNested(const Token& expr)
   case kGenericOpen:
 
   default:
+    // printf("---> %s\n", (const char*)StrHelper(expr.toString()));
     assert(0);                  // you should not be here.
   }
 
