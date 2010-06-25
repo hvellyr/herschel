@@ -627,6 +627,8 @@ SecondPass::parseFunCall(const Token& expr)
 }
 
 
+//----------------------------------------------------------------------------
+
 static bool
 isExplicitForClause(const Token& expr)
 {
@@ -637,6 +639,15 @@ isExplicitForClause(const Token& expr)
 }
 
 
+void
+SecondPass::transformExplicitForClause(const Token& token,
+                                       NodeList* loopDefines,
+                                       NodeList* testExprs,
+                                       bool* requiresReturnValue)
+{
+}
+
+
 static bool
 isRangeForClause(const Token& expr)
 {
@@ -644,6 +655,15 @@ isRangeForClause(const Token& expr)
           expr[0].isVariableDecl() &&
           expr[1] == kIn &&
           expr[2].isRange());
+}
+
+
+void
+SecondPass::transformRangeForClause(const Token& token,
+                                    NodeList* loopDefines,
+                                    NodeList* testExprs,
+                                    bool* requiresReturnValue)
+{
 }
 
 
@@ -690,7 +710,8 @@ SecondPass::transformCollForClause(const Token& token,
 
 
   // ------------------------------ if (_seq.end?)
-  Ptr<AptNode> testNode = new ApplyNode(srcpos, new SymbolNode(srcpos, String("end?")));
+  Ptr<AptNode> testNode = new ApplyNode(srcpos,
+                                        new SymbolNode(srcpos, String("end?")));
   testNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
 
   // --- then false
@@ -700,7 +721,10 @@ SecondPass::transformCollForClause(const Token& token,
   Ptr<AptNode> altNode = new BlockNode(srcpos);
 
   Ptr<AptNode> stepVarNode = new SymbolNode(srcpos, stepSym.idValue());
-  Ptr<AptNode> nextSeqNode = new ApplyNode(srcpos, new SymbolNode(srcpos, String("next")));  nextSeqNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
+  Ptr<AptNode> nextSeqNode = new ApplyNode(srcpos,
+                                           new SymbolNode(srcpos, String("next")));
+  nextSeqNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
+
   Ptr<AptNode> stepNextNode = new AssignNode(srcpos, stepVarNode, nextSeqNode);
   altNode->appendNode(nextSeqNode);
   altNode->appendNode(new BoolNode(srcpos, true));
@@ -717,8 +741,6 @@ SecondPass::transformCollForClause(const Token& token,
 AptNode*
 SecondPass::parseFor(const Token& expr)
 {
-  // TODO: before doing anything on a for-loop rewrite it as laid down in
-  // doc/loop-rewrite.txt
   assert(expr.isSeq());
   assert(expr.count() == 3 || expr.count() == 5);
   assert(expr[0] == kForId);
@@ -744,9 +766,17 @@ SecondPass::parseFor(const Token& expr)
 
     if (isExplicitForClause(seq[i])) {
       // printf("Explicit for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
+      transformExplicitForClause(seq[i],
+                                 &loopDefines,
+                                 &testExprs,
+                                 &requiresReturnValue);
     }
     else if (isRangeForClause(seq[i])) {
       // printf("Range for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
+      transformRangeForClause(seq[i],
+                              &loopDefines,
+                              &testExprs,
+                              &requiresReturnValue);
     }
     else if (isCollForClause(seq[i])) {
       // printf("Coll for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
@@ -820,6 +850,8 @@ SecondPass::parseFor(const Token& expr)
   return block.release();
 }
 
+
+//----------------------------------------------------------------------------
 
 AptNode*
 SecondPass::parseSelect(const Token& expr)
