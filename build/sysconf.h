@@ -47,8 +47,10 @@ typedef unsigned long long UInt64;
 
 #elif defined(OS_win)
 
-typedef long long Int64;
-typedef unsigned __int64 UInt64;
+#include <inttypes.h>
+
+// typedef long long Int64;
+// typedef unsigned __int64 UInt64;
 
 #else
 #  error Unsupported OS

@@ -282,6 +282,8 @@ namespace heather
       default:
         assert(0);
       }
+
+      return String();
     }
 
 
@@ -349,6 +351,7 @@ namespace heather
       default:
         assert(0);
       }
+      return String();
     }
 
 
@@ -879,6 +882,8 @@ Token::type() const
     fprintf(stderr, "Type: %d\n", fType);
     assert(0);
   }
+
+  return kPunct;
 }
 
 
@@ -1092,6 +1097,8 @@ Token::idValue() const
   default:
     assert(0);
   }
+
+  return String();
 }
 
 

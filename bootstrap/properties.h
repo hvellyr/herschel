@@ -48,4 +48,4 @@ namespace heather
   };
 };                              // namespace
 
-#endif bootstrap_properties_h
+#endif   // bootstrap_properties_h
