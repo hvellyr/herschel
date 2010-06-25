@@ -17,4 +17,6 @@ typedef unsigned char Octet;
 typedef unsigned short Char;
 
 
+#define heaImplies(_condA, _condB)  (!(_condA) || ((_condA) && (_condB)))
+
 #endif

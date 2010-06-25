@@ -41,6 +41,9 @@ namespace heather
 #if defined(UNITTESTS)
     static void test_setDontImport(bool value);
     static bool test_dontImport();
+
+    static void test_setPass1Only(bool value);
+    static bool test_pass1Only();
 #endif
 
     static bool shouldIgnoreDocStrings();

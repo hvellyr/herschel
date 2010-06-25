@@ -43,6 +43,7 @@ displayHelp()
   printf("  -d DIR,  --outdir=DIR      Output all generated files to DIR\n");
 #if defined(UNITTESTS)
   printf("  -UT,     --run-unit-tests  Run unit tests for the compiler\n");
+  printf("           --parse-1         Only do pass1 phase\n");
 #endif
   printf("  -P,      --parse           Only parse the source files\n");
 }
@@ -56,22 +57,40 @@ enum CompileFunction {
   kParseFiles,
 };
 
+enum {
+  kOptHelp = 1,
+  kOptVersion,
+  kOptOutdir,
+  kOptVerbose,
+  kOptTrace,
+  kOptParse,
+  kOptDefine,
+
+#if defined(UNITTESTS)
+  kOptRunUnitTests,
+  kOptDontImport,
+  kOptParse1,
+#endif
+};
+
 int
 main(int argc, char** argv)
 {
   static const OptionsParser::OptionsDefine heatherOptions[] = {
-    { 1, "-h",  "--help",           false },
-    { 2, "-v",  "--version",        false },
-    { 3, "-d",  "--outdir",         true  },
-    { 4, NULL,  "--verbose",        false },
-    { 5, "-T",  "--trace",          true  },
+    { kOptHelp,         "-h",  "--help",           false },
+    { kOptVersion,      "-v",  "--version",        false },
+    { kOptOutdir,       "-d",  "--outdir",         true  },
+    { kOptVerbose,      NULL,  "--verbose",        false },
+    { kOptTrace,        "-T",  "--trace",          true  },
+    { kOptParse,        "-P",  "--parse",          false },
+    { kOptDefine,       "-D",  "--define",         true  },
+
 #if defined(UNITTESTS)
-    { 6, "-UT", "--run-unit-tests", false },
-    { 9, NULL,  "--dont-import",    false },
+    { kOptRunUnitTests, "-UT", "--run-unit-tests", false },
+    { kOptDontImport,   NULL,  "--dont-import",    false },
+    { kOptParse1,       NULL,  "--parse-1",        false },
 #endif
-    { 7, "-P",  "--parse",          false },
-    { 8, "-D",  "--define",         true  },
-    { 0, NULL,  NULL,               false } // sentinel
+    { 0,                NULL,  NULL,               false } // sentinel
   };
 
   CompileFunction func = kDisplayHelp;
@@ -84,42 +103,45 @@ main(int argc, char** argv)
     switch (type) {
     case OptionsParser::kOption:
       switch (option.fId) {
-      case 1:                   // help
+      case kOptHelp:
         displayHelp();
         exit(0);
         break;
 
-      case 2:                   // version
+      case kOptVersion:
         displayVersion();
         exit(0);
         break;
 
-      case 3:                   // outdir
+      case kOptOutdir:
         Properties::setOutdir(option.fArgument);
         break;
 
-      case 4:                   // verbose
+      case kOptVerbose:
         Properties::setIsVerbose(true);
         break;
 
-      case 5:                   // trace
+      case kOptTrace:
         Properties::setTraces(option.fArgument);
         break;
 
-      case 7:                   // parse
+      case kOptParse:
         func = kParseFiles;
         break;
 
-      case 8:                   // define config var
+      case kOptDefine:
         Properties::setConfigVar(option.fArgument);
         break;
 
 #if defined(UNITTESTS)
-      case 6:                   // unittests
+      case kOptRunUnitTests:
         func = kRunUnitTests;
         break;
-      case 9:                   // dontImport
+      case kOptDontImport:
         Properties::test_setDontImport(true);
+        break;
+      case kOptParse1:
+        Properties::test_setPass1Only(true);
         break;
 #endif
       }

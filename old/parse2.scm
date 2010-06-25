@@ -15,19 +15,6 @@
 ;;  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-(define (parse-modifiers-2p nl target possible-modifiers)
-  (if (or (null? nl)
-          (not (apt-id? (car nl))))
-      nl
-      (if (member (apt-id-value (car nl)) possible-modifiers)
-          (begin
-            (vector-set! target 0 (append (vector-ref target 0)
-                                          (list (apt-id-value (car nl)))))
-            (parse-modifiers-2p (cdr nl) target
-                                possible-modifiers))
-          nl)))
-
-
 (define (parse-id-2p node)
   (make-object <apt:symbol> (list (apt-id-value node))))
 

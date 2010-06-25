@@ -18,10 +18,10 @@ $(testtemp_dir):
 	@if [ ! -d "$@" ]; then mkdir $@; fi
 
 syntax-tests:
-	python2.5 runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather -D syntax syntax/ 
+	$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather -D syntax syntax/ 
 
 import-tests:
-	python2.5 runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather -D import import/ 
+	$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather -D import import/ 
 
 
 

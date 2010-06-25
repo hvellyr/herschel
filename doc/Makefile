@@ -44,7 +44,7 @@ PDFS =  $(TEXINFO_FILES:%.texinfo=$(BUILDDIR)/%.pdf)
 
 pdf: $(PDFS)
 
-$(BUILDDIR)/%.pdf : $(BUILDDIR)/pdf %.texinfo
+$(BUILDDIR)/%.pdf : $(BUILDDIR)/pdf heather.texinfo version.texinfo
 	texi2pdf --build-dir=$(BUILDDIR)/pdf \
 			     -I $(top_srcdir)/doc -o $@ heather.texinfo
 
@@ -55,8 +55,8 @@ INFOS =  $(TEXINFO_FILES:%.texinfo=$(BUILDDIR)/%.info)
 
 info: $(INFOS)
 
-$(BUILDDIR)/%.info : %.texinfo
-	makeinfo -o $@ $<
+$(BUILDDIR)/%.info : %.texinfo version.texinfo
+	makeinfo -o $@ heather.texinfo
 
 
 clean-local:

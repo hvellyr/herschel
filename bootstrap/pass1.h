@@ -9,6 +9,8 @@
 #ifndef bootstrap_pass1_h
 #define bootstrap_pass1_h
 
+#include <map>
+
 #include "apt.h"
 #include "errcodes.h"
 #include "macro.h"
@@ -22,6 +24,11 @@
 namespace heather
 {
   class SyntaxTreeNode;
+
+  //--------------------------------------------------------------------------
+
+  typedef std::map<String, TokenVector> NamedReplacementMap;
+
 
   //--------------------------------------------------------------------------
 
@@ -196,7 +203,8 @@ namespace heather
 
     Token parseMacroDef(const Token& defToken);
     bool parseMacroPatterns(MacroPatternVector* patterns);
-    bool parseMacroComponent(TokenVector* component);
+    bool parseMacroComponent(TokenVector* component,
+                             TokenType beginTokenType, TokenType endTokenType);
 
     MacroType dertermineMacroPatternType(const Token& macroName,
                                          const SrcPos& patternPos,
@@ -232,13 +240,14 @@ namespace heather
     bool matchSyntax(TokenVector* result, SyntaxTable* syntaxTable);
     bool replaceMatchBindings(TokenVector* result,
                               const TokenVector& replacement,
-                              const std::map<String, Token>& bindings);
+                              const NamedReplacementMap& bindings);
     bool replaceSangHashIds(TokenVector* result, const TokenVector& source);
-    Token findReplaceToken(const Token& token,
-                           const std::map<String, Token>& bindings);
+    const TokenVector& findReplaceToken(const Token& token,
+                                        const NamedReplacementMap& bindings,
+                                        bool& found);
 
     bool matchParameter(const Token& macroParam,
-                        std::map<String, Token>* bindings,
+                        NamedReplacementMap* bindings,
                         SyntaxTreeNode* followSet);
 
     Token parseParameter(ParamType* expected, bool autoCompleteTypes);
