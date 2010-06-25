@@ -90,8 +90,7 @@ main(int argc, char** argv)
     { kOptDontImport,   NULL,  "--dont-import",    false },
     { kOptParse1,       NULL,  "--parse-1",        false },
 #endif
-
-    { NULL }                    // sentinel
+    { 0,                NULL,  NULL,               false } // sentinel
   };
 
   CompileFunction func = kDisplayHelp;
