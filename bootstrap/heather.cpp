@@ -71,7 +71,7 @@ main(int argc, char** argv)
 #endif
     { 7, "-P",  "--parse",          false },
     { 8, "-D",  "--define",         true  },
-    { NULL }                    // sentinel
+    { 0, NULL,  NULL,               false } // sentinel
   };
 
   CompileFunction func = kDisplayHelp;

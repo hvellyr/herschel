@@ -11,6 +11,8 @@
 
 #include "common.h"
 
+#include <stdlib.h>
+
 
 namespace heather
 {

@@ -155,7 +155,7 @@ public:
       { 5, "-U", NULL,        false },
       { 6, NULL, "--level",   true },
       { 7, "-P", NULL,        true },
-      { NULL }                    // sentinel
+      { 0, NULL, NULL,        false } // sentinel
     };
 
     OptionsParser::Option option;
