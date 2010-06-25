@@ -79,6 +79,15 @@ namespace heather
                                 NodeList* loopDefines,
                                 NodeList* testExprs,
                                 bool* requiresReturnValue);
+    void transformRangeForClause(const Token& token,
+                                 NodeList* loopDefines,
+                                 NodeList* testExprs,
+                                 bool* requiresReturnValue);
+    void transformExplicitForClause(const Token& token,
+                                    NodeList* loopDefines,
+                                    NodeList* testExprs,
+                                    bool* requiresReturnValue);
+
 
     //-------- data member
 
