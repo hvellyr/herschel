@@ -1336,6 +1336,26 @@ Token::isKeyArg() const
 
 
 bool
+Token::isNegative() const
+{
+  switch (fType) {
+  case kInt:
+    return intValue() < 0;
+  case kReal:
+    return realValue() < 0;
+  case kRational:
+    return rationalValue() < Rational(0, 1);
+  case kChar:
+    return false;
+
+  default:
+    assert(0);
+  }
+  return false;
+}
+
+
+bool
 Token::isSymFuncall() const
 {
   return isSeq() && count() == 2 &&

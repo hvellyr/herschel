@@ -82,6 +82,7 @@ namespace heather
     void transformRangeForClause(const Token& token,
                                  NodeList* loopDefines,
                                  NodeList* testExprs,
+                                 NodeList* stepExprs,
                                  bool* requiresReturnValue);
     void transformExplicitForClause(const Token& token,
                                     NodeList* loopDefines,

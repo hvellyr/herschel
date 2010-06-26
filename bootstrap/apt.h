@@ -30,6 +30,7 @@ namespace heather
   typedef std::map<String, String> StringStringMap;
 
 
+
   //--------------------------------------------------------------------------
 
   class AptNode : public RefCountable
@@ -44,6 +45,7 @@ namespace heather
       return fSrcPos;
     }
 
+    virtual AptNode* clone() const = 0;
 
     virtual void display(Port<Octet>* port) const = 0;
 
@@ -63,6 +65,7 @@ namespace heather
   public:
     StringNode(const SrcPos& srcpos, const String& value);
 
+    virtual StringNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   private:
     String fValue;
@@ -76,6 +79,7 @@ namespace heather
   public:
     KeywordNode(const SrcPos& srcpos, const String& value);
 
+    virtual KeywordNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   private:
     String fValue;
@@ -89,6 +93,7 @@ namespace heather
   public:
     SymbolNode(const SrcPos& srcpos, const String& value);
 
+    virtual SymbolNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   private:
     String fValue;
@@ -119,6 +124,7 @@ namespace heather
   {
   public:
     IntNode(const SrcPos& srcpos, int value, bool isImaginary);
+    virtual IntNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -129,6 +135,7 @@ namespace heather
   {
   public:
     RealNode(const SrcPos& srcpos, double value, bool isImaginary);
+    virtual RealNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -140,6 +147,7 @@ namespace heather
   public:
     RationalNode(const SrcPos& srcpos,
                  const Rational& value, bool isImaginary);
+    virtual RationalNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -150,6 +158,7 @@ namespace heather
   {
   public:
     CharNode(const SrcPos& srcpos, Char value);
+    virtual CharNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   private:
     Char fValue;
@@ -162,6 +171,7 @@ namespace heather
   {
   public:
     BoolNode(const SrcPos& srcpos, bool value);
+    virtual BoolNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   private:
     bool fValue;
@@ -174,6 +184,7 @@ namespace heather
   {
   public:
     CompileUnitNode(const SrcPos& srcpos);
+    virtual CompileUnitNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -185,6 +196,7 @@ namespace heather
   public:
     ModuleNode(const SrcPos& srcpos,
                const String& modName, const String& publicId);
+    virtual ModuleNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   private:
@@ -209,6 +221,7 @@ namespace heather
                VizType viz,
                bool isFinal,
                const StringList& symbols);
+    virtual ExportNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
     const char* vizAttr(VizType viz) const;
@@ -228,6 +241,7 @@ namespace heather
     ImportNode(const SrcPos& srcpos,
                const String& codeFile,
                const StringStringMap& renames);
+    virtual ImportNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   private:
@@ -267,6 +281,7 @@ namespace heather
   {
   public:
     LetNode(AptNode* node);
+    virtual LetNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -275,6 +290,7 @@ namespace heather
   {
   public:
     DefNode(AptNode* node);
+    virtual DefNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -295,6 +311,7 @@ namespace heather
                const String& symbolName, VardefFlags flags,
                AptNode* type, AptNode* initExpr);
 
+    virtual VardefNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   private:
@@ -317,6 +334,7 @@ namespace heather
               const String& symbolName, ParamFlags flags,
               AptNode* type, AptNode* initExpr);
 
+    virtual ParamNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   private:
@@ -334,6 +352,7 @@ namespace heather
       : AptNode(srcpos)
     { }
 
+    virtual ArrayNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -347,6 +366,7 @@ namespace heather
       : AptNode(srcpos)
     { }
 
+    virtual VectorNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -360,6 +380,7 @@ namespace heather
       : AptNode(srcpos)
     { }
 
+    virtual DictNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
     void addPair(AptNode* key, AptNode* value);
@@ -374,6 +395,7 @@ namespace heather
     BinaryNode(const SrcPos& srcpos,
                AptNode* left, OperatorType op, AptNode* right);
 
+    virtual BinaryNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
     OperatorType op() const;
@@ -395,11 +417,27 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class NegateNode : public AptNode
+  {
+  public:
+    NegateNode(const SrcPos& srcpos, AptNode* base);
+
+    virtual NegateNode* clone() const;
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    Ptr<AptNode> fBase;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class RangeNode : public AptNode
   {
   public:
     RangeNode(const SrcPos& srcpos,
               AptNode* from, AptNode* to, AptNode* by);
+    virtual RangeNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
     AptNode* from() const;
@@ -420,6 +458,7 @@ namespace heather
   public:
     ThenWhileNode(const SrcPos& srcpos,
                   AptNode* first, AptNode* step, AptNode* test);
+    virtual ThenWhileNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   private:
@@ -435,6 +474,7 @@ namespace heather
   {
   public:
     AssignNode(const SrcPos& srcpos, AptNode* lvalue, AptNode* rvalue);
+    virtual AssignNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
     AptNode* lvalue() const;
@@ -454,6 +494,7 @@ namespace heather
     IfNode(const SrcPos& srcpos,
            AptNode* test, AptNode* consequent, AptNode* alternate);
 
+    virtual IfNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
     AptNode* test() const;
@@ -475,6 +516,7 @@ namespace heather
     OnNode(const SrcPos& srcpos,
            const String& key, const NodeList& params, AptNode* body);
 
+    virtual OnNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   private:
@@ -490,6 +532,7 @@ namespace heather
   {
   public:
     BlockNode(const SrcPos& srcpos);
+    virtual BlockNode* clone() const;
     virtual void display(Port<Octet>* port) const;
   };
 
@@ -504,6 +547,7 @@ namespace heather
                  AptNode* retType,
                  AptNode* body);
 
+    virtual FunctionNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   protected:
@@ -528,6 +572,7 @@ namespace heather
                 AptNode* retType,
                 AptNode* body);
 
+    virtual FuncDefNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
     bool isGeneric() const;
@@ -546,6 +591,7 @@ namespace heather
   public:
     ApplyNode(const SrcPos& srcpos, AptNode* base);
 
+    virtual ApplyNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   private:
@@ -560,6 +606,7 @@ namespace heather
   public:
     KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value);
 
+    virtual KeyargNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   private:
@@ -575,6 +622,7 @@ namespace heather
   public:
     WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body);
 
+    virtual WhileNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   private:

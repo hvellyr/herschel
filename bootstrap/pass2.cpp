@@ -658,12 +658,215 @@ isRangeForClause(const Token& expr)
 }
 
 
+enum RangeForClauseCountDir
+{
+  kRangeUpwards,
+  kRangeDownwards,
+  kRangeUnknown
+};
+
 void
 SecondPass::transformRangeForClause(const Token& token,
                                     NodeList* loopDefines,
                                     NodeList* testExprs,
+                                    NodeList* stepExprs,
                                     bool* requiresReturnValue)
 {
+  assert(token.count() == 3);
+  assert(token[2].isRange());
+
+  SrcPos srcpos = token.srcpos();
+
+  Ptr<AptNode> beginRangeNode;
+  Ptr<AptNode> endRangeNode;
+
+  // determine loop direction
+  Ptr<AptNode> stepValueNode;
+  RangeForClauseCountDir direct = kRangeUnknown;
+  if (token[2].count() == 3) {
+    direct = kRangeUpwards;
+    stepValueNode = new IntNode(srcpos, 1, false);
+  }
+  else if (token[2].count() == 5) {
+    Token byToken = token[2][4];
+    if (byToken.isInt() || byToken.isReal() || byToken.isRational() ||
+        byToken.isChar())
+    {
+      direct = byToken.isNegative() ? kRangeDownwards : kRangeUpwards;
+      stepValueNode = parseExpr(byToken);
+    }
+    else {
+      direct = kRangeUnknown;
+
+      Ptr<AptNode> tmpStepNode = parseExpr(byToken);
+      // let _step = 2
+      Token tmpStepSym = Token::newUniqueSymbolToken(srcpos, "step");
+      Ptr<AptNode> endStepNode = new LetNode(
+        new VardefNode(srcpos,
+                       tmpStepSym.idValue(), kNormalVar, NULL,
+                       tmpStepNode));
+      loopDefines->push_back(endStepNode);
+
+      stepValueNode = new SymbolNode(srcpos, tmpStepSym.idValue());
+    }
+  }
+
+
+  //-------- determine best end node representation
+  Token beginToken = token[2][0];
+  if (beginToken.isLit()) {
+    beginRangeNode = parseExpr(beginToken);
+  }
+  else {
+    Ptr<AptNode> tmpEndNode = parseExpr(beginToken);
+
+    // let _end = 100
+    Token tmpEndRangeSym = Token::newUniqueSymbolToken(srcpos, "end");
+    Ptr<AptNode> endRangeDefNode = new LetNode(
+      new VardefNode(srcpos,
+                     tmpEndRangeSym.idValue(), kNormalVar, NULL,
+                     tmpEndNode));
+    loopDefines->push_back(endRangeDefNode);
+
+    beginRangeNode = new SymbolNode(srcpos, tmpEndRangeSym.idValue());
+  }
+
+
+  //-------- determine best end node representation
+  Token endToken = token[2][2];
+  if (endToken.isLit()) {
+    endRangeNode = parseExpr(endToken);
+  }
+  else {
+    Ptr<AptNode> tmpEndNode = parseExpr(endToken);
+
+    // let _end = 100
+    Token tmpEndRangeSym = Token::newUniqueSymbolToken(srcpos, "end");
+    Ptr<AptNode> endRangeDefNode = new LetNode(
+      new VardefNode(srcpos,
+                     tmpEndRangeSym.idValue(), kNormalVar, NULL,
+                     tmpEndNode));
+    loopDefines->push_back(endRangeDefNode);
+
+    endRangeNode = new SymbolNode(srcpos, tmpEndRangeSym.idValue());
+  }
+
+
+  Token iteratorVarSym = token[0].isSeq() ? token[0][0] : token[0];
+
+  //------------------------------ generate known counter variable
+  // let i = 0  |  let i = 100
+  Ptr<AptNode> stepVarTypeNode;    // TODO
+  Ptr<AptNode> stepDefNode = new LetNode(
+    new VardefNode(srcpos,
+                   iteratorVarSym.idValue(), kNormalVar, stepVarTypeNode,
+                   beginRangeNode));
+  loopDefines->push_back(stepDefNode);
+
+
+  Token absMaxEndSym;
+  Token absItVarSym;
+  Token absStepVarSym;
+
+  if (direct == kRangeUnknown) {
+    // for ranges of unknown direction we need some more temporary variables
+    absMaxEndSym = Token::newUniqueSymbolToken(srcpos, "abs_end");
+    absItVarSym = Token::newUniqueSymbolToken(srcpos, "abs_i");
+    absStepVarSym = Token::newUniqueSymbolToken(srcpos, "abs_step");
+
+    // let __i = if (i < _end) i else _end    -- min(i, _end)
+    Ptr<AptNode> absItVarNode = new LetNode(
+      new VardefNode(srcpos,
+                     absItVarSym.idValue(), kNormalVar, NULL,
+                     new IfNode(srcpos,
+                                new BinaryNode(srcpos,
+                                               new SymbolNode(srcpos, iteratorVarSym.idValue()),
+                                               kOpLess,
+                                               endRangeNode->clone()),
+                                new SymbolNode(srcpos, iteratorVarSym.idValue()),
+                                endRangeNode->clone())));
+    loopDefines->push_back(absItVarNode);
+
+    // let _abs_end = if (i < _end) _end else i   -- max(i, _end)
+    Ptr<AptNode> absMaxEndNode = new LetNode(
+      new VardefNode(srcpos,
+                     absMaxEndSym.idValue(), kNormalVar, NULL,
+                     new IfNode(srcpos,
+                                new BinaryNode(srcpos,
+                                               new SymbolNode(srcpos, iteratorVarSym.idValue()),
+                                               kOpLess,
+                                               endRangeNode->clone()),
+                                endRangeNode->clone(),
+                                new SymbolNode(srcpos, iteratorVarSym.idValue()))));
+    loopDefines->push_back(absMaxEndNode);
+
+    // let __abs_step = if (_step < 0) - _step else _step   -- abs(_step)
+    Ptr<AptNode> absStepVarNode = new LetNode(
+      new VardefNode(srcpos,
+                     absStepVarSym.idValue(), kNormalVar, NULL,
+                     new IfNode(srcpos,
+                                new BinaryNode(srcpos,
+                                               stepValueNode->clone(),
+                                               kOpLess,
+                                               endRangeNode->clone()),
+                                new NegateNode(srcpos, stepValueNode->clone()),
+                                stepValueNode->clone())));
+    loopDefines->push_back(absStepVarNode);
+  }
+
+
+  //------------------------------ generate test expressions
+  switch (direct) {
+  case kRangeUpwards:
+  case kRangeDownwards:
+    {
+      OperatorType op = direct == kRangeUpwards ? kOpLessEqual : kOpGreaterEqual;
+      // i <= _end  |  i >= _end
+      Ptr<AptNode> testExprNode = new BinaryNode(srcpos,
+                                                 new SymbolNode(srcpos,
+                                                                iteratorVarSym.idValue()),
+                                                 op,
+                                                 endRangeNode);
+      testExprs->push_back(testExprNode);
+    }
+    break;
+
+  case kRangeUnknown:
+    {
+      // _abs_i <= _abs_end
+      Ptr<AptNode> testExprNode = new BinaryNode(srcpos,
+                                                 new SymbolNode(srcpos,
+                                                                absItVarSym.idValue()),
+                                                 kOpLessEqual,
+                                                 new SymbolNode(srcpos,
+                                                                absMaxEndSym.idValue()));
+      testExprs->push_back(testExprNode);
+    }
+    break;
+  }
+
+
+  //------------------------------ generate counter step increase
+  // i = i + 1
+  Ptr<AptNode> stepVarNode = new SymbolNode(srcpos, iteratorVarSym.idValue());
+  Ptr<AptNode> nextValueNode = new BinaryNode(srcpos,
+                                              new SymbolNode(srcpos, iteratorVarSym.idValue()),
+                                              kOpPlus,
+                                              stepValueNode);
+  Ptr<AptNode> incrStepNode = new AssignNode(srcpos, stepVarNode, nextValueNode);
+  stepExprs->push_back(incrStepNode);
+
+  if (direct == kRangeUnknown) {
+    Ptr<AptNode> absStepVarNode = new SymbolNode(srcpos, absItVarSym.idValue());
+    Ptr<AptNode> absNextValueNode = new BinaryNode(srcpos,
+                                                   absStepVarNode->clone(),
+                                                   kOpPlus,
+                                                   new SymbolNode(srcpos, absStepVarSym.idValue()));
+    Ptr<AptNode> absIncrStepNode = new AssignNode(srcpos, absStepVarNode, absNextValueNode);
+    stepExprs->push_back(absIncrStepNode);
+  }
+
+  *requiresReturnValue = true;
 }
 
 
@@ -776,17 +979,16 @@ SecondPass::parseFor(const Token& expr)
       transformRangeForClause(seq[i],
                               &loopDefines,
                               &testExprs,
+                              &stepExprs,
                               &requiresReturnValue);
     }
     else if (isCollForClause(seq[i])) {
-      // printf("Coll for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
       transformCollForClause(seq[i],
                              &loopDefines,
                              &testExprs,
                              &requiresReturnValue);
     }
     else {
-      // printf("Other test for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
       Ptr<AptNode> exprNode = parseExpr(seq[i]);
       testExprs.push_back(exprNode);
     }
@@ -795,11 +997,14 @@ SecondPass::parseFor(const Token& expr)
   Token returnSym = Token::newUniqueSymbolToken(expr.srcpos(), "return");
 
   if (requiresReturnValue) {
+    if (alternate == NULL)
+      alternate = new SymbolNode(expr.srcpos(), String("unspecified"));
+
     Ptr<AptNode> retType;       // TODO?
     Ptr<AptNode> defReturnNode = new LetNode(
       new VardefNode(expr.srcpos(),
                      returnSym.idValue(), kNormalVar, retType,
-                     new SymbolNode(expr.srcpos(), String("unspecified"))));
+                     alternate));
     loopDefines.push_back(defReturnNode);
   }
 
