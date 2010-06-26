@@ -150,6 +150,33 @@ displayStringStringMap(Port<Octet>* port,
 }
 
 
+template<typename T>
+T* nodeClone(T* node)
+{
+  if (node != NULL)
+    return node->clone();
+  return NULL;
+}
+
+
+template<typename T>
+T* nodeClone(const Ptr<T>& node)
+{
+  if (node != NULL)
+    return node->clone();
+  return NULL;
+}
+
+
+void
+copyNodes(NodeList* dst, const NodeList* src)
+{
+  for (NodeList::const_iterator it = src->begin(); it != src->end(); ++it) {
+    dst->push_back(nodeClone(it->obj()));
+  }
+}
+
+
 //----------------------------------------------------------------------------
 
 void
@@ -182,6 +209,13 @@ StringNode::display(Port<Octet>* port) const
 }
 
 
+StringNode*
+StringNode::clone() const
+{
+  return new StringNode(fSrcPos, fValue);
+}
+
+
 //----------------------------------------------------------------------------
 
 KeywordNode::KeywordNode(const SrcPos& srcpos, const String& value)
@@ -198,6 +232,13 @@ KeywordNode::display(Port<Octet>* port) const
 }
 
 
+KeywordNode*
+KeywordNode::clone() const
+{
+  return new KeywordNode(fSrcPos, fValue);
+}
+
+
 //----------------------------------------------------------------------------
 
 SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value)
@@ -211,6 +252,13 @@ void
 SymbolNode::display(Port<Octet>* port) const
 {
   displayTag(port, "symbol", fValue);
+}
+
+
+SymbolNode*
+SymbolNode::clone() const
+{
+  return new SymbolNode(fSrcPos, fValue);
 }
 
 
@@ -232,6 +280,13 @@ IntNode::display(Port<Octet>* port) const
 }
 
 
+IntNode*
+IntNode::clone() const
+{
+  return new IntNode(fSrcPos, fValue, fIsImaginary);
+}
+
+
 //----------------------------------------------------------------------------
 
 RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary)
@@ -247,6 +302,13 @@ RealNode::display(Port<Octet>* port) const
     displayTagAttr(port, "real", "imag='true'", String() + fValue);
   else
     displayTag(port, "real", String() + fValue);
+}
+
+
+RealNode*
+RealNode::clone() const
+{
+  return new RealNode(fSrcPos, fValue, fIsImaginary);
 }
 
 
@@ -270,6 +332,13 @@ RationalNode::display(Port<Octet>* port) const
 }
 
 
+RationalNode*
+RationalNode::clone() const
+{
+  return new RationalNode(fSrcPos, fValue, fIsImaginary);
+}
+
+
 //----------------------------------------------------------------------------
 
 CharNode::CharNode(const SrcPos& srcpos, Char value)
@@ -282,6 +351,13 @@ void
 CharNode::display(Port<Octet>* port) const
 {
   displayTag(port, "char", fromInt(int(fValue)));
+}
+
+
+CharNode*
+CharNode::clone() const
+{
+  return new CharNode(fSrcPos, fValue);
 }
 
 
@@ -300,6 +376,13 @@ BoolNode::display(Port<Octet>* port) const
 }
 
 
+BoolNode*
+BoolNode::clone() const
+{
+  return new BoolNode(fSrcPos, fValue);
+}
+
+
 //----------------------------------------------------------------------------
 
 CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
@@ -311,6 +394,15 @@ void
 CompileUnitNode::display(Port<Octet>* port) const
 {
   displayNodeList(port, "compile-unit", fChildren);
+}
+
+
+CompileUnitNode*
+CompileUnitNode::clone() const
+{
+  Ptr<CompileUnitNode> node = new CompileUnitNode(fSrcPos);
+  copyNodes(&node->fChildren, &fChildren);
+  return node.release();
 }
 
 
@@ -336,6 +428,15 @@ ModuleNode::display(Port<Octet>* port) const
   displayNodeList(port, "defines", fChildren);
 
   displayCloseTag(port, "module");
+}
+
+
+ModuleNode*
+ModuleNode::clone() const
+{
+  Ptr<ModuleNode> mod = new ModuleNode(fSrcPos, fModName, fPublicId);
+  copyNodes(&mod->fChildren, &fChildren);
+  return mod.release();
 }
 
 
@@ -384,6 +485,13 @@ ExportNode::display(Port<Octet>* port) const
 }
 
 
+ExportNode*
+ExportNode::clone() const
+{
+  return new ExportNode(fSrcPos, fViz, fIsFinal, fSymbols);
+}
+
+
 //----------------------------------------------------------------------------
 
 ImportNode::ImportNode(const SrcPos& srcpos,
@@ -406,6 +514,13 @@ ImportNode::display(Port<Octet>* port) const
 }
 
 
+ImportNode*
+ImportNode::clone() const
+{
+  return new ImportNode(fSrcPos, fCodeFile, fRenames);
+}
+
+
 //----------------------------------------------------------------------------
 
 BaseDefNode::BaseDefNode(const SrcPos& srcpos, AptNode* defined)
@@ -414,9 +529,18 @@ BaseDefNode::BaseDefNode(const SrcPos& srcpos, AptNode* defined)
 { }
 
 
+//----------------------------------------------------------------------------
+
 LetNode::LetNode(AptNode* node)
   : BaseDefNode(node->srcpos(), node)
 { }
+
+
+LetNode*
+LetNode::clone() const
+{
+  return new LetNode(nodeClone(fDefined.obj()));
+}
 
 
 void
@@ -428,9 +552,18 @@ LetNode::display(Port<Octet>* port) const
 }
 
 
+//----------------------------------------------------------------------------
+
 DefNode::DefNode(AptNode* node)
   : BaseDefNode(node->srcpos(), node)
 { }
+
+
+DefNode*
+DefNode::clone() const
+{
+  return new DefNode(nodeClone(fDefined.obj()));
+}
 
 
 void
@@ -495,6 +628,14 @@ VardefNode::display(Port<Octet>* port) const
 }
 
 
+VardefNode*
+VardefNode::clone() const
+{
+  return new VardefNode(fSrcPos, fSymbolName, fFlags,
+                        nodeClone(fType), nodeClone(fInitExpr));
+}
+
+
 //----------------------------------------------------------------------------
 
 ParamNode::ParamNode(const SrcPos& srcpos,
@@ -540,7 +681,24 @@ ParamNode::display(Port<Octet>* port) const
 }
 
 
+ParamNode*
+ParamNode::clone() const
+{
+  return new ParamNode(fSrcPos, fKey, fSymbolName, fFlags,
+                       nodeClone(fType), nodeClone(fInitExpr));
+}
+
+
 //----------------------------------------------------------------------------
+
+ArrayNode*
+ArrayNode::clone() const
+{
+  Ptr<ArrayNode> an = new ArrayNode(fSrcPos);
+  copyNodes(&an->fChildren, &fChildren);
+  return an.release();
+}
+
 
 void
 ArrayNode::display(Port<Octet>* port) const
@@ -553,6 +711,15 @@ ArrayNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
+VectorNode*
+VectorNode::clone() const
+{
+  Ptr<VectorNode> vect = new VectorNode(fSrcPos);
+  copyNodes(&vect->fChildren, &fChildren);
+  return vect.release();
+}
+
+
 void
 VectorNode::display(Port<Octet>* port) const
 {
@@ -563,6 +730,15 @@ VectorNode::display(Port<Octet>* port) const
 
 
 //----------------------------------------------------------------------------
+
+DictNode*
+DictNode::clone() const
+{
+  Ptr<DictNode> dict = new DictNode(fSrcPos);
+  copyNodes(&dict->fChildren, &fChildren);
+  return dict.release();
+}
+
 
 void
 DictNode::display(Port<Octet>* port) const
@@ -592,6 +768,14 @@ BinaryNode::BinaryNode(const SrcPos& srcpos,
     fRight(right),
     fOp(op)
 { }
+
+
+BinaryNode*
+BinaryNode::clone() const
+{
+  return new BinaryNode(fSrcPos, 
+                        nodeClone(fLeft), fOp, nodeClone(fRight));
+}
 
 
 OperatorType
@@ -692,6 +876,30 @@ BinaryNode::display(Port<Octet>* port) const
 }
 
 
+//----------------------------------------------------------------------------
+
+NegateNode::NegateNode(const SrcPos& srcpos, AptNode* base)
+  : AptNode(srcpos),
+    fBase(base)
+{ }
+
+
+NegateNode*
+NegateNode::clone() const
+{
+  return new NegateNode(fSrcPos, nodeClone(fBase));
+}
+
+
+void
+NegateNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "neg");
+  displayNode(port, NULL, fBase);
+  displayCloseTag(port, "neg");
+}
+
+
 //------------------------------------------------------------------------------
 
 RangeNode::RangeNode(const SrcPos& srcpos,
@@ -701,6 +909,14 @@ RangeNode::RangeNode(const SrcPos& srcpos,
     fTo(to),
     fBy(by)
 { }
+
+
+RangeNode*
+RangeNode::clone() const
+{
+  return new RangeNode(fSrcPos,
+                       nodeClone(fFrom), nodeClone(fTo), nodeClone(fBy));
+}
 
 
 void
@@ -738,12 +954,22 @@ RangeNode::by() const
 //--------------------------------------------------------------------------
 
 ThenWhileNode::ThenWhileNode(const SrcPos& srcpos,
-              AptNode* first, AptNode* step, AptNode* test)
+                             AptNode* first, AptNode* step, AptNode* test)
   : AptNode(srcpos),
     fFirst(first),
     fStep(step),
     fTest(test)
 { }
+
+
+ThenWhileNode*
+ThenWhileNode::clone() const
+{
+  return new ThenWhileNode(fSrcPos,
+                           nodeClone(fFirst),
+                           nodeClone(fStep),
+                           nodeClone(fTest));
+}
 
 
 void
@@ -765,6 +991,15 @@ AssignNode::AssignNode(const SrcPos& srcpos,
     fLValue(lvalue),
     fRValue(rvalue)
 { }
+
+
+AssignNode*
+AssignNode::clone() const
+{
+  return new AssignNode(fSrcPos,
+                        nodeClone(fLValue),
+                        nodeClone(fRValue));
+}
 
 
 void
@@ -800,6 +1035,16 @@ IfNode::IfNode(const SrcPos& srcpos,
     fConsequent(consequent),
     fAlternate(alternate)
 { }
+
+
+IfNode*
+IfNode::clone() const
+{
+  return new IfNode(fSrcPos,
+                    nodeClone(fTest),
+                    nodeClone(fConsequent),
+                    nodeClone(fAlternate));
+}
 
 
 void
@@ -846,6 +1091,13 @@ OnNode::OnNode(const SrcPos& srcpos,
 }
 
 
+OnNode*
+OnNode::clone() const
+{
+  return new OnNode(fSrcPos, fKey, fParams, nodeClone(fBody));
+}
+
+
 void
 OnNode::display(Port<Octet>* port) const
 {
@@ -863,6 +1115,15 @@ OnNode::display(Port<Octet>* port) const
 BlockNode::BlockNode(const SrcPos& srcpos)
   : AptNode(srcpos)
 { }
+
+
+BlockNode*
+BlockNode::clone() const
+{
+  Ptr<BlockNode> block = new BlockNode(fSrcPos);
+  copyNodes(&block->fChildren, &fChildren);
+  return block.release();
+}
 
 
 void
@@ -883,6 +1144,14 @@ FunctionNode::FunctionNode(const SrcPos& srcpos,
     fBody(body)
 {
   fParams.assign(params.begin(), params.end());
+}
+
+
+FunctionNode*
+FunctionNode::clone() const
+{
+  return new FunctionNode(fSrcPos, fParams,
+                          nodeClone(fRetType), nodeClone(fBody));
 }
 
 
@@ -907,7 +1176,14 @@ FuncDefNode::FuncDefNode(const SrcPos& srcpos,
   : FunctionNode(srcpos, params, retType, body),
     fSym(sym),
     fFlags(flags)
+{ }
+
+
+FuncDefNode*
+FuncDefNode::clone() const
 {
+  return new FuncDefNode(fSrcPos, fSym, fFlags, fParams,
+                         nodeClone(fRetType), nodeClone(fBody));
 }
 
 
@@ -951,6 +1227,15 @@ ApplyNode::ApplyNode(const SrcPos& srcpos, AptNode* base)
 { }
 
 
+ApplyNode*
+ApplyNode::clone() const
+{
+  Ptr<ApplyNode> apply = new ApplyNode(fSrcPos, nodeClone(fBase));
+  copyNodes(&apply->fChildren, &fChildren);
+  return apply.release();
+}
+
+
 void
 ApplyNode::display(Port<Octet>* port) const
 {
@@ -972,6 +1257,13 @@ KeyargNode::KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value)
 { }
 
 
+KeyargNode*
+KeyargNode::clone() const
+{
+  return new KeyargNode(fSrcPos, fKey, nodeClone(fValue));
+}
+
+
 void
 KeyargNode::display(Port<Octet>* port) const
 {
@@ -991,6 +1283,16 @@ WhileNode::WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body)
     fTest(test),
     fBody(body)
 { }
+
+
+WhileNode*
+WhileNode::clone() const
+{
+  return new WhileNode(fSrcPos,
+                       nodeClone(fTest),
+                       nodeClone(fBody));
+}
+
 
 void
 WhileNode::display(Port<Octet>* port) const

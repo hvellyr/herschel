@@ -313,6 +313,8 @@ namespace heather
     bool isChar() const;
     bool isKeyArg() const;
 
+    bool isNegative() const;
+
     //! indicates whether the token is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;
     
