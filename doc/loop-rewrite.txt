@@ -106,7 +106,7 @@ for (e = 5 then e + 1)
 
 ::
 {
-  let _e = 5
+  let e = 5
 
   while (true) {
     <body>

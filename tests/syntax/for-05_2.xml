@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><def><func sym='f'><body><block><while><test><true/></test><body><block><apply><symbol>outln</symbol><args><str>endless fun</str></args></apply></block></body></while></block></body></func></def></compile-unit>
