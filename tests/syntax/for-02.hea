@@ -1,3 +1,15 @@
 def f0()
   for (i : Int = 0 then i + 2 while i < 100)
      outln(i)
+
+
+def f1()
+  for (i : Int = 0 then i + 3)
+     cont-count(i)
+
+
+def f2(k)
+  for (i : Int = k then i + 4)
+     cont-count(i)
+  else
+    "monday"

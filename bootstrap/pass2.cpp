@@ -643,8 +643,38 @@ void
 SecondPass::transformExplicitForClause(const Token& token,
                                        NodeList* loopDefines,
                                        NodeList* testExprs,
-                                       bool* requiresReturnValue)
+                                       NodeList* stepExprs)
 {
+  assert(token.count() == 3);
+
+  SrcPos srcpos = token.srcpos();
+  Token thenWhileExpr = token[2];
+  assert(thenWhileExpr.count() == 3 || thenWhileExpr.count() == 5);
+  assert(thenWhileExpr[1] == kThenId);
+
+  Ptr<AptNode> firstNode = parseExpr(thenWhileExpr[0]);
+  Ptr<AptNode> thenNode = parseExpr(thenWhileExpr[2]);
+
+  Token iteratorVarSym = token[0].isSeq() ? token[0][0] : token[0];
+
+  Ptr<AptNode> iteratorDefNode = new LetNode(
+    new VardefNode(srcpos,
+                   iteratorVarSym.idValue(), kNormalVar, NULL,
+                   firstNode));
+  loopDefines->push_back(iteratorDefNode);
+
+  Ptr<AptNode> nextNode = new AssignNode(srcpos,
+                                         new SymbolNode(srcpos, iteratorVarSym.idValue()),
+                                         thenNode);
+  stepExprs->push_back(nextNode);
+
+
+  if (thenWhileExpr.count() == 5) {
+    assert(thenWhileExpr[3] == kWhileId);
+
+    Ptr<AptNode> whileNode = parseExpr(thenWhileExpr[4]);
+    testExprs->push_back(whileNode);
+  }
 }
 
 
@@ -669,8 +699,7 @@ void
 SecondPass::transformRangeForClause(const Token& token,
                                     NodeList* loopDefines,
                                     NodeList* testExprs,
-                                    NodeList* stepExprs,
-                                    bool* requiresReturnValue)
+                                    NodeList* stepExprs)
 {
   assert(token.count() == 3);
   assert(token[2].isRange());
@@ -865,8 +894,6 @@ SecondPass::transformRangeForClause(const Token& token,
     Ptr<AptNode> absIncrStepNode = new AssignNode(srcpos, absStepVarNode, absNextValueNode);
     stepExprs->push_back(absIncrStepNode);
   }
-
-  *requiresReturnValue = true;
 }
 
 
@@ -882,8 +909,7 @@ isCollForClause(const Token& expr)
 void
 SecondPass::transformCollForClause(const Token& token,
                                    NodeList* loopDefines,
-                                   NodeList* testExprs,
-                                   bool* requiresReturnValue)
+                                   NodeList* testExprs)
 {
   assert(token.count() >= 3);
 
@@ -929,15 +955,13 @@ SecondPass::transformCollForClause(const Token& token,
   nextSeqNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
 
   Ptr<AptNode> stepNextNode = new AssignNode(srcpos, stepVarNode, nextSeqNode);
-  altNode->appendNode(nextSeqNode);
+  altNode->appendNode(stepNextNode);
   altNode->appendNode(new BoolNode(srcpos, true));
 
   Ptr<AptNode> ifNode = new IfNode(srcpos,
                                    testNode, consNode, altNode);
 
   testExprs->push_back(ifNode);
-
-  *requiresReturnValue = true;
 }
 
 
@@ -959,7 +983,6 @@ SecondPass::parseFor(const Token& expr)
   NodeList loopDefines;
   NodeList testExprs;
   NodeList stepExprs;
-  bool requiresReturnValue = false;
 
   NodeList tests;
   const TokenVector& seq = expr[1].children();
@@ -968,31 +991,21 @@ SecondPass::parseFor(const Token& expr)
       continue;
 
     if (isExplicitForClause(seq[i])) {
-      // printf("Explicit for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
-      transformExplicitForClause(seq[i],
-                                 &loopDefines,
-                                 &testExprs,
-                                 &requiresReturnValue);
+      transformExplicitForClause(seq[i], &loopDefines, &testExprs, &stepExprs);
     }
     else if (isRangeForClause(seq[i])) {
-      // printf("Range for clause: %s\n", (const char*)StrHelper(seq[i].toString()));
-      transformRangeForClause(seq[i],
-                              &loopDefines,
-                              &testExprs,
-                              &stepExprs,
-                              &requiresReturnValue);
+      transformRangeForClause(seq[i], &loopDefines, &testExprs, &stepExprs);
     }
     else if (isCollForClause(seq[i])) {
-      transformCollForClause(seq[i],
-                             &loopDefines,
-                             &testExprs,
-                             &requiresReturnValue);
+      transformCollForClause(seq[i], &loopDefines, &testExprs);
     }
     else {
       Ptr<AptNode> exprNode = parseExpr(seq[i]);
       testExprs.push_back(exprNode);
     }
   }
+
+  const bool requiresReturnValue = alternate != NULL || !testExprs.empty();
 
   Token returnSym = Token::newUniqueSymbolToken(expr.srcpos(), "return");
 
@@ -1012,23 +1025,30 @@ SecondPass::parseFor(const Token& expr)
   block->appendNodes(loopDefines);
 
   Ptr<AptNode> testNode;
+  bool nodeCount = 0;
   for (size_t i = 0; i < testExprs.size(); i++) {
-    if (testNode != NULL) {
+    if (nodeCount > 1) {
       Ptr<BinaryNode> prevBin = dynamic_cast<BinaryNode*>(testNode.obj());
-      if (prevBin != NULL) {
-        Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
-                                              prevBin->right(),
-                                              kOpLogicalAnd, testExprs[i]);
-        prevBin->setRight(binNode);
-      }
-      else {
-        Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
-                                              testNode, kOpLogicalAnd, testExprs[i]);
-        testNode = binNode;
-      }
+      assert(prevBin != NULL);
+      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
+                                            prevBin->right(),
+                                            kOpLogicalAnd, testExprs[i]);
+      prevBin->setRight(binNode);
+    }
+    else if (nodeCount == 1) {
+      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
+                                            testNode, kOpLogicalAnd, testExprs[i]);
+      testNode = binNode;
     }
     else
       testNode = testExprs[i];
+    nodeCount++;
+  }
+
+  // if we don't have a test node yet all loop clauses are unconditional
+  // ones.  Take a simple 'true' therefore.
+  if (testNode == NULL) {
+    testNode = new BoolNode(expr.srcpos(), true);
   }
 
   Ptr<BlockNode> bodyNode = new BlockNode(expr.srcpos());
@@ -1121,8 +1141,12 @@ SecondPass::parseSeq(const Token& expr)
   else if (expr.isBinarySeq() || expr.isTernarySeq())
     return parseBinary(expr);
   else if (expr.count() == 2) {
-    if (expr[1].isNested())
-      return parseFunCall(expr);
+    if (expr[1].isNested()) {
+      if (expr[1].leftToken() == kParanOpen)
+        return parseFunCall(expr);
+      else
+        assert(0);              // TODO generic open etc.
+    }
   }
 
   return parseExpr(expr[0]);
