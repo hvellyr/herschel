@@ -1,0 +1,421 @@
+/* -*-c++-*-
+
+   This file is part of the heather package
+
+   Copyright (c) 2010 Gregor Klinke
+   All rights reserved.
+*/
+
+#ifndef bootstrap_type_h
+#define bootstrap_type_h
+
+#include "common.h"
+
+#include <vector>
+#include <map>
+
+#include "token.h"
+#include "refcountable.h"
+#include "ptr.h"
+
+
+namespace heather
+{
+  class Type;
+  class TypeConstraint;
+  class FunctionSignature;
+  class FunctionParameter;
+
+  typedef std::vector<Type> TypeVector;
+  typedef std::vector<TypeConstraint> TypeConstVector;
+  typedef std::vector<FunctionSignature> FunctionSignatureVector;
+  typedef std::vector<FunctionParameter> FunctionParamVector;
+  typedef std::map<String, Token> StringTokenMap;
+
+
+  //--------------------------------------------------------------------------
+
+  enum TypeKind
+  {
+    kType_Any,
+
+    kType_Bool,
+    kType_Char,
+    kType_Int,
+    kType_Keyword,
+    kType_Long,
+    kType_Octet,
+    kType_Rational,
+    kType_Real,
+    kType_Short,
+    kType_String,
+    kType_ULong,
+    kType_UShort,
+    kType_UWord,
+    kType_Word,
+
+    kType_Eof,
+    kType_Nil,
+    kType_Unspecified,
+
+    kType_Vector,
+    kType_Array,
+    kType_Dict,
+
+    kType_Function,
+    kType_Measure,
+    kType_Enum,
+    kType_Class,
+    kType_Type,
+    kType_Alias,
+
+    kType_Union,
+    kType_Sequence,
+  };
+
+  class TypeImpl : public RefCountable
+  {
+  public:
+    virtual bool isEqual(const TypeImpl* other) const = 0;
+    virtual bool isCovariant(const TypeImpl* other) const = 0;
+    virtual bool isInvariant(const TypeImpl* other) const = 0;
+  };
+
+
+  class Type
+  {
+  public:
+    Type(const Type& other);
+    Type();
+
+
+    static Type newAny();
+
+    static Type newBool();
+    static Type newChar();
+    static Type newInt();
+    static Type newKeyword();
+    static Type newLong();
+    static Type newOctet();
+    static Type newRational();
+    static Type newReal();
+    static Type newShort();
+    static Type newString();
+    static Type newULong();
+    static Type newUShort();
+    static Type newUWord();
+    static Type newWord();
+
+    static Type newEof();
+    static Type newNil();
+    static Type newUnspecified();
+
+    static Type newType(const String& name, const TypeVector& generics,
+                        const Type& inherit);
+    static Type newType(const String& name, const TypeVector& generics,
+                        const Type& inherit,
+                        const FunctionSignatureVector& protocol);
+
+    static Type newClass(const String& name, const TypeVector& generics,
+                         const Type& inherit);
+    static Type newClass(const String& name, const TypeVector& generics,
+                         const Type& inherit,
+                         const FunctionSignature& defApplySign,
+                         const FunctionSignatureVector& protocol);
+
+    static Type newAlias(const String& name, const TypeVector& generics,
+                         const Type& isa);
+
+    static Type newMeasure(const String& name, const Type& baseType,
+                           const String& defUnit);
+
+    static Type newEnum(const String& name, const Type& baseType,
+                        const StringTokenMap& defUnit);
+
+    static Type newFunction(const FunctionSignature& sign);
+    static Type newUnion(const TypeVector& types);
+    static Type newSeq(const TypeVector& types);
+
+
+    //! assign operator
+    Type& operator=(const Type& other);
+
+    //! Compare operator.  Indicates true if *this and other are fully
+    //! identical.
+    bool operator==(const Type& other) const;
+    //! Compare operator
+    bool operator!=(const Type& other) const;
+
+    //! Indicates whether two types are co-variant.  If this returns false \p
+    //! other is either contravariant or invariant.  Use isInvariant to check.
+    bool isCovariant(const Type& other) const;
+    //! Indicates whether two types are invariant.
+    bool isInvariant(const Type& other) const;
+
+
+
+    //!@ base and builtin types
+    //! indicates whether the type is a base type
+    bool isBase() const;
+
+    bool isAny() const;
+
+    bool isInt() const;
+    bool isString() const;
+    bool isReal() const;
+
+
+    //!@ custom types
+    bool isClass() const;
+    Type classInheritance() const;
+    FunctionSignature defaultApplySignature() const;
+    const FunctionSignatureVector& classProtocol() const;
+
+    //!@ custom types
+    bool isType() const;
+    Type typeInheritance() const;
+    const FunctionSignatureVector& typeProtocol() const;
+
+
+    //!@ alias types
+    bool isAlias() const;
+    Type aliasInheritance() const;
+
+
+    //!@ function types
+    //! Indicates whether the type is a function type
+    bool isFunction() const;
+    FunctionSignature functionSignature() const;
+
+
+    //!@ array types
+    bool isArray() const;
+    Type arrayBaseType() const;
+    int arraySizeIndicator() const;
+
+
+    //!@ generic types
+    bool isGeneric() const;
+    Type genericBaseType() const;
+    const TypeVector& genericTypes() const;
+
+
+    //!@ union types
+    bool isUnion() const;
+    const TypeVector& unionTypes() const;
+
+
+    //!@ sequence types
+    bool isSequence() const;
+    const TypeVector& seqTypes() const;
+
+
+    //!@ enum types
+    bool isEnum() const;
+    Type enumBaseType() const;
+    TokenVector enumValues() const;
+
+
+    //!@ measure types
+    bool isMeasure() const;
+    Type measureBaseType() const;
+
+
+    //!@ has constraints?
+    bool hasConstraints() const;
+    const TypeConstVector& constraints() const;
+
+  private:
+    Type(TypeKind kind, TypeImpl* impl);
+
+    TypeKind      fKind;
+    Ptr<TypeImpl> fImpl;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  enum TypeConstOperator
+  {
+    kConstOp_and,
+    kConstOp_or,
+
+    kConstOp_equal,
+    kConstOp_notEqual,
+    kConstOp_less,
+    kConstOp_lessEqual,
+    kConstOp_greater,
+    kConstOp_greaterEqual,
+    kConstOp_in,
+
+    kConstOp_isa
+  };
+
+
+  class BaseTypeConstraintImpl : public RefCountable
+  {
+  public:
+    virtual bool isEqual(const BaseTypeConstraintImpl* other) const = 0;
+    virtual TypeConstOperator constOp() const = 0;
+    virtual BaseTypeConstraintImpl* unshare() = 0;
+  };
+
+
+  class TypeConstraint
+  {
+  public:
+    TypeConstraint(const TypeConstraint& other);
+
+    static TypeConstraint newAnd(const TypeConstraint& left,
+                                 const TypeConstraint& right);
+    static TypeConstraint newOr(const TypeConstraint& left,
+                                const TypeConstraint& right);
+    static TypeConstraint newValue(TypeConstOperator op, const Token& value);
+    static TypeConstraint newType(TypeConstOperator op, const Type& type);
+
+    //! Assign operator
+    TypeConstraint& operator=(const TypeConstraint& other);
+
+    //! Compare operator.
+    bool operator==(const TypeConstraint& other) const;
+    //! Compare operator
+    bool operator!=(const TypeConstraint& other) const;
+
+    //! returns the constraint operator
+    TypeConstOperator constOp() const;
+
+    //! indicates whether the constraint is a value constraint like, ==, >=,
+    //! in, etc.
+    bool isValueConstraint() const;
+    Token constraintValue() const;
+
+    //! indicates whether the constraint is a logical constraint; i.e. if the
+    //! constraint is a logical operation of other constraints.
+    bool isLogicalConstraint() const;
+    const TypeConstraint& leftConstraint() const;
+    const TypeConstraint& rightConstraint() const;
+
+    //! Indicates whether the constraint is a type constraint,
+    //! i.e. testing for 'isa' relations.
+    bool isTypeConstraint() const;
+    Type typeConstraint() const;
+
+  private:
+    TypeConstraint(BaseTypeConstraintImpl* impl);
+
+    Ptr<BaseTypeConstraintImpl> fImpl;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class FunctionParameter
+  {
+  public:
+    enum ParameterKind
+    {
+      kParamPos,
+      kParamNamed,
+      kParamRest
+    };
+
+    FunctionParameter(ParameterKind kind, bool isSpec, const String& key,
+                      const Type& type);
+    FunctionParameter(const FunctionParameter& other);
+
+    static FunctionParameter newPosParam(const Type& type);
+    static FunctionParameter newSpecParam(const Type& type);
+    static FunctionParameter newNamedParam(const String& key,
+                                           const Type& type);
+    static FunctionParameter newRestParam(const Type& type);
+
+
+    //! Assign operator
+    FunctionParameter& operator=(const FunctionParameter& other);
+
+    //! Compare operator.
+    bool operator==(const FunctionParameter& other) const;
+    //! Compare operator
+    bool operator!=(const FunctionParameter& other) const;
+
+    //! Indicates whether two function parameters are co-variant.  If this
+    //! returns false \p other is either contravariant or invariant.  Use
+    //! isInvariant to check.
+    bool isCovariant(const FunctionParameter& other) const;
+    //! Indicates whether two function parameters are invariant.
+    bool isInvariant(const FunctionParameter& other) const;
+    bool isContravariant(const FunctionParameter& other) const;
+
+
+    //! Returns the kind of the parameter.
+    ParameterKind kind() const; 
+
+    //! Indicate whether the parameter is specialized.  Can be true only for
+    //! positional parameters.
+    bool isSpecialized() const;
+
+    //! returns the parameter key (if isNamed() is true)
+    const String& key() const;
+
+    //! returns the parameter's type
+    const Type& type() const;
+
+  private:
+    ParameterKind fKind;
+    bool          fIsSpecialized;
+    String        fKey;
+    Type          fType;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class FunctionSignature
+  {
+  public:
+    FunctionSignature(bool isGeneric, const String& name, const Type& retType);
+    FunctionSignature(bool isGeneric, const String& name, const Type& retType,
+                      const FunctionParamVector& parameters);
+    FunctionSignature(const FunctionSignature& other);
+
+    //! Assign operator
+    FunctionSignature& operator=(const FunctionSignature& other);
+
+    //! Compare operator.
+    bool operator==(const FunctionSignature& other) const;
+    //! Compare operator
+    bool operator!=(const FunctionSignature& other) const;
+
+    //! Indicates whether two function signatures are co-variant.  If this
+    //! returns false \p other is either contravariant or invariant.  Use
+    //! isInvariant to check.
+    bool isCovariant(const FunctionSignature& other) const;
+    //! Indicates whether two function signatures are invariant.
+    bool isInvariant(const FunctionSignature& other) const;
+    bool isContravariant(const FunctionSignature& other) const;
+
+    //! Indicates whether the signature refers to a generic function.
+    bool isGeneric() const;
+
+    //! Returns the name of the method.  May be empty if the function is
+    //! anonymous.
+    const String& methodName() const;
+
+    //! Returns the returntype of the signature.
+    const Type& returnType() const;
+
+    //! Returns the signature's parameter list.  Is empty if the function has
+    //! no parameters.  If the signature refers to a generic function
+    //! (i.e. isGeneric returns true) the list has a least one parameter and
+    //! the first parameter is at least specialized.
+    const FunctionParamVector& parameters() const;
+
+  private:
+    bool                fIsGeneric;
+    String              fName;
+    Type                fReturnType;
+    FunctionParamVector fParameters;
+  };
+};                              // namespace
+
+#endif                          // bootstrap_type_h
