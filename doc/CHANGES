@@ -131,7 +131,7 @@ Slot definitions
     def slot transient readonly name : String = _name
 
 
-  def class PairIterator<T, Accessor<T> >(_root, acc)
+  def class PairIterator<T, Accessor<T> >(_root, acc)             [1]
       : Iterator<T>
   {
     public slot current : Pair<T, _> = _root
@@ -140,7 +140,7 @@ Slot definitions
   }
 
 
-  def class PairIterator<T, Accessor<T> >(_root, acc)
+  def class PairIterator<T, Accessor<T> >(_root, acc)             [2]
       : Iterator<T>
   {
     slot public current : Pair<T, _> = _root
@@ -149,7 +149,7 @@ Slot definitions
   }
 
 
-  def class PairIterator<T, Accessor<T> >(_root, acc)
+  def class PairIterator<T, Accessor<T> >(_root, acc)             [3]
       : Iterator<T>
   {
     def slot current : Pair<T, _> = _root ; public
@@ -158,7 +158,7 @@ Slot definitions
   }
 
 
-  def class PairIterator<T, Accessor<T> >(_root, acc)
+  def class PairIterator<T, Accessor<T> >(_root, acc)             [4]
       : Iterator<T>
   {
     slot current : Pair<T, _> = _root ; public
@@ -170,51 +170,51 @@ Slot definitions
   def class PairIterator<T, Accessor<T> >(_root, acc)
       : Iterator<T>
   {
-    slot current : Pair<T, _> = _root :: public
+    slot current : Pair<T, _> = _root :: public                   [5]
     slot accessor : Accessor = acc :: private
     slot maxcount : Int = 4000 : Int :: transient, readonly
   }
 
+  -> we go for the style [3]
 
 
 
 
 
-
-Visibility and finalization for modules.
-
-  Toplevel modules are always visible to the public.  Unless any class or
-  methods is export however this information is worthless.  Every
-  identifier must be exported to the public or protected domain, either
-  final or open.
-
-  The same applies to nested (i.e. inner) module:
-
-  def module printer("sijo/ixwick:printer") {
-    -- exporting the inner module:
-    export final public(printer-driver, DriverSettings)
-
-    def class DriverSettings() { ... {
-
-    def module printer-driver("sijo/ixwick:printer-driver") {
-      export public (init-driver, get-driver-settings)
-
-      def generic init-driver() ...
-      def generic get-driver-settings() : DriverSettings ...
-    }
-  }
-
-  Identifier from inner modules are seen by direct parent modules; if
-  protected they are seen by all ancestor modules until the top-module; if
-  public they are seen by all modules in the top-level module even in
-  siblings.  Symbols from inner modules must be explictely exported to the
-  outside from the top-level module if this is required:
-
-    def module printer("sijo/ixwick:printer") {
-      export final public(printer-driver|get-driver-settings, DriverSettings)
-
-    }
-
+-- Visibility and finalization for modules.
+--
+--   Toplevel modules are always visible to the public.  Unless any class or
+--   methods is export however this information is worthless.  Every
+--   identifier must be exported to the public or protected domain, either
+--   final or open.
+--
+--   The same applies to nested (i.e. inner) module:
+--
+--   def module printer("sijo/ixwick:printer") {
+--     -- exporting the inner module:
+--     export final public(printer-driver, DriverSettings)
+--
+--     def class DriverSettings() { ... {
+--
+--     def module printer-driver("sijo/ixwick:printer-driver") {
+--       export public (init-driver, get-driver-settings)
+--
+--       def generic init-driver() ...
+--       def generic get-driver-settings() : DriverSettings ...
+--     }
+--   }
+--
+--   Identifier from inner modules are seen by direct parent modules; if
+--   protected they are seen by all ancestor modules until the top-module; if
+--   public they are seen by all modules in the top-level module even in
+--   siblings.  Symbols from inner modules must be explictely exported to the
+--   outside from the top-level module if this is required:
+--
+--     def module printer("sijo/ixwick:printer") {
+--       export final public(printer-driver|get-driver-settings, DriverSettings)
+--
+--     }
+--
 
 
 
@@ -275,6 +275,51 @@ Embedding C and C++ fragments.
     ...
   }
 
+
+Function contracts
+
+  Functions can be annotated by pre and post conditions.  These are
+  actually part of the function signature and can be specified for abstract
+  functions only.  Specialization must at least fulfill these contracts:
+
+    def generic register-foo(reg @ Registry, foo @ 'T) : Registry
+        where T isa Copyable
+        on in foo <> nil
+        on out(r) reg.key?(foo.name) and r == reg
+     reg.put(foo.name, foo)
+     reg
+
+  These "on in" and "on out" statements are evaluated on entrance and exit
+  of the function resp.  Only if both evaluate to true the contract is
+  fulfilled, otherwise and AssertException is thrown.
+
+  The "on out" statement is run after an "on exit" statement, where the
+  function body's return value is passed in as 'r'.
+
+  Another way to put pre and post conditions to functions is to declare an
+  "on assert" statement in a class.  Such class invariants are run if a
+  class instance is passed to the "assert" function:
+
+    def class Date(d : Int, h : Int)
+    {
+      def slot day : Int = d
+      def slot hour : Int = h
+
+      on assert (c) {
+        assert(1 <= day and <= 31)
+        assert(0 <= hour and hour < 24)
+      }
+    }
+
+    def generic add-day(date @ Date, day : Int) : Date
+        on in assert(date)
+        on out(r) r <> date and assert(r)
+      Date(date.day + day, date.hour)
+
+  The "on assert" statement is automatically called as last command from
+  the class constructor, i.e. even after an "on init" statement.  
+
+  Pre and post conditions are normally not compiled in release versions.
 
 
 Used character in the Ascii table:

@@ -18,117 +18,416 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
-class GroupTypeImpl : public TypeImpl
+namespace heather
 {
-public:
-  GroupTypeImpl(const TypeVector& types)
-    : fTypes(types)
-  { }
-
-  virtual bool isEqual(const TypeImpl* other) const
+  template<typename T>
+  static bool
+  isEqual(const T& vect0, const T& vect1)
   {
-    const GroupTypeImpl* o = dynamic_cast<const GroupTypeImpl*>(other);
-
-    if (o != NULL && typeid(this) == typeid(other) && fTypes == o->fTypes) {
-      for (size_t i = 0; i < fTypes.size(); ++i) {
-        if (fTypes[i] != o->fTypes[i])
+    if (vect0.size() == vect1.size()) {
+      for (size_t i = 0; i < vect0.size(); i++) {
+        if (vect0[i] != vect1[i])
           return false;
       }
+    }
+    return true;
+  }
+
+
+  template<typename T>
+  static bool
+  isCovariant(const T& vect0, const T& vect1)
+  {
+    if (vect0.size() == vect1.size()) {
+      for (size_t i = 0; i < vect0.size(); i++) {
+        if (!vect0[i].isCovariant(vect1[i]))
+          return false;
+      }
+    }
+    return true;
+  }
+
+
+  template<typename T>
+  static bool
+  isInvariant(const T& vect0, const T& vect1)
+  {
+    if (vect0.size() != vect1.size())
       return true;
+    for (size_t i = 0; i < vect0.size(); i++) {
+      if (vect0[i].isInvariant(vect1[i]))
+        return true;
     }
     return false;
   }
 
 
-  virtual bool isCovariant(const TypeImpl* other) const
-  {
-    const GroupTypeImpl* o = dynamic_cast<const GroupTypeImpl*>(other);
+  //--------------------------------------------------------------------------
 
-    if (o != NULL && typeid(this) == typeid(other) && fTypes == o->fTypes) {
-      for (size_t i = 0; i < fTypes.size(); ++i) {
-        if (!fTypes[i].isCovariant(o->fTypes[i]))
-          return false;
-      }
-      return true;
+  bool
+  TypeImpl::isContravariant(const TypeImpl* other) const
+  {
+    return other->isCovariant(this);
+  }
+
+
+  bool
+  TypeImpl::isInvariant(const TypeImpl* other) const
+  {
+  return !isCovariant(other) && !isContravariant(other);
+  }
+
+
+  //--------------------------------------------------------------------------
+
+  class GroupTypeImpl : public TypeImpl
+  {
+  public:
+    GroupTypeImpl(const TypeVector& types)
+      : fTypes(types)
+    { }
+
+    virtual bool
+    isEqual(const TypeImpl* other) const
+    {
+      const GroupTypeImpl* o = dynamic_cast<const GroupTypeImpl*>(other);
+
+      return (o != NULL && typeid(this) == typeid(other) &&
+              heather::isEqual(fTypes, o->fTypes));
     }
-    return false;
-  }
 
 
-  virtual bool isInvariant(const TypeImpl* other) const
-  {
-    const GroupTypeImpl* o = dynamic_cast<const GroupTypeImpl*>(other);
+    virtual bool
+    isCovariant(const TypeImpl* other) const
+    {
+      const GroupTypeImpl* o = dynamic_cast<const GroupTypeImpl*>(other);
 
-    if (o != NULL && fTypes == o->fTypes) {
-      for (size_t i = 0; i < fTypes.size(); ++i) {
-        if (!fTypes[i].isInvariant(o->fTypes[i]))
-          return false;
-      }
-      return true;
+      if (o != NULL && typeid(this) == typeid(other))
+        return heather::isCovariant(fTypes, o->fTypes);
+      return false;
     }
-    return false;
-  }
-
-protected:
-  TypeVector fTypes;
-};
 
 
-class UnionTypeImpl : public GroupTypeImpl
-{
-public:
-  UnionTypeImpl(const TypeVector& types)
-    : GroupTypeImpl(types)
-  { }
-};
+    const TypeVector& types() const
+    {
+      return fTypes;
+    }
+
+  protected:
+    TypeVector fTypes;
+  };
 
 
-class SeqTypeImpl : public GroupTypeImpl
-{
-public:
-  SeqTypeImpl(const TypeVector& types)
-    : GroupTypeImpl(types)
-  { }
-};
+  //--------------------------------------------------------------------------
 
-
-class FunctionTypeImpl : public TypeImpl
-{
-public:
-  FunctionTypeImpl(const FunctionSignature& sign)
-    : fSign(sign)
-  { }
-
-
-  virtual bool isEqual(const TypeImpl* other) const
+  class UnionTypeImpl : public GroupTypeImpl
   {
-    const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
-    return (o != NULL && fSign == o->fSign);
-  }
+  public:
+    UnionTypeImpl(const TypeVector& types)
+      : GroupTypeImpl(types)
+    { }
+  };
 
 
-  virtual bool isCovariant(const TypeImpl* other) const
+  //--------------------------------------------------------------------------
+
+  class SeqTypeImpl : public GroupTypeImpl
   {
-    const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
-    return (o != NULL && fSign.isCovariant(o->fSign));
-  }
+  public:
+    SeqTypeImpl(const TypeVector& types)
+      : GroupTypeImpl(types)
+    { }
+  };
 
 
-  virtual bool isInvariant(const TypeImpl* other) const
+  //--------------------------------------------------------------------------
+
+  class FunctionTypeImpl : public TypeImpl
   {
-    const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
-    return (o != NULL && fSign.isInvariant(o->fSign));
-  }
-
-private:
-  FunctionSignature fSign;
-};
+  public:
+    FunctionTypeImpl(const FunctionSignature& sign)
+      : fSign(sign)
+    { }
 
 
+    virtual bool
+    isEqual(const TypeImpl* other) const
+    {
+      const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
+      return (o != NULL && fSign == o->fSign);
+    }
 
 
+    virtual bool
+    isCovariant(const TypeImpl* other) const
+    {
+      const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
+      return (o != NULL && fSign.isCovariant(o->fSign));
+    }
 
 
+    const FunctionSignature&
+    functionSignature() const
+    {
+      return fSign;
+    }
+
+
+  private:
+    FunctionSignature fSign;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class TypeTypeImpl : public TypeImpl
+  {
+  public:
+    TypeTypeImpl(const String& name,
+                 bool isInstantiatable,
+                 const TypeVector& generics,
+                 const Type& inherit,
+                 const FunctionSignature& defApplySign,
+                 const FunctionSignatureVector& protocol)
+      : fName(name),
+        fIsInstantiatable(isInstantiatable),
+        fGenerics(generics),
+        fInherit(inherit),
+        fDefApplySign(defApplySign),
+        fProtocol(protocol)
+    { }
+
+
+    virtual bool
+    isEqual(const TypeImpl* other) const
+    {
+      const TypeTypeImpl* o = dynamic_cast<const TypeTypeImpl*>(other);
+
+      return (o != NULL &&
+              fName == o->fName &&
+              fIsInstantiatable == o->fIsInstantiatable &&
+              fDefApplySign == o->fDefApplySign &&
+              fInherit == o->fInherit &&
+              heather::isEqual(fGenerics, o->fGenerics) &&
+              heather::isEqual(fProtocol, o->fProtocol));
+    }
+
+
+    virtual bool
+    isCovariant(const TypeImpl* other) const
+    {
+      const TypeTypeImpl* o = dynamic_cast<const TypeTypeImpl*>(other);
+
+      if (o != NULL &&
+          // fName == o->fName &&
+          fGenerics.size() == o->fGenerics.size() &&
+          fProtocol.size() >= o->fProtocol.size() &&
+          fInherit.isCovariant(o->fInherit))
+      {
+        for (size_t i = 0; i < fGenerics.size(); i++) {
+          if (!fGenerics[i].isCovariant(o->fGenerics[i]))
+            return false;
+        }
+
+        for (size_t i = 0; i < fProtocol.size(); i++) {
+          bool gotOne = false;
+          for (size_t j = 0; j < o->fProtocol.size(); j++) {
+            if (fProtocol[i].methodName() == o->fProtocol[j].methodName() &&
+                fProtocol[i].isCovariant(o->fProtocol[j]))
+            {
+              gotOne = true;
+              break;
+            }
+          }
+
+          if (!gotOne)
+            return false;
+        }
+        return true;
+      }
+      return false;
+    }
+
+
+    const Type&
+    inherit() const
+    {
+      return fInherit;
+    }
+
+
+    const FunctionSignature&
+    defaultApplySignature() const
+    {
+      return fDefApplySign;
+    }
+
+
+    const FunctionSignatureVector&
+    protocol() const
+    {
+      return fProtocol;
+    }
+
+
+  protected:
+    String                  fName;
+    bool                    fIsInstantiatable;
+    TypeVector              fGenerics;
+    Type                    fInherit;
+    FunctionSignature       fDefApplySign;
+    FunctionSignatureVector fProtocol;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class AliasTypeImpl : public TypeImpl
+  {
+  public:
+    AliasTypeImpl(const String& name, const TypeVector& generics,
+                  const Type& isa)
+      : fName(name),
+        fGenerics(generics),
+        fType(isa)
+    { }
+
+
+    virtual bool isEqual(const TypeImpl* other) const
+    {
+      const AliasTypeImpl* o = dynamic_cast<const AliasTypeImpl*>(other);
+
+      return (o != NULL &&
+              fName == o->fName &&
+              heather::isEqual(fGenerics, o->fGenerics) &&
+              fType == o->fType);
+    }
+
+
+    virtual bool isCovariant(const TypeImpl* other) const
+    {
+      const AliasTypeImpl* o = dynamic_cast<const AliasTypeImpl*>(other);
+
+      return (o != NULL &&
+              fType.isCovariant(o->fType));
+    }
+
+
+    const Type& inherit() const
+    {
+      return fType;
+    }
+
+
+  protected:
+    String     fName;
+    TypeVector fGenerics;
+    Type       fType;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class TypeRefTypeImpl : public TypeImpl
+  {
+  public:
+    TypeRefTypeImpl(const String& name,
+                    const TypeVector& genericArgs,
+                    const TypeConstVector& constraints)
+      : fName(name),
+        fGenerics(genericArgs),
+        fConstraints(constraints)
+    { }
+
+    virtual bool
+    isEqual(const TypeImpl* other) const
+    {
+      const TypeRefTypeImpl* o = dynamic_cast<const TypeRefTypeImpl*>(other);
+
+      return (o != NULL &&
+              fName == o->fName &&
+              heather::isEqual(fGenerics, o->fGenerics) &&
+              heather::isEqual(fConstraints, o->fConstraints));
+    }
+
+
+    virtual bool
+    isCovariant(const TypeImpl* other) const
+    {
+      const TypeRefTypeImpl* o = dynamic_cast<const TypeRefTypeImpl*>(other);
+
+      return (o != NULL &&
+              heather::isCovariant(fGenerics, o->fGenerics) &&
+              heather::isCovariant(fConstraints, o->fConstraints));
+    }
+
+
+    const TypeConstVector& constraints() const
+    {
+      return fConstraints;
+    }
+
+
+  protected:
+    String          fName;
+    TypeVector      fGenerics;
+    TypeConstVector fConstraints;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class ArrayTypeImpl : public TypeImpl
+  {
+  public:
+    ArrayTypeImpl(const Type& base, int sizeIndicator)
+      : fBase(base),
+        fSizeIndicator(sizeIndicator)
+    { }
+
+
+    virtual bool
+    isEqual(const TypeImpl* other) const
+    {
+      const ArrayTypeImpl* o = dynamic_cast<const ArrayTypeImpl*>(other);
+
+      return (o != NULL &&
+              fBase == o->fBase &&
+              fSizeIndicator == o->fSizeIndicator);
+    }
+
+
+    virtual bool
+    isCovariant(const TypeImpl* other) const
+    {
+      const ArrayTypeImpl* o = dynamic_cast<const ArrayTypeImpl*>(other);
+
+      return (o != NULL &&
+              fBase.isCovariant(o->fBase));
+    }
+
+
+    const Type&
+    baseType() const
+    {
+      return fBase;
+    }
+
+
+    int
+    sizeIndicator() const
+    {
+      return fSizeIndicator;
+    }
+
+  protected:
+    Type fBase;
+    int  fSizeIndicator;
+  };
+};                              // heather namespace
+
+
+//----------------------------------------------------------------------------
 
 Type::Type()
   : fKind(kType_Any)
@@ -153,6 +452,21 @@ Type::operator=(const Type& other)
   fKind = other.fKind;
   fImpl = other.fImpl;
   return *this;
+}
+
+
+Type
+Type::newTypeRef(const String& name, const TypeVector& genericArgs,
+                 const TypeConstVector& constraints)
+{
+  return Type(kType_Ref, new TypeRefTypeImpl(name, genericArgs, constraints));
+}
+
+
+Type
+Type::newArray(const Type& base, int sizeIndicator)
+{
+  return Type(kType_Array, new ArrayTypeImpl(base, sizeIndicator));
 }
 
 
@@ -286,6 +600,11 @@ Type
 Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit)
 {
+  FunctionSignatureVector dummyProtocol;
+  FunctionSignature       dummyDefApplySign;
+  return Type(kType_Type, new TypeTypeImpl(name, false, generics, inherit,
+                                           dummyDefApplySign,
+                                           dummyProtocol));
 }
 
 
@@ -294,6 +613,10 @@ Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit,
               const FunctionSignatureVector& protocol)
 {
+  FunctionSignature dummyDefApplySign;
+  return Type(kType_Type, new TypeTypeImpl(name, false, generics, inherit,
+                                           dummyDefApplySign,
+                                           protocol));
 }
 
 
@@ -301,6 +624,11 @@ Type
 Type::newClass(const String& name, const TypeVector& generics,
                const Type& inherit)
 {
+  FunctionSignatureVector dummyProtocol;
+  FunctionSignature       dummyDefApplySign;
+  return Type(kType_Class, new TypeTypeImpl(name, true, generics, inherit,
+                                            dummyDefApplySign,
+                                            dummyProtocol));
 }
 
 
@@ -310,6 +638,9 @@ Type::newClass(const String& name, const TypeVector& generics,
                const FunctionSignature& defApplySign,
                const FunctionSignatureVector& protocol)
 {
+  return Type(kType_Class, new TypeTypeImpl(name, true, generics, inherit,
+                                            defApplySign,
+                                            protocol));
 }
 
 
@@ -317,6 +648,7 @@ Type
 Type::newAlias(const String& name, const TypeVector& generics,
                const Type& isa)
 {
+  return Type(kType_Alias, new AliasTypeImpl(name, generics, isa));
 }
 
 
@@ -324,6 +656,8 @@ Type
 Type::newMeasure(const String& name, const Type& baseType,
                  const String& defUnit)
 {
+  // TODO
+  return Type();
 }
 
 
@@ -331,6 +665,8 @@ Type
 Type::newEnum(const String& name, const Type& baseType,
               const StringTokenMap& defUnit)
 {
+  // TODO
+  return Type();
 }
 
 
@@ -359,7 +695,11 @@ Type::newSeq(const TypeVector& types)
 bool
 Type::operator==(const Type& other) const
 {
-  // TODO
+  if (isAny() || isBase())
+    return fKind == other.fKind;
+
+  assert(fImpl != NULL);
+  return fImpl->isEqual(other.fImpl);
 }
 
 
@@ -373,14 +713,26 @@ Type::operator!=(const Type& other) const
 bool
 Type::isCovariant(const Type& other) const
 {
-  // TODO
+  if (isAny() || isBase()) {
+    // TODO
+    return true;
+  }
+
+  return fImpl->isCovariant(other.fImpl);
+}
+
+
+bool
+Type::isContravariant(const Type& other) const
+{
+  return other.isCovariant(*this);
 }
 
 
 bool
 Type::isInvariant(const Type& other) const
 {
-  // TODO
+  return !isCovariant(other) && !isContravariant(other);
 }
 
 
@@ -441,6 +793,194 @@ Type::isReal() const
 }
 
 
+bool
+Type::isClass() const
+{
+  return fKind == kType_Class;
+}
+
+
+const Type&
+Type::classInheritance() const
+{
+  assert(isClass());
+  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->inherit();
+}
+
+
+const FunctionSignature&
+Type::defaultApplySignature() const
+{
+  assert(isClass());
+  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->defaultApplySignature();
+}
+
+
+const FunctionSignatureVector&
+Type::classProtocol() const
+{
+  assert(isClass());
+  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->protocol();
+}
+
+
+bool
+Type::isType() const
+{
+  return fKind == kType_Type;
+}
+
+
+const Type&
+Type::typeInheritance() const
+{
+  assert(isType());
+  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->inherit();
+}
+
+
+const FunctionSignatureVector&
+Type::typeProtocol() const
+{
+  assert(isType());
+  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->protocol();
+}
+
+
+bool
+Type::isAlias() const
+{
+  return fKind == kType_Alias;
+}
+
+
+const Type&
+Type::aliasInheritance() const
+{
+  assert(isAlias());
+  return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->inherit();
+}
+
+
+bool
+Type::isFunction() const
+{
+  return fKind == kType_Function;
+}
+
+
+const FunctionSignature&
+Type::functionSignature() const
+{
+  assert(isFunction());
+  return dynamic_cast<const FunctionTypeImpl*>(fImpl.obj())->functionSignature();
+}
+
+
+bool
+Type::isArray() const
+{
+  return fKind == kType_Array;
+}
+
+
+const Type&
+Type::arrayBaseType() const
+{
+  assert(isArray());
+  return dynamic_cast<const ArrayTypeImpl*>(fImpl.obj())->baseType();
+}
+
+
+int
+Type::arraySizeIndicator() const
+{
+  assert(isArray());
+  return dynamic_cast<const ArrayTypeImpl*>(fImpl.obj())->sizeIndicator();
+}
+
+
+bool
+Type::isUnion() const
+{
+  return fKind == kType_Union;
+}
+
+
+const TypeVector&
+Type::unionTypes() const
+{
+  assert(isUnion());
+  return dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->types();
+}
+
+
+bool
+Type::isSequence() const
+{
+  return fKind == kType_Sequence;
+}
+
+
+const TypeVector&
+Type::seqTypes() const
+{
+  assert(isUnion());
+  return dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->types();
+}
+
+
+bool
+Type::isEnum() const
+{
+  return fKind == kType_Enum;
+}
+
+
+// const Type&
+// Type::enumBaseType() const
+// {
+// }
+
+
+// const TokenVector&
+// Type::enumValues() const
+// {
+// }
+
+
+bool
+Type::isMeasure() const
+{
+  return fKind == kType_Measure;
+}
+
+
+// const Type&
+// Type::measureBaseType() const
+// {
+// }
+
+
+bool
+Type::hasConstraints() const
+{
+  if (fKind == kType_Ref) {
+  }
+
+  return false;
+}
+
+
+const TypeConstVector&
+Type::constraints() const
+{
+  if (fKind == kType_Ref)
+    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->constraints();
+
+  static TypeConstVector dummy;
+  return dummy;
+}
 
 
 
@@ -451,148 +991,151 @@ Type::isReal() const
 
 //----------------------------------------------------------------------------
 
-class LogicalConstraintImpl : public BaseTypeConstraintImpl
+namespace heather
 {
-public:
-  LogicalConstraintImpl(TypeConstOperator op,
-                        const TypeConstraint& left,
-                        const TypeConstraint& right)
-    : fOp(op),
-      fLeft(left),
-      fRight(right)
-  { }
-
-
-  virtual bool isEqual(const BaseTypeConstraintImpl* other) const
+  class LogicalConstraintImpl : public BaseTypeConstraintImpl
   {
-    const LogicalConstraintImpl* c =
+  public:
+    LogicalConstraintImpl(TypeConstOperator op,
+                          const TypeConstraint& left,
+                          const TypeConstraint& right)
+      : fOp(op),
+        fLeft(left),
+        fRight(right)
+    { }
+
+
+    virtual bool isEqual(const BaseTypeConstraintImpl* other) const
+    {
+      const LogicalConstraintImpl* c =
       dynamic_cast<const LogicalConstraintImpl*>(other);
 
-    return (c != NULL &&
-            fOp == c->fOp &&
-            fLeft == c->fLeft &&
-            fRight == c->fRight);
-  }
+      return (c != NULL &&
+              fOp == c->fOp &&
+              fLeft == c->fLeft &&
+              fRight == c->fRight);
+    }
 
 
-  virtual TypeConstOperator constOp() const
+    virtual TypeConstOperator constOp() const
+    {
+      return fOp;
+    }
+
+
+    virtual BaseTypeConstraintImpl* unshare()
+    {
+      // TODO
+      return this;
+    }
+
+
+    const TypeConstraint& left() const
+    {
+      return fLeft;
+    }
+
+
+    const TypeConstraint& right() const
+    {
+      return fRight;
+    }
+
+  private:
+    TypeConstOperator fOp;
+    TypeConstraint    fLeft;
+    TypeConstraint    fRight;
+  };
+
+
+  class ValueConstraintImpl : public BaseTypeConstraintImpl
   {
-    return fOp;
-  }
+  public:
+    ValueConstraintImpl(TypeConstOperator op, const Token& value)
+      : fOp(op),
+        fValue(value)
+    { }
 
 
-  virtual BaseTypeConstraintImpl* unshare()
-  {
-    // TODO
-    return this;
-  }
-
-
-  const TypeConstraint& left() const
-  {
-    return fLeft;
-  }
-
-
-  const TypeConstraint& right() const
-  {
-    return fRight;
-  }
-
-private:
-  TypeConstOperator fOp;
-  TypeConstraint    fLeft;
-  TypeConstraint    fRight;
-};
-
-
-class ValueConstraintImpl : public BaseTypeConstraintImpl
-{
-public:
-  ValueConstraintImpl(TypeConstOperator op, const Token& value)
-    : fOp(op),
-      fValue(value)
-  { }
-
-
-  virtual bool isEqual(const BaseTypeConstraintImpl* other) const
-  {
-    const ValueConstraintImpl* c =
+    virtual bool isEqual(const BaseTypeConstraintImpl* other) const
+    {
+      const ValueConstraintImpl* c =
       dynamic_cast<const ValueConstraintImpl*>(other);
 
-    return (c != NULL &&
-            fOp == c->fOp &&
-            fValue == c->fValue);
-  }
+      return (c != NULL &&
+              fOp == c->fOp &&
+              fValue == c->fValue);
+    }
 
 
-  virtual TypeConstOperator constOp() const
+    virtual TypeConstOperator constOp() const
+    {
+      return fOp;
+    }
+
+
+    const Token& token() const
+    {
+      return fValue;
+    }
+
+
+    virtual BaseTypeConstraintImpl* unshare()
+    {
+      // TODO
+      return this;
+    }
+
+  private:
+    TypeConstOperator fOp;
+    Token fValue;
+  };
+
+
+  class TypeConstraintImpl : public BaseTypeConstraintImpl
   {
-    return fOp;
-  }
+  public:
+    TypeConstraintImpl(TypeConstOperator op, const Type& type)
+      : fOp(op),
+        fType(type)
+    { }
 
 
-  const Token& token() const
-  {
-    return fValue;
-  }
-
-
-  virtual BaseTypeConstraintImpl* unshare()
-  {
-    // TODO
-    return this;
-  }
-
-private:
-  TypeConstOperator fOp;
-  Token fValue;
-};
-
-
-class TypeConstraintImpl : public BaseTypeConstraintImpl
-{
-public:
-  TypeConstraintImpl(TypeConstOperator op, const Type& type)
-    : fOp(op),
-      fType(type)
-  { }
-
-
-  virtual bool isEqual(const BaseTypeConstraintImpl* other) const
-  {
-    const TypeConstraintImpl* c =
+    virtual bool isEqual(const BaseTypeConstraintImpl* other) const
+    {
+      const TypeConstraintImpl* c =
       dynamic_cast<const TypeConstraintImpl*>(other);
 
-    return (c != NULL &&
-            fType == c->fType);
-  }
+      return (c != NULL &&
+              fType == c->fType);
+    }
 
 
-  virtual TypeConstOperator constOp() const
-  {
-    return fOp;
-  }
+    virtual TypeConstOperator constOp() const
+    {
+      return fOp;
+    }
 
 
-  virtual BaseTypeConstraintImpl* unshare()
-  {
-    // TODO
-    return this;
-  }
+    virtual BaseTypeConstraintImpl* unshare()
+    {
+      // TODO
+      return this;
+    }
 
 
-  const Type& type() const
-  {
-    return fType;
-  }
+    const Type& type() const
+    {
+      return fType;
+    }
 
 
-private:
-  TypeConstOperator fOp;
-  Type fType;
-};
+  private:
+    TypeConstOperator fOp;
+    Type fType;
+  };
 
+};                              // namespace heather
 
 
 //----------------------------------------------------------------------------
@@ -659,6 +1202,51 @@ bool
 TypeConstraint::operator!=(const TypeConstraint& other) const
 {
   return !(operator==(other));
+}
+
+
+bool
+TypeConstraint::isCovariant(const TypeConstraint& other) const
+{
+  // TODO
+  if (constOp() == other.constOp()) {
+    switch (constOp()) {
+    case kConstOp_and:
+    case kConstOp_or:
+      // TODO
+      return true;
+
+    case kConstOp_equal:
+    case kConstOp_notEqual:
+    case kConstOp_less:
+    case kConstOp_lessEqual:
+    case kConstOp_greater:
+    case kConstOp_greaterEqual:
+    case kConstOp_in:
+      // TODO
+      return true;
+
+    case kConstOp_isa:
+      return ( dynamic_cast<const TypeConstraintImpl*>(fImpl.obj())->type()
+               .isCovariant(dynamic_cast<const TypeConstraintImpl*>(
+                              other.fImpl.obj())->type()));
+    }
+  }
+  return true;
+}
+
+
+bool
+TypeConstraint::isContravariant(const TypeConstraint& other) const
+{
+  return other.isCovariant(*this);
+}
+
+
+bool
+TypeConstraint::isInvariant(const TypeConstraint& other) const
+{
+  return !isCovariant(other) && !isContravariant(other);
 }
 
 
@@ -862,22 +1450,16 @@ FunctionParameter::isCovariant(const FunctionParameter& other) const
 
 
 bool
-FunctionParameter::isInvariant(const FunctionParameter& other) const
+FunctionParameter::isContravariant(const FunctionParameter& other) const
 {
-  if (fKind != other.fKind)
-    return true;
-  if (fIsSpecialized != other.fIsSpecialized)
-    return true;
-
-  // the parameter key is not relevant for co-variance testing
-  return fType.isInvariant(other.fType);
+  return other.isCovariant(*this);
 }
 
 
 bool
-FunctionParameter::isContravariant(const FunctionParameter& other) const
+FunctionParameter::isInvariant(const FunctionParameter& other) const
 {
-  return !isCovariant(other) && !isInvariant(other);
+  return !isCovariant(other) && !isContravariant(other);
 }
 
 
@@ -910,6 +1492,11 @@ FunctionParameter::type() const
 
 
 //----------------------------------------------------------------------------
+
+FunctionSignature::FunctionSignature()
+  : fIsGeneric(false)
+{ }
+
 
 FunctionSignature::FunctionSignature(bool isGeneric, const String& name,
                                      const Type& retType)
@@ -994,27 +1581,16 @@ FunctionSignature::isCovariant(const FunctionSignature& other) const
 
 
 bool
-FunctionSignature::isInvariant(const FunctionSignature& other) const
+FunctionSignature::isContravariant(const FunctionSignature& other) const
 {
-  // TODO: is fIsGeneric relevant for co-variance testing?
-
-  if (fReturnType.isInvariant(other.fReturnType))
-    return true;
-  if (fParameters.size() == other.fParameters.size()) {
-    for (size_t i = 0; i < fParameters.size(); i++) {
-      if (fParameters[i].isInvariant(other.fParameters[i]))
-        return true;
-    }
-    return false;
-  }
-  return true;
+  return other.isCovariant(*this);
 }
 
 
 bool
-FunctionSignature::isContravariant(const FunctionSignature& other) const
+FunctionSignature::isInvariant(const FunctionSignature& other) const
 {
-  return !isCovariant(other) && !isInvariant(other);
+  return !isCovariant(other) && !isContravariant(other);
 }
 
 
