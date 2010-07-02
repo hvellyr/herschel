@@ -35,9 +35,30 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  //! Technically there are Type Instances and Type References.  Type
+  //! Instances represent a fully defined type, class, alias, enum, measure,
+  //! function type, or base type (like Int, String).  They are normally never
+  //! used explicit in the code (when annotating variables, etc.); there're
+  //! normaly Type References are used:
+  //! 
+  //! <code>
+  //! def type XYZ<a, b> : (Abc<a>, Man<b>)
+  //! 
+  //! def v : XYZ<Int, Char> = 5
+  //! </code>
+  //!
+  //! The type annotation in the second line is a type references XYZ<Int,
+  //! Char> to the type definition in the first line, specializing two type
+  //! parameters.  The resulting effective type in the second line is
+  //! therefore "XYZ<Int, Char> : (Abc<Int>, Man<Char>)".
+
+  //--------------------------------------------------------------------------
+
   enum TypeKind
   {
     kType_Any,
+
+    kType_Ref,
 
     kType_Bool,
     kType_Char,
@@ -58,9 +79,7 @@ namespace heather
     kType_Nil,
     kType_Unspecified,
 
-    kType_Vector,
     kType_Array,
-    kType_Dict,
 
     kType_Function,
     kType_Measure,
@@ -78,7 +97,8 @@ namespace heather
   public:
     virtual bool isEqual(const TypeImpl* other) const = 0;
     virtual bool isCovariant(const TypeImpl* other) const = 0;
-    virtual bool isInvariant(const TypeImpl* other) const = 0;
+    virtual bool isContravariant(const TypeImpl* other) const;
+    virtual bool isInvariant(const TypeImpl* other) const;
   };
 
 
@@ -87,6 +107,13 @@ namespace heather
   public:
     Type(const Type& other);
     Type();
+
+
+    //! creates a new type ref.  Covers the following example: xyz<a, b> <> nil
+    static Type newTypeRef(const String& name, const TypeVector& genericArgs,
+                           const TypeConstVector& constraints);
+
+    static Type newArray(const Type& base, int siceIndicator);
 
 
     static Type newAny();
@@ -110,6 +137,9 @@ namespace heather
     static Type newNil();
     static Type newUnspecified();
 
+    //! Creates a new Type type-instance.  This represents a specific type,
+    //! not the type template/definition.  Therefore all (possible) type
+    //! parameters must be fill in (in generics).
     static Type newType(const String& name, const TypeVector& generics,
                         const Type& inherit);
     static Type newType(const String& name, const TypeVector& generics,
@@ -149,6 +179,7 @@ namespace heather
     //! Indicates whether two types are co-variant.  If this returns false \p
     //! other is either contravariant or invariant.  Use isInvariant to check.
     bool isCovariant(const Type& other) const;
+    bool isContravariant(const Type& other) const;
     //! Indicates whether two types are invariant.
     bool isInvariant(const Type& other) const;
 
@@ -167,37 +198,31 @@ namespace heather
 
     //!@ custom types
     bool isClass() const;
-    Type classInheritance() const;
-    FunctionSignature defaultApplySignature() const;
+    const Type& classInheritance() const;
+    const FunctionSignature& defaultApplySignature() const;
     const FunctionSignatureVector& classProtocol() const;
 
     //!@ custom types
     bool isType() const;
-    Type typeInheritance() const;
+    const Type& typeInheritance() const;
     const FunctionSignatureVector& typeProtocol() const;
 
 
     //!@ alias types
     bool isAlias() const;
-    Type aliasInheritance() const;
+    const Type& aliasInheritance() const;
 
 
     //!@ function types
     //! Indicates whether the type is a function type
     bool isFunction() const;
-    FunctionSignature functionSignature() const;
+    const FunctionSignature& functionSignature() const;
 
 
     //!@ array types
     bool isArray() const;
-    Type arrayBaseType() const;
+    const Type& arrayBaseType() const;
     int arraySizeIndicator() const;
-
-
-    //!@ generic types
-    bool isGeneric() const;
-    Type genericBaseType() const;
-    const TypeVector& genericTypes() const;
 
 
     //!@ union types
@@ -212,13 +237,13 @@ namespace heather
 
     //!@ enum types
     bool isEnum() const;
-    Type enumBaseType() const;
-    TokenVector enumValues() const;
+    const Type& enumBaseType() const;
+    const TokenVector& enumValues() const;
 
 
     //!@ measure types
     bool isMeasure() const;
-    Type measureBaseType() const;
+    const Type& measureBaseType() const;
 
 
     //!@ has constraints?
@@ -280,6 +305,10 @@ namespace heather
     bool operator==(const TypeConstraint& other) const;
     //! Compare operator
     bool operator!=(const TypeConstraint& other) const;
+
+    bool isCovariant(const TypeConstraint& other) const;
+    bool isContravariant(const TypeConstraint& other) const;
+    bool isInvariant(const TypeConstraint& other) const;
 
     //! returns the constraint operator
     TypeConstOperator constOp() const;
@@ -373,6 +402,8 @@ namespace heather
   class FunctionSignature
   {
   public:
+    FunctionSignature();
+
     FunctionSignature(bool isGeneric, const String& name, const Type& retType);
     FunctionSignature(bool isGeneric, const String& name, const Type& retType,
                       const FunctionParamVector& parameters);
