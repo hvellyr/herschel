@@ -156,11 +156,119 @@ SecondPass::parseImport(const Token& expr)
 
 //------------------------------------------------------------------------------
 
-AptNode*
+void
+SecondPass::parseTypeVector(TypeVector* generics, const Token& expr)
+{
+  assert(expr.isNested());
+  
+  for (size_t i = 0; i < expr.children().size(); i++) {
+    if (expr[i] == kComma)
+      continue;
+    Type ty = parseTypeSpec(expr[i]);
+    generics->push_back(ty);
+  }
+}
+
+
+Type
 SecondPass::parseTypeSpec(const Token& expr)
 {
+  if (expr == kSymbol) {
+    return Type::newTypeRef(expr.idValue());
+  }
+  else if (expr.isSeq()) {
+    if (expr.count() == 2) {
+      if (expr[0] == kSymbol &&
+          expr[1].isNested() && expr[1].leftToken() == kGenericOpen)
+      {
+        // generic identifier with arguments
+        TypeVector generics;
+        TypeConstVector dummyConstraints;
+        parseTypeVector(&generics, expr[1]);
+        return Type::newTypeRef(expr[0].idValue(), generics, dummyConstraints);
+      }
+      else if (expr.count() == 2 &&
+               expr[1].isNested() && expr[1].leftToken() == kBracketOpen)
+      {
+        // array
+        Type baseType = parseTypeSpec(expr[0]);
+        // TODO sizeindicator
+        return Type::newArray(baseType, 0);
+      }
+      else if (expr[0] == kQuote && expr[1] == kSymbol)
+      {
+        // quote symbol
+        // TODO
+      }
+      // else TODO
+    }
+    else if (expr.count() == 3) {
+      if (expr[0] == kSymbol) {
+        TypeVector dummyGenerics;
+        TypeConstVector constraints;
+
+        if (expr[1] == kIsa) {
+          Type rightType = parseTypeSpec(expr[2]);
+          constraints.push_back(TypeConstraint::newType(kConstOp_isa,
+                                                        rightType));
+
+          return Type::newTypeRef(expr[0].idValue(),
+                                  dummyGenerics, constraints);
+        }
+
+        TypeConstOperator op = kConstOp_equal;
+        if (expr[1] == kIn)
+          op = kConstOp_in;
+        else if (expr[1] == kEqual)
+          op = kConstOp_equal;
+        else if (expr[1] == kUnequal)
+          op = kConstOp_notEqual;
+        else if (expr[1] == kLess)
+          op = kConstOp_less;
+        else if (expr[1] == kLessEqual)
+          op = kConstOp_lessEqual;
+        else if (expr[1] == kGreater)
+          op = kConstOp_greater;
+        else if (expr[1] == kGreaterEqual)
+          op = kConstOp_greaterEqual;
+        else
+          assert(0);
+
+        constraints.push_back(TypeConstraint::newValue(op, expr[2]));
+        return Type::newTypeRef(expr[0].idValue(),
+                                dummyGenerics, constraints);
+      }
+      // else TODO
+    }
+  }
+  else if (expr.isNested() && expr.leftToken() == kParanOpen) {
+    if (expr.children().size() == 1) {
+      // grouped
+      return parseTypeSpec(expr[0]);
+    }
+    else {
+      // seq
+      TypeVector tyvect;
+      parseTypeVector(&tyvect, expr);
+      return Type::newSeq(tyvect);
+    }
+    // TODO
+  }
+  else if (expr.isNested() && expr.leftToken() == kUnionOpen) {
+    if (expr.children().size() == 1) {
+      // single type union -> the single type
+      return parseTypeSpec(expr[0]);
+    }
+    else {
+      // union
+      TypeVector tyvect;
+      parseTypeVector(&tyvect, expr);
+      return Type::newUnion(tyvect);
+    }
+  }
+  
   // TODO
-  return NULL;
+  return Type();
 }
 
 
@@ -225,7 +333,7 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs)
   String sym = seq[ofs].idValue();
   ofs++;
 
-  Ptr<AptNode> type;
+  Type type;
   if (ofs + 1 < expr.count() && seq[ofs] == kColon) {
     type = parseTypeSpec(seq[ofs + 1]);
     ofs += 2;
@@ -266,7 +374,7 @@ SecondPass::parseFunctionDef(const Token& expr)
   parseParameters(&params, expr[ofs].children());
   ofs++;
 
-  Ptr<AptNode> type;
+  Type type;
   if (ofs < expr.count()) {
     if (expr[ofs] == kColon) {
       type = parseTypeSpec(expr[ofs + 1]);
@@ -412,7 +520,7 @@ SecondPass::parseParameter(const Token& expr)
 {
   if (expr == kSymbol)
     return new ParamNode(expr.srcpos(),
-                         String(), expr.idValue(), kPosArg, NULL, NULL);
+                         String(), expr.idValue(), kPosArg, Type(), NULL);
   assert(expr.isSeq());
   assert(expr.count() > 0);
 
@@ -435,7 +543,7 @@ SecondPass::parseParameter(const Token& expr)
   String sym = seq[ofs].idValue();
   ofs++;
 
-  Ptr<AptNode> type;
+  Type type;
   if (ofs + 1 < expr.count()) {
     if (seq[ofs] == kColon) {
       type = parseTypeSpec(seq[ofs + 1]);
@@ -523,7 +631,7 @@ SecondPass::parseClosure(const Token& expr)
   parseParameters(&params, expr[1].children());
   ofs++;
 
-  Ptr<AptNode> type;
+  Type type;
   if (ofs + 1 < expr.count()) {
     if (expr[ofs] == kColon) {
       type = parseTypeSpec(expr[ofs + 1]);
@@ -659,7 +767,7 @@ SecondPass::transformExplicitForClause(const Token& token,
 
   Ptr<AptNode> iteratorDefNode = new LetNode(
     new VardefNode(srcpos,
-                   iteratorVarSym.idValue(), kNormalVar, NULL,
+                   iteratorVarSym.idValue(), kNormalVar, Type(),
                    firstNode));
   loopDefines->push_back(iteratorDefNode);
 
@@ -732,7 +840,7 @@ SecondPass::transformRangeForClause(const Token& token,
       Token tmpStepSym = Token::newUniqueSymbolToken(srcpos, "step");
       Ptr<AptNode> endStepNode = new LetNode(
         new VardefNode(srcpos,
-                       tmpStepSym.idValue(), kNormalVar, NULL,
+                       tmpStepSym.idValue(), kNormalVar, Type(),
                        tmpStepNode));
       loopDefines->push_back(endStepNode);
 
@@ -753,7 +861,7 @@ SecondPass::transformRangeForClause(const Token& token,
     Token tmpEndRangeSym = Token::newUniqueSymbolToken(srcpos, "end");
     Ptr<AptNode> endRangeDefNode = new LetNode(
       new VardefNode(srcpos,
-                     tmpEndRangeSym.idValue(), kNormalVar, NULL,
+                     tmpEndRangeSym.idValue(), kNormalVar, Type(),
                      tmpEndNode));
     loopDefines->push_back(endRangeDefNode);
 
@@ -773,7 +881,7 @@ SecondPass::transformRangeForClause(const Token& token,
     Token tmpEndRangeSym = Token::newUniqueSymbolToken(srcpos, "end");
     Ptr<AptNode> endRangeDefNode = new LetNode(
       new VardefNode(srcpos,
-                     tmpEndRangeSym.idValue(), kNormalVar, NULL,
+                     tmpEndRangeSym.idValue(), kNormalVar, Type(),
                      tmpEndNode));
     loopDefines->push_back(endRangeDefNode);
 
@@ -785,10 +893,10 @@ SecondPass::transformRangeForClause(const Token& token,
 
   //------------------------------ generate known counter variable
   // let i = 0  |  let i = 100
-  Ptr<AptNode> stepVarTypeNode;    // TODO
+  Type stepVarType;    // TODO
   Ptr<AptNode> stepDefNode = new LetNode(
     new VardefNode(srcpos,
-                   iteratorVarSym.idValue(), kNormalVar, stepVarTypeNode,
+                   iteratorVarSym.idValue(), kNormalVar, stepVarType,
                    beginRangeNode));
   loopDefines->push_back(stepDefNode);
 
@@ -806,7 +914,7 @@ SecondPass::transformRangeForClause(const Token& token,
     // let __i = if (i < _end) i else _end    -- min(i, _end)
     Ptr<AptNode> absItVarNode = new LetNode(
       new VardefNode(srcpos,
-                     absItVarSym.idValue(), kNormalVar, NULL,
+                     absItVarSym.idValue(), kNormalVar, Type(),
                      new IfNode(srcpos,
                                 new BinaryNode(srcpos,
                                                new SymbolNode(srcpos, iteratorVarSym.idValue()),
@@ -819,7 +927,7 @@ SecondPass::transformRangeForClause(const Token& token,
     // let _abs_end = if (i < _end) _end else i   -- max(i, _end)
     Ptr<AptNode> absMaxEndNode = new LetNode(
       new VardefNode(srcpos,
-                     absMaxEndSym.idValue(), kNormalVar, NULL,
+                     absMaxEndSym.idValue(), kNormalVar, Type(),
                      new IfNode(srcpos,
                                 new BinaryNode(srcpos,
                                                new SymbolNode(srcpos, iteratorVarSym.idValue()),
@@ -832,7 +940,7 @@ SecondPass::transformRangeForClause(const Token& token,
     // let __abs_step = if (_step < 0) - _step else _step   -- abs(_step)
     Ptr<AptNode> absStepVarNode = new LetNode(
       new VardefNode(srcpos,
-                     absStepVarSym.idValue(), kNormalVar, NULL,
+                     absStepVarSym.idValue(), kNormalVar, Type(),
                      new IfNode(srcpos,
                                 new BinaryNode(srcpos,
                                                stepValueNode->clone(),
@@ -918,11 +1026,11 @@ SecondPass::transformCollForClause(const Token& token,
   Token sym = Token::newUniqueSymbolToken(srcpos, "seq");
 
   // ------------------------------ let _seq = names
-  Ptr<AptNode> loopTypeNode;    // TODO
+  Type loopType;                // TODO
   Ptr<AptNode> seqInitNode = parseExpr(token[2]);
   Ptr<AptNode> loopDefNode = new LetNode(
     new VardefNode(srcpos,
-                   sym.idValue(), kNormalVar, loopTypeNode,
+                   sym.idValue(), kNormalVar, loopType,
                    seqInitNode));
   loopDefines->push_back(loopDefNode);
 
@@ -930,10 +1038,10 @@ SecondPass::transformCollForClause(const Token& token,
   // ------------------------------ let name = unspecified
   Token stepSym = token[0].isSeq() ? token[0][0] : token[0];
   assert(stepSym == kSymbol);
-  Ptr<AptNode> stepTypeNode;    // TODO
+  Type stepType;                // TODO
   Ptr<AptNode> stepDefNode = new LetNode(
     new VardefNode(srcpos,
-                   stepSym.idValue(), kNormalVar, stepTypeNode,
+                   stepSym.idValue(), kNormalVar, stepType,
                    new SymbolNode(srcpos, String("unspecified"))));
   loopDefines->push_back(stepDefNode);
 
@@ -1013,7 +1121,7 @@ SecondPass::parseFor(const Token& expr)
     if (alternate == NULL)
       alternate = new SymbolNode(expr.srcpos(), String("unspecified"));
 
-    Ptr<AptNode> retType;       // TODO?
+    Type retType;               // TODO?
     Ptr<AptNode> defReturnNode = new LetNode(
       new VardefNode(expr.srcpos(),
                      returnSym.idValue(), kNormalVar, retType,

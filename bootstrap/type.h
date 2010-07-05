@@ -25,6 +25,7 @@ namespace heather
   class TypeConstraint;
   class FunctionSignature;
   class FunctionParameter;
+  class TypeCtx;
 
   typedef std::vector<Type> TypeVector;
   typedef std::vector<TypeConstraint> TypeConstVector;
@@ -56,6 +57,8 @@ namespace heather
 
   enum TypeKind
   {
+    kType_Undefined,
+
     kType_Any,
 
     kType_Ref,
@@ -95,10 +98,15 @@ namespace heather
   class TypeImpl : public RefCountable
   {
   public:
+    virtual TypeImpl* clone() const = 0;
     virtual bool isEqual(const TypeImpl* other) const = 0;
     virtual bool isCovariant(const TypeImpl* other) const = 0;
     virtual bool isContravariant(const TypeImpl* other) const;
     virtual bool isInvariant(const TypeImpl* other) const;
+
+    virtual void replaceGenerics(const TypeCtx& typeMap) = 0;
+
+    virtual String toString() const = 0;
   };
 
 
@@ -112,9 +120,9 @@ namespace heather
     //! creates a new type ref.  Covers the following example: xyz<a, b> <> nil
     static Type newTypeRef(const String& name, const TypeVector& genericArgs,
                            const TypeConstVector& constraints);
+    static Type newTypeRef(const String& name);
 
     static Type newArray(const Type& base, int siceIndicator);
-
 
     static Type newAny();
 
@@ -166,6 +174,7 @@ namespace heather
     static Type newUnion(const TypeVector& types);
     static Type newSeq(const TypeVector& types);
 
+    Type clone() const;
 
     //! assign operator
     Type& operator=(const Type& other);
@@ -184,6 +193,9 @@ namespace heather
     bool isInvariant(const Type& other) const;
 
 
+    bool isDef() const;
+
+    
 
     //!@ base and builtin types
     //! indicates whether the type is a base type
@@ -223,6 +235,10 @@ namespace heather
     bool isArray() const;
     const Type& arrayBaseType() const;
     int arraySizeIndicator() const;
+    //! return the base type.  If *this is a single depth array identical to
+    //! arrayBaseType().
+    Type arrayRootType() const;
+    Type rebase(const Type& newBaseType) const;
 
 
     //!@ union types
@@ -249,6 +265,16 @@ namespace heather
     //!@ has constraints?
     bool hasConstraints() const;
     const TypeConstVector& constraints() const;
+
+    bool hasGenerics() const;
+    const TypeVector& generics() const;
+    Type replaceGenerics(const TypeCtx& typeMap) const;
+
+    bool isRef() const;
+    String typeName() const;
+
+    String toString() const;
+
 
   private:
     Type(TypeKind kind, TypeImpl* impl);
@@ -280,9 +306,11 @@ namespace heather
   class BaseTypeConstraintImpl : public RefCountable
   {
   public:
+    virtual BaseTypeConstraintImpl* clone() const = 0;
     virtual bool isEqual(const BaseTypeConstraintImpl* other) const = 0;
     virtual TypeConstOperator constOp() const = 0;
-    virtual BaseTypeConstraintImpl* unshare() = 0;
+    virtual void replaceGenerics(const TypeCtx& typeMap) = 0;
+    virtual String toString() const = 0;
   };
 
 
@@ -297,6 +325,9 @@ namespace heather
                                 const TypeConstraint& right);
     static TypeConstraint newValue(TypeConstOperator op, const Token& value);
     static TypeConstraint newType(TypeConstOperator op, const Type& type);
+
+    TypeConstraint clone() const;
+
 
     //! Assign operator
     TypeConstraint& operator=(const TypeConstraint& other);
@@ -329,6 +360,11 @@ namespace heather
     bool isTypeConstraint() const;
     Type typeConstraint() const;
 
+    TypeConstraint replaceGenerics(const TypeCtx& typeMap);
+    bool isDef() const { return true; }
+
+    String toString() const;
+
   private:
     TypeConstraint(BaseTypeConstraintImpl* impl);
 
@@ -358,6 +394,7 @@ namespace heather
                                            const Type& type);
     static FunctionParameter newRestParam(const Type& type);
 
+    FunctionParameter clone() const;
 
     //! Assign operator
     FunctionParameter& operator=(const FunctionParameter& other);
@@ -389,6 +426,9 @@ namespace heather
     //! returns the parameter's type
     const Type& type() const;
 
+    FunctionParameter replaceGenerics(const TypeCtx& typeMap);
+    bool isDef() const { return true; }
+
   private:
     ParameterKind fKind;
     bool          fIsSpecialized;
@@ -408,6 +448,8 @@ namespace heather
     FunctionSignature(bool isGeneric, const String& name, const Type& retType,
                       const FunctionParamVector& parameters);
     FunctionSignature(const FunctionSignature& other);
+
+    FunctionSignature clone() const;
 
     //! Assign operator
     FunctionSignature& operator=(const FunctionSignature& other);
@@ -440,6 +482,8 @@ namespace heather
     //! (i.e. isGeneric returns true) the list has a least one parameter and
     //! the first parameter is at least specialized.
     const FunctionParamVector& parameters() const;
+
+    FunctionSignature replaceGenerics(const TypeCtx& typeMap);
 
   private:
     bool                fIsGeneric;

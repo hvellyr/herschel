@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><def><method sym='f'><params><param sym='a' type='spec'></param></params><body><symbol>a</symbol></body></method></def></compile-unit>

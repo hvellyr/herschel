@@ -15,6 +15,7 @@
 #include "tokenport.h"
 #include "token.h"
 #include "parser.h"
+#include "type.h"
 
 
 namespace heather
@@ -72,7 +73,7 @@ namespace heather
     AptNode* parseNested(const Token& expr);
 
 
-    AptNode* parseTypeSpec(const Token& expr);
+    Type parseTypeSpec(const Token& expr);
 
 
     void transformCollForClause(const Token& token,
@@ -87,6 +88,7 @@ namespace heather
                                     NodeList* testExprs,
                                     NodeList* stepExprs);
 
+    void parseTypeVector(TypeVector* generics, const Token& expr);
 
     //-------- data member
 

@@ -31,6 +31,7 @@ SOURCES =         \
 	tokenizer.cpp   \
 	tokenport.cpp   \
 	type.cpp        \
+	typectx.cpp     \
 	unittests.cpp   \
 	valuesaver.cpp
 
@@ -60,6 +61,7 @@ HEADERS =         \
 	tokenizer.h     \
 	tokenport.h     \
 	type.h          \
+	typectx.h       \
 	unittests.h     \
 	valuesaver.h
 

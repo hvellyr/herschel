@@ -150,6 +150,18 @@ displayStringStringMap(Port<Octet>* port,
 }
 
 
+static void
+displayType(Port<Octet>* port, const char* tagName, const Type& type)
+{
+  if (type.isDef()) {
+    const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
+    displayOpenTagAttrs(port, tagName, attrs);
+    display(port, type.toString());
+    displayCloseTag(port, tagName);
+  }
+}
+
+
 template<typename T>
 T* nodeClone(T* node)
 {
@@ -578,7 +590,7 @@ DefNode::display(Port<Octet>* port) const
 //----------------------------------------------------------------------------
 
 BindingNode::BindingNode(const SrcPos& srcpos,
-                         const String& symbolName, AptNode* type,
+                         const String& symbolName, const Type& type,
                          AptNode* initExpr)
   : AptNode(srcpos),
     fSymbolName(symbolName),
@@ -591,7 +603,7 @@ BindingNode::BindingNode(const SrcPos& srcpos,
 
 VardefNode::VardefNode(const SrcPos& srcpos,
                        const String& symbolName, VardefFlags flags,
-                       AptNode* type, AptNode* initExpr)
+                       const Type& type, AptNode* initExpr)
   : BindingNode(srcpos, symbolName, type, initExpr),
     fFlags(flags)
 {
@@ -621,7 +633,7 @@ VardefNode::display(Port<Octet>* port) const
 
   displayOpenTagAttrs(port, "vardef", StrHelper(attrs.toString()));
 
-  displayNode(port, "type", fType);
+  displayType(port, "type", fType);
   displayNode(port, "init", fInitExpr);
 
   displayCloseTag(port, "vardef");
@@ -632,7 +644,7 @@ VardefNode*
 VardefNode::clone() const
 {
   return new VardefNode(fSrcPos, fSymbolName, fFlags,
-                        nodeClone(fType), nodeClone(fInitExpr));
+                        fType.clone(), nodeClone(fInitExpr));
 }
 
 
@@ -641,7 +653,7 @@ VardefNode::clone() const
 ParamNode::ParamNode(const SrcPos& srcpos,
                      const String& keyName,
                      const String& symbolName, ParamFlags flags,
-                     AptNode* type, AptNode* initExpr)
+                     const Type& type, AptNode* initExpr)
   : BindingNode(srcpos, symbolName, type, initExpr),
     fKey(keyName),
     fFlags(flags)
@@ -674,7 +686,7 @@ ParamNode::display(Port<Octet>* port) const
 
   displayOpenTagAttrs(port, "param", StrHelper(attrs.toString()));
 
-  displayNode(port, "type", fType);
+  displayType(port, "type", fType);
   displayNode(port, "init", fInitExpr);
 
   displayCloseTag(port, "param");
@@ -685,7 +697,7 @@ ParamNode*
 ParamNode::clone() const
 {
   return new ParamNode(fSrcPos, fKey, fSymbolName, fFlags,
-                       nodeClone(fType), nodeClone(fInitExpr));
+                       fType.clone(), nodeClone(fInitExpr));
 }
 
 
@@ -1137,7 +1149,7 @@ BlockNode::display(Port<Octet>* port) const
 
 FunctionNode::FunctionNode(const SrcPos& srcpos,
                            const NodeList& params,
-                           AptNode* retType,
+                           const Type& retType,
                            AptNode* body)
   : AptNode(srcpos),
     fRetType(retType),
@@ -1151,7 +1163,7 @@ FunctionNode*
 FunctionNode::clone() const
 {
   return new FunctionNode(fSrcPos, fParams,
-                          nodeClone(fRetType), nodeClone(fBody));
+                          fRetType.clone(), nodeClone(fBody));
 }
 
 
@@ -1171,7 +1183,7 @@ FuncDefNode::FuncDefNode(const SrcPos& srcpos,
                          const String& sym,
                          unsigned int flags,
                          const NodeList& params,
-                         AptNode* retType,
+                         const Type& retType,
                          AptNode* body)
   : FunctionNode(srcpos, params, retType, body),
     fSym(sym),
@@ -1183,7 +1195,7 @@ FuncDefNode*
 FuncDefNode::clone() const
 {
   return new FuncDefNode(fSrcPos, fSym, fFlags, fParams,
-                         nodeClone(fRetType), nodeClone(fBody));
+                         fRetType.clone(), nodeClone(fBody));
 }
 
 
@@ -1200,6 +1212,7 @@ FuncDefNode::display(Port<Octet>* port) const
 
   displayOpenTagAttrs(port, tag, StrHelper(attrs.toString()));
   displayNodeList(port, "params", fParams);
+  displayType(port, "rettype", fRetType);
   displayNode(port, "body", fBody);
   displayCloseTag(port, tag);
 }
