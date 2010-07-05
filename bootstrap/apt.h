@@ -18,6 +18,7 @@
 #include "ptr.h"
 #include "numbers.h"
 #include "parsertypes.h"
+#include "type.h"
 
 namespace heather
 {
@@ -256,11 +257,12 @@ namespace heather
   {
   public:
     BindingNode(const SrcPos& srcpos,
-                const String& symbolName, AptNode* type, AptNode* initExpr);
+                const String& symbolName, const Type& type,
+                AptNode* initExpr);
 
   protected:
-    String fSymbolName;
-    Ptr<AptNode> fType;
+    String       fSymbolName;
+    Type         fType;
     Ptr<AptNode> fInitExpr;
   };
 
@@ -309,7 +311,7 @@ namespace heather
   public:
     VardefNode(const SrcPos& srcpos,
                const String& symbolName, VardefFlags flags,
-               AptNode* type, AptNode* initExpr);
+               const Type& type, AptNode* initExpr);
 
     virtual VardefNode* clone() const;
     virtual void display(Port<Octet>* port) const;
@@ -332,7 +334,7 @@ namespace heather
     ParamNode(const SrcPos& srcpos,
               const String& keyName,
               const String& symbolName, ParamFlags flags,
-              AptNode* type, AptNode* initExpr);
+              const Type& type, AptNode* initExpr);
 
     virtual ParamNode* clone() const;
     virtual void display(Port<Octet>* port) const;
@@ -542,17 +544,17 @@ namespace heather
   class FunctionNode : public AptNode
   {
   public:
-    FunctionNode(const SrcPos& srcpos,
+    FunctionNode(const SrcPos&   srcpos,
                  const NodeList& params,
-                 AptNode* retType,
-                 AptNode* body);
+                 const Type&     retType,
+                 AptNode*        body);
 
     virtual FunctionNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
   protected:
     NodeList     fParams;
-    Ptr<AptNode> fRetType;
+    Type         fRetType;
     Ptr<AptNode> fBody;
   };
 
@@ -565,12 +567,12 @@ namespace heather
   class FuncDefNode : public FunctionNode
   {
   public:
-    FuncDefNode(const SrcPos& srcpos,
-                const String& sym,
-                unsigned int flags,
+    FuncDefNode(const SrcPos&   srcpos,
+                const String&   sym,
+                unsigned int    flags,
                 const NodeList& params,
-                AptNode* retType,
-                AptNode* body);
+                const Type&     retType,
+                AptNode*        body);
 
     virtual FuncDefNode* clone() const;
     virtual void display(Port<Octet>* port) const;

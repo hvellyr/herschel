@@ -1,0 +1,7 @@
+def x : Int
+
+def x1 : Vector<Int>
+
+def x2 : Int[]
+
+def x3 : Vector<Int>[]

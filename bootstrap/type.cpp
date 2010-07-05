@@ -11,6 +11,8 @@
 #include <typeinfo>
 
 #include "type.h"
+#include "typectx.h"
+#include "strbuf.h"
 #include "unittests.h"
 
 using namespace heather;
@@ -62,6 +64,31 @@ namespace heather
   }
 
 
+  template<typename T>
+  T vectorClone(const T& v)
+  {
+    T result;
+    result.reserve(v.size());
+
+    for (size_t i = 0; i < v.size(); i++) {
+      result.push_back(v[i].clone());
+    }
+
+    return result;
+  }
+
+
+  template<typename T>
+  void replaceGenerics(std::vector<T>& v, const TypeCtx& typeMap)
+  {
+    for (size_t i = 0; i < v.size(); i++) {
+      T replacement = v[i].replaceGenerics(typeMap);
+      if (replacement.isDef())
+        v[i] = replacement;
+    }
+  }
+
+
   //--------------------------------------------------------------------------
 
   bool
@@ -87,8 +114,8 @@ namespace heather
       : fTypes(types)
     { }
 
-    virtual bool
-    isEqual(const TypeImpl* other) const
+
+    virtual bool isEqual(const TypeImpl* other) const
     {
       const GroupTypeImpl* o = dynamic_cast<const GroupTypeImpl*>(other);
 
@@ -97,8 +124,7 @@ namespace heather
     }
 
 
-    virtual bool
-    isCovariant(const TypeImpl* other) const
+    virtual bool isCovariant(const TypeImpl* other) const
     {
       const GroupTypeImpl* o = dynamic_cast<const GroupTypeImpl*>(other);
 
@@ -113,6 +139,13 @@ namespace heather
       return fTypes;
     }
 
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      heather::replaceGenerics(fTypes, typeMap);
+    }
+
+
   protected:
     TypeVector fTypes;
   };
@@ -126,6 +159,23 @@ namespace heather
     UnionTypeImpl(const TypeVector& types)
       : GroupTypeImpl(types)
     { }
+
+
+    virtual UnionTypeImpl* clone() const
+    {
+      return new UnionTypeImpl(vectorClone(fTypes));
+    }
+
+
+    virtual String toString() const
+    {
+      StringBuffer buf;
+      buf << "<ty:union>";
+      for (size_t i = 0; i < fTypes.size(); i++)
+        buf << fTypes[i].toString();
+      buf << "</ty:union>";
+      return buf.toString();
+    }
   };
 
 
@@ -137,6 +187,22 @@ namespace heather
     SeqTypeImpl(const TypeVector& types)
       : GroupTypeImpl(types)
     { }
+
+    virtual SeqTypeImpl* clone() const
+    {
+      return new SeqTypeImpl(vectorClone(fTypes));
+    }
+
+
+    virtual String toString() const
+    {
+      StringBuffer buf;
+      buf << "<ty:seq>";
+      for (size_t i = 0; i < fTypes.size(); i++)
+        buf << fTypes[i].toString();
+      buf << "</ty:seq>";
+      return buf.toString();
+    }
   };
 
 
@@ -150,28 +216,43 @@ namespace heather
     { }
 
 
-    virtual bool
-    isEqual(const TypeImpl* other) const
+    virtual FunctionTypeImpl* clone() const
+    {
+      return new FunctionTypeImpl(fSign.clone());
+    }
+
+
+    virtual bool isEqual(const TypeImpl* other) const
     {
       const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
       return (o != NULL && fSign == o->fSign);
     }
 
 
-    virtual bool
-    isCovariant(const TypeImpl* other) const
+    virtual bool isCovariant(const TypeImpl* other) const
     {
       const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
       return (o != NULL && fSign.isCovariant(o->fSign));
     }
 
 
-    const FunctionSignature&
-    functionSignature() const
+    const FunctionSignature& functionSignature() const
     {
       return fSign;
     }
 
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      fSign.replaceGenerics(typeMap);
+    }
+
+
+    virtual String toString() const
+    {
+      // TODO
+      return String();
+    }
 
   private:
     FunctionSignature fSign;
@@ -196,6 +277,16 @@ namespace heather
         fDefApplySign(defApplySign),
         fProtocol(protocol)
     { }
+
+
+    virtual TypeTypeImpl* clone() const
+    {
+      return new TypeTypeImpl(fName, fIsInstantiatable,
+                              vectorClone(fGenerics),
+                              fInherit.clone(),
+                              fDefApplySign.clone(),
+                              vectorClone(fProtocol));
+    }
 
 
     virtual bool
@@ -249,26 +340,47 @@ namespace heather
     }
 
 
-    const Type&
-    inherit() const
+    const String& name() const
+    {
+      return fName;
+    }
+
+
+    const Type& inherit() const
     {
       return fInherit;
     }
 
 
-    const FunctionSignature&
-    defaultApplySignature() const
+    const FunctionSignature& defaultApplySignature() const
     {
       return fDefApplySign;
     }
 
 
-    const FunctionSignatureVector&
-    protocol() const
+    const FunctionSignatureVector& protocol() const
     {
       return fProtocol;
     }
 
+
+    const TypeVector& generics() const
+    {
+      return fGenerics;
+    }
+
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      // TODO
+    }
+
+
+    virtual String toString() const
+    {
+      // TODO
+      return String();
+    }
 
   protected:
     String                  fName;
@@ -293,6 +405,12 @@ namespace heather
     { }
 
 
+    virtual AliasTypeImpl* clone() const
+    {
+      return new AliasTypeImpl(fName, vectorClone(fGenerics), fType.clone());
+    }
+
+
     virtual bool isEqual(const TypeImpl* other) const
     {
       const AliasTypeImpl* o = dynamic_cast<const AliasTypeImpl*>(other);
@@ -313,11 +431,35 @@ namespace heather
     }
 
 
+    const String& name() const
+    {
+      return fName;
+    }
+
+
     const Type& inherit() const
     {
       return fType;
     }
 
+
+    const TypeVector& generics() const
+    {
+      return fGenerics;
+    }
+
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      // TODO
+    }
+
+
+    virtual String toString() const
+    {
+      // TODO
+      return String();
+    }
 
   protected:
     String     fName;
@@ -339,8 +481,16 @@ namespace heather
         fConstraints(constraints)
     { }
 
-    virtual bool
-    isEqual(const TypeImpl* other) const
+
+    virtual TypeRefTypeImpl* clone() const
+    {
+      return new TypeRefTypeImpl(fName,
+                                 vectorClone(fGenerics),
+                                 vectorClone(fConstraints));
+    }
+
+
+    virtual bool isEqual(const TypeImpl* other) const
     {
       const TypeRefTypeImpl* o = dynamic_cast<const TypeRefTypeImpl*>(other);
 
@@ -351,8 +501,7 @@ namespace heather
     }
 
 
-    virtual bool
-    isCovariant(const TypeImpl* other) const
+    virtual bool isCovariant(const TypeImpl* other) const
     {
       const TypeRefTypeImpl* o = dynamic_cast<const TypeRefTypeImpl*>(other);
 
@@ -362,11 +511,54 @@ namespace heather
     }
 
 
+    const String& name() const
+    {
+      return fName;
+    }
+
+
     const TypeConstVector& constraints() const
     {
       return fConstraints;
     }
 
+
+    const TypeVector& generics() const
+    {
+      return fGenerics;
+    }
+
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      heather::replaceGenerics(fGenerics, typeMap);
+      heather::replaceGenerics(fConstraints, typeMap);
+    }
+
+
+    virtual String toString() const
+    {
+      StringBuffer buf;
+      buf << "<ty:ref nm='" << fName << "'>";
+      if (!fGenerics.empty()) {
+        buf << "<ty:gen>";
+        for (size_t i = 0; i < fGenerics.size(); i++)
+          buf << fGenerics[i].toString();
+        buf << "</ty:gen>";
+      }
+      if (!fConstraints.empty()) {
+        if (fConstraints.size() == 1)
+          buf << fConstraints[0].toString();
+        else {
+          buf << "<ty:consts>";
+          for (size_t i = 0; i < fConstraints.size(); i++)
+            buf << fConstraints[i].toString();
+          buf << "</ty:consts>";
+        }
+      }
+      buf << "</ty:ref>";
+      return buf.toString();
+    }
 
   protected:
     String          fName;
@@ -384,6 +576,12 @@ namespace heather
       : fBase(base),
         fSizeIndicator(sizeIndicator)
     { }
+
+
+    virtual ArrayTypeImpl* clone() const
+    {
+      return new ArrayTypeImpl(fBase.clone(), fSizeIndicator);
+    }
 
 
     virtual bool
@@ -420,6 +618,22 @@ namespace heather
       return fSizeIndicator;
     }
 
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      fBase = fBase.replaceGenerics(typeMap);
+    }
+
+
+    virtual String toString() const
+    {
+      StringBuffer buf;
+      buf << "<ty:array ind='" << fromInt(fSizeIndicator) << "'>"
+          << fBase.toString()
+          << "</ty:array>";
+      return buf.toString();
+    }
+
   protected:
     Type fBase;
     int  fSizeIndicator;
@@ -430,7 +644,7 @@ namespace heather
 //----------------------------------------------------------------------------
 
 Type::Type()
-  : fKind(kType_Any)
+  : fKind(kType_Undefined)
 { }
 
 
@@ -460,6 +674,16 @@ Type::newTypeRef(const String& name, const TypeVector& genericArgs,
                  const TypeConstVector& constraints)
 {
   return Type(kType_Ref, new TypeRefTypeImpl(name, genericArgs, constraints));
+}
+
+
+Type
+Type::newTypeRef(const String& name)
+{
+  TypeVector dummyGenerics;
+  TypeConstVector dummyConstraints;
+  return Type(kType_Ref, 
+              new TypeRefTypeImpl(name, dummyGenerics, dummyConstraints));
 }
 
 
@@ -691,6 +915,12 @@ Type::newSeq(const TypeVector& types)
 }
 
 
+Type
+Type::clone() const
+{
+  return Type(fKind, (fImpl != NULL ? fImpl->clone() : NULL));
+}
+
 
 bool
 Type::operator==(const Type& other) const
@@ -733,6 +963,13 @@ bool
 Type::isInvariant(const Type& other) const
 {
   return !isCovariant(other) && !isContravariant(other);
+}
+
+
+bool
+Type::isDef() const
+{
+  return fKind != kType_Undefined;
 }
 
 
@@ -790,6 +1027,82 @@ bool
 Type::isReal() const
 {
   return fKind == kType_Real;
+}
+
+
+bool
+Type::isRef() const
+{
+  return fKind == kType_Ref;
+}
+
+
+String
+Type::typeName() const
+{
+  switch (fKind) {
+  case kType_Undefined:
+    assert(0);
+
+  case kType_Ref:
+    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->name();
+
+  case kType_Any:
+    return String("Any");
+  case kType_Bool:
+    return String("Bool");
+  case kType_Char:
+    return String("Char");
+  case kType_Int:
+    return String("Int");
+  case kType_Keyword:
+    return String("Keyword");
+  case kType_Long:
+    return String("Long");
+  case kType_Octet:
+    return String("Octet");
+  case kType_Rational:
+    return String("Rational");
+  case kType_Real:
+    return String("Real");
+  case kType_Short:
+    return String("Short");
+  case kType_String:
+    return String("String");
+  case kType_ULong:
+    return String("ULong");
+  case kType_UShort:
+    return String("UShort");
+  case kType_UWord:
+    return String("UWord");
+  case kType_Word:
+    return String("Word");
+  case kType_Eof:
+    return String("Eof");
+  case kType_Nil:
+    return String("Nil");
+  case kType_Unspecified:
+    return String("Unspecified");
+
+  case kType_Array:
+    return arrayBaseType().typeName();
+  case kType_Class:
+  case kType_Type:
+    return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->name();
+  case kType_Alias:
+    return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->name();
+
+  case kType_Measure:
+    // return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name();
+  case kType_Enum:
+    // return dynamic_cast<const EnumTypeImpl*>(fImpl.obj())->name();
+  case kType_Union:
+  case kType_Sequence:
+  case kType_Function:
+    return String();
+  }
+
+  return String();
 }
 
 
@@ -892,6 +1205,27 @@ Type::arrayBaseType() const
 }
 
 
+Type
+Type::arrayRootType() const
+{
+  Type ty = *this;
+  while (ty.isArray())
+    ty = ty.arrayBaseType();
+  return ty;
+}
+
+
+Type
+Type::rebase(const Type& newBaseType) const
+{
+  if (arrayBaseType().isArray())
+    return Type::newArray(arrayBaseType().rebase(newBaseType),
+                          arraySizeIndicator());
+
+  return newBaseType;
+}
+
+
 int
 Type::arraySizeIndicator() const
 {
@@ -965,8 +1299,9 @@ Type::isMeasure() const
 bool
 Type::hasConstraints() const
 {
-  if (fKind == kType_Ref) {
-  }
+  if (fKind == kType_Ref)
+    return ( !dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())
+             ->constraints().empty() );
 
   return false;
 }
@@ -983,10 +1318,153 @@ Type::constraints() const
 }
 
 
+bool
+Type::hasGenerics() const
+{
+  return !generics().empty();
+}
 
 
+const TypeVector&
+Type::generics() const
+{
+  static const TypeVector sEmptyTypeVector;
+  switch (fKind) {
+  case kType_Undefined:
+  case kType_Any:
+  case kType_Bool:
+  case kType_Char:
+  case kType_Int:
+  case kType_Keyword:
+  case kType_Long:
+  case kType_Octet:
+  case kType_Rational:
+  case kType_Real:
+  case kType_Short:
+  case kType_String:
+  case kType_ULong:
+  case kType_UShort:
+  case kType_UWord:
+  case kType_Word:
+  case kType_Eof:
+  case kType_Nil:
+  case kType_Unspecified:
+  case kType_Array:
+  case kType_Function:
+  case kType_Measure:
+  case kType_Enum:
+  case kType_Union:
+  case kType_Sequence:
+    return sEmptyTypeVector;
+
+  case kType_Ref:
+    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->generics();
+  case kType_Class:
+  case kType_Type:
+    return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->generics();
+  case kType_Alias:
+    return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->generics();
+  }
+
+  return sEmptyTypeVector;
+}
 
 
+Type
+Type::replaceGenerics(const TypeCtx& typeMap) const
+{
+  Type clonedTy;
+  switch (fKind) {
+  case kType_Ref:
+    {
+      Type replacement = typeMap.lookupType(typeName());
+      if (replacement.isDef()) {
+        if (replacement.hasConstraints()) {
+          if (!constraints().empty())
+            throw TypeConstraintsConflictException(
+              *this,
+              String("type parameter constraints conflict "
+                     "with generics constraints"));
+          clonedTy = replacement;
+        }
+        else if (hasConstraints()) {
+          if (!replacement.isRef())
+            throw TypeConstraintsConflictException(
+              *this,
+              String("Constraints for non trivial type reference"));
+          clonedTy = Type::newTypeRef(replacement.typeName(),
+                                     replacement.generics(),
+                                     constraints());
+        }
+        else
+          clonedTy = replacement;
+      }
+      else
+        clonedTy = clone();
+
+      clonedTy.fImpl->replaceGenerics(typeMap);
+      return clonedTy;
+    }
+
+  case kType_Alias:
+  case kType_Class:
+  case kType_Type:
+  case kType_Array:
+  case kType_Union:
+  case kType_Sequence:
+    clonedTy = clone();
+    clonedTy.fImpl->replaceGenerics(typeMap);
+    return clonedTy;
+
+  default:
+    ;
+  }
+  return *this;
+}
+
+
+String
+Type::toString() const
+{
+  switch (fKind) {
+  case kType_Any:           return String("Any");
+  case kType_Bool:          return String("Bool");
+  case kType_Char:          return String("Char");
+  case kType_Int:           return String("Int");
+  case kType_Keyword:       return String("Keyword");
+  case kType_Long:          return String("Long");
+  case kType_Octet:         return String("Octet");
+  case kType_Rational:      return String("Rational");
+  case kType_Real:          return String("Real");
+  case kType_Short:         return String("Short");
+  case kType_String:        return String("String");
+  case kType_ULong:         return String("ULong");
+  case kType_UShort:        return String("UShort");
+  case kType_UWord:         return String("UWord");
+  case kType_Word:          return String("Word");
+  case kType_Eof:           return String("Eof");
+  case kType_Nil:           return String("Nil");
+  case kType_Unspecified:   return String("Unspecified");
+
+  case kType_Ref:
+  case kType_Array:
+  case kType_Function:
+  case kType_Measure:
+  case kType_Enum:
+  case kType_Class:
+  case kType_Type:
+  case kType_Alias:
+  case kType_Union:
+  case kType_Sequence:
+    return fImpl->toString();
+
+  case kType_Undefined:
+  default:
+    ;
+  }
+
+  return String("--default--");
+}
 
 
 //----------------------------------------------------------------------------
@@ -1003,6 +1481,19 @@ namespace heather
         fLeft(left),
         fRight(right)
     { }
+
+
+    virtual BaseTypeConstraintImpl* clone() const
+    {
+      return new LogicalConstraintImpl(fOp, fLeft.clone(), fRight.clone());
+    }
+
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      fLeft = fLeft.replaceGenerics(typeMap);
+      fRight = fRight.replaceGenerics(typeMap);
+    }
 
 
     virtual bool isEqual(const BaseTypeConstraintImpl* other) const
@@ -1023,13 +1514,6 @@ namespace heather
     }
 
 
-    virtual BaseTypeConstraintImpl* unshare()
-    {
-      // TODO
-      return this;
-    }
-
-
     const TypeConstraint& left() const
     {
       return fLeft;
@@ -1041,12 +1525,36 @@ namespace heather
       return fRight;
     }
 
+
+    const char* optostr(TypeConstOperator op) const
+    {
+      switch (op) {
+      case kConstOp_and:           return "and";
+      case kConstOp_or:            return "or";
+      default:
+        assert(0);
+      }
+      return "??";
+    }
+
+
+    virtual String toString() const
+    {
+      StringBuffer buf;
+      buf << "<ty:const k='" << optostr(fOp) << "'>"
+          << fLeft.toString() << fRight.toString()
+          << "</ty:const>";
+      return buf.toString();
+    }
+
   private:
     TypeConstOperator fOp;
     TypeConstraint    fLeft;
     TypeConstraint    fRight;
   };
 
+
+  //--------------------------------------------------------------------------
 
   class ValueConstraintImpl : public BaseTypeConstraintImpl
   {
@@ -1055,6 +1563,18 @@ namespace heather
       : fOp(op),
         fValue(value)
     { }
+
+
+    virtual BaseTypeConstraintImpl* clone() const
+    {
+      return const_cast<ValueConstraintImpl*>(this);
+    }
+
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      // NOP
+    }
 
 
     virtual bool isEqual(const BaseTypeConstraintImpl* other) const
@@ -1080,10 +1600,31 @@ namespace heather
     }
 
 
-    virtual BaseTypeConstraintImpl* unshare()
+    const char* optostr(TypeConstOperator op) const
     {
-      // TODO
-      return this;
+      switch (op) {
+      case kConstOp_and:           assert(0);
+      case kConstOp_or:            assert(0);
+      case kConstOp_equal:         return "eq";
+      case kConstOp_notEqual:      return "neq";
+      case kConstOp_less:          return "lt";
+      case kConstOp_lessEqual:     return "leq";
+      case kConstOp_greater:       return "gt";
+      case kConstOp_greaterEqual:  return "geq";
+      case kConstOp_in:            return "in";
+      case kConstOp_isa:           assert(0);
+      }
+      return "??";
+    }
+
+
+    virtual String toString() const
+    {
+      StringBuffer buf;
+      buf << "<ty:const k='" << optostr(fOp) << "'>"
+          << fValue.toString()
+          << "</ty:const>";
+      return buf.toString();
     }
 
   private:
@@ -1092,6 +1633,8 @@ namespace heather
   };
 
 
+  //--------------------------------------------------------------------------
+
   class TypeConstraintImpl : public BaseTypeConstraintImpl
   {
   public:
@@ -1099,6 +1642,18 @@ namespace heather
       : fOp(op),
         fType(type)
     { }
+
+
+    virtual BaseTypeConstraintImpl* clone() const
+    {
+      return new TypeConstraintImpl(fOp, fType.clone());
+    }
+
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      fType = fType.replaceGenerics(typeMap);
+    }
 
 
     virtual bool isEqual(const BaseTypeConstraintImpl* other) const
@@ -1117,18 +1672,20 @@ namespace heather
     }
 
 
-    virtual BaseTypeConstraintImpl* unshare()
-    {
-      // TODO
-      return this;
-    }
-
-
     const Type& type() const
     {
       return fType;
     }
 
+
+    virtual String toString() const
+    {
+      StringBuffer buf;
+      buf << "<ty:const k='isa'>"
+          << fType.toString()
+          << "</ty:const>";
+      return buf.toString();
+    }
 
   private:
     TypeConstOperator fOp;
@@ -1202,6 +1759,21 @@ bool
 TypeConstraint::operator!=(const TypeConstraint& other) const
 {
   return !(operator==(other));
+}
+
+
+TypeConstraint
+TypeConstraint::clone() const
+{
+  return TypeConstraint(fImpl->clone());
+}
+
+
+TypeConstraint
+TypeConstraint::replaceGenerics(const TypeCtx& typeMap)
+{
+  fImpl->replaceGenerics(typeMap);
+  return *this;
 }
 
 
@@ -1361,6 +1933,13 @@ TypeConstraint::typeConstraint() const
 }
 
 
+String
+TypeConstraint::toString() const
+{
+  return fImpl->toString();
+}
+
+
 //----------------------------------------------------------------------------
 
 FunctionParameter::FunctionParameter(ParameterKind kind, bool isSpec,
@@ -1433,6 +2012,22 @@ bool
 FunctionParameter::operator!=(const FunctionParameter& other) const
 {
   return !(operator==(other));
+}
+
+
+FunctionParameter
+FunctionParameter::clone() const
+{
+  return FunctionParameter(fKind, fIsSpecialized,
+                           fKey, fType.clone());
+}
+
+
+FunctionParameter
+FunctionParameter::replaceGenerics(const TypeCtx& typeMap)
+{
+  fType = fType.replaceGenerics(typeMap);
+  return *this;
 }
 
 
@@ -1561,11 +2156,18 @@ FunctionSignature::operator!=(const FunctionSignature& other) const
 }
 
 
+FunctionSignature
+FunctionSignature::clone() const
+{
+  return FunctionSignature(fIsGeneric, fName,
+                           fReturnType.clone(),
+                           heather::vectorClone(fParameters));
+}
+
+
 bool
 FunctionSignature::isCovariant(const FunctionSignature& other) const
 {
-  // TODO: is fIsGeneric relevant for co-variance testing?
-
   if (fReturnType.isCovariant(other.fReturnType)) {
     if (fParameters.size() == other.fParameters.size()) {
       for (size_t i = 0; i < fParameters.size(); i++) {
@@ -1591,6 +2193,15 @@ bool
 FunctionSignature::isInvariant(const FunctionSignature& other) const
 {
   return !isCovariant(other) && !isContravariant(other);
+}
+
+
+FunctionSignature
+FunctionSignature::replaceGenerics(const TypeCtx& typeMap)
+{
+  fReturnType = fReturnType.replaceGenerics(typeMap);
+  heather::replaceGenerics(fParameters, typeMap);
+  return *this;
 }
 
 
@@ -1635,6 +2246,7 @@ public:
 
   virtual void run()
   {
+    
   }
 };
 static TypeUnitTest typeUnitTest;
