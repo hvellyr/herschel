@@ -175,6 +175,7 @@ Type
 SecondPass::parseTypeSpec(const Token& expr)
 {
   if (expr == kSymbol) {
+    // TODO check whether symbol is actually a type param
     return Type::newTypeRef(expr.idValue());
   }
   else if (expr.isSeq()) {
@@ -182,6 +183,7 @@ SecondPass::parseTypeSpec(const Token& expr)
       if (expr[0] == kSymbol &&
           expr[1].isNested() && expr[1].leftToken() == kGenericOpen)
       {
+        // TODO check whether symbol is actually a type param
         // generic identifier with arguments
         TypeVector generics;
         TypeConstVector dummyConstraints;
@@ -209,10 +211,10 @@ SecondPass::parseTypeSpec(const Token& expr)
 
         return Type::newArray(baseType, sizeInd);
       }
-      else if (expr[0] == kQuote && expr[1] == kSymbol)
-      {
-        // quote symbol
-        // TODO
+      else if (expr[0] == kQuote) {
+        assert(expr[1] == kSymbol);
+        TypeConstVector dummyConstraints;
+        return Type::newTypeRef(expr[1].idValue(), true, dummyConstraints);
       }
       // else TODO
     }
@@ -222,6 +224,7 @@ SecondPass::parseTypeSpec(const Token& expr)
         TypeConstVector constraints;
 
         if (expr[1] == kIsa) {
+          // TODO check whether symbol is actually a type param
           Type rightType = parseTypeSpec(expr[2]);
           constraints.push_back(TypeConstraint::newType(kConstOp_isa,
                                                         rightType));
@@ -266,7 +269,6 @@ SecondPass::parseTypeSpec(const Token& expr)
       parseTypeVector(&tyvect, expr);
       return Type::newSeq(tyvect);
     }
-    // TODO
   }
   else if (expr.isNested() && expr.leftToken() == kUnionOpen) {
     if (expr.children().size() == 1) {
@@ -289,9 +291,11 @@ SecondPass::parseTypeSpec(const Token& expr)
 //------------------------------------------------------------------------------
 
 AptNode*
-SecondPass::parseTypeDef(const Token& expr, bool isType)
+SecondPass::parseTypeDef(const Token& expr, bool isClass)
 {
-  // TODO
+  // TODO during parsing of the type setup a set of all type parameters, this
+  // must be available during parsing of type of inheritance, slots and protocols to
+  // identify generic type parameters.
   return NULL;
 }
 
@@ -299,7 +303,9 @@ SecondPass::parseTypeDef(const Token& expr, bool isType)
 AptNode*
 SecondPass::parseAliasDef(const Token& expr)
 {
-  // TODO
+  // TODO during parsing of the type setup a set of all type parameters, this
+  // must be available during parsing of type of inheritance to identify
+  // generic type parameters.
   return NULL;
 }
 

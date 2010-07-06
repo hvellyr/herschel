@@ -121,6 +121,8 @@ namespace heather
     static Type newTypeRef(const String& name, const TypeVector& genericArgs,
                            const TypeConstVector& constraints);
     static Type newTypeRef(const String& name);
+    static Type newTypeRef(const String& name, bool isGeneric,
+                           const TypeConstVector& constraints);
 
     static Type newArray(const Type& base, int siceIndicator);
 
