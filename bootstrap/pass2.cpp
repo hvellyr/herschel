@@ -207,7 +207,6 @@ SecondPass::parseTypeSpec(const Token& expr)
           }
         }
 
-        // TODO sizeindicator
         return Type::newArray(baseType, sizeInd);
       }
       else if (expr[0] == kQuote && expr[1] == kSymbol)
