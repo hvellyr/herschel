@@ -5,3 +5,10 @@ def x1 : Vector<Int>
 def x2 : Int[]
 
 def x3 : Vector<Int>[]
+
+def x4 : Int[10]
+
+
+def config *slots* = 22
+
+def x5 : Int[*slots*]
