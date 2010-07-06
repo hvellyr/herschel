@@ -12,6 +12,7 @@
 #include "tokenizer.h"
 #include "pass2.h"
 #include "token.h"
+#include "tokeneval.h"
 #include "errcodes.h"
 #include "log.h"
 #include "parsertypes.h"
@@ -192,8 +193,22 @@ SecondPass::parseTypeSpec(const Token& expr)
       {
         // array
         Type baseType = parseTypeSpec(expr[0]);
+
+        int sizeInd = 0;
+        if (expr[1].count() > 0) {
+          TokenEvalContext ctx(fParser->configVarRegistry());
+          Token p = ctx.evalToken(expr[1][0]);
+          if (p.isInt()) {
+            sizeInd = p.intValue();
+          }
+          else {
+            fprintf(stderr, "ERROR: array size expression did not evaluate to integer. "
+                    "Treat it as 0\n");
+          }
+        }
+
         // TODO sizeindicator
-        return Type::newArray(baseType, 0);
+        return Type::newArray(baseType, sizeInd);
       }
       else if (expr[0] == kQuote && expr[1] == kSymbol)
       {
