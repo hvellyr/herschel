@@ -474,17 +474,20 @@ namespace heather
   {
   public:
     TypeRefTypeImpl(const String& name,
+                    bool isGeneric,
                     const TypeVector& genericArgs,
                     const TypeConstVector& constraints)
       : fName(name),
         fGenerics(genericArgs),
-        fConstraints(constraints)
+        fConstraints(constraints),
+        fIsGeneric(isGeneric)
     { }
 
 
     virtual TypeRefTypeImpl* clone() const
     {
       return new TypeRefTypeImpl(fName,
+                                 fIsGeneric,
                                  vectorClone(fGenerics),
                                  vectorClone(fConstraints));
     }
@@ -496,6 +499,7 @@ namespace heather
 
       return (o != NULL &&
               fName == o->fName &&
+              fIsGeneric == o->fIsGeneric &&
               heather::isEqual(fGenerics, o->fGenerics) &&
               heather::isEqual(fConstraints, o->fConstraints));
     }
@@ -523,6 +527,12 @@ namespace heather
     }
 
 
+    bool isGeneric() const
+    {
+      return fIsGeneric;
+    }
+
+
     const TypeVector& generics() const
     {
       return fGenerics;
@@ -539,7 +549,7 @@ namespace heather
     virtual String toString() const
     {
       StringBuffer buf;
-      buf << "<ty:ref nm='" << fName << "'>";
+      buf << "<ty:ref" << (fIsGeneric ? " gen='t'" : "") << " nm='" << fName << "'>";
       if (!fGenerics.empty()) {
         buf << "<ty:gen>";
         for (size_t i = 0; i < fGenerics.size(); i++)
@@ -564,6 +574,7 @@ namespace heather
     String          fName;
     TypeVector      fGenerics;
     TypeConstVector fConstraints;
+    bool            fIsGeneric;
   };
 
 
@@ -673,7 +684,8 @@ Type
 Type::newTypeRef(const String& name, const TypeVector& genericArgs,
                  const TypeConstVector& constraints)
 {
-  return Type(kType_Ref, new TypeRefTypeImpl(name, genericArgs, constraints));
+  return Type(kType_Ref, new TypeRefTypeImpl(name, false, genericArgs,
+                                             constraints));
 }
 
 
@@ -683,7 +695,19 @@ Type::newTypeRef(const String& name)
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
   return Type(kType_Ref, 
-              new TypeRefTypeImpl(name, dummyGenerics, dummyConstraints));
+              new TypeRefTypeImpl(name, false,
+                                  dummyGenerics, dummyConstraints));
+}
+
+
+Type
+Type::newTypeRef(const String& name, bool isGeneric,
+                 const TypeConstVector& constraints)
+{
+  TypeVector dummyGenerics;
+  return Type(kType_Ref, 
+              new TypeRefTypeImpl(name, isGeneric, dummyGenerics,
+                                  constraints));
 }
 
 
@@ -1376,7 +1400,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
   Type clonedTy;
   switch (fKind) {
   case kType_Ref:
-    {
+    if (dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->isGeneric()) {
       Type replacement = typeMap.lookupType(typeName());
       if (replacement.isDef()) {
         if (replacement.hasConstraints()) {
@@ -1401,10 +1425,12 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
       }
       else
         clonedTy = clone();
-
-      clonedTy.fImpl->replaceGenerics(typeMap);
-      return clonedTy;
     }
+    else
+      clonedTy = clone();
+
+    clonedTy.fImpl->replaceGenerics(typeMap);
+    return clonedTy;
 
   case kType_Alias:
   case kType_Class:
