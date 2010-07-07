@@ -37,11 +37,14 @@ const Token Parser::initToken      = Token(SrcPos(), kSymbol, "init");
 const Token Parser::innerToken     = Token(SrcPos(), kSymbol, "inner");
 const Token Parser::macroToken     = Token(SrcPos(), kSymbol, "macro");
 const Token Parser::measureToken   = Token(SrcPos(), kSymbol, "measure");
+const Token Parser::observableToken = Token(SrcPos(), kSymbol, "observable");
 const Token Parser::outerToken     = Token(SrcPos(), kSymbol, "outer");
 const Token Parser::publicToken    = Token(SrcPos(), kSymbol, "public");
+const Token Parser::readonlyToken  = Token(SrcPos(), kSymbol, "readonly");
 const Token Parser::signalToken    = Token(SrcPos(), kSymbol, "signal");
 const Token Parser::slotToken      = Token(SrcPos(), kSymbol, "slot");
 const Token Parser::syncToken      = Token(SrcPos(), kSymbol, "sync");
+const Token Parser::transientToken = Token(SrcPos(), kSymbol, "transient");
 const Token Parser::typeToken      = Token(SrcPos(), kSymbol, "type");
 const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
 

@@ -88,11 +88,14 @@ namespace heather
     static const Token innerToken;
     static const Token macroToken;
     static const Token measureToken;
+    static const Token observableToken;
     static const Token outerToken;
     static const Token publicToken;
+    static const Token readonlyToken;
     static const Token signalToken;
     static const Token slotToken;
     static const Token syncToken;
+    static const Token transientToken;
     static const Token typeToken;
     static const Token unitToken;
 

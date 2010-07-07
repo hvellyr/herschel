@@ -17,6 +17,8 @@
 #include "parser.h"
 #include "type.h"
 
+#include <set>
+#include <list>
 
 namespace heather
 {
@@ -89,11 +91,17 @@ namespace heather
                                     NodeList* stepExprs);
 
     void parseTypeVector(TypeVector* generics, const Token& expr);
+    void paramsNodeListToType(FunctionParamVector* funcParams,
+                              const NodeList& nl) const;
+    void protocolNodeListToType(FunctionSignatureVector* protoSignatures,
+                                const NodeList& nl) const;
+    FunctionSignature nodeToFunSignature(const FuncDefNode* node) const;
 
     //-------- data member
 
     Ptr<Parser> fParser;
     std::list<Ptr<AptNode> > fLastModules;
+    std::set<String>         fCurrentGenericTypes;
   };
 };
 

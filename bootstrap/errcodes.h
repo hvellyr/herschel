@@ -34,6 +34,8 @@ namespace heather
     E_StringExpected      = 0x1002,
     E_UnexpectedTopExpr   = 0x1003,
     E_ConstExprExpected   = 0x1004,
+    E_UnexpectedDefExpr   = 0x1005,
+    E_OnExprInType        = 0x1006,
 
     // notation errors
     E_UnexpectedChar      = 0x0100,
@@ -64,6 +66,8 @@ namespace heather
     E_MissingUnitTag      = 0x4026,
     E_MissingBaseType     = 0x4027,
     E_MissingUnitSign     = 0x4028,
+    E_UnknownSlotFlag     = 0x4029,
+    E_SuperGenericType    = 0x4030,
 
     // enums
     E_BadEnumItemList     = 0x4050,
