@@ -431,6 +431,8 @@ namespace heather
     FunctionParameter replaceGenerics(const TypeCtx& typeMap);
     bool isDef() const { return true; }
 
+    String toString() const;
+
   private:
     ParameterKind fKind;
     bool          fIsSpecialized;
@@ -486,6 +488,8 @@ namespace heather
     const FunctionParamVector& parameters() const;
 
     FunctionSignature replaceGenerics(const TypeCtx& typeMap);
+
+    String toString() const;
 
   private:
     bool                fIsGeneric;

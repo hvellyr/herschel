@@ -161,7 +161,7 @@ void
 SecondPass::parseTypeVector(TypeVector* generics, const Token& expr)
 {
   assert(expr.isNested());
-  
+
   for (size_t i = 0; i < expr.children().size(); i++) {
     if (expr[i] == kComma)
       continue;
@@ -175,16 +175,24 @@ Type
 SecondPass::parseTypeSpec(const Token& expr)
 {
   if (expr == kSymbol) {
-    // TODO check whether symbol is actually a type param
-    return Type::newTypeRef(expr.idValue());
+    if (fCurrentGenericTypes.find(expr.idValue()) != fCurrentGenericTypes.end()) {
+        TypeConstVector dummyConstraints;
+        return Type::newTypeRef(expr.idValue(), true, dummyConstraints);
+    }
+    else
+      return Type::newTypeRef(expr.idValue());
   }
   else if (expr.isSeq()) {
     if (expr.count() == 2) {
       if (expr[0] == kSymbol &&
           expr[1].isNested() && expr[1].leftToken() == kGenericOpen)
       {
-        // TODO check whether symbol is actually a type param
-        // generic identifier with arguments
+        // identifier with generic arguments
+        if (fCurrentGenericTypes.find(expr[0].idValue()) != fCurrentGenericTypes.end())
+          errorf(expr[0].srcpos(), E_SuperGenericType,
+                 "Type reference '%s' is super generic",
+                 (const char*)StrHelper(expr[0].idValue()));
+
         TypeVector generics;
         TypeConstVector dummyConstraints;
         parseTypeVector(&generics, expr[1]);
@@ -222,15 +230,19 @@ SecondPass::parseTypeSpec(const Token& expr)
       if (expr[0] == kSymbol) {
         TypeVector dummyGenerics;
         TypeConstVector constraints;
+        bool isGeneric = (fCurrentGenericTypes.find(expr[0].idValue())
+                          != fCurrentGenericTypes.end());
 
         if (expr[1] == kIsa) {
-          // TODO check whether symbol is actually a type param
           Type rightType = parseTypeSpec(expr[2]);
           constraints.push_back(TypeConstraint::newType(kConstOp_isa,
                                                         rightType));
 
-          return Type::newTypeRef(expr[0].idValue(),
-                                  dummyGenerics, constraints);
+          if (isGeneric)
+            return Type::newTypeRef(expr[0].idValue(), true, constraints);
+          else
+            return Type::newTypeRef(expr[0].idValue(),
+                                    dummyGenerics, constraints);
         }
 
         TypeConstOperator op = kConstOp_equal;
@@ -252,8 +264,11 @@ SecondPass::parseTypeSpec(const Token& expr)
           assert(0);
 
         constraints.push_back(TypeConstraint::newValue(op, expr[2]));
-        return Type::newTypeRef(expr[0].idValue(),
-                                dummyGenerics, constraints);
+        if (isGeneric)
+          return Type::newTypeRef(expr[0].idValue(), true, constraints);
+        else
+          return Type::newTypeRef(expr[0].idValue(),
+                                  dummyGenerics, constraints);
       }
       // else TODO
     }
@@ -282,7 +297,7 @@ SecondPass::parseTypeSpec(const Token& expr)
       return Type::newUnion(tyvect);
     }
   }
-  
+
   // TODO
   return Type();
 }
@@ -290,13 +305,224 @@ SecondPass::parseTypeSpec(const Token& expr)
 
 //------------------------------------------------------------------------------
 
+void
+SecondPass::paramsNodeListToType(FunctionParamVector* funcParams,
+                                 const NodeList& nl) const
+{
+  for (size_t i = 0; i < nl.size(); i++) {
+    const ParamNode* pnd = dynamic_cast<const ParamNode*>(nl[i].obj());
+    if (pnd != NULL) {
+      switch (pnd->flags()) {
+      case kPosArg:
+        funcParams->push_back(
+          FunctionParameter(FunctionParameter::kParamPos,
+                            false, String(), pnd->type()));
+        break;
+      case kSpecArg:
+        funcParams->push_back(
+          FunctionParameter(FunctionParameter::kParamPos,
+                            true, String(), pnd->type()));
+        break;
+      case kNamedArg:
+        funcParams->push_back(
+          FunctionParameter(FunctionParameter::kParamNamed,
+                            false, pnd->key(), pnd->type()));
+        break;
+      case kRestArg:
+        funcParams->push_back(
+          FunctionParameter(FunctionParameter::kParamRest,
+                            false, String(), pnd->type()));
+        break;
+      }
+    }
+  }
+}
+
+
+FunctionSignature
+SecondPass::nodeToFunSignature(const FuncDefNode* node) const
+{
+  FunctionParamVector funcParams;
+  paramsNodeListToType(&funcParams, node->params());
+
+  return FunctionSignature(node->isGeneric(),
+                           node->funcName(),
+                           node->retType(),
+                           funcParams);
+}
+
+
+void
+SecondPass::protocolNodeListToType(FunctionSignatureVector* protoSignatures,
+                                   const NodeList& nl) const
+{
+  for (size_t i = 0; i < nl.size(); i++) {
+    const BaseDefNode* defnd = dynamic_cast<const BaseDefNode*>(nl[i].obj());
+    if (defnd != NULL) {
+      const FuncDefNode* fnd = dynamic_cast<const FuncDefNode*>(defnd->defNode());
+      if (fnd != NULL)
+        protoSignatures->push_back(nodeToFunSignature(fnd));
+    }
+  }
+}
+
+
 AptNode*
 SecondPass::parseTypeDef(const Token& expr, bool isClass)
 {
   // TODO during parsing of the type setup a set of all type parameters, this
-  // must be available during parsing of type of inheritance, slots and protocols to
-  // identify generic type parameters.
-  return NULL;
+  // must be available during parsing of type of inheritance, slots and
+  // protocols to identify generic type parameters.
+
+  assert(fCurrentGenericTypes.empty());
+
+  assert(expr.isSeq());
+  assert(expr.count() >= 3);
+  assert(expr[2] == kSymbol);
+
+  size_t ofs = 2;
+
+  const TokenVector& seq = expr.children();
+  String typeName = seq[ofs].idValue();
+  ofs++;
+
+  TypeVector generics;
+  if (ofs < seq.size() &&
+      seq[ofs].isNested() && seq[ofs].leftToken() == kGenericOpen)
+  {
+    // type parameters
+    parseTypeVector(&generics, expr[ofs]);
+
+    for (size_t i = 0; i < generics.size(); i++) {
+      assert(generics[i].isRef());
+      fCurrentGenericTypes.insert(generics[i].typeName());
+    }
+    ofs++;
+  }
+
+  NodeList defaultApplyParams;
+  if (ofs < seq.size() &&
+      seq[ofs].isNested() && seq[ofs].leftToken() == kParanOpen)
+  {
+    // default apply signature
+    assert(isClass);
+
+    parseParameters(&defaultApplyParams, seq[ofs].children());
+    ofs++;
+  }
+
+  Type inheritsFrom;
+  if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
+    // inheritance type spec
+    inheritsFrom = parseTypeSpec(seq[ofs + 1]);
+    ofs += 2;
+  }
+
+  if (ofs < seq.size() &&
+      seq[ofs].isSeq() && seq[ofs].count() > 1 &&
+      seq[ofs][0] == kWhereId)
+  {
+    // TODO.  Don't parse the where clause into apt nodes here, but enrich a
+    // passed in context.  The 'Where' information is used to transform
+    // quoted types into full type spec later.
+    ofs++;
+  }
+
+  NodeList slotDefs;
+  NodeList reqProtocol;
+  NodeList onExprs;
+
+  if (ofs < seq.size() &&
+      seq[ofs].isNested() && seq[ofs].leftToken() == kBraceOpen)
+  {
+    const TokenVector& defs = seq[ofs].children();
+
+    for (size_t i = 0; i < defs.size(); i++) {
+      assert(defs[i].isSeq() && defs[i].count() > 1);
+      assert(defs[i][0] == kDefId || defs[i][0] == kOnId);
+
+      if (defs[i][0] == kDefId) {
+        if (defs[i][1] == Parser::slotToken) {
+          assert(isClass);
+
+          Ptr<AptNode> def = parseExpr(defs[i]);
+          if (def != NULL)
+            slotDefs.push_back(def);
+        }
+        else if (defs[i][1] == Parser::genericToken) {
+          Ptr<AptNode> def = parseExpr(defs[i]);
+          if (def != NULL)
+            reqProtocol.push_back(def);
+        }
+        else {
+          errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
+                 "Unexpected definition in type body");
+        }
+      }
+      else if (defs[i][0] == kOnId) {
+        if (!isClass) {
+          errorf(defs[i].srcpos(), E_OnExprInType,
+                 "Unexpected on expression in type body");
+        }
+        else {
+          Ptr<AptNode> on = parseExpr(defs[i]);
+          onExprs.push_back(on);
+        }
+      }
+      else {
+        errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
+               "Unexpected expression in type body");
+      }
+    }
+
+    ofs++;
+  }
+
+
+  FunctionSignatureVector protoSignatures;
+  protocolNodeListToType(&protoSignatures, reqProtocol);
+
+  Type classType;
+  if (isClass) {
+    FunctionParamVector funcParams;
+    paramsNodeListToType(&funcParams, defaultApplyParams);
+
+    TypeVector genGenerics;
+    TypeConstVector dummyConstraints;
+    for (size_t i = 0; i < generics.size(); i++) {
+      assert(generics[i].isRef());
+      genGenerics.push_back(Type::newTypeRef(generics[i].typeName(),
+                                             true,
+                                             dummyConstraints));
+    }
+
+    FunctionSignature defApplySign(true,
+                                   String("apply"),
+                                   Type::newTypeRef(typeName, genGenerics,
+                                                    dummyConstraints),
+                                   funcParams);
+
+    classType = Type::newClass(typeName, generics,
+                               inheritsFrom,
+                               defApplySign,
+                               protoSignatures);
+  }
+  else {
+    classType = Type::newType(typeName, generics,
+                              inheritsFrom,
+                              protoSignatures);
+  }
+
+  fCurrentGenericTypes.clear();
+
+  return new TypeNode(expr.srcpos(),
+                      typeName,
+                      isClass,
+                      classType,
+                      defaultApplyParams,
+                      slotDefs,
+                      reqProtocol,
+                      onExprs);
 }
 
 
@@ -313,8 +539,53 @@ SecondPass::parseAliasDef(const Token& expr)
 AptNode*
 SecondPass::parseSlotDef(const Token& expr)
 {
-  // TODO
-  return NULL;
+  assert(expr.isSeq());
+  assert(expr.count() >= 3);
+  assert(expr[1] == Parser::slotToken);
+
+  size_t ofs = 2;
+
+  const TokenVector& seq = expr.children();
+  String slotName = seq[ofs].idValue();
+  ofs++;
+
+  Type slotType;
+  if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
+    slotType = parseTypeSpec(seq[ofs + 1]);
+    ofs += 2;
+  }
+
+  Ptr<AptNode> initExpr;
+  if (ofs + 1 < seq.size() && seq[ofs] == kAssign) {
+    initExpr = parseExpr(seq[ofs + 1]);
+    ofs += 2;
+  }
+
+  unsigned int slotFlags = kSimpleSlot;
+  if (ofs < seq.size() && seq[ofs] == kSemicolon) {
+    ofs++;
+    for ( ; ofs < seq.size(); ofs++) {
+      if (seq[ofs] == kComma)
+        continue;
+      if (seq[ofs] == Parser::transientToken) {
+        slotFlags |= kTransientSlot;
+      }
+      else if (seq[ofs] == Parser::readonlyToken) {
+        slotFlags |= kReadonlySlot;
+      }
+      else if (seq[ofs] == Parser::observableToken) {
+        slotFlags |= kObservableSlot;
+      }
+      else {
+        assert(seq[ofs] == kSymbol);
+        errorf(seq[ofs].srcpos(), E_UnknownSlotFlag,
+               "Unknown slot flag '%s' ignored", (const char*)StrHelper(seq[ofs].toString()));
+      }
+    }
+  }
+
+  return new SlotdefNode(expr.srcpos(),
+                         slotName, slotFlags, slotType, initExpr);
 }
 
 
@@ -419,7 +690,7 @@ SecondPass::parseFunctionDef(const Token& expr)
     {
       // TODO.  Don't parse the where clause into apt nodes here, but enrich a
       // passed in context.  The 'Where' information is used to transform
-      // quoted types into full type spec.
+      // quoted types into full type spec later.
       ofs++;
     }
   }

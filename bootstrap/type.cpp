@@ -378,8 +378,31 @@ namespace heather
 
     virtual String toString() const
     {
-      // TODO
-      return String();
+      StringBuffer buf;
+      buf << "<ty:type nm='" << fName << "'"
+          << (fIsInstantiatable ? " inst='t'" : "") << ">";
+      if (fInherit.isDef())
+        buf << "<ty:isa>" << fInherit.toString() << "</ty:isa>";
+
+      if (!fGenerics.empty()) {
+        buf << "<ty:gen>";
+        for (size_t i = 0; i < fGenerics.size(); i++)
+          buf << fGenerics[i].toString();
+        buf << "</ty:gen>";
+      }
+
+      if (fIsInstantiatable)
+        buf << "<ty:apply>" << fDefApplySign.toString() << "</ty:apply>";
+
+      if (!fProtocol.empty()) {
+        buf << "<ty:proto>";
+        for (size_t i = 0; i < fProtocol.size(); i++)
+          buf << fProtocol[i].toString();
+        buf << "</ty:proto>";
+      }
+
+      buf << "</ty:type>";
+      return buf.toString();
     }
 
   protected:
@@ -2112,6 +2135,32 @@ FunctionParameter::type() const
 }
 
 
+String
+FunctionParameter::toString() const
+{
+  StringBuffer buf;
+
+  buf << "<ty:prm";
+
+  switch (fKind) {
+  case kParamPos:
+    buf << " is='pos'";
+    break;
+  case kParamNamed:
+    buf << " is='named' key='" << fKey << "'";
+    break;
+  case kParamRest:
+    buf << " is='rest'";
+    break;
+  }
+
+  buf << ( fIsSpecialized ? " spec='t'" : "" ) << ">";
+  buf << fType.toString();
+  buf << "</ty:prm>";
+  return buf.toString();
+}
+
+
 //----------------------------------------------------------------------------
 
 FunctionSignature::FunctionSignature()
@@ -2256,6 +2305,26 @@ const FunctionParamVector&
 FunctionSignature::parameters() const
 {
   return fParameters;
+}
+
+
+String
+FunctionSignature::toString() const
+{
+  StringBuffer buf;
+  buf << "<ty:fun nm='" << fName << "'"
+      << (fIsGeneric ? " gen='t'" : "") << ">";
+
+  if (!fParameters.empty()) {
+    buf << "<ty:prms>";
+    for (size_t i = 0; i < fParameters.size(); i++)
+      buf << fParameters[i].toString();
+    buf << "</ty:prms>";
+  }
+
+  buf << "<ty:ret>" << fReturnType.toString() << "</ty:ret>";
+  buf << "</ty:fun>";
+  return buf.toString();
 }
 
 

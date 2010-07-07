@@ -260,6 +260,9 @@ namespace heather
                 const String& symbolName, const Type& type,
                 AptNode* initExpr);
 
+    const String& symbolName() const;
+    const Type& type() const;
+
   protected:
     String       fSymbolName;
     Type         fType;
@@ -273,6 +276,8 @@ namespace heather
   {
   public:
     BaseDefNode(const SrcPos& srcpos, AptNode* defined);
+
+    AptNode* defNode() const;
 
   protected:
     Ptr<AptNode> fDefined;
@@ -338,10 +343,36 @@ namespace heather
 
     virtual ParamNode* clone() const;
     virtual void display(Port<Octet>* port) const;
+    
+    ParamFlags flags() const;
+    const String& key() const;
 
   private:
     String fKey;
     ParamFlags fFlags;
+  };
+
+
+  enum SlotFlags {
+    kSimpleSlot     = 0,
+    kTransientSlot  = 1 << 0,
+    kReadonlySlot   = 1 << 1,
+    kObservableSlot = 1 << 2
+  };
+
+  class SlotdefNode : public BindingNode
+  {
+  public:
+    SlotdefNode(const SrcPos& srcpos,
+                const String& symbolName,
+                unsigned int flags,
+                const Type& type, AptNode* initExpr);
+
+    virtual SlotdefNode* clone() const;
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    unsigned int fFlags;
   };
 
 
@@ -552,6 +583,9 @@ namespace heather
     virtual FunctionNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
+    const NodeList& params() const;
+    const Type& retType() const;
+
   protected:
     NodeList     fParams;
     Type         fRetType;
@@ -577,6 +611,7 @@ namespace heather
     virtual FuncDefNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
+    const String& funcName() const;
     bool isGeneric() const;
     bool isAbstract() const;
 
@@ -630,6 +665,33 @@ namespace heather
   private:
     Ptr<AptNode> fTest;
     Ptr<AptNode> fBody;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class TypeNode : public AptNode
+  {
+  public:
+    TypeNode(const SrcPos& srcpos, const String& typeName,
+             bool isClass,
+             const Type& isa,
+             const NodeList& params,
+             const NodeList& slots,
+             const NodeList& reqProtocol,
+             const NodeList& onExprs);
+
+    virtual TypeNode* clone() const;
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    String fTypeName;
+    bool   fIsClass;
+    NodeList fParams;
+    NodeList fSlots;
+    NodeList fReqProtocol;
+    NodeList fOnExprs;
+    Type     fIsa;
   };
 };
 
