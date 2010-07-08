@@ -276,6 +276,59 @@ Embedding C and C++ fragments.
   }
 
 
+Enum member notation
+
+  For an enumeration
+
+    def enum Colors
+    {
+      red,
+      green,
+      orange
+    }
+
+  we can't use the notation
+
+    Colors.red  Colors.green etc.
+
+  since we couldn't distinguish between function call notation and
+  enumeration unless we use symbol tables during parsing (which we want to
+  avoid).
+
+  Alternatives?
+
+    Colors::red    Colors::green
+    Colors'red     Colors'green
+    Colors/red     Colors/green      <- this invalidates / in identifiers!
+
+    red'Color      green'Color       <- Use 'red' and 'green' as constant
+                                        and type them (like units).
+
+  Cf.
+
+    12:Int                           <- explicit type a constant
+    12'px                            <- give a unit to a constant
+
+  The red'Color approach has some nice features.  First it reads much nicer
+  than in C, since it reads as "a red color", not the military style
+  "Color, red".  Compare the C and heather approach:
+
+    enum SlotType             def enum SlotType
+    {                         {
+      kAuto,                    auto,
+      kFixed,                   fixed,
+      kDynamic                  dynamic,
+    }                         }
+
+    SlotType::kAuto           auto'SlotType
+    SlotType::kFixed          fixed'SlotType
+
+  Second we can make the slot items first class.  So, if there's no name
+  conflict, you simply can say "auto" or "dynamic".  And only if there's
+  some other "auto" or "dynamic" names in a given scope, type them
+  "auto'SlotType".
+
+
 
 Used character in the Ascii table:
 
