@@ -370,14 +370,11 @@ SecondPass::protocolNodeListToType(FunctionSignatureVector* protoSignatures,
 AptNode*
 SecondPass::parseTypeDef(const Token& expr, bool isClass)
 {
-  // TODO during parsing of the type setup a set of all type parameters, this
-  // must be available during parsing of type of inheritance, slots and
-  // protocols to identify generic type parameters.
-
   assert(fCurrentGenericTypes.empty());
 
   assert(expr.isSeq());
   assert(expr.count() >= 3);
+  assert(expr[1] == Parser::typeToken || expr[1] == Parser::classToken);
   assert(expr[2] == kSymbol);
 
   size_t ofs = 2;
@@ -529,9 +526,46 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
 AptNode*
 SecondPass::parseAliasDef(const Token& expr)
 {
-  // TODO during parsing of the type setup a set of all type parameters, this
-  // must be available during parsing of type of inheritance to identify
-  // generic type parameters.
+  assert(fCurrentGenericTypes.empty());
+
+  assert(expr.isSeq());
+  assert(expr.count() > 4);
+  assert(expr[1] == Parser::aliasToken);
+  assert(expr[2] == kSymbol);
+
+  size_t ofs = 2;
+
+  const TokenVector& seq = expr.children();
+  String aliasName = seq[ofs].idValue();
+  ofs++;
+
+  TypeVector generics;
+  if (ofs < seq.size() &&
+      seq[ofs].isNested() && seq[ofs].leftToken() == kGenericOpen)
+  {
+    // type parameters
+    parseTypeVector(&generics, expr[ofs]);
+
+    for (size_t i = 0; i < generics.size(); i++) {
+      assert(generics[i].isRef());
+      fCurrentGenericTypes.insert(generics[i].typeName());
+    }
+    ofs++;
+  }
+
+  Type referedType;
+  if (ofs + 1 < seq.size() && seq[ofs] == kAssign) {
+    referedType = parseTypeSpec(seq[ofs + 1]);
+    ofs += 2;
+  }
+
+  Type aliasType = Type::newAlias(aliasName, generics, referedType);
+
+  // TODO
+  // typectx.registerType(aliasName, aliasType);
+
+  fCurrentGenericTypes.clear();
+
   return NULL;
 }
 
