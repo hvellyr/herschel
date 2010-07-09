@@ -113,72 +113,6 @@ Visibility, export
       export (init) as final
 
 
-Slot definitions
-
-  we need
-
-  - control accessor/mutator function generation
-  - slots should be annotatable ('transient')
-  - why is a slot defined without `def' keyword?
-
-
-  Annotating style:
-
-    def slot name : String = _name ; transient, readonly
-
-  Modifier style:
-
-    def slot transient readonly name : String = _name
-
-
-  def class PairIterator<T, Accessor<T> >(_root, acc)             [1]
-      : Iterator<T>
-  {
-    public slot current : Pair<T, _> = _root
-    private slot accessor : Accessor = acc
-    transient readonly slot maxcount : Int = 4000 : Int
-  }
-
-
-  def class PairIterator<T, Accessor<T> >(_root, acc)             [2]
-      : Iterator<T>
-  {
-    slot public current : Pair<T, _> = _root
-    slot private accessor : Accessor = acc
-    slot transient readonly maxcount : Int = 4000 : Int
-  }
-
-
-  def class PairIterator<T, Accessor<T> >(_root, acc)             [3]
-      : Iterator<T>
-  {
-    def slot current : Pair<T, _> = _root ; public
-    def slot accessor : Accessor = acc ; private
-    def slot maxcount : Int = 4000 : Int ; transient, readonly
-  }
-
-
-  def class PairIterator<T, Accessor<T> >(_root, acc)             [4]
-      : Iterator<T>
-  {
-    slot current : Pair<T, _> = _root ; public
-    slot accessor : Accessor = acc ; private
-    slot maxcount : Int = 4000 : Int ; transient, readonly
-  }
-
-
-  def class PairIterator<T, Accessor<T> >(_root, acc)
-      : Iterator<T>
-  {
-    slot current : Pair<T, _> = _root :: public                   [5]
-    slot accessor : Accessor = acc :: private
-    slot maxcount : Int = 4000 : Int :: transient, readonly
-  }
-
-  -> we go for the style [3]
-
-
-
 
 
 -- Visibility and finalization for modules.
@@ -245,13 +179,19 @@ Lazy evaluation
                               .append("(").append(exc.details).append(")")
                               .to-string)
 
-  can be compile as:
+  can be compiled as:
 
-    log(#debug, function() : String {
-                  StringBuffer().append("error ")
-                                .append(exc.to-string)
-                                .append("(").append(exc.details).append(")")
-                                .to-string
+    log(#debug, {
+                  let msg = nil
+
+                  function() : String {
+                    if (msg.nil?) 
+                      msg = StringBuffer().append("error ")
+                                          .append(exc.to-string)
+                                          .append("(").append(exc.details).append(")")
+                                          .to-string
+                    msg
+                  }
                 })
 
   The log-implementation would look like:

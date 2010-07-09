@@ -3605,7 +3605,7 @@ def app|main()
 @chapter Macros
 
 @menu
-* Macro Intro::                 Introduction
+* Macro Intro::                 Macro Introduction
 * Types of Macros::             Types of Macros
 * Macro Syntax::                Defining macros
 * Pattern variables::           Pattern variables
@@ -3615,7 +3615,7 @@ def app|main()
 
 @c --------------------------------------------------------------------
 @node Macro Intro, Types of Macros, Macros, Macros
-@section Introduction
+@section Macro Introduction
 
 Macros allow to define new syntax or logical expressions as extensions
 to the core language.  Macros are transformations of one construct by
