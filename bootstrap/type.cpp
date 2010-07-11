@@ -475,6 +475,7 @@ namespace heather
     virtual void replaceGenerics(const TypeCtx& typeMap)
     {
       // TODO
+      assert(0);
     }
 
 
