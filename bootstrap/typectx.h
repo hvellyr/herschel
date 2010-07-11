@@ -46,6 +46,8 @@ namespace heather
     TypeCtx();
     TypeCtx(TypeCtx* parent);
 
+    TypeCtx* parent() const;
+
     void registerType(const String& name, const Type& type);
 
     bool hasType(const String& name) const;
@@ -75,6 +77,25 @@ namespace heather
     
     TypeMap      fMap;
     Ptr<TypeCtx> fParent;
+  };
+
+
+  class TypeCtxHelper
+  {
+  public:
+    TypeCtxHelper(Ptr<TypeCtx>& typeCtx)
+      : fTypeCtxLoc(typeCtx)
+    {
+      fTypeCtxLoc = new TypeCtx(fTypeCtxLoc);
+    }
+
+    ~TypeCtxHelper()
+    {
+      fTypeCtxLoc = fTypeCtxLoc->parent();
+    }
+
+  private:
+    Ptr<TypeCtx>& fTypeCtxLoc;
   };
 };                              // namespace
 

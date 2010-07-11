@@ -27,11 +27,18 @@ TypeCtx::TypeCtx(TypeCtx* parent)
 }
 
 
+TypeCtx*
+TypeCtx::parent() const
+{
+  return fParent;
+}
+
+
 void
 TypeCtx::registerType(const String& name, const Type& type)
 {
   assert(fMap.find(name) == fMap.end());
-  assert(!type.isRef());
+  // assert(!type.isRef());
   assert(!type.isArray());
   assert(type.isDef());
 
@@ -64,12 +71,19 @@ Type
 TypeCtx::normalizeType(const Type& type, const Type& refType) const
 {
   Type baseType;
+  Type returnType = type;
+
   if (type.isArray()) {
     baseType = type.arrayRootType();
   }
   else if (type.isRef()) {
     baseType = type;
   }
+  else if (type.isAlias()) {
+    baseType = type.aliasReplaces();
+    returnType = baseType;
+  }
+
   assert(baseType.isDef());
 
   if (!type.generics().size() == refType.generics().size())
@@ -80,7 +94,6 @@ TypeCtx::normalizeType(const Type& type, const Type& refType) const
                                   << " type arguments, found "
                                   << fromInt(refType.generics().size())).toString());
 
-  Type returnType = type;
   if (type.hasGenerics()) {
     TypeCtx localCtx;
     for (size_t i = 0; i < type.generics().size(); i++) {
