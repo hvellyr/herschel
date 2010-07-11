@@ -52,6 +52,7 @@ namespace heather
     AptNode* parseClosure(const Token& expr);
     AptNode* parseBinary(const Token& expr);
     AptNode* parseFunCall(const Token& expr);
+    AptNode* parseTypeExpr(const Token& expr);
 
     AptNode* parseTokenVector(const TokenVector& seq);
     void parseParameters(NodeList* parameters, const TokenVector& seq);
@@ -99,6 +100,11 @@ namespace heather
     void protocolNodeListToType(FunctionSignatureVector* protoSignatures,
                                 const NodeList& nl) const;
     FunctionSignature nodeToFunSignature(const FuncDefNode* node) const;
+
+    AptNode* parseIntNumber(const Token& expr);
+    AptNode* parseRationalNumber(const Token& expr);
+    AptNode* parseRealNumber(const Token& expr);
+
 
     //-------- data member
 

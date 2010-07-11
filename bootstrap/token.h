@@ -262,6 +262,9 @@ namespace heather
     bool isSymbol() const;
     bool isPunct() const;
     bool isSet() const;
+    bool isOperator() const;
+    bool isNumber() const;
+
 
     bool isImaginary() const;
     Token& setIsImaginary(bool value);

@@ -176,7 +176,7 @@ Type
 SecondPass::parseTypeSpec(const Token& expr)
 {
   Type ty = parseTypeSpecImpl(expr);
-  
+
   if (ty.isRef()) {
     Type referedType = fTypeCtx->lookupType(ty.typeName());
     if (referedType.isDef() && referedType.isAlias())
@@ -1200,7 +1200,7 @@ SecondPass::transformRangeForClause(const Token& token,
   RangeForClauseCountDir direct = kRangeUnknown;
   if (token[2].count() == 3) {
     direct = kRangeUpwards;
-    stepValueNode = new IntNode(srcpos, 1, false);
+    stepValueNode = new IntNode(srcpos, 1, false, Type::newInt());
   }
   else if (token[2].count() == 5) {
     Token byToken = token[2][4];
@@ -1583,6 +1583,16 @@ SecondPass::parseMatch(const Token& expr)
 //------------------------------------------------------------------------------
 
 AptNode*
+SecondPass::parseTypeExpr(const Token& expr)
+{
+  // TODO:   Vector<Int>
+  return NULL;
+}
+
+
+//------------------------------------------------------------------------------
+
+AptNode*
 SecondPass::parseTokenVector(const TokenVector& seq)
 {
   if (!seq.empty())
@@ -1634,8 +1644,26 @@ SecondPass::parseSeq(const Token& expr)
     if (expr[1].isNested()) {
       if (expr[1].leftToken() == kParanOpen)
         return parseFunCall(expr);
+      else if (expr[1].leftToken() == kGenericOpen)
+        return parseTypeExpr(expr);
       else
         assert(0);              // TODO generic open etc.
+    }
+  }
+  else if (expr.count() == 3) {
+    if (expr[0].isNumber() && expr[1] == kColon) {
+      switch (expr[0].tokenType()) {
+      case kInt:
+        return parseIntNumber(expr);
+      case kRational:
+        return parseRationalNumber(expr);
+      case kReal:
+        return parseRealNumber(expr);
+      default:
+        printf("%d\n", expr.tokenType());
+        assert(0);
+        return NULL;
+      }
     }
   }
 
@@ -1775,6 +1803,75 @@ SecondPass::parseNested(const Token& expr)
 
 
 AptNode*
+SecondPass::parseIntNumber(const Token& expr)
+{
+  if (expr.tokenType() == kInt) {
+    return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
+                       Type::newInt());
+  }
+  else if (expr.isSeq() && expr.count() == 3 &&
+           expr[0].isNumber() &&
+           expr[1] == kColon)
+  {
+    Type type = parseTypeSpec(expr[2]);
+
+    return new IntNode(expr.srcpos(), expr[0].intValue(),
+                       expr[0].isImaginary(),
+                       type);
+  }
+
+  assert(0);
+  return NULL;
+}
+
+
+AptNode*
+SecondPass::parseRationalNumber(const Token& expr)
+{
+  if (expr.tokenType() == kRational) {
+    return new RationalNode(expr.srcpos(), expr.rationalValue(),
+                            expr.isImaginary(), Type::newRational());
+  }
+  else if (expr.isSeq() && expr.count() == 3 &&
+           expr[0].isNumber() &&
+           expr[1] == kColon)
+  {
+    Type type = parseTypeSpec(expr[2]);
+
+    return new RationalNode(expr.srcpos(), expr[0].rationalValue(),
+                            expr[0].isImaginary(),
+                            type);
+  }
+
+  assert(0);
+  return NULL;
+}
+
+
+AptNode*
+SecondPass::parseRealNumber(const Token& expr)
+{
+  if (expr.tokenType() == kReal) {
+    return new RealNode(expr.srcpos(), expr.realValue(),
+                        expr.isImaginary(), Type::newReal());
+  }
+  else if (expr.isSeq() && expr.count() == 3 &&
+           expr[0].isNumber() &&
+           expr[1] == kColon)
+  {
+    Type type = parseTypeSpec(expr[2]);
+
+    return new RealNode(expr.srcpos(), expr[0].realValue(),
+                        expr[0].isImaginary(),
+                        type);
+  }
+
+  assert(0);
+  return NULL;
+}
+
+
+AptNode*
 SecondPass::parseExpr(const Token& expr)
 {
   switch (expr.type()) {
@@ -1786,11 +1883,11 @@ SecondPass::parseExpr(const Token& expr)
     case kBool:
       return new BoolNode(expr.srcpos(), expr.boolValue());
     case kInt:
-      return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary());
+      return parseIntNumber(expr);
     case kRational:
-      return new RationalNode(expr.srcpos(), expr.rationalValue(), expr.isImaginary());
+      return parseRationalNumber(expr);
     case kReal:
-      return new RealNode(expr.srcpos(), expr.realValue(), expr.isImaginary());
+      return parseRealNumber(expr);
     case kChar:
       return new CharNode(expr.srcpos(), expr.charValue());
     case kString:
