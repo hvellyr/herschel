@@ -285,8 +285,9 @@ SymbolNode::clone() const
 
 //----------------------------------------------------------------------------
 
-IntNode::IntNode(const SrcPos& srcpos, int value, bool isImaginary)
-  : NumberNode<int>(srcpos, value, isImaginary)
+IntNode::IntNode(const SrcPos& srcpos, int value, bool isImaginary,
+                 const Type& type)
+  : NumberNode<int>(srcpos, value, isImaginary, type)
 {
 }
 
@@ -294,24 +295,27 @@ IntNode::IntNode(const SrcPos& srcpos, int value, bool isImaginary)
 void
 IntNode::display(Port<Octet>* port) const
 {
+  StringBuffer attrs;
+  attrs << "ty='" << fType.typeName() << "'";
   if (fIsImaginary)
-    displayTagAttr(port, "int", "imag='true'", String() + fValue);
-  else
-    displayTag(port, "int", String() + fValue);
+    attrs << " imag='t'";
+
+  displayTagAttr(port, "int", StrHelper(attrs.toString()), String() + fValue);
 }
 
 
 IntNode*
 IntNode::clone() const
 {
-  return new IntNode(fSrcPos, fValue, fIsImaginary);
+  return new IntNode(fSrcPos, fValue, fIsImaginary, fType.clone());
 }
 
 
 //----------------------------------------------------------------------------
 
-RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary)
-  : NumberNode<double>(srcpos, value, isImaginary)
+RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary,
+                   const Type& type)
+  : NumberNode<double>(srcpos, value, isImaginary, type)
 {
 }
 
@@ -319,25 +323,28 @@ RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary)
 void
 RealNode::display(Port<Octet>* port) const
 {
+  StringBuffer attrs;
+  attrs << "ty='" << fType.typeName() << "'";
   if (fIsImaginary)
-    displayTagAttr(port, "real", "imag='true'", String() + fValue);
-  else
-    displayTag(port, "real", String() + fValue);
+    attrs << " imag='t'";
+
+  displayTagAttr(port, "real", StrHelper(attrs.toString()), String() + fValue);
 }
 
 
 RealNode*
 RealNode::clone() const
 {
-  return new RealNode(fSrcPos, fValue, fIsImaginary);
+  return new RealNode(fSrcPos, fValue, fIsImaginary, fType.clone());
 }
 
 
 //----------------------------------------------------------------------------
 
 RationalNode::RationalNode(const SrcPos& srcpos,
-                           const Rational& value, bool isImaginary)
-  : NumberNode<Rational>(srcpos, value, isImaginary)
+                           const Rational& value, bool isImaginary,
+                           const Type& type)
+  : NumberNode<Rational>(srcpos, value, isImaginary, type)
 {
 }
 
@@ -345,18 +352,20 @@ RationalNode::RationalNode(const SrcPos& srcpos,
 void
 RationalNode::display(Port<Octet>* port) const
 {
-  String val = String() + fValue.numerator() + "/" + fValue.denominator();
+  StringBuffer attrs;
+  attrs << "ty='" << fType.typeName() << "'";
   if (fIsImaginary)
-    displayTagAttr(port, "rational", "imag='true'", val);
-  else
-    displayTag(port, "rational", val);
+    attrs << " imag='t'";
+
+  String val = String() + fValue.numerator() + "/" + fValue.denominator();
+  displayTagAttr(port, "real", StrHelper(attrs.toString()), val);
 }
 
 
 RationalNode*
 RationalNode::clone() const
 {
-  return new RationalNode(fSrcPos, fValue, fIsImaginary);
+  return new RationalNode(fSrcPos, fValue, fIsImaginary, fType.clone());
 }
 
 
@@ -866,7 +875,9 @@ BinaryNode::BinaryNode(const SrcPos& srcpos,
     fLeft(left),
     fRight(right),
     fOp(op)
-{ }
+{
+  assert(fOp != kOpInvalid);
+}
 
 
 BinaryNode*

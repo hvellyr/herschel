@@ -936,6 +936,14 @@ Token::isLit() const
 
 
 bool
+Token::isNumber() const
+{
+  return ( (fType == kInt || fType == kReal || fType == kRational)
+           && fImpl != NULL );
+}
+
+
+bool
 Token::isId() const
 {
   return type() == kId;
@@ -953,6 +961,13 @@ bool
 Token::isPunct() const
 {
   return type() == kPunct;
+}
+
+
+bool
+Token::isOperator() const
+{
+  return (heather::tokenTypeToOperator(fType) != kOpInvalid);
 }
 
 
@@ -1220,7 +1235,7 @@ Token::isBinarySeq(TokenType op) const
 bool
 Token::isBinarySeq() const
 {
-  return (isSeq() && children().size() == 3 && (*this)[1].isPunct());
+  return (isSeq() && children().size() == 3 && (*this)[1].isOperator());
 }
 
 
@@ -1228,7 +1243,7 @@ bool
 Token::isTernarySeq() const
 {
   if (isSeq() && children().size() == 5) {
-    return ( ((*this)[1].isPunct() && (*this)[3].isPunct()) ||
+    return ( ((*this)[1].isPunct() && (*this)[3].isOperator()) ||
              ( (*this)[1] == kThenId && (*this)[3] == kWhileId ) );
   }
   return false;
