@@ -2744,14 +2744,7 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
 {
   assert(fToken == Parser::aliasToken);
 
-  Token tagToken;
-  if (isLocal) {
-    errorf(fToken.srcpos(), E_LocalAliasDef,
-           "inner alias definitions are not supported.");
-    return scanUntilTopExprAndResume();
-  }
-  else
-    tagToken = fToken;
+  Token tagToken = fToken;
   nextToken();
 
   if (fToken != kSymbol) {

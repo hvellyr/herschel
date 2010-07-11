@@ -16,6 +16,7 @@
 #include "token.h"
 #include "parser.h"
 #include "type.h"
+#include "typectx.h"
 
 #include <set>
 #include <list>
@@ -76,6 +77,8 @@ namespace heather
 
 
     Type parseTypeSpec(const Token& expr);
+    Type parseTypeSpecImpl(const Token& expr);
+
 
 
     void transformCollForClause(const Token& token,
@@ -102,6 +105,8 @@ namespace heather
     Ptr<Parser> fParser;
     std::list<Ptr<AptNode> > fLastModules;
     std::set<String>         fCurrentGenericTypes;
+
+    Ptr<TypeCtx>             fTypeCtx;
   };
 };
 

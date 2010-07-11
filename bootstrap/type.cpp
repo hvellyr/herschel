@@ -250,8 +250,7 @@ namespace heather
 
     virtual String toString() const
     {
-      // TODO
-      return String();
+      return fSign.toString();
     }
 
   private:
@@ -373,6 +372,7 @@ namespace heather
     virtual void replaceGenerics(const TypeCtx& typeMap)
     {
       // TODO
+      assert(0);
     }
 
 
@@ -480,8 +480,21 @@ namespace heather
 
     virtual String toString() const
     {
-      // TODO
-      return String();
+      StringBuffer buf;
+      buf << "<ty:alias nm='" << fName << "'>";
+
+      if (!fGenerics.empty()) {
+        buf << "<ty:gen>";
+        for (size_t i = 0; i < fGenerics.size(); i++)
+          buf << fGenerics[i].toString();
+        buf << "</ty:gen>";
+      }
+
+      if (fType.isDef())
+        buf << "<ty:isa>" << fType.toString() << "</ty:isa>";
+
+      buf << "</ty:alias>";
+      return buf.toString();
     }
 
   protected:
@@ -1215,7 +1228,7 @@ Type::isAlias() const
 
 
 const Type&
-Type::aliasInheritance() const
+Type::aliasReplaces() const
 {
   assert(isAlias());
   return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->inherit();
@@ -1461,6 +1474,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
   case kType_Array:
   case kType_Union:
   case kType_Sequence:
+  case kType_Function:
     clonedTy = clone();
     clonedTy.fImpl->replaceGenerics(typeMap);
     return clonedTy;

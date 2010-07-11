@@ -57,7 +57,6 @@ namespace heather
 
     // typedef parsing
     E_MissingType         = 0x4013,
-    E_LocalAliasDef       = 0x4020,
     E_LocalTypeDef        = 0x4021,
     E_CtorNotInTypes      = 0x4022,
     E_NestedTypeDef       = 0x4023,

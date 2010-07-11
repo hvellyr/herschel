@@ -23,7 +23,8 @@ using namespace heather;
 //----------------------------------------------------------------------------
 
 SecondPass::SecondPass(Parser* parser)
-  : fParser(parser)
+  : fParser(parser),
+    fTypeCtx(new TypeCtx)
 { }
 
 
@@ -174,6 +175,21 @@ SecondPass::parseTypeVector(TypeVector* generics, const Token& expr)
 Type
 SecondPass::parseTypeSpec(const Token& expr)
 {
+  Type ty = parseTypeSpecImpl(expr);
+  
+  if (ty.isRef()) {
+    Type referedType = fTypeCtx->lookupType(ty.typeName());
+    if (referedType.isDef() && referedType.isAlias())
+      return fTypeCtx->normalizeType(referedType, ty);
+  }
+
+  return ty;
+}
+
+
+Type
+SecondPass::parseTypeSpecImpl(const Token& expr)
+{
   if (expr == kSymbol) {
     if (fCurrentGenericTypes.find(expr.idValue()) != fCurrentGenericTypes.end()) {
         TypeConstVector dummyConstraints;
@@ -197,6 +213,18 @@ SecondPass::parseTypeSpec(const Token& expr)
         TypeConstVector dummyConstraints;
         parseTypeVector(&generics, expr[1]);
         return Type::newTypeRef(expr[0].idValue(), generics, dummyConstraints);
+      }
+      else if (expr[0] == kFUNCTIONId &&
+               expr[1].isNested() && expr[1].leftToken() == kParanOpen)
+      {
+        NodeList defaultApplyParams;
+        parseParameters(&defaultApplyParams, expr[1].children());
+
+        FunctionParamVector funcParams;
+        paramsNodeListToType(&funcParams, defaultApplyParams);
+
+        FunctionSignature sign(false, String(), Type(), funcParams);
+        return Type::newFunction(sign);
       }
       else if (expr.count() == 2 &&
                expr[1].isNested() && expr[1].leftToken() == kBracketOpen)
@@ -224,7 +252,8 @@ SecondPass::parseTypeSpec(const Token& expr)
         TypeConstVector dummyConstraints;
         return Type::newTypeRef(expr[1].idValue(), true, dummyConstraints);
       }
-      // else TODO
+      else
+        assert(0);
     }
     else if (expr.count() == 3) {
       if (expr[0] == kSymbol) {
@@ -270,8 +299,29 @@ SecondPass::parseTypeSpec(const Token& expr)
           return Type::newTypeRef(expr[0].idValue(),
                                   dummyGenerics, constraints);
       }
-      // else TODO
+      else
+        assert(0);
     }
+    else if (expr.count() == 4) {
+      if (expr[0] == kFUNCTIONId &&
+          expr[1].isNested() && expr[1].leftToken() == kParanOpen)
+      {
+        assert(expr[2] == kColon);
+
+        NodeList defaultApplyParams;
+        parseParameters(&defaultApplyParams, expr[1].children());
+
+        FunctionParamVector funcParams;
+        paramsNodeListToType(&funcParams, defaultApplyParams);
+
+        Type retType = parseTypeSpec(expr[3]);
+
+        FunctionSignature sign(false, String(), retType, funcParams);
+        return Type::newFunction(sign);
+      }
+    }
+    else
+      assert(0);
   }
   else if (expr.isNested() && expr.leftToken() == kParanOpen) {
     if (expr.children().size() == 1) {
@@ -297,8 +347,9 @@ SecondPass::parseTypeSpec(const Token& expr)
       return Type::newUnion(tyvect);
     }
   }
+  else
+    assert(0);
 
-  // TODO
   return Type();
 }
 
@@ -479,7 +530,7 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
   FunctionSignatureVector protoSignatures;
   protocolNodeListToType(&protoSignatures, reqProtocol);
 
-  Type classType;
+  Type defType;
   if (isClass) {
     FunctionParamVector funcParams;
     paramsNodeListToType(&funcParams, defaultApplyParams);
@@ -499,23 +550,25 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
                                                     dummyConstraints),
                                    funcParams);
 
-    classType = Type::newClass(typeName, generics,
-                               inheritsFrom,
-                               defApplySign,
-                               protoSignatures);
+    defType = Type::newClass(typeName, generics,
+                             inheritsFrom,
+                             defApplySign,
+                             protoSignatures);
   }
   else {
-    classType = Type::newType(typeName, generics,
-                              inheritsFrom,
-                              protoSignatures);
+    defType = Type::newType(typeName, generics,
+                            inheritsFrom,
+                            protoSignatures);
   }
+
+  fTypeCtx->registerType(typeName, defType);
 
   fCurrentGenericTypes.clear();
 
   return new TypeNode(expr.srcpos(),
                       typeName,
                       isClass,
-                      classType,
+                      defType,
                       defaultApplyParams,
                       slotDefs,
                       reqProtocol,
@@ -561,8 +614,7 @@ SecondPass::parseAliasDef(const Token& expr)
 
   Type aliasType = Type::newAlias(aliasName, generics, referedType);
 
-  // TODO
-  // typectx.registerType(aliasName, aliasType);
+  fTypeCtx->registerType(aliasName, aliasType);
 
   fCurrentGenericTypes.clear();
 
@@ -792,6 +844,7 @@ SecondPass::parseDef(const Token& expr)
 
   else if (expr[1] == Parser::charToken) {
     // TODO
+    assert(0);
     return NULL;
   }
 
@@ -1592,6 +1645,8 @@ SecondPass::parseBlock(const Token& expr)
   assert(expr.isNested());
   assert(expr.leftToken() == kBraceOpen);
   assert(expr.rightToken() == kBraceClose);
+
+  TypeCtxHelper localTypeCtx(fTypeCtx);
 
   if (expr.count() == 0) {
     return new SymbolNode(expr.srcpos(), String("unspecified"));

@@ -224,7 +224,7 @@ namespace heather
 
     //!@ alias types
     bool isAlias() const;
-    const Type& aliasInheritance() const;
+    const Type& aliasReplaces() const;
 
 
     //!@ function types

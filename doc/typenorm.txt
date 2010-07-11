@@ -21,3 +21,29 @@ Normalizing types:
    T[][]         & T=&(Int, Bool)         -> &(Int, Bool)[][]
    
 
+
+
+
+  a : MyVector   
+
+with
+
+  def alias MyVector = Vector<Int>
+
+-> Vector<Int>
+
+
+  a : MyMap<Int>
+
+with
+
+  def alias MyMap<V> = Map<String, V>
+
+-> Map<String, Int>
+
+
+
+
+  a : Int
+
+-> Int
