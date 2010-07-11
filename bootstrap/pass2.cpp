@@ -1605,7 +1605,6 @@ SecondPass::parseSeq(const Token& expr)
     return parseExport(expr);
   else if (first == kImportId)
     return parseImport(expr);
-
   else if (first == kDefId || first == kLetId) {
     Ptr<AptNode> node = parseDef(expr);
     if (node != NULL)
@@ -1626,6 +1625,11 @@ SecondPass::parseSeq(const Token& expr)
     return parseMatch(expr);
   else if (expr.isBinarySeq() || expr.isTernarySeq())
     return parseBinary(expr);
+  else if (first == kMinus) {
+    assert(expr.count() == 2);
+    Ptr<AptNode> exprNode = parseExpr(expr[1]);
+    return new NegateNode(expr.srcpos(), exprNode);
+  }
   else if (expr.count() == 2) {
     if (expr[1].isNested()) {
       if (expr[1].leftToken() == kParanOpen)
@@ -1755,6 +1759,9 @@ SecondPass::parseNested(const Token& expr)
     return parseLiteralArray(expr);
 
   case kParanOpen:
+    assert(expr.count() == 1);
+    return parseExpr(expr[0]);
+
   case kBracketOpen:
   case kGenericOpen:
 
