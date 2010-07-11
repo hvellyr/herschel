@@ -4,7 +4,7 @@ def class Abc<X>(x : X) : Collection<X>
 {
   def slot a : X
       ~ The a of X ~
-      = x ; public
+      = x ; readonly
   def slot b : X
       ~ X's b ~
       = x * 2
