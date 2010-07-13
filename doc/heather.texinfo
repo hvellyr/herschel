@@ -1223,24 +1223,49 @@ abstract generic function but bound to the @code{Comparable} type.
 
 @anchor{def alias}
 @findex def alias
+@findex let alias
 @findex alias
-@deffn Special def @code{alias} @var{name} [<@var{types}>] = @var{type}
-Defines an alias for @var{type}.  @var{name} and @var{type} afterwards
-are totally synonym, i.e.@ @var{name} is not considered a new type.  The
-only purpose of this form is to provide a more readable form for
-@var{type}.
+@deffn Special {def alias}
+
+The @code{def alias} registers a @var{type} also under a different
+name.  It has the forms:
 
 @example
-def alias UserTagMap = HashMap<String, UserTag<String, Int> >
-
-def generic add-tags(tags @@ UserTagMap) ...                     [1]
-def generic add-tags(tags @@ HashMap<String,
-                                    UserTag<String, Int> >) ... [2]
+def alias @var{name} [<@var{types}>] = @var{type}
+let alias @var{name} [<@var{types}>] = @var{type}
 @end example
 
-The two method declarations at [1] and [2] are completely identical.
+@var{name} and @var{type} afterwards are totally synonym, i.e.@
+@var{name} is not considered a new type.  The only purpose of this
+form is to provide a more readable form for @var{type}.
 
-(Alias definitions are comparable to @code{typedef}s in C and C++.)
+@example
+def alias UserTagMap = HashMap<String, UserTag<String, Int>>
+
+def generic add-tags(tags @@ UserTagMap) ...                    [1]
+def generic add-tags(tags @@ HashMap<String,
+                                    UserTag<String, Int>>) ... [2]
+@end example
+
+The two method declarations at [1] and [2] are completely identical
+(they are somehow comparable to @code{typedef}s in C and C++.)
+
+Alias definition are also allowed as local definitions.  As such the
+alias definition is only visible in the inner scope:
+
+@example
+def f()
+  let alias XMap = Map<String, Vector<Node>>
+  ...
+@end example
+
+Note that the alias itself can have generic type parameters, can be
+partially specialized on @code{type}, etc.:
+
+@example
+def alias TokenMap<K> = Map<K, Token>
+@end example
+
 @end deffn
 
 
@@ -1267,7 +1292,6 @@ separated by a @code{;}.  The following annotations are defined:
 
 @findex transient
 @findex public
-@findex private
 @findex outer
 @findex inner
 @findex observable
@@ -1275,7 +1299,6 @@ separated by a @code{;}.  The following annotations are defined:
 @findex slot!
 @table @code
 @item public
-@itemx private
 @itemx outer
 @itemx inner
 This controls the automatic export of autocreated accessor and/or
@@ -1321,7 +1344,7 @@ def class Button : Widget
 @section Constructors
 
 By default Heather creates a constructor for each class.  Technically a
-constructor is an method of the @code{apply} generic function
+constructor is a method of the @code{apply} generic function
 specialized on the class type of the class.  It is possible to implement
 such a method manually, but normally the abbreviated notation as
 parameters on the class definition itself is sufficient:
