@@ -1,0 +1,5 @@
+def v1 = Vector<Int>()
+def v2 = MyStruct()
+
+def m1 = Map<String, &(Boolean, Eof)>
+

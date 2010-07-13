@@ -162,6 +162,19 @@ displayType(Port<Octet>* port, const char* tagName, const Type& type)
 }
 
 
+static void
+displayTypeVector(Port<Octet>* port, const char* tagName, const TypeVector& types)
+{
+  if (!types.empty()) {
+    const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
+    displayOpenTagAttrs(port, tagName, attrs);
+    for (size_t i = 0; i < types.size(); i++)
+      display(port, types[i].toString());
+    displayCloseTag(port, tagName);
+  }
+}
+
+
 template<typename T>
 T* nodeClone(T* node)
 {
@@ -269,10 +282,27 @@ SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value)
 }
 
 
+SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value,
+                       const TypeVector& generics)
+  : AptNode(srcpos),
+    fValue(value),
+    fGenerics(generics)
+{ }
+
+
 void
 SymbolNode::display(Port<Octet>* port) const
 {
-  displayTag(port, "symbol", fValue);
+  if (fGenerics.empty())
+    displayTag(port, "symbol", fValue);
+  else {
+    StringBuffer attrs;
+    attrs << "nm='" << fValue << "'";
+
+    displayOpenTagAttrs(port, "symbol", StrHelper(attrs.toString()));
+    displayTypeVector(port, "gen", fGenerics);
+    displayCloseTag(port, "symbol");
+  }
 }
 
 
