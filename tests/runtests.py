@@ -83,8 +83,10 @@ class TestRunner:
             if errtest_func == None:
                 print "FAILED: %s: %s" % (what_tag, erroutput)
                 return
-            errtest_func(test_file, what_tag, passid, erroutput)
             test_count += 1
+            if not errtest_func(test_file, what_tag, passid, erroutput):
+                return
+
 
         expected_file = self.find_expected_xml(test_file, "_%s" % (passid))
         if expected_file:
@@ -157,7 +159,7 @@ class TestRunner:
         eo = erroutput.strip()
         if eo == None or len(eo) == 0:
             print "FAILED: %s: expected errors" % (test_name)
-            return
+            return False
 
         expected_errors = self.load_expected_syntax_errors_desc(test_file, passid)
 
@@ -165,6 +167,7 @@ class TestRunner:
             if self.verbose:
                 print "INFO: %s: No expected syntax errors file found" % (what_tag)
 
+        retval = True
         for experr in expected_errors:
             line_no, level, error_code = self.split_experr_line(experr)
 
@@ -181,17 +184,24 @@ class TestRunner:
                           "message at line %s not found" % (test_name, level, line_no)
                     # print "  EXPECTED: ", expected_errors
                     # print "  PATTERN: ", pattern
+                    retval = False
+        return retval
 
 
     def run_pass_failed_test(self, test_file, domain):
         if domain == "syntax":
-            opts = self.SYNTAX_PASS1_OPT
+            opts1 = self.SYNTAX_PASS1_OPT
+            opts2 = self.SYNTAX_PASS2_OPT
+
         elif domain == "import":
-            opts = self.IMPORT_PASS1_OPT
+            opts1 = self.IMPORT_PASS1_OPT
+            opts2 = self.IMPORT_PASS2_OPT
+
         else:
             assert(0)
 
-        self.run_pass_test_impl(test_file, opts, "1", self.check_for_errors)
+        self.run_pass_test_impl(test_file, opts1, "1", self.check_for_errors)
+        self.run_pass_test_impl(test_file, opts2, "2", self.check_for_errors)
 
 
     #----------------------------------------------------------------------------
