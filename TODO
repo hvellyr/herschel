@@ -66,7 +66,9 @@ Documentation
 
 Bootstrap compiler
 
-  Implement last missing pass1 stuff:
+  Implement last missing pass1 stuff
+
+    - what's about multiple return values?
 
     - pass2
 
