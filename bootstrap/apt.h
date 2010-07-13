@@ -93,11 +93,15 @@ namespace heather
   {
   public:
     SymbolNode(const SrcPos& srcpos, const String& value);
+    SymbolNode(const SrcPos& srcpos, const String& value,
+               const TypeVector& generics);
 
     virtual SymbolNode* clone() const;
     virtual void display(Port<Octet>* port) const;
+
   private:
-    String fValue;
+    String     fValue;
+    TypeVector fGenerics;
   };
 
 

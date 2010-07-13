@@ -843,13 +843,14 @@ SecondPass::parseDef(const Token& expr)
     return parseFunctionDef(expr);
 
   else if (expr[1] == Parser::charToken) {
-    // TODO
+    // should never come here actually
     assert(0);
     return NULL;
   }
 
   else if (expr[1] == Parser::macroToken) {
-    assert(0);                  // should never come here actually
+    // should never come here actually
+    assert(0);
     return NULL;
   }
 
@@ -1585,8 +1586,15 @@ SecondPass::parseMatch(const Token& expr)
 AptNode*
 SecondPass::parseTypeExpr(const Token& expr)
 {
-  // TODO:   Vector<Int>
-  return NULL;
+  assert(expr.isSeq());
+  assert(expr.count() == 2);
+  assert(expr[0] == kSymbol);
+  assert(expr[1].leftToken() == kGenericOpen);
+
+  TypeVector genericArgs;
+  parseTypeVector(&genericArgs, expr[1]);
+
+  return new SymbolNode(expr.srcpos(), expr[0].idValue(), genericArgs);
 }
 
 
@@ -1644,7 +1652,8 @@ SecondPass::parseSeq(const Token& expr)
     if (expr[1].isNested()) {
       if (expr[1].leftToken() == kParanOpen)
         return parseFunCall(expr);
-      else if (expr[1].leftToken() == kGenericOpen)
+      else if (expr[0] == kSymbol && 
+               expr[1].leftToken() == kGenericOpen)
         return parseTypeExpr(expr);
       else
         assert(0);              // TODO generic open etc.
