@@ -54,20 +54,6 @@ namespace heather
 
     const Type& lookupType(const String& name) const;
 
-    //! Lookup a type by another type.  If \p type is not a typeref, it is
-    //! returned as is.  If the type looked up is parametrized, it is fill by
-    //! type parameters as found in \p type.
-    Type lookupType(const Type& type) const;
-
-    //! Normalize a (complete) \p type using \p refType are using reference.
-    //! I.e. type generics in \p type are set using the args from \p refType.
-    //! If \p refType refers to an array type the result will be an array
-    //! also.
-    //!
-    //! Throws an TypeRefMatchException if \p refType's type parameters
-    //! does not match the number of generics expected in \p type.
-    Type normalizeType(const Type& type, const Type& refType) const;
-
   private:
     const Type& lookupTypeLocal(const String& name) const;
 

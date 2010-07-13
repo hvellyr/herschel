@@ -14,6 +14,7 @@
 #include "parser.h"
 #include "pass1.h"
 #include "properties.h"
+#include "scope.h"
 #include "strbuf.h"
 #include "tokeneval.h"
 #include "tokenizer.h"
@@ -27,10 +28,11 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
-FirstPass::FirstPass(Parser* parser, const Token& currentToken)
+FirstPass::FirstPass(Parser* parser, const Token& currentToken, Scope* scope)
   : fParser(parser),
     fToken(currentToken),
-    fEvaluateExprs(true)
+    fEvaluateExprs(true),
+    fScope(scope)
 { }
 
 
@@ -1048,7 +1050,7 @@ FirstPass::parseOn(ScopeType scopeType)
   Token keyToken = fToken;
 
   String macroId = qualifiedIdForLookup(keyToken.idValue());
-  Ptr<Macro> macro = fParser->macroRegistry()->lookupMacro(macroId);
+  const Macro* macro = fScope->lookupMacro(macroId);
   Token macroName = Token(keyToken.srcpos(), keyToken.idValue());
 
   if (macro != NULL) {
@@ -1227,7 +1229,7 @@ FirstPass::parseParamCall(const Token& expr,
 {
   if (expr.isSymbol()) {
     String macroId  = qualifiedIdForLookup(expr.idValue());
-    Ptr<Macro> macro = fParser->macroRegistry()->lookupMacro(macroId);
+    const Macro* macro = fScope->lookupMacro(macroId);
     Token macroName = Token(expr.srcpos(), expr.idValue());
 
     if (macro != NULL) {
@@ -2689,7 +2691,7 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
   Token symToken = fToken;
 
   String macroId = qualifiedIdForLookup(symToken.idValue());
-  Ptr<Macro> macro = fParser->macroRegistry()->lookupMacro(macroId);
+  const Macro* macro = fScope->lookupMacro(macroId);
   Token macroName = Token(symToken.srcpos(), symToken.idValue());
 
   if (macro != NULL) {
@@ -3488,9 +3490,15 @@ FirstPass::parseMacroDef(const Token& defToken)
     if (fEvaluateExprs) {
       MacroType mType = determineMacroType(macroNameToken, patterns);
 
+      if (fScope->checkForRedefinition(defToken.srcpos(),
+                                       macroNameToken.idValue()))
+        return Token();
+
+
       Ptr<SyntaxTable> synTable = SyntaxTable::compile(String(""), patterns);
-      fParser->macroRegistry()->registerMacro(macroNameToken.idValue(),
-                                              new Macro(synTable, mType));
+      fScope->registerMacro(defToken.srcpos(),
+                            macroNameToken.idValue(),
+                            new Macro(synTable, mType));
 
       if (Properties::isTraceMacro()) {
         fprintf(stderr, "%s\n", (const char*)StrHelper(synTable->toString()));
@@ -4168,7 +4176,7 @@ FirstPass::parseExprStream(TokenVector* result, bool isTopLevel,
 
 Token
 FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
-                              Macro* macro,
+                              const Macro* macro,
                               bool shouldParseParams,
                               bool isLocal,
                               ScopeType scopeType)
