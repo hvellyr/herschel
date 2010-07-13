@@ -820,6 +820,16 @@ SlotdefNode::display(Port<Octet>* port) const
     attrs << " observable='t'";
   }
 
+  if ((fFlags & kPublicSlot) != 0) {
+    attrs << " viz='public'";
+  }
+  else if ((fFlags & kOuterSlot) != 0) {
+    attrs << " viz='outer'";
+  }
+  else if ((fFlags & kInnerSlot) != 0) {
+    attrs << " viz='inner'";
+  }
+
   displayOpenTagAttrs(port, "slot", StrHelper(attrs.toString()));
   displayType(port, "type", fType);
   displayNode(port, "init", fInitExpr);
