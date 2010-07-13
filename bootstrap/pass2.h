@@ -9,17 +9,18 @@
 #ifndef bootstrap_pass2_h
 #define bootstrap_pass2_h
 
-#include "refcountable.h"
-#include "apt.h"
-#include "port.h"
-#include "tokenport.h"
-#include "token.h"
-#include "parser.h"
-#include "type.h"
-#include "typectx.h"
-
 #include <set>
 #include <list>
+
+#include "apt.h"
+#include "parser.h"
+#include "port.h"
+#include "refcountable.h"
+#include "scope.h"
+#include "token.h"
+#include "tokenport.h"
+#include "type.h"
+#include "typectx.h"
 
 namespace heather
 {
@@ -28,7 +29,7 @@ namespace heather
   class SecondPass
   {
   public:
-    SecondPass(Parser* parser);
+    SecondPass(Parser* parser, Scope* scope);
 
     AptNode* parse(const Token& exprs);
 
@@ -112,7 +113,7 @@ namespace heather
     std::list<Ptr<AptNode> > fLastModules;
     std::set<String>         fCurrentGenericTypes;
 
-    Ptr<TypeCtx>             fTypeCtx;
+    Ptr<Scope>               fScope;
   };
 };
 

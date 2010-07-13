@@ -49,6 +49,7 @@ namespace heather
     E_UnitExpected        = 0x0108,
 
     // def parsing
+    E_Redefinition        = 0x4000,
     E_DefInitUnexpToken   = 0x4001,
     E_DefNoInitValue      = 0x4002,
     E_LocalGenericFunc    = 0x4010,

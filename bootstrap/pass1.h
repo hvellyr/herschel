@@ -17,6 +17,7 @@
 #include "parser.h"
 #include "port.h"
 #include "refcountable.h"
+#include "scope.h"
 #include "token.h"
 #include "tokenport.h"
 
@@ -35,7 +36,7 @@ namespace heather
   class FirstPass
   {
   public:
-    FirstPass(Parser* parser, const Token& currentToken);
+    FirstPass(Parser* parser, const Token& currentToken, Scope* scope);
 
     Token nextToken();
     void unreadToken(const Token& token);
@@ -217,7 +218,7 @@ namespace heather
     //-------- macro calls
 
     Token parseMakeMacroCall(const Token& expr, const TokenVector& args,
-                             Macro* macro,
+                             const Macro* macro,
                              bool shouldParseParams,
                              bool isLocal,
                              ScopeType scopeType);
@@ -257,6 +258,7 @@ namespace heather
     Ptr<Parser> fParser;
     Token       fToken;
     bool        fEvaluateExprs;
+    Ptr<Scope>  fScope;
   };
 };
 

@@ -8,23 +8,24 @@
 
 #include <map>
 
-#include "parser.h"
-#include "tokenizer.h"
-#include "pass2.h"
-#include "token.h"
-#include "tokeneval.h"
 #include "errcodes.h"
 #include "log.h"
+#include "parser.h"
 #include "parsertypes.h"
+#include "pass2.h"
+#include "scope.h"
+#include "token.h"
+#include "tokeneval.h"
+#include "tokenizer.h"
 
 
 using namespace heather;
 
 //----------------------------------------------------------------------------
 
-SecondPass::SecondPass(Parser* parser)
+SecondPass::SecondPass(Parser* parser, Scope* scope)
   : fParser(parser),
-    fTypeCtx(new TypeCtx)
+    fScope(scope)
 { }
 
 
@@ -178,9 +179,9 @@ SecondPass::parseTypeSpec(const Token& expr)
   Type ty = parseTypeSpecImpl(expr);
 
   if (ty.isRef()) {
-    Type referedType = fTypeCtx->lookupType(ty.typeName());
+    Type referedType = fScope->lookupType(ty.typeName());
     if (referedType.isDef() && referedType.isAlias())
-      return fTypeCtx->normalizeType(referedType, ty);
+      return fScope->normalizeType(referedType, ty);
   }
 
   return ty;
@@ -561,9 +562,13 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
                             protoSignatures);
   }
 
-  fTypeCtx->registerType(typeName, defType);
 
   fCurrentGenericTypes.clear();
+
+  if (fScope->checkForRedefinition(expr.srcpos(), typeName))
+    return NULL;
+
+  fScope->registerType(expr.srcpos(), typeName, defType);
 
   return new TypeNode(expr.srcpos(),
                       typeName,
@@ -614,7 +619,7 @@ SecondPass::parseAliasDef(const Token& expr)
 
   Type aliasType = Type::newAlias(aliasName, generics, referedType);
 
-  fTypeCtx->registerType(aliasName, aliasType);
+  fScope->registerType(expr.srcpos(), aliasName, aliasType);
 
   fCurrentGenericTypes.clear();
 
@@ -653,7 +658,16 @@ SecondPass::parseSlotDef(const Token& expr)
     for ( ; ofs < seq.size(); ofs++) {
       if (seq[ofs] == kComma)
         continue;
-      if (seq[ofs] == Parser::transientToken) {
+      if (seq[ofs] == Parser::publicToken) {
+        slotFlags |= kPublicSlot;
+      }
+      else if (seq[ofs] == Parser::outerToken) {
+        slotFlags |= kOuterSlot;
+      }
+      else if (seq[ofs] == Parser::innerToken) {
+        slotFlags |= kInnerSlot;
+      }
+      else if (seq[ofs] == Parser::transientToken) {
         slotFlags |= kTransientSlot;
       }
       else if (seq[ofs] == Parser::readonlyToken) {
@@ -722,8 +736,14 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs)
     ofs += 2;
   }
 
-  return new VardefNode(expr.srcpos(),
-                        sym, flags, type, initExpr);
+  if (fScope->checkForRedefinition(expr.srcpos(), sym))
+    return NULL;
+
+  Ptr<AptNode> var = new VardefNode(expr.srcpos(),
+                                    sym, flags, type, initExpr);
+  fScope->registerVar(expr.srcpos(), sym, var);
+
+  return var.release();
 }
 
 
@@ -790,8 +810,13 @@ SecondPass::parseFunctionDef(const Token& expr)
     ofs++;
   }
 
-  return new FuncDefNode(expr.srcpos(),
-                         sym, flags, params, type, body);
+  if (fScope->checkForRedefinition(expr.srcpos(), sym))
+    return NULL;
+
+  Ptr<AptNode> func = new FuncDefNode(expr.srcpos(),
+                                      sym, flags, params, type, body);
+  fScope->registerFunction(expr.srcpos(), sym, func);
+  return func.release();
 }
 
 
@@ -1656,7 +1681,7 @@ SecondPass::parseSeq(const Token& expr)
                expr[1].leftToken() == kGenericOpen)
         return parseTypeExpr(expr);
       else
-        assert(0);              // TODO generic open etc.
+        assert(0);              // TODO
     }
   }
   else if (expr.count() == 3) {
@@ -1687,7 +1712,7 @@ SecondPass::parseBlock(const Token& expr)
   assert(expr.leftToken() == kBraceOpen);
   assert(expr.rightToken() == kBraceClose);
 
-  TypeCtxHelper localTypeCtx(fTypeCtx);
+  ScopeHelper localScope(fScope);
 
   if (expr.count() == 0) {
     return new SymbolNode(expr.srcpos(), String("unspecified"));

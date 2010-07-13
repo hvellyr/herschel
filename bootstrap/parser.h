@@ -13,6 +13,7 @@
 #include "apt.h"
 #include "macro.h"
 #include "port.h"
+#include "scope.h"
 #include "tokenport.h"
 #include "token.h"
 
@@ -64,7 +65,6 @@ namespace heather
 
     CharRegistry* charRegistry() const;
     ConfigVarRegistry* configVarRegistry() const;
-    MacroRegistry* macroRegistry() const;
 
     Token importFile(Port<Char>* port, const String& srcName);
     String lookupFile(const String& srcName, bool isPublic);
@@ -123,9 +123,9 @@ namespace heather
     class ParserState
     {
     public:
-      ParserState(CharRegistry* charReg,
+      ParserState(CharRegistry*      charReg,
                   ConfigVarRegistry* configReg,
-                  MacroRegistry* macroReg);
+                  Scope*             scope);
       ParserState(const ParserState& item);
       ParserState& operator=(const ParserState& item);
 
@@ -133,7 +133,7 @@ namespace heather
       Token                  fToken;
       Ptr<CharRegistry>      fCharRegistry;
       Ptr<ConfigVarRegistry> fConfigVarRegistry;
-      Ptr<MacroRegistry>     fMacroRegistry;
+      Ptr<Scope>             fScope;
     };
 
 

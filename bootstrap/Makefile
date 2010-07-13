@@ -23,6 +23,7 @@ SOURCES =         \
 	pass2.cpp       \
 	port.cpp        \
 	properties.cpp  \
+	scope.cpp       \
 	srcpos.cpp      \
 	str.cpp         \
 	strbuf.cpp      \
@@ -53,6 +54,7 @@ HEADERS =         \
 	ptr.h           \
 	refcountable.h  \
 	registry.h      \
+	scope.h         \
 	srcpos.h        \
 	str.h           \
 	strbuf.h        \
