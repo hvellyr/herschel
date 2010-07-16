@@ -253,12 +253,40 @@ namespace heather
 
     Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 
+
+    String currentModuleName() const;
+    void pushModule(const String& name);
+    void popModule();
+
+
+    friend class ModuleHelper;
+    class ModuleHelper
+    {
+    public:
+      ModuleHelper(FirstPass* pass, const String& name)
+        : fPass(pass)
+      {
+        fPass->pushModule(name);
+      }
+
+      ~ModuleHelper()
+      {
+        fPass->popModule();
+      }
+
+      FirstPass* fPass;
+    };
+
+
     //-------- data members
 
     Ptr<Parser> fParser;
     Token       fToken;
     bool        fEvaluateExprs;
     Ptr<Scope>  fScope;
+
+    String            fCurrentModuleName;
+    std::list<String> fModuleNameStack;
   };
 };
 

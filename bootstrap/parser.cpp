@@ -132,6 +132,9 @@ Parser::parse(Port<Char>* port, const String& srcName)
         apt->display(stream);
         displayln(stream, "");
       }
+
+      // fState.fScope->dumpDebug();
+
       return apt.release();
     }
 

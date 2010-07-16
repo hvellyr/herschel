@@ -37,6 +37,8 @@ namespace heather
     E_UnexpectedDefExpr   = 0x1005,
     E_OnExprInType        = 0x1006,
 
+    E_AmbiguousSym        = 0x2000,
+
     // notation errors
     E_UnexpectedChar      = 0x0100,
     E_BadHashNotation     = 0x0101,

@@ -221,13 +221,6 @@ namespace heather
   class ExportNode : public AptNode
   {
   public:
-    enum VizType {
-      kPrivate,
-      kInner,
-      kOuter,
-      kPublic,
-    };
-
     ExportNode(const SrcPos& srcpos,
                VizType viz,
                bool isFinal,

@@ -1,2 +1,2 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><nested left='{' right='}'><seq></seq></nested><seq><id>def</id><id>a</id><punct type='='/><lit type='char'>\u0afaf;</lit></seq></seq>
+<seq><nested left='{' right='}'/><seq><id>def</id><id>a</id><punct type='='/><lit type='char'>\u0afaf;</lit></seq></seq>

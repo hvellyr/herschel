@@ -89,14 +89,14 @@ SecondPass::parseExport(const Token& expr)
   assert(expr[0] == kExportId);
 
   int symbolOfs = 1;
-  ExportNode::VizType vizType = ExportNode::kPrivate;
+  VizType vizType = kPrivate;
   if (expr[1].isSymbol()) {
     if (expr[1] == Parser::publicToken)
-      vizType = ExportNode::kPublic;
+      vizType = kPublic;
     else if (expr[1] == Parser::innerToken)
-      vizType = ExportNode::kInner;
+      vizType = kInner;
     else if (expr[1] == Parser::outerToken)
-      vizType = ExportNode::kOuter;
+      vizType = kOuter;
     else {
       error(expr[1].srcpos(), E_UnknownVisibility,
             String("unknown visibility level: ") + expr[1]);
@@ -179,7 +179,7 @@ SecondPass::parseTypeSpec(const Token& expr)
   Type ty = parseTypeSpecImpl(expr);
 
   if (ty.isRef()) {
-    Type referedType = fScope->lookupType(ty.typeName());
+    Type referedType = fScope->lookupType(ty.typeName(), true);
     if (referedType.isDef() && referedType.isAlias())
       return fScope->normalizeType(referedType, ty);
   }
