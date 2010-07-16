@@ -27,6 +27,7 @@ SOURCES =         \
 	srcpos.cpp      \
 	str.cpp         \
 	strbuf.cpp      \
+	symbol.cpp      \
 	token.cpp       \
 	tokeneval.cpp   \
 	tokenizer.cpp   \
@@ -58,6 +59,7 @@ HEADERS =         \
 	srcpos.h        \
 	str.h           \
 	strbuf.h        \
+	symbol.h        \
 	token.h         \
 	tokeneval.h     \
 	tokenizer.h     \

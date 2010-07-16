@@ -19,6 +19,7 @@
 #include "srcpos.h"
 #include "str.h"
 #include "type.h"
+#include "parsertypes.h"
 
 
 namespace heather
@@ -49,13 +50,14 @@ namespace heather
     bool checkForRedefinition(const SrcPos& srcpos,
                               const String& sym) const;
 
+    void dumpDebug() const;
 
     //-------- types
 
     void registerType(const SrcPos& srcpos,
                       const String& name, const Type& type);
 
-    const Type& lookupType(const String& name) const;
+    const Type& lookupType(const String& name, bool showAmbiguousSymDef) const;
 
     //! Lookup a type by another type.  If \p type is not a typeref, it is
     //! returned as is.  If the type looked up is parametrized, it is fill by
@@ -76,22 +78,33 @@ namespace heather
 
     void registerMacro(const SrcPos& srcpos,
                        const String& name, Macro* macro);
-    const Macro* lookupMacro(const String& name) const;
+    const Macro* lookupMacro(const SrcPos& srcpos,
+                             const String& name, bool showAmbiguousSymDef) const;
 
 
     //-------- functions
 
     void registerFunction(const SrcPos& srcpos,
                           const String& name, AptNode* node);
-    const AptNode* lookupFunction(const String& name) const;
+    const AptNode* lookupFunction(const String& name, bool showAmbiguousSymDef) const;
 
 
     //-------- variables
 
     void registerVar(const SrcPos& srcpos,
                      const String& name, AptNode* macro);
-    const AptNode* lookupVar(const String& name) const;
+    const AptNode* lookupVar(const String& name, bool showAmbiguousSymDef) const;
 
+
+
+    //-------- register export symbols
+
+    bool shouldExportSymbol(const String& sym) const;
+    VizType exportSymbolVisibility(const String& sym) const;
+    bool exportSymbolIsFinal(const String& sym) const;
+    void registerSymbolForExport(const String& sym, VizType viz, bool asFinal);
+
+    void exportSymbols(Scope* dstScope);
 
     //-------- global defs
 
@@ -125,15 +138,28 @@ namespace heather
 
   private:
     void registerScopeItem(const String& name, ScopeItem* item);
-    const ScopeItem* lookupItemLocal(const String& name) const;
-    const ScopeItem* lookupItem(const String& name) const;
+    const ScopeItem* lookupItemLocal(const SrcPos& srcpos,
+                                     const String& name, bool showError) const;
+    const ScopeItem* lookupItem(const SrcPos& srcpos,
+                                const String& name, bool showError) const;
+
+    VizType reduceVizType(VizType in);
 
     //-------- data members
 
-    typedef std::map<String, Ptr<ScopeItem> > ScopeMap;
+    typedef std::map<String, std::map<String, Ptr<ScopeItem> > > ScopeMap;
     
     ScopeMap   fMap;
     Ptr<Scope> fParent;
+
+    struct VisibilityPair
+    {
+      VizType fViz;
+      bool    fIsFinal;
+    };
+
+    typedef std::map<String, VisibilityPair> VizMap;
+    VizMap fVisibility;
   };
 
 
@@ -143,18 +169,28 @@ namespace heather
   {
   public:
     ScopeHelper(Ptr<Scope>& scope)
-      : fScopeLoc(scope)
+      : fScopeLoc(scope),
+        fPrevScope(scope)
     {
       fScopeLoc = new Scope(fScopeLoc);
     }
 
     ~ScopeHelper()
     {
-      fScopeLoc = fScopeLoc->parent();
+      Scope* scope = fScopeLoc;
+      while (scope != NULL && scope != fPrevScope) {
+        Scope* parent = scope->parent();
+        if (parent != NULL)
+          scope->exportSymbols(parent);
+        scope = parent;
+      }
+      assert(scope == fPrevScope);
+      fScopeLoc = scope;
     }
 
   private:
     Ptr<Scope>& fScopeLoc;
+    Ptr<Scope> fPrevScope;
   };
 };                              // namespace
 

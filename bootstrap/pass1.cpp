@@ -16,6 +16,7 @@
 #include "properties.h"
 #include "scope.h"
 #include "strbuf.h"
+#include "symbol.h"
 #include "tokeneval.h"
 #include "tokenizer.h"
 #include "valuesaver.h"
@@ -35,6 +36,34 @@ FirstPass::FirstPass(Parser* parser, const Token& currentToken, Scope* scope)
     fScope(scope)
 { }
 
+
+//----------------------------------------------------------------------------
+
+String
+FirstPass::currentModuleName() const
+{
+  return fCurrentModuleName;
+}
+
+
+void
+FirstPass::pushModule(const String& name)
+{
+  fModuleNameStack.push_front(fCurrentModuleName);
+
+  fCurrentModuleName = qualifiedId(fCurrentModuleName, name);
+}
+
+
+void
+FirstPass::popModule()
+{
+  fCurrentModuleName = fModuleNameStack.front();
+  fModuleNameStack.pop_front();
+}
+
+
+//----------------------------------------------------------------------------
 
 Token
 FirstPass::nextToken()
@@ -194,12 +223,12 @@ namespace heather
       Token n = pass->parseTop(FirstPass::kNonScopedDef);
       if (n.isSet())
         result << n;
-      else {
-        errorf(pass->fToken.srcpos(), E_UnexpectedToken,
-               "Parsing module definitions found unexpected token: %s",
-               (const char*)StrHelper(pass->fToken.toString()));
-        return false;
-      }
+      // else {
+      //   errorf(pass->fToken.srcpos(), E_UnexpectedToken,
+      //          "Parsing module definitions found unexpected token: %s",
+      //          (const char*)StrHelper(pass->fToken.toString()));
+      //   return false;
+      // }
       
       return true;
     }
@@ -256,11 +285,22 @@ FirstPass::parseModule()
 
     if (fToken == kBraceOpen) {
       Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
-      parseSequence(ModuleParser(),
-                    kBraceOpen, kBraceClose, false, E_MissingBraceClose,
-                    defines,
-                    "module-body");
+
+      {
+        ScopeHelper scopeHelper(fScope);
+
+        ModuleHelper moduleScope(this, modName.idValue());
+        parseSequence(ModuleParser(),
+                      kBraceOpen, kBraceClose, false, E_MissingBraceClose,
+                      defines,
+                      "module-body");
+      }
+
       modExpr << defines;
+    }
+    else {
+      fScope = new Scope(fScope);
+      fCurrentModuleName = qualifiedId(fCurrentModuleName, modName.idValue());
     }
   }
 
@@ -301,10 +341,18 @@ FirstPass::parseExport()
 
   nextToken();
 
+  VizType vizType = kPrivate;
   if (fToken == kSymbol) {
-    if (fToken == Parser::publicToken ||
-        fToken == Parser::innerToken ||
-        fToken == Parser::outerToken) {
+    if (fToken == Parser::publicToken) {
+      vizType = kPublic;
+      expr << fToken;
+    }
+    else if (fToken == Parser::innerToken) {
+      vizType = kInner;
+      expr << fToken;
+    }
+    else if (fToken == Parser::outerToken) {
+      vizType = kOuter;
       expr << fToken;
     }
     else
@@ -333,20 +381,39 @@ FirstPass::parseExport()
   else
     expr << symbols;
 
+  bool isFinal = false;
   if (fToken == kAs) {
     Token asToken = fToken;
     nextToken();
 
     if (fToken != Parser::finalToken) {
       errorf(fToken.srcpos(), E_UnexpectedToken, "expected 'final'");
-      return expr;
     }
-
-    expr << asToken << fToken;
-    nextToken();
+    else {
+      isFinal = true;
+      expr << asToken << fToken;
+      nextToken();
+    }
   }
 
-  return ignore ? Token() : expr;
+  if (!ignore) {
+    TokenVector children = symbols.children();
+    for (TokenVector::const_iterator it = children.begin();
+         it != children.end();
+         it++)
+    {
+      if (*it == kSymbol) {
+        String fullId = ( isQualified(it->idValue()) 
+                          ? it->idValue()
+                          : qualifiedId(currentModuleName(), it->idValue()) );
+        fScope->registerSymbolForExport(fullId, vizType, isFinal);
+      }
+    }
+
+    return expr;
+  }
+
+  return Token();
 }
 
 
@@ -1050,7 +1117,7 @@ FirstPass::parseOn(ScopeType scopeType)
   Token keyToken = fToken;
 
   String macroId = qualifiedIdForLookup(keyToken.idValue());
-  const Macro* macro = fScope->lookupMacro(macroId);
+  const Macro* macro = fScope->lookupMacro(keyToken.srcpos(), macroId, true);
   Token macroName = Token(keyToken.srcpos(), keyToken.idValue());
 
   if (macro != NULL) {
@@ -1229,7 +1296,7 @@ FirstPass::parseParamCall(const Token& expr,
 {
   if (expr.isSymbol()) {
     String macroId  = qualifiedIdForLookup(expr.idValue());
-    const Macro* macro = fScope->lookupMacro(macroId);
+    const Macro* macro = fScope->lookupMacro(expr.srcpos(), macroId, true);
     Token macroName = Token(expr.srcpos(), expr.idValue());
 
     if (macro != NULL) {
@@ -1270,6 +1337,7 @@ Token
 FirstPass::parseAccess(const Token& expr)
 {
   TokenVector args;
+
   if (fToken == kParanOpen) {
     nextToken();
     return parseAccess(parseParamCall(expr, args, true));
@@ -2132,7 +2200,8 @@ FirstPass::parseTopExprUntilBrace(TokenVector* result, ScopeType scope)
     if (fToken == kEOF)
       break;
     Token topexpr = parseTop(scope);
-    result->push_back(topexpr);
+    if (topexpr.isSet())
+      result->push_back(topexpr);
   }
 
   if (fToken == kBraceClose)
@@ -2691,7 +2760,7 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
   Token symToken = fToken;
 
   String macroId = qualifiedIdForLookup(symToken.idValue());
-  const Macro* macro = fScope->lookupMacro(macroId);
+  const Macro* macro = fScope->lookupMacro(symToken.srcpos(), macroId, true);
   Token macroName = Token(symToken.srcpos(), symToken.idValue());
 
   if (macro != NULL) {
@@ -3331,8 +3400,6 @@ FirstPass::parseMacroComponent(TokenVector* component,
 
   int braceCount = 1;
   for ( ; ; ) {
-//    printf("TOKEN: %s %x\n", (const char*)StrHelper(fToken.toString()), endTokenType);
-
     if (fToken == kEOF) {
       errorf(fToken.srcpos(), E_UnexpectedEOF, "unfinished macro component");
       if (startPos != fToken.srcpos())
@@ -3490,14 +3557,16 @@ FirstPass::parseMacroDef(const Token& defToken)
     if (fEvaluateExprs) {
       MacroType mType = determineMacroType(macroNameToken, patterns);
 
-      if (fScope->checkForRedefinition(defToken.srcpos(),
-                                       macroNameToken.idValue()))
+      String fullMacroName = qualifiedId(currentModuleName(),
+                                         macroNameToken.idValue());
+
+      if (fScope->checkForRedefinition(defToken.srcpos(), fullMacroName))
         return Token();
 
 
       Ptr<SyntaxTable> synTable = SyntaxTable::compile(String(""), patterns);
       fScope->registerMacro(defToken.srcpos(),
-                            macroNameToken.idValue(),
+                            fullMacroName,
                             new Macro(synTable, mType));
 
       if (Properties::isTraceMacro()) {
@@ -3754,8 +3823,6 @@ FirstPass::replaceMatchBindings(TokenVector* result,
                                 const TokenVector& templ,
                                 const NamedReplacementMap& bindings)
 {
-//  printf("REPLACEMENT IS: %s\n", (const char*)StrHelper(String() + bindings));
-
   TokenVector replacement;
   for (TokenVector::const_iterator it = templ.begin();
        it != templ.end();
@@ -4227,7 +4294,6 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
 
       TokenVector result;
       if (parseExprStream(&result, !isLocal, scopeType)) {
-        // printf("RESULT: %s\n", (const char*)StrHelper(String() + result));
         if (result.size() == 1)
           retval = result[0];
         else if (result.size() > 1)

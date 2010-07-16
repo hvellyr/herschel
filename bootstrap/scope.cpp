@@ -15,6 +15,7 @@
 #include "apt.h"
 #include "errcodes.h"
 #include "log.h"
+#include "symbol.h"
 
 
 using namespace heather;
@@ -128,30 +129,64 @@ void
 Scope::registerScopeItem(const String& name, ScopeItem* item)
 {
   assert(item != NULL);
-  assert(fMap.find(name) == fMap.end());
+  assert(lookupItemLocal(SrcPos(), name, false) == NULL);
 
-  fMap.insert(std::make_pair(name, item));
+  String base = heather::baseName(name);
+  String ns = heather::nsName(name);
+
+  ScopeMap::iterator it = fMap.find(base);
+  if (it != fMap.end())
+    it->second.insert(std::make_pair(ns, item));
+  else
+    fMap[base].insert(std::make_pair(ns, item));
 }
 
 
 const Scope::ScopeItem*
-Scope::lookupItemLocal(const String& name) const
+Scope::lookupItemLocal(const SrcPos& srcpos,
+                       const String& name, bool showError) const
 {
-  ScopeMap::const_iterator it = fMap.find(name);
-  if (it != fMap.end())
-    return it->second.obj();
+  String base = heather::baseName(name);
+  String ns = heather::nsName(name);
+
+  ScopeMap::const_iterator it = fMap.find(base);
+  if (it != fMap.end()) {
+    if (!isQualified(name)) {
+      if (it->second.size() == 1) {
+        return it->second.begin()->second.obj();
+      }
+      else if (showError) {
+        errorf(srcpos, E_AmbiguousSym,
+               "ambiguous symbol '%s' usage", (const char*)StrHelper(base));
+        for (std::map<String, Ptr<ScopeItem> >::const_iterator vit = it->second.begin();
+             vit != it->second.end();
+             vit++)
+        {
+          String fullKey = qualifiedId(vit->first, it->first);
+          errorf(vit->second->srcpos(), E_AmbiguousSym,
+                 "symbol '%s' was defined here", (const char*)StrHelper(fullKey));
+        }
+      }
+    }
+    else {
+      std::map<String, Ptr<ScopeItem> >::const_iterator vit = it->second.find(ns);
+      if (vit != it->second.end())
+        return vit->second.obj();
+    }
+  }
 
   return NULL;
 }
 
 
 const Scope::ScopeItem*
-Scope::lookupItem(const String& name) const
+Scope::lookupItem(const SrcPos& srcpos,
+                  const String& name, bool showError) const
 {
   const Scope* scope = this;
 
   while (scope != NULL) {
-    const ScopeItem* si = scope->lookupItemLocal(name);
+    const ScopeItem* si = scope->lookupItemLocal(srcpos, name, showError);
     if (si != NULL)
       return si;
     scope = scope->parent();
@@ -164,7 +199,7 @@ Scope::lookupItem(const String& name) const
 bool
 Scope::hasName(const String& name, SrcPos* srcpos) const
 {
-  const ScopeItem* si = lookupItem(name);
+  const ScopeItem* si = lookupItem(SrcPos(), name, false);
   if (si != NULL) {
     *srcpos = si->srcpos();
     return true;
@@ -176,7 +211,7 @@ Scope::hasName(const String& name, SrcPos* srcpos) const
 bool
 Scope::hasNameLocal(const String& name, SrcPos* srcpos) const
 {
-  const ScopeItem* si = lookupItemLocal(name);
+  const ScopeItem* si = lookupItemLocal(SrcPos(), name, false);
   if (si != NULL) {
     *srcpos = si->srcpos();
     return true;
@@ -217,9 +252,9 @@ Scope::registerType(const SrcPos& srcpos,
 
 
 const Type&
-Scope::lookupType(const String& name) const
+Scope::lookupType(const String& name, bool showAmbiguousSymDef) const
 {
-  const ScopeItem* si = lookupItem(name);
+  const ScopeItem* si = lookupItem(SrcPos(), name, showAmbiguousSymDef);
   if (si != NULL && si->kind() == kScopeItem_type)
     return dynamic_cast<const TypeScopeItem*>(si)->type();
 
@@ -286,7 +321,7 @@ Scope::lookupType(const Type& type) const
   }
 
   if (baseType.isDef()) {
-    Type fullType = lookupType(baseType.typeName());
+    Type fullType = lookupType(baseType.typeName(), true);
     if (fullType.isDef())
       return normalizeType(fullType, type);
   }
@@ -306,9 +341,10 @@ Scope::registerMacro(const SrcPos& srcpos,
 
 
 const Macro*
-Scope::lookupMacro(const String& name) const
+Scope::lookupMacro(const SrcPos& srcpos,
+                   const String& name, bool showAmbiguousSymDef) const
 {
-  const ScopeItem* si = lookupItem(name);
+  const ScopeItem* si = lookupItem(srcpos, name, showAmbiguousSymDef);
   if (si != NULL && si->kind() == kScopeItem_macro)
     return dynamic_cast<const MacroScopeItem*>(si)->macro();
   return NULL;
@@ -327,9 +363,9 @@ Scope::registerFunction(const SrcPos& srcpos,
 
 
 const AptNode*
-Scope::lookupFunction(const String& name) const
+Scope::lookupFunction(const String& name, bool showAmbiguousSymDef) const
 {
-  const ScopeItem* si = lookupItem(name);
+  const ScopeItem* si = lookupItem(SrcPos(), name, showAmbiguousSymDef);
   if (si != NULL && si->kind() == kScopeItem_function)
     return dynamic_cast<const NodeScopeItem*>(si)->node();
   return NULL;
@@ -348,10 +384,140 @@ Scope::registerVar(const SrcPos& srcpos,
 
 
 const AptNode*
-Scope::lookupVar(const String& name) const
+Scope::lookupVar(const String& name, bool showAmbiguousSymDef) const
 {
-  const ScopeItem* si = lookupItem(name);
+  const ScopeItem* si = lookupItem(SrcPos(), name, showAmbiguousSymDef);
   if (si != NULL && si->kind() == kScopeItem_variable)
     return dynamic_cast<const NodeScopeItem*>(si)->node();
   return NULL;
+}
+
+
+void
+Scope::dumpDebug() const
+{
+  fprintf(stderr, "------- Scope Dump ----------------------\n");
+  for (ScopeMap::const_iterator it = fMap.begin();
+       it != fMap.end();
+       it++)
+  {
+    for (std::map<String, Ptr<ScopeItem> >::const_iterator vit = it->second.begin();
+         vit != it->second.end();
+         vit++)
+    {
+      String key = qualifiedId(vit->first, it->first);
+      fprintf(stderr, "%s\n", (const char*)StrHelper(key));
+    }
+  }
+}
+
+
+bool
+Scope::shouldExportSymbol(const String& sym) const
+{
+  VizMap::const_iterator it = fVisibility.find(sym);
+  return (it != fVisibility.end());
+}
+
+
+VizType
+Scope::exportSymbolVisibility(const String& sym) const
+{
+  VizMap::const_iterator it = fVisibility.find(sym);
+  if (it != fVisibility.end())
+    return it->second.fViz;
+  return kPrivate;
+}
+
+
+bool
+Scope::exportSymbolIsFinal(const String& sym) const
+{
+  VizMap::const_iterator it = fVisibility.find(sym);
+  if (it != fVisibility.end())
+    return it->second.fIsFinal;
+  return false;
+}
+
+
+void
+Scope::registerSymbolForExport(const String& sym, VizType viz, bool isFinal)
+{
+  VisibilityPair vp;
+  vp.fViz = viz;
+  vp.fIsFinal = isFinal;
+  fVisibility.insert(std::make_pair(sym, vp));
+}
+
+
+VizType
+Scope::reduceVizType(VizType in)
+{
+  switch (in) {
+  case kPrivate:
+    return kPrivate;
+  case kInner:
+    return kPrivate;
+  case kOuter:
+    return kOuter;
+  case kPublic:
+    return kPublic;
+  }
+  assert(0);
+  return kPrivate;
+}
+
+
+void
+Scope::exportSymbols(Scope* dstScope)
+{
+  if (shouldExportSymbol(String("*")))
+  {
+    // export all
+    VizType vizAllType = exportSymbolVisibility(String("*"));
+    if (vizAllType != kPrivate) {
+      VizType reducedVizType = reduceVizType(vizAllType);
+      bool isFinal = exportSymbolIsFinal(String("*"));
+
+      for (ScopeMap::const_iterator it = fMap.begin();
+           it != fMap.end();
+           it++)
+      {
+        for (std::map<String, Ptr<ScopeItem> >::const_iterator vit = it->second.begin();
+             vit != it->second.end();
+             vit++)
+        {
+          String fullKey = qualifiedId(vit->first, it->first);
+          dstScope->registerScopeItem(fullKey, vit->second);
+          if (reducedVizType != kPrivate)
+            dstScope->registerSymbolForExport(fullKey, reducedVizType, isFinal);
+        }
+      }
+    }
+  }
+  else
+  {
+    // selective export
+    for (ScopeMap::const_iterator it = fMap.begin();
+         it != fMap.end();
+         it++)
+    {
+      for (std::map<String, Ptr<ScopeItem> >::const_iterator vit = it->second.begin();
+           vit != it->second.end();
+           vit++)
+      {
+        String fullKey = qualifiedId(vit->first, it->first);
+
+        VizType vizType = exportSymbolVisibility(fullKey);
+        if (vizType != kPrivate) {
+          VizType reducedVizType = reduceVizType(vizType);
+          bool isFinal = exportSymbolIsFinal(fullKey);
+
+          dstScope->registerScopeItem(fullKey, vit->second);
+          if (reducedVizType != kPrivate)
+            dstScope->registerSymbolForExport(fullKey, reducedVizType, isFinal);
+        }
+      }
+    }
+  }
 }

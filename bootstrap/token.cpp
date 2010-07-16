@@ -12,6 +12,7 @@
 #include "unittests.h"
 #include "parsertypes.h"
 #include "strbuf.h"
+#include "symbol.h"
 
 
 namespace heather
@@ -1414,11 +1415,7 @@ Token::baseName() const
   if (fType != kSymbol)
     throw NotSupportedException(__FUNCTION__);
 
-  String str = idValue();
-  int idx = str.lastIndexOf('|');
-  if (idx >= 0)
-    return str.part(idx + 1, str.length());
-  return str;
+  return heather::baseName(idValue());
 }
 
 
@@ -1428,11 +1425,7 @@ Token::nsName() const
   if (fType != kSymbol)
     throw NotSupportedException(__FUNCTION__);
 
-  String str = idValue();
-  int idx = str.lastIndexOf('|');
-  if (idx >= 0)
-    return str.part(0, idx);
-  return String();
+  return heather::nsName(idValue());
 }
 
 
