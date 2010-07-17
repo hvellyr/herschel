@@ -146,7 +146,7 @@ namespace heather
     const ScopeItem* lookupItem(const SrcPos& srcpos,
                                 const String& name, bool showError) const;
 
-    VizType reduceVizType(VizType in, bool propagateOuter) const;
+    VizType reduceVizType(VizType in) const;
 
     const Scope::ScopeItem* lookupItemLocalImpl(const SrcPos& srcpos,
                                                 const String& name,
@@ -190,6 +190,8 @@ namespace heather
       Scope* scope = fScopeLoc;
       while (scope != NULL && scope != fPrevScope) {
         Scope* parent = scope->parent();
+        // printf("Export from %p to %p\n", scope, parent);
+
         if (parent != NULL && fDoExport)
           scope->exportSymbols(parent, fPropagateOuter);
         scope = parent;

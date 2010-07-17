@@ -463,7 +463,7 @@ Scope::registerSymbolForExport(const String& sym, VizType viz, bool isFinal)
 
 
 VizType
-Scope::reduceVizType(VizType in, bool propagateOuter) const
+Scope::reduceVizType(VizType in) const
 {
   switch (in) {
   case kPrivate:
@@ -471,7 +471,7 @@ Scope::reduceVizType(VizType in, bool propagateOuter) const
   case kInner:
     return kPrivate;
   case kOuter:
-    return propagateOuter ? kOuter : kPrivate;
+    return kOuter;
   case kPublic:
     return kPublic;
   }
@@ -487,8 +487,9 @@ Scope::exportSymbols(Scope* dstScope, bool propagateOuter)
   {
     // export all
     VizType vizAllType = exportSymbolVisibility(String("*"));
-    if (vizAllType != kPrivate) {
-      VizType reducedVizType = reduceVizType(vizAllType, propagateOuter);
+    if (vizAllType != kPrivate &&
+        (propagateOuter || vizAllType != kOuter)) {
+      VizType reducedVizType = reduceVizType(vizAllType);
       bool isFinal = exportSymbolIsFinal(String("*"));
 
       for (ScopeMap::const_iterator it = fMap.begin();
@@ -500,9 +501,15 @@ Scope::exportSymbols(Scope* dstScope, bool propagateOuter)
              vit++)
         {
           String fullKey = qualifyId(vit->first, it->first);
-          dstScope->registerScopeItem(fullKey, vit->second);
-          if (reducedVizType != kPrivate)
-            dstScope->registerSymbolForExport(fullKey, reducedVizType, isFinal);
+
+          if (!shouldExportSymbol(fullKey) ||
+              ( vizAllType == exportSymbolVisibility(fullKey) &&
+                isFinal == exportSymbolIsFinal(fullKey) ))
+          {
+            dstScope->registerScopeItem(fullKey, vit->second);
+            if (reducedVizType != kPrivate)
+              dstScope->registerSymbolForExport(fullKey, reducedVizType, isFinal);
+          }
         }
       }
     }
@@ -521,8 +528,9 @@ Scope::exportSymbols(Scope* dstScope, bool propagateOuter)
         String fullKey = qualifyId(vit->first, it->first);
 
         VizType vizType = exportSymbolVisibility(fullKey);
-        if (vizType != kPrivate) {
-          VizType reducedVizType = reduceVizType(vizType, propagateOuter);
+        if (vizType != kPrivate &&
+            (propagateOuter || vizType != kOuter)) {
+          VizType reducedVizType = reduceVizType(vizType);
           bool isFinal = exportSymbolIsFinal(fullKey);
 
           dstScope->registerScopeItem(fullKey, vit->second);
