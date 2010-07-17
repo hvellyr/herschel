@@ -54,6 +54,8 @@ module colors ("colors")
 }
 
 
+export public (*)
+
 def i()
   abc()
   xyz()
