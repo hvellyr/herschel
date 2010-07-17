@@ -117,6 +117,8 @@ Parser::parse(Port<Char>* port, const String& srcName)
       displayln(stream, "");
     }
 
+    // fState.fScope->dumpDebug();
+
     bool doPass2 = true;
 #if defined(UNITTESTS)
     doPass2 = !Properties::test_pass1Only();

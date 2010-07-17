@@ -69,7 +69,7 @@ SecondPass::parseModule(const Token& expr)
     assert(expr[3].isNested() && expr[3].leftToken() == kBraceOpen);
 
     {
-      ScopeHelper scopeHelper(fScope);
+      ScopeHelper scopeHelper(fScope, true);
 
       ModuleHelper moduleHelper(this, modName);
       parseTopExprlist(expr[3]);
@@ -1792,7 +1792,7 @@ SecondPass::parseBlock(const Token& expr)
   assert(expr.leftToken() == kBraceOpen);
   assert(expr.rightToken() == kBraceClose);
 
-  ScopeHelper localScope(fScope);
+  ScopeHelper localScope(fScope, false);
 
   if (expr.count() == 0) {
     return new SymbolNode(expr.srcpos(), String("unspecified"));
@@ -2037,10 +2037,16 @@ SecondPass::parseExpr(const Token& expr)
 AptNode*
 SecondPass::parse(const Token& exprs)
 {
-  assert(exprs.isSeq());
+  {
+    // let the complete parse run in its own scope to force an explicit export
+    // run
+    ScopeHelper scopeHelper(fScope, true, false);
 
-  fRootNode = new CompileUnitNode(SrcPos());
-  parseTopExprlist(exprs);
+    assert(exprs.isSeq());
+
+    fRootNode = new CompileUnitNode(SrcPos());
+    parseTopExprlist(exprs);
+  }
 
   return fRootNode.release();
 }

@@ -27,7 +27,7 @@ namespace heather
   class Macro;
   class AptNode;
 
-  
+
   //--------------------------------------------------------------------------
 
   class Scope : public RefCountable
@@ -107,7 +107,7 @@ namespace heather
     bool exportSymbolIsFinal(const String& sym) const;
     void registerSymbolForExport(const String& sym, VizType viz, bool asFinal);
 
-    void exportSymbols(Scope* dstScope);
+    void exportSymbols(Scope* dstScope, bool propagateOuter);
 
     //-------- global defs
 
@@ -146,7 +146,7 @@ namespace heather
     const ScopeItem* lookupItem(const SrcPos& srcpos,
                                 const String& name, bool showError) const;
 
-    VizType reduceVizType(VizType in);
+    VizType reduceVizType(VizType in, bool propagateOuter) const;
 
     const Scope::ScopeItem* lookupItemLocalImpl(const SrcPos& srcpos,
                                                 const String& name,
@@ -156,7 +156,7 @@ namespace heather
     //-------- data members
 
     typedef std::map<String, std::map<String, Ptr<ScopeItem> > > ScopeMap;
-    
+
     ScopeMap   fMap;
     Ptr<Scope> fParent;
 
@@ -176,9 +176,11 @@ namespace heather
   class ScopeHelper
   {
   public:
-    ScopeHelper(Ptr<Scope>& scope)
+    ScopeHelper(Ptr<Scope>& scope, bool doExport, bool propagateOuter = true)
       : fScopeLoc(scope),
-        fPrevScope(scope)
+        fPrevScope(scope),
+        fDoExport(doExport),
+        fPropagateOuter(propagateOuter)
     {
       fScopeLoc = new Scope(fScopeLoc);
     }
@@ -188,8 +190,8 @@ namespace heather
       Scope* scope = fScopeLoc;
       while (scope != NULL && scope != fPrevScope) {
         Scope* parent = scope->parent();
-        if (parent != NULL)
-          scope->exportSymbols(parent);
+        if (parent != NULL && fDoExport)
+          scope->exportSymbols(parent, fPropagateOuter);
         scope = parent;
       }
       assert(scope == fPrevScope);
@@ -199,6 +201,8 @@ namespace heather
   private:
     Ptr<Scope>& fScopeLoc;
     Ptr<Scope> fPrevScope;
+    bool fDoExport;
+    bool fPropagateOuter;
   };
 };                              // namespace
 
