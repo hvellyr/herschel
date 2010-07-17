@@ -668,7 +668,7 @@ SecondPass::parseSlotDef(const Token& expr)
   const TokenVector& seq = expr.children();
   String slotName = seq[ofs].idValue();
   if (isQualified(slotName)) {
-    errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
+    errorf(seq[ofs].srcpos(), E_QualifiedSlot,
            "Slotnames must not be qualified.  Ignore namespace");
     slotName = baseName(slotName);
   }
@@ -1005,6 +1005,11 @@ SecondPass::parseParameter(const Token& expr)
   ParamFlags paramType = kPosArg;
   if (seq[ofs] == kKeyarg) {
     key = seq[ofs].idValue();
+    if (isQualified(key)) {
+      errorf(seq[ofs].srcpos(), E_QualifiedParamKey,
+             "Named Parameter keys must not be qualified.  Ignore namespace");
+      key = baseName(key);
+    }
 
     assert(expr.count() >= 2);
     ofs++;
@@ -1015,6 +1020,11 @@ SecondPass::parseParameter(const Token& expr)
   assert(seq[ofs] == kSymbol);
 
   String sym = seq[ofs].idValue();
+  if (isQualified(sym)) {
+    errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
+           "Parameter names must not be qualified.  Ignore namespace");
+    sym = baseName(sym);
+  }
   ofs++;
 
   Type type;
