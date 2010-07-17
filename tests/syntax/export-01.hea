@@ -1,3 +1,5 @@
+module abc ("abc")
+
 export (*)
 export (abc, xyz)
 export (*) as final
@@ -19,3 +21,6 @@ export public (abc, xyz)
 export public (abc, mno, xyz)
 export public (*) as final
 export public (abc, mno, xyz) as final
+
+def f0()
+  true

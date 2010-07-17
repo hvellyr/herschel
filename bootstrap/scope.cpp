@@ -129,7 +129,7 @@ void
 Scope::registerScopeItem(const String& name, ScopeItem* item)
 {
   assert(item != NULL);
-  assert(lookupItemLocal(SrcPos(), name, false) == NULL);
+  assert(lookupItemLocalImpl(SrcPos(), name, false, false) == NULL);
 
   String base = heather::baseName(name);
   String ns = heather::nsName(name);
@@ -146,12 +146,21 @@ const Scope::ScopeItem*
 Scope::lookupItemLocal(const SrcPos& srcpos,
                        const String& name, bool showError) const
 {
+  return lookupItemLocalImpl(srcpos, name, showError, true);
+}
+
+
+const Scope::ScopeItem*
+Scope::lookupItemLocalImpl(const SrcPos& srcpos,
+                           const String& name, bool showError,
+                           bool doAutoMatch) const
+{
   String base = heather::baseName(name);
   String ns = heather::nsName(name);
 
   ScopeMap::const_iterator it = fMap.find(base);
   if (it != fMap.end()) {
-    if (!isQualified(name)) {
+    if (doAutoMatch && !isQualified(name)) {
       if (it->second.size() == 1) {
         return it->second.begin()->second.obj();
       }
@@ -162,7 +171,7 @@ Scope::lookupItemLocal(const SrcPos& srcpos,
              vit != it->second.end();
              vit++)
         {
-          String fullKey = qualifiedId(vit->first, it->first);
+          String fullKey = qualifyId(vit->first, it->first);
           errorf(vit->second->srcpos(), E_AmbiguousSym,
                  "symbol '%s' was defined here", (const char*)StrHelper(fullKey));
         }
@@ -186,7 +195,8 @@ Scope::lookupItem(const SrcPos& srcpos,
   const Scope* scope = this;
 
   while (scope != NULL) {
-    const ScopeItem* si = scope->lookupItemLocal(srcpos, name, showError);
+    const ScopeItem* si = scope->lookupItemLocalImpl(srcpos, name,
+                                                     showError, true);
     if (si != NULL)
       return si;
     scope = scope->parent();
@@ -209,9 +219,11 @@ Scope::hasName(const String& name, SrcPos* srcpos) const
 
 
 bool
-Scope::hasNameLocal(const String& name, SrcPos* srcpos) const
+Scope::hasNameLocal(const String& name, SrcPos* srcpos,
+                    bool doAutoMatch) const
 {
-  const ScopeItem* si = lookupItemLocal(SrcPos(), name, false);
+  const ScopeItem* si = lookupItemLocalImpl(SrcPos(), name, false,
+                                            doAutoMatch);
   if (si != NULL) {
     *srcpos = si->srcpos();
     return true;
@@ -225,7 +237,7 @@ Scope::checkForRedefinition(const SrcPos& srcpos,
                             const String& sym) const
 {
   SrcPos firstSrcpos;
-  if (hasNameLocal(sym, &firstSrcpos)) {
+  if (hasNameLocal(sym, &firstSrcpos, false)) {
     errorf(srcpos, E_Redefinition,
            "Redefinition of '%s'.", (const char*)StrHelper(sym));
     errorf(firstSrcpos, E_Redefinition,
@@ -405,7 +417,7 @@ Scope::dumpDebug() const
          vit != it->second.end();
          vit++)
     {
-      String key = qualifiedId(vit->first, it->first);
+      String key = qualifyId(vit->first, it->first);
       fprintf(stderr, "%s\n", (const char*)StrHelper(key));
     }
   }
@@ -487,7 +499,7 @@ Scope::exportSymbols(Scope* dstScope)
              vit != it->second.end();
              vit++)
         {
-          String fullKey = qualifiedId(vit->first, it->first);
+          String fullKey = qualifyId(vit->first, it->first);
           dstScope->registerScopeItem(fullKey, vit->second);
           if (reducedVizType != kPrivate)
             dstScope->registerSymbolForExport(fullKey, reducedVizType, isFinal);
@@ -506,7 +518,7 @@ Scope::exportSymbols(Scope* dstScope)
            vit != it->second.end();
            vit++)
       {
-        String fullKey = qualifiedId(vit->first, it->first);
+        String fullKey = qualifyId(vit->first, it->first);
 
         VizType vizType = exportSymbolVisibility(fullKey);
         if (vizType != kPrivate) {

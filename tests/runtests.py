@@ -85,6 +85,7 @@ class TestRunner:
                 return
             test_count += 1
             if not errtest_func(test_file, what_tag, passid, erroutput):
+                self.test_run += 1
                 return
 
 
@@ -92,6 +93,7 @@ class TestRunner:
         if expected_file:
             test_count += 1
             if not self.compare_XML_result_with_file(what_tag, output, expected_file):
+                self.test_run += 1
                 return
         else:
             if self.verbose:

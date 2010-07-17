@@ -202,43 +202,6 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class ModuleNode : public AptNode
-  {
-  public:
-    ModuleNode(const SrcPos& srcpos,
-               const String& modName, const String& publicId);
-    virtual ModuleNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
-
-  private:
-    String fModName;
-    String fPublicId;
-  };
-
-
-  //--------------------------------------------------------------------------
-
-  class ExportNode : public AptNode
-  {
-  public:
-    ExportNode(const SrcPos& srcpos,
-               VizType viz,
-               bool isFinal,
-               const StringList& symbols);
-    virtual ExportNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
-
-    const char* vizAttr(VizType viz) const;
-
-  private:
-    VizType fViz;
-    bool    fIsFinal;
-    StringList fSymbols;
-  };
-
-
-  //--------------------------------------------------------------------------
-
   class ImportNode : public AptNode
   {
   public:

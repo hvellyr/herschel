@@ -17,8 +17,11 @@ using namespace heather;
 
 
 String
-heather::qualifiedId(const String& ns, const String& name)
+heather::qualifyId(const String& ns, const String& name)
 {
+  if (isQualified(name) || ns.isEmpty())
+    return name;
+
   return ns + "|" + name;
 }
 
