@@ -70,6 +70,7 @@ namespace heather
     E_MissingUnitSign     = 0x4028,
     E_UnknownSlotFlag     = 0x4029,
     E_SuperGenericType    = 0x4030,
+    E_QualifiedLocalSym   = 0x4031,
 
     // enums
     E_BadEnumItemList     = 0x4050,

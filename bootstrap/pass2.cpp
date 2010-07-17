@@ -610,6 +610,12 @@ SecondPass::parseAliasDef(const Token& expr, bool isLocal)
 
   const TokenVector& seq = expr.children();
   String aliasName = seq[ofs].idValue();
+  if (isLocal && isQualified(aliasName)) {
+    errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
+           "Local symbol in definition must not be qualified.  "
+           "Ignore namespace");
+    aliasName = baseName(aliasName);
+  }
   ofs++;
 
   TypeVector generics;
@@ -661,6 +667,11 @@ SecondPass::parseSlotDef(const Token& expr)
 
   const TokenVector& seq = expr.children();
   String slotName = seq[ofs].idValue();
+  if (isQualified(slotName)) {
+    errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
+           "Slotnames must not be qualified.  Ignore namespace");
+    slotName = baseName(slotName);
+  }
   ofs++;
 
   Type slotType;
@@ -746,6 +757,12 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs,
 
   const TokenVector& seq = expr.children();
   String sym = seq[ofs].idValue();
+  if (isLocal && isQualified(sym)) {
+    errorf(expr[ofs].srcpos(), E_QualifiedLocalSym,
+           "Local symbol in definition must not be qualified.  "
+           "Ignore namespace");
+    sym = baseName(sym);
+  }
   ofs++;
 
   Type type;
@@ -792,6 +809,13 @@ SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
 
   assert(expr[ofs] == kSymbol);
   String sym = expr[ofs].idValue();
+  if (isLocal && isQualified(sym)) {
+    errorf(expr[ofs].srcpos(), E_QualifiedLocalSym,
+           "Local symbol in definition must not be qualified.  "
+           "Ignore namespace");
+    sym = baseName(sym);
+  }
+
   ofs++;
 
   assert(expr[ofs].isNested());
