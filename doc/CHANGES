@@ -31,10 +31,6 @@ Visibility, export
   - exports are used to make definitions from inside the module scope
     visible to the outside.
 
-    public -> import to all
-    protected -> import to outer modules (if any, otherwise an error)
-    private -> ?
-
     export public(...)
     export outer(...)
     export inner(...)
@@ -84,6 +80,10 @@ Visibility, export
       definitions visible to all modules up to the file (compile unit
       level) export to "outer" (the outer circle).  To make definitions
       visible to all export to "public".
+
+    - symbols defines outside of a (formal) module are nevertheless subject
+      to export.  The must also be exported with 'export public' to be
+      visible outside of this compile unit.
 
 
   - files imported behave by definition as "interface", i.e. included

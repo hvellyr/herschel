@@ -244,7 +244,7 @@ FirstPass::parseModule()
       Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
 
       {
-        ScopeHelper scopeHelper(fScope);
+        ScopeHelper scopeHelper(fScope, true);
 
         ModuleHelper moduleScope(this, modName.idValue());
         parseSequence(ModuleParser(),
@@ -3668,11 +3668,17 @@ FirstPass::parse()
 {
   Token seq;
 
-  nextToken();
-  while (fToken != kEOF) {
-    Token n = parseTop(kNonScopedDef);
-    if (n.isSet())
-      seq << n;
+  {
+    // let the complete parse run in its own scope to force an explicit export
+    // run
+    ScopeHelper scopeHelper(fScope, true, false);
+
+    nextToken();
+    while (fToken != kEOF) {
+      Token n = parseTop(kNonScopedDef);
+      if (n.isSet())
+        seq << n;
+    }
   }
 
   return seq;

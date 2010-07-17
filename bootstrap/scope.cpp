@@ -408,7 +408,7 @@ Scope::lookupVar(const String& name, bool showAmbiguousSymDef) const
 void
 Scope::dumpDebug() const
 {
-  fprintf(stderr, "------- Scope Dump ----------------------\n");
+  fprintf(stderr, "------- Scope Dump [%p] ----------------------\n", this);
   for (ScopeMap::const_iterator it = fMap.begin();
        it != fMap.end();
        it++)
@@ -463,7 +463,7 @@ Scope::registerSymbolForExport(const String& sym, VizType viz, bool isFinal)
 
 
 VizType
-Scope::reduceVizType(VizType in)
+Scope::reduceVizType(VizType in, bool propagateOuter) const
 {
   switch (in) {
   case kPrivate:
@@ -471,7 +471,7 @@ Scope::reduceVizType(VizType in)
   case kInner:
     return kPrivate;
   case kOuter:
-    return kOuter;
+    return propagateOuter ? kOuter : kPrivate;
   case kPublic:
     return kPublic;
   }
@@ -481,14 +481,14 @@ Scope::reduceVizType(VizType in)
 
 
 void
-Scope::exportSymbols(Scope* dstScope)
+Scope::exportSymbols(Scope* dstScope, bool propagateOuter)
 {
   if (shouldExportSymbol(String("*")))
   {
     // export all
     VizType vizAllType = exportSymbolVisibility(String("*"));
     if (vizAllType != kPrivate) {
-      VizType reducedVizType = reduceVizType(vizAllType);
+      VizType reducedVizType = reduceVizType(vizAllType, propagateOuter);
       bool isFinal = exportSymbolIsFinal(String("*"));
 
       for (ScopeMap::const_iterator it = fMap.begin();
@@ -522,7 +522,7 @@ Scope::exportSymbols(Scope* dstScope)
 
         VizType vizType = exportSymbolVisibility(fullKey);
         if (vizType != kPrivate) {
-          VizType reducedVizType = reduceVizType(vizType);
+          VizType reducedVizType = reduceVizType(vizType, propagateOuter);
           bool isFinal = exportSymbolIsFinal(fullKey);
 
           dstScope->registerScopeItem(fullKey, vit->second);
