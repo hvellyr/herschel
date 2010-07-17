@@ -1,0 +1,8 @@
+def core|f()
+  let abc|exp(a)
+    a ** 2
+
+def h()
+  let abc|retval = true
+  abc|retval
+
