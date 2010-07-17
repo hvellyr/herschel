@@ -71,6 +71,8 @@ namespace heather
     E_UnknownSlotFlag     = 0x4029,
     E_SuperGenericType    = 0x4030,
     E_QualifiedLocalSym   = 0x4031,
+    E_QualifiedParamKey   = 0x4032,
+    E_QualifiedSlot       = 0x4033,
 
     // enums
     E_BadEnumItemList     = 0x4050,
