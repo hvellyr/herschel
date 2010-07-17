@@ -11,7 +11,7 @@
 
 namespace heather
 {
-  String qualifiedId(const String& ns, const String& name);
+  String qualifyId(const String& ns, const String& name);
   bool isQualified(const String& sym);
 
   String baseName(const String& sym);

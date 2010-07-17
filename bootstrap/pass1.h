@@ -15,6 +15,7 @@
 #include "errcodes.h"
 #include "macro.h"
 #include "parser.h"
+#include "pass.h"
 #include "port.h"
 #include "refcountable.h"
 #include "scope.h"
@@ -33,7 +34,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class FirstPass
+  class FirstPass : public AbstractPass
   {
   public:
     FirstPass(Parser* parser, const Token& currentToken, Scope* scope);
@@ -213,8 +214,6 @@ namespace heather
     MacroType determineMacroType(const Token& macroName,
                                  const MacroPatternVector& patterns);
 
-    String qualifiedIdForLookup(const String& id) const;
-
     //-------- macro calls
 
     Token parseMakeMacroCall(const Token& expr, const TokenVector& args,
@@ -254,39 +253,10 @@ namespace heather
     Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 
 
-    String currentModuleName() const;
-    void pushModule(const String& name);
-    void popModule();
-
-
-    friend class ModuleHelper;
-    class ModuleHelper
-    {
-    public:
-      ModuleHelper(FirstPass* pass, const String& name)
-        : fPass(pass)
-      {
-        fPass->pushModule(name);
-      }
-
-      ~ModuleHelper()
-      {
-        fPass->popModule();
-      }
-
-      FirstPass* fPass;
-    };
-
-
     //-------- data members
 
-    Ptr<Parser> fParser;
     Token       fToken;
     bool        fEvaluateExprs;
-    Ptr<Scope>  fScope;
-
-    String            fCurrentModuleName;
-    std::list<String> fModuleNameStack;
   };
 };
 

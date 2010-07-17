@@ -19,6 +19,7 @@ SOURCES =         \
 	option.cpp      \
 	parser.cpp      \
 	parsertypes.cpp \
+	pass.cpp        \
 	pass1.cpp       \
 	pass2.cpp       \
 	port.cpp        \
@@ -48,6 +49,7 @@ HEADERS =         \
 	option.h        \
 	parser.h        \
 	parsertypes.h   \
+	pass.h          \
 	pass1.h         \
 	pass2.h         \
 	port.h          \

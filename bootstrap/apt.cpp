@@ -103,27 +103,27 @@ displayNodeList(Port<Octet>* port,
 }
 
 
-static void
-displayStringList(Port<Octet>* port,
-                  const char* outerTagName, const char* tagName,
-                  const StringList& strlist)
-{
-  if (!strlist.empty())
-    displayOpenTag(port, outerTagName);
+// static void
+// displayStringList(Port<Octet>* port,
+//                   const char* outerTagName, const char* tagName,
+//                   const StringList& strlist)
+// {
+//   if (!strlist.empty())
+//     displayOpenTag(port, outerTagName);
 
-  for (StringList::const_iterator it = strlist.begin();
-       it != strlist.end();
-       it++)
-  {
-    String str = (*it);
-    displayOpenTag(port, tagName);
-    display(port, str);
-    displayCloseTag(port, tagName);
-  }
+//   for (StringList::const_iterator it = strlist.begin();
+//        it != strlist.end();
+//        it++)
+//   {
+//     String str = (*it);
+//     displayOpenTag(port, tagName);
+//     display(port, str);
+//     displayCloseTag(port, tagName);
+//   }
 
-  if (!strlist.empty())
-    displayCloseTag(port, outerTagName);
-}
+//   if (!strlist.empty())
+//     displayCloseTag(port, outerTagName);
+// }
 
 
 static void
@@ -463,92 +463,6 @@ CompileUnitNode::clone() const
   Ptr<CompileUnitNode> node = new CompileUnitNode(fSrcPos);
   copyNodes(&node->fChildren, &fChildren);
   return node.release();
-}
-
-
-//----------------------------------------------------------------------------
-
-ModuleNode::ModuleNode(const SrcPos& srcpos,
-                       const String& modName, const String& publicId)
-  : AptNode(srcpos),
-    fModName(modName),
-    fPublicId(publicId)
-{
-}
-
-
-void
-ModuleNode::display(Port<Octet>* port) const
-{
-  displayOpenTag(port, "module");
-
-  displayTag(port, "mod-name", fModName);
-  displayTag(port, "public-id", fPublicId);
-
-  displayNodeList(port, "defines", fChildren);
-
-  displayCloseTag(port, "module");
-}
-
-
-ModuleNode*
-ModuleNode::clone() const
-{
-  Ptr<ModuleNode> mod = new ModuleNode(fSrcPos, fModName, fPublicId);
-  copyNodes(&mod->fChildren, &fChildren);
-  return mod.release();
-}
-
-
-//----------------------------------------------------------------------------
-
-ExportNode::ExportNode(const SrcPos& srcpos,
-                       VizType viz,
-                       bool isFinal,
-                       const StringList& symbols)
-  : AptNode(srcpos),
-    fViz(viz),
-    fIsFinal(isFinal)
-{
-  fSymbols.assign(symbols.begin(), symbols.end());
-}
-
-
-const char* ExportNode::vizAttr(VizType viz) const
-{
-  switch (viz) {
-  case kPrivate:
-    return "";
-  case kInner:
-    return "viz='inner'";
-  case kOuter:
-    return "viz='outer'";
-  case kPublic:
-    return "viz='public'";
-  }
-  return "";
-}
-
-
-void
-ExportNode::display(Port<Octet>* port) const
-{
-  StringBuffer attrs;
-  attrs << vizAttr(fViz);
-  if (fIsFinal)
-    attrs << " final='true'";
-
-  displayOpenTagAttrs(port, "export", StrHelper(attrs.toString()));
-
-  displayStringList(port, "symbols", "sym", fSymbols);
-  displayCloseTag(port, "export");
-}
-
-
-ExportNode*
-ExportNode::clone() const
-{
-  return new ExportNode(fSrcPos, fViz, fIsFinal, fSymbols);
 }
 
 

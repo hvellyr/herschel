@@ -43,8 +43,11 @@ namespace heather
     //! so return the \p srcpos where it was defined first.
     bool hasName(const String& name, SrcPos* srcpos) const;
 
-    //! Like hasName() but checks in the current scope only.
-    bool hasNameLocal(const String& name, SrcPos* srcpos) const;
+    //! Like hasName() but checks in the current scope only.  If doAutoMatch
+    //! is true the function maps a non-qualified \name to a solitary
+    //! available definition from any namespace.
+    bool hasNameLocal(const String& name, SrcPos* srcpos,
+                      bool doAutoMatch) const;
 
 
     bool checkForRedefinition(const SrcPos& srcpos,
@@ -144,6 +147,11 @@ namespace heather
                                 const String& name, bool showError) const;
 
     VizType reduceVizType(VizType in);
+
+    const Scope::ScopeItem* lookupItemLocalImpl(const SrcPos& srcpos,
+                                                const String& name,
+                                                bool showError,
+                                                bool doAutoMatch) const;
 
     //-------- data members
 

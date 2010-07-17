@@ -106,9 +106,9 @@ Parser::parse(Port<Char>* port, const String& srcName)
   assert(fState.fScope != NULL);
 
   try {
-    FirstPass firstPass(this, fState.fToken, fState.fScope);
+    Ptr<FirstPass> firstPass = new FirstPass(this, fState.fToken, fState.fScope);
 
-    Token parsedExprs = firstPass.parse();
+    Token parsedExprs = firstPass->parse();
 
     if (Properties::isTracePass1()) {
       Ptr<FilePort> stream = new FilePort(stdout);
@@ -123,9 +123,9 @@ Parser::parse(Port<Char>* port, const String& srcName)
 #endif
 
     if (doPass2) {
-      SecondPass secondPass(this, fState.fScope);
+      Ptr<SecondPass> secondPass = new SecondPass(this, fState.fScope);
 
-      Ptr<AptNode> apt = secondPass.parse(parsedExprs);
+      Ptr<AptNode> apt = secondPass->parse(parsedExprs);
       if (Properties::isTracePass2() && apt != NULL) {
         Ptr<FilePort> stream = new FilePort(stdout);
         display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
@@ -156,9 +156,9 @@ Parser::importFile(Port<Char>* port, const String& srcName)
   fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
 
   try {
-    FirstPass firstPass(this, fState.fToken, fState.fScope);
+    Ptr<FirstPass> firstPass = new FirstPass(this, fState.fToken, fState.fScope);
 
-    Token parsedExprs = firstPass.parse();
+    Token parsedExprs = firstPass->parse();
 
     if (Properties::isTraceImportFile())
       logf(kDebug, "Import file '%s'", (const char*)StrHelper(srcName));

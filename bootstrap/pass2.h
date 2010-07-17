@@ -14,6 +14,7 @@
 
 #include "apt.h"
 #include "parser.h"
+#include "pass.h"
 #include "port.h"
 #include "refcountable.h"
 #include "scope.h"
@@ -26,7 +27,7 @@ namespace heather
 {
   //--------------------------------------------------------------------------
 
-  class SecondPass
+  class SecondPass : public AbstractPass
   {
   public:
     SecondPass(Parser* parser, Scope* scope);
@@ -42,9 +43,9 @@ namespace heather
     AptNode* parseImport(const Token& expr);
 
 
-    void parseTopExprlist(AptNode* rootNode, const Token& expr);
+    void parseTopExprlist(const Token& expr);
 
-    AptNode* parseDef(const Token& expr);
+    AptNode* parseDef(const Token& expr, bool isLocal);
     AptNode* parseIf(const Token& expr);
     AptNode* parseOn(const Token& expr);
     AptNode* parseFor(const Token& expr);
@@ -60,13 +61,14 @@ namespace heather
     AptNode* parseParameter(const Token& expr);
 
     AptNode* parseTypeDef(const Token& expr, bool isType);
-    AptNode* parseAliasDef(const Token& expr);
+    AptNode* parseAliasDef(const Token& expr, bool isLocal);
     AptNode* parseSlotDef(const Token& expr);
-    AptNode* parseEnumDef(const Token& expr);
-    AptNode* parseMeasureDef(const Token& expr);
-    AptNode* parseUnitDef(const Token& expr);
-    AptNode* parseVarDef(const Token& expr, VardefFlags flags, int ofs);
-    AptNode* parseFunctionDef(const Token& expr);
+    AptNode* parseEnumDef(const Token& expr, bool isLocal);
+    AptNode* parseMeasureDef(const Token& expr, bool isLocal);
+    AptNode* parseUnitDef(const Token& expr, bool isLocal);
+    AptNode* parseVarDef(const Token& expr, VardefFlags flags, int ofs,
+                         bool isLocal);
+    AptNode* parseFunctionDef(const Token& expr, bool isLocal);
 
     AptNode* parseLiteralArray(const Token& expr);
     AptNode* parseLiteralVector(const Token& expr);
@@ -109,11 +111,8 @@ namespace heather
 
     //-------- data member
 
-    Ptr<Parser> fParser;
-    std::list<Ptr<AptNode> > fLastModules;
     std::set<String>         fCurrentGenericTypes;
-
-    Ptr<Scope>               fScope;
+    Ptr<AptNode> fRootNode;
   };
 };
 

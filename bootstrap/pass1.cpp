@@ -30,37 +30,10 @@ using namespace heather;
 //----------------------------------------------------------------------------
 
 FirstPass::FirstPass(Parser* parser, const Token& currentToken, Scope* scope)
-  : fParser(parser),
+  : AbstractPass(parser, scope),
     fToken(currentToken),
-    fEvaluateExprs(true),
-    fScope(scope)
+    fEvaluateExprs(true)
 { }
-
-
-//----------------------------------------------------------------------------
-
-String
-FirstPass::currentModuleName() const
-{
-  return fCurrentModuleName;
-}
-
-
-void
-FirstPass::pushModule(const String& name)
-{
-  fModuleNameStack.push_front(fCurrentModuleName);
-
-  fCurrentModuleName = qualifiedId(fCurrentModuleName, name);
-}
-
-
-void
-FirstPass::popModule()
-{
-  fCurrentModuleName = fModuleNameStack.front();
-  fModuleNameStack.pop_front();
-}
 
 
 //----------------------------------------------------------------------------
@@ -204,16 +177,6 @@ FirstPass::parseSequence(ParseFunctor functor,
 
 //----------------------------------------------------------------------------
 
-String
-FirstPass::qualifiedIdForLookup(const String& id) const
-{
-  // TODO
-  return id;
-}
-
-
-//----------------------------------------------------------------------------
-
 namespace heather
 {
   struct ModuleParser
@@ -223,13 +186,7 @@ namespace heather
       Token n = pass->parseTop(FirstPass::kNonScopedDef);
       if (n.isSet())
         result << n;
-      // else {
-      //   errorf(pass->fToken.srcpos(), E_UnexpectedToken,
-      //          "Parsing module definitions found unexpected token: %s",
-      //          (const char*)StrHelper(pass->fToken.toString()));
-      //   return false;
-      // }
-      
+
       return true;
     }
   };
@@ -300,7 +257,7 @@ FirstPass::parseModule()
     }
     else {
       fScope = new Scope(fScope);
-      fCurrentModuleName = qualifiedId(fCurrentModuleName, modName.idValue());
+      fCurrentModuleName = qualifyId(fCurrentModuleName, modName.idValue());
     }
   }
 
@@ -403,9 +360,9 @@ FirstPass::parseExport()
          it++)
     {
       if (*it == kSymbol) {
-        String fullId = ( isQualified(it->idValue()) 
+        String fullId = ( isQualified(it->idValue())
                           ? it->idValue()
-                          : qualifiedId(currentModuleName(), it->idValue()) );
+                          : qualifyId(currentModuleName(), it->idValue()) );
         fScope->registerSymbolForExport(fullId, vizType, isFinal);
       }
     }
@@ -978,7 +935,7 @@ FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
           fToken == kAt)
       {
         nextToken();
-      
+
         SrcPos pos = fToken.srcpos();
         Token type = parseTypeSpec(true);
         if (!type.isSet()) {
@@ -993,11 +950,11 @@ FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
       else if (autoCompleteTypes)
         paramSeq << Token(typeIntroToken.srcpos(), kColon)
                  << Token(typeIntroToken.srcpos(), kSymbol, "Any");
-      
+
       if (fToken == kAssign) {
         Token assignToken = fToken;
         nextToken();
-      
+
         SrcPos pos = fToken.srcpos();
         Token initExpr = parseExpr();
         if (!initExpr.isSet())
@@ -1116,8 +1073,8 @@ FirstPass::parseOn(ScopeType scopeType)
 
   Token keyToken = fToken;
 
-  String macroId = qualifiedIdForLookup(keyToken.idValue());
-  const Macro* macro = fScope->lookupMacro(keyToken.srcpos(), macroId, true);
+  const Macro* macro = fScope->lookupMacro(keyToken.srcpos(),
+                                           keyToken.idValue(), true);
   Token macroName = Token(keyToken.srcpos(), keyToken.idValue());
 
   if (macro != NULL) {
@@ -1295,8 +1252,8 @@ FirstPass::parseParamCall(const Token& expr,
                           bool shouldParseParams)
 {
   if (expr.isSymbol()) {
-    String macroId  = qualifiedIdForLookup(expr.idValue());
-    const Macro* macro = fScope->lookupMacro(expr.srcpos(), macroId, true);
+    const Macro* macro = fScope->lookupMacro(expr.srcpos(),
+                                             expr.idValue(), true);
     Token macroName = Token(expr.srcpos(), expr.idValue());
 
     if (macro != NULL) {
@@ -2759,8 +2716,8 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
 
   Token symToken = fToken;
 
-  String macroId = qualifiedIdForLookup(symToken.idValue());
-  const Macro* macro = fScope->lookupMacro(symToken.srcpos(), macroId, true);
+  const Macro* macro = fScope->lookupMacro(symToken.srcpos(),
+                                           symToken.idValue(), true);
   Token macroName = Token(symToken.srcpos(), symToken.idValue());
 
   if (macro != NULL) {
@@ -3557,8 +3514,8 @@ FirstPass::parseMacroDef(const Token& defToken)
     if (fEvaluateExprs) {
       MacroType mType = determineMacroType(macroNameToken, patterns);
 
-      String fullMacroName = qualifiedId(currentModuleName(),
-                                         macroNameToken.idValue());
+      String fullMacroName = qualifyId(currentModuleName(),
+                                       macroNameToken.idValue());
 
       if (fScope->checkForRedefinition(defToken.srcpos(), fullMacroName))
         return Token();

@@ -14,6 +14,7 @@
 #include "parsertypes.h"
 #include "pass2.h"
 #include "scope.h"
+#include "symbol.h"
 #include "token.h"
 #include "tokeneval.h"
 #include "tokenizer.h"
@@ -24,25 +25,23 @@ using namespace heather;
 //----------------------------------------------------------------------------
 
 SecondPass::SecondPass(Parser* parser, Scope* scope)
-  : fParser(parser),
-    fScope(scope)
-{ }
+  : AbstractPass(parser, scope)
+{
+}
 
 
 void
-SecondPass::parseTopExprlist(AptNode* rootNode, const Token& expr)
+SecondPass::parseTopExprlist(const Token& expr)
 {
+  assert(fRootNode != NULL);
+
   for (TokenVector::const_iterator it = expr.children().begin();
        it != expr.children().end();
        it++)
   {
-    Ptr<AptNode> targetNode = ( !fLastModules.empty()
-                                ? fLastModules.front().obj()
-                                : rootNode );
-
     Ptr<AptNode> n = parseExpr(*it);
     if (n != NULL)
-      targetNode->appendNode(n);
+      fRootNode->appendNode(n);
   }
 }
 
@@ -65,20 +64,23 @@ SecondPass::parseModule(const Token& expr)
     publicId = expr[2][0].stringValue();
   }
 
-  Ptr<ModuleNode> modNode = new ModuleNode(expr.srcpos(),
-                                           modName, publicId);
 
   if (expr.count() > 3) {
     assert(expr[3].isNested() && expr[3].leftToken() == kBraceOpen);
 
-    fLastModules.push_front(modNode.obj());
-    parseTopExprlist(modNode, expr[3]);
-    fLastModules.pop_front();
-  }
-  else
-    fLastModules.push_front(modNode.obj());
+    {
+      ScopeHelper scopeHelper(fScope);
 
-  return modNode.release();
+      ModuleHelper moduleHelper(this, modName);
+      parseTopExprlist(expr[3]);
+    }
+  }
+  else {
+    fScope = new Scope(fScope);
+    fCurrentModuleName = qualifyId(fCurrentModuleName, modName);
+  }
+
+  return NULL;
 }
 
 
@@ -123,7 +125,18 @@ SecondPass::parseExport(const Token& expr)
     isFinal = true;
   }
 
-  return new ExportNode(expr[0].srcpos(), vizType, isFinal, symbols);
+
+  for (StringList::const_iterator it = symbols.begin();
+       it != symbols.end();
+       it++)
+  {
+    String fullId = ( isQualified(*it)
+                      ? *it
+                      : qualifyId(currentModuleName(), *it) );
+    fScope->registerSymbolForExport(fullId, vizType, isFinal);
+  }
+
+  return NULL;
 }
 
 
@@ -433,6 +446,8 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
 
   const TokenVector& seq = expr.children();
   String typeName = seq[ofs].idValue();
+  String fullTypeName = qualifyId(currentModuleName(), typeName);
+
   ofs++;
 
   TypeVector generics;
@@ -547,17 +562,17 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
 
     FunctionSignature defApplySign(true,
                                    String("apply"),
-                                   Type::newTypeRef(typeName, genGenerics,
+                                   Type::newTypeRef(fullTypeName, genGenerics,
                                                     dummyConstraints),
                                    funcParams);
 
-    defType = Type::newClass(typeName, generics,
+    defType = Type::newClass(fullTypeName, generics,
                              inheritsFrom,
                              defApplySign,
                              protoSignatures);
   }
   else {
-    defType = Type::newType(typeName, generics,
+    defType = Type::newType(fullTypeName, generics,
                             inheritsFrom,
                             protoSignatures);
   }
@@ -565,13 +580,13 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
 
   fCurrentGenericTypes.clear();
 
-  if (fScope->checkForRedefinition(expr.srcpos(), typeName))
+  if (fScope->checkForRedefinition(expr.srcpos(), fullTypeName))
     return NULL;
 
-  fScope->registerType(expr.srcpos(), typeName, defType);
+  fScope->registerType(expr.srcpos(), fullTypeName, defType);
 
   return new TypeNode(expr.srcpos(),
-                      typeName,
+                      fullTypeName,
                       isClass,
                       defType,
                       defaultApplyParams,
@@ -582,7 +597,7 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
 
 
 AptNode*
-SecondPass::parseAliasDef(const Token& expr)
+SecondPass::parseAliasDef(const Token& expr, bool isLocal)
 {
   assert(fCurrentGenericTypes.empty());
 
@@ -617,9 +632,17 @@ SecondPass::parseAliasDef(const Token& expr)
     ofs += 2;
   }
 
-  Type aliasType = Type::newAlias(aliasName, generics, referedType);
+  String fullAliasName = ( isLocal
+                           ? aliasName
+                           : qualifyId(currentModuleName(), aliasName) );
 
-  fScope->registerType(expr.srcpos(), aliasName, aliasType);
+  if (fScope->checkForRedefinition(expr.srcpos(), fullAliasName))
+    return NULL;
+
+
+  Type aliasType = Type::newAlias(fullAliasName, generics, referedType);
+
+  fScope->registerType(expr.srcpos(), fullAliasName, aliasType);
 
   fCurrentGenericTypes.clear();
 
@@ -690,7 +713,7 @@ SecondPass::parseSlotDef(const Token& expr)
 
 
 AptNode*
-SecondPass::parseEnumDef(const Token& expr)
+SecondPass::parseEnumDef(const Token& expr, bool isLocal)
 {
   // TODO
   return NULL;
@@ -698,7 +721,7 @@ SecondPass::parseEnumDef(const Token& expr)
 
 
 AptNode*
-SecondPass::parseMeasureDef(const Token& expr)
+SecondPass::parseMeasureDef(const Token& expr, bool isLocal)
 {
   // TODO
   return NULL;
@@ -706,7 +729,7 @@ SecondPass::parseMeasureDef(const Token& expr)
 
 
 AptNode*
-SecondPass::parseUnitDef(const Token& expr)
+SecondPass::parseUnitDef(const Token& expr, bool isLocal)
 {
   // TODO
   return NULL;
@@ -714,7 +737,8 @@ SecondPass::parseUnitDef(const Token& expr)
 
 
 AptNode*
-SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs)
+SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs,
+                        bool isLocal)
 {
   assert(ofs >= 1);
   assert(ofs < expr.count());
@@ -736,19 +760,23 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs)
     ofs += 2;
   }
 
-  if (fScope->checkForRedefinition(expr.srcpos(), sym))
+  String fullSymName = ( isLocal
+                         ? sym
+                         : qualifyId(currentModuleName(), sym) );
+
+  if (fScope->checkForRedefinition(expr.srcpos(), fullSymName))
     return NULL;
 
   Ptr<AptNode> var = new VardefNode(expr.srcpos(),
-                                    sym, flags, type, initExpr);
-  fScope->registerVar(expr.srcpos(), sym, var);
+                                    fullSymName, flags, type, initExpr);
+  fScope->registerVar(expr.srcpos(), fullSymName, var);
 
   return var.release();
 }
 
 
 AptNode*
-SecondPass::parseFunctionDef(const Token& expr)
+SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
 {
   assert(expr.isSeq());
   assert(expr.count() >= 3);
@@ -810,12 +838,16 @@ SecondPass::parseFunctionDef(const Token& expr)
     ofs++;
   }
 
-  if (fScope->checkForRedefinition(expr.srcpos(), sym))
+  String fullFuncName = ( isLocal
+                          ? sym
+                          : qualifyId(currentModuleName(), sym) );
+
+  if (fScope->checkForRedefinition(expr.srcpos(), fullFuncName))
     return NULL;
 
   Ptr<AptNode> func = new FuncDefNode(expr.srcpos(),
-                                      sym, flags, params, type, body);
-  fScope->registerFunction(expr.srcpos(), sym, func);
+                                      fullFuncName, flags, params, type, body);
+  fScope->registerFunction(expr.srcpos(), fullFuncName, func);
   return func.release();
 }
 
@@ -831,41 +863,55 @@ SecondPass::newDefNode(AptNode* node, bool isLet)
 
 
 AptNode*
-SecondPass::parseDef(const Token& expr)
+SecondPass::parseDef(const Token& expr, bool isLocal)
 {
   assert(expr.count() >= 2);
   assert(expr[0] == kLetId || expr[0] == kDefId);
 
-  if (expr[1] == Parser::typeToken)
+  if (expr[1] == Parser::typeToken) {
+    if (isLocal) {
+      errorf(expr.srcpos(), E_LocalTypeDef,
+             "Local type definitions are not allowed");
+      return NULL;
+    }
     return parseTypeDef(expr, false);
+  }
 
-  else if (expr[1] == Parser::classToken)
+  else if (expr[1] == Parser::classToken) {
+    if (isLocal) {
+      errorf(expr.srcpos(), E_LocalTypeDef,
+             "Local type definitions are not allowed");
+      return NULL;
+    }
     return parseTypeDef(expr, true);
+  }
 
   else if (expr[1] == Parser::aliasToken)
-    return parseAliasDef(expr);
+    return parseAliasDef(expr, isLocal);
 
-  else if (expr[1] == Parser::slotToken)
+  else if (expr[1] == Parser::slotToken) {
+    assert(!isLocal);
     return parseSlotDef(expr);
+  }
 
   else if (expr[1] == Parser::enumToken)
-    return parseEnumDef(expr);
+    return parseEnumDef(expr, isLocal);
 
   else if (expr[1] == Parser::measureToken)
-    return parseMeasureDef(expr);
+    return parseMeasureDef(expr, isLocal);
 
   else if (expr[1] == Parser::unitToken)
-    return parseUnitDef(expr);
+    return parseUnitDef(expr, isLocal);
 
   else if (expr[1] == Parser::constToken)
-    return parseVarDef(expr, kConstVar, 2);
+    return parseVarDef(expr, kConstVar, 2, isLocal);
   else if (expr[1] == Parser::fluidToken)
-    return parseVarDef(expr, kFluidVar, 2);
+    return parseVarDef(expr, kFluidVar, 2, isLocal);
   else if (expr[1] == Parser::configToken)
-    return parseVarDef(expr, kConfigVar, 2);
+    return parseVarDef(expr, kConfigVar, 2, isLocal);
 
   else if (expr[1] == Parser::genericToken)
-    return parseFunctionDef(expr);
+    return parseFunctionDef(expr, isLocal);
 
   else if (expr[1] == Parser::charToken) {
     // should never come here actually
@@ -882,13 +928,13 @@ SecondPass::parseDef(const Token& expr)
   else if (expr[1] == kSymbol) {
     if (expr.count() >= 3) {
       if (expr[2].isNested())
-        return parseFunctionDef(expr);
+        return parseFunctionDef(expr, isLocal);
 
       assert(expr[2] == kAssign || expr[2] == kColon);
-      return parseVarDef(expr, kNormalVar, 1);
+      return parseVarDef(expr, kNormalVar, 1, isLocal);
     }
 
-    return parseVarDef(expr, kNormalVar, 1);
+    return parseVarDef(expr, kNormalVar, 1, isLocal);
   }
 
   assert(0);
@@ -1649,7 +1695,7 @@ SecondPass::parseSeq(const Token& expr)
   else if (first == kImportId)
     return parseImport(expr);
   else if (first == kDefId || first == kLetId) {
-    Ptr<AptNode> node = parseDef(expr);
+    Ptr<AptNode> node = parseDef(expr, first == kLetId);
     if (node != NULL)
       return newDefNode(node, first == kLetId);
     return NULL;
@@ -1959,9 +2005,8 @@ SecondPass::parse(const Token& exprs)
 {
   assert(exprs.isSeq());
 
-  Ptr<CompileUnitNode> node = new CompileUnitNode(SrcPos());
+  fRootNode = new CompileUnitNode(SrcPos());
+  parseTopExprlist(exprs);
 
-  parseTopExprlist(node, exprs);
-
-  return node.release();
+  return fRootNode.release();
 }
