@@ -1075,7 +1075,7 @@ FirstPass::parseOn(ScopeType scopeType)
 
   const Macro* macro = fScope->lookupMacro(keyToken.srcpos(),
                                            keyToken.idValue(), true);
-  Token macroName = Token(keyToken.srcpos(), keyToken.idValue());
+  Token macroName = Token(keyToken.srcpos(), baseName(keyToken.idValue()));
 
   if (macro != NULL) {
     TokenVector dummyArgs;
@@ -1254,7 +1254,7 @@ FirstPass::parseParamCall(const Token& expr,
   if (expr.isSymbol()) {
     const Macro* macro = fScope->lookupMacro(expr.srcpos(),
                                              expr.idValue(), true);
-    Token macroName = Token(expr.srcpos(), expr.idValue());
+    Token macroName = Token(expr.srcpos(), baseName(expr.idValue()));
 
     if (macro != NULL) {
       Token expr= parseMakeMacroCall(macroName, preScannedArgs,
@@ -2366,14 +2366,23 @@ FirstPass::parseExtend(ScopeType scope)
   Token modNameToken = fToken;
   nextToken();
 
-  if (fToken == kBraceOpen) {
-    Token code = parseTopOrExprList(true, scope);
-    if (code.isSet())
-      return Token() << extendToken << moduleToken
-                     << modNameToken << code;
+  if (fToken != kBraceOpen) {
+    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+    return scanUntilTopExprAndResume();
   }
 
-  return Token();
+  Token code;
+  {
+    ModuleHelper modHelper(this, modNameToken.idValue(), true);
+
+    code = parseTopOrExprList(true, scope);
+  }
+
+  if (code.isSet())
+    return Token() << extendToken << moduleToken
+                   << modNameToken << code;
+  else
+    return Token();
 }
 
 
@@ -2718,7 +2727,7 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
 
   const Macro* macro = fScope->lookupMacro(symToken.srcpos(),
                                            symToken.idValue(), true);
-  Token macroName = Token(symToken.srcpos(), symToken.idValue());
+  Token macroName = Token(symToken.srcpos(), baseName(symToken.idValue()));
 
   if (macro != NULL) {
     TokenVector dummyArgs;
@@ -4211,6 +4220,9 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
                               bool isLocal,
                               ScopeType scopeType)
 {
+  assert(expr == kSymbol);
+  assert(!isQualified(expr.idValue()));
+
   Ptr<SyntaxTable> syntaxTable = macro->syntaxTable();
 
   TokenVector filtered;

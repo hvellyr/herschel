@@ -1,0 +1,36 @@
+module core ("core")
+{
+  export outer (abc, cool|abc)
+
+  extend module cool
+  {
+    def macro abc
+    {
+      { abc() } -> { "test1" }
+    }
+
+    def macro mno
+    {
+      { mno() } -> { "test1b" }
+    }
+  }
+
+  def macro abc
+  {
+    { abc() } -> { "test2" }
+  }
+}
+
+
+def macro abc
+{
+  { abc() } -> { "test3" }
+}
+
+
+def f0()
+--  abc()
+  core|abc()
+  cool|abc()
+  cool|mno()
+  mno()
