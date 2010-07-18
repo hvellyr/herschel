@@ -173,6 +173,50 @@ SecondPass::parseImport(const Token& expr)
 //------------------------------------------------------------------------------
 
 void
+SecondPass::parseExtendImpl(NodeList* reqProtocol, const Token& expr)
+{
+  assert(expr.isSeq() && expr.count() == 4);
+  assert(expr[0] == kExtendId);
+  assert(expr[1] == kModuleId);
+  assert(expr[2] == kSymbol);
+  assert(expr[3].isNested());
+
+  String moduleName = expr[2].idValue();
+
+  {
+    // temporarily change the current module name
+    ModuleHelper modHelper(this, moduleName, true);
+
+    const TokenVector& children = expr[3].children();
+    for (size_t i = 0; i < children.size(); i++) {
+      Ptr<AptNode> node = parseExpr(children[i]);
+      if (node != NULL)
+        reqProtocol->push_back(node);
+    }
+  }
+}
+
+
+AptNode*
+SecondPass::parseExtend(const Token& expr)
+{
+  NodeList nodeList;
+
+  parseExtendImpl(&nodeList, expr);
+
+  for (size_t i = 0; i < nodeList.size(); i++) {
+    AptNode* n = nodeList[i];
+    if (n != NULL)
+      fRootNode->appendNode(n);
+  }
+
+  return NULL;
+}
+
+
+//------------------------------------------------------------------------------
+
+void
 SecondPass::parseTypeVector(TypeVector* generics, const Token& expr)
 {
   assert(expr.isNested());
@@ -503,7 +547,9 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
 
     for (size_t i = 0; i < defs.size(); i++) {
       assert(defs[i].isSeq() && defs[i].count() > 1);
-      assert(defs[i][0] == kDefId || defs[i][0] == kOnId);
+      assert(defs[i][0] == kDefId ||
+             defs[i][0] == kOnId ||
+             defs[i][0] == kExtendId);
 
       if (defs[i][0] == kDefId) {
         if (defs[i][1] == Parser::slotToken) {
@@ -532,6 +578,9 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
           Ptr<AptNode> on = parseExpr(defs[i]);
           onExprs.push_back(on);
         }
+      }
+      else if (defs[i][0] == kExtendId) {
+        parseExtendImpl(&reqProtocol, defs[i]);
       }
       else {
         errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
@@ -1779,6 +1828,10 @@ SecondPass::parseSeq(const Token& expr)
         return NULL;
       }
     }
+  }
+  else if (expr.count() == 4) {
+    if (expr[0] == kExtendId)
+      return parseExtend(expr);
   }
 
   return parseExpr(expr[0]);

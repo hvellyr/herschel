@@ -27,7 +27,7 @@ namespace heather
     AbstractPass(Parser* parser, Scope* scope);
 
     String currentModuleName() const;
-    void pushModule(const String& name);
+    void pushModule(const String& name, bool setName);
     void popModule();
 
 
@@ -35,10 +35,11 @@ namespace heather
     class ModuleHelper
     {
     public:
-      ModuleHelper(AbstractPass* pass, const String& name)
+      ModuleHelper(AbstractPass* pass, const String& name,
+                   bool setName = false)
         : fPass(pass)
       {
-        fPass->pushModule(name);
+        fPass->pushModule(name, setName);
       }
 
       ~ModuleHelper()

@@ -79,10 +79,12 @@ namespace heather
     AptNode* parseBlock(const Token& expr);
     AptNode* parseNested(const Token& expr);
 
+    AptNode* parseExtend(const Token& expr);
 
     Type parseTypeSpec(const Token& expr);
     Type parseTypeSpecImpl(const Token& expr);
 
+    void parseExtendImpl(NodeList* reqProtocol, const Token& expr);
 
 
     void transformCollForClause(const Token& token,
