@@ -68,7 +68,7 @@ Bootstrap compiler
 
   Implement last missing pass1 stuff
 
-    - what's about multiple return values?
+    - what's about multiple return values?  Spe?  Pass1?  Pass2?
 
     - pass2
 
@@ -90,8 +90,6 @@ Bootstrap compiler
            simply shortcuts this, so that extend is not required in
            apt-tree anymore.
 
-
-    - export of defs (esp. macros)
 
     - import
 
