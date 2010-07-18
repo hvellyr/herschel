@@ -29,7 +29,7 @@ def macro abc
 
 
 def f0()
---  abc()
+  |abc()
   core|abc()
   cool|abc()
   cool|mno()
