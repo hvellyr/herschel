@@ -158,10 +158,13 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
   String base = heather::baseName(name);
   String ns = heather::nsName(name);
 
+  // fprintf(stderr, "Look for '%s'\n", (const char*)StrHelper(name));
+
   ScopeMap::const_iterator it = fMap.find(base);
   if (it != fMap.end()) {
     if (doAutoMatch && !isQualified(name)) {
       if (it->second.size() == 1) {
+        // fprintf(stderr, " ... found something single\n"); 
         return it->second.begin()->second.obj();
       }
       else if (showError) {
@@ -179,10 +182,26 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
     }
     else {
       std::map<String, Ptr<ScopeItem> >::const_iterator vit = it->second.find(ns);
-      if (vit != it->second.end())
+      if (vit != it->second.end()) {
+        // fprintf(stderr, " ... found something special\n");
         return vit->second.obj();
+      }
     }
   }
+
+  for (ImportedScope::const_iterator it = fImportedScopes.begin();
+       it != fImportedScopes.end();
+       it++)
+  {
+    // fprintf(stderr, "Search for '%s' in '%s'\n",
+    //         (const char*)StrHelper(name), (const char*)StrHelper(it->first));
+    const ScopeItem* si = it->second->lookupItemLocalImpl(srcpos, name,
+                                                          showError,
+                                                          doAutoMatch);
+    if (si != NULL)
+      return si;
+  }
+
 
   return NULL;
 }
@@ -228,6 +247,15 @@ Scope::hasNameLocal(const String& name, SrcPos* srcpos,
     *srcpos = si->srcpos();
     return true;
   }
+
+  for (ImportedScope::const_iterator it = fImportedScopes.begin();
+       it != fImportedScopes.end();
+       it++)
+  {
+    if (it->second->hasNameLocal(name, srcpos, doAutoMatch))
+      return true;
+  }
+
   return false;
 }
 
@@ -247,6 +275,49 @@ Scope::checkForRedefinition(const SrcPos& srcpos,
   }
 
   return false;
+}
+
+
+bool
+Scope::hasScopeForFileLocal(const String& absPath) const
+{
+  ImportedScope::const_iterator it = fImportedScopes.find(absPath);
+  if (it != fImportedScopes.end())
+    return true;
+
+  for (ImportedScope::const_iterator it = fImportedScopes.begin();
+       it != fImportedScopes.end();
+       it++)
+  {
+    if (it->second->hasScopeForFile(absPath))
+      return true;
+  }
+
+  return false;
+}
+
+
+bool
+Scope::hasScopeForFile(const String& absPath) const
+{
+  const Scope* scope = this;
+
+  while (scope != NULL) {
+    if (scope->hasScopeForFileLocal(absPath))
+      return true;
+    scope = scope->parent();
+  }
+
+  return false;
+}
+
+
+void
+Scope::addImportedScope(const String& absPath, Scope* scope)
+{
+  ImportedScope::iterator it = fImportedScopes.find(absPath);
+  assert(it == fImportedScopes.end());
+  fImportedScopes.insert(std::make_pair(absPath, scope));
 }
 
 
@@ -409,6 +480,13 @@ void
 Scope::dumpDebug() const
 {
   fprintf(stderr, "------- Scope Dump [%p] ----------------------\n", this);
+  dumpDebugImpl();
+}
+
+
+void
+Scope::dumpDebugImpl() const
+{
   for (ScopeMap::const_iterator it = fMap.begin();
        it != fMap.end();
        it++)
@@ -419,6 +497,17 @@ Scope::dumpDebug() const
     {
       String key = qualifyId(vit->first, it->first);
       fprintf(stderr, "%s\n", (const char*)StrHelper(key));
+    }
+  }
+
+  if (!fImportedScopes.empty()) {
+    fprintf(stderr, "--- attached scopes: ----\n");
+    for (ImportedScope::const_iterator it = fImportedScopes.begin();
+         it != fImportedScopes.end();
+         it++)
+    {
+      fprintf(stderr, "[ATTACHED: %s]\n", (const char*)StrHelper(it->first));
+      it->second->dumpDebugImpl();
     }
   }
 }
@@ -481,7 +570,7 @@ Scope::reduceVizType(VizType in) const
 
 
 void
-Scope::exportSymbols(Scope* dstScope, bool propagateOuter)
+Scope::exportSymbols(Scope* dstScope, bool propagateOuter) const
 {
   if (shouldExportSymbol(String("*")))
   {
@@ -539,5 +628,20 @@ Scope::exportSymbols(Scope* dstScope, bool propagateOuter)
         }
       }
     }
+  }
+}
+
+
+void
+Scope::propagateImportedScopes(Scope* dstScope) const
+{
+  assert(this != dstScope);
+
+  for (ImportedScope::const_iterator it = fImportedScopes.begin();
+       it != fImportedScopes.end();
+       it++)
+  {
+    if (!dstScope->hasScopeForFileLocal(it->first))
+      dstScope->addImportedScope(it->first, it->second);
   }
 }

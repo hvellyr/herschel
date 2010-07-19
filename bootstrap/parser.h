@@ -59,16 +59,17 @@ namespace heather
   class Parser : public RefCountable
   {
   public:
-    Parser();
+    Parser(bool isParsingInterface = false);
 
     virtual AptNode* parse(Port<Char>* port, const String& srcName);
 
     CharRegistry* charRegistry() const;
     ConfigVarRegistry* configVarRegistry() const;
 
-    Token importFile(Port<Char>* port, const String& srcName);
+    bool importFile(const SrcPos& srcpos,
+                    const String& srcName, bool isPublic,
+                    Scope* currentScope);
     String lookupFile(const String& srcName, bool isPublic);
-    Port<Char>* lookupFileAndOpen(const String& srcName, bool isPublic);
 
     // predefined symbol tokens to speed up parsing
     static const Token aliasToken;
@@ -117,8 +118,14 @@ namespace heather
     friend class FirstPass;
     friend class SecondPass;
 
+    bool isParsingInterface() const;
+    Scope* scope() const;
+
     Token nextToken();
     void unreadToken(const Token& token);
+
+    AptNode* parseImpl(Port<Char>* port, const String& srcName,
+                       bool doTrace);
 
     class ParserState
     {
@@ -141,6 +148,7 @@ namespace heather
 
     ParserState            fState;
     std::list<ParserState> fParserStates;
+    bool                   fIsParsingInterface;
   };
 };
 

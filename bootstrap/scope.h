@@ -55,6 +55,11 @@ namespace heather
 
     void dumpDebug() const;
 
+    bool hasScopeForFileLocal(const String& absPath) const;
+    bool hasScopeForFile(const String& absPath) const;
+    void addImportedScope(const String& absPath, Scope* scope);
+
+
     //-------- types
 
     void registerType(const SrcPos& srcpos,
@@ -107,7 +112,8 @@ namespace heather
     bool exportSymbolIsFinal(const String& sym) const;
     void registerSymbolForExport(const String& sym, VizType viz, bool asFinal);
 
-    void exportSymbols(Scope* dstScope, bool propagateOuter);
+    void exportSymbols(Scope* dstScope, bool propagateOuter) const;
+    void propagateImportedScopes(Scope* dstScope) const;
 
     //-------- global defs
 
@@ -153,9 +159,13 @@ namespace heather
                                                 bool showError,
                                                 bool doAutoMatch) const;
 
+    void dumpDebugImpl() const;
+
+
     //-------- data members
 
     typedef std::map<String, std::map<String, Ptr<ScopeItem> > > ScopeMap;
+    typedef std::map<String, Ptr<Scope> > ImportedScope;
 
     ScopeMap   fMap;
     Ptr<Scope> fParent;
@@ -168,6 +178,8 @@ namespace heather
 
     typedef std::map<String, VisibilityPair> VizMap;
     VizMap fVisibility;
+
+    ImportedScope fImportedScopes;
   };
 
 
@@ -176,11 +188,13 @@ namespace heather
   class ScopeHelper
   {
   public:
-    ScopeHelper(Ptr<Scope>& scope, bool doExport, bool propagateOuter = true)
+    ScopeHelper(Ptr<Scope>& scope,
+                bool doExport,
+                bool isInnerScope)
       : fScopeLoc(scope),
         fPrevScope(scope),
         fDoExport(doExport),
-        fPropagateOuter(propagateOuter)
+        fIsInnerScope(isInnerScope)
     {
       fScopeLoc = new Scope(fScopeLoc);
     }
@@ -192,8 +206,14 @@ namespace heather
         Scope* parent = scope->parent();
         // printf("Export from %p to %p\n", scope, parent);
 
-        if (parent != NULL && fDoExport)
-          scope->exportSymbols(parent, fPropagateOuter);
+        if (parent != NULL && fDoExport) {
+          scope->exportSymbols(parent, fIsInnerScope);
+
+          if (!fIsInnerScope && parent == fPrevScope) {
+            // fprintf(stderr, "propagate imported scopes\n");
+            scope->propagateImportedScopes(parent);
+          }
+        }
         scope = parent;
       }
       assert(scope == fPrevScope);
@@ -204,7 +224,7 @@ namespace heather
     Ptr<Scope>& fScopeLoc;
     Ptr<Scope> fPrevScope;
     bool fDoExport;
-    bool fPropagateOuter;
+    bool fIsInnerScope;
   };
 };                              // namespace
 

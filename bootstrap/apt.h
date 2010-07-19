@@ -202,23 +202,6 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class ImportNode : public AptNode
-  {
-  public:
-    ImportNode(const SrcPos& srcpos,
-               const String& codeFile,
-               const StringStringMap& renames);
-    virtual ImportNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
-
-  private:
-    String fCodeFile;
-    StringStringMap fRenames;
-  };
-
-
-  //--------------------------------------------------------------------------
-
   class BindingNode : public AptNode
   {
   public:
