@@ -183,9 +183,6 @@ Parser::importFile(const SrcPos& srcpos,
 
   String absPath = lookupFile(srcName, isPublic);
 
-  if (Properties::isTraceImportFile())
-    logf(kDebug, "Import '%s'", (const char*)StrHelper(srcName));
-
   if (currentScope->hasScopeForFile(absPath)) {
     if (Properties::isTraceImportFile())
       logf(kDebug, "File '%s' already imported", (const char*)StrHelper(absPath));
@@ -200,6 +197,8 @@ Parser::importFile(const SrcPos& srcpos,
     return true;
   }
 
+  if (Properties::isTraceImportFile())
+    logf(kDebug, "Import '%s'", (const char*)StrHelper(srcName));
 
   try {
     Ptr<Parser> parser = new Parser(true);
