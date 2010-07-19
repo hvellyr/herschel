@@ -23,10 +23,11 @@ Visibility, export
 
   - importing into a module scope does not affect the overall namespace or
     module scope of the imported definitions; importing is about visibility
-    not about inclusion.  For example import a module "b" inside of module
-    "a" does not result in definitions of effective module scope "a.b", but
-    only in definitions of module "b" being visible in module "a", without
-    a file "c" necessarily deal with "b" definitions when importing "a".
+    not about inclusion.  For example importing a module "b" inside of
+    module "a" does not result in definitions of effective module scope
+    "a.b", but only in definitions of module "b" being visible in module
+    "a", without a file "c" necessarily have to deal with "b" definitions
+    when importing "a".
 
   - exports are used to make definitions from inside the module scope
     visible to the outside.
@@ -77,30 +78,30 @@ Visibility, export
 
       To make definitions visible to sibling modules (and their submodules)
       only export to "inner" (the inner circle of relations).  To make
-      definitions visible to all modules up to the file (compile unit
-      level) export to "outer" (the outer circle).  To make definitions
+      definitions visible to all modules up to the file (compile unit)
+      level export to "outer" (the outer circle).  To make definitions
       visible to all export to "public".
 
     - symbols defines outside of a (formal) module are nevertheless subject
-      to export.  The must also be exported with 'export public' to be
-      visible outside of this compile unit.
+      to visibility control.  They must also be exported with 'export
+      public' to be visible outside of this compile unit.
 
 
-  - files imported behave by definition as "interface", i.e. included
-    implementations are **not** part of the importing compile unit.  Only
-    the definitions of the imported file are actually imported.  (Note:
-    macros are imported as "code", however, since macros are evaluated
-    directly.  The same applies for char name and config variable
-    definitions.)
-
-    In this way we don't really need the "interface" keyword, since a
-    module behaves silently as interface if imported.  The compiler must
-    make sure however that two type/class definitions match if coming from
-    **interface** (i.e. imported) and module definition.  The rule is than
-    that if the compiler finds a symbol redefinition only must come from a
-    compile unit, all others must origin from imported files.  The
-    interface version may be reduced however (no "on init", no "on delete",
-    not slot init values, only abstract generic functions, etc.).
+| - files imported behave by definition as "interface", i.e. included
+|   implementations are **not** part of the importing compile unit.  Only
+|   the definitions of the imported file are actually imported.  (Note:
+|   macros are imported as "code", however, since macros are evaluated
+|   directly.  The same applies for char name and config variable
+|   definitions.)
+|
+|   In this way we don't really need the "interface" keyword, since a
+|   module behaves silently as interface if imported.  The compiler must
+|   make sure however that two type/class definitions match if coming from
+|   **interface** (i.e. imported) and module definition.  The rule is than
+|   that if the compiler finds a symbol redefinition only must come from a
+|   compile unit, all others must origin from imported files.  The
+|   interface version may be reduced however (no "on init", no "on delete",
+|   not slot init values, only abstract generic functions, etc.).
 
   - exporting as "final" declares a symbol to be not extensible.  It can be
     combined with any of the visible keywords:
@@ -113,42 +114,6 @@ Visibility, export
       export (init) as final
 
 
-
-
--- Visibility and finalization for modules.
---
---   Toplevel modules are always visible to the public.  Unless any class or
---   methods is export however this information is worthless.  Every
---   identifier must be exported to the public or protected domain, either
---   final or open.
---
---   The same applies to nested (i.e. inner) module:
---
---   def module printer("sijo/ixwick:printer") {
---     -- exporting the inner module:
---     export final public(printer-driver, DriverSettings)
---
---     def class DriverSettings() { ... {
---
---     def module printer-driver("sijo/ixwick:printer-driver") {
---       export public (init-driver, get-driver-settings)
---
---       def generic init-driver() ...
---       def generic get-driver-settings() : DriverSettings ...
---     }
---   }
---
---   Identifier from inner modules are seen by direct parent modules; if
---   protected they are seen by all ancestor modules until the top-module; if
---   public they are seen by all modules in the top-level module even in
---   siblings.  Symbols from inner modules must be explictely exported to the
---   outside from the top-level module if this is required:
---
---     def module printer("sijo/ixwick:printer") {
---       export final public(printer-driver|get-driver-settings, DriverSettings)
---
---     }
---
 
 
 
