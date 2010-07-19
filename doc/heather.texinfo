@@ -190,22 +190,24 @@ sources, which are sometimes not obvious (like D and Go).
 @node Source code representation, Storage model, Basic concepts, Basic concepts
 @section Source code representation
 
-Heather code is written in source files, normally taking the type
-extension @file{.hea} for implementation files or @file{.head} for
-interface files (see @ref{Source code organization} for the difference).
-A file can contain any number of modules, classes, types, and function
-definitions.  Technically the language does not impose and constraint on
-the way a source file is to be named or where it is to be located;
-there's especially no coupling of module or folder structure.
-
-When referring to a file from heather source code (e.g. in an import
-statement) the type extension is typically not specified (see
-@ref{Import}).
+Heather code is written in source files, normally taking the extension
+@file{.hea}.  No formal distinction between implementation and
+declaration files (``source'' and ``header'') is imposed by the
+language (see @ref{Source code organization} for details).  A file can
+contain any number of modules, classes, types, and function
+definitions.  Technically the language does not impose any constraint
+on the way a source file is to be named or where it is to be located;
+there's especially no coupling of module and folder structure or class
+and file name.
 
 Source files are expected to be encoded in UTF-8 encoding.  Note that
 the text is taken as is, i.e.@ no normalization is expected or applied.
 Note furthermore that identifiers are restricted to a less narrower set
-of characters though.
+of characters.
+
+When referring to a file from heather source code (e.g.@ in an import
+statement) the file extension is typically not specified (see
+@ref{Import}).
 
 
 @c --------------------------------------------------------------------
@@ -3415,51 +3417,45 @@ module stack
 @node Source code organization, Conditional compiling, Finalizing, Program structure
 @section Source code organization
 
-Components in heather consists normally of one @dfn{interface} file,
-describing the public API of the component, and one or multiple
-@dfn{program} files, containing the implementation.  If a program consists
-of one component only there's no need to have an interface file at all.
+Heather does not require separate interface and implementation files.
+A function definition is its declaration at the same time.  When the
+compiler @emph{imports} another file it only reads the file's
+declarations leaving its definitions aside.  Each file read via the
+@code{import} statement is read in @emph{interface} mode, i.e.@ only
+for its declarations.@footnote{Note that macros are importing
+@emph{with} their definition though.}
 
-Typically program files get the file extension @file{.hea} and interface files
-the extension @file{.head} (short for ``heather declaration'').
+In this way (small) projects can avoid writing explicit interface
+files.  For reusable components, however, it is often good practice to
+provide a declarating only interface file for the component.  This
+interface file then summaries the public API (types, functions,
+constants) the component offers.  Such a component interface is
+normally installed with a binary library.
 
-The interface simply contains all declarations the component is willing to
-export to the public, i.e.@ which should be visible and usable by other
-components.  A few things are to be considered:
+A few things are to be considered for interface files:
 
 @itemize
 @item functions and generic functions are to be declared as signature
-only, i.e.@ without body (notated using @code{...}).
+only, i.e.@ without body (notated using @code{...});
 @item types, classes, aliases, etc.@ must be declared with their complete
 type parameters, default parameter declarations and inheritance
-information.
-@item classes must declare their slots and their types, but does not need to
-declare any init values on them.
-@item @code{on init} or @code{on delete} hooks must not be declared in an
-interface.
+information;
+@item classes must declare their slots and their types, but do not need to
+declare any init values on them;
+@item @code{on init} or @code{on delete} hooks should not be declared in an
+interface, since they are ignored by the compiler.
 @end itemize
 
-The program files on contrary contain the implementation of the declared
-APIs.  Each program file has to declare itself being part of the same
-module by using the @code{module} declaration (giving the sample public
-id).  Declarations from the interface file does not need to be repeated
-if imported by the implementing module and if the interface file
-contains ``complete'' declarations.  If the interfile file contains
-however incomplete declarations (most likely of classes), the
-declarations must be repeated and completed in the program file.  The
-compiler will check that the interface and program declaration matches.
+If the interfile file contains incomplete declarations, the
+declarations must be repeated and completed in the implementation
+file.  The compiler will check that the interface and program
+declaration matches.
 
-Besides interface files program files may include other program files
-directly.  This is the normal situation for components which consists of
-multiple program files.
+All program files typically get the file extension @file{.hea},
+independant of whether interface or implementation file.
 
-Each program file have to restate the module declaration.  the import
-statement of such ``internal'' imports must be outside of the module
-declaration (since otherwise you get nested modules).
 
-The export directive in module declarations controls the publishing of
-symbols to other program files when program file import other program files
-directly.
+@subsection Source organization example
 
 As an example take the following (simplistic) stack implementation.  In the
 public API (aka "header" file) only the modules interface are declared and
@@ -3467,6 +3463,7 @@ the necessary symbols published:
 
 @example
 module stack ("eyestep/heather 1.0:stack")
+  export public (Stack, push, pop)
 
 def type Stack<T>
 @{
@@ -3475,18 +3472,19 @@ def type Stack<T>
 @}
 @end example
 
-In the program file the module is declared.  In this example the stack
-class is hidden in the implementation and published as an interfacing type
-@code{Stack} only.  This effectively prevents that others derive from
-@code{StackImpl} or see any automatically created accessor or modifier
-functions.  If this is required, however, the class itself would be
-declared in the interface file.
+In this example the stack class @code{StackImpl} is hidden in the
+implementation and published as an interfacing type @code{Stack} only.
+This effectively prevents that others derive from @code{StackImpl} or
+see any automatically created accessor or modifier functions.  If this
+is wanted the class itself would be declared in the interface file.
+
+There's no need to re-export the symbols @code{Stack}, @code{push} and
+@code{pop} here, since they are export from the interface already.
 
 @example
-import "stack.head"
+import "headers/stack"
 
 module stack ("eyestep/heather 1.0:stack")
-  export(Stack, push, pop)
 
 def class StackItem<T, _>(_obj, _tail)
 @{
@@ -3499,32 +3497,14 @@ def class StackImpl<T> : Stack<T>
   def slot root : StackItem<T>
 @}
 
-def push(self @@ StackImpl<'T>, obj @@ 'T) : StackImpl<'T>
-  self.root = StackItem<'T>(obj, self.root)
-  self
+def push(stack @@ StackImpl<'T>, obj @@ 'T) : StackImpl<'T>
+  stack.root = StackItem<'T>(obj, stack.root)
+  stack
 
-def pop(self @@ StackImpl<'T>) : 'T
-  let result = self.root.obj
-  self.root = self.root.tail
+def pop(stack @@ StackImpl<'T>) : 'T
+  let result = stack.root.obj
+  stack.root = stack.root.tail
   result
-@end example
-
-All symbols declared in the interface files are automatically exported; but
-not those which are imported from other interface files inside the
-interface declaration.  If this is required (e.g.@ for group interface
-files, which make all public symbols available for a complete subsystem)
-symbols must be explicitly exported with the @code{export} statement.
-
-@example
-module x11
-@{
-  export public (*)
-
-  import "xaw.head"
-  import "xft.head"
-
-  ...
-@}
 @end example
 
 
