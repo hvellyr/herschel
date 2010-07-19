@@ -840,7 +840,11 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs,
 
   Ptr<AptNode> initExpr;
   if (ofs + 1 < expr.count() && seq[ofs] == kAssign) {
-    initExpr = parseExpr(seq[ofs + 1]);
+    if (!fParser->isParsingInterface() ||
+        flags == kConstVar || flags == kConfigVar)
+    {
+      initExpr = parseExpr(seq[ofs + 1]);
+    }
     ofs += 2;
   }
 
@@ -924,7 +928,7 @@ SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
   if (ofs < expr.count()) {
     if (expr[ofs] == kEllipsis)
       flags |= kFuncIsAbstract;
-    else
+    else if (!fParser->isParsingInterface())
       body = parseExpr(expr[ofs]);
     ofs++;
   }
@@ -1037,6 +1041,7 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
 AptNode*
 SecondPass::parseIf(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   assert(expr.count() >= 3);
   assert(expr[0] == kIfId);
   assert(expr[1].isNested());
@@ -1117,7 +1122,8 @@ SecondPass::parseParameter(const Token& expr)
     if (seq[ofs] == kAssign) {
       assert(ofs + 1 < expr.count());
 
-      initExpr = parseExpr(seq[ofs + 1]);
+      if (!fParser->isParsingInterface())
+        initExpr = parseExpr(seq[ofs + 1]);
       ofs += 2;
 
       paramType = kNamedArg;
@@ -1254,6 +1260,7 @@ SecondPass::parseBinary(const Token& expr)
 AptNode*
 SecondPass::parseFunCall(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   assert(expr.isSeq());
   assert(expr.count() == 2);
   assert(expr[1].isNested());
@@ -1627,6 +1634,7 @@ SecondPass::transformCollForClause(const Token& token,
 AptNode*
 SecondPass::parseFor(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   assert(expr.isSeq());
   assert(expr.count() == 3 || expr.count() == 5);
   assert(expr[0] == kForId);
@@ -1740,6 +1748,7 @@ SecondPass::parseFor(const Token& expr)
 AptNode*
 SecondPass::parseSelect(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   // TODO
   return NULL;
 }
@@ -1748,6 +1757,7 @@ SecondPass::parseSelect(const Token& expr)
 AptNode*
 SecondPass::parseMatch(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   // TODO
   return NULL;
 }
@@ -1758,6 +1768,7 @@ SecondPass::parseMatch(const Token& expr)
 AptNode*
 SecondPass::parseTypeExpr(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   assert(expr.isSeq());
   assert(expr.count() == 2);
   assert(expr[0] == kSymbol);
@@ -1859,6 +1870,7 @@ SecondPass::parseSeq(const Token& expr)
 AptNode*
 SecondPass::parseBlock(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   assert(expr.isNested());
   assert(expr.leftToken() == kBraceOpen);
   assert(expr.rightToken() == kBraceClose);
@@ -1888,6 +1900,7 @@ SecondPass::parseBlock(const Token& expr)
 AptNode*
 SecondPass::parseLiteralVector(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   assert(expr.isNested());
   assert(expr.leftToken() == kLiteralVectorOpen);
   assert(expr.rightToken() == kParanClose);
@@ -1909,6 +1922,7 @@ SecondPass::parseLiteralVector(const Token& expr)
 AptNode*
 SecondPass::parseLiteralArray(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   assert(expr.isNested());
   assert(expr.leftToken() == kLiteralArrayOpen);
   assert(expr.rightToken() == kBracketClose);
@@ -1930,6 +1944,7 @@ SecondPass::parseLiteralArray(const Token& expr)
 AptNode*
 SecondPass::parseLiteralDict(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   assert(expr.isNested());
   assert(expr.leftToken() == kLiteralVectorOpen);
   assert(expr.rightToken() == kParanClose);
@@ -1956,6 +1971,7 @@ SecondPass::parseLiteralDict(const Token& expr)
 AptNode*
 SecondPass::parseNested(const Token& expr)
 {
+  assert(!fParser->isParsingInterface());
   assert(expr.isNested());
 
   switch (expr.leftToken()) {
