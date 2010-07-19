@@ -126,28 +126,28 @@ displayNodeList(Port<Octet>* port,
 // }
 
 
-static void
-displayStringStringMap(Port<Octet>* port,
-                       const char* outerTagName, const char* tagName,
-                       const char* firstPairTagName, const char* secPairTagName,
-                       const StringStringMap& strMap)
-{
-  if (!strMap.empty())
-    displayOpenTag(port, outerTagName);
+// static void
+// displayStringStringMap(Port<Octet>* port,
+//                        const char* outerTagName, const char* tagName,
+//                        const char* firstPairTagName, const char* secPairTagName,
+//                        const StringStringMap& strMap)
+// {
+//   if (!strMap.empty())
+//     displayOpenTag(port, outerTagName);
 
-  for (StringStringMap::const_iterator it = strMap.begin();
-       it != strMap.end();
-       it++)
-  {
-    displayOpenTag(port, tagName);
-    displayTag(port, firstPairTagName, it->first);
-    displayTag(port, secPairTagName, it->second);
-    displayCloseTag(port, tagName);
-  }
+//   for (StringStringMap::const_iterator it = strMap.begin();
+//        it != strMap.end();
+//        it++)
+//   {
+//     displayOpenTag(port, tagName);
+//     displayTag(port, firstPairTagName, it->first);
+//     displayTag(port, secPairTagName, it->second);
+//     displayCloseTag(port, tagName);
+//   }
 
-  if (!strMap.empty())
-    displayCloseTag(port, outerTagName);
-}
+//   if (!strMap.empty())
+//     displayCloseTag(port, outerTagName);
+// }
 
 
 static void
@@ -463,35 +463,6 @@ CompileUnitNode::clone() const
   Ptr<CompileUnitNode> node = new CompileUnitNode(fSrcPos);
   copyNodes(&node->fChildren, &fChildren);
   return node.release();
-}
-
-
-//----------------------------------------------------------------------------
-
-ImportNode::ImportNode(const SrcPos& srcpos,
-                       const String& codeFile,
-                       const StringStringMap& renames)
-  : AptNode(srcpos),
-    fCodeFile(codeFile)
-{
-  fRenames.insert(renames.begin(), renames.end());
-}
-
-
-void
-ImportNode::display(Port<Octet>* port) const
-{
-  displayOpenTag(port, "import");
-  displayTag(port, "file", fCodeFile);
-  displayStringStringMap(port, "renames", "rename", "from", "to", fRenames);
-  displayCloseTag(port, "import");
-}
-
-
-ImportNode*
-ImportNode::clone() const
-{
-  return new ImportNode(fSrcPos, fCodeFile, fRenames);
 }
 
 

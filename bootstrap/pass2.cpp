@@ -13,6 +13,7 @@
 #include "parser.h"
 #include "parsertypes.h"
 #include "pass2.h"
+#include "properties.h"
 #include "scope.h"
 #include "symbol.h"
 #include "token.h"
@@ -69,7 +70,7 @@ SecondPass::parseModule(const Token& expr)
     assert(expr[3].isNested() && expr[3].leftToken() == kBraceOpen);
 
     {
-      ScopeHelper scopeHelper(fScope, true);
+      ScopeHelper scopeHelper(fScope, true, true);
 
       ModuleHelper moduleHelper(this, modName);
       parseTopExprlist(expr[3]);
@@ -147,26 +148,43 @@ SecondPass::parseImport(const Token& expr)
   assert(expr[0] == kImportId);
   assert(expr[1].isString());
 
-  String codeFile = expr[1].stringValue();
-  StringStringMap renames;
+  String importFile = expr[1].stringValue();
+  // StringStringMap renames;
 
-  if (expr.count() >= 3) {
-    assert(expr[2].isNested() && expr[2].leftToken() == kParanOpen);
+  // if (expr.count() >= 3) {
+  //   assert(expr[2].isNested() && expr[2].leftToken() == kParanOpen);
 
-    Token renExprs = expr[2];
-    for (int i = 0; i < renExprs.count(); i++) {
-      Token renExpr = renExprs[i];
-      if (renExpr.isBinarySeq(kMapTo)) {
-        assert(renExpr[0].isSymbol());
-        assert(renExpr[2].isSymbol());
+  //   Token renExprs = expr[2];
+  //   for (int i = 0; i < renExprs.count(); i++) {
+  //     Token renExpr = renExprs[i];
+  //     if (renExpr.isBinarySeq(kMapTo)) {
+  //       assert(renExpr[0].isSymbol());
+  //       assert(renExpr[2].isSymbol());
 
-        renames.insert(std::make_pair(
-                         renExpr[0].idValue(), renExpr[2].idValue()));
-      }
+  //       renames.insert(std::make_pair(
+  //                        renExpr[0].idValue(), renExpr[2].idValue()));
+  //     }
+  //   }
+  // }
+
+  // return new ImportNode(expr[1].srcpos(), importFile, renames);
+
+  bool canImport = true;
+#if defined(UNITTESTS)
+  canImport = !Properties::test_dontImport();
+#endif
+
+  if (canImport) {
+    try
+    {
+      fParser->importFile(expr.srcpos(), importFile, false, fScope);
+    }
+    catch (const Exception& e) {
+      error(expr.srcpos(), E_UnknownInputFile, e.message());
     }
   }
 
-  return new ImportNode(expr[1].srcpos(), codeFile, renames);
+  return NULL;
 }
 
 
@@ -1845,7 +1863,7 @@ SecondPass::parseBlock(const Token& expr)
   assert(expr.leftToken() == kBraceOpen);
   assert(expr.rightToken() == kBraceClose);
 
-  ScopeHelper localScope(fScope, false);
+  ScopeHelper localScope(fScope, false, true);
 
   if (expr.count() == 0) {
     return new SymbolNode(expr.srcpos(), String("unspecified"));

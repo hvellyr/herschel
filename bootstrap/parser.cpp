@@ -52,11 +52,12 @@ const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
 
 //----------------------------------------------------------------------------
 
-Parser::Parser()
+Parser::Parser(bool isParsingInterface)
   : fState(ParserState(
              new CharRegistry,
              new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-             new Scope))
+             new Scope)),
+    fIsParsingInterface(isParsingInterface)
 {
 }
 
@@ -72,6 +73,20 @@ ConfigVarRegistry*
 Parser::configVarRegistry() const
 {
   return fState.fConfigVarRegistry;
+}
+
+
+Scope*
+Parser::scope() const
+{
+  return fState.fScope;
+}
+
+
+bool
+Parser::isParsingInterface() const
+{
+  return fIsParsingInterface;
 }
 
 
@@ -101,6 +116,14 @@ Parser::unreadToken(const Token& token)
 AptNode*
 Parser::parse(Port<Char>* port, const String& srcName)
 {
+  return parseImpl(port, srcName, true);
+}
+
+
+AptNode*
+Parser::parseImpl(Port<Char>* port, const String& srcName,
+                  bool doTrace)
+{
   fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
 
   assert(fState.fScope != NULL);
@@ -110,7 +133,7 @@ Parser::parse(Port<Char>* port, const String& srcName)
 
     Token parsedExprs = firstPass->parse();
 
-    if (Properties::isTracePass1()) {
+    if (doTrace && Properties::isTracePass1()) {
       Ptr<FilePort> stream = new FilePort(stdout);
       display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
       parsedExprs.toPort(stream);
@@ -128,7 +151,7 @@ Parser::parse(Port<Char>* port, const String& srcName)
       Ptr<SecondPass> secondPass = new SecondPass(this, fState.fScope);
 
       Ptr<AptNode> apt = secondPass->parse(parsedExprs);
-      if (Properties::isTracePass2() && apt != NULL) {
+      if (doTrace && Properties::isTracePass2() && apt != NULL) {
         Ptr<FilePort> stream = new FilePort(stdout);
         display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
         apt->display(stream);
@@ -150,28 +173,53 @@ Parser::parse(Port<Char>* port, const String& srcName)
 }
 
 
-Token
-Parser::importFile(Port<Char>* port, const String& srcName)
+bool
+Parser::importFile(const SrcPos& srcpos,
+                   const String& srcName, bool isPublic,
+                   Scope* currentScope)
 {
-  PortStackHelper helper(this);
+  typedef std::map<String, Ptr<Scope> > ImportCache;
+  static ImportCache sImportCache;
 
-  fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
+  String absPath = lookupFile(srcName, isPublic);
+
+  if (Properties::isTraceImportFile())
+    logf(kDebug, "Import '%s'", (const char*)StrHelper(srcName));
+
+  if (currentScope->hasScopeForFile(absPath)) {
+    if (Properties::isTraceImportFile())
+      logf(kDebug, "File '%s' already imported", (const char*)StrHelper(absPath));
+    return true;
+  }
+
+  ImportCache::iterator it = sImportCache.find(absPath);
+  if (it != sImportCache.end()) {
+    if (Properties::isTraceImportFile())
+      logf(kDebug, "Reuse imported '%s'", (const char*)StrHelper(absPath));
+    currentScope->addImportedScope(absPath, it->second);
+    return true;
+  }
+
 
   try {
-    Ptr<FirstPass> firstPass = new FirstPass(this, fState.fToken, fState.fScope);
+    Ptr<Parser> parser = new Parser(true);
+    Ptr<AptNode> apt = parser->parseImpl(new CharPort(new FilePort(absPath, "rb")),
+                                         srcName, false);
+    Ptr<Scope> scope = parser->scope();
 
-    Token parsedExprs = firstPass->parse();
+    currentScope->addImportedScope(absPath, scope);
 
-    if (Properties::isTraceImportFile())
-      logf(kDebug, "Import file '%s'", (const char*)StrHelper(srcName));
-
-    return parsedExprs;
+    sImportCache.insert(std::make_pair(absPath, scope));
   }
   catch (const Exception& e) {
-    logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
+    errorf(srcpos, E_UnknownInputFile,
+           "import '%s' failed: %s\n",
+           (const char*)StrHelper(absPath),
+           (const char*)StrHelper(e.message()));
+    return false;
   }
 
-  return Token();
+  return true;
 }
 
 
@@ -179,14 +227,6 @@ String
 Parser::lookupFile(const String& srcName, bool isPublic)
 {
   return srcName;
-}
-
-
-Port<Char>*
-Parser::lookupFileAndOpen(const String& srcName, bool isPublic)
-{
-  String absPath = lookupFile(srcName, isPublic);
-  return new CharPort(new FilePort(absPath, "rb"));
 }
 
 

@@ -244,7 +244,7 @@ FirstPass::parseModule()
       Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
 
       {
-        ScopeHelper scopeHelper(fScope, true);
+        ScopeHelper scopeHelper(fScope, true, true);
 
         ModuleHelper moduleScope(this, modName.idValue());
         parseSequence(ModuleParser(),
@@ -451,20 +451,14 @@ FirstPass::parseImport()
   if (fEvaluateExprs && canImport) {
     try
     {
-      bool isPublic = false;
       String srcName = importFile.stringValue();
-      Ptr<Port<Char> > file = fParser->lookupFileAndOpen(srcName, isPublic);
-      Token imported = fParser->importFile(file, srcName);
-
-      file->close();
-
-      return imported;
+      if (!fParser->importFile(importFile.srcpos(), srcName, false, fScope))
+        return Token();
     }
     catch (const Exception& e) {
       error(importFile.srcpos(), E_UnknownInputFile, e.message());
+      return Token();
     }
-
-    return Token();
   }
 
   return expr;
