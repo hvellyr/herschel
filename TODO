@@ -70,28 +70,7 @@ Bootstrap compiler
 
     - what's about multiple return values?  Spe?  Pass1?  Pass2?
 
-    - pass2
-
-      - 'export', 'import', 'extend', 'when' (top) should not appear in the
-        apt-tree at all.  think twice whether 'module' should
-
-        'when': is filtered during pass1 already.  should not show up in
-           pass2 at all
-
-        'import': is handled during pass1 already.  the result of 'import'
-           is directly passed into symbol tables, etc.
-
-        'export': which symbols are to be exported is directly put into the
-           enclosing 'module' node.  Or: is stored in the symbol tables
-           generated for a file during import
-
-        'extend': after the pass1 run all 'def' symbols should be annotated
-           as qualified symbols, i.e. including namespace info.  Extend
-           simply shortcuts this, so that extend is not required in
-           apt-tree anymore.
-
-
-    - import
+    - pass2 for measures, units, enums,
 
     - access values from enums as Enum::item
 
