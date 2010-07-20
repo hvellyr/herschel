@@ -33,6 +33,7 @@ static bool sShouldIgnoreDocStrings = true;
 static bool sPass1Only = false;
 static String sOutdir;
 static Ptr<ConfigVarRegistry> sConfigVarRegistry;
+static StringVector sInputSearchPath;
 
 void
 Properties::setIsVerbose(bool value)
@@ -197,4 +198,21 @@ void
 Properties::setShouldIgnoreDocStrings(bool value)
 {
   sShouldIgnoreDocStrings = value;
+}
+
+
+void
+Properties::addInputDir(const String& dir)
+{
+  sInputSearchPath.push_back(dir);
+}
+
+
+const StringVector&
+Properties::inputDirSearchPath()
+{
+  if (sInputSearchPath.empty())
+    sInputSearchPath.push_back(String("."));
+
+  return sInputSearchPath;
 }

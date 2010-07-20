@@ -9,13 +9,16 @@
 #ifndef bootstrap_properties_h
 #define bootstrap_properties_h
 
-#include "parsertypes.h"
+#include <vector>
 
+#include "parsertypes.h"
 
 namespace heather
 {
   class Token;
   class String;
+
+  typedef std::vector<String> StringVector;
 
   class Properties
   {
@@ -37,6 +40,9 @@ namespace heather
 
     static void setConfigVar(const String& keyValuePair);
     static ConfigVarRegistry* globalConfigVarRegistry();
+
+    static void addInputDir(const String& dir);
+    static const StringVector& inputDirSearchPath();
 
 #if defined(UNITTESTS)
     static void test_setDontImport(bool value);

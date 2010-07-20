@@ -16,6 +16,7 @@ class TestRunner:
         self.verbose = False
         self.test_succeeded = 0
         self.test_run = 0
+        self.input_dir = False
 
         self.SYNTAX_PASS1_OPT = ["-T", "pass1", "-P", "--dont-import", "--parse-1" ]
         self.SYNTAX_PASS2_OPT = ["-T", "pass2", "-P", "--dont-import" ]
@@ -26,7 +27,11 @@ class TestRunner:
     def run_heather_on_test(self, test_file, options):
         cmd = [self.heather_path]
         cmd.extend(options)
+        if self.input_dir:
+            cmd.append('-I')
+            cmd.append(self.input_dir)
         cmd.append(test_file)
+
         return subprocess.Popen(cmd,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE).communicate()
@@ -243,6 +248,9 @@ def main():
     parser.add_option("-D", "--domain",
                       dest="domain", default="syntax",
                       help="select the domain of tests to run")
+    parser.add_option("-I", "--input",
+                      dest="input", default=".",
+                      help="give the input directory to the compiler")
 
     (options, args) = parser.parse_args()
 
@@ -253,6 +261,9 @@ def main():
 
     if options.verbose:
         tr.verbose = options.verbose
+
+    if options.input:
+        tr.input_dir = options.input
 
     for arg in args:
         if os.path.isdir(arg):
