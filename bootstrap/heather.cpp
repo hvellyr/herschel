@@ -41,6 +41,7 @@ displayHelp()
   printf("  -T KEYS, --trace=KEYS      Trace various aspects:\n");
   printf("                             {tokenizer|pass1|pass2|import|macro}\n");
   printf("  -d DIR,  --outdir=DIR      Output all generated files to DIR\n");
+  printf("  -I DIR,  --input=DIR       Add DIR to the input searchlist\n");
 #if defined(UNITTESTS)
   printf("  -UT,     --run-unit-tests  Run unit tests for the compiler\n");
   printf("           --parse-1         Only do pass1 phase\n");
@@ -65,6 +66,7 @@ enum {
   kOptTrace,
   kOptParse,
   kOptDefine,
+  kOptInputDir,
 
 #if defined(UNITTESTS)
   kOptRunUnitTests,
@@ -84,7 +86,7 @@ main(int argc, char** argv)
     { kOptTrace,        "-T",  "--trace",          true  },
     { kOptParse,        "-P",  "--parse",          false },
     { kOptDefine,       "-D",  "--define",         true  },
-
+    { kOptInputDir,     "-I",  "--input",          true  },
 #if defined(UNITTESTS)
     { kOptRunUnitTests, "-UT", "--run-unit-tests", false },
     { kOptDontImport,   NULL,  "--dont-import",    false },
@@ -131,6 +133,10 @@ main(int argc, char** argv)
 
       case kOptDefine:
         Properties::setConfigVar(option.fArgument);
+        break;
+
+      case kOptInputDir:
+        Properties::addInputDir(option.fArgument);
         break;
 
 #if defined(UNITTESTS)

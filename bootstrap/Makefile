@@ -12,6 +12,7 @@ CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src
 
 SOURCES =         \
 	apt.cpp         \
+	file.cpp        \
 	heather.cpp     \
 	log.cpp         \
 	macro.cpp       \
@@ -43,6 +44,7 @@ HEADERS =         \
 	common.h        \
 	errcodes.h      \
 	exception.h     \
+	file.h          \
 	log.h           \
 	macro.h         \
 	numbers.h       \

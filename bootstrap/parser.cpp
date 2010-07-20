@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "file.h"
 #include "log.h"
 #include "parser.h"
 #include "pass1.h"
@@ -182,6 +183,12 @@ Parser::importFile(const SrcPos& srcpos,
   static ImportCache sImportCache;
 
   String absPath = lookupFile(srcName, isPublic);
+  if (absPath.isEmpty()) {
+    errorf(srcpos, E_UnknownInputFile,
+           "import '%s' failed: Unknown file\n",
+           (const char*)StrHelper(srcName));
+    return false;
+  }
 
   if (currentScope->hasScopeForFile(absPath)) {
     if (Properties::isTraceImportFile())
@@ -225,7 +232,10 @@ Parser::importFile(const SrcPos& srcpos,
 String
 Parser::lookupFile(const String& srcName, bool isPublic)
 {
-  return srcName;
+  StringVector exts;
+  exts.push_back(String("hea"));
+
+  return file::lookupInPath(srcName, Properties::inputDirSearchPath(), exts);
 }
 
 
