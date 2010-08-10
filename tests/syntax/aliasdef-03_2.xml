@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><def><func sym='f0'><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></rettype><body><block><let><vardef sym='a'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Vector'><ty:gen><ty:ref nm='Int'></ty:ref></ty:gen></ty:ref></type></vardef></let><symbol>a</symbol></block></body></func></def></compile-unit>

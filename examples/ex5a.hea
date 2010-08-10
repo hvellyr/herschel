@@ -1,0 +1,5 @@
+def type Comparable
+
+def type Collection<Elt>
+
+def type AssocCollection<Key, Elt> : Collection<Assoc<Key, Elt> >

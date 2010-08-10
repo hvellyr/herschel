@@ -1,0 +1,96 @@
+-*-org-*-
+
+Language and ideas:
+
+  - write up about module/interface.  Review import, export, module, etc.
+    See CHANGES.
+
+  - Redesign accessing items from enum types.  Parsing as Enum.item does
+    not work, since this would require symboltables during parsing (how to
+    distinguish between param.func and Enum.item ?).  Idea: Maybe use a new
+    item-operator ::? E.g. Enum::item.
+
+  - structs ?  Contrary to classes do not support inheritance, but provide
+    fixed layout.
+
+  - Think about non-gc objects.
+
+  - Think about lazy evaluation (generalize the 'promise' concept
+    introduced en passent with sync).  See x10 -> futures.
+
+  - checked exceptions.  Declare as
+
+      def generic f() : 'X
+          raises 'B
+          reify () : N, () : P
+          where B isa Throwable
+        ...
+
+    additionally
+
+      def generic f() : 'X
+          no-raise
+          reify ....
+
+    to document that a function does not let exceptions through.
+
+  - Think about: all objects are passed by value (i.e. even for vectors);
+    values passed to spawned functions are actually copied, otherwise
+    internal refcounted.  It is possible to explicitely use references:
+
+      def f(a : ^Int, b : ^Vector<Octet>)
+
+    Note this, of course, would require to write all typical oo-functions
+    as
+
+      def generic f(self @ ^MyType, ...)
+
+    if the function is to be non-const.
+
+  - Embedding of C/C++ fragments
+
+
+Documentation
+
+  - Write nested modules section.
+
+  - rewrite exporting, visibility, and importing section
+
+  - Mention explicitely: no coercing.  Where?
+
+  - Write assignment section.
+
+  - Rewrite the "def xxx" to the new deffn-form-example style.
+
+
+
+Bootstrap compiler
+
+  Implement last missing pass1 stuff
+
+    - what's about multiple return values?  Spe?  Pass1?  Pass2?
+
+    - pass2:
+      - for measures, units, enums,
+
+      - where clauses
+
+      - select
+
+      - match
+
+      - types for count variables in for loop
+
+    - access values from enums as Enum::item
+
+    - extend macro parameter types (like ?a:type-spec)
+
+    - macros
+
+      - subpatterns
+
+  continue with pexpreval (add the missing operators)
+
+  unittests for Rational() class.
+
+  docstrings in pass2 -> extracted documentation

@@ -1,0 +1,7 @@
+def f0(k)
+  0 .. k - 1 by 1
+
+def f1(a @ (Int in 5 .. 100 by 2)) : (Int >= 0)
+  a
+
+

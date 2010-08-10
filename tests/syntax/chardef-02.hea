@@ -1,0 +1,4 @@
+def char not = 00ach
+def char as = 002ah
+
+def x = "hello \not; and \as; world"

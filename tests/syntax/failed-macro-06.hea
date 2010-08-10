@@ -1,0 +1,13 @@
+def macro abc
+{
+  { abc() } -> { xyz }
+}
+
+def macro abc
+{
+  { on abc () ?body:expr } -> { ?body }
+}
+
+
+def f()
+  abc()

@@ -1,0 +1,9 @@
+def char test = 0afafh
+
+when ignore
+{
+  -- this char definition must not be visible outside of the when clause
+  def char test = 0fefefh
+}
+
+def a = \test
