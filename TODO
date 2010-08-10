@@ -79,6 +79,8 @@ Bootstrap compiler
 
       - match
 
+      - types for count variables in for loop
+
     - access values from enums as Enum::item
 
     - extend macro parameter types (like ?a:type-spec)

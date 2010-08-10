@@ -43,14 +43,14 @@ def class Slice<K, T> : OrderedSliceable<K, T>
     into the key position metric of the referenced collection.~
 {
   def generic num-items(slice @ Slice<K, T>) : Ordinal ...
-      ~ Returns the number of items in @var{slice}.~
+      ~ Returns the number of items in @var{slice}. ~
 
   def generic empty?(slice @ Slice<K, T>) : Bool ...
       ~ Indicates whether @var{slice} is empty.~
 
   def generic slice-range(slice @ Slice<K, T>) : Range<K> ...
       ~ Returns the outer range of @var{slice} against the referenced
-      container.~
+      container. ~
 }
 
 -- end of iterator

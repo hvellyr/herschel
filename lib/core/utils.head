@@ -31,7 +31,7 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module core ("eyestep/heather 1.0:core")
-export public(nil?, enforce)
+export public(nil?, enforce, max, min)
 
 def macro nil?
     ~ Indicates whether its argument is @const{nil}.
@@ -46,7 +46,8 @@ def macro nil?
 
 def macro enforce
     ~ Enforces that a value is not @const{nil} before continuing. Otherwise
-    it raises an @type{NilException} with a given message.
+    it raises an @type{NilException}.  If no specific message is given a
+    generic message is created from the expression.
 
     Instead of writing:
 
@@ -67,14 +68,54 @@ def macro enforce
 
     @example
     foo().enforce("foo() failed").bar
+    foo().enforce.bar
     @end example ~
 {
-  { enforce(?val:expr, ?msg:expr) } -> { { let tmp = ?val
+  { enforce(?val:expr, ?msg:expr) } -> {
+                                         { let tmp = ?val
                                            if (tmp.nil?)
                                              NilException(?msg).raise
                                            else
                                              tmp
-                                         } }
+                                         }
+                                       }
+  { enforce(?val:expr) }            -> {
+                                         { let tmp = ?val
+                                           if (tmp.nil?)
+                                             NilException(?"val" + " failed").raise
+                                           else
+                                             tmp
+                                         }
+                                       }
+}
+
+
+def macro max
+    ~ Returns the larger of two values @var{one} and @var{two}.  Both
+    parameters are evaluated once only. ~
+{
+  { max(?one:expr, ?two:expr) } -> { { let tmp1 = ?one
+                                       let tmp2 = ?two
+                                       if (tmp1 > tmp2) 
+                                         tmp1
+                                       else
+                                         tmp2 } }
+}
+
+
+def macro min
+    ~ Returns the smaller of two values @var{one} and @var{two}.  Both
+    parameters are evaluated once only. ~
+{
+  { min(?one:expr, ?two:expr) } -> {
+                                     { let tmp1 = ?one
+                                       let tmp2 = ?two
+                                       if (tmp1 < tmp2)
+                                         tmp1
+                                       else
+                                         tmp2
+                                     }
+                                   }
 }
 
 
