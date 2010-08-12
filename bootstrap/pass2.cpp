@@ -1635,6 +1635,7 @@ AptNode*
 SecondPass::parseFor(const Token& expr)
 {
   assert(!fParser->isParsingInterface());
+
   assert(expr.isSeq());
   assert(expr.count() == 3 || expr.count() == 5);
   assert(expr[0] == kForId);
@@ -1749,8 +1750,74 @@ AptNode*
 SecondPass::parseSelect(const Token& expr)
 {
   assert(!fParser->isParsingInterface());
-  // TODO
-  return NULL;
+
+  assert(expr.isSeq());
+  assert(expr.count() == 3);
+  assert(expr[0] == kSelectId);
+  assert(expr[1].isNested() && expr[1].leftToken() == kParanOpen);
+  assert(expr[2].isNested() && expr[2].leftToken() == kBraceOpen);
+
+  Ptr<AptNode> testNode;
+  Ptr<AptNode> comparatorNode;
+
+  const TokenVector& args = expr[1].children();
+  if (args.size() > 0) {
+    testNode = parseExpr(args[0]);
+
+    if (args.size() > 2) {
+      assert(args[1] == kComma);
+      comparatorNode = parseExpr(args[2]);
+    }
+  }
+
+  Ptr<SelectNode> selectNode = new SelectNode(expr.srcpos(),
+                                              testNode,
+                                              comparatorNode);
+
+  const TokenVector& testMappings = expr[2].children();
+  for (size_t i = 0; i < testMappings.size(); i++) {
+    const Token& testToken = testMappings[i];
+    assert(testToken.isSeq());
+    assert(testToken.count() == 4 || testToken.count() == 3);
+    assert(testToken[0] == kPipe);
+
+    if (testToken.count() == 4) {
+      assert(testToken[2] == kMapTo);
+
+      NodeList testValueNodes;
+      if (testToken[1].isSeq() &&
+          !testToken[1].isBinarySeq() &&
+          !testToken[1].isTernarySeq())
+      {
+        const TokenVector& testValues = testToken[1].children();
+        for (size_t j = 0; j < testValues.size(); j++) {
+          if (testValues[j] == kComma)
+            continue;
+          Ptr<AptNode> testValueNode = parseExpr(testValues[j]);
+          if (testValueNode != NULL)
+            testValueNodes.push_back(testValueNode);
+        }
+      }
+      else {
+        Ptr<AptNode> testValueNode = parseExpr(testToken[1]);
+        if (testValueNode != NULL)
+          testValueNodes.push_back(testValueNode);
+      }
+
+      Ptr<AptNode> consqExpr = parseExpr(testToken[3]);
+      if (consqExpr != NULL)
+        selectNode->addMapping(testValueNodes, consqExpr);
+    }
+    else if (testToken.count() == 3) {
+      assert(testToken[1] == kElseId);
+
+      Ptr<AptNode> consqExpr = parseExpr(testToken[2]);
+      if (consqExpr != NULL)
+        selectNode->addElseMapping(consqExpr);
+    }
+  }
+
+  return selectNode.release();
 }
 
 
@@ -1856,6 +1923,9 @@ SecondPass::parseSeq(const Token& expr)
         assert(0);
         return NULL;
       }
+    }
+    else if (expr[1] == kRange) {
+      return parseBinary(expr);
     }
   }
   else if (expr.count() == 4) {
@@ -2112,6 +2182,7 @@ SecondPass::parseExpr(const Token& expr)
     return parseNested(expr);
 
   case kPunct:
+    // printf("{1} ---> %s\n", (const char*)StrHelper(expr.toString()));
     errorf(expr.srcpos(), E_UnexpectedToken,
            "Unexpected token");
     return NULL;

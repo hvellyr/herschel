@@ -495,6 +495,39 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class SelectNode : public AptNode
+  {
+  public:
+    SelectNode(const SrcPos& srcpos, AptNode* test, AptNode* comparator);
+
+    virtual SelectNode* clone() const;
+    virtual void display(Port<Octet>* port) const;
+
+    void addMapping(const NodeList& mappings, AptNode* consequent);
+    void addMapping(AptNode* mapping, AptNode* consequent);
+    void addElseMapping(AptNode* alternate);
+
+  private:
+    struct SelectMapping
+    {
+      SelectMapping(const NodeList& values, AptNode* consequent);
+      SelectMapping(const SelectMapping& other);
+
+      // if fTestValues is empty this is an else branch
+      NodeList     fTestValues;
+      Ptr<AptNode> fConsequent;
+    };
+
+    typedef std::vector<SelectMapping> SelectMappingVector;
+
+    Ptr<AptNode>        fTest;
+    Ptr<AptNode>        fComparator;
+    SelectMappingVector fMappings;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class OnNode : public AptNode
   {
   public:

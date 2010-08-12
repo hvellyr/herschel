@@ -10,6 +10,8 @@ Language and ideas:
     distinguish between param.func and Enum.item ?).  Idea: Maybe use a new
     item-operator ::? E.g. Enum::item.
 
+    Instead of saying Colors.red or Colors::red say red'Colors.
+
   - structs ?  Contrary to classes do not support inheritance, but provide
     fixed layout.
 
