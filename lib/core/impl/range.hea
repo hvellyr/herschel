@@ -33,35 +33,46 @@
 module core ("eyestep/heather 1.0:core")
 export public(*)
 
-import "core/core.hea"
+import "core/range.hea"
 
 
-def type Comparable
-{
-  def generic compare(one @ 'S, two @ 'T) : Int ...
-      ~ Compare value @var{one} with @var{two}.
+def size(range @ Range<T>) : Int
+    ~ Returns @var{range}'s size.  This is the distance between last and
+  first. ~
+  last - first
 
-      @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
-               @var{one} is greater than @var{two}, and a value below 0 if
-               @var{one} is less. ~
-}
 
-def generic equal?(one @ 'S, two @ 'T) : Bool ...
+def center(range @ Range<T>) : Int
+    ~ Returns @var{range}'s center (rounded to @type{T}'s resolution). ~
+  (last + first) / (2 as T)
+
+
+def equal?(one @ Range<T>, two @ Range<T>) : Bool
     ~ Indicates whether @var{one} is equal to @var{two}. ~
+  one.first == two.first and one.last == two.last
 
-def generic unequal?(one @ 'S, two @ 'T) : Bool ...
+
+def unequal?(one @ Range<T>, two @ Range<T>) : Bool
     ~ Indicates whether @var{one} is not equal to @var{two}. ~
+  one.first <> two.first or one.last <> two.last
 
-def generic less?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than @var{two}. ~
 
-def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than or equal to @var{two}. ~
+def in-range?(range @ Range<T>, value @ 'T) : Bool
+    ~ Indicates whether @var{value} is in @var{range}. ~
+  if (one.first <= one.last)  
+    value >= one.first and value <= one.last
+  else
+    value >= one.last and value <= one.first
 
-def generic greater?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than @var{two}. ~
 
-def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than or equal to @var{two}. ~
+def intersect?(one @ Range<T>, two @ Range<T>) : Bool
+    ~ Indicates whether @var{one} and @var{two} intersects. ~
+  one.first < two.last and two.first < one.last
 
--- end of comparable.hea
+
+def intersect(one @ Range<T>, two @ Range<T>) : Range<T>
+    ~ Returns a new range of the intersection of @var{one} and @var{two}. ~
+  Range<T>(max(one.first, two.first),
+           min(one.last, two.last))
+
+-- end of impl/range

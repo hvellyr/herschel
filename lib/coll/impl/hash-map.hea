@@ -30,57 +30,13 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
--- New concept here, we've to think about:
---
--- Special type notations for building recursive types:
---
--- Other useful typenotations:
--- self.Type <=> Type(self)
---   get type from a instance
---
--- _.Type
---   automatic type.  Get the type of the surrounding context.  In a type
---   declaration like
---
---     Pair(Int, _.Type)
---
---   this refers to the following recursive type declaration:
---
---     Pair(Int, Pair(Int, Pair(Int, ...)))
---
---   In a assignment like this:
---
---     let x : Vector<Byte>
---
---     x = _.Type(1024)
---
---   this refers to:
---
---     x = Vector<Byte>(1024)
---
---
---
---  "Classmethods":
---
---  To define functions on type instances ("class objects") the following
---  specialization is necessary:
---
---    def meth apply(self : @ HashMap.class, ...)
---
---  or
---
---    def meth apply(self : @ class(HashMap), ...)
---
-
----------------------------------------------------------------------------
-
-import "core"
-
 module coll ("eyestep/heather 1.0:collections")
-  export public(HashMap)
+export public(HashMap)
 
-import "io"
-import "collection"
+import "core/core"
+import "io/io"
+import "coll/collection"
+
 
 ---------------------------------------------------------------------------
 
@@ -105,9 +61,7 @@ def core|to-string(self @ Triple<'K, 'V, 'T>) : String
 
 ---------------------------------------------------------------------------
 
-def const %default-size% = 16
-
-def class HashMap<Key, Elt>(items : Ordinal = %default-size%)
+def class HashMap<Key, Elt>(items : Ordinal = %default-hash-map-size%)
     : (Comparable, AssocCollection<Key, Elt>)
 {
   def slot table : Vector<Triple<Key, Elt, _> >
@@ -316,15 +270,18 @@ def table!(self : HashMap<'K, 'T>,
   slot!(self, #elts, new-table.num-items)
   self
 
+
 extend module core
 {
 def copy(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
   self.Type()().table!(self.table)
 
+
 def deepen(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
   self.table!(self.table.deep-copy)
   self
 }
+
 
 -- def equal?(one : @ HashMap, two : @ HashMap) : Bool
 --   one == two
@@ -334,7 +291,7 @@ def deepen(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
 --    -1
 
 def core|to-string(map @ HashMap<'K, 'T>) : String
-    ~ Returns a string representation of @var{map}.~
+    ~ Returns a string representation of @var{map}. ~
   let sb = StringBuffer()
   sb ++ "#("
 
@@ -416,4 +373,5 @@ when ignore {
 
 } -- when
 
--- end of dict.hea
+
+-- end of impl/hash-map

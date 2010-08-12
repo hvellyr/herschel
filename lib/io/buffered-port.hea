@@ -1,4 +1,4 @@
--- This file is part of the heather package
+-- This file is part of the heather package 
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -30,24 +30,35 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(Copyable, deep-copy)
+module io ("eyestep/heather 1.0:io")
+export public (*)
 
-def type Copyable
+import "core/core.hea"
+import "io/io.hea"
+
+
+------------------------------------------------------------------------------
+
+def class BufferedInPort<T>(port : InPort<T>,
+                            buffer-size : Ordinal = 4096) : InPort<T>
 {
-  def generic copy(obj @ 'T) : 'T
-      where T isa Copyable ...
-      ~ Returns a shallow copy of @var{obj}.~
-
-  def generic deepen(obj @ 'T) : 'T
-      where T isa Copyable ...
-      ~ Copies all child objects using @code{copy} and @code{deepen} on
-      them.~
 }
 
-def generic deep-copy(obj @ 'T) : 'T
-    where T isa Copyable ...
-    ~ Returns a deep copy of @var{obj}.~
 
--- end of copyable.head
+------------------------------------------------------------------------------
 
+def class BufferedOutPort<T>(port : OutPort<T>,
+                             buffer-size : Ordinal = 4096) : OutPort<T>
+{
+}
+
+
+------------------------------------------------------------------------------
+
+def class BufferedPort<T>(port : RandomAccessPort<T>,
+                          buffer-size : Ordinal = 4096) : RandomAccessPort<T>
+{
+}
+
+
+-- end of buffered-port

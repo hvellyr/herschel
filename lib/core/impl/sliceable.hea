@@ -1,4 +1,4 @@
--- This file is part of the heather package
+-- This file is part of the heather package 
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -31,34 +31,32 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module core ("eyestep/heather 1.0:core")
-export public(Iterator, RewindableIterator)
+export public(*)
 
-def type Iterator<T>
-{
-  def generic end?(iter @ Iterator<T>) : Bool ...
-      ~ Indicates whether @var{iter} is at the end.
-
-      @returns @const{false} if there are more elements to be returned by
-               @code{next}.~
-
-  def generic next(iter @ Iterator<T>) : T ...
-      ~ Returns the next element from @var{iter}.
-
-      @returns @const{eof} if all elements has been delivered.  Repeated
-               calling of @code{next} returns @const{eof}.~
-}
+import "core/sliceable.hea"
 
 
-def type RewindableIterator<T> : Iterator<T>
-{
-  def generic rewind(iter @ 'R) : 'R
-      where R isa RewindableIterator<T> ...
-      ~ Rewinds @var{iter} to restart with the first item.
+def compare(one @ Sliceable<Ordinal, 'T>, two @ Sliceable<Ordinal, 'T>) : Int
+    reify (one @ 'T[], two @ 'T[]) : Int,
+          (one @ 'T[], two @ Slice<Ordinal, 'T>) : Int
+    ~ Comparing sliceables returns zero if the two arrays are identical,
+    otherwise returns the comparison result between the first two differing
+    elements.  Zero-length arrays are always identical. ~
+  let n = one.num-items
+  if (n == two.num-items) {
+    for (i : Ordinal = 0 then i + 1 while i < n)
+    {
+      let cmpval = one[i] <=> two[i]
+      if (cmpval <> 0)
+        break(cmpval)
+    }
+    else
+      0
+  }
+  else if (one.num-items < two.num-items)
+    -1
+  else
+    1
 
-      Even if a previous call to @fun{end?} returned true this method must
-      reset @var{iter} to deliver that element it returned first.
 
-      @returns @var{iter}~
-}
-
--- end of iterator
+-- end of impl/sliceable

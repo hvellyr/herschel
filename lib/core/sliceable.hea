@@ -33,23 +33,56 @@
 module core ("eyestep/heather 1.0:core")
 export public(*)
 
+import "core/core.hea"
+
+
+def type Sliceable<K, E>
+    ~ A @type{Sliceable} represents types which support single-key slice
+    access, i.e. index access.  Typical candidates are containers, strings,
+    etc. ~
+{
+  def generic slice(obj @ 'S, key @ K) : 'E
+      where S isa Sliceable<K, E> ...
+      ~ Returns the element from @var{obj} at position @var{key}.  It may
+      be an error if @var{key} points to non-existing element or
+      (depending on the implementing class) out of bounds of @var{obj}. ~
+}
+
+
+def type OrderedSliceable<K, E> : Sliceable<K, E>
+    ~ An @type{OrderedSliceable} represents types which support
+    range-slices. ~
+{
+  def generic slice(obj @ 'S, from @ K, to @ K) : 'T
+      where S isa OrderedSliceable<K, E>,
+            T isa OrderedSliceable<K, E> ...
+      ~ Returns a new ordered sliceable instance (probably of different
+      type than @var{obj}) containing the elements from @var{from} to
+      @var{to} exclusive, i.e. [@var{from}, @var{to}).
+
+      An @type{OutOfBoundsException} should be raised when either
+      @var{from} or @var{to} are too large.  When @var{from} is >= @var{to}
+      the resulting sliceable is empty. ~
+}
+
+
+def type Sliceable!<E, K> : Sliceable<E, K>
+    ~ @type{Sliceable!} represents mutable types with index-access.~
+{
+  def generic slice!(obj @ 'S, key @ K, value @ E) : 'S
+      where S isa Sliceable!<K, E> ...
+      ~ Sets @var{value} into @var{obj} at position @var{key}.
+
+      @returns @var{obj}. ~
+}
+
+
 def compare(one @ Sliceable<Ordinal, 'T>,
             two @ Sliceable<Ordinal, 'T>) : Int ...
       ~ Comparing sliceables returns zero if the two arrays are identical,
       otherwise returns the comparison result between the first two differing
-      elements.  Zero-length arrays are always identical.
+      elements.  Zero-length arrays are always identical. ~
 
-      And a second paragraph.
 
-      @example
-      some example code here
-      @end example
+-- end of sliceable.head
 
-      Markup is basically texinfo markup.  Refer to parameters inline like
-      this: @prm value refers to a single symbol reference. Whereas
-      @prm{value} is the full and more clear form.
-
-      Inline comments are enclosed by tripple quotes; single quotes inside
-      the documentation are simply taken as chars in the documentation. ~
-
--- end of array.hea

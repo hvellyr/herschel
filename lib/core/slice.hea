@@ -1,4 +1,4 @@
--- This file is part of the heather package 
+-- This file is part of the heather package
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -31,37 +31,29 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module core ("eyestep/heather 1.0:core")
-export public(*)
+export public(Slice)
 
 import "core/core.hea"
 
 
-def type Comparable
-{
-  def generic compare(one @ 'S, two @ 'T) : Int ...
-      ~ Compare value @var{one} with @var{two}.
+def class Slice<K, T> : OrderedSliceable<K, T>
+    ~ A @type{Slice} is a view on a collection of elements of type @var{T}
+    addressed by indices of type @var{K}.  Like an iterator it does
+    (normaly) not contain the elements itself.  It is itself sliceable
+    again.
 
-      @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
-               @var{one} is greater than @var{two}, and a value below 0 if
-               @var{one} is less. ~
+    Since a slice is a view and 0-based it translates sub element access
+    into the key position metric of the referenced collection. ~
+{
+  def generic num-items(slice @ Slice<K, T>) : Ordinal ...
+      ~ Returns the number of items in @var{slice}. ~
+
+  def generic empty?(slice @ Slice<K, T>) : Bool ...
+      ~ Indicates whether @var{slice} is empty. ~
+
+  def generic slice-range(slice @ Slice<K, T>) : Range<K> ...
+      ~ Returns the outer range of @var{slice} against the referenced
+      container. ~
 }
 
-def generic equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is equal to @var{two}. ~
-
-def generic unequal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is not equal to @var{two}. ~
-
-def generic less?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than @var{two}. ~
-
-def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than or equal to @var{two}. ~
-
-def generic greater?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than @var{two}. ~
-
-def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than or equal to @var{two}. ~
-
--- end of comparable.hea
+-- end of iterator
