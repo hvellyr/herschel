@@ -5,7 +5,11 @@ Language and ideas:
   - write up about module/interface.  Review import, export, module, etc.
     See CHANGES.
 
-  - Redesign accessing items from enum types.  Parsing as Enum.item does
+  - notation for classes and types.  This is required if you need to pass a
+    first-class class into a function.
+
+
+  - redesign accessing items from enum types.  Parsing as Enum.item does
     not work, since this would require symboltables during parsing (how to
     distinguish between param.func and Enum.item ?).  Idea: Maybe use a new
     item-operator ::? E.g. Enum::item.

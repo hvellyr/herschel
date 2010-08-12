@@ -1,6 +1,6 @@
 -- This file is part of the heather package 
 --
--- Copyright (c) 2006, 2007, 2008 Gregor Klinke
+-- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -30,20 +30,29 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import "charnm.head"
-import "si-units.head"
+module io ("eyestep/heather 1.0:io")
+export public (*)
 
-import "common.head"
-import "break.head"
-
-import "iterator.head"
-import "incr.head"
-
-import "comparable.head"
-import "copyable.head"
-
-import "utils.head"
+import "core/core.hea"
+import "io/io.hea"
 
 
+------------------------------------------------------------------------------
 
--- end of core.head
+def class StringInPort(str : String,
+                       offset : Ordinal = 0,
+                       items : Ordinal = 0) : InPort<Char>
+{
+}
+
+
+------------------------------------------------------------------------------
+
+def class StringOutPort(str : String = nil,
+                        offset : Ordinal = 0,
+                        max-items : Ordinal = 0) : OutPort<Char>
+{
+}
+
+
+-- end of string-port

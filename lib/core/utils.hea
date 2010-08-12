@@ -33,12 +33,13 @@
 module core ("eyestep/heather 1.0:core")
 export public(nil?, enforce, max, min)
 
+
 def macro nil?
     ~ Indicates whether its argument is @const{nil}.
 
     @example
     if (abc.nil?) ...
-    @end example~
+    @end example ~
 {
   { nil?(?val:expr) } -> { ?val == nil }
 }
@@ -72,7 +73,8 @@ def macro enforce
     @end example ~
 {
   { enforce(?val:expr, ?msg:expr) } -> {
-                                         { let tmp = ?val
+                                         {
+                                           let tmp = ?val
                                            if (tmp.nil?)
                                              NilException(?msg).raise
                                            else
@@ -80,7 +82,8 @@ def macro enforce
                                          }
                                        }
   { enforce(?val:expr) }            -> {
-                                         { let tmp = ?val
+                                         {
+                                           let tmp = ?val
                                            if (tmp.nil?)
                                              NilException(?"val" + " failed").raise
                                            else
@@ -94,12 +97,16 @@ def macro max
     ~ Returns the larger of two values @var{one} and @var{two}.  Both
     parameters are evaluated once only. ~
 {
-  { max(?one:expr, ?two:expr) } -> { { let tmp1 = ?one
+  { max(?one:expr, ?two:expr) } -> {
+                                     {
+                                       let tmp1 = ?one
                                        let tmp2 = ?two
                                        if (tmp1 > tmp2) 
                                          tmp1
                                        else
-                                         tmp2 } }
+                                         tmp2
+                                     }
+                                   }
 }
 
 
@@ -108,7 +115,8 @@ def macro min
     parameters are evaluated once only. ~
 {
   { min(?one:expr, ?two:expr) } -> {
-                                     { let tmp1 = ?one
+                                     {
+                                       let tmp1 = ?one
                                        let tmp2 = ?two
                                        if (tmp1 < tmp2)
                                          tmp1

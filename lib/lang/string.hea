@@ -33,7 +33,8 @@
 module core ("eyestep/heather 1.0:core")
 export public(*)
 
-import "common.head"
+import "core/common.head"
+
 
 def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
     ~ The @type{String} class represents character strings.
@@ -50,15 +51,15 @@ def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
 
     Strings are 0-based and can be of arbitrary length.  They are
     @emph{not} 0-terminated, i.e. strings can easily contain binary data
-    (as far as representable as Unicode characters).~
+    (as far as representable as Unicode characters). ~
 {
   def slot data : Char[]
 
   def generic length(str @ String) : Ordinal ...
-    ~ Returns the length of @var{str} in characters.~
+    ~ Returns the length of @var{str} in characters. ~
 
   def generic empty?(str @ String) : Bool ...
-    ~ Indicate whether @var{str} is an empty string.~
+    ~ Indicate whether @var{str} is an empty string. ~
 
   def generic starts-with?(haystack @ String, needle @ String,
                            start-from : Ordinal = 0) : Bool ...
@@ -74,7 +75,7 @@ def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
   def generic matches(str @ String, re : Regex) : Bool ...
 
   def generic compare-ci(one @ String, two @ String) : Int ...
-    ~ Case insensitive comparing.~
+    ~ Case insensitive comparing. ~
 
 
 
@@ -86,7 +87,7 @@ def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
 
   def generic split(str @ String, re : Regex) : String[] ...
     ~ Splits @var{str} around the parts matches by the regular expression
-    @var{re}.~
+    @var{re}. ~
 
   def generic replace(str @ String,
                       old @ 'T, new @ 'T) : String ...
@@ -99,4 +100,4 @@ def slice(str @ String, n @ Ordinal) : Char ...
 def slice(str @ String, from @ Ordinal, to @ Ordinal) : Slice<Ordinal, Char> ...
 def compare(one @ String, two @ String) : Int ...
 
--- end of string.head
+-- end of string
