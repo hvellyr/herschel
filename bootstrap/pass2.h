@@ -110,6 +110,8 @@ namespace heather
     AptNode* parseRationalNumber(const Token& expr);
     AptNode* parseRealNumber(const Token& expr);
 
+    AptNode* parseChainSelect(const Token& expr);
+    AptNode* parseRealSelect(const Token& expr);
 
     //-------- data member
 

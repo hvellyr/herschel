@@ -1498,26 +1498,34 @@ namespace heather
           if (pass->fToken == kEOF)
             return false;
 
-          Token test = pass->parseExpr();
-          if (test.isSet()) {
-            pattern.push_back(test);
-
-            if (pass->fToken == kComma) {
-              pattern.push_back(pass->fToken);
-              pass->nextToken();
-            }
-            else if (pass->fToken == kMapTo)
-              break;
-            else {
-              errorf(pass->fToken.srcpos(), E_BadPatternList,
-                     "unexpected token");
-              return false;
-            }
+          if (fElseSeen) {
+            errorf(pass->fToken.srcpos(), E_ElseNotLastPattern,
+                   "'else' must be last pattern");
+            pass->scanUntilBrace();
+            return false;
           }
           else {
-            error(pass->fToken.srcpos(), E_UnexpectedToken,
-                  String("unexpected token in select: ") + pass->fToken.toString());
-            return false;
+            Token test = pass->parseExpr();
+            if (test.isSet()) {
+              pattern.push_back(test);
+
+              if (pass->fToken == kComma) {
+                pattern.push_back(pass->fToken);
+                pass->nextToken();
+              }
+              else if (pass->fToken == kMapTo)
+                break;
+              else {
+                errorf(pass->fToken.srcpos(), E_BadPatternList,
+                       "unexpected token");
+                return false;
+              }
+            }
+            else {
+              error(pass->fToken.srcpos(), E_UnexpectedToken,
+                    String("unexpected token in select: ") + pass->fToken.toString());
+              return false;
+            }
           }
         }
 

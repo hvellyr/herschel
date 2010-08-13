@@ -1757,17 +1757,29 @@ SecondPass::parseSelect(const Token& expr)
   assert(expr[1].isNested() && expr[1].leftToken() == kParanOpen);
   assert(expr[2].isNested() && expr[2].leftToken() == kBraceOpen);
 
-  Ptr<AptNode> testNode;
+  const TokenVector& args = expr[1].children();
+
+  if (args.size() > 0) {
+    return parseRealSelect(expr);
+  }
+  else {
+    return parseChainSelect(expr);
+  }
+}
+
+
+AptNode*
+SecondPass::parseRealSelect(const Token& expr)
+{
+  const TokenVector& args = expr[1].children();
+  assert(args.size() > 0);
+
+  Ptr<AptNode> testNode = parseExpr(args[0]);
   Ptr<AptNode> comparatorNode;
 
-  const TokenVector& args = expr[1].children();
-  if (args.size() > 0) {
-    testNode = parseExpr(args[0]);
-
-    if (args.size() > 2) {
-      assert(args[1] == kComma);
-      comparatorNode = parseExpr(args[2]);
-    }
+  if (args.size() > 2) {
+    assert(args[1] == kComma);
+    comparatorNode = parseExpr(args[2]);
   }
 
   Ptr<SelectNode> selectNode = new SelectNode(expr.srcpos(),
@@ -1818,6 +1830,43 @@ SecondPass::parseSelect(const Token& expr)
   }
 
   return selectNode.release();
+}
+
+
+AptNode*
+SecondPass::parseChainSelect(const Token& expr)
+{
+  assert(expr[1].count() == 0);
+
+  const TokenVector& testMappings = expr[2].children();
+  for (size_t i = 0; i < testMappings.size(); i++) {
+    const Token& testToken = testMappings[i];
+    assert(testToken.isSeq());
+    assert(testToken.count() == 4 || testToken.count() == 3);
+    assert(testToken[0] == kPipe);
+
+    if (testToken.count() == 4) {
+      assert(testToken[2] == kMapTo);
+
+      Ptr<AptNode> testValueNode = parseExpr(testToken[1]);
+      if (testValueNode != NULL) {
+
+        Ptr<AptNode> consqExpr = parseExpr(testToken[3]);
+
+        // if (consqExpr != NULL)
+        //   if(testValueNode) then consqExpr
+      }
+    }
+    else if (testToken.count() == 3) {
+      assert(testToken[1] == kElseId);
+
+      Ptr<AptNode> consqExpr = parseExpr(testToken[2]);
+      // if (consqExpr != NULL)
+        // else consqExpr
+    }
+  }
+
+  return NULL;
 }
 
 
