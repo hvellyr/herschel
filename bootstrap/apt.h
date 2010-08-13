@@ -530,6 +530,41 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class MatchNode : public AptNode
+  {
+  public:
+    MatchNode(const SrcPos& srcpos, AptNode* expr);
+
+    virtual MatchNode* clone() const;
+    virtual void display(Port<Octet>* port) const;
+
+    void addMapping(const SrcPos& srcpos, const String& varName,
+                    const Type& matchType,
+                    AptNode* consequent);
+
+  private:
+    struct MatchMapping
+    {
+      MatchMapping(const SrcPos& srcpos, const String& varName,
+                   const Type& matchType,
+                   AptNode* consequent);
+      MatchMapping(const MatchMapping& other);
+
+      SrcPos fSrcPos;
+      String fVarName;
+      Type   fMatchType;
+      Ptr<AptNode> fConsequent;
+    };
+
+    typedef std::vector<MatchMapping> MatchMappingVector;
+
+    Ptr<AptNode>       fExpr;
+    MatchMappingVector fMappings;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class OnNode : public AptNode
   {
   public:

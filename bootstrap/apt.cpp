@@ -1213,6 +1213,79 @@ SelectNode::SelectMapping::SelectMapping(const SelectMapping& other)
 
 //------------------------------------------------------------------------------
 
+MatchNode::MatchNode(const SrcPos& srcpos, AptNode* expr)
+  : AptNode(srcpos),
+    fExpr(expr)
+{
+}
+
+
+MatchNode*
+MatchNode::clone() const
+{
+  Ptr<MatchNode> newNode = new MatchNode(fSrcPos, nodeClone(fExpr));
+  for (size_t i = 0; i < fMappings.size(); i++) {
+    newNode->fMappings.push_back(
+      MatchMapping(fMappings[i].fSrcPos,
+                   fMappings[i].fVarName,
+                   fMappings[i].fMatchType.clone(),
+                   nodeClone(fMappings[i].fConsequent)));
+  }
+
+  return newNode.release();
+}
+
+
+void
+MatchNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "match");
+  displayNode(port, "test", fExpr);
+  for (size_t i = 0; i < fMappings.size(); i++) {
+    StringBuffer attrs;
+    if (!fMappings[i].fVarName.isEmpty())
+      attrs << "nm='" << xmlEncode(fMappings[i].fVarName) << "'";
+    displayOpenTagAttrs(port, "map", StrHelper(attrs.toString()));
+    displayType(port, "type", fMappings[i].fMatchType);
+    displayNode(port, "cons", fMappings[i].fConsequent);
+    displayCloseTag(port, "map");
+  }
+  displayCloseTag(port, "match");
+}
+
+
+void
+MatchNode::addMapping(const SrcPos& srcpos, const String& varName,
+                      const Type& matchType,
+                      AptNode* consequent)
+{
+  fMappings.push_back(MatchMapping(srcpos, varName, matchType, consequent));
+}
+
+
+MatchNode::MatchMapping::MatchMapping(const SrcPos& srcpos,
+                                      const String& varName,
+                                      const Type& matchType,
+                                      AptNode* consequent)
+  : fSrcPos(srcpos),
+    fVarName(varName),
+    fMatchType(matchType),
+    fConsequent(consequent)
+{
+}
+
+
+MatchNode::MatchMapping::MatchMapping(const MatchMapping& other)
+  : fSrcPos(other.fSrcPos),
+    fVarName(other.fVarName),
+    fMatchType(other.fMatchType),
+    fConsequent(other.fConsequent)
+{
+}
+
+
+//------------------------------------------------------------------------------
+
 OnNode::OnNode(const SrcPos& srcpos,
                const String& key, const NodeList& params, AptNode* body)
   : AptNode(srcpos),

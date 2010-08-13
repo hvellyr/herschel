@@ -1893,8 +1893,51 @@ AptNode*
 SecondPass::parseMatch(const Token& expr)
 {
   assert(!fParser->isParsingInterface());
-  // TODO
-  return NULL;
+
+  assert(expr.isSeq());
+  assert(expr.count() == 3);
+  assert(expr[0] == kMatchId);
+  assert(expr[1].isNested() && expr[1].leftToken() == kParanOpen);
+  assert(expr[2].isNested() && expr[2].leftToken() == kBraceOpen);
+
+  const TokenVector& args = expr[1].children();
+  assert(args.size() > 0);
+
+  Ptr<AptNode> exprNode = parseExpr(args[0]);
+
+  Ptr<MatchNode> matchNode = new MatchNode(expr.srcpos(), exprNode);
+
+  const TokenVector& typeMappings = expr[2].children();
+  for (size_t i = 0; i < typeMappings.size(); i++) {
+    const Token& typeMapping = typeMappings[i];
+    assert(typeMapping.isSeq());
+    assert(typeMapping.count() == 4);
+    assert(typeMapping[0] == kPipe);
+    assert(typeMapping[1].isSeq());
+    assert(typeMapping[1].count() >= 2);
+    assert(typeMapping[2] == kMapTo);
+
+    String  varName;
+    Type    varType;
+    if (typeMapping[1].count() == 3) {
+      assert(typeMapping[1][0] == kSymbol);
+      assert(typeMapping[1][1] == kColon);
+
+      varName = typeMapping[1][0].idValue();
+      varType = parseTypeSpec(typeMapping[1][2]);
+    }
+    else {
+      assert(typeMapping[1][0] == kColon);
+      varType = parseTypeSpec(typeMapping[1][1]);
+    }
+
+    Ptr<AptNode> consqNode = parseExpr(typeMapping[3]);
+    if (consqNode != NULL)
+      matchNode->addMapping(typeMapping[0].srcpos(),
+                            varName, varType, consqNode);
+  }
+
+  return matchNode.release();
 }
 
 
