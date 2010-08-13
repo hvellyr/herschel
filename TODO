@@ -68,26 +68,18 @@ Documentation
 
 Bootstrap compiler
 
-  Implement last missing pass1 stuff
-
+  - Implement last missing pass1 stuff
     - what's about multiple return values?  Spe?  Pass1?  Pass2?
 
-    - pass2:
-      - for measures, units, enums,
+  - pass2:
+    - for measures, units, enums,
+    - where clauses
 
-      - where clauses
+  - access values from enums as Enum::item
+  - extend macro parameter types (like ?a:type-spec)
 
-      - select
-
-      - match
-
-    - access values from enums as Enum::item
-
-    - extend macro parameter types (like ?a:type-spec)
-
-    - macros
-
-      - subpatterns
+  - macros
+    - subpatterns
 
   continue with pexpreval (add the missing operators)
 
