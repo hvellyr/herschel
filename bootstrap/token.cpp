@@ -6,6 +6,10 @@
    All rights reserved.
 */
 
+#include "common.h"
+
+#include <string.h>
+
 #include "token.h"
 #include "str.h"
 #include "exception.h"
@@ -271,7 +275,7 @@ namespace heather
         sprintf(buffer, "%d/%d",
                 fRationalValue.numerator(), fRationalValue.denominator());
         if (fIsImaginary)
-          strcat(buffer, "i");
+          ::strcat(buffer, "i");
         return String(buffer);
       }
 

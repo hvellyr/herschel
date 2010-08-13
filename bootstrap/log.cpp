@@ -8,7 +8,8 @@
 
 #include "common.h"
 
-#include "stdarg.h"
+#include <stdarg.h>
+#include <stdio.h>
 
 #include "log.h"
 #include "str.h"
@@ -69,7 +70,7 @@ static LogSurpressorUnitTest logSurpressorUnitTest;
 
 //------------------------------------------------------------------------------
 
-static char* levelStr[] = {
+static const char* levelStr[] = {
   "debug",
   "info",
   "warning",

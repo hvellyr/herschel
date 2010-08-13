@@ -7,6 +7,9 @@
 */
 
 #include "common.h"
+
+#include <string.h>
+
 #include "strbuf.h"
 #include "str.h"
 #include "unittests.h"
