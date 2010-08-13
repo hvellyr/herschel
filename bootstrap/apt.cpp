@@ -1114,6 +1114,13 @@ IfNode::alternate() const
 }
 
 
+void
+IfNode::setAlternate(AptNode* node)
+{
+  fAlternate = node;
+}
+
+
 //------------------------------------------------------------------------------
 
 SelectNode::SelectNode(const SrcPos& srcpos, AptNode* test, AptNode* comparator)

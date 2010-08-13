@@ -486,6 +486,8 @@ namespace heather
     AptNode* consequent() const;
     AptNode* alternate() const;
 
+    void setAlternate(AptNode* node);
+
   private:
     Ptr<AptNode> fTest;
     Ptr<AptNode> fConsequent;

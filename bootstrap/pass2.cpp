@@ -1838,6 +1838,9 @@ SecondPass::parseChainSelect(const Token& expr)
 {
   assert(expr[1].count() == 0);
 
+  Ptr<AptNode> resultNode;
+  Ptr<IfNode> lastNode;
+
   const TokenVector& testMappings = expr[2].children();
   for (size_t i = 0; i < testMappings.size(); i++) {
     const Token& testToken = testMappings[i];
@@ -1851,24 +1854,40 @@ SecondPass::parseChainSelect(const Token& expr)
       Ptr<AptNode> testValueNode = parseExpr(testToken[1]);
       if (testValueNode != NULL) {
 
-        Ptr<AptNode> consqExpr = parseExpr(testToken[3]);
+        Ptr<AptNode> consqNode = parseExpr(testToken[3]);
 
-        // if (consqExpr != NULL)
-        //   if(testValueNode) then consqExpr
+        if (consqNode != NULL) {
+          Ptr<IfNode> ifNode = new IfNode(testToken[1].srcpos(),
+                                          testValueNode, consqNode, NULL);
+          if (lastNode != NULL) {
+            lastNode->setAlternate(ifNode);
+            lastNode = ifNode;
+          }
+          else
+            resultNode = lastNode = ifNode;
+        }
       }
     }
     else if (testToken.count() == 3) {
       assert(testToken[1] == kElseId);
 
-      Ptr<AptNode> consqExpr = parseExpr(testToken[2]);
-      // if (consqExpr != NULL)
-        // else consqExpr
+      Ptr<AptNode> consqNode = parseExpr(testToken[2]);
+      if (consqNode != NULL) {
+        if (lastNode != NULL)
+          lastNode->setAlternate(consqNode);
+        else
+          resultNode = consqNode;
+
+        break;
+      }
     }
   }
 
-  return NULL;
+  return resultNode.release();
 }
 
+
+//------------------------------------------------------------------------------
 
 AptNode*
 SecondPass::parseMatch(const Token& expr)
