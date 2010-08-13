@@ -6,6 +6,8 @@
    All rights reserved.
 */
 
+#include <string.h>
+
 #include "apt.h"
 #include "strbuf.h"
 
