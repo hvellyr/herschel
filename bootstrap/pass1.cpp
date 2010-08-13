@@ -1594,14 +1594,18 @@ namespace heather
       Token pipeToken = pass->fToken;
       pass->nextToken();
 
-      if (pass->fToken != kSymbol) {
+      if (pass->fToken != kSymbol && pass->fToken != kColon) {
         errorf(pass->fToken.srcpos(), E_SymbolExpected,
-               "variable name expected");
+               "variable name or ':' expected");
         pass->scanUntilBrace();
         return false;
       }
-      Token varToken = pass->fToken;
-      pass->nextToken();
+
+      Token varToken;
+      if (pass->fToken == kSymbol) {
+        varToken = pass->fToken;
+        pass->nextToken();
+      }
 
       if (pass->fToken != kColon) {
         errorf(pass->fToken.srcpos(), E_ColonExpected,
@@ -1626,13 +1630,18 @@ namespace heather
       }
 
       TokenVector consq = parseConsequent(pass, true);
-      if (varToken.isSet() && colonToken.isSet() &&
-          matchType.isSet() && !consq.empty())
-        result << ( Token()
-                    << pipeToken
-                    << ( Token() << varToken << colonToken << matchType )
-                    << consq );
-
+      if (colonToken.isSet() && matchType.isSet() && !consq.empty()) {
+        if (varToken.isSet())
+          result << ( Token()
+                      << pipeToken
+                      << ( Token() << varToken << colonToken << matchType )
+                      << consq );
+        else
+          result << ( Token()
+                      << pipeToken
+                      << ( Token() << colonToken << matchType )
+                      << consq );
+      }
       return true;
     }
   };

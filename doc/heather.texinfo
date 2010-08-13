@@ -1732,8 +1732,8 @@ def octets-available() : NumberOrFalse
 
 def f()
   match (octets-available()) @{
-    t : Boolean -> outln("End of file")
-    n : Number -> outln("Still have %d to read" % #[n])
+    | t : Boolean -> outln("End of file")
+    | n : Number -> outln("Still have %d to read" % #[n])
   @}
 @end example
 
@@ -2724,8 +2724,8 @@ select (a) @{
 @}
 @end example
 
-If neither @var{antecedent} and @var{comparator} is specified the tests
-are assumed to be Boolean expression themselves are evaluated in order
+If neither @var{antecedent} nor @var{comparator} is specified the
+tests are assumed to be Boolean expression wich are evaluated in order
 until one succeeds.
 
 @example
@@ -2748,29 +2748,43 @@ The @code{match} expression, a kind of type select, has the form:
 
 @example
 match (@var{expr}) @{
-  | @var{id-1} : @var{type-1} -> @var{consequent-1}
-  | @var{id-2} : @var{type-2} -> @var{consequent-2}
+  | [ @var{id-1} ] : @var{type-1} -> @var{consequent-1}
+  | [ @var{id-2} ] : @var{type-2} -> @var{consequent-2}
   @r{@dots{}}
-  | @r{[} @var{id-3} : Any -> @var{alternate} @r{]}
+  | @r{[} [ @var{id-3} ] : Any -> @var{alternate} @r{]}
 @}
 @end example
 
-where @var{id-1}, @var{id-2}, etc.@ are identifiers typed as
-@var{type-1}, @var{type-2}, etc.  @var{expr} is evaluated and the type
-of its value matched against the types @var{type-1}, @var{type-2}, etc.
-@var{expr}'s value is bound to the identifier for the best matching type
-and the respective consequent @var{consequent-n} is evaluated.  If
-multiple type case are considered equally good matches the first in the
-given order is taken.  @var{id-n} is visible only inside of the
-consequent.
+where @var{id-1}, @var{id-2}, etc.@ are (optional) identifiers typed
+as @var{type-1}, @var{type-2}, etc.  @var{expr} is evaluated and the
+type of its value matched against the types @var{type-1},
+@var{type-2}, etc.  @var{expr}'s value is bound to the identifier (if
+defined) for the best matching type and the respective consequent
+@var{consequent-n} is evaluated.  If multiple type cases are
+considered equally good matches the first in the given order is taken.
+@var{id-n} is visible only inside of the consequent.
 
-There must only be one type case which is typed to @code{Any}; this
-acts as an `else' case.
+The first type case which is typed to @code{Any} acts as an `else'
+case.
 
 The evaluated consequent's value becomes the value of the complete
 expression.  If no type case matches (and there's no @code{Any} case)
 the value is @code{unspecified}.
+
+@example
+def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrFalse ...
+
+def remove!(self @ List<'T>, elt @ 'T) : List<'T>
+  match (self.index-of(elt)) @{
+    | : Bool        -> self
+    | idx : Ordinal -> @{
+                         self.remove-at!(idx)
+                         self
+                       @}
+  @}
+@end example
 @end deffn
+
 
 @c --------------------------------------------------------------------
 @node Conditions, On-the-fly iterators, Conditionals, Expressions
@@ -4626,7 +4640,7 @@ constants       := constant { `,' constant }
 
 match-expr      := `match' `(' test-expr `)' `{' match-tests `}'
 match-tests     := { `|' match-test }
-match-test      := var-name `:' type-clause `->' consequent
+match-test      := [ var-name ] `:' type-clause `->' consequent
 @end verbatim
 @end smallformat
 
