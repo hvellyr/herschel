@@ -33,6 +33,57 @@ namespace heather
   class Scope : public RefCountable
   {
   public:
+    enum ScopeDomain
+    {
+      kNormal,
+      kChar,
+      kUnit,
+
+      kMaxScopeDomain
+    };
+
+    struct ScopeName
+    {
+      ScopeName()
+        : fDomain(kNormal)
+      { }
+
+      ScopeName(ScopeDomain domain, const String& name)
+        : fDomain(domain),
+          fName(name)
+      { }
+
+      ScopeName(const ScopeName& other)
+        : fDomain(other.fDomain),
+          fName(other.fName)
+      { }
+
+      ScopeName& operator=(const ScopeName& other)
+      {
+        fDomain = other.fDomain;
+        fName = other.fName;
+        return *this;
+      }
+
+      bool operator==(const ScopeName& other) const
+      {
+        return ( fDomain == other.fDomain &&
+                 fName == other.fName );
+      }
+
+      bool operator<(const ScopeName& other) const
+      {
+        if (fDomain == other.fDomain)
+          return fName < other.fName;
+        return fDomain < other.fDomain;
+      }
+
+
+      ScopeDomain fDomain;
+      String      fName;
+    };
+
+
     Scope();
     Scope(Scope* parent);
 
@@ -41,16 +92,19 @@ namespace heather
 
     //! Check whether a given symbol \p name is registered in this scope.  If
     //! so return the \p srcpos where it was defined first.
-    bool hasName(const String& name, SrcPos* srcpos) const;
+    bool hasName(ScopeDomain domain, const String& name,
+                 SrcPos* srcpos) const;
 
     //! Like hasName() but checks in the current scope only.  If doAutoMatch
     //! is true the function maps a non-qualified \name to a solitary
     //! available definition from any namespace.
-    bool hasNameLocal(const String& name, SrcPos* srcpos,
+    bool hasNameLocal(ScopeDomain domain, const String& name,
+                      SrcPos* srcpos,
                       bool doAutoMatch) const;
 
 
     bool checkForRedefinition(const SrcPos& srcpos,
+                              ScopeDomain domain,
                               const String& sym) const;
 
     void dumpDebug() const;
@@ -81,6 +135,16 @@ namespace heather
     //! does not match the number of generics expected in \p type.
     Type normalizeType(const Type& type, const Type& refType) const;
 
+    //! register a unit \p unitName defined in terms of \p baseUnit, refering
+    //! to the type \p baseType.  The unit \p unitName can be computed into \p
+    //! baseUnit by \p transformFunc.  If \p transformFunc is NULL this is a
+    //! base unit.
+    void registerUnit(const SrcPos& srcpos,
+                      const String& unitName, const String& baseUnit,
+                      const Type& baseType,
+                      AptNode* transformFunc);
+
+    TypeUnit lookupUnit(const String& name, bool showAmbiguousSymDef) const;
 
     //-------- macros
 
@@ -107,13 +171,15 @@ namespace heather
 
     //-------- register export symbols
 
-    bool shouldExportSymbol(const String& sym) const;
-    VizType exportSymbolVisibility(const String& sym) const;
-    bool exportSymbolIsFinal(const String& sym) const;
-    void registerSymbolForExport(const String& sym, VizType viz, bool asFinal);
+    bool shouldExportSymbol(const ScopeName& sym) const;
+    VizType exportSymbolVisibility(const ScopeName& sym) const;
+    bool exportSymbolIsFinal(const ScopeName& sym) const;
+    void registerSymbolForExport(ScopeDomain domain, const String& sym,
+                                 VizType viz, bool asFinal);
 
     void exportSymbols(Scope* dstScope, bool propagateOuter) const;
     void propagateImportedScopes(Scope* dstScope) const;
+
 
     //-------- global defs
 
@@ -122,7 +188,8 @@ namespace heather
       kScopeItem_type,
       kScopeItem_function,
       kScopeItem_variable,
-      kScopeItem_macro
+      kScopeItem_macro,
+      kScopeItem_unit
     };
 
     class ScopeItem : public RefCountable
@@ -146,28 +213,32 @@ namespace heather
     };
 
   private:
-    void registerScopeItem(const String& name, ScopeItem* item);
+    void registerScopeItem(const ScopeName& name, ScopeItem* item);
     const ScopeItem* lookupItemLocal(const SrcPos& srcpos,
-                                     const String& name, bool showError) const;
+                                     const ScopeName& name,
+                                     bool showError) const;
     const ScopeItem* lookupItem(const SrcPos& srcpos,
-                                const String& name, bool showError) const;
+                                const ScopeName& name,
+                                bool showError) const;
 
     VizType reduceVizType(VizType in) const;
 
     const Scope::ScopeItem* lookupItemLocalImpl(const SrcPos& srcpos,
-                                                const String& name,
+                                                const ScopeName& name,
                                                 bool showError,
                                                 bool doAutoMatch) const;
 
     void dumpDebugImpl() const;
 
+    void exportAllSymbols(Scope* dstScope, bool propagateOuter) const;
 
     //-------- data members
 
-    typedef std::map<String, std::map<String, Ptr<ScopeItem> > > ScopeMap;
+    typedef std::map<String, Ptr<ScopeItem> > BaseScopeMap;
+    typedef std::map<ScopeName, BaseScopeMap> NsScopeMap;
     typedef std::map<String, Ptr<Scope> > ImportedScope;
 
-    ScopeMap   fMap;
+    NsScopeMap fMap;
     Ptr<Scope> fParent;
 
     struct VisibilityPair
@@ -176,7 +247,7 @@ namespace heather
       bool    fIsFinal;
     };
 
-    typedef std::map<String, VisibilityPair> VizMap;
+    typedef std::map<ScopeName, VisibilityPair> VizMap;
     VizMap fVisibility;
 
     ImportedScope fImportedScopes;

@@ -3190,13 +3190,14 @@ For example:
 @end example
 
 The grouping of the @var{declarations} with @code{@{} and @code{@}} is
-optional.  If the grouping is missing the module's scope extends until
+optional.  If this grouping is missing the module's scope extends until
 the end of the source file.
 
-Note: The @code{module} statement is @emph{not} a definition; there can
-be multiple module statements with the same module name and public id.
-All definitions from modules with the same public id are put into the
-same logical module (independant of what the module name was).
+Note: The @code{module} statement is @emph{not} a definition; there
+can be multiple module statements with the same module name and public
+id (possible in different files).  All definitions from modules with
+the same public id are put into the same logical module (independant
+of what the module name was).
 
 
 @c --------------------------------------------------------------------
@@ -3249,15 +3250,15 @@ definition.
 
 The name of the extending function must therefore explicitly be
 qualified.  If for example the @code{to-string} function from the
-@code{core} module should be extended this would look like:
+@code{core} module should be extended this would look like this:
 
 @example
 def core|to-string() : String
   ...
 @end example
 
-If more than one function is to be extended a special grouping form is
-available.
+If more than one function is to be extended a more convenient grouping
+form is available.
 
 @deffn Special {extend module}
 
@@ -3269,10 +3270,10 @@ extend module @var{module-name} @{
 @}
 @end example
 
-where @var{module-name} is the name of the module to extend (as
-imported).  All declarations inside this @code{extend} section are
-actually done as if written inside the mentioned @code{module}, except
-that visibility and export is controlled by the enclosing `real' module.
+where @var{module-name} is the name of the module to be extended.  All
+declarations inside this @code{extend} section are actually done as if
+written inside the mentioned @code{module}, except that visibility and
+export is controlled by the enclosing `real' module.
 
 @example
 module stack
@@ -3293,7 +3294,7 @@ extend module core
 Normally all declared identifiers from a module are restricted in
 visibility to the module and the compile unit they are defined in, i.e.@
 they're defined as @dfn{private}.  If other compile units in the same module
-or in other modules identifiers have to be @dfn{exported}.
+or in other modules should use them identifiers have to be @dfn{exported}.
 
 @deffn Special export
 The @code{export} declaration has the form:
@@ -4159,7 +4160,9 @@ define-clause   := func-decl
 export-stmt     := `export' { export-flag }
                    `(' all-symbol | symbol-list `)'
 export-flag     := `public' | `protected' | `final'
-symbol-list     := IDENTIFIER { `,' IDENTIFIER }
+symbol-list     := export-symbol { `,' export-symbol }
+export-symbol   := IDENTIFIER [ `:' domain-id ]
+domain-id       := `char' | `unit'
 all-symbol      := `*'
 @end verbatim
 @end smallformat

@@ -114,7 +114,12 @@ Visibility, export
       export (init) as final
 
 
+  - symbols to be exported take the form:
 
+    *             - affects all symbols, normal, char, and units
+    name          - export the normal symbol name (types, vars, etc.)
+    name : char   - export the char definition 'name'
+    name : unit   - export the unit definition 'unit'
 
 
 Lazy evaluation

@@ -272,8 +272,27 @@ namespace heather
     bool operator() (FirstPass* pass, Token& result)
     {
       if (pass->fToken.isSymbol()) {
-        result << pass->fToken;
+        Token symbol = pass->fToken;
         pass->nextToken();
+
+        if (pass->fToken == kColon) {
+          Token colon = pass->fToken;
+          // pass symbol-domain identifier
+          pass->nextToken();
+
+          if (pass->fToken != kSymbol) {
+            errorf(pass->fToken.srcpos(), E_SymbolExpected,
+                   "expected symbol domain identifier");
+            pass->scanUntilNextParameter();
+          }
+          else
+          {
+            result << ( Token() << symbol << colon << pass->fToken );
+            pass->nextToken();
+          }
+        }
+        else
+          result << symbol;
       }
       else if (pass->fToken == kMultiply) {
         result << Token(pass->fToken.srcpos(), "*");
@@ -363,7 +382,7 @@ FirstPass::parseExport()
         String fullId = ( isQualified(it->idValue())
                           ? it->idValue()
                           : qualifyId(currentModuleName(), it->idValue()) );
-        fScope->registerSymbolForExport(fullId, vizType, isFinal);
+        fScope->registerSymbolForExport(Scope::kNormal, fullId, vizType, isFinal);
       }
     }
 
@@ -3537,7 +3556,8 @@ FirstPass::parseMacroDef(const Token& defToken)
       String fullMacroName = qualifyId(currentModuleName(),
                                        macroNameToken.idValue());
 
-      if (fScope->checkForRedefinition(defToken.srcpos(), fullMacroName))
+      if (fScope->checkForRedefinition(defToken.srcpos(),
+                                       Scope::kNormal, fullMacroName))
         return Token();
 
 
