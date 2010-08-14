@@ -109,12 +109,32 @@ SecondPass::parseExport(const Token& expr)
   }
 
   assert(expr.count() > symbolOfs);
-  StringList symbols;
+  std::vector<Scope::ScopeName> symbols;
+
   if (expr[symbolOfs].isNested()) {
     Token symbolExprs = expr[symbolOfs];
+
     for (int j = 0; j < symbolExprs.count(); j++) {
-      if (symbolExprs[j].isSymbol())
-        symbols.push_back(symbolExprs[j].idValue());
+      if (symbolExprs[j].isSymbol()) {
+        symbols.push_back(Scope::ScopeName(Scope::kNormal, symbolExprs[j].idValue()));
+      }
+      else if (symbolExprs[j].isSeq()) {
+        assert(symbolExprs[j].count() == 3);
+        assert(symbolExprs[j][1] == kColon);
+        assert(symbolExprs[j][2] == kSymbol);
+
+        Scope::ScopeDomain domain = Scope::kNormal;
+        if (symbolExprs[j][2] == Parser::unitToken)
+          domain = Scope::kUnit;
+        else if (symbolExprs[j][2] == Parser::charToken)
+          domain = Scope::kChar;
+        else {
+          warning(symbolExprs[j][2].srcpos(), E_UnknownSymbolDomain,
+                  String("unknown symbol domain: ") + symbolExprs[j][2].idValue());
+        }
+
+        symbols.push_back(Scope::ScopeName(domain, symbolExprs[j][0].idValue()));
+      }
     }
   }
 
@@ -127,14 +147,15 @@ SecondPass::parseExport(const Token& expr)
   }
 
 
-  for (StringList::const_iterator it = symbols.begin();
+  for (std::vector<Scope::ScopeName>::const_iterator it = symbols.begin();
        it != symbols.end();
        it++)
   {
-    String fullId = ( isQualified(*it)
-                      ? *it
-                      : qualifyId(currentModuleName(), *it) );
-    fScope->registerSymbolForExport(fullId, vizType, isFinal);
+    Scope::ScopeDomain domain = it->fDomain;
+    String fullId = ( isQualified(it->fName)
+                      ? it->fName
+                      : qualifyId(currentModuleName(), it->fName));
+    fScope->registerSymbolForExport(domain, fullId, vizType, isFinal);
   }
 
   return NULL;
@@ -647,7 +668,8 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
 
   fCurrentGenericTypes.clear();
 
-  if (fScope->checkForRedefinition(expr.srcpos(), fullTypeName))
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullTypeName))
     return NULL;
 
   fScope->registerType(expr.srcpos(), fullTypeName, defType);
@@ -709,7 +731,8 @@ SecondPass::parseAliasDef(const Token& expr, bool isLocal)
                            ? aliasName
                            : qualifyId(currentModuleName(), aliasName) );
 
-  if (fScope->checkForRedefinition(expr.srcpos(), fullAliasName))
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullAliasName))
     return NULL;
 
 
@@ -801,8 +824,60 @@ SecondPass::parseEnumDef(const Token& expr, bool isLocal)
 AptNode*
 SecondPass::parseMeasureDef(const Token& expr, bool isLocal)
 {
-  // TODO
-  return NULL;
+  assert(fCurrentGenericTypes.empty());
+
+  assert(expr.isSeq());
+  assert(expr.count() == 6);
+  assert(expr[1] == Parser::measureToken);
+  assert(expr[2] == kSymbol);
+  assert(expr[3].isNested());
+  assert(expr[3].count() == 1);
+  assert(expr[3][0] == kSymbol);
+  assert(expr[4] == kColon);
+
+  size_t ofs = 2;
+
+  const TokenVector& seq = expr.children();
+  String typeName = seq[ofs].idValue();
+  String fullTypeName = qualifyId(currentModuleName(), typeName);
+  ofs++;
+
+  String unitName = seq[ofs][0].idValue();
+  String fullUnitName = qualifyId(currentModuleName(), unitName);
+  ofs++;
+
+  Type isaFrom;
+  if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
+    isaFrom = parseTypeSpec(seq[ofs + 1]);
+    ofs += 2;
+  }
+
+  Type defMeasureType = Type::newMeasure(fullTypeName, isaFrom, fullUnitName);
+
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullTypeName))
+    return NULL;
+  fScope->registerType(expr.srcpos(), fullTypeName, defMeasureType);
+
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kUnit, fullUnitName))
+    return NULL;
+  fScope->registerUnit(expr.srcpos(), fullUnitName, String(),
+                       defMeasureType, NULL);
+
+  NodeList dummyApplyParams;
+  NodeList dummySlotDefs;
+  NodeList dummyReqProtocol;
+  NodeList dummyOnExprs;
+
+  return new TypeNode(expr.srcpos(),
+                      fullTypeName,
+                      true,     // is instantiatable
+                      defMeasureType,
+                      dummyApplyParams,
+                      dummySlotDefs,
+                      dummyReqProtocol,
+                      dummyOnExprs);
 }
 
 
@@ -852,7 +927,8 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs,
                          ? sym
                          : qualifyId(currentModuleName(), sym) );
 
-  if (fScope->checkForRedefinition(expr.srcpos(), fullSymName))
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullSymName))
     return NULL;
 
   Ptr<AptNode> var = new VardefNode(expr.srcpos(),
@@ -937,7 +1013,8 @@ SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
                           ? sym
                           : qualifyId(currentModuleName(), sym) );
 
-  if (fScope->checkForRedefinition(expr.srcpos(), fullFuncName))
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullFuncName))
     return NULL;
 
   Ptr<AptNode> func = new FuncDefNode(expr.srcpos(),
@@ -1971,6 +2048,23 @@ SecondPass::parseTokenVector(const TokenVector& seq)
 
 
 AptNode*
+SecondPass::parseUnitNumber(const Token& expr)
+{
+  assert(expr.count() == 3);
+  assert(expr[1] == kQuote);
+  assert(expr[2] == kSymbol);
+
+  Ptr<AptNode> value = parseExpr(expr[0]);
+
+  TypeUnit unit = fScope->lookupUnit(expr[2].idValue(), true);
+  if (unit.isDef())
+    return new UnitConstant(expr.srcpos(), value, unit);
+  else
+    return NULL;
+}
+
+
+AptNode*
 SecondPass::parseSeq(const Token& expr)
 {
   assert(expr.isSeq());
@@ -2034,6 +2128,9 @@ SecondPass::parseSeq(const Token& expr)
         assert(0);
         return NULL;
       }
+    }
+    else if (expr[0].isNumber() && expr[1] == kQuote) {
+      return parseUnitNumber(expr);
     }
     else if (expr[1] == kRange) {
       return parseBinary(expr);

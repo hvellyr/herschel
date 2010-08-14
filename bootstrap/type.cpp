@@ -507,6 +507,89 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class MeasureTypeImpl : public TypeImpl
+  {
+  public:
+    MeasureTypeImpl(const String& name, const Type& baseType,
+                    const String& defUnit)
+      : fName(name),
+        fBaseType(baseType),
+        fDefUnit(defUnit)
+    { }
+
+
+    virtual MeasureTypeImpl* clone() const
+    {
+      return new MeasureTypeImpl(fName, fBaseType.clone(), fDefUnit);
+    }
+
+
+    virtual bool isEqual(const TypeImpl* other) const
+    {
+      const MeasureTypeImpl* o = dynamic_cast<const MeasureTypeImpl*>(other);
+
+      return (o != NULL &&
+              fName == o->fName &&
+              fDefUnit == o->fDefUnit &&
+              fBaseType == o->fBaseType);
+    }
+
+
+    virtual bool isCovariant(const TypeImpl* other) const
+    {
+      const MeasureTypeImpl* o = dynamic_cast<const MeasureTypeImpl*>(other);
+
+      return (o != NULL &&
+              fBaseType.isCovariant(o->fBaseType));
+    }
+
+
+    const String& name() const
+    {
+      return fName;
+    }
+
+
+    const Type& inherit() const
+    {
+      return fBaseType;
+    }
+
+
+    const String& defUnit() const
+    {
+      return fDefUnit;
+    }
+
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      fBaseType.replaceGenerics(typeMap);
+    }
+
+
+    virtual String toString() const
+    {
+      StringBuffer buf;
+      buf << "<ty:measure nm='" << fName << "' unit='" 
+          << fDefUnit << "'>";
+
+      if (fBaseType.isDef())
+        buf << "<ty:isa>" << fBaseType.toString() << "</ty:isa>";
+
+      buf << "</ty:measure>";
+      return buf.toString();
+    }
+
+  protected:
+    String     fName;
+    Type       fBaseType;
+    String     fDefUnit;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class TypeRefTypeImpl : public TypeImpl
   {
   public:
@@ -941,8 +1024,7 @@ Type
 Type::newMeasure(const String& name, const Type& baseType,
                  const String& defUnit)
 {
-  // TODO
-  return Type();
+  return Type(kType_Measure, new MeasureTypeImpl(name, baseType, defUnit));
 }
 
 
@@ -1154,7 +1236,7 @@ Type::typeName() const
     return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->name();
 
   case kType_Measure:
-    // return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name();
+    return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name();
   case kType_Enum:
     // return dynamic_cast<const EnumTypeImpl*>(fImpl.obj())->name();
   case kType_Union:
@@ -2342,6 +2424,63 @@ FunctionSignature::toString() const
   return buf.toString();
 }
 
+
+//------------------------------------------------------------------------------
+
+TypeUnit::TypeUnit()
+{ }
+
+
+TypeUnit::TypeUnit(const String& name, const String& derivedFrom,
+                   const Type& effectiveType)
+  : fName(name),
+    fDerivedFrom(derivedFrom),
+    fEffType(effectiveType)
+{ }
+
+
+TypeUnit::TypeUnit(const TypeUnit& other)
+{
+  *this = other;
+}
+
+
+bool
+TypeUnit::isDef() const
+{
+  return !fName.isEmpty();
+}
+
+
+const String&
+TypeUnit::name() const
+{
+  return fName;
+}
+
+
+const String&
+TypeUnit::derivedFromName() const
+{
+  return fDerivedFrom;
+}
+
+
+const Type&
+TypeUnit::effType() const
+{
+  return fEffType;
+}
+
+
+TypeUnit&
+TypeUnit::operator=(const TypeUnit& other)
+{
+  fName = other.fName;
+  fDerivedFrom = other.fDerivedFrom;
+  fEffType = other.fEffType;
+  return *this;
+}
 
 
 //============================================================================

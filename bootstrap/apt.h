@@ -191,6 +191,21 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class UnitConstant : public AptNode
+  {
+  public:
+    UnitConstant(const SrcPos& srcpos, AptNode* value, const TypeUnit& unit);
+    virtual UnitConstant* clone() const;
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    Ptr<AptNode> fValue;
+    TypeUnit     fUnit;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class CompileUnitNode : public AptNode
   {
   public:

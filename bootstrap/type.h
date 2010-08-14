@@ -41,10 +41,10 @@ namespace heather
   //! function type, or base type (like Int, String).  They are normally never
   //! used explicit in the code (when annotating variables, etc.); there're
   //! normaly Type References are used:
-  //! 
+  //!
   //! <code>
   //! def type XYZ<a, b> : (Abc<a>, Man<b>)
-  //! 
+  //!
   //! def v : XYZ<Int, Char> = 5
   //! </code>
   //!
@@ -198,7 +198,7 @@ namespace heather
 
     bool isDef() const;
 
-    
+
 
     //!@ base and builtin types
     //! indicates whether the type is a base type
@@ -417,7 +417,7 @@ namespace heather
 
 
     //! Returns the kind of the parameter.
-    ParameterKind kind() const; 
+    ParameterKind kind() const;
 
     //! Indicate whether the parameter is specialized.  Can be true only for
     //! positional parameters.
@@ -498,6 +498,33 @@ namespace heather
     Type                fReturnType;
     FunctionParamVector fParameters;
   };
+
+
+  //--------------------------------------------------------------------------
+
+  class TypeUnit
+  {
+  public:
+    TypeUnit();
+    TypeUnit(const String& name, const String& derivedFrom,
+             const Type& effectiveType);
+    TypeUnit(const TypeUnit& other);
+
+    bool isDef() const;
+
+    const String& name() const;
+    const String& derivedFromName() const;
+    const Type& effType() const;
+
+    TypeUnit& operator=(const TypeUnit& other);
+
+  private:
+    String fName;
+    String fDerivedFrom;
+    Type   fEffType;
+  };
+
+
 };                              // namespace
 
 #endif                          // bootstrap_type_h

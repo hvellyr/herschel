@@ -447,6 +447,37 @@ BoolNode::clone() const
 
 //----------------------------------------------------------------------------
 
+UnitConstant::UnitConstant(const SrcPos& srcpos, AptNode* value,
+                           const TypeUnit& unit)
+  : AptNode(srcpos),
+    fValue(value),
+    fUnit(unit)
+{
+}
+
+
+UnitConstant*
+UnitConstant::clone() const
+{
+  return new UnitConstant(fSrcPos, nodeClone(fValue), fUnit);
+}
+
+
+void
+UnitConstant::display(Port<Octet>* port) const
+{
+  StringBuffer attrs;
+  attrs << "unit='" << fUnit.name() << "'";
+
+  displayOpenTagAttrs(port, "uvalue", StrHelper(attrs.toString()));
+  displayType(port, "type", fUnit.effType());
+  displayNode(port, NULL, fValue);
+  displayCloseTag(port, "uvalue");
+}
+
+
+//----------------------------------------------------------------------------
+
 CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
   : AptNode(srcpos)
 {}

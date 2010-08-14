@@ -177,3 +177,12 @@ heather::errorf(const SrcPos& where, int errorCode, const char* format, ...)
 
   logImpl(where, kError, errorCode, stderr, buffer);
 }
+
+
+void
+heather::warning(const SrcPos& where, int errorCode, const String& msg)
+{
+  logImpl(where, kWarn, errorCode, stderr, (const char*)StrHelper(msg));
+}
+
+

@@ -113,6 +113,8 @@ namespace heather
     AptNode* parseChainSelect(const Token& expr);
     AptNode* parseRealSelect(const Token& expr);
 
+    AptNode* parseUnitNumber(const Token& expr);
+
     //-------- data member
 
     std::set<String>         fCurrentGenericTypes;
