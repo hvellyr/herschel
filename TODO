@@ -72,7 +72,10 @@ Bootstrap compiler
     - what's about multiple return values?  Spe?  Pass1?  Pass2?
 
   - pass2:
-    - for measures, units, enums,
+    - replace the UnitConstant node by a proper Measure() ctor call.  Apply
+      the unit transformation inplace.  Register unit-transform calls as
+      special functions.
+    - for enums,
     - where clauses
 
   - access values from enums as Enum::item

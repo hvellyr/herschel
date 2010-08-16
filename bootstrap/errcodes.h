@@ -50,6 +50,7 @@ namespace heather
     E_BadNumberNotation   = 0x0107,
     E_UnitExpected        = 0x0108,
     E_UnknownSymbolDomain = 0x0109,
+    E_UndefinedUnit       = 0x010a,
 
     // def parsing
     E_Redefinition        = 0x4000,

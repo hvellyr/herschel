@@ -852,6 +852,8 @@ SecondPass::parseMeasureDef(const Token& expr, bool isLocal)
     ofs += 2;
   }
 
+  fCurrentGenericTypes.clear();
+
   Type defMeasureType = Type::newMeasure(fullTypeName, isaFrom, fullUnitName);
 
   if (fScope->checkForRedefinition(expr.srcpos(),
@@ -884,7 +886,46 @@ SecondPass::parseMeasureDef(const Token& expr, bool isLocal)
 AptNode*
 SecondPass::parseUnitDef(const Token& expr, bool isLocal)
 {
-  // TODO
+  assert(fCurrentGenericTypes.empty());
+
+  assert(expr.isSeq());
+  assert(expr.count() >= 7);
+  assert(expr[1] == Parser::unitToken);
+  assert(expr[2] == kSymbol);
+  assert(expr[3] == kMapTo);
+  assert(expr[5].isNested());
+  assert(expr[5].count() == 1);
+
+  size_t ofs = 2;
+
+  const TokenVector& seq = expr.children();
+  String unitName = seq[ofs].idValue();
+  String fullUnitName = qualifyId(currentModuleName(), unitName);
+  ofs++;
+  assert(seq[ofs] == kMapTo);
+  ofs++;
+
+  TypeUnit baseUnit = fScope->lookupUnit(seq[ofs].idValue(), true);
+  if (!baseUnit.isDef()) {
+    error(seq[ofs].srcpos(), E_UndefinedUnit,
+          String("Undefined unit: ") + seq[ofs].idValue());
+    return NULL;
+  }
+  ofs++;
+  assert(seq[ofs].isNested());
+
+  FundefClauseData data;
+  parseFundefClause(seq, ofs, data);
+
+  Ptr<AptNode> funcNode = new FunctionNode(expr.srcpos(),
+                                           data.fParams, data.fType, data.fBody);
+
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kUnit, fullUnitName))
+    return NULL;
+  fScope->registerUnit(expr.srcpos(), fullUnitName, baseUnit.name(),
+                       baseUnit.effType(), funcNode);
+
   return NULL;
 }
 
@@ -939,6 +980,53 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs,
 }
 
 
+void
+SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
+                              FundefClauseData& data)
+{
+  assert(seq[ofs].isNested());
+  parseParameters(&data.fParams, seq[ofs].children());
+  ofs++;
+
+  if (ofs < seq.size()) {
+    if (seq[ofs] == kColon) {
+      data.fType = parseTypeSpec(seq[ofs + 1]);
+      ofs += 2;
+    }
+  }
+
+  if (ofs < seq.size()) {
+    if (seq[ofs].isSeq() && seq[ofs].count() > 1 &&
+        seq[ofs][0] == kReifyId)
+    {
+      // data.fReify = 
+      // TODO
+      ofs++;
+    }
+  }
+
+  if (ofs < seq.size()) {
+    if (seq[ofs].isSeq() && seq[ofs].count() > 1 &&
+        seq[ofs][0] == kWhereId)
+    {
+      // TODO.  Don't parse the where clause into apt nodes here, but enrich a
+      // passed in context.  The 'Where' information is used to transform
+      // quoted types into full type spec later.
+      // data.fWhere =
+      ofs++;
+    }
+  }
+
+  if (ofs < seq.size()) {
+    if (seq[ofs] == kEllipsis)
+      data.fFlags |= kFuncIsAbstract;
+    else if (!fParser->isParsingInterface())
+      data.fBody = parseExpr(seq[ofs]);
+    ofs++;
+  }
+}
+
+
 AptNode*
 SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
 {
@@ -946,11 +1034,11 @@ SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
   assert(expr.count() >= 3);
   assert(expr[0] == kDefId || expr[0] == kLetId);
 
-  unsigned int flags = 0;
-  int ofs = 1;
+  FundefClauseData data;
+  size_t ofs = 1;
 
   if (expr[ofs] == Parser::genericToken) {
-    flags |= kFuncIsGeneric;
+    data.fFlags |= kFuncIsGeneric;
     ofs++;
   }
 
@@ -965,49 +1053,8 @@ SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
 
   ofs++;
 
-  assert(expr[ofs].isNested());
-  NodeList params;
-  parseParameters(&params, expr[ofs].children());
-  ofs++;
-
-  Type type;
-  if (ofs < expr.count()) {
-    if (expr[ofs] == kColon) {
-      type = parseTypeSpec(expr[ofs + 1]);
-      ofs += 2;
-    }
-  }
-
-  Ptr<AptNode> reify;
-  if (ofs < expr.count()) {
-    if (expr[ofs].isSeq() && expr[ofs].count() > 1 &&
-        expr[ofs][0] == kReifyId)
-    {
-      // TODO
-      ofs++;
-    }
-  }
-
-  Ptr<AptNode> where;
-  if (ofs < expr.count()) {
-    if (expr[ofs].isSeq() && expr[ofs].count() > 1 &&
-        expr[ofs][0] == kWhereId)
-    {
-      // TODO.  Don't parse the where clause into apt nodes here, but enrich a
-      // passed in context.  The 'Where' information is used to transform
-      // quoted types into full type spec later.
-      ofs++;
-    }
-  }
-
-  Ptr<AptNode> body;
-  if (ofs < expr.count()) {
-    if (expr[ofs] == kEllipsis)
-      flags |= kFuncIsAbstract;
-    else if (!fParser->isParsingInterface())
-      body = parseExpr(expr[ofs]);
-    ofs++;
-  }
+  const TokenVector& seq = expr.children();
+  parseFundefClause(seq, ofs, data);
 
   String fullFuncName = ( isLocal
                           ? sym
@@ -1018,7 +1065,11 @@ SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
     return NULL;
 
   Ptr<AptNode> func = new FuncDefNode(expr.srcpos(),
-                                      fullFuncName, flags, params, type, body);
+                                      fullFuncName,
+                                      data.fFlags,
+                                      data.fParams,
+                                      data.fType,
+                                      data.fBody);
   fScope->registerFunction(expr.srcpos(), fullFuncName, func);
   return func.release();
 }
@@ -2057,10 +2108,14 @@ SecondPass::parseUnitNumber(const Token& expr)
   Ptr<AptNode> value = parseExpr(expr[0]);
 
   TypeUnit unit = fScope->lookupUnit(expr[2].idValue(), true);
-  if (unit.isDef())
+  if (unit.isDef()) {
     return new UnitConstant(expr.srcpos(), value, unit);
-  else
+  }
+  else {
+    error(expr[2].srcpos(), E_UndefinedUnit,
+          String("Undefined unit: ") + expr[2].idValue());
     return NULL;
+  }
 }
 
 
