@@ -115,6 +115,23 @@ namespace heather
 
     AptNode* parseUnitNumber(const Token& expr);
 
+    struct FundefClauseData
+    {
+      FundefClauseData()
+        : fFlags(0)
+      { }
+
+      NodeList     fParams;
+      Type         fType;
+      Ptr<AptNode> fReify;
+      Ptr<AptNode> fWhere;
+      unsigned int fFlags;
+      Ptr<AptNode> fBody;
+    };
+    void parseFundefClause(const TokenVector& seq, size_t& ofs,
+                           FundefClauseData& data);
+
+
     //-------- data member
 
     std::set<String>         fCurrentGenericTypes;
