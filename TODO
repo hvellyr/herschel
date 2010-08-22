@@ -73,8 +73,8 @@ Bootstrap compiler
 
   - pass2:
     - replace the UnitConstant node by a proper Measure() ctor call.  Apply
-      the unit transformation inplace.  Register unit-transform calls as
-      special functions.
+      the unit transformation inplace (if simple enough).  Register
+      unit-transform calls as special functions.
     - for enums,
     - where clauses
 
