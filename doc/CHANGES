@@ -317,7 +317,7 @@ Enum member notation
     {                         {
       kAuto,                    auto,
       kFixed,                   fixed,
-      kDynamic                  dynamic,
+      kDynamic                  dynamic
     }                         }
 
     SlotType::kAuto           auto'SlotType
@@ -328,6 +328,43 @@ Enum member notation
   some other "auto" or "dynamic" names in a given scope, type them
   "auto'SlotType".
 
+  If enum values are first class namespaces can be attached to the enum
+  value and the type separately:
+
+    module ixwick
+
+    def enum SlotType
+    {
+      auto,
+      fixed,
+      dynamic
+    }
+
+  and 
+
+  module abc
+
+    def enum SlotType
+    {
+      auto,
+      fixed,
+      dynamic
+    }
+
+  than, if a source file import both headers the following is necessary to
+  distinguish between auto and auto:
+
+    f(auto'ixwick|SlotType)
+
+  or
+
+    f(ixwick|auto)
+
+  In the later case not type is necessary since auto is unique throughout
+  the ixwick module.  The following expression is wrong, since the two
+  SlotType definition have nothing in common:
+
+    f(ixwick|auto'abc|SlotType)
 
 
 Used character in the Ascii table:
