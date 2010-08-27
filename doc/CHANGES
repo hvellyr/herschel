@@ -1,3 +1,4 @@
+
 Visibility, export
 
   - Review module vs. interface again.
@@ -365,6 +366,31 @@ Enum member notation
   SlotType definition have nothing in common:
 
     f(ixwick|auto'abc|SlotType)
+
+
+
+Again.  Other idea:
+
+  The following:
+
+    def enum SlotType
+    {
+      auto,
+      fixed,
+      dynamic
+    }
+
+  is identical to:
+
+    def type SlotType : (Int in 0 .. 2)
+    def const auto : SlotType = 0
+    def const fixed : SlotType = 1
+    def const dynamic : SlotType = 2  
+
+  i.e. Slot items are actually constant variables of a constraint type.
+  The enum definition is therefore nothing more than syntactic sugar.  Enum
+  items are never decorated by the enum type and must be unique throughout
+  a module.
 
 
 Used character in the Ascii table:
