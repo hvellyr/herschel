@@ -774,6 +774,31 @@ namespace heather
 
 //----------------------------------------------------------------------------
 
+const String heather::Type::kAnyTypeName         = String("Any");
+const String heather::Type::kBoolTypeName        = String("Bool");
+const String heather::Type::kCharTypeName        = String("Char");
+const String heather::Type::kDoubleTypeName      = String("Double");
+const String heather::Type::kEofTypeName         = String("Eof");
+const String heather::Type::kFloatTypeName       = String("Float");
+const String heather::Type::kIntTypeName         = String("Int");
+const String heather::Type::kKeywordTypeName     = String("Keyword");
+const String heather::Type::kLongDoubleTypeName  = String("LongDouble");
+const String heather::Type::kLongTypeName        = String("Long");
+const String heather::Type::kNilTypeName         = String("Nil");
+const String heather::Type::kOctetTypeName       = String("Octet");
+const String heather::Type::kRationalTypeName    = String("Rational");
+const String heather::Type::kRealTypeName        = String("Real");
+const String heather::Type::kShortTypeName       = String("Short");
+const String heather::Type::kStringTypeName      = String("String");
+const String heather::Type::kULongTypeName       = String("ULong");
+const String heather::Type::kUShortTypeName      = String("UShort");
+const String heather::Type::kUWordTypeName       = String("UWord");
+const String heather::Type::kUnspecifiedTypeName = String("Unspecified");
+const String heather::Type::kWordTypeName        = String("Word");
+
+
+//----------------------------------------------------------------------------
+
 Type::Type()
   : fKind(kType_Undefined)
 { }
@@ -1146,6 +1171,38 @@ Type::isBase() const
 
 
 bool
+Type::isBaseOrBaseRef() const
+{
+  if  (isBase())
+    return true;
+  if (isRef()) {
+    String nm = typeName();
+    return (nm == kBoolTypeName ||
+            nm == kCharTypeName ||
+            nm == kDoubleTypeName ||
+            nm == kEofTypeName ||
+            nm == kFloatTypeName ||
+            nm == kIntTypeName ||
+            nm == kKeywordTypeName ||
+            nm == kLongDoubleTypeName ||
+            nm == kLongTypeName ||
+            nm == kNilTypeName ||
+            nm == kOctetTypeName ||
+            nm == kRationalTypeName ||
+            nm == kRealTypeName ||
+            nm == kShortTypeName ||
+            nm == kStringTypeName ||
+            nm == kULongTypeName ||
+            nm == kUShortTypeName ||
+            nm == kUWordTypeName ||
+            nm == kWordTypeName);
+  }
+
+  return false;
+}
+
+
+bool
 Type::isAny() const
 {
   return fKind == kType_Any;
@@ -1190,42 +1247,27 @@ Type::typeName() const
   case kType_Ref:
     return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->name();
 
-  case kType_Any:
-    return String("Any");
-  case kType_Bool:
-    return String("Bool");
-  case kType_Char:
-    return String("Char");
-  case kType_Int:
-    return String("Int");
-  case kType_Keyword:
-    return String("Keyword");
-  case kType_Long:
-    return String("Long");
-  case kType_Octet:
-    return String("Octet");
-  case kType_Rational:
-    return String("Rational");
-  case kType_Real:
-    return String("Real");
-  case kType_Short:
-    return String("Short");
-  case kType_String:
-    return String("String");
-  case kType_ULong:
-    return String("ULong");
-  case kType_UShort:
-    return String("UShort");
-  case kType_UWord:
-    return String("UWord");
-  case kType_Word:
-    return String("Word");
-  case kType_Eof:
-    return String("Eof");
-  case kType_Nil:
-    return String("Nil");
-  case kType_Unspecified:
-    return String("Unspecified");
+  case kType_Any:         return kAnyTypeName;
+  case kType_Bool:        return kBoolTypeName;
+  case kType_Char:        return kCharTypeName;
+  case kType_Int:         return kIntTypeName;
+  case kType_Keyword:     return kKeywordTypeName;
+  case kType_Long:        return kLongTypeName;
+  case kType_Octet:       return kOctetTypeName;
+  case kType_Rational:    return kRationalTypeName;
+  case kType_Real:        return kRealTypeName;
+  case kType_Short:       return kShortTypeName;
+  case kType_String:      return kStringTypeName;
+  case kType_ULong:       return kULongTypeName;
+  case kType_UShort:      return kUShortTypeName;
+  case kType_UWord:       return kUWordTypeName;
+  case kType_Word:        return kWordTypeName;
+  case kType_Eof:         return kEofTypeName;
+  case kType_Nil:         return kNilTypeName;
+  case kType_Unspecified: return kUnspecifiedTypeName;
+  case kType_Float:       return kFloatTypeName;
+  case kType_Double:      return kDoubleTypeName;
+  case kType_LongDouble:  return kLongDoubleTypeName;
 
   case kType_Array:
     return arrayBaseType().typeName();
@@ -1483,6 +1525,9 @@ Type::generics() const
   case kType_Octet:
   case kType_Rational:
   case kType_Real:
+  case kType_Float:
+  case kType_Double:
+  case kType_LongDouble:
   case kType_Short:
   case kType_String:
   case kType_ULong:
@@ -1573,24 +1618,27 @@ String
 Type::toString() const
 {
   switch (fKind) {
-  case kType_Any:           return String("Any");
-  case kType_Bool:          return String("Bool");
-  case kType_Char:          return String("Char");
-  case kType_Int:           return String("Int");
-  case kType_Keyword:       return String("Keyword");
-  case kType_Long:          return String("Long");
-  case kType_Octet:         return String("Octet");
-  case kType_Rational:      return String("Rational");
-  case kType_Real:          return String("Real");
-  case kType_Short:         return String("Short");
-  case kType_String:        return String("String");
-  case kType_ULong:         return String("ULong");
-  case kType_UShort:        return String("UShort");
-  case kType_UWord:         return String("UWord");
-  case kType_Word:          return String("Word");
-  case kType_Eof:           return String("Eof");
-  case kType_Nil:           return String("Nil");
-  case kType_Unspecified:   return String("Unspecified");
+  case kType_Any:           return kAnyTypeName;
+  case kType_Bool:          return kBoolTypeName;
+  case kType_Char:          return kCharTypeName;
+  case kType_Int:           return kIntTypeName;
+  case kType_Keyword:       return kKeywordTypeName;
+  case kType_Long:          return kLongTypeName;
+  case kType_Octet:         return kOctetTypeName;
+  case kType_Rational:      return kRationalTypeName;
+  case kType_Real:          return kRealTypeName;
+  case kType_Short:         return kShortTypeName;
+  case kType_String:        return kStringTypeName;
+  case kType_ULong:         return kULongTypeName;
+  case kType_UShort:        return kUShortTypeName;
+  case kType_UWord:         return kUWordTypeName;
+  case kType_Word:          return kWordTypeName;
+  case kType_Eof:           return kEofTypeName;
+  case kType_Nil:           return kNilTypeName;
+  case kType_Unspecified:   return kUnspecifiedTypeName;
+  case kType_Float:         return kFloatTypeName;
+  case kType_Double:        return kDoubleTypeName;
+  case kType_LongDouble:    return kLongDoubleTypeName;
 
   case kType_Ref:
   case kType_Array:

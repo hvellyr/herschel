@@ -1773,14 +1773,20 @@ def generator(x @@ Vector<'T>) : Function() : &('T, Eof)
 @findex def enum
 @cindex enumerations
 Enumeration define types which have a known limited set of possible
-values.  Enumeration type inherit from a base type; this is not
-necessarily, as in C or C++, an integer.  The values of an enumeration
-are symbolic names which must be accessed through the dot notation (like
-function calls).
+values.  An enumeration type inherit from a base type; this is not
+necessarily, as in C or C++, an integer.
+
+The values of an enumeration are symbols in the same namespace as
+functions or variables, i.e.@ two enumerations in the same module can
+have the same symbolic name as value.  When refering to enumeration
+values the value's symbolic name is to be used.  Enumeration does not
+form a special module or namespace.
 
 Enumeration can be used to specialize methods.
 
 @example
+module xgrafix
+
 def enum Colors : Keyword
 @{
   none   = #transparent
@@ -1797,7 +1803,7 @@ def enum MidiController : (Ordinal in 0 .. 127)
   modulation     = 1
   breath         = 2
   foot-pedal     = 3
-  ...
+  -- ...
   poly-operation = 127
 @}
 
@@ -1805,15 +1811,28 @@ def enum MidiController : (Ordinal in 0 .. 127)
 def set-clip-details(self @@ Clip,
                      color @@ Colors, mctrl @@ MidiController)
   select (mctrl) @{
-    | MidiController.bank-select -> ...
-    | MidiController.modulation -> ...
-    | MidiController.breath -> ...
+    | bank-select -> ...
+    | modulation -> ...
+    | breath -> ...
     | ...
   @}
 
-  if (color == Colors.none)
+  if (color == xgrafix|none)
     reset-color(self)
   ...
+@end example
+
+If the value of the enumeration items are not specified and the
+enumeration inherits of type @code{Int} the values are automatically
+assigned.  The first enumeration item is @code{0}:
+
+@example
+def enum Slot
+@{
+  first-slot      -- -> 0
+  second-slot     -- -> 1
+  third-slot      -- -> 2
+@}
 @end example
 
 
