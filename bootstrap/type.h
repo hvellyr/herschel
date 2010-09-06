@@ -73,6 +73,9 @@ namespace heather
     kType_Int,
     kType_Real,
     kType_Rational,
+    kType_Float,
+    kType_Double,
+    kType_LongDouble,
 
     kType_Bool,
     kType_Char,
@@ -203,6 +206,7 @@ namespace heather
     //!@ base and builtin types
     //! indicates whether the type is a base type
     bool isBase() const;
+    bool isBaseOrBaseRef() const;
 
     bool isAny() const;
 
@@ -278,6 +282,28 @@ namespace heather
 
     String toString() const;
 
+
+    static const String kAnyTypeName;
+    static const String kBoolTypeName;
+    static const String kCharTypeName;
+    static const String kDoubleTypeName;
+    static const String kEofTypeName;
+    static const String kFloatTypeName;
+    static const String kIntTypeName;
+    static const String kKeywordTypeName;
+    static const String kLongDoubleTypeName;
+    static const String kLongTypeName;
+    static const String kNilTypeName;
+    static const String kOctetTypeName;
+    static const String kRationalTypeName;
+    static const String kRealTypeName;
+    static const String kShortTypeName;
+    static const String kStringTypeName;
+    static const String kULongTypeName;
+    static const String kUShortTypeName;
+    static const String kUWordTypeName;
+    static const String kUnspecifiedTypeName;
+    static const String kWordTypeName;
 
   private:
     Type(TypeKind kind, TypeImpl* impl);

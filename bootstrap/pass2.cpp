@@ -732,9 +732,10 @@ SecondPass::parseAliasDef(const Token& expr, bool isLocal)
                            : qualifyId(currentModuleName(), aliasName) );
 
   if (fScope->checkForRedefinition(expr.srcpos(),
-                                   Scope::kNormal, fullAliasName))
+                                   Scope::kNormal, fullAliasName)) {
+    fCurrentGenericTypes.clear();
     return NULL;
-
+  }
 
   Type aliasType = Type::newAlias(fullAliasName, generics, referedType);
 
@@ -816,7 +817,100 @@ SecondPass::parseSlotDef(const Token& expr)
 AptNode*
 SecondPass::parseEnumDef(const Token& expr, bool isLocal)
 {
-  // TODO
+  assert(fCurrentGenericTypes.empty());
+
+  assert(expr.isSeq());
+  assert(expr.count() == 4 || expr.count() == 6);
+  assert(expr[1] == Parser::enumToken);
+  assert(expr[2] == kSymbol);
+
+  size_t ofs = 2;
+
+  const TokenVector& seq = expr.children();
+  String enumTypeName = seq[ofs].idValue();
+  String fullEnumName = ( isLocal
+                          ? enumTypeName
+                          : qualifyId(currentModuleName(), enumTypeName) );
+  ofs++;
+
+  Type baseType;
+  if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
+    baseType = parseTypeSpec(seq[ofs + 1]);
+    ofs += 2;
+  }
+  else
+    baseType = Type::newTypeRef(Type::kIntTypeName);
+
+  if (!baseType.isBaseOrBaseRef()) {
+    errorf(expr.srcpos(), E_EnumNotBaseType, "Enum base is not a base type.");
+    return NULL;
+  }
+
+  assert(expr[ofs].isNested());
+  assert(expr[ofs].leftToken() == kBraceOpen);
+
+  fCurrentGenericTypes.clear();
+
+  //-------- define the items as def const x = y
+
+  const TokenVector& enumValues = expr[ofs].children();
+  for (size_t i = 0; i < enumValues.size(); i++) {
+    const Token& enumVal = enumValues[i];
+
+    String sym;
+    Ptr<AptNode> initExpr;
+
+    if (enumVal.isSeq()) {
+      assert(enumVal.count() >= 3);
+      assert(enumVal[0] == kSymbol);
+
+      sym = enumVal[0].idValue();
+
+      assert(enumVal[1] == kAssign);
+      initExpr = parseExpr(enumVal[2]);
+    }
+    else if (enumVal == kSymbol) {
+      sym = enumVal.idValue();
+      initExpr = NULL;
+    }
+    else
+      assert(0);
+
+    if (isQualified(sym)) {
+      errorf(enumVal.srcpos(), E_QualifiedEnumDefSym,
+             "Enum item definitions must not be qualified. "
+             "Ignore namespace");
+      sym = baseName(sym);
+    }
+
+    String fullSymName = ( isLocal
+                           ? sym
+                           : qualifyId(currentModuleName(), sym) );
+    if (fScope->checkForRedefinition(enumVal.srcpos(),
+                                     Scope::kNormal, fullSymName))
+      return NULL;
+
+    Ptr<AptNode> var = new VardefNode(enumVal.srcpos(),
+                                      fullSymName, kConstVar, baseType, initExpr);
+    fScope->registerVar(enumVal.srcpos(), fullSymName, var);
+  }
+
+  //-------- define the enum type as 'def type X : (Y in ...)'
+
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullEnumName))
+    return NULL;
+
+  // TODO: make the enum type actually a constraint type of the values of the
+  // defined items.
+  TypeVector dummyGenerics;
+  TypeConstVector constraints;
+  Type enumType = Type::newTypeRef(baseType.typeName(),
+                                   dummyGenerics, constraints);
+
+  fScope->registerType(expr.srcpos(), fullEnumName, enumType);
+
+  // there's no apt node to generate here.
   return NULL;
 }
 
@@ -999,7 +1093,7 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
     if (seq[ofs].isSeq() && seq[ofs].count() > 1 &&
         seq[ofs][0] == kReifyId)
     {
-      // data.fReify = 
+      // data.fReify =
       // TODO
       ofs++;
     }
@@ -2162,7 +2256,7 @@ SecondPass::parseSeq(const Token& expr)
     if (expr[1].isNested()) {
       if (expr[1].leftToken() == kParanOpen)
         return parseFunCall(expr);
-      else if (expr[0] == kSymbol && 
+      else if (expr[0] == kSymbol &&
                expr[1].leftToken() == kGenericOpen)
         return parseTypeExpr(expr);
       else

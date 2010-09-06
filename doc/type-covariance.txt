@@ -6,7 +6,7 @@ When are types covariant?
 
     - if A implements/inherits (type) B
 
-    Note: it is an error if no all required functions in A are
+    Note: it is an error if not all required functions in A are
           covariants to those in B
 
 
@@ -91,4 +91,30 @@ When are types covariant?
       etc.
 
     Whether a function is generic or not is however not relevant.
+
+Beware of aliasing
+
+  let a : List<String> = List<String>()
+  let b : List<Object> = a
+
+looks ok, doesn't it?  But if now later on
+
+  b.add("abc")  -- ok
+  b.add(4567)   -- problem!
+
+4567 is a number (and therefore an Object) and thus can be added to b (it's
+a List<Object>).  But since b and a point to the same object in memory the
+type contract a isa List<String> is broken!
+
+Thus two parameterized types A<X> and B<Y> are covariant only if A and B
+are covariant and X and Y are identical.
+
+
+The 'isa' constraint is valueable?
+
+  def generic foo(a : 'T) ...                     -- accepts really any type
+  def generic foo(a : Any) ...                    -- accepts Any type
+  def generic foo(a : 'T isa Shape) ...           -- accepts any type being
+                                                  -- Shape or subclass
+  def generic foo(a : 'T) where T isa Shape ...   -- dto.
 

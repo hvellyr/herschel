@@ -75,6 +75,8 @@ namespace heather
     E_QualifiedLocalSym   = 0x4031,
     E_QualifiedParamKey   = 0x4032,
     E_QualifiedSlot       = 0x4033,
+    E_QualifiedEnumDefSym = 0x4034,
+    E_EnumNotBaseType     = 0x4035,
 
     // enums
     E_BadEnumItemList     = 0x4050,
