@@ -53,18 +53,19 @@ If you don't want to copy an instance and want to modify in the function
 though?  In oop it is common pratice to have modifier functions.  In that
 case you can explicitely declare a parameter to be a reference parameter:
 
-  def generic names!(p^ @ Person, n : String, sn : String) : Person
+  def generic names!(p @ ^Person, n : String, sn : String) : Person
     p.name = n
     p.surname = sn
     p
 
-The '^' marks 'p' here as a in-out reference, i.e. the function 'name!' and
-'surname!' modify the object passed as 'p'.
+Here 'p' has the type of a "Reference to a Person object".  This make 'p' a
+in-out reference, i.e. the function 'name!' and 'surname!' modify the
+object passed as 'p'.
 
 What happen now in case that you pass in a 'local' variable definition?
 Take the following code:
 
-  def generic properties!(p^ @ Person, props)
+  def generic properties!(p @ ^Person, props)
     p.properties = props
     p
 
@@ -72,7 +73,7 @@ Take the following code:
     let p = Person(name: name, surname: surname)   -- [1]
     let props = database.properties-for-person(p)
     if (props <> nil)
-      p^.properties!(props)                        -- [4]
+      ^p.properties!(props)                        -- [4]
     else
       false
 
@@ -83,8 +84,21 @@ the object is passed as a reference to a function.  The function returns
 certain scope it is free to allocate a instance on the stack (and avoid GC
 completely).
 
-Note: both function declaration and function call have to declare a
-parameter as reference.
+Note: Passing a value to a reference parameter requires to pass it as
+reference (put '^' before the name, unles it is a reference already).  To
+access (and modify) the value of a reference dereference the name (by
+adding a '^' after the name).  The later is not necessary when setting
+members of classes, since slot access is wrapped in the slot!() methods
+which explicitely take a reference as first parameter:
+
+  def generic name!(p @ ^Person, n : String)
+    p.slot!(#name, n)
+
+  =>  slot!(p, #name, n)
+
+  -- with slot! declared as:
+
+  def generic slot!(o @ ^'T, key : Keyword, val : 'V) : ^'T ...
 
 
 Pass by value.  It could happen actually that passing a complex object to a
@@ -117,13 +131,46 @@ e.g.:
 
 This won't compile; you rather have to say:
 
-  let x^ : Person
+  let x : ^Person
 
 The 'nil' initializing here is the default.
 
 
+        The result of notating a type 'Person' as '^Person' is comparable
+        to the 'Maybe' type in Haskell.  'Person' only denotes Person
+        instances, but never nil.  '^Person' uses actually the type
+        denotation of '&(Person, Nil)'.  Reference types therefore can be
+        matched simply as:
+
+          match (arg) {
+            |   : Nil -> outln("No person set")
+            | p : Person -> outln(p.to-string)
+          }
+
+
+Aren't references (pointers) dangerous (again)?
+-----------------------------------------------
+
+Yep.  They are of course more dangerous than operating with immutable
+objects passed by value.  Since heather on the other uses garbage
+collection with no explicitly free() or dispose() function you can't
+(easily) create dangling pointers.  What you can get are nil references of
+course.
+
+
+References to array slots?
+--------------------------
+
+References to single arrays slots are not possible.  You can either have a
+reference to the complete array or you need to use slicing views.  The
+normal Slice from the standard library is however not referencing, i.e. it
+uses a copy-on-write metaphor to refer to an array.  The RefSlice type
+however allows transparent write through, it has to apply a write-barrier
+however to detect changes (reallocations) to the underlying array.
+
+
 Allocation and initialization of class based object
----------------------------------------------------
+===================================================
 
 The expression:
 
