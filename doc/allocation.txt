@@ -1,0 +1,252 @@
+Memory model and Allocation
+===========================
+
+Objects must be created in heather.  This is true for complex objects but
+also for base ones, like integers or strings.  This object creation however
+is mostly covered by the syntax.  For example
+
+  1234
+  \space
+  "Hello world"
+  #something
+
+all create new objects (an instance of class Int, Char, String, and
+Keyword, resp.).  Whether this object 'exist' in heap or on stack is up to
+the compiler and runtime.  The same applies for complex objects.
+
+With the following class definition:
+
+  def class Person
+  {
+    def slot name ; param
+    def slot surname ; param
+  }
+
+we can say:
+
+  let p = Person(name: "Gustav", surname: "Adolf")
+
+this creates an object of type Person with the proper parameters.  This
+object will be created most likely on the heap, but the user can't really
+know (and he shouldn't know actually).
+
+If you pass an object (either base or complex) to a function, say:
+
+  def foo(p)
+    p.outln
+
+then 'p' is *always* passed as a contant value into the function, i.e. p is
+immutable from inside 'foo'.  Technically complex objects will be passed as
+refcounted objects for efficiency reasons.  To the user however this feels
+like a value only.
+
+If you need to modify 'p' clone and return it.  You clone it by putting and
+'&' in front of the name.  'p' is cloned in the scope once only, i.e. every
+occurance of '&p' actually refers to the same cloned instance of 'p'.
+
+  def generic reset(p @ Person)
+    &p.name = 'N.'
+    &p.surname = 'N.'
+    &p
+
+If you don't want to copy an instance and want to modify in the function
+though?  In oop it is common pratice to have modifier functions.  In that
+case you can explicitely declare a parameter to be a reference parameter:
+
+  def generic names!(p^ @ Person, n : String, sn : String) : Person
+    p.name = n
+    p.surname = sn
+    p
+
+The '^' marks 'p' here as a in-out reference, i.e. the function 'name!' and
+'surname!' modify the object passed as 'p'.
+
+What happen now in case that you pass in a 'local' variable definition?
+Take the following code:
+
+  def generic properties!(p^ @ Person, props)
+    p.properties = props
+    p
+
+  def lookup-user(database, name, surname) : &(Person, Bool == false)
+    let p = Person(name: name, surname: surname)   -- [1]
+    let props = database.properties-for-person(p)
+    if (props <> nil)
+      p^.properties!(props)                        -- [4]
+    else
+      false
+
+In line [1] 'p' could be allocated on stack; at list at line [4] however
+the object is passed as a reference to a function.  The function returns
+'p' (as we see in 'properties!') and therefore leaves the scope of
+'lookup-user'.  If the compiler can proof that a value will never leave a
+certain scope it is free to allocate a instance on the stack (and avoid GC
+completely).
+
+Note: both function declaration and function call have to declare a
+parameter as reference.
+
+
+Pass by value.  It could happen actually that passing a complex object to a
+function will really copy the object.  This normally happens when the
+compiler finds out that the object is crossing a thread border.  Objects
+will always be passed as copies into other threads, unless they are passed
+explicitely as references.
+
+
+What is nil than?
+-----------------
+
+When we normally never deal with references, what is the dubious 'nil'
+value about than?  First, nil is always a reference, i.e. you can pass it
+to any function expecting a reference.  Inside of the function you must
+make sure of course that nobody tries to access nil, otherwise you will get
+a NilException (or a Segfault if runtime checks are turned off).
+
+Secondly, you can't pass nil to non-reference parameters.
+I.e. non-reference parameters always have a value.  This is important since
+every variable you define must be initialized:
+
+  let x : Person
+
+'x' is not nil as it may have been expected; in fact a new instance of
+Person (with some default values) is created.  You can't avoid this by
+e.g.:
+
+  let x : Person = nil
+
+This won't compile; you rather have to say:
+
+  let x^ : Person
+
+The 'nil' initializing here is the default.
+
+
+Allocation and initialization of class based object
+---------------------------------------------------
+
+The expression:
+
+  Person(name: "Gustav", surname: "Adolf")
+
+runs specially code, which allocates a new instance (in heap or on stack,
+see above), and maps the parameters according to slot options to the
+appropriate slots.  The init expression of other slots are evaluated in the
+notated order and assigned to those slots.  Than, if defined, the class'
+'on init()' hook is run.
+
+Are there constructors than?  No, at least no User specified.  Construction
+of objects is really only about constructing.  The following ways of
+defining values for an object exit however:
+
+a) No parameter at construction at all:
+
+    def class Person {
+      def slot name = "N."
+      def slot surname = "N."
+      def slot display ; transient
+
+      on init(self) {
+        self.display = self.surname + ", " + self.name
+      }
+    }
+
+  Slots are either initialized by slot init expressions or through the 'on
+  init' hook.
+
+  An instance of the above example would be created as:
+
+    Person()
+
+
+b) Specify an explicit class signature:
+
+    def class Person(_name, _surname)
+    {
+      def slot name = _name
+      def slot surname = _surname
+      def slot display ; transient
+
+      on init(self) {
+        self.display = _surname + ", " + _name
+      }
+    }
+
+  Note that the parameters to the class are visible in the 'on init'
+  function also.
+
+  An instance of the above example would be created as:
+
+    Person("Gustav", "Adolf")
+
+c) Automatic map class parameters to slots:
+
+    def class Person
+    {
+      def slot name = "N." ; auto
+      def slot surname = "N." ; auto
+
+      on init(self) {
+        self.display = self.surname + ", " + self.name
+      }
+    }
+
+  An instance of the above example would be created as:
+
+    Person(name: "Gustav", surname: "Adolf")
+
+Possibilities b) and c) can be combined of course.  This gives the
+possibility to define mandatory and optional parameters.  E.g.:
+
+  def class Person(_name, _surname)
+  {
+    def slot name = _name
+    def slot surname = _surname
+    def slot birthday ; auto
+    def slot gender ; auto
+  }
+
+Here two parameters (name and surname) are fixed and mandatory; the other
+two (birthday and gender) are optional named parameters.
+
+
+Allocation and initialization of array objects
+----------------------------------------------
+
+The expression:
+
+  Int[](42)
+
+allocated an array of Ints with 42 slots.
+
+For variable declaration the expression:
+
+  let x : Int[] = Int[](42)
+
+can be short notated as:
+
+  let x : Int[42]
+
+
+Allocation of base types
+------------------------
+
+To create a base type like integers, chars, keywords, etc.  simply write
+the external representation of that type:
+
+  1234
+  \space
+  "Hello world"
+  #something
+  nil
+
+You can create such types from the normal apply syntax also.  What you get
+than is the **default** value of the particular type:
+
+  Int()        -> 0
+  Char()       -> \nul
+  String()     -> ""
+  Keyword()    -> #keyword
+  Nil()        -> nil
+
+
