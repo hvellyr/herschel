@@ -243,9 +243,28 @@ def class SortedBag<T> : (OrderedCollection<T>,
 
 def class Vector<T> : Sequence<T>
 {
-  -- todo
+  def generic resize!(cltn @ Vector<T>, new-size : Ordinal,
+                      new-value : T = Class<T>.null-value) : Vector<T> ...
+    ~ Resizes @var{cltn} to @var{new-size} slots.
 
-  def generic resize!(cltn @ Vector<T>) : Vector<T> ...
+    After this operation @var{cltn} has exactly @var{new-size} items.  If
+    @var{new-size} is identical to the size of @var{cltn} nothing is
+    changed.  If @var{new-size} is smaller than the @var{cltn} is clipped
+    at the end.  If it is larger new slots are added to the end, which are
+    initialized to @var{new-value}. ~
+
+
+  def generic reserve!(cltn @ Vector<'T>, add-items : Ordinal) : Vector<'T> ...
+    ~ Reserve space so that adds and inserts won't lead to reallocations.
+
+    Adds @var{add-items} additional slots so that @var{add-items} items can
+    be added or insert without the vector reallocating its underlying data
+    structure.  This is only useful for optimizations.  The number of items
+    is not changed.
+
+    If @var{add-items} is @const{0} nothing is changed.
+
+    @returns @var{cltn} itself. ~
 }
 
 

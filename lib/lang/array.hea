@@ -31,66 +31,26 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module lang ("eyestep/heather 1.0:lang")
-
-import "lang.hea"
-import "lang.hea"
+export public(*)
 
 
-------------------------------------------------------------------------------
--- Slice special for string
-------------------------------------------------------------------------------
+def generic realloc(array @ 'T[],
+                    new-size : Ordinal,
+                    init-value : 'T = class<'T>.null-value) : 'T[] ...
+  ~ Reallocates @var{array} by copying it into a new array of
+  @var{new-size} items.
 
-def class StringSlice(_str : String,
-                      _from : Ordinal,
-                      _to : Ordinal) : Slice<Ordinal, Char>
-{
-  def slot str = _str
-  def slot from = _from
-  def slot to = _to
-}
+  This function reallocates memory for @var{array} as needed and returns
+  the new object.
 
+  If @var{new-size} is larger than the current size of @var{array} new
+  slots are added to the end of the array.  These new slots are initialized
+  to @var{init-value}.  If @var{new-size} however is less @var{array} is
+  cropped from the end; the cropped values are not reachable from this
+  array anymore.
 
-def num-items(sl @ StringSlice) : Ordinal
-  sl.to - sl.from
-
-
-def empty?(sl @ StringSlice) : Bool
-  sl.num-items == 0
+  @returns the new allocated @var{array} with all copied resp. initialized
+           values. ~
 
 
-def core|slice(sl @ StringSlice, idx @ Ordinal) : Char
-  sl.str[sl.from + idx]
-
-
-def core|slice(sl @ StringSlice, from @ Ordinal, to @ Ordinal)
-    : Slice<Ordinal, Char>
-  sl.str.slice(sl.from + from, sl.from + to)
-
-
-------------------------------------------------------------------------------
--- String implementation
-------------------------------------------------------------------------------
-
-def length(str @ String) : Ordinal
-  str.data.num-items
-
-
-def empty?(str @ String) : Bool
-  str.data.num-items == 0
-
-
-def core|slice(str @ String, n @ Ordinal) : Char
-  str.data[n]
-
-
-def core|slice(str @ String, from @ Ordinal, to @ Ordinal)
-    : Slice<Ordinal, Char>
-  if (from > str.length or to > str.length)
-    OutOfBoundsException(str.length, from, to).raise
-  StringSlice(str, from, to)
-
-
-def compare(one @ String, two @ String) : Int
-  one.str <=> two.str
-
--- end of impl/string
+-- end of array.hea
