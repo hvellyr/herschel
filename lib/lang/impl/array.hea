@@ -32,65 +32,27 @@
 
 module lang ("eyestep/heather 1.0:lang")
 
-import "lang.hea"
-import "lang.hea"
+
+def realloc(array @ 'T[],
+            new-size : Ordinal,
+            init-value : 'T = class<'T>.null-value) : 'T[]
+  if (new-size > array.size) {
+    let t = 'T[](new-size)
+    for (i : 0 .. array.size - 1)
+      t[i] = array[i]
+    for (i in array.size .. newsize - 1)
+      t[i] = init-value
+
+    t
+  }
+  else if (new-size < array.size) {
+    let t = 'T[](new-size)
+    for (i in 0 .. new-size - 1)
+      t[i] = array[i]
+    t
+  }
+  else
+    array
 
 
-------------------------------------------------------------------------------
--- Slice special for string
-------------------------------------------------------------------------------
-
-def class StringSlice(_str : String,
-                      _from : Ordinal,
-                      _to : Ordinal) : Slice<Ordinal, Char>
-{
-  def slot str = _str
-  def slot from = _from
-  def slot to = _to
-}
-
-
-def num-items(sl @ StringSlice) : Ordinal
-  sl.to - sl.from
-
-
-def empty?(sl @ StringSlice) : Bool
-  sl.num-items == 0
-
-
-def core|slice(sl @ StringSlice, idx @ Ordinal) : Char
-  sl.str[sl.from + idx]
-
-
-def core|slice(sl @ StringSlice, from @ Ordinal, to @ Ordinal)
-    : Slice<Ordinal, Char>
-  sl.str.slice(sl.from + from, sl.from + to)
-
-
-------------------------------------------------------------------------------
--- String implementation
-------------------------------------------------------------------------------
-
-def length(str @ String) : Ordinal
-  str.data.num-items
-
-
-def empty?(str @ String) : Bool
-  str.data.num-items == 0
-
-
-def core|slice(str @ String, n @ Ordinal) : Char
-  str.data[n]
-
-
-def core|slice(str @ String, from @ Ordinal, to @ Ordinal)
-    : Slice<Ordinal, Char>
-  if (from > str.length or to > str.length)
-    OutOfBoundsException(str.length, from, to).raise
-  StringSlice(str, from, to)
-
-
-def compare(one @ String, two @ String) : Int
-  one.str <=> two.str
-
--- end of impl/string
+-- end of impl/array.hea

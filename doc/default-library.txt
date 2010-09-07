@@ -190,10 +190,12 @@ Concurrency
   Process support (fork)
   System signals
 
+
 Misc
 
   UUID
   readline
+
 
 Images
 
@@ -209,6 +211,7 @@ Audiofiles
 XML
 
   SaxParser
+  Dom
 
 
 Internationalization
