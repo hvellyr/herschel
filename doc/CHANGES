@@ -242,16 +242,16 @@ Used character in the Ascii table:
     constant array notation
 $   identifier                          [----------]
 %   identifier                          operator (mod)
-    operator (mod)
-&   operator (bit and)                  operator (&, &&)
-    Complex type notationx               pointer ref op.
+    operator (fold)
+&   Complex type notation               operator (&, &&)
+    Clone in call-by-value              pointer ref op.
 '   Implicit type generics              char
     Units
 ()  arguments                           arguments
     grouping
 *   operator (*, **)                    operator(*)
     identifier                          pointer ref op.
-+   operator (+)                        operator(+)
++   operator (+, ++)                    operator(+)
     identifier
 ,   parameter separator                 prm separator
 -   identifier                          operator (-)
@@ -260,6 +260,8 @@ $   identifier                          [----------]
     comment starter (--)
 .   function call                       struct member
     float notation                      float notation
+    operator (..)
+    vararg notation (...)               vararg notation (...)
 /   operator (div)                      operator(div)
     identifier
 0-9 digits                              digits
@@ -280,16 +282,15 @@ A-Z digits                              digits
 []  slicing                             array
     arrays
 \   char constants                      escaping
-^   [----------] *)                     operator (xor)
+^   call-by-reference                   operator (xor)
 _   identifier                          identifier
     current type notifier
 `   [----------]                        [----------]
 a-z digits                              digits
     identifier                          identifier
 {}  code block                          code block
-|   operator (bit or)                   operator (|, ||)
-    modname separator
+|   modname separator                   operator (|, ||)
+    select/match case marker
 ~   docstring limiter                   operator (bit not)
 
 
-*) reserved for call-by-reference/call-by-value experiments
