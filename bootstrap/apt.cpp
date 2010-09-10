@@ -7,6 +7,7 @@
 */
 
 #include "apt.h"
+#include "strbuf.h"
 
 using namespace heather;
 
@@ -38,6 +39,14 @@ displayCloseTag(Port<Octet>* port, const char* tagName)
 {
   if (tagName != NULL)
     heather::display(port, String() + "</" + tagName + ">");
+}
+
+
+static void
+displayEmptyTag(Port<Octet>* port, const char* tagName)
+{
+  if (tagName != NULL && ::strlen(tagName) > 0)
+    heather::display(port, String() + "<" + tagName + "/>");
 }
 
 
@@ -94,50 +103,111 @@ displayNodeList(Port<Octet>* port,
 }
 
 
-static void
-displayStringList(Port<Octet>* port,
-                  const char* outerTagName, const char* tagName,
-                  const StringList& strlist)
-{
-  if (!strlist.empty())
-    displayOpenTag(port, outerTagName);
+// static void
+// displayStringList(Port<Octet>* port,
+//                   const char* outerTagName, const char* tagName,
+//                   const StringList& strlist)
+// {
+//   if (!strlist.empty())
+//     displayOpenTag(port, outerTagName);
 
-  for (StringList::const_iterator it = strlist.begin();
-       it != strlist.end();
-       it++)
-  {
-    String str = (*it);
-    displayOpenTag(port, tagName);
-    display(port, str);
+//   for (StringList::const_iterator it = strlist.begin();
+//        it != strlist.end();
+//        it++)
+//   {
+//     String str = (*it);
+//     displayOpenTag(port, tagName);
+//     display(port, str);
+//     displayCloseTag(port, tagName);
+//   }
+
+//   if (!strlist.empty())
+//     displayCloseTag(port, outerTagName);
+// }
+
+
+// static void
+// displayStringStringMap(Port<Octet>* port,
+//                        const char* outerTagName, const char* tagName,
+//                        const char* firstPairTagName, const char* secPairTagName,
+//                        const StringStringMap& strMap)
+// {
+//   if (!strMap.empty())
+//     displayOpenTag(port, outerTagName);
+
+//   for (StringStringMap::const_iterator it = strMap.begin();
+//        it != strMap.end();
+//        it++)
+//   {
+//     displayOpenTag(port, tagName);
+//     displayTag(port, firstPairTagName, it->first);
+//     displayTag(port, secPairTagName, it->second);
+//     displayCloseTag(port, tagName);
+//   }
+
+//   if (!strMap.empty())
+//     displayCloseTag(port, outerTagName);
+// }
+
+
+static void
+displayType(Port<Octet>* port, const char* tagName, const Type& type)
+{
+  if (type.isDef()) {
+    const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
+    displayOpenTagAttrs(port, tagName, attrs);
+    display(port, type.toString());
     displayCloseTag(port, tagName);
   }
-
-  if (!strlist.empty())
-    displayCloseTag(port, outerTagName);
 }
 
 
 static void
-displayStringStringMap(Port<Octet>* port,
-                       const char* outerTagName, const char* tagName,
-                       const char* firstPairTagName, const char* secPairTagName,
-                       const StringStringMap& strMap)
+displayTypeVector(Port<Octet>* port, const char* tagName, const TypeVector& types)
 {
-  if (!strMap.empty())
-    displayOpenTag(port, outerTagName);
-
-  for (StringStringMap::const_iterator it = strMap.begin();
-       it != strMap.end();
-       it++)
-  {
-    displayOpenTag(port, tagName);
-    displayTag(port, firstPairTagName, it->first);
-    displayTag(port, secPairTagName, it->second);
+  if (!types.empty()) {
+    const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
+    displayOpenTagAttrs(port, tagName, attrs);
+    for (size_t i = 0; i < types.size(); i++)
+      display(port, types[i].toString());
     displayCloseTag(port, tagName);
   }
+}
 
-  if (!strMap.empty())
-    displayCloseTag(port, outerTagName);
+
+template<typename T>
+T* nodeClone(T* node)
+{
+  if (node != NULL)
+    return node->clone();
+  return NULL;
+}
+
+
+template<typename T>
+T* nodeClone(const Ptr<T>& node)
+{
+  if (node != NULL)
+    return node->clone();
+  return NULL;
+}
+
+
+void
+copyNodes(NodeList* dst, const NodeList* src)
+{
+  for (NodeList::const_iterator it = src->begin(); it != src->end(); ++it) {
+    dst->push_back(nodeClone(it->obj()));
+  }
+}
+
+
+NodeList
+copyNodes(const NodeList& src)
+{
+  NodeList dst;
+  copyNodes(&dst, &src);
+  return dst;
 }
 
 
@@ -150,10 +220,18 @@ AptNode::appendNode(AptNode* node)
 }
 
 
+void
+AptNode::appendNodes(const NodeList& nodes)
+{
+  fChildren.insert(fChildren.end(), nodes.begin(), nodes.end());
+}
+
+
 //----------------------------------------------------------------------------
 
-StringNode::StringNode(const String& value)
-  : fValue(value)
+StringNode::StringNode(const SrcPos& srcpos, const String& value)
+  : AptNode(srcpos),
+    fValue(value)
 {
 }
 
@@ -165,10 +243,18 @@ StringNode::display(Port<Octet>* port) const
 }
 
 
+StringNode*
+StringNode::clone() const
+{
+  return new StringNode(fSrcPos, fValue);
+}
+
+
 //----------------------------------------------------------------------------
 
-KeywordNode::KeywordNode(const String& value)
-  :fValue(value)
+KeywordNode::KeywordNode(const SrcPos& srcpos, const String& value)
+  :AptNode(srcpos),
+   fValue(value)
 {
 }
 
@@ -180,25 +266,58 @@ KeywordNode::display(Port<Octet>* port) const
 }
 
 
+KeywordNode*
+KeywordNode::clone() const
+{
+  return new KeywordNode(fSrcPos, fValue);
+}
+
+
 //----------------------------------------------------------------------------
 
-SymbolNode::SymbolNode(const String& value)
-  :fValue(value)
+SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value)
+  : AptNode(srcpos),
+    fValue(value)
 {
 }
+
+
+SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value,
+                       const TypeVector& generics)
+  : AptNode(srcpos),
+    fValue(value),
+    fGenerics(generics)
+{ }
 
 
 void
 SymbolNode::display(Port<Octet>* port) const
 {
-  displayTag(port, "symbol", fValue);
+  if (fGenerics.empty())
+    displayTag(port, "symbol", fValue);
+  else {
+    StringBuffer attrs;
+    attrs << "nm='" << fValue << "'";
+
+    displayOpenTagAttrs(port, "symbol", StrHelper(attrs.toString()));
+    displayTypeVector(port, "gen", fGenerics);
+    displayCloseTag(port, "symbol");
+  }
+}
+
+
+SymbolNode*
+SymbolNode::clone() const
+{
+  return new SymbolNode(fSrcPos, fValue);
 }
 
 
 //----------------------------------------------------------------------------
 
-IntNode::IntNode(int value, bool isImaginary)
-  : NumberNode<int>(value, isImaginary)
+IntNode::IntNode(const SrcPos& srcpos, int value, bool isImaginary,
+                 const Type& type)
+  : NumberNode<int>(srcpos, value, isImaginary, type)
 {
 }
 
@@ -206,17 +325,27 @@ IntNode::IntNode(int value, bool isImaginary)
 void
 IntNode::display(Port<Octet>* port) const
 {
+  StringBuffer attrs;
+  attrs << "ty='" << fType.typeName() << "'";
   if (fIsImaginary)
-    displayTagAttr(port, "int", "imag='true'", String() + fValue);
-  else
-    displayTag(port, "int", String() + fValue);
+    attrs << " imag='t'";
+
+  displayTagAttr(port, "int", StrHelper(attrs.toString()), String() + fValue);
+}
+
+
+IntNode*
+IntNode::clone() const
+{
+  return new IntNode(fSrcPos, fValue, fIsImaginary, fType.clone());
 }
 
 
 //----------------------------------------------------------------------------
 
-RealNode::RealNode(double value, bool isImaginary)
-  : NumberNode<double>(value, isImaginary)
+RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary,
+                   const Type& type)
+  : NumberNode<double>(srcpos, value, isImaginary, type)
 {
 }
 
@@ -224,17 +353,28 @@ RealNode::RealNode(double value, bool isImaginary)
 void
 RealNode::display(Port<Octet>* port) const
 {
+  StringBuffer attrs;
+  attrs << "ty='" << fType.typeName() << "'";
   if (fIsImaginary)
-    displayTagAttr(port, "real", "imag='true'", String() + fValue);
-  else
-    displayTag(port, "real", String() + fValue);
+    attrs << " imag='t'";
+
+  displayTagAttr(port, "real", StrHelper(attrs.toString()), String() + fValue);
+}
+
+
+RealNode*
+RealNode::clone() const
+{
+  return new RealNode(fSrcPos, fValue, fIsImaginary, fType.clone());
 }
 
 
 //----------------------------------------------------------------------------
 
-RationalNode::RationalNode(const Rational& value, bool isImaginary)
-  : NumberNode<Rational>(value, isImaginary)
+RationalNode::RationalNode(const SrcPos& srcpos,
+                           const Rational& value, bool isImaginary,
+                           const Type& type)
+  : NumberNode<Rational>(srcpos, value, isImaginary, type)
 {
 }
 
@@ -242,18 +382,28 @@ RationalNode::RationalNode(const Rational& value, bool isImaginary)
 void
 RationalNode::display(Port<Octet>* port) const
 {
-  String val = String() + fValue.numerator() + "/" + fValue.denominator();
+  StringBuffer attrs;
+  attrs << "ty='" << fType.typeName() << "'";
   if (fIsImaginary)
-    displayTagAttr(port, "rational", "imag='true'", val);
-  else
-    displayTag(port, "rational", val);
+    attrs << " imag='t'";
+
+  String val = String() + fValue.numerator() + "/" + fValue.denominator();
+  displayTagAttr(port, "real", StrHelper(attrs.toString()), val);
+}
+
+
+RationalNode*
+RationalNode::clone() const
+{
+  return new RationalNode(fSrcPos, fValue, fIsImaginary, fType.clone());
 }
 
 
 //----------------------------------------------------------------------------
 
-CharNode::CharNode(Char value)
-  : fValue(value)
+CharNode::CharNode(const SrcPos& srcpos, Char value)
+  : AptNode(srcpos),
+    fValue(value)
 { }
 
 
@@ -264,9 +414,39 @@ CharNode::display(Port<Octet>* port) const
 }
 
 
+CharNode*
+CharNode::clone() const
+{
+  return new CharNode(fSrcPos, fValue);
+}
+
+
 //----------------------------------------------------------------------------
 
-CompileUnitNode::CompileUnitNode()
+BoolNode::BoolNode(const SrcPos& srcpos, bool value)
+  : AptNode(srcpos),
+    fValue(value)
+{ }
+
+
+void
+BoolNode::display(Port<Octet>* port) const
+{
+  displayEmptyTag(port, (fValue ? "true" : "false"));
+}
+
+
+BoolNode*
+BoolNode::clone() const
+{
+  return new BoolNode(fSrcPos, fValue);
+}
+
+
+//----------------------------------------------------------------------------
+
+CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
+  : AptNode(srcpos)
 {}
 
 
@@ -277,103 +457,145 @@ CompileUnitNode::display(Port<Octet>* port) const
 }
 
 
+CompileUnitNode*
+CompileUnitNode::clone() const
+{
+  Ptr<CompileUnitNode> node = new CompileUnitNode(fSrcPos);
+  copyNodes(&node->fChildren, &fChildren);
+  return node.release();
+}
+
+
 //----------------------------------------------------------------------------
 
-ModuleNode::ModuleNode(const String& modName, const String& publicId)
-  : fModName(modName),
-    fPublicId(publicId)
+BaseDefNode::BaseDefNode(const SrcPos& srcpos, AptNode* defined)
+  : AptNode(srcpos),
+    fDefined(defined)
+{ }
+
+
+AptNode*
+BaseDefNode::defNode() const
 {
+  return fDefined;
+}
+
+
+//----------------------------------------------------------------------------
+
+LetNode::LetNode(AptNode* node)
+  : BaseDefNode(node->srcpos(), node)
+{ }
+
+
+LetNode*
+LetNode::clone() const
+{
+  return new LetNode(nodeClone(fDefined.obj()));
 }
 
 
 void
-ModuleNode::display(Port<Octet>* port) const
+LetNode::display(Port<Octet>* port) const
 {
-  displayOpenTag(port, "module");
-
-  displayTag(port, "mod-name", fModName);
-  displayTag(port, "public-id", fPublicId);
-
-  displayNodeList(port, "defines", fChildren);
-
-  displayCloseTag(port, "module");
+  displayOpenTag(port, "let");
+  displayNode(port, NULL, fDefined);
+  displayCloseTag(port, "let");
 }
 
 
 //----------------------------------------------------------------------------
 
-ExportNode::ExportNode(const std::list<String>& flags,
-                       const std::list<String>& symbols)
+DefNode::DefNode(AptNode* node)
+  : BaseDefNode(node->srcpos(), node)
+{ }
+
+
+DefNode*
+DefNode::clone() const
 {
-  fFlags.assign(flags.begin(), flags.end());
-  fSymbols.assign(symbols.begin(), symbols.end());
+  return new DefNode(nodeClone(fDefined.obj()));
 }
 
 
 void
-ExportNode::display(Port<Octet>* port) const
+DefNode::display(Port<Octet>* port) const
 {
-  displayOpenTag(port, "export");
-  displayStringList(port, "flags", "flag", fFlags);
-  displayStringList(port, "symbols", "sym", fSymbols);
-  displayCloseTag(port, "export");
+  displayOpenTag(port, "def");
+  displayNode(port, NULL, fDefined);
+  displayCloseTag(port, "def");
 }
 
 
 //----------------------------------------------------------------------------
 
-ImportNode::ImportNode(const String& codeFile,
-                       const StringStringMap& renames)
-  : fCodeFile(codeFile)
-{
-  fRenames.insert(renames.begin(), renames.end());
-}
-
-
-void
-ImportNode::display(Port<Octet>* port) const
-{
-  displayOpenTag(port, "import");
-  displayTag(port, "file", fCodeFile);
-  displayStringStringMap(port, "renames", "rename", "from", "to", fRenames);
-  displayCloseTag(port, "import");
-}
-
-
-//----------------------------------------------------------------------------
-
-VardefNode::VardefNode(const String& symbolName, VardefFlags flags,
-                       AptNode* type, AptNode* initExpr)
-  : fSymbolName(symbolName),
-    fFlags(flags),
+BindingNode::BindingNode(const SrcPos& srcpos,
+                         const String& symbolName, const Type& type,
+                         AptNode* initExpr)
+  : AptNode(srcpos),
+    fSymbolName(symbolName),
     fType(type),
     fInitExpr(initExpr)
+{ }
+
+
+const String&
+BindingNode::symbolName() const
 {
+  return fSymbolName;
+}
+
+
+const Type&
+BindingNode::type() const
+{
+  return fType;
+}
+
+
+//----------------------------------------------------------------------------
+
+VardefNode::VardefNode(const SrcPos& srcpos,
+                       const String& symbolName, VardefFlags flags,
+                       const Type& type, AptNode* initExpr)
+  : BindingNode(srcpos, symbolName, type, initExpr),
+    fFlags(flags)
+{
+}
+
+
+VardefNode*
+VardefNode::clone() const
+{
+  return new VardefNode(fSrcPos, fSymbolName, fFlags,
+                        fType.clone(), nodeClone(fInitExpr));
 }
 
 
 void
 VardefNode::display(Port<Octet>* port) const
 {
-  displayOpenTag(port, "vardef");
+  StringBuffer attrs;
+
+  attrs << "sym='" << fSymbolName << "'";
 
   switch (fFlags) {
-  case kNoFlags:
+  case kNormalVar:
     break;
-  case kIsFluid:
-    heather::display(port, "<is-fluid/>");
+  case kFluidVar:
+    attrs << " type='fluid'";
     break;
-  case kIsConst:
-    heather::display(port, "<is-const/>");
+  case kConstVar:
+    attrs << " type='const'";
     break;
-  case kIsConfig:
-    heather::display(port, "<is-config/>");
+  case kConfigVar:
+    attrs << " type='config'";
     break;
   }
 
-  displayTag(port, "sym", fSymbolName);
+  displayOpenTagAttrs(port, "vardef", StrHelper(attrs.toString()));
 
-  displayNode(port, "type", fType);
+  displayType(port, "type", fType);
   displayNode(port, "init", fInitExpr);
 
   displayCloseTag(port, "vardef");
@@ -381,6 +603,135 @@ VardefNode::display(Port<Octet>* port) const
 
 
 //----------------------------------------------------------------------------
+
+ParamNode::ParamNode(const SrcPos& srcpos,
+                     const String& keyName,
+                     const String& symbolName, ParamFlags flags,
+                     const Type& type, AptNode* initExpr)
+  : BindingNode(srcpos, symbolName, type, initExpr),
+    fKey(keyName),
+    fFlags(flags)
+{
+  assert(heaImplies(fFlags == kNamedArg, !fKey.isEmpty()));
+}
+
+
+ParamNode*
+ParamNode::clone() const
+{
+  return new ParamNode(fSrcPos, fKey, fSymbolName, fFlags,
+                       fType.clone(), nodeClone(fInitExpr));
+}
+
+
+void
+ParamNode::display(Port<Octet>* port) const
+{
+  StringBuffer attrs;
+
+  attrs << "sym='" << fSymbolName << "'";
+
+  switch (fFlags) {
+  case kPosArg:
+    attrs << " type='pos'";
+    break;
+  case kSpecArg:
+    attrs << " type='spec'";
+    break;
+  case kNamedArg:
+    attrs << " type='key' key='" << fKey << "'";
+    break;
+  case kRestArg:
+    attrs << " type='rest'";
+    break;
+  }
+
+  displayOpenTagAttrs(port, "param", StrHelper(attrs.toString()));
+
+  displayType(port, "type", fType);
+  displayNode(port, "init", fInitExpr);
+
+  displayCloseTag(port, "param");
+}
+
+
+ParamFlags
+ParamNode::flags() const
+{
+  return fFlags;
+}
+
+
+const String&
+ParamNode::key() const
+{
+  return fKey;
+}
+
+
+//----------------------------------------------------------------------------
+
+SlotdefNode::SlotdefNode(const SrcPos& srcpos,
+                         const String& symbolName,
+                         unsigned int flags,
+                         const Type& type, AptNode* initExpr)
+  : BindingNode(srcpos, symbolName, type, initExpr),
+    fFlags(flags)
+{ }
+
+
+SlotdefNode*
+SlotdefNode::clone() const
+{
+  return new SlotdefNode(fSrcPos, fSymbolName, fFlags,
+                         fType.clone(), nodeClone(fInitExpr));
+}
+
+
+void
+SlotdefNode::display(Port<Octet>* port) const
+{
+  StringBuffer attrs;
+
+  attrs << "sym='" << fSymbolName << "'";
+
+  if ((fFlags & kTransientSlot) != 0) {
+    attrs << " transient='t'";
+  }
+  if ((fFlags & kReadonlySlot) != 0) {
+    attrs << " readonly='t'";
+  }
+  if ((fFlags & kObservableSlot) != 0) {
+    attrs << " observable='t'";
+  }
+
+  if ((fFlags & kPublicSlot) != 0) {
+    attrs << " viz='public'";
+  }
+  else if ((fFlags & kOuterSlot) != 0) {
+    attrs << " viz='outer'";
+  }
+  else if ((fFlags & kInnerSlot) != 0) {
+    attrs << " viz='inner'";
+  }
+
+  displayOpenTagAttrs(port, "slot", StrHelper(attrs.toString()));
+  displayType(port, "type", fType);
+  displayNode(port, "init", fInitExpr);
+  displayCloseTag(port, "slot");
+}
+
+
+//----------------------------------------------------------------------------
+
+ArrayNode*
+ArrayNode::clone() const
+{
+  Ptr<ArrayNode> an = new ArrayNode(fSrcPos);
+  copyNodes(&an->fChildren, &fChildren);
+  return an.release();
+}
+
 
 void
 ArrayNode::display(Port<Octet>* port) const
@@ -393,6 +744,15 @@ ArrayNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
+VectorNode*
+VectorNode::clone() const
+{
+  Ptr<VectorNode> vect = new VectorNode(fSrcPos);
+  copyNodes(&vect->fChildren, &fChildren);
+  return vect.release();
+}
+
+
 void
 VectorNode::display(Port<Octet>* port) const
 {
@@ -404,6 +764,15 @@ VectorNode::display(Port<Octet>* port) const
 
 //----------------------------------------------------------------------------
 
+DictNode*
+DictNode::clone() const
+{
+  Ptr<DictNode> dict = new DictNode(fSrcPos);
+  copyNodes(&dict->fChildren, &fChildren);
+  return dict.release();
+}
+
+
 void
 DictNode::display(Port<Octet>* port) const
 {
@@ -413,13 +782,35 @@ DictNode::display(Port<Octet>* port) const
 }
 
 
+void
+DictNode::addPair(AptNode* key, AptNode* value)
+{
+  assert(key != NULL);
+  assert(value != NULL);
+
+  appendNode(new BinaryNode(key->srcpos(), key, kOpMapTo, value));
+}
+
+
 //----------------------------------------------------------------------------
 
-BinaryNode::BinaryNode(AptNode* left, OperatorType op, AptNode* right)
-  : fLeft(left),
+BinaryNode::BinaryNode(const SrcPos& srcpos,
+                       AptNode* left, OperatorType op, AptNode* right)
+  : AptNode(srcpos),
+    fLeft(left),
     fRight(right),
     fOp(op)
-{ }
+{
+  assert(fOp != kOpInvalid);
+}
+
+
+BinaryNode*
+BinaryNode::clone() const
+{
+  return new BinaryNode(fSrcPos, 
+                        nodeClone(fLeft), fOp, nodeClone(fRight));
+}
 
 
 OperatorType
@@ -436,10 +827,24 @@ BinaryNode::left() const
 }
 
 
+void
+BinaryNode::setLeft(AptNode* node)
+{
+  fLeft = node;
+}
+
+
 AptNode*
 BinaryNode::right() const
 {
   return fRight;
+}
+
+
+void
+BinaryNode::setRight(AptNode* node)
+{
+  fRight = node;
 }
 
 
@@ -497,9 +902,512 @@ operatorName(OperatorType type)
 void
 BinaryNode::display(Port<Octet>* port) const
 {
-  displayOpenTag(port, "binary");
+  StringBuffer attrs;
+  attrs << "op='" << xmlEncode(operatorName(fOp)) << "'";
+  displayOpenTagAttrs(port, "binary", StrHelper(attrs.toString()));
   displayNode(port, NULL, fLeft);
-  heather::display(port, operatorName(fOp));
   displayNode(port, NULL, fRight);
   displayCloseTag(port, "binary");
+}
+
+
+//----------------------------------------------------------------------------
+
+NegateNode::NegateNode(const SrcPos& srcpos, AptNode* base)
+  : AptNode(srcpos),
+    fBase(base)
+{ }
+
+
+NegateNode*
+NegateNode::clone() const
+{
+  return new NegateNode(fSrcPos, nodeClone(fBase));
+}
+
+
+void
+NegateNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "neg");
+  displayNode(port, NULL, fBase);
+  displayCloseTag(port, "neg");
+}
+
+
+//------------------------------------------------------------------------------
+
+RangeNode::RangeNode(const SrcPos& srcpos,
+                     AptNode* from, AptNode* to, AptNode* by)
+  : AptNode(srcpos),
+    fFrom(from),
+    fTo(to),
+    fBy(by)
+{ }
+
+
+RangeNode*
+RangeNode::clone() const
+{
+  return new RangeNode(fSrcPos,
+                       nodeClone(fFrom), nodeClone(fTo), nodeClone(fBy));
+}
+
+
+void
+RangeNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "range");
+  displayNode(port, NULL, fFrom);
+  displayNode(port, NULL, fTo);
+  displayNode(port, NULL, fBy);
+  displayCloseTag(port, "range");
+}
+
+
+AptNode*
+RangeNode::from() const
+{
+  return fFrom;
+}
+
+
+AptNode*
+RangeNode::to() const
+{
+  return fTo;
+}
+
+
+AptNode*
+RangeNode::by() const
+{
+  return fBy;
+}
+
+
+//--------------------------------------------------------------------------
+
+ThenWhileNode::ThenWhileNode(const SrcPos& srcpos,
+                             AptNode* first, AptNode* step, AptNode* test)
+  : AptNode(srcpos),
+    fFirst(first),
+    fStep(step),
+    fTest(test)
+{ }
+
+
+ThenWhileNode*
+ThenWhileNode::clone() const
+{
+  return new ThenWhileNode(fSrcPos,
+                           nodeClone(fFirst),
+                           nodeClone(fStep),
+                           nodeClone(fTest));
+}
+
+
+void
+ThenWhileNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "then-while");
+  displayNode(port, NULL, fFirst);
+  displayNode(port, NULL, fStep);
+  displayNode(port, NULL, fTest);
+  displayCloseTag(port, "then-while");
+}
+
+
+//--------------------------------------------------------------------------
+
+AssignNode::AssignNode(const SrcPos& srcpos,
+                       AptNode* lvalue, AptNode* rvalue)
+  : AptNode(srcpos),
+    fLValue(lvalue),
+    fRValue(rvalue)
+{ }
+
+
+AssignNode*
+AssignNode::clone() const
+{
+  return new AssignNode(fSrcPos,
+                        nodeClone(fLValue),
+                        nodeClone(fRValue));
+}
+
+
+void
+AssignNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "assign");
+  displayNode(port, NULL, fLValue);
+  displayNode(port, NULL, fRValue);
+  displayCloseTag(port, "assign");
+}
+
+
+AptNode*
+AssignNode::lvalue() const
+{
+  return fLValue;
+}
+
+
+AptNode*
+AssignNode::rvalue() const
+{
+  return fRValue;
+}
+
+
+//------------------------------------------------------------------------------
+
+IfNode::IfNode(const SrcPos& srcpos,
+               AptNode* test, AptNode* consequent, AptNode* alternate)
+  : AptNode(srcpos),
+    fTest(test),
+    fConsequent(consequent),
+    fAlternate(alternate)
+{ }
+
+
+IfNode*
+IfNode::clone() const
+{
+  return new IfNode(fSrcPos,
+                    nodeClone(fTest),
+                    nodeClone(fConsequent),
+                    nodeClone(fAlternate));
+}
+
+
+void
+IfNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "if");
+  displayNode(port, "test", fTest);
+  displayNode(port, "then", fConsequent);
+  displayNode(port, "else", fAlternate);
+  displayCloseTag(port, "if");
+}
+
+
+AptNode*
+IfNode::test() const
+{
+  return fTest;
+}
+
+
+AptNode*
+IfNode::consequent() const
+{
+  return fConsequent;
+}
+
+
+AptNode*
+IfNode::alternate() const
+{
+  return fAlternate;
+}
+
+
+//------------------------------------------------------------------------------
+
+OnNode::OnNode(const SrcPos& srcpos,
+               const String& key, const NodeList& params, AptNode* body)
+  : AptNode(srcpos),
+    fKey(key),
+    fBody(body)
+{
+  fParams.assign(params.begin(), params.end());
+}
+
+
+OnNode*
+OnNode::clone() const
+{
+  return new OnNode(fSrcPos, fKey,
+                              copyNodes(fParams),
+                              nodeClone(fBody));
+}
+
+
+void
+OnNode::display(Port<Octet>* port) const
+{
+  StringBuffer attrs;
+  attrs << "key='" << fKey << "'";
+  displayOpenTagAttrs(port, "on", StrHelper(attrs.toString()));
+  displayNodeList(port, "params", fParams);
+  displayNode(port, "body", fBody);
+  displayCloseTag(port, "on");
+}
+
+
+//----------------------------------------------------------------------------
+
+BlockNode::BlockNode(const SrcPos& srcpos)
+  : AptNode(srcpos)
+{ }
+
+
+BlockNode*
+BlockNode::clone() const
+{
+  Ptr<BlockNode> block = new BlockNode(fSrcPos);
+  copyNodes(&block->fChildren, &fChildren);
+  return block.release();
+}
+
+
+void
+BlockNode::display(Port<Octet>* port) const
+{
+  displayNodeList(port, "block", fChildren);
+}
+
+
+//----------------------------------------------------------------------------
+
+FunctionNode::FunctionNode(const SrcPos& srcpos,
+                           const NodeList& params,
+                           const Type& retType,
+                           AptNode* body)
+  : AptNode(srcpos),
+    fRetType(retType),
+    fBody(body)
+{
+  fParams.assign(params.begin(), params.end());
+}
+
+
+FunctionNode*
+FunctionNode::clone() const
+{
+  return new FunctionNode(fSrcPos, copyNodes(fParams),
+                          fRetType.clone(), nodeClone(fBody));
+}
+
+
+void
+FunctionNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "function");
+  displayNodeList(port, "params", fParams);
+  displayType(port, "rettype", fRetType);
+  displayNode(port, "body", fBody);
+  displayCloseTag(port, "function");
+}
+
+
+const NodeList&
+FunctionNode::params() const
+{
+  return fParams;
+}
+
+
+const Type&
+FunctionNode::retType() const
+{
+  return fRetType;
+}
+
+
+//----------------------------------------------------------------------------
+
+FuncDefNode::FuncDefNode(const SrcPos& srcpos,
+                         const String& sym,
+                         unsigned int flags,
+                         const NodeList& params,
+                         const Type& retType,
+                         AptNode* body)
+  : FunctionNode(srcpos, params, retType, body),
+    fSym(sym),
+    fFlags(flags)
+{ }
+
+
+FuncDefNode*
+FuncDefNode::clone() const
+{
+  return new FuncDefNode(fSrcPos, fSym, fFlags, fParams,
+                         fRetType.clone(), nodeClone(fBody));
+}
+
+
+void
+FuncDefNode::display(Port<Octet>* port) const
+{
+  const char* tag = isGeneric() ? "method" : "func";
+
+  StringBuffer attrs;
+  attrs << "sym='" << fSym << "'";
+
+  if (isAbstract())
+    attrs << " abstract='true'";
+
+  displayOpenTagAttrs(port, tag, StrHelper(attrs.toString()));
+  displayNodeList(port, "params", fParams);
+  displayType(port, "rettype", fRetType);
+  displayNode(port, "body", fBody);
+  displayCloseTag(port, tag);
+}
+
+
+bool
+FuncDefNode::isGeneric() const
+{
+  return (fFlags & kFuncIsGeneric) != 0;
+}
+
+
+bool
+FuncDefNode::isAbstract() const
+{
+  return (fFlags & kFuncIsAbstract) != 0;
+}
+
+
+const String&
+FuncDefNode::funcName() const
+{
+  return fSym;
+}
+
+
+//----------------------------------------------------------------------------
+
+ApplyNode::ApplyNode(const SrcPos& srcpos, AptNode* base)
+  : AptNode(srcpos),
+    fBase(base)
+{ }
+
+
+ApplyNode*
+ApplyNode::clone() const
+{
+  Ptr<ApplyNode> apply = new ApplyNode(fSrcPos, nodeClone(fBase));
+  copyNodes(&apply->fChildren, &fChildren);
+  return apply.release();
+}
+
+
+void
+ApplyNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "apply");
+  displayNode(port, NULL, fBase);
+  displayOpenTag(port, "args");
+  displayNodeList(port, NULL, fChildren);
+  displayCloseTag(port, "args");
+  displayCloseTag(port, "apply");
+}
+
+
+//----------------------------------------------------------------------------
+
+KeyargNode::KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value)
+  : AptNode(srcpos),
+    fKey(key),
+    fValue(value)
+{ }
+
+
+KeyargNode*
+KeyargNode::clone() const
+{
+  return new KeyargNode(fSrcPos, fKey, nodeClone(fValue));
+}
+
+
+void
+KeyargNode::display(Port<Octet>* port) const
+{
+  StringBuffer attrs;
+  attrs << "key='" << fKey << "'";
+
+  displayOpenTagAttrs(port, "arg", StrHelper(attrs.toString()));
+  displayNode(port, NULL, fValue);
+  displayCloseTag(port, "arg");
+}
+
+
+//----------------------------------------------------------------------------
+
+WhileNode::WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body)
+  : AptNode(srcpos),
+    fTest(test),
+    fBody(body)
+{ }
+
+
+WhileNode*
+WhileNode::clone() const
+{
+  return new WhileNode(fSrcPos,
+                       nodeClone(fTest),
+                       nodeClone(fBody));
+}
+
+
+void
+WhileNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "while");
+  displayNode(port, "test", fTest);
+  displayNode(port, "body", fBody);
+  displayCloseTag(port, "while");
+}
+
+
+//----------------------------------------------------------------------------
+
+TypeNode::TypeNode(const SrcPos& srcpos, const String& typeName,
+                   bool isClass,
+                   const Type& isa,
+                   const NodeList& params,
+                   const NodeList& slots,
+                   const NodeList& reqProtocol,
+                   const NodeList& onExprs)
+  : AptNode(srcpos),
+    fTypeName(typeName),
+    fIsClass(isClass),
+    fParams(params),
+    fSlots(slots),
+    fReqProtocol(reqProtocol),
+    fOnExprs(onExprs),
+    fIsa(isa)
+{ }
+
+
+TypeNode*
+TypeNode::clone() const
+{
+  return new TypeNode(fSrcPos, fTypeName, fIsClass, fIsa.clone(),
+                      copyNodes(fParams),
+                      copyNodes(fSlots),
+                      copyNodes(fReqProtocol),
+                      copyNodes(fOnExprs));
+}
+
+
+void
+TypeNode::display(Port<Octet>* port) const
+{
+  const char* tagName = fIsClass ? "class" : "type";
+
+  StringBuffer attrs;
+  attrs << "nm='" << fTypeName << "'";
+
+  displayOpenTagAttrs(port, tagName, StrHelper(attrs.toString()));
+  displayNodeList(port, "params", fParams);
+  displayNodeList(port, "slots", fSlots);
+  displayNodeList(port, "on", fOnExprs);
+  displayNodeList(port, "proto", fReqProtocol);
+  displayType(port, "isa", fIsa);
+  displayCloseTag(port, tagName);
 }

@@ -5,7 +5,11 @@ Language and ideas:
   - write up about module/interface.  Review import, export, module, etc.
     See CHANGES.
 
-  - Redesign accessing items from enum types.  Parsing as Enum.item does
+  - notation for classes and types.  This is required if you need to pass a
+    first-class class into a function.
+
+
+  - redesign accessing items from enum types.  Parsing as Enum.item does
     not work, since this would require symboltables during parsing (how to
     distinguish between param.func and Enum.item ?).  Idea: Maybe use a new
     item-operator ::? E.g. Enum::item.
@@ -21,7 +25,7 @@ Language and ideas:
   - checked exceptions.  Declare as
 
       def generic f() : 'X
-          throws 'B
+          raises 'B
           reify () : N, () : P
           where B isa Throwable
         ...
@@ -29,7 +33,7 @@ Language and ideas:
     additionally
 
       def generic f() : 'X
-          no-throws
+          no-raise
           reify ....
 
     to document that a function does not let exceptions through.
@@ -54,7 +58,7 @@ Documentation
 
   - Write nested modules section.
 
-  - rewrite exporting and visibility section on modules
+  - rewrite exporting, visibility, and importing section
 
   - Mention explicitely: no coercing.  Where?
 
@@ -66,13 +70,20 @@ Documentation
 
 Bootstrap compiler
 
-  Implement last missing pass1 stuff:
+  Implement last missing pass1 stuff
 
-    - pass2
+    - what's about multiple return values?  Spe?  Pass1?  Pass2?
 
-    - export of defs (esp. macros)
+    - pass2:
+      - for measures, units, enums,
 
-    - import
+      - where clauses
+
+      - select
+
+      - match
+
+      - types for count variables in for loop
 
     - access values from enums as Enum::item
 
@@ -85,3 +96,5 @@ Bootstrap compiler
   continue with pexpreval (add the missing operators)
 
   unittests for Rational() class.
+
+  docstrings in pass2 -> extracted documentation

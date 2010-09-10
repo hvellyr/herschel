@@ -9,12 +9,16 @@
 #ifndef bootstrap_pass1_h
 #define bootstrap_pass1_h
 
+#include <map>
+
 #include "apt.h"
 #include "errcodes.h"
 #include "macro.h"
 #include "parser.h"
+#include "pass.h"
 #include "port.h"
 #include "refcountable.h"
+#include "scope.h"
 #include "token.h"
 #include "tokenport.h"
 
@@ -25,10 +29,15 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class FirstPass
+  typedef std::map<String, TokenVector> NamedReplacementMap;
+
+
+  //--------------------------------------------------------------------------
+
+  class FirstPass : public AbstractPass
   {
   public:
-    FirstPass(Parser* parser, const Token& currentToken);
+    FirstPass(Parser* parser, const Token& currentToken, Scope* scope);
 
     Token nextToken();
     void unreadToken(const Token& token);
@@ -196,7 +205,8 @@ namespace heather
 
     Token parseMacroDef(const Token& defToken);
     bool parseMacroPatterns(MacroPatternVector* patterns);
-    bool parseMacroComponent(TokenVector* component);
+    bool parseMacroComponent(TokenVector* component,
+                             TokenType beginTokenType, TokenType endTokenType);
 
     MacroType dertermineMacroPatternType(const Token& macroName,
                                          const SrcPos& patternPos,
@@ -204,12 +214,10 @@ namespace heather
     MacroType determineMacroType(const Token& macroName,
                                  const MacroPatternVector& patterns);
 
-    String qualifiedIdForLookup(const String& id) const;
-
     //-------- macro calls
 
     Token parseMakeMacroCall(const Token& expr, const TokenVector& args,
-                             Macro* macro,
+                             const Macro* macro,
                              bool shouldParseParams,
                              bool isLocal,
                              ScopeType scopeType);
@@ -232,20 +240,21 @@ namespace heather
     bool matchSyntax(TokenVector* result, SyntaxTable* syntaxTable);
     bool replaceMatchBindings(TokenVector* result,
                               const TokenVector& replacement,
-                              const std::map<String, Token>& bindings);
+                              const NamedReplacementMap& bindings);
     bool replaceSangHashIds(TokenVector* result, const TokenVector& source);
-    Token findReplaceToken(const Token& token,
-                           const std::map<String, Token>& bindings);
+    const TokenVector& findReplaceToken(const Token& token,
+                                        const NamedReplacementMap& bindings,
+                                        bool& found);
 
     bool matchParameter(const Token& macroParam,
-                        std::map<String, Token>* bindings,
+                        NamedReplacementMap* bindings,
                         SyntaxTreeNode* followSet);
 
     Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 
+
     //-------- data members
 
-    Ptr<Parser> fParser;
     Token       fToken;
     bool        fEvaluateExprs;
   };

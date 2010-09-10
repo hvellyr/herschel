@@ -1,0 +1,6 @@
+export public (*)
+
+def config x = 12345h
+
+def f(a = if (x > 0) x else -1)
+  a ** 2

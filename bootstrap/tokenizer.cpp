@@ -105,6 +105,7 @@ Tokenizer::isDelimiter(Char c) const
            c == '(' || c == ')' ||
            c == '[' || c == ']' ||
            c == '{' || c == '}' ||
+           c == 0x300c || c == 0x300d ||
            c == '.' || c == ',' || c == ';' || c == '#' || c == '@' );
 }
 
@@ -618,12 +619,23 @@ Tokenizer::nextTokenImpl()
     case '{': return makeTokenAndNext(srcpos(), kBraceOpen);
     case '}': return makeTokenAndNext(srcpos(), kBraceClose);
 
+      // utf8: e3 80 8c | 343 200 214
+    case 0x300c: return makeTokenAndNext(srcpos(), kMacroOpen);
+      // utf8: e3 80 8d | 343 200 215
+    case 0x300d: return makeTokenAndNext(srcpos(), kMacroClose);
+
     case ',': return makeTokenAndNext(srcpos(), kComma);
     case ';': return makeTokenAndNext(srcpos(), kSemicolon);
     case ':': return makeTokenAndNext(srcpos(), kColon);
 
     case '@': return makeTokenAndNext(srcpos(), kAt);
-    case '|': return makeTokenAndNext(srcpos(), kPipe);
+    case '|': 
+      nextChar();
+      if (isSymbolChar(fCC))
+        return readIdentifier(beginSrcpos, String("|"), kSymbol, true);
+      else
+        return Token(beginSrcpos, kPipe);
+
     case '\'': return makeTokenAndNext(srcpos(), kQuote);
 
     case '&':
@@ -992,7 +1004,8 @@ public:
         "2 < 1  2 <= 1  2 > 1  2 >= 1  2 <=> 1  2 <> 1  2 == 1\n"
         "a + b  \"a\" ++ \"b\" a - b  a * b  a / b  a ** 2  a mod 5\n"
         "1 XOR 2  1 OR 2  1 AND 2\n"
-        "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n";
+        "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n"
+        "|abc ->abc\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 
@@ -1130,6 +1143,8 @@ public:
         assert(tnz.nextToken() == Token(sp, kAs));
         assert(tnz.nextToken() == Token(sp, String("Octet")));
 
+        assert(tnz.nextToken() == Token(sp, String("|abc")));
+        assert(tnz.nextToken() == Token(sp, String("->abc")));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
@@ -1169,7 +1184,8 @@ public:
 
     {
       static const char* test =
-        "##  ?val:name ?\"abc\" ?\"\" ";
+        "##  ?val:name ?\"abc\" ?\"\" "
+        "\343\200\214 xyz \343\200\215 ";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 
@@ -1183,6 +1199,10 @@ public:
           // ?"" is not allowed.
           assert(tnz.nextToken() == Token());
         }
+
+        assert(tnz.nextToken() == Token(sp, kMacroOpen));
+        assert(tnz.nextToken() == Token(sp, kSymbol, "xyz"));
+        assert(tnz.nextToken() == Token(sp, kMacroClose));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));

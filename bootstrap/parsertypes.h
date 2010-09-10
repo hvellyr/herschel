@@ -17,6 +17,13 @@ namespace heather
 {
   class Token;
 
+  enum VizType {
+    kPrivate,
+    kInner,
+    kOuter,
+    kPublic,
+  };
+
 
   //--------------------------------------------------------------------------
 

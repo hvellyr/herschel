@@ -12,6 +12,7 @@
 #include "unittests.h"
 #include "parsertypes.h"
 #include "strbuf.h"
+#include "symbol.h"
 
 
 namespace heather
@@ -55,6 +56,8 @@ namespace heather
     case kBraceClose:        return String("}");
     case kGenericOpen:       return String("<");
     case kGenericClose:      return String(">");
+    case kMacroOpen:         return String("\343\200\214");
+    case kMacroClose:        return String("\343\200\215");
     case kComma:             return String(",");
     case kSemicolon:         return String(";");
     case kColon:             return String(":");
@@ -497,6 +500,16 @@ namespace heather
 
 using namespace heather;
 
+Token
+Token::newUniqueSymbolToken(const SrcPos& where, const char* prefix)
+{
+  static int counter = 0;
+  StringBuffer buffer;
+  buffer << "__" << prefix << "_" << fromInt(counter++);
+  return Token(where, kSymbol, buffer.toString());
+}
+
+
 Token::Token()
   : fType(kSeqExpr),
     fImpl(new SeqTokenImpl)
@@ -822,6 +835,8 @@ Token::type() const
   case kBraceClose:
   case kGenericOpen:
   case kGenericClose:
+  case kMacroOpen:
+  case kMacroClose:
   case kComma:
   case kSemicolon:
   case kColon:
@@ -922,6 +937,14 @@ Token::isLit() const
 
 
 bool
+Token::isNumber() const
+{
+  return ( (fType == kInt || fType == kReal || fType == kRational)
+           && fImpl != NULL );
+}
+
+
+bool
 Token::isId() const
 {
   return type() == kId;
@@ -939,6 +962,13 @@ bool
 Token::isPunct() const
 {
   return type() == kPunct;
+}
+
+
+bool
+Token::isOperator() const
+{
+  return (heather::tokenTypeToOperator(fType) != kOpInvalid);
 }
 
 
@@ -1206,7 +1236,53 @@ Token::isBinarySeq(TokenType op) const
 bool
 Token::isBinarySeq() const
 {
-  return (isSeq() && children().size() == 3 && (*this)[1].isPunct());
+  return (isSeq() && children().size() == 3 && (*this)[1].isOperator());
+}
+
+
+bool
+Token::isTernarySeq() const
+{
+  if (isSeq() && children().size() == 5) {
+    return ( ((*this)[1].isPunct() && (*this)[3].isOperator()) ||
+             ( (*this)[1] == kThenId && (*this)[3] == kWhileId ) );
+  }
+  return false;
+}
+
+
+bool
+Token::isThenWhileSeq() const
+{
+  if (isSeq()) {
+    if ( (children().size() == 3 && (*this)[1] == kThenId) ||
+         (children().size() == 5 && (*this)[1] == kThenId &&
+          (*this)[3] == kWhileId) )
+      return true;
+  }
+  return false;
+}
+
+
+bool
+Token::isVariableDecl() const
+{
+  return (tokenType() == kSymbol ||
+          ( isSeq() && count() == 3 &&
+            (*this)[0] == kSymbol &&
+            (*this)[1] == kColon));
+}
+
+
+bool
+Token::isRange() const
+{
+  if (isSeq()) {
+    return ( (count() == 3 && (*this)[1] == kRange) ||
+             (count() == 5 && (*this)[1] == kRange && (*this)[3] == kBy) );
+  }
+
+  return false;
 }
 
 
@@ -1276,6 +1352,26 @@ Token::isKeyArg() const
 
 
 bool
+Token::isNegative() const
+{
+  switch (fType) {
+  case kInt:
+    return intValue() < 0;
+  case kReal:
+    return realValue() < 0;
+  case kRational:
+    return rationalValue() < Rational(0, 1);
+  case kChar:
+    return false;
+
+  default:
+    assert(0);
+  }
+  return false;
+}
+
+
+bool
 Token::isSymFuncall() const
 {
   return isSeq() && count() == 2 &&
@@ -1319,11 +1415,7 @@ Token::baseName() const
   if (fType != kSymbol)
     throw NotSupportedException(__FUNCTION__);
 
-  String str = idValue();
-  int idx = str.lastIndexOf('|');
-  if (idx >= 0)
-    return str.part(idx + 1, str.length());
-  return str;
+  return heather::baseName(idValue());
 }
 
 
@@ -1333,11 +1425,7 @@ Token::nsName() const
   if (fType != kSymbol)
     throw NotSupportedException(__FUNCTION__);
 
-  String str = idValue();
-  int idx = str.lastIndexOf('|');
-  if (idx >= 0)
-    return str.part(0, idx);
-  return String();
+  return heather::nsName(idValue());
 }
 
 
@@ -1505,12 +1593,12 @@ heather::operator+(const String& one, const TokenVector& vect)
 
 
 String
-heather::operator+(const String& one, const std::map<String, Token>& bindings)
+heather::operator+(const String& one, const NamedTokenMap& bindings)
 {
   StringBuffer buf;
   buf << "{";
 
-  for (std::map<String, Token>::const_iterator it = bindings.begin();
+  for (NamedTokenMap::const_iterator it = bindings.begin();
        it != bindings.end();
        it++)
   {
@@ -1548,9 +1636,12 @@ public:
 
     assert(Token() == Token());
     assert(Token(sp, kParanOpen, kParanClose) == Token(sp, kParanOpen, kParanClose));
+    assert(Token(sp, kMacroOpen, kMacroClose) == Token(sp, kMacroOpen, kMacroClose));
     assert(Token() << Token(sp, kInt, 25) == Token() << Token(sp, kInt, 25));
     assert(( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ) ==
            ( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ));
+    assert(( Token(sp, kMacroOpen, kMacroClose) << Token(sp, kInt, 25) ) ==
+           ( Token(sp, kMacroOpen, kMacroClose) << Token(sp, kInt, 25) ));
 
     assert(Token(sp, kReal, 3.1415).realValue() == 3.1415);
     assert(Token(sp, kReal, 1.2345).tokenType() == kReal);

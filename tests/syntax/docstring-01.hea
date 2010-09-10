@@ -12,7 +12,7 @@ def const x
     ~ xxx ~
     = 5
 
-def const x : Int
+def const x2 : Int
     ~ xxx ~
     = 5
 

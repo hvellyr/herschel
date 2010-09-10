@@ -8,12 +8,14 @@
 
 #include <map>
 
+#include "file.h"
+#include "log.h"
 #include "parser.h"
-#include "tokenizer.h"
 #include "pass1.h"
 #include "pass2.h"
 #include "properties.h"
-#include "log.h"
+#include "scope.h"
+#include "tokenizer.h"
 
 using namespace heather;
 
@@ -37,22 +39,26 @@ const Token Parser::initToken      = Token(SrcPos(), kSymbol, "init");
 const Token Parser::innerToken     = Token(SrcPos(), kSymbol, "inner");
 const Token Parser::macroToken     = Token(SrcPos(), kSymbol, "macro");
 const Token Parser::measureToken   = Token(SrcPos(), kSymbol, "measure");
+const Token Parser::observableToken = Token(SrcPos(), kSymbol, "observable");
 const Token Parser::outerToken     = Token(SrcPos(), kSymbol, "outer");
 const Token Parser::publicToken    = Token(SrcPos(), kSymbol, "public");
+const Token Parser::readonlyToken  = Token(SrcPos(), kSymbol, "readonly");
 const Token Parser::signalToken    = Token(SrcPos(), kSymbol, "signal");
 const Token Parser::slotToken      = Token(SrcPos(), kSymbol, "slot");
 const Token Parser::syncToken      = Token(SrcPos(), kSymbol, "sync");
+const Token Parser::transientToken = Token(SrcPos(), kSymbol, "transient");
 const Token Parser::typeToken      = Token(SrcPos(), kSymbol, "type");
 const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
 
 
 //----------------------------------------------------------------------------
 
-Parser::Parser()
+Parser::Parser(bool isParsingInterface)
   : fState(ParserState(
              new CharRegistry,
              new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-             new MacroRegistry))
+             new Scope)),
+    fIsParsingInterface(isParsingInterface)
 {
 }
 
@@ -71,10 +77,17 @@ Parser::configVarRegistry() const
 }
 
 
-MacroRegistry*
-Parser::macroRegistry() const
+Scope*
+Parser::scope() const
 {
-  return fState.fMacroRegistry;
+  return fState.fScope;
+}
+
+
+bool
+Parser::isParsingInterface() const
+{
+  return fIsParsingInterface;
 }
 
 
@@ -104,31 +117,54 @@ Parser::unreadToken(const Token& token)
 AptNode*
 Parser::parse(Port<Char>* port, const String& srcName)
 {
+  return parseImpl(port, srcName, true);
+}
+
+
+AptNode*
+Parser::parseImpl(Port<Char>* port, const String& srcName,
+                  bool doTrace)
+{
   fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
 
+  assert(fState.fScope != NULL);
+
   try {
-    FirstPass firstPass(this, fState.fToken);
+    Ptr<FirstPass> firstPass = new FirstPass(this, fState.fToken, fState.fScope);
 
-    Token parsedExprs = firstPass.parse();
+    Token parsedExprs = firstPass->parse();
 
-    if (Properties::isTracePass1()) {
+    if (doTrace && Properties::isTracePass1()) {
       Ptr<FilePort> stream = new FilePort(stdout);
       display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
       parsedExprs.toPort(stream);
       displayln(stream, "");
     }
 
-    SecondPass secondPass(this);
+    // fState.fScope->dumpDebug();
 
-    Ptr<AptNode> apt = secondPass.parse(parsedExprs);
-    if (Properties::isTracePass2() && apt != NULL) {
-      Ptr<FilePort> stream = new FilePort(stdout);
-      display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
-      apt->display(stream);
-      displayln(stream, "");
+    bool doPass2 = true;
+#if defined(UNITTESTS)
+    doPass2 = !Properties::test_pass1Only();
+#endif
+
+    if (doPass2) {
+      Ptr<SecondPass> secondPass = new SecondPass(this, fState.fScope);
+
+      Ptr<AptNode> apt = secondPass->parse(parsedExprs);
+      if (doTrace && Properties::isTracePass2() && apt != NULL) {
+        Ptr<FilePort> stream = new FilePort(stdout);
+        display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
+        apt->display(stream);
+        displayln(stream, "");
+      }
+
+      // fState.fScope->dumpDebug();
+
+      return apt.release();
     }
 
-    return apt.release();
+    return NULL;
   }
   catch (const Exception& e) {
     logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
@@ -138,43 +174,68 @@ Parser::parse(Port<Char>* port, const String& srcName)
 }
 
 
-Token
-Parser::importFile(Port<Char>* port, const String& srcName)
+bool
+Parser::importFile(const SrcPos& srcpos,
+                   const String& srcName, bool isPublic,
+                   Scope* currentScope)
 {
-  PortStackHelper helper(this);
+  typedef std::map<String, Ptr<Scope> > ImportCache;
+  static ImportCache sImportCache;
 
-  fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
+  String absPath = lookupFile(srcName, isPublic);
+  if (absPath.isEmpty()) {
+    errorf(srcpos, E_UnknownInputFile,
+           "import '%s' failed: Unknown file\n",
+           (const char*)StrHelper(srcName));
+    return false;
+  }
+
+  if (currentScope->hasScopeForFile(absPath)) {
+    if (Properties::isTraceImportFile())
+      logf(kDebug, "File '%s' already imported", (const char*)StrHelper(absPath));
+    return true;
+  }
+
+  ImportCache::iterator it = sImportCache.find(absPath);
+  if (it != sImportCache.end()) {
+    if (Properties::isTraceImportFile())
+      logf(kDebug, "Reuse imported '%s'", (const char*)StrHelper(absPath));
+    currentScope->addImportedScope(absPath, it->second);
+    return true;
+  }
+
+  if (Properties::isTraceImportFile())
+    logf(kDebug, "Import '%s'", (const char*)StrHelper(srcName));
 
   try {
-    FirstPass firstPass(this, fState.fToken);
+    Ptr<Parser> parser = new Parser(true);
+    Ptr<AptNode> apt = parser->parseImpl(new CharPort(new FilePort(absPath, "rb")),
+                                         srcName, false);
+    Ptr<Scope> scope = parser->scope();
 
-    Token parsedExprs = firstPass.parse();
+    currentScope->addImportedScope(absPath, scope);
 
-    if (Properties::isTraceImportFile())
-      logf(kDebug, "Import file '%s'", (const char*)StrHelper(srcName));
-
-    return parsedExprs;
+    sImportCache.insert(std::make_pair(absPath, scope));
   }
   catch (const Exception& e) {
-    logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
+    errorf(srcpos, E_UnknownInputFile,
+           "import '%s' failed: %s\n",
+           (const char*)StrHelper(absPath),
+           (const char*)StrHelper(e.message()));
+    return false;
   }
 
-  return Token();
+  return true;
 }
 
 
 String
 Parser::lookupFile(const String& srcName, bool isPublic)
 {
-  return srcName;
-}
+  StringVector exts;
+  exts.push_back(String("hea"));
 
-
-Port<Char>*
-Parser::lookupFileAndOpen(const String& srcName, bool isPublic)
-{
-  String absPath = lookupFile(srcName, isPublic);
-  return new CharPort(new FilePort(absPath, "rb"));
+  return file::lookupInPath(srcName, Properties::inputDirSearchPath(), exts);
 }
 
 
@@ -182,10 +243,10 @@ Parser::lookupFileAndOpen(const String& srcName, bool isPublic)
 
 Parser::ParserState::ParserState(CharRegistry* charReg,
                                  ConfigVarRegistry* configReg,
-                                 MacroRegistry* macroReg)
+                                 Scope* scope)
   : fCharRegistry(charReg),
     fConfigVarRegistry(configReg),
-    fMacroRegistry(macroReg)
+    fScope(scope)
 {
 }
 
@@ -203,7 +264,8 @@ Parser::ParserState::operator=(const ParserState& item)
   fToken             = item.fToken;
   fCharRegistry      = item.fCharRegistry;
   fConfigVarRegistry = item.fConfigVarRegistry;
-  fMacroRegistry     = item.fMacroRegistry;
+  fScope             = item.fScope;
+
   return *this;
 }
 
@@ -218,7 +280,7 @@ Parser::PortStackHelper::PortStackHelper(Parser* parser)
   fParser->fState = ParserState(
     new CharRegistry,
     new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-    new MacroRegistry);
+    new Scope);
 }
 
 
@@ -230,7 +292,7 @@ Parser::PortStackHelper::PortStackHelper(Parser* parser, TokenPort* port)
   fParser->fState = ParserState(
     parser->charRegistry(),
     new ConfigVarRegistry(parser->configVarRegistry()),
-    parser->macroRegistry());
+    parser->fState.fScope);
 
   fParser->fState.fPort = port;
 }
@@ -245,7 +307,7 @@ Parser::PortStackHelper::~PortStackHelper()
   fParser->fParserStates.pop_front();
 
   if (!fPortOnly) {
-    // merge current.fCharRegistry into fParser->fState; same for
-    // configVarReg and fMacroRegistry
+    // merge current.fScope into fParser->fState; same for configVarReg and
+    // current.fCharRegistry
   }
 }

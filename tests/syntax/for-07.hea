@@ -1,0 +1,11 @@
+def f()
+  for (count in 0 .. 100 by 2,
+       idx in 0 .. 100,
+       e = root() then e.cdr(),
+       n = names() then n.cdr() while n <> nil,
+       name in names,
+       not e.nil?,
+       name.empty?)
+  {
+    outln(count)
+  }
