@@ -1,0 +1,5 @@
+module xyz ("xyz")
+
+import "import/ignore-green-03b.hea"
+
+--def alias MyNumber = Real

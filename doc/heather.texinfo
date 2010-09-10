@@ -190,22 +190,24 @@ sources, which are sometimes not obvious (like D and Go).
 @node Source code representation, Storage model, Basic concepts, Basic concepts
 @section Source code representation
 
-Heather code is written in source files, normally taking the type
-extension @file{.hea} for implementation files or @file{.head} for
-interface files (see @ref{Source code organization} for the difference).
-A file can contain any number of modules, classes, types, and function
-definitions.  Technically the language does not impose and constraint on
-the way a source file is to be named or where it is to be located;
-there's especially no coupling of module or folder structure.
-
-When referring to a file from heather source code (e.g. in an import
-statement) the type extension is typically not specified (see
-@ref{Import}).
+Heather code is written in source files, normally taking the extension
+@file{.hea}.  No formal distinction between implementation and
+declaration files (``source'' and ``header'') is imposed by the
+language (see @ref{Source code organization} for details).  A file can
+contain any number of modules, classes, types, and function
+definitions.  Technically the language does not impose any constraint
+on the way a source file is to be named or where it is to be located;
+there's especially no coupling of module and folder structure or class
+and file name.
 
 Source files are expected to be encoded in UTF-8 encoding.  Note that
 the text is taken as is, i.e.@ no normalization is expected or applied.
 Note furthermore that identifiers are restricted to a less narrower set
-of characters though.
+of characters.
+
+When referring to a file from heather source code (e.g.@ in an import
+statement) the file extension is typically not specified (see
+@ref{Import}).
 
 
 @c --------------------------------------------------------------------
@@ -1223,24 +1225,49 @@ abstract generic function but bound to the @code{Comparable} type.
 
 @anchor{def alias}
 @findex def alias
+@findex let alias
 @findex alias
-@deffn Special def @code{alias} @var{name} [<@var{types}>] = @var{type}
-Defines an alias for @var{type}.  @var{name} and @var{type} afterwards
-are totally synonym, i.e.@ @var{name} is not considered a new type.  The
-only purpose of this form is to provide a more readable form for
-@var{type}.
+@deffn Special {def alias}
+
+The @code{def alias} registers a @var{type} also under a different
+name.  It has the forms:
 
 @example
-def alias UserTagMap = HashMap<String, UserTag<String, Int> >
-
-def generic add-tags(tags @@ UserTagMap) ...                     [1]
-def generic add-tags(tags @@ HashMap<String,
-                                    UserTag<String, Int> >) ... [2]
+def alias @var{name} [<@var{types}>] = @var{type}
+let alias @var{name} [<@var{types}>] = @var{type}
 @end example
 
-The two method declarations at [1] and [2] are completely identical.
+@var{name} and @var{type} afterwards are totally synonym, i.e.@
+@var{name} is not considered a new type.  The only purpose of this
+form is to provide a more readable form for @var{type}.
 
-(Alias definitions are comparable to @code{typedef}s in C and C++.)
+@example
+def alias UserTagMap = HashMap<String, UserTag<String, Int>>
+
+def generic add-tags(tags @@ UserTagMap) ...                    [1]
+def generic add-tags(tags @@ HashMap<String,
+                                    UserTag<String, Int>>) ... [2]
+@end example
+
+The two method declarations at [1] and [2] are completely identical
+(they are somehow comparable to @code{typedef}s in C and C++.)
+
+Alias definition are also allowed as local definitions.  As such the
+alias definition is only visible in the inner scope:
+
+@example
+def f()
+  let alias XMap = Map<String, Vector<Node>>
+  ...
+@end example
+
+Note that the alias itself can have generic type parameters, can be
+partially specialized on @code{type}, etc.:
+
+@example
+def alias TokenMap<K> = Map<K, Token>
+@end example
+
 @end deffn
 
 
@@ -1267,7 +1294,6 @@ separated by a @code{;}.  The following annotations are defined:
 
 @findex transient
 @findex public
-@findex private
 @findex outer
 @findex inner
 @findex observable
@@ -1275,7 +1301,6 @@ separated by a @code{;}.  The following annotations are defined:
 @findex slot!
 @table @code
 @item public
-@itemx private
 @itemx outer
 @itemx inner
 This controls the automatic export of autocreated accessor and/or
@@ -1321,7 +1346,7 @@ def class Button : Widget
 @section Constructors
 
 By default Heather creates a constructor for each class.  Technically a
-constructor is an method of the @code{apply} generic function
+constructor is a method of the @code{apply} generic function
 specialized on the class type of the class.  It is possible to implement
 such a method manually, but normally the abbreviated notation as
 parameters on the class definition itself is sufficient:
@@ -1707,8 +1732,8 @@ def octets-available() : NumberOrFalse
 
 def f()
   match (octets-available()) @{
-    t : Boolean -> outln("End of file")
-    n : Number -> outln("Still have %d to read" % #[n])
+    | t : Boolean -> outln("End of file")
+    | n : Number -> outln("Still have %d to read" % #[n])
   @}
 @end example
 
@@ -1748,14 +1773,20 @@ def generator(x @@ Vector<'T>) : Function() : &('T, Eof)
 @findex def enum
 @cindex enumerations
 Enumeration define types which have a known limited set of possible
-values.  Enumeration type inherit from a base type; this is not
-necessarily, as in C or C++, an integer.  The values of an enumeration
-are symbolic names which must be accessed through the dot notation (like
-function calls).
+values.  An enumeration type inherit from a base type; this is not
+necessarily, as in C or C++, an integer.
+
+The values of an enumeration are symbols in the same namespace as
+functions or variables, i.e.@ two enumerations in the same module can
+have the same symbolic name as value.  When refering to enumeration
+values the value's symbolic name is to be used.  Enumeration does not
+form a special module or namespace.
 
 Enumeration can be used to specialize methods.
 
 @example
+module xgrafix
+
 def enum Colors : Keyword
 @{
   none   = #transparent
@@ -1772,7 +1803,7 @@ def enum MidiController : (Ordinal in 0 .. 127)
   modulation     = 1
   breath         = 2
   foot-pedal     = 3
-  ...
+  -- ...
   poly-operation = 127
 @}
 
@@ -1780,15 +1811,28 @@ def enum MidiController : (Ordinal in 0 .. 127)
 def set-clip-details(self @@ Clip,
                      color @@ Colors, mctrl @@ MidiController)
   select (mctrl) @{
-    | MidiController.bank-select -> ...
-    | MidiController.modulation -> ...
-    | MidiController.breath -> ...
+    | bank-select -> ...
+    | modulation -> ...
+    | breath -> ...
     | ...
   @}
 
-  if (color == Colors.none)
+  if (color == xgrafix|none)
     reset-color(self)
   ...
+@end example
+
+If the value of the enumeration items are not specified and the
+enumeration inherits of type @code{Int} the values are automatically
+assigned.  The first enumeration item is @code{0}:
+
+@example
+def enum Slot
+@{
+  first-slot      -- -> 0
+  second-slot     -- -> 1
+  third-slot      -- -> 2
+@}
 @end example
 
 
@@ -2699,8 +2743,8 @@ select (a) @{
 @}
 @end example
 
-If neither @var{antecedent} and @var{comparator} is specified the tests
-are assumed to be Boolean expression themselves are evaluated in order
+If neither @var{antecedent} nor @var{comparator} is specified the
+tests are assumed to be Boolean expression wich are evaluated in order
 until one succeeds.
 
 @example
@@ -2723,29 +2767,43 @@ The @code{match} expression, a kind of type select, has the form:
 
 @example
 match (@var{expr}) @{
-  | @var{id-1} : @var{type-1} -> @var{consequent-1}
-  | @var{id-2} : @var{type-2} -> @var{consequent-2}
+  | [ @var{id-1} ] : @var{type-1} -> @var{consequent-1}
+  | [ @var{id-2} ] : @var{type-2} -> @var{consequent-2}
   @r{@dots{}}
-  | @r{[} @var{id-3} : Any -> @var{alternate} @r{]}
+  | @r{[} [ @var{id-3} ] : Any -> @var{alternate} @r{]}
 @}
 @end example
 
-where @var{id-1}, @var{id-2}, etc.@ are identifiers typed as
-@var{type-1}, @var{type-2}, etc.  @var{expr} is evaluated and the type
-of its value matched against the types @var{type-1}, @var{type-2}, etc.
-@var{expr}'s value is bound to the identifier for the best matching type
-and the respective consequent @var{consequent-n} is evaluated.  If
-multiple type case are considered equally good matches the first in the
-given order is taken.  @var{id-n} is visible only inside of the
-consequent.
+where @var{id-1}, @var{id-2}, etc.@ are (optional) identifiers typed
+as @var{type-1}, @var{type-2}, etc.  @var{expr} is evaluated and the
+type of its value matched against the types @var{type-1},
+@var{type-2}, etc.  @var{expr}'s value is bound to the identifier (if
+defined) for the best matching type and the respective consequent
+@var{consequent-n} is evaluated.  If multiple type cases are
+considered equally good matches the first in the given order is taken.
+@var{id-n} is visible only inside of the consequent.
 
-There must only be one type case which is typed to @code{Any}; this
-acts as an `else' case.
+The first type case which is typed to @code{Any} acts as an `else'
+case.
 
 The evaluated consequent's value becomes the value of the complete
 expression.  If no type case matches (and there's no @code{Any} case)
 the value is @code{unspecified}.
+
+@example
+def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrFalse ...
+
+def remove!(self @ List<'T>, elt @ 'T) : List<'T>
+  match (self.index-of(elt)) @{
+    | : Bool        -> self
+    | idx : Ordinal -> @{
+                         self.remove-at!(idx)
+                         self
+                       @}
+  @}
+@end example
 @end deffn
+
 
 @c --------------------------------------------------------------------
 @node Conditions, On-the-fly iterators, Conditionals, Expressions
@@ -3151,13 +3209,14 @@ For example:
 @end example
 
 The grouping of the @var{declarations} with @code{@{} and @code{@}} is
-optional.  If the grouping is missing the module's scope extends until
+optional.  If this grouping is missing the module's scope extends until
 the end of the source file.
 
-Note: The @code{module} statement is @emph{not} a definition; there can
-be multiple module statements with the same module name and public id.
-All definitions from modules with the same public id are put into the
-same logical module (independant of what the module name was).
+Note: The @code{module} statement is @emph{not} a definition; there
+can be multiple module statements with the same module name and public
+id (possible in different files).  All definitions from modules with
+the same public id are put into the same logical module (independant
+of what the module name was).
 
 
 @c --------------------------------------------------------------------
@@ -3210,15 +3269,15 @@ definition.
 
 The name of the extending function must therefore explicitly be
 qualified.  If for example the @code{to-string} function from the
-@code{core} module should be extended this would look like:
+@code{core} module should be extended this would look like this:
 
 @example
 def core|to-string() : String
   ...
 @end example
 
-If more than one function is to be extended a special grouping form is
-available.
+If more than one function is to be extended a more convenient grouping
+form is available.
 
 @deffn Special {extend module}
 
@@ -3230,10 +3289,10 @@ extend module @var{module-name} @{
 @}
 @end example
 
-where @var{module-name} is the name of the module to extend (as
-imported).  All declarations inside this @code{extend} section are
-actually done as if written inside the mentioned @code{module}, except
-that visibility and export is controlled by the enclosing `real' module.
+where @var{module-name} is the name of the module to be extended.  All
+declarations inside this @code{extend} section are actually done as if
+written inside the mentioned @code{module}, except that visibility and
+export is controlled by the enclosing `real' module.
 
 @example
 module stack
@@ -3254,7 +3313,7 @@ extend module core
 Normally all declared identifiers from a module are restricted in
 visibility to the module and the compile unit they are defined in, i.e.@
 they're defined as @dfn{private}.  If other compile units in the same module
-or in other modules identifiers have to be @dfn{exported}.
+or in other modules should use them identifiers have to be @dfn{exported}.
 
 @deffn Special export
 The @code{export} declaration has the form:
@@ -3392,51 +3451,45 @@ module stack
 @node Source code organization, Conditional compiling, Finalizing, Program structure
 @section Source code organization
 
-Components in heather consists normally of one @dfn{interface} file,
-describing the public API of the component, and one or multiple
-@dfn{program} files, containing the implementation.  If a program consists
-of one component only there's no need to have an interface file at all.
+Heather does not require separate interface and implementation files.
+A function definition is its declaration at the same time.  When the
+compiler @emph{imports} another file it only reads the file's
+declarations leaving its definitions aside.  Each file read via the
+@code{import} statement is read in @emph{interface} mode, i.e.@ only
+for its declarations.@footnote{Note that macros are importing
+@emph{with} their definition though.}
 
-Typically program files get the file extension @file{.hea} and interface files
-the extension @file{.head} (short for ``heather declaration'').
+In this way (small) projects can avoid writing explicit interface
+files.  For reusable components, however, it is often good practice to
+provide a declarating only interface file for the component.  This
+interface file then summaries the public API (types, functions,
+constants) the component offers.  Such a component interface is
+normally installed with a binary library.
 
-The interface simply contains all declarations the component is willing to
-export to the public, i.e.@ which should be visible and usable by other
-components.  A few things are to be considered:
+A few things are to be considered for interface files:
 
 @itemize
 @item functions and generic functions are to be declared as signature
-only, i.e.@ without body (notated using @code{...}).
+only, i.e.@ without body (notated using @code{...});
 @item types, classes, aliases, etc.@ must be declared with their complete
 type parameters, default parameter declarations and inheritance
-information.
-@item classes must declare their slots and their types, but does not need to
-declare any init values on them.
-@item @code{on init} or @code{on delete} hooks must not be declared in an
-interface.
+information;
+@item classes must declare their slots and their types, but do not need to
+declare any init values on them;
+@item @code{on init} or @code{on delete} hooks should not be declared in an
+interface, since they are ignored by the compiler.
 @end itemize
 
-The program files on contrary contain the implementation of the declared
-APIs.  Each program file has to declare itself being part of the same
-module by using the @code{module} declaration (giving the sample public
-id).  Declarations from the interface file does not need to be repeated
-if imported by the implementing module and if the interface file
-contains ``complete'' declarations.  If the interfile file contains
-however incomplete declarations (most likely of classes), the
-declarations must be repeated and completed in the program file.  The
-compiler will check that the interface and program declaration matches.
+If the interfile file contains incomplete declarations, the
+declarations must be repeated and completed in the implementation
+file.  The compiler will check that the interface and program
+declaration matches.
 
-Besides interface files program files may include other program files
-directly.  This is the normal situation for components which consists of
-multiple program files.
+All program files typically get the file extension @file{.hea},
+independant of whether interface or implementation file.
 
-Each program file have to restate the module declaration.  the import
-statement of such ``internal'' imports must be outside of the module
-declaration (since otherwise you get nested modules).
 
-The export directive in module declarations controls the publishing of
-symbols to other program files when program file import other program files
-directly.
+@subsection Source organization example
 
 As an example take the following (simplistic) stack implementation.  In the
 public API (aka "header" file) only the modules interface are declared and
@@ -3444,6 +3497,7 @@ the necessary symbols published:
 
 @example
 module stack ("eyestep/heather 1.0:stack")
+  export public (Stack, push, pop)
 
 def type Stack<T>
 @{
@@ -3452,18 +3506,19 @@ def type Stack<T>
 @}
 @end example
 
-In the program file the module is declared.  In this example the stack
-class is hidden in the implementation and published as an interfacing type
-@code{Stack} only.  This effectively prevents that others derive from
-@code{StackImpl} or see any automatically created accessor or modifier
-functions.  If this is required, however, the class itself would be
-declared in the interface file.
+In this example the stack class @code{StackImpl} is hidden in the
+implementation and published as an interfacing type @code{Stack} only.
+This effectively prevents that others derive from @code{StackImpl} or
+see any automatically created accessor or modifier functions.  If this
+is wanted the class itself would be declared in the interface file.
+
+There's no need to re-export the symbols @code{Stack}, @code{push} and
+@code{pop} here, since they are export from the interface already.
 
 @example
-import "stack.head"
+import "headers/stack"
 
 module stack ("eyestep/heather 1.0:stack")
-  export(Stack, push, pop)
 
 def class StackItem<T, _>(_obj, _tail)
 @{
@@ -3476,32 +3531,14 @@ def class StackImpl<T> : Stack<T>
   def slot root : StackItem<T>
 @}
 
-def push(self @@ StackImpl<'T>, obj @@ 'T) : StackImpl<'T>
-  self.root = StackItem<'T>(obj, self.root)
-  self
+def push(stack @@ StackImpl<'T>, obj @@ 'T) : StackImpl<'T>
+  stack.root = StackItem<'T>(obj, stack.root)
+  stack
 
-def pop(self @@ StackImpl<'T>) : 'T
-  let result = self.root.obj
-  self.root = self.root.tail
+def pop(stack @@ StackImpl<'T>) : 'T
+  let result = stack.root.obj
+  stack.root = stack.root.tail
   result
-@end example
-
-All symbols declared in the interface files are automatically exported; but
-not those which are imported from other interface files inside the
-interface declaration.  If this is required (e.g.@ for group interface
-files, which make all public symbols available for a complete subsystem)
-symbols must be explicitly exported with the @code{export} statement.
-
-@example
-module x11
-@{
-  export public (*)
-
-  import "xaw.head"
-  import "xft.head"
-
-  ...
-@}
 @end example
 
 
@@ -3605,7 +3642,7 @@ def app|main()
 @chapter Macros
 
 @menu
-* Macro Intro::                 Introduction
+* Macro Intro::                 Macro Introduction
 * Types of Macros::             Types of Macros
 * Macro Syntax::                Defining macros
 * Pattern variables::           Pattern variables
@@ -3615,7 +3652,7 @@ def app|main()
 
 @c --------------------------------------------------------------------
 @node Macro Intro, Types of Macros, Macros, Macros
-@section Introduction
+@section Macro Introduction
 
 Macros allow to define new syntax or logical expressions as extensions
 to the core language.  Macros are transformations of one construct by
@@ -4142,7 +4179,9 @@ define-clause   := func-decl
 export-stmt     := `export' { export-flag }
                    `(' all-symbol | symbol-list `)'
 export-flag     := `public' | `protected' | `final'
-symbol-list     := IDENTIFIER { `,' IDENTIFIER }
+symbol-list     := export-symbol { `,' export-symbol }
+export-symbol   := IDENTIFIER [ `:' domain-id ]
+domain-id       := `char' | `unit'
 all-symbol      := `*'
 @end verbatim
 @end smallformat
@@ -4623,7 +4662,7 @@ constants       := constant { `,' constant }
 
 match-expr      := `match' `(' test-expr `)' `{' match-tests `}'
 match-tests     := { `|' match-test }
-match-test      := var-name `:' type-clause `->' consequent
+match-test      := [ var-name ] `:' type-clause `->' consequent
 @end verbatim
 @end smallformat
 

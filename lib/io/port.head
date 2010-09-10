@@ -153,10 +153,9 @@ def type SeekablePort<T> : Port<T>
                       whence : PortCursorWhenceType) : PortCursor<T> ...
       ~ Set the cursor of @var{port} to @var{offset}, where @var{offset} is
       measured in elements T relative to the file start (for @var{whence}
-      == PortCursorWhenceType.begin), relative to the file end (for
-      @var{whence} == PortCursorWhenceType.end), or relative to the current
-      port cursor position (for @var{whence} ==
-      PortCursorWhenceType.current).
+      == begin), relative to the file end (for @var{whence} == end), or
+      relative to the current port cursor position (for @var{whence} ==
+      current).
 
       @returns the new cursor position~
 
@@ -169,7 +168,7 @@ def type SeekablePort<T> : Port<T>
 
   def generic reset(port @ SeekablePort<T>) : PortCursor<T> ...
       ~ Reset the cursor of port @var{port} to the port start.  This is a
-      shortcut for @code{cursor!(port, 0, PortCursorWhenceType.begin)}.~
+      shortcut for @code{cursor!(port, 0, begin)}.~
 }
 
 

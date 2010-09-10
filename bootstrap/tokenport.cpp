@@ -7,6 +7,9 @@
 */
 
 #include "common.h"
+
+#include <string.h>
+
 #include "tokenport.h"
 #include "unittests.h"
 #include "port.h"
@@ -162,7 +165,7 @@ public:
         "  slot first : T = x ;\n"
         "  slot data : Octet[]\n"
         "}\n";
-      Ptr<TokenPort> p = new FileTokenPort(new DataPort((Octet*)test, strlen(test)),
+      Ptr<TokenPort> p = new FileTokenPort(new DataPort((Octet*)test, ::strlen(test)),
                                            String("test"));
 
       assert(p->read() == Token(sp, kModuleId));

@@ -8,6 +8,7 @@
 
 #include "common.h"
 
+#include <stdio.h>
 #include <map>
 
 #include "unittests.h"

@@ -16,17 +16,22 @@ class TestRunner:
         self.verbose = False
         self.test_succeeded = 0
         self.test_run = 0
+        self.input_dir = False
 
-        self.SYNTAX_PASS1_OPT = ["-T", "pass1", "-P", "--dont-import" ]
+        self.SYNTAX_PASS1_OPT = ["-T", "pass1", "-P", "--dont-import", "--parse-1" ]
         self.SYNTAX_PASS2_OPT = ["-T", "pass2", "-P", "--dont-import" ]
-        self.IMPORT_PASS1_OPT = ["-T", "pass1", "-P" ]
+        self.IMPORT_PASS1_OPT = ["-T", "pass1", "-P", "--parse-1" ]
         self.IMPORT_PASS2_OPT = ["-T", "pass2", "-P" ]
 
 
     def run_heather_on_test(self, test_file, options):
         cmd = [self.heather_path]
         cmd.extend(options)
+        if self.input_dir:
+            cmd.append('-I')
+            cmd.append(self.input_dir)
         cmd.append(test_file)
+
         return subprocess.Popen(cmd,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE).communicate()
@@ -83,13 +88,17 @@ class TestRunner:
             if errtest_func == None:
                 print "FAILED: %s: %s" % (what_tag, erroutput)
                 return
-            errtest_func(test_file, what_tag, passid, erroutput)
             test_count += 1
+            if not errtest_func(test_file, what_tag, passid, erroutput):
+                self.test_run += 1
+                return
+
 
         expected_file = self.find_expected_xml(test_file, "_%s" % (passid))
         if expected_file:
             test_count += 1
             if not self.compare_XML_result_with_file(what_tag, output, expected_file):
+                self.test_run += 1
                 return
         else:
             if self.verbose:
@@ -157,7 +166,7 @@ class TestRunner:
         eo = erroutput.strip()
         if eo == None or len(eo) == 0:
             print "FAILED: %s: expected errors" % (test_name)
-            return
+            return False
 
         expected_errors = self.load_expected_syntax_errors_desc(test_file, passid)
 
@@ -165,6 +174,7 @@ class TestRunner:
             if self.verbose:
                 print "INFO: %s: No expected syntax errors file found" % (what_tag)
 
+        retval = True
         for experr in expected_errors:
             line_no, level, error_code = self.split_experr_line(experr)
 
@@ -181,17 +191,24 @@ class TestRunner:
                           "message at line %s not found" % (test_name, level, line_no)
                     # print "  EXPECTED: ", expected_errors
                     # print "  PATTERN: ", pattern
+                    retval = False
+        return retval
 
 
     def run_pass_failed_test(self, test_file, domain):
         if domain == "syntax":
-            opts = self.SYNTAX_PASS1_OPT
+            opts1 = self.SYNTAX_PASS1_OPT
+            opts2 = self.SYNTAX_PASS2_OPT
+
         elif domain == "import":
-            opts = self.IMPORT_PASS1_OPT
+            opts1 = self.IMPORT_PASS1_OPT
+            opts2 = self.IMPORT_PASS2_OPT
+
         else:
             assert(0)
 
-        self.run_pass_test_impl(test_file, opts, "1", self.check_for_errors)
+        self.run_pass_test_impl(test_file, opts1, "1", self.check_for_errors)
+        self.run_pass_test_impl(test_file, opts2, "2", self.check_for_errors)
 
 
     #----------------------------------------------------------------------------
@@ -231,6 +248,9 @@ def main():
     parser.add_option("-D", "--domain",
                       dest="domain", default="syntax",
                       help="select the domain of tests to run")
+    parser.add_option("-I", "--input",
+                      dest="input", default=".",
+                      help="give the input directory to the compiler")
 
     (options, args) = parser.parse_args()
 
@@ -241,6 +261,9 @@ def main():
 
     if options.verbose:
         tr.verbose = options.verbose
+
+    if options.input:
+        tr.input_dir = options.input
 
     for arg in args:
         if os.path.isdir(arg):

@@ -30,8 +30,10 @@ static bool sIsMacroTracing = false;
 static bool sDontImport = false;
 #endif
 static bool sShouldIgnoreDocStrings = true;
+static bool sPass1Only = false;
 static String sOutdir;
 static Ptr<ConfigVarRegistry> sConfigVarRegistry;
+static StringVector sInputSearchPath;
 
 void
 Properties::setIsVerbose(bool value)
@@ -168,6 +170,21 @@ Properties::test_dontImport()
 {
   return sDontImport;
 }
+
+
+void
+Properties::test_setPass1Only(bool value)
+{
+  sPass1Only = value;
+}
+
+
+bool
+Properties::test_pass1Only()
+{
+  return sPass1Only;
+}
+
 #endif
 
 
@@ -181,4 +198,21 @@ void
 Properties::setShouldIgnoreDocStrings(bool value)
 {
   sShouldIgnoreDocStrings = value;
+}
+
+
+void
+Properties::addInputDir(const String& dir)
+{
+  sInputSearchPath.push_back(dir);
+}
+
+
+const StringVector&
+Properties::inputDirSearchPath()
+{
+  if (sInputSearchPath.empty())
+    sInputSearchPath.push_back(String("."));
+
+  return sInputSearchPath;
 }

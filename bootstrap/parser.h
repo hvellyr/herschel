@@ -13,6 +13,7 @@
 #include "apt.h"
 #include "macro.h"
 #include "port.h"
+#include "scope.h"
 #include "tokenport.h"
 #include "token.h"
 
@@ -58,17 +59,17 @@ namespace heather
   class Parser : public RefCountable
   {
   public:
-    Parser();
+    Parser(bool isParsingInterface = false);
 
     virtual AptNode* parse(Port<Char>* port, const String& srcName);
 
     CharRegistry* charRegistry() const;
     ConfigVarRegistry* configVarRegistry() const;
-    MacroRegistry* macroRegistry() const;
 
-    Token importFile(Port<Char>* port, const String& srcName);
+    bool importFile(const SrcPos& srcpos,
+                    const String& srcName, bool isPublic,
+                    Scope* currentScope);
     String lookupFile(const String& srcName, bool isPublic);
-    Port<Char>* lookupFileAndOpen(const String& srcName, bool isPublic);
 
     // predefined symbol tokens to speed up parsing
     static const Token aliasToken;
@@ -88,11 +89,14 @@ namespace heather
     static const Token innerToken;
     static const Token macroToken;
     static const Token measureToken;
+    static const Token observableToken;
     static const Token outerToken;
     static const Token publicToken;
+    static const Token readonlyToken;
     static const Token signalToken;
     static const Token slotToken;
     static const Token syncToken;
+    static const Token transientToken;
     static const Token typeToken;
     static const Token unitToken;
 
@@ -114,15 +118,21 @@ namespace heather
     friend class FirstPass;
     friend class SecondPass;
 
+    bool isParsingInterface() const;
+    Scope* scope() const;
+
     Token nextToken();
     void unreadToken(const Token& token);
+
+    AptNode* parseImpl(Port<Char>* port, const String& srcName,
+                       bool doTrace);
 
     class ParserState
     {
     public:
-      ParserState(CharRegistry* charReg,
+      ParserState(CharRegistry*      charReg,
                   ConfigVarRegistry* configReg,
-                  MacroRegistry* macroReg);
+                  Scope*             scope);
       ParserState(const ParserState& item);
       ParserState& operator=(const ParserState& item);
 
@@ -130,7 +140,7 @@ namespace heather
       Token                  fToken;
       Ptr<CharRegistry>      fCharRegistry;
       Ptr<ConfigVarRegistry> fConfigVarRegistry;
-      Ptr<MacroRegistry>     fMacroRegistry;
+      Ptr<Scope>             fScope;
     };
 
 
@@ -138,6 +148,7 @@ namespace heather
 
     ParserState            fState;
     std::list<ParserState> fParserStates;
+    bool                   fIsParsingInterface;
   };
 };
 
