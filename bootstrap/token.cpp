@@ -69,6 +69,7 @@ namespace heather
     case kLiteralArrayOpen:  return String("#[");
     case kUnionOpen:         return String("&(");
     case kSangHash:          return String("##");
+    case kReference:         return String("^");
 
     case kEOF:     return String("EOF");
     case kInvalid: return String("INVALID");
@@ -836,6 +837,7 @@ Token::type() const
   case kLiteralArrayOpen:
   case kUnionOpen:
   case kSangHash:
+  case kReference:
   case kEOF:
   case kInvalid:
     return kPunct;

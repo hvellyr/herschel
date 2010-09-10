@@ -105,7 +105,8 @@ Tokenizer::isDelimiter(Char c) const
            c == '(' || c == ')' ||
            c == '[' || c == ']' ||
            c == '{' || c == '}' ||
-           c == '.' || c == ',' || c == ';' || c == '#' || c == '@' );
+           c == '.' || c == ',' || c == ';' || c == '#' || c == '@' ||
+           c == '^' );
 }
 
 
@@ -625,6 +626,7 @@ Tokenizer::nextTokenImpl()
     case '@': return makeTokenAndNext(srcpos(), kAt);
     case '|': return makeTokenAndNext(srcpos(), kPipe);
     case '\'': return makeTokenAndNext(srcpos(), kQuote);
+    case '^': return makeTokenAndNext(srcpos(), kReference);
 
     case '&':
       nextChar();
@@ -898,7 +900,9 @@ public:
       static const char* test =
         "def f(args : &(String, Uri, Boolean)[] ...) ...\n"
         "  ~ Some function f, does not contain \\~ or similar Spuk.~\n"
-        "def f(arg: _x = 0 .. 20 by 2)\n";
+        "def f(arg: _x = 0 .. 20 by 2)\n"
+        "def g(a @ ^'T)\n"
+        "def h(a : ^Repo) a^ = 5 &m = 4\n";
       Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                     String("n.n."));
 
@@ -936,6 +940,35 @@ public:
         assert(tnz.nextToken() == Token(sp, kBy));
         assert(tnz.nextToken() == Token(sp, kInt, 2));
         assert(tnz.nextToken() == Token(sp, kParanClose));
+
+        assert(tnz.nextToken() == Token(sp, kDefId));
+        assert(tnz.nextToken() == Token(sp, String("g")));
+        assert(tnz.nextToken() == Token(sp, kParanOpen));
+        assert(tnz.nextToken() == Token(sp, String("a")));
+        assert(tnz.nextToken() == Token(sp, kAt));
+        assert(tnz.nextToken() == Token(sp, kReference));
+        assert(tnz.nextToken() == Token(sp, kQuote));
+        assert(tnz.nextToken() == Token(sp, String("T")));
+        assert(tnz.nextToken() == Token(sp, kParanClose));
+
+        assert(tnz.nextToken() == Token(sp, kDefId));
+        assert(tnz.nextToken() == Token(sp, String("h")));
+        assert(tnz.nextToken() == Token(sp, kParanOpen));
+        assert(tnz.nextToken() == Token(sp, String("a")));
+        assert(tnz.nextToken() == Token(sp, kColon));
+        assert(tnz.nextToken() == Token(sp, kReference));
+        assert(tnz.nextToken() == Token(sp, String("Repo")));
+        assert(tnz.nextToken() == Token(sp, kParanClose));
+
+        assert(tnz.nextToken() == Token(sp, String("a")));
+        assert(tnz.nextToken() == Token(sp, kReference));
+        assert(tnz.nextToken() == Token(sp, kAssign));
+        assert(tnz.nextToken() == Token(sp, kInt, 5));
+
+        assert(tnz.nextToken() == Token(sp, kAmpersand));
+        assert(tnz.nextToken() == Token(sp, String("m")));
+        assert(tnz.nextToken() == Token(sp, kAssign));
+        assert(tnz.nextToken() == Token(sp, kInt, 4));
       }
       catch (const Exception& ne) {
         fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));

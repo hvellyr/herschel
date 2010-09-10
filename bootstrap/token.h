@@ -136,6 +136,7 @@ namespace heather
     kLiteralArrayOpen,
     kUnionOpen,
     kSangHash,
+    kReference,
 
     // kLitExpr
     kString,
