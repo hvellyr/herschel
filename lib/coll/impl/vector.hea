@@ -34,21 +34,25 @@ module coll ("eyestep/heather 1.0:collections")
 
 
 
-def class VectorImpl<T> : Vector<T>
+def class VectorImpl<T>(size: prealloc-size : Ordinal = 8) : Vector<T>
 {
   def slot data : T[] ; private
   def slot items : Ordinal = 0
+
+  on init(self) {
+    self.data = T[](prealloc-size)
+  }
 }
 
 
-def adapt-preallocation(cltn @ Vector<'T>)
+def adapt-preallocation(cltn @ ^Vector<'T>)
   -- todo
   cltn
 
 
 -- from collection
 
-def add-all!(cltn @ Vector<'T>, other-coll @ Collection<'T>) : Vector<'T>
+def add-all!(cltn @ ^Vector<'T>, other-coll @ Collection<'T>) : ^Vector<'T>
   let ni = other-coll.num-items
   if (ni > 0) {
     let old-ni = cltn.num-items
@@ -59,8 +63,6 @@ def add-all!(cltn @ Vector<'T>, other-coll @ Collection<'T>) : Vector<'T>
   cltn
 
 
-
-
 def num-items(cltn @ Vector<'T>) : Ordinal
   cltn.items
 
@@ -69,8 +71,7 @@ def empty?(cltn @ Vector<'T>) : Bool
   cltn.items == 0
 
 
-def empty!(cltn @ Vector<'T>) : Vector<'T>
-    where C isa Collection<T> ...
+def empty!(cltn @ ^Vector<'T>) : ^Vector<'T>
   cltn.items = 0
   cltn.adapt-preallocation
   cltn
@@ -83,8 +84,7 @@ def contains?(cltn @ Vector<'T>, elt @ 'T) : Bool
   }
 
 
-  def generic add!(cltn @ 'C, elt @ T) : 'C
-      where C isa Collection<T> ...
+  def generic add!(cltn @ ^Vector<'T>, elt @ 'T) : ^Vector<'T>
       ~ Adds @var{elt} to @var{cltn}
 
       It is implementation dependant what happens when @var{elt} is already
@@ -92,8 +92,7 @@ def contains?(cltn @ Vector<'T>, elt @ 'T) : Bool
 
       @returns @var{cltn} ~
 
-  def generic remove!(cltn @ 'C, elt @ T) : 'C
-      where C isa Collection<T> ...
+  def generic remove!(cltn @ ^Vector<'T>, elt @ 'T) : ^Vector<'T>
       ~ Remove @var{elt} from @var{cltn}
 
       The method ignores silently if @var{elt} is not contained in
@@ -101,8 +100,7 @@ def contains?(cltn @ Vector<'T>, elt @ 'T) : Bool
 
       @returns @var{cltn} ~
 
-  def generic iterator(cltn @ 'C) : Iterator<T>
-      where C isa Collection<T> ...
+  def generic iterator(cltn @ Vector<'T>) : Iterator<'T>
       ~ Returns an iterator over the contained elements in @var{cltn}
 
       The order of elements delivered by the returned iterator dependants
@@ -156,9 +154,9 @@ def index-of(cltn @ Vector<'T>, elt @ T) : OrdinalOrFalse
 
 ------------------------------------------------------------------------------
 -- from vector
-def generic resize!(cltn @ Vector<'T>,
+def generic resize!(cltn @ ^Vector<'T>,
                     new-size : Ordinal,
-                    init-value : 'T = Class<'T>.null-value) : Vector<'T>
+                    init-value : 'T = Class<'T>.null-value) : ^Vector<'T>
 --    on out(r) r.num-items == new-size
 
     if (new-size <> cltn.data.size) {
@@ -168,10 +166,9 @@ def generic resize!(cltn @ Vector<'T>,
     cltn
 
 
-def reserve!(cltn @ Vector<'T>, add-items : Ordinal) : Vector<'T>
+def reserve!(cltn @ ^Vector<'T>, add-items : Ordinal) : ^Vector<'T>
     if (add-items > 0)
       cltn.data = cltn.data.realloc(cltn.data.size + add-items)
-
     cltn
 
 
