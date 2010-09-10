@@ -2,6 +2,23 @@
 
 Language and ideas:
 
+  - clearify: do we support multiple functions with the same base name but
+    different parameter counts?
+
+      def generic init(a @ Int) ...
+      def generic init(a @ Int, b @ String) ...
+
+    If we define ctors to be essentials calls to the class/apply functions,
+    we definitely have to (each class than has an apply function).
+
+    If we don't support this, some ideas for ctors:
+
+      def class Ixwick { }
+      def ctor Ixwick(cl @ Class<Ixwick>)
+
+    Eek, review the complete ctor/apply/init thing again.
+
+
   - how to specify class functions (or static functions)
 
       def generic apply(self @ Abc.class) ... ???
@@ -22,8 +39,10 @@ Language and ideas:
 
       def slot x ; class
 
+
   - write up about module/interface.  Review import, export, module, etc.
     See CHANGES.
+
 
   - Redesign accessing items from enum types.  Parsing as Enum.item does
     not work, since this would require symboltables during parsing (how to
@@ -32,7 +51,7 @@ Language and ideas:
 
     Instead of saying Colors.red or Colors::red say red'Colors.
 
-    Or: 
+    Or:
 
       def enum A : Int { a, b, c }
 
@@ -123,8 +142,11 @@ Bootstrap compiler
     - replace the UnitConstant node by a proper Measure() ctor call.  Apply
       the unit transformation inplace (if simple enough).  Register
       unit-transform calls as special functions.
-    - for enums,
     - where clauses
+    - enum:
+      - construct proper enum constraint type
+      - autocreate values
+      - check that init values match the base type
 
   - access values from enums as Enum::item
   - extend macro parameter types (like ?a:type-spec)
@@ -132,8 +154,8 @@ Bootstrap compiler
   - macros
     - subpatterns
 
-  continue with pexpreval (add the missing operators)
+  - continue with pexpreval (add the missing operators)
 
-  unittests for Rational() class.
+  - unittests for Rational() class.
 
-  docstrings in pass2 -> extracted documentation
+  - docstrings in pass2 -> extracted documentation
