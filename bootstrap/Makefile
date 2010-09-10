@@ -8,7 +8,7 @@ top_srcdir=..
 
 include $(top_srcdir)/config.mk
 
-CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src
+CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTest++/src
 
 SOURCES =         \
 	apt.cpp         \

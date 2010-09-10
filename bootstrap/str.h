@@ -12,6 +12,9 @@
 #include "common.h"
 
 #include <vector>
+#if defined(UNITTESTS)
+#  include <iostream>
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -128,6 +131,13 @@ namespace heather
 
   String xmlEncode(const String& str);
   String xmlEncode(const char* str);
+
+#if defined(UNITTESTS)
+  std::ostream& operator<<(std::ostream& os, const String& str);
+  std::ostream& operator<<(std::ostream& os, char c);
+  std::ostream& operator<<(std::ostream& os, const char* str0);
+#endif
+
 };
 
 #endif  // bootstrap_str_h

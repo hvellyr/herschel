@@ -3,6 +3,13 @@
 
 #include <vector>
 
+#if defined(UNITTESTS)
+#  include <iostream>
+#  include <UnitTest++.h>
+#  include <TestReporterStdout.h>
+#  include <XmlTestReporter.h>
+#endif
+
 #include "common.h"
 #include "str.h"
 #include "option.h"
@@ -14,6 +21,10 @@
 
 
 using namespace heather;
+
+#if defined(UNITTESTS)
+static int runUnitTests();
+#endif
 
 static void
 displayVersion()
@@ -33,18 +44,19 @@ displayHelp()
   printf("\n");
   printf("Usage: heather [options] files...\n");
   printf("Options:\n");
-  printf("  -h,      --help            Display this information\n");
-  printf("  -v,      --version         Display the version\n");
-  printf("           --verbose         Be verbose\n");
-  printf("  -D VAR=VALUE               Define config VAR to be VALUE\n");
+  printf("  -h,      --help              Display this information\n");
+  printf("  -v,      --version           Display the version\n");
+  printf("           --verbose           Be verbose\n");
+  printf("  -D VAR=VALUE                 Define config VAR to be VALUE\n");
   printf("     --define=VAR=VALUE\n");
-  printf("  -T KEYS, --trace=KEYS      Trace various aspects:\n");
-  printf("                             {tokenizer|pass1|pass2|import|macro}\n");
-  printf("  -d DIR,  --outdir=DIR      Output all generated files to DIR\n");
+  printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
+  printf("                               {tokenizer|pass1|pass2|import|macro}\n");
+  printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
 #if defined(UNITTESTS)
-  printf("  -UT,     --run-unit-tests  Run unit tests for the compiler\n");
+  printf("  -UT,     --run-unit-tests    Run unit tests for the compiler\n");
+  printf("           --ut-format=FORMAT  Output format of unit tests {xml|txt}\n");
 #endif
-  printf("  -P,      --parse           Only parse the source files\n");
+  printf("  -P,      --parse             Only parse the source files\n");
 }
 
 
@@ -56,22 +68,48 @@ enum CompileFunction {
   kParseFiles,
 };
 
+
+enum {
+  kOptHelp = 1,
+  kOptVersion,
+  kOptOutdir,
+  kOptVerbose,
+  kOptTrace,
+  kOptParse,
+  kOptDefine,
+  kOptInputDir,
+
+#if defined(UNITTESTS)
+  kOptRunUnitTests,
+  kOptUTFormat,
+  kOptDontImport,
+  kOptParse1,
+#endif
+};
+
+#if defined(UNITTESTS)
+static String sUnitTestFormat;
+#endif
+
 int
 main(int argc, char** argv)
 {
   static const OptionsParser::OptionsDefine heatherOptions[] = {
-    { 1, "-h",  "--help",           false },
-    { 2, "-v",  "--version",        false },
-    { 3, "-d",  "--outdir",         true  },
-    { 4, NULL,  "--verbose",        false },
-    { 5, "-T",  "--trace",          true  },
+    { kOptHelp,         "-h",  "--help",           false },
+    { kOptVersion,      "-v",  "--version",        false },
+    { kOptOutdir,       "-d",  "--outdir",         true  },
+    { kOptVerbose,      NULL,  "--verbose",        false },
+    { kOptTrace,        "-T",  "--trace",          true  },
+    { kOptParse,        "-P",  "--parse",          false },
+    { kOptDefine,       "-D",  "--define",         true  },
+    { kOptInputDir,     "-I",  "--input",          true  },
 #if defined(UNITTESTS)
-    { 6, "-UT", "--run-unit-tests", false },
-    { 9, NULL,  "--dont-import",    false },
+    { kOptRunUnitTests, "-UT", "--run-unit-tests", false },
+    { kOptUTFormat,     NULL,  "--ut-format",      true },
+    { kOptDontImport,   NULL,  "--dont-import",    false },
+    { kOptParse1,       NULL,  "--parse-1",        false },
 #endif
-    { 7, "-P",  "--parse",          false },
-    { 8, "-D",  "--define",         true  },
-    { 0, NULL,  NULL,               false } // sentinel
+    { 0,                NULL,  NULL,               false } // sentinel
   };
 
   CompileFunction func = kDisplayHelp;
@@ -84,41 +122,44 @@ main(int argc, char** argv)
     switch (type) {
     case OptionsParser::kOption:
       switch (option.fId) {
-      case 1:                   // help
+      case kOptHelp:
         displayHelp();
         exit(0);
         break;
 
-      case 2:                   // version
+      case kOptVersion:
         displayVersion();
         exit(0);
         break;
 
-      case 3:                   // outdir
+      case kOptOutdir:
         Properties::setOutdir(option.fArgument);
         break;
 
-      case 4:                   // verbose
+      case kOptVerbose:
         Properties::setIsVerbose(true);
         break;
 
-      case 5:                   // trace
+      case kOptTrace:
         Properties::setTraces(option.fArgument);
         break;
 
-      case 7:                   // parse
+      case kOptParse:
         func = kParseFiles;
         break;
 
-      case 8:                   // define config var
+      case kOptDefine:
         Properties::setConfigVar(option.fArgument);
         break;
 
 #if defined(UNITTESTS)
-      case 6:                   // unittests
+      case kOptUTFormat:
+        sUnitTestFormat = option.fArgument;
+        break;
+      case kOptRunUnitTests:
         func = kRunUnitTests;
         break;
-      case 9:                   // dontImport
+      case kOptDontImport:
         Properties::test_setDontImport(true);
         break;
 #endif
@@ -149,8 +190,9 @@ main(int argc, char** argv)
 
 #if defined(UNITTESTS)
   case kRunUnitTests:
-    UnitTest::runUnitTests();
-    break;
+    heather::UnitTest::runUnitTests();
+
+    return runUnitTests();
 #endif
 
   case kParseFiles:
@@ -174,3 +216,31 @@ main(int argc, char** argv)
 
   return 0;
 }
+
+
+#if defined(UNITTESTS)
+static int
+runUnitTestsWithRunner(UnitTest::TestRunner& runner)
+{
+    return runner.RunTestsIf(UnitTest::Test::GetTestList(), NULL, UnitTest::True(), 0);
+}
+
+
+static int
+runUnitTests()
+{
+  // return UnitTest::RunAllTests();
+  if (sUnitTestFormat == String("xml")) {
+    UnitTest::XmlTestReporter reporter(std::cerr);
+    UnitTest::TestRunner runner(reporter);
+    return runUnitTestsWithRunner(runner);
+  }
+  else {
+    UnitTest::TestReporterStdout reporter;
+    UnitTest::TestRunner runner(reporter);
+    return runUnitTestsWithRunner(runner);
+  }
+}
+#endif
+
+
