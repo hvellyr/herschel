@@ -135,7 +135,6 @@ namespace heather
 #if defined(UNITTESTS)
   std::ostream& operator<<(std::ostream& os, const String& str);
   std::ostream& operator<<(std::ostream& os, char c);
-  std::ostream& operator<<(std::ostream& os, const char* str0);
 #endif
 
 };

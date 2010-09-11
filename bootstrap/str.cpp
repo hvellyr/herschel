@@ -813,13 +813,6 @@ std::ostream& heather::operator<<(std::ostream& os, char c)
 }
 
 
-std::ostream& heather::operator<<(std::ostream& os, const char* str0)
-{
-  os << String(str0);
-  return os;
-}
-
-
 
 //----------------------------------------------------------------------------
 

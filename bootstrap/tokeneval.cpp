@@ -11,6 +11,7 @@
 #include "tokeneval.h"
 #include "unittests.h"
 
+
 using namespace heather;
 
 TokenEvalContext::TokenEvalContext(ConfigVarRegistry* registry)
@@ -577,318 +578,365 @@ TokenEvalContext::evalToken(const Token& expr) const
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class PexpEvalContextUnitTest : public UnitTest
+#include <UnitTest++.h>
+
+struct TokenEvalContextFixture
 {
-public:
-  PexpEvalContextUnitTest() : UnitTest("PexpEvalContext") {}
-
-  virtual void run()
+  TokenEvalContextFixture()
+    : reg(new ConfigVarRegistry),
+      ctx(reg)
   {
-    Ptr<ConfigVarRegistry> reg = new ConfigVarRegistry;
-    TokenEvalContext ctx(reg);
-    SrcPos sp;
+  }
 
-    Token t;
+  ~TokenEvalContextFixture() {
+  }
 
+  Ptr<ConfigVarRegistry> reg;
+  TokenEvalContext ctx;
+  SrcPos sp;
+  Token t;
+};
+
+
+SUITE(TokenEvalContext)
+{
+  TEST_FIXTURE(TokenEvalContextFixture, Basic)
+  {
     t = ctx.evalToken(Token(sp, kInt, 25));
-    assert(t.isInt() && t.intValue() == 25);
+    CHECK(t.isInt() && t.intValue() == 25);
 
     t = ctx.evalToken(Token(sp, kReal, 3.1415));
-    assert(t.isReal() && t.realValue() == 3.1415);
+    CHECK(t.isReal() && t.realValue() == 3.1415);
 
     t = ctx.evalToken(Token(sp, kRational, Rational(101, 127)));
-    assert(t.isRational() && t.rationalValue() == Rational(101, 127));
+    CHECK(t.isRational() && t.rationalValue() == Rational(101, 127));
 
     t = ctx.evalToken(Token(sp, kString, "hello world"));
-    assert(t.isString() && t.stringValue() == String("hello world"));
+    CHECK(t.isString() && t.stringValue() == String("hello world"));
 
     t = ctx.evalToken(Token(sp, kChar, 0xac00));
-    assert(t.isChar() && t.charValue() == Char(0xac00));
+    CHECK(t.isChar() && t.charValue() == Char(0xac00));
+  }
 
 
 #define MAKE_BINARY_SEQ(_ltype, _lvalue, _op, _rtype, _rvalue)  \
-    Token() << Token(sp, _ltype, _lvalue)                           \
-            << Token(sp, _op)                                       \
+    Token() << Token(sp, _ltype, _lvalue)                       \
+            << Token(sp, _op)                                   \
             << Token(sp, _rtype, _rvalue)
 
-    //-------- test add
-
+  TEST_FIXTURE(TokenEvalContextFixture, Add)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kPlus, kInt, 17));
-    assert(t.isInt() && t.intValue() == 42);
+    CHECK(t.isInt() && t.intValue() == 42);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kPlus, kReal, 3.1415));
-    assert(t.isReal() && t.realValue() == 28.1415);
+    CHECK(t.isReal() && t.realValue() == 28.1415);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kPlus, kRational, Rational(3, 4)));
-    assert(t.isRational() && t.rationalValue() == Rational(103, 4));
+    CHECK(t.isRational() && t.rationalValue() == Rational(103, 4));
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kPlus, kInt, 25));
-    assert(t.isReal() && t.realValue() == 28.1415);
+    CHECK(t.isReal() && t.realValue() == 28.1415);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kPlus, kReal, 3.1415));
-    assert(t.isReal() && int(t.realValue() * 1000) == 6283);
+    CHECK(t.isReal() && int(t.realValue() * 1000) == 6283);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kPlus, kRational, Rational(3, 4)));
-    assert(t.isReal() && t.realValue() == 3.8915);
+    CHECK(t.isReal() && t.realValue() == 3.8915);
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kInt, 25));
-    assert(t.isRational() && t.rationalValue() == Rational(103, 4));
+    CHECK(t.isRational() && t.rationalValue() == Rational(103, 4));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kReal, 3.1415));
-    assert(t.isReal() && t.realValue() == 3.8915);
+    CHECK(t.isReal() && t.realValue() == 3.8915);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus,
                                       kRational, Rational(3, 4)));
-    assert(t.isRational() && t.rationalValue() == Rational(6, 4));
+    CHECK(t.isRational() && t.rationalValue() == Rational(6, 4));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus,
                                       kRational, Rational(2, 5)));
-    assert(t.isRational() && t.rationalValue() == Rational(23, 20));
+    CHECK(t.isRational() && t.rationalValue() == Rational(23, 20));
+  }
 
 
-    //-------- test minus
-
+  TEST_FIXTURE(TokenEvalContextFixture, Minus)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMinus, kInt, 17));
-    assert(t.isInt() && t.intValue() == 8);
+    CHECK(t.isInt() && t.intValue() == 8);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMinus, kReal, 3.1415));
-    assert(t.isReal() && t.realValue() == 21.8585);
+    CHECK(t.isReal() && t.realValue() == 21.8585);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMinus, kRational, Rational(3, 4)));
-    assert(t.isRational() && t.rationalValue() == Rational(97, 4));
+    CHECK(t.isRational() && t.rationalValue() == Rational(97, 4));
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kInt, 25));
-    assert(t.isReal() && t.realValue() == -21.8585);
+    CHECK(t.isReal() && t.realValue() == -21.8585);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kReal, 3.1415));
-    assert(t.isReal() && int(t.realValue() * 1000) == 0.0);
+    CHECK(t.isReal() && int(t.realValue() * 1000) == 0.0);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kRational, Rational(3, 4)));
-    assert(t.isReal() && t.realValue() == 2.3915);
+    CHECK(t.isReal() && t.realValue() == 2.3915);
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kInt, 25));
-    assert(t.isRational() && t.rationalValue() == Rational(-97, 4));
+    CHECK(t.isRational() && t.rationalValue() == Rational(-97, 4));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kReal, 3.1415));
-    assert(t.isReal() && t.realValue() == -2.3915);
+    CHECK(t.isReal() && t.realValue() == -2.3915);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus,
                                       kRational, Rational(3, 4)));
-    assert(t.isRational() && t.rationalValue() == Rational(0, 4));
+    CHECK(t.isRational() && t.rationalValue() == Rational(0, 4));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus,
                                       kRational, Rational(2, 5)));
-    assert(t.isRational() && t.rationalValue() == Rational(7, 20));
+    CHECK(t.isRational() && t.rationalValue() == Rational(7, 20));
+  }
 
-    //-------- test multiply
 
+  TEST_FIXTURE(TokenEvalContextFixture, Multiply)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMultiply, kInt, 17));
-    assert(t.isInt() && t.intValue() == 425);
+    CHECK(t.isInt() && t.intValue() == 425);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMultiply, kReal, 3.1415));
-    assert(t.isReal() && int(t.realValue() * 10000) == 785375);
+    CHECK(t.isReal() && int(t.realValue() * 10000) == 785375);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMultiply, kRational, Rational(3, 4)));
-    assert(t.isRational() && t.rationalValue() == Rational(75, 4));
+    CHECK(t.isRational() && t.rationalValue() == Rational(75, 4));
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kInt, 25));
-    assert(t.isReal() && int(t.realValue() * 10000) == 785375);
+    CHECK(t.isReal() && int(t.realValue() * 10000) == 785375);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kReal, 3.1415));
-    assert(t.isReal() && int(t.realValue() * 100000000) == 986902225);
+    CHECK(t.isReal() && int(t.realValue() * 100000000) == 986902225);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kRational, Rational(3, 4)));
-    assert(t.isReal() && int(t.realValue() * 1000000) == 2356125);
+    CHECK(t.isReal() && int(t.realValue() * 1000000) == 2356125);
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kInt, 25));
-    assert(t.isRational() && t.rationalValue() == Rational(75, 4));
+    CHECK(t.isRational() && t.rationalValue() == Rational(75, 4));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kReal, 3.1415));
-    assert(t.isReal() && int(t.realValue() * 1000000) == 2356125);
+    CHECK(t.isReal() && int(t.realValue() * 1000000) == 2356125);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply,
                                       kRational, Rational(3, 4)));
-    assert(t.isRational() && t.rationalValue() == Rational(9, 16));
+    CHECK(t.isRational() && t.rationalValue() == Rational(9, 16));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply,
                                       kRational, Rational(2, 5)));
-    assert(t.isRational() && t.rationalValue() == Rational(6, 20));
+    CHECK(t.isRational() && t.rationalValue() == Rational(6, 20));
+  }
 
-    //-------- test divide
 
+  TEST_FIXTURE(TokenEvalContextFixture, Divide)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kDivide, kInt, 17));
-    assert(t.isInt() && t.intValue() == 1);
+    CHECK(t.isInt() && t.intValue() == 1);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kDivide, kReal, 3.1415));
-    assert(t.isReal() && int(t.realValue() * 100000000) == 795798185);
+    CHECK(t.isReal() && int(t.realValue() * 100000000) == 795798185);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kDivide, kRational, Rational(3, 4)));
-    assert(t.isRational() && t.rationalValue() == Rational(100, 3));
+    CHECK(t.isRational() && t.rationalValue() == Rational(100, 3));
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kInt, 25));
-    assert(t.isReal() && int(t.realValue() * 100000) == 12566);
+    CHECK(t.isReal() && int(t.realValue() * 100000) == 12566);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kReal, 3.1415));
-    assert(t.isReal() && t.realValue() == 1.0);
+    CHECK(t.isReal() && t.realValue() == 1.0);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kRational, Rational(3, 4)));
-    assert(t.isReal() && int(t.realValue() * 100000000) == 418866666);
+    CHECK(t.isReal() && int(t.realValue() * 100000000) == 418866666);
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kInt, 25));
-    assert(t.isRational() && t.rationalValue() == Rational(3, 100));
+    CHECK(t.isRational() && t.rationalValue() == Rational(3, 100));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kReal, 3.1415));
-    assert(t.isReal() && int(t.realValue() * 100000000) == 23873945);
+    CHECK(t.isReal() && int(t.realValue() * 100000000) == 23873945);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide,
                                       kRational, Rational(3, 4)));
-    assert(t.isRational() && t.rationalValue() == Rational(12, 12));
+    CHECK(t.isRational() && t.rationalValue() == Rational(12, 12));
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide,
                                       kRational, Rational(2, 5)));
-    assert(t.isRational() && t.rationalValue() == Rational(15, 8));
+    CHECK(t.isRational() && t.rationalValue() == Rational(15, 8));
+  }
 
 
-    //-------- test modulo
-
+  TEST_FIXTURE(TokenEvalContextFixture, Modulo)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMod, kInt, 3));
-    assert(t.isInt() && t.intValue() == 1);
+    CHECK(t.isInt() && t.intValue() == 1);
+  }
 
-    //-------- test exponent
 
+  TEST_FIXTURE(TokenEvalContextFixture, Exponent)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 2, kExponent, kInt, 16));
-    assert(t.isInt() && t.intValue() == 65536);
+    CHECK(t.isInt() && t.intValue() == 65536);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kExponent, kInt, 4));
-    assert(t.isReal() && int(t.realValue() * 10000) == 973976);
+    CHECK(t.isReal() && int(t.realValue() * 10000) == 973976);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kExponent,
                                       kInt, 4));
-    assert(t.isRational() && t.rationalValue() == Rational(81, 256));
+    CHECK(t.isRational() && t.rationalValue() == Rational(81, 256));
+  }
 
-    //-------- test bitAND
 
+  TEST_FIXTURE(TokenEvalContextFixture, BitAND)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0xacde, kBitAnd, kInt, 0x0ff0));
-    assert(t.isInt() && t.intValue() == 0x0cd0);
+    CHECK(t.isInt() && t.intValue() == 0x0cd0);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0xacde, kBitAnd, kInt, 0xf0f0));
-    assert(t.isInt() && t.intValue() == 0xa0d0);
+    CHECK(t.isInt() && t.intValue() == 0xa0d0);
+  }
 
-    //-------- test bitOR
 
+  TEST_FIXTURE(TokenEvalContextFixture, BitOR)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0xa0d0, kBitOr, kInt, 0x0c0e));
-    assert(t.isInt() && t.intValue() == 0xacde);
+    CHECK(t.isInt() && t.intValue() == 0xacde);
+  }
 
-    //-------- test bitXOR
 
+  TEST_FIXTURE(TokenEvalContextFixture, BitXOR)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0xacde, kBitXor, kInt, 0xffff));
-    assert(t.isInt() && t.intValue() == 0x5321);
+    CHECK(t.isInt() && t.intValue() == 0x5321);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0x0000, kBitXor, kInt, 0xfefe));
-    assert(t.isInt() && t.intValue() == 0xfefe);
+    CHECK(t.isInt() && t.intValue() == 0xfefe);
+  }
 
-    //-------- test shiftLeft
 
+  TEST_FIXTURE(TokenEvalContextFixture, ShiftLeft)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0xabcd, kShiftLeft, kInt, 3));
-    assert(t.isInt() && t.intValue() == 0x55e68);
+    CHECK(t.isInt() && t.intValue() == 0x55e68);
+  }
 
-    //-------- test shiftRight
 
+  TEST_FIXTURE(TokenEvalContextFixture, ShiftRight)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 0x55e68, kShiftRight, kInt, 3));
-    assert(t.isInt() && t.intValue() == 0xabcd);
+    CHECK(t.isInt() && t.intValue() == 0xabcd);
+  }
 
-    //-------- test kOpCompare:
 
+  TEST_FIXTURE(TokenEvalContextFixture, OpCompare)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kCompare, kInt, 17));
-    assert(t.isInt() && t.intValue() > 0);
+    CHECK(t.isInt() && t.intValue() > 0);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 17, kCompare, kInt, 25));
-    assert(t.isInt() && t.intValue() < 0);
+    CHECK(t.isInt() && t.intValue() < 0);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 17, kCompare, kInt, 17));
-    assert(t.isInt() && t.intValue() == 0);
+    CHECK(t.isInt() && t.intValue() == 0);
+  }
 
-    //-------- test kOpEqual:
 
+  TEST_FIXTURE(TokenEvalContextFixture, OpEqual)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kEqual, kInt, 17));
-    assert(t.isBool() && !t.boolValue());
+    CHECK(t.isBool() && !t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kEqual, kInt, 25));
-    assert(t.isBool() && t.boolValue());
+    CHECK(t.isBool() && t.boolValue());
+  }
 
-    //-------- test kOpUnequal:
 
+  TEST_FIXTURE(TokenEvalContextFixture, OpUnequal)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kUnequal, kInt, 17));
-    assert(t.isBool() && t.boolValue());
+    CHECK(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kUnequal, kInt, 25));
-    assert(t.isBool() && !t.boolValue());
+    CHECK(t.isBool() && !t.boolValue());
+  }
 
-    //-------- test kOpGreater:
 
+  TEST_FIXTURE(TokenEvalContextFixture, OpGreater)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kGreater, kInt, 17));
-    assert(t.isBool() && t.boolValue());
+    CHECK(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kGreater, kInt, 25));
-    assert(t.isBool() && !t.boolValue());
+    CHECK(t.isBool() && !t.boolValue());
+  }
 
-    //-------- test kOpGreaterEqual:
 
+  TEST_FIXTURE(TokenEvalContextFixture, OpGreaterEqual)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kGreaterEqual, kInt, 17));
-    assert(t.isBool() && t.boolValue());
+    CHECK(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kGreaterEqual, kInt, 25));
-    assert(t.isBool() && t.boolValue());
+    CHECK(t.isBool() && t.boolValue());
+  }
 
-    //-------- test kOpLess:
 
+  TEST_FIXTURE(TokenEvalContextFixture, OpLess)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kLess, kInt, 17));
-    assert(t.isBool() && !t.boolValue());
+    CHECK(t.isBool() && !t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kLess, kInt, 25));
-    assert(t.isBool() && !t.boolValue());
+    CHECK(t.isBool() && !t.boolValue());
+  }
 
-    //-------- test kOpLessEqual:
 
+  TEST_FIXTURE(TokenEvalContextFixture, OpLessEqual)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kLessEqual, kInt, 17));
-    assert(t.isBool() && !t.boolValue());
+    CHECK(t.isBool() && !t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kLessEqual, kInt, 25));
-    assert(t.isBool() && t.boolValue());
+    CHECK(t.isBool() && t.boolValue());
+  }
 
-    //-------- test kOpLogicalAnd:
 
+  TEST_FIXTURE(TokenEvalContextFixture, OpLogicalAnd)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, true, kLogicalAnd, kBool, true));
-    assert(t.isBool() && t.boolValue());
+    CHECK(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, true, kLogicalAnd, kBool, false));
-    assert(t.isBool() && !t.boolValue());
+    CHECK(t.isBool() && !t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, false, kLogicalAnd, kBool, true));
-    assert(t.isBool() && !t.boolValue());
+    CHECK(t.isBool() && !t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, false, kLogicalAnd, kBool, false));
-    assert(t.isBool() && !t.boolValue());
+    CHECK(t.isBool() && !t.boolValue());
+  }
 
-    //-------- test kOpLogicalOr:
 
+  TEST_FIXTURE(TokenEvalContextFixture, OpLogicalOr)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, true, kLogicalOr, kBool, true));
-    assert(t.isBool() && t.boolValue());
+    CHECK(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, true, kLogicalOr, kBool, false));
-    assert(t.isBool() && t.boolValue());
+    CHECK(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, false, kLogicalOr, kBool, true));
-    assert(t.isBool() && t.boolValue());
+    CHECK(t.isBool() && t.boolValue());
     t = ctx.evalToken(MAKE_BINARY_SEQ(kBool, false, kLogicalOr, kBool, false));
-    assert(t.isBool() && !t.boolValue());
+    CHECK(t.isBool() && !t.boolValue());
+  }
 
-    //-------- test kOpAppend:
 
+  TEST_FIXTURE(TokenEvalContextFixture, OpAppend)
+  {
     t = ctx.evalToken(MAKE_BINARY_SEQ(kString, String("hello "), kAppend,
                                       kString, String("world")));
-    assert(t.isString() && t.stringValue() == String("hello world"));
-
+    CHECK(t.isString() && t.stringValue() == String("hello world"));
   }
-};
-
-static PexpEvalContextUnitTest pexpEvalContextUnitTest;
+}
 
 #endif  // #if defined(UNITTESTS)
