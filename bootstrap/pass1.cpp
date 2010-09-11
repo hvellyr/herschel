@@ -152,7 +152,8 @@ FirstPass::parseSequence(ParseFunctor functor,
       else if (fToken != endToken)
         error(fToken.srcpos(), errorCode,
               (StringBuffer() << ctx << ": expected '"
-               << Token(SrcPos(), endToken).toString() << "' or ','").toString());
+               << Token(SrcPos(), endToken).toString() << "' or ','"
+               << "; found: " << fToken.toString()).toString());
     }
   }
 
@@ -507,6 +508,7 @@ namespace heather
       }
       else
         result << type;
+
       return true;
     }
   };
