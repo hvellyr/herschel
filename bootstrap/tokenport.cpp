@@ -8,7 +8,6 @@
 
 #include "common.h"
 #include "tokenport.h"
-#include "unittests.h"
 #include "port.h"
 #include "token.h"
 #include "tokenizer.h"

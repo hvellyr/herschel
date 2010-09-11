@@ -13,7 +13,6 @@
 #include "log.h"
 #include "str.h"
 #include "srcpos.h"
-#include "unittests.h"
 
 
 using namespace heather;

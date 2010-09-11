@@ -14,7 +14,6 @@
 #include "str.h"
 #include "option.h"
 #include "properties.h"
-#include "unittests.h"
 #include "ptr.h"
 #include "apt.h"
 #include "parser.h"
@@ -190,8 +189,6 @@ main(int argc, char** argv)
 
 #if defined(UNITTESTS)
   case kRunUnitTests:
-    heather::UnitTest::runUnitTests();
-
     return runUnitTests();
 #endif
 

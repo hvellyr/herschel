@@ -16,7 +16,6 @@
 #include "str.h"
 #include "refcountable.h"
 #include "exception.h"
-#include "unittests.h"
 
 #if defined(UNITTESTS)
 #  include <iostream>
