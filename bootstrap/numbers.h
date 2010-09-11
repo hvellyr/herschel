@@ -9,6 +9,9 @@
 #ifndef bootstrap_numbers_h
 #define bootstrap_numbers_h
 
+#if defined(UNITTESTS)
+#  include <iostream>
+#endif
 
 namespace heather
 {
@@ -78,6 +81,10 @@ namespace heather
     int fNumerator;
     int fDenominator;
   };
+
+#if defined(UNITTESTS)
+  std::ostream& operator<<(std::ostream& os, const Rational& rat);
+#endif
 
 };
 

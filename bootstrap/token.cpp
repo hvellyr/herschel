@@ -9,9 +9,12 @@
 #include "token.h"
 #include "str.h"
 #include "exception.h"
-#include "unittests.h"
 #include "parsertypes.h"
 #include "strbuf.h"
+
+#if defined(UNITTESTS)
+#  include <iostream>
+#endif
 
 
 namespace heather
@@ -1525,56 +1528,81 @@ heather::operator+(const String& one, const std::map<String, Token>& bindings)
 
 
 
-#if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class TokenUnitTest : public UnitTest
-{
-public:
-  TokenUnitTest() : UnitTest("Token") {}
+#if defined(UNITTESTS)
 
-  virtual void run()
+#include <UnitTest++.h>
+
+std::ostream& heather::operator<<(std::ostream& os,const Token& token)
+{
+  String s = token.toString();
+  os << "'" << (const char*)StrHelper(s) << "'";
+  return os;
+}
+
+
+std::ostream& heather::operator<<(std::ostream& os, ExprType type)
+{
+  switch (type) {
+  case kSeq:    os << "ExprType::kSeq"; break;
+  case kNested: os << "ExprType::kNested"; break;
+  case kPunct:  os << "ExprType::kPunct"; break;
+  case kLit:    os << "ExprType::kLit"; break;
+  case kId:     os << "ExprType::kId"; break;
+  }
+  return os;
+}
+
+
+SUITE(Token)
+{
+  TEST(SimpleTokens)
   {
     SrcPos sp;
 
-    assert(Token(sp, kReal,     3.1415)         == Token(sp, kReal,     3.1415));
-    assert(Token(sp, kInt,      12345)          == Token(sp, kInt,      12345));
-    assert(Token(sp, kChar,     0xac00)         == Token(sp, kChar,     0xac00));
-    assert(Token(sp, kString,   "abc")          == Token(sp, kString,   "abc"));
-    assert(Token(sp, kDocString, "abc")         == Token(sp, kDocString, "abc"));
-    assert(Token(sp, kSymbol,   "abc")          == Token(sp, kSymbol,   "abc"));
-    assert(Token(sp, kDefId)                    == Token(sp, kDefId));
-    assert(Token(sp, kRational, Rational(7, 4)) == Token(sp, kRational, Rational(7, 4)));
+    CHECK_EQUAL(Token(sp, kReal,     3.1415),         Token(sp, kReal,     3.1415));
+    CHECK_EQUAL(Token(sp, kInt,      12345),          Token(sp, kInt,      12345));
+    CHECK_EQUAL(Token(sp, kChar,     0xac00),         Token(sp, kChar,     0xac00));
+    CHECK_EQUAL(Token(sp, kString,   "abc"),          Token(sp, kString,   "abc"));
+    CHECK_EQUAL(Token(sp, kDocString, "abc"),         Token(sp, kDocString, "abc"));
+    CHECK_EQUAL(Token(sp, kSymbol,   "abc"),          Token(sp, kSymbol,   "abc"));
+    CHECK_EQUAL(Token(sp, kDefId),                    Token(sp, kDefId));
+    CHECK_EQUAL(Token(sp, kRational, Rational(7, 4)), Token(sp, kRational, Rational(7, 4)));
 
-    assert(Token(sp, kUnionOpen).type() == kPunct);
+    CHECK_EQUAL(Token(sp, kUnionOpen).type(), kPunct);
 
-    assert(Token() == Token());
-    assert(Token(sp, kParanOpen, kParanClose) == Token(sp, kParanOpen, kParanClose));
-    assert(Token() << Token(sp, kInt, 25) == Token() << Token(sp, kInt, 25));
-    assert(( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ) ==
-           ( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ));
+    CHECK_EQUAL(Token(), Token());
+    CHECK_EQUAL(Token(sp, kParanOpen, kParanClose), Token(sp, kParanOpen, kParanClose));
+    CHECK_EQUAL(Token() << Token(sp, kInt, 25),     Token() << Token(sp, kInt, 25));
+    CHECK_EQUAL(( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ),
+                ( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ));
 
-    assert(Token(sp, kReal, 3.1415).realValue() == 3.1415);
-    assert(Token(sp, kReal, 1.2345).tokenType() == kReal);
-    assert(Token(sp, kBool, true).boolValue() == true);
-    assert(Token(sp, kInt, 0x10000).intValue() == 0x10000);
-    assert(Token(sp, kRational, Rational(23, 27)).rationalValue() == Rational(23, 27));
+    CHECK_EQUAL(Token(sp, kReal, 3.1415).realValue(), 3.1415);
+    CHECK_EQUAL(Token(sp, kReal, 1.2345).tokenType(), kReal);
+    CHECK_EQUAL(Token(sp, kBool, true).boolValue(),   true);
+    CHECK_EQUAL(Token(sp, kInt, 0x10000).intValue(),  0x10000);
+    CHECK_EQUAL(Token(sp, kRational, Rational(23, 27)).rationalValue(), Rational(23, 27));
 
-    assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
-    assert(Token(sp, kMacroParam, String("abc")).idValue() == String("abc"));
-    assert(Token(sp, kMacroParamAsStr, String("abc")).idValue() == String("abc"));
-    assert(Token(sp, kString, String("abc")).stringValue() == String("abc"));
-    assert(Token(sp, kDocString, String("abc")).stringValue() == String("abc"));
-    assert(Token(sp, kKeyword, String("abc")).stringValue() == String("abc"));
+    CHECK_EQUAL(Token(sp, kSymbol, "abc").idValue(),                  String("abc"));
+    CHECK_EQUAL(Token(sp, kMacroParam, String("abc")).idValue(),      String("abc"));
+    CHECK_EQUAL(Token(sp, kMacroParamAsStr, String("abc")).idValue(), String("abc"));
+    CHECK_EQUAL(Token(sp, kString, String("abc")).stringValue(),      String("abc"));
+    CHECK_EQUAL(Token(sp, kDocString, String("abc")).stringValue(),   String("abc"));
+    CHECK_EQUAL(Token(sp, kKeyword, String("abc")).stringValue(),     String("abc"));
 
-    assert(Token(sp, kSymbol, "abc").idValue() == String("abc"));
-    assert(Token(sp, kMacroParam, "abc").idValue() == String("abc"));
-    assert(Token(sp, kMacroParamAsStr, "abc").idValue() == String("abc"));
-    assert(Token(sp, kString, "abc").stringValue() == String("abc"));
-    assert(Token(sp, kDocString, "abc").stringValue() == String("abc"));
-    assert(Token(sp, kKeyword, "abc").stringValue() == String("abc"));
-    assert(Token(sp, kKeyarg, "abc").isKeyArg());
+    CHECK_EQUAL(Token(sp, kSymbol, "abc").idValue(),          String("abc"));
+    CHECK_EQUAL(Token(sp, kMacroParam, "abc").idValue(),      String("abc"));
+    CHECK_EQUAL(Token(sp, kMacroParamAsStr, "abc").idValue(), String("abc"));
+    CHECK_EQUAL(Token(sp, kString, "abc").stringValue(),      String("abc"));
+    CHECK_EQUAL(Token(sp, kDocString, "abc").stringValue(),   String("abc"));
+    CHECK_EQUAL(Token(sp, kKeyword, "abc").stringValue(),     String("abc"));
+    CHECK(Token(sp, kKeyarg, "abc").isKeyArg());
+  }
 
+  TEST(MakeRange)
+  {
+    SrcPos sp;
 
 #define MAKE_RANGE(_fromty, _fromv, _toty, _tov)  \
     (Token() << Token(sp, _fromty, _fromv)        \
@@ -1587,29 +1615,33 @@ public:
              << Token(sp, kBy)                                      \
              << Token(sp, _stepty, _stepv))
 
-    assert(MAKE_RANGE(kInt,     0,     kInt,     25).isConstRange());
-    assert(MAKE_RANGE(kReal,    0.0,   kReal,    25.0).isConstRange());
-    assert(MAKE_RANGE(kChar,    'a',   kChar,    'z').isConstRange());
-    assert(MAKE_RANGE(kBool,    false, kBool,    true).isConstRange());
-    assert(MAKE_RANGE(kString,  "a",   kString,  "z").isConstRange());
-    assert(MAKE_RANGE(kKeyword, "a",   kKeyword, "z").isConstRange());
+    CHECK(MAKE_RANGE(kInt,     0,     kInt,     25).isConstRange());
+    CHECK(MAKE_RANGE(kReal,    0.0,   kReal,    25.0).isConstRange());
+    CHECK(MAKE_RANGE(kChar,    'a',   kChar,    'z').isConstRange());
+    CHECK(MAKE_RANGE(kBool,    false, kBool,    true).isConstRange());
+    CHECK(MAKE_RANGE(kString,  "a",   kString,  "z").isConstRange());
+    CHECK(MAKE_RANGE(kKeyword, "a",   kKeyword, "z").isConstRange());
 
-    assert(MAKE_RANGE_2(kInt,     0,     kInt,     25,   kInt,  2).isConstRange());
-    assert(MAKE_RANGE_2(kReal,    0.0,   kReal,    25.0, kReal, 0.2).isConstRange());
-    assert(MAKE_RANGE_2(kChar,    'a',   kChar,    'z',  kInt,  1).isConstRange());
-    assert(MAKE_RANGE_2(kString,  "a",   kString,  "z",  kInt,  1).isConstRange());
-    assert(MAKE_RANGE_2(kKeyword, "a",   kKeyword, "z",  kInt,  2).isConstRange());
+    CHECK(MAKE_RANGE_2(kInt,     0,     kInt,     25,   kInt,  2).isConstRange());
+    CHECK(MAKE_RANGE_2(kReal,    0.0,   kReal,    25.0, kReal, 0.2).isConstRange());
+    CHECK(MAKE_RANGE_2(kChar,    'a',   kChar,    'z',  kInt,  1).isConstRange());
+    CHECK(MAKE_RANGE_2(kString,  "a",   kString,  "z",  kInt,  1).isConstRange());
+    CHECK(MAKE_RANGE_2(kKeyword, "a",   kKeyword, "z",  kInt,  2).isConstRange());
 
-    assert(!(Token(sp, kInt, 5).isConstRange()));
-    assert(!(Token() << Token(sp, kSymbol, "abc") << Token(sp, kRange)
-             << Token(sp, kInt, 27)).isConstRange());
+    CHECK(!(Token(sp, kInt, 5).isConstRange()));
+    CHECK(!(Token() << Token(sp, kSymbol, "abc") << Token(sp, kRange)
+            << Token(sp, kInt, 27)).isConstRange());
+  }
 
+  TEST(AssignOperator2)
+  {
+    SrcPos sp;
 
-#define TEST_ASSIGNOP2(_type, _value, _member)          \
-    {                                                   \
+#define TEST_ASSIGNOP2(_type, _value, _member)              \
+    {                                                       \
       Token t = Token(sp, _type, _value);                   \
-      assert(t.tokenType() == _type &&                  \
-             t._member() == _value);                    \
+      CHECK_EQUAL(t.tokenType(), _type);                    \
+      CHECK_EQUAL(t._member(), _value);                     \
     }
 
     TEST_ASSIGNOP2(kReal, 3.1415, realValue);
@@ -1618,12 +1650,18 @@ public:
     TEST_ASSIGNOP2(kRational, Rational(1, 127), rationalValue);
     TEST_ASSIGNOP2(kString, String("abc"), stringValue);
 #undef TEST_ASSIGNOP2
+  }
 
-#define TEST_COPYCTOR2(_type, _value, _member)          \
-    {                                                   \
+
+  TEST(CopyCtor)
+  {
+    SrcPos sp;
+
+#define TEST_COPYCTOR2(_type, _value, _member)              \
+    {                                                       \
       Token t(Token(sp, _type, _value));                    \
-      assert(t.tokenType() == _type &&                  \
-             t._member() == _value);                    \
+      CHECK_EQUAL(t.tokenType(), _type);                    \
+      CHECK_EQUAL(t._member(), _value);                     \
     }
 
     TEST_COPYCTOR2(kReal, 3.1415, realValue);
@@ -1632,78 +1670,105 @@ public:
     TEST_COPYCTOR2(kRational, Rational(1, 127), rationalValue);
     TEST_COPYCTOR2(kString, String("abc"), stringValue);
 #undef TEST_COPYCTOR2
-
-    {
-      Token t(Token(sp, kReal, 12.345).setIsImaginary(true));
-      assert(t.tokenType() == kReal &&
-             t.realValue() == 12.345 &&
-             t.isImaginary());
-    }
-
-
-    {
-      Token t = Token(sp, kSymbol, "File");
-      assert(!t.isQualifiedId());
-      assert(t.baseName() == String("File"));
-      assert(t.nsName() == String());
-    }
-
-    {
-      Token t = Token(sp, kSymbol, "io|File");
-      assert(t.isQualifiedId());
-      assert(t.baseName() == String("File"));
-      assert(t.nsName() == String("io"));
-    }
-
-    {
-      Token t = Token(sp, kSymbol, "core|rubitz|packs|Package");
-      assert(t.isQualifiedId());
-      assert(t.baseName() == String("Package"));
-      assert(t.nsName() == String("core|rubitz|packs"));
-    }
-
-    {
-      assert((Token() << Token(sp, kSymbol, "abc")).unwrapSingleton() ==
-             Token(sp, kSymbol, "abc"));
-
-      Token t = Token() << Token(sp, kSymbol, "abc")
-                        << Token(sp, kInt, 27);
-      assert(t.unwrapSingleton() == t);
-
-      assert(Token().unwrapSingleton() == Token());
-      assert(Token(sp, kInt, 4).unwrapSingleton() == Token(sp, kInt, 4));
-    }
-
-    {
-      Token t = Token(sp, kMacroParam, "abc:name");
-      assert(t == kMacroParam);
-      assert(t.macroParamName() == String("abc"));
-      assert(t.macroParamType() == String("name"));
-    }
-
-    {
-      Token t = Token(sp, kMacroParam, "*:expr");
-      assert(t == kMacroParam);
-      assert(t.macroParamName() == String("*"));
-      assert(t.macroParamType() == String("expr"));
-    }
-
-    {
-      Token t = Token(sp, kMacroParam, "abc");
-      assert(t == kMacroParam);
-      assert(t.macroParamName() == String("abc"));
-      assert(t.macroParamType() == String());
-    }
-
-    {
-      Token t = Token(sp, kMacroParamAsStr, "abc");
-      assert(t == kMacroParamAsStr);
-      assert(t.macroParamName() == String("abc"));
-      assert(t.macroParamType() == String());
-    }
   }
-};
-static TokenUnitTest tokenUnitTest;
+
+
+  TEST(Imaginary)
+  {
+    SrcPos sp;
+    Token t(Token(sp, kReal, 12.345).setIsImaginary(true));
+    CHECK_EQUAL(t.tokenType(), kReal);
+    CHECK_EQUAL(t.realValue(), 12.345);
+    CHECK(t.isImaginary());
+  }
+
+
+  TEST(IsQualified1)
+  {
+    SrcPos sp;
+    Token t = Token(sp, kSymbol, "File");
+    CHECK(!t.isQualifiedId());
+    CHECK_EQUAL(t.baseName(), String("File"));
+    CHECK_EQUAL(t.nsName(), String());
+  }
+
+
+  TEST(IsQualified2)
+  {
+    SrcPos sp;
+    Token t = Token(sp, kSymbol, "io|File");
+    CHECK(t.isQualifiedId());
+    CHECK_EQUAL(t.baseName(), String("File"));
+    CHECK_EQUAL(t.nsName(), String("io"));
+  }
+
+
+  TEST(IsQualified3)
+  {
+    SrcPos sp;
+    Token t = Token(sp, kSymbol, "core|rubitz|packs|Package");
+    CHECK(t.isQualifiedId());
+    CHECK_EQUAL(t.baseName(), String("Package"));
+    CHECK_EQUAL(t.nsName(), String("core|rubitz|packs"));
+  }
+
+
+  TEST(UnwrapSingleton)
+  {
+    SrcPos sp;
+    CHECK_EQUAL((Token() << Token(sp, kSymbol, "abc")).unwrapSingleton(),
+                Token(sp, kSymbol, "abc"));
+
+    Token t = Token() << Token(sp, kSymbol, "abc")
+                      << Token(sp, kInt, 27);
+    CHECK_EQUAL(t.unwrapSingleton(), t);
+
+    CHECK_EQUAL(Token().unwrapSingleton(), Token());
+    CHECK_EQUAL(Token(sp, kInt, 4).unwrapSingleton(), Token(sp, kInt, 4));
+  }
+
+
+  TEST(MacroNameQualified)
+  {
+    SrcPos sp;
+    Token t = Token(sp, kMacroParam, "abc:name");
+    CHECK_EQUAL(t, kMacroParam);
+    CHECK_EQUAL(t.macroParamName(), String("abc"));
+    CHECK_EQUAL(t.macroParamType(), String("name"));
+  }
+
+
+  TEST(MacroNameWildcard)
+  {
+    SrcPos sp;
+    Token t = Token(sp, kMacroParam, "*:expr");
+    CHECK_EQUAL(t, kMacroParam);
+    CHECK_EQUAL(t.macroParamName(), String("*"));
+    CHECK_EQUAL(t.macroParamType(), String("expr"));
+  }
+
+
+  TEST(MacroNameNameOnly)
+  {
+    SrcPos sp;
+    Token t = Token(sp, kMacroParam, "abc");
+    CHECK_EQUAL(t, kMacroParam);
+    CHECK_EQUAL(t.macroParamName(), String("abc"));
+    CHECK_EQUAL(t.macroParamType(), String());
+  }
+
+
+  TEST(MacroNameAsString)
+  {
+    SrcPos sp;
+    Token t = Token(sp, kMacroParamAsStr, "abc");
+    CHECK_EQUAL(t, kMacroParamAsStr);
+    CHECK_EQUAL(t.macroParamName(), String("abc"));
+    CHECK_EQUAL(t.macroParamType(), String());
+  }
+}
+
+
 
 
 #endif  // #if defined(UNITTESTS)

@@ -12,6 +12,10 @@
 #include <vector>
 #include <map>
 
+#if defined(UNITTESTS)
+#  include <iostream>
+#endif
+
 #include "refcountable.h"
 #include "ptr.h"
 #include "port.h"
@@ -346,6 +350,12 @@ namespace heather
 
   String operator+(const String& one, const TokenVector& vect);
   String operator+(const String& one, const std::map<String, Token>& bindings);
+
+#if defined(UNITTESTS)
+  std::ostream& operator <<(std::ostream &os,const Token& token);
+  std::ostream& operator<<(std::ostream& os, ExprType type);
+#endif
+
 
   //--------------------------------------------------------------------------
   // definitions of the reserved keywords

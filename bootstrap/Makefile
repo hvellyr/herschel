@@ -8,7 +8,7 @@ top_srcdir=..
 
 include $(top_srcdir)/config.mk
 
-CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src
+CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTest++/src
 
 SOURCES =         \
 	apt.cpp         \
@@ -30,7 +30,6 @@ SOURCES =         \
 	tokeneval.cpp   \
 	tokenizer.cpp   \
 	tokenport.cpp   \
-	unittests.cpp   \
 	valuesaver.cpp
 
 HEADERS =         \
@@ -58,7 +57,6 @@ HEADERS =         \
 	tokeneval.h     \
 	tokenizer.h     \
 	tokenport.h     \
-	unittests.h     \
 	valuesaver.h
 
 
