@@ -18,7 +18,7 @@
 #include "file.h"
 #include "str.h"
 #include "strbuf.h"
-#include "unittests.h"
+
 
 using namespace heather;
 
@@ -439,74 +439,82 @@ heather::file::lookupInPath(const String& pattern,
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class FileUnitTest : public UnitTest
+#include <UnitTest++.h>
+
+
+SUITE(File)
 {
-public:
-  FileUnitTest() : UnitTest("file") {}
-
-  virtual void run()
+  TEST(RelativePath)
   {
-    {
-      String t = String("tests/war/../raw/01.bin");
+    String t = String("tests/war/../raw/01.bin");
 
-      String ct = file::canonicalPathName(t);
+    String ct = file::canonicalPathName(t);
 
-      assert(ct == file::workingDir() + "tests/raw/01.bin");
-      assert(file::isFile(ct));
-      assert(!file::isDir(ct));
-    }
-
-    {
-      String t = String("./tests/war/../raw/01.bin");
-
-      String ct = file::canonicalPathName(t);
-
-      assert(ct == file::workingDir() + "tests/raw/01.bin");
-      assert(file::isFile(ct));
-      assert(!file::isDir(ct));
-    }
-
-    {
-      String t = String("tests/war/../raw/01.bin");
-
-      String ct = file::canonicalPathName(t, String("/usr/lib/"));
-
-      assert(ct == String("/usr/lib/tests/raw/01.bin"));
-      assert(file::isFilePath(ct));
-    }
-
-    {
-      String t = file::appendFile(String("/usr/share/heather/"), String("a.xml"));
-      assert(t == String("/usr/share/heather/a.xml"));
-      assert(file::isFilePath(t));
-
-      assert(!file::isFilePath(String("/opt/")));
-    }
-
-    {
-      assert(file::appendExt(String("/usr/share/heather/a"), String("xml")) ==
-             String("/usr/share/heather/a.xml"));
-      assert(file::appendExt(String("/usr/share/heather/a.xml"), String("txt")) ==
-             String("/usr/share/heather/a.xml.txt"));
-    }
-
-    {
-      assert(file::isAbsolutePath(String("/usr/lib/")));
-      assert(!file::isAbsolutePath(String("tests/raw/01.bin")));
-      assert(!file::isAbsolutePath(String("./tests/raw/01.bin")));
-      assert(!file::isAbsolutePath(String("../tests/raw/01.bin")));
-      assert(file::isAbsolutePath(String("~/tests/raw/01.bin")));
-    }
-
-    {
-      assert(!file::hasExtension(String("/usr/lib/")));
-      assert(file::hasExtension(String("tests/raw/01.bin")));
-      assert(!file::hasExtension(String("tests.all/raw/test")));
-    }
+    CHECK_EQUAL(ct, file::workingDir() + "tests/raw/01.bin");
+    CHECK(file::isFile(ct));
+    CHECK(!file::isDir(ct));
   }
-};
 
-static FileUnitTest fileUnitTest;
+
+  TEST(RelativePath2)
+  {
+    String t = String("./tests/war/../raw/01.bin");
+
+    String ct = file::canonicalPathName(t);
+
+    CHECK_EQUAL(ct, file::workingDir() + "tests/raw/01.bin");
+    CHECK(file::isFile(ct));
+    CHECK(!file::isDir(ct));
+  }
+
+
+  TEST(RelativePathToAbs)
+  {
+    String t = String("tests/war/../raw/01.bin");
+    
+    String ct = file::canonicalPathName(t, String("/usr/lib/"));
+    
+    CHECK_EQUAL(ct, String("/usr/lib/tests/raw/01.bin"));
+    CHECK(file::isFilePath(ct));
+  }
+
+
+  TEST(appendFile)
+  {
+    String t = file::appendFile(String("/usr/share/heather/"), String("a.xml"));
+    CHECK_EQUAL(t, String("/usr/share/heather/a.xml"));
+    CHECK(file::isFilePath(t));
+
+    CHECK(!file::isFilePath(String("/opt/")));
+  }
+
+  
+  TEST(appendExt)
+  {
+    CHECK_EQUAL(file::appendExt(String("/usr/share/heather/a"), String("xml")),
+                String("/usr/share/heather/a.xml"));
+    CHECK_EQUAL(file::appendExt(String("/usr/share/heather/a.xml"), String("txt")),
+                String("/usr/share/heather/a.xml.txt"));
+  }
+
+
+  TEST(isAbsolutePath)
+  {
+    CHECK(file::isAbsolutePath(String("/usr/lib/")));
+    CHECK(!file::isAbsolutePath(String("tests/raw/01.bin")));
+    CHECK(!file::isAbsolutePath(String("./tests/raw/01.bin")));
+    CHECK(!file::isAbsolutePath(String("../tests/raw/01.bin")));
+    CHECK(file::isAbsolutePath(String("~/tests/raw/01.bin")));
+  }
+
+
+  TEST(hasExtension)
+  {
+    CHECK(!file::hasExtension(String("/usr/lib/")));
+    CHECK(file::hasExtension(String("tests/raw/01.bin")));
+    CHECK(!file::hasExtension(String("tests.all/raw/test")));
+  }
+}
 
 #endif  // #if defined(UNITTESTS)
 

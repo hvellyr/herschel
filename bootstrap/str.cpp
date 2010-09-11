@@ -16,7 +16,11 @@
 #include "str.h"
 #include "refcountable.h"
 #include "exception.h"
-#include "unittests.h"
+
+#if defined(UNITTESTS)
+#  include <iostream>
+#endif
+
 
 using namespace heather;
 
@@ -791,191 +795,222 @@ heather::xmlEncode(const char* str)
 
 
 #if defined(UNITTESTS)
+
+#include <UnitTest++.h>
+
+std::ostream& heather::operator<<(std::ostream& os, const String& str)
+{
+  os << "\"" << (const char*)StrHelper(str) << "\"";
+  return os;
+}
+
+
+std::ostream& heather::operator<<(std::ostream& os, char c)
+{
+  os << "'" << c << "'";
+  return os;
+}
+
+
+
 //----------------------------------------------------------------------------
 
-class StringUnitTest : public UnitTest
+SUITE(String)
 {
-public:
-  StringUnitTest() : UnitTest("String") {}
-
-  virtual void run()
+  TEST(Simple)
   {
-    assert(String().length() == 0);
-    assert(String("").length() == 0);
-    assert(String("hello, world!").length() == 13);
+    CHECK_EQUAL(String().length(), 0);
+    CHECK_EQUAL(String("").length(), 0);
+    CHECK_EQUAL(String("hello, world!").length(), 13);
+  }
 
-    assert(String("abc") == String("abc"));
-    assert(String("") == String(""));
-    assert(String("") != String("abc"));
-    assert(String("abc") < String("xyz"));
-    assert(String("abc") <= String("abc"));
-    assert(String("abc") <= String("xyz"));
-    assert(String("abc") != String("xyz"));
-    assert(String("xyz") > String("abc"));
-    assert(String("xyz") >= String("abc"));
-    assert(String("xyz") >= String("xyz"));
-    assert(String("abc") < String("xyz!"));
-    assert(String("xyz!") > String("abc"));
+  TEST(Compare)
+  {
+    CHECK_EQUAL(String("abc"), String("abc"));
+    CHECK_EQUAL(String(""), String(""));
+    CHECK(String("") != String("abc"));
+    CHECK(String("abc") < String("xyz"));
+    CHECK(String("abc") <= String("abc"));
+    CHECK(String("abc") <= String("xyz"));
+    CHECK(String("abc") != String("xyz"));
+    CHECK(String("xyz") > String("abc"));
+    CHECK(String("xyz") >= String("abc"));
+    CHECK(String("xyz") >= String("xyz"));
+    CHECK(String("abc") < String("xyz!"));
+    CHECK(String("xyz!") > String("abc"));
+  }
 
-    {
-      String t("hello, world!");
+  TEST(FindParts)
+  {
+    String t("hello, world!");
 
-      assert(t.startsWith(String("hello")));
-      assert(t.startsWith(String()));
+    CHECK(t.startsWith(String("hello")));
+    CHECK(t.startsWith(String()));
 
-      assert(t.endsWith(String("world!")));
-      assert(t.endsWith(String()));
+    CHECK(t.endsWith(String("world!")));
+    CHECK(t.endsWith(String()));
 
-      assert(String("a").endsWith(String("a")));
-      assert(!String().endsWith(String("a")));
-      assert(String("a").endsWith(String()));
+    CHECK(String("a").endsWith(String("a")));
+    CHECK(!String().endsWith(String("a")));
+    CHECK(String("a").endsWith(String()));
 
-      assert(t[6] == ' ');
-      assert(t[0] == 'h');
-      assert(t[12] == '!');
-      assert(t[t.length() - 1] == '!');
+    CHECK_EQUAL(t[6], ' ');
+    CHECK_EQUAL(t[0], 'h');
+    CHECK_EQUAL(t[12], '!');
+    CHECK_EQUAL(t[t.length() - 1], '!');
 
-      assert(t.indexOf('h') == 0);
-      assert(t.indexOf('!') == 12);
-      assert(t.indexOf('!', 12) == 12);
-      assert(t.indexOf('x') == -1);
+    CHECK_EQUAL(t.indexOf('h'), 0);
+    CHECK_EQUAL(t.indexOf('!'), 12);
+    CHECK_EQUAL(t.indexOf('!', 12), 12);
+    CHECK_EQUAL(t.indexOf('x'), -1);
 
-      assert(t.indexOf('o') == 4);
-      assert(t.indexOf('o', 4) == 4);
-      assert(t.indexOf('o', 5) == 8);
-      assert(t.indexOf('o', 9) == -1);
+    CHECK_EQUAL(t.indexOf('o'), 4);
+    CHECK_EQUAL(t.indexOf('o', 4), 4);
+    CHECK_EQUAL(t.indexOf('o', 5), 8);
+    CHECK_EQUAL(t.indexOf('o', 9), -1);
 
-      assert(t.indexOf(String("hello")) == 0);
-      assert(t.indexOf(String("hello"), 1) == -1);
+    CHECK_EQUAL(t.indexOf(String("hello")), 0);
+    CHECK_EQUAL(t.indexOf(String("hello"), 1), -1);
 
-      assert(t.indexOf(String("world")) == 7);
+    CHECK_EQUAL(t.indexOf(String("world")), 7);
 
-      assert(t.lastIndexOf('!') == 12);
-      assert(t.lastIndexOf('h') == 0);
-      assert(t.lastIndexOf('x') == -1);
+    CHECK_EQUAL(t.lastIndexOf('!'), 12);
+    CHECK_EQUAL(t.lastIndexOf('h'), 0);
+    CHECK_EQUAL(t.lastIndexOf('x'), -1);
 
-      assert(t.lastIndexOf('!', 13) == 12);
-      assert(t.lastIndexOf('!', 12) == 12);
-      assert(t.lastIndexOf('h', 7) == 0);
-      assert(t.lastIndexOf('x', 11) == -1);
+    CHECK_EQUAL(t.lastIndexOf('!', 13), 12);
+    CHECK_EQUAL(t.lastIndexOf('!', 12), 12);
+    CHECK_EQUAL(t.lastIndexOf('h', 7), 0);
+    CHECK_EQUAL(t.lastIndexOf('x', 11), -1);
 
-      assert(t.lastIndexOf(String("world")) == 7);
-      assert(t.lastIndexOf(String("world"), 13) == 7);
-      assert(t.lastIndexOf(String("world"), 12) == 7);
-      assert(t.lastIndexOf(String("world"), 11) == -1);
-      assert(t.lastIndexOf(String("world"), 6) == -1);
-      assert(t.lastIndexOf(String("hello"), 6) == 0);
-      assert(t.lastIndexOf(String("hello"), 0) == -1);
+    CHECK_EQUAL(t.lastIndexOf(String("world")), 7);
+    CHECK_EQUAL(t.lastIndexOf(String("world"), 13), 7);
+    CHECK_EQUAL(t.lastIndexOf(String("world"), 12), 7);
+    CHECK_EQUAL(t.lastIndexOf(String("world"), 11), -1);
+    CHECK_EQUAL(t.lastIndexOf(String("world"), 6), -1);
+    CHECK_EQUAL(t.lastIndexOf(String("hello"), 6), 0);
+    CHECK_EQUAL(t.lastIndexOf(String("hello"), 0), -1);
 
-      assert(t.lastIndexOf(String()) == 13);
-      assert(t.lastIndexOf(String(), 10) == 10);
-    }
+    CHECK_EQUAL(t.lastIndexOf(String()), 13);
+    CHECK_EQUAL(t.lastIndexOf(String(), 10), 10);
+  }
 
-    assert(String("hello") +
-           String(", ") + String("world!") == String("hello, world!"));
-    assert(String() + "hello" + ", " + "world!" == String("hello, world!"));
-    assert(String("midi: ") + 128 == String("midi: 128"));
-    assert(String("midi: ") + fromInt(128) == String("midi: 128"));
-    assert(String("midi?: ") + fromBool(true) == String("midi?: true"));
+  TEST(AppendStrAndNumber)
+  {
+    CHECK_EQUAL(String("hello") +
+                String(", ") + String("world!"), String("hello, world!"));
+    CHECK_EQUAL(String() + "hello" + ", " + "world!", String("hello, world!"));
+    CHECK_EQUAL(String("midi: ") + 128, String("midi: 128"));
+    CHECK_EQUAL(String("midi: ") + fromInt(128), String("midi: 128"));
+    CHECK_EQUAL(String("midi?: ") + fromBool(true), String("midi?: true"));
+  }
 
-    {
-      String t = String("hello") + Char(',') + ' ' + String("world") + Char('!');
-      char tmp[256];
-      t.toUtf8(tmp, 256);
-      assert(t == String("hello, world!"));
-    }
 
-    {
-      String t("hello, world!");
-      char tmp[128];
-      assert(t.toUtf8(NULL, 128) == 13);
-      assert(t.toUtf8(tmp, 128) == 13);
-      assert(tmp[13] == '\0');
-      assert(strcmp(tmp, "hello, world!") == 0);
-    }
+  TEST(AppendChar)
+  {
+    String t = String("hello") + Char(',') + ' ' + String("world") + Char('!');
+    char tmp[256];
+    t.toUtf8(tmp, 256);
+    CHECK_EQUAL(t, String("hello, world!"));
+  }
 
-    {
-      String t("hello, world!");
-      char tmp[128];
-      assert(t.toUtf8(NULL, 6) == 5);
-      assert(t.toUtf8(tmp, 6) == 5);
-      assert(tmp[5] == '\0');
-      assert(strcmp(tmp, "hello") == 0);
-    }
+  TEST(ConvertToUtf8)
+  {
+    String t("hello, world!");
+    char tmp[128];
+    CHECK_EQUAL(t.toUtf8(NULL, 128), 13);
+    CHECK_EQUAL(t.toUtf8(tmp, 128), 13);
+    CHECK_EQUAL(tmp[13], '\0');
+    CHECK_EQUAL(strcmp(tmp, "hello, world!"), 0);
+  }
 
-    {
-      String t;
-      char tmp[128];
-      assert(t.toUtf8(NULL, 128) == 0);
-      assert(t.toUtf8(tmp, 128) == 0);
-      assert(tmp[0] == '\0');
-      assert(strcmp(tmp, "") == 0);
-    }
+  TEST(ConvertToUtf8Limit6)
+  {
+    String t("hello, world!");
+    char tmp[128];
+    CHECK_EQUAL(t.toUtf8(NULL, 6), 5);
+    CHECK_EQUAL(t.toUtf8(tmp, 6), 5);
+    CHECK_EQUAL(tmp[5], '\0');
+    CHECK_EQUAL(strcmp(tmp, "hello"), 0);
+  }
 
-    {
-      String t("hello, world!");
-      String before, after;
-      assert(t.split(',', before, after) == 5);
-      assert(before == String("hello"));
-      assert(after == String(" world!"));
+  TEST(ConvertEmptyStrToUtf8)
+  {
+    String t;
+    char tmp[128];
+    CHECK_EQUAL(t.toUtf8(NULL, 128), 0);
+    CHECK_EQUAL(t.toUtf8(tmp, 128), 0);
+    CHECK_EQUAL(tmp[0], '\0');
+    CHECK_EQUAL(strcmp(tmp, ""), 0);
+  }
 
-      assert(t.split('h', before, after) == 0);
-      assert(before == String());
-      assert(after == String("ello, world!"));
+  TEST(Split)
+  {
+    String t("hello, world!");
+    String before, after;
 
-      assert(t.split('!', before, after) == 12);
-      assert(before == String("hello, world"));
-      assert(after == String());
+    CHECK_EQUAL(t.split(',', before, after), 5);
+    CHECK_EQUAL(before, String("hello"));
+    CHECK_EQUAL(after, String(" world!"));
 
-      assert(t.split('x', before, after) == -1);
+    CHECK_EQUAL(t.split('h', before, after), 0);
+    CHECK_EQUAL(before, String());
+    CHECK_EQUAL(after, String("ello, world!"));
 
-      assert(t.split(String(", "), before, after) == 5);
-      assert(before == String("hello"));
-      assert(after == String("world!"));
+    CHECK_EQUAL(t.split('!', before, after), 12);
+    CHECK_EQUAL(before, String("hello, world"));
+    CHECK_EQUAL(after, String());
 
-      assert(t.split(String("hello"), before, after) == 0);
-      assert(before == String());
-      assert(after == String(", world!"));
+    CHECK_EQUAL(t.split('x', before, after), -1);
 
-      assert(t.split(String("world"), before, after) == 7);
-      assert(before == String("hello, "));
-      assert(after == String("!"));
+    CHECK_EQUAL(t.split(String(", "), before, after), 5);
+    CHECK_EQUAL(before, String("hello"));
+    CHECK_EQUAL(after, String("world!"));
 
-      assert(t.split(String("world!"), before, after) == 7);
-      assert(before == String("hello, "));
-      assert(after == String());
+    CHECK_EQUAL(t.split(String("hello"), before, after), 0);
+    CHECK_EQUAL(before, String());
+    CHECK_EQUAL(after, String(", world!"));
 
-      assert(t.split(String("hello, world!"), before, after) == 0);
-      assert(before == String());
-      assert(after == String());
+    CHECK_EQUAL(t.split(String("world"), before, after), 7);
+    CHECK_EQUAL(before, String("hello, "));
+    CHECK_EQUAL(after, String("!"));
 
-      assert(t.split(String("o"), before, after) == 4);
-      assert(before == String("hell"));
-      assert(after == String(", world!"));
+    CHECK_EQUAL(t.split(String("world!"), before, after), 7);
+    CHECK_EQUAL(before, String("hello, "));
+    CHECK_EQUAL(after, String());
 
-      assert(String().split(String(), before, after) == 0);
-      assert(before == String());
-      assert(after == String());
+    CHECK_EQUAL(t.split(String("hello, world!"), before, after), 0);
+    CHECK_EQUAL(before, String());
+    CHECK_EQUAL(after, String());
 
-      assert(t.part(0, t.length()) == t);
-      assert(t.part(0, 1) == String("h"));
-      assert(t.part(0, 5) == String("hello"));
-      assert(t.part(7, 12) == String("world"));
-      assert(t.part(13, 20) == String());
-    }
+    CHECK_EQUAL(t.split(String("o"), before, after), 4);
+    CHECK_EQUAL(before, String("hell"));
+    CHECK_EQUAL(after, String(", world!"));
 
-    {
-      assert(String("123456").toInt() == 123456);
-      assert(String("123456").toInt(16) == 0x123456);
-      assert(String("123456").toInt(8) == 0123456);
-      assert(String("0").toInt() == 0);
+    CHECK_EQUAL(String().split(String(), before, after), 0);
+    CHECK_EQUAL(before, String());
+    CHECK_EQUAL(after, String());
 
-      assert(String("3.1415").toDouble() == 3.1415);
-    }
+    CHECK_EQUAL(t.part(0, t.length()), t);
+    CHECK_EQUAL(t.part(0, 1), String("h"));
+    CHECK_EQUAL(t.part(0, 5), String("hello"));
+    CHECK_EQUAL(t.part(7, 12), String("world"));
+    CHECK_EQUAL(t.part(13, 20), String());
+  }
+
+  TEST(ConvertToInt)
+  {
+    CHECK_EQUAL(String("123456").toInt(), 123456);
+    CHECK_EQUAL(String("123456").toInt(16), 0x123456);
+    CHECK_EQUAL(String("123456").toInt(8), 0123456);
+    CHECK_EQUAL(String("0").toInt(), 0);
+  }
+
+  TEST(ConvertToDouble)
+  {
+    CHECK_EQUAL(String("3.1415").toDouble(), 3.1415);
   }
 };
 
-
-static StringUnitTest unitTest;
 
 #endif  // #if defined(UNITTESTS)

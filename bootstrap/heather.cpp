@@ -3,17 +3,27 @@
 
 #include <vector>
 
+#if defined(UNITTESTS)
+#  include <iostream>
+#  include <UnitTest++.h>
+#  include <TestReporterStdout.h>
+#  include <XmlTestReporter.h>
+#endif
+
 #include "common.h"
 #include "str.h"
 #include "option.h"
 #include "properties.h"
-#include "unittests.h"
 #include "ptr.h"
 #include "apt.h"
 #include "parser.h"
 
 
 using namespace heather;
+
+#if defined(UNITTESTS)
+static int runUnitTests();
+#endif
 
 static void
 displayVersion()
@@ -33,20 +43,21 @@ displayHelp()
   printf("\n");
   printf("Usage: heather [options] files...\n");
   printf("Options:\n");
-  printf("  -h,      --help            Display this information\n");
-  printf("  -v,      --version         Display the version\n");
-  printf("           --verbose         Be verbose\n");
-  printf("  -D VAR=VALUE               Define config VAR to be VALUE\n");
+  printf("  -h,      --help              Display this information\n");
+  printf("  -v,      --version           Display the version\n");
+  printf("           --verbose           Be verbose\n");
+  printf("  -D VAR=VALUE                 Define config VAR to be VALUE\n");
   printf("     --define=VAR=VALUE\n");
-  printf("  -T KEYS, --trace=KEYS      Trace various aspects:\n");
-  printf("                             {tokenizer|pass1|pass2|import|macro}\n");
-  printf("  -d DIR,  --outdir=DIR      Output all generated files to DIR\n");
-  printf("  -I DIR,  --input=DIR       Add DIR to the input searchlist\n");
+  printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
+  printf("                               {tokenizer|pass1|pass2|import|macro}\n");
+  printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
+  printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
 #if defined(UNITTESTS)
-  printf("  -UT,     --run-unit-tests  Run unit tests for the compiler\n");
-  printf("           --parse-1         Only do pass1 phase\n");
+  printf("  -UT,     --run-unit-tests    Run unit tests for the compiler\n");
+  printf("           --ut-format=FORMAT  Output format of unit tests {xml|txt}\n");
+  printf("           --parse-1           Only do pass1 phase\n");
 #endif
-  printf("  -P,      --parse           Only parse the source files\n");
+  printf("  -P,      --parse             Only parse the source files\n");
 }
 
 
@@ -57,6 +68,7 @@ enum CompileFunction {
 #endif
   kParseFiles,
 };
+
 
 enum {
   kOptHelp = 1,
@@ -70,10 +82,15 @@ enum {
 
 #if defined(UNITTESTS)
   kOptRunUnitTests,
+  kOptUTFormat,
   kOptDontImport,
   kOptParse1,
 #endif
 };
+
+#if defined(UNITTESTS)
+static String sUnitTestFormat;
+#endif
 
 int
 main(int argc, char** argv)
@@ -89,6 +106,7 @@ main(int argc, char** argv)
     { kOptInputDir,     "-I",  "--input",          true  },
 #if defined(UNITTESTS)
     { kOptRunUnitTests, "-UT", "--run-unit-tests", false },
+    { kOptUTFormat,     NULL,  "--ut-format",      true },
     { kOptDontImport,   NULL,  "--dont-import",    false },
     { kOptParse1,       NULL,  "--parse-1",        false },
 #endif
@@ -140,6 +158,9 @@ main(int argc, char** argv)
         break;
 
 #if defined(UNITTESTS)
+      case kOptUTFormat:
+        sUnitTestFormat = option.fArgument;
+        break;
       case kOptRunUnitTests:
         func = kRunUnitTests;
         break;
@@ -177,8 +198,7 @@ main(int argc, char** argv)
 
 #if defined(UNITTESTS)
   case kRunUnitTests:
-    UnitTest::runUnitTests();
-    break;
+    return runUnitTests();
 #endif
 
   case kParseFiles:
@@ -202,3 +222,31 @@ main(int argc, char** argv)
 
   return 0;
 }
+
+
+#if defined(UNITTESTS)
+static int
+runUnitTestsWithRunner(UnitTest::TestRunner& runner)
+{
+    return runner.RunTestsIf(UnitTest::Test::GetTestList(), NULL, UnitTest::True(), 0);
+}
+
+
+static int
+runUnitTests()
+{
+  // return UnitTest::RunAllTests();
+  if (sUnitTestFormat == String("xml")) {
+    UnitTest::XmlTestReporter reporter(std::cerr);
+    UnitTest::TestRunner runner(reporter);
+    return runUnitTestsWithRunner(runner);
+  }
+  else {
+    UnitTest::TestReporterStdout reporter;
+    UnitTest::TestRunner runner(reporter);
+    return runUnitTestsWithRunner(runner);
+  }
+}
+#endif
+
+

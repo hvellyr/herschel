@@ -13,7 +13,7 @@
 #include "type.h"
 #include "typectx.h"
 #include "strbuf.h"
-#include "unittests.h"
+
 
 using namespace heather;
 
@@ -2536,203 +2536,216 @@ TypeUnit::operator=(const TypeUnit& other)
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class TypeUnitTest : public UnitTest
+#include <UnitTest++.h>
+#include <iostream>
+
+
+std::ostream& operator<<(std::ostream& os, const TypeConstraint& constraint)
 {
-public:
-  TypeUnitTest() : UnitTest("Type") {}
-
-  virtual void run()
-  {
-    
-  }
-};
-static TypeUnitTest typeUnitTest;
+  os << constraint.toString();
+  return os;
+}
 
 
-//----------------------------------------------------------------------------
-
-class TypeConstraintUnitTest : public UnitTest
+std::ostream& operator<<(std::ostream& os, const Type& type)
 {
-public:
-  TypeConstraintUnitTest() : UnitTest("TypeConstraint") {}
+  os << type.toString();
+  return os;
+}
 
-  virtual void run()
+
+std::ostream& operator<<(std::ostream& os, const FunctionParameter& prm)
+{
+  os << prm.toString();
+  return os;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const FunctionSignature& sign)
+{
+  os << sign.toString();
+  return os;
+}
+
+
+
+SUITE(TypeConstraint)
+{
+  TEST(construction)
   {
     SrcPos sp;
-    {
-      TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
-                                                   Token(sp, kInt, 42));
-      assert(t0.constOp() == kConstOp_equal);
-    }
-
-    {
-      TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
-                                                   Token(sp, kInt, 42));
-      TypeConstraint t1 = TypeConstraint::newValue(kConstOp_equal,
-                                                   Token(sp, kInt, 42));
-      assert(t0.constOp() == kConstOp_equal);
-      assert(t0 == t1);
-    }
-
-    {
-      TypeConstraint t0 = TypeConstraint::newValue(kConstOp_notEqual,
-                                                   Token(sp, kInt, 10));
-      TypeConstraint t1 = TypeConstraint::newValue(kConstOp_notEqual,
-                                                   Token(sp, kInt, 21));
-      TypeConstraint t2 = TypeConstraint::newAnd(t0, t1);
-      TypeConstraint t3 = TypeConstraint::newOr(t0, t2);
-
-      assert(t2.constOp() == kConstOp_and);
-      assert(t2.leftConstraint() == t0);
-      assert(t2.rightConstraint() == t1);
-
-      assert(t3.constOp() == kConstOp_or);
-      assert(t3.leftConstraint() == t0);
-      assert(t3.rightConstraint() == t2);
-    }
-
-    {
-      TypeConstraint t0 = TypeConstraint::newType(kConstOp_isa,
-                                                  Type::newInt());
-      assert(t0.constOp() == kConstOp_isa);
-      assert(t0.typeConstraint() == Type::newInt());
-    }
+    TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
+                                                 Token(sp, kInt, 42));
+    CHECK_EQUAL(t0.constOp(), kConstOp_equal);
   }
-};
-static TypeConstraintUnitTest typeConstraintUnitTest;
+
+
+  TEST(equalConstraint)
+  {
+    SrcPos sp;
+    TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
+                                                 Token(sp, kInt, 42));
+    TypeConstraint t1 = TypeConstraint::newValue(kConstOp_equal,
+                                                 Token(sp, kInt, 42));
+    CHECK_EQUAL(t0.constOp(), kConstOp_equal);
+    CHECK_EQUAL(t0, t1);
+  }
+
+
+  TEST(andConstraint)
+  {
+    SrcPos sp;
+    TypeConstraint t0 = TypeConstraint::newValue(kConstOp_notEqual,
+                                                 Token(sp, kInt, 10));
+    TypeConstraint t1 = TypeConstraint::newValue(kConstOp_notEqual,
+                                                 Token(sp, kInt, 21));
+    TypeConstraint t2 = TypeConstraint::newAnd(t0, t1);
+    TypeConstraint t3 = TypeConstraint::newOr(t0, t2);
+
+    CHECK_EQUAL(t2.constOp(), kConstOp_and);
+    CHECK_EQUAL(t2.leftConstraint(), t0);
+    CHECK_EQUAL(t2.rightConstraint(), t1);
+
+    CHECK_EQUAL(t3.constOp(), kConstOp_or);
+    CHECK_EQUAL(t3.leftConstraint(), t0);
+    CHECK_EQUAL(t3.rightConstraint(), t2);
+  }
+
+
+  TEST(isaConstraint)
+  {
+    SrcPos sp;
+    TypeConstraint t0 = TypeConstraint::newType(kConstOp_isa,
+                                                Type::newInt());
+    CHECK_EQUAL(t0.constOp(), kConstOp_isa);
+    CHECK_EQUAL(t0.typeConstraint(), Type::newInt());
+  }
+}
 
 
 //----------------------------------------------------------------------------
 
-class FunctionParameterUnitTest : public UnitTest
+SUITE(FunctionParameter)
 {
-public:
-  FunctionParameterUnitTest() : UnitTest("FunctionParameter") {}
-
-  virtual void run()
+  TEST(posParamCtor)
   {
-    {
-      FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-      assert(p0.type().isInt());
-      assert(!p0.isSpecialized());
-      assert(p0.key().isEmpty());
-      assert(p0.kind() == FunctionParameter::kParamPos);
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newSpecParam(Type::newInt());
-      assert(p0.type().isInt());
-      assert(p0.isSpecialized());
-      assert(p0.key().isEmpty());
-      assert(p0.kind() == FunctionParameter::kParamPos);
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newNamedParam(String("abc"),
-                                                              Type::newInt());
-      assert(p0.type().isInt());
-      assert(!p0.isSpecialized());
-      assert(p0.key() == String("abc"));
-      assert(p0.kind() == FunctionParameter::kParamNamed);
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newRestParam(Type::newInt());
-      assert(p0.type().isInt());
-      assert(!p0.isSpecialized());
-      assert(p0.key().isEmpty());
-      assert(p0.kind() == FunctionParameter::kParamRest);
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-      FunctionParameter p1 = FunctionParameter::newPosParam(Type::newInt());
-
-      assert(p0 == p1);
-      assert(p0.isCovariant(p1));
-      assert(p0.isContravariant(p1));
-      assert(!p0.isInvariant(p1));
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-      FunctionParameter p1 = FunctionParameter::newPosParam(Type::newAny());
-
-      assert(p0 != p1);
-
-      assert(p0.isCovariant(p1));
-      assert(p0.isContravariant(p1));
-      assert(!p0.isInvariant(p1));
-
-      // assert(!p1.isCovariant(p0));
-      // assert(!p1.isContravariant(p0));
-      assert(!p1.isInvariant(p0));
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-      FunctionParameter p1 = FunctionParameter::newPosParam(Type::newString());
-
-      assert(p0 != p1);
-
-      // assert(!p0.isCovariant(p1));
-      // assert(!p0.isContravariant(p1));
-      // assert(p0.isInvariant(p1));
-
-      // assert(!p1.isCovariant(p0));
-      // assert(!p1.isContravariant(p0));
-      // assert(p1.isInvariant(p0));
-    }
+    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
+    CHECK(p0.type().isInt());
+    CHECK(!p0.isSpecialized());
+    CHECK(p0.key().isEmpty());
+    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamPos);
   }
-};
-static FunctionParameterUnitTest functionParameterUnitTest;
+
+  TEST(specParamCtor)
+  {
+    FunctionParameter p0 = FunctionParameter::newSpecParam(Type::newInt());
+    CHECK(p0.type().isInt());
+    CHECK(p0.isSpecialized());
+    CHECK(p0.key().isEmpty());
+    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamPos);
+  }
+  
+  TEST(namedParamCtor)
+  {
+    FunctionParameter p0 = FunctionParameter::newNamedParam(String("abc"),
+                                                            Type::newInt());
+    CHECK(p0.type().isInt());
+    CHECK(!p0.isSpecialized());
+    CHECK_EQUAL(p0.key(), String("abc"));
+    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamNamed);
+  }
+
+  TEST(restParamCtor)
+  {
+    FunctionParameter p0 = FunctionParameter::newRestParam(Type::newInt());
+    CHECK(p0.type().isInt());
+    CHECK(!p0.isSpecialized());
+    CHECK(p0.key().isEmpty());
+    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamRest);
+  }
+
+  TEST(covariantCheckIntInt)
+  {
+    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
+    FunctionParameter p1 = FunctionParameter::newPosParam(Type::newInt());
+
+    CHECK_EQUAL(p0, p1);
+    CHECK(p0.isCovariant(p1));
+    CHECK(p0.isContravariant(p1));
+    CHECK(!p0.isInvariant(p1));
+  }
+
+  TEST(covariantCheckIntAny)
+  {
+    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
+    FunctionParameter p1 = FunctionParameter::newPosParam(Type::newAny());
+
+    CHECK(p0 != p1);
+
+    CHECK(p0.isCovariant(p1));
+    CHECK(p0.isContravariant(p1));
+    CHECK(!p0.isInvariant(p1));
+
+    // CHECK(!p1.isCovariant(p0));
+    // CHECK(!p1.isContravariant(p0));
+    CHECK(!p1.isInvariant(p0));
+  }
+
+  TEST(covariantCheckIntString)
+  {
+    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
+    FunctionParameter p1 = FunctionParameter::newPosParam(Type::newString());
+
+    CHECK(p0 != p1);
+
+    // CHECK(!p0.isCovariant(p1));
+    // CHECK(!p0.isContravariant(p1));
+    // CHECK(p0.isInvariant(p1));
+
+    // CHECK(!p1.isCovariant(p0));
+    // CHECK(!p1.isContravariant(p0));
+    // CHECK(p1.isInvariant(p0));
+  }
+}
 
 
 //----------------------------------------------------------------------------
 
-class FunctionSignatureUnitTest : public UnitTest
+TEST(FunctionSignature)
 {
-public:
-  FunctionSignatureUnitTest() : UnitTest("FunctionSignature") {}
+  FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt());
 
-  virtual void run()
-  {
-    FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt());
+  FunctionParamVector params1;
+  params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
+  params1.push_back(FunctionParameter::newPosParam(Type::newInt()));
+  params1.push_back(FunctionParameter::newNamedParam(String("xyz"), Type::newReal()));
+  params1.push_back(FunctionParameter::newRestParam(Type::newAny()));
 
-    FunctionParamVector params1;
-    params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
-    params1.push_back(FunctionParameter::newPosParam(Type::newInt()));
-    params1.push_back(FunctionParameter::newNamedParam(String("xyz"), Type::newReal()));
-    params1.push_back(FunctionParameter::newRestParam(Type::newAny()));
+  FunctionSignature fs1 = FunctionSignature(true, String("man"), Type::newInt(),
+                                            params1);
 
-    FunctionSignature fs1 = FunctionSignature(true, String("man"), Type::newInt(),
-                                              params1);
+  CHECK(!fs0.isGeneric());
+  CHECK_EQUAL(fs0.methodName(), String("abc"));
+  CHECK_EQUAL(fs0.returnType(), Type::newInt());
+  CHECK(fs0.parameters().empty());
 
-    assert(!fs0.isGeneric());
-    assert(fs0.methodName() == String("abc"));
-    assert(fs0.returnType() == Type::newInt());
-    assert(fs0.parameters().empty());
+  CHECK(fs1.isGeneric());
+  CHECK_EQUAL(fs1.methodName(), String("man"));
+  CHECK_EQUAL(fs1.returnType(), Type::newInt());
+  CHECK_EQUAL(fs1.parameters().size(), (size_t)4);
+  CHECK(fs1.parameters()[0].type().isString());
+  CHECK_EQUAL(fs1.parameters()[0].kind(), FunctionParameter::kParamPos);
+  CHECK(fs1.parameters()[0].isSpecialized());
 
-    assert(fs1.isGeneric());
-    assert(fs1.methodName() == String("man"));
-    assert(fs1.returnType() == Type::newInt());
-    assert(fs1.parameters().size() == 4);
-    assert(fs1.parameters()[0].type().isString());
-    assert(fs1.parameters()[0].kind() == FunctionParameter::kParamPos);
-    assert(fs1.parameters()[0].isSpecialized());
+  CHECK(fs1.parameters()[1].type().isInt());
+  CHECK_EQUAL(fs1.parameters()[1].kind(), FunctionParameter::kParamPos);
 
-    assert(fs1.parameters()[1].type().isInt());
-    assert(fs1.parameters()[1].kind() == FunctionParameter::kParamPos);
+  CHECK(fs1.parameters()[2].type().isReal());
+  CHECK_EQUAL(fs1.parameters()[2].kind(), FunctionParameter::kParamNamed);
 
-    assert(fs1.parameters()[2].type().isReal());
-    assert(fs1.parameters()[2].kind() == FunctionParameter::kParamNamed);
-
-    assert(fs1.parameters()[3].type().isAny());
-    assert(fs1.parameters()[3].kind() == FunctionParameter::kParamRest);
-  }
-};
-static FunctionSignatureUnitTest functionSignatureUnitTest;
-
+  CHECK(fs1.parameters()[3].type().isAny());
+  CHECK_EQUAL(fs1.parameters()[3].kind(), FunctionParameter::kParamRest);
+}
 
 #endif  // #if defined(UNITTESTS)
 

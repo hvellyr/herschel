@@ -106,8 +106,8 @@ endif
 
 # ----------------------------------------------------------------------
 DEFS   += $(WX_CXXFLAGS)
-LIBS   +=
-LDFLAGS +=
+LIBS   += -lUnitTest++
+LDFLAGS += -L$(top_srcdir)/external/UnitTest++
 
 CFLAGS += $(CBUILDFLAG) $(CWARNING) \
 				  -DOS_$(TARGET_OS) -DARCH_$(TARGET_ARCH) -DOSFLAV_$(TARGET_OSFLV)
