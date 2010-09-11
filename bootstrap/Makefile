@@ -30,7 +30,6 @@ SOURCES =         \
 	tokeneval.cpp   \
 	tokenizer.cpp   \
 	tokenport.cpp   \
-	unittests.cpp   \
 	valuesaver.cpp
 
 HEADERS =         \
@@ -58,7 +57,6 @@ HEADERS =         \
 	tokeneval.h     \
 	tokenizer.h     \
 	tokenport.h     \
-	unittests.h     \
 	valuesaver.h
 
 

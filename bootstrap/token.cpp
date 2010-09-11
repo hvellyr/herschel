@@ -9,10 +9,8 @@
 #include "token.h"
 #include "str.h"
 #include "exception.h"
-#include "unittests.h"
 #include "parsertypes.h"
 #include "strbuf.h"
-#include "unittests.h"
 
 #if defined(UNITTESTS)
 #  include <iostream>

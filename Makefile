@@ -25,6 +25,7 @@ DISTFILES = \
 
 include $(top_srcdir)/build/pre.mk
 
+.PHONY: build tests docs 
 
 build: version.h config-local.h $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 	(cd bootstrap && $(MAKE) all)

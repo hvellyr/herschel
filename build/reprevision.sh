@@ -8,4 +8,4 @@
 
 REP_ID=$(hg id | awk '{print $1}') || REP_ID=unknown
 
-echo "$REP_ID"
+printf "$REP_ID"
