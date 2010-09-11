@@ -8,7 +8,8 @@
 
 #include "common.h"
 
-#include "stdarg.h"
+#include <stdarg.h>
+#include <stdio.h>
 
 #include "log.h"
 #include "str.h"
@@ -62,7 +63,7 @@ TEST(LogSurpressor)
 
 //------------------------------------------------------------------------------
 
-static char* levelStr[] = {
+static const char* levelStr[] = {
   "debug",
   "info",
   "warning",
@@ -169,3 +170,12 @@ heather::errorf(const SrcPos& where, int errorCode, const char* format, ...)
 
   logImpl(where, kError, errorCode, stderr, buffer);
 }
+
+
+void
+heather::warning(const SrcPos& where, int errorCode, const String& msg)
+{
+  logImpl(where, kWarn, errorCode, stderr, (const char*)StrHelper(msg));
+}
+
+

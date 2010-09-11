@@ -171,31 +171,6 @@ namespace heather
     Ptr<SyntaxTable> fSyntaxTable;
     MacroType        fMacroType;
   };
-
-
-  class MacroRegistry : public Registry<Ptr<Macro> >
-  {
-  public:
-    void registerMacro(const String& id, Macro* macro)
-    {
-      Ptr<Macro> keep = macro;
-      registerValue(id, macro);
-    }
-
-
-    Macro* lookupMacro(const String& id) const
-    {
-      Ptr<Macro> macro;
-      // deal with qualified ids and context
-      if (lookup(id, &macro))
-      {
-        return macro;
-      }
-
-      return NULL;
-    }
-  };
-
 };                              // namespace
 
 #endif                          // macro

@@ -2,4 +2,4 @@
 
 import "import/ignore-green-01.hea"
 
-def a = 12
+def a : MyNumber = 12

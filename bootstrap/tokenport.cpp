@@ -7,6 +7,9 @@
 */
 
 #include "common.h"
+
+#include <string.h>
+
 #include "tokenport.h"
 #include "port.h"
 #include "token.h"
@@ -154,7 +157,7 @@ TEST(TokenPort)
     "def class Portable<T>(x @ Int) : (Copyable, Comparable)\n"
     "{\n"
     "  slot first : T = x ;\n"
-        "  slot data : Octet[]\n"
+    "  slot data : Octet[]\n"
     "}\n";
 
   SrcPos sp;

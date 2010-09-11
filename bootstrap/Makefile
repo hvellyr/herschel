@@ -12,6 +12,7 @@ CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTes
 
 SOURCES =         \
 	apt.cpp         \
+	file.cpp        \
 	heather.cpp     \
 	log.cpp         \
 	macro.cpp       \
@@ -19,17 +20,22 @@ SOURCES =         \
 	option.cpp      \
 	parser.cpp      \
 	parsertypes.cpp \
+	pass.cpp        \
 	pass1.cpp       \
 	pass2.cpp       \
 	port.cpp        \
 	properties.cpp  \
+	scope.cpp       \
 	srcpos.cpp      \
 	str.cpp         \
 	strbuf.cpp      \
+	symbol.cpp      \
 	token.cpp       \
 	tokeneval.cpp   \
 	tokenizer.cpp   \
 	tokenport.cpp   \
+	type.cpp        \
+	typectx.cpp     \
 	valuesaver.cpp
 
 HEADERS =         \
@@ -37,12 +43,14 @@ HEADERS =         \
 	common.h        \
 	errcodes.h      \
 	exception.h     \
+	file.h          \
 	log.h           \
 	macro.h         \
 	numbers.h       \
 	option.h        \
 	parser.h        \
 	parsertypes.h   \
+	pass.h          \
 	pass1.h         \
 	pass2.h         \
 	port.h          \
@@ -50,13 +58,17 @@ HEADERS =         \
 	ptr.h           \
 	refcountable.h  \
 	registry.h      \
+	scope.h         \
 	srcpos.h        \
 	str.h           \
 	strbuf.h        \
+	symbol.h        \
 	token.h         \
 	tokeneval.h     \
 	tokenizer.h     \
 	tokenport.h     \
+	type.h          \
+	typectx.h       \
 	valuesaver.h
 
 

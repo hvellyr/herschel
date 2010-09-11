@@ -9,6 +9,8 @@
 #ifndef bootstrap_port_h
 #define bootstrap_port_h
 
+#include <stdio.h>
+
 #include <vector>
 #include <list>
 

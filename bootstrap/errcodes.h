@@ -34,6 +34,10 @@ namespace heather
     E_StringExpected      = 0x1002,
     E_UnexpectedTopExpr   = 0x1003,
     E_ConstExprExpected   = 0x1004,
+    E_UnexpectedDefExpr   = 0x1005,
+    E_OnExprInType        = 0x1006,
+
+    E_AmbiguousSym        = 0x2000,
 
     // notation errors
     E_UnexpectedChar      = 0x0100,
@@ -45,8 +49,11 @@ namespace heather
     E_BadCharNotation     = 0x0106,
     E_BadNumberNotation   = 0x0107,
     E_UnitExpected        = 0x0108,
+    E_UnknownSymbolDomain = 0x0109,
+    E_UndefinedUnit       = 0x010a,
 
     // def parsing
+    E_Redefinition        = 0x4000,
     E_DefInitUnexpToken   = 0x4001,
     E_DefNoInitValue      = 0x4002,
     E_LocalGenericFunc    = 0x4010,
@@ -55,7 +62,6 @@ namespace heather
 
     // typedef parsing
     E_MissingType         = 0x4013,
-    E_LocalAliasDef       = 0x4020,
     E_LocalTypeDef        = 0x4021,
     E_CtorNotInTypes      = 0x4022,
     E_NestedTypeDef       = 0x4023,
@@ -64,6 +70,13 @@ namespace heather
     E_MissingUnitTag      = 0x4026,
     E_MissingBaseType     = 0x4027,
     E_MissingUnitSign     = 0x4028,
+    E_UnknownSlotFlag     = 0x4029,
+    E_SuperGenericType    = 0x4030,
+    E_QualifiedLocalSym   = 0x4031,
+    E_QualifiedParamKey   = 0x4032,
+    E_QualifiedSlot       = 0x4033,
+    E_QualifiedEnumDefSym = 0x4034,
+    E_EnumNotBaseType     = 0x4035,
 
     // enums
     E_BadEnumItemList     = 0x4050,
@@ -83,6 +96,7 @@ namespace heather
     E_MissingBody         = 0x4100,
     E_InvalidRestParam    = 0x4101,
     E_ParamOrder          = 0x4102,
+    E_SpecNamedParam      = 0x4103,
 
     // loops
     E_BadForLoopClause    = 0x4200,
@@ -102,6 +116,7 @@ namespace heather
     E_RedefinedPattern    = 0x4402,
     E_ColonExpected       = 0x4403,
     E_ExpectedPipe        = 0x4404,
+    E_ElseNotLastPattern  = 0x4405,
 
     // module parsing
     E_MissingModName      = 0x4500,
@@ -111,6 +126,7 @@ namespace heather
     E_ExportVisibility    = 0x4540,
     E_EmptyExportList     = 0x4541,
     E_UnknownInputFile    = 0x4542,
+    E_UnknownVisibility   = 0x4543,
   };
 };
 

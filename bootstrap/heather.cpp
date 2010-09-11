@@ -51,9 +51,11 @@ displayHelp()
   printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
   printf("                               {tokenizer|pass1|pass2|import|macro}\n");
   printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
+  printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
 #if defined(UNITTESTS)
   printf("  -UT,     --run-unit-tests    Run unit tests for the compiler\n");
   printf("           --ut-format=FORMAT  Output format of unit tests {xml|txt}\n");
+  printf("           --parse-1           Only do pass1 phase\n");
 #endif
   printf("  -P,      --parse             Only parse the source files\n");
 }
@@ -151,6 +153,10 @@ main(int argc, char** argv)
         Properties::setConfigVar(option.fArgument);
         break;
 
+      case kOptInputDir:
+        Properties::addInputDir(option.fArgument);
+        break;
+
 #if defined(UNITTESTS)
       case kOptUTFormat:
         sUnitTestFormat = option.fArgument;
@@ -160,6 +166,9 @@ main(int argc, char** argv)
         break;
       case kOptDontImport:
         Properties::test_setDontImport(true);
+        break;
+      case kOptParse1:
+        Properties::test_setPass1Only(true);
         break;
 #endif
       }

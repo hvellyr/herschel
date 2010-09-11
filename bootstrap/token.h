@@ -118,14 +118,6 @@ namespace heather
     kShiftLeft,
     kShiftRight,
     kAppend,
-    kParanOpen,
-    kParanClose,
-    kBracketOpen,
-    kBracketClose,
-    kBraceOpen,
-    kBraceClose,
-    kGenericOpen,
-    kGenericClose,
     kComma,
     kSemicolon,
     kColon,
@@ -136,11 +128,22 @@ namespace heather
     kEllipsis,
     kRange,
     kDot,
-    kLiteralVectorOpen,
-    kLiteralArrayOpen,
     kUnionOpen,
     kSangHash,
     kReference,
+
+    kParanOpen,
+    kParanClose,
+    kBracketOpen,
+    kBracketClose,
+    kBraceOpen,
+    kBraceClose,
+    kGenericOpen,
+    kGenericClose,
+    kLiteralVectorOpen,
+    kLiteralArrayOpen,
+    kMacroOpen,
+    kMacroClose,
 
     // kLitExpr
     kString,
@@ -201,7 +204,8 @@ namespace heather
   };
 
 
-  typedef std::vector<Token> TokenVector;
+  typedef std::vector<Token>      TokenVector;
+  typedef std::map<String, Token> NamedTokenMap;
 
   class Token
   {
@@ -239,6 +243,9 @@ namespace heather
     Token(const Token& other);
     Token& operator=(const Token& other);
 
+    static Token newUniqueSymbolToken(const SrcPos& where,
+                                      const char* prefix);
+
     bool operator==(const Token& other) const;
     bool operator!=(const Token& other) const;
 
@@ -260,6 +267,9 @@ namespace heather
     bool isSymbol() const;
     bool isPunct() const;
     bool isSet() const;
+    bool isOperator() const;
+    bool isNumber() const;
+
 
     bool isImaginary() const;
     Token& setIsImaginary(bool value);
@@ -294,6 +304,13 @@ namespace heather
     bool isBinarySeq() const;
     bool isBinarySeq(TokenType op) const;
     OperatorType binarySeqOperator() const;
+    bool isTernarySeq() const;
+    bool isThenWhileSeq() const;
+    //! indicates whether the expression is a (possible) variable declaration;
+    //! possible accepted forms are:
+    //!   symbol
+    //!   %(symbol : type)
+    bool isVariableDecl() const;
 
     bool isString() const;
     bool isDocString() const;
@@ -304,9 +321,13 @@ namespace heather
     bool isChar() const;
     bool isKeyArg() const;
 
+    bool isNegative() const;
+
     //! indicates whether the token is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;
-
+    
+    //! indicates whether the token is a range
+    bool isRange() const;
     //! indicates whether the token is a constant range (i.e. a range where
     //! from, to, and step are constant literal values only
     bool isConstRange() const;
@@ -349,7 +370,7 @@ namespace heather
   String operator+(const String& one, const Token& two);
 
   String operator+(const String& one, const TokenVector& vect);
-  String operator+(const String& one, const std::map<String, Token>& bindings);
+  String operator+(const String& one, const NamedTokenMap& bindings);
 
 #if defined(UNITTESTS)
   std::ostream& operator <<(std::ostream &os,const Token& token);

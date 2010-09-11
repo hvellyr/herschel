@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><def><func sym='f'><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></rettype><body><apply><apply><symbol>slice</symbol><args><apply><symbol>b</symbol><args><symbol>a</symbol></args></apply><int ty='Int'>1</int></args></apply><args></args></apply></body></func></def></compile-unit>
