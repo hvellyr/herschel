@@ -10,7 +10,7 @@ include $(top_srcdir)/config.mk
 
 #----------------------------------------------------------------------
 
-SUBDIRS = bootstrap build doc tests
+SUBDIRS = external bootstrap build doc tests
 
 DISTFILES = \
 	AUTHORS   \
