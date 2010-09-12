@@ -1,0 +1,160 @@
+-*-org-*-
+
+Language and ideas:
+
+  - clearify: do we support multiple functions with the same base name but
+    different parameter counts?
+
+      def generic init(a @ Int) ...
+      def generic init(a @ Int, b @ String) ...
+
+    If we define ctors to be essentials calls to the class/apply functions,
+    we definitely have to (each class than has an apply function).
+
+    If we don't support this, some ideas for ctors:
+
+      def class Ixwick { }
+      def ctor Ixwick(cl @ Class<Ixwick>)
+
+    Eek, review the complete ctor/apply/init thing again.
+
+
+  - how to specify class functions (or static functions)
+
+      def generic apply(self @ Abc.class) ... ???
+      def generic apply(self @ class(Abc)) ... ???
+      def generic apply(self @ Class<Abc>) ... ???
+
+    The notation Class<T> makes actually clear what we are talking about:
+    We declare that the class of a type T is actually an instance of the
+    meta class Class<T>.  It is therefore naturally to bind methods to this
+    meta class.  And of course it doesn't need a compiler/syntax change.
+
+    or a generic attribute approach (cf. def slots):
+
+      def generic apply(self @ Abc) ; class ...
+
+    This would allow also to define class variables (shared) by all
+    instances of a class:
+
+      def slot x ; class
+
+
+  - write up about module/interface.  Review import, export, module, etc.
+    See CHANGES.
+
+
+  - Redesign accessing items from enum types.  Parsing as Enum.item does
+    not work, since this would require symboltables during parsing (how to
+    distinguish between param.func and Enum.item ?).  Idea: Maybe use a new
+    item-operator ::? E.g. Enum::item.
+
+    Instead of saying Colors.red or Colors::red say red'Colors.
+
+    Or:
+
+      def enum A : Int { a, b, c }
+
+    =>
+      def type A : (Int in 0..2)
+      module A {
+        export public (*)
+        def const a : A = 0
+        def const b : A = 1
+        def const c : A = 2
+      }
+
+    than you can use
+
+      read(a)
+
+    or (if a leads to conflicts):
+
+      read(A|a)
+
+    Additional I like to see:
+
+      export public (A|*)
+
+    i.e. export all symbols from sub-module A (that I can see here) to public.
+
+
+  - structs ?  Contrary to classes do not support inheritance, but provide
+    fixed layout.
+
+  - Think about non-gc objects.
+
+  - Think about lazy evaluation (generalize the 'promise' concept
+    introduced en passent with sync).  See x10 -> futures.
+
+  - checked exceptions.  Declare as
+
+      def generic f() : 'X
+          raises 'B
+          reify () : N, () : P
+          where B isa Throwable
+        ...
+
+    additionally
+
+      def generic f() : 'X
+          no-raise
+          reify ....
+
+    to document that a function does not let exceptions through.
+
+  - Think about: all objects are passed by value (i.e. even for vectors);
+    values passed to spawned functions are actually copied, otherwise
+    internal refcounted.  It is possible to explicitely use references:
+
+      def f(a : ^Int, b : ^Vector<Octet>)
+
+    Note this, of course, would require to write all typical oo-functions
+    as
+
+      def generic f(self @ ^MyType, ...)
+
+    if the function is to be non-const.
+
+  - Embedding of C/C++ fragments
+
+
+Documentation
+
+  - Write nested modules section.
+
+  - rewrite exporting, visibility, and importing section
+
+  - Mention explicitely: no coercing.  Where?
+
+  - Write assignment section.
+
+  - Rewrite the "def xxx" to the new deffn-form-example style.
+
+
+
+Bootstrap compiler
+
+  - Implement last missing pass1 stuff
+    - what's about multiple return values?  Spe?  Pass1?  Pass2?
+
+  - pass2:
+    - replace the UnitConstant node by a proper Measure() ctor call.  Apply
+      the unit transformation inplace (if simple enough).  Register
+      unit-transform calls as special functions.
+    - where clauses
+    - enum:
+      - construct proper enum constraint type
+      - check that init values match the base type
+
+  - access values from enums as Enum::item
+  - extend macro parameter types (like ?a:type-spec)
+
+  - macros
+    - subpatterns
+
+  - continue with pexpreval (add the missing operators)
+
+  - unittests for Rational() class.
+
+  - docstrings in pass2 -> extracted documentation

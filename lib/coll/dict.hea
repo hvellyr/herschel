@@ -1,0 +1,419 @@
+-- This file is part of the heather package
+--
+-- Copyright (c) 2010 Gregor Klinke
+-- All rights reserved.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+-- - Redistributions of source code must retain the above copyright notice,
+--   this list of conditions and the following disclaimer.
+--
+-- - Redistributions in binary form must reproduce the above copyright
+--   notice, this list of conditions and the following disclaimer in the
+--   documentation and/or other materials provided with the distribution.
+--
+-- - Neither the name of the author nor the names of other contributors may
+--   be used to endorse or promote products derived from this software
+--   without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+-- New concept here, we've to think about:
+--
+-- Special type notations for building recursive types:
+--
+-- Other useful typenotations:
+-- self.Type <=> Type(self)
+--   get type from a instance
+--
+-- _.Type
+--   automatic type.  Get the type of the surrounding context.  In a type
+--   declaration like
+--
+--     Pair(Int, _.Type)
+--
+--   this refers to the following recursive type declaration:
+--
+--     Pair(Int, Pair(Int, Pair(Int, ...)))
+--
+--   In a assignment like this:
+--
+--     let x : Vector<Byte>
+--
+--     x = _.Type(1024)
+--
+--   this refers to:
+--
+--     x = Vector<Byte>(1024)
+--
+--
+--
+--  "Classmethods":
+--
+--  To define functions on type instances ("class objects") the following
+--  specialization is necessary:
+--
+--    def meth apply(self : @ HashMap.class, ...)
+--
+--  or
+--
+--    def meth apply(self : @ class(HashMap), ...)
+--
+
+---------------------------------------------------------------------------
+
+import "core"
+
+module coll ("eyestep/heather 1.0:collections")
+  export public(HashMap)
+
+import "io"
+import "collection"
+
+---------------------------------------------------------------------------
+
+def core|to-string(self @ Assoc<'K, 'V>) : String
+  (StringBuffer() ++ self.key ++ "->" ++ self.value).to-string
+
+
+def class Triple<Key, Value, Tail>(_key : Key, _val : Value, _tail : Tail)
+{
+  def slot key : Key = _key
+  def slot value : Value = _val
+  def slot tail : Tail = _tail
+}
+
+def generic key?(self @ Triple<'K, 'V, 'T>, other : 'K) : Bool
+  self.key == other
+
+def core|to-string(self @ Triple<'K, 'V, 'T>) : String
+  (StringBuffer() ++ self.key ++ "->" ++ self.value).to-string
+
+
+
+---------------------------------------------------------------------------
+
+def const %default-size% = 16
+
+def class HashMap<Key, Elt>(items : Ordinal = %default-size%)
+    : (Comparable, AssocCollection<Key, Elt>)
+{
+  def slot table : Vector<Triple<Key, Elt, _> >
+  def slot elts : Ordinal = items
+
+  on init(self) {
+    if (elts > 0)
+      table = _.Type(items: elts)
+  }
+}
+
+
+--------------------------------------------------------------------
+-- collection protocol
+--------------------------------------------------------------------
+
+def empty?(self @ HashMap<'K, 'T>) : Bool
+  self.elts == 0
+
+def empty!(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
+  self.table = _.Type()(items: %default-size%)
+  self.elts = 0
+  self
+
+def core|size(self @ HashMap<'K, 'T>) : Ordinal
+  self.table.size
+
+def num-items(self @ HashMap<'K, 'T>) : Ordinal
+  self.elts
+
+def iterator(self @ HashMap<'K, 'T>) : Iterator<Assoc<'K, 'T> >
+  HashMapIterator<'K, 'T>(self.table)
+
+def key-iterator(self @ HashMap<'K, 'T>) : Iterator<'K>
+  HashMapKeyIterator<'K>(self.table)
+
+def value-iterator(self @ HashMap<'K, 'T>) : Iterator<'T>
+  HashMapValueIterator<'T>(self.table)
+
+
+--------------------------------------------------------------------
+-- adding, removing, finding
+--------------------------------------------------------------------
+
+def has-key?(self @ HashMap<'K, 'T>, key @ 'K) : Bool
+  let loop(nl) {
+      if (nl.nil?)
+        false
+      else if (nl.key?(key))
+        true
+      else
+        loop(nl.tail)
+    }
+  loop(self.table[key.hash mod self.table.num-items])
+
+
+def get(self @ HashMap<'K, 'T>, key @ 'K)
+  let loop(nl) {
+      if (nl.nil?)
+        nil
+      else if (nl.key?(key))
+        nl.value
+      else
+        loop(nl.tail)
+    }
+  loop(self.table[key.hash mod self.table.num-items])
+
+
+def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) : HashMap
+  let hash = (key.hash mod self.table.num-items) as Ordinal
+  let loop(nl) {
+      if (nl.nil?) {
+        self.table[hash] = Triple<'K, 'T, _>(key, obj, self.table[hash])
+        self.elts.incr!
+      }
+      else if (nl.key?(key))
+        nl.value = obj
+      else
+        loop(nl.tail)
+    }
+  loop(self.table[hash])
+
+  -- check if a resizement is necessary.  this is a slow method, but it
+  -- uses other, checked functionality.
+  let ts = self.table.num-items
+
+  if (self.elts >= (ts * 75) / 100) {
+    let t2 = self.Type()(items: (ts * 15) / 10)
+    -- copy all elements
+    t2.add-all!(self)
+
+    -- grap the table and length from the new dictionary
+    self.table = t2.table
+    self.elts = t2.num-items
+  }
+
+  self
+
+
+def put!(self @ HashMap<'K, 'T>, obj @ Assoc<'K, 'T>) : HashMap<'K, 'T>
+  self.put!(obj.key, obj.value)
+
+
+def remove!(self @ HashMap<'K, 'T>, key @ 'K) : HashMap<'K, 'T>
+  let hash = (key.hash mod self.table.num-items) as Ordinal
+  let np = self.table[hash]
+
+  if (np <> nil) {
+    if (np.key?(key)) {
+      -- special case. if the first element is the key/value pair, than
+      -- remove it directly
+      self.table[hash] = np.tail
+    }
+    else {
+      -- otherwise find the hash entry to delete
+      let loop(prev, nl) {
+          if (nl.key?(key)) {
+            prev.tail = nl.tail
+          }
+          else
+            loop(nl, nl.tail)
+        }
+      loop(np, np.tail)
+    }
+    self.elts.decr!
+  }
+
+  -- check if a resizement of the dictionary is appropriate
+  let ts = self.table.num-items
+
+  if (self.elts <= (ts * 15) / 100) {
+    let t2 = self.Type()(items: ts / 2)
+    -- copy all elements
+    t2.add-all!(self)
+
+    -- grap the table and length from the new dictionary
+    self.table = t2.table
+    self.elts = t2.num-items
+  }
+
+  self
+
+
+def keys(self @ HashMap<'K, 'T>) : Vector<'K>
+  let keys = Vector<'K>(self.elts)
+  for (k in self.key-iterator)
+    keys.append!(k)
+  keys
+
+
+def values(self @ HashMap<'K, 'T>) : Vector<'T>
+  let values = Vector<'T>(self.elts)
+  for (v in self.value-iterator)
+    values.append!(v)
+  values
+
+
+--  has-value?: obj(_ELT_) : (BOOL) |
+--    -- TODO
+--    false.
+
+
+--  del-value: obj(_ELT_) : (self) |
+--    -- TODO
+--    self.
+
+
+def add-all!(self @ HashMap<'K, 'T>,
+             coll @ AssocCollection<'K, 'T>) : HashMap<'K, 'T>
+  for (e in coll)
+    self.put!(e.key, e.value)
+  self
+
+
+def has-all-keys?(self @ HashMap<'K, 'T>, keys @ Collection<'K>) : Bool
+  for (k in keys) {
+    if (not self.has?(k))
+      return false
+  }
+  true
+
+
+def remove-all-keys!(self @ HashMap<'K, 'T>,
+                     keys @ Collection<'K>) : HashMap<'K, 'T>
+  for (k in keys)
+    self.remove!(k)
+  self
+
+
+def retain-all-keys!(self @ HashMap<'K, 'T>,
+                     keys @ Collection<'K>) : HashMap<'K, 'T>
+  for (k in keys) {
+    if (not self.has?(k))
+      self.remove!(k)
+  }
+  self
+
+
+----------------------------------------------------------------------
+-- copy
+----------------------------------------------------------------------
+
+def table!(self : HashMap<'K, 'T>,
+           new-table : Vector<Triple<'K, 'T, _> >)
+  slot!(self, #table, new-table)
+  slot!(self, #elts, new-table.num-items)
+  self
+
+extend module core
+{
+def copy(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
+  self.Type()().table!(self.table)
+
+def deepen(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
+  self.table!(self.table.deep-copy)
+  self
+}
+
+-- def equal?(one : @ HashMap, two : @ HashMap) : Bool
+--   one == two
+
+--  cmp: obj(lang.ANY) : (lang.INT) |
+--       -- TODO
+--    -1
+
+def core|to-string(map @ HashMap<'K, 'T>) : String
+    ~ Returns a string representation of @var{map}.~
+  let sb = StringBuffer()
+  sb ++ "#("
+
+  for (e in map)
+    sb ++ e.to-string
+       ++ " "
+
+  sb ++ ")"
+  sb.to-string
+
+
+
+
+
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+when ignore {
+
+-- -- sequence implementation for the dict class.  once the orange2c compiler
+-- -- supports anonymous classes, this should be done in the seq method directly.
+-- lang.DICT-SEQ <- class : (lang.SEQ) base: _BASE_ (
+-- | table (VECT elt: TRIPLE) <- nil,
+--   curidx(INT) <- 0,
+--   np <- nil |
+--
+--   init-with-table: t(VECT elt: TRIPLE) |
+--     super init,
+--     table <- t,
+--     curidx <- 0,
+--     np <- table at: curidx,
+--     self.
+--
+--   next? : (lang.BOOL) |
+--     np <> nil or ( | i(INT) <- curidx + 1,
+--                      tlen(INT) <- table length,
+--                      found(BOOL) <- false |
+--                    [ |
+--                      (table at: i) <> nil ? found <- true
+--                                           : i <- i + 1
+--                    ] while: (i < tlen and ¬found),
+--                    found).
+--
+--   next : (ASSOC) |
+--     ( | retv(ASSOC) |
+--
+--       -- if np contains has visited a node, try to return the next value in
+--       -- the chain
+--       np <> nil ? (retv <- ASSOC alloc ' init-with-key: (np key)
+--                                                  value: (np value),
+--                    np <- np tail)
+--                 : curidx <- curidx + 1,
+--
+--       -- if this is nil, go to the next slot in the hash
+--       retv = nil ? ( | done(BOOL) <- false,
+--                        tlen(INT) <- table length |
+--                      [ |
+--                        np <- table at: curidx,
+--                        np <> nil ? (retv <- ASSOC alloc
+--                                                 ' init-with-key: (np key)
+--                                                           value: (np value),
+--                                     np <- np tail,
+--                                     done <- true)
+--                                  : curidx <- curidx + 1
+--                      ] while: (curidx < tlen and ¬done)),
+--       retv).
+--
+--
+--   del |
+--     -- TODO
+--     nil.
+--
+--   reset : (BOOL) |
+--     curidx <- 0,
+--     np <- table at: curidx,
+--     true.
+-- )
+--
+
+} -- when
+
+-- end of dict.hea

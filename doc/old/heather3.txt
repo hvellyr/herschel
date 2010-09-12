@@ -1,0 +1,805 @@
+                                  Heather
+
+                      A general programming language
+
+                                  vr. 1.0
+
+
+
+
+
+
+Global Definitions
+==================
+
+There are x possible toplevel definitions, each introduced with the keyword
+'def':
+
+Functions
+---------
+
+Function are standalone function not bound to any particular type.
+Functions are resolved by "name" only.  There's nothing like
+type-overwriting, etc.
+
+  def name()
+    ...
+
+Methods in contrast are generic functions bound by one or multiple
+parameters to certain types.  Methods are resolved by name and specialized
+parameters.  Parameters are specialized by adding the @ to their type
+declaration.  Only positional parameters can be specialized.  Specialized
+parameters' type can not be infert:
+
+  def meth name(self : @ <my-something>, value : @<int>)
+    ...
+
+Generics must be defined at least once.  Multiple generic definition must
+be compatible.  Specialization of a generic not definedb before as such is
+an error.
+
+
+Types:
+------
+
+  def type <name>(<derivestmt>;
+                  <slots-defs>) {
+    <additional-init-code>
+  }
+
+
+Types does have no namespace behaviour.  Generics and functions therefore
+are not bound to types by name but only by specialized parameters.
+
+Slots ("member variables") are defined inline as parameters to the type
+definition:
+
+  def type <point>(<object>;
+                   x : <coord> = 0,
+                   y : <coord> = 0)
+
+Such a type has a default allocator and can be instantiated by:
+
+  <point>()
+  <point>(x: 1, y: 1)
+
+Slots can be removed from the initialization list by declaring it "noinit":
+
+  def type <student>(<person>;
+                     name : <string> = "",
+                     address = address>(),
+
+                     noinit proper-setup? = #f)
+  {
+    if (not(empty?(name)))
+      proper-setup? = #t
+  }
+
+
+Variables & constants
+---------------------
+
+  def const %page-width% = #'21cm
+
+  def port = *stdout*
+
+Fluid variables (which ignore lexical scoping):
+
+  def fluid *stdin* = io.<cport>(0)
+  def fluid *stdout* = io.<cport>(1)
+  def fluid *stderr* = io.<cport>(2)
+
+Such fluid variables can be set later with "let fluid x" to change
+temporarily their value:
+
+  def fluid x = 5
+
+  def g()
+    outln(x)
+
+  def f()
+    outln(x)
+    {
+      let fluid x = 11
+      g()
+    }
+    outln(x)
+
+  => 5
+     11
+     5
+
+
+Function calls
+==============
+
+Function calls:
+
+  f(a, b, c)
+
+Even if calling a generic this pattern is kept.  To enhance readability
+(and remove parantheses chains) the following form
+
+  a.f(b, c)
+
+is rewritten into
+
+  f(a, b, c)
+
+Additional functions without parameter don't need the parantheses.
+Therefore
+
+  f(g(h(i, j)))
+
+is identical to
+
+  h(i, j).g.f
+
+Or 
+
+  self.name.empty?('force)
+
+is identical to
+
+  empty?(name(self), 'force)         by:    self.name.empty?('force)
+                                         => name(self).empty?('force)
+                                         => empty?(name(self), 'force)
+
+
+Access to type slots
+====================
+
+Since methods/functions are not bound to type, access is always to be done
+explicitly to a typed reference:
+
+  def type <point>(x = 0, y = 0)
+
+  def add(self : @<point>, val : @<int>)
+    self.x += val
+    self.y += val
+    self
+
+  def add(self : @<point>, val : @<point>)
+    self.x += val.x
+    self.y += val.y
+    self
+
+How is this .x and .y implemented?  By default the compiler generates the
+relevant access code.  You can overwrite accessors and modifiers by
+functions.  To access the slots you have to use the slot() and slot!()
+special forms:
+
+  def x(self : @<point>)
+    self.slot(x)
+    -- identical to slot(self, 'x)
+
+  def x!(self : @<point>, val)
+    self.slot(x) = val
+    -- identical to slot!(self, 'x, val)
+
+The "self.x" and "self.x =" syntax forms are translated into
+
+    self.x      ->   x(self)
+    self.x = 5  ->   x!(self, 5)
+
+
+Namespace
+=========
+
+Declare the namespace of a "compile unit":
+
+  namespace heather
+
+
+Blocks
+======
+
+Code blocks are sequences of statements.  The last statement's return value
+gives the return value of the complete block.  Blocks are atomic and
+therefore can be put whereever a single expression is expected (i.e. even
+in default parameter init value places):
+
+  def f(x = { let p = <properties>()
+              while (p.next?) {
+                if (not p.nil?)
+                  p.value
+              }
+              else
+                #f
+            })
+    ...
+
+Whether this is readable, is another question ...
+
+
+LOOPS
+=====
+
+  for (base; conditions) expr
+  while (test) expr
+  until (test) expr
+
+The returnvalue of expr's last statement gives the return value of the
+complete loop statement.  Each loop form takes an optional "else" branch,
+which is evaluated if the loop's body is never entered:
+
+  let first-name = for (n in values; not n.nil?)
+                     break(n)
+                   else
+                     #nil
+
+if no "else" branch is given the return value of such is a loop is #f.
+
+
+IF & SELECT
+===========
+
+  if (test) expr
+  if (test) expr else expr
+
+
+  select (test) {
+    test -> expr
+    test -> expr
+    otherwise expr
+  }
+
+Example:
+
+  select (a) {
+    \a -> if (not done)
+            do-it
+          else
+            do-something-different
+    otherwise outln("nothing applies")
+  }
+
+If the parameter list for select is empty each test is expected to be a
+conditional expr:
+
+  select () {
+    (c == \a or
+     c == \b or
+     c == \c)            -> ...
+    (c in #[\a, \b, \c]) -> ...
+  }
+
+
+
+RANGES & Slices
+===============
+
+Basic ranges are exclusive, so the range [5, 100) is written as:
+
+  5 .. 100
+
+Whereas [5, 100] is written as:
+
+  5 ... 100
+
+Give the step parameter:
+
+  5 .. 100 by 5
+  => 5, 10, 15, ..., 95
+
+
+Ranges are used for instance to slice vectors and strings:
+
+  "hello world"[3 .. 6]
+  => "lo "
+
+  "hello world"[3 ... 6]
+  => "lo w"
+
+  "hello world"[3 .. 8 by 2]
+  => "l o"
+
+
+Conditions
+==========
+
+It's possible to add a hook to a block which is called whenever the block
+is left, either by unroll or by "normal" code flow:
+
+  on exit(value) expr
+
+Value is the return value of the block's last statement.  Normally the exit
+handler will return this without modification.
+
+Not that the "on exit" declaration is actually inside the block for which
+it is declared.  It can therefore access local bindings etc.  On the other
+side in examples like this:
+
+  let stream = <file-input-port>(name)
+  for (i = 0 .. 100) {
+    on exit(v) { stream.close }
+  }
+
+The exit hook would be called for each loop step.  The author mostly likely
+meant this:
+
+  let stream = <file-input-port>(name)
+  on exit(v) { stream.close }
+
+  for (i = 0 .. 100) {
+  }
+
+
+Similar to "on exit" conditions can be trapped:
+
+  on signal(value : <type>) expr
+
+This declares a condition handler for a condition of type "<type>".
+Whenever a condition raised (using raise()) the first matching condition
+handler is called.  During evaluation of signal-expr two special functions
+are available: "continue(val)" and "raise()" without parameter.
+
+continue(val) returns to the place from which raise() was called injecting
+"val" as new returnvalue to the raise expression.
+
+raise() without parameter propagates condition handling to the next
+matching condition handler.  There's a difference between raise(cond) and
+raise.  "raise" without parameter does not start a new condition signal
+chain, but passed controll upwards.  raise(cond) however starts a new
+signal chain, which can be handled inside the control handler.
+
+If the condition handle is neither left early with continue() or raise()
+its return value becomes the return value of the block in which the
+condition handler has been declared.  If both exit and condition handler
+had been declared, the condition handler is called first and therefore its
+return value is passed as input to the exit handler.
+
+
+
+Anonymous functions and Closures
+--------------------------------
+
+function(a : Real, b : Real) : Int { }
+
+a.<b>c().d
+
+LITERALS
+========
+
+Symbols
+-------
+
+*stdout*
+%some-constant%
+-a-string-
+_a_string_
+_a/string_
+
+
+Chars
+-----
+\a
+\space
+\u41h
+\nl
+
+
+String
+------
+"abc"
+"hello world"
+"Usage: cmd OPTIONS\nl;"
+"a string"
+"a \nl;string"
+"a \tab;string"
+"a \\string"
+"a \"string"
+"a \A;string"
+"a \u41h;string"
+
+
+Keywords
+--------
+
+'symbol
+'hello-world
+
+
+Vector
+------
+
+#[1, 2, 3]
+
+
+Dictionary:
+-----------
+
+#("abc" -> #[1, 2, 3],
+  "def" -> 'symbol,            -- symbol
+  "xyz" -> \a,                 -- char
+  "mmm" -> \u41h,              -- char
+  "ch1" -> \space              -- char
+)
+
+
+Numbers
+-------
+
+1234
+100h
+-100y
+100t
+
+
+Basic constants
+---------------
+
+#nil
+#true #t #false #f
+#eof
+
+
+----------------------------------------------------------------------
+
+Parameters
+==========
+
+
+Positional, keywords and optional arguments:
+
+Positional parameters:
+---------------------
+
+  def f(a, b, c) {}
+
+Used as:
+
+  f(1, 2, 3)
+
+
+Keyword arguments:
+-----------------
+
+  def f(a = 5, b = "hello world", c = { let x = 5
+                                        x * x }) {}
+
+Used as:
+
+  f(a: 11, b: "N.N.", c: 255) ...
+  => a -> 11
+     b -> "N.N."
+     c -> 255
+
+  f()
+  => a -> 5
+     b -> "hello world"
+     c -> 25
+
+  f(c: 7, a: 0)
+
+  => a -> 0
+     b -> "hello world"
+     c -> 7
+
+
+Optional parameters
+-------------------
+
+  def f(args ...)
+
+Used as:
+
+  f()
+  => args -> #[]
+
+  f(1, 2, 3, 4)
+  => args -> #[1, 2, 3, 4]
+
+  f(#[1, 2, 3, 4])
+  => args -> #[#[1, 2, 3, 4]]
+
+
+Mixture of all three
+--------------------
+
+The rule is: first positional, then keyword, and following optional.
+
+  def f(a, b, c, d = #t, e = 25, f ...)
+
+Used as:
+
+  f(1, 2, 3)
+  => a -> 1
+     b -> 2
+     c -> 3
+     d -> #t
+     e -> 25
+     f -> #[]
+
+  f(4, 5, 6, e: 127, "hello world", "sic est")
+  => a -> 4
+     b -> 5
+     c -> 6
+     d -> #t
+     e -> 127
+     f -> #["hello world", "sic est"]
+
+  f(1, 2, 3, f: 1, g: 2, h: 3)
+  => a -> 1
+     b -> 2
+     c -> 3
+     d -> #t
+     e -> 25
+     f -> #['f, 1, 'g, 2, 'h, 3]
+
+
+
+----------------------------------------------------------------------
+
+MACROS
+======
+
+different kind of macro styles:
+
+FUNCTION MACROS.
+
+Look exactly and are called like functions:
+
+  def macro min
+     { min (?a:*, ?b:*) } -> { { let tmp-a = ?a tmp-b = ?b
+                                 if (tmp-a > tmp2) tmp-b else tmp-a } }
+or
+
+  let macro min
+     { min (?a:*, ?b:*) } -> { { let tmp-a = ?a tmp-b = ?b
+                                 if (tmp-a > tmp2) tmp-b else tmp-a } }
+usage:
+
+  min(100, 200)
+
+
+DEFINITION MACROS
+
+Look like a define and/or let:
+
+  def macro functional-variable
+      { define functional-variable ?name:id = ?:expr } ->
+        { define ?name ## -var = ?expr
+          define ?name () ?name ## -var
+          define ?name (value) { ?name ##-var = value
+                                 value } },
+      { let functional-variable ?name:id = ?:expr } ->
+        { let ?name ## -var = ?expr
+          let ?name () ?name ## -var
+          let ?name (value) { ?name ##-var = value
+                              value } }
+
+STATEMENT MACROS
+
+Look like a statement like for, while, etc.
+
+  def macro unless
+      { unless (?test:expr) ?:body } -> { if (not(?test)) { ?body } }
+
+
+
+  def macro with-open-file
+    { with-open-file (?stream:id, ?name:string) ?:expression } ->
+      {
+        let ?stream = make(<file-input-port>, ?name)
+        on exit(value) {
+          if (?stream is nil) close(?stream)
+          value
+        }
+      }
+
+
+
+
+Measures
+--------
+
+21'cm     -> <measure>(21, 'cm)
+12.15'ft  -> <measure>(12.15, 'ft)
+21'm/s
+
+def measure cm(<length>)
+def meth transform(from : @cm, to : @mm)
+  from * 100
+
+
+
+
+
+Reserved keywords:
+------------------
+
+and
+by
+const
+def
+else
+fluid
+for
+if
+in
+let
+macro
+meth
+mod
+namespace
+or
+otherwise
+select
+slot
+slot!
+type
+until
+while
+
+
+
+
+
+
+================================================================================
+Example
+================================================================================
+
+namespace heather
+
+----------------------------------------------------------------------
+-- a pair class
+
+def type <pair>(<object>;
+    car = #nil
+    cdr = #nil ) : (<serializable>, <copyable>)
+
+def meth init(self : @<pair>, car = 0, cdr = 0)
+  self.car = car
+  self.cdr = cdr
+
+
+def meth ->string(self : @<pair>) : <string>
+  <stringbuffer>().append("#<pair ",
+                          self.car.->string,
+                          " . ",
+                          self.cdr.->string,
+                          ">").->string
+
+-- can be instantiated with
+-- <pair>(car: "hello", cdr: "world")
+
+
+----------------------------------------------------------------------
+-- a point class
+
+def type <point>(<object>;
+    x : <int>
+    y : <int>)
+
+def meth distance(p1 : @<point>, p2 : @<point>) : <real>
+  let square(n) n ^ 2
+
+  sqrt(square(p2.x - p1.x) + square(p2.y - p1.y))
+
+
+def distance(x1, y1, x2, y2)
+  let square(n) n ^ 2
+
+  sqrt(square(x2 - x1) + square(y2 - y1))
+
+
+-- can be instantiated with
+-- <point>(0, 127)
+
+
+----------------------------------------------------------------------
+-- standalone function:
+
+def with-open-input-file(name, proc)
+  let stream = <file-input-port>(name)
+  on exit(value) {
+    if (stream is nil)
+      close(stream)
+    value
+  }
+
+  proc(stream)
+
+
+
+
+
+----------------------------------------------------------------------
+-- parameterized vector?
+
+def type <vector>(<object>; elt : <any>)
+
+def apply(self : @<vector>, elt : <any>, size : <int>)
+  if (elt typeof <int>)
+    <int-vector>(size)
+  else if (elt typeof <byte>)
+    <byte-vector>(size)
+  else
+    <vector>(elt).resize(size)
+
+
+  <vector>(<int>)
+
+
+
+def type <2tuple>(<object>; <1st> = <int>, <2nd> = <int>)
+{
+  key-init-prop(first) fst : <1st>
+  key-init-prop(second) snd : <2nd>
+}
+
+
+def meth ->point(self : @<2tuple>(<int>, <int>)) : <point>
+  <point>(fst, snd)
+
+
+def meth ->pair(self : @<2tuple>) : <pair>
+  <pair>(fst, snd)
+
+def meth ->pair(self : @<2tuple>(<int>, <int>)) : <pair>(<int>, <int>)
+  <pair>(<int>, <int>)(fst, snd)
+
+
+usage:
+  <2tuple>()(first: 10, second: 20)
+  <2tuple>(<real>
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------
+
+-- form ::= identifier
+-- form ::= literal
+-- form ::= '(' elements ')'
+-- form ::= '{' elements ')'
+-- form ::= 'def' modifiers name parameters body
+-- form ::= 'def' modifiers name '=' form
+-- form ::= 'if' parameters form 'else' form
+-- modifiers ::=
+--
+-- elements ::= [ form | punctuation ]*
+--
+--
+--
+--
+-- if (t) t else f
+-- for (c) b
+-- while (c) b
+-- until (c) b
+-- class(sc, p) b
+-- method(p) b
+-- on n(p) b
+--
+-- def mod n(p) b
+-- def mod n = b
+--
+-- let mod n(p) b
+-- let mod n = b
+
+
+
+
+
+
+def func(a @ <real>, b @ <int>,
+         c : <int> = 1, d : <int> = 2, args ...) : <string>
+  ...
+
+make(<vector>)
+
+
+   func(5.0, 7, c: 10, d: 56, "hello", "world", "and so on")
+
+
+
+

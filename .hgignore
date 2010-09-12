@@ -1,0 +1,14 @@
+temp/
+doc/.DS_Store
+doc/version.texinfo$
+.DS_Store
+.*~
+version.h$
+config-local.h$
+bootstrap/TAGS
+TAGS
+tests/.*\.pyc$
+external/UnitTest\+\+/.*\.a
+external/UnitTest\+\+/src/.*\.o
+external/UnitTest\+\+/src/.*\.d
+external/UnitTest\+\+/TestUnitTest\+\+

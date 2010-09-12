@@ -1,0 +1,32 @@
+What's it
+
+  Heather is an general-purpose multiparadigm programming language.  It is
+  strongly typed, offering type inference and parametric polymorphism
+  ("generics").  It is thoroughly object oriented (everything is a object),
+  while its consequent multiple dispatch approach gives it a strong
+  functional touch.  The object model is class-oriented, supporting
+  multiple inheritance just as a separation of types ("protocols",
+  "interfaces") and classes.
+
+  A (non complete) list of features:
+
+  - object oriented ("everything's an object")
+  - multi dispatch functions
+  - first class functions
+  - fully lexical scoped
+  - strong functional aproach (while being not strictly functional)
+  - garbage collected
+  - returnable exceptions
+  - compiled, though not required by specification
+
+
+Where can I find more information about it?
+
+  This project is neither finished nor really usable yet.  You can find the
+  code on
+
+    http://mercurial.intuxication.org/hg/heather 
+
+  For more information check the wiki at:
+
+    http://beta.intuxication.org/hvellyr/heather/wiki/WikiStart
