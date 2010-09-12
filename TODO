@@ -145,7 +145,6 @@ Bootstrap compiler
     - where clauses
     - enum:
       - construct proper enum constraint type
-      - autocreate values
       - check that init values match the base type
 
   - access values from enums as Enum::item
