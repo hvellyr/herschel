@@ -44,8 +44,8 @@ HEA_TARGET_DESC ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh)
 # TAR = tar
 
 # Give the CC version. Known values:
-# gcc3
-# gcc4
+# gcc3.0
+# gcc4.0, gcc4.1, gcc4.2, gcc4.3, gcc4.4, gcc4.5
 
 CC_VERSION ?= $(shell CC=$(CC) $(SHELL) $(top_srcdir)/build/gccver.sh)
 

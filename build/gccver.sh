@@ -8,7 +8,7 @@
 
 CC_VERSION=`($CC --version) 2>/dev/null` || CC_VERSION=unknown
 
-CC_MAJOR=`echo $CC_VERSION | sed -e 's/.*\([234]\)\.\([0-9]*\).*/\1/g'`
-CC_MINOR=`echo $CC_VERSION | sed -e 's/.*\([234]\)\.\([0-9]*\).*/\2/g'`
+CC_MAJOR=`echo $CC_VERSION | sed -n -e 's/.*(GCC)[ \t]*\([234]\)\.\([0-9]*\).*/\1/p'`
+CC_MINOR=`echo $CC_VERSION | sed -n -e 's/.*(GCC)[ \t]*\([234]\)\.\([0-9]*\).*/\2/p'`
 
-echo "gcc$CC_MAJOR"
+echo "gcc$CC_MAJOR.$CC_MINOR"
