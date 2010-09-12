@@ -60,7 +60,7 @@ namespace heather
     //-------- data members
 
     typedef std::map<String, Type> TypeMap;
-    
+
     TypeMap      fMap;
     Ptr<TypeCtx> fParent;
   };

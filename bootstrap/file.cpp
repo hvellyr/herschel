@@ -471,9 +471,9 @@ SUITE(File)
   TEST(RelativePathToAbs)
   {
     String t = String("tests/war/../raw/01.bin");
-    
+
     String ct = file::canonicalPathName(t, String("/usr/lib/"));
-    
+
     CHECK_EQUAL(ct, String("/usr/lib/tests/raw/01.bin"));
     CHECK(file::isFilePath(ct));
   }
@@ -488,7 +488,7 @@ SUITE(File)
     CHECK(!file::isFilePath(String("/opt/")));
   }
 
-  
+
   TEST(appendExt)
   {
     CHECK_EQUAL(file::appendExt(String("/usr/share/heather/a"), String("xml")),

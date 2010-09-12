@@ -873,7 +873,7 @@ BinaryNode::BinaryNode(const SrcPos& srcpos,
 BinaryNode*
 BinaryNode::clone() const
 {
-  return new BinaryNode(fSrcPos, 
+  return new BinaryNode(fSrcPos,
                         nodeClone(fLeft), fOp, nodeClone(fRight));
 }
 

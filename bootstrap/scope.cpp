@@ -207,7 +207,7 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
   if (it != fMap.end()) {
     if (doAutoMatch && !isQualified(name.fName)) {
       if (it->second.size() == 1) {
-        // fprintf(stderr, " ... found something single\n"); 
+        // fprintf(stderr, " ... found something single\n");
         return it->second.begin()->second.obj();
       }
       else if (showError) {

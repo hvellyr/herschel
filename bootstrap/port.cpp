@@ -631,7 +631,7 @@ SUITE(CharPort)
                    0x4e57 };  // e4 b9 97
     Ptr<DataPort> dp = new DataPort;
     Ptr<CharPort> cp = new CharPort(dp);
-    
+
     for (int i = 0; i < 6; i++)
       cp->write(src[i]);
 
@@ -650,7 +650,7 @@ SUITE(CharPort)
     dp->setCursor(0);
     for (int i = 0; i < 100; i++)
       cp->write(src, 6);
-    
+
     CHECK_EQUAL(dp->length(), (size_t)(15 * 100));
     for (int i = 0; i < 100; i++) {
       CHECK_EQUAL(::memcmp(dp->data() + i * 15, expected, 15), 0);

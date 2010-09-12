@@ -572,7 +572,7 @@ namespace heather
     virtual String toString() const
     {
       StringBuffer buf;
-      buf << "<ty:measure nm='" << fName << "' unit='" 
+      buf << "<ty:measure nm='" << fName << "' unit='"
           << fDefUnit << "'>";
 
       if (fBaseType.isDef())
@@ -840,7 +840,7 @@ Type::newTypeRef(const String& name)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
-  return Type(kType_Ref, 
+  return Type(kType_Ref,
               new TypeRefTypeImpl(name, false,
                                   dummyGenerics, dummyConstraints));
 }
@@ -851,7 +851,7 @@ Type::newTypeRef(const String& name, bool isGeneric,
                  const TypeConstVector& constraints)
 {
   TypeVector dummyGenerics;
-  return Type(kType_Ref, 
+  return Type(kType_Ref,
               new TypeRefTypeImpl(name, isGeneric, dummyGenerics,
                                   constraints));
 }
@@ -2836,7 +2836,7 @@ SUITE(FunctionParameter)
     CHECK(p0.key().isEmpty());
     CHECK_EQUAL(p0.kind(), FunctionParameter::kParamPos);
   }
-  
+
   TEST(namedParamCtor)
   {
     FunctionParameter p0 = FunctionParameter::newNamedParam(String("abc"),

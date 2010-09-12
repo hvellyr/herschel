@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -41,12 +41,12 @@ namespace heather
       : fNumerator(num),
         fDenominator(den)
       { }
-    
+
     Rational(const Rational& other)
       : fNumerator(other.fNumerator),
         fDenominator(other.fDenominator)
       { }
-    
+
     Rational& operator=(const Rational& other);
 
     bool operator==(const Rational& other) const;
