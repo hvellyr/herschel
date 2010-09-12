@@ -750,7 +750,8 @@ SUITE(TokenEvalContext)
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kInt, 25));
-    CHECK(t.isReal() && int(t.realValue() * 100000) == 12566);
+    CHECK(t.isReal());
+    CHECK_CLOSE(t.realValue(), 0.12566, 0.0001);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kReal, 3.1415));
     CHECK(t.isReal() && t.realValue() == 1.0);

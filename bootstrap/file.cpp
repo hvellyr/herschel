@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "file.h"
 #include "str.h"

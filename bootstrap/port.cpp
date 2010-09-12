@@ -20,6 +20,11 @@
 
 using namespace heather;
 
+// ENOTSUP seem not to be defined on windows (xp)?
+#if !defined(ENOTSUP)
+#define ENOTSUP 0x0ffffffe
+#endif
+
 
 //----------------------------------------------------------------------------
 
@@ -705,7 +710,15 @@ SUITE(FilePort)
       "thousand times, and now how abhorr'd in my imagination it is!\n"
       "My gorge rises at it.\n";
 
-    Ptr<FilePort> port = new FilePort(String("tests/raw/01.bin"), "rb");
+    Ptr<FilePort> port;
+
+    try {
+      port = new FilePort(String("tests/raw/01.bin"), "rb");
+    }
+    catch (IOException e) {
+      CHECK(false);
+      return;
+    }
 
     const Octet* p = (Octet*)"\0";
     try {
