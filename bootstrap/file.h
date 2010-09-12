@@ -42,7 +42,7 @@ namespace heather
     String workingDir();
     String homeDir();
 
-    //! Returns the canonicalized form of path 
+    //! Returns the canonicalized form of path
     String canonicalPathName(const String& path);
 
     //! Like canonicalPathName(String) but with \p path being relative to \p

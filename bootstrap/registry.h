@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -22,7 +22,7 @@ namespace heather
   class Registry : public RefCountable
   {
   public:
-    typedef T ValueType; 
+    typedef T ValueType;
     typedef typename std::map<String, ValueType> ValueMapType;
     typedef typename std::map<String, ValueType>::iterator ValueMapTypeIterator;
     typedef typename std::map<String, ValueType>::const_iterator ValueMapTypeConstIterator;

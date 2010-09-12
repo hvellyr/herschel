@@ -313,7 +313,7 @@ namespace heather
 
     virtual ParamNode* clone() const;
     virtual void display(Port<Octet>* port) const;
-    
+
     ParamFlags flags() const;
     const String& key() const;
 
@@ -328,7 +328,7 @@ namespace heather
     kTransientSlot  = 1 << 0,
     kReadonlySlot   = 1 << 1,
     kObservableSlot = 1 << 2,
-    kPublicSlot     = 1 << 3, 
+    kPublicSlot     = 1 << 3,
     kOuterSlot      = 1 << 4,
     kInnerSlot      = 1 << 5
   };

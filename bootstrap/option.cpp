@@ -196,7 +196,7 @@ SUITE(OptionsParser)
     CHECK_EQUAL(option.fId, 4);
     CHECK_EQUAL(option.fOption, String("--verbose"));
     CHECK(option.fArgument.isEmpty());
-    
+
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
     CHECK_EQUAL(option.fId, 7);
     CHECK_EQUAL(option.fOption, String("-P"));
@@ -227,7 +227,7 @@ SUITE(OptionsParser)
     CHECK_EQUAL(option.fId, 3);
     CHECK_EQUAL(option.fOption, String("--outdir"));
     CHECK_EQUAL(option.fArgument, String("tmp/test.log"));
-    
+
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
   }
 
@@ -247,7 +247,7 @@ SUITE(OptionsParser)
 
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
   }
-  
+
   TEST(Five)
   {
     static const char* args[] = { "heather",
@@ -257,16 +257,16 @@ SUITE(OptionsParser)
     CHECK_EQUAL(option.fId, 2);
     CHECK_EQUAL(option.fOption, String("--version"));
     CHECK(option.fArgument.isEmpty());
-      
+
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNotAnOption);
     CHECK(option.fOption.isEmpty());
     CHECK_EQUAL(option.fArgument, String("Something"));
-    
+
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
     CHECK_EQUAL(option.fId, 5);
     CHECK_EQUAL(option.fOption, String("-U"));
     CHECK(option.fArgument.isEmpty());
-    
+
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
   }
 
@@ -282,7 +282,7 @@ SUITE(OptionsParser)
     CHECK_EQUAL(option.fId, -1);
     CHECK_EQUAL(option.fOption, String("--port"));
     CHECK_EQUAL(option.fArgument, String("7111"));
-    
+
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kUnknownOption);
     CHECK_EQUAL(option.fId, -1);
     CHECK_EQUAL(option.fOption, String("--host"));

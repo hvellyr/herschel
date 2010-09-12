@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -325,7 +325,7 @@ namespace heather
 
     //! indicates whether the token is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;
-    
+
     //! indicates whether the token is a range
     bool isRange() const;
     //! indicates whether the token is a constant range (i.e. a range where

@@ -633,7 +633,7 @@ Tokenizer::nextTokenImpl()
     case ':': return makeTokenAndNext(srcpos(), kColon);
 
     case '@': return makeTokenAndNext(srcpos(), kAt);
-    case '|': 
+    case '|':
       nextChar();
       if (isSymbolChar(fCC))
         return readIdentifier(beginSrcpos, String("|"), kSymbol, true);
@@ -830,7 +830,7 @@ SUITE(Tokenizer)
     CHECK_EQUAL(tnz.nextToken(), Token(sp, String("T")));
     CHECK_EQUAL(tnz.nextToken(), Token(sp, kAssign));
     CHECK_EQUAL(tnz.nextToken(), Token(sp, String("x")));
-    
+
     CHECK_EQUAL(tnz.nextToken(), Token(sp, kSemicolon));
 
     CHECK_EQUAL(tnz.nextToken(), Token(sp, String("slot")));
@@ -1026,7 +1026,7 @@ SUITE(Tokenizer)
 
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kLiteralArrayOpen));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kBracketClose));
-      
+
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kLiteralVectorOpen));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 1));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kMapTo));
@@ -1206,7 +1206,7 @@ SUITE(Tokenizer)
     }
   }
 
-  
+
   TEST(Namespaces)
   {
     SrcPos sp;
