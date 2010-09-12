@@ -13,6 +13,7 @@
 #include "type.h"
 #include "typectx.h"
 #include "strbuf.h"
+#include "typeenum.h"
 
 
 using namespace heather;
@@ -1203,30 +1204,221 @@ Type::isBaseOrBaseRef() const
 
 
 bool
+Type::isBuiltinType(TypeKind kind, const String& name) const
+{
+  return fKind == kind || (isRef() && typeName() == name);
+}
+
+
+TypeEnumMaker*
+Type::newBaseTypeEnumMaker() const
+{
+  switch (fKind) {
+  case kType_Bool:        return new BoolTypeEnumMaker;
+  case kType_Char:        return new CharTypeEnumMaker;
+  case kType_Int:         return new IntTypeEnumMaker;
+  case kType_Keyword:     return new KeywordTypeEnumMaker;
+  case kType_Long:        return new LongTypeEnumMaker;
+  case kType_Octet:       return new OctetTypeEnumMaker;
+  case kType_Rational:    return new RationalTypeEnumMaker;
+  case kType_Real:        return new RealTypeEnumMaker;
+  case kType_Short:       return new ShortTypeEnumMaker;
+  case kType_String:      return new StringTypeEnumMaker;
+  case kType_ULong:       return new ULongTypeEnumMaker;
+  case kType_UShort:      return new UShortTypeEnumMaker;
+  case kType_UWord:       return new UWordTypeEnumMaker;
+  case kType_Word:        return new WordTypeEnumMaker;
+  case kType_Eof:         return new EofTypeEnumMaker;
+  case kType_Nil:         return new NilTypeEnumMaker;
+  case kType_Unspecified: return new UnspecifiedTypeEnumMaker;
+  case kType_Ref:
+    {
+      String nm = typeName();
+      if (nm == kBoolTypeName)
+        return new BoolTypeEnumMaker;
+      else if (nm == kCharTypeName)
+        return new CharTypeEnumMaker;
+      else if (nm == kDoubleTypeName)
+        return new DoubleTypeEnumMaker;
+      else if (nm == kEofTypeName)
+        return new EofTypeEnumMaker;
+      else if (nm == kFloatTypeName)
+        return new FloatTypeEnumMaker;
+      else if (nm == kIntTypeName)
+        return new IntTypeEnumMaker;
+      else if (nm == kKeywordTypeName)
+        return new KeywordTypeEnumMaker;
+      else if (nm == kLongDoubleTypeName)
+        return new LongDoubleTypeEnumMaker;
+      else if (nm == kLongTypeName)
+        return new LongTypeEnumMaker;
+      else if (nm == kNilTypeName)
+        return new NilTypeEnumMaker;
+      else if (nm == kOctetTypeName)
+        return new OctetTypeEnumMaker;
+      else if (nm == kRationalTypeName)
+        return new RationalTypeEnumMaker;
+      else if (nm == kRealTypeName)
+        return new RealTypeEnumMaker;
+      else if (nm == kShortTypeName)
+        return new ShortTypeEnumMaker;
+      else if (nm == kStringTypeName)
+        return new StringTypeEnumMaker;
+      else if (nm == kULongTypeName)
+        return new ULongTypeEnumMaker;
+      else if (nm == kUShortTypeName)
+        return new UShortTypeEnumMaker;
+      else if (nm == kUWordTypeName)
+        return new UWordTypeEnumMaker;
+      else if (nm == kWordTypeName)
+        return new WordTypeEnumMaker;
+
+      return NULL;
+    }
+
+  default:
+    return NULL;
+  }
+}
+
+
+bool
 Type::isAny() const
 {
-  return fKind == kType_Any;
+  return isBuiltinType(kType_Any, kAnyTypeName);
 }
 
 
 bool
 Type::isInt() const
 {
-  return fKind == kType_Int;
+  return isBuiltinType(kType_Int, kIntTypeName);
 }
 
 
 bool
 Type::isString() const
 {
-  return fKind == kType_String;
+  return isBuiltinType(kType_String, kStringTypeName);
 }
 
 
 bool
 Type::isReal() const
 {
-  return fKind == kType_Real;
+  return isBuiltinType(kType_Real, kRealTypeName);
+}
+
+
+bool
+Type::isKeyword() const
+{
+  return isBuiltinType(kType_Keyword, kKeywordTypeName);
+}
+
+
+bool
+Type::isOctet() const
+{
+  return isBuiltinType(kType_Octet, kOctetTypeName);
+}
+
+
+bool
+Type::isShort() const
+{
+  return isBuiltinType(kType_Short, kShortTypeName);
+}
+
+
+bool
+Type::isWord() const
+{
+  return isBuiltinType(kType_Word, kWordTypeName);
+}
+
+
+bool
+Type::isLong() const
+{
+  return isBuiltinType(kType_Long, kLongTypeName);
+}
+
+
+bool
+Type::isUShort() const
+{
+  return isBuiltinType(kType_UShort, kUShortTypeName);
+}
+
+
+bool
+Type::isUWord() const
+{
+  return isBuiltinType(kType_UWord, kUWordTypeName);
+}
+
+
+bool
+Type::isULong() const
+{
+  return isBuiltinType(kType_ULong, kULongTypeName);
+}
+
+
+bool
+Type::isFloat() const
+{
+  return isBuiltinType(kType_Float, kFloatTypeName);
+}
+
+
+bool
+Type::isDouble() const
+{
+  return isBuiltinType(kType_Double, kDoubleTypeName);
+}
+
+
+bool
+Type::isLongDouble() const
+{
+  return isBuiltinType(kType_LongDouble, kLongDoubleTypeName);
+}
+
+
+bool
+Type::isBool() const
+{
+  return isBuiltinType(kType_Bool, kBoolTypeName);
+}
+
+
+bool
+Type::isChar() const
+{
+  return isBuiltinType(kType_Char, kCharTypeName);
+}
+
+
+bool
+Type::isEof() const
+{
+  return isBuiltinType(kType_Eof, kEofTypeName);
+}
+
+
+bool
+Type::isNil() const
+{
+  return isBuiltinType(kType_Nil, kNilTypeName);
+}
+
+
+bool
+Type::isRational() const
+{
+  return isBuiltinType(kType_Rational, kRationalTypeName);
 }
 
 

@@ -17,5 +17,5 @@ def enum Colors : Keyword
 }
 
 
-def x : PortCursorWhenceType = current
+def x : PortCursorWhenceType = end
 def y : Colors = orange

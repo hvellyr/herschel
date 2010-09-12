@@ -586,6 +586,14 @@ BindingNode::type() const
 }
 
 
+AptNode*
+BindingNode::initExpr() const
+{
+  return fInitExpr;
+}
+
+
+
 //----------------------------------------------------------------------------
 
 VardefNode::VardefNode(const SrcPos& srcpos,
@@ -624,6 +632,9 @@ VardefNode::display(Port<Octet>* port) const
   case kConfigVar:
     attrs << " type='config'";
     break;
+  case kEnumVar:
+    attrs << " type='enum'";
+    break;
   }
 
   displayOpenTagAttrs(port, "vardef", StrHelper(attrs.toString()));
@@ -632,6 +643,27 @@ VardefNode::display(Port<Octet>* port) const
   displayNode(port, "init", fInitExpr);
 
   displayCloseTag(port, "vardef");
+}
+
+
+bool
+VardefNode::isConst() const
+{
+  return fFlags == kConstVar;
+}
+
+
+bool
+VardefNode::isConfig() const
+{
+  return fFlags == kConfigVar;
+}
+
+
+bool
+VardefNode::isEnum() const
+{
+  return fFlags == kEnumVar;
 }
 
 

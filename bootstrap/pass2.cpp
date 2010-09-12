@@ -19,6 +19,7 @@
 #include "token.h"
 #include "tokeneval.h"
 #include "tokenizer.h"
+#include "typeenum.h"
 
 
 using namespace heather;
@@ -815,6 +816,27 @@ SecondPass::parseSlotDef(const Token& expr)
 
 
 AptNode*
+SecondPass::nextEnumInitValue(const SrcPos& srcpos,
+                              const Token& enumItemSym,
+                              const Type& baseType, Token& lastInitToken)
+{
+  Ptr<AptNode> initExpr;
+
+  Ptr<TypeEnumMaker> maker = baseType.newBaseTypeEnumMaker();
+  if (maker != NULL) {
+    lastInitToken = maker->nextEnumItem(srcpos, enumItemSym, lastInitToken);
+    if (lastInitToken.isSet())
+      initExpr = parseExpr(lastInitToken);
+  }
+  else {
+    errorf(srcpos, E_EnumNotBaseType, "Enum init value is not of base type");
+  }
+
+  return initExpr.release();
+}
+
+
+AptNode*
 SecondPass::parseEnumDef(const Token& expr, bool isLocal)
 {
   assert(fCurrentGenericTypes.empty());
@@ -853,6 +875,8 @@ SecondPass::parseEnumDef(const Token& expr, bool isLocal)
 
   //-------- define the items as def const x = y
 
+  Token lastInitToken;
+  SrcPos lastInitPos;
   const TokenVector& enumValues = expr[ofs].children();
   for (size_t i = 0; i < enumValues.size(); i++) {
     const Token& enumVal = enumValues[i];
@@ -868,10 +892,13 @@ SecondPass::parseEnumDef(const Token& expr, bool isLocal)
 
       assert(enumVal[1] == kAssign);
       initExpr = parseExpr(enumVal[2]);
+      lastInitToken = enumVal[2];
+      lastInitPos = enumVal[2].srcpos();
     }
     else if (enumVal == kSymbol) {
       sym = enumVal.idValue();
-      initExpr = NULL;
+      initExpr = nextEnumInitValue(lastInitPos, enumVal, baseType,
+                                   lastInitToken);
     }
     else
       assert(0);
@@ -891,7 +918,7 @@ SecondPass::parseEnumDef(const Token& expr, bool isLocal)
       return NULL;
 
     Ptr<AptNode> var = new VardefNode(enumVal.srcpos(),
-                                      fullSymName, kConstVar, baseType, initExpr);
+                                      fullSymName, kEnumVar, baseType, initExpr);
     fScope->registerVar(enumVal.srcpos(), fullSymName, var);
   }
 
@@ -2504,6 +2531,13 @@ SecondPass::parseExpr(const Token& expr)
 {
   switch (expr.type()) {
   case kId:
+    {
+      const AptNode* var = fScope->lookupVar(expr.idValue(), true);
+      const VardefNode* vardef = dynamic_cast<const VardefNode*>(var);
+      if (vardef != NULL && vardef->isEnum() && vardef->initExpr() != NULL) {
+        return vardef->initExpr()->clone();
+      }
+    }
     return new SymbolNode(expr.srcpos(), expr.idValue());
 
   case kLit:

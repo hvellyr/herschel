@@ -77,6 +77,7 @@ namespace heather
     E_QualifiedSlot       = 0x4033,
     E_QualifiedEnumDefSym = 0x4034,
     E_EnumNotBaseType     = 0x4035,
+    E_EnumInitTypeMismatch= 0x4036,
 
     // enums
     E_BadEnumItemList     = 0x4050,
