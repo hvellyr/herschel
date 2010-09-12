@@ -49,7 +49,7 @@ HEA_TARGET_DESC ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh)
 
 CC_VERSION ?= $(shell CC=$(CC) $(SHELL) $(top_srcdir)/build/gccver.sh)
 
-BASE_REVISION = $(shell $(PYTHON) $(top_srcdir)/build/reprevision.py --hg=$(HG))
+BASE_REVISION = $(shell $(SHELL) $(top_srcdir)/build/reprevision.sh)
 
 
 # ----------------------------------------------------------------------
