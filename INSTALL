@@ -15,3 +15,10 @@ Requirements
 
 
 Developed on Mac OS X (10.5), Linux, and Windows XP.
+
+
+Build on Windows XP:
+
+  - only tested with mingw32.  You need at least version
+    mingw-get-inst-20100909, i.e. gcc 4.5.0.  gcc 4.4.0 shows some strange
+    inconsistency in the default c++ library setup.
