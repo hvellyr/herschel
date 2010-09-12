@@ -1,0 +1,9 @@
+def alias Abc = Int
+
+def enum XKind : Abc
+{
+  %a %b %c
+}
+
+def const a : XKind = #[%a, %b, %c]
+ 
