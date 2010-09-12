@@ -26,6 +26,7 @@ namespace heather
   class FunctionSignature;
   class FunctionParameter;
   class TypeCtx;
+  class TypeEnumMaker;
 
   typedef std::vector<Type> TypeVector;
   typedef std::vector<TypeConstraint> TypeConstVector;
@@ -208,12 +209,32 @@ namespace heather
     bool isBase() const;
     bool isBaseOrBaseRef() const;
 
+    bool isBuiltinType(TypeKind kind, const String& name) const;
+
     bool isAny() const;
 
     bool isInt() const;
     bool isString() const;
     bool isReal() const;
+    bool isKeyword() const;
+    bool isOctet() const;
+    bool isShort() const;
+    bool isWord() const;
+    bool isLong() const;
+    bool isUShort() const;
+    bool isUWord() const;
+    bool isULong() const;
+    bool isFloat() const;
+    bool isDouble() const;
+    bool isLongDouble() const;
 
+    bool isBool() const;
+    bool isChar() const;
+    bool isEof() const;
+    bool isNil() const;
+    bool isRational() const;
+
+    TypeEnumMaker* newBaseTypeEnumMaker() const;
 
     //!@ custom types
     bool isClass() const;

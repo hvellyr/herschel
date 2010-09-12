@@ -226,6 +226,7 @@ namespace heather
 
     const String& symbolName() const;
     const Type& type() const;
+    AptNode* initExpr() const;
 
   protected:
     String       fSymbolName;
@@ -272,7 +273,8 @@ namespace heather
     kNormalVar,
     kFluidVar,
     kConstVar,
-    kConfigVar
+    kConfigVar,
+    kEnumVar
   };
 
   class VardefNode : public BindingNode
@@ -284,6 +286,10 @@ namespace heather
 
     virtual VardefNode* clone() const;
     virtual void display(Port<Octet>* port) const;
+
+    bool isEnum() const;
+    bool isConst() const;
+    bool isConfig() const;
 
   private:
     VardefFlags fFlags;

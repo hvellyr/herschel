@@ -35,6 +35,7 @@ SOURCES =         \
 	tokenizer.cpp   \
 	tokenport.cpp   \
 	type.cpp        \
+	typeenum.cpp    \
 	typectx.cpp     \
 	valuesaver.cpp
 
@@ -68,6 +69,7 @@ HEADERS =         \
 	tokenizer.h     \
 	tokenport.h     \
 	type.h          \
+	typeenum.h      \
 	typectx.h       \
 	valuesaver.h
 

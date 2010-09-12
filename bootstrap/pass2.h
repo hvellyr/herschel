@@ -64,6 +64,9 @@ namespace heather
     AptNode* parseAliasDef(const Token& expr, bool isLocal);
     AptNode* parseSlotDef(const Token& expr);
     AptNode* parseEnumDef(const Token& expr, bool isLocal);
+    AptNode* nextEnumInitValue(const SrcPos& srcpos,
+                               const Token& enumItemSym,
+                               const Type& baseType, Token& lastInitToken);
     AptNode* parseMeasureDef(const Token& expr, bool isLocal);
     AptNode* parseUnitDef(const Token& expr, bool isLocal);
     AptNode* parseVarDef(const Token& expr, VardefFlags flags, int ofs,
