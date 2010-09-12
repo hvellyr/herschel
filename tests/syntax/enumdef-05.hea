@@ -6,4 +6,4 @@ def enum XKind : Abc
 }
 
 def const a : XKind = #[%a, %b, %c]
- 
+
