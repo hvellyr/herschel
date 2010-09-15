@@ -4419,20 +4419,13 @@ reify-decl      := `reify' func-signature { `,' func-signature }
 and/or return type a generic constraint section can be applied.}
 @smallformat
 @verbatim
-generics-const  := `where' constraint-expr { `,' constraint-expr }
-
-constraint-expr := type-constraint | logic-const | group-const
+generics-const  := `where' type-constraint { `,' type-constraint }
 
 type-constraint := subtype-const | sign-constraint
 subtype-const   := type-id subtype-op const-expr
 subtype-op      := COMPARE-OP
 const-expr      := expression
-sign-constraint := type-id `isa' type-clause
-
-logic-const     := constraint-expr constraint-op constraint-expr
-constraint-op   := `and' | `or'
-
-group-const     := `(' constraint-expr `)'
+sign-constraint := type-name `isa' type-clause
 @end verbatim
 @end smallformat
 
@@ -4463,12 +4456,12 @@ type-clause     := simple-type | complex-type | quoted-type
 simple-type     := type-id | param-type | array-type | funsign-def
 complex-type    := type-seq | union-type | constraint-type
 
-quoted-type     := `'' SYMBOL
+quoted-type     := `'' type-name
 
 type-name       := SYMBOL
 type-id         := IDENTIFIER
 
-constraint-type := type-clause constraint-op const-expr
+constraint-type := (type-name | quoted-type) constraint-op const-expr
 constraint-op   := COMPARE-OP
 @end verbatim
 @end smallformat
