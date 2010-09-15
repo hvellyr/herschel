@@ -2596,13 +2596,47 @@ FirstPass::parseWhereClause()
       return Token();
     }
 
-    Token constrExpr = parseExpr();
-    if (constrExpr.isSet()) {
+    if (fToken != kSymbol) {
+      errorf(fToken.srcpos(), E_SymbolExpected, "missing type name");
+      return Token();
+    }
+    Token symToken = fToken;
+    nextToken();
+
+    Token opToken = fToken;
+    OperatorType op1 = tokenTypeToOperator(fToken.tokenType());
+
+    if (op1 == kOpEqual || op1 == kOpUnequal ||
+        op1 == kOpLess  || op1 == kOpLessEqual ||
+        op1 == kOpGreater || op1 == kOpGreaterEqual ||
+        op1 == kOpIn)
+    {
+      nextToken();
+
+      Token constrExpr = parseExpr();
+      if (constrExpr.isSet()) {
+        if (delayedCommaToken.isSet()) {
+          constraints.push_back(delayedCommaToken);
+          delayedCommaToken = Token();
+        }
+        Token constrToken = Token() << symToken << opToken << constrExpr;
+        constraints.push_back(constrToken);
+      }
+    }
+    else if (op1 == kOpIsa) {
+      nextToken();
+
+      Token typeConstraint = parseTypeSpec(false);
       if (delayedCommaToken.isSet()) {
         constraints.push_back(delayedCommaToken);
         delayedCommaToken = Token();
       }
-      constraints.push_back(constrExpr);
+      Token constrToken = Token() << symToken << opToken << typeConstraint;
+      constraints.push_back(constrToken);
+    }
+    else {
+      errorf(fToken.srcpos(), E_SymbolExpected, "unexpected operator in where clause");
+      return Token();
     }
 
     if (fToken == kComma) {

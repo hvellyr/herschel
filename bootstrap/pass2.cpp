@@ -286,6 +286,56 @@ SecondPass::parseTypeSpec(const Token& expr)
 
 
 Type
+SecondPass::parseBinaryTypeSpec(const Token& expr)
+{
+  assert(expr.count() == 3);
+  assert(expr[0] == kSymbol);
+
+  TypeVector dummyGenerics;
+  TypeConstVector constraints;
+  bool isGeneric = (fCurrentGenericTypes.find(expr[0].idValue())
+                    != fCurrentGenericTypes.end());
+
+  if (expr[1] == kIsa) {
+    Type rightType = parseTypeSpec(expr[2]);
+    constraints.push_back(TypeConstraint::newType(kConstOp_isa,
+                                                  rightType));
+
+    if (isGeneric)
+      return Type::newTypeRef(expr[0].idValue(), true, constraints);
+    else
+      return Type::newTypeRef(expr[0].idValue(),
+                              dummyGenerics, constraints);
+  }
+
+  TypeConstOperator op = kConstOp_equal;
+  if (expr[1] == kIn)
+    op = kConstOp_in;
+  else if (expr[1] == kEqual)
+    op = kConstOp_equal;
+  else if (expr[1] == kUnequal)
+    op = kConstOp_notEqual;
+  else if (expr[1] == kLess)
+    op = kConstOp_less;
+  else if (expr[1] == kLessEqual)
+    op = kConstOp_lessEqual;
+  else if (expr[1] == kGreater)
+    op = kConstOp_greater;
+  else if (expr[1] == kGreaterEqual)
+    op = kConstOp_greaterEqual;
+  else
+    assert(0);
+
+  constraints.push_back(TypeConstraint::newValue(op, expr[2]));
+  if (isGeneric)
+    return Type::newTypeRef(expr[0].idValue(), true, constraints);
+  else
+    return Type::newTypeRef(expr[0].idValue(),
+                            dummyGenerics, constraints);
+}
+
+
+Type
 SecondPass::parseTypeSpecImpl(const Token& expr)
 {
   if (expr == kSymbol) {
@@ -354,51 +404,7 @@ SecondPass::parseTypeSpecImpl(const Token& expr)
         assert(0);
     }
     else if (expr.count() == 3) {
-      if (expr[0] == kSymbol) {
-        TypeVector dummyGenerics;
-        TypeConstVector constraints;
-        bool isGeneric = (fCurrentGenericTypes.find(expr[0].idValue())
-                          != fCurrentGenericTypes.end());
-
-        if (expr[1] == kIsa) {
-          Type rightType = parseTypeSpec(expr[2]);
-          constraints.push_back(TypeConstraint::newType(kConstOp_isa,
-                                                        rightType));
-
-          if (isGeneric)
-            return Type::newTypeRef(expr[0].idValue(), true, constraints);
-          else
-            return Type::newTypeRef(expr[0].idValue(),
-                                    dummyGenerics, constraints);
-        }
-
-        TypeConstOperator op = kConstOp_equal;
-        if (expr[1] == kIn)
-          op = kConstOp_in;
-        else if (expr[1] == kEqual)
-          op = kConstOp_equal;
-        else if (expr[1] == kUnequal)
-          op = kConstOp_notEqual;
-        else if (expr[1] == kLess)
-          op = kConstOp_less;
-        else if (expr[1] == kLessEqual)
-          op = kConstOp_lessEqual;
-        else if (expr[1] == kGreater)
-          op = kConstOp_greater;
-        else if (expr[1] == kGreaterEqual)
-          op = kConstOp_greaterEqual;
-        else
-          assert(0);
-
-        constraints.push_back(TypeConstraint::newValue(op, expr[2]));
-        if (isGeneric)
-          return Type::newTypeRef(expr[0].idValue(), true, constraints);
-        else
-          return Type::newTypeRef(expr[0].idValue(),
-                                  dummyGenerics, constraints);
-      }
-      else
-        assert(0);
+      return parseBinaryTypeSpec(expr);
     }
     else if (expr.count() == 4) {
       if (expr[0] == kFUNCTIONId &&
@@ -516,6 +522,34 @@ SecondPass::protocolNodeListToType(FunctionSignatureVector* protoSignatures,
 }
 
 
+Type
+SecondPass::parseWhereConstraint(const Token& whereConstrSeq)
+{
+  assert(whereConstrSeq.isSeq());
+  assert(whereConstrSeq.count() == 3);
+  assert(whereConstrSeq[0] == kSymbol);
+
+  return parseBinaryTypeSpec(whereConstrSeq);
+}
+
+
+void
+SecondPass::parseWhereClause(const Token& whereSeq)
+{
+  const TokenVector& whereClause = whereSeq.children();
+  assert(whereClause[0] == kWhereId);
+  assert(whereClause.size() > 1);
+
+  for (size_t i = 1; i < whereClause.size(); i++) {
+    if (whereClause[i] == kComma)
+      continue;
+    Type ty = parseWhereConstraint(whereClause[i]);
+
+    // printf("WHERE TYPE: %s\n", (const char*)StrHelper(ty.toString()));
+  }
+}
+
+
 AptNode*
 SecondPass::parseTypeDef(const Token& expr, bool isClass)
 {
@@ -570,9 +604,8 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
       seq[ofs].isSeq() && seq[ofs].count() > 1 &&
       seq[ofs][0] == kWhereId)
   {
-    // TODO.  Don't parse the where clause into apt nodes here, but enrich a
-    // passed in context.  The 'Where' information is used to transform
-    // quoted types into full type spec later.
+    // TODO
+    parseWhereClause(seq[ofs]);
     ofs++;
   }
 
@@ -1130,10 +1163,8 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
     if (seq[ofs].isSeq() && seq[ofs].count() > 1 &&
         seq[ofs][0] == kWhereId)
     {
-      // TODO.  Don't parse the where clause into apt nodes here, but enrich a
-      // passed in context.  The 'Where' information is used to transform
-      // quoted types into full type spec later.
-      // data.fWhere =
+      // TODO
+      parseWhereClause(seq[ofs]);
       ofs++;
     }
   }
