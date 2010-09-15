@@ -135,6 +135,10 @@ namespace heather
                            FundefClauseData& data);
 
 
+    Type parseBinaryTypeSpec(const Token& expr);
+    Type parseWhereConstraint(const Token& whereConstrSeq);
+    void parseWhereClause(const Token& whereSeq);
+
     //-------- data member
 
     std::set<String>         fCurrentGenericTypes;
