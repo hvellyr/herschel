@@ -354,7 +354,7 @@ SecondPass::parseTypeSpecImpl(const Token& expr)
         // identifier with generic arguments
         if (fCurrentGenericTypes.find(expr[0].idValue()) != fCurrentGenericTypes.end())
           errorf(expr[0].srcpos(), E_SuperGenericType,
-                 "Type reference '%s' is super generic",
+                 "Generic type reference '%s' with parameters",
                  (const char*)StrHelper(expr[0].idValue()));
 
         TypeVector generics;
@@ -388,8 +388,8 @@ SecondPass::parseTypeSpecImpl(const Token& expr)
             sizeInd = p.intValue();
           }
           else {
-            fprintf(stderr, "ERROR: array size expression did not evaluate to integer. "
-                    "Treat it as 0\n");
+            errorf(expr[1][0].srcpos(), E_InvaliArraySize,
+                   "array size expression did not evaluate to integer. Treat it as 0");
           }
         }
 
