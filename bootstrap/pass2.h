@@ -11,6 +11,7 @@
 
 #include <set>
 #include <list>
+#include <map>
 
 #include "apt.h"
 #include "parser.h"
@@ -135,14 +136,42 @@ namespace heather
                            FundefClauseData& data);
 
 
-    Type parseBinaryTypeSpec(const Token& expr);
+    Type parseBinaryTypeSpec(const Token& expr, bool forceGeneric);
     Type parseWhereConstraint(const Token& whereConstrSeq);
     void parseWhereClause(const Token& whereSeq);
 
+    Type genericTypeRef(const String& id) const;
+    size_t getWhereOfs(const Token& expr) const;
+    size_t getWhereOfs(const TokenVector& seq, size_t ofs) const;
+
+
+    typedef std::map<String, Type> TSharedGenericTable;
+    class TSharedGenericScopeHelper
+    {
+    public:
+      TSharedGenericScopeHelper(TSharedGenericTable& table)
+        : fOldTable(table),
+          fOldLoc(table)
+      {
+        // don't reset the old table.  We keep it as is and simply overwrite
+        // it with new values to get a simple read-through mechanism to deeper
+        // layers
+      }
+
+      ~TSharedGenericScopeHelper()
+      {
+        fOldLoc = fOldTable;
+      }
+
+      TSharedGenericTable fOldTable;
+      TSharedGenericTable& fOldLoc;
+    };
+
     //-------- data member
 
-    std::set<String>         fCurrentGenericTypes;
-    Ptr<AptNode> fRootNode;
+    std::set<String>    fCurrentGenericTypes;
+    TSharedGenericTable fSharedGenericTable;
+    Ptr<AptNode>        fRootNode;
   };
 };
 
