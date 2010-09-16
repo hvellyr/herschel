@@ -1201,8 +1201,7 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
     if (seq[ofs].isSeq() && seq[ofs].count() > 1 &&
         seq[ofs][0] == kReifyId)
     {
-      // data.fReify =
-      // TODO
+      // TODO: data.fReify =
       ofs++;
     }
   }
