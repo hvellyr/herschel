@@ -4287,6 +4287,7 @@ typedef-clause  := `type' type-name
                    [ `{' { protocol-decl } `}' ]
 
 aliasdef-clause := `alias' type-name [ generics-spec ]
+                   [ generics-const ]
                    [ DOCSTRING ]
                    `=' type-clause
 @end verbatim

@@ -286,7 +286,7 @@ SecondPass::parseTypeSpec(const Token& expr)
 
 
 Type
-SecondPass::parseBinaryTypeSpec(const Token& expr)
+SecondPass::parseBinaryTypeSpec(const Token& expr, bool forceGeneric)
 {
   assert(expr.count() == 3);
   assert(expr[0] == kSymbol);
@@ -301,7 +301,7 @@ SecondPass::parseBinaryTypeSpec(const Token& expr)
     constraints.push_back(TypeConstraint::newType(kConstOp_isa,
                                                   rightType));
 
-    if (isGeneric)
+    if (isGeneric || forceGeneric)
       return Type::newTypeRef(expr[0].idValue(), true, constraints);
     else
       return Type::newTypeRef(expr[0].idValue(),
@@ -327,11 +327,23 @@ SecondPass::parseBinaryTypeSpec(const Token& expr)
     assert(0);
 
   constraints.push_back(TypeConstraint::newValue(op, expr[2]));
-  if (isGeneric)
+  if (isGeneric || forceGeneric)
     return Type::newTypeRef(expr[0].idValue(), true, constraints);
-  else
-    return Type::newTypeRef(expr[0].idValue(),
-                            dummyGenerics, constraints);
+
+  return Type::newTypeRef(expr[0].idValue(),
+                          dummyGenerics, constraints);
+}
+
+
+Type
+SecondPass::genericTypeRef(const String& id) const
+{
+  TSharedGenericTable::const_iterator it = fSharedGenericTable.find(id);
+  if (it != fSharedGenericTable.end())
+    return it->second;
+
+  TypeConstVector dummyConstraints;
+  return Type::newTypeRef(id, true, dummyConstraints);
 }
 
 
@@ -339,10 +351,8 @@ Type
 SecondPass::parseTypeSpecImpl(const Token& expr)
 {
   if (expr == kSymbol) {
-    if (fCurrentGenericTypes.find(expr.idValue()) != fCurrentGenericTypes.end()) {
-        TypeConstVector dummyConstraints;
-        return Type::newTypeRef(expr.idValue(), true, dummyConstraints);
-    }
+    if (fCurrentGenericTypes.find(expr.idValue()) != fCurrentGenericTypes.end())
+      return genericTypeRef(expr.idValue());
     else
       return Type::newTypeRef(expr.idValue());
   }
@@ -397,14 +407,13 @@ SecondPass::parseTypeSpecImpl(const Token& expr)
       }
       else if (expr[0] == kQuote) {
         assert(expr[1] == kSymbol);
-        TypeConstVector dummyConstraints;
-        return Type::newTypeRef(expr[1].idValue(), true, dummyConstraints);
+        return genericTypeRef(expr[1].idValue());
       }
       else
         assert(0);
     }
     else if (expr.count() == 3) {
-      return parseBinaryTypeSpec(expr);
+      return parseBinaryTypeSpec(expr, false);
     }
     else if (expr.count() == 4) {
       if (expr[0] == kFUNCTIONId &&
@@ -529,7 +538,7 @@ SecondPass::parseWhereConstraint(const Token& whereConstrSeq)
   assert(whereConstrSeq.count() == 3);
   assert(whereConstrSeq[0] == kSymbol);
 
-  return parseBinaryTypeSpec(whereConstrSeq);
+  return parseBinaryTypeSpec(whereConstrSeq, true);
 }
 
 
@@ -545,8 +554,35 @@ SecondPass::parseWhereClause(const Token& whereSeq)
       continue;
     Type ty = parseWhereConstraint(whereClause[i]);
 
-    // printf("WHERE TYPE: %s\n", (const char*)StrHelper(ty.toString()));
+    TSharedGenericTable::iterator it = fSharedGenericTable.find(ty.typeName());
+    if (it != fSharedGenericTable.end())
+      it->second = ty;
+    else
+      fSharedGenericTable.insert(std::make_pair(ty.typeName(), ty));
   }
+}
+
+
+size_t
+SecondPass::getWhereOfs(const TokenVector& seq, size_t ofs) const
+{
+  for (size_t i = ofs; i < seq.size(); i++) {
+    if (seq[i].isSeq() && seq[i].count() > 1 &&
+        seq[i][0] == kWhereId)
+    {
+      assert(i > ofs);
+      return i;
+    }
+  }
+
+  return 0;
+}
+
+
+size_t
+SecondPass::getWhereOfs(const Token& expr) const
+{
+  return getWhereOfs(expr.children(), 0);
 }
 
 
@@ -554,6 +590,7 @@ AptNode*
 SecondPass::parseTypeDef(const Token& expr, bool isClass)
 {
   assert(fCurrentGenericTypes.empty());
+  TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
 
   assert(expr.isSeq());
   assert(expr.count() >= 3);
@@ -567,6 +604,10 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
   String fullTypeName = qualifyId(currentModuleName(), typeName);
 
   ofs++;
+
+  size_t whereOfs = ofs;
+  if ((whereOfs = getWhereOfs(expr)) >= ofs)
+    parseWhereClause(seq[whereOfs]);
 
   TypeVector generics;
   if (ofs < seq.size() &&
@@ -600,14 +641,8 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
     ofs += 2;
   }
 
-  if (ofs < seq.size() &&
-      seq[ofs].isSeq() && seq[ofs].count() > 1 &&
-      seq[ofs][0] == kWhereId)
-  {
-    // TODO
-    parseWhereClause(seq[ofs]);
+  if (ofs == whereOfs)
     ofs++;
-  }
 
   NodeList slotDefs;
   NodeList reqProtocol;
@@ -674,14 +709,12 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
     paramsNodeListToType(&funcParams, defaultApplyParams);
 
     TypeVector genGenerics;
-    TypeConstVector dummyConstraints;
     for (size_t i = 0; i < generics.size(); i++) {
       assert(generics[i].isRef());
-      genGenerics.push_back(Type::newTypeRef(generics[i].typeName(),
-                                             true,
-                                             dummyConstraints));
+      genGenerics.push_back(genericTypeRef(generics[i].typeName()));
     }
 
+    TypeConstVector dummyConstraints;
     FunctionSignature defApplySign(true,
                                    String("apply"),
                                    Type::newTypeRef(fullTypeName, genGenerics,
@@ -723,6 +756,7 @@ AptNode*
 SecondPass::parseAliasDef(const Token& expr, bool isLocal)
 {
   assert(fCurrentGenericTypes.empty());
+  TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
 
   assert(expr.isSeq());
   assert(expr.count() > 4);
@@ -740,6 +774,10 @@ SecondPass::parseAliasDef(const Token& expr, bool isLocal)
     aliasName = baseName(aliasName);
   }
   ofs++;
+
+  size_t whereOfs = ofs;
+  if ((whereOfs = getWhereOfs(expr)) >= ofs)
+    parseWhereClause(seq[whereOfs]);
 
   TypeVector generics;
   if (ofs < seq.size() &&
@@ -760,6 +798,9 @@ SecondPass::parseAliasDef(const Token& expr, bool isLocal)
     referedType = parseTypeSpec(seq[ofs + 1]);
     ofs += 2;
   }
+
+  if (ofs == whereOfs)
+    ofs++;
 
   String fullAliasName = ( isLocal
                            ? aliasName
@@ -1139,6 +1180,13 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
                               FundefClauseData& data)
 {
   assert(seq[ofs].isNested());
+
+  TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
+
+  size_t whereOfs = ofs;
+  if ((whereOfs = getWhereOfs(seq, ofs)) >= ofs)
+    parseWhereClause(seq[whereOfs]);
+
   parseParameters(&data.fParams, seq[ofs].children());
   ofs++;
 
@@ -1159,15 +1207,8 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
     }
   }
 
-  if (ofs < seq.size()) {
-    if (seq[ofs].isSeq() && seq[ofs].count() > 1 &&
-        seq[ofs][0] == kWhereId)
-    {
-      // TODO
-      parseWhereClause(seq[ofs]);
-      ofs++;
-    }
-  }
+  if (ofs == whereOfs)
+    ofs++;
 
   if (ofs < seq.size()) {
     if (seq[ofs] == kEllipsis)
