@@ -138,14 +138,12 @@ Bootstrap compiler
   - Implement last missing pass1 stuff
     - what's about multiple return values?  Spe?  Pass1?  Pass2?
 
-  - pass2:
-    - replace the UnitConstant node by a proper Measure() ctor call.  Apply
-      the unit transformation inplace (if simple enough).  Register
-      unit-transform calls as special functions.
-    - where clauses
-    - enum:
-      - construct proper enum constraint type
-      - check that init values match the base type
+  - replace the UnitConstant node by a proper Measure() ctor call.  Apply
+    the unit transformation inplace (if simple enough).  Register
+    unit-transform calls as special functions.
+  - enum:
+    - construct proper enum constraint type
+    - check that init values match the base type
 
   - access values from enums as Enum::item
   - extend macro parameter types (like ?a:type-spec)
