@@ -1,13 +1,12 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
 */
 
 #include "valuesaver.h"
-#include "unittests.h"
 
 
 using namespace heather;
@@ -15,28 +14,31 @@ using namespace heather;
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class ValueSaverUnitTest : public UnitTest
-{
-public:
-  ValueSaverUnitTest() : UnitTest("ValueSaver") {}
+#include <UnitTest++.h>
 
-  virtual void run()
+SUITE(ValueSaver)
+{
+  TEST(DefaultInit)
   {
     int x = 11;
     {
       ValueSaver<int> vs(x);
       x = 5;
     }
-    assert(x == 11);
+    CHECK_EQUAL(x, 11);
+  }
 
+
+  TEST(CustomInit)
+  {
+    int x = 11;
     {
       ValueSaver<int> vs(x, 22);
-      assert(x == 22);
+      CHECK_EQUAL(x, 22);
+      x = 5;
     }
-    assert(x == 11);
+    CHECK_EQUAL(x, 11);
   }
-};
-
-static ValueSaverUnitTest valueSaverUnitTest;
+}
 
 #endif  // #if defined(UNITTESTS)

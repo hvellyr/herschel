@@ -43,6 +43,8 @@ namespace heather
 
   void error(const SrcPos& where, int errorCode, const String& msg);
   void errorf(const SrcPos& where, int errorCode, const char* format, ...);
+
+  void warning(const SrcPos& where, int errorCode, const String& msg);
 };
 
 #endif  // bootstrap_log_h

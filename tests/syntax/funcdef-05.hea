@@ -10,5 +10,5 @@ def generic put(value @ 'V, key @ 'K) : ('V, 'T)
 
 
 def value(cont @ 'C)
-    where C isa Collection and C isa Nullable
+    where C isa (Collection, Nullable)
   cont

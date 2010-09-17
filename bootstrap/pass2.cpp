@@ -19,6 +19,7 @@
 #include "token.h"
 #include "tokeneval.h"
 #include "tokenizer.h"
+#include "typeenum.h"
 
 
 using namespace heather;
@@ -109,12 +110,32 @@ SecondPass::parseExport(const Token& expr)
   }
 
   assert(expr.count() > symbolOfs);
-  StringList symbols;
+  std::vector<Scope::ScopeName> symbols;
+
   if (expr[symbolOfs].isNested()) {
     Token symbolExprs = expr[symbolOfs];
+
     for (int j = 0; j < symbolExprs.count(); j++) {
-      if (symbolExprs[j].isSymbol())
-        symbols.push_back(symbolExprs[j].idValue());
+      if (symbolExprs[j].isSymbol()) {
+        symbols.push_back(Scope::ScopeName(Scope::kNormal, symbolExprs[j].idValue()));
+      }
+      else if (symbolExprs[j].isSeq()) {
+        assert(symbolExprs[j].count() == 3);
+        assert(symbolExprs[j][1] == kColon);
+        assert(symbolExprs[j][2] == kSymbol);
+
+        Scope::ScopeDomain domain = Scope::kNormal;
+        if (symbolExprs[j][2] == Parser::unitToken)
+          domain = Scope::kUnit;
+        else if (symbolExprs[j][2] == Parser::charToken)
+          domain = Scope::kChar;
+        else {
+          warning(symbolExprs[j][2].srcpos(), E_UnknownSymbolDomain,
+                  String("unknown symbol domain: ") + symbolExprs[j][2].idValue());
+        }
+
+        symbols.push_back(Scope::ScopeName(domain, symbolExprs[j][0].idValue()));
+      }
     }
   }
 
@@ -127,14 +148,15 @@ SecondPass::parseExport(const Token& expr)
   }
 
 
-  for (StringList::const_iterator it = symbols.begin();
+  for (std::vector<Scope::ScopeName>::const_iterator it = symbols.begin();
        it != symbols.end();
        it++)
   {
-    String fullId = ( isQualified(*it)
-                      ? *it
-                      : qualifyId(currentModuleName(), *it) );
-    fScope->registerSymbolForExport(fullId, vizType, isFinal);
+    Scope::ScopeDomain domain = it->fDomain;
+    String fullId = ( isQualified(it->fName)
+                      ? it->fName
+                      : qualifyId(currentModuleName(), it->fName));
+    fScope->registerSymbolForExport(domain, fullId, vizType, isFinal);
   }
 
   return NULL;
@@ -264,13 +286,73 @@ SecondPass::parseTypeSpec(const Token& expr)
 
 
 Type
+SecondPass::parseBinaryTypeSpec(const Token& expr, bool forceGeneric)
+{
+  assert(expr.count() == 3);
+  assert(expr[0] == kSymbol);
+
+  TypeVector dummyGenerics;
+  TypeConstVector constraints;
+  bool isGeneric = (fCurrentGenericTypes.find(expr[0].idValue())
+                    != fCurrentGenericTypes.end());
+
+  if (expr[1] == kIsa) {
+    Type rightType = parseTypeSpec(expr[2]);
+    constraints.push_back(TypeConstraint::newType(kConstOp_isa,
+                                                  rightType));
+
+    if (isGeneric || forceGeneric)
+      return Type::newTypeRef(expr[0].idValue(), true, constraints);
+    else
+      return Type::newTypeRef(expr[0].idValue(),
+                              dummyGenerics, constraints);
+  }
+
+  TypeConstOperator op = kConstOp_equal;
+  if (expr[1] == kIn)
+    op = kConstOp_in;
+  else if (expr[1] == kEqual)
+    op = kConstOp_equal;
+  else if (expr[1] == kUnequal)
+    op = kConstOp_notEqual;
+  else if (expr[1] == kLess)
+    op = kConstOp_less;
+  else if (expr[1] == kLessEqual)
+    op = kConstOp_lessEqual;
+  else if (expr[1] == kGreater)
+    op = kConstOp_greater;
+  else if (expr[1] == kGreaterEqual)
+    op = kConstOp_greaterEqual;
+  else
+    assert(0);
+
+  constraints.push_back(TypeConstraint::newValue(op, expr[2]));
+  if (isGeneric || forceGeneric)
+    return Type::newTypeRef(expr[0].idValue(), true, constraints);
+
+  return Type::newTypeRef(expr[0].idValue(),
+                          dummyGenerics, constraints);
+}
+
+
+Type
+SecondPass::genericTypeRef(const String& id) const
+{
+  TSharedGenericTable::const_iterator it = fSharedGenericTable.find(id);
+  if (it != fSharedGenericTable.end())
+    return it->second;
+
+  TypeConstVector dummyConstraints;
+  return Type::newTypeRef(id, true, dummyConstraints);
+}
+
+
+Type
 SecondPass::parseTypeSpecImpl(const Token& expr)
 {
   if (expr == kSymbol) {
-    if (fCurrentGenericTypes.find(expr.idValue()) != fCurrentGenericTypes.end()) {
-        TypeConstVector dummyConstraints;
-        return Type::newTypeRef(expr.idValue(), true, dummyConstraints);
-    }
+    if (fCurrentGenericTypes.find(expr.idValue()) != fCurrentGenericTypes.end())
+      return genericTypeRef(expr.idValue());
     else
       return Type::newTypeRef(expr.idValue());
   }
@@ -282,7 +364,7 @@ SecondPass::parseTypeSpecImpl(const Token& expr)
         // identifier with generic arguments
         if (fCurrentGenericTypes.find(expr[0].idValue()) != fCurrentGenericTypes.end())
           errorf(expr[0].srcpos(), E_SuperGenericType,
-                 "Type reference '%s' is super generic",
+                 "Generic type reference '%s' with parameters",
                  (const char*)StrHelper(expr[0].idValue()));
 
         TypeVector generics;
@@ -316,8 +398,8 @@ SecondPass::parseTypeSpecImpl(const Token& expr)
             sizeInd = p.intValue();
           }
           else {
-            fprintf(stderr, "ERROR: array size expression did not evaluate to integer. "
-                    "Treat it as 0\n");
+            errorf(expr[1][0].srcpos(), E_InvaliArraySize,
+                   "array size expression did not evaluate to integer. Treat it as 0");
           }
         }
 
@@ -325,58 +407,13 @@ SecondPass::parseTypeSpecImpl(const Token& expr)
       }
       else if (expr[0] == kQuote) {
         assert(expr[1] == kSymbol);
-        TypeConstVector dummyConstraints;
-        return Type::newTypeRef(expr[1].idValue(), true, dummyConstraints);
+        return genericTypeRef(expr[1].idValue());
       }
       else
         assert(0);
     }
     else if (expr.count() == 3) {
-      if (expr[0] == kSymbol) {
-        TypeVector dummyGenerics;
-        TypeConstVector constraints;
-        bool isGeneric = (fCurrentGenericTypes.find(expr[0].idValue())
-                          != fCurrentGenericTypes.end());
-
-        if (expr[1] == kIsa) {
-          Type rightType = parseTypeSpec(expr[2]);
-          constraints.push_back(TypeConstraint::newType(kConstOp_isa,
-                                                        rightType));
-
-          if (isGeneric)
-            return Type::newTypeRef(expr[0].idValue(), true, constraints);
-          else
-            return Type::newTypeRef(expr[0].idValue(),
-                                    dummyGenerics, constraints);
-        }
-
-        TypeConstOperator op = kConstOp_equal;
-        if (expr[1] == kIn)
-          op = kConstOp_in;
-        else if (expr[1] == kEqual)
-          op = kConstOp_equal;
-        else if (expr[1] == kUnequal)
-          op = kConstOp_notEqual;
-        else if (expr[1] == kLess)
-          op = kConstOp_less;
-        else if (expr[1] == kLessEqual)
-          op = kConstOp_lessEqual;
-        else if (expr[1] == kGreater)
-          op = kConstOp_greater;
-        else if (expr[1] == kGreaterEqual)
-          op = kConstOp_greaterEqual;
-        else
-          assert(0);
-
-        constraints.push_back(TypeConstraint::newValue(op, expr[2]));
-        if (isGeneric)
-          return Type::newTypeRef(expr[0].idValue(), true, constraints);
-        else
-          return Type::newTypeRef(expr[0].idValue(),
-                                  dummyGenerics, constraints);
-      }
-      else
-        assert(0);
+      return parseBinaryTypeSpec(expr, false);
     }
     else if (expr.count() == 4) {
       if (expr[0] == kFUNCTIONId &&
@@ -494,10 +531,66 @@ SecondPass::protocolNodeListToType(FunctionSignatureVector* protoSignatures,
 }
 
 
+Type
+SecondPass::parseWhereConstraint(const Token& whereConstrSeq)
+{
+  assert(whereConstrSeq.isSeq());
+  assert(whereConstrSeq.count() == 3);
+  assert(whereConstrSeq[0] == kSymbol);
+
+  return parseBinaryTypeSpec(whereConstrSeq, true);
+}
+
+
+void
+SecondPass::parseWhereClause(const Token& whereSeq)
+{
+  const TokenVector& whereClause = whereSeq.children();
+  assert(whereClause[0] == kWhereId);
+  assert(whereClause.size() > 1);
+
+  for (size_t i = 1; i < whereClause.size(); i++) {
+    if (whereClause[i] == kComma)
+      continue;
+    Type ty = parseWhereConstraint(whereClause[i]);
+
+    TSharedGenericTable::iterator it = fSharedGenericTable.find(ty.typeName());
+    if (it != fSharedGenericTable.end())
+      it->second = ty;
+    else
+      fSharedGenericTable.insert(std::make_pair(ty.typeName(), ty));
+  }
+}
+
+
+size_t
+SecondPass::getWhereOfs(const TokenVector& seq, size_t ofs) const
+{
+  for (size_t i = ofs; i < seq.size(); i++) {
+    if (seq[i].isSeq() && seq[i].count() > 1 &&
+        seq[i][0] == kWhereId)
+    {
+      assert(i > ofs);
+      return i;
+    }
+  }
+
+  return 0;
+}
+
+
+size_t
+SecondPass::getWhereOfs(const Token& expr) const
+{
+  return getWhereOfs(expr.children(), 0);
+}
+
+
 AptNode*
 SecondPass::parseTypeDef(const Token& expr, bool isClass)
 {
   assert(fCurrentGenericTypes.empty());
+  TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
 
   assert(expr.isSeq());
   assert(expr.count() >= 3);
@@ -511,6 +604,10 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
   String fullTypeName = qualifyId(currentModuleName(), typeName);
 
   ofs++;
+
+  size_t whereOfs = ofs;
+  if ((whereOfs = getWhereOfs(expr)) >= ofs)
+    parseWhereClause(seq[whereOfs]);
 
   TypeVector generics;
   if (ofs < seq.size() &&
@@ -544,15 +641,8 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
     ofs += 2;
   }
 
-  if (ofs < seq.size() &&
-      seq[ofs].isSeq() && seq[ofs].count() > 1 &&
-      seq[ofs][0] == kWhereId)
-  {
-    // TODO.  Don't parse the where clause into apt nodes here, but enrich a
-    // passed in context.  The 'Where' information is used to transform
-    // quoted types into full type spec later.
+  if (ofs == whereOfs)
     ofs++;
-  }
 
   NodeList slotDefs;
   NodeList reqProtocol;
@@ -619,14 +709,12 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
     paramsNodeListToType(&funcParams, defaultApplyParams);
 
     TypeVector genGenerics;
-    TypeConstVector dummyConstraints;
     for (size_t i = 0; i < generics.size(); i++) {
       assert(generics[i].isRef());
-      genGenerics.push_back(Type::newTypeRef(generics[i].typeName(),
-                                             true,
-                                             dummyConstraints));
+      genGenerics.push_back(genericTypeRef(generics[i].typeName()));
     }
 
+    TypeConstVector dummyConstraints;
     FunctionSignature defApplySign(true,
                                    String("apply"),
                                    Type::newTypeRef(fullTypeName, genGenerics,
@@ -647,7 +735,8 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
 
   fCurrentGenericTypes.clear();
 
-  if (fScope->checkForRedefinition(expr.srcpos(), fullTypeName))
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullTypeName))
     return NULL;
 
   fScope->registerType(expr.srcpos(), fullTypeName, defType);
@@ -667,6 +756,7 @@ AptNode*
 SecondPass::parseAliasDef(const Token& expr, bool isLocal)
 {
   assert(fCurrentGenericTypes.empty());
+  TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
 
   assert(expr.isSeq());
   assert(expr.count() > 4);
@@ -684,6 +774,10 @@ SecondPass::parseAliasDef(const Token& expr, bool isLocal)
     aliasName = baseName(aliasName);
   }
   ofs++;
+
+  size_t whereOfs = ofs;
+  if ((whereOfs = getWhereOfs(expr)) >= ofs)
+    parseWhereClause(seq[whereOfs]);
 
   TypeVector generics;
   if (ofs < seq.size() &&
@@ -705,13 +799,18 @@ SecondPass::parseAliasDef(const Token& expr, bool isLocal)
     ofs += 2;
   }
 
+  if (ofs == whereOfs)
+    ofs++;
+
   String fullAliasName = ( isLocal
                            ? aliasName
                            : qualifyId(currentModuleName(), aliasName) );
 
-  if (fScope->checkForRedefinition(expr.srcpos(), fullAliasName))
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullAliasName)) {
+    fCurrentGenericTypes.clear();
     return NULL;
-
+  }
 
   Type aliasType = Type::newAlias(fullAliasName, generics, referedType);
 
@@ -791,9 +890,128 @@ SecondPass::parseSlotDef(const Token& expr)
 
 
 AptNode*
+SecondPass::nextEnumInitValue(const SrcPos& srcpos,
+                              const Token& enumItemSym,
+                              const Type& baseType, Token& lastInitToken)
+{
+  Ptr<AptNode> initExpr;
+
+  Ptr<TypeEnumMaker> maker = baseType.newBaseTypeEnumMaker();
+  if (maker != NULL) {
+    lastInitToken = maker->nextEnumItem(srcpos, enumItemSym, lastInitToken);
+    if (lastInitToken.isSet())
+      initExpr = parseExpr(lastInitToken);
+  }
+  else {
+    errorf(srcpos, E_EnumNotBaseType, "Enum init value is not of base type");
+  }
+
+  return initExpr.release();
+}
+
+
+AptNode*
 SecondPass::parseEnumDef(const Token& expr, bool isLocal)
 {
-  // TODO
+  assert(fCurrentGenericTypes.empty());
+
+  assert(expr.isSeq());
+  assert(expr.count() == 4 || expr.count() == 6);
+  assert(expr[1] == Parser::enumToken);
+  assert(expr[2] == kSymbol);
+
+  size_t ofs = 2;
+
+  const TokenVector& seq = expr.children();
+  String enumTypeName = seq[ofs].idValue();
+  String fullEnumName = ( isLocal
+                          ? enumTypeName
+                          : qualifyId(currentModuleName(), enumTypeName) );
+  ofs++;
+
+  Type baseType;
+  if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
+    baseType = parseTypeSpec(seq[ofs + 1]);
+    ofs += 2;
+  }
+  else
+    baseType = Type::newTypeRef(Type::kIntTypeName);
+
+  if (!baseType.isBaseOrBaseRef()) {
+    errorf(expr.srcpos(), E_EnumNotBaseType, "Enum base is not a base type.");
+    return NULL;
+  }
+
+  assert(expr[ofs].isNested());
+  assert(expr[ofs].leftToken() == kBraceOpen);
+
+  fCurrentGenericTypes.clear();
+
+  //-------- define the items as def const x = y
+
+  Token lastInitToken;
+  SrcPos lastInitPos;
+  const TokenVector& enumValues = expr[ofs].children();
+  for (size_t i = 0; i < enumValues.size(); i++) {
+    const Token& enumVal = enumValues[i];
+
+    String sym;
+    Ptr<AptNode> initExpr;
+
+    if (enumVal.isSeq()) {
+      assert(enumVal.count() >= 3);
+      assert(enumVal[0] == kSymbol);
+
+      sym = enumVal[0].idValue();
+
+      assert(enumVal[1] == kAssign);
+      initExpr = parseExpr(enumVal[2]);
+      lastInitToken = enumVal[2];
+      lastInitPos = enumVal[2].srcpos();
+    }
+    else if (enumVal == kSymbol) {
+      sym = enumVal.idValue();
+      initExpr = nextEnumInitValue(lastInitPos, enumVal, baseType,
+                                   lastInitToken);
+    }
+    else
+      assert(0);
+
+    if (isQualified(sym)) {
+      errorf(enumVal.srcpos(), E_QualifiedEnumDefSym,
+             "Enum item definitions must not be qualified. "
+             "Ignore namespace");
+      sym = baseName(sym);
+    }
+
+    String fullSymName = ( isLocal
+                           ? sym
+                           : qualifyId(currentModuleName(), sym) );
+    if (fScope->checkForRedefinition(enumVal.srcpos(),
+                                     Scope::kNormal, fullSymName))
+      return NULL;
+
+    Ptr<AptNode> var = new VardefNode(enumVal.srcpos(),
+                                      fullSymName, kEnumVar, baseType, initExpr);
+    fScope->registerVar(enumVal.srcpos(), fullSymName, var);
+  }
+
+  //-------- define the enum type as 'def type X : (Y in ...)'
+
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullEnumName))
+    return NULL;
+
+  // TODO: make the enum type actually a constraint type of the values of the
+  // defined items.
+  TypeVector dummyGenerics;
+  TypeConstVector constraints;
+  Type enumType = Type::newTypeRef(baseType.typeName(),
+                                   dummyGenerics, constraints);
+
+  fScope->registerType(expr.srcpos(), fullEnumName, enumType);
+
+  // there's no apt node to generate here.
   return NULL;
 }
 
@@ -801,15 +1019,108 @@ SecondPass::parseEnumDef(const Token& expr, bool isLocal)
 AptNode*
 SecondPass::parseMeasureDef(const Token& expr, bool isLocal)
 {
-  // TODO
-  return NULL;
+  assert(fCurrentGenericTypes.empty());
+
+  assert(expr.isSeq());
+  assert(expr.count() == 6);
+  assert(expr[1] == Parser::measureToken);
+  assert(expr[2] == kSymbol);
+  assert(expr[3].isNested());
+  assert(expr[3].count() == 1);
+  assert(expr[3][0] == kSymbol);
+  assert(expr[4] == kColon);
+
+  size_t ofs = 2;
+
+  const TokenVector& seq = expr.children();
+  String typeName = seq[ofs].idValue();
+  String fullTypeName = qualifyId(currentModuleName(), typeName);
+  ofs++;
+
+  String unitName = seq[ofs][0].idValue();
+  String fullUnitName = qualifyId(currentModuleName(), unitName);
+  ofs++;
+
+  Type isaFrom;
+  if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
+    isaFrom = parseTypeSpec(seq[ofs + 1]);
+    ofs += 2;
+  }
+
+  fCurrentGenericTypes.clear();
+
+  Type defMeasureType = Type::newMeasure(fullTypeName, isaFrom, fullUnitName);
+
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullTypeName))
+    return NULL;
+  fScope->registerType(expr.srcpos(), fullTypeName, defMeasureType);
+
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kUnit, fullUnitName))
+    return NULL;
+  fScope->registerUnit(expr.srcpos(), fullUnitName, String(),
+                       defMeasureType, NULL);
+
+  NodeList dummyApplyParams;
+  NodeList dummySlotDefs;
+  NodeList dummyReqProtocol;
+  NodeList dummyOnExprs;
+
+  return new TypeNode(expr.srcpos(),
+                      fullTypeName,
+                      true,     // is instantiatable
+                      defMeasureType,
+                      dummyApplyParams,
+                      dummySlotDefs,
+                      dummyReqProtocol,
+                      dummyOnExprs);
 }
 
 
 AptNode*
 SecondPass::parseUnitDef(const Token& expr, bool isLocal)
 {
-  // TODO
+  assert(fCurrentGenericTypes.empty());
+
+  assert(expr.isSeq());
+  assert(expr.count() >= 7);
+  assert(expr[1] == Parser::unitToken);
+  assert(expr[2] == kSymbol);
+  assert(expr[3] == kMapTo);
+  assert(expr[5].isNested());
+  assert(expr[5].count() == 1);
+
+  size_t ofs = 2;
+
+  const TokenVector& seq = expr.children();
+  String unitName = seq[ofs].idValue();
+  String fullUnitName = qualifyId(currentModuleName(), unitName);
+  ofs++;
+  assert(seq[ofs] == kMapTo);
+  ofs++;
+
+  TypeUnit baseUnit = fScope->lookupUnit(seq[ofs].idValue(), true);
+  if (!baseUnit.isDef()) {
+    error(seq[ofs].srcpos(), E_UndefinedUnit,
+          String("Undefined unit: ") + seq[ofs].idValue());
+    return NULL;
+  }
+  ofs++;
+  assert(seq[ofs].isNested());
+
+  FundefClauseData data;
+  parseFundefClause(seq, ofs, data);
+
+  Ptr<AptNode> funcNode = new FunctionNode(expr.srcpos(),
+                                           data.fParams, data.fType, data.fBody);
+
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kUnit, fullUnitName))
+    return NULL;
+  fScope->registerUnit(expr.srcpos(), fullUnitName, baseUnit.name(),
+                       baseUnit.effType(), funcNode);
+
   return NULL;
 }
 
@@ -852,7 +1163,8 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs,
                          ? sym
                          : qualifyId(currentModuleName(), sym) );
 
-  if (fScope->checkForRedefinition(expr.srcpos(), fullSymName))
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullSymName))
     return NULL;
 
   Ptr<AptNode> var = new VardefNode(expr.srcpos(),
@@ -863,6 +1175,50 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs,
 }
 
 
+void
+SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
+                              FundefClauseData& data)
+{
+  assert(seq[ofs].isNested());
+
+  TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
+
+  size_t whereOfs = ofs;
+  if ((whereOfs = getWhereOfs(seq, ofs)) >= ofs)
+    parseWhereClause(seq[whereOfs]);
+
+  parseParameters(&data.fParams, seq[ofs].children());
+  ofs++;
+
+  if (ofs < seq.size()) {
+    if (seq[ofs] == kColon) {
+      data.fType = parseTypeSpec(seq[ofs + 1]);
+      ofs += 2;
+    }
+  }
+
+  if (ofs < seq.size()) {
+    if (seq[ofs].isSeq() && seq[ofs].count() > 1 &&
+        seq[ofs][0] == kReifyId)
+    {
+      // TODO: data.fReify =
+      ofs++;
+    }
+  }
+
+  if (ofs == whereOfs)
+    ofs++;
+
+  if (ofs < seq.size()) {
+    if (seq[ofs] == kEllipsis)
+      data.fFlags |= kFuncIsAbstract;
+    else if (!fParser->isParsingInterface())
+      data.fBody = parseExpr(seq[ofs]);
+    ofs++;
+  }
+}
+
+
 AptNode*
 SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
 {
@@ -870,11 +1226,11 @@ SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
   assert(expr.count() >= 3);
   assert(expr[0] == kDefId || expr[0] == kLetId);
 
-  unsigned int flags = 0;
-  int ofs = 1;
+  FundefClauseData data;
+  size_t ofs = 1;
 
   if (expr[ofs] == Parser::genericToken) {
-    flags |= kFuncIsGeneric;
+    data.fFlags |= kFuncIsGeneric;
     ofs++;
   }
 
@@ -889,59 +1245,23 @@ SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
 
   ofs++;
 
-  assert(expr[ofs].isNested());
-  NodeList params;
-  parseParameters(&params, expr[ofs].children());
-  ofs++;
-
-  Type type;
-  if (ofs < expr.count()) {
-    if (expr[ofs] == kColon) {
-      type = parseTypeSpec(expr[ofs + 1]);
-      ofs += 2;
-    }
-  }
-
-  Ptr<AptNode> reify;
-  if (ofs < expr.count()) {
-    if (expr[ofs].isSeq() && expr[ofs].count() > 1 &&
-        expr[ofs][0] == kReifyId)
-    {
-      // TODO
-      ofs++;
-    }
-  }
-
-  Ptr<AptNode> where;
-  if (ofs < expr.count()) {
-    if (expr[ofs].isSeq() && expr[ofs].count() > 1 &&
-        expr[ofs][0] == kWhereId)
-    {
-      // TODO.  Don't parse the where clause into apt nodes here, but enrich a
-      // passed in context.  The 'Where' information is used to transform
-      // quoted types into full type spec later.
-      ofs++;
-    }
-  }
-
-  Ptr<AptNode> body;
-  if (ofs < expr.count()) {
-    if (expr[ofs] == kEllipsis)
-      flags |= kFuncIsAbstract;
-    else if (!fParser->isParsingInterface())
-      body = parseExpr(expr[ofs]);
-    ofs++;
-  }
+  const TokenVector& seq = expr.children();
+  parseFundefClause(seq, ofs, data);
 
   String fullFuncName = ( isLocal
                           ? sym
                           : qualifyId(currentModuleName(), sym) );
 
-  if (fScope->checkForRedefinition(expr.srcpos(), fullFuncName))
+  if (fScope->checkForRedefinition(expr.srcpos(),
+                                   Scope::kNormal, fullFuncName))
     return NULL;
 
   Ptr<AptNode> func = new FuncDefNode(expr.srcpos(),
-                                      fullFuncName, flags, params, type, body);
+                                      fullFuncName,
+                                      data.fFlags,
+                                      data.fParams,
+                                      data.fType,
+                                      data.fBody);
   fScope->registerFunction(expr.srcpos(), fullFuncName, func);
   return func.release();
 }
@@ -1635,6 +1955,7 @@ AptNode*
 SecondPass::parseFor(const Token& expr)
 {
   assert(!fParser->isParsingInterface());
+
   assert(expr.isSeq());
   assert(expr.count() == 3 || expr.count() == 5);
   assert(expr[0] == kForId);
@@ -1749,17 +2070,194 @@ AptNode*
 SecondPass::parseSelect(const Token& expr)
 {
   assert(!fParser->isParsingInterface());
-  // TODO
-  return NULL;
+
+  assert(expr.isSeq());
+  assert(expr.count() == 3);
+  assert(expr[0] == kSelectId);
+  assert(expr[1].isNested() && expr[1].leftToken() == kParanOpen);
+  assert(expr[2].isNested() && expr[2].leftToken() == kBraceOpen);
+
+  const TokenVector& args = expr[1].children();
+
+  if (args.size() > 0) {
+    return parseRealSelect(expr);
+  }
+  else {
+    return parseChainSelect(expr);
+  }
 }
 
+
+AptNode*
+SecondPass::parseRealSelect(const Token& expr)
+{
+  const TokenVector& args = expr[1].children();
+  assert(args.size() > 0);
+
+  Ptr<AptNode> testNode = parseExpr(args[0]);
+  Ptr<AptNode> comparatorNode;
+
+  if (args.size() > 2) {
+    assert(args[1] == kComma);
+    comparatorNode = parseExpr(args[2]);
+  }
+
+  Ptr<SelectNode> selectNode = new SelectNode(expr.srcpos(),
+                                              testNode,
+                                              comparatorNode);
+
+  const TokenVector& testMappings = expr[2].children();
+  for (size_t i = 0; i < testMappings.size(); i++) {
+    const Token& testToken = testMappings[i];
+    assert(testToken.isSeq());
+    assert(testToken.count() == 4 || testToken.count() == 3);
+    assert(testToken[0] == kPipe);
+
+    if (testToken.count() == 4) {
+      assert(testToken[2] == kMapTo);
+
+      NodeList testValueNodes;
+      if (testToken[1].isSeq() &&
+          !testToken[1].isBinarySeq() &&
+          !testToken[1].isTernarySeq())
+      {
+        const TokenVector& testValues = testToken[1].children();
+        for (size_t j = 0; j < testValues.size(); j++) {
+          if (testValues[j] == kComma)
+            continue;
+          Ptr<AptNode> testValueNode = parseExpr(testValues[j]);
+          if (testValueNode != NULL)
+            testValueNodes.push_back(testValueNode);
+        }
+      }
+      else {
+        Ptr<AptNode> testValueNode = parseExpr(testToken[1]);
+        if (testValueNode != NULL)
+          testValueNodes.push_back(testValueNode);
+      }
+
+      Ptr<AptNode> consqExpr = parseExpr(testToken[3]);
+      if (consqExpr != NULL)
+        selectNode->addMapping(testValueNodes, consqExpr);
+    }
+    else if (testToken.count() == 3) {
+      assert(testToken[1] == kElseId);
+
+      Ptr<AptNode> consqExpr = parseExpr(testToken[2]);
+      if (consqExpr != NULL)
+        selectNode->addElseMapping(consqExpr);
+    }
+  }
+
+  return selectNode.release();
+}
+
+
+AptNode*
+SecondPass::parseChainSelect(const Token& expr)
+{
+  assert(expr[1].count() == 0);
+
+  Ptr<AptNode> resultNode;
+  Ptr<IfNode> lastNode;
+
+  const TokenVector& testMappings = expr[2].children();
+  for (size_t i = 0; i < testMappings.size(); i++) {
+    const Token& testToken = testMappings[i];
+    assert(testToken.isSeq());
+    assert(testToken.count() == 4 || testToken.count() == 3);
+    assert(testToken[0] == kPipe);
+
+    if (testToken.count() == 4) {
+      assert(testToken[2] == kMapTo);
+
+      Ptr<AptNode> testValueNode = parseExpr(testToken[1]);
+      if (testValueNode != NULL) {
+
+        Ptr<AptNode> consqNode = parseExpr(testToken[3]);
+
+        if (consqNode != NULL) {
+          Ptr<IfNode> ifNode = new IfNode(testToken[1].srcpos(),
+                                          testValueNode, consqNode, NULL);
+          if (lastNode != NULL) {
+            lastNode->setAlternate(ifNode);
+            lastNode = ifNode;
+          }
+          else
+            resultNode = lastNode = ifNode;
+        }
+      }
+    }
+    else if (testToken.count() == 3) {
+      assert(testToken[1] == kElseId);
+
+      Ptr<AptNode> consqNode = parseExpr(testToken[2]);
+      if (consqNode != NULL) {
+        if (lastNode != NULL)
+          lastNode->setAlternate(consqNode);
+        else
+          resultNode = consqNode;
+
+        break;
+      }
+    }
+  }
+
+  return resultNode.release();
+}
+
+
+//------------------------------------------------------------------------------
 
 AptNode*
 SecondPass::parseMatch(const Token& expr)
 {
   assert(!fParser->isParsingInterface());
-  // TODO
-  return NULL;
+
+  assert(expr.isSeq());
+  assert(expr.count() == 3);
+  assert(expr[0] == kMatchId);
+  assert(expr[1].isNested() && expr[1].leftToken() == kParanOpen);
+  assert(expr[2].isNested() && expr[2].leftToken() == kBraceOpen);
+
+  const TokenVector& args = expr[1].children();
+  assert(args.size() > 0);
+
+  Ptr<AptNode> exprNode = parseExpr(args[0]);
+
+  Ptr<MatchNode> matchNode = new MatchNode(expr.srcpos(), exprNode);
+
+  const TokenVector& typeMappings = expr[2].children();
+  for (size_t i = 0; i < typeMappings.size(); i++) {
+    const Token& typeMapping = typeMappings[i];
+    assert(typeMapping.isSeq());
+    assert(typeMapping.count() == 4);
+    assert(typeMapping[0] == kPipe);
+    assert(typeMapping[1].isSeq());
+    assert(typeMapping[1].count() >= 2);
+    assert(typeMapping[2] == kMapTo);
+
+    String  varName;
+    Type    varType;
+    if (typeMapping[1].count() == 3) {
+      assert(typeMapping[1][0] == kSymbol);
+      assert(typeMapping[1][1] == kColon);
+
+      varName = typeMapping[1][0].idValue();
+      varType = parseTypeSpec(typeMapping[1][2]);
+    }
+    else {
+      assert(typeMapping[1][0] == kColon);
+      varType = parseTypeSpec(typeMapping[1][1]);
+    }
+
+    Ptr<AptNode> consqNode = parseExpr(typeMapping[3]);
+    if (consqNode != NULL)
+      matchNode->addMapping(typeMapping[0].srcpos(),
+                            varName, varType, consqNode);
+  }
+
+  return matchNode.release();
 }
 
 
@@ -1789,6 +2287,27 @@ SecondPass::parseTokenVector(const TokenVector& seq)
   if (!seq.empty())
     return parseSeq(Token() << seq);
   return NULL;
+}
+
+
+AptNode*
+SecondPass::parseUnitNumber(const Token& expr)
+{
+  assert(expr.count() == 3);
+  assert(expr[1] == kQuote);
+  assert(expr[2] == kSymbol);
+
+  Ptr<AptNode> value = parseExpr(expr[0]);
+
+  TypeUnit unit = fScope->lookupUnit(expr[2].idValue(), true);
+  if (unit.isDef()) {
+    return new UnitConstant(expr.srcpos(), value, unit);
+  }
+  else {
+    error(expr[2].srcpos(), E_UndefinedUnit,
+          String("Undefined unit: ") + expr[2].idValue());
+    return NULL;
+  }
 }
 
 
@@ -1835,7 +2354,7 @@ SecondPass::parseSeq(const Token& expr)
     if (expr[1].isNested()) {
       if (expr[1].leftToken() == kParanOpen)
         return parseFunCall(expr);
-      else if (expr[0] == kSymbol && 
+      else if (expr[0] == kSymbol &&
                expr[1].leftToken() == kGenericOpen)
         return parseTypeExpr(expr);
       else
@@ -1856,6 +2375,12 @@ SecondPass::parseSeq(const Token& expr)
         assert(0);
         return NULL;
       }
+    }
+    else if (expr[0].isNumber() && expr[1] == kQuote) {
+      return parseUnitNumber(expr);
+    }
+    else if (expr[1] == kRange) {
+      return parseBinary(expr);
     }
   }
   else if (expr.count() == 4) {
@@ -2077,6 +2602,13 @@ SecondPass::parseExpr(const Token& expr)
 {
   switch (expr.type()) {
   case kId:
+    {
+      const AptNode* var = fScope->lookupVar(expr.idValue(), true);
+      const VardefNode* vardef = dynamic_cast<const VardefNode*>(var);
+      if (vardef != NULL && vardef->isEnum() && vardef->initExpr() != NULL) {
+        return vardef->initExpr()->clone();
+      }
+    }
     return new SymbolNode(expr.srcpos(), expr.idValue());
 
   case kLit:
@@ -2112,6 +2644,7 @@ SecondPass::parseExpr(const Token& expr)
     return parseNested(expr);
 
   case kPunct:
+    // printf("{1} ---> %s\n", (const char*)StrHelper(expr.toString()));
     errorf(expr.srcpos(), E_UnexpectedToken,
            "Unexpected token");
     return NULL;

@@ -44,12 +44,12 @@ HEA_TARGET_DESC ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh)
 # TAR = tar
 
 # Give the CC version. Known values:
-# gcc3
-# gcc4
+# gcc3.0
+# gcc4.0, gcc4.1, gcc4.2, gcc4.3, gcc4.4, gcc4.5
 
 CC_VERSION ?= $(shell CC=$(CC) $(SHELL) $(top_srcdir)/build/gccver.sh)
 
-BASE_REVISION = $(shell $(PYTHON) $(top_srcdir)/build/reprevision.py --hg=$(HG))
+BASE_REVISION = $(shell $(SHELL) $(top_srcdir)/build/reprevision.sh)
 
 
 # ----------------------------------------------------------------------
@@ -106,8 +106,8 @@ endif
 
 # ----------------------------------------------------------------------
 DEFS   += $(WX_CXXFLAGS)
-LIBS   +=
-LDFLAGS +=
+LIBS   += -lUnitTest++
+LDFLAGS += -L$(top_srcdir)/external/UnitTest++
 
 CFLAGS += $(CBUILDFLAG) $(CWARNING) \
 				  -DOS_$(TARGET_OS) -DARCH_$(TARGET_ARCH) -DOSFLAV_$(TARGET_OSFLV)

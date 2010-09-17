@@ -152,7 +152,8 @@ FirstPass::parseSequence(ParseFunctor functor,
       else if (fToken != endToken)
         error(fToken.srcpos(), errorCode,
               (StringBuffer() << ctx << ": expected '"
-               << Token(SrcPos(), endToken).toString() << "' or ','").toString());
+               << Token(SrcPos(), endToken).toString() << "' or ','"
+               << "; found: " << fToken.toString()).toString());
     }
   }
 
@@ -272,8 +273,27 @@ namespace heather
     bool operator() (FirstPass* pass, Token& result)
     {
       if (pass->fToken.isSymbol()) {
-        result << pass->fToken;
+        Token symbol = pass->fToken;
         pass->nextToken();
+
+        if (pass->fToken == kColon) {
+          Token colon = pass->fToken;
+          // pass symbol-domain identifier
+          pass->nextToken();
+
+          if (pass->fToken != kSymbol) {
+            errorf(pass->fToken.srcpos(), E_SymbolExpected,
+                   "expected symbol domain identifier");
+            pass->scanUntilNextParameter();
+          }
+          else
+          {
+            result << ( Token() << symbol << colon << pass->fToken );
+            pass->nextToken();
+          }
+        }
+        else
+          result << symbol;
       }
       else if (pass->fToken == kMultiply) {
         result << Token(pass->fToken.srcpos(), "*");
@@ -363,7 +383,7 @@ FirstPass::parseExport()
         String fullId = ( isQualified(it->idValue())
                           ? it->idValue()
                           : qualifyId(currentModuleName(), it->idValue()) );
-        fScope->registerSymbolForExport(fullId, vizType, isFinal);
+        fScope->registerSymbolForExport(Scope::kNormal, fullId, vizType, isFinal);
       }
     }
 
@@ -488,6 +508,7 @@ namespace heather
       }
       else
         result << type;
+
       return true;
     }
   };
@@ -1498,26 +1519,34 @@ namespace heather
           if (pass->fToken == kEOF)
             return false;
 
-          Token test = pass->parseExpr();
-          if (test.isSet()) {
-            pattern.push_back(test);
-
-            if (pass->fToken == kComma) {
-              pattern.push_back(pass->fToken);
-              pass->nextToken();
-            }
-            else if (pass->fToken == kMapTo)
-              break;
-            else {
-              errorf(pass->fToken.srcpos(), E_BadPatternList,
-                     "unexpected token");
-              return false;
-            }
+          if (fElseSeen) {
+            errorf(pass->fToken.srcpos(), E_ElseNotLastPattern,
+                   "'else' must be last pattern");
+            pass->scanUntilBrace();
+            return false;
           }
           else {
-            error(pass->fToken.srcpos(), E_UnexpectedToken,
-                  String("unexpected token in select: ") + pass->fToken.toString());
-            return false;
+            Token test = pass->parseExpr();
+            if (test.isSet()) {
+              pattern.push_back(test);
+
+              if (pass->fToken == kComma) {
+                pattern.push_back(pass->fToken);
+                pass->nextToken();
+              }
+              else if (pass->fToken == kMapTo)
+                break;
+              else {
+                errorf(pass->fToken.srcpos(), E_BadPatternList,
+                       "unexpected token");
+                return false;
+              }
+            }
+            else {
+              error(pass->fToken.srcpos(), E_UnexpectedToken,
+                    String("unexpected token in select: ") + pass->fToken.toString());
+              return false;
+            }
           }
         }
 
@@ -1586,14 +1615,18 @@ namespace heather
       Token pipeToken = pass->fToken;
       pass->nextToken();
 
-      if (pass->fToken != kSymbol) {
+      if (pass->fToken != kSymbol && pass->fToken != kColon) {
         errorf(pass->fToken.srcpos(), E_SymbolExpected,
-               "variable name expected");
+               "variable name or ':' expected");
         pass->scanUntilBrace();
         return false;
       }
-      Token varToken = pass->fToken;
-      pass->nextToken();
+
+      Token varToken;
+      if (pass->fToken == kSymbol) {
+        varToken = pass->fToken;
+        pass->nextToken();
+      }
 
       if (pass->fToken != kColon) {
         errorf(pass->fToken.srcpos(), E_ColonExpected,
@@ -1618,13 +1651,18 @@ namespace heather
       }
 
       TokenVector consq = parseConsequent(pass, true);
-      if (varToken.isSet() && colonToken.isSet() &&
-          matchType.isSet() && !consq.empty())
-        result << ( Token()
-                    << pipeToken
-                    << ( Token() << varToken << colonToken << matchType )
-                    << consq );
-
+      if (colonToken.isSet() && matchType.isSet() && !consq.empty()) {
+        if (varToken.isSet())
+          result << ( Token()
+                      << pipeToken
+                      << ( Token() << varToken << colonToken << matchType )
+                      << consq );
+        else
+          result << ( Token()
+                      << pipeToken
+                      << ( Token() << colonToken << matchType )
+                      << consq );
+      }
       return true;
     }
   };
@@ -2558,13 +2596,47 @@ FirstPass::parseWhereClause()
       return Token();
     }
 
-    Token constrExpr = parseExpr();
-    if (constrExpr.isSet()) {
+    if (fToken != kSymbol) {
+      errorf(fToken.srcpos(), E_SymbolExpected, "missing type name");
+      return Token();
+    }
+    Token symToken = fToken;
+    nextToken();
+
+    Token opToken = fToken;
+    OperatorType op1 = tokenTypeToOperator(fToken.tokenType());
+
+    if (op1 == kOpEqual || op1 == kOpUnequal ||
+        op1 == kOpLess  || op1 == kOpLessEqual ||
+        op1 == kOpGreater || op1 == kOpGreaterEqual ||
+        op1 == kOpIn)
+    {
+      nextToken();
+
+      Token constrExpr = parseExpr();
+      if (constrExpr.isSet()) {
+        if (delayedCommaToken.isSet()) {
+          constraints.push_back(delayedCommaToken);
+          delayedCommaToken = Token();
+        }
+        Token constrToken = Token() << symToken << opToken << constrExpr;
+        constraints.push_back(constrToken);
+      }
+    }
+    else if (op1 == kOpIsa) {
+      nextToken();
+
+      Token typeConstraint = parseTypeSpec(false);
       if (delayedCommaToken.isSet()) {
         constraints.push_back(delayedCommaToken);
         delayedCommaToken = Token();
       }
-      constraints.push_back(constrExpr);
+      Token constrToken = Token() << symToken << opToken << typeConstraint;
+      constraints.push_back(constrToken);
+    }
+    else {
+      errorf(fToken.srcpos(), E_SymbolExpected, "unexpected operator in where clause");
+      return Token();
     }
 
     if (fToken == kComma) {
@@ -3520,7 +3592,8 @@ FirstPass::parseMacroDef(const Token& defToken)
       String fullMacroName = qualifyId(currentModuleName(),
                                        macroNameToken.idValue());
 
-      if (fScope->checkForRedefinition(defToken.srcpos(), fullMacroName))
+      if (fScope->checkForRedefinition(defToken.srcpos(),
+                                       Scope::kNormal, fullMacroName))
         return Token();
 
 

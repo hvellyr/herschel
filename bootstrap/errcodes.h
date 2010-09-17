@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -49,6 +49,8 @@ namespace heather
     E_BadCharNotation     = 0x0106,
     E_BadNumberNotation   = 0x0107,
     E_UnitExpected        = 0x0108,
+    E_UnknownSymbolDomain = 0x0109,
+    E_UndefinedUnit       = 0x010a,
 
     // def parsing
     E_Redefinition        = 0x4000,
@@ -73,6 +75,10 @@ namespace heather
     E_QualifiedLocalSym   = 0x4031,
     E_QualifiedParamKey   = 0x4032,
     E_QualifiedSlot       = 0x4033,
+    E_QualifiedEnumDefSym = 0x4034,
+    E_EnumNotBaseType     = 0x4035,
+    E_EnumInitTypeMismatch= 0x4036,
+    E_InvaliArraySize     = 0x4037,
 
     // enums
     E_BadEnumItemList     = 0x4050,
@@ -112,6 +118,7 @@ namespace heather
     E_RedefinedPattern    = 0x4402,
     E_ColonExpected       = 0x4403,
     E_ExpectedPipe        = 0x4404,
+    E_ElseNotLastPattern  = 0x4405,
 
     // module parsing
     E_MissingModName      = 0x4500,

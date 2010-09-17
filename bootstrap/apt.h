@@ -191,6 +191,21 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class UnitConstant : public AptNode
+  {
+  public:
+    UnitConstant(const SrcPos& srcpos, AptNode* value, const TypeUnit& unit);
+    virtual UnitConstant* clone() const;
+    virtual void display(Port<Octet>* port) const;
+
+  private:
+    Ptr<AptNode> fValue;
+    TypeUnit     fUnit;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class CompileUnitNode : public AptNode
   {
   public:
@@ -211,6 +226,7 @@ namespace heather
 
     const String& symbolName() const;
     const Type& type() const;
+    AptNode* initExpr() const;
 
   protected:
     String       fSymbolName;
@@ -257,7 +273,8 @@ namespace heather
     kNormalVar,
     kFluidVar,
     kConstVar,
-    kConfigVar
+    kConfigVar,
+    kEnumVar
   };
 
   class VardefNode : public BindingNode
@@ -269,6 +286,10 @@ namespace heather
 
     virtual VardefNode* clone() const;
     virtual void display(Port<Octet>* port) const;
+
+    bool isEnum() const;
+    bool isConst() const;
+    bool isConfig() const;
 
   private:
     VardefFlags fFlags;
@@ -292,7 +313,7 @@ namespace heather
 
     virtual ParamNode* clone() const;
     virtual void display(Port<Octet>* port) const;
-    
+
     ParamFlags flags() const;
     const String& key() const;
 
@@ -307,7 +328,7 @@ namespace heather
     kTransientSlot  = 1 << 0,
     kReadonlySlot   = 1 << 1,
     kObservableSlot = 1 << 2,
-    kPublicSlot     = 1 << 3, 
+    kPublicSlot     = 1 << 3,
     kOuterSlot      = 1 << 4,
     kInnerSlot      = 1 << 5
   };
@@ -486,10 +507,80 @@ namespace heather
     AptNode* consequent() const;
     AptNode* alternate() const;
 
+    void setAlternate(AptNode* node);
+
   private:
     Ptr<AptNode> fTest;
     Ptr<AptNode> fConsequent;
     Ptr<AptNode> fAlternate;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class SelectNode : public AptNode
+  {
+  public:
+    SelectNode(const SrcPos& srcpos, AptNode* test, AptNode* comparator);
+
+    virtual SelectNode* clone() const;
+    virtual void display(Port<Octet>* port) const;
+
+    void addMapping(const NodeList& mappings, AptNode* consequent);
+    void addMapping(AptNode* mapping, AptNode* consequent);
+    void addElseMapping(AptNode* alternate);
+
+  private:
+    struct SelectMapping
+    {
+      SelectMapping(const NodeList& values, AptNode* consequent);
+      SelectMapping(const SelectMapping& other);
+
+      // if fTestValues is empty this is an else branch
+      NodeList     fTestValues;
+      Ptr<AptNode> fConsequent;
+    };
+
+    typedef std::vector<SelectMapping> SelectMappingVector;
+
+    Ptr<AptNode>        fTest;
+    Ptr<AptNode>        fComparator;
+    SelectMappingVector fMappings;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class MatchNode : public AptNode
+  {
+  public:
+    MatchNode(const SrcPos& srcpos, AptNode* expr);
+
+    virtual MatchNode* clone() const;
+    virtual void display(Port<Octet>* port) const;
+
+    void addMapping(const SrcPos& srcpos, const String& varName,
+                    const Type& matchType,
+                    AptNode* consequent);
+
+  private:
+    struct MatchMapping
+    {
+      MatchMapping(const SrcPos& srcpos, const String& varName,
+                   const Type& matchType,
+                   AptNode* consequent);
+      MatchMapping(const MatchMapping& other);
+
+      SrcPos fSrcPos;
+      String fVarName;
+      Type   fMatchType;
+      Ptr<AptNode> fConsequent;
+    };
+
+    typedef std::vector<MatchMapping> MatchMappingVector;
+
+    Ptr<AptNode>       fExpr;
+    MatchMappingVector fMappings;
   };
 
 

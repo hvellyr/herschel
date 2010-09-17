@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -36,7 +36,7 @@ namespace heather
   class FileTokenPort : public TokenPort
   {
   public:
-    FileTokenPort(Port<Octet>* port, const String& srcName, 
+    FileTokenPort(Port<Octet>* port, const String& srcName,
                   CharRegistry* charRegistry = NULL);
     FileTokenPort(Port<Char>* port, const String& srcName,
                   CharRegistry* charRegistry = NULL);

@@ -6,6 +6,8 @@
    All rights reserved.
 */
 
+#include <string.h>
+
 #include "apt.h"
 #include "strbuf.h"
 
@@ -445,6 +447,37 @@ BoolNode::clone() const
 
 //----------------------------------------------------------------------------
 
+UnitConstant::UnitConstant(const SrcPos& srcpos, AptNode* value,
+                           const TypeUnit& unit)
+  : AptNode(srcpos),
+    fValue(value),
+    fUnit(unit)
+{
+}
+
+
+UnitConstant*
+UnitConstant::clone() const
+{
+  return new UnitConstant(fSrcPos, nodeClone(fValue), fUnit);
+}
+
+
+void
+UnitConstant::display(Port<Octet>* port) const
+{
+  StringBuffer attrs;
+  attrs << "unit='" << fUnit.name() << "'";
+
+  displayOpenTagAttrs(port, "uvalue", StrHelper(attrs.toString()));
+  displayType(port, "type", fUnit.effType());
+  displayNode(port, NULL, fValue);
+  displayCloseTag(port, "uvalue");
+}
+
+
+//----------------------------------------------------------------------------
+
 CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
   : AptNode(srcpos)
 {}
@@ -553,6 +586,14 @@ BindingNode::type() const
 }
 
 
+AptNode*
+BindingNode::initExpr() const
+{
+  return fInitExpr;
+}
+
+
+
 //----------------------------------------------------------------------------
 
 VardefNode::VardefNode(const SrcPos& srcpos,
@@ -591,6 +632,9 @@ VardefNode::display(Port<Octet>* port) const
   case kConfigVar:
     attrs << " type='config'";
     break;
+  case kEnumVar:
+    attrs << " type='enum'";
+    break;
   }
 
   displayOpenTagAttrs(port, "vardef", StrHelper(attrs.toString()));
@@ -599,6 +643,27 @@ VardefNode::display(Port<Octet>* port) const
   displayNode(port, "init", fInitExpr);
 
   displayCloseTag(port, "vardef");
+}
+
+
+bool
+VardefNode::isConst() const
+{
+  return fFlags == kConstVar;
+}
+
+
+bool
+VardefNode::isConfig() const
+{
+  return fFlags == kConfigVar;
+}
+
+
+bool
+VardefNode::isEnum() const
+{
+  return fFlags == kEnumVar;
 }
 
 
@@ -808,7 +873,7 @@ BinaryNode::BinaryNode(const SrcPos& srcpos,
 BinaryNode*
 BinaryNode::clone() const
 {
-  return new BinaryNode(fSrcPos, 
+  return new BinaryNode(fSrcPos,
                         nodeClone(fLeft), fOp, nodeClone(fRight));
 }
 
@@ -1114,6 +1179,176 @@ IfNode::alternate() const
 }
 
 
+void
+IfNode::setAlternate(AptNode* node)
+{
+  fAlternate = node;
+}
+
+
+//------------------------------------------------------------------------------
+
+SelectNode::SelectNode(const SrcPos& srcpos, AptNode* test, AptNode* comparator)
+  : AptNode(srcpos),
+    fTest(test),
+    fComparator(comparator)
+{
+}
+
+
+SelectNode*
+SelectNode::clone() const
+{
+  Ptr<SelectNode> newNode = new SelectNode(fSrcPos,
+                                           nodeClone(fTest),
+                                           nodeClone(fComparator));
+  for (size_t i = 0; i < fMappings.size(); i++) {
+    newNode->fMappings.push_back(
+      SelectMapping(copyNodes(fMappings[i].fTestValues),
+                    nodeClone(fMappings[i].fConsequent)));
+  }
+
+  return newNode.release();
+}
+
+
+void
+SelectNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "select");
+  displayNode(port, "test", fTest);
+  displayNode(port, "comp", fComparator);
+  for (size_t i = 0; i < fMappings.size(); i++) {
+    if (fMappings[i].fTestValues.empty()) {
+      displayNode(port, "alternate", fMappings[i].fConsequent);
+    }
+    else {
+      displayOpenTag(port, "map");
+      displayOpenTag(port, "values");
+      for (size_t j = 0; j < fMappings[i].fTestValues.size(); j++) {
+        displayNode(port, NULL, fMappings[i].fTestValues[j]);
+      }
+      displayCloseTag(port, "values");
+      displayNode(port, "cons", fMappings[i].fConsequent);
+      displayCloseTag(port, "map");
+    }
+  }
+  displayCloseTag(port, "select");
+}
+
+
+void
+SelectNode::addMapping(const NodeList& mappings, AptNode* consequent)
+{
+  fMappings.push_back(SelectMapping(mappings, consequent));
+}
+
+
+void
+SelectNode::addMapping(AptNode* mapping, AptNode* consequent)
+{
+  NodeList nl;
+  nl.push_back(mapping);
+  fMappings.push_back(SelectMapping(nl, consequent));
+}
+
+
+void
+SelectNode::addElseMapping(AptNode* alternate)
+{
+  NodeList nl;
+  fMappings.push_back(SelectMapping(nl, alternate));
+}
+
+
+SelectNode::SelectMapping::SelectMapping(const NodeList& values,
+                                         AptNode* consequent)
+  : fTestValues(values),
+    fConsequent(consequent)
+{
+}
+
+
+SelectNode::SelectMapping::SelectMapping(const SelectMapping& other)
+  : fTestValues(other.fTestValues),
+    fConsequent(other.fConsequent)
+{
+}
+
+
+//------------------------------------------------------------------------------
+
+MatchNode::MatchNode(const SrcPos& srcpos, AptNode* expr)
+  : AptNode(srcpos),
+    fExpr(expr)
+{
+}
+
+
+MatchNode*
+MatchNode::clone() const
+{
+  Ptr<MatchNode> newNode = new MatchNode(fSrcPos, nodeClone(fExpr));
+  for (size_t i = 0; i < fMappings.size(); i++) {
+    newNode->fMappings.push_back(
+      MatchMapping(fMappings[i].fSrcPos,
+                   fMappings[i].fVarName,
+                   fMappings[i].fMatchType.clone(),
+                   nodeClone(fMappings[i].fConsequent)));
+  }
+
+  return newNode.release();
+}
+
+
+void
+MatchNode::display(Port<Octet>* port) const
+{
+  displayOpenTag(port, "match");
+  displayNode(port, "test", fExpr);
+  for (size_t i = 0; i < fMappings.size(); i++) {
+    StringBuffer attrs;
+    if (!fMappings[i].fVarName.isEmpty())
+      attrs << "nm='" << xmlEncode(fMappings[i].fVarName) << "'";
+    displayOpenTagAttrs(port, "map", StrHelper(attrs.toString()));
+    displayType(port, "type", fMappings[i].fMatchType);
+    displayNode(port, "cons", fMappings[i].fConsequent);
+    displayCloseTag(port, "map");
+  }
+  displayCloseTag(port, "match");
+}
+
+
+void
+MatchNode::addMapping(const SrcPos& srcpos, const String& varName,
+                      const Type& matchType,
+                      AptNode* consequent)
+{
+  fMappings.push_back(MatchMapping(srcpos, varName, matchType, consequent));
+}
+
+
+MatchNode::MatchMapping::MatchMapping(const SrcPos& srcpos,
+                                      const String& varName,
+                                      const Type& matchType,
+                                      AptNode* consequent)
+  : fSrcPos(srcpos),
+    fVarName(varName),
+    fMatchType(matchType),
+    fConsequent(consequent)
+{
+}
+
+
+MatchNode::MatchMapping::MatchMapping(const MatchMapping& other)
+  : fSrcPos(other.fSrcPos),
+    fVarName(other.fVarName),
+    fMatchType(other.fMatchType),
+    fConsequent(other.fConsequent)
+{
+}
+
+
 //------------------------------------------------------------------------------
 
 OnNode::OnNode(const SrcPos& srcpos,
@@ -1130,8 +1365,8 @@ OnNode*
 OnNode::clone() const
 {
   return new OnNode(fSrcPos, fKey,
-                              copyNodes(fParams),
-                              nodeClone(fBody));
+                    copyNodes(fParams),
+                    nodeClone(fBody));
 }
 
 

@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -11,6 +11,10 @@
 
 #include <vector>
 #include <map>
+
+#if defined(UNITTESTS)
+#  include <iostream>
+#endif
 
 #include "refcountable.h"
 #include "ptr.h"
@@ -126,6 +130,7 @@ namespace heather
     kDot,
     kUnionOpen,
     kSangHash,
+    kReference,
 
     kParanOpen,
     kParanClose,
@@ -320,7 +325,7 @@ namespace heather
 
     //! indicates whether the token is a symbol-function call (e.g. abc())
     bool isSymFuncall() const;
-    
+
     //! indicates whether the token is a range
     bool isRange() const;
     //! indicates whether the token is a constant range (i.e. a range where
@@ -366,6 +371,12 @@ namespace heather
 
   String operator+(const String& one, const TokenVector& vect);
   String operator+(const String& one, const NamedTokenMap& bindings);
+
+#if defined(UNITTESTS)
+  std::ostream& operator <<(std::ostream &os,const Token& token);
+  std::ostream& operator<<(std::ostream& os, ExprType type);
+#endif
+
 
   //--------------------------------------------------------------------------
   // definitions of the reserved keywords

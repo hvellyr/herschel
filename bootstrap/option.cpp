@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 #include "option.h"
-#include "unittests.h"
+
 
 using namespace heather;
 
@@ -140,170 +140,171 @@ OptionsParser::nextOption(Option* option)
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class OptionsParserUnitTest : public UnitTest
+#include <UnitTest++.h>
+
+
+SUITE(OptionsParser)
 {
-public:
-  OptionsParserUnitTest() : UnitTest("OptionsParser") {}
+  static const OptionsParser::OptionsDefine options[] = {
+    { 1, "-h", "--help",    false },
+    { 2, "-v", "--version", false },
+    { 3, "-d", "--outdir",  true },
+    { 4, NULL, "--verbose", false },
+    { 5, "-U", NULL,        false },
+    { 6, NULL, "--level",   true },
+    { 7, "-P", NULL,        true },
+    { 0, NULL, NULL,        false } // sentinel
+  };
 
-  virtual void run()
+  OptionsParser::Option option;
+
+  TEST(One)
   {
-    static const OptionsParser::OptionsDefine options[] = {
-      { 1, "-h", "--help",    false },
-      { 2, "-v", "--version", false },
-      { 3, "-d", "--outdir",  true },
-      { 4, NULL, "--verbose", false },
-      { 5, "-U", NULL,        false },
-      { 6, NULL, "--level",   true },
-      { 7, "-P", NULL,        true },
-      { 0, NULL, NULL,        false } // sentinel
-    };
+    static const char* args[] = { "heather", "-h" };
 
-    OptionsParser::Option option;
+    OptionsParser p(options, 2, args);
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 1);
+    CHECK_EQUAL(option.fOption, String("-h"));
+    CHECK(option.fArgument.isEmpty());
 
-    {
-      static const char* args[] = { "heather", "-h" };
-
-      OptionsParser p(options, 2, args);
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 1);
-      assert(option.fOption == String("-h"));
-      assert(option.fArgument.isEmpty());
-
-      assert(p.nextOption(&option) == OptionsParser::kNoMoreArgs);
-    }
-
-    {
-      static const char* args[] = { "heather",
-                                    "-d", "tmp/test.log",
-                                    "--level=5",
-                                    "--verbose",
-                                    "-P", "8080",
-                                    "-U",
-                                    "abc.hea", "xyz.hea" };
-
-      OptionsParser p(options, 10, args);
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 3);
-      assert(option.fOption == String("-d"));
-      assert(option.fArgument == String("tmp/test.log"));
-
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 6);
-      assert(option.fOption == String("--level"));
-      assert(option.fArgument == String("5"));
-
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 4);
-      assert(option.fOption == String("--verbose"));
-      assert(option.fArgument.isEmpty());
-
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 7);
-      assert(option.fOption == String("-P"));
-      assert(option.fArgument == String("8080"));
-
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 5);
-      assert(option.fOption == String("-U"));
-      assert(option.fArgument.isEmpty());
-
-      assert(p.nextOption(&option) == OptionsParser::kNotAnOption);
-      assert(option.fOption.isEmpty());
-      assert(option.fArgument == String("abc.hea"));
-
-      assert(p.nextOption(&option) == OptionsParser::kNotAnOption);
-      assert(option.fOption.isEmpty());
-      assert(option.fArgument == String("xyz.hea"));
-
-      assert(p.nextOption(&option) == OptionsParser::kNoMoreArgs);
-    }
-
-    {
-      static const char* args[] = { "heather",
-                                     "--outdir=tmp/test.log" };
-      OptionsParser p(options, 2, args);
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 3);
-      assert(option.fOption == String("--outdir"));
-      assert(option.fArgument == String("tmp/test.log"));
-
-      assert(p.nextOption(&option) == OptionsParser::kNoMoreArgs);
-    }
-
-    {
-      static const char* args[] = { "heather", "-d", "-U" };
-      OptionsParser p(options, 3, args);
-      assert(p.nextOption(&option) == OptionsParser::kMissingArgument);
-      assert(option.fId == 3);        // return the proper option id anyway
-      assert(option.fOption == String("-d"));
-      assert(option.fArgument.isEmpty());
-
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 5);        // return the proper option id anyway
-      assert(option.fOption == String("-U"));
-      assert(option.fArgument.isEmpty());
-
-      assert(p.nextOption(&option) == OptionsParser::kNoMoreArgs);
-    }
-
-    {
-      static const char* args[] = { "heather",
-                                    "--version", "Something", "-U" };
-      OptionsParser p(options, 4, args);
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 2);
-      assert(option.fOption == String("--version"));
-      assert(option.fArgument.isEmpty());
-      
-      assert(p.nextOption(&option) == OptionsParser::kNotAnOption);
-      assert(option.fOption.isEmpty());
-      assert(option.fArgument == String("Something"));
-      
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 5);
-      assert(option.fOption == String("-U"));
-      assert(option.fArgument.isEmpty());
-  
-      assert(p.nextOption(&option) == OptionsParser::kNoMoreArgs);
-    }
-
-    {
-      static const char* args[] = { "heather",
-                                    "--port=7111", "--host=www.eyestep.org",
-                                    "--output",
-                                    "--level=DEBUG",
-                                    "-XYZ" };
-      OptionsParser p(options, 6, args);
-      assert(p.nextOption(&option) == OptionsParser::kUnknownOption);
-      assert(option.fId == -1);
-      assert(option.fOption == String("--port"));
-      assert(option.fArgument == String("7111"));
-
-      assert(p.nextOption(&option) == OptionsParser::kUnknownOption);
-      assert(option.fId == -1);
-      assert(option.fOption == String("--host"));
-      assert(option.fArgument == String("www.eyestep.org"));
-
-      assert(p.nextOption(&option) == OptionsParser::kUnknownOption);
-      assert(option.fId == -1);
-      assert(option.fOption == String("--output"));
-      assert(option.fArgument.isEmpty());
-
-      assert(p.nextOption(&option) == OptionsParser::kOption);
-      assert(option.fId == 6);
-      assert(option.fOption == String("--level"));
-      assert(option.fArgument == String("DEBUG"));
-
-      assert(p.nextOption(&option) == OptionsParser::kUnknownOption);
-      assert(option.fId == -1);
-      assert(option.fOption == String("-XYZ"));
-      assert(option.fArgument.isEmpty());
-
-      assert(p.nextOption(&option) == OptionsParser::kNoMoreArgs);
-    }
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
   }
-};
 
-static OptionsParserUnitTest unitTest;
+  TEST(Two)
+  {
+    static const char* args[] = { "heather",
+                                  "-d", "tmp/test.log",
+                                  "--level=5",
+                                  "--verbose",
+                                  "-P", "8080",
+                                  "-U",
+                                  "abc.hea", "xyz.hea" };
+
+    OptionsParser p(options, 10, args);
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 3);
+    CHECK_EQUAL(option.fOption, String("-d"));
+    CHECK_EQUAL(option.fArgument, String("tmp/test.log"));
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 6);
+    CHECK_EQUAL(option.fOption, String("--level"));
+    CHECK_EQUAL(option.fArgument, String("5"));
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 4);
+    CHECK_EQUAL(option.fOption, String("--verbose"));
+    CHECK(option.fArgument.isEmpty());
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 7);
+    CHECK_EQUAL(option.fOption, String("-P"));
+    CHECK_EQUAL(option.fArgument, String("8080"));
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 5);
+    CHECK_EQUAL(option.fOption, String("-U"));
+    CHECK(option.fArgument.isEmpty());
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNotAnOption);
+    CHECK(option.fOption.isEmpty());
+    CHECK_EQUAL(option.fArgument, String("abc.hea"));
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNotAnOption);
+    CHECK(option.fOption.isEmpty());
+    CHECK_EQUAL(option.fArgument, String("xyz.hea"));
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
+  }
+
+  TEST(Three)
+  {
+    static const char* args[] = { "heather",
+                                  "--outdir=tmp/test.log" };
+    OptionsParser p(options, 2, args);
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 3);
+    CHECK_EQUAL(option.fOption, String("--outdir"));
+    CHECK_EQUAL(option.fArgument, String("tmp/test.log"));
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
+  }
+
+  TEST(Four)
+  {
+    static const char* args[] = { "heather", "-d", "-U" };
+    OptionsParser p(options, 3, args);
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kMissingArgument);
+    CHECK_EQUAL(option.fId, 3);        // return the proper option id anyway
+    CHECK_EQUAL(option.fOption, String("-d"));
+    CHECK(option.fArgument.isEmpty());
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 5);        // return the proper option id anyway
+    CHECK_EQUAL(option.fOption, String("-U"));
+    CHECK(option.fArgument.isEmpty());
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
+  }
+
+  TEST(Five)
+  {
+    static const char* args[] = { "heather",
+                                  "--version", "Something", "-U" };
+    OptionsParser p(options, 4, args);
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 2);
+    CHECK_EQUAL(option.fOption, String("--version"));
+    CHECK(option.fArgument.isEmpty());
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNotAnOption);
+    CHECK(option.fOption.isEmpty());
+    CHECK_EQUAL(option.fArgument, String("Something"));
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 5);
+    CHECK_EQUAL(option.fOption, String("-U"));
+    CHECK(option.fArgument.isEmpty());
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
+  }
+
+  TEST(Six)
+  {
+    static const char* args[] = { "heather",
+                                  "--port=7111", "--host=www.eyestep.org",
+                                  "--output",
+                                  "--level=DEBUG",
+                                  "-XYZ" };
+    OptionsParser p(options, 6, args);
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kUnknownOption);
+    CHECK_EQUAL(option.fId, -1);
+    CHECK_EQUAL(option.fOption, String("--port"));
+    CHECK_EQUAL(option.fArgument, String("7111"));
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kUnknownOption);
+    CHECK_EQUAL(option.fId, -1);
+    CHECK_EQUAL(option.fOption, String("--host"));
+    CHECK_EQUAL(option.fArgument, String("www.eyestep.org"));
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kUnknownOption);
+    CHECK_EQUAL(option.fId, -1);
+    CHECK_EQUAL(option.fOption, String("--output"));
+    CHECK(option.fArgument.isEmpty());
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
+    CHECK_EQUAL(option.fId, 6);
+    CHECK_EQUAL(option.fOption, String("--level"));
+    CHECK_EQUAL(option.fArgument, String("DEBUG"));
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kUnknownOption);
+    CHECK_EQUAL(option.fId, -1);
+    CHECK_EQUAL(option.fOption, String("-XYZ"));
+    CHECK(option.fArgument.isEmpty());
+
+    CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
+  }
+}
 
 #endif  // #if defined(UNITTESTS)

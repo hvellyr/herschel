@@ -26,6 +26,7 @@ namespace heather
   class FunctionSignature;
   class FunctionParameter;
   class TypeCtx;
+  class TypeEnumMaker;
 
   typedef std::vector<Type> TypeVector;
   typedef std::vector<TypeConstraint> TypeConstVector;
@@ -41,10 +42,10 @@ namespace heather
   //! function type, or base type (like Int, String).  They are normally never
   //! used explicit in the code (when annotating variables, etc.); there're
   //! normaly Type References are used:
-  //! 
+  //!
   //! <code>
   //! def type XYZ<a, b> : (Abc<a>, Man<b>)
-  //! 
+  //!
   //! def v : XYZ<Int, Char> = 5
   //! </code>
   //!
@@ -73,6 +74,9 @@ namespace heather
     kType_Int,
     kType_Real,
     kType_Rational,
+    kType_Float,
+    kType_Double,
+    kType_LongDouble,
 
     kType_Bool,
     kType_Char,
@@ -198,18 +202,39 @@ namespace heather
 
     bool isDef() const;
 
-    
+
 
     //!@ base and builtin types
     //! indicates whether the type is a base type
     bool isBase() const;
+    bool isBaseOrBaseRef() const;
+
+    bool isBuiltinType(TypeKind kind, const String& name) const;
 
     bool isAny() const;
 
     bool isInt() const;
     bool isString() const;
     bool isReal() const;
+    bool isKeyword() const;
+    bool isOctet() const;
+    bool isShort() const;
+    bool isWord() const;
+    bool isLong() const;
+    bool isUShort() const;
+    bool isUWord() const;
+    bool isULong() const;
+    bool isFloat() const;
+    bool isDouble() const;
+    bool isLongDouble() const;
 
+    bool isBool() const;
+    bool isChar() const;
+    bool isEof() const;
+    bool isNil() const;
+    bool isRational() const;
+
+    TypeEnumMaker* newBaseTypeEnumMaker() const;
 
     //!@ custom types
     bool isClass() const;
@@ -278,6 +303,28 @@ namespace heather
 
     String toString() const;
 
+
+    static const String kAnyTypeName;
+    static const String kBoolTypeName;
+    static const String kCharTypeName;
+    static const String kDoubleTypeName;
+    static const String kEofTypeName;
+    static const String kFloatTypeName;
+    static const String kIntTypeName;
+    static const String kKeywordTypeName;
+    static const String kLongDoubleTypeName;
+    static const String kLongTypeName;
+    static const String kNilTypeName;
+    static const String kOctetTypeName;
+    static const String kRationalTypeName;
+    static const String kRealTypeName;
+    static const String kShortTypeName;
+    static const String kStringTypeName;
+    static const String kULongTypeName;
+    static const String kUShortTypeName;
+    static const String kUWordTypeName;
+    static const String kUnspecifiedTypeName;
+    static const String kWordTypeName;
 
   private:
     Type(TypeKind kind, TypeImpl* impl);
@@ -417,7 +464,7 @@ namespace heather
 
 
     //! Returns the kind of the parameter.
-    ParameterKind kind() const; 
+    ParameterKind kind() const;
 
     //! Indicate whether the parameter is specialized.  Can be true only for
     //! positional parameters.
@@ -498,6 +545,33 @@ namespace heather
     Type                fReturnType;
     FunctionParamVector fParameters;
   };
+
+
+  //--------------------------------------------------------------------------
+
+  class TypeUnit
+  {
+  public:
+    TypeUnit();
+    TypeUnit(const String& name, const String& derivedFrom,
+             const Type& effectiveType);
+    TypeUnit(const TypeUnit& other);
+
+    bool isDef() const;
+
+    const String& name() const;
+    const String& derivedFromName() const;
+    const Type& effType() const;
+
+    TypeUnit& operator=(const TypeUnit& other);
+
+  private:
+    String fName;
+    String fDerivedFrom;
+    Type   fEffType;
+  };
+
+
 };                              // namespace
 
 #endif                          // bootstrap_type_h

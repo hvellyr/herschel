@@ -17,9 +17,13 @@
 #include "str.h"
 #include "refcountable.h"
 #include "port.h"
-#include "unittests.h"
 
 using namespace heather;
+
+// ENOTSUP seem not to be defined on windows (xp)?
+#if !defined(ENOTSUP)
+#define ENOTSUP 0x0ffffffe
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -532,229 +536,235 @@ heather::displayln(Port<Octet>* port, const String& value)
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class DataPortUnitTest : public UnitTest
-{
-public:
-  DataPortUnitTest() : UnitTest("DataPort") {}
+#include <UnitTest++.h>
 
-  virtual void run()
-  {
+SUITE(DataPort)
+{
 #define PAGESIZE 243            // take a odd number to test chunking
 #define PAGENUM    8
 #define BUFSIZE  PAGENUM * PAGESIZE
 
-    {
-      Ptr<DataPort> dp = new DataPort;
-      dp->write((Octet*)"hello, world!", 14); // incl. terminating 0
-      assert(dp->length() == 14);
-      assert(strcmp((char*)dp->data(), "hello, world!") == 0);
+  TEST(StringWrite)
+  {
+    Ptr<DataPort> dp = new DataPort;
+    dp->write((Octet*)"hello, world!", 14); // incl. terminating 0
+    CHECK_EQUAL(dp->length(), (size_t)14);
+    CHECK_EQUAL(strcmp((char*)dp->data(), "hello, world!"), 0);
+  }
+
+
+  TEST(BlockInitCtor)
+  {
+    Octet tmp[BUFSIZE];
+    for (int i = 0; i < BUFSIZE; i++)
+      tmp[i] = i % 256;
+
+    Ptr<DataPort> dp = new DataPort(tmp, BUFSIZE);
+    for (int i = 0; i < BUFSIZE; i++) {
+      CHECK_EQUAL(dp->read(), i % 256);
     }
+  }
 
-    {
-      Octet tmp[BUFSIZE];
-      for (int i = 0; i < BUFSIZE; i++)
-        tmp[i] = i % 256;
 
-      Ptr<DataPort> dp = new DataPort(tmp, BUFSIZE);
-      for (int i = 0; i < BUFSIZE; i++) {
-        assert(dp->read() == i % 256);
-      }
+  TEST(Write)
+  {
+    Ptr<DataPort> dp = new DataPort;
+
+    for (int i = 0; i < BUFSIZE; i++) {
+      int x = dp->write(i % 256);
+      CHECK_EQUAL(x, 1);
     }
+    CHECK_EQUAL(dp->cursor(), BUFSIZE);
 
-    {
-      Ptr<DataPort> dp = new DataPort;
-
-      for (int i = 0; i < BUFSIZE; i++) {
-        int x = dp->write(i % 256);
-        assert(x == 1);
-      }
-      assert(dp->cursor() == BUFSIZE);
-
-      dp->setCursor(0);
-      for (int i = 0; i < BUFSIZE; i++) {
-        assert(dp->read() == i % 256);
-      }
+    dp->setCursor(0);
+    for (int i = 0; i < BUFSIZE; i++) {
+      CHECK_EQUAL(dp->read(), i % 256);
     }
+  }
 
-    {
-      Ptr<DataPort> dp = new DataPort;
 
-      for (int p = 0; p < PAGENUM; p++) {
-        Octet tmp[PAGESIZE];
-        for (int i = 0; i < PAGESIZE; i++)
-          tmp[i] = (p * PAGESIZE + i) % 256;
+  TEST(BlockWrite)
+  {
+    Ptr<DataPort> dp = new DataPort;
 
-        int x = dp->write(tmp, PAGESIZE);
-        assert(x == PAGESIZE);
-      }
-      assert(dp->cursor() == BUFSIZE);
+    for (int p = 0; p < PAGENUM; p++) {
+      Octet tmp[PAGESIZE];
+      for (int i = 0; i < PAGESIZE; i++)
+        tmp[i] = (p * PAGESIZE + i) % 256;
 
-      dp->setCursor(0);
-      for (int i = 0; i < BUFSIZE; i++) {
-        assert(dp->read() == i % 256);
-      }
+      int x = dp->write(tmp, PAGESIZE);
+      CHECK_EQUAL(x, PAGESIZE);
     }
+    CHECK_EQUAL(dp->cursor(), BUFSIZE);
 
-    {
-      Octet tmp[] = { 'a', '\0' };
-      Ptr<DataPort> dp = new DataPort(tmp, strlen((char*)tmp));
-
-      assert(dp->read() == 'a');
-
-      try {
-        dp->read();
-        assert(0);              // must not come here
-      }
-      catch (const EofException& ) {
-      }
+    dp->setCursor(0);
+    for (int i = 0; i < BUFSIZE; i++) {
+      CHECK_EQUAL(dp->read(), i % 256);
     }
+  }
+
+
+  TEST(FailingRead)
+  {
+    Octet tmp[] = { 'a', '\0' };
+    Ptr<DataPort> dp = new DataPort(tmp, strlen((char*)tmp));
+
+    CHECK_EQUAL(dp->read(), 'a');
+
+    try {
+      dp->read();
+      CHECK(false);             // must not come here
+    }
+    catch (const EofException& ) {
+    }
+  }
 
 #undef BUFSIZE
 #undef PAGESIZE
-  }
-};
-static DataPortUnitTest dataPortUnitTest;
+}
 
 
-class CharPortUnitTest : public UnitTest
+SUITE(CharPort)
 {
-public:
-  CharPortUnitTest() : UnitTest("CharPort") {}
-
-  virtual void run()
+  TEST(BasicReadAndWrite)
   {
-    {
-      Char src[] = { 'a',       // 61
-                     0x424,     // d0 a4
-                     0xc548,    // ec 95 88
-                     0xfb00,    // ef ac 80
-                     0xac00,    // ea b0 80
-                     0x4e57 };  // e4 b9 97
-      Ptr<DataPort> dp = new DataPort;
-      Ptr<CharPort> cp = new CharPort(dp);
+    Char src[] = { 'a',       // 61
+                   0x424,     // d0 a4
+                   0xc548,    // ec 95 88
+                   0xfb00,    // ef ac 80
+                   0xac00,    // ea b0 80
+                   0x4e57 };  // e4 b9 97
+    Ptr<DataPort> dp = new DataPort;
+    Ptr<CharPort> cp = new CharPort(dp);
 
-      for (int i = 0; i < 6; i++)
-        cp->write(src[i]);
+    for (int i = 0; i < 6; i++)
+      cp->write(src[i]);
 
-      Octet expected[] = {
-        'a',
-        0xd0, 0xa4,
-        0xec, 0x95, 0x88,
-        0xef, 0xac, 0x80,
-        0xea, 0xb0, 0x80,
-        0xe4, 0xb9, 0x97, 0x00
-      };
+    Octet expected[] = {
+      'a',
+      0xd0, 0xa4,
+      0xec, 0x95, 0x88,
+      0xef, 0xac, 0x80,
+      0xea, 0xb0, 0x80,
+      0xe4, 0xb9, 0x97, 0x00
+    };
 
-      assert(dp->length() == 15);
-      assert(::memcmp(dp->data(), expected, 15) == 0);
+    CHECK_EQUAL(dp->length(), (size_t)15);
+    CHECK_EQUAL(::memcmp(dp->data(), expected, 15), 0);
 
-      dp->setCursor(0);
-      for (int i = 0; i < 100; i++)
-        cp->write(src, 6);
+    dp->setCursor(0);
+    for (int i = 0; i < 100; i++)
+      cp->write(src, 6);
 
-      assert(dp->length() == 15 * 100);
-      for (int i = 0; i < 100; i++) {
-        assert(::memcmp(dp->data() + i * 15, expected, 15) == 0);
-      }
-    }
-
-    {
-      Octet tmp[] = { 'h', 'e', 'l', 'l', 'o', 0xd0, 0xa4, '-', '-',
-                      0xec, 0x95, 0x88, 0x00 };
-      Char cs[] = { 'h', 'e', 'l', 'l', 'o', 0x424, '-', '-', 0xc548 };
-      Ptr<CharPort> cp = new CharPort(new DataPort(tmp, strlen((char*)tmp)));
-      for (int i = 0; i < 9; i++) {
-        int c = cp->read();
-        assert(c == cs[i]);
-      }
-
-      cp->setCursor(0);
-      Char result[20];
-      int clen = cp->read(result, 9);
-      assert(clen == 9);
-
-      assert(::memcmp(result, cs, sizeof(Char) * 9) == 0);
-    }
-
-    {
-      Octet tmp[] = { 'a', '\0' };
-      Ptr<CharPort> cp = new CharPort(new DataPort(tmp, strlen((char*)tmp)));
-
-      assert(cp->read() == 'a');
-
-      try {
-        cp->read();
-        assert(0);              // must not come here
-      }
-      catch (const EofException& ) {
-      }
+    CHECK_EQUAL(dp->length(), (size_t)(15 * 100));
+    for (int i = 0; i < 100; i++) {
+      CHECK_EQUAL(::memcmp(dp->data() + i * 15, expected, 15), 0);
     }
   }
-};
-static CharPortUnitTest charPortUnitTest;
 
 
-class FilePortUnitTest : public UnitTest
+  TEST(BlockRead)
+  {
+    Octet tmp[] = { 'h', 'e', 'l', 'l', 'o', 0xd0, 0xa4, '-', '-',
+                    0xec, 0x95, 0x88, 0x00 };
+    Char cs[] = { 'h', 'e', 'l', 'l', 'o', 0x424, '-', '-', 0xc548 };
+    Ptr<CharPort> cp = new CharPort(new DataPort(tmp, strlen((char*)tmp)));
+    for (int i = 0; i < 9; i++) {
+      int c = cp->read();
+      CHECK_EQUAL(c, cs[i]);
+    }
+
+    cp->setCursor(0);
+    Char result[20];
+    int clen = cp->read(result, 9);
+    CHECK_EQUAL(clen, 9);
+
+    CHECK_EQUAL(::memcmp(result, cs, sizeof(Char) * 9), 0);
+  }
+
+
+  TEST(IllegalRead)
+  {
+    Octet tmp[] = { 'a', '\0' };
+    Ptr<CharPort> cp = new CharPort(new DataPort(tmp, strlen((char*)tmp)));
+
+    CHECK_EQUAL(cp->read(), 'a');
+
+    try {
+      cp->read();
+      CHECK(false);             // must not come here
+    }
+    catch (const EofException& ) {
+    }
+  }
+}
+
+
+SUITE(FilePort)
 {
-public:
-  FilePortUnitTest() : UnitTest("FilePort") {}
-
-  virtual void run()
+  TEST(Test1)
   {
-    {
-      static const Octet tmp[] = "Hamlet:\n"
-        "Alas, poor Yorick! I knew him, Horatio, a fellow of infinite\n"
-        "jest, of most excellent fancy. He hath bore me on his back a\n"
-        "thousand times, and now how abhorr'd in my imagination it is!\n"
-        "My gorge rises at it.\n";
+    static const Octet tmp[] = "Hamlet:\n"
+      "Alas, poor Yorick! I knew him, Horatio, a fellow of infinite\n"
+      "jest, of most excellent fancy. He hath bore me on his back a\n"
+      "thousand times, and now how abhorr'd in my imagination it is!\n"
+      "My gorge rises at it.\n";
 
-      Ptr<FilePort> port = new FilePort(String("tests/raw/01.bin"), "rb");
+    Ptr<FilePort> port;
 
-      const Octet* p = (Octet*)"\0";
-      try {
-        for (p = tmp; *p; p++) {
-          Octet c = port->read();
-          assert(c == *p);
-        }
-        // try to read beyond the end
-        port->read();
-        assert(0);
-      }
-      catch (const EofException& ) {
-        assert(!*p);
-      }
-      int explen = strlen((const char*)tmp);
-      assert(port->cursor() == explen);
-
-      port->setCursor(0);
-
-      Octet buffer[512];
-      int readlen = port->read(buffer, explen);
-      assert(readlen == explen);
-      assert(memcmp(tmp, buffer, explen) == 0);
-
-      port->close();
-      assert(!port->isOpen());
-
-      try {
-        (void)port->isEof();
-        assert(0);
-      }
-      catch (const PortNotOpenException& ) {
-      }
+    try {
+      port = new FilePort(String("tests/raw/01.bin"), "rb");
+    }
+    catch (IOException e) {
+      CHECK(false);
+      return;
     }
 
-    {
-      try {
-        Ptr<FilePort> port = new FilePort(String("tests/raw/does-not-exist.bin"), "rb");
-        assert(0);
+    const Octet* p = (Octet*)"\0";
+    try {
+      for (p = tmp; *p; p++) {
+        Octet c = port->read();
+        CHECK_EQUAL(c, *p);
       }
-      catch (const IOException& e) {
-        assert(e.errCode() == ENOENT);
-      }
+      // try to read beyond the end
+      port->read();
+      CHECK(false);
+    }
+    catch (const EofException& ) {
+      CHECK(!*p);
+    }
+    int explen = strlen((const char*)tmp);
+    CHECK_EQUAL(port->cursor(), explen);
+
+    port->setCursor(0);
+
+    Octet buffer[512];
+    int readlen = port->read(buffer, explen);
+    CHECK_EQUAL(readlen, explen);
+    CHECK_EQUAL(memcmp(tmp, buffer, explen), 0);
+
+    port->close();
+    CHECK(!port->isOpen());
+
+    try {
+      (void)port->isEof();
+      CHECK(false);
+    }
+    catch (const PortNotOpenException& ) {
     }
   }
-};
-static FilePortUnitTest filePortUnitTest;
+
+
+  TEST(Test2)
+  {
+    try {
+      Ptr<FilePort> port = new FilePort(String("tests/raw/does-not-exist.bin"), "rb");
+      CHECK(false);
+    }
+    catch (const IOException& e) {
+      CHECK_EQUAL(e.errCode(), ENOENT);
+    }
+  }
+}
 
 #endif  // #if defined(UNITTESTS)

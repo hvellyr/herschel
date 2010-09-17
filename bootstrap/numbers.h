@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -9,6 +9,9 @@
 #ifndef bootstrap_numbers_h
 #define bootstrap_numbers_h
 
+#if defined(UNITTESTS)
+#  include <iostream>
+#endif
 
 namespace heather
 {
@@ -38,12 +41,12 @@ namespace heather
       : fNumerator(num),
         fDenominator(den)
       { }
-    
+
     Rational(const Rational& other)
       : fNumerator(other.fNumerator),
         fDenominator(other.fDenominator)
       { }
-    
+
     Rational& operator=(const Rational& other);
 
     bool operator==(const Rational& other) const;
@@ -78,6 +81,10 @@ namespace heather
     int fNumerator;
     int fDenominator;
   };
+
+#if defined(UNITTESTS)
+  std::ostream& operator<<(std::ostream& os, const Rational& rat);
+#endif
 
 };
 

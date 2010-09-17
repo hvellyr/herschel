@@ -8,12 +8,12 @@
 
 #include "common.h"
 
-#include "stdarg.h"
+#include <stdarg.h>
+#include <stdio.h>
 
 #include "log.h"
 #include "str.h"
 #include "srcpos.h"
-#include "unittests.h"
 
 
 using namespace heather;
@@ -38,38 +38,32 @@ LogSurpressor::~LogSurpressor()
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class LogSurpressorUnitTest : public UnitTest
-{
-public:
-  LogSurpressorUnitTest() : UnitTest("LogSurpressor") {}
+#include <UnitTest++.h>
 
-  virtual void run()
+TEST(LogSurpressor)
+{
+  CHECK(!sBeSilent);
+
   {
-    assert(!sBeSilent);
+    LogSurpressor beSilent;
+    CHECK(sBeSilent);
 
     {
-      LogSurpressor beSilent;
-      assert(sBeSilent);
-
-      {
-        LogSurpressor beSilent2;
-        assert(sBeSilent);
-      }
-      assert(sBeSilent);
+      LogSurpressor beSilent2;
+      CHECK(sBeSilent);
     }
-
-    assert(!sBeSilent);
+    CHECK(sBeSilent);
   }
-};
 
-static LogSurpressorUnitTest logSurpressorUnitTest;
+  CHECK(!sBeSilent);
+}
 
 #endif  // #if defined(UNITTESTS)
 
 
 //------------------------------------------------------------------------------
 
-static char* levelStr[] = {
+static const char* levelStr[] = {
   "debug",
   "info",
   "warning",
@@ -176,3 +170,12 @@ heather::errorf(const SrcPos& where, int errorCode, const char* format, ...)
 
   logImpl(where, kError, errorCode, stderr, buffer);
 }
+
+
+void
+heather::warning(const SrcPos& where, int errorCode, const String& msg)
+{
+  logImpl(where, kWarn, errorCode, stderr, (const char*)StrHelper(msg));
+}
+
+

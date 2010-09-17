@@ -1,15 +1,17 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
 */
 
 #include "common.h"
+
+#include <string.h>
+
 #include "strbuf.h"
 #include "str.h"
-#include "unittests.h"
 
 
 using namespace heather;
@@ -118,34 +120,46 @@ StringBuffer::operator[] (int atIndex) const
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class StringBufferUnitTest : public UnitTest
-{
-public:
-  StringBufferUnitTest() : UnitTest("StringBuffer") {}
+#include <UnitTest++.h>
 
-  virtual void run()
+
+SUITE(StringBuffer)
+{
+  TEST(Basic)
   {
     StringBuffer buf("hello world");
-    assert(buf.toString() == String("hello world"));
-    assert(buf.length() == 11);
-    assert(!buf.isEmpty());
+    CHECK_EQUAL(buf.toString(), String("hello world"));
+    CHECK_EQUAL(buf.length(), 11);
+    CHECK(!buf.isEmpty());
+  }
 
+  TEST(Compare)
+  {
     StringBuffer buf2(String("hello world"));
-    assert(buf2.toString() == String("hello world"));
+    CHECK_EQUAL(buf2.toString(), String("hello world"));
 
     StringBuffer buf3(buf2);
-    assert(buf3.toString() == String("hello world"));
+    CHECK_EQUAL(buf3.toString(), String("hello world"));
+  }
 
+  TEST(AppendStr)
+  {
     StringBuffer buf4;
     buf4 << "hello world";
-    assert(buf4.toString() == String("hello world"));
+    CHECK_EQUAL(buf4.toString(), String("hello world"));
+  }
 
+  TEST(AppendChar)
+  {
     StringBuffer buf5;
     buf5 << 'h';
     buf5 << 'e';
     buf5 << 'l' << 'l' << "o w" << String("orl") << Char('d');
-    assert(buf5.toString() == String("hello world"));
+    CHECK_EQUAL(buf5.toString(), String("hello world"));
+  }
 
+  TEST(AppendChar2)
+  {
     StringBuffer buf6;
     for (int i = 0; i < 2048; i++) {
       Char c = Char((i % 65) + 32);
@@ -153,30 +167,39 @@ public:
     }
 
     String s = buf6.toString();
-    assert(s.length() == 2048);
-    assert(buf6.length() == 2048);
+    CHECK_EQUAL(s.length(), 2048);
+    CHECK_EQUAL(buf6.length(), 2048);
 
     for (int i = 0; i < 2048; i++) {
       Char c = Char((i % 65) + 32);
-      assert(s[i] == c);
-      assert(buf6[i] == c);
+      CHECK_EQUAL(s[i], c);
+      CHECK_EQUAL(buf6[i], c);
     }
+  }
 
+  TEST(EmptyBuf)
+  {
     StringBuffer buf7;
-    assert(buf7.length() == 0);
-    assert(buf7.isEmpty());
+    CHECK_EQUAL(buf7.length(), 0);
+    CHECK(buf7.isEmpty());
+  }
 
+
+  TEST(EmptyBuf2)
+  {
     StringBuffer buf8("");
-    assert(buf8.length() == 0);
-    assert(buf8.isEmpty());
+    CHECK_EQUAL(buf8.length(), 0);
+    CHECK(buf8.isEmpty());
+  }
 
+
+  TEST(EmptyBuf3)
+  {
     StringBuffer buf9;
     buf9 << "" << String("");
-    assert(buf9.length() == 0);
-    assert(buf9.isEmpty());
+    CHECK_EQUAL(buf9.length(), 0);
+    CHECK(buf9.isEmpty());
   }
-};
-
-static StringBufferUnitTest stringBufferUnitTest;
+}
 
 #endif  // #if defined(UNITTESTS)

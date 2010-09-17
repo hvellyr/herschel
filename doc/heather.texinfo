@@ -1732,8 +1732,8 @@ def octets-available() : NumberOrFalse
 
 def f()
   match (octets-available()) @{
-    t : Boolean -> outln("End of file")
-    n : Number -> outln("Still have %d to read" % #[n])
+    | t : Boolean -> outln("End of file")
+    | n : Number -> outln("Still have %d to read" % #[n])
   @}
 @end example
 
@@ -1773,14 +1773,20 @@ def generator(x @@ Vector<'T>) : Function() : &('T, Eof)
 @findex def enum
 @cindex enumerations
 Enumeration define types which have a known limited set of possible
-values.  Enumeration type inherit from a base type; this is not
-necessarily, as in C or C++, an integer.  The values of an enumeration
-are symbolic names which must be accessed through the dot notation (like
-function calls).
+values.  An enumeration type inherit from a base type; this is not
+necessarily, as in C or C++, an integer.
+
+The values of an enumeration are symbols in the same namespace as
+functions or variables, i.e.@ two enumerations in the same module can
+have the same symbolic name as value.  When refering to enumeration
+values the value's symbolic name is to be used.  Enumeration does not
+form a special module or namespace.
 
 Enumeration can be used to specialize methods.
 
 @example
+module xgrafix
+
 def enum Colors : Keyword
 @{
   none   = #transparent
@@ -1797,7 +1803,7 @@ def enum MidiController : (Ordinal in 0 .. 127)
   modulation     = 1
   breath         = 2
   foot-pedal     = 3
-  ...
+  -- ...
   poly-operation = 127
 @}
 
@@ -1805,15 +1811,28 @@ def enum MidiController : (Ordinal in 0 .. 127)
 def set-clip-details(self @@ Clip,
                      color @@ Colors, mctrl @@ MidiController)
   select (mctrl) @{
-    | MidiController.bank-select -> ...
-    | MidiController.modulation -> ...
-    | MidiController.breath -> ...
+    | bank-select -> ...
+    | modulation -> ...
+    | breath -> ...
     | ...
   @}
 
-  if (color == Colors.none)
+  if (color == xgrafix|none)
     reset-color(self)
   ...
+@end example
+
+If the value of the enumeration items are not specified and the
+enumeration inherits of type @code{Int} the values are automatically
+assigned.  The first enumeration item is @code{0}:
+
+@example
+def enum Slot
+@{
+  first-slot      -- -> 0
+  second-slot     -- -> 1
+  third-slot      -- -> 2
+@}
 @end example
 
 
@@ -2724,8 +2743,8 @@ select (a) @{
 @}
 @end example
 
-If neither @var{antecedent} and @var{comparator} is specified the tests
-are assumed to be Boolean expression themselves are evaluated in order
+If neither @var{antecedent} nor @var{comparator} is specified the
+tests are assumed to be Boolean expression wich are evaluated in order
 until one succeeds.
 
 @example
@@ -2748,29 +2767,43 @@ The @code{match} expression, a kind of type select, has the form:
 
 @example
 match (@var{expr}) @{
-  | @var{id-1} : @var{type-1} -> @var{consequent-1}
-  | @var{id-2} : @var{type-2} -> @var{consequent-2}
+  | [ @var{id-1} ] : @var{type-1} -> @var{consequent-1}
+  | [ @var{id-2} ] : @var{type-2} -> @var{consequent-2}
   @r{@dots{}}
-  | @r{[} @var{id-3} : Any -> @var{alternate} @r{]}
+  | @r{[} [ @var{id-3} ] : Any -> @var{alternate} @r{]}
 @}
 @end example
 
-where @var{id-1}, @var{id-2}, etc.@ are identifiers typed as
-@var{type-1}, @var{type-2}, etc.  @var{expr} is evaluated and the type
-of its value matched against the types @var{type-1}, @var{type-2}, etc.
-@var{expr}'s value is bound to the identifier for the best matching type
-and the respective consequent @var{consequent-n} is evaluated.  If
-multiple type case are considered equally good matches the first in the
-given order is taken.  @var{id-n} is visible only inside of the
-consequent.
+where @var{id-1}, @var{id-2}, etc.@ are (optional) identifiers typed
+as @var{type-1}, @var{type-2}, etc.  @var{expr} is evaluated and the
+type of its value matched against the types @var{type-1},
+@var{type-2}, etc.  @var{expr}'s value is bound to the identifier (if
+defined) for the best matching type and the respective consequent
+@var{consequent-n} is evaluated.  If multiple type cases are
+considered equally good matches the first in the given order is taken.
+@var{id-n} is visible only inside of the consequent.
 
-There must only be one type case which is typed to @code{Any}; this
-acts as an `else' case.
+The first type case which is typed to @code{Any} acts as an `else'
+case.
 
 The evaluated consequent's value becomes the value of the complete
 expression.  If no type case matches (and there's no @code{Any} case)
 the value is @code{unspecified}.
+
+@example
+def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrFalse ...
+
+def remove!(self @ List<'T>, elt @ 'T) : List<'T>
+  match (self.index-of(elt)) @{
+    | : Bool        -> self
+    | idx : Ordinal -> @{
+                         self.remove-at!(idx)
+                         self
+                       @}
+  @}
+@end example
 @end deffn
+
 
 @c --------------------------------------------------------------------
 @node Conditions, On-the-fly iterators, Conditionals, Expressions
@@ -3176,13 +3209,14 @@ For example:
 @end example
 
 The grouping of the @var{declarations} with @code{@{} and @code{@}} is
-optional.  If the grouping is missing the module's scope extends until
+optional.  If this grouping is missing the module's scope extends until
 the end of the source file.
 
-Note: The @code{module} statement is @emph{not} a definition; there can
-be multiple module statements with the same module name and public id.
-All definitions from modules with the same public id are put into the
-same logical module (independant of what the module name was).
+Note: The @code{module} statement is @emph{not} a definition; there
+can be multiple module statements with the same module name and public
+id (possible in different files).  All definitions from modules with
+the same public id are put into the same logical module (independant
+of what the module name was).
 
 
 @c --------------------------------------------------------------------
@@ -3235,15 +3269,15 @@ definition.
 
 The name of the extending function must therefore explicitly be
 qualified.  If for example the @code{to-string} function from the
-@code{core} module should be extended this would look like:
+@code{core} module should be extended this would look like this:
 
 @example
 def core|to-string() : String
   ...
 @end example
 
-If more than one function is to be extended a special grouping form is
-available.
+If more than one function is to be extended a more convenient grouping
+form is available.
 
 @deffn Special {extend module}
 
@@ -3255,10 +3289,10 @@ extend module @var{module-name} @{
 @}
 @end example
 
-where @var{module-name} is the name of the module to extend (as
-imported).  All declarations inside this @code{extend} section are
-actually done as if written inside the mentioned @code{module}, except
-that visibility and export is controlled by the enclosing `real' module.
+where @var{module-name} is the name of the module to be extended.  All
+declarations inside this @code{extend} section are actually done as if
+written inside the mentioned @code{module}, except that visibility and
+export is controlled by the enclosing `real' module.
 
 @example
 module stack
@@ -3279,7 +3313,7 @@ extend module core
 Normally all declared identifiers from a module are restricted in
 visibility to the module and the compile unit they are defined in, i.e.@
 they're defined as @dfn{private}.  If other compile units in the same module
-or in other modules identifiers have to be @dfn{exported}.
+or in other modules should use them identifiers have to be @dfn{exported}.
 
 @deffn Special export
 The @code{export} declaration has the form:
@@ -4145,7 +4179,9 @@ define-clause   := func-decl
 export-stmt     := `export' { export-flag }
                    `(' all-symbol | symbol-list `)'
 export-flag     := `public' | `protected' | `final'
-symbol-list     := IDENTIFIER { `,' IDENTIFIER }
+symbol-list     := export-symbol { `,' export-symbol }
+export-symbol   := IDENTIFIER [ `:' domain-id ]
+domain-id       := `char' | `unit'
 all-symbol      := `*'
 @end verbatim
 @end smallformat
@@ -4251,6 +4287,7 @@ typedef-clause  := `type' type-name
                    [ `{' { protocol-decl } `}' ]
 
 aliasdef-clause := `alias' type-name [ generics-spec ]
+                   [ generics-const ]
                    [ DOCSTRING ]
                    `=' type-clause
 @end verbatim
@@ -4383,20 +4420,13 @@ reify-decl      := `reify' func-signature { `,' func-signature }
 and/or return type a generic constraint section can be applied.}
 @smallformat
 @verbatim
-generics-const  := `where' constraint-expr { `,' constraint-expr }
-
-constraint-expr := type-constraint | logic-const | group-const
+generics-const  := `where' type-constraint { `,' type-constraint }
 
 type-constraint := subtype-const | sign-constraint
 subtype-const   := type-id subtype-op const-expr
 subtype-op      := COMPARE-OP
 const-expr      := expression
-sign-constraint := type-id `isa' type-clause
-
-logic-const     := constraint-expr constraint-op constraint-expr
-constraint-op   := `and' | `or'
-
-group-const     := `(' constraint-expr `)'
+sign-constraint := type-name `isa' type-clause
 @end verbatim
 @end smallformat
 
@@ -4427,12 +4457,12 @@ type-clause     := simple-type | complex-type | quoted-type
 simple-type     := type-id | param-type | array-type | funsign-def
 complex-type    := type-seq | union-type | constraint-type
 
-quoted-type     := `'' SYMBOL
+quoted-type     := `'' type-name
 
 type-name       := SYMBOL
 type-id         := IDENTIFIER
 
-constraint-type := type-clause constraint-op const-expr
+constraint-type := (type-name | quoted-type) constraint-op const-expr
 constraint-op   := COMPARE-OP
 @end verbatim
 @end smallformat
@@ -4626,7 +4656,7 @@ constants       := constant { `,' constant }
 
 match-expr      := `match' `(' test-expr `)' `{' match-tests `}'
 match-tests     := { `|' match-test }
-match-test      := var-name `:' type-clause `->' consequent
+match-test      := [ var-name ] `:' type-clause `->' consequent
 @end verbatim
 @end smallformat
 

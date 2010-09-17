@@ -13,7 +13,8 @@
 #include "type.h"
 #include "typectx.h"
 #include "strbuf.h"
-#include "unittests.h"
+#include "typeenum.h"
+
 
 using namespace heather;
 
@@ -507,6 +508,89 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class MeasureTypeImpl : public TypeImpl
+  {
+  public:
+    MeasureTypeImpl(const String& name, const Type& baseType,
+                    const String& defUnit)
+      : fName(name),
+        fBaseType(baseType),
+        fDefUnit(defUnit)
+    { }
+
+
+    virtual MeasureTypeImpl* clone() const
+    {
+      return new MeasureTypeImpl(fName, fBaseType.clone(), fDefUnit);
+    }
+
+
+    virtual bool isEqual(const TypeImpl* other) const
+    {
+      const MeasureTypeImpl* o = dynamic_cast<const MeasureTypeImpl*>(other);
+
+      return (o != NULL &&
+              fName == o->fName &&
+              fDefUnit == o->fDefUnit &&
+              fBaseType == o->fBaseType);
+    }
+
+
+    virtual bool isCovariant(const TypeImpl* other) const
+    {
+      const MeasureTypeImpl* o = dynamic_cast<const MeasureTypeImpl*>(other);
+
+      return (o != NULL &&
+              fBaseType.isCovariant(o->fBaseType));
+    }
+
+
+    const String& name() const
+    {
+      return fName;
+    }
+
+
+    const Type& inherit() const
+    {
+      return fBaseType;
+    }
+
+
+    const String& defUnit() const
+    {
+      return fDefUnit;
+    }
+
+
+    virtual void replaceGenerics(const TypeCtx& typeMap)
+    {
+      fBaseType.replaceGenerics(typeMap);
+    }
+
+
+    virtual String toString() const
+    {
+      StringBuffer buf;
+      buf << "<ty:measure nm='" << fName << "' unit='"
+          << fDefUnit << "'>";
+
+      if (fBaseType.isDef())
+        buf << "<ty:isa>" << fBaseType.toString() << "</ty:isa>";
+
+      buf << "</ty:measure>";
+      return buf.toString();
+    }
+
+  protected:
+    String     fName;
+    Type       fBaseType;
+    String     fDefUnit;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   class TypeRefTypeImpl : public TypeImpl
   {
   public:
@@ -691,6 +775,31 @@ namespace heather
 
 //----------------------------------------------------------------------------
 
+const String heather::Type::kAnyTypeName         = String("Any");
+const String heather::Type::kBoolTypeName        = String("Bool");
+const String heather::Type::kCharTypeName        = String("Char");
+const String heather::Type::kDoubleTypeName      = String("Double");
+const String heather::Type::kEofTypeName         = String("Eof");
+const String heather::Type::kFloatTypeName       = String("Float");
+const String heather::Type::kIntTypeName         = String("Int");
+const String heather::Type::kKeywordTypeName     = String("Keyword");
+const String heather::Type::kLongDoubleTypeName  = String("LongDouble");
+const String heather::Type::kLongTypeName        = String("Long");
+const String heather::Type::kNilTypeName         = String("Nil");
+const String heather::Type::kOctetTypeName       = String("Octet");
+const String heather::Type::kRationalTypeName    = String("Rational");
+const String heather::Type::kRealTypeName        = String("Real");
+const String heather::Type::kShortTypeName       = String("Short");
+const String heather::Type::kStringTypeName      = String("String");
+const String heather::Type::kULongTypeName       = String("ULong");
+const String heather::Type::kUShortTypeName      = String("UShort");
+const String heather::Type::kUWordTypeName       = String("UWord");
+const String heather::Type::kUnspecifiedTypeName = String("Unspecified");
+const String heather::Type::kWordTypeName        = String("Word");
+
+
+//----------------------------------------------------------------------------
+
 Type::Type()
   : fKind(kType_Undefined)
 { }
@@ -731,7 +840,7 @@ Type::newTypeRef(const String& name)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
-  return Type(kType_Ref, 
+  return Type(kType_Ref,
               new TypeRefTypeImpl(name, false,
                                   dummyGenerics, dummyConstraints));
 }
@@ -742,7 +851,7 @@ Type::newTypeRef(const String& name, bool isGeneric,
                  const TypeConstVector& constraints)
 {
   TypeVector dummyGenerics;
-  return Type(kType_Ref, 
+  return Type(kType_Ref,
               new TypeRefTypeImpl(name, isGeneric, dummyGenerics,
                                   constraints));
 }
@@ -941,8 +1050,7 @@ Type
 Type::newMeasure(const String& name, const Type& baseType,
                  const String& defUnit)
 {
-  // TODO
-  return Type();
+  return Type(kType_Measure, new MeasureTypeImpl(name, baseType, defUnit));
 }
 
 
@@ -1064,30 +1172,253 @@ Type::isBase() const
 
 
 bool
+Type::isBaseOrBaseRef() const
+{
+  if  (isBase())
+    return true;
+  if (isRef()) {
+    String nm = typeName();
+    return (nm == kBoolTypeName ||
+            nm == kCharTypeName ||
+            nm == kDoubleTypeName ||
+            nm == kEofTypeName ||
+            nm == kFloatTypeName ||
+            nm == kIntTypeName ||
+            nm == kKeywordTypeName ||
+            nm == kLongDoubleTypeName ||
+            nm == kLongTypeName ||
+            nm == kNilTypeName ||
+            nm == kOctetTypeName ||
+            nm == kRationalTypeName ||
+            nm == kRealTypeName ||
+            nm == kShortTypeName ||
+            nm == kStringTypeName ||
+            nm == kULongTypeName ||
+            nm == kUShortTypeName ||
+            nm == kUWordTypeName ||
+            nm == kWordTypeName);
+  }
+
+  return false;
+}
+
+
+bool
+Type::isBuiltinType(TypeKind kind, const String& name) const
+{
+  return fKind == kind || (isRef() && typeName() == name);
+}
+
+
+TypeEnumMaker*
+Type::newBaseTypeEnumMaker() const
+{
+  switch (fKind) {
+  case kType_Bool:        return new BoolTypeEnumMaker;
+  case kType_Char:        return new CharTypeEnumMaker;
+  case kType_Int:         return new IntTypeEnumMaker;
+  case kType_Keyword:     return new KeywordTypeEnumMaker;
+  case kType_Long:        return new LongTypeEnumMaker;
+  case kType_Octet:       return new OctetTypeEnumMaker;
+  case kType_Rational:    return new RationalTypeEnumMaker;
+  case kType_Real:        return new RealTypeEnumMaker;
+  case kType_Short:       return new ShortTypeEnumMaker;
+  case kType_String:      return new StringTypeEnumMaker;
+  case kType_ULong:       return new ULongTypeEnumMaker;
+  case kType_UShort:      return new UShortTypeEnumMaker;
+  case kType_UWord:       return new UWordTypeEnumMaker;
+  case kType_Word:        return new WordTypeEnumMaker;
+  case kType_Eof:         return new EofTypeEnumMaker;
+  case kType_Nil:         return new NilTypeEnumMaker;
+  case kType_Unspecified: return new UnspecifiedTypeEnumMaker;
+  case kType_Ref:
+    {
+      String nm = typeName();
+      if (nm == kBoolTypeName)
+        return new BoolTypeEnumMaker;
+      else if (nm == kCharTypeName)
+        return new CharTypeEnumMaker;
+      else if (nm == kDoubleTypeName)
+        return new DoubleTypeEnumMaker;
+      else if (nm == kEofTypeName)
+        return new EofTypeEnumMaker;
+      else if (nm == kFloatTypeName)
+        return new FloatTypeEnumMaker;
+      else if (nm == kIntTypeName)
+        return new IntTypeEnumMaker;
+      else if (nm == kKeywordTypeName)
+        return new KeywordTypeEnumMaker;
+      else if (nm == kLongDoubleTypeName)
+        return new LongDoubleTypeEnumMaker;
+      else if (nm == kLongTypeName)
+        return new LongTypeEnumMaker;
+      else if (nm == kNilTypeName)
+        return new NilTypeEnumMaker;
+      else if (nm == kOctetTypeName)
+        return new OctetTypeEnumMaker;
+      else if (nm == kRationalTypeName)
+        return new RationalTypeEnumMaker;
+      else if (nm == kRealTypeName)
+        return new RealTypeEnumMaker;
+      else if (nm == kShortTypeName)
+        return new ShortTypeEnumMaker;
+      else if (nm == kStringTypeName)
+        return new StringTypeEnumMaker;
+      else if (nm == kULongTypeName)
+        return new ULongTypeEnumMaker;
+      else if (nm == kUShortTypeName)
+        return new UShortTypeEnumMaker;
+      else if (nm == kUWordTypeName)
+        return new UWordTypeEnumMaker;
+      else if (nm == kWordTypeName)
+        return new WordTypeEnumMaker;
+
+      return NULL;
+    }
+
+  default:
+    return NULL;
+  }
+}
+
+
+bool
 Type::isAny() const
 {
-  return fKind == kType_Any;
+  return isBuiltinType(kType_Any, kAnyTypeName);
 }
 
 
 bool
 Type::isInt() const
 {
-  return fKind == kType_Int;
+  return isBuiltinType(kType_Int, kIntTypeName);
 }
 
 
 bool
 Type::isString() const
 {
-  return fKind == kType_String;
+  return isBuiltinType(kType_String, kStringTypeName);
 }
 
 
 bool
 Type::isReal() const
 {
-  return fKind == kType_Real;
+  return isBuiltinType(kType_Real, kRealTypeName);
+}
+
+
+bool
+Type::isKeyword() const
+{
+  return isBuiltinType(kType_Keyword, kKeywordTypeName);
+}
+
+
+bool
+Type::isOctet() const
+{
+  return isBuiltinType(kType_Octet, kOctetTypeName);
+}
+
+
+bool
+Type::isShort() const
+{
+  return isBuiltinType(kType_Short, kShortTypeName);
+}
+
+
+bool
+Type::isWord() const
+{
+  return isBuiltinType(kType_Word, kWordTypeName);
+}
+
+
+bool
+Type::isLong() const
+{
+  return isBuiltinType(kType_Long, kLongTypeName);
+}
+
+
+bool
+Type::isUShort() const
+{
+  return isBuiltinType(kType_UShort, kUShortTypeName);
+}
+
+
+bool
+Type::isUWord() const
+{
+  return isBuiltinType(kType_UWord, kUWordTypeName);
+}
+
+
+bool
+Type::isULong() const
+{
+  return isBuiltinType(kType_ULong, kULongTypeName);
+}
+
+
+bool
+Type::isFloat() const
+{
+  return isBuiltinType(kType_Float, kFloatTypeName);
+}
+
+
+bool
+Type::isDouble() const
+{
+  return isBuiltinType(kType_Double, kDoubleTypeName);
+}
+
+
+bool
+Type::isLongDouble() const
+{
+  return isBuiltinType(kType_LongDouble, kLongDoubleTypeName);
+}
+
+
+bool
+Type::isBool() const
+{
+  return isBuiltinType(kType_Bool, kBoolTypeName);
+}
+
+
+bool
+Type::isChar() const
+{
+  return isBuiltinType(kType_Char, kCharTypeName);
+}
+
+
+bool
+Type::isEof() const
+{
+  return isBuiltinType(kType_Eof, kEofTypeName);
+}
+
+
+bool
+Type::isNil() const
+{
+  return isBuiltinType(kType_Nil, kNilTypeName);
+}
+
+
+bool
+Type::isRational() const
+{
+  return isBuiltinType(kType_Rational, kRationalTypeName);
 }
 
 
@@ -1108,42 +1439,27 @@ Type::typeName() const
   case kType_Ref:
     return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->name();
 
-  case kType_Any:
-    return String("Any");
-  case kType_Bool:
-    return String("Bool");
-  case kType_Char:
-    return String("Char");
-  case kType_Int:
-    return String("Int");
-  case kType_Keyword:
-    return String("Keyword");
-  case kType_Long:
-    return String("Long");
-  case kType_Octet:
-    return String("Octet");
-  case kType_Rational:
-    return String("Rational");
-  case kType_Real:
-    return String("Real");
-  case kType_Short:
-    return String("Short");
-  case kType_String:
-    return String("String");
-  case kType_ULong:
-    return String("ULong");
-  case kType_UShort:
-    return String("UShort");
-  case kType_UWord:
-    return String("UWord");
-  case kType_Word:
-    return String("Word");
-  case kType_Eof:
-    return String("Eof");
-  case kType_Nil:
-    return String("Nil");
-  case kType_Unspecified:
-    return String("Unspecified");
+  case kType_Any:         return kAnyTypeName;
+  case kType_Bool:        return kBoolTypeName;
+  case kType_Char:        return kCharTypeName;
+  case kType_Int:         return kIntTypeName;
+  case kType_Keyword:     return kKeywordTypeName;
+  case kType_Long:        return kLongTypeName;
+  case kType_Octet:       return kOctetTypeName;
+  case kType_Rational:    return kRationalTypeName;
+  case kType_Real:        return kRealTypeName;
+  case kType_Short:       return kShortTypeName;
+  case kType_String:      return kStringTypeName;
+  case kType_ULong:       return kULongTypeName;
+  case kType_UShort:      return kUShortTypeName;
+  case kType_UWord:       return kUWordTypeName;
+  case kType_Word:        return kWordTypeName;
+  case kType_Eof:         return kEofTypeName;
+  case kType_Nil:         return kNilTypeName;
+  case kType_Unspecified: return kUnspecifiedTypeName;
+  case kType_Float:       return kFloatTypeName;
+  case kType_Double:      return kDoubleTypeName;
+  case kType_LongDouble:  return kLongDoubleTypeName;
 
   case kType_Array:
     return arrayBaseType().typeName();
@@ -1154,7 +1470,7 @@ Type::typeName() const
     return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->name();
 
   case kType_Measure:
-    // return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name();
+    return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name();
   case kType_Enum:
     // return dynamic_cast<const EnumTypeImpl*>(fImpl.obj())->name();
   case kType_Union:
@@ -1401,6 +1717,9 @@ Type::generics() const
   case kType_Octet:
   case kType_Rational:
   case kType_Real:
+  case kType_Float:
+  case kType_Double:
+  case kType_LongDouble:
   case kType_Short:
   case kType_String:
   case kType_ULong:
@@ -1491,24 +1810,27 @@ String
 Type::toString() const
 {
   switch (fKind) {
-  case kType_Any:           return String("Any");
-  case kType_Bool:          return String("Bool");
-  case kType_Char:          return String("Char");
-  case kType_Int:           return String("Int");
-  case kType_Keyword:       return String("Keyword");
-  case kType_Long:          return String("Long");
-  case kType_Octet:         return String("Octet");
-  case kType_Rational:      return String("Rational");
-  case kType_Real:          return String("Real");
-  case kType_Short:         return String("Short");
-  case kType_String:        return String("String");
-  case kType_ULong:         return String("ULong");
-  case kType_UShort:        return String("UShort");
-  case kType_UWord:         return String("UWord");
-  case kType_Word:          return String("Word");
-  case kType_Eof:           return String("Eof");
-  case kType_Nil:           return String("Nil");
-  case kType_Unspecified:   return String("Unspecified");
+  case kType_Any:           return kAnyTypeName;
+  case kType_Bool:          return kBoolTypeName;
+  case kType_Char:          return kCharTypeName;
+  case kType_Int:           return kIntTypeName;
+  case kType_Keyword:       return kKeywordTypeName;
+  case kType_Long:          return kLongTypeName;
+  case kType_Octet:         return kOctetTypeName;
+  case kType_Rational:      return kRationalTypeName;
+  case kType_Real:          return kRealTypeName;
+  case kType_Short:         return kShortTypeName;
+  case kType_String:        return kStringTypeName;
+  case kType_ULong:         return kULongTypeName;
+  case kType_UShort:        return kUShortTypeName;
+  case kType_UWord:         return kUWordTypeName;
+  case kType_Word:          return kWordTypeName;
+  case kType_Eof:           return kEofTypeName;
+  case kType_Nil:           return kNilTypeName;
+  case kType_Unspecified:   return kUnspecifiedTypeName;
+  case kType_Float:         return kFloatTypeName;
+  case kType_Double:        return kDoubleTypeName;
+  case kType_LongDouble:    return kLongDoubleTypeName;
 
   case kType_Ref:
   case kType_Array:
@@ -2343,209 +2665,279 @@ FunctionSignature::toString() const
 }
 
 
+//------------------------------------------------------------------------------
+
+TypeUnit::TypeUnit()
+{ }
+
+
+TypeUnit::TypeUnit(const String& name, const String& derivedFrom,
+                   const Type& effectiveType)
+  : fName(name),
+    fDerivedFrom(derivedFrom),
+    fEffType(effectiveType)
+{ }
+
+
+TypeUnit::TypeUnit(const TypeUnit& other)
+{
+  *this = other;
+}
+
+
+bool
+TypeUnit::isDef() const
+{
+  return !fName.isEmpty();
+}
+
+
+const String&
+TypeUnit::name() const
+{
+  return fName;
+}
+
+
+const String&
+TypeUnit::derivedFromName() const
+{
+  return fDerivedFrom;
+}
+
+
+const Type&
+TypeUnit::effType() const
+{
+  return fEffType;
+}
+
+
+TypeUnit&
+TypeUnit::operator=(const TypeUnit& other)
+{
+  fName = other.fName;
+  fDerivedFrom = other.fDerivedFrom;
+  fEffType = other.fEffType;
+  return *this;
+}
+
 
 //============================================================================
 
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------
 
-class TypeUnitTest : public UnitTest
+#include <UnitTest++.h>
+#include <iostream>
+
+
+std::ostream& operator<<(std::ostream& os, const TypeConstraint& constraint)
 {
-public:
-  TypeUnitTest() : UnitTest("Type") {}
-
-  virtual void run()
-  {
-    
-  }
-};
-static TypeUnitTest typeUnitTest;
+  os << constraint.toString();
+  return os;
+}
 
 
-//----------------------------------------------------------------------------
-
-class TypeConstraintUnitTest : public UnitTest
+std::ostream& operator<<(std::ostream& os, const Type& type)
 {
-public:
-  TypeConstraintUnitTest() : UnitTest("TypeConstraint") {}
+  os << type.toString();
+  return os;
+}
 
-  virtual void run()
+
+std::ostream& operator<<(std::ostream& os, const FunctionParameter& prm)
+{
+  os << prm.toString();
+  return os;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const FunctionSignature& sign)
+{
+  os << sign.toString();
+  return os;
+}
+
+
+
+SUITE(TypeConstraint)
+{
+  TEST(construction)
   {
     SrcPos sp;
-    {
-      TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
-                                                   Token(sp, kInt, 42));
-      assert(t0.constOp() == kConstOp_equal);
-    }
-
-    {
-      TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
-                                                   Token(sp, kInt, 42));
-      TypeConstraint t1 = TypeConstraint::newValue(kConstOp_equal,
-                                                   Token(sp, kInt, 42));
-      assert(t0.constOp() == kConstOp_equal);
-      assert(t0 == t1);
-    }
-
-    {
-      TypeConstraint t0 = TypeConstraint::newValue(kConstOp_notEqual,
-                                                   Token(sp, kInt, 10));
-      TypeConstraint t1 = TypeConstraint::newValue(kConstOp_notEqual,
-                                                   Token(sp, kInt, 21));
-      TypeConstraint t2 = TypeConstraint::newAnd(t0, t1);
-      TypeConstraint t3 = TypeConstraint::newOr(t0, t2);
-
-      assert(t2.constOp() == kConstOp_and);
-      assert(t2.leftConstraint() == t0);
-      assert(t2.rightConstraint() == t1);
-
-      assert(t3.constOp() == kConstOp_or);
-      assert(t3.leftConstraint() == t0);
-      assert(t3.rightConstraint() == t2);
-    }
-
-    {
-      TypeConstraint t0 = TypeConstraint::newType(kConstOp_isa,
-                                                  Type::newInt());
-      assert(t0.constOp() == kConstOp_isa);
-      assert(t0.typeConstraint() == Type::newInt());
-    }
+    TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
+                                                 Token(sp, kInt, 42));
+    CHECK_EQUAL(t0.constOp(), kConstOp_equal);
   }
-};
-static TypeConstraintUnitTest typeConstraintUnitTest;
+
+
+  TEST(equalConstraint)
+  {
+    SrcPos sp;
+    TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
+                                                 Token(sp, kInt, 42));
+    TypeConstraint t1 = TypeConstraint::newValue(kConstOp_equal,
+                                                 Token(sp, kInt, 42));
+    CHECK_EQUAL(t0.constOp(), kConstOp_equal);
+    CHECK_EQUAL(t0, t1);
+  }
+
+
+  TEST(andConstraint)
+  {
+    SrcPos sp;
+    TypeConstraint t0 = TypeConstraint::newValue(kConstOp_notEqual,
+                                                 Token(sp, kInt, 10));
+    TypeConstraint t1 = TypeConstraint::newValue(kConstOp_notEqual,
+                                                 Token(sp, kInt, 21));
+    TypeConstraint t2 = TypeConstraint::newAnd(t0, t1);
+    TypeConstraint t3 = TypeConstraint::newOr(t0, t2);
+
+    CHECK_EQUAL(t2.constOp(), kConstOp_and);
+    CHECK_EQUAL(t2.leftConstraint(), t0);
+    CHECK_EQUAL(t2.rightConstraint(), t1);
+
+    CHECK_EQUAL(t3.constOp(), kConstOp_or);
+    CHECK_EQUAL(t3.leftConstraint(), t0);
+    CHECK_EQUAL(t3.rightConstraint(), t2);
+  }
+
+
+  TEST(isaConstraint)
+  {
+    SrcPos sp;
+    TypeConstraint t0 = TypeConstraint::newType(kConstOp_isa,
+                                                Type::newInt());
+    CHECK_EQUAL(t0.constOp(), kConstOp_isa);
+    CHECK_EQUAL(t0.typeConstraint(), Type::newInt());
+  }
+}
 
 
 //----------------------------------------------------------------------------
 
-class FunctionParameterUnitTest : public UnitTest
+SUITE(FunctionParameter)
 {
-public:
-  FunctionParameterUnitTest() : UnitTest("FunctionParameter") {}
-
-  virtual void run()
+  TEST(posParamCtor)
   {
-    {
-      FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-      assert(p0.type().isInt());
-      assert(!p0.isSpecialized());
-      assert(p0.key().isEmpty());
-      assert(p0.kind() == FunctionParameter::kParamPos);
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newSpecParam(Type::newInt());
-      assert(p0.type().isInt());
-      assert(p0.isSpecialized());
-      assert(p0.key().isEmpty());
-      assert(p0.kind() == FunctionParameter::kParamPos);
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newNamedParam(String("abc"),
-                                                              Type::newInt());
-      assert(p0.type().isInt());
-      assert(!p0.isSpecialized());
-      assert(p0.key() == String("abc"));
-      assert(p0.kind() == FunctionParameter::kParamNamed);
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newRestParam(Type::newInt());
-      assert(p0.type().isInt());
-      assert(!p0.isSpecialized());
-      assert(p0.key().isEmpty());
-      assert(p0.kind() == FunctionParameter::kParamRest);
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-      FunctionParameter p1 = FunctionParameter::newPosParam(Type::newInt());
-
-      assert(p0 == p1);
-      assert(p0.isCovariant(p1));
-      assert(p0.isContravariant(p1));
-      assert(!p0.isInvariant(p1));
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-      FunctionParameter p1 = FunctionParameter::newPosParam(Type::newAny());
-
-      assert(p0 != p1);
-
-      assert(p0.isCovariant(p1));
-      assert(p0.isContravariant(p1));
-      assert(!p0.isInvariant(p1));
-
-      // assert(!p1.isCovariant(p0));
-      // assert(!p1.isContravariant(p0));
-      assert(!p1.isInvariant(p0));
-    }
-
-    {
-      FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-      FunctionParameter p1 = FunctionParameter::newPosParam(Type::newString());
-
-      assert(p0 != p1);
-
-      // assert(!p0.isCovariant(p1));
-      // assert(!p0.isContravariant(p1));
-      // assert(p0.isInvariant(p1));
-
-      // assert(!p1.isCovariant(p0));
-      // assert(!p1.isContravariant(p0));
-      // assert(p1.isInvariant(p0));
-    }
+    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
+    CHECK(p0.type().isInt());
+    CHECK(!p0.isSpecialized());
+    CHECK(p0.key().isEmpty());
+    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamPos);
   }
-};
-static FunctionParameterUnitTest functionParameterUnitTest;
+
+  TEST(specParamCtor)
+  {
+    FunctionParameter p0 = FunctionParameter::newSpecParam(Type::newInt());
+    CHECK(p0.type().isInt());
+    CHECK(p0.isSpecialized());
+    CHECK(p0.key().isEmpty());
+    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamPos);
+  }
+
+  TEST(namedParamCtor)
+  {
+    FunctionParameter p0 = FunctionParameter::newNamedParam(String("abc"),
+                                                            Type::newInt());
+    CHECK(p0.type().isInt());
+    CHECK(!p0.isSpecialized());
+    CHECK_EQUAL(p0.key(), String("abc"));
+    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamNamed);
+  }
+
+  TEST(restParamCtor)
+  {
+    FunctionParameter p0 = FunctionParameter::newRestParam(Type::newInt());
+    CHECK(p0.type().isInt());
+    CHECK(!p0.isSpecialized());
+    CHECK(p0.key().isEmpty());
+    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamRest);
+  }
+
+  TEST(covariantCheckIntInt)
+  {
+    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
+    FunctionParameter p1 = FunctionParameter::newPosParam(Type::newInt());
+
+    CHECK_EQUAL(p0, p1);
+    CHECK(p0.isCovariant(p1));
+    CHECK(p0.isContravariant(p1));
+    CHECK(!p0.isInvariant(p1));
+  }
+
+  TEST(covariantCheckIntAny)
+  {
+    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
+    FunctionParameter p1 = FunctionParameter::newPosParam(Type::newAny());
+
+    CHECK(p0 != p1);
+
+    CHECK(p0.isCovariant(p1));
+    CHECK(p0.isContravariant(p1));
+    CHECK(!p0.isInvariant(p1));
+
+    // CHECK(!p1.isCovariant(p0));
+    // CHECK(!p1.isContravariant(p0));
+    CHECK(!p1.isInvariant(p0));
+  }
+
+  TEST(covariantCheckIntString)
+  {
+    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
+    FunctionParameter p1 = FunctionParameter::newPosParam(Type::newString());
+
+    CHECK(p0 != p1);
+
+    // CHECK(!p0.isCovariant(p1));
+    // CHECK(!p0.isContravariant(p1));
+    // CHECK(p0.isInvariant(p1));
+
+    // CHECK(!p1.isCovariant(p0));
+    // CHECK(!p1.isContravariant(p0));
+    // CHECK(p1.isInvariant(p0));
+  }
+}
 
 
 //----------------------------------------------------------------------------
 
-class FunctionSignatureUnitTest : public UnitTest
+TEST(FunctionSignature)
 {
-public:
-  FunctionSignatureUnitTest() : UnitTest("FunctionSignature") {}
+  FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt());
 
-  virtual void run()
-  {
-    FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt());
+  FunctionParamVector params1;
+  params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
+  params1.push_back(FunctionParameter::newPosParam(Type::newInt()));
+  params1.push_back(FunctionParameter::newNamedParam(String("xyz"), Type::newReal()));
+  params1.push_back(FunctionParameter::newRestParam(Type::newAny()));
 
-    FunctionParamVector params1;
-    params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
-    params1.push_back(FunctionParameter::newPosParam(Type::newInt()));
-    params1.push_back(FunctionParameter::newNamedParam(String("xyz"), Type::newReal()));
-    params1.push_back(FunctionParameter::newRestParam(Type::newAny()));
+  FunctionSignature fs1 = FunctionSignature(true, String("man"), Type::newInt(),
+                                            params1);
 
-    FunctionSignature fs1 = FunctionSignature(true, String("man"), Type::newInt(),
-                                              params1);
+  CHECK(!fs0.isGeneric());
+  CHECK_EQUAL(fs0.methodName(), String("abc"));
+  CHECK_EQUAL(fs0.returnType(), Type::newInt());
+  CHECK(fs0.parameters().empty());
 
-    assert(!fs0.isGeneric());
-    assert(fs0.methodName() == String("abc"));
-    assert(fs0.returnType() == Type::newInt());
-    assert(fs0.parameters().empty());
+  CHECK(fs1.isGeneric());
+  CHECK_EQUAL(fs1.methodName(), String("man"));
+  CHECK_EQUAL(fs1.returnType(), Type::newInt());
+  CHECK_EQUAL(fs1.parameters().size(), (size_t)4);
+  CHECK(fs1.parameters()[0].type().isString());
+  CHECK_EQUAL(fs1.parameters()[0].kind(), FunctionParameter::kParamPos);
+  CHECK(fs1.parameters()[0].isSpecialized());
 
-    assert(fs1.isGeneric());
-    assert(fs1.methodName() == String("man"));
-    assert(fs1.returnType() == Type::newInt());
-    assert(fs1.parameters().size() == 4);
-    assert(fs1.parameters()[0].type().isString());
-    assert(fs1.parameters()[0].kind() == FunctionParameter::kParamPos);
-    assert(fs1.parameters()[0].isSpecialized());
+  CHECK(fs1.parameters()[1].type().isInt());
+  CHECK_EQUAL(fs1.parameters()[1].kind(), FunctionParameter::kParamPos);
 
-    assert(fs1.parameters()[1].type().isInt());
-    assert(fs1.parameters()[1].kind() == FunctionParameter::kParamPos);
+  CHECK(fs1.parameters()[2].type().isReal());
+  CHECK_EQUAL(fs1.parameters()[2].kind(), FunctionParameter::kParamNamed);
 
-    assert(fs1.parameters()[2].type().isReal());
-    assert(fs1.parameters()[2].kind() == FunctionParameter::kParamNamed);
-
-    assert(fs1.parameters()[3].type().isAny());
-    assert(fs1.parameters()[3].kind() == FunctionParameter::kParamRest);
-  }
-};
-static FunctionSignatureUnitTest functionSignatureUnitTest;
-
+  CHECK(fs1.parameters()[3].type().isAny());
+  CHECK_EQUAL(fs1.parameters()[3].kind(), FunctionParameter::kParamRest);
+}
 
 #endif  // #if defined(UNITTESTS)
 

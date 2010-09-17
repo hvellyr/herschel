@@ -70,6 +70,9 @@ MAKENSIS ?= c:/programme/nsis/makensis.exe
 ifeq ($(TARGET_OSFLV),mingw32)
 CADDS = -mno-cygwin
 LDADDS = -mno-cygwin
+
+# setting for UnitTest++
+MSYSTEM = MINGW32
 endif
 
 endif

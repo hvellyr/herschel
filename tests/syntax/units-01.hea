@@ -1,3 +1,8 @@
+def measure Inch (in) : Real
+def measure Centimer (cm) : Real
+def measure Speed (m/s) : Real
+def measure Pixel (px) : Int
+
 def x = 12'in
 def y = 12.34'cm
 def z = 12/33'm/s

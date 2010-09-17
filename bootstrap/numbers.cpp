@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package 
+   This file is part of the heather package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -8,6 +8,9 @@
 
 #include "numbers.h"
 
+#if defined(UNITTESTS)
+#  include <iostream>
+#endif
 
 using namespace heather;
 
@@ -109,3 +112,12 @@ Rational::exponent(int exp) const
   else
     return Rational(1, 1);
 }
+
+
+#if defined(UNITTESTS)
+std::ostream& heather::operator<<(std::ostream& os, const Rational& rat)
+{
+  os << rat.numerator() << "/" << rat.denominator();
+  return os;
+}
+#endif

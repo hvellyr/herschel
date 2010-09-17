@@ -8,3 +8,7 @@ config-local.h$
 bootstrap/TAGS
 TAGS
 tests/.*\.pyc$
+external/UnitTest\+\+/.*\.a
+external/UnitTest\+\+/src/.*\.o
+external/UnitTest\+\+/src/.*\.d
+external/UnitTest\+\+/TestUnitTest\+\+
