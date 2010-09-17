@@ -30,38 +30,38 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(*)
+module io ("eyestep/heather 1.0:io")
+export public (*)
 
 import "core/core.hea"
+import "io/io.hea"
 
 
-def type Comparable
+------------------------------------------------------------------------------
+
+def class CharInPort(port : InPort<Char>,
+                     encoding : String = "auto") : InPort<Char>
+    ~ Character based input port.
+
+    Typical usage:
+
+    @example
+    let port = CharInPort(BufferedInPort<Octet>(
+                            FilePort(file: fname, mode: FileModeType.read)),
+                          encoding: "utf-8")
+    for (c in port)
+      display(c)
+    @end example ~
 {
-  def generic compare(one @ 'S, two @ 'T) : Int ...
-      ~ Compare value @var{one} with @var{two}.
-
-      @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
-               @var{one} is greater than @var{two}, and a value below 0 if
-               @var{one} is less. ~
 }
 
-def generic equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is equal to @var{two}. ~
 
-def generic unequal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is not equal to @var{two}. ~
+------------------------------------------------------------------------------
 
-def generic less?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than @var{two}. ~
+def class CharOutPort(port : OutPort<Char>,
+                      encoding : String = "auto") : OutPort<Char>
+{
+}
 
-def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than or equal to @var{two}. ~
 
-def generic greater?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than @var{two}. ~
-
-def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than or equal to @var{two}. ~
-
--- end of comparable.hea
+-- end of char-port

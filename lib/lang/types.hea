@@ -30,45 +30,79 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(*)
+module lang ("eyestep/heather 1.0:lang")
+export public (*)
+
+
+------------------------------------------------------------------------------
+-- Common Integer types
+------------------------------------------------------------------------------
+
+def alias Byte   = Int8
+def alias UByte  = UInt8
+def alias Octet  = UInt8
+def alias Short  = Int16
+def alias UShort = UInt16
+def alias Word   = Int32
+def alias UWord  = UInt32
+def alias Long   = Int64
+def alias ULong  = UInt64
+
+def alias Float      = Float32
+def alias Double     = Float64
+def alias LongDouble = Float128
+
+
+def type Ordinal : (Int >= 0)
+    ~ A positive, arbitrary precise integer. ~
+
+------------------------------------------------------------------------------
+-- Common Union types
+------------------------------------------------------------------------------
 
 def type OrdinalOrEof : &(Ordinal, Eof)
     ~ A union type as typically used to either return the number of
     successful processed items or the end of the resource.  A typical usage
-    in code looks like
+    looks like
 
     @example
-    match(port.read(buffer, 0)) @{
+    match (port.read(buffer, 0)) @{
       | e : Eof -> outln("reading done")
       | n : Ordinal -> outln("%d items read" % #[n])
     @}
     @end example ~
 
+
+def type CharOrEof : &(Char, Eof)
+    ~ A union type as typically used to either return a read character or
+    the end of the resource.  A typical usage looks like
+
+    @example
+    match (port.read) @{
+      | e : Eof -> outln("reading done")
+      | n : Char -> outln("read: %c" % #[n])
+    @}
+    @end example ~
+
+
 def type OrdinalOrFalse : &(Ordinal, Bool == false)
     ~ A union type as typically used by find or lookup functions to either
     return the index of an element or indicate failure.~
 
-def type StringOrUri : &(String, Uri)
-    ~ A union type as typically used to refer to external resource as files
-    or URLs.~
-
 
 ------------------------------------------------------------------------------
--- Common exceptions
+-- Default value
 ------------------------------------------------------------------------------
 
-def class OutOfBoundsException : Exception
-    ~ An @type{OutOfBoundsException} is typically raised when trying to
-    access (or writes) elements outside of the range of a container.~
-{
-}
+def generic null-value(ty @ Class<'T>) : 'T ...
+  ~ Returns the default null value for type @type{T}.
+
+  For reference types this is normally always @val{nil}, for integers this
+  is @val{0}, for chars @val{#\0000}, etc. ~
 
 
-def class NilException : Exception
-    ~ A NilException is raised when code tries to dereference a @const{nil}
-    pointer.~
-{
-}
+def generic min-value(ty @ Class<'T>) : 'T ...
+def generic max-value(ty @ Class<'T>) : 'T ...
 
--- end of common
+
+-- end of types.hea

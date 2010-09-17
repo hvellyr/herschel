@@ -1,4 +1,4 @@
--- This file is part of the heather package
+-- This file is part of the heather package 
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -30,24 +30,29 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(Copyable, deep-copy)
+module lang ("eyestep/heather 1.0:lang")
 
-def type Copyable
-{
-  def generic copy(obj @ 'T) : 'T
-      where T isa Copyable ...
-      ~ Returns a shallow copy of @var{obj}.~
 
-  def generic deepen(obj @ 'T) : 'T
-      where T isa Copyable ...
-      ~ Copies all child objects using @code{copy} and @code{deepen} on
-      them.~
-}
+def realloc(array @ 'T[],
+            new-size : Ordinal,
+            init-value : 'T = class<'T>.null-value) : 'T[]
+  if (new-size > array.size) {
+    let t = 'T[](new-size)
+    for (i : 0 .. array.size - 1)
+      t[i] = array[i]
+    for (i in array.size .. newsize - 1)
+      t[i] = init-value
 
-def generic deep-copy(obj @ 'T) : 'T
-    where T isa Copyable ...
-    ~ Returns a deep copy of @var{obj}.~
+    t
+  }
+  else if (new-size < array.size) {
+    let t = 'T[](new-size)
+    for (i in 0 .. new-size - 1)
+      t[i] = array[i]
+    t
+  }
+  else
+    array
 
--- end of copyable.head
 
+-- end of impl/array.hea

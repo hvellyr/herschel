@@ -1,6 +1,6 @@
--- This file is part of the heather package
+-- This file is part of the heather package 
 --
--- Copyright (c) 2010 Gregor Klinke
+-- Copyright (c) 2006, 2007, 2008 Gregor Klinke
 -- All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -30,19 +30,26 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(*)
+import "core/charnm.hea"
+import "core/si-units.hea"
+
+import "core/common.hea"
+
+import "core/object.hea"
+
+import "core/string.hea"
+import "core/slice.hea"
+
+import "core/break.hea"
+
+import "core/iterator.hea"
+import "core/incr.hea"
+
+import "core/comparable.hea"
+import "core/copyable.hea"
+
+import "core/utils.hea"
 
 
-def generic size(obj @ Any) : Ordinal ...
-    ~ Returns the allocation size of @var{self} in octets.
 
-    This method returns the sum of the allocations size of the base
-    instance plus all slots which are treated as composition (i.e. which
-    @var{self} owns).
-
-    Note that this methods must never return 0.~
-
-def generic hash-code(obj @ Any) : UWord ...
-
--- end of object.head
+-- end of core.head

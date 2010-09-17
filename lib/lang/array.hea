@@ -1,4 +1,4 @@
--- This file is part of the heather package
+-- This file is part of the heather package 
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -30,26 +30,27 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
+module lang ("eyestep/heather 1.0:lang")
 export public(*)
 
-def compare(one @ Sliceable<Ordinal, 'T>,
-            two @ Sliceable<Ordinal, 'T>) : Int ...
-      ~ Comparing sliceables returns zero if the two arrays are identical,
-      otherwise returns the comparison result between the first two differing
-      elements.  Zero-length arrays are always identical.
 
-      And a second paragraph.
+def generic realloc(array @ 'T[],
+                    new-size : Ordinal,
+                    init-value : 'T = class<'T>.null-value) : 'T[] ...
+  ~ Reallocates @var{array} by copying it into a new array of
+  @var{new-size} items.
 
-      @example
-      some example code here
-      @end example
+  This function reallocates memory for @var{array} as needed and returns
+  the new object.
 
-      Markup is basically texinfo markup.  Refer to parameters inline like
-      this: @prm value refers to a single symbol reference. Whereas
-      @prm{value} is the full and more clear form.
+  If @var{new-size} is larger than the current size of @var{array} new
+  slots are added to the end of the array.  These new slots are initialized
+  to @var{init-value}.  If @var{new-size} however is less @var{array} is
+  cropped from the end; the cropped values are not reachable from this
+  array anymore.
 
-      Inline comments are enclosed by tripple quotes; single quotes inside
-      the documentation are simply taken as chars in the documentation. ~
+  @returns the new allocated @var{array} with all copied resp. initialized
+           values. ~
+
 
 -- end of array.hea

@@ -1,4 +1,4 @@
--- This file is part of the heather package 
+-- This file is part of the heather package
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -33,27 +33,15 @@
 module core ("eyestep/heather 1.0:core")
 export public(*)
 
-def compare(one @ Sliceable<Ordinal, 'T>, two @ Sliceable<Ordinal, 'T>) : Int
-    reify (one @ 'T[], two @ 'T[]) : Int,
-          (one @ 'T[], two @ Slice<Ordinal, 'T>) : Int
-    ~ Comparing sliceables returns zero if the two arrays are identical,
-    otherwise returns the comparison result between the first two differing
-    elements.  Zero-length arrays are always identical.~
-  let n = one.num-items
-  if (n == two.num-items) {
-    for (i : Ordinal = 0 then i + 1 while i < n)
-    {
-      let cmpval = one[i] <=> two[i]
-      if (cmpval <> 0)
-        break(cmpval)
-    }
-    else
-      0
-  }
-  else if (one.num-items < two.num-items)
-    -1
-  else
-    1
+import "core/copyable.hea"
 
 
--- end of array.hea
+-- Default implementation for @fun{deep-copy}
+
+def generic deep-copy(obj @ 'T) : 'T
+    where T isa Copyable
+  obj.copy.deepen
+
+
+-- end of copyable.hea
+

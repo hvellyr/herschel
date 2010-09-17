@@ -1,4 +1,4 @@
--- This file is part of the heather package 
+-- This file is part of the heather package
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -33,32 +33,17 @@
 module core ("eyestep/heather 1.0:core")
 export public(*)
 
-def type Comparable
-{
-  def generic compare(one @ 'S, two @ 'T) : Int ...
-      ~ Compare value @var{one} with @var{two}.
+import "core/core.hea"
 
-      @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
-               @var{one} is greater than @var{two}, and a value below 0 if
-               @var{one} is less.~
-}
+def generic octet-size(obj @ Any) : Ordinal ...
+    ~ Returns the allocation size of @var{self} in octets.
 
-def generic equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is equal to @var{two}.~
+    This method returns the sum of the allocations size of the base
+    instance plus all slots which are treated as composition (i.e. which
+    @var{self} owns).
 
-def generic unequal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is not equal to @var{two}.~
+    Note that this methods must never return 0. ~
 
-def generic less?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than @var{two}.~
+def generic hash-code(obj @ Any) : UWord ...
 
-def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than or equal to @var{two}.~
-
-def generic greater?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than @var{two}.~
-
-def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than or equal to @var{two}.~
-
--- end of comparable.head
+-- end of object.head

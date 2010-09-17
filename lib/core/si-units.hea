@@ -33,6 +33,9 @@
 module core ("eyestep/heather 1.0:core")
 export public(*)
 
+import "core/core.hea"
+
+
 ------------------------------------------------------------------------------
 -- base quantities and their SI base units
 ------------------------------------------------------------------------------
@@ -57,6 +60,7 @@ def measure AmountOfSubstance(mol) : Real
 
 def measure LuminousIntensity(cd) : Real
     ~ Denotes the Intensity of light, base unit is Candela (cd). ~
+
 
 ------------------------------------------------------------------------------
 -- Additional units
@@ -135,7 +139,9 @@ def measure Luminance(cd/m2) : Real
 
 
 
+----------------------------------------------------------------------
 -- Coherent derived units in the SI with special names and symbols
+----------------------------------------------------------------------
 
 -- base unit: Hertz
 -- Hz = s-1

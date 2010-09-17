@@ -1,4 +1,4 @@
--- This file is part of the heather package
+-- This file is part of the heather package 
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -30,27 +30,29 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(Slice)
+module io ("eyestep/heather 1.0:io")
+export public (*)
 
-def class Slice<K, T> : OrderedSliceable<K, T>
-    ~ A @type{Slice} is a view on a collection of elements of type @var{T}
-    addressed by indices of type @var{K}.  Like an iterator it does
-    (normaly) not contain the elements itself.  It is itself sliceable
-    again.
+import "core/core.hea"
+import "io/io.hea"
 
-    Since a slice is a view and 0-based it translates sub element access
-    into the key position metric of the referenced collection.~
+
+------------------------------------------------------------------------------
+
+def class StringInPort(str : String,
+                       offset : Ordinal = 0,
+                       items : Ordinal = 0) : InPort<Char>
 {
-  def generic num-items(slice @ Slice<K, T>) : Ordinal ...
-      ~ Returns the number of items in @var{slice}.~
-
-  def generic empty?(slice @ Slice<K, T>) : Bool ...
-      ~ Indicates whether @var{slice} is empty.~
-
-  def generic slice-range(slice @ Slice<K, T>) : Range<K> ...
-      ~ Returns the outer range of @var{slice} against the referenced
-      container.~
 }
 
--- end of iterator
+
+------------------------------------------------------------------------------
+
+def class StringOutPort(str : String = nil,
+                        offset : Ordinal = 0,
+                        max-items : Ordinal = 0) : OutPort<Char>
+{
+}
+
+
+-- end of string-port
