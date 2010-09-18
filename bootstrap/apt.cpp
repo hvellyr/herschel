@@ -317,6 +317,29 @@ SymbolNode::clone() const
 
 //----------------------------------------------------------------------------
 
+ArraySymbolNode::ArraySymbolNode(const SrcPos& srcpos, const String& value)
+  : SymbolNode(srcpos, value)
+{ }
+
+
+ArraySymbolNode*
+ArraySymbolNode::clone() const
+{
+  return new ArraySymbolNode(fSrcPos, fValue);
+}
+
+
+void
+ArraySymbolNode::display(Port<Octet>* port) const
+{
+  assert(fGenerics.empty());
+
+  displayTagAttr(port, "symbol", "array='t'", fValue);
+}
+
+
+//----------------------------------------------------------------------------
+
 IntNode::IntNode(const SrcPos& srcpos, int value, bool isImaginary,
                  const Type& type)
   : NumberNode<int>(srcpos, value, isImaginary, type)

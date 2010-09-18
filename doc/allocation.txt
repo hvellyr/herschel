@@ -85,7 +85,7 @@ certain scope it is free to allocate a instance on the stack (and avoid GC
 completely).
 
 Note: Passing a value to a reference parameter requires to pass it as
-reference (put '^' before the name, unles it is a reference already).  To
+reference (put '^' before the name, unless it is a reference already).  To
 access (and modify) the value of a reference dereference the name (by
 adding a '^' after the name).  The later is not necessary when setting
 members of classes, since slot access is wrapped in the slot!() methods
@@ -273,6 +273,18 @@ For variable declaration the expression:
 can be short notated as:
 
   let x : Int[42]
+
+
+        How to distinguish between a slice expression and the allocation of
+        an array type?
+        
+          myvect[12]
+
+        is syntactically identical to
+
+          Int[]
+
+        ?  Let's distinguish here by the missing slice operator!
 
 
 Allocation of base types
