@@ -2270,12 +2270,16 @@ SecondPass::parseTypeExpr(const Token& expr)
   assert(expr.isSeq());
   assert(expr.count() == 2);
   assert(expr[0] == kSymbol);
-  assert(expr[1].leftToken() == kGenericOpen);
 
-  TypeVector genericArgs;
-  parseTypeVector(&genericArgs, expr[1]);
+  if (expr[1].leftToken() == kGenericOpen) {
+    TypeVector genericArgs;
+    parseTypeVector(&genericArgs, expr[1]);
 
-  return new SymbolNode(expr.srcpos(), expr[0].idValue(), genericArgs);
+    return new SymbolNode(expr.srcpos(), expr[0].idValue(), genericArgs);
+  }
+  else if (expr[1].leftToken() == kBracketOpen) {
+    return new ArraySymbolNode(expr.srcpos(), expr[0].idValue());
+  }
 }
 
 
@@ -2357,8 +2361,13 @@ SecondPass::parseSeq(const Token& expr)
       else if (expr[0] == kSymbol &&
                expr[1].leftToken() == kGenericOpen)
         return parseTypeExpr(expr);
-      else
+      else if (expr[0] == kSymbol &&
+               expr[1].leftToken() == kBracketOpen)
+        return parseTypeExpr(expr);
+      else {
+        printf("UNEXPECTED DEXPR: %s\n", (const char*)StrHelper(expr.toString()));
         assert(0);              // TODO
+      }
     }
   }
   else if (expr.count() == 3) {
