@@ -1,0 +1,7 @@
+def lookup-user(database, name, surname) : &(Person, Bool == false)
+  let p = Person(name: name, surname: surname)   -- [1]
+  let props = database.properties-for-person(p)
+  if (props <> nil)
+    ^p.properties!(props)                        -- [4]
+  else
+    false
