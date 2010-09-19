@@ -1290,18 +1290,26 @@ FirstPass::parseSlice(const Token& expr)
   SrcPos startPos = fToken.srcpos();
   nextToken();
 
-  Token idx = parseExpr();
-
-  if (fToken != kBracketClose)
-    errorf(fToken.srcpos(), E_MissingBracketClose, "expected ']'");
-  else
+  if (fToken == kBracketClose) {
     nextToken();
 
-  return Token() << Token(startPos, "slice")
-                 << ( Token(startPos, kParanOpen, kParanClose)
-                      << expr
-                      << Token(idx.srcpos(), kComma)
-                      << idx );
+    // the expression is an array type name
+    return Token() << expr << Token(startPos, kBracketOpen, kBracketClose);
+  }
+  else {
+    Token idx = parseExpr();
+    
+    if (fToken != kBracketClose)
+      errorf(fToken.srcpos(), E_MissingBracketClose, "expected ']'");
+    else
+      nextToken();
+
+    return Token() << Token(startPos, "slice")
+                   << ( Token(startPos, kParanOpen, kParanClose)
+                        << expr
+                        << Token(idx.srcpos(), kComma)
+                        << idx );
+  }
 }
 
 

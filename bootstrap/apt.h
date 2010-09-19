@@ -99,9 +99,19 @@ namespace heather
     virtual SymbolNode* clone() const;
     virtual void display(Port<Octet>* port) const;
 
-  private:
+  protected:
     String     fValue;
     TypeVector fGenerics;
+  };
+
+
+  class ArraySymbolNode : public SymbolNode
+  {
+  public:
+    ArraySymbolNode(const SrcPos& srcpos, const String& value);
+
+    virtual ArraySymbolNode* clone() const;
+    virtual void display(Port<Octet>* port) const;
   };
 
 
