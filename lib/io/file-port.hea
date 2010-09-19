@@ -30,38 +30,33 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(*)
+module io ("eyestep/heather 1.0:io")
+export public (*)
 
-import "core/core.hea"
+import "lang/types.hea"
+import "io/io-types.hea"
 
 
-def type Comparable
+------------------------------------------------------------------------------
+
+def enum FileModeType : UWord
 {
-  def generic compare(one @ 'S, two @ 'T) : Int ...
-      ~ Compare value @var{one} with @var{two}.
-
-      @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
-               @var{one} is greater than @var{two}, and a value below 0 if
-               @var{one} is less. ~
+  read      =  1 << 0
+  write     =  1 << 1
+  append    =  1 << 2
+  create    =  1 << 3
+  exclusive =  1 << 4
+  readwrite = read OR write
 }
 
-def generic equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is equal to @var{two}. ~
 
-def generic unequal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is not equal to @var{two}. ~
+def class FilePort(file : StringOrUri = nil,
+                   mode : FileModeType = FileModeType.read,
+                   umask : UWord = 0)
+    : RandomAccessPort<Octet>
+    ~ A FilePort is the base abstraction of a file stream. ~
+{
+}
 
-def generic less?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than @var{two}. ~
 
-def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than or equal to @var{two}. ~
-
-def generic greater?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than @var{two}. ~
-
-def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than or equal to @var{two}. ~
-
--- end of comparable.hea
+-- end of file-port

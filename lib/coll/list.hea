@@ -348,7 +348,7 @@ def slice!(self @ List<'T>,
                                                   self.num-items]).raise
 
 
-def to-string(self @ List<'T>) : String
+def lang|to-string(self @ List<'T>) : String
   if (self.root.nil?)
     "()"
   else

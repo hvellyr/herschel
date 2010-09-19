@@ -43,6 +43,8 @@ Language and ideas:
   - write up about module/interface.  Review import, export, module, etc.
     See CHANGES.
 
+  - notation for classes and types.  This is required if you need to pass a
+    first-class class into a function.
 
   - Redesign accessing items from enum types.  Parsing as Enum.item does
     not work, since this would require symboltables during parsing (how to
@@ -152,6 +154,10 @@ Bootstrap compiler
     - subpatterns
 
   - continue with pexpreval (add the missing operators)
+
+    - types for count variables in for loop
+
+    - access values from enums as Enum::item
 
   - unittests for Rational() class.
 

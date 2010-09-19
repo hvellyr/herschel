@@ -1,4 +1,4 @@
--- This file is part of the heather package
+-- This file is part of the heather package 
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -30,35 +30,18 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(Iterator, RewindableIterator)
+module io ("eyestep/heather 1.0:io")
+export public (*)
 
-def type Iterator<T>
+import "core/core.hea"
+import "io/io.hea"
+
+
+------------------------------------------------------------------------------
+
+def class DataPort<T>(buffer : T[] = nil) : RandomAccessPort<T>
 {
-  def generic end?(iter @ Iterator<T>) : Bool ...
-      ~ Indicates whether @var{iter} is at the end.
-
-      @returns @const{false} if there are more elements to be returned by
-               @code{next}.~
-
-  def generic next(iter @ Iterator<T>) : T ...
-      ~ Returns the next element from @var{iter}.
-
-      @returns @const{eof} if all elements has been delivered.  Repeated
-               calling of @code{next} returns @const{eof}.~
 }
 
 
-def type RewindableIterator<T> : Iterator<T>
-{
-  def generic rewind(iter @ 'R) : 'R
-      where R isa RewindableIterator<T> ...
-      ~ Rewinds @var{iter} to restart with the first item.
-
-      Even if a previous call to @fun{end?} returned true this method must
-      reset @var{iter} to deliver that element it returned first.
-
-      @returns @var{iter}~
-}
-
--- end of iterator
+-- end of data-port

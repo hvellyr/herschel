@@ -30,38 +30,52 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
-export public(*)
+module coll ("eyestep/heather 1.0:collections")
 
-import "core/core.hea"
+-- generic implementations for various Collection functions
+
+def add-all!(cltn @ 'C, other-coll @ 'X) : 'C
+    where C isa Collection<T>
+  for (e in other-coll) 
+    cltn.add!(e)
+  cltn
 
 
-def type Comparable
-{
-  def generic compare(one @ 'S, two @ 'T) : Int ...
-      ~ Compare value @var{one} with @var{two}.
+def has-all?(cltn @ 'C, other-coll @ 'X) : Bool
+    where C isa Collection<T>
+  for (e in other-coll) {
+    if (not cltn.contains?(e))
+      return(false)
+  }
+  true
 
-      @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
-               @var{one} is greater than @var{two}, and a value below 0 if
-               @var{one} is less. ~
-}
 
-def generic equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is equal to @var{two}. ~
+def retain-all!(cltn @ 'C, other-coll @ 'X) : 'C
+    where C isa Collection<T>
+  let tmp : Set<T>
 
-def generic unequal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is not equal to @var{two}. ~
+  for (e in cltn) {
+    if (not other-coll.contains?(e))
+      tmp.add!(e)
+  }
+  cltn.remove-all!(tmp)
 
-def generic less?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than @var{two}. ~
 
-def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than or equal to @var{two}. ~
+def remove-all!(cltn @ 'C, other-coll @ 'X) : 'C
+    where C isa Collection<T>
+  for (e in other-coll)
+    cltn.remove!(e)
+  cltn
 
-def generic greater?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than @var{two}. ~
 
-def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than or equal to @var{two}. ~
+def for-each(cltn @ 'C, func : ForEachVisitor<'T>) : 'C
+    where C isa Collection<T> ...
+  for (e in cltn) {
+    if (not func(e))
+      return(cltn)
+  }
 
--- end of comparable.hea
+  return(cltn)
+
+
+-- end of impl/common.hea

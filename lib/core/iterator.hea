@@ -1,4 +1,4 @@
--- This file is part of the heather package 
+-- This file is part of the heather package
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -31,37 +31,34 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module core ("eyestep/heather 1.0:core")
-export public(*)
+export public(Iterator, RewindableIterator)
 
-import "core/core.hea"
-
-
-def type Comparable
+def type Iterator<T>
 {
-  def generic compare(one @ 'S, two @ 'T) : Int ...
-      ~ Compare value @var{one} with @var{two}.
+  def generic end?(iter @ Iterator<T>) : Bool ...
+      ~ Indicates whether @var{iter} is at the end.
 
-      @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
-               @var{one} is greater than @var{two}, and a value below 0 if
-               @var{one} is less. ~
+      @returns @const{false} if there are more elements to be returned by
+               @code{next}. ~
+
+  def generic next(iter @ Iterator<T>) : T ...
+      ~ Returns the next element from @var{iter}.
+
+      @returns @const{eof} if all elements has been delivered.  Repeated
+               calling of @code{next} returns @const{eof}. ~
 }
 
-def generic equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is equal to @var{two}. ~
 
-def generic unequal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is not equal to @var{two}. ~
+def type RewindableIterator<T> : Iterator<T>
+{
+  def generic rewind(iter @ 'R) : 'R
+      where R isa RewindableIterator<T> ...
+      ~ Rewinds @var{iter} to restart with the first item.
 
-def generic less?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than @var{two}. ~
+      Even if a previous call to @fun{end?} returned true this method must
+      reset @var{iter} to deliver that element it returned first.
 
-def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is less than or equal to @var{two}. ~
+      @returns @var{iter} ~
+}
 
-def generic greater?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than @var{two}. ~
-
-def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
-    ~ Indicates whether @var{one} is greater than or equal to @var{two}. ~
-
--- end of comparable.hea
+-- end of iterator

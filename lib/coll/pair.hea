@@ -58,7 +58,7 @@ def pair-cell-to-string(node @ Pair<'L, 'R>, port,
   port.writes(" ")
   func(node)
 
-def core|to-string(self @ Pair<'L, 'R>) : String
+def lang|to-string(self @ Pair<'L, 'R>) : String
   if (self.car.nil? and self.cdr.nil?)
     "()"
   else {
