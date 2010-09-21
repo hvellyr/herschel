@@ -33,14 +33,20 @@
 module lang ("eyestep/heather 1.0:lang")
 
 import "lang.hea"
-import "lang.hea"
+import "string.hea"
+
+
+def class StringImpl : String
+{
+  def slot data : Char[]
+}
 
 
 ------------------------------------------------------------------------------
 -- Slice special for string
 ------------------------------------------------------------------------------
 
-def class StringSlice(_str : String,
+def class StringSlice(_str : StringImpl,
                       _from : Ordinal,
                       _to : Ordinal) : Slice<Ordinal, Char>
 {
@@ -71,26 +77,26 @@ def core|slice(sl @ StringSlice, from @ Ordinal, to @ Ordinal)
 -- String implementation
 ------------------------------------------------------------------------------
 
-def length(str @ String) : Ordinal
+def length(str @ StringImpl) : Ordinal
   str.data.num-items
 
 
-def empty?(str @ String) : Bool
+def empty?(str @ StringImpl) : Bool
   str.data.num-items == 0
 
 
-def core|slice(str @ String, n @ Ordinal) : Char
+def core|slice(str @ StringImpl, n @ Ordinal) : Char
   str.data[n]
 
 
-def core|slice(str @ String, from @ Ordinal, to @ Ordinal)
+def core|slice(str @ StringImpl, from @ Ordinal, to @ Ordinal)
     : Slice<Ordinal, Char>
-  if (from > str.length or to > str.length)
-    OutOfBoundsException(str.length, from, to).raise
+  if (from > str.data.num-items or to > str.data.num-items)
+    OutOfBoundsException(str.data.num-items, from, to).raise
   StringSlice(str, from, to)
 
 
-def compare(one @ String, two @ String) : Int
-  one.str <=> two.str
+def compare(one @ StringImpl, two @ StringImpl) : Int
+  one.data <=> two.data
 
 -- end of impl/string
