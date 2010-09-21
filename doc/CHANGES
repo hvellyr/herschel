@@ -263,7 +263,7 @@ $   identifier                          [----------]
 %   identifier                          operator (mod)
     operator (fold)
 &   Complex type notation               operator (&, &&)
-    Clone in call-by-value              pointer ref op.
+                                        pointer ref op.
 '   Implicit type generics              char
     Units
 ()  arguments                           arguments
