@@ -703,6 +703,14 @@ FirstPass::parseQuotedType()
 Token
 FirstPass::parseTypeSpec(bool onlyNestedConstraints)
 {
+  bool isRefType = false;
+  if (fToken == kReference) {
+    isRefType = true;
+    nextToken();
+  }
+
+  // TODO: pass the isRefType into the following functions
+
   if (fToken == kSymbol) {
     return ( onlyNestedConstraints
              ? parseArrayExtend(parseSimpleType(fToken))
