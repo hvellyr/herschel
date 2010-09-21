@@ -2280,6 +2280,9 @@ SecondPass::parseTypeExpr(const Token& expr)
   else if (expr[1].leftToken() == kBracketOpen) {
     return new ArraySymbolNode(expr.srcpos(), expr[0].idValue());
   }
+
+  assert(0);
+  return NULL;
 }
 
 
