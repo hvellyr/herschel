@@ -23,6 +23,7 @@ using namespace heather;
 //----------------------------------------------------------------------------
 
 const Token Parser::aliasToken     = Token(SrcPos(), kSymbol, "alias");
+const Token Parser::autoToken      = Token(SrcPos(), kSymbol, "auto");
 const Token Parser::charToken      = Token(SrcPos(), kSymbol, "char");
 const Token Parser::classToken     = Token(SrcPos(), kSymbol, "class");
 const Token Parser::configToken    = Token(SrcPos(), kSymbol, "config");

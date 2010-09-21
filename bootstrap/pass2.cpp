@@ -876,6 +876,9 @@ SecondPass::parseSlotDef(const Token& expr)
       else if (seq[ofs] == Parser::observableToken) {
         slotFlags |= kObservableSlot;
       }
+      else if (seq[ofs] == Parser::autoToken) {
+        slotFlags |= kAutoSlot;
+      }
       else {
         assert(seq[ofs] == kSymbol);
         errorf(seq[ofs].srcpos(), E_UnknownSlotFlag,
