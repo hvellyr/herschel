@@ -36,7 +36,7 @@ export public(*)
 import "core/common.head"
 
 
-def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
+def type String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
     ~ The @type{String} class represents character strings.
 
     This is the basic string type of which all literal strings in Heather,
@@ -53,8 +53,6 @@ def class String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
     @emph{not} 0-terminated, i.e. strings can easily contain binary data
     (as far as representable as Unicode characters). ~
 {
-  def slot data : Char[]
-
   def generic length(str @ String) : Ordinal ...
     ~ Returns the length of @var{str} in characters. ~
 
