@@ -1,0 +1,4 @@
+def generic reset(p @ Person)
+  &p.name = "N."
+  &p.surname = "N."
+  &p

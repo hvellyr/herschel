@@ -169,6 +169,84 @@ however allows transparent write through, it has to apply a write-barrier
 however to detect changes (reallocations) to the underlying array.
 
 
+
+Review ^ again
+--------------
+
+- call-by-reference and call-by-value? vs. call-by-ref and call-by-const-ref?
+
+  def foo(a : ^Person)
+    let b : Person = a                  -- make a copy of a
+    let c : ^Person = a                 -- ref to a (a and c ref to same object)
+    a.name!("xxx")                      -- modify passed in object
+    b.name!("xxx")                      -- modify b
+    c.name!("xxx")                      -- modify passed in object 
+
+    c = b                               -- c refs to object of b now
+    c.name!("xxx")                      -- c and b changed now
+
+    let d : ^Person = b                 -- d refs to obj of b
+    d = c                               -- d and c ref to same obj
+    d = a                               -- d and a ref to same obj
+
+    let e : Person = b                  -- make a copy of b
+    e = c                               -- make a copy of obj ref by c
+
+    a = b                               -- a refers to obj of b now.  HAS
+                                        -- NO INFLUENCE ON PASSED-IN VALUE!
+
+  def bar()
+    let a0 : Person
+    foo(a0)                             -- ref to local a0 is passed to foo
+                                        -- on return a0 has changed
+
+  To summarize:
+
+  - Nonreference types (normal types) are always call-by-value,
+    copy-assign.  The implementation is free to implement proper
+    copy-on-write mechanisms
+
+  - objects passed by value are not immutable, they are really value types
+
+  - variables of reference type refer transparently to objects.
+    - modify objects (call *! functions) modify the object
+
+    - assign values to a ref-type vars resets the reference only (point
+      the ref-type var to a different object).  You can't have
+      reference-out variable ('double-pointer variables'):
+
+        def foo(a : ^Person)
+          let b : Person = Person("Heinz")
+          a = b
+
+        def bar()
+          let n : Person = Person("Jakob")
+          foo(n)
+          outln(n)
+
+        => "Jakob"
+
+      i.e. 'a' is changed in foo only.  On the other hand
+
+        def foo(a : ^Person)
+          a.name!("Heinz")
+
+        def bar()
+          let n : Person = Person("Jakob")
+          foo(n)
+          outln(n)
+
+        => "Heinz"
+
+      here 'a' is modified 'in place' inside foo.
+
+====> we don't need the special 'clone in place' syntax with '&...'
+====> we don't need the 'dereference a reference' syntax with 'var^'
+====> we don't need the 'take a reference' syntax with '^var'
+
+Only the 'reference type' syntax with '^type' is required
+
+
 Allocation and initialization of class based object
 ===================================================
 
