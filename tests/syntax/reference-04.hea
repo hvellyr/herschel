@@ -4,9 +4,7 @@ def g()
   let px : ^Int = nil
   let qx : ^Int = nil
 
-  qx = ^x  -- qx now points to x (take address of x)
-  qx = y   -- set x to y
+  qx = x   -- qx now points to x
+  qx = y   -- qx now points to y
+  qx = 11  -- qx now point to a (free floating object) 11
   px = qx  -- px points to the same value a qx
-
-  qx^ = 11  -- now x has the value 11 and qx and px point still to the same
-            -- address.  y is not affected
