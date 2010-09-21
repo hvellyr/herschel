@@ -171,6 +171,24 @@ Lazy evaluation
         do-whatever-is-necessary(msg())
 
 
+  Some better notation for this.  Lazy evaluation is probably important
+  enough to have "real" syntax for it.  Some ideas:
+
+    def log(level : Keyword, lazy msg : String) ...
+    def log(level : Keyword, &lazy msg : String) ...
+
+  Is being lazy a quality of the variable 'msg'?  or of the type?  Since
+  being lazy and a reference is semantically strange we can declare them
+  mutual exclusive and use the same prefix notation space for this:
+
+    def log(level : Keyword, msg : String) ...      -- call by value
+    def log(level : Keyword, msg : ^String) ...     -- call by reference
+    def log(level : Keyword, msg : ,String) ...     -- call by lazy value (1)
+    def log(level : Keyword, msg : *(String)) ...   -- call by lazy value (2)
+    def log(level : Keyword, msg : (*)String) ...   -- call by lazy value (3)
+    def log(level : Keyword, msg : =>String) ...    -- call by lazy value (4)
+
+
 
 Embedding C and C++ fragments.
 
@@ -237,6 +255,7 @@ Used character in the Ascii table:
     Heather                             C
 -------------------------------------------------------------
 !   identifier                          not
+    modifable function marker
 "   string separator                    string
 #   keyword notation                    preproc
     constant array notation
