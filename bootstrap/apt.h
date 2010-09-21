@@ -340,7 +340,8 @@ namespace heather
     kObservableSlot = 1 << 2,
     kPublicSlot     = 1 << 3,
     kOuterSlot      = 1 << 4,
-    kInnerSlot      = 1 << 5
+    kInnerSlot      = 1 << 5,
+    kAutoSlot       = 1 << 6,
   };
 
   class SlotdefNode : public BindingNode

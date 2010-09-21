@@ -792,6 +792,9 @@ SlotdefNode::display(Port<Octet>* port) const
   if ((fFlags & kObservableSlot) != 0) {
     attrs << " observable='t'";
   }
+  if ((fFlags & kAutoSlot) != 0) {
+    attrs << " auto='t'";
+  }
 
   if ((fFlags & kPublicSlot) != 0) {
     attrs << " viz='public'";
