@@ -15,6 +15,4 @@ def f10(a : ^'T) : ^'T
 def f11(a : ^'T) : ^'T
     where T isa &(Ordinal, Bool == false) ...
 
-def f12(a : 'T) : 'T
-    where T isa ^&(Ordinal, Bool == false) ...
 

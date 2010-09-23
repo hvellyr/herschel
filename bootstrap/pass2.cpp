@@ -299,6 +299,12 @@ SecondPass::parseBinaryTypeSpec(const Token& expr, bool forceGeneric,
 
   if (expr[1] == kIsa) {
     Type rightType = parseTypeSpec(expr[2]);
+    if (!rightType.isValueType()) {
+      errorf(expr[1].srcpos(), E_InheritsRefType,
+             "isa-constraints must not be reference types. Ignored");
+      rightType.setIsValueType(true);
+    }
+
     constraints.push_back(TypeConstraint::newType(kConstOp_isa,
                                                   rightType));
 
@@ -345,6 +351,59 @@ SecondPass::genericTypeRef(const String& id, bool isValue) const
 
   TypeConstVector dummyConstraints;
   return Type::newTypeRef(id, true, dummyConstraints, isValue);
+}
+
+
+Type
+SecondPass::rephraseRefType(const SrcPos& srcpos, const Type& inType, bool isValue)
+{
+  if (!isValue) {
+    if (!inType.isValueType())
+      warning(srcpos, k_DoubleRefType,
+              String("Double reference notation on singleton type group is ignored"));
+    else
+      return inType.clone().setIsValueType(isValue);
+  }
+  return inType;
+}
+
+
+Type
+SecondPass::parseGroupType(const Token& expr, bool isValue)
+{
+  assert(expr.isNested());
+  assert(expr.leftToken() == kParanOpen || expr.leftToken() == kUnionOpen);
+
+  if (expr.children().size() == 1)
+    return rephraseRefType(expr.srcpos(), parseTypeSpec(expr[0]), isValue);
+
+  // seq
+  TypeVector tyvect;
+  parseTypeVector(&tyvect, expr);
+  if (tyvect.empty()) {
+    errorf(expr.srcpos(), E_EmptySeqType, "Empty sequence type.");
+    return Type();
+  }
+
+  bool firstIsValue = tyvect.begin()->isValueType();
+  for (TypeVector::iterator it = tyvect.begin(); it != tyvect.end(); it++) {
+    if (it->isValueType() != firstIsValue) {
+      errorf(expr.srcpos(), E_MixedValueType, "Group type with mixed value types");
+      return Type();
+    }
+  }
+
+  if (!isValue && firstIsValue == isValue) {
+    warning(expr.srcpos(), k_DoubleRefType,
+            String("Double reference notation on group type is ignored"));
+    for (TypeVector::iterator it = tyvect.begin(); it != tyvect.end(); it++)
+      it->setIsValueType(true);
+  }
+
+  if (expr.leftToken() == kParanOpen)
+    return Type::newSeq(tyvect, isValue);
+  else
+    return Type::newUnion(tyvect, isValue);
 }
 
 
@@ -459,45 +518,8 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue)
     else
       assert(0);
   }
-  else if (expr.isNested() && expr.leftToken() == kParanOpen) {
-    if (expr.children().size() == 1) {
-      // grouped
-      Type retval = parseTypeSpec(expr[0]);
-      if (!isValue) {
-        if (!retval.isValueType())
-          warning(expr.srcpos(), k_DoubleRefType,
-                  String("Double reference notation on singleton type group is ignored"));
-        else
-          retval.setIsValueType(isValue);
-      }
-      return retval;
-    }
-    else {
-      // seq
-      TypeVector tyvect;
-      parseTypeVector(&tyvect, expr);
-      return Type::newSeq(tyvect, isValue);
-    }
-  }
-  else if (expr.isNested() && expr.leftToken() == kUnionOpen) {
-    if (expr.children().size() == 1) {
-      // single type union -> the single type
-      Type retval = parseTypeSpec(expr[0]);
-      if (!isValue) {
-        if (!retval.isValueType())
-          warning(expr.srcpos(), k_DoubleRefType,
-                  String("Double reference notation on singleton type group is ignored"));
-        else
-          retval.setIsValueType(isValue);
-      }
-      return retval;
-    }
-    else {
-      // union
-      TypeVector tyvect;
-      parseTypeVector(&tyvect, expr);
-      return Type::newUnion(tyvect, isValue);
-    }
+  else if (expr.isNested()) {
+    return parseGroupType(expr, isValue);
   }
   else
     assert(0);
@@ -677,6 +699,13 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
   if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
     // inheritance type spec
     inheritsFrom = parseTypeSpec(seq[ofs + 1]);
+
+    if (!inheritsFrom.isValueType()) {
+      errorf(seq[ofs + 1].srcpos(), E_InheritsRefType,
+             "Can't inherit from reference type.  Reference ignored.");
+      inheritsFrom.setIsValueType(true);
+    }
+
     ofs += 2;
   }
 
@@ -974,6 +1003,13 @@ SecondPass::parseEnumDef(const Token& expr, bool isLocal)
   Type baseType;
   if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
     baseType = parseTypeSpec(seq[ofs + 1]);
+
+    if (!baseType.isValueType()) {
+      errorf(seq[ofs + 1].srcpos(), E_InheritsRefType,
+             "Can't inherit from reference type.  Reference ignored.");
+      baseType.setIsValueType(true);
+    }
+
     ofs += 2;
   }
   else
@@ -1086,6 +1122,13 @@ SecondPass::parseMeasureDef(const Token& expr, bool isLocal)
   Type isaFrom;
   if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
     isaFrom = parseTypeSpec(seq[ofs + 1]);
+
+    if (!isaFrom.isValueType()) {
+      errorf(seq[ofs + 1].srcpos(), E_InheritsRefType,
+             "Can't inherit from reference type.  Reference ignored.");
+      isaFrom.setIsValueType(true);
+    }
+
     ofs += 2;
   }
 

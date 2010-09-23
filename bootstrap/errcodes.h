@@ -81,6 +81,9 @@ namespace heather
     E_InvaliArraySize     = 0x4037,
     E_RefToFunc           = 0x4038,
     k_DoubleRefType       = 0x4039,
+    E_EmptySeqType        = 0x403a,
+    E_MixedValueType      = 0x403b,
+    E_InheritsRefType     = 0x403c,
 
     // enums
     E_BadEnumItemList     = 0x4050,
