@@ -88,6 +88,8 @@ namespace heather
     Type parseTypeSpec(const Token& expr);
     Type parseTypeSpecImpl(const Token& expr);
     Type parseTypeSpecImpl2(const Token& expr, bool isValue);
+    Type parseGroupType(const Token& expr, bool isValue);
+    Type rephraseRefType(const SrcPos& srcpos, const Type& inType, bool isValue);
 
     void parseExtendImpl(NodeList* reqProtocol, const Token& expr);
 
