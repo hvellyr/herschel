@@ -87,6 +87,7 @@ namespace heather
 
     Type parseTypeSpec(const Token& expr);
     Type parseTypeSpecImpl(const Token& expr);
+    Type parseTypeSpecImpl2(const Token& expr, bool isValue);
 
     void parseExtendImpl(NodeList* reqProtocol, const Token& expr);
 
@@ -136,11 +137,12 @@ namespace heather
                            FundefClauseData& data);
 
 
-    Type parseBinaryTypeSpec(const Token& expr, bool forceGeneric);
+    Type parseBinaryTypeSpec(const Token& expr, bool forceGeneric,
+                             bool isValue);
     Type parseWhereConstraint(const Token& whereConstrSeq);
     void parseWhereClause(const Token& whereSeq);
 
-    Type genericTypeRef(const String& id) const;
+    Type genericTypeRef(const String& id, bool isValue) const;
     size_t getWhereOfs(const Token& expr) const;
     size_t getWhereOfs(const TokenVector& seq, size_t ofs) const;
 

@@ -168,10 +168,10 @@ namespace heather
     }
 
 
-    virtual String toString() const
+    virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:union>";
+      buf << "<ty:union" << ( !isValue ? " ref='t'" : "") << ">";
       for (size_t i = 0; i < fTypes.size(); i++)
         buf << fTypes[i].toString();
       buf << "</ty:union>";
@@ -195,10 +195,10 @@ namespace heather
     }
 
 
-    virtual String toString() const
+    virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:seq>";
+      buf << "<ty:seq" << ( !isValue ? " ref='t'" : "") << ">";
       for (size_t i = 0; i < fTypes.size(); i++)
         buf << fTypes[i].toString();
       buf << "</ty:seq>";
@@ -249,7 +249,7 @@ namespace heather
     }
 
 
-    virtual String toString() const
+    virtual String toString(bool isValue) const
     {
       return fSign.toString();
     }
@@ -377,7 +377,7 @@ namespace heather
     }
 
 
-    virtual String toString() const
+    virtual String toString(bool isValue) const
     {
       StringBuffer buf;
       buf << "<ty:type nm='" << fName << "'"
@@ -480,7 +480,7 @@ namespace heather
     }
 
 
-    virtual String toString() const
+    virtual String toString(bool isValue) const
     {
       StringBuffer buf;
       buf << "<ty:alias nm='" << fName << "'>";
@@ -569,7 +569,7 @@ namespace heather
     }
 
 
-    virtual String toString() const
+    virtual String toString(bool isValue) const
     {
       StringBuffer buf;
       buf << "<ty:measure nm='" << fName << "' unit='"
@@ -667,10 +667,12 @@ namespace heather
     }
 
 
-    virtual String toString() const
+    virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:ref" << (fIsGeneric ? " gen='t'" : "") << " nm='" << fName << "'>";
+      buf << "<ty:ref" << (fIsGeneric ? " gen='t'" : "")
+          << ( !isValue ? " ref='t'" : "")
+          << " nm='" << fName << "'>";
       if (!fGenerics.empty()) {
         buf << "<ty:gen>";
         for (size_t i = 0; i < fGenerics.size(); i++)
@@ -757,10 +759,11 @@ namespace heather
     }
 
 
-    virtual String toString() const
+    virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:array ind='" << fromInt(fSizeIndicator) << "'>"
+      buf << "<ty:array ind='" << fromInt(fSizeIndicator) << "'"
+          << ( !isValue ? " ref='t'" : "") << ">"
           << fBase.toString()
           << "</ty:array>";
       return buf.toString();
@@ -801,7 +804,8 @@ const String heather::Type::kWordTypeName        = String("Word");
 //----------------------------------------------------------------------------
 
 Type::Type()
-  : fKind(kType_Undefined)
+  : fKind(kType_Undefined),
+    fIsValue(true)
 { }
 
 
@@ -811,8 +815,9 @@ Type::Type(const Type& other)
 }
 
 
-Type::Type(TypeKind kind, TypeImpl* impl)
+Type::Type(TypeKind kind, bool isValue, TypeImpl* impl)
   : fKind(kind),
+    fIsValue(isValue),
     fImpl(impl)
 { }
 
@@ -821,6 +826,7 @@ Type&
 Type::operator=(const Type& other)
 {
   fKind = other.fKind;
+  fIsValue = other.fIsValue;
   fImpl = other.fImpl;
   return *this;
 }
@@ -828,19 +834,19 @@ Type::operator=(const Type& other)
 
 Type
 Type::newTypeRef(const String& name, const TypeVector& genericArgs,
-                 const TypeConstVector& constraints)
+                 const TypeConstVector& constraints, bool isValue)
 {
-  return Type(kType_Ref, new TypeRefTypeImpl(name, false, genericArgs,
-                                             constraints));
+  return Type(kType_Ref, isValue, 
+              new TypeRefTypeImpl(name, false, genericArgs, constraints));
 }
 
 
 Type
-Type::newTypeRef(const String& name)
+Type::newTypeRef(const String& name, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
-  return Type(kType_Ref,
+  return Type(kType_Ref, isValue,
               new TypeRefTypeImpl(name, false,
                                   dummyGenerics, dummyConstraints));
 }
@@ -848,145 +854,145 @@ Type::newTypeRef(const String& name)
 
 Type
 Type::newTypeRef(const String& name, bool isGeneric,
-                 const TypeConstVector& constraints)
+                 const TypeConstVector& constraints, bool isValue)
 {
   TypeVector dummyGenerics;
-  return Type(kType_Ref,
+  return Type(kType_Ref, isValue,
               new TypeRefTypeImpl(name, isGeneric, dummyGenerics,
                                   constraints));
 }
 
 
 Type
-Type::newArray(const Type& base, int sizeIndicator)
+Type::newArray(const Type& base, int sizeIndicator, bool isValue)
 {
-  return Type(kType_Array, new ArrayTypeImpl(base, sizeIndicator));
+  return Type(kType_Array, isValue, new ArrayTypeImpl(base, sizeIndicator));
 }
 
 
 Type
-Type::newAny()
+Type::newAny(bool isValue)
 {
-  return Type(kType_Any, NULL);
+  return Type(kType_Any, isValue, NULL);
 }
 
 
 Type
-Type::newBool()
+Type::newBool(bool isValue)
 {
-  return Type(kType_Bool, NULL);
+  return Type(kType_Bool, isValue, NULL);
 }
 
 
 Type
-Type::newChar()
+Type::newChar(bool isValue)
 {
-  return Type(kType_Char, NULL);
+  return Type(kType_Char, isValue, NULL);
 }
 
 
 Type
-Type::newInt()
+Type::newInt(bool isValue)
 {
-  return Type(kType_Int, NULL);
+  return Type(kType_Int, isValue, NULL);
 }
 
 
 Type
-Type::newKeyword()
+Type::newKeyword(bool isValue)
 {
-  return Type(kType_Keyword, NULL);
+  return Type(kType_Keyword, isValue, NULL);
 }
 
 
 Type
-Type::newLong()
+Type::newLong(bool isValue)
 {
-  return Type(kType_Long, NULL);
+  return Type(kType_Long, isValue, NULL);
 }
 
 
 Type
-Type::newOctet()
+Type::newOctet(bool isValue)
 {
-  return Type(kType_Octet, NULL);
+  return Type(kType_Octet, isValue, NULL);
 }
 
 
 Type
-Type::newRational()
+Type::newRational(bool isValue)
 {
-  return Type(kType_Rational, NULL);
+  return Type(kType_Rational, isValue, NULL);
 }
 
 
 Type
-Type::newReal()
+Type::newReal(bool isValue)
 {
-  return Type(kType_Real, NULL);
+  return Type(kType_Real, isValue, NULL);
 }
 
 
 Type
-Type::newShort()
+Type::newShort(bool isValue)
 {
-  return Type(kType_Short, NULL);
+  return Type(kType_Short, isValue, NULL);
 }
 
 
 Type
-Type::newString()
+Type::newString(bool isValue)
 {
-  return Type(kType_String, NULL);
+  return Type(kType_String, isValue, NULL);
 }
 
 
 Type
-Type::newULong()
+Type::newULong(bool isValue)
 {
-  return Type(kType_ULong, NULL);
+  return Type(kType_ULong, isValue, NULL);
 }
 
 
 Type
-Type::newUShort()
+Type::newUShort(bool isValue)
 {
-  return Type(kType_UShort, NULL);
+  return Type(kType_UShort, isValue, NULL);
 }
 
 
 Type
-Type::newUWord()
+Type::newUWord(bool isValue)
 {
-  return Type(kType_UWord, NULL);
+  return Type(kType_UWord, isValue, NULL);
 }
 
 
 Type
-Type::newWord()
+Type::newWord(bool isValue)
 {
-  return Type(kType_Word, NULL);
+  return Type(kType_Word, isValue, NULL);
 }
 
 
 Type
 Type::newEof()
 {
-  return Type(kType_Eof, NULL);
+  return Type(kType_Eof, true, NULL);
 }
 
 
 Type
 Type::newNil()
 {
-  return Type(kType_Nil, NULL);
+  return Type(kType_Nil, true, NULL);
 }
 
 
 Type
 Type::newUnspecified()
 {
-  return Type(kType_Unspecified, NULL);
+  return Type(kType_Unspecified, true, NULL);
 }
 
 
@@ -996,9 +1002,10 @@ Type::newType(const String& name, const TypeVector& generics,
 {
   FunctionSignatureVector dummyProtocol;
   FunctionSignature       dummyDefApplySign;
-  return Type(kType_Type, new TypeTypeImpl(name, false, generics, inherit,
-                                           dummyDefApplySign,
-                                           dummyProtocol));
+  return Type(kType_Type, true,
+              new TypeTypeImpl(name, false, generics, inherit,
+                               dummyDefApplySign,
+                               dummyProtocol));
 }
 
 
@@ -1008,9 +1015,10 @@ Type::newType(const String& name, const TypeVector& generics,
               const FunctionSignatureVector& protocol)
 {
   FunctionSignature dummyDefApplySign;
-  return Type(kType_Type, new TypeTypeImpl(name, false, generics, inherit,
-                                           dummyDefApplySign,
-                                           protocol));
+  return Type(kType_Type, true,
+              new TypeTypeImpl(name, false, generics, inherit,
+                               dummyDefApplySign,
+                               protocol));
 }
 
 
@@ -1020,9 +1028,10 @@ Type::newClass(const String& name, const TypeVector& generics,
 {
   FunctionSignatureVector dummyProtocol;
   FunctionSignature       dummyDefApplySign;
-  return Type(kType_Class, new TypeTypeImpl(name, true, generics, inherit,
-                                            dummyDefApplySign,
-                                            dummyProtocol));
+  return Type(kType_Class, true, 
+              new TypeTypeImpl(name, true, generics, inherit,
+                               dummyDefApplySign,
+                               dummyProtocol));
 }
 
 
@@ -1032,9 +1041,10 @@ Type::newClass(const String& name, const TypeVector& generics,
                const FunctionSignature& defApplySign,
                const FunctionSignatureVector& protocol)
 {
-  return Type(kType_Class, new TypeTypeImpl(name, true, generics, inherit,
-                                            defApplySign,
-                                            protocol));
+  return Type(kType_Class, true,
+              new TypeTypeImpl(name, true, generics, inherit,
+                               defApplySign,
+                               protocol));
 }
 
 
@@ -1042,7 +1052,7 @@ Type
 Type::newAlias(const String& name, const TypeVector& generics,
                const Type& isa)
 {
-  return Type(kType_Alias, new AliasTypeImpl(name, generics, isa));
+  return Type(kType_Alias, true, new AliasTypeImpl(name, generics, isa));
 }
 
 
@@ -1050,7 +1060,8 @@ Type
 Type::newMeasure(const String& name, const Type& baseType,
                  const String& defUnit)
 {
-  return Type(kType_Measure, new MeasureTypeImpl(name, baseType, defUnit));
+  return Type(kType_Measure, true,
+              new MeasureTypeImpl(name, baseType, defUnit));
 }
 
 
@@ -1066,34 +1077,37 @@ Type::newEnum(const String& name, const Type& baseType,
 Type
 Type::newFunction(const FunctionSignature& sign)
 {
-  return Type(kType_Function, new FunctionTypeImpl(sign));
+  return Type(kType_Function, true, new FunctionTypeImpl(sign));
 }
 
 
 Type
-Type::newUnion(const TypeVector& types)
+Type::newUnion(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Union, new UnionTypeImpl(types));
+  return Type(kType_Union, isValue, new UnionTypeImpl(types));
 }
 
 
 Type
-Type::newSeq(const TypeVector& types)
+Type::newSeq(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Sequence, new SeqTypeImpl(types));
+  return Type(kType_Sequence, isValue, new SeqTypeImpl(types));
 }
 
 
 Type
 Type::clone() const
 {
-  return Type(fKind, (fImpl != NULL ? fImpl->clone() : NULL));
+  return Type(fKind, fIsValue, (fImpl != NULL ? fImpl->clone() : NULL));
 }
 
 
 bool
 Type::operator==(const Type& other) const
 {
+  if (fIsValue != other.fIsValue)
+    return false;
+
   if (isAny() || isBase())
     return fKind == other.fKind;
 
@@ -1429,6 +1443,21 @@ Type::isRef() const
 }
 
 
+bool
+Type::isValueType() const
+{
+  return fIsValue;
+}
+
+
+Type&
+Type::setIsValueType(bool value)
+{
+  fIsValue = value;
+  return *this;
+}
+
+
 String
 Type::typeName() const
 {
@@ -1597,7 +1626,8 @@ Type::rebase(const Type& newBaseType) const
 {
   if (arrayBaseType().isArray())
     return Type::newArray(arrayBaseType().rebase(newBaseType),
-                          arraySizeIndicator());
+                          arraySizeIndicator(),
+                          arrayBaseType().isValueType());
 
   return newBaseType;
 }
@@ -1773,8 +1803,9 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
               *this,
               String("Constraints for non trivial type reference"));
           clonedTy = Type::newTypeRef(replacement.typeName(),
-                                     replacement.generics(),
-                                     constraints());
+                                      replacement.generics(),
+                                      constraints(),
+                                      replacement.isValueType());
         }
         else
           clonedTy = replacement;
@@ -1809,28 +1840,30 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
 String
 Type::toString() const
 {
+  String retval;
+
   switch (fKind) {
-  case kType_Any:           return kAnyTypeName;
-  case kType_Bool:          return kBoolTypeName;
-  case kType_Char:          return kCharTypeName;
-  case kType_Int:           return kIntTypeName;
-  case kType_Keyword:       return kKeywordTypeName;
-  case kType_Long:          return kLongTypeName;
-  case kType_Octet:         return kOctetTypeName;
-  case kType_Rational:      return kRationalTypeName;
-  case kType_Real:          return kRealTypeName;
-  case kType_Short:         return kShortTypeName;
-  case kType_String:        return kStringTypeName;
-  case kType_ULong:         return kULongTypeName;
-  case kType_UShort:        return kUShortTypeName;
-  case kType_UWord:         return kUWordTypeName;
-  case kType_Word:          return kWordTypeName;
-  case kType_Eof:           return kEofTypeName;
-  case kType_Nil:           return kNilTypeName;
-  case kType_Unspecified:   return kUnspecifiedTypeName;
-  case kType_Float:         return kFloatTypeName;
-  case kType_Double:        return kDoubleTypeName;
-  case kType_LongDouble:    return kLongDoubleTypeName;
+  case kType_Any:           retval = kAnyTypeName; break;
+  case kType_Bool:          retval = kBoolTypeName; break;
+  case kType_Char:          retval = kCharTypeName; break;
+  case kType_Int:           retval = kIntTypeName; break;
+  case kType_Keyword:       retval = kKeywordTypeName; break;
+  case kType_Long:          retval = kLongTypeName; break;
+  case kType_Octet:         retval = kOctetTypeName; break;
+  case kType_Rational:      retval = kRationalTypeName; break;
+  case kType_Real:          retval = kRealTypeName; break;
+  case kType_Short:         retval = kShortTypeName; break;
+  case kType_String:        retval = kStringTypeName; break;
+  case kType_ULong:         retval = kULongTypeName; break;
+  case kType_UShort:        retval = kUShortTypeName; break;
+  case kType_UWord:         retval = kUWordTypeName; break;
+  case kType_Word:          retval = kWordTypeName; break;
+  case kType_Eof:           retval = kEofTypeName; break;
+  case kType_Nil:           retval = kNilTypeName; break;
+  case kType_Unspecified:   retval = kUnspecifiedTypeName; break;
+  case kType_Float:         retval = kFloatTypeName; break;
+  case kType_Double:        retval = kDoubleTypeName; break;
+  case kType_LongDouble:    retval = kLongDoubleTypeName; break;
 
   case kType_Ref:
   case kType_Array:
@@ -1842,14 +1875,17 @@ Type::toString() const
   case kType_Alias:
   case kType_Union:
   case kType_Sequence:
-    return fImpl->toString();
+    return fImpl->toString(fIsValue);
+    break;
 
   case kType_Undefined:
   default:
-    ;
+    return String("--default--");
   }
 
-  return String("--default--");
+  if (!fIsValue)
+    return String("^") + retval;
+  return retval;
 }
 
 

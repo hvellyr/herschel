@@ -79,6 +79,8 @@ namespace heather
     E_EnumNotBaseType     = 0x4035,
     E_EnumInitTypeMismatch= 0x4036,
     E_InvaliArraySize     = 0x4037,
+    E_RefToFunc           = 0x4038,
+    k_DoubleRefType       = 0x4039,
 
     // enums
     E_BadEnumItemList     = 0x4050,
