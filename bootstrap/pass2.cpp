@@ -286,7 +286,8 @@ SecondPass::parseTypeSpec(const Token& expr)
 
 
 Type
-SecondPass::parseBinaryTypeSpec(const Token& expr, bool forceGeneric)
+SecondPass::parseBinaryTypeSpec(const Token& expr, bool forceGeneric,
+                                bool isValue)
 {
   assert(expr.count() == 3);
   assert(expr[0] == kSymbol);
@@ -302,10 +303,10 @@ SecondPass::parseBinaryTypeSpec(const Token& expr, bool forceGeneric)
                                                   rightType));
 
     if (isGeneric || forceGeneric)
-      return Type::newTypeRef(expr[0].idValue(), true, constraints);
+      return Type::newTypeRef(expr[0].idValue(), true, constraints, isValue);
     else
       return Type::newTypeRef(expr[0].idValue(),
-                              dummyGenerics, constraints);
+                              dummyGenerics, constraints, isValue);
   }
 
   TypeConstOperator op = kConstOp_equal;
@@ -328,33 +329,46 @@ SecondPass::parseBinaryTypeSpec(const Token& expr, bool forceGeneric)
 
   constraints.push_back(TypeConstraint::newValue(op, expr[2]));
   if (isGeneric || forceGeneric)
-    return Type::newTypeRef(expr[0].idValue(), true, constraints);
+    return Type::newTypeRef(expr[0].idValue(), true, constraints, isValue);
 
   return Type::newTypeRef(expr[0].idValue(),
-                          dummyGenerics, constraints);
+                          dummyGenerics, constraints, isValue);
 }
 
 
 Type
-SecondPass::genericTypeRef(const String& id) const
+SecondPass::genericTypeRef(const String& id, bool isValue) const
 {
   TSharedGenericTable::const_iterator it = fSharedGenericTable.find(id);
   if (it != fSharedGenericTable.end())
-    return it->second;
+    return it->second.clone().setIsValueType(isValue);
 
   TypeConstVector dummyConstraints;
-  return Type::newTypeRef(id, true, dummyConstraints);
+  return Type::newTypeRef(id, true, dummyConstraints, isValue);
 }
 
 
 Type
 SecondPass::parseTypeSpecImpl(const Token& expr)
 {
+  if (expr.isSeq() && expr[0] == kReference) {
+    assert(expr.count() == 2);
+
+    return parseTypeSpecImpl2(expr[1], false);
+  }
+
+  return parseTypeSpecImpl2(expr, true);
+}
+
+
+Type
+SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue)
+{
   if (expr == kSymbol) {
     if (fCurrentGenericTypes.find(expr.idValue()) != fCurrentGenericTypes.end())
-      return genericTypeRef(expr.idValue());
+      return genericTypeRef(expr.idValue(), isValue);
     else
-      return Type::newTypeRef(expr.idValue());
+      return Type::newTypeRef(expr.idValue(), isValue);
   }
   else if (expr.isSeq()) {
     if (expr.count() == 2) {
@@ -370,11 +384,16 @@ SecondPass::parseTypeSpecImpl(const Token& expr)
         TypeVector generics;
         TypeConstVector dummyConstraints;
         parseTypeVector(&generics, expr[1]);
-        return Type::newTypeRef(expr[0].idValue(), generics, dummyConstraints);
+        return Type::newTypeRef(expr[0].idValue(), generics, dummyConstraints,
+                                isValue);
       }
       else if (expr[0] == kFUNCTIONId &&
                expr[1].isNested() && expr[1].leftToken() == kParanOpen)
       {
+        if (isValue)
+          warning(expr.srcpos(), E_RefToFunc,
+                  String("References to function types have no effect.  Ignored"));
+
         NodeList defaultApplyParams;
         parseParameters(&defaultApplyParams, expr[1].children());
 
@@ -403,23 +422,27 @@ SecondPass::parseTypeSpecImpl(const Token& expr)
           }
         }
 
-        return Type::newArray(baseType, sizeInd);
+        return Type::newArray(baseType, sizeInd, isValue);
       }
       else if (expr[0] == kQuote) {
         assert(expr[1] == kSymbol);
-        return genericTypeRef(expr[1].idValue());
+        return genericTypeRef(expr[1].idValue(), isValue);
       }
       else
         assert(0);
     }
     else if (expr.count() == 3) {
-      return parseBinaryTypeSpec(expr, false);
+      return parseBinaryTypeSpec(expr, false, isValue);
     }
     else if (expr.count() == 4) {
       if (expr[0] == kFUNCTIONId &&
           expr[1].isNested() && expr[1].leftToken() == kParanOpen)
       {
         assert(expr[2] == kColon);
+
+        if (!isValue)
+          warning(expr.srcpos(), E_RefToFunc,
+                  String("References to function types have no effect.  Ignored"));
 
         NodeList defaultApplyParams;
         parseParameters(&defaultApplyParams, expr[1].children());
@@ -439,25 +462,41 @@ SecondPass::parseTypeSpecImpl(const Token& expr)
   else if (expr.isNested() && expr.leftToken() == kParanOpen) {
     if (expr.children().size() == 1) {
       // grouped
-      return parseTypeSpec(expr[0]);
+      Type retval = parseTypeSpec(expr[0]);
+      if (!isValue) {
+        if (!retval.isValueType())
+          warning(expr.srcpos(), k_DoubleRefType,
+                  String("Double reference notation on singleton type group is ignored"));
+        else
+          retval.setIsValueType(isValue);
+      }
+      return retval;
     }
     else {
       // seq
       TypeVector tyvect;
       parseTypeVector(&tyvect, expr);
-      return Type::newSeq(tyvect);
+      return Type::newSeq(tyvect, isValue);
     }
   }
   else if (expr.isNested() && expr.leftToken() == kUnionOpen) {
     if (expr.children().size() == 1) {
       // single type union -> the single type
-      return parseTypeSpec(expr[0]);
+      Type retval = parseTypeSpec(expr[0]);
+      if (!isValue) {
+        if (!retval.isValueType())
+          warning(expr.srcpos(), k_DoubleRefType,
+                  String("Double reference notation on singleton type group is ignored"));
+        else
+          retval.setIsValueType(isValue);
+      }
+      return retval;
     }
     else {
       // union
       TypeVector tyvect;
       parseTypeVector(&tyvect, expr);
-      return Type::newUnion(tyvect);
+      return Type::newUnion(tyvect, isValue);
     }
   }
   else
@@ -538,7 +577,7 @@ SecondPass::parseWhereConstraint(const Token& whereConstrSeq)
   assert(whereConstrSeq.count() == 3);
   assert(whereConstrSeq[0] == kSymbol);
 
-  return parseBinaryTypeSpec(whereConstrSeq, true);
+  return parseBinaryTypeSpec(whereConstrSeq, true, true);
 }
 
 
@@ -711,14 +750,14 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
     TypeVector genGenerics;
     for (size_t i = 0; i < generics.size(); i++) {
       assert(generics[i].isRef());
-      genGenerics.push_back(genericTypeRef(generics[i].typeName()));
+      genGenerics.push_back(genericTypeRef(generics[i].typeName(), true));
     }
 
     TypeConstVector dummyConstraints;
     FunctionSignature defApplySign(true,
                                    String("apply"),
                                    Type::newTypeRef(fullTypeName, genGenerics,
-                                                    dummyConstraints),
+                                                    dummyConstraints, true),
                                    funcParams);
 
     defType = Type::newClass(fullTypeName, generics,
@@ -938,7 +977,7 @@ SecondPass::parseEnumDef(const Token& expr, bool isLocal)
     ofs += 2;
   }
   else
-    baseType = Type::newTypeRef(Type::kIntTypeName);
+    baseType = Type::newTypeRef(Type::kIntTypeName, true);
 
   if (!baseType.isBaseOrBaseRef()) {
     errorf(expr.srcpos(), E_EnumNotBaseType, "Enum base is not a base type.");
@@ -1010,7 +1049,7 @@ SecondPass::parseEnumDef(const Token& expr, bool isLocal)
   TypeVector dummyGenerics;
   TypeConstVector constraints;
   Type enumType = Type::newTypeRef(baseType.typeName(),
-                                   dummyGenerics, constraints);
+                                   dummyGenerics, constraints, true);
 
   fScope->registerType(expr.srcpos(), fullEnumName, enumType);
 

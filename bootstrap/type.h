@@ -111,7 +111,7 @@ namespace heather
 
     virtual void replaceGenerics(const TypeCtx& typeMap) = 0;
 
-    virtual String toString() const = 0;
+    virtual String toString(bool isValue) const = 0;
   };
 
 
@@ -124,29 +124,31 @@ namespace heather
 
     //! creates a new type ref.  Covers the following example: xyz<a, b> <> nil
     static Type newTypeRef(const String& name, const TypeVector& genericArgs,
-                           const TypeConstVector& constraints);
-    static Type newTypeRef(const String& name);
+                           const TypeConstVector& constraints,
+                           bool isValue);
+    static Type newTypeRef(const String& name, bool isValue);
     static Type newTypeRef(const String& name, bool isGeneric,
-                           const TypeConstVector& constraints);
+                           const TypeConstVector& constraints,
+                           bool isValue);
 
-    static Type newArray(const Type& base, int siceIndicator);
+    static Type newArray(const Type& base, int siceIndicator, bool isValue);
 
-    static Type newAny();
+    static Type newAny(bool isValue = true);
 
-    static Type newBool();
-    static Type newChar();
-    static Type newInt();
-    static Type newKeyword();
-    static Type newLong();
-    static Type newOctet();
-    static Type newRational();
-    static Type newReal();
-    static Type newShort();
-    static Type newString();
-    static Type newULong();
-    static Type newUShort();
-    static Type newUWord();
-    static Type newWord();
+    static Type newBool(bool isValue = true);
+    static Type newChar(bool isValue = true);
+    static Type newInt(bool isValue = true);
+    static Type newKeyword(bool isValue = true);
+    static Type newLong(bool isValue = true);
+    static Type newOctet(bool isValue = true);
+    static Type newRational(bool isValue = true);
+    static Type newReal(bool isValue = true);
+    static Type newShort(bool isValue = true);
+    static Type newString(bool isValue = true);
+    static Type newULong(bool isValue = true);
+    static Type newUShort(bool isValue = true);
+    static Type newUWord(bool isValue = true);
+    static Type newWord(bool isValue = true);
 
     static Type newEof();
     static Type newNil();
@@ -178,8 +180,8 @@ namespace heather
                         const StringTokenMap& defUnit);
 
     static Type newFunction(const FunctionSignature& sign);
-    static Type newUnion(const TypeVector& types);
-    static Type newSeq(const TypeVector& types);
+    static Type newUnion(const TypeVector& types, bool isValue);
+    static Type newSeq(const TypeVector& types, bool isValue);
 
     Type clone() const;
 
@@ -303,6 +305,11 @@ namespace heather
 
     String toString() const;
 
+    //! Types in heather are either 'reference' or 'value' types.  Even if all
+    //! objects are possible passed by reference internally, value types
+    //! behave on (first) modification as if being copied (copy-on-write).
+    bool isValueType() const;
+    Type& setIsValueType(bool value);
 
     static const String kAnyTypeName;
     static const String kBoolTypeName;
@@ -327,9 +334,10 @@ namespace heather
     static const String kWordTypeName;
 
   private:
-    Type(TypeKind kind, TypeImpl* impl);
+    Type(TypeKind kind, bool isValue, TypeImpl* impl);
 
     TypeKind      fKind;
+    bool          fIsValue;
     Ptr<TypeImpl> fImpl;
   };
 

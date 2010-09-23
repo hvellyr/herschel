@@ -703,36 +703,40 @@ FirstPass::parseQuotedType()
 Token
 FirstPass::parseTypeSpec(bool onlyNestedConstraints)
 {
-  bool isRefType = false;
+  Token isRefToken;
   if (fToken == kReference) {
-    isRefType = true;
+    isRefToken = fToken;
     nextToken();
   }
 
   // TODO: pass the isRefType into the following functions
 
+  Token retval;
   if (fToken == kSymbol) {
-    return ( onlyNestedConstraints
-             ? parseArrayExtend(parseSimpleType(fToken))
-             : parseConstraintExtend(parseArrayExtend(parseSimpleType(fToken))) );
+    retval = ( onlyNestedConstraints
+               ? parseArrayExtend(parseSimpleType(fToken))
+               : parseConstraintExtend(parseArrayExtend(parseSimpleType(fToken))) );
   }
   else if (fToken == kFUNCTIONId) {
-    return parseArrayExtend(parseFunctionType());
+    retval = parseArrayExtend(parseFunctionType());
   }
   else if (fToken == kQuote) {
     // no constraints for generics
-    return parseArrayExtend(parseQuotedType());
+    retval = parseArrayExtend(parseQuotedType());
   }
   else if (fToken == kUnionOpen) {
     // no constraints for union types
-    return parseArrayExtend(parseUnionType());
+    retval = parseArrayExtend(parseUnionType());
   }
   else if (fToken == kParanOpen) {
     // no constraints for sequence types
-    return parseArrayExtend(parseGroupType());
+    retval = parseArrayExtend(parseGroupType());
   }
 
-  return Token();
+  if (isRefToken.isSet())
+    return Token() << isRefToken << retval;
+
+  return retval;
 }
 
 
