@@ -1,0 +1,13 @@
+def bar()
+  let a
+  let b
+  let c
+
+  outln("hello world")
+
+  a, b, c = foo()
+  a, b, c ... = foo2()
+  a ... = foo3()
+
+  true
+
