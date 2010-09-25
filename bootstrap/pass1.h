@@ -78,19 +78,19 @@ namespace heather
       kRest
     };
 
-    Token parseTop(ScopeType scope);
+    TokenVector parseTop(ScopeType scope);
     Token parseModule();
     Token parseExport();
     Token parseImport();
-    Token parseDef(bool isLocal, ScopeType scope);
+    TokenVector parseDef(bool isLocal, ScopeType scope);
     Token parseCharDef(const Token& defToken);
-    Token parseVarDef(const Token& defToken, const Token& tagToken,
-                      bool isLocal);
-    Token parseVarDef2(const Token& defToken, const Token& tagToken,
-                       const Token& symbolToken, bool isLocal);
+    TokenVector parseVarDef(const Token& defToken, const Token& tagToken,
+                            bool isLocal);
+    TokenVector parseVarDef2(const Token& defToken, const Token& tagToken,
+                             const Token& symbolToken, bool isLocal);
     Token parseFunctionDef(const Token& defToken, const Token& tagToken,
                            const Token& symToken, bool isLocal);
-    Token parseFunctionOrVarDef(const Token& defToken, bool isLocal);
+    TokenVector parseFunctionOrVarDef(const Token& defToken, bool isLocal);
     Token parseSelect();
     Token parseMatch();
     Token parseFor();

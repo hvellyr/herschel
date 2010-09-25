@@ -353,6 +353,8 @@ namespace heather
     //! as charname or unit name.
     bool isCharOrUnitName() const;
 
+    TokenVector toTokenVector() const;
+
   private:
     void unshare();
 

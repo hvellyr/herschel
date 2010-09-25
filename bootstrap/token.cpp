@@ -1510,6 +1510,16 @@ Token::unwrapSingleton() const
 }
 
 
+TokenVector
+Token::toTokenVector() const
+{
+  TokenVector vect;
+  if (isSet())
+    vect.push_back(*this);
+  return vect;
+}
+
+
 bool
 Token::isCharOrUnitName() const
 {

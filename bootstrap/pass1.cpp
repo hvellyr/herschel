@@ -184,8 +184,8 @@ namespace heather
   {
     bool operator() (FirstPass* pass, Token& result)
     {
-      Token n = pass->parseTop(FirstPass::kNonScopedDef);
-      if (n.isSet())
+      TokenVector n = pass->parseTop(FirstPass::kNonScopedDef);
+      if (!n.empty())
         result << n;
 
       return true;
@@ -1056,7 +1056,7 @@ bool
 FirstPass::parseFunctionsParamsFull(TokenVector* exprlist,
                                     TokenType startToken, TokenType endToken,
                                     bool autoCompleteType,
-                                    bool exceptEmptyList,
+                                    bool acceptEmptyList,
                                     bool skipFirst, bool eatLast)
 {
   Token params;
@@ -1066,7 +1066,7 @@ FirstPass::parseFunctionsParamsFull(TokenVector* exprlist,
                 "func-params",
                 skipFirst, eatLast);
 
-  if (params.isSet() || exceptEmptyList) {
+  if (params.isSet() || acceptEmptyList) {
     *exprlist = params.children();
     return true;
   }
@@ -1077,12 +1077,12 @@ FirstPass::parseFunctionsParamsFull(TokenVector* exprlist,
 
 bool
 FirstPass::parseFunctionsParams(TokenVector* exprlist, bool autoCompleteType,
-                                bool exceptEmptyList)
+                                bool acceptEmptyList)
 {
   return parseFunctionsParamsFull(exprlist,
                                   kParanOpen, kParanClose,
                                   autoCompleteType,
-                                  exceptEmptyList,
+                                  acceptEmptyList,
                                   true, true);
 }
 
@@ -1381,8 +1381,6 @@ FirstPass::parseExprListUntilBrace(TokenVector* result,
                                    bool isLocal)
 {
   for ( ; ; ) {
-    Token expr;
-
     if (fToken == kDefId ||
         fToken == kExtendId ||
         fToken == kExportId ||
@@ -1403,7 +1401,10 @@ FirstPass::parseExprListUntilBrace(TokenVector* result,
         parseDef(isLocal, kNonScopedDef);
         continue;
       }
-      expr = parseDef(isLocal, kNonScopedDef);
+
+      TokenVector exprs = parseDef(isLocal, kNonScopedDef);
+      if (!exprs.empty())
+        result->insert(result->end(), exprs.begin(), exprs.end());
     }
     else if (fToken == kBraceClose) {
       return true;
@@ -1412,21 +1413,22 @@ FirstPass::parseExprListUntilBrace(TokenVector* result,
       return true;
     }
     else if (fToken == kWhenId) {
-      expr = parseWhen(!isLocal, kNonScopedDef);
+      Token expr = parseWhen(!isLocal, kNonScopedDef);
+      if (expr.isSet())
+        result->push_back(expr);
     }
     else {
       Token before = fToken;
       SrcPos startPos = fToken.srcpos();
-      expr = parseExpr();
+      Token expr = parseExpr();
+
       if (!expr.isSet()) {
         error(startPos, E_UnexpectedToken,
                String("unexpected token while scanning block: ") + before);
         return false;
       }
-    }
-
-    if (expr.isSet())
       result->push_back(expr);
+    }
   }
 
   return false;
@@ -2208,9 +2210,9 @@ FirstPass::parseTopExprUntilBrace(TokenVector* result, ScopeType scope)
   while (fToken != kBraceClose) {
     if (fToken == kEOF)
       break;
-    Token topexpr = parseTop(scope);
-    if (topexpr.isSet())
-      result->push_back(topexpr);
+    TokenVector topexprs = parseTop(scope);
+    if (!topexprs.empty())
+      result->insert(result->end(), topexprs.begin(), topexprs.end());
   }
 
   if (fToken == kBraceClose)
@@ -2231,7 +2233,9 @@ FirstPass::parseTopOrExprList(bool isTopLevel, ScopeType scope)
 
       return Token(bracePos, kBraceOpen, kBraceClose) << exprs;
     }
-    return parseTop(scope);
+
+    TokenVector exprs = parseTop(scope);
+    return exprs.empty() ? Token() : ( Token() << exprs );
   }
   return parseExpr();
 }
@@ -2438,7 +2442,7 @@ FirstPass::parseExtend(ScopeType scope)
 }
 
 
-Token
+TokenVector
 FirstPass::parseVarDef(const Token& defToken, const Token& tagToken, bool isLocal)
 {
   Token keepTagToken = tagToken;
@@ -2447,7 +2451,7 @@ FirstPass::parseVarDef(const Token& defToken, const Token& tagToken, bool isLoca
 
   if (fToken != kSymbol) {
     errorf(fToken.srcpos(), E_MissingDefName, "Missing name");
-    return scanUntilTopExprAndResume();
+    return scanUntilTopExprAndResume().toTokenVector();
   }
   Token symbolToken = fToken;
 
@@ -2465,26 +2469,63 @@ FirstPass::evaluateConfigExpr(const Token& initExpr)
 }
 
 
-Token
+TokenVector
 FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
                         const Token& symbolToken,
                         bool isLocal)
 {
-  Token type;
-  Token colonToken, assignToken;
+  Token assignToken;
+  Token sym = symbolToken;
 
-  if (fToken == kColon) {
-    colonToken = fToken;
-    nextToken();
-    SrcPos pos = fToken.srcpos();
-    type = parseTypeSpec(true);
-    if (!type.isSet()) {
-      errorf(pos, E_MissingType, "type expression expected");
-      type = Token(pos, kSymbol, "Any");
+  std::vector<Token> leftHands;
+  std::vector<Token> leftHandSyms;
+
+  bool isDone = false;
+  while (!isDone) {
+    Token colonToken;
+    Token type;
+
+    if (fToken == kColon) {
+      colonToken = fToken;
+      nextToken();
+      SrcPos pos = fToken.srcpos();
+      type = parseTypeSpec(true);
+      if (!type.isSet()) {
+        errorf(pos, E_MissingType, "type expression expected");
+        type = Token(pos, kSymbol, "Any");
+      }
     }
-  }
 
-  Token docString = parseOptDocString();
+    Token docString = parseOptDocString();
+
+    Token vardefExpr;
+    vardefExpr << defToken;
+    if (tagToken.isSet())
+      vardefExpr << tagToken;
+
+    vardefExpr << sym;
+
+    if (type.isSet())
+      vardefExpr << colonToken << type;
+
+    if (docString.isSet())
+      vardefExpr << docString;
+
+    leftHands.push_back(vardefExpr);
+    leftHandSyms.push_back(sym);
+
+    if (fToken == kComma) {
+      nextToken();
+      if (fToken != kSymbol) {
+        errorf(fToken.srcpos(), E_MissingDefName, "Missing name");
+        return scanUntilTopExprAndResume().toTokenVector();
+      }
+      sym = fToken;
+      nextToken();
+    }
+    else
+      isDone = true;
+  }
 
   Token initExpr;
   if (fToken == kAssign) {
@@ -2497,43 +2538,71 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
       errorf(pos, E_MissingRHExpr, "no value in var init");
   }
 
-  Token vardefExpr;
-  vardefExpr << defToken;
-  if (tagToken.isSet())
-    vardefExpr << tagToken;
 
-  vardefExpr << symbolToken;
+  TokenVector result;
 
-  if (type.isSet())
-    vardefExpr << colonToken << type;
+  Token initValueSym;
+  if (leftHands.size() > 1) {
+    if (initExpr == kSymbol) {
+      initValueSym = initExpr;
+    }
+    else {
+      initValueSym = Token::newUniqueSymbolToken(symbolToken.srcpos(), "value");
 
-  if (tagToken == Parser::configToken) {
-    if (fEvaluateExprs) {
-      if (!initExpr.isSet()) {
-        error(symbolToken.srcpos(), E_DefNoInitValue,
-              ( String("Config variable '") + symbolToken +
-                "' without default value") );
+      Token multiInitValueToken;
+      multiInitValueToken << defToken;
+      if (tagToken.isSet())
+        multiInitValueToken << tagToken;
 
-        // if no default value is given assume ''
-        initExpr = Token(symbolToken.srcpos(), kString, "");
-        if (!assignToken.isSet())
-          assignToken = Token(symbolToken.srcpos(), kAssign);
-      }
-      fParser->configVarRegistry()->registerValue(symbolToken.idValue(),
-                                                  evaluateConfigExpr(initExpr));
-      // even if we have to evaluate the config var expression, we have to
-      // keep the constructed expr since config-vars can be used like
-      // normal const-vars by code
+      multiInitValueToken << initValueSym << assignToken << initExpr;
+      result.push_back(multiInitValueToken);
     }
   }
 
-  if (docString.isSet())
-    vardefExpr << docString;
 
-  if (initExpr.isSet())
-    vardefExpr << assignToken << initExpr;
+  for (size_t i = 0; i < leftHands.size(); i++) {
+    Token vardefExpr = leftHands[i];
+    Token vardefSym = leftHandSyms[i];
 
-  return vardefExpr;
+    Token effInitExpr;
+    if (leftHands.size() > 1) {
+      assert(initValueSym.isSet());
+      effInitExpr << Token(vardefSym.srcpos(), "slice")
+                  << ( Token(vardefSym.srcpos(), kParanOpen, kParanClose)
+                       << initValueSym
+                       << Token(vardefSym.srcpos(), kComma)
+                       << Token(initExpr.srcpos(), kInt, (int)i) );
+    }
+    else
+      effInitExpr = initExpr;
+
+    if (tagToken == Parser::configToken) {
+      if (fEvaluateExprs) {
+        if (!effInitExpr.isSet()) {
+          error(vardefSym.srcpos(), E_DefNoInitValue,
+                ( String("Config variable '") + symbolToken +
+                  "' without default value") );
+
+          // if no default value is given assume ''
+          effInitExpr = Token(vardefSym.srcpos(), kString, "");
+          if (!assignToken.isSet())
+            assignToken = Token(vardefSym.srcpos(), kAssign);
+        }
+        fParser->configVarRegistry()->registerValue(vardefSym.idValue(),
+                                                    evaluateConfigExpr(effInitExpr));
+        // even if we have to evaluate the config var expression, we have to
+        // keep the constructed expr since config-vars can be used like
+        // normal const-vars by code
+      }
+    }
+
+    if (effInitExpr.isSet())
+      vardefExpr << assignToken << effInitExpr;
+
+    result.push_back(vardefExpr);
+  }
+
+  return result;
 }
 
 
@@ -2804,7 +2873,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 }
 
 
-Token
+TokenVector
 FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
 {
   assert(fToken == kSymbol);
@@ -2820,17 +2889,18 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal)
     Token expr= parseMakeMacroCall(macroName, dummyArgs, macro,
                                    true /* parseParams */, isLocal,
                                    kNonScopedDef);
-    return expr;
+    return expr.toTokenVector();
   }
   else
   {
     nextToken();
     if (fToken == kParanOpen)
-      return parseFunctionDef(defToken, Token(), symToken, isLocal);
+      return parseFunctionDef(defToken, Token(), symToken, isLocal).toTokenVector();
 
     return parseVarDef2(defToken, Token(), symToken, isLocal);
   }
-  return Token();
+
+  return TokenVector();
 }
 
 
@@ -3633,7 +3703,7 @@ FirstPass::parseMacroDef(const Token& defToken)
 }
 
 
-Token
+TokenVector
 FirstPass::parseDef(bool isLocal, ScopeType scope)
 {
   Token defToken = fToken;
@@ -3642,54 +3712,54 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
   switch (scope) {
   case kInTypeDef:
     if (fToken == Parser::genericToken) {
-      return parseGenericFunctionDef(defToken, isLocal);
+      return parseGenericFunctionDef(defToken, isLocal).toTokenVector();
     }
     else {
       error(fToken.srcpos(), E_UnexpDefInClass,
             ( String("unexpected definition type '") + fToken.toString()
               + "'in class") );
-      return scanUntilTopExprAndResume();
+      return scanUntilTopExprAndResume().toTokenVector();
     }
     break;
 
   case kInClassDef:
     if (fToken == Parser::slotToken) {
-      return parseSlotDef(defToken);
+      return parseSlotDef(defToken).toTokenVector();
     }
     else if (fToken == Parser::genericToken) {
-      return parseGenericFunctionDef(defToken, isLocal);
+      return parseGenericFunctionDef(defToken, isLocal).toTokenVector();
     }
     else {
       error(fToken.srcpos(), E_UnexpDefInClass,
             ( String("unexpected definition type '") + fToken.toString()
               + "'in class") );
-      return scanUntilTopExprAndResume();
+      return scanUntilTopExprAndResume().toTokenVector();
     }
     break;
 
   case kNonScopedDef:
     if (fToken == Parser::typeToken) {
-      return parseTypeDef(defToken, false, isLocal);
+      return parseTypeDef(defToken, false, isLocal).toTokenVector();
     }
     else if (fToken == Parser::classToken) {
-      return parseTypeDef(defToken, true, isLocal);
+      return parseTypeDef(defToken, true, isLocal).toTokenVector();
     }
     else if (fToken == Parser::aliasToken) {
-      return parseAliasDef(defToken, isLocal);
+      return parseAliasDef(defToken, isLocal).toTokenVector();
     }
     else if (fToken == Parser::slotToken) {
       errorf(fToken.srcpos(), E_SlotNotInClassDef,
              "slot definitions only allowed in class defs.");
-      return scanUntilTopExprAndResume();
+      return scanUntilTopExprAndResume().toTokenVector();
     }
     else if (fToken == Parser::enumToken) {
-      return parseEnumDef(defToken, isLocal);
+      return parseEnumDef(defToken, isLocal).toTokenVector();
     }
     else if (fToken == Parser::measureToken) {
-      return parseMeasure(defToken, isLocal);
+      return parseMeasure(defToken, isLocal).toTokenVector();
     }
     else if (fToken == Parser::unitToken) {
-      return parseUnit(defToken, isLocal);
+      return parseUnit(defToken, isLocal).toTokenVector();
     }
     else if (fToken == Parser::constToken ||
              fToken == Parser::fluidToken ||
@@ -3697,65 +3767,65 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
       return parseVarDef(defToken, fToken, isLocal);
     }
     else if (fToken == Parser::genericToken) {
-      return parseGenericFunctionDef(defToken, isLocal);
+      return parseGenericFunctionDef(defToken, isLocal).toTokenVector();
     }
     else if (fToken == Parser::charToken) {
-      return parseCharDef(defToken);
+      return parseCharDef(defToken).toTokenVector();
     }
     else if (fToken == Parser::macroToken) {
-      return parseMacroDef(defToken);
+      return parseMacroDef(defToken).toTokenVector();
     }
     else if (fToken == kSymbol)
       return parseFunctionOrVarDef(defToken, isLocal);
     else {
       errorf(fToken.srcpos(), E_DefInitUnexpToken,
              "Bad init value: %s", (const char*)StrHelper(fToken.toString()));
-      return scanUntilTopExprAndResume();
+      return scanUntilTopExprAndResume().toTokenVector();
     }
     break;
   }
 
-  return Token();
+  return TokenVector();
 }
 
 
-Token
+TokenVector
 FirstPass::parseTop(ScopeType scope)
 {
   if (fToken == kModuleId) {
-    return parseModule();
+    return parseModule().toTokenVector();
   }
   else if (fToken == kExportId) {
-    return parseExport();
+    return parseExport().toTokenVector();
   }
   else if (fToken == kImportId) {
-    return parseImport();
+    return parseImport().toTokenVector();
   }
   else if (fToken == kDefId) {
     return parseDef(false, scope);
   }
   else if (fToken == kWhenId) {
-    return parseWhen(true, scope);
+    return parseWhen(true, scope).toTokenVector();
   }
   else if (fToken == kExtendId) {
-    return parseExtend(scope);
+    return parseExtend(scope).toTokenVector();
   }
   else if (fToken == kOnId) {
     if (scope == kInClassDef)
-      return parseOn(kInClassDef);
+      return parseOn(kInClassDef).toTokenVector();
     else {
       errorf(fToken.srcpos(), E_UnexpectedToken, "Unexpected 'on' expr");
-      return scanUntilTopExprAndResume();
+      return scanUntilTopExprAndResume().toTokenVector();
     }
   }
   else {
     errorf(fToken.srcpos(), E_UnexpectedToken,
            "Unexpected top expression: %s",
            (const char*)StrHelper(fToken.toString()));
-    return scanUntilTopExprAndResume();
+    return scanUntilTopExprAndResume().toTokenVector();
   }
 
-  return Token();
+  return TokenVector();
 }
 
 
@@ -3771,8 +3841,8 @@ FirstPass::parse()
 
     nextToken();
     while (fToken != kEOF) {
-      Token n = parseTop(kNonScopedDef);
-      if (n.isSet())
+      TokenVector n = parseTop(kNonScopedDef);
+      if (!n.empty())
         seq << n;
     }
   }
@@ -4093,7 +4163,7 @@ namespace heather {
       if (!pass->parseFunctionsParamsFull(&params,
                                           kParanOpen, endTokenType,
                                           true /* autoCompleteType */,
-                                          true /* exceptEmptyList */,
+                                          true /* acceptEmptyList */,
                                           false /* skipFirst */,
                                           false /* don't eat last */)) {
         return false;
@@ -4280,14 +4350,14 @@ FirstPass::parseExprStream(TokenVector* result, bool isTopLevel,
       return true;
 
     SrcPos pos = fToken.srcpos();
-    Token expr;
+    TokenVector exprs;
     if (isTopLevel)
-      expr = parseTop(scopeType);
+      exprs = parseTop(scopeType);
     else
-      expr = parseExpr();
+      exprs = parseExpr().toTokenVector();
 
-    if (expr.isSet())
-      result->push_back(expr);
+    if (!exprs.empty())
+      result->insert(result->end(), exprs.begin(), exprs.end());
     else {
       errorf(pos, E_UnexpectedToken,
              "unexpected token while scanning macro replacement: %s",
