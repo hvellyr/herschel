@@ -1777,12 +1777,12 @@ values.  An enumeration type inherit from a base type; this is not
 necessarily, as in C or C++, an integer.
 
 The values of an enumeration are symbols in the same namespace as
-functions or variables, i.e.@ two enumerations in the same module can
-have the same symbolic name as value.  When refering to enumeration
-values the value's symbolic name is to be used.  Enumeration does not
-form a special module or namespace.
+functions or variables, i.e.@ two enumerations in the same module
+can't have the same symbolic name as value.  When refering to
+enumeration values the value's symbolic name is to be used.  The
+enumeration type itself does not form a special module or namespace.
 
-Enumeration can be used to specialize methods.
+Enumeration type can be used to specialize methods.
 
 @example
 module xgrafix
@@ -1797,7 +1797,7 @@ def enum Colors : Keyword
   yellow = #yellow
 @}
 
-def enum MidiController : (Ordinal in 0 .. 127)
+def enum MidiController : Ordinal
 @{
   bank-select    = 0
   modulation     = 1
