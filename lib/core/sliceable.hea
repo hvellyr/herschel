@@ -44,8 +44,9 @@ def type Sliceable<K, E>
   def generic slice(obj @ 'S, key @ K) : 'E
       where S isa Sliceable<K, E> ...
       ~ Returns the element from @var{obj} at position @var{key}.  It may
-      be an error if @var{key} points to non-existing element or
-      (depending on the implementing class) out of bounds of @var{obj}. ~
+      be an error if @var{key} points to an non-existing element or
+      (depending on the implementing class) is out of bounds of
+      @var{obj}. ~
 }
 
 
@@ -56,13 +57,28 @@ def type OrderedSliceable<K, E> : Sliceable<K, E>
   def generic slice(obj @ 'S, from @ K, to @ K) : 'T
       where S isa OrderedSliceable<K, E>,
             T isa OrderedSliceable<K, E> ...
-      ~ Returns a new ordered sliceable instance (probably of different
+      ~ Returns a new ordered sliceable (probably of different
       type than @var{obj}) containing the elements from @var{from} to
       @var{to} exclusive, i.e. [@var{from}, @var{to}).
 
       An @type{OutOfBoundsException} should be raised when either
       @var{from} or @var{to} are too large.  When @var{from} is >= @var{to}
       the resulting sliceable is empty. ~
+
+  def generic slice*(obj @ 'S, from @ K) : 'T
+      where S isa OrderedSliceable<K, E>,
+            T isa OrderedSliceable<K, E> ...
+      ~ Returns a new ordered sliceable (probably of different type than
+      @var{obj}) containing all elements from @var{from} to the last
+      element in @var{obj} (inclusive).
+
+      If @var{obj} supports a @func{num-items} method this is can be
+      implemented as:
+
+      @example
+      def slice*(obj, from)
+        obj.slice(from, from + obj.num-items)
+      @end example ~
 }
 
 
