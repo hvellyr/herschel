@@ -46,43 +46,23 @@ Language and ideas:
   - notation for classes and types.  This is required if you need to pass a
     first-class class into a function.
 
-  - Redesign accessing items from enum types.  Parsing as Enum.item does
-    not work, since this would require symboltables during parsing (how to
-    distinguish between param.func and Enum.item ?).  Idea: Maybe use a new
-    item-operator ::? E.g. Enum::item.
 
-    Instead of saying Colors.red or Colors::red say red'Colors.
-
-    Or:
-
-      def enum A : Int { a, b, c }
-
-    =>
-      def type A : (Int in 0..2)
-      module A {
-        export public (*)
-        def const a : A = 0
-        def const b : A = 1
-        def const c : A = 2
-      }
-
-    than you can use
-
-      read(a)
-
-    or (if a leads to conflicts):
-
-      read(A|a)
+  - Group export for enum values.  Export an enum type automatically
+    exports its defined value items:
 
     Additional I like to see:
 
-      export public (A|*)
+      def enum X { a b c d }
+      export public (X)
 
-    i.e. export all symbols from sub-module A (that I can see here) to public.
+      =>
+
+      export public (X a b c d)
+
 
 
   - structs ?  Contrary to classes do not support inheritance, but provide
-    fixed layout.
+    fixed (and controlled) layout.
 
   - Think about non-gc objects.
 
@@ -105,20 +85,12 @@ Language and ideas:
 
     to document that a function does not let exceptions through.
 
-  - Think about: all objects are passed by value (i.e. even for vectors);
-    values passed to spawned functions are actually copied, otherwise
-    internal refcounted.  It is possible to explicitely use references:
+  - Embedding of C/C++ fragments.  Like this:
 
-      def f(a : ^Int, b : ^Vector<Octet>)
-
-    Note this, of course, would require to write all typical oo-functions
-    as
-
-      def generic f(self @ ^MyType, ...)
-
-    if the function is to be non-const.
-
-  - Embedding of C/C++ fragments
+    extern ("C") {
+      void foo();
+      int bar(int argc, char** argv);
+    }
 
 
 Documentation
@@ -133,6 +105,7 @@ Documentation
 
   - Rewrite the "def xxx" to the new deffn-form-example style.
 
+  - document call-by-value, reference types.
 
 
 Bootstrap compiler
