@@ -8,10 +8,6 @@
 
 #include "numbers.h"
 
-#if defined(UNITTESTS)
-#  include <iostream>
-#endif
-
 using namespace heather;
 
 
@@ -51,10 +47,26 @@ Rational::operator>(const Rational& other) const
 
 
 bool
+Rational::operator>=(const Rational& other) const
+{
+  return (fNumerator * other.fDenominator -
+          other.fNumerator * fDenominator >= 0);
+}
+
+
+bool
 Rational::operator<(const Rational& other) const
 {
   return (fNumerator * other.fDenominator -
           other.fNumerator * fDenominator < 0);
+}
+
+
+bool
+Rational::operator<=(const Rational& other) const
+{
+  return (fNumerator * other.fDenominator -
+          other.fNumerator * fDenominator <= 0);
 }
 
 
@@ -114,10 +126,112 @@ Rational::exponent(int exp) const
 }
 
 
+//------------------------------------------------------------------------------
+
 #if defined(UNITTESTS)
+
+#include <UnitTest++.h>
+#include <iostream>
+
 std::ostream& heather::operator<<(std::ostream& os, const Rational& rat)
 {
   os << rat.numerator() << "/" << rat.denominator();
   return os;
 }
+
+SUITE(RationalNumber)
+{
+  TEST(ctor)
+  {
+    CHECK_EQUAL(Rational().numerator(), 0);
+    CHECK_EQUAL(Rational().denominator(), 1);
+
+    CHECK_EQUAL(Rational(0, 1), Rational());
+
+    Rational r(42, 11);
+    CHECK_EQUAL(r.numerator(), 42);
+    CHECK_EQUAL(r.denominator(), 11);
+
+    CHECK_EQUAL(Rational(r), r);
+  }
+
+  TEST(assign)
+  {
+    Rational r(42, 11);
+    r = Rational(123, 17);
+    CHECK_EQUAL(r.denominator(), 17);
+    CHECK_EQUAL(r.numerator(), 123);
+  }
+
+
+  TEST(compare)
+  {
+    CHECK(Rational(5, 4) > Rational(4, 4));
+    CHECK(Rational(5, 4) >= Rational(4, 4));
+    CHECK(Rational(4, 4) >= Rational(4, 4));
+
+    CHECK(Rational(4, 4) < Rational(5, 4));
+    CHECK(Rational(4, 4) <= Rational(5, 4));
+    CHECK(Rational(4, 4) <= Rational(4, 4));
+
+    CHECK(Rational(4, 4) == Rational(4, 4));
+    CHECK(Rational(4, 4) != Rational(5, 4));
+  }
+
+
+  TEST(toreal)
+  {
+    CHECK_EQUAL(Rational(22, 11).toReal(), 2.0);
+  }
+
+
+  TEST(add)
+  {
+    CHECK_EQUAL(Rational(5, 4) + Rational(2, 4), Rational(7, 4));
+    CHECK_EQUAL(Rational(-5, 4) + Rational(2, 4), Rational(-3, 4));
+    CHECK_EQUAL(Rational(2, 4) + Rational(-5, 4), Rational(-3, 4));
+    CHECK_EQUAL(Rational(7, 9) + Rational(11, 4), Rational(127, 36));
+
+    CHECK_EQUAL(Rational() + Rational(11, 4), Rational(11, 4));
+  }
+
+
+  TEST(minus)
+  {
+    CHECK_EQUAL(Rational(5, 4) - Rational(2, 4), Rational(3, 4));
+    CHECK_EQUAL(Rational(-5, 4) - Rational(2, 4), Rational(-7, 4));
+    CHECK_EQUAL(Rational(2, 4) - Rational(-5, 4), Rational(7, 4));
+    CHECK_EQUAL(Rational(7, 9) - Rational(11, 4), Rational(-71, 36));
+  }
+
+
+  TEST(multiply)
+  {
+    CHECK_EQUAL(Rational(5, 4) * Rational(2, 4), Rational(10, 16));
+    CHECK_EQUAL(Rational(-5, 4) * Rational(2, 4), Rational(-10, 16));
+    CHECK_EQUAL(Rational(2, 4) * Rational(-5, 4), Rational(-10, 16));
+
+    CHECK_EQUAL(Rational(7, 9) * Rational(11, 4), Rational(77, 36));
+  }
+
+
+  TEST(devide)
+  {
+    CHECK_EQUAL(Rational(5, 4) / Rational(2, 4), Rational(20, 8));
+    CHECK_EQUAL(Rational(-5, 4) / Rational(2, 4), Rational(-20, 8));
+    CHECK_EQUAL(Rational(2, 4) / Rational(-5, 4), Rational(8, -20));
+
+    CHECK_EQUAL(Rational(7, 9) / Rational(11, 4), Rational(28, 99));
+  }
+
+
+  TEST(exponent)
+  {
+    CHECK_EQUAL(Rational(42, 11).exponent(0), Rational(1, 1));
+    CHECK_EQUAL(Rational(5, 4).exponent(3), Rational(125, 64));
+
+    CHECK_EQUAL(Rational(5, 4).exponent(-3), Rational(64, 125));
+  }
+}
+
 #endif
