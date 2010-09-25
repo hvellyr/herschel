@@ -3098,9 +3098,9 @@ Return multiple values as constant array:
 @example
 def treefold(f : Bool) : (Int, Char, Bool)
   if (f)
-    return #[100, \a, true]
+    #[100, \a, true]
   else
-    return #[0, \0, false]
+    #[0, \0, false]
 @end example
 
 Number of values and types must match of course.
@@ -3137,7 +3137,7 @@ It is also possible to unwrapped a vector or array directly into
 multiple variables:
 
 @example
-def f(val : Array)
+def f(val : Any[])
   let x, y, z = val
 @end example
 
@@ -3145,7 +3145,7 @@ Such expressions will fail if @code{val} has less or more elements than
 3, so it may be better to write:
 
 @example
-def f(val : Array)
+def f(val : Any[])
   let x, y, z = val[0 .. 3]
 @end example
 
