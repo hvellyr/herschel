@@ -1310,7 +1310,7 @@ FirstPass::parseSlice(const Token& expr)
   }
   else {
     Token idx = parseExpr();
-    
+
     if (fToken != kBracketClose)
       errorf(fToken.srcpos(), E_MissingBracketClose, "expected ']'");
     else
@@ -2480,10 +2480,13 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
   std::vector<Token> leftHands;
   std::vector<Token> leftHandSyms;
 
+  Token ellipsisToken;
   bool isDone = false;
   while (!isDone) {
     Token colonToken;
     Token type;
+    
+    assert(!ellipsisToken.isSet());
 
     if (fToken == kColon) {
       colonToken = fToken;
@@ -2494,6 +2497,11 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
         errorf(pos, E_MissingType, "type expression expected");
         type = Token(pos, kSymbol, "Any");
       }
+    }
+
+    if (fToken == kEllipsis) {
+      ellipsisToken = fToken;
+      nextToken();
     }
 
     Token docString = parseOptDocString();
@@ -2515,6 +2523,12 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
     leftHandSyms.push_back(sym);
 
     if (fToken == kComma) {
+      if (ellipsisToken.isSet()) {
+        errorf(fToken.srcpos(), E_InvalidRestParam,
+               "Rest var declaration must be last in sequence");
+        return scanUntilTopExprAndResume().toTokenVector();
+      }
+
       nextToken();
       if (fToken != kSymbol) {
         errorf(fToken.srcpos(), E_MissingDefName, "Missing name");
@@ -2567,7 +2581,12 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
     Token effInitExpr;
     if (leftHands.size() > 1) {
       assert(initValueSym.isSet());
-      effInitExpr << Token(vardefSym.srcpos(), "slice")
+
+      const char* funcName = ( i == leftHands.size() - 1 && ellipsisToken.isSet()
+                               ? "slice*"
+                               : "slice" );
+        
+      effInitExpr << Token(vardefSym.srcpos(), funcName)
                   << ( Token(vardefSym.srcpos(), kParanOpen, kParanClose)
                        << initValueSym
                        << Token(vardefSym.srcpos(), kComma)
