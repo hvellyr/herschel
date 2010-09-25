@@ -577,7 +577,7 @@ FirstPass::parseArrayExtend(const Token& baseType)
     Token idxExpr;
     if (fToken != kBracketClose) {
       SrcPos idxPos = fToken.srcpos();
-      idxExpr = parseExpr();
+      idxExpr = parseExpr(false);
       if (!idxExpr.isSet())
         errorf(idxPos, E_UnexpectedToken, "expected index expression");
       else
@@ -614,7 +614,7 @@ FirstPass::parseConstraintExtend(const Token& baseType)
     Token op = fToken;
     nextToken();
 
-    Token constExpr = parseExpr();
+    Token constExpr = parseExpr(false);
     if ( !(constExpr.isLit() || constExpr.isSymbol() ||
            constExpr.isConstRange()))
     {
@@ -751,7 +751,7 @@ namespace heather
 
     bool operator() (FirstPass* pass, Token& result)
     {
-      Token expr = pass->parseExpr();
+      Token expr = pass->parseExpr(false);
 
       if (!expr.isSet()) {
         pass->scanUntilNextParameter();
@@ -770,7 +770,7 @@ namespace heather
           Token mapToken = pass->fToken;
           pass->nextToken();
 
-          Token toValue = pass->parseExpr();
+          Token toValue = pass->parseExpr(false);
           if (!toValue.isSet()) {
             errorf(mapToken.srcpos(), E_MissingRHExpr,
                    "'->' requires a second expression");
@@ -816,7 +816,7 @@ namespace heather
   {
     bool operator() (FirstPass* pass, Token& result)
     {
-      Token n = pass->parseExpr();
+      Token n = pass->parseExpr(false);
       if (n.isSet())
         result << n;
       else {
@@ -858,7 +858,7 @@ FirstPass::parseIf()
   SrcPos paranPos = fToken.srcpos();
   nextToken();
 
-  Token test = parseExpr();
+  Token test = parseExpr(false);
   if (fToken != kParanClose) {
     errorf(fToken.srcpos(), E_ParamMissParanClose,
            "Syntax error, missing ')'");
@@ -866,7 +866,7 @@ FirstPass::parseIf()
   else
     nextToken();
 
-  Token consequent = parseExpr();
+  Token consequent = parseExpr(false);
 
   Token result;
   result << ifToken;
@@ -883,7 +883,7 @@ FirstPass::parseIf()
     Token elseToken = fToken;
     nextToken();
 
-    Token alternate = parseExpr();
+    Token alternate = parseExpr(false);
 
     result << elseToken << alternate;
   }
@@ -983,7 +983,7 @@ FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
         nextToken();
 
         SrcPos pos = fToken.srcpos();
-        Token initExpr = parseExpr();
+        Token initExpr = parseExpr(false);
         if (!initExpr.isSet())
           errorf(pos, E_MissingRHExpr, "no value in keyed argument");
         else {
@@ -1134,7 +1134,7 @@ FirstPass::parseOn(ScopeType scopeType)
 
     TokenVector params;
     if (parseFunctionsParams(&params)) {
-      Token body = parseExpr();
+      Token body = parseExpr(false);
 
       if (!ignoreStmt && body.isSet())
         return Token() << tagToken << keyToken
@@ -1182,7 +1182,7 @@ FirstPass::parseAnonFun()
       returnType = Token(fToken.srcpos(), kSymbol, "Any");
     }
 
-    Token body = parseExpr();
+    Token body = parseExpr(false);
     if (body.isSet())
       return Token() << funcToken
                      << ( Token(paranPos, kParanOpen, kParanClose)
@@ -1204,7 +1204,7 @@ namespace heather
         Token key = pass->fToken;
         pass->nextToken();
 
-        Token val = pass->parseExpr();
+        Token val = pass->parseExpr(false);
         if (!val.isSet()) {
           errorf(pass->fToken.srcpos(), E_UnexpectedToken,
                  "Unexpected token while parsing function keyed argument's expr:",
@@ -1216,7 +1216,7 @@ namespace heather
         result << val;
       }
       else {
-        Token val = pass->parseExpr();
+        Token val = pass->parseExpr(false);
         if (!val.isSet()) {
           errorf(pass->fToken.srcpos(), E_UnexpectedToken,
                  "unexpected token while parsing function arguments: ",
@@ -1309,7 +1309,7 @@ FirstPass::parseSlice(const Token& expr)
     return Token() << expr << Token(startPos, kBracketOpen, kBracketClose);
   }
   else {
-    Token idx = parseExpr();
+    Token idx = parseExpr(false);
 
     if (fToken != kBracketClose)
       errorf(fToken.srcpos(), E_MissingBracketClose, "expected ']'");
@@ -1364,7 +1364,7 @@ FirstPass::parseAccess(const Token& expr)
 Token
 FirstPass::parseGroup()
 {
-  Token expr = parseExpr();
+  Token expr = parseExpr(true);
   if (fToken != kParanClose) {
     errorf(fToken.srcpos(), E_MissingParanClose, "expected closing ')'");
   }
@@ -1420,7 +1420,7 @@ FirstPass::parseExprListUntilBrace(TokenVector* result,
     else {
       Token before = fToken;
       SrcPos startPos = fToken.srcpos();
-      Token expr = parseExpr();
+      Token expr = parseExpr(true);
 
       if (!expr.isSet()) {
         error(startPos, E_UnexpectedToken,
@@ -1491,7 +1491,7 @@ namespace heather
         pass->nextToken();
       }
 
-      Token body = pass->parseExpr();
+      Token body = pass->parseExpr(true);
       if (body.isSet()) {
         if (mapToReq)
           result.push_back(mapToToken);
@@ -1548,7 +1548,7 @@ namespace heather
             return false;
           }
           else {
-            Token test = pass->parseExpr();
+            Token test = pass->parseExpr(false);
             if (test.isSet()) {
               pattern.push_back(test);
 
@@ -1737,7 +1737,7 @@ namespace heather
       Token inToken = pass->fToken;
       pass->nextToken();
 
-      Token collToken = pass->parseExpr();
+      Token collToken = pass->parseExpr(false);
       if (!collToken.isSet()) {
         error(pass->fToken.srcpos(), E_MissingRHExpr,
               String("unexpected token: ") + pass->fToken.toString());
@@ -1768,7 +1768,7 @@ namespace heather
       Token assignToken = pass->fToken;
       pass->nextToken();
 
-      Token iterator = pass->parseExpr();
+      Token iterator = pass->parseExpr(false);
       if (!iterator.isSet()) {
         error(pass->fToken.srcpos(), E_MissingRHExpr,
               String("unexpected token: ") + pass->fToken.toString());
@@ -1827,7 +1827,8 @@ namespace heather
             SrcPos op1Srcpos = pass->fToken.srcpos();
 
             if (op1 != kOpInvalid) {
-              Token expr = pass->parseExprRec(first, op1, op1Srcpos);
+              Token expr = pass->parseExprRec(first.toTokenVector(), op1,
+                                              op1Srcpos, false);
               if (expr.isSet()) {
                 result << expr;
                 return true;
@@ -1840,12 +1841,13 @@ namespace heather
           }
 
           error(pass->fToken.srcpos(), E_UnexpectedToken,
-                String("unexpected token in for clause (1): ") + pass->fToken.toString());
+                String("unexpected token in for clause (1): ") +
+                pass->fToken.toString());
           pass->scanUntilNextParameter();
         }
       }
       else {
-        Token expr = pass->parseExpr();
+        Token expr = pass->parseExpr(false);
         if (expr.isSet()) {
           result << expr;
           return true;
@@ -1881,7 +1883,7 @@ FirstPass::parseFor()
                 kParanOpen, kParanClose, true, E_BadParameterList,
                 args, "for-clauses", false);
 
-  Token body = parseExpr();
+  Token body = parseExpr(true);
 
   Token elseToken;
   Token alternate;
@@ -1889,7 +1891,7 @@ FirstPass::parseFor()
     elseToken = fToken;
     nextToken();
 
-    alternate = parseExpr();
+    alternate = parseExpr(false);
   }
 
   if (body.isSet()) {
@@ -2024,18 +2026,71 @@ FirstPass::makeAssignToken(const Token& expr1, const Token& expr2,
                            const SrcPos& op1Srcpos) const
 {
   if (expr1.isSymFuncall()) {
-    // rename the function call in expr1 to name! and append expr2 as last
+    // rename the function call in expr to name! and append expr2 as last
     // parameter to expr1's parameter list
     return Token() << Token(expr1[0].srcpos(), expr1[0].idValue() + "!")
                    << ( Token(op1Srcpos, kParanOpen, kParanClose)
-                        << expr1.children()
+                        << expr1[1].children()
                         << Token(op1Srcpos, kComma)
                         << expr2 );
   }
+  else {
+    return Token() << expr1
+                   << Token(op1Srcpos, kAssign)
+                   << expr2;
+  }
+}
 
-  return Token() << expr1
-                 << Token(op1Srcpos, kAssign)
-                 << expr2;
+
+Token
+FirstPass::makeAssignToken(const TokenVector& exprs, const Token& expr2,
+                           const SrcPos& op1Srcpos,
+                           bool hasRest) const
+{
+  if (exprs.size() > 1) {
+    Token block = Token(op1Srcpos, kBraceOpen, kBraceClose);
+
+    Token tempSymToken = Token::newUniqueSymbolToken(op1Srcpos, "value");
+    block << ( Token() << Token(op1Srcpos, kLetId)
+               << tempSymToken
+               << Token(op1Srcpos, kAssign)
+               << expr2 );
+
+    for (size_t i = 0; i < exprs.size(); i++) {
+      const Token& expr = exprs[i];
+
+      const char* funcName = ( i == exprs.size() - 1 && hasRest
+                               ? "slice*"
+                               : "slice" );
+      Token sliceExpr = Token() << Token(op1Srcpos, funcName)
+                                << ( Token(op1Srcpos, kParanOpen, kParanClose)
+                                     << tempSymToken
+                                     << Token(op1Srcpos, kComma)
+                                     << Token(op1Srcpos, kInt, (int)i) );
+      Token retv;
+      if (expr.isSymFuncall()) {
+        // rename the function call in expr to name! and append expr2 as last
+        // parameter to expr1's parameter list
+        retv = Token() << Token(expr[0].srcpos(), expr[0].idValue() + "!")
+                       << ( Token(op1Srcpos, kParanOpen, kParanClose)
+                            << expr[1].children()
+                            << Token(op1Srcpos, kComma)
+                            << sliceExpr );
+      }
+      else {
+        retv = Token() << expr
+                       << Token(op1Srcpos, kAssign)
+                       << sliceExpr;
+      }
+
+      block << retv;
+    }
+
+    return block;
+  }
+
+  assert(exprs.size() == 1);
+  return makeAssignToken(exprs[0], expr2, op1Srcpos);
 }
 
 
@@ -2152,13 +2207,24 @@ FirstPass::isOpWeightAbove(OperatorType op1, OperatorType op2) const
 
 
 Token
-FirstPass::parseExprRec(const Token& expr1,
-                        OperatorType op1, const SrcPos& op1Srcpos)
+FirstPass::parseExprRec(const TokenVector& exprs,
+                        OperatorType op1, const SrcPos& op1Srcpos,
+                        bool hasRest)
 {
-  if (op1 == kOpInvalid)
-    return expr1;
+  assert(exprs.size() > 0);
+
+  if (op1 == kOpInvalid) {
+    if (exprs.size() > 1)
+      errorf(exprs[0].srcpos(), E_OrphanedMultiValue,
+             "Multiple variables without assign");
+    if (hasRest)
+      errorf(exprs[0].srcpos(), E_OrphanedRestInd,
+             "Multiple variables (rest notation) without assign");
+    return exprs[0];
+  }
 
   nextToken();
+
   SrcPos before2ndPos = fToken.srcpos();
   Token expr2 = parseAtomicExpr();
   OperatorType op2 = tokenTypeToOperator(fToken.tokenType());
@@ -2166,39 +2232,75 @@ FirstPass::parseExprRec(const Token& expr1,
 
   if (!expr2.isSet()) {
     errorf(before2ndPos, E_MissingRHExpr, "no right hand expression");
-    return expr1;
+    return exprs[0];
   }
 
   if (op2 == kOpInvalid) {
-    if (op1 == kOpAssign)
-      return makeAssignToken(expr1, expr2, op1Srcpos);
-    else
-      return Token() << expr1
+    if (op1 == kOpAssign) {
+      return makeAssignToken(exprs, expr2, op1Srcpos, hasRest);
+    }
+    else {
+      if (exprs.size() > 1) {
+        errorf(exprs[0].srcpos(), E_BadLHExpr,
+               "Multiple left hand variables only allowed with assignments.");
+        return Token();
+      }
+      return Token() << exprs[0]
                      << Token(op1Srcpos, operatorToTokenType(op1))
                      << expr2;
+    }
   }
   else {
+    if (exprs.size() > 1) {
+      errorf(exprs[0].srcpos(), E_BadLHExpr,
+             "Multiple left hand variables only allowed with assignments.");
+      return Token();
+    }
+
     if (!isRightOperator(op1) && isOpWeightAbove(op1, op2))
-      return parseExprRec(makeBinaryToken(expr1, op1, expr2, op1Srcpos),
+      return parseExprRec(makeBinaryToken(exprs[0], op1,
+                                          expr2, op1Srcpos).toTokenVector(),
                           op2,
-                          op2Srcpos);
+                          op2Srcpos, false);
     else
-      return makeBinaryToken(expr1, op1, parseExprRec(expr2, op2, op2Srcpos),
+      return makeBinaryToken(exprs[0], op1,
+                             parseExprRec(expr2.toTokenVector(),
+                                          op2, op2Srcpos, false),
                              op1Srcpos);
   }
 }
 
 
 Token
-FirstPass::parseExpr()
+FirstPass::parseExpr(bool acceptComma)
 {
   Token expr1 = parseAtomicExpr();
   if (expr1.isSet()) {
+    TokenVector exprs;
+    bool hasRest = false;
+
+    exprs.push_back(expr1);
+
+    if (acceptComma) {
+      while (fToken == kComma) {
+        nextToken();
+
+        Token expr2 = parseAtomicExpr();
+        if (expr2.isSet())
+          exprs.push_back(expr2);
+      }
+
+      if (fToken == kEllipsis) {
+        hasRest = true;
+        nextToken();
+      }
+    }
+
     OperatorType op1 = tokenTypeToOperator(fToken.tokenType());
     SrcPos op1Srcpos = fToken.srcpos();
 
     if (op1 != kOpInvalid)
-      return parseExprRec(expr1, op1, op1Srcpos);
+      return parseExprRec(exprs, op1, op1Srcpos, hasRest);
   }
   return expr1;
 }
@@ -2237,7 +2339,7 @@ FirstPass::parseTopOrExprList(bool isTopLevel, ScopeType scope)
     TokenVector exprs = parseTop(scope);
     return exprs.empty() ? Token() : ( Token() << exprs );
   }
-  return parseExpr();
+  return parseExpr(false);
 }
 
 
@@ -2275,7 +2377,7 @@ FirstPass::scanBlock(bool isTopLevel, ScopeType scope)
   if (isTopLevel)
     parseTop(scope);
   else
-    parseExpr();
+    parseExpr(true);
   return true;
 }
 
@@ -2311,7 +2413,7 @@ FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
     SrcPos paranPos = fToken.srcpos();
     nextToken();
 
-    Token test = parseExpr();
+    Token test = parseExpr(false);
     if (fToken != kParanClose) {
       errorf(fToken.srcpos(), E_ParamMissParanClose, "missing ')'");
       if (fToken == kBraceOpen) {
@@ -2547,7 +2649,7 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
     nextToken();
 
     SrcPos pos = fToken.srcpos();
-    initExpr = parseExpr();
+    initExpr = parseExpr(false);
     if (!initExpr.isSet())
       errorf(pos, E_MissingRHExpr, "no value in var init");
   }
@@ -2721,7 +2823,7 @@ FirstPass::parseWhereClause()
     {
       nextToken();
 
-      Token constrExpr = parseExpr();
+      Token constrExpr = parseExpr(false);
       if (constrExpr.isSet()) {
         if (delayedCommaToken.isSet()) {
           constraints.push_back(delayedCommaToken);
@@ -2855,7 +2957,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       docString = parseOptDocString();
 
       if (isLocal) {
-        body = parseExpr();
+        body = parseExpr(false);
         if (!body.isSet()) {
           errorf(bodyPos, E_MissingBody, "expected function body");
           return Token();
@@ -3161,7 +3263,7 @@ FirstPass::parseSlotDef(const Token& defToken)
     nextToken();
 
     SrcPos pos = fToken.srcpos();
-    initExpr = parseExpr();
+    initExpr = parseExpr(false);
     if (!initExpr.isSet())
       errorf(pos, E_MissingRHExpr, "no value in var init");
   }
@@ -3317,7 +3419,7 @@ FirstPass::parseUnit(const Token& defToken, bool isLocal)
   Token docString = parseOptDocString();
 
   SrcPos bodyPos = fToken.srcpos();
-  Token body = parseExpr();
+  Token body = parseExpr(false);
   if (!body.isSet()) {
     errorf(bodyPos, E_MissingBody, "expected unit def function body");
     return Token();
@@ -3362,7 +3464,7 @@ namespace heather
         Token assignToken = pass->fToken;
         pass->nextToken();
 
-        Token value = pass->parseExpr();
+        Token value = pass->parseExpr(false);
         if (value.isSet()) {
           resultValue.push_back(assignToken);
           resultValue.push_back(value);
@@ -4069,7 +4171,7 @@ namespace heather {
                        SyntaxTreeNode* followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
-      Token expr = pass->parseExpr();
+      Token expr = pass->parseExpr(false);
       if (!expr.isSet()) {
         errorf(pos, E_MacroParamMismatch,
                "Macro parameter %s requires expression",
@@ -4373,7 +4475,7 @@ FirstPass::parseExprStream(TokenVector* result, bool isTopLevel,
     if (isTopLevel)
       exprs = parseTop(scopeType);
     else
-      exprs = parseExpr().toTokenVector();
+      exprs = parseExpr(true).toTokenVector();
 
     if (!exprs.empty())
       result->insert(result->end(), exprs.begin(), exprs.end());

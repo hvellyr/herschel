@@ -51,6 +51,8 @@ namespace heather
     E_UnitExpected        = 0x0108,
     E_UnknownSymbolDomain = 0x0109,
     E_UndefinedUnit       = 0x010a,
+    E_OrphanedMultiValue  = 0x010b,
+    E_OrphanedRestInd     = 0x010c,
 
     // def parsing
     E_Redefinition        = 0x4000,
@@ -117,6 +119,7 @@ namespace heather
 
     // expressions
     E_MissingRHExpr       = 0x4400,
+    E_BadLHExpr           = 0x4401,
 
     // select, match
     E_BadPatternList      = 0x4401,

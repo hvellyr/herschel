@@ -95,12 +95,12 @@ namespace heather
     Token parseMatch();
     Token parseFor();
 
-    Token parseExpr();
+    Token parseExpr(bool acceptComma);
     Token parseAtomicExpr();
     Token parseUnitNumber(const Token& token);
     Token parseExplicitTypedNumber(const Token& token);
-    Token parseExprRec(const Token& expr1, OperatorType op1,
-                       const SrcPos& op1Srcpos);
+    Token parseExprRec(const TokenVector& exprs, OperatorType op1,
+                       const SrcPos& op1Srcpos, bool hasRest);
 
     Token parseTypeSpec(bool onlyNestedConstraints);
     Token parseSimpleType(const Token& baseType, bool nextIsParsedYet = false);
@@ -136,8 +136,10 @@ namespace heather
     Token makeBinaryToken(const Token& expr1, OperatorType op1,
                           const Token& expr2,
                           const SrcPos& op1Srcpos) const;
-    Token makeAssignToken(const Token& expr1, const Token& expr2,
+    Token makeAssignToken(const Token& exprs, const Token& expr2,
                           const SrcPos& op1Srcpos) const;
+    Token makeAssignToken(const TokenVector& exprs, const Token& expr2,
+                          const SrcPos& op1Srcpos, bool hasRest) const;
 
     bool isRightOperator(OperatorType op1) const;
     bool isOpWeightAbove(OperatorType op1, OperatorType op2) const;

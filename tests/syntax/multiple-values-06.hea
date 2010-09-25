@@ -1,0 +1,2 @@
+def foo(o)
+  o.name, o.surname, o.gender = foo2()
