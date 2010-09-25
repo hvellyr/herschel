@@ -116,6 +116,7 @@ Bootstrap compiler
   - replace the UnitConstant node by a proper Measure() ctor call.  Apply
     the unit transformation inplace (if simple enough).  Register
     unit-transform calls as special functions.
+
   - enum:
     - construct proper enum constraint type
     - check that init values match the base type
@@ -129,9 +130,5 @@ Bootstrap compiler
   - continue with pexpreval (add the missing operators)
 
     - types for count variables in for loop
-
-    - access values from enums as Enum::item
-
-  - unittests for Rational() class.
 
   - docstrings in pass2 -> extracted documentation
