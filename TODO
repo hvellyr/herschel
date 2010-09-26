@@ -110,9 +110,6 @@ Documentation
 
 Bootstrap compiler
 
-  - Implement last missing pass1 stuff
-    - what's about multiple return values?  Spe?  Pass1?  Pass2?
-
   - replace the UnitConstant node by a proper Measure() ctor call.  Apply
     the unit transformation inplace (if simple enough).  Register
     unit-transform calls as special functions.
@@ -121,7 +118,6 @@ Bootstrap compiler
     - construct proper enum constraint type
     - check that init values match the base type
 
-  - access values from enums as Enum::item
   - extend macro parameter types (like ?a:type-spec)
 
   - macros
