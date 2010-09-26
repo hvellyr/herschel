@@ -1454,7 +1454,7 @@ FirstPass::parseBlock()
   else
     nextToken();
 
-  return Token(bosp, kBraceOpen, kBraceClose) << exprlist;
+  return wrapInBlock(bosp, exprlist);
 }
 
 
@@ -2322,7 +2322,7 @@ FirstPass::parseTopExprUntilBrace(TokenVector* result, ScopeType scope)
 }
 
 
-Token
+TokenVector
 FirstPass::parseTopOrExprList(bool isTopLevel, ScopeType scope)
 {
   if (isTopLevel) {
@@ -2333,13 +2333,32 @@ FirstPass::parseTopOrExprList(bool isTopLevel, ScopeType scope)
       TokenVector exprs;
       parseTopExprUntilBrace(&exprs, scope);
 
-      return Token(bracePos, kBraceOpen, kBraceClose) << exprs;
+      return exprs;
     }
 
     TokenVector exprs = parseTop(scope);
-    return exprs.empty() ? Token() : ( Token() << exprs );
+    return exprs;
   }
-  return parseExpr(false);
+  return parseExpr(false).toTokenVector();
+}
+
+
+Token
+FirstPass::multiExprsToBlock(const TokenVector& exprs)
+{
+  if (exprs.size() > 1)
+    return wrapInBlock(exprs[0].srcpos(), exprs);
+  else if (exprs.size() == 1)
+    return exprs[0];
+  else
+    return Token();
+}
+
+
+Token
+FirstPass::wrapInBlock(const SrcPos& srcpos, const TokenVector& exprs)
+{
+  return Token(srcpos, kBraceOpen, kBraceClose) << exprs;
 }
 
 
@@ -2463,7 +2482,7 @@ FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
 
   if (inclConsequent) {
     ValueSaver<bool> keep(fEvaluateExprs, inclConsequent);
-    consequent = parseTopOrExprList(isTopLevel, scope);
+    consequent = multiExprsToBlock(parseTopOrExprList(isTopLevel, scope));
   }
   else {
     if (!scanBlock(isTopLevel, scope))
@@ -2476,7 +2495,7 @@ FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
 
     if (inclAlternate) {
       ValueSaver<bool> keep(fEvaluateExprs, inclAlternate);
-      alternate = parseTopOrExprList(isTopLevel, scope);
+      alternate = multiExprsToBlock(parseTopOrExprList(isTopLevel, scope));
     }
     else {
       if (!scanBlock(isTopLevel, scope))
@@ -2533,7 +2552,7 @@ FirstPass::parseExtend(ScopeType scope)
   {
     ModuleHelper modHelper(this, modNameToken.idValue(), true);
 
-    code = parseTopOrExprList(true, scope);
+    code = wrapInBlock(fToken.srcpos(), parseTopOrExprList(true, scope));
   }
 
   if (code.isSet())
@@ -2967,7 +2986,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
         TokenVector bodyExprs;
         parseExprListUntilBrace(&bodyExprs, !isLocal, true);
 
-        body = Token(bodyPos, kBraceOpen, kBraceClose) << bodyExprs;
+        body = wrapInBlock(bodyPos, bodyExprs);
       }
     }
 
@@ -3196,13 +3215,13 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 
   Token docString = parseOptDocString();
 
-  Token requiredProtocol;
+  TokenVector requiredProtocols;
+  SrcPos bracePos;
   if (fToken == kBraceOpen) {
-    requiredProtocol = parseTopOrExprList(true, (isClass
-                                                 ? kInClassDef
-                                                 : kInTypeDef) );
-    if (!requiredProtocol.isSet())
-      return scanUntilTopExprAndResume();
+    bracePos = fToken.srcpos();
+    requiredProtocols = parseTopOrExprList(true, (isClass
+                                                  ? kInClassDef
+                                                  : kInTypeDef) );
   }
 
   Token result = Token() << defToken << tagToken << symToken;
@@ -3220,8 +3239,8 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
   if (docString.isSet())
     result << docString;
 
-  if (requiredProtocol.isSet())
-    result << requiredProtocol;
+  if (!requiredProtocols.empty())
+    result << wrapInBlock(bracePos, requiredProtocols);
 
   return result;
 }
