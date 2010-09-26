@@ -149,7 +149,9 @@ namespace heather
                                  bool endAtToplevelId,
                                  bool isLocal);
     void parseTopExprUntilBrace(TokenVector* result, ScopeType scope);
-    Token parseTopOrExprList(bool isTopLevel, ScopeType scope);
+    TokenVector parseTopOrExprList(bool isTopLevel, ScopeType scope);
+    Token multiExprsToBlock(const TokenVector& exprs);
+    Token wrapInBlock(const SrcPos& srcpos, const TokenVector& exprs);
 
     bool parseFunctionsParamsFull(TokenVector* exprlist,
                                   TokenType startToken, TokenType endToken,
