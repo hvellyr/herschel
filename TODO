@@ -1,5 +1,42 @@
 -*-org-*-
 
+Documentation
+
+  - Write nested modules section.
+
+  - rewrite exporting, visibility, and importing section
+
+  - Mention explicitely: no coercing.  Where?
+
+  - Write assignment section.
+
+  - Rewrite the "def xxx" to the new deffn-form-example style.
+
+  - document call-by-value, reference types.
+
+
+Bootstrap compiler
+
+  - replace the UnitConstant node by a proper Measure() ctor call.  Apply
+    the unit transformation inplace (if simple enough).  Register
+    unit-transform calls as special functions.
+
+  - enum:
+    - construct proper enum constraint type
+    - check that init values match the base type
+
+  - extend macro parameter types (like ?a:type-spec)
+
+  - macros
+    - subpatterns
+
+  - continue with pexpreval (add the missing operators)
+
+    - types for count variables in for loop
+
+  - docstrings in pass2 -> extracted documentation
+
+
 Language and ideas:
 
   - clearify: do we support multiple functions with the same base name but
@@ -93,38 +130,3 @@ Language and ideas:
     }
 
 
-Documentation
-
-  - Write nested modules section.
-
-  - rewrite exporting, visibility, and importing section
-
-  - Mention explicitely: no coercing.  Where?
-
-  - Write assignment section.
-
-  - Rewrite the "def xxx" to the new deffn-form-example style.
-
-  - document call-by-value, reference types.
-
-
-Bootstrap compiler
-
-  - replace the UnitConstant node by a proper Measure() ctor call.  Apply
-    the unit transformation inplace (if simple enough).  Register
-    unit-transform calls as special functions.
-
-  - enum:
-    - construct proper enum constraint type
-    - check that init values match the base type
-
-  - extend macro parameter types (like ?a:type-spec)
-
-  - macros
-    - subpatterns
-
-  - continue with pexpreval (add the missing operators)
-
-    - types for count variables in for loop
-
-  - docstrings in pass2 -> extracted documentation
