@@ -32,7 +32,7 @@ Bootstrap compiler
 
   - continue with pexpreval (add the missing operators)
 
-    - types for count variables in for loop
+  - types for count variables in for loop
 
   - docstrings in pass2 -> extracted documentation
 
