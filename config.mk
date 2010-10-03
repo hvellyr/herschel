@@ -29,6 +29,9 @@ TARGET_OSVER ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh -r)
 TARGET_OSFLV ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh -f)
 HEA_TARGET_DESC ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh)
 
+# OS_FLAGS = -DOS_$(TARGET_OS) -DARCH_$(TARGET_ARCH) -DOSFLAV_$(TARGET_OSFLV)
+OS_FLAGS = -DOS_$(TARGET_OS) -DARCH_$(TARGET_ARCH) # -DOSFLAV_$(TARGET_OSFLV)
+
 #CC = gcc
 #CXX = g++
 #MAKE = make
@@ -109,13 +112,11 @@ DEFS   += $(WX_CXXFLAGS)
 LIBS   += -lUnitTest++
 LDFLAGS += -L$(top_srcdir)/external/UnitTest++
 
-CFLAGS += $(CBUILDFLAG) $(CWARNING) \
-				  -DOS_$(TARGET_OS) -DARCH_$(TARGET_ARCH) -DOSFLAV_$(TARGET_OSFLV)
+CFLAGS += $(CBUILDFLAG) $(CWARNING) $(OS_FLAGS)
 CFLAGS += -I. -I$(top_srcdir)/build
 CFLAGS += $(DEFS) $(CADDS)
 
-CXXFLAGS += $(CBUILDFLAG) $(CWARNING) \
-				    -DOS_$(TARGET_OS) -DARCH_$(TARGET_ARCH) -DOSFLAV_$(TARGET_OSFLV)
+CXXFLAGS += $(CBUILDFLAG) $(CWARNING) $(OS_FLAGS)
 CXXFLAGS += -I. -I$(top_srcdir)/build
 CXXFLAGS += $(DEFS) $(CXXADDS)
 

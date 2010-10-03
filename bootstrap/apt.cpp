@@ -6,13 +6,29 @@
    All rights reserved.
 */
 
+#include "sysconf.h"
+
 #include <string.h>
 
 #include "apt.h"
 #include "strbuf.h"
 
+#include "llvm/Analysis/Verifier.h"
+#include "llvm/Constants.h"
+#include "llvm/DerivedTypes.h"
+#include "llvm/LLVMContext.h"
+#include "llvm/Module.h"
+#include "llvm/Support/IRBuilder.h"
+#include "llvm/Value.h"
+
+#include <string>
+#include <map>
+
 using namespace heather;
 
+
+static llvm::IRBuilder<> builder(llvm::getGlobalContext());
+static std::map<std::string, llvm::Value*> NamedValues;
 
 static void
 displayOpenTag(Port<Octet>* port, const char* tagName)
@@ -366,6 +382,13 @@ IntNode::clone() const
 }
 
 
+llvm::Value*
+IntNode::codegen()
+{
+  return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(32, fValue, true));
+}
+
+
 //----------------------------------------------------------------------------
 
 RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary,
@@ -391,6 +414,13 @@ RealNode*
 RealNode::clone() const
 {
   return new RealNode(fSrcPos, fValue, fIsImaginary, fType.clone());
+}
+
+
+llvm::Value*
+RealNode::codegen()
+{
+  return llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(fValue));
 }
 
 

@@ -8,7 +8,15 @@ top_srcdir=..
 
 include $(top_srcdir)/config.mk
 
-CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTest++/src
+LLVM_ROOT = $(top_srcdir)/external/llvm/
+
+LLVM_CPPFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --cppflags)
+LLVM_LDFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --ldflags --libs core)
+
+CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTest++/src \
+	$(LLVM_CPPFLAGS)
+
+LDFLAGS += $(LLVM_LDFLAGS)
 
 SOURCES =         \
 	apt.cpp         \
