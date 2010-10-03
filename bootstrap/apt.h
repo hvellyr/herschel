@@ -20,6 +20,11 @@
 #include "parsertypes.h"
 #include "type.h"
 
+namespace llvm
+{
+  class Value;
+}
+
 namespace heather
 {
   class AptNode;
@@ -145,6 +150,8 @@ namespace heather
             const Type& type);
     virtual IntNode* clone() const;
     virtual void display(Port<Octet>* port) const;
+
+    virtual llvm::Value* codegen();
   };
 
 
@@ -157,6 +164,8 @@ namespace heather
              const Type& type);
     virtual RealNode* clone() const;
     virtual void display(Port<Octet>* port) const;
+
+    virtual llvm::Value* codegen();
   };
 
 
