@@ -28,13 +28,13 @@ namespace llvm
 namespace heather
 {
   class AptNode;
+  class CodeGenerator;
+  class XmlRenderer;
+
 
   //--------------------------------------------------------------------------
 
   typedef std::vector<Ptr<AptNode> > NodeList;
-  typedef std::list<String> StringList;
-  typedef std::map<String, String> StringStringMap;
-
 
 
   //--------------------------------------------------------------------------
@@ -53,12 +53,16 @@ namespace heather
 
     virtual AptNode* clone() const = 0;
 
-    virtual void display(Port<Octet>* port) const = 0;
+    virtual void render(XmlRenderer* renderer) const = 0;
 
     virtual void appendNode(AptNode* node);
     virtual void appendNodes(const NodeList& nodes);
 
+    virtual llvm::Value* codegen(CodeGenerator* generator);
+
   protected:
+    friend class XmlRenderer;
+
     SrcPos   fSrcPos;
     NodeList fChildren;
   };
@@ -72,8 +76,10 @@ namespace heather
     StringNode(const SrcPos& srcpos, const String& value);
 
     virtual StringNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
   private:
+    friend class XmlRenderer;
+
     String fValue;
   };
 
@@ -86,8 +92,11 @@ namespace heather
     KeywordNode(const SrcPos& srcpos, const String& value);
 
     virtual KeywordNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
+
   private:
+    friend class XmlRenderer;
+
     String fValue;
   };
 
@@ -102,9 +111,12 @@ namespace heather
                const TypeVector& generics);
 
     virtual SymbolNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
 
   protected:
+    friend class XmlRenderer;
+
     String     fValue;
     TypeVector fGenerics;
   };
@@ -116,7 +128,7 @@ namespace heather
     ArraySymbolNode(const SrcPos& srcpos, const String& value);
 
     virtual ArraySymbolNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
   };
 
 
@@ -135,6 +147,9 @@ namespace heather
         fType(type)
     { }
 
+  public:
+    friend class XmlRenderer;
+
     T fValue;
     bool fIsImaginary;
     Type fType;
@@ -149,9 +164,9 @@ namespace heather
     IntNode(const SrcPos& srcpos, int value, bool isImaginary,
             const Type& type);
     virtual IntNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
 
-    virtual llvm::Value* codegen();
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator);
   };
 
 
@@ -163,9 +178,9 @@ namespace heather
     RealNode(const SrcPos& srcpos, double value, bool isImaginary,
              const Type& type);
     virtual RealNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
 
-    virtual llvm::Value* codegen();
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator);
   };
 
 
@@ -178,7 +193,8 @@ namespace heather
                  const Rational& value, bool isImaginary,
                  const Type& type);
     virtual RationalNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
   };
 
 
@@ -189,8 +205,12 @@ namespace heather
   public:
     CharNode(const SrcPos& srcpos, Char value);
     virtual CharNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
+
   private:
+    friend class XmlRenderer;
+
     Char fValue;
   };
 
@@ -202,8 +222,12 @@ namespace heather
   public:
     BoolNode(const SrcPos& srcpos, bool value);
     virtual BoolNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
+
   private:
+    friend class XmlRenderer;
+
     bool fValue;
   };
 
@@ -215,9 +239,12 @@ namespace heather
   public:
     UnitConstant(const SrcPos& srcpos, AptNode* value, const TypeUnit& unit);
     virtual UnitConstant* clone() const;
-    virtual void display(Port<Octet>* port) const;
 
+    virtual void render(XmlRenderer* renderer) const;
+  
   private:
+    friend class XmlRenderer;
+
     Ptr<AptNode> fValue;
     TypeUnit     fUnit;
   };
@@ -230,7 +257,8 @@ namespace heather
   public:
     CompileUnitNode(const SrcPos& srcpos);
     virtual CompileUnitNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
   };
 
 
@@ -248,6 +276,8 @@ namespace heather
     AptNode* initExpr() const;
 
   protected:
+    friend class XmlRenderer;
+
     String       fSymbolName;
     Type         fType;
     Ptr<AptNode> fInitExpr;
@@ -264,6 +294,8 @@ namespace heather
     AptNode* defNode() const;
 
   protected:
+    friend class XmlRenderer;
+
     Ptr<AptNode> fDefined;
   };
 
@@ -273,7 +305,8 @@ namespace heather
   public:
     LetNode(AptNode* node);
     virtual LetNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
   };
 
 
@@ -282,7 +315,8 @@ namespace heather
   public:
     DefNode(AptNode* node);
     virtual DefNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
   };
 
 
@@ -304,13 +338,16 @@ namespace heather
                const Type& type, AptNode* initExpr);
 
     virtual VardefNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
 
     bool isEnum() const;
     bool isConst() const;
     bool isConfig() const;
 
   private:
+    friend class XmlRenderer;
+
     VardefFlags fFlags;
   };
 
@@ -322,6 +359,7 @@ namespace heather
     kRestArg
   };
 
+
   class ParamNode : public BindingNode
   {
   public:
@@ -331,12 +369,15 @@ namespace heather
               const Type& type, AptNode* initExpr);
 
     virtual ParamNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
 
     ParamFlags flags() const;
     const String& key() const;
 
   private:
+    friend class XmlRenderer;
+
     String fKey;
     ParamFlags fFlags;
   };
@@ -353,6 +394,7 @@ namespace heather
     kAutoSlot       = 1 << 6,
   };
 
+
   class SlotdefNode : public BindingNode
   {
   public:
@@ -362,9 +404,12 @@ namespace heather
                 const Type& type, AptNode* initExpr);
 
     virtual SlotdefNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
 
   private:
+    friend class XmlRenderer;
+
     unsigned int fFlags;
   };
 
@@ -379,7 +424,8 @@ namespace heather
     { }
 
     virtual ArrayNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
   };
 
 
@@ -393,7 +439,8 @@ namespace heather
     { }
 
     virtual VectorNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
   };
 
 
@@ -407,7 +454,8 @@ namespace heather
     { }
 
     virtual DictNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+
+    virtual void render(XmlRenderer* renderer) const;
 
     void addPair(AptNode* key, AptNode* value);
   };
@@ -422,7 +470,7 @@ namespace heather
                AptNode* left, OperatorType op, AptNode* right);
 
     virtual BinaryNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
     OperatorType op() const;
     AptNode* left() const;
@@ -435,6 +483,8 @@ namespace heather
     bool isMapTo() const;
 
   private:
+    friend class XmlRenderer;
+
     Ptr<AptNode> fLeft;
     Ptr<AptNode> fRight;
     OperatorType fOp;
@@ -449,9 +499,11 @@ namespace heather
     NegateNode(const SrcPos& srcpos, AptNode* base);
 
     virtual NegateNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
   private:
+    friend class XmlRenderer;
+
     Ptr<AptNode> fBase;
   };
 
@@ -464,13 +516,15 @@ namespace heather
     RangeNode(const SrcPos& srcpos,
               AptNode* from, AptNode* to, AptNode* by);
     virtual RangeNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
     AptNode* from() const;
     AptNode* to() const;
     AptNode* by() const;
 
   private:
+    friend class XmlRenderer;
+
     Ptr<AptNode> fFrom;
     Ptr<AptNode> fTo;
     Ptr<AptNode> fBy;
@@ -485,9 +539,11 @@ namespace heather
     ThenWhileNode(const SrcPos& srcpos,
                   AptNode* first, AptNode* step, AptNode* test);
     virtual ThenWhileNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
   private:
+    friend class XmlRenderer;
+
     Ptr<AptNode> fFirst;
     Ptr<AptNode> fStep;
     Ptr<AptNode> fTest;
@@ -501,12 +557,14 @@ namespace heather
   public:
     AssignNode(const SrcPos& srcpos, AptNode* lvalue, AptNode* rvalue);
     virtual AssignNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
     AptNode* lvalue() const;
     AptNode* rvalue() const;
 
   private:
+    friend class XmlRenderer;
+
     Ptr<AptNode> fLValue;
     Ptr<AptNode> fRValue;
   };
@@ -521,7 +579,7 @@ namespace heather
            AptNode* test, AptNode* consequent, AptNode* alternate);
 
     virtual IfNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
     AptNode* test() const;
     AptNode* consequent() const;
@@ -530,6 +588,8 @@ namespace heather
     void setAlternate(AptNode* node);
 
   private:
+    friend class XmlRenderer;
+
     Ptr<AptNode> fTest;
     Ptr<AptNode> fConsequent;
     Ptr<AptNode> fAlternate;
@@ -544,13 +604,15 @@ namespace heather
     SelectNode(const SrcPos& srcpos, AptNode* test, AptNode* comparator);
 
     virtual SelectNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
     void addMapping(const NodeList& mappings, AptNode* consequent);
     void addMapping(AptNode* mapping, AptNode* consequent);
     void addElseMapping(AptNode* alternate);
 
   private:
+    friend class XmlRenderer;
+
     struct SelectMapping
     {
       SelectMapping(const NodeList& values, AptNode* consequent);
@@ -577,13 +639,15 @@ namespace heather
     MatchNode(const SrcPos& srcpos, AptNode* expr);
 
     virtual MatchNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
     void addMapping(const SrcPos& srcpos, const String& varName,
                     const Type& matchType,
                     AptNode* consequent);
 
   private:
+    friend class XmlRenderer;
+
     struct MatchMapping
     {
       MatchMapping(const SrcPos& srcpos, const String& varName,
@@ -613,9 +677,11 @@ namespace heather
            const String& key, const NodeList& params, AptNode* body);
 
     virtual OnNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
   private:
+    friend class XmlRenderer;
+
     String       fKey;
     NodeList     fParams;
     Ptr<AptNode> fBody;
@@ -629,7 +695,7 @@ namespace heather
   public:
     BlockNode(const SrcPos& srcpos);
     virtual BlockNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
   };
 
 
@@ -644,12 +710,14 @@ namespace heather
                  AptNode*        body);
 
     virtual FunctionNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
     const NodeList& params() const;
     const Type& retType() const;
 
   protected:
+    friend class XmlRenderer;
+
     NodeList     fParams;
     Type         fRetType;
     Ptr<AptNode> fBody;
@@ -660,6 +728,7 @@ namespace heather
     kFuncIsGeneric = 1 << 0,
     kFuncIsAbstract = 1 << 1,
   };
+
 
   class FuncDefNode : public FunctionNode
   {
@@ -672,13 +741,15 @@ namespace heather
                 AptNode*        body);
 
     virtual FuncDefNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
     const String& funcName() const;
     bool isGeneric() const;
     bool isAbstract() const;
 
   private:
+    friend class XmlRenderer;
+
     String       fSym;
     unsigned int fFlags;
   };
@@ -692,9 +763,11 @@ namespace heather
     ApplyNode(const SrcPos& srcpos, AptNode* base);
 
     virtual ApplyNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
   private:
+    friend class XmlRenderer;
+
     Ptr<AptNode> fBase;
   };
 
@@ -707,9 +780,11 @@ namespace heather
     KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value);
 
     virtual KeyargNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
   private:
+    friend class XmlRenderer;
+
     String       fKey;
     Ptr<AptNode> fValue;
   };
@@ -723,9 +798,11 @@ namespace heather
     WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body);
 
     virtual WhileNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
   private:
+    friend class XmlRenderer;
+
     Ptr<AptNode> fTest;
     Ptr<AptNode> fBody;
   };
@@ -745,9 +822,11 @@ namespace heather
              const NodeList& onExprs);
 
     virtual TypeNode* clone() const;
-    virtual void display(Port<Octet>* port) const;
+    virtual void render(XmlRenderer* renderer) const;
 
   private:
+    friend class XmlRenderer;
+
     String fTypeName;
     bool   fIsClass;
     NodeList fParams;

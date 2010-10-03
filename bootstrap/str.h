@@ -136,7 +136,6 @@ namespace heather
   std::ostream& operator<<(std::ostream& os, const String& str);
   std::ostream& operator<<(std::ostream& os, char c);
 #endif
-
 };
 
 #endif  // bootstrap_str_h

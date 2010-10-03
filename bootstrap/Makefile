@@ -20,6 +20,7 @@ LDFLAGS += $(LLVM_LDFLAGS)
 
 SOURCES =         \
 	apt.cpp         \
+	codegen.cpp     \
 	file.cpp        \
 	heather.cpp     \
 	log.cpp         \
@@ -45,10 +46,12 @@ SOURCES =         \
 	type.cpp        \
 	typeenum.cpp    \
 	typectx.cpp     \
-	valuesaver.cpp
+	valuesaver.cpp  \
+	xmlout.cpp
 
 HEADERS =         \
 	apt.h           \
+	codegen.h       \
 	common.h        \
 	errcodes.h      \
 	exception.h     \
@@ -79,7 +82,8 @@ HEADERS =         \
 	type.h          \
 	typeenum.h      \
 	typectx.h       \
-	valuesaver.h
+	valuesaver.h    \
+	xmlout.h
 
 
 # ifeq ($(TARGET_OS),mac)

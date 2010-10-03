@@ -16,6 +16,7 @@
 #include "properties.h"
 #include "scope.h"
 #include "tokenizer.h"
+#include "xmlout.h"
 
 using namespace heather;
 
@@ -154,10 +155,8 @@ Parser::parseImpl(Port<Char>* port, const String& srcName,
 
       Ptr<AptNode> apt = secondPass->parse(parsedExprs);
       if (doTrace && Properties::isTracePass2() && apt != NULL) {
-        Ptr<FilePort> stream = new FilePort(stdout);
-        display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
-        apt->display(stream);
-        displayln(stream, "");
+        Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+        out->render(apt);
       }
 
       // fState.fScope->dumpDebug();
