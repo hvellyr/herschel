@@ -105,6 +105,13 @@ StringNode::render(XmlRenderer* renderer) const
 }
 
 
+llvm::Value*
+StringNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 KeywordNode::KeywordNode(const SrcPos& srcpos, const String& value)
@@ -125,6 +132,13 @@ void
 KeywordNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+KeywordNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -152,10 +166,24 @@ SymbolNode::clone() const
 }
 
 
+std::string
+SymbolNode::string() const
+{
+  return std::string(StrHelper(fValue));
+}
+
+
 void
 SymbolNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+SymbolNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -177,6 +205,13 @@ void
 ArraySymbolNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+ArraySymbolNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -264,6 +299,13 @@ RationalNode::render(XmlRenderer* renderer) const
 }
 
 
+llvm::Value*
+RationalNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 CharNode::CharNode(const SrcPos& srcpos, Char value)
@@ -286,6 +328,13 @@ CharNode::render(XmlRenderer* renderer) const
 }
 
 
+llvm::Value*
+CharNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 BoolNode::BoolNode(const SrcPos& srcpos, bool value)
@@ -305,6 +354,13 @@ void
 BoolNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+BoolNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -333,6 +389,13 @@ UnitConstant::render(XmlRenderer* renderer) const
 }
 
 
+llvm::Value*
+UnitConstant::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
@@ -353,6 +416,13 @@ void
 CompileUnitNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+CompileUnitNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -392,6 +462,13 @@ LetNode::render(XmlRenderer* renderer) const
 }
 
 
+llvm::Value*
+LetNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 DefNode::DefNode(AptNode* node)
@@ -410,6 +487,13 @@ void
 DefNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+DefNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -444,7 +528,6 @@ BindingNode::initExpr() const
 {
   return fInitExpr;
 }
-
 
 
 //----------------------------------------------------------------------------
@@ -494,6 +577,13 @@ VardefNode::isEnum() const
 }
 
 
+llvm::Value*
+VardefNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 ParamNode::ParamNode(const SrcPos& srcpos,
@@ -537,6 +627,13 @@ ParamNode::key() const
 }
 
 
+llvm::Value*
+ParamNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 SlotdefNode::SlotdefNode(const SrcPos& srcpos,
@@ -563,6 +660,13 @@ SlotdefNode::render(XmlRenderer* renderer) const
 }
 
 
+llvm::Value*
+SlotdefNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 ArrayNode*
@@ -581,6 +685,13 @@ ArrayNode::render(XmlRenderer* renderer) const
 }
 
 
+llvm::Value*
+ArrayNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 VectorNode*
@@ -596,6 +707,13 @@ void
 VectorNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+VectorNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -624,6 +742,13 @@ DictNode::addPair(AptNode* key, AptNode* value)
   assert(value != NULL);
 
   appendNode(new BinaryNode(key->srcpos(), key, kOpMapTo, value));
+}
+
+
+llvm::Value*
+DictNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -697,6 +822,13 @@ BinaryNode::render(XmlRenderer* renderer) const
 }
 
 
+llvm::Value*
+BinaryNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 NegateNode::NegateNode(const SrcPos& srcpos, AptNode* base)
@@ -716,6 +848,13 @@ void
 NegateNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+NegateNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -766,6 +905,13 @@ RangeNode::by() const
 }
 
 
+llvm::Value*
+RangeNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //--------------------------------------------------------------------------
 
 ThenWhileNode::ThenWhileNode(const SrcPos& srcpos,
@@ -791,6 +937,13 @@ void
 ThenWhileNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+ThenWhileNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -831,6 +984,13 @@ void
 AssignNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+AssignNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -887,6 +1047,13 @@ void
 IfNode::setAlternate(AptNode* node)
 {
   fAlternate = node;
+}
+
+
+llvm::Value*
+IfNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -962,6 +1129,13 @@ SelectNode::SelectMapping::SelectMapping(const SelectMapping& other)
 }
 
 
+llvm::Value*
+SelectNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //------------------------------------------------------------------------------
 
 MatchNode::MatchNode(const SrcPos& srcpos, AptNode* expr)
@@ -1024,6 +1198,13 @@ MatchNode::MatchMapping::MatchMapping(const MatchMapping& other)
 }
 
 
+llvm::Value*
+MatchNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //------------------------------------------------------------------------------
 
 OnNode::OnNode(const SrcPos& srcpos,
@@ -1052,6 +1233,13 @@ OnNode::render(XmlRenderer* renderer) const
 }
 
 
+llvm::Value*
+OnNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 BlockNode::BlockNode(const SrcPos& srcpos)
@@ -1072,6 +1260,13 @@ void
 BlockNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+BlockNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -1115,6 +1310,13 @@ const Type&
 FunctionNode::retType() const
 {
   return fRetType;
+}
+
+
+llvm::Value*
+FunctionNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -1168,6 +1370,13 @@ FuncDefNode::funcName() const
 }
 
 
+llvm::Value*
+FuncDefNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 ApplyNode::ApplyNode(const SrcPos& srcpos, AptNode* base)
@@ -1189,6 +1398,13 @@ void
 ApplyNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+ApplyNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -1215,6 +1431,13 @@ KeyargNode::render(XmlRenderer* renderer) const
 }
 
 
+llvm::Value*
+KeyargNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 WhileNode::WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body)
@@ -1237,6 +1460,13 @@ void
 WhileNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
+}
+
+
+llvm::Value*
+WhileNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
 }
 
 
@@ -1276,3 +1506,12 @@ TypeNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
 }
+
+
+llvm::Value*
+TypeNode::codegen(CodeGenerator* generator)
+{
+  return generator->codegen(this);
+}
+
+
