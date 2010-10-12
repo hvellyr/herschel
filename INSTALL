@@ -24,7 +24,8 @@ Build on Mac OS X:
 
     $ mkdir $TMP_DIR/llvm-build
     $ cd $TMP_DIR/llvm-build
-    $ $LLVM_SRC_ROOT/configure 
+    $ $LLVM_SRC_ROOT/configure
+    $ make
 
   2. create a link to the build directory in $HEA_DIR/external and create a
      link:
