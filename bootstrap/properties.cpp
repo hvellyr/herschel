@@ -34,6 +34,8 @@ static bool sPass1Only = false;
 static String sOutdir;
 static Ptr<ConfigVarRegistry> sConfigVarRegistry;
 static StringVector sInputSearchPath;
+static CompileOutFormat sCompileOutFormat = kLLVM_IR;
+
 
 void
 Properties::setIsVerbose(bool value)
@@ -60,6 +62,20 @@ String
 Properties::outdir()
 {
   return sOutdir;
+}
+
+
+void
+Properties::setCompileOutFormat(CompileOutFormat format)
+{
+  sCompileOutFormat = format;
+}
+
+
+CompileOutFormat
+Properties::compileOutFormat()
+{
+  return sCompileOutFormat;
 }
 
 

@@ -58,7 +58,7 @@ namespace heather
     virtual void appendNode(AptNode* node);
     virtual void appendNodes(const NodeList& nodes);
 
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   protected:
     friend class XmlRenderer;
@@ -78,7 +78,7 @@ namespace heather
 
     virtual StringNode* clone() const;
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -96,7 +96,7 @@ namespace heather
 
     virtual KeywordNode* clone() const;
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -117,7 +117,7 @@ namespace heather
     virtual SymbolNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     std::string string() const;
 
@@ -137,7 +137,7 @@ namespace heather
 
     virtual ArraySymbolNode* clone() const;
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
   };
 
 
@@ -175,7 +175,7 @@ namespace heather
     virtual IntNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
   };
 
 
@@ -189,7 +189,7 @@ namespace heather
     virtual RealNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
   };
 
 
@@ -204,7 +204,7 @@ namespace heather
     virtual RationalNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
   };
 
 
@@ -217,7 +217,7 @@ namespace heather
     virtual CharNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -235,7 +235,7 @@ namespace heather
     virtual BoolNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -253,7 +253,7 @@ namespace heather
     virtual UnitConstant* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -272,7 +272,7 @@ namespace heather
     virtual CompileUnitNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
   };
 
 
@@ -287,6 +287,7 @@ namespace heather
 
   protected:
     friend class XmlRenderer;
+    friend class CodeGenerator;
 
     Ptr<AptNode> fDefined;
   };
@@ -299,7 +300,7 @@ namespace heather
     virtual LetNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
   };
 
 
@@ -310,7 +311,7 @@ namespace heather
     virtual DefNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
   };
 
 
@@ -329,6 +330,7 @@ namespace heather
 
   protected:
     friend class XmlRenderer;
+    friend class CodeGenerator;
 
     String       fSymbolName;
     Type         fType;
@@ -354,7 +356,7 @@ namespace heather
     virtual VardefNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     bool isEnum() const;
     bool isConst() const;
@@ -386,10 +388,12 @@ namespace heather
     virtual ParamNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     ParamFlags flags() const;
     const String& key() const;
+
+    bool isRestArg() const;
 
   private:
     friend class XmlRenderer;
@@ -422,7 +426,7 @@ namespace heather
     virtual SlotdefNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -443,7 +447,7 @@ namespace heather
     virtual ArrayNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
   };
 
 
@@ -459,7 +463,7 @@ namespace heather
     virtual VectorNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
   };
 
 
@@ -475,7 +479,7 @@ namespace heather
     virtual DictNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     void addPair(AptNode* key, AptNode* value);
   };
@@ -492,7 +496,7 @@ namespace heather
     virtual BinaryNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     OperatorType op() const;
     AptNode* left() const;
@@ -506,6 +510,7 @@ namespace heather
 
   private:
     friend class XmlRenderer;
+    friend class CodeGenerator;
 
     Ptr<AptNode> fLeft;
     Ptr<AptNode> fRight;
@@ -523,10 +528,11 @@ namespace heather
     virtual NegateNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
+    friend class CodeGenerator;
 
     Ptr<AptNode> fBase;
   };
@@ -542,7 +548,7 @@ namespace heather
     virtual RangeNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     AptNode* from() const;
     AptNode* to() const;
@@ -567,7 +573,7 @@ namespace heather
     virtual ThenWhileNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -587,7 +593,7 @@ namespace heather
     virtual AssignNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     AptNode* lvalue() const;
     AptNode* rvalue() const;
@@ -611,7 +617,7 @@ namespace heather
     virtual IfNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     AptNode* test() const;
     AptNode* consequent() const;
@@ -638,7 +644,7 @@ namespace heather
     virtual SelectNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     void addMapping(const NodeList& mappings, AptNode* consequent);
     void addMapping(AptNode* mapping, AptNode* consequent);
@@ -675,7 +681,7 @@ namespace heather
     virtual MatchNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     void addMapping(const SrcPos& srcpos, const String& varName,
                     const Type& matchType,
@@ -715,7 +721,7 @@ namespace heather
     virtual OnNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -735,7 +741,7 @@ namespace heather
     virtual BlockNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
   };
 
 
@@ -752,13 +758,14 @@ namespace heather
     virtual FunctionNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     const NodeList& params() const;
     const Type& retType() const;
 
   protected:
     friend class XmlRenderer;
+    friend class CodeGenerator;
 
     NodeList     fParams;
     Type         fRetType;
@@ -785,7 +792,7 @@ namespace heather
     virtual FuncDefNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     const String& funcName() const;
     bool isGeneric() const;
@@ -793,6 +800,7 @@ namespace heather
 
   private:
     friend class XmlRenderer;
+    friend class CodeGenerator;
 
     String       fSym;
     unsigned int fFlags;
@@ -809,7 +817,7 @@ namespace heather
     virtual ApplyNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -829,7 +837,7 @@ namespace heather
     virtual KeyargNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -849,7 +857,7 @@ namespace heather
     virtual WhileNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;
@@ -875,7 +883,7 @@ namespace heather
     virtual TypeNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator);
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
   private:
     friend class XmlRenderer;

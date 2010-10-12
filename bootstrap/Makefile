@@ -11,7 +11,7 @@ include $(top_srcdir)/config.mk
 LLVM_ROOT = $(top_srcdir)/external/llvm/
 
 LLVM_CPPFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --cppflags)
-LLVM_LDFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --ldflags --libs core)
+LLVM_LDFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --ldflags --libs) # core jit native)
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTest++/src \
 	$(LLVM_CPPFLAGS)

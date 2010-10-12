@@ -20,6 +20,13 @@ namespace heather
 
   typedef std::vector<String> StringVector;
 
+  enum CompileOutFormat
+  {
+    kNativeObject,
+    kLLVM_IR,
+    kLLVM_BC
+  };
+
   class Properties
   {
   public:
@@ -28,6 +35,9 @@ namespace heather
 
     static void setOutdir(const String& outdir);
     static String outdir();
+
+    static void setCompileOutFormat(CompileOutFormat format);
+    static CompileOutFormat compileOutFormat();
 
     static void setTrace(const String& key, bool value);
     static void setTraces(const String& argument);

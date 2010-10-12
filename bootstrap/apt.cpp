@@ -76,7 +76,7 @@ AptNode::appendNodes(const NodeList& nodes)
 
 
 llvm::Value*
-AptNode::codegen(CodeGenerator* generator)
+AptNode::codegen(CodeGenerator* generator) const
 {
   return NULL;
 }
@@ -106,7 +106,7 @@ StringNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-StringNode::codegen(CodeGenerator* generator)
+StringNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -136,7 +136,7 @@ KeywordNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-KeywordNode::codegen(CodeGenerator* generator)
+KeywordNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -181,7 +181,7 @@ SymbolNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-SymbolNode::codegen(CodeGenerator* generator)
+SymbolNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -209,7 +209,7 @@ ArraySymbolNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-ArraySymbolNode::codegen(CodeGenerator* generator)
+ArraySymbolNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -232,7 +232,7 @@ IntNode::clone() const
 
 
 llvm::Value*
-IntNode::codegen(CodeGenerator* generator)
+IntNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -269,7 +269,7 @@ RealNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-RealNode::codegen(CodeGenerator* generator)
+RealNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -300,7 +300,7 @@ RationalNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-RationalNode::codegen(CodeGenerator* generator)
+RationalNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -329,7 +329,7 @@ CharNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-CharNode::codegen(CodeGenerator* generator)
+CharNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -358,7 +358,7 @@ BoolNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-BoolNode::codegen(CodeGenerator* generator)
+BoolNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -390,7 +390,7 @@ UnitConstant::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-UnitConstant::codegen(CodeGenerator* generator)
+UnitConstant::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -420,7 +420,7 @@ CompileUnitNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-CompileUnitNode::codegen(CodeGenerator* generator)
+CompileUnitNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -463,7 +463,7 @@ LetNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-LetNode::codegen(CodeGenerator* generator)
+LetNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -491,7 +491,7 @@ DefNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-DefNode::codegen(CodeGenerator* generator)
+DefNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -578,7 +578,7 @@ VardefNode::isEnum() const
 
 
 llvm::Value*
-VardefNode::codegen(CodeGenerator* generator)
+VardefNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -620,6 +620,13 @@ ParamNode::flags() const
 }
 
 
+bool
+ParamNode::isRestArg() const
+{
+  return (fFlags & kRestArg) != 0;
+}
+
+
 const String&
 ParamNode::key() const
 {
@@ -628,7 +635,7 @@ ParamNode::key() const
 
 
 llvm::Value*
-ParamNode::codegen(CodeGenerator* generator)
+ParamNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -661,7 +668,7 @@ SlotdefNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-SlotdefNode::codegen(CodeGenerator* generator)
+SlotdefNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -686,7 +693,7 @@ ArrayNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-ArrayNode::codegen(CodeGenerator* generator)
+ArrayNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -711,7 +718,7 @@ VectorNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-VectorNode::codegen(CodeGenerator* generator)
+VectorNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -746,7 +753,7 @@ DictNode::addPair(AptNode* key, AptNode* value)
 
 
 llvm::Value*
-DictNode::codegen(CodeGenerator* generator)
+DictNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -823,7 +830,7 @@ BinaryNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-BinaryNode::codegen(CodeGenerator* generator)
+BinaryNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -852,7 +859,7 @@ NegateNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-NegateNode::codegen(CodeGenerator* generator)
+NegateNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -906,7 +913,7 @@ RangeNode::by() const
 
 
 llvm::Value*
-RangeNode::codegen(CodeGenerator* generator)
+RangeNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -941,7 +948,7 @@ ThenWhileNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-ThenWhileNode::codegen(CodeGenerator* generator)
+ThenWhileNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -988,7 +995,7 @@ AssignNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-AssignNode::codegen(CodeGenerator* generator)
+AssignNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1051,7 +1058,7 @@ IfNode::setAlternate(AptNode* node)
 
 
 llvm::Value*
-IfNode::codegen(CodeGenerator* generator)
+IfNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1130,7 +1137,7 @@ SelectNode::SelectMapping::SelectMapping(const SelectMapping& other)
 
 
 llvm::Value*
-SelectNode::codegen(CodeGenerator* generator)
+SelectNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1199,7 +1206,7 @@ MatchNode::MatchMapping::MatchMapping(const MatchMapping& other)
 
 
 llvm::Value*
-MatchNode::codegen(CodeGenerator* generator)
+MatchNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1234,7 +1241,7 @@ OnNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-OnNode::codegen(CodeGenerator* generator)
+OnNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1264,7 +1271,7 @@ BlockNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-BlockNode::codegen(CodeGenerator* generator)
+BlockNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1314,7 +1321,7 @@ FunctionNode::retType() const
 
 
 llvm::Value*
-FunctionNode::codegen(CodeGenerator* generator)
+FunctionNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1371,7 +1378,7 @@ FuncDefNode::funcName() const
 
 
 llvm::Value*
-FuncDefNode::codegen(CodeGenerator* generator)
+FuncDefNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1402,7 +1409,7 @@ ApplyNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-ApplyNode::codegen(CodeGenerator* generator)
+ApplyNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1432,7 +1439,7 @@ KeyargNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-KeyargNode::codegen(CodeGenerator* generator)
+KeyargNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1464,7 +1471,7 @@ WhileNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-WhileNode::codegen(CodeGenerator* generator)
+WhileNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
@@ -1509,7 +1516,7 @@ TypeNode::render(XmlRenderer* renderer) const
 
 
 llvm::Value*
-TypeNode::codegen(CodeGenerator* generator)
+TypeNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
