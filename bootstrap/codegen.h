@@ -10,6 +10,11 @@
 #define bootstrap_codegen_h
 
 #include "refcountable.h"
+#include "ptr.h"
+
+#include <map>
+#include <vector>
+#include <string>
 
 #include "llvm/Support/IRBuilder.h"
 
@@ -17,6 +22,9 @@ namespace llvm
 {
   class Value;
   class Module;
+  class BasicBlock;
+  class AllocaInst;
+  class FunctionPassManager;
 };
 
 
@@ -59,6 +67,10 @@ namespace heather
   class VectorNode;
   class WhileNode;
 
+  class String;
+
+  typedef std::vector<Ptr<AptNode> > NodeList;
+
 
   //----------------------------------------------------------------------------
 
@@ -68,9 +80,9 @@ namespace heather
     CodeGenerator();
     ~CodeGenerator();
 
-    void generateCode(AptNode* node);
+    bool compileToCode(const CompileUnitNode* node, const String& outputFile);
 
-    llvm::Value* codegenNode(AptNode* node);
+    llvm::Value* codegenNode(const AptNode* node);
 
     llvm::Value* codegen(const ApplyNode* node);
     llvm::Value* codegen(const ArrayNode* node);
@@ -109,8 +121,18 @@ namespace heather
     llvm::Value* codegen(const WhileNode* node);
 
   private:
+    llvm::FunctionType* createFunctionSignature(const FunctionNode* node);
+
+    void codegen(const NodeList& nl, llvm::BasicBlock* bb);
+
+    //-------- data members
+
     llvm::Module*     fModule;
     llvm::IRBuilder<> fBuilder;
+    llvm::FunctionPassManager* fOptPassManager;
+    llvm::AllocaInst *fCurrentValue;
+
+    std::map<std::string, llvm::AllocaInst*> fNamedValues;
   };
 };                              // namespace
 
