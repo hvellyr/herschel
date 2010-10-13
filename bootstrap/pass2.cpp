@@ -2098,7 +2098,7 @@ SecondPass::parseFor(const Token& expr)
   block->appendNodes(loopDefines);
 
   Ptr<AptNode> testNode;
-  bool nodeCount = 0;
+  int nodeCount = 0;
   for (size_t i = 0; i < testExprs.size(); i++) {
     if (nodeCount > 1) {
       Ptr<BinaryNode> prevBin = dynamic_cast<BinaryNode*>(testNode.obj());
