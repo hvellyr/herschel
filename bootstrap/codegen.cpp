@@ -50,9 +50,11 @@ CodeGenerator::CodeGenerator()
 
   // Create the JIT.  This takes ownership of the module.
   std::string errStr;
-  theExecutionEngine = llvm::EngineBuilder(fModule).setErrorStr(&errStr).setEngineKind(llvm::EngineKind::JIT).create();
+  theExecutionEngine = llvm::EngineBuilder(fModule).setErrorStr(&errStr)
+                                                   .setEngineKind(llvm::EngineKind::JIT)
+                                                   .create();
   if (!theExecutionEngine) {
-    fprintf(stderr, "Could not create ExecutionEngine: %s\n", errStr.c_str());
+    logf(kError, "Could not create ExecutionEngine: %s", errStr.c_str());
     exit(1);
   }
   fOptPassManager = new llvm::FunctionPassManager(fModule);
@@ -142,6 +144,7 @@ CodeGenerator::codegen(const RealNode* node)
 llvm::Value*
 CodeGenerator::codegen(const StringNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   return NULL;
 }
 
@@ -164,6 +167,7 @@ CodeGenerator::codegen(const SymbolNode* node)
 llvm::Value*
 CodeGenerator::codegen(const KeywordNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   return NULL;
 }
 
@@ -209,6 +213,7 @@ CodeGenerator::codegen(const ApplyNode* node)
 llvm::Value*
 CodeGenerator::codegen(const ArrayNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -217,6 +222,7 @@ CodeGenerator::codegen(const ArrayNode* node)
 llvm::Value*
 CodeGenerator::codegen(const ArraySymbolNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -225,6 +231,7 @@ CodeGenerator::codegen(const ArraySymbolNode* node)
 llvm::Value*
 CodeGenerator::codegen(const AssignNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -298,6 +305,7 @@ CodeGenerator::codegen(const BlockNode* node)
 llvm::Value*
 CodeGenerator::codegen(const BoolNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -306,6 +314,7 @@ CodeGenerator::codegen(const BoolNode* node)
 llvm::Value*
 CodeGenerator::codegen(const CharNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -370,6 +379,7 @@ CodeGenerator::codegen(const DefNode* node)
 llvm::Value*
 CodeGenerator::codegen(const DictNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -455,6 +465,7 @@ CodeGenerator::codegen(const FuncDefNode* node)
 llvm::Value*
 CodeGenerator::codegen(const FunctionNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -526,6 +537,7 @@ CodeGenerator::codegen(const IfNode* node)
 llvm::Value*
 CodeGenerator::codegen(const KeyargNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -563,6 +575,7 @@ CodeGenerator::codegen(const LetNode* node)
 llvm::Value*
 CodeGenerator::codegen(const MatchNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -585,6 +598,7 @@ CodeGenerator::codegen(const NegateNode* node)
 llvm::Value*
 CodeGenerator::codegen(const OnNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -593,6 +607,7 @@ CodeGenerator::codegen(const OnNode* node)
 llvm::Value*
 CodeGenerator::codegen(const ParamNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -601,6 +616,7 @@ CodeGenerator::codegen(const ParamNode* node)
 llvm::Value*
 CodeGenerator::codegen(const RangeNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -609,6 +625,7 @@ CodeGenerator::codegen(const RangeNode* node)
 llvm::Value*
 CodeGenerator::codegen(const RationalNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -617,6 +634,7 @@ CodeGenerator::codegen(const RationalNode* node)
 llvm::Value*
 CodeGenerator::codegen(const SelectNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -625,6 +643,7 @@ CodeGenerator::codegen(const SelectNode* node)
 llvm::Value*
 CodeGenerator::codegen(const SlotdefNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -633,6 +652,7 @@ CodeGenerator::codegen(const SlotdefNode* node)
 llvm::Value*
 CodeGenerator::codegen(const ThenWhileNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -641,6 +661,7 @@ CodeGenerator::codegen(const ThenWhileNode* node)
 llvm::Value*
 CodeGenerator::codegen(const TypeNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -649,6 +670,7 @@ CodeGenerator::codegen(const TypeNode* node)
 llvm::Value*
 CodeGenerator::codegen(const UnitConstant* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -657,6 +679,7 @@ CodeGenerator::codegen(const UnitConstant* node)
 llvm::Value*
 CodeGenerator::codegen(const VardefNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -665,6 +688,7 @@ CodeGenerator::codegen(const VardefNode* node)
 llvm::Value*
 CodeGenerator::codegen(const VectorNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
@@ -673,6 +697,7 @@ CodeGenerator::codegen(const VectorNode* node)
 llvm::Value*
 CodeGenerator::codegen(const WhileNode* node)
 {
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
 }
