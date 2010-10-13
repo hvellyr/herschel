@@ -11,6 +11,7 @@
 #include "apt.h"
 #include "log.h"
 #include "properties.h"
+#include "symbol.h"
 
 #include <vector>
 
@@ -30,10 +31,10 @@
 #include "llvm/Support/raw_ostream.h"
 
 
-//----------------------------------------------------------------------------
-
 using namespace heather;
 
+
+//----------------------------------------------------------------------------
 
 CodeGenerator::CodeGenerator()
   : fModule(NULL),
@@ -133,37 +134,45 @@ CodeGenerator::codegen(const CompileUnitNode* node)
     codegenNode(node->fChildren[i].obj());
 
   if (fHasMainFunc) {
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(llvm::Type::getInt32Ty(llvm::getGlobalContext()));
-    sign.push_back(llvm::Type::getInt8Ty(llvm::getGlobalContext())->getPointerTo()->getPointerTo());
-
-    llvm::FunctionType *ft =
-    llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
-                            sign,
-                            false);
-    assert(ft != NULL);
-
-    llvm::Function *func = llvm::Function::Create(ft,
-                                                  llvm::Function::ExternalLinkage,
-                                                  std::string("main"),
-                                                  fModule);
-
-    llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
-                                                  "entry", func);
-    fBuilder.SetInsertPoint(bb);
-
-    llvm::Function* appMainFunc = fModule->getFunction(std::string("app|main"));
-    assert(appMainFunc != NULL);
-
-    fBuilder.CreateRet(fBuilder.CreateCall(appMainFunc, "appMainTmp"));
-
-    verifyFunction(*func);
-
-    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-      fOptPassManager->run(*func);
+    createDefaultCMainFunc();
   }
 
   return NULL;
+}
+
+
+void
+CodeGenerator::createDefaultCMainFunc()
+{
+  std::vector<const llvm::Type*> sign;
+  sign.push_back(llvm::Type::getInt32Ty(llvm::getGlobalContext()));
+  sign.push_back(llvm::Type::getInt8Ty(llvm::getGlobalContext())->getPointerTo()->getPointerTo());
+
+  llvm::FunctionType *ft =
+  llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+                          sign,
+                          false);
+  assert(ft != NULL);
+
+  llvm::Function *func = llvm::Function::Create(ft,
+                                                llvm::Function::ExternalLinkage,
+                                                std::string("main"),
+                                                fModule);
+
+  llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+                                                  "entry", func);
+  fBuilder.SetInsertPoint(bb);
+
+  String appMainFuncNm = heather::mangleToC(String("app|main"));
+  llvm::Function* appMainFunc = fModule->getFunction(std::string(StrHelper(appMainFuncNm)));
+  assert(appMainFunc != NULL);
+
+  fBuilder.CreateRet(fBuilder.CreateCall(appMainFunc, "appMainTmp"));
+
+  verifyFunction(*func);
+
+  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+    fOptPassManager->run(*func);
 }
 
 
@@ -452,9 +461,11 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
   llvm::FunctionType* ft = createFunctionSignature(node);
   assert(ft != NULL);
 
+  String funcnm = heather::mangleToC(node->funcName());
+
   llvm::Function *func = llvm::Function::Create(ft,
                                                 llvm::Function::ExternalLinkage,
-                                                std::string(StrHelper(node->funcName())),
+                                                std::string(StrHelper(funcnm)),
                                                 fModule);
 
   llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
@@ -465,6 +476,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
   for (size_t pidx = 0; pidx < node->fParams.size(); pidx++, ++aiter) {
     const ParamNode* param = dynamic_cast<const ParamNode*>(node->fParams[pidx].obj());
 
+    // TODO ende name
     llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func, param->fSymbolName);
     fBuilder.CreateStore(aiter, stackSlot);
     fNamedValues[std::string(StrHelper(param->fSymbolName))] = stackSlot;
@@ -516,7 +528,9 @@ CodeGenerator::codegen(const ApplyNode* node)
   const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->fBase.obj());
   if (symNode != NULL) {
     // Look up the name in the global module table.
-    calleeFunc = fModule->getFunction(symNode->string());
+    String funcnm = heather::mangleToC(symNode->fValue);
+
+    calleeFunc = fModule->getFunction(std::string(StrHelper(funcnm)));
     if (calleeFunc == NULL) {
       errorf(node->srcpos(), 0, "Unknown function referenced");
       return NULL;

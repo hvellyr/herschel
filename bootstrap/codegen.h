@@ -126,6 +126,8 @@ namespace heather
 
     void codegen(const NodeList& nl, llvm::BasicBlock* bb);
 
+    void createDefaultCMainFunc();
+
     //-------- data members
 
     llvm::Module*     fModule;
