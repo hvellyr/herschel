@@ -126,28 +126,27 @@ CodeGenerator::codegenNode(const AptNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const IntNode* node)
+CodeGenerator::codegen(const CompileUnitNode* node)
 {
-  return llvm::ConstantInt::get(llvm::getGlobalContext(),
-                                llvm::APInt(32, node->fValue, true));
-}
-
-
-llvm::Value*
-CodeGenerator::codegen(const RealNode* node)
-{
-  return llvm::ConstantFP::get(llvm::getGlobalContext(),
-                               llvm::APFloat(node->fValue));
-}
-
-
-llvm::Value*
-CodeGenerator::codegen(const StringNode* node)
-{
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  for (size_t i = 0; i < node->fChildren.size(); i++)
+    codegenNode(node->fChildren[i].obj());
   return NULL;
 }
 
+
+//------------------------------------------------------------------------------
+
+static llvm::AllocaInst*
+createEntryBlockAlloca(llvm::Function *func, const String& name)
+{
+  llvm::IRBuilder<> tmp(&func->getEntryBlock(), func->getEntryBlock().begin());
+  return tmp.CreateAlloca(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+                          0,
+                          std::string(StrHelper(name)));
+}
+
+
+//------------------------------------------------------------------------------
 
 llvm::Value*
 CodeGenerator::codegen(const SymbolNode* node)
@@ -165,53 +164,7 @@ CodeGenerator::codegen(const SymbolNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const KeywordNode* node)
-{
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  return NULL;
-}
-
-
-
-
-llvm::Value*
-CodeGenerator::codegen(const ApplyNode* node)
-{
-  llvm::Function *calleeFunc = NULL;
-
-  const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->fBase.obj());
-  if (symNode != NULL) {
-    // Look up the name in the global module table.
-    calleeFunc = fModule->getFunction(symNode->string());
-    if (calleeFunc == NULL) {
-      errorf(node->srcpos(), 0, "Unknown function referenced");
-      return NULL;
-    }
-  }
-  else {
-    // TODO
-    assert(0);
-  }
-
-  // TODO: proper argument mismatch check
-  if (calleeFunc->arg_size() != node->fChildren.size()) {
-    errorf(node->srcpos(), 0, "Incorrect # arguments passed");
-    return NULL;
-  }
-
-  std::vector<llvm::Value*> argv;
-  for (unsigned i = 0, e = node->fChildren.size(); i != e; ++i) {
-    argv.push_back(codegenNode(node->fChildren[i]));
-    if (argv.back() == NULL)
-      return NULL;
-  }
-
-  return fBuilder.CreateCall(calleeFunc, argv.begin(), argv.end(), "calltmp");
-}
-
-
-llvm::Value*
-CodeGenerator::codegen(const ArrayNode* node)
+CodeGenerator::codegen(const ArraySymbolNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
@@ -220,7 +173,16 @@ CodeGenerator::codegen(const ArrayNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const ArraySymbolNode* node)
+CodeGenerator::codegen(const SlotdefNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  // TODO
+  return NULL;
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const VardefNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
@@ -238,35 +200,47 @@ CodeGenerator::codegen(const AssignNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const BinaryNode* node)
+CodeGenerator::codegen(const DefNode* node)
 {
-  llvm::Value *left = codegenNode(node->fLeft);
-  llvm::Value *right = codegenNode(node->fRight);
-  if (left == NULL || right == NULL)
-    return NULL;
-
-  switch (node->fOp) {
-  case kOpPlus:     return fBuilder.CreateAdd(left, right, "addtmp");
-  case kOpMinus:    return fBuilder.CreateSub(left, right, "subtmp");
-  case kOpMultiply: return fBuilder.CreateMul(left, right, "multmp");
-  case kOpLess:
-    return fBuilder.CreateICmpULT(left, right, "cmptmp");
-  default:
-    printf("invalid binary operator");
-    return NULL;
+  // TODO
+  const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->fDefined.obj());
+  if (func != NULL) {
+    return codegenNode(func);
   }
+  return NULL;
 }
 
 
-static llvm::AllocaInst*
-createEntryBlockAlloca(llvm::Function *func, const String& name)
+llvm::Value*
+CodeGenerator::codegen(const LetNode* node)
 {
-  llvm::IRBuilder<> tmp(&func->getEntryBlock(), func->getEntryBlock().begin());
-  return tmp.CreateAlloca(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
-                          0,
-                          std::string(StrHelper(name)));
+  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->fDefined.obj());
+  if (vardefNode != NULL) {
+    llvm::Value* initval = NULL;
+    if (vardefNode->fInitExpr != NULL) {
+      initval = codegenNode(vardefNode->fInitExpr);
+    }
+    else {
+      // TODO: init the temporary value.  We shouldn't have to care about this
+      // here.
+      initval = llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                       llvm::APInt(32, 0, true));
+    }
+
+    llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
+
+    llvm::AllocaInst *stackSlot = createEntryBlockAlloca(curFunction,
+                                                         vardefNode->fSymbolName);
+    fBuilder.CreateStore(initval, stackSlot);
+    fNamedValues[std::string(StrHelper(vardefNode->fSymbolName))] = stackSlot;
+
+    return initval;
+  }
+  return NULL;
 }
 
+
+//------------------------------------------------------------------------------
 
 void
 CodeGenerator::codegen(const NodeList& nl, llvm::BasicBlock* bb)
@@ -302,6 +276,8 @@ CodeGenerator::codegen(const BlockNode* node)
 }
 
 
+//------------------------------------------------------------------------------
+
 llvm::Value*
 CodeGenerator::codegen(const BoolNode* node)
 {
@@ -321,57 +297,51 @@ CodeGenerator::codegen(const CharNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const CompileUnitNode* node)
+CodeGenerator::codegen(const KeywordNode* node)
 {
-  for (size_t i = 0; i < node->fChildren.size(); i++)
-    codegenNode(node->fChildren[i].obj());
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   return NULL;
-//   using namespace llvm;
-
-//   std::vector<const llvm::Type*> sign2;
-//   sign2.push_back(llvm::Type::getDoubleTy(getGlobalContext()));
-//   sign2.push_back(llvm::Type::getInt32Ty(getGlobalContext()));
-
-//   FunctionType *ft2 = FunctionType::get(llvm::Type::getInt32Ty(getGlobalContext()), sign2, true);
-//   Function *f2 = llvm::Function::Create(ft2, Function::PrivateLinkage, "", fModule);
-
-//   BasicBlock *bb2 = BasicBlock::Create(getGlobalContext(), "entry2", f2);
-
-//   fBuilder.SetInsertPoint(bb2);
-//   fBuilder.CreateRet(fBuilder.CreateAdd(llvm::ConstantInt::get(getGlobalContext(),
-//                                                                APInt(32, 42, true)),
-//                                         llvm::ConstantInt::get(getGlobalContext(),
-//                                                                APInt(32, 11, true))));
-//   verifyFunction(*f2);
-
-//   printf("------------------------------------------\n");
-
-// // Make the function type:  double(double,double) etc.
-//   std::vector<const llvm::Type*> sign(0, llvm::Type::getDoubleTy(getGlobalContext()));
-//   FunctionType *ft = FunctionType::get(ft2->getPointerTo(), //llvm::Type::getInt32Ty(getGlobalContext()),
-//                                        sign, false);
-//   Function *f = llvm::Function::Create(ft, Function::ExternalLinkage, std::string("x"), fModule);
-
-
-// // Create a new basic block to start insertion into.
-//   BasicBlock *bb = BasicBlock::Create(getGlobalContext(), "entry", f);
-//   fBuilder.SetInsertPoint(bb);
-//   fBuilder.CreateRet(f2);
-
-//   verifyFunction(*f);
-
-//   return f;
 }
 
 
 llvm::Value*
-CodeGenerator::codegen(const DefNode* node)
+CodeGenerator::codegen(const IntNode* node)
 {
+  return llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                llvm::APInt(32, node->fValue, true));
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const RealNode* node)
+{
+  return llvm::ConstantFP::get(llvm::getGlobalContext(),
+                               llvm::APFloat(node->fValue));
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const StringNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  return NULL;
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const RationalNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
-  const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->fDefined.obj());
-  if (func != NULL) {
-    return codegenNode(func);
-  }
+  return NULL;
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const ArrayNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  // TODO
   return NULL;
 }
 
@@ -384,6 +354,26 @@ CodeGenerator::codegen(const DictNode* node)
   return NULL;
 }
 
+
+llvm::Value*
+CodeGenerator::codegen(const VectorNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  // TODO
+  return NULL;
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const RangeNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  // TODO
+  return NULL;
+}
+
+
+//------------------------------------------------------------------------------
 
 llvm::FunctionType*
 CodeGenerator::createFunctionSignature(const FunctionNode* node)
@@ -472,6 +462,99 @@ CodeGenerator::codegen(const FunctionNode* node)
 
 
 llvm::Value*
+CodeGenerator::codegen(const ApplyNode* node)
+{
+  llvm::Function *calleeFunc = NULL;
+
+  const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->fBase.obj());
+  if (symNode != NULL) {
+    // Look up the name in the global module table.
+    calleeFunc = fModule->getFunction(symNode->string());
+    if (calleeFunc == NULL) {
+      errorf(node->srcpos(), 0, "Unknown function referenced");
+      return NULL;
+    }
+  }
+  else {
+    // TODO
+    assert(0);
+  }
+
+  // TODO: proper argument mismatch check
+  if (calleeFunc->arg_size() != node->fChildren.size()) {
+    errorf(node->srcpos(), 0, "Incorrect # arguments passed");
+    return NULL;
+  }
+
+  std::vector<llvm::Value*> argv;
+  for (unsigned i = 0, e = node->fChildren.size(); i != e; ++i) {
+    argv.push_back(codegenNode(node->fChildren[i]));
+    if (argv.back() == NULL)
+      return NULL;
+  }
+
+  return fBuilder.CreateCall(calleeFunc, argv.begin(), argv.end(), "calltmp");
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const KeyargNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  // TODO
+  return NULL;
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const ParamNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  // TODO
+  return NULL;
+}
+
+
+//------------------------------------------------------------------------------
+
+llvm::Value*
+CodeGenerator::codegen(const BinaryNode* node)
+{
+  llvm::Value *left = codegenNode(node->fLeft);
+  llvm::Value *right = codegenNode(node->fRight);
+  if (left == NULL || right == NULL)
+    return NULL;
+
+  switch (node->fOp) {
+  case kOpPlus:     return fBuilder.CreateAdd(left, right, "addtmp");
+  case kOpMinus:    return fBuilder.CreateSub(left, right, "subtmp");
+  case kOpMultiply: return fBuilder.CreateMul(left, right, "multmp");
+  case kOpLess:
+    return fBuilder.CreateICmpULT(left, right, "cmptmp");
+  default:
+    printf("invalid binary operator");
+    return NULL;
+  }
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const NegateNode* node)
+{
+  llvm::Value *base = codegenNode(node->fBase);
+  if (base == NULL)
+    return NULL;
+
+  return fBuilder.CreateMul(base,
+                            llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                                   llvm::APInt(32, (uint64_t)-1, true)),
+                            "negtmp");
+}
+
+
+//------------------------------------------------------------------------------
+
+llvm::Value*
 CodeGenerator::codegen(const IfNode* node)
 {
   llvm::Value *testValue = codegenNode(node->test());
@@ -535,63 +618,11 @@ CodeGenerator::codegen(const IfNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const KeyargNode* node)
-{
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
-  return NULL;
-}
-
-
-llvm::Value*
-CodeGenerator::codegen(const LetNode* node)
-{
-  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->fDefined.obj());
-  if (vardefNode != NULL) {
-    llvm::Value* initval = NULL;
-    if (vardefNode->fInitExpr != NULL) {
-      initval = codegenNode(vardefNode->fInitExpr);
-    }
-    else {
-      // TODO: init the temporary value.  We shouldn't have to care about this
-      // here.
-      initval = llvm::ConstantInt::get(llvm::getGlobalContext(),
-                                       llvm::APInt(32, 0, true));
-    }
-
-    llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-
-    llvm::AllocaInst *stackSlot = createEntryBlockAlloca(curFunction,
-                                                         vardefNode->fSymbolName);
-    fBuilder.CreateStore(initval, stackSlot);
-    fNamedValues[std::string(StrHelper(vardefNode->fSymbolName))] = stackSlot;
-
-    return initval;
-  }
-  return NULL;
-}
-
-
-llvm::Value*
 CodeGenerator::codegen(const MatchNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
   return NULL;
-}
-
-
-llvm::Value*
-CodeGenerator::codegen(const NegateNode* node)
-{
-  llvm::Value *base = codegenNode(node->fBase);
-  if (base == NULL)
-    return NULL;
-
-  return fBuilder.CreateMul(base,
-                            llvm::ConstantInt::get(llvm::getGlobalContext(),
-                                                   llvm::APInt(32, (uint64_t)-1, true)),
-                            "negtmp");
 }
 
 
@@ -605,43 +636,7 @@ CodeGenerator::codegen(const OnNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const ParamNode* node)
-{
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
-  return NULL;
-}
-
-
-llvm::Value*
-CodeGenerator::codegen(const RangeNode* node)
-{
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
-  return NULL;
-}
-
-
-llvm::Value*
-CodeGenerator::codegen(const RationalNode* node)
-{
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
-  return NULL;
-}
-
-
-llvm::Value*
 CodeGenerator::codegen(const SelectNode* node)
-{
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
-  return NULL;
-}
-
-
-llvm::Value*
-CodeGenerator::codegen(const SlotdefNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
@@ -669,24 +664,6 @@ CodeGenerator::codegen(const TypeNode* node)
 
 llvm::Value*
 CodeGenerator::codegen(const UnitConstant* node)
-{
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
-  return NULL;
-}
-
-
-llvm::Value*
-CodeGenerator::codegen(const VardefNode* node)
-{
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
-  return NULL;
-}
-
-
-llvm::Value*
-CodeGenerator::codegen(const VectorNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
