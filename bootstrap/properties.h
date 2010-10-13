@@ -27,6 +27,12 @@ namespace heather
     kLLVM_BC
   };
 
+  enum OptimizeLevel
+  {
+    kOptLevelNone,
+    kOptLevelBasic
+  };
+
   class Properties
   {
   public:
@@ -38,6 +44,9 @@ namespace heather
 
     static void setCompileOutFormat(CompileOutFormat format);
     static CompileOutFormat compileOutFormat();
+
+    static void setOptimizeLevel(OptimizeLevel optLevel);
+    static OptimizeLevel optimizeLevel();
 
     static void setTrace(const String& key, bool value);
     static void setTraces(const String& argument);
