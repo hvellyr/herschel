@@ -17,6 +17,7 @@ namespace heather
   String baseName(const String& sym);
   String nsName(const String& sym);
 
+  String mangleToC(const String& qualId);
 };                              // namespace
 
 #endif                          // bootstrap_symbol_h
