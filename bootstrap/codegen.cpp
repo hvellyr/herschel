@@ -39,7 +39,8 @@ CodeGenerator::CodeGenerator()
   : fModule(NULL),
     fBuilder(llvm::getGlobalContext()),
     fOptPassManager(NULL),
-    fCurrentValue(NULL)
+    fCurrentValue(NULL),
+    fHasMainFunc(false)
 {
   llvm::InitializeNativeTarget();
 
@@ -130,6 +131,38 @@ CodeGenerator::codegen(const CompileUnitNode* node)
 {
   for (size_t i = 0; i < node->fChildren.size(); i++)
     codegenNode(node->fChildren[i].obj());
+
+  if (fHasMainFunc) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(llvm::Type::getInt32Ty(llvm::getGlobalContext()));
+    sign.push_back(llvm::Type::getInt8Ty(llvm::getGlobalContext())->getPointerTo()->getPointerTo());
+
+    llvm::FunctionType *ft =
+    llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+                            sign,
+                            false);
+    assert(ft != NULL);
+
+    llvm::Function *func = llvm::Function::Create(ft,
+                                                  llvm::Function::ExternalLinkage,
+                                                  std::string("main"),
+                                                  fModule);
+
+    llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+                                                  "entry", func);
+    fBuilder.SetInsertPoint(bb);
+
+    llvm::Function* appMainFunc = fModule->getFunction(std::string("app|main"));
+    assert(appMainFunc != NULL);
+
+    fBuilder.CreateRet(fBuilder.CreateCall(appMainFunc, "appMainTmp"));
+
+    verifyFunction(*func);
+
+    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+      fOptPassManager->run(*func);
+  }
+
   return NULL;
 }
 
@@ -182,11 +215,27 @@ CodeGenerator::codegen(const SlotdefNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const VardefNode* node)
+CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
-  return NULL;
+  llvm::Value* initval = NULL;
+  if (node->fInitExpr != NULL) {
+    initval = codegenNode(node->fInitExpr);
+  }
+  else {
+    // TODO: init the temporary value.  We shouldn't have to care about this
+    // here.
+    initval = llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                     llvm::APInt(32, 0, true));
+  }
+
+  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
+
+  llvm::AllocaInst *stackSlot = createEntryBlockAlloca(curFunction,
+                                                       node->fSymbolName);
+  fBuilder.CreateStore(initval, stackSlot);
+  fNamedValues[std::string(StrHelper(node->fSymbolName))] = stackSlot;
+
+  return initval;
 }
 
 
@@ -202,11 +251,17 @@ CodeGenerator::codegen(const AssignNode* node)
 llvm::Value*
 CodeGenerator::codegen(const DefNode* node)
 {
-  // TODO
-  const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->fDefined.obj());
-  if (func != NULL) {
-    return codegenNode(func);
+  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->fDefined.obj());
+  if (vardefNode != NULL) {
+    logf(kError, "Compiling global vardefs not supported yet: %s", __FUNCTION__);
+    return NULL;
   }
+
+  const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->fDefined.obj());
+  if (func != NULL)
+    return codegen(func, false);
+
+  // TODO
   return NULL;
 }
 
@@ -215,27 +270,15 @@ llvm::Value*
 CodeGenerator::codegen(const LetNode* node)
 {
   const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->fDefined.obj());
-  if (vardefNode != NULL) {
-    llvm::Value* initval = NULL;
-    if (vardefNode->fInitExpr != NULL) {
-      initval = codegenNode(vardefNode->fInitExpr);
-    }
-    else {
-      // TODO: init the temporary value.  We shouldn't have to care about this
-      // here.
-      initval = llvm::ConstantInt::get(llvm::getGlobalContext(),
-                                       llvm::APInt(32, 0, true));
-    }
+  if (vardefNode != NULL)
+    return codegen(vardefNode, true);
 
-    llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-
-    llvm::AllocaInst *stackSlot = createEntryBlockAlloca(curFunction,
-                                                         vardefNode->fSymbolName);
-    fBuilder.CreateStore(initval, stackSlot);
-    fNamedValues[std::string(StrHelper(vardefNode->fSymbolName))] = stackSlot;
-
-    return initval;
+  const FuncDefNode* funcDefNode = dynamic_cast<const FuncDefNode*>(node->fDefined.obj());
+  if (funcDefNode != NULL) {
+    logf(kError, "Compiling local functions not supported yet: %s", __FUNCTION__);
+    return NULL;
   }
+
   return NULL;
 }
 
@@ -400,7 +443,7 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const FuncDefNode* node)
+CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 {
   // TODO: nested functions need special treatment here.  Or even better:
   // avoid nested functions by lambda lifting.
@@ -445,8 +488,12 @@ CodeGenerator::codegen(const FuncDefNode* node)
 
   verifyFunction(*func);
 
-  if (fOptPassManager != NULL)
+  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
     fOptPassManager->run(*func);
+
+  if (!isLocal && node->funcName() == String("app|main")) {
+    fHasMainFunc = true;
+  }
 
   return func;
 }
@@ -561,10 +608,10 @@ CodeGenerator::codegen(const IfNode* node)
   if (testValue == NULL)
     return NULL;
 
-  // Convert condition to a bool by comparing equal to 0
+  // Convert condition to a bool by comparing equal to 1
   testValue = fBuilder.CreateICmpEQ(testValue,
                                     llvm::ConstantInt::get(llvm::getGlobalContext(),
-                                                           llvm::APInt(1, 0, true)),
+                                                           llvm::APInt(1, 1, true)),
                                     "ifcond");
 
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
