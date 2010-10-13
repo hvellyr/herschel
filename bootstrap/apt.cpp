@@ -580,7 +580,9 @@ VardefNode::isEnum() const
 llvm::Value*
 VardefNode::codegen(CodeGenerator* generator) const
 {
-  return generator->codegen(this);
+  // this should never be called directly.  See codegen::DefNode
+  assert(0);
+  return NULL;
 }
 
 
@@ -1380,7 +1382,9 @@ FuncDefNode::funcName() const
 llvm::Value*
 FuncDefNode::codegen(CodeGenerator* generator) const
 {
-  return generator->codegen(this);
+  // this should never be called directly.  See codegen::DefNode
+  assert(0);
+  return NULL;
 }
 
 

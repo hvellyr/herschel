@@ -95,7 +95,6 @@ namespace heather
     llvm::Value* codegen(const CompileUnitNode* node);
     llvm::Value* codegen(const DefNode* node);
     llvm::Value* codegen(const DictNode* node);
-    llvm::Value* codegen(const FuncDefNode* node);
     llvm::Value* codegen(const FunctionNode* node);
     llvm::Value* codegen(const IfNode* node);
     llvm::Value* codegen(const IntNode* node);
@@ -116,11 +115,13 @@ namespace heather
     llvm::Value* codegen(const ThenWhileNode* node);
     llvm::Value* codegen(const TypeNode* node);
     llvm::Value* codegen(const UnitConstant* node);
-    llvm::Value* codegen(const VardefNode* node);
     llvm::Value* codegen(const VectorNode* node);
     llvm::Value* codegen(const WhileNode* node);
 
   private:
+    llvm::Value* codegen(const FuncDefNode* node, bool isLocal);
+    llvm::Value* codegen(const VardefNode* node, bool isLocal);
+
     llvm::FunctionType* createFunctionSignature(const FunctionNode* node);
 
     void codegen(const NodeList& nl, llvm::BasicBlock* bb);
@@ -131,6 +132,7 @@ namespace heather
     llvm::IRBuilder<> fBuilder;
     llvm::FunctionPassManager* fOptPassManager;
     llvm::AllocaInst *fCurrentValue;
+    bool fHasMainFunc;
 
     std::map<std::string, llvm::AllocaInst*> fNamedValues;
   };
