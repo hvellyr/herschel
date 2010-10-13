@@ -20,22 +20,23 @@
 
 using namespace heather;
 
-static bool sVerbose = false;
-static bool sIsTokenizerTracing = false;
-static bool sIsPass1Tracing = false;
-static bool sIsPass2Tracing = false;
-static bool sIsImportFileTracing = false;
-static bool sIsMacroTracing = false;
 #if defined(UNITTESTS)
 static bool sDontImport = false;
 #endif
-static bool sShouldIgnoreDocStrings = true;
-static bool sPass1Only = false;
-static String sOutdir;
-static Ptr<ConfigVarRegistry> sConfigVarRegistry;
-static StringVector sInputSearchPath;
-static CompileOutFormat sCompileOutFormat = kLLVM_IR;
 
+static CompileOutFormat sCompileOutFormat = kLLVM_IR;
+static OptimizeLevel sOptLevel = kOptLevelBasic;
+static Ptr<ConfigVarRegistry> sConfigVarRegistry;
+static String sOutdir;
+static StringVector sInputSearchPath;
+static bool sIsImportFileTracing = false;
+static bool sIsMacroTracing = false;
+static bool sIsPass1Tracing = false;
+static bool sIsPass2Tracing = false;
+static bool sIsTokenizerTracing = false;
+static bool sPass1Only = false;
+static bool sShouldIgnoreDocStrings = true;
+static bool sVerbose = false;
 
 void
 Properties::setIsVerbose(bool value)
@@ -76,6 +77,20 @@ CompileOutFormat
 Properties::compileOutFormat()
 {
   return sCompileOutFormat;
+}
+
+
+void
+Properties::setOptimizeLevel(OptimizeLevel optLevel)
+{
+  sOptLevel = optLevel;
+}
+
+
+OptimizeLevel
+Properties::optimizeLevel()
+{
+  return sOptLevel;
 }
 
 

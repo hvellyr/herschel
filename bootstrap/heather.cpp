@@ -55,6 +55,8 @@ displayHelp()
   printf("                               {tokenizer|pass1|pass2|import|macro}\n");
   printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
   printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
+  printf("  -O                           Optimize code more\n");
+  printf("  -On                          Turn off any (even basic) optimization\n");
 #if defined(UNITTESTS)
   printf("  -UT,     --run-unit-tests    Run unit tests for the compiler\n");
   printf("           --ut-format=FORMAT  Output format of unit tests {xml|txt}\n");
@@ -90,6 +92,8 @@ enum {
   kOptCompile,
   kOptCompileToBC,
   kOptCompileToIR,
+  kOptOptimizeMore,
+  kOptOptimizeNone,
 
 #if defined(UNITTESTS)
   kOptRunUnitTests,
@@ -189,6 +193,9 @@ main(int argc, char** argv)
     { kOptCompileToBC,  "-b",  NULL,               false },
     { kOptCompileToIR,  "-s",  NULL,               false },
     { kOptCompile,      "-c",  NULL,               false },
+    { kOptOptimizeMore, "-O",  NULL,               false },
+    { kOptOptimizeMore, "-O1", NULL,               false },
+    { kOptOptimizeNone, "-On", NULL,               false },
 #if defined(UNITTESTS)
     { kOptRunUnitTests, "-UT", "--run-unit-tests", false },
     { kOptUTFormat,     NULL,  "--ut-format",      true },
@@ -258,6 +265,13 @@ main(int argc, char** argv)
 
       case kOptInputDir:
         Properties::addInputDir(option.fArgument);
+        break;
+
+      case kOptOptimizeMore:
+        Properties::setOptimizeLevel(kOptLevelBasic);
+        break;
+      case kOptOptimizeNone:
+        Properties::setOptimizeLevel(kOptLevelNone);
         break;
 
 #if defined(UNITTESTS)
