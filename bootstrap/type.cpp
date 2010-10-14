@@ -2767,34 +2767,35 @@ TypeUnit::operator=(const TypeUnit& other)
 #include <UnitTest++.h>
 #include <iostream>
 
-
-std::ostream& operator<<(std::ostream& os, const TypeConstraint& constraint)
+namespace heather
 {
-  os << constraint.toString();
-  return os;
-}
+  std::ostream& operator<<(std::ostream& os, const TypeConstraint& constraint)
+  {
+    os << constraint.toString();
+    return os;
+  }
 
 
-std::ostream& operator<<(std::ostream& os, const Type& type)
-{
-  os << type.toString();
-  return os;
-}
+  std::ostream& operator<<(std::ostream& os, const Type& type)
+  {
+    os << type.toString();
+    return os;
+  }
 
 
-std::ostream& operator<<(std::ostream& os, const FunctionParameter& prm)
-{
-  os << prm.toString();
-  return os;
-}
+  std::ostream& operator<<(std::ostream& os, const FunctionParameter& prm)
+  {
+    os << prm.toString();
+    return os;
+  }
 
 
-std::ostream& operator<<(std::ostream& os, const FunctionSignature& sign)
-{
-  os << sign.toString();
-  return os;
-}
-
+  std::ostream& operator<<(std::ostream& os, const FunctionSignature& sign)
+  {
+    os << sign.toString();
+    return os;
+  }
+};
 
 
 SUITE(TypeConstraint)
