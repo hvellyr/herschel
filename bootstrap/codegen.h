@@ -124,7 +124,7 @@ namespace heather
 
     llvm::FunctionType* createFunctionSignature(const FunctionNode* node);
 
-    void codegen(const NodeList& nl, llvm::BasicBlock* bb);
+    void codegen(const NodeList& nl);
 
     void createDefaultCMainFunc();
 

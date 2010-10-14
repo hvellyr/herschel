@@ -119,6 +119,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
+    const String& name() const;
     std::string string() const;
 
   protected:
@@ -858,6 +859,9 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+
+    AptNode* body() const;
+    AptNode* test() const;
 
   private:
     friend class XmlRenderer;

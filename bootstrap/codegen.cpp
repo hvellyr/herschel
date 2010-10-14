@@ -193,10 +193,16 @@ createEntryBlockAlloca(llvm::Function *func, const String& name)
 llvm::Value*
 CodeGenerator::codegen(const SymbolNode* node)
 {
+  if (node->name() == String("unspecified")) {
+    // TODO
+    return llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                  llvm::APInt(32, 0, true));
+  }
+
   // Look this variable up in the function.
   llvm::Value* val = fNamedValues[node->string()];
   if (val == NULL) {
-    printf("Unknown variable name");
+    logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(node->name()));
     return NULL;
   }
 
@@ -239,10 +245,10 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
 
-  llvm::AllocaInst *stackSlot = createEntryBlockAlloca(curFunction,
-                                                       node->fSymbolName);
+  llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
+                                                       node->symbolName());
   fBuilder.CreateStore(initval, stackSlot);
-  fNamedValues[std::string(StrHelper(node->fSymbolName))] = stackSlot;
+  fNamedValues[std::string(StrHelper(node->symbolName()))] = stackSlot;
 
   return initval;
 }
@@ -251,8 +257,24 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 llvm::Value*
 CodeGenerator::codegen(const AssignNode* node)
 {
+  const SymbolNode* lsym = dynamic_cast<const SymbolNode*>(node->lvalue());
+  if (lsym != NULL) {
+    llvm::Value* rvalue = codegenNode(node->rvalue());
+    if (rvalue == NULL)
+      return NULL;
+
+    // Look up the name.
+    llvm::AllocaInst* var = fNamedValues[lsym->string()];
+    if (var == NULL) {
+      logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(lsym->name()));
+      return NULL;
+    }
+
+    fBuilder.CreateStore(rvalue, var);
+    return rvalue;
+  }
+
   logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
   return NULL;
 }
 
@@ -295,7 +317,7 @@ CodeGenerator::codegen(const LetNode* node)
 //------------------------------------------------------------------------------
 
 void
-CodeGenerator::codegen(const NodeList& nl, llvm::BasicBlock* bb)
+CodeGenerator::codegen(const NodeList& nl)
 {
   assert(fCurrentValue != NULL);
 
@@ -303,7 +325,8 @@ CodeGenerator::codegen(const NodeList& nl, llvm::BasicBlock* bb)
     llvm::Value* val = codegenNode(nl[bidx]);
     if (val == NULL)
       return;
-    fBuilder.CreateStore(val, fCurrentValue);
+    if (val != fCurrentValue)
+      fBuilder.CreateStore(val, fCurrentValue);
   }
 }
 
@@ -317,14 +340,16 @@ CodeGenerator::codegen(const BlockNode* node)
                                                   "inner", curFunction);
   llvm::BasicBlock* contBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
                                                       "next", curFunction);
+  // Insert an explicit fall through from the current block to the loopBB.
+  fBuilder.CreateBr(bb);
   fBuilder.SetInsertPoint(bb);
 
-  codegen(node->fChildren, bb);
+  codegen(node->fChildren);
 
   fBuilder.CreateBr(contBB);
   fBuilder.SetInsertPoint(contBB);
 
-  return contBB;
+  return fCurrentValue;
 }
 
 
@@ -487,7 +512,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
     fCurrentValue = createEntryBlockAlloca(func, String("curval"));
     assert(fCurrentValue != NULL);
 
-    codegen(blockNode->fChildren, bb);
+    codegen(blockNode->fChildren);
 
     fBuilder.CreateRet(fBuilder.CreateLoad(fCurrentValue));
   }
@@ -735,7 +760,46 @@ CodeGenerator::codegen(const UnitConstant* node)
 llvm::Value*
 CodeGenerator::codegen(const WhileNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
-  return NULL;
+  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
+  llvm::BasicBlock *loopHeadBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+                                                          "loophead", curFunction);
+  llvm::BasicBlock *loopBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+                                                      "loop", curFunction);
+  // Create the "after loop" block and insert it.
+  llvm::BasicBlock *afterBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+                                                       "afterloop",
+                                                       curFunction);
+
+  // Insert an explicit fall through from the current block to the loopBB.
+  fBuilder.CreateBr(loopHeadBB);
+
+  // Start insertion in loopBB.
+  fBuilder.SetInsertPoint(loopHeadBB);
+
+  llvm::Value *testValue = codegenNode(node->test());
+  if (testValue == NULL)
+    return NULL;
+
+  // Convert condition to a bool by comparing equal to 1
+  testValue = fBuilder.CreateICmpEQ(testValue,
+                                    llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                                           llvm::APInt(1, 1, true)),
+                                    "loopcond");
+  // Insert the conditional branch into the end of loopEndBB.
+  fBuilder.CreateCondBr(testValue, loopBB, afterBB);
+
+  // Start insertion in loopBB.
+  fBuilder.SetInsertPoint(loopBB);
+
+  llvm::Value* bodyValue = codegenNode(node->body());
+  if (bodyValue == NULL)
+    return NULL;
+
+  // jump back to loop start
+  fBuilder.CreateBr(loopHeadBB);
+
+  // Any new code will be inserted in AfterBB.
+  fBuilder.SetInsertPoint(afterBB);
+
+  return fCurrentValue;
 }

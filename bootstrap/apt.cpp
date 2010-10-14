@@ -166,6 +166,13 @@ SymbolNode::clone() const
 }
 
 
+const String&
+SymbolNode::name() const
+{
+  return fValue;
+}
+
+
 std::string
 SymbolNode::string() const
 {
@@ -1479,6 +1486,21 @@ WhileNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
+
+
+AptNode*
+WhileNode::body() const
+{
+  return fBody;
+}
+
+
+AptNode*
+WhileNode::test() const
+{
+  return fTest;
+}
+
 
 
 //----------------------------------------------------------------------------
