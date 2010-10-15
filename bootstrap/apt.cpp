@@ -10,9 +10,11 @@
 
 #include <string.h>
 
+#include "annotate.h"
 #include "apt.h"
-#include "strbuf.h"
 #include "codegen.h"
+#include "scope.h"
+#include "strbuf.h"
 #include "xmlout.h"
 
 #include "llvm/Value.h"
@@ -79,6 +81,13 @@ llvm::Value*
 AptNode::codegen(CodeGenerator* generator) const
 {
   return NULL;
+}
+
+
+void
+AptNode::annotate(Annotator* annotator, Scope* scope)
+{
+  annotator->annotate(this, scope);
 }
 
 
@@ -191,6 +200,13 @@ llvm::Value*
 SymbolNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
+}
+
+
+void
+SymbolNode::annotate(Annotator* an, Scope* scope)
+{
+  an->annotate(this, scope);
 }
 
 

@@ -54,6 +54,8 @@ namespace heather
     static bool isTraceTokenizer();
     static bool isTracePass1();
     static bool isTracePass2();
+    static bool isTraceAnnotate();
+
     static bool isTraceImportFile();
     static bool isTraceMacro();
 
@@ -67,8 +69,8 @@ namespace heather
     static void test_setDontImport(bool value);
     static bool test_dontImport();
 
-    static void test_setPass1Only(bool value);
-    static bool test_pass1Only();
+    static void test_setPassLevel(int level);
+    static int test_passLevel();
 #endif
 
     static bool shouldIgnoreDocStrings();

@@ -52,7 +52,8 @@ displayHelp()
   printf("  -D VAR=VALUE                 Define config VAR to be VALUE\n");
   printf("     --define=VAR=VALUE\n");
   printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
-  printf("                               {tokenizer|pass1|pass2|import|macro}\n");
+  printf("                               {tokenizer|pass1|pass2|annotate|\n");
+  printf("                                import|macro}\n");
   printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
   printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
   printf("  -O                           Optimize code more\n");
@@ -100,6 +101,7 @@ enum {
   kOptUTFormat,
   kOptDontImport,
   kOptParse1,
+  kOptParse2,
 #endif
 };
 
@@ -150,6 +152,7 @@ compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
       Ptr<Parser> parser = new Parser;
       Ptr<AptNode> apt = parser->parse(new CharPort(new FilePort(file, "rb")),
                                        file);
+      assert(apt);
 
       if (doCompile) {
         CompileUnitNode* unit = dynamic_cast<CompileUnitNode*>(apt.obj());
@@ -201,6 +204,7 @@ main(int argc, char** argv)
     { kOptUTFormat,     NULL,  "--ut-format",      true },
     { kOptDontImport,   NULL,  "--dont-import",    false },
     { kOptParse1,       NULL,  "--parse-1",        false },
+    { kOptParse2,       NULL,  "--parse-2",        false },
 #endif
     { 0,                NULL,  NULL,               false } // sentinel
   };
@@ -285,7 +289,10 @@ main(int argc, char** argv)
         Properties::test_setDontImport(true);
         break;
       case kOptParse1:
-        Properties::test_setPass1Only(true);
+        Properties::test_setPassLevel(1);
+        break;
+      case kOptParse2:
+        Properties::test_setPassLevel(2);
         break;
 #endif
       }

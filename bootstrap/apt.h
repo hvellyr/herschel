@@ -30,7 +30,8 @@ namespace heather
   class AptNode;
   class CodeGenerator;
   class XmlRenderer;
-
+  class Annotator;
+  class Scope;
 
   //--------------------------------------------------------------------------
 
@@ -53,12 +54,12 @@ namespace heather
 
     virtual AptNode* clone() const = 0;
 
-    virtual void render(XmlRenderer* renderer) const = 0;
-
     virtual void appendNode(AptNode* node);
     virtual void appendNodes(const NodeList& nodes);
 
+    virtual void render(XmlRenderer* renderer) const = 0;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator, Scope* scope);
 
   protected:
     friend class XmlRenderer;
@@ -116,11 +117,12 @@ namespace heather
 
     virtual SymbolNode* clone() const;
 
-    virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator) const;
-
     const String& name() const;
     std::string string() const;
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* an, Scope* scope);
 
   protected:
     friend class XmlRenderer;
