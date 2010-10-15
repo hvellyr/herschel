@@ -33,8 +33,9 @@ static bool sIsImportFileTracing = false;
 static bool sIsMacroTracing = false;
 static bool sIsPass1Tracing = false;
 static bool sIsPass2Tracing = false;
+static bool sIsAnnotateTracing = false;
 static bool sIsTokenizerTracing = false;
-static bool sPass1Only = false;
+static int sPassLevel = 3;
 static bool sShouldIgnoreDocStrings = true;
 static bool sVerbose = false;
 
@@ -103,6 +104,8 @@ Properties::setTrace(const String& key, bool value)
     sIsPass1Tracing = value;
   else if (key == String("pass2"))
     sIsPass2Tracing = value;
+  else if (key == String("annotate"))
+    sIsAnnotateTracing = value;
   else if (key == String("import"))
     sIsImportFileTracing = value;
   else if (key == String("macro"))
@@ -143,6 +146,13 @@ bool
 Properties::isTracePass2()
 {
   return sIsPass2Tracing;
+}
+
+
+bool
+Properties::isTraceAnnotate()
+{
+  return sIsAnnotateTracing;
 }
 
 
@@ -204,16 +214,16 @@ Properties::test_dontImport()
 
 
 void
-Properties::test_setPass1Only(bool value)
+Properties::test_setPassLevel(int level)
 {
-  sPass1Only = value;
+  sPassLevel = level;
 }
 
 
-bool
-Properties::test_pass1Only()
+int
+Properties::test_passLevel()
 {
-  return sPass1Only;
+  return sPassLevel;
 }
 
 #endif

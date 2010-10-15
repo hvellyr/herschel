@@ -19,9 +19,11 @@ class TestRunner:
         self.input_dir = False
 
         self.SYNTAX_PASS1_OPT = ["-T", "pass1", "-P", "--dont-import", "--parse-1" ]
-        self.SYNTAX_PASS2_OPT = ["-T", "pass2", "-P", "--dont-import" ]
+        self.SYNTAX_PASS2_OPT = ["-T", "pass2", "-P", "--dont-import", "--parse-2" ]
+        self.SYNTAX_PASS3_OPT = ["-T", "pass2", "-P", "--dont-import" ]
         self.IMPORT_PASS1_OPT = ["-T", "pass1", "-P", "--parse-1" ]
-        self.IMPORT_PASS2_OPT = ["-T", "pass2", "-P" ]
+        self.IMPORT_PASS2_OPT = ["-T", "pass2", "-P", "--parse-2" ]
+        self.IMPORT_PASS3_OPT = ["-T", "pass2", "-P" ]
 
 
     def run_heather_on_test(self, test_file, options):
@@ -79,9 +81,14 @@ class TestRunner:
 
     def run_pass_test_impl(self, test_file, options, passid,
                            errtest_func=None):
+        expected_file = self.find_expected_xml(test_file, "_%s" % (passid))
+        if not expected_file:
+            return
+
         test_count = 0
         if self.verbose:
             print "Run test '%s'" % (test_file)
+
         output, erroutput = self.run_heather_on_test(test_file, options)
         what_tag = "[%s] %s" % (passid, test_file)
         if erroutput:
@@ -113,16 +120,19 @@ class TestRunner:
         if domain == "syntax":
             opts1 = self.SYNTAX_PASS1_OPT
             opts2 = self.SYNTAX_PASS2_OPT
+            opts3 = self.SYNTAX_PASS3_OPT
 
         elif domain == "import":
             opts1 = self.IMPORT_PASS1_OPT
             opts2 = self.IMPORT_PASS2_OPT
+            opts3 = self.IMPORT_PASS3_OPT
 
         else:
             assert(0)
 
         self.run_pass_test_impl(test_file, opts1, "1")
         self.run_pass_test_impl(test_file, opts2, "2")
+        self.run_pass_test_impl(test_file, opts3, "3")
 
 
 
@@ -199,16 +209,19 @@ class TestRunner:
         if domain == "syntax":
             opts1 = self.SYNTAX_PASS1_OPT
             opts2 = self.SYNTAX_PASS2_OPT
+            opts3 = self.SYNTAX_PASS3_OPT
 
         elif domain == "import":
             opts1 = self.IMPORT_PASS1_OPT
             opts2 = self.IMPORT_PASS2_OPT
+            opts3 = self.IMPORT_PASS3_OPT
 
         else:
             assert(0)
 
         self.run_pass_test_impl(test_file, opts1, "1", self.check_for_errors)
         self.run_pass_test_impl(test_file, opts2, "2", self.check_for_errors)
+        self.run_pass_test_impl(test_file, opts3, "3", self.check_for_errors)
 
 
     #----------------------------------------------------------------------------

@@ -19,6 +19,7 @@ CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTes
 LDFLAGS += $(LLVM_LDFLAGS)
 
 SOURCES =         \
+	annotate.cpp    \
 	apt.cpp         \
 	codegen.cpp     \
 	file.cpp        \
@@ -50,6 +51,7 @@ SOURCES =         \
 	xmlout.cpp
 
 HEADERS =         \
+	annotate.h      \
 	apt.h           \
 	codegen.h       \
 	common.h        \

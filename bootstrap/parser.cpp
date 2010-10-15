@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "annotate.h"
 #include "file.h"
 #include "log.h"
 #include "parser.h"
@@ -148,7 +149,7 @@ Parser::doPass2Parse(const Token& parsedExprs, bool doTrace)
 {
   bool doPass2 = true;
 #if defined(UNITTESTS)
-  doPass2 = !Properties::test_pass1Only();
+  doPass2 = Properties::test_passLevel() >= 1;
 #endif
 
   if (doPass2) {
@@ -170,6 +171,31 @@ Parser::doPass2Parse(const Token& parsedExprs, bool doTrace)
 
 
 AptNode*
+Parser::annotate(AptNode* node, bool doTrace)
+{
+  Ptr<AptNode> n = node;
+  bool doPass3 = true;
+#if defined(UNITTESTS)
+  doPass3 = Properties::test_passLevel() >= 2;
+#endif
+
+  if (doPass3) {
+    Ptr<Annotator> pAn = new Annotator;
+
+    Ptr<Scope> rootScope = new Scope;
+    pAn->annotateNode(n, rootScope);
+
+    if (doTrace && Properties::isTraceAnnotate() && n != NULL) {
+      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+      out->render(n);
+    }
+  }
+
+  return n.release();
+}
+
+
+AptNode*
 Parser::parseImpl(Port<Char>* port, const String& srcName,
                   bool doTrace)
 {
@@ -180,7 +206,8 @@ Parser::parseImpl(Port<Char>* port, const String& srcName,
   try {
     Token parsedExprs = doPass1Parse(doTrace);
     Ptr<AptNode> apt = doPass2Parse(parsedExprs, doTrace);
-    return apt.release();
+    Ptr<AptNode> apt2 = annotate(apt.release(), doTrace);
+    return apt2.release();
   }
   catch (const Exception& e) {
     logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
