@@ -123,6 +123,52 @@ Parser::parse(Port<Char>* port, const String& srcName)
 }
 
 
+Token
+Parser::doPass1Parse(bool doTrace)
+{
+  Ptr<FirstPass> firstPass = new FirstPass(this, fState.fToken, fState.fScope);
+
+  Token parsedExprs = firstPass->parse();
+
+  if (doTrace && Properties::isTracePass1()) {
+    Ptr<FilePort> stream = new FilePort(stdout);
+    display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
+    parsedExprs.toPort(stream);
+    displayln(stream, "");
+  }
+
+  // fState.fScope->dumpDebug();
+
+  return parsedExprs;
+}
+
+
+AptNode*
+Parser::doPass2Parse(const Token& parsedExprs, bool doTrace)
+{
+  bool doPass2 = true;
+#if defined(UNITTESTS)
+  doPass2 = !Properties::test_pass1Only();
+#endif
+
+  if (doPass2) {
+    Ptr<SecondPass> secondPass = new SecondPass(this, fState.fScope);
+
+    Ptr<AptNode> apt = secondPass->parse(parsedExprs);
+    if (doTrace && Properties::isTracePass2() && apt != NULL) {
+      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+      out->render(apt);
+    }
+
+    // fState.fScope->dumpDebug();
+
+    return apt.release();
+  }
+
+  return NULL;
+}
+
+
 AptNode*
 Parser::parseImpl(Port<Char>* port, const String& srcName,
                   bool doTrace)
@@ -132,39 +178,9 @@ Parser::parseImpl(Port<Char>* port, const String& srcName,
   assert(fState.fScope != NULL);
 
   try {
-    Ptr<FirstPass> firstPass = new FirstPass(this, fState.fToken, fState.fScope);
-
-    Token parsedExprs = firstPass->parse();
-
-    if (doTrace && Properties::isTracePass1()) {
-      Ptr<FilePort> stream = new FilePort(stdout);
-      display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
-      parsedExprs.toPort(stream);
-      displayln(stream, "");
-    }
-
-    // fState.fScope->dumpDebug();
-
-    bool doPass2 = true;
-#if defined(UNITTESTS)
-    doPass2 = !Properties::test_pass1Only();
-#endif
-
-    if (doPass2) {
-      Ptr<SecondPass> secondPass = new SecondPass(this, fState.fScope);
-
-      Ptr<AptNode> apt = secondPass->parse(parsedExprs);
-      if (doTrace && Properties::isTracePass2() && apt != NULL) {
-        Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
-        out->render(apt);
-      }
-
-      // fState.fScope->dumpDebug();
-
-      return apt.release();
-    }
-
-    return NULL;
+    Token parsedExprs = doPass1Parse(doTrace);
+    Ptr<AptNode> apt = doPass2Parse(parsedExprs, doTrace);
+    return apt.release();
   }
   catch (const Exception& e) {
     logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
