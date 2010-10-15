@@ -145,6 +145,9 @@ namespace heather
     };
 
 
+    Token doPass1Parse(bool doTrace);
+    AptNode* doPass2Parse(const Token& parsedExprs, bool doTrace);
+
     //-------- data members
 
     ParserState            fState;
