@@ -42,12 +42,6 @@ Annotator::annotate(CompileUnitNode* node)
 //------------------------------------------------------------------------------
 
 void
-Annotator::annotate(AptNode* node)
-{
-}
-
-
-void
 Annotator::takeFullNameFromNode(SymbolNode* node, const AptNode* otherNode)
 {
   const NamedNode* nn = dynamic_cast<const NamedNode*>(otherNode);
