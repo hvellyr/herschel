@@ -119,13 +119,6 @@ AptNode::codegen(CodeGenerator* generator) const
 }
 
 
-void
-AptNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
 //----------------------------------------------------------------------------
 
 StringNode::StringNode(const SrcPos& srcpos, Scope* scope,

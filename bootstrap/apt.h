@@ -58,7 +58,7 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const = 0;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator) = 0;
 
   protected:
     SrcPos     fSrcPos;

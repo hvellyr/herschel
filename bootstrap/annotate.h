@@ -63,7 +63,6 @@ namespace heather
 
     void annotate(CompileUnitNode* node);
 
-    void annotate(AptNode* node);
     void annotate(SymbolNode* node);
 
     void annotate(DefNode* node);
