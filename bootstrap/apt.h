@@ -52,6 +52,17 @@ namespace heather
       return fSrcPos;
     }
 
+    NodeList& children()
+    {
+      return fChildren;
+    }
+
+
+    const NodeList& children() const
+    {
+      return fChildren;
+    }
+
     virtual AptNode* clone() const = 0;
 
     virtual void appendNode(AptNode* node);
@@ -62,9 +73,6 @@ namespace heather
     virtual void annotate(Annotator* annotator, Scope* scope);
 
   protected:
-    friend class XmlRenderer;
-    friend class CodeGenerator;
-
     SrcPos   fSrcPos;
     NodeList fChildren;
   };
@@ -276,6 +284,7 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator, Scope* scope);
   };
 
 
@@ -304,6 +313,7 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator, Scope* scope);
   };
 
 
@@ -315,6 +325,7 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator, Scope* scope);
   };
 
 
@@ -358,12 +369,18 @@ namespace heather
 
     virtual VardefNode* clone() const;
 
-    virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator) const;
-
     bool isEnum() const;
     bool isConst() const;
     bool isConfig() const;
+
+    VardefFlags flags() const
+    {
+      return fFlags;
+    }
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator, Scope* scope);
 
   private:
     friend class XmlRenderer;
@@ -390,13 +407,14 @@ namespace heather
 
     virtual ParamNode* clone() const;
 
-    virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator) const;
-
     ParamFlags flags() const;
     const String& key() const;
 
     bool isRestArg() const;
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator, Scope* scope);
 
   private:
     friend class XmlRenderer;
@@ -745,6 +763,7 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator, Scope* scope);
   };
 
 
@@ -765,6 +784,16 @@ namespace heather
 
     const NodeList& params() const;
     const Type& retType() const;
+
+    AptNode* body()
+    {
+      return fBody;
+    }
+
+    NodeList& params()
+    {
+      return fParams;
+    }
 
   protected:
     friend class XmlRenderer;
@@ -794,12 +823,13 @@ namespace heather
 
     virtual FuncDefNode* clone() const;
 
-    virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator) const;
-
     const String& funcName() const;
     bool isGeneric() const;
     bool isAbstract() const;
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator, Scope* scope);
 
   private:
     friend class XmlRenderer;

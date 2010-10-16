@@ -307,7 +307,7 @@ XmlRenderer::renderNode(const UnitConstant* node)
 void
 XmlRenderer::renderNode(const CompileUnitNode* node)
 {
-  displayNodeList("compile-unit", node->fChildren);
+  displayNodeList("compile-unit", node->children());
 }
 
 
@@ -436,7 +436,7 @@ void
 XmlRenderer::renderNode(const ArrayNode* node)
 {
   displayOpenTag("array");
-  displayNodeList(NULL, node->fChildren);
+  displayNodeList(NULL, node->children());
   displayCloseTag("array");
 }
 
@@ -445,7 +445,7 @@ void
 XmlRenderer::renderNode(const VectorNode* node)
 {
   displayOpenTag("vector");
-  displayNodeList(NULL, node->fChildren);
+  displayNodeList(NULL, node->children());
   displayCloseTag("vector");
 }
 
@@ -454,7 +454,7 @@ void
 XmlRenderer::renderNode(const DictNode* node)
 {
   displayOpenTag("dict");
-  displayNodeList(NULL, node->fChildren);
+  displayNodeList(NULL, node->children());
   displayCloseTag("dict");
 }
 
@@ -625,7 +625,7 @@ XmlRenderer::renderNode(const OnNode* node)
 void
 XmlRenderer::renderNode(const BlockNode* node)
 {
-  displayNodeList("block", node->fChildren);
+  displayNodeList("block", node->children());
 }
 
 
@@ -665,7 +665,7 @@ XmlRenderer::renderNode(const ApplyNode* node)
   displayOpenTag("apply");
   displayNode(NULL, node->fBase);
   displayOpenTag("args");
-  displayNodeList(NULL, node->fChildren);
+  displayNodeList(NULL, node->children());
   displayCloseTag("args");
   displayCloseTag("apply");
 }

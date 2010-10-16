@@ -130,8 +130,9 @@ CodeGenerator::codegenNode(const AptNode* node)
 llvm::Value*
 CodeGenerator::codegen(const CompileUnitNode* node)
 {
-  for (size_t i = 0; i < node->fChildren.size(); i++)
-    codegenNode(node->fChildren[i].obj());
+  const NodeList& nl = node->children();
+  for (size_t i = 0; i < nl.size(); i++)
+    codegenNode(nl[i].obj());
 
   if (fHasMainFunc) {
     createDefaultCMainFunc();
@@ -344,7 +345,7 @@ CodeGenerator::codegen(const BlockNode* node)
   fBuilder.CreateBr(bb);
   fBuilder.SetInsertPoint(bb);
 
-  codegen(node->fChildren);
+  codegen(node->children());
 
   fBuilder.CreateBr(contBB);
   fBuilder.SetInsertPoint(contBB);
@@ -512,7 +513,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
     fCurrentValue = createEntryBlockAlloca(func, String("curval"));
     assert(fCurrentValue != NULL);
 
-    codegen(blockNode->fChildren);
+    codegen(blockNode->children());
 
     fBuilder.CreateRet(fBuilder.CreateLoad(fCurrentValue));
   }
@@ -567,14 +568,15 @@ CodeGenerator::codegen(const ApplyNode* node)
   }
 
   // TODO: proper argument mismatch check
-  if (calleeFunc->arg_size() != node->fChildren.size()) {
+  const NodeList& nl = node->fChildren;
+  if (calleeFunc->arg_size() != nl.size()) {
     errorf(node->srcpos(), 0, "Incorrect # arguments passed");
     return NULL;
   }
 
   std::vector<llvm::Value*> argv;
-  for (unsigned i = 0, e = node->fChildren.size(); i != e; ++i) {
-    argv.push_back(codegenNode(node->fChildren[i]));
+  for (unsigned i = 0, e = nl.size(); i != e; ++i) {
+    argv.push_back(codegenNode(nl[i]));
     if (argv.back() == NULL)
       return NULL;
   }
