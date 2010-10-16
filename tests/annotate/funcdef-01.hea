@@ -1,0 +1,20 @@
+module abc ("-/test:1")
+
+export public (*)
+
+def foo(a, b)
+  let c = a + b
+  c * c
+
+module hinz ("-/test:2")
+{
+  export public (*)
+
+  def bar(x)
+    foo(x, x - 2) * x
+}
+
+
+def app|main()
+  bar(5)
+
