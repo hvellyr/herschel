@@ -182,8 +182,7 @@ Parser::annotate(AptNode* node, bool doTrace)
   if (doPass3) {
     Ptr<Annotator> pAn = new Annotator;
 
-    Ptr<Scope> rootScope = new Scope;
-    pAn->annotateNode(n, rootScope);
+    pAn->annotateNode(n);
 
     if (doTrace && Properties::isTraceAnnotate() && n != NULL) {
       Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));

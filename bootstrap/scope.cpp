@@ -558,11 +558,25 @@ Scope::lookupVar(const String& name, bool showAmbiguousSymDef) const
 }
 
 
+const AptNode*
+Scope::lookupVarOrFunc(const String& name, bool showAmbiguousSymDef) const
+{
+  const ScopeItem* si = lookupItem(SrcPos(),
+                                   ScopeName(kNormal, name),
+                                   showAmbiguousSymDef);
+  if (si != NULL && ( si->kind() == kScopeItem_variable ||
+                      si->kind() == kScopeItem_function ))
+    return dynamic_cast<const NodeScopeItem*>(si)->node();
+  return NULL;
+}
+
+
 void
 Scope::dumpDebug() const
 {
-  fprintf(stderr, "------- Scope Dump [%p] ----------------------\n", this);
+  fprintf(stderr, "[------- Scope Dump [%p] ----------------------\n", this);
   dumpDebugImpl();
+  fprintf(stderr, "]------- Scope Dump [%p] ----------------------\n", this);
 }
 
 

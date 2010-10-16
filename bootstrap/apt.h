@@ -19,6 +19,7 @@
 #include "numbers.h"
 #include "parsertypes.h"
 #include "type.h"
+#include "scope.h"
 
 namespace llvm
 {
@@ -31,7 +32,7 @@ namespace heather
   class CodeGenerator;
   class XmlRenderer;
   class Annotator;
-  class Scope;
+
 
   //--------------------------------------------------------------------------
 
@@ -43,25 +44,12 @@ namespace heather
   class AptNode : public RefCountable
   {
   public:
-    AptNode(const SrcPos& srcpos)
-      : fSrcPos(srcpos)
-    { }
+    AptNode(const SrcPos& srcpos, Scope* scope);
 
-    const SrcPos& srcpos() const
-    {
-      return fSrcPos;
-    }
-
-    NodeList& children()
-    {
-      return fChildren;
-    }
-
-
-    const NodeList& children() const
-    {
-      return fChildren;
-    }
+    const SrcPos& srcpos() const;
+    Scope* scope();
+    NodeList& children();
+    const NodeList& children() const;
 
     virtual AptNode* clone() const = 0;
 
@@ -70,11 +58,22 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const = 0;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator, Scope* scope);
+    virtual void annotate(Annotator* annotator);
 
   protected:
-    SrcPos   fSrcPos;
-    NodeList fChildren;
+    SrcPos     fSrcPos;
+    NodeList   fChildren;
+    Ptr<Scope> fScope;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class NamedNode
+  {
+  public:
+    virtual ~NamedNode() { };
+    virtual const String& name() const = 0;
   };
 
 
@@ -83,11 +82,12 @@ namespace heather
   class StringNode : public AptNode
   {
   public:
-    StringNode(const SrcPos& srcpos, const String& value);
+    StringNode(const SrcPos& srcpos, Scope* scope, const String& value);
 
     virtual StringNode* clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -101,11 +101,12 @@ namespace heather
   class KeywordNode : public AptNode
   {
   public:
-    KeywordNode(const SrcPos& srcpos, const String& value);
+    KeywordNode(const SrcPos& srcpos, Scope* scope, const String& value);
 
     virtual KeywordNode* clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -119,18 +120,19 @@ namespace heather
   class SymbolNode : public AptNode
   {
   public:
-    SymbolNode(const SrcPos& srcpos, const String& value);
-    SymbolNode(const SrcPos& srcpos, const String& value,
+    SymbolNode(const SrcPos& srcpos, Scope* scope, const String& value);
+    SymbolNode(const SrcPos& srcpos, Scope* scope, const String& value,
                const TypeVector& generics);
 
     virtual SymbolNode* clone() const;
 
+    void setName(const String& nm);
     const String& name() const;
     std::string string() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* an, Scope* scope);
+    virtual void annotate(Annotator* an);
 
   protected:
     friend class XmlRenderer;
@@ -144,11 +146,12 @@ namespace heather
   class ArraySymbolNode : public SymbolNode
   {
   public:
-    ArraySymbolNode(const SrcPos& srcpos, const String& value);
+    ArraySymbolNode(const SrcPos& srcpos, Scope* scope, const String& value);
 
     virtual ArraySymbolNode* clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
   };
 
 
@@ -159,9 +162,9 @@ namespace heather
   {
   public:
   protected:
-    NumberNode(const SrcPos& srcpos, T value, bool isImaginary,
-               const Type& type)
-      : AptNode(srcpos),
+    NumberNode(const SrcPos& srcpos, Scope* scope, T value,
+               bool isImaginary, const Type& type)
+      : AptNode(srcpos, scope),
         fValue(value),
         fIsImaginary(isImaginary),
         fType(type)
@@ -181,12 +184,13 @@ namespace heather
   class IntNode : public NumberNode<int>
   {
   public:
-    IntNode(const SrcPos& srcpos, int value, bool isImaginary,
+    IntNode(const SrcPos& srcpos, Scope* scope, int value, bool isImaginary,
             const Type& type);
     virtual IntNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
   };
 
 
@@ -195,12 +199,13 @@ namespace heather
   class RealNode : public NumberNode<double>
   {
   public:
-    RealNode(const SrcPos& srcpos, double value, bool isImaginary,
-             const Type& type);
+    RealNode(const SrcPos& srcpos, Scope* scope, double value,
+             bool isImaginary, const Type& type);
     virtual RealNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
   };
 
 
@@ -209,13 +214,14 @@ namespace heather
   class RationalNode : public NumberNode<Rational>
   {
   public:
-    RationalNode(const SrcPos& srcpos,
+    RationalNode(const SrcPos& srcpos, Scope* scope,
                  const Rational& value, bool isImaginary,
                  const Type& type);
     virtual RationalNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
   };
 
 
@@ -224,11 +230,12 @@ namespace heather
   class CharNode : public AptNode
   {
   public:
-    CharNode(const SrcPos& srcpos, Char value);
+    CharNode(const SrcPos& srcpos, Scope* scope, Char value);
     virtual CharNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -242,11 +249,12 @@ namespace heather
   class BoolNode : public AptNode
   {
   public:
-    BoolNode(const SrcPos& srcpos, bool value);
+    BoolNode(const SrcPos& srcpos, Scope* scope, bool value);
     virtual BoolNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -260,11 +268,13 @@ namespace heather
   class UnitConstant : public AptNode
   {
   public:
-    UnitConstant(const SrcPos& srcpos, AptNode* value, const TypeUnit& unit);
+    UnitConstant(const SrcPos& srcpos, Scope* scope, AptNode* value,
+                 const TypeUnit& unit);
     virtual UnitConstant* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -279,12 +289,12 @@ namespace heather
   class CompileUnitNode : public AptNode
   {
   public:
-    CompileUnitNode(const SrcPos& srcpos);
+    CompileUnitNode(const SrcPos& srcpos, Scope* scope);
     virtual CompileUnitNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator, Scope* scope);
+    virtual void annotate(Annotator* annotator);
   };
 
 
@@ -293,7 +303,7 @@ namespace heather
   class BaseDefNode : public AptNode
   {
   public:
-    BaseDefNode(const SrcPos& srcpos, AptNode* defined);
+    BaseDefNode(const SrcPos& srcpos, Scope* scope, AptNode* defined);
 
     AptNode* defNode() const;
 
@@ -308,39 +318,41 @@ namespace heather
   class LetNode : public BaseDefNode
   {
   public:
-    LetNode(AptNode* node);
+    LetNode(Scope* scope, AptNode* node);
     virtual LetNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator, Scope* scope);
+    virtual void annotate(Annotator* annotator);
   };
 
 
   class DefNode : public BaseDefNode
   {
   public:
-    DefNode(AptNode* node);
+    DefNode(Scope* scope, AptNode* node);
     virtual DefNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator, Scope* scope);
+    virtual void annotate(Annotator* annotator);
   };
 
 
   //--------------------------------------------------------------------------
 
-  class BindingNode : public AptNode
+  class BindingNode : public AptNode, public NamedNode
   {
   public:
-    BindingNode(const SrcPos& srcpos,
+    BindingNode(const SrcPos& srcpos, Scope* scope,
                 const String& symbolName, const Type& type,
                 AptNode* initExpr);
 
     const String& symbolName() const;
     const Type& type() const;
     AptNode* initExpr() const;
+
+    virtual const String& name() const { return symbolName(); }
 
   protected:
     friend class XmlRenderer;
@@ -363,7 +375,7 @@ namespace heather
   class VardefNode : public BindingNode
   {
   public:
-    VardefNode(const SrcPos& srcpos,
+    VardefNode(const SrcPos& srcpos, Scope* scope,
                const String& symbolName, VardefFlags flags,
                const Type& type, AptNode* initExpr);
 
@@ -380,7 +392,7 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator, Scope* scope);
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -400,7 +412,7 @@ namespace heather
   class ParamNode : public BindingNode
   {
   public:
-    ParamNode(const SrcPos& srcpos,
+    ParamNode(const SrcPos& srcpos, Scope* scope,
               const String& keyName,
               const String& symbolName, ParamFlags flags,
               const Type& type, AptNode* initExpr);
@@ -414,7 +426,7 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator, Scope* scope);
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -439,7 +451,7 @@ namespace heather
   class SlotdefNode : public BindingNode
   {
   public:
-    SlotdefNode(const SrcPos& srcpos,
+    SlotdefNode(const SrcPos& srcpos, Scope* scope,
                 const String& symbolName,
                 unsigned int flags,
                 const Type& type, AptNode* initExpr);
@@ -448,6 +460,7 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -461,14 +474,15 @@ namespace heather
   class ArrayNode : public AptNode
   {
   public:
-    ArrayNode(const SrcPos& srcpos)
-      : AptNode(srcpos)
+    ArrayNode(const SrcPos& srcpos, Scope* scope)
+      : AptNode(srcpos, scope)
     { }
 
     virtual ArrayNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
   };
 
 
@@ -477,14 +491,15 @@ namespace heather
   class VectorNode : public AptNode
   {
   public:
-    VectorNode(const SrcPos& srcpos)
-      : AptNode(srcpos)
+    VectorNode(const SrcPos& srcpos, Scope* scope)
+      : AptNode(srcpos, scope)
     { }
 
     virtual VectorNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
   };
 
 
@@ -493,16 +508,17 @@ namespace heather
   class DictNode : public AptNode
   {
   public:
-    DictNode(const SrcPos& srcpos)
-      : AptNode(srcpos)
+    DictNode(const SrcPos& srcpos, Scope* scope)
+      : AptNode(srcpos, scope)
     { }
+
+    void addPair(AptNode* key, AptNode* value);
 
     virtual DictNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-
-    void addPair(AptNode* key, AptNode* value);
+    virtual void annotate(Annotator* annotator);
   };
 
 
@@ -511,13 +527,8 @@ namespace heather
   class BinaryNode : public AptNode
   {
   public:
-    BinaryNode(const SrcPos& srcpos,
+    BinaryNode(const SrcPos& srcpos, Scope* scope,
                AptNode* left, OperatorType op, AptNode* right);
-
-    virtual BinaryNode* clone() const;
-
-    virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     OperatorType op() const;
     AptNode* left() const;
@@ -526,8 +537,13 @@ namespace heather
     void setLeft(AptNode* node);
     void setRight(AptNode* node);
 
-
     bool isMapTo() const;
+
+    virtual BinaryNode* clone() const;
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -544,12 +560,16 @@ namespace heather
   class NegateNode : public AptNode
   {
   public:
-    NegateNode(const SrcPos& srcpos, AptNode* base);
+    NegateNode(const SrcPos& srcpos, Scope* scope, AptNode* base);
+
+    const AptNode* base() const;
+    AptNode* base();
 
     virtual NegateNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -564,16 +584,18 @@ namespace heather
   class RangeNode : public AptNode
   {
   public:
-    RangeNode(const SrcPos& srcpos,
+    RangeNode(const SrcPos& srcpos, Scope* scope,
               AptNode* from, AptNode* to, AptNode* by);
-    virtual RangeNode* clone() const;
-
-    virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     AptNode* from() const;
     AptNode* to() const;
     AptNode* by() const;
+
+    virtual RangeNode* clone() const;
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -589,12 +611,13 @@ namespace heather
   class ThenWhileNode : public AptNode
   {
   public:
-    ThenWhileNode(const SrcPos& srcpos,
+    ThenWhileNode(const SrcPos& srcpos, Scope* scope,
                   AptNode* first, AptNode* step, AptNode* test);
     virtual ThenWhileNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -610,14 +633,17 @@ namespace heather
   class AssignNode : public AptNode
   {
   public:
-    AssignNode(const SrcPos& srcpos, AptNode* lvalue, AptNode* rvalue);
+    AssignNode(const SrcPos& srcpos, Scope* scope,
+               AptNode* lvalue, AptNode* rvalue);
+
+    AptNode* lvalue() const;
+    AptNode* rvalue() const;
+
     virtual AssignNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-
-    AptNode* lvalue() const;
-    AptNode* rvalue() const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -632,13 +658,14 @@ namespace heather
   class IfNode : public AptNode
   {
   public:
-    IfNode(const SrcPos& srcpos,
+    IfNode(const SrcPos& srcpos, Scope* scope,
            AptNode* test, AptNode* consequent, AptNode* alternate);
 
     virtual IfNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
     AptNode* test() const;
     AptNode* consequent() const;
@@ -660,12 +687,14 @@ namespace heather
   class SelectNode : public AptNode
   {
   public:
-    SelectNode(const SrcPos& srcpos, AptNode* test, AptNode* comparator);
+    SelectNode(const SrcPos& srcpos, Scope* scope,
+               AptNode* test, AptNode* comparator);
 
     virtual SelectNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
     void addMapping(const NodeList& mappings, AptNode* consequent);
     void addMapping(AptNode* mapping, AptNode* consequent);
@@ -697,12 +726,13 @@ namespace heather
   class MatchNode : public AptNode
   {
   public:
-    MatchNode(const SrcPos& srcpos, AptNode* expr);
+    MatchNode(const SrcPos& srcpos, Scope* scope, AptNode* expr);
 
     virtual MatchNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
     void addMapping(const SrcPos& srcpos, const String& varName,
                     const Type& matchType,
@@ -736,13 +766,14 @@ namespace heather
   class OnNode : public AptNode
   {
   public:
-    OnNode(const SrcPos& srcpos,
+    OnNode(const SrcPos& srcpos, Scope* scope,
            const String& key, const NodeList& params, AptNode* body);
 
     virtual OnNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -758,12 +789,12 @@ namespace heather
   class BlockNode : public AptNode
   {
   public:
-    BlockNode(const SrcPos& srcpos);
+    BlockNode(const SrcPos& srcpos, Scope* scope);
     virtual BlockNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator, Scope* scope);
+    virtual void annotate(Annotator* annotator);
   };
 
 
@@ -772,7 +803,7 @@ namespace heather
   class FunctionNode : public AptNode
   {
   public:
-    FunctionNode(const SrcPos&   srcpos,
+    FunctionNode(const SrcPos&   srcpos, Scope* scope,
                  const NodeList& params,
                  const Type&     retType,
                  AptNode*        body);
@@ -781,6 +812,7 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
     const NodeList& params() const;
     const Type& retType() const;
@@ -811,10 +843,11 @@ namespace heather
   };
 
 
-  class FuncDefNode : public FunctionNode
+  class FuncDefNode : public FunctionNode, public NamedNode
   {
   public:
     FuncDefNode(const SrcPos&   srcpos,
+                Scope*          scope,
                 const String&   sym,
                 unsigned int    flags,
                 const NodeList& params,
@@ -829,7 +862,9 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator, Scope* scope);
+    virtual void annotate(Annotator* annotator);
+
+    virtual const String& name() const { return funcName(); }
 
   private:
     friend class XmlRenderer;
@@ -845,12 +880,15 @@ namespace heather
   class ApplyNode : public AptNode
   {
   public:
-    ApplyNode(const SrcPos& srcpos, AptNode* base);
+    ApplyNode(const SrcPos& srcpos, Scope* scope, AptNode* base);
+
+    AptNode* base() const;
 
     virtual ApplyNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -865,12 +903,14 @@ namespace heather
   class KeyargNode : public AptNode
   {
   public:
-    KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value);
+    KeyargNode(const SrcPos& srcpos, Scope* scope,
+               const String& key, AptNode* value);
 
     virtual KeyargNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;
@@ -885,12 +925,14 @@ namespace heather
   class WhileNode : public AptNode
   {
   public:
-    WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body);
+    WhileNode(const SrcPos& srcpos, Scope* scope,
+              AptNode* test, AptNode* body);
 
     virtual WhileNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
     AptNode* body() const;
     AptNode* test() const;
@@ -908,9 +950,11 @@ namespace heather
   class TypeNode : public AptNode
   {
   public:
-    TypeNode(const SrcPos& srcpos, const String& typeName,
-             bool isClass,
-             const Type& isa,
+    TypeNode(const SrcPos&   srcpos,
+             Scope*          scope,
+             const String&   typeName,
+             bool            isClass,
+             const Type&     isa,
              const NodeList& params,
              const NodeList& slots,
              const NodeList& reqProtocol,
@@ -920,6 +964,7 @@ namespace heather
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
 
   private:
     friend class XmlRenderer;

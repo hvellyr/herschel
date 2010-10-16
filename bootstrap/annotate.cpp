@@ -10,7 +10,9 @@
 #include "annotate.h"
 #include "scope.h"
 #include "symbol.h"
+#include "log.h"
 
+#include <typeinfo>  //for 'typeid' to work
 //----------------------------------------------------------------------------
 
 using namespace heather;
@@ -21,20 +23,18 @@ Annotator::Annotator()
 
 
 void
-Annotator::annotateNode(AptNode* node, Scope* scope)
+Annotator::annotateNode(AptNode* node)
 {
-  node->annotate(this, scope);
+  node->annotate(this);
 }
 
 
 void
-Annotator::annotate(CompileUnitNode* node, Scope* scope)
+Annotator::annotate(CompileUnitNode* node)
 {
-  Ptr<Scope> newScope = new Scope(scope);
-
   NodeList& nl = node->children();
   for (size_t i = 0; i < nl.size(); i++) {
-    annotateNode(nl[i], newScope);
+    annotateNode(nl[i]);
   }
 }
 
@@ -42,31 +42,53 @@ Annotator::annotate(CompileUnitNode* node, Scope* scope)
 //------------------------------------------------------------------------------
 
 void
-Annotator::annotate(AptNode* node, Scope* scope)
+Annotator::annotate(AptNode* node)
 {
 }
 
 
 void
-Annotator::annotate(SymbolNode* node, Scope* scope)
+Annotator::takeFullNameFromNode(SymbolNode* node, const AptNode* otherNode)
 {
+  const NamedNode* nn = dynamic_cast<const NamedNode*>(otherNode);
+  if (nn != NULL) {
+    node->setName(nn->name());
+    return;
+  }
+
+  // TODO: unexpected type here.
+  logf(kError, "Unexpected type here: %s\n", typeid(*otherNode).name());
+  assert(0);
+}
+
+
+void
+Annotator::annotate(SymbolNode* node)
+{
+  const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
+  if (var == NULL) {
+    logf(kError, "Unknown variable '%s'", (const char*)StrHelper(node->name()));
+  }
+  else {
+    takeFullNameFromNode(node, var);
+  }
 }
 
 
 //------------------------------------------------------------------------------
 
 void
-Annotator::annotate(DefNode* node, Scope* scope)
+Annotator::annotate(DefNode* node)
 {
   VardefNode* vardefNode = dynamic_cast<VardefNode*>(node->defNode());
   if (vardefNode != NULL) {
-    annotate(vardefNode, scope, false);
+    annotate(vardefNode, false);
     return;
   }
 
   FuncDefNode* funcNode = dynamic_cast<FuncDefNode*>(node->defNode());
   if (funcNode != NULL) {
-    annotate(funcNode, scope, false);
+    annotate(funcNode, false);
     return;
   }
 
@@ -76,17 +98,17 @@ Annotator::annotate(DefNode* node, Scope* scope)
 
 
 void
-Annotator::annotate(LetNode* node, Scope* scope)
+Annotator::annotate(LetNode* node)
 {
   VardefNode* vardefNode = dynamic_cast<VardefNode*>(node->defNode());
   if (vardefNode != NULL) {
-    annotate(vardefNode, scope, true);
+    annotate(vardefNode, true);
     return;
   }
 
   FuncDefNode* funcNode = dynamic_cast<FuncDefNode*>(node->defNode());
   if (funcNode != NULL) {
-    annotate(funcNode, scope, true);
+    annotate(funcNode, true);
     return;
   }
 
@@ -96,66 +118,216 @@ Annotator::annotate(LetNode* node, Scope* scope)
 
 
 void
-Annotator::annotate(VardefNode* node, Scope* scope, bool isLocal)
+Annotator::annotate(VardefNode* node, bool isLocal)
 {
-  printf("Register var: %s (scope: %p)\n", (const char*)StrHelper(node->symbolName()),
-         scope);
-  assert(!isLocal || !isQualified(node->symbolName()));
-
-  if (scope->checkForRedefinition(node->srcpos(),
-                                  Scope::kNormal, node->symbolName()))
-    return;
-
-  scope->registerVar(node->srcpos(), node->symbolName(), node);
+  if (node->initExpr() != NULL)
+    annotateNode(node->initExpr());
 }
 
 
 void
-Annotator::annotate(FuncDefNode* node, Scope* scope, bool isLocal)
+Annotator::annotate(FuncDefNode* node, bool isLocal)
 {
-  printf("Register function: %s (scope: %p)\n", (const char*)StrHelper(node->funcName()),
-         scope);
-  assert(!isLocal || !isQualified(node->funcName()));
-
-  if (scope->checkForRedefinition(node->srcpos(),
-                                  Scope::kNormal, node->funcName()))
-    return;
-
-  scope->registerFunction(node->srcpos(), node->funcName(), node);
-
-  Ptr<Scope> bodyScope = new Scope(scope);
   for (size_t pidx = 0; pidx < node->params().size(); pidx++)
-    annotateNode(node->params()[pidx], bodyScope);
+    annotateNode(node->params()[pidx]);
 
-  annotateNode(node->body(), bodyScope);
+  annotateNode(node->body());
 }
 
 
 void
-Annotator::annotate(BlockNode* node, Scope* scope)
+Annotator::annotate(FunctionNode* node)
 {
-  Ptr<Scope> newScope = new Scope(scope);
+}
 
+
+void
+Annotator::annotate(SlotdefNode* node)
+{
+}
+
+
+void
+Annotator::annotate(BlockNode* node)
+{
   NodeList& nl = node->children();
   for (size_t i = 0; i < nl.size(); i++) {
-    annotateNode(nl[i], newScope);
+    annotateNode(nl[i]);
   }
 }
 
 
 void
-Annotator::annotate(ParamNode* node, Scope* scope)
+Annotator::annotate(ParamNode* node)
 {
-  printf("Register param: %s (scope: %p)\n", (const char*)StrHelper(node->symbolName()),
-         scope);
-  assert(!isQualified(node->symbolName()));
+  if (node->initExpr() != NULL)
+    annotateNode(node->initExpr());
+}
 
-  if (scope->checkForRedefinition(node->srcpos(),
-                                  Scope::kNormal, node->symbolName()))
-    return;
 
-  scope->registerVar(node->srcpos(), node->symbolName(), node);
+void
+Annotator::annotate(ApplyNode* node)
+{
+  annotateNode(node->base());
+
+  NodeList& nl = node->children();
+  for (size_t i = 0; i < nl.size(); i++)
+    annotateNode(nl[i]);
+}
+
+
+void
+Annotator::annotate(ArrayNode* node)
+{
+}
+
+
+void
+Annotator::annotate(ArraySymbolNode* node)
+{
+}
+
+
+void
+Annotator::annotate(AssignNode* node)
+{
+  annotateNode(node->lvalue());
+  annotateNode(node->rvalue());
+}
+
+
+void
+Annotator::annotate(BinaryNode* node)
+{
+  annotateNode(node->left());
+  annotateNode(node->right());
+}
+
+
+void
+Annotator::annotate(NegateNode* node)
+{
+  annotateNode(node->base());
+}
+
+
+void
+Annotator::annotate(IfNode* node)
+{
+  annotateNode(node->test());
+  annotateNode(node->consequent());
+  if (node->alternate())
+    annotateNode(node->alternate());
+}
+
+
+void
+Annotator::annotate(KeyargNode* node)
+{
+}
+
+
+void
+Annotator::annotate(MatchNode* node)
+{
+}
+
+
+void
+Annotator::annotate(OnNode* node)
+{
+}
+
+
+void
+Annotator::annotate(RangeNode* node)
+{
+}
+
+
+void
+Annotator::annotate(SelectNode* node)
+{
+}
+
+
+void
+Annotator::annotate(ThenWhileNode* node)
+{
+}
+
+
+void
+Annotator::annotate(TypeNode* node)
+{
+}
+
+
+void
+Annotator::annotate(WhileNode* node)
+{
+}
+
+
+void
+Annotator::annotate(VectorNode* node)
+{
+}
+
+
+void
+Annotator::annotate(DictNode* node)
+{
 }
 
 
 //------------------------------------------------------------------------------
+
+void
+Annotator::annotate(BoolNode* node)
+{
+}
+
+
+void
+Annotator::annotate(CharNode* node)
+{
+}
+
+
+void
+Annotator::annotate(StringNode* node)
+{
+}
+
+
+void
+Annotator::annotate(RationalNode* node)
+{
+}
+
+
+void
+Annotator::annotate(RealNode* node)
+{
+}
+
+
+void
+Annotator::annotate(IntNode* node)
+{
+}
+
+
+void
+Annotator::annotate(KeywordNode* node)
+{
+}
+
+
+void
+Annotator::annotate(UnitConstant* node)
+{
+}
+
+

@@ -167,6 +167,8 @@ namespace heather
                      const String& name, AptNode* macro);
     const AptNode* lookupVar(const String& name, bool showAmbiguousSymDef) const;
 
+    const AptNode* lookupVarOrFunc(const String& name,
+                                   bool showAmbiguousSymDef) const;
 
 
     //-------- register export symbols
