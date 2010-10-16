@@ -449,6 +449,13 @@ CompileUnitNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+CompileUnitNode::annotate(Annotator* annotator, Scope* scope)
+{
+  annotator->annotate(this, scope);
+}
+
+
 //----------------------------------------------------------------------------
 
 BaseDefNode::BaseDefNode(const SrcPos& srcpos, AptNode* defined)
@@ -492,6 +499,13 @@ LetNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+LetNode::annotate(Annotator* annotator, Scope* scope)
+{
+  annotator->annotate(this, scope);
+}
+
+
 //----------------------------------------------------------------------------
 
 DefNode::DefNode(AptNode* node)
@@ -517,6 +531,13 @@ llvm::Value*
 DefNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
+}
+
+
+void
+DefNode::annotate(Annotator* annotator, Scope* scope)
+{
+  annotator->annotate(this, scope);
 }
 
 
@@ -609,6 +630,15 @@ VardefNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+VardefNode::annotate(Annotator* annotator, Scope* scope)
+{
+  // this should never be called directly.  See Annotator::DefNode
+  assert(0);
+}
+
+
+
 //----------------------------------------------------------------------------
 
 ParamNode::ParamNode(const SrcPos& srcpos,
@@ -663,6 +693,13 @@ llvm::Value*
 ParamNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
+}
+
+
+void
+ParamNode::annotate(Annotator* annotator, Scope* scope)
+{
+  annotator->annotate(this, scope);
 }
 
 
@@ -1302,6 +1339,13 @@ BlockNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+BlockNode::annotate(Annotator* annotator, Scope* scope)
+{
+  annotator->annotate(this, scope);
+}
+
+
 //----------------------------------------------------------------------------
 
 FunctionNode::FunctionNode(const SrcPos& srcpos,
@@ -1409,6 +1453,15 @@ FuncDefNode::codegen(CodeGenerator* generator) const
   assert(0);
   return NULL;
 }
+
+
+void
+FuncDefNode::annotate(Annotator* annotator, Scope* scope)
+{
+  // this should never be called directly.  See Annotator::DefNode
+  assert(0);
+}
+
 
 
 //----------------------------------------------------------------------------
