@@ -20,10 +20,10 @@ class TestRunner:
 
         self.SYNTAX_PASS1_OPT = ["-T", "pass1", "-P", "--dont-import", "--parse-1" ]
         self.SYNTAX_PASS2_OPT = ["-T", "pass2", "-P", "--dont-import", "--parse-2" ]
-        self.SYNTAX_PASS3_OPT = ["-T", "pass2", "-P", "--dont-import" ]
+        self.SYNTAX_PASS3_OPT = ["-T", "annotate", "-P", "--dont-import" ]
         self.IMPORT_PASS1_OPT = ["-T", "pass1", "-P", "--parse-1" ]
         self.IMPORT_PASS2_OPT = ["-T", "pass2", "-P", "--parse-2" ]
-        self.IMPORT_PASS3_OPT = ["-T", "pass2", "-P" ]
+        self.IMPORT_PASS3_OPT = ["-T", "annotate", "-P" ]
 
 
     def run_heather_on_test(self, test_file, options):
