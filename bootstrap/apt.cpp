@@ -63,6 +63,41 @@ copyNodes(const NodeList& src)
 
 //----------------------------------------------------------------------------
 
+AptNode::AptNode(const SrcPos& srcpos, Scope* scope)
+  : fSrcPos(srcpos),
+    fScope(scope)
+{
+}
+
+
+const SrcPos&
+AptNode::srcpos() const
+{
+  return fSrcPos;
+}
+
+
+Scope*
+AptNode::scope()
+{
+  return fScope;
+}
+
+
+NodeList&
+AptNode::children()
+{
+  return fChildren;
+}
+
+
+const NodeList&
+AptNode::children() const
+{
+  return fChildren;
+}
+
+
 void
 AptNode::appendNode(AptNode* node)
 {
@@ -85,16 +120,17 @@ AptNode::codegen(CodeGenerator* generator) const
 
 
 void
-AptNode::annotate(Annotator* annotator, Scope* scope)
+AptNode::annotate(Annotator* annotator)
 {
-  annotator->annotate(this, scope);
+  annotator->annotate(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-StringNode::StringNode(const SrcPos& srcpos, const String& value)
-  : AptNode(srcpos),
+StringNode::StringNode(const SrcPos& srcpos, Scope* scope,
+                       const String& value)
+  : AptNode(srcpos, scope),
     fValue(value)
 {
 }
@@ -103,7 +139,7 @@ StringNode::StringNode(const SrcPos& srcpos, const String& value)
 StringNode*
 StringNode::clone() const
 {
-  return new StringNode(fSrcPos, fValue);
+  return new StringNode(fSrcPos, fScope, fValue);
 }
 
 
@@ -121,10 +157,18 @@ StringNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+StringNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-KeywordNode::KeywordNode(const SrcPos& srcpos, const String& value)
-  :AptNode(srcpos),
+KeywordNode::KeywordNode(const SrcPos& srcpos, Scope* scope,
+                         const String& value)
+  :AptNode(srcpos, scope),
    fValue(value)
 {
 }
@@ -133,7 +177,7 @@ KeywordNode::KeywordNode(const SrcPos& srcpos, const String& value)
 KeywordNode*
 KeywordNode::clone() const
 {
-  return new KeywordNode(fSrcPos, fValue);
+  return new KeywordNode(fSrcPos, fScope, fValue);
 }
 
 
@@ -151,18 +195,27 @@ KeywordNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+KeywordNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value)
-  : AptNode(srcpos),
+SymbolNode::SymbolNode(const SrcPos& srcpos, Scope* scope,
+                       const String& value)
+  : AptNode(srcpos, scope),
     fValue(value)
 {
 }
 
 
-SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value,
+SymbolNode::SymbolNode(const SrcPos& srcpos, Scope* scope,
+                       const String& value,
                        const TypeVector& generics)
-  : AptNode(srcpos),
+  : AptNode(srcpos, scope),
     fValue(value),
     fGenerics(generics)
 { }
@@ -171,7 +224,14 @@ SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value,
 SymbolNode*
 SymbolNode::clone() const
 {
-  return new SymbolNode(fSrcPos, fValue);
+  return new SymbolNode(fSrcPos, fScope, fValue);
+}
+
+
+void
+SymbolNode::setName(const String& nm)
+{
+  fValue = nm;
 }
 
 
@@ -204,23 +264,24 @@ SymbolNode::codegen(CodeGenerator* generator) const
 
 
 void
-SymbolNode::annotate(Annotator* an, Scope* scope)
+SymbolNode::annotate(Annotator* an)
 {
-  an->annotate(this, scope);
+  an->annotate(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-ArraySymbolNode::ArraySymbolNode(const SrcPos& srcpos, const String& value)
-  : SymbolNode(srcpos, value)
+ArraySymbolNode::ArraySymbolNode(const SrcPos& srcpos, Scope* scope,
+                                 const String& value)
+  : SymbolNode(srcpos, scope, value)
 { }
 
 
 ArraySymbolNode*
 ArraySymbolNode::clone() const
 {
-  return new ArraySymbolNode(fSrcPos, fValue);
+  return new ArraySymbolNode(fSrcPos, fScope, fValue);
 }
 
 
@@ -238,11 +299,19 @@ ArraySymbolNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+ArraySymbolNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-IntNode::IntNode(const SrcPos& srcpos, int value, bool isImaginary,
+IntNode::IntNode(const SrcPos& srcpos, Scope* scope, int value,
+                 bool isImaginary,
                  const Type& type)
-  : NumberNode<int>(srcpos, value, isImaginary, type)
+  : NumberNode<int>(srcpos, scope, value, isImaginary, type)
 {
 }
 
@@ -250,7 +319,7 @@ IntNode::IntNode(const SrcPos& srcpos, int value, bool isImaginary,
 IntNode*
 IntNode::clone() const
 {
-  return new IntNode(fSrcPos, fValue, fIsImaginary, fType.clone());
+  return new IntNode(fSrcPos, fScope, fValue, fIsImaginary, fType.clone());
 }
 
 
@@ -268,11 +337,19 @@ IntNode::render(XmlRenderer* renderer) const
 }
 
 
+void
+IntNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary,
+RealNode::RealNode(const SrcPos& srcpos, Scope* scope, double value,
+                   bool isImaginary,
                    const Type& type)
-  : NumberNode<double>(srcpos, value, isImaginary, type)
+  : NumberNode<double>(srcpos, scope, value, isImaginary, type)
 {
 }
 
@@ -280,7 +357,7 @@ RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary,
 RealNode*
 RealNode::clone() const
 {
-  return new RealNode(fSrcPos, fValue, fIsImaginary, fType.clone());
+  return new RealNode(fSrcPos, fScope, fValue, fIsImaginary, fType.clone());
 }
 
 
@@ -298,12 +375,19 @@ RealNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+RealNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-RationalNode::RationalNode(const SrcPos& srcpos,
+RationalNode::RationalNode(const SrcPos& srcpos, Scope* scope,
                            const Rational& value, bool isImaginary,
                            const Type& type)
-  : NumberNode<Rational>(srcpos, value, isImaginary, type)
+  : NumberNode<Rational>(srcpos, scope, value, isImaginary, type)
 {
 }
 
@@ -311,7 +395,8 @@ RationalNode::RationalNode(const SrcPos& srcpos,
 RationalNode*
 RationalNode::clone() const
 {
-  return new RationalNode(fSrcPos, fValue, fIsImaginary, fType.clone());
+  return new RationalNode(fSrcPos, fScope, fValue,
+                          fIsImaginary, fType.clone());
 }
 
 
@@ -329,10 +414,17 @@ RationalNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+RationalNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-CharNode::CharNode(const SrcPos& srcpos, Char value)
-  : AptNode(srcpos),
+CharNode::CharNode(const SrcPos& srcpos, Scope* scope, Char value)
+  : AptNode(srcpos, scope),
     fValue(value)
 { }
 
@@ -340,7 +432,7 @@ CharNode::CharNode(const SrcPos& srcpos, Char value)
 CharNode*
 CharNode::clone() const
 {
-  return new CharNode(fSrcPos, fValue);
+  return new CharNode(fSrcPos, fScope, fValue);
 }
 
 
@@ -358,10 +450,17 @@ CharNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+CharNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-BoolNode::BoolNode(const SrcPos& srcpos, bool value)
-  : AptNode(srcpos),
+BoolNode::BoolNode(const SrcPos& srcpos, Scope* scope, bool value)
+  : AptNode(srcpos, scope),
     fValue(value)
 { }
 
@@ -369,7 +468,7 @@ BoolNode::BoolNode(const SrcPos& srcpos, bool value)
 BoolNode*
 BoolNode::clone() const
 {
-  return new BoolNode(fSrcPos, fValue);
+  return new BoolNode(fSrcPos, fScope, fValue);
 }
 
 
@@ -387,11 +486,18 @@ BoolNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+BoolNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-UnitConstant::UnitConstant(const SrcPos& srcpos, AptNode* value,
+UnitConstant::UnitConstant(const SrcPos& srcpos, Scope* scope, AptNode* value,
                            const TypeUnit& unit)
-  : AptNode(srcpos),
+  : AptNode(srcpos, scope),
     fValue(value),
     fUnit(unit)
 {
@@ -401,7 +507,7 @@ UnitConstant::UnitConstant(const SrcPos& srcpos, AptNode* value,
 UnitConstant*
 UnitConstant::clone() const
 {
-  return new UnitConstant(fSrcPos, nodeClone(fValue), fUnit);
+  return new UnitConstant(fSrcPos, fScope, nodeClone(fValue), fUnit);
 }
 
 
@@ -419,17 +525,24 @@ UnitConstant::codegen(CodeGenerator* generator) const
 }
 
 
+void
+UnitConstant::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+CompileUnitNode::CompileUnitNode(const SrcPos& srcpos, Scope* scope)
+  : AptNode(srcpos, scope)
 {}
 
 
 CompileUnitNode*
 CompileUnitNode::clone() const
 {
-  Ptr<CompileUnitNode> node = new CompileUnitNode(fSrcPos);
+  Ptr<CompileUnitNode> node = new CompileUnitNode(fSrcPos, fScope);
   copyNodes(&node->fChildren, &fChildren);
   return node.release();
 }
@@ -450,16 +563,16 @@ CompileUnitNode::codegen(CodeGenerator* generator) const
 
 
 void
-CompileUnitNode::annotate(Annotator* annotator, Scope* scope)
+CompileUnitNode::annotate(Annotator* annotator)
 {
-  annotator->annotate(this, scope);
+  annotator->annotate(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-BaseDefNode::BaseDefNode(const SrcPos& srcpos, AptNode* defined)
-  : AptNode(srcpos),
+BaseDefNode::BaseDefNode(const SrcPos& srcpos, Scope* scope, AptNode* defined)
+  : AptNode(srcpos, scope),
     fDefined(defined)
 { }
 
@@ -473,15 +586,15 @@ BaseDefNode::defNode() const
 
 //----------------------------------------------------------------------------
 
-LetNode::LetNode(AptNode* node)
-  : BaseDefNode(node->srcpos(), node)
+LetNode::LetNode(Scope* scope, AptNode* node)
+  : BaseDefNode(node->srcpos(), scope, node)
 { }
 
 
 LetNode*
 LetNode::clone() const
 {
-  return new LetNode(nodeClone(fDefined.obj()));
+  return new LetNode(fScope, nodeClone(fDefined.obj()));
 }
 
 
@@ -500,23 +613,23 @@ LetNode::codegen(CodeGenerator* generator) const
 
 
 void
-LetNode::annotate(Annotator* annotator, Scope* scope)
+LetNode::annotate(Annotator* annotator)
 {
-  annotator->annotate(this, scope);
+  annotator->annotate(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-DefNode::DefNode(AptNode* node)
-  : BaseDefNode(node->srcpos(), node)
+DefNode::DefNode(Scope* scope, AptNode* node)
+  : BaseDefNode(node->srcpos(), scope, node)
 { }
 
 
 DefNode*
 DefNode::clone() const
 {
-  return new DefNode(nodeClone(fDefined.obj()));
+  return new DefNode(fScope, nodeClone(fDefined.obj()));
 }
 
 
@@ -535,18 +648,18 @@ DefNode::codegen(CodeGenerator* generator) const
 
 
 void
-DefNode::annotate(Annotator* annotator, Scope* scope)
+DefNode::annotate(Annotator* annotator)
 {
-  annotator->annotate(this, scope);
+  annotator->annotate(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-BindingNode::BindingNode(const SrcPos& srcpos,
+BindingNode::BindingNode(const SrcPos& srcpos, Scope* scope,
                          const String& symbolName, const Type& type,
                          AptNode* initExpr)
-  : AptNode(srcpos),
+  : AptNode(srcpos, scope),
     fSymbolName(symbolName),
     fType(type),
     fInitExpr(initExpr)
@@ -576,10 +689,10 @@ BindingNode::initExpr() const
 
 //----------------------------------------------------------------------------
 
-VardefNode::VardefNode(const SrcPos& srcpos,
+VardefNode::VardefNode(const SrcPos& srcpos, Scope* scope,
                        const String& symbolName, VardefFlags flags,
                        const Type& type, AptNode* initExpr)
-  : BindingNode(srcpos, symbolName, type, initExpr),
+  : BindingNode(srcpos, scope, symbolName, type, initExpr),
     fFlags(flags)
 {
 }
@@ -588,7 +701,7 @@ VardefNode::VardefNode(const SrcPos& srcpos,
 VardefNode*
 VardefNode::clone() const
 {
-  return new VardefNode(fSrcPos, fSymbolName, fFlags,
+  return new VardefNode(fSrcPos, fScope, fSymbolName, fFlags,
                         fType.clone(), nodeClone(fInitExpr));
 }
 
@@ -631,7 +744,7 @@ VardefNode::codegen(CodeGenerator* generator) const
 
 
 void
-VardefNode::annotate(Annotator* annotator, Scope* scope)
+VardefNode::annotate(Annotator* annotator)
 {
   // this should never be called directly.  See Annotator::DefNode
   assert(0);
@@ -641,11 +754,11 @@ VardefNode::annotate(Annotator* annotator, Scope* scope)
 
 //----------------------------------------------------------------------------
 
-ParamNode::ParamNode(const SrcPos& srcpos,
+ParamNode::ParamNode(const SrcPos& srcpos, Scope* scope,
                      const String& keyName,
                      const String& symbolName, ParamFlags flags,
                      const Type& type, AptNode* initExpr)
-  : BindingNode(srcpos, symbolName, type, initExpr),
+  : BindingNode(srcpos, scope, symbolName, type, initExpr),
     fKey(keyName),
     fFlags(flags)
 {
@@ -656,7 +769,7 @@ ParamNode::ParamNode(const SrcPos& srcpos,
 ParamNode*
 ParamNode::clone() const
 {
-  return new ParamNode(fSrcPos, fKey, fSymbolName, fFlags,
+  return new ParamNode(fSrcPos, fScope, fKey, fSymbolName, fFlags,
                        fType.clone(), nodeClone(fInitExpr));
 }
 
@@ -697,19 +810,19 @@ ParamNode::codegen(CodeGenerator* generator) const
 
 
 void
-ParamNode::annotate(Annotator* annotator, Scope* scope)
+ParamNode::annotate(Annotator* annotator)
 {
-  annotator->annotate(this, scope);
+  annotator->annotate(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-SlotdefNode::SlotdefNode(const SrcPos& srcpos,
+SlotdefNode::SlotdefNode(const SrcPos& srcpos, Scope* scope,
                          const String& symbolName,
                          unsigned int flags,
                          const Type& type, AptNode* initExpr)
-  : BindingNode(srcpos, symbolName, type, initExpr),
+  : BindingNode(srcpos, scope, symbolName, type, initExpr),
     fFlags(flags)
 { }
 
@@ -717,7 +830,7 @@ SlotdefNode::SlotdefNode(const SrcPos& srcpos,
 SlotdefNode*
 SlotdefNode::clone() const
 {
-  return new SlotdefNode(fSrcPos, fSymbolName, fFlags,
+  return new SlotdefNode(fSrcPos, fScope, fSymbolName, fFlags,
                          fType.clone(), nodeClone(fInitExpr));
 }
 
@@ -736,12 +849,19 @@ SlotdefNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+SlotdefNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 ArrayNode*
 ArrayNode::clone() const
 {
-  Ptr<ArrayNode> an = new ArrayNode(fSrcPos);
+  Ptr<ArrayNode> an = new ArrayNode(fSrcPos, fScope);
   copyNodes(&an->fChildren, &fChildren);
   return an.release();
 }
@@ -761,12 +881,19 @@ ArrayNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+ArrayNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 VectorNode*
 VectorNode::clone() const
 {
-  Ptr<VectorNode> vect = new VectorNode(fSrcPos);
+  Ptr<VectorNode> vect = new VectorNode(fSrcPos, fScope);
   copyNodes(&vect->fChildren, &fChildren);
   return vect.release();
 }
@@ -786,12 +913,19 @@ VectorNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+VectorNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 DictNode*
 DictNode::clone() const
 {
-  Ptr<DictNode> dict = new DictNode(fSrcPos);
+  Ptr<DictNode> dict = new DictNode(fSrcPos, fScope);
   copyNodes(&dict->fChildren, &fChildren);
   return dict.release();
 }
@@ -810,7 +944,7 @@ DictNode::addPair(AptNode* key, AptNode* value)
   assert(key != NULL);
   assert(value != NULL);
 
-  appendNode(new BinaryNode(key->srcpos(), key, kOpMapTo, value));
+  appendNode(new BinaryNode(key->srcpos(), fScope, key, kOpMapTo, value));
 }
 
 
@@ -821,11 +955,18 @@ DictNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+DictNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-BinaryNode::BinaryNode(const SrcPos& srcpos,
+BinaryNode::BinaryNode(const SrcPos& srcpos, Scope* scope,
                        AptNode* left, OperatorType op, AptNode* right)
-  : AptNode(srcpos),
+  : AptNode(srcpos, scope),
     fLeft(left),
     fRight(right),
     fOp(op)
@@ -837,7 +978,7 @@ BinaryNode::BinaryNode(const SrcPos& srcpos,
 BinaryNode*
 BinaryNode::clone() const
 {
-  return new BinaryNode(fSrcPos,
+  return new BinaryNode(fSrcPos, fScope,
                         nodeClone(fLeft), fOp, nodeClone(fRight));
 }
 
@@ -898,18 +1039,39 @@ BinaryNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+BinaryNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-NegateNode::NegateNode(const SrcPos& srcpos, AptNode* base)
-  : AptNode(srcpos),
+NegateNode::NegateNode(const SrcPos& srcpos, Scope* scope, AptNode* base)
+  : AptNode(srcpos, scope),
     fBase(base)
 { }
+
+
+const AptNode*
+NegateNode::base() const
+{
+  return fBase;
+}
+
+
+AptNode*
+NegateNode::base()
+{
+  return fBase;
+}
 
 
 NegateNode*
 NegateNode::clone() const
 {
-  return new NegateNode(fSrcPos, nodeClone(fBase));
+  return new NegateNode(fSrcPos, fScope, nodeClone(fBase));
 }
 
 
@@ -927,11 +1089,18 @@ NegateNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+NegateNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //------------------------------------------------------------------------------
 
-RangeNode::RangeNode(const SrcPos& srcpos,
+RangeNode::RangeNode(const SrcPos& srcpos, Scope* scope,
                      AptNode* from, AptNode* to, AptNode* by)
-  : AptNode(srcpos),
+  : AptNode(srcpos, scope),
     fFrom(from),
     fTo(to),
     fBy(by)
@@ -941,7 +1110,7 @@ RangeNode::RangeNode(const SrcPos& srcpos,
 RangeNode*
 RangeNode::clone() const
 {
-  return new RangeNode(fSrcPos,
+  return new RangeNode(fSrcPos, fScope,
                        nodeClone(fFrom), nodeClone(fTo), nodeClone(fBy));
 }
 
@@ -981,11 +1150,18 @@ RangeNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+RangeNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //--------------------------------------------------------------------------
 
-ThenWhileNode::ThenWhileNode(const SrcPos& srcpos,
+ThenWhileNode::ThenWhileNode(const SrcPos& srcpos, Scope* scope,
                              AptNode* first, AptNode* step, AptNode* test)
-  : AptNode(srcpos),
+  : AptNode(srcpos, scope),
     fFirst(first),
     fStep(step),
     fTest(test)
@@ -995,7 +1171,7 @@ ThenWhileNode::ThenWhileNode(const SrcPos& srcpos,
 ThenWhileNode*
 ThenWhileNode::clone() const
 {
-  return new ThenWhileNode(fSrcPos,
+  return new ThenWhileNode(fSrcPos, fScope,
                            nodeClone(fFirst),
                            nodeClone(fStep),
                            nodeClone(fTest));
@@ -1016,11 +1192,18 @@ ThenWhileNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+ThenWhileNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //--------------------------------------------------------------------------
 
-AssignNode::AssignNode(const SrcPos& srcpos,
+AssignNode::AssignNode(const SrcPos& srcpos, Scope* scope,
                        AptNode* lvalue, AptNode* rvalue)
-  : AptNode(srcpos),
+  : AptNode(srcpos, scope),
     fLValue(lvalue),
     fRValue(rvalue)
 { }
@@ -1029,7 +1212,7 @@ AssignNode::AssignNode(const SrcPos& srcpos,
 AssignNode*
 AssignNode::clone() const
 {
-  return new AssignNode(fSrcPos,
+  return new AssignNode(fSrcPos, fScope,
                         nodeClone(fLValue),
                         nodeClone(fRValue));
 }
@@ -1063,11 +1246,18 @@ AssignNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+AssignNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //------------------------------------------------------------------------------
 
-IfNode::IfNode(const SrcPos& srcpos,
+IfNode::IfNode(const SrcPos& srcpos, Scope* scope,
                AptNode* test, AptNode* consequent, AptNode* alternate)
-  : AptNode(srcpos),
+  : AptNode(srcpos, scope),
     fTest(test),
     fConsequent(consequent),
     fAlternate(alternate)
@@ -1077,7 +1267,7 @@ IfNode::IfNode(const SrcPos& srcpos,
 IfNode*
 IfNode::clone() const
 {
-  return new IfNode(fSrcPos,
+  return new IfNode(fSrcPos, fScope,
                     nodeClone(fTest),
                     nodeClone(fConsequent),
                     nodeClone(fAlternate));
@@ -1126,10 +1316,18 @@ IfNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+IfNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //------------------------------------------------------------------------------
 
-SelectNode::SelectNode(const SrcPos& srcpos, AptNode* test, AptNode* comparator)
-  : AptNode(srcpos),
+SelectNode::SelectNode(const SrcPos& srcpos, Scope* scope,
+                       AptNode* test, AptNode* comparator)
+  : AptNode(srcpos, scope),
     fTest(test),
     fComparator(comparator)
 {
@@ -1139,7 +1337,7 @@ SelectNode::SelectNode(const SrcPos& srcpos, AptNode* test, AptNode* comparator)
 SelectNode*
 SelectNode::clone() const
 {
-  Ptr<SelectNode> newNode = new SelectNode(fSrcPos,
+  Ptr<SelectNode> newNode = new SelectNode(fSrcPos, fScope,
                                            nodeClone(fTest),
                                            nodeClone(fComparator));
   for (size_t i = 0; i < fMappings.size(); i++) {
@@ -1205,10 +1403,17 @@ SelectNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+SelectNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //------------------------------------------------------------------------------
 
-MatchNode::MatchNode(const SrcPos& srcpos, AptNode* expr)
-  : AptNode(srcpos),
+MatchNode::MatchNode(const SrcPos& srcpos, Scope* scope, AptNode* expr)
+  : AptNode(srcpos, scope),
     fExpr(expr)
 {
 }
@@ -1217,7 +1422,7 @@ MatchNode::MatchNode(const SrcPos& srcpos, AptNode* expr)
 MatchNode*
 MatchNode::clone() const
 {
-  Ptr<MatchNode> newNode = new MatchNode(fSrcPos, nodeClone(fExpr));
+  Ptr<MatchNode> newNode = new MatchNode(fSrcPos, fScope, nodeClone(fExpr));
   for (size_t i = 0; i < fMappings.size(); i++) {
     newNode->fMappings.push_back(
       MatchMapping(fMappings[i].fSrcPos,
@@ -1274,11 +1479,18 @@ MatchNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+MatchNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //------------------------------------------------------------------------------
 
-OnNode::OnNode(const SrcPos& srcpos,
+OnNode::OnNode(const SrcPos& srcpos, Scope* scope,
                const String& key, const NodeList& params, AptNode* body)
-  : AptNode(srcpos),
+  : AptNode(srcpos, scope),
     fKey(key),
     fBody(body)
 {
@@ -1289,7 +1501,7 @@ OnNode::OnNode(const SrcPos& srcpos,
 OnNode*
 OnNode::clone() const
 {
-  return new OnNode(fSrcPos, fKey,
+  return new OnNode(fSrcPos, fScope, fKey,
                     copyNodes(fParams),
                     nodeClone(fBody));
 }
@@ -1309,17 +1521,24 @@ OnNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+OnNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-BlockNode::BlockNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+BlockNode::BlockNode(const SrcPos& srcpos, Scope* scope)
+  : AptNode(srcpos, scope)
 { }
 
 
 BlockNode*
 BlockNode::clone() const
 {
-  Ptr<BlockNode> block = new BlockNode(fSrcPos);
+  Ptr<BlockNode> block = new BlockNode(fSrcPos, fScope);
   copyNodes(&block->fChildren, &fChildren);
   return block.release();
 }
@@ -1340,19 +1559,20 @@ BlockNode::codegen(CodeGenerator* generator) const
 
 
 void
-BlockNode::annotate(Annotator* annotator, Scope* scope)
+BlockNode::annotate(Annotator* annotator)
 {
-  annotator->annotate(this, scope);
+  annotator->annotate(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-FunctionNode::FunctionNode(const SrcPos& srcpos,
+FunctionNode::FunctionNode(const SrcPos&   srcpos,
+                           Scope*          scope,
                            const NodeList& params,
-                           const Type& retType,
-                           AptNode* body)
-  : AptNode(srcpos),
+                           const Type&     retType,
+                           AptNode*        body)
+  : AptNode(srcpos, scope),
     fRetType(retType),
     fBody(body)
 {
@@ -1363,7 +1583,7 @@ FunctionNode::FunctionNode(const SrcPos& srcpos,
 FunctionNode*
 FunctionNode::clone() const
 {
-  return new FunctionNode(fSrcPos, copyNodes(fParams),
+  return new FunctionNode(fSrcPos, fScope, copyNodes(fParams),
                           fRetType.clone(), nodeClone(fBody));
 }
 
@@ -1396,15 +1616,23 @@ FunctionNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+FunctionNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 FuncDefNode::FuncDefNode(const SrcPos& srcpos,
+                         Scope* scope,
                          const String& sym,
                          unsigned int flags,
                          const NodeList& params,
                          const Type& retType,
                          AptNode* body)
-  : FunctionNode(srcpos, params, retType, body),
+  : FunctionNode(srcpos, scope, params, retType, body),
     fSym(sym),
     fFlags(flags)
 { }
@@ -1413,7 +1641,7 @@ FuncDefNode::FuncDefNode(const SrcPos& srcpos,
 FuncDefNode*
 FuncDefNode::clone() const
 {
-  return new FuncDefNode(fSrcPos, fSym, fFlags, fParams,
+  return new FuncDefNode(fSrcPos, fScope, fSym, fFlags, fParams,
                          fRetType.clone(), nodeClone(fBody));
 }
 
@@ -1456,7 +1684,7 @@ FuncDefNode::codegen(CodeGenerator* generator) const
 
 
 void
-FuncDefNode::annotate(Annotator* annotator, Scope* scope)
+FuncDefNode::annotate(Annotator* annotator)
 {
   // this should never be called directly.  See Annotator::DefNode
   assert(0);
@@ -1466,8 +1694,8 @@ FuncDefNode::annotate(Annotator* annotator, Scope* scope)
 
 //----------------------------------------------------------------------------
 
-ApplyNode::ApplyNode(const SrcPos& srcpos, AptNode* base)
-  : AptNode(srcpos),
+ApplyNode::ApplyNode(const SrcPos& srcpos, Scope* scope, AptNode* base)
+  : AptNode(srcpos, scope),
     fBase(base)
 { }
 
@@ -1475,9 +1703,16 @@ ApplyNode::ApplyNode(const SrcPos& srcpos, AptNode* base)
 ApplyNode*
 ApplyNode::clone() const
 {
-  Ptr<ApplyNode> apply = new ApplyNode(fSrcPos, nodeClone(fBase));
+  Ptr<ApplyNode> apply = new ApplyNode(fSrcPos, fScope, nodeClone(fBase));
   copyNodes(&apply->fChildren, &fChildren);
   return apply.release();
+}
+
+
+AptNode*
+ApplyNode::base() const
+{
+  return fBase;
 }
 
 
@@ -1495,10 +1730,18 @@ ApplyNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+ApplyNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-KeyargNode::KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value)
-  : AptNode(srcpos),
+KeyargNode::KeyargNode(const SrcPos& srcpos, Scope* scope,
+                       const String& key, AptNode* value)
+  : AptNode(srcpos, scope),
     fKey(key),
     fValue(value)
 { }
@@ -1507,7 +1750,7 @@ KeyargNode::KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value)
 KeyargNode*
 KeyargNode::clone() const
 {
-  return new KeyargNode(fSrcPos, fKey, nodeClone(fValue));
+  return new KeyargNode(fSrcPos, fScope, fKey, nodeClone(fValue));
 }
 
 
@@ -1525,10 +1768,18 @@ KeyargNode::codegen(CodeGenerator* generator) const
 }
 
 
+void
+KeyargNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
 //----------------------------------------------------------------------------
 
-WhileNode::WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body)
-  : AptNode(srcpos),
+WhileNode::WhileNode(const SrcPos& srcpos, Scope* scope,
+                     AptNode* test, AptNode* body)
+  : AptNode(srcpos, scope),
     fTest(test),
     fBody(body)
 { }
@@ -1537,7 +1788,7 @@ WhileNode::WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body)
 WhileNode*
 WhileNode::clone() const
 {
-  return new WhileNode(fSrcPos,
+  return new WhileNode(fSrcPos, fScope,
                        nodeClone(fTest),
                        nodeClone(fBody));
 }
@@ -1571,17 +1822,25 @@ WhileNode::test() const
 }
 
 
+void
+WhileNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
 
 //----------------------------------------------------------------------------
 
-TypeNode::TypeNode(const SrcPos& srcpos, const String& typeName,
-                   bool isClass,
-                   const Type& isa,
+TypeNode::TypeNode(const SrcPos&   srcpos,
+                   Scope*          scope,
+                   const String&   typeName,
+                   bool            isClass,
+                   const Type&     isa,
                    const NodeList& params,
                    const NodeList& slots,
                    const NodeList& reqProtocol,
                    const NodeList& onExprs)
-  : AptNode(srcpos),
+  : AptNode(srcpos, scope),
     fTypeName(typeName),
     fIsClass(isClass),
     fParams(params),
@@ -1595,7 +1854,7 @@ TypeNode::TypeNode(const SrcPos& srcpos, const String& typeName,
 TypeNode*
 TypeNode::clone() const
 {
-  return new TypeNode(fSrcPos, fTypeName, fIsClass, fIsa.clone(),
+  return new TypeNode(fSrcPos, fScope, fTypeName, fIsClass, fIsa.clone(),
                       copyNodes(fParams),
                       copyNodes(fSlots),
                       copyNodes(fReqProtocol),
@@ -1614,6 +1873,13 @@ llvm::Value*
 TypeNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
+}
+
+
+void
+TypeNode::annotate(Annotator* an)
+{
+  an->annotate(this);
 }
 
 
