@@ -11,6 +11,7 @@
 #include <map>
 
 #include "properties.h"
+#include "log.h"
 #include "str.h"
 #include "ptr.h"
 #include "token.h"
@@ -186,7 +187,7 @@ Properties::setConfigVar(const String& keyValuePair)
                                                  kString, value));
   }
   else
-    fprintf(stderr, "ERROR: bad key-value pair for config key.  Ignored\n");
+    logf(kError, "bad key-value pair for config key.  Ignored\n");
 }
 
 

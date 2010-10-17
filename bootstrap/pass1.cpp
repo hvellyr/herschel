@@ -2457,8 +2457,9 @@ FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
         inclAlternate = !p.boolValue();
       }
       else {
-        fprintf(stderr, "ERROR: when-expression did not evaluate to boolean. "
-                "Treat it as false\n");
+        warningf(p.srcpos(), E_BadType,
+                "when-expression did not evaluate to boolean. "
+                "Treat it as false");
         inclConsequent = false;
         inclAlternate = true;
       }
@@ -2611,7 +2612,7 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
   while (!isDone) {
     Token colonToken;
     Token type;
-    
+
     assert(!ellipsisToken.isSet());
 
     if (fToken == kColon) {
@@ -2711,7 +2712,7 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
       const char* funcName = ( i == leftHands.size() - 1 && ellipsisToken.isSet()
                                ? "slice*"
                                : "slice" );
-        
+
       effInitExpr << Token(vardefSym.srcpos(), funcName)
                   << ( Token(vardefSym.srcpos(), kParanOpen, kParanClose)
                        << initValueSym

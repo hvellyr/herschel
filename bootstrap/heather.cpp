@@ -173,9 +173,9 @@ compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
     }
   }
   catch (const Exception& e) {
-    fprintf(stderr, "ERROR: compilation of '%s' failed: %s\n",
-            (const char*)StrHelper(file),
-            (const char*)StrHelper(e.message()));
+    logf(kError, "compilation of '%s' failed: %s",
+         (const char*)StrHelper(file),
+         (const char*)StrHelper(e.message()));
   }
 }
 
@@ -299,11 +299,11 @@ main(int argc, char** argv)
       break;
 
     case OptionsParser::kUnknownOption:
-      fprintf(stderr, "ERROR: Unknown option: %s\n", (const char*)StrHelper(option.fOption));
+      logf(kError, "Unknown option: %s\n", (const char*)StrHelper(option.fOption));
       break;
 
     case OptionsParser::kMissingArgument:
-      fprintf(stderr, "ERROR: Missing value for option: %s\n", (const char*)StrHelper(option.fOption));
+      logf(kError, "Missing value for option: %s\n", (const char*)StrHelper(option.fOption));
       break;
 
     case OptionsParser::kNotAnOption:
