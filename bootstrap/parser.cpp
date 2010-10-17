@@ -149,7 +149,7 @@ Parser::doPass2Parse(const Token& parsedExprs, bool doTrace)
 {
   bool doPass2 = true;
 #if defined(UNITTESTS)
-  doPass2 = Properties::test_passLevel() >= 1;
+  doPass2 = Properties::test_passLevel() > 1;
 #endif
 
   if (doPass2) {
@@ -176,7 +176,7 @@ Parser::annotate(AptNode* node, bool doTrace)
   Ptr<AptNode> n = node;
   bool doPass3 = true;
 #if defined(UNITTESTS)
-  doPass3 = Properties::test_passLevel() >= 2;
+  doPass3 = Properties::test_passLevel() > 2;
 #endif
 
   if (doPass3) {

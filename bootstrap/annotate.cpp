@@ -6,11 +6,14 @@
    All rights reserved.
 */
 
-#include "apt.h"
 #include "annotate.h"
+#include "apt.h"
+#include "errcodes.h"
+#include "log.h"
+#include "properties.h"
 #include "scope.h"
 #include "symbol.h"
-#include "log.h"
+
 
 #include <typeinfo>  //for 'typeid' to work
 //----------------------------------------------------------------------------
@@ -66,7 +69,9 @@ Annotator::annotate(SymbolNode* node)
 {
   const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
   if (var == NULL) {
-    logf(kError, "Unknown variable '%s'", (const char*)StrHelper(node->name()));
+    if (Properties::test_passLevel() > 2)
+      errorf(node->srcpos(), E_UndefinedVar,
+             "Unknown variable '%s'", (const char*)StrHelper(node->name()));
   }
   else {
     takeFullNameFromNode(node, var);
