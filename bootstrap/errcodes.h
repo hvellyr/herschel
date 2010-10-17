@@ -122,11 +122,13 @@ namespace heather
     E_BadLHExpr           = 0x4401,
 
     // select, match
-    E_BadPatternList      = 0x4401,
     E_RedefinedPattern    = 0x4402,
     E_ColonExpected       = 0x4403,
     E_ExpectedPipe        = 0x4404,
     E_ElseNotLastPattern  = 0x4405,
+    E_BadPatternList      = 0x4406,
+
+    E_UndefinedVar        = 0x4410,
 
     // module parsing
     E_MissingModName      = 0x4500,

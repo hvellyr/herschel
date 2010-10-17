@@ -152,9 +152,8 @@ compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
       Ptr<Parser> parser = new Parser;
       Ptr<AptNode> apt = parser->parse(new CharPort(new FilePort(file, "rb")),
                                        file);
-      assert(apt);
-
       if (doCompile) {
+        assert(apt);
         CompileUnitNode* unit = dynamic_cast<CompileUnitNode*>(apt.obj());
         assert(unit != NULL);
 
