@@ -52,7 +52,7 @@ namespace heather
   class SymbolNode;
   class ThenWhileNode;
   class TypeDefNode;
-  class UnitConstant;
+  class UnitConstNode;
   class VardefNode;
   class VectorNode;
   class WhileNode;
@@ -104,7 +104,7 @@ namespace heather
     void renderNode(const SymbolNode* node);
     void renderNode(const ThenWhileNode* node);
     void renderNode(const TypeDefNode* node);
-    void renderNode(const UnitConstant* node);
+    void renderNode(const UnitConstNode* node);
     void renderNode(const VardefNode* node);
     void renderNode(const VectorNode* node);
     void renderNode(const WhileNode* node);

@@ -2487,7 +2487,7 @@ SecondPass::parseUnitNumber(const Token& expr)
 
   TypeUnit unit = fScope->lookupUnit(expr[2].idValue(), true);
   if (unit.isDef()) {
-    return new UnitConstant(expr.srcpos(), fScope, value, unit);
+    return new UnitConstNode(expr.srcpos(), fScope, value, unit);
   }
   else {
     error(expr[2].srcpos(), E_UndefinedUnit,
