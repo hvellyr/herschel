@@ -8,6 +8,15 @@ import sys
 import comparexml
 import re
 
+OPTIONS = { 'syntax':   { '1': ['-T', 'pass1', '-P', '--dont-import', '--parse-1' ],
+                          '2': ['-T', 'pass2', '-P', '--dont-import', '--parse-2' ],
+                          '3': ['-T', 'annotate', '-P', '--dont-import' ] },
+            'import':   { '1': ['-T', 'pass1', '-P', '--parse-1' ],
+                          '2': ['-T', 'pass2', '-P', '--parse-2' ],
+                          '3': ['-T', 'annotate', '-P' ] },
+            'annotate': { '3': ['-T', 'annotate', '-P' ], }
+            }
+
 
 class TestRunner:
 
@@ -17,13 +26,6 @@ class TestRunner:
         self.test_succeeded = 0
         self.test_run = 0
         self.input_dir = False
-
-        self.SYNTAX_PASS1_OPT = ["-T", "pass1", "-P", "--dont-import", "--parse-1" ]
-        self.SYNTAX_PASS2_OPT = ["-T", "pass2", "-P", "--dont-import", "--parse-2" ]
-        self.SYNTAX_PASS3_OPT = ["-T", "annotate", "-P", "--dont-import" ]
-        self.IMPORT_PASS1_OPT = ["-T", "pass1", "-P", "--parse-1" ]
-        self.IMPORT_PASS2_OPT = ["-T", "pass2", "-P", "--parse-2" ]
-        self.IMPORT_PASS3_OPT = ["-T", "annotate", "-P" ]
 
 
     def run_heather_on_test(self, test_file, options):
@@ -117,22 +119,9 @@ class TestRunner:
 
 
     def run_pass_test(self, test_file, domain):
-        if domain == "syntax":
-            opts1 = self.SYNTAX_PASS1_OPT
-            opts2 = self.SYNTAX_PASS2_OPT
-            opts3 = self.SYNTAX_PASS3_OPT
-
-        elif domain == "import":
-            opts1 = self.IMPORT_PASS1_OPT
-            opts2 = self.IMPORT_PASS2_OPT
-            opts3 = self.IMPORT_PASS3_OPT
-
-        else:
-            assert(0)
-
-        self.run_pass_test_impl(test_file, opts1, "1")
-        self.run_pass_test_impl(test_file, opts2, "2")
-        self.run_pass_test_impl(test_file, opts3, "3")
+        for level in [ '1', '2', '3' ]:
+            if level in OPTIONS[domain]:
+                self.run_pass_test_impl(test_file, OPTIONS[domain][level], level)
 
 
 
@@ -206,22 +195,10 @@ class TestRunner:
 
 
     def run_pass_failed_test(self, test_file, domain):
-        if domain == "syntax":
-            opts1 = self.SYNTAX_PASS1_OPT
-            opts2 = self.SYNTAX_PASS2_OPT
-            opts3 = self.SYNTAX_PASS3_OPT
-
-        elif domain == "import":
-            opts1 = self.IMPORT_PASS1_OPT
-            opts2 = self.IMPORT_PASS2_OPT
-            opts3 = self.IMPORT_PASS3_OPT
-
-        else:
-            assert(0)
-
-        self.run_pass_test_impl(test_file, opts1, "1", self.check_for_errors)
-        self.run_pass_test_impl(test_file, opts2, "2", self.check_for_errors)
-        self.run_pass_test_impl(test_file, opts3, "3", self.check_for_errors)
+        for level in [ '1', '2', '3' ]:
+            if level in OPTIONS[domain]:
+                self.run_pass_test_impl(test_file, OPTIONS[domain][level], level,
+                                        self.check_for_errors)
 
 
     #----------------------------------------------------------------------------
