@@ -379,6 +379,7 @@ Annotator::annotate(KeywordNode* node)
 void
 Annotator::annotate(UnitConstant* node)
 {
+  annotateNode(node->value());
 }
 
 
