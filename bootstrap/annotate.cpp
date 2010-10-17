@@ -32,8 +32,14 @@ Annotator::annotateNode(AptNode* node)
 void
 Annotator::annotate(CompileUnitNode* node)
 {
-  NodeList& nl = node->children();
-  for (size_t i = 0; i < nl.size(); i++) {
+  annotateNodeList(node->children());
+}
+
+
+void
+Annotator::annotateNodeList(NodeList& nl)
+{
+  for (size_t i = 0; i < nl.size(); i++)
     annotateNode(nl[i]);
 }
 
@@ -65,6 +71,13 @@ Annotator::annotate(SymbolNode* node)
   else {
     takeFullNameFromNode(node, var);
   }
+}
+
+
+void
+Annotator::annotate(ArraySymbolNode* node)
+{
+  // TODO
 }
 
 
@@ -121,9 +134,7 @@ Annotator::annotate(VardefNode* node, bool isLocal)
 void
 Annotator::annotate(FuncDefNode* node, bool isLocal)
 {
-  for (size_t pidx = 0; pidx < node->params().size(); pidx++)
-    annotateNode(node->params()[pidx]);
-
+  annotateNodeList(node->params());
   annotateNode(node->body());
 }
 
@@ -131,22 +142,22 @@ Annotator::annotate(FuncDefNode* node, bool isLocal)
 void
 Annotator::annotate(FunctionNode* node)
 {
+  annotateNodeList(node->params());
+  annotateNode(node->body());
 }
 
 
 void
 Annotator::annotate(SlotdefNode* node)
 {
+  // TODO
 }
 
 
 void
 Annotator::annotate(BlockNode* node)
 {
-  NodeList& nl = node->children();
-  for (size_t i = 0; i < nl.size(); i++) {
-    annotateNode(nl[i]);
-  }
+  annotateNodeList(node->children());
 }
 
 
@@ -162,22 +173,14 @@ void
 Annotator::annotate(ApplyNode* node)
 {
   annotateNode(node->base());
-
-  NodeList& nl = node->children();
-  for (size_t i = 0; i < nl.size(); i++)
-    annotateNode(nl[i]);
+  annotateNodeList(node->children());
 }
 
 
 void
 Annotator::annotate(ArrayNode* node)
 {
-}
-
-
-void
-Annotator::annotate(ArraySymbolNode* node)
-{
+  annotateNodeList(node->children());
 }
 
 
@@ -217,30 +220,55 @@ Annotator::annotate(IfNode* node)
 void
 Annotator::annotate(KeyargNode* node)
 {
+  // TODO
 }
 
 
 void
 Annotator::annotate(MatchNode* node)
 {
-}
-
-
-void
-Annotator::annotate(OnNode* node)
-{
-}
-
-
-void
-Annotator::annotate(RangeNode* node)
-{
+  annotateNode(node->fExpr);
+  for (size_t i = 0; i < node->fMappings.size(); i++) {
+    annotateNode(node->fMappings[i].fConsequent);
+  }
 }
 
 
 void
 Annotator::annotate(SelectNode* node)
 {
+  annotateNode(node->fTest);
+  if (node->fComparator != NULL)
+    annotateNode(node->fComparator);
+
+  for (size_t i = 0; i < node->fMappings.size(); i++) {
+    if (node->fMappings[i].fTestValues.empty()) {
+      annotateNode(node->fMappings[i].fConsequent);
+    }
+    else {
+      for (size_t j = 0; j < node->fMappings[i].fTestValues.size(); j++)
+        annotateNode(node->fMappings[i].fTestValues[j]);
+    }
+    annotateNode(node->fMappings[i].fConsequent);
+  }
+}
+
+
+void
+Annotator::annotate(OnNode* node)
+{
+  annotateNodeList(node->params());
+  annotateNode(node->body());
+}
+
+
+void
+Annotator::annotate(RangeNode* node)
+{
+  annotateNode(node->from());
+  annotateNode(node->to());
+  if (node->by() != NULL)
+    annotateNode(node->by());
 }
 
 
@@ -251,7 +279,7 @@ Annotator::annotate(ThenWhileNode* node)
 
 
 void
-Annotator::annotate(TypeNode* node)
+Annotator::annotate(TypeDefNode* node)
 {
 }
 

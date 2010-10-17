@@ -598,8 +598,6 @@ namespace heather
     virtual void annotate(Annotator* annotator);
 
   private:
-    friend class XmlRenderer;
-
     Ptr<AptNode> fFrom;
     Ptr<AptNode> fTo;
     Ptr<AptNode> fBy;
@@ -702,6 +700,7 @@ namespace heather
 
   private:
     friend class XmlRenderer;
+    friend class Annotator;
 
     struct SelectMapping
     {
@@ -740,6 +739,7 @@ namespace heather
 
   private:
     friend class XmlRenderer;
+    friend class Annotator;
 
     struct MatchMapping
     {
@@ -774,6 +774,10 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+
+    const String& key() { return fKey; }
+    AptNode* body() { return fBody; }
+    NodeList& params() { return fParams; }
 
   private:
     friend class XmlRenderer;
@@ -947,20 +951,20 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class TypeNode : public AptNode
+  class TypeDefNode : public AptNode
   {
   public:
-    TypeNode(const SrcPos&   srcpos,
-             Scope*          scope,
-             const String&   typeName,
-             bool            isClass,
-             const Type&     isa,
-             const NodeList& params,
-             const NodeList& slots,
-             const NodeList& reqProtocol,
-             const NodeList& onExprs);
+    TypeDefNode(const SrcPos&   srcpos,
+                Scope*          scope,
+                const String&   typeName,
+                bool            isClass,
+                const Type&     isa,
+                const NodeList& params,
+                const NodeList& slots,
+                const NodeList& reqProtocol,
+                const NodeList& onExprs);
 
-    virtual TypeNode* clone() const;
+    virtual TypeDefNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;

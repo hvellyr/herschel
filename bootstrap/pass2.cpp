@@ -809,14 +809,14 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
 
   fScope->registerType(expr.srcpos(), fullTypeName, defType);
 
-  return new TypeNode(expr.srcpos(), fScope,
-                      fullTypeName,
-                      isClass,
-                      defType,
-                      defaultApplyParams,
-                      slotDefs,
-                      reqProtocol,
-                      onExprs);
+  return new TypeDefNode(expr.srcpos(), fScope,
+                         fullTypeName,
+                         isClass,
+                         defType,
+                         defaultApplyParams,
+                         slotDefs,
+                         reqProtocol,
+                         onExprs);
 }
 
 
@@ -1152,14 +1152,14 @@ SecondPass::parseMeasureDef(const Token& expr, bool isLocal)
   NodeList dummyReqProtocol;
   NodeList dummyOnExprs;
 
-  return new TypeNode(expr.srcpos(), fScope,
-                      fullTypeName,
-                      true,     // is instantiatable
-                      defMeasureType,
-                      dummyApplyParams,
-                      dummySlotDefs,
-                      dummyReqProtocol,
-                      dummyOnExprs);
+  return new TypeDefNode(expr.srcpos(), fScope,
+                         fullTypeName,
+                         true,     // is instantiatable
+                         defMeasureType,
+                         dummyApplyParams,
+                         dummySlotDefs,
+                         dummyReqProtocol,
+                         dummyOnExprs);
 }
 
 

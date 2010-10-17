@@ -528,9 +528,9 @@ void
 XmlRenderer::renderNode(const RangeNode* node)
 {
   displayOpenTag("range");
-  displayNode(NULL, node->fFrom);
-  displayNode(NULL, node->fTo);
-  displayNode(NULL, node->fBy);
+  displayNode(NULL, node->from());
+  displayNode(NULL, node->to());
+  displayNode(NULL, node->by());
   displayCloseTag("range");
 }
 
@@ -694,7 +694,7 @@ XmlRenderer::renderNode(const WhileNode* node)
 
 
 void
-XmlRenderer::renderNode(const TypeNode* node)
+XmlRenderer::renderNode(const TypeDefNode* node)
 {
   const char* tagName = node->fIsClass ? "class" : "type";
 

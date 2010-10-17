@@ -10,6 +10,9 @@
 #define bootstrap_annotate_h
 
 #include "refcountable.h"
+#include "ptr.h"
+
+#include <vector>
 
 namespace heather
 {
@@ -45,13 +48,15 @@ namespace heather
   class StringNode;
   class SymbolNode;
   class ThenWhileNode;
-  class TypeNode;
+  class TypeDefNode;
   class UnitConstant;
   class VardefNode;
   class VectorNode;
   class WhileNode;
 
   class Scope;
+
+  typedef std::vector<Ptr<AptNode> > NodeList;
 
   //------------------------------------------------------------------------------
 
@@ -96,12 +101,14 @@ namespace heather
     void annotate(SlotdefNode* node);
     void annotate(StringNode* node);
     void annotate(ThenWhileNode* node);
-    void annotate(TypeNode* node);
+    void annotate(TypeDefNode* node);
     void annotate(UnitConstant* node);
     void annotate(VectorNode* node);
     void annotate(WhileNode* node);
 
   private:
+    void annotateNodeList(NodeList& nl);
+
     void annotate(VardefNode* node, bool isLocal);
     void annotate(FuncDefNode* node, bool isLocal);
 
