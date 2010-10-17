@@ -292,7 +292,7 @@ XmlRenderer::renderNode(const BoolNode* node)
 
 
 void
-XmlRenderer::renderNode(const UnitConstant* node)
+XmlRenderer::renderNode(const UnitConstNode* node)
 {
   StringBuffer attrs;
   attrs << "unit='" << node->fUnit.name() << "'";

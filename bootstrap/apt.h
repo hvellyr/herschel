@@ -265,12 +265,12 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class UnitConstant : public AptNode
+  class UnitConstNode : public AptNode
   {
   public:
-    UnitConstant(const SrcPos& srcpos, Scope* scope, AptNode* value,
+    UnitConstNode(const SrcPos& srcpos, Scope* scope, AptNode* value,
                  const TypeUnit& unit);
-    virtual UnitConstant* clone() const;
+    virtual UnitConstNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;

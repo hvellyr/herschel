@@ -488,8 +488,8 @@ BoolNode::annotate(Annotator* an)
 
 //----------------------------------------------------------------------------
 
-UnitConstant::UnitConstant(const SrcPos& srcpos, Scope* scope, AptNode* value,
-                           const TypeUnit& unit)
+UnitConstNode::UnitConstNode(const SrcPos& srcpos, Scope* scope, AptNode* value,
+                             const TypeUnit& unit)
   : AptNode(srcpos, scope),
     fValue(value),
     fUnit(unit)
@@ -497,29 +497,29 @@ UnitConstant::UnitConstant(const SrcPos& srcpos, Scope* scope, AptNode* value,
 }
 
 
-UnitConstant*
-UnitConstant::clone() const
+UnitConstNode*
+UnitConstNode::clone() const
 {
-  return new UnitConstant(fSrcPos, fScope, nodeClone(fValue), fUnit);
+  return new UnitConstNode(fSrcPos, fScope, nodeClone(fValue), fUnit);
 }
 
 
 void
-UnitConstant::render(XmlRenderer* renderer) const
+UnitConstNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
 }
 
 
 llvm::Value*
-UnitConstant::codegen(CodeGenerator* generator) const
+UnitConstNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
 
 
 void
-UnitConstant::annotate(Annotator* an)
+UnitConstNode::annotate(Annotator* an)
 {
   an->annotate(this);
 }

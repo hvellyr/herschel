@@ -49,7 +49,7 @@ namespace heather
   class SymbolNode;
   class ThenWhileNode;
   class TypeDefNode;
-  class UnitConstant;
+  class UnitConstNode;
   class VardefNode;
   class VectorNode;
   class WhileNode;
@@ -102,7 +102,7 @@ namespace heather
     void annotate(StringNode* node);
     void annotate(ThenWhileNode* node);
     void annotate(TypeDefNode* node);
-    void annotate(UnitConstant* node);
+    void annotate(UnitConstNode* node);
     void annotate(VectorNode* node);
     void annotate(WhileNode* node);
 

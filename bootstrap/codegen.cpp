@@ -751,7 +751,7 @@ CodeGenerator::codegen(const TypeDefNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const UnitConstant* node)
+CodeGenerator::codegen(const UnitConstNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
