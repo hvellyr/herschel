@@ -1876,3 +1876,56 @@ TypeNode::annotate(Annotator* an)
 }
 
 
+//----------------------------------------------------------------------------
+
+CastNode::CastNode(const SrcPos& srcpos,
+                   Scope* scope,
+                   AptNode* base,
+                   const Type& type)
+  : AptNode(srcpos, scope),
+    fBase(base),
+    fType(type)
+{ }
+
+AptNode*
+CastNode::base() const
+{
+  return fBase;
+}
+
+
+const Type&
+CastNode::type() const
+{
+  return fType;
+}
+
+
+CastNode*
+CastNode::clone() const
+{
+  return new CastNode(fSrcPos, fScope, nodeClone(fBase), fType.clone());
+}
+
+
+void
+CastNode::render(XmlRenderer* renderer) const
+{
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+CastNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+CastNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+

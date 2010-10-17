@@ -1659,6 +1659,15 @@ SecondPass::parseBinary(const Token& expr)
       return new ThenWhileNode(expr.srcpos(), fScope, first, step, NULL);
     }
 
+  case kAs:
+    {
+      Ptr<AptNode> base = parseExpr(expr[0]);
+      Type type = parseTypeSpec(expr[2]);
+
+      return new CastNode(expr.srcpos(), fScope, base, type);
+    }
+    break;
+
   default:
     ;
   }
@@ -2349,9 +2358,28 @@ SecondPass::parseMatch(const Token& expr)
   const TokenVector& args = expr[1].children();
   assert(args.size() > 0);
 
-  Ptr<AptNode> exprNode = parseExpr(args[0]);
+  ScopeHelper scopeHelper(fScope, false, true);
 
-  Ptr<MatchNode> matchNode = new MatchNode(expr.srcpos(), fScope, exprNode);
+  Ptr<BlockNode> block = new BlockNode(expr.srcpos(), fScope);
+
+  Ptr<AptNode> exprNode = parseExpr(args[0]);
+  Token tmpValueSym = Token::newUniqueSymbolToken(expr.srcpos(), "match");
+  Type tempType;                // TODO?
+  Ptr<AptNode> tmpVarDef = new VardefNode(expr.srcpos(), fScope,
+                                          tmpValueSym.idValue(),
+                                          kNormalVar,
+                                          tempType,
+                                          exprNode);
+  Ptr<AptNode> tmpLetNode = new LetNode(fScope, tmpVarDef);
+  block->appendNode(tmpLetNode);
+
+  fScope->registerVar(expr.srcpos(), tmpValueSym.idValue(), tmpVarDef);
+
+  Ptr<AptNode> tmpValueNode = new SymbolNode(expr.srcpos(), fScope,
+                                             tmpValueSym.idValue());
+
+  Ptr<MatchNode> matchNode = new MatchNode(expr.srcpos(), fScope,
+                                           tmpValueNode->clone());
 
   const TokenVector& typeMappings = expr[2].children();
   for (size_t i = 0; i < typeMappings.size(); i++) {
@@ -2363,27 +2391,50 @@ SecondPass::parseMatch(const Token& expr)
     assert(typeMapping[1].count() >= 2);
     assert(typeMapping[2] == kMapTo);
 
-    String  varName;
-    Type    varType;
-    if (typeMapping[1].count() == 3) {
-      assert(typeMapping[1][0] == kSymbol);
-      assert(typeMapping[1][1] == kColon);
+    {
+      ScopeHelper scopeHelper(fScope, false, true);
 
-      varName = typeMapping[1][0].idValue();
-      varType = parseTypeSpec(typeMapping[1][2]);
-    }
-    else {
-      assert(typeMapping[1][0] == kColon);
-      varType = parseTypeSpec(typeMapping[1][1]);
-    }
+      Ptr<BlockNode> localBlock = new BlockNode(typeMapping[3].srcpos(), fScope);
 
-    Ptr<AptNode> consqNode = parseExpr(typeMapping[3]);
-    if (consqNode != NULL)
-      matchNode->addMapping(typeMapping[0].srcpos(),
-                            varName, varType, consqNode);
+      String  varName;
+      Type    varType;
+      if (typeMapping[1].count() == 3) {
+        assert(typeMapping[1][0] == kSymbol);
+        assert(typeMapping[1][1] == kColon);
+
+        SrcPos sympos = typeMapping[1][0].srcpos();
+
+        varName = typeMapping[1][0].idValue();
+        varType = parseTypeSpec(typeMapping[1][2]);
+
+        Ptr<AptNode> initVal = new CastNode(typeMapping[0].srcpos(), fScope,
+                                            tmpValueNode->clone(),
+                                            varType);
+
+        Ptr<VardefNode> localVar = new VardefNode(sympos, fScope,
+                                                  varName, kNormalVar, varType,
+                                                  initVal);
+        fScope->registerVar(sympos, varName, localVar);
+
+        localBlock->appendNode(new LetNode(fScope, localVar));
+      }
+      else {
+        assert(typeMapping[1][0] == kColon);
+        varType = parseTypeSpec(typeMapping[1][1]);
+      }
+
+      Ptr<AptNode> consqNode = parseExpr(typeMapping[3]);
+      if (consqNode != NULL) {
+        localBlock->appendNode(consqNode);
+        matchNode->addMapping(typeMapping[0].srcpos(),
+                              varName, varType, localBlock);
+      }
+    }
   }
 
-  return matchNode.release();
+  block->appendNode(matchNode);
+
+  return block.release();
 }
 
 

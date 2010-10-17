@@ -977,6 +977,31 @@ namespace heather
     NodeList fOnExprs;
     Type     fIsa;
   };
+
+
+  //--------------------------------------------------------------------------
+
+  class CastNode : public AptNode
+  {
+  public:
+    CastNode(const SrcPos& srcpos,
+             Scope* scope,
+             AptNode* base,
+             const Type& type);
+
+    virtual CastNode* clone() const;
+
+    AptNode* base() const;
+    const Type& type() const;
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
+
+  private:
+    Ptr<AptNode> fBase;
+    Type         fType;
+  };
 };
 
 

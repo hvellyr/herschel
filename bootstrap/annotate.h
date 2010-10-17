@@ -21,6 +21,7 @@ namespace heather
   class BinaryNode;
   class BlockNode;
   class BoolNode;
+  class CastNode;
   class CharNode;
   class CompileUnitNode;
   class DefNode;
@@ -77,6 +78,7 @@ namespace heather
     void annotate(AssignNode* node);
     void annotate(BinaryNode* node);
     void annotate(BoolNode* node);
+    void annotate(CastNode* node);
     void annotate(CharNode* node);
     void annotate(DictNode* node);
     void annotate(FunctionNode* node);

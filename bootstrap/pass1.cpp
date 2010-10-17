@@ -2226,7 +2226,12 @@ FirstPass::parseExprRec(const TokenVector& exprs,
   nextToken();
 
   SrcPos before2ndPos = fToken.srcpos();
-  Token expr2 = parseAtomicExpr();
+  Token expr2;
+
+  if (op1 == kOpAs)
+    expr2 = parseTypeSpec(true);
+  else
+    expr2 = parseAtomicExpr();
   OperatorType op2 = tokenTypeToOperator(fToken.tokenType());
   SrcPos op2Srcpos = fToken.srcpos();
 

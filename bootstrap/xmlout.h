@@ -27,6 +27,7 @@ namespace heather
   class BinaryNode;
   class BlockNode;
   class BoolNode;
+  class CastNode;
   class CharNode;
   class CompileUnitNode;
   class DefNode;
@@ -107,6 +108,7 @@ namespace heather
     void renderNode(const VardefNode* node);
     void renderNode(const VectorNode* node);
     void renderNode(const WhileNode* node);
+    void renderNode(const CastNode* node);
 
   private:
     void displayOpenTag(const char* tagName);
