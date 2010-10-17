@@ -617,6 +617,10 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
 
+    AptNode* first() const { return fFirst; }
+    AptNode* step() const { return fStep; }
+    AptNode* test() const { return fTest; }
+
   private:
     friend class XmlRenderer;
 
@@ -915,6 +919,9 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+
+    const String& key() const { return fKey; }
+    AptNode* value() const { return fValue; }
 
   private:
     friend class XmlRenderer;

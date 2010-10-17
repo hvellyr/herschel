@@ -68,21 +68,34 @@ void
 Annotator::annotate(SymbolNode* node)
 {
   const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
-  if (var == NULL) {
-    if (Properties::test_passLevel() > 2)
-      errorf(node->srcpos(), E_UndefinedVar,
-             "Unknown variable '%s'", (const char*)StrHelper(node->name()));
-  }
-  else {
+  if (var != NULL) {
     takeFullNameFromNode(node, var);
+    return;
   }
+
+  Type type = node->scope()->lookupType(node->name(), true);
+  if (type.isDef()) {
+    node->setName(type.typeName());
+    return;
+  }
+
+  if (Properties::test_passLevel() > 2)
+    errorf(node->srcpos(), E_UndefinedVar,
+           "Unknown variable '%s'", (const char*)StrHelper(node->name()));
 }
 
 
 void
 Annotator::annotate(ArraySymbolNode* node)
 {
-  // TODO
+  Type type = node->scope()->lookupType(node->name(), true);
+  if (!type.isDef()) {
+    if (Properties::test_passLevel() > 2)
+      errorf(node->srcpos(), E_UndefinedVar,
+             "Unknown variable '%s'", (const char*)StrHelper(node->name()));
+  }
+  else
+    node->setName(type.typeName());
 }
 
 
@@ -103,8 +116,7 @@ Annotator::annotate(DefNode* node)
     return;
   }
 
-  // TODO
-  assert(0);
+  annotateNode(node->defNode());
 }
 
 
@@ -123,8 +135,7 @@ Annotator::annotate(LetNode* node)
     return;
   }
 
-  // TODO
-  assert(0);
+  annotateNode(node->defNode());
 }
 
 
@@ -225,7 +236,7 @@ Annotator::annotate(IfNode* node)
 void
 Annotator::annotate(KeyargNode* node)
 {
-  // TODO
+  annotateNode(node->value());
 }
 
 
@@ -280,6 +291,9 @@ Annotator::annotate(RangeNode* node)
 void
 Annotator::annotate(ThenWhileNode* node)
 {
+  annotateNode(node->first());
+  annotateNode(node->step());
+  annotateNode(node->test());
 }
 
 
@@ -292,18 +306,29 @@ Annotator::annotate(TypeDefNode* node)
 void
 Annotator::annotate(WhileNode* node)
 {
+  annotateNode(node->test());
+  annotateNode(node->body());
 }
 
 
 void
 Annotator::annotate(VectorNode* node)
 {
+  annotateNodeList(node->children());
 }
 
 
 void
 Annotator::annotate(DictNode* node)
 {
+  annotateNodeList(node->children());
+}
+
+
+void
+Annotator::annotate(CastNode* node)
+{
+  annotateNode(node->base());
 }
 
 
@@ -357,9 +382,5 @@ Annotator::annotate(UnitConstant* node)
 }
 
 
-void
-Annotator::annotate(CastNode* node)
-{
-}
 
 
