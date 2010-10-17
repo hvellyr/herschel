@@ -709,3 +709,13 @@ XmlRenderer::renderNode(const TypeNode* node)
   displayType("isa", node->fIsa);
   displayCloseTag(tagName);
 }
+
+
+void
+XmlRenderer::renderNode(const CastNode* node)
+{
+  displayOpenTag("cast");
+  displayNode("base", node->base());
+  displayType("as", node->type());
+  displayCloseTag("cast");
+}

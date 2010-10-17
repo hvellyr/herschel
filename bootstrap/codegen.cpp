@@ -805,3 +805,14 @@ CodeGenerator::codegen(const WhileNode* node)
 
   return fCurrentValue;
 }
+
+
+llvm::Value*
+CodeGenerator::codegen(const CastNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  // TODO
+  return NULL;
+}
+
+

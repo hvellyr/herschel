@@ -35,7 +35,6 @@ Annotator::annotate(CompileUnitNode* node)
   NodeList& nl = node->children();
   for (size_t i = 0; i < nl.size(); i++) {
     annotateNode(nl[i]);
-  }
 }
 
 
@@ -321,6 +320,12 @@ Annotator::annotate(KeywordNode* node)
 
 void
 Annotator::annotate(UnitConstant* node)
+{
+}
+
+
+void
+Annotator::annotate(CastNode* node)
 {
 }
 

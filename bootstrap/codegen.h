@@ -38,6 +38,7 @@ namespace heather
   class BinaryNode;
   class BlockNode;
   class BoolNode;
+  class CastNode;
   class CharNode;
   class CompileUnitNode;
   class DefNode;
@@ -91,6 +92,7 @@ namespace heather
     llvm::Value* codegen(const BinaryNode* node);
     llvm::Value* codegen(const BlockNode* node);
     llvm::Value* codegen(const BoolNode* node);
+    llvm::Value* codegen(const CastNode* node);
     llvm::Value* codegen(const CharNode* node);
     llvm::Value* codegen(const CompileUnitNode* node);
     llvm::Value* codegen(const DefNode* node);
