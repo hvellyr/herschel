@@ -1824,15 +1824,15 @@ WhileNode::annotate(Annotator* an)
 
 //----------------------------------------------------------------------------
 
-TypeNode::TypeNode(const SrcPos&   srcpos,
-                   Scope*          scope,
-                   const String&   typeName,
-                   bool            isClass,
-                   const Type&     isa,
-                   const NodeList& params,
-                   const NodeList& slots,
-                   const NodeList& reqProtocol,
-                   const NodeList& onExprs)
+TypeDefNode::TypeDefNode(const SrcPos&   srcpos,
+                         Scope*          scope,
+                         const String&   typeName,
+                         bool            isClass,
+                         const Type&     isa,
+                         const NodeList& params,
+                         const NodeList& slots,
+                         const NodeList& reqProtocol,
+                         const NodeList& onExprs)
   : AptNode(srcpos, scope),
     fTypeName(typeName),
     fIsClass(isClass),
@@ -1844,33 +1844,33 @@ TypeNode::TypeNode(const SrcPos&   srcpos,
 { }
 
 
-TypeNode*
-TypeNode::clone() const
+TypeDefNode*
+TypeDefNode::clone() const
 {
-  return new TypeNode(fSrcPos, fScope, fTypeName, fIsClass, fIsa.clone(),
-                      copyNodes(fParams),
-                      copyNodes(fSlots),
-                      copyNodes(fReqProtocol),
-                      copyNodes(fOnExprs));
+  return new TypeDefNode(fSrcPos, fScope, fTypeName, fIsClass, fIsa.clone(),
+                         copyNodes(fParams),
+                         copyNodes(fSlots),
+                         copyNodes(fReqProtocol),
+                         copyNodes(fOnExprs));
 }
 
 
 void
-TypeNode::render(XmlRenderer* renderer) const
+TypeDefNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
 }
 
 
 llvm::Value*
-TypeNode::codegen(CodeGenerator* generator) const
+TypeDefNode::codegen(CodeGenerator* generator) const
 {
   return generator->codegen(this);
 }
 
 
 void
-TypeNode::annotate(Annotator* an)
+TypeDefNode::annotate(Annotator* an)
 {
   an->annotate(this);
 }

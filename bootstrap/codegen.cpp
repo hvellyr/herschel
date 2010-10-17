@@ -742,7 +742,7 @@ CodeGenerator::codegen(const ThenWhileNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const TypeNode* node)
+CodeGenerator::codegen(const TypeDefNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO

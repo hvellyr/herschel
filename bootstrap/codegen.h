@@ -62,7 +62,7 @@ namespace heather
   class StringNode;
   class SymbolNode;
   class ThenWhileNode;
-  class TypeNode;
+  class TypeDefNode;
   class UnitConstant;
   class VardefNode;
   class VectorNode;
@@ -115,7 +115,7 @@ namespace heather
     llvm::Value* codegen(const StringNode* node);
     llvm::Value* codegen(const SymbolNode* node);
     llvm::Value* codegen(const ThenWhileNode* node);
-    llvm::Value* codegen(const TypeNode* node);
+    llvm::Value* codegen(const TypeDefNode* node);
     llvm::Value* codegen(const UnitConstant* node);
     llvm::Value* codegen(const VectorNode* node);
     llvm::Value* codegen(const WhileNode* node);
