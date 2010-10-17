@@ -337,42 +337,49 @@ Annotator::annotate(CastNode* node)
 void
 Annotator::annotate(BoolNode* node)
 {
+  // Nothing to annotate here
 }
 
 
 void
 Annotator::annotate(CharNode* node)
 {
+  // Nothing to annotate here
 }
 
 
 void
 Annotator::annotate(StringNode* node)
 {
+  // Nothing to annotate here
 }
 
 
 void
 Annotator::annotate(RationalNode* node)
 {
+  // Nothing to annotate here
 }
 
 
 void
 Annotator::annotate(RealNode* node)
 {
+  // Nothing to annotate here
 }
 
 
 void
 Annotator::annotate(IntNode* node)
 {
+  // Nothing to annotate here
 }
 
 
 void
 Annotator::annotate(KeywordNode* node)
 {
+  // Nothing to annotate here
 }
 
 
