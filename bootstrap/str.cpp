@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "str.h"
+#include "strbuf.h"
 #include "refcountable.h"
 #include "exception.h"
 
@@ -791,6 +792,16 @@ String
 heather::xmlEncode(const char* str)
 {
   return xmlEncode(String(str));
+}
+
+
+String
+heather::uniqueName(const char* prefix)
+{
+  static int counter = 0;
+  StringBuffer buffer;
+  buffer << "__" << prefix << "_" << fromInt(counter++);
+  return buffer.toString();
 }
 
 

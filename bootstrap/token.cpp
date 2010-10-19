@@ -511,10 +511,7 @@ using namespace heather;
 Token
 Token::newUniqueSymbolToken(const SrcPos& where, const char* prefix)
 {
-  static int counter = 0;
-  StringBuffer buffer;
-  buffer << "__" << prefix << "_" << fromInt(counter++);
-  return Token(where, kSymbol, buffer.toString());
+  return Token(where, kSymbol, uniqueName(prefix));
 }
 
 

@@ -103,6 +103,9 @@ namespace heather
   int str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems);
   int str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems);
 
+  String uniqueName(const char* prefix);
+
+
   class StrHelper
   {
   public:
