@@ -29,6 +29,7 @@
 #include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/GlobalVariable.h"
 
 
 using namespace heather;
@@ -93,6 +94,9 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
                              const String& outputFile)
 {
   node->codegen(this);
+
+  emitCtorList(fGlobalCtors, "llvm.global_ctors");
+  emitCtorList(fGlobalDtors, "llvm.global_dtors");
 
   assert(!outputFile.isEmpty());
 
@@ -230,6 +234,80 @@ CodeGenerator::codegen(const SlotdefNode* node)
 }
 
 
+//! Add a function to the list that will be called before main() runs.
+void
+CodeGenerator::addGlobalCtor(llvm::Function* ctor, int priority)
+{
+  // FIXME: Type coercion of void()* types.
+  fGlobalCtors.push_back(std::make_pair(ctor, priority));
+}
+
+//! Add a function to the list that will be called when the module is
+//! unloaded.
+void
+CodeGenerator::addGlobalDtor(llvm::Function* dtor, int priority)
+{
+  // FIXME: Type coercion of void()* types.
+  fGlobalDtors.push_back(std::make_pair(dtor, priority));
+}
+
+void
+CodeGenerator::emitCtorList(const CtorList &fns, const char *globalName)
+{
+  // Ctor function type is void()*.
+  llvm::FunctionType* ctorFTy = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm::getGlobalContext()),
+                                                        std::vector<const llvm::Type*>(),
+                                                        false);
+  llvm::Type *ctorPFTy = llvm::PointerType::getUnqual(ctorFTy);
+
+  // Get the type of a ctor entry, { i32, void ()* }.
+  llvm::StructType* ctorStructTy = llvm::StructType::get(llvm::getGlobalContext(),
+                                                         llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+                                                         llvm::PointerType::getUnqual(ctorFTy),
+                                                         NULL);
+
+  // Construct the constructor and destructor arrays.
+  std::vector<llvm::Constant*> ctors;
+  for (CtorList::const_iterator i = fns.begin(), e = fns.end(); i != e; ++i) {
+    std::vector<llvm::Constant*> s;
+    s.push_back(llvm::ConstantInt::get(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+                                       i->second, false));
+    s.push_back(llvm::ConstantExpr::getBitCast(i->first, ctorPFTy));
+    ctors.push_back(llvm::ConstantStruct::get(ctorStructTy, s));
+  }
+
+  if (!ctors.empty()) {
+    llvm::ArrayType *at = llvm::ArrayType::get(ctorStructTy, ctors.size());
+    new llvm::GlobalVariable(*fModule, at, false,
+                             llvm::GlobalValue::AppendingLinkage,
+                             llvm::ConstantArray::get(at, ctors),
+                             globalName);
+  }
+}
+
+
+llvm::Function*
+CodeGenerator::createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
+                                              const String& name)
+{
+  llvm::Function* fn =
+  llvm::Function::Create(ft, llvm::GlobalValue::InternalLinkage,
+                         std::string(StrHelper(name)),
+                         fModule);
+
+  // clang adds the following __TEXT,__StaticInit, etc. section to static
+  // initializer functions.  Initialization however seems to work without
+  // also.(?)
+
+  // Set the section if needed.
+  // if (const char* section = llvm::getGlobalContext().Target.getStaticInitSectionSpecifier())
+  //   fn->setSection("__TEXT,__StaticInit,regular,pure_instructions");
+
+  // fn->setDoesNotThrow();
+  return fn;
+}
+
+
 llvm::Value*
 CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 {
@@ -244,12 +322,53 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
                                      llvm::APInt(32, 0, true));
   }
 
-  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
+  if (!isLocal) {
+    String varnm = heather::mangleToC(node->symbolName());
+    llvm::GlobalVariable* gv =
+      new llvm::GlobalVariable(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+                               false, // isConstant,
+                               llvm::GlobalValue::ExternalLinkage,
+                               llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                                  llvm::APInt(32, 0, true)),
+                               std::string(StrHelper(varnm)),
+                               false, // ThreadLocal
+                               0);    // AddressSpace
+    fModule->getGlobalList().push_back(gv);
 
-  llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
-                                                       node->symbolName());
-  fBuilder.CreateStore(initval, stackSlot);
-  fNamedValues[std::string(StrHelper(node->symbolName()))] = stackSlot;
+    const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm::getGlobalContext()),
+                                                           false);
+
+    assert(ft != NULL);
+
+    String tmpName = uniqueName("gv");
+    String funcnm = heather::mangleToC(tmpName);
+
+    llvm::Function *func = createGlobalInitOrDtorFunction(ft, funcnm);
+
+    llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+                                                    "entry", func);
+    fBuilder.SetInsertPoint(bb);
+    fBuilder.CreateStore(initval, gv);
+    fBuilder.CreateRetVoid();
+
+    verifyFunction(*func);
+
+    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+      fOptPassManager->run(*func);
+
+    addGlobalCtor(func, 1);
+
+    // TODO: put the global variable into fNamedValues (?).  GlobalVariables
+    // are not AllocaInst however therefore it requires some extra work here.
+  }
+  else {
+    llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
+
+    llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
+                                                         node->symbolName());
+    fBuilder.CreateStore(initval, stackSlot);
+    fNamedValues[std::string(StrHelper(node->symbolName()))] = stackSlot;
+  }
 
   return initval;
 }
@@ -284,10 +403,8 @@ llvm::Value*
 CodeGenerator::codegen(const DefNode* node)
 {
   const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->fDefined.obj());
-  if (vardefNode != NULL) {
-    logf(kError, "Compiling global vardefs not supported yet: %s", __FUNCTION__);
-    return NULL;
-  }
+  if (vardefNode != NULL)
+    return codegen(vardefNode, false);
 
   const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->fDefined.obj());
   if (func != NULL)

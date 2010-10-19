@@ -25,6 +25,7 @@ namespace llvm
   class BasicBlock;
   class AllocaInst;
   class FunctionPassManager;
+  class Function;
 };
 
 
@@ -130,6 +131,15 @@ namespace heather
 
     void createDefaultCMainFunc();
 
+    void addGlobalCtor(llvm::Function* ctor, int priority);
+    void addGlobalDtor(llvm::Function* dtor, int priority);
+
+    typedef std::vector<std::pair<llvm::Constant*, int> > CtorList;
+    void emitCtorList(const CtorList &fns, const char *globalName);
+    llvm::Function*
+    createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
+                                   const String& name);
+
     //-------- data members
 
     llvm::Module*     fModule;
@@ -137,7 +147,8 @@ namespace heather
     llvm::FunctionPassManager* fOptPassManager;
     llvm::AllocaInst *fCurrentValue;
     bool fHasMainFunc;
-
+    CtorList fGlobalCtors;
+    CtorList fGlobalDtors;
     std::map<std::string, llvm::AllocaInst*> fNamedValues;
   };
 };                              // namespace
