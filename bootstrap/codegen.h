@@ -139,6 +139,7 @@ namespace heather
     llvm::Function*
     createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
                                    const String& name);
+    llvm::Value* codegenForGlobalVars(const VardefNode* node);
 
     //-------- data members
 
@@ -149,7 +150,9 @@ namespace heather
     bool fHasMainFunc;
     CtorList fGlobalCtors;
     CtorList fGlobalDtors;
-    std::map<std::string, llvm::AllocaInst*> fNamedValues;
+    // takes llvm::Value or llvm::GlobalVariable
+    std::map<String, llvm::AllocaInst*> fNamedValues;
+    std::map<String, llvm::GlobalVariable*> fGlobalVariables;
   };
 };                              // namespace
 

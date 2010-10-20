@@ -205,13 +205,15 @@ CodeGenerator::codegen(const SymbolNode* node)
   }
 
   // Look this variable up in the function.
-  llvm::Value* val = fNamedValues[node->string()];
+  llvm::Value* val = fNamedValues[node->name()];
   if (val == NULL) {
-    logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(node->name()));
-    return NULL;
+    val = fGlobalVariables[node->name()];
+    if (val == NULL) {
+      logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(node->name()));
+      return NULL;
+    }
   }
 
-  // Load the value.
   return fBuilder.CreateLoad(val, node->string());
 }
 
@@ -309,66 +311,89 @@ CodeGenerator::createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
 
 
 llvm::Value*
-CodeGenerator::codegen(const VardefNode* node, bool isLocal)
+CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
+  String varnm = heather::mangleToC(node->symbolName());
+  llvm::GlobalVariable* gv =
+  new llvm::GlobalVariable(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+                           false, // isConstant,
+                           llvm::GlobalValue::ExternalLinkage,
+                           llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                                  llvm::APInt(32, 0, true)),
+                           std::string(StrHelper(varnm)),
+                           false, // ThreadLocal
+                           0);    // AddressSpace
+  assert(gv != NULL);
+  fModule->getGlobalList().push_back(gv);
+
+  fNamedValues.clear();
+
+  const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm::getGlobalContext()),
+                                                         false);
+
+  assert(ft != NULL);
+
+  String tmpName = uniqueName("gv");
+  String funcnm = heather::mangleToC(tmpName);
+
+  llvm::Function *func = createGlobalInitOrDtorFunction(ft, funcnm);
+
+  llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+                                                  "entry", func);
+  fBuilder.SetInsertPoint(bb);
+
   llvm::Value* initval = NULL;
   if (node->fInitExpr != NULL) {
     initval = codegenNode(node->fInitExpr);
   }
   else {
-    // TODO: init the temporary value.  We shouldn't have to care about this
-    // here.
+    // TODO: init the temporary value.  We shouldn't really have to care about
+    // this here, since this can be better done in the AST analysis.
     initval = llvm::ConstantInt::get(llvm::getGlobalContext(),
                                      llvm::APInt(32, 0, true));
   }
 
+  fBuilder.CreateStore(initval, gv);
+  fBuilder.CreateRetVoid();
+
+  verifyFunction(*func);
+
+  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+    fOptPassManager->run(*func);
+
+  addGlobalCtor(func, 1);
+
+  assert(fGlobalVariables.find(node->symbolName()) == fGlobalVariables.end());
+  fGlobalVariables[node->symbolName()] = gv;
+
+  return initval;
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const VardefNode* node, bool isLocal)
+{
   if (!isLocal) {
-    String varnm = heather::mangleToC(node->symbolName());
-    llvm::GlobalVariable* gv =
-      new llvm::GlobalVariable(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
-                               false, // isConstant,
-                               llvm::GlobalValue::ExternalLinkage,
-                               llvm::ConstantInt::get(llvm::getGlobalContext(),
-                                                  llvm::APInt(32, 0, true)),
-                               std::string(StrHelper(varnm)),
-                               false, // ThreadLocal
-                               0);    // AddressSpace
-    fModule->getGlobalList().push_back(gv);
+    return codegenForGlobalVars(node);
+  }
 
-    const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm::getGlobalContext()),
-                                                           false);
-
-    assert(ft != NULL);
-
-    String tmpName = uniqueName("gv");
-    String funcnm = heather::mangleToC(tmpName);
-
-    llvm::Function *func = createGlobalInitOrDtorFunction(ft, funcnm);
-
-    llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
-                                                    "entry", func);
-    fBuilder.SetInsertPoint(bb);
-    fBuilder.CreateStore(initval, gv);
-    fBuilder.CreateRetVoid();
-
-    verifyFunction(*func);
-
-    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-      fOptPassManager->run(*func);
-
-    addGlobalCtor(func, 1);
-
-    // TODO: put the global variable into fNamedValues (?).  GlobalVariables
-    // are not AllocaInst however therefore it requires some extra work here.
+  llvm::Value* initval = NULL;
+  if (node->fInitExpr != NULL) {
+    initval = codegenNode(node->fInitExpr);
   }
   else {
-    llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-
-    llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
-                                                         node->symbolName());
-    fBuilder.CreateStore(initval, stackSlot);
-    fNamedValues[std::string(StrHelper(node->symbolName()))] = stackSlot;
+    // TODO: init the temporary value.  We shouldn't really have to care about
+    // this here, since this can be better done in the AST analysis.
+    initval = llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                     llvm::APInt(32, 0, true));
   }
+
+  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
+
+  llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
+                                                       node->symbolName());
+  fBuilder.CreateStore(initval, stackSlot);
+  fNamedValues[node->symbolName()] = stackSlot;
 
   return initval;
 }
@@ -384,7 +409,7 @@ CodeGenerator::codegen(const AssignNode* node)
       return NULL;
 
     // Look up the name.
-    llvm::AllocaInst* var = fNamedValues[lsym->string()];
+    llvm::AllocaInst* var = fNamedValues[lsym->name()];
     if (var == NULL) {
       logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(lsym->name()));
       return NULL;
@@ -622,7 +647,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
     // TODO ende name
     llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func, param->fSymbolName);
     fBuilder.CreateStore(aiter, stackSlot);
-    fNamedValues[std::string(StrHelper(param->fSymbolName))] = stackSlot;
+    fNamedValues[param->name()] = stackSlot;
   }
 
   const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->fBody.obj());
