@@ -38,8 +38,9 @@ using namespace heather;
 //----------------------------------------------------------------------------
 
 CodeGenerator::CodeGenerator()
-  : fModule(NULL),
-    fBuilder(llvm::getGlobalContext()),
+  : fContext(llvm::getGlobalContext()),
+    fModule(NULL),
+    fBuilder(context()),
     fOptPassManager(NULL),
     fCurrentValue(NULL),
     fHasMainFunc(false)
@@ -48,8 +49,7 @@ CodeGenerator::CodeGenerator()
 
   static llvm::ExecutionEngine *theExecutionEngine = NULL;
 
-  llvm::LLVMContext& context = llvm::getGlobalContext();
-  fModule = new llvm::Module("compile-unit", context);
+  fModule = new llvm::Module("compile-unit", fContext);
 
   // Create the JIT.  This takes ownership of the module.
   std::string errStr;
@@ -150,11 +150,11 @@ void
 CodeGenerator::createDefaultCMainFunc()
 {
   std::vector<const llvm::Type*> sign;
-  sign.push_back(llvm::Type::getInt32Ty(llvm::getGlobalContext()));
-  sign.push_back(llvm::Type::getInt8Ty(llvm::getGlobalContext())->getPointerTo()->getPointerTo());
+  sign.push_back(llvm::Type::getInt32Ty(context()));
+  sign.push_back(llvm::Type::getInt8Ty(context())->getPointerTo()->getPointerTo());
 
   llvm::FunctionType *ft =
-  llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+  llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
                           sign,
                           false);
   assert(ft != NULL);
@@ -164,12 +164,12 @@ CodeGenerator::createDefaultCMainFunc()
                                                 std::string("main"),
                                                 fModule);
 
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(),
                                                   "entry", func);
   fBuilder.SetInsertPoint(bb);
 
   String appMainFuncNm = heather::mangleToC(String("app|main"));
-  llvm::Function* appMainFunc = fModule->getFunction(std::string(StrHelper(appMainFuncNm)));
+  llvm::Function* appMainFunc = fModule->getFunction(llvm::StringRef(appMainFuncNm));
   assert(appMainFunc != NULL);
 
   fBuilder.CreateRet(fBuilder.CreateCall(appMainFunc, "appMainTmp"));
@@ -183,13 +183,11 @@ CodeGenerator::createDefaultCMainFunc()
 
 //------------------------------------------------------------------------------
 
-static llvm::AllocaInst*
-createEntryBlockAlloca(llvm::Function *func, const String& name)
+llvm::AllocaInst*
+CodeGenerator::createEntryBlockAlloca(llvm::Function *func, const String& name)
 {
   llvm::IRBuilder<> tmp(&func->getEntryBlock(), func->getEntryBlock().begin());
-  return tmp.CreateAlloca(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
-                          0,
-                          std::string(StrHelper(name)));
+  return tmp.CreateAlloca(llvm::Type::getInt32Ty(context()), 0, llvm::Twine(name));
 }
 
 
@@ -200,7 +198,7 @@ CodeGenerator::codegen(const SymbolNode* node)
 {
   if (node->name() == String("unspecified")) {
     // TODO
-    return llvm::ConstantInt::get(llvm::getGlobalContext(),
+    return llvm::ConstantInt::get(context(),
                                   llvm::APInt(32, 0, true));
   }
 
@@ -266,14 +264,14 @@ void
 CodeGenerator::emitCtorList(const CtorList &fns, const char *globalName)
 {
   // Ctor function type is void()*.
-  llvm::FunctionType* ctorFTy = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm::getGlobalContext()),
+  llvm::FunctionType* ctorFTy = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                         std::vector<const llvm::Type*>(),
                                                         false);
   llvm::Type *ctorPFTy = llvm::PointerType::getUnqual(ctorFTy);
 
   // Get the type of a ctor entry, { i32, void ()* }.
-  llvm::StructType* ctorStructTy = llvm::StructType::get(llvm::getGlobalContext(),
-                                                         llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+  llvm::StructType* ctorStructTy = llvm::StructType::get(context(),
+                                                         llvm::Type::getInt32Ty(context()),
                                                          llvm::PointerType::getUnqual(ctorFTy),
                                                          NULL);
 
@@ -281,7 +279,7 @@ CodeGenerator::emitCtorList(const CtorList &fns, const char *globalName)
   std::vector<llvm::Constant*> ctors;
   for (CtorList::const_iterator i = fns.begin(), e = fns.end(); i != e; ++i) {
     std::vector<llvm::Constant*> s;
-    s.push_back(llvm::ConstantInt::get(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+    s.push_back(llvm::ConstantInt::get(llvm::Type::getInt32Ty(context()),
                                        i->second, false));
     s.push_back(llvm::ConstantExpr::getBitCast(i->first, ctorPFTy));
     ctors.push_back(llvm::ConstantStruct::get(ctorStructTy, s));
@@ -303,15 +301,14 @@ CodeGenerator::createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
 {
   llvm::Function* fn =
   llvm::Function::Create(ft, llvm::GlobalValue::InternalLinkage,
-                         std::string(StrHelper(name)),
-                         fModule);
+                         llvm::Twine(name), fModule);
 
   // clang adds the following __TEXT,__StaticInit, etc. section to static
   // initializer functions.  Initialization however seems to work without
   // also.(?)
 
   // Set the section if needed.
-  // if (const char* section = llvm::getGlobalContext().Target.getStaticInitSectionSpecifier())
+  // if (const char* section = context().Target.getStaticInitSectionSpecifier())
   //   fn->setSection("__TEXT,__StaticInit,regular,pure_instructions");
 
   // fn->setDoesNotThrow();
@@ -324,12 +321,12 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
   String varnm = heather::mangleToC(node->symbolName());
   llvm::GlobalVariable* gv =
-  new llvm::GlobalVariable(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+  new llvm::GlobalVariable(llvm::Type::getInt32Ty(context()),
                            false, // isConstant,
                            llvm::GlobalValue::ExternalLinkage,
-                           llvm::ConstantInt::get(llvm::getGlobalContext(),
+                           llvm::ConstantInt::get(context(),
                                                   llvm::APInt(32, 0, true)),
-                           std::string(StrHelper(varnm)),
+                           llvm::Twine(varnm),
                            false, // ThreadLocal
                            0);    // AddressSpace
   assert(gv != NULL);
@@ -337,7 +334,7 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 
   fNamedValues.clear();
 
-  const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm::getGlobalContext()),
+  const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                          false);
 
   assert(ft != NULL);
@@ -347,7 +344,7 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 
   llvm::Function *func = createGlobalInitOrDtorFunction(ft, funcnm);
 
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(),
                                                   "entry", func);
   fBuilder.SetInsertPoint(bb);
 
@@ -358,7 +355,7 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
   else {
     // TODO: init the temporary value.  We shouldn't really have to care about
     // this here, since this can be better done in the AST analysis.
-    initval = llvm::ConstantInt::get(llvm::getGlobalContext(),
+    initval = llvm::ConstantInt::get(context(),
                                      llvm::APInt(32, 0, true));
   }
 
@@ -393,7 +390,7 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
   else {
     // TODO: init the temporary value.  We shouldn't really have to care about
     // this here, since this can be better done in the AST analysis.
-    initval = llvm::ConstantInt::get(llvm::getGlobalContext(),
+    initval = llvm::ConstantInt::get(context(),
                                      llvm::APInt(32, 0, true));
   }
 
@@ -488,9 +485,9 @@ CodeGenerator::codegen(const BlockNode* node)
 {
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
 
-  llvm::BasicBlock* bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock* bb = llvm::BasicBlock::Create(context(),
                                                   "inner", curFunction);
-  llvm::BasicBlock* contBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock* contBB = llvm::BasicBlock::Create(context(),
                                                       "next", curFunction);
   // Insert an explicit fall through from the current block to the loopBB.
   fBuilder.CreateBr(bb);
@@ -536,7 +533,7 @@ CodeGenerator::codegen(const KeywordNode* node)
 llvm::Value*
 CodeGenerator::codegen(const IntNode* node)
 {
-  return llvm::ConstantInt::get(llvm::getGlobalContext(),
+  return llvm::ConstantInt::get(context(),
                                 llvm::APInt(32, node->fValue, true));
 }
 
@@ -544,7 +541,7 @@ CodeGenerator::codegen(const IntNode* node)
 llvm::Value*
 CodeGenerator::codegen(const RealNode* node)
 {
-  return llvm::ConstantFP::get(llvm::getGlobalContext(),
+  return llvm::ConstantFP::get(context(),
                                llvm::APFloat(node->fValue));
 }
 
@@ -616,11 +613,11 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node)
     if (param->isRestArg())
       isVarArgs = true;
     else
-      sign.push_back(llvm::Type::getInt32Ty(llvm::getGlobalContext()));
+      sign.push_back(llvm::Type::getInt32Ty(context()));
   }
 
   llvm::FunctionType *ft =
-    llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+    llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
                             sign,
                             isVarArgs);
 
@@ -642,10 +639,10 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 
   llvm::Function *func = llvm::Function::Create(ft,
                                                 llvm::Function::ExternalLinkage,
-                                                std::string(StrHelper(funcnm)),
+                                                llvm::Twine(funcnm),
                                                 fModule);
 
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(),
                                                   "entry", func);
   fBuilder.SetInsertPoint(bb);
 
@@ -708,7 +705,7 @@ CodeGenerator::codegen(const ApplyNode* node)
     // Look up the name in the global module table.
     String funcnm = heather::mangleToC(symNode->fValue);
 
-    calleeFunc = fModule->getFunction(std::string(StrHelper(funcnm)));
+    calleeFunc = fModule->getFunction(llvm::StringRef(funcnm));
     if (calleeFunc == NULL) {
       errorf(node->srcpos(), 0, "Unknown function referenced");
       return NULL;
@@ -786,7 +783,7 @@ CodeGenerator::codegen(const NegateNode* node)
     return NULL;
 
   return fBuilder.CreateMul(base,
-                            llvm::ConstantInt::get(llvm::getGlobalContext(),
+                            llvm::ConstantInt::get(context(),
                                                    llvm::APInt(32, (uint64_t)-1, true)),
                             "negtmp");
 }
@@ -803,7 +800,7 @@ CodeGenerator::codegen(const IfNode* node)
 
   // Convert condition to a bool by comparing equal to 1
   testValue = fBuilder.CreateICmpEQ(testValue,
-                                    llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                    llvm::ConstantInt::get(context(),
                                                            llvm::APInt(1, 1, true)),
                                     "ifcond");
 
@@ -811,11 +808,11 @@ CodeGenerator::codegen(const IfNode* node)
 
   // Create blocks for the then and else cases.  Insert the 'then' block at the
   // end of the function.
-  llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(context(),
                                                       "then", curFunction);
-  llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(context(),
                                                       "else");
-  llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(context(),
                                                        "ifcont");
 
   fBuilder.CreateCondBr(testValue, thenBB, elseBB);
@@ -847,7 +844,7 @@ CodeGenerator::codegen(const IfNode* node)
   // Emit merge block.
   curFunction->getBasicBlockList().push_back(mergeBB);
   fBuilder.SetInsertPoint(mergeBB);
-  llvm::PHINode *pn = fBuilder.CreatePHI(llvm::Type::getInt32Ty(llvm::getGlobalContext()),
+  llvm::PHINode *pn = fBuilder.CreatePHI(llvm::Type::getInt32Ty(context()),
                                          "iftmp");
 
   pn->addIncoming(thenValue, thenBB);
@@ -915,12 +912,12 @@ llvm::Value*
 CodeGenerator::codegen(const WhileNode* node)
 {
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-  llvm::BasicBlock *loopHeadBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock *loopHeadBB = llvm::BasicBlock::Create(context(),
                                                           "loophead", curFunction);
-  llvm::BasicBlock *loopBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock *loopBB = llvm::BasicBlock::Create(context(),
                                                       "loop", curFunction);
   // Create the "after loop" block and insert it.
-  llvm::BasicBlock *afterBB = llvm::BasicBlock::Create(llvm::getGlobalContext(),
+  llvm::BasicBlock *afterBB = llvm::BasicBlock::Create(context(),
                                                        "afterloop",
                                                        curFunction);
 
@@ -936,7 +933,7 @@ CodeGenerator::codegen(const WhileNode* node)
 
   // Convert condition to a bool by comparing equal to 1
   testValue = fBuilder.CreateICmpEQ(testValue,
-                                    llvm::ConstantInt::get(llvm::getGlobalContext(),
+                                    llvm::ConstantInt::get(context(),
                                                            llvm::APInt(1, 1, true)),
                                     "loopcond");
   // Insert the conditional branch into the end of loopEndBB.
@@ -968,3 +965,11 @@ CodeGenerator::codegen(const CastNode* node)
 }
 
 
+
+//------------------------------------------------------------------------------
+
+llvm::LLVMContext&
+CodeGenerator::context()
+{
+  return fContext;
+}

@@ -20,12 +20,13 @@
 
 namespace llvm
 {
-  class Value;
-  class Module;
-  class BasicBlock;
   class AllocaInst;
-  class FunctionPassManager;
+  class BasicBlock;
   class Function;
+  class FunctionPassManager;
+  class LLVMContext;
+  class Module;
+  class Value;
 };
 
 
@@ -125,6 +126,8 @@ namespace heather
     llvm::Value* codegen(const FuncDefNode* node, bool isLocal);
     llvm::Value* codegen(const VardefNode* node, bool isLocal);
 
+    llvm::LLVMContext& context();
+
     llvm::FunctionType* createFunctionSignature(const FunctionNode* node);
 
     void codegen(const NodeList& nl);
@@ -141,8 +144,12 @@ namespace heather
                                    const String& name);
     llvm::Value* codegenForGlobalVars(const VardefNode* node);
 
+    llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
+                                             const String& name);
+
     //-------- data members
 
+    llvm::LLVMContext& fContext;
     llvm::Module*     fModule;
     llvm::IRBuilder<> fBuilder;
     llvm::FunctionPassManager* fOptPassManager;

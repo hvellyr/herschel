@@ -12,6 +12,7 @@
 #include "common.h"
 
 #include <vector>
+#include <string>
 #if defined(UNITTESTS)
 #  include <iostream>
 #endif
@@ -80,6 +81,8 @@ namespace heather
 
     int toInt(int radix = 10) const;
     double toDouble() const;
+
+    operator std::string() const;
 
   private:
     friend class StringBuffer;
