@@ -18,6 +18,8 @@
 #include "refcountable.h"
 #include "exception.h"
 
+#include <string>
+
 #if defined(UNITTESTS)
 #  include <iostream>
 #endif
@@ -499,6 +501,12 @@ String::toDouble() const
   if (endptr != NULL && strlen(endptr) > 0)
     throw NotANumberException(String("Is not a number: ") + tmp);
   return val;
+}
+
+
+String::operator std::string() const
+{
+  return std::string(StrHelper(*this));
 }
 
 
