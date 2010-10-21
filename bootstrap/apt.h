@@ -117,6 +117,17 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  enum SymReferType
+  {
+    kFreeVar,
+    kGlobalVar,
+    kLocalVar,
+    kParam,
+    kSlot,
+    kFunction,
+    kType,
+  };
+
   class SymbolNode : public AptNode
   {
   public:
@@ -130,6 +141,9 @@ namespace heather
     const String& name() const;
     std::string string() const;
 
+    SymReferType refersTo() const;
+    void setRefersTo(SymReferType type);
+
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* an);
@@ -138,8 +152,9 @@ namespace heather
     friend class XmlRenderer;
     friend class CodeGenerator;
 
-    String     fValue;
-    TypeVector fGenerics;
+    String       fValue;
+    TypeVector   fGenerics;
+    SymReferType fRefersTo;
   };
 
 
@@ -379,6 +394,7 @@ namespace heather
   public:
     VardefNode(const SrcPos& srcpos, Scope* scope,
                const String& symbolName, VardefFlags flags,
+               bool isLocal,
                const Type& type, AptNode* initExpr);
 
     virtual VardefNode* clone() const;
@@ -386,11 +402,9 @@ namespace heather
     bool isEnum() const;
     bool isConst() const;
     bool isConfig() const;
+    bool isLocal() const;
 
-    VardefFlags flags() const
-    {
-      return fFlags;
-    }
+    VardefFlags flags() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
@@ -399,6 +413,7 @@ namespace heather
   private:
     friend class XmlRenderer;
 
+    bool fIsLocal;
     VardefFlags fFlags;
   };
 
