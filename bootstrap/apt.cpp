@@ -200,7 +200,8 @@ KeywordNode::annotate(Annotator* an)
 SymbolNode::SymbolNode(const SrcPos& srcpos, Scope* scope,
                        const String& value)
   : AptNode(srcpos, scope),
-    fValue(value)
+    fValue(value),
+    fRefersTo(kFreeVar)
 {
 }
 
@@ -210,7 +211,8 @@ SymbolNode::SymbolNode(const SrcPos& srcpos, Scope* scope,
                        const TypeVector& generics)
   : AptNode(srcpos, scope),
     fValue(value),
-    fGenerics(generics)
+    fGenerics(generics),
+    fRefersTo(kFreeVar)
 { }
 
 
@@ -239,6 +241,20 @@ std::string
 SymbolNode::string() const
 {
   return std::string(StrHelper(fValue));
+}
+
+
+SymReferType
+SymbolNode::refersTo() const
+{
+  return fRefersTo;
+}
+
+
+void
+SymbolNode::setRefersTo(SymReferType type)
+{
+  fRefersTo = type;
 }
 
 
@@ -684,8 +700,10 @@ BindingNode::initExpr() const
 
 VardefNode::VardefNode(const SrcPos& srcpos, Scope* scope,
                        const String& symbolName, VardefFlags flags,
+                       bool isLocal,
                        const Type& type, AptNode* initExpr)
   : BindingNode(srcpos, scope, symbolName, type, initExpr),
+    fIsLocal(isLocal),
     fFlags(flags)
 {
 }
@@ -694,7 +712,7 @@ VardefNode::VardefNode(const SrcPos& srcpos, Scope* scope,
 VardefNode*
 VardefNode::clone() const
 {
-  return new VardefNode(fSrcPos, fScope, fSymbolName, fFlags,
+  return new VardefNode(fSrcPos, fScope, fSymbolName, fFlags, fIsLocal,
                         fType.clone(), nodeClone(fInitExpr));
 }
 
@@ -724,6 +742,20 @@ bool
 VardefNode::isEnum() const
 {
   return fFlags == kEnumVar;
+}
+
+
+bool
+VardefNode::isLocal() const
+{
+  return fIsLocal;
+}
+
+
+VardefFlags
+VardefNode::flags() const
+{
+  return fFlags;
 }
 
 

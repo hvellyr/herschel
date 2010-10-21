@@ -70,6 +70,23 @@ Annotator::annotate(SymbolNode* node)
   const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
   if (var != NULL) {
     takeFullNameFromNode(node, var);
+
+    const VardefNode* vardef = dynamic_cast<const VardefNode*>(var);
+    if (vardef != NULL) {
+      node->setRefersTo(vardef->isLocal() ? kLocalVar : kGlobalVar);
+    }
+    else if (dynamic_cast<const FuncDefNode*>(var) != NULL) {
+      node->setRefersTo(kFunction);
+    }
+    else if (dynamic_cast<const ParamNode*>(var) != NULL) {
+      node->setRefersTo(kParam);
+    }
+    else if (dynamic_cast<const SlotdefNode*>(var) != NULL) {
+      node->setRefersTo(kSlot);
+    }
+    else {
+      assert(0 && "unhandled registered symbol def");
+    }
     return;
   }
 

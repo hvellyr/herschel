@@ -204,14 +204,23 @@ CodeGenerator::codegen(const SymbolNode* node)
                                   llvm::APInt(32, 0, true));
   }
 
-  // Look this variable up in the function.
-  llvm::Value* val = fNamedValues[node->name()];
-  if (val == NULL) {
+  llvm::Value* val = NULL;
+
+  switch (node->refersTo()) {
+  case kLocalVar:
+  case kParam:
+    val = fNamedValues[node->name()];
+    break;
+  case kGlobalVar:
     val = fGlobalVariables[node->name()];
-    if (val == NULL) {
-      logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(node->name()));
-      return NULL;
-    }
+    break;
+  default:
+    assert(false && "unexpected symbol reference");
+  }
+
+  if (val == NULL) {
+    logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(node->name()));
+    return NULL;
   }
 
   return fBuilder.CreateLoad(val, node->string());
@@ -695,6 +704,7 @@ CodeGenerator::codegen(const ApplyNode* node)
 
   const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->fBase.obj());
   if (symNode != NULL) {
+    assert(symNode->refersTo() == kFunction);
     // Look up the name in the global module table.
     String funcnm = heather::mangleToC(symNode->fValue);
 
