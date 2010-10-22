@@ -168,7 +168,9 @@ void
 Annotator::annotate(FuncDefNode* node, bool isLocal)
 {
   annotateNodeList(node->params());
-  annotateNode(node->body());
+  if (node->body() != NULL) {
+    annotateNode(node->body());
+  }
 }
 
 

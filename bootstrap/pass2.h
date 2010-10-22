@@ -61,18 +61,19 @@ namespace heather
     void parseParameters(NodeList* parameters, const TokenVector& seq);
     AptNode* parseParameter(const Token& expr);
 
-    AptNode* parseTypeDef(const Token& expr, bool isType);
-    AptNode* parseAliasDef(const Token& expr, bool isLocal);
-    AptNode* parseSlotDef(const Token& expr);
-    AptNode* parseEnumDef(const Token& expr, bool isLocal);
+    AptNode* parseTypeDef(const Token& expr, size_t ofs, bool isType);
+    AptNode* parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
+    AptNode* parseSlotDef(const Token& expr, size_t ofs);
+    AptNode* parseEnumDef(const Token& expr, size_t ofs, bool isLocal);
     AptNode* nextEnumInitValue(const SrcPos& srcpos,
                                const Token& enumItemSym,
                                const Type& baseType, Token& lastInitToken);
-    AptNode* parseMeasureDef(const Token& expr, bool isLocal);
-    AptNode* parseUnitDef(const Token& expr, bool isLocal);
-    AptNode* parseVarDef(const Token& expr, VardefFlags flags, int ofs,
-                         bool isLocal);
-    AptNode* parseFunctionDef(const Token& expr, bool isLocal);
+    AptNode* parseMeasureDef(const Token& expr, size_t ofs, bool isLocal);
+    AptNode* parseUnitDef(const Token& expr, size_t ofs, bool isLocal);
+    AptNode* parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
+                         bool isLocal, const String& linkage);
+    AptNode* parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
+                              const String& linkage);
 
     AptNode* parseLiteralArray(const Token& expr);
     AptNode* parseLiteralVector(const Token& expr);

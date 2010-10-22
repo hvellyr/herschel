@@ -22,6 +22,7 @@ SOURCES =         \
 	annotate.cpp    \
 	apt.cpp         \
 	codegen.cpp     \
+	externc.cpp     \
 	file.cpp        \
 	heather.cpp     \
 	log.cpp         \
@@ -57,6 +58,7 @@ HEADERS =         \
 	common.h        \
 	errcodes.h      \
 	exception.h     \
+	externc.h       \
 	file.h          \
 	log.h           \
 	macro.h         \

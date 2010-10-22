@@ -635,50 +635,62 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
   llvm::FunctionType* ft = createFunctionSignature(node);
   assert(ft != NULL);
 
-  String funcnm = heather::mangleToC(node->funcName());
+  String funcnm;
+  if (node->linkage() == String("C")) {
+    funcnm = node->funcName();
+  }
+  else {
+    funcnm = heather::mangleToC(node->funcName());
+  }
 
   llvm::Function *func = llvm::Function::Create(ft,
                                                 llvm::Function::ExternalLinkage,
                                                 llvm::Twine(funcnm),
                                                 fModule);
 
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(),
+  if (node->fBody != NULL) {
+    llvm::Function::arg_iterator aiter = func->arg_begin();
+    llvm::Function::arg_iterator aiter_e = func->arg_end();
+    for (size_t pidx = 0;
+         pidx < node->fParams.size() && aiter != aiter_e;
+         pidx++, ++aiter)
+    {
+      const ParamNode* param = dynamic_cast<const ParamNode*>(node->fParams[pidx].obj());
+
+      // TODO ende name
+      llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func, param->fSymbolName);
+      fBuilder.CreateStore(aiter, stackSlot);
+      fNamedValues[param->name()] = stackSlot;
+    }
+
+    llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(),
                                                   "entry", func);
-  fBuilder.SetInsertPoint(bb);
+    fBuilder.SetInsertPoint(bb);
 
-  llvm::Function::arg_iterator aiter = func->arg_begin();
-  for (size_t pidx = 0; pidx < node->fParams.size(); pidx++, ++aiter) {
-    const ParamNode* param = dynamic_cast<const ParamNode*>(node->fParams[pidx].obj());
+    const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->fBody.obj());
+    if (blockNode != NULL) {
+      fCurrentValue = createEntryBlockAlloca(func, String("curval"));
+      assert(fCurrentValue != NULL);
 
-    // TODO ende name
-    llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func, param->fSymbolName);
-    fBuilder.CreateStore(aiter, stackSlot);
-    fNamedValues[param->name()] = stackSlot;
-  }
+      codegen(blockNode->children());
 
-  const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->fBody.obj());
-  if (blockNode != NULL) {
-    fCurrentValue = createEntryBlockAlloca(func, String("curval"));
-    assert(fCurrentValue != NULL);
+      fBuilder.CreateRet(fBuilder.CreateLoad(fCurrentValue));
+    }
+    else {
+      llvm::Value* val = codegenNode(node->fBody);
+      if (val == NULL)
+        return NULL;
+      fBuilder.CreateRet(val);
+    }
 
-    codegen(blockNode->children());
+    verifyFunction(*func);
 
-    fBuilder.CreateRet(fBuilder.CreateLoad(fCurrentValue));
-  }
-  else {
-    llvm::Value* val = codegenNode(node->fBody);
-    if (val == NULL)
-      return NULL;
-    fBuilder.CreateRet(val);
-  }
+    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+      fOptPassManager->run(*func);
 
-  verifyFunction(*func);
-
-  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-    fOptPassManager->run(*func);
-
-  if (!isLocal && node->funcName() == String("app|main")) {
-    fHasMainFunc = true;
+    if (!isLocal && node->funcName() == String("app|main")) {
+      fHasMainFunc = true;
+    }
   }
 
   return func;
@@ -702,12 +714,23 @@ CodeGenerator::codegen(const ApplyNode* node)
   const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->fBase.obj());
   if (symNode != NULL) {
     assert(symNode->refersTo() == kFunction);
-    // Look up the name in the global module table.
-    String funcnm = heather::mangleToC(symNode->fValue);
+
+    const AptNode* fn = symNode->fScope->lookupFunction(symNode->fValue, false);
+    const FuncDefNode* fdn = dynamic_cast<const FuncDefNode*>(fn);
+    assert(fdn != NULL);
+
+    String funcnm;
+    if (fdn->linkage() == String("C")) {
+      funcnm = symNode->name();
+    }
+    else {
+      funcnm = heather::mangleToC(symNode->name());
+    }
 
     calleeFunc = fModule->getFunction(llvm::StringRef(funcnm));
     if (calleeFunc == NULL) {
-      errorf(node->srcpos(), 0, "Unknown function referenced");
+      errorf(node->srcpos(), 0, "Unknown function referenced: %s",
+             (const char*)StrHelper(funcnm));
       return NULL;
     }
   }

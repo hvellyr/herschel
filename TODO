@@ -17,6 +17,17 @@ Documentation
 
 Bootstrap compiler
 
+  - get rid of nested functions
+    - detect closure variable access
+
+    - detect whether nested functions can simply be inlined
+
+    - otherwise lambda lift functions to outside.
+
+  - array access
+
+  - vardef parameters
+
   - replace the UnitConstant node by a proper Measure() ctor call.  Apply
     the unit transformation inplace (if simple enough).  Register
     unit-transform calls as special functions.

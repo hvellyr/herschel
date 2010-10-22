@@ -662,6 +662,7 @@ Token::operator<(const Token& other) const
       case kEofId:
       case kExportId:
       case kExtendId:
+      case kExternId:
       case kForId:
       case kFUNCTIONId:
       case kFunctionId:
@@ -765,6 +766,7 @@ Token::toString() const
     case kEofId:       return String(MID_EofId);
     case kExportId:    return String(MID_ExportId);
     case kExtendId:    return String(MID_ExtendId);
+    case kExternId:    return String(MID_ExternId);
     case kForId:       return String(MID_ForId);
     case kFUNCTIONId:  return String(MID_FUNCTIONId);
     case kFunctionId:  return String(MID_FunctionId);
@@ -880,6 +882,7 @@ Token::type() const
   case kEofId:
   case kExportId:
   case kExtendId:
+  case kExternId:
   case kForId:
   case kFUNCTIONId:
   case kFunctionId:
@@ -1079,10 +1082,10 @@ Token::operator[](int idx)
 }
 
 
-int
+size_t
 Token::count() const
 {
-  return int(children().size());
+  return children().size();
 }
 
 
@@ -1107,6 +1110,7 @@ Token::idValue() const
   case kEofId:
   case kExportId:
   case kExtendId:
+  case kExternId:
   case kForId:
   case kFUNCTIONId:
   case kFunctionId:
@@ -1466,6 +1470,7 @@ Token::toPort(Port<Octet>* port) const
     case kEofId:
     case kExportId:
     case kExtendId:
+    case kExternId:
     case kForId:
     case kFUNCTIONId:
     case kFunctionId:
@@ -1536,6 +1541,7 @@ Token::isCharOrUnitName() const
           fType == kEofId ||
           fType == kExportId ||
           fType == kExtendId ||
+          fType == kExternId ||
           fType == kForId ||
           fType == kFUNCTIONId ||
           fType == kFunctionId ||

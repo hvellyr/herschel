@@ -30,15 +30,6 @@ namespace heather
     E_MapToExpected       = 0x000d,
     E_MissingApos         = 0x000e,
 
-    E_SymbolExpected      = 0x1001,
-    E_StringExpected      = 0x1002,
-    E_UnexpectedTopExpr   = 0x1003,
-    E_ConstExprExpected   = 0x1004,
-    E_UnexpectedDefExpr   = 0x1005,
-    E_OnExprInType        = 0x1006,
-
-    E_AmbiguousSym        = 0x2000,
-
     // notation errors
     E_UnexpectedChar      = 0x0100,
     E_BadHashNotation     = 0x0101,
@@ -53,6 +44,17 @@ namespace heather
     E_UndefinedUnit       = 0x010a,
     E_OrphanedMultiValue  = 0x010b,
     E_OrphanedRestInd     = 0x010c,
+
+    E_SymbolExpected      = 0x1001,
+    E_StringExpected      = 0x1002,
+    E_UnexpectedTopExpr   = 0x1003,
+    E_ConstExprExpected   = 0x1004,
+    E_UnexpectedDefExpr   = 0x1005,
+    E_OnExprInType        = 0x1006,
+
+    E_AmbiguousSym        = 0x2000,
+
+    E_UnknownLinkage      = 0x2100,
 
     // def parsing
     E_Redefinition        = 0x4000,
@@ -140,6 +142,11 @@ namespace heather
     E_EmptyExportList     = 0x4541,
     E_UnknownInputFile    = 0x4542,
     E_UnknownVisibility   = 0x4543,
+
+
+    // external C syntax
+    E_BadCSyntax          = 0xe000,
+    E_UnexpLinkage        = 0xe001,
   };
 };
 

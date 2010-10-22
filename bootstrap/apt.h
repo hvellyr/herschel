@@ -406,6 +406,9 @@ namespace heather
 
     VardefFlags flags() const;
 
+    const String& linkage() const;
+    void setLinkage(const String& linkage);
+
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
@@ -415,6 +418,7 @@ namespace heather
 
     bool fIsLocal;
     VardefFlags fFlags;
+    String fLinkage;
   };
 
 
@@ -885,6 +889,9 @@ namespace heather
     bool isGeneric() const;
     bool isAbstract() const;
 
+    const String& linkage() const;
+    void setLinkage(const String& linkage);
+
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
@@ -897,6 +904,7 @@ namespace heather
 
     String       fSym;
     unsigned int fFlags;
+    String       fLinkage;
   };
 
 

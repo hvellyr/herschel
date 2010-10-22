@@ -355,6 +355,9 @@ XmlRenderer::renderNode(const VardefNode* node)
     break;
   }
 
+  if (!node->linkage().isEmpty())
+    attrs << " linkage='" << node->linkage() << "'";
+
   displayOpenTagAttrs("vardef", StrHelper(attrs.toString()));
 
   displayType("type", node->fType);
@@ -650,6 +653,9 @@ XmlRenderer::renderNode(const FuncDefNode* node)
 
   if (node->isAbstract())
     attrs << " abstract='true'";
+
+  if (!node->linkage().isEmpty())
+    attrs << " linkage='" << node->linkage() << "'";
 
   displayOpenTagAttrs(tag, StrHelper(attrs.toString()));
   displayNodeList("params", node->fParams);
