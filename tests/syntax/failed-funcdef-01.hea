@@ -1,0 +1,6 @@
+def x = {
+          let generic f0()
+             outln("hello world")
+
+          f0()
+        }

@@ -1,0 +1,19 @@
+def foo(v : Int) : (Int, Char, Bool)
+   #[v, \a, true]
+
+def bar()
+  let a, b, c = foo(256)
+  true
+
+def foo2(val : (Int, Char, Bool))
+  let x, y, z = val
+  true
+
+def foo3(val : 'T[])
+  let x, y, z = val
+  true
+
+def foo4(val : Any[])
+  let x, y, z = val[0 .. 3]
+  true
+

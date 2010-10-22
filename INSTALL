@@ -1,0 +1,24 @@
+Requirements
+
+  for the code itself:
+    - c++ (tested with gcc 4.0.1)
+
+  for building and testing:
+  - a shell (posix compliant shell)
+  - sed
+  - GNU make (tested with GNU make 3.81)
+  - python (tested with python 2.5.1)
+
+
+  for the documentation:
+  - texinfo (the makefile refers to texi2pdf and makeinfo)
+
+
+Developed on Mac OS X (10.5), Linux, and Windows XP.
+
+
+Build on Windows XP:
+
+  - only tested with mingw32.  You need at least version
+    mingw-get-inst-20100909, i.e. gcc 4.5.0.  gcc 4.4.0 shows some strange
+    inconsistency in the default c++ library setup.

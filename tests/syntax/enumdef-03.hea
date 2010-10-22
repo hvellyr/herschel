@@ -1,0 +1,19 @@
+def enum I1 : Int
+{
+  %int-a
+  %int-b
+  %int-c
+}
+
+def const a1 = #[%int-a, %int-b, %int-c]
+
+def enum I2 : Int
+{
+  %int2-a = -42
+  %int2-b = 0
+  %int2-c
+  %int2-d = 127
+  %int2-e
+}
+
+def const a2 = #[%int2-a, %int2-b, %int2-c, %int2-d, %int2-e]

@@ -1,0 +1,5 @@
+def f()
+  match (octets-available()) {
+    | t : Boolean -> outln("End of file")
+    | n : Number -> outln("Still have %d to read" % #[n])
+  }

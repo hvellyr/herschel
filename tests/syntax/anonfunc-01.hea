@@ -1,0 +1,3 @@
+def a = function(a : Int) : bool { a }
+
+def b = function(b : Int) : bool b

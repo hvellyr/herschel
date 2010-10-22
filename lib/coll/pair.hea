@@ -1,0 +1,118 @@
+-- This file is part of the heather package 
+--
+-- Copyright (c) 2006, 2007, 2008 Gregor Klinke
+-- All rights reserved.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+-- - Redistributions of source code must retain the above copyright notice,
+--   this list of conditions and the following disclaimer.
+--
+-- - Redistributions in binary form must reproduce the above copyright
+--   notice, this list of conditions and the following disclaimer in the
+--   documentation and/or other materials provided with the distribution.
+--
+-- - Neither the name of the author nor the names of other contributors may
+--   be used to endorse or promote products derived from this software
+--   without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+module coll ("eyestep/heather 1.0:collections")
+export public(Pair, value-iterator)
+
+import "core"
+
+def class Pair<Car, Cdr>(car: _car : Car = nil,
+                         cdr: _cdr : Cdr = nil)
+    ~ Simple LISP like pair/list implementation.
+
+    You can simulate the basic lisp style (cons a b) in heather with
+    Pair(a, b).~
+{
+  def slot car : Car = _car ; public
+  def slot cdr : Cdr = _cdr ; public
+}
+
+def alias NodePrinterFunc<L, R> = Function(node : Pair<L, R>) : Unspecified
+
+def generic pair-cell-to-string(node @ Any, port,
+                                func : NodePrinterFunc<'L, 'R>)
+  port.writes(" . ")
+  port.writes(node.to-string)
+
+def pair-cell-to-string(node @ Pair<'L, 'R>, port,
+                        func : NodePrinterFunc<'L, 'R>)
+  port.writes(" ")
+  func(node)
+
+def lang|to-string(self @ Pair<'L, 'R>) : String
+  if (self.car.nil? and self.cdr.nil?)
+    "()"
+  else {
+    let port = io|StringPort()
+    let printer(p : Pair<'L, 'R>) : Unspecified {
+      port.writes(p.car.to-string)
+
+      let pcdr = p.cdr
+      if (pcdr <> nil)
+        pcdr.pair-cell-to-string(port, printer)
+    }
+
+    port.writes("(")
+    printer(self)
+    port.writes(")")
+
+    port.to-string
+  }
+
+
+def alias PairIteratorAccessorFunc<T> = Function(node : Pair<T, _>) : T
+
+def class PairIterator<T, Accessor<T> >(_root, acc)
+    : Iterator<T>
+{
+  def slot current : Pair<T, _> = _root ; public
+  def slot accessor : Accessor = acc ; private
+}
+
+
+def core|next(self @ PairIterator<'Elt, 'AccType>) : 'Elt
+   if (not self.end?) {
+     let value = self.accessor(self.current)
+     self.current = self.current.cdr
+     value
+   }
+   else
+     eof
+
+
+def core|end?(pair @ PairIterator<'Elt, 'AccType>) : Bool
+   pair.current.nil? or not pair.current.kind-of?(Pair)
+
+
+
+def value-iterator(pair @ Pair<'Elt, 'AccType>) : Iterator<'Elt>
+    ~ Returns an iterator over the car branches of @var{pair}. ~
+  PairIterator<'Elt, 'AccType>(pair, function(node) { node.car })
+
+
+def iterator(pair @ Pair<'Elt, 'AccType>) : Iterator<'Elt>
+    ~ Returns an iterator over all linked nodes of @var{pair} by following
+    the cdr chain. ~
+  PairIterator<'Elt, 'AccType>(pair, function(node) { node })
+
+
+-- end of Pair

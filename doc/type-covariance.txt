@@ -1,0 +1,120 @@
+When are types covariant?
+
+  A type A is covariant to a type B when
+
+  - if both A and B are base types
+
+    - if A implements/inherits (type) B
+
+    Note: it is an error if not all required functions in A are
+          covariants to those in B
+
+
+  - a measure type A is covariant to a type B
+
+    - if A's base type is covariant to B
+
+    - if B is a measure type, too, A is covariant to B if A's and B's base
+      types are covariant.
+
+
+  - an enumeration type A is covariant to a type B
+
+    - if A's base type is covariant to B
+
+    - two enumeration types can never be covariant
+
+    - base type can never be covariant to enumeration types.
+
+
+  - if A and B are array types
+
+    - if the base types for A and B are covariant
+
+      ex. Int[] is covariant to Number[]
+          Number[] is contravariant to Int[]
+          Int[] is invariant to String[]
+
+    An optional given array size has no influence on the covariance state.
+
+
+  - if A and B are parametrized types
+
+    - if the base types for A and B are covariant
+
+    - if A and B are specializations of a supertype C of and A's type
+      parameters are covariant to those of B:
+
+      ex. Vector<Int> is covariant to Vector<Number>
+          Vector<Number> is contravariant to Vector<Int>
+          Vector<Int> is invariant ot Vector<String>
+
+    - if A and B are alias for a partial specialized type C and A's type
+      parameters are covariant to those of B and their partial specialized
+      parameters are covariant:
+
+      ex. with
+          type C<x, y>
+          alias A<z> = C<z, Int>
+          alias B<z> = C<z, Number>
+          alias D<z> = C<z, String>
+
+          A<Int> is covariant to B<Number>
+          B<Number> is contravariant to A<Int>
+
+          A<Int> is invariant to B<String>.
+          A<Int> is invariant to D<Int>.
+
+
+  - if A and B are constrainted types
+
+    - if A's constraint is 'narrower' than B's constraint, i.e.
+
+      - for a numerical type if A's range is complete covered by B's range
+
+      - for a type constraint if A's constraint type is covariant to B's
+
+      - for a logical type constraint if A's set of constraints is
+        completely contained in B's
+
+      Incongruent type constraints (like value and subtype constraints) are
+      never covariant.
+
+
+  - if A and B are function types
+
+    - if the return type is covariant
+
+    - if all parameters are covariant; this implies that positional
+      parameters can only be covariant to positional parameters, that
+      specialized parameters can only be covariant o specalized parameters
+      etc.
+
+    Whether a function is generic or not is however not relevant.
+
+Beware of aliasing
+
+  let a : List<String> = List<String>()
+  let b : List<Object> = a
+
+looks ok, doesn't it?  But if now later on
+
+  b.add("abc")  -- ok
+  b.add(4567)   -- problem!
+
+4567 is a number (and therefore an Object) and thus can be added to b (it's
+a List<Object>).  But since b and a point to the same object in memory the
+type contract a isa List<String> is broken!
+
+Thus two parameterized types A<X> and B<Y> are covariant only if A and B
+are covariant and X and Y are identical.
+
+
+The 'isa' constraint is valueable?
+
+  def generic foo(a : 'T) ...                     -- accepts really any type
+  def generic foo(a : Any) ...                    -- accepts Any type
+  def generic foo(a : 'T isa Shape) ...           -- accepts any type being
+                                                  -- Shape or subclass
+  def generic foo(a : 'T) where T isa Shape ...   -- dto.
+
