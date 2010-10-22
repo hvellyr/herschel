@@ -108,6 +108,7 @@ language.  It refers to version @value{VERSION}.
 * Expressions::                 Expressions
 * Program structure::           Program structure
 * Macros::                      Macros
+* Linking to C::                Linking to C
 * Inline documentation::        Inline documentation
 * Syntax::                      Syntax
 * Concept Index::               Index of concepts
@@ -3799,7 +3800,7 @@ def app|main()
 
 
 @c ====================================================================
-@node Macros, Inline documentation, Program structure, Top
+@node Macros, Linking to C, Program structure, Top
 @chapter Macros
 
 @menu
@@ -4162,7 +4163,56 @@ def process-calls(parent)
 
 
 @c ====================================================================
-@node Inline documentation, Syntax, Macros, Top
+@node Linking to C, Inline documentation, Macros, Top
+@chapter Linking to C
+
+@findex extern
+
+It is possible to directly access functions and (global) variables
+from external link domains.  To call functions from C libraries they
+must be declared as @dfn{extern}:
+
+@smallexample
+extern ("C") @{
+  int printf(const char* format, ...);
+  char* getcwd(char* buffer, long size);
+@}
+@end smallexample
+
+Note that all syntax in the enclosed @code{extern} block is actually C
+syntax.  The functions can be used in heather code directly:
+
+@smallexample
+def foo(s)
+  printf(s.C|->buffer)
+@end smallexample
+
+There are certain limitations however:
+
+@enumerate
+@item
+Memory management.  TBD
+@item
+The syntax is not passed through a C preprocessor.  No macros are
+available in the @code{extern} section therefore (i.e. neither C
+preprocessor macros nor heather macros).
+@item
+Only C function and (global) variable declaration are allowed, i.e.@
+no @code{typedef}, no @code{struct}, no @code{enum}, etc.
+@item
+Only a very limited set of types are identified and known to heather.
+The basic C types @code{void}, @code{char}, @code{short}, @code{int},
+@code{long}, @code{float}, @code{double}, and their pointer and
+unsigned variants (where it applies) are understood and properly
+mapped to heather types.
+@item
+C functions are never tail optimized.
+@item
+It is not possible to call heather from C.
+@end enumerate
+
+@c ====================================================================
+@node Inline documentation, Syntax, Linking to C, Top
 @chapter Inline documentation
 
 @findex ~
@@ -4309,6 +4359,7 @@ declaration     := define-decl
                 |  when-stmt
                 |  extend-stmt
                 |  module-stmt
+                |  extern-decls
 @end verbatim
 @end smallformat
 
@@ -4387,7 +4438,8 @@ like local, global, closure definition, etc.}
 @smallformat
 @verbatim
 func-decl       := [ `generic' ] IDENTIFIER fundef-clause
-
+                   | extern-clause IDENTIFIER func-signature
+                     [ DOCSTRING ] `...'
 func-signature  := `(' fun-param-list `)' [ `:' return-type ]
 fundef-clause   := func-signature [ reify-decl ] [ generics-const ]
                    [ DOCSTRING ]
@@ -4417,7 +4469,7 @@ fun-impl        := expr-list
 
 @smallformat
 @verbatim
-vardef-clause   := vardef-bindings [ `=' varinit-value ]
+vardef-clause   := [ extern-clause ] vardef-bindings [ `=' varinit-value ]
 vardef-bindings := vardef-binding { `,' vardef-binding } [ rest-ind ]
 rest-ind        := `...'
 vardef-binding  := [ `const' ] var-name [ `:' type-clause ]
@@ -4431,6 +4483,7 @@ fluiddef-clause := `fluid' var-name [ `:' type-clause ]
                    `=' varinit-value
 @end verbatim
 @end smallformat
+
 
 @sp 1
 
@@ -4606,6 +4659,21 @@ pattern-def     := { any token }
 rplc-text       := { any token }
 @end verbatim
 @end smallformat
+
+@sp 1
+
+@emph{To directly access external functions or variables from other
+linkages domain (e.g.@ ``C'') functions and variables can be declared
+to be `external'.}
+@smallformat
+@verbatim
+extern-decls    := extern-clause mod-decls
+
+extern-clause   := `extern' `(' linkage-type `)'
+linkage-type    := STRING
+@end verbatim
+@end smallformat
+
 
 @sp 1
 
