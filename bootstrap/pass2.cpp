@@ -92,7 +92,7 @@ SecondPass::parseExport(const Token& expr)
   assert(expr.isSeq() && expr.count() >= 2);
   assert(expr[0] == kExportId);
 
-  int symbolOfs = 1;
+  size_t symbolOfs = 1;
   VizType vizType = kPrivate;
   if (expr[1].isSymbol()) {
     if (expr[1] == Parser::publicToken)
@@ -115,7 +115,7 @@ SecondPass::parseExport(const Token& expr)
   if (expr[symbolOfs].isNested()) {
     Token symbolExprs = expr[symbolOfs];
 
-    for (int j = 0; j < symbolExprs.count(); j++) {
+    for (size_t j = 0; j < symbolExprs.count(); j++) {
       if (symbolExprs[j].isSymbol()) {
         symbols.push_back(Scope::ScopeName(Scope::kNormal, symbolExprs[j].idValue()));
       }
@@ -648,17 +648,17 @@ SecondPass::getWhereOfs(const Token& expr) const
 
 
 AptNode*
-SecondPass::parseTypeDef(const Token& expr, bool isClass)
+SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass)
 {
   assert(fCurrentGenericTypes.empty());
   TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
 
   assert(expr.isSeq());
-  assert(expr.count() >= 3);
-  assert(expr[1] == Parser::typeToken || expr[1] == Parser::classToken);
-  assert(expr[2] == kSymbol);
+  assert(expr.count() >= ofs + 2);
+  assert(expr[ofs] == Parser::typeToken || expr[ofs] == Parser::classToken);
+  assert(expr[ofs + 1] == kSymbol);
 
-  size_t ofs = 2;
+  ofs++;
 
   const TokenVector& seq = expr.children();
   String typeName = seq[ofs].idValue();
@@ -821,17 +821,17 @@ SecondPass::parseTypeDef(const Token& expr, bool isClass)
 
 
 AptNode*
-SecondPass::parseAliasDef(const Token& expr, bool isLocal)
+SecondPass::parseAliasDef(const Token& expr, size_t ofs, bool isLocal)
 {
   assert(fCurrentGenericTypes.empty());
   TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
 
   assert(expr.isSeq());
-  assert(expr.count() > 4);
-  assert(expr[1] == Parser::aliasToken);
-  assert(expr[2] == kSymbol);
+  assert(expr.count() > ofs + 3);
+  assert(expr[ofs] == Parser::aliasToken);
+  assert(expr[ofs + 1] == kSymbol);
 
-  size_t ofs = 2;
+  ofs++;
 
   const TokenVector& seq = expr.children();
   String aliasName = seq[ofs].idValue();
@@ -891,13 +891,13 @@ SecondPass::parseAliasDef(const Token& expr, bool isLocal)
 
 
 AptNode*
-SecondPass::parseSlotDef(const Token& expr)
+SecondPass::parseSlotDef(const Token& expr, size_t ofs)
 {
   assert(expr.isSeq());
-  assert(expr.count() >= 3);
-  assert(expr[1] == Parser::slotToken);
+  assert(expr.count() >= ofs + 2);
+  assert(expr[ofs] == Parser::slotToken);
 
-  size_t ofs = 2;
+  ofs++;
 
   const TokenVector& seq = expr.children();
   String slotName = seq[ofs].idValue();
@@ -982,16 +982,16 @@ SecondPass::nextEnumInitValue(const SrcPos& srcpos,
 
 
 AptNode*
-SecondPass::parseEnumDef(const Token& expr, bool isLocal)
+SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
 {
   assert(fCurrentGenericTypes.empty());
 
   assert(expr.isSeq());
-  assert(expr.count() == 4 || expr.count() == 6);
-  assert(expr[1] == Parser::enumToken);
-  assert(expr[2] == kSymbol);
+  assert(expr.count() == ofs + 3 || expr.count() == ofs + 5);
+  assert(expr[ofs] == Parser::enumToken);
+  assert(expr[ofs + 1] == kSymbol);
 
-  size_t ofs = 2;
+  ofs++;
 
   const TokenVector& seq = expr.children();
   String enumTypeName = seq[ofs].idValue();
@@ -1096,20 +1096,20 @@ SecondPass::parseEnumDef(const Token& expr, bool isLocal)
 
 
 AptNode*
-SecondPass::parseMeasureDef(const Token& expr, bool isLocal)
+SecondPass::parseMeasureDef(const Token& expr, size_t ofs, bool isLocal)
 {
   assert(fCurrentGenericTypes.empty());
 
   assert(expr.isSeq());
-  assert(expr.count() == 6);
-  assert(expr[1] == Parser::measureToken);
-  assert(expr[2] == kSymbol);
-  assert(expr[3].isNested());
-  assert(expr[3].count() == 1);
-  assert(expr[3][0] == kSymbol);
-  assert(expr[4] == kColon);
+  assert(expr.count() == ofs + 5);
+  assert(expr[ofs] == Parser::measureToken);
+  assert(expr[ofs + 1] == kSymbol);
+  assert(expr[ofs + 2].isNested());
+  assert(expr[ofs + 2].count() == 1);
+  assert(expr[ofs + 2][0] == kSymbol);
+  assert(expr[ofs + 3] == kColon);
 
-  size_t ofs = 2;
+  ofs++;
 
   const TokenVector& seq = expr.children();
   String typeName = seq[ofs].idValue();
@@ -1165,19 +1165,19 @@ SecondPass::parseMeasureDef(const Token& expr, bool isLocal)
 
 
 AptNode*
-SecondPass::parseUnitDef(const Token& expr, bool isLocal)
+SecondPass::parseUnitDef(const Token& expr, size_t ofs, bool isLocal)
 {
   assert(fCurrentGenericTypes.empty());
 
   assert(expr.isSeq());
-  assert(expr.count() >= 7);
-  assert(expr[1] == Parser::unitToken);
-  assert(expr[2] == kSymbol);
-  assert(expr[3] == kMapTo);
-  assert(expr[5].isNested());
-  assert(expr[5].count() == 1);
+  assert(expr.count() >= ofs + 6);
+  assert(expr[ofs] == Parser::unitToken);
+  assert(expr[ofs + 1] == kSymbol);
+  assert(expr[ofs + 2] == kMapTo);
+  assert(expr[ofs + 4].isNested());
+  assert(expr[ofs + 4].count() == 1);
 
-  size_t ofs = 2;
+  ofs++;
 
   const TokenVector& seq = expr.children();
   String unitName = seq[ofs].idValue();
@@ -1212,8 +1212,8 @@ SecondPass::parseUnitDef(const Token& expr, bool isLocal)
 
 
 AptNode*
-SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs,
-                        bool isLocal)
+SecondPass::parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
+                        bool isLocal, const String& linkage)
 {
   assert(ofs >= 1);
   assert(ofs < expr.count());
@@ -1253,9 +1253,10 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, int ofs,
                                    Scope::kNormal, fullSymName))
     return NULL;
 
-  Ptr<AptNode> var = new VardefNode(expr.srcpos(), fScope,
-                                    fullSymName, flags, isLocal,
-                                    type, initExpr);
+  Ptr<VardefNode> var = new VardefNode(expr.srcpos(), fScope,
+                                       fullSymName, flags, isLocal,
+                                       type, initExpr);
+  var->setLinkage(linkage);
   fScope->registerVar(expr.srcpos(), fullSymName, var);
 
   return var.release();
@@ -1315,14 +1316,13 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
 
 
 AptNode*
-SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
+SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
+                             const String& linkage)
 {
   assert(expr.isSeq());
-  assert(expr.count() >= 3);
-  assert(expr[0] == kDefId || expr[0] == kLetId);
+  assert(expr.count() >= ofs + 2);
 
   FundefClauseData data;
-  size_t ofs = 1;
 
   if (expr[ofs] == Parser::genericToken) {
     data.fFlags |= kFuncIsGeneric;
@@ -1351,12 +1351,13 @@ SecondPass::parseFunctionDef(const Token& expr, bool isLocal)
                                    Scope::kNormal, fullFuncName))
     return NULL;
 
-  Ptr<AptNode> func = new FuncDefNode(expr.srcpos(), fScope,
-                                      fullFuncName,
-                                      data.fFlags,
-                                      data.fParams,
-                                      data.fType,
-                                      data.fBody);
+  Ptr<FuncDefNode> func = new FuncDefNode(expr.srcpos(), fScope,
+                                          fullFuncName,
+                                          data.fFlags,
+                                          data.fParams,
+                                          data.fType,
+                                          data.fBody);
+  func->setLinkage(linkage);
   fScope->registerFunction(expr.srcpos(), fullFuncName, func);
 
   return func.release();
@@ -1379,75 +1380,112 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
   assert(expr.count() >= 2);
   assert(expr[0] == kLetId || expr[0] == kDefId);
 
-  if (expr[1] == Parser::typeToken) {
+  String linkage;
+
+  size_t ofs = 1;
+  if (expr[1].isSeq() && expr[1].count() == 2 && expr[1][0] == kExternId) {
+    const TokenVector& seq = expr[1].children();
+    assert(seq[1].isNested());
+    assert(seq[1].leftToken() == kParanOpen);
+    assert(seq[1].rightToken() == kParanClose);
+    assert(seq[1].count() == 1);
+    assert(seq[1][0] == kString);
+
+    linkage = seq[1][0].stringValue();
+
+    ofs++;
+  }
+
+
+  if (expr[ofs] == Parser::typeToken) {
+    assert(linkage.isEmpty());
     if (isLocal) {
       errorf(expr.srcpos(), E_LocalTypeDef,
              "Local type definitions are not allowed");
       return NULL;
     }
-    return parseTypeDef(expr, false);
+    return parseTypeDef(expr, ofs, false);
   }
 
-  else if (expr[1] == Parser::classToken) {
+  else if (expr[ofs] == Parser::classToken) {
+    assert(linkage.isEmpty());
     if (isLocal) {
       errorf(expr.srcpos(), E_LocalTypeDef,
              "Local type definitions are not allowed");
       return NULL;
     }
-    return parseTypeDef(expr, true);
+    return parseTypeDef(expr, ofs, true);
   }
 
-  else if (expr[1] == Parser::aliasToken)
-    return parseAliasDef(expr, isLocal);
+  else if (expr[ofs] == Parser::aliasToken) {
+    assert(linkage.isEmpty());
+    return parseAliasDef(expr, ofs, isLocal);
+  }
 
-  else if (expr[1] == Parser::slotToken) {
+  else if (expr[ofs] == Parser::slotToken) {
     assert(!isLocal);
-    return parseSlotDef(expr);
+    assert(linkage.isEmpty());
+    return parseSlotDef(expr, ofs);
   }
 
-  else if (expr[1] == Parser::enumToken)
-    return parseEnumDef(expr, isLocal);
+  else if (expr[ofs] == Parser::enumToken) {
+    assert(linkage.isEmpty());
+    return parseEnumDef(expr, ofs, isLocal);
+  }
+  else if (expr[ofs] == Parser::measureToken) {
+    assert(linkage.isEmpty());
+    return parseMeasureDef(expr, ofs, isLocal);
+  }
 
-  else if (expr[1] == Parser::measureToken)
-    return parseMeasureDef(expr, isLocal);
+  else if (expr[ofs] == Parser::unitToken) {
+    assert(linkage.isEmpty());
+    return parseUnitDef(expr, ofs, isLocal);
+  }
 
-  else if (expr[1] == Parser::unitToken)
-    return parseUnitDef(expr, isLocal);
+  else if (expr[ofs] == Parser::constToken) {
+    assert(linkage.isEmpty());
+    return parseVarDef(expr, kConstVar, ofs + 1, isLocal, String());
+  }
+  else if (expr[ofs] == Parser::fluidToken) {
+    assert(linkage.isEmpty());
+    return parseVarDef(expr, kFluidVar, ofs + 1, isLocal, String());
+  }
+  else if (expr[ofs] == Parser::configToken) {
+    assert(linkage.isEmpty());
+    return parseVarDef(expr, kConfigVar, ofs + 1, isLocal, String());
+  }
 
-  else if (expr[1] == Parser::constToken)
-    return parseVarDef(expr, kConstVar, 2, isLocal);
-  else if (expr[1] == Parser::fluidToken)
-    return parseVarDef(expr, kFluidVar, 2, isLocal);
-  else if (expr[1] == Parser::configToken)
-    return parseVarDef(expr, kConfigVar, 2, isLocal);
+  else if (expr[ofs] == Parser::genericToken) {
+    assert(linkage.isEmpty());
+    return parseFunctionDef(expr, ofs, isLocal, String());
+  }
 
-  else if (expr[1] == Parser::genericToken)
-    return parseFunctionDef(expr, isLocal);
-
-  else if (expr[1] == Parser::charToken) {
-    // should never come here actually
+  else if (expr[ofs] == Parser::charToken) {
     assert(0);
+    // should never come here actually
     return NULL;
   }
 
-  else if (expr[1] == Parser::macroToken) {
-    // should never come here actually
+  else if (expr[ofs] == Parser::macroToken) {
     assert(0);
+    // should never come here actually
     return NULL;
   }
 
-  else if (expr[1] == kSymbol) {
-    if (expr.count() >= 3) {
-      if (expr[2].isNested())
-        return parseFunctionDef(expr, isLocal);
+  else if (expr[ofs] == kSymbol) {
+    if (expr.count() >= ofs + 2) {
+      if (expr[ofs + 1].isNested())
+        return parseFunctionDef(expr, ofs, isLocal, linkage);
 
-      assert(expr[2] == kAssign || expr[2] == kColon);
-      return parseVarDef(expr, kNormalVar, 1, isLocal);
+      assert(expr[ofs + 1] == kAssign || expr[ofs + 1] == kColon);
+      return parseVarDef(expr, kNormalVar, ofs, isLocal, linkage);
     }
 
-    return parseVarDef(expr, kNormalVar, 1, isLocal);
+    return parseVarDef(expr, kNormalVar, ofs, isLocal, linkage);
   }
 
+  errorf(expr[ofs].srcpos(), 0, "Unexpected token: %s\n",
+         (const char*)StrHelper(expr[ofs].toString()));
   assert(0);
 
   return NULL;
@@ -1486,7 +1524,7 @@ SecondPass::parseParameter(const Token& expr)
   assert(expr.isSeq());
   assert(expr.count() > 0);
 
-  int ofs = 0;
+  size_t ofs = 0;
   const TokenVector& seq = expr.children();
 
   String key;
@@ -1598,7 +1636,7 @@ SecondPass::parseClosure(const Token& expr)
   assert(expr[0] == kFunctionId);
   assert(expr[1].isNested());
 
-  int ofs = 1;
+  size_t ofs = 1;
   assert(expr[ofs].isNested());
 
   NodeList params;

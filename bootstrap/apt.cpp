@@ -712,8 +712,11 @@ VardefNode::VardefNode(const SrcPos& srcpos, Scope* scope,
 VardefNode*
 VardefNode::clone() const
 {
-  return new VardefNode(fSrcPos, fScope, fSymbolName, fFlags, fIsLocal,
-                        fType.clone(), nodeClone(fInitExpr));
+  Ptr<VardefNode> n = new VardefNode(fSrcPos, fScope, fSymbolName, fFlags,
+                                     fIsLocal,
+                                     fType.clone(), nodeClone(fInitExpr));
+  n->setLinkage(fLinkage);
+  return n.release();
 }
 
 
@@ -756,6 +759,20 @@ VardefFlags
 VardefNode::flags() const
 {
   return fFlags;
+}
+
+
+const String&
+VardefNode::linkage() const
+{
+  return fLinkage;
+}
+
+
+void
+VardefNode::setLinkage(const String& linkage)
+{
+  fLinkage = linkage;
 }
 
 
@@ -1666,8 +1683,11 @@ FuncDefNode::FuncDefNode(const SrcPos& srcpos,
 FuncDefNode*
 FuncDefNode::clone() const
 {
-  return new FuncDefNode(fSrcPos, fScope, fSym, fFlags, fParams,
-                         fRetType.clone(), nodeClone(fBody));
+  Ptr<FuncDefNode> n = new FuncDefNode(fSrcPos, fScope, fSym, fFlags,
+                                       fParams,
+                                       fRetType.clone(), nodeClone(fBody));
+  n->setLinkage(fLinkage);
+  return n.release();
 }
 
 
@@ -1696,6 +1716,20 @@ const String&
 FuncDefNode::funcName() const
 {
   return fSym;
+}
+
+
+const String&
+FuncDefNode::linkage() const
+{
+  return fLinkage;
+}
+
+
+void
+FuncDefNode::setLinkage(const String& linkage)
+{
+  fLinkage = linkage;
 }
 
 

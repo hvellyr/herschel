@@ -167,6 +167,7 @@ namespace heather
     kEofId,
     kExportId,
     kExtendId,
+    kExternId,
     kForId,
     kFUNCTIONId,
     kFunctionId,
@@ -286,7 +287,7 @@ namespace heather
     const Token& operator[](int idx) const;
     Token& operator[](int idx);
 
-    int count() const;
+    size_t count() const;
 
     //-------- accessing the values and types
     TokenType punctValue() const;
@@ -387,6 +388,7 @@ namespace heather
 #define MID_EofId       "eof"
 #define MID_ExportId    "export"
 #define MID_ExtendId    "extend"
+#define MID_ExternId    "extern"
 #define MID_ForId       "for"
 #define MID_FUNCTIONId  "Function"
 #define MID_FunctionId  "function"
