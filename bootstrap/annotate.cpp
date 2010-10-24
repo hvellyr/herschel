@@ -4,7 +4,9 @@
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
-*/
+
+   - look up all name references and complete their namespaces
+ */
 
 #include "annotate.h"
 #include "apt.h"
@@ -16,9 +18,11 @@
 
 
 #include <typeinfo>  //for 'typeid' to work
-//----------------------------------------------------------------------------
+
 
 using namespace heather;
+
+//----------------------------------------------------------------------------
 
 Annotator::Annotator()
 {
