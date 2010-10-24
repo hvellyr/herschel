@@ -62,6 +62,7 @@ displayHelp()
   printf("  -UT,     --run-unit-tests    Run unit tests for the compiler\n");
   printf("           --ut-format=FORMAT  Output format of unit tests {xml|txt}\n");
   printf("           --parse-1           Only do pass1 phase\n");
+  printf("           --parse-2           Only do pass1 + pass2 phase\n");
 #endif
   printf("  -P,      --parse             Only parse the source files\n");
   printf("  -c                           Only compile the source files, no link\n");
