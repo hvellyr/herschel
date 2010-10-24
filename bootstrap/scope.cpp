@@ -455,7 +455,7 @@ Scope::normalizeType(const Type& type, const Type& refType) const
 
 
 Type
-Scope::lookupType(const Type& type) const
+Scope::lookupType_unused(const Type& type) const
 {
   Type baseType;
   if (type.isArray()) {
@@ -752,3 +752,33 @@ Scope::propagateImportedScopes(Scope* dstScope) const
       dstScope->addImportedScope(it->first, it->second);
   }
 }
+
+
+
+//============================================================================
+
+#if defined(UNITTESTS)
+//----------------------------------------------------------------------------
+
+#include <UnitTest++.h>
+#include <iostream>
+
+SUITE(Scope)
+{
+  TEST(lookupType)
+  {
+    SrcPos sp;
+    TypeVector generics;
+    generics.push_back(Type::newTypeRef(String("Char"), true));
+    TypeConstVector constraints;
+    Type t0 = Type::newTypeRef(String("Foo"), generics, constraints, true);
+
+    Ptr<Scope> s0 = new Scope();
+    Type t1 = s0->lookupType_unused(t0);
+    // printf("%s\n", (const char*)StrHelper(t1.toString()));
+    CHECK(t1.isDef());
+  }
+}
+
+#endif  // #if defined(UNITTESTS)
+
