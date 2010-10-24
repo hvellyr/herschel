@@ -1015,7 +1015,7 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
   else
     baseType = Type::newTypeRef(Type::kIntTypeName, true);
 
-  if (!baseType.isBaseOrBaseRef()) {
+  if (!baseType.isBaseType()) {
     errorf(expr.srcpos(), E_EnumNotBaseType, "Enum base is not a base type.");
     return NULL;
   }
