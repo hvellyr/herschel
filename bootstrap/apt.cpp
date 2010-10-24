@@ -201,7 +201,8 @@ SymbolNode::SymbolNode(const SrcPos& srcpos, Scope* scope,
                        const String& value)
   : AptNode(srcpos, scope),
     fValue(value),
-    fRefersTo(kFreeVar)
+    fRefersTo(kFreeVar),
+    fIsShared(false)
 {
 }
 
@@ -212,7 +213,8 @@ SymbolNode::SymbolNode(const SrcPos& srcpos, Scope* scope,
   : AptNode(srcpos, scope),
     fValue(value),
     fGenerics(generics),
-    fRefersTo(kFreeVar)
+    fRefersTo(kFreeVar),
+    fIsShared(false)
 { }
 
 
@@ -252,9 +254,17 @@ SymbolNode::refersTo() const
 
 
 void
-SymbolNode::setRefersTo(SymReferType type)
+SymbolNode::setRefersTo(SymReferType type, bool isShared)
 {
   fRefersTo = type;
+  fIsShared = isShared;
+}
+
+
+bool
+SymbolNode::isShared() const
+{
+  return fIsShared;
 }
 
 
@@ -671,7 +681,8 @@ BindingNode::BindingNode(const SrcPos& srcpos, Scope* scope,
   : AptNode(srcpos, scope),
     fSymbolName(symbolName),
     fType(type),
-    fInitExpr(initExpr)
+    fInitExpr(initExpr),
+    fAllocType(kAlloc_Local)
 { }
 
 
@@ -693,6 +704,20 @@ AptNode*
 BindingNode::initExpr() const
 {
   return fInitExpr;
+}
+
+
+void
+BindingNode::setAllocType(BindingAllocType allocType)
+{
+  fAllocType = allocType;
+}
+
+
+BindingAllocType
+BindingNode::allocType() const
+{
+  return fAllocType;
 }
 
 

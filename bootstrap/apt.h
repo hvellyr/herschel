@@ -142,7 +142,8 @@ namespace heather
     std::string string() const;
 
     SymReferType refersTo() const;
-    void setRefersTo(SymReferType type);
+    void setRefersTo(SymReferType type, bool isShared);
+    bool isShared() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
@@ -155,6 +156,8 @@ namespace heather
     String       fValue;
     TypeVector   fGenerics;
     SymReferType fRefersTo;
+    bool         fIsShared;     // refers to a variable outside of owning
+                                // frame (= closed variable)
   };
 
 
@@ -358,6 +361,12 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  enum BindingAllocType
+  {
+    kAlloc_Local,
+    kAlloc_Shared               // variable is taken by closure
+  };
+
   class BindingNode : public AptNode, public NamedNode
   {
   public:
@@ -371,6 +380,9 @@ namespace heather
 
     virtual const String& name() const { return symbolName(); }
 
+    void setAllocType(BindingAllocType type);
+    BindingAllocType allocType() const;
+
   protected:
     friend class XmlRenderer;
     friend class CodeGenerator;
@@ -378,6 +390,7 @@ namespace heather
     String       fSymbolName;
     Type         fType;
     Ptr<AptNode> fInitExpr;
+    BindingAllocType fAllocType;
   };
 
 

@@ -216,11 +216,17 @@ XmlRenderer::renderNode(const StringNode* node)
 void
 XmlRenderer::renderNode(const SymbolNode* node)
 {
-  if (node->fGenerics.empty())
-    displayTag("symbol", node->fValue);
+  if (node->fGenerics.empty()) {
+    if (node->isShared())
+      displayTagAttr("symbol", "acc='shared'", node->fValue);
+    else
+      displayTag("symbol", node->fValue);
+  }
   else {
     StringBuffer attrs;
     attrs << "nm='" << node->fValue << "'";
+    if (node->isShared())
+      attrs << " acc='shared'";
 
     displayOpenTagAttrs("symbol", StrHelper(attrs.toString()));
     displayTypeVector("gen", node->fGenerics);
@@ -358,6 +364,14 @@ XmlRenderer::renderNode(const VardefNode* node)
   if (!node->linkage().isEmpty())
     attrs << " linkage='" << node->linkage() << "'";
 
+  switch (node->allocType()) {
+  case kAlloc_Local:
+    break;
+  case kAlloc_Shared:
+    attrs << " alloc='shared'";
+    break;
+  }
+
   displayOpenTagAttrs("vardef", StrHelper(attrs.toString()));
 
   displayType("type", node->fType);
@@ -386,6 +400,14 @@ XmlRenderer::renderNode(const ParamNode* node)
     break;
   case kRestArg:
     attrs << " type='rest'";
+    break;
+  }
+
+  switch (node->allocType()) {
+  case kAlloc_Local:
+    break;
+  case kAlloc_Shared:
+    attrs << " alloc='shared'";
     break;
   }
 
@@ -426,6 +448,14 @@ XmlRenderer::renderNode(const SlotdefNode* node)
   }
   else if ((node->fFlags & kInnerSlot) != 0) {
     attrs << " viz='inner'";
+  }
+
+  switch (node->allocType()) {
+  case kAlloc_Local:
+    break;
+  case kAlloc_Shared:
+    attrs << " alloc='shared'";
+    break;
   }
 
   displayOpenTagAttrs("slot", StrHelper(attrs.toString()));

@@ -30,6 +30,14 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  enum ScopeLevel
+  {
+    kScopeL_CompileUnit,
+    kScopeL_Module,
+    kScopeL_Function,
+    kScopeL_Local,
+  };
+
   class Scope : public RefCountable
   {
   public:
@@ -84,10 +92,11 @@ namespace heather
     };
 
 
-    Scope();
-    Scope(Scope* parent);
+    Scope(ScopeLevel level);
+    Scope(ScopeLevel level, Scope* parent);
 
     Scope* parent() const;
+    ScopeLevel scopeLevel() const;
 
 
     //! Check whether a given symbol \p name is registered in this scope.  If
@@ -170,6 +179,7 @@ namespace heather
     const AptNode* lookupVarOrFunc(const String& name,
                                    bool showAmbiguousSymDef) const;
 
+    bool isVarInOuterFunction(const String& name) const;
 
     //-------- register export symbols
 
@@ -216,19 +226,47 @@ namespace heather
 
   private:
     void registerScopeItem(const ScopeName& name, ScopeItem* item);
-    const ScopeItem* lookupItemLocal(const SrcPos& srcpos,
-                                     const ScopeName& name,
-                                     bool showError) const;
-    const ScopeItem* lookupItem(const SrcPos& srcpos,
-                                const ScopeName& name,
-                                bool showError) const;
+    struct LookupResult
+    {
+      LookupResult()
+        : fItem(NULL),
+          fInOuterFunc(false)
+      { }
+
+      LookupResult(const ScopeItem* item, bool inOuterFunc)
+        : fItem(item),
+          fInOuterFunc(inOuterFunc)
+      { }
+
+      LookupResult(const LookupResult& other)
+        : fItem(other.fItem),
+          fInOuterFunc(other.fInOuterFunc)
+      { }
+
+      LookupResult& operator=(const LookupResult& other)
+      {
+        fItem = other.fItem;
+        fInOuterFunc = other.fInOuterFunc;
+        return *this;
+      }
+
+      const ScopeItem* fItem;
+      bool             fInOuterFunc;
+    };
+
+    LookupResult lookupItemLocal(const SrcPos& srcpos,
+                                 const ScopeName& name,
+                                 bool showError) const;
+    LookupResult lookupItem(const SrcPos& srcpos,
+                            const ScopeName& name,
+                            bool showError) const;
 
     VizType reduceVizType(VizType in) const;
 
-    const Scope::ScopeItem* lookupItemLocalImpl(const SrcPos& srcpos,
-                                                const ScopeName& name,
-                                                bool showError,
-                                                bool doAutoMatch) const;
+    LookupResult lookupItemLocalImpl(const SrcPos& srcpos,
+                                     const ScopeName& name,
+                                     bool showError,
+                                     bool doAutoMatch) const;
 
     void dumpDebugImpl() const;
 
@@ -253,6 +291,7 @@ namespace heather
     VizMap fVisibility;
 
     ImportedScope fImportedScopes;
+    ScopeLevel    fLevel;
   };
 
 
@@ -263,13 +302,14 @@ namespace heather
   public:
     ScopeHelper(Ptr<Scope>& scope,
                 bool doExport,
-                bool isInnerScope)
+                bool isInnerScope,
+                ScopeLevel level)
       : fScopeLoc(scope),
         fPrevScope(scope),
         fDoExport(doExport),
         fIsInnerScope(isInnerScope)
     {
-      fScopeLoc = new Scope(fScopeLoc);
+      fScopeLoc = new Scope(level, fScopeLoc);
     }
 
     ~ScopeHelper()

@@ -254,7 +254,7 @@ FirstPass::parseModule()
       Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
 
       {
-        ScopeHelper scopeHelper(fScope, true, true);
+        ScopeHelper scopeHelper(fScope, true, true, kScopeL_Module);
 
         ModuleHelper moduleScope(this, modName.idValue());
         parseSequence(ModuleParser(),
@@ -266,7 +266,7 @@ FirstPass::parseModule()
       modExpr << defines;
     }
     else {
-      fScope = new Scope(fScope);
+      fScope = new Scope(kScopeL_Module, fScope);
       fCurrentModuleName = qualifyId(fCurrentModuleName, modName.idValue());
     }
   }
@@ -4135,7 +4135,7 @@ FirstPass::parse()
   {
     // let the complete parse run in its own scope to force an explicit export
     // run
-    ScopeHelper scopeHelper(fScope, true, false);
+    ScopeHelper scopeHelper(fScope, true, false, kScopeL_CompileUnit);
 
     nextToken();
     while (fToken != kEOF) {

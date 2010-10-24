@@ -60,7 +60,7 @@ Parser::Parser(bool isParsingInterface)
   : fState(ParserState(
              new CharRegistry,
              new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-             new Scope)),
+             new Scope(kScopeL_CompileUnit))),
     fIsParsingInterface(isParsingInterface)
 {
 }
@@ -322,7 +322,7 @@ Parser::PortStackHelper::PortStackHelper(Parser* parser)
   fParser->fState = ParserState(
     new CharRegistry,
     new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-    new Scope);
+    new Scope(kScopeL_CompileUnit));
 }
 
 

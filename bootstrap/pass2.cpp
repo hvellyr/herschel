@@ -71,14 +71,14 @@ SecondPass::parseModule(const Token& expr)
     assert(expr[3].isNested() && expr[3].leftToken() == kBraceOpen);
 
     {
-      ScopeHelper scopeHelper(fScope, true, true);
+      ScopeHelper scopeHelper(fScope, true, true, kScopeL_Module);
 
       ModuleHelper moduleHelper(this, modName);
       parseTopExprlist(expr[3]);
     }
   }
   else {
-    fScope = new Scope(fScope);
+    fScope = new Scope(kScopeL_Module, fScope);
     fCurrentModuleName = qualifyId(fCurrentModuleName, modName);
   }
 
@@ -1264,12 +1264,24 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
 
 
 void
+SecondPass::registerParameters(NodeList& params)
+{
+  for (size_t i = 0; i < params.size(); i++) {
+    ParamNode* pn = dynamic_cast<ParamNode*>(params[i].obj());
+    assert(pn != NULL);
+    fScope->registerVar(pn->srcpos(), pn->symbolName(), pn);
+  }
+
+}
+
+
+void
 SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
                               FundefClauseData& data)
 {
   assert(seq[ofs].isNested());
 
-  ScopeHelper scopeHelper(fScope, false, true);
+  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
 
   TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
 
@@ -1280,11 +1292,7 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
   parseParameters(&data.fParams, seq[ofs].children());
   ofs++;
 
-  for (size_t i = 0; i < data.fParams.size(); i++) {
-    ParamNode* pn = dynamic_cast<ParamNode*>(data.fParams[i].obj());
-    assert(pn != NULL);
-    fScope->registerVar(pn->srcpos(), pn->symbolName(), pn);
-  }
+  registerParameters(data.fParams);
 
   if (ofs < seq.size()) {
     if (seq[ofs] == kColon) {
@@ -1619,8 +1627,12 @@ SecondPass::parseOn(const Token& expr)
   assert(expr[1] == kSymbol);
   assert(expr[2].isNested());
 
+  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
+
   NodeList params;
   parseParameters(&params, expr[2].children());
+
+  registerParameters(params);
 
   return new OnNode(expr.srcpos(), fScope,
                     expr[1].idValue(), params,
@@ -1639,9 +1651,13 @@ SecondPass::parseClosure(const Token& expr)
   size_t ofs = 1;
   assert(expr[ofs].isNested());
 
+  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
+
   NodeList params;
   parseParameters(&params, expr[1].children());
   ofs++;
+
+  registerParameters(params);
 
   Type type;
   if (ofs + 1 < expr.count()) {
@@ -2141,7 +2157,7 @@ SecondPass::parseFor(const Token& expr)
   assert(expr[1].isNested());
   assert(heaImplies(expr.count() == 5, expr[3] == kElseId));
 
-  ScopeHelper scopeHelper(fScope, false, true);
+  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
   Ptr<AptNode> body = parseExpr(expr[2]);
   Ptr<AptNode> alternate;
@@ -2411,7 +2427,7 @@ SecondPass::parseMatch(const Token& expr)
   const TokenVector& args = expr[1].children();
   assert(args.size() > 0);
 
-  ScopeHelper scopeHelper(fScope, false, true);
+  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
   Ptr<BlockNode> block = new BlockNode(expr.srcpos(), fScope);
 
@@ -2446,7 +2462,7 @@ SecondPass::parseMatch(const Token& expr)
     assert(typeMapping[2] == kMapTo);
 
     {
-      ScopeHelper scopeHelper(fScope, false, true);
+      ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
       Ptr<BlockNode> localBlock = new BlockNode(typeMapping[3].srcpos(), fScope);
 
@@ -2645,7 +2661,7 @@ SecondPass::parseBlock(const Token& expr)
   assert(expr.leftToken() == kBraceOpen);
   assert(expr.rightToken() == kBraceClose);
 
-  ScopeHelper localScope(fScope, false, true);
+  ScopeHelper localScope(fScope, false, true, kScopeL_Local);
 
   if (expr.count() == 0) {
     return new SymbolNode(expr.srcpos(), fScope, String("unspecified"));
@@ -2906,7 +2922,7 @@ SecondPass::parse(const Token& exprs)
   {
     // let the complete parse run in its own scope to force an explicit export
     // run
-    ScopeHelper scopeHelper(fScope, true, false);
+    ScopeHelper scopeHelper(fScope, true, false, kScopeL_CompileUnit);
 
     assert(exprs.isSeq());
 
