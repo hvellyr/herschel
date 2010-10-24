@@ -27,70 +27,47 @@ When are types covariant?
     - base type can never be covariant to enumeration types.
 
 
-  - if A and B are array types
+  - arrays are never covariant
 
-    - if the base types for A and B are covariant
-
-      ex. Int[] is covariant to Number[]
-          Number[] is contravariant to Int[]
-          Int[] is invariant to String[]
-
-    An optional given array size has no influence on the covariance state.
-
+    - Int[] is not covariant to Number[]
 
   - if A and B are parametrized types
 
-    - if the base types for A and B are covariant
+    - parametrized types are never covariant (aliasing!), unless they
+      generic (using 'T notation):
 
-    - if A and B are specializations of a supertype C of and A's type
-      parameters are covariant to those of B:
+        HashMap<'K, 'V> is covariant to Map<'K, 'V>
+        Map<'K, 'V> is contravariant to HashMap<'K, 'V>
 
-      ex. Vector<Int> is covariant to Vector<Number>
-          Vector<Number> is contravariant to Vector<Int>
-          Vector<Int> is invariant ot Vector<String>
+      This only applies if type parameters are equal or equally generic:
 
-    - if A and B are alias for a partial specialized type C and A's type
-      parameters are covariant to those of B and their partial specialized
-      parameters are covariant:
-
-      ex. with
-          type C<x, y>
-          alias A<z> = C<z, Int>
-          alias B<z> = C<z, Number>
-          alias D<z> = C<z, String>
-
-          A<Int> is covariant to B<Number>
-          B<Number> is contravariant to A<Int>
-
-          A<Int> is invariant to B<String>.
-          A<Int> is invariant to D<Int>.
+        HashMap<String, 'V> is covariant to Map<String, 'V>
+        HashMap<'K isa String, 'V> is covariant to Map<'K isa String, 'V>
 
 
-  - if A and B are constrainted types
+    - List<'T>: can access members as Object, but can't store anything,
+      since 'T is unclear
 
-    - if A's constraint is 'narrower' than B's constraint, i.e.
+    - List<'T isa Number>: can access members as Numbers, and store any
+      Number (or subclass of Int)
 
-      - for a numerical type if A's range is complete covered by B's range
-
-      - for a type constraint if A's constraint type is covariant to B's
-
-      - for a logical type constraint if A's set of constraints is
-        completely contained in B's
-
-      Incongruent type constraints (like value and subtype constraints) are
-      never covariant.
+    - List<Int> is however not covariant to List<Number> (aliasing)
 
 
-  - if A and B are function types
 
-    - if the return type is covariant
+Function overwriting:
 
-    - if all parameters are covariant; this implies that positional
-      parameters can only be covariant to positional parameters, that
-      specialized parameters can only be covariant o specalized parameters
-      etc.
+  When implementing generic functions for other types:
 
-    Whether a function is generic or not is however not relevant.
+    - return types must be covariant to the original definition
+
+    - specialized parameters must be covariant to the original definition
+
+    - additional parameters must be *contravariant* or equal to the
+      original definition (!)
+
+
+------------------------------------------------------------------------------
 
 Beware of aliasing
 
@@ -118,3 +95,28 @@ The 'isa' constraint is valueable?
                                                   -- Shape or subclass
   def generic foo(a : 'T) where T isa Shape ...   -- dto.
 
+
+------------------------------------------------------------------------------
+
+type implementation:
+
+  each type definition (alias, type, class, etc.) add a instance of
+  heather::Type() to the relevant scope.  References to other types (in
+  generics, class inheritance, variable usage, etc.) are *always* given as
+  instances of heather::TypeRef().  Types have generic variables, TypeRefs
+  can have explicit generics.
+
+      def class Foo<a, b> : (Other<a>, Bar<b>)
+
+      def x : Foo<Int, String>
+
+  =>
+
+      register Type("Foo", ["a", "b"], [TypeRef("Other", ["a"]),
+                                        TypeRef("Bar", ["b"])])
+
+      <letnode>
+        <symbolnode>x</>
+        <type>TypeRef("Foo", ["Int", "String"])
+
+  Union types, sequences, constraint-types only exist as TypeRefs.
