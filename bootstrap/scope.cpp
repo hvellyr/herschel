@@ -151,13 +151,18 @@ namespace heather
 
 //------------------------------------------------------------------------------
 
-Scope::Scope()
-{ }
-
-
-Scope::Scope(Scope* parent)
- : fParent(parent)
+Scope::Scope(ScopeLevel level)
+  : fLevel(level)
 {
+  assert(level == kScopeL_CompileUnit);
+}
+
+
+Scope::Scope(ScopeLevel level, Scope* parent)
+  : fParent(parent),
+    fLevel(level)
+{
+  assert(heaImplies(level > kScopeL_CompileUnit, parent != NULL));
 }
 
 
@@ -168,11 +173,18 @@ Scope::parent() const
 }
 
 
+ScopeLevel
+Scope::scopeLevel() const
+{
+  return fLevel;
+}
+
+
 void
 Scope::registerScopeItem(const ScopeName& name, ScopeItem* item)
 {
   assert(item != NULL);
-  assert(lookupItemLocalImpl(SrcPos(), name, false, false) == NULL);
+  assert(lookupItemLocalImpl(SrcPos(), name, false, false).fItem == NULL);
 
   ScopeName base(name.fDomain, heather::baseName(name.fName));
   String ns(heather::nsName(name.fName));
@@ -185,7 +197,7 @@ Scope::registerScopeItem(const ScopeName& name, ScopeItem* item)
 }
 
 
-const Scope::ScopeItem*
+Scope::LookupResult
 Scope::lookupItemLocal(const SrcPos& srcpos,
                        const ScopeName& name, bool showError) const
 {
@@ -193,7 +205,7 @@ Scope::lookupItemLocal(const SrcPos& srcpos,
 }
 
 
-const Scope::ScopeItem*
+Scope::LookupResult
 Scope::lookupItemLocalImpl(const SrcPos& srcpos,
                            const ScopeName& name, bool showError,
                            bool doAutoMatch) const
@@ -208,7 +220,7 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
     if (doAutoMatch && !isQualified(name.fName)) {
       if (it->second.size() == 1) {
         // fprintf(stderr, " ... found something single\n");
-        return it->second.begin()->second.obj();
+        return LookupResult(it->second.begin()->second.obj(), false);
       }
       else if (showError) {
         errorf(srcpos, E_AmbiguousSym,
@@ -227,7 +239,7 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
       BaseScopeMap::const_iterator vit = it->second.find(ns.fName);
       if (vit != it->second.end()) {
         // fprintf(stderr, " ... found something special\n");
-        return vit->second.obj();
+        return LookupResult(vit->second.obj(), false);
       }
     }
   }
@@ -238,43 +250,46 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
   {
     // fprintf(stderr, "Search for '%s' in '%s'\n",
     //         (const char*)StrHelper(name), (const char*)StrHelper(it->first));
-    const ScopeItem* si = it->second->lookupItemLocalImpl(srcpos, name,
-                                                          showError,
-                                                          doAutoMatch);
-    if (si != NULL)
-      return si;
+    LookupResult lv = it->second->lookupItemLocalImpl(srcpos, name,
+                                                      showError,
+                                                      doAutoMatch);
+    if (lv.fItem != NULL)
+      return lv;
   }
 
 
-  return NULL;
+  return LookupResult();
 }
 
 
-const Scope::ScopeItem*
+Scope::LookupResult
 Scope::lookupItem(const SrcPos& srcpos,
                   const ScopeName& name, bool showError) const
 {
   const Scope* scope = this;
+  bool crossedFuncLevel = false;
 
   while (scope != NULL) {
-    const ScopeItem* si = scope->lookupItemLocalImpl(srcpos, name,
-                                                     showError, true);
-    if (si != NULL)
-      return si;
+    LookupResult lv = scope->lookupItemLocalImpl(srcpos, name,
+                                                 showError, true);
+    if (lv.fItem != NULL)
+      return LookupResult(lv.fItem, crossedFuncLevel);
+
+    if (scope->scopeLevel() == kScopeL_Function)
+      crossedFuncLevel = true;
     scope = scope->parent();
   }
 
-  return NULL;
+  return LookupResult();
 }
 
 
 bool
 Scope::hasName(ScopeDomain domain, const String& name, SrcPos* srcpos) const
 {
-  const ScopeItem* si = lookupItem(SrcPos(),
-                                   ScopeName(domain, name), false);
-  if (si != NULL) {
-    *srcpos = si->srcpos();
+  LookupResult lv = lookupItem(SrcPos(), ScopeName(domain, name), false);
+  if (lv.fItem != NULL) {
+    *srcpos = lv.fItem->srcpos();
     return true;
   }
   return false;
@@ -285,11 +300,10 @@ bool
 Scope::hasNameLocal(ScopeDomain domain, const String& name, SrcPos* srcpos,
                     bool doAutoMatch) const
 {
-  const ScopeItem* si = lookupItemLocalImpl(SrcPos(),
-                                            ScopeName(domain, name), false,
-                                            doAutoMatch);
-  if (si != NULL) {
-    *srcpos = si->srcpos();
+  LookupResult lv = lookupItemLocalImpl(SrcPos(), ScopeName(domain, name),
+                                        false, doAutoMatch);
+  if (lv.fItem != NULL) {
+    *srcpos = lv.fItem->srcpos();
     return true;
   }
 
@@ -384,11 +398,11 @@ Scope::registerType(const SrcPos& srcpos,
 const Type&
 Scope::lookupType(const String& name, bool showAmbiguousSymDef) const
 {
-  const ScopeItem* si = lookupItem(SrcPos(),
-                                   ScopeName(kNormal, name),
-                                   showAmbiguousSymDef);
-  if (si != NULL && si->kind() == kScopeItem_type)
-    return dynamic_cast<const TypeScopeItem*>(si)->type();
+  LookupResult lv = lookupItem(SrcPos(),
+                               ScopeName(kNormal, name),
+                               showAmbiguousSymDef);
+  if (lv.fItem != NULL && lv.fItem->kind() == kScopeItem_type)
+    return dynamic_cast<const TypeScopeItem*>(lv.fItem)->type();
 
   return sInvalidType;
 }
@@ -397,11 +411,11 @@ Scope::lookupType(const String& name, bool showAmbiguousSymDef) const
 TypeUnit
 Scope::lookupUnit(const String& name, bool showAmbiguousSymDef) const
 {
-  const ScopeItem* si = lookupItem(SrcPos(),
-                                   ScopeName(kUnit, name),
-                                   showAmbiguousSymDef);
-  if (si != NULL && si->kind() == kScopeItem_unit)
-    return dynamic_cast<const UnitScopeItem*>(si)->unit();
+  LookupResult lv = lookupItem(SrcPos(),
+                               ScopeName(kUnit, name),
+                               showAmbiguousSymDef);
+  if (lv.fItem != NULL && lv.fItem->kind() == kScopeItem_unit)
+    return dynamic_cast<const UnitScopeItem*>(lv.fItem)->unit();
 
   return TypeUnit();
 }
@@ -503,11 +517,11 @@ const Macro*
 Scope::lookupMacro(const SrcPos& srcpos,
                    const String& name, bool showAmbiguousSymDef) const
 {
-  const ScopeItem* si = lookupItem(srcpos,
-                                   ScopeName(kNormal, name),
-                                   showAmbiguousSymDef);
-  if (si != NULL && si->kind() == kScopeItem_macro)
-    return dynamic_cast<const MacroScopeItem*>(si)->macro();
+  LookupResult lv = lookupItem(srcpos,
+                               ScopeName(kNormal, name),
+                               showAmbiguousSymDef);
+  if (lv.fItem != NULL && lv.fItem->kind() == kScopeItem_macro)
+    return dynamic_cast<const MacroScopeItem*>(lv.fItem)->macro();
   return NULL;
 }
 
@@ -526,11 +540,11 @@ Scope::registerFunction(const SrcPos& srcpos,
 const AptNode*
 Scope::lookupFunction(const String& name, bool showAmbiguousSymDef) const
 {
-  const ScopeItem* si = lookupItem(SrcPos(),
-                                   ScopeName(kNormal, name),
-                                   showAmbiguousSymDef);
-  if (si != NULL && si->kind() == kScopeItem_function)
-    return dynamic_cast<const NodeScopeItem*>(si)->node();
+  LookupResult lv = lookupItem(SrcPos(),
+                               ScopeName(kNormal, name),
+                               showAmbiguousSymDef);
+  if (lv.fItem != NULL && lv.fItem->kind() == kScopeItem_function)
+    return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
   return NULL;
 }
 
@@ -549,11 +563,11 @@ Scope::registerVar(const SrcPos& srcpos,
 const AptNode*
 Scope::lookupVar(const String& name, bool showAmbiguousSymDef) const
 {
-  const ScopeItem* si = lookupItem(SrcPos(),
-                                   ScopeName(kNormal, name),
-                                   showAmbiguousSymDef);
-  if (si != NULL && si->kind() == kScopeItem_variable)
-    return dynamic_cast<const NodeScopeItem*>(si)->node();
+  LookupResult lv = lookupItem(SrcPos(),
+                               ScopeName(kNormal, name),
+                               showAmbiguousSymDef);
+  if (lv.fItem != NULL && lv.fItem->kind() == kScopeItem_variable)
+    return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
   return NULL;
 }
 
@@ -561,13 +575,23 @@ Scope::lookupVar(const String& name, bool showAmbiguousSymDef) const
 const AptNode*
 Scope::lookupVarOrFunc(const String& name, bool showAmbiguousSymDef) const
 {
-  const ScopeItem* si = lookupItem(SrcPos(),
-                                   ScopeName(kNormal, name),
-                                   showAmbiguousSymDef);
-  if (si != NULL && ( si->kind() == kScopeItem_variable ||
-                      si->kind() == kScopeItem_function ))
-    return dynamic_cast<const NodeScopeItem*>(si)->node();
+  LookupResult lv = lookupItem(SrcPos(),
+                               ScopeName(kNormal, name),
+                               showAmbiguousSymDef);
+  if (lv.fItem != NULL && ( lv.fItem->kind() == kScopeItem_variable ||
+                            lv.fItem->kind() == kScopeItem_function ))
+    return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
   return NULL;
+}
+
+
+bool
+Scope::isVarInOuterFunction(const String& name) const
+{
+  LookupResult lv = lookupItem(SrcPos(),
+                               ScopeName(kNormal, name),
+                               false);
+  return lv.fItem != NULL && lv.fInOuterFunc;
 }
 
 
@@ -754,7 +778,6 @@ Scope::propagateImportedScopes(Scope* dstScope) const
 }
 
 
-
 //============================================================================
 
 #if defined(UNITTESTS)
@@ -773,7 +796,7 @@ SUITE(Scope)
     TypeConstVector constraints;
     Type t0 = Type::newTypeRef(String("Foo"), generics, constraints, true);
 
-    Ptr<Scope> s0 = new Scope();
+    Ptr<Scope> s0 = new Scope(kScopeL_CompileUnit);
     Type t1 = s0->lookupType_unused(t0);
     // printf("%s\n", (const char*)StrHelper(t1.toString()));
     CHECK(t1.isDef());

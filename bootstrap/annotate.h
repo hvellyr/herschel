@@ -113,6 +113,7 @@ namespace heather
     void annotate(FuncDefNode* node, bool isLocal);
 
     void takeFullNameFromNode(SymbolNode* node, const AptNode* otherNode);
+    bool updateAllocType(SymbolNode* usingNode, const AptNode* referedNode);
   };
 
 };                              // namespace

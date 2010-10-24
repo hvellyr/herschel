@@ -68,6 +68,20 @@ Annotator::takeFullNameFromNode(SymbolNode* node, const AptNode* otherNode)
 }
 
 
+bool
+Annotator::updateAllocType(SymbolNode* usingNode, const AptNode* referedNode)
+{
+  if (usingNode->scope()->isVarInOuterFunction(usingNode->name())) {
+    const BindingNode* bindNode = dynamic_cast<const BindingNode*>(referedNode);
+    assert(bindNode != NULL);
+
+    const_cast<BindingNode*>(bindNode)->setAllocType(kAlloc_Shared);
+    return true;
+  }
+  return false;
+}
+
+
 void
 Annotator::annotate(SymbolNode* node)
 {
@@ -77,20 +91,25 @@ Annotator::annotate(SymbolNode* node)
 
     const VardefNode* vardef = dynamic_cast<const VardefNode*>(var);
     if (vardef != NULL) {
-      node->setRefersTo(vardef->isLocal() ? kLocalVar : kGlobalVar);
+      bool isShared = updateAllocType(node, vardef);
+      node->setRefersTo(vardef->isLocal() ? kLocalVar : kGlobalVar,
+                        isShared);
     }
     else if (dynamic_cast<const FuncDefNode*>(var) != NULL) {
-      node->setRefersTo(kFunction);
+      node->setRefersTo(kFunction, false);
     }
     else if (dynamic_cast<const ParamNode*>(var) != NULL) {
-      node->setRefersTo(kParam);
+      bool isShared = updateAllocType(node, var);
+      node->setRefersTo(kParam, isShared);
     }
     else if (dynamic_cast<const SlotdefNode*>(var) != NULL) {
-      node->setRefersTo(kSlot);
+      bool isShared = updateAllocType(node, var);
+      node->setRefersTo(kSlot, isShared);
     }
     else {
       assert(0 && "unhandled registered symbol def");
     }
+
     return;
   }
 
