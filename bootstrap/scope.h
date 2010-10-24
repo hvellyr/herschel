@@ -124,7 +124,7 @@ namespace heather
     //! Lookup a type by another type.  If \p type is not a typeref, it is
     //! returned as is.  If the type looked up is parametrized, it is fill by
     //! type parameters as found in \p type.
-    Type lookupType(const Type& type) const;
+    Type lookupType_unused(const Type& type) const;
 
     //! Normalize a (complete) \p type using \p refType are using reference.
     //! I.e. type generics in \p type are set using the args from \p refType.
