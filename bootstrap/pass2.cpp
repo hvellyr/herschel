@@ -2663,23 +2663,20 @@ SecondPass::parseBlock(const Token& expr)
 
   ScopeHelper localScope(fScope, false, true, kScopeL_Local);
 
-  if (expr.count() == 0) {
+  if (expr.count() == 0)
     return new SymbolNode(expr.srcpos(), fScope, String("unspecified"));
-  }
-  else if (expr.count() == 1) {
+  else if (expr.count() == 1)
     return parseExpr(expr[0]);
-  }
-  else {
-    const TokenVector& seq = expr.children();
-    Ptr<BlockNode> block = new BlockNode(expr.srcpos(), fScope);
-    for (size_t i = 0; i < seq.size(); i++) {
-      Ptr<AptNode> item = parseExpr(seq[i]);
-      if (item != NULL)
-        block->appendNode(item);
-    }
 
-    return block.release();
+  const TokenVector& seq = expr.children();
+  Ptr<BlockNode> block = new BlockNode(expr.srcpos(), fScope);
+  for (size_t i = 0; i < seq.size(); i++) {
+    Ptr<AptNode> item = parseExpr(seq[i]);
+    if (item != NULL)
+      block->appendNode(item);
   }
+
+  return block.release();
 }
 
 
