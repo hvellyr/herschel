@@ -63,7 +63,7 @@ Annotator::takeFullNameFromNode(SymbolNode* node, const AptNode* otherNode)
   }
 
   // TODO: unexpected type here.
-  logf(kError, "Unexpected type here: %s\n", typeid(*otherNode).name());
+  logf(kError, "Unexpected type here: %s", typeid(*otherNode).name());
   assert(0);
 }
 
