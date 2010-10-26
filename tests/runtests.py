@@ -8,13 +8,17 @@ import sys
 import comparexml
 import re
 
-OPTIONS = { 'syntax':   { '1': ['-T', 'pass1', '-P', '--dont-import', '--parse-1' ],
-                          '2': ['-T', 'pass2', '-P', '--dont-import', '--parse-2' ],
-                          '3': ['-T', 'annotate', '-P', '--dont-import' ] },
-            'import':   { '1': ['-T', 'pass1', '-P', '--parse-1' ],
-                          '2': ['-T', 'pass2', '-P', '--parse-2' ],
-                          '3': ['-T', 'annotate', '-P' ] },
-            'annotate': { '3': ['-T', 'annotate', '-P' ], }
+OPTIONS = { 'syntax':    { '1': ['-T', 'pass1',     '-P', '--dont-import', '--parse-1' ],
+                           '2': ['-T', 'pass2',     '-P', '--dont-import', '--parse-2' ],
+                           '3': ['-T', 'transform', '-P', '--dont-import', '--parse-3' ],
+                           '4': ['-T', 'annotate',  '-P', '--dont-import' ] },
+            'import':    { '1': ['-T', 'pass1',     '-P', '--parse-1' ],
+                           '2': ['-T', 'pass2',     '-P', '--parse-2' ],
+                           '3': ['-T', 'transform', '-P', '--parse-3' ],
+                           '4': ['-T', 'annotate',  '-P' ] },
+            'transform': { '3': ['-T', 'transform', '-P', '--parse-3' ] },
+            'annotate':  { '3': ['-T', 'transform', '-P', '--parse-3' ],
+                           '4': ['-T', 'annotate',  '-P' ], }
             }
 
 
@@ -119,7 +123,7 @@ class TestRunner:
 
 
     def run_pass_test(self, test_file, domain):
-        for level in [ '1', '2', '3' ]:
+        for level in [ '1', '2', '3', '4' ]:
             if level in OPTIONS[domain]:
                 self.run_pass_test_impl(test_file, OPTIONS[domain][level], level)
 
