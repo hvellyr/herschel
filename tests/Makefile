@@ -18,19 +18,19 @@ $(testtemp_dir):
 	@if [ ! -d "$@" ]; then mkdir $@; fi
 
 syntax-tests:
-	$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
+	@$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
 		-I $(top_srcdir)/tests -D syntax syntax/
 
 import-tests:
-	$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
+	@$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
 		-I $(top_srcdir)/tests -D import import/
 
 transform-tests:
-	$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
+	@$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
 		-I $(top_srcdir)/tests -D transform transform/
 
 annotate-tests:
-	$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
+	@$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
 		-I $(top_srcdir)/tests -D annotate annotate/
 
 include $(top_srcdir)/build/generic.mk
