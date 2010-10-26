@@ -63,7 +63,15 @@ namespace heather
   class Annotator : public RefCountable
   {
   public:
+    enum Phase
+    {
+      kRegister,
+      kLookup
+    };
+
     Annotator();
+
+    void annotateRecursively(AptNode* node);
 
     void annotateNode(AptNode* node);
 
@@ -114,6 +122,12 @@ namespace heather
 
     void takeFullNameFromNode(SymbolNode* node, const AptNode* otherNode);
     bool updateAllocType(SymbolNode* usingNode, const AptNode* referedNode);
+
+
+    //-------- data members
+
+    Ptr<Scope> fScope;
+    Phase      fPhase;
   };
 
 };                              // namespace

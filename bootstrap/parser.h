@@ -148,6 +148,7 @@ namespace heather
     Token doPass1Parse(bool doTrace);
     AptNode* doPass2Parse(const Token& parsedExprs, bool doTrace);
     AptNode* annotate(AptNode* node, bool doTrace);
+    AptNode* transform(AptNode* node, bool doTrace);
 
     //-------- data members
 

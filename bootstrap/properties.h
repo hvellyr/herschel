@@ -55,6 +55,7 @@ namespace heather
     static bool isTracePass1();
     static bool isTracePass2();
     static bool isTraceAnnotate();
+    static bool isTraceTransform();
 
     static bool isTraceImportFile();
     static bool isTraceMacro();

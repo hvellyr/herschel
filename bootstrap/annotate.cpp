@@ -25,13 +25,31 @@ using namespace heather;
 //----------------------------------------------------------------------------
 
 Annotator::Annotator()
+  : fPhase(kRegister)
 {
+}
+
+
+void
+Annotator::annotateRecursively(AptNode* node)
+{
+  {
+    fScope = new Scope(kScopeL_CompileUnit);
+
+    fPhase = kRegister;
+    annotateNode(node);
+  }
+
+  fPhase = kLookup;
+  annotateNode(node);
 }
 
 
 void
 Annotator::annotateNode(AptNode* node)
 {
+  if (fPhase == kRegister)
+    node->setScope(fScope);
   node->annotate(this);
 }
 
@@ -85,57 +103,61 @@ Annotator::updateAllocType(SymbolNode* usingNode, const AptNode* referedNode)
 void
 Annotator::annotate(SymbolNode* node)
 {
-  const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
-  if (var != NULL) {
-    takeFullNameFromNode(node, var);
+  if (fPhase == kLookup) {
+    const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
+    if (var != NULL) {
+      takeFullNameFromNode(node, var);
 
-    const VardefNode* vardef = dynamic_cast<const VardefNode*>(var);
-    if (vardef != NULL) {
-      bool isShared = updateAllocType(node, vardef);
-      node->setRefersTo(vardef->isLocal() ? kLocalVar : kGlobalVar,
-                        isShared);
-    }
-    else if (dynamic_cast<const FuncDefNode*>(var) != NULL) {
-      node->setRefersTo(kFunction, false);
-    }
-    else if (dynamic_cast<const ParamNode*>(var) != NULL) {
-      bool isShared = updateAllocType(node, var);
-      node->setRefersTo(kParam, isShared);
-    }
-    else if (dynamic_cast<const SlotdefNode*>(var) != NULL) {
-      bool isShared = updateAllocType(node, var);
-      node->setRefersTo(kSlot, isShared);
-    }
-    else {
-      assert(0 && "unhandled registered symbol def");
+      const VardefNode* vardef = dynamic_cast<const VardefNode*>(var);
+      if (vardef != NULL) {
+        bool isShared = updateAllocType(node, vardef);
+        node->setRefersTo(vardef->isLocal() ? kLocalVar : kGlobalVar,
+                          isShared);
+      }
+      else if (dynamic_cast<const FuncDefNode*>(var) != NULL) {
+        node->setRefersTo(kFunction, false);
+      }
+      else if (dynamic_cast<const ParamNode*>(var) != NULL) {
+        bool isShared = updateAllocType(node, var);
+        node->setRefersTo(kParam, isShared);
+      }
+      else if (dynamic_cast<const SlotdefNode*>(var) != NULL) {
+        bool isShared = updateAllocType(node, var);
+        node->setRefersTo(kSlot, isShared);
+      }
+      else {
+        assert(0 && "unhandled registered symbol def");
+      }
+
+      return;
     }
 
-    return;
+    Type type = node->scope()->lookupType(node->name(), true);
+    if (type.isDef()) {
+      node->setName(type.typeName());
+      return;
+    }
+
+    if (Properties::test_passLevel() > 2)
+      errorf(node->srcpos(), E_UndefinedVar,
+             "Unknown variable '%s'", (const char*)StrHelper(node->name()));
   }
-
-  Type type = node->scope()->lookupType(node->name(), true);
-  if (type.isDef()) {
-    node->setName(type.typeName());
-    return;
-  }
-
-  if (Properties::test_passLevel() > 2)
-    errorf(node->srcpos(), E_UndefinedVar,
-           "Unknown variable '%s'", (const char*)StrHelper(node->name()));
 }
 
 
 void
 Annotator::annotate(ArraySymbolNode* node)
 {
-  Type type = node->scope()->lookupType(node->name(), true);
-  if (!type.isDef()) {
-    if (Properties::test_passLevel() > 2)
-      errorf(node->srcpos(), E_UndefinedVar,
-             "Unknown variable '%s'", (const char*)StrHelper(node->name()));
+  if (fPhase == kLookup) {
+    Type type = node->scope()->lookupType(node->name(), true);
+    if (!type.isDef()) {
+      if (Properties::test_passLevel() > 2)
+        errorf(node->srcpos(), E_UndefinedVar,
+               "Unknown variable '%s'", (const char*)StrHelper(node->name()));
+    }
+    else
+      node->setName(type.typeName());
   }
-  else
-    node->setName(type.typeName());
 }
 
 
@@ -182,6 +204,9 @@ Annotator::annotate(LetNode* node)
 void
 Annotator::annotate(VardefNode* node, bool isLocal)
 {
+  if (fPhase == kRegister)
+    fScope->registerVar(node->srcpos(), node->name(), node);
+
   if (node->initExpr() != NULL)
     annotateNode(node->initExpr());
 }
@@ -190,24 +215,33 @@ Annotator::annotate(VardefNode* node, bool isLocal)
 void
 Annotator::annotate(FuncDefNode* node, bool isLocal)
 {
+  if (fPhase == kRegister)
+    fScope->registerFunction(node->srcpos(), node->name(), node);
+
+  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
+
   annotateNodeList(node->params());
-  if (node->body() != NULL) {
+  if (node->body() != NULL)
     annotateNode(node->body());
-  }
 }
 
 
 void
 Annotator::annotate(FunctionNode* node)
 {
+  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
+
   annotateNodeList(node->params());
-  annotateNode(node->body());
+  if (node->body() != NULL)
+    annotateNode(node->body());
 }
 
 
 void
 Annotator::annotate(SlotdefNode* node)
 {
+  // if (fPhase == kRegister)
+  //   fScope->registerVar(node->srcpos(), node->name(), node);
   // TODO
 }
 
@@ -215,6 +249,7 @@ Annotator::annotate(SlotdefNode* node)
 void
 Annotator::annotate(BlockNode* node)
 {
+  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
   annotateNodeList(node->children());
 }
 
@@ -222,6 +257,9 @@ Annotator::annotate(BlockNode* node)
 void
 Annotator::annotate(ParamNode* node)
 {
+  if (fPhase == kRegister)
+    fScope->registerVar(node->srcpos(), node->name(), node);
+
   if (node->initExpr() != NULL)
     annotateNode(node->initExpr());
 }
@@ -315,6 +353,8 @@ Annotator::annotate(SelectNode* node)
 void
 Annotator::annotate(OnNode* node)
 {
+  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
+
   annotateNodeList(node->params());
   annotateNode(node->body());
 }
@@ -342,6 +382,8 @@ Annotator::annotate(ThenWhileNode* node)
 void
 Annotator::annotate(TypeDefNode* node)
 {
+  if (fPhase == kRegister)
+    fScope->registerType(node->srcpos(), node->name(), node->defType());
 }
 
 
@@ -430,7 +472,3 @@ Annotator::annotate(UnitConstNode* node)
 {
   annotateNode(node->value());
 }
-
-
-
-

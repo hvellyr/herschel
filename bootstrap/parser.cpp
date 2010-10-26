@@ -17,6 +17,7 @@
 #include "properties.h"
 #include "scope.h"
 #include "tokenizer.h"
+#include "transform.h"
 #include "xmlout.h"
 
 using namespace heather;
@@ -171,7 +172,7 @@ Parser::doPass2Parse(const Token& parsedExprs, bool doTrace)
 
 
 AptNode*
-Parser::annotate(AptNode* node, bool doTrace)
+Parser::transform(AptNode* node, bool doTrace)
 {
   Ptr<AptNode> n = node;
   bool doPass3 = true;
@@ -180,9 +181,33 @@ Parser::annotate(AptNode* node, bool doTrace)
 #endif
 
   if (doPass3) {
+    Ptr<Transformator> pTr = new Transformator;
+
+    pTr->transformNode(n);
+
+    if (doTrace && Properties::isTraceTransform() && n != NULL) {
+      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+      out->render(n);
+    }
+  }
+
+  return n.release();
+}
+
+
+AptNode*
+Parser::annotate(AptNode* node, bool doTrace)
+{
+  Ptr<AptNode> n = node;
+  bool doPass4 = true;
+#if defined(UNITTESTS)
+  doPass4 = Properties::test_passLevel() > 3;
+#endif
+
+  if (doPass4) {
     Ptr<Annotator> pAn = new Annotator;
 
-    pAn->annotateNode(n);
+    pAn->annotateRecursively(n);
 
     if (doTrace && Properties::isTraceAnnotate() && n != NULL) {
       Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
@@ -205,8 +230,9 @@ Parser::parseImpl(Port<Char>* port, const String& srcName,
   try {
     Token parsedExprs = doPass1Parse(doTrace);
     Ptr<AptNode> apt = doPass2Parse(parsedExprs, doTrace);
-    Ptr<AptNode> apt2 = annotate(apt.release(), doTrace);
-    return apt2.release();
+    Ptr<AptNode> apt2 = transform(apt.release(), doTrace);
+    Ptr<AptNode> apt3 = annotate(apt2.release(), doTrace);
+    return apt3.release();
   }
   catch (const Exception& e) {
     logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
