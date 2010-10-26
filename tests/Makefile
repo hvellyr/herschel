@@ -10,7 +10,7 @@ include $(top_srcdir)/config.mk
 
 include $(top_srcdir)/build/pre.mk
 
-all-local: syntax-tests import-tests annotate-tests
+all-local: syntax-tests import-tests transform-tests annotate-tests
 
 testtemp_dir = $(BUILDDIR)/temp
 
@@ -24,6 +24,10 @@ syntax-tests:
 import-tests:
 	$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
 		-I $(top_srcdir)/tests -D import import/
+
+transform-tests:
+	$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
+		-I $(top_srcdir)/tests -D transform transform/
 
 annotate-tests:
 	$(PYTHON) runtests.py -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
