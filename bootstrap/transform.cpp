@@ -200,7 +200,7 @@ Transformator::transform(BlockNode* node)
   if (idx > 0) {
     Ptr<BlockNode> newBlock = new BlockNode(nodes[idx]->srcpos());
     for (size_t i = idx; i < nodes.size(); i++)
-      newBlock->appendNode(nodes[idx]);
+      newBlock->appendNode(nodes[i]);
 
     node->children().resize(idx);
     node->appendNode(newBlock);
