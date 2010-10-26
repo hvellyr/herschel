@@ -59,7 +59,6 @@ namespace heather
 
     AptNode* parseTokenVector(const TokenVector& seq);
     void parseParameters(NodeList* parameters, const TokenVector& seq);
-    void registerParameters(NodeList& params);
 
     AptNode* parseParameter(const Token& expr);
 

@@ -809,7 +809,7 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass)
 
   fScope->registerType(expr.srcpos(), fullTypeName, defType);
 
-  return new TypeDefNode(expr.srcpos(), fScope,
+  return new TypeDefNode(expr.srcpos(),
                          fullTypeName,
                          isClass,
                          defType,
@@ -955,8 +955,8 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
     }
   }
 
-  return new SlotdefNode(expr.srcpos(), fScope,
-                         slotName, slotFlags, slotType, initExpr);
+  return new SlotdefNode(expr.srcpos(), slotName, slotFlags, slotType,
+                         initExpr);
 }
 
 
@@ -1069,7 +1069,7 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
                                      Scope::kNormal, fullSymName))
       return NULL;
 
-    Ptr<AptNode> var = new VardefNode(enumVal.srcpos(), fScope,
+    Ptr<AptNode> var = new VardefNode(enumVal.srcpos(),
                                       fullSymName, kEnumVar, isLocal,
                                       baseType, initExpr);
     fScope->registerVar(enumVal.srcpos(), fullSymName, var);
@@ -1153,7 +1153,7 @@ SecondPass::parseMeasureDef(const Token& expr, size_t ofs, bool isLocal)
   NodeList dummyReqProtocol;
   NodeList dummyOnExprs;
 
-  return new TypeDefNode(expr.srcpos(), fScope,
+  return new TypeDefNode(expr.srcpos(),
                          fullTypeName,
                          true,     // is instantiatable
                          defMeasureType,
@@ -1198,8 +1198,8 @@ SecondPass::parseUnitDef(const Token& expr, size_t ofs, bool isLocal)
   FundefClauseData data;
   parseFundefClause(seq, ofs, data);
 
-  Ptr<AptNode> funcNode = new FunctionNode(expr.srcpos(), fScope,
-                                           data.fParams, data.fType, data.fBody);
+  Ptr<AptNode> funcNode = new FunctionNode(expr.srcpos(), data.fParams,
+                                           data.fType, data.fBody);
 
   if (fScope->checkForRedefinition(expr.srcpos(),
                                    Scope::kUnit, fullUnitName))
@@ -1253,7 +1253,7 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
                                    Scope::kNormal, fullSymName))
     return NULL;
 
-  Ptr<VardefNode> var = new VardefNode(expr.srcpos(), fScope,
+  Ptr<VardefNode> var = new VardefNode(expr.srcpos(),
                                        fullSymName, flags, isLocal,
                                        type, initExpr);
   var->setLinkage(linkage);
@@ -1264,25 +1264,12 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
 
 
 void
-SecondPass::registerParameters(NodeList& params)
-{
-  for (size_t i = 0; i < params.size(); i++) {
-    ParamNode* pn = dynamic_cast<ParamNode*>(params[i].obj());
-    assert(pn != NULL);
-    fScope->registerVar(pn->srcpos(), pn->symbolName(), pn);
-  }
-
-}
-
-
-void
 SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
                               FundefClauseData& data)
 {
   assert(seq[ofs].isNested());
 
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
-
   TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
 
   size_t whereOfs = ofs;
@@ -1291,8 +1278,6 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
 
   parseParameters(&data.fParams, seq[ofs].children());
   ofs++;
-
-  registerParameters(data.fParams);
 
   if (ofs < seq.size()) {
     if (seq[ofs] == kColon) {
@@ -1359,7 +1344,7 @@ SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
                                    Scope::kNormal, fullFuncName))
     return NULL;
 
-  Ptr<FuncDefNode> func = new FuncDefNode(expr.srcpos(), fScope,
+  Ptr<FuncDefNode> func = new FuncDefNode(expr.srcpos(),
                                           fullFuncName,
                                           data.fFlags,
                                           data.fParams,
@@ -1376,9 +1361,9 @@ AptNode*
 SecondPass::newDefNode(AptNode* node, bool isLet)
 {
   if (isLet)
-    return new LetNode(fScope, node);
+    return new LetNode(node);
   else
-    return new DefNode(fScope, node);
+    return new DefNode(node);
 }
 
 
@@ -1518,8 +1503,7 @@ SecondPass::parseIf(const Token& expr)
     alternate = parseExpr(expr[4]);
   }
 
-  return new IfNode(expr.srcpos(), fScope,
-                    test, consequent, alternate);
+  return new IfNode(expr.srcpos(), test, consequent, alternate);
 }
 
 
@@ -1527,7 +1511,7 @@ AptNode*
 SecondPass::parseParameter(const Token& expr)
 {
   if (expr == kSymbol)
-    return new ParamNode(expr.srcpos(), fScope,
+    return new ParamNode(expr.srcpos(),
                          String(), expr.idValue(), kPosArg, Type(), NULL);
   assert(expr.isSeq());
   assert(expr.count() > 0);
@@ -1600,8 +1584,7 @@ SecondPass::parseParameter(const Token& expr)
     }
   }
 
-  return new ParamNode(expr.srcpos(), fScope,
-                       key, sym, paramType, type, initExpr);
+  return new ParamNode(expr.srcpos(), key, sym, paramType, type, initExpr);
 }
 
 
@@ -1627,15 +1610,10 @@ SecondPass::parseOn(const Token& expr)
   assert(expr[1] == kSymbol);
   assert(expr[2].isNested());
 
-  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
-
   NodeList params;
   parseParameters(&params, expr[2].children());
 
-  registerParameters(params);
-
-  return new OnNode(expr.srcpos(), fScope,
-                    expr[1].idValue(), params,
+  return new OnNode(expr.srcpos(), expr[1].idValue(), params,
                     parseExpr(expr[3]));
 }
 
@@ -1651,13 +1629,9 @@ SecondPass::parseClosure(const Token& expr)
   size_t ofs = 1;
   assert(expr[ofs].isNested());
 
-  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
-
   NodeList params;
   parseParameters(&params, expr[1].children());
   ofs++;
-
-  registerParameters(params);
 
   Type type;
   if (ofs + 1 < expr.count()) {
@@ -1670,7 +1644,7 @@ SecondPass::parseClosure(const Token& expr)
   assert(ofs < expr.count());
   Ptr<AptNode> body = parseExpr(expr[ofs]);;
 
-  return new FunctionNode(expr.srcpos(), fScope, params, type, body);
+  return new FunctionNode(expr.srcpos(), params, type, body);
 }
 
 
@@ -1684,7 +1658,7 @@ SecondPass::parseBinary(const Token& expr)
     {
       Ptr<AptNode> lvalue = parseExpr(expr[0]);
       Ptr<AptNode> rvalue = parseExpr(expr[2]);
-      return new AssignNode(expr.srcpos(), fScope, lvalue, rvalue);
+      return new AssignNode(expr.srcpos(), lvalue, rvalue);
     }
 
   case kRange:
@@ -1693,12 +1667,12 @@ SecondPass::parseBinary(const Token& expr)
       Ptr<AptNode> from = parseExpr(expr[0]);
       Ptr<AptNode> to   = parseExpr(expr[2]);
       Ptr<AptNode> step = parseExpr(expr[4]);
-      return new RangeNode(expr.srcpos(), fScope, from, to, step);
+      return new RangeNode(expr.srcpos(), from, to, step);
     }
     else {
       Ptr<AptNode> from = parseExpr(expr[0]);
       Ptr<AptNode> to   = parseExpr(expr[2]);
-      return new RangeNode(expr.srcpos(), fScope, from, to, NULL);
+      return new RangeNode(expr.srcpos(), from, to, NULL);
     }
 
   case kThenId:
@@ -1707,12 +1681,12 @@ SecondPass::parseBinary(const Token& expr)
       Ptr<AptNode> first = parseExpr(expr[0]);
       Ptr<AptNode> step = parseExpr(expr[2]);
       Ptr<AptNode> test = parseExpr(expr[4]);
-      return new ThenWhileNode(expr.srcpos(), fScope, first, step, test);
+      return new ThenWhileNode(expr.srcpos(), first, step, test);
     }
     else {
       Ptr<AptNode> first = parseExpr(expr[0]);
       Ptr<AptNode> step = parseExpr(expr[2]);
-      return new ThenWhileNode(expr.srcpos(), fScope, first, step, NULL);
+      return new ThenWhileNode(expr.srcpos(), first, step, NULL);
     }
 
   case kAs:
@@ -1720,7 +1694,7 @@ SecondPass::parseBinary(const Token& expr)
       Ptr<AptNode> base = parseExpr(expr[0]);
       Type type = parseTypeSpec(expr[2]);
 
-      return new CastNode(expr.srcpos(), fScope, base, type);
+      return new CastNode(expr.srcpos(), base, type);
     }
     break;
 
@@ -1730,7 +1704,7 @@ SecondPass::parseBinary(const Token& expr)
 
   Ptr<AptNode> left = parseExpr(expr[0]);
   Ptr<AptNode> right = parseExpr(expr[2]);
-  return new BinaryNode(expr.srcpos(), fScope,
+  return new BinaryNode(expr.srcpos(),
                         left,
                         tokenTypeToOperator(expr[1].tokenType()),
                         right);
@@ -1748,7 +1722,7 @@ SecondPass::parseFunCall(const Token& expr)
   assert(expr[1].rightToken() == kParanClose);
 
   Ptr<AptNode> first = parseExpr(expr[0]);
-  Ptr<AptNode> funcall = new ApplyNode(expr.srcpos(), fScope, first);
+  Ptr<AptNode> funcall = new ApplyNode(expr.srcpos(), first);
 
   const TokenVector& seq = expr[1].children();
   for (size_t i = 0; i < seq.size(); i++) {
@@ -1760,7 +1734,7 @@ SecondPass::parseFunCall(const Token& expr)
       assert(i + 1 < seq.size());
 
       Ptr<AptNode> value = parseExpr(seq[i + 1]);
-      arg = new KeyargNode(seq[i].srcpos(), fScope, seq[i].idValue(), value);
+      arg = new KeyargNode(seq[i].srcpos(), seq[i].idValue(), value);
       i++;
     }
     else
@@ -1803,16 +1777,14 @@ SecondPass::transformExplicitForClause(const Token& token,
 
   Token iteratorVarSym = token[0].isSeq() ? token[0][0] : token[0];
 
-  Ptr<AptNode> vardef = new VardefNode(srcpos, fScope,
+  Ptr<AptNode> vardef = new VardefNode(srcpos,
                                        iteratorVarSym.idValue(), kNormalVar, true, Type(),
                                        firstNode);
-  Ptr<AptNode> iteratorDefNode = new LetNode(fScope, vardef);
+  Ptr<AptNode> iteratorDefNode = new LetNode(vardef);
   loopDefines->push_back(iteratorDefNode);
 
-  fScope->registerVar(srcpos, iteratorVarSym.idValue(), vardef);
-
-  Ptr<AptNode> nextNode = new AssignNode(srcpos, fScope,
-                                         new SymbolNode(srcpos, fScope,
+  Ptr<AptNode> nextNode = new AssignNode(srcpos,
+                                         new SymbolNode(srcpos,
                                                         iteratorVarSym.idValue()),
                                          thenNode);
   stepExprs->push_back(nextNode);
@@ -1863,7 +1835,7 @@ SecondPass::transformRangeForClause(const Token& token,
   RangeForClauseCountDir direct = kRangeUnknown;
   if (token[2].count() == 3) {
     direct = kRangeUpwards;
-    stepValueNode = new IntNode(srcpos, fScope, 1, false, Type::newInt());
+    stepValueNode = new IntNode(srcpos, 1, false, Type::newInt());
   }
   else if (token[2].count() == 5) {
     Token byToken = token[2][4];
@@ -1879,15 +1851,13 @@ SecondPass::transformRangeForClause(const Token& token,
       Ptr<AptNode> tmpStepNode = parseExpr(byToken);
       // let _step = 2
       Token tmpStepSym = Token::newUniqueSymbolToken(srcpos, "step");
-      Ptr<AptNode> vardef = new VardefNode(srcpos, fScope,
+      Ptr<AptNode> vardef = new VardefNode(srcpos,
                                            tmpStepSym.idValue(), kNormalVar, true, Type(),
                                            tmpStepNode);
-      Ptr<AptNode> endStepNode = new LetNode(fScope, vardef);
+      Ptr<AptNode> endStepNode = new LetNode(vardef);
       loopDefines->push_back(endStepNode);
 
-      fScope->registerVar(srcpos, tmpStepSym.idValue(), vardef);
-
-      stepValueNode = new SymbolNode(srcpos, fScope, tmpStepSym.idValue());
+      stepValueNode = new SymbolNode(srcpos, tmpStepSym.idValue());
     }
   }
 
@@ -1902,15 +1872,13 @@ SecondPass::transformRangeForClause(const Token& token,
 
     // let _end = 100
     Token tmpEndRangeSym = Token::newUniqueSymbolToken(srcpos, "end");
-    Ptr<AptNode> vardef = new VardefNode(srcpos, fScope,
+    Ptr<AptNode> vardef = new VardefNode(srcpos,
                                          tmpEndRangeSym.idValue(), kNormalVar,
                                          true, Type(), tmpEndNode);
-    Ptr<AptNode> endRangeDefNode = new LetNode(fScope, vardef);
+    Ptr<AptNode> endRangeDefNode = new LetNode(vardef);
     loopDefines->push_back(endRangeDefNode);
 
-    fScope->registerVar(srcpos, tmpEndRangeSym.idValue(), vardef);
-
-    beginRangeNode = new SymbolNode(srcpos, fScope, tmpEndRangeSym.idValue());
+    beginRangeNode = new SymbolNode(srcpos, tmpEndRangeSym.idValue());
   }
 
 
@@ -1924,15 +1892,13 @@ SecondPass::transformRangeForClause(const Token& token,
 
     // let _end = 100
     Token tmpEndRangeSym = Token::newUniqueSymbolToken(srcpos, "end");
-    Ptr<AptNode> vardef = new VardefNode(srcpos, fScope,
+    Ptr<AptNode> vardef = new VardefNode(srcpos,
                                          tmpEndRangeSym.idValue(), kNormalVar,
                                          true, Type(), tmpEndNode);
-    Ptr<AptNode> endRangeDefNode = new LetNode(fScope, vardef);
+    Ptr<AptNode> endRangeDefNode = new LetNode(vardef);
     loopDefines->push_back(endRangeDefNode);
 
-    fScope->registerVar(srcpos, tmpEndRangeSym.idValue(), vardef);
-
-    endRangeNode = new SymbolNode(srcpos, fScope, tmpEndRangeSym.idValue());
+    endRangeNode = new SymbolNode(srcpos, tmpEndRangeSym.idValue());
   }
 
 
@@ -1941,13 +1907,12 @@ SecondPass::transformRangeForClause(const Token& token,
   //------------------------------ generate known counter variable
   // let i = 0  |  let i = 100
   Type stepVarType;    // TODO
-  Ptr<AptNode> vardef = new VardefNode(srcpos, fScope,
-                                       iteratorVarSym.idValue(), kNormalVar, true, stepVarType,
+  Ptr<AptNode> vardef = new VardefNode(srcpos,
+                                       iteratorVarSym.idValue(), kNormalVar,
+                                       true, stepVarType,
                                        beginRangeNode);
-  Ptr<AptNode> stepDefNode = new LetNode(fScope, vardef);
+  Ptr<AptNode> stepDefNode = new LetNode(vardef);
   loopDefines->push_back(stepDefNode);
-
-  fScope->registerVar(srcpos, iteratorVarSym.idValue(), vardef);
 
   Token absMaxEndSym;
   Token absItVarSym;
@@ -1960,56 +1925,51 @@ SecondPass::transformRangeForClause(const Token& token,
     absStepVarSym = Token::newUniqueSymbolToken(srcpos, "abs_step");
 
     // let __i = if (i < _end) i else _end    -- min(i, _end)
-    Ptr<AptNode> absVardef = new VardefNode(srcpos, fScope,
-                                            absItVarSym.idValue(), kNormalVar, true, Type(),
-                                            new IfNode(srcpos, fScope,
-                                                       new BinaryNode(srcpos, fScope,
-                                                                      new SymbolNode(srcpos, fScope,
-                                                                                     iteratorVarSym.idValue()),
-                                                                      kOpLess,
-                                                                      endRangeNode->clone()),
-                                                       new SymbolNode(srcpos, fScope,
-                                                                      iteratorVarSym.idValue()),
-                                                       endRangeNode->clone()));
-    Ptr<AptNode> absItVarNode = new LetNode(fScope, absVardef);
+    Ptr<AptNode> absVardef =
+      new VardefNode(srcpos,
+                     absItVarSym.idValue(), kNormalVar, true, Type(),
+                     new IfNode(srcpos,
+                                new BinaryNode(srcpos,
+                                               new SymbolNode(srcpos,
+                                                              iteratorVarSym.idValue()),
+                                               kOpLess,
+                                               endRangeNode->clone()),
+                                new SymbolNode(srcpos,
+                                               iteratorVarSym.idValue()),
+                                endRangeNode->clone()));
+    Ptr<AptNode> absItVarNode = new LetNode(absVardef);
     loopDefines->push_back(absItVarNode);
 
-    fScope->registerVar(srcpos, absItVarSym.idValue(), absVardef);
-
     // let _abs_end = if (i < _end) _end else i   -- max(i, _end)
-    Ptr<AptNode> absMaxEndVardef = 
-      new VardefNode(srcpos, fScope,
+    Ptr<AptNode> absMaxEndVardef =
+      new VardefNode(srcpos,
                      absMaxEndSym.idValue(), kNormalVar, true, Type(),
-                     new IfNode(srcpos, fScope,
-                                new BinaryNode(srcpos, fScope,
-                                               new SymbolNode(srcpos, fScope,
+                     new IfNode(srcpos,
+                                new BinaryNode(srcpos,
+                                               new SymbolNode(srcpos,
                                                               iteratorVarSym.idValue()),
                                                kOpLess,
                                                endRangeNode->clone()),
                                 endRangeNode->clone(),
-                                new SymbolNode(srcpos, fScope,
+                                new SymbolNode(srcpos,
                                                iteratorVarSym.idValue())));
-    Ptr<AptNode> absMaxEndNode = new LetNode(fScope, absMaxEndVardef);
+    Ptr<AptNode> absMaxEndNode = new LetNode(absMaxEndVardef);
     loopDefines->push_back(absMaxEndNode);
-
-    fScope->registerVar(srcpos, absMaxEndSym.idValue(), absMaxEndVardef);
 
     // let __abs_step = if (_step < 0) - _step else _step   -- abs(_step)
     Ptr<AptNode> absStepVarSymVardef =
-      new VardefNode(srcpos, fScope,
+      new VardefNode(srcpos,
                      absStepVarSym.idValue(), kNormalVar, true, Type(),
-                     new IfNode(srcpos, fScope,
-                                new BinaryNode(srcpos, fScope,
+                     new IfNode(srcpos,
+                                new BinaryNode(srcpos,
                                                stepValueNode->clone(),
                                                kOpLess,
                                                endRangeNode->clone()),
-                                new NegateNode(srcpos, fScope,
+                                new NegateNode(srcpos,
                                                stepValueNode->clone()),
                                 stepValueNode->clone()));
-    Ptr<AptNode> absStepVarNode = new LetNode(fScope, absStepVarSymVardef);
+    Ptr<AptNode> absStepVarNode = new LetNode(absStepVarSymVardef);
     loopDefines->push_back(absStepVarNode);
-
-    fScope->registerVar(srcpos, absStepVarSym.idValue(), absStepVarSymVardef);
   }
 
 
@@ -2020,8 +1980,8 @@ SecondPass::transformRangeForClause(const Token& token,
     {
       OperatorType op = direct == kRangeUpwards ? kOpLessEqual : kOpGreaterEqual;
       // i <= _end  |  i >= _end
-      Ptr<AptNode> testExprNode = new BinaryNode(srcpos, fScope,
-                                                 new SymbolNode(srcpos, fScope,
+      Ptr<AptNode> testExprNode = new BinaryNode(srcpos,
+                                                 new SymbolNode(srcpos,
                                                                 iteratorVarSym.idValue()),
                                                  op,
                                                  endRangeNode);
@@ -2032,11 +1992,11 @@ SecondPass::transformRangeForClause(const Token& token,
   case kRangeUnknown:
     {
       // _abs_i <= _abs_end
-      Ptr<AptNode> testExprNode = new BinaryNode(srcpos, fScope,
-                                                 new SymbolNode(srcpos, fScope,
+      Ptr<AptNode> testExprNode = new BinaryNode(srcpos,
+                                                 new SymbolNode(srcpos,
                                                                 absItVarSym.idValue()),
                                                  kOpLessEqual,
-                                                 new SymbolNode(srcpos, fScope,
+                                                 new SymbolNode(srcpos,
                                                                 absMaxEndSym.idValue()));
       testExprs->push_back(testExprNode);
     }
@@ -2046,26 +2006,26 @@ SecondPass::transformRangeForClause(const Token& token,
 
   //------------------------------ generate counter step increase
   // i = i + 1
-  Ptr<AptNode> stepVarNode = new SymbolNode(srcpos, fScope,
+  Ptr<AptNode> stepVarNode = new SymbolNode(srcpos,
                                             iteratorVarSym.idValue());
-  Ptr<AptNode> nextValueNode = new BinaryNode(srcpos, fScope,
-                                              new SymbolNode(srcpos, fScope,
+  Ptr<AptNode> nextValueNode = new BinaryNode(srcpos,
+                                              new SymbolNode(srcpos,
                                                              iteratorVarSym.idValue()),
                                               kOpPlus,
                                               stepValueNode);
-  Ptr<AptNode> incrStepNode = new AssignNode(srcpos, fScope,
+  Ptr<AptNode> incrStepNode = new AssignNode(srcpos,
                                              stepVarNode, nextValueNode);
   stepExprs->push_back(incrStepNode);
 
   if (direct == kRangeUnknown) {
-    Ptr<AptNode> absStepVarNode = new SymbolNode(srcpos, fScope,
+    Ptr<AptNode> absStepVarNode = new SymbolNode(srcpos,
                                                  absItVarSym.idValue());
-    Ptr<AptNode> absNextValueNode = new BinaryNode(srcpos, fScope,
+    Ptr<AptNode> absNextValueNode = new BinaryNode(srcpos,
                                                    absStepVarNode->clone(),
                                                    kOpPlus,
-                                                   new SymbolNode(srcpos, fScope,
+                                                   new SymbolNode(srcpos,
                                                                   absStepVarSym.idValue()));
-    Ptr<AptNode> absIncrStepNode = new AssignNode(srcpos, fScope,
+    Ptr<AptNode> absIncrStepNode = new AssignNode(srcpos,
                                                   absStepVarNode, absNextValueNode);
     stepExprs->push_back(absIncrStepNode);
   }
@@ -2095,52 +2055,49 @@ SecondPass::transformCollForClause(const Token& token,
   // ------------------------------ let _seq = names
   Type loopType;                // TODO
   Ptr<AptNode> seqInitNode = parseExpr(token[2]);
-  Ptr<AptNode> seqInitVardef = new VardefNode(srcpos, fScope,
+  Ptr<AptNode> seqInitVardef = new VardefNode(srcpos,
                                               sym.idValue(), kNormalVar, true, loopType,
                                               seqInitNode);
-  Ptr<AptNode> loopDefNode = new LetNode(fScope, seqInitVardef);
+  Ptr<AptNode> loopDefNode = new LetNode(seqInitVardef);
   loopDefines->push_back(loopDefNode);
-
-  fScope->registerVar(srcpos, sym.idValue(), seqInitVardef);
 
 
   // ------------------------------ let name = unspecified
   Token stepSym = token[0].isSeq() ? token[0][0] : token[0];
   assert(stepSym == kSymbol);
   Type stepType;                // TODO
-  Ptr<AptNode> stepSymVardef = new VardefNode(srcpos, fScope,
-                                              stepSym.idValue(), kNormalVar, true, stepType,
-                                              new SymbolNode(srcpos, fScope, String("unspecified")));
-  Ptr<AptNode> stepDefNode = new LetNode(fScope, stepSymVardef);
+  Ptr<AptNode> stepSymVardef = new VardefNode(srcpos,
+                                              stepSym.idValue(), kNormalVar,
+                                              true, stepType,
+                                              new SymbolNode(srcpos,
+                                                             String("unspecified")));
+  Ptr<AptNode> stepDefNode = new LetNode(stepSymVardef);
   loopDefines->push_back(stepDefNode);
 
-  fScope->registerVar(srcpos, stepSym.idValue(), stepSymVardef);
-
   // ------------------------------ if (_seq.end?)
-  Ptr<AptNode> testNode = new ApplyNode(srcpos, fScope,
-                                        new SymbolNode(srcpos, fScope,
+  Ptr<AptNode> testNode = new ApplyNode(srcpos,
+                                        new SymbolNode(srcpos,
                                                        String("end?")));
-  testNode->appendNode(new SymbolNode(srcpos, fScope, sym.idValue()));
+  testNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
 
   // --- then false
-  Ptr<AptNode> consNode = new BoolNode(srcpos, fScope, false);
+  Ptr<AptNode> consNode = new BoolNode(srcpos, false);
 
   // --- else { name = _seq.next true }
-  Ptr<AptNode> altNode = new BlockNode(srcpos, fScope);
+  Ptr<AptNode> altNode = new BlockNode(srcpos);
 
-  Ptr<AptNode> stepVarNode = new SymbolNode(srcpos, fScope, stepSym.idValue());
-  Ptr<AptNode> nextSeqNode = new ApplyNode(srcpos, fScope,
-                                           new SymbolNode(srcpos, fScope,
+  Ptr<AptNode> stepVarNode = new SymbolNode(srcpos, stepSym.idValue());
+  Ptr<AptNode> nextSeqNode = new ApplyNode(srcpos,
+                                           new SymbolNode(srcpos,
                                                           String("next")));
-  nextSeqNode->appendNode(new SymbolNode(srcpos, fScope, sym.idValue()));
+  nextSeqNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
 
-  Ptr<AptNode> stepNextNode = new AssignNode(srcpos, fScope,
+  Ptr<AptNode> stepNextNode = new AssignNode(srcpos,
                                              stepVarNode, nextSeqNode);
   altNode->appendNode(stepNextNode);
-  altNode->appendNode(new BoolNode(srcpos, fScope, true));
+  altNode->appendNode(new BoolNode(srcpos, true));
 
-  Ptr<AptNode> ifNode = new IfNode(srcpos, fScope,
-                                   testNode, consNode, altNode);
+  Ptr<AptNode> ifNode = new IfNode(srcpos, testNode, consNode, altNode);
 
   testExprs->push_back(ifNode);
 }
@@ -2196,20 +2153,17 @@ SecondPass::parseFor(const Token& expr)
 
   if (requiresReturnValue) {
     if (alternate == NULL)
-      alternate = new SymbolNode(expr.srcpos(), fScope,
-                                 String("unspecified"));
+      alternate = new SymbolNode(expr.srcpos(), String("unspecified"));
 
     Type retType;               // TODO?
-    Ptr<AptNode> returnVardef = new VardefNode(expr.srcpos(), fScope,
+    Ptr<AptNode> returnVardef = new VardefNode(expr.srcpos(),
                                                returnSym.idValue(), kNormalVar,
                                                true, retType, alternate);
-    Ptr<AptNode> defReturnNode = new LetNode(fScope, returnVardef);
+    Ptr<AptNode> defReturnNode = new LetNode(returnVardef);
     loopDefines.push_back(defReturnNode);
-
-    fScope->registerVar(expr.srcpos(), returnSym.idValue(), returnVardef);
   }
 
-  Ptr<BlockNode> block = new BlockNode(expr.srcpos(), fScope);
+  Ptr<BlockNode> block = new BlockNode(expr.srcpos());
   block->appendNodes(loopDefines);
 
   Ptr<AptNode> testNode;
@@ -2218,13 +2172,13 @@ SecondPass::parseFor(const Token& expr)
     if (nodeCount > 1) {
       Ptr<BinaryNode> prevBin = dynamic_cast<BinaryNode*>(testNode.obj());
       assert(prevBin != NULL);
-      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(), fScope,
+      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
                                             prevBin->right(),
                                             kOpLogicalAnd, testExprs[i]);
       prevBin->setRight(binNode);
     }
     else if (nodeCount == 1) {
-      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(), fScope,
+      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
                                             testNode, kOpLogicalAnd, testExprs[i]);
       testNode = binNode;
     }
@@ -2236,15 +2190,15 @@ SecondPass::parseFor(const Token& expr)
   // if we don't have a test node yet all loop clauses are unconditional
   // ones.  Take a simple 'true' therefore.
   if (testNode == NULL) {
-    testNode = new BoolNode(expr.srcpos(), fScope, true);
+    testNode = new BoolNode(expr.srcpos(), true);
   }
 
-  Ptr<BlockNode> bodyNode = new BlockNode(expr.srcpos(), fScope);
+  Ptr<BlockNode> bodyNode = new BlockNode(expr.srcpos());
 
   if (requiresReturnValue) {
-    Ptr<AptNode> retNode = new SymbolNode(expr.srcpos(), fScope,
+    Ptr<AptNode> retNode = new SymbolNode(expr.srcpos(),
                                           returnSym.idValue());
-    Ptr<AptNode> saveRetNode = new AssignNode(expr.srcpos(), fScope,
+    Ptr<AptNode> saveRetNode = new AssignNode(expr.srcpos(),
                                               retNode, body);
     bodyNode->appendNode(saveRetNode);
   }
@@ -2254,11 +2208,9 @@ SecondPass::parseFor(const Token& expr)
 
   Ptr<AptNode> returnNode;
   if (requiresReturnValue)
-    returnNode = new SymbolNode(expr.srcpos(), fScope,
-                                returnSym.idValue());
+    returnNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
 
-  Ptr<WhileNode> whileNode = new WhileNode(expr.srcpos(), fScope,
-                                           testNode, bodyNode);
+  Ptr<WhileNode> whileNode = new WhileNode(expr.srcpos(), testNode, bodyNode);
   block->appendNode(whileNode);
 
   if (returnNode != NULL)
@@ -2306,7 +2258,7 @@ SecondPass::parseRealSelect(const Token& expr)
     comparatorNode = parseExpr(args[2]);
   }
 
-  Ptr<SelectNode> selectNode = new SelectNode(expr.srcpos(), fScope,
+  Ptr<SelectNode> selectNode = new SelectNode(expr.srcpos(),
                                               testNode,
                                               comparatorNode);
 
@@ -2381,7 +2333,7 @@ SecondPass::parseChainSelect(const Token& expr)
         Ptr<AptNode> consqNode = parseExpr(testToken[3]);
 
         if (consqNode != NULL) {
-          Ptr<IfNode> ifNode = new IfNode(testToken[1].srcpos(), fScope,
+          Ptr<IfNode> ifNode = new IfNode(testToken[1].srcpos(),
                                           testValueNode, consqNode, NULL);
           if (lastNode != NULL) {
             lastNode->setAlternate(ifNode);
@@ -2429,26 +2381,24 @@ SecondPass::parseMatch(const Token& expr)
 
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
-  Ptr<BlockNode> block = new BlockNode(expr.srcpos(), fScope);
+  Ptr<BlockNode> block = new BlockNode(expr.srcpos());
 
   Ptr<AptNode> exprNode = parseExpr(args[0]);
   Token tmpValueSym = Token::newUniqueSymbolToken(expr.srcpos(), "match");
   Type tempType;                // TODO?
-  Ptr<AptNode> tmpVarDef = new VardefNode(expr.srcpos(), fScope,
+  Ptr<AptNode> tmpVarDef = new VardefNode(expr.srcpos(),
                                           tmpValueSym.idValue(),
                                           kNormalVar,
                                           true,
                                           tempType,
                                           exprNode);
-  Ptr<AptNode> tmpLetNode = new LetNode(fScope, tmpVarDef);
+  Ptr<AptNode> tmpLetNode = new LetNode(tmpVarDef);
   block->appendNode(tmpLetNode);
 
-  fScope->registerVar(expr.srcpos(), tmpValueSym.idValue(), tmpVarDef);
-
-  Ptr<AptNode> tmpValueNode = new SymbolNode(expr.srcpos(), fScope,
+  Ptr<AptNode> tmpValueNode = new SymbolNode(expr.srcpos(),
                                              tmpValueSym.idValue());
 
-  Ptr<MatchNode> matchNode = new MatchNode(expr.srcpos(), fScope,
+  Ptr<MatchNode> matchNode = new MatchNode(expr.srcpos(),
                                            tmpValueNode->clone());
 
   const TokenVector& typeMappings = expr[2].children();
@@ -2464,7 +2414,7 @@ SecondPass::parseMatch(const Token& expr)
     {
       ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
-      Ptr<BlockNode> localBlock = new BlockNode(typeMapping[3].srcpos(), fScope);
+      Ptr<BlockNode> localBlock = new BlockNode(typeMapping[3].srcpos());
 
       String  varName;
       Type    varType;
@@ -2477,16 +2427,14 @@ SecondPass::parseMatch(const Token& expr)
         varName = typeMapping[1][0].idValue();
         varType = parseTypeSpec(typeMapping[1][2]);
 
-        Ptr<AptNode> initVal = new CastNode(typeMapping[0].srcpos(), fScope,
+        Ptr<AptNode> initVal = new CastNode(typeMapping[0].srcpos(),
                                             tmpValueNode->clone(),
                                             varType);
 
-        Ptr<VardefNode> localVar = new VardefNode(sympos, fScope,
+        Ptr<VardefNode> localVar = new VardefNode(sympos,
                                                   varName, kNormalVar, true,
                                                   varType, initVal);
-        fScope->registerVar(sympos, varName, localVar);
-
-        localBlock->appendNode(new LetNode(fScope, localVar));
+        localBlock->appendNode(new LetNode(localVar));
       }
       else {
         assert(typeMapping[1][0] == kColon);
@@ -2522,12 +2470,10 @@ SecondPass::parseTypeExpr(const Token& expr)
     TypeVector genericArgs;
     parseTypeVector(&genericArgs, expr[1]);
 
-    return new SymbolNode(expr.srcpos(), fScope,
-                          expr[0].idValue(), genericArgs);
+    return new SymbolNode(expr.srcpos(), expr[0].idValue(), genericArgs);
   }
   else if (expr[1].leftToken() == kBracketOpen) {
-    return new ArraySymbolNode(expr.srcpos(), fScope,
-                               expr[0].idValue());
+    return new ArraySymbolNode(expr.srcpos(), expr[0].idValue());
   }
 
   assert(0);
@@ -2557,7 +2503,7 @@ SecondPass::parseUnitNumber(const Token& expr)
 
   TypeUnit unit = fScope->lookupUnit(expr[2].idValue(), true);
   if (unit.isDef()) {
-    return new UnitConstNode(expr.srcpos(), fScope, value, unit);
+    return new UnitConstNode(expr.srcpos(), value, unit);
   }
   else {
     error(expr[2].srcpos(), E_UndefinedUnit,
@@ -2604,7 +2550,7 @@ SecondPass::parseSeq(const Token& expr)
   else if (first == kMinus) {
     assert(expr.count() == 2);
     Ptr<AptNode> exprNode = parseExpr(expr[1]);
-    return new NegateNode(expr.srcpos(), fScope, exprNode);
+    return new NegateNode(expr.srcpos(), exprNode);
   }
   else if (expr.count() == 2) {
     if (expr[1].isNested()) {
@@ -2661,15 +2607,15 @@ SecondPass::parseBlock(const Token& expr)
   assert(expr.leftToken() == kBraceOpen);
   assert(expr.rightToken() == kBraceClose);
 
-  ScopeHelper localScope(fScope, false, true, kScopeL_Local);
+  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
   if (expr.count() == 0)
-    return new SymbolNode(expr.srcpos(), fScope, String("unspecified"));
+    return new SymbolNode(expr.srcpos(), String("unspecified"));
   else if (expr.count() == 1)
     return parseExpr(expr[0]);
 
   const TokenVector& seq = expr.children();
-  Ptr<BlockNode> block = new BlockNode(expr.srcpos(), fScope);
+  Ptr<BlockNode> block = new BlockNode(expr.srcpos());
   for (size_t i = 0; i < seq.size(); i++) {
     Ptr<AptNode> item = parseExpr(seq[i]);
     if (item != NULL)
@@ -2688,7 +2634,7 @@ SecondPass::parseLiteralVector(const Token& expr)
   assert(expr.leftToken() == kLiteralVectorOpen);
   assert(expr.rightToken() == kParanClose);
 
-  Ptr<AptNode> vector = new VectorNode(expr.srcpos(), fScope);
+  Ptr<AptNode> vector = new VectorNode(expr.srcpos());
   const TokenVector& seq = expr.children();
 
   for (size_t i = 0; i < seq.size(); i++) {
@@ -2710,7 +2656,7 @@ SecondPass::parseLiteralArray(const Token& expr)
   assert(expr.leftToken() == kLiteralArrayOpen);
   assert(expr.rightToken() == kBracketClose);
 
-  Ptr<AptNode> array = new ArrayNode(expr.srcpos(), fScope);
+  Ptr<AptNode> array = new ArrayNode(expr.srcpos());
   const TokenVector& seq = expr.children();
 
   for (size_t i = 0; i < seq.size(); i++) {
@@ -2732,7 +2678,7 @@ SecondPass::parseLiteralDict(const Token& expr)
   assert(expr.leftToken() == kLiteralVectorOpen);
   assert(expr.rightToken() == kParanClose);
 
-  Ptr<DictNode> dict = new DictNode(expr.srcpos(), fScope);
+  Ptr<DictNode> dict = new DictNode(expr.srcpos());
   const TokenVector& seq = expr.children();
 
   for (size_t i = 0; i < seq.size(); i++) {
@@ -2790,8 +2736,7 @@ AptNode*
 SecondPass::parseIntNumber(const Token& expr)
 {
   if (expr.tokenType() == kInt) {
-    return new IntNode(expr.srcpos(), fScope,
-                       expr.intValue(), expr.isImaginary(),
+    return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
                        Type::newInt());
   }
   else if (expr.isSeq() && expr.count() == 3 &&
@@ -2800,9 +2745,8 @@ SecondPass::parseIntNumber(const Token& expr)
   {
     Type type = parseTypeSpec(expr[2]);
 
-    return new IntNode(expr.srcpos(), fScope, expr[0].intValue(),
-                       expr[0].isImaginary(),
-                       type);
+    return new IntNode(expr.srcpos(), expr[0].intValue(),
+                       expr[0].isImaginary(), type);
   }
 
   assert(0);
@@ -2814,7 +2758,7 @@ AptNode*
 SecondPass::parseRationalNumber(const Token& expr)
 {
   if (expr.tokenType() == kRational) {
-    return new RationalNode(expr.srcpos(), fScope, expr.rationalValue(),
+    return new RationalNode(expr.srcpos(), expr.rationalValue(),
                             expr.isImaginary(), Type::newRational());
   }
   else if (expr.isSeq() && expr.count() == 3 &&
@@ -2823,9 +2767,8 @@ SecondPass::parseRationalNumber(const Token& expr)
   {
     Type type = parseTypeSpec(expr[2]);
 
-    return new RationalNode(expr.srcpos(), fScope, expr[0].rationalValue(),
-                            expr[0].isImaginary(),
-                            type);
+    return new RationalNode(expr.srcpos(), expr[0].rationalValue(),
+                            expr[0].isImaginary(), type);
   }
 
   assert(0);
@@ -2837,7 +2780,7 @@ AptNode*
 SecondPass::parseRealNumber(const Token& expr)
 {
   if (expr.tokenType() == kReal) {
-    return new RealNode(expr.srcpos(), fScope, expr.realValue(),
+    return new RealNode(expr.srcpos(), expr.realValue(),
                         expr.isImaginary(), Type::newReal());
   }
   else if (expr.isSeq() && expr.count() == 3 &&
@@ -2846,9 +2789,8 @@ SecondPass::parseRealNumber(const Token& expr)
   {
     Type type = parseTypeSpec(expr[2]);
 
-    return new RealNode(expr.srcpos(), fScope, expr[0].realValue(),
-                        expr[0].isImaginary(),
-                        type);
+    return new RealNode(expr.srcpos(), expr[0].realValue(),
+                        expr[0].isImaginary(), type);
   }
 
   assert(0);
@@ -2868,12 +2810,12 @@ SecondPass::parseExpr(const Token& expr)
         return vardef->initExpr()->clone();
       }
     }
-    return new SymbolNode(expr.srcpos(), fScope, expr.idValue());
+    return new SymbolNode(expr.srcpos(), expr.idValue());
 
   case kLit:
     switch (expr.tokenType()) {
     case kBool:
-      return new BoolNode(expr.srcpos(), fScope, expr.boolValue());
+      return new BoolNode(expr.srcpos(), expr.boolValue());
     case kInt:
       return parseIntNumber(expr);
     case kRational:
@@ -2881,11 +2823,11 @@ SecondPass::parseExpr(const Token& expr)
     case kReal:
       return parseRealNumber(expr);
     case kChar:
-      return new CharNode(expr.srcpos(), fScope, expr.charValue());
+      return new CharNode(expr.srcpos(), expr.charValue());
     case kString:
-      return new StringNode(expr.srcpos(), fScope, expr.stringValue());
+      return new StringNode(expr.srcpos(), expr.stringValue());
     case kKeyword:
-      return new KeywordNode(expr.srcpos(), fScope, expr.stringValue());
+      return new KeywordNode(expr.srcpos(), expr.stringValue());
 
     case kDocString:
       // TODO
@@ -2916,14 +2858,12 @@ SecondPass::parseExpr(const Token& expr)
 AptNode*
 SecondPass::parse(const Token& exprs)
 {
+  assert(exprs.isSeq());
+
   {
-    // let the complete parse run in its own scope to force an explicit export
-    // run
     ScopeHelper scopeHelper(fScope, true, false, kScopeL_CompileUnit);
 
-    assert(exprs.isSeq());
-
-    fRootNode = new CompileUnitNode(SrcPos(), fScope);
+    fRootNode = new CompileUnitNode(SrcPos());
     parseTopExprlist(exprs);
   }
 

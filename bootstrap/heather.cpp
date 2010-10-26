@@ -53,7 +53,7 @@ displayHelp()
   printf("     --define=VAR=VALUE\n");
   printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
   printf("                               {tokenizer|pass1|pass2|annotate|\n");
-  printf("                                import|macro}\n");
+  printf("                                transform|import|macro}\n");
   printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
   printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
   printf("  -O                           Optimize code more\n");
@@ -63,6 +63,7 @@ displayHelp()
   printf("           --ut-format=FORMAT  Output format of unit tests {xml|txt}\n");
   printf("           --parse-1           Only do pass1 phase\n");
   printf("           --parse-2           Only do pass1 + pass2 phase\n");
+  printf("           --parse-3           Only do pass1, 2, 3 phase\n");
 #endif
   printf("  -P,      --parse             Only parse the source files\n");
   printf("  -c                           Only compile the source files, no link\n");
@@ -103,6 +104,7 @@ enum {
   kOptDontImport,
   kOptParse1,
   kOptParse2,
+  kOptParse3,
 #endif
 };
 
@@ -206,6 +208,7 @@ main(int argc, char** argv)
     { kOptDontImport,   NULL,  "--dont-import",    false },
     { kOptParse1,       NULL,  "--parse-1",        false },
     { kOptParse2,       NULL,  "--parse-2",        false },
+    { kOptParse3,       NULL,  "--parse-3",        false },
 #endif
     { 0,                NULL,  NULL,               false } // sentinel
   };
@@ -294,6 +297,9 @@ main(int argc, char** argv)
         break;
       case kOptParse2:
         Properties::test_setPassLevel(2);
+        break;
+      case kOptParse3:
+        Properties::test_setPassLevel(3);
         break;
 #endif
       }
