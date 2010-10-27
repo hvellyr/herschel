@@ -26,3 +26,6 @@ def enum MidiController : (Ordinal in 0 .. 127)
   -- ...
   poly-operation = 127
 }
+
+
+def a = 1
