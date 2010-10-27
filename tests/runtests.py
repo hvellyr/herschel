@@ -179,6 +179,7 @@ class TestRunner:
         path, ext = os.path.splitext(test_file)
         expected_file = path + "_" + passid + ".expsynerr"
 
+#        print "Print expect expsynerr file: %s" % expected_file
         if os.path.isfile(expected_file):
             try:
                 fd = open(expected_file, "rb")
@@ -238,7 +239,7 @@ class TestRunner:
 
 
     def run_pass_failed_test(self, test_file, domain):
-        for level in [ '1', '2', '3' ]:
+        for level in [ '1', '2', '3', '4' ]:
             if level in OPTIONS[domain]:
                 self.run_pass_test_impl(test_file, OPTIONS[domain][level], level,
                                         self.check_for_errors)
