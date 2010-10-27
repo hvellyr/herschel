@@ -204,8 +204,11 @@ Annotator::annotate(LetNode* node)
 void
 Annotator::annotate(VardefNode* node, bool isLocal)
 {
-  if (fPhase == kRegister)
-    fScope->registerVar(node->srcpos(), node->name(), node);
+  if (fPhase == kRegister) {
+    if (!fScope->checkForRedefinition(node->srcpos(),
+                                      Scope::kNormal, node->name()))
+      fScope->registerVar(node->srcpos(), node->name(), node);
+  }
 
   if (node->initExpr() != NULL)
     annotateNode(node->initExpr());
@@ -240,8 +243,11 @@ Annotator::annotate(FunctionNode* node)
 void
 Annotator::annotate(SlotdefNode* node)
 {
-  // if (fPhase == kRegister)
-  //   fScope->registerVar(node->srcpos(), node->name(), node);
+  // if (fPhase == kRegister) {
+  //   if (!fScope->checkForRedefinition(node->srcpos(),
+  //                                     Scope::kNormal, node->name()))
+  //     fScope->registerVar(node->srcpos(), node->name(), node);
+  // }
   // TODO
 }
 
@@ -257,8 +263,11 @@ Annotator::annotate(BlockNode* node)
 void
 Annotator::annotate(ParamNode* node)
 {
-  if (fPhase == kRegister)
-    fScope->registerVar(node->srcpos(), node->name(), node);
+  if (fPhase == kRegister) {
+    if (!fScope->checkForRedefinition(node->srcpos(),
+                                      Scope::kNormal, node->name()))
+      fScope->registerVar(node->srcpos(), node->name(), node);
+  }
 
   if (node->initExpr() != NULL)
     annotateNode(node->initExpr());
