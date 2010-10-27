@@ -2599,6 +2599,26 @@ SecondPass::parseSeq(const Token& expr)
 }
 
 
+namespace heather
+{
+  static bool
+  doesNodeNeedBlock(const AptNode* node)
+  {
+    const OnNode* on = dynamic_cast<const OnNode*>(node);
+    if (on != NULL) {
+      if (on->key() == String("exit") ||
+          on->key() == String("signal"))
+        return true;
+    }
+    else if (dynamic_cast<const LetNode*>(node) != NULL ||
+             dynamic_cast<const DefNode*>(node) != NULL)
+      return true;
+
+    return false;
+  }
+}
+
+
 AptNode*
 SecondPass::parseBlock(const Token& expr)
 {
@@ -2609,18 +2629,24 @@ SecondPass::parseBlock(const Token& expr)
 
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
-  if (expr.count() == 0)
-    return new SymbolNode(expr.srcpos(), String("unspecified"));
-  else if (expr.count() == 1)
-    return parseExpr(expr[0]);
-
   const TokenVector& seq = expr.children();
-  Ptr<BlockNode> block = new BlockNode(expr.srcpos());
+  NodeList nodes;
   for (size_t i = 0; i < seq.size(); i++) {
     Ptr<AptNode> item = parseExpr(seq[i]);
     if (item != NULL)
-      block->appendNode(item);
+      nodes.push_back(item);
   }
+
+  if (nodes.size() == 0) {
+    return new SymbolNode(expr.srcpos(), String("unspecified"));
+  }
+  else if (nodes.size() == 1) {
+    if (!doesNodeNeedBlock(nodes[0].obj()))
+      return nodes[0].release();
+  }
+
+  Ptr<BlockNode> block = new BlockNode(expr.srcpos());
+  block->appendNodes(nodes);
 
   return block.release();
 }
