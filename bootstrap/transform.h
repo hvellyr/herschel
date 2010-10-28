@@ -112,6 +112,9 @@ namespace heather
     void transformNodeList(NodeList& nl);
 
     int findBlockSplitIndex(const NodeList& nodes);
+
+    void transformSingleOnExitBlock(BlockNode* node, OnNode* onnd);
+
   };
 
 };                              // namespace
