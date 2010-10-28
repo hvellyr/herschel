@@ -29,90 +29,100 @@ Transformator::Transformator()
 }
 
 
-void
+AptNode*
 Transformator::transformNode(AptNode* node)
 {
-  node->transform(this);
+  return node->transform(this);
 }
 
 
-void
+AptNode*
 Transformator::transform(CompileUnitNode* node)
 {
   transformNodeList(node->children());
+  return node;
 }
 
 
 void
 Transformator::transformNodeList(NodeList& nl)
 {
-  for (size_t i = 0; i < nl.size(); i++)
-    transformNode(nl[i]);
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-Transformator::transform(SymbolNode* node)
-{
-  // nothing to transform
-}
-
-
-void
-Transformator::transform(ArraySymbolNode* node)
-{
-  // nothing to transform
-}
-
-
-//------------------------------------------------------------------------------
-
-void
-Transformator::transform(DefNode* node)
-{
-  transformNode(node->defNode());
-}
-
-
-void
-Transformator::transform(LetNode* node)
-{
-  transformNode(node->defNode());
-}
-
-
-void
-Transformator::transform(VardefNode* node)
-{
-  if (node->initExpr() != NULL)
-    transformNode(node->initExpr());
-}
-
-
-void
-Transformator::transform(FuncDefNode* node)
-{
-  transformNodeList(node->params());
-  if (node->body() != NULL) {
-    transformNode(node->body());
+  for (size_t i = 0; i < nl.size(); i++) {
+    nl[i] = transformNode(nl[i]);
   }
 }
 
 
-void
-Transformator::transform(FunctionNode* node)
+//------------------------------------------------------------------------------
+
+AptNode*
+Transformator::transform(SymbolNode* node)
 {
-  transformNodeList(node->params());
-  transformNode(node->body());
+  // nothing to transform
+  return node;
 }
 
 
-void
+AptNode*
+Transformator::transform(ArraySymbolNode* node)
+{
+  // nothing to transform
+  return node;
+}
+
+
+//------------------------------------------------------------------------------
+
+AptNode*
+Transformator::transform(DefNode* node)
+{
+  node->setDefNode(transformNode(node->defNode()));
+  return node;
+}
+
+
+AptNode*
+Transformator::transform(LetNode* node)
+{
+  node->setDefNode(transformNode(node->defNode()));
+  return node;
+}
+
+
+AptNode*
+Transformator::transform(VardefNode* node)
+{
+  if (node->initExpr() != NULL)
+    node->setInitExpr(transformNode(node->initExpr()));
+  return node;
+}
+
+
+AptNode*
+Transformator::transform(FuncDefNode* node)
+{
+  transformNodeList(node->params());
+  if (node->body() != NULL) {
+    node->fBody = transformNode(node->body());
+  }
+  return node;
+}
+
+
+AptNode*
+Transformator::transform(FunctionNode* node)
+{
+  transformNodeList(node->params());
+  node->fBody = transformNode(node->body());
+  return node;
+}
+
+
+AptNode*
 Transformator::transform(SlotdefNode* node)
 {
   // TODO
+  return node;
 }
 
 
@@ -224,7 +234,7 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
 }
 
 
-void
+AptNode*
 Transformator::transform(BlockNode* node)
 {
   NodeList& nodes = node->children();
@@ -238,10 +248,11 @@ Transformator::transform(BlockNode* node)
         // warning though.
         warningf(onnd->srcpos(), E_UnreachableCode,
                  "unreachable code in orphaned 'on signal' handler");
-        // TODO
+        return NULL;
       }
       else if (onnd->key() == String("exit")) {
-        return transformSingleOnExitBlock(node, onnd);
+        transformSingleOnExitBlock(node, onnd);
+        return node;
       }
     }
   }
@@ -258,219 +269,247 @@ Transformator::transform(BlockNode* node)
   }
 
   transformNodeList(node->children());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(ParamNode* node)
 {
   if (node->initExpr() != NULL)
-    transformNode(node->initExpr());
+    node->fInitExpr = transformNode(node->initExpr());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(ApplyNode* node)
 {
-  transformNode(node->base());
+  node->fBase = transformNode(node->base());
   transformNodeList(node->children());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(ArrayNode* node)
 {
   transformNodeList(node->children());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(AssignNode* node)
 {
-  transformNode(node->lvalue());
-  transformNode(node->rvalue());
+  node->setLvalue(transformNode(node->lvalue()));
+  node->setRvalue(transformNode(node->rvalue()));
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(BinaryNode* node)
 {
-  transformNode(node->left());
-  transformNode(node->right());
+  node->setLeft(transformNode(node->left()));
+  node->setRight(transformNode(node->right()));
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(NegateNode* node)
 {
-  transformNode(node->base());
+  node->fBase = transformNode(node->base());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(IfNode* node)
 {
-  transformNode(node->test());
-  transformNode(node->consequent());
+  node->fTest = transformNode(node->test());
+  node->fConsequent = transformNode(node->consequent());
   if (node->alternate())
-    transformNode(node->alternate());
+    node->fAlternate = transformNode(node->alternate());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(KeyargNode* node)
 {
-  transformNode(node->value());
+  node->fValue = transformNode(node->value());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(MatchNode* node)
 {
-  transformNode(node->fExpr);
+  node->fExpr = transformNode(node->fExpr);
   for (size_t i = 0; i < node->fMappings.size(); i++) {
-    transformNode(node->fMappings[i].fConsequent);
+    node->fMappings[i].fConsequent = transformNode(node->fMappings[i].fConsequent);
   }
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(SelectNode* node)
 {
-  transformNode(node->fTest);
+  node->fTest = transformNode(node->fTest);
   if (node->fComparator != NULL)
-    transformNode(node->fComparator);
+    node->fComparator = transformNode(node->fComparator);
 
   for (size_t i = 0; i < node->fMappings.size(); i++) {
     if (node->fMappings[i].fTestValues.empty()) {
-      transformNode(node->fMappings[i].fConsequent);
+      node->fMappings[i].fConsequent = transformNode(node->fMappings[i].fConsequent);
     }
     else {
       for (size_t j = 0; j < node->fMappings[i].fTestValues.size(); j++)
-        transformNode(node->fMappings[i].fTestValues[j]);
+        node->fMappings[i].fTestValues[j] = transformNode(node->fMappings[i].fTestValues[j]);
     }
-    transformNode(node->fMappings[i].fConsequent);
+    node->fMappings[i].fConsequent = transformNode(node->fMappings[i].fConsequent);
   }
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(OnNode* node)
 {
   transformNodeList(node->params());
-  transformNode(node->body());
+  node->fBody = transformNode(node->body());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(RangeNode* node)
 {
-  transformNode(node->from());
-  transformNode(node->to());
+  node->fFrom = transformNode(node->from());
+  node->fTo = transformNode(node->to());
   if (node->by() != NULL)
-    transformNode(node->by());
+    node->fBy = transformNode(node->by());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(ThenWhileNode* node)
 {
-  transformNode(node->first());
-  transformNode(node->step());
-  transformNode(node->test());
+  node->fFirst = transformNode(node->first());
+  node->fStep = transformNode(node->step());
+  node->fTest = transformNode(node->test());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(TypeDefNode* node)
 {
+  // TODO
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(WhileNode* node)
 {
-  transformNode(node->test());
-  transformNode(node->body());
+  node->fTest = transformNode(node->test());
+  node->fBody = transformNode(node->body());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(VectorNode* node)
 {
   transformNodeList(node->children());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(DictNode* node)
 {
   transformNodeList(node->children());
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(CastNode* node)
 {
-  transformNode(node->base());
+  node->fBase = transformNode(node->base());
+  return node;
 }
 
 
 //------------------------------------------------------------------------------
 
-void
+AptNode*
 Transformator::transform(BoolNode* node)
 {
   // Nothing to transform here
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(CharNode* node)
 {
   // Nothing to transform here
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(StringNode* node)
 {
   // Nothing to transform here
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(RationalNode* node)
 {
   // Nothing to transform here
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(RealNode* node)
 {
   // Nothing to transform here
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(IntNode* node)
 {
   // Nothing to transform here
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(KeywordNode* node)
 {
   // Nothing to transform here
+  return node;
 }
 
 
-void
+AptNode*
 Transformator::transform(UnitConstNode* node)
 {
-  transformNode(node->value());
+  node->fValue = transformNode(node->value());
+  return node;
 }
 
 
