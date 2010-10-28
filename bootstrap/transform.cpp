@@ -192,9 +192,60 @@ Transformator::findBlockSplitIndex(const NodeList& nodes)
 
 
 void
+Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
+{
+  // If there's no code other than the 'on exit' handler in the scope we
+  // can inline the handler codes directly.  Make the handler's
+  // parameter (the return value of the block) a local variable and
+  // initialize it to 'unspecified' (the value of an empty blocks)
+  // unless the parameter has a default value already.  Issue a warning
+  // anyway, since this situation is most likely a programming error.
+  warningf(onnd->srcpos(), E_OrphanedOnExit,
+           "orphaned 'on exit' handler parameter");
+  assert(onnd->params().size() == 1);
+  ParamNode* onPrmNode = dynamic_cast<ParamNode*>(onnd->params()[0].obj());
+  assert(onPrmNode != NULL);
+
+  Ptr<AptNode> initExpr = ( onPrmNode->initExpr() != NULL
+                            ? onPrmNode->initExpr()
+                            : new SymbolNode(onPrmNode->srcpos(),
+                                             String("unspecified")) );
+  NodeList nl;
+  nl.push_back(new LetNode(new VardefNode(onPrmNode->srcpos(),
+                                          onPrmNode->name(), kNormalVar, true,
+                                          onPrmNode->type(),
+                                          initExpr)));
+  nl.push_back(onnd->body());
+
+  node->children().clear();
+  node->appendNodes(nl);
+
+  transformNodeList(node->children());
+}
+
+
+void
 Transformator::transform(BlockNode* node)
 {
-  const NodeList& nodes = node->children();
+  NodeList& nodes = node->children();
+  if (nodes.size() == 1) {
+    OnNode* onnd = dynamic_cast<OnNode*>(nodes[0].obj());
+    if (onnd != NULL) {
+      if (onnd->key() == String("signal")) {
+        // if a block contains a single "on signal" node we can drop the
+        // complete block, since there's no code in the scope which could
+        // raise any signal.  So the signal code is effectively dead.  Print a
+        // warning though.
+        warningf(onnd->srcpos(), E_UnreachableCode,
+                 "unreachable code in orphaned 'on signal' handler");
+        // TODO
+      }
+      else if (onnd->key() == String("exit")) {
+        return transformSingleOnExitBlock(node, onnd);
+      }
+    }
+  }
+
   int idx = findBlockSplitIndex(nodes);
 
   if (idx > 0) {

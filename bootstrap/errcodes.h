@@ -118,6 +118,8 @@ namespace heather
 
     // on
     E_UnknownOnKey        = 0x4301,
+    E_UnreachableCode     = 0x4302,
+    E_OrphanedOnExit      = 0x4303,
 
     // expressions
     E_MissingRHExpr       = 0x4400,
