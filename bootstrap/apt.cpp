@@ -175,10 +175,10 @@ StringNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 StringNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -220,10 +220,10 @@ KeywordNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 KeywordNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -321,10 +321,10 @@ SymbolNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 SymbolNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -364,10 +364,10 @@ ArraySymbolNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 ArraySymbolNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -410,10 +410,10 @@ IntNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 IntNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -456,10 +456,10 @@ RealNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 RealNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -503,10 +503,10 @@ RationalNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 RationalNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -546,10 +546,10 @@ CharNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 CharNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -589,10 +589,10 @@ BoolNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 BoolNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -635,10 +635,10 @@ UnitConstNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 UnitConstNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -679,10 +679,10 @@ CompileUnitNode::annotate(Annotator* annotator)
 }
 
 
-void
+AptNode*
 CompileUnitNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -736,10 +736,10 @@ LetNode::annotate(Annotator* annotator)
 }
 
 
-void
+AptNode*
 LetNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -778,10 +778,10 @@ DefNode::annotate(Annotator* annotator)
 }
 
 
-void
+AptNode*
 DefNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -930,10 +930,10 @@ VardefNode::annotate(Annotator* annotator)
 }
 
 
-void
+AptNode*
 VardefNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1003,10 +1003,10 @@ ParamNode::annotate(Annotator* annotator)
 }
 
 
-void
+AptNode*
 ParamNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1051,10 +1051,10 @@ SlotdefNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 SlotdefNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1095,10 +1095,10 @@ ArrayNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 ArrayNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1139,10 +1139,10 @@ VectorNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 VectorNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1193,10 +1193,10 @@ DictNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 DictNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1285,10 +1285,10 @@ BinaryNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 BinaryNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1342,10 +1342,10 @@ NegateNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 NegateNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1411,10 +1411,10 @@ RangeNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 RangeNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1460,10 +1460,10 @@ ThenWhileNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 ThenWhileNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1501,6 +1501,20 @@ AssignNode::rvalue() const
 
 
 void
+AssignNode::setLvalue(AptNode* val)
+{
+  fLValue = val;
+}
+
+
+void
+AssignNode::setRvalue(AptNode* val)
+{
+  fRValue = val;
+}
+
+
+void
 AssignNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
@@ -1521,10 +1535,10 @@ AssignNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 AssignNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1598,10 +1612,10 @@ IfNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 IfNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1692,10 +1706,10 @@ SelectNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 SelectNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1775,10 +1789,10 @@ MatchNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 MatchNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1824,10 +1838,10 @@ OnNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 OnNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1903,10 +1917,10 @@ BlockNode::annotate(Annotator* annotator)
 }
 
 
-void
+AptNode*
 BlockNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -1968,10 +1982,10 @@ FunctionNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 FunctionNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -2059,10 +2073,10 @@ FuncDefNode::annotate(Annotator* annotator)
 }
 
 
-void
+AptNode*
 FuncDefNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -2112,10 +2126,10 @@ ApplyNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 ApplyNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -2157,10 +2171,10 @@ KeyargNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 KeyargNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -2217,10 +2231,10 @@ WhileNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 WhileNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -2278,10 +2292,10 @@ TypeDefNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 TypeDefNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 
@@ -2338,10 +2352,10 @@ CastNode::annotate(Annotator* an)
 }
 
 
-void
+AptNode*
 CastNode::transform(Transformator* tr)
 {
-  tr->transform(this);
+  return tr->transform(this);
 }
 
 

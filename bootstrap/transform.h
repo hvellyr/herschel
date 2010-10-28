@@ -65,48 +65,48 @@ namespace heather
   public:
     Transformator();
 
-    void transformNode(AptNode* node);
+    AptNode* transformNode(AptNode* node);
 
-    void transform(CompileUnitNode* node);
+    AptNode* transform(CompileUnitNode* node);
 
-    void transform(SymbolNode* node);
+    AptNode* transform(SymbolNode* node);
 
-    void transform(DefNode* node);
-    void transform(LetNode* node);
-    void transform(BlockNode* node);
+    AptNode* transform(DefNode* node);
+    AptNode* transform(LetNode* node);
+    AptNode* transform(BlockNode* node);
 
-    void transform(ParamNode* node);
+    AptNode* transform(ParamNode* node);
 
-    void transform(ApplyNode* node);
-    void transform(ArrayNode* node);
-    void transform(ArraySymbolNode* node);
-    void transform(AssignNode* node);
-    void transform(BinaryNode* node);
-    void transform(BoolNode* node);
-    void transform(CastNode* node);
-    void transform(CharNode* node);
-    void transform(DictNode* node);
-    void transform(FunctionNode* node);
-    void transform(IfNode* node);
-    void transform(IntNode* node);
-    void transform(KeyargNode* node);
-    void transform(KeywordNode* node);
-    void transform(MatchNode* node);
-    void transform(NegateNode* node);
-    void transform(OnNode* node);
-    void transform(RangeNode* node);
-    void transform(RationalNode* node);
-    void transform(RealNode* node);
-    void transform(SelectNode* node);
-    void transform(SlotdefNode* node);
-    void transform(StringNode* node);
-    void transform(ThenWhileNode* node);
-    void transform(TypeDefNode* node);
-    void transform(UnitConstNode* node);
-    void transform(VectorNode* node);
-    void transform(WhileNode* node);
-    void transform(VardefNode* node);
-    void transform(FuncDefNode* node);
+    AptNode* transform(ApplyNode* node);
+    AptNode* transform(ArrayNode* node);
+    AptNode* transform(ArraySymbolNode* node);
+    AptNode* transform(AssignNode* node);
+    AptNode* transform(BinaryNode* node);
+    AptNode* transform(BoolNode* node);
+    AptNode* transform(CastNode* node);
+    AptNode* transform(CharNode* node);
+    AptNode* transform(DictNode* node);
+    AptNode* transform(FunctionNode* node);
+    AptNode* transform(IfNode* node);
+    AptNode* transform(IntNode* node);
+    AptNode* transform(KeyargNode* node);
+    AptNode* transform(KeywordNode* node);
+    AptNode* transform(MatchNode* node);
+    AptNode* transform(NegateNode* node);
+    AptNode* transform(OnNode* node);
+    AptNode* transform(RangeNode* node);
+    AptNode* transform(RationalNode* node);
+    AptNode* transform(RealNode* node);
+    AptNode* transform(SelectNode* node);
+    AptNode* transform(SlotdefNode* node);
+    AptNode* transform(StringNode* node);
+    AptNode* transform(ThenWhileNode* node);
+    AptNode* transform(TypeDefNode* node);
+    AptNode* transform(UnitConstNode* node);
+    AptNode* transform(VectorNode* node);
+    AptNode* transform(WhileNode* node);
+    AptNode* transform(VardefNode* node);
+    AptNode* transform(FuncDefNode* node);
 
   private:
     void transformNodeList(NodeList& nl);
