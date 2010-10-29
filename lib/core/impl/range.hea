@@ -1,4 +1,4 @@
--- This file is part of the heather package 
+-- This file is part of the heather package
 --
 -- Copyright (c) 2010 Gregor Klinke
 -- All rights reserved.
@@ -36,41 +36,45 @@ export public(*)
 import "core/range.hea"
 
 
-def size(range @ Range<T>) : Int
+def size(range @ Range<'T>) : Int
     ~ Returns @var{range}'s size.  This is the distance between last and
   first. ~
   last - first
 
 
-def center(range @ Range<T>) : Int
+def center(range @ Range<'T>) : Int
     ~ Returns @var{range}'s center (rounded to @type{T}'s resolution). ~
-  (last + first) / (2 as T)
+  (last + first) / (2 as 'T)
 
 
-def equal?(one @ Range<T>, two @ Range<T>) : Bool
+def equal?(one @ 'R, two @ 'R) : Bool
+    where R isa Range<'T>
     ~ Indicates whether @var{one} is equal to @var{two}. ~
   one.first == two.first and one.last == two.last
 
 
-def unequal?(one @ Range<T>, two @ Range<T>) : Bool
+def unequal?(one @ 'R, two @ 'R) : Bool
+    where R isa Range<'T>
     ~ Indicates whether @var{one} is not equal to @var{two}. ~
   one.first <> two.first or one.last <> two.last
 
 
-def in-range?(range @ Range<T>, value @ 'T) : Bool
+def in-range?(range @ Range<'T>, value @ 'T) : Bool
     ~ Indicates whether @var{value} is in @var{range}. ~
-  if (one.first <= one.last)  
+  if (one.first <= one.last)
     value >= one.first and value <= one.last
   else
     value >= one.last and value <= one.first
 
 
-def intersect?(one @ Range<T>, two @ Range<T>) : Bool
+def intersect?(one @ 'R, two @ 'R) : Bool
+    where R isa Range<'T>
     ~ Indicates whether @var{one} and @var{two} intersects. ~
   one.first < two.last and two.first < one.last
 
 
-def intersect(one @ Range<T>, two @ Range<T>) : Range<T>
+def intersect(one @ 'R, two @ 'R) : 'R
+    where R isa Range<'T>
     ~ Returns a new range of the intersection of @var{one} and @var{two}. ~
   Range<T>(max(one.first, two.first),
            min(one.last, two.last))
