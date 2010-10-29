@@ -11,6 +11,7 @@
 #include <map>
 
 #include "properties.h"
+#include "log.h"
 #include "str.h"
 #include "ptr.h"
 #include "token.h"
@@ -20,20 +21,25 @@
 
 using namespace heather;
 
-static bool sVerbose = false;
-static bool sIsTokenizerTracing = false;
-static bool sIsPass1Tracing = false;
-static bool sIsPass2Tracing = false;
-static bool sIsImportFileTracing = false;
-static bool sIsMacroTracing = false;
 #if defined(UNITTESTS)
 static bool sDontImport = false;
 #endif
-static bool sShouldIgnoreDocStrings = true;
-static bool sPass1Only = false;
-static String sOutdir;
+
+static CompileOutFormat sCompileOutFormat = kLLVM_IR;
+static OptimizeLevel sOptLevel = kOptLevelBasic;
 static Ptr<ConfigVarRegistry> sConfigVarRegistry;
+static String sOutdir;
 static StringVector sInputSearchPath;
+static bool sIsImportFileTracing = false;
+static bool sIsMacroTracing = false;
+static bool sIsPass1Tracing = false;
+static bool sIsPass2Tracing = false;
+static bool sIsAnnotateTracing = false;
+static bool sIsTransformTracing = false;
+static bool sIsTokenizerTracing = false;
+static int sPassLevel = 4;
+static bool sShouldIgnoreDocStrings = true;
+static bool sVerbose = false;
 
 void
 Properties::setIsVerbose(bool value)
@@ -64,6 +70,34 @@ Properties::outdir()
 
 
 void
+Properties::setCompileOutFormat(CompileOutFormat format)
+{
+  sCompileOutFormat = format;
+}
+
+
+CompileOutFormat
+Properties::compileOutFormat()
+{
+  return sCompileOutFormat;
+}
+
+
+void
+Properties::setOptimizeLevel(OptimizeLevel optLevel)
+{
+  sOptLevel = optLevel;
+}
+
+
+OptimizeLevel
+Properties::optimizeLevel()
+{
+  return sOptLevel;
+}
+
+
+void
 Properties::setTrace(const String& key, bool value)
 {
   if (key == String("tokenizer"))
@@ -72,6 +106,10 @@ Properties::setTrace(const String& key, bool value)
     sIsPass1Tracing = value;
   else if (key == String("pass2"))
     sIsPass2Tracing = value;
+  else if (key == String("annotate"))
+    sIsAnnotateTracing = value;
+  else if (key == String("transform"))
+    sIsTransformTracing = value;
   else if (key == String("import"))
     sIsImportFileTracing = value;
   else if (key == String("macro"))
@@ -116,6 +154,20 @@ Properties::isTracePass2()
 
 
 bool
+Properties::isTraceAnnotate()
+{
+  return sIsAnnotateTracing;
+}
+
+
+bool
+Properties::isTraceTransform()
+{
+  return sIsTransformTracing;
+}
+
+
+bool
 Properties::isTraceImportFile()
 {
   return sIsImportFileTracing;
@@ -145,7 +197,7 @@ Properties::setConfigVar(const String& keyValuePair)
                                                  kString, value));
   }
   else
-    fprintf(stderr, "ERROR: bad key-value pair for config key.  Ignored\n");
+    logf(kError, "bad key-value pair for config key.  Ignored\n");
 }
 
 
@@ -173,16 +225,16 @@ Properties::test_dontImport()
 
 
 void
-Properties::test_setPass1Only(bool value)
+Properties::test_setPassLevel(int level)
 {
-  sPass1Only = value;
+  sPassLevel = level;
 }
 
 
-bool
-Properties::test_pass1Only()
+int
+Properties::test_passLevel()
 {
-  return sPass1Only;
+  return sPassLevel;
 }
 
 #endif

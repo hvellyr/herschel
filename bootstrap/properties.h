@@ -20,6 +20,19 @@ namespace heather
 
   typedef std::vector<String> StringVector;
 
+  enum CompileOutFormat
+  {
+    kNativeObject,
+    kLLVM_IR,
+    kLLVM_BC
+  };
+
+  enum OptimizeLevel
+  {
+    kOptLevelNone,
+    kOptLevelBasic
+  };
+
   class Properties
   {
   public:
@@ -29,12 +42,21 @@ namespace heather
     static void setOutdir(const String& outdir);
     static String outdir();
 
+    static void setCompileOutFormat(CompileOutFormat format);
+    static CompileOutFormat compileOutFormat();
+
+    static void setOptimizeLevel(OptimizeLevel optLevel);
+    static OptimizeLevel optimizeLevel();
+
     static void setTrace(const String& key, bool value);
     static void setTraces(const String& argument);
 
     static bool isTraceTokenizer();
     static bool isTracePass1();
     static bool isTracePass2();
+    static bool isTraceAnnotate();
+    static bool isTraceTransform();
+
     static bool isTraceImportFile();
     static bool isTraceMacro();
 
@@ -48,8 +70,8 @@ namespace heather
     static void test_setDontImport(bool value);
     static bool test_dontImport();
 
-    static void test_setPass1Only(bool value);
-    static bool test_pass1Only();
+    static void test_setPassLevel(int level);
+    static int test_passLevel();
 #endif
 
     static bool shouldIgnoreDocStrings();

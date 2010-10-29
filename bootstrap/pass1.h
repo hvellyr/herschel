@@ -40,6 +40,8 @@ namespace heather
     FirstPass(Parser* parser, const Token& currentToken, Scope* scope);
 
     Token nextToken();
+    Token currentToken();
+
     void unreadToken(const Token& token);
 
     //! first pass parse
@@ -66,6 +68,8 @@ namespace heather
     friend struct SpecParamParamSyntaxMatcher;
     friend struct ParamListParamSyntax;
 
+    friend class ExternCParser;
+
     enum ScopeType {
       kNonScopedDef,
       kInTypeDef,
@@ -87,10 +91,13 @@ namespace heather
     TokenVector parseVarDef(const Token& defToken, const Token& tagToken,
                             bool isLocal);
     TokenVector parseVarDef2(const Token& defToken, const Token& tagToken,
-                             const Token& symbolToken, bool isLocal);
+                             const Token& symbolToken, bool isLocal,
+                             const Token& linkage);
     Token parseFunctionDef(const Token& defToken, const Token& tagToken,
-                           const Token& symToken, bool isLocal);
-    TokenVector parseFunctionOrVarDef(const Token& defToken, bool isLocal);
+                           const Token& symToken, bool isLocal,
+                           const Token& linkage);
+    TokenVector parseFunctionOrVarDef(const Token& defToken, bool isLocal,
+                                      const Token& linkage);
     Token parseSelect();
     Token parseMatch();
     Token parseFor();
@@ -165,6 +172,8 @@ namespace heather
 
     Token parseWhen(bool isTopLevel, ScopeType scope);
     Token parseExtend(ScopeType scope);
+
+    TokenVector parseExtern();
 
     bool scanBlock(bool isTopLevel, ScopeType scope);
 
@@ -256,6 +265,8 @@ namespace heather
 
     Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 
+
+    Token parseLinkageType();
 
     //-------- data members
 

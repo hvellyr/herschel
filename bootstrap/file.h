@@ -28,6 +28,7 @@ namespace heather
     bool isAbsolutePath(const String& path);
     bool hasExtension(const String& path);
 
+    String append(const String& path, const String& name);
     String appendDir(const String& path, const String& dirName);
     String appendFile(const String& path, const String& name);
     String appendExt(const String& path, const String& ext);

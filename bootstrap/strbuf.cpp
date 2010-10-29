@@ -68,7 +68,8 @@ StringBuffer::operator<<(const StringBuffer& other)
 }
 
 
-StringBuffer& StringBuffer::operator<<(const String& other)
+StringBuffer&
+StringBuffer::operator<<(const String& other)
 {
   size_t items = other.length();
   if (items > 0) {
@@ -80,7 +81,8 @@ StringBuffer& StringBuffer::operator<<(const String& other)
 }
 
 
-StringBuffer& StringBuffer::operator<<(const char* utf8)
+StringBuffer&
+StringBuffer::operator<<(const char* utf8)
 {
   int utf8len = ::strlen(utf8);
   int reqlen = str_utf8_to_wcs(utf8, utf8len, NULL, 0);
@@ -114,6 +116,59 @@ StringBuffer::operator[] (int atIndex) const
 {
   assert(atIndex >= 0 && atIndex < int(fBuffer.size()));
   return fBuffer[atIndex];
+}
+
+
+void
+StringBuffer::setAtIndex(int atIndex, Char c)
+{
+  assert(atIndex >= 0 && atIndex < int(fBuffer.size()));
+  fBuffer[atIndex] = c;
+}
+
+
+void
+StringBuffer::setAtIndex(int atIndex, const String& other)
+{
+  assert(atIndex >= 0 && atIndex + other.length() < int(fBuffer.size()));
+  for (int i = 0; i < other.length(); i++)
+    fBuffer[atIndex + i] = other[i];
+}
+
+
+StringBuffer&
+StringBuffer::insertAt(int atIndex, Char c)
+{
+  fBuffer.insert(fBuffer.begin() + atIndex, c);
+  return *this;
+}
+
+StringBuffer&
+StringBuffer::insertAt(int atIndex, const String& other)
+{
+  size_t items = other.length();
+  if (items > 0) {
+    fBuffer.insert(fBuffer.begin() + atIndex, items, ' ');
+    ::memcpy(&fBuffer[atIndex], other.data(), items * sizeof(Char));
+  }
+  return *this;
+}
+
+
+StringBuffer&
+StringBuffer::insertAt(int atIndex, const char* utf8)
+{
+  int utf8len = ::strlen(utf8);
+  int reqlen = str_utf8_to_wcs(utf8, utf8len, NULL, 0);
+
+  if (reqlen > 0) {
+    fBuffer.insert(fBuffer.begin() + atIndex, reqlen, ' ');
+
+    int reallen = str_utf8_to_wcs(utf8, utf8len,
+                                  &fBuffer[atIndex], reqlen);
+    assert(reallen == reqlen);
+  }
+  return *this;
 }
 
 
@@ -199,6 +254,59 @@ SUITE(StringBuffer)
     buf9 << "" << String("");
     CHECK_EQUAL(buf9.length(), 0);
     CHECK(buf9.isEmpty());
+  }
+
+  TEST(SetAtIndex1)
+  {
+    StringBuffer buf;
+    buf << "__QN..core/2fcc";
+    buf.setAtIndex(4, String("09"));
+    CHECK_EQUAL(String("__QN09core/2fcc"), buf.toString());
+
+    buf.setAtIndex(14, Char('x'));
+    CHECK_EQUAL(String("__QN09core/2fcx"), buf.toString());
+  }
+
+  TEST(InsertAt1)
+  {
+    StringBuffer buf;
+    buf << "__QNcore/2fcc";
+    buf.insertAt(4, "9");
+    CHECK_EQUAL(String("__QN9core/2fcc"), buf.toString());
+
+    buf.insertAt(0, "1234");
+    CHECK_EQUAL(String("1234__QN9core/2fcc"), buf.toString());
+
+    buf.insertAt(18, "5432");
+    CHECK_EQUAL(String("1234__QN9core/2fcc5432"), buf.toString());
+  }
+
+  TEST(InsertAt2)
+  {
+    StringBuffer buf;
+    buf << "__QNcore/2fcc";
+    buf.insertAt(4, String("9"));
+    CHECK_EQUAL(String("__QN9core/2fcc"), buf.toString());
+
+    buf.insertAt(0, String("1234"));
+    CHECK_EQUAL(String("1234__QN9core/2fcc"), buf.toString());
+
+    buf.insertAt(18, String("5432"));
+    CHECK_EQUAL(String("1234__QN9core/2fcc5432"), buf.toString());
+  }
+
+  TEST(InsertAt3)
+  {
+    StringBuffer buf;
+    buf << "__QNcore/2fcc";
+    buf.insertAt(4, Char('9'));
+    CHECK_EQUAL(String("__QN9core/2fcc"), buf.toString());
+
+    buf.insertAt(0, Char('x'));
+    CHECK_EQUAL(String("x__QN9core/2fcc"), buf.toString());
+
+    buf.insertAt(15, Char('!'));
+    CHECK_EQUAL(String("x__QN9core/2fcc!"), buf.toString());
   }
 }
 

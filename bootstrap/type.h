@@ -60,38 +60,12 @@ namespace heather
   {
     kType_Undefined,
 
-    kType_Any,
-
     kType_Ref,
-
-    kType_Octet,
-    kType_Short,
-    kType_UShort,
-    kType_Word,
-    kType_UWord,
-    kType_Long,
-    kType_ULong,
-    kType_Int,
-    kType_Real,
-    kType_Rational,
-    kType_Float,
-    kType_Double,
-    kType_LongDouble,
-
-    kType_Bool,
-    kType_Char,
-    kType_Keyword,
-    kType_String,
-
-    kType_Eof,
-    kType_Nil,
-    kType_Unspecified,
 
     kType_Array,
 
     kType_Function,
     kType_Measure,
-    kType_Enum,
     kType_Class,
     kType_Type,
     kType_Alias,
@@ -135,24 +109,10 @@ namespace heather
 
     static Type newAny(bool isValue = true);
 
-    static Type newBool(bool isValue = true);
-    static Type newChar(bool isValue = true);
     static Type newInt(bool isValue = true);
-    static Type newKeyword(bool isValue = true);
-    static Type newLong(bool isValue = true);
-    static Type newOctet(bool isValue = true);
     static Type newRational(bool isValue = true);
     static Type newReal(bool isValue = true);
-    static Type newShort(bool isValue = true);
     static Type newString(bool isValue = true);
-    static Type newULong(bool isValue = true);
-    static Type newUShort(bool isValue = true);
-    static Type newUWord(bool isValue = true);
-    static Type newWord(bool isValue = true);
-
-    static Type newEof();
-    static Type newNil();
-    static Type newUnspecified();
 
     //! Creates a new Type type-instance.  This represents a specific type,
     //! not the type template/definition.  Therefore all (possible) type
@@ -175,9 +135,6 @@ namespace heather
 
     static Type newMeasure(const String& name, const Type& baseType,
                            const String& defUnit);
-
-    static Type newEnum(const String& name, const Type& baseType,
-                        const StringTokenMap& defUnit);
 
     static Type newFunction(const FunctionSignature& sign);
     static Type newUnion(const TypeVector& types, bool isValue);
@@ -208,33 +165,13 @@ namespace heather
 
     //!@ base and builtin types
     //! indicates whether the type is a base type
-    bool isBase() const;
-    bool isBaseOrBaseRef() const;
-
-    bool isBuiltinType(TypeKind kind, const String& name) const;
+    bool isBaseType() const;
 
     bool isAny() const;
 
     bool isInt() const;
     bool isString() const;
     bool isReal() const;
-    bool isKeyword() const;
-    bool isOctet() const;
-    bool isShort() const;
-    bool isWord() const;
-    bool isLong() const;
-    bool isUShort() const;
-    bool isUWord() const;
-    bool isULong() const;
-    bool isFloat() const;
-    bool isDouble() const;
-    bool isLongDouble() const;
-
-    bool isBool() const;
-    bool isChar() const;
-    bool isEof() const;
-    bool isNil() const;
-    bool isRational() const;
 
     TypeEnumMaker* newBaseTypeEnumMaker() const;
 
@@ -279,12 +216,6 @@ namespace heather
     //!@ sequence types
     bool isSequence() const;
     const TypeVector& seqTypes() const;
-
-
-    //!@ enum types
-    bool isEnum() const;
-    const Type& enumBaseType() const;
-    const TokenVector& enumValues() const;
 
 
     //!@ measure types
@@ -335,6 +266,8 @@ namespace heather
 
   private:
     Type(TypeKind kind, bool isValue, TypeImpl* impl);
+
+    bool isBuiltinType(const String& name) const;
 
     TypeKind      fKind;
     bool          fIsValue;

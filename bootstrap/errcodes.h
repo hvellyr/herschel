@@ -30,15 +30,6 @@ namespace heather
     E_MapToExpected       = 0x000d,
     E_MissingApos         = 0x000e,
 
-    E_SymbolExpected      = 0x1001,
-    E_StringExpected      = 0x1002,
-    E_UnexpectedTopExpr   = 0x1003,
-    E_ConstExprExpected   = 0x1004,
-    E_UnexpectedDefExpr   = 0x1005,
-    E_OnExprInType        = 0x1006,
-
-    E_AmbiguousSym        = 0x2000,
-
     // notation errors
     E_UnexpectedChar      = 0x0100,
     E_BadHashNotation     = 0x0101,
@@ -53,6 +44,17 @@ namespace heather
     E_UndefinedUnit       = 0x010a,
     E_OrphanedMultiValue  = 0x010b,
     E_OrphanedRestInd     = 0x010c,
+
+    E_SymbolExpected      = 0x1001,
+    E_StringExpected      = 0x1002,
+    E_UnexpectedTopExpr   = 0x1003,
+    E_ConstExprExpected   = 0x1004,
+    E_UnexpectedDefExpr   = 0x1005,
+    E_OnExprInType        = 0x1006,
+
+    E_AmbiguousSym        = 0x2000,
+
+    E_UnknownLinkage      = 0x2100,
 
     // def parsing
     E_Redefinition        = 0x4000,
@@ -116,17 +118,22 @@ namespace heather
 
     // on
     E_UnknownOnKey        = 0x4301,
+    E_UnreachableCode     = 0x4302,
+    E_OrphanedOnExit      = 0x4303,
 
     // expressions
     E_MissingRHExpr       = 0x4400,
     E_BadLHExpr           = 0x4401,
 
     // select, match
-    E_BadPatternList      = 0x4401,
     E_RedefinedPattern    = 0x4402,
     E_ColonExpected       = 0x4403,
     E_ExpectedPipe        = 0x4404,
     E_ElseNotLastPattern  = 0x4405,
+    E_BadPatternList      = 0x4406,
+
+    E_UndefinedVar        = 0x4410,
+    E_BadType             = 0x4411,
 
     // module parsing
     E_MissingModName      = 0x4500,
@@ -137,6 +144,11 @@ namespace heather
     E_EmptyExportList     = 0x4541,
     E_UnknownInputFile    = 0x4542,
     E_UnknownVisibility   = 0x4543,
+
+
+    // external C syntax
+    E_BadCSyntax          = 0xe000,
+    E_UnexpLinkage        = 0xe001,
   };
 };
 

@@ -179,3 +179,15 @@ heather::warning(const SrcPos& where, int errorCode, const String& msg)
 }
 
 
+void
+heather::warningf(const SrcPos& where, int errorCode, const char* format, ...)
+{
+  char buffer[2048];
+
+  va_list args;
+  va_start(args, format);
+  vsnprintf(buffer, 2048, format, args);
+  va_end(args);
+
+  logImpl(where, kWarn, errorCode, stderr, buffer);
+}

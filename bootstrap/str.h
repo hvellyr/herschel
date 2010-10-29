@@ -12,6 +12,7 @@
 #include "common.h"
 
 #include <vector>
+#include <string>
 #if defined(UNITTESTS)
 #  include <iostream>
 #endif
@@ -81,6 +82,8 @@ namespace heather
     int toInt(int radix = 10) const;
     double toDouble() const;
 
+    operator std::string() const;
+
   private:
     friend class StringBuffer;
 
@@ -102,6 +105,9 @@ namespace heather
 
   int str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems);
   int str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems);
+
+  String uniqueName(const char* prefix);
+
 
   class StrHelper
   {
@@ -136,7 +142,6 @@ namespace heather
   std::ostream& operator<<(std::ostream& os, const String& str);
   std::ostream& operator<<(std::ostream& os, char c);
 #endif
-
 };
 
 #endif  // bootstrap_str_h

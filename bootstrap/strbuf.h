@@ -35,6 +35,13 @@ namespace heather
 
     Char operator[] (int atIndex) const;
 
+    void setAtIndex(int atIndex, Char c);
+    void setAtIndex(int atIndex, const String& other);
+
+    StringBuffer& insertAt(int atIndex, Char c);
+    StringBuffer& insertAt(int atIndex, const String& other);
+    StringBuffer& insertAt(int atIndex, const char* utf8);
+
     String toString() const;
 
   private:

@@ -265,8 +265,9 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       { String(MID_EofId),       kEofId        },
       { String(MID_ExportId),    kExportId     },
       { String(MID_ExtendId),    kExtendId     },
-      { String(MID_ForId),       kForId        },
+      { String(MID_ExternId),    kExternId     },
       { String(MID_FUNCTIONId),  kFUNCTIONId   },
+      { String(MID_ForId),       kForId        },
       { String(MID_FunctionId),  kFunctionId   },
       { String(MID_IfId),        kIfId         },
       { String(MID_ImportId),    kImportId     },
@@ -882,7 +883,7 @@ SUITE(Tokenizer)
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kReal, 3.1415).setIsImaginary(true));
     }
     catch (const Exception& ne) {
-      fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      logf(kError, StrHelper(ne.message()));
     }
   }
 
@@ -915,7 +916,7 @@ SUITE(Tokenizer)
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kChar, 0xacf5));
     }
     catch (const Exception& ne) {
-      fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      logf(kError, StrHelper(ne.message()));
     }
   }
 
@@ -997,7 +998,7 @@ SUITE(Tokenizer)
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 4));
     }
     catch (const Exception& ne) {
-      fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      logf(kError, StrHelper(ne.message()));
     }
   }
 
@@ -1043,7 +1044,7 @@ SUITE(Tokenizer)
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kParanClose));
     }
     catch (const Exception& ne) {
-      fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      logf(kError, StrHelper(ne.message()));
     }
   }
 
@@ -1202,7 +1203,7 @@ SUITE(Tokenizer)
       CHECK_EQUAL(tnz.nextToken(), Token(sp, String("->abc")));
     }
     catch (const Exception& ne) {
-      fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      logf(kError, StrHelper(ne.message()));
     }
   }
 
@@ -1237,7 +1238,7 @@ SUITE(Tokenizer)
       CHECK_EQUAL(tnz.nextToken(), Token(sp, String("mm")));
     }
     catch (const Exception& ne) {
-      fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      logf(kError, StrHelper(ne.message()));
     }
   }
 
@@ -1263,7 +1264,7 @@ SUITE(Tokenizer)
       }
     }
     catch (const Exception& ne) {
-      fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      logf(kError, StrHelper(ne.message()));
     }
   }
 
@@ -1282,7 +1283,7 @@ SUITE(Tokenizer)
       assert(tnz.nextToken() == Token(sp, kMacroClose));
     }
     catch (const Exception& ne) {
-      fprintf(stderr, "ERROR: %s\n", (const char*)StrHelper(ne.message()));
+      logf(kError, StrHelper(ne.message()));
     }
   }
 }
