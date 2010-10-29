@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>def</id><id>config</id><id>os</id><punct type='='/><lit type='str'>linux</lit></seq><seq><id>def</id><id>config</id><id>cfg</id><punct type='='/><lit type='str'>LE</lit></seq><seq><id>import</id><lit type='str'>linux/little-endian.head</lit></seq></seq>

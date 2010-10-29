@@ -1,0 +1,3 @@
+def a = f.g.h(1)
+def b = f().g()
+def c = f()().g()

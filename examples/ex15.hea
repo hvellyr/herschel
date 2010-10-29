@@ -1,0 +1,22 @@
+def macro fluidx
+{
+  { def fluidx ?n:name = ?e:expr } -> { def ?n = register-fluidx(?n, ?e) }
+  { let fluidx ?n:name = ?e:expr } -> { let ?n = register-fluidx(?n, ?e) }
+}
+
+def macro mutex
+{
+  { def mutex ?n:name (global) = ?init:expr }
+    -> { def ?n = InterprocessMutex(?init) }
+  { def mutex ?n:name (local) = ?init:expr }
+    -> { def ?n = CriticalSection(?init) }
+}
+
+
+def fluidx abc = 11
+
+def mutex NetworkQueue(local) = 128
+
+def h()
+  let fluidx xyz = 24
+  xyz
