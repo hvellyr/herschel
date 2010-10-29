@@ -14,8 +14,11 @@
 #include <string.h>
 
 #include "str.h"
+#include "strbuf.h"
 #include "refcountable.h"
 #include "exception.h"
+
+#include <string>
 
 #if defined(UNITTESTS)
 #  include <iostream>
@@ -501,6 +504,12 @@ String::toDouble() const
 }
 
 
+String::operator std::string() const
+{
+  return std::string(StrHelper(*this));
+}
+
+
 //----------------------------------------------------------------------------
 
 static int
@@ -791,6 +800,16 @@ String
 heather::xmlEncode(const char* str)
 {
   return xmlEncode(String(str));
+}
+
+
+String
+heather::uniqueName(const char* prefix)
+{
+  static int counter = 0;
+  StringBuffer buffer;
+  buffer << "__" << prefix << "_" << fromInt(counter++);
+  return buffer.toString();
 }
 
 

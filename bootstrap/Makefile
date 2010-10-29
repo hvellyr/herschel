@@ -8,10 +8,21 @@ top_srcdir=..
 
 include $(top_srcdir)/config.mk
 
-CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTest++/src
+LLVM_ROOT = $(top_srcdir)/external/llvm/
+
+LLVM_CPPFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --cppflags)
+LLVM_LDFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --ldflags --libs) # core jit native)
+
+CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTest++/src \
+	$(LLVM_CPPFLAGS)
+
+LDFLAGS += $(LLVM_LDFLAGS)
 
 SOURCES =         \
+	annotate.cpp    \
 	apt.cpp         \
+	codegen.cpp     \
+	externc.cpp     \
 	file.cpp        \
 	heather.cpp     \
 	log.cpp         \
@@ -34,16 +45,21 @@ SOURCES =         \
 	tokeneval.cpp   \
 	tokenizer.cpp   \
 	tokenport.cpp   \
+	transform.cpp   \
 	type.cpp        \
 	typeenum.cpp    \
 	typectx.cpp     \
-	valuesaver.cpp
+	valuesaver.cpp  \
+	xmlout.cpp
 
 HEADERS =         \
+	annotate.h      \
 	apt.h           \
+	codegen.h       \
 	common.h        \
 	errcodes.h      \
 	exception.h     \
+	externc.h       \
 	file.h          \
 	log.h           \
 	macro.h         \
@@ -68,10 +84,12 @@ HEADERS =         \
 	tokeneval.h     \
 	tokenizer.h     \
 	tokenport.h     \
+	transform.h     \
 	type.h          \
 	typeenum.h      \
 	typectx.h       \
-	valuesaver.h
+	valuesaver.h    \
+	xmlout.h
 
 
 # ifeq ($(TARGET_OS),mac)

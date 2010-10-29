@@ -8,6 +8,19 @@ import sys
 import comparexml
 import re
 
+OPTIONS = { 'syntax':    { '1': ['-T', 'pass1',     '-P', '--dont-import', '--parse-1' ],
+                           '2': ['-T', 'pass2',     '-P', '--dont-import', '--parse-2' ],
+                           '3': ['-T', 'transform', '-P', '--dont-import', '--parse-3' ],
+                           '4': ['-T', 'annotate',  '-P', '--dont-import' ] },
+            'import':    { '1': ['-T', 'pass1',     '-P', '--parse-1' ],
+                           '2': ['-T', 'pass2',     '-P', '--parse-2' ],
+                           '3': ['-T', 'transform', '-P', '--parse-3' ],
+                           '4': ['-T', 'annotate',  '-P' ] },
+            'transform': { '3': ['-T', 'transform', '-P', '--parse-3' ] },
+            'annotate':  { '3': ['-T', 'transform', '-P', '--parse-3' ],
+                           '4': ['-T', 'annotate',  '-P' ], }
+            }
+
 
 class TestRunner:
 
@@ -17,11 +30,48 @@ class TestRunner:
         self.test_succeeded = 0
         self.test_run = 0
         self.input_dir = False
+        self.last_passid = -1
+        self.failures = []
 
-        self.SYNTAX_PASS1_OPT = ["-T", "pass1", "-P", "--dont-import", "--parse-1" ]
-        self.SYNTAX_PASS2_OPT = ["-T", "pass2", "-P", "--dont-import" ]
-        self.IMPORT_PASS1_OPT = ["-T", "pass1", "-P", "--parse-1" ]
-        self.IMPORT_PASS2_OPT = ["-T", "pass2", "-P" ]
+
+    def report_failure(self, msg):
+        full_msg = "FAILED: %s" % msg
+        if self.verbose:
+            print full_msg
+        else:
+            if self.last_passid >= 0:
+                sys.stdout.write('\b.')
+            sys.stdout.write("E")
+            self.failures.append(full_msg)
+            self.last_passid = -1
+
+
+    def report_info(self, msg):
+        full_msg = "INFO: %s" % msg
+        if self.verbose:
+            print full_msg
+        else:
+            if self.last_passid >= 0:
+                sys.stdout.write('\b.')
+            sys.stdout.write("i")
+            self.failures.append(full_msg)
+            self.last_passid = -1
+
+
+    def report_success(self, passid, msg):
+        if self.verbose:
+            print "OK: %s" % msg
+        else:
+            np = int(passid)
+            if self.last_passid >= 0:
+                if np <= self.last_passid:
+                    sys.stdout.write("\b")
+                else:
+                    sys.stdout.write("\b.")
+            sys.stdout.write("%d" % np)
+            sys.stdout.flush()
+            #print "%d" % passid,
+            self.last_passid = np
 
 
     def run_heather_on_test(self, test_file, options):
@@ -45,24 +95,24 @@ class TestRunner:
             try:
                 dom1 = minidom.parseString(test_str)
             except Exception, e:
-                print "FAILED: %s: not a valid XML file: %s" % (test_name, e)
+                self.report_failure("%s: not a valid XML file: %s" % (test_name, e))
                 if self.verbose:
-                    print "  OUTPUT: %s" % (test_str)
+                    self.failures.append("  OUTPUT: %s" % test_str)
                 return False
 
             try:
                 dom2 = minidom.parse(expected_file)
             except Exception, e:
-                print "FAILED: %s: not a valid XML file: %s" % (test_name, e)
+                self.report_failure("%s: not a valid XML file: %s" % (test_name, e))
                 return False
 
             if not comparexml.compareXML(dom1, dom2):
-                print "FAILED: %s: differs from expected data" % (test_name)
+                self.report_failure("%s: differs from expected data" % test_name)
                 return False
             else:
                 return True
         except Exception, e:
-            print "FAILED: %s: comparing results failed with exception: %s" % (test_name, e)
+            self.report_failure("%s: comparing results failed with exception: %s" % (test_name, e))
             return False
 
 
@@ -79,14 +129,17 @@ class TestRunner:
 
     def run_pass_test_impl(self, test_file, options, passid,
                            errtest_func=None):
+        expected_file = self.find_expected_xml(test_file, "_%s" % (passid))
+        if not expected_file:
+            return
+
         test_count = 0
-        if self.verbose:
-            print "Run test '%s'" % (test_file)
+
         output, erroutput = self.run_heather_on_test(test_file, options)
         what_tag = "[%s] %s" % (passid, test_file)
         if erroutput:
             if errtest_func == None:
-                print "FAILED: %s: %s" % (what_tag, erroutput)
+                self.report_failure("%s: %s" % (what_tag, erroutput))
                 return
             test_count += 1
             if not errtest_func(test_file, what_tag, passid, erroutput):
@@ -101,28 +154,18 @@ class TestRunner:
                 self.test_run += 1
                 return
         else:
-            if self.verbose:
-                print "INFO: %s: No expected xml file found" % (what_tag)
+            self.report_info("%s: No expected xml file found" % what_tag)
 
-        print "OK: %s: test succeeds" % (what_tag)
+        self.report_success(passid, "%s: test succeeds" % what_tag)
+
         self.test_succeeded += test_count
         self.test_run += test_count
 
 
     def run_pass_test(self, test_file, domain):
-        if domain == "syntax":
-            opts1 = self.SYNTAX_PASS1_OPT
-            opts2 = self.SYNTAX_PASS2_OPT
-
-        elif domain == "import":
-            opts1 = self.IMPORT_PASS1_OPT
-            opts2 = self.IMPORT_PASS2_OPT
-
-        else:
-            assert(0)
-
-        self.run_pass_test_impl(test_file, opts1, "1")
-        self.run_pass_test_impl(test_file, opts2, "2")
+        for level in [ '1', '2', '3', '4' ]:
+            if level in OPTIONS[domain]:
+                self.run_pass_test_impl(test_file, OPTIONS[domain][level], level)
 
 
 
@@ -136,6 +179,7 @@ class TestRunner:
         path, ext = os.path.splitext(test_file)
         expected_file = path + "_" + passid + ".expsynerr"
 
+#        print "Print expect expsynerr file: %s" % expected_file
         if os.path.isfile(expected_file):
             try:
                 fd = open(expected_file, "rb")
@@ -165,14 +209,13 @@ class TestRunner:
     def check_for_errors(self, test_file, test_name, passid, erroutput):
         eo = erroutput.strip()
         if eo == None or len(eo) == 0:
-            print "FAILED: %s: expected errors" % (test_name)
+            self.report_failure("%s: expected errors" % test_name)
             return False
 
         expected_errors = self.load_expected_syntax_errors_desc(test_file, passid)
 
         if len(expected_errors) == 0:
-            if self.verbose:
-                print "INFO: %s: No expected syntax errors file found" % (what_tag)
+            self.report_info("%s: No expected syntax errors file found" % test_file)
 
         retval = True
         for experr in expected_errors:
@@ -187,8 +230,8 @@ class TestRunner:
                 error_re = re.compile(pattern)
                 m = error_re.search(eo)
                 if m is None:
-                    print "FAILED: %s: expected %s " \
-                          "message at line %s not found" % (test_name, level, line_no)
+                    self.report_failure("%s: expected %s "
+                                        "message at line %s not found" % (test_name, level, line_no))
                     # print "  EXPECTED: ", expected_errors
                     # print "  PATTERN: ", pattern
                     retval = False
@@ -196,19 +239,10 @@ class TestRunner:
 
 
     def run_pass_failed_test(self, test_file, domain):
-        if domain == "syntax":
-            opts1 = self.SYNTAX_PASS1_OPT
-            opts2 = self.SYNTAX_PASS2_OPT
-
-        elif domain == "import":
-            opts1 = self.IMPORT_PASS1_OPT
-            opts2 = self.IMPORT_PASS2_OPT
-
-        else:
-            assert(0)
-
-        self.run_pass_test_impl(test_file, opts1, "1", self.check_for_errors)
-        self.run_pass_test_impl(test_file, opts2, "2", self.check_for_errors)
+        for level in [ '1', '2', '3', '4' ]:
+            if level in OPTIONS[domain]:
+                self.run_pass_test_impl(test_file, OPTIONS[domain][level], level,
+                                        self.check_for_errors)
 
 
     #----------------------------------------------------------------------------
@@ -229,11 +263,23 @@ class TestRunner:
             if f.endswith(".hea"):
                 self.run_test(test_dir, f, domain)
 
+        if not self.verbose:
+            sys.stdout.write("\b.\n")
+
+            if len(self.failures) > 0:
+                print
+                print "FAILURES:"
+                for f in self.failures:
+                    print f
+
+            print
+
         if self.test_succeeded <> self.test_run:
-            print "SUMMARY: %d tests of %d failed" % (self.test_run - self.test_succeeded,
-                                                      self.test_run)
+            print "SUMMARY: %d tests of %d failed in %s" % (self.test_run - self.test_succeeded,
+                                                            self.test_run,
+                                                            domain)
         else:
-            print "SUMMARY: %d tests succeeded" % (self.test_succeeded)
+            print "SUMMARY: %d tests succeeded in %s" % (self.test_succeeded, domain)
 
 
 #----------------------------------------------------------------------------

@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "annotate.h"
 #include "file.h"
 #include "log.h"
 #include "parser.h"
@@ -16,6 +17,8 @@
 #include "properties.h"
 #include "scope.h"
 #include "tokenizer.h"
+#include "transform.h"
+#include "xmlout.h"
 
 using namespace heather;
 
@@ -58,7 +61,7 @@ Parser::Parser(bool isParsingInterface)
   : fState(ParserState(
              new CharRegistry,
              new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-             new Scope)),
+             new Scope(kScopeL_CompileUnit))),
     fIsParsingInterface(isParsingInterface)
 {
 }
@@ -122,6 +125,100 @@ Parser::parse(Port<Char>* port, const String& srcName)
 }
 
 
+Token
+Parser::doPass1Parse(bool doTrace)
+{
+  Ptr<FirstPass> firstPass = new FirstPass(this, fState.fToken, fState.fScope);
+
+  Token parsedExprs = firstPass->parse();
+
+  if (doTrace && Properties::isTracePass1()) {
+    Ptr<FilePort> stream = new FilePort(stdout);
+    display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
+    parsedExprs.toPort(stream);
+    displayln(stream, "");
+  }
+
+  // fState.fScope->dumpDebug();
+
+  return parsedExprs;
+}
+
+
+AptNode*
+Parser::doPass2Parse(const Token& parsedExprs, bool doTrace)
+{
+  bool doPass2 = true;
+#if defined(UNITTESTS)
+  doPass2 = Properties::test_passLevel() > 1;
+#endif
+
+  if (doPass2) {
+    Ptr<SecondPass> secondPass = new SecondPass(this, fState.fScope);
+
+    Ptr<AptNode> apt = secondPass->parse(parsedExprs);
+    if (doTrace && Properties::isTracePass2() && apt != NULL) {
+      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+      out->render(apt);
+    }
+
+    // fState.fScope->dumpDebug();
+
+    return apt.release();
+  }
+
+  return NULL;
+}
+
+
+AptNode*
+Parser::transform(AptNode* node, bool doTrace)
+{
+  Ptr<AptNode> n = node;
+  bool doPass3 = true;
+#if defined(UNITTESTS)
+  doPass3 = Properties::test_passLevel() > 2;
+#endif
+
+  if (doPass3) {
+    Ptr<Transformator> pTr = new Transformator;
+
+    pTr->transformNode(n);
+
+    if (doTrace && Properties::isTraceTransform() && n != NULL) {
+      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+      out->render(n);
+    }
+  }
+
+  return n.release();
+}
+
+
+AptNode*
+Parser::annotate(AptNode* node, bool doTrace)
+{
+  Ptr<AptNode> n = node;
+  bool doPass4 = true;
+#if defined(UNITTESTS)
+  doPass4 = Properties::test_passLevel() > 3;
+#endif
+
+  if (doPass4) {
+    Ptr<Annotator> pAn = new Annotator;
+
+    pAn->annotateRecursively(n);
+
+    if (doTrace && Properties::isTraceAnnotate() && n != NULL) {
+      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+      out->render(n);
+    }
+  }
+
+  return n.release();
+}
+
+
 AptNode*
 Parser::parseImpl(Port<Char>* port, const String& srcName,
                   bool doTrace)
@@ -131,41 +228,11 @@ Parser::parseImpl(Port<Char>* port, const String& srcName,
   assert(fState.fScope != NULL);
 
   try {
-    Ptr<FirstPass> firstPass = new FirstPass(this, fState.fToken, fState.fScope);
-
-    Token parsedExprs = firstPass->parse();
-
-    if (doTrace && Properties::isTracePass1()) {
-      Ptr<FilePort> stream = new FilePort(stdout);
-      display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
-      parsedExprs.toPort(stream);
-      displayln(stream, "");
-    }
-
-    // fState.fScope->dumpDebug();
-
-    bool doPass2 = true;
-#if defined(UNITTESTS)
-    doPass2 = !Properties::test_pass1Only();
-#endif
-
-    if (doPass2) {
-      Ptr<SecondPass> secondPass = new SecondPass(this, fState.fScope);
-
-      Ptr<AptNode> apt = secondPass->parse(parsedExprs);
-      if (doTrace && Properties::isTracePass2() && apt != NULL) {
-        Ptr<FilePort> stream = new FilePort(stdout);
-        display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
-        apt->display(stream);
-        displayln(stream, "");
-      }
-
-      // fState.fScope->dumpDebug();
-
-      return apt.release();
-    }
-
-    return NULL;
+    Token parsedExprs = doPass1Parse(doTrace);
+    Ptr<AptNode> apt = doPass2Parse(parsedExprs, doTrace);
+    Ptr<AptNode> apt2 = transform(apt.release(), doTrace);
+    Ptr<AptNode> apt3 = annotate(apt2.release(), doTrace);
+    return apt3.release();
   }
   catch (const Exception& e) {
     logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
@@ -281,7 +348,7 @@ Parser::PortStackHelper::PortStackHelper(Parser* parser)
   fParser->fState = ParserState(
     new CharRegistry,
     new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-    new Scope);
+    new Scope(kScopeL_CompileUnit));
 }
 
 

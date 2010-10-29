@@ -133,6 +133,15 @@ heather::file::appendExt(const String& path, const String& ext)
 
 
 String
+heather::file::append(const String& path, const String& name)
+{
+  if (isFilePath(path))
+    return path + "/" + name;
+  return path + name;
+}
+
+
+String
 heather::file::workingDir()
 {
   int size = 256;

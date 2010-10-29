@@ -6,175 +6,24 @@
    All rights reserved.
 */
 
+#include "sysconf.h"
+
 #include <string.h>
 
+#include "annotate.h"
+#include "transform.h"
 #include "apt.h"
+#include "codegen.h"
+#include "scope.h"
 #include "strbuf.h"
+#include "xmlout.h"
+
+#include "llvm/Value.h"
+
+#include <string>
+#include <map>
 
 using namespace heather;
-
-
-static void
-displayOpenTag(Port<Octet>* port, const char* tagName)
-{
-  if (tagName != NULL)
-    display(port, String() + "<" + tagName + ">");
-}
-
-
-static void
-displayOpenTagAttrs(Port<Octet>* port, const char* tagName,
-                    const char* attrs)
-{
-  if (tagName != NULL) {
-    display(port, String() + "<" + tagName);
-    if (attrs != NULL)
-      display(port, String() + " " + attrs + ">");
-    else
-      display(port, ">");
-  }
-}
-
-
-static void
-displayCloseTag(Port<Octet>* port, const char* tagName)
-{
-  if (tagName != NULL)
-    heather::display(port, String() + "</" + tagName + ">");
-}
-
-
-static void
-displayEmptyTag(Port<Octet>* port, const char* tagName)
-{
-  if (tagName != NULL && ::strlen(tagName) > 0)
-    heather::display(port, String() + "<" + tagName + "/>");
-}
-
-
-static void
-displayTag(Port<Octet>* port, const char* tagName, const String& value)
-{
-  displayOpenTag(port, tagName);
-  display(port, xmlEncode(value));
-  displayCloseTag(port, tagName);
-}
-
-
-static void
-displayTagAttr(Port<Octet>* port, const char* tagName,
-               const char* attrs,
-               const String& value)
-{
-  displayOpenTagAttrs(port, tagName, attrs);
-  display(port, xmlEncode(value));
-  displayCloseTag(port, tagName);
-}
-
-
-static void
-displayNode(Port<Octet>* port, const char* tagName, AptNode* node)
-{
-  if (node != NULL) {
-    displayOpenTag(port, tagName);
-    node->display(port);
-    displayCloseTag(port, tagName);
-  }
-}
-
-
-static void
-displayNodeList(Port<Octet>* port,
-                const char* tagName,
-                const NodeList& nodelist)
-{
-  if (!nodelist.empty()) {
-    displayOpenTag(port, tagName);
-
-    for (NodeList::const_iterator it = nodelist.begin();
-         it != nodelist.end();
-         it++)
-    {
-      AptNode* n = (*it);
-      if (n != NULL)
-        n->display(port);
-    }
-
-    displayCloseTag(port, tagName);
-  }
-}
-
-
-// static void
-// displayStringList(Port<Octet>* port,
-//                   const char* outerTagName, const char* tagName,
-//                   const StringList& strlist)
-// {
-//   if (!strlist.empty())
-//     displayOpenTag(port, outerTagName);
-
-//   for (StringList::const_iterator it = strlist.begin();
-//        it != strlist.end();
-//        it++)
-//   {
-//     String str = (*it);
-//     displayOpenTag(port, tagName);
-//     display(port, str);
-//     displayCloseTag(port, tagName);
-//   }
-
-//   if (!strlist.empty())
-//     displayCloseTag(port, outerTagName);
-// }
-
-
-// static void
-// displayStringStringMap(Port<Octet>* port,
-//                        const char* outerTagName, const char* tagName,
-//                        const char* firstPairTagName, const char* secPairTagName,
-//                        const StringStringMap& strMap)
-// {
-//   if (!strMap.empty())
-//     displayOpenTag(port, outerTagName);
-
-//   for (StringStringMap::const_iterator it = strMap.begin();
-//        it != strMap.end();
-//        it++)
-//   {
-//     displayOpenTag(port, tagName);
-//     displayTag(port, firstPairTagName, it->first);
-//     displayTag(port, secPairTagName, it->second);
-//     displayCloseTag(port, tagName);
-//   }
-
-//   if (!strMap.empty())
-//     displayCloseTag(port, outerTagName);
-// }
-
-
-static void
-displayType(Port<Octet>* port, const char* tagName, const Type& type)
-{
-  if (type.isDef()) {
-    const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
-    displayOpenTagAttrs(port, tagName, attrs);
-    display(port, type.toString());
-    displayCloseTag(port, tagName);
-  }
-}
-
-
-static void
-displayTypeVector(Port<Octet>* port, const char* tagName, const TypeVector& types)
-{
-  if (!types.empty()) {
-    const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
-    displayOpenTagAttrs(port, tagName, attrs);
-    for (size_t i = 0; i < types.size(); i++)
-      display(port, types[i].toString());
-    displayCloseTag(port, tagName);
-  }
-}
 
 
 template<typename T>
@@ -215,6 +64,48 @@ copyNodes(const NodeList& src)
 
 //----------------------------------------------------------------------------
 
+AptNode::AptNode(const SrcPos& srcpos)
+  : fSrcPos(srcpos)
+{
+}
+
+
+const SrcPos&
+AptNode::srcpos() const
+{
+  return fSrcPos;
+}
+
+
+Scope*
+AptNode::scope() const
+{
+  return fScope;
+}
+
+
+AptNode*
+AptNode::setScope(Scope* scope)
+{
+  fScope = scope;
+  return this;
+}
+
+
+NodeList&
+AptNode::children()
+{
+  return fChildren;
+}
+
+
+const NodeList&
+AptNode::children() const
+{
+  return fChildren;
+}
+
+
 void
 AptNode::appendNode(AptNode* node)
 {
@@ -229,95 +120,218 @@ AptNode::appendNodes(const NodeList& nodes)
 }
 
 
-//----------------------------------------------------------------------------
-
-StringNode::StringNode(const SrcPos& srcpos, const String& value)
-  : AptNode(srcpos),
-    fValue(value)
+llvm::Value*
+AptNode::codegen(CodeGenerator* generator) const
 {
+  return NULL;
 }
 
 
-void
-StringNode::display(Port<Octet>* port) const
+//----------------------------------------------------------------------------
+
+namespace heather {
+  template<typename T>
+  T* cloneScope(const T* src, T* dst)
+  {
+    dst->setScope(src->scope());
+    return dst;
+  }
+}
+
+
+StringNode::StringNode(const SrcPos& srcpos,
+                       const String& value)
+  : AptNode(srcpos),
+    fValue(value)
 {
-  displayTag(port, "str", fValue);
 }
 
 
 StringNode*
 StringNode::clone() const
 {
-  return new StringNode(fSrcPos, fValue);
-}
-
-
-//----------------------------------------------------------------------------
-
-KeywordNode::KeywordNode(const SrcPos& srcpos, const String& value)
-  :AptNode(srcpos),
-   fValue(value)
-{
+  return heather::cloneScope(this, new StringNode(fSrcPos, fValue));
 }
 
 
 void
-KeywordNode::display(Port<Octet>* port) const
+StringNode::render(XmlRenderer* renderer) const
 {
-  displayTag(port, "keyw", fValue);
+  renderer->renderNode(this);
 }
 
 
-KeywordNode*
-KeywordNode::clone() const
+llvm::Value*
+StringNode::codegen(CodeGenerator* generator) const
 {
-  return new KeywordNode(fSrcPos, fValue);
+  return generator->codegen(this);
+}
+
+
+void
+StringNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+StringNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value)
+KeywordNode::KeywordNode(const SrcPos& srcpos,
+                         const String& value)
   : AptNode(srcpos),
     fValue(value)
 {
 }
 
 
-SymbolNode::SymbolNode(const SrcPos& srcpos, const String& value,
-                       const TypeVector& generics)
-  : AptNode(srcpos),
-    fValue(value),
-    fGenerics(generics)
-{ }
-
-
-void
-SymbolNode::display(Port<Octet>* port) const
+KeywordNode*
+KeywordNode::clone() const
 {
-  if (fGenerics.empty())
-    displayTag(port, "symbol", fValue);
-  else {
-    StringBuffer attrs;
-    attrs << "nm='" << fValue << "'";
-
-    displayOpenTagAttrs(port, "symbol", StrHelper(attrs.toString()));
-    displayTypeVector(port, "gen", fGenerics);
-    displayCloseTag(port, "symbol");
-  }
+  return cloneScope(this, new KeywordNode(fSrcPos, fValue));
 }
 
 
-SymbolNode*
-SymbolNode::clone() const
+void
+KeywordNode::render(XmlRenderer* renderer) const
 {
-  return new SymbolNode(fSrcPos, fValue);
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+KeywordNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+KeywordNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+KeywordNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-ArraySymbolNode::ArraySymbolNode(const SrcPos& srcpos, const String& value)
+SymbolNode::SymbolNode(const SrcPos& srcpos,
+                       const String& value)
+  : AptNode(srcpos),
+    fValue(value),
+    fRefersTo(kFreeVar),
+    fIsShared(false)
+{
+}
+
+
+SymbolNode::SymbolNode(const SrcPos& srcpos,
+                       const String& value,
+                       const TypeVector& generics)
+  : AptNode(srcpos),
+    fValue(value),
+    fGenerics(generics),
+    fRefersTo(kFreeVar),
+    fIsShared(false)
+{ }
+
+
+SymbolNode*
+SymbolNode::clone() const
+{
+  return cloneScope(this, new SymbolNode(fSrcPos, fValue));
+}
+
+
+void
+SymbolNode::setName(const String& nm)
+{
+  fValue = nm;
+}
+
+
+const String&
+SymbolNode::name() const
+{
+  return fValue;
+}
+
+
+std::string
+SymbolNode::string() const
+{
+  return std::string(StrHelper(fValue));
+}
+
+
+SymReferType
+SymbolNode::refersTo() const
+{
+  return fRefersTo;
+}
+
+
+void
+SymbolNode::setRefersTo(SymReferType type, bool isShared)
+{
+  fRefersTo = type;
+  fIsShared = isShared;
+}
+
+
+bool
+SymbolNode::isShared() const
+{
+  return fIsShared;
+}
+
+
+void
+SymbolNode::render(XmlRenderer* renderer) const
+{
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+SymbolNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+SymbolNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+SymbolNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+
+//----------------------------------------------------------------------------
+
+ArraySymbolNode::ArraySymbolNode(const SrcPos& srcpos,
+                                 const String& value)
   : SymbolNode(srcpos, value)
 { }
 
@@ -325,72 +339,127 @@ ArraySymbolNode::ArraySymbolNode(const SrcPos& srcpos, const String& value)
 ArraySymbolNode*
 ArraySymbolNode::clone() const
 {
-  return new ArraySymbolNode(fSrcPos, fValue);
+  return cloneScope(this, new ArraySymbolNode(fSrcPos, fValue));
 }
 
 
 void
-ArraySymbolNode::display(Port<Octet>* port) const
+ArraySymbolNode::render(XmlRenderer* renderer) const
 {
-  assert(fGenerics.empty());
+  renderer->renderNode(this);
+}
 
-  displayTagAttr(port, "symbol", "array='t'", fValue);
+
+llvm::Value*
+ArraySymbolNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+ArraySymbolNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+ArraySymbolNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-IntNode::IntNode(const SrcPos& srcpos, int value, bool isImaginary,
+IntNode::IntNode(const SrcPos& srcpos, int value,
+                 bool isImaginary,
                  const Type& type)
   : NumberNode<int>(srcpos, value, isImaginary, type)
 {
 }
 
 
-void
-IntNode::display(Port<Octet>* port) const
-{
-  StringBuffer attrs;
-  attrs << "ty='" << fType.typeName() << "'";
-  if (fIsImaginary)
-    attrs << " imag='t'";
-
-  displayTagAttr(port, "int", StrHelper(attrs.toString()), String() + fValue);
-}
-
-
 IntNode*
 IntNode::clone() const
 {
-  return new IntNode(fSrcPos, fValue, fIsImaginary, fType.clone());
+  return cloneScope(this,
+                    new IntNode(fSrcPos, fValue, fIsImaginary, fType.clone()));
+}
+
+
+llvm::Value*
+IntNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+IntNode::render(XmlRenderer* renderer) const
+{
+  renderer->renderNode(this);
+}
+
+
+void
+IntNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+IntNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary,
+RealNode::RealNode(const SrcPos& srcpos, double value,
+                   bool isImaginary,
                    const Type& type)
   : NumberNode<double>(srcpos, value, isImaginary, type)
 {
 }
 
 
-void
-RealNode::display(Port<Octet>* port) const
-{
-  StringBuffer attrs;
-  attrs << "ty='" << fType.typeName() << "'";
-  if (fIsImaginary)
-    attrs << " imag='t'";
-
-  displayTagAttr(port, "real", StrHelper(attrs.toString()), String() + fValue);
-}
-
-
 RealNode*
 RealNode::clone() const
 {
-  return new RealNode(fSrcPos, fValue, fIsImaginary, fType.clone());
+  return cloneScope(this,
+                    new RealNode(fSrcPos, fValue, fIsImaginary, fType.clone()));
+}
+
+
+void
+RealNode::render(XmlRenderer* renderer) const
+{
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+RealNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+RealNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+RealNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -404,23 +473,40 @@ RationalNode::RationalNode(const SrcPos& srcpos,
 }
 
 
-void
-RationalNode::display(Port<Octet>* port) const
-{
-  StringBuffer attrs;
-  attrs << "ty='" << fType.typeName() << "'";
-  if (fIsImaginary)
-    attrs << " imag='t'";
-
-  String val = String() + fValue.numerator() + "/" + fValue.denominator();
-  displayTagAttr(port, "real", StrHelper(attrs.toString()), val);
-}
-
-
 RationalNode*
 RationalNode::clone() const
 {
-  return new RationalNode(fSrcPos, fValue, fIsImaginary, fType.clone());
+  return cloneScope(this,
+                    new RationalNode(fSrcPos, fValue,
+                                     fIsImaginary, fType.clone()));
+}
+
+
+void
+RationalNode::render(XmlRenderer* renderer) const
+{
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+RationalNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+RationalNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+RationalNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -432,17 +518,38 @@ CharNode::CharNode(const SrcPos& srcpos, Char value)
 { }
 
 
-void
-CharNode::display(Port<Octet>* port) const
-{
-  displayTag(port, "char", fromInt(int(fValue)));
-}
-
-
 CharNode*
 CharNode::clone() const
 {
-  return new CharNode(fSrcPos, fValue);
+  return cloneScope(this, new CharNode(fSrcPos, fValue));
+}
+
+
+void
+CharNode::render(XmlRenderer* renderer) const
+{
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+CharNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+CharNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+CharNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -454,24 +561,45 @@ BoolNode::BoolNode(const SrcPos& srcpos, bool value)
 { }
 
 
-void
-BoolNode::display(Port<Octet>* port) const
-{
-  displayEmptyTag(port, (fValue ? "true" : "false"));
-}
-
-
 BoolNode*
 BoolNode::clone() const
 {
-  return new BoolNode(fSrcPos, fValue);
+  return cloneScope(this, new BoolNode(fSrcPos, fValue));
+}
+
+
+void
+BoolNode::render(XmlRenderer* renderer) const
+{
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+BoolNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+BoolNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+BoolNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-UnitConstant::UnitConstant(const SrcPos& srcpos, AptNode* value,
-                           const TypeUnit& unit)
+UnitConstNode::UnitConstNode(const SrcPos& srcpos, AptNode* value,
+                             const TypeUnit& unit)
   : AptNode(srcpos),
     fValue(value),
     fUnit(unit)
@@ -479,23 +607,38 @@ UnitConstant::UnitConstant(const SrcPos& srcpos, AptNode* value,
 }
 
 
-UnitConstant*
-UnitConstant::clone() const
+UnitConstNode*
+UnitConstNode::clone() const
 {
-  return new UnitConstant(fSrcPos, nodeClone(fValue), fUnit);
+  return cloneScope(this, new UnitConstNode(fSrcPos, nodeClone(fValue), fUnit));
 }
 
 
 void
-UnitConstant::display(Port<Octet>* port) const
+UnitConstNode::render(XmlRenderer* renderer) const
 {
-  StringBuffer attrs;
-  attrs << "unit='" << fUnit.name() << "'";
+  renderer->renderNode(this);
+}
 
-  displayOpenTagAttrs(port, "uvalue", StrHelper(attrs.toString()));
-  displayType(port, "type", fUnit.effType());
-  displayNode(port, NULL, fValue);
-  displayCloseTag(port, "uvalue");
+
+llvm::Value*
+UnitConstNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+UnitConstNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+UnitConstNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -506,19 +649,40 @@ CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
 {}
 
 
-void
-CompileUnitNode::display(Port<Octet>* port) const
-{
-  displayNodeList(port, "compile-unit", fChildren);
-}
-
-
 CompileUnitNode*
 CompileUnitNode::clone() const
 {
   Ptr<CompileUnitNode> node = new CompileUnitNode(fSrcPos);
   copyNodes(&node->fChildren, &fChildren);
-  return node.release();
+  return cloneScope(this, node.release());
+}
+
+
+void
+CompileUnitNode::render(XmlRenderer* renderer) const
+{
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+CompileUnitNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+CompileUnitNode::annotate(Annotator* annotator)
+{
+  annotator->annotate(this);
+}
+
+
+AptNode*
+CompileUnitNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -547,16 +711,35 @@ LetNode::LetNode(AptNode* node)
 LetNode*
 LetNode::clone() const
 {
-  return new LetNode(nodeClone(fDefined.obj()));
+  return cloneScope(this, new LetNode(nodeClone(fDefined.obj())));
 }
 
 
 void
-LetNode::display(Port<Octet>* port) const
+LetNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "let");
-  displayNode(port, NULL, fDefined);
-  displayCloseTag(port, "let");
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+LetNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+LetNode::annotate(Annotator* annotator)
+{
+  annotator->annotate(this);
+}
+
+
+AptNode*
+LetNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -570,16 +753,35 @@ DefNode::DefNode(AptNode* node)
 DefNode*
 DefNode::clone() const
 {
-  return new DefNode(nodeClone(fDefined.obj()));
+  return cloneScope(this, new DefNode(nodeClone(fDefined.obj())));
 }
 
 
 void
-DefNode::display(Port<Octet>* port) const
+DefNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "def");
-  displayNode(port, NULL, fDefined);
-  displayCloseTag(port, "def");
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+DefNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+DefNode::annotate(Annotator* annotator)
+{
+  annotator->annotate(this);
+}
+
+
+AptNode*
+DefNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -591,7 +793,8 @@ BindingNode::BindingNode(const SrcPos& srcpos,
   : AptNode(srcpos),
     fSymbolName(symbolName),
     fType(type),
-    fInitExpr(initExpr)
+    fInitExpr(initExpr),
+    fAllocType(kAlloc_Local)
 { }
 
 
@@ -616,13 +819,28 @@ BindingNode::initExpr() const
 }
 
 
+void
+BindingNode::setAllocType(BindingAllocType allocType)
+{
+  fAllocType = allocType;
+}
+
+
+BindingAllocType
+BindingNode::allocType() const
+{
+  return fAllocType;
+}
+
 
 //----------------------------------------------------------------------------
 
 VardefNode::VardefNode(const SrcPos& srcpos,
                        const String& symbolName, VardefFlags flags,
+                       bool isLocal,
                        const Type& type, AptNode* initExpr)
   : BindingNode(srcpos, symbolName, type, initExpr),
+    fIsLocal(isLocal),
     fFlags(flags)
 {
 }
@@ -631,41 +849,18 @@ VardefNode::VardefNode(const SrcPos& srcpos,
 VardefNode*
 VardefNode::clone() const
 {
-  return new VardefNode(fSrcPos, fSymbolName, fFlags,
-                        fType.clone(), nodeClone(fInitExpr));
+  Ptr<VardefNode> n = new VardefNode(fSrcPos, fSymbolName, fFlags,
+                                     fIsLocal,
+                                     fType.clone(), nodeClone(fInitExpr));
+  n->setLinkage(fLinkage);
+  return cloneScope(this, n.release());
 }
 
 
 void
-VardefNode::display(Port<Octet>* port) const
+VardefNode::render(XmlRenderer* renderer) const
 {
-  StringBuffer attrs;
-
-  attrs << "sym='" << fSymbolName << "'";
-
-  switch (fFlags) {
-  case kNormalVar:
-    break;
-  case kFluidVar:
-    attrs << " type='fluid'";
-    break;
-  case kConstVar:
-    attrs << " type='const'";
-    break;
-  case kConfigVar:
-    attrs << " type='config'";
-    break;
-  case kEnumVar:
-    attrs << " type='enum'";
-    break;
-  }
-
-  displayOpenTagAttrs(port, "vardef", StrHelper(attrs.toString()));
-
-  displayType(port, "type", fType);
-  displayNode(port, "init", fInitExpr);
-
-  displayCloseTag(port, "vardef");
+  renderer->renderNode(this);
 }
 
 
@@ -690,6 +885,59 @@ VardefNode::isEnum() const
 }
 
 
+bool
+VardefNode::isLocal() const
+{
+  return fIsLocal;
+}
+
+
+VardefFlags
+VardefNode::flags() const
+{
+  return fFlags;
+}
+
+
+const String&
+VardefNode::linkage() const
+{
+  return fLinkage;
+}
+
+
+void
+VardefNode::setLinkage(const String& linkage)
+{
+  fLinkage = linkage;
+}
+
+
+llvm::Value*
+VardefNode::codegen(CodeGenerator* generator) const
+{
+  // this should never be called directly.  See codegen::DefNode
+  assert(0);
+  return NULL;
+}
+
+
+void
+VardefNode::annotate(Annotator* annotator)
+{
+  // this should never be called directly.  See Annotator::DefNode
+  assert(0);
+}
+
+
+AptNode*
+VardefNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+
+
 //----------------------------------------------------------------------------
 
 ParamNode::ParamNode(const SrcPos& srcpos,
@@ -707,39 +955,16 @@ ParamNode::ParamNode(const SrcPos& srcpos,
 ParamNode*
 ParamNode::clone() const
 {
-  return new ParamNode(fSrcPos, fKey, fSymbolName, fFlags,
-                       fType.clone(), nodeClone(fInitExpr));
+  return cloneScope(this,
+                    new ParamNode(fSrcPos, fKey, fSymbolName, fFlags,
+                                  fType.clone(), nodeClone(fInitExpr)));
 }
 
 
 void
-ParamNode::display(Port<Octet>* port) const
+ParamNode::render(XmlRenderer* renderer) const
 {
-  StringBuffer attrs;
-
-  attrs << "sym='" << fSymbolName << "'";
-
-  switch (fFlags) {
-  case kPosArg:
-    attrs << " type='pos'";
-    break;
-  case kSpecArg:
-    attrs << " type='spec'";
-    break;
-  case kNamedArg:
-    attrs << " type='key' key='" << fKey << "'";
-    break;
-  case kRestArg:
-    attrs << " type='rest'";
-    break;
-  }
-
-  displayOpenTagAttrs(port, "param", StrHelper(attrs.toString()));
-
-  displayType(port, "type", fType);
-  displayNode(port, "init", fInitExpr);
-
-  displayCloseTag(port, "param");
+  renderer->renderNode(this);
 }
 
 
@@ -750,10 +975,38 @@ ParamNode::flags() const
 }
 
 
+bool
+ParamNode::isRestArg() const
+{
+  return (fFlags & kRestArg) != 0;
+}
+
+
 const String&
 ParamNode::key() const
 {
   return fKey;
+}
+
+
+llvm::Value*
+ParamNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+ParamNode::annotate(Annotator* annotator)
+{
+  annotator->annotate(this);
+}
+
+
+AptNode*
+ParamNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -771,105 +1024,148 @@ SlotdefNode::SlotdefNode(const SrcPos& srcpos,
 SlotdefNode*
 SlotdefNode::clone() const
 {
-  return new SlotdefNode(fSrcPos, fSymbolName, fFlags,
-                         fType.clone(), nodeClone(fInitExpr));
+  return cloneScope(this,
+                    new SlotdefNode(fSrcPos, fSymbolName, fFlags,
+                                    fType.clone(), nodeClone(fInitExpr)));
 }
 
 
 void
-SlotdefNode::display(Port<Octet>* port) const
+SlotdefNode::render(XmlRenderer* renderer) const
 {
-  StringBuffer attrs;
+  renderer->renderNode(this);
+}
 
-  attrs << "sym='" << fSymbolName << "'";
 
-  if ((fFlags & kTransientSlot) != 0) {
-    attrs << " transient='t'";
-  }
-  if ((fFlags & kReadonlySlot) != 0) {
-    attrs << " readonly='t'";
-  }
-  if ((fFlags & kObservableSlot) != 0) {
-    attrs << " observable='t'";
-  }
-  if ((fFlags & kAutoSlot) != 0) {
-    attrs << " auto='t'";
-  }
+llvm::Value*
+SlotdefNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
 
-  if ((fFlags & kPublicSlot) != 0) {
-    attrs << " viz='public'";
-  }
-  else if ((fFlags & kOuterSlot) != 0) {
-    attrs << " viz='outer'";
-  }
-  else if ((fFlags & kInnerSlot) != 0) {
-    attrs << " viz='inner'";
-  }
 
-  displayOpenTagAttrs(port, "slot", StrHelper(attrs.toString()));
-  displayType(port, "type", fType);
-  displayNode(port, "init", fInitExpr);
-  displayCloseTag(port, "slot");
+void
+SlotdefNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+SlotdefNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
+
+ArrayNode::ArrayNode(const SrcPos& srcpos)
+  : AptNode(srcpos)
+{ }
+
 
 ArrayNode*
 ArrayNode::clone() const
 {
   Ptr<ArrayNode> an = new ArrayNode(fSrcPos);
   copyNodes(&an->fChildren, &fChildren);
-  return an.release();
+  return cloneScope(this, an.release());
 }
 
 
 void
-ArrayNode::display(Port<Octet>* port) const
+ArrayNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "array");
-  displayNodeList(port, NULL, fChildren);
-  displayCloseTag(port, "array");
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+ArrayNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+ArrayNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+ArrayNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
+
+VectorNode::VectorNode(const SrcPos& srcpos)
+  : AptNode(srcpos)
+{ }
+
 
 VectorNode*
 VectorNode::clone() const
 {
   Ptr<VectorNode> vect = new VectorNode(fSrcPos);
   copyNodes(&vect->fChildren, &fChildren);
-  return vect.release();
+  return cloneScope(this, vect.release());
 }
 
 
 void
-VectorNode::display(Port<Octet>* port) const
+VectorNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "vector");
-  displayNodeList(port, NULL, fChildren);
-  displayCloseTag(port, "vector");
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+VectorNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+VectorNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+VectorNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
+
+DictNode::DictNode(const SrcPos& srcpos)
+  : AptNode(srcpos)
+{ }
+
 
 DictNode*
 DictNode::clone() const
 {
   Ptr<DictNode> dict = new DictNode(fSrcPos);
   copyNodes(&dict->fChildren, &fChildren);
-  return dict.release();
+  return cloneScope(this, dict.release());
 }
 
 
 void
-DictNode::display(Port<Octet>* port) const
+DictNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "dict");
-  displayNodeList(port, NULL, fChildren);
-  displayCloseTag(port, "dict");
+  renderer->renderNode(this);
 }
 
 
@@ -880,6 +1176,27 @@ DictNode::addPair(AptNode* key, AptNode* value)
   assert(value != NULL);
 
   appendNode(new BinaryNode(key->srcpos(), key, kOpMapTo, value));
+}
+
+
+llvm::Value*
+DictNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+DictNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+DictNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -899,8 +1216,9 @@ BinaryNode::BinaryNode(const SrcPos& srcpos,
 BinaryNode*
 BinaryNode::clone() const
 {
-  return new BinaryNode(fSrcPos,
-                        nodeClone(fLeft), fOp, nodeClone(fRight));
+  return cloneScope(this,
+                    new BinaryNode(fSrcPos, nodeClone(fLeft),
+                                   fOp, nodeClone(fRight)));
 }
 
 
@@ -946,59 +1264,31 @@ BinaryNode::isMapTo() const
 }
 
 
-static const char*
-operatorName(OperatorType type)
+void
+BinaryNode::render(XmlRenderer* renderer) const
 {
-  switch (type) {
-  case kOpAppend:       return "++";
-  case kOpAs:           return "as";
-  case kOpAssign:       return "=";
-  case kOpBitAnd:       return "AND";
-  case kOpBitOr:        return "OR";
-  case kOpBitXor:       return "XOR";
-  case kOpBy:           return "by";
-  case kOpCompare:      return "<=>";
-  case kOpDivide:       return "/";
-  case kOpEqual:        return "==";
-  case kOpExponent:     return "**";
-  case kOpFold:         return "%";
-  case kOpGreater:      return ">";
-  case kOpGreaterEqual: return ">=";
-  case kOpIn:           return "in";
-  case kOpIsa:          return "isa";
-  case kOpLess:         return "<";
-  case kOpLessEqual:    return "<=";
-  case kOpLogicalAnd:   return "and";
-  case kOpLogicalOr:    return "or";
-  case kOpMapTo:        return "->";
-  case kOpMinus:        return "-";
-  case kOpMod:          return "mod";
-  case kOpMultiply:     return "*";
-  case kOpPlus:         return "+";
-  case kOpRange:        return "..";
-  case kOpShiftLeft:    return "<<";
-  case kOpShiftRight:   return ">>";
-  case kOpUnequal:      return "<>";
-  case kOpThen:         return "then";
-  case kOpWhile:        return "while";
+  renderer->renderNode(this);
+}
 
-  case kOpInvalid:
-    assert(0);
-  }
 
-  return NULL;
+llvm::Value*
+BinaryNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
 }
 
 
 void
-BinaryNode::display(Port<Octet>* port) const
+BinaryNode::annotate(Annotator* an)
 {
-  StringBuffer attrs;
-  attrs << "op='" << xmlEncode(operatorName(fOp)) << "'";
-  displayOpenTagAttrs(port, "binary", StrHelper(attrs.toString()));
-  displayNode(port, NULL, fLeft);
-  displayNode(port, NULL, fRight);
-  displayCloseTag(port, "binary");
+  an->annotate(this);
+}
+
+
+AptNode*
+BinaryNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -1010,19 +1300,52 @@ NegateNode::NegateNode(const SrcPos& srcpos, AptNode* base)
 { }
 
 
+const AptNode*
+NegateNode::base() const
+{
+  return fBase;
+}
+
+
+AptNode*
+NegateNode::base()
+{
+  return fBase;
+}
+
+
 NegateNode*
 NegateNode::clone() const
 {
-  return new NegateNode(fSrcPos, nodeClone(fBase));
+  return cloneScope(this, new NegateNode(fSrcPos, nodeClone(fBase)));
 }
 
 
 void
-NegateNode::display(Port<Octet>* port) const
+NegateNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "neg");
-  displayNode(port, NULL, fBase);
-  displayCloseTag(port, "neg");
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+NegateNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+NegateNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+NegateNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -1040,19 +1363,16 @@ RangeNode::RangeNode(const SrcPos& srcpos,
 RangeNode*
 RangeNode::clone() const
 {
-  return new RangeNode(fSrcPos,
-                       nodeClone(fFrom), nodeClone(fTo), nodeClone(fBy));
+  return cloneScope(this,
+                    new RangeNode(fSrcPos, nodeClone(fFrom),
+                                  nodeClone(fTo), nodeClone(fBy)));
 }
 
 
 void
-RangeNode::display(Port<Octet>* port) const
+RangeNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "range");
-  displayNode(port, NULL, fFrom);
-  displayNode(port, NULL, fTo);
-  displayNode(port, NULL, fBy);
-  displayCloseTag(port, "range");
+  renderer->renderNode(this);
 }
 
 
@@ -1077,6 +1397,27 @@ RangeNode::by() const
 }
 
 
+llvm::Value*
+RangeNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+RangeNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+RangeNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+
 //--------------------------------------------------------------------------
 
 ThenWhileNode::ThenWhileNode(const SrcPos& srcpos,
@@ -1091,21 +1432,38 @@ ThenWhileNode::ThenWhileNode(const SrcPos& srcpos,
 ThenWhileNode*
 ThenWhileNode::clone() const
 {
-  return new ThenWhileNode(fSrcPos,
-                           nodeClone(fFirst),
-                           nodeClone(fStep),
-                           nodeClone(fTest));
+  return cloneScope(this, new ThenWhileNode(fSrcPos,
+                                            nodeClone(fFirst),
+                                            nodeClone(fStep),
+                                            nodeClone(fTest)));
 }
 
 
 void
-ThenWhileNode::display(Port<Octet>* port) const
+ThenWhileNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "then-while");
-  displayNode(port, NULL, fFirst);
-  displayNode(port, NULL, fStep);
-  displayNode(port, NULL, fTest);
-  displayCloseTag(port, "then-while");
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+ThenWhileNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+ThenWhileNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+ThenWhileNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -1122,19 +1480,9 @@ AssignNode::AssignNode(const SrcPos& srcpos,
 AssignNode*
 AssignNode::clone() const
 {
-  return new AssignNode(fSrcPos,
-                        nodeClone(fLValue),
-                        nodeClone(fRValue));
-}
-
-
-void
-AssignNode::display(Port<Octet>* port) const
-{
-  displayOpenTag(port, "assign");
-  displayNode(port, NULL, fLValue);
-  displayNode(port, NULL, fRValue);
-  displayCloseTag(port, "assign");
+  return cloneScope(this, new AssignNode(fSrcPos,
+                                         nodeClone(fLValue),
+                                         nodeClone(fRValue)));
 }
 
 
@@ -1152,6 +1500,48 @@ AssignNode::rvalue() const
 }
 
 
+void
+AssignNode::setLvalue(AptNode* val)
+{
+  fLValue = val;
+}
+
+
+void
+AssignNode::setRvalue(AptNode* val)
+{
+  fRValue = val;
+}
+
+
+void
+AssignNode::render(XmlRenderer* renderer) const
+{
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+AssignNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+AssignNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+AssignNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+
 //------------------------------------------------------------------------------
 
 IfNode::IfNode(const SrcPos& srcpos,
@@ -1166,21 +1556,17 @@ IfNode::IfNode(const SrcPos& srcpos,
 IfNode*
 IfNode::clone() const
 {
-  return new IfNode(fSrcPos,
-                    nodeClone(fTest),
-                    nodeClone(fConsequent),
-                    nodeClone(fAlternate));
+  return cloneScope(this, new IfNode(fSrcPos,
+                                     nodeClone(fTest),
+                                     nodeClone(fConsequent),
+                                     nodeClone(fAlternate)));
 }
 
 
 void
-IfNode::display(Port<Octet>* port) const
+IfNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "if");
-  displayNode(port, "test", fTest);
-  displayNode(port, "then", fConsequent);
-  displayNode(port, "else", fAlternate);
-  displayCloseTag(port, "if");
+  renderer->renderNode(this);
 }
 
 
@@ -1212,9 +1598,31 @@ IfNode::setAlternate(AptNode* node)
 }
 
 
+llvm::Value*
+IfNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+IfNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+IfNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+
 //------------------------------------------------------------------------------
 
-SelectNode::SelectNode(const SrcPos& srcpos, AptNode* test, AptNode* comparator)
+SelectNode::SelectNode(const SrcPos& srcpos,
+                       AptNode* test, AptNode* comparator)
   : AptNode(srcpos),
     fTest(test),
     fComparator(comparator)
@@ -1234,32 +1642,14 @@ SelectNode::clone() const
                     nodeClone(fMappings[i].fConsequent)));
   }
 
-  return newNode.release();
+  return cloneScope(this, newNode.release());
 }
 
 
 void
-SelectNode::display(Port<Octet>* port) const
+SelectNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "select");
-  displayNode(port, "test", fTest);
-  displayNode(port, "comp", fComparator);
-  for (size_t i = 0; i < fMappings.size(); i++) {
-    if (fMappings[i].fTestValues.empty()) {
-      displayNode(port, "alternate", fMappings[i].fConsequent);
-    }
-    else {
-      displayOpenTag(port, "map");
-      displayOpenTag(port, "values");
-      for (size_t j = 0; j < fMappings[i].fTestValues.size(); j++) {
-        displayNode(port, NULL, fMappings[i].fTestValues[j]);
-      }
-      displayCloseTag(port, "values");
-      displayNode(port, "cons", fMappings[i].fConsequent);
-      displayCloseTag(port, "map");
-    }
-  }
-  displayCloseTag(port, "select");
+  renderer->renderNode(this);
 }
 
 
@@ -1302,6 +1692,27 @@ SelectNode::SelectMapping::SelectMapping(const SelectMapping& other)
 }
 
 
+llvm::Value*
+SelectNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+SelectNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+SelectNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+
 //------------------------------------------------------------------------------
 
 MatchNode::MatchNode(const SrcPos& srcpos, AptNode* expr)
@@ -1323,25 +1734,14 @@ MatchNode::clone() const
                    nodeClone(fMappings[i].fConsequent)));
   }
 
-  return newNode.release();
+  return cloneScope(this, newNode.release());
 }
 
 
 void
-MatchNode::display(Port<Octet>* port) const
+MatchNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "match");
-  displayNode(port, "test", fExpr);
-  for (size_t i = 0; i < fMappings.size(); i++) {
-    StringBuffer attrs;
-    if (!fMappings[i].fVarName.isEmpty())
-      attrs << "nm='" << xmlEncode(fMappings[i].fVarName) << "'";
-    displayOpenTagAttrs(port, "map", StrHelper(attrs.toString()));
-    displayType(port, "type", fMappings[i].fMatchType);
-    displayNode(port, "cons", fMappings[i].fConsequent);
-    displayCloseTag(port, "map");
-  }
-  displayCloseTag(port, "match");
+  renderer->renderNode(this);
 }
 
 
@@ -1375,6 +1775,27 @@ MatchNode::MatchMapping::MatchMapping(const MatchMapping& other)
 }
 
 
+llvm::Value*
+MatchNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+MatchNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+MatchNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+
 //------------------------------------------------------------------------------
 
 OnNode::OnNode(const SrcPos& srcpos,
@@ -1390,21 +1811,72 @@ OnNode::OnNode(const SrcPos& srcpos,
 OnNode*
 OnNode::clone() const
 {
-  return new OnNode(fSrcPos, fKey,
-                    copyNodes(fParams),
-                    nodeClone(fBody));
+  return cloneScope(this, new OnNode(fSrcPos, fKey,
+                                     copyNodes(fParams),
+                                     nodeClone(fBody)));
 }
 
 
 void
-OnNode::display(Port<Octet>* port) const
+OnNode::render(XmlRenderer* renderer) const
 {
-  StringBuffer attrs;
-  attrs << "key='" << fKey << "'";
-  displayOpenTagAttrs(port, "on", StrHelper(attrs.toString()));
-  displayNodeList(port, "params", fParams);
-  displayNode(port, "body", fBody);
-  displayCloseTag(port, "on");
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+OnNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+OnNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+OnNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+
+const String&
+OnNode::key() const
+{
+  return fKey;
+}
+
+
+const AptNode*
+OnNode::body() const
+{
+  return fBody;
+}
+
+
+AptNode*
+OnNode::body()
+{
+  return fBody;
+}
+
+
+const NodeList&
+OnNode::params() const
+{
+  return fParams;
+}
+
+
+NodeList&
+OnNode::params()
+{
+  return fParams;
 }
 
 
@@ -1420,23 +1892,44 @@ BlockNode::clone() const
 {
   Ptr<BlockNode> block = new BlockNode(fSrcPos);
   copyNodes(&block->fChildren, &fChildren);
-  return block.release();
+  return cloneScope(this, block.release());
 }
 
 
 void
-BlockNode::display(Port<Octet>* port) const
+BlockNode::render(XmlRenderer* renderer) const
 {
-  displayNodeList(port, "block", fChildren);
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+BlockNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+BlockNode::annotate(Annotator* annotator)
+{
+  annotator->annotate(this);
+}
+
+
+AptNode*
+BlockNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-FunctionNode::FunctionNode(const SrcPos& srcpos,
+FunctionNode::FunctionNode(const SrcPos&   srcpos,
                            const NodeList& params,
-                           const Type& retType,
-                           AptNode* body)
+                           const Type&     retType,
+                           AptNode*        body)
   : AptNode(srcpos),
     fRetType(retType),
     fBody(body)
@@ -1448,19 +1941,16 @@ FunctionNode::FunctionNode(const SrcPos& srcpos,
 FunctionNode*
 FunctionNode::clone() const
 {
-  return new FunctionNode(fSrcPos, copyNodes(fParams),
-                          fRetType.clone(), nodeClone(fBody));
+  return cloneScope(this,
+                    new FunctionNode(fSrcPos, copyNodes(fParams),
+                                     fRetType.clone(), nodeClone(fBody)));
 }
 
 
 void
-FunctionNode::display(Port<Octet>* port) const
+FunctionNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "function");
-  displayNodeList(port, "params", fParams);
-  displayType(port, "rettype", fRetType);
-  displayNode(port, "body", fBody);
-  displayCloseTag(port, "function");
+  renderer->renderNode(this);
 }
 
 
@@ -1475,6 +1965,27 @@ const Type&
 FunctionNode::retType() const
 {
   return fRetType;
+}
+
+
+llvm::Value*
+FunctionNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+FunctionNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+FunctionNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -1495,27 +2006,18 @@ FuncDefNode::FuncDefNode(const SrcPos& srcpos,
 FuncDefNode*
 FuncDefNode::clone() const
 {
-  return new FuncDefNode(fSrcPos, fSym, fFlags, fParams,
-                         fRetType.clone(), nodeClone(fBody));
+  Ptr<FuncDefNode> n = new FuncDefNode(fSrcPos, fSym, fFlags,
+                                       fParams,
+                                       fRetType.clone(), nodeClone(fBody));
+  n->setLinkage(fLinkage);
+  return cloneScope(this, n.release());
 }
 
 
 void
-FuncDefNode::display(Port<Octet>* port) const
+FuncDefNode::render(XmlRenderer* renderer) const
 {
-  const char* tag = isGeneric() ? "method" : "func";
-
-  StringBuffer attrs;
-  attrs << "sym='" << fSym << "'";
-
-  if (isAbstract())
-    attrs << " abstract='true'";
-
-  displayOpenTagAttrs(port, tag, StrHelper(attrs.toString()));
-  displayNodeList(port, "params", fParams);
-  displayType(port, "rettype", fRetType);
-  displayNode(port, "body", fBody);
-  displayCloseTag(port, tag);
+  renderer->renderNode(this);
 }
 
 
@@ -1540,6 +2042,45 @@ FuncDefNode::funcName() const
 }
 
 
+const String&
+FuncDefNode::linkage() const
+{
+  return fLinkage;
+}
+
+
+void
+FuncDefNode::setLinkage(const String& linkage)
+{
+  fLinkage = linkage;
+}
+
+
+llvm::Value*
+FuncDefNode::codegen(CodeGenerator* generator) const
+{
+  // this should never be called directly.  See codegen::DefNode
+  assert(0);
+  return NULL;
+}
+
+
+void
+FuncDefNode::annotate(Annotator* annotator)
+{
+  // this should never be called directly.  See Annotator::DefNode
+  assert(0);
+}
+
+
+AptNode*
+FuncDefNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+
+
 //----------------------------------------------------------------------------
 
 ApplyNode::ApplyNode(const SrcPos& srcpos, AptNode* base)
@@ -1553,25 +2094,49 @@ ApplyNode::clone() const
 {
   Ptr<ApplyNode> apply = new ApplyNode(fSrcPos, nodeClone(fBase));
   copyNodes(&apply->fChildren, &fChildren);
-  return apply.release();
+  return cloneScope(this, apply.release());
+}
+
+
+AptNode*
+ApplyNode::base() const
+{
+  return fBase;
 }
 
 
 void
-ApplyNode::display(Port<Octet>* port) const
+ApplyNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "apply");
-  displayNode(port, NULL, fBase);
-  displayOpenTag(port, "args");
-  displayNodeList(port, NULL, fChildren);
-  displayCloseTag(port, "args");
-  displayCloseTag(port, "apply");
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+ApplyNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+ApplyNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+ApplyNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-KeyargNode::KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value)
+KeyargNode::KeyargNode(const SrcPos& srcpos,
+                       const String& key, AptNode* value)
   : AptNode(srcpos),
     fKey(key),
     fValue(value)
@@ -1581,19 +2146,35 @@ KeyargNode::KeyargNode(const SrcPos& srcpos, const String& key, AptNode* value)
 KeyargNode*
 KeyargNode::clone() const
 {
-  return new KeyargNode(fSrcPos, fKey, nodeClone(fValue));
+  return cloneScope(this, new KeyargNode(fSrcPos, fKey, nodeClone(fValue)));
 }
 
 
 void
-KeyargNode::display(Port<Octet>* port) const
+KeyargNode::render(XmlRenderer* renderer) const
 {
-  StringBuffer attrs;
-  attrs << "key='" << fKey << "'";
+  renderer->renderNode(this);
+}
 
-  displayOpenTagAttrs(port, "arg", StrHelper(attrs.toString()));
-  displayNode(port, NULL, fValue);
-  displayCloseTag(port, "arg");
+
+llvm::Value*
+KeyargNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+KeyargNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+KeyargNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
@@ -1609,31 +2190,64 @@ WhileNode::WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body)
 WhileNode*
 WhileNode::clone() const
 {
-  return new WhileNode(fSrcPos,
-                       nodeClone(fTest),
-                       nodeClone(fBody));
+  return cloneScope(this, new WhileNode(fSrcPos,
+                                        nodeClone(fTest),
+                                        nodeClone(fBody)));
 }
 
 
 void
-WhileNode::display(Port<Octet>* port) const
+WhileNode::render(XmlRenderer* renderer) const
 {
-  displayOpenTag(port, "while");
-  displayNode(port, "test", fTest);
-  displayNode(port, "body", fBody);
-  displayCloseTag(port, "while");
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+WhileNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+AptNode*
+WhileNode::body() const
+{
+  return fBody;
+}
+
+
+AptNode*
+WhileNode::test() const
+{
+  return fTest;
+}
+
+
+void
+WhileNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+WhileNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
 }
 
 
 //----------------------------------------------------------------------------
 
-TypeNode::TypeNode(const SrcPos& srcpos, const String& typeName,
-                   bool isClass,
-                   const Type& isa,
-                   const NodeList& params,
-                   const NodeList& slots,
-                   const NodeList& reqProtocol,
-                   const NodeList& onExprs)
+TypeDefNode::TypeDefNode(const SrcPos&   srcpos,
+                         const String&   typeName,
+                         bool            isClass,
+                         const Type&     isa,
+                         const NodeList& params,
+                         const NodeList& slots,
+                         const NodeList& reqProtocol,
+                         const NodeList& onExprs)
   : AptNode(srcpos),
     fTypeName(typeName),
     fIsClass(isClass),
@@ -1645,30 +2259,103 @@ TypeNode::TypeNode(const SrcPos& srcpos, const String& typeName,
 { }
 
 
-TypeNode*
-TypeNode::clone() const
+TypeDefNode*
+TypeDefNode::clone() const
 {
-  return new TypeNode(fSrcPos, fTypeName, fIsClass, fIsa.clone(),
-                      copyNodes(fParams),
-                      copyNodes(fSlots),
-                      copyNodes(fReqProtocol),
-                      copyNodes(fOnExprs));
+  return cloneScope(this,
+                    new TypeDefNode(fSrcPos, fTypeName, fIsClass, fIsa.clone(),
+                                    copyNodes(fParams),
+                                    copyNodes(fSlots),
+                                    copyNodes(fReqProtocol),
+                                    copyNodes(fOnExprs)));
 }
 
 
 void
-TypeNode::display(Port<Octet>* port) const
+TypeDefNode::render(XmlRenderer* renderer) const
 {
-  const char* tagName = fIsClass ? "class" : "type";
-
-  StringBuffer attrs;
-  attrs << "nm='" << fTypeName << "'";
-
-  displayOpenTagAttrs(port, tagName, StrHelper(attrs.toString()));
-  displayNodeList(port, "params", fParams);
-  displayNodeList(port, "slots", fSlots);
-  displayNodeList(port, "on", fOnExprs);
-  displayNodeList(port, "proto", fReqProtocol);
-  displayType(port, "isa", fIsa);
-  displayCloseTag(port, tagName);
+  renderer->renderNode(this);
 }
+
+
+llvm::Value*
+TypeDefNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+TypeDefNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+TypeDefNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+
+//----------------------------------------------------------------------------
+
+CastNode::CastNode(const SrcPos& srcpos,
+                   AptNode* base,
+                   const Type& type)
+  : AptNode(srcpos),
+    fBase(base),
+    fType(type)
+{ }
+
+AptNode*
+CastNode::base() const
+{
+  return fBase;
+}
+
+
+const Type&
+CastNode::type() const
+{
+  return fType;
+}
+
+
+CastNode*
+CastNode::clone() const
+{
+  return cloneScope(this,
+                    new CastNode(fSrcPos, nodeClone(fBase), fType.clone()));
+}
+
+
+void
+CastNode::render(XmlRenderer* renderer) const
+{
+  renderer->renderNode(this);
+}
+
+
+llvm::Value*
+CastNode::codegen(CodeGenerator* generator) const
+{
+  return generator->codegen(this);
+}
+
+
+void
+CastNode::annotate(Annotator* an)
+{
+  an->annotate(this);
+}
+
+
+AptNode*
+CastNode::transform(Transformator* tr)
+{
+  return tr->transform(this);
+}
+
+

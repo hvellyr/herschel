@@ -27,11 +27,14 @@ SrcPos::toString() const
 #include <UnitTest++.h>
 #include <iostream>
 
-std::ostream& operator<<(std::ostream& os, const SrcPos& pos)
+namespace heather
 {
-  os << StrHelper(pos.toString());
-  return os;
-}
+  std::ostream& operator<<(std::ostream& os, const SrcPos& pos)
+  {
+    os << StrHelper(pos.toString());
+    return os;
+  }
+};
 
 
 SUITE(SrcPos)

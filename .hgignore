@@ -12,3 +12,4 @@ external/UnitTest\+\+/.*\.a
 external/UnitTest\+\+/src/.*\.o
 external/UnitTest\+\+/src/.*\.d
 external/UnitTest\+\+/TestUnitTest\+\+
+glob:external/llvm
