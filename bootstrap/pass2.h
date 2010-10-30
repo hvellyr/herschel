@@ -177,7 +177,7 @@ namespace heather
 
     std::set<String>    fCurrentGenericTypes;
     TSharedGenericTable fSharedGenericTable;
-    Ptr<AptNode>        fRootNode;
+    Ptr<ListNode>       fRootNode;
   };
 };
 

@@ -53,16 +53,10 @@ namespace heather
     Scope* scope() const;
     AptNode* setScope(Scope* scope);
 
-    NodeList& children();
-    const NodeList& children() const;
-
     const Type& type() const;
     void setType(const Type& type);
 
     virtual AptNode* clone() const = 0;
-
-    virtual void appendNode(AptNode* node);
-    virtual void appendNodes(const NodeList& nodes);
 
     virtual void render(XmlRenderer* renderer) const = 0;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
@@ -72,9 +66,26 @@ namespace heather
 
   protected:
     SrcPos     fSrcPos;
-    NodeList   fChildren;
     Ptr<Scope> fScope;
     Type       fType;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class ListNode : public AptNode
+  {
+  public:
+    ListNode(const SrcPos& srcpos);
+
+    NodeList& children();
+    const NodeList& children() const;
+
+    virtual void appendNode(AptNode* node);
+    virtual void appendNodes(const NodeList& nodes);
+
+  protected:
+    NodeList   fChildren;
   };
 
 
@@ -344,7 +355,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class CompileUnitNode : public AptNode
+  class CompileUnitNode : public ListNode
   {
   public:
     CompileUnitNode(const SrcPos& srcpos);
@@ -543,7 +554,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class ArrayNode : public AptNode
+  class ArrayNode : public ListNode
   {
   public:
     ArrayNode(const SrcPos& srcpos);
@@ -560,7 +571,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class VectorNode : public AptNode
+  class VectorNode : public ListNode
   {
   public:
     VectorNode(const SrcPos& srcpos);
@@ -577,7 +588,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class DictNode : public AptNode
+  class DictNode : public ListNode
   {
   public:
     DictNode(const SrcPos& srcpos);
@@ -867,7 +878,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class OnNode : public AptNode
+  class OnNode : public ListNode
   {
   public:
     OnNode(const SrcPos& srcpos,
@@ -889,14 +900,13 @@ namespace heather
 
   private:
     String       fKey;
-    NodeList     fParams;
     Ptr<AptNode> fBody;
   };
 
 
   //--------------------------------------------------------------------------
 
-  class BlockNode : public AptNode
+  class BlockNode : public ListNode
   {
   public:
     BlockNode(const SrcPos& srcpos);
@@ -912,7 +922,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class FunctionNode : public AptNode
+  class FunctionNode : public ListNode
   {
   public:
     FunctionNode(const SrcPos&   srcpos,
@@ -936,7 +946,6 @@ namespace heather
     NodeList& params();
 
   protected:
-    NodeList     fParams;
     Type         fRetType;
     Ptr<AptNode> fBody;
   };
@@ -982,7 +991,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class ApplyNode : public AptNode
+  class ApplyNode : public ListNode
   {
   public:
     ApplyNode(const SrcPos& srcpos, AptNode* base);
