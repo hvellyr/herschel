@@ -162,8 +162,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   protected:
-    friend class CodeGenerator;
-
     String       fValue;
     TypeVector   fGenerics;
     SymReferType fRefersTo;
@@ -373,8 +371,6 @@ namespace heather
     void setDefNode(AptNode* val);
 
   protected:
-    friend class CodeGenerator;
-
     Ptr<AptNode> fDefined;
   };
 
@@ -431,7 +427,6 @@ namespace heather
     BindingAllocType allocType() const;
 
   protected:
-    friend class CodeGenerator;
     friend class Transformator;
 
     String       fSymbolName;
@@ -631,8 +626,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class CodeGenerator;
-
     Ptr<AptNode> fLeft;
     Ptr<AptNode> fRight;
     OperatorType fOp;
@@ -657,7 +650,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class CodeGenerator;
     friend class Transformator;
 
     Ptr<AptNode> fBase;
@@ -951,7 +943,6 @@ namespace heather
     NodeList& params();
 
   protected:
-    friend class CodeGenerator;
     friend class Transformator;
 
     NodeList     fParams;
@@ -992,8 +983,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class CodeGenerator;
-
     String       fSym;
     unsigned int fFlags;
     String       fLinkage;
@@ -1018,7 +1007,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class CodeGenerator;
     friend class Transformator;
 
     Ptr<AptNode> fBase;
