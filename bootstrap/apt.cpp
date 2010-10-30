@@ -71,6 +71,13 @@ AptNode::AptNode(const SrcPos& srcpos)
 }
 
 
+AptNode::AptNode(const SrcPos& srcpos, const Type& type)
+  : fSrcPos(srcpos),
+    fType(type)
+{
+}
+
+
 const SrcPos&
 AptNode::srcpos() const
 {
@@ -104,6 +111,20 @@ const NodeList&
 AptNode::children() const
 {
   return fChildren;
+}
+
+
+const Type&
+AptNode::type() const
+{
+  return fType;
+}
+
+
+void
+AptNode::setType(const Type& type)
+{
+  fType = type;
 }
 
 
@@ -945,19 +966,11 @@ DefNode::typify(Typifier* typifier)
 BindingNode::BindingNode(const SrcPos& srcpos,
                          const String& symbolName, const Type& type,
                          AptNode* initExpr)
-  : AptNode(srcpos),
+  : AptNode(srcpos, type),
     fSymbolName(symbolName),
-    fType(type),
     fInitExpr(initExpr),
     fAllocType(kAlloc_Local)
 { }
-
-
-const Type&
-BindingNode::type() const
-{
-  return fType;
-}
 
 
 AptNode*
@@ -2919,9 +2932,8 @@ TypeDefNode::typify(Typifier* typifier)
 CastNode::CastNode(const SrcPos& srcpos,
                    AptNode* base,
                    const Type& type)
-  : AptNode(srcpos),
-    fBase(base),
-    fType(type)
+  : AptNode(srcpos, type),
+    fBase(base)
 { }
 
 AptNode*
@@ -2935,13 +2947,6 @@ void
 CastNode::setBase(AptNode* node)
 {
   fBase = node;
-}
-
-
-const Type&
-CastNode::type() const
-{
-  return fType;
 }
 
 

@@ -46,12 +46,18 @@ namespace heather
   {
   public:
     AptNode(const SrcPos& srcpos);
+    AptNode(const SrcPos& srcpos, const Type& type);
 
     const SrcPos& srcpos() const;
+
     Scope* scope() const;
     AptNode* setScope(Scope* scope);
+
     NodeList& children();
     const NodeList& children() const;
+
+    const Type& type() const;
+    void setType(const Type& type);
 
     virtual AptNode* clone() const = 0;
 
@@ -68,6 +74,7 @@ namespace heather
     SrcPos     fSrcPos;
     NodeList   fChildren;
     Ptr<Scope> fScope;
+    Type       fType;
   };
 
 
@@ -193,10 +200,9 @@ namespace heather
   protected:
     NumberNode(const SrcPos& srcpos, T value,
                bool isImaginary, const Type& type)
-      : AptNode(srcpos),
+      : AptNode(srcpos, type),
         fValue(value),
-        fIsImaginary(isImaginary),
-        fType(type)
+        fIsImaginary(isImaginary)
     { }
 
   public:
@@ -212,16 +218,9 @@ namespace heather
     }
 
 
-    const Type& type() const
-    {
-      return fType;
-    }
-
-
   protected:
     T fValue;
     bool fIsImaginary;
-    Type fType;
   };
 
 
@@ -417,7 +416,6 @@ namespace heather
                 const String& symbolName, const Type& type,
                 AptNode* initExpr);
 
-    const Type& type() const;
     AptNode* initExpr() const;
     void setInitExpr(AptNode* val);
     virtual const String& name() const;
@@ -427,7 +425,6 @@ namespace heather
 
   protected:
     String       fSymbolName;
-    Type         fType;
     Ptr<AptNode> fInitExpr;
     BindingAllocType fAllocType;
   };
@@ -1112,7 +1109,6 @@ namespace heather
 
     AptNode* base() const;
     void setBase(AptNode* node);
-    const Type& type() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
@@ -1122,7 +1118,6 @@ namespace heather
 
   private:
     Ptr<AptNode> fBase;
-    Type         fType;
   };
 };
 
