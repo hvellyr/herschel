@@ -334,11 +334,10 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
     AptNode* value() const;
+    void setValue(AptNode* node);
     TypeUnit unit() const;
 
   private:
-    friend class Transformator;
-
     Ptr<AptNode> fValue;
     TypeUnit     fUnit;
   };
@@ -427,8 +426,6 @@ namespace heather
     BindingAllocType allocType() const;
 
   protected:
-    friend class Transformator;
-
     String       fSymbolName;
     Type         fType;
     Ptr<AptNode> fInitExpr;
@@ -640,6 +637,7 @@ namespace heather
     NegateNode(const SrcPos& srcpos, AptNode* base);
 
     AptNode* base() const;
+    void setBase(AptNode* base);
 
     virtual NegateNode* clone() const;
 
@@ -650,8 +648,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class Transformator;
-
     Ptr<AptNode> fBase;
   };
 
@@ -665,8 +661,11 @@ namespace heather
               AptNode* from, AptNode* to, AptNode* by);
 
     AptNode* from() const;
+    void setFrom(AptNode* node);
     AptNode* to() const;
+    void setTo(AptNode* node);
     AptNode* by() const;
+    void setBy(AptNode* node);
 
     virtual RangeNode* clone() const;
 
@@ -677,8 +676,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class Transformator;
-
     Ptr<AptNode> fFrom;
     Ptr<AptNode> fTo;
     Ptr<AptNode> fBy;
@@ -703,10 +700,11 @@ namespace heather
     AptNode* first() const;
     AptNode* step() const;
     AptNode* test() const;
+    void setFirst(AptNode* node);
+    void setStep(AptNode* node);
+    void setTest(AptNode* node);
 
   private:
-    friend class Transformator;
-
     Ptr<AptNode> fFirst;
     Ptr<AptNode> fStep;
     Ptr<AptNode> fTest;
@@ -757,14 +755,13 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
     AptNode* test() const;
+    void setTest(AptNode* node);
     AptNode* consequent() const;
+    void setConsequent(AptNode* node);
     AptNode* alternate() const;
-
     void setAlternate(AptNode* node);
 
   private:
-    friend class Transformator;
-
     Ptr<AptNode> fTest;
     Ptr<AptNode> fConsequent;
     Ptr<AptNode> fAlternate;
@@ -812,9 +809,11 @@ namespace heather
     size_t mappingCount() const;
     const SelectMapping& mappingAt(size_t i) const;
 
+    void setConsequentAt(size_t i, AptNode* consq);
+    void setTestValueAt(size_t i, size_t j, AptNode* value);
+
   private:
     friend class Annotator;
-    friend class Transformator;
 
     Ptr<AptNode>        fTest;
     Ptr<AptNode>        fComparator;
@@ -863,9 +862,10 @@ namespace heather
     size_t mappingCount() const;
     const MatchMapping& mappingAt(size_t i) const;
 
+    void setConsequentAt(size_t i, AptNode* consq);
+
   private:
     friend class Annotator;
-    friend class Transformator;
 
     Ptr<AptNode>       fExpr;
     MatchMappingVector fMappings;
@@ -890,12 +890,11 @@ namespace heather
 
     const String& key() const;
     AptNode* body() const;
+    void setBody(AptNode* node);
     const NodeList& params() const;
     NodeList& params();
 
   private:
-    friend class Transformator;
-
     String       fKey;
     NodeList     fParams;
     Ptr<AptNode> fBody;
@@ -939,12 +938,11 @@ namespace heather
     const Type& retType() const;
 
     AptNode* body() const;
+    void setBody(AptNode* node);
     const NodeList& params() const;
     NodeList& params();
 
   protected:
-    friend class Transformator;
-
     NodeList     fParams;
     Type         fRetType;
     Ptr<AptNode> fBody;
@@ -997,6 +995,7 @@ namespace heather
     ApplyNode(const SrcPos& srcpos, AptNode* base);
 
     AptNode* base() const;
+    void setBase(AptNode* node);
 
     virtual ApplyNode* clone() const;
 
@@ -1007,8 +1006,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class Transformator;
-
     Ptr<AptNode> fBase;
   };
 
@@ -1031,10 +1028,9 @@ namespace heather
 
     const String& key() const;
     AptNode* value() const;
+    void setValue(AptNode* node);
 
   private:
-    friend class Transformator;
-
     String       fKey;
     Ptr<AptNode> fValue;
   };
@@ -1056,11 +1052,11 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
     AptNode* body() const;
+    void setBody(AptNode* node);
     AptNode* test() const;
+    void setTest(AptNode* node);
 
   private:
-    friend class Transformator;
-
     Ptr<AptNode> fTest;
     Ptr<AptNode> fBody;
   };
@@ -1119,6 +1115,7 @@ namespace heather
     virtual CastNode* clone() const;
 
     AptNode* base() const;
+    void setBase(AptNode* node);
     const Type& type() const;
 
     virtual void render(XmlRenderer* renderer) const;
@@ -1128,8 +1125,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class Transformator;
-
     Ptr<AptNode> fBase;
     Type         fType;
   };

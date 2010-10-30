@@ -720,6 +720,13 @@ UnitConstNode::value() const
 }
 
 
+void
+UnitConstNode::setValue(AptNode* node)
+{
+  fValue = node;
+}
+
+
 TypeUnit
 UnitConstNode::unit() const
 {
@@ -1517,6 +1524,13 @@ NegateNode::base() const
 }
 
 
+void
+NegateNode::setBase(AptNode* base)
+{
+  fBase = base;
+}
+
+
 NegateNode*
 NegateNode::clone() const
 {
@@ -1593,6 +1607,13 @@ RangeNode::from() const
 }
 
 
+void
+RangeNode::setFrom(AptNode* node)
+{
+  fFrom = node;
+}
+
+
 AptNode*
 RangeNode::to() const
 {
@@ -1600,10 +1621,24 @@ RangeNode::to() const
 }
 
 
+void
+RangeNode::setTo(AptNode* node)
+{
+  fTo = node;
+}
+
+
 AptNode*
 RangeNode::by() const
 {
   return fBy;
+}
+
+
+void
+RangeNode::setBy(AptNode* node)
+{
+  fBy = node;
 }
 
 
@@ -1674,6 +1709,27 @@ AptNode*
 ThenWhileNode::test() const
 {
   return fTest;
+}
+
+
+void
+ThenWhileNode::setFirst(AptNode* node)
+{
+  fFirst = node;
+}
+
+
+void
+ThenWhileNode::setStep(AptNode* node)
+{
+  fStep = node;
+}
+
+
+void
+ThenWhileNode::setTest(AptNode* node)
+{
+  fTest = node;
 }
 
 
@@ -1844,6 +1900,20 @@ IfNode::alternate() const
 
 
 void
+IfNode::setTest(AptNode* node)
+{
+  fTest = node;
+}
+
+
+void
+IfNode::setConsequent(AptNode* node)
+{
+  fConsequent = node;
+}
+
+
+void
 IfNode::setAlternate(AptNode* node)
 {
   fAlternate = node;
@@ -1985,6 +2055,20 @@ SelectNode::mappingAt(size_t i) const
 }
 
 
+void
+SelectNode::setConsequentAt(size_t i, AptNode* consq)
+{
+  fMappings[i].fConsequent = consq;
+}
+
+
+void
+SelectNode::setTestValueAt(size_t i, size_t j, AptNode* value)
+{
+  fMappings[i].fTestValues[j] = value;
+}
+
+
 SelectNode::SelectMapping::SelectMapping(const NodeList& values,
                                          AptNode* consequent)
   : fTestValues(values),
@@ -2104,6 +2188,13 @@ MatchNode::mappingAt(size_t i) const
 }
 
 
+void
+MatchNode::setConsequentAt(size_t i, AptNode* consq)
+{
+  fMappings[i].fConsequent = consq;
+}
+
+
 MatchNode::MatchMapping::MatchMapping(const SrcPos& srcpos,
                                       const String& varName,
                                       const Type& matchType,
@@ -2213,6 +2304,13 @@ AptNode*
 OnNode::body() const
 {
   return fBody;
+}
+
+
+void
+OnNode::setBody(AptNode* node)
+{
+  fBody = node;
 }
 
 
@@ -2343,6 +2441,13 @@ AptNode*
 FunctionNode::body() const
 {
   return fBody;
+}
+
+
+void
+FunctionNode::setBody(AptNode* node)
+{
+  fBody = node;
 }
 
 
@@ -2497,6 +2602,13 @@ ApplyNode::base() const
 
 
 void
+ApplyNode::setBase(AptNode* node)
+{
+  fBase = node;
+}
+
+
+void
 ApplyNode::render(XmlRenderer* renderer) const
 {
   renderer->renderNode(this);
@@ -2559,6 +2671,13 @@ AptNode*
 KeyargNode::value() const
 {
   return fValue;
+}
+
+
+void
+KeyargNode::setValue(AptNode* node)
+{
+  fValue = node;
 }
 
 
@@ -2636,10 +2755,24 @@ WhileNode::body() const
 }
 
 
+void
+WhileNode::setBody(AptNode* node)
+{
+  fBody = node;
+}
+
+
 AptNode*
 WhileNode::test() const
 {
   return fTest;
+}
+
+
+void
+WhileNode::setTest(AptNode* node)
+{
+  fTest = node;
 }
 
 
@@ -2795,6 +2928,13 @@ AptNode*
 CastNode::base() const
 {
   return fBase;
+}
+
+
+void
+CastNode::setBase(AptNode* node)
+{
+  fBase = node;
 }
 
 
