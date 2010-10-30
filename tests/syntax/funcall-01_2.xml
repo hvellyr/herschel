@@ -1,2 +1,2 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit><def><vardef sym='a'><init><apply><symbol>ff</symbol><args><int ty='Int'>1</int><int ty='Int'>2</int></args></apply></init></vardef></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><vardef sym='a'><init><apply><symbol>ff</symbol><args><int ty='Int'>1</int><int ty='Int'>2</int></args></apply></init></vardef></def></compile-unit>

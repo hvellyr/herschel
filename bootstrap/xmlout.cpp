@@ -176,8 +176,7 @@ void
 XmlRenderer::displayType(const char* tagName, const Type& type)
 {
   if (type.isDef()) {
-    const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
-    displayOpenTagAttrs(tagName, attrs);
+    displayOpenTag(tagName);
     heather::display(fPort, type.toString());
     displayCloseTag(tagName);
   }
@@ -188,8 +187,7 @@ void
 XmlRenderer::displayTypeVector(const char* tagName, const TypeVector& types)
 {
   if (!types.empty()) {
-    const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
-    displayOpenTagAttrs(tagName, attrs);
+    displayOpenTag(tagName);
     for (size_t i = 0; i < types.size(); i++)
       heather::display(fPort, types[i].toString());
     displayCloseTag(tagName);
@@ -294,6 +292,7 @@ void
 XmlRenderer::renderNode(const BoolNode* node)
 {
   displayEmptyTag(node->value() ? "true" : "false");
+//  displayType
 }
 
 
@@ -313,7 +312,10 @@ XmlRenderer::renderNode(const UnitConstNode* node)
 void
 XmlRenderer::renderNode(const CompileUnitNode* node)
 {
-  displayNodeList("compile-unit", node->children());
+  const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
+  displayOpenTagAttrs("compile-unit", attrs);
+  displayNodeList(NULL, node->children());
+  displayCloseTag("compile-unit");
 }
 
 
