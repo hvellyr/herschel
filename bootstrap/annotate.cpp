@@ -332,9 +332,9 @@ Annotator::annotate(KeyargNode* node)
 void
 Annotator::annotate(MatchNode* node)
 {
-  annotateNode(node->fExpr);
-  for (size_t i = 0; i < node->fMappings.size(); i++) {
-    annotateNode(node->fMappings[i].fConsequent);
+  annotateNode(node->expr());
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    annotateNode(node->mappingAt(i).fConsequent);
   }
 }
 
@@ -342,19 +342,19 @@ Annotator::annotate(MatchNode* node)
 void
 Annotator::annotate(SelectNode* node)
 {
-  annotateNode(node->fTest);
-  if (node->fComparator != NULL)
-    annotateNode(node->fComparator);
+  annotateNode(node->test());
+  if (node->comparator() != NULL)
+    annotateNode(node->comparator());
 
-  for (size_t i = 0; i < node->fMappings.size(); i++) {
-    if (node->fMappings[i].fTestValues.empty()) {
-      annotateNode(node->fMappings[i].fConsequent);
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    if (node->mappingAt(i).fTestValues.empty()) {
+      annotateNode(node->mappingAt(i).fConsequent);
     }
     else {
-      for (size_t j = 0; j < node->fMappings[i].fTestValues.size(); j++)
-        annotateNode(node->fMappings[i].fTestValues[j]);
+      for (size_t j = 0; j < node->mappingAt(i).fTestValues.size(); j++)
+        annotateNode(node->mappingAt(i).fTestValues[j]);
     }
-    annotateNode(node->fMappings[i].fConsequent);
+    annotateNode(node->mappingAt(i).fConsequent);
   }
 }
 

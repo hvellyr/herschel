@@ -813,8 +813,6 @@ namespace heather
     void setTestValueAt(size_t i, size_t j, AptNode* value);
 
   private:
-    friend class Annotator;
-
     Ptr<AptNode>        fTest;
     Ptr<AptNode>        fComparator;
     SelectMappingVector fMappings;
@@ -865,8 +863,6 @@ namespace heather
     void setConsequentAt(size_t i, AptNode* consq);
 
   private:
-    friend class Annotator;
-
     Ptr<AptNode>       fExpr;
     MatchMappingVector fMappings;
   };
