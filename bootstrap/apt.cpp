@@ -11,11 +11,12 @@
 #include <string.h>
 
 #include "annotate.h"
-#include "transform.h"
 #include "apt.h"
 #include "codegen.h"
 #include "scope.h"
 #include "strbuf.h"
+#include "transform.h"
+#include "typify.h"
 #include "xmlout.h"
 
 #include "llvm/Value.h"
@@ -182,6 +183,13 @@ StringNode::transform(Transformator* tr)
 }
 
 
+void
+StringNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 KeywordNode::KeywordNode(const SrcPos& srcpos,
@@ -224,6 +232,13 @@ AptNode*
 KeywordNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+KeywordNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -328,6 +343,13 @@ SymbolNode::transform(Transformator* tr)
 }
 
 
+void
+SymbolNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 ArraySymbolNode::ArraySymbolNode(const SrcPos& srcpos,
@@ -368,6 +390,13 @@ AptNode*
 ArraySymbolNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+ArraySymbolNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -417,6 +446,13 @@ IntNode::transform(Transformator* tr)
 }
 
 
+void
+IntNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 RealNode::RealNode(const SrcPos& srcpos, double value,
@@ -460,6 +496,13 @@ AptNode*
 RealNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+RealNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -510,6 +553,13 @@ RationalNode::transform(Transformator* tr)
 }
 
 
+void
+RationalNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 CharNode::CharNode(const SrcPos& srcpos, Char value)
@@ -553,6 +603,13 @@ CharNode::transform(Transformator* tr)
 }
 
 
+void
+CharNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 BoolNode::BoolNode(const SrcPos& srcpos, bool value)
@@ -593,6 +650,13 @@ AptNode*
 BoolNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+BoolNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -642,6 +706,13 @@ UnitConstNode::transform(Transformator* tr)
 }
 
 
+void
+UnitConstNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
@@ -683,6 +754,13 @@ AptNode*
 CompileUnitNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+CompileUnitNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -743,6 +821,13 @@ LetNode::transform(Transformator* tr)
 }
 
 
+void
+LetNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 DefNode::DefNode(AptNode* node)
@@ -782,6 +867,13 @@ AptNode*
 DefNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+DefNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -937,6 +1029,12 @@ VardefNode::transform(Transformator* tr)
 }
 
 
+void
+VardefNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
 
 //----------------------------------------------------------------------------
 
@@ -1010,6 +1108,13 @@ ParamNode::transform(Transformator* tr)
 }
 
 
+void
+ParamNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 SlotdefNode::SlotdefNode(const SrcPos& srcpos,
@@ -1058,6 +1163,13 @@ SlotdefNode::transform(Transformator* tr)
 }
 
 
+void
+SlotdefNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 ArrayNode::ArrayNode(const SrcPos& srcpos)
@@ -1102,6 +1214,13 @@ ArrayNode::transform(Transformator* tr)
 }
 
 
+void
+ArrayNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 VectorNode::VectorNode(const SrcPos& srcpos)
@@ -1143,6 +1262,13 @@ AptNode*
 VectorNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+VectorNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -1197,6 +1323,13 @@ AptNode*
 DictNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+DictNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -1292,6 +1425,13 @@ BinaryNode::transform(Transformator* tr)
 }
 
 
+void
+BinaryNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 NegateNode::NegateNode(const SrcPos& srcpos, AptNode* base)
@@ -1346,6 +1486,13 @@ AptNode*
 NegateNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+NegateNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -1418,6 +1565,13 @@ RangeNode::transform(Transformator* tr)
 }
 
 
+void
+RangeNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //--------------------------------------------------------------------------
 
 ThenWhileNode::ThenWhileNode(const SrcPos& srcpos,
@@ -1464,6 +1618,13 @@ AptNode*
 ThenWhileNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+ThenWhileNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -1539,6 +1700,13 @@ AptNode*
 AssignNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+AssignNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -1619,6 +1787,13 @@ IfNode::transform(Transformator* tr)
 }
 
 
+void
+IfNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //------------------------------------------------------------------------------
 
 SelectNode::SelectNode(const SrcPos& srcpos,
@@ -1677,6 +1852,41 @@ SelectNode::addElseMapping(AptNode* alternate)
 }
 
 
+AptNode*
+SelectNode::test()
+{
+  return fTest;
+}
+
+
+void
+SelectNode::setTest(AptNode* nd)
+{
+  fTest = nd;
+}
+
+
+AptNode*
+SelectNode::comparator()
+{
+  return fComparator;
+}
+
+
+void
+SelectNode::setComparator(AptNode* nd)
+{
+  fComparator = nd;
+}
+
+
+SelectNode::SelectMappingVector&
+SelectNode::mappings()
+{
+  return fMappings;
+}
+
+
 SelectNode::SelectMapping::SelectMapping(const NodeList& values,
                                          AptNode* consequent)
   : fTestValues(values),
@@ -1710,6 +1920,13 @@ AptNode*
 SelectNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+SelectNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -1754,6 +1971,27 @@ MatchNode::addMapping(const SrcPos& srcpos, const String& varName,
 }
 
 
+AptNode*
+MatchNode::expr()
+{
+  return fExpr;
+}
+
+
+void
+MatchNode::setExpr(AptNode* nd)
+{
+  fExpr = nd;
+}
+
+
+MatchNode::MatchMappingVector&
+MatchNode::mappings()
+{
+  return fMappings;
+}
+
+
 MatchNode::MatchMapping::MatchMapping(const SrcPos& srcpos,
                                       const String& varName,
                                       const Type& matchType,
@@ -1793,6 +2031,13 @@ AptNode*
 MatchNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+MatchNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -1880,6 +2125,13 @@ OnNode::params()
 }
 
 
+void
+OnNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 BlockNode::BlockNode(const SrcPos& srcpos)
@@ -1921,6 +2173,13 @@ AptNode*
 BlockNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+BlockNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -1986,6 +2245,13 @@ AptNode*
 FunctionNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+FunctionNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -2080,6 +2346,12 @@ FuncDefNode::transform(Transformator* tr)
 }
 
 
+void
+FuncDefNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
 
 //----------------------------------------------------------------------------
 
@@ -2133,6 +2405,13 @@ ApplyNode::transform(Transformator* tr)
 }
 
 
+void
+ApplyNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 KeyargNode::KeyargNode(const SrcPos& srcpos,
@@ -2175,6 +2454,13 @@ AptNode*
 KeyargNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+KeyargNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -2235,6 +2521,13 @@ AptNode*
 WhileNode::transform(Transformator* tr)
 {
   return tr->transform(this);
+}
+
+
+void
+WhileNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
 }
 
 
@@ -2299,6 +2592,13 @@ TypeDefNode::transform(Transformator* tr)
 }
 
 
+void
+TypeDefNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}
+
+
 //----------------------------------------------------------------------------
 
 CastNode::CastNode(const SrcPos& srcpos,
@@ -2359,3 +2659,8 @@ CastNode::transform(Transformator* tr)
 }
 
 
+void
+CastNode::typify(Typifier* typifier)
+{
+  typifier->typify(this);
+}

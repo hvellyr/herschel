@@ -5,7 +5,7 @@
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
 
-   - look up all name references and complete their namespaces
+   - precompile transformation (simplification, etc.)
  */
 
 #include "transform.h"

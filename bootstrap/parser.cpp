@@ -18,6 +18,7 @@
 #include "scope.h"
 #include "tokenizer.h"
 #include "transform.h"
+#include "typify.h"
 #include "xmlout.h"
 
 using namespace heather;
@@ -220,6 +221,30 @@ Parser::annotate(AptNode* node, bool doTrace)
 
 
 AptNode*
+Parser::typify(AptNode* node, bool doTrace)
+{
+  Ptr<AptNode> n = node;
+  bool doPass5 = true;
+#if defined(UNITTESTS)
+  doPass5 = Properties::test_passLevel() > 4;
+#endif
+
+  if (doPass5) {
+    Ptr<Typifier> pTy = new Typifier;
+
+    pTy->typifyRecursively(n);
+
+    if (doTrace && Properties::isTraceTypify() && n != NULL) {
+      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+      out->render(n);
+    }
+  }
+
+  return n.release();
+}
+
+
+AptNode*
 Parser::parseImpl(Port<Char>* port, const String& srcName,
                   bool doTrace)
 {
@@ -229,10 +254,11 @@ Parser::parseImpl(Port<Char>* port, const String& srcName,
 
   try {
     Token parsedExprs = doPass1Parse(doTrace);
-    Ptr<AptNode> apt = doPass2Parse(parsedExprs, doTrace);
+    Ptr<AptNode> apt  = doPass2Parse(parsedExprs, doTrace);
     Ptr<AptNode> apt2 = transform(apt.release(), doTrace);
     Ptr<AptNode> apt3 = annotate(apt2.release(), doTrace);
-    return apt3.release();
+    Ptr<AptNode> apt4 = typify(apt3.release(), doTrace);
+    return apt4.release();
   }
   catch (const Exception& e) {
     logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));

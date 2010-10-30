@@ -49,6 +49,7 @@ SOURCES =         \
 	type.cpp        \
 	typeenum.cpp    \
 	typectx.cpp     \
+	typify.cpp      \
 	valuesaver.cpp  \
 	xmlout.cpp
 
@@ -88,6 +89,7 @@ HEADERS =         \
 	type.h          \
 	typeenum.h      \
 	typectx.h       \
+	typify.h        \
 	valuesaver.h    \
 	xmlout.h
 
