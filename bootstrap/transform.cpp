@@ -103,7 +103,7 @@ Transformator::transform(FuncDefNode* node)
 {
   transformNodeList(node->params());
   if (node->body() != NULL) {
-    node->fBody = transformNode(node->body());
+    node->setBody(transformNode(node->body()));
   }
   return node;
 }
@@ -113,7 +113,7 @@ AptNode*
 Transformator::transform(FunctionNode* node)
 {
   transformNodeList(node->params());
-  node->fBody = transformNode(node->body());
+  node->setBody(transformNode(node->body()));
   return node;
 }
 
@@ -277,7 +277,7 @@ AptNode*
 Transformator::transform(ParamNode* node)
 {
   if (node->initExpr() != NULL)
-    node->fInitExpr = transformNode(node->initExpr());
+    node->setInitExpr(transformNode(node->initExpr()));
   return node;
 }
 
@@ -285,7 +285,7 @@ Transformator::transform(ParamNode* node)
 AptNode*
 Transformator::transform(ApplyNode* node)
 {
-  node->fBase = transformNode(node->base());
+  node->setBase(transformNode(node->base()));
   transformNodeList(node->children());
   return node;
 }
@@ -320,7 +320,7 @@ Transformator::transform(BinaryNode* node)
 AptNode*
 Transformator::transform(NegateNode* node)
 {
-  node->fBase = transformNode(node->base());
+  node->setBase(transformNode(node->base()));
   return node;
 }
 
@@ -328,10 +328,10 @@ Transformator::transform(NegateNode* node)
 AptNode*
 Transformator::transform(IfNode* node)
 {
-  node->fTest = transformNode(node->test());
-  node->fConsequent = transformNode(node->consequent());
+  node->setTest(transformNode(node->test()));
+  node->setConsequent(transformNode(node->consequent()));
   if (node->alternate())
-    node->fAlternate = transformNode(node->alternate());
+    node->setAlternate(transformNode(node->alternate()));
   return node;
 }
 
@@ -339,7 +339,7 @@ Transformator::transform(IfNode* node)
 AptNode*
 Transformator::transform(KeyargNode* node)
 {
-  node->fValue = transformNode(node->value());
+  node->setValue(transformNode(node->value()));
   return node;
 }
 
@@ -347,9 +347,9 @@ Transformator::transform(KeyargNode* node)
 AptNode*
 Transformator::transform(MatchNode* node)
 {
-  node->fExpr = transformNode(node->fExpr);
-  for (size_t i = 0; i < node->fMappings.size(); i++) {
-    node->fMappings[i].fConsequent = transformNode(node->fMappings[i].fConsequent);
+  node->setExpr(transformNode(node->expr()));
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    node->setConsequentAt(i, transformNode(node->mappingAt(i).fConsequent));
   }
   return node;
 }
@@ -358,19 +358,19 @@ Transformator::transform(MatchNode* node)
 AptNode*
 Transformator::transform(SelectNode* node)
 {
-  node->fTest = transformNode(node->fTest);
-  if (node->fComparator != NULL)
-    node->fComparator = transformNode(node->fComparator);
+  node->setTest(transformNode(node->test()));
+  if (node->comparator() != NULL)
+    node->setComparator(transformNode(node->comparator()));
 
-  for (size_t i = 0; i < node->fMappings.size(); i++) {
-    if (node->fMappings[i].fTestValues.empty()) {
-      node->fMappings[i].fConsequent = transformNode(node->fMappings[i].fConsequent);
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    if (node->mappingAt(i).fTestValues.empty()) {
+      node->setConsequentAt(i, transformNode(node->mappingAt(i).fConsequent));
     }
     else {
-      for (size_t j = 0; j < node->fMappings[i].fTestValues.size(); j++)
-        node->fMappings[i].fTestValues[j] = transformNode(node->fMappings[i].fTestValues[j]);
+      for (size_t j = 0; j < node->mappingAt(i).fTestValues.size(); j++)
+        node->setTestValueAt(i, j, transformNode(node->mappingAt(i).fTestValues[j]));
     }
-    node->fMappings[i].fConsequent = transformNode(node->fMappings[i].fConsequent);
+    node->setConsequentAt(i, transformNode(node->mappingAt(i).fConsequent));
   }
   return node;
 }
@@ -380,7 +380,7 @@ AptNode*
 Transformator::transform(OnNode* node)
 {
   transformNodeList(node->params());
-  node->fBody = transformNode(node->body());
+  node->setBody(transformNode(node->body()));
   return node;
 }
 
@@ -388,10 +388,10 @@ Transformator::transform(OnNode* node)
 AptNode*
 Transformator::transform(RangeNode* node)
 {
-  node->fFrom = transformNode(node->from());
-  node->fTo = transformNode(node->to());
+  node->setFrom(transformNode(node->from()));
+  node->setTo(transformNode(node->to()));
   if (node->by() != NULL)
-    node->fBy = transformNode(node->by());
+    node->setBy(transformNode(node->by()));
   return node;
 }
 
@@ -399,9 +399,9 @@ Transformator::transform(RangeNode* node)
 AptNode*
 Transformator::transform(ThenWhileNode* node)
 {
-  node->fFirst = transformNode(node->first());
-  node->fStep = transformNode(node->step());
-  node->fTest = transformNode(node->test());
+  node->setFirst(transformNode(node->first()));
+  node->setStep(transformNode(node->step()));
+  node->setTest(transformNode(node->test()));
   return node;
 }
 
@@ -417,8 +417,8 @@ Transformator::transform(TypeDefNode* node)
 AptNode*
 Transformator::transform(WhileNode* node)
 {
-  node->fTest = transformNode(node->test());
-  node->fBody = transformNode(node->body());
+  node->setTest(transformNode(node->test()));
+  node->setBody(transformNode(node->body()));
   return node;
 }
 
@@ -442,7 +442,7 @@ Transformator::transform(DictNode* node)
 AptNode*
 Transformator::transform(CastNode* node)
 {
-  node->fBase = transformNode(node->base());
+  node->setBase(transformNode(node->base()));
   return node;
 }
 
@@ -508,7 +508,7 @@ Transformator::transform(KeywordNode* node)
 AptNode*
 Transformator::transform(UnitConstNode* node)
 {
-  node->fValue = transformNode(node->value());
+  node->setValue(transformNode(node->value()));
   return node;
 }
 
