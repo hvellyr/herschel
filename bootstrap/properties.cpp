@@ -37,7 +37,8 @@ static bool sIsPass2Tracing = false;
 static bool sIsAnnotateTracing = false;
 static bool sIsTransformTracing = false;
 static bool sIsTokenizerTracing = false;
-static int sPassLevel = 4;
+static bool sIsTypifyTracing = false;
+static int sPassLevel = 5;
 static bool sShouldIgnoreDocStrings = true;
 static bool sVerbose = false;
 
@@ -110,6 +111,8 @@ Properties::setTrace(const String& key, bool value)
     sIsAnnotateTracing = value;
   else if (key == String("transform"))
     sIsTransformTracing = value;
+  else if (key == String("typify"))
+    sIsTypifyTracing = value;
   else if (key == String("import"))
     sIsImportFileTracing = value;
   else if (key == String("macro"))
@@ -164,6 +167,13 @@ bool
 Properties::isTraceTransform()
 {
   return sIsTransformTracing;
+}
+
+
+bool
+Properties::isTraceTypify()
+{
+  return sIsTypifyTracing;
 }
 
 

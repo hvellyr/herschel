@@ -33,7 +33,7 @@ namespace heather
   class XmlRenderer;
   class Annotator;
   class Transformator;
-
+  class Typifier;
 
   //--------------------------------------------------------------------------
 
@@ -62,6 +62,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator) = 0;
     virtual AptNode* transform(Transformator* annotator) = 0;
+    virtual void typify(Typifier* typifier) = 0;
 
   protected:
     SrcPos     fSrcPos;
@@ -92,6 +93,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -112,6 +114,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -154,6 +157,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* an);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   protected:
     friend class XmlRenderer;
@@ -177,6 +181,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -217,6 +222,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -233,6 +239,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -249,6 +256,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -264,6 +272,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -284,6 +293,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -305,6 +315,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
     AptNode* value() const { return fValue; }
 
@@ -329,6 +340,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -360,6 +372,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -373,6 +386,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -444,6 +458,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -481,6 +496,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -516,6 +532,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -537,6 +554,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -553,6 +571,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -571,6 +590,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -597,6 +617,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -624,6 +645,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -652,6 +674,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class Transformator;
@@ -675,6 +698,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
     AptNode* first() const { return fFirst; }
     AptNode* step() const { return fStep; }
@@ -709,6 +733,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -732,6 +757,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
     AptNode* test() const;
     AptNode* consequent() const;
@@ -754,25 +780,6 @@ namespace heather
   class SelectNode : public AptNode
   {
   public:
-    SelectNode(const SrcPos& srcpos,
-               AptNode* test, AptNode* comparator);
-
-    virtual SelectNode* clone() const;
-
-    virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
-    virtual AptNode* transform(Transformator* annotator);
-
-    void addMapping(const NodeList& mappings, AptNode* consequent);
-    void addMapping(AptNode* mapping, AptNode* consequent);
-    void addElseMapping(AptNode* alternate);
-
-  private:
-    friend class XmlRenderer;
-    friend class Annotator;
-    friend class Transformator;
-
     struct SelectMapping
     {
       SelectMapping(const NodeList& values, AptNode* consequent);
@@ -785,6 +792,33 @@ namespace heather
 
     typedef std::vector<SelectMapping> SelectMappingVector;
 
+
+    SelectNode(const SrcPos& srcpos,
+               AptNode* test, AptNode* comparator);
+
+    virtual SelectNode* clone() const;
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
+    virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
+
+    void addMapping(const NodeList& mappings, AptNode* consequent);
+    void addMapping(AptNode* mapping, AptNode* consequent);
+    void addElseMapping(AptNode* alternate);
+
+    AptNode* test();
+    void setTest(AptNode* nd);
+    AptNode* comparator();
+    void setComparator(AptNode* nd);
+    SelectMappingVector& mappings();
+
+  private:
+    friend class XmlRenderer;
+    friend class Annotator;
+    friend class Transformator;
+
     Ptr<AptNode>        fTest;
     Ptr<AptNode>        fComparator;
     SelectMappingVector fMappings;
@@ -796,24 +830,6 @@ namespace heather
   class MatchNode : public AptNode
   {
   public:
-    MatchNode(const SrcPos& srcpos, AptNode* expr);
-
-    virtual MatchNode* clone() const;
-
-    virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
-    virtual AptNode* transform(Transformator* annotator);
-
-    void addMapping(const SrcPos& srcpos, const String& varName,
-                    const Type& matchType,
-                    AptNode* consequent);
-
-  private:
-    friend class XmlRenderer;
-    friend class Annotator;
-    friend class Transformator;
-
     struct MatchMapping
     {
       MatchMapping(const SrcPos& srcpos, const String& varName,
@@ -828,6 +844,30 @@ namespace heather
     };
 
     typedef std::vector<MatchMapping> MatchMappingVector;
+
+
+    MatchNode(const SrcPos& srcpos, AptNode* expr);
+
+    virtual MatchNode* clone() const;
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
+    virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
+
+    void addMapping(const SrcPos& srcpos, const String& varName,
+                    const Type& matchType,
+                    AptNode* consequent);
+
+    AptNode* expr();
+    void setExpr(AptNode* nd);
+    MatchMappingVector& mappings();
+
+  private:
+    friend class XmlRenderer;
+    friend class Annotator;
+    friend class Transformator;
 
     Ptr<AptNode>       fExpr;
     MatchMappingVector fMappings;
@@ -848,6 +888,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
     const String& key() const;
     const AptNode* body() const;
@@ -877,6 +918,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -896,6 +938,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
     const NodeList& params() const;
     const Type& retType() const;
@@ -950,6 +993,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
     virtual const String& name() const { return funcName(); }
 
@@ -978,6 +1022,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class XmlRenderer;
@@ -1002,6 +1047,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
     const String& key() const { return fKey; }
     AptNode* value() const { return fValue; }
@@ -1028,6 +1074,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
     AptNode* body() const;
     AptNode* test() const;
@@ -1061,6 +1108,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
     const String& name() { return fTypeName; }
     const Type& defType() { return fIsa; }
@@ -1096,6 +1144,7 @@ namespace heather
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
 
   private:
     friend class Transformator;
