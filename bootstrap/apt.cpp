@@ -155,6 +155,13 @@ StringNode::clone() const
 }
 
 
+const String&
+StringNode::value() const
+{
+  return fValue;
+}
+
+
 void
 StringNode::render(XmlRenderer* renderer) const
 {
@@ -204,6 +211,13 @@ KeywordNode*
 KeywordNode::clone() const
 {
   return cloneScope(this, new KeywordNode(fSrcPos, fValue));
+}
+
+
+const String&
+KeywordNode::value() const
+{
+  return fValue;
 }
 
 
@@ -283,6 +297,13 @@ const String&
 SymbolNode::name() const
 {
   return fValue;
+}
+
+
+const TypeVector&
+SymbolNode::generics() const
+{
+  return fGenerics;
 }
 
 
@@ -575,6 +596,13 @@ CharNode::clone() const
 }
 
 
+Char
+CharNode::value() const
+{
+  return fValue;
+}
+
+
 void
 CharNode::render(XmlRenderer* renderer) const
 {
@@ -622,6 +650,13 @@ BoolNode*
 BoolNode::clone() const
 {
   return cloneScope(this, new BoolNode(fSrcPos, fValue));
+}
+
+
+Char
+BoolNode::value() const
+{
+  return fValue;
 }
 
 
@@ -675,6 +710,20 @@ UnitConstNode*
 UnitConstNode::clone() const
 {
   return cloneScope(this, new UnitConstNode(fSrcPos, nodeClone(fValue), fUnit));
+}
+
+
+AptNode*
+UnitConstNode::value() const
+{
+  return fValue;
+}
+
+
+TypeUnit
+UnitConstNode::unit() const
+{
+  return fUnit;
 }
 
 
@@ -776,6 +825,13 @@ AptNode*
 BaseDefNode::defNode() const
 {
   return fDefined;
+}
+
+
+void
+BaseDefNode::setDefNode(AptNode* val)
+{
+  fDefined = val;
 }
 
 
@@ -890,13 +946,6 @@ BindingNode::BindingNode(const SrcPos& srcpos,
 { }
 
 
-const String&
-BindingNode::symbolName() const
-{
-  return fSymbolName;
-}
-
-
 const Type&
 BindingNode::type() const
 {
@@ -912,6 +961,13 @@ BindingNode::initExpr() const
 
 
 void
+BindingNode::setInitExpr(AptNode* val)
+{
+  fInitExpr = val;
+}
+
+
+void
 BindingNode::setAllocType(BindingAllocType allocType)
 {
   fAllocType = allocType;
@@ -922,6 +978,13 @@ BindingAllocType
 BindingNode::allocType() const
 {
   return fAllocType;
+}
+
+
+const String&
+BindingNode::name() const
+{
+  return fSymbolName;
 }
 
 
@@ -1132,6 +1195,13 @@ SlotdefNode::clone() const
   return cloneScope(this,
                     new SlotdefNode(fSrcPos, fSymbolName, fFlags,
                                     fType.clone(), nodeClone(fInitExpr)));
+}
+
+
+unsigned int
+SlotdefNode::flags() const
+{
+  return fFlags;
 }
 
 
@@ -1440,15 +1510,8 @@ NegateNode::NegateNode(const SrcPos& srcpos, AptNode* base)
 { }
 
 
-const AptNode*
-NegateNode::base() const
-{
-  return fBase;
-}
-
-
 AptNode*
-NegateNode::base()
+NegateNode::base() const
 {
   return fBase;
 }
@@ -1590,6 +1653,27 @@ ThenWhileNode::clone() const
                                             nodeClone(fFirst),
                                             nodeClone(fStep),
                                             nodeClone(fTest)));
+}
+
+
+AptNode*
+ThenWhileNode::first() const
+{
+  return fFirst;
+}
+
+
+AptNode*
+ThenWhileNode::step() const
+{
+  return fStep;
+}
+
+
+AptNode*
+ThenWhileNode::test() const
+{
+  return fTest;
 }
 
 
@@ -1853,7 +1937,7 @@ SelectNode::addElseMapping(AptNode* alternate)
 
 
 AptNode*
-SelectNode::test()
+SelectNode::test() const
 {
   return fTest;
 }
@@ -1867,7 +1951,7 @@ SelectNode::setTest(AptNode* nd)
 
 
 AptNode*
-SelectNode::comparator()
+SelectNode::comparator() const
 {
   return fComparator;
 }
@@ -1884,6 +1968,20 @@ SelectNode::SelectMappingVector&
 SelectNode::mappings()
 {
   return fMappings;
+}
+
+
+size_t
+SelectNode::mappingCount() const
+{
+  return fMappings.size();
+}
+
+
+const SelectNode::SelectMapping&
+SelectNode::mappingAt(size_t i) const
+{
+  return fMappings[i];
 }
 
 
@@ -1972,7 +2070,7 @@ MatchNode::addMapping(const SrcPos& srcpos, const String& varName,
 
 
 AptNode*
-MatchNode::expr()
+MatchNode::expr() const
 {
   return fExpr;
 }
@@ -1989,6 +2087,20 @@ MatchNode::MatchMappingVector&
 MatchNode::mappings()
 {
   return fMappings;
+}
+
+
+size_t
+MatchNode::mappingCount() const
+{
+  return fMappings.size();
+}
+
+
+const MatchNode::MatchMapping&
+MatchNode::mappingAt(size_t i) const
+{
+  return fMappings[i];
 }
 
 
@@ -2097,15 +2209,8 @@ OnNode::key() const
 }
 
 
-const AptNode*
-OnNode::body() const
-{
-  return fBody;
-}
-
-
 AptNode*
-OnNode::body()
+OnNode::body() const
 {
   return fBody;
 }
@@ -2220,10 +2325,24 @@ FunctionNode::params() const
 }
 
 
+NodeList&
+FunctionNode::params()
+{
+  return fParams;
+}
+
+
 const Type&
 FunctionNode::retType() const
 {
   return fRetType;
+}
+
+
+AptNode*
+FunctionNode::body() const
+{
+  return fBody;
 }
 
 
@@ -2302,7 +2421,7 @@ FuncDefNode::isAbstract() const
 
 
 const String&
-FuncDefNode::funcName() const
+FuncDefNode::name() const
 {
   return fSym;
 }
@@ -2426,6 +2545,20 @@ KeyargNode*
 KeyargNode::clone() const
 {
   return cloneScope(this, new KeyargNode(fSrcPos, fKey, nodeClone(fValue)));
+}
+
+
+const String&
+KeyargNode::key() const
+{
+  return fKey;
+}
+
+
+AptNode*
+KeyargNode::value() const
+{
+  return fValue;
 }
 
 
@@ -2561,6 +2694,55 @@ TypeDefNode::clone() const
                                     copyNodes(fSlots),
                                     copyNodes(fReqProtocol),
                                     copyNodes(fOnExprs)));
+}
+
+
+const String&
+TypeDefNode::name() const
+{
+  return fTypeName;
+}
+
+
+const Type&
+TypeDefNode::defType() const
+{
+  return fIsa;
+}
+
+
+bool
+TypeDefNode::isClass() const
+{
+  return fIsClass;
+}
+
+
+const NodeList&
+TypeDefNode::params() const
+{
+  return fParams;
+}
+
+
+const NodeList&
+TypeDefNode::slots() const
+{
+  return fSlots;
+}
+
+
+const NodeList&
+TypeDefNode::reqProtocol() const
+{
+  return fReqProtocol;
+}
+
+
+const NodeList&
+TypeDefNode::onExprs() const
+{
+  return fOnExprs;
 }
 
 

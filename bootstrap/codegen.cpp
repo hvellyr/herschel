@@ -319,7 +319,7 @@ CodeGenerator::createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
 llvm::Value*
 CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
-  String varnm = heather::mangleToC(node->symbolName());
+  String varnm = heather::mangleToC(node->name());
   llvm::GlobalVariable* gv =
   new llvm::GlobalVariable(llvm::Type::getInt32Ty(context()),
                            false, // isConstant,
@@ -369,8 +369,8 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 
   addGlobalCtor(func, 1);
 
-  assert(fGlobalVariables.find(node->symbolName()) == fGlobalVariables.end());
-  fGlobalVariables[node->symbolName()] = gv;
+  assert(fGlobalVariables.find(node->name()) == fGlobalVariables.end());
+  fGlobalVariables[node->name()] = gv;
 
   return initval;
 }
@@ -397,9 +397,9 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
 
   llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
-                                                       node->symbolName());
+                                                       node->name());
   fBuilder.CreateStore(initval, stackSlot);
-  fNamedValues[node->symbolName()] = stackSlot;
+  fNamedValues[node->name()] = stackSlot;
 
   return initval;
 }
@@ -534,7 +534,7 @@ llvm::Value*
 CodeGenerator::codegen(const IntNode* node)
 {
   return llvm::ConstantInt::get(context(),
-                                llvm::APInt(32, node->fValue, true));
+                                llvm::APInt(32, node->value(), true));
 }
 
 
@@ -542,7 +542,7 @@ llvm::Value*
 CodeGenerator::codegen(const RealNode* node)
 {
   return llvm::ConstantFP::get(context(),
-                               llvm::APFloat(node->fValue));
+                               llvm::APFloat(node->value()));
 }
 
 
@@ -637,10 +637,10 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 
   String funcnm;
   if (node->linkage() == String("C")) {
-    funcnm = node->funcName();
+    funcnm = node->name();
   }
   else {
-    funcnm = heather::mangleToC(node->funcName());
+    funcnm = heather::mangleToC(node->name());
   }
 
   llvm::Function *func = llvm::Function::Create(ft,
@@ -688,7 +688,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
     if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
       fOptPassManager->run(*func);
 
-    if (!isLocal && node->funcName() == String("app|main")) {
+    if (!isLocal && node->name() == String("app|main")) {
       fHasMainFunc = true;
     }
   }

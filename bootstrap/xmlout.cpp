@@ -202,34 +202,34 @@ XmlRenderer::displayTypeVector(const char* tagName, const TypeVector& types)
 void
 XmlRenderer::renderNode(const KeywordNode* node)
 {
-  displayTag("keyw", node->fValue);
+  displayTag("keyw", node->value());
 }
 
 
 void
 XmlRenderer::renderNode(const StringNode* node)
 {
-  displayTag("str", node->fValue);
+  displayTag("str", node->value());
 }
 
 
 void
 XmlRenderer::renderNode(const SymbolNode* node)
 {
-  if (node->fGenerics.empty()) {
+  if (node->generics().empty()) {
     if (node->isShared())
-      displayTagAttr("symbol", "acc='shared'", node->fValue);
+      displayTagAttr("symbol", "acc='shared'", node->name());
     else
-      displayTag("symbol", node->fValue);
+      displayTag("symbol", node->name());
   }
   else {
     StringBuffer attrs;
-    attrs << "nm='" << node->fValue << "'";
+    attrs << "nm='" << node->name() << "'";
     if (node->isShared())
       attrs << " acc='shared'";
 
     displayOpenTagAttrs("symbol", StrHelper(attrs.toString()));
-    displayTypeVector("gen", node->fGenerics);
+    displayTypeVector("gen", node->generics());
     displayCloseTag("symbol");
   }
 }
@@ -238,9 +238,9 @@ XmlRenderer::renderNode(const SymbolNode* node)
 void
 XmlRenderer::renderNode(const ArraySymbolNode* node)
 {
-  assert(node->fGenerics.empty());
+  assert(node->generics().empty());
 
-  displayTagAttr("symbol", "array='t'", node->fValue);
+  displayTagAttr("symbol", "array='t'", node->name());
 }
 
 
@@ -248,12 +248,12 @@ void
 XmlRenderer::renderNode(const IntNode* node)
 {
   StringBuffer attrs;
-  attrs << "ty='" << node->fType.typeName() << "'";
-  if (node->fIsImaginary)
+  attrs << "ty='" << node->type().typeName() << "'";
+  if (node->isImaginary())
     attrs << " imag='t'";
 
   displayTagAttr("int", StrHelper(attrs.toString()),
-                 String() + node->fValue);
+                 String() + node->value());
 }
 
 
@@ -261,12 +261,12 @@ void
 XmlRenderer::renderNode(const RealNode* node)
 {
   StringBuffer attrs;
-  attrs << "ty='" << node->fType.typeName() << "'";
-  if (node->fIsImaginary)
+  attrs << "ty='" << node->type().typeName() << "'";
+  if (node->isImaginary())
     attrs << " imag='t'";
 
   displayTagAttr("real", StrHelper(attrs.toString()),
-                 String() + node->fValue);
+                 String() + node->value());
 }
 
 
@@ -274,11 +274,11 @@ void
 XmlRenderer::renderNode(const RationalNode* node)
 {
   StringBuffer attrs;
-  attrs << "ty='" << node->fType.typeName() << "'";
-  if (node->fIsImaginary)
+  attrs << "ty='" << node->type().typeName() << "'";
+  if (node->isImaginary())
     attrs << " imag='t'";
 
-  String val = String() + node->fValue.numerator() + "/" + node->fValue.denominator();
+  String val = String() + node->value().numerator() + "/" + node->value().denominator();
   displayTagAttr("real", StrHelper(attrs.toString()), val);
 }
 
@@ -286,14 +286,14 @@ XmlRenderer::renderNode(const RationalNode* node)
 void
 XmlRenderer::renderNode(const CharNode* node)
 {
-  displayTag("char", fromInt(int(node->fValue)));
+  displayTag("char", fromInt(int(node->value())));
 }
 
 
 void
 XmlRenderer::renderNode(const BoolNode* node)
 {
-  displayEmptyTag(node->fValue ? "true" : "false");
+  displayEmptyTag(node->value() ? "true" : "false");
 }
 
 
@@ -301,11 +301,11 @@ void
 XmlRenderer::renderNode(const UnitConstNode* node)
 {
   StringBuffer attrs;
-  attrs << "unit='" << node->fUnit.name() << "'";
+  attrs << "unit='" << node->unit().name() << "'";
 
   displayOpenTagAttrs("uvalue", StrHelper(attrs.toString()));
-  displayType("type", node->fUnit.effType());
-  displayNode(NULL, node->fValue);
+  displayType("type", node->unit().effType());
+  displayNode(NULL, node->value());
   displayCloseTag("uvalue");
 }
 
@@ -321,7 +321,7 @@ void
 XmlRenderer::renderNode(const LetNode* node)
 {
   displayOpenTag("let");
-  displayNode(NULL, node->fDefined);
+  displayNode(NULL, node->defNode());
   displayCloseTag("let");
 }
 
@@ -330,7 +330,7 @@ void
 XmlRenderer::renderNode(const DefNode* node)
 {
   displayOpenTag("def");
-  displayNode(NULL, node->fDefined);
+  displayNode(NULL, node->defNode());
   displayCloseTag("def");
 }
 
@@ -342,9 +342,9 @@ XmlRenderer::renderNode(const VardefNode* node)
 {
   StringBuffer attrs;
 
-  attrs << "sym='" << node->fSymbolName << "'";
+  attrs << "sym='" << node->name() << "'";
 
-  switch (node->fFlags) {
+  switch (node->flags()) {
   case kNormalVar:
     break;
   case kFluidVar:
@@ -374,8 +374,8 @@ XmlRenderer::renderNode(const VardefNode* node)
 
   displayOpenTagAttrs("vardef", StrHelper(attrs.toString()));
 
-  displayType("type", node->fType);
-  displayNode("init", node->fInitExpr);
+  displayType("type", node->type());
+  displayNode("init", node->initExpr());
 
   displayCloseTag("vardef");
 }
@@ -386,9 +386,9 @@ XmlRenderer::renderNode(const ParamNode* node)
 {
   StringBuffer attrs;
 
-  attrs << "sym='" << node->fSymbolName << "'";
+  attrs << "sym='" << node->name() << "'";
 
-  switch (node->fFlags) {
+  switch (node->flags()) {
   case kPosArg:
     attrs << " type='pos'";
     break;
@@ -396,7 +396,7 @@ XmlRenderer::renderNode(const ParamNode* node)
     attrs << " type='spec'";
     break;
   case kNamedArg:
-    attrs << " type='key' key='" << node->fKey << "'";
+    attrs << " type='key' key='" << node->key() << "'";
     break;
   case kRestArg:
     attrs << " type='rest'";
@@ -413,8 +413,8 @@ XmlRenderer::renderNode(const ParamNode* node)
 
   displayOpenTagAttrs("param", StrHelper(attrs.toString()));
 
-  displayType("type", node->fType);
-  displayNode("init", node->fInitExpr);
+  displayType("type", node->type());
+  displayNode("init", node->initExpr());
 
   displayCloseTag("param");
 }
@@ -425,28 +425,28 @@ XmlRenderer::renderNode(const SlotdefNode* node)
 {
   StringBuffer attrs;
 
-  attrs << "sym='" << node->fSymbolName << "'";
+  attrs << "sym='" << node->name() << "'";
 
-  if ((node->fFlags & kTransientSlot) != 0) {
+  if ((node->flags() & kTransientSlot) != 0) {
     attrs << " transient='t'";
   }
-  if ((node->fFlags & kReadonlySlot) != 0) {
+  if ((node->flags() & kReadonlySlot) != 0) {
     attrs << " readonly='t'";
   }
-  if ((node->fFlags & kObservableSlot) != 0) {
+  if ((node->flags() & kObservableSlot) != 0) {
     attrs << " observable='t'";
   }
-  if ((node->fFlags & kAutoSlot) != 0) {
+  if ((node->flags() & kAutoSlot) != 0) {
     attrs << " auto='t'";
   }
 
-  if ((node->fFlags & kPublicSlot) != 0) {
+  if ((node->flags() & kPublicSlot) != 0) {
     attrs << " viz='public'";
   }
-  else if ((node->fFlags & kOuterSlot) != 0) {
+  else if ((node->flags() & kOuterSlot) != 0) {
     attrs << " viz='outer'";
   }
-  else if ((node->fFlags & kInnerSlot) != 0) {
+  else if ((node->flags() & kInnerSlot) != 0) {
     attrs << " viz='inner'";
   }
 
@@ -459,8 +459,8 @@ XmlRenderer::renderNode(const SlotdefNode* node)
   }
 
   displayOpenTagAttrs("slot", StrHelper(attrs.toString()));
-  displayType("type", node->fType);
-  displayNode("init", node->fInitExpr);
+  displayType("type", node->type());
+  displayNode("init", node->initExpr());
   displayCloseTag("slot");
 }
 
@@ -540,10 +540,10 @@ void
 XmlRenderer::renderNode(const BinaryNode* node)
 {
   StringBuffer attrs;
-  attrs << "op='" << xmlEncode(operatorName(node->fOp)) << "'";
+  attrs << "op='" << xmlEncode(operatorName(node->op())) << "'";
   displayOpenTagAttrs("binary", StrHelper(attrs.toString()));
-  displayNode(NULL, node->fLeft);
-  displayNode(NULL, node->fRight);
+  displayNode(NULL, node->left());
+  displayNode(NULL, node->right());
   displayCloseTag("binary");
 }
 
@@ -552,7 +552,7 @@ void
 XmlRenderer::renderNode(const NegateNode* node)
 {
   displayOpenTag("neg");
-  displayNode(NULL, node->fBase);
+  displayNode(NULL, node->base());
   displayCloseTag("neg");
 }
 
@@ -572,9 +572,9 @@ void
 XmlRenderer::renderNode(const ThenWhileNode* node)
 {
   displayOpenTag("then-while");
-  displayNode(NULL, node->fFirst);
-  displayNode(NULL, node->fStep);
-  displayNode(NULL, node->fTest);
+  displayNode(NULL, node->first());
+  displayNode(NULL, node->step());
+  displayNode(NULL, node->test());
   displayCloseTag("then-while");
 }
 
@@ -583,8 +583,8 @@ void
 XmlRenderer::renderNode(const AssignNode* node)
 {
   displayOpenTag("assign");
-  displayNode(NULL, node->fLValue);
-  displayNode(NULL, node->fRValue);
+  displayNode(NULL, node->lvalue());
+  displayNode(NULL, node->rvalue());
   displayCloseTag("assign");
 }
 
@@ -593,9 +593,9 @@ void
 XmlRenderer::renderNode(const IfNode* node)
 {
   displayOpenTag("if");
-  displayNode("test", node->fTest);
-  displayNode("then", node->fConsequent);
-  displayNode("else", node->fAlternate);
+  displayNode("test", node->test());
+  displayNode("then", node->consequent());
+  displayNode("else", node->alternate());
   displayCloseTag("if");
 }
 
@@ -604,20 +604,20 @@ void
 XmlRenderer::renderNode(const SelectNode* node)
 {
   displayOpenTag("select");
-  displayNode("test", node->fTest);
-  displayNode("comp", node->fComparator);
-  for (size_t i = 0; i < node->fMappings.size(); i++) {
-    if (node->fMappings[i].fTestValues.empty()) {
-      displayNode("alternate", node->fMappings[i].fConsequent);
+  displayNode("test", node->test());
+  displayNode("comp", node->comparator());
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    if (node->mappingAt(i).fTestValues.empty()) {
+      displayNode("alternate", node->mappingAt(i).fConsequent);
     }
     else {
       displayOpenTag("map");
       displayOpenTag("values");
-      for (size_t j = 0; j < node->fMappings[i].fTestValues.size(); j++) {
-        displayNode(NULL, node->fMappings[i].fTestValues[j]);
+      for (size_t j = 0; j < node->mappingAt(i).fTestValues.size(); j++) {
+        displayNode(NULL, node->mappingAt(i).fTestValues[j]);
       }
       displayCloseTag("values");
-      displayNode("cons", node->fMappings[i].fConsequent);
+      displayNode("cons", node->mappingAt(i).fConsequent);
       displayCloseTag("map");
     }
   }
@@ -629,14 +629,14 @@ void
 XmlRenderer::renderNode(const MatchNode* node)
 {
   displayOpenTag("match");
-  displayNode("test", node->fExpr);
-  for (size_t i = 0; i < node->fMappings.size(); i++) {
+  displayNode("test", node->expr());
+  for (size_t i = 0; i < node->mappingCount(); i++) {
     StringBuffer attrs;
-    if (!node->fMappings[i].fVarName.isEmpty())
-      attrs << "nm='" << xmlEncode(node->fMappings[i].fVarName) << "'";
+    if (!node->mappingAt(i).fVarName.isEmpty())
+      attrs << "nm='" << xmlEncode(node->mappingAt(i).fVarName) << "'";
     displayOpenTagAttrs("map", StrHelper(attrs.toString()));
-    displayType("type", node->fMappings[i].fMatchType);
-    displayNode("cons", node->fMappings[i].fConsequent);
+    displayType("type", node->mappingAt(i).fMatchType);
+    displayNode("cons", node->mappingAt(i).fConsequent);
     displayCloseTag("map");
   }
   displayCloseTag("match");
@@ -647,10 +647,10 @@ void
 XmlRenderer::renderNode(const OnNode* node)
 {
   StringBuffer attrs;
-  attrs << "key='" << node->fKey << "'";
+  attrs << "key='" << node->key() << "'";
   displayOpenTagAttrs("on", StrHelper(attrs.toString()));
-  displayNodeList("params", node->fParams);
-  displayNode("body", node->fBody);
+  displayNodeList("params", node->params());
+  displayNode("body", node->body());
   displayCloseTag("on");
 }
 
@@ -666,9 +666,9 @@ void
 XmlRenderer::renderNode(const FunctionNode* node)
 {
   displayOpenTag("function");
-  displayNodeList("params", node->fParams);
-  displayType("rettype", node->fRetType);
-  displayNode("body", node->fBody);
+  displayNodeList("params", node->params());
+  displayType("rettype", node->retType());
+  displayNode("body", node->body());
   displayCloseTag("function");
 }
 
@@ -679,7 +679,7 @@ XmlRenderer::renderNode(const FuncDefNode* node)
   const char* tag = node->isGeneric() ? "method" : "func";
 
   StringBuffer attrs;
-  attrs << "sym='" << node->fSym << "'";
+  attrs << "sym='" << node->name() << "'";
 
   if (node->isAbstract())
     attrs << " abstract='true'";
@@ -688,9 +688,9 @@ XmlRenderer::renderNode(const FuncDefNode* node)
     attrs << " linkage='" << node->linkage() << "'";
 
   displayOpenTagAttrs(tag, StrHelper(attrs.toString()));
-  displayNodeList("params", node->fParams);
-  displayType("rettype", node->fRetType);
-  displayNode("body", node->fBody);
+  displayNodeList("params", node->params());
+  displayType("rettype", node->retType());
+  displayNode("body", node->body());
   displayCloseTag(tag);
 }
 
@@ -699,7 +699,7 @@ void
 XmlRenderer::renderNode(const ApplyNode* node)
 {
   displayOpenTag("apply");
-  displayNode(NULL, node->fBase);
+  displayNode(NULL, node->base());
   displayOpenTag("args");
   displayNodeList(NULL, node->children());
   displayCloseTag("args");
@@ -711,10 +711,10 @@ void
 XmlRenderer::renderNode(const KeyargNode* node)
 {
   StringBuffer attrs;
-  attrs << "key='" << node->fKey << "'";
+  attrs << "key='" << node->key() << "'";
 
   displayOpenTagAttrs("arg", StrHelper(attrs.toString()));
-  displayNode(NULL, node->fValue);
+  displayNode(NULL, node->value());
   displayCloseTag("arg");
 }
 
@@ -723,8 +723,8 @@ void
 XmlRenderer::renderNode(const WhileNode* node)
 {
   displayOpenTag("while");
-  displayNode("test", node->fTest);
-  displayNode("body", node->fBody);
+  displayNode("test", node->test());
+  displayNode("body", node->body());
   displayCloseTag("while");
 }
 
@@ -732,17 +732,17 @@ XmlRenderer::renderNode(const WhileNode* node)
 void
 XmlRenderer::renderNode(const TypeDefNode* node)
 {
-  const char* tagName = node->fIsClass ? "class" : "type";
+  const char* tagName = node->isClass() ? "class" : "type";
 
   StringBuffer attrs;
-  attrs << "nm='" << node->fTypeName << "'";
+  attrs << "nm='" << node->name() << "'";
 
   displayOpenTagAttrs(tagName, StrHelper(attrs.toString()));
-  displayNodeList("params", node->fParams);
-  displayNodeList("slots", node->fSlots);
-  displayNodeList("on", node->fOnExprs);
-  displayNodeList("proto", node->fReqProtocol);
-  displayType("isa", node->fIsa);
+  displayNodeList("params", node->params());
+  displayNodeList("slots", node->slots());
+  displayNodeList("on", node->onExprs());
+  displayNodeList("proto", node->reqProtocol());
+  displayType("isa", node->defType());
   displayCloseTag(tagName);
 }
 
