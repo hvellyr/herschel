@@ -571,7 +571,7 @@ SecondPass::nodeToFunSignature(const FuncDefNode* node) const
   paramsNodeListToType(&funcParams, node->params());
 
   return FunctionSignature(node->isGeneric(),
-                           node->funcName(),
+                           node->name(),
                            node->retType(),
                            funcParams);
 }

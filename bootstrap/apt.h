@@ -95,9 +95,9 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-  private:
-    friend class XmlRenderer;
+    const String& value() const;
 
+  private:
     String fValue;
   };
 
@@ -116,9 +116,9 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-  private:
-    friend class XmlRenderer;
+    const String& value() const;
 
+  private:
     String fValue;
   };
 
@@ -149,6 +149,8 @@ namespace heather
     const String& name() const;
     std::string string() const;
 
+    const TypeVector& generics() const;
+
     SymReferType refersTo() const;
     void setRefersTo(SymReferType type, bool isShared);
     bool isShared() const;
@@ -160,7 +162,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   protected:
-    friend class XmlRenderer;
     friend class CodeGenerator;
 
     String       fValue;
@@ -201,8 +202,25 @@ namespace heather
     { }
 
   public:
-    friend class XmlRenderer;
+    T value() const
+    {
+      return fValue;
+    }
 
+
+    bool isImaginary() const
+    {
+      return fIsImaginary;
+    }
+
+
+    const Type& type() const
+    {
+      return fType;
+    }
+
+
+  protected:
     T fValue;
     bool fIsImaginary;
     Type fType;
@@ -274,9 +292,9 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-  private:
-    friend class XmlRenderer;
+    Char value() const;
 
+  private:
     Char fValue;
   };
 
@@ -295,9 +313,9 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-  private:
-    friend class XmlRenderer;
+    Char value() const;
 
+  private:
     bool fValue;
   };
 
@@ -317,10 +335,10 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-    AptNode* value() const { return fValue; }
+    AptNode* value() const;
+    TypeUnit unit() const;
 
   private:
-    friend class XmlRenderer;
     friend class Transformator;
 
     Ptr<AptNode> fValue;
@@ -352,10 +370,9 @@ namespace heather
     BaseDefNode(const SrcPos& srcpos, AptNode* defined);
 
     AptNode* defNode() const;
-    void setDefNode(AptNode* val) { fDefined = val; }
+    void setDefNode(AptNode* val);
 
   protected:
-    friend class XmlRenderer;
     friend class CodeGenerator;
 
     Ptr<AptNode> fDefined;
@@ -405,17 +422,15 @@ namespace heather
                 const String& symbolName, const Type& type,
                 AptNode* initExpr);
 
-    const String& symbolName() const;
     const Type& type() const;
     AptNode* initExpr() const;
-    void setInitExpr(AptNode* val) { fInitExpr = val; }
-    virtual const String& name() const { return symbolName(); }
+    void setInitExpr(AptNode* val);
+    virtual const String& name() const;
 
     void setAllocType(BindingAllocType type);
     BindingAllocType allocType() const;
 
   protected:
-    friend class XmlRenderer;
     friend class CodeGenerator;
     friend class Transformator;
 
@@ -461,8 +476,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class XmlRenderer;
-
     bool fIsLocal;
     VardefFlags fFlags;
     String fLinkage;
@@ -499,8 +512,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class XmlRenderer;
-
     String fKey;
     ParamFlags fFlags;
   };
@@ -534,9 +545,9 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-  private:
-    friend class XmlRenderer;
+    unsigned int flags() const;
 
+  private:
     unsigned int fFlags;
   };
 
@@ -620,7 +631,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class XmlRenderer;
     friend class CodeGenerator;
 
     Ptr<AptNode> fLeft;
@@ -636,8 +646,7 @@ namespace heather
   public:
     NegateNode(const SrcPos& srcpos, AptNode* base);
 
-    const AptNode* base() const;
-    AptNode* base();
+    AptNode* base() const;
 
     virtual NegateNode* clone() const;
 
@@ -648,7 +657,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class XmlRenderer;
     friend class CodeGenerator;
     friend class Transformator;
 
@@ -700,12 +708,11 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-    AptNode* first() const { return fFirst; }
-    AptNode* step() const { return fStep; }
-    AptNode* test() const { return fTest; }
+    AptNode* first() const;
+    AptNode* step() const;
+    AptNode* test() const;
 
   private:
-    friend class XmlRenderer;
     friend class Transformator;
 
     Ptr<AptNode> fFirst;
@@ -736,8 +743,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class XmlRenderer;
-
     Ptr<AptNode> fLValue;
     Ptr<AptNode> fRValue;
   };
@@ -766,7 +771,6 @@ namespace heather
     void setAlternate(AptNode* node);
 
   private:
-    friend class XmlRenderer;
     friend class Transformator;
 
     Ptr<AptNode> fTest;
@@ -808,14 +812,15 @@ namespace heather
     void addMapping(AptNode* mapping, AptNode* consequent);
     void addElseMapping(AptNode* alternate);
 
-    AptNode* test();
+    AptNode* test() const;
     void setTest(AptNode* nd);
-    AptNode* comparator();
+    AptNode* comparator() const;
     void setComparator(AptNode* nd);
     SelectMappingVector& mappings();
+    size_t mappingCount() const;
+    const SelectMapping& mappingAt(size_t i) const;
 
   private:
-    friend class XmlRenderer;
     friend class Annotator;
     friend class Transformator;
 
@@ -860,12 +865,13 @@ namespace heather
                     const Type& matchType,
                     AptNode* consequent);
 
-    AptNode* expr();
+    AptNode* expr() const;
     void setExpr(AptNode* nd);
     MatchMappingVector& mappings();
+    size_t mappingCount() const;
+    const MatchMapping& mappingAt(size_t i) const;
 
   private:
-    friend class XmlRenderer;
     friend class Annotator;
     friend class Transformator;
 
@@ -891,13 +897,11 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
     const String& key() const;
-    const AptNode* body() const;
-    AptNode* body();
+    AptNode* body() const;
     const NodeList& params() const;
     NodeList& params();
 
   private:
-    friend class XmlRenderer;
     friend class Transformator;
 
     String       fKey;
@@ -940,21 +944,13 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-    const NodeList& params() const;
     const Type& retType() const;
 
-    AptNode* body()
-    {
-      return fBody;
-    }
-
-    NodeList& params()
-    {
-      return fParams;
-    }
+    AptNode* body() const;
+    const NodeList& params() const;
+    NodeList& params();
 
   protected:
-    friend class XmlRenderer;
     friend class CodeGenerator;
     friend class Transformator;
 
@@ -982,7 +978,7 @@ namespace heather
 
     virtual FuncDefNode* clone() const;
 
-    const String& funcName() const;
+    virtual const String& name() const;
     bool isGeneric() const;
     bool isAbstract() const;
 
@@ -995,10 +991,7 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-    virtual const String& name() const { return funcName(); }
-
   private:
-    friend class XmlRenderer;
     friend class CodeGenerator;
 
     String       fSym;
@@ -1025,7 +1018,6 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
   private:
-    friend class XmlRenderer;
     friend class CodeGenerator;
     friend class Transformator;
 
@@ -1049,11 +1041,10 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-    const String& key() const { return fKey; }
-    AptNode* value() const { return fValue; }
+    const String& key() const;
+    AptNode* value() const;
 
   private:
-    friend class XmlRenderer;
     friend class Transformator;
 
     String       fKey;
@@ -1080,7 +1071,6 @@ namespace heather
     AptNode* test() const;
 
   private:
-    friend class XmlRenderer;
     friend class Transformator;
 
     Ptr<AptNode> fTest;
@@ -1110,12 +1100,15 @@ namespace heather
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-    const String& name() { return fTypeName; }
-    const Type& defType() { return fIsa; }
+    const String& name() const;
+    const Type& defType() const;
+    bool isClass() const;
+    const NodeList& params() const;
+    const NodeList& slots() const;
+    const NodeList& reqProtocol() const;
+    const NodeList& onExprs() const;
 
   private:
-    friend class XmlRenderer;
-
     String fTypeName;
     bool   fIsClass;
     NodeList fParams;
