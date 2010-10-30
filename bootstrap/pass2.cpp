@@ -1722,7 +1722,7 @@ SecondPass::parseFunCall(const Token& expr)
   assert(expr[1].rightToken() == kParanClose);
 
   Ptr<AptNode> first = parseExpr(expr[0]);
-  Ptr<AptNode> funcall = new ApplyNode(expr.srcpos(), first);
+  Ptr<ApplyNode> funcall = new ApplyNode(expr.srcpos(), first);
 
   const TokenVector& seq = expr[1].children();
   for (size_t i = 0; i < seq.size(); i++) {
@@ -2075,21 +2075,21 @@ SecondPass::transformCollForClause(const Token& token,
   loopDefines->push_back(stepDefNode);
 
   // ------------------------------ if (_seq.end?)
-  Ptr<AptNode> testNode = new ApplyNode(srcpos,
-                                        new SymbolNode(srcpos,
-                                                       String("end?")));
+  Ptr<ApplyNode> testNode = new ApplyNode(srcpos,
+                                          new SymbolNode(srcpos,
+                                                         String("end?")));
   testNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
 
   // --- then false
   Ptr<AptNode> consNode = new BoolNode(srcpos, false);
 
   // --- else { name = _seq.next true }
-  Ptr<AptNode> altNode = new BlockNode(srcpos);
+  Ptr<BlockNode> altNode = new BlockNode(srcpos);
 
   Ptr<AptNode> stepVarNode = new SymbolNode(srcpos, stepSym.idValue());
-  Ptr<AptNode> nextSeqNode = new ApplyNode(srcpos,
-                                           new SymbolNode(srcpos,
-                                                          String("next")));
+  Ptr<ApplyNode> nextSeqNode = new ApplyNode(srcpos,
+                                             new SymbolNode(srcpos,
+                                                            String("next")));
   nextSeqNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
 
   Ptr<AptNode> stepNextNode = new AssignNode(srcpos,
@@ -2660,7 +2660,7 @@ SecondPass::parseLiteralVector(const Token& expr)
   assert(expr.leftToken() == kLiteralVectorOpen);
   assert(expr.rightToken() == kParanClose);
 
-  Ptr<AptNode> vector = new VectorNode(expr.srcpos());
+  Ptr<VectorNode> vector = new VectorNode(expr.srcpos());
   const TokenVector& seq = expr.children();
 
   for (size_t i = 0; i < seq.size(); i++) {
@@ -2682,7 +2682,7 @@ SecondPass::parseLiteralArray(const Token& expr)
   assert(expr.leftToken() == kLiteralArrayOpen);
   assert(expr.rightToken() == kBracketClose);
 
-  Ptr<AptNode> array = new ArrayNode(expr.srcpos());
+  Ptr<ArrayNode> array = new ArrayNode(expr.srcpos());
   const TokenVector& seq = expr.children();
 
   for (size_t i = 0; i < seq.size(); i++) {

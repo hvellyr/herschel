@@ -100,20 +100,6 @@ AptNode::setScope(Scope* scope)
 }
 
 
-NodeList&
-AptNode::children()
-{
-  return fChildren;
-}
-
-
-const NodeList&
-AptNode::children() const
-{
-  return fChildren;
-}
-
-
 const Type&
 AptNode::type() const
 {
@@ -128,24 +114,46 @@ AptNode::setType(const Type& type)
 }
 
 
+llvm::Value*
+AptNode::codegen(CodeGenerator* generator) const
+{
+  return NULL;
+}
+
+
+//----------------------------------------------------------------------------
+
+ListNode::ListNode(const SrcPos& srcpos)
+  : AptNode(srcpos)
+{
+}
+
+
+NodeList&
+ListNode::children()
+{
+  return fChildren;
+}
+
+
+const NodeList&
+ListNode::children() const
+{
+  return fChildren;
+}
+
+
 void
-AptNode::appendNode(AptNode* node)
+ListNode::appendNode(AptNode* node)
 {
   fChildren.push_back(node);
 }
 
 
 void
-AptNode::appendNodes(const NodeList& nodes)
+ListNode::appendNodes(const NodeList& nodes)
 {
   fChildren.insert(fChildren.end(), nodes.begin(), nodes.end());
-}
-
-
-llvm::Value*
-AptNode::codegen(CodeGenerator* generator) const
-{
-  return NULL;
 }
 
 
@@ -793,7 +801,7 @@ UnitConstNode::typify(Typifier* typifier)
 //----------------------------------------------------------------------------
 
 CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+  : ListNode(srcpos)
 {}
 
 
@@ -1263,7 +1271,7 @@ SlotdefNode::typify(Typifier* typifier)
 //----------------------------------------------------------------------------
 
 ArrayNode::ArrayNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+  : ListNode(srcpos)
 { }
 
 
@@ -1314,7 +1322,7 @@ ArrayNode::typify(Typifier* typifier)
 //----------------------------------------------------------------------------
 
 VectorNode::VectorNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+  : ListNode(srcpos)
 { }
 
 
@@ -1365,7 +1373,7 @@ VectorNode::typify(Typifier* typifier)
 //----------------------------------------------------------------------------
 
 DictNode::DictNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+  : ListNode(srcpos)
 { }
 
 
@@ -2261,11 +2269,11 @@ MatchNode::typify(Typifier* typifier)
 
 OnNode::OnNode(const SrcPos& srcpos,
                const String& key, const NodeList& params, AptNode* body)
-  : AptNode(srcpos),
+  : ListNode(srcpos),
     fKey(key),
     fBody(body)
 {
-  fParams.assign(params.begin(), params.end());
+  fChildren.assign(params.begin(), params.end());
 }
 
 
@@ -2273,7 +2281,7 @@ OnNode*
 OnNode::clone() const
 {
   return cloneScope(this, new OnNode(fSrcPos, fKey,
-                                     copyNodes(fParams),
+                                     copyNodes(fChildren),
                                      nodeClone(fBody)));
 }
 
@@ -2330,14 +2338,14 @@ OnNode::setBody(AptNode* node)
 const NodeList&
 OnNode::params() const
 {
-  return fParams;
+  return fChildren;
 }
 
 
 NodeList&
 OnNode::params()
 {
-  return fParams;
+  return fChildren;
 }
 
 
@@ -2351,7 +2359,7 @@ OnNode::typify(Typifier* typifier)
 //----------------------------------------------------------------------------
 
 BlockNode::BlockNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+  : ListNode(srcpos)
 { }
 
 
@@ -2405,11 +2413,11 @@ FunctionNode::FunctionNode(const SrcPos&   srcpos,
                            const NodeList& params,
                            const Type&     retType,
                            AptNode*        body)
-  : AptNode(srcpos),
+  : ListNode(srcpos),
     fRetType(retType),
     fBody(body)
 {
-  fParams.assign(params.begin(), params.end());
+  fChildren.assign(params.begin(), params.end());
 }
 
 
@@ -2417,7 +2425,7 @@ FunctionNode*
 FunctionNode::clone() const
 {
   return cloneScope(this,
-                    new FunctionNode(fSrcPos, copyNodes(fParams),
+                    new FunctionNode(fSrcPos, copyNodes(fChildren),
                                      fRetType.clone(), nodeClone(fBody)));
 }
 
@@ -2432,14 +2440,14 @@ FunctionNode::render(XmlRenderer* renderer) const
 const NodeList&
 FunctionNode::params() const
 {
-  return fParams;
+  return fChildren;
 }
 
 
 NodeList&
 FunctionNode::params()
 {
-  return fParams;
+  return fChildren;
 }
 
 
@@ -2510,7 +2518,7 @@ FuncDefNode*
 FuncDefNode::clone() const
 {
   Ptr<FuncDefNode> n = new FuncDefNode(fSrcPos, fSym, fFlags,
-                                       fParams,
+                                       copyNodes(fChildren),
                                        fRetType.clone(), nodeClone(fBody));
   n->setLinkage(fLinkage);
   return cloneScope(this, n.release());
@@ -2593,7 +2601,7 @@ FuncDefNode::typify(Typifier* typifier)
 //----------------------------------------------------------------------------
 
 ApplyNode::ApplyNode(const SrcPos& srcpos, AptNode* base)
-  : AptNode(srcpos),
+  : ListNode(srcpos),
     fBase(base)
 { }
 
