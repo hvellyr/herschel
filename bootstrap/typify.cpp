@@ -15,6 +15,7 @@
 #include "properties.h"
 #include "scope.h"
 #include "symbol.h"
+#include "str.h"
 
 
 using namespace heather;
@@ -97,6 +98,42 @@ Typifier::typify(VardefNode* node)
 {
   if (node->initExpr() != NULL)
     typifyNode(node->initExpr());
+
+  if (fPhase == kTypify) {
+    assert(node->scope() != NULL);
+    String typenm = ( node->type().isDef()
+                      ? node->type().typeName()
+                      : Type::kAnyTypeName );
+    Type varty = node->scope()->lookupType(typenm, true);
+    if (!varty.isDef()) {
+      errorf(node->srcpos(), E_UndefinedType,
+             "undefined type '%s'", (const char*)StrHelper(typenm));
+      node->scope()->dumpDebug();
+    }
+    else {
+      assert(varty.isDef());
+      node->setType(varty);
+
+      if (node->initExpr() != NULL) {
+        if (varty.isAny()) {
+          // infer the vardef type from the init expression
+          node->setType(node->initExpr()->type());
+        }
+        else if (!node->initExpr()->type().isDef()) {
+          errorf(node->initExpr()->srcpos(), E_TypeMismatch,
+                 "Undefined type in variable initialization");
+        }
+        else if (!varty.isCovariant(node->initExpr()->type())) {
+          errorf(node->initExpr()->srcpos(), E_TypeMismatch,
+                 "type mismatch in variable initialization");
+        }
+        else {
+          // infer the vardef type from the init expression
+          node->setType(node->initExpr()->type());
+        }
+      }
+    }
+  }
 }
 
 
@@ -293,7 +330,14 @@ Typifier::typify(CastNode* node)
 void
 Typifier::typify(BoolNode* node)
 {
-  // TODO
+  if (fPhase == kTypify) {
+    Type ty = node->scope()->lookupType(Type::kBoolTypeName, true);
+    if (!ty.isDef())
+      errorf(node->srcpos(), E_UndefinedType,
+             "undefined type '%s'", (const char*)StrHelper(Type::kBoolTypeName));
+    else
+      node->setType(ty);
+  }
 }
 
 
@@ -328,7 +372,17 @@ Typifier::typify(RealNode* node)
 void
 Typifier::typify(IntNode* node)
 {
-  // TODO
+  if (fPhase == kTypify) {
+    String typenm = ( node->type().isDef()
+                      ? node->type().typeName()
+                      : Type::kIntTypeName );
+    Type ty = node->scope()->lookupType(typenm, true);
+    if (!ty.isDef())
+      errorf(node->srcpos(), E_UndefinedType,
+             "undefined type '%s'", (const char*)StrHelper(typenm));
+    else
+      node->setType(ty);
+  }
 }
 
 

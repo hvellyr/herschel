@@ -27,6 +27,8 @@ namespace heather
   class FunctionParameter;
   class TypeCtx;
   class TypeEnumMaker;
+  class Scope;
+  class SrcPos;
 
   typedef std::vector<Type> TypeVector;
   typedef std::vector<TypeConstraint> TypeConstVector;
@@ -101,9 +103,9 @@ namespace heather
                            const TypeConstVector& constraints,
                            bool isValue);
     static Type newTypeRef(const String& name, bool isValue);
+    static Type newTypeRef(const char* name, bool isValue = true);
     static Type newTypeRef(const String& name, bool isGeneric,
-                           const TypeConstVector& constraints,
-                           bool isValue);
+                           const TypeConstVector& constraints, bool isValue);
 
     static Type newArray(const Type& base, int siceIndicator, bool isValue);
 
@@ -177,9 +179,7 @@ namespace heather
 
     //!@ custom types
     bool isClass() const;
-    const Type& classInheritance() const;
     const FunctionSignature& defaultApplySignature() const;
-    const FunctionSignatureVector& classProtocol() const;
 
     //!@ custom types
     bool isType() const;
@@ -263,6 +263,7 @@ namespace heather
     static const String kUWordTypeName;
     static const String kUnspecifiedTypeName;
     static const String kWordTypeName;
+    static const String kObjectTypeName;
 
   private:
     Type(TypeKind kind, bool isValue, TypeImpl* impl);
