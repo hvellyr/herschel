@@ -1014,6 +1014,13 @@ Type::clone() const
 }
 
 
+TypeKind
+Type::kind() const
+{
+  return fKind;
+}
+
+
 bool
 Type::operator==(const Type& other) const
 {
@@ -2406,6 +2413,15 @@ TypeUnit::operator=(const TypeUnit& other)
 
 namespace heather
 {
+  Type
+  resolveType(const Type& type, Scope* scope)
+  {
+    return ( type.isRef()
+             ? scope->lookupType(type.typeName(), true)
+             : type );
+  }
+
+
   bool
   isSameType(const TypeVector& vect0, const TypeVector& vect1, Scope* scope,
              const SrcPos& srcpos, bool reportErrors)
@@ -2456,12 +2472,8 @@ namespace heather
       return false;
     }
 
-    Type left = ( left0.isRef()
-                  ? scope->lookupType(left0.typeName(), true)
-                  : left0 );
-    Type right = ( right0.isRef()
-                   ? scope->lookupType(right0.typeName(), true)
-                   : right0 );
+    Type left = resolveType(left0, scope);
+    Type right = resolveType(right0, scope);
 
     if (!left.isDef() || !right.isDef()) {
       if (reportErrors)
@@ -2516,33 +2528,12 @@ namespace heather
       }
       return false;
     }
-    else if (left.isType()) {
-      if (right.isType()) {
+    else if (left.isType() || left.isClass()) {
+      if (left.kind() == right.kind()) {
         if (left.typeName() != right.typeName())
           return false;
-        // if (!isSameType(left.typeInheritance(), right.typeInheritance(),
-        //                 scope, srcpos, reportErrors))
-        //   return false;
         if (!isSameType(left.generics(), right.generics(), scope, srcpos,
                         reportErrors))
-          return false;
-        return true;
-      }
-      return false;
-    }
-    else if (left.isClass()) {
-      if (right.isClass()) {
-        if (left.typeName() != right.typeName())
-          return false;
-        // if (!isSameType(left.defaultApplySignature(),
-        //                 right.defaultApplySignature(),
-        //                 scope, srcpos, reportErrors))
-        //   return false;
-        // if (!isSameType(left.typeInheritance(), right.typeInheritance(),
-        //                 scope, srcpos, reportErrors))
-        //   return false;
-        if (!isSameType(left.generics(), right.generics(),
-                        scope, srcpos, reportErrors))
           return false;
         return true;
       }
@@ -2568,22 +2559,25 @@ namespace heather
       return false;
     }
 
-    Type left = ( left0.isRef()
-                  ? scope->lookupType(left0.typeName(), true)
-                  : left0 );
-    Type right = ( right0.isRef()
-                   ? scope->lookupType(right0.typeName(), true)
-                   : right0 );
+    Type left = resolveType(left0, scope);
+    Type right = resolveType(right0, scope);
 
     if (!left.isDef() || !right.isDef()) {
       if (reportErrors)
         errorf(srcpos, E_UndefinedType, "Undefined type");
       return false;
     }
-    if (!left.isType() && !left.isClass())
+
+    Type inheritance;
+    if (left.isType() || left.isClass()) {
+      inheritance = left.typeInheritance();
+    }
+    else if (left.isMeasure()) {
+      inheritance = left.measureBaseType();
+    }
+    else
       return false;
 
-    Type inheritance = left.typeInheritance();
     if (!inheritance.isDef()) {
       return false;
     }
@@ -2619,10 +2613,187 @@ namespace heather
   }
 
 
+  //----------------------------------------------------------------------------
+
   bool
-  isCovariant(const Type& left, const Type& right, Scope* scope,
+  isCovariant(const TypeVector& vect0, const TypeVector& vect1, Scope* scope,
               const SrcPos& srcpos, bool reportErrors)
   {
+    if (vect0.size() == vect1.size()) {
+      for (size_t i = 0; i < vect0.size(); i++) {
+        if (!heather::isCovariant(vect0[i], vect1[i], scope, srcpos,
+                                  reportErrors))
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+
+  bool
+  isCovariantToEveryTypeInSeq(const Type& type, const TypeVector& vect0,
+                              Scope* scope,
+                              const SrcPos& srcpos, bool reportErrors)
+  {
+    for (size_t i = 0; i < vect0.size(); i++) {
+      if (!heather::isCovariant(type, vect0[i], scope, srcpos, reportErrors))
+        return false;
+    }
+    return true;
+  }
+
+
+  bool
+  isCoOrInvariantToEveryTypeInUnion(const Type& type, const TypeVector& vect0,
+                                    Scope* scope,
+                                    const SrcPos& srcpos, bool reportErrors)
+  {
+    bool hadOneCovariantType = false;
+    for (size_t i = 0; i < vect0.size(); i++) {
+      if (heather::isContravariant(type, vect0[i], scope, srcpos, reportErrors))
+        return false;
+      if (!hadOneCovariantType &&
+          heather::isCovariant(type, vect0[i], scope, srcpos, reportErrors))
+        hadOneCovariantType = true;
+    }
+    return hadOneCovariantType;
+  }
+
+
+  bool
+  isCovariantForAllTypesInUnion(const TypeVector& vect0, const TypeVector& vect1,
+                                Scope* scope,
+                                const SrcPos& srcpos, bool reportErrors)
+  {
+    for (size_t i = 0; i < vect0.size(); i++) {
+      if (!isCoOrInvariantToEveryTypeInUnion(vect0[i], vect1, scope,
+                                             srcpos, reportErrors))
+        return false;
+    }
+    return true;
+  }
+
+
+  bool
+  isCovariant(const FunctionSignature& leftsig,
+              const FunctionSignature& rightsig,
+              Scope* scope, const SrcPos& srcpos, bool reportErrors)
+  {
+    if (!isCovariant(leftsig.returnType(), rightsig.returnType(),
+                     scope, srcpos, reportErrors))
+      return false;
+
+    if (leftsig.parameters().size() != rightsig.parameters().size())
+      return false;
+
+    for (size_t i = 0; i < leftsig.parameters().size(); i++) {
+      const FunctionParameter& leftprm = leftsig.parameters()[i];
+      const FunctionParameter& rightprm = rightsig.parameters()[i];
+
+      if (leftprm.kind() != rightprm.kind() ||
+          !isContravariant(leftprm.type(), rightprm.type(), scope, srcpos,
+                           reportErrors))
+        return false;
+    }
+    return true;
+  }
+
+
+  bool
+  isCovariant(const Type& left0, const Type& right0, Scope* scope,
+              const SrcPos& srcpos, bool reportErrors)
+  {
+    if (!left0.isDef() || !right0.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type");
+      return false;
+    }
+
+    Type left = resolveType(left0, scope);
+    Type right = resolveType(right0, scope);
+
+    if (!left.isDef() || !right.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type");
+      return false;
+    }
+
+    if (right.isAny()) {
+      // everything is covariant to lang|Any
+      return true;
+    }
+
+#if 0
+    // TODO: check constraints
+    if (left.hasConstraints()) {
+      if (right.hasConstraints()) {
+        // TODO
+      }
+      return false;
+    }
+#endif
+
+    if (left.isArray()) {
+      return isSameType(left, right, scope, srcpos, reportErrors);
+    }
+    else if (left.isUnion()) {
+      if (right.isUnion()) {
+        if (isSameType(left, right, scope, srcpos, reportErrors))
+          return true;
+
+        return isCovariantForAllTypesInUnion(left.unionTypes(),
+                                             right.unionTypes(),
+                                             scope, srcpos,
+                                             reportErrors);
+      }
+      return false;
+    }
+    else if (left.isSequence()) {
+      if (right.isSequence()) {
+        if (isSameType(left, right, scope, srcpos, reportErrors))
+          return true;
+        return isCovariant(left.seqTypes(), right.seqTypes(), scope,
+                           srcpos, reportErrors);
+      }
+      return false;
+    }
+    else if (left.isMeasure()) {
+      return ( isSameType(left, right, scope, srcpos, reportErrors) ||
+               isCovariant(left.measureBaseType(), right, scope, srcpos,
+                           reportErrors) );
+    }
+    else if (left.isFunction()) {
+      if (isSameType(left, right, scope, srcpos, reportErrors))
+        return true;
+      return isCovariant(left, right, scope, srcpos, reportErrors);
+    }
+    else if (left.isType() || left.isClass()) {
+      if (isSameType(left, right, scope, srcpos, reportErrors))
+        return true;
+
+      if (right.isType() || right.isClass()) {
+        if (!inheritsFrom(left, right, scope, srcpos, reportErrors))
+          return false;
+        return isSameType(left.generics(), right.generics(), scope, srcpos,
+                          reportErrors);
+      }
+      else if (right.isSequence()) {
+        return isCovariantToEveryTypeInSeq(left, right.seqTypes(), scope,
+                                           srcpos, reportErrors);
+      }
+      else if (right.isUnion()) {
+        return isCoOrInvariantToEveryTypeInUnion(left, right.unionTypes(),
+                                                 scope,
+                                                 srcpos, reportErrors);
+      }
+
+      return false;
+    }
+
+    printf("LEFT: %s\n", (const char*)StrHelper(left.toString()));
+    printf("RIGHT: %s\n", (const char*)StrHelper(right.toString()));
+    assert(0 && "unhandled type?");
     return false;
   }
 
@@ -2631,7 +2802,8 @@ namespace heather
   isContravariant(const Type& left, const Type& right, Scope* scope,
                   const SrcPos& srcpos, bool reportErrors)
   {
-    return false;
+    return isCovariant(right, left,
+                       scope, srcpos, reportErrors);
   }
 
 
@@ -2639,7 +2811,8 @@ namespace heather
   isInvariant(const Type& left, const Type& right, Scope* scope,
               const SrcPos& srcpos, bool reportErrors)
   {
-    return false;
+    return ( !isCovariant(left, right, scope, srcpos, reportErrors) &&
+             !isContravariant(left, right, scope, srcpos, reportErrors) );
   }
 };                              // namespace heather
 
@@ -2972,12 +3145,16 @@ SUITE(Type_IsSameType)
                                                   params1)),
                               scope, SrcPos(), false));
   }
+
+  // TODO check generic types
+  // TODO check combinations of tests (arrays of generics, arrays of unions,
+  // sequences of generics and function types, etc.)
 }
 
 
 //----------------------------------------------------------------------------
 
-SUITE(Type_Covariance)
+SUITE(Type_Inheritance)
 {
   // Test class tree:
   //
@@ -3012,6 +3189,100 @@ SUITE(Type_Covariance)
     CHECK(!heather::inheritsFrom(Type::newTypeRef("Xyz"),
                                  Type::newTypeRef("Base"),
                                  scope, SrcPos(), false));
+  }
+
+  // TODO check generic types
+
+  TEST(measureTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(!heather::inheritsFrom(Type::newMeasure(String("Maiko"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  String("mk")),
+                                 Type::newMeasure(String("Maiko"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  String("mk")),
+                                 scope, SrcPos(), false));
+
+    CHECK(heather::inheritsFrom(Type::newMeasure(String("Maiko"),
+                                                 Type::newTypeRef("Ultra"),
+                                                 String("mk")),
+                                Type::newTypeRef(String("Abstract"), true),
+                                scope, SrcPos(), false));
+    CHECK(!heather::inheritsFrom(Type::newMeasure(String("Maiko"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  String("mk")),
+                                 Type::newTypeRef(String("Base"), true),
+                                 scope, SrcPos(), false));
+
+    CHECK(!heather::inheritsFrom(Type::newMeasure(String("Maiko"),
+                                                  Type::newTypeRef("Ultra"),
+                                                  String("mk")),
+                                 Type::newMeasure(String("Tomoko"),
+                                                  Type::newTypeRef("Abstract"),
+                                                  String("to")),
+                                 scope, SrcPos(), false));
+  }
+}
+
+
+SUITE(Type_Covariance)
+{
+  // Test class tree:
+  //
+  // Obj <- Base     <- Medium  <- Top
+  //     ^           <- Special <- Ultra
+  //     |               |
+  //     |               v
+  //     \- Abstract <- Xyz
+
+
+  TEST(basicTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isCovariant(Type::newTypeRef("Base"),
+                               Type::newTypeRef("Base"),
+                               scope, SrcPos(), false));
+    CHECK(heather::isCovariant(Type::newTypeRef("Xyz"),
+                               Type::newTypeRef("Xyz"),
+                               scope, SrcPos(), false));
+    CHECK(heather::isCovariant(Type::newTypeRef("Medium"),
+                                Type::newTypeRef("Base"),
+                                scope, SrcPos(), false));
+    CHECK(!heather::isCovariant(Type::newTypeRef("Base"),
+                                Type::newTypeRef("Medium"),
+                                scope, SrcPos(), false));
+    CHECK(heather::isContravariant(Type::newTypeRef("Base"),
+                                   Type::newTypeRef("Medium"),
+                                   scope, SrcPos(), false));
+    CHECK(!heather::isContravariant(Type::newTypeRef("Medium"),
+                                    Type::newTypeRef("Base"),
+                                    scope, SrcPos(), false));
+
+    CHECK(!heather::isCovariant(Type::newTypeRef("Top"),
+                                Type::newTypeRef("Xyz"),
+                                scope, SrcPos(), false));
+    CHECK(!heather::isContravariant(Type::newTypeRef("Top"),
+                                    Type::newTypeRef("Xyz"),
+                                    scope, SrcPos(), false));
+    CHECK(heather::isInvariant(Type::newTypeRef("Top"),
+                               Type::newTypeRef("Xyz"),
+                               scope, SrcPos(), false));
+  }
+
+
+  TEST(MultipleInheritance_basicTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isCovariant(Type::newTypeRef("Ultra"),
+                               Type::newTypeRef("Base"),
+                               scope, SrcPos(), false));
+    CHECK(heather::isCovariant(Type::newTypeRef("Ultra"),
+                               Type::newTypeRef("Abstract"),
+                               scope, SrcPos(), false));
   }
 }
 

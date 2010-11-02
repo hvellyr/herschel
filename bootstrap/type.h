@@ -164,6 +164,7 @@ namespace heather
     bool isDef() const;
 
 
+    TypeKind kind() const;
 
     //!@ base and builtin types
     //! indicates whether the type is a base type
