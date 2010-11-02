@@ -2402,6 +2402,248 @@ TypeUnit::operator=(const TypeUnit& other)
 }
 
 
+//----------------------------------------------------------------------------
+
+namespace heather
+{
+  bool
+  isSameType(const TypeVector& vect0, const TypeVector& vect1, Scope* scope,
+             const SrcPos& srcpos, bool reportErrors)
+  {
+    if (vect0.size() == vect1.size()) {
+      for (size_t i = 0; i < vect0.size(); i++) {
+        if (!heather::isSameType(vect0[i], vect1[i], scope, srcpos,
+                                 reportErrors))
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+
+  bool
+  isSameType(const FunctionSignature& leftsig,
+             const FunctionSignature& rightsig,
+             Scope* scope, const SrcPos& srcpos, bool reportErrors)
+  {
+    if (!isSameType(leftsig.returnType(), rightsig.returnType(),
+                    scope, srcpos, reportErrors))
+      return false;
+    if (leftsig.parameters().size() != rightsig.parameters().size())
+      return false;
+
+    for (size_t i = 0; i < leftsig.parameters().size(); i++) {
+      const FunctionParameter& leftprm = leftsig.parameters()[i];
+      const FunctionParameter& rightprm = rightsig.parameters()[i];
+
+      if (leftprm.kind() != rightprm.kind() ||
+          !isSameType(leftprm.type(), rightprm.type(), scope, srcpos,
+                      reportErrors))
+        return false;
+    }
+    return true;
+  }
+
+
+  bool
+  isSameType(const Type& left0, const Type& right0, Scope* scope,
+             const SrcPos& srcpos, bool reportErrors)
+  {
+    if (!left0.isDef() || !right0.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type");
+      return false;
+    }
+
+    Type left = ( left0.isRef()
+                  ? scope->lookupType(left0.typeName(), true)
+                  : left0 );
+    Type right = ( right0.isRef()
+                   ? scope->lookupType(right0.typeName(), true)
+                   : right0 );
+
+    if (!left.isDef() || !right.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type");
+      return false;
+    }
+
+    if (left.isAny()) {
+      if (right.isAny())
+        return true;
+      return false;
+    }
+
+#if 0
+    // TODO: check constraints
+    if (left.hasConstraints()) {
+      if (right.hasConstraints()) {
+        // TODO
+      }
+      return false;
+    }
+#endif
+
+    if (left.isArray()) {
+      if (right.isArray())
+        return isSameType(left.arrayBaseType(), right.arrayBaseType(), scope,
+                          srcpos, reportErrors);
+      return false;
+    }
+    else if (left.isUnion()) {
+      if (right.isUnion())
+        return isSameType(left.unionTypes(), right.unionTypes(), scope,
+                          srcpos, reportErrors);
+      return false;
+    }
+    else if (left.isSequence()) {
+      if (right.isSequence())
+        return isSameType(left.seqTypes(), right.seqTypes(), scope,
+                          srcpos, reportErrors);
+      return false;
+    }
+    else if (left.isMeasure()) {
+      if (right.isMeasure())
+        if (left.typeName() == right.typeName())
+          return true;
+      return false;
+    }
+    else if (left.isFunction()) {
+      if (right.isFunction()) {
+        return isSameType(left.functionSignature(), right.functionSignature(),
+                          scope, srcpos, reportErrors);
+      }
+      return false;
+    }
+    else if (left.isType()) {
+      if (right.isType()) {
+        if (left.typeName() != right.typeName())
+          return false;
+        // if (!isSameType(left.typeInheritance(), right.typeInheritance(),
+        //                 scope, srcpos, reportErrors))
+        //   return false;
+        if (!isSameType(left.generics(), right.generics(), scope, srcpos,
+                        reportErrors))
+          return false;
+        return true;
+      }
+      return false;
+    }
+    else if (left.isClass()) {
+      if (right.isClass()) {
+        if (left.typeName() != right.typeName())
+          return false;
+        // if (!isSameType(left.defaultApplySignature(),
+        //                 right.defaultApplySignature(),
+        //                 scope, srcpos, reportErrors))
+        //   return false;
+        // if (!isSameType(left.typeInheritance(), right.typeInheritance(),
+        //                 scope, srcpos, reportErrors))
+        //   return false;
+        if (!isSameType(left.generics(), right.generics(),
+                        scope, srcpos, reportErrors))
+          return false;
+        return true;
+      }
+      return false;
+    }
+
+    printf("LEFT: %s\n", (const char*)StrHelper(left.toString()));
+    printf("RIGHT: %s\n", (const char*)StrHelper(right.toString()));
+    assert(0 && "unhandled type?");
+    return false;
+  }
+
+
+  //! Indicates whether left0 is a subtype of right0.  This is tested by checking
+  //! whether right0 is in left0's inheritance list.
+  bool
+  inheritsFrom(const Type& left0, const Type& right0, Scope* scope,
+               const SrcPos& srcpos, bool reportErrors)
+  {
+    if (!left0.isDef() || !right0.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type");
+      return false;
+    }
+
+    Type left = ( left0.isRef()
+                  ? scope->lookupType(left0.typeName(), true)
+                  : left0 );
+    Type right = ( right0.isRef()
+                   ? scope->lookupType(right0.typeName(), true)
+                   : right0 );
+
+    if (!left.isDef() || !right.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type");
+      return false;
+    }
+    if (!left.isType() && !left.isClass())
+      return false;
+
+    Type inheritance = left.typeInheritance();
+    if (!inheritance.isDef()) {
+      return false;
+    }
+    else if (inheritance.isRef()) {
+      inheritance = scope->lookupType(inheritance.typeName(), true);
+    }
+
+    if (!inheritance.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type");
+      return false;
+    }
+
+    if (inheritance.isType() || inheritance.isClass()) {
+      if (isSameType(inheritance, right, scope, srcpos, reportErrors))
+        return true;
+      return inheritsFrom(inheritance, right, scope, srcpos, reportErrors);
+    }
+
+    if (inheritance.isSequence()) {
+      const TypeVector& seq = inheritance.seqTypes();
+      for (size_t i = 0; i < seq.size(); ++i) {
+        if (isSameType(seq[i], right, scope, srcpos, reportErrors))
+          return true;
+        if (inheritsFrom(seq[i], right, scope, srcpos, reportErrors))
+          return true;
+      }
+      return false;
+    }
+
+    assert(0 && "unexpected type kind");
+    return false;
+  }
+
+
+  bool
+  isCovariant(const Type& left, const Type& right, Scope* scope,
+              const SrcPos& srcpos, bool reportErrors)
+  {
+    return false;
+  }
+
+
+  bool
+  isContravariant(const Type& left, const Type& right, Scope* scope,
+                  const SrcPos& srcpos, bool reportErrors)
+  {
+    return false;
+  }
+
+
+  bool
+  isInvariant(const Type& left, const Type& right, Scope* scope,
+              const SrcPos& srcpos, bool reportErrors)
+  {
+    return false;
+  }
+};                              // namespace heather
+
+
 //============================================================================
 
 #if defined(UNITTESTS)
@@ -2441,6 +2683,340 @@ namespace heather
 };
 
 
+static Scope* testScopeSetup()
+{
+  Ptr<Scope> scope = new Scope(kScopeL_CompileUnit);
+
+  TypeVector generics;
+
+  // Test class tree:
+  //
+  // Obj <- Base     <- Medium  <- Top
+  //     ^           <- Special <- Ultra
+  //     |               |
+  //     |               v
+  //     \- Abstract <- Xyz
+
+  scope->registerType(SrcPos(), Type::kAnyTypeName, Type::newAny(true));
+
+  scope->registerType(SrcPos(), String("Obj"),
+                      Type::newType(String("Obj"), generics, Type()));
+  scope->registerType(SrcPos(), String("Base"),
+                      Type::newType(String("Base"),
+                                    generics,
+                                    Type::newTypeRef("Obj")));
+
+  scope->registerType(SrcPos(), String("Medium"),
+                      Type::newType(String("Medium"),
+                                    generics,
+                                    Type::newTypeRef("Base")));
+  scope->registerType(SrcPos(), String("Top"),
+                      Type::newType(String("Top"),
+                                    generics,
+                                    Type::newTypeRef("Medium")));
+
+  scope->registerType(SrcPos(), String("Abstract"),
+                      Type::newType(String("Abstract"),
+                                    generics,
+                                    Type::newTypeRef("Obj")));
+  scope->registerType(SrcPos(), String("Xyz"),
+                      Type::newType(String("Xyz"),
+                                    generics,
+                                    Type::newTypeRef("Abstract")));
+
+  TypeVector isa;
+  isa.push_back(Type::newTypeRef("Base"));
+  isa.push_back(Type::newTypeRef("Xyz"));
+  scope->registerType(SrcPos(), String("Special"),
+                      Type::newType(String("Special"),
+                                    generics,
+                                    Type::newSeq(isa, true)));
+  scope->registerType(SrcPos(), String("Ultra"),
+                      Type::newType(String("Ultra"),
+                                    generics,
+                                    Type::newTypeRef("Special")));
+
+  return scope.release();
+}
+
+
+SUITE(Type_IsSameType)
+{
+  TEST(basicTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isSameType(Type::newTypeRef("Base"),
+                              Type::newTypeRef("Base"),
+                              scope, SrcPos(), false));
+    CHECK(heather::isSameType(Type::newTypeRef("Xyz"),
+                              Type::newTypeRef("Xyz"),
+                              scope, SrcPos(), false));
+    CHECK(!heather::isSameType(Type::newTypeRef("Base"),
+                               Type::newTypeRef("Medium"),
+                               scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newTypeRef("Base"),
+                               Type::newTypeRef("Hello"),
+                               scope, SrcPos(), false));
+  }
+
+
+  TEST(arrayTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isSameType(
+            Type::newArray(Type::newTypeRef("Base"), 5, true),
+            Type::newArray(Type::newTypeRef("Base"), 17, false),
+            scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(
+            Type::newArray(Type::newTypeRef("Base"), 5, true),
+            Type::newArray(Type::newTypeRef("Xyz"), 17, false),
+            scope, SrcPos(), false));
+
+    CHECK(heather::isSameType(
+            Type::newArray(Type::newAny(true), 5, true),
+            Type::newArray(Type::newAny(true), 17, false),
+            scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(
+            Type::newArray(Type::newTypeRef("Base"), 5, true),
+            Type::newTypeRef("Base"),
+            scope, SrcPos(), false));
+  }
+
+
+  TEST(anyTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isSameType(Type::newAny(true),
+                              Type::newAny(true),
+                              scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newAny(true),
+                               Type::newTypeRef("Medium"),
+                               scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newTypeRef("Xyz"),
+                               Type::newAny(true),
+                               scope, SrcPos(), true));
+  }
+
+
+  TEST(unionTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    TypeVector union0;
+    union0.push_back(Type::newTypeRef("Xyz"));
+    union0.push_back(Type::newTypeRef("Medium"));
+
+    TypeVector union1;
+    union1.push_back(Type::newTypeRef("Medium"));
+    union1.push_back(Type::newTypeRef("Xyz"));
+
+    CHECK(heather::isSameType(Type::newUnion(union0, true),
+                              Type::newUnion(union0, true),
+                              scope, SrcPos(), true));
+    CHECK(!heather::isSameType(Type::newUnion(union0, true),
+                               Type::newUnion(union1, true),
+                               scope, SrcPos(), true));
+
+    TypeVector union2;
+    union2.push_back(Type::newTypeRef("Medium"));
+    union2.push_back(Type::newTypeRef("Ultra"));
+    union2.push_back(Type::newTypeRef("Abstract"));
+
+    CHECK(!heather::isSameType(Type::newUnion(union0, true),
+                               Type::newUnion(union2, true),
+                               scope, SrcPos(), true));
+  }
+
+
+  TEST(seqTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    TypeVector seq0;
+    seq0.push_back(Type::newTypeRef("Xyz"));
+    seq0.push_back(Type::newTypeRef("Medium"));
+
+    TypeVector seq1;
+    seq1.push_back(Type::newTypeRef("Medium"));
+    seq1.push_back(Type::newTypeRef("Xyz"));
+
+    CHECK(heather::isSameType(Type::newSeq(seq0, true),
+                              Type::newSeq(seq0, true),
+                              scope, SrcPos(), true));
+    CHECK(!heather::isSameType(Type::newSeq(seq0, true),
+                               Type::newSeq(seq1, true),
+                               scope, SrcPos(), true));
+
+    TypeVector seq2;
+    seq2.push_back(Type::newTypeRef("Medium"));
+    seq2.push_back(Type::newTypeRef("Ultra"));
+    seq2.push_back(Type::newTypeRef("Abstract"));
+
+    CHECK(!heather::isSameType(Type::newSeq(seq0, true),
+                               Type::newSeq(seq2, true),
+                               scope, SrcPos(), true));
+  }
+
+
+  TEST(measureTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isSameType(Type::newMeasure(String("Maiko"),
+                                               Type::newTypeRef("Xyz"),
+                                               String("mk")),
+                              Type::newMeasure(String("Maiko"),
+                                               Type::newTypeRef("Xyz"),
+                                               String("mk")),
+                              scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newMeasure(String("Maiko"),
+                                                Type::newTypeRef("Xyz"),
+                                                String("mk")),
+                               Type::newTypeRef(String("Xyz"), true),
+                               scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newMeasure(String("Maiko"),
+                                               Type::newTypeRef("Xyz"),
+                                               String("mk")),
+                              Type::newMeasure(String("Tomoko"),
+                                               Type::newTypeRef("Xyz"),
+                                               String("to")),
+                              scope, SrcPos(), false));
+  }
+
+
+  TEST(functionTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    FunctionParamVector params0;
+    CHECK(heather::isSameType(Type::newFunction(
+                                FunctionSignature(false, String("foo"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params0)),
+                              Type::newFunction(
+                                FunctionSignature(false, String("foo"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params0)),
+                              scope, SrcPos(), false));
+
+    CHECK(heather::isSameType(Type::newFunction(
+                                FunctionSignature(false, String("foo"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params0)),
+                              Type::newFunction(
+                                FunctionSignature(false, String("bar"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params0)),
+                              scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newFunction(
+                                 FunctionSignature(false, String("foo"),
+                                                   Type::newTypeRef("Xyz"),
+                                                   params0)),
+                               Type::newFunction(
+                                 FunctionSignature(false, String("bar"),
+                                                   Type::newTypeRef("Abstract"),
+                                                   params0)),
+                               scope, SrcPos(), false));
+
+    FunctionParamVector params1;
+    params1.push_back(FunctionParameter(FunctionParameter::kParamPos, false,
+                                        String(), Type::newTypeRef("Medium")));
+    CHECK(heather::isSameType(Type::newFunction(
+                                FunctionSignature(false, String("foo"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params1)),
+                              Type::newFunction(
+                                FunctionSignature(false, String("bar"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params1)),
+                              scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newFunction(
+                                 FunctionSignature(false, String("foo"),
+                                                   Type::newTypeRef("Xyz"),
+                                                   params1)),
+                               Type::newFunction(
+                                 FunctionSignature(false, String("bar"),
+                                                   Type::newTypeRef("Xyz"),
+                                                   params0)),
+                               scope, SrcPos(), false));
+
+    params1.push_back(FunctionParameter(FunctionParameter::kParamNamed, false,
+                                        String("na"),
+                                        Type::newTypeRef("Xyz")));
+    params1.push_back(FunctionParameter(FunctionParameter::kParamNamed, false,
+                                        String("nu"),
+                                        Type::newTypeRef("Abstract")));
+    params1.push_back(FunctionParameter(FunctionParameter::kParamRest, false,
+                                        String("rest"),
+                                        Type::newAny(true)));
+
+    CHECK(heather::isSameType(Type::newFunction(
+                                FunctionSignature(false, String("foo"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params1)),
+                              Type::newFunction(
+                                FunctionSignature(false, String("bar"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params1)),
+                              scope, SrcPos(), false));
+  }
+}
+
+
+//----------------------------------------------------------------------------
+
+SUITE(Type_Covariance)
+{
+  // Test class tree:
+  //
+  // Obj <- Base     <- Medium  <- Top
+  //     ^           <- Special <- Ultra
+  //     |               |
+  //     |               v
+  //     \- Abstract <- Xyz
+
+
+  TEST(basicTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    // a type A does not inherit itself
+    CHECK(!heather::inheritsFrom(Type::newTypeRef("Base"),
+                                 Type::newTypeRef("Base"),
+                                 scope, SrcPos(), false));
+    CHECK(heather::inheritsFrom(Type::newTypeRef("Ultra"),
+                                Type::newTypeRef("Obj"),
+                                scope, SrcPos(), false));
+    CHECK(heather::inheritsFrom(Type::newTypeRef("Special"),
+                                 Type::newTypeRef("Base"),
+                                 scope, SrcPos(), false));
+    CHECK(heather::inheritsFrom(Type::newTypeRef("Special"),
+                                 Type::newTypeRef("Abstract"),
+                                 scope, SrcPos(), false));
+
+    CHECK(!heather::inheritsFrom(Type::newTypeRef("Top"),
+                                 Type::newTypeRef("Abstract"),
+                                 scope, SrcPos(), false));
+    CHECK(!heather::inheritsFrom(Type::newTypeRef("Xyz"),
+                                 Type::newTypeRef("Base"),
+                                 scope, SrcPos(), false));
+  }
+}
+
+
+//----------------------------------------------------------------------------
 SUITE(TypeConstraint)
 {
   TEST(construction)
