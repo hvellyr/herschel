@@ -168,12 +168,16 @@ Annotator::annotate(DefNode* node)
 {
   VardefNode* vardefNode = dynamic_cast<VardefNode*>(node->defNode());
   if (vardefNode != NULL) {
+    if (fPhase == kRegister)
+      vardefNode->setScope(fScope);
     annotate(vardefNode, false);
     return;
   }
 
   FuncDefNode* funcNode = dynamic_cast<FuncDefNode*>(node->defNode());
   if (funcNode != NULL) {
+    if (fPhase == kRegister)
+      funcNode->setScope(fScope);
     annotate(funcNode, false);
     return;
   }
@@ -187,12 +191,16 @@ Annotator::annotate(LetNode* node)
 {
   VardefNode* vardefNode = dynamic_cast<VardefNode*>(node->defNode());
   if (vardefNode != NULL) {
+    if (fPhase == kRegister)
+      vardefNode->setScope(fScope);
     annotate(vardefNode, true);
     return;
   }
 
   FuncDefNode* funcNode = dynamic_cast<FuncDefNode*>(node->defNode());
   if (funcNode != NULL) {
+    if (fPhase == kRegister)
+      funcNode->setScope(fScope);
     annotate(funcNode, true);
     return;
   }
