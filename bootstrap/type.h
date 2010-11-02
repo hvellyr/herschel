@@ -514,6 +514,20 @@ namespace heather
   };
 
 
+  //--------------------------------------------------------------------------
+
+  bool inheritsFrom(const Type& left, const Type& right, Scope* scope,
+                    const SrcPos& srcpos, bool reportErrors);
+
+  bool isSameType(const Type& left, const Type& right, Scope* scope,
+                  const SrcPos& srcpos, bool reportErrors);
+  bool isCovariant(const Type& left, const Type& right, Scope* scope,
+                   const SrcPos& srcpos, bool reportErrors);
+  bool isContravariant(const Type& left, const Type& right, Scope* scope,
+                       const SrcPos& srcpos, bool reportErrors);
+  bool isInvariant(const Type& left, const Type& right, Scope* scope,
+                   const SrcPos& srcpos, bool reportErrors);
+
 };                              // namespace
 
 #endif                          // bootstrap_type_h
