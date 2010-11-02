@@ -69,7 +69,7 @@ namespace heather
   class XmlRenderer : public RefCountable
   {
   public:
-    XmlRenderer(Port<Octet>* port);
+    XmlRenderer(Port<Octet>* port, bool showNodeType = false);
 
     void render(AptNode* node);
 
@@ -115,6 +115,7 @@ namespace heather
     void displayOpenTagAttrs(const char* tagName, const char* attrs);
     void displayCloseTag(const char* tagName);
     void displayEmptyTag(const char* tagName);
+    void displayEmptyTagAttrs(const char* tagName, const char* attrs);
     void displayTag(const char* tagName, const String& value);
     void displayTagAttr(const char* tagName,
                         const char* attrs,
@@ -134,6 +135,8 @@ namespace heather
     //-------- data members
 
     Ptr<Port<Octet> > fPort;
+    bool fShowNodeType;
+    std::map<String, Type> fReferencedTypes;
   };
 };                              // namespace
 

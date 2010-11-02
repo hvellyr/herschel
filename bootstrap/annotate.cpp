@@ -15,6 +15,7 @@
 #include "properties.h"
 #include "scope.h"
 #include "symbol.h"
+#include "parser.h"
 
 
 #include <typeinfo>  //for 'typeid' to work
@@ -34,7 +35,7 @@ void
 Annotator::annotateRecursively(AptNode* node)
 {
   {
-    fScope = new Scope(kScopeL_CompileUnit);
+    fScope = Parser::newRootScope();
 
     fPhase = kRegister;
     annotateNode(node);

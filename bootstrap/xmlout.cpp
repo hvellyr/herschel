@@ -21,8 +21,9 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
-XmlRenderer::XmlRenderer(Port<Octet>* port)
-  : fPort(port)
+XmlRenderer::XmlRenderer(Port<Octet>* port, bool showNodeType)
+  : fPort(port),
+    fShowNodeType(showNodeType)
 {
   display(fPort, "<?xml version='1.0' encoding='utf-8'?>\n");
 }
@@ -71,6 +72,14 @@ XmlRenderer::displayEmptyTag(const char* tagName)
 {
   if (tagName != NULL && ::strlen(tagName) > 0)
     heather::display(fPort, String() + "<" + tagName + "/>");
+}
+
+
+void
+XmlRenderer::displayEmptyTagAttrs(const char* tagName, const char* attrs)
+{
+  if (tagName != NULL && ::strlen(tagName) > 0)
+    heather::display(fPort, String() + "<" + tagName + attrs + "/>");
 }
 
 
@@ -247,11 +256,16 @@ XmlRenderer::renderNode(const IntNode* node)
 {
   StringBuffer attrs;
   attrs << "ty='" << node->type().typeName() << "'";
+
   if (node->isImaginary())
     attrs << " imag='t'";
 
-  displayTagAttr("int", StrHelper(attrs.toString()),
-                 String() + node->value());
+  displayOpenTagAttrs("int", StrHelper(attrs.toString()));
+  heather::display(fPort, xmlEncode(String() + node->value()));
+  displayCloseTag("int");
+
+  if (fShowNodeType)
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
 }
 
 
@@ -265,6 +279,9 @@ XmlRenderer::renderNode(const RealNode* node)
 
   displayTagAttr("real", StrHelper(attrs.toString()),
                  String() + node->value());
+
+  if (fShowNodeType)
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
 }
 
 
@@ -278,6 +295,9 @@ XmlRenderer::renderNode(const RationalNode* node)
 
   String val = String() + node->value().numerator() + "/" + node->value().denominator();
   displayTagAttr("real", StrHelper(attrs.toString()), val);
+
+  if (fShowNodeType)
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
 }
 
 
@@ -291,8 +311,16 @@ XmlRenderer::renderNode(const CharNode* node)
 void
 XmlRenderer::renderNode(const BoolNode* node)
 {
-  displayEmptyTag(node->value() ? "true" : "false");
-//  displayType
+  if (fShowNodeType) {
+    StringBuffer attrs;
+    attrs << " ty='" << node->type().typeName() << "'";
+    displayEmptyTagAttrs(node->value() ? "true" : "false", StrHelper(attrs.toString()));
+  }
+  else
+    displayEmptyTag(node->value() ? "true" : "false");
+
+  if (fShowNodeType)
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
 }
 
 
@@ -315,6 +343,19 @@ XmlRenderer::renderNode(const CompileUnitNode* node)
   const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
   displayOpenTagAttrs("compile-unit", attrs);
   displayNodeList(NULL, node->children());
+
+  if (fShowNodeType && !fReferencedTypes.empty()) {
+    displayOpenTag("ty:node-types");
+    for (std::map<String, Type>::iterator it = fReferencedTypes.begin(),
+         e = fReferencedTypes.end();
+         it != e;
+         ++it)
+    {
+      displayType("ty:used-type", it->second);
+    }
+    displayCloseTag("ty:node-types");
+  }
+
   displayCloseTag("compile-unit");
 }
 

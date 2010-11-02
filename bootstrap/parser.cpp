@@ -58,15 +58,43 @@ const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
 
 //----------------------------------------------------------------------------
 
+Scope*
+Parser::newRootScope()
+{
+  Ptr<Scope> root = new Scope(kScopeL_CompileUnit);
+
+  TypeVector generics;
+
+  root->registerType(SrcPos(), Type::kObjectTypeName,
+                     Type::newType(Type::kObjectTypeName, generics, Type()));
+
+  Type boolTy = Type::newType(Type::kBoolTypeName,
+                              generics,
+                              Type::newTypeRef(Type::kObjectTypeName, true));
+  root->registerType(SrcPos(), Type::kBoolTypeName, boolTy);
+
+  Type intTy = Type::newType(Type::kIntTypeName,
+                             generics,
+                             Type::newTypeRef(Type::kObjectTypeName, true));
+  root->registerType(SrcPos(), Type::kIntTypeName, intTy);
+
+  root->registerType(SrcPos(), Type::kAnyTypeName,
+                     Type::newType(Type::kAnyTypeName, generics, Type()));
+
+  return root.release();
+}
+
+
+//----------------------------------------------------------------------------
+
 Parser::Parser(bool isParsingInterface)
   : fState(ParserState(
              new CharRegistry,
              new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-             new Scope(kScopeL_CompileUnit))),
+             newRootScope())),
     fIsParsingInterface(isParsingInterface)
 {
 }
-
 
 CharRegistry*
 Parser::charRegistry() const
@@ -235,7 +263,7 @@ Parser::typify(AptNode* node, bool doTrace)
     pTy->typifyRecursively(n);
 
     if (doTrace && Properties::isTraceTypify() && n != NULL) {
-      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout), true);
       out->render(n);
     }
   }
@@ -374,7 +402,7 @@ Parser::PortStackHelper::PortStackHelper(Parser* parser)
   fParser->fState = ParserState(
     new CharRegistry,
     new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-    new Scope(kScopeL_CompileUnit));
+    Parser::newRootScope());
 }
 
 
