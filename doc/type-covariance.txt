@@ -1,13 +1,83 @@
-When are types covariant?
+When two types A and B are covariant?
 
-  A type A is covariant to a type B when
+  Notation: T    BaseType
+            T[]  Array
+            T<>  Generic
+            (T)  Sequence
+            &(T) Union
+            T'm  United type
+            fT   Function type
 
-  - if both A and B are base types
+     A       B
+------------------------------------------------------------------------------
+1    T    -> T          if A == B || A inherits B
 
-    - if A implements/inherits (type) B
+2    T<>  -> T<>        if A == B || (A(generics) == B(generics) and A inherits B)
 
-    Note: it is an error if not all required functions in A are
-          covariants to those in B
+3    T[]  -> T[]        if A == B
+
+4    &(T) -> &(T)       if A == B || for every T in A -> T must have a covariant T' in B
+5    (T)  -> (T)        if A == B || for every T in A -> T must have a covariant T' in B
+                                     and num(A) == num(B)
+6    &(T) -> T          NEVER
+7    (T)  -> T          NEVER
+8    T    -> &(T)       if A is covariant or invariant to every T in B, but at least
+                        covariant to one T in B
+9    T    -> (T)        if A is covariant to every T in B
+
+10   T'm  -> T          if base-type of A covariant to B
+11   T    -> T'm        NEVER
+12   T'm  -> T'm        if A == B || A inherits B
+
+12   fT   -> fT         if A == B || every parameter in A is COVARIANT to that in B
+                                     and A's returntype is CONTRAVARIANT to B's
+
+
+
+ad 3:
+   NB: even if Int > Number  Int[] <> Number[] !  Aliasing!
+
+ad 4:
+   &(Int, MutualString) -> &(Number, String)        √
+   &(Int, MutualString) -> &(Number, String, Bool)  √
+   &(Int, Bool)         -> &(Number, String)        W
+
+
+ad 10 & 11:
+   let x : Pixel = 7    √
+   let x : Int = 7'px   W
+
+
+ad 13:
+   let f1 : Function(a : Int) : String          = lambda(a : Int) : String { }             (√, √)
+   let f2 : Function(a : Int) : String          = lambda(a : Number) : MutualString { }    (√, √)
+   let f3 : Function(a : Number) : MutualString = lambda(a : Int) : String { }             (W, W)
+   let f4 : Function(a : Number) : String       = lambda(a : Int) : MutualString { }       (W, √)
+
+
+   in type A:
+      foo(a : Int) : String
+
+   in type B (inherits from A):
+      foo(a : Int) : String           √
+      foo(a : Number) : MutualString  √
+      foo(a : Number) : Object        W
+      foo(a : SpecInt) : String       W
+
+      ergo: overwritten functions must be contravariant to functions in base classes
+
+
+
+- whether value or reference type is irrelavant.  Assigning a ref to value
+  and v.v. only affects the value itself, not the type.
+
+  
+
+
+
+
+
+
 
 
   - a measure type A is covariant to a type B
@@ -25,6 +95,10 @@ When are types covariant?
     - two enumeration types can never be covariant
 
     - base type can never be covariant to enumeration types.
+
+
+
+
 
 
   - arrays are never covariant
