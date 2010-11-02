@@ -36,6 +36,11 @@ tests: build
 docs: doc/version.texinfo $(BUILDDIR) 
 	(cd doc/ && $(MAKE) all)
 
+all-post: run-unittest
+
+run-unittest:
+	@echo "Running unit tests..."
+	$(BUILDDIR)/$(BUILDSTYLE)/heather$(APPEXT) -UT
 
 all-local: version.h config-local.h doc/version.texinfo $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 
