@@ -277,8 +277,15 @@ SecondPass::parseTypeSpec(const Token& expr)
 
   if (ty.isRef()) {
     Type referedType = fScope->lookupType(ty.typeName(), true);
-    if (referedType.isDef() && referedType.isAlias())
-      return fScope->normalizeType(referedType, ty);
+    if (referedType.isDef()) {
+      if (referedType.isAlias())
+        return fScope->normalizeType(referedType, ty);
+
+      // we normally don't want to have full types here (these would lead to
+      // unnecessary data expansion and possible issues with recursive types).
+      // Rewrite the typeref to have the fully qualified type name
+      return Type::newTypeRef(referedType.typeName(), ty);
+    }
   }
 
   return ty;
