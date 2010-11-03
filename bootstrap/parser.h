@@ -71,8 +71,6 @@ namespace heather
                     Scope* currentScope);
     String lookupFile(const String& srcName, bool isPublic);
 
-    static Scope* newRootScope();
-
     // predefined symbol tokens to speed up parsing
     static const Token aliasToken;
     static const Token autoToken;
