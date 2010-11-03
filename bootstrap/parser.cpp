@@ -15,6 +15,7 @@
 #include "pass1.h"
 #include "pass2.h"
 #include "properties.h"
+#include "rootscope.h"
 #include "scope.h"
 #include "tokenizer.h"
 #include "transform.h"
@@ -58,31 +59,6 @@ const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
 
 //----------------------------------------------------------------------------
 
-Scope*
-Parser::newRootScope()
-{
-  Ptr<Scope> root = new Scope(kScopeL_CompileUnit);
-
-  TypeVector generics;
-
-  root->registerType(SrcPos(), Type::kObjectTypeName,
-                     Type::newType(Type::kObjectTypeName, generics, Type()));
-
-  Type boolTy = Type::newType(Type::kBoolTypeName,
-                              generics,
-                              Type::newTypeRef(Type::kObjectTypeName, true));
-  root->registerType(SrcPos(), Type::kBoolTypeName, boolTy);
-
-  Type intTy = Type::newType(Type::kIntTypeName,
-                             generics,
-                             Type::newTypeRef(Type::kObjectTypeName, true));
-  root->registerType(SrcPos(), Type::kIntTypeName, intTy);
-
-  root->registerType(SrcPos(), Type::kAnyTypeName,
-                     Type::newType(Type::kAnyTypeName, generics, Type()));
-
-  return root.release();
-}
 
 
 //----------------------------------------------------------------------------
@@ -91,7 +67,7 @@ Parser::Parser(bool isParsingInterface)
   : fState(ParserState(
              new CharRegistry,
              new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-             newRootScope())),
+             type::newRootScope())),
     fIsParsingInterface(isParsingInterface)
 {
 }
@@ -402,7 +378,7 @@ Parser::PortStackHelper::PortStackHelper(Parser* parser)
   fParser->fState = ParserState(
     new CharRegistry,
     new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-    Parser::newRootScope());
+    type::newRootScope());
 }
 
 

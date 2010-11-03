@@ -123,7 +123,8 @@ Typifier::typify(VardefNode* node)
           errorf(node->initExpr()->srcpos(), E_TypeMismatch,
                  "Undefined type in variable initialization");
         }
-        else if (!varty.isCovariant(node->initExpr()->type())) {
+        else if (!isContravariant(varty, node->initExpr()->type(),
+                                  node->scope(), node->srcpos())) {
           errorf(node->initExpr()->srcpos(), E_TypeMismatch,
                  "type mismatch in variable initialization");
         }
@@ -327,16 +328,30 @@ Typifier::typify(CastNode* node)
 
 //------------------------------------------------------------------------------
 
+namespace heather
+{
+  void
+  typifyNodeType(AptNode* node, const Type& type, const String& defaultTypeName)
+  {
+    String typenm = ( type.isDef()
+                      ? type.typeName()
+                      : defaultTypeName );
+    Type ty = node->scope()->lookupType(typenm, true);
+    if (!ty.isDef()) {
+      errorf(node->srcpos(), E_UndefinedType,
+             "undefined type '%s'", (const char*)StrHelper(typenm));
+      node->setType(Type::newAny(true));
+    }
+    else
+      node->setType(ty);
+  }
+};
+
 void
 Typifier::typify(BoolNode* node)
 {
   if (fPhase == kTypify) {
-    Type ty = node->scope()->lookupType(Type::kBoolTypeName, true);
-    if (!ty.isDef())
-      errorf(node->srcpos(), E_UndefinedType,
-             "undefined type '%s'", (const char*)StrHelper(Type::kBoolTypeName));
-    else
-      node->setType(ty);
+    typifyNodeType(node, Type(), Type::kBoolTypeName);
   }
 }
 
@@ -344,28 +359,27 @@ Typifier::typify(BoolNode* node)
 void
 Typifier::typify(CharNode* node)
 {
-  // TODO
-}
-
-
-void
-Typifier::typify(StringNode* node)
-{
-  // TODO
+  if (fPhase == kTypify) {
+    typifyNodeType(node, Type(), Type::kCharTypeName);
+  }
 }
 
 
 void
 Typifier::typify(RationalNode* node)
 {
-  // TODO
+  if (fPhase == kTypify) {
+    typifyNodeType(node, node->type(), Type::kRationalTypeName);
+  }
 }
 
 
 void
 Typifier::typify(RealNode* node)
 {
-  // TODO
+  if (fPhase == kTypify) {
+    typifyNodeType(node, node->type(), Type::kRealTypeName);
+  }
 }
 
 
@@ -373,15 +387,16 @@ void
 Typifier::typify(IntNode* node)
 {
   if (fPhase == kTypify) {
-    String typenm = ( node->type().isDef()
-                      ? node->type().typeName()
-                      : Type::kIntTypeName );
-    Type ty = node->scope()->lookupType(typenm, true);
-    if (!ty.isDef())
-      errorf(node->srcpos(), E_UndefinedType,
-             "undefined type '%s'", (const char*)StrHelper(typenm));
-    else
-      node->setType(ty);
+    typifyNodeType(node, node->type(), Type::kIntTypeName);
+  }
+}
+
+
+void
+Typifier::typify(StringNode* node)
+{
+  if (fPhase == kTypify) {
+    typifyNodeType(node, Type(), Type::kStringTypeName);
   }
 }
 
@@ -389,7 +404,9 @@ Typifier::typify(IntNode* node)
 void
 Typifier::typify(KeywordNode* node)
 {
-  // TODO
+  if (fPhase == kTypify) {
+    typifyNodeType(node, Type(), Type::kKeywordTypeName);
+  }
 }
 
 

@@ -42,34 +42,6 @@ namespace heather
 
 
   template<typename T>
-  static bool
-  isCovariant(const T& vect0, const T& vect1)
-  {
-    if (vect0.size() == vect1.size()) {
-      for (size_t i = 0; i < vect0.size(); i++) {
-        if (!vect0[i].isCovariant(vect1[i]))
-          return false;
-      }
-    }
-    return true;
-  }
-
-
-  template<typename T>
-  static bool
-  isInvariant(const T& vect0, const T& vect1)
-  {
-    if (vect0.size() != vect1.size())
-      return true;
-    for (size_t i = 0; i < vect0.size(); i++) {
-      if (vect0[i].isInvariant(vect1[i]))
-        return true;
-    }
-    return false;
-  }
-
-
-  template<typename T>
   T vectorClone(const T& v)
   {
     T result;
@@ -96,22 +68,6 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  bool
-  TypeImpl::isContravariant(const TypeImpl* other) const
-  {
-    return other->isCovariant(this);
-  }
-
-
-  bool
-  TypeImpl::isInvariant(const TypeImpl* other) const
-  {
-  return !isCovariant(other) && !isContravariant(other);
-  }
-
-
-  //--------------------------------------------------------------------------
-
   class GroupTypeImpl : public TypeImpl
   {
   public:
@@ -126,16 +82,6 @@ namespace heather
 
       return (o != NULL && typeid(this) == typeid(other) &&
               heather::isEqual(fTypes, o->fTypes));
-    }
-
-
-    virtual bool isCovariant(const TypeImpl* other) const
-    {
-      const GroupTypeImpl* o = dynamic_cast<const GroupTypeImpl*>(other);
-
-      if (o != NULL && typeid(this) == typeid(other))
-        return heather::isCovariant(fTypes, o->fTypes);
-      return false;
     }
 
 
@@ -234,13 +180,6 @@ namespace heather
     }
 
 
-    virtual bool isCovariant(const TypeImpl* other) const
-    {
-      const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
-      return (o != NULL && fSign.isCovariant(o->fSign));
-    }
-
-
     const FunctionSignature& functionSignature() const
     {
       return fSign;
@@ -305,42 +244,6 @@ namespace heather
               fInherit == o->fInherit &&
               heather::isEqual(fGenerics, o->fGenerics) &&
               heather::isEqual(fProtocol, o->fProtocol));
-    }
-
-
-    virtual bool
-    isCovariant(const TypeImpl* other) const
-    {
-      const TypeTypeImpl* o = dynamic_cast<const TypeTypeImpl*>(other);
-
-      if (o != NULL &&
-          // fName == o->fName &&
-          fGenerics.size() == o->fGenerics.size() &&
-          fProtocol.size() >= o->fProtocol.size() &&
-          fInherit.isCovariant(o->fInherit))
-      {
-        for (size_t i = 0; i < fGenerics.size(); i++) {
-          if (!fGenerics[i].isCovariant(o->fGenerics[i]))
-            return false;
-        }
-
-        for (size_t i = 0; i < fProtocol.size(); i++) {
-          bool gotOne = false;
-          for (size_t j = 0; j < o->fProtocol.size(); j++) {
-            if (fProtocol[i].methodName() == o->fProtocol[j].methodName() &&
-                fProtocol[i].isCovariant(o->fProtocol[j]))
-            {
-              gotOne = true;
-              break;
-            }
-          }
-
-          if (!gotOne)
-            return false;
-        }
-        return true;
-      }
-      return false;
     }
 
 
@@ -450,15 +353,6 @@ namespace heather
     }
 
 
-    virtual bool isCovariant(const TypeImpl* other) const
-    {
-      const AliasTypeImpl* o = dynamic_cast<const AliasTypeImpl*>(other);
-
-      return (o != NULL &&
-              fType.isCovariant(o->fType));
-    }
-
-
     const String& name() const
     {
       return fName;
@@ -540,15 +434,6 @@ namespace heather
     }
 
 
-    virtual bool isCovariant(const TypeImpl* other) const
-    {
-      const MeasureTypeImpl* o = dynamic_cast<const MeasureTypeImpl*>(other);
-
-      return (o != NULL &&
-              fBaseType.isCovariant(o->fBaseType));
-    }
-
-
     const String& name() const
     {
       return fName;
@@ -627,16 +512,6 @@ namespace heather
               fIsGeneric == o->fIsGeneric &&
               heather::isEqual(fGenerics, o->fGenerics) &&
               heather::isEqual(fConstraints, o->fConstraints));
-    }
-
-
-    virtual bool isCovariant(const TypeImpl* other) const
-    {
-      const TypeRefTypeImpl* o = dynamic_cast<const TypeRefTypeImpl*>(other);
-
-      return (o != NULL &&
-              heather::isCovariant(fGenerics, o->fGenerics) &&
-              heather::isCovariant(fConstraints, o->fConstraints));
     }
 
 
@@ -733,16 +608,6 @@ namespace heather
     }
 
 
-    virtual bool
-    isCovariant(const TypeImpl* other) const
-    {
-      const ArrayTypeImpl* o = dynamic_cast<const ArrayTypeImpl*>(other);
-
-      return (o != NULL &&
-              fBase.isCovariant(o->fBase));
-    }
-
-
     const Type&
     baseType() const
     {
@@ -785,6 +650,7 @@ namespace heather
 const String heather::Type::kAnyTypeName         = String("lang|Any");
 const String heather::Type::kBoolTypeName        = String("lang|Bool");
 const String heather::Type::kCharTypeName        = String("lang|Char");
+const String heather::Type::kComplexTypeName     = String("lang|Complex");
 const String heather::Type::kDoubleTypeName      = String("lang|Double");
 const String heather::Type::kEofTypeName         = String("lang|Eof");
 const String heather::Type::kFloatTypeName       = String("lang|Float");
@@ -804,6 +670,7 @@ const String heather::Type::kUWordTypeName       = String("lang|UWord");
 const String heather::Type::kUnspecifiedTypeName = String("lang|Unspecified");
 const String heather::Type::kWordTypeName        = String("lang|Word");
 const String heather::Type::kObjectTypeName      = String("lang|Object");
+const String heather::Type::kNumberTypeName      = String("lang|Number");
 
 
 //----------------------------------------------------------------------------
@@ -1040,34 +907,6 @@ Type::operator!=(const Type& other) const
 
 
 bool
-Type::isCovariant(const Type& other) const
-{
-  // TODO
-//  assert(fKind != kType_Ref);
-  if (isDef() && other.isDef())
-    return fImpl->isCovariant(other.fImpl);
-  else
-    return true;
-}
-
-
-bool
-Type::isContravariant(const Type& other) const
-{
-  assert (fKind != kType_Ref);
-  return other.isCovariant(*this);
-}
-
-
-bool
-Type::isInvariant(const Type& other) const
-{
-  assert (fKind != kType_Ref);
-  return !isCovariant(other) && !isContravariant(other);
-}
-
-
-bool
 Type::isDef() const
 {
   return fKind != kType_Undefined;
@@ -1077,8 +916,13 @@ Type::isDef() const
 bool
 Type::isBaseType() const
 {
-  if (isRef()) {
-    String nm = typeName();
+  String nm;
+  if (isRef() || isType() || isClass()) {
+    nm = typeName();
+  }
+
+  printf("BASE TYPE? %s\n", (const char*)StrHelper(nm));
+  if (!nm.isEmpty()) {
     return (nm == kBoolTypeName ||
             nm == kCharTypeName ||
             nm == kDoubleTypeName ||
@@ -1849,51 +1693,6 @@ TypeConstraint::replaceGenerics(const TypeCtx& typeMap)
 }
 
 
-bool
-TypeConstraint::isCovariant(const TypeConstraint& other) const
-{
-  // TODO
-  if (constOp() == other.constOp()) {
-    switch (constOp()) {
-    case kConstOp_and:
-    case kConstOp_or:
-      // TODO
-      return true;
-
-    case kConstOp_equal:
-    case kConstOp_notEqual:
-    case kConstOp_less:
-    case kConstOp_lessEqual:
-    case kConstOp_greater:
-    case kConstOp_greaterEqual:
-    case kConstOp_in:
-      // TODO
-      return true;
-
-    case kConstOp_isa:
-      return ( dynamic_cast<const TypeConstraintImpl*>(fImpl.obj())->type()
-               .isCovariant(dynamic_cast<const TypeConstraintImpl*>(
-                              other.fImpl.obj())->type()));
-    }
-  }
-  return true;
-}
-
-
-bool
-TypeConstraint::isContravariant(const TypeConstraint& other) const
-{
-  return other.isCovariant(*this);
-}
-
-
-bool
-TypeConstraint::isInvariant(const TypeConstraint& other) const
-{
-  return !isCovariant(other) && !isContravariant(other);
-}
-
-
 TypeConstOperator
 TypeConstraint::constOp() const
 {
@@ -2103,33 +1902,6 @@ FunctionParameter::replaceGenerics(const TypeCtx& typeMap)
 }
 
 
-bool
-FunctionParameter::isCovariant(const FunctionParameter& other) const
-{
-  if (fKind != other.fKind)
-    return false;
-  if (fIsSpecialized != other.fIsSpecialized)
-    return false;
-
-  // the parameter key is not relevant for co-variance testing
-  return fType.isCovariant(other.fType);
-}
-
-
-bool
-FunctionParameter::isContravariant(const FunctionParameter& other) const
-{
-  return other.isCovariant(*this);
-}
-
-
-bool
-FunctionParameter::isInvariant(const FunctionParameter& other) const
-{
-  return !isCovariant(other) && !isContravariant(other);
-}
-
-
 FunctionParameter::ParameterKind
 FunctionParameter::kind() const
 {
@@ -2260,37 +2032,6 @@ FunctionSignature::clone() const
   return FunctionSignature(fIsGeneric, fName,
                            fReturnType.clone(),
                            heather::vectorClone(fParameters));
-}
-
-
-bool
-FunctionSignature::isCovariant(const FunctionSignature& other) const
-{
-  if (fReturnType.isCovariant(other.fReturnType)) {
-    if (fParameters.size() == other.fParameters.size()) {
-      for (size_t i = 0; i < fParameters.size(); i++) {
-        if (!fParameters[i].isCovariant(other.fParameters[i]))
-          return false;
-      }
-      return true;
-    }
-  }
-
-  return false;
-}
-
-
-bool
-FunctionSignature::isContravariant(const FunctionSignature& other) const
-{
-  return other.isCovariant(*this);
-}
-
-
-bool
-FunctionSignature::isInvariant(const FunctionSignature& other) const
-{
-  return !isCovariant(other) && !isContravariant(other);
 }
 
 
@@ -2428,8 +2169,7 @@ namespace heather
   {
     if (vect0.size() == vect1.size()) {
       for (size_t i = 0; i < vect0.size(); i++) {
-        if (!heather::isSameType(vect0[i], vect1[i], scope, srcpos,
-                                 reportErrors))
+        if (!isSameType(vect0[i], vect1[i], scope, srcpos, reportErrors))
           return false;
       }
       return true;
@@ -2621,8 +2361,7 @@ namespace heather
   {
     if (vect0.size() == vect1.size()) {
       for (size_t i = 0; i < vect0.size(); i++) {
-        if (!heather::isCovariant(vect0[i], vect1[i], scope, srcpos,
-                                  reportErrors))
+        if (!isCovariant(vect0[i], vect1[i], scope, srcpos, reportErrors))
           return false;
       }
       return true;
@@ -2637,7 +2376,7 @@ namespace heather
                               const SrcPos& srcpos, bool reportErrors)
   {
     for (size_t i = 0; i < vect0.size(); i++) {
-      if (!heather::isCovariant(type, vect0[i], scope, srcpos, reportErrors))
+      if (!isCovariant(type, vect0[i], scope, srcpos, reportErrors))
         return false;
     }
     return true;
@@ -2651,10 +2390,10 @@ namespace heather
   {
     bool hadOneCovariantType = false;
     for (size_t i = 0; i < vect0.size(); i++) {
-      if (heather::isContravariant(type, vect0[i], scope, srcpos, reportErrors))
+      if (isContravariant(type, vect0[i], scope, srcpos, reportErrors))
         return false;
       if (!hadOneCovariantType &&
-          heather::isCovariant(type, vect0[i], scope, srcpos, reportErrors))
+          isCovariant(type, vect0[i], scope, srcpos, reportErrors))
         hadOneCovariantType = true;
     }
     return hadOneCovariantType;
@@ -3382,49 +3121,6 @@ SUITE(FunctionParameter)
     CHECK(p0.key().isEmpty());
     CHECK_EQUAL(p0.kind(), FunctionParameter::kParamRest);
   }
-
-  // TEST(covariantCheckIntInt)
-  // {
-  //   FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-  //   FunctionParameter p1 = FunctionParameter::newPosParam(Type::newInt());
-
-  //   CHECK_EQUAL(p0, p1);
-  //   // CHECK(p0.isCovariant(p1));
-  //   // CHECK(p0.isContravariant(p1));
-  //   // CHECK(!p0.isInvariant(p1));
-  // }
-
-  // TEST(covariantCheckIntAny)
-  // {
-  //   FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-  //   FunctionParameter p1 = FunctionParameter::newPosParam(Type::newAny());
-
-  //   CHECK(p0 != p1);
-
-  //   // CHECK(p0.isCovariant(p1));
-  //   // CHECK(p0.isContravariant(p1));
-  //   // CHECK(!p0.isInvariant(p1));
-
-  //   // CHECK(!p1.isCovariant(p0));
-  //   // CHECK(!p1.isContravariant(p0));
-  //   // CHECK(!p1.isInvariant(p0));
-  // }
-
-  // TEST(covariantCheckIntString)
-  // {
-  //   FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-  //   FunctionParameter p1 = FunctionParameter::newPosParam(Type::newString());
-
-  //   CHECK(p0 != p1);
-
-  //   // CHECK(!p0.isCovariant(p1));
-  //   // CHECK(!p0.isContravariant(p1));
-  //   // CHECK(p0.isInvariant(p1));
-
-  //   // CHECK(!p1.isCovariant(p0));
-  //   // CHECK(!p1.isContravariant(p0));
-  //   // CHECK(p1.isInvariant(p0));
-  // }
 }
 
 

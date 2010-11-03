@@ -81,9 +81,6 @@ namespace heather
   public:
     virtual TypeImpl* clone() const = 0;
     virtual bool isEqual(const TypeImpl* other) const = 0;
-    virtual bool isCovariant(const TypeImpl* other) const = 0;
-    virtual bool isContravariant(const TypeImpl* other) const;
-    virtual bool isInvariant(const TypeImpl* other) const;
 
     virtual void replaceGenerics(const TypeCtx& typeMap) = 0;
 
@@ -153,16 +150,8 @@ namespace heather
     //! Compare operator
     bool operator!=(const Type& other) const;
 
-    //! Indicates whether two types are co-variant.  If this returns false \p
-    //! other is either contravariant or invariant.  Use isInvariant to check.
-    bool isCovariant(const Type& other) const;
-    bool isContravariant(const Type& other) const;
-    //! Indicates whether two types are invariant.
-    bool isInvariant(const Type& other) const;
-
 
     bool isDef() const;
-
 
     TypeKind kind() const;
 
@@ -246,6 +235,7 @@ namespace heather
     static const String kAnyTypeName;
     static const String kBoolTypeName;
     static const String kCharTypeName;
+    static const String kComplexTypeName;
     static const String kDoubleTypeName;
     static const String kEofTypeName;
     static const String kFloatTypeName;
@@ -254,6 +244,7 @@ namespace heather
     static const String kLongDoubleTypeName;
     static const String kLongTypeName;
     static const String kNilTypeName;
+    static const String kNumberTypeName;
     static const String kOctetTypeName;
     static const String kRationalTypeName;
     static const String kRealTypeName;
@@ -330,10 +321,6 @@ namespace heather
     //! Compare operator
     bool operator!=(const TypeConstraint& other) const;
 
-    bool isCovariant(const TypeConstraint& other) const;
-    bool isContravariant(const TypeConstraint& other) const;
-    bool isInvariant(const TypeConstraint& other) const;
-
     //! returns the constraint operator
     TypeConstOperator constOp() const;
 
@@ -397,15 +384,6 @@ namespace heather
     //! Compare operator
     bool operator!=(const FunctionParameter& other) const;
 
-    //! Indicates whether two function parameters are co-variant.  If this
-    //! returns false \p other is either contravariant or invariant.  Use
-    //! isInvariant to check.
-    bool isCovariant(const FunctionParameter& other) const;
-    //! Indicates whether two function parameters are invariant.
-    bool isInvariant(const FunctionParameter& other) const;
-    bool isContravariant(const FunctionParameter& other) const;
-
-
     //! Returns the kind of the parameter.
     ParameterKind kind() const;
 
@@ -453,14 +431,6 @@ namespace heather
     bool operator==(const FunctionSignature& other) const;
     //! Compare operator
     bool operator!=(const FunctionSignature& other) const;
-
-    //! Indicates whether two function signatures are co-variant.  If this
-    //! returns false \p other is either contravariant or invariant.  Use
-    //! isInvariant to check.
-    bool isCovariant(const FunctionSignature& other) const;
-    //! Indicates whether two function signatures are invariant.
-    bool isInvariant(const FunctionSignature& other) const;
-    bool isContravariant(const FunctionSignature& other) const;
 
     //! Indicates whether the signature refers to a generic function.
     bool isGeneric() const;
@@ -518,16 +488,16 @@ namespace heather
   //--------------------------------------------------------------------------
 
   bool inheritsFrom(const Type& left, const Type& right, Scope* scope,
-                    const SrcPos& srcpos, bool reportErrors);
+                    const SrcPos& srcpos, bool reportErrors = true);
 
   bool isSameType(const Type& left, const Type& right, Scope* scope,
-                  const SrcPos& srcpos, bool reportErrors);
+                  const SrcPos& srcpos, bool reportErrors = true);
   bool isCovariant(const Type& left, const Type& right, Scope* scope,
-                   const SrcPos& srcpos, bool reportErrors);
+                   const SrcPos& srcpos, bool reportErrors = true);
   bool isContravariant(const Type& left, const Type& right, Scope* scope,
-                       const SrcPos& srcpos, bool reportErrors);
+                       const SrcPos& srcpos, bool reportErrors = true);
   bool isInvariant(const Type& left, const Type& right, Scope* scope,
-                   const SrcPos& srcpos, bool reportErrors);
+                   const SrcPos& srcpos, bool reportErrors = true);
 
 };                              // namespace
 
