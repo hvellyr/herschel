@@ -743,6 +743,19 @@ Type::newTypeRef(const String& name, bool isGeneric,
 
 
 Type
+Type::newTypeRef(const String& name, const Type& old)
+{
+  assert(old.isRef());
+
+  return Type(kType_Ref, old.isValueType(),
+              new TypeRefTypeImpl(name,
+                                  dynamic_cast<const TypeRefTypeImpl*>(old.fImpl.obj())->isGeneric(),
+                                  old.generics(),
+                                  old.constraints()));
+}
+
+
+Type
 Type::newArray(const Type& base, int sizeIndicator, bool isValue)
 {
   return Type(kType_Array, isValue, new ArrayTypeImpl(base, sizeIndicator));
@@ -921,7 +934,6 @@ Type::isBaseType() const
     nm = typeName();
   }
 
-  printf("BASE TYPE? %s\n", (const char*)StrHelper(nm));
   if (!nm.isEmpty()) {
     return (nm == kBoolTypeName ||
             nm == kCharTypeName ||
