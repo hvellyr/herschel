@@ -1151,7 +1151,7 @@ FirstPass::parseOn(ScopeType scopeType)
                             << params )
                        << body;
       else
-        return Token() << Token(tagToken.srcpos(), "unspecified");
+        return Token() << Token(tagToken.srcpos(), "lang|unspecified");
     }
 
     return Token();
@@ -1912,7 +1912,7 @@ FirstPass::parseFor()
       result << elseToken << alternate;
     return result;
   }
-  return Token() << Token(forToken.srcpos(), "unspecified");
+  return Token() << Token(forToken.srcpos(), "lang|unspecified");
 }
 
 
