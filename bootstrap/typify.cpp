@@ -67,6 +67,19 @@ void
 Typifier::typify(SymbolNode* node)
 {
   // TODO
+  if (fPhase == kTypify) {
+    const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
+    if (var != NULL) {
+      node->setType(var->type());
+      return;
+    }
+
+    Type type = node->scope()->lookupType(node->name(), true);
+    if (type.isDef()) {
+      node->setType(type);
+      return;
+    }
+  }
 }
 
 
@@ -413,5 +426,6 @@ Typifier::typify(KeywordNode* node)
 void
 Typifier::typify(UnitConstNode* node)
 {
+  // TODO
   typifyNode(node->value());
 }

@@ -51,7 +51,7 @@ XmlRenderer::displayOpenTagAttrs(const char* tagName, const char* attrs)
 {
   if (tagName != NULL) {
     heather::display(fPort, String() + "<" + tagName);
-    if (attrs != NULL)
+    if (attrs != NULL && ::strlen(attrs) > 0)
       heather::display(fPort, String() + " " + attrs + ">");
     else
       heather::display(fPort, ">");
@@ -223,15 +223,17 @@ XmlRenderer::renderNode(const StringNode* node)
 void
 XmlRenderer::renderNode(const SymbolNode* node)
 {
+  StringBuffer attrs;
+  if (fShowNodeType)
+    attrs << " ty='" << node->type().typeName() << "'";
+
   if (node->generics().empty()) {
     if (node->isShared())
-      displayTagAttr("symbol", "acc='shared'", node->name());
-    else
-      displayTag("symbol", node->name());
+      attrs << " acc='shared'";
+    displayTagAttr("symbol", StrHelper(attrs.toString()), node->name());
   }
   else {
-    StringBuffer attrs;
-    attrs << "nm='" << node->name() << "'";
+    attrs << " nm='" << node->name() << "'";
     if (node->isShared())
       attrs << " acc='shared'";
 
@@ -239,6 +241,9 @@ XmlRenderer::renderNode(const SymbolNode* node)
     displayTypeVector("gen", node->generics());
     displayCloseTag("symbol");
   }
+
+  if (fShowNodeType)
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
 }
 
 

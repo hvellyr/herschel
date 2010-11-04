@@ -2069,7 +2069,7 @@ SecondPass::transformCollForClause(const Token& token,
   loopDefines->push_back(loopDefNode);
 
 
-  // ------------------------------ let name = unspecified
+  // ------------------------------ let name = lang|unspecified
   Token stepSym = token[0].isSeq() ? token[0][0] : token[0];
   assert(stepSym == kSymbol);
   Type stepType;                // TODO
@@ -2077,7 +2077,7 @@ SecondPass::transformCollForClause(const Token& token,
                                               stepSym.idValue(), kNormalVar,
                                               true, stepType,
                                               new SymbolNode(srcpos,
-                                                             String("unspecified")));
+                                                             String("lang|unspecified")));
   Ptr<AptNode> stepDefNode = new LetNode(stepSymVardef);
   loopDefines->push_back(stepDefNode);
 
@@ -2160,7 +2160,7 @@ SecondPass::parseFor(const Token& expr)
 
   if (requiresReturnValue) {
     if (alternate == NULL)
-      alternate = new SymbolNode(expr.srcpos(), String("unspecified"));
+      alternate = new SymbolNode(expr.srcpos(), String("lang|unspecified"));
 
     Type retType;               // TODO?
     Ptr<AptNode> returnVardef = new VardefNode(expr.srcpos(),
@@ -2645,7 +2645,7 @@ SecondPass::parseBlock(const Token& expr)
   }
 
   if (nodes.size() == 0) {
-    return new SymbolNode(expr.srcpos(), String("unspecified"));
+    return new SymbolNode(expr.srcpos(), String("lang|unspecified"));
   }
   else if (nodes.size() == 1) {
     if (!doesNodeNeedBlock(nodes[0].obj()))

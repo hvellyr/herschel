@@ -196,7 +196,7 @@ CodeGenerator::createEntryBlockAlloca(llvm::Function *func, const String& name)
 llvm::Value*
 CodeGenerator::codegen(const SymbolNode* node)
 {
-  if (node->name() == String("unspecified")) {
+  if (node->name() == String("lang|unspecified")) {
     // TODO
     return llvm::ConstantInt::get(context(),
                                   llvm::APInt(32, 0, true));

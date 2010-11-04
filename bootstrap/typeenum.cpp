@@ -85,9 +85,9 @@ _TypeName ## TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,          \
   return Token(srcpos, kSymbol, String(_value));                        \
 }
 
-SIMPLE_TYPE_ENUM_MAKE(Eof, "eof")
-SIMPLE_TYPE_ENUM_MAKE(Nil, "nil")
-SIMPLE_TYPE_ENUM_MAKE(Unspecified, "unspecified")
+SIMPLE_TYPE_ENUM_MAKE(Eof, "lang|eof")
+SIMPLE_TYPE_ENUM_MAKE(Nil, "lang|nil")
+SIMPLE_TYPE_ENUM_MAKE(Unspecified, "lang|unspecified")
 
 
 #define STRING_TYPE_ENUM_MAKE(_TypeName, _kind)                         \
