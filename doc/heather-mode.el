@@ -309,8 +309,10 @@ Key bindings:
   '(
     "Any"
     "Bool" "Char"
-    "Int" "Rational" "Real" "Complex" "Short" "UShort" "Word" "UWord"
-    "Long" "ULong" "Float" "Double" "LongDouble" "Octet" "Ordinal"
+    "Int" "Rational" "Real" "Complex"
+    "Int8" "UInt8" "Int16" "UInt16" "Int32" "UInt32" "Int64" "UInt64"
+     "Octet" "Ordinal"
+    "Float" "Double" "LongDouble"
     "String"
     "Vector"
     "Number" "ExactNumber" "ApproxNumber" "Ordered" "Unordered"

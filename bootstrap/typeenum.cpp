@@ -40,20 +40,23 @@ _TypeName ## TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,          \
 }
 
 
-NUMBER_TYPE_ENUM_MAKER(Int, Int, int, 0, 1)
-NUMBER_TYPE_ENUM_MAKER(Long, Int, int, 0, 1)
-NUMBER_TYPE_ENUM_MAKER(ULong, Int, int, 0, 1)
-NUMBER_TYPE_ENUM_MAKER(Short, Int, int, 0, 1)
-NUMBER_TYPE_ENUM_MAKER(UShort, Int, int, 0, 1)
-NUMBER_TYPE_ENUM_MAKER(Word, Int, int, 0, 1)
-NUMBER_TYPE_ENUM_MAKER(UWord, Int, int, 0, 1)
-NUMBER_TYPE_ENUM_MAKER(Real, Real, real, 0.0, 1.0)
-NUMBER_TYPE_ENUM_MAKER(Float, Real, real, 0.0, 1.0)
-NUMBER_TYPE_ENUM_MAKER(Double, Real, real, 0.0, 1.0)
-NUMBER_TYPE_ENUM_MAKER(LongDouble, Real, real, 0.0, 1.0)
-NUMBER_TYPE_ENUM_MAKER(Rational, Rational, rational, Rational(), Rational(1, 1))
-NUMBER_TYPE_ENUM_MAKER(Char, Char, char, 0, 1)
-NUMBER_TYPE_ENUM_MAKER(Octet, Int, int, 0, 1)
+//                     _TypeName,  _kind,    _method, _init, _step
+NUMBER_TYPE_ENUM_MAKER(Int,        Int,      int,     0,     1)
+NUMBER_TYPE_ENUM_MAKER(Real,       Real,     real,    0.0,   1.0)
+NUMBER_TYPE_ENUM_MAKER(Float32,    Real,     real,    0.0,   1.0)
+NUMBER_TYPE_ENUM_MAKER(Float64,    Real,     real,    0.0,   1.0)
+NUMBER_TYPE_ENUM_MAKER(Float128,   Real,     real,    0.0,   1.0)
+NUMBER_TYPE_ENUM_MAKER(Rational,   Rational, rational, Rational(), Rational(1, 1))
+NUMBER_TYPE_ENUM_MAKER(Char,       Char,     char,    0,     1)
+
+NUMBER_TYPE_ENUM_MAKER(Int8,       Int,      int,     0,     1)
+NUMBER_TYPE_ENUM_MAKER(UInt8,      Int,      int,     0,     1)
+NUMBER_TYPE_ENUM_MAKER(Int16,      Int,      int,     0,     1)
+NUMBER_TYPE_ENUM_MAKER(UInt16,     Int,      int,     0,     1)
+NUMBER_TYPE_ENUM_MAKER(Int32,      Int,      int,     0,     1)
+NUMBER_TYPE_ENUM_MAKER(UInt32,     Int,      int,     0,     1)
+NUMBER_TYPE_ENUM_MAKER(Int64,      Int,      int,     0,     1)
+NUMBER_TYPE_ENUM_MAKER(UInt64,     Int,      int,     0,     1)
 
 Token
 BoolTypeEnumMaker::nextEnumItem(const SrcPos& srcpos,

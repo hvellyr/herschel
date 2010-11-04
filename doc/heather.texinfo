@@ -232,7 +232,7 @@ statement) the file extension is typically not specified (see
 Heather provides a rather complex number model with both exact and
 approximate number representations.  Normal development should always
 use exact and unlimited numbers like @code{Int} or @code{Real}.  The
-approximate and limited types like @code{Float}, @code{UWord} or
+approximate and limited types like @code{Float32}, @code{UInt32} or
 @code{Octet} are supported mostly for interfacing to existing software
 components.
 
@@ -257,16 +257,17 @@ Rational     arbitrary precise quotient like 3/4     -INF .. INF
 Int          signed, arbitrary precise integer       -INF .. INF
 Ordinal      positive, arbitrary precise integer        0 .. INF
 
-Octet        unsigned 8bit                              0 .. 2^8-1
-Short        signed 16bit                           -2^15 .. 2^15-1
-UShort       unsigned 16bit                             0 .. 2^16-1
-Word         signed 32bit                           -2^31 .. 2^31-1
-UWord        unsigned 32bit                             0 .. 2^32-1
-Long         signed 64bit                           -2^63 .. 2^63-1
-ULong        unsigned 64bit                             0 .. 2^64-1
-Float        32bit ieee754 float                    +/- 3.4E +/- 38
-Double       64bit ieee754 float                    +/- 1.7E +/- 308
-LongDouble   128bit ieee754 float                   +/- 1.18 +/- 4932
+Int8         signed 8bit                             -2^7 .. 2^7-1
+UInt8        unsigned 8bit                              0 .. 2^8-1
+Int16        signed 16bit                           -2^15 .. 2^15-1
+UInt16       unsigned 16bit                             0 .. 2^16-1
+Int32        signed 32bit                           -2^31 .. 2^31-1
+UInt32       unsigned 32bit                             0 .. 2^32-1
+Int64        signed 64bit                           -2^63 .. 2^63-1
+UInt64       unsigned 64bit                             0 .. 2^64-1
+Float32      32bit ieee754 float                    +/- 3.4E +/- 38
+Float64      64bit ieee754 float                    +/- 1.7E +/- 308
+Float128     128bit ieee754 float                   +/- 1.18 +/- 4932
 @end smallexample
 
 
@@ -546,16 +547,16 @@ To give a specific type for approximate numbers the constant itself can
 be typed:
 
 @example
-123 : Octet                    -- (approx) octet
-123 : Short                    -- (approx) signed short
-123 : UShort                   -- (approx) unsigned short
-123 : Word                     -- (approx) word
-123 : UWord                    -- (approx) unsigned word
-123 : Long                     -- (approx) long
-123 : ULong                    -- (approx) unsigned long
-123.4 : Float                  -- (approx) ieee754 float
-123.4 : Double                 -- (approx) ieee754 double
-123.4 : LongDouble             -- (approx) ieee754 long double
+123 : UInt8                    -- (approx) octet
+123 : Int16                    -- (approx) signed short
+123 : UInt16                   -- (approx) unsigned short
+123 : Int32                    -- (approx) word
+123 : UInt32                   -- (approx) unsigned word
+123 : Int64                    -- (approx) long
+123 : UInt64                   -- (approx) unsigned long
+123.4 : Float32                -- (approx) ieee754 float
+123.4 : Float64                -- (approx) ieee754 double
+123.4 : Float128               -- (approx) ieee754 long double
 @end example
 
 It is an error to specify a non-matching type to a numerical constant.
@@ -563,8 +564,8 @@ It is an error to specify a non-matching type to a numerical constant.
 In combination with different notations, the typing is always last:
 
 @example
-0fffffefeh : UWord
-1.4675e-10 : Double
+0fffffefeh : UInt32
+1.4675e-10 : Float64
 @end example
 
 
@@ -3462,7 +3463,7 @@ module stack
 extend module core
 @{
   def to-string() : String ...
-  def hash-value() : UWord ...
+  def hash-value() : UInt32 ...
 @}
 @end example
 @end deffn
