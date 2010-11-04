@@ -236,29 +236,37 @@ namespace heather
     Type& setIsValueType(bool value);
 
     static const String kAnyTypeName;
+
+    static const String kObjectTypeName;
+
     static const String kBoolTypeName;
     static const String kCharTypeName;
-    static const String kComplexTypeName;
-    static const String kDoubleTypeName;
-    static const String kEofTypeName;
-    static const String kFloatTypeName;
-    static const String kIntTypeName;
-    static const String kKeywordTypeName;
-    static const String kLongDoubleTypeName;
-    static const String kLongTypeName;
-    static const String kNilTypeName;
+
     static const String kNumberTypeName;
-    static const String kOctetTypeName;
+    static const String kComplexTypeName;
+    static const String kIntTypeName;
     static const String kRationalTypeName;
     static const String kRealTypeName;
-    static const String kShortTypeName;
-    static const String kStringTypeName;
-    static const String kULongTypeName;
-    static const String kUShortTypeName;
-    static const String kUWordTypeName;
+
+    static const String kFloat32TypeName;
+    static const String kFloat64TypeName;
+    static const String kFloat128TypeName;
+
+    static const String kEofTypeName;
+    static const String kNilTypeName;
     static const String kUnspecifiedTypeName;
-    static const String kWordTypeName;
-    static const String kObjectTypeName;
+
+    static const String kKeywordTypeName;
+    static const String kStringTypeName;
+
+    static const String kInt64TypeName;
+    static const String kUInt64TypeName;
+    static const String kInt8TypeName;
+    static const String kUInt8TypeName;
+    static const String kInt16TypeName;
+    static const String kUInt16TypeName;
+    static const String kInt32TypeName;
+    static const String kUInt32TypeName;
 
   private:
     Type(TypeKind kind, bool isValue, TypeImpl* impl);

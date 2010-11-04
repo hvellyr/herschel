@@ -648,29 +648,37 @@ namespace heather
 //----------------------------------------------------------------------------
 
 const String heather::Type::kAnyTypeName         = String("lang|Any");
+
 const String heather::Type::kBoolTypeName        = String("lang|Bool");
 const String heather::Type::kCharTypeName        = String("lang|Char");
+
+const String heather::Type::kObjectTypeName      = String("lang|Object");
+
+const String heather::Type::kNumberTypeName      = String("lang|Number");
 const String heather::Type::kComplexTypeName     = String("lang|Complex");
-const String heather::Type::kDoubleTypeName      = String("lang|Double");
-const String heather::Type::kEofTypeName         = String("lang|Eof");
-const String heather::Type::kFloatTypeName       = String("lang|Float");
 const String heather::Type::kIntTypeName         = String("lang|Int");
-const String heather::Type::kKeywordTypeName     = String("lang|Keyword");
-const String heather::Type::kLongDoubleTypeName  = String("lang|LongDouble");
-const String heather::Type::kLongTypeName        = String("lang|Long");
-const String heather::Type::kNilTypeName         = String("lang|Nil");
-const String heather::Type::kOctetTypeName       = String("lang|Octet");
 const String heather::Type::kRationalTypeName    = String("lang|Rational");
 const String heather::Type::kRealTypeName        = String("lang|Real");
-const String heather::Type::kShortTypeName       = String("lang|Short");
-const String heather::Type::kStringTypeName      = String("lang|String");
-const String heather::Type::kULongTypeName       = String("lang|ULong");
-const String heather::Type::kUShortTypeName      = String("lang|UShort");
-const String heather::Type::kUWordTypeName       = String("lang|UWord");
+
+const String heather::Type::kFloat32TypeName     = String("lang|Float32");
+const String heather::Type::kFloat64TypeName     = String("lang|Float64");
+const String heather::Type::kFloat128TypeName    = String("lang|Float128");
+
+const String heather::Type::kEofTypeName         = String("lang|Eof");
+const String heather::Type::kNilTypeName         = String("lang|Nil");
 const String heather::Type::kUnspecifiedTypeName = String("lang|Unspecified");
-const String heather::Type::kWordTypeName        = String("lang|Word");
-const String heather::Type::kObjectTypeName      = String("lang|Object");
-const String heather::Type::kNumberTypeName      = String("lang|Number");
+
+const String heather::Type::kKeywordTypeName     = String("lang|Keyword");
+const String heather::Type::kStringTypeName      = String("lang|String");
+
+const String heather::Type::kInt8TypeName        = String("lang|Int8");
+const String heather::Type::kUInt8TypeName       = String("lang|UInt8");
+const String heather::Type::kInt16TypeName       = String("lang|Int16");
+const String heather::Type::kUInt16TypeName      = String("lang|UInt16");
+const String heather::Type::kInt32TypeName       = String("lang|Int32");
+const String heather::Type::kUInt32TypeName      = String("lang|UInt32");
+const String heather::Type::kInt64TypeName       = String("lang|Int64");
+const String heather::Type::kUInt64TypeName      = String("lang|UInt64");
 
 
 //----------------------------------------------------------------------------
@@ -937,23 +945,24 @@ Type::isBaseType() const
   if (!nm.isEmpty()) {
     return (nm == kBoolTypeName ||
             nm == kCharTypeName ||
-            nm == kDoubleTypeName ||
             nm == kEofTypeName ||
-            nm == kFloatTypeName ||
+            nm == kFloat32TypeName ||
+            nm == kFloat64TypeName ||
+            nm == kFloat128TypeName ||
             nm == kIntTypeName ||
             nm == kKeywordTypeName ||
-            nm == kLongDoubleTypeName ||
-            nm == kLongTypeName ||
             nm == kNilTypeName ||
-            nm == kOctetTypeName ||
             nm == kRationalTypeName ||
             nm == kRealTypeName ||
-            nm == kShortTypeName ||
             nm == kStringTypeName ||
-            nm == kULongTypeName ||
-            nm == kUShortTypeName ||
-            nm == kUWordTypeName ||
-            nm == kWordTypeName);
+            nm == kInt8TypeName ||
+            nm == kUInt8TypeName ||
+            nm == kInt16TypeName ||
+            nm == kUInt16TypeName ||
+            nm == kInt32TypeName ||
+            nm == kUInt32TypeName ||
+            nm == kInt64TypeName ||
+            nm == kUInt64TypeName);
   }
 
   return false;
@@ -976,40 +985,42 @@ Type::newBaseTypeEnumMaker() const
       return new BoolTypeEnumMaker;
     else if (nm == kCharTypeName)
       return new CharTypeEnumMaker;
-    else if (nm == kDoubleTypeName)
-      return new DoubleTypeEnumMaker;
+    else if (nm == kFloat32TypeName)
+      return new Float32TypeEnumMaker;
+    else if (nm == kFloat64TypeName)
+      return new Float64TypeEnumMaker;
+    else if (nm == kFloat128TypeName)
+      return new Float128TypeEnumMaker;
     else if (nm == kEofTypeName)
       return new EofTypeEnumMaker;
-    else if (nm == kFloatTypeName)
-      return new FloatTypeEnumMaker;
     else if (nm == kIntTypeName)
       return new IntTypeEnumMaker;
     else if (nm == kKeywordTypeName)
       return new KeywordTypeEnumMaker;
-    else if (nm == kLongDoubleTypeName)
-      return new LongDoubleTypeEnumMaker;
-    else if (nm == kLongTypeName)
-      return new LongTypeEnumMaker;
     else if (nm == kNilTypeName)
       return new NilTypeEnumMaker;
-    else if (nm == kOctetTypeName)
-      return new OctetTypeEnumMaker;
     else if (nm == kRationalTypeName)
       return new RationalTypeEnumMaker;
     else if (nm == kRealTypeName)
       return new RealTypeEnumMaker;
-    else if (nm == kShortTypeName)
-      return new ShortTypeEnumMaker;
     else if (nm == kStringTypeName)
       return new StringTypeEnumMaker;
-    else if (nm == kULongTypeName)
-      return new ULongTypeEnumMaker;
-    else if (nm == kUShortTypeName)
-      return new UShortTypeEnumMaker;
-    else if (nm == kUWordTypeName)
-      return new UWordTypeEnumMaker;
-    else if (nm == kWordTypeName)
-      return new WordTypeEnumMaker;
+    else if (nm == kInt8TypeName)
+      return new Int8TypeEnumMaker;
+    else if (nm == kUInt8TypeName)
+      return new UInt8TypeEnumMaker;
+    else if (nm == kInt16TypeName)
+      return new Int16TypeEnumMaker;
+    else if (nm == kUInt16TypeName)
+      return new UInt16TypeEnumMaker;
+    else if (nm == kUInt32TypeName)
+      return new Int32TypeEnumMaker;
+    else if (nm == kUInt32TypeName)
+      return new UInt32TypeEnumMaker;
+    else if (nm == kInt64TypeName)
+      return new Int64TypeEnumMaker;
+    else if (nm == kUInt64TypeName)
+      return new UInt64TypeEnumMaker;
   }
 
   return NULL;
