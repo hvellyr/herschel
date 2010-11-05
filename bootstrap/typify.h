@@ -22,6 +22,7 @@ namespace heather
   class ArraySymbolNode;
   class AssignNode;
   class BinaryNode;
+  class BindingNode;
   class BlockNode;
   class BoolNode;
   class CastNode;
@@ -118,6 +119,11 @@ namespace heather
 
   private:
     void typifyNodeList(NodeList& nl);
+
+    void setupFunctionNodeType(FunctionNode* node);
+    void checkFunctionReturnType(FunctionNode* node);
+
+    void setupBindingNodeType(BindingNode* node, const char* errdesc);
 
     //-------- data members
     Phase fPhase;
