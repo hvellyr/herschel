@@ -2458,6 +2458,13 @@ FunctionNode::retType() const
 }
 
 
+void
+FunctionNode::setRetType(const Type& type)
+{
+  fRetType = type;
+}
+
+
 AptNode*
 FunctionNode::body() const
 {

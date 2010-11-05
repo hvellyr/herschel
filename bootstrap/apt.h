@@ -939,6 +939,7 @@ namespace heather
     virtual void typify(Typifier* typifier);
 
     const Type& retType() const;
+    void setRetType(const Type& type);
 
     AptNode* body() const;
     void setBody(AptNode* node);

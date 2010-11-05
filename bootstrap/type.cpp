@@ -2552,6 +2552,9 @@ namespace heather
 
       return false;
     }
+    else if (left.isAny()) {
+      return false;
+    }
 
     printf("LEFT: %s\n", (const char*)StrHelper(left.toString()));
     printf("RIGHT: %s\n", (const char*)StrHelper(right.toString()));
