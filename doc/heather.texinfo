@@ -2729,7 +2729,7 @@ they are evaluated as if @code{and}-combined.
 
 If the tests list is empty the @code{for} expression repeats to
 evaluate @var{expr} unless it is terminated by other means (e.g.@
-early @code{return}, a break statement, or an signal).
+early @code{return}, a break statement, or a signal).
 
 The test are either boolean expressions or any of the following binding
 constructs:
