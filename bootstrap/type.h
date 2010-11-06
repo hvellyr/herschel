@@ -103,6 +103,7 @@ namespace heather
     static Type newTypeRef(const char* name, bool isValue = true);
     static Type newTypeRef(const String& name, bool isGeneric,
                            const TypeConstVector& constraints, bool isValue);
+    static Type newTypeRef(const String& name, bool isGeneric, bool isValue);
 
     //! rewrite \p old to a new typeref with name.
     static Type newTypeRef(const String& name, const Type& old);
