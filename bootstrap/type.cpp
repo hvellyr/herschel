@@ -1299,6 +1299,15 @@ Type::constraints() const
 
 
 bool
+Type::isGeneric() const
+{
+  if (fKind == kType_Ref)
+    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->isGeneric();
+  return false;
+}
+
+
+bool
 Type::hasGenerics() const
 {
   return !generics().empty();
@@ -2242,16 +2251,19 @@ namespace heather
   {
     if (!left0.isDef() || !right0.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type");
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
       return false;
     }
+
+    if (left0.isGeneric() && right0.isGeneric())
+      return left0.typeName() == right0.typeName();
 
     Type left = resolveType(left0, scope);
     Type right = resolveType(right0, scope);
 
     if (!left.isDef() || !right.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type");
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
       return false;
     }
 
@@ -2314,8 +2326,8 @@ namespace heather
       return false;
     }
 
-    printf("LEFT: %s\n", (const char*)StrHelper(left.toString()));
-    printf("RIGHT: %s\n", (const char*)StrHelper(right.toString()));
+    fprintf(stderr, "LEFT: %s\n", (const char*)StrHelper(left.toString()));
+    fprintf(stderr, "RIGHT: %s\n", (const char*)StrHelper(right.toString()));
     assert(0 && "unhandled type?");
     return false;
   }
@@ -2329,7 +2341,7 @@ namespace heather
   {
     if (!left0.isDef() || !right0.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type");
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
       return false;
     }
 
@@ -2338,7 +2350,7 @@ namespace heather
 
     if (!left.isDef() || !right.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type");
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
       return false;
     }
 
@@ -2361,7 +2373,7 @@ namespace heather
 
     if (!inheritance.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type");
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
       return false;
     }
 
@@ -2477,18 +2489,24 @@ namespace heather
   isCovariant(const Type& left0, const Type& right0, Scope* scope,
               const SrcPos& srcpos, bool reportErrors)
   {
+    // fprintf(stderr, "CONTRA-X: %s %s\n", (const char*)StrHelper(left0.toString()),
+    //        (const char*)StrHelper(right0.toString()));
+
     if (!left0.isDef() || !right0.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type");
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
       return false;
     }
+
+    if (left0.isGeneric() && right0.isGeneric())
+      return isSameType(left0, right0, scope, srcpos, reportErrors);
 
     Type left = resolveType(left0, scope);
     Type right = resolveType(right0, scope);
 
     if (!left.isDef() || !right.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type");
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
       return false;
     }
 

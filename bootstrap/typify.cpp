@@ -16,6 +16,8 @@
 #include "scope.h"
 #include "symbol.h"
 #include "str.h"
+#include "traverse.h"
+#include "typectx.h"
 
 
 using namespace heather;
@@ -114,6 +116,10 @@ void
 Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
 {
   assert(node->scope() != NULL);
+
+  if (node->type().isDef() && node->type().isGeneric())
+    return;
+
   String typenm = ( node->type().isDef()
                     ? node->type().typeName()
                     : Type::kAnyTypeName );
@@ -208,6 +214,33 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
 }
 
 
+namespace heather
+{
+  class FindReturnTraverseDelegate : public TraverseDelegate
+  {
+  public:
+    virtual bool preApply(AptNode* node)
+    {
+      // don't dive into nested functions
+      if (dynamic_cast<FunctionNode*>(node) != NULL)
+        return false;
+
+      ApplyNode* apply = dynamic_cast<ApplyNode*>(node);
+      if (apply != NULL && apply->isSimpleCall() &&
+          apply->simpleCallName() == String("lang|return"))
+        fReturns.push_back(apply);
+      return true;
+    }
+
+    virtual void postApply(AptNode* node)
+    {
+    }
+
+    NodeList fReturns;
+  };
+};
+
+
 void
 Typifier::checkFunctionReturnType(FunctionNode* node)
 {
@@ -217,6 +250,20 @@ Typifier::checkFunctionReturnType(FunctionNode* node)
     {
       errorf(node->srcpos(), E_TypeMismatch,
              "function's body type does not match its return type");
+    }
+
+
+    FindReturnTraverseDelegate delegate;
+    Traversator(delegate).traverseNode(node);
+
+    for (size_t i = 0; i < delegate.fReturns.size(); i++) {
+      AptNode* ret = delegate.fReturns[i];
+      if (!isContravariant(node->retType(), ret->type(), ret->scope(),
+                           ret->srcpos()))
+      {
+        errorf(ret->srcpos(), E_TypeMismatch,
+               "return's type does not match outer block type");
+      }
     }
   }
 }
@@ -319,6 +366,62 @@ Typifier::typify(ApplyNode* node)
 {
   typifyNode(node->base());
   typifyNodeList(node->children());
+
+  if (fPhase == kTypify) {
+    if (node->isSimpleCall()) {
+      const FunctionNode* funcNode = (
+        dynamic_cast<const FunctionNode*>(node->scope()
+                                    ->lookupFunction(node->simpleCallName(), true)) );
+      if (funcNode != NULL) {
+        NodeList funcParams = funcNode->params();
+        NodeList args = node->children();
+
+        TypeCtx localCtx;
+        for (size_t i = 0; i < funcParams.size(); ++i) {
+          const ParamNode* param = dynamic_cast<const ParamNode*>(funcParams[i].obj());
+          AptNode* arg = args[i].obj();
+
+          if (param != NULL) {
+            if (param->type().isGeneric()) {
+              if (localCtx.hasType(param->type().typeName())) {
+                if (!isSameType(localCtx.lookupType(param->type().typeName()),
+                                arg->type(), arg->scope(), arg->srcpos()))
+                {
+                  errorf(arg->srcpos(), E_TypeMismatch,
+                         "type mismatch for generic parameter");
+                }
+              }
+              else {
+                localCtx.registerType(param->type().typeName(), args[i]->type());
+              }
+            }
+            else {
+              if (!isContravariant(param->type(), arg->type(), arg->scope(),
+                                   arg->srcpos()))
+              {
+                errorf(arg->srcpos(), E_TypeMismatch,
+                       "type mismatch for argument %d", i);
+              }
+            }
+          }
+        }
+
+        if (funcNode->retType().isGeneric()) {
+          Type retty = funcNode->retType();
+          if (localCtx.hasType(retty.typeName())) {
+            node->setType(localCtx.lookupType(retty.typeName()));
+          }
+          else {
+            errorf(node->srcpos(), E_TypeMismatch,
+                   "function has unmatched generic return type.");
+          }
+        }
+        else {
+          node->setType(funcNode->retType());
+        }
+      }
+    }
+  }
 }
 
 
