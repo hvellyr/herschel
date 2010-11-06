@@ -127,6 +127,22 @@ heather::type::newRootScope()
   root->registerVar(sp, String("lang|unspecified"), unspecified);
 
 
+  //------------------------------ builtin functions
+  String genVarNm = uniqueName("T");
+
+  NodeList params;
+  params.push_back(new ParamNode(sp, String(), String("r"),
+                                 kPosArg,
+                                 Type::newTypeRef(genVarNm, true, true),
+                                 NULL));
+  root->registerFunction(sp, String("lang|return"),
+                         new FuncDefNode(sp,
+                                         String("lang|return"),
+                                         kFuncIsAbstract, // flags
+                                         params,
+                                         Type::newTypeRef(genVarNm, true, true),
+                                         NULL));
+ 
   return root.release();
 }
 
