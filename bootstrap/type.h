@@ -181,6 +181,10 @@ namespace heather
     const FunctionSignatureVector& typeProtocol() const;
 
 
+    //@ is a Generic type reference (i.e. 'T)
+    bool isGeneric() const;
+
+
     //!@ alias types
     bool isAlias() const;
     const Type& aliasReplaces() const;

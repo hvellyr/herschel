@@ -1,0 +1,5 @@
+def foo(x : Int) : String
+  "This is an int"
+
+def bar()
+  foo(5)

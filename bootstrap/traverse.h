@@ -11,7 +11,6 @@
 
 #include <vector>
 #include "ptr.h"
-#include "refcountable.h"
 
 
 namespace heather
@@ -71,7 +70,7 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class Traversator : public RefCountable
+  class Traversator
   {
   public:
     Traversator(TraverseDelegate& delegate);
