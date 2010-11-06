@@ -12,13 +12,16 @@
 
 #include "errcodes.h"
 #include "log.h"
+#include "predefined.h"
 #include "properties.h"
 #include "registry.h"
 #include "str.h"
 #include "strbuf.h"
 #include "tokenizer.h"
 
-#include <UnitTest++.h>
+#if defined(UNITTESTS)
+#  include <UnitTest++.h>
+#endif
 
 using namespace heather;
 

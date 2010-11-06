@@ -11,13 +11,14 @@
 
 #include <typeinfo>
 
-#include "type.h"
-#include "typectx.h"
-#include "scope.h"
-#include "strbuf.h"
-#include "typeenum.h"
 #include "errcodes.h"
 #include "log.h"
+#include "predefined.h"
+#include "scope.h"
+#include "strbuf.h"
+#include "type.h"
+#include "typectx.h"
+#include "typeenum.h"
 
 
 using namespace heather;
@@ -647,42 +648,6 @@ namespace heather
 
 //----------------------------------------------------------------------------
 
-const String heather::Type::kAnyTypeName         = String("lang|Any");
-
-const String heather::Type::kBoolTypeName        = String("lang|Bool");
-const String heather::Type::kCharTypeName        = String("lang|Char");
-
-const String heather::Type::kObjectTypeName      = String("lang|Object");
-
-const String heather::Type::kNumberTypeName      = String("lang|Number");
-const String heather::Type::kComplexTypeName     = String("lang|Complex");
-const String heather::Type::kIntTypeName         = String("lang|Int");
-const String heather::Type::kRationalTypeName    = String("lang|Rational");
-const String heather::Type::kRealTypeName        = String("lang|Real");
-
-const String heather::Type::kFloat32TypeName     = String("lang|Float32");
-const String heather::Type::kFloat64TypeName     = String("lang|Float64");
-const String heather::Type::kFloat128TypeName    = String("lang|Float128");
-
-const String heather::Type::kEofTypeName         = String("lang|Eof");
-const String heather::Type::kNilTypeName         = String("lang|Nil");
-const String heather::Type::kUnspecifiedTypeName = String("lang|Unspecified");
-
-const String heather::Type::kKeywordTypeName     = String("lang|Keyword");
-const String heather::Type::kStringTypeName      = String("lang|String");
-
-const String heather::Type::kInt8TypeName        = String("lang|Int8");
-const String heather::Type::kUInt8TypeName       = String("lang|UInt8");
-const String heather::Type::kInt16TypeName       = String("lang|Int16");
-const String heather::Type::kUInt16TypeName      = String("lang|UInt16");
-const String heather::Type::kInt32TypeName       = String("lang|Int32");
-const String heather::Type::kUInt32TypeName      = String("lang|UInt32");
-const String heather::Type::kInt64TypeName       = String("lang|Int64");
-const String heather::Type::kUInt64TypeName      = String("lang|UInt64");
-
-
-//----------------------------------------------------------------------------
-
 Type::Type()
   : fKind(kType_Undefined),
     fIsValue(true)
@@ -784,35 +749,35 @@ Type::newArray(const Type& base, int sizeIndicator, bool isValue)
 Type
 Type::newAny(bool isValue)
 {
-  return newTypeRef(kAnyTypeName, isValue);
+  return newTypeRef(Names::kAnyTypeName, isValue);
 }
 
 
 Type
 Type::newInt(bool isValue)
 {
-  return newTypeRef(kIntTypeName, isValue);
+  return newTypeRef(Names::kIntTypeName, isValue);
 }
 
 
 Type
 Type::newRational(bool isValue)
 {
-  return newTypeRef(kRationalTypeName, isValue);
+  return newTypeRef(Names::kRationalTypeName, isValue);
 }
 
 
 Type
 Type::newReal(bool isValue)
 {
-  return newTypeRef(kRealTypeName, isValue);
+  return newTypeRef(Names::kRealTypeName, isValue);
 }
 
 
 Type
 Type::newString(bool isValue)
 {
-  return newTypeRef(kStringTypeName, isValue);
+  return newTypeRef(Names::kStringTypeName, isValue);
 }
 
 
@@ -954,26 +919,26 @@ Type::isBaseType() const
   }
 
   if (!nm.isEmpty()) {
-    return (nm == kBoolTypeName ||
-            nm == kCharTypeName ||
-            nm == kEofTypeName ||
-            nm == kFloat32TypeName ||
-            nm == kFloat64TypeName ||
-            nm == kFloat128TypeName ||
-            nm == kIntTypeName ||
-            nm == kKeywordTypeName ||
-            nm == kNilTypeName ||
-            nm == kRationalTypeName ||
-            nm == kRealTypeName ||
-            nm == kStringTypeName ||
-            nm == kInt8TypeName ||
-            nm == kUInt8TypeName ||
-            nm == kInt16TypeName ||
-            nm == kUInt16TypeName ||
-            nm == kInt32TypeName ||
-            nm == kUInt32TypeName ||
-            nm == kInt64TypeName ||
-            nm == kUInt64TypeName);
+    return (nm == Names::kBoolTypeName ||
+            nm == Names::kCharTypeName ||
+            nm == Names::kEofTypeName ||
+            nm == Names::kFloat32TypeName ||
+            nm == Names::kFloat64TypeName ||
+            nm == Names::kFloat128TypeName ||
+            nm == Names::kIntTypeName ||
+            nm == Names::kKeywordTypeName ||
+            nm == Names::kNilTypeName ||
+            nm == Names::kRationalTypeName ||
+            nm == Names::kRealTypeName ||
+            nm == Names::kStringTypeName ||
+            nm == Names::kInt8TypeName ||
+            nm == Names::kUInt8TypeName ||
+            nm == Names::kInt16TypeName ||
+            nm == Names::kUInt16TypeName ||
+            nm == Names::kInt32TypeName ||
+            nm == Names::kUInt32TypeName ||
+            nm == Names::kInt64TypeName ||
+            nm == Names::kUInt64TypeName);
   }
 
   return false;
@@ -992,45 +957,45 @@ Type::newBaseTypeEnumMaker() const
 {
   if (fKind == kType_Ref) {
     String nm = typeName();
-    if (nm == kBoolTypeName)
+    if (nm == Names::kBoolTypeName)
       return new BoolTypeEnumMaker;
-    else if (nm == kCharTypeName)
+    else if (nm == Names::kCharTypeName)
       return new CharTypeEnumMaker;
-    else if (nm == kFloat32TypeName)
+    else if (nm == Names::kFloat32TypeName)
       return new Float32TypeEnumMaker;
-    else if (nm == kFloat64TypeName)
+    else if (nm == Names::kFloat64TypeName)
       return new Float64TypeEnumMaker;
-    else if (nm == kFloat128TypeName)
+    else if (nm == Names::kFloat128TypeName)
       return new Float128TypeEnumMaker;
-    else if (nm == kEofTypeName)
+    else if (nm == Names::kEofTypeName)
       return new EofTypeEnumMaker;
-    else if (nm == kIntTypeName)
+    else if (nm == Names::kIntTypeName)
       return new IntTypeEnumMaker;
-    else if (nm == kKeywordTypeName)
+    else if (nm == Names::kKeywordTypeName)
       return new KeywordTypeEnumMaker;
-    else if (nm == kNilTypeName)
+    else if (nm == Names::kNilTypeName)
       return new NilTypeEnumMaker;
-    else if (nm == kRationalTypeName)
+    else if (nm == Names::kRationalTypeName)
       return new RationalTypeEnumMaker;
-    else if (nm == kRealTypeName)
+    else if (nm == Names::kRealTypeName)
       return new RealTypeEnumMaker;
-    else if (nm == kStringTypeName)
+    else if (nm == Names::kStringTypeName)
       return new StringTypeEnumMaker;
-    else if (nm == kInt8TypeName)
+    else if (nm == Names::kInt8TypeName)
       return new Int8TypeEnumMaker;
-    else if (nm == kUInt8TypeName)
+    else if (nm == Names::kUInt8TypeName)
       return new UInt8TypeEnumMaker;
-    else if (nm == kInt16TypeName)
+    else if (nm == Names::kInt16TypeName)
       return new Int16TypeEnumMaker;
-    else if (nm == kUInt16TypeName)
+    else if (nm == Names::kUInt16TypeName)
       return new UInt16TypeEnumMaker;
-    else if (nm == kUInt32TypeName)
+    else if (nm == Names::kUInt32TypeName)
       return new Int32TypeEnumMaker;
-    else if (nm == kUInt32TypeName)
+    else if (nm == Names::kUInt32TypeName)
       return new UInt32TypeEnumMaker;
-    else if (nm == kInt64TypeName)
+    else if (nm == Names::kInt64TypeName)
       return new Int64TypeEnumMaker;
-    else if (nm == kUInt64TypeName)
+    else if (nm == Names::kUInt64TypeName)
       return new UInt64TypeEnumMaker;
   }
 
@@ -1041,28 +1006,28 @@ Type::newBaseTypeEnumMaker() const
 bool
 Type::isAny() const
 {
-  return isBuiltinType(kAnyTypeName);
+  return isBuiltinType(Names::kAnyTypeName);
 }
 
 
 bool
 Type::isInt() const
 {
-  return isBuiltinType(kIntTypeName);
+  return isBuiltinType(Names::kIntTypeName);
 }
 
 
 bool
 Type::isString() const
 {
-  return isBuiltinType(kStringTypeName);
+  return isBuiltinType(Names::kStringTypeName);
 }
 
 
 bool
 Type::isReal() const
 {
-  return isBuiltinType(kRealTypeName);
+  return isBuiltinType(Names::kRealTypeName);
 }
 
 
@@ -2664,7 +2629,7 @@ static Scope* testScopeSetup()
   //     |               v
   //     \- Abstract <- Xyz
 
-  scope->registerType(SrcPos(), Type::kAnyTypeName, Type::newAny(true));
+  scope->registerType(SrcPos(), Names::kAnyTypeName, Type::newAny(true));
 
   scope->registerType(SrcPos(), String("Obj"),
                       Type::newType(String("Obj"), generics, Type()));

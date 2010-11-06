@@ -6,12 +6,13 @@
    All rights reserved.
 */
 
+#include "apt.h"
+#include "predefined.h"
 #include "ptr.h"
 #include "rootscope.h"
 #include "scope.h"
 #include "srcpos.h"
 #include "type.h"
-#include "apt.h"
 
 
 //----------------------------------------------------------------------------
@@ -28,92 +29,92 @@ heather::type::newRootScope()
   TypeVector generics;
 
   //-------- lang|Any
-  root->registerType(sp, Type::kAnyTypeName, Type::newAny(true));
+  root->registerType(sp, Names::kAnyTypeName, Type::newAny(true));
 
   //-------- lang|Object
-  root->registerType(sp, Type::kObjectTypeName,
-                     Type::newType(Type::kObjectTypeName, generics, Type()));
+  root->registerType(sp, Names::kObjectTypeName,
+                     Type::newType(Names::kObjectTypeName, generics, Type()));
 
   //-------- lang|Bool
-  root->registerType(sp, Type::kBoolTypeName,
-                     Type::newType(Type::kBoolTypeName,
+  root->registerType(sp, Names::kBoolTypeName,
+                     Type::newType(Names::kBoolTypeName,
                                    generics,
-                                   Type::newTypeRef(Type::kObjectTypeName, true)));
+                                   Type::newTypeRef(Names::kObjectTypeName, true)));
 
   //-------- lang|Char
-  root->registerType(sp, Type::kCharTypeName,
-                     Type::newType(Type::kCharTypeName,
+  root->registerType(sp, Names::kCharTypeName,
+                     Type::newType(Names::kCharTypeName,
                                    generics,
-                                   Type::newTypeRef(Type::kObjectTypeName, true)));
+                                   Type::newTypeRef(Names::kObjectTypeName, true)));
 
 
   //------------------------------
   // Number types
 
   //-------- Number, Int, Real, Rational, Complex
-  root->registerType(sp, Type::kNumberTypeName,
-                     Type::newType(Type::kNumberTypeName,
+  root->registerType(sp, Names::kNumberTypeName,
+                     Type::newType(Names::kNumberTypeName,
                                    generics,
-                                   Type::newTypeRef(Type::kObjectTypeName, true)));
+                                   Type::newTypeRef(Names::kObjectTypeName, true)));
 
-  root->registerType(sp, Type::kIntTypeName,
-                     Type::newType(Type::kIntTypeName,
+  root->registerType(sp, Names::kIntTypeName,
+                     Type::newType(Names::kIntTypeName,
                                    generics,
-                                   Type::newTypeRef(Type::kNumberTypeName, true)));
+                                   Type::newTypeRef(Names::kNumberTypeName, true)));
 
-  root->registerType(sp, Type::kRealTypeName,
-                     Type::newType(Type::kRealTypeName,
+  root->registerType(sp, Names::kRealTypeName,
+                     Type::newType(Names::kRealTypeName,
                                    generics,
-                                   Type::newTypeRef(Type::kNumberTypeName, true)));
+                                   Type::newTypeRef(Names::kNumberTypeName, true)));
 
-  root->registerType(sp, Type::kRationalTypeName,
-                     Type::newType(Type::kRationalTypeName,
+  root->registerType(sp, Names::kRationalTypeName,
+                     Type::newType(Names::kRationalTypeName,
                                    generics,
-                                   Type::newTypeRef(Type::kNumberTypeName, true)));
+                                   Type::newTypeRef(Names::kNumberTypeName, true)));
 
-  root->registerType(sp, Type::kComplexTypeName,
-                     Type::newType(Type::kComplexTypeName,
+  root->registerType(sp, Names::kComplexTypeName,
+                     Type::newType(Names::kComplexTypeName,
                                    generics,
-                                   Type::newTypeRef(Type::kNumberTypeName, true)));
+                                   Type::newTypeRef(Names::kNumberTypeName, true)));
 
 
   //------------------------------
   // String and symbols
-  root->registerType(sp, Type::kStringTypeName,
-                     Type::newType(Type::kStringTypeName,
+  root->registerType(sp, Names::kStringTypeName,
+                     Type::newType(Names::kStringTypeName,
                                    generics,
-                                   Type::newTypeRef(Type::kObjectTypeName, true)));
+                                   Type::newTypeRef(Names::kObjectTypeName, true)));
 
-  root->registerType(sp, Type::kKeywordTypeName,
-                     Type::newType(Type::kKeywordTypeName,
+  root->registerType(sp, Names::kKeywordTypeName,
+                     Type::newType(Names::kKeywordTypeName,
                                    generics,
-                                   Type::newTypeRef(Type::kObjectTypeName, true)));
+                                   Type::newTypeRef(Names::kObjectTypeName, true)));
 
 
   //------------------------------
   // Other basic types and constants
 
-  Type eofType = Type::newType(Type::kEofTypeName,
+  Type eofType = Type::newType(Names::kEofTypeName,
                                generics,
-                               Type::newTypeRef(Type::kObjectTypeName, true));
-  root->registerType(sp, Type::kEofTypeName, eofType);
+                               Type::newTypeRef(Names::kObjectTypeName, true));
+  root->registerType(sp, Names::kEofTypeName, eofType);
 
-  Type nilType = Type::newType(Type::kNilTypeName,
+  Type nilType = Type::newType(Names::kNilTypeName,
                                generics,
-                               Type::newTypeRef(Type::kObjectTypeName, true));
-  root->registerType(sp, Type::kNilTypeName, nilType);
+                               Type::newTypeRef(Names::kObjectTypeName, true));
+  root->registerType(sp, Names::kNilTypeName, nilType);
 
-  Type unspecifiedType = Type::newType(Type::kUnspecifiedTypeName,
+  Type unspecifiedType = Type::newType(Names::kUnspecifiedTypeName,
                                        generics,
-                                       Type::newTypeRef(Type::kObjectTypeName, true));
-  root->registerType(sp, Type::kUnspecifiedTypeName, unspecifiedType);
+                                       Type::newTypeRef(Names::kObjectTypeName, true));
+  root->registerType(sp, Names::kUnspecifiedTypeName, unspecifiedType);
 
 
   Ptr<AptNode> eof = new VardefNode(sp, String("lang|eof"), kNormalVar,
                                     false, eofType,
                                     new ApplyNode(sp,
                                                   new SymbolNode(sp,
-                                                                 Type::kEofTypeName)));
+                                                                 Names::kEofTypeName)));
   root->registerVar(sp, String("lang|eof"), eof);
 
 
@@ -121,7 +122,7 @@ heather::type::newRootScope()
                                     false, nilType,
                                     new ApplyNode(sp,
                                                   new SymbolNode(sp,
-                                                                 Type::kNilTypeName)));
+                                                                 Names::kNilTypeName)));
   root->registerVar(sp, String("lang|nil"), nil);
 
 
@@ -129,7 +130,7 @@ heather::type::newRootScope()
                                             false, unspecifiedType,
                                             new ApplyNode(sp,
                                                           new SymbolNode(sp,
-                                                                         Type::kUnspecifiedTypeName)));
+                                                                         Names::kUnspecifiedTypeName)));
   root->registerVar(sp, String("lang|unspecified"), unspecified);
 
 
@@ -139,9 +140,9 @@ heather::type::newRootScope()
                                  kPosArg,
                                  Type::newTypeRef(String("T"), true, true),
                                  NULL));
-  root->registerFunction(sp, String("lang|return"),
+  root->registerFunction(sp, Names::kLangReturn,
                          new FuncDefNode(sp,
-                                         String("lang|return"),
+                                         Names::kLangReturn,
                                          kFuncIsAbstract, // flags
                                          params,
                                          Type::newTypeRef(String("T"), true, true),

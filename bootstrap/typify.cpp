@@ -8,16 +8,17 @@
    - look up all name references and complete their namespaces
  */
 
-#include "typify.h"
 #include "apt.h"
 #include "errcodes.h"
 #include "log.h"
+#include "predefined.h"
 #include "properties.h"
 #include "scope.h"
-#include "symbol.h"
 #include "str.h"
+#include "symbol.h"
 #include "traverse.h"
 #include "typectx.h"
+#include "typify.h"
 
 
 using namespace heather;
@@ -122,7 +123,7 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
 
   String typenm = ( node->type().isDef()
                     ? node->type().typeName()
-                    : Type::kAnyTypeName );
+                    : Names::kAnyTypeName );
   Type bindty = node->scope()->lookupType(typenm, true);
   if (!bindty.isDef()) {
     errorf(node->srcpos(), E_UndefinedType,
@@ -227,7 +228,7 @@ namespace heather
 
       ApplyNode* apply = dynamic_cast<ApplyNode*>(node);
       if (apply != NULL && apply->isSimpleCall() &&
-          apply->simpleCallName() == String("lang|return"))
+          apply->simpleCallName() == Names::kLangReturn)
         fReturns.push_back(apply);
       return true;
     }
@@ -317,7 +318,7 @@ Typifier::typify(BlockNode* node)
     // look whether we have a on-exit handler; try to infer its parameter
     for (size_t i = 0; i < node->children().size(); ++i) {
       OnNode* onnd = dynamic_cast<OnNode*>(node->children()[i].obj());
-      if (onnd != NULL && onnd->key() == String("exit")) {
+      if (onnd != NULL && onnd->key() == Names::kExitKeyword) {
         assert(!onnd->params().empty());
 
         ParamNode* firstPrm = dynamic_cast<ParamNode*>(onnd->params()[0].obj());
@@ -336,7 +337,7 @@ Typifier::typify(BlockNode* node)
   else if (fPhase == kCheck) {
     for (size_t i = 0; i < node->children().size(); ++i) {
       OnNode* onnd = dynamic_cast<OnNode*>(node->children()[i].obj());
-      if (onnd != NULL && onnd->key() == String("exit")) {
+      if (onnd != NULL && onnd->key() == Names::kExitKeyword) {
         if (!isContravariant(node->type(), onnd->body()->type(), node->scope(),
                              onnd->body()->srcpos()))
         {
@@ -590,7 +591,7 @@ void
 Typifier::typify(BoolNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Type::kBoolTypeName);
+    typifyNodeType(node, Type(), Names::kBoolTypeName);
   }
 }
 
@@ -599,7 +600,7 @@ void
 Typifier::typify(CharNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Type::kCharTypeName);
+    typifyNodeType(node, Type(), Names::kCharTypeName);
   }
 }
 
@@ -608,7 +609,7 @@ void
 Typifier::typify(RationalNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, node->type(), Type::kRationalTypeName);
+    typifyNodeType(node, node->type(), Names::kRationalTypeName);
   }
 }
 
@@ -617,7 +618,7 @@ void
 Typifier::typify(RealNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, node->type(), Type::kRealTypeName);
+    typifyNodeType(node, node->type(), Names::kRealTypeName);
   }
 }
 
@@ -626,7 +627,7 @@ void
 Typifier::typify(IntNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, node->type(), Type::kIntTypeName);
+    typifyNodeType(node, node->type(), Names::kIntTypeName);
   }
 }
 
@@ -635,7 +636,7 @@ void
 Typifier::typify(StringNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Type::kStringTypeName);
+    typifyNodeType(node, Type(), Names::kStringTypeName);
   }
 }
 
@@ -644,7 +645,7 @@ void
 Typifier::typify(KeywordNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Type::kKeywordTypeName);
+    typifyNodeType(node, Type(), Names::kKeywordTypeName);
   }
 }
 

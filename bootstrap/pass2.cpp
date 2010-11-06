@@ -13,6 +13,7 @@
 #include "parser.h"
 #include "parsertypes.h"
 #include "pass2.h"
+#include "predefined.h"
 #include "properties.h"
 #include "scope.h"
 #include "symbol.h"
@@ -1020,7 +1021,7 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
     ofs += 2;
   }
   else
-    baseType = Type::newTypeRef(Type::kIntTypeName, true);
+    baseType = Type::newTypeRef(Names::kIntTypeName, true);
 
   if (!baseType.isBaseType()) {
     errorf(expr.srcpos(), E_EnumNotBaseType, "Enum base is not a base type.");
@@ -2613,8 +2614,8 @@ namespace heather
   {
     const OnNode* on = dynamic_cast<const OnNode*>(node);
     if (on != NULL) {
-      if (on->key() == String("exit") ||
-          on->key() == String("signal"))
+      if (on->key() == Names::kExitKeyword ||
+          on->key() == Names::kSignalKeyword)
         return true;
     }
     else if (dynamic_cast<const LetNode*>(node) != NULL ||

@@ -240,38 +240,6 @@ namespace heather
     bool isValueType() const;
     Type& setIsValueType(bool value);
 
-    static const String kAnyTypeName;
-
-    static const String kObjectTypeName;
-
-    static const String kBoolTypeName;
-    static const String kCharTypeName;
-
-    static const String kNumberTypeName;
-    static const String kComplexTypeName;
-    static const String kIntTypeName;
-    static const String kRationalTypeName;
-    static const String kRealTypeName;
-
-    static const String kFloat32TypeName;
-    static const String kFloat64TypeName;
-    static const String kFloat128TypeName;
-
-    static const String kEofTypeName;
-    static const String kNilTypeName;
-    static const String kUnspecifiedTypeName;
-
-    static const String kKeywordTypeName;
-    static const String kStringTypeName;
-
-    static const String kInt64TypeName;
-    static const String kUInt64TypeName;
-    static const String kInt8TypeName;
-    static const String kUInt8TypeName;
-    static const String kInt16TypeName;
-    static const String kUInt16TypeName;
-    static const String kInt32TypeName;
-    static const String kUInt32TypeName;
 
   private:
     Type(TypeKind kind, bool isValue, TypeImpl* impl);

@@ -10,12 +10,13 @@
 
 #include <string.h>
 
-#include "token.h"
-#include "str.h"
 #include "exception.h"
 #include "parsertypes.h"
+#include "predefined.h"
+#include "str.h"
 #include "strbuf.h"
 #include "symbol.h"
+#include "token.h"
 
 #if defined(UNITTESTS)
 #  include <iostream>
