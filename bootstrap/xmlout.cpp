@@ -243,7 +243,8 @@ XmlRenderer::renderNode(const SymbolNode* node)
   }
 
   if (fShowNodeType && node->type().isDef())
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+                                           node->type()));
 }
 
 
@@ -270,7 +271,8 @@ XmlRenderer::renderNode(const IntNode* node)
   displayCloseTag("int");
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+                                           node->type()));
 }
 
 
@@ -286,7 +288,8 @@ XmlRenderer::renderNode(const RealNode* node)
                  String() + node->value());
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+                                           node->type()));
 }
 
 
@@ -302,7 +305,8 @@ XmlRenderer::renderNode(const RationalNode* node)
   displayTagAttr("real", StrHelper(attrs.toString()), val);
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+                                           node->type()));
 }
 
 
@@ -319,13 +323,15 @@ XmlRenderer::renderNode(const BoolNode* node)
   if (fShowNodeType) {
     StringBuffer attrs;
     attrs << " ty='" << node->type().typeName() << "'";
-    displayEmptyTagAttrs(node->value() ? "true" : "false", StrHelper(attrs.toString()));
+    displayEmptyTagAttrs(node->value() ? "true" : "false",
+                         StrHelper(attrs.toString()));
   }
   else
     displayEmptyTag(node->value() ? "true" : "false");
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+                                           node->type()));
 }
 
 
@@ -746,12 +752,21 @@ XmlRenderer::renderNode(const FuncDefNode* node)
 void
 XmlRenderer::renderNode(const ApplyNode* node)
 {
-  displayOpenTag("apply");
+  StringBuffer attrs;
+
+  if (fShowNodeType && node->type().isDef())
+    attrs << " ty='" << node->type().typeName() << "'";
+
+  displayOpenTagAttrs("apply", StrHelper(attrs.toString()));
   displayNode(NULL, node->base());
   displayOpenTag("args");
   displayNodeList(NULL, node->children());
   displayCloseTag("args");
   displayCloseTag("apply");
+
+  if (fShowNodeType)
+    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+                                           node->type()));
 }
 
 
