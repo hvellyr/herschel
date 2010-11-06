@@ -224,7 +224,7 @@ void
 XmlRenderer::renderNode(const SymbolNode* node)
 {
   StringBuffer attrs;
-  if (fShowNodeType)
+  if (fShowNodeType && node->type().isDef())
     attrs << " ty='" << node->type().typeName() << "'";
 
   if (node->generics().empty()) {
@@ -242,7 +242,7 @@ XmlRenderer::renderNode(const SymbolNode* node)
     displayCloseTag("symbol");
   }
 
-  if (fShowNodeType)
+  if (fShowNodeType && node->type().isDef())
     fReferencedTypes.insert(std::make_pair(node->type().typeName(), node->type()));
 }
 
