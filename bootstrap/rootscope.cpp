@@ -40,6 +40,12 @@ heather::type::newRootScope()
                                    generics,
                                    Type::newTypeRef(Type::kObjectTypeName, true)));
 
+  //-------- lang|Char
+  root->registerType(sp, Type::kCharTypeName,
+                     Type::newType(Type::kCharTypeName,
+                                   generics,
+                                   Type::newTypeRef(Type::kObjectTypeName, true)));
+
 
   //------------------------------
   // Number types
@@ -128,19 +134,17 @@ heather::type::newRootScope()
 
 
   //------------------------------ builtin functions
-  String genVarNm = uniqueName("T");
-
   NodeList params;
   params.push_back(new ParamNode(sp, String(), String("r"),
                                  kPosArg,
-                                 Type::newTypeRef(genVarNm, true, true),
+                                 Type::newTypeRef(String("T"), true, true),
                                  NULL));
   root->registerFunction(sp, String("lang|return"),
                          new FuncDefNode(sp,
                                          String("lang|return"),
                                          kFuncIsAbstract, // flags
                                          params,
-                                         Type::newTypeRef(genVarNm, true, true),
+                                         Type::newTypeRef(String("T"), true, true),
                                          NULL));
  
   return root.release();
