@@ -751,6 +751,17 @@ Type::newTypeRef(const String& name, bool isGeneric,
 
 
 Type
+Type::newTypeRef(const String& name, bool isGeneric, bool isValue)
+{
+  TypeVector dummyGenerics;
+  TypeConstVector dummyConstraints;
+  return Type(kType_Ref, isValue,
+              new TypeRefTypeImpl(name, isGeneric, dummyGenerics,
+                                  dummyConstraints));
+}
+
+
+Type
 Type::newTypeRef(const String& name, const Type& old)
 {
   assert(old.isRef());
