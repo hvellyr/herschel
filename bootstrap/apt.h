@@ -33,6 +33,7 @@ namespace heather
   class XmlRenderer;
   class Annotator;
   class Transformator;
+  class Traversator;
   class Typifier;
 
   //--------------------------------------------------------------------------
@@ -61,6 +62,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const = 0;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator) = 0;
+    virtual void traverse(Traversator* traversator) = 0;
     virtual AptNode* transform(Transformator* annotator) = 0;
     virtual void typify(Typifier* typifier) = 0;
 
@@ -110,6 +112,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -131,6 +134,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -176,6 +180,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* an);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -197,6 +202,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -247,6 +253,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -264,6 +271,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -281,6 +289,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -297,6 +306,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -318,6 +328,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -340,6 +351,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -364,6 +376,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -393,6 +406,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -407,6 +421,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -472,6 +487,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -508,6 +524,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -542,6 +559,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -564,6 +582,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -581,6 +600,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -600,6 +620,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -627,6 +648,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -652,6 +674,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -680,6 +703,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -702,6 +726,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -737,6 +762,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -759,6 +785,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -802,6 +829,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -855,6 +883,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -889,6 +918,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -915,6 +945,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
   };
@@ -935,6 +966,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -980,6 +1012,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -1005,6 +1038,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -1026,6 +1060,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -1051,6 +1086,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -1084,6 +1120,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
@@ -1123,6 +1160,7 @@ namespace heather
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
