@@ -1033,6 +1033,10 @@ namespace heather
     AptNode* base() const;
     void setBase(AptNode* node);
 
+    //! indicates whether base is a SymbolNode
+    bool isSimpleCall() const;
+    String simpleCallName() const;
+
     virtual ApplyNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
