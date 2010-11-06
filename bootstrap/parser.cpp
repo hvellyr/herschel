@@ -14,6 +14,7 @@
 #include "parser.h"
 #include "pass1.h"
 #include "pass2.h"
+#include "predefined.h"
 #include "properties.h"
 #include "rootscope.h"
 #include "scope.h"
@@ -35,7 +36,7 @@ const Token Parser::configToken    = Token(SrcPos(), kSymbol, "config");
 const Token Parser::constToken     = Token(SrcPos(), kSymbol, "const");
 const Token Parser::deleteToken    = Token(SrcPos(), kSymbol, "delete");
 const Token Parser::enumToken      = Token(SrcPos(), kSymbol, "enum");
-const Token Parser::exitToken      = Token(SrcPos(), kSymbol, "exit");
+const Token Parser::exitToken      = Token(SrcPos(), kSymbol, MID_exitKeyword);
 const Token Parser::finalToken     = Token(SrcPos(), kSymbol, "final");
 const Token Parser::fluidToken     = Token(SrcPos(), kSymbol, "fluid");
 const Token Parser::genericToken   = Token(SrcPos(), kSymbol, "generic");
@@ -49,7 +50,7 @@ const Token Parser::observableToken = Token(SrcPos(), kSymbol, "observable");
 const Token Parser::outerToken     = Token(SrcPos(), kSymbol, "outer");
 const Token Parser::publicToken    = Token(SrcPos(), kSymbol, "public");
 const Token Parser::readonlyToken  = Token(SrcPos(), kSymbol, "readonly");
-const Token Parser::signalToken    = Token(SrcPos(), kSymbol, "signal");
+const Token Parser::signalToken    = Token(SrcPos(), kSymbol, MID_signalKeyword);
 const Token Parser::slotToken      = Token(SrcPos(), kSymbol, "slot");
 const Token Parser::syncToken      = Token(SrcPos(), kSymbol, "sync");
 const Token Parser::transientToken = Token(SrcPos(), kSymbol, "transient");

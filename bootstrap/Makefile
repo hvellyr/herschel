@@ -35,6 +35,7 @@ SOURCES =         \
 	pass1.cpp       \
 	pass2.cpp       \
 	port.cpp        \
+	predefined.cpp  \
 	properties.cpp  \
 	rootscope.cpp   \
 	scope.cpp       \
@@ -74,6 +75,7 @@ HEADERS =         \
 	pass1.h         \
 	pass2.h         \
 	port.h          \
+	predefined.h    \
 	properties.h    \
 	ptr.h           \
 	refcountable.h  \

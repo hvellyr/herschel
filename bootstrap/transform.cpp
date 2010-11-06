@@ -12,6 +12,7 @@
 #include "apt.h"
 #include "errcodes.h"
 #include "log.h"
+#include "predefined.h"
 #include "properties.h"
 #include "scope.h"
 #include "symbol.h"
@@ -161,17 +162,17 @@ Transformator::findBlockSplitIndex(const NodeList& nodes)
         switch (mode) {
         case kMode_begin:
         case kMode_let:
-          if (onnd->key() == String("signal"))
+          if (onnd->key() == Names::kSignalKeyword)
             mode = kMode_let;
-          else if (onnd->key() == String("exit"))
+          else if (onnd->key() == Names::kExitKeyword)
             mode = kMode_onExit;
           else
             mode = kMode_other;
           break;
         case kMode_other:
-          if (onnd->key() == String("signal"))
+          if (onnd->key() == Names::kSignalKeyword)
             return i;
-          else if (onnd->key() == String("exit"))
+          else if (onnd->key() == Names::kExitKeyword)
             return i;
           else
             mode = kMode_other;
@@ -241,7 +242,7 @@ Transformator::transform(BlockNode* node)
   if (nodes.size() == 1) {
     OnNode* onnd = dynamic_cast<OnNode*>(nodes[0].obj());
     if (onnd != NULL) {
-      if (onnd->key() == String("signal")) {
+      if (onnd->key() == Names::kSignalKeyword) {
         // if a block contains a single "on signal" node we can drop the
         // complete block, since there's no code in the scope which could
         // raise any signal.  So the signal code is effectively dead.  Print a
@@ -250,7 +251,7 @@ Transformator::transform(BlockNode* node)
                  "unreachable code in orphaned 'on signal' handler");
         return NULL;
       }
-      else if (onnd->key() == String("exit")) {
+      else if (onnd->key() == Names::kExitKeyword) {
         transformSingleOnExitBlock(node, onnd);
         return node;
       }
