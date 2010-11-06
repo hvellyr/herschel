@@ -16,6 +16,7 @@
 #include "scope.h"
 #include "strbuf.h"
 #include "transform.h"
+#include "traverse.h"
 #include "typify.h"
 #include "xmlout.h"
 
@@ -157,6 +158,53 @@ ListNode::appendNodes(const NodeList& nodes)
 }
 
 
+#define DEF_RENDER(_type)                       \
+void                                            \
+_type::render(XmlRenderer* renderer) const      \
+{                                               \
+  renderer->renderNode(this);                   \
+}
+
+#define DEF_CODEGEN(_type)                      \
+llvm::Value*                                    \
+_type::codegen(CodeGenerator* generator) const  \
+{                                               \
+  return generator->codegen(this);              \
+}
+
+
+#define DEF_TRAVERSE(_type)                     \
+void                                            \
+_type::traverse(Traversator* traversator)       \
+{                                               \
+  traversator->traverse(this);                  \
+}
+
+
+#define DEF_ANNOTATE(_type)                     \
+void                                            \
+_type::annotate(Annotator* an)                  \
+{                                               \
+  an->annotate(this);                           \
+}
+
+
+#define DEF_TRANSFORM(_type)                    \
+AptNode*                                        \
+_type::transform(Transformator* tr)             \
+{                                               \
+  return tr->transform(this);                   \
+}
+
+
+#define DEF_TYPIFY(_type)                       \
+void                                            \
+_type::typify(Typifier* typifier)               \
+{                                               \
+  typifier->typify(this);                       \
+}
+
+
 //----------------------------------------------------------------------------
 
 namespace heather {
@@ -191,39 +239,12 @@ StringNode::value() const
 }
 
 
-void
-StringNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-StringNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-StringNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-StringNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-StringNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(StringNode)
+DEF_CODEGEN(StringNode)
+DEF_ANNOTATE(StringNode)
+DEF_TRAVERSE(StringNode)
+DEF_TRANSFORM(StringNode)
+DEF_TYPIFY(StringNode)
 
 
 //----------------------------------------------------------------------------
@@ -250,39 +271,12 @@ KeywordNode::value() const
 }
 
 
-void
-KeywordNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-KeywordNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-KeywordNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-KeywordNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-KeywordNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(KeywordNode)
+DEF_CODEGEN(KeywordNode)
+DEF_ANNOTATE(KeywordNode)
+DEF_TRAVERSE(KeywordNode)
+DEF_TRANSFORM(KeywordNode)
+DEF_TYPIFY(KeywordNode)
 
 
 //----------------------------------------------------------------------------
@@ -365,39 +359,12 @@ SymbolNode::isShared() const
 }
 
 
-void
-SymbolNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-SymbolNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-SymbolNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-SymbolNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-SymbolNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(SymbolNode)
+DEF_CODEGEN(SymbolNode)
+DEF_ANNOTATE(SymbolNode)
+DEF_TRAVERSE(SymbolNode)
+DEF_TRANSFORM(SymbolNode)
+DEF_TYPIFY(SymbolNode)
 
 
 //----------------------------------------------------------------------------
@@ -415,39 +382,12 @@ ArraySymbolNode::clone() const
 }
 
 
-void
-ArraySymbolNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-ArraySymbolNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-ArraySymbolNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-ArraySymbolNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-ArraySymbolNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(ArraySymbolNode)
+DEF_CODEGEN(ArraySymbolNode)
+DEF_ANNOTATE(ArraySymbolNode)
+DEF_TRAVERSE(ArraySymbolNode)
+DEF_TRANSFORM(ArraySymbolNode)
+DEF_TYPIFY(ArraySymbolNode)
 
 
 //----------------------------------------------------------------------------
@@ -468,39 +408,12 @@ IntNode::clone() const
 }
 
 
-llvm::Value*
-IntNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-IntNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-void
-IntNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-IntNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-IntNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(IntNode)
+DEF_CODEGEN(IntNode)
+DEF_ANNOTATE(IntNode)
+DEF_TRAVERSE(IntNode)
+DEF_TRANSFORM(IntNode)
+DEF_TYPIFY(IntNode)
 
 
 //----------------------------------------------------------------------------
@@ -521,39 +434,12 @@ RealNode::clone() const
 }
 
 
-void
-RealNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-RealNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-RealNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-RealNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-RealNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(RealNode)
+DEF_CODEGEN(RealNode)
+DEF_ANNOTATE(RealNode)
+DEF_TRAVERSE(RealNode)
+DEF_TRANSFORM(RealNode)
+DEF_TYPIFY(RealNode)
 
 
 //----------------------------------------------------------------------------
@@ -575,39 +461,12 @@ RationalNode::clone() const
 }
 
 
-void
-RationalNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-RationalNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-RationalNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-RationalNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-RationalNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(RationalNode)
+DEF_CODEGEN(RationalNode)
+DEF_ANNOTATE(RationalNode)
+DEF_TRAVERSE(RationalNode)
+DEF_TRANSFORM(RationalNode)
+DEF_TYPIFY(RationalNode)
 
 
 //----------------------------------------------------------------------------
@@ -632,39 +491,12 @@ CharNode::value() const
 }
 
 
-void
-CharNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-CharNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-CharNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-CharNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-CharNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(CharNode)
+DEF_CODEGEN(CharNode)
+DEF_ANNOTATE(CharNode)
+DEF_TRAVERSE(CharNode)
+DEF_TRANSFORM(CharNode)
+DEF_TYPIFY(CharNode)
 
 
 //----------------------------------------------------------------------------
@@ -689,39 +521,12 @@ BoolNode::value() const
 }
 
 
-void
-BoolNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-BoolNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-BoolNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-BoolNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-BoolNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(BoolNode)
+DEF_CODEGEN(BoolNode)
+DEF_ANNOTATE(BoolNode)
+DEF_TRAVERSE(BoolNode)
+DEF_TRANSFORM(BoolNode)
+DEF_TYPIFY(BoolNode)
 
 
 //----------------------------------------------------------------------------
@@ -763,39 +568,12 @@ UnitConstNode::unit() const
 }
 
 
-void
-UnitConstNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-UnitConstNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-UnitConstNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-UnitConstNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-UnitConstNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(UnitConstNode)
+DEF_CODEGEN(UnitConstNode)
+DEF_ANNOTATE(UnitConstNode)
+DEF_TRAVERSE(UnitConstNode)
+DEF_TRANSFORM(UnitConstNode)
+DEF_TYPIFY(UnitConstNode)
 
 
 //----------------------------------------------------------------------------
@@ -814,39 +592,12 @@ CompileUnitNode::clone() const
 }
 
 
-void
-CompileUnitNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-CompileUnitNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-CompileUnitNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
-AptNode*
-CompileUnitNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-CompileUnitNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(CompileUnitNode)
+DEF_CODEGEN(CompileUnitNode)
+DEF_ANNOTATE(CompileUnitNode)
+DEF_TRAVERSE(CompileUnitNode)
+DEF_TRANSFORM(CompileUnitNode)
+DEF_TYPIFY(CompileUnitNode)
 
 
 //----------------------------------------------------------------------------
@@ -885,39 +636,12 @@ LetNode::clone() const
 }
 
 
-void
-LetNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-LetNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-LetNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
-AptNode*
-LetNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-LetNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(LetNode)
+DEF_CODEGEN(LetNode)
+DEF_ANNOTATE(LetNode)
+DEF_TRAVERSE(LetNode)
+DEF_TRANSFORM(LetNode)
+DEF_TYPIFY(LetNode)
 
 
 //----------------------------------------------------------------------------
@@ -934,39 +658,12 @@ DefNode::clone() const
 }
 
 
-void
-DefNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-DefNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-DefNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
-AptNode*
-DefNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-DefNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(DefNode)
+DEF_CODEGEN(DefNode)
+DEF_ANNOTATE(DefNode)
+DEF_TRAVERSE(DefNode)
+DEF_TRANSFORM(DefNode)
+DEF_TYPIFY(DefNode)
 
 
 //----------------------------------------------------------------------------
@@ -1040,13 +737,6 @@ VardefNode::clone() const
 }
 
 
-void
-VardefNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
 bool
 VardefNode::isConst() const
 {
@@ -1096,6 +786,12 @@ VardefNode::setLinkage(const String& linkage)
 }
 
 
+DEF_RENDER(VardefNode)
+DEF_TRAVERSE(VardefNode)
+DEF_TRANSFORM(VardefNode)
+DEF_TYPIFY(VardefNode)
+
+
 llvm::Value*
 VardefNode::codegen(CodeGenerator* generator) const
 {
@@ -1110,20 +806,6 @@ VardefNode::annotate(Annotator* annotator)
 {
   // this should never be called directly.  See Annotator::DefNode
   assert(0);
-}
-
-
-AptNode*
-VardefNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-VardefNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
 }
 
 
@@ -1150,13 +832,6 @@ ParamNode::clone() const
 }
 
 
-void
-ParamNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
 ParamFlags
 ParamNode::flags() const
 {
@@ -1178,32 +853,12 @@ ParamNode::key() const
 }
 
 
-llvm::Value*
-ParamNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-ParamNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
-AptNode*
-ParamNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-ParamNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(ParamNode)
+DEF_CODEGEN(ParamNode)
+DEF_ANNOTATE(ParamNode)
+DEF_TRAVERSE(ParamNode)
+DEF_TRANSFORM(ParamNode)
+DEF_TYPIFY(ParamNode)
 
 
 //----------------------------------------------------------------------------
@@ -1233,39 +888,12 @@ SlotdefNode::flags() const
 }
 
 
-void
-SlotdefNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-SlotdefNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-SlotdefNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-SlotdefNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-SlotdefNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(SlotdefNode)
+DEF_CODEGEN(SlotdefNode)
+DEF_ANNOTATE(SlotdefNode)
+DEF_TRAVERSE(SlotdefNode)
+DEF_TRANSFORM(SlotdefNode)
+DEF_TYPIFY(SlotdefNode)
 
 
 //----------------------------------------------------------------------------
@@ -1284,39 +912,12 @@ ArrayNode::clone() const
 }
 
 
-void
-ArrayNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-ArrayNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-ArrayNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-ArrayNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-ArrayNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(ArrayNode)
+DEF_CODEGEN(ArrayNode)
+DEF_ANNOTATE(ArrayNode)
+DEF_TRAVERSE(ArrayNode)
+DEF_TRANSFORM(ArrayNode)
+DEF_TYPIFY(ArrayNode)
 
 
 //----------------------------------------------------------------------------
@@ -1335,39 +936,12 @@ VectorNode::clone() const
 }
 
 
-void
-VectorNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-VectorNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-VectorNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-VectorNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-VectorNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(VectorNode)
+DEF_CODEGEN(VectorNode)
+DEF_ANNOTATE(VectorNode)
+DEF_TRAVERSE(VectorNode)
+DEF_TRANSFORM(VectorNode)
+DEF_TYPIFY(VectorNode)
 
 
 //----------------------------------------------------------------------------
@@ -1387,13 +961,6 @@ DictNode::clone() const
 
 
 void
-DictNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-void
 DictNode::addPair(AptNode* key, AptNode* value)
 {
   assert(key != NULL);
@@ -1403,32 +970,12 @@ DictNode::addPair(AptNode* key, AptNode* value)
 }
 
 
-llvm::Value*
-DictNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-DictNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-DictNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-DictNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(DictNode)
+DEF_CODEGEN(DictNode)
+DEF_ANNOTATE(DictNode)
+DEF_TRAVERSE(DictNode)
+DEF_TRANSFORM(DictNode)
+DEF_TYPIFY(DictNode)
 
 
 //----------------------------------------------------------------------------
@@ -1495,39 +1042,12 @@ BinaryNode::isMapTo() const
 }
 
 
-void
-BinaryNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-BinaryNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-BinaryNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-BinaryNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-BinaryNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(BinaryNode)
+DEF_CODEGEN(BinaryNode)
+DEF_ANNOTATE(BinaryNode)
+DEF_TRAVERSE(BinaryNode)
+DEF_TRANSFORM(BinaryNode)
+DEF_TYPIFY(BinaryNode)
 
 
 //----------------------------------------------------------------------------
@@ -1559,39 +1079,12 @@ NegateNode::clone() const
 }
 
 
-void
-NegateNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-NegateNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-NegateNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-NegateNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-NegateNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(NegateNode)
+DEF_CODEGEN(NegateNode)
+DEF_ANNOTATE(NegateNode)
+DEF_TRAVERSE(NegateNode)
+DEF_TRANSFORM(NegateNode)
+DEF_TYPIFY(NegateNode)
 
 
 //------------------------------------------------------------------------------
@@ -1611,13 +1104,6 @@ RangeNode::clone() const
   return cloneScope(this,
                     new RangeNode(fSrcPos, nodeClone(fFrom),
                                   nodeClone(fTo), nodeClone(fBy)));
-}
-
-
-void
-RangeNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
 }
 
 
@@ -1663,32 +1149,12 @@ RangeNode::setBy(AptNode* node)
 }
 
 
-llvm::Value*
-RangeNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-RangeNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-RangeNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-RangeNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(RangeNode)
+DEF_CODEGEN(RangeNode)
+DEF_ANNOTATE(RangeNode)
+DEF_TRAVERSE(RangeNode)
+DEF_TRANSFORM(RangeNode)
+DEF_TYPIFY(RangeNode)
 
 
 //--------------------------------------------------------------------------
@@ -1754,39 +1220,12 @@ ThenWhileNode::setTest(AptNode* node)
 }
 
 
-void
-ThenWhileNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-ThenWhileNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-ThenWhileNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-ThenWhileNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-ThenWhileNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(ThenWhileNode)
+DEF_CODEGEN(ThenWhileNode)
+DEF_ANNOTATE(ThenWhileNode)
+DEF_TRAVERSE(ThenWhileNode)
+DEF_TRANSFORM(ThenWhileNode)
+DEF_TYPIFY(ThenWhileNode)
 
 
 //--------------------------------------------------------------------------
@@ -1836,39 +1275,12 @@ AssignNode::setRvalue(AptNode* val)
 }
 
 
-void
-AssignNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-AssignNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-AssignNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-AssignNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-AssignNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(AssignNode)
+DEF_CODEGEN(AssignNode)
+DEF_ANNOTATE(AssignNode)
+DEF_TRAVERSE(AssignNode)
+DEF_TRANSFORM(AssignNode)
+DEF_TYPIFY(AssignNode)
 
 
 //------------------------------------------------------------------------------
@@ -1889,13 +1301,6 @@ IfNode::clone() const
                                      nodeClone(fTest),
                                      nodeClone(fConsequent),
                                      nodeClone(fAlternate)));
-}
-
-
-void
-IfNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
 }
 
 
@@ -1941,32 +1346,12 @@ IfNode::setAlternate(AptNode* node)
 }
 
 
-llvm::Value*
-IfNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-IfNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-IfNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-IfNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(IfNode)
+DEF_CODEGEN(IfNode)
+DEF_ANNOTATE(IfNode)
+DEF_TRAVERSE(IfNode)
+DEF_TRANSFORM(IfNode)
+DEF_TYPIFY(IfNode)
 
 
 //------------------------------------------------------------------------------
@@ -1993,13 +1378,6 @@ SelectNode::clone() const
   }
 
   return cloneScope(this, newNode.release());
-}
-
-
-void
-SelectNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
 }
 
 
@@ -2105,32 +1483,12 @@ SelectNode::SelectMapping::SelectMapping(const SelectMapping& other)
 }
 
 
-llvm::Value*
-SelectNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-SelectNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-SelectNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-SelectNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(SelectNode)
+DEF_CODEGEN(SelectNode)
+DEF_ANNOTATE(SelectNode)
+DEF_TRAVERSE(SelectNode)
+DEF_TRANSFORM(SelectNode)
+DEF_TYPIFY(SelectNode)
 
 
 //------------------------------------------------------------------------------
@@ -2155,13 +1513,6 @@ MatchNode::clone() const
   }
 
   return cloneScope(this, newNode.release());
-}
-
-
-void
-MatchNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
 }
 
 
@@ -2216,6 +1567,14 @@ MatchNode::setConsequentAt(size_t i, AptNode* consq)
 }
 
 
+DEF_RENDER(MatchNode)
+DEF_CODEGEN(MatchNode)
+DEF_ANNOTATE(MatchNode)
+DEF_TRAVERSE(MatchNode)
+DEF_TRANSFORM(MatchNode)
+DEF_TYPIFY(MatchNode)
+
+
 MatchNode::MatchMapping::MatchMapping(const SrcPos& srcpos,
                                       const String& varName,
                                       const Type& matchType,
@@ -2237,34 +1596,6 @@ MatchNode::MatchMapping::MatchMapping(const MatchMapping& other)
 }
 
 
-llvm::Value*
-MatchNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-MatchNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-MatchNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-MatchNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
-
-
 //------------------------------------------------------------------------------
 
 OnNode::OnNode(const SrcPos& srcpos,
@@ -2283,34 +1614,6 @@ OnNode::clone() const
   return cloneScope(this, new OnNode(fSrcPos, fKey,
                                      copyNodes(fChildren),
                                      nodeClone(fBody)));
-}
-
-
-void
-OnNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-OnNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-OnNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-OnNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
 }
 
 
@@ -2349,11 +1652,12 @@ OnNode::params()
 }
 
 
-void
-OnNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(OnNode)
+DEF_CODEGEN(OnNode)
+DEF_ANNOTATE(OnNode)
+DEF_TRAVERSE(OnNode)
+DEF_TRANSFORM(OnNode)
+DEF_TYPIFY(OnNode)
 
 
 //----------------------------------------------------------------------------
@@ -2372,39 +1676,12 @@ BlockNode::clone() const
 }
 
 
-void
-BlockNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-BlockNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-BlockNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
-AptNode*
-BlockNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-BlockNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(BlockNode)
+DEF_CODEGEN(BlockNode)
+DEF_ANNOTATE(BlockNode)
+DEF_TRAVERSE(BlockNode)
+DEF_TRANSFORM(BlockNode)
+DEF_TYPIFY(BlockNode)
 
 
 //----------------------------------------------------------------------------
@@ -2427,13 +1704,6 @@ FunctionNode::clone() const
   return cloneScope(this,
                     new FunctionNode(fSrcPos, copyNodes(fChildren),
                                      fRetType.clone(), nodeClone(fBody)));
-}
-
-
-void
-FunctionNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
 }
 
 
@@ -2479,32 +1749,12 @@ FunctionNode::setBody(AptNode* node)
 }
 
 
-llvm::Value*
-FunctionNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-FunctionNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-FunctionNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-FunctionNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(FunctionNode)
+DEF_CODEGEN(FunctionNode)
+DEF_ANNOTATE(FunctionNode)
+DEF_TRAVERSE(FunctionNode)
+DEF_TRANSFORM(FunctionNode)
+DEF_TYPIFY(FunctionNode)
 
 
 //----------------------------------------------------------------------------
@@ -2529,13 +1779,6 @@ FuncDefNode::clone() const
                                        fRetType.clone(), nodeClone(fBody));
   n->setLinkage(fLinkage);
   return cloneScope(this, n.release());
-}
-
-
-void
-FuncDefNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
 }
 
 
@@ -2590,19 +1833,10 @@ FuncDefNode::annotate(Annotator* annotator)
   assert(0);
 }
 
-
-AptNode*
-FuncDefNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-FuncDefNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(FuncDefNode)
+DEF_TRAVERSE(FuncDefNode)
+DEF_TRANSFORM(FuncDefNode)
+DEF_TYPIFY(FuncDefNode)
 
 
 //----------------------------------------------------------------------------
@@ -2636,39 +1870,12 @@ ApplyNode::setBase(AptNode* node)
 }
 
 
-void
-ApplyNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-ApplyNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-ApplyNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-ApplyNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-ApplyNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(ApplyNode)
+DEF_CODEGEN(ApplyNode)
+DEF_ANNOTATE(ApplyNode)
+DEF_TRAVERSE(ApplyNode)
+DEF_TRANSFORM(ApplyNode)
+DEF_TYPIFY(ApplyNode)
 
 
 //----------------------------------------------------------------------------
@@ -2709,39 +1916,12 @@ KeyargNode::setValue(AptNode* node)
 }
 
 
-void
-KeyargNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-KeyargNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-KeyargNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-KeyargNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-KeyargNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(KeyargNode)
+DEF_CODEGEN(KeyargNode)
+DEF_ANNOTATE(KeyargNode)
+DEF_TRAVERSE(KeyargNode)
+DEF_TRANSFORM(KeyargNode)
+DEF_TYPIFY(KeyargNode)
 
 
 //----------------------------------------------------------------------------
@@ -2759,20 +1939,6 @@ WhileNode::clone() const
   return cloneScope(this, new WhileNode(fSrcPos,
                                         nodeClone(fTest),
                                         nodeClone(fBody)));
-}
-
-
-void
-WhileNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-WhileNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
 }
 
 
@@ -2804,25 +1970,12 @@ WhileNode::setTest(AptNode* node)
 }
 
 
-void
-WhileNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-WhileNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-WhileNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(WhileNode)
+DEF_CODEGEN(WhileNode)
+DEF_ANNOTATE(WhileNode)
+DEF_TRAVERSE(WhileNode)
+DEF_TRANSFORM(WhileNode)
+DEF_TYPIFY(WhileNode)
 
 
 //----------------------------------------------------------------------------
@@ -2907,39 +2060,12 @@ TypeDefNode::onExprs() const
 }
 
 
-void
-TypeDefNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-TypeDefNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-TypeDefNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-TypeDefNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-TypeDefNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(TypeDefNode)
+DEF_CODEGEN(TypeDefNode)
+DEF_ANNOTATE(TypeDefNode)
+DEF_TRAVERSE(TypeDefNode)
+DEF_TRANSFORM(TypeDefNode)
+DEF_TYPIFY(TypeDefNode)
 
 
 //----------------------------------------------------------------------------
@@ -2973,36 +2099,9 @@ CastNode::clone() const
 }
 
 
-void
-CastNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-CastNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-CastNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-CastNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-void
-CastNode::typify(Typifier* typifier)
-{
-  typifier->typify(this);
-}
+DEF_RENDER(CastNode)
+DEF_CODEGEN(CastNode)
+DEF_ANNOTATE(CastNode)
+DEF_TRAVERSE(CastNode)
+DEF_TRANSFORM(CastNode)
+DEF_TYPIFY(CastNode)

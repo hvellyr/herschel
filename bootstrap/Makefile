@@ -47,6 +47,7 @@ SOURCES =         \
 	tokenizer.cpp   \
 	tokenport.cpp   \
 	transform.cpp   \
+	traverse.cpp    \
 	type.cpp        \
 	typeenum.cpp    \
 	typectx.cpp     \
@@ -88,6 +89,7 @@ HEADERS =         \
 	tokenizer.h     \
 	tokenport.h     \
 	transform.h     \
+	traverse.h      \
 	type.h          \
 	typeenum.h      \
 	typectx.h       \
