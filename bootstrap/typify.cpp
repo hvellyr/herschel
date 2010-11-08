@@ -20,6 +20,8 @@
 #include "typectx.h"
 #include "typify.h"
 
+#include <set>
+
 
 using namespace heather;
 
@@ -363,6 +365,176 @@ Typifier::typify(ParamNode* node)
 
 
 void
+Typifier::checkArgParamType(TypeCtx& localCtx,
+                            const ParamNode* param,
+                            AptNode* arg,
+                            int idx)
+{
+  if (param->type().isGeneric()) {
+    if (localCtx.hasType(param->type().typeName())) {
+      if (!isSameType(localCtx.lookupType(param->type().typeName()),
+                      arg->type(), arg->scope(), arg->srcpos()))
+      {
+        errorf(arg->srcpos(), E_TypeMismatch,
+               "type mismatch for generic parameter");
+      }
+    }
+    else {
+      localCtx.registerType(param->type().typeName(), arg->type());
+    }
+  }
+  // else if (param->type().isPartialGeneric()) {
+  //   TODO
+  // }
+  else {
+    if (!isContravariant(param->type(), arg->type(), arg->scope(),
+                         arg->srcpos()))
+    {
+      errorf(arg->srcpos(), E_TypeMismatch,
+             "type mismatch for argument %d", idx);
+    }
+  }
+}
+
+
+Typifier::KeyargReturn
+Typifier::findKeyedArg(const NodeList& args, size_t argidx, const String& key)
+{
+  KeyargReturn retval = { NULL, 0 };
+
+  for (size_t i = argidx; i < args.size(); i++) {
+    const KeyargNode* keyarg = dynamic_cast<const KeyargNode*>(args[i].obj());
+    if (keyarg == NULL) {
+      return retval;
+    }
+
+    if (keyarg->key() == key) {
+      retval.fKeyarg = keyarg;
+      retval.fIdx = i;
+      return retval;
+    }
+  }
+  return retval;
+}
+
+
+void
+Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
+                                        const FunctionNode* funcNode,
+                                        const NodeList& funcParams)
+{
+/*
+  def param.is-generic-type():
+    if isRef() && isGeneric(): -> true
+    if isRef() && constraints.containsGenericTypeRef(): -> true
+
+  def check-arg-param-type():
+    if param.is-generic-type:
+      if generic-type is known yet:
+        if not isSameType(generics-table().type(), arg.type():
+          error(type mismatch)
+      else:
+        register-generic-type(generic-type)
+    else if param.type().contains-generic-type:
+      ty = match-generic-type-recursivly(params.type(), arg.type()
+      if ty is known yet:
+        if not isSameType(ty, arg.type():
+          error(type mismatch)
+      else:
+        register-generic-type(ty)
+    else:
+      if not isContravariant(param.type, arg.type):
+        error
+
+  def create-sequence-type-from-rest-arg():
+    ...
+
+  for-each param in params:
+    if param.isPositional():
+      if not has-arg:
+        error(wrong number of args)
+      else:
+        check-arg-param-type(arg)
+    else if param.isNamed():
+      if has-named-arg:
+        check-arg-param-type(arg)
+      else:
+        check-arg-param-type(init-expr)
+    else if param.isRest():
+      create-sequence-type-from-rest-arg()
+
+  if more args than params (and not rest-param):
+    error(wrong number of args)
+  */
+
+  NodeList args = node->children();
+
+  TypeCtx localCtx;
+  size_t argidx = 0;
+  std::set<int> argIndicesUsed;
+  for (size_t i = 0; i < funcParams.size(); ++i) {
+    const ParamNode* param = dynamic_cast<const ParamNode*>(funcParams[i].obj());
+
+    if (param != NULL) {
+      if (param->flags() == kPosArg || param->flags() == kSpecArg) {
+        AptNode* arg = args[argidx].obj();
+
+        if (i >= args.size()) {
+          errorf(node->srcpos(), E_BadArgNumber, "not enough arguments");
+          return;
+        }
+        checkArgParamType(localCtx, param, arg, i);
+        argidx++;
+      }
+      else if (param->flags() == kNamedArg) {
+        Typifier::KeyargReturn keyval = findKeyedArg(args, argidx, param->key());
+        if (keyval.fKeyarg == NULL) {
+          checkArgParamType(localCtx, param, param->initExpr(), i);
+        }
+        else {
+          checkArgParamType(localCtx, param, keyval.fKeyarg->value(), keyval.fIdx);
+          argIndicesUsed.insert(keyval.fIdx);
+        }
+      }
+      else if (param->flags() == kRestArg) {
+        // TypeVector types;
+        // for (size_t j = 0; j < args.size(); j++) {
+        //   if (argIndicesUser.find(j) != argIndicesUser.end()) {
+        //     // argument not yet used
+        //     types.push_back(args[j]->type());
+        //   }
+        // }
+        // Type seq = Type::newSequence(types, true);
+        argidx = args.size();
+      }
+      else {
+        assert(0);
+      }
+    }
+  }
+
+  if (argidx < args.size()) {
+    errorf(node->srcpos(), E_BadArgNumber,
+           "Too much arguments");
+  }
+
+  if (funcNode->retType().isGeneric()) {
+    Type retty = funcNode->retType();
+    if (localCtx.hasType(retty.typeName())) {
+      node->setType(localCtx.lookupType(retty.typeName()));
+    }
+    else {
+      errorf(node->srcpos(), E_TypeMismatch,
+             "function has unmatched generic return type.");
+    }
+  }
+  else {
+    node->setType(funcNode->retType());
+  }
+}
+
+
+void
 Typifier::typify(ApplyNode* node)
 {
   typifyNode(node->base());
@@ -372,55 +544,9 @@ Typifier::typify(ApplyNode* node)
     if (node->isSimpleCall()) {
       const FunctionNode* funcNode = (
         dynamic_cast<const FunctionNode*>(node->scope()
-                                    ->lookupFunction(node->simpleCallName(), true)) );
-      if (funcNode != NULL) {
-        NodeList funcParams = funcNode->params();
-        NodeList args = node->children();
-
-        TypeCtx localCtx;
-        for (size_t i = 0; i < funcParams.size(); ++i) {
-          const ParamNode* param = dynamic_cast<const ParamNode*>(funcParams[i].obj());
-          AptNode* arg = args[i].obj();
-
-          if (param != NULL) {
-            if (param->type().isGeneric()) {
-              if (localCtx.hasType(param->type().typeName())) {
-                if (!isSameType(localCtx.lookupType(param->type().typeName()),
-                                arg->type(), arg->scope(), arg->srcpos()))
-                {
-                  errorf(arg->srcpos(), E_TypeMismatch,
-                         "type mismatch for generic parameter");
-                }
-              }
-              else {
-                localCtx.registerType(param->type().typeName(), args[i]->type());
-              }
-            }
-            else {
-              if (!isContravariant(param->type(), arg->type(), arg->scope(),
-                                   arg->srcpos()))
-              {
-                errorf(arg->srcpos(), E_TypeMismatch,
-                       "type mismatch for argument %d", i);
-              }
-            }
-          }
-        }
-
-        if (funcNode->retType().isGeneric()) {
-          Type retty = funcNode->retType();
-          if (localCtx.hasType(retty.typeName())) {
-            node->setType(localCtx.lookupType(retty.typeName()));
-          }
-          else {
-            errorf(node->srcpos(), E_TypeMismatch,
-                   "function has unmatched generic return type.");
-          }
-        }
-        else {
-          node->setType(funcNode->retType());
-        }
-      }
+                                          ->lookupFunction(node->simpleCallName(), true)) );
+      if (funcNode != NULL)
+        typifyMatchAndCheckParameters(node, funcNode, funcNode->params());
     }
   }
 }
