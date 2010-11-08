@@ -2226,6 +2226,8 @@ namespace heather
     Type left = resolveType(left0, scope);
     Type right = resolveType(right0, scope);
 
+    // fprintf(stderr, "LEFT IS: %s\n", (const char*)StrHelper(left.toString()));
+    // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right.toString()));
     if (!left.isDef() || !right.isDef()) {
       if (reportErrors)
         errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
@@ -2550,8 +2552,8 @@ namespace heather
       return false;
     }
 
-    printf("LEFT: %s\n", (const char*)StrHelper(left.toString()));
-    printf("RIGHT: %s\n", (const char*)StrHelper(right.toString()));
+    fprintf(stderr, "LEFT: %s\n", (const char*)StrHelper(left.toString()));
+    fprintf(stderr, "RIGHT: %s\n", (const char*)StrHelper(right.toString()));
     assert(0 && "unhandled type?");
     return false;
   }
