@@ -764,7 +764,7 @@ XmlRenderer::renderNode(const ApplyNode* node)
   displayCloseTag("args");
   displayCloseTag("apply");
 
-  if (fShowNodeType)
+  if (fShowNodeType && node->type().isDef())
     fReferencedTypes.insert(std::make_pair(node->type().typeName(),
                                            node->type()));
 }
