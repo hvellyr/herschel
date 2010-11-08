@@ -125,6 +125,21 @@ namespace heather
 
     void setupBindingNodeType(BindingNode* node, const char* errdesc);
 
+    void checkArgParamType(TypeCtx& localCtx, const ParamNode* param,
+                           AptNode* arg, int idx);
+    void typifyMatchAndCheckParameters(ApplyNode* node,
+                                       const FunctionNode* funcNode,
+                                       const NodeList& funcParams);
+
+    struct KeyargReturn
+    {
+      const KeyargNode* fKeyarg;
+      int fIdx;
+    };
+
+    KeyargReturn findKeyedArg(const NodeList& args, size_t argidx,
+                              const String& key);
+
     //-------- data members
     Phase fPhase;
   };

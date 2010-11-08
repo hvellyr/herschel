@@ -1,0 +1,8 @@
+def type Container<A> : Object
+
+def foo(x : Container<'T>) : Container<'T>
+  x
+
+def bar()
+  let y : Container<Int>
+  foo(y)

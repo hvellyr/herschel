@@ -137,6 +137,8 @@ namespace heather
     E_UndefinedType       = 0x4412,
     E_TypeMismatch        = 0x4413,
 
+    E_BadArgNumber        = 0x4414,
+
     // module parsing
     E_MissingModName      = 0x4500,
     E_MissingDefName      = 0x4501,
