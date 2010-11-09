@@ -130,6 +130,8 @@ namespace heather
 
     const Type& lookupType(const String& name, bool showAmbiguousSymDef) const;
 
+    Type lookupType(const Type& type) const;
+
     //! Lookup a type by another type.  If \p type is not a typeref, it is
     //! returned as is.  If the type looked up is parametrized, it is fill by
     //! type parameters as found in \p type.

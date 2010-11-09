@@ -67,6 +67,28 @@ namespace heather
   }
 
 
+  template<typename T>
+  bool isOpen(const std::vector<T>& v)
+  {
+    for (size_t i = 0; i < v.size(); i++) {
+      if (v[i].isOpen())
+        return true;
+    }
+    return false;
+  }
+
+
+  StringBuffer& operator<<(StringBuffer& other, const TypeVector& tyve)
+  {
+    for (size_t i = 0; i < tyve.size(); i++) {
+      if (i > 0)
+        other << ", ";
+      other << tyve[i].typeId();
+    }
+    return other;
+  }
+
+
   //--------------------------------------------------------------------------
 
   class GroupTypeImpl : public TypeImpl
@@ -83,6 +105,16 @@ namespace heather
 
       return (o != NULL && typeid(this) == typeid(other) &&
               heather::isEqual(fTypes, o->fTypes));
+    }
+
+
+    bool isOpen() const
+    {
+      for (size_t i = 0; i < fTypes.size(); i++) {
+        if (fTypes[i].isOpen())
+          return true;
+      }
+      return false;
     }
 
 
@@ -128,6 +160,16 @@ namespace heather
       buf << "</ty:union>";
       return buf.toString();
     }
+
+
+    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
+                              Scope* scope, const SrcPos& srcpos) const
+    {
+      if (right0.isUnion()) {
+        assert(0 && "missing");
+      }
+      return false;
+    }
   };
 
 
@@ -155,6 +197,23 @@ namespace heather
       buf << "</ty:seq>";
       return buf.toString();
     }
+
+
+    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
+                              Scope* scope, const SrcPos& srcpos) const
+    {
+      if (right0.isSequence() && types().size() == right0.seqTypes().size()) {
+        const TypeVector& ltypes = types();
+        const TypeVector& rtypes = right0.seqTypes();
+
+        for (size_t i = 0; i < ltypes.size(); ++i) {
+          if (!ltypes[i].matchOpeness(localCtx, rtypes[i], scope, srcpos))
+            return false;
+        }
+        return true;
+      }
+      return false;
+    }
   };
 
 
@@ -178,6 +237,22 @@ namespace heather
     {
       const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
       return (o != NULL && fSign == o->fSign);
+    }
+
+
+    bool isOpen() const
+    {
+      return fSign.isOpen();
+    }
+
+
+    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
+                              Scope* scope, const SrcPos& srcpos) const
+    {
+      if (right0.isFunction())
+        return fSign.matchOpeness(localCtx, right0.functionSignature(),
+                                  scope, srcpos);
+      return false;
     }
 
 
@@ -248,6 +323,13 @@ namespace heather
     }
 
 
+    bool isOpen() const
+    {
+      return ( fInherit.isOpen() || fDefApplySign.isOpen() ||
+               !fGenerics.empty() );
+    }
+
+
     const String& name() const
     {
       return fName;
@@ -280,8 +362,23 @@ namespace heather
 
     virtual void replaceGenerics(const TypeCtx& typeMap)
     {
-      // TODO
-      assert(0);
+      for (size_t i = 0; i < fGenerics.size(); i++) {
+        assert(fGenerics[i].isRef());
+
+        // fprintf(stderr, "REPLACE GENERIC: %s\n", (const char*)StrHelper(fGenerics[i].toString()));
+
+        Type replacement = typeMap.lookupType(fGenerics[i].typeName());
+        if (replacement.isDef()) {
+          // fprintf(stderr, "FOUND STH: %s\n", (const char*)StrHelper(replacement.toString()));
+          fGenerics[i] = replacement;
+        }
+      }
+      fInherit = fInherit.replaceGenerics(typeMap);
+      fDefApplySign.replaceGenerics(typeMap);
+
+      for (size_t i = 0; i < fProtocol.size(); ++i) {
+        fProtocol[i].replaceGenerics(typeMap);
+      }
     }
 
 
@@ -312,6 +409,27 @@ namespace heather
 
       buf << "</ty:type>";
       return buf.toString();
+    }
+
+
+    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
+                              Scope* scope, const SrcPos& srcpos) const
+    {
+      // fprintf(stderr, "RIGHT in class: %s\n", (const char*)StrHelper(right0.toString()));
+      if (right0.isType() || right0.isClass()) {
+        if (fName == right0.typeName() &&
+            fGenerics.size() == right0.generics().size())
+        {
+          for (size_t i = 0; i < fGenerics.size(); ++i) {
+            // fprintf(stderr, "CHECK GENERIC: %s\n", (const char*)StrHelper(fGenerics[i].toString()));
+            if (!fGenerics[i].matchOpeness(localCtx, right0.generics()[i],
+                                           scope, srcpos))
+              return false;
+          }
+          return true;
+        }
+      }
+      return false;
     }
 
   protected:
@@ -351,6 +469,20 @@ namespace heather
               fName == o->fName &&
               heather::isEqual(fGenerics, o->fGenerics) &&
               fType == o->fType);
+    }
+
+
+    bool isOpen() const
+    {
+      return fType.isOpen() || heather::isOpen(fGenerics);
+    }
+
+
+    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
+                              Scope* scope, const SrcPos& srcpos) const
+    {
+      assert(0 && "when does this happen?");
+      return false;
     }
 
 
@@ -435,6 +567,12 @@ namespace heather
     }
 
 
+    bool isOpen() const
+    {
+      return fBaseType.isOpen();
+    }
+
+
     const String& name() const
     {
       return fName;
@@ -472,6 +610,17 @@ namespace heather
       return buf.toString();
     }
 
+
+    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
+                              Scope* scope, const SrcPos& srcpos) const
+    {
+      if (right0.isMeasure())
+        return fBaseType.matchOpeness(localCtx, right0.measureBaseType(),
+                                      scope, srcpos);
+      return false;
+    }
+
+
   protected:
     String     fName;
     Type       fBaseType;
@@ -485,20 +634,20 @@ namespace heather
   {
   public:
     TypeRefTypeImpl(const String& name,
-                    bool isGeneric,
+                    bool isOpen,
                     const TypeVector& genericArgs,
                     const TypeConstVector& constraints)
       : fName(name),
         fGenerics(genericArgs),
         fConstraints(constraints),
-        fIsGeneric(isGeneric)
+        fIsOpen(isOpen)
     { }
 
 
     virtual TypeRefTypeImpl* clone() const
     {
       return new TypeRefTypeImpl(fName,
-                                 fIsGeneric,
+                                 fIsOpen,
                                  vectorClone(fGenerics),
                                  vectorClone(fConstraints));
     }
@@ -510,7 +659,7 @@ namespace heather
 
       return (o != NULL &&
               fName == o->fName &&
-              fIsGeneric == o->fIsGeneric &&
+              fIsOpen == o->fIsOpen &&
               heather::isEqual(fGenerics, o->fGenerics) &&
               heather::isEqual(fConstraints, o->fConstraints));
     }
@@ -528,9 +677,15 @@ namespace heather
     }
 
 
-    bool isGeneric() const
+    bool isOpen() const
     {
-      return fIsGeneric;
+      return fIsOpen || heather::isOpen(fGenerics);
+    }
+
+
+    bool isOpenSelf() const
+    {
+      return fIsOpen;
     }
 
 
@@ -550,7 +705,7 @@ namespace heather
     virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:ref" << (fIsGeneric ? " gen='t'" : "")
+      buf << "<ty:ref" << (fIsOpen ? " gen='t'" : "")
           << ( !isValue ? " ref='t'" : "")
           << " nm='" << fName << "'>";
       if (!fGenerics.empty()) {
@@ -573,11 +728,83 @@ namespace heather
       return buf.toString();
     }
 
+
+    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
+                              Scope* scope, const SrcPos& srcpos) const
+    {
+      //fprintf(stderr, "LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
+      //fprintf(stderr, "RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
+      if (right0.isRef()) {
+        // if the reference has generics, it itself cannot be generic.  A
+        // 'T<'Y'> is not allowed.
+        if (!fGenerics.empty()) {
+          if (fGenerics.size() == right0.generics().size() &&
+              fName == right0.typeName())
+          {
+            for (size_t i = 0; i < fGenerics.size(); ++i) {
+              if (!fGenerics[i].matchOpeness(localCtx, right0.generics()[i],
+                                             scope, srcpos))
+                return false;
+            }
+            return true;
+          }
+          return false;
+        }
+
+        if (localCtx.hasType(name())) {
+          if (!isSameType(localCtx.lookupType(name()), right0, scope, srcpos))
+          {
+            errorf(srcpos, E_TypeMismatch, "type mismatch for generic parameter");
+            return false;
+          }
+          return true;
+        }
+        else {
+          // fprintf(stderr, "MAP %s to %s\n", (const char*)StrHelper(name()),
+          //         (const char*)StrHelper(right0.toString()));
+          localCtx.registerType(name(), right0);
+          return true;
+        }
+      }
+      else if (right0.isType() || right0.isClass()) {
+        if (!fGenerics.empty()) {
+          if (fGenerics.size() == right0.generics().size() &&
+              fName == right0.typeName())
+          {
+            for (size_t i = 0; i < fGenerics.size(); ++i) {
+              if (!fGenerics[i].matchOpeness(localCtx, right0.generics()[i],
+                                             scope, srcpos))
+                return false;
+            }
+            return true;
+          }
+          return false;
+        }
+
+        if (localCtx.hasType(name())) {
+          if (!isSameType(localCtx.lookupType(name()), right0, scope, srcpos))
+          {
+            errorf(srcpos, E_TypeMismatch, "type mismatch for generic parameter");
+            return false;
+          }
+          return true;
+        }
+        else {
+          // fprintf(stderr, "MAP %s to %s\n", (const char*)StrHelper(name()),
+          //         (const char*)StrHelper(right0.toString()));
+          localCtx.registerType(name(), right0);
+          return true;
+        }
+      }
+      return false;
+    }
+
+
   protected:
     String          fName;
     TypeVector      fGenerics;
     TypeConstVector fConstraints;
-    bool            fIsGeneric;
+    bool            fIsOpen;
   };
 
 
@@ -606,6 +833,12 @@ namespace heather
       return (o != NULL &&
               fBase == o->fBase &&
               fSizeIndicator == o->fSizeIndicator);
+    }
+
+
+    bool isOpen() const
+    {
+      return fBase.isOpen();
     }
 
 
@@ -638,6 +871,19 @@ namespace heather
           << "</ty:array>";
       return buf.toString();
     }
+
+
+    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
+                              Scope* scope, const SrcPos& srcpos) const
+    {
+      // fprintf(stderr, "LEFT IS:  %s\n", (const char*)StrHelper(toString(true)));
+      // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right0.toString()));
+
+      if (right0.isArray())
+        return fBase.matchOpeness(localCtx, right0.arrayBaseType(), scope, srcpos);
+      return false;
+    }
+
 
   protected:
     Type fBase;
@@ -705,23 +951,23 @@ Type::newTypeRef(const char* name, bool isValue)
 
 
 Type
-Type::newTypeRef(const String& name, bool isGeneric,
+Type::newTypeRef(const String& name, bool isOpen,
                  const TypeConstVector& constraints, bool isValue)
 {
   TypeVector dummyGenerics;
   return Type(kType_Ref, isValue,
-              new TypeRefTypeImpl(name, isGeneric, dummyGenerics,
+              new TypeRefTypeImpl(name, isOpen, dummyGenerics,
                                   constraints));
 }
 
 
 Type
-Type::newTypeRef(const String& name, bool isGeneric, bool isValue)
+Type::newTypeRef(const String& name, bool isOpen, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
   return Type(kType_Ref, isValue,
-              new TypeRefTypeImpl(name, isGeneric, dummyGenerics,
+              new TypeRefTypeImpl(name, isOpen, dummyGenerics,
                                   dummyConstraints));
 }
 
@@ -733,7 +979,7 @@ Type::newTypeRef(const String& name, const Type& old)
 
   return Type(kType_Ref, old.isValueType(),
               new TypeRefTypeImpl(name,
-                                  dynamic_cast<const TypeRefTypeImpl*>(old.fImpl.obj())->isGeneric(),
+                                  dynamic_cast<const TypeRefTypeImpl*>(old.fImpl.obj())->isOpenSelf(),
                                   old.generics(),
                                   old.constraints()));
 }
@@ -1083,6 +1329,64 @@ Type::typeName() const
 }
 
 
+String
+Type::typeId() const
+{
+  StringBuffer buffer;
+
+  switch (fKind) {
+  case kType_Undefined:
+    assert(0);
+
+  case kType_Ref:
+    {
+      const TypeRefTypeImpl* tyimpl = dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj());
+      if (tyimpl->isOpenSelf())
+        buffer << "'";
+      buffer << tyimpl->name();
+      if (!tyimpl->generics().empty())
+        buffer << "<" << tyimpl->generics() << ">";
+      return buffer.toString();
+    }
+
+  case kType_Array:
+    buffer << arrayBaseType().typeId() << "[]";
+    return buffer.toString();
+
+  case kType_Class:
+  case kType_Type:
+    {
+      const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
+      buffer << tyimpl->name();
+      if (!tyimpl->generics().empty())
+        buffer << "<" << tyimpl->generics()  << ">";
+      return buffer.toString();
+    }
+
+  case kType_Alias:
+    return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->name();
+
+  case kType_Measure:
+    buffer << dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name()
+           << dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->defUnit();
+    return buffer.toString();
+
+  case kType_Union:
+    buffer << "&(" << dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->types() << ")";
+    return buffer.toString();
+
+  case kType_Sequence:
+    buffer << "(" << dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->types() << ")";
+    return buffer.toString();
+
+  case kType_Function:
+    return dynamic_cast<const FunctionTypeImpl*>(fImpl.obj())->functionSignature().typeId();
+  }
+
+  return String();
+}
+
+
 bool
 Type::isClass() const
 {
@@ -1241,6 +1545,14 @@ Type::measureBaseType() const
 }
 
 
+String
+Type::measureUnit() const
+{
+  assert(isMeasure());
+  return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->defUnit();
+}
+
+
 bool
 Type::hasConstraints() const
 {
@@ -1264,11 +1576,9 @@ Type::constraints() const
 
 
 bool
-Type::isGeneric() const
+Type::isOpen() const
 {
-  if (fKind == kType_Ref)
-    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->isGeneric();
-  return false;
+  return (fImpl != NULL && fImpl->isOpen());
 }
 
 
@@ -1311,7 +1621,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
   Type clonedTy;
   switch (fKind) {
   case kType_Ref:
-    if (dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->isGeneric()) {
+    if (dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->isOpen()) {
       Type replacement = typeMap.lookupType(typeName());
       if (replacement.isDef()) {
         if (replacement.hasConstraints()) {
@@ -1388,6 +1698,16 @@ Type::toString() const
   if (!fIsValue)
     return String("^") + retval;
   return retval;
+}
+
+
+bool
+Type::matchOpeness(TypeCtx& localCtx, const Type& right0,
+                   Scope* scope, const SrcPos& srcpos) const
+{
+  if (fImpl != NULL)
+    return fImpl->matchOpeness(localCtx, right0, scope, srcpos);
+  return false;
 }
 
 
@@ -2059,6 +2379,21 @@ FunctionSignature::isGeneric() const
 }
 
 
+bool
+FunctionSignature::isOpen() const
+{
+  if (fReturnType.isOpen())
+    return true;
+
+  for (size_t i = 0; i < fParameters.size(); ++i) {
+    if (fParameters[i].type().isOpen())
+      return true;
+  }
+
+  return false;
+}
+
+
 const String&
 FunctionSignature::methodName() const
 {
@@ -2080,6 +2415,29 @@ FunctionSignature::parameters() const
 }
 
 
+bool
+FunctionSignature::matchOpeness(TypeCtx& localCtx,
+                                const FunctionSignature& right0,
+                                Scope* scope, const SrcPos& srcpos) const
+{
+  if (fParameters.size() == right0.parameters().size()) {
+    if (!fReturnType.matchOpeness(localCtx, right0.returnType(), scope, srcpos))
+      return false;
+    for (size_t i = 0; i < fParameters.size(); ++i) {
+      const FunctionParameter& lparam = fParameters[i];
+      const FunctionParameter& rparam = right0.parameters()[i];
+
+      if (lparam.kind() != rparam.kind())
+        return false;
+      if (!lparam.type().matchOpeness(localCtx, rparam.type(), scope, srcpos))
+        return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+
 String
 FunctionSignature::toString() const
 {
@@ -2096,6 +2454,34 @@ FunctionSignature::toString() const
 
   buf << "<ty:ret>" << fReturnType.toString() << "</ty:ret>";
   buf << "</ty:fun>";
+  return buf.toString();
+}
+
+
+namespace heather
+{
+  StringBuffer&
+  operator<<(StringBuffer& other, const FunctionParamVector& params)
+  {
+    for (size_t i = 0; i < params.size(); i++) {
+      if (i > 0)
+        other << ", ";
+      other << params[i].type().typeId();
+    }
+    return other;
+  }
+}
+
+String
+FunctionSignature::typeId() const
+{
+  StringBuffer buf;
+  if (fName.isEmpty())
+    buf << "lambda";
+  else
+    buf << fName;
+  buf << "(" << fParameters << ")";
+  buf << ":" << fReturnType.typeId();
   return buf.toString();
 }
 
@@ -2220,7 +2606,10 @@ namespace heather
       return false;
     }
 
-    if (left0.isGeneric() && right0.isGeneric())
+    // fprintf(stderr, "LEFT IS:  %s\n", (const char*)StrHelper(left0.toString()));
+    // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right0.toString()));
+    if (left0.isOpen() && right0.isOpen())
+      // TODO: handle complex generic types like 'T[]
       return left0.typeName() == right0.typeName();
 
     Type left = resolveType(left0, scope);
@@ -2465,7 +2854,8 @@ namespace heather
       return false;
     }
 
-    if (left0.isGeneric() && right0.isGeneric())
+    if (left0.isOpen() && right0.isOpen())
+      // TODO: handle complex generic types like 'T[]
       return isSameType(left0, right0, scope, srcpos, reportErrors);
 
     Type left = resolveType(left0, scope);
@@ -3183,6 +3573,23 @@ TEST(FunctionSignature)
   CHECK(fs1.parameters()[3].type().isAny());
   CHECK_EQUAL(fs1.parameters()[3].kind(), FunctionParameter::kParamRest);
 }
+
+
+TEST(FunctionSignIsOpen)
+{
+  FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt());
+  CHECK(!fs0.isOpen());
+
+  FunctionParamVector params1;
+  params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
+  params1.push_back(FunctionParameter::newPosParam(Type::newTypeRef(String("x"), true, false)));
+
+  FunctionSignature fs1 = FunctionSignature(true, String("man"),
+                                            Type::newTypeRef(String("y"), true, false),
+                                            params1);
+  CHECK(fs1.isOpen());
+}
+
 
 #endif  // #if defined(UNITTESTS)
 

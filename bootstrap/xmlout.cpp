@@ -225,7 +225,7 @@ XmlRenderer::renderNode(const SymbolNode* node)
 {
   StringBuffer attrs;
   if (fShowNodeType && node->type().isDef())
-    attrs << " ty='" << node->type().typeName() << "'";
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
 
   if (node->generics().empty()) {
     if (node->isShared())
@@ -243,7 +243,7 @@ XmlRenderer::renderNode(const SymbolNode* node)
   }
 
   if (fShowNodeType && node->type().isDef())
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
                                            node->type()));
 }
 
@@ -261,7 +261,7 @@ void
 XmlRenderer::renderNode(const IntNode* node)
 {
   StringBuffer attrs;
-  attrs << "ty='" << node->type().typeName() << "'";
+  attrs << "ty='" << xmlEncode(node->type().typeId()) << "'";
 
   if (node->isImaginary())
     attrs << " imag='t'";
@@ -271,7 +271,7 @@ XmlRenderer::renderNode(const IntNode* node)
   displayCloseTag("int");
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
                                            node->type()));
 }
 
@@ -280,7 +280,7 @@ void
 XmlRenderer::renderNode(const RealNode* node)
 {
   StringBuffer attrs;
-  attrs << "ty='" << node->type().typeName() << "'";
+  attrs << "ty='" << xmlEncode(node->type().typeId()) << "'";
   if (node->isImaginary())
     attrs << " imag='t'";
 
@@ -288,7 +288,7 @@ XmlRenderer::renderNode(const RealNode* node)
                  String() + node->value());
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
                                            node->type()));
 }
 
@@ -297,7 +297,7 @@ void
 XmlRenderer::renderNode(const RationalNode* node)
 {
   StringBuffer attrs;
-  attrs << "ty='" << node->type().typeName() << "'";
+  attrs << "ty='" << xmlEncode(node->type().typeId()) << "'";
   if (node->isImaginary())
     attrs << " imag='t'";
 
@@ -305,7 +305,7 @@ XmlRenderer::renderNode(const RationalNode* node)
   displayTagAttr("real", StrHelper(attrs.toString()), val);
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
                                            node->type()));
 }
 
@@ -322,7 +322,7 @@ XmlRenderer::renderNode(const BoolNode* node)
 {
   if (fShowNodeType) {
     StringBuffer attrs;
-    attrs << " ty='" << node->type().typeName() << "'";
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
     displayEmptyTagAttrs(node->value() ? "true" : "false",
                          StrHelper(attrs.toString()));
   }
@@ -330,7 +330,7 @@ XmlRenderer::renderNode(const BoolNode* node)
     displayEmptyTag(node->value() ? "true" : "false");
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
                                            node->type()));
 }
 
@@ -755,7 +755,7 @@ XmlRenderer::renderNode(const ApplyNode* node)
   StringBuffer attrs;
 
   if (fShowNodeType && node->type().isDef())
-    attrs << " ty='" << node->type().typeName() << "'";
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
 
   displayOpenTagAttrs("apply", StrHelper(attrs.toString()));
   displayNode(NULL, node->base());
@@ -765,7 +765,7 @@ XmlRenderer::renderNode(const ApplyNode* node)
   displayCloseTag("apply");
 
   if (fShowNodeType && node->type().isDef())
-    fReferencedTypes.insert(std::make_pair(node->type().typeName(),
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
                                            node->type()));
 }
 

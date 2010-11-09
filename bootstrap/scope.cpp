@@ -424,7 +424,7 @@ Scope::lookupUnit(const String& name, bool showAmbiguousSymDef) const
 Type
 Scope::normalizeType(const Type& type, const Type& refType) const
 {
-  Type baseType;
+  Type baseType = type;
   Type returnType = type;
 
   if (type.isArray()) {
@@ -465,6 +465,55 @@ Scope::normalizeType(const Type& type, const Type& refType) const
     return refType.rebase(returnType);
 
   return returnType;
+}
+
+
+//! lookup a type via another type.
+Type
+Scope::lookupType(const Type& type) const
+{
+  if (type.isArray()) {
+    return Type::newArray(lookupType(type.arrayBaseType()),
+                          type.arraySizeIndicator(),
+                          type.isValueType());
+  }
+  else if (type.isType() || type.isClass()) {
+    // TODO: something to be done here?
+    return type;
+  }
+  else if (type.isMeasure()) {
+    return Type::newMeasure(type.typeName(),
+                            lookupType(type.measureBaseType()),
+                            type.measureUnit());
+  }
+  else if (type.isRef()) {
+    Type resolvedType = lookupType(type.typeName(), true);
+    if (resolvedType.isDef()) {
+      if (resolvedType.isOpen())
+        return normalizeType(resolvedType, type);
+      return resolvedType;
+    }
+  }
+  else if (type.isFunction()) {
+    // TODO: something to be done here?
+    return type;
+  }
+  else if (type.isUnion()) {
+    TypeVector types;
+    for (size_t i = 0; i < type.unionTypes().size(); ++i) {
+      types.push_back(lookupType(type.unionTypes()[i]));
+    }
+    return Type::newUnion(types, type.isValueType());
+  }
+  else if (type.isSequence()) {
+    TypeVector types;
+    for (size_t i = 0; i < type.seqTypes().size(); ++i) {
+      types.push_back(lookupType(type.seqTypes()[i]));
+    }
+    return Type::newSeq(types, type.isValueType());
+  }
+
+  return Type();
 }
 
 
