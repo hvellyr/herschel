@@ -120,21 +120,25 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
 {
   assert(node->scope() != NULL);
 
-  if (node->type().isDef() && node->type().isGeneric())
+  if (node->type().isDef() && node->type().isOpen())
     return;
 
-  String typenm = ( node->type().isDef()
-                    ? node->type().typeName()
-                    : Names::kAnyTypeName );
-  Type bindty = node->scope()->lookupType(typenm, true);
+  Type bindty = ( node->type().isDef()
+                  ? node->scope()->lookupType(node->type())
+                  : node->scope()->lookupType(Names::kAnyTypeName, true) );
   if (!bindty.isDef()) {
     errorf(node->srcpos(), E_UndefinedType,
-           "undefined type '%s' in %s", (const char*)StrHelper(typenm),
+           "undefined type '%s' in %s",
+           (const char*)StrHelper(Names::kAnyTypeName),
            errdesc);
     node->scope()->dumpDebug();
   }
   else {
     assert(bindty.isDef());
+    // if (bindty.isOpen()) {
+    //   if (node->type().isDef())
+    //     bindty = node->scope()->normalizeType(bindty, node->type());
+    // }
     node->setType(bindty);
 
     if (node->initExpr() != NULL) {
@@ -370,22 +374,9 @@ Typifier::checkArgParamType(TypeCtx& localCtx,
                             AptNode* arg,
                             int idx)
 {
-  if (param->type().isGeneric()) {
-    if (localCtx.hasType(param->type().typeName())) {
-      if (!isSameType(localCtx.lookupType(param->type().typeName()),
-                      arg->type(), arg->scope(), arg->srcpos()))
-      {
-        errorf(arg->srcpos(), E_TypeMismatch,
-               "type mismatch for generic parameter");
-      }
-    }
-    else {
-      localCtx.registerType(param->type().typeName(), arg->type());
-    }
+  if (param->type().isOpen()) {
+    param->type().matchOpeness(localCtx, arg->type(), arg->scope(), arg->srcpos());
   }
-  // else if (param->type().isPartialGeneric()) {
-  //   TODO
-  // }
   else {
     if (!isContravariant(param->type(), arg->type(), arg->scope(),
                          arg->srcpos()))
@@ -518,16 +509,25 @@ Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
            "Too much arguments");
   }
 
-  if (funcNode->retType().isGeneric()) {
-    Type retty = funcNode->retType();
-    if (localCtx.hasType(retty.typeName())) {
-      node->setType(localCtx.lookupType(retty.typeName()));
-    }
-    else {
+  if (funcNode->retType().isOpen()) {
+    Type retty = funcNode->retType().replaceGenerics(localCtx);
+    // fprintf(stderr, "RETTY: %s\n", (const char*)StrHelper(retty.toString()));
+
+    if (retty.isDef())
+      node->setType(retty);
+    else
       errorf(node->srcpos(), E_TypeMismatch,
              "function has unmatched generic return type.");
-    }
-  }
+
+    // Type retty = funcNode->retType();
+    // if (localCtx.hasType(retty.typeName())) {
+    //   node->setType(localCtx.lookupType(retty.typeName()));
+    // }
+    // else {
+    //   errorf(node->srcpos(), E_TypeMismatch,
+    //          "function has unmatched generic return type.");
+    // }
+ }
   else {
     node->setType(funcNode->retType());
   }
@@ -699,13 +699,12 @@ namespace heather
   void
   typifyNodeType(AptNode* node, const Type& type, const String& defaultTypeName)
   {
-    String typenm = ( type.isDef()
-                      ? type.typeName()
-                      : defaultTypeName );
-    Type ty = node->scope()->lookupType(typenm, true);
+    Type ty = ( type.isDef()
+                ? node->scope()->lookupType(type)
+                : node->scope()->lookupType(defaultTypeName, true) );
     if (!ty.isDef()) {
       errorf(node->srcpos(), E_UndefinedType,
-             "undefined type '%s'", (const char*)StrHelper(typenm));
+             "undefined type '%s'", (const char*)StrHelper(defaultTypeName));
       node->setType(Type::newAny(true));
     }
     else

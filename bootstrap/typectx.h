@@ -54,6 +54,7 @@ namespace heather
 
     const Type& lookupType(const String& name) const;
 
+    void dumpDebug();
   private:
     const Type& lookupTypeLocal(const String& name) const;
 

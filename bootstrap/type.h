@@ -82,9 +82,14 @@ namespace heather
     virtual TypeImpl* clone() const = 0;
     virtual bool isEqual(const TypeImpl* other) const = 0;
 
+    virtual bool isOpen() const = 0;
+
     virtual void replaceGenerics(const TypeCtx& typeMap) = 0;
 
     virtual String toString(bool isValue) const = 0;
+
+    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
+                              Scope* scope, const SrcPos& srcpos) const = 0;
   };
 
 
@@ -101,14 +106,14 @@ namespace heather
                            bool isValue);
     static Type newTypeRef(const String& name, bool isValue);
     static Type newTypeRef(const char* name, bool isValue = true);
-    static Type newTypeRef(const String& name, bool isGeneric,
+    static Type newTypeRef(const String& name, bool isOpen,
                            const TypeConstVector& constraints, bool isValue);
-    static Type newTypeRef(const String& name, bool isGeneric, bool isValue);
+    static Type newTypeRef(const String& name, bool isOpen, bool isValue);
 
     //! rewrite \p old to a new typeref with name.
     static Type newTypeRef(const String& name, const Type& old);
 
-    static Type newArray(const Type& base, int siceIndicator, bool isValue);
+    static Type newArray(const Type& base, int sizeIndicator, bool isValue);
 
     static Type newAny(bool isValue = true);
 
@@ -181,8 +186,13 @@ namespace heather
     const FunctionSignatureVector& typeProtocol() const;
 
 
-    //@ is a Generic type reference (i.e. 'T)
-    bool isGeneric() const;
+    //@ is anything on this type is generic (i.e. a variable type
+    //expression).  For references the type itself must be marked as generic
+    //(e.g. 'T); for complex type any subtype (generics, parameters, etc.)
+    //must be a Generic type reference (e.g. 'T[], List<'T>, &('T, Bool = false))
+    bool isOpen() const;
+    bool matchOpeness(TypeCtx& localCtx, const Type& right0,
+                      Scope* scope, const SrcPos& srcpos) const;
 
 
     //!@ alias types
@@ -219,7 +229,7 @@ namespace heather
     //!@ measure types
     bool isMeasure() const;
     const Type& measureBaseType() const;
-
+    String measureUnit() const;
 
     //!@ has constraints?
     bool hasConstraints() const;
@@ -231,6 +241,7 @@ namespace heather
 
     bool isRef() const;
     String typeName() const;
+    String typeId() const;
 
     String toString() const;
 
@@ -419,6 +430,11 @@ namespace heather
     //! Indicates whether the signature refers to a generic function.
     bool isGeneric() const;
 
+    bool isOpen() const;
+
+    bool matchOpeness(TypeCtx& localCtx, const FunctionSignature& right0,
+                      Scope* scope, const SrcPos& srcpos) const;
+
     //! Returns the name of the method.  May be empty if the function is
     //! anonymous.
     const String& methodName() const;
@@ -435,6 +451,7 @@ namespace heather
     FunctionSignature replaceGenerics(const TypeCtx& typeMap);
 
     String toString() const;
+    String typeId() const;
 
   private:
     bool                fIsGeneric;
