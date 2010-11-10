@@ -211,13 +211,13 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
     }
   }
 
-  if (node->retType().isAny()) {
+  if (!node->retType().isDef() || node->retType().isAny()) {
     // try to infer the return type from the body's type
     if (node->body() != NULL) {
       node->setRetType(node->body()->type());
     }
   }
-  else {
+  else if (!node->retType().isOpen()) {
     String typenm = ( node->retType().isDef()
                       ? node->retType().typeName()
                       : Names::kAnyTypeName );
