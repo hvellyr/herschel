@@ -123,15 +123,17 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
   if (node->type().isDef() && node->type().isOpen())
     return;
 
+  String typenm = ( node->type().isDef()
+                    ? node->type().typeName()
+                    : Names::kAnyTypeName );
   Type bindty = ( node->type().isDef()
                   ? node->scope()->lookupType(node->type())
                   : node->scope()->lookupType(Names::kAnyTypeName, true) );
   if (!bindty.isDef()) {
     errorf(node->srcpos(), E_UndefinedType,
            "undefined type '%s' in %s",
-           (const char*)StrHelper(Names::kAnyTypeName),
+           (const char*)StrHelper(typenm),
            errdesc);
-    node->scope()->dumpDebug();
   }
   else {
     assert(bindty.isDef());
@@ -214,6 +216,21 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
     if (node->body() != NULL) {
       node->setRetType(node->body()->type());
     }
+  }
+  else {
+    String typenm = ( node->retType().isDef()
+                      ? node->retType().typeName()
+                      : Names::kAnyTypeName );
+    Type retty = ( node->retType().isDef()
+                   ? node->scope()->lookupType(node->retType())
+                   : node->scope()->lookupType(Names::kAnyTypeName, true) );
+    if (!retty.isDef()) {
+      errorf(node->srcpos(), E_UndefinedType,
+             "undefined return type '%s'",
+             (const char*)StrHelper(typenm));
+    }
+    else
+      node->setRetType(retty);
   }
 
   FunctionSignature sign(false, String(), node->retType(), params);
