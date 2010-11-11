@@ -582,6 +582,31 @@ Typifier::typify(AssignNode* node)
 {
   typifyNode(node->lvalue());
   typifyNode(node->rvalue());
+
+  if (fPhase == kTypify) {
+    Type ltype = node->lvalue()->type();
+    Type rtype = node->rvalue()->type();
+
+    if (!ltype.isDef()) {
+      // infer the vardef type from rvalue expression
+      node->lvalue()->setType(node->rvalue()->type());
+    }
+    else if (!rtype.isDef()) {
+      errorf(node->rvalue()->srcpos(), E_TypeMismatch,
+             "Undefined type in assignment right hand value");
+    }
+    else if (!isContravariant(ltype, rtype,
+                              node->scope(), node->srcpos())) {
+      errorf(node->rvalue()->srcpos(), E_TypeMismatch,
+             "type mismatch in assignment");
+    }
+    else if (!ltype.isDef()) {
+      // infer the vardef type from rvalue expression
+      node->lvalue()->setType(rtype);
+    }
+
+    node->setType(rtype);
+  }
 }
 
 

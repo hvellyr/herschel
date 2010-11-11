@@ -643,7 +643,14 @@ XmlRenderer::renderNode(const ThenWhileNode* node)
 void
 XmlRenderer::renderNode(const AssignNode* node)
 {
-  displayOpenTag("assign");
+  StringBuffer attrs;
+  if (fShowNodeType && node->type().isDef()) {
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
+  }
+
+  displayOpenTagAttrs("assign", StrHelper(attrs.toString()));
   displayNode(NULL, node->lvalue());
   displayNode(NULL, node->rvalue());
   displayCloseTag("assign");
