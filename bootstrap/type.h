@@ -88,8 +88,8 @@ namespace heather
 
     virtual String toString(bool isValue) const = 0;
 
-    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
-                              Scope* scope, const SrcPos& srcpos) const = 0;
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const = 0;
   };
 
 
@@ -191,8 +191,8 @@ namespace heather
     //(e.g. 'T); for complex type any subtype (generics, parameters, etc.)
     //must be a Generic type reference (e.g. 'T[], List<'T>, &('T, Bool = false))
     bool isOpen() const;
-    bool matchOpeness(TypeCtx& localCtx, const Type& right0,
-                      Scope* scope, const SrcPos& srcpos) const;
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       Scope* scope, const SrcPos& srcpos) const;
 
 
     //!@ alias types
@@ -432,8 +432,8 @@ namespace heather
 
     bool isOpen() const;
 
-    bool matchOpeness(TypeCtx& localCtx, const FunctionSignature& right0,
-                      Scope* scope, const SrcPos& srcpos) const;
+    bool matchGenerics(TypeCtx& localCtx, const FunctionSignature& right0,
+                       Scope* scope, const SrcPos& srcpos) const;
 
     //! Returns the name of the method.  May be empty if the function is
     //! anonymous.

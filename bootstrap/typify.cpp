@@ -392,7 +392,8 @@ Typifier::checkArgParamType(TypeCtx& localCtx,
                             int idx)
 {
   if (param->type().isOpen()) {
-    param->type().matchOpeness(localCtx, arg->type(), arg->scope(), arg->srcpos());
+    param->type().matchGenerics(localCtx, arg->type(),
+                                arg->scope(), arg->srcpos());
   }
   else {
     if (!isContravariant(param->type(), arg->type(), arg->scope(),
