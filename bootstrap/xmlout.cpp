@@ -660,7 +660,14 @@ XmlRenderer::renderNode(const AssignNode* node)
 void
 XmlRenderer::renderNode(const IfNode* node)
 {
-  displayOpenTag("if");
+  StringBuffer attrs;
+  if (fShowNodeType && node->type().isDef()) {
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
+  }
+
+  displayOpenTagAttrs("if", StrHelper(attrs.toString()));
   displayNode("test", node->test());
   displayNode("then", node->consequent());
   displayNode("else", node->alternate());

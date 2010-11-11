@@ -637,6 +637,44 @@ Typifier::typify(IfNode* node)
   typifyNode(node->consequent());
   if (node->alternate())
     typifyNode(node->alternate());
+
+  if (fPhase == kTypify) {
+    if (node->alternate() != NULL) {
+      Type cotype = node->consequent()->type();
+      Type alttype = node->alternate()->type();
+
+      if (isCovariant(cotype, alttype, node->scope(), node->srcpos()))
+        node->setType(alttype);
+      else if (isCovariant(alttype, cotype, node->scope(), node->srcpos()))
+        node->setType(cotype);
+      else {
+        // if the if expression is not in tail position, the branch type
+        // mismatch doesn't matter.
+        if (node->isInTailPos() || node->isSingleTypeRequired()) {
+          errorf(node->srcpos(), E_IfConsqTypeMismatch,
+                 "types for if consequent and alternate branch do not match");
+        }
+        node->setType(Type::newAny(true));
+      }
+    }
+    else {
+      if (node->isInTailPos() || node->isSingleTypeRequired()) {
+        // if the if expression is in tail position we should definitely have
+        // have an alternate branch.
+        errorf(node->srcpos(), E_IfAltTypeMismatch,
+               "unspecified alternate branch do not match type with consequent");
+        node->setType(Type::newAny(true));
+      }
+      else
+        node->setType(node->consequent()->type());
+    }
+  }
+  // else if (fPhase == kCheck) {
+  //   if (!isSameType(Type::newBool(true), node->test()->type())) {
+  //     errorf(node->test(), E_BoolTypeExpected,
+  //            "Bool type in if test expected");
+  //   }
+  // }
 }
 
 

@@ -138,6 +138,9 @@ namespace heather
     E_TypeMismatch        = 0x4413,
 
     E_BadArgNumber        = 0x4414,
+    E_BoolTypeExpected    = 0x4415,
+    E_IfConsqTypeMismatch = 0x4416,
+    E_IfAltTypeMismatch   = 0x4417,
 
     // module parsing
     E_MissingModName      = 0x4500,
