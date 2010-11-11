@@ -115,7 +115,7 @@ namespace heather
     void annotate(WhileNode* node);
 
   private:
-    void annotateNodeList(NodeList& nl);
+    void annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype);
 
     void annotate(VardefNode* node, bool isLocal);
     void annotate(FuncDefNode* node, bool isLocal);

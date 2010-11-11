@@ -59,15 +59,21 @@ Annotator::annotateNode(AptNode* node)
 void
 Annotator::annotate(CompileUnitNode* node)
 {
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), false, false);
 }
 
 
 void
-Annotator::annotateNodeList(NodeList& nl)
+Annotator::annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype)
 {
-  for (size_t i = 0; i < nl.size(); i++)
+  const size_t nlsize = nl.size();
+  for (size_t i = 0; i < nlsize; i++) {
+    if (marktailpos && i == nlsize - 1)
+      nl[i]->setIsInTailPos(true);
+    if (marksingletype)
+      nl[i]->setIsSingleTypeRequired(true);
     annotateNode(nl[i]);
+  }
 }
 
 
@@ -220,8 +226,10 @@ Annotator::annotate(VardefNode* node, bool isLocal)
       fScope->registerVar(node->srcpos(), node->name(), node);
   }
 
-  if (node->initExpr() != NULL)
+  if (node->initExpr() != NULL) {
+    node->initExpr()->setIsSingleTypeRequired(true);
     annotateNode(node->initExpr());
+  }
 }
 
 
@@ -233,9 +241,11 @@ Annotator::annotate(FuncDefNode* node, bool isLocal)
 
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
 
-  annotateNodeList(node->params());
-  if (node->body() != NULL)
+  annotateNodeList(node->params(), false, true);
+  if (node->body() != NULL) {
+    node->body()->setIsInTailPos(true);
     annotateNode(node->body());
+  }
 }
 
 
@@ -244,9 +254,11 @@ Annotator::annotate(FunctionNode* node)
 {
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
 
-  annotateNodeList(node->params());
-  if (node->body() != NULL)
+  annotateNodeList(node->params(), false, true);
+  if (node->body() != NULL) {
+    node->body()->setIsInTailPos(true);
     annotateNode(node->body());
+  }
 }
 
 
@@ -266,7 +278,7 @@ void
 Annotator::annotate(BlockNode* node)
 {
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), true, false);
 }
 
 
@@ -279,23 +291,26 @@ Annotator::annotate(ParamNode* node)
       fScope->registerVar(node->srcpos(), node->name(), node);
   }
 
-  if (node->initExpr() != NULL)
+  if (node->initExpr() != NULL) {
+    node->initExpr()->setIsSingleTypeRequired(true);
     annotateNode(node->initExpr());
+  }
 }
 
 
 void
 Annotator::annotate(ApplyNode* node)
 {
+  node->base()->setIsSingleTypeRequired(true);
   annotateNode(node->base());
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), false, true);
 }
 
 
 void
 Annotator::annotate(ArrayNode* node)
 {
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), false, true);
 }
 
 
@@ -303,6 +318,8 @@ void
 Annotator::annotate(AssignNode* node)
 {
   annotateNode(node->lvalue());
+
+  node->rvalue()->setIsSingleTypeRequired(true);
   annotateNode(node->rvalue());
 }
 
@@ -326,15 +343,20 @@ void
 Annotator::annotate(IfNode* node)
 {
   annotateNode(node->test());
+
+  node->consequent()->setIsInTailPos(true);
   annotateNode(node->consequent());
-  if (node->alternate())
+  if (node->alternate()) {
+    node->alternate()->setIsInTailPos(true);
     annotateNode(node->alternate());
+  }
 }
 
 
 void
 Annotator::annotate(KeyargNode* node)
 {
+  node->value()->setIsSingleTypeRequired(true);
   annotateNode(node->value());
 }
 
@@ -342,6 +364,7 @@ Annotator::annotate(KeyargNode* node)
 void
 Annotator::annotate(MatchNode* node)
 {
+  // TODO : set tail node position
   annotateNode(node->expr());
   for (size_t i = 0; i < node->mappingCount(); i++) {
     annotateNode(node->mappingAt(i).fConsequent);
@@ -352,6 +375,7 @@ Annotator::annotate(MatchNode* node)
 void
 Annotator::annotate(SelectNode* node)
 {
+  // TODO : set tail node position
   annotateNode(node->test());
   if (node->comparator() != NULL)
     annotateNode(node->comparator());
@@ -372,9 +396,10 @@ Annotator::annotate(SelectNode* node)
 void
 Annotator::annotate(OnNode* node)
 {
+  // TODO : set tail node position
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
-  annotateNodeList(node->params());
+  annotateNodeList(node->params(), false, true);
   annotateNode(node->body());
 }
 
@@ -382,6 +407,7 @@ Annotator::annotate(OnNode* node)
 void
 Annotator::annotate(RangeNode* node)
 {
+  // TODO : set tail node position
   annotateNode(node->from());
   annotateNode(node->to());
   if (node->by() != NULL)
@@ -392,6 +418,7 @@ Annotator::annotate(RangeNode* node)
 void
 Annotator::annotate(ThenWhileNode* node)
 {
+  // TODO : set tail node position
   annotateNode(node->first());
   annotateNode(node->step());
   annotateNode(node->test());
@@ -401,6 +428,7 @@ Annotator::annotate(ThenWhileNode* node)
 void
 Annotator::annotate(TypeDefNode* node)
 {
+  // TODO : set tail node position
   if (fPhase == kRegister)
     fScope->registerType(node->srcpos(), node->name(), node->defType());
 }
@@ -409,7 +437,10 @@ Annotator::annotate(TypeDefNode* node)
 void
 Annotator::annotate(WhileNode* node)
 {
+  node->test()->setIsSingleTypeRequired(true);
   annotateNode(node->test());
+
+  node->body()->setIsInTailPos(true);
   annotateNode(node->body());
 }
 
@@ -417,20 +448,21 @@ Annotator::annotate(WhileNode* node)
 void
 Annotator::annotate(VectorNode* node)
 {
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), false, true);
 }
 
 
 void
 Annotator::annotate(DictNode* node)
 {
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), false, true);
 }
 
 
 void
 Annotator::annotate(CastNode* node)
 {
+  node->base()->setIsSingleTypeRequired(true);
   annotateNode(node->base());
 }
 

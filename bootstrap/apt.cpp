@@ -72,14 +72,18 @@ copyNodes(const NodeList& src)
 //----------------------------------------------------------------------------
 
 AptNode::AptNode(const SrcPos& srcpos)
-  : fSrcPos(srcpos)
+  : fSrcPos(srcpos),
+    fIsInTailPos(false),
+    fIsSingleTypeRequired(false)
 {
 }
 
 
 AptNode::AptNode(const SrcPos& srcpos, const Type& type)
   : fSrcPos(srcpos),
-    fType(type)
+    fType(type),
+    fIsInTailPos(false),
+    fIsSingleTypeRequired(false)
 {
 }
 
@@ -124,6 +128,34 @@ llvm::Value*
 AptNode::codegen(CodeGenerator* generator) const
 {
   return NULL;
+}
+
+
+bool
+AptNode::isInTailPos() const
+{
+  return fIsInTailPos;
+}
+
+
+void
+AptNode::setIsInTailPos(bool value)
+{
+  fIsInTailPos = value;
+}
+
+
+bool
+AptNode::isSingleTypeRequired() const
+{
+  return fIsSingleTypeRequired;
+}
+
+
+void
+AptNode::setIsSingleTypeRequired(bool value)
+{
+  fIsSingleTypeRequired = value;
 }
 
 
