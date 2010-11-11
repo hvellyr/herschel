@@ -110,27 +110,30 @@ heather::type::newRootScope()
   root->registerType(sp, Names::kUnspecifiedTypeName, unspecifiedType);
 
 
-  Ptr<AptNode> eof = new VardefNode(sp, String("lang|eof"), kNormalVar,
-                                    false, eofType,
-                                    new ApplyNode(sp,
-                                                  new SymbolNode(sp,
-                                                                 Names::kEofTypeName)));
+  Ptr<AptNode> eof =
+    new VardefNode(sp, String("lang|eof"), kNormalVar,
+                   false, eofType,
+                   new ApplyNode(sp,
+                                 new SymbolNode(sp,
+                                                Names::kEofTypeName)));
   root->registerVar(sp, String("lang|eof"), eof);
 
 
-  Ptr<AptNode> nil = new VardefNode(sp, String("lang|nil"), kNormalVar,
-                                    false, nilType,
-                                    new ApplyNode(sp,
-                                                  new SymbolNode(sp,
-                                                                 Names::kNilTypeName)));
+  Ptr<AptNode> nil =
+    new VardefNode(sp, String("lang|nil"), kNormalVar,
+                   false, nilType,
+                   new ApplyNode(sp,
+                                 new SymbolNode(sp,
+                                                Names::kNilTypeName)));
   root->registerVar(sp, String("lang|nil"), nil);
 
 
-  Ptr<AptNode> unspecified = new VardefNode(sp, String("lang|unspecified"), kNormalVar,
-                                            false, unspecifiedType,
-                                            new ApplyNode(sp,
-                                                          new SymbolNode(sp,
-                                                                         Names::kUnspecifiedTypeName)));
+  Ptr<AptNode> unspecified =
+    new VardefNode(sp, String("lang|unspecified"), kNormalVar,
+                   false, unspecifiedType,
+                   new ApplyNode(sp,
+                                 new SymbolNode(sp,
+                                                Names::kUnspecifiedTypeName)));
   root->registerVar(sp, String("lang|unspecified"), unspecified);
 
 
@@ -147,7 +150,7 @@ heather::type::newRootScope()
                                          params,
                                          Type::newTypeRef(String("T"), true, true),
                                          NULL));
- 
+
   return root.release();
 }
 
