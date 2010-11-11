@@ -605,7 +605,14 @@ XmlRenderer::renderNode(const BinaryNode* node)
 void
 XmlRenderer::renderNode(const NegateNode* node)
 {
-  displayOpenTag("neg");
+  StringBuffer attrs;
+  if (fShowNodeType && node->type().isDef()) {
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
+  }
+
+  displayOpenTagAttrs("neg", StrHelper(attrs.toString()));
   displayNode(NULL, node->base());
   displayCloseTag("neg");
 }
