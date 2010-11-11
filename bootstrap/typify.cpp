@@ -624,7 +624,8 @@ void
 Typifier::typify(NegateNode* node)
 {
   typifyNode(node->base());
-  node->setType(node->base()->type());
+  if (fPhase == kTypify)
+    node->setType(node->base()->type());
 }
 
 
