@@ -182,18 +182,7 @@ Transformator::findBlockSplitIndex(const NodeList& nodes)
         }
       }
       else {
-        switch (mode) {
-        case kMode_begin:
-          mode = kMode_other;
-          break;
-        case kMode_let:
-          mode = kMode_other;
-          break;
-        case kMode_other:
-          return i;
-        case kMode_onExit:
-          return i;
-        }
+        mode = kMode_other;
       }
     }
   }
@@ -259,7 +248,7 @@ Transformator::transform(BlockNode* node)
   }
 
   int idx = findBlockSplitIndex(nodes);
-
+//  fprintf(stderr, "SPLIT AT: %d\n", idx);
   if (idx > 0) {
     Ptr<BlockNode> newBlock = new BlockNode(nodes[idx]->srcpos());
     for (size_t i = idx; i < nodes.size(); i++)
