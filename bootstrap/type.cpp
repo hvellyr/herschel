@@ -162,15 +162,15 @@ namespace heather
     }
 
 
-    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
-                              Scope* scope, const SrcPos& srcpos) const
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
     {
       if (right0.isUnion() && types().size() == right0.unionTypes().size()) {
         const TypeVector& ltypes = types();
         const TypeVector& rtypes = right0.unionTypes();
 
         for (size_t i = 0; i < ltypes.size(); ++i) {
-          if (!ltypes[i].matchOpeness(localCtx, rtypes[i], scope, srcpos))
+          if (!ltypes[i].matchGenerics(localCtx, rtypes[i], scope, srcpos))
             return false;
         }
         return true;
@@ -206,15 +206,15 @@ namespace heather
     }
 
 
-    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
-                              Scope* scope, const SrcPos& srcpos) const
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
     {
       if (right0.isSequence() && types().size() == right0.seqTypes().size()) {
         const TypeVector& ltypes = types();
         const TypeVector& rtypes = right0.seqTypes();
 
         for (size_t i = 0; i < ltypes.size(); ++i) {
-          if (!ltypes[i].matchOpeness(localCtx, rtypes[i], scope, srcpos))
+          if (!ltypes[i].matchGenerics(localCtx, rtypes[i], scope, srcpos))
             return false;
         }
         return true;
@@ -253,12 +253,12 @@ namespace heather
     }
 
 
-    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
-                              Scope* scope, const SrcPos& srcpos) const
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
     {
       if (right0.isFunction())
-        return fSign.matchOpeness(localCtx, right0.functionSignature(),
-                                  scope, srcpos);
+        return fSign.matchGenerics(localCtx, right0.functionSignature(),
+                                   scope, srcpos);
       return false;
     }
 
@@ -419,8 +419,8 @@ namespace heather
     }
 
 
-    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
-                              Scope* scope, const SrcPos& srcpos) const
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
     {
       // fprintf(stderr, "RIGHT in class: %s\n", (const char*)StrHelper(right0.toString()));
       if (right0.isType() || right0.isClass()) {
@@ -429,8 +429,8 @@ namespace heather
         {
           for (size_t i = 0; i < fGenerics.size(); ++i) {
             // fprintf(stderr, "CHECK GENERIC: %s\n", (const char*)StrHelper(fGenerics[i].toString()));
-            if (!fGenerics[i].matchOpeness(localCtx, right0.generics()[i],
-                                           scope, srcpos))
+            if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
+                                            scope, srcpos))
               return false;
           }
           return true;
@@ -485,8 +485,8 @@ namespace heather
     }
 
 
-    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
-                              Scope* scope, const SrcPos& srcpos) const
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
     {
       assert(0 && "when does this happen?");
       return false;
@@ -618,12 +618,12 @@ namespace heather
     }
 
 
-    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
-                              Scope* scope, const SrcPos& srcpos) const
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
     {
       if (right0.isMeasure())
-        return fBaseType.matchOpeness(localCtx, right0.measureBaseType(),
-                                      scope, srcpos);
+        return fBaseType.matchGenerics(localCtx, right0.measureBaseType(),
+                                       scope, srcpos);
       return false;
     }
 
@@ -736,8 +736,8 @@ namespace heather
     }
 
 
-    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
-                              Scope* scope, const SrcPos& srcpos) const
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
     {
       //fprintf(stderr, "LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
       //fprintf(stderr, "RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
@@ -749,8 +749,8 @@ namespace heather
               fName == right0.typeName())
           {
             for (size_t i = 0; i < fGenerics.size(); ++i) {
-              if (!fGenerics[i].matchOpeness(localCtx, right0.generics()[i],
-                                             scope, srcpos))
+              if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
+                                              scope, srcpos))
                 return false;
             }
             return true;
@@ -779,8 +779,8 @@ namespace heather
               fName == right0.typeName())
           {
             for (size_t i = 0; i < fGenerics.size(); ++i) {
-              if (!fGenerics[i].matchOpeness(localCtx, right0.generics()[i],
-                                             scope, srcpos))
+              if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
+                                              scope, srcpos))
                 return false;
             }
             return true;
@@ -880,14 +880,15 @@ namespace heather
     }
 
 
-    virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
-                              Scope* scope, const SrcPos& srcpos) const
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
     {
       // fprintf(stderr, "LEFT IS:  %s\n", (const char*)StrHelper(toString(true)));
       // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right0.toString()));
 
       if (right0.isArray())
-        return fBase.matchOpeness(localCtx, right0.arrayBaseType(), scope, srcpos);
+        return fBase.matchGenerics(localCtx, right0.arrayBaseType(),
+                                   scope, srcpos);
       return false;
     }
 
@@ -1709,11 +1710,11 @@ Type::toString() const
 
 
 bool
-Type::matchOpeness(TypeCtx& localCtx, const Type& right0,
-                   Scope* scope, const SrcPos& srcpos) const
+Type::matchGenerics(TypeCtx& localCtx, const Type& right0,
+                    Scope* scope, const SrcPos& srcpos) const
 {
   if (fImpl != NULL)
-    return fImpl->matchOpeness(localCtx, right0, scope, srcpos);
+    return fImpl->matchGenerics(localCtx, right0, scope, srcpos);
   return false;
 }
 
@@ -2423,12 +2424,13 @@ FunctionSignature::parameters() const
 
 
 bool
-FunctionSignature::matchOpeness(TypeCtx& localCtx,
-                                const FunctionSignature& right0,
-                                Scope* scope, const SrcPos& srcpos) const
+FunctionSignature::matchGenerics(TypeCtx& localCtx,
+                                 const FunctionSignature& right0,
+                                 Scope* scope, const SrcPos& srcpos) const
 {
   if (fParameters.size() == right0.parameters().size()) {
-    if (!fReturnType.matchOpeness(localCtx, right0.returnType(), scope, srcpos))
+    if (!fReturnType.matchGenerics(localCtx, right0.returnType(),
+                                   scope, srcpos))
       return false;
     for (size_t i = 0; i < fParameters.size(); ++i) {
       const FunctionParameter& lparam = fParameters[i];
@@ -2436,7 +2438,7 @@ FunctionSignature::matchOpeness(TypeCtx& localCtx,
 
       if (lparam.kind() != rparam.kind())
         return false;
-      if (!lparam.type().matchOpeness(localCtx, rparam.type(), scope, srcpos))
+      if (!lparam.type().matchGenerics(localCtx, rparam.type(), scope, srcpos))
         return false;
     }
     return true;
