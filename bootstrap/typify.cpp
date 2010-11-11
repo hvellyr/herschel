@@ -573,6 +573,7 @@ Typifier::typify(ApplyNode* node)
 void
 Typifier::typify(ArrayNode* node)
 {
+  // TODO
   typifyNodeList(node->children());
 }
 
@@ -613,6 +614,7 @@ Typifier::typify(AssignNode* node)
 void
 Typifier::typify(BinaryNode* node)
 {
+  // TODO
   typifyNode(node->left());
   typifyNode(node->right());
 }
@@ -629,6 +631,7 @@ Typifier::typify(NegateNode* node)
 void
 Typifier::typify(IfNode* node)
 {
+  // TODO
   typifyNode(node->test());
   typifyNode(node->consequent());
   if (node->alternate())
@@ -639,6 +642,7 @@ Typifier::typify(IfNode* node)
 void
 Typifier::typify(KeyargNode* node)
 {
+  // TODO
   typifyNode(node->value());
 }
 
@@ -646,6 +650,7 @@ Typifier::typify(KeyargNode* node)
 void
 Typifier::typify(MatchNode* node)
 {
+  // TODO
   typifyNode(node->expr());
   for (size_t i = 0; i < node->mappings().size(); i++) {
     typifyNode(node->mappings()[i].fConsequent);
@@ -656,6 +661,7 @@ Typifier::typify(MatchNode* node)
 void
 Typifier::typify(SelectNode* node)
 {
+  // TODO
   typifyNode(node->test());
   if (node->comparator() != NULL)
     typifyNode(node->comparator());
@@ -676,6 +682,7 @@ Typifier::typify(SelectNode* node)
 void
 Typifier::typify(OnNode* node)
 {
+  // TODO
   typifyNodeList(node->params());
   typifyNode(node->body());
 }
@@ -684,6 +691,7 @@ Typifier::typify(OnNode* node)
 void
 Typifier::typify(RangeNode* node)
 {
+  // TODO
   typifyNode(node->from());
   typifyNode(node->to());
   if (node->by() != NULL)
@@ -694,6 +702,7 @@ Typifier::typify(RangeNode* node)
 void
 Typifier::typify(ThenWhileNode* node)
 {
+  // TODO
   typifyNode(node->first());
   typifyNode(node->step());
   typifyNode(node->test());
@@ -710,6 +719,7 @@ Typifier::typify(TypeDefNode* node)
 void
 Typifier::typify(WhileNode* node)
 {
+  // TODO
   typifyNode(node->test());
   typifyNode(node->body());
 }
@@ -718,6 +728,7 @@ Typifier::typify(WhileNode* node)
 void
 Typifier::typify(VectorNode* node)
 {
+  // TODO
   typifyNodeList(node->children());
 }
 
@@ -725,6 +736,7 @@ Typifier::typify(VectorNode* node)
 void
 Typifier::typify(DictNode* node)
 {
+  // TODO
   typifyNodeList(node->children());
 }
 
@@ -732,6 +744,7 @@ Typifier::typify(DictNode* node)
 void
 Typifier::typify(CastNode* node)
 {
+  // TODO
   typifyNode(node->base());
 }
 
