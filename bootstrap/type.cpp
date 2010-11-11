@@ -165,8 +165,15 @@ namespace heather
     virtual bool matchOpeness(TypeCtx& localCtx, const Type& right0,
                               Scope* scope, const SrcPos& srcpos) const
     {
-      if (right0.isUnion()) {
-        assert(0 && "missing");
+      if (right0.isUnion() && types().size() == right0.unionTypes().size()) {
+        const TypeVector& ltypes = types();
+        const TypeVector& rtypes = right0.unionTypes();
+
+        for (size_t i = 0; i < ltypes.size(); ++i) {
+          if (!ltypes[i].matchOpeness(localCtx, rtypes[i], scope, srcpos))
+            return false;
+        }
+        return true;
       }
       return false;
     }
