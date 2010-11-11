@@ -57,6 +57,11 @@ namespace heather
     const Type& type() const;
     void setType(const Type& type);
 
+    bool isInTailPos() const;
+    void setIsInTailPos(bool value);
+    bool isSingleTypeRequired() const;
+    void setIsSingleTypeRequired(bool value);
+
     virtual AptNode* clone() const = 0;
 
     virtual void render(XmlRenderer* renderer) const = 0;
@@ -70,6 +75,8 @@ namespace heather
     SrcPos     fSrcPos;
     Ptr<Scope> fScope;
     Type       fType;
+    bool       fIsInTailPos;
+    bool       fIsSingleTypeRequired;
   };
 
 
