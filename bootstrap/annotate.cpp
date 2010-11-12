@@ -278,7 +278,7 @@ void
 Annotator::annotate(BlockNode* node)
 {
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
-  annotateNodeList(node->children(), true, false);
+  annotateNodeList(node->children(), node->isInTailPos(), false);
 }
 
 
@@ -344,10 +344,10 @@ Annotator::annotate(IfNode* node)
 {
   annotateNode(node->test());
 
-  node->consequent()->setIsInTailPos(true);
+  node->consequent()->setIsInTailPos(node->isInTailPos());
   annotateNode(node->consequent());
   if (node->alternate()) {
-    node->alternate()->setIsInTailPos(true);
+    node->alternate()->setIsInTailPos(node->isInTailPos());
     annotateNode(node->alternate());
   }
 }
@@ -440,7 +440,7 @@ Annotator::annotate(WhileNode* node)
   node->test()->setIsSingleTypeRequired(true);
   annotateNode(node->test());
 
-  node->body()->setIsInTailPos(true);
+  node->body()->setIsInTailPos(node->isInTailPos());
   annotateNode(node->body());
 }
 
