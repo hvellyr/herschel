@@ -6,8 +6,8 @@
    All rights reserved.
 */
 
-#ifndef bootstrap_parser_h
-#define bootstrap_parser_h
+#ifndef bootstrap_compiler_h
+#define bootstrap_compiler_h
 
 #include "refcountable.h"
 #include "apt.h"
@@ -56,12 +56,12 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class Parser : public RefCountable
+  class Compiler : public RefCountable
   {
   public:
-    Parser(bool isParsingInterface = false);
+    Compiler(bool isParsingInterface = false);
 
-    virtual AptNode* parse(Port<Char>* port, const String& srcName);
+    virtual AptNode* process(Port<Char>* port, const String& srcName);
 
     CharRegistry* charRegistry() const;
     ConfigVarRegistry* configVarRegistry() const;
@@ -105,12 +105,12 @@ namespace heather
     class PortStackHelper
     {
     public:
-      PortStackHelper(Parser* parser);
-      PortStackHelper(Parser* parser, TokenPort* port);
+      PortStackHelper(Compiler* compiler);
+      PortStackHelper(Compiler* compiler, TokenPort* port);
       ~PortStackHelper();
 
     private:
-      Parser* fParser;
+      Compiler* fCompiler;
       bool fPortOnly;
     };
 
@@ -125,17 +125,17 @@ namespace heather
     Token nextToken();
     void unreadToken(const Token& token);
 
-    AptNode* parseImpl(Port<Char>* port, const String& srcName,
-                       bool doTrace);
+    AptNode* processImpl(Port<Char>* port, const String& srcName,
+                         bool doTrace);
 
-    class ParserState
+    class CompilerState
     {
     public:
-      ParserState(CharRegistry*      charReg,
-                  ConfigVarRegistry* configReg,
-                  Scope*             scope);
-      ParserState(const ParserState& item);
-      ParserState& operator=(const ParserState& item);
+      CompilerState(CharRegistry*      charReg,
+                    ConfigVarRegistry* configReg,
+                    Scope*             scope);
+      CompilerState(const CompilerState& item);
+      CompilerState& operator=(const CompilerState& item);
 
       Ptr<TokenPort>         fPort;
       Token                  fToken;
@@ -147,10 +147,10 @@ namespace heather
 
     //-------- data members
 
-    ParserState            fState;
-    std::list<ParserState> fParserStates;
-    bool                   fIsParsingInterface;
+    CompilerState            fState;
+    std::list<CompilerState> fCompilerStates;
+    bool                     fIsParsingInterface;
   };
 };
 
-#endif  // bootstrap_parser_h
+#endif  // bootstrap_compiler_h

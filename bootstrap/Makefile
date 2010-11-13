@@ -24,6 +24,7 @@ SOURCES =         \
 	codegen.cpp     \
 	compile.cpp     \
 	compilepass.cpp \
+	compiler.cpp    \
 	externc.cpp     \
 	file.cpp        \
 	heather.cpp     \
@@ -31,7 +32,6 @@ SOURCES =         \
 	macro.cpp       \
 	numbers.cpp     \
 	option.cpp      \
-	parser.cpp      \
 	parsertypes.cpp \
 	pass.cpp        \
 	pass1.cpp       \
@@ -65,6 +65,7 @@ HEADERS =         \
 	common.h        \
 	compile.h       \
 	compilepass.h   \
+	compiler.h      \
 	errcodes.h      \
 	exception.h     \
 	externc.h       \
@@ -73,7 +74,6 @@ HEADERS =         \
 	macro.h         \
 	numbers.h       \
 	option.h        \
-	parser.h        \
 	parsertypes.h   \
 	pass.h          \
 	pass1.h         \

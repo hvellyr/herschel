@@ -15,7 +15,7 @@
 #include "properties.h"
 #include "scope.h"
 #include "symbol.h"
-#include "parser.h"
+#include "compiler.h"
 #include "rootscope.h"
 
 
