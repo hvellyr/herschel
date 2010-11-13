@@ -11,7 +11,7 @@
 
 #include <list>
 
-#include "parser.h"
+#include "compiler.h"
 #include "ptr.h"
 #include "refcountable.h"
 #include "scope.h"
@@ -24,7 +24,7 @@ namespace heather
   {
   public:
     AbstractPass();
-    AbstractPass(Parser* parser, Scope* scope);
+    AbstractPass(Compiler* compiler, Scope* scope);
 
     String currentModuleName() const;
     void pushModule(const String& name, bool setName);
@@ -56,7 +56,7 @@ namespace heather
     std::list<String> fModuleNameStack;
 
     Ptr<Scope>        fScope;
-    Ptr<Parser>       fParser;
+    Ptr<Compiler>     fCompiler;
   };
 };                              // namespace
 

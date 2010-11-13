@@ -10,7 +10,7 @@
 
 #include "errcodes.h"
 #include "log.h"
-#include "parser.h"
+#include "compiler.h"
 #include "parsertypes.h"
 #include "pass2.h"
 #include "predefined.h"
@@ -27,11 +27,11 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
-NodifyPass::NodifyPass(int level, Parser* parser, Scope* scope)
+NodifyPass::NodifyPass(int level, Compiler* compiler, Scope* scope)
   : Token2AptNodeCompilePass(level),
     fScope(scope),
-    fParser(parser),
-    fPass(new SecondPass(fParser, fScope))
+    fCompiler(compiler),
+    fPass(new SecondPass(fCompiler, fScope))
 { }
 
 
@@ -51,8 +51,8 @@ NodifyPass::currentScope()
 
 //----------------------------------------------------------------------------
 
-SecondPass::SecondPass(Parser* parser, Scope* scope)
-  : AbstractPass(parser, scope)
+SecondPass::SecondPass(Compiler* compiler, Scope* scope)
+  : AbstractPass(compiler, scope)
 {
 }
 
@@ -120,11 +120,11 @@ SecondPass::parseExport(const Token& expr)
   size_t symbolOfs = 1;
   VizType vizType = kPrivate;
   if (expr[1].isSymbol()) {
-    if (expr[1] == Parser::publicToken)
+    if (expr[1] == Compiler::publicToken)
       vizType = kPublic;
-    else if (expr[1] == Parser::innerToken)
+    else if (expr[1] == Compiler::innerToken)
       vizType = kInner;
-    else if (expr[1] == Parser::outerToken)
+    else if (expr[1] == Compiler::outerToken)
       vizType = kOuter;
     else {
       error(expr[1].srcpos(), E_UnknownVisibility,
@@ -150,9 +150,9 @@ SecondPass::parseExport(const Token& expr)
         assert(symbolExprs[j][2] == kSymbol);
 
         Scope::ScopeDomain domain = Scope::kNormal;
-        if (symbolExprs[j][2] == Parser::unitToken)
+        if (symbolExprs[j][2] == Compiler::unitToken)
           domain = Scope::kUnit;
-        else if (symbolExprs[j][2] == Parser::charToken)
+        else if (symbolExprs[j][2] == Compiler::charToken)
           domain = Scope::kChar;
         else {
           warning(symbolExprs[j][2].srcpos(), E_UnknownSymbolDomain,
@@ -167,7 +167,7 @@ SecondPass::parseExport(const Token& expr)
   bool isFinal = false;
   if (expr.count() >= symbolOfs + 2) {
     assert(expr[symbolOfs + 1] == kAs);
-    assert(expr[symbolOfs + 2] == Parser::finalToken);
+    assert(expr[symbolOfs + 2] == Compiler::finalToken);
 
     isFinal = true;
   }
@@ -224,7 +224,7 @@ SecondPass::parseImport(const Token& expr)
   if (canImport) {
     try
     {
-      fParser->importFile(expr.srcpos(), importFile, false, fScope);
+      fCompiler->importFile(expr.srcpos(), importFile, false, fScope);
     }
     catch (const Exception& e) {
       error(expr.srcpos(), E_UnknownInputFile, e.message());
@@ -502,7 +502,7 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue)
 
         int sizeInd = 0;
         if (expr[1].count() > 0) {
-          TokenEvalContext ctx(fParser->configVarRegistry());
+          TokenEvalContext ctx(fCompiler->configVarRegistry());
           Token p = ctx.evalToken(expr[1][0]);
           if (p.isInt()) {
             sizeInd = p.intValue();
@@ -687,7 +687,7 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass)
 
   assert(expr.isSeq());
   assert(expr.count() >= ofs + 2);
-  assert(expr[ofs] == Parser::typeToken || expr[ofs] == Parser::classToken);
+  assert(expr[ofs] == Compiler::typeToken || expr[ofs] == Compiler::classToken);
   assert(expr[ofs + 1] == kSymbol);
 
   ofs++;
@@ -760,14 +760,14 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass)
              defs[i][0] == kExtendId);
 
       if (defs[i][0] == kDefId) {
-        if (defs[i][1] == Parser::slotToken) {
+        if (defs[i][1] == Compiler::slotToken) {
           assert(isClass);
 
           Ptr<AptNode> def = parseExpr(defs[i]);
           if (def != NULL)
             slotDefs.push_back(def);
         }
-        else if (defs[i][1] == Parser::genericToken) {
+        else if (defs[i][1] == Compiler::genericToken) {
           Ptr<AptNode> def = parseExpr(defs[i]);
           if (def != NULL)
             reqProtocol.push_back(def);
@@ -860,7 +860,7 @@ SecondPass::parseAliasDef(const Token& expr, size_t ofs, bool isLocal)
 
   assert(expr.isSeq());
   assert(expr.count() > ofs + 3);
-  assert(expr[ofs] == Parser::aliasToken);
+  assert(expr[ofs] == Compiler::aliasToken);
   assert(expr[ofs + 1] == kSymbol);
 
   ofs++;
@@ -927,7 +927,7 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
 {
   assert(expr.isSeq());
   assert(expr.count() >= ofs + 2);
-  assert(expr[ofs] == Parser::slotToken);
+  assert(expr[ofs] == Compiler::slotToken);
 
   ofs++;
 
@@ -958,25 +958,25 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
     for ( ; ofs < seq.size(); ofs++) {
       if (seq[ofs] == kComma)
         continue;
-      if (seq[ofs] == Parser::publicToken) {
+      if (seq[ofs] == Compiler::publicToken) {
         slotFlags |= kPublicSlot;
       }
-      else if (seq[ofs] == Parser::outerToken) {
+      else if (seq[ofs] == Compiler::outerToken) {
         slotFlags |= kOuterSlot;
       }
-      else if (seq[ofs] == Parser::innerToken) {
+      else if (seq[ofs] == Compiler::innerToken) {
         slotFlags |= kInnerSlot;
       }
-      else if (seq[ofs] == Parser::transientToken) {
+      else if (seq[ofs] == Compiler::transientToken) {
         slotFlags |= kTransientSlot;
       }
-      else if (seq[ofs] == Parser::readonlyToken) {
+      else if (seq[ofs] == Compiler::readonlyToken) {
         slotFlags |= kReadonlySlot;
       }
-      else if (seq[ofs] == Parser::observableToken) {
+      else if (seq[ofs] == Compiler::observableToken) {
         slotFlags |= kObservableSlot;
       }
-      else if (seq[ofs] == Parser::autoToken) {
+      else if (seq[ofs] == Compiler::autoToken) {
         slotFlags |= kAutoSlot;
       }
       else {
@@ -1020,7 +1020,7 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
 
   assert(expr.isSeq());
   assert(expr.count() == ofs + 3 || expr.count() == ofs + 5);
-  assert(expr[ofs] == Parser::enumToken);
+  assert(expr[ofs] == Compiler::enumToken);
   assert(expr[ofs + 1] == kSymbol);
 
   ofs++;
@@ -1134,7 +1134,7 @@ SecondPass::parseMeasureDef(const Token& expr, size_t ofs, bool isLocal)
 
   assert(expr.isSeq());
   assert(expr.count() == ofs + 5);
-  assert(expr[ofs] == Parser::measureToken);
+  assert(expr[ofs] == Compiler::measureToken);
   assert(expr[ofs + 1] == kSymbol);
   assert(expr[ofs + 2].isNested());
   assert(expr[ofs + 2].count() == 1);
@@ -1203,7 +1203,7 @@ SecondPass::parseUnitDef(const Token& expr, size_t ofs, bool isLocal)
 
   assert(expr.isSeq());
   assert(expr.count() >= ofs + 6);
-  assert(expr[ofs] == Parser::unitToken);
+  assert(expr[ofs] == Compiler::unitToken);
   assert(expr[ofs + 1] == kSymbol);
   assert(expr[ofs + 2] == kMapTo);
   assert(expr[ofs + 4].isNested());
@@ -1269,7 +1269,7 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
 
   Ptr<AptNode> initExpr;
   if (ofs + 1 < expr.count() && seq[ofs] == kAssign) {
-    if (!fParser->isParsingInterface() ||
+    if (!fCompiler->isParsingInterface() ||
         flags == kConstVar || flags == kConfigVar)
     {
       initExpr = parseExpr(seq[ofs + 1]);
@@ -1333,7 +1333,7 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
   if (ofs < seq.size()) {
     if (seq[ofs] == kEllipsis)
       data.fFlags |= kFuncIsAbstract;
-    else if (!fParser->isParsingInterface())
+    else if (!fCompiler->isParsingInterface())
       data.fBody = parseExpr(seq[ofs]);
     ofs++;
   }
@@ -1349,7 +1349,7 @@ SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
 
   FundefClauseData data;
 
-  if (expr[ofs] == Parser::genericToken) {
+  if (expr[ofs] == Compiler::genericToken) {
     data.fFlags |= kFuncIsGeneric;
     ofs++;
   }
@@ -1422,7 +1422,7 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
   }
 
 
-  if (expr[ofs] == Parser::typeToken) {
+  if (expr[ofs] == Compiler::typeToken) {
     assert(linkage.isEmpty());
     if (isLocal) {
       errorf(expr.srcpos(), E_LocalTypeDef,
@@ -1432,7 +1432,7 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
     return parseTypeDef(expr, ofs, false);
   }
 
-  else if (expr[ofs] == Parser::classToken) {
+  else if (expr[ofs] == Compiler::classToken) {
     assert(linkage.isEmpty());
     if (isLocal) {
       errorf(expr.srcpos(), E_LocalTypeDef,
@@ -1442,56 +1442,56 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
     return parseTypeDef(expr, ofs, true);
   }
 
-  else if (expr[ofs] == Parser::aliasToken) {
+  else if (expr[ofs] == Compiler::aliasToken) {
     assert(linkage.isEmpty());
     return parseAliasDef(expr, ofs, isLocal);
   }
 
-  else if (expr[ofs] == Parser::slotToken) {
+  else if (expr[ofs] == Compiler::slotToken) {
     assert(!isLocal);
     assert(linkage.isEmpty());
     return parseSlotDef(expr, ofs);
   }
 
-  else if (expr[ofs] == Parser::enumToken) {
+  else if (expr[ofs] == Compiler::enumToken) {
     assert(linkage.isEmpty());
     return parseEnumDef(expr, ofs, isLocal);
   }
-  else if (expr[ofs] == Parser::measureToken) {
+  else if (expr[ofs] == Compiler::measureToken) {
     assert(linkage.isEmpty());
     return parseMeasureDef(expr, ofs, isLocal);
   }
 
-  else if (expr[ofs] == Parser::unitToken) {
+  else if (expr[ofs] == Compiler::unitToken) {
     assert(linkage.isEmpty());
     return parseUnitDef(expr, ofs, isLocal);
   }
 
-  else if (expr[ofs] == Parser::constToken) {
+  else if (expr[ofs] == Compiler::constToken) {
     assert(linkage.isEmpty());
     return parseVarDef(expr, kConstVar, ofs + 1, isLocal, String());
   }
-  else if (expr[ofs] == Parser::fluidToken) {
+  else if (expr[ofs] == Compiler::fluidToken) {
     assert(linkage.isEmpty());
     return parseVarDef(expr, kFluidVar, ofs + 1, isLocal, String());
   }
-  else if (expr[ofs] == Parser::configToken) {
+  else if (expr[ofs] == Compiler::configToken) {
     assert(linkage.isEmpty());
     return parseVarDef(expr, kConfigVar, ofs + 1, isLocal, String());
   }
 
-  else if (expr[ofs] == Parser::genericToken) {
+  else if (expr[ofs] == Compiler::genericToken) {
     assert(linkage.isEmpty());
     return parseFunctionDef(expr, ofs, isLocal, String());
   }
 
-  else if (expr[ofs] == Parser::charToken) {
+  else if (expr[ofs] == Compiler::charToken) {
     assert(0);
     // should never come here actually
     return NULL;
   }
 
-  else if (expr[ofs] == Parser::macroToken) {
+  else if (expr[ofs] == Compiler::macroToken) {
     assert(0);
     // should never come here actually
     return NULL;
@@ -1520,7 +1520,7 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
 AptNode*
 SecondPass::parseIf(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
   assert(expr.count() >= 3);
   assert(expr[0] == kIfId);
   assert(expr[1].isNested());
@@ -1600,7 +1600,7 @@ SecondPass::parseParameter(const Token& expr)
     if (seq[ofs] == kAssign) {
       assert(ofs + 1 < expr.count());
 
-      if (!fParser->isParsingInterface())
+      if (!fCompiler->isParsingInterface())
         initExpr = parseExpr(seq[ofs + 1]);
       ofs += 2;
 
@@ -1746,7 +1746,7 @@ SecondPass::parseBinary(const Token& expr)
 AptNode*
 SecondPass::parseFunCall(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
   assert(expr.isSeq());
   assert(expr.count() == 2);
   assert(expr[1].isNested());
@@ -2138,7 +2138,7 @@ SecondPass::transformCollForClause(const Token& token,
 AptNode*
 SecondPass::parseFor(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
 
   assert(expr.isSeq());
   assert(expr.count() == 3 || expr.count() == 5);
@@ -2257,7 +2257,7 @@ SecondPass::parseFor(const Token& expr)
 AptNode*
 SecondPass::parseSelect(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
 
   assert(expr.isSeq());
   assert(expr.count() == 3);
@@ -2400,7 +2400,7 @@ SecondPass::parseChainSelect(const Token& expr)
 AptNode*
 SecondPass::parseMatch(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
 
   assert(expr.isSeq());
   assert(expr.count() == 3);
@@ -2493,7 +2493,7 @@ SecondPass::parseMatch(const Token& expr)
 AptNode*
 SecondPass::parseTypeExpr(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
   assert(expr.isSeq());
   assert(expr.count() == 2);
   assert(expr[0] == kSymbol);
@@ -2654,7 +2654,7 @@ namespace heather
 AptNode*
 SecondPass::parseBlock(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
   assert(expr.isNested());
   assert(expr.leftToken() == kBraceOpen);
   assert(expr.rightToken() == kBraceClose);
@@ -2687,7 +2687,7 @@ SecondPass::parseBlock(const Token& expr)
 AptNode*
 SecondPass::parseLiteralVector(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
   assert(expr.isNested());
   assert(expr.leftToken() == kLiteralVectorOpen);
   assert(expr.rightToken() == kParanClose);
@@ -2709,7 +2709,7 @@ SecondPass::parseLiteralVector(const Token& expr)
 AptNode*
 SecondPass::parseLiteralArray(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
   assert(expr.isNested());
   assert(expr.leftToken() == kLiteralArrayOpen);
   assert(expr.rightToken() == kBracketClose);
@@ -2731,7 +2731,7 @@ SecondPass::parseLiteralArray(const Token& expr)
 AptNode*
 SecondPass::parseLiteralDict(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
   assert(expr.isNested());
   assert(expr.leftToken() == kLiteralVectorOpen);
   assert(expr.rightToken() == kParanClose);
@@ -2758,7 +2758,7 @@ SecondPass::parseLiteralDict(const Token& expr)
 AptNode*
 SecondPass::parseNested(const Token& expr)
 {
-  assert(!fParser->isParsingInterface());
+  assert(!fCompiler->isParsingInterface());
   assert(expr.isNested());
 
   switch (expr.leftToken()) {

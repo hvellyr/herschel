@@ -15,7 +15,7 @@
 
 #include "apt.h"
 #include "compilepass.h"
-#include "parser.h"
+#include "compiler.h"
 #include "pass.h"
 #include "port.h"
 #include "refcountable.h"
@@ -32,7 +32,7 @@ namespace heather
   class SecondPass : public AbstractPass
   {
   public:
-    SecondPass(Parser* parser, Scope* scope);
+    SecondPass(Compiler* compiler, Scope* scope);
 
     AptNode* parse(const Token& exprs);
 
@@ -187,13 +187,13 @@ namespace heather
   class NodifyPass : public Token2AptNodeCompilePass
   {
   public:
-    NodifyPass(int level, Parser* parser, Scope* scope);
+    NodifyPass(int level, Compiler* compiler, Scope* scope);
     virtual AptNode* doApply(const Token& src);
     Scope* currentScope();
 
   private:
     Ptr<Scope>      fScope;
-    Ptr<Parser>     fParser;
+    Ptr<Compiler>   fCompiler;
     Ptr<SecondPass> fPass;
   };
 };

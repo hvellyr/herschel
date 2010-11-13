@@ -8,7 +8,7 @@
 
 #include "str.h"
 #include "file.h"
-#include "parser.h"
+#include "compiler.h"
 #include "apt.h"
 #include "ptr.h"
 #include "log.h"
@@ -62,9 +62,10 @@ compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
 {
   try {
     if (doParse) {
-      Ptr<Parser> parser = new Parser;
-      Ptr<AptNode> apt = parser->parse(new CharPort(new FilePort(file, "rb")),
-                                       file);
+      Ptr<Compiler> compiler = new Compiler;
+      Ptr<AptNode> apt = compiler->process(new CharPort(
+                                             new FilePort(file, "rb")),
+                                           file);
       if (doCompile) {
         assert(apt);
         CompileUnitNode* unit = dynamic_cast<CompileUnitNode*>(apt.obj());

@@ -11,7 +11,7 @@
 #include "annotate.h"
 #include "file.h"
 #include "log.h"
-#include "parser.h"
+#include "compiler.h"
 #include "pass1.h"
 #include "pass2.h"
 #include "predefined.h"
@@ -28,34 +28,34 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
-const Token Parser::aliasToken     = Token(SrcPos(), kSymbol, "alias");
-const Token Parser::autoToken      = Token(SrcPos(), kSymbol, "auto");
-const Token Parser::charToken      = Token(SrcPos(), kSymbol, "char");
-const Token Parser::classToken     = Token(SrcPos(), kSymbol, "class");
-const Token Parser::configToken    = Token(SrcPos(), kSymbol, "config");
-const Token Parser::constToken     = Token(SrcPos(), kSymbol, "const");
-const Token Parser::deleteToken    = Token(SrcPos(), kSymbol, "delete");
-const Token Parser::enumToken      = Token(SrcPos(), kSymbol, "enum");
-const Token Parser::exitToken      = Token(SrcPos(), kSymbol, MID_exitKeyword);
-const Token Parser::finalToken     = Token(SrcPos(), kSymbol, "final");
-const Token Parser::fluidToken     = Token(SrcPos(), kSymbol, "fluid");
-const Token Parser::genericToken   = Token(SrcPos(), kSymbol, "generic");
-const Token Parser::ignoreToken    = Token(SrcPos(), kSymbol, "ignore");
-const Token Parser::includeToken   = Token(SrcPos(), kSymbol, "include");
-const Token Parser::initToken      = Token(SrcPos(), kSymbol, "init");
-const Token Parser::innerToken     = Token(SrcPos(), kSymbol, "inner");
-const Token Parser::macroToken     = Token(SrcPos(), kSymbol, "macro");
-const Token Parser::measureToken   = Token(SrcPos(), kSymbol, "measure");
-const Token Parser::observableToken = Token(SrcPos(), kSymbol, "observable");
-const Token Parser::outerToken     = Token(SrcPos(), kSymbol, "outer");
-const Token Parser::publicToken    = Token(SrcPos(), kSymbol, "public");
-const Token Parser::readonlyToken  = Token(SrcPos(), kSymbol, "readonly");
-const Token Parser::signalToken    = Token(SrcPos(), kSymbol, MID_signalKeyword);
-const Token Parser::slotToken      = Token(SrcPos(), kSymbol, "slot");
-const Token Parser::syncToken      = Token(SrcPos(), kSymbol, "sync");
-const Token Parser::transientToken = Token(SrcPos(), kSymbol, "transient");
-const Token Parser::typeToken      = Token(SrcPos(), kSymbol, "type");
-const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
+const Token Compiler::aliasToken     = Token(SrcPos(), kSymbol, "alias");
+const Token Compiler::autoToken      = Token(SrcPos(), kSymbol, "auto");
+const Token Compiler::charToken      = Token(SrcPos(), kSymbol, "char");
+const Token Compiler::classToken     = Token(SrcPos(), kSymbol, "class");
+const Token Compiler::configToken    = Token(SrcPos(), kSymbol, "config");
+const Token Compiler::constToken     = Token(SrcPos(), kSymbol, "const");
+const Token Compiler::deleteToken    = Token(SrcPos(), kSymbol, "delete");
+const Token Compiler::enumToken      = Token(SrcPos(), kSymbol, "enum");
+const Token Compiler::exitToken      = Token(SrcPos(), kSymbol, MID_exitKeyword);
+const Token Compiler::finalToken     = Token(SrcPos(), kSymbol, "final");
+const Token Compiler::fluidToken     = Token(SrcPos(), kSymbol, "fluid");
+const Token Compiler::genericToken   = Token(SrcPos(), kSymbol, "generic");
+const Token Compiler::ignoreToken    = Token(SrcPos(), kSymbol, "ignore");
+const Token Compiler::includeToken   = Token(SrcPos(), kSymbol, "include");
+const Token Compiler::initToken      = Token(SrcPos(), kSymbol, "init");
+const Token Compiler::innerToken     = Token(SrcPos(), kSymbol, "inner");
+const Token Compiler::macroToken     = Token(SrcPos(), kSymbol, "macro");
+const Token Compiler::measureToken   = Token(SrcPos(), kSymbol, "measure");
+const Token Compiler::observableToken = Token(SrcPos(), kSymbol, "observable");
+const Token Compiler::outerToken     = Token(SrcPos(), kSymbol, "outer");
+const Token Compiler::publicToken    = Token(SrcPos(), kSymbol, "public");
+const Token Compiler::readonlyToken  = Token(SrcPos(), kSymbol, "readonly");
+const Token Compiler::signalToken    = Token(SrcPos(), kSymbol, MID_signalKeyword);
+const Token Compiler::slotToken      = Token(SrcPos(), kSymbol, "slot");
+const Token Compiler::syncToken      = Token(SrcPos(), kSymbol, "sync");
+const Token Compiler::transientToken = Token(SrcPos(), kSymbol, "transient");
+const Token Compiler::typeToken      = Token(SrcPos(), kSymbol, "type");
+const Token Compiler::unitToken      = Token(SrcPos(), kSymbol, "unit");
 
 
 //----------------------------------------------------------------------------
@@ -64,8 +64,8 @@ const Token Parser::unitToken      = Token(SrcPos(), kSymbol, "unit");
 
 //----------------------------------------------------------------------------
 
-Parser::Parser(bool isParsingInterface)
-  : fState(ParserState(
+Compiler::Compiler(bool isParsingInterface)
+  : fState(CompilerState(
              new CharRegistry,
              new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
              type::newRootScope())),
@@ -74,35 +74,35 @@ Parser::Parser(bool isParsingInterface)
 }
 
 CharRegistry*
-Parser::charRegistry() const
+Compiler::charRegistry() const
 {
   return fState.fCharRegistry;
 }
 
 
 ConfigVarRegistry*
-Parser::configVarRegistry() const
+Compiler::configVarRegistry() const
 {
   return fState.fConfigVarRegistry;
 }
 
 
 Scope*
-Parser::scope() const
+Compiler::scope() const
 {
   return fState.fScope;
 }
 
 
 bool
-Parser::isParsingInterface() const
+Compiler::isParsingInterface() const
 {
   return fIsParsingInterface;
 }
 
 
 Token
-Parser::nextToken()
+Compiler::nextToken()
 {
   try {
     fState.fToken = fState.fPort->read();
@@ -118,21 +118,21 @@ Parser::nextToken()
 
 
 void
-Parser::unreadToken(const Token& token)
+Compiler::unreadToken(const Token& token)
 {
   fState.fPort->unread(token);
 }
 
 
 AptNode*
-Parser::parse(Port<Char>* port, const String& srcName)
+Compiler::process(Port<Char>* port, const String& srcName)
 {
-  return parseImpl(port, srcName, true);
+  return processImpl(port, srcName, true);
 }
 
 
 AptNode*
-Parser::parseImpl(Port<Char>* port, const String& srcName, bool doTrace)
+Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
 {
   fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
 
@@ -183,9 +183,9 @@ Parser::parseImpl(Port<Char>* port, const String& srcName, bool doTrace)
 
 
 bool
-Parser::importFile(const SrcPos& srcpos,
-                   const String& srcName, bool isPublic,
-                   Scope* currentScope)
+Compiler::importFile(const SrcPos& srcpos,
+                     const String& srcName, bool isPublic,
+                     Scope* currentScope)
 {
   typedef std::map<String, Ptr<Scope> > ImportCache;
   static ImportCache sImportCache;
@@ -216,10 +216,11 @@ Parser::importFile(const SrcPos& srcpos,
     logf(kDebug, "Import '%s'", (const char*)StrHelper(srcName));
 
   try {
-    Ptr<Parser> parser = new Parser(true);
-    Ptr<AptNode> apt = parser->parseImpl(new CharPort(new FilePort(absPath, "rb")),
-                                         srcName, false);
-    Ptr<Scope> scope = parser->scope();
+    Ptr<Compiler> compiler = new Compiler(true);
+    Ptr<AptNode> apt = compiler->processImpl(new CharPort(
+                                               new FilePort(absPath, "rb")),
+                                             srcName, false);
+    Ptr<Scope> scope = compiler->scope();
 
     currentScope->addImportedScope(absPath, scope);
 
@@ -238,7 +239,7 @@ Parser::importFile(const SrcPos& srcpos,
 
 
 String
-Parser::lookupFile(const String& srcName, bool isPublic)
+Compiler::lookupFile(const String& srcName, bool isPublic)
 {
   StringVector exts;
   exts.push_back(String("hea"));
@@ -249,9 +250,9 @@ Parser::lookupFile(const String& srcName, bool isPublic)
 
 //==============================================================================
 
-Parser::ParserState::ParserState(CharRegistry* charReg,
-                                 ConfigVarRegistry* configReg,
-                                 Scope* scope)
+Compiler::CompilerState::CompilerState(CharRegistry* charReg,
+                                       ConfigVarRegistry* configReg,
+                                       Scope* scope)
   : fCharRegistry(charReg),
     fConfigVarRegistry(configReg),
     fScope(scope)
@@ -259,14 +260,14 @@ Parser::ParserState::ParserState(CharRegistry* charReg,
 }
 
 
-Parser::ParserState::ParserState(const ParserState& item)
+Compiler::CompilerState::CompilerState(const CompilerState& item)
 {
   *this = item;
 }
 
 
-Parser::ParserState&
-Parser::ParserState::operator=(const ParserState& item)
+Compiler::CompilerState&
+Compiler::CompilerState::operator=(const CompilerState& item)
 {
   fPort              = item.fPort;
   fToken             = item.fToken;
@@ -280,42 +281,42 @@ Parser::ParserState::operator=(const ParserState& item)
 
 //==============================================================================
 
-Parser::PortStackHelper::PortStackHelper(Parser* parser)
-  : fParser(parser),
+Compiler::PortStackHelper::PortStackHelper(Compiler* compiler)
+  : fCompiler(compiler),
     fPortOnly(false)
 {
-  fParser->fParserStates.push_front(fParser->fState);
-  fParser->fState = ParserState(
+  fCompiler->fCompilerStates.push_front(fCompiler->fState);
+  fCompiler->fState = CompilerState(
     new CharRegistry,
     new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
     type::newRootScope());
 }
 
 
-Parser::PortStackHelper::PortStackHelper(Parser* parser, TokenPort* port)
-  : fParser(parser),
+Compiler::PortStackHelper::PortStackHelper(Compiler* compiler, TokenPort* port)
+  : fCompiler(compiler),
     fPortOnly(true)
 {
-  fParser->fParserStates.push_front(fParser->fState);
-  fParser->fState = ParserState(
-    parser->charRegistry(),
-    new ConfigVarRegistry(parser->configVarRegistry()),
-    parser->fState.fScope);
+  fCompiler->fCompilerStates.push_front(fCompiler->fState);
+  fCompiler->fState = CompilerState(
+    compiler->charRegistry(),
+    new ConfigVarRegistry(compiler->configVarRegistry()),
+    compiler->fState.fScope);
 
-  fParser->fState.fPort = port;
+  fCompiler->fState.fPort = port;
 }
 
 
-Parser::PortStackHelper::~PortStackHelper()
+Compiler::PortStackHelper::~PortStackHelper()
 {
-  assert(!fParser->fParserStates.empty());
+  assert(!fCompiler->fCompilerStates.empty());
 
-  ParserState current = fParser->fState;
-  fParser->fState = fParser->fParserStates.front();
-  fParser->fParserStates.pop_front();
+  CompilerState current = fCompiler->fState;
+  fCompiler->fState = fCompiler->fCompilerStates.front();
+  fCompiler->fCompilerStates.pop_front();
 
   if (!fPortOnly) {
-    // merge current.fScope into fParser->fState; same for configVarReg and
+    // merge current.fScope into fCompiler->fState; same for configVarReg and
     // current.fCharRegistry
   }
 }
