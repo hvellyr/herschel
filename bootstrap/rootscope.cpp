@@ -77,6 +77,10 @@ heather::type::newRootScope()
                                    generics,
                                    Type::newTypeRef(Names::kNumberTypeName, true)));
 
+  root->registerType(sp, Names::kInt32TypeName,
+                     Type::newType(Names::kInt32TypeName,
+                                   generics,
+                                   Type::newTypeRef(Names::kNumberTypeName, true)));
 
   //------------------------------
   // String and symbols

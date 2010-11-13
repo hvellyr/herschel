@@ -55,3 +55,8 @@ AbstractPass::popModule()
 }
 
 
+Scope*
+AbstractPass::scope()
+{
+  return fScope;
+}

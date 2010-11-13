@@ -644,11 +644,32 @@ Scope::isVarInOuterFunction(const String& name) const
 }
 
 
-void
-Scope::dumpDebug() const
+static const char*
+scopeLevelName(ScopeLevel level)
 {
-  fprintf(stderr, "[------- Scope Dump [%p] ----------------------\n", this);
+  switch (level) {
+  case kScopeL_CompileUnit: return "compile-unit";
+  case kScopeL_Module:      return "module";
+  case kScopeL_Function:    return "function";
+  case kScopeL_Local:       return "local";
+  };
+  return "???";
+}
+
+void
+Scope::dumpDebug(bool recursive) const
+{
+  fprintf(stderr, "[------- Scope Dump [%p] - %s ----------------------\n", this,
+          scopeLevelName(scopeLevel()));
   dumpDebugImpl();
+  if (recursive) {
+    Scope* sc0 = parent();
+    while (sc0) {
+      fprintf(stderr, "----- [%p] - %s -----\n", sc0, scopeLevelName(sc0->scopeLevel()));
+      sc0->dumpDebugImpl();
+      sc0 = sc0->parent();
+    }
+  }
   fprintf(stderr, "]------- Scope Dump [%p] ----------------------\n", this);
 }
 

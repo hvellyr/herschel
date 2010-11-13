@@ -30,15 +30,22 @@ using namespace heather;
 NodifyPass::NodifyPass(int level, Parser* parser, Scope* scope)
   : Token2AptNodeCompilePass(level),
     fScope(scope),
-    fParser(parser)
+    fParser(parser),
+    fPass(new SecondPass(fParser, fScope))
 { }
 
 
 AptNode*
 NodifyPass::doApply(const Token& src)
 {
-  Ptr<SecondPass> sp = new SecondPass(fParser, fScope);
-  return sp->parse(src);
+  return fPass->parse(src);
+}
+
+
+Scope*
+NodifyPass::currentScope()
+{
+  return fPass->scope();
 }
 
 
@@ -2911,12 +2918,8 @@ SecondPass::parse(const Token& exprs)
 {
   assert(exprs.isSeq());
 
-  {
-    ScopeHelper scopeHelper(fScope, true, false, kScopeL_CompileUnit);
-
-    fRootNode = new CompileUnitNode(SrcPos());
-    parseTopExprlist(exprs);
-  }
+  fRootNode = new CompileUnitNode(SrcPos());
+  parseTopExprlist(exprs);
 
   return fRootNode.release();
 }

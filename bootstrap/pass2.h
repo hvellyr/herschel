@@ -189,10 +189,12 @@ namespace heather
   public:
     NodifyPass(int level, Parser* parser, Scope* scope);
     virtual AptNode* doApply(const Token& src);
+    Scope* currentScope();
 
   private:
-    Ptr<Scope>  fScope;
-    Ptr<Parser> fParser;
+    Ptr<Scope>      fScope;
+    Ptr<Parser>     fParser;
+    Ptr<SecondPass> fPass;
   };
 };
 

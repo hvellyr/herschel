@@ -132,8 +132,7 @@ Parser::parse(Port<Char>* port, const String& srcName)
 
 
 AptNode*
-Parser::parseImpl(Port<Char>* port, const String& srcName,
-                  bool doTrace)
+Parser::parseImpl(Port<Char>* port, const String& srcName, bool doTrace)
 {
   fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
 
@@ -149,17 +148,29 @@ Parser::parseImpl(Port<Char>* port, const String& srcName,
     tokenPass = new ExprPass(1, this, fState.fToken, fState.fScope);
     parsedExprs = tokenPass->apply(Token(), doTrace);
 
-    t2nPass = new NodifyPass(2, this, fState.fScope);
-    apt = t2nPass->apply(parsedExprs, doTrace);
+    // let all following passes run beneath the same root-scope.
+    {
+      ScopeHelper scopeHelper(fState.fScope, true, false, kScopeL_CompileUnit);
 
-    nodePass = new TransformPass(3);
-    apt = nodePass->apply(apt.release(), doTrace);
+      Ptr<NodifyPass> nodifyPass = new NodifyPass(2, this, fState.fScope);
+      apt = nodifyPass->apply(parsedExprs, doTrace);
 
-    nodePass = new AnnotatePass(4);
-    apt = nodePass->apply(apt.release(), doTrace);
+      // if the compileunit contains open-ended module declarations
+      // (i.e. without {}) get the last valid scope back and make it the
+      // current one.  It contains the complete upstream chain of scopes.  (We
+      // must not simply export it back to the original fState.fScope, since
+      // the symbols may not be exportable at all).
+      fState.fScope = nodifyPass->currentScope();
 
-    nodePass = new TypifyPass(5);
-    apt = nodePass->apply(apt.release(), doTrace);
+      nodePass = new TransformPass(3);
+      apt = nodePass->apply(apt.release(), doTrace);
+
+      nodePass = new AnnotatePass(4, fState.fScope);
+      apt = nodePass->apply(apt.release(), doTrace);
+
+      nodePass = new TypifyPass(5);
+      apt = nodePass->apply(apt.release(), doTrace);
+    }
 
     return apt.release();
   }
