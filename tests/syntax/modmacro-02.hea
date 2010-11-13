@@ -1,0 +1,11 @@
+module core ("sijo/ixwick 0.1: core")
+
+module cool ("sijo/ixwick 0.1: cool")
+
+def macro abc
+{
+  { abc() } -> { "abc" }
+}
+
+def f()
+  abc()

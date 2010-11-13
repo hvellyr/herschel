@@ -1,0 +1,11 @@
+How to prepare the installer for windows
+
+  Requirements: nullsoft scriptable install system (NSIS) > 2.2
+    see http://nsis.sourceforge.net
+
+  Set the MAKENSIS setting in $(top_srcdir)/build/config.mk or overwrite it
+  in your config-local.mk to the absolute path of makensis.exe
+
+
+
+ 

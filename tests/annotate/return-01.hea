@@ -1,0 +1,29 @@
+def foo(x : String)
+  {
+    let y : String
+    return(y)
+  }
+  x
+
+
+def foo2(x)
+  {
+    let y : String
+    return(y)
+  }
+  x
+
+
+def type MutualString : String
+
+def foo3(x : MutualString) : String
+  {
+    let y : String
+
+    {
+      return("hello world")
+    }
+
+    y.return
+  }
+  x

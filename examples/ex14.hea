@@ -1,0 +1,43 @@
+def macro _x-with-value
+{
+  { _x-with-value(?x:name = ?val:expr, ?body:expr, ?else:expr) }
+    -> { {
+           let ?x = ?val
+           if (?x == nil)
+             ?body
+           else
+             ?else
+       } }
+}
+
+def macro with-value
+{
+  { with-value(?x:name = ?val:expr) ?body:expr }
+    -> { _x-with-value(?x = ?val, ?body, false) }
+  { with-value(?x:name = ?val:expr) ?body:expr otherwise ?e:expr }
+    -> { _x-with-value(?x = ?val, ?body, ?e) }
+}
+
+def macro foreach
+{
+  { foreach(?v:name in ?val:expr) ?body:expr } -> { let ?v = ?val ?body }
+}
+
+
+def f1(x, y)
+  with-value(a = x + y)
+    outln(a)
+  otherwise
+    11
+
+def f(x, y)
+  with-value(a = x + y)
+    outln(a)
+
+def g()
+   true
+
+def h()
+  foreach(a in 5 .. 7) outln(a)
+
+

@@ -1,0 +1,20 @@
+def type MutualString : String
+
+def foo(x : MutualString) : String
+  {
+    let y : String
+
+    -- the return in the nested function is checked against bar only.
+    let bar(z : Int) : Number
+      return(z)
+
+    let zip(f : Bool, g : Keyword)
+      return(g)
+
+    {
+      return("hello world")
+    }
+
+    y.return
+  }
+  x

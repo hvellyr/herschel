@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>import</id><lit type='str'>red</lit></seq><seq><id>import</id><lit type='str'>blue</lit><nested left='(' right=')'><seq><id>blue</id><punct type='->'/><id>green</id></seq></nested></seq><seq><id>import</id><lit type='str'>blue</lit><nested left='(' right=')'><seq><id>blue</id><punct type='->'/><id>green</id></seq><punct type=','/><seq><id>orange</id><punct type='->'/><id>yellow</id></seq></nested></seq></seq>

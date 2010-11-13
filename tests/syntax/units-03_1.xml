@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>def</id><id>measure</id><id>Pixel</id><nested left='(' right=')'><id>px</id></nested><punct type=':'/><id>Real</id></seq><seq><id>def</id><id>measure</id><id>AmountOfSubstance</id><nested left='(' right=')'><id>mol</id></nested><punct type=':'/><id>Real</id></seq><seq><id>def</id><id>measure</id><id>SurfaceDensity</id><nested left='(' right=')'><id>kg/m2</id></nested><punct type=':'/><id>Real</id></seq></seq>

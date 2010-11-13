@@ -1,0 +1,8 @@
+2  ; warning ; 4039
+5  ; warning ; 4039
+9  ; error   ; 403b
+13 ; error   ; 403b
+16 ; error   ; 403b
+19 ; error   ; 403b
+22 ; warning ; 4039
+26 ; warning ; 4038

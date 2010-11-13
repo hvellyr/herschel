@@ -1,0 +1,2 @@
+def a = not is-it?() and would-it?()
+def b = not not true

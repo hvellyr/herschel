@@ -1,0 +1,14 @@
+def foo(x : 'T, y : 'T) : 'T
+  x
+
+def bar()
+  foo(5, 6)
+  foo(#hello, #world)
+
+
+
+def foo2(x : 'T, y : 'Z) : 'T
+  x
+
+def bar2()
+  foo2(5, \space)

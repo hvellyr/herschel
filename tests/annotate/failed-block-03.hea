@@ -1,0 +1,12 @@
+def foo(x : String) : Int
+  on exit(r) {
+    r
+  }
+  x
+
+
+def foo2(x : String)
+  on exit(r : Keyword) {
+    r
+  }
+  x
