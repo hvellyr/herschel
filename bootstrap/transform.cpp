@@ -23,6 +23,24 @@
 
 using namespace heather;
 
+
+//----------------------------------------------------------------------------
+
+TransformPass::TransformPass(int level)
+  : AptNodeCompilePass(level)
+{}
+
+
+AptNode*
+TransformPass::doApply(AptNode* src)
+{
+  Ptr<AptNode> node = src;
+  Ptr<Transformator> tr = new Transformator;
+  tr->transformNode(node);
+  return node.release();
+}
+
+
 //----------------------------------------------------------------------------
 
 Transformator::Transformator()

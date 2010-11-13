@@ -30,6 +30,25 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
+ExprPass::ExprPass(int level, Parser* parser,
+                   const Token& currentToken, Scope* scope)
+  : TokenCompilePass(level),
+    fCurrentToken(currentToken),
+    fScope(scope),
+    fParser(parser)
+{ }
+
+
+Token
+ExprPass::doApply(const Token& src)
+{
+  Ptr<FirstPass> fp = new FirstPass(fParser, fCurrentToken, fScope);
+  return fp->parse();
+}
+
+
+//----------------------------------------------------------------------------
+
 FirstPass::FirstPass(Parser* parser, const Token& currentToken, Scope* scope)
   : AbstractPass(parser, scope),
     fToken(currentToken),

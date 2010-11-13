@@ -27,6 +27,23 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
+NodifyPass::NodifyPass(int level, Parser* parser, Scope* scope)
+  : Token2AptNodeCompilePass(level),
+    fScope(scope),
+    fParser(parser)
+{ }
+
+
+AptNode*
+NodifyPass::doApply(const Token& src)
+{
+  Ptr<SecondPass> sp = new SecondPass(fParser, fScope);
+  return sp->parse(src);
+}
+
+
+//----------------------------------------------------------------------------
+
 SecondPass::SecondPass(Parser* parser, Scope* scope)
   : AbstractPass(parser, scope)
 {

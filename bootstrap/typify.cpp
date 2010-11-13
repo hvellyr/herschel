@@ -27,6 +27,23 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
+TypifyPass::TypifyPass(int level)
+  : AptNodeCompilePass(level, true)
+{}
+
+
+AptNode*
+TypifyPass::doApply(AptNode* src)
+{
+  Ptr<AptNode> node = src;
+  Ptr<Typifier> ty = new Typifier;
+  ty->typifyRecursively(node);
+  return node.release();
+}
+
+
+//----------------------------------------------------------------------------
+
 Typifier::Typifier()
   : fPhase(kTypify)
 {

@@ -11,6 +11,7 @@
 
 #include "refcountable.h"
 #include "ptr.h"
+#include "compilepass.h"
 
 #include <vector>
 
@@ -142,6 +143,16 @@ namespace heather
 
     //-------- data members
     Phase fPhase;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class TypifyPass : public AptNodeCompilePass
+  {
+  public:
+    TypifyPass(int level);
+    virtual AptNode* doApply(AptNode* src);
   };
 };                              // namespace
 

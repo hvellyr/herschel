@@ -12,6 +12,7 @@
 #include <map>
 
 #include "apt.h"
+#include "compilepass.h"
 #include "errcodes.h"
 #include "macro.h"
 #include "parser.h"
@@ -272,6 +273,21 @@ namespace heather
 
     Token       fToken;
     bool        fEvaluateExprs;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class ExprPass : public TokenCompilePass
+  {
+  public:
+    ExprPass(int level, Parser* parser, const Token& currentToken, Scope* scope);
+    virtual Token doApply(const Token& src);
+
+  private:
+    Token       fCurrentToken;
+    Ptr<Scope>  fScope;
+    Ptr<Parser> fParser;
   };
 };
 

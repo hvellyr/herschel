@@ -131,124 +131,6 @@ Parser::parse(Port<Char>* port, const String& srcName)
 }
 
 
-Token
-Parser::doPass1Parse(bool doTrace)
-{
-  Ptr<FirstPass> firstPass = new FirstPass(this, fState.fToken, fState.fScope);
-
-  Token parsedExprs = firstPass->parse();
-
-  if (doTrace && Properties::isTracePass1()) {
-    Ptr<FilePort> stream = new FilePort(stdout);
-    display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
-    parsedExprs.toPort(stream);
-    displayln(stream, "");
-  }
-
-  // fState.fScope->dumpDebug();
-
-  return parsedExprs;
-}
-
-
-AptNode*
-Parser::doPass2Parse(const Token& parsedExprs, bool doTrace)
-{
-  bool doPass2 = true;
-#if defined(UNITTESTS)
-  doPass2 = Properties::test_passLevel() > 1;
-#endif
-
-  if (doPass2) {
-    Ptr<SecondPass> secondPass = new SecondPass(this, fState.fScope);
-
-    Ptr<AptNode> apt = secondPass->parse(parsedExprs);
-    if (doTrace && Properties::isTracePass2() && apt != NULL) {
-      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
-      out->render(apt);
-    }
-
-    // fState.fScope->dumpDebug();
-
-    return apt.release();
-  }
-
-  return NULL;
-}
-
-
-AptNode*
-Parser::transform(AptNode* node, bool doTrace)
-{
-  Ptr<AptNode> n = node;
-  bool doPass3 = true;
-#if defined(UNITTESTS)
-  doPass3 = Properties::test_passLevel() > 2;
-#endif
-
-  if (doPass3) {
-    Ptr<Transformator> pTr = new Transformator;
-
-    pTr->transformNode(n);
-
-    if (doTrace && Properties::isTraceTransform() && n != NULL) {
-      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
-      out->render(n);
-    }
-  }
-
-  return n.release();
-}
-
-
-AptNode*
-Parser::annotate(AptNode* node, bool doTrace)
-{
-  Ptr<AptNode> n = node;
-  bool doPass4 = true;
-#if defined(UNITTESTS)
-  doPass4 = Properties::test_passLevel() > 3;
-#endif
-
-  if (doPass4) {
-    Ptr<Annotator> pAn = new Annotator;
-
-    pAn->annotateRecursively(n);
-
-    if (doTrace && Properties::isTraceAnnotate() && n != NULL) {
-      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
-      out->render(n);
-    }
-  }
-
-  return n.release();
-}
-
-
-AptNode*
-Parser::typify(AptNode* node, bool doTrace)
-{
-  Ptr<AptNode> n = node;
-  bool doPass5 = true;
-#if defined(UNITTESTS)
-  doPass5 = Properties::test_passLevel() > 4;
-#endif
-
-  if (doPass5) {
-    Ptr<Typifier> pTy = new Typifier;
-
-    pTy->typifyRecursively(n);
-
-    if (doTrace && Properties::isTraceTypify() && n != NULL) {
-      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout), true);
-      out->render(n);
-    }
-  }
-
-  return n.release();
-}
-
-
 AptNode*
 Parser::parseImpl(Port<Char>* port, const String& srcName,
                   bool doTrace)
@@ -258,12 +140,28 @@ Parser::parseImpl(Port<Char>* port, const String& srcName,
   assert(fState.fScope != NULL);
 
   try {
-    Token parsedExprs = doPass1Parse(doTrace);
-    Ptr<AptNode> apt  = doPass2Parse(parsedExprs, doTrace);
-    Ptr<AptNode> apt2 = transform(apt.release(), doTrace);
-    Ptr<AptNode> apt3 = annotate(apt2.release(), doTrace);
-    Ptr<AptNode> apt4 = typify(apt3.release(), doTrace);
-    return apt4.release();
+    Ptr<AptNode> apt;
+    Token parsedExprs;
+    Ptr<TokenCompilePass> tokenPass;
+    Ptr<Token2AptNodeCompilePass> t2nPass;
+    Ptr<AptNodeCompilePass> nodePass;
+
+    tokenPass = new ExprPass(1, this, fState.fToken, fState.fScope);
+    parsedExprs = tokenPass->apply(Token(), doTrace);
+
+    t2nPass = new NodifyPass(2, this, fState.fScope);
+    apt = t2nPass->apply(parsedExprs, doTrace);
+
+    nodePass = new TransformPass(3);
+    apt = nodePass->apply(apt.release(), doTrace);
+
+    nodePass = new AnnotatePass(4);
+    apt = nodePass->apply(apt.release(), doTrace);
+
+    nodePass = new TypifyPass(5);
+    apt = nodePass->apply(apt.release(), doTrace);
+
+    return apt.release();
   }
   catch (const Exception& e) {
     logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));

@@ -52,6 +52,7 @@ namespace heather
     static void setTraces(const String& argument);
 
     static bool isTraceTokenizer();
+    static bool isTracePass(int level);
     static bool isTracePass1();
     static bool isTracePass2();
     static bool isTraceAnnotate();

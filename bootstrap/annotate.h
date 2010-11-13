@@ -11,6 +11,7 @@
 
 #include "refcountable.h"
 #include "ptr.h"
+#include "compilepass.h"
 
 #include <vector>
 
@@ -128,6 +129,16 @@ namespace heather
 
     Ptr<Scope> fScope;
     Phase      fPhase;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class AnnotatePass : public AptNodeCompilePass
+  {
+  public:
+    AnnotatePass(int level);
+    virtual AptNode* doApply(AptNode* src);
   };
 
 };                              // namespace

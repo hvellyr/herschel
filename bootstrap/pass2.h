@@ -14,6 +14,7 @@
 #include <map>
 
 #include "apt.h"
+#include "compilepass.h"
 #include "parser.h"
 #include "pass.h"
 #include "port.h"
@@ -178,6 +179,20 @@ namespace heather
     std::set<String>    fCurrentGenericTypes;
     TSharedGenericTable fSharedGenericTable;
     Ptr<ListNode>       fRootNode;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class NodifyPass : public Token2AptNodeCompilePass
+  {
+  public:
+    NodifyPass(int level, Parser* parser, Scope* scope);
+    virtual AptNode* doApply(const Token& src);
+
+  private:
+    Ptr<Scope>  fScope;
+    Ptr<Parser> fParser;
   };
 };
 

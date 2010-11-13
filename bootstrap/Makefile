@@ -22,6 +22,8 @@ SOURCES =         \
 	annotate.cpp    \
 	apt.cpp         \
 	codegen.cpp     \
+	compile.cpp     \
+	compilepass.cpp \
 	externc.cpp     \
 	file.cpp        \
 	heather.cpp     \
@@ -61,6 +63,8 @@ HEADERS =         \
 	apt.h           \
 	codegen.h       \
 	common.h        \
+	compile.h       \
+	compilepass.h   \
 	errcodes.h      \
 	exception.h     \
 	externc.h       \

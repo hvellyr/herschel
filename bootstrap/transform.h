@@ -11,6 +11,7 @@
 
 #include "refcountable.h"
 #include "ptr.h"
+#include "compilepass.h"
 
 #include <vector>
 
@@ -114,9 +115,17 @@ namespace heather
     int findBlockSplitIndex(const NodeList& nodes);
 
     void transformSingleOnExitBlock(BlockNode* node, OnNode* onnd);
-
   };
 
+
+  //--------------------------------------------------------------------------
+
+  class TransformPass : public AptNodeCompilePass
+  {
+  public:
+    TransformPass(int level);
+    virtual AptNode* doApply(AptNode* src);
+  };
 };                              // namespace
 
 #endif                          // bootstrap_transform_h

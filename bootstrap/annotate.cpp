@@ -24,6 +24,24 @@
 
 using namespace heather;
 
+
+//----------------------------------------------------------------------------
+
+AnnotatePass::AnnotatePass(int level)
+  : AptNodeCompilePass(level)
+{}
+
+
+AptNode*
+AnnotatePass::doApply(AptNode* src)
+{
+  Ptr<AptNode> node = src;
+  Ptr<Annotator> an = new Annotator;
+  an->annotateRecursively(node);
+  return node.release();
+}
+
+
 //----------------------------------------------------------------------------
 
 Annotator::Annotator()

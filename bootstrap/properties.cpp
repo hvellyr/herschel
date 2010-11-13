@@ -143,6 +143,23 @@ Properties::isTraceTokenizer()
 
 
 bool
+Properties::isTracePass(int level)
+{
+  switch (level) {
+  case 0: return false;
+  case 1: return sIsPass1Tracing;
+  case 2: return sIsPass2Tracing;
+  case 3: return sIsTransformTracing;
+  case 4: return sIsAnnotateTracing;
+  case 5: return sIsTypifyTracing;
+  default:
+    assert(0 && "Missing pass level setting");
+  }
+  return false;
+}
+
+
+bool
 Properties::isTracePass1()
 {
   return sIsPass1Tracing;
