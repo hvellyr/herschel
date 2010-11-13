@@ -12,7 +12,7 @@
 
 #include "apt.h"
 #include "common.h"
-#include "compile.h"
+#include "compiler.h"
 #include "log.h"
 #include "option.h"
 #include "properties.h"
