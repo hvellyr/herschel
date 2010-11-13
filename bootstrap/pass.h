@@ -30,6 +30,7 @@ namespace heather
     void pushModule(const String& name, bool setName);
     void popModule();
 
+    Scope* scope();
 
     friend class ModuleHelper;
     class ModuleHelper

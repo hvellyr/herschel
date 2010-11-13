@@ -70,7 +70,7 @@ namespace heather
       kLookup
     };
 
-    Annotator();
+    Annotator(Scope* scope);
 
     void annotateRecursively(AptNode* node);
 
@@ -137,8 +137,11 @@ namespace heather
   class AnnotatePass : public AptNodeCompilePass
   {
   public:
-    AnnotatePass(int level);
+    AnnotatePass(int level, Scope* scope);
     virtual AptNode* doApply(AptNode* src);
+
+  private:
+    Ptr<Scope> fScope;
   };
 
 };                              // namespace

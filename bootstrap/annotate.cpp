@@ -27,8 +27,9 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
-AnnotatePass::AnnotatePass(int level)
-  : AptNodeCompilePass(level)
+AnnotatePass::AnnotatePass(int level, Scope* scope)
+  : AptNodeCompilePass(level),
+    fScope(scope)
 {}
 
 
@@ -36,7 +37,7 @@ AptNode*
 AnnotatePass::doApply(AptNode* src)
 {
   Ptr<AptNode> node = src;
-  Ptr<Annotator> an = new Annotator;
+  Ptr<Annotator> an = new Annotator(fScope);
   an->annotateRecursively(node);
   return node.release();
 }
@@ -44,8 +45,9 @@ AnnotatePass::doApply(AptNode* src)
 
 //----------------------------------------------------------------------------
 
-Annotator::Annotator()
-  : fPhase(kRegister)
+Annotator::Annotator(Scope* scope)
+  : fScope(scope),
+    fPhase(kRegister)
 {
 }
 
@@ -53,12 +55,8 @@ Annotator::Annotator()
 void
 Annotator::annotateRecursively(AptNode* node)
 {
-  {
-    fScope = type::newRootScope();
-
-    fPhase = kRegister;
-    annotateNode(node);
-  }
+  fPhase = kRegister;
+  annotateNode(node);
 
   fPhase = kLookup;
   annotateNode(node);
@@ -164,9 +162,11 @@ Annotator::annotate(SymbolNode* node)
       return;
     }
 
-    if (Properties::test_passLevel() > 2)
+    if (Properties::test_passLevel() > 2) {
       errorf(node->srcpos(), E_UndefinedVar,
-             "Unknown variable '%s'", (const char*)StrHelper(node->name()));
+             "Unknown variable '%s' [1]", (const char*)StrHelper(node->name()));
+      // node->scope()->dumpDebug(true);
+    }
   }
 }
 
@@ -179,7 +179,7 @@ Annotator::annotate(ArraySymbolNode* node)
     if (!type.isDef()) {
       if (Properties::test_passLevel() > 2)
         errorf(node->srcpos(), E_UndefinedVar,
-               "Unknown variable '%s'", (const char*)StrHelper(node->name()));
+               "Unknown variable '%s' [2]", (const char*)StrHelper(node->name()));
     }
     else
       node->setName(type.typeName());
@@ -239,9 +239,11 @@ void
 Annotator::annotate(VardefNode* node, bool isLocal)
 {
   if (fPhase == kRegister) {
-    if (!fScope->checkForRedefinition(node->srcpos(),
-                                      Scope::kNormal, node->name()))
-      fScope->registerVar(node->srcpos(), node->name(), node);
+    if (isLocal) {
+      if (!fScope->checkForRedefinition(node->srcpos(),
+                                        Scope::kNormal, node->name()))
+        fScope->registerVar(node->srcpos(), node->name(), node);
+    }
   }
 
   if (node->initExpr() != NULL) {
@@ -254,8 +256,10 @@ Annotator::annotate(VardefNode* node, bool isLocal)
 void
 Annotator::annotate(FuncDefNode* node, bool isLocal)
 {
-  if (fPhase == kRegister)
-    fScope->registerFunction(node->srcpos(), node->name(), node);
+  if (fPhase == kRegister) {
+    if (isLocal)
+      fScope->registerFunction(node->srcpos(), node->name(), node);
+  }
 
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
 
@@ -447,8 +451,10 @@ void
 Annotator::annotate(TypeDefNode* node)
 {
   // TODO : set tail node position
-  if (fPhase == kRegister)
-    fScope->registerType(node->srcpos(), node->name(), node->defType());
+
+  // don't re-register the type if global; it is registered in pass2 already
+  // if (fPhase == kRegister)
+  //   fScope->registerType(node->srcpos(), node->name(), node->defType());
 }
 
 

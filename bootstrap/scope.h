@@ -116,7 +116,7 @@ namespace heather
                               ScopeDomain domain,
                               const String& sym) const;
 
-    void dumpDebug() const;
+    void dumpDebug(bool recursive = false) const;
 
     bool hasScopeForFileLocal(const String& absPath) const;
     bool hasScopeForFile(const String& absPath) const;
@@ -316,23 +316,31 @@ namespace heather
 
     ~ScopeHelper()
     {
-      Scope* scope = fScopeLoc;
-      while (scope != NULL && scope != fPrevScope) {
+      unrollScopes(fScopeLoc, fPrevScope, fDoExport, fIsInnerScope);
+    }
+
+
+    static void unrollScopes(Ptr<Scope>& scopeLoc, Scope* prevScope,
+                             bool doExport, bool isInnerScope)
+    {
+      Scope* scope = scopeLoc;
+      while (scope != NULL && scope != prevScope) {
         Scope* parent = scope->parent();
         // printf("Export from %p to %p\n", scope, parent);
 
-        if (parent != NULL && fDoExport) {
-          scope->exportSymbols(parent, fIsInnerScope);
+        if (parent != NULL && doExport) {
+          scope->exportSymbols(parent, isInnerScope);
 
-          if (!fIsInnerScope && parent == fPrevScope) {
+          if (!isInnerScope && parent == prevScope) {
             // fprintf(stderr, "propagate imported scopes\n");
             scope->propagateImportedScopes(parent);
           }
         }
         scope = parent;
       }
-      assert(scope == fPrevScope);
-      fScopeLoc = scope;
+
+      assert(scope == prevScope);
+      scopeLoc = scope;
     }
 
   private:
