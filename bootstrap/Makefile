@@ -22,7 +22,6 @@ SOURCES =         \
 	annotate.cpp    \
 	apt.cpp         \
 	codegen.cpp     \
-	compile.cpp     \
 	compilepass.cpp \
 	compiler.cpp    \
 	externc.cpp     \
@@ -63,7 +62,6 @@ HEADERS =         \
 	apt.h           \
 	codegen.h       \
 	common.h        \
-	compile.h       \
 	compilepass.h   \
 	compiler.h      \
 	errcodes.h      \

@@ -18,7 +18,6 @@
 #include "token.h"
 
 
-
 namespace heather
 {
   //--------------------------------------------------------------------------
@@ -151,6 +150,19 @@ namespace heather
     std::list<CompilerState> fCompilerStates;
     bool                     fIsParsingInterface;
   };
+
+
+  //--------------------------------------------------------------------------
+
+  void compileFile(const String& file,
+                   bool doParse, bool doCompile, bool doLink,
+                   const String& outfileName);
+
+  void parseFiles(const std::vector<String>& files,
+                  const String& outputfile);
+
+  void compileFiles(const std::vector<String>& files,
+                    const String& outputfile);
 };
 
 #endif  // bootstrap_compiler_h
