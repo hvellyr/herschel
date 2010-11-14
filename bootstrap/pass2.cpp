@@ -2496,18 +2496,35 @@ SecondPass::parseTypeExpr(const Token& expr)
   assert(!fCompiler->isParsingInterface());
   assert(expr.isSeq());
   assert(expr.count() == 2);
-  assert(expr[0] == kSymbol);
 
-  if (expr[1].leftToken() == kGenericOpen) {
+  if (expr[0] == kSymbol) {
     TypeVector genericArgs;
-    parseTypeVector(&genericArgs, expr[1]);
+    String symbol = expr[0].idValue();
 
-    return new SymbolNode(expr.srcpos(), expr[0].idValue(), genericArgs);
+    if (expr[1].leftToken() == kGenericOpen) {
+      parseTypeVector(&genericArgs, expr[1]);
+      return new SymbolNode(expr.srcpos(), symbol, genericArgs);
+    }
+    else if (expr[1].leftToken() == kBracketOpen) {
+      return new ArrayTypeNode(expr.srcpos(),
+                               new SymbolNode(expr.srcpos(), symbol));
+    }
   }
-  else if (expr[1].leftToken() == kBracketOpen) {
-    return new ArraySymbolNode(expr.srcpos(), expr[0].idValue());
+  else if (expr[0].isSeq()) {
+    assert(expr[0].count() == 2);
+    assert(expr[0][0] == kSymbol || expr[0][0].isSeq());
+    assert(expr[1].isNested());
+    assert(expr[1].leftToken() == kBracketOpen);
+
+    Ptr<AptNode> typeNode = parseTypeExpr(expr[0]);
+    if (typeNode != NULL) {
+      return new ArrayTypeNode(expr.srcpos(), typeNode);
+    }
   }
 
+  fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
+          (const char*)StrHelper(expr.toString()),
+          __FILE__, __LINE__);
   assert(0);
   return NULL;
 }
@@ -2591,11 +2608,13 @@ SecondPass::parseSeq(const Token& expr)
       else if (expr[0] == kSymbol &&
                expr[1].leftToken() == kGenericOpen)
         return parseTypeExpr(expr);
-      else if (expr[0] == kSymbol &&
+      else if ((expr[0] == kSymbol || expr[0].isSeq()) &&
                expr[1].leftToken() == kBracketOpen)
         return parseTypeExpr(expr);
       else {
-        printf("UNEXPECTED DEXPR: %s\n", (const char*)StrHelper(expr.toString()));
+        fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
+                (const char*)StrHelper(expr.toString()),
+                __FILE__, __LINE__);
         assert(0);              // TODO
       }
     }
@@ -2620,6 +2639,12 @@ SecondPass::parseSeq(const Token& expr)
     }
     else if (expr[1] == kRange) {
       return parseBinary(expr);
+    }
+    else {
+      fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
+              (const char*)StrHelper(expr.toString()),
+              __FILE__, __LINE__);
+      assert(0);              // TODO
     }
   }
   else if (expr.count() == 4) {

@@ -20,7 +20,7 @@ namespace heather
   class ApplyNode;
   class AptNode;
   class ArrayNode;
-  class ArraySymbolNode;
+  class ArrayTypeNode;
   class AssignNode;
   class BinaryNode;
   class BindingNode;
@@ -89,7 +89,7 @@ namespace heather
 
     void typify(ApplyNode* node);
     void typify(ArrayNode* node);
-    void typify(ArraySymbolNode* node);
+    void typify(ArrayTypeNode* node);
     void typify(AssignNode* node);
     void typify(BinaryNode* node);
     void typify(BoolNode* node);

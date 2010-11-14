@@ -98,6 +98,7 @@ Typifier::typify(SymbolNode* node)
 
     Type type = node->scope()->lookupType(node->name(), true);
     if (type.isDef()) {
+      // TODO: apply generics from node->generics();
       node->setType(type);
       return;
     }
@@ -106,9 +107,16 @@ Typifier::typify(SymbolNode* node)
 
 
 void
-Typifier::typify(ArraySymbolNode* node)
+Typifier::typify(ArrayTypeNode* node)
 {
-  //TODO
+  if (fPhase == kTypify) {
+    typifyNode(node->typeNode());
+
+    SymbolNode* symnd = dynamic_cast<SymbolNode*>(node->typeNode());
+    if (symnd != NULL) {
+      node->setType(Type::newArray(symnd->type(), 0, true));
+    }
+  }
 }
 
 
@@ -582,6 +590,15 @@ Typifier::typify(ApplyNode* node)
                                           ->lookupFunction(node->simpleCallName(), true)) );
       if (funcNode != NULL)
         typifyMatchAndCheckParameters(node, funcNode, funcNode->params());
+    }
+    else {
+      ArrayTypeNode* typeNode = dynamic_cast<ArrayTypeNode*>(node->base());
+      if (typeNode != NULL) {
+        node->setType(typeNode->type());
+      }
+      else {
+        assert(0 && "Unhandled apply base node");
+      }
     }
   }
 }

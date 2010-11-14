@@ -406,25 +406,32 @@ DEF_TYPIFY(SymbolNode)
 
 //----------------------------------------------------------------------------
 
-ArraySymbolNode::ArraySymbolNode(const SrcPos& srcpos,
-                                 const String& value)
-  : SymbolNode(srcpos, value)
+ArrayTypeNode::ArrayTypeNode(const SrcPos& srcpos, AptNode* typeNode)
+  : AptNode(srcpos),
+    fTypeNode(typeNode)
 { }
 
 
-ArraySymbolNode*
-ArraySymbolNode::clone() const
+AptNode*
+ArrayTypeNode::typeNode() const
 {
-  return cloneScope(this, new ArraySymbolNode(fSrcPos, fValue));
+  return fTypeNode;
 }
 
 
-DEF_RENDER(ArraySymbolNode)
-DEF_CODEGEN(ArraySymbolNode)
-DEF_ANNOTATE(ArraySymbolNode)
-DEF_TRAVERSE(ArraySymbolNode)
-DEF_TRANSFORM(ArraySymbolNode)
-DEF_TYPIFY(ArraySymbolNode)
+ArrayTypeNode*
+ArrayTypeNode::clone() const
+{
+  return cloneScope(this, new ArrayTypeNode(fSrcPos, fTypeNode));
+}
+
+
+DEF_RENDER(ArrayTypeNode)
+DEF_CODEGEN(ArrayTypeNode)
+DEF_ANNOTATE(ArrayTypeNode)
+DEF_TRAVERSE(ArrayTypeNode)
+DEF_TRANSFORM(ArrayTypeNode)
+DEF_TYPIFY(ArrayTypeNode)
 
 
 //----------------------------------------------------------------------------

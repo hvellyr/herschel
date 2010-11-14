@@ -1,0 +1,4 @@
+def g()
+  let x : Vector<Int>[] = Vector<Int>[](1024)
+  let y : Map<String, Int>[12]
+  x[34]

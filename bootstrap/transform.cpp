@@ -83,7 +83,7 @@ Transformator::transform(SymbolNode* node)
 
 
 AptNode*
-Transformator::transform(ArraySymbolNode* node)
+Transformator::transform(ArrayTypeNode* node)
 {
   // nothing to transform
   return node;
