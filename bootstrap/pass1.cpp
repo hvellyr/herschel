@@ -598,7 +598,9 @@ FirstPass::parseUnionType()
 Token
 FirstPass::parseArrayExtend(const Token& baseType)
 {
-  if (fToken == kBracketOpen) {
+  Token result = baseType;
+
+  while (fToken == kBracketOpen) {
     Token arrayType = Token(fToken.srcpos(), kBracketOpen, kBracketClose);
     nextToken();
 
@@ -618,10 +620,10 @@ FirstPass::parseArrayExtend(const Token& baseType)
     else
       nextToken();
 
-    return Token() << baseType << arrayType;
+    result = Token() << result << arrayType;
   }
 
-  return baseType;
+  return result;
 }
 
 

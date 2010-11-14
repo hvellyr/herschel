@@ -35,7 +35,7 @@ namespace heather
   class ApplyNode;
   class AptNode;
   class ArrayNode;
-  class ArraySymbolNode;
+  class ArrayTypeNode;
   class AssignNode;
   class BinaryNode;
   class BlockNode;
@@ -89,7 +89,7 @@ namespace heather
 
     llvm::Value* codegen(const ApplyNode* node);
     llvm::Value* codegen(const ArrayNode* node);
-    llvm::Value* codegen(const ArraySymbolNode* node);
+    llvm::Value* codegen(const ArrayTypeNode* node);
     llvm::Value* codegen(const AssignNode* node);
     llvm::Value* codegen(const BinaryNode* node);
     llvm::Value* codegen(const BlockNode* node);

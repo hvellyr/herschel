@@ -172,18 +172,9 @@ Annotator::annotate(SymbolNode* node)
 
 
 void
-Annotator::annotate(ArraySymbolNode* node)
+Annotator::annotate(ArrayTypeNode* node)
 {
-  if (fPhase == kLookup) {
-    Type type = node->scope()->lookupType(node->name(), true);
-    if (!type.isDef()) {
-      if (Properties::test_passLevel() > 2)
-        errorf(node->srcpos(), E_UndefinedVar,
-               "Unknown variable '%s' [2]", (const char*)StrHelper(node->name()));
-    }
-    else
-      node->setName(type.typeName());
-  }
+  annotateNode(node->typeNode());
 }
 
 

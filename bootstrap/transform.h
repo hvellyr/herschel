@@ -20,7 +20,7 @@ namespace heather
   class ApplyNode;
   class AptNode;
   class ArrayNode;
-  class ArraySymbolNode;
+  class ArrayTypeNode;
   class AssignNode;
   class BinaryNode;
   class BlockNode;
@@ -80,7 +80,7 @@ namespace heather
 
     AptNode* transform(ApplyNode* node);
     AptNode* transform(ArrayNode* node);
-    AptNode* transform(ArraySymbolNode* node);
+    AptNode* transform(ArrayTypeNode* node);
     AptNode* transform(AssignNode* node);
     AptNode* transform(BinaryNode* node);
     AptNode* transform(BoolNode* node);

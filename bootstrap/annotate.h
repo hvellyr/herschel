@@ -20,7 +20,7 @@ namespace heather
   class ApplyNode;
   class AptNode;
   class ArrayNode;
-  class ArraySymbolNode;
+  class ArrayTypeNode;
   class AssignNode;
   class BinaryNode;
   class BlockNode;
@@ -88,7 +88,7 @@ namespace heather
 
     void annotate(ApplyNode* node);
     void annotate(ArrayNode* node);
-    void annotate(ArraySymbolNode* node);
+    void annotate(ArrayTypeNode* node);
     void annotate(AssignNode* node);
     void annotate(BinaryNode* node);
     void annotate(BoolNode* node);

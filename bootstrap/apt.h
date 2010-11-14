@@ -200,18 +200,23 @@ namespace heather
   };
 
 
-  class ArraySymbolNode : public SymbolNode
+  class ArrayTypeNode : public AptNode
   {
   public:
-    ArraySymbolNode(const SrcPos& srcpos, const String& value);
+    ArrayTypeNode(const SrcPos& srcpos, AptNode* typeNode);
 
-    virtual ArraySymbolNode* clone() const;
+    AptNode* typeNode() const;
+
+    virtual ArrayTypeNode* clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
+
+  private:
+    Ptr<AptNode> fTypeNode;
   };
 
 

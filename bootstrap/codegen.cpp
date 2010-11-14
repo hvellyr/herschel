@@ -226,7 +226,7 @@ CodeGenerator::codegen(const SymbolNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const ArraySymbolNode* node)
+CodeGenerator::codegen(const ArrayTypeNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO

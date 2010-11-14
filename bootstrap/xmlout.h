@@ -22,7 +22,7 @@ namespace heather
   class ApplyNode;
   class AptNode;
   class ArrayNode;
-  class ArraySymbolNode;
+  class ArrayTypeNode;
   class AssignNode;
   class BinaryNode;
   class BlockNode;
@@ -75,7 +75,7 @@ namespace heather
 
     void renderNode(const ApplyNode* node);
     void renderNode(const ArrayNode* node);
-    void renderNode(const ArraySymbolNode* node);
+    void renderNode(const ArrayTypeNode* node);
     void renderNode(const AssignNode* node);
     void renderNode(const BinaryNode* node);
     void renderNode(const BlockNode* node);

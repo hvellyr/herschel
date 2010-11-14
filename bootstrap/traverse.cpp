@@ -55,8 +55,9 @@ Traversator::traverse(SymbolNode* node)
 
 
 void
-Traversator::traverse(ArraySymbolNode* node)
+Traversator::traverse(ArrayTypeNode* node)
 {
+  traverseNode(node->typeNode());
 }
 
 

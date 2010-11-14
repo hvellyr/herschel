@@ -18,7 +18,7 @@ namespace heather
   class ApplyNode;
   class AptNode;
   class ArrayNode;
-  class ArraySymbolNode;
+  class ArrayTypeNode;
   class AssignNode;
   class BinaryNode;
   class BlockNode;
@@ -89,7 +89,7 @@ namespace heather
 
     void traverse(ApplyNode* node);
     void traverse(ArrayNode* node);
-    void traverse(ArraySymbolNode* node);
+    void traverse(ArrayTypeNode* node);
     void traverse(AssignNode* node);
     void traverse(BinaryNode* node);
     void traverse(BoolNode* node);

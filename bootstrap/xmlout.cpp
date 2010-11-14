@@ -13,6 +13,7 @@
 #include "apt.h"
 #include "strbuf.h"
 
+#include <typeinfo>
 
 //----------------------------------------------------------------------------
 
@@ -249,11 +250,38 @@ XmlRenderer::renderNode(const SymbolNode* node)
 
 
 void
-XmlRenderer::renderNode(const ArraySymbolNode* node)
+XmlRenderer::renderNode(const ArrayTypeNode* node)
 {
-  assert(node->generics().empty());
+  const ArrayTypeNode* n = node;
+  const AptNode* rootType = NULL;
 
-  displayTagAttr("symbol", "array='t'", node->name());
+  int arrayDepth = 0;
+  while (n != NULL) {
+    arrayDepth++;
+    rootType = n->typeNode();
+    n = dynamic_cast<const ArrayTypeNode*>(rootType);
+  }
+
+  const SymbolNode* sym = dynamic_cast<const SymbolNode*>(rootType);
+  if (sym != NULL) {
+    StringBuffer attrs;
+
+    if (fShowNodeType && node->type().isDef()) {
+      attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+      fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                             node->type()));
+    }
+
+    if (arrayDepth == 1)
+      attrs << " array='t'";
+    else
+      attrs << " array='t*" << fromInt(arrayDepth) << "'";
+    displayTagAttr("symbol", StrHelper(attrs.toString()), sym->name());
+  }
+  else if (rootType) {
+    fprintf(stderr, "Unexpected type node: %p %s\n", rootType, typeid(*rootType).name());
+    assert(0 && "unexpected type node");
+  }
 }
 
 
