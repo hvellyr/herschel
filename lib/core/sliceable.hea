@@ -82,7 +82,7 @@ def type OrderedSliceable<K, E> : Sliceable<K, E>
 }
 
 
-def type Sliceable!<E, K> : Sliceable<E, K>
+def type Sliceable!<K, E> : Sliceable<K, E>
     ~ @type{Sliceable!} represents mutable types with index-access.~
 {
   def generic slice!(obj @ ^'S, key @ K, value @ E) : ^'S
