@@ -500,6 +500,14 @@ namespace heather
   bool isInvariant(const Type& left, const Type& right, Scope* scope,
                    const SrcPos& srcpos, bool reportErrors = true);
 
+
+  TypeVector newTypeVector(const Type& ty1);
+  TypeVector newTypeVector(const Type& ty1, const Type& ty2);
+  TypeVector newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3);
+  TypeVector newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
+                           const Type& ty4);
+  TypeVector newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
+                           const Type& ty4, const Type& ty5);
 };                              // namespace
 
 #endif                          // bootstrap_type_h

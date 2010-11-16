@@ -84,10 +84,15 @@ namespace heather
 #define MID_Int64TypeName       "lang|Int64"
 #define MID_UInt64TypeName      "lang|UInt64"
 
+#define MID_SliceableTypeName   "lang|Sliceable"
+#define MID_SliceableXTypeName  "lang|Sliceable!"
+
+
   //--------------------------------------------------------------------------
   // names of predefined functions
-#define MID_lang_return "lang|return"
-
+#define MID_lang_return         "lang|return"
+#define MID_lang_slice          "lang|slice"
+#define MID_lang_sliceX         "lang|slice!"
 
   class Names
   {
@@ -126,9 +131,13 @@ namespace heather
     const static String kInt64TypeName;
     const static String kUInt64TypeName;
 
+    const static String kSliceableTypeName;
+    const static String kSliceableXTypeName;
 
     // predefined functions
     const static String kLangReturn;
+    const static String kLangSlice;
+    const static String kLangSliceX;
 
 
     // known keywords

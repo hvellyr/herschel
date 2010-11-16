@@ -163,8 +163,8 @@ heather::type::newRootScope()
     generics.push_back(Type::newTypeRef(String("K"), true, true));
     generics.push_back(Type::newTypeRef(String("E"), true, true));
 
-    root->registerType(sp, String("lang|Sliceable"),
-                       Type::newType(String("lang|Sliceable"),
+    root->registerType(sp, Names::kSliceableTypeName,
+                       Type::newType(Names::kSliceableTypeName,
                                      generics, Type()));
   }
   Type sliceableRef;
@@ -174,7 +174,7 @@ heather::type::newRootScope()
     refGenerics.push_back(Type::newTypeRef(String("E"), true, true));
 
     TypeConstVector refConstraints;
-    sliceableRef = Type::newTypeRef(String("lang|Sliceable"),
+    sliceableRef = Type::newTypeRef(Names::kSliceableTypeName,
                                     refGenerics, refConstraints, true);
   }
 
@@ -184,8 +184,8 @@ heather::type::newRootScope()
     generics.push_back(Type::newTypeRef(String("K"), true, true));
     generics.push_back(Type::newTypeRef(String("E"), true, true));
 
-    root->registerType(sp, String("lang|Sliceable!"),
-                       Type::newType(String("lang|Sliceable!"),
+    root->registerType(sp, Names::kSliceableXTypeName,
+                       Type::newType(Names::kSliceableXTypeName,
                                      generics, sliceableRef));
   }
   Type sliceableXRef;
@@ -196,9 +196,9 @@ heather::type::newRootScope()
     refGenerics.push_back(Type::newTypeRef(String("E"), true, true));
 
     TypeConstVector refConstraints;
-    sliceableXRef = Type::newTypeRef(String("lang|Sliceable!"),
+    sliceableXRef = Type::newTypeRef(Names::kSliceableXTypeName,
                                     refGenerics, refConstraints, true);
-    refSliceableXRef = Type::newTypeRef(String("lang|Sliceable!"),
+    refSliceableXRef = Type::newTypeRef(Names::kSliceableXTypeName,
                                         refGenerics, refConstraints, false);
   }
 
@@ -213,9 +213,9 @@ heather::type::newRootScope()
                                    kPosArg,
                                    Type::newTypeRef(String("K"), true, true),
                                    NULL));
-    root->registerFunction(sp, String("lang|slice"),
+    root->registerFunction(sp, Names::kLangSlice,
                            new FuncDefNode(sp,
-                                           String("lang|slice"),
+                                           Names::kLangSlice,
                                            kFuncIsGeneric | kFuncIsAbstract,
                                            params,
                                            Type::newTypeRef(String("E"), true, true),
@@ -237,9 +237,9 @@ heather::type::newRootScope()
                                    kPosArg,
                                    Type::newTypeRef(String("E"), true, true),
                                    NULL));
-    root->registerFunction(sp, String("lang|slice!"),
+    root->registerFunction(sp, Names::kLangSliceX,
                            new FuncDefNode(sp,
-                                           String("lang|slice!"),
+                                           Names::kLangSliceX,
                                            kFuncIsGeneric | kFuncIsAbstract,
                                            params,
                                            refSliceableXRef,

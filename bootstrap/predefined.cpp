@@ -47,8 +47,12 @@ const String heather::Names::kUInt32TypeName      = String(MID_UInt32TypeName);
 const String heather::Names::kInt64TypeName       = String(MID_Int64TypeName);
 const String heather::Names::kUInt64TypeName      = String(MID_UInt64TypeName);
 
+const String heather::Names::kSliceableTypeName   = String(MID_SliceableTypeName);
+const String heather::Names::kSliceableXTypeName  = String(MID_SliceableXTypeName);
 
 const String heather::Names::kLangReturn = String(MID_lang_return);
+const String heather::Names::kLangSlice  = String(MID_lang_slice);
+const String heather::Names::kLangSliceX = String(MID_lang_sliceX);
 
 
 const String heather::Names::kExitKeyword = String(MID_exitKeyword);

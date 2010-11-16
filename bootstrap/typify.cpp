@@ -19,6 +19,8 @@
 #include "traverse.h"
 #include "typectx.h"
 #include "typify.h"
+#include "xmlout.h"
+#include "port.h"
 
 #include <set>
 
@@ -88,7 +90,6 @@ Typifier::typifyNodeList(NodeList& nl)
 void
 Typifier::typify(SymbolNode* node)
 {
-  // TODO
   if (fPhase == kTypify) {
     const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
     if (var != NULL) {
@@ -98,8 +99,39 @@ Typifier::typify(SymbolNode* node)
 
     Type type = node->scope()->lookupType(node->name(), true);
     if (type.isDef()) {
-      // TODO: apply generics from node->generics();
-      node->setType(type);
+      if (type.hasGenerics()) {
+        if (type.generics().size() != node->generics().size()) {
+          errorf(node->srcpos(), E_GenericsMismatch,
+                 "Type instance generic number mismatch");
+          return;
+        }
+        if (!node->generics().empty() && !type.isOpen()) {
+          errorf(node->srcpos(), E_GenericsMismatch,
+                 "Type instance generic number mismatch");
+          return;
+        }
+
+        TypeVector nodeGenerics = node->generics();
+        TypeCtx localCtx;
+        for (size_t i = 0; i < type.generics().size(); i++) {
+          Type gen = type.generics()[i];
+          assert(gen.isRef());
+
+          String genName = gen.typeName();
+          localCtx.registerType(genName, nodeGenerics[i]);
+        }
+
+        node->setType(type.replaceGenerics(localCtx));
+      }
+      else {
+        if (!node->generics().empty()) {
+          errorf(node->srcpos(), E_GenericsMismatch,
+                 "Type instance generic number mismatch");
+          return;
+        }
+
+        node->setType(type);
+      }
       return;
     }
   }
@@ -115,6 +147,9 @@ Typifier::typify(ArrayTypeNode* node)
     SymbolNode* symnd = dynamic_cast<SymbolNode*>(node->typeNode());
     if (symnd != NULL) {
       node->setType(Type::newArray(symnd->type(), 0, true));
+    }
+    else {
+      node->setType(Type::newArray(node->typeNode()->type(), 0, true));
     }
   }
 }
@@ -588,8 +623,11 @@ Typifier::typify(ApplyNode* node)
       const FunctionNode* funcNode = (
         dynamic_cast<const FunctionNode*>(node->scope()
                                           ->lookupFunction(node->simpleCallName(), true)) );
-      if (funcNode != NULL)
+      if (funcNode != NULL) {
+        // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+        // out->render(const_cast<FunctionNode*>(funcNode));
         typifyMatchAndCheckParameters(node, funcNode, funcNode->params());
+      }
     }
     else {
       ArrayTypeNode* typeNode = dynamic_cast<ArrayTypeNode*>(node->base());
@@ -600,6 +638,7 @@ Typifier::typify(ApplyNode* node)
         assert(0 && "Unhandled apply base node");
       }
     }
+    // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->type().toString()));
   }
 }
 

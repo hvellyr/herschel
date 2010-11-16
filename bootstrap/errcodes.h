@@ -141,6 +141,7 @@ namespace heather
     E_BoolTypeExpected    = 0x4415,
     E_IfConsqTypeMismatch = 0x4416,
     E_IfAltTypeMismatch   = 0x4417,
+    E_GenericsMismatch    = 0x4418,
 
     // module parsing
     E_MissingModName      = 0x4500,
