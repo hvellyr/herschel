@@ -1,0 +1,7 @@
+module samba ("-/core:1.0")
+
+def extern("C") getcwd(buf : C|char*, size : C|long) : C|char* ...
+def extern("C") printf(format : C|char*, args ...) : C|int ...
+
+def foo()
+  printf("%d\nl;", 4711)

@@ -1,0 +1,9 @@
+module core ("sijo/ixwick 0.1: core")
+
+def f()
+  1
+
+module cool ("sijo/ixwick 0.1: cool")
+
+def f()
+  2

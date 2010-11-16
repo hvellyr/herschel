@@ -1,0 +1,2 @@
+def foo(a : Any) : Int
+  a as Int

@@ -1,0 +1,8 @@
+def macro abc
+{
+  { abc() } -> { #abc }
+}
+
+
+def f()
+  abc()

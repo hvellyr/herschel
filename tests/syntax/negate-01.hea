@@ -1,0 +1,5 @@
+def a = - (a * 2)
+
+def b = -a * 2
+
+def c = -(a * 2)

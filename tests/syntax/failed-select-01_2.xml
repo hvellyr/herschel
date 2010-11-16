@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='f'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><select><test><symbol>a</symbol></test><alternate><apply><symbol>outln</symbol><args><str>x</str></args></apply></alternate></select></body></func></def></compile-unit>

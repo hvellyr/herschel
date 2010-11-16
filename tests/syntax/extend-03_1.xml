@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>def</id><id>type</id><id>XYZ</id><nested left='{' right='}'><seq><id>extend</id><id>module</id><id>core</id><nested left='{' right='}'><seq><id>def</id><id>generic</id><id>to-string</id><nested left='(' right=')'><seq><id>o</id><punct type='@'/><id>XYZ</id></seq></nested><punct type=':'/><id>String</id><punct type='...'/></seq></nested></seq><seq><id>def</id><id>generic</id><id>meuble</id><nested left='(' right=')'/><punct type=':'/><id>Any</id><punct type='...'/></seq></nested></seq></seq>

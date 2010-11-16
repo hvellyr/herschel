@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='f'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><block><while><test><true/></test><body><block><apply><symbol>outln</symbol><args><str>endless fun</str></args></apply></block></body></while></block></body></func></def></compile-unit>

@@ -1,0 +1,19 @@
+-- the following tests must even valid if single expression blocks are
+-- eliminated
+
+def foo()
+  let x = 42
+  {
+    let x = 5
+  }
+
+
+def bar()
+  { let x = 42 } + 11
+
+
+def foo2()
+  let x = 42
+  { let x = 5 } + 11
+
+
