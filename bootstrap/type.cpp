@@ -19,6 +19,7 @@
 #include "type.h"
 #include "typectx.h"
 #include "typeenum.h"
+#include "rootscope.h"
 
 
 using namespace heather;
@@ -739,9 +740,9 @@ namespace heather
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                                Scope* scope, const SrcPos& srcpos) const
     {
-      //fprintf(stderr, "LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
-      //fprintf(stderr, "RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
-      if (right0.isRef()) {
+      // fprintf(stderr, "LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
+      // fprintf(stderr, "RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
+      if (right0.isRef() || right0.isType() || right0.isClass()) {
         // if the reference has generics, it itself cannot be generic.  A
         // 'T<'Y'> is not allowed.
         if (!fGenerics.empty()) {
@@ -773,34 +774,14 @@ namespace heather
           return true;
         }
       }
-      else if (right0.isType() || right0.isClass()) {
-        if (!fGenerics.empty()) {
-          if (fGenerics.size() == right0.generics().size() &&
-              fName == right0.typeName())
-          {
-            for (size_t i = 0; i < fGenerics.size(); ++i) {
-              if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
-                                              scope, srcpos))
-                return false;
-            }
-            return true;
+      else if (right0.isArray()) {
+        // special case: Make lang/sliceable<K, E> match arrays, which are
+        // otherwise not first class entities.
+        if (name() == Names::kSliceableTypeName || name() == Names::kSliceableXTypeName) {
+          if (fGenerics.size() == 2) {
+            localCtx.registerType(fGenerics[0].typeName(), Type::newInt(true));
+            localCtx.registerType(fGenerics[1].typeName(), right0.arrayBaseType());
           }
-          return false;
-        }
-
-        if (localCtx.hasType(name())) {
-          if (!isSameType(localCtx.lookupType(name()), right0, scope, srcpos))
-          {
-            errorf(srcpos, E_TypeMismatch, "type mismatch for generic parameter");
-            return false;
-          }
-          return true;
-        }
-        else {
-          // fprintf(stderr, "MAP %s to %s\n", (const char*)StrHelper(name()),
-          //         (const char*)StrHelper(right0.toString()));
-          localCtx.registerType(name(), right0);
-          return true;
         }
       }
       return false;
@@ -2892,6 +2873,14 @@ namespace heather
 #endif
 
     if (left.isArray()) {
+      if (right.isType() && (right.typeName() == Names::kSliceableTypeName ||
+                             right.typeName() == Names::kSliceableXTypeName) &&
+          right.generics().size() == 2 &&
+          isSameType(right.generics()[0], Type::newInt(true), scope,
+                     srcpos, reportErrors) &&
+          isSameType(left.arrayBaseType(), right.generics()[1],
+                     scope, srcpos, reportErrors))
+        return true;
       return isSameType(left, right, scope, srcpos, reportErrors);
     }
     else if (left.isUnion()) {
@@ -2977,6 +2966,68 @@ namespace heather
 };                              // namespace heather
 
 
+//----------------------------------------------------------------------------
+
+namespace heather
+{
+  TypeVector
+  newTypeVector(const Type& ty1)
+  {
+    TypeVector vector;
+    vector.push_back(ty1);
+    return vector;
+  }
+
+
+  TypeVector
+  newTypeVector(const Type& ty1, const Type& ty2)
+  {
+    TypeVector vector;
+    vector.push_back(ty1);
+    vector.push_back(ty2);
+    return vector;
+  }
+
+  
+  TypeVector
+  newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3)
+  {
+    TypeVector vector;
+    vector.push_back(ty1);
+    vector.push_back(ty2);
+    vector.push_back(ty3);
+    return vector;
+  }
+
+  
+  TypeVector
+  newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
+                const Type& ty4)
+  {
+    TypeVector vector;
+    vector.push_back(ty1);
+    vector.push_back(ty2);
+    vector.push_back(ty3);
+    vector.push_back(ty4);
+    return vector;
+  }
+
+
+  TypeVector
+  newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
+                const Type& ty4, const Type& ty5)
+  {
+    TypeVector vector;
+    vector.push_back(ty1);
+    vector.push_back(ty2);
+    vector.push_back(ty3);
+    vector.push_back(ty4);
+    vector.push_back(ty5);
+    return vector;
+  }
+};
+
+
 //============================================================================
 
 #if defined(UNITTESTS)
@@ -3018,7 +3069,7 @@ namespace heather
 
 static Scope* testScopeSetup()
 {
-  Ptr<Scope> scope = new Scope(kScopeL_CompileUnit);
+  Ptr<Scope> scope = heather::type::newRootScope();
 
   TypeVector generics;
 
@@ -3030,7 +3081,7 @@ static Scope* testScopeSetup()
   //     |               v
   //     \- Abstract <- Xyz
 
-  scope->registerType(SrcPos(), Names::kAnyTypeName, Type::newAny(true));
+  // scope->registerType(SrcPos(), Names::kAnyTypeName, Type::newAny(true));
 
   scope->registerType(SrcPos(), String("Obj"),
                       Type::newType(String("Obj"), generics, Type()));
@@ -3443,6 +3494,33 @@ SUITE(Type_Covariance)
     CHECK(heather::isCovariant(Type::newTypeRef("Ultra"),
                                Type::newTypeRef("Abstract"),
                                scope, SrcPos(), false));
+  }
+
+  TEST(SliceableArrays)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), true),
+                                              0, true),
+                               Type::newType(Names::kSliceableTypeName,
+                                             newTypeVector(Type::newInt(true),
+                                                           Type::newTypeRef("Ultra")),
+                                             Type()),
+                               scope, SrcPos(), false));
+    CHECK(!heather::isCovariant(Type::newArray(Type::newTypeRef(String("Special"), true),
+                                               0, true),
+                                Type::newType(Names::kSliceableTypeName,
+                                              newTypeVector(Type::newInt(true),
+                                                            Type::newTypeRef("Ultra")),
+                                              Type()),
+                                scope, SrcPos(), false));
+    CHECK(!heather::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), true),
+                                               0, true),
+                                Type::newType(Names::kSliceableTypeName,
+                                              newTypeVector(Type::newInt(true),
+                                                            Type::newTypeRef("Special")),
+                                              Type()),
+                                scope, SrcPos(), false));
   }
 }
 

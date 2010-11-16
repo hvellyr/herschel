@@ -78,7 +78,7 @@ ad 13:
   and v.v. only affects the value itself, not the type.
 
 
-
+- additional rule:  a type T[] is covariant to Sliceable<Int, T>
 
 
 

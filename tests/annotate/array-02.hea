@@ -1,0 +1,14 @@
+def class Seq<T>
+{
+}
+
+
+def class Dict<K, V>
+{
+}
+
+
+def g()
+  let x : Seq<Int>[] = Seq<Int>[](1024)
+  let y : Dict<String, Int>[12]
+  x[34]
