@@ -1917,7 +1917,8 @@ ApplyNode::setBase(AptNode* node)
 bool
 ApplyNode::isSimpleCall() const
 {
-  return dynamic_cast<const SymbolNode*>(base()) != NULL;
+  const SymbolNode* sym = dynamic_cast<const SymbolNode*>(base());
+  return sym != NULL && sym->generics().empty();
 }
 
 

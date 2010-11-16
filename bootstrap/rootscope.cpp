@@ -141,6 +141,15 @@ heather::type::newRootScope()
   root->registerVar(sp, String("lang|unspecified"), unspecified);
 
 
+  //------------------------------ range
+  // def class Range<T>
+  root->registerType(sp, Names::kRangeTypeName,
+                     Type::newType(Names::kRangeTypeName,
+                                   newTypeVector(Type::newTypeRef(String("T"),
+                                                                  true, true)),
+                                   Type()));
+
+
   //------------------------------ builtin functions
   NodeList params;
   params.push_back(new ParamNode(sp, String(), String("r"),
@@ -245,6 +254,7 @@ heather::type::newRootScope()
                                            refSliceableXRef,
                                            NULL));
   }
+
 
   return root.release();
 }

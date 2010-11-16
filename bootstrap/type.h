@@ -508,6 +508,10 @@ namespace heather
                            const Type& ty4);
   TypeVector newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
                            const Type& ty4, const Type& ty5);
+
+  Type newRangeType(const Type& generic);
 };                              // namespace
+
+
 
 #endif                          // bootstrap_type_h
