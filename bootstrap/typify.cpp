@@ -132,7 +132,6 @@ Typifier::typify(SymbolNode* node)
 
         node->setType(type);
       }
-      return;
     }
   }
 }
@@ -162,7 +161,7 @@ Typifier::typify(DefNode* node)
 {
   typifyNode(node->defNode());
   if (fPhase == kTypify)
-    node->setType(node->type());
+    node->setType(node->defNode()->type());
 }
 
 
@@ -171,7 +170,7 @@ Typifier::typify(LetNode* node)
 {
   typifyNode(node->defNode());
   if (fPhase == kTypify)
-    node->setType(node->type());
+    node->setType(node->defNode()->type());
 }
 
 
@@ -632,10 +631,18 @@ Typifier::typify(ApplyNode* node)
     else {
       ArrayTypeNode* typeNode = dynamic_cast<ArrayTypeNode*>(node->base());
       if (typeNode != NULL) {
+        // TODO: check type ctor function API
         node->setType(typeNode->type());
       }
       else {
-        assert(0 && "Unhandled apply base node");
+        SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->base());
+        if (symNode != NULL) {
+          // TODO: check type ctor function API
+          node->setType(symNode->type());
+        }
+        else {
+          assert(0 && "Unhandled apply base node");
+        }
       }
     }
     // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->type().toString()));
@@ -705,7 +712,6 @@ Typifier::typify(NegateNode* node)
 void
 Typifier::typify(IfNode* node)
 {
-  // TODO
   typifyNode(node->test());
   typifyNode(node->consequent());
   if (node->alternate())
@@ -742,6 +748,7 @@ Typifier::typify(IfNode* node)
         node->setType(node->consequent()->type());
     }
   }
+  // TODO
   // else if (fPhase == kCheck) {
   //   if (!isSameType(Type::newBool(true), node->test()->type())) {
   //     errorf(node->test(), E_BoolTypeExpected,
@@ -754,7 +761,7 @@ Typifier::typify(IfNode* node)
 void
 Typifier::typify(KeyargNode* node)
 {
-  // TODO
+  // TODO ?
   typifyNode(node->value());
 }
 
@@ -803,11 +810,54 @@ Typifier::typify(OnNode* node)
 void
 Typifier::typify(RangeNode* node)
 {
-  // TODO
   typifyNode(node->from());
   typifyNode(node->to());
   if (node->by() != NULL)
     typifyNode(node->by());
+
+  if (fPhase == kTypify) {
+    Type fromType = node->from()->type();
+    Type toType = node->to()->type();
+    bool fromIsOpen = fromType.isOpen();
+    bool toIsOpen = toType.isOpen();
+
+    if ((fromIsOpen || toIsOpen) && (fromIsOpen != toIsOpen))
+    {
+      errorf(node->srcpos(), E_RangeTypeMismatch,
+             "partial open types in range declaration defeats generics usage");
+      node->setType(newRangeType(Type::newAny(true)));
+      return;
+    }
+
+    if (!isSameType(fromType, toType, node->scope(), node->srcpos()))
+    {
+      errorf(node->srcpos(), E_RangeTypeMismatch, "type of range is ambiguous");
+      node->setType(newRangeType(Type::newAny(true)));
+      return;
+    }
+
+    if (node->by() != NULL) {
+      Type byType = node->by()->type();
+      bool byIsOpen= byType.isOpen();
+
+      if (byIsOpen && byIsOpen != fromIsOpen) {
+        errorf(node->srcpos(), E_RangeTypeMismatch,
+               "partial open types in range declaration defeats generics usage");
+        node->setType(newRangeType(Type::newAny(true)));
+        return;
+      }
+
+      if (!isSameType(fromType, byType, node->scope(), node->by()->srcpos()))
+      {
+        errorf(node->srcpos(), E_RangeTypeMismatch,
+               "step type does not match range type");
+        node->setType(newRangeType(Type::newAny(true)));
+        return;
+      }
+    }
+
+    node->setType(newRangeType(node->from()->type()));
+  }
 }
 
 
@@ -856,8 +906,21 @@ Typifier::typify(DictNode* node)
 void
 Typifier::typify(CastNode* node)
 {
-  // TODO
   typifyNode(node->base());
+
+  if (fPhase == kTypify) {
+    // TODO check that the casted type is contra- or co-variant
+    if (!node->type().isOpen()) {
+      Type type = node->scope()->lookupType(node->type());
+      if (!type.isDef()) {
+        errorf(node->srcpos(), E_UndefinedType,
+               "undefined type '%s'", (const char*)StrHelper(node->type().toString()));
+        node->setType(Type::newAny(true));
+      }
+      else
+        node->setType(type);
+    }
+  }
 }
 
 
