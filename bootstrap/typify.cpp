@@ -154,6 +154,15 @@ Typifier::typify(ArrayTypeNode* node)
 }
 
 
+void
+Typifier::typify(TypeNode* node)
+{
+  if (fPhase == kTypify) {
+    node->setType(node->type());
+  }
+}
+
+
 //------------------------------------------------------------------------------
 
 void

@@ -262,8 +262,7 @@ XmlRenderer::renderNode(const ArrayTypeNode* node)
     n = dynamic_cast<const ArrayTypeNode*>(rootType);
   }
 
-  const SymbolNode* sym = dynamic_cast<const SymbolNode*>(rootType);
-  if (sym != NULL) {
+  if (const SymbolNode* sym = dynamic_cast<const SymbolNode*>(rootType)) {
     StringBuffer attrs;
 
     if (fShowNodeType && node->type().isDef()) {
@@ -278,10 +277,37 @@ XmlRenderer::renderNode(const ArrayTypeNode* node)
       attrs << " array='t*" << fromInt(arrayDepth) << "'";
     displayTagAttr("symbol", StrHelper(attrs.toString()), sym->name());
   }
+  else if (const TypeNode* ty = dynamic_cast<const TypeNode*>(rootType)) {
+    StringBuffer attrs;
+
+    if (fShowNodeType && node->type().isDef()) {
+      attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+      fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                             node->type()));
+    }
+
+    if (arrayDepth == 1)
+      attrs << " array='t'";
+    else
+      attrs << " array='t*" << fromInt(arrayDepth) << "'";
+    attrs << " ty='" << xmlEncode(ty->type().typeId()) << "'";
+    displayTagAttr("type", StrHelper(attrs.toString()), String());
+  }
   else if (rootType) {
     fprintf(stderr, "Unexpected type node: %p %s\n", rootType, typeid(*rootType).name());
     assert(0 && "unexpected type node");
   }
+}
+
+
+void
+XmlRenderer::renderNode(const TypeNode* node)
+{
+  StringBuffer attrs;
+  if (node->type().isDef())
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+
+  displayTagAttr("type", StrHelper(attrs.toString()), String());
 }
 
 

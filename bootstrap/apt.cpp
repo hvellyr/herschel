@@ -434,6 +434,36 @@ DEF_TRANSFORM(ArrayTypeNode)
 DEF_TYPIFY(ArrayTypeNode)
 
 
+//--------------------------------------------------------------------------
+
+TypeNode::TypeNode(const SrcPos& srcpos, const Type& type)
+  : AptNode(srcpos),
+    fType(type)
+{ }
+
+
+Type
+TypeNode::type() const
+{
+  return fType;
+}
+
+
+TypeNode*
+TypeNode::clone() const
+{
+  return cloneScope(this, new TypeNode(fSrcPos, fType));
+}
+
+
+DEF_RENDER(TypeNode)
+DEF_CODEGEN(TypeNode)
+DEF_ANNOTATE(TypeNode)
+DEF_TRAVERSE(TypeNode)
+DEF_TRANSFORM(TypeNode)
+DEF_TYPIFY(TypeNode)
+
+
 //----------------------------------------------------------------------------
 
 IntNode::IntNode(const SrcPos& srcpos, int value,

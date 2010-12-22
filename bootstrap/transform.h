@@ -50,6 +50,7 @@ namespace heather
   class SymbolNode;
   class ThenWhileNode;
   class TypeDefNode;
+  class TypeNode;
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
@@ -103,6 +104,7 @@ namespace heather
     AptNode* transform(StringNode* node);
     AptNode* transform(ThenWhileNode* node);
     AptNode* transform(TypeDefNode* node);
+    AptNode* transform(TypeNode* node);
     AptNode* transform(UnitConstNode* node);
     AptNode* transform(VectorNode* node);
     AptNode* transform(WhileNode* node);

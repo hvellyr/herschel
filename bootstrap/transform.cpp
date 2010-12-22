@@ -90,6 +90,14 @@ Transformator::transform(ArrayTypeNode* node)
 }
 
 
+AptNode*
+Transformator::transform(TypeNode* node)
+{
+  // nothing to transform
+  return node;
+}
+
+
 //------------------------------------------------------------------------------
 
 AptNode*
