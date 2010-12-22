@@ -546,9 +546,21 @@ namespace heather
 Token
 FirstPass::parseSimpleType(const Token& baseToken, bool nextIsParsedYet)
 {
-  assert(baseToken == kSymbol);
+  assert(baseToken == kSymbol || baseToken == kQuote);
 
   Token typeName = baseToken;
+  if (baseToken == kQuote) {
+    Token t = baseToken;
+    nextToken();
+
+    if (fToken != kSymbol) {
+      errorf(t.srcpos(), E_UnexpectedQuote, "Unexpected quote");
+      return Token();
+    }
+
+    typeName = Token() << t << fToken;
+  }
+
   if (!nextIsParsedYet)
     nextToken();
 
@@ -2030,6 +2042,7 @@ FirstPass::parseAtomicExpr()
     break;
 
   case kSymbol:
+  case kQuote:
     return parseAccess(parseSimpleType(fToken));
 
   case kLiteralVectorOpen:

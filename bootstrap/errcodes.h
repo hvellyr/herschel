@@ -29,6 +29,7 @@ namespace heather
     E_AssignExpected      = 0x000c,
     E_MapToExpected       = 0x000d,
     E_MissingApos         = 0x000e,
+    E_UnexpectedQuote     = 0x000f,
 
     // notation errors
     E_UnexpectedChar      = 0x0100,

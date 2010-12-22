@@ -104,6 +104,7 @@ namespace heather
     void renderNode(const SymbolNode* node);
     void renderNode(const ThenWhileNode* node);
     void renderNode(const TypeDefNode* node);
+    void renderNode(const TypeNode* node);
     void renderNode(const UnitConstNode* node);
     void renderNode(const VardefNode* node);
     void renderNode(const VectorNode* node);
