@@ -3025,6 +3025,13 @@ namespace heather
     vector.push_back(ty5);
     return vector;
   }
+
+
+  Type
+  newRangeType(const Type& generic)
+  {
+    return Type::newType(Names::kRangeTypeName, newTypeVector(generic), Type());
+  }
 };
 
 

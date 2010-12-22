@@ -87,6 +87,8 @@ namespace heather
 #define MID_SliceableTypeName   "lang|Sliceable"
 #define MID_SliceableXTypeName  "lang|Sliceable!"
 
+#define MID_RangeTypeName       "lang|Range"
+
 
   //--------------------------------------------------------------------------
   // names of predefined functions
@@ -133,6 +135,9 @@ namespace heather
 
     const static String kSliceableTypeName;
     const static String kSliceableXTypeName;
+
+    const static String kRangeTypeName;
+
 
     // predefined functions
     const static String kLangReturn;
