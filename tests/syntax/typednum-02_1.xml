@@ -1,2 +1,63 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>f</id><nested left='(' right=')'><seq><id type='keyarg'>a</id><id>a</id><punct type=':'/><id>UInt32</id><punct type='='/><seq><lit type='int'>23</lit><punct type=':'/><id>UInt32</id></seq></seq><punct type=','/><seq><id type='keyarg'>b</id><id>b</id><punct type=':'/><id>Int64</id><punct type='='/><seq><lit type='int'>4677</lit><punct type=':'/><id>Int64</id></seq></seq></nested><punct type=':'/><id>UInt16</id><nested left='{' right='}'><seq><seq><id>a</id><punct type='+'/><seq><seq><seq><lit type='int'>12</lit><punct type=':'/><id>UInt32</id></seq><punct type='*'/><id>b</id></seq><punct type='-'/><seq><lit type='int'>2</lit><punct type=':'/><id>Int64</id></seq></seq></seq><punct type='as'/><id>UInt16</id></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'>
+<seq>
+<id type='keyarg'>a</id>
+<id>a</id>
+<punct type=':'/>
+<id>UInt32</id>
+<punct type='='/>
+<seq>
+<lit type='int'>23</lit>
+<punct type=':'/>
+<id>UInt32</id>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id type='keyarg'>b</id>
+<id>b</id>
+<punct type=':'/>
+<id>Int64</id>
+<punct type='='/>
+<seq>
+<lit type='int'>4677</lit>
+<punct type=':'/>
+<id>Int64</id>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>UInt16</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>a</id>
+<punct type='+'/>
+<seq>
+<seq>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt32</id>
+</seq>
+<punct type='*'/>
+<id>b</id>
+</seq>
+<punct type='-'/>
+<seq>
+<lit type='int'>2</lit>
+<punct type=':'/>
+<id>Int64</id>
+</seq>
+</seq>
+</seq>
+<punct type='as'/>
+<id>UInt16</id>
+</seq>
+</nested>
+</seq>
+</seq>

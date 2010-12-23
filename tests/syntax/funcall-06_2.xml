@@ -1,2 +1,66 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='f'><params><param sym='a' type='pos'><type><ty:ref nm='lang|Any'></ty:ref></type></param><param sym='b' type='key' key='b'><type><ty:ref nm='lang|Any'></ty:ref></type><init><true/></init></param><param sym='r' type='rest'><type><ty:ref nm='lang|Any'></ty:ref></type></param></params><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><apply><symbol>outln</symbol><args><symbol>a</symbol><symbol>b</symbol><symbol>r</symbol></args></apply></body></func></def><def><func sym='g'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><apply><symbol>f</symbol><args><symbol>a</symbol><arg key='b'><false/></arg><int ty='lang|Int'>2</int><int ty='lang|Int'>3</int><int ty='lang|Int'>4</int></args></apply></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='key' key='b'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+<init>
+<true/>
+</init>
+</param>
+<param sym='r' type='rest'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<apply>
+<symbol>outln</symbol>
+<args>
+<symbol>a</symbol>
+<symbol>b</symbol>
+<symbol>r</symbol>
+</args>
+</apply>
+</body>
+</func>
+</def>
+<def>
+<func sym='g'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<apply>
+<symbol>f</symbol>
+<args>
+<symbol>a</symbol>
+<arg key='b'>
+<false/>
+</arg>
+<int ty='lang|Int'>2</int>
+<int ty='lang|Int'>3</int>
+<int ty='lang|Int'>4</int>
+</args>
+</apply>
+</body>
+</func>
+</def>
+</compile-unit>

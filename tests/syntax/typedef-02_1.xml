@@ -1,2 +1,50 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>type</id><id>Collection</id><nested left='&lt;' right='>'><id>T</id></nested></seq><seq><id>def</id><id>type</id><id>OrderedCollection</id><nested left='&lt;' right='>'><id>T</id></nested><punct type=':'/><seq><id>Collection</id><nested left='&lt;' right='>'><id>T</id></nested></seq></seq><seq><id>def</id><id>type</id><id>AssocCollection</id><nested left='&lt;' right='>'><id>K</id><punct type=','/><id>V</id></nested><punct type=':'/><seq><id>Collection</id><nested left='&lt;' right='>'><seq><id>Assoc</id><nested left='&lt;' right='>'><id>K</id><punct type=','/><id>V</id></nested></seq></nested></seq></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>Collection</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>OrderedCollection</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+<punct type=':'/>
+<seq>
+<id>Collection</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>AssocCollection</id>
+<nested left='&lt;' right='>'>
+<id>K</id>
+<punct type=','/>
+<id>V</id>
+</nested>
+<punct type=':'/>
+<seq>
+<id>Collection</id>
+<nested left='&lt;' right='>'>
+<seq>
+<id>Assoc</id>
+<nested left='&lt;' right='>'>
+<id>K</id>
+<punct type=','/>
+<id>V</id>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>
+</seq>

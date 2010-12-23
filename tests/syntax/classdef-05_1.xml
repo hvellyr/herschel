@@ -1,2 +1,78 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>module</id><id>core</id><nested left='(' right=')'><lit type='str'>eyestep/heather 1.0:core</lit></nested></seq><seq><id>export</id><id>public</id><nested left='(' right=')'><id>*</id></nested></seq><seq><id>def</id><id>type</id><id>Comparable</id><nested left='{' right='}'><seq><id>def</id><id>generic</id><id>compare</id><nested left='(' right=')'><seq><id>one</id><punct type='@'/><seq><punct type='&apos;'/><id>S</id></seq></seq><punct type=','/><seq><id>two</id><punct type='@'/><seq><punct type='&apos;'/><id>T</id></seq></seq></nested><punct type=':'/><id>Int</id><punct type='...'/></seq><seq><id>def</id><id>generic</id><id>equal?</id><nested left='(' right=')'><seq><id>one</id><punct type='@'/><seq><punct type='&apos;'/><id>S</id></seq></seq><punct type=','/><seq><id>two</id><punct type='@'/><seq><punct type='&apos;'/><id>T</id></seq></seq></nested><punct type=':'/><id>Bool</id><punct type='...'/></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>module</id>
+<id>core</id>
+<nested left='(' right=')'>
+<lit type='str'>eyestep/heather 1.0:core</lit>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>*</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>Comparable</id>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>compare</id>
+<nested left='(' right=')'>
+<seq>
+<id>one</id>
+<punct type='@'/>
+<seq>
+<punct type='&apos;'/>
+<id>S</id>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id>two</id>
+<punct type='@'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Int</id>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>one</id>
+<punct type='@'/>
+<seq>
+<punct type='&apos;'/>
+<id>S</id>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id>two</id>
+<punct type='@'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<punct type='...'/>
+</seq>
+</nested>
+</seq>
+</seq>

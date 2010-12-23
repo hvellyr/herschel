@@ -22,6 +22,163 @@ using namespace heather;
 
 //----------------------------------------------------------------------------
 
+void
+heather::xml::displayOpenTag(Port<Octet>* port,
+                             const char* tagName, bool newline)
+{
+  if (tagName != NULL) {
+    heather::display(port, String() + "<" + tagName + ">");
+    if (newline)
+      heather::display(port, String() + "\n");
+  }
+}
+
+
+void
+heather::xml::displayOpenTagAttrs(Port<Octet>* port,
+                                  const char* tagName, const char* attrs,
+                                  bool newline)
+{
+  if (tagName != NULL) {
+    heather::display(port, String() + "<" + tagName);
+    if (attrs != NULL && ::strlen(attrs) > 0)
+      heather::display(port, String() + " " + attrs + ">");
+    else
+      heather::display(port, ">");
+    if (newline)
+      heather::display(port, String() + "\n");
+  }
+}
+
+
+void
+heather::xml::displayCloseTag(Port<Octet>* port,
+                              const char* tagName)
+{
+  if (tagName != NULL)
+    heather::display(port, String() + "</" + tagName + ">\n");
+}
+
+
+void
+heather::xml::displayEmptyTag(Port<Octet>* port,
+                              const char* tagName)
+{
+  if (tagName != NULL && ::strlen(tagName) > 0)
+    heather::display(port, String() + "<" + tagName + "/>\n");
+}
+
+
+void
+heather::xml::displayEmptyTagAttrs(Port<Octet>* port,
+                                   const char* tagName, const char* attrs)
+{
+  if (tagName != NULL && ::strlen(tagName) > 0)
+    heather::display(port, String() + "<" + tagName + attrs + "/>\n");
+}
+
+
+void
+heather::xml::displayTag(Port<Octet>* port,
+                         const char* tagName, const String& value)
+{
+  displayOpenTag(port, tagName, false);
+  heather::display(port, xmlEncode(value));
+  displayCloseTag(port, tagName);
+}
+
+
+void
+heather::xml::displayTagAttr(Port<Octet>* port,
+                             const char* tagName,
+                             const char* attrs,
+                             const String& value)
+{
+  String encodedValue = xmlEncode(value);
+  if (!encodedValue.isEmpty()) {
+    displayOpenTagAttrs(port, tagName, attrs, false);
+    heather::display(port, encodedValue);
+    displayCloseTag(port, tagName);
+  }
+  else
+    displayEmptyTagAttrs(port, tagName, attrs);
+}
+
+
+void
+heather::xml::displayStringList(Port<Octet>* port,
+                                const char* outerTagName, const char* tagName,
+                                const StringList& strlist)
+{
+  if (!strlist.empty())
+    displayOpenTag(port, outerTagName);
+
+  for (StringList::const_iterator it = strlist.begin();
+       it != strlist.end();
+       it++)
+  {
+    String str = (*it);
+    displayOpenTag(port, tagName, false);
+    heather::display(port, str);
+    displayCloseTag(port, tagName);
+  }
+
+  if (!strlist.empty())
+    displayCloseTag(port, outerTagName);
+}
+
+
+void
+heather::xml::displayStringStringMap(Port<Octet>* port,
+                                     const char* outerTagName,
+                                     const char* tagName,
+                                     const char* firstPairTagName,
+                                     const char* secPairTagName,
+                                     const StringStringMap& strMap)
+{
+  if (!strMap.empty())
+    displayOpenTag(port, outerTagName);
+
+  for (StringStringMap::const_iterator it = strMap.begin();
+       it != strMap.end();
+       it++)
+  {
+    displayOpenTag(port, tagName);
+    displayTag(port, firstPairTagName, it->first);
+    displayTag(port, secPairTagName, it->second);
+    displayCloseTag(port, tagName);
+  }
+
+  if (!strMap.empty())
+    displayCloseTag(port, outerTagName);
+}
+
+
+void
+heather::xml::displayType(Port<Octet>* port, const char* tagName, const Type& type)
+{
+  if (type.isDef()) {
+    displayOpenTag(port, tagName);
+    heather::display(port, type.toString());
+    displayCloseTag(port, tagName);
+  }
+}
+
+
+void
+heather::xml::displayTypeVector(Port<Octet>* port, const char* tagName, const TypeVector& types)
+{
+  if (!types.empty()) {
+    displayOpenTag(port, tagName);
+    for (size_t i = 0; i < types.size(); i++)
+      heather::display(port, types[i].toString());
+    displayCloseTag(port, tagName);
+  }
+}
+
+
+//----------------------------------------------------------------------------
+
 XmlRenderer::XmlRenderer(Port<Octet>* port, bool showNodeType)
   : fPort(port),
     fShowNodeType(showNodeType)
@@ -40,56 +197,45 @@ XmlRenderer::render(AptNode* node)
 //----------------------------------------------------------------------------
 
 void
-XmlRenderer::displayOpenTag(const char* tagName)
+XmlRenderer::displayOpenTag(const char* tagName, bool newline)
 {
-  if (tagName != NULL)
-    heather::display(fPort, String() + "<" + tagName + ">");
+  xml::displayOpenTag(fPort, tagName, newline);
 }
 
 
 void
-XmlRenderer::displayOpenTagAttrs(const char* tagName, const char* attrs)
+XmlRenderer::displayOpenTagAttrs(const char* tagName, const char* attrs,
+                                 bool newline)
 {
-  if (tagName != NULL) {
-    heather::display(fPort, String() + "<" + tagName);
-    if (attrs != NULL && ::strlen(attrs) > 0)
-      heather::display(fPort, String() + " " + attrs + ">");
-    else
-      heather::display(fPort, ">");
-  }
+  xml::displayOpenTagAttrs(fPort, tagName, attrs, newline);
 }
 
 
 void
 XmlRenderer::displayCloseTag(const char* tagName)
 {
-  if (tagName != NULL)
-    heather::display(fPort, String() + "</" + tagName + ">");
+  xml::displayCloseTag(fPort, tagName);
 }
 
 
 void
 XmlRenderer::displayEmptyTag(const char* tagName)
 {
-  if (tagName != NULL && ::strlen(tagName) > 0)
-    heather::display(fPort, String() + "<" + tagName + "/>");
+  xml::displayEmptyTag(fPort, tagName);
 }
 
 
 void
 XmlRenderer::displayEmptyTagAttrs(const char* tagName, const char* attrs)
 {
-  if (tagName != NULL && ::strlen(tagName) > 0)
-    heather::display(fPort, String() + "<" + tagName + attrs + "/>");
+  xml::displayEmptyTagAttrs(fPort, tagName, attrs);
 }
 
 
 void
 XmlRenderer::displayTag(const char* tagName, const String& value)
 {
-  displayOpenTag(tagName);
-  heather::display(fPort, xmlEncode(value));
-  displayCloseTag(tagName);
+  xml::displayTag(fPort, tagName, value);
 }
 
 
@@ -98,9 +244,7 @@ XmlRenderer::displayTagAttr(const char* tagName,
                             const char* attrs,
                             const String& value)
 {
-  displayOpenTagAttrs(tagName, attrs);
-  heather::display(fPort, xmlEncode(value));
-  displayCloseTag(tagName);
+  xml::displayTagAttr(fPort, tagName, attrs, value);
 }
 
 
@@ -108,21 +252,7 @@ void
 XmlRenderer::displayStringList(const char* outerTagName, const char* tagName,
                                const StringList& strlist)
 {
-  if (!strlist.empty())
-    displayOpenTag(outerTagName);
-
-  for (StringList::const_iterator it = strlist.begin();
-       it != strlist.end();
-       it++)
-  {
-    String str = (*it);
-    displayOpenTag(tagName);
-    heather::display(fPort, str);
-    displayCloseTag(tagName);
-  }
-
-  if (!strlist.empty())
-    displayCloseTag(outerTagName);
+  xml::displayStringList(fPort, outerTagName, tagName, strlist);
 }
 
 
@@ -133,21 +263,9 @@ XmlRenderer::displayStringStringMap(const char* outerTagName,
                                     const char* secPairTagName,
                                     const StringStringMap& strMap)
 {
-  if (!strMap.empty())
-    displayOpenTag(outerTagName);
-
-  for (StringStringMap::const_iterator it = strMap.begin();
-       it != strMap.end();
-       it++)
-  {
-    displayOpenTag(tagName);
-    displayTag(firstPairTagName, it->first);
-    displayTag(secPairTagName, it->second);
-    displayCloseTag(tagName);
-  }
-
-  if (!strMap.empty())
-    displayCloseTag(outerTagName);
+  xml::displayStringStringMap(fPort, outerTagName,
+                              tagName, firstPairTagName, secPairTagName,
+                              strMap);
 }
 
 
@@ -185,23 +303,14 @@ XmlRenderer::displayNodeList(const char* tagName, const NodeList& nodelist)
 void
 XmlRenderer::displayType(const char* tagName, const Type& type)
 {
-  if (type.isDef()) {
-    displayOpenTag(tagName);
-    heather::display(fPort, type.toString());
-    displayCloseTag(tagName);
-  }
+  xml::displayType(fPort, tagName, type);
 }
 
 
 void
 XmlRenderer::displayTypeVector(const char* tagName, const TypeVector& types)
 {
-  if (!types.empty()) {
-    displayOpenTag(tagName);
-    for (size_t i = 0; i < types.size(); i++)
-      heather::display(fPort, types[i].toString());
-    displayCloseTag(tagName);
-  }
+  xml::displayTypeVector(fPort, tagName, types);
 }
 
 
@@ -320,7 +429,7 @@ XmlRenderer::renderNode(const IntNode* node)
   if (node->isImaginary())
     attrs << " imag='t'";
 
-  displayOpenTagAttrs("int", StrHelper(attrs.toString()));
+  displayOpenTagAttrs("int", StrHelper(attrs.toString()), false);
   heather::display(fPort, xmlEncode(String() + node->value()));
   displayCloseTag("int");
 

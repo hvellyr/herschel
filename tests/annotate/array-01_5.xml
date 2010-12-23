@@ -1,2 +1,82 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='g'><rettype><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type></rettype><body><block><let><vardef sym='x'><type><ty:array ind='0'><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type></ty:array></type><init><apply  ty='lang|Int[]'><symbol  ty='lang|Int[]' array='t'>lang|Int</symbol><args><int ty='lang|Int'>1024</int></args></apply></init></vardef></let><let><vardef sym='y'><type><ty:array ind='12'><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type></ty:array></type></vardef></let><apply  ty='lang|Int'><symbol>lang|slice</symbol><args><symbol  ty='lang|Int[]'>x</symbol><int ty='lang|Int'>34</int></args></apply></block></body></func></def><ty:node-types><ty:used-type><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type></ty:used-type><ty:used-type><ty:array ind='0'><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type></ty:array></ty:used-type></ty:node-types></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='g'>
+<rettype>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<type>
+<ty:array ind='0'>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:array>
+</type>
+<init>
+<apply  ty='lang|Int[]'>
+<symbol  ty='lang|Int[]' array='t'>lang|Int</symbol>
+<args>
+<int ty='lang|Int'>1024</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='y'>
+<type>
+<ty:array ind='12'>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:array>
+</type>
+</vardef>
+</let>
+<apply  ty='lang|Int'>
+<symbol>lang|slice</symbol>
+<args>
+<symbol  ty='lang|Int[]'>x</symbol>
+<int ty='lang|Int'>34</int>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:array ind='0'>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:array>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

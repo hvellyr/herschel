@@ -1,2 +1,13 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>f</id><nested left='(' right=')'/><punct type=':'/><id>Any</id><nested left='{' right='}'><lit type='bool'>true</lit></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<lit type='bool'>true</lit>
+</nested>
+</seq>
+</seq>

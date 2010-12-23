@@ -1,2 +1,41 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><vardef sym='x'><type><ty:ref nm='lang|Any'></ty:ref></type><init><if  ty='lang|Any'><test><binary op='>'><int ty='lang|Int'>5</int><int ty='lang|Int'>4</int></binary></test><then><str>hello</str></then><else><keyw>keyword</keyw></else></if></init></vardef></def><ty:node-types><ty:used-type><ty:ref nm='lang|Any'></ty:ref></ty:used-type><ty:used-type><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type></ty:used-type></ty:node-types></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='x'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+<init>
+<if  ty='lang|Any'>
+<test>
+<binary op='>'>
+<int ty='lang|Int'>5</int>
+<int ty='lang|Int'>4</int>
+</binary>
+</test>
+<then>
+<str>hello</str>
+</then>
+<else>
+<keyw>keyword</keyw>
+</else>
+</if>
+</init>
+</vardef>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

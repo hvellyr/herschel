@@ -1,2 +1,206 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><class nm='Seq'><isa><ty:type nm='Seq' inst='t'><ty:gen><ty:ref nm='T'></ty:ref></ty:gen><ty:apply><ty:fun nm='apply' gen='t'><ty:ret><ty:ref nm='Seq'><ty:gen><ty:ref gen='t' nm='T'></ty:ref></ty:gen></ty:ref></ty:ret></ty:fun></ty:apply></ty:type></isa></class></def><def><class nm='Dict'><isa><ty:type nm='Dict' inst='t'><ty:gen><ty:ref nm='K'></ty:ref><ty:ref nm='V'></ty:ref></ty:gen><ty:apply><ty:fun nm='apply' gen='t'><ty:ret><ty:ref nm='Dict'><ty:gen><ty:ref gen='t' nm='K'></ty:ref><ty:ref gen='t' nm='V'></ty:ref></ty:gen></ty:ref></ty:ret></ty:fun></ty:apply></ty:type></isa></class></def><def><func sym='g'><rettype><ty:type nm='Seq' inst='t'><ty:gen><ty:ref nm='lang|Int'></ty:ref></ty:gen><ty:apply><ty:fun nm='apply' gen='t'><ty:ret><ty:ref nm='Seq'><ty:gen><ty:ref nm='lang|Int'></ty:ref></ty:gen></ty:ref></ty:ret></ty:fun></ty:apply></ty:type></rettype><body><block><let><vardef sym='x'><type><ty:array ind='0'><ty:type nm='Seq' inst='t'><ty:gen><ty:ref nm='lang|Int'></ty:ref></ty:gen><ty:apply><ty:fun nm='apply' gen='t'><ty:ret><ty:ref nm='Seq'><ty:gen><ty:ref nm='lang|Int'></ty:ref></ty:gen></ty:ref></ty:ret></ty:fun></ty:apply></ty:type></ty:array></type><init><apply  ty='Seq&lt;lang|Int>[]'><symbol  ty='Seq&lt;lang|Int>[]' array='t'>Seq</symbol><args><int ty='lang|Int'>1024</int></args></apply></init></vardef></let><let><vardef sym='y'><type><ty:array ind='12'><ty:type nm='Dict' inst='t'><ty:gen><ty:ref nm='lang|String'></ty:ref><ty:ref nm='lang|Int'></ty:ref></ty:gen><ty:apply><ty:fun nm='apply' gen='t'><ty:ret><ty:ref nm='Dict'><ty:gen><ty:ref nm='lang|String'></ty:ref><ty:ref nm='lang|Int'></ty:ref></ty:gen></ty:ref></ty:ret></ty:fun></ty:apply></ty:type></ty:array></type></vardef></let><apply  ty='Seq&lt;lang|Int>'><symbol>lang|slice</symbol><args><symbol  ty='Seq&lt;lang|Int>[]'>x</symbol><int ty='lang|Int'>34</int></args></apply></block></body></func></def><ty:node-types><ty:used-type><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type></ty:used-type><ty:used-type><ty:type nm='Seq' inst='t'><ty:gen><ty:ref nm='lang|Int'></ty:ref></ty:gen><ty:apply><ty:fun nm='apply' gen='t'><ty:ret><ty:ref nm='Seq'><ty:gen><ty:ref nm='lang|Int'></ty:ref></ty:gen></ty:ref></ty:ret></ty:fun></ty:apply></ty:type></ty:used-type><ty:used-type><ty:array ind='0'><ty:type nm='Seq' inst='t'><ty:gen><ty:ref nm='lang|Int'></ty:ref></ty:gen><ty:apply><ty:fun nm='apply' gen='t'><ty:ret><ty:ref nm='Seq'><ty:gen><ty:ref nm='lang|Int'></ty:ref></ty:gen></ty:ref></ty:ret></ty:fun></ty:apply></ty:type></ty:array></ty:used-type></ty:node-types></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<class nm='Seq'>
+<isa>
+<ty:type nm='Seq' inst='t'>
+<ty:gen>
+<ty:ref nm='T'>
+</ty:ref>
+</ty:gen>
+<ty:apply>
+<ty:fun nm='apply' gen='t'>
+<ty:ret>
+<ty:ref nm='Seq'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:apply>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<class nm='Dict'>
+<isa>
+<ty:type nm='Dict' inst='t'>
+<ty:gen>
+<ty:ref nm='K'>
+</ty:ref>
+<ty:ref nm='V'>
+</ty:ref>
+</ty:gen>
+<ty:apply>
+<ty:fun nm='apply' gen='t'>
+<ty:ret>
+<ty:ref nm='Dict'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='V'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:apply>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='g'>
+<rettype>
+<ty:type nm='Seq' inst='t'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+<ty:apply>
+<ty:fun nm='apply' gen='t'>
+<ty:ret>
+<ty:ref nm='Seq'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:apply>
+</ty:type>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<type>
+<ty:array ind='0'>
+<ty:type nm='Seq' inst='t'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+<ty:apply>
+<ty:fun nm='apply' gen='t'>
+<ty:ret>
+<ty:ref nm='Seq'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:apply>
+</ty:type>
+</ty:array>
+</type>
+<init>
+<apply  ty='Seq&lt;lang|Int>[]'>
+<symbol  ty='Seq&lt;lang|Int>[]' array='t'>Seq</symbol>
+<args>
+<int ty='lang|Int'>1024</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='y'>
+<type>
+<ty:array ind='12'>
+<ty:type nm='Dict' inst='t'>
+<ty:gen>
+<ty:ref nm='lang|String'>
+</ty:ref>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+<ty:apply>
+<ty:fun nm='apply' gen='t'>
+<ty:ret>
+<ty:ref nm='Dict'>
+<ty:gen>
+<ty:ref nm='lang|String'>
+</ty:ref>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:apply>
+</ty:type>
+</ty:array>
+</type>
+</vardef>
+</let>
+<apply  ty='Seq&lt;lang|Int>'>
+<symbol>lang|slice</symbol>
+<args>
+<symbol  ty='Seq&lt;lang|Int>[]'>x</symbol>
+<int ty='lang|Int'>34</int>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='Seq' inst='t'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+<ty:apply>
+<ty:fun nm='apply' gen='t'>
+<ty:ret>
+<ty:ref nm='Seq'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:apply>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:array ind='0'>
+<ty:type nm='Seq' inst='t'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+<ty:apply>
+<ty:fun nm='apply' gen='t'>
+<ty:ret>
+<ty:ref nm='Seq'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:apply>
+</ty:type>
+</ty:array>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

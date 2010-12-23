@@ -1,2 +1,80 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>generic</id><id>f</id><nested left='(' right=')'><seq><id>a</id><punct type='@'/><seq><punct type='&apos;'/><id>T</id></seq></seq></nested><punct type=':'/><seq><punct type='&apos;'/><id>T</id></seq><nested left='{' right='}'><seq><seq><punct type='&apos;'/><id>T</id></seq><punct type='isa'/><id>Copyable</id></seq><id>a</id></nested></seq><seq><id>def</id><id>generic</id><id>put</id><nested left='(' right=')'><seq><id>value</id><punct type='@'/><seq><punct type='&apos;'/><id>V</id></seq></seq><punct type=','/><seq><id>key</id><punct type='@'/><seq><punct type='&apos;'/><id>K</id></seq></seq></nested><punct type=':'/><nested left='(' right=')'><seq><punct type='&apos;'/><id>V</id></seq><punct type=','/><seq><punct type='&apos;'/><id>T</id></seq></nested><nested left='{' right='}'><seq><seq><punct type='&apos;'/><id>V</id></seq><punct type='isa'/><id>Serializable</id></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>f</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type='@'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+<punct type='isa'/>
+<id>Copyable</id>
+</seq>
+<id>a</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>put</id>
+<nested left='(' right=')'>
+<seq>
+<id>value</id>
+<punct type='@'/>
+<seq>
+<punct type='&apos;'/>
+<id>V</id>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id>key</id>
+<punct type='@'/>
+<seq>
+<punct type='&apos;'/>
+<id>K</id>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<nested left='(' right=')'>
+<seq>
+<punct type='&apos;'/>
+<id>V</id>
+</seq>
+<punct type=','/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<punct type='&apos;'/>
+<id>V</id>
+</seq>
+<punct type='isa'/>
+<id>Serializable</id>
+</seq>
+</nested>
+</seq>
+</seq>

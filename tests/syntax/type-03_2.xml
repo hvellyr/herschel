@@ -1,2 +1,50 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='f0'><params><param sym='k' type='pos'><type><ty:ref nm='lang|Any'></ty:ref></type></param></params><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><range><int ty='lang|Int'>0</int><binary op='-'><symbol>k</symbol><int ty='lang|Int'>1</int></binary><int ty='lang|Int'>1</int></range></body></func></def><def><func sym='f1'><params><param sym='a' type='spec'><type><ty:ref nm='lang|Int'><ty:const k='in'>%(5 .. 100 by 2 %)</ty:const></ty:ref></type></param></params><rettype><ty:ref nm='lang|Int'><ty:const k='geq'>0</ty:const></ty:ref></rettype><body><symbol>a</symbol></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f0'>
+<params>
+<param sym='k' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<range>
+<int ty='lang|Int'>0</int>
+<binary op='-'>
+<symbol>k</symbol>
+<int ty='lang|Int'>1</int>
+</binary>
+<int ty='lang|Int'>1</int>
+</range>
+</body>
+</func>
+</def>
+<def>
+<func sym='f1'>
+<params>
+<param sym='a' type='spec'>
+<type>
+<ty:ref nm='lang|Int'>
+<ty:const k='in'>%(5 .. 100 by 2 %)</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Int'>
+<ty:const k='geq'>0</ty:const>
+</ty:ref>
+</rettype>
+<body>
+<symbol>a</symbol>
+</body>
+</func>
+</def>
+</compile-unit>
