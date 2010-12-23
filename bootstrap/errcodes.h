@@ -89,6 +89,7 @@ namespace heather
     E_EmptySeqType        = 0x403a,
     E_MixedValueType      = 0x403b,
     E_InheritsRefType     = 0x403c,
+    E_InvariantType       = 0x403d,
 
     // enums
     E_BadEnumItemList     = 0x4050,

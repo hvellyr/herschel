@@ -1,0 +1,3 @@
+def foo(a : String)
+  let t = a as Int
+  t

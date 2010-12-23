@@ -926,8 +926,14 @@ Typifier::typify(CastNode* node)
                "undefined type '%s'", (const char*)StrHelper(node->type().toString()));
         node->setType(Type::newAny(true));
       }
-      else
-        node->setType(type);
+      else {
+        if (isInvariant(node->base()->type(), type, node->scope(), node->srcpos())) {
+          errorf(node->srcpos(), E_InvariantType, "Cast to invariant type");
+          node->setType(Type::newAny(true));
+        }
+        else
+          node->setType(type);
+      }
     }
   }
 }

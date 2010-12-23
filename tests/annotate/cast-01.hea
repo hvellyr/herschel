@@ -1,0 +1,9 @@
+def foo(a)
+  let t = a as Int
+  t
+
+def bar(b : Number)
+  b as Int
+
+def bar2(b : Int)
+  b as Number
