@@ -112,8 +112,9 @@ namespace heather
     void renderNode(const CastNode* node);
 
   private:
-    void displayOpenTag(const char* tagName);
-    void displayOpenTagAttrs(const char* tagName, const char* attrs);
+    void displayOpenTag(const char* tagName, bool newline = true);
+    void displayOpenTagAttrs(const char* tagName, const char* attrs,
+                             bool newline = true);
     void displayCloseTag(const char* tagName);
     void displayEmptyTag(const char* tagName);
     void displayEmptyTagAttrs(const char* tagName, const char* attrs);
@@ -138,6 +139,36 @@ namespace heather
     Ptr<Port<Octet> > fPort;
     bool fShowNodeType;
     std::map<String, Type> fReferencedTypes;
+  };
+
+
+  namespace xml
+  {
+    void displayOpenTag(Port<Octet>* port, const char* tagName,
+                        bool newline = true);
+    void displayOpenTagAttrs(Port<Octet>* port,
+                             const char* tagName, const char* attrs,
+                             bool newline = true);
+    void displayCloseTag(Port<Octet>* port, const char* tagName);
+    void displayEmptyTag(Port<Octet>* port, const char* tagName);
+    void displayEmptyTagAttrs(Port<Octet>* port, const char* tagName,
+                              const char* attrs);
+    void displayTag(Port<Octet>* port, const char* tagName, const String& value);
+    void displayTagAttr(Port<Octet>* port, const char* tagName,
+                        const char* attrs,
+                        const String& value);
+    void displayStringList(Port<Octet>* port,
+                           const char* outerTagName, const char* tagName,
+                           const StringList& strlist);
+    void displayStringStringMap(Port<Octet>* port,
+                                const char* outerTagName,
+                                const char* tagName,
+                                const char* firstPairTagName,
+                                const char* secPairTagName,
+                                const StringStringMap& strMap);
+    void displayType(Port<Octet>* port, const char* tagName, const Type& type);
+    void displayTypeVector(Port<Octet>* port,
+                           const char* tagName, const TypeVector& types);
   };
 };                              // namespace
 

@@ -1,2 +1,23 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>f</id><nested left='(' right=')'/><punct type=':'/><id>Any</id><nested left='{' right='}'><seq><id>select</id><nested left='(' right=')'/><nested left='{' right='}'><seq><punct type='|'/><id>else</id><lit type='bool'>true</lit></seq></nested></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>select</id>
+<nested left='(' right=')'/>
+<nested left='{' right='}'>
+<seq>
+<punct type='|'/>
+<id>else</id>
+<lit type='bool'>true</lit>
+</seq>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>

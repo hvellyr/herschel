@@ -1,2 +1,86 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='f'><params><param sym='a' type='pos'><type><ty:ref nm='lang|Any'></ty:ref></type></param></params><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><select><test><symbol>a</symbol></test><comp><function><params><param sym='one' type='pos'><type><ty:ref nm='lang|Any'></ty:ref></type></param><param sym='two' type='pos'><type><ty:ref nm='lang|Any'></ty:ref></type></param></params><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><binary op='in'><symbol>one</symbol><symbol>two</symbol></binary></body></function></comp><map><values><range><int ty='lang|Int'>1</int><int ty='lang|Int'>3</int></range></values><cons><apply><symbol>outln</symbol><args><str>a</str></args></apply></cons></map><map><values><range><int ty='lang|Int'>4</int><int ty='lang|Int'>6</int></range></values><cons><apply><symbol>outln</symbol><args><str>b</str></args></apply></cons></map></select></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<select>
+<test>
+<symbol>a</symbol>
+</test>
+<comp>
+<function>
+<params>
+<param sym='one' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='two' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<binary op='in'>
+<symbol>one</symbol>
+<symbol>two</symbol>
+</binary>
+</body>
+</function>
+</comp>
+<map>
+<values>
+<range>
+<int ty='lang|Int'>1</int>
+<int ty='lang|Int'>3</int>
+</range>
+</values>
+<cons>
+<apply>
+<symbol>outln</symbol>
+<args>
+<str>a</str>
+</args>
+</apply>
+</cons>
+</map>
+<map>
+<values>
+<range>
+<int ty='lang|Int'>4</int>
+<int ty='lang|Int'>6</int>
+</range>
+</values>
+<cons>
+<apply>
+<symbol>outln</symbol>
+<args>
+<str>b</str>
+</args>
+</apply>
+</cons>
+</map>
+</select>
+</body>
+</func>
+</def>
+</compile-unit>

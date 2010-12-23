@@ -1,2 +1,40 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='value-iterators'><params><param sym='root' type='pos'><type><ty:ref nm='Pair'><ty:gen><ty:ref nm='lang|String'></ty:ref><ty:ref nm='_'></ty:ref></ty:gen></ty:ref></type></param></params><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><then-while><symbol>root</symbol><apply><symbol>cdr</symbol><args><symbol>root</symbol></args></apply><binary op='&lt;>'><symbol>root</symbol><symbol>nil</symbol></binary></then-while></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='value-iterators'>
+<params>
+<param sym='root' type='pos'>
+<type>
+<ty:ref nm='Pair'>
+<ty:gen>
+<ty:ref nm='lang|String'>
+</ty:ref>
+<ty:ref nm='_'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<then-while>
+<symbol>root</symbol>
+<apply>
+<symbol>cdr</symbol>
+<args>
+<symbol>root</symbol>
+</args>
+</apply>
+<binary op='&lt;>'>
+<symbol>root</symbol>
+<symbol>nil</symbol>
+</binary>
+</then-while>
+</body>
+</func>
+</def>
+</compile-unit>

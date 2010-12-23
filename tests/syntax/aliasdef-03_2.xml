@@ -1,2 +1,28 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='f0'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><block><let><vardef sym='a'><type><ty:ref nm='Vector'><ty:gen><ty:ref nm='lang|Int'></ty:ref></ty:gen></ty:ref></type></vardef></let><symbol>a</symbol></block></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f0'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='a'>
+<type>
+<ty:ref nm='Vector'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</vardef>
+</let>
+<symbol>a</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

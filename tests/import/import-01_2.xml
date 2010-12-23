@@ -1,2 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><vardef sym='a'><type><ty:ref nm='lang|Int'></ty:ref></type><init><int ty='lang|Int'>12</int></init></vardef></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='a'>
+<type>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</type>
+<init>
+<int ty='lang|Int'>12</int>
+</init>
+</vardef>
+</def>
+</compile-unit>

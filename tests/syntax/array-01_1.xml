@@ -1,2 +1,50 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>g</id><nested left='(' right=')'/><punct type=':'/><id>Any</id><nested left='{' right='}'><seq><id>let</id><id>x</id><punct type=':'/><seq><id>Int</id><nested left='[' right=']'/></seq><punct type='='/><seq><seq><id>Int</id><nested left='[' right=']'/></seq><nested left='(' right=')'><lit type='int'>1024</lit></nested></seq></seq><seq><id>let</id><id>y</id><punct type=':'/><seq><id>Int</id><nested left='[' right=']'><lit type='int'>12</lit></nested></seq></seq><seq><id>slice</id><nested left='(' right=')'><id>x</id><punct type=','/><lit type='int'>34</lit></nested></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>g</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>let</id>
+<id>x</id>
+<punct type=':'/>
+<seq>
+<id>Int</id>
+<nested left='[' right=']'/>
+</seq>
+<punct type='='/>
+<seq>
+<seq>
+<id>Int</id>
+<nested left='[' right=']'/>
+</seq>
+<nested left='(' right=')'>
+<lit type='int'>1024</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>y</id>
+<punct type=':'/>
+<seq>
+<id>Int</id>
+<nested left='[' right=']'>
+<lit type='int'>12</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>x</id>
+<punct type=','/>
+<lit type='int'>34</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>
