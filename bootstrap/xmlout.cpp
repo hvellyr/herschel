@@ -13,6 +13,7 @@
 #include "apt.h"
 #include "strbuf.h"
 
+#include "string.h"
 #include <typeinfo>
 
 //----------------------------------------------------------------------------
