@@ -961,9 +961,17 @@ Typifier::typify(TypeDefNode* node)
 void
 Typifier::typify(WhileNode* node)
 {
-  // TODO
   typifyNode(node->test());
   typifyNode(node->body());
+
+  if (node->isInTailPos() || node->isSingleTypeRequired()) {
+    // the while expression should never be in tail position
+    warningf(node->srcpos(), E_WhileTypeMismatch,
+             "while in tail position enforces Any type");
+    node->setType(Type::newAny(true));
+  }
+  else
+    node->setType(node->body()->type());
 }
 
 

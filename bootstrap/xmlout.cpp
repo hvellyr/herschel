@@ -984,7 +984,12 @@ XmlRenderer::renderNode(const KeyargNode* node)
 void
 XmlRenderer::renderNode(const WhileNode* node)
 {
-  displayOpenTag("while");
+  StringBuffer attrs;
+
+  if (fShowNodeType && node->type().isDef())
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+
+  displayOpenTagAttrs("while", StrHelper(attrs.toString()));
   displayNode("test", node->test());
   displayNode("body", node->body());
   displayCloseTag("while");
