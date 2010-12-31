@@ -502,6 +502,7 @@ namespace heather
                    const SrcPos& srcpos, bool reportErrors = true);
 
 
+  TypeVector newTypeVector();
   TypeVector newTypeVector(const Type& ty1);
   TypeVector newTypeVector(const Type& ty1, const Type& ty2);
   TypeVector newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3);
@@ -509,6 +510,8 @@ namespace heather
                            const Type& ty4);
   TypeVector newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
                            const Type& ty4, const Type& ty5);
+
+  TypeConstVector newTypeConstVector();
 
   Type newRangeType(const Type& generic);
 

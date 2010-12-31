@@ -88,6 +88,10 @@ namespace heather
 #define MID_SliceableXTypeName  "lang|Sliceable!"
 
 #define MID_RangeTypeName       "lang|Range"
+#define MID_CollectionTypeName  "lang|Collection"
+#define MID_OrderedCollectionTypeName "lang|OrderedCollection"
+#define MID_SequenceTypeName    "lang|Sequence"
+#define MID_VectorTypeName      "lang|Vector"
 
 
   //--------------------------------------------------------------------------
@@ -137,7 +141,10 @@ namespace heather
     const static String kSliceableXTypeName;
 
     const static String kRangeTypeName;
-
+    const static String kCollectionTypeName;
+    const static String kOrderedCollectionTypeName;
+    const static String kSequenceTypeName;
+    const static String kVectorTypeName;
 
     // predefined functions
     const static String kLangReturn;
