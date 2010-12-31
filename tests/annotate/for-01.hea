@@ -1,0 +1,5 @@
+def to-string(a : Int) : String ...
+
+def foo()
+  for (i in 0 .. 100)
+    i.to-string

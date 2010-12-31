@@ -2187,7 +2187,11 @@ SecondPass::parseFor(const Token& expr)
     if (alternate == NULL)
       alternate = new SymbolNode(expr.srcpos(), String("lang|unspecified"));
 
-    Type retType;               // TODO?
+    TypeVector unionTypes;
+    unionTypes.push_back(Type::newAny());
+    unionTypes.push_back(Type::newTypeRef(Names::kUnspecifiedTypeName, true));
+
+    Type retType = Type::newUnion(unionTypes, true);
     Ptr<AptNode> returnVardef = new VardefNode(expr.srcpos(),
                                                returnSym.idValue(), kNormalVar,
                                                true, retType, alternate);

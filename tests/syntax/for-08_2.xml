@@ -35,6 +35,14 @@
 </let>
 <let>
 <vardef sym='__return_1'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
 <init>
 <false/>
 </init>
@@ -108,6 +116,14 @@
 </let>
 <let>
 <vardef sym='__return_3'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
 <init>
 <false/>
 </init>
@@ -181,6 +197,14 @@
 </let>
 <let>
 <vardef sym='__return_5'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
 <init>
 <symbol>lang|unspecified</symbol>
 </init>
@@ -244,6 +268,14 @@
 </let>
 <let>
 <vardef sym='__return_6'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
 <init>
 <symbol>lang|unspecified</symbol>
 </init>
@@ -307,6 +339,14 @@
 </let>
 <let>
 <vardef sym='__return_7'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
 <init>
 <symbol>lang|unspecified</symbol>
 </init>
@@ -439,6 +479,14 @@
 </let>
 <let>
 <vardef sym='__return_12'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
 <init>
 <symbol>lang|unspecified</symbol>
 </init>

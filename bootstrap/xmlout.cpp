@@ -759,6 +759,13 @@ XmlRenderer::renderNode(const BinaryNode* node)
 {
   StringBuffer attrs;
   attrs << "op='" << xmlEncode(operatorName(node->op())) << "'";
+
+  if (fShowNodeType && node->type().isDef()) {
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
+  }
+
   displayOpenTagAttrs("binary", StrHelper(attrs.toString()));
   displayNode(NULL, node->left());
   displayNode(NULL, node->right());

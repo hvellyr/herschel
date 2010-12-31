@@ -9,7 +9,7 @@
 <init>
 <if  ty='lang|Any'>
 <test>
-<binary op='>'>
+<binary op='>' ty='lang|Bool'>
 <int ty='lang|Int'>5</int>
 <int ty='lang|Int'>4</int>
 </binary>
@@ -36,6 +36,10 @@
 </ty:ref>
 </ty:isa>
 </ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
 </ty:used-type>
 </ty:node-types>
 </compile-unit>
