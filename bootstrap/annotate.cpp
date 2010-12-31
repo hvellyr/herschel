@@ -178,6 +178,13 @@ Annotator::annotate(ArrayTypeNode* node)
 }
 
 
+void
+Annotator::annotate(TypeNode* node)
+{
+  // TODO
+}
+
+
 //------------------------------------------------------------------------------
 
 void

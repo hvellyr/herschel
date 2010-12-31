@@ -1,2 +1,175 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='f0'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><block><let><vardef sym='i'><init><int ty='lang|Int'>0</int></init></vardef></let><let><vardef sym='__return_0'><init><symbol>lang|unspecified</symbol></init></vardef></let><while><test><binary op='&lt;'><symbol>i</symbol><int ty='lang|Int'>100</int></binary></test><body><block><assign><symbol>__return_0</symbol><apply><symbol>outln</symbol><args><symbol>i</symbol></args></apply></assign><assign><symbol>i</symbol><binary op='+'><symbol>i</symbol><int ty='lang|Int'>2</int></binary></assign></block></body></while><symbol>__return_0</symbol></block></body></func></def><def><func sym='f1'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><block><let><vardef sym='i'><init><int ty='lang|Int'>0</int></init></vardef></let><while><test><true/></test><body><block><apply><symbol>cont-count</symbol><args><symbol>i</symbol></args></apply><assign><symbol>i</symbol><binary op='+'><symbol>i</symbol><int ty='lang|Int'>3</int></binary></assign></block></body></while></block></body></func></def><def><func sym='f2'><params><param sym='k' type='pos'><type><ty:ref nm='lang|Any'></ty:ref></type></param></params><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><block><let><vardef sym='i'><init><symbol>k</symbol></init></vardef></let><let><vardef sym='__return_2'><init><str>monday</str></init></vardef></let><while><test><true/></test><body><block><assign><symbol>__return_2</symbol><apply><symbol>cont-count</symbol><args><symbol>i</symbol></args></apply></assign><assign><symbol>i</symbol><binary op='+'><symbol>i</symbol><int ty='lang|Int'>4</int></binary></assign></block></body></while><symbol>__return_2</symbol></block></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f0'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='i'>
+<init>
+<int ty='lang|Int'>0</int>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__return_0'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
+<init>
+<symbol>lang|unspecified</symbol>
+</init>
+</vardef>
+</let>
+<while>
+<test>
+<binary op='&lt;'>
+<symbol>i</symbol>
+<int ty='lang|Int'>100</int>
+</binary>
+</test>
+<body>
+<block>
+<assign>
+<symbol>__return_0</symbol>
+<apply>
+<symbol>outln</symbol>
+<args>
+<symbol>i</symbol>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>i</symbol>
+<binary op='+'>
+<symbol>i</symbol>
+<int ty='lang|Int'>2</int>
+</binary>
+</assign>
+</block>
+</body>
+</while>
+<symbol>__return_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f1'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='i'>
+<init>
+<int ty='lang|Int'>0</int>
+</init>
+</vardef>
+</let>
+<while>
+<test>
+<true/>
+</test>
+<body>
+<block>
+<apply>
+<symbol>cont-count</symbol>
+<args>
+<symbol>i</symbol>
+</args>
+</apply>
+<assign>
+<symbol>i</symbol>
+<binary op='+'>
+<symbol>i</symbol>
+<int ty='lang|Int'>3</int>
+</binary>
+</assign>
+</block>
+</body>
+</while>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f2'>
+<params>
+<param sym='k' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='i'>
+<init>
+<symbol>k</symbol>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__return_2'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
+<init>
+<str>monday</str>
+</init>
+</vardef>
+</let>
+<while>
+<test>
+<true/>
+</test>
+<body>
+<block>
+<assign>
+<symbol>__return_2</symbol>
+<apply>
+<symbol>cont-count</symbol>
+<args>
+<symbol>i</symbol>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>i</symbol>
+<binary op='+'>
+<symbol>i</symbol>
+<int ty='lang|Int'>4</int>
+</binary>
+</assign>
+</block>
+</body>
+</while>
+<symbol>__return_2</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

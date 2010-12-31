@@ -155,10 +155,10 @@ namespace heather
     virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:union" << ( !isValue ? " ref='t'" : "") << ">";
+      buf << "<ty:union" << ( !isValue ? " ref='t'" : "") << ">\n";
       for (size_t i = 0; i < fTypes.size(); i++)
         buf << fTypes[i].toString();
-      buf << "</ty:union>";
+      buf << "</ty:union>\n";
       return buf.toString();
     }
 
@@ -199,10 +199,10 @@ namespace heather
     virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:seq" << ( !isValue ? " ref='t'" : "") << ">";
+      buf << "<ty:seq" << ( !isValue ? " ref='t'" : "") << ">\n";
       for (size_t i = 0; i < fTypes.size(); i++)
         buf << fTypes[i].toString();
-      buf << "</ty:seq>";
+      buf << "</ty:seq>\n";
       return buf.toString();
     }
 
@@ -394,28 +394,28 @@ namespace heather
     {
       StringBuffer buf;
       buf << "<ty:type nm='" << fName << "'"
-          << (fIsInstantiatable ? " inst='t'" : "") << ">";
+          << (fIsInstantiatable ? " inst='t'" : "") << ">\n";
       if (fInherit.isDef())
-        buf << "<ty:isa>" << fInherit.toString() << "</ty:isa>";
+        buf << "<ty:isa>\n" << fInherit.toString() << "</ty:isa>\n";
 
       if (!fGenerics.empty()) {
-        buf << "<ty:gen>";
+        buf << "<ty:gen>\n";
         for (size_t i = 0; i < fGenerics.size(); i++)
           buf << fGenerics[i].toString();
-        buf << "</ty:gen>";
+        buf << "</ty:gen>\n";
       }
 
       if (fIsInstantiatable)
-        buf << "<ty:apply>" << fDefApplySign.toString() << "</ty:apply>";
+        buf << "<ty:apply>\n" << fDefApplySign.toString() << "</ty:apply>\n";
 
       if (!fProtocol.empty()) {
-        buf << "<ty:proto>";
+        buf << "<ty:proto>\n";
         for (size_t i = 0; i < fProtocol.size(); i++)
           buf << fProtocol[i].toString();
-        buf << "</ty:proto>";
+        buf << "</ty:proto>\n";
       }
 
-      buf << "</ty:type>";
+      buf << "</ty:type>\n";
       return buf.toString();
     }
 
@@ -522,19 +522,19 @@ namespace heather
     virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:alias nm='" << fName << "'>";
+      buf << "<ty:alias nm='" << fName << "'>\n";
 
       if (!fGenerics.empty()) {
-        buf << "<ty:gen>";
+        buf << "<ty:gen>\n";
         for (size_t i = 0; i < fGenerics.size(); i++)
           buf << fGenerics[i].toString();
-        buf << "</ty:gen>";
+        buf << "</ty:gen>\n";
       }
 
       if (fType.isDef())
-        buf << "<ty:isa>" << fType.toString() << "</ty:isa>";
+        buf << "<ty:isa>\n" << fType.toString() << "</ty:isa>\n";
 
-      buf << "</ty:alias>";
+      buf << "</ty:alias>\n";
       return buf.toString();
     }
 
@@ -609,12 +609,12 @@ namespace heather
     {
       StringBuffer buf;
       buf << "<ty:measure nm='" << fName << "' unit='"
-          << fDefUnit << "'>";
+          << fDefUnit << "'>\n";
 
       if (fBaseType.isDef())
-        buf << "<ty:isa>" << fBaseType.toString() << "</ty:isa>";
+        buf << "<ty:isa>\n" << fBaseType.toString() << "</ty:isa>\n";
 
-      buf << "</ty:measure>";
+      buf << "</ty:measure>\n";
       return buf.toString();
     }
 
@@ -715,24 +715,24 @@ namespace heather
       StringBuffer buf;
       buf << "<ty:ref" << (fIsOpen ? " gen='t'" : "")
           << ( !isValue ? " ref='t'" : "")
-          << " nm='" << fName << "'>";
+          << " nm='" << fName << "'>\n";
       if (!fGenerics.empty()) {
-        buf << "<ty:gen>";
+        buf << "<ty:gen>\n";
         for (size_t i = 0; i < fGenerics.size(); i++)
           buf << fGenerics[i].toString();
-        buf << "</ty:gen>";
+        buf << "</ty:gen>\n";
       }
       if (!fConstraints.empty()) {
         if (fConstraints.size() == 1)
           buf << fConstraints[0].toString();
         else {
-          buf << "<ty:consts>";
+          buf << "<ty:consts>\n";
           for (size_t i = 0; i < fConstraints.size(); i++)
             buf << fConstraints[i].toString();
-          buf << "</ty:consts>";
+          buf << "</ty:consts>\n";
         }
       }
-      buf << "</ty:ref>";
+      buf << "</ty:ref>\n";
       return buf.toString();
     }
 
@@ -854,9 +854,9 @@ namespace heather
     {
       StringBuffer buf;
       buf << "<ty:array ind='" << fromInt(fSizeIndicator) << "'"
-          << ( !isValue ? " ref='t'" : "") << ">"
+          << ( !isValue ? " ref='t'" : "") << ">\n"
           << fBase.toString()
-          << "</ty:array>";
+          << "</ty:array>\n";
       return buf.toString();
     }
 
@@ -1013,6 +1013,13 @@ Type
 Type::newString(bool isValue)
 {
   return newTypeRef(Names::kStringTypeName, isValue);
+}
+
+
+Type
+Type::newBool(bool isValue)
+{
+  return newTypeRef(Names::kBoolTypeName, isValue);
 }
 
 
@@ -1248,21 +1255,24 @@ Type::isAny() const
 bool
 Type::isInt() const
 {
-  return isBuiltinType(Names::kIntTypeName);
+  return (isBuiltinType(Names::kIntTypeName) ||
+          typeName() == Names::kIntTypeName);
 }
 
 
 bool
 Type::isString() const
 {
-  return isBuiltinType(Names::kStringTypeName);
+  return ( isBuiltinType(Names::kStringTypeName) ||
+           typeName() == Names::kStringTypeName );
 }
 
 
 bool
 Type::isReal() const
 {
-  return isBuiltinType(Names::kRealTypeName);
+  return ( isBuiltinType(Names::kRealTypeName) ||
+           typeName() == Names::kRealTypeName );
 }
 
 
@@ -1776,7 +1786,7 @@ namespace heather
       StringBuffer buf;
       buf << "<ty:const k='" << optostr(fOp) << "'>"
           << fLeft.toString() << fRight.toString()
-          << "</ty:const>";
+          << "</ty:const>\n";
       return buf.toString();
     }
 
@@ -1856,7 +1866,7 @@ namespace heather
       StringBuffer buf;
       buf << "<ty:const k='" << optostr(fOp) << "'>"
           << fValue.toString()
-          << "</ty:const>";
+          << "</ty:const>\n";
       return buf.toString();
     }
 
@@ -1914,9 +1924,9 @@ namespace heather
     virtual String toString() const
     {
       StringBuffer buf;
-      buf << "<ty:const k='isa'>"
+      buf << "<ty:const k='isa'>\n"
           << fType.toString()
-          << "</ty:const>";
+          << "</ty:const>\n";
       return buf.toString();
     }
 
@@ -2266,9 +2276,9 @@ FunctionParameter::toString() const
     break;
   }
 
-  buf << ( fIsSpecialized ? " spec='t'" : "" ) << ">";
+  buf << ( fIsSpecialized ? " spec='t'" : "" ) << ">\n";
   buf << fType.toString();
-  buf << "</ty:prm>";
+  buf << "</ty:prm>\n";
   return buf.toString();
 }
 
@@ -2433,17 +2443,17 @@ FunctionSignature::toString() const
 {
   StringBuffer buf;
   buf << "<ty:fun nm='" << fName << "'"
-      << (fIsGeneric ? " gen='t'" : "") << ">";
+      << (fIsGeneric ? " gen='t'" : "") << ">\n";
 
   if (!fParameters.empty()) {
-    buf << "<ty:prms>";
+    buf << "<ty:prms>\n";
     for (size_t i = 0; i < fParameters.size(); i++)
       buf << fParameters[i].toString();
-    buf << "</ty:prms>";
+    buf << "</ty:prms>\n";
   }
 
-  buf << "<ty:ret>" << fReturnType.toString() << "</ty:ret>";
-  buf << "</ty:fun>";
+  buf << "<ty:ret>\n" << fReturnType.toString() << "</ty:ret>\n";
+  buf << "</ty:fun>\n";
   return buf.toString();
 }
 
@@ -2782,7 +2792,8 @@ namespace heather
   {
     bool hadOneCovariantType = false;
     for (size_t i = 0; i < vect0.size(); i++) {
-      if (isContravariant(type, vect0[i], scope, srcpos, reportErrors))
+      if (isContravariant(type, vect0[i], scope, srcpos, reportErrors) &&
+          !isSameType(type, vect0[i], scope, srcpos, reportErrors))
         return false;
       if (!hadOneCovariantType &&
           isCovariant(type, vect0[i], scope, srcpos, reportErrors))
@@ -2988,7 +2999,7 @@ namespace heather
     return vector;
   }
 
-  
+
   TypeVector
   newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3)
   {
@@ -2999,7 +3010,7 @@ namespace heather
     return vector;
   }
 
-  
+
   TypeVector
   newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
                 const Type& ty4)
@@ -3031,6 +3042,13 @@ namespace heather
   newRangeType(const Type& generic)
   {
     return Type::newType(Names::kRangeTypeName, newTypeVector(generic), Type());
+  }
+
+
+  void
+  tyerror(const Type& type, const char* msg)
+  {
+    fprintf(stderr, "%s: %s\n", msg, (const char*)StrHelper(type.toString()));
   }
 };
 

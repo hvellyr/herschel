@@ -222,6 +222,28 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  class TypeNode : public AptNode
+  {
+  public:
+    TypeNode(const SrcPos& srcpos, const Type& type);
+
+    Type type() const;
+
+    virtual TypeNode* clone() const;
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
+    virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
+
+  private:
+    Type fType;
+  };
+
+
+  //--------------------------------------------------------------------------
+
   template<typename T>
   class NumberNode : public AptNode
   {

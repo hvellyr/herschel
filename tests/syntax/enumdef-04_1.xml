@@ -1,2 +1,61 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>enum</id><id>K1</id><punct type=':'/><id>Keyword</id><nested left='{' right='}'><id>apple</id><id>orange</id><id>pear</id></nested></seq><seq><id>def</id><id>const</id><id>k1</id><punct type='='/><nested left='#[' right=']'><id>apple</id><punct type=','/><id>orange</id><punct type=','/><id>pear</id></nested></seq><seq><id>def</id><id>enum</id><id>K2</id><punct type=':'/><id>Keyword</id><nested left='{' right='}'><seq><id>apple2</id><punct type='='/><lit type='keyw'>#apfel</lit></seq><id>orange2</id><seq><id>pear2</id><punct type='='/><lit type='keyw'>#birne</lit></seq></nested></seq><seq><id>def</id><id>const</id><id>k2</id><punct type='='/><nested left='#[' right=']'><id>apple2</id><punct type=','/><id>orange2</id><punct type=','/><id>pear2</id></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>enum</id>
+<id>K1</id>
+<punct type=':'/>
+<id>Keyword</id>
+<nested left='{' right='}'>
+<id>apple</id>
+<id>orange</id>
+<id>pear</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>k1</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<id>apple</id>
+<punct type=','/>
+<id>orange</id>
+<punct type=','/>
+<id>pear</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>enum</id>
+<id>K2</id>
+<punct type=':'/>
+<id>Keyword</id>
+<nested left='{' right='}'>
+<seq>
+<id>apple2</id>
+<punct type='='/>
+<lit type='keyw'>#apfel</lit>
+</seq>
+<id>orange2</id>
+<seq>
+<id>pear2</id>
+<punct type='='/>
+<lit type='keyw'>#birne</lit>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>k2</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<id>apple2</id>
+<punct type=','/>
+<id>orange2</id>
+<punct type=','/>
+<id>pear2</id>
+</nested>
+</seq>
+</seq>

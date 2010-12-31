@@ -1,3 +1,65 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='samba|getcwd' abstract='true' linkage='C'><params><param sym='buf' type='pos'><type><ty:ref nm='C|char*'></ty:ref></type></param><param sym='size' type='pos'><type><ty:ref nm='C|long'></ty:ref></type></param></params><rettype><ty:ref nm='C|char*'></ty:ref></rettype></func></def><def><func sym='samba|printf' abstract='true' linkage='C'><params><param sym='format' type='pos'><type><ty:ref nm='C|char*'></ty:ref></type></param><param sym='args' type='rest'><type><ty:ref nm='lang|Any'></ty:ref></type></param></params><rettype><ty:ref nm='C|int'></ty:ref></rettype></func></def><def><func sym='samba|foo'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><apply><symbol>printf</symbol><args><str>%d
-</str><int ty='lang|Int'>4711</int></args></apply></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='samba|getcwd' abstract='true' linkage='C'>
+<params>
+<param sym='buf' type='pos'>
+<type>
+<ty:ref nm='C|char*'>
+</ty:ref>
+</type>
+</param>
+<param sym='size' type='pos'>
+<type>
+<ty:ref nm='C|long'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='C|char*'>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='samba|printf' abstract='true' linkage='C'>
+<params>
+<param sym='format' type='pos'>
+<type>
+<ty:ref nm='C|char*'>
+</ty:ref>
+</type>
+</param>
+<param sym='args' type='rest'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='C|int'>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='samba|foo'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<apply>
+<symbol>printf</symbol>
+<args>
+<str>%d
+</str>
+<int ty='lang|Int'>4711</int>
+</args>
+</apply>
+</body>
+</func>
+</def>
+</compile-unit>

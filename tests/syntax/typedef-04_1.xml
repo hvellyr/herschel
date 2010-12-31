@@ -1,2 +1,40 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>type</id><id>OrdinalOrEof</id><punct type=':'/><nested left='&amp;(' right=')'><id>Ordinal</id><punct type=','/><id>Eof</id></nested></seq><seq><id>def</id><id>type</id><id>OrdinalOrFalse</id><punct type=':'/><nested left='&amp;(' right=')'><id>Ordinal</id><punct type=','/><seq><id>Bool</id><punct type='=='/><lit type='bool'>false</lit></seq></nested></seq><seq><id>def</id><id>type</id><id>StringOrUri</id><punct type=':'/><nested left='&amp;(' right=')'><id>String</id><punct type=','/><id>Uri</id></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>OrdinalOrEof</id>
+<punct type=':'/>
+<nested left='&amp;(' right=')'>
+<id>Ordinal</id>
+<punct type=','/>
+<id>Eof</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>OrdinalOrFalse</id>
+<punct type=':'/>
+<nested left='&amp;(' right=')'>
+<id>Ordinal</id>
+<punct type=','/>
+<seq>
+<id>Bool</id>
+<punct type='=='/>
+<lit type='bool'>false</lit>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>StringOrUri</id>
+<punct type=':'/>
+<nested left='&amp;(' right=')'>
+<id>String</id>
+<punct type=','/>
+<id>Uri</id>
+</nested>
+</seq>
+</seq>

@@ -11,7 +11,8 @@ include $(top_srcdir)/config.mk
 LLVM_ROOT = $(top_srcdir)/external/llvm/
 
 LLVM_CPPFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --cppflags)
-LLVM_LDFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --ldflags --libs) # core jit native)
+LLVM_LDFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --ldflags)
+LLVM_LIBS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --libs)
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTest++/src \
 	$(LLVM_CPPFLAGS)
@@ -131,7 +132,7 @@ APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/heather$(APPEXT)
 APPX: $(APPBINARY)
 
 $(APPBINARY): $(OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS) $(LLVM_LIBS)
 
 
 

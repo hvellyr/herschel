@@ -1,2 +1,30 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>export</id><id>public</id><nested left='(' right=')'><id>abc</id></nested></seq><seq><id>export</id><id>public</id><nested left='(' right=')'><id>abc</id><punct type=','/><id>fff</id></nested></seq><seq><id>export</id><id>public</id><nested left='(' right=')'><id>abc</id><punct type=','/><id>xyz</id><punct type=','/><id>fff</id></nested></seq></seq>
+<seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>abc</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>fff</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>xyz</id>
+<punct type=','/>
+<id>fff</id>
+</nested>
+</seq>
+</seq>

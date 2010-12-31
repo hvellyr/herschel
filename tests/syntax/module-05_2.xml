@@ -1,2 +1,58 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='core|f'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><int ty='lang|Int'>1</int></body></func></def><def><func sym='core|red|f'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><int ty='lang|Int'>2</int></body></func></def><def><func sym='core|blue|f'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><int ty='lang|Int'>3</int></body></func></def><def><func sym='core|blue|violet|f'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><int ty='lang|Int'>4</int></body></func></def><def><func sym='core|blue|pink|f'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><int ty='lang|Int'>5</int></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='core|f'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<int ty='lang|Int'>1</int>
+</body>
+</func>
+</def>
+<def>
+<func sym='core|red|f'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<int ty='lang|Int'>2</int>
+</body>
+</func>
+</def>
+<def>
+<func sym='core|blue|f'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<int ty='lang|Int'>3</int>
+</body>
+</func>
+</def>
+<def>
+<func sym='core|blue|violet|f'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<int ty='lang|Int'>4</int>
+</body>
+</func>
+</def>
+<def>
+<func sym='core|blue|pink|f'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<int ty='lang|Int'>5</int>
+</body>
+</func>
+</def>
+</compile-unit>

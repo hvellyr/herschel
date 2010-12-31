@@ -1,2 +1,19 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>class</id><id>Atlas2</id><nested left='&lt;' right='>'><id>T1</id><punct type=','/><id>T2</id></nested><punct type=':'/><nested left='(' right=')'><id>Persona</id><punct type=','/><id>Copyable</id></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>class</id>
+<id>Atlas2</id>
+<nested left='&lt;' right='>'>
+<id>T1</id>
+<punct type=','/>
+<id>T2</id>
+</nested>
+<punct type=':'/>
+<nested left='(' right=')'>
+<id>Persona</id>
+<punct type=','/>
+<id>Copyable</id>
+</nested>
+</seq>
+</seq>

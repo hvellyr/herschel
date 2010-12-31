@@ -1,2 +1,51 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>a</id><punct type='='/><lit type='char'>\u075;</lit></seq><seq><id>def</id><id>b</id><punct type='='/><lit type='char'>\u075;</lit></seq><seq><id>def</id><id>c</id><punct type='='/><lit type='char'>\u0ffff;</lit></seq><seq><id>def</id><id>d</id><punct type='='/><lit type='char'>\u04d2;</lit></seq><seq><id>def</id><id>e</id><punct type='='/><lit type='char'>\u0ffff;</lit></seq><seq><id>def</id><id>f</id><punct type='='/><lit type='char'>\u0ffff;</lit></seq><seq><id>def</id><id>g</id><punct type='='/><lit type='char'>\u0ffff;</lit></seq><seq><id>def</id><id>h</id><punct type='='/><lit type='char'>\u05c;</lit></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>a</id>
+<punct type='='/>
+<lit type='char'>\u075;</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>b</id>
+<punct type='='/>
+<lit type='char'>\u075;</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>c</id>
+<punct type='='/>
+<lit type='char'>\u0ffff;</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>d</id>
+<punct type='='/>
+<lit type='char'>\u04d2;</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>e</id>
+<punct type='='/>
+<lit type='char'>\u0ffff;</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>f</id>
+<punct type='='/>
+<lit type='char'>\u0ffff;</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>g</id>
+<punct type='='/>
+<lit type='char'>\u0ffff;</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>h</id>
+<punct type='='/>
+<lit type='char'>\u05c;</lit>
+</seq>
+</seq>

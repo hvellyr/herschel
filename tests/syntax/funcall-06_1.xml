@@ -1,2 +1,67 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>f</id><nested left='(' right=')'><seq><id>a</id><punct type=':'/><id>Any</id></seq><punct type=','/><seq><id>b</id><punct type=':'/><id>Any</id><punct type='='/><lit type='bool'>true</lit></seq><punct type=','/><seq><id>r</id><punct type=':'/><id>Any</id><punct type='...'/></seq></nested><punct type=':'/><id>Any</id><nested left='{' right='}'><seq><id>outln</id><nested left='(' right=')'><id>a</id><punct type=','/><id>b</id><punct type=','/><id>r</id></nested></seq></nested></seq><seq><id>def</id><id>g</id><nested left='(' right=')'/><punct type=':'/><id>Any</id><nested left='{' right='}'><seq><id>f</id><nested left='(' right=')'><id>a</id><punct type=','/><id type='keyarg'>b</id><lit type='bool'>false</lit><punct type=','/><lit type='int'>2</lit><punct type=','/><lit type='int'>3</lit><punct type=','/><lit type='int'>4</lit></nested></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>b</id>
+<punct type=':'/>
+<id>Any</id>
+<punct type='='/>
+<lit type='bool'>true</lit>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type=':'/>
+<id>Any</id>
+<punct type='...'/>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>outln</id>
+<nested left='(' right=')'>
+<id>a</id>
+<punct type=','/>
+<id>b</id>
+<punct type=','/>
+<id>r</id>
+</nested>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>g</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>f</id>
+<nested left='(' right=')'>
+<id>a</id>
+<punct type=','/>
+<id type='keyarg'>b</id>
+<lit type='bool'>false</lit>
+<punct type=','/>
+<lit type='int'>2</lit>
+<punct type=','/>
+<lit type='int'>3</lit>
+<punct type=','/>
+<lit type='int'>4</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>

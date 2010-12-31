@@ -121,6 +121,7 @@ namespace heather
     static Type newRational(bool isValue = true);
     static Type newReal(bool isValue = true);
     static Type newString(bool isValue = true);
+    static Type newBool(bool isValue = true);
 
     //! Creates a new Type type-instance.  This represents a specific type,
     //! not the type template/definition.  Therefore all (possible) type
@@ -510,6 +511,9 @@ namespace heather
                            const Type& ty4, const Type& ty5);
 
   Type newRangeType(const Type& generic);
+
+
+  void tyerror(const Type& type, const char* msg);
 };                              // namespace
 
 
