@@ -61,6 +61,12 @@ Traversator::traverse(ArrayTypeNode* node)
 }
 
 
+void
+Traversator::traverse(TypeNode* node)
+{
+}
+
+
 //------------------------------------------------------------------------------
 
 void

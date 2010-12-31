@@ -235,6 +235,15 @@ CodeGenerator::codegen(const ArrayTypeNode* node)
 
 
 llvm::Value*
+CodeGenerator::codegen(const TypeNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  // TODO
+  return NULL;
+}
+
+
+llvm::Value*
 CodeGenerator::codegen(const SlotdefNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);

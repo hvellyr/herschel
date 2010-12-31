@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='x' alloc='shared'>
+<type>
+<ty:union>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:union>
+</type>
+<init>
+<str>abc</str>
+</init>
+</vardef>
+</def>
+<def>
+<func sym='foo'>
+<rettype>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<assign  ty='lang|String'>
+<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' acc='shared'>x</symbol>
+<str>hello world</str>
+</assign>
+</body>
+</func>
+</def>
+<def>
+<func sym='goo'>
+<rettype>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<assign  ty='lang|Int'>
+<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' acc='shared'>x</symbol>
+<int ty='lang|Int'>42</int>
+</assign>
+</body>
+</func>
+</def>
+<def>
+<func sym='bar'>
+<rettype>
+<ty:union>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:union>
+</rettype>
+<body>
+<assign  ty='lang|Unspecified'>
+<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' acc='shared'>x</symbol>
+<symbol  ty='lang|Unspecified' acc='shared'>lang|unspecified</symbol>
+</assign>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Unspecified'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:union>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:union>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

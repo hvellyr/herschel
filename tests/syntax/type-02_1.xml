@@ -1,2 +1,26 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>generic</id><id>f</id><nested left='(' right=')'><seq><id>a</id><punct type='@'/><seq><punct type='&apos;'/><id>T</id></seq></seq></nested><punct type=':'/><seq><punct type='&apos;'/><id>T</id></seq><nested left='{' right='}'><id>a</id></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>f</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type='@'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+<nested left='{' right='}'>
+<id>a</id>
+</nested>
+</seq>
+</seq>

@@ -2187,7 +2187,11 @@ SecondPass::parseFor(const Token& expr)
     if (alternate == NULL)
       alternate = new SymbolNode(expr.srcpos(), String("lang|unspecified"));
 
-    Type retType;               // TODO?
+    TypeVector unionTypes;
+    unionTypes.push_back(Type::newAny());
+    unionTypes.push_back(Type::newTypeRef(Names::kUnspecifiedTypeName, true));
+
+    Type retType = Type::newUnion(unionTypes, true);
     Ptr<AptNode> returnVardef = new VardefNode(expr.srcpos(),
                                                returnSym.idValue(), kNormalVar,
                                                true, retType, alternate);
@@ -2510,16 +2514,28 @@ SecondPass::parseTypeExpr(const Token& expr)
                                new SymbolNode(expr.srcpos(), symbol));
     }
   }
+  else if (expr[0] == kQuote && expr[1] == kSymbol) {
+    Type ty = genericTypeRef(expr[1].idValue(), true);
+    return new TypeNode(expr.srcpos(), ty);
+  }
   else if (expr[0].isSeq()) {
+    TypeVector genericArgs;
     assert(expr[0].count() == 2);
-    assert(expr[0][0] == kSymbol || expr[0][0].isSeq());
     assert(expr[1].isNested());
     assert(expr[1].leftToken() == kBracketOpen);
 
-    Ptr<AptNode> typeNode = parseTypeExpr(expr[0]);
-    if (typeNode != NULL) {
-      return new ArrayTypeNode(expr.srcpos(), typeNode);
+    Ptr<AptNode> typeNode;
+    if (expr[0][0] == kQuote && expr[0][1] == kSymbol) {
+      Type ty = genericTypeRef(expr[0][1].idValue(), true);
+      typeNode = new TypeNode(expr.srcpos(), ty);
     }
+    else {
+      assert(expr[0][0] == kSymbol || expr[0][0].isSeq());
+
+      typeNode = parseTypeExpr(expr[0]);
+    }
+    if (typeNode != NULL)
+      return new ArrayTypeNode(expr.srcpos(), typeNode);
   }
 
   fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
@@ -2617,6 +2633,9 @@ SecondPass::parseSeq(const Token& expr)
                 __FILE__, __LINE__);
         assert(0);              // TODO
       }
+    }
+    else if (expr[0] == kQuote && expr[1] == kSymbol) {
+      return parseTypeExpr(expr);
     }
   }
   else if (expr.count() == 3) {

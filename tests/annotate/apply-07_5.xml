@@ -1,2 +1,194 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='foo'><params><param sym='x' type='pos'><type><ty:seq><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type><ty:type nm='lang|String'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type><ty:type nm='lang|Bool'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type></ty:seq></type></param></params><rettype><ty:seq><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type><ty:type nm='lang|String'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type><ty:type nm='lang|Bool'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type></ty:seq></rettype><body><symbol  ty='(lang|Int, lang|String, lang|Bool)'>x</symbol></body></func></def><def><func sym='bar'><rettype><ty:seq><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type><ty:type nm='lang|String'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type><ty:type nm='lang|Bool'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type></ty:seq></rettype><body><block><let><vardef sym='y'><type><ty:seq><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type><ty:type nm='lang|String'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type><ty:type nm='lang|Bool'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type></ty:seq></type></vardef></let><apply  ty='(lang|Int, lang|String, lang|Bool)'><symbol  ty='lambda((lang|Int, lang|String, lang|Bool)):(lang|Int, lang|String, lang|Bool)'>foo</symbol><args><symbol  ty='(lang|Int, lang|String, lang|Bool)'>y</symbol></args></apply></block></body></func></def><ty:node-types><ty:used-type><ty:seq><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type><ty:type nm='lang|String'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type><ty:type nm='lang|Bool'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type></ty:seq></ty:used-type><ty:used-type><ty:fun nm=''><ty:prms><ty:prm is='pos'><ty:seq><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type><ty:type nm='lang|String'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type><ty:type nm='lang|Bool'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type></ty:seq></ty:prm></ty:prms><ty:ret><ty:seq><ty:type nm='lang|Int'><ty:isa><ty:ref nm='lang|Number'></ty:ref></ty:isa></ty:type><ty:type nm='lang|String'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type><ty:type nm='lang|Bool'><ty:isa><ty:ref nm='lang|Object'></ty:ref></ty:isa></ty:type></ty:seq></ty:ret></ty:fun></ty:used-type></ty:node-types></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:seq>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Bool'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:seq>
+</type>
+</param>
+</params>
+<rettype>
+<ty:seq>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Bool'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:seq>
+</rettype>
+<body>
+<symbol  ty='(lang|Int, lang|String, lang|Bool)'>x</symbol>
+</body>
+</func>
+</def>
+<def>
+<func sym='bar'>
+<rettype>
+<ty:seq>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Bool'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:seq>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='y'>
+<type>
+<ty:seq>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Bool'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:seq>
+</type>
+</vardef>
+</let>
+<apply  ty='(lang|Int, lang|String, lang|Bool)'>
+<symbol  ty='lambda((lang|Int, lang|String, lang|Bool)):(lang|Int, lang|String, lang|Bool)'>foo</symbol>
+<args>
+<symbol  ty='(lang|Int, lang|String, lang|Bool)'>y</symbol>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:seq>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Bool'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:seq>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:seq>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Bool'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:seq>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:seq>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Bool'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:seq>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

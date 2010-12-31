@@ -1,2 +1,69 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><class nm='abc|Person'><isa><ty:type nm='abc|Person' inst='t'><ty:apply><ty:fun nm='apply' gen='t'><ty:ret><ty:ref nm='abc|Person'></ty:ref></ty:ret></ty:fun></ty:apply></ty:type></isa></class></def><def><func sym='abc|foo'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><block><let><vardef sym='x'><init><apply><symbol array='t'>abc|Person</symbol><args><int ty='lang|Int'>12</int></args></apply></init></vardef></let><symbol>x</symbol></block></body></func></def><def><func sym='abc|bar'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><block><let><vardef sym='x'><init><apply><symbol>abc|Person</symbol><args><int ty='lang|Int'>12</int></args></apply></init></vardef></let><symbol>x</symbol></block></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<class nm='abc|Person'>
+<isa>
+<ty:type nm='abc|Person' inst='t'>
+<ty:apply>
+<ty:fun nm='apply' gen='t'>
+<ty:ret>
+<ty:ref nm='abc|Person'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:apply>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='abc|foo'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<apply>
+<symbol array='t'>abc|Person</symbol>
+<args>
+<int ty='lang|Int'>12</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<symbol>x</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='abc|bar'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<apply>
+<symbol>abc|Person</symbol>
+<args>
+<int ty='lang|Int'>12</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<symbol>x</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

@@ -1,2 +1,53 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='f'><params><param sym='self' type='pos'><type><ty:ref nm='lang|Any'></ty:ref></type></param><param sym='proc' type='key' key='proc'><type><ty:ref nm='lang|Any'></ty:ref></type><init><function><params><param sym='item' type='pos'><type><ty:ref nm='Item'></ty:ref></type></param></params><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><symbol>item</symbol></body></function></init></param></params><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><apply><symbol>for-each</symbol><args><symbol>self</symbol><symbol>proc</symbol></args></apply></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f'>
+<params>
+<param sym='self' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='proc' type='key' key='proc'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+<init>
+<function>
+<params>
+<param sym='item' type='pos'>
+<type>
+<ty:ref nm='Item'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<symbol>item</symbol>
+</body>
+</function>
+</init>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<apply>
+<symbol>for-each</symbol>
+<args>
+<symbol>self</symbol>
+<symbol>proc</symbol>
+</args>
+</apply>
+</body>
+</func>
+</def>
+</compile-unit>

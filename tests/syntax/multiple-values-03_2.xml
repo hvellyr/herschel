@@ -1,2 +1,128 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><func sym='bar'><rettype><ty:ref nm='lang|Any'></ty:ref></rettype><body><block><let><vardef sym='a'></vardef></let><let><vardef sym='b'></vardef></let><let><vardef sym='c'></vardef></let><apply><symbol>outln</symbol><args><str>hello world</str></args></apply><block><let><vardef sym='__value_0'><init><apply><symbol>foo</symbol><args></args></apply></init></vardef></let><assign><symbol>a</symbol><apply><symbol>slice</symbol><args><symbol>__value_0</symbol><int ty='lang|Int'>0</int></args></apply></assign><assign><symbol>b</symbol><apply><symbol>slice</symbol><args><symbol>__value_0</symbol><int ty='lang|Int'>1</int></args></apply></assign><assign><symbol>c</symbol><apply><symbol>slice</symbol><args><symbol>__value_0</symbol><int ty='lang|Int'>2</int></args></apply></assign></block><block><let><vardef sym='__value_1'><init><apply><symbol>foo2</symbol><args></args></apply></init></vardef></let><assign><symbol>a</symbol><apply><symbol>slice</symbol><args><symbol>__value_1</symbol><int ty='lang|Int'>0</int></args></apply></assign><assign><symbol>b</symbol><apply><symbol>slice</symbol><args><symbol>__value_1</symbol><int ty='lang|Int'>1</int></args></apply></assign><assign><symbol>c</symbol><apply><symbol>slice*</symbol><args><symbol>__value_1</symbol><int ty='lang|Int'>2</int></args></apply></assign></block><assign><symbol>a</symbol><apply><symbol>foo3</symbol><args></args></apply></assign><true/></block></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='bar'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='a'>
+</vardef>
+</let>
+<let>
+<vardef sym='b'>
+</vardef>
+</let>
+<let>
+<vardef sym='c'>
+</vardef>
+</let>
+<apply>
+<symbol>outln</symbol>
+<args>
+<str>hello world</str>
+</args>
+</apply>
+<block>
+<let>
+<vardef sym='__value_0'>
+<init>
+<apply>
+<symbol>foo</symbol>
+<args>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<assign>
+<symbol>a</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|Int'>0</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>b</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|Int'>1</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>c</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|Int'>2</int>
+</args>
+</apply>
+</assign>
+</block>
+<block>
+<let>
+<vardef sym='__value_1'>
+<init>
+<apply>
+<symbol>foo2</symbol>
+<args>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<assign>
+<symbol>a</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_1</symbol>
+<int ty='lang|Int'>0</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>b</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_1</symbol>
+<int ty='lang|Int'>1</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>c</symbol>
+<apply>
+<symbol>slice*</symbol>
+<args>
+<symbol>__value_1</symbol>
+<int ty='lang|Int'>2</int>
+</args>
+</apply>
+</assign>
+</block>
+<assign>
+<symbol>a</symbol>
+<apply>
+<symbol>foo3</symbol>
+<args>
+</args>
+</apply>
+</assign>
+<true/>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

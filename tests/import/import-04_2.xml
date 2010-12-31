@@ -1,2 +1,25 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit xmlns:ty='http://heather.eyestep.org/types'><def><vardef sym='a1|a'><type><ty:ref nm='lang|Real'></ty:ref></type><init><int ty='lang|Int'>12</int></init></vardef></def><def><vardef sym='a1|b'><type><ty:ref nm='MyString'></ty:ref></type><init><str>abc</str></init></vardef></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='a1|a'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<int ty='lang|Int'>12</int>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='a1|b'>
+<type>
+<ty:ref nm='MyString'>
+</ty:ref>
+</type>
+<init>
+<str>abc</str>
+</init>
+</vardef>
+</def>
+</compile-unit>

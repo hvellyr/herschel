@@ -42,7 +42,6 @@ def realloc(array @ 'T[],
       t[i] = array[i]
     for (i in array.size .. newsize - 1)
       t[i] = init-value
-
     t
   }
   else if (new-size < array.size) {

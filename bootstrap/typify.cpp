@@ -154,6 +154,15 @@ Typifier::typify(ArrayTypeNode* node)
 }
 
 
+void
+Typifier::typify(TypeNode* node)
+{
+  if (fPhase == kTypify) {
+    node->setType(node->type());
+  }
+}
+
+
 //------------------------------------------------------------------------------
 
 void
@@ -215,10 +224,6 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
                                 node->scope(), node->srcpos())) {
         errorf(node->initExpr()->srcpos(), E_TypeMismatch,
                "type mismatch in %s initialization", errdesc);
-      }
-      else {
-        // infer the vardef type from the init expression
-        node->setType(node->initExpr()->type());
       }
     }
   }
@@ -697,6 +702,81 @@ Typifier::typify(BinaryNode* node)
   // TODO
   typifyNode(node->left());
   typifyNode(node->right());
+
+  switch (node->op()) {
+  case kOpInvalid:
+    assert(0);
+
+  case kOpPlus:
+  case kOpMinus:
+    if (node->left()->type().isInt()) {
+      if (node->right()->type().isInt())
+        node->setType(node->left()->type());
+      else if (node->right()->type().isReal())
+        node->setType(node->right()->type());
+      else {
+        // TODO
+        assert(0 && "int + what?");
+      }
+    }
+    else if (node->left()->type().isReal()) {
+      if (node->right()->type().isInt() ||
+          node->right()->type().isReal())
+      {
+        node->setType(node->left()->type());
+      }
+      else {
+        // TODO
+        assert(0 && "real + what?");
+      }
+    }
+    else {
+      // TODO
+      fprintf(stderr, "%s + %s\n",
+              (const char*)StrHelper(node->left()->type().toString()),
+              (const char*)StrHelper(node->right()->type().toString()));
+      assert(0 && "what? + what?");
+    }
+    break;
+
+  case kOpEqual:
+  case kOpGreater:
+  case kOpGreaterEqual:
+  case kOpIn:
+  case kOpIsa:
+  case kOpLess:
+  case kOpLessEqual:
+  case kOpUnequal:
+    // TODO: check that left and right type are comparable
+    node->setType(Type::newBool());
+    break;
+
+  case kOpAppend:
+  case kOpAs:
+  case kOpAssign:
+  case kOpBitAnd:
+  case kOpBitOr:
+  case kOpBitXor:
+  case kOpBy:
+  case kOpCompare:
+  case kOpDivide:
+  case kOpExponent:
+  case kOpFold:
+  case kOpLogicalAnd:
+  case kOpLogicalOr:
+  case kOpMapTo:
+  case kOpMod:
+  case kOpMultiply:
+  case kOpRange:
+  case kOpShiftLeft:
+  case kOpShiftRight:
+    assert(0 && "not done yet");
+    break;
+
+  case kOpThen:
+  case kOpWhile:
+    assert(0 && "???");
+  }
 }
 
 
@@ -909,7 +989,6 @@ Typifier::typify(CastNode* node)
   typifyNode(node->base());
 
   if (fPhase == kTypify) {
-    // TODO check that the casted type is contra- or co-variant
     if (!node->type().isOpen()) {
       Type type = node->scope()->lookupType(node->type());
       if (!type.isDef()) {
@@ -917,8 +996,14 @@ Typifier::typify(CastNode* node)
                "undefined type '%s'", (const char*)StrHelper(node->type().toString()));
         node->setType(Type::newAny(true));
       }
-      else
-        node->setType(type);
+      else {
+        if (isInvariant(node->base()->type(), type, node->scope(), node->srcpos())) {
+          errorf(node->srcpos(), E_InvariantType, "Cast to invariant type");
+          node->setType(Type::newAny(true));
+        }
+        else
+          node->setType(type);
+      }
     }
   }
 }
