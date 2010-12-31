@@ -74,7 +74,7 @@
 </init>
 </vardef>
 </let>
-<while>
+<while  ty='lang|Int'>
 <test>
 <binary op='&lt;=' ty='lang|Bool'>
 <symbol  ty='lang|Int'>i</symbol>
