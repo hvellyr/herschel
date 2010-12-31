@@ -978,8 +978,29 @@ Typifier::typify(WhileNode* node)
 void
 Typifier::typify(VectorNode* node)
 {
-  // TODO
-  typifyNodeList(node->children());
+  NodeList& nl = node->children();
+  typifyNodeList(nl);
+
+  Type sharedType;
+  TypeVector generics;
+  for (size_t i = 0; i < nl.size(); i++) {
+    Type ty0 = nl[i]->type();
+    if (!sharedType.isDef()) {
+      sharedType = ty0;
+    }
+    else if (!isSameType(ty0, sharedType, node->scope(), nl[i]->srcpos())) {
+      sharedType = Type::newAny(true);
+      break;
+    }
+  }
+
+  if (!sharedType.isDef())
+    sharedType = Type::newAny(true);
+
+  node->setType(Type::newTypeRef(Names::kVectorTypeName,
+                                 newTypeVector(sharedType),
+                                 newTypeConstVector(),
+                                 true));
 }
 
 

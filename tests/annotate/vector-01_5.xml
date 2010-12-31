@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='ints'>
+<type>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</type>
+<init>
+<vector>
+<int ty='lang|Int'>1</int>
+<int ty='lang|Int'>2</int>
+<int ty='lang|Int'>3</int>
+</vector>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='strs'>
+<type>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</type>
+<init>
+<vector>
+<str>abc</str>
+<str>xyz</str>
+<str>def</str>
+</vector>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='anys'>
+<type>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+<init>
+<vector>
+<str>abc</str>
+<keyw>xyz</keyw>
+<true ty='lang|Bool'/>
+</vector>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='empty'>
+<type>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+<init>
+<vector>
+</vector>
+</init>
+</vardef>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Bool'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='ints'>
+<type>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+<init>
+<vector>
+<vector>
+<str>abc</str>
+<str>xyz</str>
+</vector>
+<vector>
+<str>hello</str>
+<str>world</str>
+</vector>
+</vector>
+</init>
+</vardef>
+</def>
+</compile-unit>

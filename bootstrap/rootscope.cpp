@@ -164,6 +164,45 @@ heather::type::newRootScope()
                                          Type::newTypeRef(String("T"), true, true),
                                          NULL));
 
+  //------------------------------ collections
+
+  // Collection<T>
+  // OrderedCollection<T> : Collection<T>
+  // OrderedSliceable<Ordinal, T> : Sliceable<K, E>
+  // Sequence<T> : (Collection<T>,
+  //                OrderedCollection<T>, 
+  //                OrderedSliceable<Ordinal, T>)
+
+  root->registerType(sp, Names::kCollectionTypeName,
+                     Type::newType(Names::kCollectionTypeName,
+                                   newTypeVector(Type::newTypeRef(String("T"), true, true)),
+                                   Type::newTypeRef(Names::kObjectTypeName, true)));
+
+  root->registerType(sp, Names::kOrderedCollectionTypeName,
+                     Type::newType(Names::kOrderedCollectionTypeName,
+                                   newTypeVector(Type::newTypeRef(String("T"), true, true)),
+                                   Type::newTypeRef(Names::kCollectionTypeName,
+                                                    newTypeVector(Type::newTypeRef(String("T"), true, true)),
+                                                    newTypeConstVector(),
+                                                    true)));
+
+  root->registerType(sp, Names::kSequenceTypeName,
+                     Type::newType(Names::kSequenceTypeName,
+                                   newTypeVector(Type::newTypeRef(String("T"), true, true)),
+                                   Type::newTypeRef(Names::kOrderedCollectionTypeName,
+                                                    newTypeVector(Type::newTypeRef(String("T"), true, true)),
+                                                    newTypeConstVector(),
+                                                    true)));
+
+  root->registerType(sp, Names::kVectorTypeName,
+                     Type::newType(Names::kVectorTypeName,
+                                   newTypeVector(Type::newTypeRef(String("T"), true, true)),
+                                   Type::newTypeRef(Names::kSequenceTypeName,
+                                                    newTypeVector(Type::newTypeRef(String("T"), true, true)),
+                                                    newTypeConstVector(),
+                                                    true)));
+
+
   //------------------------------ slicing
 
   {

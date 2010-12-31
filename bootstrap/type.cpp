@@ -1687,7 +1687,6 @@ Type::toString() const
   case kType_Union:
   case kType_Sequence:
     return fImpl->toString(fIsValue);
-    break;
 
   case kType_Undefined:
   default:
@@ -2982,6 +2981,12 @@ namespace heather
 namespace heather
 {
   TypeVector
+  newTypeVector()
+  {
+    return TypeVector();
+  }
+
+  TypeVector
   newTypeVector(const Type& ty1)
   {
     TypeVector vector;
@@ -3035,6 +3040,13 @@ namespace heather
     vector.push_back(ty4);
     vector.push_back(ty5);
     return vector;
+  }
+
+
+  TypeConstVector
+  newTypeConstVector()
+  {
+    return TypeConstVector();
   }
 
 
