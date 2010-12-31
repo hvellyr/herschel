@@ -60,6 +60,14 @@
 </let>
 <let>
 <vardef sym='__return_1'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
 <init>
 <symbol>lang|unspecified</symbol>
 </init>

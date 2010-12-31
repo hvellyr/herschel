@@ -17,6 +17,14 @@
 </let>
 <let>
 <vardef sym='__return_0'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
 <init>
 <symbol>lang|unspecified</symbol>
 </init>
@@ -121,6 +129,14 @@
 </let>
 <let>
 <vardef sym='__return_2'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
 <init>
 <str>monday</str>
 </init>

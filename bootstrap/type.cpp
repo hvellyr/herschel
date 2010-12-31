@@ -1017,6 +1017,13 @@ Type::newString(bool isValue)
 
 
 Type
+Type::newBool(bool isValue)
+{
+  return newTypeRef(Names::kBoolTypeName, isValue);
+}
+
+
+Type
 Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit)
 {
@@ -1248,21 +1255,24 @@ Type::isAny() const
 bool
 Type::isInt() const
 {
-  return isBuiltinType(Names::kIntTypeName);
+  return (isBuiltinType(Names::kIntTypeName) ||
+          typeName() == Names::kIntTypeName);
 }
 
 
 bool
 Type::isString() const
 {
-  return isBuiltinType(Names::kStringTypeName);
+  return ( isBuiltinType(Names::kStringTypeName) ||
+           typeName() == Names::kStringTypeName );
 }
 
 
 bool
 Type::isReal() const
 {
-  return isBuiltinType(Names::kRealTypeName);
+  return ( isBuiltinType(Names::kRealTypeName) ||
+           typeName() == Names::kRealTypeName );
 }
 
 
@@ -2782,7 +2792,8 @@ namespace heather
   {
     bool hadOneCovariantType = false;
     for (size_t i = 0; i < vect0.size(); i++) {
-      if (isContravariant(type, vect0[i], scope, srcpos, reportErrors))
+      if (isContravariant(type, vect0[i], scope, srcpos, reportErrors) &&
+          !isSameType(type, vect0[i], scope, srcpos, reportErrors))
         return false;
       if (!hadOneCovariantType &&
           isCovariant(type, vect0[i], scope, srcpos, reportErrors))
@@ -2988,7 +2999,7 @@ namespace heather
     return vector;
   }
 
-  
+
   TypeVector
   newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3)
   {
@@ -2999,7 +3010,7 @@ namespace heather
     return vector;
   }
 
-  
+
   TypeVector
   newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
                 const Type& ty4)
@@ -3031,6 +3042,13 @@ namespace heather
   newRangeType(const Type& generic)
   {
     return Type::newType(Names::kRangeTypeName, newTypeVector(generic), Type());
+  }
+
+
+  void
+  tyerror(const Type& type, const char* msg)
+  {
+    fprintf(stderr, "%s: %s\n", msg, (const char*)StrHelper(type.toString()));
   }
 };
 
