@@ -569,17 +569,6 @@ XmlRenderer::renderNode(const RangeNode* node)
 
 
 void
-XmlRenderer::renderNode(const ThenWhileNode* node)
-{
-  displayOpenTag("then-while");
-  displayNode(NULL, node->fFirst);
-  displayNode(NULL, node->fStep);
-  displayNode(NULL, node->fTest);
-  displayCloseTag("then-while");
-}
-
-
-void
 XmlRenderer::renderNode(const AssignNode* node)
 {
   displayOpenTag("assign");
