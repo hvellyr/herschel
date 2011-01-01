@@ -201,7 +201,7 @@ on the way a source file is to be named or where it is to be located;
 there's especially no coupling of module and folder structure or class
 and file name.
 
-Source files are expected to be encoded in UTF-8 encoding.  Note that
+Source files are expected to be encoded in @acronym{UTF}-8 encoding.  Note that
 the text is taken as is, i.e.@ no normalization is expected or applied.
 Note furthermore that identifiers are restricted to a less narrower set
 of characters.
@@ -2283,7 +2283,6 @@ def config version = 10203
 * Loops::                       Loops
 * Conditionals::                Conditionals
 * Conditions::                  Conditions
-* On-the-fly iterators::        On the fly iterators
 * Closures::                    Closures
 * Concurrency::                 Concurrent evaluation
 * NonLocalExists::              Non local exists
@@ -2968,7 +2967,7 @@ def remove!(self @ List<'T>, elt @ 'T) : List<'T>
 
 
 @c --------------------------------------------------------------------
-@node Conditions, On-the-fly iterators, Conditionals, Expressions
+@node Conditions, Closures, Conditionals, Expressions
 @section Conditions
 
 It's possible to add a hook to a block which is called whenever the
@@ -3062,23 +3061,7 @@ exit handler.
 
 
 @c --------------------------------------------------------------------
-@node On-the-fly iterators, Closures, Conditions, Expressions
-@section On the fly iterators
-
-The @code{then-while} ternary operator is used to express iterators on
-the fly.  Its most common usage is in for loops:
-
-@example
-for (i : Int = 0 then i + 1 while i < 10) @emph{body}
-
-def value-iterators(root : Pair<String, _>)
-  root then root.cdr while root <> nil
-@end example
-
-
-
-@c --------------------------------------------------------------------
-@node Closures, Concurrency, On-the-fly iterators, Expressions
+@node Closures, Concurrency, Conditions, Expressions
 @section Closures
 
 @deffn Special function
@@ -4180,10 +4163,10 @@ extern ("C") @{
 @end smallexample
 
 Note that all syntax in the enclosed @code{extern} block is actually C
-syntax.  The functions can be used in heather code directly:
+syntax.  The functions can be used in heather code directly however:
 
 @smallexample
-def foo(s)
+def foo(s : String)
   printf(s.C|->buffer)
 @end smallexample
 
@@ -4200,11 +4183,11 @@ preprocessor macros nor heather macros).
 Only C function and (global) variable declaration are allowed, i.e.@
 no @code{typedef}, no @code{struct}, no @code{enum}, etc.
 @item
-Only a very limited set of types are identified and known to heather.
-The basic C types @code{void}, @code{char}, @code{short}, @code{int},
-@code{long}, @code{float}, @code{double}, and their pointer and
-unsigned variants (where it applies) are understood and properly
-mapped to heather types.
+Only a very limited set of C types are identified and known to
+heather.  The basic C types @code{void}, @code{char}, @code{short},
+@code{int}, @code{long}, @code{float}, @code{double}, and their
+pointer and unsigned variants (where it applies) are understood and
+properly mapped to heather types.
 @item
 C functions are never tail optimized.
 @item
@@ -4405,7 +4388,7 @@ all-symbol      := `*'
 import-stmt     := `import' file-name [ rename-clauses ]
 file-name       := STRING
 rename-clauses  := `(' rename-clause { `,' rename-clause } `)'
-rename-clause   := mod-name `->' mod-name
+rename-clause   := mod-name MAP-OP mod-name
 @end verbatim
 @end smallformat
 
@@ -4531,7 +4514,8 @@ generics-param  := type-name
 
 @sp 1
 
-@emph{Slots are introduced without `def' keyword (WHY?).}
+@emph{Slots definitions may take additional properties
+(``annotations'') after the definition.}
 @smallformat
 @verbatim
 slot-def        := `def' `slot' slot-name [ `:' type-clause ]
@@ -4599,7 +4583,7 @@ unit to another.  The definition is a kind of specialized function
 declaration.}
 @smallformat
 @verbatim
-unit-clause     := `unit' derived-unittag `->' base-unit-tag
+unit-clause     := `unit' derived-unittag MAP-OP base-unit-tag
                    fundef-clause
 base-unit-tag   := UNIT-TAG
 derived-unittag := UNIT-TAG
@@ -4654,7 +4638,7 @@ and replacement form see @ref{Macros}.}
 macro-clause    := `macro' macro-name
                    [ DOCSTRING ]
                    `{' { macro-pattern } `}'
-macro-pattern   := `{' pattern-def `}' `->' `{' rplc-text `}'
+macro-pattern   := `{' pattern-def `}' MAP-OP `{' rplc-text `}'
 pattern-def     := { any token }
 rplc-text       := { any token }
 @end verbatim
@@ -4845,12 +4829,7 @@ right-operand   := expression
 unary-expr      := UNARY-OP operand
 operand         := expression
 
-ternary         := iterator-expr | range-expr
-
-iterator-expr   := init-step `then' next-step [ `while' while-test ]
-init-step       := expression
-next-step       := expression
-while-test      := expression
+ternary         := range-expr
 
 range-expr      := from-expr RANGE-OP to-expr [ `by' step-expr ]
 from-expr       := expression
@@ -4878,14 +4857,14 @@ select-expr     := `select' `(' test-expr [ `,' select-comptor ] `)'
                    `{' select-tests `}'
 select-comptor  := expression
 select-tests    := { `|' select-test }
-select-test     := constants `->' consequent
+select-test     := constants MAP-OP consequent
                 |  `else' alternate
 
 constants       := constant { `,' constant }
 
 match-expr      := `match' `(' test-expr `)' `{' match-tests `}'
 match-tests     := { `|' match-test }
-match-test      := [ var-name ] `:' type-clause `->' consequent
+match-test      := [ var-name ] `:' type-clause MAP-OP consequent
 @end verbatim
 @end smallformat
 
@@ -4901,6 +4880,9 @@ incoll-expr     := var-name [ `:' type-clause ] `in' collection-expr
 collection-expr := expression
 explicit-expr   := var-name [ `:' type-clause ] `='
                    init-step `then' next-step [ `while' while-test ]
+init-step       := expression
+next-step       := expression
+while-test      := expression
 loop-body       := expression
 @end verbatim
 @end smallformat
@@ -4943,7 +4925,7 @@ literal-vector  := `#(' [ expression { `,' expression } ] `)'
 literal-array   := `#[' [ expression { `,' expression } ] `]'
 
 literal-dict    := `#(' dict-pair { `,' dict-pair } `)'
-dict-pair       := constant `->' expression
+dict-pair       := constant MAP-OP expression
 @end verbatim
 @end smallformat
 
@@ -5065,6 +5047,7 @@ compare-op      := `==' | `<>' | `<' | `>' | `<=' | `>='
 misc-op         := `%' | `isa'
 
 range-op        := `..'
+map-op          := `->'
 @end verbatim
 @end smallformat
 
