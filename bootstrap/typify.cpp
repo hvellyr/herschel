@@ -841,8 +841,8 @@ Typifier::typify(IfNode* node)
 void
 Typifier::typify(KeyargNode* node)
 {
-  // TODO ?
   typifyNode(node->value());
+  node->setType(node->value()->type());
 }
 
 
