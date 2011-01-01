@@ -656,14 +656,6 @@ Typifier::typify(ApplyNode* node)
 
 
 void
-Typifier::typify(ArrayNode* node)
-{
-  // TODO
-  typifyNodeList(node->children());
-}
-
-
-void
 Typifier::typify(AssignNode* node)
 {
   typifyNode(node->lvalue());
@@ -1032,6 +1024,26 @@ Typifier::typify(DictNode* node)
                                  newTypeVector(keyType, valueType),
                                  newTypeConstVector(),
                                  true));
+}
+
+
+void
+Typifier::typify(ArrayNode* node)
+{
+  NodeList& nl = node->children();
+  typifyNodeList(nl);
+
+  Type valueType;
+  TypeVector generics;
+  for (size_t i = 0; i < nl.size(); i++) {
+    if (!mapCommonType(valueType, nl[i]))
+      break;
+  }
+
+  if (!valueType.isDef())
+    valueType = Type::newAny(true);
+
+  node->setType(Type::newArray(valueType, nl.size(), true));
 }
 
 

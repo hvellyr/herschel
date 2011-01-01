@@ -691,7 +691,15 @@ XmlRenderer::renderNode(const SlotdefNode* node)
 void
 XmlRenderer::renderNode(const ArrayNode* node)
 {
-  displayOpenTag("array");
+  StringBuffer attrs;
+
+  if (fShowNodeType && node->type().isDef()) {
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
+  }
+
+  displayOpenTagAttrs("array", StrHelper(attrs.toString()));
   displayNodeList(NULL, node->children());
   displayCloseTag("array");
 }
@@ -700,7 +708,15 @@ XmlRenderer::renderNode(const ArrayNode* node)
 void
 XmlRenderer::renderNode(const VectorNode* node)
 {
-  displayOpenTag("vector");
+  StringBuffer attrs;
+
+  if (fShowNodeType && node->type().isDef()) {
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
+  }
+
+  displayOpenTagAttrs("vector", StrHelper(attrs.toString()));
   displayNodeList(NULL, node->children());
   displayCloseTag("vector");
 }
@@ -709,7 +725,15 @@ XmlRenderer::renderNode(const VectorNode* node)
 void
 XmlRenderer::renderNode(const DictNode* node)
 {
-  displayOpenTag("dict");
+  StringBuffer attrs;
+
+  if (fShowNodeType && node->type().isDef()) {
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
+  }
+
+  displayOpenTagAttrs("dict", StrHelper(attrs.toString()));
   displayNodeList(NULL, node->children());
   displayCloseTag("dict");
 }

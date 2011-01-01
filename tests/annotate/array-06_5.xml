@@ -3,81 +3,72 @@
 <def>
 <vardef sym='ints'>
 <type>
-<ty:ref nm='lang|Vector'>
-<ty:gen>
+<ty:array ind='3'>
 <ty:type nm='lang|Int'>
 <ty:isa>
 <ty:ref nm='lang|Number'>
 </ty:ref>
 </ty:isa>
 </ty:type>
-</ty:gen>
-</ty:ref>
+</ty:array>
 </type>
 <init>
-<vector  ty='lang|Vector&lt;lang|Int>'>
+<array  ty='lang|Int[]'>
 <int ty='lang|Int'>1</int>
 <int ty='lang|Int'>2</int>
 <int ty='lang|Int'>3</int>
-</vector>
+</array>
 </init>
 </vardef>
 </def>
 <def>
 <vardef sym='strs'>
 <type>
-<ty:ref nm='lang|Vector'>
-<ty:gen>
+<ty:array ind='2'>
 <ty:type nm='lang|String'>
 <ty:isa>
 <ty:ref nm='lang|Object'>
 </ty:ref>
 </ty:isa>
 </ty:type>
-</ty:gen>
-</ty:ref>
+</ty:array>
 </type>
 <init>
-<vector  ty='lang|Vector&lt;lang|String>'>
+<array  ty='lang|String[]'>
 <str>abc</str>
 <str>xyz</str>
-<str>def</str>
-</vector>
+</array>
 </init>
 </vardef>
 </def>
 <def>
 <vardef sym='anys'>
 <type>
-<ty:ref nm='lang|Vector'>
-<ty:gen>
+<ty:array ind='3'>
 <ty:ref nm='lang|Any'>
 </ty:ref>
-</ty:gen>
-</ty:ref>
+</ty:array>
 </type>
 <init>
-<vector  ty='lang|Vector&lt;lang|Any>'>
+<array  ty='lang|Any[]'>
+<keyw>abc</keyw>
 <str>abc</str>
-<keyw>xyz</keyw>
 <true ty='lang|Bool'/>
-</vector>
+</array>
 </init>
 </vardef>
 </def>
 <def>
 <vardef sym='empty'>
 <type>
-<ty:ref nm='lang|Vector'>
-<ty:gen>
+<ty:array ind='0'>
 <ty:ref nm='lang|Any'>
 </ty:ref>
-</ty:gen>
-</ty:ref>
+</ty:array>
 </type>
 <init>
-<vector  ty='lang|Vector&lt;lang|Any>'>
-</vector>
+<array  ty='lang|Any[]'>
+</array>
 </init>
 </vardef>
 </def>
@@ -99,36 +90,30 @@
 </ty:type>
 </ty:used-type>
 <ty:used-type>
-<ty:ref nm='lang|Vector'>
-<ty:gen>
+<ty:array ind='3'>
 <ty:ref nm='lang|Any'>
 </ty:ref>
-</ty:gen>
-</ty:ref>
+</ty:array>
 </ty:used-type>
 <ty:used-type>
-<ty:ref nm='lang|Vector'>
-<ty:gen>
+<ty:array ind='3'>
 <ty:type nm='lang|Int'>
 <ty:isa>
 <ty:ref nm='lang|Number'>
 </ty:ref>
 </ty:isa>
 </ty:type>
-</ty:gen>
-</ty:ref>
+</ty:array>
 </ty:used-type>
 <ty:used-type>
-<ty:ref nm='lang|Vector'>
-<ty:gen>
+<ty:array ind='2'>
 <ty:type nm='lang|String'>
 <ty:isa>
 <ty:ref nm='lang|Object'>
 </ty:ref>
 </ty:isa>
 </ty:type>
-</ty:gen>
-</ty:ref>
+</ty:array>
 </ty:used-type>
 </ty:node-types>
 </compile-unit>
