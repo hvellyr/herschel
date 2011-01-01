@@ -50,7 +50,6 @@ namespace heather
   class SlotdefNode;
   class StringNode;
   class SymbolNode;
-  class ThenWhileNode;
   class TypeDefNode;
   class UnitConstNode;
   class VardefNode;
@@ -102,7 +101,6 @@ namespace heather
     void renderNode(const SlotdefNode* node);
     void renderNode(const StringNode* node);
     void renderNode(const SymbolNode* node);
-    void renderNode(const ThenWhileNode* node);
     void renderNode(const TypeDefNode* node);
     void renderNode(const UnitConstNode* node);
     void renderNode(const VardefNode* node);
