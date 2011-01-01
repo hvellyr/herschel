@@ -21,7 +21,7 @@
 </ty:ref>
 </type>
 <init>
-<dict>
+<dict  ty='lang|Map&lt;lang|Char, lang|String>'>
 <binary op='->'>
 <char>97</char>
 <str>alpha</str>
@@ -55,7 +55,7 @@
 </ty:ref>
 </type>
 <init>
-<dict>
+<dict  ty='lang|Map&lt;lang|Keyword, lang|Any>'>
 <binary op='->'>
 <keyw>name</keyw>
 <str>albert rice</str>
@@ -80,6 +80,38 @@
 </ty:ref>
 </ty:isa>
 </ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Map'>
+<ty:gen>
+<ty:type nm='lang|Char'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Map'>
+<ty:gen>
+<ty:type nm='lang|Keyword'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
 </ty:used-type>
 </ty:node-types>
 </compile-unit>
