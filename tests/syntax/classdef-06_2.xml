@@ -143,7 +143,7 @@
 <isa>
 <ty:type nm='Abc' inst='t'>
 <ty:isa>
-<ty:ref nm='Collection'>
+<ty:ref nm='lang|Collection'>
 <ty:gen>
 <ty:ref gen='t' nm='K'>
 <ty:const k='isa'>

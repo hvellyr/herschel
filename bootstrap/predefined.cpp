@@ -54,6 +54,9 @@ const String heather::Names::kCollectionTypeName  = String(MID_CollectionTypeNam
 const String heather::Names::kOrderedCollectionTypeName = String(MID_OrderedCollectionTypeName);
 const String heather::Names::kSequenceTypeName    = String(MID_SequenceTypeName);
 const String heather::Names::kVectorTypeName      = String(MID_VectorTypeName);
+const String heather::Names::kAssocTypeName       = String(MID_AssocTypeName);
+const String heather::Names::kAssocCollectionTypeName = String(MID_AssocCollectionTypeName);
+const String heather::Names::kMapTypeName         = String(MID_MapTypeName);
 
 const String heather::Names::kLangReturn = String(MID_lang_return);
 const String heather::Names::kLangSlice  = String(MID_lang_slice);

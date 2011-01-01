@@ -975,30 +975,40 @@ Typifier::typify(WhileNode* node)
 }
 
 
+static bool
+mapCommonType(Type& resultType, AptNode* node)
+{
+  Type ty0 = node->type();
+  if (!resultType.isDef()) {
+    resultType = ty0;
+  }
+  else if (!isSameType(ty0, resultType, node->scope(), node->srcpos())) {
+    resultType = Type::newAny(true);
+    return false;
+  }
+
+  return true;
+}
+
+
 void
 Typifier::typify(VectorNode* node)
 {
   NodeList& nl = node->children();
   typifyNodeList(nl);
 
-  Type sharedType;
+  Type valueType;
   TypeVector generics;
   for (size_t i = 0; i < nl.size(); i++) {
-    Type ty0 = nl[i]->type();
-    if (!sharedType.isDef()) {
-      sharedType = ty0;
-    }
-    else if (!isSameType(ty0, sharedType, node->scope(), nl[i]->srcpos())) {
-      sharedType = Type::newAny(true);
+    if (!mapCommonType(valueType, nl[i]))
       break;
-    }
   }
 
-  if (!sharedType.isDef())
-    sharedType = Type::newAny(true);
+  if (!valueType.isDef())
+    valueType = Type::newAny(true);
 
   node->setType(Type::newTypeRef(Names::kVectorTypeName,
-                                 newTypeVector(sharedType),
+                                 newTypeVector(valueType),
                                  newTypeConstVector(),
                                  true));
 }
@@ -1007,8 +1017,31 @@ Typifier::typify(VectorNode* node)
 void
 Typifier::typify(DictNode* node)
 {
-  // TODO
-  typifyNodeList(node->children());
+  Type keyType;
+  Type valueType;
+
+  NodeList& nl = node->children();
+  for (size_t i = 0; i < nl.size(); i++) {
+    BinaryNode* pair = dynamic_cast<BinaryNode*>(nl[i].obj());
+    assert(pair != NULL);
+    assert(pair->op() == kOpMapTo);
+
+    typifyNode(pair->left());
+    typifyNode(pair->right());
+
+    mapCommonType(keyType, pair->left());
+    mapCommonType(valueType, pair->right());
+  }
+
+  if (!keyType.isDef())
+    keyType = Type::newAny(true);
+  if (!valueType.isDef())
+    valueType = Type::newAny(true);
+
+  node->setType(Type::newTypeRef(Names::kMapTypeName,
+                                 newTypeVector(keyType, valueType),
+                                 newTypeConstVector(),
+                                 true));
 }
 
 

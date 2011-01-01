@@ -92,6 +92,9 @@ namespace heather
 #define MID_OrderedCollectionTypeName "lang|OrderedCollection"
 #define MID_SequenceTypeName    "lang|Sequence"
 #define MID_VectorTypeName      "lang|Vector"
+#define MID_AssocCollectionTypeName "lang|AssocCollection"
+#define MID_AssocTypeName       "lang|Assoc"
+#define MID_MapTypeName         "lang|Map"
 
 
   //--------------------------------------------------------------------------
@@ -145,6 +148,9 @@ namespace heather
     const static String kOrderedCollectionTypeName;
     const static String kSequenceTypeName;
     const static String kVectorTypeName;
+    const static String kAssocTypeName;
+    const static String kAssocCollectionTypeName;
+    const static String kMapTypeName;
 
     // predefined functions
     const static String kLangReturn;
