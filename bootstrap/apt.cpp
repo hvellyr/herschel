@@ -1420,55 +1420,6 @@ RangeNode::transform(Transformator* tr)
 
 //--------------------------------------------------------------------------
 
-ThenWhileNode::ThenWhileNode(const SrcPos& srcpos,
-                             AptNode* first, AptNode* step, AptNode* test)
-  : AptNode(srcpos),
-    fFirst(first),
-    fStep(step),
-    fTest(test)
-{ }
-
-
-ThenWhileNode*
-ThenWhileNode::clone() const
-{
-  return cloneScope(this, new ThenWhileNode(fSrcPos,
-                                            nodeClone(fFirst),
-                                            nodeClone(fStep),
-                                            nodeClone(fTest)));
-}
-
-
-void
-ThenWhileNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-ThenWhileNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-ThenWhileNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-ThenWhileNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
-//--------------------------------------------------------------------------
-
 AssignNode::AssignNode(const SrcPos& srcpos,
                        AptNode* lvalue, AptNode* rvalue)
   : AptNode(srcpos),

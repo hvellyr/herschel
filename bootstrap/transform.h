@@ -47,7 +47,6 @@ namespace heather
   class SlotdefNode;
   class StringNode;
   class SymbolNode;
-  class ThenWhileNode;
   class TypeDefNode;
   class UnitConstNode;
   class VardefNode;
@@ -100,7 +99,6 @@ namespace heather
     AptNode* transform(SelectNode* node);
     AptNode* transform(SlotdefNode* node);
     AptNode* transform(StringNode* node);
-    AptNode* transform(ThenWhileNode* node);
     AptNode* transform(TypeDefNode* node);
     AptNode* transform(UnitConstNode* node);
     AptNode* transform(VectorNode* node);

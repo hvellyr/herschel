@@ -380,15 +380,6 @@ Annotator::annotate(RangeNode* node)
 
 
 void
-Annotator::annotate(ThenWhileNode* node)
-{
-  annotateNode(node->first());
-  annotateNode(node->step());
-  annotateNode(node->test());
-}
-
-
-void
 Annotator::annotate(TypeDefNode* node)
 {
   if (fPhase == kRegister)

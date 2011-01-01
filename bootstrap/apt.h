@@ -664,34 +664,6 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  class ThenWhileNode : public AptNode
-  {
-  public:
-    ThenWhileNode(const SrcPos& srcpos,
-                  AptNode* first, AptNode* step, AptNode* test);
-    virtual ThenWhileNode* clone() const;
-
-    virtual void render(XmlRenderer* renderer) const;
-    virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
-    virtual AptNode* transform(Transformator* annotator);
-
-    AptNode* first() const { return fFirst; }
-    AptNode* step() const { return fStep; }
-    AptNode* test() const { return fTest; }
-
-  private:
-    friend class XmlRenderer;
-    friend class Transformator;
-
-    Ptr<AptNode> fFirst;
-    Ptr<AptNode> fStep;
-    Ptr<AptNode> fTest;
-  };
-
-
-  //--------------------------------------------------------------------------
-
   class AssignNode : public AptNode
   {
   public:

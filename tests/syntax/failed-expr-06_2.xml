@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><def><func sym='value-iterators'><params><param sym='root' type='pos'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Pair'><ty:gen><ty:ref nm='String'></ty:ref><ty:ref nm='_'></ty:ref></ty:gen></ty:ref></type></param></params><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></rettype><body><symbol>unspecified</symbol></body></func></def></compile-unit>
