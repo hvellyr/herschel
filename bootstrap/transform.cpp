@@ -413,16 +413,6 @@ Transformator::transform(RangeNode* node)
 
 
 AptNode*
-Transformator::transform(ThenWhileNode* node)
-{
-  node->setFirst(transformNode(node->first()));
-  node->setStep(transformNode(node->step()));
-  node->setTest(transformNode(node->test()));
-  return node;
-}
-
-
-AptNode*
 Transformator::transform(TypeDefNode* node)
 {
   // TODO

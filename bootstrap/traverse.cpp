@@ -236,15 +236,6 @@ Traversator::traverse(RangeNode* node)
 
 
 void
-Traversator::traverse(ThenWhileNode* node)
-{
-  traverseNode(node->first());
-  traverseNode(node->step());
-  traverseNode(node->test());
-}
-
-
-void
 Traversator::traverse(TypeDefNode* node)
 {
   // TODO

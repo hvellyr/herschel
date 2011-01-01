@@ -1,6 +1,7 @@
 Basic dos and don'ts:
 
   - never using TABs, use whitespace only
+  - basic indentation step is 2
   - please don't leave trailing whitespace
   - identifiers and comments should be in english
 
@@ -46,7 +47,8 @@ Global variables
 
 Constants (enum, defines, const)
 
-  Start with a 'k', otherwise in camelcase.
+  Start with a 'k', otherwise in camelcase.  Exception: error codes start
+  with an E_.
 
 
 Namespaces
@@ -165,4 +167,4 @@ Whitespace
 
   Separate functions and types by 2 empty lines.  Single empty lines are to
   be used for grouping code portions.  You may add a separator line
-  (#----...) between functions and types to form a larger grouping.
+  (//----...) between functions and types to form a larger grouping.
