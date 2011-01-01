@@ -12,7 +12,7 @@
 <vardef sym='x'>
 <type>
 <ty:array ind='0'>
-<ty:ref nm='Vector'>
+<ty:ref nm='lang|Vector'>
 <ty:gen>
 <ty:ref nm='lang|Int'>
 </ty:ref>
@@ -22,7 +22,7 @@
 </type>
 <init>
 <apply>
-<symbol array='t'>Vector</symbol>
+<symbol  array='t'>Vector</symbol>
 <args>
 <int ty='lang|Int'>1024</int>
 </args>
@@ -34,7 +34,7 @@
 <vardef sym='y'>
 <type>
 <ty:array ind='12'>
-<ty:ref nm='Map'>
+<ty:ref nm='lang|Map'>
 <ty:gen>
 <ty:ref nm='lang|String'>
 </ty:ref>

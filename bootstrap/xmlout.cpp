@@ -414,8 +414,11 @@ void
 XmlRenderer::renderNode(const TypeNode* node)
 {
   StringBuffer attrs;
-  if (node->type().isDef())
+  if (node->type().isDef()) {
     attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
+  }
 
   displayTagAttr("type", StrHelper(attrs.toString()), String());
 }
@@ -596,6 +599,8 @@ XmlRenderer::renderNode(const VardefNode* node)
   displayNode("init", node->initExpr());
 
   displayCloseTag("vardef");
+
+
 }
 
 
@@ -986,8 +991,11 @@ XmlRenderer::renderNode(const WhileNode* node)
 {
   StringBuffer attrs;
 
-  if (fShowNodeType && node->type().isDef())
+  if (fShowNodeType && node->type().isDef()) {
     attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
+  }
 
   displayOpenTagAttrs("while", StrHelper(attrs.toString()));
   displayNode("test", node->test());

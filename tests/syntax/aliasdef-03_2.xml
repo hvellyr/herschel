@@ -11,7 +11,7 @@
 <let>
 <vardef sym='a'>
 <type>
-<ty:ref nm='Vector'>
+<ty:ref nm='lang|Vector'>
 <ty:gen>
 <ty:ref nm='lang|Int'>
 </ty:ref>

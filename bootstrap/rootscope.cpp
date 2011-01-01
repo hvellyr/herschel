@@ -203,6 +203,42 @@ heather::type::newRootScope()
                                                     true)));
 
 
+  // Assoc<K, V>
+  // AssocCollection<K, V> : Collection<Assoc<K, V>>
+  // Map<K, V> : AssocCollection<K, V>
+
+  root->registerType(sp, Names::kAssocTypeName,
+                     Type::newType(Names::kAssocTypeName,
+                                   newTypeVector(Type::newTypeRef(String("K"), true, true),
+                                                 Type::newTypeRef(String("V"), true, true)),
+                                   Type::newTypeRef(Names::kObjectTypeName, true)));
+
+  root->registerType(
+    sp, Names::kAssocCollectionTypeName,
+    Type::newType(Names::kAssocCollectionTypeName,
+                  newTypeVector(Type::newTypeRef(String("K"), true, true),
+                                Type::newTypeRef(String("V"), true, true)),
+                  Type::newTypeRef(
+                    Names::kCollectionTypeName,
+                    newTypeVector(Type::newTypeRef(
+                                    Names::kAssocTypeName,
+                                    newTypeVector(Type::newTypeRef(String("K"), true, true),
+                                                  Type::newTypeRef(String("V"), true, true)),
+                                    newTypeConstVector(),
+                                    true)),
+                    newTypeConstVector(),
+                    true)));
+
+  root->registerType(sp, Names::kMapTypeName,
+                     Type::newType(Names::kMapTypeName,
+                                   newTypeVector(Type::newTypeRef(String("K"), true, true),
+                                                 Type::newTypeRef(String("V"), true, true)),
+                                   Type::newTypeRef(Names::kAssocCollectionTypeName,
+                                                    newTypeVector(Type::newTypeRef(String("K"), true, true),
+                                                                  Type::newTypeRef(String("V"), true, true)),
+                                                    newTypeConstVector(),
+                                                    true)));
+
   //------------------------------ slicing
 
   {

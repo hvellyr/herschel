@@ -70,7 +70,7 @@
 <ty:ref gen='t' nm='C'>
 <ty:const k='isa'>
 <ty:seq>
-<ty:ref nm='Collection'>
+<ty:ref nm='lang|Collection'>
 </ty:ref>
 <ty:ref nm='Nullable'>
 </ty:ref>
