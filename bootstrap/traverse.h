@@ -46,7 +46,6 @@ namespace heather
   class SlotdefNode;
   class StringNode;
   class SymbolNode;
-  class ThenWhileNode;
   class TypeDefNode;
   class TypeNode;
   class UnitConstNode;
@@ -111,7 +110,6 @@ namespace heather
     void traverse(SelectNode* node);
     void traverse(SlotdefNode* node);
     void traverse(StringNode* node);
-    void traverse(ThenWhileNode* node);
     void traverse(TypeDefNode* node);
     void traverse(TypeNode* node);
     void traverse(UnitConstNode* node);

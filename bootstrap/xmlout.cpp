@@ -813,17 +813,6 @@ XmlRenderer::renderNode(const RangeNode* node)
 
 
 void
-XmlRenderer::renderNode(const ThenWhileNode* node)
-{
-  displayOpenTag("then-while");
-  displayNode(NULL, node->first());
-  displayNode(NULL, node->step());
-  displayNode(NULL, node->test());
-  displayCloseTag("then-while");
-}
-
-
-void
 XmlRenderer::renderNode(const AssignNode* node)
 {
   StringBuffer attrs;

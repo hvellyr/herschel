@@ -45,6 +45,7 @@ namespace heather
     E_UndefinedUnit       = 0x010a,
     E_OrphanedMultiValue  = 0x010b,
     E_OrphanedRestInd     = 0x010c,
+    E_MisplacedThenWhile  = 0x010d,
 
     E_SymbolExpected      = 0x1001,
     E_StringExpected      = 0x1002,

@@ -436,16 +436,6 @@ Annotator::annotate(RangeNode* node)
 
 
 void
-Annotator::annotate(ThenWhileNode* node)
-{
-  // TODO : set tail node position
-  annotateNode(node->first());
-  annotateNode(node->step());
-  annotateNode(node->test());
-}
-
-
-void
 Annotator::annotate(TypeDefNode* node)
 {
   // TODO : set tail node position

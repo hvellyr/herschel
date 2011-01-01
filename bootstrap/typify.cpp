@@ -942,16 +942,6 @@ Typifier::typify(RangeNode* node)
 
 
 void
-Typifier::typify(ThenWhileNode* node)
-{
-  // TODO
-  typifyNode(node->first());
-  typifyNode(node->step());
-  typifyNode(node->test());
-}
-
-
-void
 Typifier::typify(TypeDefNode* node)
 {
   // TODO
