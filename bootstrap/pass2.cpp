@@ -1676,18 +1676,9 @@ SecondPass::parseBinary(const Token& expr)
     }
 
   case kThenId:
-    if (expr.count() >= 5) {
-      assert(expr[3] == kWhileId);
-      Ptr<AptNode> first = parseExpr(expr[0]);
-      Ptr<AptNode> step = parseExpr(expr[2]);
-      Ptr<AptNode> test = parseExpr(expr[4]);
-      return new ThenWhileNode(expr.srcpos(), first, step, test);
-    }
-    else {
-      Ptr<AptNode> first = parseExpr(expr[0]);
-      Ptr<AptNode> step = parseExpr(expr[2]);
-      return new ThenWhileNode(expr.srcpos(), first, step, NULL);
-    }
+    errorf(expr.srcpos(), E_MisplacedThenWhile,
+           "unexpected then/while operator outside of for() expression");
+    return NULL;
 
   case kAs:
     {

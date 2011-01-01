@@ -47,7 +47,6 @@ namespace heather
   class SlotdefNode;
   class StringNode;
   class SymbolNode;
-  class ThenWhileNode;
   class TypeDefNode;
   class UnitConstNode;
   class VardefNode;
@@ -108,7 +107,6 @@ namespace heather
     void annotate(SelectNode* node);
     void annotate(SlotdefNode* node);
     void annotate(StringNode* node);
-    void annotate(ThenWhileNode* node);
     void annotate(TypeDefNode* node);
     void annotate(UnitConstNode* node);
     void annotate(VectorNode* node);
