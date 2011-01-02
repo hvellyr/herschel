@@ -26,6 +26,8 @@ const String heather::Names::kComplexTypeName     = String(MID_ComplexTypeName);
 const String heather::Names::kIntTypeName         = String(MID_IntTypeName);
 const String heather::Names::kRationalTypeName    = String(MID_RationalTypeName);
 const String heather::Names::kRealTypeName        = String(MID_RealTypeName);
+const String heather::Names::kOrdinalTypeName     = String(MID_OrdinalTypeName);
+
 
 const String heather::Names::kFloat32TypeName     = String(MID_Float32TypeName);
 const String heather::Names::kFloat64TypeName     = String(MID_Float64TypeName);

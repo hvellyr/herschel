@@ -121,6 +121,7 @@ Typifier::typify(SymbolNode* node)
           localCtx.registerType(genName, nodeGenerics[i]);
         }
 
+        // TODO: shouldn't this be Class<some-type> ?
         node->setType(type.replaceGenerics(localCtx));
       }
       else {
@@ -130,6 +131,7 @@ Typifier::typify(SymbolNode* node)
           return;
         }
 
+        // TODO: shouldn't this be Class<some-type> ?
         node->setType(type);
       }
     }
@@ -145,9 +147,11 @@ Typifier::typify(ArrayTypeNode* node)
 
     SymbolNode* symnd = dynamic_cast<SymbolNode*>(node->typeNode());
     if (symnd != NULL) {
+      // TODO: shouldn't this be Class<some-type> ?
       node->setType(Type::newArray(symnd->type(), 0, true));
     }
     else {
+      // TODO: shouldn't this be Class<some-type> ?
       node->setType(Type::newArray(node->typeNode()->type(), 0, true));
     }
   }
@@ -158,6 +162,7 @@ void
 Typifier::typify(TypeNode* node)
 {
   if (fPhase == kTypify) {
+    // TODO: shouldn't this be Class<some-type> ?
     node->setType(node->type());
   }
 }
@@ -691,83 +696,170 @@ Typifier::typify(AssignNode* node)
 void
 Typifier::typify(BinaryNode* node)
 {
-  // TODO
-  typifyNode(node->left());
-  typifyNode(node->right());
+  if (fPhase == kTypify) {
+    typifyNode(node->left());
+    typifyNode(node->right());
 
-  switch (node->op()) {
-  case kOpInvalid:
-    assert(0);
+    Type leftty = node->left()->type();
+    Type rightty = node->right()->type();
 
-  case kOpPlus:
-  case kOpMinus:
-    if (node->left()->type().isInt()) {
-      if (node->right()->type().isInt())
-        node->setType(node->left()->type());
-      else if (node->right()->type().isReal())
-        node->setType(node->right()->type());
-      else {
-        // TODO
-        assert(0 && "int + what?");
+    switch (node->op()) {
+    case kOpInvalid:
+      assert(0 && "type not determined yet");
+
+    case kOpPlus:
+    case kOpMinus:
+    case kOpMultiply:
+    case kOpDivide:
+    case kOpMod:
+    case kOpExponent:
+      if (leftty.isAny() || rightty.isAny()) {
+        node->setType(Type::newAny());
+        return;
       }
-    }
-    else if (node->left()->type().isReal()) {
-      if (node->right()->type().isInt() ||
-          node->right()->type().isReal())
-      {
-        node->setType(node->left()->type());
+      if (leftty.isNumber() || rightty.isNumber()) {
+        node->setType(Type::newTypeRef(Names::kNumberTypeName, true));
+        return;
       }
-      else {
-        // TODO
-        assert(0 && "real + what?");
+
+      if (leftty.isComplex() || rightty.isComplex()) {
+        node->setType(Type::newTypeRef(Names::kComplexTypeName, true));
+        return;
       }
+
+      if (leftty.isReal() || rightty.isReal()) {
+        node->setType(Type::newTypeRef(Names::kRealTypeName, true));
+        return;
+      }
+
+      if (leftty.isAnyFloat()) {
+        if (rightty.isAnyFloat())
+          node->setType(maxFloatType(leftty, rightty));
+        else
+          node->setType(leftty);
+        return;
+      }
+      if (rightty.isAnyFloat()) {
+        if (leftty.isAnyFloat())
+          node->setType(maxFloatType(leftty, rightty));
+        else
+          node->setType(rightty);
+        return;
+      }
+
+      if (leftty.isRational() || rightty.isRational()) {
+        node->setType(Type::newTypeRef(Names::kRationalTypeName, true));
+        return;
+      }
+
+      if (leftty.isOrdinal() || rightty.isOrdinal()) {
+        node->setType(Type::newTypeRef(Names::kOrdinalTypeName, true));
+      }
+      if (leftty.isInt() || rightty.isInt()) {
+        node->setType(Type::newTypeRef(Names::kIntTypeName, true));
+        return;
+      }
+
+      if (leftty.isAnyInt() && rightty.isAnyInt()) {
+        node->setType(maxIntType(leftty, rightty));
+        return;
+      }
+
+      // TODO: try to lookup a method which enables add(leftty, rightty) and use
+      // it's returntype
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in binary operation");
+      break;
+
+    case kOpEqual:
+    case kOpGreater:
+    case kOpGreaterEqual:
+    case kOpIn:
+    case kOpLess:
+    case kOpLessEqual:
+    case kOpUnequal:
+      // TODO: check that left and right type are comparable
+      node->setType(Type::newBool());
+      break;
+
+    case kOpCompare:
+      // TODO: check that left and right type are comparable
+      node->setType(Type::newInt());
+      break;
+
+    case kOpIsa:
+      // TODO: the right side must be Any or Class<T>
+      if (rightty.isAny()) {
+        node->setType(Type::newBool());
+        return;
+      }
+      // TODO: try to lookup a method which enables append(leftty, rightty) and
+      // use it's returntype
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible right side type in isa operation");
+      break;
+
+    case kOpAppend:
+      if (leftty.isString() || leftty.isAny()) {
+        if (rightty.isString() || rightty.isChar() || rightty.isAny()) {
+          node->setType(leftty);
+          return;
+        }
+      }
+      // TODO: try to lookup a method which enables append(leftty, rightty) and
+      // use it's returntype
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in append operation");
+      break;
+
+    case kOpFold:
+      if (leftty.isString() || leftty.isAny()) {
+        // accept everything on the right hand side
+        node->setType(leftty);
+        return;
+      }
+      // TODO: try to lookup a method which enables fold(leftty, rightty) and
+      // use it's returntype
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in fold operation");
+      break;
+
+    case kOpLogicalAnd:
+    case kOpLogicalOr:
+      if (leftty.isBool() && rightty.isBool()) {
+        node->setType(Type::newBool());
+        return;
+      }
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "bool types required in logical 'and'/'or' operations");
+      break;
+
+    case kOpBitAnd:
+    case kOpBitOr:
+    case kOpBitXor:
+    case kOpShiftLeft:
+    case kOpShiftRight:
+      if (leftty.isAnyUInt() || leftty.isAny()) {
+        if (rightty.isAnyInt() || rightty.isAny())
+          node->setType(leftty);
+        else
+          errorf(node->srcpos(), E_BinaryTypeMismatch,
+                 "bit operations require integer types on right side");
+      }
+      else
+        errorf(node->srcpos(), E_BinaryTypeMismatch,
+               "bit operations require unsigned integer types on left side");
+      break;
+
+    case kOpMapTo:
+    case kOpRange:
+    case kOpBy:
+    case kOpAs:
+    case kOpAssign:
+    case kOpThen:
+    case kOpWhile:
+      assert(0 && "???");
     }
-    else {
-      // TODO
-      fprintf(stderr, "%s + %s\n",
-              (const char*)StrHelper(node->left()->type().toString()),
-              (const char*)StrHelper(node->right()->type().toString()));
-      assert(0 && "what? + what?");
-    }
-    break;
-
-  case kOpEqual:
-  case kOpGreater:
-  case kOpGreaterEqual:
-  case kOpIn:
-  case kOpIsa:
-  case kOpLess:
-  case kOpLessEqual:
-  case kOpUnequal:
-    // TODO: check that left and right type are comparable
-    node->setType(Type::newBool());
-    break;
-
-  case kOpAppend:
-  case kOpAs:
-  case kOpAssign:
-  case kOpBitAnd:
-  case kOpBitOr:
-  case kOpBitXor:
-  case kOpBy:
-  case kOpCompare:
-  case kOpDivide:
-  case kOpExponent:
-  case kOpFold:
-  case kOpLogicalAnd:
-  case kOpLogicalOr:
-  case kOpMapTo:
-  case kOpMod:
-  case kOpMultiply:
-  case kOpRange:
-  case kOpShiftLeft:
-  case kOpShiftRight:
-    assert(0 && "not done yet");
-    break;
-
-  case kOpThen:
-  case kOpWhile:
-    assert(0 && "???");
   }
 }
 

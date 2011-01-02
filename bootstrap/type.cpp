@@ -1190,7 +1190,7 @@ Type::isBaseType() const
 bool
 Type::isBuiltinType(const String& name) const
 {
-  return isRef() && typeName() == name;
+  return typeName() == name;
 }
 
 
@@ -1255,24 +1255,99 @@ Type::isAny() const
 bool
 Type::isInt() const
 {
-  return (isBuiltinType(Names::kIntTypeName) ||
-          typeName() == Names::kIntTypeName);
+  return isBuiltinType(Names::kIntTypeName);
 }
 
 
 bool
 Type::isString() const
 {
-  return ( isBuiltinType(Names::kStringTypeName) ||
-           typeName() == Names::kStringTypeName );
+  return isBuiltinType(Names::kStringTypeName);
 }
 
 
 bool
 Type::isReal() const
 {
-  return ( isBuiltinType(Names::kRealTypeName) ||
-           typeName() == Names::kRealTypeName );
+  return isBuiltinType(Names::kRealTypeName);
+}
+
+
+bool
+Type::isNumber() const
+{
+  return isBuiltinType(Names::kNumberTypeName);
+}
+
+
+bool
+Type::isComplex() const
+{
+  return isBuiltinType(Names::kComplexTypeName);
+}
+
+
+bool
+Type::isRational() const
+{
+  return isBuiltinType(Names::kRationalTypeName);
+}
+
+
+bool
+Type::isOrdinal() const
+{
+  return isBuiltinType(Names::kOrdinalTypeName);
+}
+
+
+bool
+Type::isChar() const
+{
+  return isBuiltinType(Names::kCharTypeName);
+}
+
+
+bool
+Type::isBool() const
+{
+  return isBuiltinType(Names::kBoolTypeName);
+}
+
+
+bool
+Type::isAnyFloat() const
+{
+  return ( isBuiltinType(Names::kFloat32TypeName) ||
+           isBuiltinType(Names::kFloat64TypeName) ||
+           isBuiltinType(Names::kFloat128TypeName) );
+}
+
+
+bool
+Type::isAnyInt() const
+{
+  return ( isBuiltinType(Names::kIntTypeName) ||
+           isBuiltinType(Names::kOrdinalTypeName) ||
+           isBuiltinType(Names::kInt8TypeName) ||
+           isBuiltinType(Names::kUInt8TypeName) ||
+           isBuiltinType(Names::kInt16TypeName) ||
+           isBuiltinType(Names::kUInt16TypeName) ||
+           isBuiltinType(Names::kInt32TypeName) ||
+           isBuiltinType(Names::kUInt32TypeName) ||
+           isBuiltinType(Names::kInt64TypeName) ||
+           isBuiltinType(Names::kUInt64TypeName) );
+}
+
+
+bool
+Type::isAnyUInt() const
+{
+  return ( isBuiltinType(Names::kOrdinalTypeName) ||
+           isBuiltinType(Names::kUInt8TypeName) ||
+           isBuiltinType(Names::kUInt16TypeName) ||
+           isBuiltinType(Names::kUInt32TypeName) ||
+           isBuiltinType(Names::kUInt64TypeName) );
 }
 
 
@@ -3061,6 +3136,78 @@ namespace heather
   tyerror(const Type& type, const char* msg)
   {
     fprintf(stderr, "%s: %s\n", msg, (const char*)StrHelper(type.toString()));
+  }
+
+
+  int
+  floatTypeBitsize(const Type& ty)
+  {
+    if (ty.isBuiltinType(Names::kFloat32TypeName))
+      return 32;
+    else if (ty.isBuiltinType(Names::kFloat64TypeName))
+      return 64;
+    else if (ty.isBuiltinType(Names::kFloat128TypeName))
+      return 128;
+
+    assert(0 && "unhandled floating type");
+    return 0;
+  }
+
+
+  Type
+  maxFloatType(const Type& leftty, const Type& rightty)
+  {
+    if (floatTypeBitsize(leftty) < floatTypeBitsize(rightty))
+      return rightty;
+    else
+      return leftty;
+  }
+
+
+  int
+  intTypeBitsize(const Type& ty)
+  {
+    if (ty.isBuiltinType(Names::kInt8TypeName) ||
+        ty.isBuiltinType(Names::kUInt8TypeName))
+      return 8;
+    else if (ty.isBuiltinType(Names::kInt16TypeName) ||
+             ty.isBuiltinType(Names::kUInt16TypeName))
+      return 16;
+    else if (ty.isBuiltinType(Names::kInt32TypeName) ||
+             ty.isBuiltinType(Names::kUInt32TypeName))
+      return 32;
+    else if (ty.isBuiltinType(Names::kInt64TypeName) ||
+             ty.isBuiltinType(Names::kUInt64TypeName))
+      return 64;
+
+    assert(0 && "unhandled int type");
+    return 0;
+  }
+
+
+  Type
+  maxIntType(const Type& leftty, const Type& rightty)
+  {
+    int righttysize = intTypeBitsize(rightty);
+    if (intTypeBitsize(leftty) < righttysize) {
+      if (leftty.isAnyUInt()) {
+        switch (righttysize) {
+        case 8:
+          return Type::newTypeRef(Names::kUInt8TypeName, true);
+        case 16:
+          return Type::newTypeRef(Names::kUInt16TypeName, true);
+        case 32:
+          return Type::newTypeRef(Names::kUInt32TypeName, true);
+        case 64:
+          return Type::newTypeRef(Names::kUInt64TypeName, true);
+        default:
+          assert(0 && "unhandled int type size");
+        }
+      }
+      return rightty;
+    }
+    else
+      return leftty;
   }
 };
 
