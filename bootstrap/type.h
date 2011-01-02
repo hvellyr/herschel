@@ -174,6 +174,15 @@ namespace heather
     bool isInt() const;
     bool isString() const;
     bool isReal() const;
+    bool isNumber() const;
+    bool isComplex() const;
+    bool isAnyFloat() const;
+    bool isRational() const;
+    bool isOrdinal() const;
+    bool isAnyInt() const;
+    bool isAnyUInt() const;
+    bool isChar() const;
+    bool isBool() const;
 
     TypeEnumMaker* newBaseTypeEnumMaker() const;
 
@@ -252,11 +261,10 @@ namespace heather
     bool isValueType() const;
     Type& setIsValueType(bool value);
 
+    bool isBuiltinType(const String& name) const;
 
   private:
     Type(TypeKind kind, bool isValue, TypeImpl* impl);
-
-    bool isBuiltinType(const String& name) const;
 
     TypeKind      fKind;
     bool          fIsValue;
@@ -517,6 +525,13 @@ namespace heather
 
 
   void tyerror(const Type& type, const char* msg);
+
+  int floatTypeBitsize(const Type& ty);
+  int intTypeBitsize(const Type& ty);
+
+  Type maxFloatType(const Type& leftty, const Type& rightty);
+  Type maxIntType(const Type& leftty, const Type& rightty);
+
 };                              // namespace
 
 

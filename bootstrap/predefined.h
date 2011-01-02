@@ -63,6 +63,7 @@ namespace heather
 #define MID_IntTypeName         "lang|Int"
 #define MID_RationalTypeName    "lang|Rational"
 #define MID_RealTypeName        "lang|Real"
+#define MID_OrdinalTypeName     "lang|Ordinal"
 
 #define MID_Float32TypeName     "lang|Float32"
 #define MID_Float64TypeName     "lang|Float64"
@@ -119,6 +120,7 @@ namespace heather
     const static String kIntTypeName;
     const static String kRationalTypeName;
     const static String kRealTypeName;
+    const static String kOrdinalTypeName;
 
     const static String kFloat32TypeName;
     const static String kFloat64TypeName;

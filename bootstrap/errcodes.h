@@ -147,6 +147,7 @@ namespace heather
     E_GenericsMismatch    = 0x4418,
     E_RangeTypeMismatch   = 0x4419,
     E_WhileTypeMismatch   = 0x441a,
+    E_BinaryTypeMismatch  = 0x441b,
 
     // module parsing
     E_MissingModName      = 0x4500,
