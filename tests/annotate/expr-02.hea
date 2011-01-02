@@ -1,0 +1,22 @@
+-- binary operations are possible with untyped expressions (for rapid prototyping)
+def f0(a : Int8, b : Int8)
+  let t0 = a + b
+  let t1 = a - b
+  let t2 = a * b
+  let t3 = a / b
+  let t4 = a ** b
+  let t5 = a mod b
+
+def f1(a : Int8, b : Int8)
+  let t0 = a == b
+  let t1 = a <> b
+  let t2 = a < b
+  let t3 = a > b
+  let t4 = a >= b
+  let t5 = a <= b
+  let t6 = a <=> b
+  let t7 = a in b
+
+def f5(a : Int8, b : Int8)
+  let t0 = (a == 0) and (b == 5)
+  let t1 = (a == b) or (a == b)

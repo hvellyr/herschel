@@ -285,6 +285,11 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
     if (node->body() != NULL) {
       node->setRetType(node->body()->type());
     }
+    else {
+      warningf(node->srcpos(), E_UndefinedType,
+               "undefined return type on function defauts to lang|Any");
+      node->setRetType(Type::newAny());
+    }
   }
   else if (!node->retType().isOpen()) {
     String typenm = ( node->retType().isDef()
@@ -366,8 +371,12 @@ void
 Typifier::typify(FuncDefNode* node)
 {
   typifyNodeList(node->params());
-  if (node->body() != NULL)
+  if (node->body() != NULL) {
     typifyNode(node->body());
+
+    if (!node->body()->type().isDef())
+      node->body()->setType(Type::newAny());
+  }
 
   if (fPhase == kTypify)
     setupFunctionNodeType(node);
@@ -380,8 +389,12 @@ void
 Typifier::typify(FunctionNode* node)
 {
   typifyNodeList(node->params());
-  if (node->body() != NULL)
+  if (node->body() != NULL) {
     typifyNode(node->body());
+
+    if (!node->body()->type().isDef())
+      node->body()->setType(Type::newAny());
+  }
 
   if (fPhase == kTypify)
     setupFunctionNodeType(node);
@@ -769,6 +782,7 @@ Typifier::typify(BinaryNode* node)
       // it's returntype
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible types in binary operation");
+      node->setType(Type::newAny());
       break;
 
     case kOpEqual:
@@ -778,8 +792,28 @@ Typifier::typify(BinaryNode* node)
     case kOpLess:
     case kOpLessEqual:
     case kOpUnequal:
+      if ( (leftty.isAny() && rightty.isBool()) ||
+           (leftty.isBool() && rightty.isAny()) ||
+           (leftty.isAnySignedInt() && rightty.isAnySignedInt()) ||
+           (leftty.isAnyUInt() && rightty.isAnyUInt()) ||
+           (leftty.isAnyFloat() && rightty.isAnyFloat()) ||
+           (leftty.isReal() && rightty.isReal()) ||
+           (leftty.isRational() && rightty.isRational()) ||
+           (leftty.isComplex() && rightty.isComplex()) ||
+           (leftty.isOrdinal() && rightty.isOrdinal()) ||
+           (leftty.isInt() && rightty.isInt()) ||
+           (leftty.isNumber() && rightty.isNumber()) ||
+           (isSameType(leftty, rightty, node->scope(), node->srcpos())) )
+      {
+        // any is always ok.
+        node->setType(Type::newBool());
+        return;
+      }
+
       // TODO: check that left and right type are comparable
-      node->setType(Type::newBool());
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in binary comparison");
+      node->setType(Type::newAny());
       break;
 
     case kOpCompare:
@@ -797,6 +831,7 @@ Typifier::typify(BinaryNode* node)
       // use it's returntype
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible right side type in isa operation");
+      node->setType(Type::newAny());
       break;
 
     case kOpAppend:
@@ -810,6 +845,7 @@ Typifier::typify(BinaryNode* node)
       // use it's returntype
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible types in append operation");
+      node->setType(Type::newAny());
       break;
 
     case kOpFold:
@@ -822,6 +858,7 @@ Typifier::typify(BinaryNode* node)
       // use it's returntype
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible types in fold operation");
+      node->setType(Type::newAny());
       break;
 
     case kOpLogicalAnd:
@@ -832,23 +869,39 @@ Typifier::typify(BinaryNode* node)
       }
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "bool types required in logical 'and'/'or' operations");
+      node->setType(Type::newAny());
       break;
 
     case kOpBitAnd:
     case kOpBitOr:
     case kOpBitXor:
+      if ((leftty.isAnyUInt() || leftty.isAny()) &&
+          (rightty.isAnyUInt() || rightty.isAny()) ) {
+        node->setType(leftty);
+      }
+      else {
+        errorf(node->srcpos(), E_BinaryTypeMismatch,
+               "AND, OR, XOR operations require unsigned integer types on both sides");
+        node->setType(Type::newAny());
+      }
+      break;
+
     case kOpShiftLeft:
     case kOpShiftRight:
       if (leftty.isAnyUInt() || leftty.isAny()) {
         if (rightty.isAnyInt() || rightty.isAny())
           node->setType(leftty);
-        else
+        else {
           errorf(node->srcpos(), E_BinaryTypeMismatch,
                  "bit operations require integer types on right side");
+          node->setType(Type::newAny());
+        }
       }
-      else
+      else {
         errorf(node->srcpos(), E_BinaryTypeMismatch,
                "bit operations require unsigned integer types on left side");
+        node->setType(Type::newAny());
+      }
       break;
 
     case kOpMapTo:

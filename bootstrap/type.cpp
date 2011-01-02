@@ -1327,16 +1327,18 @@ Type::isAnyFloat() const
 bool
 Type::isAnyInt() const
 {
+  return ( isAnySignedInt() || isAnyUInt() );
+}
+
+
+bool
+Type::isAnySignedInt() const
+{
   return ( isBuiltinType(Names::kIntTypeName) ||
-           isBuiltinType(Names::kOrdinalTypeName) ||
            isBuiltinType(Names::kInt8TypeName) ||
-           isBuiltinType(Names::kUInt8TypeName) ||
            isBuiltinType(Names::kInt16TypeName) ||
-           isBuiltinType(Names::kUInt16TypeName) ||
            isBuiltinType(Names::kInt32TypeName) ||
-           isBuiltinType(Names::kUInt32TypeName) ||
-           isBuiltinType(Names::kInt64TypeName) ||
-           isBuiltinType(Names::kUInt64TypeName) );
+           isBuiltinType(Names::kInt64TypeName) );
 }
 
 
