@@ -181,6 +181,7 @@ namespace heather
     bool isOrdinal() const;
     bool isAnyInt() const;
     bool isAnyUInt() const;
+    bool isAnySignedInt() const;
     bool isChar() const;
     bool isBool() const;
 

@@ -62,6 +62,11 @@ heather::type::newRootScope()
                                    generics,
                                    Type::newTypeRef(Names::kNumberTypeName, true)));
 
+  root->registerType(sp, Names::kOrdinalTypeName,
+                     Type::newType(Names::kOrdinalTypeName,
+                                   generics,
+                                   Type::newInt()));
+
   root->registerType(sp, Names::kRealTypeName,
                      Type::newType(Names::kRealTypeName,
                                    generics,
@@ -77,10 +82,45 @@ heather::type::newRootScope()
                                    generics,
                                    Type::newTypeRef(Names::kNumberTypeName, true)));
 
+  root->registerType(sp, Names::kInt8TypeName,
+                     Type::newType(Names::kInt8TypeName,
+                                   generics,
+                                   Type::newInt()));
+
+  root->registerType(sp, Names::kInt16TypeName,
+                     Type::newType(Names::kInt16TypeName,
+                                   generics,
+                                   Type::newInt()));
+
   root->registerType(sp, Names::kInt32TypeName,
                      Type::newType(Names::kInt32TypeName,
                                    generics,
-                                   Type::newTypeRef(Names::kNumberTypeName, true)));
+                                   Type::newInt()));
+
+  root->registerType(sp, Names::kInt64TypeName,
+                     Type::newType(Names::kInt64TypeName,
+                                   generics,
+                                   Type::newInt()));
+
+  root->registerType(sp, Names::kUInt8TypeName,
+                     Type::newType(Names::kUInt8TypeName,
+                                   generics,
+                                   Type::newTypeRef(Names::kOrdinalTypeName, true)));
+
+  root->registerType(sp, Names::kUInt16TypeName,
+                     Type::newType(Names::kUInt16TypeName,
+                                   generics,
+                                   Type::newTypeRef(Names::kOrdinalTypeName, true)));
+
+  root->registerType(sp, Names::kUInt32TypeName,
+                     Type::newType(Names::kUInt32TypeName,
+                                   generics,
+                                   Type::newTypeRef(Names::kOrdinalTypeName, true)));
+
+  root->registerType(sp, Names::kUInt64TypeName,
+                     Type::newType(Names::kUInt64TypeName,
+                                   generics,
+                                   Type::newTypeRef(Names::kOrdinalTypeName, true)));
 
   //------------------------------
   // String and symbols
