@@ -796,8 +796,7 @@ Typifier::typify(BinaryNode* node)
            (leftty.isBool() && rightty.isAny()) ||
            (leftty.isAnySignedInt() && rightty.isAnySignedInt()) ||
            (leftty.isAnyUInt() && rightty.isAnyUInt()) ||
-           (leftty.isAnyFloat() && rightty.isAnyFloat()) ||
-           (leftty.isReal() && rightty.isReal()) ||
+           (leftty.isAnyReal() && rightty.isAnyReal()) ||
            (leftty.isRational() && rightty.isRational()) ||
            (leftty.isComplex() && rightty.isComplex()) ||
            (leftty.isOrdinal() && rightty.isOrdinal()) ||
@@ -1223,7 +1222,8 @@ Typifier::typify(CastNode* node)
 namespace heather
 {
   void
-  typifyNodeType(AptNode* node, const Type& type, const String& defaultTypeName)
+  typifyNodeType(AptNode* node, const Type& type, const String& defaultTypeName,
+                 bool maybeImaginary)
   {
     Type ty = ( type.isDef()
                 ? node->scope()->lookupType(type)
@@ -1233,8 +1233,14 @@ namespace heather
              "undefined type '%s'", (const char*)StrHelper(defaultTypeName));
       node->setType(Type::newAny(true));
     }
-    else
+    else {
+      if (maybeImaginary && ty.isAnyNumber()) {
+        BaseNumberNode* nnd = dynamic_cast<BaseNumberNode*>(node);
+        if (nnd != NULL)
+          ty.setIsImaginary(nnd->isImaginary());
+      }
       node->setType(ty);
+    }
   }
 };
 
@@ -1242,7 +1248,7 @@ void
 Typifier::typify(BoolNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Names::kBoolTypeName);
+    typifyNodeType(node, Type(), Names::kBoolTypeName, false);
   }
 }
 
@@ -1251,7 +1257,7 @@ void
 Typifier::typify(CharNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Names::kCharTypeName);
+    typifyNodeType(node, Type(), Names::kCharTypeName, false);
   }
 }
 
@@ -1260,7 +1266,8 @@ void
 Typifier::typify(RationalNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, node->type(), Names::kRationalTypeName);
+    typifyNodeType(node, node->type(), Names::kRationalTypeName,
+                   true);
   }
 }
 
@@ -1269,7 +1276,7 @@ void
 Typifier::typify(RealNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, node->type(), Names::kRealTypeName);
+    typifyNodeType(node, node->type(), Names::kRealTypeName, true);
   }
 }
 
@@ -1278,7 +1285,7 @@ void
 Typifier::typify(IntNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, node->type(), Names::kIntTypeName);
+    typifyNodeType(node, node->type(), Names::kIntTypeName, true);
   }
 }
 
@@ -1287,7 +1294,7 @@ void
 Typifier::typify(StringNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Names::kStringTypeName);
+    typifyNodeType(node, Type(), Names::kStringTypeName, false);
   }
 }
 
@@ -1296,7 +1303,7 @@ void
 Typifier::typify(KeywordNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Names::kKeywordTypeName);
+    typifyNodeType(node, Type(), Names::kKeywordTypeName, false);
   }
 }
 

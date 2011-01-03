@@ -466,6 +466,22 @@ DEF_TYPIFY(TypeNode)
 
 //----------------------------------------------------------------------------
 
+BaseNumberNode::BaseNumberNode(const SrcPos& srcpos, bool isImaginary,
+                               const Type& type)
+  : AptNode(srcpos, type),
+    fIsImaginary(isImaginary)
+{ }
+
+
+bool
+BaseNumberNode::isImaginary() const
+{
+      return fIsImaginary;
+}
+
+
+//----------------------------------------------------------------------------
+
 IntNode::IntNode(const SrcPos& srcpos, int value,
                  bool isImaginary,
                  const Type& type)
