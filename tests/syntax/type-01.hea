@@ -1,0 +1,9 @@
+def a : String[]
+
+def b : (A, B, C)
+
+def c : &(A, B, C)
+
+def d : &(&(A, B), &(C), (A, B[], C))
+
+def e : &(A, B, C)[]

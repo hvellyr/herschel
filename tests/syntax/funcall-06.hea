@@ -1,0 +1,5 @@
+def f(a, b = true, r ...)
+  outln(a, b, r)
+
+def g()
+  f(a, b: false, 2, 3, 4)

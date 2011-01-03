@@ -1,0 +1,10 @@
+when {
+  def x = 5
+}
+def y = 6
+
+when {
+  def m = 11
+}
+else
+  def m = 27

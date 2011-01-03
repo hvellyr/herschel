@@ -1,0 +1,232 @@
+-- This file is part of the heather package
+--
+-- Copyright (c) 2006, 2007, 2008 Gregor Klinke
+-- All rights reserved.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+-- - Redistributions of source code must retain the above copyright notice,
+--   this list of conditions and the following disclaimer.
+--
+-- - Redistributions in binary form must reproduce the above copyright
+--   notice, this list of conditions and the following disclaimer in the
+--   documentation and/or other materials provided with the distribution.
+--
+-- - Neither the name of the author nor the names of other contributors may
+--   be used to endorse or promote products derived from this software
+--   without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+module core ("eyestep/heather 1.0:core")
+export public(*)
+
+import "core/core.hea"
+
+
+------------------------------------------------------------------------------
+-- base quantities and their SI base units
+------------------------------------------------------------------------------
+
+def measure Length(m) : Real
+    ~ Denotes length, base unit is meter (m). ~
+
+def measure Mass(kg) : Real
+    ~ Denotes mass, base unit is kilogram (kg). ~
+
+def measure Duration(s) : Real
+    ~ Denotes duration in time, base unit is seconds (s). ~
+
+def measure ElectricCurrent(A) : Real
+    ~ Denotes electric currency, base unit is Ampere (A). ~
+
+def measure Temperature(K) : Real
+    ~ Denotes temperature, base unit is Kelvin (K). ~
+
+def measure AmountOfSubstance(mol) : Real
+    ~ Denotes the amount of substance; base unit is Mole (mol). ~
+
+def measure LuminousIntensity(cd) : Real
+    ~ Denotes the Intensity of light, base unit is Candela (cd). ~
+
+
+------------------------------------------------------------------------------
+-- Additional units
+------------------------------------------------------------------------------
+
+def unit cm -> m (x)
+    ~ Centimeter. ~
+     { x / 100 }
+
+def unit mm -> m (x)
+    ~ Millimeter. ~
+    { x / 1000 }
+
+def unit in -> m (x)
+    ~ Inch. ~
+    { x / 25.4-e10 }
+
+def unit g -> kg (x)
+    ~ Gram. ~
+    { x / 1000 }
+
+def unit t -> kg (x)
+    ~ Ton ~
+    { x * 1000 }
+
+
+----------------------------------------------------------------------
+-- Derived quantities and their SI coherent derived units
+----------------------------------------------------------------------
+
+def measure Area(m2) : Real
+    ~ Denotes areas, base unit is square metres (m2). ~
+
+def measure Volume(m3) : Real
+    ~ Denotes the volume, base unit is cubic metre (m3). ~
+
+def measure Velocity(m/s) : Real
+    ~ Measures velocity, base unit is metre per second (m/s). ~
+
+def measure Acceleration(m/s2) : Real
+    ~ Denotes the acceleration, base unit is metre per square second
+    (m/s2). ~
+
+def measure WaveNumber(m-1) : Real
+    ~ Base unit is reciprocal metre (m-1). ~
+
+def measure MassDensity(kg/m3) : Real
+    ~ Measures mass densisty, base unit is kilogram per cubic metre
+    (kg/m3). ~
+
+def measure SurfaceDensity(kg/m2) : Real
+    ~ Measures the surface density, base unit is kilogram per square metre
+    (kg/m2). ~
+
+def measure SpecificVolume(m3/kg) : Real
+    ~ Base unit is cubic metre per kilogram (m3/kg) ~
+
+def measure CurrentDensity(A/m2) : Real
+    ~ Measures the current density (A/m2) ~
+
+def measure MagneticFieldStrength(A/m) : Real
+    ~ Measures magentic field strength, base unit is Ampere per metre
+    (A/m). ~
+
+def measure AmountConcentration(mol/m3) : Real
+    ~ Measures amount of concentration, base unit is mole per cubic metre
+    (mol/m3). ~
+
+def measure MassConcentration(kg/m3) : Real
+    ~ Measures the mass concentration, base unit is kilogram per cubic
+    metre (kg/m3). ~
+
+def measure Luminance(cd/m2) : Real
+    ~ Measures the luminance; base unit is candela per square metre
+    (cd/m2). ~
+
+
+
+----------------------------------------------------------------------
+-- Coherent derived units in the SI with special names and symbols
+----------------------------------------------------------------------
+
+-- base unit: Hertz
+-- Hz = s-1
+def measure Frequency(Hz) : Real
+
+-- base unit: Newton
+-- N = m kg s-2
+def measure Force(N) : Real
+
+-- base unit: Pascal
+-- Pa = N/m2, m-1 kg s-2
+def measure Pressure(Pa) : Real
+
+-- base unit: Joule
+-- J = N m, m2 kg s-2
+def measure Energy(J) : Real
+
+-- base unit: Watt
+-- W = J/s, m2 kg s-3
+def measure Power(W) : Real
+
+-- base unit: Coulomb
+-- C = s A
+def measure ElectricCharge(C) : Real
+
+-- base unit: Volt
+-- V = W/A, m2 kg s-3 A-1
+def measure ElectricPotentialDifference(V) : Real
+
+-- base unit: farad
+-- F = C/V, m-2 kg-1 s4 A2
+def measure Capacitance(F) : Real
+
+-- base unit: ohm
+-- ohm = V/A, m2 kg s-3 A-2
+def measure ElectricResistance(ohm) : Real
+
+-- base unit: siemens
+-- S = A/V, m-2 kg-1 s3 A2
+def measure ElectricConductance(S) : Real
+
+-- base unit: weber
+-- Wb = V s, m2 kg s-2 A-1
+def measure MagneticFlux(Wb) : Real
+
+-- base unit: tesla
+-- T = Wb/m2, kg s-2 A-1
+def measure MagneticFluxDensity(T) : Real
+
+-- base unit: henry
+-- H = Wb/A, m2 kg s-2 A-2
+def measure Inductance(H) : Real
+
+-- base unit: lumen
+-- lm = cd sr, cd
+def measure LuminousFlux(lm) : Real
+
+-- base unit: lux
+-- lx = lm/m2, m-2 cd
+def measure Illuminance(lx) : Real
+
+-- base unit: becquerel
+-- Bq = s-1
+def measure ActivityReferredToARadionuclide(Bq) : Real
+
+-- base unit: gray
+-- Gy = J/kg, m2 s-2
+def measure AbsorbedDose(Gy) : Real
+
+-- base unit: sievert
+-- Sv = J/kg, m2 s-2
+def measure PersonalDoseEquivalent(Sv) : Real
+
+-- base unit: katal
+-- kat = s-1 mol
+def measure CatalyticActivity(kat) : Real
+
+
+-- Unit 'C' is taken by electric charge.
+def unit oC -> K (x)
+    ~ Unit: Degree Celsius. ~
+    { x + 273.15 }
+
+def unit kHz -> Hz (x)
+    ~ Unit: kilo Hertz. ~
+    { x * 1000 }
+
+-- end of SI-units.head

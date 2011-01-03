@@ -1,0 +1,5 @@
+
+def callback-array : (Function(item : Item) : Bool)[] =
+  #[ function(item : Item) : Bool f(item),
+     function(item : Item) : Bool g(item),
+     function(item : Item) : Bool h(item) ]

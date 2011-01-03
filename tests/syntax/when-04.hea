@@ -1,0 +1,8 @@
+def x = 42
+when ignore {
+def a = "hello world"
+}
+def b = 11
+when include {
+def c = "foobar"
+}

@@ -1,0 +1,25 @@
+def a = 5 + 11
+def b = 5 - 11 * 2
+def b2 = (5 + 11) * 2
+def c = 0 .. 100 by 2
+
+def d = 1 in #[1, 2] and value isa Key or 4 ** 4 > 12
+def e = 1 + 2 as UInt
+def e2 = (1 + 2) as UInt
+
+def f = "hello %s" % #["world"]
+
+def g = (value1 AND 0ff00h) >> 8 OR (value2 AND 0ffh) OR (value3 AND 0ff0000h) >> 16
+def h = 5 XOR 6 << 7 AND 8
+
+
+def i = 5 in #[4, 4] == 4 <= 3
+def i2 = 45 <> 2
+def i3 = 5 < 2
+def i4 = a >= 2
+def i5 = a <=> b
+
+def k = t / 2
+def l = t mod 2 + 1
+
+def x = #(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31)[3 .. 6 by 2]
