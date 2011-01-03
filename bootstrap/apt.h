@@ -42,26 +42,49 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
+  //! AptNode is the base of all abstract part tree nodes.  Since it is a
+  //! refcounted object, keep it always in Ptr<>.
   class AptNode : public RefCountable
   {
   public:
     AptNode(const SrcPos& srcpos);
 
+    //! Returns the source position where the code for this node was seen in
+    //! the source file.
     const SrcPos& srcpos() const;
-    Scope* scope() const;
-    AptNode* setScope(Scope* scope);
-    NodeList& children();
-    const NodeList& children() const;
 
-    virtual AptNode* clone() const = 0;
+    //! Returns the captured scope for this node.
+    Scope* scope() const;
+
+    //! Set the captured scope.
+    AptNode* setScope(Scope* scope);
+
+    //! Returns a changeable list of the receiver's children.  Node that the
+    //! notion 'children' depends on the specific subclass of this.
+    NodeList& children();
+
+    //! Returns a readonly list of the receiver's children.  Node that the
+    //! notion 'children' depends on the specific subclass of this.
+    const NodeList& children() const;
 
     virtual void appendNode(AptNode* node);
     virtual void appendNodes(const NodeList& nodes);
 
+    //! Returns a (deep) copy of this node.
+    virtual AptNode* clone() const = 0;
+
+    //! Render a (debug) representation of this node using \p renderer.
     virtual void render(XmlRenderer* renderer) const = 0;
+
+    //! Generate (binary) code for this node using \p generator.  For details
+    //! see \p CodeGenerator.
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
+
+    //! Annotate this node using \p annotator.  For details see \p Annotator.
     virtual void annotate(Annotator* annotator) = 0;
-    virtual AptNode* transform(Transformator* annotator) = 0;
+
+    //! Transform this node using \p transformator.
+    virtual AptNode* transform(Transformator* transformator) = 0;
 
   protected:
     SrcPos     fSrcPos;
