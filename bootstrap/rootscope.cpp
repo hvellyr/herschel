@@ -122,6 +122,22 @@ heather::type::newRootScope()
                                    generics,
                                    Type::newTypeRef(Names::kOrdinalTypeName, true)));
 
+
+  root->registerType(sp, Names::kFloat32TypeName,
+                     Type::newType(Names::kFloat32TypeName,
+                                   generics,
+                                   Type::newTypeRef(Names::kRealTypeName, true)));
+
+  root->registerType(sp, Names::kFloat64TypeName,
+                     Type::newType(Names::kFloat64TypeName,
+                                   generics,
+                                   Type::newTypeRef(Names::kRealTypeName, true)));
+
+  root->registerType(sp, Names::kFloat128TypeName,
+                     Type::newType(Names::kFloat128TypeName,
+                                   generics,
+                                   Type::newTypeRef(Names::kRealTypeName, true)));
+
   //------------------------------
   // String and symbols
   root->registerType(sp, Names::kStringTypeName,

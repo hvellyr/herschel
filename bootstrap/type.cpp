@@ -885,7 +885,8 @@ namespace heather
 
 Type::Type()
   : fKind(kType_Undefined),
-    fIsValue(true)
+    fIsValue(true),
+    fIsImaginary(false)
 { }
 
 
@@ -895,9 +896,10 @@ Type::Type(const Type& other)
 }
 
 
-Type::Type(TypeKind kind, bool isValue, TypeImpl* impl)
+Type::Type(TypeKind kind, bool isValue, bool isImaginary, TypeImpl* impl)
   : fKind(kind),
     fIsValue(isValue),
+    fIsImaginary(isImaginary),
     fImpl(impl)
 { }
 
@@ -907,6 +909,7 @@ Type::operator=(const Type& other)
 {
   fKind = other.fKind;
   fIsValue = other.fIsValue;
+  fIsImaginary = other.fIsImaginary;
   fImpl = other.fImpl;
   return *this;
 }
@@ -916,7 +919,7 @@ Type
 Type::newTypeRef(const String& name, const TypeVector& genericArgs,
                  const TypeConstVector& constraints, bool isValue)
 {
-  return Type(kType_Ref, isValue,
+  return Type(kType_Ref, isValue, false,
               new TypeRefTypeImpl(name, false, genericArgs, constraints));
 }
 
@@ -926,7 +929,7 @@ Type::newTypeRef(const String& name, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
-  return Type(kType_Ref, isValue,
+  return Type(kType_Ref, isValue, false,
               new TypeRefTypeImpl(name, false,
                                   dummyGenerics, dummyConstraints));
 }
@@ -944,7 +947,7 @@ Type::newTypeRef(const String& name, bool isOpen,
                  const TypeConstVector& constraints, bool isValue)
 {
   TypeVector dummyGenerics;
-  return Type(kType_Ref, isValue,
+  return Type(kType_Ref, isValue, false,
               new TypeRefTypeImpl(name, isOpen, dummyGenerics,
                                   constraints));
 }
@@ -955,7 +958,7 @@ Type::newTypeRef(const String& name, bool isOpen, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
-  return Type(kType_Ref, isValue,
+  return Type(kType_Ref, isValue, false,
               new TypeRefTypeImpl(name, isOpen, dummyGenerics,
                                   dummyConstraints));
 }
@@ -966,7 +969,7 @@ Type::newTypeRef(const String& name, const Type& old)
 {
   assert(old.isRef());
 
-  return Type(kType_Ref, old.isValueType(),
+  return Type(kType_Ref, old.isValueType(), old.isImaginary(),
               new TypeRefTypeImpl(name,
                                   dynamic_cast<const TypeRefTypeImpl*>(old.fImpl.obj())->isOpenSelf(),
                                   old.generics(),
@@ -977,7 +980,8 @@ Type::newTypeRef(const String& name, const Type& old)
 Type
 Type::newArray(const Type& base, int sizeIndicator, bool isValue)
 {
-  return Type(kType_Array, isValue, new ArrayTypeImpl(base, sizeIndicator));
+  return Type(kType_Array, isValue, false,
+              new ArrayTypeImpl(base, sizeIndicator));
 }
 
 
@@ -996,6 +1000,15 @@ Type::newInt(bool isValue)
 
 
 Type
+Type::newImaginaryInt(bool isValue)
+{
+  Type ty = newTypeRef(Names::kIntTypeName, isValue);
+  ty.setIsImaginary(true);
+  return ty;
+}
+
+
+Type
 Type::newRational(bool isValue)
 {
   return newTypeRef(Names::kRationalTypeName, isValue);
@@ -1006,6 +1019,15 @@ Type
 Type::newReal(bool isValue)
 {
   return newTypeRef(Names::kRealTypeName, isValue);
+}
+
+
+Type
+Type::newImaginaryReal(bool isValue)
+{
+  Type ty = newTypeRef(Names::kRealTypeName, isValue);
+  ty.setIsImaginary(true);
+  return ty;
 }
 
 
@@ -1029,7 +1051,7 @@ Type::newType(const String& name, const TypeVector& generics,
 {
   FunctionSignatureVector dummyProtocol;
   FunctionSignature       dummyDefApplySign;
-  return Type(kType_Type, true,
+  return Type(kType_Type, true, false,
               new TypeTypeImpl(name, false, generics, inherit,
                                dummyDefApplySign,
                                dummyProtocol));
@@ -1042,7 +1064,7 @@ Type::newType(const String& name, const TypeVector& generics,
               const FunctionSignatureVector& protocol)
 {
   FunctionSignature dummyDefApplySign;
-  return Type(kType_Type, true,
+  return Type(kType_Type, true, false,
               new TypeTypeImpl(name, false, generics, inherit,
                                dummyDefApplySign,
                                protocol));
@@ -1055,7 +1077,7 @@ Type::newClass(const String& name, const TypeVector& generics,
 {
   FunctionSignatureVector dummyProtocol;
   FunctionSignature       dummyDefApplySign;
-  return Type(kType_Class, true,
+  return Type(kType_Class, true, false,
               new TypeTypeImpl(name, true, generics, inherit,
                                dummyDefApplySign,
                                dummyProtocol));
@@ -1068,7 +1090,7 @@ Type::newClass(const String& name, const TypeVector& generics,
                const FunctionSignature& defApplySign,
                const FunctionSignatureVector& protocol)
 {
-  return Type(kType_Class, true,
+  return Type(kType_Class, true, false,
               new TypeTypeImpl(name, true, generics, inherit,
                                defApplySign,
                                protocol));
@@ -1079,7 +1101,8 @@ Type
 Type::newAlias(const String& name, const TypeVector& generics,
                const Type& isa)
 {
-  return Type(kType_Alias, true, new AliasTypeImpl(name, generics, isa));
+  return Type(kType_Alias, true, false,
+              new AliasTypeImpl(name, generics, isa));
 }
 
 
@@ -1087,7 +1110,7 @@ Type
 Type::newMeasure(const String& name, const Type& baseType,
                  const String& defUnit)
 {
-  return Type(kType_Measure, true,
+  return Type(kType_Measure, true, false,
               new MeasureTypeImpl(name, baseType, defUnit));
 }
 
@@ -1095,28 +1118,30 @@ Type::newMeasure(const String& name, const Type& baseType,
 Type
 Type::newFunction(const FunctionSignature& sign)
 {
-  return Type(kType_Function, true, new FunctionTypeImpl(sign));
+  return Type(kType_Function, true, false,
+              new FunctionTypeImpl(sign));
 }
 
 
 Type
 Type::newUnion(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Union, isValue, new UnionTypeImpl(types));
+  return Type(kType_Union, isValue, false, new UnionTypeImpl(types));
 }
 
 
 Type
 Type::newSeq(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Sequence, isValue, new SeqTypeImpl(types));
+  return Type(kType_Sequence, isValue, false, new SeqTypeImpl(types));
 }
 
 
 Type
 Type::clone() const
 {
-  return Type(fKind, fIsValue, (fImpl != NULL ? fImpl->clone() : NULL));
+  return Type(fKind, fIsValue, fIsImaginary,
+              (fImpl != NULL ? fImpl->clone() : NULL));
 }
 
 
@@ -1253,6 +1278,29 @@ Type::isAny() const
 
 
 bool
+Type::isAnyNumber() const
+{
+  return ( isBuiltinType(Names::kNumberTypeName) ||
+           isBuiltinType(Names::kComplexTypeName) ||
+           isBuiltinType(Names::kRationalTypeName) ||
+           isBuiltinType(Names::kRealTypeName) ||
+           isBuiltinType(Names::kIntTypeName) ||
+           isBuiltinType(Names::kOrdinalTypeName) ||
+           isBuiltinType(Names::kInt8TypeName) ||
+           isBuiltinType(Names::kUInt8TypeName) ||
+           isBuiltinType(Names::kInt16TypeName) ||
+           isBuiltinType(Names::kUInt16TypeName) ||
+           isBuiltinType(Names::kInt32TypeName) ||
+           isBuiltinType(Names::kUInt32TypeName) ||
+           isBuiltinType(Names::kInt64TypeName) ||
+           isBuiltinType(Names::kUInt64TypeName) ||
+           isBuiltinType(Names::kFloat32TypeName) ||
+           isBuiltinType(Names::kFloat64TypeName) ||
+           isBuiltinType(Names::kFloat128TypeName) );
+}
+
+
+bool
 Type::isInt() const
 {
   return isBuiltinType(Names::kIntTypeName);
@@ -1283,7 +1331,7 @@ Type::isNumber() const
 bool
 Type::isComplex() const
 {
-  return isBuiltinType(Names::kComplexTypeName);
+  return ( isBuiltinType(Names::kComplexTypeName) || isImaginary() );
 }
 
 
@@ -1325,6 +1373,16 @@ Type::isAnyFloat() const
 
 
 bool
+Type::isAnyReal() const
+{
+  return ( isBuiltinType(Names::kRealTypeName) ||
+           isBuiltinType(Names::kFloat32TypeName) ||
+           isBuiltinType(Names::kFloat64TypeName) ||
+           isBuiltinType(Names::kFloat128TypeName) );
+}
+
+
+bool
 Type::isAnyInt() const
 {
   return ( isAnySignedInt() || isAnyUInt() );
@@ -1350,6 +1408,24 @@ Type::isAnyUInt() const
            isBuiltinType(Names::kUInt16TypeName) ||
            isBuiltinType(Names::kUInt32TypeName) ||
            isBuiltinType(Names::kUInt64TypeName) );
+}
+
+
+bool
+Type::isImaginary() const
+{
+  if (isAnyNumber()) {
+    return fIsImaginary;
+  }
+  return false;
+}
+
+
+void
+Type::setIsImaginary(bool value)
+{
+  assert(isAnyNumber());
+  fIsImaginary = value;
 }
 
 
@@ -1419,9 +1495,16 @@ Type::typeId() const
       const TypeRefTypeImpl* tyimpl = dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj());
       if (tyimpl->isOpenSelf())
         buffer << "'";
+      if (fIsImaginary)
+        buffer << "imag(";
+
       buffer << tyimpl->name();
       if (!tyimpl->generics().empty())
         buffer << "<" << tyimpl->generics() << ">";
+
+      if (fIsImaginary)
+        buffer << ")";
+
       return buffer.toString();
     }
 
@@ -1433,9 +1516,13 @@ Type::typeId() const
   case kType_Type:
     {
       const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
+      if (fIsImaginary)
+        buffer << "imag(";
       buffer << tyimpl->name();
       if (!tyimpl->generics().empty())
         buffer << "<" << tyimpl->generics()  << ">";
+      if (fIsImaginary)
+        buffer << ")";
       return buffer.toString();
     }
 
@@ -1707,6 +1794,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
               String("type parameter constraints conflict "
                      "with generics constraints"));
           clonedTy = replacement;
+          clonedTy.setIsImaginary(fIsImaginary);
         }
         else if (hasConstraints()) {
           if (!replacement.isRef())
@@ -1717,9 +1805,12 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
                                       replacement.generics(),
                                       constraints(),
                                       replacement.isValueType());
+          clonedTy.setIsImaginary(fIsImaginary);
         }
-        else
+        else {
           clonedTy = replacement;
+          clonedTy.setIsImaginary(fIsImaginary);
+        }
       }
       else
         clonedTy = clone();

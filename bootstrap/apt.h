@@ -244,16 +244,29 @@ namespace heather
 
   //--------------------------------------------------------------------------
 
-  template<typename T>
-  class NumberNode : public AptNode
+  class BaseNumberNode : public AptNode
   {
+  protected:
+    BaseNumberNode(const SrcPos& srcpos, bool isImaginary, const Type& type);
+
   public:
+    bool isImaginary() const;
+
+  protected:
+    bool fIsImaginary;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  template<typename T>
+  class NumberNode : public BaseNumberNode
+  {
   protected:
     NumberNode(const SrcPos& srcpos, T value,
                bool isImaginary, const Type& type)
-      : AptNode(srcpos, type),
-        fValue(value),
-        fIsImaginary(isImaginary)
+      : BaseNumberNode(srcpos, isImaginary, type),
+        fValue(value)
     { }
 
   public:
@@ -263,15 +276,8 @@ namespace heather
     }
 
 
-    bool isImaginary() const
-    {
-      return fIsImaginary;
-    }
-
-
   protected:
     T fValue;
-    bool fIsImaginary;
   };
 
 

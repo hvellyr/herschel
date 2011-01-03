@@ -118,8 +118,10 @@ namespace heather
     static Type newAny(bool isValue = true);
 
     static Type newInt(bool isValue = true);
+    static Type newImaginaryInt(bool isValue = true);
     static Type newRational(bool isValue = true);
     static Type newReal(bool isValue = true);
+    static Type newImaginaryReal(bool isValue = true);
     static Type newString(bool isValue = true);
     static Type newBool(bool isValue = true);
 
@@ -177,6 +179,7 @@ namespace heather
     bool isNumber() const;
     bool isComplex() const;
     bool isAnyFloat() const;
+    bool isAnyReal() const;
     bool isRational() const;
     bool isOrdinal() const;
     bool isAnyInt() const;
@@ -184,6 +187,11 @@ namespace heather
     bool isAnySignedInt() const;
     bool isChar() const;
     bool isBool() const;
+
+    bool isAnyNumber() const;
+
+    bool isImaginary() const;
+    void setIsImaginary(bool value);
 
     TypeEnumMaker* newBaseTypeEnumMaker() const;
 
@@ -265,10 +273,11 @@ namespace heather
     bool isBuiltinType(const String& name) const;
 
   private:
-    Type(TypeKind kind, bool isValue, TypeImpl* impl);
+    Type(TypeKind kind, bool isValue, bool isImaginary, TypeImpl* impl);
 
     TypeKind      fKind;
     bool          fIsValue;
+    bool          fIsImaginary;
     Ptr<TypeImpl> fImpl;
   };
 

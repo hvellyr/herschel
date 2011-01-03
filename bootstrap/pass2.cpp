@@ -2829,15 +2829,17 @@ AptNode*
 SecondPass::parseIntNumber(const Token& expr)
 {
   if (expr.tokenType() == kInt) {
+    Type type = Type::newInt();
+    type.setIsImaginary(expr.isImaginary());
     return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
-                       Type::newInt());
+                       type);
   }
   else if (expr.isSeq() && expr.count() == 3 &&
            expr[0].isNumber() &&
            expr[1] == kColon)
   {
     Type type = parseTypeSpec(expr[2]);
-
+    type.setIsImaginary(expr.isImaginary());
     return new IntNode(expr.srcpos(), expr[0].intValue(),
                        expr[0].isImaginary(), type);
   }
@@ -2851,14 +2853,17 @@ AptNode*
 SecondPass::parseRationalNumber(const Token& expr)
 {
   if (expr.tokenType() == kRational) {
+    Type type = Type::newRational();
+    type.setIsImaginary(expr.isImaginary());
     return new RationalNode(expr.srcpos(), expr.rationalValue(),
-                            expr.isImaginary(), Type::newRational());
+                            expr.isImaginary(), type);
   }
   else if (expr.isSeq() && expr.count() == 3 &&
            expr[0].isNumber() &&
            expr[1] == kColon)
   {
     Type type = parseTypeSpec(expr[2]);
+    type.setIsImaginary(expr.isImaginary());
 
     return new RationalNode(expr.srcpos(), expr[0].rationalValue(),
                             expr[0].isImaginary(), type);
@@ -2873,14 +2878,17 @@ AptNode*
 SecondPass::parseRealNumber(const Token& expr)
 {
   if (expr.tokenType() == kReal) {
+    Type type = Type::newReal();
+    type.setIsImaginary(expr.isImaginary());
     return new RealNode(expr.srcpos(), expr.realValue(),
-                        expr.isImaginary(), Type::newReal());
+                        expr.isImaginary(), type);
   }
   else if (expr.isSeq() && expr.count() == 3 &&
            expr[0].isNumber() &&
            expr[1] == kColon)
   {
     Type type = parseTypeSpec(expr[2]);
+    type.setIsImaginary(expr.isImaginary());
 
     return new RealNode(expr.srcpos(), expr[0].realValue(),
                         expr[0].isImaginary(), type);
