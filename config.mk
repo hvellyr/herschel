@@ -10,7 +10,7 @@ srcdir = .
 
 PACKAGE = heather
 VERSION = 0.1
-COPYRIGHTYEAR = 2002, 2003, 2009, 2010
+COPYRIGHTYEAR = 2002, 2003, 2009-2011
 COPYRIGHTOWNER = Gregor C. Klinke
 # human readable package name, used for Mac packages, etc.
 HR_PACKAGE = Heather
