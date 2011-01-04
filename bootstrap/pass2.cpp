@@ -2839,7 +2839,8 @@ SecondPass::parseIntNumber(const Token& expr)
            expr[1] == kColon)
   {
     Type type = parseTypeSpec(expr[2]);
-    type.setIsImaginary(expr.isImaginary());
+    if (type.isDef())
+      type.setIsImaginary(expr[0].isImaginary());
     return new IntNode(expr.srcpos(), expr[0].intValue(),
                        expr[0].isImaginary(), type);
   }
@@ -2863,7 +2864,8 @@ SecondPass::parseRationalNumber(const Token& expr)
            expr[1] == kColon)
   {
     Type type = parseTypeSpec(expr[2]);
-    type.setIsImaginary(expr.isImaginary());
+    if (type.isDef())
+      type.setIsImaginary(expr[0].isImaginary());
 
     return new RationalNode(expr.srcpos(), expr[0].rationalValue(),
                             expr[0].isImaginary(), type);
@@ -2888,7 +2890,8 @@ SecondPass::parseRealNumber(const Token& expr)
            expr[1] == kColon)
   {
     Type type = parseTypeSpec(expr[2]);
-    type.setIsImaginary(expr.isImaginary());
+    if (type.isDef())
+      type.setIsImaginary(expr[0].isImaginary());
 
     return new RealNode(expr.srcpos(), expr[0].realValue(),
                         expr[0].isImaginary(), type);
