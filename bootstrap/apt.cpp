@@ -476,7 +476,7 @@ BaseNumberNode::BaseNumberNode(const SrcPos& srcpos, bool isImaginary,
 bool
 BaseNumberNode::isImaginary() const
 {
-      return fIsImaginary;
+  return fIsImaginary;
 }
 
 
