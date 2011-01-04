@@ -38,7 +38,7 @@
 <vector>
 <vector>
 <int ty='lang|Int'>1</int>
-<real ty='lang|Real' imag='t'>3.141500</real>
+<real ty='i&lt;lang|Real>' imag='t'>3.141500</real>
 </vector>
 <vector>
 <real ty='lang|Rational'>3/4</real>

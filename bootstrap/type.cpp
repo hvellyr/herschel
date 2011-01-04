@@ -1498,14 +1498,14 @@ Type::typeId() const
       if (tyimpl->isOpenSelf())
         buffer << "'";
       if (fIsImaginary)
-        buffer << "imag(";
+        buffer << "i<";
 
       buffer << tyimpl->name();
       if (!tyimpl->generics().empty())
         buffer << "<" << tyimpl->generics() << ">";
 
       if (fIsImaginary)
-        buffer << ")";
+        buffer << ">";
 
       return buffer.toString();
     }
@@ -1519,12 +1519,12 @@ Type::typeId() const
     {
       const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
       if (fIsImaginary)
-        buffer << "imag(";
+        buffer << "i<";
       buffer << tyimpl->name();
       if (!tyimpl->generics().empty())
         buffer << "<" << tyimpl->generics()  << ">";
       if (fIsImaginary)
-        buffer << ")";
+        buffer << ">";
       return buffer.toString();
     }
 

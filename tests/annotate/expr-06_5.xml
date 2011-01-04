@@ -350,14 +350,14 @@
 <symbol  ty='lang|Complex'>a</symbol>
 <binary op='+' ty='lang|Complex'>
 <real ty='lang|Real'>3.141500</real>
-<int ty='imag(lang|Int)' imag='t'>1</int>
+<int ty='i&lt;lang|Int>' imag='t'>1</int>
 </binary>
 </binary>
 <binary op='==' ty='lang|Bool'>
 <symbol  ty='lang|Complex'>b</symbol>
 <binary op='+' ty='lang|Complex'>
 <int ty='lang|Int'>42</int>
-<int ty='imag(lang|Int)' imag='t'>2</int>
+<int ty='i&lt;lang|Int>' imag='t'>2</int>
 </binary>
 </binary>
 </binary>
@@ -410,16 +410,16 @@
 </ty:type>
 </ty:used-type>
 <ty:used-type>
-<ty:ref nm='lang|Complex'>
-</ty:ref>
-</ty:used-type>
-<ty:used-type>
 <ty:type nm='lang|Int'>
 <ty:isa>
 <ty:ref nm='lang|Number'>
 </ty:ref>
 </ty:isa>
 </ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
 </ty:used-type>
 </ty:node-types>
 </compile-unit>
