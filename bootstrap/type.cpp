@@ -1424,8 +1424,10 @@ Type::isImaginary() const
 void
 Type::setIsImaginary(bool value)
 {
-  assert(isAnyNumber());
-  fIsImaginary = value;
+  if (isAnyNumber())
+    fIsImaginary = value;
+  else
+    fIsImaginary = false;
 }
 
 
