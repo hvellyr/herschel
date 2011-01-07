@@ -1,0 +1,9 @@
+module ixwick
+
+def enum Xyz
+{
+  ckiwix|revert = 0
+  ckiwix|forward = 1
+}
+
+def m : Xyz = forward

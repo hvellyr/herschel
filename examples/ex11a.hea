@@ -1,0 +1,2 @@
+def f(self @ Pair, b : Int, c, d = 5, e: esel = 11, g ...)
+  self

@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit><def><vardef sym='a1|a'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Real'></ty:ref></type><init><int ty='Int'>12</int></init></vardef></def><def><vardef sym='a1|b'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='MyString'></ty:ref></type><init><str>abc</str></init></vardef></def></compile-unit>

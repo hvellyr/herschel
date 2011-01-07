@@ -1,0 +1,13 @@
+def macro regfunc
+{
+  { def regfunc ?n:name (?y:named-param, ?r:rest-param) ?body:expr }
+  -> {
+       def ?n (?y, ?r)
+         ?body
+       def _register_ ## ?n = func|register(?n)
+     }
+}
+
+
+def regfunc print-driver(device: d : String = "unknown", others ...)
+  lookup(d).send-message(others)

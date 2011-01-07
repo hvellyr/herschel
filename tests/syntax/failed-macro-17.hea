@@ -1,0 +1,7 @@
+def macro abc
+{
+  { def abc ?a:name       } -> { def _tmp_ ## ?a ## ## _const }
+}
+
+
+def abc xyz

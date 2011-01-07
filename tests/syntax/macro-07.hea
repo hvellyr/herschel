@@ -1,0 +1,7 @@
+def macro fluidx
+{
+  { def fluidx ?n:name = ?e:expr } -> { def ?n = register-fluidx(?n, ?e) }
+}
+
+
+def fluidx aaa = 11

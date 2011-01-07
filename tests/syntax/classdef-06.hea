@@ -1,0 +1,23 @@
+def class Abc<K, V>(k : K) : Collection<K, 'Z>
+    where K isa Comparable,
+          V isa Slotable
+{
+  -- K refers to Comparable, dto. for V
+  def generic item(k @ K) : V ...
+
+  def generic itemx(k @ 'X[]) : 'Y
+      where X isa VeryComparable,
+            Y isa NearlySlotable ...
+
+  -- here K should refer to VeryComparable, not Comparable!  dto. for V
+  def generic itemy(k @ 'K[]) : 'V
+      where K isa VeryComparable,
+            V isa NearlySlotable ...
+
+  -- K refers again to Comparable, dto. for V
+  def generic itemz(k @ K) : V ...
+
+  -- K refers again to Comparable, V to Copyable
+  def generic itemf(k @ K) : 'V
+      where V isa Copyable ...
+}

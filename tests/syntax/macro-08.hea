@@ -1,0 +1,12 @@
+when ignore {
+  def macro x
+  {
+    { on x () ?a:expr } -> { ?a }
+  }
+
+  on x ()
+    outln("x")
+}
+
+def f()
+  true

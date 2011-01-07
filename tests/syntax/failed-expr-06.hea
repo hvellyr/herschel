@@ -1,0 +1,2 @@
+def value-iterators(root : Pair<String, _>)
+  root then root.cdr while root <> nil

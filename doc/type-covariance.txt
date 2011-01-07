@@ -1,0 +1,122 @@
+When are types covariant?
+
+  A type A is covariant to a type B when
+
+  - if both A and B are base types
+
+    - if A implements/inherits (type) B
+
+    Note: it is an error if not all required functions in A are
+          covariants to those in B
+
+
+  - a measure type A is covariant to a type B
+
+    - if A's base type is covariant to B
+
+    - if B is a measure type, too, A is covariant to B if A's and B's base
+      types are covariant.
+
+
+  - an enumeration type A is covariant to a type B
+
+    - if A's base type is covariant to B
+
+    - two enumeration types can never be covariant
+
+    - base type can never be covariant to enumeration types.
+
+
+  - arrays are never covariant
+
+    - Int[] is not covariant to Number[]
+
+  - if A and B are parametrized types
+
+    - parametrized types are never covariant (aliasing!), unless they
+      generic (using 'T notation):
+
+        HashMap<'K, 'V> is covariant to Map<'K, 'V>
+        Map<'K, 'V> is contravariant to HashMap<'K, 'V>
+
+      This only applies if type parameters are equal or equally generic:
+
+        HashMap<String, 'V> is covariant to Map<String, 'V>
+        HashMap<'K isa String, 'V> is covariant to Map<'K isa String, 'V>
+
+
+    - List<'T>: can access members as Object, but can't store anything,
+      since 'T is unclear
+
+    - List<'T isa Number>: can access members as Numbers, and store any
+      Number (or subclass of Int)
+
+    - List<Int> is however not covariant to List<Number> (aliasing)
+
+
+
+Function overwriting:
+
+  When implementing generic functions for other types:
+
+    - return types must be covariant to the original definition
+
+    - specialized parameters must be covariant to the original definition
+
+    - additional parameters must be *contravariant* or equal to the
+      original definition (!)
+
+
+------------------------------------------------------------------------------
+
+Beware of aliasing
+
+  let a : List<String> = List<String>()
+  let b : List<Object> = a
+
+looks ok, doesn't it?  But if now later on
+
+  b.add("abc")  -- ok
+  b.add(4567)   -- problem!
+
+4567 is a number (and therefore an Object) and thus can be added to b (it's
+a List<Object>).  But since b and a point to the same object in memory the
+type contract a isa List<String> is broken!
+
+Thus two parameterized types A<X> and B<Y> are covariant only if A and B
+are covariant and X and Y are identical.
+
+
+The 'isa' constraint is valueable?
+
+  def generic foo(a : 'T) ...                     -- accepts really any type
+  def generic foo(a : Any) ...                    -- accepts Any type
+  def generic foo(a : 'T isa Shape) ...           -- accepts any type being
+                                                  -- Shape or subclass
+  def generic foo(a : 'T) where T isa Shape ...   -- dto.
+
+
+------------------------------------------------------------------------------
+
+type implementation:
+
+  each type definition (alias, type, class, etc.) add a instance of
+  heather::Type() to the relevant scope.  References to other types (in
+  generics, class inheritance, variable usage, etc.) are *always* given as
+  instances of heather::TypeRef().  Types have generic variables, TypeRefs
+  can have explicit generics.
+
+      def class Foo<a, b> : (Other<a>, Bar<b>)
+
+      def x : Foo<Int, String>
+
+  =>
+
+      register Type("Foo", ["a", "b"], [TypeRef("Other", ["a"]),
+                                        TypeRef("Bar", ["b"])])
+
+      <letnode>
+        <symbolnode>x</>
+        <type>TypeRef("Foo", ["Int", "String"])
+
+  Union types, sequences, constraint-types only exist as TypeRefs.

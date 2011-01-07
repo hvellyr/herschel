@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq><seq><id>def</id><id>a</id><punct type='='/><seq><seq><id>not</id><nested left='(' right=')'><seq><id>is-it?</id><nested left='(' right=')'/></seq></nested></seq><punct type='and'/><seq><id>would-it?</id><nested left='(' right=')'/></seq></seq></seq><seq><id>def</id><id>b</id><punct type='='/><seq><id>not</id><nested left='(' right=')'><seq><id>not</id><nested left='(' right=')'><lit type='bool'>true</lit></nested></seq></nested></seq></seq></seq>

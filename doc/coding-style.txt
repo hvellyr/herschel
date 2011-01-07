@@ -1,0 +1,170 @@
+Basic dos and don'ts:
+
+  - never using TABs, use whitespace only
+  - basic indentation step is 2
+  - please don't leave trailing whitespace
+  - identifiers and comments should be in english
+
+
+Types and classes
+
+  Start with a capital letter; otherwise in camelcase.
+
+    class StringNode : public AbstractNode
+    {
+    }
+
+
+(Member) functions
+
+  Start with a lowercase letter; otherwise in camelcase.
+
+  The format is always:
+
+    ReturnType
+    namespace::function(param1,
+                        param2,
+                        param3) const
+    {
+    }
+
+
+Member variables
+
+  Start with a 'f', otherwise in camelcase.
+
+  struct X
+  {
+    int fCount;
+    String fNameOfCase;
+  };
+
+
+Global variables
+
+  Start with a 's', otherwise in camelcase.
+
+
+Constants (enum, defines, const)
+
+  Start with a 'k', otherwise in camelcase.  Exception: error codes start
+  with an E_.
+
+
+Namespaces
+
+  All heather classes, functions, and types are within the "heather"
+  namespace.
+
+  Namespace names are all lowercase (and since they should be short no
+  camelcase is required anyway).
+
+
+Braces
+
+  In general put braces *behind* the statement, except for "if" or "for"
+  statements which are wrapped (see there).  Cf. Functions also.  Braces
+  for classes, structs, and functions are always on the next line.
+
+
+if style
+
+  Always put a space between "if" and "(":
+
+    if (condition) {
+    }
+    else if (condition2) {
+    }
+    else {
+    }
+
+  Oneline bodies should be written without braces:
+
+    if (condition)
+      printf("hello");
+
+  Don't use this when a following else branch needs braces:
+
+    if (condition) {
+      printf("hello");
+    }
+    else {
+      ...
+    }
+
+
+for
+
+   Always put a space between "for" and "(":
+
+     for (term1; term2; term3) {
+     }
+
+   Oneline bodies should be written without braces:
+
+     for (term1; term2; term3)
+       count++;
+
+   except when the body itself needs braces:
+
+     for (term1; term2; term3) {
+       if (condition)
+         count++;
+     }
+
+   When the "for" statement is to be broken, align the terms and put the
+   opening brace on the next line:
+
+     for (std::vector<abc>::iterator it = fMyCollection.begin();
+          it != fMyCollection.end();
+          ++it)
+     {
+       if (condition)
+         count++;
+     }
+
+
+while
+
+   Analog to for:
+
+   while (test) {
+   }
+
+   or
+
+   while (test)
+     count++;
+
+
+   Similar for do while:
+
+   do {
+   } while (test);
+
+
+switch
+
+  switch (value) {
+  case x:
+    term1;
+    break;
+
+  case y:
+    {
+      int v;
+      term2;
+    }
+    break;
+
+  case z:
+  default;
+    fallback;
+  }
+
+
+Whitespace
+
+  Separate functions and types by 2 empty lines.  Single empty lines are to
+  be used for grouping code portions.  You may add a separator line
+  (//----...) between functions and types to form a larger grouping.

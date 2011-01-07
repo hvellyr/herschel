@@ -1,0 +1,5138 @@
+\input texinfo @c -*-texinfo-*-
+@c %**start of header
+@setfilename heather.info
+@settitle Heather -- Language specification
+@finalout
+@setchapternewpage off
+@paragraphindent 0
+@afourpaper
+@syncodeindex fn cp
+@c %**end of header
+
+@include version.texinfo
+
+@c @shorttitlepage Heather
+
+@titlepage
+@ifhtml
+@title Heather
+@sp 2
+@subtitle Language specification
+@sp 1
+@subtitle Version @value{VERSION}
+@c @center @image{bg2,,8cm}
+@author by Gregor C. Klinke
+@end ifhtml
+
+@iftex
+@sp 5
+@flushright
+@sp -5
+@titlefont{Heather}
+@sp 1
+Language specification
+Version @value{VERSION}
+@sp 5
+by @emph{Gregor C. Klinke}
+@end flushright
+@flushleft
+@sp -20
+@image{heather-logo,,22cm}
+@end flushleft
+@end iftex
+
+@c @author by Gregor C. Klinke
+@page
+@vskip 0pt plus 1filll
+Compiled from base revision `@value{BASEREVISION}'.
+@vskip 20pt
+Copyright (C) @value{COPYRIGHTYEAR}, @value{COPYRIGHTOWNER}. All rights reserved.
+
+Redistribution and use in source (@acronym{GNU} texinfo) and `compiled'
+forms (@acronym{SGML}, @acronym{HTML}, @acronym{PDF}, PostScript,
+@acronym{RTF} and so forth) with or without modification, are permitted
+provided that the following conditions are met:
+
+@enumerate
+@item Redistributions of source code (@acronym{GNU} texinfo)
+must retain the above copyright notice, this list of conditions and the
+following disclaimer as the first lines of this file unmodified.
+
+@item Redistributions in compiled form (transformed to other
+markup, converted to @acronym{PDF}, PostScript, @acronym{RTF} and other
+formats) must reproduce the above copyright notice, this list of
+conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+@end enumerate
+
+THIS DOCUMENTATION IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS
+OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ANY WAY OUT OF THE USE OF THIS DOCUMENTATION, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+@end titlepage
+@headings double
+
+@contents
+
+@c All the nodes can be updated using the EMACS command
+@c texinfo-every-node-update, which is normally bound to C-c C-u C-e.
+@node Top, Introduction, (dir), (dir)
+
+@ifinfo
+This is the reference specification for the @dfn{Heather} programming
+language.  It refers to version @value{VERSION}.
+@end ifinfo
+
+@ifhtml
+This is the reference specification for the @dfn{Heather} programming
+language.  It refers to version @value{VERSION}.
+@end ifhtml
+
+@c All the menus can be updated with the EMACS command
+@c texinfo-all-menus-update, which is normally bound to C-c C-u C-a.
+
+@menu
+* Introduction::                Introduction
+* Basic concepts::              Basic concepts
+* Lexical elements::            Lexical elements
+* Functions::                   Functions
+* Types::                       Types
+* Bindings::                    Bindings
+* Expressions::                 Expressions
+* Program structure::           Program structure
+* Macros::                      Macros
+* Linking to C::                Linking to C
+* Inline documentation::        Inline documentation
+* Syntax::                      Syntax
+* Concept Index::               Index of concepts
+@end menu
+
+@ifinfo
+Compiled from base revision `@value{BASEREVISION}'.
+
+Copyright (C) @value{COPYRIGHTYEAR}, @value{COPYRIGHTOWNER}. All rights reserved.
+
+Redistribution and use in source (@acronym{GNU} texinfo) and `compiled'
+forms (@acronym{SGML}, @acronym{HTML}, @acronym{PDF}, PostScript,
+@acronym{RTF} and so forth) with or without modification, are permitted
+provided that the following conditions are met:
+
+@enumerate
+@item Redistributions of source code (@acronym{GNU} texinfo)
+must retain the above copyright notice, this list of conditions and the
+following disclaimer as the first lines of this file unmodified.
+
+@item Redistributions in compiled form (transformed to other
+markup, converted to @acronym{PDF}, PostScript, @acronym{RTF} and other
+formats) must reproduce the above copyright notice, this list of
+conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
+@end enumerate
+
+THIS DOCUMENTATION IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS
+OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ANY WAY OUT OF THE USE OF THIS DOCUMENTATION, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+@end ifinfo
+
+
+@c ====================================================================
+@node Introduction, Basic concepts, Top, Top
+@chapter Introduction
+
+Heather is an general-purpose multiparadigm programming language.  It
+is strongly typed, offering type inference and parametric polymorphism
+(``generics'').  It is consequently object oriented (everything is a
+object, even functions), while its consequent multiple dispatch
+approach keeps a strong functional touch.  The object model is
+class-oriented, supporting multiple inheritance as well as the
+separation of types (``protocols'', ``interfaces'') and classes.
+
+The grammar is regular, small, and context free.  In particular it can
+be parsed without symbol tables, and does not require a special
+preprocessor since it offers powerful hygienic macros as part of the
+language and special support for conditional compilation.
+
+It is designed for a conventional compile-link development model, though
+this is not required by the specification.
+
+Heather has been strongly influenced by languages like Scheme, Dylan,
+Cecil/Diesel, and Modula-3.  It drew of course influences of much more
+sources, which are sometimes not obvious (like D and Go).
+
+
+@c ====================================================================
+@node Basic concepts, Lexical elements, Introduction, Top
+@chapter Basic concepts
+
+@menu
+* Source code representation::
+* Storage model::               Storage model
+* Numbers::                     Numbers
+* Tail recursion::              Tail recursion
+@end menu
+
+
+@c --------------------------------------------------------------------
+@node Source code representation, Storage model, Basic concepts, Basic concepts
+@section Source code representation
+
+Heather code is written in source files, normally taking the extension
+@file{.hea}.  No formal distinction between implementation and
+declaration files (``source'' and ``header'') is imposed by the
+language (see @ref{Source code organization} for details).  A file can
+contain any number of modules, classes, types, and function
+definitions.  Technically the language does not impose any constraint
+on the way a source file is to be named or where it is to be located;
+there's especially no coupling of module and folder structure or class
+and file name.
+
+Source files are expected to be encoded in @acronym{UTF}-8 encoding.  Note that
+the text is taken as is, i.e.@ no normalization is expected or applied.
+Note furthermore that identifiers are restricted to a less narrower set
+of characters.
+
+When referring to a file from heather source code (e.g.@ in an import
+statement) the file extension is typically not specified (see
+@ref{Import}).
+
+
+@c --------------------------------------------------------------------
+@node Storage model, Numbers, Source code representation, Basic concepts
+@section Storage model
+
+@c todo
+@emph{To write}
+
+@itemize
+@item precise memory layout?
+@item garbage collection
+@item non-gc memory objects?
+@end itemize
+
+
+@c --------------------------------------------------------------------
+@node Numbers, Tail recursion, Storage model, Basic concepts
+@section Numbers
+
+Heather provides a rather complex number model with both exact and
+approximate number representations.  Normal development should always
+use exact and unlimited numbers like @code{Int} or @code{Real}.  The
+approximate and limited types like @code{Float}, @code{UWord} or
+@code{Octet} are supported mostly for interfacing to existing software
+components.
+
+The exact number types are (from least specific) @code{Number << Exact
+<< Complex << Real << Rational << Int << Ordinal}, i.e.@ each
+@code{Ordinal} is an @code{Integer}, each @code{Integer} is a
+@code{Rational}, etc.
+
+The approximate number integer types all inherit from @code{Number <<
+Approximate << ApproxInt} whereas the approximate floating point types
+inherit from @code{Number << Approximate << ApproxFloat}.
+
+All standard types and their properties:
+
+@smallexample
+Type         Description                           Value range
+
+Number       (abstract)
+Complex      arbitrary precise complex like 3+2i     -INF .. INF
+Real         arbitrary precise real                  -INF .. INF
+Rational     arbitrary precise quotient like 3/4     -INF .. INF
+Int          signed, arbitrary precise integer       -INF .. INF
+Ordinal      positive, arbitrary precise integer        0 .. INF
+
+Octet        unsigned 8bit                              0 .. 2^8-1
+Short        signed 16bit                           -2^15 .. 2^15-1
+UShort       unsigned 16bit                             0 .. 2^16-1
+Word         signed 32bit                           -2^31 .. 2^31-1
+UWord        unsigned 32bit                             0 .. 2^32-1
+Long         signed 64bit                           -2^63 .. 2^63-1
+ULong        unsigned 64bit                             0 .. 2^64-1
+Float        32bit ieee754 float                    +/- 3.4E +/- 38
+Double       64bit ieee754 float                    +/- 1.7E +/- 308
+LongDouble   128bit ieee754 float                   +/- 1.18 +/- 4932
+@end smallexample
+
+
+@c --------------------------------------------------------------------
+@node Tail recursion,  , Numbers, Basic concepts
+@section Tail recursion
+
+@c todo
+@emph{To write}
+
+
+@c ====================================================================
+@node Lexical elements, Functions, Basic concepts, Top
+@chapter Lexical elements
+
+@c ....................................................................
+@section Comments
+
+Comments start with the character sequence @code{--} and continue
+through the next newline.  There are no block comments.
+
+@c ....................................................................
+@section Identifiers
+
+Identifiers and symbols can contain much more special characters than in
+`normal' programming languages, notably the characters `+', `*', `-',
+and `/'.  Adding white space between token is therefore indispensable.
+
+Identifiers in Heather are case sensitive.
+
+@example
+to-string
+list-of-values!
+*stdout*
+%some-constant%
+_a_string_
+_a/string_
+->xyz
+@end example
+
+Not that a minus (`-') at the beginning of an identifier is only
+accepted if it directly is followed by a greater (`>') char.
+
+Even though the source code itself is encoded in UTF-8 identifiers are
+not allowed to contain arbitrary Unicode characters.
+
+
+@c ....................................................................
+@section Reserved identifiers
+
+The following identifiers are reserved and have a special meaning:
+
+@c 1234567890123456789012345678901234567890123456789012345678901234567890
+@verbatim
+AND       and       as        by        def       else      eof
+export    extend    false     for       Function  function  if
+import    in        isa       let       match     mod       module
+nil       not       on        OR        or        reify     select
+then      true      when      where     while     XOR
+@end verbatim
+
+The following identifiers are predefined and used by the language
+specification.  They can be used as function and/or variable names
+under certain situation, but this is seldomly recommended@footnote{As
+an example where reusing predefined symbol can be useful take the
+@code{class} identifier -- it is at the same time used as @code{def}
+modifier (to define a class) and as the name of a function, which
+returns the implementing class for an object.}:
+
+@verbatim
+alias     char      class     config    const     enum      exit
+final     fluid     generic   ignore    include   init      inner
+macro     measure   outer     public    private   signal    slot
+sync      type      unit
+@end verbatim
+
+
+@c ....................................................................
+@section Operator identifiers
+
+The following identifiers are reserved and handled as operators:
+
+@verbatim
+%    *    **   +    -    ->   ..   ...  /    ++   <    <<   <=
+<=>  <>   ==   >    >=   >>   and  by   in   mod  or   AND  OR
+XOR  isa  as
+@end verbatim
+
+Note that operators are really identifiers @emph{not} delimiters.
+
+
+@c ....................................................................
+@section Delimiters
+
+General delimiters in Heather.
+
+@verbatim
+"    '    .    ,    ;    #    @    (    )    [    ]    {    }    ~
+@end verbatim
+
+
+@c ....................................................................
+@section Boolean constants
+
+@findex true
+@findex false
+@findex Boolean
+The predefined Boolean constants @code{true} and @code{false} are
+logically realized by singleton instances of the class @code{Boolean}.
+
+@example
+true
+false
+@end example
+
+
+@c ....................................................................
+@section Other constants
+
+@findex unspecified
+@findex Unspecified
+@findex eof
+@findex Eof
+@findex nil
+@findex Nil
+The predefined constant @code{nil} denotes the zero value of reference
+types (see @ref{Reference types}).  It is logically realized by the
+singleton instance of the class @code{Nil}.
+
+Similar to @code{nil} the constant @code{eof} denotes the end of
+sequence of values (it name derives from ``end of file'', but it is
+equally used for ``end of list'', or ``end of iterator'').  It is
+logically realized by the singleton instance of the class @code{Eof}.
+
+There's a special constant @code{unspecified} which is a singleton
+instance of the type @code{Unspecified}.  This value can not be
+compared or transformed.  Its sole purpose is to be returned from
+expressions or functions where no reasonable return value
+exists.@footnote{The effect of the @code{Unspecified} type can be
+compared to @code{void} in Java or C.}
+
+
+@c ....................................................................
+@section Chars
+
+@findex \ @r{(literal char notation)}
+
+@c todo
+@emph{To write}
+
+@example
+\a
+\space
+\u41h
+\nl
+@end example
+
+
+@c ....................................................................
+@section String
+
+@c todo
+@emph{To write}
+
+@example
+"abc"
+"hello world"
+"Usage: cmd OPTIONS\nl;"
+"a string"
+"a \nl;string"
+"a \tab;string"
+"a \\string"
+"a \"string"
+"a \A;string"
+"a \u41h;string"
+@end example
+
+
+@c ....................................................................
+@section Keywords
+
+@findex # @r{(keyword notation)}
+@cindex keywords
+Keywords denote a global unique identity.  This holds true even if
+keywords are imported from a dynamic linked object (e.g.@ @acronym{DLL})
+which has been compiled and linked on a different machine.
+
+@example
+#symbol
+#hello-world
+@end example
+
+Keywords are first class objects and can be created at runtime
+(@code{to-keyword()}); they are assumed however to show a much better
+performance when comparing for identity.
+
+@defun to-keyword (@var{string} : String) : Keyword
+Returns to the keyword representation for @var{string}.
+@end defun
+
+@defun to-string (@var{keyword} @@ Keyword) : String
+Returns the string representation of @var{keyword}.
+@end defun
+
+
+
+@c ....................................................................
+@section Arrays
+
+@findex #[ @r{(literal array notation)}
+
+@c todo
+@emph{To write}
+
+@example
+a constant array: #[1, 2, 3, 4, 5]
+@end example
+
+
+@c ....................................................................
+@section Vector
+
+@findex #( @r{(literal vector notation)}
+
+@c todo
+@emph{To write}
+
+@example
+#(1, 2, 3)
+@end example
+
+
+@c ....................................................................
+@section Dictionary
+
+@findex #( @r{(literal dictionary notation)}
+
+@c todo
+@emph{To write}
+
+@example
+#("abc" -> #[1, 2, 3],
+  "def" -> #symbol,            -- symbol
+  "xyz" -> \a,                 -- char
+  "mmm" -> \u41h,              -- char
+  "ch1" -> \space              -- char
+)
+@end example
+
+
+@c ....................................................................
+@section Numbers
+
+Constant numbers can be notated in decimal, hexadecimal, binary and
+octal writing.  To distinguish a corresponding letter is @emph{appended}
+to the number:
+
+@example
+100                            -- decimal
+100h                           -- hexadecimal
+100y                           -- binary
+100t                           -- octal
+@end example
+
+More complex notations exist for complex and rational numbers:
+
+@example
+1234                           -- precise integer
+123.4                          -- precise real
+12/34                          -- precise rational
+12 + 34i                       -- precise complex
+12.3+34j                       -- precise complex
+1.23e-45                       -- precise integer (exp.@ not.)
+@end example
+
+To give a specific type for approximate numbers the constant itself can
+be typed:
+
+@example
+123 : Octet                    -- (approx) octet
+123 : Short                    -- (approx) signed short
+123 : UShort                   -- (approx) unsigned short
+123 : Word                     -- (approx) word
+123 : UWord                    -- (approx) unsigned word
+123 : Long                     -- (approx) long
+123 : ULong                    -- (approx) unsigned long
+123.4 : Float                  -- (approx) ieee754 float
+123.4 : Double                 -- (approx) ieee754 double
+123.4 : LongDouble             -- (approx) ieee754 long double
+@end example
+
+It is an error to specify a non-matching type to a numerical constant.
+
+In combination with different notations, the typing is always last:
+
+@example
+0fffffefeh : UWord
+1.4675e-10 : Double
+@end example
+
+
+@c ....................................................................
+@section Measures
+
+Heather supports numerical constants with @dfn{units}.  Units are tags
+which are bound to types and automatically type a numerical constant to
+the associated type (see @ref{Measure types} for details).  The tags are
+user definable and are notated using a quote:
+
+@example
+12'px      -- 12 pixel
+56.4'cm    -- 56.4 centimeter
+@end example
+
+
+@c ====================================================================
+@node Functions, Types, Lexical elements, Top
+@chapter Functions
+
+Besides `normal' standalone functions Heather supports so-called
+@dfn{generic functions} which are specialized for certain types on one
+or more parameters.  These generic functions make up the core of
+Heather's object oriented system.
+
+@menu
+* Standalone Functions::        Standalone Functions
+* Function Parameters::         Function parameters
+* Generic Functions::           Generic Functions
+* Method lookup::               Method lookup
+* Method reification::          Explicit Method Reification
+@end menu
+
+
+@c --------------------------------------------------------------------
+@node Standalone Functions, Function Parameters, Functions, Functions
+@section Standalone Functions
+
+Standalone functions are not bound to any particular type.  They are
+resolved by their name only.  There's nothing like type-overwriting,
+etc.
+
+@cindex functions, defining
+@deffn Special {def [function]}
+
+The definition of standalone functions take the following form:
+
+@example
+def @var{name} ([@var{parameters}]) [: @var{return-type}]
+    [@var{generics-const}]
+    @var{function-body}
+@end example
+
+Local function definition are similar using the let keyword:
+
+@example
+let @var{name} ([@var{parameters}]) [: @var{return-type}]
+    [@var{generics-const}]
+    @var{function-body}
+@end example
+
+The function is declared with @var{parameters} and the body
+@var{function-body} bound to @var{name}.  The @var{function-body} is
+expected to be a @emph{single} expression, i.e.@ for a body with
+multiple expression it must be written as a block (see @ref{Blocks}).
+As a notable exception to this rule function bodies on top-level
+(i.e.@ when defined with the @code{def} keyword) are delimited by the
+next definition (e.g.@ by a @code{def} keyword), a closing module,
+class or type scope, or the file end.
+
+Functions are always defined in recursive mode, i.e.@ a function
+@var{name} can ``see'' (i.e.@ call) itself recursively.
+
+For the way to define the @var{parameters} see @ref{Function
+Parameters}.
+
+For the specification and function of the @var{generics-const} see
+@ref{Parametrized types}.
+
+@example
+def ack(x : Int, y : Int) : Int
+  if (x == 0)
+    y + 1
+  else if (y == 0)
+    ack(x - 1, 1)
+  else
+    ack(x - 1, ack(x, y - 1))
+@end example
+
+@findex ... @r{(abstract function notation)}
+If a function is to be declared in a signature (header) file, the
+@var{function body} is notated in abstract way, i.e.@ using the
+ellipsis notation:
+
+@example
+def ack(x : Int, y : Int) : Int ...
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Function Parameters, Generic Functions, Standalone Functions, Functions
+@section Function Parameters
+
+@menu
+* Positional Parameters::       Positional Parameters
+* Named parameters::            Named parameters
+* Optional parameters::         Optional parameters
+* Mixed parameters::            Mixture of the parameter types
+@end menu
+
+
+@c --------------------------------------------------------------------
+@node Positional Parameters, Named parameters, Function Parameters, Function Parameters
+@subsection Positional Parameters
+
+Positional parameters:
+
+@example
+def f(a, b, c) a + b + c
+@end example
+
+are used as:
+
+@example
+f(1, 2, 3)
+@result{} 6
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Named parameters, Optional parameters, Positional Parameters, Function Parameters
+@subsection Named parameters
+
+Heather function can use named arguments with @dfn{named parameters}.
+These are declared by adding a default value to the parameters name:
+
+@example
+def f(a = 5, b = "hello world", c = @{ let x = 5
+                                      x * x @})
+  @emph{body}
+@end example
+
+The default value can be any valid expression, even complete block (as
+to be seen for the parameter @code{c} in the example above.  This can be
+used like in the following examples:
+
+@example
+f(a: 11, b: "N.N.", c: 255)
+@result{} a -> 11
+   b -> "N.N."
+   c -> 255
+
+f()
+@result{} a -> 5
+   b -> "hello world"
+   c -> 25
+
+f(c: 7, a: 0)
+@result{} a -> 0
+   b -> "hello world"
+   c -> 7
+@end example
+
+By default the keyword and the parameter name are identical (like @code{a} and
+@code{a:} in the examples above).  It is possible to specify a
+particular keyword name in the declaration however:
+
+@example
+def f(fst: a = 5,
+      snd: b = "hello world",
+      trd: c = @{ let x = 5
+                 x * x @})
+  @emph{body}
+
+f(fst: 127, trd: 8, snd: "/")
+@result{} a -> 127
+   b -> "/"
+   c -> 8
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Optional parameters, Mixed parameters, Named parameters, Function Parameters
+@subsection Optional parameters
+
+@findex ... @r{(rest values)}
+Additionally to positional and named parameters it is possible to define
+a @dfn{rest parameter} which takes all additional arguments to be found
+in a function call:
+
+@example
+def f(args ...)
+@end example
+
+When called it puts all additional parameters, including all keyword
+arguments which are not matching, into an immutable array:
+
+@example
+f()
+@result{} args -> #[]
+
+f(1, 2, 3, 4)
+@result{} args -> #[1, 2, 3, 4]
+
+f(#[1, 2, 3, 4])
+@result{} args -> #[#[1, 2, 3, 4]]
+
+f(a: 1, b: 2, 3, 4)
+@result{} args -> #[#a, 1, #b, 3, 4]
+@end example
+
+The rest parameter is by default to be a @code{Any[]}.  It is possible
+however to give a specific type.  The function in the following example
+accepts any number of @code{String} arguments, but no other types of
+objects:
+
+@example
+def f(args : String[] ...) ...
+@end example
+
+This is possible with union types also, of course.  The function in the
+following example accepts any number of Strings, Uris, or Booleans,
+probably in any combination.
+
+@example
+def f(args : &(String, Uri, Boolean)[] ...) ...
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Mixed parameters,  , Optional parameters, Function Parameters
+@subsection Mixture of the parameter types
+
+When using positional, keywords and optional parameters at the same time
+in a function declaration, they have to appear in the following order:
+
+@enumerate
+@item positional
+@item keyword
+@item optional
+@end enumerate
+
+@example
+def f(a, b, c, d = true, e = 25, f ...)
+@end example
+
+The same basic order applies to function calls.  Even if keyword
+arguments can be ordered in any way, they always have to follow
+positional arguments.
+
+Keyword arguments are always ordered in lexicographical way when listed
+in an optional argument:
+
+@example
+f(1, 2, 3)
+@result{} a -> 1
+   b -> 2
+   c -> 3
+   d -> true
+   e -> 25
+   f -> #[]
+
+f(4, 5, 6, e: 127, "hello world", "sic est")
+@result{} a -> 4
+   b -> 5
+   c -> 6
+   d -> true
+   e -> 127
+   f -> #["hello world", "sic est"]
+
+f(1, 2, 3, z: 1, g: 2, h: 3)
+@result{} a -> 1
+   b -> 2
+   c -> 3
+   d -> true
+   e -> 25
+   f -> #[#g, 2, #h, 3, #z, 1]
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Generic Functions, Method lookup, Function Parameters, Functions
+@section Generic Functions
+
+@cindex generic functions, defining
+@findex generic
+Generic functions are specialized by one or more parameters for
+certain types.
+
+@deffn Special {def generic}
+
+The definition of generic functions take the following form:
+
+@example
+def generic @var{name} ([@var{parameters}]) [: @var{return-type}] ...
+def generic @var{name} ([@var{parameters}]) [: @var{return-type}] 
+    @var{function-body}
+@end example
+
+@findex ... @r{(abstract function notation)}
+Defines a generic function named @var{name}.  The first form (with the
+left out body) defines an abstract generic function signature with no
+(default) specialization.  The second form (including the body)
+defines the generic function and provides a default specialization.
+
+@findex @@ @r{(specialization marker)}
+Parameters are specialized by adding their type using the `@@'
+delimiter.  Only positional parameters can be specialized.  It is an
+error if a function is declared as generic using the @code{generic}
+keyword but no parameter is marked as specializable.
+
+@cindex methods
+Generic functions must be defined at least once.  Multiple generic
+definitions must be co-variant in return type and the types of
+non-specialized parameters.  A generic function specialization (a
+@dfn{method}) must not be defined before its generic method definition
+has been seen.
+
+It's possible to define an empty, i.e.@ abstract, generic function:
+
+@example
+def generic compare(one @@ OneType, two @@ TwoType) : Bool ...
+@end example
+
+Note the ellipsis @code{...} at the end of the line.
+
+To put it another way: defining a generic function with a body
+implementation is like defining an abstract generic function with
+certain parameters specialized to @code{Any} @emph{and} adding a
+default implementation.
+
+@example
+def generic add-x(self @@ XMap, value @@ Int)
+  self.insert(value, -1)
+@end example
+
+is equivalent to:
+
+@example
+def generic add-x(self @@ Any, value @@ Any) ...
+
+def add-x(self @@ XMap, value @@ Int)
+  self.insert(value, -1)
+@end example
+
+Implementing a method may restate the @code{generic} keyword; the
+specialized parameters must be marked as specialized however (using
+the @@ marker).  Restating the @code{generic} keyword is generally not
+recommended, since it may hide overwrite ambiguities.@footnote{A
+specialized method @code{m()} requires a matching generic function
+@code{g()} being declared somewhere before.  If the generic function
+is later changed the compiler will complain about the method not
+matching any known generic function.  This is comparable to the
+@code{overwrite} modifier in languages like @acronym{D} or
+@acronym{C#}.}
+
+Methods must be co-variant with their generic function:
+
+@example
+def generic f(x @@ Any) : Number ...
+
+def f(x @@ Int) : Int ...                @result{} ok
+def f(x @@ Real) : Real ...              @result{} ok
+def f(x @@ String) : String ...          @result{} error
+@end example
+
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Method lookup, Method reification, Generic Functions, Functions
+@section Method lookup
+
+When applying (i.e.@ calling) a generic function the method is looked up
+by name (like a normal standalone function) and matching the parameter
+types to specialized parameters.  Resolve order is always from first to
+last parameter.  For each parameter the most specific type matches.
+
+@verbatim
+Extend
+@end verbatim
+
+When a matching function is called it can propagate the function call to
+the next function using the @code{next-method} call.
+
+@deffn Special next-method ()
+Inside generic functions @code{next-method} calls the next overwritten
+method with exactly the same parameters as the current active function.
+Since methods have a defined matching order the next method is the one
+which matches less precise than the current called one.
+
+This resembles somewhat a call to @code{super} in other programming
+languages.
+
+@example
+def generic before-open(self @@ Document) : Bool
+  if (next-method()) @{
+    self.fill-in-dsp-tables
+    true
+  @}
+  else
+    false
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Method reification,  , Method lookup, Functions
+@section Explicit Method Reification
+
+Normally methods should be implemented in a very general way, i.e.@
+special implementations for different types are normaly avoided to
+prevent code duplication.  This could lead however sometimes to
+suboptimal performance since the compiler can't generate code
+optimized for special type properties.
+
+For example:
+
+@example
+def compare(one @@ Sliceable<Ordinal, 'T>,
+            two @@ Sliceable<Ordinal, 'T>) : Int
+  let n = one.num-items
+  if (n == two.num-items) @{
+    for (i : Ordinal = 0 then i + 1 while i < n) @{
+      let cmpval = one[i] <=> two[i]
+      if (cmpval <> 0)
+        break(cmpval)
+    @}
+    else
+      0
+  @}
+  else if (one.num-items < two.num-items)
+    1
+  else
+    -1
+@end example
+
+This @code{compare} function matches for all sliceable types, i.e.@
+arrays, collections, and even strings.  The compiler can't use optimized
+arrays access however for the expressions @code{one[i]} or @code{two[i]}
+-- since it can't assume @code{one} or @code{two} being arrays.
+
+@deffn Special reify
+The @code{reify} clauses on method definitions can be used to hint the
+compiler to treat the method declaration as if it would have been
+declared in addition to the explicitly written form also with the
+signatures listed by the @code{reify} clause.
+
+The @code{reify} extension has the form:
+
+@example
+def @var{name}(@var{function-parameters}) : @var{return-type}
+  reify (@var{alt-func-params1}) : @var{alt-return-type1},
+        (@var{alt-func-params2}) : @var{alt-return-type2},
+        ...
+  @var{function-body}
+@end example
+
+All signatures (@var{function-parameters}, @var{alt-func-params1},
+@var{alt-func-params2}) must have the parameter layout, i.e.@ the number
+of positional and named parameters must be identical, etc.
+
+For the example above this could look like:
+
+@example
+def compare(one @@ Sliceable<Ordinal, 'T>,
+            two @@ Sliceable<Ordinal, 'T>) : Int
+    reify (one @ 'T[], two @ 'T[]) : Int,
+          (one @ 'T[], two @ Slice<Ordinal, 'T>) : Int
+  let n = one.num-items
+  if (n == two.num-items) @{
+    for (i : Ordinal = 0 then i + 1 while i < n)
+    @{
+      ...
+@end example
+
+This hints the compiler to compile (and optimize) the code for three
+different type combination.
+
+The @code{reify} declaration is only possible for implementations, i.e.@
+an abstract function declaration can not be explicitly reified as
+different specializations.
+@end deffn
+
+
+@c ====================================================================
+@node Types, Bindings, Functions, Top
+@chapter Types
+
+@menu
+* Type Introduction::           Type Introduction
+* Defining types::              Defining types
+* Slots::                       Slots
+* Constructors::                Constructors
+* Required Functions::          Required Functions
+* Finalization::                Finalization
+* Reference types::             Reference types
+* Array types::                 Array types
+* Parametrized types::          Parametrized types
+* Implicit type parameters::    Implicit type parameters
+* Type Constraints::            Type Constraints
+* Union types::                 Union types
+* Function types::              Function types
+* Enumeration types::           Enumeration types
+* Measure types::               Measure types
+* Type casts::                  Type casts
+@end menu
+
+
+@c --------------------------------------------------------------------
+@node Type Introduction, Defining types, Types, Types
+@section Type Introduction
+
+@cindex classes
+@cindex classes, defining
+@cindex types
+@cindex types, defining
+
+Heather distinguishes between @dfn{types} and @dfn{classes}.  Every class
+has exactly one type, but not every type is represented by a class.
+A union type for example forms a specific type without a class.  Only
+classes can be instantiated.
+
+Heather's type system is nominative, i.e.@ types are identified by name
+(as a consequence two types having the exact same definition are
+considered different if they have different names).  Types can be
+parametrized, constrained, or being a set of possible types (@dfn{union
+types}).  Types are first class, i.e.@ types have a runtime
+representation and are objects themselves.
+
+Types are orthogonal to namespaces.  Methods and functions are not
+@sc{members} of types; neither is it possible to define sub-classes or
+enumerations inside of types.  Methods are specialized @emph{on} types,
+they are however not members @emph{of} types.
+
+Types can define a number of supported generic functions.  The
+corresponding methods are implemented outside.
+
+@cindex multiple inheritance
+Heather supports multiple inheritance.  All inherited types must be
+compatible in required functions and slot names, neither in public nor
+private ones.  If two inherited types have exactly the same slot (they
+are identical in name, type and initial value), they share the same
+physical allocation space.  If two inherited types have exactly the same
+required function it is treated to be the same required function.
+
+Cyclic inheritance is not possible.
+
+There are various forms for defining types:
+
+@enumerate
+@item The first, @code{def class}, is used for defining a class, i.e.@ a
+type which has a defined run-time representation with a certain memory
+layout and which is (ultimately) intended to be instantiated (see
+@ref{def class}).
+
+@item The second, @code{def type}, is used to define a logical type,
+which is cannot have instances (see @ref{def type}).
+
+@item The third, @code{def alias}, is a shortcut definition, where a
+type declaration is bound to a new name (see @ref{def alias}).
+
+@item @code{def enum} is used for define derives types with limited sets
+of possible values (see @ref{Enumeration types}).
+
+@item @code{def measure} is used to define special types with a special
+notation (see @ref{Measure types}).
+@end enumerate
+
+
+@c --------------------------------------------------------------------
+@node Defining types, Slots, Type Introduction, Types
+@section Defining types
+
+@anchor{def class}
+@findex def class
+@findex class
+@deffn Special def @code{class} @var{name} @
+       [<@var{types}>] [(@var{params})] [@code{:} @var{inheritance}] @
+       [@var{generics-const} ] @
+       @{ [ @var{slots} ] [ @var{protocol} ] @}
+Define a class @var{name} with @var{params}.  The class derives from
+@var{inheritance} and have @var{slots} slots.
+
+If @var{types} is a non empty list of variables the resulting type is
+set to be @dfn{parametrized}.  These parameters are @dfn{type
+parameters}, which can be used in type declarations on the slot
+definitions in @var{slots} and from related method definitions.
+
+With @var{params} the parameters for the default @code{apply} method can
+be defined.  See @ref{Positional Parameters} for the syntax details.
+
+@var{Inheritance} is either a single type declaration or a list of comma
+separated type declarations.  This gives the full inheritance definition
+of the resulting type.  The order of the types specifies their priority
+in method dispatching.
+
+For the specification and function of the @var{generics-const} see
+@ref{Parametrized types}.
+
+Every class ultimately inherits from @code{Object}.  This type is
+automatically added to the inheritance list if not specified.
+
+@var{slots} defines the slots (aka `member variables', aka `fields') of
+the class; their order defines the order of initialization.
+
+@var{protocol} gives the list of all functions required by this type,
+i.e.@ all generic functions which must be implemented as methods
+specialized (at least) for this type; see @ref{Required Functions} for
+details.
+
+@end deffn
+
+
+@anchor{def type}
+@findex def type
+@findex type
+@deffn Special def @code{type} @var{name} @
+       [<@var{types}>] [@code{:} @var{inheritance}]
+       [ @var{generics-const} ]
+       [ @{ [ @var{protocol} ] @} ]
+Defines a new type @var{name} which is derived from @var{inheritance}.
+@var{inheritance} is either a simple type declarations or a list of type
+declarations.
+
+As with classes @var{types} specifies the type to be parametrized.  For
+the specification and function of the @var{generics-const} see
+@ref{Parametrized types}.
+
+@var{protocol} gives the list of all functions required by this type.
+See @ref{Required Functions} for details.
+
+@example
+def type RandomAccessStream : (InputStream, OutputStream,
+                               RepositionableStream)
+@end example
+
+The resulting type is a new type with its own run-time representation
+which is different to those of its inherited types -- even in case of
+single inheritance and no added required function:
+
+@example
+def type T : X
+@end example
+
+Even if @code{T} is effectively identical to @code{X}, @code{T} is a
+different type to @code{X}.
+
+Other than classes a type does not automatically inherit from
+@code{Object}; it is possible to have types without inheritance at all.
+Such a type is useful for defining type signatures (aka interfaces
+in Java) and even mixins:
+
+@example
+def type Comparable
+@{
+  def generic compare(one @@ Comparable,
+                      two @@ Comparable) : Int ...
+@}
+
+def generic less?(one @@ Comparable, two @@ Comparable) : Bool
+  (one <=> two) < 0
+
+def generic equal?(one @@ Comparable,
+                   two @@ Comparable) : Bool
+  (one <=> two) == 0
+
+def generic less-equal?(one @@ Comparable,
+                        two @@ Comparable) : Bool
+  (one <=> two) <= 0
+
+def generic greater?(one @@ Comparable,
+                     two @@ Comparable) : Bool
+  (one <=> two) > 0
+
+def generic greater-equal?(one @@ Comparable,
+                           two @@ Comparable) : Bool
+  (one <=> two) >= 0
+@end example
+
+In this example every class or type inheriting from @code{Comparable}
+automatically gets the compare operators @code{<}, @code{<=}, @code{>},
+etc.@ and only has to specialize the method @code{compare} (as
+implementation of the operator @code{<=>}).  This method is kept as
+abstract generic function but bound to the @code{Comparable} type.
+@end deffn
+
+
+@anchor{def alias}
+@findex def alias
+@findex let alias
+@findex alias
+@deffn Special {def alias}
+
+The @code{def alias} registers a @var{type} also under a different
+name.  It has the forms:
+
+@example
+def alias @var{name} [<@var{types}>] = @var{type}
+let alias @var{name} [<@var{types}>] = @var{type}
+@end example
+
+@var{name} and @var{type} afterwards are totally synonym, i.e.@
+@var{name} is not considered a new type.  The only purpose of this
+form is to provide a more readable form for @var{type}.
+
+@example
+def alias UserTagMap = HashMap<String, UserTag<String, Int>>
+
+def generic add-tags(tags @@ UserTagMap) ...                    [1]
+def generic add-tags(tags @@ HashMap<String,
+                                    UserTag<String, Int>>) ... [2]
+@end example
+
+The two method declarations at [1] and [2] are completely identical
+(they are somehow comparable to @code{typedef}s in C and C++.)
+
+Alias definition are also allowed as local definitions.  As such the
+alias definition is only visible in the inner scope:
+
+@example
+def f()
+  let alias XMap = Map<String, Vector<Node>>
+  ...
+@end example
+
+Note that the alias itself can have generic type parameters, can be
+partially specialized on @code{type}, etc.:
+
+@example
+def alias TokenMap<K> = Map<K, Token>
+@end example
+
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Slots, Constructors, Defining types, Types
+@section Slots
+
+@deffn Special {def slot}
+
+Slots are defined as variables inside the block of a class declaration
+using the special @code{slot} definition form:
+
+@example
+def slot @var{slot-name} [ : @var{type} ] [ = @var{init-value} ] [ ; @var{annotations} ]
+@end example
+
+@var{init-value} is the slot's default value which is used when an
+instance of the class is created.  If is given @var{type} maybe
+infered from it.
+
+Slots can be controlled by a number of additional @var{annotations}.
+These comma separated symbols are put after the definition line
+separated by a @code{;}.  The following annotations are defined:
+
+@findex transient
+@findex public
+@findex outer
+@findex inner
+@findex observable
+@findex Observable
+@findex slot!
+@table @code
+@item public
+@itemx outer
+@itemx inner
+This controls the automatic export of autocreated accessor and/or
+mutator functions for the slot.
+@item transient
+The slot is flag as being transient, i.e.@ it is not included in
+automatic serialization.
+@item readonly
+Not mutator function is created automaticly for this slot.  The
+function can be add later manually using the @code{slot!()} builtin,
+of course (see @ref{SlotAccess, Access to type slots}).
+@item observable
+The slot is created as @dfn{observable}, i.e.@ changing its value
+emits a message to all connected observers.  The message emitted is
+constructed from the slot name like this
+@code{on-<slotname>-changed}.  Note that the class itself
+automatically becomes an @code{Observable} by this flag.
+@end table
+
+Some examples:
+
+@example
+def class Point : Object
+@{
+  def slot x = 0'px
+  def slot y = 0'px
+@}
+@end example
+
+An example of an annotated slot:
+
+@example
+def class Button : Widget
+@{
+  def slot state : ButtonState = ButtonState.down ; observable
+@}
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Constructors, Required Functions, Slots, Types
+@section Constructors
+
+By default Heather creates a constructor for each class.  Technically a
+constructor is a method of the @code{apply} generic function
+specialized on the class type of the class.  It is possible to implement
+such a method manually, but normally the abbreviated notation as
+parameters on the class definition itself is sufficient:
+
+@example
+def class SenseOfLife(x: _x = 6, y: _y = 7) : Object
+@{
+  def slot x : Int = _x
+  def slot y : Int = _y
+@}
+
+-- the following method is generated by the compiler
+def generic apply(self @@ SenseOfLife.class,
+                  x: _x : Int = 6,
+                  y: _y : Int = 7)
+  @emph{body}
+@end example
+
+Instances of @code{SenseOfLife} could now be created like following:
+
+@example
+SenseOfLive(x: 6, y: 7)
+SenseOfLive(y: 7)
+SenseOfLive()
+@end example
+
+It is possible of course to use positional parameters in class
+definitions:
+
+@example
+def class SenseOfLife(_x, _y) : Object
+@{
+  def slot x : Int = _x
+  def slot y : Int = _y
+@}
+
+-- result in a constructor apply method:
+def generic apply(self @@ SenseOfLife.class, y : Int, x : Int)
+  @emph{body}
+@end example
+
+Note that the @code{apply} methods are specialized on the class type of
+the defined class, not the type itself (i.e.@ @code{SenseOfLife.class},
+not @code{SenseOfLife}).
+
+For special constructors you can define and implement your own
+@code{apply} methods for your type of course.
+
+In addition to the automatic created constructor @code{apply} method it
+is possible to add a post construction initialization hook to the class using the
+@code{on init} handler declaration.
+
+@findex on init
+@findex init
+@findex on
+@deffn Handler {on init}
+
+The @code{on init} declaration has the form:
+
+@example
+on init (@var{self})
+  @var{expr}
+@end example
+
+The @code{on init} hook is called as part of the instance
+initialization.  Directly after instance allocation and binding of
+initialization values to the instance's slots the init hook is called.
+As single argument the instance is passed to @var{self}.
+
+The class parameters are visible inside the @code{on init} scope.
+
+@example
+def class Person(name) : Object
+@{
+  def slot firstname : String
+  def slot surname : String
+
+  on init(self)
+  @{
+    self.firstname, self.surname = name.split(\space)
+  @}
+@}
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Required Functions, Finalization, Constructors, Types
+@section Required Functions
+
+A type can define a list of required functions which must be implemented
+at least by one specialized method to fulfill the type's protocol.  For
+a class it is an error if a function is not implemented.
+
+@example
+def type Collection<Elt>
+@{
+  def generic add(self @@, item @@ Any) : self.Type ...
+  def generic contains?(self @@, item @@ Any) : Bool ...
+@}
+@end example
+
+Such defined required functions must be defined without body (i.e.@
+require the ellipsis on the line end) and must by default be defined
+as generic functions.  Functions declared in this way must be
+compatible with generic functions of same name defined in other places
+(independent whether defined as standalone or required generic
+functions).
+
+@c For required functions specialized parameters which refer to the
+@c enclosing type can be abbreviated with a simple `@@' marker.
+
+Required functions are inherited to subtypes. If a subtype requires the
+same function as an inherited type the ``overloaded'' function must be
+co-variant to the overwritten function, i.e.@ its return type must be
+`larger' or equal to the one of the overwritten function, etc.
+
+Note that the definition of a type protocols specifies the list of
+required functions only -- there may exist much more functions which are
+specialized on this type.
+
+
+@c --------------------------------------------------------------------
+@node Finalization, Reference types, Required Functions, Types
+@section Finalization
+
+@cindex finalization
+@cindex destructor
+@findex on delete
+@findex delete
+@findex on
+@deffn Handler {on delete}
+
+It is possible to add special finalization code inside the class
+declaration using the @code{on delete} directive with the form:
+
+@example
+on delete (@var{object})
+  @var{expr}
+@end example
+
+The handler is called before an object is destroyed by the runtime; the
+object itself is passed as @var{object}.  Note that this is not a real
+destructor, but a kind of finalization which is only necessary to free
+(external) resources.
+
+@example
+def class ProxyBridge : Object
+@{
+  on delete(self)
+  @{
+    global-registry.de-register(self)
+  @}
+@}
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Reference types, Array types, Finalization, Types
+@section Reference types
+
+@cindex call-by-value
+@cindex call-by-reference
+All values have copy semantics in Heather by default.  This is true
+even for complex objects like arrays or class instances.  Values are
+always pass @emph{by value} to functions by default.@footnote{The
+compiler will use call-by-reference and copy-on-write mechanism where
+appropriate to avoid unnecessary copying.}
+
+In some cases calling values @emph{by reference} is however more
+appropriate.  Heather supports this by explicit @dfn{reference types}.
+A reference type denotes a direct access to a shared memory cell (or
+block).  This allows to reference and modify the same memory from
+multiple bindings.
+
+Heather does not support pointer arithmetics, however.  It is for
+instance not possible to use pointers to freely move around the
+memory.  Consequently it is also not possible to have pointers to
+slots of arrays only; a reference points to the full value always.
+
+@menu
+* Reftype notation::            Reference type notation
+* Reftypes and nil::            Reference types and nil
+* Reftypes and out::            Reference types and ``out'' parameter
+@end menu
+
+
+@c --------------------------------------------------------------------
+@node Reftype notation, Reftypes and nil, Reference types, Reference types
+@subsection Reference type notation
+
+@deffn Notation ^
+Reference types are notated by putting a @code{^} in front of the base
+type expression:
+
+@example
+def foo(a : ^String) : ^(Int, Int, Bool) ...
+def a : ^String = nil
+@end example
+
+Accessing the value of a variable of reference type does not differ
+from accessing variables with copy semantic types (i.e.@ reference
+typed variable are not ``dereferenced'' explicitely).
+@end deffn
+
+
+Note that in object orient programming the object parameter to generic
+functions (sometimes call the ``this'' or ``self'' pointer) is often a
+reference type, esp. in so-call modifier functions:
+
+@example
+def generic names!(p @@ ^Person, n : String, sn : String) : ^Person
+  p.name = n
+  p.surname = sn
+  p
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Reftypes and nil, Reftypes and out, Reftype notation, Reference types
+@subsection Reference types and @code{nil}
+
+The special value @code{nil} can not be assign to non-reference typed
+variables, i.e.@ non-reference typed values always have always a
+value.  This is important since every variable that is defined must be
+initialized:
+
+@example
+let x : Person                          (1)
+let y : ^Person                         (2)
+@end example
+
+In (1) @code{x} is not @code{nil} as it may have been expected, but in
+fact a new instance of @code{Person} (with some default values) is
+created.  In (2) however @code{y} is a reference to a @code{Person}
+value and by default @code{nil}.  The effective type of @code{y} is
+therefore @code{&(Person, Nil)} and could be matched like this:
+
+@example
+match (y) @{
+  |   : Nil    -> outln("No person set")
+  | p : Person -> outln(p.to-string)
+@}
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Reftypes and out,  , Reftypes and nil, Reference types
+@subsection Reference types and ``out'' parameters
+
+Assign values to a reference typed variable resets the reference only
+(i.e.@ points the var to a different object).  The value original
+pointed to by the variables is not affected by the assignment.
+
+This mean that reference-out parameters (``double-pointer
+parameters'') are not possible.  In the following example:
+
+@example
+def foo(a : ^Person)
+  let b : Person = Person("Heinz")
+  a = b
+
+def bar()
+  let n : Person = Person("Jakob")
+  foo(n)
+  outln(n)
+
+@result{} "Jakob"
+@end example
+
+the parameter @code{a} is changed locally in @code{foo} only.  On the
+other hand in the following form it is possible to modify members of
+reference typed parameters: 
+
+@example
+def foo(a : ^Person)
+  a.name!("Heinz")
+
+def bar()
+  let n : Person = Person("Jakob")
+  foo(n)
+  outln(n.name)
+
+@result{} "Heinz"
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Array types, Parametrized types, Reference types, Types
+@section Array types
+
+@cindex arrays
+Every type can exist as simple or as @dfn{array} pendant.  Arrays are
+first class objects.
+
+@example
+let buffer : Char[]        [1]
+let tmp : Int[10]          [2]
+@end example
+
+[1] defines @code{buffer} to be an array of unspecified size.  The
+initial value is @emph{not} @code{nil}, but an empty array of
+characters.
+
+With [2] the variable @code{tmp} is bound to an array of 10 integers.
+Note that an array's size is not an integral part of the type, nor is it
+a constraint (see below).  A @code{Int[10]} has therefore the same type
+as @code{Int[]}.
+
+
+@c --------------------------------------------------------------------
+@node Parametrized types, Implicit type parameters, Array types, Types
+@section Parametrized types
+
+@cindex generics (type parameters)
+@cindex parametrized types
+Types can be parametrized.  The parameters are types
+themselves.@footnote{Parametrized types are sometimes called `generics'
+also.  We avoid this term for Heather since it may be confused
+with `generic function'.}
+
+@example
+def class Pair<One, Two>(_one : One, _two : Two)
+@{
+  def slot one : One = _one
+  def slot two : Two = _two
+@}
+@end example
+
+To allocate a new instance of such a class the parameters must
+specified:
+
+@example
+let p = Pair<Int, Real>(5, 7.0)
+@end example
+
+It is not possible to create an instance of the type @code{Pair} (in the
+example above) without the proper type parameters.
+
+Parametrized types can be used to specialize methods:
+
+@example
+def do-y(self @@ Pair<Int, Int>) ...
+@end example
+
+This method will match for Int-Int-Pairs only.
+
+
+@c --------------------------------------------------------------------
+@node Implicit type parameters, Type Constraints, Parametrized types, Types
+@section Implicit type parameters
+
+Inside class or type declarations the type parameters are visible in
+the declaration scope: i.e.@ required methods, slot declarations,
+@code{on init} and @code{on delete} statements, the class parameters,
+and even the inheritance declaration can directly refer to these type
+parameters.
+
+In the following example the class @code{MyContainer} is a possible
+collection for all types @code{T}, which can be initialized with an
+array of type @code{T}, which is derived from a vector of type @code{T},
+etc.:
+
+@example
+def class MyContainer<T>(items : T[]) : (Vector<T>, Comparable)
+@{
+  def slot _data = items
+
+  def generic compare(one @@ MyContainer<T>,
+                      two @@ MyContainer<T>) : Int
+    one._data <=> two._data
+
+  def generic slice(self @@ MyContainer<T>, index : Ordinal) : T ...
+@}
+@end example
+
+@cindex implicit type parametrization
+@findex ' @r{(implicit type parameter notation)}
+If a method or function is defined as standalone or outside of a class
+or type context it is necessary to parametrize the declaration
+explicitly.  The types which are to be parametrized are notated with a
+leading @emph{quote}.  All quoted types with the same name refer to
+the same type.
+
+@example
+-- for all type @@var@{T@} copies all elements from @@var@{src@} into
+-- @@var@{dst@} and returns the last elements copied.  Only those
+-- elements in the range @@code@{src[offset .. offset + items]@}
+-- are copied.
+def add-from-vector(dst @@ Container<'T>,
+                    src @@ Vector<'T>,
+                    offset : 'K, items : 'K) : 'T ...
+@end example
+
+The function is parametrized on two types, @code{T} and @code{K}, where
+@code{T} refers to the type of the collection items and @code{K} to the
+type of the indexes.  The function is specialized on
+@code{Container<Any>} and @code{Vector<Any>} only, since @code{T} is not
+a concrete type.  The parametrization however guarantees that the
+method will always return a @code{Char} if it is called with a
+@code{Container<Char>}, and that @code{offset} and @code{items} must
+have the same type.
+
+The quote type notation is valid throughout the complete method
+declaration, but does not influence other declarations.
+
+
+@c --------------------------------------------------------------------
+@node Type Constraints, Union types, Implicit type parameters, Types
+@section Type Constraints
+
+@cindex constraint types
+A @dfn{Constraint Type} is a type which is constrained by a certain
+subset of possible values.  Examples are numerical values that accept
+only specific value ranges, collections that accept only certain values,
+etc.
+
+@example
+(Bool == true)
+(Int in -127 .. 127)
+(Keyword in #[#apple, #pear, #orange, #banana, #grapefruit])
+@end example
+
+The constraints are not an integral part of the type, they are used
+however during compilation to detect type mismatch and for possible
+optimization.  They are especially not honoured in multiple dispatch.
+I.e.@ two constraint types only differing in their constraints are
+treated as the same type during dispatch.  In the following example:
+
+@example
+def generic add-value(self @@ Cont, value, index @@ (Int == -1))
+  self.append!(value)
+
+def generic add-value(self @@ Cont, value, index @@ (Int >= 0))
+  self.insert!(value, before-index)
+@end example
+
+the compiler will complain about a generic function redefinition.
+
+
+@findex where
+@findex isa
+@cindex type constraints
+Sometimes it is useful to further specify a type parameter, e.g.@ to
+limit possibly accepted subtypes or certain expected signatures
+(protocols).
+
+This limitation can be achieved by the @code{where} special clause on
+function, class, or type declarations:
+
+@example
+def add-from-vector(dst @@ Container<'T>,
+                    src @@ Vector<'T>,
+                    offset : 'K, items : 'K) : 'T
+    where T isa Comparable,
+          K >= 0
+    ...
+@end example
+
+Here the type parameter @code{T} is required to be at least a
+@code{Comparable} and @code{K} is only allowed to be a positive number.
+
+The @code{where} clause is only a syntactic variation of the
+constraints explicitly annotated on the type declaration.  It's most
+useful to abbreviate constraint type parameters used in multiple
+places in a signature.
+
+
+@c --------------------------------------------------------------------
+@node Union types, Function types, Type Constraints, Types
+@section Union types
+
+Union types declare that a variable, parameter or such may be of any
+type defined in the union type.  Union types are most likely useful when
+defining methods which are appropriate for various types, which are not
+directly related.
+
+@example
+def generic to-xml(val @@ &(IntNode, StringNode, BoolNode)) : String
+  (StringBuffer() ++ "<x>"
+                  ++ val.to-string
+                  ++ "</x>").to-string
+@end example
+
+The function in the example is specialized for three various types:
+@code{IntNode}, @code{StringNode}, and @code{BoolNode}.  The following
+implementation is, except for the code duplication, completely synonym
+to the example above:
+
+@example
+def generic to-xml(val @@ IntNode) : String
+  (StringBuffer() ++ "<x>"
+                  ++ val.to-string ++ "</x>").to-string
+
+def generic to-xml(val @@ StringNode) : String
+  (StringBuffer() ++ "<x>"
+                  ++ val.to-string ++ "</x>").to-string
+
+def generic to-xml(val @@ BoolNode) : String
+  (StringBuffer() ++ "<x>"
+                  ++ val.to-string ++ "</x>").to-string
+@end example
+
+A common use case for union types is a return value with some given error
+code:
+
+@example
+def alias NumberOrFalse = &(Number, Bool = false)
+
+def octets-available() : NumberOrFalse
+  ...
+
+def f()
+  match (octets-available()) @{
+    | t : Boolean -> outln("End of file")
+    | n : Number -> outln("Still have %d to read" % #[n])
+  @}
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Function types, Enumeration types, Union types, Types
+@section Function types
+
+@deffn TypeDecl Function
+The type of anonymous functions is notated as such:
+
+@example
+Function ( @var{function-params} ) @r{[} : @var{return-type} @r{]}
+@end example
+
+The following example declares a method which returns a function taking
+one parameter and returns a value with a union type:
+
+@example
+def generator(x @@ Vector<'T>) : Function() : &('T, Eof)
+  let i = 0
+  function() : &('T, Eof)
+  @{
+    if (i < x.num-items)
+      x[i.post-incr!]
+    else
+      eof
+  @}
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Enumeration types, Measure types, Function types, Types
+@section Enumeration types
+
+@findex def enum
+@cindex enumerations
+Enumeration define types which have a known limited set of possible
+values.  An enumeration type inherit from a base type; this is not
+necessarily, as in C or C++, an integer.
+
+The values of an enumeration are symbols in the same namespace as
+functions or variables, i.e.@ two enumerations in the same module
+can't have the same symbolic name as value.  When refering to
+enumeration values the value's symbolic name is to be used.  The
+enumeration type itself does not form a special module or namespace.
+
+Enumeration type can be used to specialize methods.
+
+@example
+module xgrafix
+
+def enum Colors : Keyword
+@{
+  none   = #transparent
+  red    = #red
+  orange = #orange
+  blue   = #blue
+  green  = #green
+  yellow = #yellow
+@}
+
+def enum MidiController : Ordinal
+@{
+  bank-select    = 0
+  modulation     = 1
+  breath         = 2
+  foot-pedal     = 3
+  -- ...
+  poly-operation = 127
+@}
+
+
+def set-clip-details(self @@ Clip,
+                     color @@ Colors, mctrl @@ MidiController)
+  select (mctrl) @{
+    | bank-select -> ...
+    | modulation -> ...
+    | breath -> ...
+    | ...
+  @}
+
+  if (color == xgrafix|none)
+    reset-color(self)
+  ...
+@end example
+
+If the value of the enumeration items are not specified and the
+enumeration inherits of type @code{Int} the values are automatically
+assigned.  The first enumeration item is @code{0}:
+
+@example
+def enum Slot
+@{
+  first-slot      -- -> 0
+  second-slot     -- -> 1
+  third-slot      -- -> 2
+@}
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Measure types, Type casts, Enumeration types, Types
+@section Measure types
+
+@findex def measure
+@cindex measures
+@findex ' @r{(unit type notation)}
+Measures define numerical types and define a default @dfn{unit tag}.
+Unit tags are attached to constant numerical values and automatically
+set the types of this constants:
+
+@example
+let page-length : Length = 21'cm
+let distance : Length = 12.15'ft
+let speed : Speed = 21'm/s
+let width : Pixel = 412'px
+@end example
+
+Contrary to enumeration types measures don't limit the possible values
+but extend the constant notation.
+
+@deffn Special {def measure}
+The @code{def measure} statement has the form:
+
+@example
+def measure @var{type-name} (@var{base-unit}) : @var{base-type}
+@end example
+
+where @var{type-name} is the measure type to be defined and
+@var{base-type} the type the measure inherits from.  Each measure type
+has a @dfn{default unit} which must be unique throughout the whole
+program.
+@end deffn
+
+@deffn Special {def unit}
+The type declared represents always the quantity of 1 @var{base-unit}
+items.  In addition to the default unit further units can be defined.
+This has the form:
+
+@example
+def unit @var{src-unit} -> @var{dst-unit} (@var{param}) @var{transform-expr}
+@end example
+
+This defines a transformation function, which computes the mapping of a
+value notated in @var{src-unit} to one notated in @var{dst-unit}.  The
+value is passed in as @var{param} and @var{transform-expr} has to return
+the transformed value.  It is possible to define @var{src-dst} in terms
+of additional defined units; ultimatively all defined units must lead
+via @var{dst-unit} to a base unit as defined in a @code{def measure}
+expression.
+
+The following example defines a measure @code{Length} and additional
+units @code{cm} and @code{mm}:
+
+@example
+def measure Length (m) : Real
+def unit cm -> m (x) @{ x / 100.0 @}
+def unit mm -> cm (x) @{ x / 10.0 @}
+@end example
+
+These types can be used as in the following example.  Note that both
+local bindings (@code{page-height} and @code{left-margin}) are
+implicitely of type @code{Length} and have a value properly normalized:
+
+@example
+let page-height = 21'cm
+let left-margin = 11'mm
+
+outln(page-height.value)
+@print{} 0.21
+outln(left-margin.value)
+@print{} 0.011
+
+outln(page-height.value-in-unit(mm))
+@print{} 210
+outln((page-height + left-margin).value-in-unit(mm))
+@print{} 221
+@end example
+@end deffn
+
+@deffn Method value (@var{value})
+Returns the value of @var{value}, which must have a measure type, scaled
+to the base @var{unit}.
+@end deffn
+
+@deffn Method value-in-unit (@var{value}, @var{unit})
+Returns the value of @var{value}, which must have a measure type, scaled
+to @var{unit}.
+@end deffn
+
+For most measures from the standard library, like @code{Pixel}, the
+relevant operators are overloaded, so that computation and comparison is
+possible without ever extracting the base value:
+
+@example
+def generic equal?(one @@ Pixel, two @@ Pixel)
+  one.value == two.value
+
+def alias Dimen = Pixel
+
+def window-height!(window @@ Window, h @@ Dimen)
+  if (h <> window.height)
+    ...
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Type casts,  , Measure types, Types
+@section Type casts
+
+@cindex casts
+@findex TypeCastException
+@findex as
+
+Since Heather does no automatic coercing type casts are sometimes
+inevitable.  Casts has the form:
+
+@example
+@var{expression} as @var{type}
+@end example
+
+where expression is the value to cast.  The compile will check whether
+the proposed cast is possible.  If the check is not possible at compile
+time an @code{TypeCastException} is thrown at runtime.
+
+
+
+@c ====================================================================
+@node Bindings, Expressions, Types, Top
+@chapter Bindings
+
+A declaration binds a constant, the result of a (constant) expression,
+type, class, macro, or function to an identifier.  Every identifier in a
+program must be declared.  No identifier may be declared twice in the
+same scope.
+
+@example
+def const %page-width% = 21
+let port = *stdout*
+let tmp = self.ack(n)
+@end example
+
+@menu
+* Scope::                       Scope
+* Variable bindings::           Variable bindings
+* Immutable bindings::          Immutable Bindings
+* Fluid bindings::              Fluid bindings
+* Config bindings::             Config bindings
+@end menu
+
+
+@c --------------------------------------------------------------------
+@node Scope, Variable bindings, Bindings, Bindings
+@section Scope
+
+Heather is a proper lexical scoped language.  Bindings are visible
+inside the scope they are declare in.  The following scopes exist:
+
+@enumerate
+@item
+Predeclared bindings have universal scope.  They can not be rebound.
+@item
+Bindings declared on top-level are only visible throughout the compile
+unit unless they are exported.  They can be rebound in local scopes.
+@item
+Bindings imported from other units are visible only in the scope
+importing the unit.
+@item
+The scope of an identifier denoting a function parameter is the function
+body including the default value expression of other parameters defined
+in the same function @emph{following} the parameter.  A function binding
+is always visible inside its own body.
+@item
+The scope of an identifier denoting a class or type parameter is the
+class or type definition body.
+@item
+The scope of a local binding declared inside a function begins with its
+own definition (i.e.@ it is recursive) and ends at the end of the
+innermost containing block.
+@item
+The scope of a local binding declared inside a local block begins with
+its own definition (i.e.@ it is recursive) and ends at the end of the
+innermost containing block.
+@end enumerate
+
+
+@c --------------------------------------------------------------------
+@node Variable bindings, Immutable bindings, Scope, Bindings
+@section Variable Bindings
+
+Every variable must be declared at least once.  On top-level
+(``global'') variables are declared using the @code{def} keyword.  Such
+declared variables have endless unlimited extent, i.e.@ they can't be
+re- or undeclared.  Only their value can be updated (unless they are
+declared to be immutable, see @ref{Immutable bindings}).
+
+In local scope variables are declared using the @code{let} keyword.
+These bindings are accessible only inside the scope, the bound values
+however survive the scope.  When bindings are accessed from within a
+function returned from the scope (@dfn{closure}) the bindings continues
+to exist.
+
+Init expressions of bindings are evaluated in the order as they are
+declared.
+
+
+@c --------------------------------------------------------------------
+@node Immutable bindings, Fluid bindings, Variable bindings, Bindings
+@section Immutable Bindings
+
+Adding the keyword @code{const} to a declaration makes the binding
+@dfn{immutable}.  Such a binding can be not change after initialization.
+
+
+@c --------------------------------------------------------------------
+@node Fluid bindings, Config bindings, Immutable bindings, Bindings
+@section Fluid Bindings
+
+Fluid variables (which drill wholes into lexical scoping):
+
+@example
+def fluid *stdin* = io|StdPort(0)
+def fluid *stdout* = io|StdPort(1)
+def fluid *stderr* = io|StdPort(2)
+@end example
+
+Such fluid variables can be set later with @samp{let fluid x} to change
+temporarily their value.  The value is reset to the previous value when
+the variable falls out of scope:
+
+@example
+def fluid x = 5
+
+def g()
+  outln(x)
+
+def f()
+  outln(x)
+  @{
+    let fluid x = 11
+    g()
+  @}
+  outln(x)
+
+@print{} 5
+@print{} 11
+@print{} 5
+@end example
+
+Variables not being declared @code{fluid} globally before a local
+@code{let fluid} is an error.
+
+
+@c --------------------------------------------------------------------
+@node Config bindings,  , Fluid bindings, Bindings
+@section Config Bindings
+
+A rather special type of bindings are @dfn{Config bindings}.  They
+behave like ordinary const bindings (i.e.@ they are immutable), but are
+used as constant flags for conditional compiling.  They can be checked
+in @code{when} expressions (@ref{Conditional compiling}).
+
+@example
+def config os = "unknown"
+def config version-str = "1.2.3"
+def config version = 10203
+@end example
+
+
+
+@c ====================================================================
+@node Expressions, Program structure, Bindings, Top
+@chapter Expressions
+
+@menu
+* FunctionCalls::               Function calls
+* SlotAccess::                  Access to type slots
+* Assignment::                  Assignment
+* Operators::                   Operators
+* Unary Operators::             Unary Operators
+* Ranges and Slices::           Ranges and Slices
+* Blocks::                      Blocks
+* Loops::                       Loops
+* Conditionals::                Conditionals
+* Conditions::                  Conditions
+* Closures::                    Closures
+* Concurrency::                 Concurrent evaluation
+* NonLocalExists::              Non local exists
+* Multiple return values::      Multiple return values
+@end menu
+
+
+@c --------------------------------------------------------------------
+@node FunctionCalls, SlotAccess, Expressions, Expressions
+@section Function calls
+
+Function calls:
+
+@example
+f(a, b, c)
+@end example
+
+Even if calling a generic function this pattern is kept.  To enhance
+readability (and remove parentheses chains) the following form
+
+@example
+a.f(b, c)
+@end example
+
+is rewritten into
+
+@example
+f(a, b, c)
+@end example
+
+Additional functions without parameter don't need the parentheses.
+Therefore
+
+@example
+f(g(h(i, j)))
+@end example
+
+is identical to
+
+@example
+h(i, j).g.f
+@end example
+
+Or
+
+@example
+self.name.empty?(#force)
+@end example
+
+is identical to
+
+@example
+empty?(name(self), #force)    by:    self.name.empty?(#force)
+                                     @expansion{} name(self).empty?(#force)
+                                     @expansion{} empty?(name(self), #force)
+@end example
+
+
+@c --------------------------------------------------------------------
+@node SlotAccess, Assignment, FunctionCalls, Expressions
+@section Access to type slots
+
+Since methods/functions are not bound to type, access is always to be done
+explicitly to a typed reference:
+
+@example
+def class Point
+@{
+  def slot x = 0'px
+  def slot y = 0'px
+@}
+
+def add(self @@ Point, val @@ Pixel)
+  self.x = self.x + val
+  self.y = self.x + val
+  self
+
+def add(self @@ Point, val @@ Point)
+  self.x = self.x + val.x
+  self.y = self.x + val.y
+  self
+@end example
+
+All access to slots are passed through functions.  They are created
+automatically by the compiler unless specified explicitly.  The
+@code{self.x} and @code{self.x =} syntax forms are translated into
+
+@example
+self.x      @expansion{} x(self)
+self.x = 5  @expansion{} x!(self, 5)
+@end example
+
+@findex slot
+@findex slot!
+Technically the access is done using the runtime specials @code{slot()}
+and @code{slot!()}.  The automatic generated accessor and mutator
+methods from the example above end up like:
+
+@example
+def x(self @@ Point)
+  self.slot(#x)             @expansion{} slot(self, #x)
+
+def x!(self @@ Point, val)
+  self.slot(#x) = val       @expansion{} slot!(self, #x, val)
+  self
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Assignment, Operators, SlotAccess, Expressions
+@section Assignment
+
+@findex =
+@c todo
+@emph{To write}
+
+@c lvalue not only simple variables, but also complex member select
+@c expression
+
+@c multiple variable assignments.
+
+
+@c --------------------------------------------------------------------
+@node Operators, Unary Operators, Assignment, Expressions
+@section Operators
+
+Heather's operators are rewritten by the compiler into method calls.  To
+implement operator support for custom types and classes implement these
+methods.
+
+@findex +
+@findex ++
+@findex -
+@findex /
+@findex *
+@findex **
+@findex mod
+@findex and
+@findex or
+@findex %
+@findex AND
+@findex OR
+@findex XOR
+@findex <<
+@findex >>
+@findex as
+@findex isa
+@table @code
+@item +
+@code{add}
+@item ++
+@code{append}
+@item -
+@code{subtract}
+@item /
+@code{divide}
+@item *
+@code{multiply}
+@item **
+@code{exponent}
+@item mod
+@code{modulo}
+@item and
+@code{and}
+@item or
+@code{or}
+@item %
+@code{fold}
+@item AND
+@code{bitand}
+@item OR
+@code{bitor}
+@item XOR
+@code{bitxor}
+@item <<
+@code{shift-left}
+@item >>
+@code{shift-right}
+@item isa
+@code{isa?}
+@item as
+@code{cast-to}
+@end table
+
+Note the difference between @code{and}/@code{AND} and
+@code{or}/@code{OR} -- the lowercase variants are the logic operators,
+the uppercase the bit operators on approximate number values.
+
+@deftypefn Method Number add (@var{op1}, @var{op2})
+Addition; defined on numbers
+@end deftypefn
+
+@deftypefn Method Number subtract (@var{op1}, @var{op2})
+Subtraction; defined on numbers
+@end deftypefn
+
+@deftypefn Method Number divide (@var{op1}, @var{op2})
+On Integers and approximate non floating point numbers defined as
+integer division; on real and approximate floating point numbers
+division
+@end deftypefn
+
+@deftypefn Method Number multiply (@var{op1}, @var{op2})
+Multiplication; defined on Numbers
+@end deftypefn
+
+@deftypefn Method Number exponent (@var{op1}, @var{op2})
+Computes the exponent
+@end deftypefn
+
+@deftypefn Method Number modulo (@var{op1}, @var{op2})
+Modulo arithmetic.  Only defined on integers and approximate non
+floating point numbers
+@end deftypefn
+
+@deftypefn Method Number logand (@var{op1}, @var{op2})
+Logical AND; defined on @code{Bool} only
+@end deftypefn
+
+@deftypefn Method Number logor (@var{op1}, @var{op2})
+Logical OR; defined on @code{Bool} only
+@end deftypefn
+
+@deftypefn Method Number fold (@var{op1}, @var{op2})
+Fold operator; defined on @code{String} and alike
+@end deftypefn
+
+@deftypefn Method ApproxInt bitand (@var{op1}, @var{op2})
+Bit wise AND; defined on approximate integer's only
+@end deftypefn
+
+@deftypefn Method ApproxInt bitor (@var{op1}, @var{op2})
+Bit wise OR; defined on approximate integer's only
+@end deftypefn
+
+@deftypefn Method ApproxInt bitxor (@var{op1}, @var{op2})
+Bit wise XOR; defined on approximate integer's only
+@end deftypefn
+
+@deftypefn Method ApproxInt shift-left (@var{op1}, @var{op2})
+Bit wise shift left; defined on approximate integer's only
+@end deftypefn
+
+@deftypefn Method ApproxInt shift-right (@var{op1}, @var{op2})
+Bit wise shift right; defined on approximate integer's only
+@end deftypefn
+
+@deftypefn Method Bool isa? (@var{op1}, @var{type})
+When @var{op1} is an instance indicates whether @var{op1} is an instance
+of type @var{type}.  If @var{op1} is a class or type indicates whether
+@var{op1} is a kind of @var{type}.
+@end deftypefn
+
+@findex TypeCastException
+@deftypefn Method @var{type} cast-to (@var{op1}, @var{type})
+Return @var{op1} transformed into type @var{type} (cast operator).  If
+@var{op1} can not be casted into @var{type} the method has to throw a
+@code{TypeCastException}.
+@end deftypefn
+
+@deftypefn Method @var{type} append (@var{op1}, @var{op2})
+Append @var{op2} to @var{op1}.  As such the @code{++} operator returns a
+new and modified copy of @var{op1}.
+@end deftypefn
+
+
+Comparison operators:
+
+@findex ==
+@findex <>
+@findex <
+@findex <=
+@findex >
+@findex >=
+@findex <=>
+@table @code
+@item ==
+@code{equal?}
+@item <>
+@code{unequal?}
+@item >
+@code{greater?}
+@item >=
+@code{greater-equal?}
+@item <
+@code{less?}
+@item <=
+@code{less-equal?}
+@item <=>
+@code{compare}
+@end table
+
+@deftypefn Method Bool equal? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} and @var{operand2} are equal.
+@end deftypefn
+
+@deftypefn Method Bool unequal? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} and @var{operand2} are not equal.
+@end deftypefn
+
+@deftypefn Method Bool greater? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} is greater than @var{operand2}.
+@end deftypefn
+
+@deftypefn Method Bool greater-equal? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} is greater than or equal to @var{operand2}.
+@end deftypefn
+
+@deftypefn Method Bool less? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} is less than @var{operand2}.
+@end deftypefn
+
+@deftypefn Method Bool less-equal? (@var{operand1}, @var{operand2})
+Indicates whether @var{operand1} is less than or equal to @var{operand2}.
+@end deftypefn
+
+@deftypefn Method Int compare (@var{operand1}, @var{operand2})
+Compares @var{operand1} with @var{operand2} and returns a negative
+integer if @var{operand1} is less than @var{operand2}, a zero if it is
+equal and a positive integer if is greater.
+@end deftypefn
+
+
+@c --------------------------------------------------------------------
+@node Unary Operators, Ranges and Slices, Operators, Expressions
+@section Unary Operators
+
+Similar to binary operators unary operators are translated into method
+calls also.  The following operators are known:
+
+@findex not
+@findex -
+@table @code
+@item not
+@code{not}
+@item -
+@code{negate}
+@end table
+
+@deftypefn Method 'T not (@var{op1})
+NOT; as defined on Boolean type returns the logical alternate to
+@var{op1}; as defined on approximate integers returns the bit wise ones'
+complement of @var{op1}.
+@end deftypefn
+
+@deftypefn Method Number negate (@var{op1})
+Numerical negate; returns the @var{op1} with changed sign.
+@end deftypefn
+
+
+@c --------------------------------------------------------------------
+@node Ranges and Slices, Blocks, Unary Operators, Expressions
+@section Ranges and Slices
+
+@findex ..
+@findex by
+
+Basic ranges are inclusive, so the expression @code{5 .. 100} denotes
+the range [5, 100].
+
+Give the step parameter:
+
+@example
+5 .. 100 by 5
+@result{} 5, 10, 15, ..., 100
+@end example
+
+Ranges are used for instance to slice vectors and strings:
+
+@example
+"hello world"[3 .. 6]
+@result{} "lo w"
+
+#(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31)[3 .. 6 by 2]
+@result{} #(7, 13, 19)
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Blocks, Loops, Ranges and Slices, Expressions
+@section Blocks
+
+Code blocks are sequences of statements.  The last statement's return value
+gives the return value of the complete block.  Blocks are atomic and
+therefore can be put where ever a single expression is expected (i.e.@ even
+in default parameter init value places):
+
+@example
+def f(x = @{
+            let p = Properties()
+            for (p.next?) @{
+              if (not p.nil?)
+                break(p.value)
+            @}
+            else
+              false
+          @})
+   @emph{body}
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Loops, Conditionals, Blocks, Expressions
+@section Loops
+
+With the @code{for} expression Heather provides only one (builtin)
+loop construct.  It can express natively however comparable constructs
+like @code{while}, @code{until}, or @code{do} in other languages.
+
+@findex else
+The return value of the loop body gives the value of the complete loop
+statement.  It takes an optional @code{else} branch, which is
+evaluated if the loop's body expression is never entered.  In the
+following example the return value is @code{nil} if @code{values} is
+an empty collection:
+
+@example
+let first-name = for (n in values)
+                   break(n)
+                 else
+                   nil
+@end example
+
+If no @code{else} expression is given and the loop body is not entered
+the value of a loop expression is @code{unspecified}.
+
+
+@deffn Special for
+
+The @code{for} expression has the form:
+
+@example
+for (@var{test-1}, @var{test-2})
+  @var{expr}
+@r{[} else @var{alternate} @r{]}
+@end example
+
+Any number of comma separated tests @var{test-1}, @var{test-2}, etc.@
+can be given, and @code{for} re-evaluates @var{expr} until at least
+one of these tests fail.  The order of tests is significant, i.e.@
+they are evaluated as if @code{and}-combined.
+
+If the tests list is empty the @code{for} expression repeats to
+evaluate @var{expr} unless it is terminated by other means (e.g.@
+early @code{return}, a break statement, or an signal).
+
+The test are either boolean expressions or any of the following binding
+constructs:
+
+@sp 1
+@example
+@var{var} @r{[} : @var{type} @r{]} in @var{collection}
+@end example
+
+@var{collection} is evaluated and stored in a temporary (invisible)
+fresh binding.  Its result must implement the @code{Iteratable} type.
+A new binding @var{var} (of @var{type}) is created and re-bound on
+each loop iteration to the next available value from
+@var{collection}'s return value.  If @var{collection} is exhausted
+(i.e.@ its @code{next?} method returns @code{false}) this loop
+expression fail (and therefore stops the loop).
+
+A common application of this pattern is to give an literal range
+expression as @var{collection} (for an example see below).
+
+@sp 1
+@findex then
+@findex while
+@example
+@var{var} @r{[} : @var{type} @r{]} = @var{first} then @var{step} @r{[} while @var{test} @r{]}
+@end example
+
+@var{first} is evaluated and bound to a fresh variable @var{var}.
+Then @var{test} is evaluated and, if returning @code{true}, the
+complete loop expression is said to be successful.  On the next
+iteration @var{step} is evaluated and @var{var} is rebound to its
+returnvalue; @var{test} is evaluated again and, if returning
+@code{true}, the loop expression is successful.
+
+If the @code{while} test is missing the loop expression has no
+explicit termination and therefore (as loop expression) always
+succeeds.  It needs other tests or means (e.g.@ signals or a
+@code{break}) to exit the loop.
+
+@sp 1
+
+The following examples show some typical patterns of the @code{for}
+expression usage.
+
+To iterate over all elements of a collection:
+
+@example
+for (e : Elt in values)
+  outln(e)
+@end example
+
+To enumerate numbers two typical patterns exist.  Both should be
+optimized in the same way by the compiler:
+
+@example
+for (i : Int in 0 .. 100 by 2) outln(i)
+for (i : Int = 0 then i + 2 while i < 100) outln(i)
+@end example
+
+To traverse a linked list (assuming that @code{tail} gives the next node
+in the list):
+
+@example
+for (n : Node = root-element then n.tail while n <> nil)
+  outln(n)
+@end example
+
+Multiple Loop expressions are possible of course:
+
+@example
+def count-until(root : Node, element : Node) : OrdinalOrEof
+  for (n : Node = root then n.tail while n <> nil,
+       i : Ordinal = 0 then i + 1,
+       n <> element)
+    i
+  else
+    eof
+@end example
+@end deffn
+
+The @code{for} expression in a `while'-like construct:
+
+@example
+let p = Properties()
+for (p.next?) @{
+  if (not p.nil?)
+    break(p.value)
+@}
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Conditionals, Conditions, Loops, Expressions
+@section Conditionals
+
+@deffn Special if
+
+@findex else
+The @code{if} expression has the form:
+
+@example
+if (@var{antecedent}) @var{consequent}
+  @r{[} else @var{alternate} @r{]}
+@end example
+
+where @var{antecedent} is a Boolean expression.  Depending on
+@var{antecedent}'s value either @var{consequent} or @var{alternate} is
+evaluated.  The return value of the @code{if} expression is the
+evaluated branch's return value.  If @var{alternate} is not given and
+@var{antecedent} evaluates to @code{false} the return value is
+@code{unspecified}.
+
+@example
+if (not ptr.nil?) @{
+  let p = BufferPort()
+  ptr.serialize-into(p)
+  outln("Value is ", p.string-value)
+@}
+else
+  outln("Ptr is nil")
+@end example
+
+Note that both @var{consequent} and @var{alternate} are @emph{single
+expressions}; the grouping of the statements in the example above is a
+@dfn{block} and not part of the @code{if} expression syntax.
+@end deffn
+
+
+@deffn Special select
+
+@findex else
+@findex |
+A @code{select} expression has the form:
+
+@example
+select (@r{[} @var{antecedent} @r{[} , @var{comparator}@r{]]}) @{
+  | @var{test-1} -> @var{consequent-1}
+  | @var{test-2} -> @var{consequent-2}
+  @r{@dots{}}
+  | @r{[} else @var{alternate} @r{]}
+@}
+@end example
+
+The @var{antecedent} is compared to the tests @var{test-1},
+@var{test-2}, etc.@ using @var{comparator}.  The consequent for the
+first succeeding test is evaluated and its value becomes the return
+value of the complete @code{select} expression.  If none of the tests
+succeed the @var{alternate} expression to the (optional) @code{else}
+case is evaluated.  If there's no @code{else} case the return value of
+the @code{select} expression is @code{unspecified}.
+
+If multiple test values should lead to the same consequent they can be
+given as comma separated values:
+
+@example
+select (a) @{
+  | 1, 2, 3 -> ...
+@}
+@end example
+
+The @var{comparator} is a two-parameter function returning a boolean.
+It is called with the @var{antecedent} as first argument.  In case of
+multiple test values it is called for each value.
+
+If the @var{comparator} is not specified @code{equal?} is assumed.
+
+@example
+select (a) @{
+  | \a -> if (not done)
+            do-it
+          else
+            do-something-different()
+  | else outln("nothing applies")
+@}
+@end example
+
+If neither @var{antecedent} nor @var{comparator} is specified the
+tests are assumed to be Boolean expression wich are evaluated in order
+until one succeeds.
+
+@example
+def f(c : Char)
+  select () @{
+    | (c == \a or
+       c == \b or
+       c == \c)            -> outln("Begin of alphabet")
+    | (c in #[\x, \y, \z]) -> outln("End of alphabet")
+  @}
+@end example
+@end deffn
+
+
+@deffn Special match
+
+@findex Any
+@findex |
+The @code{match} expression, a kind of type select, has the form:
+
+@example
+match (@var{expr}) @{
+  | [ @var{id-1} ] : @var{type-1} -> @var{consequent-1}
+  | [ @var{id-2} ] : @var{type-2} -> @var{consequent-2}
+  @r{@dots{}}
+  | @r{[} [ @var{id-3} ] : Any -> @var{alternate} @r{]}
+@}
+@end example
+
+where @var{id-1}, @var{id-2}, etc.@ are (optional) identifiers typed
+as @var{type-1}, @var{type-2}, etc.  @var{expr} is evaluated and the
+type of its value matched against the types @var{type-1},
+@var{type-2}, etc.  @var{expr}'s value is bound to the identifier (if
+defined) for the best matching type and the respective consequent
+@var{consequent-n} is evaluated.  If multiple type cases are
+considered equally good matches the first in the given order is taken.
+@var{id-n} is visible only inside of the consequent.
+
+The first type case which is typed to @code{Any} acts as an `else'
+case.
+
+The evaluated consequent's value becomes the value of the complete
+expression.  If no type case matches (and there's no @code{Any} case)
+the value is @code{unspecified}.
+
+@example
+def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrFalse ...
+
+def remove!(self @ List<'T>, elt @ 'T) : List<'T>
+  match (self.index-of(elt)) @{
+    | : Bool        -> self
+    | idx : Ordinal -> @{
+                         self.remove-at!(idx)
+                         self
+                       @}
+  @}
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Conditions, Closures, Conditionals, Expressions
+@section Conditions
+
+It's possible to add a hook to a block which is called whenever the
+block is left, either by unroll or by ``normal'' code flow.  Not that
+all handlers are actually inside the block for which they're declared.
+They can therefore access local bindings of the scope, etc.
+
+@cindex exit handler
+@findex on exit
+@findex exit
+@findex on
+@deffn Handler {on exit}
+
+The @code{on exit} hook has the form:
+
+@example
+on exit (@var{value})
+  @var{expr}
+@end example
+
+where @var{value} is the return value of the enclosing block's last
+statement or the value of the expression leading to the scope exit
+(e.g.@ a @code{return} or @code{break}).  Normally the exit handler
+should return this without modification.
+
+@example
+def f(name)
+  let stream = io|FileInputPort(name)
+  on exit(v)
+  @{
+    stream.close
+  @}
+
+  for (i = 0 .. 100) @{
+    @r{@dots{}}
+  @}
+@end example
+@end deffn
+
+@cindex catching exceptions
+@cindex exceptions (Conditions)
+@findex on signal
+@findex signal
+@findex on
+@deffn Handler {on signal}
+
+Similar to @code{on exit} special conditions can be trapped using the
+form:
+
+@example
+on signal (@var{name} @code{:} @var{type})
+  @var{signal-expr}
+@end example
+
+This declares a condition handler for a condition of type @var{type}.
+Whenever a condition raised (using @code{raise}) the first matching
+condition handler is called.  The value raised by @code{raise} is bound
+to the fresh variable @var{name} and @var{signal-expr} is evaluated in
+this context.
+
+Note that the type declaration @var{type} on @var{name} is particular
+important in @code{on signal}; if it left out the result is a catch-all
+condition handler.
+@end deffn
+
+During evaluation of @var{signal-expr} two special functions are
+available: @code{continue(val)} and @code{raise()} without parameter.
+
+@defun continue (@var{value})
+Returns to the place from which @code{raise()} was
+called injecting @var{value} as new return value to the raise expression.
+@end defun
+
+@defun raise ([@var{condition}])
+When called without parameter propagates the condition handling to the
+next matching condition handler.  @code{raise()} without parameter does
+not start a new condition signal chain, but passes control upwards.
+
+When called with parameter @var{condition} is raised and a new signal
+chain is started, which can be handled inside the control handler.
+@end defun
+
+If the condition handle is neither left early with @code{continue} or
+@code{raise} the stack is unrolled and @var{signal-expr}'s return value
+becomes the return value of the block in which the condition handler has
+been declared.
+
+If both exit and condition handler had been declared, the condition
+handler is called first and its return value is passed as input to the
+exit handler.
+
+
+@c --------------------------------------------------------------------
+@node Closures, Concurrency, Conditions, Expressions
+@section Closures
+
+@deffn Special function
+Standalone, unnamed functions can be defined using the @code{function}
+special form:
+
+@example
+function ( @var{parameters} ) @r{[} : @var{return-type} @r{]} @var{body}
+@end example
+
+The @var{parameters} in unnamed functions must not be specialized; named
+and rest parameters are however allowed.  Expressions from both
+@code{body} and possible default values of named parameters may refer to
+local bindings in the enclosing scope.  These bindings survive even if
+the defined function is returned from the scope (the function becomes a
+@dfn{closure}).
+
+The @var{return-type} is optional since it will be deduced from the
+relevant expression in @var{body}.
+
+@example
+def accumulator(n : Int)
+  function(i : Int)
+  @{
+    n.incr!(i)
+  @}
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Concurrency, NonLocalExists, Closures, Expressions
+@section Concurrent evaluation
+
+To run a portion of code in its own thread one can call a function using
+the special form @code{spawn}.
+
+@deffn Special spawn
+
+The @code{spawn} expression has the following form:
+
+@example
+spawn(@var{function-call})
+@end example
+
+This starts @var{function-call} in a new thread and returns immediately
+to the normal control flow.  If @var{function-call}'s return value is
+used in the following code (e.g.@ it is bound to a name, assigned to a
+variable, or directly passed as argument to another function) the
+compiler arranges an automatic @code{sync} point to wait on
+@var{function-call}'s return before continuing.  To the calling site the
+return value of a spawned function forms a @dfn{promise}.
+
+It is possible to spawn multiple functions in sequence before using
+their return values.  The compiler may arrange for a joint sync point
+here.
+
+@example
+def fib(n : Int) : Int
+  if (n < 2)
+    n
+  else @{
+    let x = spawn(fib(n - 1))      (1)
+    let y = spawn(fib(n - 2))      (2)
+    x + y                          (3)
+  @}
+@end example
+
+At (1) a new thread is started; the return value of @code{fib(n - 1)} is
+a promise until used at (3).  The same applies for the line at (2).
+@end deffn
+
+Spawned functions whose return value is not used survive their parent
+function, i.e.@ the context from where they have been spawned.
+
+It is possible to add explicit synchronization points by using the
+@code{on sync} handler declaration.
+
+@findex on sync
+@findex sync
+@findex on
+@deffn Handler {on sync}
+
+With the form:
+
+@example
+on sync (@var{res1}, @var{res2}, ...)
+  @var{expr}
+@end example
+
+Before evaluating @var{expr} this monitor waits for the resources
+@var{res1}, @var{res2}, etc.@ to become available.  Resources are
+
+@table @asis
+@item Promises
+A promise is said to be available when its value is computed.  Is the
+promise backed by a spawned function this must have finished and
+returned its value.
+@item Mutexes
+A mutex is said to be available if the waiting thread has successfully
+gained access to it.
+@item Ports
+An (input) port (of type @code{Port}) is said to be available if more
+data is ready for processing.
+@item Iterators
+An iterator is said to be available if it has (at least) one more
+element to consume.
+@end table
+
+@example
+on sync(pending-ticket-list-mutex,
+        database-mutex)
+@{
+  pending-ticket-list.append!(something)
+  database.update
+@}
+@end example
+@end deffn
+
+TO DISCUSS: spawn + conditions, spawn + fluid
+
+@c --------------------------------------------------------------------
+@node NonLocalExists, Multiple return values, Concurrency, Expressions
+@section Non local exists
+
+@deffn Special break (@var{return-value})
+Stops the current inner-most loop and sets @var{return-value} as its
+return value.  Note that the optional @code{else} branch of the
+enclosing loop is not evaluated.  Any exit handlers in the scope until
+the loop are evaluated before.
+@end deffn
+
+@deffn Special return (@var{return-value})
+Returns from the current @emph{function} and sets @var{return-value} as
+its return value.  Any exit handlers in the scope until the function are
+evaluated before.
+@end deffn
+
+@deffn Macro with-break () @var{body-expr}
+@deffnx Macro with-break (@var{break-symbol}) @var{body-expr}
+@deffnx Macro with-break (@var{break-symbol} = @var{function}) @var{body-expr}
+Defines a new scope and binds a non-local exist function to the name
+@var{break-symbol} or @code{break} if non symbol is given.
+@var{function} must be a function definition taking one argument.
+Analog to the @code{break} special this new binding allows to exit a
+scope quickly, even from deep nested locations.
+
+@example
+def xyz(collection)
+  with-break(outer-break)
+  @{
+     for (k in collection.keys)
+     @{
+        for (v in collection.values-for-key(k))
+        @{
+          if (v.is-not-valid?)
+            outer-break(false)
+          else if (v.nil?)
+            break(false)
+        @}
+     @}
+  @}
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Multiple return values,  , NonLocalExists, Expressions
+@section Multiple return values
+
+Declare a function to return multiple values:
+
+@example
+def treefold() : (Int, Char, Bool)
+@end example
+
+Return multiple values as constant array:
+
+@example
+def treefold(f : Bool) : (Int, Char, Bool)
+  if (f)
+    #[100, \a, true]
+  else
+    #[0, \0, false]
+@end example
+
+Number of values and types must match of course.
+
+Multiple return values behave like real multiple values:
+
+@example
+def g(a @@ Int, b @@ Char, c @@ Bool)
+  display("%d %c %b" % #[a, b, c])
+
+def app|main()
+  g(treefold(true))
+
+@result{} 100 a true
+@end example
+
+Assign to variables:
+
+@example
+let a, b, c = treefold(false)
+a, b, c = treefold(false)
+@end example
+
+@findex ... @r{(rest values)}
+It's possible to assign even to rest values:
+
+@example
+let a, b ... = some-function()
+@end example
+
+The variable @code{b} is always of type @code{Array}.
+
+It is also possible to unwrapped a vector or array directly into
+multiple variables:
+
+@example
+def f(val : Any[])
+  let x, y, z = val
+@end example
+
+Such expressions will fail if @code{val} has less or more elements than
+3, so it may be better to write:
+
+@example
+def f(val : Any[])
+  let x, y, z = val[0 .. 3]
+@end example
+
+
+@c CONTINUE
+
+@c ====================================================================
+@node Program structure, Macros, Expressions, Top
+@chapter Program structure
+
+@menu
+* Modules::                     Modules
+* Qualified identifiers::       Qualified identifier
+* Extending modules::           Extending modules
+* Visibility::                  Visibility
+* Nested modules::              Nested modules
+* Import::                      Importing modules
+* Finalizing::                  Finalizing
+* Source code organization::    Source code organization
+* Conditional compiling::       Conditional compiling
+* Program entry::               Program main entry point
+@end menu
+
+
+@c --------------------------------------------------------------------
+@node Modules, Qualified identifiers, Program structure, Program structure
+@section Modules
+
+All declarations are grouped into @dfn{modules}, implicit or explicit.
+
+@deffn Special {module}
+
+Modules are declared using the @code{module} statement with the
+form:
+
+@example
+module @var{name} @r{[} ( @var{public-id} )@r{]}
+  @r{[} @{ @r{]}
+  @var{declarations}
+  @r{[} @} @r{]}
+@end example
+
+Modules have an identifier given as @var{name}.  If the module is a
+public API module it is recommended to add an unique public identifier
+(@var{public-id}).  The public identifier is used to distinguish modules
+with clashing names.  If the public-id is missing it is identical to
+@var{name}.
+@end deffn
+
+Even if @var{public-id} is a simple string all standard library modules
+have public identifier of the following basic form:
+
+@example
+owner `/' package ` ' version `:' module-scope
+@end example
+
+For example:
+
+@example
+"eyestep/heather 1.0:io"
+@end example
+
+The grouping of the @var{declarations} with @code{@{} and @code{@}} is
+optional.  If this grouping is missing the module's scope extends until
+the end of the source file.
+
+Note: The @code{module} statement is @emph{not} a definition; there
+can be multiple module statements with the same module name and public
+id (possible in different files).  All definitions from modules with
+the same public id are put into the same logical module (independant
+of what the module name was).
+
+
+@c --------------------------------------------------------------------
+@node Qualified identifiers, Extending modules, Modules, Program structure
+@section Qualified identifiers
+
+@findex | @r{(namespace marker)}
+@cindex fully qualified identifiers
+Beside visibility control (see below) modules provide namespaces to
+organize public symbols in source code.  Each symbol defined inside a
+module is implicitly defined in the name space of that module.  When
+such symbols are imported from other modules name clashes can be avoided
+either by renaming the module on import (see @ref{Import}) or by using
+@dfn{fully qualified identifiers} which explicitly mention the name
+space.
+
+Fully qualified identifiers put the name space (the module name) in
+front using the @code{|} sign as delimiter:
+
+@example
+io|InputPort()
+zip|InputPort()
+@end example
+
+Here the ambiguous identifier @code{InputPort} is qualified by adding
+the @code{io} and the @code{zip} name space respectively.
+
+Note that the @code{|} must @emph{not} be separated by white space.
+
+The name space can (and have to) be given inside of method call chains
+also if necessary:
+
+@example
+self.io|write()
+@end example
+
+If a module is renamed on import (see @ref{Import}) the qualified name
+in the respective module has to use the renamed form, of course.
+
+
+@c --------------------------------------------------------------------
+@node Extending modules, Visibility, Qualified identifiers, Program structure
+@section Extending modules
+
+If a module extends (``overwrites'') a generic function originally
+declared in another module it must make sure that it extends the correct
+function.  A simple function definition would define a function in the
+current module, i.e.@ creating a clash to the original module
+definition.
+
+The name of the extending function must therefore explicitly be
+qualified.  If for example the @code{to-string} function from the
+@code{core} module should be extended this would look like this:
+
+@example
+def core|to-string() : String
+  ...
+@end example
+
+If more than one function is to be extended a more convenient grouping
+form is available.
+
+@deffn Special {extend module}
+
+The @code{extend module} special form has the form:
+
+@example
+extend module @var{module-name} @{
+  @var{declarations}
+@}
+@end example
+
+where @var{module-name} is the name of the module to be extended.  All
+declarations inside this @code{extend} section are actually done as if
+written inside the mentioned @code{module}, except that visibility and
+export is controlled by the enclosing `real' module.
+
+@example
+module stack
+
+extend module core
+@{
+  def to-string() : String ...
+  def hash-value() : UWord ...
+@}
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Visibility, Nested modules, Extending modules, Program structure
+@section Visibility
+
+Normally all declared identifiers from a module are restricted in
+visibility to the module and the compile unit they are defined in, i.e.@
+they're defined as @dfn{private}.  If other compile units in the same module
+or in other modules should use them identifiers have to be @dfn{exported}.
+
+@deffn Special export
+The @code{export} declaration has the form:
+
+@example
+export @r{[} @var{keywords} @r{]} ( @var{symbols} )
+@end example
+
+with @var{keywords} being a list of the following visibility specifiers:
+@code{public}, @code{protected}, and @code{final}.  @var{symbols} is a
+comma separated list all identifiers from the module which should be
+exported in the export domain specified by @var{keywords}.
+
+The @code{export} declaration is normally given inside a @code{module}
+declaration and refers to the declarations in the module only.
+
+@example
+module xxx ("de.sijo.what")
+  export public(display, to-string)
+  export protected(do-copy, self-contain)
+@end example
+
+As a abbreviated notation the special symbol @code{*} can be used to
+export everything from a module:
+
+@example
+module xxx ("de.sijo.what")
+  export public(*)
+@end example
+@end deffn
+
+Note that this visibility control should and cannot be used reliable as
+a security feature.  Especially for generic functions it is always
+possible that a generic function declared to be private can be ``seen''
+by other compile units by means of type matching.
+
+Take for instance the following definition:
+
+@example
+def generic crash-detect(one : @@SpaceShip, two : @@Planet)
+  display("Spaceship crashes into Planet")
+@end example
+
+@findex MethodNotImplemented
+If not exported the function should be invisible to all other compile
+units.  If however in an unrelated second file the following code
+appears:
+
+@example
+def generic crash-detect(one : @@Plane, two : @@House)
+  display("Plane crashes into House")
+
+def do-a-crash()
+  SpaceShip().crash-detect(Planet())
+@end example
+
+On the first view one would expect a @code{MethodNotImplemented}
+exception to be raised.  The runtime however folds all three definition
+into one generic function and thus the code in @code{do-a-crash}
+displays happily @code{SpaceShip crashes into star}.  This cross
+influence happens of course only for generic functions defined in the
+@emph{same} name space.
+
+
+@c --------------------------------------------------------------------
+@node Nested modules, Import, Visibility, Program structure
+@section Nested modules
+
+@c todo
+@emph{To write}
+
+
+@c --------------------------------------------------------------------
+@node Import, Finalizing, Nested modules, Program structure
+@section Import
+
+Other modules are imported into the current compile unit using the
+import expression.  The @code{import} is only possible on module level (i.e.@ not
+inside of functions).  It is possible to import from inside macro
+expansion of course (if the macro expands to a module level construct).
+
+@deffn Special import
+The @code{import} expression has the following form:
+
+@example
+import @var{code-file} @r{[} ( @var{rename-clauses} ) @r{]}
+@end example
+
+where the optional @var{rename-clauses} has the form:
+
+@example
+@r{modname} -> @r{new-modname}, @r{modname2} -> @r{new-modname2}, ...
+@end example
+
+The unit to be imported is referenced by the source file name
+(code-file), which may include a partial path part.  The name is
+resolved relative to the current compile units file location.  There's
+no difference between system and local include files.
+
+Files are imported once per compile unit only, i.e.@ the import is not a
+general include facility.
+
+If @var{rename-clauses} are specified modules from @var{code-file}
+matching @var{modname}, @var{modname2}, etc.@ are are renamed locally to
+@var{new-modname}, @var{new-modname2}, etc.@ during import.  This can be
+used to avoid name clashes.
+
+@example
+import "stack.head"
+import "lib/collection.head"
+import "zip/io.hea" (zip -> zipio)
+@end example
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Finalizing, Source code organization, Import, Program structure
+@section Finalizing
+
+Identifiers declared as @code{final} in an export declaration are
+``sealed'' for other users, i.e.@ finalized
+
+@itemize
+@item classes can not be inherited
+@item generic functions can not be extended by new concrete methods.
+@end itemize
+
+@example
+module stack
+  export final public (Stack)
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Source code organization, Conditional compiling, Finalizing, Program structure
+@section Source code organization
+
+Heather does not require separate interface and implementation files.
+A function definition is its declaration at the same time.  When the
+compiler @emph{imports} another file it only reads the file's
+declarations leaving its definitions aside.  Each file read via the
+@code{import} statement is read in @emph{interface} mode, i.e.@ only
+for its declarations.@footnote{Note that macros are importing
+@emph{with} their definition though.}
+
+In this way (small) projects can avoid writing explicit interface
+files.  For reusable components, however, it is often good practice to
+provide a declaration-only interface file for the component.  This
+interface file then summaries the public API (types, functions,
+constants) the component offers.  Such a component interface is
+normally installed with a binary library.
+
+A few things are to be considered for interface files:
+
+@itemize
+@item functions and generic functions should be declared as signature
+only, i.e.@ without body (notated using @code{...});
+@item types, classes, aliases, etc.@ must be declared with their complete
+type parameters, default parameter declarations and inheritance
+information;
+@item classes must declare their slots and their types, but should not
+declare any init values on them;
+@item @code{on init} or @code{on delete} hooks should not be declared in an
+interface, since they are ignored by the compiler.
+@end itemize
+
+If the interface file contains incomplete declarations, the
+declarations must be repeated and completed in the implementation
+file.  The compiler will check that the interface and program
+declaration matches.
+
+All program files typically get the file extension @file{.hea},
+independant of whether interface or implementation file.
+
+
+@subsection Source organization example
+
+As an example take the following (simplistic) stack implementation.
+In the public API (aka "header" file) only the modules interface is
+declared and the necessary symbols published:
+
+@example
+module stack ("eyestep/heather 1.0:stack")
+  export public (Stack, push, pop)
+
+def type Stack<T>
+@{
+  def generic push(stack @@ Stack<T>, obj @@ T) : Stack<T> ...
+  def generic pop(stack @@ Stack<T>) : T ...
+@}
+@end example
+
+The stack class @code{StackImpl} however is hidden in the
+implementation and published as an interfacing type @code{Stack} only.
+This effectively prevents that others derive from @code{StackImpl} or
+see any automatically created accessor or modifier functions.  If this
+is wanted the class itself would be declared in the interface file.
+
+There's no need to re-export the symbols @code{Stack}, @code{push} and
+@code{pop} here, since they are exported from the interface already.
+
+@example
+import "headers/stack"
+
+module stack ("eyestep/heather 1.0:stack")
+
+def class StackItem<T, _>(_obj, _tail)
+@{
+  def slot obj = _obj
+  def slot tail = _tail
+@}
+
+def class StackImpl<T> : Stack<T>
+@{
+  def slot root : StackItem<T>
+@}
+
+def push(stack @@ StackImpl<'T>, obj @@ 'T) : StackImpl<'T>
+  stack.root = StackItem<'T>(obj, stack.root)
+  stack
+
+def pop(stack @@ StackImpl<'T>) : 'T
+  let result = stack.root.obj
+  stack.root = stack.root.tail
+  result
+@end example
+
+
+@c --------------------------------------------------------------------
+@node Conditional compiling, Program entry, Source code organization, Program structure
+@section Conditional compiling
+@findex when
+@cindex conditional compiling
+
+Heather does not include a preprocessor, at least not from the base
+language's point of view.  It supports the conditional compilation of
+complete code sections with the @code{when} expression, however.
+
+@deffn Special when
+The @code{when} expression has one of the following forms:
+
+@example
+when (@var{boolean-expr}) @{
+  expr
+@}
+@r{[} else @{
+  expr @r{]}
+@}
+
+when ignore @{
+  expr
+@}
+@r{[} else @{
+  expr @r{]}
+@}
+
+when include @{
+  expr
+@}
+@r{[} else @{
+  expr @r{]}
+@}
+@end example
+
+The @code{when} expression can replace typical applications of
+@code{#ifdef() ... #endif} in C or C++:
+
+@example
+when (os == "linux") @{
+  when (cpu == "LittleEndian") @{
+    -- little endian specific code
+  @}
+  else when (cpu == "BigEndian") @{
+    -- big endian specific code
+  @}
+  else @{
+  @}
+@}
+@end example
+
+It can be used to compare config variables for certain values.  The
+variables to check must be defined before as a global config binding and
+must be visible in the scope (see @ref{Config bindings}).
+
+Sometimes it is helpful to disable a code block completely.  The
+@code{when ignore} form unconditionally removes the enclosed code from
+compilation.
+
+@example
+when ignore @{
+@}
+@end example
+
+The @code{when include} form unconditionally includes the enclosed
+code.  The @code{include} form is useful when switching between @code{ignore}
+and @code{include} during development.
+
+The @code{when} expressions can appear on all levels (top-level and
+inside of functions).  The enclosed expressions don't need to be valid
+code (unless included of course), but the number of braces must be
+properly nested.
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Program entry,  , Conditional compiling, Program structure
+@section Program main entry point
+@cindex main function
+@cindex program main entry point
+@findex app|main
+
+The compiler will start the program at a function called @code{main()}
+in the @code{app} module.  The module is predefined, but the function
+must be provided by the user.
+
+Hello world in heather is therefore:
+
+@example
+def app|main()
+  outln("hello, world!")
+@end example
+
+
+@c ====================================================================
+@node Macros, Linking to C, Program structure, Top
+@chapter Macros
+
+@menu
+* Macro Intro::                 Macro Introduction
+* Types of Macros::             Types of Macros
+* Macro Syntax::                Defining macros
+* Pattern variables::           Pattern variables
+* Macro templates::             Macro templates
+* Macro examples::              Macro Examples
+@end menu
+
+@c --------------------------------------------------------------------
+@node Macro Intro, Types of Macros, Macros, Macros
+@section Macro Introduction
+
+Macros allow to define new syntax or logical expressions as extensions
+to the core language.  Macros are transformations of one construct by
+another one.  Macros are neither intended to optimize code by inlining
+(though they can be used for that), nor to ``generate'' generic code
+(though this can be done).  Since macros apply to a logical expression
+level they fit nicely into the overall language -- they are a core
+part of the language specification.
+
+Macros are defined as rewrite rules systems.  They consist of a
+sequence of patterns that match token sequences in the incoming stream
+and a corresponding replacement template.  The rules can contain
+variables (``macro arguments''), which can match certain predefined
+pattern or constructs in the heather language.  They can be inserted
+into the replacement template.  Macro expansion is always recursive,
+i.e.@ the output of a replacement transformation is scanned for macro
+expansion again.
+
+Compilation of a source is processed in the following steps:
+
+@enumerate
+@item
+The @dfn{tokenizer} splits the incoming stream of characters into
+@dfn{tokens};
+@item
+The tokens are parsed into a basic program, composed of so called
+@dfn{parsed expressions}.  During this phase macros are
+parsed and expanded;
+@item
+The token stream is transformed into a compile-time model (``the
+abstract syntax tree'');
+@item
+Only now the code is optimized and compiled into machine code.
+@end enumerate
+
+
+Macros are only visible in the compile units they are defined in.
+They are especially never part of compiled code.
+
+
+@c --------------------------------------------------------------------
+@node Types of Macros, Macro Syntax, Macro Intro, Macros
+@section Types of Macros
+
+Macros are integrated into the core language.  Unlike an independant
+preprocessor macros apply only to certain basic forms in the language.
+The following 4 constructs can be extended: function calls, statements
+(see below), @code{on}-statements, and definitions.  Other constructs are
+not macro-extensible (e.g. the @code{module} or @code{extend}
+clauses).
+
+@deffn {Macro form} {Function calls}
+Function calls have the basic form:
+
+@example
+@var{function-name} ( @r{[} @var{parameters} @r{]} )
+@end example
+
+Note that the dot notation are transformed into function calls @emph{before}
+macro expansion, i.e@ dot-notated functions calls are subject to the
+same macro definition as `ordinary' notated functions.
+@end deffn
+
+
+@deffn {Macro form} Statements
+Statements are similar to function calls except that they take and
+additional body or further expressions which form a kind of body to
+the opening statement:
+
+@example
+@var{stmt-name} ( @r{[} @var{parameters} @r{]} ) @var{body}
+@end example
+
+Where @var{body} can be any number of pattern variables or other
+tokens.
+@end deffn
+
+
+@deffn {Macro form} @code{on}-statements
+@code{on}-statements extend the builtin `on'-syntax by further
+keywords:
+
+@example
+on @var{on-tag} @var{on-body}
+@end example
+
+where @var{on-tag} is the discriminating token by which a macro is
+detected.
+@end deffn
+
+
+@deffn {Macro form} Definitions
+Like @code{on}-statement macros definitions macros extend the reserved
+number of definition tags:
+
+@example
+def @var{def-tag} @var{def-body}
+let @var{def-tag} @var{def-body}
+@end example
+
+The @code{def} form is detected on top level, the @code{let} form on
+local definition level only.
+@end deffn
+
+
+The discriminating token (the @var{function-name}, the
+@var{stmt-name}, the @var{on-tag}, the @var{def-tag}) must be
+identical to the macro name.
+
+
+@c --------------------------------------------------------------------
+@node Macro Syntax, Pattern variables, Types of Macros, Macros
+@section Defining macros
+
+@deffn Special {def macro}
+The form for creating all kinds of macros is the following:
+
+@example
+def macro @var{macro-name}
+@{
+  @{ @var{pattern-1} @} -> @{ @var{replacement-1} @}
+  @{ @var{pattern-2} @} -> @{ @var{replacement-2} @}
+  ...
+  @{ @var{pattern-n} @} -> @{ @var{replacement-n} @}
+@}
+@end example
+
+where @var{pattern-1}, @var{pattern-2}, etc.@ are the patterns that,
+when matching, are replaced by the corresponding @var{replacement-1},
+@var{replacement-2}, etc.  Each pattern must re-state the complete
+syntactic form, i.e.@ a definition macro must start with a @code{def}
+or @code{let}.  The @var{replacement} are free to take any content,
+including to be empty.
+
+Each -- patterns and replacements -- must be ``self-contained'', i.e.@
+contained parantheses and braces must be balanced.  The enclosing
+braces around patterns and replacements are not part of the respective
+clause.
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Pattern variables, Macro templates, Macro Syntax, Macros
+@section Pattern variables
+
+@cindex Pattern variables
+
+Pattern variables are automatic sub rules in the left hand side of a
+rewrite rule.  They take the general form:
+
+@example
+?@var{name}:@var{type}
+@end example
+
+where @var{name} is the variable identifier, and @var{type} one of a
+set of predefined sub pattern.  The variable @code{?counter:expr}, for
+instance, detects and parses a complete heather expression and stores
+the found token sequence into a variable @code{counter}.  When given
+in the replacement templates variables must be written without their
+type:
+
+@example
+@{ let ?var = ?init @}
+@end example
+
+They are replaced here, when expanded, by their token sequence found
+during parsing.
+
+
+The following macro parameter types are defined:
+
+@deffn {Macro type} :name
+Expects a single (probably fully qualified) identifier.  The
+replacement is a single token.
+@end deffn
+
+@deffn {Macro type} :expr
+Expects any valid expression.
+@end deffn
+
+@deffn {Macro type} :param
+Expects a single valid (function) parameter declaration.  The
+parameter can be a positional, named, or rest parameter.  The optional
+type specification and keyarg prefix (for named parameters) are
+automatically scanned.  The result is a sequence of tokens.
+
+If more control over the type of parameter is required see the macro
+parameter types @code{pos-param}, @code{named-param}, and
+@code{rest-param}.
+@end deffn
+
+@deffn {Macro type} :pos-param
+Expects a single valid positional parameter declaration.  The optional
+type specification is automatically scanned.  The result is a sequence
+of tokens.
+@end deffn
+
+@deffn {Macro type} :named-param
+Expects a single valid named parameter declaration.  The optional type
+specification, keyarg prefix and init value are automatically scanned.
+The result is a sequence of tokens.
+@end deffn
+
+@deffn {Macro type} :rest-param
+Expects a single valid rest parameter declaration.  The optional
+parameter name and type specification is automatically scanned.  The
+result is a sequence of tokens.
+@end deffn
+
+@deffn {Macro type} :paramlist
+Expects a full parameter list declaration as defined for functions,
+i.e.@ including positional, named, and rest parameters.  Parameters
+must be in proper order.  The result is a sequence of tokens.
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Macro templates, Macro examples, Pattern variables, Macros
+@section Macro templates
+
+@deffn {Macro operator} ##
+Inside macro templates the special operator @code{##} between two
+symbol tokens can be used to concate both into one new symbol.  It is
+an error if @code{##} appears outside of this combination.
+
+The symbol concatination is applied after pattern variable expansion,
+but before recursive macro expansion.
+
+@example
+@{ let ?name ## -var = ?init @}
+@end example
+@end deffn
+
+
+@deffn {Macro operator} ?""
+When a pattern variable is given inside a macro template enclosed by
+quotes, in the form
+
+@example
+?"@var{variable-name}"
+@end example
+
+then the variable content is inserted as constant string.  Note that,
+in case the variable contains a complex token sequence, the string
+generated may not be identical to the parsed input.  It will rather be
+a serialized token sequence.
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Macro examples,  , Macro templates, Macros
+@section Macro Examples
+
+A function macro and its appliance:
+
+@smallexample
+def macro min
+@{
+   @{ min (?a:expr, ?b:expr) @} -> @{ @{ let tmp-a = ?a
+                                     let tmp-b = ?b
+                                     if (tmp-a > tmp-b)
+                                       tmp-b
+                                     else
+                                       tmp-a @} @}
+@}
+
+def f()
+  let i = min(100, 200)
+  outln(i)
+
+@result{} 100
+@end smallexample
+
+A definition macro:
+
+@smallexample
+def macro func-variable
+@{
+  @{ def func-variable ?name:name = ?e:expr @} ->
+    @{ def ?name ## -var = ?e
+      def ?name () ?name ## -var
+      def ?name ## ! (value) @{ ?name ## -var = value
+                               value @} @}
+  @{ let func-variable ?name:name = ?e:expr @} ->
+    @{ let ?name ## -var = ?e
+      let ?name () ?name ## -var
+      let ?name ## ! (value) @{ ?name ## -var = value
+                               value @} @}
+@}
+
+def func-variable foo = 42
+
+@result{} def foo-var = 42
+  def foo () foo-var
+  def foo! (value) @{ foo-var = value
+                     value @}
+@end smallexample
+
+A statement macro:
+
+@smallexample
+def macro with-write-to-file
+@{
+  @{ with-write-to-file (?stream:name, ?name:string)
+       ?e:expr
+     finally
+       ?f:expr @} ->
+    @{
+      let ?stream = FileInputPort(?name, FileModeType::append)
+      on exit(value) @{
+        if (?stream.nil?) close(?stream)
+        ?f
+        value
+      @}
+
+      ?e
+    @}
+@}
+
+def f()
+  with-write-to-file (port, "test.log") @{
+    outln(port: port, "hello world!")
+  @}
+  finally
+    outln("log file has been closed")
+@end smallexample
+
+An @code{on}-statement macro:
+
+@smallexample
+def macro ui-msg
+@{
+  @{ on ui-msg mouse (?x:pos-param, ?y:pos-param) ?handler:expr @} ->
+     @{ parent.register-mouse-msg(self,
+                                 function(?x, ?y) @{ ?handler @}) @}
+  @{ on ui-msg file  (?f:pos-param) ?handler:expr @} ->
+     @{ parent.register-file-msg(self,
+                                function(?f) @{ ?handler @}) @}
+@}
+
+def process-calls(parent)
+  on ui-msg mouse (x, y) @{
+    registry.lookup-view(x, y).do-mouse-click(x, y)
+  @}
+@end smallexample
+
+
+@c ====================================================================
+@node Linking to C, Inline documentation, Macros, Top
+@chapter Linking to C
+
+@findex extern
+
+It is possible to directly access functions and (global) variables
+from external link domains.  To call functions from C libraries they
+must be declared as @dfn{extern}:
+
+@smallexample
+extern ("C") @{
+  int printf(const char* format, ...);
+  char* getcwd(char* buffer, long size);
+@}
+@end smallexample
+
+Note that all syntax in the enclosed @code{extern} block is actually C
+syntax.  The functions can be used in heather code directly however:
+
+@smallexample
+def foo(s : String)
+  printf(s.C|->buffer)
+@end smallexample
+
+There are certain limitations however:
+
+@enumerate
+@item
+Memory management.  TBD
+@item
+The syntax is not passed through a C preprocessor.  No macros are
+available in the @code{extern} section therefore (i.e. neither C
+preprocessor macros nor heather macros).
+@item
+Only C function and (global) variable declaration are allowed, i.e.@
+no @code{typedef}, no @code{struct}, no @code{enum}, etc.
+@item
+Only a very limited set of C types are identified and known to
+heather.  The basic C types @code{void}, @code{char}, @code{short},
+@code{int}, @code{long}, @code{float}, @code{double}, and their
+pointer and unsigned variants (where it applies) are understood and
+properly mapped to heather types.
+@item
+C functions are never tail optimized.
+@item
+It is not possible to call heather from C.
+@end enumerate
+
+@c ====================================================================
+@node Inline documentation, Syntax, Linking to C, Top
+@chapter Inline documentation
+
+@findex ~
+@cindex inline documentation
+@cindex documentation
+
+Code can be documentated in multiple ways; one way is to put comments
+into the source and header files.  These comments are ignored by the
+compiler however and are normally only useful for the maintainers or
+developers of the source code.  Users of a particular API expect a
+distilled and probably nicely formated documentation.
+
+In Heather definitions can be annotated by @dfn{document strings}.
+This inline documentation is parsed and checked for validity in normal
+compiler runs, but ignored for code generation.  It can be extracted
+however into a format which secondary tools can format into online or
+printed documentation.
+
+Document strings can be attached to the following definitions and
+declarations:
+
+@itemize
+@item module declarations
+@item function definitions
+@item variable definitions
+@item class and type definitions
+@item slot definitions
+@item alias definitions
+@item enum definitions
+@item enum value declarations
+@item measure and unit definitions
+@item character definitions
+@item macro definitions
+@end itemize
+
+The exact syntax of the document string is not part of this language
+specification.  Some example show how this looks like:
+
+@smallexample
+def class Pair<Car, Cdr>(car: _car : Car = nil,
+                         cdr: _cdr : Cdr = nil)
+    ~ Simple LISP like pair/list implementation.
+
+    You can simulate the basic lisp style @@code@{(cons a b)@} in
+    heather with @@code@{Pair(a, b)@}.
+
+    @@author gck
+    @@version 1.0 ~
+@{
+  def slot car : Car
+      ~ The left side of a cell. ~
+      = _car ; public
+  def slot cdr : Cdr
+      ~ The right side of a cell. ~
+      = _cdr ; public
+@}
+
+def alias StringCell
+    ~ A Pair defined for string lists.
+    @@deprecated ~
+    = Pair<String, _>
+
+def generic for-each(cltn @@ 'C, func : ForEachVisitor<T>) : 'C
+    where C isa Collection<T> ...
+    ~ Apply @@var@{functor@} on ach contained element in @@var@{cltn@}.
+    @@returns @@var@{cltn@} ~
+@end smallexample
+
+@c ====================================================================
+@node Syntax, Concept Index, Inline documentation, Top
+@appendix Syntax
+
+@menu
+* Syntax notation::             Used notation
+* Syntax grammar::              Grammar
+* Syntax Tokens::               Tokens
+* Common character names::      Common character names
+@end menu
+
+@c --------------------------------------------------------------------
+@node Syntax notation, Syntax grammar, Syntax, Syntax
+@section Used notation
+
+The syntax is notated using an Extended Backus-Naur Form (EBNF):
+
+@smallformat
+@verbatim
+production  := PRODUCTION-NAME `:=' expression
+expression  := alternative { `|' alternative }
+alternative := term { term }
+term        := PRODUCTION-NAME | TOKEN [ `...' TOKEN ] | group
+               | option | repetition
+group       := `(' expression `)'
+option      := `[' expression `]'
+repetition  := `{' expression `}'
+@end verbatim
+@end smallformat
+
+Productions are expressions constructed from terms and the following
+operators, in increasing precedence:
+
+@table @code
+@item |
+alternation
+@item ()
+grouping
+@item []
+option (0 or 1 times)
+@item @{@}
+repetition (0 to n times)
+@end table
+
+Capital only production names are used to identify lexical tokens.
+Non-terminals are in lowercase.  Lexical symbols are enclosed in single
+quotes.
+
+The form @code{`a' ... `b'} represents the set of characters from `a'
+through `b' as alternatives.
+
+
+@c --------------------------------------------------------------------
+@node Syntax grammar, Syntax Tokens, Syntax notation, Syntax
+@section Grammar
+
+@emph{A compile unit is a set of declarations.  Any number of compile
+units linked form either a component (in the form of a library) or a
+program, if a special entry point is defined.}
+
+@smallformat
+@verbatim
+compile-unit    := { declaration }
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{A declaration binds a name to a variable, class, type, function,
+etc.}
+@smallformat
+@verbatim
+declaration     := define-decl
+                |  export-stmt
+                |  import-stmt
+                |  when-stmt
+                |  extend-stmt
+                |  module-stmt
+                |  extern-decls
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+define-decl     := `def' define-clause
+
+define-clause   := func-decl
+                |  vardef-clause
+                |  fluiddef-clause
+                |  classdef-clause
+                |  typedef-clause
+                |  aliasdef-clause
+                |  enumdef-clause
+                |  measure-clause
+                |  unit-clause
+                |  char-clause
+                |  macro-clause
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The export statement publishes the symbols to other modules.}
+@smallformat
+@verbatim
+export-stmt     := `export' { export-flag }
+                   `(' all-symbol | symbol-list `)'
+export-flag     := `public' | `protected' | `final'
+symbol-list     := export-symbol { `,' export-symbol }
+export-symbol   := IDENTIFIER [ `:' domain-id ]
+domain-id       := `char' | `unit'
+all-symbol      := `*'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+import-stmt     := `import' file-name [ rename-clauses ]
+file-name       := STRING
+rename-clauses  := `(' rename-clause { `,' rename-clause } `)'
+rename-clause   := mod-name MAP-OP mod-name
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The module declarations have an optional declarations part.  If this is
+missing the module extends until the end of the file.}
+@smallformat
+@verbatim
+module-stmt     := `module' mod-name [ `(' PUBLIC-ID `)' ]
+                   [ DOCSTRING ]
+                   [ mod-decls ]
+mod-name        := SYMBOL
+mod-decls       := `{' { declaration } `}'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+extend-stmt     := `extend' `module' mod-name mod-decls
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The function definition is the same for all function definitions
+like local, global, closure definition, etc.}
+@smallformat
+@verbatim
+func-decl       := [ `generic' ] IDENTIFIER fundef-clause
+                   | extern-clause IDENTIFIER func-signature
+                     [ DOCSTRING ] `...'
+func-signature  := `(' fun-param-list `)' [ `:' return-type ]
+fundef-clause   := func-signature [ reify-decl ] [ generics-const ]
+                   [ DOCSTRING ]
+                   fun-body
+
+fun-param-list  := [ fun-param { `,' fun-param } ]
+
+fun-param       := spec-param | pos-param | key-param | rest-param
+spec-param      := param-name `@' type-clause
+pos-param       := param-name [ `:' type-clause ]
+key-param       := [ KEY-SYMBOL ] param-name [ `:' type-clause ]
+                   `=' param-default
+param-default   := expression
+
+rest-param      := param-name `...'
+param-name      := SYMBOL
+
+return-type     := type-clause
+
+fun-body        := abstract-body | fun-impl
+abstract-body   := `...'
+fun-impl        := expr-list
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+vardef-clause   := [ extern-clause ] vardef-bindings [ `=' varinit-value ]
+vardef-bindings := vardef-binding { `,' vardef-binding } [ rest-ind ]
+rest-ind        := `...'
+vardef-binding  := [ `const' ] var-name [ `:' type-clause ]
+                   [ DOCSTRING ]
+
+var-name        := SYMBOL
+varinit-value   := expression
+
+fluiddef-clause := `fluid' var-name [ `:' type-clause ]
+                   [ DOCSTRING ]
+                   `=' varinit-value
+@end verbatim
+@end smallformat
+
+
+@sp 1
+
+@smallformat
+@verbatim
+classdef-clause := `class' type-name
+                   [ generics-spec ] [ ctor-clause ] [ `:' inheritance ]
+                   [ generics-const ]
+                   [ DOCSTRING ]
+                   [ `{' { slot-def } { protocol-decl } `}' ]
+typedef-clause  := `type' type-name
+                   [ generics-spec ] [ `:' inheritance ]
+                   [ generics-const ]
+                   [ DOCSTRING ]
+                   [ `{' { protocol-decl } `}' ]
+
+aliasdef-clause := `alias' type-name [ generics-spec ]
+                   [ generics-const ]
+                   [ DOCSTRING ]
+                   `=' type-clause
+@end verbatim
+@end smallformat
+
+
+@sp 1
+
+@emph{The ctor-clause gives the parameters (and probably default values
+in case of keyed parameters) for the default constructor of a class.}
+@smallformat
+@verbatim
+ctor-clause     := `(' fun-param-list `)'
+inheritance     := type-clause
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{Generics define parametrized types.}
+@smallformat
+@verbatim
+generics-spec   := `<' generics-param { `,' generics-param } `>'
+generics-param  := type-name
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{Slots definitions may take additional properties
+(``annotations'') after the definition.}
+@smallformat
+@verbatim
+slot-def        := `def' `slot' slot-name [ `:' type-clause ]
+                   [ DOCSTRING ]
+                   [ `=' slotinit-value ] [ `;' slot-annos ]
+slot-name       := SYMBOL
+slotinit-value  := expression
+
+slot-annos      := slot-annotation { `,' slot-annotation }
+slot-annotation := SYMBOL
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{Protocols are generic functions required on a type declaration.
+They must be declared as abstract and generic (for simplicity this
+restriction on the func-decl production is not reflected in the
+grammar).}
+@smallformat
+@verbatim
+protocol-decl   := func-decl
+                |  when-stmt
+                |  extend-stmt
+
+@end verbatim
+@end smallformat
+
+
+@sp 1
+
+@emph{Enumeration are like normal types with a defined set of possible
+values.}
+@smallformat
+@verbatim
+enumdef-clause  := `enum' enum-name [ `:' base-type ]
+                   [ DOCSTRING ]
+                   `{' enum-value-spec { enum-value-spec } `}'
+enum-name       := type-name
+base-type       := type-clause
+enum-value-spec := enum-name
+                   [ DOCSTRING ]
+                   [ `=' const-value ]
+enum-name       := SYMBOL
+@end verbatim
+@end smallformat
+
+
+@sp 1
+
+@emph{Measures are like normal types with a define unit.  They are
+accompanied by related unit declarations.}
+@smallformat
+@verbatim
+measure-clause  := `measure' type-name
+                   `(' UNIT-TAG `)' `:' inheritance
+                   [ DOCSTRING ]
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{Related to measure units are defined as transformation from one
+unit to another.  The definition is a kind of specialized function
+declaration.}
+@smallformat
+@verbatim
+unit-clause     := `unit' derived-unittag MAP-OP base-unit-tag
+                   fundef-clause
+base-unit-tag   := UNIT-TAG
+derived-unittag := UNIT-TAG
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The @code{def char} declaration is used to defined new logical
+character names.}
+@smallformat
+@verbatim
+char-clause     := `char' CHAR-NAME
+                   [ DOCSTRING ]
+                   `=' int-number
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The @code{reify} declaration binds additional specialization
+declarations to a given method implementation.}
+@smallformat
+@verbatim
+reify-decl      := `reify' func-signature { `,' func-signature }
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{In case a function or type uses parametrized types for parameters
+and/or return type a generic constraint section can be applied.}
+@smallformat
+@verbatim
+generics-const  := `where' type-constraint { `,' type-constraint }
+
+type-constraint := subtype-const | sign-constraint
+subtype-const   := type-id subtype-op const-expr
+subtype-op      := COMPARE-OP
+const-expr      := expression
+sign-constraint := type-name `isa' type-clause
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The @code{macro} facility allows to define new syntax forms.  Here
+only it's outer syntax production is given, for details of the pattern
+and replacement form see @ref{Macros}.}
+@smallformat
+@verbatim
+macro-clause    := `macro' macro-name
+                   [ DOCSTRING ]
+                   `{' { macro-pattern } `}'
+macro-pattern   := `{' pattern-def `}' MAP-OP `{' rplc-text `}'
+pattern-def     := { any token }
+rplc-text       := { any token }
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{To directly access external functions or variables from other
+linkages domain (e.g.@ ``C'') functions and variables can be declared
+to be `external'.}
+@smallformat
+@verbatim
+extern-decls    := extern-clause mod-decls
+
+extern-clause   := `extern' `(' linkage-type `)'
+linkage-type    := STRING
+@end verbatim
+@end smallformat
+
+
+@sp 1
+
+@emph{Besides naming simple types by class names type expression can be quite
+complex in Heather.}
+@smallformat
+@verbatim
+type-clause     := simple-type | complex-type | quoted-type
+
+simple-type     := type-id | param-type | array-type | funsign-def
+complex-type    := type-seq | union-type | constraint-type
+
+quoted-type     := `'' type-name
+
+type-name       := SYMBOL
+type-id         := IDENTIFIER
+
+constraint-type := (type-name | quoted-type) constraint-op const-expr
+constraint-op   := COMPARE-OP
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{For parametrized types it is important that between the leading
+type-clause and the @code{`<'} is no whitespace.}
+@smallformat
+@verbatim
+param-type      := type-id `<' type-params `>'
+type-params     := type-clause { `,' type-clause }
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The array size indication is optional and only used for allocation of
+local variables or slots.  It is no constraint.}
+@smallformat
+@verbatim
+array-type      := type-clause `[' [ array-size-ind ] `]'
+array-size-ind  := expression
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+type-seq        := `(' type-clause { `,' type-clause } `)'
+union-type      := `&(' type-clause { `,' type-clause } `)'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The definition of the type of functions looks much like a normal
+function definition, except that neither body nor abstract notation is
+used.}
+@smallformat
+@verbatim
+funsign-def     := `Function' `(' fun-param-list `)'
+                   [ `:' type-clause ]
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@c ..............................
+@c expressions
+
+@smallformat
+@verbatim
+expression      := local-def
+                |  closure-def
+                |  when-stmt
+                |  assignment
+                |  unary-expr
+                |  binary-expr
+                |  ternary-expr
+                |  on-expr
+                |  apply-expr
+                |  IDENTIFIER
+                |  param-type
+                |  selector
+                |  slice
+                |  dot-notation
+                |  loop-expr
+                |  if-expr
+                |  select-expr
+                |  match-expr
+                |  block-expr
+                |  group-expr
+                |  typed-number
+                |  constant
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{Sequences of expression does not need separators in heather.}
+@smallformat
+@verbatim
+expr-list       := expression { expression }
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{Local declarations are much like their global ones, except they have a
+different semantic.}
+@smallformat
+@verbatim
+local-def       := `let' locdef-clause
+locdef-clause   := IDENTIFIER fundef-clause
+                |  vardef-clause
+                |  aliasdef-clause
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{A first class unnamed function is defined like a `normal' function
+using the general @code{function} keyword.}
+@smallformat
+@verbatim
+closure-def     := `function' fundef-clause
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+when-stmt       := `when' when-condition expr
+                   [ `else' expr ]
+when-condition  := cond-when | cond-incl
+
+cond-when       := `(' cond-spec `)'
+cond-spec       := expr
+
+cond-incl       := `ignore' | `include'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+apply-expr      := base-expr `(' [ arguments ] `)'
+arguments       := argument { `,' argument }
+argument        := [ arg-key ] expression
+arg-key         := KEY-SYMBOL
+
+selector        := base-expr `.' IDENTIFIER
+
+slice           := base-expr `[' slice-expr `]'
+slice-expr      := expression
+
+base-expr       := expression
+
+assignment      := bindings `=' expression
+bindings        := lvalue { `,' lvalue }
+lvalue          := IDENTIFIER | selector | slice
+
+binary-expr     := left-operand BINARY-OP right-operand
+left-operand    := expression
+right-operand   := expression
+
+unary-expr      := UNARY-OP operand
+operand         := expression
+
+ternary         := range-expr
+
+range-expr      := from-expr RANGE-OP to-expr [ `by' step-expr ]
+from-expr       := expression
+to-expr         := expression
+step-expr       := expression
+
+block-expr      := `{` expr-list `}'
+group-expr      := `(' expression ')'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The three builtin conditional expressions of heathers are
+@code{if}, @code{select} and @code{match}.}
+@smallformat
+@verbatim
+if-expr         := `if' `(' test-expr `)' consequent
+                   [ `else' alternate ]
+test-expr       := expression
+consequent      := expression
+alternate       := expression
+
+select-expr     := `select' `(' test-expr [ `,' select-comptor ] `)'
+                   `{' select-tests `}'
+select-comptor  := expression
+select-tests    := { `|' select-test }
+select-test     := constants MAP-OP consequent
+                |  `else' alternate
+
+constants       := constant { `,' constant }
+
+match-expr      := `match' `(' test-expr `)' `{' match-tests `}'
+match-tests     := { `|' match-test }
+match-test      := [ var-name ] `:' type-clause MAP-OP consequent
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The @code{for} expression in the only builtin loop operator of Heather.}
+@smallformat
+@verbatim
+loop-expr       := `for' `(' [ loop-test { `,' loop-test } ] `)'
+                   loop-body [ `else' alternate ]
+loop-test       := incoll-expr | explicit-expr | while-test
+incoll-expr     := var-name [ `:' type-clause ] `in' collection-expr
+collection-expr := expression
+explicit-expr   := var-name [ `:' type-clause ] `='
+                   init-step `then' next-step [ `while' while-test ]
+init-step       := expression
+next-step       := expression
+while-test      := expression
+loop-body       := expression
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{All signal and condition hooks have the same @code{on} syntax.}
+@smallformat
+@verbatim
+on-expr         := `on' on-keyword fundef-clause
+on-keyword      := `init' | `delete' | `sync' | `exit' | `signal'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+typed-number    := NUMBER `:' type-clause
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+constant        := NUMBER | STRING | CHAR | BOOLEAN | KEYWORD
+                |  LITERAL-ARRAY | LITERAL-VECTOR | LITERAL-DICT
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{Common used containters use a special notation.  Literal
+dictionaries have the Dictionary type, and are commonly implemented as
+hash maps.}
+@smallformat
+@verbatim
+literal-vector  := `#(' [ expression { `,' expression } ] `)'
+literal-array   := `#[' [ expression { `,' expression } ] `]'
+
+literal-dict    := `#(' dict-pair { `,' dict-pair } `)'
+dict-pair       := constant MAP-OP expression
+@end verbatim
+@end smallformat
+
+
+@c --------------------------------------------------------------------
+@node Syntax Tokens, Common character names, Syntax grammar, Syntax
+@section Tokens
+
+Other than the grammar productions in the previous section the token
+production exclude explicitly any white space between the tokens.
+
+@sp 1
+
+@smallformat
+@verbatim
+identifier      := { modul-id `|' } symbol
+module-id       := module-name { '|' modul-id }
+module-name     := symbol
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{Symbols are the `names' which can be identifiers and reserved
+keywords.}
+@smallformat
+@verbatim
+symbol          := [ '->' ] first-char { other-char }
+first-char      := letter | first-other
+other-char      := letter | dec-digit | other
+first-other     := `_' | `*' | `+' | `%' | `?' | `!' | `/' | `$'
+other           := `-' | first-other
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+key-symbol      := SYMBOL `:'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+number          := [ `-' ]
+                   ( SIMPLE-NUMBER | COMPLEX-NUMBER | RATIONAL )
+                   [ `'' UNIT-TAG ]
+unit-tag        := SYMBOL
+
+simple-number   := INT-NUMBER | REAL-NUMBER
+
+int-number      := DEC-INT-NUMBER
+                |  HEX-INT-NUMBER
+                |  OCT-INT-NUMBER
+                |  BIN-INT-NUMBER
+dec-int-number  := DEC-DIGIT { DEC-DIGIT }
+hex-int-number  := DEC-DIGIT { HEX-DIGIT } ( `h' | `H' )
+oct-int-number  := OCT-DIGIT { OCT-DIGIT } ( `t' | `T' )
+bin-int-number  := BIN-DIGIT { BIN-DIGIT } ( `y' | `Y' )
+
+real-number     := DEC-INT-NUMBER `.' DEC-INT-NUMBER
+                   [ eng-num-clause ]
+eng-num-clause  := ( `e' | `E' ) ( `-' | `+' ) DEC-INT-NUMBER
+
+complex-number  := SIMPLE-NUMBER ( `i' | `I' )
+
+rational        := INT-NUMBER `/' INT-NUMBER
+
+string          := `"' { ANY-CHAR | ESCAPED-CHAR } `"'
+any-char        := any char except for `"'
+escaped-char    := `\' CHAR-ID `;'
+
+keyword         := `#' SYMBOL
+
+boolean         := `false' | `true'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{The docstring is an embedded documentation attached to definitions.}
+@smallformat
+@verbatim
+docstring       := `~' { ANY-DOCCHAR | ESCAPED-CHAR } `~'
+any-docchar     := any char except for `~'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@emph{Literal characters can be notated by using unicode codepoints or
+character names.  A number of character names can be found in
+@ref{Common character names}.}
+@smallformat
+@verbatim
+char            := `\' CHAR-ID
+char-id         := PRINTABLE-CHAR | CHAR-NAME | CODEPOINT
+char-name       := SYMBOL
+codepoint       := INT-NUMBER
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+unary-op        := `-' | `not'
+
+binary-op       := COMPARE-OP | ARITHM-OP | BITW-OP | LOGIC-OP
+                |  MISC-OP
+arithm-op       := `+' | `-' | `/' | `*' | `mod' | `**'
+logic-op        := `and' | `or'
+bitw-op         := `<<' | `>>' | `AND' | `OR' | `XOR'
+compare-op      := `==' | `<>' | `<' | `>' | `<=' | `>='
+                |  `<=>' | `in'
+misc-op         := `%' | `isa'
+
+range-op        := `..'
+map-op          := `->'
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+comment         := `--' { any char until end-of-line }
+@end verbatim
+@end smallformat
+
+@sp 1
+
+@smallformat
+@verbatim
+public-id  := STRING
+@end verbatim
+@end smallformat
+
+
+@sp 1
+
+@emph{Common notation and char repertoires.}
+@smallformat
+@verbatim
+letter          := `a' ... `z' | `A' ... `Z'
+
+dec-digit       := `0' ... `9'
+hex-digit       := `0' ... `9' | `a' ... `f' | `A' ... `F'
+oct-digit       := `0' ... `7'
+bin-digit       := `0' | `1'
+
+printable-char  := u-0021 ... u-007e
+@end verbatim
+@end smallformat
+
+
+@c --------------------------------------------------------------------
+@node Common character names,  , Syntax Tokens, Syntax
+@section Common character names
+
+@emph{Common character names.  Some names have a short and a long form
+defined.}
+@smallformat
+@verbatim
+0000 nul  null          000d cr   return       20ac euro
+0007 bel  bell          001b esc  escape       2122 trade
+0008 bs   backspace     0020 sp   space        fffc objreplc
+0009 ht   tab           005c bsol backslash    fffd replc
+000a nl   newline       007f del  delete
+000c np   formfeed      00a0 nbsp
+@end verbatim
+@end smallformat
+
+@sp 1
+
+Character names are not defined by the language but defined with the
+@code{def char} expression:
+
+@deffn Special {def char}
+
+The @code{def char} expression has the form:
+
+@example
+def char @var{char-name} = @var{codepoint}
+@end example
+
+with @var{char-name} being the name of the character and @var{codepoint}
+being the unicode codepoint as integer.
+
+@example
+def char aacute = 00e1h
+@end example
+
+Character names are defined in a separate namespace, so characters can
+take the same name as functions, classes, or even operators.
+@end deffn
+
+@page
+
+@c ====================================================================
+@node Concept Index,  , Syntax, Top
+@unnumbered Index
+
+@printindex cp
+
+@bye
+
