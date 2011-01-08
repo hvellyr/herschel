@@ -15,7 +15,7 @@ namespace heather
 
   namespace type
   {
-    Scope* newRootScope();
+    Scope* newRootScope(bool forUnitTests = false);
   };
 };                              // namespace
 

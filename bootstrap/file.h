@@ -20,6 +20,8 @@ namespace heather
 
   namespace file
   {
+    String makeDir(const String& path);
+
     bool isFilePath(const String& path);
 
     bool isFile(const String& path);
@@ -30,6 +32,13 @@ namespace heather
 
     String append(const String& path, const String& name);
     String appendDir(const String& path, const String& dirName);
+    String appendDir(const String& path, const String& dirName,
+                     const String& dirName2);
+    String appendDir(const String& path, const String& dirName1,
+                     const String& dirName2, const String& dirName3);
+    String appendDir(const String& path, const String& dirName1,
+                     const String& dirName2, const String& dirName3,
+                     const String& dirName4);
     String appendFile(const String& path, const String& name);
     String appendExt(const String& path, const String& ext);
 

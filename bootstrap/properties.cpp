@@ -30,6 +30,7 @@ static OptimizeLevel sOptLevel = kOptLevelBasic;
 static Ptr<ConfigVarRegistry> sConfigVarRegistry;
 static String sOutdir;
 static StringVector sInputSearchPath;
+static StringVector sSystemSearchPath;
 static bool sIsImportFileTracing = false;
 static bool sIsMacroTracing = false;
 static bool sIsPass1Tracing = false;
@@ -294,4 +295,18 @@ Properties::inputDirSearchPath()
     sInputSearchPath.push_back(String("."));
 
   return sInputSearchPath;
+}
+
+
+void
+Properties::addSystemDir(const String& dir)
+{
+  sSystemSearchPath.push_back(dir);
+}
+
+
+const StringVector&
+Properties::systemDirSearchPath()
+{
+  return sSystemSearchPath;
 }

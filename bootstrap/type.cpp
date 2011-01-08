@@ -3348,7 +3348,7 @@ namespace heather
 
 static Scope* testScopeSetup()
 {
-  Ptr<Scope> scope = heather::type::newRootScope();
+  Ptr<Scope> scope = heather::type::newRootScope(true);
 
   TypeVector generics;
 

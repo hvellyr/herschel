@@ -7,8 +7,16 @@
 <type>
 <ty:type nm='lang|UInt16'>
 <ty:isa>
-<ty:ref nm='lang|Ordinal'>
+<ty:seq>
+<ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -17,8 +25,16 @@
 <type>
 <ty:type nm='lang|UInt64'>
 <ty:isa>
-<ty:ref nm='lang|Ordinal'>
+<ty:seq>
+<ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -125,8 +141,16 @@
 <type>
 <ty:type nm='lang|UInt16'>
 <ty:isa>
-<ty:ref nm='lang|Ordinal'>
+<ty:seq>
+<ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -135,8 +159,16 @@
 <type>
 <ty:type nm='lang|UInt64'>
 <ty:isa>
-<ty:ref nm='lang|Ordinal'>
+<ty:seq>
+<ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -271,8 +303,16 @@
 <type>
 <ty:type nm='lang|UInt16'>
 <ty:isa>
-<ty:ref nm='lang|Ordinal'>
+<ty:seq>
+<ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -281,8 +321,16 @@
 <type>
 <ty:type nm='lang|UInt64'>
 <ty:isa>
-<ty:ref nm='lang|Ordinal'>
+<ty:seq>
+<ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -350,16 +398,32 @@
 <ty:used-type>
 <ty:type nm='lang|UInt16'>
 <ty:isa>
-<ty:ref nm='lang|Ordinal'>
+<ty:seq>
+<ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|UInt32'>
 <ty:isa>
-<ty:ref nm='lang|Ordinal'>
+<ty:seq>
+<ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>

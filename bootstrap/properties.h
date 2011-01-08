@@ -68,6 +68,9 @@ namespace heather
     static void addInputDir(const String& dir);
     static const StringVector& inputDirSearchPath();
 
+    static void addSystemDir(const String& dir);
+    static const StringVector& systemDirSearchPath();
+
 #if defined(UNITTESTS)
     static void test_setDontImport(bool value);
     static bool test_dontImport();

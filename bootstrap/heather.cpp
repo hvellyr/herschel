@@ -18,6 +18,7 @@
 #include "properties.h"
 #include "ptr.h"
 #include "str.h"
+#include "setup.h"
 
 
 using namespace heather;
@@ -256,6 +257,8 @@ main(int argc, char** argv)
     }
   }
 
+
+  setupDefaultPath();
 
   switch (func) {
   case kDisplayHelp:

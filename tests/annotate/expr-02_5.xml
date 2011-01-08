@@ -7,8 +7,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -17,8 +23,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -27,8 +39,14 @@
 <rettype>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </rettype>
@@ -39,8 +57,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -57,8 +81,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -75,8 +105,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -93,8 +129,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -111,8 +153,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -129,8 +177,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -153,8 +207,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -163,8 +223,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -299,8 +365,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -309,8 +381,14 @@
 <type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -378,8 +456,14 @@
 <ty:used-type>
 <ty:type nm='lang|Int8'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
