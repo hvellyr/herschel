@@ -187,6 +187,7 @@ namespace heather
     bool isAnySignedInt() const;
     bool isChar() const;
     bool isBool() const;
+    bool isKeyword() const;
 
     bool isAnyNumber() const;
 

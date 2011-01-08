@@ -1315,6 +1315,13 @@ Type::isString() const
 
 
 bool
+Type::isKeyword() const
+{
+  return isBuiltinType(Names::kKeywordTypeName);
+}
+
+
+bool
 Type::isReal() const
 {
   return isBuiltinType(Names::kRealTypeName);
