@@ -158,7 +158,7 @@ namespace heather
     E_EmptyExportList     = 0x4541,
     E_UnknownInputFile    = 0x4542,
     E_UnknownVisibility   = 0x4543,
-
+    E_MissingRequiredFile = 0x4544,
 
     // external C syntax
     E_BadCSyntax          = 0xe000,

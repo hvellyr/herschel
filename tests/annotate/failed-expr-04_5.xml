@@ -7,8 +7,16 @@
 <type>
 <ty:type nm='lang|UInt16'>
 <ty:isa>
-<ty:ref nm='lang|Ordinal'>
+<ty:seq>
+<ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -17,8 +25,14 @@
 <type>
 <ty:type nm='lang|Int16'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -81,8 +95,15 @@
 <type>
 <ty:type nm='lang|Ordinal'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
+<ty:const k='geq'>0</ty:const>
 </ty:ref>
+<ty:ref nm='lang|BoundedBelow'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -168,24 +189,45 @@
 <ty:used-type>
 <ty:type nm='lang|Int16'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|UInt16'>
 <ty:isa>
-<ty:ref nm='lang|Ordinal'>
+<ty:seq>
+<ty:ref nm='lang|Int'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|Ordinal'>
 <ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Int'>
+<ty:const k='geq'>0</ty:const>
 </ty:ref>
+<ty:ref nm='lang|BoundedBelow'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>

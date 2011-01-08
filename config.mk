@@ -123,13 +123,15 @@ CXXFLAGS += $(DEFS) $(CXXADDS)
 
 #----------------------------------------------------------------------
 # Path settings
-prefix      ?= /usr/local
-bindir      ?= $(prefix)/bin
-libdir  	  ?= $(prefix)/lib
-pkglibdir	  ?= $(libdir)/heather
-datadir     ?= $(prefix)/share
-pkgdatadir  ?= $(prefix)/share/heather
-mandir      ?= $(prefix)/man
+prefix        ?= /usr/local
+bindir        ?= $(prefix)/bin
+libdir  	    ?= $(prefix)/lib
+pkglibdir	    ?= $(libdir)/heather
+includedir    ?= $(prefix)/include
+pkgincludedir ?= $(prefix)/include/heather
+datadir       ?= $(prefix)/share
+pkgdatadir    ?= $(prefix)/share/heather
+mandir        ?= $(prefix)/man
 
 BUILDDIR = $(top_srcdir)/temp
 PKGDIR = $(top_srcdir)/packages

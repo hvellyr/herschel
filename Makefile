@@ -183,6 +183,8 @@ config-local.h: Makefile config.mk
 	@echo "#define HEA_INSTDIR_bindir \"$(bindir)/\"" >> $@
 	@echo "#define HEA_INSTDIR_libdir \"$(libdir)/\"" >> $@
 	@echo "#define HEA_INSTDIR_pkglibdir \"$(pkglibdir)/\"" >> $@
+	@echo "#define HEA_INSTDIR_includedir \"$(includedir)/\"" >> $@
+	@echo "#define HEA_INSTDIR_pkgincludedir \"$(pkgincludedir)/\"" >> $@
 	@echo "#define HEA_INSTDIR_datadir \"$(datadir)/\"" >> $@
 	@echo "#define HEA_INSTDIR_pkgdatadir \"$(pkgdatadir)/\"" >> $@
 	@echo "#endif" >> $@

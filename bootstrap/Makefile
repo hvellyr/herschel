@@ -41,6 +41,7 @@ SOURCES =         \
 	properties.cpp  \
 	rootscope.cpp   \
 	scope.cpp       \
+	setup.cpp       \
 	srcpos.cpp      \
 	str.cpp         \
 	strbuf.cpp      \
@@ -85,6 +86,7 @@ HEADERS =         \
 	registry.h      \
 	rootscope.h     \
 	scope.h         \
+	setup.h         \
 	srcpos.h        \
 	str.h           \
 	strbuf.h        \
@@ -103,17 +105,21 @@ HEADERS =         \
 	xmlout.h
 
 
-# ifeq ($(TARGET_OS),mac)
+ifeq ($(TARGET_OS),mac)
 # HEADERS +=
-# endif
+SOURCES += setup-unix.cpp
+LIBS += -framework Carbon
+endif
 
-# ifeq ($(TARGET_OS),linux)
+ifeq ($(TARGET_OS),linux)
 # HEADERS +=
-# endif
+SOURCES += setup-unix.cpp
+endif
 
-# ifeq ($(TARGET_OS),win)
+ifeq ($(TARGET_OS),win)
 # HEADERS +=
-# endif
+SOURCES += setup-win.cpp
+endif
 
 CPP_OBJS =  $(SOURCES:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
 

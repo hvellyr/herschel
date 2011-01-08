@@ -104,7 +104,6 @@ namespace heather
     class PortStackHelper
     {
     public:
-      PortStackHelper(Compiler* compiler);
       PortStackHelper(Compiler* compiler, TokenPort* port);
       ~PortStackHelper();
 
@@ -126,6 +125,13 @@ namespace heather
 
     AptNode* processImpl(Port<Char>* port, const String& srcName,
                          bool doTrace);
+    bool importFileImpl(const SrcPos& srcpos,
+                        const String& srcName, const String& absPath,
+                        Scope* currentScope,
+                        bool preload);
+
+    void importSystemHeaders(const String& avoidPath);
+    void importSystemHeader(const String& header, const String& avoidPath);
 
     class CompilerState
     {

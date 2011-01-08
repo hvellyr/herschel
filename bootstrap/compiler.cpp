@@ -131,6 +131,8 @@ Compiler::unreadToken(const Token& token)
 AptNode*
 Compiler::process(Port<Char>* port, const String& srcName)
 {
+  fState.fScope = new Scope(kScopeL_CompileUnit, fState.fScope);
+  importSystemHeaders(srcName);
   return processImpl(port, srcName, true);
 }
 
@@ -191,10 +193,48 @@ Compiler::importFile(const SrcPos& srcpos,
                      const String& srcName, bool isPublic,
                      Scope* currentScope)
 {
+  String absPath = lookupFile(srcName, isPublic);
+  return importFileImpl(srcpos, srcName, absPath, currentScope, true);
+}
+
+
+void
+Compiler::importSystemHeader(const String& header, const String& avoidPath)
+{
+  String absPath = lookupFile(header, false);
+
+  String fullAvoidPath = file::canonicalPathName(avoidPath);
+  if (Properties::isTraceImportFile())
+    log(kDebug, String("Load: ") + absPath + String(" while loading ") + fullAvoidPath);
+
+  if (absPath == fullAvoidPath) {
+    if (Properties::isTraceImportFile())
+      logf(kDebug, "Don't preload '%s'", (const char*)StrHelper(header));
+    return;
+  }
+
+  if (Properties::isTraceImportFile())
+    logf(kDebug, "Preload '%s'", (const char*)StrHelper(header));
+  importFileImpl(SrcPos(), header, absPath, fState.fScope, false);
+}
+
+
+void
+Compiler::importSystemHeaders(const String& avoidPath)
+{
+  importSystemHeader(String("builtin:lang/numbers.hea"), avoidPath);
+}
+
+
+bool
+Compiler::importFileImpl(const SrcPos& srcpos,
+                         const String& srcName, const String& absPath,
+                         Scope* currentScope,
+                         bool preload)
+{
   typedef std::map<String, Ptr<Scope> > ImportCache;
   static ImportCache sImportCache;
 
-  String absPath = lookupFile(srcName, isPublic);
   if (absPath.isEmpty()) {
     errorf(srcpos, E_UnknownInputFile,
            "import '%s' failed: Unknown file\n",
@@ -221,6 +261,9 @@ Compiler::importFile(const SrcPos& srcpos,
 
   try {
     Ptr<Compiler> compiler = new Compiler(true);
+    if (preload)
+      compiler->importSystemHeaders(absPath);
+
     Ptr<AptNode> apt = compiler->processImpl(new CharPort(
                                                new FilePort(absPath, "rb")),
                                              srcName, false);
@@ -248,7 +291,18 @@ Compiler::lookupFile(const String& srcName, bool isPublic)
   StringVector exts;
   exts.push_back(String("hea"));
 
-  return file::lookupInPath(srcName, Properties::inputDirSearchPath(), exts);
+  if (srcName.startsWith(String("builtin:")))
+  {
+    return file::lookupInPath(srcName.part(8, srcName.length()),
+                              Properties::systemDirSearchPath(), exts);
+  }
+
+  String path = file::lookupInPath(srcName,
+                                   Properties::systemDirSearchPath(), exts);
+  if (path.isEmpty())
+    path = file::lookupInPath(srcName, Properties::inputDirSearchPath(), exts);
+
+  return path;
 }
 
 
@@ -284,18 +338,6 @@ Compiler::CompilerState::operator=(const CompilerState& item)
 
 
 //==============================================================================
-
-Compiler::PortStackHelper::PortStackHelper(Compiler* compiler)
-  : fCompiler(compiler),
-    fPortOnly(false)
-{
-  fCompiler->fCompilerStates.push_front(fCompiler->fState);
-  fCompiler->fState = CompilerState(
-    new CharRegistry,
-    new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
-    type::newRootScope());
-}
-
 
 Compiler::PortStackHelper::PortStackHelper(Compiler* compiler, TokenPort* port)
   : fCompiler(compiler),
