@@ -59,6 +59,10 @@ namespace heather
 
   //------------------------------------------------------------------------------
 
+  //! Defines the "annotate" pass over the abstract parse tree.
+  //!
+  //! Currently the annotate pass detects shared variable access (which is
+  //! required for closure detection).
   class Annotator : public RefCountable
   {
   public:
