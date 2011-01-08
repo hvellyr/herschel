@@ -76,6 +76,7 @@ namespace heather
 
   //----------------------------------------------------------------------------
 
+  //! The code generation pass.
   class CodeGenerator : public RefCountable
   {
   public:

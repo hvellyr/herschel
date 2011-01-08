@@ -15,10 +15,14 @@
 #include "version.h"
 #include "sysconf.h"
 
+//! Type abstraction for a byte.
 typedef unsigned char Octet;
+
+//! Type abstraction for a single unicode character.  Note that this type
+//! requires UTF-16 encoding for strings.
 typedef unsigned short Char;
 
-
+//! Macro which evaluates _condA IMP _condB
 #define heaImplies(_condA, _condB)  (!(_condA) || ((_condA) && (_condB)))
 
 #endif
