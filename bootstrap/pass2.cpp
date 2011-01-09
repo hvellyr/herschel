@@ -295,24 +295,29 @@ SecondPass::parseTypeVector(TypeVector* generics, const Token& expr)
 
 
 Type
-SecondPass::parseTypeSpec(const Token& expr)
+SecondPass::normalizeType(const Type& type)
 {
-  Type ty = parseTypeSpecImpl(expr);
-
-  if (ty.isRef()) {
-    Type referedType = fScope->lookupType(ty.typeName(), true);
+  if (type.isRef()) {
+    Type referedType = fScope->lookupType(type.typeName(), true);
     if (referedType.isDef()) {
       if (referedType.isAlias())
-        return fScope->normalizeType(referedType, ty);
+        return fScope->normalizeType(referedType, type);
 
       // we normally don't want to have full types here (these would lead to
       // unnecessary data expansion and possible issues with recursive types).
       // Rewrite the typeref to have the fully qualified type name
-      return Type::newTypeRef(referedType.typeName(), ty);
+      return Type::newTypeRef(referedType.typeName(), type);
     }
   }
+  return type;
+}
 
-  return ty;
+
+Type
+SecondPass::parseTypeSpec(const Token& expr)
+{
+  Type ty = parseTypeSpecImpl(expr);
+  return normalizeType(ty);
 }
 
 
@@ -1878,6 +1883,103 @@ SecondPass::parseBinary(const Token& expr)
 
 
 AptNode*
+SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
+{
+  const ArrayTypeNode* n = dynamic_cast<const ArrayTypeNode*>(typeNode);
+  const AptNode* rootType = NULL;
+
+  int arrayDepth = 0;
+  while (n != NULL) {
+    arrayDepth++;
+    rootType = n->typeNode();
+    n = dynamic_cast<const ArrayTypeNode*>(rootType);
+  }
+
+  String initName;
+  Type type;
+  if (const SymbolNode* sym = dynamic_cast<const SymbolNode*>(rootType)) {
+    initName = sym->name() + "|init";
+  }
+  else if (const TypeNode* ty = dynamic_cast<const TypeNode*>(rootType)) {
+    type = ty->type();
+    initName = type.typeName() + "|init";
+  }
+  else if (rootType) {
+    fprintf(stderr, "Unexpected type node: %p %s\n", rootType, typeid(*rootType).name());
+    assert(0 && "unexpected type node");
+    return NULL;
+  }
+
+
+  NodeList args = parseFunCallArgs(expr[1].children());
+
+
+  //--------
+  Ptr<ApplyNode> newObjAllocExpr = new ApplyNode(expr.srcpos(),
+                                                 new SymbolNode(expr.srcpos(),
+                                                                Names::kLangAllocateArray));
+  newObjAllocExpr->appendNode(rootType->clone());
+  newObjAllocExpr->appendNode(new SymbolNode(expr.srcpos(), initName));
+  //--- columns (depth)
+  newObjAllocExpr->appendNode(new IntNode(expr.srcpos(),
+                                          arrayDepth, false, Type::newInt()));
+  //-- rows (number) + additional rest args
+  newObjAllocExpr->appendNodes(args);
+
+
+  return newObjAllocExpr.release();
+}
+
+
+AptNode*
+SecondPass::generateAlloc(const Token& expr, const Type& type)
+{
+  Ptr<ApplyNode> newObjAllocExpr = new ApplyNode(expr.srcpos(),
+                                                 new SymbolNode(expr.srcpos(),
+                                                                Names::kLangAllocate));
+  newObjAllocExpr->appendNode(new TypeNode(expr.srcpos(), type));
+
+  //---
+  String initName = type.typeName() + "|init";
+  Ptr<ApplyNode> initExpr = new ApplyNode(expr.srcpos(),
+                                          new SymbolNode(expr.srcpos(), initName));
+  initExpr->appendNode(newObjAllocExpr);
+
+  //---
+  NodeList args = parseFunCallArgs(expr[1].children());
+  initExpr->appendNodes(args);
+
+  return initExpr.release();
+}
+
+
+NodeList
+SecondPass::parseFunCallArgs(const TokenVector& args)
+{
+  NodeList parsedArgs;
+  for (size_t i = 0; i < args.size(); i++) {
+    if (args[i] == kComma)
+      continue;
+
+    Ptr<AptNode> arg;
+    if (args[i] == kKeyarg) {
+      assert(i + 1 < args.size());
+
+      Ptr<AptNode> value = singletonNodeListOrNull(parseExpr(args[i + 1]));
+      arg = new KeyargNode(args[i].srcpos(), args[i].idValue(), value);
+      i++;
+    }
+    else
+      arg = singletonNodeListOrNull(parseExpr(args[i]));
+
+    parsedArgs.push_back(arg);
+  }
+
+  return parsedArgs;
+}
+
+
+AptNode*
 SecondPass::parseFunCall(const Token& expr)
 {
   assert(!fCompiler->isParsingInterface());
@@ -1888,26 +1990,22 @@ SecondPass::parseFunCall(const Token& expr)
   assert(expr[1].rightToken() == kParanClose);
 
   Ptr<AptNode> first = singletonNodeListOrNull(parseExpr(expr[0]));
-  Ptr<ApplyNode> funcall = new ApplyNode(expr.srcpos(), first);
-
-  const TokenVector& seq = expr[1].children();
-  for (size_t i = 0; i < seq.size(); i++) {
-    if (seq[i] == kComma)
-      continue;
-
-    Ptr<AptNode> arg;
-    if (seq[i] == kKeyarg) {
-      assert(i + 1 < seq.size());
-
-      Ptr<AptNode> value = singletonNodeListOrNull(parseExpr(seq[i + 1]));
-      arg = new KeyargNode(seq[i].srcpos(), seq[i].idValue(), value);
-      i++;
+  if (dynamic_cast<ArrayTypeNode*>(first.obj()) != NULL)
+    return generateArrayAlloc(expr, first);
+  else if (dynamic_cast<TypeNode*>(first.obj()) != NULL)
+    return generateAlloc(expr, dynamic_cast<TypeNode*>(first.obj())->type());
+  else {
+    SymbolNode* symNode = dynamic_cast<SymbolNode*>(first.obj());
+    if (symNode != NULL) {
+      Type referedType = fScope->lookupType(symNode->name(), true);
+      if (referedType.isDef())
+        return generateAlloc(expr, referedType);
     }
-    else
-      arg = singletonNodeListOrNull(parseExpr(seq[i]));
-
-    funcall->appendNode(arg);
   }
+
+  Ptr<ApplyNode> funcall = new ApplyNode(expr.srcpos(), first);
+  NodeList args = parseFunCallArgs(expr[1].children());
+  funcall->appendNodes(args);
 
   return funcall.release();
 }
@@ -2641,6 +2739,12 @@ SecondPass::parseTypeExpr(const Token& expr)
 
     if (expr[1].leftToken() == kGenericOpen) {
       parseTypeVector(&genericArgs, expr[1]);
+      Type referedType = fScope->lookupType(symbol, true);
+      if (referedType.isDef()) {
+        Type ty1 = degeneralizeType(expr.srcpos(), referedType, genericArgs);
+        if (ty1.isDef())
+          return new TypeNode(expr.srcpos(), ty1);
+      }
       return new SymbolNode(expr.srcpos(), symbol, genericArgs);
     }
     else if (expr[1].leftToken() == kBracketOpen) {

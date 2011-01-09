@@ -57,6 +57,7 @@ namespace heather
     AptNode* parseClosure(const Token& expr);
     AptNode* parseBinary(const Token& expr);
     AptNode* parseFunCall(const Token& expr);
+    NodeList parseFunCallArgs(const TokenVector& args);
     AptNode* parseTypeExpr(const Token& expr);
 
     NodeList parseTokenVector(const TokenVector& seq);
@@ -134,6 +135,12 @@ namespace heather
     AptNode* parseRealSelect(const Token& expr);
 
     AptNode* parseUnitNumber(const Token& expr);
+
+    AptNode* generateArrayAlloc(const Token& expr, AptNode* typeNode);
+    AptNode* generateAlloc(const Token& expr, const Type& type);
+
+    Type normalizeType(const Type& type);
+
 
     struct FundefClauseData
     {

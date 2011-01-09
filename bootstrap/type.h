@@ -543,6 +543,9 @@ namespace heather
   Type maxFloatType(const Type& leftty, const Type& rightty);
   Type maxIntType(const Type& leftty, const Type& rightty);
 
+  Type degeneralizeType(const SrcPos& srcpos, const Type& type,
+                        const TypeVector& srcGenerics);
+
 };                              // namespace
 
 
