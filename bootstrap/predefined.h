@@ -103,6 +103,8 @@ namespace heather
 #define MID_lang_return         "lang|return"
 #define MID_lang_slice          "lang|slice"
 #define MID_lang_sliceX         "lang|slice!"
+#define MID_lang_unspecified    "lang|unspecified"
+#define MID_lang_allocate       "lang|allocate"
 
   class Names
   {
@@ -158,7 +160,8 @@ namespace heather
     const static String kLangReturn;
     const static String kLangSlice;
     const static String kLangSliceX;
-
+    const static String kLangUnspecified;
+    const static String kLangAllocate;
 
     // known keywords
     const static String kExitKeyword;

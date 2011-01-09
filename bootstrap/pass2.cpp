@@ -21,6 +21,7 @@
 #include "tokeneval.h"
 #include "tokenizer.h"
 #include "typeenum.h"
+#include "xmlout.h"
 
 
 using namespace heather;
@@ -66,9 +67,8 @@ SecondPass::parseTopExprlist(const Token& expr)
        it != expr.children().end();
        it++)
   {
-    Ptr<AptNode> n = parseExpr(*it);
-    if (n != NULL)
-      fRootNode->appendNode(n);
+    NodeList nl = parseExpr(*it);
+    fRootNode->appendNodes(nl);
   }
 }
 
@@ -254,9 +254,8 @@ SecondPass::parseExtendImpl(NodeList* reqProtocol, const Token& expr)
 
     const TokenVector& children = expr[3].children();
     for (size_t i = 0; i < children.size(); i++) {
-      Ptr<AptNode> node = parseExpr(children[i]);
-      if (node != NULL)
-        reqProtocol->push_back(node);
+      NodeList nl = parseExpr(children[i]);
+      appendNodes(*reqProtocol, nl);
     }
   }
 }
@@ -679,8 +678,9 @@ SecondPass::getWhereOfs(const Token& expr) const
 }
 
 
-AptNode*
-SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass)
+NodeList
+SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
+                         bool isLocal)
 {
   assert(fCurrentGenericTypes.empty());
   TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
@@ -763,14 +763,12 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass)
         if (defs[i][1] == Compiler::slotToken) {
           assert(isClass);
 
-          Ptr<AptNode> def = parseExpr(defs[i]);
-          if (def != NULL)
-            slotDefs.push_back(def);
+          NodeList nl = parseExpr(defs[i]);
+          appendNodes(slotDefs, nl);
         }
         else if (defs[i][1] == Compiler::genericToken) {
-          Ptr<AptNode> def = parseExpr(defs[i]);
-          if (def != NULL)
-            reqProtocol.push_back(def);
+          NodeList nl = parseExpr(defs[i]);
+          appendNodes(reqProtocol, nl);
         }
         else {
           errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
@@ -783,8 +781,8 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass)
                  "Unexpected on expression in type body");
         }
         else {
-          Ptr<AptNode> on = parseExpr(defs[i]);
-          onExprs.push_back(on);
+          NodeList nl = parseExpr(defs[i]);
+          appendNodes(onExprs, nl);
         }
       }
       else if (defs[i][0] == kExtendId) {
@@ -837,18 +835,140 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass)
 
   if (fScope->checkForRedefinition(expr.srcpos(),
                                    Scope::kNormal, fullTypeName))
-    return NULL;
+    return NodeList();
 
   fScope->registerType(expr.srcpos(), fullTypeName, defType);
 
-  return new TypeDefNode(expr.srcpos(),
-                         fullTypeName,
-                         isClass,
-                         defType,
-                         defaultApplyParams,
-                         slotDefs,
-                         reqProtocol,
-                         onExprs);
+  NodeList result;
+
+  result.push_back(newDefNode(new TypeDefNode(expr.srcpos(),
+                                              fullTypeName,
+                                              isClass,
+                                              defType,
+                                              defaultApplyParams,
+                                              slotDefs,
+                                              reqProtocol,
+                                              onExprs),
+                              isLocal));
+
+  if (isClass) {
+    Ptr<AptNode> ctor = generateConstructor(expr, fullTypeName, defType,
+                                            defaultApplyParams,
+                                            slotDefs,
+                                            onExprs);
+    result.push_back(ctor);
+  }
+
+  return result;
+}
+
+
+AptNode*
+SecondPass::defaultSlotInitValue(const SlotdefNode* slot)
+{
+  if (slot->initExpr() != NULL)
+    return slot->initExpr()->clone();
+  else if (slot->type().isDef()) {
+    if (slot->type().isAnyInt())
+      return new IntNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
+    else if (slot->type().isAnyFloat() || slot->type().isReal())
+      return new RealNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
+    else if (slot->type().isAnyFloat() || slot->type().isRational())
+      return new RationalNode(slot->srcpos(), Rational(0, 1),
+                              slot->type().isImaginary(), slot->type());
+    else if (slot->type().isString())
+      return new StringNode(slot->srcpos(), String());
+    else if (slot->type().isBool())
+      return new BoolNode(slot->srcpos(), false);
+    else if (slot->type().isChar())
+      return new CharNode(slot->srcpos(), Char(0));
+    else if (slot->type().isKeyword())
+      return new KeywordNode(slot->srcpos(), String());
+  }
+
+  // TODO
+
+  return new SymbolNode(slot->srcpos(), String("lang|nil"));
+}
+
+
+AptNode*
+SecondPass::generateConstructor(const Token& typeExpr,
+                                const String& fullTypeName,
+                                const Type& defType,
+                                const NodeList& defaultApplyParams,
+                                const NodeList& slotDefs,
+                                const NodeList& onExprs)
+{
+  const SrcPos& srcpos = typeExpr.srcpos();
+
+  String ctorFuncName = fullTypeName + "|init";
+  String selfParamSym = uniqueName("obj");
+
+  NodeList params = copyNodes(defaultApplyParams);
+  params.insert(params.begin(),
+                new ParamNode(srcpos, String(), selfParamSym,
+                              kPosArg, defType, NULL));
+
+  // Ptr<ApplyNode> newObjAllocExpr = new ApplyNode(srcpos,
+  //                                                new SymbolNode(srcpos, Names::kLangAllocate));
+  // newObjAllocExpr->appendNode(new TypeNode(srcpos, defType));
+
+  // Ptr<AptNode> vardef = new VardefNode(srcpos,
+  //                                      selfParamSym, kNormalVar, true, defType,
+  //                                      newObjAllocExpr);
+  // Ptr<LetNode> objLet = new LetNode(vardef);
+
+  Ptr<ListNode> body = new BlockNode(srcpos);
+
+  // TODO: call init functions of super classes.  If we have "on super"
+  // constructs, use them, otherwise generate default calls.
+
+  // initialize slots
+  for (unsigned int i = 0; i < slotDefs.size(); i++) {
+    const BaseDefNode* basedef = dynamic_cast<const BaseDefNode*>(slotDefs[i].obj());
+    assert(basedef != NULL);
+
+    const SlotdefNode* slot = dynamic_cast<const SlotdefNode*>(basedef->defNode());
+    assert(slot != NULL);
+
+    Ptr<ApplyNode> slotInit = new ApplyNode(srcpos,
+                                            new SymbolNode(srcpos, String("lang|slot!")));
+
+    slotInit->appendNode(new SymbolNode(srcpos, selfParamSym));
+    slotInit->appendNode(new KeywordNode(srcpos, slot->name()));
+    slotInit->appendNode(defaultSlotInitValue(slot));
+
+    body->appendNode(slotInit);
+  }
+
+  // inline a possible on init expr.
+  for (unsigned int i = 0; i < onExprs.size(); i++) {
+    const OnNode* onNode = dynamic_cast<const OnNode*>(onExprs[i].obj());
+    if (onNode != NULL && onNode->key() == Compiler::initToken.idValue()) {
+      Ptr<AptNode> func = new FunctionNode(srcpos, copyNodes(onNode->params()),
+                                           Type(),
+                                           onNode->body()->clone());
+      Ptr<ApplyNode> initCall = new ApplyNode(srcpos, func);
+      initCall->appendNode(new SymbolNode(srcpos, selfParamSym));
+
+      body->appendNode(initCall);
+    }
+  }
+
+  body->appendNode(new SymbolNode(srcpos, selfParamSym));
+
+
+  // register constructor function
+  Ptr<FuncDefNode> ctorFunc = new FuncDefNode(srcpos,
+                                              ctorFuncName,
+                                              0, // flags
+                                              params,
+                                              defType,
+                                              body);
+  fScope->registerFunction(typeExpr.srcpos(), ctorFuncName, ctorFunc);
+
+  return newDefNode(ctorFunc.release(), false);
 }
 
 
@@ -948,7 +1068,8 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
 
   Ptr<AptNode> initExpr;
   if (ofs + 1 < seq.size() && seq[ofs] == kAssign) {
-    initExpr = parseExpr(seq[ofs + 1]);
+    NodeList nl = parseExpr(seq[ofs + 1]);
+    initExpr = singletonNodeListOrNull(nl);
     ofs += 2;
   }
 
@@ -982,7 +1103,8 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
       else {
         assert(seq[ofs] == kSymbol);
         errorf(seq[ofs].srcpos(), E_UnknownSlotFlag,
-               "Unknown slot flag '%s' ignored", (const char*)StrHelper(seq[ofs].toString()));
+               "Unknown slot flag '%s' ignored",
+               (const char*)StrHelper(seq[ofs].toString()));
       }
     }
   }
@@ -1003,7 +1125,7 @@ SecondPass::nextEnumInitValue(const SrcPos& srcpos,
   if (maker != NULL) {
     lastInitToken = maker->nextEnumItem(srcpos, enumItemSym, lastInitToken);
     if (lastInitToken.isSet())
-      initExpr = parseExpr(lastInitToken);
+      initExpr = singletonNodeListOrNull(parseExpr(lastInitToken));
   }
   else {
     errorf(srcpos, E_EnumNotBaseType, "Enum init value is not of base type");
@@ -1075,7 +1197,7 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
       sym = enumVal[0].idValue();
 
       assert(enumVal[1] == kAssign);
-      initExpr = parseExpr(enumVal[2]);
+      initExpr = singletonNodeListOrNull(parseExpr(enumVal[2]));
       lastInitToken = enumVal[2];
       lastInitPos = enumVal[2].srcpos();
     }
@@ -1272,7 +1394,7 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
     if (!fCompiler->isParsingInterface() ||
         flags == kConstVar || flags == kConfigVar)
     {
-      initExpr = parseExpr(seq[ofs + 1]);
+      initExpr = singletonNodeListOrNull(parseExpr(seq[ofs + 1]));
     }
     ofs += 2;
   }
@@ -1334,7 +1456,7 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
     if (seq[ofs] == kEllipsis)
       data.fFlags |= kFuncIsAbstract;
     else if (!fCompiler->isParsingInterface())
-      data.fBody = parseExpr(seq[ofs]);
+      data.fBody = singletonNodeListOrNull(parseExpr(seq[ofs]));
     ofs++;
   }
 }
@@ -1399,7 +1521,16 @@ SecondPass::newDefNode(AptNode* node, bool isLet)
 }
 
 
-AptNode*
+NodeList
+SecondPass::rewriteDefNode(AptNode* node, bool isLet)
+{
+  if (node != NULL)
+    return newNodeList(newDefNode(node, isLet));
+  return NodeList();
+}
+
+
+NodeList
 SecondPass::parseDef(const Token& expr, bool isLocal)
 {
   assert(expr.count() >= 2);
@@ -1427,9 +1558,9 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
     if (isLocal) {
       errorf(expr.srcpos(), E_LocalTypeDef,
              "Local type definitions are not allowed");
-      return NULL;
+      return NodeList();
     }
-    return parseTypeDef(expr, ofs, false);
+    return parseTypeDef(expr, ofs, false, isLocal);
   }
 
   else if (expr[ofs] == Compiler::classToken) {
@@ -1437,83 +1568,90 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
     if (isLocal) {
       errorf(expr.srcpos(), E_LocalTypeDef,
              "Local type definitions are not allowed");
-      return NULL;
+      return NodeList();
     }
-    return parseTypeDef(expr, ofs, true);
+    return parseTypeDef(expr, ofs, true, isLocal);
   }
 
   else if (expr[ofs] == Compiler::aliasToken) {
     assert(linkage.isEmpty());
-    return parseAliasDef(expr, ofs, isLocal);
+    return rewriteDefNode(parseAliasDef(expr, ofs, isLocal), isLocal);
   }
 
   else if (expr[ofs] == Compiler::slotToken) {
     assert(!isLocal);
     assert(linkage.isEmpty());
-    return parseSlotDef(expr, ofs);
+    return rewriteDefNode(parseSlotDef(expr, ofs), isLocal);
   }
 
   else if (expr[ofs] == Compiler::enumToken) {
     assert(linkage.isEmpty());
-    return parseEnumDef(expr, ofs, isLocal);
+    return rewriteDefNode(parseEnumDef(expr, ofs, isLocal), isLocal);
   }
   else if (expr[ofs] == Compiler::measureToken) {
     assert(linkage.isEmpty());
-    return parseMeasureDef(expr, ofs, isLocal);
+    return rewriteDefNode(parseMeasureDef(expr, ofs, isLocal), isLocal);
   }
 
   else if (expr[ofs] == Compiler::unitToken) {
     assert(linkage.isEmpty());
-    return parseUnitDef(expr, ofs, isLocal);
+    return rewriteDefNode(parseUnitDef(expr, ofs, isLocal), isLocal);
   }
 
   else if (expr[ofs] == Compiler::constToken) {
     assert(linkage.isEmpty());
-    return parseVarDef(expr, kConstVar, ofs + 1, isLocal, String());
+    return rewriteDefNode(parseVarDef(expr, kConstVar, ofs + 1, isLocal, String()),
+                          isLocal);
   }
   else if (expr[ofs] == Compiler::fluidToken) {
     assert(linkage.isEmpty());
-    return parseVarDef(expr, kFluidVar, ofs + 1, isLocal, String());
+    return rewriteDefNode(parseVarDef(expr, kFluidVar, ofs + 1, isLocal, String()),
+                          isLocal);
   }
   else if (expr[ofs] == Compiler::configToken) {
     assert(linkage.isEmpty());
-    return parseVarDef(expr, kConfigVar, ofs + 1, isLocal, String());
+    return rewriteDefNode(parseVarDef(expr, kConfigVar, ofs + 1, isLocal, String()),
+                          isLocal);
   }
 
   else if (expr[ofs] == Compiler::genericToken) {
     assert(linkage.isEmpty());
-    return parseFunctionDef(expr, ofs, isLocal, String());
+    return rewriteDefNode(parseFunctionDef(expr, ofs, isLocal, String()),
+                          isLocal);
   }
 
   else if (expr[ofs] == Compiler::charToken) {
     assert(0);
     // should never come here actually
-    return NULL;
+    return NodeList();
   }
 
   else if (expr[ofs] == Compiler::macroToken) {
     assert(0);
     // should never come here actually
-    return NULL;
+    return NodeList();
   }
 
   else if (expr[ofs] == kSymbol) {
     if (expr.count() >= ofs + 2) {
       if (expr[ofs + 1].isNested())
-        return parseFunctionDef(expr, ofs, isLocal, linkage);
+        return rewriteDefNode(parseFunctionDef(expr, ofs, isLocal, linkage),
+                              isLocal);
 
       assert(expr[ofs + 1] == kAssign || expr[ofs + 1] == kColon);
-      return parseVarDef(expr, kNormalVar, ofs, isLocal, linkage);
+      return rewriteDefNode(parseVarDef(expr, kNormalVar, ofs, isLocal, linkage),
+                            isLocal);
     }
 
-    return parseVarDef(expr, kNormalVar, ofs, isLocal, linkage);
+    return rewriteDefNode(parseVarDef(expr, kNormalVar, ofs, isLocal, linkage),
+                          isLocal);
   }
 
   errorf(expr[ofs].srcpos(), 0, "Unexpected token: %s\n",
          (const char*)StrHelper(expr[ofs].toString()));
   assert(0);
 
-  return NULL;
+  return NodeList();
 }
 
 
@@ -1526,16 +1664,21 @@ SecondPass::parseIf(const Token& expr)
   assert(expr[1].isNested());
   assert(expr[1].count() > 0);
 
-  Ptr<AptNode> test = parseTokenVector(expr[1].children());
-  Ptr<AptNode> consequent = parseExpr(expr[2]);
+  NodeList test = parseTokenVector(expr[1].children());
+  Ptr<AptNode> consequent = singletonNodeListOrNull(parseExpr(expr[2]));
   Ptr<AptNode> alternate;
+
+  if (test.size() != 1) {
+    errorf(expr.srcpos(), E_BadParameterList, "broken if-test");
+    return NULL;
+  }
 
   if (expr.count() >= 4) {
     assert(expr[3] == kElseId);
-    alternate = parseExpr(expr[4]);
+    alternate = singletonNodeListOrNull(parseExpr(expr[4]));
   }
 
-  return new IfNode(expr.srcpos(), test, consequent, alternate);
+  return new IfNode(expr.srcpos(), test[0], consequent, alternate);
 }
 
 
@@ -1601,7 +1744,7 @@ SecondPass::parseParameter(const Token& expr)
       assert(ofs + 1 < expr.count());
 
       if (!fCompiler->isParsingInterface())
-        initExpr = parseExpr(seq[ofs + 1]);
+        initExpr = singletonNodeListOrNull(parseExpr(seq[ofs + 1]));
       ofs += 2;
 
       paramType = kNamedArg;
@@ -1646,7 +1789,7 @@ SecondPass::parseOn(const Token& expr)
   parseParameters(&params, expr[2].children());
 
   return new OnNode(expr.srcpos(), expr[1].idValue(), params,
-                    parseExpr(expr[3]));
+                    singletonNodeListOrNull(parseExpr(expr[3])));
 }
 
 
@@ -1674,7 +1817,7 @@ SecondPass::parseClosure(const Token& expr)
   }
 
   assert(ofs < expr.count());
-  Ptr<AptNode> body = parseExpr(expr[ofs]);;
+  Ptr<AptNode> body = singletonNodeListOrNull(parseExpr(expr[ofs]));
 
   return new FunctionNode(expr.srcpos(), params, type, body);
 }
@@ -1688,22 +1831,22 @@ SecondPass::parseBinary(const Token& expr)
   switch (expr[1].tokenType()) {
   case kAssign:
     {
-      Ptr<AptNode> lvalue = parseExpr(expr[0]);
-      Ptr<AptNode> rvalue = parseExpr(expr[2]);
+      Ptr<AptNode> lvalue = singletonNodeListOrNull(parseExpr(expr[0]));
+      Ptr<AptNode> rvalue = singletonNodeListOrNull(parseExpr(expr[2]));
       return new AssignNode(expr.srcpos(), lvalue, rvalue);
     }
 
   case kRange:
     if (expr.count() >= 5) {
       assert(expr[3] == kBy);
-      Ptr<AptNode> from = parseExpr(expr[0]);
-      Ptr<AptNode> to   = parseExpr(expr[2]);
-      Ptr<AptNode> step = parseExpr(expr[4]);
+      Ptr<AptNode> from = singletonNodeListOrNull(parseExpr(expr[0]));
+      Ptr<AptNode> to   = singletonNodeListOrNull(parseExpr(expr[2]));
+      Ptr<AptNode> step = singletonNodeListOrNull(parseExpr(expr[4]));
       return new RangeNode(expr.srcpos(), from, to, step);
     }
     else {
-      Ptr<AptNode> from = parseExpr(expr[0]);
-      Ptr<AptNode> to   = parseExpr(expr[2]);
+      Ptr<AptNode> from = singletonNodeListOrNull(parseExpr(expr[0]));
+      Ptr<AptNode> to   = singletonNodeListOrNull(parseExpr(expr[2]));
       return new RangeNode(expr.srcpos(), from, to, NULL);
     }
 
@@ -1714,7 +1857,7 @@ SecondPass::parseBinary(const Token& expr)
 
   case kAs:
     {
-      Ptr<AptNode> base = parseExpr(expr[0]);
+      Ptr<AptNode> base = singletonNodeListOrNull(parseExpr(expr[0]));
       Type type = parseTypeSpec(expr[2]);
 
       return new CastNode(expr.srcpos(), base, type);
@@ -1725,8 +1868,8 @@ SecondPass::parseBinary(const Token& expr)
     ;
   }
 
-  Ptr<AptNode> left = parseExpr(expr[0]);
-  Ptr<AptNode> right = parseExpr(expr[2]);
+  Ptr<AptNode> left  = singletonNodeListOrNull(parseExpr(expr[0]));
+  Ptr<AptNode> right = singletonNodeListOrNull(parseExpr(expr[2]));
   return new BinaryNode(expr.srcpos(),
                         left,
                         tokenTypeToOperator(expr[1].tokenType()),
@@ -1744,7 +1887,7 @@ SecondPass::parseFunCall(const Token& expr)
   assert(expr[1].leftToken() == kParanOpen);
   assert(expr[1].rightToken() == kParanClose);
 
-  Ptr<AptNode> first = parseExpr(expr[0]);
+  Ptr<AptNode> first = singletonNodeListOrNull(parseExpr(expr[0]));
   Ptr<ApplyNode> funcall = new ApplyNode(expr.srcpos(), first);
 
   const TokenVector& seq = expr[1].children();
@@ -1756,12 +1899,12 @@ SecondPass::parseFunCall(const Token& expr)
     if (seq[i] == kKeyarg) {
       assert(i + 1 < seq.size());
 
-      Ptr<AptNode> value = parseExpr(seq[i + 1]);
+      Ptr<AptNode> value = singletonNodeListOrNull(parseExpr(seq[i + 1]));
       arg = new KeyargNode(seq[i].srcpos(), seq[i].idValue(), value);
       i++;
     }
     else
-      arg = parseExpr(seq[i]);
+      arg = singletonNodeListOrNull(parseExpr(seq[i]));
 
     funcall->appendNode(arg);
   }
@@ -1795,8 +1938,8 @@ SecondPass::transformExplicitForClause(const Token& token,
   assert(thenWhileExpr.count() == 3 || thenWhileExpr.count() == 5);
   assert(thenWhileExpr[1] == kThenId);
 
-  Ptr<AptNode> firstNode = parseExpr(thenWhileExpr[0]);
-  Ptr<AptNode> thenNode = parseExpr(thenWhileExpr[2]);
+  Ptr<AptNode> firstNode = singletonNodeListOrNull(parseExpr(thenWhileExpr[0]));
+  Ptr<AptNode> thenNode  = singletonNodeListOrNull(parseExpr(thenWhileExpr[2]));
 
   Token iteratorVarSym = token[0].isSeq() ? token[0][0] : token[0];
 
@@ -1816,7 +1959,7 @@ SecondPass::transformExplicitForClause(const Token& token,
   if (thenWhileExpr.count() == 5) {
     assert(thenWhileExpr[3] == kWhileId);
 
-    Ptr<AptNode> whileNode = parseExpr(thenWhileExpr[4]);
+    Ptr<AptNode> whileNode = singletonNodeListOrNull(parseExpr(thenWhileExpr[4]));
     testExprs->push_back(whileNode);
   }
 }
@@ -1866,12 +2009,12 @@ SecondPass::transformRangeForClause(const Token& token,
         byToken.isChar())
     {
       direct = byToken.isNegative() ? kRangeDownwards : kRangeUpwards;
-      stepValueNode = parseExpr(byToken);
+      stepValueNode = singletonNodeListOrNull(parseExpr(byToken));
     }
     else {
       direct = kRangeUnknown;
 
-      Ptr<AptNode> tmpStepNode = parseExpr(byToken);
+      Ptr<AptNode> tmpStepNode = singletonNodeListOrNull(parseExpr(byToken));
       // let _step = 2
       Token tmpStepSym = Token::newUniqueSymbolToken(srcpos, "step");
       Ptr<AptNode> vardef = new VardefNode(srcpos,
@@ -1888,10 +2031,10 @@ SecondPass::transformRangeForClause(const Token& token,
   //-------- determine best end node representation
   Token beginToken = token[2][0];
   if (beginToken.isLit()) {
-    beginRangeNode = parseExpr(beginToken);
+    beginRangeNode = singletonNodeListOrNull(parseExpr(beginToken));
   }
   else {
-    Ptr<AptNode> tmpEndNode = parseExpr(beginToken);
+    Ptr<AptNode> tmpEndNode = singletonNodeListOrNull(parseExpr(beginToken));
 
     // let _end = 100
     Token tmpEndRangeSym = Token::newUniqueSymbolToken(srcpos, "end");
@@ -1908,10 +2051,10 @@ SecondPass::transformRangeForClause(const Token& token,
   //-------- determine best end node representation
   Token endToken = token[2][2];
   if (endToken.isLit()) {
-    endRangeNode = parseExpr(endToken);
+    endRangeNode = singletonNodeListOrNull(parseExpr(endToken));
   }
   else {
-    Ptr<AptNode> tmpEndNode = parseExpr(endToken);
+    Ptr<AptNode> tmpEndNode = singletonNodeListOrNull(parseExpr(endToken));
 
     // let _end = 100
     Token tmpEndRangeSym = Token::newUniqueSymbolToken(srcpos, "end");
@@ -2077,7 +2220,7 @@ SecondPass::transformCollForClause(const Token& token,
 
   // ------------------------------ let _seq = names
   Type loopType;                // TODO
-  Ptr<AptNode> seqInitNode = parseExpr(token[2]);
+  Ptr<AptNode> seqInitNode = singletonNodeListOrNull(parseExpr(token[2]));
   Ptr<AptNode> seqInitVardef = new VardefNode(srcpos,
                                               sym.idValue(), kNormalVar, true, loopType,
                                               seqInitNode);
@@ -2093,7 +2236,7 @@ SecondPass::transformCollForClause(const Token& token,
                                               stepSym.idValue(), kNormalVar,
                                               true, stepType,
                                               new SymbolNode(srcpos,
-                                                             String("lang|unspecified")));
+                                                             Names::kLangUnspecified));
   Ptr<AptNode> stepDefNode = new LetNode(stepSymVardef);
   loopDefines->push_back(stepDefNode);
 
@@ -2139,11 +2282,11 @@ SecondPass::parseFor(const Token& expr)
 
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
-  Ptr<AptNode> body = parseExpr(expr[2]);
+  Ptr<AptNode> body = singletonNodeListOrNull(parseExpr(expr[2]));
   Ptr<AptNode> alternate;
 
   if (expr.count() == 5)
-    alternate = parseExpr(expr[4]);
+    alternate = singletonNodeListOrNull(parseExpr(expr[4]));
 
   NodeList loopDefines;
   NodeList testExprs;
@@ -2165,7 +2308,7 @@ SecondPass::parseFor(const Token& expr)
       transformCollForClause(seq[i], &loopDefines, &testExprs);
     }
     else {
-      Ptr<AptNode> exprNode = parseExpr(seq[i]);
+      Ptr<AptNode> exprNode = singletonNodeListOrNull(parseExpr(seq[i]));
       testExprs.push_back(exprNode);
     }
   }
@@ -2176,7 +2319,7 @@ SecondPass::parseFor(const Token& expr)
 
   if (requiresReturnValue) {
     if (alternate == NULL)
-      alternate = new SymbolNode(expr.srcpos(), String("lang|unspecified"));
+      alternate = new SymbolNode(expr.srcpos(), Names::kLangUnspecified);
 
     TypeVector unionTypes;
     unionTypes.push_back(Type::newAny());
@@ -2277,12 +2420,12 @@ SecondPass::parseRealSelect(const Token& expr)
   const TokenVector& args = expr[1].children();
   assert(args.size() > 0);
 
-  Ptr<AptNode> testNode = parseExpr(args[0]);
+  Ptr<AptNode> testNode = singletonNodeListOrNull(parseExpr(args[0]));
   Ptr<AptNode> comparatorNode;
 
   if (args.size() > 2) {
     assert(args[1] == kComma);
-    comparatorNode = parseExpr(args[2]);
+    comparatorNode = singletonNodeListOrNull(parseExpr(args[2]));
   }
 
   Ptr<SelectNode> selectNode = new SelectNode(expr.srcpos(),
@@ -2308,25 +2451,25 @@ SecondPass::parseRealSelect(const Token& expr)
         for (size_t j = 0; j < testValues.size(); j++) {
           if (testValues[j] == kComma)
             continue;
-          Ptr<AptNode> testValueNode = parseExpr(testValues[j]);
+          Ptr<AptNode> testValueNode = singletonNodeListOrNull(parseExpr(testValues[j]));
           if (testValueNode != NULL)
             testValueNodes.push_back(testValueNode);
         }
       }
       else {
-        Ptr<AptNode> testValueNode = parseExpr(testToken[1]);
+        Ptr<AptNode> testValueNode = singletonNodeListOrNull(parseExpr(testToken[1]));
         if (testValueNode != NULL)
           testValueNodes.push_back(testValueNode);
       }
 
-      Ptr<AptNode> consqExpr = parseExpr(testToken[3]);
+      Ptr<AptNode> consqExpr = singletonNodeListOrNull(parseExpr(testToken[3]));
       if (consqExpr != NULL)
         selectNode->addMapping(testValueNodes, consqExpr);
     }
     else if (testToken.count() == 3) {
       assert(testToken[1] == kElseId);
 
-      Ptr<AptNode> consqExpr = parseExpr(testToken[2]);
+      Ptr<AptNode> consqExpr = singletonNodeListOrNull(parseExpr(testToken[2]));
       if (consqExpr != NULL)
         selectNode->addElseMapping(consqExpr);
     }
@@ -2354,10 +2497,10 @@ SecondPass::parseChainSelect(const Token& expr)
     if (testToken.count() == 4) {
       assert(testToken[2] == kMapTo);
 
-      Ptr<AptNode> testValueNode = parseExpr(testToken[1]);
+      Ptr<AptNode> testValueNode = singletonNodeListOrNull(parseExpr(testToken[1]));
       if (testValueNode != NULL) {
 
-        Ptr<AptNode> consqNode = parseExpr(testToken[3]);
+        Ptr<AptNode> consqNode = singletonNodeListOrNull(parseExpr(testToken[3]));
 
         if (consqNode != NULL) {
           Ptr<IfNode> ifNode = new IfNode(testToken[1].srcpos(),
@@ -2374,7 +2517,7 @@ SecondPass::parseChainSelect(const Token& expr)
     else if (testToken.count() == 3) {
       assert(testToken[1] == kElseId);
 
-      Ptr<AptNode> consqNode = parseExpr(testToken[2]);
+      Ptr<AptNode> consqNode = singletonNodeListOrNull(parseExpr(testToken[2]));
       if (consqNode != NULL) {
         if (lastNode != NULL)
           lastNode->setAlternate(consqNode);
@@ -2410,7 +2553,7 @@ SecondPass::parseMatch(const Token& expr)
 
   Ptr<BlockNode> block = new BlockNode(expr.srcpos());
 
-  Ptr<AptNode> exprNode = parseExpr(args[0]);
+  Ptr<AptNode> exprNode = singletonNodeListOrNull(parseExpr(args[0]));
   Token tmpValueSym = Token::newUniqueSymbolToken(expr.srcpos(), "match");
   Type tempType;                // TODO?
   Ptr<AptNode> tmpVarDef = new VardefNode(expr.srcpos(),
@@ -2468,7 +2611,7 @@ SecondPass::parseMatch(const Token& expr)
         varType = parseTypeSpec(typeMapping[1][1]);
       }
 
-      Ptr<AptNode> consqNode = parseExpr(typeMapping[3]);
+      Ptr<AptNode> consqNode = singletonNodeListOrNull(parseExpr(typeMapping[3]));
       if (consqNode != NULL) {
         localBlock->appendNode(consqNode);
         matchNode->addMapping(typeMapping[0].srcpos(),
@@ -2539,12 +2682,12 @@ SecondPass::parseTypeExpr(const Token& expr)
 
 //------------------------------------------------------------------------------
 
-AptNode*
+NodeList
 SecondPass::parseTokenVector(const TokenVector& seq)
 {
   if (!seq.empty())
     return parseSeq(Token() << seq);
-  return NULL;
+  return NodeList();
 }
 
 
@@ -2555,7 +2698,7 @@ SecondPass::parseUnitNumber(const Token& expr)
   assert(expr[1] == kQuote);
   assert(expr[2] == kSymbol);
 
-  Ptr<AptNode> value = parseExpr(expr[0]);
+  Ptr<AptNode> value = singletonNodeListOrNull(parseExpr(expr[0]));
 
   TypeUnit unit = fScope->lookupUnit(expr[2].idValue(), true);
   if (unit.isDef()) {
@@ -2569,55 +2712,51 @@ SecondPass::parseUnitNumber(const Token& expr)
 }
 
 
-AptNode*
+NodeList
 SecondPass::parseSeq(const Token& expr)
 {
   assert(expr.isSeq());
   if (expr.isEmpty())
-    return NULL;
+    return NodeList();
 
   Token first = expr[0];
   if (first == kModuleId)
-    return parseModule(expr);
+    return newNodeList(parseModule(expr));
   else if (first == kExportId)
-    return parseExport(expr);
+    return newNodeList(parseExport(expr));
   else if (first == kImportId)
-    return parseImport(expr);
-  else if (first == kDefId || first == kLetId) {
-    Ptr<AptNode> node = parseDef(expr, first == kLetId);
-    if (node != NULL)
-      return newDefNode(node, first == kLetId);
-    return NULL;
-  }
+    return newNodeList(parseImport(expr));
+  else if (first == kDefId || first == kLetId)
+    return parseDef(expr, first == kLetId);
   else if (first == kIfId)
-    return parseIf(expr);
+    return newNodeList(parseIf(expr));
   else if (first == kOnId)
-    return parseOn(expr);
+    return newNodeList(parseOn(expr));
   else if (first == kFunctionId)
-    return parseClosure(expr);
+    return newNodeList(parseClosure(expr));
   else if (first == kForId)
-    return parseFor(expr);
+    return newNodeList(parseFor(expr));
   else if (first == kSelectId)
-    return parseSelect(expr);
+    return newNodeList(parseSelect(expr));
   else if (first == kMatchId)
-    return parseMatch(expr);
+    return newNodeList(parseMatch(expr));
   else if (expr.isBinarySeq() || expr.isTernarySeq())
-    return parseBinary(expr);
+    return newNodeList(parseBinary(expr));
   else if (first == kMinus) {
     assert(expr.count() == 2);
-    Ptr<AptNode> exprNode = parseExpr(expr[1]);
-    return new NegateNode(expr.srcpos(), exprNode);
+    Ptr<AptNode> exprNode = singletonNodeListOrNull(parseExpr(expr[1]));
+    return newNodeList(new NegateNode(expr.srcpos(), exprNode));
   }
   else if (expr.count() == 2) {
     if (expr[1].isNested()) {
       if (expr[1].leftToken() == kParanOpen)
-        return parseFunCall(expr);
+        return newNodeList(parseFunCall(expr));
       else if (expr[0] == kSymbol &&
                expr[1].leftToken() == kGenericOpen)
-        return parseTypeExpr(expr);
+        return newNodeList(parseTypeExpr(expr));
       else if ((expr[0] == kSymbol || expr[0].isSeq()) &&
                expr[1].leftToken() == kBracketOpen)
-        return parseTypeExpr(expr);
+        return newNodeList(parseTypeExpr(expr));
       else {
         fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
                 (const char*)StrHelper(expr.toString()),
@@ -2625,30 +2764,29 @@ SecondPass::parseSeq(const Token& expr)
         assert(0);              // TODO
       }
     }
-    else if (expr[0] == kQuote && expr[1] == kSymbol) {
-      return parseTypeExpr(expr);
-    }
+    else if (expr[0] == kQuote && expr[1] == kSymbol)
+      return newNodeList(parseTypeExpr(expr));
   }
   else if (expr.count() == 3) {
     if (expr[0].isNumber() && expr[1] == kColon) {
       switch (expr[0].tokenType()) {
       case kInt:
-        return parseIntNumber(expr);
+        return newNodeList(parseIntNumber(expr));
       case kRational:
-        return parseRationalNumber(expr);
+        return newNodeList(parseRationalNumber(expr));
       case kReal:
-        return parseRealNumber(expr);
+        return newNodeList(parseRealNumber(expr));
       default:
         printf("%d\n", expr.tokenType());
         assert(0);
-        return NULL;
+        return NodeList();
       }
     }
     else if (expr[0].isNumber() && expr[1] == kQuote) {
-      return parseUnitNumber(expr);
+      return newNodeList(parseUnitNumber(expr));
     }
     else if (expr[1] == kRange) {
-      return parseBinary(expr);
+      return newNodeList(parseBinary(expr));
     }
     else {
       fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
@@ -2659,7 +2797,7 @@ SecondPass::parseSeq(const Token& expr)
   }
   else if (expr.count() == 4) {
     if (expr[0] == kExtendId)
-      return parseExtend(expr);
+      return newNodeList(parseExtend(expr));
   }
 
   return parseExpr(expr[0]);
@@ -2699,13 +2837,12 @@ SecondPass::parseBlock(const Token& expr)
   const TokenVector& seq = expr.children();
   NodeList nodes;
   for (size_t i = 0; i < seq.size(); i++) {
-    Ptr<AptNode> item = parseExpr(seq[i]);
-    if (item != NULL)
-      nodes.push_back(item);
+    NodeList nl = parseExpr(seq[i]);
+    appendNodes(nodes, nl);
   }
 
   if (nodes.size() == 0) {
-    return new SymbolNode(expr.srcpos(), String("lang|unspecified"));
+    return new SymbolNode(expr.srcpos(), Names::kLangUnspecified);
   }
   else if (nodes.size() == 1) {
     if (!doesNodeNeedBlock(nodes[0].obj()))
@@ -2733,8 +2870,8 @@ SecondPass::parseLiteralVector(const Token& expr)
   for (size_t i = 0; i < seq.size(); i++) {
     if (seq[i] == kComma)
       continue;
-    Ptr<AptNode> item = parseExpr(seq[i]);
-    vector->appendNode(item);
+    NodeList nl = parseExpr(seq[i]);
+    vector->appendNodes(nl);
   }
 
   return vector.release();
@@ -2755,8 +2892,8 @@ SecondPass::parseLiteralArray(const Token& expr)
   for (size_t i = 0; i < seq.size(); i++) {
     if (seq[i] == kComma)
       continue;
-    Ptr<AptNode> item = parseExpr(seq[i]);
-    array->appendNode(item);
+    NodeList nl = parseExpr(seq[i]);
+    array->appendNodes(nl);
   }
 
   return array.release();
@@ -2780,8 +2917,8 @@ SecondPass::parseLiteralDict(const Token& expr)
 
     assert(seq[i].isBinarySeq(kMapTo));
 
-    Ptr<AptNode> key = parseExpr(seq[i][0]);
-    Ptr<AptNode> value = parseExpr(seq[i][2]);
+    Ptr<AptNode> key   = singletonNodeListOrNull(parseExpr(seq[i][0]));
+    Ptr<AptNode> value = singletonNodeListOrNull(parseExpr(seq[i][2]));
 
     dict->addPair(key, value);
   }
@@ -2790,7 +2927,7 @@ SecondPass::parseLiteralDict(const Token& expr)
 }
 
 
-AptNode*
+NodeList
 SecondPass::parseNested(const Token& expr)
 {
   assert(!fCompiler->isParsingInterface());
@@ -2798,16 +2935,16 @@ SecondPass::parseNested(const Token& expr)
 
   switch (expr.leftToken()) {
   case kBraceOpen:
-    return parseBlock(expr);
+    return newNodeList(parseBlock(expr));
 
   case kLiteralVectorOpen:
     if (expr.count() > 0 && expr[0].isBinarySeq(kMapTo))
-      return parseLiteralDict(expr);
+      return newNodeList(parseLiteralDict(expr));
     else
-      return parseLiteralVector(expr);
+      return newNodeList(parseLiteralVector(expr));
 
   case kLiteralArrayOpen:
-    return parseLiteralArray(expr);
+    return newNodeList(parseLiteralArray(expr));
 
   case kParanOpen:
     assert(expr.count() == 1);
@@ -2821,7 +2958,7 @@ SecondPass::parseNested(const Token& expr)
     assert(0);                  // you should not be here.
   }
 
-  return NULL;
+  return NodeList();
 }
 
 
@@ -2902,7 +3039,7 @@ SecondPass::parseRealNumber(const Token& expr)
 }
 
 
-AptNode*
+NodeList
 SecondPass::parseExpr(const Token& expr)
 {
   switch (expr.type()) {
@@ -2911,31 +3048,31 @@ SecondPass::parseExpr(const Token& expr)
       const AptNode* var = fScope->lookupVar(expr.idValue(), true);
       const VardefNode* vardef = dynamic_cast<const VardefNode*>(var);
       if (vardef != NULL && vardef->isEnum() && vardef->initExpr() != NULL) {
-        return vardef->initExpr()->clone();
+        return newNodeList(vardef->initExpr()->clone());
       }
     }
-    return new SymbolNode(expr.srcpos(), expr.idValue());
+    return newNodeList(new SymbolNode(expr.srcpos(), expr.idValue()));
 
   case kLit:
     switch (expr.tokenType()) {
     case kBool:
-      return new BoolNode(expr.srcpos(), expr.boolValue());
+      return newNodeList(new BoolNode(expr.srcpos(), expr.boolValue()));
     case kInt:
-      return parseIntNumber(expr);
+      return newNodeList(parseIntNumber(expr));
     case kRational:
-      return parseRationalNumber(expr);
+      return newNodeList(parseRationalNumber(expr));
     case kReal:
-      return parseRealNumber(expr);
+      return newNodeList(parseRealNumber(expr));
     case kChar:
-      return new CharNode(expr.srcpos(), expr.charValue());
+      return newNodeList(new CharNode(expr.srcpos(), expr.charValue()));
     case kString:
-      return new StringNode(expr.srcpos(), expr.stringValue());
+      return newNodeList(new StringNode(expr.srcpos(), expr.stringValue()));
     case kKeyword:
-      return new KeywordNode(expr.srcpos(), expr.stringValue());
+      return newNodeList(new KeywordNode(expr.srcpos(), expr.stringValue()));
 
     case kDocString:
       // TODO
-      return NULL;
+      return NodeList();
 
     default:
       assert(0);
@@ -2952,10 +3089,10 @@ SecondPass::parseExpr(const Token& expr)
     // printf("{1} ---> %s\n", (const char*)StrHelper(expr.toString()));
     errorf(expr.srcpos(), E_UnexpectedToken,
            "Unexpected token");
-    return NULL;
+    return NodeList();
   }
 
-  return NULL;
+  return NodeList();
 }
 
 

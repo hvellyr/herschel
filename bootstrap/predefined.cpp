@@ -60,10 +60,11 @@ const String heather::Names::kAssocTypeName       = String(MID_AssocTypeName);
 const String heather::Names::kAssocCollectionTypeName = String(MID_AssocCollectionTypeName);
 const String heather::Names::kMapTypeName         = String(MID_MapTypeName);
 
-const String heather::Names::kLangReturn = String(MID_lang_return);
-const String heather::Names::kLangSlice  = String(MID_lang_slice);
-const String heather::Names::kLangSliceX = String(MID_lang_sliceX);
-
+const String heather::Names::kLangReturn      = String(MID_lang_return);
+const String heather::Names::kLangSlice       = String(MID_lang_slice);
+const String heather::Names::kLangSliceX      = String(MID_lang_sliceX);
+const String heather::Names::kLangUnspecified = String(MID_lang_unspecified);
+const String heather::Names::kLangAllocate    = String(MID_lang_allocate);
 
 const String heather::Names::kExitKeyword = String(MID_exitKeyword);
 const String heather::Names::kSignalKeyword = String(MID_signalKeyword);

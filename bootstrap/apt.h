@@ -40,6 +40,17 @@ namespace heather
 
   typedef std::vector<Ptr<AptNode> > NodeList;
 
+  NodeList newNodeList();
+  NodeList newNodeList(AptNode* n1);
+  NodeList newNodeList(AptNode* n1, AptNode* n2);
+  NodeList newNodeList(AptNode* n1, AptNode* n2, AptNode* n3);
+  NodeList newNodeList(AptNode* n1, AptNode* n2, AptNode* n3, AptNode* n4);
+
+  NodeList& appendNodes(NodeList& dst, const NodeList& nl);
+  AptNode* singletonNodeListOrNull(const NodeList& nl);
+
+  void copyNodes(NodeList* dst, const NodeList* src);
+  NodeList copyNodes(const NodeList& src);
 
   //--------------------------------------------------------------------------
 

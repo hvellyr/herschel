@@ -4,8 +4,8 @@ def class X(a, b) : All
   def slot y
 
   on init (self) {
-    x = a
-    y = a + b
+    self.x = a
+    self.y = a + b
   }
 
   on delete (self) {

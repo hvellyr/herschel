@@ -52,7 +52,7 @@ T* nodeClone(const Ptr<T>& node)
 
 
 void
-copyNodes(NodeList* dst, const NodeList* src)
+heather::copyNodes(NodeList* dst, const NodeList* src)
 {
   for (NodeList::const_iterator it = src->begin(); it != src->end(); ++it) {
     dst->push_back(nodeClone(it->obj()));
@@ -61,7 +61,7 @@ copyNodes(NodeList* dst, const NodeList* src)
 
 
 NodeList
-copyNodes(const NodeList& src)
+heather::copyNodes(const NodeList& src)
 {
   NodeList dst;
   copyNodes(&dst, &src);
@@ -191,7 +191,8 @@ ListNode::appendNode(AptNode* node)
 void
 ListNode::appendNodes(const NodeList& nodes)
 {
-  fChildren.insert(fChildren.end(), nodes.begin(), nodes.end());
+  if (!nodes.empty())
+    fChildren.insert(fChildren.end(), nodes.begin(), nodes.end());
 }
 
 
@@ -2161,3 +2162,83 @@ DEF_ANNOTATE(CastNode)
 DEF_TRAVERSE(CastNode)
 DEF_TRANSFORM(CastNode)
 DEF_TYPIFY(CastNode)
+
+
+//--------------------------------------------------------------------------------
+
+NodeList
+heather::newNodeList()
+{
+  return NodeList();
+}
+
+
+NodeList
+heather::newNodeList(AptNode* n1)
+{
+  NodeList nl;
+  if (n1 != NULL)
+    nl.push_back(n1);
+  return nl;
+}
+
+
+NodeList
+heather::newNodeList(AptNode* n1, AptNode* n2)
+{
+  NodeList nl;
+  if (n1 != NULL)
+    nl.push_back(n1);
+  if (n2 != NULL)
+    nl.push_back(n2);
+  return nl;
+}
+
+
+NodeList
+heather::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3)
+{
+  NodeList nl;
+  if (n1 != NULL)
+    nl.push_back(n1);
+  if (n2 != NULL)
+    nl.push_back(n2);
+  if (n3 != NULL)
+    nl.push_back(n3);
+  return nl;
+}
+
+
+NodeList
+heather::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3, AptNode* n4)
+{
+  NodeList nl;
+  if (n1 != NULL)
+    nl.push_back(n1);
+  if (n2 != NULL)
+    nl.push_back(n2);
+  if (n3 != NULL)
+    nl.push_back(n3);
+  if (n4 != NULL)
+    nl.push_back(n4);
+  return nl;
+}
+
+
+NodeList&
+heather::appendNodes(NodeList& dst, const NodeList& nl)
+{
+  if (!nl.empty())
+    dst.insert(dst.end(), nl.begin(), nl.end());
+  return dst;
+}
+
+
+AptNode*
+heather::singletonNodeListOrNull(const NodeList& nl)
+{
+  assert(nl.size() < 2);
+  if (nl.size() == 1)
+    return nl[0].obj();
+  return NULL;
+}

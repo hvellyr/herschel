@@ -464,11 +464,11 @@ Keywords are first class objects and can be created at runtime
 (@code{to-keyword()}); they are assumed however to show a much better
 performance when comparing for identity.
 
-@defun to-keyword (@var{string} : String) : Keyword
+@defun lang|to-keyword (@var{string} : String) : Keyword
 Returns to the keyword representation for @var{string}.
 @end defun
 
-@defun to-string (@var{keyword} @@ Keyword) : String
+@defun lang|to-string (@var{keyword} @@ Keyword) : String
 Returns the string representation of @var{keyword}.
 @end defun
 

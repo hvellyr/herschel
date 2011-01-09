@@ -37,8 +37,8 @@ namespace heather
     AptNode* parse(const Token& exprs);
 
   private:
-    AptNode* parseExpr(const Token& expr);
-    AptNode* parseSeq(const Token& expr);
+    NodeList parseExpr(const Token& expr);
+    NodeList parseSeq(const Token& expr);
 
     AptNode* parseModule(const Token& expr);
     AptNode* parseExport(const Token& expr);
@@ -47,7 +47,8 @@ namespace heather
 
     void parseTopExprlist(const Token& expr);
 
-    AptNode* parseDef(const Token& expr, bool isLocal);
+    NodeList rewriteDefNode(AptNode* node, bool isLet);
+    NodeList parseDef(const Token& expr, bool isLocal);
     AptNode* parseIf(const Token& expr);
     AptNode* parseOn(const Token& expr);
     AptNode* parseFor(const Token& expr);
@@ -58,12 +59,21 @@ namespace heather
     AptNode* parseFunCall(const Token& expr);
     AptNode* parseTypeExpr(const Token& expr);
 
-    AptNode* parseTokenVector(const TokenVector& seq);
+    NodeList parseTokenVector(const TokenVector& seq);
     void parseParameters(NodeList* parameters, const TokenVector& seq);
 
     AptNode* parseParameter(const Token& expr);
 
-    AptNode* parseTypeDef(const Token& expr, size_t ofs, bool isType);
+    NodeList parseTypeDef(const Token& expr, size_t ofs, bool isType,
+                          bool isLocal);
+    AptNode* generateConstructor(const Token& typeExpr,
+                                 const String& fullTypeName,
+                                 const Type& defType,
+                                 const NodeList& defaultApplyParams,
+                                 const NodeList& slotDefs,
+                                 const NodeList& onExprs);
+    AptNode* defaultSlotInitValue(const SlotdefNode* slot);
+
     AptNode* parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
     AptNode* parseSlotDef(const Token& expr, size_t ofs);
     AptNode* parseEnumDef(const Token& expr, size_t ofs, bool isLocal);
@@ -84,7 +94,7 @@ namespace heather
     AptNode* newDefNode(AptNode* node, bool isLet);
 
     AptNode* parseBlock(const Token& expr);
-    AptNode* parseNested(const Token& expr);
+    NodeList parseNested(const Token& expr);
 
     AptNode* parseExtend(const Token& expr);
 
