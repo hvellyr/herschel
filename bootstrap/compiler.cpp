@@ -223,6 +223,7 @@ void
 Compiler::importSystemHeaders(const String& avoidPath)
 {
   importSystemHeader(String("builtin:lang/numbers.hea"), avoidPath);
+  importSystemHeader(String("builtin:lang/runtime.hea"), avoidPath);
 }
 
 

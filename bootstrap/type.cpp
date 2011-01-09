@@ -3311,6 +3311,51 @@ namespace heather
     else
       return leftty;
   }
+
+
+  Type
+  degeneralizeType(const SrcPos& srcpos, const Type& type,
+                   const TypeVector& srcGenerics)
+  {
+    if (type.isDef()) {
+      if (type.hasGenerics()) {
+        if (type.generics().size() != srcGenerics.size()) {
+          errorf(srcpos, E_GenericsMismatch,
+                 "Type instance generic number mismatch");
+          return Type();
+        }
+        if (!srcGenerics.empty() && !type.isOpen()) {
+          errorf(srcpos, E_GenericsMismatch,
+                 "Type instance generic number mismatch");
+          return Type();
+        }
+
+        TypeCtx localCtx;
+        for (size_t i = 0; i < type.generics().size(); i++) {
+          Type gen = type.generics()[i];
+          assert(gen.isRef());
+
+          String genName = gen.typeName();
+          localCtx.registerType(genName, srcGenerics[i]);
+        }
+
+        // TODO: shouldn't this be Class<some-type> ?
+        return type.replaceGenerics(localCtx);
+      }
+      else {
+        if (!srcGenerics.empty()) {
+          errorf(srcpos, E_GenericsMismatch,
+                 "Type instance generic number mismatch");
+          return Type();
+        }
+
+        // TODO: shouldn't this be Class<some-type> ?
+        return type;
+      }
+    }
+
+    return Type();
+  }
 };
 
 

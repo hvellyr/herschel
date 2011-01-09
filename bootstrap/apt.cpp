@@ -438,16 +438,8 @@ DEF_TYPIFY(ArrayTypeNode)
 //--------------------------------------------------------------------------
 
 TypeNode::TypeNode(const SrcPos& srcpos, const Type& type)
-  : AptNode(srcpos),
-    fType(type)
+  : AptNode(srcpos, type)
 { }
-
-
-Type
-TypeNode::type() const
-{
-  return fType;
-}
 
 
 TypeNode*

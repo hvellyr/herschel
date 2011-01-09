@@ -97,44 +97,10 @@ Typifier::typify(SymbolNode* node)
       return;
     }
 
-    Type type = node->scope()->lookupType(node->name(), true);
-    if (type.isDef()) {
-      if (type.hasGenerics()) {
-        if (type.generics().size() != node->generics().size()) {
-          errorf(node->srcpos(), E_GenericsMismatch,
-                 "Type instance generic number mismatch");
-          return;
-        }
-        if (!node->generics().empty() && !type.isOpen()) {
-          errorf(node->srcpos(), E_GenericsMismatch,
-                 "Type instance generic number mismatch");
-          return;
-        }
-
-        TypeVector nodeGenerics = node->generics();
-        TypeCtx localCtx;
-        for (size_t i = 0; i < type.generics().size(); i++) {
-          Type gen = type.generics()[i];
-          assert(gen.isRef());
-
-          String genName = gen.typeName();
-          localCtx.registerType(genName, nodeGenerics[i]);
-        }
-
-        // TODO: shouldn't this be Class<some-type> ?
-        node->setType(type.replaceGenerics(localCtx));
-      }
-      else {
-        if (!node->generics().empty()) {
-          errorf(node->srcpos(), E_GenericsMismatch,
-                 "Type instance generic number mismatch");
-          return;
-        }
-
-        // TODO: shouldn't this be Class<some-type> ?
-        node->setType(type);
-      }
-    }
+    Type type0 = node->scope()->lookupType(node->name(), true);
+    Type type1 = degeneralizeType(node->srcpos(), type0, node->generics());
+    if (type1.isDef())
+      node->setType(type1);
   }
 }
 
@@ -162,8 +128,9 @@ void
 Typifier::typify(TypeNode* node)
 {
   if (fPhase == kTypify) {
+    assert(node->type().isDef());
     // TODO: shouldn't this be Class<some-type> ?
-    node->setType(node->type());
+    // node->setType(node->type());
   }
 }
 
@@ -287,7 +254,7 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
     }
     else {
       warningf(node->srcpos(), E_UndefinedType,
-               "undefined return type on function defauts to lang|Any");
+               "undefined return type on function defaults to lang|Any");
       node->setRetType(Type::newAny());
     }
   }
