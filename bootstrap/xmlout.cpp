@@ -390,18 +390,14 @@ XmlRenderer::renderNode(const ArrayTypeNode* node)
   else if (const TypeNode* ty = dynamic_cast<const TypeNode*>(rootType)) {
     StringBuffer attrs;
 
-    if (fShowNodeType && node->type().isDef()) {
-      attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-      fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                             node->type()));
-    }
-
     if (arrayDepth == 1)
       attrs << " array='t'";
     else
       attrs << " array='t*" << fromInt(arrayDepth) << "'";
     attrs << " ty='" << xmlEncode(ty->type().typeId()) << "'";
     displayTagAttr("type", StrHelper(attrs.toString()), String());
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
   }
   else if (rootType) {
     fprintf(stderr, "Unexpected type node: %p %s\n", rootType, typeid(*rootType).name());
