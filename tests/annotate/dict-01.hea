@@ -1,0 +1,8 @@
+def a = #(\a -> "alpha",
+          \b -> "beta",
+          \g -> "gamma")
+
+def b = #(#name -> "albert rice",
+          #profession -> #architect,
+          #age -> 39)
+

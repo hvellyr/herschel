@@ -1,0 +1,307 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<class nm='Abc'>
+<params>
+<param sym='k' type='pos'>
+<type>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<proto>
+<def>
+<method sym='item' abstract='true'>
+<params>
+<param sym='k' type='spec'>
+<type>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Slotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</rettype>
+</method>
+</def>
+<def>
+<method sym='itemx' abstract='true'>
+<params>
+<param sym='k' type='spec'>
+<type>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='X'>
+<ty:const k='isa'>
+<ty:ref nm='VeryComparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:array>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='Y'>
+<ty:const k='isa'>
+<ty:ref nm='NearlySlotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</rettype>
+</method>
+</def>
+<def>
+<method sym='itemy' abstract='true'>
+<params>
+<param sym='k' type='spec'>
+<type>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='VeryComparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:array>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='NearlySlotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</rettype>
+</method>
+</def>
+<def>
+<method sym='itemz' abstract='true'>
+<params>
+<param sym='k' type='spec'>
+<type>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Slotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</rettype>
+</method>
+</def>
+<def>
+<method sym='itemf' abstract='true'>
+<params>
+<param sym='k' type='spec'>
+<type>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</rettype>
+</method>
+</def>
+</proto>
+<isa>
+<ty:type nm='Abc' inst='t'>
+<ty:isa>
+<ty:ref nm='lang|Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+<ty:ref gen='t' nm='Z'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref nm='K'>
+</ty:ref>
+<ty:ref nm='V'>
+</ty:ref>
+</ty:gen>
+<ty:apply>
+<ty:fun nm='apply' gen='t'>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='Abc'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Slotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:apply>
+<ty:proto>
+<ty:fun nm='item' gen='t'>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Slotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+<ty:fun nm='itemx' gen='t'>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='X'>
+<ty:const k='isa'>
+<ty:ref nm='VeryComparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:array>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='Y'>
+<ty:const k='isa'>
+<ty:ref nm='NearlySlotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+<ty:fun nm='itemy' gen='t'>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='VeryComparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:array>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='NearlySlotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+<ty:fun nm='itemz' gen='t'>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Slotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+<ty:fun nm='itemf' gen='t'>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:proto>
+</ty:type>
+</isa>
+</class>
+</def>
+</compile-unit>

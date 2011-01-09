@@ -1,0 +1,435 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f0'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|UInt16'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|UInt64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|UInt64'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:ref nm='lang|UInt64'>
+</ty:ref>
+</type>
+<init>
+<binary op='+' ty='lang|UInt64'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:ref nm='lang|UInt64'>
+</ty:ref>
+</type>
+<init>
+<binary op='-' ty='lang|UInt64'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<type>
+<ty:ref nm='lang|UInt64'>
+</ty:ref>
+</type>
+<init>
+<binary op='*' ty='lang|UInt64'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<type>
+<ty:ref nm='lang|UInt64'>
+</ty:ref>
+</type>
+<init>
+<binary op='/' ty='lang|UInt64'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<type>
+<ty:ref nm='lang|UInt64'>
+</ty:ref>
+</type>
+<init>
+<binary op='**' ty='lang|UInt64'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<type>
+<ty:ref nm='lang|UInt64'>
+</ty:ref>
+</type>
+<init>
+<binary op='mod' ty='lang|UInt64'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f1'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|UInt16'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|UInt64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<binary op='==' ty='lang|Bool'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<binary op='&lt;>' ty='lang|Bool'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<binary op='&lt;' ty='lang|Bool'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<binary op='>' ty='lang|Bool'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<binary op='>=' ty='lang|Bool'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<binary op='&lt;=' ty='lang|Bool'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t6'>
+<type>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</type>
+<init>
+<binary op='&lt;=>' ty='lang|Int'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t7'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<binary op='in' ty='lang|Bool'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f5'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|UInt16'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|UInt64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<binary op='and' ty='lang|Bool'>
+<binary op='==' ty='lang|Bool'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<int ty='lang|UInt32'>0</int>
+</binary>
+<binary op='==' ty='lang|Bool'>
+<symbol  ty='lang|UInt64'>b</symbol>
+<int ty='lang|UInt32'>5</int>
+</binary>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<binary op='or' ty='lang|Bool'>
+<binary op='==' ty='lang|Bool'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+<binary op='==' ty='lang|Bool'>
+<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt64'>b</symbol>
+</binary>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|UInt16'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|UInt32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|UInt64'>
+</ty:ref>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

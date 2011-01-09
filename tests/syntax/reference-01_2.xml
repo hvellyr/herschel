@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f0' abstract='true'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref ref='t' nm='lang|Int'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref ref='t' nm='lang|Int'>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='f1' abstract='true'>
+<params>
+<param sym='a' type='spec'>
+<type>
+<ty:ref ref='t' nm='lang|String'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref ref='t' nm='lang|Bool'>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='f2' abstract='true'>
+<params>
+<param sym='x' type='key' key='a'>
+<type>
+<ty:ref ref='t' nm='lang|Char'>
+</ty:ref>
+</type>
+<init>
+<char>32</char>
+</init>
+</param>
+</params>
+<rettype>
+<ty:ref ref='t' nm='lang|Char'>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='f3' abstract='true'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:union ref='t'>
+<ty:ref nm='lang|Ordinal'>
+</ty:ref>
+<ty:ref nm='lang|Bool'>
+<ty:const k='eq'>false</ty:const>
+</ty:ref>
+</ty:union>
+</type>
+</param>
+</params>
+<rettype>
+<ty:union ref='t'>
+<ty:ref nm='lang|Ordinal'>
+</ty:ref>
+<ty:ref nm='lang|Bool'>
+<ty:const k='eq'>false</ty:const>
+</ty:ref>
+</ty:union>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='f4' abstract='true'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:seq ref='t'>
+<ty:ref nm='Slotable'>
+</ty:ref>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:seq>
+</type>
+</param>
+</params>
+<rettype>
+<ty:seq ref='t'>
+<ty:ref nm='Slotable'>
+</ty:ref>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:seq>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='f10' abstract='true'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref gen='t' ref='t' nm='T'>
+<ty:const k='isa'>
+<ty:ref nm='Slotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' ref='t' nm='T'>
+<ty:const k='isa'>
+<ty:ref nm='Slotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='f11' abstract='true'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref gen='t' ref='t' nm='T'>
+<ty:const k='isa'>
+<ty:union>
+<ty:ref nm='lang|Ordinal'>
+</ty:ref>
+<ty:ref nm='lang|Bool'>
+<ty:const k='eq'>false</ty:const>
+</ty:ref>
+</ty:union>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' ref='t' nm='T'>
+<ty:const k='isa'>
+<ty:union>
+<ty:ref nm='lang|Ordinal'>
+</ty:ref>
+<ty:ref nm='lang|Bool'>
+<ty:const k='eq'>false</ty:const>
+</ty:ref>
+</ty:union>
+</ty:const>
+</ty:ref>
+</rettype>
+</func>
+</def>
+</compile-unit>

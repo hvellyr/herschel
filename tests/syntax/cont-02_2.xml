@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='a' type='const'>
+<init>
+<vector>
+<int ty='lang|Int'>1</int>
+<int ty='lang|Int'>2</int>
+<int ty='lang|Int'>3</int>
+<int ty='lang|Int'>4</int>
+</vector>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='b' type='const'>
+<init>
+<vector>
+</vector>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='c' type='const'>
+<init>
+<vector>
+<str>hello</str>
+<str>, </str>
+<str>world</str>
+<str>!</str>
+</vector>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='d' type='const'>
+<init>
+<vector>
+<vector>
+<int ty='lang|Int'>1</int>
+<real ty='i&lt;lang|Real>' imag='t'>3.141500</real>
+</vector>
+<vector>
+<real ty='lang|Rational'>3/4</real>
+</vector>
+<vector>
+</vector>
+</vector>
+</init>
+</vardef>
+</def>
+</compile-unit>

@@ -1,0 +1,15 @@
+def type Pair<L, R>
+
+def alias ListPair<T> = Pair<T, ListPair<T>>
+
+def insert!(self @ ListPair<'T>,
+            value @ 'T,
+            before-index : Int) : ListPair<'T> ...
+
+def remove-at!(self @ ListPair<'T>, index : Int) : 'T ...
+
+
+def foo()
+  let p : ListPair<String>
+  insert!(p, "hello world", 0)
+  remove-at!(p, 1)

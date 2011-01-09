@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>smallint</id>
+<punct type=':'/>
+<id>Int16</id>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>smallgroup</id>
+<punct type=':'/>
+<id>group</id>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>init</id>
+<nested left='(' right=')'>
+<seq>
+<id>grp</id>
+<punct type='@'/>
+<id>smallgroup</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>smallgroup</id>
+<punct type='...'/>
+</seq>
+</nested>
+</seq>
+</seq>

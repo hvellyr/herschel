@@ -1,0 +1,2 @@
+def foo(x : 'T) : Range<T>
+  x .. 100 as 'T

@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='o' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='__value_0'>
+<init>
+<apply>
+<symbol>foo2</symbol>
+<args>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<apply>
+<symbol>name!</symbol>
+<args>
+<symbol>o</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|Int'>0</int>
+</args>
+</apply>
+</args>
+</apply>
+<apply>
+<symbol>surname!</symbol>
+<args>
+<symbol>o</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|Int'>1</int>
+</args>
+</apply>
+</args>
+</apply>
+<apply>
+<symbol>gender!</symbol>
+<args>
+<symbol>o</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|Int'>2</int>
+</args>
+</apply>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

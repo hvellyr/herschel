@@ -1,0 +1,9 @@
+module ixwick ("sijo/ixwick 0.1")
+
+def macro abc
+{
+  { abc() } -> { "abc" }
+}
+
+def f()
+  abc()

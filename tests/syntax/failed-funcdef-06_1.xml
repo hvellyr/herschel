@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>g</id>
+<nested left='(' right=')'>
+<seq>
+<id>x</id>
+<punct type='@'/>
+<id>Int</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>y</id>
+<punct type=':'/>
+<id>Real</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>m</id>
+<punct type=':'/>
+<id>Any</id>
+<punct type='='/>
+<lit type='int'>34</lit>
+</seq>
+<punct type=','/>
+<seq>
+<id>n</id>
+<punct type=':'/>
+<id>Any</id>
+<punct type='='/>
+<lit type='int'>11</lit>
+</seq>
+<punct type=','/>
+<seq>
+<id>args</id>
+<punct type=':'/>
+<id>Any</id>
+<punct type='...'/>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>x</id>
+<punct type='*'/>
+<id>y</id>
+</seq>
+<punct type='+'/>
+<seq>
+<id>m</id>
+<punct type='*'/>
+<nested left='{' right='}'>
+<id>n</id>
+<id>m</id>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>if</id>
+<nested left='(' right=')'>
+<id>a</id>
+<punct type='+'/>
+<id>a</id>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>d</id>
+<nested left='(' right=')'>
+<seq>
+<id>c</id>
+<nested left='(' right=')'>
+<id>b</id>
+</nested>
+</seq>
+</nested>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>if</id>
+<nested left='(' right=')'>
+<id>b</id>
+<punct type='+'/>
+<id>b</id>
+</nested>
+<seq>
+<id>c</id>
+<punct type='*'/>
+<id>e</id>
+</seq>
+<id>else</id>
+<seq>
+<id>f</id>
+<punct type='/'/>
+<id>g</id>
+</seq>
+</seq>
+</nested>
+</seq>
+</seq>

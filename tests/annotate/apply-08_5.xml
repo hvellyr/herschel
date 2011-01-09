@@ -1,0 +1,256 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<type nm='Pair'>
+<isa>
+<ty:type nm='Pair'>
+<ty:gen>
+<ty:ref nm='L'>
+</ty:ref>
+<ty:ref nm='R'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<func sym='insert!' abstract='true'>
+<params>
+<param sym='self' type='spec'>
+<type>
+<ty:ref nm='Pair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+<ty:ref nm='ListPair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+<param sym='value' type='spec'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+<param sym='before-index' type='pos'>
+<type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='Pair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+<ty:ref nm='ListPair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='remove-at!' abstract='true'>
+<params>
+<param sym='self' type='spec'>
+<type>
+<ty:ref nm='Pair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+<ty:ref nm='ListPair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+<param sym='index' type='pos'>
+<type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='foo'>
+<rettype>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='p'>
+<type>
+<ty:type nm='Pair'>
+<ty:gen>
+<ty:ref nm='lang|String'>
+</ty:ref>
+<ty:ref nm='ListPair'>
+<ty:gen>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</type>
+</vardef>
+</let>
+<apply  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>'>
+<symbol  ty='lambda(Pair&lt;&apos;T, ListPair&lt;&apos;T>>, &apos;T, lang|Int):Pair&lt;&apos;T, ListPair&lt;&apos;T>>'>insert!</symbol>
+<args>
+<symbol  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>'>p</symbol>
+<str>hello world</str>
+<int ty='lang|Int'>0</int>
+</args>
+</apply>
+<apply  ty='lang|String'>
+<symbol  ty='lambda(Pair&lt;&apos;T, ListPair&lt;&apos;T>>, lang|Int):&apos;T'>remove-at!</symbol>
+<args>
+<symbol  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>'>p</symbol>
+<int ty='lang|Int'>1</int>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='Pair'>
+<ty:gen>
+<ty:ref nm='lang|String'>
+</ty:ref>
+<ty:ref nm='ListPair'>
+<ty:gen>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='Pair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+<ty:ref nm='ListPair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos'>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='Pair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+<ty:ref nm='ListPair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos'>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='Pair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+<ty:ref nm='ListPair'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

@@ -1,0 +1,108 @@
+-- This file is part of the heather package 
+--
+-- Copyright (c) 2010 Gregor Klinke
+-- All rights reserved.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+-- - Redistributions of source code must retain the above copyright notice,
+--   this list of conditions and the following disclaimer.
+--
+-- - Redistributions in binary form must reproduce the above copyright
+--   notice, this list of conditions and the following disclaimer in the
+--   documentation and/or other materials provided with the distribution.
+--
+-- - Neither the name of the author nor the names of other contributors may
+--   be used to endorse or promote products derived from this software
+--   without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+module lang ("eyestep/heather 1.0:lang")
+export public (*)
+
+
+------------------------------------------------------------------------------
+-- Common Integer types
+------------------------------------------------------------------------------
+
+def alias Byte   = Int8
+def alias UByte  = UInt8
+def alias Octet  = UInt8
+def alias Short  = Int16
+def alias UShort = UInt16
+def alias Word   = Int32
+def alias UWord  = UInt32
+def alias Long   = Int64
+def alias ULong  = UInt64
+
+def alias Float      = Float32
+def alias Double     = Float64
+def alias LongDouble = Float128
+
+
+def type Ordinal : (Int >= 0)
+    ~ A positive, arbitrary precise integer. ~
+
+------------------------------------------------------------------------------
+-- Common Union types
+------------------------------------------------------------------------------
+
+def type OrdinalOrEof : &(Ordinal, Eof)
+    ~ A union type as typically used to either return the number of
+    successful processed items or the end of the resource.  A typical usage
+    looks like
+
+    @example
+    match (port.read(buffer, 0)) @{
+      | e : Eof -> outln("reading done")
+      | n : Ordinal -> outln("%d items read" % #[n])
+    @}
+    @end example ~
+
+
+def type CharOrEof : &(Char, Eof)
+    ~ A union type as typically used to either return a read character or
+    the end of the resource.  A typical usage looks like
+
+    @example
+    match (port.read) @{
+      | e : Eof -> outln("reading done")
+      | n : Char -> outln("read: %c" % #[n])
+    @}
+    @end example ~
+
+
+def type OrdinalOrFalse : &(Ordinal, Bool == false)
+    ~ A union type as typically used by find or lookup functions to either
+    return the index of an element or indicate failure.~
+
+
+------------------------------------------------------------------------------
+-- Default value
+------------------------------------------------------------------------------
+
+def generic null-value(ty @ Class<'T>) : 'T ...
+  ~ Returns the default null value for type @type{T}.
+
+  For reference types this is normally always @val{nil}, for integers this
+  is @val{0}, for chars @val{#\0000}, etc. ~
+
+
+def generic min-value(ty @ Class<'T>) : 'T ...
+def generic max-value(ty @ Class<'T>) : 'T ...
+
+
+-- end of types.hea

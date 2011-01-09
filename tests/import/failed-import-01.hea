@@ -1,0 +1,5 @@
+-- test to import (failing) missing-01
+
+import "missing-01"
+
+def a = 12

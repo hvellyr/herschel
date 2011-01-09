@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>f0</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<id>Int</id>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<id>Int</id>
+</seq>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>f1</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type='@'/>
+<seq>
+<punct type='^'/>
+<id>String</id>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<id>Bool</id>
+</seq>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>f2</id>
+<nested left='(' right=')'>
+<seq>
+<id type='keyarg'>a</id>
+<id>x</id>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<id>Char</id>
+</seq>
+<punct type='='/>
+<lit type='char'>\u020;</lit>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<id>Char</id>
+</seq>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>f3</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<nested left='&amp;(' right=')'>
+<id>Ordinal</id>
+<punct type=','/>
+<seq>
+<id>Bool</id>
+<punct type='=='/>
+<lit type='bool'>false</lit>
+</seq>
+</nested>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<nested left='&amp;(' right=')'>
+<id>Ordinal</id>
+<punct type=','/>
+<seq>
+<id>Bool</id>
+<punct type='=='/>
+<lit type='bool'>false</lit>
+</seq>
+</nested>
+</seq>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>f4</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<nested left='(' right=')'>
+<id>Slotable</id>
+<punct type=','/>
+<id>Copyable</id>
+</nested>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<nested left='(' right=')'>
+<id>Slotable</id>
+<punct type=','/>
+<id>Copyable</id>
+</nested>
+</seq>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>f10</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</seq>
+<seq>
+<id>where</id>
+<seq>
+<id>T</id>
+<punct type='isa'/>
+<id>Slotable</id>
+</seq>
+</seq>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>f11</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<punct type='^'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</seq>
+<seq>
+<id>where</id>
+<seq>
+<id>T</id>
+<punct type='isa'/>
+<nested left='&amp;(' right=')'>
+<id>Ordinal</id>
+<punct type=','/>
+<seq>
+<id>Bool</id>
+<punct type='=='/>
+<lit type='bool'>false</lit>
+</seq>
+</nested>
+</seq>
+</seq>
+<punct type='...'/>
+</seq>
+</seq>

@@ -1,0 +1,12 @@
+def f(abc|x : Int,
+      mno|zzz: _z : String = nil)
+  on exit (core|r) {
+    outln("on exit: %s" % #[_z])
+  }
+  x
+
+
+def class X(abc|a)
+{
+  def slot www|b = a
+}

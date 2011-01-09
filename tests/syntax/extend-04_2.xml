@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f0'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<str>test3</str>
+<str>test2</str>
+<str>test1</str>
+<apply>
+<symbol>cool|mno</symbol>
+<args>
+</args>
+</apply>
+<apply>
+<symbol>mno</symbol>
+<args>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>module</id>
+<id>core</id>
+<nested left='(' right=')'>
+<lit type='str'>sijo/ixwick 0.1: core</lit>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<lit type='int'>1</lit>
+</nested>
+</seq>
+<seq>
+<id>module</id>
+<id>red</id>
+<nested left='(' right=')'>
+<lit type='str'>sijo/ixwick 0.1: red</lit>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<lit type='int'>2</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>module</id>
+<id>blue</id>
+<nested left='(' right=')'>
+<lit type='str'>sijo/ixwick 0.1: blue</lit>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<lit type='int'>3</lit>
+</nested>
+</seq>
+<seq>
+<id>module</id>
+<id>violet</id>
+<nested left='(' right=')'>
+<lit type='str'>sijo/ixwick 0.1: violet</lit>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<lit type='int'>4</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>module</id>
+<id>pink</id>
+<nested left='(' right=')'>
+<lit type='str'>sijo/ixwick 0.1: pink</lit>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<lit type='int'>5</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>

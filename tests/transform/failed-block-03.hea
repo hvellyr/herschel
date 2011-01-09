@@ -1,0 +1,8 @@
+-- blocks with single "on signal" members can be dropped completely.
+
+def foo()
+  let a = 0
+  {
+    on signal(x) false
+  }
+  a

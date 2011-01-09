@@ -1,0 +1,2 @@
+def r0 : Range<Int> =
+  Range<Int>(5, 6, 7)

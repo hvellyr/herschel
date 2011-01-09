@@ -1,0 +1,3 @@
+def generic f0(a @ String)
+  outln("hello world: %s" % #[a])
+

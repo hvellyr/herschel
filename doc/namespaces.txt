@@ -1,0 +1,33 @@
+Simplified modules, namespaces, and import
+------------------------------------------
+
+Problem: The "public" name part of modules (the "eyestep/something:version"
+part) seems to be bogus.  The current implementation uses the name part
+only and symbols in the final binary build will be based very likely on the
+same info.  Additionally typing the namespace strings is cumbersome and
+error prone.  It simply doesn't will right.
+
+Proposed solution: There's only the name part.  To avoid conflicts, rely
+more on nested modules and the power of export and import.  This means
+however also that import can't simply rename namespaces (since they are
+fixed in that case).  To avoid long namespace constructs (like
+"heather|lang|Serializable") introduce the namespace aliasing feature we
+had in heather 2:
+
+  def namespace hl = heather|lang
+
+or local:
+
+  let namespace gfx = org|eyestep|anaconda|grafix
+
+This is really only aliasing.  Instead of writing
+
+  let adapter : org|eyestep|anaconda|grafix|Adapter
+
+it allows to write
+
+  let adapter : gfx|Adapter
+
+
+Is 'namespace' the right keyword for it?  What's about 'ns-alias',
+'modalias'?

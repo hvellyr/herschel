@@ -1,0 +1,4 @@
+def h()
+  let x : &(String, Bool == false)[][]
+  let y : (Copyable, Serializable[7], Seq<Int>)[5][12]
+  x[34][2]

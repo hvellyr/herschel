@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='abc' type='const'>
+</vardef>
+</def>
+<def>
+<vardef sym='xyz' type='fluid'>
+</vardef>
+</def>
+</compile-unit>

@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='a'>
+<init>
+<int ty='lang|Int'>0</int>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='b'>
+<init>
+<int ty='lang|Int'>1</int>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='c'>
+<init>
+<int ty='lang|Int'>2</int>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='d'>
+<init>
+<int ty='lang|Int'>3</int>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='e'>
+<init>
+<int ty='lang|Int'>4</int>
+</init>
+</vardef>
+</def>
+<def>
+<func sym='f'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='a'>
+<init>
+<int ty='lang|Int'>100</int>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='b'>
+<init>
+<int ty='lang|Int'>100</int>
+</init>
+</vardef>
+</let>
+<block>
+<let>
+<vardef sym='a'>
+<init>
+<int ty='lang|Int'>400</int>
+</init>
+</vardef>
+</let>
+</block>
+<symbol>a</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

@@ -1,0 +1,171 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<type nm='Container'>
+<isa>
+<ty:type nm='Container'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref nm='A'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<func sym='foo'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:ref nm='Container'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='Container'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</rettype>
+<body>
+<symbol  ty='Container&lt;&apos;T>'>x</symbol>
+</body>
+</func>
+</def>
+<def>
+<func sym='item' abstract='true'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:ref nm='Container'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<func sym='bar'>
+<rettype>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='y'>
+<type>
+<ty:type nm='Container'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</type>
+</vardef>
+</let>
+<apply  ty='lang|Int'>
+<symbol  ty='lambda(Container&lt;&apos;T>):&apos;T'>item</symbol>
+<args>
+<apply  ty='Container&lt;lang|Int>'>
+<symbol  ty='lambda(Container&lt;&apos;T>):Container&lt;&apos;T>'>foo</symbol>
+<args>
+<symbol  ty='Container&lt;lang|Int>'>y</symbol>
+</args>
+</apply>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='Container'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='Container'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref nm='Container'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref nm='Container'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='Container'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

@@ -1,0 +1,3 @@
+def type RandomAccessPort<T> : (InPort<T>, OutPort<T>, SeekablePort<T>)
+    where T isa Referencable
+

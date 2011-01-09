@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='a' type='const'>
+<init>
+<dict>
+<binary op='->'>
+<int ty='lang|Int'>1</int>
+<int ty='lang|Int'>2</int>
+</binary>
+<binary op='->'>
+<int ty='lang|Int'>3</int>
+<int ty='lang|Int'>4</int>
+</binary>
+</dict>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='b' type='const'>
+<init>
+<vector>
+</vector>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='c' type='const'>
+<init>
+<dict>
+<binary op='->'>
+<keyw>name</keyw>
+<str>Yukie Itoh</str>
+</binary>
+<binary op='->'>
+<keyw>city</keyw>
+<str>Tokyo</str>
+</binary>
+</dict>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='d' type='const'>
+<init>
+<vector>
+<dict>
+<binary op='->'>
+<int ty='lang|Int'>1</int>
+<int ty='lang|Int'>2</int>
+</binary>
+</dict>
+<vector>
+<int ty='lang|Int'>3</int>
+</vector>
+<vector>
+</vector>
+</vector>
+</init>
+</vardef>
+</def>
+</compile-unit>

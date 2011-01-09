@@ -1,0 +1,1153 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f0'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|Real'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='+' ty='lang|Real'>
+<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='-' ty='lang|Real'>
+<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='*' ty='lang|Real'>
+<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='/' ty='lang|Real'>
+<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='**' ty='lang|Real'>
+<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='mod' ty='lang|Real'>
+<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f1'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|Real'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='+' ty='lang|Real'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Int'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='-' ty='lang|Real'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Int'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='*' ty='lang|Real'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Int'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='/' ty='lang|Real'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Int'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='**' ty='lang|Real'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Int'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='mod' ty='lang|Real'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Int'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f2'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|Rational'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|Real'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='+' ty='lang|Real'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='-' ty='lang|Real'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='*' ty='lang|Real'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='/' ty='lang|Real'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='**' ty='lang|Real'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</type>
+<init>
+<binary op='mod' ty='lang|Real'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f3'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|Complex'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|Real'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='+' ty='lang|Complex'>
+<symbol  ty='lang|Complex'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='-' ty='lang|Complex'>
+<symbol  ty='lang|Complex'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='*' ty='lang|Complex'>
+<symbol  ty='lang|Complex'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='/' ty='lang|Complex'>
+<symbol  ty='lang|Complex'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='**' ty='lang|Complex'>
+<symbol  ty='lang|Complex'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='mod' ty='lang|Complex'>
+<symbol  ty='lang|Complex'>a</symbol>
+<symbol  ty='lang|Real'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f4'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|Real'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|Complex'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='+' ty='lang|Complex'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='-' ty='lang|Complex'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='*' ty='lang|Complex'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='/' ty='lang|Complex'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='**' ty='lang|Complex'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='mod' ty='lang|Complex'>
+<symbol  ty='lang|Real'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f5'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|Rational'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|Complex'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='+' ty='lang|Complex'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='-' ty='lang|Complex'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='*' ty='lang|Complex'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='/' ty='lang|Complex'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='**' ty='lang|Complex'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</type>
+<init>
+<binary op='mod' ty='lang|Complex'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Complex'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f6'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|Rational'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='+' ty='lang|Float32'>
+<symbol  ty='lang|Float32'>a</symbol>
+<symbol  ty='lang|Rational'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='-' ty='lang|Float32'>
+<symbol  ty='lang|Float32'>a</symbol>
+<symbol  ty='lang|Rational'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='*' ty='lang|Float32'>
+<symbol  ty='lang|Float32'>a</symbol>
+<symbol  ty='lang|Rational'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='/' ty='lang|Float32'>
+<symbol  ty='lang|Float32'>a</symbol>
+<symbol  ty='lang|Rational'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='**' ty='lang|Float32'>
+<symbol  ty='lang|Float32'>a</symbol>
+<symbol  ty='lang|Rational'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='mod' ty='lang|Float32'>
+<symbol  ty='lang|Float32'>a</symbol>
+<symbol  ty='lang|Rational'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f7'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|Rational'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|Float64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='lang|Float64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<type>
+<ty:type nm='lang|Float64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='+' ty='lang|Float64'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Float64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<type>
+<ty:type nm='lang|Float64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='-' ty='lang|Float64'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Float64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<type>
+<ty:type nm='lang|Float64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='*' ty='lang|Float64'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Float64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<type>
+<ty:type nm='lang|Float64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='/' ty='lang|Float64'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Float64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<type>
+<ty:type nm='lang|Float64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='**' ty='lang|Float64'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Float64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<type>
+<ty:type nm='lang|Float64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<binary op='mod' ty='lang|Float64'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Float64'>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Complex'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Float64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Rational'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

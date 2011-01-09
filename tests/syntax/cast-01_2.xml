@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</rettype>
+<body>
+<cast>
+<base>
+<symbol>a</symbol>
+</base>
+<as>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</as>
+</cast>
+</body>
+</func>
+</def>
+</compile-unit>

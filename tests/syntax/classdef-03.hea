@@ -1,0 +1,13 @@
+def class X(a, b) : All
+{
+  def slot x
+  def slot y
+
+  on init (self) {
+    self.x = a
+    self.y = a + b
+  }
+
+  on delete (self) {
+  }
+}

@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>a</id>
+<punct type='='/>
+<nested left='#(' right=')'>
+<lit type='int'>1</lit>
+<punct type=','/>
+<lit type='int'>2</lit>
+<punct type=','/>
+<lit type='int'>3</lit>
+<punct type=','/>
+<lit type='int'>4</lit>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>b</id>
+<punct type='='/>
+<nested left='#(' right=')'/>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>c</id>
+<punct type='='/>
+<nested left='#(' right=')'>
+<lit type='str'>hello</lit>
+<punct type=','/>
+<lit type='str'>, </lit>
+<punct type=','/>
+<lit type='str'>world</lit>
+<punct type=','/>
+<lit type='str'>!</lit>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>d</id>
+<punct type='='/>
+<nested left='#(' right=')'>
+<nested left='#(' right=')'>
+<lit type='int'>1</lit>
+<punct type=','/>
+<lit type='real'>3.141500i</lit>
+</nested>
+<punct type=','/>
+<nested left='#(' right=')'>
+<lit type='ratio'>3/4</lit>
+</nested>
+<punct type=','/>
+<nested left='#(' right=')'/>
+</nested>
+</seq>
+</seq>

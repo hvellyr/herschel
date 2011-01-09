@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<class nm='Inch'>
+<isa>
+<ty:measure nm='Inch' unit='in'>
+<ty:isa>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</isa>
+</class>
+</def>
+<def>
+<class nm='Centimer'>
+<isa>
+<ty:measure nm='Centimer' unit='cm'>
+<ty:isa>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</isa>
+</class>
+</def>
+<def>
+<class nm='Speed'>
+<isa>
+<ty:measure nm='Speed' unit='m/s'>
+<ty:isa>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</isa>
+</class>
+</def>
+<def>
+<class nm='Pixel'>
+<isa>
+<ty:measure nm='Pixel' unit='px'>
+<ty:isa>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</isa>
+</class>
+</def>
+<def>
+<vardef sym='x'>
+<init>
+<uvalue unit='in'>
+<type>
+<ty:measure nm='Inch' unit='in'>
+<ty:isa>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</type>
+<int ty='lang|Int'>12</int>
+</uvalue>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='y'>
+<init>
+<uvalue unit='cm'>
+<type>
+<ty:measure nm='Centimer' unit='cm'>
+<ty:isa>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</type>
+<real ty='lang|Real'>12.340000</real>
+</uvalue>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='z'>
+<init>
+<uvalue unit='m/s'>
+<type>
+<ty:measure nm='Speed' unit='m/s'>
+<ty:isa>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</type>
+<real ty='lang|Rational'>12/33</real>
+</uvalue>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='a'>
+<init>
+<array>
+<uvalue unit='px'>
+<type>
+<ty:measure nm='Pixel' unit='px'>
+<ty:isa>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</type>
+<int ty='lang|Int'>1</int>
+</uvalue>
+<uvalue unit='px'>
+<type>
+<ty:measure nm='Pixel' unit='px'>
+<ty:isa>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</type>
+<int ty='lang|Int'>20</int>
+</uvalue>
+</array>
+</init>
+</vardef>
+</def>
+</compile-unit>

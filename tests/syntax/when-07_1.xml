@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>config</id>
+<id>os</id>
+<punct type='='/>
+<lit type='str'>linux</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>config</id>
+<id>version-str</id>
+<punct type='='/>
+<lit type='str'>1.2.3</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>config</id>
+<id>version</id>
+<punct type='='/>
+<lit type='int'>10105</lit>
+</seq>
+<seq>
+<id>import</id>
+<lit type='str'>linux1.1.head</lit>
+</seq>
+</seq>

@@ -1,0 +1,5 @@
+-- imported file
+
+export public (*)
+
+def alias MyNumber = Int
