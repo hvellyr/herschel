@@ -26,25 +26,24 @@ heather::type::newRootScope(bool forUnitTests)
   Ptr<Scope> root = new Scope(kScopeL_CompileUnit);
   SrcPos sp;
 
-  TypeVector generics;
-
   //-------- lang|Any
   root->registerType(sp, Names::kAnyTypeName, Type::newAny(true));
 
   //-------- lang|Object
   root->registerType(sp, Names::kObjectTypeName,
-                     Type::newType(Names::kObjectTypeName, generics, Type()));
+                     Type::newType(Names::kObjectTypeName, TypeVector(), Type()));
+
 
   //-------- lang|Bool
   root->registerType(sp, Names::kBoolTypeName,
                      Type::newType(Names::kBoolTypeName,
-                                   generics,
+                                   TypeVector(),
                                    Type::newTypeRef(Names::kObjectTypeName, true)));
 
   //-------- lang|Char
   root->registerType(sp, Names::kCharTypeName,
                      Type::newType(Names::kCharTypeName,
-                                   generics,
+                                   TypeVector(),
                                    Type::newTypeRef(Names::kObjectTypeName, true)));
 
 
@@ -55,12 +54,12 @@ heather::type::newRootScope(bool forUnitTests)
     //-------- Number, Int, Real, Rational, Complex
     root->registerType(sp, Names::kNumberTypeName,
                        Type::newType(Names::kNumberTypeName,
-                                     generics,
+                                     TypeVector(),
                                      Type::newTypeRef(Names::kObjectTypeName, true)));
 
     root->registerType(sp, Names::kIntTypeName,
                        Type::newType(Names::kIntTypeName,
-                                     generics,
+                                     TypeVector(),
                                      Type::newTypeRef(Names::kNumberTypeName, true)));
   }
 
@@ -69,12 +68,12 @@ heather::type::newRootScope(bool forUnitTests)
   // String and symbols
   root->registerType(sp, Names::kStringTypeName,
                      Type::newType(Names::kStringTypeName,
-                                   generics,
+                                   TypeVector(),
                                    Type::newTypeRef(Names::kObjectTypeName, true)));
 
   root->registerType(sp, Names::kKeywordTypeName,
                      Type::newType(Names::kKeywordTypeName,
-                                   generics,
+                                   TypeVector(),
                                    Type::newTypeRef(Names::kObjectTypeName, true)));
 
 
@@ -82,17 +81,17 @@ heather::type::newRootScope(bool forUnitTests)
   // Other basic types and constants
 
   Type eofType = Type::newType(Names::kEofTypeName,
-                               generics,
+                               TypeVector(),
                                Type::newTypeRef(Names::kObjectTypeName, true));
   root->registerType(sp, Names::kEofTypeName, eofType);
 
   Type nilType = Type::newType(Names::kNilTypeName,
-                               generics,
+                               TypeVector(),
                                Type::newTypeRef(Names::kObjectTypeName, true));
   root->registerType(sp, Names::kNilTypeName, nilType);
 
   Type unspecifiedType = Type::newType(Names::kUnspecifiedTypeName,
-                                       generics,
+                                       TypeVector(),
                                        Type::newTypeRef(Names::kObjectTypeName, true));
   root->registerType(sp, Names::kUnspecifiedTypeName, unspecifiedType);
 
