@@ -144,7 +144,6 @@ namespace heather
                          const Type& inherit);
     static Type newClass(const String& name, const TypeVector& generics,
                          const Type& inherit,
-                         const FunctionSignature& defApplySign,
                          const FunctionSignatureVector& protocol);
 
     static Type newAlias(const String& name, const TypeVector& generics,
@@ -206,7 +205,6 @@ namespace heather
 
     //!@ custom types
     bool isClass() const;
-    const FunctionSignature& defaultApplySignature() const;
 
     //!@ custom types
     bool isType() const;

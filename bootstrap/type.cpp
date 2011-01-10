@@ -295,13 +295,11 @@ namespace heather
                  bool isInstantiatable,
                  const TypeVector& generics,
                  const Type& inherit,
-                 const FunctionSignature& defApplySign,
                  const FunctionSignatureVector& protocol)
       : fName(name),
         fIsInstantiatable(isInstantiatable),
         fGenerics(generics),
         fInherit(inherit),
-        fDefApplySign(defApplySign),
         fProtocol(protocol)
     { }
 
@@ -311,7 +309,6 @@ namespace heather
       return new TypeTypeImpl(fName, fIsInstantiatable,
                               vectorClone(fGenerics),
                               fInherit.clone(),
-                              fDefApplySign.clone(),
                               vectorClone(fProtocol));
     }
 
@@ -324,7 +321,6 @@ namespace heather
       return (o != NULL &&
               fName == o->fName &&
               fIsInstantiatable == o->fIsInstantiatable &&
-              fDefApplySign == o->fDefApplySign &&
               fInherit == o->fInherit &&
               heather::isEqual(fGenerics, o->fGenerics) &&
               heather::isEqual(fProtocol, o->fProtocol));
@@ -333,8 +329,7 @@ namespace heather
 
     bool isOpen() const
     {
-      return ( fInherit.isOpen() || fDefApplySign.isOpen() ||
-               !fGenerics.empty() );
+      return ( fInherit.isOpen() || !fGenerics.empty() );
     }
 
 
@@ -347,12 +342,6 @@ namespace heather
     const Type& inherit() const
     {
       return fInherit;
-    }
-
-
-    const FunctionSignature& defaultApplySignature() const
-    {
-      return fDefApplySign;
     }
 
 
@@ -382,7 +371,6 @@ namespace heather
         }
       }
       fInherit = fInherit.replaceGenerics(typeMap);
-      fDefApplySign.replaceGenerics(typeMap);
 
       for (size_t i = 0; i < fProtocol.size(); ++i) {
         fProtocol[i].replaceGenerics(typeMap);
@@ -404,9 +392,6 @@ namespace heather
           buf << fGenerics[i].toString();
         buf << "</ty:gen>\n";
       }
-
-      if (fIsInstantiatable)
-        buf << "<ty:apply>\n" << fDefApplySign.toString() << "</ty:apply>\n";
 
       if (!fProtocol.empty()) {
         buf << "<ty:proto>\n";
@@ -445,7 +430,6 @@ namespace heather
     bool                    fIsInstantiatable;
     TypeVector              fGenerics;
     Type                    fInherit;
-    FunctionSignature       fDefApplySign;
     FunctionSignatureVector fProtocol;
   };
 
@@ -1073,10 +1057,8 @@ Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit)
 {
   FunctionSignatureVector dummyProtocol;
-  FunctionSignature       dummyDefApplySign;
   return Type(kType_Type, true, false,
               new TypeTypeImpl(name, false, generics, inherit,
-                               dummyDefApplySign,
                                dummyProtocol));
 }
 
@@ -1086,10 +1068,8 @@ Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit,
               const FunctionSignatureVector& protocol)
 {
-  FunctionSignature dummyDefApplySign;
   return Type(kType_Type, true, false,
               new TypeTypeImpl(name, false, generics, inherit,
-                               dummyDefApplySign,
                                protocol));
 }
 
@@ -1099,10 +1079,8 @@ Type::newClass(const String& name, const TypeVector& generics,
                const Type& inherit)
 {
   FunctionSignatureVector dummyProtocol;
-  FunctionSignature       dummyDefApplySign;
   return Type(kType_Class, true, false,
               new TypeTypeImpl(name, true, generics, inherit,
-                               dummyDefApplySign,
                                dummyProtocol));
 }
 
@@ -1110,12 +1088,10 @@ Type::newClass(const String& name, const TypeVector& generics,
 Type
 Type::newClass(const String& name, const TypeVector& generics,
                const Type& inherit,
-               const FunctionSignature& defApplySign,
                const FunctionSignatureVector& protocol)
 {
   return Type(kType_Class, true, false,
               new TypeTypeImpl(name, true, generics, inherit,
-                               defApplySign,
                                protocol));
 }
 
@@ -1593,14 +1569,6 @@ bool
 Type::isClass() const
 {
   return fKind == kType_Class;
-}
-
-
-const FunctionSignature&
-Type::defaultApplySignature() const
-{
-  assert(isClass());
-  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->defaultApplySignature();
 }
 
 
