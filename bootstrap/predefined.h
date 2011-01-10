@@ -57,6 +57,7 @@ namespace heather
 #define MID_CharTypeName        "lang|Char"
 
 #define MID_ObjectTypeName      "lang|Object"
+#define MID_ClassTypeName       "lang|Class"
 
 #define MID_NumberTypeName      "lang|Number"
 #define MID_ComplexTypeName     "lang|Complex"
@@ -117,6 +118,7 @@ namespace heather
     const static String kCharTypeName;
 
     const static String kObjectTypeName;
+    const static String kClassTypeName;
 
     const static String kNumberTypeName;
     const static String kComplexTypeName;

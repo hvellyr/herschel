@@ -20,6 +20,7 @@ const String heather::Names::kBoolTypeName        = String(MID_BoolTypeName);
 const String heather::Names::kCharTypeName        = String(MID_CharTypeName);
 
 const String heather::Names::kObjectTypeName      = String(MID_ObjectTypeName);
+const String heather::Names::kClassTypeName       = String(MID_ClassTypeName);
 
 const String heather::Names::kNumberTypeName      = String(MID_NumberTypeName);
 const String heather::Names::kComplexTypeName     = String(MID_ComplexTypeName);

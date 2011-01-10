@@ -925,6 +925,15 @@ Type::newTypeRef(const String& name, const TypeVector& genericArgs,
 
 
 Type
+Type::newTypeRef(const String& name, const TypeVector& genericArgs,
+                 bool isValue)
+{
+  return Type(kType_Ref, isValue, false,
+              new TypeRefTypeImpl(name, false, genericArgs, TypeConstVector()));
+}
+
+
+Type
 Type::newTypeRef(const String& name, bool isValue)
 {
   TypeVector dummyGenerics;
@@ -974,6 +983,13 @@ Type::newTypeRef(const String& name, const Type& old)
                                   dynamic_cast<const TypeRefTypeImpl*>(old.fImpl.obj())->isOpenSelf(),
                                   old.generics(),
                                   old.constraints()));
+}
+
+
+Type
+Type::newClassOf(const Type& type, bool isValue)
+{
+  return newTypeRef(Names::kClassTypeName, newTypeVector(type), isValue);
 }
 
 
@@ -1422,6 +1438,13 @@ Type::isAnyUInt() const
            isBuiltinType(Names::kUInt16TypeName) ||
            isBuiltinType(Names::kUInt32TypeName) ||
            isBuiltinType(Names::kUInt64TypeName) );
+}
+
+
+bool
+Type::isClassOf() const
+{
+  return isBuiltinType(Names::kClassTypeName);
 }
 
 

@@ -104,6 +104,8 @@ namespace heather
     static Type newTypeRef(const String& name, const TypeVector& genericArgs,
                            const TypeConstVector& constraints,
                            bool isValue);
+    static Type newTypeRef(const String& name, const TypeVector& genericArgs,
+                           bool isValue);
     static Type newTypeRef(const String& name, bool isValue);
     static Type newTypeRef(const char* name, bool isValue = true);
     static Type newTypeRef(const String& name, bool isOpen,
@@ -112,6 +114,9 @@ namespace heather
 
     //! rewrite \p old to a new typeref with name.
     static Type newTypeRef(const String& name, const Type& old);
+
+    //! creates a lang|Class<type>
+    static Type newClassOf(const Type& type, bool isValue = true);
 
     static Type newArray(const Type& base, int sizeIndicator, bool isValue);
 
@@ -191,6 +196,8 @@ namespace heather
     bool isKeyword() const;
 
     bool isAnyNumber() const;
+
+    bool isClassOf() const;
 
     bool isImaginary() const;
     void setIsImaginary(bool value);
