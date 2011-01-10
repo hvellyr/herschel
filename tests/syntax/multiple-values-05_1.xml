@@ -105,7 +105,7 @@
 <nested left='(' right=')'>
 <id>__value_0</id>
 <punct type=','/>
-<lit type='int'>0</lit>
+<lit type='uint'>0</lit>
 </nested>
 </seq>
 </seq>
@@ -118,7 +118,7 @@
 <nested left='(' right=')'>
 <id>__value_0</id>
 <punct type=','/>
-<lit type='int'>1</lit>
+<lit type='uint'>1</lit>
 </nested>
 </seq>
 </seq>
@@ -131,7 +131,7 @@
 <nested left='(' right=')'>
 <id>__value_0</id>
 <punct type=','/>
-<lit type='int'>2</lit>
+<lit type='uint'>2</lit>
 </nested>
 </seq>
 </seq>
@@ -193,7 +193,7 @@
 <nested left='(' right=')'>
 <id>__value_1</id>
 <punct type=','/>
-<lit type='int'>0</lit>
+<lit type='uint'>0</lit>
 </nested>
 </seq>
 </seq>
@@ -205,7 +205,7 @@
 <nested left='(' right=')'>
 <id>__value_1</id>
 <punct type=','/>
-<lit type='int'>1</lit>
+<lit type='uint'>1</lit>
 </nested>
 </seq>
 </seq>
@@ -217,7 +217,7 @@
 <nested left='(' right=')'>
 <id>__value_1</id>
 <punct type=','/>
-<lit type='int'>2</lit>
+<lit type='uint'>2</lit>
 </nested>
 </seq>
 </seq>
@@ -254,7 +254,7 @@
 <nested left='(' right=')'>
 <id>__value_2</id>
 <punct type=','/>
-<lit type='int'>0</lit>
+<lit type='uint'>0</lit>
 </nested>
 </seq>
 </seq>
@@ -266,7 +266,7 @@
 <nested left='(' right=')'>
 <id>__value_2</id>
 <punct type=','/>
-<lit type='int'>1</lit>
+<lit type='uint'>1</lit>
 </nested>
 </seq>
 </seq>
@@ -278,7 +278,7 @@
 <nested left='(' right=')'>
 <id>__value_2</id>
 <punct type=','/>
-<lit type='int'>2</lit>
+<lit type='uint'>2</lit>
 </nested>
 </seq>
 </seq>
@@ -309,7 +309,7 @@
 <nested left='(' right=')'>
 <id>__value_3</id>
 <punct type=','/>
-<lit type='int'>0</lit>
+<lit type='uint'>0</lit>
 </nested>
 </seq>
 </seq>
@@ -321,7 +321,7 @@
 <nested left='(' right=')'>
 <id>__value_3</id>
 <punct type=','/>
-<lit type='int'>1</lit>
+<lit type='uint'>1</lit>
 </nested>
 </seq>
 </seq>
@@ -333,7 +333,7 @@
 <nested left='(' right=')'>
 <id>__value_3</id>
 <punct type=','/>
-<lit type='int'>2</lit>
+<lit type='uint'>2</lit>
 </nested>
 </seq>
 </seq>
@@ -364,7 +364,7 @@
 <nested left='(' right=')'>
 <id>__value_4</id>
 <punct type=','/>
-<lit type='int'>0</lit>
+<lit type='uint'>0</lit>
 </nested>
 </seq>
 </seq>
@@ -376,7 +376,7 @@
 <nested left='(' right=')'>
 <id>__value_4</id>
 <punct type=','/>
-<lit type='int'>1</lit>
+<lit type='uint'>1</lit>
 </nested>
 </seq>
 </seq>
@@ -388,7 +388,7 @@
 <nested left='(' right=')'>
 <id>__value_4</id>
 <punct type=','/>
-<lit type='int'>2</lit>
+<lit type='uint'>2</lit>
 </nested>
 </seq>
 </seq>
@@ -399,3 +399,4 @@
 </nested>
 </seq>
 </seq>
+

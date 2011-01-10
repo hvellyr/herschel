@@ -109,7 +109,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Ordinal'>0</int>
 </args>
 </apply>
 </init>
@@ -122,7 +122,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Ordinal'>1</int>
 </args>
 </apply>
 </init>
@@ -135,7 +135,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Ordinal'>2</int>
 </args>
 </apply>
 </init>
@@ -206,7 +206,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_1</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Ordinal'>0</int>
 </args>
 </apply>
 </assign>
@@ -216,7 +216,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_1</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Ordinal'>1</int>
 </args>
 </apply>
 </assign>
@@ -226,7 +226,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_1</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Ordinal'>2</int>
 </args>
 </apply>
 </assign>
@@ -271,7 +271,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_2</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Ordinal'>0</int>
 </args>
 </apply>
 </assign>
@@ -281,7 +281,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_2</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Ordinal'>1</int>
 </args>
 </apply>
 </assign>
@@ -291,7 +291,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_2</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Ordinal'>2</int>
 </args>
 </apply>
 </assign>
@@ -321,7 +321,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_3</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Ordinal'>0</int>
 </args>
 </apply>
 </assign>
@@ -331,7 +331,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_3</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Ordinal'>1</int>
 </args>
 </apply>
 </assign>
@@ -341,7 +341,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_3</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Ordinal'>2</int>
 </args>
 </apply>
 </assign>
@@ -371,7 +371,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_4</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Ordinal'>0</int>
 </args>
 </apply>
 </assign>
@@ -381,7 +381,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_4</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Ordinal'>1</int>
 </args>
 </apply>
 </assign>
@@ -391,7 +391,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_4</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Ordinal'>2</int>
 </args>
 </apply>
 </assign>
