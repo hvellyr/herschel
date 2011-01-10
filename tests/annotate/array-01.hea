@@ -1,5 +1,5 @@
 def g()
-  let x : Int[] = Int[](1024)
+  let x : Int[] = Int[](1024u)
   let y : Int[12]
   x[34]
 

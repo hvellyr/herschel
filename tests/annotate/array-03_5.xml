@@ -13,31 +13,6 @@
 <body>
 <block>
 <let>
-<vardef sym='x'>
-<type>
-<ty:array ind='0'>
-<ty:array ind='0'>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:array>
-</ty:array>
-</type>
-<init>
-<apply  ty='lang|Int[][]'>
-<symbol  ty='lang|Int[][]' array='t*2'>lang|Int</symbol>
-<args>
-<int ty='lang|Int'>1024</int>
-<int ty='lang|Int'>768</int>
-</args>
-</apply>
-</init>
-</vardef>
-</let>
-<let>
 <vardef sym='y'>
 <type>
 <ty:array ind='12'>
@@ -59,7 +34,7 @@
 <apply  ty='lang|Int[]'>
 <symbol>lang|slice</symbol>
 <args>
-<symbol  ty='lang|Int[][]'>x</symbol>
+<symbol  ty='lang|Int[][]'>y</symbol>
 <int ty='lang|Int'>34</int>
 </args>
 </apply>
@@ -80,7 +55,7 @@
 </ty:type>
 </ty:used-type>
 <ty:used-type>
-<ty:array ind='0'>
+<ty:array ind='5'>
 <ty:type nm='lang|Int'>
 <ty:isa>
 <ty:ref nm='lang|Number'>
@@ -90,8 +65,8 @@
 </ty:array>
 </ty:used-type>
 <ty:used-type>
-<ty:array ind='0'>
-<ty:array ind='0'>
+<ty:array ind='12'>
+<ty:array ind='5'>
 <ty:type nm='lang|Int'>
 <ty:isa>
 <ty:ref nm='lang|Number'>
