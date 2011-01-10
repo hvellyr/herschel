@@ -151,6 +151,7 @@ namespace heather
     kChar,
     kBool,
     kInt,
+    kUInt,
     kReal,
     kRational,
     kKeyword,

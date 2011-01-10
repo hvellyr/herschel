@@ -118,6 +118,7 @@ namespace heather
     static Type newAny(bool isValue = true);
 
     static Type newInt(bool isValue = true);
+    static Type newOrdinal(bool isValue = true);
     static Type newImaginaryInt(bool isValue = true);
     static Type newRational(bool isValue = true);
     static Type newReal(bool isValue = true);

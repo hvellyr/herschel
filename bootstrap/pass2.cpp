@@ -1922,7 +1922,7 @@ SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
   newObjAllocExpr->appendNode(new SymbolNode(expr.srcpos(), initName));
   //--- columns (depth)
   newObjAllocExpr->appendNode(new IntNode(expr.srcpos(),
-                                          arrayDepth, false, Type::newInt()));
+                                          arrayDepth, false, Type::newOrdinal()));
   //-- rows (number) + additional rest args
   newObjAllocExpr->appendNodes(args);
 
@@ -2875,6 +2875,7 @@ SecondPass::parseSeq(const Token& expr)
     if (expr[0].isNumber() && expr[1] == kColon) {
       switch (expr[0].tokenType()) {
       case kInt:
+      case kUInt:
         return newNodeList(parseIntNumber(expr));
       case kRational:
         return newNodeList(parseRationalNumber(expr));
@@ -3075,6 +3076,12 @@ SecondPass::parseIntNumber(const Token& expr)
     return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
                        type);
   }
+  else if (expr.tokenType() == kUInt) {
+    Type type = Type::newOrdinal();
+    type.setIsImaginary(expr.isImaginary());
+    return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
+                       type);
+  }
   else if (expr.isSeq() && expr.count() == 3 &&
            expr[0].isNumber() &&
            expr[1] == kColon)
@@ -3162,6 +3169,7 @@ SecondPass::parseExpr(const Token& expr)
     case kBool:
       return newNodeList(new BoolNode(expr.srcpos(), expr.boolValue()));
     case kInt:
+    case kUInt:
       return newNodeList(parseIntNumber(expr));
     case kRational:
       return newNodeList(parseRationalNumber(expr));

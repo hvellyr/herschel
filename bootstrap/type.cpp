@@ -1000,6 +1000,13 @@ Type::newInt(bool isValue)
 
 
 Type
+Type::newOrdinal(bool isValue)
+{
+  return newTypeRef(Names::kOrdinalTypeName, isValue);
+}
+
+
+Type
 Type::newImaginaryInt(bool isValue)
 {
   Type ty = newTypeRef(Names::kIntTypeName, isValue);

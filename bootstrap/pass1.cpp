@@ -2000,6 +2000,7 @@ FirstPass::parseAtomicExpr()
 {
   switch (fToken.tokenType()) {
   case kInt:
+  case kUInt:
   case kReal:
   case kRational:
     return parseExplicitTypedNumber(parseUnitNumber(fToken));
@@ -2110,7 +2111,7 @@ FirstPass::makeAssignToken(const TokenVector& exprs, const Token& expr2,
                                 << ( Token(op1Srcpos, kParanOpen, kParanClose)
                                      << tempSymToken
                                      << Token(op1Srcpos, kComma)
-                                     << Token(op1Srcpos, kInt, (int)i) );
+                                     << Token(op1Srcpos, kUInt, (int)i) );
       Token retv;
       if (expr.isSymFuncall()) {
         // rename the function call in expr to name! and append expr2 as last
@@ -2808,7 +2809,7 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
                   << ( Token(vardefSym.srcpos(), kParanOpen, kParanClose)
                        << initValueSym
                        << Token(vardefSym.srcpos(), kComma)
-                       << Token(initExpr.srcpos(), kInt, (int)i) );
+                       << Token(initExpr.srcpos(), kUInt, (int)i) );
     }
     else
       effInitExpr = initExpr;
@@ -2873,17 +2874,17 @@ FirstPass::parseCharDef(const Token& defToken)
   Token codePointToken = fToken;
   int codePoint = 0xffff;
 
-  if (fToken != kInt) {
+  if (fToken != kInt && fToken != kUInt) {
     errorf(fToken.srcpos(), E_DefInitUnexpToken,
            "expected INTEGER");
-    codePointToken = Token(fToken.srcpos(), kInt, 0xffff);
+    codePointToken = Token(fToken.srcpos(), kUInt, 0xffff);
   }
   else {
     codePoint = fToken.intValue();
     if (codePoint < 0 || codePoint > 0x10FFFF) {
       errorf(fToken.srcpos(), E_BadCharValue, "invalid expected INTEGER");
 
-      codePointToken = Token(fToken.srcpos(), kInt, 0xffff);
+      codePointToken = Token(fToken.srcpos(), kUInt, 0xffff);
       codePoint = 0xffff;
     }
     nextToken();
@@ -2891,7 +2892,7 @@ FirstPass::parseCharDef(const Token& defToken)
 
   if (fEvaluateExprs) {
     fCompiler->charRegistry()->registerValue(charNameToken.idValue(),
-                                           codePoint);
+                                             codePoint);
     return Token();
   }
   else {

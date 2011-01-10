@@ -526,37 +526,44 @@ octal writing.  To distinguish a corresponding letter is @emph{appended}
 to the number:
 
 @example
-100                            -- decimal
-100h                           -- hexadecimal
-100y                           -- binary
-100t                           -- octal
+100                     -- decimal
+100h                    -- hexadecimal
+100y                    -- binary
+100t                    -- octal
 @end example
 
 More complex notations exist for complex and rational numbers:
 
 @example
-1234                           -- precise integer
-123.4                          -- precise real
-12/34                          -- precise rational
-12 + 34i                       -- precise complex
-12.3+34j                       -- precise complex
-1.23e-45                       -- precise integer (exp.@ not.)
+1234                    -- precise integer
+123.4                   -- precise real
+12/34                   -- precise rational
+12 + 34i                -- precise complex
+12.3+34j                -- precise complex
+1.23e-45                -- precise integer (exp.@ not.)
+@end example
+
+Integer numbers can be notated as unsigned by appending an @code{u}:
+
+@example
+1234u
+0ffhu                   -- unsigned integer, hexadecimal notation
 @end example
 
 To give a specific type for approximate numbers the constant itself can
 be typed:
 
 @example
-123 : UInt8                    -- (approx) octet
-123 : Int16                    -- (approx) signed short
-123 : UInt16                   -- (approx) unsigned short
-123 : Int32                    -- (approx) word
-123 : UInt32                   -- (approx) unsigned word
-123 : Int64                    -- (approx) long
-123 : UInt64                   -- (approx) unsigned long
-123.4 : Float32                -- (approx) ieee754 float
-123.4 : Float64                -- (approx) ieee754 double
-123.4 : Float128               -- (approx) ieee754 long double
+123 : UInt8             -- (approx) octet
+123 : Int16             -- (approx) signed short
+123 : UInt16            -- (approx) unsigned short
+123 : Int32             -- (approx) word
+123 : UInt32            -- (approx) unsigned word
+123 : Int64             -- (approx) long
+123 : UInt64            -- (approx) unsigned long
+123.4 : Float32         -- (approx) ieee754 float
+123.4 : Float64         -- (approx) ieee754 double
+123.4 : Float128        -- (approx) ieee754 long double
 @end example
 
 It is an error to specify a non-matching type to a numerical constant.
