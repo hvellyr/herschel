@@ -75,7 +75,7 @@ heather::xml::displayEmptyTagAttrs(Port<Octet>* port,
                                    const char* tagName, const char* attrs)
 {
   if (tagName != NULL && ::strlen(tagName) > 0)
-    heather::display(port, String() + "<" + tagName + attrs + "/>\n");
+    heather::display(port, String() + "<" + tagName + " " + attrs + "/>\n");
 }
 
 

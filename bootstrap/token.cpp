@@ -241,22 +241,22 @@ namespace heather
     {
       switch (fType) {
       case kChar:
-        xml::displayTagAttr(port, "lit", " type='char'", toString());
+        xml::displayTagAttr(port, "lit", "type='char'", toString());
         break;
       case kBool:
-        xml::displayTagAttr(port, "lit", " type='bool'", toString());
+        xml::displayTagAttr(port, "lit", "type='bool'", toString());
         break;
       case kInt:
-        xml::displayTagAttr(port, "lit", " type='int'", toString());
+        xml::displayTagAttr(port, "lit", "type='int'", toString());
         break;
       case kUInt:
-        xml::displayTagAttr(port, "lit", " type='uint'", toString());
+        xml::displayTagAttr(port, "lit", "type='uint'", toString());
         break;
       case kReal:
-        xml::displayTagAttr(port, "lit", " type='real'", toString());
+        xml::displayTagAttr(port, "lit", "type='real'", toString());
         break;
       case kRational:
-        xml::displayTagAttr(port, "lit", " type='ratio'", toString());
+        xml::displayTagAttr(port, "lit", "type='ratio'", toString());
         break;
 
       default:
@@ -343,13 +343,13 @@ namespace heather
     {
       switch (fType) {
       case kString:
-        xml::displayTagAttr(port, "lit", " type='str'", fStrValue);
+        xml::displayTagAttr(port, "lit", "type='str'", fStrValue);
         break;
       case kDocString:
-        xml::displayTagAttr(port, "lit", " type='docstr'", fStrValue);
+        xml::displayTagAttr(port, "lit", "type='docstr'", fStrValue);
         break;
       case kKeyword:
-        xml::displayTagAttr(port, "lit", " type='keyw'", toString());
+        xml::displayTagAttr(port, "lit", "type='keyw'", toString());
         break;
       default:
         assert(0);
@@ -471,7 +471,7 @@ namespace heather
     virtual void toPort(Port<Octet>* port) const
     {
       StringBuffer attrs;
-      attrs << " left='" << xmlEncode(tokenTypeToString(fLeft)) << "'"
+      attrs << "left='" << xmlEncode(tokenTypeToString(fLeft)) << "'"
             << " right='" << xmlEncode(tokenTypeToString(fRight)) << "'";
 
       if (!fChildren.empty()) {
@@ -1507,7 +1507,7 @@ Token::toPort(Port<Octet>* port) const
 
   case kPunct:
     xml::displayEmptyTagAttrs(port, "punct",
-                              StrHelper(String(" type='") +
+                              StrHelper(String("type='") +
                                         xmlEncode(tokenTypeToString(fType)) + "'"));
     break;
   }
