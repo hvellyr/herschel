@@ -6,7 +6,7 @@ Documentation
 
   - rewrite exporting, visibility, and importing section
 
-  - Mention explicitely: no coercing.  Where?
+  - Mention explicitely: coercing.  Where? 
 
   - Write assignment section.
 
@@ -16,6 +16,9 @@ Documentation
 
 
 Bootstrap compiler
+
+  - A reference to a class/type 'Abc' where 'normal' symbols are expected must be
+    of type Class<Abc>
 
   - get rid of nested functions
     - detect closure variable access
@@ -43,29 +46,23 @@ Bootstrap compiler
 
   - continue with pexpreval (add the missing operators)
 
-  - types for count variables in for loop
-
   - docstrings in pass2 -> extracted documentation
 
 
 Language and ideas:
+
+  - drop the public id from module specs
+
+  - drop the rename facility from the import statement.
+
+  - review fluids.  Do we really need them?  They clash unhealthily with
+    threading.
 
   - clearify: do we support multiple functions with the same base name but
     different parameter counts?
 
       def generic init(a @ Int) ...
       def generic init(a @ Int, b @ String) ...
-
-    If we define ctors to be essentials calls to the class/apply functions,
-    we definitely have to (each class than has an apply function).
-
-    If we don't support this, some ideas for ctors:
-
-      def class Ixwick { }
-      def ctor Ixwick(cl @ Class<Ixwick>)
-
-    Eek, review the complete ctor/apply/init thing again.
-
 
   - how to specify class functions (or static functions)
 
@@ -87,13 +84,11 @@ Language and ideas:
 
       def slot x ; class
 
-
   - write up about module/interface.  Review import, export, module, etc.
     See CHANGES.
 
   - notation for classes and types.  This is required if you need to pass a
-    first-class class into a function.
-
+    first-class class into a function.  (Isn't this Class<'T> ?)
 
   - Group export for enum values.  Export an enum type automatically
     exports its defined value items:
@@ -107,10 +102,8 @@ Language and ideas:
 
       export public (X a b c d)
 
-
-
   - structs ?  Contrary to classes do not support inheritance, but provide
-    fixed (and controlled) layout.
+    fixed, controlled, and fast slot layout.
 
   - Think about non-gc objects.
 
@@ -131,13 +124,7 @@ Language and ideas:
           no-raise
           reify ....
 
-    to document that a function does not let exceptions through.
+    to document that a function does not pass exceptions.
 
-  - Embedding of C/C++ fragments.  Like this:
-
-    extern ("C") {
-      void foo();
-      int bar(int argc, char** argv);
-    }
 
 
