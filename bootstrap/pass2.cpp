@@ -1898,11 +1898,14 @@ SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
   String initName;
   Type type;
   if (const SymbolNode* sym = dynamic_cast<const SymbolNode*>(rootType)) {
-    initName = sym->name() + "|init";
+    type = fScope->lookupType(sym->name(), true);
+    if (!type.isDef()) {
+      errorf(sym->srcpos(), E_UndefinedType, "unknown type");
+      return NULL;
+    }
   }
   else if (const TypeNode* ty = dynamic_cast<const TypeNode*>(rootType)) {
     type = ty->type();
-    initName = type.typeName() + "|init";
   }
   else if (rootType) {
     fprintf(stderr, "Unexpected type node: %p %s\n", rootType, typeid(*rootType).name());
@@ -1910,16 +1913,44 @@ SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
     return NULL;
   }
 
+  if (type.isAnyInt() ||
+      type.isAnyReal() ||
+      type.isChar() ||
+      type.isBool() ||
+      type.isComplex() ||
+      type.isString() ||
+      type.isKeyword() ||
+      type.isRational()) {
+  }
+  else
+    initName = type.typeName() + "|init";
+
 
   NodeList args = parseFunCallArgs(expr[1].children());
-
 
   //--------
   Ptr<ApplyNode> newObjAllocExpr = new ApplyNode(expr.srcpos(),
                                                  new SymbolNode(expr.srcpos(),
                                                                 Names::kLangAllocateArray));
   newObjAllocExpr->appendNode(rootType->clone());
-  newObjAllocExpr->appendNode(new SymbolNode(expr.srcpos(), initName));
+  if (initName.isEmpty()) {
+    String newParamSym = uniqueName("self");
+    String newParamSym2 = uniqueName("rest");
+
+    newObjAllocExpr->appendNode(//new SymbolNode(expr.srcpos(),
+                                //String("lang|identity-init")));
+      new FunctionNode(expr.srcpos(),
+                       newNodeList(new ParamNode(expr.srcpos(), String(),
+                                                 newParamSym, kPosArg, type, NULL),
+                                   new ParamNode(expr.srcpos(), String(),
+                                                 newParamSym2, kRestArg, type, NULL)),
+                       type,
+                       new SymbolNode(expr.srcpos(), newParamSym)));
+  }
+  else {
+    newObjAllocExpr->appendNode(new SymbolNode(expr.srcpos(), initName));
+  }
+
   //--- columns (depth)
   newObjAllocExpr->appendNode(new IntNode(expr.srcpos(),
                                           arrayDepth, false, Type::newOrdinal()));
@@ -1990,10 +2021,12 @@ SecondPass::parseFunCall(const Token& expr)
   assert(expr[1].rightToken() == kParanClose);
 
   Ptr<AptNode> first = singletonNodeListOrNull(parseExpr(expr[0]));
-  if (dynamic_cast<ArrayTypeNode*>(first.obj()) != NULL)
+  if (dynamic_cast<ArrayTypeNode*>(first.obj()) != NULL) {
     return generateArrayAlloc(expr, first);
-  else if (dynamic_cast<TypeNode*>(first.obj()) != NULL)
+  }
+  else if (dynamic_cast<TypeNode*>(first.obj()) != NULL) {
     return generateAlloc(expr, dynamic_cast<TypeNode*>(first.obj())->type());
+  }
   else {
     SymbolNode* symNode = dynamic_cast<SymbolNode*>(first.obj());
     if (symNode != NULL) {
