@@ -25,7 +25,6 @@
 #include "tokenizer.h"
 #include "transform.h"
 #include "typify.h"
-#include "xmlout.h"
 
 using namespace heather;
 
