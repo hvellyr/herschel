@@ -67,6 +67,7 @@ const String heather::Names::kLangSliceX      = String(MID_lang_sliceX);
 const String heather::Names::kLangUnspecified = String(MID_lang_unspecified);
 const String heather::Names::kLangAllocate    = String(MID_lang_allocate);
 const String heather::Names::kLangAllocateArray = String(MID_lang_allocate_array);
+const String heather::Names::kLangNil         = String(MID_lang_nil);
 
 const String heather::Names::kExitKeyword = String(MID_exitKeyword);
 const String heather::Names::kSignalKeyword = String(MID_signalKeyword);
