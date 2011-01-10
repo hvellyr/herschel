@@ -9,27 +9,6 @@
 <body>
 <block>
 <let>
-<vardef sym='x'>
-<type>
-<ty:array ind='0'>
-<ty:array ind='0'>
-<ty:ref nm='lang|Int'>
-</ty:ref>
-</ty:array>
-</ty:array>
-</type>
-<init>
-<apply>
-<symbol array='t*2'>Int</symbol>
-<args>
-<int ty='lang|Int'>1024</int>
-<int ty='lang|Int'>768</int>
-</args>
-</apply>
-</init>
-</vardef>
-</let>
-<let>
 <vardef sym='y'>
 <type>
 <ty:array ind='12'>
@@ -47,7 +26,7 @@
 <apply>
 <symbol>slice</symbol>
 <args>
-<symbol>x</symbol>
+<symbol>y</symbol>
 <int ty='lang|Int'>34</int>
 </args>
 </apply>

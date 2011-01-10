@@ -3,7 +3,7 @@
 <seq>
 <id>def</id>
 <id>foo</id>
-<nested left='(' right=')'>
+<nested  left='(' right=')'>
 <seq>
 <id>a</id>
 <punct type='@'/>
@@ -32,10 +32,10 @@
 <punct type='='/>
 <seq>
 <id>null-value</id>
-<nested left='(' right=')'>
+<nested  left='(' right=')'>
 <seq>
-<id>class</id>
-<nested left='&lt;' right='>'>
+<id>Class</id>
+<nested  left='&lt;' right='>'>
 <seq>
 <punct type='&apos;'/>
 <id>T</id>
@@ -54,7 +54,7 @@
 </seq>
 <nested left='[' right=']'/>
 </seq>
-<nested left='{' right='}'>
+<nested  left='{' right='}'>
 <seq>
 <id>let</id>
 <id>t</id>
@@ -67,14 +67,14 @@
 </seq>
 <nested left='[' right=']'/>
 </seq>
-<nested left='(' right=')'>
+<nested  left='(' right=')'>
 <id>new-size</id>
 </nested>
 </seq>
 </seq>
 <seq>
 <id>init</id>
-<nested left='(' right=')'>
+<nested  left='(' right=')'>
 <id>t</id>
 <punct type=','/>
 <id>init-value</id>
@@ -84,3 +84,4 @@
 </nested>
 </seq>
 </seq>
+
