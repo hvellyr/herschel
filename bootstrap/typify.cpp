@@ -100,7 +100,7 @@ Typifier::typify(SymbolNode* node)
     Type type0 = node->scope()->lookupType(node->name(), true);
     Type type1 = degeneralizeType(node->srcpos(), type0, node->generics());
     if (type1.isDef())
-      node->setType(type1);
+      node->setType(Type::newClassOf(type1));
   }
 }
 
@@ -114,11 +114,12 @@ Typifier::typify(ArrayTypeNode* node)
     SymbolNode* symnd = dynamic_cast<SymbolNode*>(node->typeNode());
     if (symnd != NULL) {
       // TODO: shouldn't this be Class<some-type> ?
-      node->setType(Type::newArray(symnd->type(), 0, true));
+      node->setType(Type::newClassOf(Type::newArray(symnd->type(), 0, true)));
     }
     else {
       // TODO: shouldn't this be Class<some-type> ?
-      node->setType(Type::newArray(node->typeNode()->type(), 0, true));
+      node->setType(Type::newClassOf(Type::newArray(node->typeNode()->type(),
+                                                    0, true)));
     }
   }
 }
@@ -130,7 +131,7 @@ Typifier::typify(TypeNode* node)
   if (fPhase == kTypify) {
     assert(node->type().isDef());
     // TODO: shouldn't this be Class<some-type> ?
-    // node->setType(node->type());
+    node->setType(Type::newClassOf(node->type()));
   }
 }
 
@@ -789,7 +790,7 @@ Typifier::typify(BinaryNode* node)
 
     case kOpIsa:
       // TODO: the right side must be Any or Class<T>
-      if (rightty.isAny()) {
+      if (rightty.isAny() || rightty.isClassOf()) {
         node->setType(Type::newBool());
         return;
       }
