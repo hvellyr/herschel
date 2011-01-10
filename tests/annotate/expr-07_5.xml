@@ -291,6 +291,20 @@
 <body>
 <block>
 <let>
+<vardef sym='t0'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<binary op='isa' ty='lang|Bool'>
+<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Class&lt;lang|Int>'>lang|Int</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
 <vardef sym='t1'>
 <type>
 <ty:ref nm='lang|Bool'>
@@ -397,6 +411,18 @@
 </ty:used-type>
 <ty:used-type>
 <ty:ref nm='lang|Rational'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
 </ty:ref>
 </ty:used-type>
 </ty:node-types>

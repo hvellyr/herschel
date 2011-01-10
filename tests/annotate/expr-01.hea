@@ -29,7 +29,7 @@ def f3(a, b)
   let t4 = a >> b
 
 def f4(a, b)
---  let t0 = a isa Int
+  let t0 = a isa Int
   let t1 = a isa b
 
 def f5(a, b)

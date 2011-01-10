@@ -1,20 +1,41 @@
 <?xml version='1.0' encoding='utf-8'?>
 <compile-unit xmlns:ty='http://heather.eyestep.org/types'>
 <def>
-<func sym='g'>
-<rettype>
-<ty:ref ref='t' nm='lang|Sliceable!'>
-<ty:gen>
-<ty:ref nm='lang|Int'>
-</ty:ref>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
+<class nm='abc|Person'>
+<isa>
+<ty:type nm='abc|Person' inst='t'>
 </ty:type>
-</ty:gen>
-</ty:ref>
+</isa>
+</class>
+</def>
+<def>
+<func sym='abc|Person|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<symbol  ty='abc|Person'>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='abc|foo'>
+<rettype>
+<ty:array ind='0'>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:array>
 </rettype>
 <body>
 <block>
@@ -22,111 +43,70 @@
 <vardef sym='x'>
 <type>
 <ty:array ind='0'>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
+<ty:type nm='abc|Person' inst='t'>
 </ty:type>
 </ty:array>
 </type>
 <init>
-<apply  ty='lang|Int[]'>
+<apply  ty='abc|Person[]'>
 <symbol  ty='lambda(lang|Class&lt;&apos;T>, lambda(&apos;T, lang|Any):&apos;T, lang|Ordinal, lang|Ordinal, lang|Any):&apos;T[]'>lang|allocate*</symbol>
 <args>
-<symbol  ty='lang|Class&lt;lang|Int>'>lang|Int</symbol>
-<function>
-<params>
-<param sym='__self_0' type='pos'>
-<type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</type>
-</param>
-<param sym='__rest_1' type='rest'>
-<type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</type>
-</param>
-</params>
-<rettype>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</rettype>
-<body>
-<symbol  ty='lang|Int'>__self_0</symbol>
-</body>
-</function>
+<symbol  ty='lang|Class&lt;abc|Person>'>abc|Person</symbol>
+<symbol  ty='lambda(abc|Person):abc|Person'>abc|Person|init</symbol>
 <int ty='lang|Ordinal'>1</int>
-<int ty='lang|Ordinal'>10</int>
+<int ty='lang|Ordinal'>12</int>
 </args>
 </apply>
 </init>
 </vardef>
 </let>
-<let>
-<vardef sym='y'>
-<type>
-<ty:array ind='12'>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
+<symbol  ty='abc|Person[]'>x</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='abc|bar'>
+<rettype>
+<ty:type nm='abc|Person' inst='t'>
 </ty:type>
-</ty:array>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<type>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
 </type>
+<init>
+<apply  ty='abc|Person'>
+<symbol  ty='lambda(abc|Person):abc|Person'>abc|Person|init</symbol>
+<args>
+<apply  ty='abc|Person'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|allocate</symbol>
+<args>
+<type ty='lang|Class&lt;abc|Person>'/>
+</args>
+</apply>
+</args>
+</apply>
+</init>
 </vardef>
 </let>
-<apply  ty='lang|Sliceable!&lt;lang|Int, lang|Int>'>
-<symbol>lang|slice!</symbol>
-<args>
-<symbol  ty='lang|Int[]'>x</symbol>
-<int ty='lang|Int'>0</int>
-<int ty='lang|Int'>42</int>
-</args>
-</apply>
-<apply  ty='lang|Sliceable!&lt;lang|Int, lang|Int>'>
-<symbol>lang|slice!</symbol>
-<args>
-<symbol  ty='lang|Int[]'>y</symbol>
-<int ty='lang|Int'>1</int>
-<int ty='lang|Int'>4711</int>
-</args>
-</apply>
+<symbol  ty='abc|Person'>x</symbol>
 </block>
 </body>
 </func>
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
+<ty:type nm='abc|Person' inst='t'>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:array ind='0'>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
+<ty:type nm='abc|Person' inst='t'>
 </ty:type>
 </ty:array>
 </ty:used-type>
@@ -148,28 +128,42 @@
 <ty:used-type>
 <ty:ref nm='lang|Class'>
 <ty:gen>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
+<ty:type nm='abc|Person' inst='t'>
 </ty:type>
 </ty:gen>
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
-<ty:ref ref='t' nm='lang|Sliceable!'>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref gen='t' nm='T'>
 </ty:ref>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
 </ty:gen>
 </ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:ret>
+</ty:fun>
 </ty:used-type>
 <ty:used-type>
 <ty:fun nm=''>

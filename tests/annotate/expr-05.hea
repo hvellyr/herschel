@@ -18,7 +18,7 @@ def f1(a : Float32, b : Float64)
   let t7 = a in b
 
 def f4(a : Float128, b)
---  let t0 = a isa Int
+  let t0 = a isa Int
   let t1 = a isa b
 
 def f5(a : Float32, b : Float128)
