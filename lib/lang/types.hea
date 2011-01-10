@@ -33,29 +33,6 @@
 module lang ("eyestep/heather 1.0:lang")
 export public (*)
 
-
-------------------------------------------------------------------------------
--- Common Integer types
-------------------------------------------------------------------------------
-
-def alias Byte   = Int8
-def alias UByte  = UInt8
-def alias Octet  = UInt8
-def alias Short  = Int16
-def alias UShort = UInt16
-def alias Word   = Int32
-def alias UWord  = UInt32
-def alias Long   = Int64
-def alias ULong  = UInt64
-
-def alias Float      = Float32
-def alias Double     = Float64
-def alias LongDouble = Float128
-
-
-def type Ordinal : (Int >= 0)
-    ~ A positive, arbitrary precise integer. ~
-
 ------------------------------------------------------------------------------
 -- Common Union types
 ------------------------------------------------------------------------------
