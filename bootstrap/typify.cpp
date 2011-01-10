@@ -626,12 +626,18 @@ Typifier::typify(ApplyNode* node)
         node->setType(typeNode->type());
       }
       else {
-        SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->base());
-        if (symNode != NULL) {
+        if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->base())) {
           // TODO: check type ctor function API
           node->setType(symNode->type());
         }
+        else if (TypeNode* typeNode = dynamic_cast<TypeNode*>(node->base())) {
+          // TODO: 
+          node->setType(typeNode->type());
+        }
         else {
+          // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->base()->type().toString()));
+          // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
+          // out->render(node->base());
           assert(0 && "Unhandled apply base node");
         }
       }
