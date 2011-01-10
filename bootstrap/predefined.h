@@ -107,6 +107,8 @@ namespace heather
 #define MID_lang_unspecified    "lang|unspecified"
 #define MID_lang_allocate       "lang|allocate"
 #define MID_lang_allocate_array "lang|allocate*"
+#define MID_lang_nil            "lang|nil"
+
 
   class Names
   {
@@ -166,6 +168,7 @@ namespace heather
     const static String kLangUnspecified;
     const static String kLangAllocate;
     const static String kLangAllocateArray;
+    const static String kLangNil;
 
     // known keywords
     const static String kExitKeyword;
