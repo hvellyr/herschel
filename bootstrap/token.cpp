@@ -187,6 +187,7 @@ namespace heather
           return fBoolValue == other.boolValue();
 
         case kInt:
+        case kUInt:
           return ( fIntValue == other.intValue() &&
                    fIsImaginary == other.isImaginary() );
         case kReal:
@@ -215,6 +216,7 @@ namespace heather
           return fBoolValue < other.boolValue();
 
         case kInt:
+        case kUInt:
           return ( fIsImaginary == other.isImaginary()
                    ? fIntValue < other.intValue()
                    : false );
@@ -247,6 +249,9 @@ namespace heather
       case kInt:
         xml::displayTagAttr(port, "lit", " type='int'", toString());
         break;
+      case kUInt:
+        xml::displayTagAttr(port, "lit", " type='uint'", toString());
+        break;
       case kReal:
         xml::displayTagAttr(port, "lit", " type='real'", toString());
         break;
@@ -266,6 +271,7 @@ namespace heather
       case kBool:
         return fBoolValue ? String("true") : String("false");
       case kInt:
+      case kUInt:
         return ( !fIsImaginary
                  ? fromInt(fIntValue)
                  : (fromInt(fIntValue) + "i") );
@@ -868,6 +874,7 @@ Token::type() const
   case kChar:
   case kBool:
   case kInt:
+  case kUInt:
   case kReal:
   case kRational:
   case kKeyword:
@@ -948,7 +955,8 @@ Token::isLit() const
 bool
 Token::isNumber() const
 {
-  return ( (fType == kInt || fType == kReal || fType == kRational)
+  return ( (fType == kInt || fType == kUInt ||
+            fType == kReal || fType == kRational)
            && fImpl != NULL );
 }
 
@@ -1154,7 +1162,7 @@ Token::boolValue() const
 int
 Token::intValue() const
 {
-  if (fType != kInt)
+  if (fType != kInt && fType != kUInt)
     throw NotSupportedException(__FUNCTION__);
   return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIntValue;
 }
@@ -1329,7 +1337,7 @@ Token::isBool() const
 bool
 Token::isInt() const
 {
-  return fType == kInt;
+  return fType == kInt || fType == kUInt;
 }
 
 
@@ -1367,6 +1375,8 @@ Token::isNegative() const
   switch (fType) {
   case kInt:
     return intValue() < 0;
+  case kUInt:
+    return false;
   case kReal:
     return realValue() < 0;
   case kRational:

@@ -326,6 +326,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
   int expSign = 1;
   int radix = 10;
   bool isImaginary = false;
+  bool isUnsigned = false;
 
   assert(!first.isEmpty());
 
@@ -379,6 +380,15 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
     nextChar();
   }
 
+  if (fCC == 'u' || fCC == 'U') {
+    nextChar();
+    if (type != kInt)
+      errorf(srcpos(), E_BadNumberNotation,
+             "unsigned notation for unappropriate number type");
+    else
+      isUnsigned = true;
+  }
+
   if (fCC == 'i' || fCC == 'I') {
     nextChar();
     isImaginary = true;
@@ -388,7 +398,10 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
   Token token;
   switch (type) {
   case kInt:
-    token = Token(startPos, kInt, first.toInt(radix) * sign);
+    if (isUnsigned)
+      token = Token(startPos, kUInt, first.toInt(radix));
+    else
+      token = Token(startPos, kInt, first.toInt(radix) * sign);
     break;
 
   case kReal:
