@@ -17,8 +17,39 @@ Documentation
 
 Bootstrap compiler
 
-  - A reference to a class/type 'Abc' where 'normal' symbols are expected must be
-    of type Class<Abc>
+  - how to allocate multiple dimension arrays?  Int[][]() is of type
+    Int[][], what is the allocate* function for this?  Cf. disabled test in
+    annotate/array-03.hea
+
+  - allocate of arrays with generic types
+
+      def foo(a @ 'T[],
+              new-size : Ordinal,
+              init-value : 'T = Class<'T>.null-value) : 'T[]
+        let t = 'T[](new-size)
+        t.init(init-value)
+        t
+
+    does not work, if we hardcode the init function of type 'T in the pass2
+    rewriting:
+
+      <apply>
+      <symbol>lang|allocate*</symbol>
+      <args>
+      <type ty="'T"/>
+      <symbol>T|init</symbol>
+      <int ty='lang|Ordinal'>1</int>
+      <symbol>new-size</symbol>
+      </args>
+      </apply>
+
+    There's no function "T|init" and won't every be.  So either we have a
+    generic function "init-functor(Class<'T>), or the allocate* function
+    must handle this itself.
+
+    See syntax/array-05.hea
+
+
 
   - get rid of nested functions
     - detect closure variable access
