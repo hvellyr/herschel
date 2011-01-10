@@ -35,9 +35,15 @@ export public(*)
 
 import "lang/numbers.hea"
 
+
+def type Class<T>
+  ~ The type of classes themselves. ~
+
+
 def generic allocate(ty @ Class<'T>) : 'T ...
   ~ Allocate a new instance of type @var{ty}.  Note that the allocated
   object is not initialized! ~
+
 
 def generic allocate*(ty @ Class<'T>,
                       init-func : Function(self : 'T, rest-args ...) : 'T,
