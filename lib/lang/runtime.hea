@@ -55,4 +55,14 @@ def generic allocate*(ty @ Class<'T>,
   function @var{init-func} ~
 
 
+def type Range<T>
+
+module Range ("eyestep/heather 1.0:range")
+{
+  export public (init)
+
+  def generic init(range @ Range<'T>, from : 'T, to : 'T, step : 'T) : Range<'T> ...
+}
+
+
 -- end of runtime
