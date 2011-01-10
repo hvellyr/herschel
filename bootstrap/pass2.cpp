@@ -817,21 +817,11 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
       genGenerics.push_back(genericTypeRef(generics[i].typeName(), true));
     }
 
-    TypeConstVector dummyConstraints;
-    FunctionSignature defApplySign(true,
-                                   String("apply"),
-                                   Type::newTypeRef(fullTypeName, genGenerics,
-                                                    dummyConstraints, true),
-                                   funcParams);
-
-    defType = Type::newClass(fullTypeName, generics,
-                             inheritsFrom,
-                             defApplySign,
+    defType = Type::newClass(fullTypeName, generics, inheritsFrom,
                              protoSignatures);
   }
   else {
-    defType = Type::newType(fullTypeName, generics,
-                            inheritsFrom,
+    defType = Type::newType(fullTypeName, generics, inheritsFrom,
                             protoSignatures);
   }
 
@@ -1937,8 +1927,7 @@ SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
     String newParamSym = uniqueName("self");
     String newParamSym2 = uniqueName("rest");
 
-    newObjAllocExpr->appendNode(//new SymbolNode(expr.srcpos(),
-                                //String("lang|identity-init")));
+    newObjAllocExpr->appendNode(
       new FunctionNode(expr.srcpos(),
                        newNodeList(new ParamNode(expr.srcpos(), String(),
                                                  newParamSym, kPosArg, type, NULL),
