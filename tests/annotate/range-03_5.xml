@@ -17,7 +17,7 @@
 <apply  ty='lang|Range&lt;lang|Int>'>
 <symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|allocate</symbol>
 <args>
-<type ty='lang|Class&lt;lang|Range&lt;lang|Int>>'/>
+<type  ty='lang|Class&lt;lang|Range&lt;lang|Int>>'/>
 </args>
 </apply>
 <int ty='lang|Int'>5</int>

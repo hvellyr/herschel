@@ -6,7 +6,7 @@ def class Person<T>(name, phone-extension)
 
 
 def foo()
-  let x : Person<String>[] = Person<String>[](1024u, "N.N.", 100)
+  let x : Person<String>[] = Person<String>[](1024u, value: Person<String>("N.N.", 100))
   x[34]
 
 

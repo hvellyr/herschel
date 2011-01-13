@@ -40,19 +40,42 @@ def type Class<T>
   ~ The type of classes themselves. ~
 
 
+def generic init-functor(ty @ Class<'T>) : Function(o : 'T, rest-args ...) : 'T ...
+  ~ Returns the init function for type @var{ty}. ~
+
+
+------------------------------------------------------------------------------
+-- Default value
+------------------------------------------------------------------------------
+
+def generic null-value(ty @ Class<'T>) : 'T ...
+  ~ Returns the default null value for type @type{T}.
+
+  For reference types this is normally always @val{nil}, for integers this
+  is @val{0}, for chars @val{#\\0000}, etc. ~
+
+
+def generic min-value(ty @ Class<'T>) : 'T ...
+def generic max-value(ty @ Class<'T>) : 'T ...
+
+
+
+------------------------------------------------------------------------------
+-- allocation
+------------------------------------------------------------------------------
+
 def generic allocate(ty @ Class<'T>) : 'T ...
   ~ Allocate a new instance of type @var{ty}.  Note that the allocated
   object is not initialized! ~
 
 
 def generic allocate*(ty @ Class<'T>,
-                      init-func : Function(self : 'T, rest-args ...) : 'T,
-                      columns : Ordinal,
-                      rows : Ordinal,
-                      rest-args ...) : 'T[] ...
-  ~ Allocate an array of @var{ty} with @var{columns} times @var{rows}
-  size.  The cells of the array are initialized each which the constructor
-  function @var{init-func} ~
+                      value : 'T = 'T.null-value,
+                      sizes ...) : 'T[] ...
+  ~ Allocate an array of @var{ty} with @var{sizes} slots.  Each slot is
+  initialized to @var{value}.  The size is computed from all the product of
+  all values in @var{sizes}, i.e. three value @code{3, 7, 11} would result
+  in (three dimensional) array of 231 slots. ~
 
 
 def type Range<T>

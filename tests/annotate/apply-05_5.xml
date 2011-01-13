@@ -9,7 +9,7 @@
 </ty:ref>
 </ty:isa>
 <ty:gen>
-<ty:ref nm='A'>
+<ty:ref gen='t' nm='A'>
 </ty:ref>
 </ty:gen>
 </ty:type>

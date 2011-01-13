@@ -1,0 +1,6 @@
+def generic init-functor(ty @ Class<'T>) : Function(o : 'T, rest-args ...) : 'T ...
+  ~ Returns the initialization function for type @var{ty}. ~
+
+def foo()
+  init-functor(Int)
+

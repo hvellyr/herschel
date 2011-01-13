@@ -11,5 +11,4 @@ def item(x : Container<'T>) : 'T ...
 
 def bar()
   let y : Container<Int>
---  foo(y)
   item(foo(y))

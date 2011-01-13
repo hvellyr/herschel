@@ -6,25 +6,17 @@
 <param sym='x' type='pos'>
 <type>
 <ty:ref gen='t' nm='T'>
-<ty:const k='isa'>
-<ty:ref nm='lang|Int'>
-</ty:ref>
-</ty:const>
 </ty:ref>
 </type>
 </param>
 </params>
 <rettype>
-<ty:ref nm='lang|Range'>
+<ty:type nm='lang|Range'>
 <ty:gen>
-<ty:ref gen='t' nm='T'>
-<ty:const k='isa'>
-<ty:ref nm='lang|Int'>
-</ty:ref>
-</ty:const>
+<ty:ref nm='T'>
 </ty:ref>
 </ty:gen>
-</ty:ref>
+</ty:type>
 </rettype>
 <body>
 <range  ty='lang|Range&lt;&apos;T>'>
@@ -35,10 +27,6 @@
 </base>
 <as>
 <ty:ref gen='t' nm='T'>
-<ty:const k='isa'>
-<ty:ref nm='lang|Int'>
-</ty:ref>
-</ty:const>
 </ty:ref>
 </as>
 </cast>
@@ -49,10 +37,6 @@
 <ty:node-types>
 <ty:used-type>
 <ty:ref gen='t' nm='T'>
-<ty:const k='isa'>
-<ty:ref nm='lang|Int'>
-</ty:ref>
-</ty:const>
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
@@ -67,10 +51,6 @@
 <ty:type nm='lang|Range'>
 <ty:gen>
 <ty:ref gen='t' nm='T'>
-<ty:const k='isa'>
-<ty:ref nm='lang|Int'>
-</ty:ref>
-</ty:const>
 </ty:ref>
 </ty:gen>
 </ty:type>

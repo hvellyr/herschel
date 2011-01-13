@@ -42,18 +42,24 @@
 </nested>
 <nested left='{' right='}'>
 <seq>
-<id>x</id>
-<punct type='='/>
+<id>x!</id>
+<nested left='(' right=')'>
+<id>self</id>
+<punct type=','/>
 <id>a</id>
+</nested>
 </seq>
 <seq>
-<id>y</id>
-<punct type='='/>
+<id>y!</id>
+<nested left='(' right=')'>
+<id>self</id>
+<punct type=','/>
 <seq>
 <id>a</id>
 <punct type='+'/>
 <id>b</id>
 </seq>
+</nested>
 </seq>
 </nested>
 </seq>
@@ -72,3 +78,4 @@
 </nested>
 </seq>
 </seq>
+

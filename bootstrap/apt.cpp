@@ -1934,7 +1934,9 @@ KeyargNode::KeyargNode(const SrcPos& srcpos,
   : AptNode(srcpos),
     fKey(key),
     fValue(value)
-{ }
+{
+  assert(fValue != NULL);
+}
 
 
 KeyargNode*

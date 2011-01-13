@@ -9,22 +9,30 @@
 <body>
 <block>
 <let>
-<vardef sym='y'>
+<vardef sym='x'>
 <type>
-<ty:array ind='12'>
-<ty:array ind='5'>
+<ty:array ind='0'>
 <ty:ref nm='lang|Int'>
 </ty:ref>
 </ty:array>
+</type>
+</vardef>
+</let>
+<let>
+<vardef sym='y'>
+<type>
+<ty:array ind='5'>
+<ty:ref nm='lang|Int'>
+</ty:ref>
 </ty:array>
 </type>
 </vardef>
 </let>
 <apply>
-<symbol>lang|slice</symbol>
+<symbol>slice</symbol>
 <args>
 <apply>
-<symbol>lang|slice</symbol>
+<symbol>slice</symbol>
 <args>
 <symbol>y</symbol>
 <int ty='lang|Int'>34</int>

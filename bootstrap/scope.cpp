@@ -440,7 +440,7 @@ Scope::normalizeType(const Type& type, const Type& refType) const
 
   assert(baseType.isDef());
 
-  if (!type.generics().size() == refType.generics().size())
+  if (type.generics().size() != refType.generics().size())
     throw TypeRefMatchException(refType,
                                 ( StringBuffer()
                                   << "Requires "
@@ -455,7 +455,8 @@ Scope::normalizeType(const Type& type, const Type& refType) const
       assert(gen.isRef());
 
       String genName = gen.typeName();
-      localCtx.registerType(genName, refType.generics()[i]);
+      Type genReplacement = refType.generics()[i];
+      localCtx.registerType(genName, genReplacement);
     }
 
     returnType = baseType.replaceGenerics(localCtx);

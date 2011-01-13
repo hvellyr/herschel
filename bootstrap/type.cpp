@@ -329,7 +329,7 @@ namespace heather
 
     bool isOpen() const
     {
-      return ( fInherit.isOpen() || !fGenerics.empty() );
+      return ( fInherit.isOpen() || heather::isOpen(fGenerics));
     }
 
 
@@ -2725,9 +2725,14 @@ namespace heather
   Type
   resolveType(const Type& type, Scope* scope)
   {
-    return ( type.isRef()
-             ? scope->lookupType(type.typeName(), true)
-             : type );
+    Type ty = ( type.isDef() && type.isRef()
+                ? scope->lookupType(type.typeName(), true)
+                : type );
+    if (ty.isDef() && ty.isOpen()) {
+      if (type.isDef())
+        return scope->normalizeType(ty, type);
+    }
+    return ty;
   }
 
 
@@ -2786,14 +2791,24 @@ namespace heather
       // TODO: handle complex generic types like 'T[]
       return left0.typeName() == right0.typeName();
 
+
     Type left = resolveType(left0, scope);
     Type right = resolveType(right0, scope);
 
     // fprintf(stderr, "LEFT IS: %s\n", (const char*)StrHelper(left.toString()));
     // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right.toString()));
-    if (!left.isDef() || !right.isDef()) {
+    if (!left.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+        errorf(srcpos, E_UndefinedType,
+               "Undefined type: '%s' (%s:%d)",
+               (const char*)StrHelper(left0.typeId()), __FILE__, __LINE__);
+      return false;
+    }
+    if (!right.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType,
+               "Undefined type: '%s' (%s:%d)",
+               (const char*)StrHelper(right0.typeId()), __FILE__, __LINE__);
       return false;
     }
 

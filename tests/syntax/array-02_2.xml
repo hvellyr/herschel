@@ -24,9 +24,7 @@
 <apply>
 <symbol>lang|allocate*</symbol>
 <args>
-<type ty='lang|Vector&lt;lang|Int>'/>
-<symbol>lang|Vector|init</symbol>
-<int ty='lang|Ordinal'>1</int>
+<type  ty='lang|Vector&lt;lang|Int>'/>
 <int ty='lang|Int'>1024</int>
 </args>
 </apply>
