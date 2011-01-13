@@ -67,19 +67,4 @@ def type OrdinalOrFalse : &(Ordinal, Bool == false)
     return the index of an element or indicate failure.~
 
 
-------------------------------------------------------------------------------
--- Default value
-------------------------------------------------------------------------------
-
-def generic null-value(ty @ Class<'T>) : 'T ...
-  ~ Returns the default null value for type @type{T}.
-
-  For reference types this is normally always @val{nil}, for integers this
-  is @val{0}, for chars @val{#\0000}, etc. ~
-
-
-def generic min-value(ty @ Class<'T>) : 'T ...
-def generic max-value(ty @ Class<'T>) : 'T ...
-
-
 -- end of types.hea

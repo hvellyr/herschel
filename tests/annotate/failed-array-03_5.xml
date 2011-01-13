@@ -3,19 +3,28 @@
 <def>
 <func sym='h'>
 <rettype>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<type>
+<ty:array ind='0'>
 <ty:type nm='lang|Int'>
 <ty:isa>
 <ty:ref nm='lang|Number'>
 </ty:ref>
 </ty:isa>
 </ty:type>
-</rettype>
-<body>
-<block>
+</ty:array>
+</type>
+</vardef>
+</let>
 <let>
 <vardef sym='y'>
 <type>
-<ty:array ind='12'>
 <ty:array ind='5'>
 <ty:type nm='lang|Int'>
 <ty:isa>
@@ -24,17 +33,16 @@
 </ty:isa>
 </ty:type>
 </ty:array>
-</ty:array>
 </type>
 </vardef>
 </let>
+<apply  ty='&apos;E'>
+<symbol>lang|slice</symbol>
+<args>
 <apply  ty='lang|Int'>
 <symbol>lang|slice</symbol>
 <args>
-<apply  ty='lang|Int[]'>
-<symbol>lang|slice</symbol>
-<args>
-<symbol  ty='lang|Int[][]'>y</symbol>
+<symbol  ty='lang|Int[]'>y</symbol>
 <int ty='lang|Int'>34</int>
 </args>
 </apply>
@@ -47,6 +55,10 @@
 </def>
 <ty:node-types>
 <ty:used-type>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
 <ty:type nm='lang|Int'>
 <ty:isa>
 <ty:ref nm='lang|Number'>
@@ -62,18 +74,6 @@
 </ty:ref>
 </ty:isa>
 </ty:type>
-</ty:array>
-</ty:used-type>
-<ty:used-type>
-<ty:array ind='12'>
-<ty:array ind='5'>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:array>
 </ty:array>
 </ty:used-type>
 </ty:node-types>

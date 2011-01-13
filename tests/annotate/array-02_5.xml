@@ -5,7 +5,7 @@
 <isa>
 <ty:type nm='Seq' inst='t'>
 <ty:gen>
-<ty:ref nm='T'>
+<ty:ref gen='t' nm='T'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -19,7 +19,7 @@
 <type>
 <ty:type nm='Seq' inst='t'>
 <ty:gen>
-<ty:ref nm='T'>
+<ty:ref gen='t' nm='T'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -29,14 +29,14 @@
 <rettype>
 <ty:type nm='Seq' inst='t'>
 <ty:gen>
-<ty:ref nm='T'>
+<ty:ref gen='t' nm='T'>
 </ty:ref>
 </ty:gen>
 </ty:type>
 </rettype>
 <body>
 <block>
-<symbol  ty='Seq&lt;T>'>__obj_0</symbol>
+<symbol  ty='Seq&lt;&apos;T>'>__obj_0</symbol>
 </block>
 </body>
 </func>
@@ -46,9 +46,9 @@
 <isa>
 <ty:type nm='Dict' inst='t'>
 <ty:gen>
-<ty:ref nm='K'>
+<ty:ref gen='t' nm='K'>
 </ty:ref>
-<ty:ref nm='V'>
+<ty:ref gen='t' nm='V'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -62,9 +62,9 @@
 <type>
 <ty:type nm='Dict' inst='t'>
 <ty:gen>
-<ty:ref nm='K'>
+<ty:ref gen='t' nm='K'>
 </ty:ref>
-<ty:ref nm='V'>
+<ty:ref gen='t' nm='V'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -74,16 +74,16 @@
 <rettype>
 <ty:type nm='Dict' inst='t'>
 <ty:gen>
-<ty:ref nm='K'>
+<ty:ref gen='t' nm='K'>
 </ty:ref>
-<ty:ref nm='V'>
+<ty:ref gen='t' nm='V'>
 </ty:ref>
 </ty:gen>
 </ty:type>
 </rettype>
 <body>
 <block>
-<symbol  ty='Dict&lt;K, V>'>__obj_1</symbol>
+<symbol  ty='Dict&lt;&apos;K, &apos;V>'>__obj_1</symbol>
 </block>
 </body>
 </func>
@@ -114,11 +114,9 @@
 </type>
 <init>
 <apply  ty='Seq&lt;lang|Int>[]'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>, lambda(&apos;T, lang|Any):&apos;T, lang|Ordinal, lang|Ordinal, lang|Any):&apos;T[]'>lang|allocate*</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]'>lang|allocate*</symbol>
 <args>
-<type ty='lang|Class&lt;Seq&lt;lang|Int>>'/>
-<symbol  ty='lambda(Seq&lt;T>):Seq&lt;T>'>Seq|init</symbol>
-<int ty='lang|Ordinal'>1</int>
+<type  ty='lang|Class&lt;Seq&lt;lang|Int>>'/>
 <int ty='lang|Ordinal'>1024</int>
 </args>
 </apply>
@@ -156,7 +154,7 @@
 <ty:used-type>
 <ty:type nm='Seq' inst='t'>
 <ty:gen>
-<ty:ref nm='T'>
+<ty:ref gen='t' nm='T'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -172,9 +170,9 @@
 <ty:used-type>
 <ty:type nm='Dict' inst='t'>
 <ty:gen>
-<ty:ref nm='K'>
+<ty:ref gen='t' nm='K'>
 </ty:ref>
-<ty:ref nm='V'>
+<ty:ref gen='t' nm='V'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -213,28 +211,6 @@
 </ty:array>
 </ty:used-type>
 <ty:used-type>
-<ty:fun nm=''>
-<ty:prms>
-<ty:prm is='pos'>
-<ty:type nm='Seq' inst='t'>
-<ty:gen>
-<ty:ref nm='T'>
-</ty:ref>
-</ty:gen>
-</ty:type>
-</ty:prm>
-</ty:prms>
-<ty:ret>
-<ty:type nm='Seq' inst='t'>
-<ty:gen>
-<ty:ref nm='T'>
-</ty:ref>
-</ty:gen>
-</ty:type>
-</ty:ret>
-</ty:fun>
-</ty:used-type>
-<ty:used-type>
 <ty:ref nm='lang|Class'>
 <ty:gen>
 <ty:type nm='Seq' inst='t'>
@@ -257,53 +233,9 @@
 </ty:gen>
 </ty:ref>
 </ty:prm>
-<ty:prm is='pos'>
-<ty:fun nm=''>
-<ty:prms>
-<ty:prm is='pos'>
+<ty:prm is='named' key='value'>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
-</ty:prm>
-<ty:prm is='rest'>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-</ty:prm>
-</ty:prms>
-<ty:ret>
-<ty:ref gen='t' nm='T'>
-</ty:ref>
-</ty:ret>
-</ty:fun>
-</ty:prm>
-<ty:prm is='pos'>
-<ty:type nm='lang|Ordinal'>
-<ty:isa>
-<ty:seq>
-<ty:ref nm='lang|Int'>
-<ty:const k='geq'>0</ty:const>
-</ty:ref>
-<ty:ref nm='lang|BoundedBelow'>
-</ty:ref>
-<ty:ref nm='lang|Unsigned'>
-</ty:ref>
-</ty:seq>
-</ty:isa>
-</ty:type>
-</ty:prm>
-<ty:prm is='pos'>
-<ty:type nm='lang|Ordinal'>
-<ty:isa>
-<ty:seq>
-<ty:ref nm='lang|Int'>
-<ty:const k='geq'>0</ty:const>
-</ty:ref>
-<ty:ref nm='lang|BoundedBelow'>
-</ty:ref>
-<ty:ref nm='lang|Unsigned'>
-</ty:ref>
-</ty:seq>
-</ty:isa>
-</ty:type>
 </ty:prm>
 <ty:prm is='rest'>
 <ty:ref nm='lang|Any'>

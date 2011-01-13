@@ -281,15 +281,17 @@ SecondPass::parseExtend(const Token& expr)
 //------------------------------------------------------------------------------
 
 void
-SecondPass::parseTypeVector(TypeVector* generics, const Token& expr)
+SecondPass::parseTypeVector(TypeVector* generics, const Token& expr,
+                            bool forceOpenType)
 {
   assert(expr.isNested());
 
   for (size_t i = 0; i < expr.children().size(); i++) {
     if (expr[i] == kComma)
       continue;
-    Type ty = parseTypeSpec(expr[i]);
-    generics->push_back(ty);
+    Type ty = parseTypeSpec(expr[i], forceOpenType);
+    if (ty.isDef())
+      generics->push_back(ty);
   }
 }
 
@@ -314,9 +316,11 @@ SecondPass::normalizeType(const Type& type)
 
 
 Type
-SecondPass::parseTypeSpec(const Token& expr)
+SecondPass::parseTypeSpec(const Token& expr, bool forceOpenType)
 {
-  Type ty = parseTypeSpecImpl(expr);
+  Type ty = parseTypeSpecImpl(expr, forceOpenType);
+  if (forceOpenType)
+    return ty;
   return normalizeType(ty);
 }
 
@@ -444,29 +448,37 @@ SecondPass::parseGroupType(const Token& expr, bool isValue)
 
 
 Type
-SecondPass::parseTypeSpecImpl(const Token& expr)
+SecondPass::parseTypeSpecImpl(const Token& expr, bool forceOpenType)
 {
   if (expr.isSeq() && expr[0] == kReference) {
     assert(expr.count() == 2);
+    assert(!forceOpenType);
 
-    return parseTypeSpecImpl2(expr[1], false);
+    return parseTypeSpecImpl2(expr[1], false, forceOpenType);
   }
 
-  return parseTypeSpecImpl2(expr, true);
+  return parseTypeSpecImpl2(expr, true, forceOpenType);
 }
 
 
 Type
-SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue)
+SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenType)
 {
   if (expr == kSymbol) {
     if (fCurrentGenericTypes.find(expr.idValue()) != fCurrentGenericTypes.end())
       return genericTypeRef(expr.idValue(), isValue);
+    else if (forceOpenType)
+      return Type::newTypeRef(expr.idValue(), true, TypeConstVector(), isValue);
     else
       return Type::newTypeRef(expr.idValue(), isValue);
   }
   else if (expr.isSeq()) {
     if (expr.count() == 2) {
+      if (forceOpenType) {
+        errorf(expr.srcpos(), E_BadGenericType, "Unexpected generic type notation");
+        return Type();
+      }
+
       if (expr[0] == kSymbol &&
           expr[1].isNested() && expr[1].leftToken() == kGenericOpen)
       {
@@ -512,9 +524,16 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue)
             sizeInd = p.intValue();
           }
           else {
-            errorf(expr[1][0].srcpos(), E_InvaliArraySize,
+            errorf(expr[1][0].srcpos(), E_InvalidArraySize,
                    "array size expression did not evaluate to integer. Treat it as 0");
           }
+        }
+
+        if (baseType.isArray())
+        {
+          errorf(expr.srcpos(), E_MultiDimenArray,
+                 "Multi-dimensional array types are not supported");
+          return baseType;
         }
 
         return Type::newArray(baseType, sizeInd, isValue);
@@ -555,6 +574,7 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue)
       assert(0);
   }
   else if (expr.isNested()) {
+    assert(!forceOpenType);
     return parseGroupType(expr, isValue);
   }
   else
@@ -712,7 +732,7 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
       seq[ofs].isNested() && seq[ofs].leftToken() == kGenericOpen)
   {
     // type parameters
-    parseTypeVector(&generics, expr[ofs]);
+    parseTypeVector(&generics, expr[ofs], true);
 
     for (size_t i = 0; i < generics.size(); i++) {
       assert(generics[i].isRef());
@@ -904,15 +924,6 @@ SecondPass::generateConstructor(const Token& typeExpr,
   params.insert(params.begin(),
                 new ParamNode(srcpos, String(), selfParamSym,
                               kPosArg, defType, NULL));
-
-  // Ptr<ApplyNode> newObjAllocExpr = new ApplyNode(srcpos,
-  //                                                new SymbolNode(srcpos, Names::kLangAllocate));
-  // newObjAllocExpr->appendNode(new TypeNode(srcpos, defType));
-
-  // Ptr<AptNode> vardef = new VardefNode(srcpos,
-  //                                      selfParamSym, kNormalVar, true, defType,
-  //                                      newObjAllocExpr);
-  // Ptr<LetNode> objLet = new LetNode(vardef);
 
   Ptr<ListNode> body = new BlockNode(srcpos);
 
@@ -1876,76 +1887,51 @@ AptNode*
 SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
 {
   const ArrayTypeNode* n = dynamic_cast<const ArrayTypeNode*>(typeNode);
-  const AptNode* rootType = NULL;
+  const AptNode* rootType = n->typeNode();
+  assert(dynamic_cast<const ArrayTypeNode*>(rootType) == NULL);
 
-  int arrayDepth = 0;
-  while (n != NULL) {
-    arrayDepth++;
-    rootType = n->typeNode();
-    n = dynamic_cast<const ArrayTypeNode*>(rootType);
-  }
+  NodeList args = parseFunCallArgs(expr[1].children());
 
-  String initName;
-  Type type;
-  if (const SymbolNode* sym = dynamic_cast<const SymbolNode*>(rootType)) {
-    type = fScope->lookupType(sym->name(), true);
-    if (!type.isDef()) {
-      errorf(sym->srcpos(), E_UndefinedType, "unknown type");
-      return NULL;
-    }
-  }
-  else if (const TypeNode* ty = dynamic_cast<const TypeNode*>(rootType)) {
-    type = ty->type();
-  }
-  else if (rootType) {
-    fprintf(stderr, "Unexpected type node: %p %s\n", rootType, typeid(*rootType).name());
-    assert(0 && "unexpected type node");
+  if (args.empty()) {
+    errorf(expr[1].srcpos(), E_BadArgNumber,
+           "Bad number of arguments for array allocation");
     return NULL;
   }
 
-  if (type.isAnyInt() ||
-      type.isAnyReal() ||
-      type.isChar() ||
-      type.isBool() ||
-      type.isComplex() ||
-      type.isString() ||
-      type.isKeyword() ||
-      type.isRational()) {
+  Ptr<AptNode> initValue;
+  size_t argc = args.size();
+  if (KeyargNode* keyarg = dynamic_cast<KeyargNode*>(args[args.size() - 1].obj())) {
+    if (keyarg->key() == String("value")) {
+      initValue = keyarg;
+      argc--;
+    }
+    else {
+      error(keyarg->srcpos(), E_BadArgKind,
+            String("Unexpected key argument: ") + keyarg->key()
+            + " in array allocation");
+    }
   }
-  else
-    initName = type.typeName() + "|init";
 
-
-  NodeList args = parseFunCallArgs(expr[1].children());
+  if (argc > 1) {
+    errorf(expr[1].srcpos(), E_BadArgNumber, "Too much arguments for array allocation");
+    return NULL;
+  }
+  else if (argc < 1) {
+    errorf(expr[1].srcpos(), E_BadArgNumber, "Not enough arguments for array allocation");
+    return NULL;
+  }
 
   //--------
   Ptr<ApplyNode> newObjAllocExpr = new ApplyNode(expr.srcpos(),
                                                  new SymbolNode(expr.srcpos(),
                                                                 Names::kLangAllocateArray));
   newObjAllocExpr->appendNode(rootType->clone());
-  if (initName.isEmpty()) {
-    String newParamSym = uniqueName("self");
-    String newParamSym2 = uniqueName("rest");
-
-    newObjAllocExpr->appendNode(
-      new FunctionNode(expr.srcpos(),
-                       newNodeList(new ParamNode(expr.srcpos(), String(),
-                                                 newParamSym, kPosArg, type, NULL),
-                                   new ParamNode(expr.srcpos(), String(),
-                                                 newParamSym2, kRestArg, type, NULL)),
-                       type,
-                       new SymbolNode(expr.srcpos(), newParamSym)));
-  }
-  else {
-    newObjAllocExpr->appendNode(new SymbolNode(expr.srcpos(), initName));
-  }
+  if (initValue != NULL)
+    newObjAllocExpr->appendNode(initValue);
 
   //--- columns (depth)
-  newObjAllocExpr->appendNode(new IntNode(expr.srcpos(),
-                                          arrayDepth, false, Type::newOrdinal()));
-  //-- rows (number) + additional rest args
-  newObjAllocExpr->appendNodes(args);
-
+  for (size_t i = 0; i < argc; i++)
+    newObjAllocExpr->appendNode(args[i]);
 
   return newObjAllocExpr.release();
 }
@@ -1960,9 +1946,19 @@ SecondPass::generateAlloc(const Token& expr, const Type& type)
   newObjAllocExpr->appendNode(new TypeNode(expr.srcpos(), type));
 
   //---
-  String initName = type.typeName() + "|init";
-  Ptr<ApplyNode> initExpr = new ApplyNode(expr.srcpos(),
-                                          new SymbolNode(expr.srcpos(), initName));
+  Ptr<AptNode> funcNode;
+  if (type.isOpen()) {
+    Ptr<ApplyNode> apply = new ApplyNode(expr.srcpos(),
+                                         new SymbolNode(expr.srcpos(), String("lang|init-functor")));
+    apply->appendNode(new TypeNode(expr.srcpos(), type));
+    funcNode = apply;
+  }
+  else {
+    String initName = type.typeName() + "|init";
+    funcNode = new SymbolNode(expr.srcpos(), initName);
+  }
+
+  Ptr<ApplyNode> initExpr = new ApplyNode(expr.srcpos(), funcNode);
   initExpr->appendNode(newObjAllocExpr);
 
   //---
@@ -2749,7 +2745,7 @@ SecondPass::parseMatch(const Token& expr)
 //------------------------------------------------------------------------------
 
 AptNode*
-SecondPass::parseTypeExpr(const Token& expr)
+SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
 {
   assert(!fCompiler->isParsingInterface());
   assert(expr.isSeq());
@@ -2770,6 +2766,13 @@ SecondPass::parseTypeExpr(const Token& expr)
       return new SymbolNode(expr.srcpos(), symbol, genericArgs);
     }
     else if (expr[1].leftToken() == kBracketOpen) {
+      if (inArrayType) {
+        errorf(expr.srcpos(), E_MultiDimenArray,
+               "Multi-dimensional array types are not supported");
+        Type ty = genericTypeRef(symbol, true);
+        return new TypeNode(expr.srcpos(), ty);
+      }
+
       return new ArrayTypeNode(expr.srcpos(),
                                new SymbolNode(expr.srcpos(), symbol));
     }
@@ -2791,11 +2794,17 @@ SecondPass::parseTypeExpr(const Token& expr)
     }
     else {
       assert(expr[0][0] == kSymbol || expr[0][0].isSeq());
-
-      typeNode = parseTypeExpr(expr[0]);
+      typeNode = parseTypeExpr(expr[0], true);
     }
-    if (typeNode != NULL)
+
+    if (typeNode != NULL) {
+      if (inArrayType) {
+        errorf(expr.srcpos(), E_MultiDimenArray,
+               "Multi-dimensional array types are not supported");
+        return typeNode;
+      }
       return new ArrayTypeNode(expr.srcpos(), typeNode);
+    }
   }
 
   fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",

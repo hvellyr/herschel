@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<method sym='init-functor' abstract='true'>
+<params>
+<param sym='ty' type='spec'>
+<type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</rettype>
+</method>
+</def>
+<def>
+<func sym='foo'>
+<rettype>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:ret>
+</ty:fun>
+</rettype>
+<body>
+<apply  ty='lambda(lang|Int, lang|Any):lang|Int'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):lambda(&apos;T, lang|Any):&apos;T'>init-functor</symbol>
+<args>
+<symbol  ty='lang|Class&lt;lang|Int>'>lang|Int</symbol>
+</args>
+</apply>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

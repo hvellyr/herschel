@@ -98,7 +98,7 @@
 </ty:ref>
 </ty:isa>
 <ty:gen>
-<ty:ref nm='X'>
+<ty:ref gen='t' nm='X'>
 </ty:ref>
 </ty:gen>
 <ty:proto>
@@ -154,7 +154,7 @@
 </ty:ref>
 </ty:isa>
 <ty:gen>
-<ty:ref nm='X'>
+<ty:ref gen='t' nm='X'>
 </ty:ref>
 </ty:gen>
 <ty:proto>
@@ -216,7 +216,7 @@
 </ty:ref>
 </ty:isa>
 <ty:gen>
-<ty:ref nm='X'>
+<ty:ref gen='t' nm='X'>
 </ty:ref>
 </ty:gen>
 <ty:proto>

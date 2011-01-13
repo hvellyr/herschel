@@ -21,7 +21,7 @@
 <isa>
 <ty:type nm='Seq'>
 <ty:gen>
-<ty:ref nm='T'>
+<ty:ref gen='t' nm='T'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -31,20 +31,8 @@
 <def>
 <func sym='h'>
 <rettype>
-<ty:union>
-<ty:type nm='lang|String'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:ref gen='t' nm='E'>
 </ty:ref>
-</ty:isa>
-</ty:type>
-<ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:union>
 </rettype>
 <body>
 <block>
@@ -52,7 +40,6 @@
 <vardef sym='x'>
 <type>
 <ty:array ind='0'>
-<ty:array ind='0'>
 <ty:union>
 <ty:type nm='lang|String'>
 <ty:isa>
@@ -68,14 +55,12 @@
 </ty:type>
 </ty:union>
 </ty:array>
-</ty:array>
 </type>
 </vardef>
 </let>
 <let>
 <vardef sym='y'>
 <type>
-<ty:array ind='12'>
 <ty:array ind='5'>
 <ty:seq>
 <ty:type nm='Copyable'>
@@ -92,17 +77,16 @@
 </ty:type>
 </ty:seq>
 </ty:array>
-</ty:array>
 </type>
 </vardef>
 </let>
+<apply  ty='&apos;E'>
+<symbol>lang|slice</symbol>
+<args>
 <apply  ty='&amp;(lang|String, lang|Bool)'>
 <symbol>lang|slice</symbol>
 <args>
-<apply  ty='&amp;(lang|String, lang|Bool)[]'>
-<symbol>lang|slice</symbol>
-<args>
-<symbol  ty='&amp;(lang|String, lang|Bool)[][]'>x</symbol>
+<symbol  ty='&amp;(lang|String, lang|Bool)[]'>x</symbol>
 <int ty='lang|Int'>34</int>
 </args>
 </apply>
@@ -114,6 +98,10 @@
 </func>
 </def>
 <ty:node-types>
+<ty:used-type>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|Int'>
 <ty:isa>
@@ -154,26 +142,6 @@
 </ty:isa>
 </ty:type>
 </ty:union>
-</ty:array>
-</ty:used-type>
-<ty:used-type>
-<ty:array ind='0'>
-<ty:array ind='0'>
-<ty:union>
-<ty:type nm='lang|String'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-<ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:union>
-</ty:array>
 </ty:array>
 </ty:used-type>
 </ty:node-types>

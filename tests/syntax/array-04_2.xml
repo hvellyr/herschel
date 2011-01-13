@@ -12,7 +12,6 @@
 <vardef sym='x'>
 <type>
 <ty:array ind='0'>
-<ty:array ind='0'>
 <ty:union>
 <ty:ref nm='lang|String'>
 </ty:ref>
@@ -21,14 +20,12 @@
 </ty:ref>
 </ty:union>
 </ty:array>
-</ty:array>
 </type>
 </vardef>
 </let>
 <let>
 <vardef sym='y'>
 <type>
-<ty:array ind='12'>
 <ty:array ind='5'>
 <ty:seq>
 <ty:ref nm='Copyable'>
@@ -44,7 +41,6 @@
 </ty:gen>
 </ty:ref>
 </ty:seq>
-</ty:array>
 </ty:array>
 </type>
 </vardef>

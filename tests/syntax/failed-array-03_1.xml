@@ -12,16 +12,26 @@
 <id>x</id>
 <punct type=':'/>
 <seq>
-<nested left='&amp;(' right=')'>
-<id>String</id>
-<punct type=','/>
 <seq>
-<id>Bool</id>
-<punct type='=='/>
-<lit type='bool'>false</lit>
-</seq>
-</nested>
+<id>Int</id>
 <nested left='[' right=']'/>
+</seq>
+<nested left='[' right=']'/>
+</seq>
+<punct type='='/>
+<seq>
+<seq>
+<seq>
+<id>Int</id>
+<nested left='[' right=']'/>
+</seq>
+<nested left='[' right=']'/>
+</seq>
+<nested left='(' right=')'>
+<lit type='int'>1024</lit>
+<punct type=','/>
+<lit type='int'>768</lit>
+</nested>
 </seq>
 </seq>
 <seq>
@@ -29,27 +39,16 @@
 <id>y</id>
 <punct type=':'/>
 <seq>
-<nested left='(' right=')'>
-<id>Copyable</id>
-<punct type=','/>
 <seq>
-<id>Serializable</id>
-<nested left='[' right=']'>
-<lit type='int'>7</lit>
-</nested>
-</seq>
-<punct type=','/>
-<seq>
-<id>Seq</id>
-<nested left='&lt;' right='>'>
 <id>Int</id>
-</nested>
-</seq>
-</nested>
 <nested left='[' right=']'>
 <lit type='int'>5</lit>
 </nested>
 </seq>
+<nested left='[' right=']'>
+<lit type='int'>12</lit>
+</nested>
+</seq>
 </seq>
 <seq>
 <id>slice</id>
@@ -57,7 +56,7 @@
 <seq>
 <id>slice</id>
 <nested left='(' right=')'>
-<id>x</id>
+<id>y</id>
 <punct type=','/>
 <lit type='int'>34</lit>
 </nested>

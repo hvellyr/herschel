@@ -84,13 +84,15 @@ namespace heather
     E_QualifiedEnumDefSym = 0x4034,
     E_EnumNotBaseType     = 0x4035,
     E_EnumInitTypeMismatch= 0x4036,
-    E_InvaliArraySize     = 0x4037,
+    E_InvalidArraySize    = 0x4037,
     E_RefToFunc           = 0x4038,
     k_DoubleRefType       = 0x4039,
     E_EmptySeqType        = 0x403a,
     E_MixedValueType      = 0x403b,
     E_InheritsRefType     = 0x403c,
     E_InvariantType       = 0x403d,
+    E_MultiDimenArray     = 0x403e,
+    E_BadGenericType      = 0x403f,
 
     // enums
     E_BadEnumItemList     = 0x4050,
@@ -148,6 +150,7 @@ namespace heather
     E_RangeTypeMismatch   = 0x4419,
     E_WhileTypeMismatch   = 0x441a,
     E_BinaryTypeMismatch  = 0x441b,
+    E_BadArgKind          = 0x441c,
 
     // module parsing
     E_MissingModName      = 0x4500,

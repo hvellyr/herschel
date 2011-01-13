@@ -44,8 +44,6 @@
 <symbol>lang|allocate*</symbol>
 <args>
 <symbol>abc|Person</symbol>
-<symbol>abc|Person|init</symbol>
-<int ty='lang|Ordinal'>1</int>
 <int ty='lang|Ordinal'>12</int>
 </args>
 </apply>
@@ -74,7 +72,7 @@
 <apply>
 <symbol>lang|allocate</symbol>
 <args>
-<type ty='abc|Person'/>
+<type  ty='abc|Person'/>
 </args>
 </apply>
 </args>

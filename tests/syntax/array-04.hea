@@ -1,4 +1,4 @@
 def h()
-  let x : &(String, Bool == false)[][]
-  let y : (Copyable, Serializable[7], Seq<Int>)[5][12]
+  let x : &(String, Bool == false)[]
+  let y : (Copyable, Serializable[7], Seq<Int>)[5]
   x[34][2]

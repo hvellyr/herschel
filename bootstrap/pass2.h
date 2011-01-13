@@ -58,7 +58,7 @@ namespace heather
     AptNode* parseBinary(const Token& expr);
     AptNode* parseFunCall(const Token& expr);
     NodeList parseFunCallArgs(const TokenVector& args);
-    AptNode* parseTypeExpr(const Token& expr);
+    AptNode* parseTypeExpr(const Token& expr, bool inArrayType = false);
 
     NodeList parseTokenVector(const TokenVector& seq);
     void parseParameters(NodeList* parameters, const TokenVector& seq);
@@ -99,9 +99,9 @@ namespace heather
 
     AptNode* parseExtend(const Token& expr);
 
-    Type parseTypeSpec(const Token& expr);
-    Type parseTypeSpecImpl(const Token& expr);
-    Type parseTypeSpecImpl2(const Token& expr, bool isValue);
+    Type parseTypeSpec(const Token& expr, bool forceOpenType = false);
+    Type parseTypeSpecImpl(const Token& expr, bool forceOpenType);
+    Type parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenType);
     Type parseGroupType(const Token& expr, bool isValue);
     Type rephraseRefType(const SrcPos& srcpos, const Type& inType, bool isValue);
 
@@ -120,7 +120,8 @@ namespace heather
                                     NodeList* testExprs,
                                     NodeList* stepExprs);
 
-    void parseTypeVector(TypeVector* generics, const Token& expr);
+    void parseTypeVector(TypeVector* generics, const Token& expr,
+                         bool forceOpenType = false);
     void paramsNodeListToType(FunctionParamVector* funcParams,
                               const NodeList& nl) const;
     void protocolNodeListToType(FunctionSignatureVector* protoSignatures,

@@ -21,42 +21,6 @@
 <symbol>lang|allocate*</symbol>
 <args>
 <symbol>Int</symbol>
-<function>
-<params>
-<param sym='__self_0' type='pos'>
-<type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</type>
-</param>
-<param sym='__rest_1' type='rest'>
-<type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</type>
-</param>
-</params>
-<rettype>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</rettype>
-<body>
-<symbol>__self_0</symbol>
-</body>
-</function>
-<int ty='lang|Ordinal'>1</int>
 <int ty='lang|Int'>1024</int>
 </args>
 </apply>

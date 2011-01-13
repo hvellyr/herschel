@@ -20,8 +20,19 @@
 <vardef sym='t'>
 <init>
 <apply>
-<type  ty='&apos;T'/>
+<apply>
+<symbol>lang|init-functor</symbol>
 <args>
+<type  ty='&apos;T'/>
+</args>
+</apply>
+<args>
+<apply>
+<symbol>lang|allocate</symbol>
+<args>
+<type  ty='&apos;T'/>
+</args>
+</apply>
 </args>
 </apply>
 </init>

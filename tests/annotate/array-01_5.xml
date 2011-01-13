@@ -26,45 +26,9 @@
 </type>
 <init>
 <apply  ty='lang|Int[]'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>, lambda(&apos;T, lang|Any):&apos;T, lang|Ordinal, lang|Ordinal, lang|Any):&apos;T[]'>lang|allocate*</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]'>lang|allocate*</symbol>
 <args>
 <symbol  ty='lang|Class&lt;lang|Int>'>lang|Int</symbol>
-<function>
-<params>
-<param sym='__self_0' type='pos'>
-<type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</type>
-</param>
-<param sym='__rest_1' type='rest'>
-<type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</type>
-</param>
-</params>
-<rettype>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</rettype>
-<body>
-<symbol  ty='lang|Int'>__self_0</symbol>
-</body>
-</function>
-<int ty='lang|Ordinal'>1</int>
 <int ty='lang|Ordinal'>1024</int>
 </args>
 </apply>
@@ -153,53 +117,9 @@
 </ty:gen>
 </ty:ref>
 </ty:prm>
-<ty:prm is='pos'>
-<ty:fun nm=''>
-<ty:prms>
-<ty:prm is='pos'>
+<ty:prm is='named' key='value'>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
-</ty:prm>
-<ty:prm is='rest'>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-</ty:prm>
-</ty:prms>
-<ty:ret>
-<ty:ref gen='t' nm='T'>
-</ty:ref>
-</ty:ret>
-</ty:fun>
-</ty:prm>
-<ty:prm is='pos'>
-<ty:type nm='lang|Ordinal'>
-<ty:isa>
-<ty:seq>
-<ty:ref nm='lang|Int'>
-<ty:const k='geq'>0</ty:const>
-</ty:ref>
-<ty:ref nm='lang|BoundedBelow'>
-</ty:ref>
-<ty:ref nm='lang|Unsigned'>
-</ty:ref>
-</ty:seq>
-</ty:isa>
-</ty:type>
-</ty:prm>
-<ty:prm is='pos'>
-<ty:type nm='lang|Ordinal'>
-<ty:isa>
-<ty:seq>
-<ty:ref nm='lang|Int'>
-<ty:const k='geq'>0</ty:const>
-</ty:ref>
-<ty:ref nm='lang|BoundedBelow'>
-</ty:ref>
-<ty:ref nm='lang|Unsigned'>
-</ty:ref>
-</ty:seq>
-</ty:isa>
-</ty:type>
 </ty:prm>
 <ty:prm is='rest'>
 <ty:ref nm='lang|Any'>

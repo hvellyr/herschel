@@ -5,7 +5,7 @@
 <isa>
 <ty:type nm='Abc' inst='t'>
 <ty:gen>
-<ty:ref nm='X'>
+<ty:ref gen='t' nm='X'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -19,7 +19,7 @@
 <type>
 <ty:type nm='Abc' inst='t'>
 <ty:gen>
-<ty:ref nm='X'>
+<ty:ref gen='t' nm='X'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -29,14 +29,14 @@
 <rettype>
 <ty:type nm='Abc' inst='t'>
 <ty:gen>
-<ty:ref nm='X'>
+<ty:ref gen='t' nm='X'>
 </ty:ref>
 </ty:gen>
 </ty:type>
 </rettype>
 <body>
 <block>
-<symbol  ty='Abc&lt;X>'>__obj_0</symbol>
+<symbol  ty='Abc&lt;&apos;X>'>__obj_0</symbol>
 </block>
 </body>
 </func>
@@ -86,7 +86,7 @@
 <ty:used-type>
 <ty:type nm='Abc' inst='t'>
 <ty:gen>
-<ty:ref nm='X'>
+<ty:ref gen='t' nm='X'>
 </ty:ref>
 </ty:gen>
 </ty:type>

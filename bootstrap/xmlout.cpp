@@ -362,15 +362,7 @@ XmlRenderer::renderNode(const SymbolNode* node)
 void
 XmlRenderer::renderNode(const ArrayTypeNode* node)
 {
-  const ArrayTypeNode* n = node;
-  const AptNode* rootType = NULL;
-
-  int arrayDepth = 0;
-  while (n != NULL) {
-    arrayDepth++;
-    rootType = n->typeNode();
-    n = dynamic_cast<const ArrayTypeNode*>(rootType);
-  }
+  const AptNode* rootType = node->typeNode();
 
   if (const SymbolNode* sym = dynamic_cast<const SymbolNode*>(rootType)) {
     StringBuffer attrs;
@@ -381,19 +373,13 @@ XmlRenderer::renderNode(const ArrayTypeNode* node)
                                              node->type()));
     }
 
-    if (arrayDepth == 1)
-      attrs << " array='t'";
-    else
-      attrs << " array='t*" << fromInt(arrayDepth) << "'";
+    attrs << " array='t'";
     displayTagAttr("symbol", StrHelper(attrs.toString()), sym->name());
   }
   else if (const TypeNode* ty = dynamic_cast<const TypeNode*>(rootType)) {
     StringBuffer attrs;
 
-    if (arrayDepth == 1)
-      attrs << " array='t'";
-    else
-      attrs << " array='t*" << fromInt(arrayDepth) << "'";
+    attrs << " array='t'";
     attrs << " ty='" << xmlEncode(ty->type().typeId()) << "'";
     displayTagAttr("type", StrHelper(attrs.toString()), String());
     fReferencedTypes.insert(std::make_pair(node->type().typeId(),

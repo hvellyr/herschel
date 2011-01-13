@@ -5,9 +5,9 @@
 <isa>
 <ty:type nm='Pair'>
 <ty:gen>
-<ty:ref nm='L'>
+<ty:ref gen='t' nm='L'>
 </ty:ref>
-<ty:ref nm='R'>
+<ty:ref gen='t' nm='R'>
 </ty:ref>
 </ty:gen>
 </ty:type>

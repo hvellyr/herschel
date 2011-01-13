@@ -1,2 +1,3 @@
-def foo(x : 'T) : Range<T>
+def foo(x : 'T) : Range<'T>
+    where T isa Int
   x .. 100 as 'T

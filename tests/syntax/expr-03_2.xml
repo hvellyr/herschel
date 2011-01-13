@@ -4,13 +4,14 @@
 <vardef sym='v1'>
 <init>
 <apply>
-<symbol nm='Vector'>
-<gen>
-<ty:ref nm='lang|Int'>
-</ty:ref>
-</gen>
-</symbol>
+<symbol>lang|Vector|init</symbol>
 <args>
+<apply>
+<symbol>lang|allocate</symbol>
+<args>
+<type  ty='lang|Vector&lt;lang|Int>'/>
+</args>
+</apply>
 </args>
 </apply>
 </init>
@@ -30,18 +31,7 @@
 <def>
 <vardef sym='m1'>
 <init>
-<symbol nm='Map'>
-<gen>
-<ty:ref nm='lang|String'>
-</ty:ref>
-<ty:union>
-<ty:ref nm='Boolean'>
-</ty:ref>
-<ty:ref nm='lang|Eof'>
-</ty:ref>
-</ty:union>
-</gen>
-</symbol>
+<type  ty='lang|Map&lt;lang|String, &amp;(Boolean, lang|Eof)>'/>
 </init>
 </vardef>
 </def>
