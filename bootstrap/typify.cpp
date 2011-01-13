@@ -548,7 +548,11 @@ Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
       else if (param->flags() == kNamedArg) {
         Typifier::KeyargReturn keyval = findKeyedArg(args, argidx, param->key());
         if (keyval.fKeyarg == NULL) {
-          checkArgParamType(localCtx, param, param->initExpr(), i);
+          // if the function prototype has been parsed as interface, the init
+          // expressions are not passed and therefore we don't need to check
+          // them here.
+          if (param->initExpr() != NULL)
+            checkArgParamType(localCtx, param, param->initExpr(), i);
         }
         else {
           checkArgParamType(localCtx, param, keyval.fKeyarg->value(), keyval.fIdx);
