@@ -735,11 +735,16 @@ namespace heather
           {
             for (size_t i = 0; i < fGenerics.size(); ++i) {
               if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
-                                              scope, srcpos))
+                                              scope, srcpos)) {
+                fprintf(stderr, "<1>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
+                fprintf(stderr, "<1>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
                 return false;
+              }
             }
             return true;
           }
+          // fprintf(stderr, "<2>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
+          // fprintf(stderr, "<2>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
           return false;
         }
 
@@ -765,9 +770,14 @@ namespace heather
           if (fGenerics.size() == 2) {
             localCtx.registerType(fGenerics[0].typeName(), Type::newInt(true));
             localCtx.registerType(fGenerics[1].typeName(), right0.arrayBaseType());
+
+            return true;
           }
         }
       }
+
+      // fprintf(stderr, "<3>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
+      // fprintf(stderr, "<3>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
       return false;
     }
 

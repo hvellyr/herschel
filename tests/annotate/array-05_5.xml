@@ -56,7 +56,7 @@
 </vardef>
 </let>
 <apply  ty='lang|Sliceable!&lt;lang|Int, lang|Int>'>
-<symbol>lang|slice!</symbol>
+<symbol  ty='lambda(lang|Sliceable!&lt;&apos;K, &apos;E>, &apos;K, &apos;E):lang|Sliceable!&lt;&apos;K, &apos;E>'>lang|slice!</symbol>
 <args>
 <symbol  ty='lang|Int[]'>x</symbol>
 <int ty='lang|Int'>0</int>
@@ -64,7 +64,7 @@
 </args>
 </apply>
 <apply  ty='lang|Sliceable!&lt;lang|Int, lang|Int>'>
-<symbol>lang|slice!</symbol>
+<symbol  ty='lambda(lang|Sliceable!&lt;&apos;K, &apos;E>, &apos;K, &apos;E):lang|Sliceable!&lt;&apos;K, &apos;E>'>lang|slice!</symbol>
 <args>
 <symbol  ty='lang|Int[]'>y</symbol>
 <int ty='lang|Int'>1</int>
@@ -160,6 +160,40 @@
 <ty:ref gen='t' nm='T'>
 </ty:ref>
 </ty:array>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref ref='t' nm='lang|Sliceable!'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref ref='t' nm='lang|Sliceable!'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
 </ty:ret>
 </ty:fun>
 </ty:used-type>

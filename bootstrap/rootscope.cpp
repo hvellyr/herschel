@@ -141,10 +141,8 @@ heather::type::newRootScope(bool forUnitTests)
 
   // Collection<T>
   // OrderedCollection<T> : Collection<T>
-  // OrderedSliceable<Ordinal, T> : Sliceable<K, E>
   // Sequence<T> : (Collection<T>,
-  //                OrderedCollection<T>, 
-  //                OrderedSliceable<Ordinal, T>)
+  //                OrderedCollection<T>)
 
   root->registerType(sp, Names::kCollectionTypeName,
                      Type::newType(Names::kCollectionTypeName,
@@ -211,97 +209,6 @@ heather::type::newRootScope(bool forUnitTests)
                                                                   Type::newTypeRef(String("V"), true, true)),
                                                     newTypeConstVector(),
                                                     true)));
-
-  //------------------------------ slicing
-
-  {
-    // def type Sliceable<K, E>
-    TypeVector generics;
-    generics.push_back(Type::newTypeRef(String("K"), true, true));
-    generics.push_back(Type::newTypeRef(String("E"), true, true));
-
-    root->registerType(sp, Names::kSliceableTypeName,
-                       Type::newType(Names::kSliceableTypeName,
-                                     generics, Type()));
-  }
-  Type sliceableRef;
-  {
-    TypeVector refGenerics;
-    refGenerics.push_back(Type::newTypeRef(String("K"), true, true));
-    refGenerics.push_back(Type::newTypeRef(String("E"), true, true));
-
-    TypeConstVector refConstraints;
-    sliceableRef = Type::newTypeRef(Names::kSliceableTypeName,
-                                    refGenerics, refConstraints, true);
-  }
-
-  {
-    // def type Sliceable!<K, E> : Sliceable<K, E>
-    TypeVector generics;
-    generics.push_back(Type::newTypeRef(String("K"), true, true));
-    generics.push_back(Type::newTypeRef(String("E"), true, true));
-
-    root->registerType(sp, Names::kSliceableXTypeName,
-                       Type::newType(Names::kSliceableXTypeName,
-                                     generics, sliceableRef));
-  }
-  Type sliceableXRef;
-  Type refSliceableXRef;
-  {
-    TypeVector refGenerics;
-    refGenerics.push_back(Type::newTypeRef(String("K"), true, true));
-    refGenerics.push_back(Type::newTypeRef(String("E"), true, true));
-
-    TypeConstVector refConstraints;
-    sliceableXRef = Type::newTypeRef(Names::kSliceableXTypeName,
-                                    refGenerics, refConstraints, true);
-    refSliceableXRef = Type::newTypeRef(Names::kSliceableXTypeName,
-                                        refGenerics, refConstraints, false);
-  }
-
-  {
-    // def generic slice(obj @ 'S, key @ K) : 'E
-    //   where S isa Sliceable<K, E> ...
-
-    NodeList params;
-    params.push_back(new ParamNode(sp, String(), String("obj"),
-                                   kPosArg, sliceableRef, NULL));
-    params.push_back(new ParamNode(sp, String(), String("key"),
-                                   kPosArg,
-                                   Type::newTypeRef(String("K"), true, true),
-                                   NULL));
-    root->registerFunction(sp, Names::kLangSlice,
-                           new FuncDefNode(sp,
-                                           Names::kLangSlice,
-                                           kFuncIsGeneric | kFuncIsAbstract,
-                                           params,
-                                           Type::newTypeRef(String("E"), true, true),
-                                           NULL));
-  }
-
-  {
-    // def generic slice!(obj @ ^'S, key @ K, value @ E) : ^'S
-    //   where S isa Sliceable!<K, E> ...
-
-    NodeList params;
-    params.push_back(new ParamNode(sp, String(), String("obj"),
-                                   kPosArg, refSliceableXRef, NULL));
-    params.push_back(new ParamNode(sp, String(), String("key"),
-                                   kPosArg,
-                                   Type::newTypeRef(String("K"), true, true),
-                                   NULL));
-    params.push_back(new ParamNode(sp, String(), String("value"),
-                                   kPosArg,
-                                   Type::newTypeRef(String("E"), true, true),
-                                   NULL));
-    root->registerFunction(sp, Names::kLangSliceX,
-                           new FuncDefNode(sp,
-                                           Names::kLangSliceX,
-                                           kFuncIsGeneric | kFuncIsAbstract,
-                                           params,
-                                           refSliceableXRef,
-                                           NULL));
-  }
 
 
   return root.release();
