@@ -136,6 +136,8 @@ namespace heather
     E_ExpectedPipe        = 0x4404,
     E_ElseNotLastPattern  = 0x4405,
     E_BadPatternList      = 0x4406,
+    E_MissingExpr         = 0x4407,
+    E_UnexpectedMapTo     = 0x4408,
 
     E_UndefinedVar        = 0x4410,
     E_BadType             = 0x4411,

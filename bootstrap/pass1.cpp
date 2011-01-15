@@ -1534,11 +1534,16 @@ namespace heather
         pass->nextToken();
       }
 
+      SrcPos bodySrcpos = pass->fToken.srcpos();
       Token body = pass->parseExpr(true);
       if (body.isSet()) {
         if (mapToReq)
           result.push_back(mapToToken);
         result.push_back(body);
+      }
+      else {
+        errorf(bodySrcpos, E_MissingExpr,
+               "Missing expression for select pattern");
       }
       return result;
     }
@@ -1573,6 +1578,12 @@ namespace heather
         }
         fElseSeen = true;
         pass->nextToken();
+
+        if (pass->fToken == kMapTo) {
+          warningf(pass->fToken.srcpos(), E_UnexpectedMapTo,
+                   "Misplaced '->' after 'else' in select");
+          pass->nextToken();
+        }
 
         TokenVector consq = parseConsequent(pass, false);
         if (!ignore && !consq.empty())
