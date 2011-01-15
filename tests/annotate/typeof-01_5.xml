@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='ty' type='pos'>
+<type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+<param sym='value' type='key' key='value'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+<init>
+<apply  ty='&apos;T'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|null-value</symbol>
+<args>
+<symbol  ty='lang|Class&lt;&apos;T>'>ty</symbol>
+</args>
+</apply>
+</init>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+<body>
+<symbol  ty='&apos;T'>value</symbol>
+</body>
+</func>
+</def>
+<def>
+<func sym='bar'>
+<params>
+<param sym='n' type='pos'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+<param sym='value' type='key' key='value'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+<init>
+<apply  ty='&apos;T'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|null-value</symbol>
+<args>
+<apply  ty='lang|Class&lt;&apos;T>'>
+<symbol  ty='lambda(&apos;T):lang|Class&lt;&apos;T>'>lang|type-of</symbol>
+<args>
+<symbol  ty='&apos;T'>n</symbol>
+</args>
+</apply>
+</args>
+</apply>
+</init>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+<body>
+<symbol  ty='&apos;T'>value</symbol>
+</body>
+</func>
+</def>
+<def>
+<vardef sym='a'>
+<type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<int ty='lang|Int'>5</int>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='x'>
+<type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<apply  ty='lang|Int'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|null-value</symbol>
+<args>
+<apply  ty='lang|Class&lt;lang|Int>'>
+<symbol  ty='lambda(&apos;T):lang|Class&lt;&apos;T>'>lang|type-of</symbol>
+<args>
+<symbol  ty='lang|Int'>a</symbol>
+</args>
+</apply>
+</args>
+</apply>
+</init>
+</vardef>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>
