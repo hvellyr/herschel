@@ -217,7 +217,7 @@ CodeGenerator::codegen(const SymbolNode* node)
   }
 
   if (val == NULL) {
-    logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(node->name()));
+    logf(kError, "Unknown symbol '%s'", (const char*)StrHelper(node->name()));
     return NULL;
   }
 
@@ -426,7 +426,7 @@ CodeGenerator::codegen(const AssignNode* node)
     // Look up the name.
     llvm::AllocaInst* var = fNamedValues[lsym->name()];
     if (var == NULL) {
-      logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(lsym->name()));
+      logf(kError, "Unknown symbol '%s'", (const char*)StrHelper(lsym->name()));
       return NULL;
     }
 
