@@ -19,8 +19,6 @@ Bootstrap compiler
 
   - 'T is not allowed in a function body (!)
 
-  - Init functors must get the same visibility as the classes in export.
-
   - BUG: syntax errors from import files are not shown (handled) properly.
 
   - =====> get rid of multidimensional arrays for now.  Disallow [][]

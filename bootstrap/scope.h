@@ -12,6 +12,7 @@
 #include "common.h"
 
 #include <map>
+#include <set>
 
 #include "ptr.h"
 #include "exception.h"
@@ -97,6 +98,8 @@ namespace heather
 
     Scope* parent() const;
     ScopeLevel scopeLevel() const;
+    static const char* scopeLevelName(ScopeLevel level);
+    const char* scopeLevelName() const;
 
 
     //! Check whether a given symbol \p name is registered in this scope.  If
@@ -188,8 +191,12 @@ namespace heather
     bool shouldExportSymbol(const ScopeName& sym) const;
     VizType exportSymbolVisibility(const ScopeName& sym) const;
     bool exportSymbolIsFinal(const ScopeName& sym) const;
+    const std::set<String>& attachedExportSymbols(const ScopeName& sym) const;
+
     void registerSymbolForExport(ScopeDomain domain, const String& sym,
                                  VizType viz, bool asFinal);
+    void attachSymbolForExport(ScopeDomain domain, const String& sym,
+                               const String& attachedSym);
 
     void exportSymbols(Scope* dstScope, bool propagateOuter) const;
     void propagateImportedScopes(Scope* dstScope) const;
@@ -273,12 +280,17 @@ namespace heather
     void dumpDebugImpl() const;
 
     void exportAllSymbols(Scope* dstScope, bool propagateOuter) const;
+    void exportAttachedSymbols(Scope* dstScope,
+                               const ScopeName& fullKey, VizType vizType,
+                               bool isFinal) const;
+
 
     //-------- data members
 
     typedef std::map<String, Ptr<ScopeItem> > BaseScopeMap;
     typedef std::map<ScopeName, BaseScopeMap> NsScopeMap;
-    typedef std::map<String, Ptr<Scope> > ImportedScope;
+    typedef std::map<String, Ptr<Scope> >     ImportedScope;
+    typedef std::set<String>                  AttachedSymbols;
 
     NsScopeMap fMap;
     Ptr<Scope> fParent;
@@ -287,6 +299,7 @@ namespace heather
     {
       VizType fViz;
       bool    fIsFinal;
+      AttachedSymbols fAttachedSymbols;
     };
 
     typedef std::map<ScopeName, VisibilityPair> VizMap;

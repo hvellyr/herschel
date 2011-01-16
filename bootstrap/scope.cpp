@@ -213,13 +213,10 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
   ScopeName base(name.fDomain, heather::baseName(name.fName));
   ScopeName ns(name.fDomain, heather::nsName(name.fName));
 
-  // fprintf(stderr, "Look for '%s'\n", (const char*)StrHelper(name));
-
   NsScopeMap::const_iterator it = fMap.find(base);
   if (it != fMap.end()) {
     if (doAutoMatch && !isQualified(name.fName)) {
       if (it->second.size() == 1) {
-        // fprintf(stderr, " ... found something single\n");
         return LookupResult(it->second.begin()->second.obj(), false);
       }
       else if (showError) {
@@ -238,7 +235,6 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
     else {
       BaseScopeMap::const_iterator vit = it->second.find(ns.fName);
       if (vit != it->second.end()) {
-        // fprintf(stderr, " ... found something special\n");
         return LookupResult(vit->second.obj(), false);
       }
     }
@@ -248,8 +244,6 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
        it != fImportedScopes.end();
        it++)
   {
-    // fprintf(stderr, "Search for '%s' in '%s'\n",
-    //         (const char*)StrHelper(name), (const char*)StrHelper(it->first));
     LookupResult lv = it->second->lookupItemLocalImpl(srcpos, name,
                                                       showError,
                                                       doAutoMatch);
@@ -645,8 +639,8 @@ Scope::isVarInOuterFunction(const String& name) const
 }
 
 
-static const char*
-scopeLevelName(ScopeLevel level)
+const char*
+Scope::scopeLevelName(ScopeLevel level)
 {
   switch (level) {
   case kScopeL_CompileUnit: return "compile-unit";
@@ -655,6 +649,13 @@ scopeLevelName(ScopeLevel level)
   case kScopeL_Local:       return "local";
   };
   return "???";
+}
+
+
+const char*
+Scope::scopeLevelName() const
+{
+  return scopeLevelName(scopeLevel());
 }
 
 void
@@ -708,7 +709,7 @@ bool
 Scope::shouldExportSymbol(const ScopeName& sym) const
 {
   VizMap::const_iterator it = fVisibility.find(sym);
-  return (it != fVisibility.end());
+  return (it != fVisibility.end() && it->second.fViz != kUnset);
 }
 
 
@@ -716,7 +717,7 @@ VizType
 Scope::exportSymbolVisibility(const ScopeName& sym) const
 {
   VizMap::const_iterator it = fVisibility.find(sym);
-  if (it != fVisibility.end())
+  if (it != fVisibility.end() && it->second.fViz != kUnset)
     return it->second.fViz;
   return kPrivate;
 }
@@ -732,14 +733,63 @@ Scope::exportSymbolIsFinal(const ScopeName& sym) const
 }
 
 
+const std::set<String>& 
+Scope::attachedExportSymbols(const ScopeName& sym) const
+{
+  VizMap::const_iterator it = fVisibility.find(sym);
+  if (it != fVisibility.end())
+    return it->second.fAttachedSymbols;
+
+  static std::set<String> emptySet;
+  return emptySet;
+}
+
+
 void
 Scope::registerSymbolForExport(ScopeDomain domain, const String& sym,
                                VizType viz, bool isFinal)
 {
-  VisibilityPair vp;
-  vp.fViz = viz;
-  vp.fIsFinal = isFinal;
-  fVisibility.insert(std::make_pair(ScopeName(domain, sym), vp));
+  VizMap::iterator it = fVisibility.find(ScopeName(domain, sym));
+  if (it == fVisibility.end()) {
+    VisibilityPair vp;
+    vp.fViz = viz;
+    vp.fIsFinal = isFinal;
+    fVisibility.insert(std::make_pair(ScopeName(domain, sym), vp));
+  }
+  else {
+    bool registerAttachedSymbols = it->second.fViz == kUnset;
+
+    it->second.fViz = viz;
+    it->second.fIsFinal = isFinal;
+
+    if (registerAttachedSymbols) {
+      for (AttachedSymbols::iterator ait = it->second.fAttachedSymbols.begin();
+           ait != it->second.fAttachedSymbols.end();
+           ait++)
+      {
+        registerSymbolForExport(domain, *ait, viz, isFinal);
+      }
+    }
+  }
+}
+
+
+void
+Scope::attachSymbolForExport(ScopeDomain domain, const String& sym,
+                             const String& attachedSym)
+{
+  VizMap::iterator it = fVisibility.find(ScopeName(domain, sym));
+  if (it == fVisibility.end()) {
+    VisibilityPair vp;
+    vp.fViz = kUnset;
+    vp.fIsFinal = false;
+    vp.fAttachedSymbols.insert(attachedSym);
+    fVisibility.insert(std::make_pair(ScopeName(domain, sym), vp));
+  }
+  else {
+    it->second.fAttachedSymbols.insert(attachedSym);
+    registerSymbolForExport(domain, attachedSym, it->second.fViz, it->second.fIsFinal);
+  }
 }
 
 
@@ -747,6 +797,7 @@ VizType
 Scope::reduceVizType(VizType in) const
 {
   switch (in) {
+  case kUnset:
   case kPrivate:
     return kPrivate;
   case kInner:
@@ -758,6 +809,23 @@ Scope::reduceVizType(VizType in) const
   }
   assert(0);
   return kPrivate;
+}
+
+
+void
+Scope::exportAttachedSymbols(Scope* dstScope,
+                             const ScopeName& fullKey, VizType vizType,
+                             bool isFinal) const
+{
+  const AttachedSymbols& attachedSyms = attachedExportSymbols(fullKey);
+  for (AttachedSymbols::const_iterator ait = attachedSyms.begin();
+       ait != attachedSyms.end();
+       ait++)
+  {
+    String attachedSym = *ait;
+    dstScope->attachSymbolForExport(fullKey.fDomain, fullKey.fName,
+                                    attachedSym);
+  }
 }
 
 
@@ -786,9 +854,12 @@ Scope::exportAllSymbols(Scope* dstScope, bool propagateOuter) const
               isFinal == exportSymbolIsFinal(fullKey) ))
         {
           dstScope->registerScopeItem(fullKey, vit->second);
-          if (reducedVizType != kPrivate)
+
+          if (reducedVizType != kPrivate) {
             dstScope->registerSymbolForExport(fullKey.fDomain, fullKey.fName,
                                               reducedVizType, isFinal);
+            exportAttachedSymbols(dstScope, fullKey, reducedVizType, isFinal);
+          }
         }
       }
     }
@@ -824,9 +895,11 @@ Scope::exportSymbols(Scope* dstScope, bool propagateOuter) const
           bool isFinal = exportSymbolIsFinal(fullKey);
 
           dstScope->registerScopeItem(fullKey, vit->second);
-          if (reducedVizType != kPrivate)
+          if (reducedVizType != kPrivate) {
             dstScope->registerSymbolForExport(fullKey.fDomain, fullKey.fName,
                                               reducedVizType, isFinal);
+            exportAttachedSymbols(dstScope, fullKey, reducedVizType, isFinal);
+          }
         }
       }
     }
