@@ -42,7 +42,7 @@
 <if>
 <test>
 <apply>
-<symbol>end?</symbol>
+<symbol>lang|end?</symbol>
 <args>
 <symbol>__seq_0</symbol>
 </args>
@@ -56,7 +56,7 @@
 <assign>
 <symbol>i</symbol>
 <apply>
-<symbol>next</symbol>
+<symbol>lang|next</symbol>
 <args>
 <symbol>__seq_0</symbol>
 </args>
@@ -128,7 +128,7 @@
 <if>
 <test>
 <apply>
-<symbol>end?</symbol>
+<symbol>lang|end?</symbol>
 <args>
 <symbol>__seq_2</symbol>
 </args>
@@ -142,7 +142,7 @@
 <assign>
 <symbol>i</symbol>
 <apply>
-<symbol>next</symbol>
+<symbol>lang|next</symbol>
 <args>
 <symbol>__seq_2</symbol>
 </args>
@@ -214,7 +214,7 @@
 <if>
 <test>
 <apply>
-<symbol>end?</symbol>
+<symbol>lang|end?</symbol>
 <args>
 <symbol>__seq_4</symbol>
 </args>
@@ -228,7 +228,7 @@
 <assign>
 <symbol>i</symbol>
 <apply>
-<symbol>next</symbol>
+<symbol>lang|next</symbol>
 <args>
 <symbol>__seq_4</symbol>
 </args>

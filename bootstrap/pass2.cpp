@@ -903,7 +903,7 @@ SecondPass::defaultSlotInitValue(const SlotdefNode* slot)
 
   // TODO
 
-  return new SymbolNode(slot->srcpos(), String("lang|nil"));
+  return new SymbolNode(slot->srcpos(), Names::kLangNil);
 }
 
 
@@ -917,7 +917,7 @@ SecondPass::generateConstructor(const Token& typeExpr,
 {
   const SrcPos& srcpos = typeExpr.srcpos();
 
-  String ctorFuncName = fullTypeName + "|init";
+  String ctorFuncName = qualifyId(fullTypeName, Names::kInitFuncName);
   String selfParamSym = uniqueName("obj");
 
   NodeList params = copyNodes(defaultApplyParams);
@@ -939,7 +939,8 @@ SecondPass::generateConstructor(const Token& typeExpr,
     assert(slot != NULL);
 
     Ptr<ApplyNode> slotInit = new ApplyNode(srcpos,
-                                            new SymbolNode(srcpos, String("lang|slot!")));
+                                            new SymbolNode(srcpos,
+                                                           Names::kLangSlotX));
 
     slotInit->appendNode(new SymbolNode(srcpos, selfParamSym));
     slotInit->appendNode(new KeywordNode(srcpos, slot->name()));
@@ -1905,7 +1906,7 @@ SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
   Ptr<AptNode> initValue;
   size_t argc = args.size();
   if (KeyargNode* keyarg = dynamic_cast<KeyargNode*>(args[args.size() - 1].obj())) {
-    if (keyarg->key() == String("value")) {
+    if (keyarg->key() == Names::kValueKeyargName) {
       initValue = keyarg;
       argc--;
     }
@@ -1953,12 +1954,13 @@ SecondPass::generateAlloc(const Token& expr, const Type& type)
   Ptr<AptNode> funcNode;
   if (type.isOpen()) {
     Ptr<ApplyNode> apply = new ApplyNode(expr.srcpos(),
-                                         new SymbolNode(expr.srcpos(), String("lang|init-functor")));
+                                         new SymbolNode(expr.srcpos(),
+                                                        Names::kLangInitFunctor));
     apply->appendNode(new TypeNode(expr.srcpos(), type));
     funcNode = apply;
   }
   else {
-    String initName = type.typeName() + "|init";
+    String initName = qualifyId(type.typeName(), Names::kInitFuncName);
     funcNode = new SymbolNode(expr.srcpos(), initName);
   }
 
@@ -2363,7 +2365,7 @@ SecondPass::transformCollForClause(const Token& token,
   // ------------------------------ if (_seq.end?)
   Ptr<ApplyNode> testNode = new ApplyNode(srcpos,
                                           new SymbolNode(srcpos,
-                                                         String("end?")));
+                                                         Names::kLangEndp));
   testNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
 
   // --- then false
@@ -2375,7 +2377,7 @@ SecondPass::transformCollForClause(const Token& token,
   Ptr<AptNode> stepVarNode = new SymbolNode(srcpos, stepSym.idValue());
   Ptr<ApplyNode> nextSeqNode = new ApplyNode(srcpos,
                                              new SymbolNode(srcpos,
-                                                            String("next")));
+                                                            Names::kLangNext));
   nextSeqNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
 
   Ptr<AptNode> stepNextNode = new AssignNode(srcpos,
@@ -2917,7 +2919,7 @@ SecondPass::parseSeq(const Token& expr)
       case kReal:
         return newNodeList(parseRealNumber(expr));
       default:
-        printf("%d\n", expr.tokenType());
+        fprintf(stderr, "%d\n", expr.tokenType());
         assert(0);
         return NodeList();
       }
