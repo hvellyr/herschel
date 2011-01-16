@@ -164,7 +164,7 @@ Annotator::annotate(SymbolNode* node)
 
     if (Properties::test_passLevel() > 2) {
       errorf(node->srcpos(), E_UndefinedVar,
-             "Unknown variable '%s' [1]", (const char*)StrHelper(node->name()));
+             "Unknown symbol '%s'", (const char*)StrHelper(node->name()));
       // node->scope()->dumpDebug(true);
     }
   }
