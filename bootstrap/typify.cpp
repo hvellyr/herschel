@@ -112,15 +112,10 @@ Typifier::typify(ArrayTypeNode* node)
     typifyNode(node->typeNode());
 
     SymbolNode* symnd = dynamic_cast<SymbolNode*>(node->typeNode());
-    if (symnd != NULL) {
-      // TODO: shouldn't this be Class<some-type> ?
-      node->setType(Type::newClassOf(Type::newArray(symnd->type(), 0, true)));
-    }
-    else {
-      // TODO: shouldn't this be Class<some-type> ?
-      node->setType(Type::newClassOf(Type::newArray(node->typeNode()->type(),
-                                                    0, true)));
-    }
+    Type type = ( symnd != NULL
+                  ? symnd->type()
+                  : node->typeNode()->type() );
+    node->setType(Type::newClassOf(Type::newArray(type, 0, true)));
   }
 }
 
@@ -130,7 +125,6 @@ Typifier::typify(TypeNode* node)
 {
   if (fPhase == kTypify) {
     assert(node->type().isDef());
-    // TODO: shouldn't this be Class<some-type> ?
     node->setType(Type::newClassOf(node->type()));
   }
 }
@@ -629,16 +623,13 @@ Typifier::typify(ApplyNode* node)
     else {
       ArrayTypeNode* typeNode = dynamic_cast<ArrayTypeNode*>(node->base());
       if (typeNode != NULL) {
-        // TODO: check type ctor function API
         node->setType(typeNode->type());
       }
       else {
         if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->base())) {
-          // TODO: check type ctor function API
           node->setType(symNode->type());
         }
         else if (TypeNode* typeNode = dynamic_cast<TypeNode*>(node->base())) {
-          // TODO: 
           node->setType(typeNode->type());
         }
         else {
@@ -802,12 +793,11 @@ Typifier::typify(BinaryNode* node)
       break;
 
     case kOpIsa:
-      // TODO: the right side must be Any or Class<T>
       if (rightty.isAny() || rightty.isClassOf()) {
         node->setType(Type::newBool());
         return;
       }
-      // TODO: try to lookup a method which enables append(leftty, rightty) and
+      // TODO: try to lookup a method which enables isa(leftty, rightty) and
       // use it's returntype
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible right side type in isa operation");
@@ -821,8 +811,8 @@ Typifier::typify(BinaryNode* node)
           return;
         }
       }
-      // TODO: try to lookup a method which enables append(leftty, rightty) and
-      // use it's returntype
+      // TODO: try to lookup a method which enables append(leftty, rightty)
+      // and use it's returntype
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible types in append operation");
       node->setType(Type::newAny());
