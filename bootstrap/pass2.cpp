@@ -974,6 +974,8 @@ SecondPass::generateConstructor(const Token& typeExpr,
                                               body);
   fScope->registerFunction(typeExpr.srcpos(), ctorFuncName, ctorFunc);
 
+  fScope->attachSymbolForExport(Scope::kNormal, fullTypeName, ctorFuncName);
+
   return newDefNode(ctorFunc.release(), false);
 }
 
