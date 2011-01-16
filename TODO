@@ -19,7 +19,31 @@ Bootstrap compiler
 
   - 'T is not allowed in a function body (!)
 
+  - call superclass ctors from init-functor.  Do we need the 'on
+    super(super-type)' construct?
+
   - BUG: syntax errors from import files are not shown (handled) properly.
+
+  - BinaryNode: in case the builtin types are not recognized from the
+    compiler, lookup an add(), subtract(), multiply(), ... function and use
+    its type signature to check whether the binary operator is possible and
+    correct.
+
+    The same for binary compare operators.
+
+    The same for append(), fold()
+
+  - Missing node support:
+     - match
+     - select
+     - on
+     - slotdef
+     - typedef
+     - UnitConst
+
+  - replace the UnitConstant node by a proper Measure() ctor call.  Apply
+    the unit transformation inplace (if simple enough).  Register
+    unit-transform calls as special functions.
 
   - get rid of nested functions
     - detect closure variable access
@@ -31,10 +55,6 @@ Bootstrap compiler
   - array access
 
   - vardef parameters
-
-  - replace the UnitConstant node by a proper Measure() ctor call.  Apply
-    the unit transformation inplace (if simple enough).  Register
-    unit-transform calls as special functions.
 
   - enum:
     - construct proper enum constraint type
