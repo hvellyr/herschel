@@ -50,64 +50,65 @@ namespace heather
 
   //--------------------------------------------------------------------------
   // names of predefined types
+#define MID_core_ns             "lang"
 
-#define MID_AnyTypeName         "lang|Any"
+#define MID_AnyTypeName         MID_core_ns "|" "Any"
 
-#define MID_BoolTypeName        "lang|Bool"
-#define MID_CharTypeName        "lang|Char"
+#define MID_BoolTypeName        MID_core_ns "|" "Bool"
+#define MID_CharTypeName        MID_core_ns "|" "Char"
 
-#define MID_ObjectTypeName      "lang|Object"
-#define MID_ClassTypeName       "lang|Class"
+#define MID_ObjectTypeName      MID_core_ns "|" "Object"
+#define MID_ClassTypeName       MID_core_ns "|" "Class"
 
-#define MID_NumberTypeName      "lang|Number"
-#define MID_ComplexTypeName     "lang|Complex"
-#define MID_IntTypeName         "lang|Int"
-#define MID_RationalTypeName    "lang|Rational"
-#define MID_RealTypeName        "lang|Real"
-#define MID_OrdinalTypeName     "lang|Ordinal"
+#define MID_NumberTypeName      MID_core_ns "|" "Number"
+#define MID_ComplexTypeName     MID_core_ns "|" "Complex"
+#define MID_IntTypeName         MID_core_ns "|" "Int"
+#define MID_RationalTypeName    MID_core_ns "|" "Rational"
+#define MID_RealTypeName        MID_core_ns "|" "Real"
+#define MID_OrdinalTypeName     MID_core_ns "|" "Ordinal"
 
-#define MID_Float32TypeName     "lang|Float32"
-#define MID_Float64TypeName     "lang|Float64"
-#define MID_Float128TypeName    "lang|Float128"
+#define MID_Float32TypeName     MID_core_ns "|" "Float32"
+#define MID_Float64TypeName     MID_core_ns "|" "Float64"
+#define MID_Float128TypeName    MID_core_ns "|" "Float128"
 
-#define MID_EofTypeName         "lang|Eof"
-#define MID_NilTypeName         "lang|Nil"
-#define MID_UnspecifiedTypeName "lang|Unspecified"
+#define MID_EofTypeName         MID_core_ns "|" "Eof"
+#define MID_NilTypeName         MID_core_ns "|" "Nil"
+#define MID_UnspecifiedTypeName MID_core_ns "|" "Unspecified"
 
-#define MID_KeywordTypeName     "lang|Keyword"
-#define MID_StringTypeName      "lang|String"
+#define MID_KeywordTypeName     MID_core_ns "|" "Keyword"
+#define MID_StringTypeName      MID_core_ns "|" "String"
 
-#define MID_Int8TypeName        "lang|Int8"
-#define MID_UInt8TypeName       "lang|UInt8"
-#define MID_Int16TypeName       "lang|Int16"
-#define MID_UInt16TypeName      "lang|UInt16"
-#define MID_Int32TypeName       "lang|Int32"
-#define MID_UInt32TypeName      "lang|UInt32"
-#define MID_Int64TypeName       "lang|Int64"
-#define MID_UInt64TypeName      "lang|UInt64"
+#define MID_Int8TypeName        MID_core_ns "|" "Int8"
+#define MID_UInt8TypeName       MID_core_ns "|" "UInt8"
+#define MID_Int16TypeName       MID_core_ns "|" "Int16"
+#define MID_UInt16TypeName      MID_core_ns "|" "UInt16"
+#define MID_Int32TypeName       MID_core_ns "|" "Int32"
+#define MID_UInt32TypeName      MID_core_ns "|" "UInt32"
+#define MID_Int64TypeName       MID_core_ns "|" "Int64"
+#define MID_UInt64TypeName      MID_core_ns "|" "UInt64"
 
-#define MID_SliceableTypeName   "lang|Sliceable"
-#define MID_SliceableXTypeName  "lang|Sliceable!"
+#define MID_SliceableTypeName   MID_core_ns "|" "Sliceable"
+#define MID_SliceableXTypeName  MID_core_ns "|" "Sliceable!"
 
-#define MID_RangeTypeName       "lang|Range"
-#define MID_CollectionTypeName  "lang|Collection"
-#define MID_OrderedCollectionTypeName "lang|OrderedCollection"
-#define MID_SequenceTypeName    "lang|Sequence"
-#define MID_VectorTypeName      "lang|Vector"
-#define MID_AssocCollectionTypeName "lang|AssocCollection"
-#define MID_AssocTypeName       "lang|Assoc"
-#define MID_MapTypeName         "lang|Map"
+#define MID_RangeTypeName       MID_core_ns "|" "Range"
+#define MID_CollectionTypeName  MID_core_ns "|" "Collection"
+#define MID_OrderedCollectionTypeName MID_core_ns "|" "OrderedCollection"
+#define MID_SequenceTypeName    MID_core_ns "|" "Sequence"
+#define MID_VectorTypeName      MID_core_ns "|" "Vector"
+#define MID_AssocCollectionTypeName MID_core_ns "|" "AssocCollection"
+#define MID_AssocTypeName       MID_core_ns "|" "Assoc"
+#define MID_MapTypeName         MID_core_ns "|" "Map"
 
 
   //--------------------------------------------------------------------------
   // names of predefined functions
-#define MID_lang_return         "lang|return"
-#define MID_lang_slice          "lang|slice"
-#define MID_lang_sliceX         "lang|slice!"
-#define MID_lang_unspecified    "lang|unspecified"
-#define MID_lang_allocate       "lang|allocate"
-#define MID_lang_allocate_array "lang|allocate*"
-#define MID_lang_nil            "lang|nil"
+#define MID_lang_return         MID_core_ns "|" "return"
+#define MID_lang_slice          MID_core_ns "|" "slice"
+#define MID_lang_sliceX         MID_core_ns "|" "slice!"
+#define MID_lang_unspecified    MID_core_ns "|" "unspecified"
+#define MID_lang_allocate       MID_core_ns "|" "allocate"
+#define MID_lang_allocate_array MID_core_ns "|" "allocate*"
+#define MID_lang_nil            MID_core_ns "|" "nil"
 
 
   class Names
@@ -169,10 +170,19 @@ namespace heather
     const static String kLangAllocate;
     const static String kLangAllocateArray;
     const static String kLangNil;
+    const static String kLangInitFunctor;
+    const static String kLangSlot;
+    const static String kLangSlotX;
+    const static String kLangEndp;
+    const static String kLangNext;
 
     // known keywords
     const static String kExitKeyword;
     const static String kSignalKeyword;
+
+    // predefined function, variable, and keyarg names
+    const static String kInitFuncName;
+    const static String kValueKeyargName;
   };
 };                              // namespace
 

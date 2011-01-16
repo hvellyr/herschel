@@ -96,7 +96,7 @@
 <if>
 <test>
 <apply>
-<symbol>end?</symbol>
+<symbol>lang|end?</symbol>
 <args>
 <symbol>__seq_0</symbol>
 </args>
@@ -110,7 +110,7 @@
 <assign>
 <symbol>name</symbol>
 <apply>
-<symbol>next</symbol>
+<symbol>lang|next</symbol>
 <args>
 <symbol>__seq_0</symbol>
 </args>

@@ -61,13 +61,24 @@ const String heather::Names::kAssocTypeName       = String(MID_AssocTypeName);
 const String heather::Names::kAssocCollectionTypeName = String(MID_AssocCollectionTypeName);
 const String heather::Names::kMapTypeName         = String(MID_MapTypeName);
 
-const String heather::Names::kLangReturn      = String(MID_lang_return);
-const String heather::Names::kLangSlice       = String(MID_lang_slice);
-const String heather::Names::kLangSliceX      = String(MID_lang_sliceX);
-const String heather::Names::kLangUnspecified = String(MID_lang_unspecified);
-const String heather::Names::kLangAllocate    = String(MID_lang_allocate);
-const String heather::Names::kLangAllocateArray = String(MID_lang_allocate_array);
-const String heather::Names::kLangNil         = String(MID_lang_nil);
+const String heather::Names::kLangReturn          = String(MID_lang_return);
+const String heather::Names::kLangSlice           = String(MID_lang_slice);
+const String heather::Names::kLangSliceX          = String(MID_lang_sliceX);
+const String heather::Names::kLangUnspecified     = String(MID_lang_unspecified);
+const String heather::Names::kLangAllocate        = String(MID_lang_allocate);
+const String heather::Names::kLangAllocateArray   = String(MID_lang_allocate_array);
+const String heather::Names::kLangNil             = String(MID_lang_nil);
+const String heather::Names::kLangInitFunctor     = String(MID_core_ns "|" "init-functor");
+const String heather::Names::kLangSlot            = String(MID_core_ns "|" "slot");
+const String heather::Names::kLangSlotX           = String(MID_core_ns "|" "slot!");
+const String heather::Names::kLangEndp            = String(MID_core_ns "|" "end?");
+const String heather::Names::kLangNext            = String(MID_core_ns "|" "next");
 
-const String heather::Names::kExitKeyword = String(MID_exitKeyword);
-const String heather::Names::kSignalKeyword = String(MID_signalKeyword);
+const String heather::Names::kExitKeyword         = String(MID_exitKeyword);
+const String heather::Names::kSignalKeyword       = String(MID_signalKeyword);
+
+
+const String heather::Names::kInitFuncName        = String("init");
+const String heather::Names::kValueKeyargName     = String("value");
+
+
