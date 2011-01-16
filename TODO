@@ -21,10 +21,6 @@ Bootstrap compiler
 
   - BUG: syntax errors from import files are not shown (handled) properly.
 
-  - =====> get rid of multidimensional arrays for now.  Disallow [][]
-    explicitely ...
-
-
   - get rid of nested functions
     - detect closure variable access
 
@@ -69,43 +65,15 @@ Language and ideas:
       def generic init(a @ Int) ...
       def generic init(a @ Int, b @ String) ...
 
-  - how to specify class functions (or static functions)
+  - Document how to specify class functions:
 
-      def generic apply(self @ Abc.class) ... ???
-      def generic apply(self @ class(Abc)) ... ???
       def generic apply(self @ Class<Abc>) ... ???
-
-    The notation Class<T> makes actually clear what we are talking about:
-    We declare that the class of a type T is actually an instance of the
-    meta class Class<T>.  It is therefore naturally to bind methods to this
-    meta class.  And of course it doesn't need a compiler/syntax change.
-
-    or a generic attribute approach (cf. def slots):
-
-      def generic apply(self @ Abc) ; class ...
-
-    This would allow also to define class variables (shared) by all
-    instances of a class:
-
-      def slot x ; class
 
   - write up about module/interface.  Review import, export, module, etc.
     See CHANGES.
 
   - notation for classes and types.  This is required if you need to pass a
     first-class class into a function.  (Isn't this Class<'T> ?)
-
-  - Group export for enum values.  Export an enum type automatically
-    exports its defined value items:
-
-    Additional I like to see:
-
-      def enum X { a b c d }
-      export public (X)
-
-      =>
-
-      export public (X a b c d)
 
   - structs ?  Contrary to classes do not support inheritance, but provide
     fixed, controlled, and fast slot layout.
