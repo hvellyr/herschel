@@ -1235,6 +1235,8 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
                                       fullSymName, kEnumVar, isLocal,
                                       baseType, initExpr);
     fScope->registerVar(enumVal.srcpos(), fullSymName, var);
+
+    fScope->attachSymbolForExport(Scope::kNormal, fullEnumName, fullSymName);
   }
 
   //-------- define the enum type as 'def type X : (Y in ...)'
