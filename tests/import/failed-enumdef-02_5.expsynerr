@@ -1,0 +1,2 @@
+5 ; error ; 4410     ; Unknown symbol 'foot-pedal'
+5 ; error ; 4412     ; undefined type 'MidiControllerX' in variable

@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='a' type='spec'>
+<type>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:array>
+</type>
+</param>
+<param sym='new-size' type='pos'>
+<type>
+<ty:ref nm='lang|Ordinal'>
+</ty:ref>
+</type>
+</param>
+<param sym='init-value' type='key' key='init-value'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+<init>
+<apply>
+<symbol>null-value</symbol>
+<args>
+<apply>
+<symbol>class-of</symbol>
+<args>
+<apply>
+<symbol>base-type</symbol>
+<args>
+<symbol>a</symbol>
+</args>
+</apply>
+</args>
+</apply>
+</args>
+</apply>
+</init>
+</param>
+</params>
+<rettype>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:array>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t'>
+<init>
+<apply>
+<apply>
+<symbol>class-of</symbol>
+<args>
+<symbol>a</symbol>
+</args>
+</apply>
+<args>
+<symbol>new-size</symbol>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<apply>
+<symbol>init</symbol>
+<args>
+<symbol>t</symbol>
+<symbol>init-value</symbol>
+</args>
+</apply>
+<symbol>t</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

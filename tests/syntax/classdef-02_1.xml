@@ -1,2 +1,96 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>class</id><id>X</id><nested left='&lt;' right='>'><id>A</id><punct type=','/><id>B</id></nested><nested left='(' right=')'><seq><id>a</id><punct type=':'/><id>Any</id></seq><punct type=','/><seq><id>b</id><punct type=':'/><id>Any</id></seq></nested><punct type=':'/><nested left='(' right=')'><id>C</id><punct type=','/><nested left='&amp;(' right=')'><id>D</id><punct type=','/><id>E</id></nested><punct type=','/><seq><id>F</id><nested left='&lt;' right='>'><id>B</id></nested></seq></nested><nested left='{' right='}'><seq><id>def</id><id>slot</id><id>x</id><punct type=':'/><id>Int</id><punct type='='/><id>a</id><punct type=';'/><id>readonly</id></seq><seq><id>def</id><id>slot</id><id>y</id><punct type=':'/><id>Int</id><punct type='='/><id>b</id><punct type=';'/><id>readonly</id><punct type=','/><id>observable</id></seq><seq><id>def</id><id>generic</id><id>f</id><nested left='(' right=')'><seq><id>x</id><punct type=':'/><seq><punct type='&apos;'/><id>T</id></seq></seq></nested><punct type=':'/><id>Any</id><punct type='...'/></seq><seq><id>def</id><id>slot</id><id>z</id><punct type=':'/><id>Cache</id><punct type=';'/><id>transient</id></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>class</id>
+<id>X</id>
+<nested left='&lt;' right='>'>
+<id>A</id>
+<punct type=','/>
+<id>B</id>
+</nested>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>b</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
+<punct type=':'/>
+<nested left='(' right=')'>
+<id>C</id>
+<punct type=','/>
+<nested left='&amp;(' right=')'>
+<id>D</id>
+<punct type=','/>
+<id>E</id>
+</nested>
+<punct type=','/>
+<seq>
+<id>F</id>
+<nested left='&lt;' right='>'>
+<id>B</id>
+</nested>
+</seq>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>x</id>
+<punct type=':'/>
+<id>Int</id>
+<punct type='='/>
+<id>a</id>
+<punct type=';'/>
+<id>readonly</id>
+</seq>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>y</id>
+<punct type=':'/>
+<id>Int</id>
+<punct type='='/>
+<id>b</id>
+<punct type=';'/>
+<id>readonly</id>
+<punct type=','/>
+<id>observable</id>
+</seq>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>f</id>
+<nested left='(' right=')'>
+<seq>
+<id>x</id>
+<punct type=':'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>z</id>
+<punct type=':'/>
+<id>Cache</id>
+<punct type=';'/>
+<id>transient</id>
+</seq>
+</nested>
+</seq>
+</seq>

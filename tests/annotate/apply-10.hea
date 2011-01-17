@@ -1,0 +1,7 @@
+def foo(x : &('T, Bool == false)) : &('T, Bool == false) ...
+
+def sep(x : &('Z, Bool == false)) : 'Z ...
+
+def bar()
+  let y : &(String, Bool)
+  sep(foo(y))

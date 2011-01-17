@@ -1,0 +1,6 @@
+def foo()
+  select (n) {
+    | 0 ->
+    | 1
+    | else -> "else"
+  }

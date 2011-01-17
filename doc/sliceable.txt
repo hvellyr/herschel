@@ -1,0 +1,4 @@
+lang|Sliceable<K, E>   vs.  Int[][]  -> K must be Int (or more precise: Ordinal)
+                                        E is Int[]
+                       vs.  Int[]    -> K is Ordinal
+                                        E is Int

@@ -39,7 +39,7 @@ TypeCtx::registerType(const String& name, const Type& type)
 {
   assert(fMap.find(name) == fMap.end());
   // assert(!type.isRef());
-  assert(!type.isArray());
+//  assert(!type.isArray());
   assert(type.isDef());
 
   fMap.insert(std::make_pair(name, type));
@@ -75,4 +75,17 @@ TypeCtx::lookupTypeLocal(const String& name) const
     return it->second;
 
   return sInvalidType;
+}
+
+
+void
+TypeCtx::dumpDebug()
+{
+  for (TypeMap::const_iterator it = fMap.begin(), e = fMap.end();
+       it != e; ++it)
+  {
+    fprintf(stderr, "TYPECTX: %s -> %s\n",
+            (const char*)StrHelper(it->first),
+            (const char*)StrHelper(it->second.toString()));
+  }
 }

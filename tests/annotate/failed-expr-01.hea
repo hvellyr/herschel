@@ -1,0 +1,4 @@
+def f2(a : Int8, b : Char)
+  let t0 = a % b
+  let t1 = a ++ b
+

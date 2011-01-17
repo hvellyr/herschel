@@ -1,2 +1,146 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>module</id><id>colors</id><nested left='(' right=')'><lit type='str'>colors</lit></nested><nested left='{' right='}'><seq><id>module</id><id>red</id><nested left='(' right=')'><lit type='str'>red</lit></nested><nested left='{' right='}'><seq><id>module</id><id>apple</id><nested left='(' right=')'><lit type='str'>apple</lit></nested><nested left='{' right='}'><seq><id>export</id><id>inner</id><nested left='(' right=')'><id>abc</id></nested></seq><seq><id>export</id><id>outer</id><nested left='(' right=')'><id>xyz</id></nested></seq><seq><id>def</id><id>f</id><nested left='(' right=')'/><punct type=':'/><id>Any</id><nested left='{' right='}'><lit type='str'>hello</lit></nested></seq></nested></seq><seq><id>module</id><id>cherry</id><nested left='(' right=')'><lit type='str'>cherry</lit></nested><nested left='{' right='}'><seq><id>def</id><id>g</id><nested left='(' right=')'/><punct type=':'/><id>Any</id><nested left='{' right='}'><lit type='str'>hello</lit></nested></seq></nested></seq></nested></seq><seq><id>module</id><id>green</id><nested left='(' right=')'><lit type='str'>green</lit></nested><nested left='{' right='}'><seq><id>module</id><id>apple</id><nested left='(' right=')'><lit type='str'>apple</lit></nested><nested left='{' right='}'><seq><id>export</id><id>public</id><nested left='(' right=')'><id>mno</id></nested></seq><seq><id>def</id><id>h</id><nested left='(' right=')'/><punct type=':'/><id>Any</id><nested left='{' right='}'><seq><id>abc</id><nested left='(' right=')'/></seq><lit type='str'>world</lit></nested></seq></nested></seq><seq><id>module</id><id>melon</id><nested left='(' right=')'><lit type='str'>melon</lit></nested><nested left='{' right='}'/></seq></nested></seq></nested></seq><seq><id>export</id><id>public</id><nested left='(' right=')'><id>*</id></nested></seq><seq><id>def</id><id>i</id><nested left='(' right=')'/><punct type=':'/><id>Any</id><nested left='{' right='}'><seq><id>abc</id><nested left='(' right=')'/></seq><lit type='str'>world</lit><seq><id>uvw</id><nested left='(' right=')'/></seq><lit type='str'>green apples</lit></nested></seq></seq>
+<seq>
+<seq>
+<id>module</id>
+<id>colors</id>
+<nested left='(' right=')'>
+<lit type='str'>colors</lit>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>module</id>
+<id>red</id>
+<nested left='(' right=')'>
+<lit type='str'>red</lit>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>module</id>
+<id>apple</id>
+<nested left='(' right=')'>
+<lit type='str'>apple</lit>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>export</id>
+<id>inner</id>
+<nested left='(' right=')'>
+<id>abc</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>outer</id>
+<nested left='(' right=')'>
+<id>xyz</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<lit type='str'>hello</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>module</id>
+<id>cherry</id>
+<nested left='(' right=')'>
+<lit type='str'>cherry</lit>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>g</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<lit type='str'>hello</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>module</id>
+<id>green</id>
+<nested left='(' right=')'>
+<lit type='str'>green</lit>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>module</id>
+<id>apple</id>
+<nested left='(' right=')'>
+<lit type='str'>apple</lit>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>mno</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>h</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>abc</id>
+<nested left='(' right=')'/>
+</seq>
+<lit type='str'>world</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>module</id>
+<id>melon</id>
+<nested left='(' right=')'>
+<lit type='str'>melon</lit>
+</nested>
+<nested left='{' right='}'/>
+</seq>
+</nested>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>*</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>i</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>abc</id>
+<nested left='(' right=')'/>
+</seq>
+<lit type='str'>world</lit>
+<seq>
+<id>uvw</id>
+<nested left='(' right=')'/>
+</seq>
+<lit type='str'>green apples</lit>
+</nested>
+</seq>
+</seq>

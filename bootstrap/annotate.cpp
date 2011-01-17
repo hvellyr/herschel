@@ -15,6 +15,8 @@
 #include "properties.h"
 #include "scope.h"
 #include "symbol.h"
+#include "compiler.h"
+#include "rootscope.h"
 
 
 #include <typeinfo>  //for 'typeid' to work
@@ -22,10 +24,30 @@
 
 using namespace heather;
 
+
 //----------------------------------------------------------------------------
 
-Annotator::Annotator()
-  : fPhase(kRegister)
+AnnotatePass::AnnotatePass(int level, Scope* scope)
+  : AptNodeCompilePass(level),
+    fScope(scope)
+{}
+
+
+AptNode*
+AnnotatePass::doApply(AptNode* src)
+{
+  Ptr<AptNode> node = src;
+  Ptr<Annotator> an = new Annotator(fScope);
+  an->annotateRecursively(node);
+  return node.release();
+}
+
+
+//----------------------------------------------------------------------------
+
+Annotator::Annotator(Scope* scope)
+  : fScope(scope),
+    fPhase(kRegister)
 {
 }
 
@@ -33,12 +55,8 @@ Annotator::Annotator()
 void
 Annotator::annotateRecursively(AptNode* node)
 {
-  {
-    fScope = new Scope(kScopeL_CompileUnit);
-
-    fPhase = kRegister;
-    annotateNode(node);
-  }
+  fPhase = kRegister;
+  annotateNode(node);
 
   fPhase = kLookup;
   annotateNode(node);
@@ -57,15 +75,21 @@ Annotator::annotateNode(AptNode* node)
 void
 Annotator::annotate(CompileUnitNode* node)
 {
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), false, false);
 }
 
 
 void
-Annotator::annotateNodeList(NodeList& nl)
+Annotator::annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype)
 {
-  for (size_t i = 0; i < nl.size(); i++)
+  const size_t nlsize = nl.size();
+  for (size_t i = 0; i < nlsize; i++) {
+    if (marktailpos && i == nlsize - 1)
+      nl[i]->setIsInTailPos(true);
+    if (marksingletype)
+      nl[i]->setIsSingleTypeRequired(true);
     annotateNode(nl[i]);
+  }
 }
 
 
@@ -138,26 +162,26 @@ Annotator::annotate(SymbolNode* node)
       return;
     }
 
-    if (Properties::test_passLevel() > 2)
+    if (Properties::test_passLevel() > 2) {
       errorf(node->srcpos(), E_UndefinedVar,
-             "Unknown variable '%s'", (const char*)StrHelper(node->name()));
+             "Unknown symbol '%s'", (const char*)StrHelper(node->name()));
+      // node->scope()->dumpDebug(true);
+    }
   }
 }
 
 
 void
-Annotator::annotate(ArraySymbolNode* node)
+Annotator::annotate(ArrayTypeNode* node)
 {
-  if (fPhase == kLookup) {
-    Type type = node->scope()->lookupType(node->name(), true);
-    if (!type.isDef()) {
-      if (Properties::test_passLevel() > 2)
-        errorf(node->srcpos(), E_UndefinedVar,
-               "Unknown variable '%s'", (const char*)StrHelper(node->name()));
-    }
-    else
-      node->setName(type.typeName());
-  }
+  annotateNode(node->typeNode());
+}
+
+
+void
+Annotator::annotate(TypeNode* node)
+{
+  // TODO
 }
 
 
@@ -168,12 +192,16 @@ Annotator::annotate(DefNode* node)
 {
   VardefNode* vardefNode = dynamic_cast<VardefNode*>(node->defNode());
   if (vardefNode != NULL) {
+    if (fPhase == kRegister)
+      vardefNode->setScope(fScope);
     annotate(vardefNode, false);
     return;
   }
 
   FuncDefNode* funcNode = dynamic_cast<FuncDefNode*>(node->defNode());
   if (funcNode != NULL) {
+    if (fPhase == kRegister)
+      funcNode->setScope(fScope);
     annotate(funcNode, false);
     return;
   }
@@ -187,12 +215,16 @@ Annotator::annotate(LetNode* node)
 {
   VardefNode* vardefNode = dynamic_cast<VardefNode*>(node->defNode());
   if (vardefNode != NULL) {
+    if (fPhase == kRegister)
+      vardefNode->setScope(fScope);
     annotate(vardefNode, true);
     return;
   }
 
   FuncDefNode* funcNode = dynamic_cast<FuncDefNode*>(node->defNode());
   if (funcNode != NULL) {
+    if (fPhase == kRegister)
+      funcNode->setScope(fScope);
     annotate(funcNode, true);
     return;
   }
@@ -205,27 +237,35 @@ void
 Annotator::annotate(VardefNode* node, bool isLocal)
 {
   if (fPhase == kRegister) {
-    if (!fScope->checkForRedefinition(node->srcpos(),
-                                      Scope::kNormal, node->name()))
-      fScope->registerVar(node->srcpos(), node->name(), node);
+    if (isLocal) {
+      if (!fScope->checkForRedefinition(node->srcpos(),
+                                        Scope::kNormal, node->name()))
+        fScope->registerVar(node->srcpos(), node->name(), node);
+    }
   }
 
-  if (node->initExpr() != NULL)
+  if (node->initExpr() != NULL) {
+    node->initExpr()->setIsSingleTypeRequired(true);
     annotateNode(node->initExpr());
+  }
 }
 
 
 void
 Annotator::annotate(FuncDefNode* node, bool isLocal)
 {
-  if (fPhase == kRegister)
-    fScope->registerFunction(node->srcpos(), node->name(), node);
+  if (fPhase == kRegister) {
+    if (isLocal)
+      fScope->registerFunction(node->srcpos(), node->name(), node);
+  }
 
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
 
-  annotateNodeList(node->params());
-  if (node->body() != NULL)
+  annotateNodeList(node->params(), false, true);
+  if (node->body() != NULL) {
+    node->body()->setIsInTailPos(true);
     annotateNode(node->body());
+  }
 }
 
 
@@ -234,9 +274,11 @@ Annotator::annotate(FunctionNode* node)
 {
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
 
-  annotateNodeList(node->params());
-  if (node->body() != NULL)
+  annotateNodeList(node->params(), false, true);
+  if (node->body() != NULL) {
+    node->body()->setIsInTailPos(true);
     annotateNode(node->body());
+  }
 }
 
 
@@ -256,7 +298,7 @@ void
 Annotator::annotate(BlockNode* node)
 {
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), node->isInTailPos(), false);
 }
 
 
@@ -269,23 +311,26 @@ Annotator::annotate(ParamNode* node)
       fScope->registerVar(node->srcpos(), node->name(), node);
   }
 
-  if (node->initExpr() != NULL)
+  if (node->initExpr() != NULL) {
+    node->initExpr()->setIsSingleTypeRequired(true);
     annotateNode(node->initExpr());
+  }
 }
 
 
 void
 Annotator::annotate(ApplyNode* node)
 {
+  node->base()->setIsSingleTypeRequired(true);
   annotateNode(node->base());
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), false, true);
 }
 
 
 void
 Annotator::annotate(ArrayNode* node)
 {
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), false, true);
 }
 
 
@@ -293,6 +338,8 @@ void
 Annotator::annotate(AssignNode* node)
 {
   annotateNode(node->lvalue());
+
+  node->rvalue()->setIsSingleTypeRequired(true);
   annotateNode(node->rvalue());
 }
 
@@ -316,15 +363,20 @@ void
 Annotator::annotate(IfNode* node)
 {
   annotateNode(node->test());
+
+  node->consequent()->setIsInTailPos(node->isInTailPos());
   annotateNode(node->consequent());
-  if (node->alternate())
+  if (node->alternate()) {
+    node->alternate()->setIsInTailPos(node->isInTailPos());
     annotateNode(node->alternate());
+  }
 }
 
 
 void
 Annotator::annotate(KeyargNode* node)
 {
+  node->value()->setIsSingleTypeRequired(true);
   annotateNode(node->value());
 }
 
@@ -332,9 +384,10 @@ Annotator::annotate(KeyargNode* node)
 void
 Annotator::annotate(MatchNode* node)
 {
-  annotateNode(node->fExpr);
-  for (size_t i = 0; i < node->fMappings.size(); i++) {
-    annotateNode(node->fMappings[i].fConsequent);
+  // TODO : set tail node position
+  annotateNode(node->expr());
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    annotateNode(node->mappingAt(i).fConsequent);
   }
 }
 
@@ -342,19 +395,20 @@ Annotator::annotate(MatchNode* node)
 void
 Annotator::annotate(SelectNode* node)
 {
-  annotateNode(node->fTest);
-  if (node->fComparator != NULL)
-    annotateNode(node->fComparator);
+  // TODO : set tail node position
+  annotateNode(node->test());
+  if (node->comparator() != NULL)
+    annotateNode(node->comparator());
 
-  for (size_t i = 0; i < node->fMappings.size(); i++) {
-    if (node->fMappings[i].fTestValues.empty()) {
-      annotateNode(node->fMappings[i].fConsequent);
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    if (node->mappingAt(i).fTestValues.empty()) {
+      annotateNode(node->mappingAt(i).fConsequent);
     }
     else {
-      for (size_t j = 0; j < node->fMappings[i].fTestValues.size(); j++)
-        annotateNode(node->fMappings[i].fTestValues[j]);
+      for (size_t j = 0; j < node->mappingAt(i).fTestValues.size(); j++)
+        annotateNode(node->mappingAt(i).fTestValues[j]);
     }
-    annotateNode(node->fMappings[i].fConsequent);
+    annotateNode(node->mappingAt(i).fConsequent);
   }
 }
 
@@ -362,9 +416,10 @@ Annotator::annotate(SelectNode* node)
 void
 Annotator::annotate(OnNode* node)
 {
+  // TODO : set tail node position
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
-  annotateNodeList(node->params());
+  annotateNodeList(node->params(), false, true);
   annotateNode(node->body());
 }
 
@@ -372,6 +427,7 @@ Annotator::annotate(OnNode* node)
 void
 Annotator::annotate(RangeNode* node)
 {
+  // TODO : set tail node position
   annotateNode(node->from());
   annotateNode(node->to());
   if (node->by() != NULL)
@@ -382,15 +438,21 @@ Annotator::annotate(RangeNode* node)
 void
 Annotator::annotate(TypeDefNode* node)
 {
-  if (fPhase == kRegister)
-    fScope->registerType(node->srcpos(), node->name(), node->defType());
+  // TODO : set tail node position
+
+  // don't re-register the type if global; it is registered in pass2 already
+  // if (fPhase == kRegister)
+  //   fScope->registerType(node->srcpos(), node->name(), node->defType());
 }
 
 
 void
 Annotator::annotate(WhileNode* node)
 {
+  node->test()->setIsSingleTypeRequired(true);
   annotateNode(node->test());
+
+  node->body()->setIsInTailPos(node->isInTailPos());
   annotateNode(node->body());
 }
 
@@ -398,20 +460,21 @@ Annotator::annotate(WhileNode* node)
 void
 Annotator::annotate(VectorNode* node)
 {
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), false, true);
 }
 
 
 void
 Annotator::annotate(DictNode* node)
 {
-  annotateNodeList(node->children());
+  annotateNodeList(node->children(), false, true);
 }
 
 
 void
 Annotator::annotate(CastNode* node)
 {
+  node->base()->setIsSingleTypeRequired(true);
   annotateNode(node->base());
 }
 

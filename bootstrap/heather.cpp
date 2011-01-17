@@ -10,16 +10,15 @@
 #  include <XmlTestReporter.h>
 #endif
 
+#include "apt.h"
 #include "common.h"
-#include "str.h"
+#include "compiler.h"
+#include "log.h"
 #include "option.h"
 #include "properties.h"
 #include "ptr.h"
-#include "apt.h"
-#include "log.h"
-#include "parser.h"
-#include "codegen.h"
-#include "file.h"
+#include "str.h"
+#include "setup.h"
 
 
 using namespace heather;
@@ -53,7 +52,7 @@ displayHelp()
   printf("     --define=VAR=VALUE\n");
   printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
   printf("                               {tokenizer|pass1|pass2|annotate|\n");
-  printf("                                transform|import|macro}\n");
+  printf("                                transform|typify|import|macro}\n");
   printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
   printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
   printf("  -O                           Optimize code more\n");
@@ -64,6 +63,7 @@ displayHelp()
   printf("           --parse-1           Only do pass1 phase\n");
   printf("           --parse-2           Only do pass1 + pass2 phase\n");
   printf("           --parse-3           Only do pass1, 2, 3 phase\n");
+  printf("           --parse-4           Only do pass1..4 phase\n");
 #endif
   printf("  -P,      --parse             Only parse the source files\n");
   printf("  -c                           Only compile the source files, no link\n");
@@ -105,82 +105,13 @@ enum {
   kOptParse1,
   kOptParse2,
   kOptParse3,
+  kOptParse4,
 #endif
 };
 
 #if defined(UNITTESTS)
 static String sUnitTestFormat;
 #endif
-
-
-static String
-makeCompileOutputFileExt()
-{
-  switch (Properties::compileOutFormat()) {
-  case kNativeObject:
-    return String("o");
-  case kLLVM_IR:
-    return String("ll");
-  case kLLVM_BC:
-    return String("bc");
-  }
-  assert(0);
-  return String();
-}
-
-
-static String
-makeOutputFileName(const String& outdir, const String& outfileName,
-                   const String& file,
-                   const String& outExt)
-{
-  if (!outfileName.isEmpty())
-    return outfileName;
-
-  if (!outdir.isEmpty())
-    return file::append(outdir,
-                        file::appendExt(file::baseName(file::namePart(file)),
-                                        outExt));
-
-  return file::appendExt(file::baseName(file), outExt);
-}
-
-
-static void
-compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
-            const String& outfileName)
-{
-  try {
-    if (doParse) {
-      Ptr<Parser> parser = new Parser;
-      Ptr<AptNode> apt = parser->parse(new CharPort(new FilePort(file, "rb")),
-                                       file);
-      if (doCompile) {
-        assert(apt);
-        CompileUnitNode* unit = dynamic_cast<CompileUnitNode*>(apt.obj());
-        assert(unit != NULL);
-
-        if (unit != NULL) {
-          String outExt = makeCompileOutputFileExt();
-          String outFile = makeOutputFileName(Properties::outdir(),
-                                              outfileName, file, outExt);
-
-          Ptr<CodeGenerator> codegen = new CodeGenerator();
-          codegen->compileToCode(unit, outFile);
-        }
-
-        if (doLink) {
-          // TODO
-        }
-      }
-    }
-  }
-  catch (const Exception& e) {
-    logf(kError, "compilation of '%s' failed: %s",
-         (const char*)StrHelper(file),
-         (const char*)StrHelper(e.message()));
-  }
-}
 
 
 int
@@ -209,6 +140,7 @@ main(int argc, char** argv)
     { kOptParse1,       NULL,  "--parse-1",        false },
     { kOptParse2,       NULL,  "--parse-2",        false },
     { kOptParse3,       NULL,  "--parse-3",        false },
+    { kOptParse4,       NULL,  "--parse-4",        false },
 #endif
     { 0,                NULL,  NULL,               false } // sentinel
   };
@@ -301,6 +233,9 @@ main(int argc, char** argv)
       case kOptParse3:
         Properties::test_setPassLevel(3);
         break;
+      case kOptParse4:
+        Properties::test_setPassLevel(4);
+        break;
 #endif
       }
       break;
@@ -310,7 +245,8 @@ main(int argc, char** argv)
       break;
 
     case OptionsParser::kMissingArgument:
-      logf(kError, "Missing value for option: %s\n", (const char*)StrHelper(option.fOption));
+      logf(kError, "Missing value for option: %s\n",
+           (const char*)StrHelper(option.fOption));
       break;
 
     case OptionsParser::kNotAnOption:
@@ -321,6 +257,8 @@ main(int argc, char** argv)
     }
   }
 
+
+  setupDefaultPath();
 
   switch (func) {
   case kDisplayHelp:
@@ -333,23 +271,11 @@ main(int argc, char** argv)
 #endif
 
   case kParseFiles:
-    for (std::vector<String>::iterator it = files.begin(), e = files.end();
-         it != e;
-         it++)
-    {
-      compileFile(*it, true, false, false, outputFile);
-    }
+    parseFiles(files, outputFile);
     break;
 
   case kCompileFiles:
-    if (!outputFile.isEmpty() && files.size() > 1)
-      logf(kError, "Outputfile and multiple compile files are given.");
-    for (std::vector<String>::iterator it = files.begin(), e = files.end();
-         it != e;
-         it++)
-    {
-      compileFile(*it, true, true, false, outputFile);
-    }
+    compileFiles(files, outputFile);
     break;
   }
 
@@ -361,7 +287,8 @@ main(int argc, char** argv)
 static int
 runUnitTestsWithRunner(UnitTest::TestRunner& runner)
 {
-    return runner.RunTestsIf(UnitTest::Test::GetTestList(), NULL, UnitTest::True(), 0);
+  return runner.RunTestsIf(UnitTest::Test::GetTestList(),
+                           NULL, UnitTest::True(), 0);
 }
 
 

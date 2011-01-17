@@ -1,0 +1,6 @@
+module a1 ("a1")
+
+import "import/ignore-enumdef-01.hea"
+
+def a2 : MidiController = foot-pedal
+def a3 : MidiController = midi|foot-pedal

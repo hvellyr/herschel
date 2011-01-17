@@ -1,2 +1,93 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit><def><vardef sym='callback-array'><type xmlns:ty='http://heather.eyestep.org/types'><ty:array ind='0'><ty:fun nm=''><ty:prms><ty:prm is='pos'><ty:ref nm='Item'></ty:ref></ty:prm></ty:prms><ty:ret><ty:ref nm='Bool'></ty:ref></ty:ret></ty:fun></ty:array></type><init><array><function><params><param sym='item' type='pos'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Item'></ty:ref></type></param></params><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Bool'></ty:ref></rettype><body><apply><symbol>f</symbol><args><symbol>item</symbol></args></apply></body></function><function><params><param sym='item' type='pos'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Item'></ty:ref></type></param></params><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Bool'></ty:ref></rettype><body><apply><symbol>g</symbol><args><symbol>item</symbol></args></apply></body></function><function><params><param sym='item' type='pos'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Item'></ty:ref></type></param></params><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Bool'></ty:ref></rettype><body><apply><symbol>h</symbol><args><symbol>item</symbol></args></apply></body></function></array></init></vardef></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='callback-array'>
+<type>
+<ty:array ind='0'>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref nm='Item'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:array>
+</type>
+<init>
+<array>
+<function>
+<params>
+<param sym='item' type='pos'>
+<type>
+<ty:ref nm='Item'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</rettype>
+<body>
+<apply>
+<symbol>f</symbol>
+<args>
+<symbol>item</symbol>
+</args>
+</apply>
+</body>
+</function>
+<function>
+<params>
+<param sym='item' type='pos'>
+<type>
+<ty:ref nm='Item'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</rettype>
+<body>
+<apply>
+<symbol>g</symbol>
+<args>
+<symbol>item</symbol>
+</args>
+</apply>
+</body>
+</function>
+<function>
+<params>
+<param sym='item' type='pos'>
+<type>
+<ty:ref nm='Item'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</rettype>
+<body>
+<apply>
+<symbol>h</symbol>
+<args>
+<symbol>item</symbol>
+</args>
+</apply>
+</body>
+</function>
+</array>
+</init>
+</vardef>
+</def>
+</compile-unit>

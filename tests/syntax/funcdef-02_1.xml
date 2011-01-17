@@ -1,2 +1,31 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>generic</id><id>f0</id><nested left='(' right=')'><seq><id>a</id><punct type='@'/><id>String</id></seq></nested><punct type=':'/><id>Any</id><nested left='{' right='}'><seq><id>outln</id><nested left='(' right=')'><seq><lit type='str'>hello world: %s</lit><punct type='%'/><nested left='#[' right=']'><id>a</id></nested></seq></nested></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>f0</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type='@'/>
+<id>String</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>outln</id>
+<nested left='(' right=')'>
+<seq>
+<lit type='str'>hello world: %s</lit>
+<punct type='%'/>
+<nested left='#[' right=']'>
+<id>a</id>
+</nested>
+</seq>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>

@@ -1,0 +1,6 @@
+def foo(a : 'T) : 'T
+  let t =
+    'T()
+  let z = Person()
+  t
+

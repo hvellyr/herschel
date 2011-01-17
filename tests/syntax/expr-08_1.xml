@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>foo</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type=':'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+<nested left='{' right='}'>
+<seq>
+<id>let</id>
+<id>t</id>
+<punct type='='/>
+<seq>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+<nested left='(' right=')'/>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>z</id>
+<punct type='='/>
+<seq>
+<id>Person</id>
+<nested left='(' right=')'/>
+</seq>
+</seq>
+<id>t</id>
+</nested>
+</seq>
+</seq>

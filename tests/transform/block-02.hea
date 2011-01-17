@@ -1,0 +1,34 @@
+def foo(a, b)
+  let x = a
+  let y = b
+  on signal (e1 : IoException) {
+    e1
+  }
+  on signal (e2 : ArrayException) {
+    e2
+  }
+  on exit (r) {
+    r
+  }
+
+  a + b
+  bar(a)
+  goo(b)
+
+
+def foo2(a, b)
+  on signal (e1 : IoException) {
+    e1
+  }
+  on signal (e2 : ArrayException) {
+    e2
+  }
+  on exit (r) {
+    r
+  }
+  let x = a
+  let y = b
+
+  a + b
+  bar(a)
+  goo(b)

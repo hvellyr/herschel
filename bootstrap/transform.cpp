@@ -5,13 +5,14 @@
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
 
-   - look up all name references and complete their namespaces
+   - precompile transformation (simplification, etc.)
  */
 
 #include "transform.h"
 #include "apt.h"
 #include "errcodes.h"
 #include "log.h"
+#include "predefined.h"
 #include "properties.h"
 #include "scope.h"
 #include "symbol.h"
@@ -21,6 +22,24 @@
 
 
 using namespace heather;
+
+
+//----------------------------------------------------------------------------
+
+TransformPass::TransformPass(int level)
+  : AptNodeCompilePass(level)
+{}
+
+
+AptNode*
+TransformPass::doApply(AptNode* src)
+{
+  Ptr<AptNode> node = src;
+  Ptr<Transformator> tr = new Transformator;
+  tr->transformNode(node);
+  return node.release();
+}
+
 
 //----------------------------------------------------------------------------
 
@@ -64,7 +83,15 @@ Transformator::transform(SymbolNode* node)
 
 
 AptNode*
-Transformator::transform(ArraySymbolNode* node)
+Transformator::transform(ArrayTypeNode* node)
+{
+  // nothing to transform
+  return node;
+}
+
+
+AptNode*
+Transformator::transform(TypeNode* node)
 {
   // nothing to transform
   return node;
@@ -103,7 +130,7 @@ Transformator::transform(FuncDefNode* node)
 {
   transformNodeList(node->params());
   if (node->body() != NULL) {
-    node->fBody = transformNode(node->body());
+    node->setBody(transformNode(node->body()));
   }
   return node;
 }
@@ -113,7 +140,7 @@ AptNode*
 Transformator::transform(FunctionNode* node)
 {
   transformNodeList(node->params());
-  node->fBody = transformNode(node->body());
+  node->setBody(transformNode(node->body()));
   return node;
 }
 
@@ -161,17 +188,17 @@ Transformator::findBlockSplitIndex(const NodeList& nodes)
         switch (mode) {
         case kMode_begin:
         case kMode_let:
-          if (onnd->key() == String("signal"))
+          if (onnd->key() == Names::kSignalKeyword)
             mode = kMode_let;
-          else if (onnd->key() == String("exit"))
+          else if (onnd->key() == Names::kExitKeyword)
             mode = kMode_onExit;
           else
             mode = kMode_other;
           break;
         case kMode_other:
-          if (onnd->key() == String("signal"))
+          if (onnd->key() == Names::kSignalKeyword)
             return i;
-          else if (onnd->key() == String("exit"))
+          else if (onnd->key() == Names::kExitKeyword)
             return i;
           else
             mode = kMode_other;
@@ -181,18 +208,7 @@ Transformator::findBlockSplitIndex(const NodeList& nodes)
         }
       }
       else {
-        switch (mode) {
-        case kMode_begin:
-          mode = kMode_other;
-          break;
-        case kMode_let:
-          mode = kMode_other;
-          break;
-        case kMode_other:
-          return i;
-        case kMode_onExit:
-          return i;
-        }
+        mode = kMode_other;
       }
     }
   }
@@ -204,12 +220,12 @@ Transformator::findBlockSplitIndex(const NodeList& nodes)
 void
 Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
 {
-  // If there's no code other than the 'on exit' handler in the scope we
-  // can inline the handler codes directly.  Make the handler's
-  // parameter (the return value of the block) a local variable and
-  // initialize it to 'unspecified' (the value of an empty blocks)
-  // unless the parameter has a default value already.  Issue a warning
-  // anyway, since this situation is most likely a programming error.
+  // If there's no code other than the 'on exit' handler in the scope we can
+  // inline the handler codes directly.  Make the handler's parameter (the
+  // return value of the block) a local variable and initialize it to
+  // 'lang|unspecified' (the value of an empty blocks) unless the parameter
+  // has a default value already.  Issue a warning anyway, since this
+  // situation is most likely a programming error.
   warningf(onnd->srcpos(), E_OrphanedOnExit,
            "orphaned 'on exit' handler parameter");
   assert(onnd->params().size() == 1);
@@ -219,7 +235,7 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
   Ptr<AptNode> initExpr = ( onPrmNode->initExpr() != NULL
                             ? onPrmNode->initExpr()
                             : new SymbolNode(onPrmNode->srcpos(),
-                                             String("unspecified")) );
+                                             String("lang|unspecified")) );
   NodeList nl;
   nl.push_back(new LetNode(new VardefNode(onPrmNode->srcpos(),
                                           onPrmNode->name(), kNormalVar, true,
@@ -241,7 +257,7 @@ Transformator::transform(BlockNode* node)
   if (nodes.size() == 1) {
     OnNode* onnd = dynamic_cast<OnNode*>(nodes[0].obj());
     if (onnd != NULL) {
-      if (onnd->key() == String("signal")) {
+      if (onnd->key() == Names::kSignalKeyword) {
         // if a block contains a single "on signal" node we can drop the
         // complete block, since there's no code in the scope which could
         // raise any signal.  So the signal code is effectively dead.  Print a
@@ -250,7 +266,7 @@ Transformator::transform(BlockNode* node)
                  "unreachable code in orphaned 'on signal' handler");
         return NULL;
       }
-      else if (onnd->key() == String("exit")) {
+      else if (onnd->key() == Names::kExitKeyword) {
         transformSingleOnExitBlock(node, onnd);
         return node;
       }
@@ -258,7 +274,7 @@ Transformator::transform(BlockNode* node)
   }
 
   int idx = findBlockSplitIndex(nodes);
-
+//  fprintf(stderr, "SPLIT AT: %d\n", idx);
   if (idx > 0) {
     Ptr<BlockNode> newBlock = new BlockNode(nodes[idx]->srcpos());
     for (size_t i = idx; i < nodes.size(); i++)
@@ -277,7 +293,7 @@ AptNode*
 Transformator::transform(ParamNode* node)
 {
   if (node->initExpr() != NULL)
-    node->fInitExpr = transformNode(node->initExpr());
+    node->setInitExpr(transformNode(node->initExpr()));
   return node;
 }
 
@@ -285,7 +301,7 @@ Transformator::transform(ParamNode* node)
 AptNode*
 Transformator::transform(ApplyNode* node)
 {
-  node->fBase = transformNode(node->base());
+  node->setBase(transformNode(node->base()));
   transformNodeList(node->children());
   return node;
 }
@@ -320,7 +336,7 @@ Transformator::transform(BinaryNode* node)
 AptNode*
 Transformator::transform(NegateNode* node)
 {
-  node->fBase = transformNode(node->base());
+  node->setBase(transformNode(node->base()));
   return node;
 }
 
@@ -328,10 +344,10 @@ Transformator::transform(NegateNode* node)
 AptNode*
 Transformator::transform(IfNode* node)
 {
-  node->fTest = transformNode(node->test());
-  node->fConsequent = transformNode(node->consequent());
+  node->setTest(transformNode(node->test()));
+  node->setConsequent(transformNode(node->consequent()));
   if (node->alternate())
-    node->fAlternate = transformNode(node->alternate());
+    node->setAlternate(transformNode(node->alternate()));
   return node;
 }
 
@@ -339,7 +355,7 @@ Transformator::transform(IfNode* node)
 AptNode*
 Transformator::transform(KeyargNode* node)
 {
-  node->fValue = transformNode(node->value());
+  node->setValue(transformNode(node->value()));
   return node;
 }
 
@@ -347,9 +363,9 @@ Transformator::transform(KeyargNode* node)
 AptNode*
 Transformator::transform(MatchNode* node)
 {
-  node->fExpr = transformNode(node->fExpr);
-  for (size_t i = 0; i < node->fMappings.size(); i++) {
-    node->fMappings[i].fConsequent = transformNode(node->fMappings[i].fConsequent);
+  node->setExpr(transformNode(node->expr()));
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    node->setConsequentAt(i, transformNode(node->mappingAt(i).fConsequent));
   }
   return node;
 }
@@ -358,19 +374,19 @@ Transformator::transform(MatchNode* node)
 AptNode*
 Transformator::transform(SelectNode* node)
 {
-  node->fTest = transformNode(node->fTest);
-  if (node->fComparator != NULL)
-    node->fComparator = transformNode(node->fComparator);
+  node->setTest(transformNode(node->test()));
+  if (node->comparator() != NULL)
+    node->setComparator(transformNode(node->comparator()));
 
-  for (size_t i = 0; i < node->fMappings.size(); i++) {
-    if (node->fMappings[i].fTestValues.empty()) {
-      node->fMappings[i].fConsequent = transformNode(node->fMappings[i].fConsequent);
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    if (node->mappingAt(i).fTestValues.empty()) {
+      node->setConsequentAt(i, transformNode(node->mappingAt(i).fConsequent));
     }
     else {
-      for (size_t j = 0; j < node->fMappings[i].fTestValues.size(); j++)
-        node->fMappings[i].fTestValues[j] = transformNode(node->fMappings[i].fTestValues[j]);
+      for (size_t j = 0; j < node->mappingAt(i).fTestValues.size(); j++)
+        node->setTestValueAt(i, j, transformNode(node->mappingAt(i).fTestValues[j]));
     }
-    node->fMappings[i].fConsequent = transformNode(node->fMappings[i].fConsequent);
+    node->setConsequentAt(i, transformNode(node->mappingAt(i).fConsequent));
   }
   return node;
 }
@@ -380,7 +396,7 @@ AptNode*
 Transformator::transform(OnNode* node)
 {
   transformNodeList(node->params());
-  node->fBody = transformNode(node->body());
+  node->setBody(transformNode(node->body()));
   return node;
 }
 
@@ -388,10 +404,10 @@ Transformator::transform(OnNode* node)
 AptNode*
 Transformator::transform(RangeNode* node)
 {
-  node->fFrom = transformNode(node->from());
-  node->fTo = transformNode(node->to());
+  node->setFrom(transformNode(node->from()));
+  node->setTo(transformNode(node->to()));
   if (node->by() != NULL)
-    node->fBy = transformNode(node->by());
+    node->setBy(transformNode(node->by()));
   return node;
 }
 
@@ -407,8 +423,8 @@ Transformator::transform(TypeDefNode* node)
 AptNode*
 Transformator::transform(WhileNode* node)
 {
-  node->fTest = transformNode(node->test());
-  node->fBody = transformNode(node->body());
+  node->setTest(transformNode(node->test()));
+  node->setBody(transformNode(node->body()));
   return node;
 }
 
@@ -432,7 +448,7 @@ Transformator::transform(DictNode* node)
 AptNode*
 Transformator::transform(CastNode* node)
 {
-  node->fBase = transformNode(node->base());
+  node->setBase(transformNode(node->base()));
   return node;
 }
 
@@ -498,7 +514,7 @@ Transformator::transform(KeywordNode* node)
 AptNode*
 Transformator::transform(UnitConstNode* node)
 {
-  node->fValue = transformNode(node->value());
+  node->setValue(transformNode(node->value()));
   return node;
 }
 

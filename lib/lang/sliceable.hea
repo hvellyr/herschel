@@ -1,6 +1,6 @@
 -- This file is part of the heather package
 --
--- Copyright (c) 2010 Gregor Klinke
+-- Copyright (c) 2010-2011 Gregor Klinke
 -- All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -30,74 +30,75 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core ("eyestep/heather 1.0:core")
+module lang ("eyestep/heather 1.0:lang")
 export public(*)
 
-import "core/core.hea"
+import "lang/numbers.hea"
 
+
+----------------------------------------------------------------------
 
 def type Sliceable<K, E>
     ~ A @type{Sliceable} represents types which support single-key slice
     access, i.e. index access.  Typical candidates are containers, strings,
     etc. ~
-{
-  def generic slice(obj @ 'S, key @ K) : 'E
-      where S isa Sliceable<K, E> ...
-      ~ Returns the element from @var{obj} at position @var{key}.  It may
-      be an error if @var{key} points to an non-existing element or
-      (depending on the implementing class) is out of bounds of
-      @var{obj}. ~
-}
 
+def generic slice(obj @ Sliceable<'K, 'E>, key @ 'K) : 'E
+    ~ Returns the element from @var{obj} at position @var{key}.  It may be
+    an error if @var{key} points to an non-existing element or
+    (depending on the implementing class) is out of bounds of @var{obj}. ~
+
+
+----------------------------------------------------------------------
 
 def type OrderedSliceable<K, E> : Sliceable<K, E>
     ~ An @type{OrderedSliceable} represents types which support
     range-slices. ~
-{
-  def generic slice(obj @ 'S, from @ K, to @ K) : 'T
-      where S isa OrderedSliceable<K, E>,
-            T isa OrderedSliceable<K, E> ...
-      ~ Returns a new ordered sliceable (probably of different
-      type than @var{obj}) containing the elements from @var{from} to
-      @var{to} exclusive, i.e. [@var{from}, @var{to}).
 
-      An @type{OutOfBoundsException} should be raised when either
-      @var{from} or @var{to} are too large.  When @var{from} is >= @var{to}
-      the resulting sliceable is empty. ~
+def generic slice*(obj @ OrderedSliceable<'K, 'E>,
+                   from @ 'K, to @ 'K) : OrderedSliceable<'K, 'E>
+    ~ Returns a new ordered sliceable (probably of different type than
+    @var{obj}) containing the elements from @var{from} to @var{to}
+    exclusive, i.e. [@var{from}, @var{to}).
 
-  def generic slice*(obj @ 'S, from @ K) : 'T
-      where S isa OrderedSliceable<K, E>,
-            T isa OrderedSliceable<K, E> ...
-      ~ Returns a new ordered sliceable (probably of different type than
-      @var{obj}) containing all elements from @var{from} to the last
-      element in @var{obj} (inclusive).
+    An @type{OutOfBoundsException} should be raised when either @var{from}
+    or @var{to} are too large.  When @var{from} is >= @var{to} the
+    resulting sliceable is empty. ~
 
-      If @var{obj} supports a @func{num-items} method this is can be
-      implemented as:
+def generic slice-rest(obj @ OrderedSliceable<'K, 'E>,
+                       from @ 'K) : OrderedSliceable<'K, 'E>
+    ~ Returns a new ordered sliceable (probably of different type than
+    @var{obj}) containing all elements from @var{from} to the last element
+    in @var{obj} (inclusive).
 
-      @example
-      def slice*(obj, from)
-        obj.slice(from, from + obj.num-items)
-      @end example ~
-}
+    If @var{obj} supports a @func{num-items} method this is can be
+    implemented as:
+
+    @example
+    def slice*(obj, from)
+      obj.slice(from, from + obj.num-items)
+    @end example ~
 
 
-def type Sliceable!<E, K> : Sliceable<E, K>
+----------------------------------------------------------------------
+
+def type Sliceable!<K, E> : Sliceable<K, E>
     ~ @type{Sliceable!} represents mutable types with index-access.~
-{
-  def generic slice!(obj @ ^'S, key @ K, value @ E) : ^'S
-      where S isa Sliceable!<K, E> ...
-      ~ Sets @var{value} into @var{obj} at position @var{key}.
 
-      @returns @var{obj}. ~
-}
+def generic slice!(obj @ ^Sliceable!<'K, 'E>,
+                   key @ 'K, value @ 'E) : ^Sliceable!<'K, 'E>
+    ~ Sets @var{value} into @var{obj} at position @var{key}.
 
+    @returns @var{obj}. ~
+
+
+----------------------------------------------------------------------
 
 def compare(one @ Sliceable<Ordinal, 'T>,
             two @ Sliceable<Ordinal, 'T>) : Int ...
       ~ Comparing sliceables returns zero if the two arrays are identical,
-      otherwise returns the comparison result between the first two differing
-      elements.  Zero-length arrays are always identical. ~
+      otherwise returns the comparison result between the first two
+      differing elements.  Zero-length arrays are always identical. ~
 
 
 -- end of sliceable.head

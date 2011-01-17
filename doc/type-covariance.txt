@@ -1,70 +1,85 @@
-When are types covariant?
+When two types A and B are covariant?
 
-  A type A is covariant to a type B when
+  Notation: T    BaseType
+            T[]  Array
+            T<>  Generic
+            (T)  Sequence
+            &(T) Union
+            T'm  United type
+            fT   Function type
 
-  - if both A and B are base types
+A is covariant to B if it is narrower:
 
-    - if A implements/inherits (type) B
+     A       B
+------------------------------------------------------------------------------
+1    T    -> T          if A == B || A inherits B                                         |
 
-    Note: it is an error if not all required functions in A are
-          covariants to those in B
+2    T<>  -> T<>        if A == B || (A(generics) == B(generics) and A inherits B)        |
 
+3    T[]  -> T[]        if A == B                                                         |
 
-  - a measure type A is covariant to a type B
+4    &(T) -> &(T)       if A == B || for every T in A -> T is covariant or invariant      |
+                        to every T' in B                                                  |
+5    (T)  -> (T)        if A == B || for every T in A -> T must have a covariant T' in B  |
+                                     and num(A) == num(B)                                 |
 
-    - if A's base type is covariant to B
+6    &(T) -> T          NEVER                                                             |
+7    (T)  -> T          NEVER                                                             |
+8    T    -> &(T)       if A is covariant or invariant to every T in B, but at least
+                        covariant to one T in B
+9    T    -> (T)        if A is covariant to every T in B                                 |
 
-    - if B is a measure type, too, A is covariant to B if A's and B's base
-      types are covariant.
+10   T'm  -> T          if base-type of A covariant to B                                  |
+11   T    -> T'm        NEVER                                                             |
+12   T'm  -> T'm        if A == B                                                         |
 
+13   fT   -> fT         if A == B || every parameter in A is CONTRAVARIANT to that in B   |
+                                     and A's returntype is COVARIANT to B's               |
 
-  - an enumeration type A is covariant to a type B
-
-    - if A's base type is covariant to B
-
-    - two enumeration types can never be covariant
-
-    - base type can never be covariant to enumeration types.
-
-
-  - arrays are never covariant
-
-    - Int[] is not covariant to Number[]
-
-  - if A and B are parametrized types
-
-    - parametrized types are never covariant (aliasing!), unless they
-      generic (using 'T notation):
-
-        HashMap<'K, 'V> is covariant to Map<'K, 'V>
-        Map<'K, 'V> is contravariant to HashMap<'K, 'V>
-
-      This only applies if type parameters are equal or equally generic:
-
-        HashMap<String, 'V> is covariant to Map<String, 'V>
-        HashMap<'K isa String, 'V> is covariant to Map<'K isa String, 'V>
+14   T    -> ANY        ALWAYS                                                            |
+15   ANY  -> T          NEVER                                                             |
 
 
-    - List<'T>: can access members as Object, but can't store anything,
-      since 'T is unclear
+ad 3:
+   NB: even if Int > Number  Int[] <> Number[] !  Aliasing!
 
-    - List<'T isa Number>: can access members as Numbers, and store any
-      Number (or subclass of Int)
+ad 4:
+   &(Int, MutualString) -> &(Number, String)        √
+   &(Int, MutualString) -> &(Number, String, Bool)  √
+   &(Int, Bool)         -> &(Number, String)        W
 
-    - List<Int> is however not covariant to List<Number> (aliasing)
+
+ad 10 & 11:
+   let x : Pixel = 7    √
+   let x : Int = 7'px   W
+
+
+ad 13:
+   let f1 : Function(a : Int) : String          = lambda(a : Int) : String { }             (√, √)
+   let f2 : Function(a : Int) : String          = lambda(a : Number) : MutualString { }    (√, √)
+   let f3 : Function(a : Number) : MutualString = lambda(a : Int) : String { }             (W, W)
+   let f4 : Function(a : Number) : String       = lambda(a : Int) : MutualString { }       (W, √)
+
+
+   in type A:
+      foo(a : Int) : String
+
+   in type B (inherits from A):
+      foo(a : Int) : String           √
+      foo(a : Number) : MutualString  √
+      foo(a : Number) : Object        W
+      foo(a : SpecInt) : String       W
+
+      ergo: overwritten functions must be contravariant to functions in base classes
 
 
 
-Function overwriting:
+- whether value or reference type is irrelavant.  Assigning a ref to value
+  and v.v. only affects the value itself, not the type.
 
-  When implementing generic functions for other types:
 
-    - return types must be covariant to the original definition
+- additional rule:  a type T[] is covariant to Sliceable<Int, T>
 
-    - specialized parameters must be covariant to the original definition
-
-    - additional parameters must be *contravariant* or equal to the
-      original definition (!)
 
 
 ------------------------------------------------------------------------------
@@ -96,27 +111,3 @@ The 'isa' constraint is valueable?
   def generic foo(a : 'T) where T isa Shape ...   -- dto.
 
 
-------------------------------------------------------------------------------
-
-type implementation:
-
-  each type definition (alias, type, class, etc.) add a instance of
-  heather::Type() to the relevant scope.  References to other types (in
-  generics, class inheritance, variable usage, etc.) are *always* given as
-  instances of heather::TypeRef().  Types have generic variables, TypeRefs
-  can have explicit generics.
-
-      def class Foo<a, b> : (Other<a>, Bar<b>)
-
-      def x : Foo<Int, String>
-
-  =>
-
-      register Type("Foo", ["a", "b"], [TypeRef("Other", ["a"]),
-                                        TypeRef("Bar", ["b"])])
-
-      <letnode>
-        <symbolnode>x</>
-        <type>TypeRef("Foo", ["Int", "String"])
-
-  Union types, sequences, constraint-types only exist as TypeRefs.
