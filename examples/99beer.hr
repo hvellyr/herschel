@@ -1,0 +1,25 @@
+module beer99
+
+--import "io/io.h"
+def type OutPort
+def *stdout*() : OutPort ...
+def generic outln(port = *stdout*(), msgs ...) : Int ...
+
+def bottles(n : Int)
+  for (i in n .. 0 by -1) {
+    let number-str = select (i) {
+                       | 0 -> "No more bottles"
+                       | 1 -> "One bottle"
+                       | else "%d bottles" % i
+                     }
+    outln("%s of beer on the wall" % number-str)
+    outln("%s of beer" % number-str)
+    outln("Take one down, pass it around")
+    outln("%s of beer on the wall" % number-str)
+    outln()
+  }
+
+def app|main()
+  bottles(99)
+
+-- end of 99beer
