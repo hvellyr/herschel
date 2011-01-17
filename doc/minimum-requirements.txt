@@ -31,7 +31,7 @@ Next-Big-Thing will contain:
 Here's a short list of programming-language features that have become
 ad-hoc standards that everyone expects:
 
-                                                                        Heather?
+                                                                        Herschel?
 - Object-literal syntax for arrays and hashes                           yes
 - Array slicing and other intelligent collection operators              yes
 - Perl 5 compatible regular expression literals

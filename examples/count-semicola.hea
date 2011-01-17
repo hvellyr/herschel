@@ -1,4 +1,4 @@
--- This file is part of the heather package 
+-- This file is part of the herschel package 
 --
 -- Copyright (c) 2006, 2007, 2010 Gregor Klinke
 -- All rights reserved.
@@ -30,10 +30,10 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module examples("eyestep/heather:examples")
+module examples("eyestep/herschel:examples")
 
-import "io.head"
-import "app.head"
+import "io.hr"
+import "app.hr"
 
 def macro with-input-file
 {
@@ -71,8 +71,8 @@ def app|main(args @ String[])
            }
     | else {
              outln(port: io|stderr,
-                   "Usage: count-semicola.hea FILE")
+                   "Usage: count-semicola.hr FILE")
            }
   }
 
--- end of count-semicola.hea
+-- end of count-semicola.hr

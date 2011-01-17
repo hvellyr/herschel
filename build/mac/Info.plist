@@ -27,11 +27,11 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>Heather</string>
+	<string>Herschel</string>
 	<key>CFBundleIconFile</key>
-	<string>Heather.icns</string>
+	<string>Herschel.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.eyestep.heather</string>
+	<string>org.eyestep.herschel</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>

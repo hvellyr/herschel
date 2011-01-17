@@ -4,7 +4,7 @@
 <id>module</id>
 <id>core</id>
 <nested left='(' right=')'>
-<lit type='str'>eyestep/heather 1.0:core</lit>
+<lit type='str'>eyestep/herschel 1.0:core</lit>
 </nested>
 </seq>
 <seq>

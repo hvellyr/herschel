@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -13,7 +13,7 @@
 #include "strbuf.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 
 //------------------------------------------------------------------------------
@@ -224,7 +224,7 @@ SyntaxTable::toString() const
 {
   StringBuffer buf;
 
-  buf << "<st:table xmlns:st='http://heather.eyestep.org/syntax-table'>";
+  buf << "<st:table xmlns:st='http://herschel.eyestep.org/syntax-table'>";
   for (PatternMap::const_iterator it = fItems.begin();
        it != fItems.end();
        it++)
@@ -243,7 +243,7 @@ SyntaxTable::toString() const
 //------------------------------------------------------------------------------
 
 String
-heather::toString(MacroType type)
+herschel::toString(MacroType type)
 {
   switch (type) {
   case kMacro_Invalid:  return String("--invalid--");
@@ -261,7 +261,7 @@ heather::toString(MacroType type)
 //------------------------------------------------------------------------------
 
 MacroParamType
-heather::macroParamType(const Token& token, String* paramName)
+herschel::macroParamType(const Token& token, String* paramName)
 {
   assert(token == kMacroParam ||
          token == kMacroParamAsStr);

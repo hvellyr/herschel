@@ -1,5 +1,5 @@
 /*
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -74,12 +74,12 @@ typedef unsigned long long UInt64;
 #define SIZEOF_LONG_DOUBLE  16
 #define SIZEOF_VOID_P       4
 
-#define HEA_INT_MIN (-2147483647 - 1)
-#define HEA_INT_MAX 2147483647
+#define HR_INT_MIN (-2147483647 - 1)
+#define HR_INT_MAX 2147483647
 
 #if defined(USE_LLONG)
-#define HEA_LLONG_MIN (-0x7fffffffffffffffLL-1)
-#define HEA_LLONG_MAX 0x7fffffffffffffffLL
+#define HR_LLONG_MIN (-0x7fffffffffffffffLL-1)
+#define HR_LLONG_MAX 0x7fffffffffffffffLL
 #endif
 
 

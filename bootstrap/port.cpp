@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -18,7 +18,7 @@
 #include "refcountable.h"
 #include "port.h"
 
-using namespace heather;
+using namespace herschel;
 
 // ENOTSUP seem not to be defined on windows (xp)?
 #if !defined(ENOTSUP)
@@ -501,7 +501,7 @@ CharPort::cursor()
 //----------------------------------------------------------------------------
 
 void
-heather::display(Port<Octet>* port, const char* value)
+herschel::display(Port<Octet>* port, const char* value)
 {
   if (value != NULL)
     port->write((const Octet*)value, strlen(value));
@@ -511,7 +511,7 @@ heather::display(Port<Octet>* port, const char* value)
 
 
 void
-heather::displayln(Port<Octet>* port, const char* value)
+herschel::displayln(Port<Octet>* port, const char* value)
 {
   display(port, value);
   display(port, "\n");
@@ -519,14 +519,14 @@ heather::displayln(Port<Octet>* port, const char* value)
 
 
 void
-heather::display(Port<Octet>* port, const String& value)
+herschel::display(Port<Octet>* port, const String& value)
 {
   display(port, StrHelper(value));
 }
 
 
 void
-heather::displayln(Port<Octet>* port, const String& value)
+herschel::displayln(Port<Octet>* port, const String& value)
 {
   display(port, value);
   display(port, "\n");

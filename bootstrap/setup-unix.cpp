@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2011 Gregor Klinke
    All rights reserved.
@@ -30,9 +30,9 @@
 #include "log.h"
 
 
-using namespace heather;
+using namespace herschel;
 
-namespace heather
+namespace herschel
 {
 
 #if defined(OS_mac)
@@ -159,7 +159,7 @@ namespace heather
 #endif
 
 
-  #define APPFILE "heather"
+  #define APPFILE "hrc"
 
   static bool
   exeFromDevpath(const String& exedir, String& syspath)
@@ -200,7 +200,7 @@ namespace heather
       if (exedir.endsWith(String(*p))) {
         String basepath = exedir.part(0, exedir.length() - strlen(*p) + 1);
         syspath = file::appendDir(file::makeDir(basepath),
-                                  String("lib/heather"), 
+                                  String("lib/herschel"), 
                                   String(VERSION),
                                   String("include"));
         return true;
@@ -237,7 +237,7 @@ namespace heather
         result.push_back(syspath);
       }
       else {
-        syspath = file::appendDir(file::makeDir(String(HEA_INSTDIR_pkglibdir)),
+        syspath = file::appendDir(file::makeDir(String(HR_INSTDIR_pkglibdir)),
                                   String(VERSION),
                                   String("include"));
         result.push_back(syspath);

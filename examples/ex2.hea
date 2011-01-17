@@ -1,6 +1,6 @@
-module examples("eyestep/heather 1.0:examples")
+module examples("eyestep/herschel 1.0:examples")
 
-module io("eyestep/heather 1.0:io")
+module io("eyestep/herschel 1.0:io")
 
 def v = 5
 

@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -18,79 +18,79 @@
 
 //----------------------------------------------------------------------------
 
-using namespace heather;
+using namespace herschel;
 
 
 //----------------------------------------------------------------------------
 
 void
-heather::xml::displayOpenTag(Port<Octet>* port,
+herschel::xml::displayOpenTag(Port<Octet>* port,
                              const char* tagName, bool newline)
 {
   if (tagName != NULL) {
-    heather::display(port, String() + "<" + tagName + ">");
+    herschel::display(port, String() + "<" + tagName + ">");
     if (newline)
-      heather::display(port, String() + "\n");
+      herschel::display(port, String() + "\n");
   }
 }
 
 
 void
-heather::xml::displayOpenTagAttrs(Port<Octet>* port,
+herschel::xml::displayOpenTagAttrs(Port<Octet>* port,
                                   const char* tagName, const char* attrs,
                                   bool newline)
 {
   if (tagName != NULL) {
-    heather::display(port, String() + "<" + tagName);
+    herschel::display(port, String() + "<" + tagName);
     if (attrs != NULL && ::strlen(attrs) > 0)
-      heather::display(port, String() + " " + attrs + ">");
+      herschel::display(port, String() + " " + attrs + ">");
     else
-      heather::display(port, ">");
+      herschel::display(port, ">");
     if (newline)
-      heather::display(port, String() + "\n");
+      herschel::display(port, String() + "\n");
   }
 }
 
 
 void
-heather::xml::displayCloseTag(Port<Octet>* port,
+herschel::xml::displayCloseTag(Port<Octet>* port,
                               const char* tagName)
 {
   if (tagName != NULL)
-    heather::display(port, String() + "</" + tagName + ">\n");
+    herschel::display(port, String() + "</" + tagName + ">\n");
 }
 
 
 void
-heather::xml::displayEmptyTag(Port<Octet>* port,
+herschel::xml::displayEmptyTag(Port<Octet>* port,
                               const char* tagName)
 {
   if (tagName != NULL && ::strlen(tagName) > 0)
-    heather::display(port, String() + "<" + tagName + "/>\n");
+    herschel::display(port, String() + "<" + tagName + "/>\n");
 }
 
 
 void
-heather::xml::displayEmptyTagAttrs(Port<Octet>* port,
+herschel::xml::displayEmptyTagAttrs(Port<Octet>* port,
                                    const char* tagName, const char* attrs)
 {
   if (tagName != NULL && ::strlen(tagName) > 0)
-    heather::display(port, String() + "<" + tagName + " " + attrs + "/>\n");
+    herschel::display(port, String() + "<" + tagName + " " + attrs + "/>\n");
 }
 
 
 void
-heather::xml::displayTag(Port<Octet>* port,
+herschel::xml::displayTag(Port<Octet>* port,
                          const char* tagName, const String& value)
 {
   displayOpenTag(port, tagName, false);
-  heather::display(port, xmlEncode(value));
+  herschel::display(port, xmlEncode(value));
   displayCloseTag(port, tagName);
 }
 
 
 void
-heather::xml::displayTagAttr(Port<Octet>* port,
+herschel::xml::displayTagAttr(Port<Octet>* port,
                              const char* tagName,
                              const char* attrs,
                              const String& value)
@@ -98,7 +98,7 @@ heather::xml::displayTagAttr(Port<Octet>* port,
   String encodedValue = xmlEncode(value);
   if (!encodedValue.isEmpty()) {
     displayOpenTagAttrs(port, tagName, attrs, false);
-    heather::display(port, encodedValue);
+    herschel::display(port, encodedValue);
     displayCloseTag(port, tagName);
   }
   else
@@ -107,7 +107,7 @@ heather::xml::displayTagAttr(Port<Octet>* port,
 
 
 void
-heather::xml::displayStringList(Port<Octet>* port,
+herschel::xml::displayStringList(Port<Octet>* port,
                                 const char* outerTagName, const char* tagName,
                                 const StringList& strlist)
 {
@@ -120,7 +120,7 @@ heather::xml::displayStringList(Port<Octet>* port,
   {
     String str = (*it);
     displayOpenTag(port, tagName, false);
-    heather::display(port, str);
+    herschel::display(port, str);
     displayCloseTag(port, tagName);
   }
 
@@ -130,7 +130,7 @@ heather::xml::displayStringList(Port<Octet>* port,
 
 
 void
-heather::xml::displayStringStringMap(Port<Octet>* port,
+herschel::xml::displayStringStringMap(Port<Octet>* port,
                                      const char* outerTagName,
                                      const char* tagName,
                                      const char* firstPairTagName,
@@ -156,23 +156,23 @@ heather::xml::displayStringStringMap(Port<Octet>* port,
 
 
 void
-heather::xml::displayType(Port<Octet>* port, const char* tagName, const Type& type)
+herschel::xml::displayType(Port<Octet>* port, const char* tagName, const Type& type)
 {
   if (type.isDef()) {
     displayOpenTag(port, tagName);
-    heather::display(port, type.toString());
+    herschel::display(port, type.toString());
     displayCloseTag(port, tagName);
   }
 }
 
 
 void
-heather::xml::displayTypeVector(Port<Octet>* port, const char* tagName, const TypeVector& types)
+herschel::xml::displayTypeVector(Port<Octet>* port, const char* tagName, const TypeVector& types)
 {
   if (!types.empty()) {
     displayOpenTag(port, tagName);
     for (size_t i = 0; i < types.size(); i++)
-      heather::display(port, types[i].toString());
+      herschel::display(port, types[i].toString());
     displayCloseTag(port, tagName);
   }
 }
@@ -416,7 +416,7 @@ XmlRenderer::renderNode(const IntNode* node)
     attrs << " imag='t'";
 
   displayOpenTagAttrs("int", StrHelper(attrs.toString()), false);
-  heather::display(fPort, xmlEncode(String() + node->value()));
+  herschel::display(fPort, xmlEncode(String() + node->value()));
   displayCloseTag("int");
 
   if (fShowNodeType)
@@ -500,7 +500,7 @@ XmlRenderer::renderNode(const UnitConstNode* node)
 void
 XmlRenderer::renderNode(const CompileUnitNode* node)
 {
-  const char* attrs = "xmlns:ty='http://heather.eyestep.org/types'";
+  const char* attrs = "xmlns:ty='http://herschel.eyestep.org/types'";
   displayOpenTagAttrs("compile-unit", attrs);
   displayNodeList(NULL, node->children());
 

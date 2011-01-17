@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -26,7 +26,7 @@
 #include "transform.h"
 #include "typify.h"
 
-using namespace heather;
+using namespace herschel;
 
 
 //----------------------------------------------------------------------------
@@ -221,9 +221,9 @@ Compiler::importSystemHeader(const String& header, const String& avoidPath)
 void
 Compiler::importSystemHeaders(const String& avoidPath)
 {
-  importSystemHeader(String("builtin:lang/numbers.hea"), avoidPath);
-  importSystemHeader(String("builtin:lang/runtime.hea"), avoidPath);
-  importSystemHeader(String("builtin:lang/sliceable.hea"),   avoidPath);
+  importSystemHeader(String("builtin:lang/numbers.hr"), avoidPath);
+  importSystemHeader(String("builtin:lang/runtime.hr"), avoidPath);
+  importSystemHeader(String("builtin:lang/sliceable.hr"),   avoidPath);
 }
 
 
@@ -290,7 +290,7 @@ String
 Compiler::lookupFile(const String& srcName, bool isPublic)
 {
   StringVector exts;
-  exts.push_back(String("hea"));
+  exts.push_back(String("hr"));
 
   if (srcName.startsWith(String("builtin:")))
   {
@@ -371,7 +371,7 @@ Compiler::PortStackHelper::~PortStackHelper()
 
 //----------------------------------------------------------------------------
 
-namespace heather
+namespace herschel
 {
 
   static String

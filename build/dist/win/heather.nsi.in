@@ -1,13 +1,13 @@
-; heather.nsi
+; herschel.nsi
 ;
-; This file is part of the heather package 
+; This file is part of the herschel package 
 ;
 ; Copyright (c) 2009 Gregor Klinke
 ; All rights reserved.
 ;
 
 ;----------------------------------------------------------------------
-; this is a simple heather installer for windows.
+; this is a simple herschel installer for windows.
 
 ;---------------------
 ;Include Modern UI
@@ -18,17 +18,17 @@
 ;--------------------------------
 
 ; The name of the installer
-Name "Heather @VERSION@"
+Name "Herschel @VERSION@"
 
 ; The file to write
-OutFile "heather-@VERSION@-installer.exe"
+OutFile "herschel-@VERSION@-installer.exe"
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\Heather-@VERSION@
+InstallDir $PROGRAMFILES\Herschel-@VERSION@
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
-InstallDirRegKey HKLM "Software\EyeStep_Heather" "Install_Dir"
+InstallDirRegKey HKLM "Software\EyeStep_Herschel" "Install_Dir"
 
 ;--------------------------------
 ;Interface Settings
@@ -81,7 +81,7 @@ InstallDirRegKey HKLM "Software\EyeStep_Heather" "Install_Dir"
 ;--------------------------------
 
 ; The stuff to install
-Section "Heather (required)" sect_exe_id
+Section "Herschel (required)" sect_exe_id
 
   SectionIn 1 2 RO  ; full, core, Readonly
   
@@ -89,20 +89,20 @@ Section "Heather (required)" sect_exe_id
   SetOutPath $INSTDIR
   
   ; Put file there
-  File "@top_srcdir@\temp\dist-release\heather.exe"
+  File "@top_srcdir@\temp\dist-release\hrc.exe"
   File "@top_srcdir@\LICENSE"
   File "@top_srcdir@\BUGS"
   File "@top_srcdir@\NEWS"
   File "@top_srcdir@\README"
   
   ; Write the installation path into the registry
-  WriteRegStr HKLM SOFTWARE\EyeStep_Heather "Install_Dir" "$INSTDIR"
+  WriteRegStr HKLM SOFTWARE\EyeStep_Herschel "Install_Dir" "$INSTDIR"
   
   ; Write the uninstall keys for Windows
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Heather" "DisplayName" "EyeStep Heather"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Heather" "UninstallString" '"$INSTDIR\uninstall.exe"'
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Heather" "NoModify" 1
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Heather" "NoRepair" 1
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Herschel" "DisplayName" "EyeStep Herschel"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Herschel" "UninstallString" '"$INSTDIR\uninstall.exe"'
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Herschel" "NoModify" 1
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Herschel" "NoRepair" 1
   WriteUninstaller "uninstall.exe"
   
 SectionEnd
@@ -110,7 +110,7 @@ SectionEnd
 
 ; Section "Documentation" sect_docs_id
 ;   SectionIn 1 ; full
-;   File "@top_srcdir@\doc\heather.pdf"
+;   File "@top_srcdir@\doc\herschel.pdf"
 ; SectionEnd
 
 
@@ -118,12 +118,12 @@ SectionEnd
 Section "Start Menu Shortcuts" sect_menushorts_id
   SectionIn 1 ; full
 
-  CreateDirectory "$SMPROGRAMS\Heather @VERSION@"
-  CreateShortCut "$SMPROGRAMS\Heather @VERSION@\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\Heather @VERSION@\Heather.lnk" "$INSTDIR\heather.exe" "" "$INSTDIR\heather.exe" 0
+  CreateDirectory "$SMPROGRAMS\Herschel @VERSION@"
+  CreateShortCut "$SMPROGRAMS\Herschel @VERSION@\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
+  CreateShortCut "$SMPROGRAMS\Herschel @VERSION@\Herschel.lnk" "$INSTDIR\hrc.exe" "" "$INSTDIR\hrc.exe" 0
 
-  IfFileExists $INSTDIR\heather.pdf 0 +2
-    CreateShortCut "$SMPROGRAMS\Heather @VERSION@\Heather.pdf.lnk" "$INSTDIR\heather.pdf" "" "$INSTDIR\heather.pdf" 0
+  IfFileExists $INSTDIR\herschel.pdf 0 +2
+    CreateShortCut "$SMPROGRAMS\Herschel @VERSION@\Herschel.pdf.lnk" "$INSTDIR\herschel.pdf" "" "$INSTDIR\herschel.pdf" 0
   
 SectionEnd
 
@@ -132,16 +132,16 @@ SectionEnd
 ;Descriptions
 
   ;Language strings
-  LangString DESC_heather ${LANG_ENGLISH} "The heather application and core files"
+  LangString DESC_herschel ${LANG_ENGLISH} "The herschel compiler and core files"
   LangString DESC_menu_shortcuts ${LANG_ENGLISH} "Add folder and shortcuts to the windows menu."
-  LangString DESC_heather_docs ${LANG_ENGLISH} "Installs the manual."
+  LangString DESC_herschel_docs ${LANG_ENGLISH} "Installs the manual."
 
 
   ;Assign language strings to sections
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-    !insertmacro MUI_DESCRIPTION_TEXT ${sect_exe_id} $(DESC_heather)
+    !insertmacro MUI_DESCRIPTION_TEXT ${sect_exe_id} $(DESC_herschel)
     !insertmacro MUI_DESCRIPTION_TEXT ${sect_menushorts_id} $(DESC_menu_shortcuts)
-;    !insertmacro MUI_DESCRIPTION_TEXT ${sect_docs_id} $(DESC_heather_docs)
+;    !insertmacro MUI_DESCRIPTION_TEXT ${sect_docs_id} $(DESC_herschel_docs)
   !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
@@ -162,23 +162,23 @@ FunctionEnd
 Section "Uninstall"
   
   ; Remove registry keys
-  DeleteRegKey /ifempty HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Heather"
-  DeleteRegKey /ifempty HKLM SOFTWARE\EyeStep_Heather
+  DeleteRegKey /ifempty HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Herschel"
+  DeleteRegKey /ifempty HKLM SOFTWARE\EyeStep_Herschel
 
   ; Remove files and uninstaller
-  Delete $INSTDIR\heather.exe
+  Delete $INSTDIR\hrc.exe
   Delete $INSTDIR\LICENSE
   Delete $INSTDIR\BUGS
   Delete $INSTDIR\README
   Delete $INSTDIR\NEWS
-  Delete $INSTDIR\heather.pdf
+  Delete $INSTDIR\herschel.pdf
   Delete $INSTDIR\uninstall.exe
 
   ; Remove shortcuts, if any
-  Delete "$SMPROGRAMS\Heather @VERSION@\*.*"
+  Delete "$SMPROGRAMS\Herschel @VERSION@\*.*"
 
   ; Remove directories used
-  RMDir "$SMPROGRAMS\Heather @VERSION@"
+  RMDir "$SMPROGRAMS\Herschel @VERSION@"
   RMDir "$INSTDIR"
 
 SectionEnd

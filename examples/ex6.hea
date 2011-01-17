@@ -1,4 +1,4 @@
-module io("eyestep/heather 1.0:input output")
+module io("eyestep/herschel 1.0:input output")
 module ixwick("eyestep/ixwick 0.9")
 
 def f()

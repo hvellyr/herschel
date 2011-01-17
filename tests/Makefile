@@ -1,4 +1,4 @@
-#  This file is part of the heather package
+#  This file is part of the herschel package
 #
 #  Copyright (c) 2010 Gregor Klinke
 #  All rights reserved.
@@ -18,19 +18,19 @@ $(testtemp_dir):
 	@if [ ! -d "$@" ]; then mkdir $@; fi
 
 syntax-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/hrc \
 		-I $(top_srcdir)/tests -D syntax syntax/
 
 import-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/hrc \
 		-I $(top_srcdir)/tests -D import import/
 
 transform-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/hrc \
 		-I $(top_srcdir)/tests -D transform transform/
 
 annotate-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/heather \
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/hrc \
 		-I $(top_srcdir)/tests -D annotate annotate/
 
 include $(top_srcdir)/build/generic.mk
@@ -40,6 +40,6 @@ include $(top_srcdir)/build/generic.mk
 #----------------------------------------------------------------------
 
 prepare-syntax-tests:
-	for a in syntax/*.hea; do \
-	  $(BUILDDIR)/$(BUILDSTYLE)/heather -P $$a > `dirname $$a`/`basename $$a .hea`.xml; \
+	for a in syntax/*.hr; do \
+	  $(BUILDDIR)/$(BUILDSTYLE)/hrc -P $$a > `dirname $$a`/`basename $$a .hr`.xml; \
   done

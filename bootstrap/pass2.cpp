@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -24,7 +24,7 @@
 #include "xmlout.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 //----------------------------------------------------------------------------
 
@@ -2400,7 +2400,7 @@ SecondPass::parseFor(const Token& expr)
   assert(expr.count() == 3 || expr.count() == 5);
   assert(expr[0] == kForId);
   assert(expr[1].isNested());
-  assert(heaImplies(expr.count() == 5, expr[3] == kElseId));
+  assert(implies(expr.count() == 5, expr[3] == kElseId));
 
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
 
@@ -2946,7 +2946,7 @@ SecondPass::parseSeq(const Token& expr)
 }
 
 
-namespace heather
+namespace herschel
 {
   static bool
   doesNodeNeedBlock(const AptNode* node)

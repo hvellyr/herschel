@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -9,7 +9,7 @@
 #include "valuesaver.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 #if defined(UNITTESTS)
 //----------------------------------------------------------------------------

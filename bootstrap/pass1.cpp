@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -25,7 +25,7 @@
 
 //----------------------------------------------------------------------------
 
-using namespace heather;
+using namespace herschel;
 
 
 //----------------------------------------------------------------------------
@@ -206,7 +206,7 @@ FirstPass::parseSequence(ParseFunctor functor,
 
 //----------------------------------------------------------------------------
 
-namespace heather
+namespace herschel
 {
   struct ModuleParser
   {
@@ -294,7 +294,7 @@ FirstPass::parseModule()
 }
 
 
-namespace heather
+namespace herschel
 {
   struct ExportParser
   {
@@ -422,7 +422,7 @@ FirstPass::parseExport()
 }
 
 
-namespace heather
+namespace herschel
 {
   struct ImportRenameParser
   {
@@ -513,7 +513,7 @@ FirstPass::parseImport()
 }
 
 
-namespace heather
+namespace herschel
 {
   struct TypeParser
   {
@@ -782,7 +782,7 @@ FirstPass::parseTypeSpec(bool onlyNestedConstraints)
 }
 
 
-namespace heather
+namespace herschel
 {
   struct LiteralVectorParser
   {
@@ -852,7 +852,7 @@ FirstPass::parseLiteralVector()
 }
 
 
-namespace heather
+namespace herschel
 {
   struct LiteralArrayParser
   {
@@ -1071,7 +1071,7 @@ FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
 }
 
 
-namespace heather
+namespace herschel
 {
   struct ParseFuncParamsParser
   {
@@ -1236,7 +1236,7 @@ FirstPass::parseAnonFun()
 }
 
 
-namespace heather
+namespace herschel
 {
   struct FuncallArgsParser
   {
@@ -1518,7 +1518,7 @@ FirstPass::parseUnaryOp(const Token& inOpToken)
 }
 
 
-namespace heather
+namespace herschel
 {
   struct BasePatternParser
   {
@@ -1676,7 +1676,7 @@ FirstPass::parseSelect()
 }
 
 
-namespace heather
+namespace herschel
 {
   struct MatchPatternParser : public BasePatternParser
   {
@@ -1778,7 +1778,7 @@ FirstPass::parseMatch()
 }
 
 
-namespace heather
+namespace herschel
 {
   struct ForClauseParser
   {
@@ -3575,7 +3575,7 @@ FirstPass::parseUnit(const Token& defToken, bool isLocal)
 }
 
 
-namespace heather
+namespace herschel
 {
   struct EnumItemParser
   {
@@ -4369,7 +4369,7 @@ FirstPass::replaceMatchBindings(TokenVector* result,
 
 //------------------------------------------------------------------------------
 
-namespace heather {
+namespace herschel {
 
   struct ParameterSyntaxMatcher : public RefCountable
   {

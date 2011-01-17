@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -25,7 +25,7 @@
 #endif
 
 
-using namespace heather;
+using namespace herschel;
 
 static int str_cmp(const Char* s1, int len1, const Char* s2, int len2);
 static int str_ncmp(const Char* s1, int len1, const Char* s2, int len2,
@@ -38,7 +38,7 @@ static int str_rstr(const Char* haystack, int hslen, int ofs,
                     const Char* needle, int nlen);
 
 
-namespace heather
+namespace herschel
 {
   class StringImpl : public RefCountable
   {
@@ -612,7 +612,7 @@ str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle, int nlen)
 
 
 int
-heather::str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems)
+herschel::str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems)
 {
   Octet* sp = (Octet*)src;
   const Octet* end = (Octet*)src + items;
@@ -695,7 +695,7 @@ heather::str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems)
 
 
 int
-heather::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
+herschel::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
 {
   const Char* sp = src;
 
@@ -760,7 +760,7 @@ heather::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
 
 
 String
-heather::xmlEncode(const String& str)
+herschel::xmlEncode(const String& str)
 {
   std::vector<Char> buffer;
   buffer.reserve(str.length());
@@ -797,14 +797,14 @@ heather::xmlEncode(const String& str)
 
 
 String
-heather::xmlEncode(const char* str)
+herschel::xmlEncode(const char* str)
 {
   return xmlEncode(String(str));
 }
 
 
 String
-heather::uniqueName(const char* prefix)
+herschel::uniqueName(const char* prefix)
 {
   static int counter = 0;
   StringBuffer buffer;
@@ -817,14 +817,14 @@ heather::uniqueName(const char* prefix)
 
 #include <UnitTest++.h>
 
-std::ostream& heather::operator<<(std::ostream& os, const String& str)
+std::ostream& herschel::operator<<(std::ostream& os, const String& str)
 {
   os << "\"" << (const char*)StrHelper(str) << "\"";
   return os;
 }
 
 
-std::ostream& heather::operator<<(std::ostream& os, char c)
+std::ostream& herschel::operator<<(std::ostream& os, char c)
 {
   os << "'" << c << "'";
   return os;

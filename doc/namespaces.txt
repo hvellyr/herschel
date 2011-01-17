@@ -11,10 +11,10 @@ Proposed solution: There's only the name part.  To avoid conflicts, rely
 more on nested modules and the power of export and import.  This means
 however also that import can't simply rename namespaces (since they are
 fixed in that case).  To avoid long namespace constructs (like
-"heather|lang|Serializable") introduce the namespace aliasing feature we
-had in heather 2:
+"herschel|lang|Serializable") introduce the namespace aliasing feature we
+had in herschel 2:
 
-  def namespace hl = heather|lang
+  def namespace hl = herschel|lang
 
 or local:
 

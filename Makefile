@@ -1,4 +1,4 @@
-#  This file is part of the heather package 
+#  This file is part of the herschel package 
 #
 #  Copyright (c) 2010 Gregor Klinke
 #  All rights reserved.
@@ -40,7 +40,7 @@ all-post: run-unittest
 
 run-unittest:
 	@echo "Running unit tests..."
-	$(BUILDDIR)/$(BUILDSTYLE)/heather$(APPEXT) -UT
+	$(BUILDDIR)/$(BUILDSTYLE)/hrc$(APPEXT) -UT
 
 all-local: version.h config-local.h doc/version.texinfo $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 
@@ -123,7 +123,7 @@ dist-bin-pc: $(BUILDDIR) $(PKGDIR) all-local
 	  bin_pkgdir=$(BUILDDIR)/$$pkg_name; \
 	  mkdir $$bin_pkgdir; \
 	  cp doc/README.dist-pc-bin $$bin_pkgdir/README; \
-	  cp $(BUILDDIR)/heather.exe $$bin_pkgdir/heather.exe; \
+	  cp $(BUILDDIR)/hrc.exe $$bin_pkgdir/hrc.exe; \
 	  (cd $(BUILDDIR); \
 	   $(ZIP) -r ../$(PKGDIR)/$$pkg_name.zip $$pkg_name); \
 	fi
@@ -139,7 +139,7 @@ dist-bin-pkg: all-local
 dist-windows: $(PKGDIR) 
 	(BUILDSTYLE=release $(MAKE) dist-bin-pkg); \
 	(cd build/dist/win && $(MAKE) all); \
-	cp build/dist/win/heather-*.exe $(PKGDIR)
+	cp build/dist/win/hrc-*.exe $(PKGDIR)
 
 
 #----------------------------------------------------------------------
@@ -158,14 +158,14 @@ dist-all: dist-src dist-doc
 
 version.h: Makefile config.mk
 	@echo "/* Don't edit this file.  It has been created automatically. */" > $@
-	@echo "#ifndef heather_version_h" >> $@
-	@echo "#define heather_version_h" >> $@
+	@echo "#ifndef herschel_version_h" >> $@
+	@echo "#define herschel_version_h" >> $@
 	@echo "#define PACKAGE \"$(PACKAGE)\"" >> $@
 	@echo "#define VERSION \"$(VERSION)\"" >> $@
 	@echo "#define COPYRIGHTYEAR \"$(COPYRIGHTYEAR)\"" >> $@
 	@echo "#define COPYRIGHTOWNER \"$(COPYRIGHTOWNER)\"" >> $@
-	@echo "#define HEA_HOSTTYPE \"$(HEA_TARGET_DESC)\"" >> $@
-	@echo "#define HEA_BASE_REVISION \"$(BASE_REVISION)\"" >> $@
+	@echo "#define HR_HOSTTYPE \"$(HR_TARGET_DESC)\"" >> $@
+	@echo "#define HR_BASE_REVISION \"$(BASE_REVISION)\"" >> $@
 	@echo "#endif" >> $@
 
 doc/version.texinfo: Makefile config.mk
@@ -177,16 +177,16 @@ doc/version.texinfo: Makefile config.mk
 
 config-local.h: Makefile config.mk 
 	@echo "/* Don't edit this file.  It has been created automatically. */" > $@
-	@echo "#ifndef heather_config_local_h" > $@
-	@echo "#define heather_config_local_h" >> $@
-	@echo "#define HEA_INSTDIR_prefix \"$(prefix)/\"" >> $@
-	@echo "#define HEA_INSTDIR_bindir \"$(bindir)/\"" >> $@
-	@echo "#define HEA_INSTDIR_libdir \"$(libdir)/\"" >> $@
-	@echo "#define HEA_INSTDIR_pkglibdir \"$(pkglibdir)/\"" >> $@
-	@echo "#define HEA_INSTDIR_includedir \"$(includedir)/\"" >> $@
-	@echo "#define HEA_INSTDIR_pkgincludedir \"$(pkgincludedir)/\"" >> $@
-	@echo "#define HEA_INSTDIR_datadir \"$(datadir)/\"" >> $@
-	@echo "#define HEA_INSTDIR_pkgdatadir \"$(pkgdatadir)/\"" >> $@
+	@echo "#ifndef herschel_config_local_h" > $@
+	@echo "#define herschel_config_local_h" >> $@
+	@echo "#define HR_INSTDIR_prefix \"$(prefix)/\"" >> $@
+	@echo "#define HR_INSTDIR_bindir \"$(bindir)/\"" >> $@
+	@echo "#define HR_INSTDIR_libdir \"$(libdir)/\"" >> $@
+	@echo "#define HR_INSTDIR_pkglibdir \"$(pkglibdir)/\"" >> $@
+	@echo "#define HR_INSTDIR_includedir \"$(includedir)/\"" >> $@
+	@echo "#define HR_INSTDIR_pkgincludedir \"$(pkgincludedir)/\"" >> $@
+	@echo "#define HR_INSTDIR_datadir \"$(datadir)/\"" >> $@
+	@echo "#define HR_INSTDIR_pkgdatadir \"$(pkgdatadir)/\"" >> $@
 	@echo "#endif" >> $@
 
 
