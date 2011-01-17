@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>org.eyestep.heather.heather.pkg</string>
+	<string>org.eyestep.herschel.herschel.pkg</string>
 	<key>CFBundleShortVersionString</key>
 	<string>@VERSION@</string>
 	<key>IFMajorVersion</key>
@@ -15,9 +15,9 @@
 	<string>English</string>-->
 
 	<key>CFBundleGetInfoString</key>
-	<string>Heather Installer, vr. @VERSION@</string>
+	<string>Herschel Installer, vr. @VERSION@</string>
 	<key>CFBundleName</key>
-	<string>Heather Installer for OSX</string>
+	<string>Herschel Installer for OSX</string>
 
 	<key>IFPkgFlagAllowBackRev</key>
 	<false/>

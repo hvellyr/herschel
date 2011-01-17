@@ -1,4 +1,4 @@
-module examples ("eyestep/heather 1.0:examples")
+module examples ("eyestep/herschel 1.0:examples")
 
 import "io"
 

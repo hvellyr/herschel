@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -32,7 +32,7 @@
 #include "llvm/GlobalVariable.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 
 //----------------------------------------------------------------------------
@@ -168,7 +168,7 @@ CodeGenerator::createDefaultCMainFunc()
                                                   "entry", func);
   fBuilder.SetInsertPoint(bb);
 
-  String appMainFuncNm = heather::mangleToC(String("app|main"));
+  String appMainFuncNm = herschel::mangleToC(String("app|main"));
   llvm::Function* appMainFunc = fModule->getFunction(llvm::StringRef(appMainFuncNm));
   assert(appMainFunc != NULL);
 
@@ -328,7 +328,7 @@ CodeGenerator::createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
 llvm::Value*
 CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
-  String varnm = heather::mangleToC(node->name());
+  String varnm = herschel::mangleToC(node->name());
   llvm::GlobalVariable* gv =
   new llvm::GlobalVariable(llvm::Type::getInt32Ty(context()),
                            false, // isConstant,
@@ -349,7 +349,7 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
   assert(ft != NULL);
 
   String tmpName = uniqueName("gv");
-  String funcnm = heather::mangleToC(tmpName);
+  String funcnm = herschel::mangleToC(tmpName);
 
   llvm::Function *func = createGlobalInitOrDtorFunction(ft, funcnm);
 
@@ -649,7 +649,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
     funcnm = node->name();
   }
   else {
-    funcnm = heather::mangleToC(node->name());
+    funcnm = herschel::mangleToC(node->name());
   }
 
   llvm::Function *func = llvm::Function::Create(ft,
@@ -733,7 +733,7 @@ CodeGenerator::codegen(const ApplyNode* node)
       funcnm = symNode->name();
     }
     else {
-      funcnm = heather::mangleToC(symNode->name());
+      funcnm = herschel::mangleToC(symNode->name());
     }
 
     calleeFunc = fModule->getFunction(llvm::StringRef(funcnm));

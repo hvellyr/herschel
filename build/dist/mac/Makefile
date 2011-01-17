@@ -1,4 +1,4 @@
-#  This file is part of the heather package 
+#  This file is part of the herschel package 
 #
 #  Copyright (c) 2010 Gregor Klinke
 #  All rights reserved.
@@ -28,7 +28,7 @@ Info.plist: Info.plist.in
 	sed -e"s/\(@VERSION@\)/${VERSION}/g" $< > tmp.$$$$; \
 	mv tmp.$$$$ $@
 
-$(MAC_DMG): Info.plist Desc.plist $(top_srcdir)/temp/dist-release/heather
+$(MAC_DMG): Info.plist Desc.plist $(top_srcdir)/temp/dist-release/herschel
 	 $(SHELL) make-pkg.sh $(top_srcdir) $(PACKAGE) $(HR_PACKAGE) $(VERSION) $@
 
 

@@ -1,4 +1,4 @@
-#  This file is part of the heather package 
+#  This file is part of the herschel package 
 #
 #  Copyright (c) 2010 Gregor Klinke
 #  All rights reserved.
@@ -8,19 +8,19 @@ top_srcdir=..
 
 include $(top_srcdir)/config.mk
 
-TEXINFO_FILES = heather.texinfo
+TEXINFO_FILES = herschel.texinfo
 
 DISTFILES = Makefile       \
-	heather-mode.el          \
-	heather-logo.eps         \
+	herschel-mode.el          \
+	herschel-logo.eps         \
 	copyright.head           \
 	copyright.cpp            \
 	minimum-requirements.txt \
 	patterns.txt             \
 	texinfo.tex              \
-	artwork/heather-logo.eps \
-	artwork/heather-logo.png \
-	artwork/heather.jpg      \
+	artwork/herschel-logo.eps \
+	artwork/herschel-logo.png \
+	artwork/herschel.jpg      \
 	fonts/Makefile           \
 	fonts/OcrB.afm           \
 	fonts/OcrB.map           \
@@ -44,9 +44,9 @@ PDFS =  $(TEXINFO_FILES:%.texinfo=$(BUILDDIR)/%.pdf)
 
 pdf: $(PDFS)
 
-$(BUILDDIR)/%.pdf : $(BUILDDIR)/pdf heather.texinfo version.texinfo
+$(BUILDDIR)/%.pdf : $(BUILDDIR)/pdf herschel.texinfo version.texinfo
 	texi2pdf --build-dir=$(BUILDDIR)/pdf \
-			     -I $(top_srcdir)/doc -o $@ heather.texinfo
+			     -I $(top_srcdir)/doc -o $@ herschel.texinfo
 
 $(BUILDDIR)/pdf: $(BUILDDIR)
 	@if [ ! -d "$@" ]; then mkdir $@; fi
@@ -56,7 +56,7 @@ INFOS =  $(TEXINFO_FILES:%.texinfo=$(BUILDDIR)/%.info)
 info: $(INFOS)
 
 $(BUILDDIR)/%.info : %.texinfo version.texinfo
-	makeinfo -o $@ heather.texinfo
+	makeinfo -o $@ herschel.texinfo
 
 
 clean-local:

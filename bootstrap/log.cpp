@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -16,7 +16,7 @@
 #include "srcpos.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 //------------------------------------------------------------------------------
 
@@ -108,14 +108,14 @@ logImpl(const SrcPos& where, LogLevel level, int errorCode, FILE* stream,
 
 
 void
-heather::log(const SrcPos& where, LogLevel level, const String& msg)
+herschel::log(const SrcPos& where, LogLevel level, const String& msg)
 {
   logImpl(where, level, 0, stderr, (const char*)StrHelper(msg));
 }
 
 
 void
-heather::logf(const SrcPos& where, LogLevel level, const char* format, ...)
+herschel::logf(const SrcPos& where, LogLevel level, const char* format, ...)
 {
   char buffer[2048];
 
@@ -129,7 +129,7 @@ heather::logf(const SrcPos& where, LogLevel level, const char* format, ...)
 
 
 void
-heather::log(LogLevel level, const String& msg)
+herschel::log(LogLevel level, const String& msg)
 {
   static SrcPos sp;
   logImpl(sp, level, 0, stderr, (const char*)StrHelper(msg));
@@ -137,7 +137,7 @@ heather::log(LogLevel level, const String& msg)
 
 
 void
-heather::logf(LogLevel level, const char* format, ...)
+herschel::logf(LogLevel level, const char* format, ...)
 {
   static SrcPos sp;
   char buffer[2048];
@@ -152,14 +152,14 @@ heather::logf(LogLevel level, const char* format, ...)
 
 
 void
-heather::error(const SrcPos& where, int errorCode, const String& msg)
+herschel::error(const SrcPos& where, int errorCode, const String& msg)
 {
   logImpl(where, kError, errorCode, stderr, (const char*)StrHelper(msg));
 }
 
 
 void
-heather::errorf(const SrcPos& where, int errorCode, const char* format, ...)
+herschel::errorf(const SrcPos& where, int errorCode, const char* format, ...)
 {
   char buffer[2048];
 
@@ -173,14 +173,14 @@ heather::errorf(const SrcPos& where, int errorCode, const char* format, ...)
 
 
 void
-heather::warning(const SrcPos& where, int errorCode, const String& msg)
+herschel::warning(const SrcPos& where, int errorCode, const String& msg)
 {
   logImpl(where, kWarn, errorCode, stderr, (const char*)StrHelper(msg));
 }
 
 
 void
-heather::warningf(const SrcPos& where, int errorCode, const char* format, ...)
+herschel::warningf(const SrcPos& where, int errorCode, const char* format, ...)
 {
   char buffer[2048];
 

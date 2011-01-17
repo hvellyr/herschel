@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -16,11 +16,11 @@
 
 //----------------------------------------------------------------------------
 
-using namespace heather;
+using namespace herschel;
 
 
 String
-heather::qualifyId(const String& ns, const String& name)
+herschel::qualifyId(const String& ns, const String& name)
 {
   if (isQualified(name) || ns.isEmpty())
     return name;
@@ -30,14 +30,14 @@ heather::qualifyId(const String& ns, const String& name)
 
 
 bool
-heather::isQualified(const String& sym)
+herschel::isQualified(const String& sym)
 {
   return (sym.lastIndexOf('|') >= 0);
 }
 
 
 String
-heather::baseName(const String& sym)
+herschel::baseName(const String& sym)
 {
   int idx = sym.lastIndexOf('|');
   if (idx >= 0)
@@ -47,7 +47,7 @@ heather::baseName(const String& sym)
 
 
 String
-heather::nsName(const String& sym)
+herschel::nsName(const String& sym)
 {
   int idx = sym.lastIndexOf('|');
   if (idx >= 0)
@@ -56,7 +56,7 @@ heather::nsName(const String& sym)
 }
 
 
-namespace heather {
+namespace herschel {
 static void
 fastMangleSymPart(StringBuffer& result, const String& sym)
 {
@@ -106,7 +106,7 @@ fastMangleSymPart(StringBuffer& result, const String& sym)
 //! where .. is the length of the following sym in decimal digits.  Special
 //! characters (other than a-zA-Z0-9 and _) are translated as /2two-hexdigit.
 String
-heather::mangleToC(const String& qualId)
+herschel::mangleToC(const String& qualId)
 {
   StringBuffer result;
   result << "__QN";

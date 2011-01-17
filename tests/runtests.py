@@ -29,7 +29,7 @@ PHASES = ['1', '2', '3', '4', '5']
 class TestRunner:
 
     def __init__(self):
-        self.heather_path = "../temp/debug/heather"
+        self.herschel_path = "../temp/debug/hrc"
         self.verbose = False
         self.test_succeeded = 0
         self.test_run = 0
@@ -78,8 +78,8 @@ class TestRunner:
             self.last_passid = np
 
 
-    def run_heather_on_test(self, test_file, options):
-        cmd = [self.heather_path]
+    def run_herschel_on_test(self, test_file, options):
+        cmd = [self.herschel_path]
         cmd.extend(options)
         if self.input_dir:
             cmd.append('-I')
@@ -139,7 +139,7 @@ class TestRunner:
 
         test_count = 0
 
-        output, erroutput = self.run_heather_on_test(test_file, options)
+        output, erroutput = self.run_herschel_on_test(test_file, options)
         what_tag = "[%s] %s" % (passid, test_file)
         if erroutput:
             if errtest_func == None:
@@ -264,7 +264,7 @@ class TestRunner:
 
     def run_all_tests(self, test_dir, domain):
         for f in os.listdir(test_dir):
-            if f.endswith(".hea"):
+            if f.endswith(".hr"):
                 self.run_test(test_dir, f, domain)
 
         if not self.verbose:
@@ -307,7 +307,7 @@ def main():
     tr = TestRunner()
 
     if options.executable is not None:
-        tr.heather_path = options.executable
+        tr.herschel_path = options.executable
 
     if options.verbose:
         tr.verbose = options.verbose

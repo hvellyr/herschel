@@ -1,5 +1,0 @@
--- test to import ignore-green-02.hea
-
-import "import/ignore-green-02.hea"
-
-def abc a = 12

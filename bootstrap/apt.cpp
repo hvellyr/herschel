@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -30,7 +30,7 @@
 #  include <iostream>
 #endif
 
-using namespace heather;
+using namespace herschel;
 
 
 template<typename T>
@@ -52,7 +52,7 @@ T* nodeClone(const Ptr<T>& node)
 
 
 void
-heather::copyNodes(NodeList* dst, const NodeList* src)
+herschel::copyNodes(NodeList* dst, const NodeList* src)
 {
   for (NodeList::const_iterator it = src->begin(); it != src->end(); ++it) {
     dst->push_back(nodeClone(it->obj()));
@@ -61,7 +61,7 @@ heather::copyNodes(NodeList* dst, const NodeList* src)
 
 
 NodeList
-heather::copyNodes(const NodeList& src)
+herschel::copyNodes(const NodeList& src)
 {
   NodeList dst;
   copyNodes(&dst, &src);
@@ -245,7 +245,7 @@ _type::typify(Typifier* typifier)               \
 
 //----------------------------------------------------------------------------
 
-namespace heather {
+namespace herschel {
   template<typename T>
   T* cloneScope(const T* src, T* dst)
   {
@@ -266,7 +266,7 @@ StringNode::StringNode(const SrcPos& srcpos,
 StringNode*
 StringNode::clone() const
 {
-  return heather::cloneScope(this, new StringNode(fSrcPos, fValue));
+  return herschel::cloneScope(this, new StringNode(fSrcPos, fValue));
 }
 
 
@@ -902,7 +902,7 @@ ParamNode::ParamNode(const SrcPos& srcpos,
     fKey(keyName),
     fFlags(flags)
 {
-  assert(heaImplies(fFlags == kNamedArg, !fKey.isEmpty()));
+  assert(implies(fFlags == kNamedArg, !fKey.isEmpty()));
 }
 
 
@@ -2161,14 +2161,14 @@ DEF_TYPIFY(CastNode)
 //--------------------------------------------------------------------------------
 
 NodeList
-heather::newNodeList()
+herschel::newNodeList()
 {
   return NodeList();
 }
 
 
 NodeList
-heather::newNodeList(AptNode* n1)
+herschel::newNodeList(AptNode* n1)
 {
   NodeList nl;
   if (n1 != NULL)
@@ -2178,7 +2178,7 @@ heather::newNodeList(AptNode* n1)
 
 
 NodeList
-heather::newNodeList(AptNode* n1, AptNode* n2)
+herschel::newNodeList(AptNode* n1, AptNode* n2)
 {
   NodeList nl;
   if (n1 != NULL)
@@ -2190,7 +2190,7 @@ heather::newNodeList(AptNode* n1, AptNode* n2)
 
 
 NodeList
-heather::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3)
+herschel::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3)
 {
   NodeList nl;
   if (n1 != NULL)
@@ -2204,7 +2204,7 @@ heather::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3)
 
 
 NodeList
-heather::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3, AptNode* n4)
+herschel::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3, AptNode* n4)
 {
   NodeList nl;
   if (n1 != NULL)
@@ -2220,7 +2220,7 @@ heather::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3, AptNode* n4)
 
 
 NodeList&
-heather::appendNodes(NodeList& dst, const NodeList& nl)
+herschel::appendNodes(NodeList& dst, const NodeList& nl)
 {
   if (!nl.empty())
     dst.insert(dst.end(), nl.begin(), nl.end());
@@ -2229,7 +2229,7 @@ heather::appendNodes(NodeList& dst, const NodeList& nl)
 
 
 AptNode*
-heather::singletonNodeListOrNull(const NodeList& nl)
+herschel::singletonNodeListOrNull(const NodeList& nl)
 {
   assert(nl.size() < 2);
   if (nl.size() == 1)

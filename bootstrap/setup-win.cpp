@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -21,10 +21,10 @@
 #include "log.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 
-namespace heather
+namespace herschel
 {
   static String
   getExeLocation()
@@ -37,7 +37,7 @@ namespace heather
   }
 
 
-  #define APPFILE "heather.exe"
+  #define APPFILE "hrc.exe"
 
   static bool
   exeFromDevpath(const String& exedir, String& syspath)
@@ -79,7 +79,7 @@ namespace heather
         result.push_back(syspath);
       }
       else {
-        syspath = file::appendDir(file::makeDir(String(HEA_INSTDIR_pkglibdir)),
+        syspath = file::appendDir(file::makeDir(String(HR_INSTDIR_pkglibdir)),
                                   String(VERSION),
                                   String("include"));
         result.push_back(syspath);

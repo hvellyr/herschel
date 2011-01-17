@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -8,7 +8,7 @@
 
 #include "numbers.h"
 
-using namespace heather;
+using namespace herschel;
 
 
 //----------------------------------------------------------------------------
@@ -116,11 +116,11 @@ Rational
 Rational::exponent(int exp) const
 {
   if (exp > 0)
-    return Rational(heather::exponent(fNumerator, exp),
-                    heather::exponent(fDenominator, exp));
+    return Rational(herschel::exponent(fNumerator, exp),
+                    herschel::exponent(fDenominator, exp));
   else if (exp < 0)
-    return Rational(heather::exponent(fDenominator, -exp),
-                    heather::exponent(fNumerator, -exp));
+    return Rational(herschel::exponent(fDenominator, -exp),
+                    herschel::exponent(fNumerator, -exp));
   else
     return Rational(1, 1);
 }
@@ -133,7 +133,7 @@ Rational::exponent(int exp) const
 #include <UnitTest++.h>
 #include <iostream>
 
-std::ostream& heather::operator<<(std::ostream& os, const Rational& rat)
+std::ostream& herschel::operator<<(std::ostream& os, const Rational& rat)
 {
   os << rat.numerator() << "/" << rat.denominator();
   return os;

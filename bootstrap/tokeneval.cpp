@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -11,7 +11,7 @@
 #include "tokeneval.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 TokenEvalContext::TokenEvalContext(ConfigVarRegistry* registry)
   : fRegistry(registry)
@@ -273,7 +273,7 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
 
     if (right.isInt())
       return Token(left.srcpos(),
-                   kInt, heather::exponent(value, right.intValue()));
+                   kInt, herschel::exponent(value, right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -284,7 +284,7 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
 
     if (right.isInt())
       return Token(left.srcpos(),
-                   kReal, heather::exponent(value, right.intValue()));
+                   kReal, herschel::exponent(value, right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }

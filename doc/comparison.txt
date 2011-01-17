@@ -1,6 +1,6 @@
 Language Feature Comparison Table
 
-Feature                                     D   Hea
+Feature                                     D   Hr
   Garbage Collection                        y   y
 
 Functions

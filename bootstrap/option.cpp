@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -12,7 +12,7 @@
 #include "option.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 //----------------------------------------------------------------------------
 
@@ -160,7 +160,7 @@ SUITE(OptionsParser)
 
   TEST(One)
   {
-    static const char* args[] = { "heather", "-h" };
+    static const char* args[] = { "herschel", "-h" };
 
     OptionsParser p(options, 2, args);
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
@@ -173,13 +173,13 @@ SUITE(OptionsParser)
 
   TEST(Two)
   {
-    static const char* args[] = { "heather",
+    static const char* args[] = { "herschel",
                                   "-d", "tmp/test.log",
                                   "--level=5",
                                   "--verbose",
                                   "-P", "8080",
                                   "-U",
-                                  "abc.hea", "xyz.hea" };
+                                  "abc.hr", "xyz.hr" };
 
     OptionsParser p(options, 10, args);
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
@@ -209,18 +209,18 @@ SUITE(OptionsParser)
 
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNotAnOption);
     CHECK(option.fOption.isEmpty());
-    CHECK_EQUAL(option.fArgument, String("abc.hea"));
+    CHECK_EQUAL(option.fArgument, String("abc.hr"));
 
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNotAnOption);
     CHECK(option.fOption.isEmpty());
-    CHECK_EQUAL(option.fArgument, String("xyz.hea"));
+    CHECK_EQUAL(option.fArgument, String("xyz.hr"));
 
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
   }
 
   TEST(Three)
   {
-    static const char* args[] = { "heather",
+    static const char* args[] = { "herschel",
                                   "--outdir=tmp/test.log" };
     OptionsParser p(options, 2, args);
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
@@ -233,7 +233,7 @@ SUITE(OptionsParser)
 
   TEST(Four)
   {
-    static const char* args[] = { "heather", "-d", "-U" };
+    static const char* args[] = { "herschel", "-d", "-U" };
     OptionsParser p(options, 3, args);
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kMissingArgument);
     CHECK_EQUAL(option.fId, 3);        // return the proper option id anyway
@@ -250,7 +250,7 @@ SUITE(OptionsParser)
 
   TEST(Five)
   {
-    static const char* args[] = { "heather",
+    static const char* args[] = { "herschel",
                                   "--version", "Something", "-U" };
     OptionsParser p(options, 4, args);
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
@@ -272,7 +272,7 @@ SUITE(OptionsParser)
 
   TEST(Six)
   {
-    static const char* args[] = { "heather",
+    static const char* args[] = { "herschel",
                                   "--port=7111", "--host=www.eyestep.org",
                                   "--output",
                                   "--level=DEBUG",

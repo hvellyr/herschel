@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -24,7 +24,7 @@
 #endif
 
 
-namespace heather
+namespace herschel
 {
   String tokenTypeToString(TokenType type)
   {
@@ -512,7 +512,7 @@ namespace heather
 
 //----------------------------------------------------------------------------
 
-using namespace heather;
+using namespace herschel;
 
 Token
 Token::newUniqueSymbolToken(const SrcPos& where, const char* prefix)
@@ -985,7 +985,7 @@ Token::isPunct() const
 bool
 Token::isOperator() const
 {
-  return (heather::tokenTypeToOperator(fType) != kOpInvalid);
+  return (herschel::tokenTypeToOperator(fType) != kOpInvalid);
 }
 
 
@@ -1435,7 +1435,7 @@ Token::baseName() const
   if (fType != kSymbol)
     throw NotSupportedException(__FUNCTION__);
 
-  return heather::baseName(idValue());
+  return herschel::baseName(idValue());
 }
 
 
@@ -1445,7 +1445,7 @@ Token::nsName() const
   if (fType != kSymbol)
     throw NotSupportedException(__FUNCTION__);
 
-  return heather::nsName(idValue());
+  return herschel::nsName(idValue());
 }
 
 
@@ -1604,14 +1604,14 @@ Token::macroParamType() const
 //----------------------------------------------------------------------------
 
 String
-heather::operator+(const String& one, const Token& two)
+herschel::operator+(const String& one, const Token& two)
 {
   return one + two.toString();
 }
 
 
 String
-heather::operator+(const String& one, const TokenVector& vect)
+herschel::operator+(const String& one, const TokenVector& vect)
 {
   StringBuffer buf;
   for (TokenVector::const_iterator it = vect.begin();
@@ -1626,7 +1626,7 @@ heather::operator+(const String& one, const TokenVector& vect)
 
 
 String
-heather::operator+(const String& one, const NamedTokenMap& bindings)
+herschel::operator+(const String& one, const NamedTokenMap& bindings)
 {
   StringBuffer buf;
   buf << "{";
@@ -1650,7 +1650,7 @@ heather::operator+(const String& one, const NamedTokenMap& bindings)
 
 #include <UnitTest++.h>
 
-std::ostream& heather::operator<<(std::ostream& os,const Token& token)
+std::ostream& herschel::operator<<(std::ostream& os,const Token& token)
 {
   String s = token.toString();
   os << "'" << (const char*)StrHelper(s) << "'";
@@ -1658,7 +1658,7 @@ std::ostream& heather::operator<<(std::ostream& os,const Token& token)
 }
 
 
-std::ostream& heather::operator<<(std::ostream& os, ExprType type)
+std::ostream& herschel::operator<<(std::ostream& os, ExprType type)
 {
   switch (type) {
   case kSeq:    os << "ExprType::kSeq"; break;

@@ -1,4 +1,4 @@
--- 99 Bottles of Beer in Heather (v1)
+-- 99 Bottles of Beer in Herschel (v1)
 module beer99 ("sijo/99beer")
 
 def display-bottles(n : Int, port : Port)

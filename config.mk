@@ -1,4 +1,4 @@
-#  This file is part of the heather package
+#  This file is part of the herschel package
 #
 #  Copyright (c) 2010 Gregor Klinke
 #  All rights reserved.
@@ -8,12 +8,12 @@ srcdir = .
 
 # ----------------------------------------------------------------------
 
-PACKAGE = heather
+PACKAGE = herschel
 VERSION = 0.1
 COPYRIGHTYEAR = 2002, 2003, 2009-2011
 COPYRIGHTOWNER = Gregor C. Klinke
 # human readable package name, used for Mac packages, etc.
-HR_PACKAGE = Heather
+HR_PACKAGE = Herschel
 
 LANG_VERSION = 0.2.1
 
@@ -27,7 +27,7 @@ TARGET_OS    ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh -m)
 TARGET_ARCH  ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh -a)
 TARGET_OSVER ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh -r)
 TARGET_OSFLV ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh -f)
-HEA_TARGET_DESC ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh)
+HR_TARGET_DESC ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh)
 
 # OS_FLAGS = -DOS_$(TARGET_OS) -DARCH_$(TARGET_ARCH) -DOSFLAV_$(TARGET_OSFLV)
 OS_FLAGS = -DOS_$(TARGET_OS) -DARCH_$(TARGET_ARCH) # -DOSFLAV_$(TARGET_OSFLV)
@@ -126,11 +126,11 @@ CXXFLAGS += $(DEFS) $(CXXADDS)
 prefix        ?= /usr/local
 bindir        ?= $(prefix)/bin
 libdir  	    ?= $(prefix)/lib
-pkglibdir	    ?= $(libdir)/heather
+pkglibdir	    ?= $(libdir)/herschel
 includedir    ?= $(prefix)/include
-pkgincludedir ?= $(prefix)/include/heather
+pkgincludedir ?= $(prefix)/include/herschel
 datadir       ?= $(prefix)/share
-pkgdatadir    ?= $(prefix)/share/heather
+pkgdatadir    ?= $(prefix)/share/herschel
 mandir        ?= $(prefix)/man
 
 BUILDDIR = $(top_srcdir)/temp

@@ -16,6 +16,6 @@
 </seq>
 <seq>
 <id>import</id>
-<lit type='str'>linux/little-endian.head</lit>
+<lit type='str'>linux/little-endian.hr</lit>
 </seq>
 </seq>

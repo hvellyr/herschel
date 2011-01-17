@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -10,12 +10,12 @@
 #include "parsertypes.h"
 #include "token.h"
 
-using namespace heather;
+using namespace herschel;
 
 
 
 OperatorType
-heather::tokenTypeToOperator(TokenType type)
+herschel::tokenTypeToOperator(TokenType type)
 {
   switch (type) {
   case kPlus:          return kOpPlus;
@@ -56,7 +56,7 @@ heather::tokenTypeToOperator(TokenType type)
 
 
 TokenType
-heather::operatorToTokenType(OperatorType op)
+herschel::operatorToTokenType(OperatorType op)
 {
   switch (op) {
   case kOpPlus:          return kPlus;

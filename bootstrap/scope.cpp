@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -18,14 +18,14 @@
 #include "symbol.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 static Type sInvalidType;
 
 
 //------------------------------------------------------------------------------
 
-namespace heather
+namespace herschel
 {
   //--------------------------------------------------------------------------
 
@@ -162,7 +162,7 @@ Scope::Scope(ScopeLevel level, Scope* parent)
   : fParent(parent),
     fLevel(level)
 {
-  assert(heaImplies(level > kScopeL_CompileUnit, parent != NULL));
+  assert(implies(level > kScopeL_CompileUnit, parent != NULL));
 }
 
 
@@ -186,8 +186,8 @@ Scope::registerScopeItem(const ScopeName& name, ScopeItem* item)
   assert(item != NULL);
   assert(lookupItemLocalImpl(SrcPos(), name, false, false).fItem == NULL);
 
-  ScopeName base(name.fDomain, heather::baseName(name.fName));
-  String ns(heather::nsName(name.fName));
+  ScopeName base(name.fDomain, herschel::baseName(name.fName));
+  String ns(herschel::nsName(name.fName));
 
   NsScopeMap::iterator it = fMap.find(base);
   if (it != fMap.end())
@@ -210,8 +210,8 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
                            const ScopeName& name, bool showError,
                            bool doAutoMatch) const
 {
-  ScopeName base(name.fDomain, heather::baseName(name.fName));
-  ScopeName ns(name.fDomain, heather::nsName(name.fName));
+  ScopeName base(name.fDomain, herschel::baseName(name.fName));
+  ScopeName ns(name.fDomain, herschel::nsName(name.fName));
 
   NsScopeMap::const_iterator it = fMap.find(base);
   if (it != fMap.end()) {

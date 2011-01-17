@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -16,7 +16,7 @@
 
 #include <vector>
 
-using namespace heather;
+using namespace herschel;
 
 
 /* ----------------------------------------------------------------------
@@ -24,14 +24,14 @@ using namespace heather;
    ---------------------------------------------------------------------- */
 #if defined(OS_mac) || defined(OS_win) || defined(OS_linux)
 
-namespace heather
+namespace herschel
 {
 extern StringVector findSysResourceBundle();
 };
 
 #else
 
-namespace heather
+namespace herschel
 {
   /* a generic implementation */
   StringVector
@@ -43,8 +43,8 @@ namespace heather
     /* check whether we run from the development folder */
     {
       String cwd = file::workingDir();
-      if (file::isFile(file::appendFile(cwd, String("temp/debug/heather"))) ||
-          file::isFile(file::appendFile(cwd, String("temp/release/heather"))) ) {
+      if (file::isFile(file::appendFile(cwd, String("temp/debug/herschel"))) ||
+          file::isFile(file::appendFile(cwd, String("temp/release/herschel"))) ) {
 
         result.push_back(file::appendDir(cwd, String("lib")));
         return result;
@@ -53,7 +53,7 @@ namespace heather
 #endif
 
     result.push_back(file::appendDir(
-                       file::makeDir(String(HEA_INSTDIR_pkglibdir)),
+                       file::makeDir(String(HR_INSTDIR_pkglibdir)),
                        String(VERSION)),
                        String("include"));
     return result;
@@ -63,7 +63,7 @@ namespace heather
 #endif
 
 
-namespace heather
+namespace herschel
 {
   static StringVector
   findResourceBundle()
@@ -74,7 +74,7 @@ namespace heather
 
 
 void
-heather::setupDefaultPath()
+herschel::setupDefaultPath()
 {
   StringVector syspaths = findResourceBundle();
 

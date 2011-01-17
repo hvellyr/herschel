@@ -53,7 +53,7 @@ Constants (enum, defines, const)
 
 Namespaces
 
-  All heather classes, functions, and types are within the "heather"
+  All herschel classes, functions, and types are within the "herschel"
   namespace.
 
   Namespace names are all lowercase (and since they should be short no

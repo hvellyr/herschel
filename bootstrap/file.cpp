@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -22,10 +22,10 @@
 #include "strbuf.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 String
-heather::file::makeDir(const String& path)
+herschel::file::makeDir(const String& path)
 {
   if (path.length() > 0) {
     if (path[path.length() - 1] == '/')
@@ -37,14 +37,14 @@ heather::file::makeDir(const String& path)
 
 
 bool
-heather::file::isFilePath(const String& path)
+herschel::file::isFilePath(const String& path)
 {
   return (!path.isEmpty() && path[path.length() - 1] != '/');
 }
 
 
 bool
-heather::file::isFile(const String& path)
+herschel::file::isFile(const String& path)
 {
   struct stat fstat;
 
@@ -58,7 +58,7 @@ heather::file::isFile(const String& path)
 
 
 bool
-heather::file::isDir(const String& path)
+herschel::file::isDir(const String& path)
 {
   struct stat fstat;
 
@@ -72,7 +72,7 @@ heather::file::isDir(const String& path)
 
 
 bool
-heather::file::isAbsolutePath(const String& path)
+herschel::file::isAbsolutePath(const String& path)
 {
   return (!path.isEmpty() && (path[0] == '/' ||
                               path[0] == '~'));
@@ -80,7 +80,7 @@ heather::file::isAbsolutePath(const String& path)
 
 
 bool
-heather::file::hasExtension(const String& path)
+herschel::file::hasExtension(const String& path)
 {
   String name = file::namePart(path);
   int idx = name.lastIndexOf('.');
@@ -89,7 +89,7 @@ heather::file::hasExtension(const String& path)
 
 
 String
-heather::file::namePart(const String& path)
+herschel::file::namePart(const String& path)
 {
   int idx = path.lastIndexOf('/');
   if (idx >= 0)
@@ -100,7 +100,7 @@ heather::file::namePart(const String& path)
 
 
 String
-heather::file::dirPart(const String& path)
+herschel::file::dirPart(const String& path)
 {
   int idx = path.lastIndexOf('/');
   if (idx >= 0)
@@ -111,7 +111,7 @@ heather::file::dirPart(const String& path)
 
 
 String
-heather::file::baseName(const String& path)
+herschel::file::baseName(const String& path)
 {
   String name = file::namePart(path);
   int idx = name.lastIndexOf('.');
@@ -123,7 +123,7 @@ heather::file::baseName(const String& path)
 
 
 String
-heather::file::appendDir(const String& path, const String& dirName)
+herschel::file::appendDir(const String& path, const String& dirName)
 {
   assert(!isFilePath(path));
   return makeDir(path + dirName);
@@ -131,7 +131,7 @@ heather::file::appendDir(const String& path, const String& dirName)
 
 
 String
-heather::file::appendDir(const String& path, const String& dirName,
+herschel::file::appendDir(const String& path, const String& dirName,
                          const String& dirName2)
 {
   assert(!isFilePath(path));
@@ -140,7 +140,7 @@ heather::file::appendDir(const String& path, const String& dirName,
 
 
 String
-heather::file::appendDir(const String& path, const String& dirName1,
+herschel::file::appendDir(const String& path, const String& dirName1,
                          const String& dirName2, const String& dirName3)
 {
   assert(!isFilePath(path));
@@ -151,7 +151,7 @@ heather::file::appendDir(const String& path, const String& dirName1,
 
 
 String
-heather::file::appendDir(const String& path, const String& dirName1,
+herschel::file::appendDir(const String& path, const String& dirName1,
                          const String& dirName2, const String& dirName3,
                          const String& dirName4)
 {
@@ -164,7 +164,7 @@ heather::file::appendDir(const String& path, const String& dirName1,
 
 
 String
-heather::file::appendFile(const String& path, const String& name)
+herschel::file::appendFile(const String& path, const String& name)
 {
   assert(!isFilePath(path));
   return path + name;
@@ -172,14 +172,14 @@ heather::file::appendFile(const String& path, const String& name)
 
 
 String
-heather::file::appendExt(const String& path, const String& ext)
+herschel::file::appendExt(const String& path, const String& ext)
 {
   return path + "." + ext;
 }
 
 
 String
-heather::file::append(const String& path, const String& name)
+herschel::file::append(const String& path, const String& name)
 {
   if (isFilePath(path))
     return path + "/" + name;
@@ -188,7 +188,7 @@ heather::file::append(const String& path, const String& name)
 
 
 String
-heather::file::workingDir()
+herschel::file::workingDir()
 {
   int size = 256;
   std::vector<char> buffer;
@@ -212,7 +212,7 @@ heather::file::workingDir()
 
 
 String
-heather::file::homeDir()
+herschel::file::homeDir()
 {
   char *home = ::getenv("HOME");
   if (home != NULL)
@@ -420,7 +420,7 @@ private:
 
 
 String
-heather::file::canonicalPathName(const String& path, const String& baseDir)
+herschel::file::canonicalPathName(const String& path, const String& baseDir)
 {
   CanonicalPath cn(path);
 
@@ -433,7 +433,7 @@ heather::file::canonicalPathName(const String& path, const String& baseDir)
 
 
 String
-heather::file::canonicalPathName(const String& path)
+herschel::file::canonicalPathName(const String& path)
 {
   return canonicalPathName(path, workingDir());
 }
@@ -464,7 +464,7 @@ checkForFileWithExts(const String& fullPath,
 
 
 String
-heather::file::lookupInPath(const String& pattern,
+herschel::file::lookupInPath(const String& pattern,
                             const StringVector& searchPath,
                             const StringVector& altExtensions)
 {
@@ -537,8 +537,8 @@ SUITE(File)
 
   TEST(appendFile)
   {
-    String t = file::appendFile(String("/usr/share/heather/"), String("a.xml"));
-    CHECK_EQUAL(t, String("/usr/share/heather/a.xml"));
+    String t = file::appendFile(String("/usr/share/herschel/"), String("a.xml"));
+    CHECK_EQUAL(t, String("/usr/share/herschel/a.xml"));
     CHECK(file::isFilePath(t));
 
     CHECK(!file::isFilePath(String("/opt/")));
@@ -547,22 +547,22 @@ SUITE(File)
 
   TEST(appendDir)
   {
-    String t = file::appendDir(String("/usr/share/heather/"), String("abc"));
-    CHECK_EQUAL(t, String("/usr/share/heather/abc/"));
+    String t = file::appendDir(String("/usr/share/herschel/"), String("abc"));
+    CHECK_EQUAL(t, String("/usr/share/herschel/abc/"));
     CHECK(!file::isFilePath(t));
 
-    String z = file::appendDir(String("/usr/share/heather/"), String("abc/"));
-    CHECK_EQUAL(z, String("/usr/share/heather/abc/"));
+    String z = file::appendDir(String("/usr/share/herschel/"), String("abc/"));
+    CHECK_EQUAL(z, String("/usr/share/herschel/abc/"));
     CHECK(!file::isFilePath(z));
   }
 
 
   TEST(appendExt)
   {
-    CHECK_EQUAL(file::appendExt(String("/usr/share/heather/a"), String("xml")),
-                String("/usr/share/heather/a.xml"));
-    CHECK_EQUAL(file::appendExt(String("/usr/share/heather/a.xml"), String("txt")),
-                String("/usr/share/heather/a.xml.txt"));
+    CHECK_EQUAL(file::appendExt(String("/usr/share/herschel/a"), String("xml")),
+                String("/usr/share/herschel/a.xml"));
+    CHECK_EQUAL(file::appendExt(String("/usr/share/herschel/a.xml"), String("txt")),
+                String("/usr/share/herschel/a.xml.txt"));
   }
 
 

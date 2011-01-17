@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -17,7 +17,7 @@
 #include "srcpos.h"
 
 
-using namespace heather;
+using namespace herschel;
 
 
 #define NUMBER_TYPE_ENUM_MAKER(_TypeName, _kind, _method, _init, _step)  \

@@ -1,7 +1,7 @@
 Memory model and Allocation
 ===========================
 
-Objects must be created in heather.  This is true for complex objects but
+Objects must be created in herschel.  This is true for complex objects but
 also for base ones, like integers or strings.  This object creation however
 is mostly covered by the syntax.  For example
 
@@ -152,7 +152,7 @@ Aren't references (pointers) dangerous (again)?
 -----------------------------------------------
 
 Yep.  They are of course more dangerous than operating with immutable
-objects passed by value.  Since heather on the other uses garbage
+objects passed by value.  Since herschel on the other uses garbage
 collection with no explicitly free() or dispose() function you can't
 (easily) create dangling pointers.  What you can get are nil references of
 course.

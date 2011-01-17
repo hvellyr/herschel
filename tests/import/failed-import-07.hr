@@ -1,0 +1,8 @@
+module a1 ("a1")
+
+import "import/ignore-classdef-01.hr"
+
+def place = City("Tokio", "Japan")
+
+def x = Person("Akira", "developer")
+

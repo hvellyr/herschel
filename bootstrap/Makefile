@@ -1,4 +1,4 @@
-#  This file is part of the heather package
+#  This file is part of the herschel package
 #
 #  Copyright (c) 2010 Gregor Klinke
 #  All rights reserved.
@@ -27,7 +27,7 @@ SOURCES =         \
 	compiler.cpp    \
 	externc.cpp     \
 	file.cpp        \
-	heather.cpp     \
+	herschel.cpp    \
 	log.cpp         \
 	macro.cpp       \
 	numbers.cpp     \
@@ -134,7 +134,7 @@ include $(top_srcdir)/build/pre.mk
 
 all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) APPX
 
-APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/heather$(APPEXT)
+APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/hrc$(APPEXT)
 APPX: $(APPBINARY)
 
 $(APPBINARY): $(OBJS)

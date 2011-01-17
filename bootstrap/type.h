@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -19,7 +19,7 @@
 #include "ptr.h"
 
 
-namespace heather
+namespace herschel
 {
   class Type;
   class TypeConstraint;
@@ -271,7 +271,7 @@ namespace heather
 
     String toString() const;
 
-    //! Types in heather are either 'reference' or 'value' types.  Even if all
+    //! Types in herschel are either 'reference' or 'value' types.  Even if all
     //! objects are possible passed by reference internally, value types
     //! behave on (first) modification as if being copied (copy-on-write).
     bool isValueType() const;

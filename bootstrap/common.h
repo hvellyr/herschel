@@ -1,6 +1,6 @@
 /* -*-c++-*-
 
-   This file is part of the heather package
+   This file is part of the herschel package
 
    Copyright (c) 2010 Gregor Klinke
    All rights reserved.
@@ -23,6 +23,6 @@ typedef unsigned char Octet;
 typedef unsigned short Char;
 
 //! Macro which evaluates _condA IMP _condB
-#define heaImplies(_condA, _condB)  (!(_condA) || ((_condA) && (_condB)))
+#define implies(_condA, _condB)  (!(_condA) || ((_condA) && (_condB)))
 
 #endif
