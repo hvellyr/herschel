@@ -15,31 +15,31 @@
 </ty:ref>
 </rettype>
 <body>
-<block>
-<let>
-<vardef sym='t'>
+<symbol>lang|unspecified</symbol>
+</body>
+</func>
+</def>
+<def>
+<func sym='foo2'>
+<params>
+<param sym='a' type='pos'>
 <type>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
 </type>
-<init>
-<cast>
-<base>
-<apply>
-<symbol>Person</symbol>
-<args>
-</args>
-</apply>
-</base>
-<as>
+</param>
+</params>
+<rettype>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
-</as>
-</cast>
-</init>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
 </vardef>
 </let>
-<symbol>t</symbol>
+<symbol>x</symbol>
 </block>
 </body>
 </func>

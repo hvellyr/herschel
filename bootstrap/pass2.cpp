@@ -1881,6 +1881,9 @@ SecondPass::parseBinary(const Token& expr)
 
   Ptr<AptNode> left  = singletonNodeListOrNull(parseExpr(expr[0]));
   Ptr<AptNode> right = singletonNodeListOrNull(parseExpr(expr[2]));
+
+  if (left == NULL || right == NULL)
+    return NULL;
   return new BinaryNode(expr.srcpos(),
                         left,
                         tokenTypeToOperator(expr[1].tokenType()),
@@ -2012,6 +2015,9 @@ SecondPass::parseFunCall(const Token& expr)
   assert(expr[1].rightToken() == kParanClose);
 
   Ptr<AptNode> first = singletonNodeListOrNull(parseExpr(expr[0]));
+  if (first == NULL)
+    return NULL;
+
   if (dynamic_cast<ArrayTypeNode*>(first.obj()) != NULL) {
     return generateArrayAlloc(expr, first);
   }
@@ -2782,35 +2788,65 @@ SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
       return new ArrayTypeNode(expr.srcpos(),
                                new SymbolNode(expr.srcpos(), symbol));
     }
-  }
-  else if (expr[0] == kQuote && expr[1] == kSymbol) {
-    Type ty = genericTypeRef(expr[1].idValue(), true);
-    return new TypeNode(expr.srcpos(), ty);
+    else if (expr[1].leftToken() == kParanOpen) {
+      return parseFunCall(expr);
+    }
+    // else {
+    //   error(expr[1].srcpos(), E_UnexpectedToken,
+    //         String("unexpected token: ") + expr[1].toString());
+    //   return NULL;
+    // }
   }
   else if (expr[0].isSeq()) {
     TypeVector genericArgs;
     assert(expr[0].count() == 2);
     assert(expr[1].isNested());
-    assert(expr[1].leftToken() == kBracketOpen);
 
-    Ptr<AptNode> typeNode;
-    if (expr[0][0] == kQuote && expr[0][1] == kSymbol) {
-      Type ty = genericTypeRef(expr[0][1].idValue(), true);
-      typeNode = new TypeNode(expr.srcpos(), ty);
+    if (expr[0].count() == 2 && expr[0][0] == kQuote && expr[0][1] == kSymbol) {
+      errorf(expr.srcpos(), E_BadGenericType,
+             "Generic type is not allowed here");
+      return NULL;
     }
-    else {
-      assert(expr[0][0] == kSymbol || expr[0][0].isSeq());
-      typeNode = parseTypeExpr(expr[0], true);
-    }
-
-    if (typeNode != NULL) {
-      if (inArrayType) {
-        errorf(expr.srcpos(), E_MultiDimenArray,
-               "Multi-dimensional array types are not supported");
-        return typeNode;
+    else if (expr[1].leftToken() == kBracketOpen) {
+      Ptr<AptNode> typeNode;
+      if (expr[0][0] == kQuote && expr[0][1] == kSymbol) {
+        Type ty = genericTypeRef(expr[0][1].idValue(), true);
+        typeNode = new TypeNode(expr.srcpos(), ty);
       }
-      return new ArrayTypeNode(expr.srcpos(), typeNode);
+      else {
+        assert(expr[0][0] == kSymbol || expr[0][0].isSeq());
+        typeNode = parseTypeExpr(expr[0], true);
+      }
+
+      if (dynamic_cast<SymbolNode*>(typeNode.obj()) ||
+          dynamic_cast<TypeNode*>(typeNode.obj()))
+      {
+        if (inArrayType) {
+          errorf(expr.srcpos(), E_MultiDimenArray,
+                 "Multi-dimensional array types are not supported");
+          return typeNode;
+        }
+        return new ArrayTypeNode(expr.srcpos(), typeNode);
+      }
+      else if (typeNode != NULL) {
+        error(expr[1].srcpos(), E_BadType,
+              String("bad base type in array type: ") + expr.toString());
+        return NULL;
+      }
+      return NULL;
     }
+    // else {
+    //   error(expr[1].srcpos(), E_UnexpectedToken,
+    //         String("unexpected token: ") + expr[1].toString());
+    //   return NULL;
+    // }
+  }
+  else if (expr[0] == kQuote && expr[1] == kSymbol) {
+    errorf(expr.srcpos(), E_BadGenericType,
+           "Generic type is not allowed here");
+    // Type ty = genericTypeRef(expr[1].idValue(), true);
+    // return new TypeNode(expr.srcpos(), ty);
+    return NULL;
   }
 
   fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
