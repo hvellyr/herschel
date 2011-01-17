@@ -11,17 +11,24 @@
 #include <string.h>
 
 #include "annotate.h"
-#include "transform.h"
 #include "apt.h"
 #include "codegen.h"
 #include "scope.h"
 #include "strbuf.h"
+#include "transform.h"
+#include "traverse.h"
+#include "typify.h"
 #include "xmlout.h"
 
 #include "llvm/Value.h"
 
 #include <string>
 #include <map>
+
+#if defined(UNITTESTS)
+#  include <UnitTest++.h>
+#  include <iostream>
+#endif
 
 using namespace heather;
 
@@ -45,7 +52,7 @@ T* nodeClone(const Ptr<T>& node)
 
 
 void
-copyNodes(NodeList* dst, const NodeList* src)
+heather::copyNodes(NodeList* dst, const NodeList* src)
 {
   for (NodeList::const_iterator it = src->begin(); it != src->end(); ++it) {
     dst->push_back(nodeClone(it->obj()));
@@ -54,7 +61,7 @@ copyNodes(NodeList* dst, const NodeList* src)
 
 
 NodeList
-copyNodes(const NodeList& src)
+heather::copyNodes(const NodeList& src)
 {
   NodeList dst;
   copyNodes(&dst, &src);
@@ -65,7 +72,18 @@ copyNodes(const NodeList& src)
 //----------------------------------------------------------------------------
 
 AptNode::AptNode(const SrcPos& srcpos)
-  : fSrcPos(srcpos)
+  : fSrcPos(srcpos),
+    fIsInTailPos(false),
+    fIsSingleTypeRequired(false)
+{
+}
+
+
+AptNode::AptNode(const SrcPos& srcpos, const Type& type)
+  : fSrcPos(srcpos),
+    fType(type),
+    fIsInTailPos(false),
+    fIsSingleTypeRequired(false)
 {
 }
 
@@ -92,31 +110,17 @@ AptNode::setScope(Scope* scope)
 }
 
 
-NodeList&
-AptNode::children()
+const Type&
+AptNode::type() const
 {
-  return fChildren;
-}
-
-
-const NodeList&
-AptNode::children() const
-{
-  return fChildren;
+  return fType;
 }
 
 
 void
-AptNode::appendNode(AptNode* node)
+AptNode::setType(const Type& type)
 {
-  fChildren.push_back(node);
-}
-
-
-void
-AptNode::appendNodes(const NodeList& nodes)
-{
-  fChildren.insert(fChildren.end(), nodes.begin(), nodes.end());
+  fType = type;
 }
 
 
@@ -124,6 +128,118 @@ llvm::Value*
 AptNode::codegen(CodeGenerator* generator) const
 {
   return NULL;
+}
+
+
+bool
+AptNode::isInTailPos() const
+{
+  return fIsInTailPos;
+}
+
+
+void
+AptNode::setIsInTailPos(bool value)
+{
+  fIsInTailPos = value;
+}
+
+
+bool
+AptNode::isSingleTypeRequired() const
+{
+  return fIsSingleTypeRequired;
+}
+
+
+void
+AptNode::setIsSingleTypeRequired(bool value)
+{
+  fIsSingleTypeRequired = value;
+}
+
+
+//----------------------------------------------------------------------------
+
+ListNode::ListNode(const SrcPos& srcpos)
+  : AptNode(srcpos)
+{
+}
+
+
+NodeList&
+ListNode::children()
+{
+  return fChildren;
+}
+
+
+const NodeList&
+ListNode::children() const
+{
+  return fChildren;
+}
+
+
+void
+ListNode::appendNode(AptNode* node)
+{
+  fChildren.push_back(node);
+}
+
+
+void
+ListNode::appendNodes(const NodeList& nodes)
+{
+  if (!nodes.empty())
+    fChildren.insert(fChildren.end(), nodes.begin(), nodes.end());
+}
+
+
+#define DEF_RENDER(_type)                       \
+void                                            \
+_type::render(XmlRenderer* renderer) const      \
+{                                               \
+  renderer->renderNode(this);                   \
+}
+
+#define DEF_CODEGEN(_type)                      \
+llvm::Value*                                    \
+_type::codegen(CodeGenerator* generator) const  \
+{                                               \
+  return generator->codegen(this);              \
+}
+
+
+#define DEF_TRAVERSE(_type)                     \
+void                                            \
+_type::traverse(Traversator* traversator)       \
+{                                               \
+  traversator->traverse(this);                  \
+}
+
+
+#define DEF_ANNOTATE(_type)                     \
+void                                            \
+_type::annotate(Annotator* an)                  \
+{                                               \
+  an->annotate(this);                           \
+}
+
+
+#define DEF_TRANSFORM(_type)                    \
+AptNode*                                        \
+_type::transform(Transformator* tr)             \
+{                                               \
+  return tr->transform(this);                   \
+}
+
+
+#define DEF_TYPIFY(_type)                       \
+void                                            \
+_type::typify(Typifier* typifier)               \
+{                                               \
+  typifier->typify(this);                       \
 }
 
 
@@ -154,32 +270,19 @@ StringNode::clone() const
 }
 
 
-void
-StringNode::render(XmlRenderer* renderer) const
+const String&
+StringNode::value() const
 {
-  renderer->renderNode(this);
+  return fValue;
 }
 
 
-llvm::Value*
-StringNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-StringNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-StringNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(StringNode)
+DEF_CODEGEN(StringNode)
+DEF_ANNOTATE(StringNode)
+DEF_TRAVERSE(StringNode)
+DEF_TRANSFORM(StringNode)
+DEF_TYPIFY(StringNode)
 
 
 //----------------------------------------------------------------------------
@@ -199,32 +302,19 @@ KeywordNode::clone() const
 }
 
 
-void
-KeywordNode::render(XmlRenderer* renderer) const
+const String&
+KeywordNode::value() const
 {
-  renderer->renderNode(this);
+  return fValue;
 }
 
 
-llvm::Value*
-KeywordNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-KeywordNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-KeywordNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(KeywordNode)
+DEF_CODEGEN(KeywordNode)
+DEF_ANNOTATE(KeywordNode)
+DEF_TRAVERSE(KeywordNode)
+DEF_TRANSFORM(KeywordNode)
+DEF_TYPIFY(KeywordNode)
 
 
 //----------------------------------------------------------------------------
@@ -271,6 +361,13 @@ SymbolNode::name() const
 }
 
 
+const TypeVector&
+SymbolNode::generics() const
+{
+  return fGenerics;
+}
+
+
 std::string
 SymbolNode::string() const
 {
@@ -300,74 +397,79 @@ SymbolNode::isShared() const
 }
 
 
-void
-SymbolNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-SymbolNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-SymbolNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-SymbolNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(SymbolNode)
+DEF_CODEGEN(SymbolNode)
+DEF_ANNOTATE(SymbolNode)
+DEF_TRAVERSE(SymbolNode)
+DEF_TRANSFORM(SymbolNode)
+DEF_TYPIFY(SymbolNode)
 
 
 //----------------------------------------------------------------------------
 
-ArraySymbolNode::ArraySymbolNode(const SrcPos& srcpos,
-                                 const String& value)
-  : SymbolNode(srcpos, value)
+ArrayTypeNode::ArrayTypeNode(const SrcPos& srcpos, AptNode* typeNode)
+  : AptNode(srcpos),
+    fTypeNode(typeNode)
 { }
 
 
-ArraySymbolNode*
-ArraySymbolNode::clone() const
-{
-  return cloneScope(this, new ArraySymbolNode(fSrcPos, fValue));
-}
-
-
-void
-ArraySymbolNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-ArraySymbolNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-ArraySymbolNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
 AptNode*
-ArraySymbolNode::transform(Transformator* tr)
+ArrayTypeNode::typeNode() const
 {
-  return tr->transform(this);
+  return fTypeNode;
+}
+
+
+ArrayTypeNode*
+ArrayTypeNode::clone() const
+{
+  return cloneScope(this, new ArrayTypeNode(fSrcPos, fTypeNode));
+}
+
+
+DEF_RENDER(ArrayTypeNode)
+DEF_CODEGEN(ArrayTypeNode)
+DEF_ANNOTATE(ArrayTypeNode)
+DEF_TRAVERSE(ArrayTypeNode)
+DEF_TRANSFORM(ArrayTypeNode)
+DEF_TYPIFY(ArrayTypeNode)
+
+
+//--------------------------------------------------------------------------
+
+TypeNode::TypeNode(const SrcPos& srcpos, const Type& type)
+  : AptNode(srcpos, type)
+{ }
+
+
+TypeNode*
+TypeNode::clone() const
+{
+  return cloneScope(this, new TypeNode(fSrcPos, fType));
+}
+
+
+DEF_RENDER(TypeNode)
+DEF_CODEGEN(TypeNode)
+DEF_ANNOTATE(TypeNode)
+DEF_TRAVERSE(TypeNode)
+DEF_TRANSFORM(TypeNode)
+DEF_TYPIFY(TypeNode)
+
+
+//----------------------------------------------------------------------------
+
+BaseNumberNode::BaseNumberNode(const SrcPos& srcpos, bool isImaginary,
+                               const Type& type)
+  : AptNode(srcpos, type),
+    fIsImaginary(isImaginary)
+{ }
+
+
+bool
+BaseNumberNode::isImaginary() const
+{
+  return fIsImaginary;
 }
 
 
@@ -389,32 +491,12 @@ IntNode::clone() const
 }
 
 
-llvm::Value*
-IntNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-IntNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-void
-IntNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-IntNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(IntNode)
+DEF_CODEGEN(IntNode)
+DEF_ANNOTATE(IntNode)
+DEF_TRAVERSE(IntNode)
+DEF_TRANSFORM(IntNode)
+DEF_TYPIFY(IntNode)
 
 
 //----------------------------------------------------------------------------
@@ -435,32 +517,12 @@ RealNode::clone() const
 }
 
 
-void
-RealNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-RealNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-RealNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-RealNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(RealNode)
+DEF_CODEGEN(RealNode)
+DEF_ANNOTATE(RealNode)
+DEF_TRAVERSE(RealNode)
+DEF_TRANSFORM(RealNode)
+DEF_TYPIFY(RealNode)
 
 
 //----------------------------------------------------------------------------
@@ -482,32 +544,12 @@ RationalNode::clone() const
 }
 
 
-void
-RationalNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-RationalNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-RationalNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-RationalNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(RationalNode)
+DEF_CODEGEN(RationalNode)
+DEF_ANNOTATE(RationalNode)
+DEF_TRAVERSE(RationalNode)
+DEF_TRANSFORM(RationalNode)
+DEF_TYPIFY(RationalNode)
 
 
 //----------------------------------------------------------------------------
@@ -525,32 +567,19 @@ CharNode::clone() const
 }
 
 
-void
-CharNode::render(XmlRenderer* renderer) const
+Char
+CharNode::value() const
 {
-  renderer->renderNode(this);
+  return fValue;
 }
 
 
-llvm::Value*
-CharNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-CharNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-CharNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(CharNode)
+DEF_CODEGEN(CharNode)
+DEF_ANNOTATE(CharNode)
+DEF_TRAVERSE(CharNode)
+DEF_TRANSFORM(CharNode)
+DEF_TYPIFY(CharNode)
 
 
 //----------------------------------------------------------------------------
@@ -568,32 +597,19 @@ BoolNode::clone() const
 }
 
 
-void
-BoolNode::render(XmlRenderer* renderer) const
+Char
+BoolNode::value() const
 {
-  renderer->renderNode(this);
+  return fValue;
 }
 
 
-llvm::Value*
-BoolNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-BoolNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-BoolNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(BoolNode)
+DEF_CODEGEN(BoolNode)
+DEF_ANNOTATE(BoolNode)
+DEF_TRAVERSE(BoolNode)
+DEF_TRANSFORM(BoolNode)
+DEF_TYPIFY(BoolNode)
 
 
 //----------------------------------------------------------------------------
@@ -614,38 +630,39 @@ UnitConstNode::clone() const
 }
 
 
-void
-UnitConstNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-UnitConstNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-UnitConstNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
 AptNode*
-UnitConstNode::transform(Transformator* tr)
+UnitConstNode::value() const
 {
-  return tr->transform(this);
+  return fValue;
 }
+
+
+void
+UnitConstNode::setValue(AptNode* node)
+{
+  fValue = node;
+}
+
+
+TypeUnit
+UnitConstNode::unit() const
+{
+  return fUnit;
+}
+
+
+DEF_RENDER(UnitConstNode)
+DEF_CODEGEN(UnitConstNode)
+DEF_ANNOTATE(UnitConstNode)
+DEF_TRAVERSE(UnitConstNode)
+DEF_TRANSFORM(UnitConstNode)
+DEF_TYPIFY(UnitConstNode)
 
 
 //----------------------------------------------------------------------------
 
 CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+  : ListNode(srcpos)
 {}
 
 
@@ -658,32 +675,12 @@ CompileUnitNode::clone() const
 }
 
 
-void
-CompileUnitNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-CompileUnitNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-CompileUnitNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
-AptNode*
-CompileUnitNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(CompileUnitNode)
+DEF_CODEGEN(CompileUnitNode)
+DEF_ANNOTATE(CompileUnitNode)
+DEF_TRAVERSE(CompileUnitNode)
+DEF_TRANSFORM(CompileUnitNode)
+DEF_TYPIFY(CompileUnitNode)
 
 
 //----------------------------------------------------------------------------
@@ -701,6 +698,13 @@ BaseDefNode::defNode() const
 }
 
 
+void
+BaseDefNode::setDefNode(AptNode* val)
+{
+  fDefined = val;
+}
+
+
 //----------------------------------------------------------------------------
 
 LetNode::LetNode(AptNode* node)
@@ -715,32 +719,12 @@ LetNode::clone() const
 }
 
 
-void
-LetNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-LetNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-LetNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
-AptNode*
-LetNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(LetNode)
+DEF_CODEGEN(LetNode)
+DEF_ANNOTATE(LetNode)
+DEF_TRAVERSE(LetNode)
+DEF_TRANSFORM(LetNode)
+DEF_TYPIFY(LetNode)
 
 
 //----------------------------------------------------------------------------
@@ -757,32 +741,12 @@ DefNode::clone() const
 }
 
 
-void
-DefNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-DefNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-DefNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
-AptNode*
-DefNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(DefNode)
+DEF_CODEGEN(DefNode)
+DEF_ANNOTATE(DefNode)
+DEF_TRAVERSE(DefNode)
+DEF_TRANSFORM(DefNode)
+DEF_TYPIFY(DefNode)
 
 
 //----------------------------------------------------------------------------
@@ -790,32 +754,24 @@ DefNode::transform(Transformator* tr)
 BindingNode::BindingNode(const SrcPos& srcpos,
                          const String& symbolName, const Type& type,
                          AptNode* initExpr)
-  : AptNode(srcpos),
+  : AptNode(srcpos, type),
     fSymbolName(symbolName),
-    fType(type),
     fInitExpr(initExpr),
     fAllocType(kAlloc_Local)
 { }
-
-
-const String&
-BindingNode::symbolName() const
-{
-  return fSymbolName;
-}
-
-
-const Type&
-BindingNode::type() const
-{
-  return fType;
-}
 
 
 AptNode*
 BindingNode::initExpr() const
 {
   return fInitExpr;
+}
+
+
+void
+BindingNode::setInitExpr(AptNode* val)
+{
+  fInitExpr = val;
 }
 
 
@@ -830,6 +786,13 @@ BindingAllocType
 BindingNode::allocType() const
 {
   return fAllocType;
+}
+
+
+const String&
+BindingNode::name() const
+{
+  return fSymbolName;
 }
 
 
@@ -854,13 +817,6 @@ VardefNode::clone() const
                                      fType.clone(), nodeClone(fInitExpr));
   n->setLinkage(fLinkage);
   return cloneScope(this, n.release());
-}
-
-
-void
-VardefNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
 }
 
 
@@ -913,6 +869,12 @@ VardefNode::setLinkage(const String& linkage)
 }
 
 
+DEF_RENDER(VardefNode)
+DEF_TRAVERSE(VardefNode)
+DEF_TRANSFORM(VardefNode)
+DEF_TYPIFY(VardefNode)
+
+
 llvm::Value*
 VardefNode::codegen(CodeGenerator* generator) const
 {
@@ -928,14 +890,6 @@ VardefNode::annotate(Annotator* annotator)
   // this should never be called directly.  See Annotator::DefNode
   assert(0);
 }
-
-
-AptNode*
-VardefNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
 
 
 //----------------------------------------------------------------------------
@@ -961,13 +915,6 @@ ParamNode::clone() const
 }
 
 
-void
-ParamNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
 ParamFlags
 ParamNode::flags() const
 {
@@ -989,25 +936,12 @@ ParamNode::key() const
 }
 
 
-llvm::Value*
-ParamNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-ParamNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
-AptNode*
-ParamNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(ParamNode)
+DEF_CODEGEN(ParamNode)
+DEF_ANNOTATE(ParamNode)
+DEF_TRAVERSE(ParamNode)
+DEF_TRANSFORM(ParamNode)
+DEF_TYPIFY(ParamNode)
 
 
 //----------------------------------------------------------------------------
@@ -1030,38 +964,25 @@ SlotdefNode::clone() const
 }
 
 
-void
-SlotdefNode::render(XmlRenderer* renderer) const
+unsigned int
+SlotdefNode::flags() const
 {
-  renderer->renderNode(this);
+  return fFlags;
 }
 
 
-llvm::Value*
-SlotdefNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-SlotdefNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-SlotdefNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(SlotdefNode)
+DEF_CODEGEN(SlotdefNode)
+DEF_ANNOTATE(SlotdefNode)
+DEF_TRAVERSE(SlotdefNode)
+DEF_TRANSFORM(SlotdefNode)
+DEF_TYPIFY(SlotdefNode)
 
 
 //----------------------------------------------------------------------------
 
 ArrayNode::ArrayNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+  : ListNode(srcpos)
 { }
 
 
@@ -1074,38 +995,18 @@ ArrayNode::clone() const
 }
 
 
-void
-ArrayNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-ArrayNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-ArrayNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-ArrayNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(ArrayNode)
+DEF_CODEGEN(ArrayNode)
+DEF_ANNOTATE(ArrayNode)
+DEF_TRAVERSE(ArrayNode)
+DEF_TRANSFORM(ArrayNode)
+DEF_TYPIFY(ArrayNode)
 
 
 //----------------------------------------------------------------------------
 
 VectorNode::VectorNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+  : ListNode(srcpos)
 { }
 
 
@@ -1118,38 +1019,18 @@ VectorNode::clone() const
 }
 
 
-void
-VectorNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-VectorNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-VectorNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-VectorNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(VectorNode)
+DEF_CODEGEN(VectorNode)
+DEF_ANNOTATE(VectorNode)
+DEF_TRAVERSE(VectorNode)
+DEF_TRANSFORM(VectorNode)
+DEF_TYPIFY(VectorNode)
 
 
 //----------------------------------------------------------------------------
 
 DictNode::DictNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+  : ListNode(srcpos)
 { }
 
 
@@ -1163,13 +1044,6 @@ DictNode::clone() const
 
 
 void
-DictNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-void
 DictNode::addPair(AptNode* key, AptNode* value)
 {
   assert(key != NULL);
@@ -1179,25 +1053,12 @@ DictNode::addPair(AptNode* key, AptNode* value)
 }
 
 
-llvm::Value*
-DictNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-DictNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-DictNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(DictNode)
+DEF_CODEGEN(DictNode)
+DEF_ANNOTATE(DictNode)
+DEF_TRAVERSE(DictNode)
+DEF_TRANSFORM(DictNode)
+DEF_TYPIFY(DictNode)
 
 
 //----------------------------------------------------------------------------
@@ -1264,32 +1125,12 @@ BinaryNode::isMapTo() const
 }
 
 
-void
-BinaryNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-BinaryNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-BinaryNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-BinaryNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(BinaryNode)
+DEF_CODEGEN(BinaryNode)
+DEF_ANNOTATE(BinaryNode)
+DEF_TRAVERSE(BinaryNode)
+DEF_TRANSFORM(BinaryNode)
+DEF_TYPIFY(BinaryNode)
 
 
 //----------------------------------------------------------------------------
@@ -1300,17 +1141,17 @@ NegateNode::NegateNode(const SrcPos& srcpos, AptNode* base)
 { }
 
 
-const AptNode*
+AptNode*
 NegateNode::base() const
 {
   return fBase;
 }
 
 
-AptNode*
-NegateNode::base()
+void
+NegateNode::setBase(AptNode* base)
 {
-  return fBase;
+  fBase = base;
 }
 
 
@@ -1321,32 +1162,12 @@ NegateNode::clone() const
 }
 
 
-void
-NegateNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-NegateNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-NegateNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-NegateNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(NegateNode)
+DEF_CODEGEN(NegateNode)
+DEF_ANNOTATE(NegateNode)
+DEF_TRAVERSE(NegateNode)
+DEF_TRANSFORM(NegateNode)
+DEF_TYPIFY(NegateNode)
 
 
 //------------------------------------------------------------------------------
@@ -1369,17 +1190,17 @@ RangeNode::clone() const
 }
 
 
-void
-RangeNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
 AptNode*
 RangeNode::from() const
 {
   return fFrom;
+}
+
+
+void
+RangeNode::setFrom(AptNode* node)
+{
+  fFrom = node;
 }
 
 
@@ -1390,6 +1211,13 @@ RangeNode::to() const
 }
 
 
+void
+RangeNode::setTo(AptNode* node)
+{
+  fTo = node;
+}
+
+
 AptNode*
 RangeNode::by() const
 {
@@ -1397,25 +1225,19 @@ RangeNode::by() const
 }
 
 
-llvm::Value*
-RangeNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
 void
-RangeNode::annotate(Annotator* an)
+RangeNode::setBy(AptNode* node)
 {
-  an->annotate(this);
+  fBy = node;
 }
 
 
-AptNode*
-RangeNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(RangeNode)
+DEF_CODEGEN(RangeNode)
+DEF_ANNOTATE(RangeNode)
+DEF_TRAVERSE(RangeNode)
+DEF_TRANSFORM(RangeNode)
+DEF_TYPIFY(RangeNode)
 
 
 //--------------------------------------------------------------------------
@@ -1465,32 +1287,12 @@ AssignNode::setRvalue(AptNode* val)
 }
 
 
-void
-AssignNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-AssignNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-AssignNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-AssignNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(AssignNode)
+DEF_CODEGEN(AssignNode)
+DEF_ANNOTATE(AssignNode)
+DEF_TRAVERSE(AssignNode)
+DEF_TRANSFORM(AssignNode)
+DEF_TYPIFY(AssignNode)
 
 
 //------------------------------------------------------------------------------
@@ -1511,13 +1313,6 @@ IfNode::clone() const
                                      nodeClone(fTest),
                                      nodeClone(fConsequent),
                                      nodeClone(fAlternate)));
-}
-
-
-void
-IfNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
 }
 
 
@@ -1543,31 +1338,32 @@ IfNode::alternate() const
 
 
 void
+IfNode::setTest(AptNode* node)
+{
+  fTest = node;
+}
+
+
+void
+IfNode::setConsequent(AptNode* node)
+{
+  fConsequent = node;
+}
+
+
+void
 IfNode::setAlternate(AptNode* node)
 {
   fAlternate = node;
 }
 
 
-llvm::Value*
-IfNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-IfNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-IfNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(IfNode)
+DEF_CODEGEN(IfNode)
+DEF_ANNOTATE(IfNode)
+DEF_TRAVERSE(IfNode)
+DEF_TRANSFORM(IfNode)
+DEF_TYPIFY(IfNode)
 
 
 //------------------------------------------------------------------------------
@@ -1598,13 +1394,6 @@ SelectNode::clone() const
 
 
 void
-SelectNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-void
 SelectNode::addMapping(const NodeList& mappings, AptNode* consequent)
 {
   fMappings.push_back(SelectMapping(mappings, consequent));
@@ -1628,6 +1417,69 @@ SelectNode::addElseMapping(AptNode* alternate)
 }
 
 
+AptNode*
+SelectNode::test() const
+{
+  return fTest;
+}
+
+
+void
+SelectNode::setTest(AptNode* nd)
+{
+  fTest = nd;
+}
+
+
+AptNode*
+SelectNode::comparator() const
+{
+  return fComparator;
+}
+
+
+void
+SelectNode::setComparator(AptNode* nd)
+{
+  fComparator = nd;
+}
+
+
+SelectNode::SelectMappingVector&
+SelectNode::mappings()
+{
+  return fMappings;
+}
+
+
+size_t
+SelectNode::mappingCount() const
+{
+  return fMappings.size();
+}
+
+
+const SelectNode::SelectMapping&
+SelectNode::mappingAt(size_t i) const
+{
+  return fMappings[i];
+}
+
+
+void
+SelectNode::setConsequentAt(size_t i, AptNode* consq)
+{
+  fMappings[i].fConsequent = consq;
+}
+
+
+void
+SelectNode::setTestValueAt(size_t i, size_t j, AptNode* value)
+{
+  fMappings[i].fTestValues[j] = value;
+}
+
+
 SelectNode::SelectMapping::SelectMapping(const NodeList& values,
                                          AptNode* consequent)
   : fTestValues(values),
@@ -1643,25 +1495,12 @@ SelectNode::SelectMapping::SelectMapping(const SelectMapping& other)
 }
 
 
-llvm::Value*
-SelectNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-SelectNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-SelectNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(SelectNode)
+DEF_CODEGEN(SelectNode)
+DEF_ANNOTATE(SelectNode)
+DEF_TRAVERSE(SelectNode)
+DEF_TRANSFORM(SelectNode)
+DEF_TYPIFY(SelectNode)
 
 
 //------------------------------------------------------------------------------
@@ -1690,19 +1529,62 @@ MatchNode::clone() const
 
 
 void
-MatchNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-void
 MatchNode::addMapping(const SrcPos& srcpos, const String& varName,
                       const Type& matchType,
                       AptNode* consequent)
 {
   fMappings.push_back(MatchMapping(srcpos, varName, matchType, consequent));
 }
+
+
+AptNode*
+MatchNode::expr() const
+{
+  return fExpr;
+}
+
+
+void
+MatchNode::setExpr(AptNode* nd)
+{
+  fExpr = nd;
+}
+
+
+MatchNode::MatchMappingVector&
+MatchNode::mappings()
+{
+  return fMappings;
+}
+
+
+size_t
+MatchNode::mappingCount() const
+{
+  return fMappings.size();
+}
+
+
+const MatchNode::MatchMapping&
+MatchNode::mappingAt(size_t i) const
+{
+  return fMappings[i];
+}
+
+
+void
+MatchNode::setConsequentAt(size_t i, AptNode* consq)
+{
+  fMappings[i].fConsequent = consq;
+}
+
+
+DEF_RENDER(MatchNode)
+DEF_CODEGEN(MatchNode)
+DEF_ANNOTATE(MatchNode)
+DEF_TRAVERSE(MatchNode)
+DEF_TRANSFORM(MatchNode)
+DEF_TYPIFY(MatchNode)
 
 
 MatchNode::MatchMapping::MatchMapping(const SrcPos& srcpos,
@@ -1726,36 +1608,15 @@ MatchNode::MatchMapping::MatchMapping(const MatchMapping& other)
 }
 
 
-llvm::Value*
-MatchNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-MatchNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-MatchNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
-
 //------------------------------------------------------------------------------
 
 OnNode::OnNode(const SrcPos& srcpos,
                const String& key, const NodeList& params, AptNode* body)
-  : AptNode(srcpos),
+  : ListNode(srcpos),
     fKey(key),
     fBody(body)
 {
-  fParams.assign(params.begin(), params.end());
+  fChildren.assign(params.begin(), params.end());
 }
 
 
@@ -1763,36 +1624,8 @@ OnNode*
 OnNode::clone() const
 {
   return cloneScope(this, new OnNode(fSrcPos, fKey,
-                                     copyNodes(fParams),
+                                     copyNodes(fChildren),
                                      nodeClone(fBody)));
-}
-
-
-void
-OnNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-OnNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-OnNode::annotate(Annotator* an)
-{
-  an->annotate(this);
-}
-
-
-AptNode*
-OnNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
 }
 
 
@@ -1803,38 +1636,46 @@ OnNode::key() const
 }
 
 
-const AptNode*
+AptNode*
 OnNode::body() const
 {
   return fBody;
 }
 
 
-AptNode*
-OnNode::body()
+void
+OnNode::setBody(AptNode* node)
 {
-  return fBody;
+  fBody = node;
 }
 
 
 const NodeList&
 OnNode::params() const
 {
-  return fParams;
+  return fChildren;
 }
 
 
 NodeList&
 OnNode::params()
 {
-  return fParams;
+  return fChildren;
 }
+
+
+DEF_RENDER(OnNode)
+DEF_CODEGEN(OnNode)
+DEF_ANNOTATE(OnNode)
+DEF_TRAVERSE(OnNode)
+DEF_TRANSFORM(OnNode)
+DEF_TYPIFY(OnNode)
 
 
 //----------------------------------------------------------------------------
 
 BlockNode::BlockNode(const SrcPos& srcpos)
-  : AptNode(srcpos)
+  : ListNode(srcpos)
 { }
 
 
@@ -1847,32 +1688,12 @@ BlockNode::clone() const
 }
 
 
-void
-BlockNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-BlockNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-BlockNode::annotate(Annotator* annotator)
-{
-  annotator->annotate(this);
-}
-
-
-AptNode*
-BlockNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(BlockNode)
+DEF_CODEGEN(BlockNode)
+DEF_ANNOTATE(BlockNode)
+DEF_TRAVERSE(BlockNode)
+DEF_TRANSFORM(BlockNode)
+DEF_TYPIFY(BlockNode)
 
 
 //----------------------------------------------------------------------------
@@ -1881,11 +1702,11 @@ FunctionNode::FunctionNode(const SrcPos&   srcpos,
                            const NodeList& params,
                            const Type&     retType,
                            AptNode*        body)
-  : AptNode(srcpos),
+  : ListNode(srcpos),
     fRetType(retType),
     fBody(body)
 {
-  fParams.assign(params.begin(), params.end());
+  fChildren.assign(params.begin(), params.end());
 }
 
 
@@ -1893,22 +1714,22 @@ FunctionNode*
 FunctionNode::clone() const
 {
   return cloneScope(this,
-                    new FunctionNode(fSrcPos, copyNodes(fParams),
+                    new FunctionNode(fSrcPos, copyNodes(fChildren),
                                      fRetType.clone(), nodeClone(fBody)));
-}
-
-
-void
-FunctionNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
 }
 
 
 const NodeList&
 FunctionNode::params() const
 {
-  return fParams;
+  return fChildren;
+}
+
+
+NodeList&
+FunctionNode::params()
+{
+  return fChildren;
 }
 
 
@@ -1919,25 +1740,33 @@ FunctionNode::retType() const
 }
 
 
-llvm::Value*
-FunctionNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
 void
-FunctionNode::annotate(Annotator* an)
+FunctionNode::setRetType(const Type& type)
 {
-  an->annotate(this);
+  fRetType = type;
 }
 
 
 AptNode*
-FunctionNode::transform(Transformator* tr)
+FunctionNode::body() const
 {
-  return tr->transform(this);
+  return fBody;
 }
+
+
+void
+FunctionNode::setBody(AptNode* node)
+{
+  fBody = node;
+}
+
+
+DEF_RENDER(FunctionNode)
+DEF_CODEGEN(FunctionNode)
+DEF_ANNOTATE(FunctionNode)
+DEF_TRAVERSE(FunctionNode)
+DEF_TRANSFORM(FunctionNode)
+DEF_TYPIFY(FunctionNode)
 
 
 //----------------------------------------------------------------------------
@@ -1958,17 +1787,10 @@ FuncDefNode*
 FuncDefNode::clone() const
 {
   Ptr<FuncDefNode> n = new FuncDefNode(fSrcPos, fSym, fFlags,
-                                       fParams,
+                                       copyNodes(fChildren),
                                        fRetType.clone(), nodeClone(fBody));
   n->setLinkage(fLinkage);
   return cloneScope(this, n.release());
-}
-
-
-void
-FuncDefNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
 }
 
 
@@ -1987,7 +1809,7 @@ FuncDefNode::isAbstract() const
 
 
 const String&
-FuncDefNode::funcName() const
+FuncDefNode::name() const
 {
   return fSym;
 }
@@ -2023,19 +1845,16 @@ FuncDefNode::annotate(Annotator* annotator)
   assert(0);
 }
 
-
-AptNode*
-FuncDefNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
-
+DEF_RENDER(FuncDefNode)
+DEF_TRAVERSE(FuncDefNode)
+DEF_TRANSFORM(FuncDefNode)
+DEF_TYPIFY(FuncDefNode)
 
 
 //----------------------------------------------------------------------------
 
 ApplyNode::ApplyNode(const SrcPos& srcpos, AptNode* base)
-  : AptNode(srcpos),
+  : ListNode(srcpos),
     fBase(base)
 { }
 
@@ -2057,31 +1876,55 @@ ApplyNode::base() const
 
 
 void
-ApplyNode::render(XmlRenderer* renderer) const
+ApplyNode::setBase(AptNode* node)
 {
-  renderer->renderNode(this);
+  fBase = node;
 }
 
 
-llvm::Value*
-ApplyNode::codegen(CodeGenerator* generator) const
+bool
+ApplyNode::isSimpleCall() const
 {
-  return generator->codegen(this);
+  const SymbolNode* sym = dynamic_cast<const SymbolNode*>(base());
+  return sym != NULL && sym->generics().empty();
 }
 
 
-void
-ApplyNode::annotate(Annotator* an)
+String
+ApplyNode::simpleCallName() const
 {
-  an->annotate(this);
+  const SymbolNode* sym = dynamic_cast<const SymbolNode*>(base());
+  return (sym != NULL
+          ? sym->name()
+          : String());
 }
 
 
-AptNode*
-ApplyNode::transform(Transformator* tr)
+DEF_RENDER(ApplyNode)
+DEF_CODEGEN(ApplyNode)
+DEF_ANNOTATE(ApplyNode)
+DEF_TRAVERSE(ApplyNode)
+DEF_TRANSFORM(ApplyNode)
+DEF_TYPIFY(ApplyNode)
+
+
+#if defined(UNITTESTS)
+
+TEST(ApplyNode)
 {
-  return tr->transform(this);
+  Ptr<ApplyNode> an = new ApplyNode(SrcPos(), new SymbolNode(SrcPos(), String("xyz")));
+  CHECK(an->isSimpleCall());
+  CHECK_EQUAL(an->simpleCallName(), String("xyz"));
+
+  Ptr<ApplyNode> an2 = new ApplyNode(SrcPos(),
+                                     new ApplyNode(SrcPos(),
+                                                   new SymbolNode(SrcPos(),
+                                                                  String("get-func"))));
+  CHECK(!an2->isSimpleCall());
+  CHECK_EQUAL(an2->simpleCallName(), String());
 }
+
+#endif  // #if defined(UNITTESTS)
 
 
 //----------------------------------------------------------------------------
@@ -2091,7 +1934,9 @@ KeyargNode::KeyargNode(const SrcPos& srcpos,
   : AptNode(srcpos),
     fKey(key),
     fValue(value)
-{ }
+{
+  assert(fValue != NULL);
+}
 
 
 KeyargNode*
@@ -2101,32 +1946,33 @@ KeyargNode::clone() const
 }
 
 
-void
-KeyargNode::render(XmlRenderer* renderer) const
+const String&
+KeyargNode::key() const
 {
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-KeyargNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
-void
-KeyargNode::annotate(Annotator* an)
-{
-  an->annotate(this);
+  return fKey;
 }
 
 
 AptNode*
-KeyargNode::transform(Transformator* tr)
+KeyargNode::value() const
 {
-  return tr->transform(this);
+  return fValue;
 }
+
+
+void
+KeyargNode::setValue(AptNode* node)
+{
+  fValue = node;
+}
+
+
+DEF_RENDER(KeyargNode)
+DEF_CODEGEN(KeyargNode)
+DEF_ANNOTATE(KeyargNode)
+DEF_TRAVERSE(KeyargNode)
+DEF_TRANSFORM(KeyargNode)
+DEF_TYPIFY(KeyargNode)
 
 
 //----------------------------------------------------------------------------
@@ -2147,24 +1993,17 @@ WhileNode::clone() const
 }
 
 
-void
-WhileNode::render(XmlRenderer* renderer) const
-{
-  renderer->renderNode(this);
-}
-
-
-llvm::Value*
-WhileNode::codegen(CodeGenerator* generator) const
-{
-  return generator->codegen(this);
-}
-
-
 AptNode*
 WhileNode::body() const
 {
   return fBody;
+}
+
+
+void
+WhileNode::setBody(AptNode* node)
+{
+  fBody = node;
 }
 
 
@@ -2176,17 +2015,18 @@ WhileNode::test() const
 
 
 void
-WhileNode::annotate(Annotator* an)
+WhileNode::setTest(AptNode* node)
 {
-  an->annotate(this);
+  fTest = node;
 }
 
 
-AptNode*
-WhileNode::transform(Transformator* tr)
-{
-  return tr->transform(this);
-}
+DEF_RENDER(WhileNode)
+DEF_CODEGEN(WhileNode)
+DEF_ANNOTATE(WhileNode)
+DEF_TRAVERSE(WhileNode)
+DEF_TRANSFORM(WhileNode)
+DEF_TYPIFY(WhileNode)
 
 
 //----------------------------------------------------------------------------
@@ -2222,32 +2062,61 @@ TypeDefNode::clone() const
 }
 
 
-void
-TypeDefNode::render(XmlRenderer* renderer) const
+const String&
+TypeDefNode::name() const
 {
-  renderer->renderNode(this);
+  return fTypeName;
 }
 
 
-llvm::Value*
-TypeDefNode::codegen(CodeGenerator* generator) const
+const Type&
+TypeDefNode::defType() const
 {
-  return generator->codegen(this);
+  return fIsa;
 }
 
 
-void
-TypeDefNode::annotate(Annotator* an)
+bool
+TypeDefNode::isClass() const
 {
-  an->annotate(this);
+  return fIsClass;
 }
 
 
-AptNode*
-TypeDefNode::transform(Transformator* tr)
+const NodeList&
+TypeDefNode::params() const
 {
-  return tr->transform(this);
+  return fParams;
 }
+
+
+const NodeList&
+TypeDefNode::slots() const
+{
+  return fSlots;
+}
+
+
+const NodeList&
+TypeDefNode::reqProtocol() const
+{
+  return fReqProtocol;
+}
+
+
+const NodeList&
+TypeDefNode::onExprs() const
+{
+  return fOnExprs;
+}
+
+
+DEF_RENDER(TypeDefNode)
+DEF_CODEGEN(TypeDefNode)
+DEF_ANNOTATE(TypeDefNode)
+DEF_TRAVERSE(TypeDefNode)
+DEF_TRANSFORM(TypeDefNode)
+DEF_TYPIFY(TypeDefNode)
 
 
 //----------------------------------------------------------------------------
@@ -2255,9 +2124,8 @@ TypeDefNode::transform(Transformator* tr)
 CastNode::CastNode(const SrcPos& srcpos,
                    AptNode* base,
                    const Type& type)
-  : AptNode(srcpos),
-    fBase(base),
-    fType(type)
+  : AptNode(srcpos, type),
+    fBase(base)
 { }
 
 AptNode*
@@ -2267,10 +2135,10 @@ CastNode::base() const
 }
 
 
-const Type&
-CastNode::type() const
+void
+CastNode::setBase(AptNode* node)
 {
-  return fType;
+  fBase = node;
 }
 
 
@@ -2282,31 +2150,89 @@ CastNode::clone() const
 }
 
 
-void
-CastNode::render(XmlRenderer* renderer) const
+DEF_RENDER(CastNode)
+DEF_CODEGEN(CastNode)
+DEF_ANNOTATE(CastNode)
+DEF_TRAVERSE(CastNode)
+DEF_TRANSFORM(CastNode)
+DEF_TYPIFY(CastNode)
+
+
+//--------------------------------------------------------------------------------
+
+NodeList
+heather::newNodeList()
 {
-  renderer->renderNode(this);
+  return NodeList();
 }
 
 
-llvm::Value*
-CastNode::codegen(CodeGenerator* generator) const
+NodeList
+heather::newNodeList(AptNode* n1)
 {
-  return generator->codegen(this);
+  NodeList nl;
+  if (n1 != NULL)
+    nl.push_back(n1);
+  return nl;
 }
 
 
-void
-CastNode::annotate(Annotator* an)
+NodeList
+heather::newNodeList(AptNode* n1, AptNode* n2)
 {
-  an->annotate(this);
+  NodeList nl;
+  if (n1 != NULL)
+    nl.push_back(n1);
+  if (n2 != NULL)
+    nl.push_back(n2);
+  return nl;
+}
+
+
+NodeList
+heather::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3)
+{
+  NodeList nl;
+  if (n1 != NULL)
+    nl.push_back(n1);
+  if (n2 != NULL)
+    nl.push_back(n2);
+  if (n3 != NULL)
+    nl.push_back(n3);
+  return nl;
+}
+
+
+NodeList
+heather::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3, AptNode* n4)
+{
+  NodeList nl;
+  if (n1 != NULL)
+    nl.push_back(n1);
+  if (n2 != NULL)
+    nl.push_back(n2);
+  if (n3 != NULL)
+    nl.push_back(n3);
+  if (n4 != NULL)
+    nl.push_back(n4);
+  return nl;
+}
+
+
+NodeList&
+heather::appendNodes(NodeList& dst, const NodeList& nl)
+{
+  if (!nl.empty())
+    dst.insert(dst.end(), nl.begin(), nl.end());
+  return dst;
 }
 
 
 AptNode*
-CastNode::transform(Transformator* tr)
+heather::singletonNodeListOrNull(const NodeList& nl)
 {
-  return tr->transform(this);
+  assert(nl.size() < 2);
+  if (nl.size() == 1)
+    return nl[0].obj();
+  return NULL;
 }
-
-

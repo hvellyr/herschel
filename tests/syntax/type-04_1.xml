@@ -1,2 +1,72 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>x</id><punct type=':'/><id>Int</id></seq><seq><id>def</id><id>x1</id><punct type=':'/><seq><id>Vector</id><nested left='&lt;' right='>'><id>Int</id></nested></seq></seq><seq><id>def</id><id>x2</id><punct type=':'/><seq><id>Int</id><nested left='[' right=']'/></seq></seq><seq><id>def</id><id>x3</id><punct type=':'/><seq><seq><id>Vector</id><nested left='&lt;' right='>'><id>Int</id></nested></seq><nested left='[' right=']'/></seq></seq><seq><id>def</id><id>x4</id><punct type=':'/><seq><id>Int</id><nested left='[' right=']'><lit type='int'>10</lit></nested></seq></seq><seq><id>def</id><id>config</id><id>*slots*</id><punct type='='/><lit type='int'>22</lit></seq><seq><id>def</id><id>x5</id><punct type=':'/><seq><id>Int</id><nested left='[' right=']'><id>*slots*</id></nested></seq></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>x</id>
+<punct type=':'/>
+<id>Int</id>
+</seq>
+<seq>
+<id>def</id>
+<id>x1</id>
+<punct type=':'/>
+<seq>
+<id>Vector</id>
+<nested left='&lt;' right='>'>
+<id>Int</id>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>x2</id>
+<punct type=':'/>
+<seq>
+<id>Int</id>
+<nested left='[' right=']'/>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>x3</id>
+<punct type=':'/>
+<seq>
+<seq>
+<id>Vector</id>
+<nested left='&lt;' right='>'>
+<id>Int</id>
+</nested>
+</seq>
+<nested left='[' right=']'/>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>x4</id>
+<punct type=':'/>
+<seq>
+<id>Int</id>
+<nested left='[' right=']'>
+<lit type='int'>10</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>config</id>
+<id>*slots*</id>
+<punct type='='/>
+<lit type='int'>22</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>x5</id>
+<punct type=':'/>
+<seq>
+<id>Int</id>
+<nested left='[' right=']'>
+<id>*slots*</id>
+</nested>
+</seq>
+</seq>
+</seq>

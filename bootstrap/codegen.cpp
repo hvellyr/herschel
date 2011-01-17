@@ -196,7 +196,7 @@ CodeGenerator::createEntryBlockAlloca(llvm::Function *func, const String& name)
 llvm::Value*
 CodeGenerator::codegen(const SymbolNode* node)
 {
-  if (node->name() == String("unspecified")) {
+  if (node->name() == String("lang|unspecified")) {
     // TODO
     return llvm::ConstantInt::get(context(),
                                   llvm::APInt(32, 0, true));
@@ -217,7 +217,7 @@ CodeGenerator::codegen(const SymbolNode* node)
   }
 
   if (val == NULL) {
-    logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(node->name()));
+    logf(kError, "Unknown symbol '%s'", (const char*)StrHelper(node->name()));
     return NULL;
   }
 
@@ -226,7 +226,16 @@ CodeGenerator::codegen(const SymbolNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const ArraySymbolNode* node)
+CodeGenerator::codegen(const ArrayTypeNode* node)
+{
+  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  // TODO
+  return NULL;
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const TypeNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
@@ -319,7 +328,7 @@ CodeGenerator::createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
 llvm::Value*
 CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
-  String varnm = heather::mangleToC(node->symbolName());
+  String varnm = heather::mangleToC(node->name());
   llvm::GlobalVariable* gv =
   new llvm::GlobalVariable(llvm::Type::getInt32Ty(context()),
                            false, // isConstant,
@@ -349,8 +358,8 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
   fBuilder.SetInsertPoint(bb);
 
   llvm::Value* initval = NULL;
-  if (node->fInitExpr != NULL) {
-    initval = codegenNode(node->fInitExpr);
+  if (node->initExpr() != NULL) {
+    initval = codegenNode(node->initExpr());
   }
   else {
     // TODO: init the temporary value.  We shouldn't really have to care about
@@ -369,8 +378,8 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 
   addGlobalCtor(func, 1);
 
-  assert(fGlobalVariables.find(node->symbolName()) == fGlobalVariables.end());
-  fGlobalVariables[node->symbolName()] = gv;
+  assert(fGlobalVariables.find(node->name()) == fGlobalVariables.end());
+  fGlobalVariables[node->name()] = gv;
 
   return initval;
 }
@@ -384,8 +393,8 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
   }
 
   llvm::Value* initval = NULL;
-  if (node->fInitExpr != NULL) {
-    initval = codegenNode(node->fInitExpr);
+  if (node->initExpr() != NULL) {
+    initval = codegenNode(node->initExpr());
   }
   else {
     // TODO: init the temporary value.  We shouldn't really have to care about
@@ -397,9 +406,9 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
 
   llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
-                                                       node->symbolName());
+                                                       node->name());
   fBuilder.CreateStore(initval, stackSlot);
-  fNamedValues[node->symbolName()] = stackSlot;
+  fNamedValues[node->name()] = stackSlot;
 
   return initval;
 }
@@ -417,7 +426,7 @@ CodeGenerator::codegen(const AssignNode* node)
     // Look up the name.
     llvm::AllocaInst* var = fNamedValues[lsym->name()];
     if (var == NULL) {
-      logf(kError, "Unknown variable name: '%s'", (const char*)StrHelper(lsym->name()));
+      logf(kError, "Unknown symbol '%s'", (const char*)StrHelper(lsym->name()));
       return NULL;
     }
 
@@ -433,11 +442,11 @@ CodeGenerator::codegen(const AssignNode* node)
 llvm::Value*
 CodeGenerator::codegen(const DefNode* node)
 {
-  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->fDefined.obj());
+  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->defNode());
   if (vardefNode != NULL)
     return codegen(vardefNode, false);
 
-  const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->fDefined.obj());
+  const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->defNode());
   if (func != NULL)
     return codegen(func, false);
 
@@ -449,11 +458,11 @@ CodeGenerator::codegen(const DefNode* node)
 llvm::Value*
 CodeGenerator::codegen(const LetNode* node)
 {
-  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->fDefined.obj());
+  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->defNode());
   if (vardefNode != NULL)
     return codegen(vardefNode, true);
 
-  const FuncDefNode* funcDefNode = dynamic_cast<const FuncDefNode*>(node->fDefined.obj());
+  const FuncDefNode* funcDefNode = dynamic_cast<const FuncDefNode*>(node->defNode());
   if (funcDefNode != NULL) {
     logf(kError, "Compiling local functions not supported yet: %s", __FUNCTION__);
     return NULL;
@@ -534,7 +543,7 @@ llvm::Value*
 CodeGenerator::codegen(const IntNode* node)
 {
   return llvm::ConstantInt::get(context(),
-                                llvm::APInt(32, node->fValue, true));
+                                llvm::APInt(32, node->value(), true));
 }
 
 
@@ -542,7 +551,7 @@ llvm::Value*
 CodeGenerator::codegen(const RealNode* node)
 {
   return llvm::ConstantFP::get(context(),
-                               llvm::APFloat(node->fValue));
+                               llvm::APFloat(node->value()));
 }
 
 
@@ -607,8 +616,8 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node)
   std::vector<const llvm::Type*> sign;
 
   bool isVarArgs = false;
-  for (size_t pidx = 0; pidx < node->fParams.size(); pidx++) {
-    const ParamNode* param = dynamic_cast<const ParamNode*>(node->fParams[pidx].obj());
+  for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
+    const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
     // TODO
     if (param->isRestArg())
       isVarArgs = true;
@@ -637,10 +646,10 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 
   String funcnm;
   if (node->linkage() == String("C")) {
-    funcnm = node->funcName();
+    funcnm = node->name();
   }
   else {
-    funcnm = heather::mangleToC(node->funcName());
+    funcnm = heather::mangleToC(node->name());
   }
 
   llvm::Function *func = llvm::Function::Create(ft,
@@ -648,17 +657,17 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
                                                 llvm::Twine(funcnm),
                                                 fModule);
 
-  if (node->fBody != NULL) {
+  if (node->body() != NULL) {
     llvm::Function::arg_iterator aiter = func->arg_begin();
     llvm::Function::arg_iterator aiter_e = func->arg_end();
     for (size_t pidx = 0;
-         pidx < node->fParams.size() && aiter != aiter_e;
+         pidx < node->params().size() && aiter != aiter_e;
          pidx++, ++aiter)
     {
-      const ParamNode* param = dynamic_cast<const ParamNode*>(node->fParams[pidx].obj());
+      const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
 
       // TODO ende name
-      llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func, param->fSymbolName);
+      llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func, param->name());
       fBuilder.CreateStore(aiter, stackSlot);
       fNamedValues[param->name()] = stackSlot;
     }
@@ -667,7 +676,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
                                                   "entry", func);
     fBuilder.SetInsertPoint(bb);
 
-    const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->fBody.obj());
+    const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->body());
     if (blockNode != NULL) {
       fCurrentValue = createEntryBlockAlloca(func, String("curval"));
       assert(fCurrentValue != NULL);
@@ -677,7 +686,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
       fBuilder.CreateRet(fBuilder.CreateLoad(fCurrentValue));
     }
     else {
-      llvm::Value* val = codegenNode(node->fBody);
+      llvm::Value* val = codegenNode(node->body());
       if (val == NULL)
         return NULL;
       fBuilder.CreateRet(val);
@@ -688,7 +697,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
     if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
       fOptPassManager->run(*func);
 
-    if (!isLocal && node->funcName() == String("app|main")) {
+    if (!isLocal && node->name() == String("app|main")) {
       fHasMainFunc = true;
     }
   }
@@ -711,11 +720,11 @@ CodeGenerator::codegen(const ApplyNode* node)
 {
   llvm::Function *calleeFunc = NULL;
 
-  const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->fBase.obj());
+  const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->base());
   if (symNode != NULL) {
     assert(symNode->refersTo() == kFunction);
 
-    const AptNode* fn = symNode->fScope->lookupFunction(symNode->fValue, false);
+    const AptNode* fn = symNode->scope()->lookupFunction(symNode->name(), false);
     const FuncDefNode* fdn = dynamic_cast<const FuncDefNode*>(fn);
     assert(fdn != NULL);
 
@@ -740,7 +749,7 @@ CodeGenerator::codegen(const ApplyNode* node)
   }
 
   // TODO: proper argument mismatch check
-  const NodeList& nl = node->fChildren;
+  const NodeList& nl = node->children();
   if (calleeFunc->arg_size() != nl.size()) {
     errorf(node->srcpos(), 0, "Incorrect # arguments passed");
     return NULL;
@@ -780,12 +789,12 @@ CodeGenerator::codegen(const ParamNode* node)
 llvm::Value*
 CodeGenerator::codegen(const BinaryNode* node)
 {
-  llvm::Value *left = codegenNode(node->fLeft);
-  llvm::Value *right = codegenNode(node->fRight);
+  llvm::Value *left = codegenNode(node->left());
+  llvm::Value *right = codegenNode(node->right());
   if (left == NULL || right == NULL)
     return NULL;
 
-  switch (node->fOp) {
+  switch (node->op()) {
   case kOpPlus:     return fBuilder.CreateAdd(left, right, "addtmp");
   case kOpMinus:    return fBuilder.CreateSub(left, right, "subtmp");
   case kOpMultiply: return fBuilder.CreateMul(left, right, "multmp");
@@ -801,7 +810,7 @@ CodeGenerator::codegen(const BinaryNode* node)
 llvm::Value*
 CodeGenerator::codegen(const NegateNode* node)
 {
-  llvm::Value *base = codegenNode(node->fBase);
+  llvm::Value *base = codegenNode(node->base());
   if (base == NULL)
     return NULL;
 

@@ -36,6 +36,11 @@ tests: build
 docs: doc/version.texinfo $(BUILDDIR) 
 	(cd doc/ && $(MAKE) all)
 
+all-post: run-unittest
+
+run-unittest:
+	@echo "Running unit tests..."
+	$(BUILDDIR)/$(BUILDSTYLE)/heather$(APPEXT) -UT
 
 all-local: version.h config-local.h doc/version.texinfo $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 
@@ -178,6 +183,8 @@ config-local.h: Makefile config.mk
 	@echo "#define HEA_INSTDIR_bindir \"$(bindir)/\"" >> $@
 	@echo "#define HEA_INSTDIR_libdir \"$(libdir)/\"" >> $@
 	@echo "#define HEA_INSTDIR_pkglibdir \"$(pkglibdir)/\"" >> $@
+	@echo "#define HEA_INSTDIR_includedir \"$(includedir)/\"" >> $@
+	@echo "#define HEA_INSTDIR_pkgincludedir \"$(pkgincludedir)/\"" >> $@
 	@echo "#define HEA_INSTDIR_datadir \"$(datadir)/\"" >> $@
 	@echo "#define HEA_INSTDIR_pkgdatadir \"$(pkgdatadir)/\"" >> $@
 	@echo "#endif" >> $@

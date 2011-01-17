@@ -1,2 +1,81 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>class</id><id>X</id><nested left='(' right=')'><seq><id>a</id><punct type=':'/><id>Any</id></seq><punct type=','/><seq><id>b</id><punct type=':'/><id>Any</id></seq></nested><punct type=':'/><id>All</id><nested left='{' right='}'><seq><id>def</id><id>slot</id><id>x</id></seq><seq><id>def</id><id>slot</id><id>y</id></seq><seq><id>on</id><id>init</id><nested left='(' right=')'><seq><id>self</id><punct type=':'/><id>Any</id></seq></nested><nested left='{' right='}'><seq><id>x</id><punct type='='/><id>a</id></seq><seq><id>y</id><punct type='='/><seq><id>a</id><punct type='+'/><id>b</id></seq></seq></nested></seq><seq><id>on</id><id>delete</id><nested left='(' right=')'><seq><id>self</id><punct type=':'/><id>Any</id></seq></nested><nested left='{' right='}'/></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>class</id>
+<id>X</id>
+<nested left='(' right=')'>
+<seq>
+<id>a</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>b</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>All</id>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>x</id>
+</seq>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>y</id>
+</seq>
+<seq>
+<id>on</id>
+<id>init</id>
+<nested left='(' right=')'>
+<seq>
+<id>self</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>x!</id>
+<nested left='(' right=')'>
+<id>self</id>
+<punct type=','/>
+<id>a</id>
+</nested>
+</seq>
+<seq>
+<id>y!</id>
+<nested left='(' right=')'>
+<id>self</id>
+<punct type=','/>
+<seq>
+<id>a</id>
+<punct type='+'/>
+<id>b</id>
+</seq>
+</nested>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>on</id>
+<id>delete</id>
+<nested left='(' right=')'>
+<seq>
+<id>self</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
+<nested left='{' right='}'/>
+</seq>
+</nested>
+</seq>
+</seq>
+

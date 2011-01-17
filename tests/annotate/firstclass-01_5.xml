@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<method sym='null-value' abstract='true'>
+<params>
+<param sym='ty' type='spec'>
+<type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+</method>
+</def>
+<def>
+<vardef sym='x'>
+<type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<apply  ty='lang|Int'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>null-value</symbol>
+<args>
+<symbol  ty='lang|Class&lt;lang|Int>'>lang|Int</symbol>
+</args>
+</apply>
+</init>
+</vardef>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

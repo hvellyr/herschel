@@ -1,0 +1,6 @@
+def to-string(a : Int) : String ...
+
+
+def foo(a : Int)
+  if (a > 0)
+    a.to-string

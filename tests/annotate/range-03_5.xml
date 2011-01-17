@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='r0'>
+<type>
+<ty:type nm='lang|Range'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</type>
+<init>
+<apply  ty='lang|Range&lt;lang|Int>'>
+<symbol  ty='lambda(lang|Range&lt;&apos;T>, &apos;T, &apos;T, &apos;T):lang|Range&lt;&apos;T>'>lang|Range|init</symbol>
+<args>
+<apply  ty='lang|Range&lt;lang|Int>'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|allocate</symbol>
+<args>
+<type  ty='lang|Class&lt;lang|Range&lt;lang|Int>>'/>
+</args>
+</apply>
+<int ty='lang|Int'>5</int>
+<int ty='lang|Int'>6</int>
+<int ty='lang|Int'>7</int>
+</args>
+</apply>
+</init>
+</vardef>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Range'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:type nm='lang|Range'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

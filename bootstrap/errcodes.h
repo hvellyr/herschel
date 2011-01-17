@@ -29,6 +29,7 @@ namespace heather
     E_AssignExpected      = 0x000c,
     E_MapToExpected       = 0x000d,
     E_MissingApos         = 0x000e,
+    E_UnexpectedQuote     = 0x000f,
 
     // notation errors
     E_UnexpectedChar      = 0x0100,
@@ -83,12 +84,15 @@ namespace heather
     E_QualifiedEnumDefSym = 0x4034,
     E_EnumNotBaseType     = 0x4035,
     E_EnumInitTypeMismatch= 0x4036,
-    E_InvaliArraySize     = 0x4037,
+    E_InvalidArraySize    = 0x4037,
     E_RefToFunc           = 0x4038,
     k_DoubleRefType       = 0x4039,
     E_EmptySeqType        = 0x403a,
     E_MixedValueType      = 0x403b,
     E_InheritsRefType     = 0x403c,
+    E_InvariantType       = 0x403d,
+    E_MultiDimenArray     = 0x403e,
+    E_BadGenericType      = 0x403f,
 
     // enums
     E_BadEnumItemList     = 0x4050,
@@ -132,9 +136,23 @@ namespace heather
     E_ExpectedPipe        = 0x4404,
     E_ElseNotLastPattern  = 0x4405,
     E_BadPatternList      = 0x4406,
+    E_MissingExpr         = 0x4407,
+    E_UnexpectedMapTo     = 0x4408,
 
     E_UndefinedVar        = 0x4410,
     E_BadType             = 0x4411,
+    E_UndefinedType       = 0x4412,
+    E_TypeMismatch        = 0x4413,
+
+    E_BadArgNumber        = 0x4414,
+    E_BoolTypeExpected    = 0x4415,
+    E_IfConsqTypeMismatch = 0x4416,
+    E_IfAltTypeMismatch   = 0x4417,
+    E_GenericsMismatch    = 0x4418,
+    E_RangeTypeMismatch   = 0x4419,
+    E_WhileTypeMismatch   = 0x441a,
+    E_BinaryTypeMismatch  = 0x441b,
+    E_BadArgKind          = 0x441c,
 
     // module parsing
     E_MissingModName      = 0x4500,
@@ -145,7 +163,7 @@ namespace heather
     E_EmptyExportList     = 0x4541,
     E_UnknownInputFile    = 0x4542,
     E_UnknownVisibility   = 0x4543,
-
+    E_MissingRequiredFile = 0x4544,
 
     // external C syntax
     E_BadCSyntax          = 0xe000,

@@ -11,6 +11,7 @@
 
 #include "refcountable.h"
 #include "ptr.h"
+#include "compilepass.h"
 
 #include <vector>
 
@@ -19,7 +20,7 @@ namespace heather
   class ApplyNode;
   class AptNode;
   class ArrayNode;
-  class ArraySymbolNode;
+  class ArrayTypeNode;
   class AssignNode;
   class BinaryNode;
   class BlockNode;
@@ -48,6 +49,7 @@ namespace heather
   class StringNode;
   class SymbolNode;
   class TypeDefNode;
+  class TypeNode;
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
@@ -78,7 +80,7 @@ namespace heather
 
     AptNode* transform(ApplyNode* node);
     AptNode* transform(ArrayNode* node);
-    AptNode* transform(ArraySymbolNode* node);
+    AptNode* transform(ArrayTypeNode* node);
     AptNode* transform(AssignNode* node);
     AptNode* transform(BinaryNode* node);
     AptNode* transform(BoolNode* node);
@@ -100,6 +102,7 @@ namespace heather
     AptNode* transform(SlotdefNode* node);
     AptNode* transform(StringNode* node);
     AptNode* transform(TypeDefNode* node);
+    AptNode* transform(TypeNode* node);
     AptNode* transform(UnitConstNode* node);
     AptNode* transform(VectorNode* node);
     AptNode* transform(WhileNode* node);
@@ -112,9 +115,17 @@ namespace heather
     int findBlockSplitIndex(const NodeList& nodes);
 
     void transformSingleOnExitBlock(BlockNode* node, OnNode* onnd);
-
   };
 
+
+  //--------------------------------------------------------------------------
+
+  class TransformPass : public AptNodeCompilePass
+  {
+  public:
+    TransformPass(int level);
+    virtual AptNode* doApply(AptNode* src);
+  };
 };                              // namespace
 
 #endif                          // bootstrap_transform_h

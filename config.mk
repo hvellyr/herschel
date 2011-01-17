@@ -10,7 +10,7 @@ srcdir = .
 
 PACKAGE = heather
 VERSION = 0.1
-COPYRIGHTYEAR = 2002, 2003, 2009, 2010
+COPYRIGHTYEAR = 2002, 2003, 2009-2011
 COPYRIGHTOWNER = Gregor C. Klinke
 # human readable package name, used for Mac packages, etc.
 HR_PACKAGE = Heather
@@ -123,13 +123,15 @@ CXXFLAGS += $(DEFS) $(CXXADDS)
 
 #----------------------------------------------------------------------
 # Path settings
-prefix      ?= /usr/local
-bindir      ?= $(prefix)/bin
-libdir  	  ?= $(prefix)/lib
-pkglibdir	  ?= $(libdir)/heather
-datadir     ?= $(prefix)/share
-pkgdatadir  ?= $(prefix)/share/heather
-mandir      ?= $(prefix)/man
+prefix        ?= /usr/local
+bindir        ?= $(prefix)/bin
+libdir  	    ?= $(prefix)/lib
+pkglibdir	    ?= $(libdir)/heather
+includedir    ?= $(prefix)/include
+pkgincludedir ?= $(prefix)/include/heather
+datadir       ?= $(prefix)/share
+pkgdatadir    ?= $(prefix)/share/heather
+mandir        ?= $(prefix)/man
 
 BUILDDIR = $(top_srcdir)/temp
 PKGDIR = $(top_srcdir)/packages

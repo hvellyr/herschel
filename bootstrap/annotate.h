@@ -11,6 +11,7 @@
 
 #include "refcountable.h"
 #include "ptr.h"
+#include "compilepass.h"
 
 #include <vector>
 
@@ -19,7 +20,7 @@ namespace heather
   class ApplyNode;
   class AptNode;
   class ArrayNode;
-  class ArraySymbolNode;
+  class ArrayTypeNode;
   class AssignNode;
   class BinaryNode;
   class BlockNode;
@@ -48,6 +49,7 @@ namespace heather
   class StringNode;
   class SymbolNode;
   class TypeDefNode;
+  class TypeNode;
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
@@ -68,7 +70,7 @@ namespace heather
       kLookup
     };
 
-    Annotator();
+    Annotator(Scope* scope);
 
     void annotateRecursively(AptNode* node);
 
@@ -86,7 +88,7 @@ namespace heather
 
     void annotate(ApplyNode* node);
     void annotate(ArrayNode* node);
-    void annotate(ArraySymbolNode* node);
+    void annotate(ArrayTypeNode* node);
     void annotate(AssignNode* node);
     void annotate(BinaryNode* node);
     void annotate(BoolNode* node);
@@ -108,12 +110,13 @@ namespace heather
     void annotate(SlotdefNode* node);
     void annotate(StringNode* node);
     void annotate(TypeDefNode* node);
+    void annotate(TypeNode* node);
     void annotate(UnitConstNode* node);
     void annotate(VectorNode* node);
     void annotate(WhileNode* node);
 
   private:
-    void annotateNodeList(NodeList& nl);
+    void annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype);
 
     void annotate(VardefNode* node, bool isLocal);
     void annotate(FuncDefNode* node, bool isLocal);
@@ -126,6 +129,19 @@ namespace heather
 
     Ptr<Scope> fScope;
     Phase      fPhase;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class AnnotatePass : public AptNodeCompilePass
+  {
+  public:
+    AnnotatePass(int level, Scope* scope);
+    virtual AptNode* doApply(AptNode* src);
+
+  private:
+    Ptr<Scope> fScope;
   };
 
 };                              // namespace

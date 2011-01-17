@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='a1|place'>
+<type>
+<ty:type nm='japan|City' inst='t'>
+</ty:type>
+</type>
+<init>
+<apply  ty='japan|City'>
+<symbol  ty='lambda(japan|City, lang|Any, lang|Any):japan|City'>japan|City|init</symbol>
+<args>
+<apply  ty='japan|City'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|allocate</symbol>
+<args>
+<type  ty='lang|Class&lt;japan|City>'/>
+</args>
+</apply>
+<str>Tokio</str>
+<str>Japan</str>
+</args>
+</apply>
+</init>
+</vardef>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='japan|City' inst='t'>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:type nm='japan|City' inst='t'>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:type nm='japan|City' inst='t'>
+</ty:type>
+</ty:prm>
+<ty:prm is='pos'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:type nm='japan|City' inst='t'>
+</ty:type>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

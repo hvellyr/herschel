@@ -33,29 +33,6 @@
 module lang ("eyestep/heather 1.0:lang")
 export public (*)
 
-
-------------------------------------------------------------------------------
--- Common Integer types
-------------------------------------------------------------------------------
-
-def alias Byte   = Int8
-def alias UByte  = UInt8
-def alias Octet  = UInt8
-def alias Short  = Int16
-def alias UShort = UInt16
-def alias Word   = Int32
-def alias UWord  = UInt32
-def alias Long   = Int64
-def alias ULong  = UInt64
-
-def alias Float      = Float32
-def alias Double     = Float64
-def alias LongDouble = Float128
-
-
-def type Ordinal : (Int >= 0)
-    ~ A positive, arbitrary precise integer. ~
-
 ------------------------------------------------------------------------------
 -- Common Union types
 ------------------------------------------------------------------------------
@@ -88,21 +65,6 @@ def type CharOrEof : &(Char, Eof)
 def type OrdinalOrFalse : &(Ordinal, Bool == false)
     ~ A union type as typically used by find or lookup functions to either
     return the index of an element or indicate failure.~
-
-
-------------------------------------------------------------------------------
--- Default value
-------------------------------------------------------------------------------
-
-def generic null-value(ty @ Class<'T>) : 'T ...
-  ~ Returns the default null value for type @type{T}.
-
-  For reference types this is normally always @val{nil}, for integers this
-  is @val{0}, for chars @val{#\0000}, etc. ~
-
-
-def generic min-value(ty @ Class<'T>) : 'T ...
-def generic max-value(ty @ Class<'T>) : 'T ...
 
 
 -- end of types.hea

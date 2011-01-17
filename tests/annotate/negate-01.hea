@@ -1,0 +1,3 @@
+def foo(a : Int)
+  let x = - a
+  x

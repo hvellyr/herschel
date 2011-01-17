@@ -151,6 +151,7 @@ namespace heather
     kChar,
     kBool,
     kInt,
+    kUInt,
     kReal,
     kRational,
     kKeyword,
@@ -379,33 +380,6 @@ namespace heather
   std::ostream& operator <<(std::ostream &os,const Token& token);
   std::ostream& operator<<(std::ostream& os, ExprType type);
 #endif
-
-
-  //--------------------------------------------------------------------------
-  // definitions of the reserved keywords
-#define MID_DefId       "def"
-#define MID_ElseId      "else"
-#define MID_EofId       "eof"
-#define MID_ExportId    "export"
-#define MID_ExtendId    "extend"
-#define MID_ExternId    "extern"
-#define MID_ForId       "for"
-#define MID_FUNCTIONId  "Function"
-#define MID_FunctionId  "function"
-#define MID_IfId        "if"
-#define MID_ImportId    "import"
-#define MID_LetId       "let"
-#define MID_MatchId     "match"
-#define MID_ModuleId    "module"
-#define MID_NilId       "nil"
-#define MID_NotId       "not"
-#define MID_OnId        "on"
-#define MID_ReifyId     "reify"
-#define MID_SelectId    "select"
-#define MID_ThenId      "then"
-#define MID_WhenId      "when"
-#define MID_WhereId     "where"
-#define MID_WhileId     "while"
 
 };
 

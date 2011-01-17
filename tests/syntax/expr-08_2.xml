@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t'>
+<init>
+<apply>
+<apply>
+<symbol>lang|init-functor</symbol>
+<args>
+<type  ty='&apos;T'/>
+</args>
+</apply>
+<args>
+<apply>
+<symbol>lang|allocate</symbol>
+<args>
+<type  ty='&apos;T'/>
+</args>
+</apply>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='z'>
+<init>
+<apply>
+<symbol>Person</symbol>
+<args>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<symbol>t</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>
