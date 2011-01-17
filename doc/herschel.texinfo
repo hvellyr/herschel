@@ -14,7 +14,6 @@
 @c @shorttitlepage Herschel
 
 @titlepage
-@ifhtml
 @title Herschel
 @sp 2
 @subtitle Language specification
@@ -22,24 +21,6 @@
 @subtitle Version @value{VERSION}
 @c @center @image{bg2,,8cm}
 @author by Gregor C. Klinke
-@end ifhtml
-
-@iftex
-@sp 5
-@flushright
-@sp -5
-@titlefont{Herschel}
-@sp 1
-Language specification
-Version @value{VERSION}
-@sp 5
-by @emph{Gregor C. Klinke}
-@end flushright
-@flushleft
-@sp -20
-@image{herschel-logo,,22cm}
-@end flushleft
-@end iftex
 
 @c @author by Gregor C. Klinke
 @page
