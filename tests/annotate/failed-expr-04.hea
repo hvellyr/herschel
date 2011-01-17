@@ -1,0 +1,22 @@
+-- can't compare unsigned and signed integer value
+
+def f5(a : UInt16, b : Int16)
+  let t0 =
+    (a == 0)
+       and
+    (b == 5)
+  let t1 =
+    (a == b)
+       or
+    (a == b)
+
+
+def f6(a : Ordinal, b : Int)
+  let t0 =
+    (a == 0)
+       and
+    (b == 5)
+  let t1 =
+    (a == b)
+       or
+    (a == b)

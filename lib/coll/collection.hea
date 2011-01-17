@@ -343,21 +343,30 @@ def class Deque!<T> : (Deque<T>, Sequence!<T>)
 }
 
 
-
-def class HashMap<K, V> : (AssocCollection<K, V>,
+def type Map<K, V> : (AssocCollection<K, V>,
                            Sliceable<K, V>)
 {
 }
 
 
-def class HashMap!<K, V> : (HashMap<K, V>,
-                            AssocCollection!<K, V>,
-                            Sliceable!<K, V>)
+def type Map!<K, V> : (Map<K, V>,
+                       AssocCollection!<K, V>,
+                       Sliceable!<K, V>)
 {
 }
 
 
-def class Tree<K, V> : (AssocCollection<K, V>,
+def class HashMap<K, V> : Map<K, V>
+{
+}
+
+
+def class HashMap!<K, V> : (HashMap<K, V>, Map!<K, V>)
+{
+}
+
+
+def class Tree<K, V> : (Map<K, V>,
                         OrderedCollection<K>,
                         OrderedSliceable<K, V>)
 {
@@ -365,21 +374,18 @@ def class Tree<K, V> : (AssocCollection<K, V>,
 
 
 def class Tree!<K, V> : (Tree<K, V>,
-                         AssocCollection!<K, V>,
-                         Sliceable!<K, V>)
+                         Map!<K, V>)
 {
 }
 
 
-def class MultiMap<K, V> : (AssocCollection<K, V>,
-                            Sliceable<K, V>)
+def class MultiMap<K, V> : Map<K, V>
 {
 }
 
 
 def class MultiMap!<K, V> : (MultiMap<K, V>,
-                             AssocCollection!<K, V>,
-                             Sliceable!<K, V>)
+                             Map!<K, V>)
 {
 }
 

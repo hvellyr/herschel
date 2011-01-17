@@ -1,11 +1,11 @@
 def ints    = #[12,          0ch,          14t,          1100y         ]
-def octets  = #[12 : Octet,  0ch : Octet,  14t : Octet,  1100y : Octet ]
-def shorts  = #[12 : Short,  0ch : Short,  14t : Short,  1100y : Short ]
-def ushorts = #[12 : UShort, 0ch : UShort, 14t : UShort, 1100y : UShort]
-def words   = #[12 : Word,   0ch : Word,   14t : Word,   1100y : Word  ]
-def uwords  = #[12 : UWord,  0ch : UWord,  14t : UWord,  1100y : UWord ]
-def longs   = #[12 : Long,   0ch : Long,   14t : Long,   1100y : Long  ]
-def ulongs  = #[12 : ULong,  0ch : ULong,  14t : ULong,  1100y : ULong ]
+def octets  = #[12 : UInt8,  0ch : UInt8,  14t : UInt8,  1100y : UInt8 ]
+def shorts  = #[12 : Int16,  0ch : Int16,  14t : Int16,  1100y : Int16 ]
+def ushorts = #[12 : UInt16, 0ch : UInt16, 14t : UInt16, 1100y : UInt16]
+def words   = #[12 : Int32,  0ch : Int32,  14t : Int32,  1100y : Int32  ]
+def uwords  = #[12 : UInt32, 0ch : UInt32, 14t : UInt32, 1100y : UInt32 ]
+def longs   = #[12 : Int64,  0ch : Int64,  14t : Int64,  1100y : Int64  ]
+def ulongs  = #[12 : UInt64, 0ch : UInt64, 14t : UInt64, 1100y : UInt64 ]
 
 def rat = 4/5
 

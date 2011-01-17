@@ -7,7 +7,7 @@
 ifdef SUBDIRS
 
 #### MAKEFILE WITH SUBDIRS ####
-all: all-local all-rec
+all: all-local all-rec all-post
 
 clean: clean-local clean-rec clean-post
 
@@ -17,11 +17,11 @@ distclean: distclean-local distclean-rec distclean-post
 
 else
 #### MAKEFILE WITHOUT SUBDIRS ####
-all: all-local
+all: all-local all-post
 
-clean: clean-local
+clean: clean-local clean-post
 
-distclean: distclean-local
+distclean: distclean-local distclean-post
 
 #dist: dist-local
 

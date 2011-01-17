@@ -1,2 +1,17 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>k1</id></seq><seq><id>def</id><id>k2</id></seq><seq><id>def</id><id>k3</id><punct type='='/><lit type='keyw'>#abc</lit></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>k1</id>
+</seq>
+<seq>
+<id>def</id>
+<id>k2</id>
+</seq>
+<seq>
+<id>def</id>
+<id>k3</id>
+<punct type='='/>
+<lit type='keyw'>#abc</lit>
+</seq>
+</seq>

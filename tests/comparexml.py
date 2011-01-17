@@ -4,6 +4,10 @@ import xml.dom.minidom as minidom
 import getopt
 import sys
 
+def compareTextNode(a, b):
+    return a.strip() == b.strip()
+
+
 def isEqualElement(a, b):
     if a.tagName != b.tagName:
         return False
@@ -14,11 +18,12 @@ def isEqualElement(a, b):
     for ac, bc in zip(a.childNodes, b.childNodes):
         if ac.nodeType != bc.nodeType:
             return False
-        if ac.nodeType == ac.TEXT_NODE and ac.data != bc.data:
+        if ac.nodeType == ac.TEXT_NODE and not compareTextNode(ac.data, bc.data):
             return False
         if ac.nodeType == ac.ELEMENT_NODE and not isEqualElement(ac, bc):
             return False
     return True
+
 
 def compareXMLfiles(file1, file2):
     da, db = minidom.parse(file1), minidom.parse(file2)

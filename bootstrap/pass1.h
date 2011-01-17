@@ -12,9 +12,10 @@
 #include <map>
 
 #include "apt.h"
+#include "compilepass.h"
 #include "errcodes.h"
 #include "macro.h"
-#include "parser.h"
+#include "compiler.h"
 #include "pass.h"
 #include "port.h"
 #include "refcountable.h"
@@ -37,7 +38,7 @@ namespace heather
   class FirstPass : public AbstractPass
   {
   public:
-    FirstPass(Parser* parser, const Token& currentToken, Scope* scope);
+    FirstPass(Compiler* compiler, const Token& currentToken, Scope* scope);
 
     Token nextToken();
     Token currentToken();
@@ -272,6 +273,22 @@ namespace heather
 
     Token       fToken;
     bool        fEvaluateExprs;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class ExprPass : public TokenCompilePass
+  {
+  public:
+    ExprPass(int level, Compiler* compiler, const Token& currentToken,
+             Scope* scope);
+    virtual Token doApply(const Token& src);
+
+  private:
+    Token         fCurrentToken;
+    Ptr<Scope>    fScope;
+    Ptr<Compiler> fCompiler;
   };
 };
 

@@ -1,0 +1,13 @@
+def foo(ty : Class<'T>,
+        value = ty.null-value) : 'T
+  value
+
+
+def bar(n : 'T,
+        value = n.type-of.null-value) : 'T
+  value
+
+
+
+def a = 5
+def x = a.type-of.null-value

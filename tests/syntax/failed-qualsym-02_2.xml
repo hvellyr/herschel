@@ -1,2 +1,116 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit><def><func sym='f'><params><param sym='x' type='pos'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Int'></ty:ref></type></param><param sym='_z' type='key' key='zzz'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='String'></ty:ref></type><init><symbol>nil</symbol></init></param></params><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></rettype><body><block><on key='exit'><params><param sym='r' type='pos'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></type></param></params><body><apply><symbol>outln</symbol><args><binary op='%'><str>on exit: %s</str><array><symbol>_z</symbol></array></binary></args></apply></body></on><symbol>x</symbol></block></body></func></def><def><class nm='X'><params><param sym='a' type='pos'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></type></param></params><slots><def><slot sym='b'><init><symbol>a</symbol></init></slot></def></slots><isa xmlns:ty='http://heather.eyestep.org/types'><ty:type nm='X' inst='t'><ty:apply><ty:fun nm='apply' gen='t'><ty:prms><ty:prm is='pos'><ty:ref nm='Any'></ty:ref></ty:prm></ty:prms><ty:ret><ty:ref nm='X'></ty:ref></ty:ret></ty:fun></ty:apply></ty:type></isa></class></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</type>
+</param>
+<param sym='_z' type='key' key='zzz'>
+<type>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</type>
+<init>
+<symbol>nil</symbol>
+</init>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<on key='exit'>
+<params>
+<param sym='r' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<body>
+<apply>
+<symbol>outln</symbol>
+<args>
+<binary op='%'>
+<str>on exit: %s</str>
+<array>
+<symbol>_z</symbol>
+</array>
+</binary>
+</args>
+</apply>
+</body>
+</on>
+<symbol>x</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<class nm='X'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<slots>
+<def>
+<slot sym='b'>
+<init>
+<symbol>a</symbol>
+</init>
+</slot>
+</def>
+</slots>
+<isa>
+<ty:type nm='X' inst='t'>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='X|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='X' inst='t'>
+</ty:type>
+</type>
+</param>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='X' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<apply>
+<symbol>lang|slot!</symbol>
+<args>
+<symbol>__obj_0</symbol>
+<keyw>b</keyw>
+<symbol>a</symbol>
+</args>
+</apply>
+<symbol>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

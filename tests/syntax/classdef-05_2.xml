@@ -1,2 +1,91 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit><def><type nm='core|Comparable'><proto><def><method sym='core|compare' abstract='true'><params><param sym='one' type='spec'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref gen='t' nm='S'></ty:ref></type></param><param sym='two' type='spec'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref gen='t' nm='T'></ty:ref></type></param></params><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Int'></ty:ref></rettype></method></def><def><method sym='core|equal?' abstract='true'><params><param sym='one' type='spec'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref gen='t' nm='S'></ty:ref></type></param><param sym='two' type='spec'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref gen='t' nm='T'></ty:ref></type></param></params><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Bool'></ty:ref></rettype></method></def></proto><isa xmlns:ty='http://heather.eyestep.org/types'><ty:type nm='core|Comparable'><ty:proto><ty:fun nm='core|compare' gen='t'><ty:prms><ty:prm is='pos' spec='t'><ty:ref gen='t' nm='S'></ty:ref></ty:prm><ty:prm is='pos' spec='t'><ty:ref gen='t' nm='T'></ty:ref></ty:prm></ty:prms><ty:ret><ty:ref nm='Int'></ty:ref></ty:ret></ty:fun><ty:fun nm='core|equal?' gen='t'><ty:prms><ty:prm is='pos' spec='t'><ty:ref gen='t' nm='S'></ty:ref></ty:prm><ty:prm is='pos' spec='t'><ty:ref gen='t' nm='T'></ty:ref></ty:prm></ty:prms><ty:ret><ty:ref nm='Bool'></ty:ref></ty:ret></ty:fun></ty:proto></ty:type></isa></type></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<type nm='core|Comparable'>
+<proto>
+<def>
+<method sym='core|compare' abstract='true'>
+<params>
+<param sym='one' type='spec'>
+<type>
+<ty:ref gen='t' nm='S'>
+</ty:ref>
+</type>
+</param>
+<param sym='two' type='spec'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</rettype>
+</method>
+</def>
+<def>
+<method sym='core|equal?' abstract='true'>
+<params>
+<param sym='one' type='spec'>
+<type>
+<ty:ref gen='t' nm='S'>
+</ty:ref>
+</type>
+</param>
+<param sym='two' type='spec'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</rettype>
+</method>
+</def>
+</proto>
+<isa>
+<ty:type nm='core|Comparable'>
+<ty:proto>
+<ty:fun nm='core|compare' gen='t'>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='S'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+<ty:fun nm='core|equal?' gen='t'>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='S'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:proto>
+</ty:type>
+</isa>
+</type>
+</def>
+</compile-unit>

@@ -11,10 +11,15 @@
 
 #include <typeinfo>
 
+#include "errcodes.h"
+#include "log.h"
+#include "predefined.h"
+#include "scope.h"
+#include "strbuf.h"
 #include "type.h"
 #include "typectx.h"
-#include "strbuf.h"
 #include "typeenum.h"
+#include "rootscope.h"
 
 
 using namespace heather;
@@ -35,34 +40,6 @@ namespace heather
       }
     }
     return true;
-  }
-
-
-  template<typename T>
-  static bool
-  isCovariant(const T& vect0, const T& vect1)
-  {
-    if (vect0.size() == vect1.size()) {
-      for (size_t i = 0; i < vect0.size(); i++) {
-        if (!vect0[i].isCovariant(vect1[i]))
-          return false;
-      }
-    }
-    return true;
-  }
-
-
-  template<typename T>
-  static bool
-  isInvariant(const T& vect0, const T& vect1)
-  {
-    if (vect0.size() != vect1.size())
-      return true;
-    for (size_t i = 0; i < vect0.size(); i++) {
-      if (vect0[i].isInvariant(vect1[i]))
-        return true;
-    }
-    return false;
   }
 
 
@@ -91,19 +68,25 @@ namespace heather
   }
 
 
-  //--------------------------------------------------------------------------
-
-  bool
-  TypeImpl::isContravariant(const TypeImpl* other) const
+  template<typename T>
+  bool isOpen(const std::vector<T>& v)
   {
-    return other->isCovariant(this);
+    for (size_t i = 0; i < v.size(); i++) {
+      if (v[i].isOpen())
+        return true;
+    }
+    return false;
   }
 
 
-  bool
-  TypeImpl::isInvariant(const TypeImpl* other) const
+  StringBuffer& operator<<(StringBuffer& other, const TypeVector& tyve)
   {
-  return !isCovariant(other) && !isContravariant(other);
+    for (size_t i = 0; i < tyve.size(); i++) {
+      if (i > 0)
+        other << ", ";
+      other << tyve[i].typeId();
+    }
+    return other;
   }
 
 
@@ -126,12 +109,12 @@ namespace heather
     }
 
 
-    virtual bool isCovariant(const TypeImpl* other) const
+    bool isOpen() const
     {
-      const GroupTypeImpl* o = dynamic_cast<const GroupTypeImpl*>(other);
-
-      if (o != NULL && typeid(this) == typeid(other))
-        return heather::isCovariant(fTypes, o->fTypes);
+      for (size_t i = 0; i < fTypes.size(); i++) {
+        if (fTypes[i].isOpen())
+          return true;
+      }
       return false;
     }
 
@@ -172,11 +155,28 @@ namespace heather
     virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:union" << ( !isValue ? " ref='t'" : "") << ">";
+      buf << "<ty:union" << ( !isValue ? " ref='t'" : "") << ">\n";
       for (size_t i = 0; i < fTypes.size(); i++)
         buf << fTypes[i].toString();
-      buf << "</ty:union>";
+      buf << "</ty:union>\n";
       return buf.toString();
+    }
+
+
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
+    {
+      if (right0.isUnion() && types().size() == right0.unionTypes().size()) {
+        const TypeVector& ltypes = types();
+        const TypeVector& rtypes = right0.unionTypes();
+
+        for (size_t i = 0; i < ltypes.size(); ++i) {
+          if (!ltypes[i].matchGenerics(localCtx, rtypes[i], scope, srcpos))
+            return false;
+        }
+        return true;
+      }
+      return false;
     }
   };
 
@@ -199,11 +199,28 @@ namespace heather
     virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:seq" << ( !isValue ? " ref='t'" : "") << ">";
+      buf << "<ty:seq" << ( !isValue ? " ref='t'" : "") << ">\n";
       for (size_t i = 0; i < fTypes.size(); i++)
         buf << fTypes[i].toString();
-      buf << "</ty:seq>";
+      buf << "</ty:seq>\n";
       return buf.toString();
+    }
+
+
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
+    {
+      if (right0.isSequence() && types().size() == right0.seqTypes().size()) {
+        const TypeVector& ltypes = types();
+        const TypeVector& rtypes = right0.seqTypes();
+
+        for (size_t i = 0; i < ltypes.size(); ++i) {
+          if (!ltypes[i].matchGenerics(localCtx, rtypes[i], scope, srcpos))
+            return false;
+        }
+        return true;
+      }
+      return false;
     }
   };
 
@@ -231,10 +248,19 @@ namespace heather
     }
 
 
-    virtual bool isCovariant(const TypeImpl* other) const
+    bool isOpen() const
     {
-      const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
-      return (o != NULL && fSign.isCovariant(o->fSign));
+      return fSign.isOpen();
+    }
+
+
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
+    {
+      if (right0.isFunction())
+        return fSign.matchGenerics(localCtx, right0.functionSignature(),
+                                   scope, srcpos);
+      return false;
     }
 
 
@@ -269,13 +295,11 @@ namespace heather
                  bool isInstantiatable,
                  const TypeVector& generics,
                  const Type& inherit,
-                 const FunctionSignature& defApplySign,
                  const FunctionSignatureVector& protocol)
       : fName(name),
         fIsInstantiatable(isInstantiatable),
         fGenerics(generics),
         fInherit(inherit),
-        fDefApplySign(defApplySign),
         fProtocol(protocol)
     { }
 
@@ -285,7 +309,6 @@ namespace heather
       return new TypeTypeImpl(fName, fIsInstantiatable,
                               vectorClone(fGenerics),
                               fInherit.clone(),
-                              fDefApplySign.clone(),
                               vectorClone(fProtocol));
     }
 
@@ -298,46 +321,15 @@ namespace heather
       return (o != NULL &&
               fName == o->fName &&
               fIsInstantiatable == o->fIsInstantiatable &&
-              fDefApplySign == o->fDefApplySign &&
               fInherit == o->fInherit &&
               heather::isEqual(fGenerics, o->fGenerics) &&
               heather::isEqual(fProtocol, o->fProtocol));
     }
 
 
-    virtual bool
-    isCovariant(const TypeImpl* other) const
+    bool isOpen() const
     {
-      const TypeTypeImpl* o = dynamic_cast<const TypeTypeImpl*>(other);
-
-      if (o != NULL &&
-          // fName == o->fName &&
-          fGenerics.size() == o->fGenerics.size() &&
-          fProtocol.size() >= o->fProtocol.size() &&
-          fInherit.isCovariant(o->fInherit))
-      {
-        for (size_t i = 0; i < fGenerics.size(); i++) {
-          if (!fGenerics[i].isCovariant(o->fGenerics[i]))
-            return false;
-        }
-
-        for (size_t i = 0; i < fProtocol.size(); i++) {
-          bool gotOne = false;
-          for (size_t j = 0; j < o->fProtocol.size(); j++) {
-            if (fProtocol[i].methodName() == o->fProtocol[j].methodName() &&
-                fProtocol[i].isCovariant(o->fProtocol[j]))
-            {
-              gotOne = true;
-              break;
-            }
-          }
-
-          if (!gotOne)
-            return false;
-        }
-        return true;
-      }
-      return false;
+      return ( fInherit.isOpen() || heather::isOpen(fGenerics));
     }
 
 
@@ -350,12 +342,6 @@ namespace heather
     const Type& inherit() const
     {
       return fInherit;
-    }
-
-
-    const FunctionSignature& defaultApplySignature() const
-    {
-      return fDefApplySign;
     }
 
 
@@ -373,8 +359,22 @@ namespace heather
 
     virtual void replaceGenerics(const TypeCtx& typeMap)
     {
-      // TODO
-      assert(0);
+      for (size_t i = 0; i < fGenerics.size(); i++) {
+        assert(fGenerics[i].isRef());
+
+        // fprintf(stderr, "REPLACE GENERIC: %s\n", (const char*)StrHelper(fGenerics[i].toString()));
+
+        Type replacement = typeMap.lookupType(fGenerics[i].typeName());
+        if (replacement.isDef()) {
+          // fprintf(stderr, "FOUND STH: %s\n", (const char*)StrHelper(replacement.toString()));
+          fGenerics[i] = replacement;
+        }
+      }
+      fInherit = fInherit.replaceGenerics(typeMap);
+
+      for (size_t i = 0; i < fProtocol.size(); ++i) {
+        fProtocol[i].replaceGenerics(typeMap);
+      }
     }
 
 
@@ -382,29 +382,47 @@ namespace heather
     {
       StringBuffer buf;
       buf << "<ty:type nm='" << fName << "'"
-          << (fIsInstantiatable ? " inst='t'" : "") << ">";
+          << (fIsInstantiatable ? " inst='t'" : "") << ">\n";
       if (fInherit.isDef())
-        buf << "<ty:isa>" << fInherit.toString() << "</ty:isa>";
+        buf << "<ty:isa>\n" << fInherit.toString() << "</ty:isa>\n";
 
       if (!fGenerics.empty()) {
-        buf << "<ty:gen>";
+        buf << "<ty:gen>\n";
         for (size_t i = 0; i < fGenerics.size(); i++)
           buf << fGenerics[i].toString();
-        buf << "</ty:gen>";
+        buf << "</ty:gen>\n";
       }
-
-      if (fIsInstantiatable)
-        buf << "<ty:apply>" << fDefApplySign.toString() << "</ty:apply>";
 
       if (!fProtocol.empty()) {
-        buf << "<ty:proto>";
+        buf << "<ty:proto>\n";
         for (size_t i = 0; i < fProtocol.size(); i++)
           buf << fProtocol[i].toString();
-        buf << "</ty:proto>";
+        buf << "</ty:proto>\n";
       }
 
-      buf << "</ty:type>";
+      buf << "</ty:type>\n";
       return buf.toString();
+    }
+
+
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
+    {
+      // fprintf(stderr, "RIGHT in class: %s\n", (const char*)StrHelper(right0.toString()));
+      if (right0.isType() || right0.isClass()) {
+        if (fName == right0.typeName() &&
+            fGenerics.size() == right0.generics().size())
+        {
+          for (size_t i = 0; i < fGenerics.size(); ++i) {
+            // fprintf(stderr, "CHECK GENERIC: %s\n", (const char*)StrHelper(fGenerics[i].toString()));
+            if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
+                                            scope, srcpos))
+              return false;
+          }
+          return true;
+        }
+      }
+      return false;
     }
 
   protected:
@@ -412,7 +430,6 @@ namespace heather
     bool                    fIsInstantiatable;
     TypeVector              fGenerics;
     Type                    fInherit;
-    FunctionSignature       fDefApplySign;
     FunctionSignatureVector fProtocol;
   };
 
@@ -447,12 +464,17 @@ namespace heather
     }
 
 
-    virtual bool isCovariant(const TypeImpl* other) const
+    bool isOpen() const
     {
-      const AliasTypeImpl* o = dynamic_cast<const AliasTypeImpl*>(other);
+      return fType.isOpen() || heather::isOpen(fGenerics);
+    }
 
-      return (o != NULL &&
-              fType.isCovariant(o->fType));
+
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
+    {
+      assert(0 && "when does this happen?");
+      return false;
     }
 
 
@@ -484,19 +506,19 @@ namespace heather
     virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:alias nm='" << fName << "'>";
+      buf << "<ty:alias nm='" << fName << "'>\n";
 
       if (!fGenerics.empty()) {
-        buf << "<ty:gen>";
+        buf << "<ty:gen>\n";
         for (size_t i = 0; i < fGenerics.size(); i++)
           buf << fGenerics[i].toString();
-        buf << "</ty:gen>";
+        buf << "</ty:gen>\n";
       }
 
       if (fType.isDef())
-        buf << "<ty:isa>" << fType.toString() << "</ty:isa>";
+        buf << "<ty:isa>\n" << fType.toString() << "</ty:isa>\n";
 
-      buf << "</ty:alias>";
+      buf << "</ty:alias>\n";
       return buf.toString();
     }
 
@@ -537,12 +559,9 @@ namespace heather
     }
 
 
-    virtual bool isCovariant(const TypeImpl* other) const
+    bool isOpen() const
     {
-      const MeasureTypeImpl* o = dynamic_cast<const MeasureTypeImpl*>(other);
-
-      return (o != NULL &&
-              fBaseType.isCovariant(o->fBaseType));
+      return fBaseType.isOpen();
     }
 
 
@@ -574,14 +593,25 @@ namespace heather
     {
       StringBuffer buf;
       buf << "<ty:measure nm='" << fName << "' unit='"
-          << fDefUnit << "'>";
+          << fDefUnit << "'>\n";
 
       if (fBaseType.isDef())
-        buf << "<ty:isa>" << fBaseType.toString() << "</ty:isa>";
+        buf << "<ty:isa>\n" << fBaseType.toString() << "</ty:isa>\n";
 
-      buf << "</ty:measure>";
+      buf << "</ty:measure>\n";
       return buf.toString();
     }
+
+
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
+    {
+      if (right0.isMeasure())
+        return fBaseType.matchGenerics(localCtx, right0.measureBaseType(),
+                                       scope, srcpos);
+      return false;
+    }
+
 
   protected:
     String     fName;
@@ -596,20 +626,20 @@ namespace heather
   {
   public:
     TypeRefTypeImpl(const String& name,
-                    bool isGeneric,
+                    bool isOpen,
                     const TypeVector& genericArgs,
                     const TypeConstVector& constraints)
       : fName(name),
         fGenerics(genericArgs),
         fConstraints(constraints),
-        fIsGeneric(isGeneric)
+        fIsOpen(isOpen)
     { }
 
 
     virtual TypeRefTypeImpl* clone() const
     {
       return new TypeRefTypeImpl(fName,
-                                 fIsGeneric,
+                                 fIsOpen,
                                  vectorClone(fGenerics),
                                  vectorClone(fConstraints));
     }
@@ -621,19 +651,9 @@ namespace heather
 
       return (o != NULL &&
               fName == o->fName &&
-              fIsGeneric == o->fIsGeneric &&
+              fIsOpen == o->fIsOpen &&
               heather::isEqual(fGenerics, o->fGenerics) &&
               heather::isEqual(fConstraints, o->fConstraints));
-    }
-
-
-    virtual bool isCovariant(const TypeImpl* other) const
-    {
-      const TypeRefTypeImpl* o = dynamic_cast<const TypeRefTypeImpl*>(other);
-
-      return (o != NULL &&
-              heather::isCovariant(fGenerics, o->fGenerics) &&
-              heather::isCovariant(fConstraints, o->fConstraints));
     }
 
 
@@ -649,9 +669,15 @@ namespace heather
     }
 
 
-    bool isGeneric() const
+    bool isOpen() const
     {
-      return fIsGeneric;
+      return fIsOpen || heather::isOpen(fGenerics);
+    }
+
+
+    bool isOpenSelf() const
+    {
+      return fIsOpen;
     }
 
 
@@ -671,34 +697,96 @@ namespace heather
     virtual String toString(bool isValue) const
     {
       StringBuffer buf;
-      buf << "<ty:ref" << (fIsGeneric ? " gen='t'" : "")
+      buf << "<ty:ref" << (fIsOpen ? " gen='t'" : "")
           << ( !isValue ? " ref='t'" : "")
-          << " nm='" << fName << "'>";
+          << " nm='" << fName << "'>\n";
       if (!fGenerics.empty()) {
-        buf << "<ty:gen>";
+        buf << "<ty:gen>\n";
         for (size_t i = 0; i < fGenerics.size(); i++)
           buf << fGenerics[i].toString();
-        buf << "</ty:gen>";
+        buf << "</ty:gen>\n";
       }
       if (!fConstraints.empty()) {
         if (fConstraints.size() == 1)
           buf << fConstraints[0].toString();
         else {
-          buf << "<ty:consts>";
+          buf << "<ty:consts>\n";
           for (size_t i = 0; i < fConstraints.size(); i++)
             buf << fConstraints[i].toString();
-          buf << "</ty:consts>";
+          buf << "</ty:consts>\n";
         }
       }
-      buf << "</ty:ref>";
+      buf << "</ty:ref>\n";
       return buf.toString();
     }
+
+
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
+    {
+      // fprintf(stderr, "LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
+      // fprintf(stderr, "RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
+      if (right0.isRef() || right0.isType() || right0.isClass()) {
+        // if the reference has generics, it itself cannot be generic.  A
+        // 'T<'Y'> is not allowed.
+        if (!fGenerics.empty()) {
+          if (fGenerics.size() == right0.generics().size() &&
+              fName == right0.typeName())
+          {
+            for (size_t i = 0; i < fGenerics.size(); ++i) {
+              if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
+                                              scope, srcpos)) {
+                fprintf(stderr, "<1>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
+                fprintf(stderr, "<1>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
+                return false;
+              }
+            }
+            return true;
+          }
+          // fprintf(stderr, "<2>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
+          // fprintf(stderr, "<2>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
+          return false;
+        }
+
+        if (localCtx.hasType(name())) {
+          if (!isSameType(localCtx.lookupType(name()), right0, scope, srcpos))
+          {
+            errorf(srcpos, E_TypeMismatch, "type mismatch for generic parameter");
+            return false;
+          }
+          return true;
+        }
+        else {
+          // fprintf(stderr, "MAP %s to %s\n", (const char*)StrHelper(name()),
+          //         (const char*)StrHelper(right0.toString()));
+          localCtx.registerType(name(), right0);
+          return true;
+        }
+      }
+      else if (right0.isArray()) {
+        // special case: Make lang/sliceable<K, E> match arrays, which are
+        // otherwise not first class entities.
+        if (name() == Names::kSliceableTypeName || name() == Names::kSliceableXTypeName) {
+          if (fGenerics.size() == 2) {
+            localCtx.registerType(fGenerics[0].typeName(), Type::newInt(true));
+            localCtx.registerType(fGenerics[1].typeName(), right0.arrayBaseType());
+
+            return true;
+          }
+        }
+      }
+
+      // fprintf(stderr, "<3>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
+      // fprintf(stderr, "<3>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
+      return false;
+    }
+
 
   protected:
     String          fName;
     TypeVector      fGenerics;
     TypeConstVector fConstraints;
-    bool            fIsGeneric;
+    bool            fIsOpen;
   };
 
 
@@ -730,13 +818,9 @@ namespace heather
     }
 
 
-    virtual bool
-    isCovariant(const TypeImpl* other) const
+    bool isOpen() const
     {
-      const ArrayTypeImpl* o = dynamic_cast<const ArrayTypeImpl*>(other);
-
-      return (o != NULL &&
-              fBase.isCovariant(o->fBase));
+      return fBase.isOpen();
     }
 
 
@@ -764,11 +848,25 @@ namespace heather
     {
       StringBuffer buf;
       buf << "<ty:array ind='" << fromInt(fSizeIndicator) << "'"
-          << ( !isValue ? " ref='t'" : "") << ">"
+          << ( !isValue ? " ref='t'" : "") << ">\n"
           << fBase.toString()
-          << "</ty:array>";
+          << "</ty:array>\n";
       return buf.toString();
     }
+
+
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const
+    {
+      // fprintf(stderr, "LEFT IS:  %s\n", (const char*)StrHelper(toString(true)));
+      // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right0.toString()));
+
+      if (right0.isArray())
+        return fBase.matchGenerics(localCtx, right0.arrayBaseType(),
+                                   scope, srcpos);
+      return false;
+    }
+
 
   protected:
     Type fBase;
@@ -779,34 +877,10 @@ namespace heather
 
 //----------------------------------------------------------------------------
 
-const String heather::Type::kAnyTypeName         = String("Any");
-const String heather::Type::kBoolTypeName        = String("Bool");
-const String heather::Type::kCharTypeName        = String("Char");
-const String heather::Type::kDoubleTypeName      = String("Double");
-const String heather::Type::kEofTypeName         = String("Eof");
-const String heather::Type::kFloatTypeName       = String("Float");
-const String heather::Type::kIntTypeName         = String("Int");
-const String heather::Type::kKeywordTypeName     = String("Keyword");
-const String heather::Type::kLongDoubleTypeName  = String("LongDouble");
-const String heather::Type::kLongTypeName        = String("Long");
-const String heather::Type::kNilTypeName         = String("Nil");
-const String heather::Type::kOctetTypeName       = String("Octet");
-const String heather::Type::kRationalTypeName    = String("Rational");
-const String heather::Type::kRealTypeName        = String("Real");
-const String heather::Type::kShortTypeName       = String("Short");
-const String heather::Type::kStringTypeName      = String("String");
-const String heather::Type::kULongTypeName       = String("ULong");
-const String heather::Type::kUShortTypeName      = String("UShort");
-const String heather::Type::kUWordTypeName       = String("UWord");
-const String heather::Type::kUnspecifiedTypeName = String("Unspecified");
-const String heather::Type::kWordTypeName        = String("Word");
-
-
-//----------------------------------------------------------------------------
-
 Type::Type()
   : fKind(kType_Undefined),
-    fIsValue(true)
+    fIsValue(true),
+    fIsImaginary(false)
 { }
 
 
@@ -816,9 +890,10 @@ Type::Type(const Type& other)
 }
 
 
-Type::Type(TypeKind kind, bool isValue, TypeImpl* impl)
+Type::Type(TypeKind kind, bool isValue, bool isImaginary, TypeImpl* impl)
   : fKind(kind),
     fIsValue(isValue),
+    fIsImaginary(isImaginary),
     fImpl(impl)
 { }
 
@@ -828,6 +903,7 @@ Type::operator=(const Type& other)
 {
   fKind = other.fKind;
   fIsValue = other.fIsValue;
+  fIsImaginary = other.fIsImaginary;
   fImpl = other.fImpl;
   return *this;
 }
@@ -837,8 +913,17 @@ Type
 Type::newTypeRef(const String& name, const TypeVector& genericArgs,
                  const TypeConstVector& constraints, bool isValue)
 {
-  return Type(kType_Ref, isValue, 
+  return Type(kType_Ref, isValue, false,
               new TypeRefTypeImpl(name, false, genericArgs, constraints));
+}
+
+
+Type
+Type::newTypeRef(const String& name, const TypeVector& genericArgs,
+                 bool isValue)
+{
+  return Type(kType_Ref, isValue, false,
+              new TypeRefTypeImpl(name, false, genericArgs, TypeConstVector()));
 }
 
 
@@ -847,62 +932,133 @@ Type::newTypeRef(const String& name, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
-  return Type(kType_Ref, isValue,
+  return Type(kType_Ref, isValue, false,
               new TypeRefTypeImpl(name, false,
                                   dummyGenerics, dummyConstraints));
 }
 
 
 Type
-Type::newTypeRef(const String& name, bool isGeneric,
+Type::newTypeRef(const char* name, bool isValue)
+{
+  return newTypeRef(String(name), isValue);
+}
+
+
+Type
+Type::newTypeRef(const String& name, bool isOpen,
                  const TypeConstVector& constraints, bool isValue)
 {
   TypeVector dummyGenerics;
-  return Type(kType_Ref, isValue,
-              new TypeRefTypeImpl(name, isGeneric, dummyGenerics,
+  return Type(kType_Ref, isValue, false,
+              new TypeRefTypeImpl(name, isOpen, dummyGenerics,
                                   constraints));
+}
+
+
+Type
+Type::newTypeRef(const String& name, bool isOpen, bool isValue)
+{
+  TypeVector dummyGenerics;
+  TypeConstVector dummyConstraints;
+  return Type(kType_Ref, isValue, false,
+              new TypeRefTypeImpl(name, isOpen, dummyGenerics,
+                                  dummyConstraints));
+}
+
+
+Type
+Type::newTypeRef(const String& name, const Type& old)
+{
+  assert(old.isRef());
+
+  return Type(kType_Ref, old.isValueType(), old.isImaginary(),
+              new TypeRefTypeImpl(name,
+                                  dynamic_cast<const TypeRefTypeImpl*>(old.fImpl.obj())->isOpenSelf(),
+                                  old.generics(),
+                                  old.constraints()));
+}
+
+
+Type
+Type::newClassOf(const Type& type, bool isValue)
+{
+  return newTypeRef(Names::kClassTypeName, newTypeVector(type), isValue);
 }
 
 
 Type
 Type::newArray(const Type& base, int sizeIndicator, bool isValue)
 {
-  return Type(kType_Array, isValue, new ArrayTypeImpl(base, sizeIndicator));
+  return Type(kType_Array, isValue, false,
+              new ArrayTypeImpl(base, sizeIndicator));
 }
 
 
 Type
 Type::newAny(bool isValue)
 {
-  return newTypeRef(kAnyTypeName, isValue);
+  return newTypeRef(Names::kAnyTypeName, isValue);
 }
 
 
 Type
 Type::newInt(bool isValue)
 {
-  return newTypeRef(kIntTypeName, isValue);
+  return newTypeRef(Names::kIntTypeName, isValue);
+}
+
+
+Type
+Type::newOrdinal(bool isValue)
+{
+  return newTypeRef(Names::kOrdinalTypeName, isValue);
+}
+
+
+Type
+Type::newImaginaryInt(bool isValue)
+{
+  Type ty = newTypeRef(Names::kIntTypeName, isValue);
+  ty.setIsImaginary(true);
+  return ty;
 }
 
 
 Type
 Type::newRational(bool isValue)
 {
-  return newTypeRef(kRationalTypeName, isValue);
+  return newTypeRef(Names::kRationalTypeName, isValue);
 }
 
 
 Type
 Type::newReal(bool isValue)
 {
-  return newTypeRef(kRealTypeName, isValue);
+  return newTypeRef(Names::kRealTypeName, isValue);
+}
+
+
+Type
+Type::newImaginaryReal(bool isValue)
+{
+  Type ty = newTypeRef(Names::kRealTypeName, isValue);
+  ty.setIsImaginary(true);
+  return ty;
 }
 
 
 Type
 Type::newString(bool isValue)
 {
-  return newTypeRef(kStringTypeName, isValue);
+  return newTypeRef(Names::kStringTypeName, isValue);
+}
+
+
+Type
+Type::newBool(bool isValue)
+{
+  return newTypeRef(Names::kBoolTypeName, isValue);
 }
 
 
@@ -911,10 +1067,8 @@ Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit)
 {
   FunctionSignatureVector dummyProtocol;
-  FunctionSignature       dummyDefApplySign;
-  return Type(kType_Type, true,
+  return Type(kType_Type, true, false,
               new TypeTypeImpl(name, false, generics, inherit,
-                               dummyDefApplySign,
                                dummyProtocol));
 }
 
@@ -924,10 +1078,8 @@ Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit,
               const FunctionSignatureVector& protocol)
 {
-  FunctionSignature dummyDefApplySign;
-  return Type(kType_Type, true,
+  return Type(kType_Type, true, false,
               new TypeTypeImpl(name, false, generics, inherit,
-                               dummyDefApplySign,
                                protocol));
 }
 
@@ -937,10 +1089,8 @@ Type::newClass(const String& name, const TypeVector& generics,
                const Type& inherit)
 {
   FunctionSignatureVector dummyProtocol;
-  FunctionSignature       dummyDefApplySign;
-  return Type(kType_Class, true, 
+  return Type(kType_Class, true, false,
               new TypeTypeImpl(name, true, generics, inherit,
-                               dummyDefApplySign,
                                dummyProtocol));
 }
 
@@ -948,12 +1098,10 @@ Type::newClass(const String& name, const TypeVector& generics,
 Type
 Type::newClass(const String& name, const TypeVector& generics,
                const Type& inherit,
-               const FunctionSignature& defApplySign,
                const FunctionSignatureVector& protocol)
 {
-  return Type(kType_Class, true,
+  return Type(kType_Class, true, false,
               new TypeTypeImpl(name, true, generics, inherit,
-                               defApplySign,
                                protocol));
 }
 
@@ -962,7 +1110,8 @@ Type
 Type::newAlias(const String& name, const TypeVector& generics,
                const Type& isa)
 {
-  return Type(kType_Alias, true, new AliasTypeImpl(name, generics, isa));
+  return Type(kType_Alias, true, false,
+              new AliasTypeImpl(name, generics, isa));
 }
 
 
@@ -970,7 +1119,7 @@ Type
 Type::newMeasure(const String& name, const Type& baseType,
                  const String& defUnit)
 {
-  return Type(kType_Measure, true,
+  return Type(kType_Measure, true, false,
               new MeasureTypeImpl(name, baseType, defUnit));
 }
 
@@ -978,28 +1127,37 @@ Type::newMeasure(const String& name, const Type& baseType,
 Type
 Type::newFunction(const FunctionSignature& sign)
 {
-  return Type(kType_Function, true, new FunctionTypeImpl(sign));
+  return Type(kType_Function, true, false,
+              new FunctionTypeImpl(sign));
 }
 
 
 Type
 Type::newUnion(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Union, isValue, new UnionTypeImpl(types));
+  return Type(kType_Union, isValue, false, new UnionTypeImpl(types));
 }
 
 
 Type
 Type::newSeq(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Sequence, isValue, new SeqTypeImpl(types));
+  return Type(kType_Sequence, isValue, false, new SeqTypeImpl(types));
 }
 
 
 Type
 Type::clone() const
 {
-  return Type(fKind, fIsValue, (fImpl != NULL ? fImpl->clone() : NULL));
+  return Type(fKind, fIsValue, fIsImaginary,
+              (fImpl != NULL ? fImpl->clone() : NULL));
+}
+
+
+TypeKind
+Type::kind() const
+{
+  return fKind;
 }
 
 
@@ -1022,30 +1180,6 @@ Type::operator!=(const Type& other) const
 
 
 bool
-Type::isCovariant(const Type& other) const
-{
-  assert (fKind != kType_Ref);
-  return fImpl->isCovariant(other.fImpl);
-}
-
-
-bool
-Type::isContravariant(const Type& other) const
-{
-  assert (fKind != kType_Ref);
-  return other.isCovariant(*this);
-}
-
-
-bool
-Type::isInvariant(const Type& other) const
-{
-  assert (fKind != kType_Ref);
-  return !isCovariant(other) && !isContravariant(other);
-}
-
-
-bool
 Type::isDef() const
 {
   return fKind != kType_Undefined;
@@ -1055,27 +1189,32 @@ Type::isDef() const
 bool
 Type::isBaseType() const
 {
-  if (isRef()) {
-    String nm = typeName();
-    return (nm == kBoolTypeName ||
-            nm == kCharTypeName ||
-            nm == kDoubleTypeName ||
-            nm == kEofTypeName ||
-            nm == kFloatTypeName ||
-            nm == kIntTypeName ||
-            nm == kKeywordTypeName ||
-            nm == kLongDoubleTypeName ||
-            nm == kLongTypeName ||
-            nm == kNilTypeName ||
-            nm == kOctetTypeName ||
-            nm == kRationalTypeName ||
-            nm == kRealTypeName ||
-            nm == kShortTypeName ||
-            nm == kStringTypeName ||
-            nm == kULongTypeName ||
-            nm == kUShortTypeName ||
-            nm == kUWordTypeName ||
-            nm == kWordTypeName);
+  String nm;
+  if (isRef() || isType() || isClass()) {
+    nm = typeName();
+  }
+
+  if (!nm.isEmpty()) {
+    return (nm == Names::kBoolTypeName ||
+            nm == Names::kCharTypeName ||
+            nm == Names::kEofTypeName ||
+            nm == Names::kFloat32TypeName ||
+            nm == Names::kFloat64TypeName ||
+            nm == Names::kFloat128TypeName ||
+            nm == Names::kIntTypeName ||
+            nm == Names::kKeywordTypeName ||
+            nm == Names::kNilTypeName ||
+            nm == Names::kRationalTypeName ||
+            nm == Names::kRealTypeName ||
+            nm == Names::kStringTypeName ||
+            nm == Names::kInt8TypeName ||
+            nm == Names::kUInt8TypeName ||
+            nm == Names::kInt16TypeName ||
+            nm == Names::kUInt16TypeName ||
+            nm == Names::kInt32TypeName ||
+            nm == Names::kUInt32TypeName ||
+            nm == Names::kInt64TypeName ||
+            nm == Names::kUInt64TypeName);
   }
 
   return false;
@@ -1085,7 +1224,7 @@ Type::isBaseType() const
 bool
 Type::isBuiltinType(const String& name) const
 {
-  return isRef() && typeName() == name;
+  return typeName() == name;
 }
 
 
@@ -1094,44 +1233,46 @@ Type::newBaseTypeEnumMaker() const
 {
   if (fKind == kType_Ref) {
     String nm = typeName();
-    if (nm == kBoolTypeName)
+    if (nm == Names::kBoolTypeName)
       return new BoolTypeEnumMaker;
-    else if (nm == kCharTypeName)
+    else if (nm == Names::kCharTypeName)
       return new CharTypeEnumMaker;
-    else if (nm == kDoubleTypeName)
-      return new DoubleTypeEnumMaker;
-    else if (nm == kEofTypeName)
+    else if (nm == Names::kFloat32TypeName)
+      return new Float32TypeEnumMaker;
+    else if (nm == Names::kFloat64TypeName)
+      return new Float64TypeEnumMaker;
+    else if (nm == Names::kFloat128TypeName)
+      return new Float128TypeEnumMaker;
+    else if (nm == Names::kEofTypeName)
       return new EofTypeEnumMaker;
-    else if (nm == kFloatTypeName)
-      return new FloatTypeEnumMaker;
-    else if (nm == kIntTypeName)
+    else if (nm == Names::kIntTypeName)
       return new IntTypeEnumMaker;
-    else if (nm == kKeywordTypeName)
+    else if (nm == Names::kKeywordTypeName)
       return new KeywordTypeEnumMaker;
-    else if (nm == kLongDoubleTypeName)
-      return new LongDoubleTypeEnumMaker;
-    else if (nm == kLongTypeName)
-      return new LongTypeEnumMaker;
-    else if (nm == kNilTypeName)
+    else if (nm == Names::kNilTypeName)
       return new NilTypeEnumMaker;
-    else if (nm == kOctetTypeName)
-      return new OctetTypeEnumMaker;
-    else if (nm == kRationalTypeName)
+    else if (nm == Names::kRationalTypeName)
       return new RationalTypeEnumMaker;
-    else if (nm == kRealTypeName)
+    else if (nm == Names::kRealTypeName)
       return new RealTypeEnumMaker;
-    else if (nm == kShortTypeName)
-      return new ShortTypeEnumMaker;
-    else if (nm == kStringTypeName)
+    else if (nm == Names::kStringTypeName)
       return new StringTypeEnumMaker;
-    else if (nm == kULongTypeName)
-      return new ULongTypeEnumMaker;
-    else if (nm == kUShortTypeName)
-      return new UShortTypeEnumMaker;
-    else if (nm == kUWordTypeName)
-      return new UWordTypeEnumMaker;
-    else if (nm == kWordTypeName)
-      return new WordTypeEnumMaker;
+    else if (nm == Names::kInt8TypeName)
+      return new Int8TypeEnumMaker;
+    else if (nm == Names::kUInt8TypeName)
+      return new UInt8TypeEnumMaker;
+    else if (nm == Names::kInt16TypeName)
+      return new Int16TypeEnumMaker;
+    else if (nm == Names::kUInt16TypeName)
+      return new UInt16TypeEnumMaker;
+    else if (nm == Names::kUInt32TypeName)
+      return new Int32TypeEnumMaker;
+    else if (nm == Names::kUInt32TypeName)
+      return new UInt32TypeEnumMaker;
+    else if (nm == Names::kInt64TypeName)
+      return new Int64TypeEnumMaker;
+    else if (nm == Names::kUInt64TypeName)
+      return new UInt64TypeEnumMaker;
   }
 
   return NULL;
@@ -1141,28 +1282,175 @@ Type::newBaseTypeEnumMaker() const
 bool
 Type::isAny() const
 {
-  return isBuiltinType(kAnyTypeName);
+  return isBuiltinType(Names::kAnyTypeName);
+}
+
+
+bool
+Type::isAnyNumber() const
+{
+  return ( isBuiltinType(Names::kNumberTypeName) ||
+           isBuiltinType(Names::kComplexTypeName) ||
+           isBuiltinType(Names::kRationalTypeName) ||
+           isBuiltinType(Names::kRealTypeName) ||
+           isBuiltinType(Names::kIntTypeName) ||
+           isBuiltinType(Names::kOrdinalTypeName) ||
+           isBuiltinType(Names::kInt8TypeName) ||
+           isBuiltinType(Names::kUInt8TypeName) ||
+           isBuiltinType(Names::kInt16TypeName) ||
+           isBuiltinType(Names::kUInt16TypeName) ||
+           isBuiltinType(Names::kInt32TypeName) ||
+           isBuiltinType(Names::kUInt32TypeName) ||
+           isBuiltinType(Names::kInt64TypeName) ||
+           isBuiltinType(Names::kUInt64TypeName) ||
+           isBuiltinType(Names::kFloat32TypeName) ||
+           isBuiltinType(Names::kFloat64TypeName) ||
+           isBuiltinType(Names::kFloat128TypeName) );
 }
 
 
 bool
 Type::isInt() const
 {
-  return isBuiltinType(kIntTypeName);
+  return isBuiltinType(Names::kIntTypeName);
 }
 
 
 bool
 Type::isString() const
 {
-  return isBuiltinType(kStringTypeName);
+  return isBuiltinType(Names::kStringTypeName);
+}
+
+
+bool
+Type::isKeyword() const
+{
+  return isBuiltinType(Names::kKeywordTypeName);
 }
 
 
 bool
 Type::isReal() const
 {
-  return isBuiltinType(kRealTypeName);
+  return isBuiltinType(Names::kRealTypeName);
+}
+
+
+bool
+Type::isNumber() const
+{
+  return isBuiltinType(Names::kNumberTypeName);
+}
+
+
+bool
+Type::isComplex() const
+{
+  return ( isBuiltinType(Names::kComplexTypeName) || isImaginary() );
+}
+
+
+bool
+Type::isRational() const
+{
+  return isBuiltinType(Names::kRationalTypeName);
+}
+
+
+bool
+Type::isOrdinal() const
+{
+  return isBuiltinType(Names::kOrdinalTypeName);
+}
+
+
+bool
+Type::isChar() const
+{
+  return isBuiltinType(Names::kCharTypeName);
+}
+
+
+bool
+Type::isBool() const
+{
+  return isBuiltinType(Names::kBoolTypeName);
+}
+
+
+bool
+Type::isAnyFloat() const
+{
+  return ( isBuiltinType(Names::kFloat32TypeName) ||
+           isBuiltinType(Names::kFloat64TypeName) ||
+           isBuiltinType(Names::kFloat128TypeName) );
+}
+
+
+bool
+Type::isAnyReal() const
+{
+  return ( isBuiltinType(Names::kRealTypeName) ||
+           isBuiltinType(Names::kFloat32TypeName) ||
+           isBuiltinType(Names::kFloat64TypeName) ||
+           isBuiltinType(Names::kFloat128TypeName) );
+}
+
+
+bool
+Type::isAnyInt() const
+{
+  return ( isAnySignedInt() || isAnyUInt() );
+}
+
+
+bool
+Type::isAnySignedInt() const
+{
+  return ( isBuiltinType(Names::kIntTypeName) ||
+           isBuiltinType(Names::kInt8TypeName) ||
+           isBuiltinType(Names::kInt16TypeName) ||
+           isBuiltinType(Names::kInt32TypeName) ||
+           isBuiltinType(Names::kInt64TypeName) );
+}
+
+
+bool
+Type::isAnyUInt() const
+{
+  return ( isBuiltinType(Names::kOrdinalTypeName) ||
+           isBuiltinType(Names::kUInt8TypeName) ||
+           isBuiltinType(Names::kUInt16TypeName) ||
+           isBuiltinType(Names::kUInt32TypeName) ||
+           isBuiltinType(Names::kUInt64TypeName) );
+}
+
+
+bool
+Type::isClassOf() const
+{
+  return isBuiltinType(Names::kClassTypeName);
+}
+
+
+bool
+Type::isImaginary() const
+{
+  if (isAnyNumber()) {
+    return fIsImaginary;
+  }
+  return false;
+}
+
+
+void
+Type::setIsImaginary(bool value)
+{
+  if (isAnyNumber())
+    fIsImaginary = value;
+  else
+    fIsImaginary = false;
 }
 
 
@@ -1218,34 +1506,79 @@ Type::typeName() const
 }
 
 
+String
+Type::typeId() const
+{
+  StringBuffer buffer;
+
+  switch (fKind) {
+  case kType_Undefined:
+    assert(0);
+
+  case kType_Ref:
+    {
+      const TypeRefTypeImpl* tyimpl = dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj());
+      if (tyimpl->isOpenSelf())
+        buffer << "'";
+      if (fIsImaginary)
+        buffer << "i<";
+
+      buffer << tyimpl->name();
+      if (!tyimpl->generics().empty())
+        buffer << "<" << tyimpl->generics() << ">";
+
+      if (fIsImaginary)
+        buffer << ">";
+
+      return buffer.toString();
+    }
+
+  case kType_Array:
+    buffer << arrayBaseType().typeId() << "[]";
+    return buffer.toString();
+
+  case kType_Class:
+  case kType_Type:
+    {
+      const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
+      if (fIsImaginary)
+        buffer << "i<";
+      buffer << tyimpl->name();
+      if (!tyimpl->generics().empty())
+        buffer << "<" << tyimpl->generics()  << ">";
+      if (fIsImaginary)
+        buffer << ">";
+      return buffer.toString();
+    }
+
+  case kType_Alias:
+    return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->name();
+
+  case kType_Measure:
+    buffer << dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name()
+           << dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->defUnit();
+    return buffer.toString();
+
+  case kType_Union:
+    buffer << "&(" << dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->types() << ")";
+    return buffer.toString();
+
+  case kType_Sequence:
+    buffer << "(" << dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->types() << ")";
+    return buffer.toString();
+
+  case kType_Function:
+    return dynamic_cast<const FunctionTypeImpl*>(fImpl.obj())->functionSignature().typeId();
+  }
+
+  return String();
+}
+
+
 bool
 Type::isClass() const
 {
   return fKind == kType_Class;
-}
-
-
-const Type&
-Type::classInheritance() const
-{
-  assert(isClass());
-  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->inherit();
-}
-
-
-const FunctionSignature&
-Type::defaultApplySignature() const
-{
-  assert(isClass());
-  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->defaultApplySignature();
-}
-
-
-const FunctionSignatureVector&
-Type::classProtocol() const
-{
-  assert(isClass());
-  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->protocol();
 }
 
 
@@ -1259,7 +1592,7 @@ Type::isType() const
 const Type&
 Type::typeInheritance() const
 {
-  assert(isType());
+  assert(isType() || isClass());
   return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->inherit();
 }
 
@@ -1267,7 +1600,7 @@ Type::typeInheritance() const
 const FunctionSignatureVector&
 Type::typeProtocol() const
 {
-  assert(isType());
+  assert(isType() || isClass());
   return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->protocol();
 }
 
@@ -1372,7 +1705,7 @@ Type::isSequence() const
 const TypeVector&
 Type::seqTypes() const
 {
-  assert(isUnion());
+  assert(isSequence());
   return dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->types();
 }
 
@@ -1389,6 +1722,14 @@ Type::measureBaseType() const
 {
   assert(isMeasure());
   return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->inherit();
+}
+
+
+String
+Type::measureUnit() const
+{
+  assert(isMeasure());
+  return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->defUnit();
 }
 
 
@@ -1411,6 +1752,13 @@ Type::constraints() const
 
   static TypeConstVector dummy;
   return dummy;
+}
+
+
+bool
+Type::isOpen() const
+{
+  return (fImpl != NULL && fImpl->isOpen());
 }
 
 
@@ -1453,7 +1801,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
   Type clonedTy;
   switch (fKind) {
   case kType_Ref:
-    if (dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->isGeneric()) {
+    if (dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->isOpen()) {
       Type replacement = typeMap.lookupType(typeName());
       if (replacement.isDef()) {
         if (replacement.hasConstraints()) {
@@ -1463,6 +1811,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
               String("type parameter constraints conflict "
                      "with generics constraints"));
           clonedTy = replacement;
+          clonedTy.setIsImaginary(fIsImaginary);
         }
         else if (hasConstraints()) {
           if (!replacement.isRef())
@@ -1473,9 +1822,12 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
                                       replacement.generics(),
                                       constraints(),
                                       replacement.isValueType());
+          clonedTy.setIsImaginary(fIsImaginary);
         }
-        else
+        else {
           clonedTy = replacement;
+          clonedTy.setIsImaginary(fIsImaginary);
+        }
       }
       else
         clonedTy = clone();
@@ -1520,7 +1872,6 @@ Type::toString() const
   case kType_Union:
   case kType_Sequence:
     return fImpl->toString(fIsValue);
-    break;
 
   case kType_Undefined:
   default:
@@ -1530,6 +1881,16 @@ Type::toString() const
   if (!fIsValue)
     return String("^") + retval;
   return retval;
+}
+
+
+bool
+Type::matchGenerics(TypeCtx& localCtx, const Type& right0,
+                    Scope* scope, const SrcPos& srcpos) const
+{
+  if (fImpl != NULL)
+    return fImpl->matchGenerics(localCtx, right0, scope, srcpos);
+  return false;
 }
 
 
@@ -1609,7 +1970,7 @@ namespace heather
       StringBuffer buf;
       buf << "<ty:const k='" << optostr(fOp) << "'>"
           << fLeft.toString() << fRight.toString()
-          << "</ty:const>";
+          << "</ty:const>\n";
       return buf.toString();
     }
 
@@ -1689,7 +2050,7 @@ namespace heather
       StringBuffer buf;
       buf << "<ty:const k='" << optostr(fOp) << "'>"
           << fValue.toString()
-          << "</ty:const>";
+          << "</ty:const>\n";
       return buf.toString();
     }
 
@@ -1747,9 +2108,9 @@ namespace heather
     virtual String toString() const
     {
       StringBuffer buf;
-      buf << "<ty:const k='isa'>"
+      buf << "<ty:const k='isa'>\n"
           << fType.toString()
-          << "</ty:const>";
+          << "</ty:const>\n";
       return buf.toString();
     }
 
@@ -1840,51 +2201,6 @@ TypeConstraint::replaceGenerics(const TypeCtx& typeMap)
 {
   fImpl->replaceGenerics(typeMap);
   return *this;
-}
-
-
-bool
-TypeConstraint::isCovariant(const TypeConstraint& other) const
-{
-  // TODO
-  if (constOp() == other.constOp()) {
-    switch (constOp()) {
-    case kConstOp_and:
-    case kConstOp_or:
-      // TODO
-      return true;
-
-    case kConstOp_equal:
-    case kConstOp_notEqual:
-    case kConstOp_less:
-    case kConstOp_lessEqual:
-    case kConstOp_greater:
-    case kConstOp_greaterEqual:
-    case kConstOp_in:
-      // TODO
-      return true;
-
-    case kConstOp_isa:
-      return ( dynamic_cast<const TypeConstraintImpl*>(fImpl.obj())->type()
-               .isCovariant(dynamic_cast<const TypeConstraintImpl*>(
-                              other.fImpl.obj())->type()));
-    }
-  }
-  return true;
-}
-
-
-bool
-TypeConstraint::isContravariant(const TypeConstraint& other) const
-{
-  return other.isCovariant(*this);
-}
-
-
-bool
-TypeConstraint::isInvariant(const TypeConstraint& other) const
-{
-  return !isCovariant(other) && !isContravariant(other);
 }
 
 
@@ -2097,33 +2413,6 @@ FunctionParameter::replaceGenerics(const TypeCtx& typeMap)
 }
 
 
-bool
-FunctionParameter::isCovariant(const FunctionParameter& other) const
-{
-  if (fKind != other.fKind)
-    return false;
-  if (fIsSpecialized != other.fIsSpecialized)
-    return false;
-
-  // the parameter key is not relevant for co-variance testing
-  return fType.isCovariant(other.fType);
-}
-
-
-bool
-FunctionParameter::isContravariant(const FunctionParameter& other) const
-{
-  return other.isCovariant(*this);
-}
-
-
-bool
-FunctionParameter::isInvariant(const FunctionParameter& other) const
-{
-  return !isCovariant(other) && !isContravariant(other);
-}
-
-
 FunctionParameter::ParameterKind
 FunctionParameter::kind() const
 {
@@ -2171,9 +2460,9 @@ FunctionParameter::toString() const
     break;
   }
 
-  buf << ( fIsSpecialized ? " spec='t'" : "" ) << ">";
+  buf << ( fIsSpecialized ? " spec='t'" : "" ) << ">\n";
   buf << fType.toString();
-  buf << "</ty:prm>";
+  buf << "</ty:prm>\n";
   return buf.toString();
 }
 
@@ -2257,37 +2546,6 @@ FunctionSignature::clone() const
 }
 
 
-bool
-FunctionSignature::isCovariant(const FunctionSignature& other) const
-{
-  if (fReturnType.isCovariant(other.fReturnType)) {
-    if (fParameters.size() == other.fParameters.size()) {
-      for (size_t i = 0; i < fParameters.size(); i++) {
-        if (!fParameters[i].isCovariant(other.fParameters[i]))
-          return false;
-      }
-      return true;
-    }
-  }
-
-  return false;
-}
-
-
-bool
-FunctionSignature::isContravariant(const FunctionSignature& other) const
-{
-  return other.isCovariant(*this);
-}
-
-
-bool
-FunctionSignature::isInvariant(const FunctionSignature& other) const
-{
-  return !isCovariant(other) && !isContravariant(other);
-}
-
-
 FunctionSignature
 FunctionSignature::replaceGenerics(const TypeCtx& typeMap)
 {
@@ -2301,6 +2559,21 @@ bool
 FunctionSignature::isGeneric() const
 {
   return fIsGeneric;
+}
+
+
+bool
+FunctionSignature::isOpen() const
+{
+  if (fReturnType.isOpen())
+    return true;
+
+  for (size_t i = 0; i < fParameters.size(); ++i) {
+    if (fParameters[i].type().isOpen())
+      return true;
+  }
+
+  return false;
 }
 
 
@@ -2325,22 +2598,74 @@ FunctionSignature::parameters() const
 }
 
 
+bool
+FunctionSignature::matchGenerics(TypeCtx& localCtx,
+                                 const FunctionSignature& right0,
+                                 Scope* scope, const SrcPos& srcpos) const
+{
+  if (fParameters.size() == right0.parameters().size()) {
+    if (!fReturnType.matchGenerics(localCtx, right0.returnType(),
+                                   scope, srcpos))
+      return false;
+    for (size_t i = 0; i < fParameters.size(); ++i) {
+      const FunctionParameter& lparam = fParameters[i];
+      const FunctionParameter& rparam = right0.parameters()[i];
+
+      if (lparam.kind() != rparam.kind())
+        return false;
+      if (!lparam.type().matchGenerics(localCtx, rparam.type(), scope, srcpos))
+        return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+
 String
 FunctionSignature::toString() const
 {
   StringBuffer buf;
   buf << "<ty:fun nm='" << fName << "'"
-      << (fIsGeneric ? " gen='t'" : "") << ">";
+      << (fIsGeneric ? " gen='t'" : "") << ">\n";
 
   if (!fParameters.empty()) {
-    buf << "<ty:prms>";
+    buf << "<ty:prms>\n";
     for (size_t i = 0; i < fParameters.size(); i++)
       buf << fParameters[i].toString();
-    buf << "</ty:prms>";
+    buf << "</ty:prms>\n";
   }
 
-  buf << "<ty:ret>" << fReturnType.toString() << "</ty:ret>";
-  buf << "</ty:fun>";
+  buf << "<ty:ret>\n" << fReturnType.toString() << "</ty:ret>\n";
+  buf << "</ty:fun>\n";
+  return buf.toString();
+}
+
+
+namespace heather
+{
+  StringBuffer&
+  operator<<(StringBuffer& other, const FunctionParamVector& params)
+  {
+    for (size_t i = 0; i < params.size(); i++) {
+      if (i > 0)
+        other << ", ";
+      other << params[i].type().typeId();
+    }
+    return other;
+  }
+}
+
+String
+FunctionSignature::typeId() const
+{
+  StringBuffer buf;
+  if (fName.isEmpty())
+    buf << "lambda";
+  else
+    buf << fName;
+  buf << "(" << fParameters << ")";
+  buf << ":" << fReturnType.typeId();
   return buf.toString();
 }
 
@@ -2403,6 +2728,660 @@ TypeUnit::operator=(const TypeUnit& other)
 }
 
 
+//----------------------------------------------------------------------------
+
+namespace heather
+{
+  Type
+  resolveType(const Type& type, Scope* scope)
+  {
+    Type ty = ( type.isDef() && type.isRef()
+                ? scope->lookupType(type.typeName(), true)
+                : type );
+    if (ty.isDef() && ty.isOpen()) {
+      if (type.isDef())
+        return scope->normalizeType(ty, type);
+    }
+    return ty;
+  }
+
+
+  bool
+  isSameType(const TypeVector& vect0, const TypeVector& vect1, Scope* scope,
+             const SrcPos& srcpos, bool reportErrors)
+  {
+    if (vect0.size() == vect1.size()) {
+      for (size_t i = 0; i < vect0.size(); i++) {
+        if (!isSameType(vect0[i], vect1[i], scope, srcpos, reportErrors))
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+
+  bool
+  isSameType(const FunctionSignature& leftsig,
+             const FunctionSignature& rightsig,
+             Scope* scope, const SrcPos& srcpos, bool reportErrors)
+  {
+    if (!isSameType(leftsig.returnType(), rightsig.returnType(),
+                    scope, srcpos, reportErrors))
+      return false;
+    if (leftsig.parameters().size() != rightsig.parameters().size())
+      return false;
+
+    for (size_t i = 0; i < leftsig.parameters().size(); i++) {
+      const FunctionParameter& leftprm = leftsig.parameters()[i];
+      const FunctionParameter& rightprm = rightsig.parameters()[i];
+
+      if (leftprm.kind() != rightprm.kind() ||
+          !isSameType(leftprm.type(), rightprm.type(), scope, srcpos,
+                      reportErrors))
+        return false;
+    }
+    return true;
+  }
+
+
+  bool
+  isSameType(const Type& left0, const Type& right0, Scope* scope,
+             const SrcPos& srcpos, bool reportErrors)
+  {
+    if (!left0.isDef() || !right0.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return false;
+    }
+
+    // fprintf(stderr, "LEFT IS:  %s\n", (const char*)StrHelper(left0.toString()));
+    // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right0.toString()));
+    if (left0.isOpen() && right0.isOpen())
+      // TODO: handle complex generic types like 'T[]
+      return left0.typeName() == right0.typeName();
+
+
+    Type left = resolveType(left0, scope);
+    Type right = resolveType(right0, scope);
+
+    // fprintf(stderr, "LEFT IS: %s\n", (const char*)StrHelper(left.toString()));
+    // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right.toString()));
+    if (!left.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType,
+               "Undefined type: '%s' (%s:%d)",
+               (const char*)StrHelper(left0.typeId()), __FILE__, __LINE__);
+      return false;
+    }
+    if (!right.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType,
+               "Undefined type: '%s' (%s:%d)",
+               (const char*)StrHelper(right0.typeId()), __FILE__, __LINE__);
+      return false;
+    }
+
+    if (left.isAny()) {
+      if (right.isAny())
+        return true;
+      return false;
+    }
+
+#if 0
+    // TODO: check constraints
+    if (left.hasConstraints()) {
+      if (right.hasConstraints()) {
+        // TODO
+      }
+      return false;
+    }
+#endif
+
+    if (left.isArray()) {
+      if (right.isArray())
+        return isSameType(left.arrayBaseType(), right.arrayBaseType(), scope,
+                          srcpos, reportErrors);
+      return false;
+    }
+    else if (left.isUnion()) {
+      if (right.isUnion())
+        return isSameType(left.unionTypes(), right.unionTypes(), scope,
+                          srcpos, reportErrors);
+      return false;
+    }
+    else if (left.isSequence()) {
+      if (right.isSequence())
+        return isSameType(left.seqTypes(), right.seqTypes(), scope,
+                          srcpos, reportErrors);
+      return false;
+    }
+    else if (left.isMeasure()) {
+      if (right.isMeasure())
+        if (left.typeName() == right.typeName())
+          return true;
+      return false;
+    }
+    else if (left.isFunction()) {
+      if (right.isFunction()) {
+        return isSameType(left.functionSignature(), right.functionSignature(),
+                          scope, srcpos, reportErrors);
+      }
+      return false;
+    }
+    else if (left.isType() || left.isClass()) {
+      if (left.kind() == right.kind()) {
+        if (left.typeName() != right.typeName())
+          return false;
+        if (!isSameType(left.generics(), right.generics(), scope, srcpos,
+                        reportErrors))
+          return false;
+        return true;
+      }
+      return false;
+    }
+
+    fprintf(stderr, "LEFT: %s\n", (const char*)StrHelper(left.toString()));
+    fprintf(stderr, "RIGHT: %s\n", (const char*)StrHelper(right.toString()));
+    assert(0 && "unhandled type?");
+    return false;
+  }
+
+
+  //! Indicates whether left0 is a subtype of right0.  This is tested by checking
+  //! whether right0 is in left0's inheritance list.
+  bool
+  inheritsFrom(const Type& left0, const Type& right0, Scope* scope,
+               const SrcPos& srcpos, bool reportErrors)
+  {
+    if (!left0.isDef() || !right0.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return false;
+    }
+
+    Type left = resolveType(left0, scope);
+    Type right = resolveType(right0, scope);
+
+    if (!left.isDef() || !right.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return false;
+    }
+
+    Type inheritance;
+    if (left.isType() || left.isClass()) {
+      inheritance = left.typeInheritance();
+    }
+    else if (left.isMeasure()) {
+      inheritance = left.measureBaseType();
+    }
+    else
+      return false;
+
+    if (!inheritance.isDef()) {
+      return false;
+    }
+    else if (inheritance.isRef()) {
+      inheritance = scope->lookupType(inheritance.typeName(), true);
+    }
+
+    if (!inheritance.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return false;
+    }
+
+    if (inheritance.isType() || inheritance.isClass()) {
+      if (isSameType(inheritance, right, scope, srcpos, reportErrors))
+        return true;
+      return inheritsFrom(inheritance, right, scope, srcpos, reportErrors);
+    }
+
+    if (inheritance.isSequence()) {
+      const TypeVector& seq = inheritance.seqTypes();
+      for (size_t i = 0; i < seq.size(); ++i) {
+        if (isSameType(seq[i], right, scope, srcpos, reportErrors))
+          return true;
+        if (inheritsFrom(seq[i], right, scope, srcpos, reportErrors))
+          return true;
+      }
+      return false;
+    }
+
+    assert(0 && "unexpected type kind");
+    return false;
+  }
+
+
+  //----------------------------------------------------------------------------
+
+  bool
+  isCovariant(const TypeVector& vect0, const TypeVector& vect1, Scope* scope,
+              const SrcPos& srcpos, bool reportErrors)
+  {
+    if (vect0.size() == vect1.size()) {
+      for (size_t i = 0; i < vect0.size(); i++) {
+        if (!isCovariant(vect0[i], vect1[i], scope, srcpos, reportErrors))
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+
+  bool
+  isCovariantToEveryTypeInSeq(const Type& type, const TypeVector& vect0,
+                              Scope* scope,
+                              const SrcPos& srcpos, bool reportErrors)
+  {
+    for (size_t i = 0; i < vect0.size(); i++) {
+      if (!isCovariant(type, vect0[i], scope, srcpos, reportErrors))
+        return false;
+    }
+    return true;
+  }
+
+
+  bool
+  isCoOrInvariantToEveryTypeInUnion(const Type& type, const TypeVector& vect0,
+                                    Scope* scope,
+                                    const SrcPos& srcpos, bool reportErrors)
+  {
+    bool hadOneCovariantType = false;
+    for (size_t i = 0; i < vect0.size(); i++) {
+      if (isContravariant(type, vect0[i], scope, srcpos, reportErrors) &&
+          !isSameType(type, vect0[i], scope, srcpos, reportErrors))
+        return false;
+      if (!hadOneCovariantType &&
+          isCovariant(type, vect0[i], scope, srcpos, reportErrors))
+        hadOneCovariantType = true;
+    }
+    return hadOneCovariantType;
+  }
+
+
+  bool
+  isCovariantForAllTypesInUnion(const TypeVector& vect0, const TypeVector& vect1,
+                                Scope* scope,
+                                const SrcPos& srcpos, bool reportErrors)
+  {
+    for (size_t i = 0; i < vect0.size(); i++) {
+      if (!isCoOrInvariantToEveryTypeInUnion(vect0[i], vect1, scope,
+                                             srcpos, reportErrors))
+        return false;
+    }
+    return true;
+  }
+
+
+  bool
+  isCovariant(const FunctionSignature& leftsig,
+              const FunctionSignature& rightsig,
+              Scope* scope, const SrcPos& srcpos, bool reportErrors)
+  {
+    if (!isCovariant(leftsig.returnType(), rightsig.returnType(),
+                     scope, srcpos, reportErrors))
+      return false;
+
+    if (leftsig.parameters().size() != rightsig.parameters().size())
+      return false;
+
+    for (size_t i = 0; i < leftsig.parameters().size(); i++) {
+      const FunctionParameter& leftprm = leftsig.parameters()[i];
+      const FunctionParameter& rightprm = rightsig.parameters()[i];
+
+      if (leftprm.kind() != rightprm.kind() ||
+          !isContravariant(leftprm.type(), rightprm.type(), scope, srcpos,
+                           reportErrors))
+        return false;
+    }
+    return true;
+  }
+
+
+  bool
+  isCovariant(const Type& left0, const Type& right0, Scope* scope,
+              const SrcPos& srcpos, bool reportErrors)
+  {
+    // fprintf(stderr, "CONTRA-X: %s %s\n", (const char*)StrHelper(left0.toString()),
+    //        (const char*)StrHelper(right0.toString()));
+
+    if (!left0.isDef() || !right0.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return false;
+    }
+
+    if (left0.isOpen() && right0.isOpen())
+      // TODO: handle complex generic types like 'T[]
+      return isSameType(left0, right0, scope, srcpos, reportErrors);
+
+    Type left = resolveType(left0, scope);
+    Type right = resolveType(right0, scope);
+
+    if (!left.isDef() || !right.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return false;
+    }
+
+    if (right.isAny()) {
+      // everything is covariant to lang|Any
+      return true;
+    }
+
+#if 0
+    // TODO: check constraints
+    if (left.hasConstraints()) {
+      if (right.hasConstraints()) {
+        // TODO
+      }
+      return false;
+    }
+#endif
+
+    if (left.isArray()) {
+      if (right.isType() && (right.typeName() == Names::kSliceableTypeName ||
+                             right.typeName() == Names::kSliceableXTypeName) &&
+          right.generics().size() == 2 &&
+          isSameType(right.generics()[0], Type::newInt(true), scope,
+                     srcpos, reportErrors) &&
+          isSameType(left.arrayBaseType(), right.generics()[1],
+                     scope, srcpos, reportErrors))
+        return true;
+      return isSameType(left, right, scope, srcpos, reportErrors);
+    }
+    else if (left.isUnion()) {
+      if (right.isUnion()) {
+        if (isSameType(left, right, scope, srcpos, reportErrors))
+          return true;
+
+        return isCovariantForAllTypesInUnion(left.unionTypes(),
+                                             right.unionTypes(),
+                                             scope, srcpos,
+                                             reportErrors);
+      }
+      return false;
+    }
+    else if (left.isSequence()) {
+      if (right.isSequence()) {
+        if (isSameType(left, right, scope, srcpos, reportErrors))
+          return true;
+        return isCovariant(left.seqTypes(), right.seqTypes(), scope,
+                           srcpos, reportErrors);
+      }
+      return false;
+    }
+    else if (left.isMeasure()) {
+      return ( isSameType(left, right, scope, srcpos, reportErrors) ||
+               isCovariant(left.measureBaseType(), right, scope, srcpos,
+                           reportErrors) );
+    }
+    else if (left.isFunction()) {
+      if (isSameType(left, right, scope, srcpos, reportErrors))
+        return true;
+      return isCovariant(left, right, scope, srcpos, reportErrors);
+    }
+    else if (left.isType() || left.isClass()) {
+      if (isSameType(left, right, scope, srcpos, reportErrors))
+        return true;
+
+      if (right.isType() || right.isClass()) {
+        if (!inheritsFrom(left, right, scope, srcpos, reportErrors))
+          return false;
+        return isSameType(left.generics(), right.generics(), scope, srcpos,
+                          reportErrors);
+      }
+      else if (right.isSequence()) {
+        return isCovariantToEveryTypeInSeq(left, right.seqTypes(), scope,
+                                           srcpos, reportErrors);
+      }
+      else if (right.isUnion()) {
+        return isCoOrInvariantToEveryTypeInUnion(left, right.unionTypes(),
+                                                 scope,
+                                                 srcpos, reportErrors);
+      }
+
+      return false;
+    }
+    else if (left.isAny()) {
+      return false;
+    }
+
+    fprintf(stderr, "LEFT: %s\n", (const char*)StrHelper(left.toString()));
+    fprintf(stderr, "RIGHT: %s\n", (const char*)StrHelper(right.toString()));
+    assert(0 && "unhandled type?");
+    return false;
+  }
+
+
+  bool
+  isContravariant(const Type& left, const Type& right, Scope* scope,
+                  const SrcPos& srcpos, bool reportErrors)
+  {
+    return isCovariant(right, left,
+                       scope, srcpos, reportErrors);
+  }
+
+
+  bool
+  isInvariant(const Type& left, const Type& right, Scope* scope,
+              const SrcPos& srcpos, bool reportErrors)
+  {
+    return ( !isCovariant(left, right, scope, srcpos, reportErrors) &&
+             !isContravariant(left, right, scope, srcpos, reportErrors) );
+  }
+};                              // namespace heather
+
+
+//----------------------------------------------------------------------------
+
+namespace heather
+{
+  TypeVector
+  newTypeVector()
+  {
+    return TypeVector();
+  }
+
+  TypeVector
+  newTypeVector(const Type& ty1)
+  {
+    TypeVector vector;
+    vector.push_back(ty1);
+    return vector;
+  }
+
+
+  TypeVector
+  newTypeVector(const Type& ty1, const Type& ty2)
+  {
+    TypeVector vector;
+    vector.push_back(ty1);
+    vector.push_back(ty2);
+    return vector;
+  }
+
+
+  TypeVector
+  newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3)
+  {
+    TypeVector vector;
+    vector.push_back(ty1);
+    vector.push_back(ty2);
+    vector.push_back(ty3);
+    return vector;
+  }
+
+
+  TypeVector
+  newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
+                const Type& ty4)
+  {
+    TypeVector vector;
+    vector.push_back(ty1);
+    vector.push_back(ty2);
+    vector.push_back(ty3);
+    vector.push_back(ty4);
+    return vector;
+  }
+
+
+  TypeVector
+  newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
+                const Type& ty4, const Type& ty5)
+  {
+    TypeVector vector;
+    vector.push_back(ty1);
+    vector.push_back(ty2);
+    vector.push_back(ty3);
+    vector.push_back(ty4);
+    vector.push_back(ty5);
+    return vector;
+  }
+
+
+  TypeConstVector
+  newTypeConstVector()
+  {
+    return TypeConstVector();
+  }
+
+
+  Type
+  newRangeType(const Type& generic)
+  {
+    return Type::newType(Names::kRangeTypeName, newTypeVector(generic), Type());
+  }
+
+
+  void
+  tyerror(const Type& type, const char* msg)
+  {
+    fprintf(stderr, "%s: %s\n", msg, (const char*)StrHelper(type.toString()));
+  }
+
+
+  int
+  floatTypeBitsize(const Type& ty)
+  {
+    if (ty.isBuiltinType(Names::kFloat32TypeName))
+      return 32;
+    else if (ty.isBuiltinType(Names::kFloat64TypeName))
+      return 64;
+    else if (ty.isBuiltinType(Names::kFloat128TypeName))
+      return 128;
+
+    assert(0 && "unhandled floating type");
+    return 0;
+  }
+
+
+  Type
+  maxFloatType(const Type& leftty, const Type& rightty)
+  {
+    if (floatTypeBitsize(leftty) < floatTypeBitsize(rightty))
+      return rightty;
+    else
+      return leftty;
+  }
+
+
+  int
+  intTypeBitsize(const Type& ty)
+  {
+    if (ty.isBuiltinType(Names::kInt8TypeName) ||
+        ty.isBuiltinType(Names::kUInt8TypeName))
+      return 8;
+    else if (ty.isBuiltinType(Names::kInt16TypeName) ||
+             ty.isBuiltinType(Names::kUInt16TypeName))
+      return 16;
+    else if (ty.isBuiltinType(Names::kInt32TypeName) ||
+             ty.isBuiltinType(Names::kUInt32TypeName))
+      return 32;
+    else if (ty.isBuiltinType(Names::kInt64TypeName) ||
+             ty.isBuiltinType(Names::kUInt64TypeName))
+      return 64;
+
+    assert(0 && "unhandled int type");
+    return 0;
+  }
+
+
+  Type
+  maxIntType(const Type& leftty, const Type& rightty)
+  {
+    int righttysize = intTypeBitsize(rightty);
+    if (intTypeBitsize(leftty) < righttysize) {
+      if (leftty.isAnyUInt()) {
+        switch (righttysize) {
+        case 8:
+          return Type::newTypeRef(Names::kUInt8TypeName, true);
+        case 16:
+          return Type::newTypeRef(Names::kUInt16TypeName, true);
+        case 32:
+          return Type::newTypeRef(Names::kUInt32TypeName, true);
+        case 64:
+          return Type::newTypeRef(Names::kUInt64TypeName, true);
+        default:
+          assert(0 && "unhandled int type size");
+        }
+      }
+      return rightty;
+    }
+    else
+      return leftty;
+  }
+
+
+  Type
+  degeneralizeType(const SrcPos& srcpos, const Type& type,
+                   const TypeVector& srcGenerics)
+  {
+    if (type.isDef()) {
+      if (type.hasGenerics()) {
+        if (type.generics().size() != srcGenerics.size()) {
+          errorf(srcpos, E_GenericsMismatch,
+                 "Type instance generic number mismatch");
+          return Type();
+        }
+        if (!srcGenerics.empty() && !type.isOpen()) {
+          errorf(srcpos, E_GenericsMismatch,
+                 "Type instance generic number mismatch");
+          return Type();
+        }
+
+        TypeCtx localCtx;
+        for (size_t i = 0; i < type.generics().size(); i++) {
+          Type gen = type.generics()[i];
+          assert(gen.isRef());
+
+          String genName = gen.typeName();
+          localCtx.registerType(genName, srcGenerics[i]);
+        }
+
+        // TODO: shouldn't this be Class<some-type> ?
+        return type.replaceGenerics(localCtx);
+      }
+      else {
+        if (!srcGenerics.empty()) {
+          errorf(srcpos, E_GenericsMismatch,
+                 "Type instance generic number mismatch");
+          return Type();
+        }
+
+        // TODO: shouldn't this be Class<some-type> ?
+        return type;
+      }
+    }
+
+    return Type();
+  }
+};
+
+
 //============================================================================
 
 #if defined(UNITTESTS)
@@ -2442,6 +3421,465 @@ namespace heather
 };
 
 
+static Scope* testScopeSetup()
+{
+  Ptr<Scope> scope = heather::type::newRootScope(true);
+
+  TypeVector generics;
+
+  // Test class tree:
+  //
+  // Obj <- Base     <- Medium  <- Top
+  //     ^           <- Special <- Ultra
+  //     |               |
+  //     |               v
+  //     \- Abstract <- Xyz
+
+  // scope->registerType(SrcPos(), Names::kAnyTypeName, Type::newAny(true));
+
+  scope->registerType(SrcPos(), String("Obj"),
+                      Type::newType(String("Obj"), generics, Type()));
+  scope->registerType(SrcPos(), String("Base"),
+                      Type::newType(String("Base"),
+                                    generics,
+                                    Type::newTypeRef("Obj")));
+
+  scope->registerType(SrcPos(), String("Medium"),
+                      Type::newType(String("Medium"),
+                                    generics,
+                                    Type::newTypeRef("Base")));
+  scope->registerType(SrcPos(), String("Top"),
+                      Type::newType(String("Top"),
+                                    generics,
+                                    Type::newTypeRef("Medium")));
+
+  scope->registerType(SrcPos(), String("Abstract"),
+                      Type::newType(String("Abstract"),
+                                    generics,
+                                    Type::newTypeRef("Obj")));
+  scope->registerType(SrcPos(), String("Xyz"),
+                      Type::newType(String("Xyz"),
+                                    generics,
+                                    Type::newTypeRef("Abstract")));
+
+  TypeVector isa;
+  isa.push_back(Type::newTypeRef("Base"));
+  isa.push_back(Type::newTypeRef("Xyz"));
+  scope->registerType(SrcPos(), String("Special"),
+                      Type::newType(String("Special"),
+                                    generics,
+                                    Type::newSeq(isa, true)));
+  scope->registerType(SrcPos(), String("Ultra"),
+                      Type::newType(String("Ultra"),
+                                    generics,
+                                    Type::newTypeRef("Special")));
+
+  return scope.release();
+}
+
+
+SUITE(Type_IsSameType)
+{
+  TEST(basicTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isSameType(Type::newTypeRef("Base"),
+                              Type::newTypeRef("Base"),
+                              scope, SrcPos(), false));
+    CHECK(heather::isSameType(Type::newTypeRef("Xyz"),
+                              Type::newTypeRef("Xyz"),
+                              scope, SrcPos(), false));
+    CHECK(!heather::isSameType(Type::newTypeRef("Base"),
+                               Type::newTypeRef("Medium"),
+                               scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newTypeRef("Base"),
+                               Type::newTypeRef("Hello"),
+                               scope, SrcPos(), false));
+  }
+
+
+  TEST(arrayTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isSameType(
+            Type::newArray(Type::newTypeRef("Base"), 5, true),
+            Type::newArray(Type::newTypeRef("Base"), 17, false),
+            scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(
+            Type::newArray(Type::newTypeRef("Base"), 5, true),
+            Type::newArray(Type::newTypeRef("Xyz"), 17, false),
+            scope, SrcPos(), false));
+
+    CHECK(heather::isSameType(
+            Type::newArray(Type::newAny(true), 5, true),
+            Type::newArray(Type::newAny(true), 17, false),
+            scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(
+            Type::newArray(Type::newTypeRef("Base"), 5, true),
+            Type::newTypeRef("Base"),
+            scope, SrcPos(), false));
+  }
+
+
+  TEST(anyTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isSameType(Type::newAny(true),
+                              Type::newAny(true),
+                              scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newAny(true),
+                               Type::newTypeRef("Medium"),
+                               scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newTypeRef("Xyz"),
+                               Type::newAny(true),
+                               scope, SrcPos(), true));
+  }
+
+
+  TEST(unionTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    TypeVector union0;
+    union0.push_back(Type::newTypeRef("Xyz"));
+    union0.push_back(Type::newTypeRef("Medium"));
+
+    TypeVector union1;
+    union1.push_back(Type::newTypeRef("Medium"));
+    union1.push_back(Type::newTypeRef("Xyz"));
+
+    CHECK(heather::isSameType(Type::newUnion(union0, true),
+                              Type::newUnion(union0, true),
+                              scope, SrcPos(), true));
+    CHECK(!heather::isSameType(Type::newUnion(union0, true),
+                               Type::newUnion(union1, true),
+                               scope, SrcPos(), true));
+
+    TypeVector union2;
+    union2.push_back(Type::newTypeRef("Medium"));
+    union2.push_back(Type::newTypeRef("Ultra"));
+    union2.push_back(Type::newTypeRef("Abstract"));
+
+    CHECK(!heather::isSameType(Type::newUnion(union0, true),
+                               Type::newUnion(union2, true),
+                               scope, SrcPos(), true));
+  }
+
+
+  TEST(seqTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    TypeVector seq0;
+    seq0.push_back(Type::newTypeRef("Xyz"));
+    seq0.push_back(Type::newTypeRef("Medium"));
+
+    TypeVector seq1;
+    seq1.push_back(Type::newTypeRef("Medium"));
+    seq1.push_back(Type::newTypeRef("Xyz"));
+
+    CHECK(heather::isSameType(Type::newSeq(seq0, true),
+                              Type::newSeq(seq0, true),
+                              scope, SrcPos(), true));
+    CHECK(!heather::isSameType(Type::newSeq(seq0, true),
+                               Type::newSeq(seq1, true),
+                               scope, SrcPos(), true));
+
+    TypeVector seq2;
+    seq2.push_back(Type::newTypeRef("Medium"));
+    seq2.push_back(Type::newTypeRef("Ultra"));
+    seq2.push_back(Type::newTypeRef("Abstract"));
+
+    CHECK(!heather::isSameType(Type::newSeq(seq0, true),
+                               Type::newSeq(seq2, true),
+                               scope, SrcPos(), true));
+  }
+
+
+  TEST(measureTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isSameType(Type::newMeasure(String("Maiko"),
+                                               Type::newTypeRef("Xyz"),
+                                               String("mk")),
+                              Type::newMeasure(String("Maiko"),
+                                               Type::newTypeRef("Xyz"),
+                                               String("mk")),
+                              scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newMeasure(String("Maiko"),
+                                                Type::newTypeRef("Xyz"),
+                                                String("mk")),
+                               Type::newTypeRef(String("Xyz"), true),
+                               scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newMeasure(String("Maiko"),
+                                               Type::newTypeRef("Xyz"),
+                                               String("mk")),
+                              Type::newMeasure(String("Tomoko"),
+                                               Type::newTypeRef("Xyz"),
+                                               String("to")),
+                              scope, SrcPos(), false));
+  }
+
+
+  TEST(functionTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    FunctionParamVector params0;
+    CHECK(heather::isSameType(Type::newFunction(
+                                FunctionSignature(false, String("foo"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params0)),
+                              Type::newFunction(
+                                FunctionSignature(false, String("foo"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params0)),
+                              scope, SrcPos(), false));
+
+    CHECK(heather::isSameType(Type::newFunction(
+                                FunctionSignature(false, String("foo"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params0)),
+                              Type::newFunction(
+                                FunctionSignature(false, String("bar"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params0)),
+                              scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newFunction(
+                                 FunctionSignature(false, String("foo"),
+                                                   Type::newTypeRef("Xyz"),
+                                                   params0)),
+                               Type::newFunction(
+                                 FunctionSignature(false, String("bar"),
+                                                   Type::newTypeRef("Abstract"),
+                                                   params0)),
+                               scope, SrcPos(), false));
+
+    FunctionParamVector params1;
+    params1.push_back(FunctionParameter(FunctionParameter::kParamPos, false,
+                                        String(), Type::newTypeRef("Medium")));
+    CHECK(heather::isSameType(Type::newFunction(
+                                FunctionSignature(false, String("foo"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params1)),
+                              Type::newFunction(
+                                FunctionSignature(false, String("bar"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params1)),
+                              scope, SrcPos(), false));
+
+    CHECK(!heather::isSameType(Type::newFunction(
+                                 FunctionSignature(false, String("foo"),
+                                                   Type::newTypeRef("Xyz"),
+                                                   params1)),
+                               Type::newFunction(
+                                 FunctionSignature(false, String("bar"),
+                                                   Type::newTypeRef("Xyz"),
+                                                   params0)),
+                               scope, SrcPos(), false));
+
+    params1.push_back(FunctionParameter(FunctionParameter::kParamNamed, false,
+                                        String("na"),
+                                        Type::newTypeRef("Xyz")));
+    params1.push_back(FunctionParameter(FunctionParameter::kParamNamed, false,
+                                        String("nu"),
+                                        Type::newTypeRef("Abstract")));
+    params1.push_back(FunctionParameter(FunctionParameter::kParamRest, false,
+                                        String("rest"),
+                                        Type::newAny(true)));
+
+    CHECK(heather::isSameType(Type::newFunction(
+                                FunctionSignature(false, String("foo"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params1)),
+                              Type::newFunction(
+                                FunctionSignature(false, String("bar"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  params1)),
+                              scope, SrcPos(), false));
+  }
+
+  // TODO check generic types
+  // TODO check combinations of tests (arrays of generics, arrays of unions,
+  // sequences of generics and function types, etc.)
+}
+
+
+//----------------------------------------------------------------------------
+
+SUITE(Type_Inheritance)
+{
+  // Test class tree:
+  //
+  // Obj <- Base     <- Medium  <- Top
+  //     ^           <- Special <- Ultra
+  //     |               |
+  //     |               v
+  //     \- Abstract <- Xyz
+
+
+  TEST(basicTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    // a type A does not inherit itself
+    CHECK(!heather::inheritsFrom(Type::newTypeRef("Base"),
+                                 Type::newTypeRef("Base"),
+                                 scope, SrcPos(), false));
+    CHECK(heather::inheritsFrom(Type::newTypeRef("Ultra"),
+                                Type::newTypeRef("Obj"),
+                                scope, SrcPos(), false));
+    CHECK(heather::inheritsFrom(Type::newTypeRef("Special"),
+                                 Type::newTypeRef("Base"),
+                                 scope, SrcPos(), false));
+    CHECK(heather::inheritsFrom(Type::newTypeRef("Special"),
+                                 Type::newTypeRef("Abstract"),
+                                 scope, SrcPos(), false));
+
+    CHECK(!heather::inheritsFrom(Type::newTypeRef("Top"),
+                                 Type::newTypeRef("Abstract"),
+                                 scope, SrcPos(), false));
+    CHECK(!heather::inheritsFrom(Type::newTypeRef("Xyz"),
+                                 Type::newTypeRef("Base"),
+                                 scope, SrcPos(), false));
+  }
+
+  // TODO check generic types
+
+  TEST(measureTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(!heather::inheritsFrom(Type::newMeasure(String("Maiko"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  String("mk")),
+                                 Type::newMeasure(String("Maiko"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  String("mk")),
+                                 scope, SrcPos(), false));
+
+    CHECK(heather::inheritsFrom(Type::newMeasure(String("Maiko"),
+                                                 Type::newTypeRef("Ultra"),
+                                                 String("mk")),
+                                Type::newTypeRef(String("Abstract"), true),
+                                scope, SrcPos(), false));
+    CHECK(!heather::inheritsFrom(Type::newMeasure(String("Maiko"),
+                                                  Type::newTypeRef("Xyz"),
+                                                  String("mk")),
+                                 Type::newTypeRef(String("Base"), true),
+                                 scope, SrcPos(), false));
+
+    CHECK(!heather::inheritsFrom(Type::newMeasure(String("Maiko"),
+                                                  Type::newTypeRef("Ultra"),
+                                                  String("mk")),
+                                 Type::newMeasure(String("Tomoko"),
+                                                  Type::newTypeRef("Abstract"),
+                                                  String("to")),
+                                 scope, SrcPos(), false));
+  }
+}
+
+
+SUITE(Type_Covariance)
+{
+  // Test class tree:
+  //
+  // Obj <- Base     <- Medium  <- Top
+  //     ^           <- Special <- Ultra
+  //     |               |
+  //     |               v
+  //     \- Abstract <- Xyz
+
+
+  TEST(basicTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isCovariant(Type::newTypeRef("Base"),
+                               Type::newTypeRef("Base"),
+                               scope, SrcPos(), false));
+    CHECK(heather::isCovariant(Type::newTypeRef("Xyz"),
+                               Type::newTypeRef("Xyz"),
+                               scope, SrcPos(), false));
+    CHECK(heather::isCovariant(Type::newTypeRef("Medium"),
+                                Type::newTypeRef("Base"),
+                                scope, SrcPos(), false));
+    CHECK(!heather::isCovariant(Type::newTypeRef("Base"),
+                                Type::newTypeRef("Medium"),
+                                scope, SrcPos(), false));
+    CHECK(heather::isContravariant(Type::newTypeRef("Base"),
+                                   Type::newTypeRef("Medium"),
+                                   scope, SrcPos(), false));
+    CHECK(!heather::isContravariant(Type::newTypeRef("Medium"),
+                                    Type::newTypeRef("Base"),
+                                    scope, SrcPos(), false));
+
+    CHECK(!heather::isCovariant(Type::newTypeRef("Top"),
+                                Type::newTypeRef("Xyz"),
+                                scope, SrcPos(), false));
+    CHECK(!heather::isContravariant(Type::newTypeRef("Top"),
+                                    Type::newTypeRef("Xyz"),
+                                    scope, SrcPos(), false));
+    CHECK(heather::isInvariant(Type::newTypeRef("Top"),
+                               Type::newTypeRef("Xyz"),
+                               scope, SrcPos(), false));
+  }
+
+
+  TEST(MultipleInheritance_basicTypes)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isCovariant(Type::newTypeRef("Ultra"),
+                               Type::newTypeRef("Base"),
+                               scope, SrcPos(), false));
+    CHECK(heather::isCovariant(Type::newTypeRef("Ultra"),
+                               Type::newTypeRef("Abstract"),
+                               scope, SrcPos(), false));
+  }
+
+  TEST(SliceableArrays)
+  {
+    Ptr<Scope> scope = testScopeSetup();
+
+    CHECK(heather::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), true),
+                                              0, true),
+                               Type::newType(Names::kSliceableTypeName,
+                                             newTypeVector(Type::newInt(true),
+                                                           Type::newTypeRef("Ultra")),
+                                             Type()),
+                               scope, SrcPos(), false));
+    CHECK(!heather::isCovariant(Type::newArray(Type::newTypeRef(String("Special"), true),
+                                               0, true),
+                                Type::newType(Names::kSliceableTypeName,
+                                              newTypeVector(Type::newInt(true),
+                                                            Type::newTypeRef("Ultra")),
+                                              Type()),
+                                scope, SrcPos(), false));
+    CHECK(!heather::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), true),
+                                               0, true),
+                                Type::newType(Names::kSliceableTypeName,
+                                              newTypeVector(Type::newInt(true),
+                                                            Type::newTypeRef("Special")),
+                                              Type()),
+                                scope, SrcPos(), false));
+  }
+}
+
+
+//----------------------------------------------------------------------------
 SUITE(TypeConstraint)
 {
   TEST(construction)
@@ -2536,49 +3974,6 @@ SUITE(FunctionParameter)
     CHECK(p0.key().isEmpty());
     CHECK_EQUAL(p0.kind(), FunctionParameter::kParamRest);
   }
-
-  TEST(covariantCheckIntInt)
-  {
-    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-    FunctionParameter p1 = FunctionParameter::newPosParam(Type::newInt());
-
-    CHECK_EQUAL(p0, p1);
-    // CHECK(p0.isCovariant(p1));
-    // CHECK(p0.isContravariant(p1));
-    // CHECK(!p0.isInvariant(p1));
-  }
-
-  TEST(covariantCheckIntAny)
-  {
-    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-    FunctionParameter p1 = FunctionParameter::newPosParam(Type::newAny());
-
-    CHECK(p0 != p1);
-
-    // CHECK(p0.isCovariant(p1));
-    // CHECK(p0.isContravariant(p1));
-    // CHECK(!p0.isInvariant(p1));
-
-    // CHECK(!p1.isCovariant(p0));
-    // CHECK(!p1.isContravariant(p0));
-    // CHECK(!p1.isInvariant(p0));
-  }
-
-  TEST(covariantCheckIntString)
-  {
-    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-    FunctionParameter p1 = FunctionParameter::newPosParam(Type::newString());
-
-    CHECK(p0 != p1);
-
-    // CHECK(!p0.isCovariant(p1));
-    // CHECK(!p0.isContravariant(p1));
-    // CHECK(p0.isInvariant(p1));
-
-    // CHECK(!p1.isCovariant(p0));
-    // CHECK(!p1.isContravariant(p0));
-    // CHECK(p1.isInvariant(p0));
-  }
 }
 
 
@@ -2619,6 +4014,23 @@ TEST(FunctionSignature)
   CHECK(fs1.parameters()[3].type().isAny());
   CHECK_EQUAL(fs1.parameters()[3].kind(), FunctionParameter::kParamRest);
 }
+
+
+TEST(FunctionSignIsOpen)
+{
+  FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt());
+  CHECK(!fs0.isOpen());
+
+  FunctionParamVector params1;
+  params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
+  params1.push_back(FunctionParameter::newPosParam(Type::newTypeRef(String("x"), true, false)));
+
+  FunctionSignature fs1 = FunctionSignature(true, String("man"),
+                                            Type::newTypeRef(String("y"), true, false),
+                                            params1);
+  CHECK(fs1.isOpen());
+}
+
 
 #endif  // #if defined(UNITTESTS)
 

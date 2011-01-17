@@ -1,2 +1,77 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit><def><func sym='core|f0'><params><param sym='a' type='pos'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></type></param></params><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></rettype><body><symbol>a</symbol></body></func></def><def><func sym='a|b|f1'><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Bool'></ty:ref></rettype><body><int ty='Int'>0</int></body></func></def><def><func sym='a|b|f2'><params><param sym='a' type='pos'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></type></param></params><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></rettype><body><binary op='**'><symbol>a</symbol><int ty='Int'>2</int></binary></body></func></def><def><func sym='core|f3'><params><param sym='a' type='pos'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></type></param></params><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></rettype><body><binary op='*'><symbol>a</symbol><symbol>a</symbol></binary></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='core|f0'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<symbol>a</symbol>
+</body>
+</func>
+</def>
+<def>
+<func sym='a|b|f1'>
+<rettype>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</rettype>
+<body>
+<int ty='lang|Int'>0</int>
+</body>
+</func>
+</def>
+<def>
+<func sym='a|b|f2'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<binary op='**'>
+<symbol>a</symbol>
+<int ty='lang|Int'>2</int>
+</binary>
+</body>
+</func>
+</def>
+<def>
+<func sym='core|f3'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<binary op='*'>
+<symbol>a</symbol>
+<symbol>a</symbol>
+</binary>
+</body>
+</func>
+</def>
+</compile-unit>

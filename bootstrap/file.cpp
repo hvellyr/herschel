@@ -17,11 +17,24 @@
 #include <stdlib.h>
 
 #include "file.h"
+#include "log.h"
 #include "str.h"
 #include "strbuf.h"
 
 
 using namespace heather;
+
+String
+heather::file::makeDir(const String& path)
+{
+  if (path.length() > 0) {
+    if (path[path.length() - 1] == '/')
+      return path;
+  }
+
+  return path + '/';
+}
+
 
 bool
 heather::file::isFilePath(const String& path)
@@ -113,7 +126,40 @@ String
 heather::file::appendDir(const String& path, const String& dirName)
 {
   assert(!isFilePath(path));
-  return path + dirName;
+  return makeDir(path + dirName);
+}
+
+
+String
+heather::file::appendDir(const String& path, const String& dirName,
+                         const String& dirName2)
+{
+  assert(!isFilePath(path));
+  return appendDir(appendDir(path, dirName), dirName2);
+}
+
+
+String
+heather::file::appendDir(const String& path, const String& dirName1,
+                         const String& dirName2, const String& dirName3)
+{
+  assert(!isFilePath(path));
+  return appendDir(appendDir(appendDir(path, dirName1),
+                             dirName2),
+                   dirName3);
+}
+
+
+String
+heather::file::appendDir(const String& path, const String& dirName1,
+                         const String& dirName2, const String& dirName3,
+                         const String& dirName4)
+{
+  assert(!isFilePath(path));
+  return appendDir(appendDir(appendDir(appendDir(path, dirName1),
+                                       dirName2),
+                             dirName3),
+                   dirName4);
 }
 
 
@@ -496,6 +542,18 @@ SUITE(File)
     CHECK(file::isFilePath(t));
 
     CHECK(!file::isFilePath(String("/opt/")));
+  }
+
+
+  TEST(appendDir)
+  {
+    String t = file::appendDir(String("/usr/share/heather/"), String("abc"));
+    CHECK_EQUAL(t, String("/usr/share/heather/abc/"));
+    CHECK(!file::isFilePath(t));
+
+    String z = file::appendDir(String("/usr/share/heather/"), String("abc/"));
+    CHECK_EQUAL(z, String("/usr/share/heather/abc/"));
+    CHECK(!file::isFilePath(z));
   }
 
 

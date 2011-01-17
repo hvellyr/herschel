@@ -11,7 +11,8 @@ include $(top_srcdir)/config.mk
 LLVM_ROOT = $(top_srcdir)/external/llvm/
 
 LLVM_CPPFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --cppflags)
-LLVM_LDFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --ldflags --libs) # core jit native)
+LLVM_LDFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --ldflags)
+LLVM_LIBS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --libs)
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTest++/src \
 	$(LLVM_CPPFLAGS)
@@ -22,6 +23,8 @@ SOURCES =         \
 	annotate.cpp    \
 	apt.cpp         \
 	codegen.cpp     \
+	compilepass.cpp \
+	compiler.cpp    \
 	externc.cpp     \
 	file.cpp        \
 	heather.cpp     \
@@ -29,14 +32,16 @@ SOURCES =         \
 	macro.cpp       \
 	numbers.cpp     \
 	option.cpp      \
-	parser.cpp      \
 	parsertypes.cpp \
 	pass.cpp        \
 	pass1.cpp       \
 	pass2.cpp       \
 	port.cpp        \
+	predefined.cpp  \
 	properties.cpp  \
+	rootscope.cpp   \
 	scope.cpp       \
+	setup.cpp       \
 	srcpos.cpp      \
 	str.cpp         \
 	strbuf.cpp      \
@@ -46,9 +51,11 @@ SOURCES =         \
 	tokenizer.cpp   \
 	tokenport.cpp   \
 	transform.cpp   \
+	traverse.cpp    \
 	type.cpp        \
 	typeenum.cpp    \
 	typectx.cpp     \
+	typify.cpp      \
 	valuesaver.cpp  \
 	xmlout.cpp
 
@@ -57,6 +64,8 @@ HEADERS =         \
 	apt.h           \
 	codegen.h       \
 	common.h        \
+	compilepass.h   \
+	compiler.h      \
 	errcodes.h      \
 	exception.h     \
 	externc.h       \
@@ -65,17 +74,19 @@ HEADERS =         \
 	macro.h         \
 	numbers.h       \
 	option.h        \
-	parser.h        \
 	parsertypes.h   \
 	pass.h          \
 	pass1.h         \
 	pass2.h         \
 	port.h          \
+	predefined.h    \
 	properties.h    \
 	ptr.h           \
 	refcountable.h  \
 	registry.h      \
+	rootscope.h     \
 	scope.h         \
+	setup.h         \
 	srcpos.h        \
 	str.h           \
 	strbuf.h        \
@@ -85,24 +96,30 @@ HEADERS =         \
 	tokenizer.h     \
 	tokenport.h     \
 	transform.h     \
+	traverse.h      \
 	type.h          \
 	typeenum.h      \
 	typectx.h       \
+	typify.h        \
 	valuesaver.h    \
 	xmlout.h
 
 
-# ifeq ($(TARGET_OS),mac)
+ifeq ($(TARGET_OS),mac)
 # HEADERS +=
-# endif
+SOURCES += setup-unix.cpp
+LIBS += -framework Carbon
+endif
 
-# ifeq ($(TARGET_OS),linux)
+ifeq ($(TARGET_OS),linux)
 # HEADERS +=
-# endif
+SOURCES += setup-unix.cpp
+endif
 
-# ifeq ($(TARGET_OS),win)
+ifeq ($(TARGET_OS),win)
 # HEADERS +=
-# endif
+SOURCES += setup-win.cpp
+endif
 
 CPP_OBJS =  $(SOURCES:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
 
@@ -121,7 +138,7 @@ APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/heather$(APPEXT)
 APPX: $(APPBINARY)
 
 $(APPBINARY): $(OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS) $(LLVM_LIBS)
 
 
 

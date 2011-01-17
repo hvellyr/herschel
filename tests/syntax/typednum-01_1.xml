@@ -1,2 +1,227 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>ints</id><punct type='='/><nested left='#[' right=']'><lit type='int'>12</lit><punct type=','/><lit type='int'>12</lit><punct type=','/><lit type='int'>12</lit><punct type=','/><lit type='int'>12</lit></nested></seq><seq><id>def</id><id>octets</id><punct type='='/><nested left='#[' right=']'><seq><lit type='int'>12</lit><punct type=':'/><id>Octet</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Octet</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Octet</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Octet</id></seq></nested></seq><seq><id>def</id><id>shorts</id><punct type='='/><nested left='#[' right=']'><seq><lit type='int'>12</lit><punct type=':'/><id>Short</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Short</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Short</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Short</id></seq></nested></seq><seq><id>def</id><id>ushorts</id><punct type='='/><nested left='#[' right=']'><seq><lit type='int'>12</lit><punct type=':'/><id>UShort</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>UShort</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>UShort</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>UShort</id></seq></nested></seq><seq><id>def</id><id>words</id><punct type='='/><nested left='#[' right=']'><seq><lit type='int'>12</lit><punct type=':'/><id>Word</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Word</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Word</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Word</id></seq></nested></seq><seq><id>def</id><id>uwords</id><punct type='='/><nested left='#[' right=']'><seq><lit type='int'>12</lit><punct type=':'/><id>UWord</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>UWord</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>UWord</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>UWord</id></seq></nested></seq><seq><id>def</id><id>longs</id><punct type='='/><nested left='#[' right=']'><seq><lit type='int'>12</lit><punct type=':'/><id>Long</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Long</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Long</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>Long</id></seq></nested></seq><seq><id>def</id><id>ulongs</id><punct type='='/><nested left='#[' right=']'><seq><lit type='int'>12</lit><punct type=':'/><id>ULong</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>ULong</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>ULong</id></seq><punct type=','/><seq><lit type='int'>12</lit><punct type=':'/><id>ULong</id></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>ints</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<lit type='int'>12</lit>
+<punct type=','/>
+<lit type='int'>12</lit>
+<punct type=','/>
+<lit type='int'>12</lit>
+<punct type=','/>
+<lit type='int'>12</lit>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>octets</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt8</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt8</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt8</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt8</id>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>shorts</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int16</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int16</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int16</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int16</id>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>ushorts</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt16</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt16</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt16</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt16</id>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>words</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int32</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int32</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int32</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int32</id>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>uwords</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt32</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt32</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt32</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt32</id>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>longs</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int64</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int64</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int64</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>Int64</id>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>ulongs</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt64</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt64</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt64</id>
+</seq>
+<punct type=','/>
+<seq>
+<lit type='int'>12</lit>
+<punct type=':'/>
+<id>UInt64</id>
+</seq>
+</nested>
+</seq>
+</seq>

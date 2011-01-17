@@ -1,0 +1,4 @@
+
+def generic null-value(ty @ Class<'T>) : 'T ...
+
+def x = Int.null-value

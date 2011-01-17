@@ -10,7 +10,7 @@
 #define bootstrap_tokeneval_h
 
 #include "token.h"
-#include "parser.h"
+#include "compiler.h"
 #include "ptr.h"
 
 

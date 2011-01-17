@@ -18,6 +18,7 @@ namespace heather
   class Token;
 
   enum VizType {
+    kUnset,
     kPrivate,
     kInner,
     kOuter,

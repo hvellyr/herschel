@@ -1,2 +1,17 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit><def><vardef sym='a'><init><int ty='Int'>0</int></init></vardef></def><def><vardef sym='b'><init><int ty='Int'>0</int></init></vardef></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<vardef sym='a'>
+<init>
+<int ty='lang|Int'>0</int>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='b'>
+<init>
+<int ty='lang|Int'>0</int>
+</init>
+</vardef>
+</def>
+</compile-unit>

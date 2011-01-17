@@ -1,0 +1,11 @@
+def f5(a : Int8, b : Int8)
+  -- logical and/or operators requires booleans; so for Any operands this
+  -- makes explicit true comparasions necessary
+  let t0 =
+    (a == true)
+       and
+    (b == true)
+  let t1 =
+    (a == true)
+       or
+    (b == true)

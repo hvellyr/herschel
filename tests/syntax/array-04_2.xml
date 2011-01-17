@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='h'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<type>
+<ty:array ind='0'>
+<ty:union>
+<ty:ref nm='lang|String'>
+</ty:ref>
+<ty:ref nm='lang|Bool'>
+<ty:const k='eq'>false</ty:const>
+</ty:ref>
+</ty:union>
+</ty:array>
+</type>
+</vardef>
+</let>
+<let>
+<vardef sym='y'>
+<type>
+<ty:array ind='5'>
+<ty:seq>
+<ty:ref nm='Copyable'>
+</ty:ref>
+<ty:array ind='7'>
+<ty:ref nm='Serializable'>
+</ty:ref>
+</ty:array>
+<ty:ref nm='Seq'>
+<ty:gen>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:seq>
+</ty:array>
+</type>
+</vardef>
+</let>
+<apply>
+<symbol>slice</symbol>
+<args>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>x</symbol>
+<int ty='lang|Int'>34</int>
+</args>
+</apply>
+<int ty='lang|Int'>2</int>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

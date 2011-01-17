@@ -32,6 +32,9 @@
 
 module lang ("eyestep/heather 1.0:lang")
 
+export public (*)
+
+
 ------------------------------------------------------------------------------
 -- general type specifications
 ------------------------------------------------------------------------------
@@ -148,7 +151,7 @@ def alias ULong  = UInt64
 
 def alias Float      = Float32
 def alias Double     = Float64
-def alias LongDouble = Float80
+def alias LongDouble = Float128
 
 
 -- end of lang/numbers

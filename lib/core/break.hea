@@ -64,7 +64,6 @@ def macro with-break
       ?body
     }
   }
-
   { with-break(?break:name = ?func:expr) ?body:expr } -> {
     {
       on signal (break-signal : BreakSignal) {
