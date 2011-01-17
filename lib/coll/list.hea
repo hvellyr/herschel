@@ -45,11 +45,13 @@ def find-last-node(node @ Pair<'L, 'R>) : Pair<'L, 'R>
   p
 
 
-def class List<Elt>(root: _root : Pair<Elt, _> = nil)
+def alias ListPair<Elt> = Pair<Elt, ListPair<Elt>>
+
+def class List<Elt>(root: _root : ListPair<Elt> = nil)
     : Sequence<Elt>
 {
-  def slot root : Pair<Elt, _> = _root
-  def slot last : Pair<Elt, _> = nil
+  def slot root : ListPair<Elt> = _root
+  def slot last : ListPair<Elt> = nil
 
   on init(self) {
     -- set self.last to the last element in the list
@@ -61,7 +63,7 @@ def class List<Elt>(root: _root : Pair<Elt, _> = nil)
 def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
   select () {
     | (before-index == self.num-items) -> {
-        let nl = Pair<'T, _>(car: value)
+        let nl = ListPair<'T>(car: value)
         if (self.last.nil?)
           self.root = self.last = nl
         else {
@@ -72,7 +74,7 @@ def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
       }
 
     | (before-index == 0 and self.root.nil?) -> {
-        self.root = self.last = Pair<'T, _>(car: value)
+        self.root = self.last = ListPair<'T>(car: value)
         self
       }
 
@@ -84,9 +86,9 @@ def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
         for (p <> nil) {
           if (n == before-index) {
             if (prev <> nil)
-              prev.cdr = Pair<'T, _>(car: value, cdr: p)
+              prev.cdr = ListPair<'T>(car: value, cdr: p)
             else
-              self.root = Pair<'T, _>(car: value, cdr: p)
+              self.root = ListPair<'T>(car: value, cdr: p)
             return self
           }
 
@@ -207,8 +209,7 @@ def for-each(self @ Collection<'T>,
 
 
 def iterator(self @ List<'T>) : Iterator<'T>
-  PairIterator<'T,
-               Function(node : Pair<'T, _>) : 'T>(
+  PairIterator<'T, Function(node : ListPair<'T>) : 'T>(
     self.root, function(node) { node.car })
 
 
@@ -241,7 +242,7 @@ def swap!(self @ List<'T>, from-idx : Ordinal, to-idx : Ordinal) : List<'T> ...
   -- TODO
 
 
-def merge-split(nl : Pair<'T, _>) : Pair<'T, _>
+def merge-split(nl : ListPair<'T>) : ListPair<'T>
   let split-h(nl, nl1, nl2) {
     if (nl.nil? or nl.cdr.nil?)
       Pair(car: nl2.reverse, cdr: nl1)
@@ -252,20 +253,20 @@ def merge-split(nl : Pair<'T, _>) : Pair<'T, _>
 
 
 def merge(pred : (Function(left, right) : Bool),
-          nl1 : Pair<'T, _>,
-          nl2 : Pair<'T, _>) : Pair<'T, _>
+          nl1 : ListPair<'T>,
+          nl2 : ListPair<'T>) : ListPair<'T>
   select () {
     | (nl1.nil?) -> nl2
     | (nl2.nil?) -> nl1
-    | pred(nl1.car, nl2.car) -> Pair<'T, _>(car: nl1.car,
-                                            cdr: merge(pred, nl1.cdr, nl2))
-    | else Pair<'T, _>(car: nl2.car,
-                       cdr: merge(pred, nl1, nl2.cdr))
+    | pred(nl1.car, nl2.car) -> ListPair<'T>(car: nl1.car,
+                                             cdr: merge(pred, nl1.cdr, nl2))
+    | else ListPair<'T>(car: nl2.car,
+                              cdr: merge(pred, nl1, nl2.cdr))
   }
 
 
-def merge-sort(nl : Pair<'T, _>,
-               pred : (Function(left, right) : Bool)) : Pair<'T, _>
+def merge-sort(nl : ListPair<'T>,
+               pred : (Function(left, right) : Bool)) : ListPair<'T>
   select () {
     | (nl.nil?)     -> nl
     | (nl.cdr.nil?) -> nl
@@ -298,10 +299,10 @@ def reverse(self @ List<'T>) : List<'T>
 def reverse!(self @ List<'T>) : List<'T>
   let newroot = nil
   if (self.root <> nil) {
-    newroot = self.last = Pair<'T, _>(car: self.root.car, cdr: nil)
+    newroot = self.last = ListPair<'T>(car: self.root.car, cdr: nil)
 
     for (p = self.root.cdr then p.cdr while p <> nil)
-      newroot = Pair<'T, _>(car: p.car, cdr: newroot)
+      newroot = ListPair<'T>(car: p.car, cdr: newroot)
     self.root = newroot
   }
   self

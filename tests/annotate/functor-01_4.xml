@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<method sym='init-functor' abstract='true'>
+<params>
+<param sym='ty' type='spec'>
+<type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</rettype>
+</method>
+</def>
+<def>
+<func sym='foo'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<apply>
+<symbol>init-functor</symbol>
+<args>
+<symbol>lang|Int</symbol>
+</args>
+</apply>
+</body>
+</func>
+</def>
+</compile-unit>

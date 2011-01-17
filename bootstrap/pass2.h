@@ -14,7 +14,8 @@
 #include <map>
 
 #include "apt.h"
-#include "parser.h"
+#include "compilepass.h"
+#include "compiler.h"
 #include "pass.h"
 #include "port.h"
 #include "refcountable.h"
@@ -31,13 +32,13 @@ namespace heather
   class SecondPass : public AbstractPass
   {
   public:
-    SecondPass(Parser* parser, Scope* scope);
+    SecondPass(Compiler* compiler, Scope* scope);
 
     AptNode* parse(const Token& exprs);
 
   private:
-    AptNode* parseExpr(const Token& expr);
-    AptNode* parseSeq(const Token& expr);
+    NodeList parseExpr(const Token& expr);
+    NodeList parseSeq(const Token& expr);
 
     AptNode* parseModule(const Token& expr);
     AptNode* parseExport(const Token& expr);
@@ -46,7 +47,8 @@ namespace heather
 
     void parseTopExprlist(const Token& expr);
 
-    AptNode* parseDef(const Token& expr, bool isLocal);
+    NodeList rewriteDefNode(AptNode* node, bool isLet);
+    NodeList parseDef(const Token& expr, bool isLocal);
     AptNode* parseIf(const Token& expr);
     AptNode* parseOn(const Token& expr);
     AptNode* parseFor(const Token& expr);
@@ -55,14 +57,24 @@ namespace heather
     AptNode* parseClosure(const Token& expr);
     AptNode* parseBinary(const Token& expr);
     AptNode* parseFunCall(const Token& expr);
-    AptNode* parseTypeExpr(const Token& expr);
+    NodeList parseFunCallArgs(const TokenVector& args);
+    AptNode* parseTypeExpr(const Token& expr, bool inArrayType = false);
 
-    AptNode* parseTokenVector(const TokenVector& seq);
+    NodeList parseTokenVector(const TokenVector& seq);
     void parseParameters(NodeList* parameters, const TokenVector& seq);
 
     AptNode* parseParameter(const Token& expr);
 
-    AptNode* parseTypeDef(const Token& expr, size_t ofs, bool isType);
+    NodeList parseTypeDef(const Token& expr, size_t ofs, bool isType,
+                          bool isLocal);
+    AptNode* generateConstructor(const Token& typeExpr,
+                                 const String& fullTypeName,
+                                 const Type& defType,
+                                 const NodeList& defaultApplyParams,
+                                 const NodeList& slotDefs,
+                                 const NodeList& onExprs);
+    AptNode* defaultSlotInitValue(const SlotdefNode* slot);
+
     AptNode* parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
     AptNode* parseSlotDef(const Token& expr, size_t ofs);
     AptNode* parseEnumDef(const Token& expr, size_t ofs, bool isLocal);
@@ -83,13 +95,13 @@ namespace heather
     AptNode* newDefNode(AptNode* node, bool isLet);
 
     AptNode* parseBlock(const Token& expr);
-    AptNode* parseNested(const Token& expr);
+    NodeList parseNested(const Token& expr);
 
     AptNode* parseExtend(const Token& expr);
 
-    Type parseTypeSpec(const Token& expr);
-    Type parseTypeSpecImpl(const Token& expr);
-    Type parseTypeSpecImpl2(const Token& expr, bool isValue);
+    Type parseTypeSpec(const Token& expr, bool forceOpenType = false);
+    Type parseTypeSpecImpl(const Token& expr, bool forceOpenType);
+    Type parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenType);
     Type parseGroupType(const Token& expr, bool isValue);
     Type rephraseRefType(const SrcPos& srcpos, const Type& inType, bool isValue);
 
@@ -108,7 +120,8 @@ namespace heather
                                     NodeList* testExprs,
                                     NodeList* stepExprs);
 
-    void parseTypeVector(TypeVector* generics, const Token& expr);
+    void parseTypeVector(TypeVector* generics, const Token& expr,
+                         bool forceOpenType = false);
     void paramsNodeListToType(FunctionParamVector* funcParams,
                               const NodeList& nl) const;
     void protocolNodeListToType(FunctionSignatureVector* protoSignatures,
@@ -123,6 +136,12 @@ namespace heather
     AptNode* parseRealSelect(const Token& expr);
 
     AptNode* parseUnitNumber(const Token& expr);
+
+    AptNode* generateArrayAlloc(const Token& expr, AptNode* typeNode);
+    AptNode* generateAlloc(const Token& expr, const Type& type);
+
+    Type normalizeType(const Type& type);
+
 
     struct FundefClauseData
     {
@@ -177,7 +196,23 @@ namespace heather
 
     std::set<String>    fCurrentGenericTypes;
     TSharedGenericTable fSharedGenericTable;
-    Ptr<AptNode>        fRootNode;
+    Ptr<ListNode>       fRootNode;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class NodifyPass : public Token2AptNodeCompilePass
+  {
+  public:
+    NodifyPass(int level, Compiler* compiler, Scope* scope);
+    virtual AptNode* doApply(const Token& src);
+    Scope* currentScope();
+
+  private:
+    Ptr<Scope>      fScope;
+    Ptr<Compiler>   fCompiler;
+    Ptr<SecondPass> fPass;
   };
 };
 

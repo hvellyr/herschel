@@ -34,48 +34,47 @@ module coll ("eyestep/heather 1.0:collections")
 
 -- generic implementations for various Collection functions
 
-def add-all!(cltn @ 'C, other-coll @ 'X) : 'C
-    where C isa Collection<T>
+def add-all!(coll @ ^'C, other-coll @ 'X) : ^'C
+    where C isa Collection<'T>
   for (e in other-coll) 
-    cltn.add!(e)
-  cltn
+    coll.add!(e)
+  coll
 
 
-def has-all?(cltn @ 'C, other-coll @ 'X) : Bool
-    where C isa Collection<T>
+def has-all?(coll @ 'C, other-coll @ 'X) : Bool
+    where C isa Collection<'T>
   for (e in other-coll) {
-    if (not cltn.contains?(e))
+    if (not coll.contains?(e))
       return(false)
   }
   true
 
 
-def retain-all!(cltn @ 'C, other-coll @ 'X) : 'C
-    where C isa Collection<T>
-  let tmp : Set<T>
+def retain-all!(coll @ ^'C, other-coll @ 'X) : ^'C
+    where C isa Collection<'T>
+  let tmp : Set<'T>
 
-  for (e in cltn) {
+  for (e in coll) {
     if (not other-coll.contains?(e))
       tmp.add!(e)
   }
-  cltn.remove-all!(tmp)
+  coll.remove-all!(tmp)
 
 
-def remove-all!(cltn @ 'C, other-coll @ 'X) : 'C
-    where C isa Collection<T>
+def remove-all!(coll @ ^'C, other-coll @ 'X) : ^'C
+    where C isa Collection<'T>
   for (e in other-coll)
-    cltn.remove!(e)
-  cltn
+    coll.remove!(e)
+  coll
 
 
-def for-each(cltn @ 'C, func : ForEachVisitor<'T>) : 'C
-    where C isa Collection<T> ...
-  for (e in cltn) {
+def for-each(coll @ 'C, func : ForEachVisitor<'T>) : 'C
+    where C isa Collection<'T>
+  for (e in coll) {
     if (not func(e))
-      return(cltn)
+      return(coll)
   }
-
-  return(cltn)
+  coll
 
 
 -- end of impl/common.hea

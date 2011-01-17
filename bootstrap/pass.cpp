@@ -24,9 +24,9 @@ AbstractPass::AbstractPass()
 }
 
 
-AbstractPass::AbstractPass(Parser* parser, Scope* scope)
+AbstractPass::AbstractPass(Compiler* compiler, Scope* scope)
   : fScope(scope),
-    fParser(parser)
+    fCompiler(compiler)
 {
 }
 
@@ -55,3 +55,8 @@ AbstractPass::popModule()
 }
 
 
+Scope*
+AbstractPass::scope()
+{
+  return fScope;
+}

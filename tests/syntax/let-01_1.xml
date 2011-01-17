@@ -1,2 +1,135 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>compare</id><nested left='(' right=')'><seq><id>one</id><punct type='@'/><seq><id>Sliceable</id><nested left='&lt;' right='>'><id>Ordinal</id><punct type=','/><seq><punct type='&apos;'/><id>T</id></seq></nested></seq></seq><punct type=','/><seq><id>two</id><punct type='@'/><seq><id>Sliceable</id><nested left='&lt;' right='>'><id>Ordinal</id><punct type=','/><seq><punct type='&apos;'/><id>T</id></seq></nested></seq></seq></nested><punct type=':'/><id>Int</id><seq><id>reify</id><seq><nested left='(' right=')'><seq><id>one</id><punct type='@'/><seq><seq><punct type='&apos;'/><id>T</id></seq><nested left='[' right=']'/></seq></seq><punct type=','/><seq><id>two</id><punct type='@'/><seq><seq><punct type='&apos;'/><id>T</id></seq><nested left='[' right=']'/></seq></seq></nested><punct type=':'/><id>Int</id></seq><punct type=','/><seq><nested left='(' right=')'><seq><id>one</id><punct type='@'/><seq><seq><punct type='&apos;'/><id>T</id></seq><nested left='[' right=']'/></seq></seq><punct type=','/><seq><id>two</id><punct type='@'/><seq><id>Slice</id><nested left='&lt;' right='>'><id>Ordinal</id><punct type=','/><seq><punct type='&apos;'/><id>T</id></seq></nested></seq></seq></nested><punct type=':'/><id>Int</id></seq></seq><nested left='{' right='}'><seq><id>let</id><id>n</id><punct type='='/><seq><id>num-items</id><nested left='(' right=')'><id>one</id></nested></seq></seq><seq><id>if</id><nested left='(' right=')'><id>n</id><punct type='=='/><seq><id>num-items</id><nested left='(' right=')'><id>two</id></nested></seq></nested><nested left='{' right='}'/></seq></nested></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>compare</id>
+<nested left='(' right=')'>
+<seq>
+<id>one</id>
+<punct type='@'/>
+<seq>
+<id>Sliceable</id>
+<nested left='&lt;' right='>'>
+<id>Ordinal</id>
+<punct type=','/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</nested>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id>two</id>
+<punct type='@'/>
+<seq>
+<id>Sliceable</id>
+<nested left='&lt;' right='>'>
+<id>Ordinal</id>
+<punct type=','/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</nested>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Int</id>
+<seq>
+<id>reify</id>
+<seq>
+<nested left='(' right=')'>
+<seq>
+<id>one</id>
+<punct type='@'/>
+<seq>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+<nested left='[' right=']'/>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id>two</id>
+<punct type='@'/>
+<seq>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+<nested left='[' right=']'/>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Int</id>
+</seq>
+<punct type=','/>
+<seq>
+<nested left='(' right=')'>
+<seq>
+<id>one</id>
+<punct type='@'/>
+<seq>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+<nested left='[' right=']'/>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id>two</id>
+<punct type='@'/>
+<seq>
+<id>Slice</id>
+<nested left='&lt;' right='>'>
+<id>Ordinal</id>
+<punct type=','/>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+</nested>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Int</id>
+</seq>
+</seq>
+<nested left='{' right='}'>
+<seq>
+<id>let</id>
+<id>n</id>
+<punct type='='/>
+<seq>
+<id>num-items</id>
+<nested left='(' right=')'>
+<id>one</id>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>if</id>
+<nested left='(' right=')'>
+<id>n</id>
+<punct type='=='/>
+<seq>
+<id>num-items</id>
+<nested left='(' right=')'>
+<id>two</id>
+</nested>
+</seq>
+</nested>
+<nested left='{' right='}'/>
+</seq>
+</nested>
+</seq>
+</seq>

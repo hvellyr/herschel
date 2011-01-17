@@ -1,2 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>y</id><punct type='='/><lit type='int'>6</lit></seq><seq><id>def</id><id>m</id><punct type='='/><lit type='int'>27</lit></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>y</id>
+<punct type='='/>
+<lit type='int'>6</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>m</id>
+<punct type='='/>
+<lit type='int'>27</lit>
+</seq>
+</seq>

@@ -42,11 +42,11 @@ def realloc(array @ 'T[],
       t[i] = array[i]
     for (i in array.size .. newsize - 1)
       t[i] = init-value
-
     t
   }
   else if (new-size < array.size) {
     let t = 'T[](new-size)
+    for (i in 0 .. new-size - 1)
     for (i in 0 .. new-size - 1)
       t[i] = array[i]
     t

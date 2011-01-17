@@ -57,7 +57,7 @@ def add-all!(cltn @ ^Vector<'T>, other-coll @ Collection<'T>) : ^Vector<'T>
   if (ni > 0) {
     let old-ni = cltn.num-items
     cltn.resize!(old-ni + ni)
-    for (e in other-coll, 
+    for (e in other-coll,
          i : Ordinal = old-ni then i + 1)
       cltn[i] = e
   cltn
@@ -175,9 +175,9 @@ def reserve!(cltn @ ^Vector<'T>, add-items : Ordinal) : ^Vector<'T>
 ------------------------------------------------------------------------------
 -- from Sliceable!
 
-def class VectorSlice<T> : (_vector : Vector<T>,
-                            _from : Ordinal,
-                            _to : Ordinal)
+def class VectorSlice<T>(_vector : Vector<T>,
+                         _from : Ordinal,
+                         _to : Ordinal)
     : core|Slice<Ordinal, T>
 {
   def slot vector = _vector

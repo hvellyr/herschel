@@ -51,10 +51,12 @@ def class Triple<Key, Value, Tail>(_key : Key, _val : Value, _tail : Tail)
 
 def const %default-hash-map-size% = 16
 
+def alias HashMapTriple<Key, Elt> = Triple<Key, Elt, HashMapTriple<Key, Elt>>
+
 def class HashMap<Key, Elt>(items : Ordinal = %default-hash-map-size%)
     : (Comparable, AssocCollection<Key, Elt>)
 {
-  def slot table : Vector<Triple<Key, Elt, _>>
+  def slot table : Vector<HashMapTriple<Key, Elt>>
   def slot elts : Ordinal = items
 }
 

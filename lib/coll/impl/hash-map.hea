@@ -64,12 +64,12 @@ def lang|to-string(self @ Triple<'K, 'V, 'T>) : String
 def class HashMap<Key, Elt>(items : Ordinal = %default-hash-map-size%)
     : (Comparable, AssocCollection<Key, Elt>)
 {
-  def slot table : Vector<Triple<Key, Elt, _> >
+  def slot table : Vector<HashMapTriple<Key, Elt>>
   def slot elts : Ordinal = items
 
   on init(self) {
     if (elts > 0)
-      table = _.Type(items: elts)
+      table = Vector<HashMapTriple<Key, Elt>>(items: elts)
   }
 }
 
@@ -82,7 +82,7 @@ def empty?(self @ HashMap<'K, 'T>) : Bool
   self.elts == 0
 
 def empty!(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
-  self.table = _.Type()(items: %default-size%)
+  self.table = Vector<HashMapTriple<'K, 'T>>(items: %default-size%)
   self.elts = 0
   self
 
@@ -134,7 +134,7 @@ def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) : HashMap
   let hash = (key.hash mod self.table.num-items) as Ordinal
   let loop(nl) {
       if (nl.nil?) {
-        self.table[hash] = Triple<'K, 'T, _>(key, obj, self.table[hash])
+        self.table[hash] = HashMapTriple<'K, 'T>(key, obj, self.table[hash])
         self.elts.incr!
       }
       else if (nl.key?(key))
@@ -265,7 +265,7 @@ def retain-all-keys!(self @ HashMap<'K, 'T>,
 ----------------------------------------------------------------------
 
 def table!(self : HashMap<'K, 'T>,
-           new-table : Vector<Triple<'K, 'T, _> >)
+           new-table : Vector<HashMapTriple<'K, 'T> >)
   slot!(self, #table, new-table)
   slot!(self, #elts, new-table.num-items)
   self

@@ -1,2 +1,51 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>def</id><id>a</id><punct type='='/><seq><id>ff</id><nested left='(' right=')'><lit type='int'>1</lit><punct type=','/><seq><id>g</id><nested left='(' right=')'><seq><id>h</id><nested left='(' right=')'><seq><lit type='int'>1</lit><punct type='+'/><lit type='int'>2</lit></seq></nested></seq><punct type=','/><seq><id>k</id><nested left='(' right=')'/></seq></nested></seq><punct type=','/><lit type='int'>3</lit></nested></seq></seq><seq><id>def</id><id>b</id><punct type='='/><seq><id>f</id><nested left='(' right=')'><seq><id>g</id><nested left='(' right=')'/></seq></nested></seq></seq></seq>
+<seq>
+<seq>
+<id>def</id>
+<id>a</id>
+<punct type='='/>
+<seq>
+<id>ff</id>
+<nested left='(' right=')'>
+<lit type='int'>1</lit>
+<punct type=','/>
+<seq>
+<id>g</id>
+<nested left='(' right=')'>
+<seq>
+<id>h</id>
+<nested left='(' right=')'>
+<seq>
+<lit type='int'>1</lit>
+<punct type='+'/>
+<lit type='int'>2</lit>
+</seq>
+</nested>
+</seq>
+<punct type=','/>
+<seq>
+<id>k</id>
+<nested left='(' right=')'/>
+</seq>
+</nested>
+</seq>
+<punct type=','/>
+<lit type='int'>3</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>b</id>
+<punct type='='/>
+<seq>
+<id>f</id>
+<nested left='(' right=')'>
+<seq>
+<id>g</id>
+<nested left='(' right=')'/>
+</seq>
+</nested>
+</seq>
+</seq>
+</seq>

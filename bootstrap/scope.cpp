@@ -213,13 +213,10 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
   ScopeName base(name.fDomain, heather::baseName(name.fName));
   ScopeName ns(name.fDomain, heather::nsName(name.fName));
 
-  // fprintf(stderr, "Look for '%s'\n", (const char*)StrHelper(name));
-
   NsScopeMap::const_iterator it = fMap.find(base);
   if (it != fMap.end()) {
     if (doAutoMatch && !isQualified(name.fName)) {
       if (it->second.size() == 1) {
-        // fprintf(stderr, " ... found something single\n");
         return LookupResult(it->second.begin()->second.obj(), false);
       }
       else if (showError) {
@@ -238,7 +235,6 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
     else {
       BaseScopeMap::const_iterator vit = it->second.find(ns.fName);
       if (vit != it->second.end()) {
-        // fprintf(stderr, " ... found something special\n");
         return LookupResult(vit->second.obj(), false);
       }
     }
@@ -248,8 +244,6 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
        it != fImportedScopes.end();
        it++)
   {
-    // fprintf(stderr, "Search for '%s' in '%s'\n",
-    //         (const char*)StrHelper(name), (const char*)StrHelper(it->first));
     LookupResult lv = it->second->lookupItemLocalImpl(srcpos, name,
                                                       showError,
                                                       doAutoMatch);
@@ -424,7 +418,7 @@ Scope::lookupUnit(const String& name, bool showAmbiguousSymDef) const
 Type
 Scope::normalizeType(const Type& type, const Type& refType) const
 {
-  Type baseType;
+  Type baseType = type;
   Type returnType = type;
 
   if (type.isArray()) {
@@ -440,7 +434,7 @@ Scope::normalizeType(const Type& type, const Type& refType) const
 
   assert(baseType.isDef());
 
-  if (!type.generics().size() == refType.generics().size())
+  if (type.generics().size() != refType.generics().size())
     throw TypeRefMatchException(refType,
                                 ( StringBuffer()
                                   << "Requires "
@@ -455,7 +449,8 @@ Scope::normalizeType(const Type& type, const Type& refType) const
       assert(gen.isRef());
 
       String genName = gen.typeName();
-      localCtx.registerType(genName, refType.generics()[i]);
+      Type genReplacement = refType.generics()[i];
+      localCtx.registerType(genName, genReplacement);
     }
 
     returnType = baseType.replaceGenerics(localCtx);
@@ -465,6 +460,55 @@ Scope::normalizeType(const Type& type, const Type& refType) const
     return refType.rebase(returnType);
 
   return returnType;
+}
+
+
+//! lookup a type via another type.
+Type
+Scope::lookupType(const Type& type) const
+{
+  if (type.isArray()) {
+    return Type::newArray(lookupType(type.arrayBaseType()),
+                          type.arraySizeIndicator(),
+                          type.isValueType());
+  }
+  else if (type.isType() || type.isClass()) {
+    // TODO: something to be done here?
+    return type;
+  }
+  else if (type.isMeasure()) {
+    return Type::newMeasure(type.typeName(),
+                            lookupType(type.measureBaseType()),
+                            type.measureUnit());
+  }
+  else if (type.isRef()) {
+    Type resolvedType = lookupType(type.typeName(), true);
+    if (resolvedType.isDef()) {
+      if (resolvedType.isOpen())
+        return normalizeType(resolvedType, type);
+      return resolvedType;
+    }
+  }
+  else if (type.isFunction()) {
+    // TODO: something to be done here?
+    return type;
+  }
+  else if (type.isUnion()) {
+    TypeVector types;
+    for (size_t i = 0; i < type.unionTypes().size(); ++i) {
+      types.push_back(lookupType(type.unionTypes()[i]));
+    }
+    return Type::newUnion(types, type.isValueType());
+  }
+  else if (type.isSequence()) {
+    TypeVector types;
+    for (size_t i = 0; i < type.seqTypes().size(); ++i) {
+      types.push_back(lookupType(type.seqTypes()[i]));
+    }
+    return Type::newSeq(types, type.isValueType());
+  }
+
+  return Type();
 }
 
 
@@ -595,11 +639,39 @@ Scope::isVarInOuterFunction(const String& name) const
 }
 
 
-void
-Scope::dumpDebug() const
+const char*
+Scope::scopeLevelName(ScopeLevel level)
 {
-  fprintf(stderr, "[------- Scope Dump [%p] ----------------------\n", this);
+  switch (level) {
+  case kScopeL_CompileUnit: return "compile-unit";
+  case kScopeL_Module:      return "module";
+  case kScopeL_Function:    return "function";
+  case kScopeL_Local:       return "local";
+  };
+  return "???";
+}
+
+
+const char*
+Scope::scopeLevelName() const
+{
+  return scopeLevelName(scopeLevel());
+}
+
+void
+Scope::dumpDebug(bool recursive) const
+{
+  fprintf(stderr, "[------- Scope Dump [%p] - %s ----------------------\n", this,
+          scopeLevelName(scopeLevel()));
   dumpDebugImpl();
+  if (recursive) {
+    Scope* sc0 = parent();
+    while (sc0) {
+      fprintf(stderr, "----- [%p] - %s -----\n", sc0, scopeLevelName(sc0->scopeLevel()));
+      sc0->dumpDebugImpl();
+      sc0 = sc0->parent();
+    }
+  }
   fprintf(stderr, "]------- Scope Dump [%p] ----------------------\n", this);
 }
 
@@ -637,7 +709,7 @@ bool
 Scope::shouldExportSymbol(const ScopeName& sym) const
 {
   VizMap::const_iterator it = fVisibility.find(sym);
-  return (it != fVisibility.end());
+  return (it != fVisibility.end() && it->second.fViz != kUnset);
 }
 
 
@@ -645,7 +717,7 @@ VizType
 Scope::exportSymbolVisibility(const ScopeName& sym) const
 {
   VizMap::const_iterator it = fVisibility.find(sym);
-  if (it != fVisibility.end())
+  if (it != fVisibility.end() && it->second.fViz != kUnset)
     return it->second.fViz;
   return kPrivate;
 }
@@ -661,14 +733,63 @@ Scope::exportSymbolIsFinal(const ScopeName& sym) const
 }
 
 
+const std::set<String>& 
+Scope::attachedExportSymbols(const ScopeName& sym) const
+{
+  VizMap::const_iterator it = fVisibility.find(sym);
+  if (it != fVisibility.end())
+    return it->second.fAttachedSymbols;
+
+  static std::set<String> emptySet;
+  return emptySet;
+}
+
+
 void
 Scope::registerSymbolForExport(ScopeDomain domain, const String& sym,
                                VizType viz, bool isFinal)
 {
-  VisibilityPair vp;
-  vp.fViz = viz;
-  vp.fIsFinal = isFinal;
-  fVisibility.insert(std::make_pair(ScopeName(domain, sym), vp));
+  VizMap::iterator it = fVisibility.find(ScopeName(domain, sym));
+  if (it == fVisibility.end()) {
+    VisibilityPair vp;
+    vp.fViz = viz;
+    vp.fIsFinal = isFinal;
+    fVisibility.insert(std::make_pair(ScopeName(domain, sym), vp));
+  }
+  else {
+    bool registerAttachedSymbols = it->second.fViz == kUnset;
+
+    it->second.fViz = viz;
+    it->second.fIsFinal = isFinal;
+
+    if (registerAttachedSymbols) {
+      for (AttachedSymbols::iterator ait = it->second.fAttachedSymbols.begin();
+           ait != it->second.fAttachedSymbols.end();
+           ait++)
+      {
+        registerSymbolForExport(domain, *ait, viz, isFinal);
+      }
+    }
+  }
+}
+
+
+void
+Scope::attachSymbolForExport(ScopeDomain domain, const String& sym,
+                             const String& attachedSym)
+{
+  VizMap::iterator it = fVisibility.find(ScopeName(domain, sym));
+  if (it == fVisibility.end()) {
+    VisibilityPair vp;
+    vp.fViz = kUnset;
+    vp.fIsFinal = false;
+    vp.fAttachedSymbols.insert(attachedSym);
+    fVisibility.insert(std::make_pair(ScopeName(domain, sym), vp));
+  }
+  else {
+    it->second.fAttachedSymbols.insert(attachedSym);
+    registerSymbolForExport(domain, attachedSym, it->second.fViz, it->second.fIsFinal);
+  }
 }
 
 
@@ -676,6 +797,7 @@ VizType
 Scope::reduceVizType(VizType in) const
 {
   switch (in) {
+  case kUnset:
   case kPrivate:
     return kPrivate;
   case kInner:
@@ -687,6 +809,23 @@ Scope::reduceVizType(VizType in) const
   }
   assert(0);
   return kPrivate;
+}
+
+
+void
+Scope::exportAttachedSymbols(Scope* dstScope,
+                             const ScopeName& fullKey, VizType vizType,
+                             bool isFinal) const
+{
+  const AttachedSymbols& attachedSyms = attachedExportSymbols(fullKey);
+  for (AttachedSymbols::const_iterator ait = attachedSyms.begin();
+       ait != attachedSyms.end();
+       ait++)
+  {
+    String attachedSym = *ait;
+    dstScope->attachSymbolForExport(fullKey.fDomain, fullKey.fName,
+                                    attachedSym);
+  }
 }
 
 
@@ -715,9 +854,12 @@ Scope::exportAllSymbols(Scope* dstScope, bool propagateOuter) const
               isFinal == exportSymbolIsFinal(fullKey) ))
         {
           dstScope->registerScopeItem(fullKey, vit->second);
-          if (reducedVizType != kPrivate)
+
+          if (reducedVizType != kPrivate) {
             dstScope->registerSymbolForExport(fullKey.fDomain, fullKey.fName,
                                               reducedVizType, isFinal);
+            exportAttachedSymbols(dstScope, fullKey, reducedVizType, isFinal);
+          }
         }
       }
     }
@@ -753,9 +895,11 @@ Scope::exportSymbols(Scope* dstScope, bool propagateOuter) const
           bool isFinal = exportSymbolIsFinal(fullKey);
 
           dstScope->registerScopeItem(fullKey, vit->second);
-          if (reducedVizType != kPrivate)
+          if (reducedVizType != kPrivate) {
             dstScope->registerSymbolForExport(fullKey.fDomain, fullKey.fName,
                                               reducedVizType, isFinal);
+            exportAttachedSymbols(dstScope, fullKey, reducedVizType, isFinal);
+          }
         }
       }
     }

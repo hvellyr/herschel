@@ -1,2 +1,106 @@
 <?xml version='1.0' encoding='utf-8'?>
-<compile-unit><def><func sym='f'><rettype xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Any'></ty:ref></rettype><body><block><let><vardef sym='__match_0'><init><apply><symbol>octets-available</symbol><args></args></apply></init></vardef></let><match><test><symbol>__match_0</symbol></test><map nm='t'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Boolean'></ty:ref></type><cons><block><let><vardef sym='t'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Boolean'></ty:ref></type><init><cast><base><symbol>__match_0</symbol></base><as xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Boolean'></ty:ref></as></cast></init></vardef></let><apply><symbol>outln</symbol><args><str>End of file</str></args></apply></block></cons></map><map nm='n'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Number'></ty:ref></type><cons><block><let><vardef sym='n'><type xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Number'></ty:ref></type><init><cast><base><symbol>__match_0</symbol></base><as xmlns:ty='http://heather.eyestep.org/types'><ty:ref nm='Number'></ty:ref></as></cast></init></vardef></let><apply><symbol>outln</symbol><args><binary op='%'><str>Still have %d to read</str><array><symbol>n</symbol></array></binary></args></apply></block></cons></map></match></block></body></func></def></compile-unit>
+<compile-unit xmlns:ty='http://heather.eyestep.org/types'>
+<def>
+<func sym='f'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='__match_0'>
+<init>
+<apply>
+<symbol>octets-available</symbol>
+<args>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<match>
+<test>
+<symbol>__match_0</symbol>
+</test>
+<map nm='t'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<cons>
+<block>
+<let>
+<vardef sym='t'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<cast>
+<base>
+<symbol>__match_0</symbol>
+</base>
+<as>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</as>
+</cast>
+</init>
+</vardef>
+</let>
+<apply>
+<symbol>outln</symbol>
+<args>
+<str>End of file</str>
+</args>
+</apply>
+</block>
+</cons>
+</map>
+<map nm='n'>
+<type>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</type>
+<cons>
+<block>
+<let>
+<vardef sym='n'>
+<type>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</type>
+<init>
+<cast>
+<base>
+<symbol>__match_0</symbol>
+</base>
+<as>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</as>
+</cast>
+</init>
+</vardef>
+</let>
+<apply>
+<symbol>outln</symbol>
+<args>
+<binary op='%'>
+<str>Still have %d to read</str>
+<array>
+<symbol>n</symbol>
+</array>
+</binary>
+</args>
+</apply>
+</block>
+</cons>
+</map>
+</match>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

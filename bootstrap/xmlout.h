@@ -22,7 +22,7 @@ namespace heather
   class ApplyNode;
   class AptNode;
   class ArrayNode;
-  class ArraySymbolNode;
+  class ArrayTypeNode;
   class AssignNode;
   class BinaryNode;
   class BlockNode;
@@ -68,13 +68,13 @@ namespace heather
   class XmlRenderer : public RefCountable
   {
   public:
-    XmlRenderer(Port<Octet>* port);
+    XmlRenderer(Port<Octet>* port, bool showNodeType = false);
 
     void render(AptNode* node);
 
     void renderNode(const ApplyNode* node);
     void renderNode(const ArrayNode* node);
-    void renderNode(const ArraySymbolNode* node);
+    void renderNode(const ArrayTypeNode* node);
     void renderNode(const AssignNode* node);
     void renderNode(const BinaryNode* node);
     void renderNode(const BlockNode* node);
@@ -102,6 +102,7 @@ namespace heather
     void renderNode(const StringNode* node);
     void renderNode(const SymbolNode* node);
     void renderNode(const TypeDefNode* node);
+    void renderNode(const TypeNode* node);
     void renderNode(const UnitConstNode* node);
     void renderNode(const VardefNode* node);
     void renderNode(const VectorNode* node);
@@ -109,10 +110,12 @@ namespace heather
     void renderNode(const CastNode* node);
 
   private:
-    void displayOpenTag(const char* tagName);
-    void displayOpenTagAttrs(const char* tagName, const char* attrs);
+    void displayOpenTag(const char* tagName, bool newline = true);
+    void displayOpenTagAttrs(const char* tagName, const char* attrs,
+                             bool newline = true);
     void displayCloseTag(const char* tagName);
     void displayEmptyTag(const char* tagName);
+    void displayEmptyTagAttrs(const char* tagName, const char* attrs);
     void displayTag(const char* tagName, const String& value);
     void displayTagAttr(const char* tagName,
                         const char* attrs,
@@ -132,6 +135,38 @@ namespace heather
     //-------- data members
 
     Ptr<Port<Octet> > fPort;
+    bool fShowNodeType;
+    std::map<String, Type> fReferencedTypes;
+  };
+
+
+  namespace xml
+  {
+    void displayOpenTag(Port<Octet>* port, const char* tagName,
+                        bool newline = true);
+    void displayOpenTagAttrs(Port<Octet>* port,
+                             const char* tagName, const char* attrs,
+                             bool newline = true);
+    void displayCloseTag(Port<Octet>* port, const char* tagName);
+    void displayEmptyTag(Port<Octet>* port, const char* tagName);
+    void displayEmptyTagAttrs(Port<Octet>* port, const char* tagName,
+                              const char* attrs);
+    void displayTag(Port<Octet>* port, const char* tagName, const String& value);
+    void displayTagAttr(Port<Octet>* port, const char* tagName,
+                        const char* attrs,
+                        const String& value);
+    void displayStringList(Port<Octet>* port,
+                           const char* outerTagName, const char* tagName,
+                           const StringList& strlist);
+    void displayStringStringMap(Port<Octet>* port,
+                                const char* outerTagName,
+                                const char* tagName,
+                                const char* firstPairTagName,
+                                const char* secPairTagName,
+                                const StringStringMap& strMap);
+    void displayType(Port<Octet>* port, const char* tagName, const Type& type);
+    void displayTypeVector(Port<Octet>* port,
+                           const char* tagName, const TypeVector& types);
   };
 };                              // namespace
 

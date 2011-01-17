@@ -39,7 +39,7 @@ import "io/io-types.hea"
 
 ------------------------------------------------------------------------------
 
-def enum FileModeType : UWord
+def enum FileModeType : UInt32
 {
   read      =  1 << 0
   write     =  1 << 1
@@ -52,7 +52,7 @@ def enum FileModeType : UWord
 
 def class FilePort(file : StringOrUri = nil,
                    mode : FileModeType = FileModeType.read,
-                   umask : UWord = 0)
+                   umask : UInt32 = 0)
     : RandomAccessPort<Octet>
     ~ A FilePort is the base abstraction of a file stream. ~
 {

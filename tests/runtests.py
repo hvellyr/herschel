@@ -15,11 +15,15 @@ OPTIONS = { 'syntax':    { '1': ['-T', 'pass1',     '-P', '--dont-import', '--pa
             'import':    { '1': ['-T', 'pass1',     '-P', '--parse-1' ],
                            '2': ['-T', 'pass2',     '-P', '--parse-2' ],
                            '3': ['-T', 'transform', '-P', '--parse-3' ],
-                           '4': ['-T', 'annotate',  '-P' ] },
+                           '4': ['-T', 'annotate',  '-P', '--parse-4' ],
+                           '5': ['-T', 'typify',    '-P'              ] },
             'transform': { '3': ['-T', 'transform', '-P', '--parse-3' ] },
             'annotate':  { '3': ['-T', 'transform', '-P', '--parse-3' ],
-                           '4': ['-T', 'annotate',  '-P' ], }
+                           '4': ['-T', 'annotate',  '-P', '--parse-4' ],
+                           '5': ['-T', 'typify',    '-P'              ] }
             }
+
+PHASES = ['1', '2', '3', '4', '5']
 
 
 class TestRunner:
@@ -163,7 +167,7 @@ class TestRunner:
 
 
     def run_pass_test(self, test_file, domain):
-        for level in [ '1', '2', '3', '4' ]:
+        for level in PHASES:
             if level in OPTIONS[domain]:
                 self.run_pass_test_impl(test_file, OPTIONS[domain][level], level)
 
@@ -239,7 +243,7 @@ class TestRunner:
 
 
     def run_pass_failed_test(self, test_file, domain):
-        for level in [ '1', '2', '3', '4' ]:
+        for level in PHASES:
             if level in OPTIONS[domain]:
                 self.run_pass_test_impl(test_file, OPTIONS[domain][level], level,
                                         self.check_for_errors)

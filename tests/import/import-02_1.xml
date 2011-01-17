@@ -1,2 +1,13 @@
 <?xml version='1.0' encoding='utf-8'?>
-<seq><seq><id>import</id><lit type='str'>import/ignore-green-02.hea</lit></seq><seq><id>def</id><id>x-a</id><punct type='='/><lit type='int'>12</lit></seq></seq>
+<seq>
+<seq>
+<id>import</id>
+<lit type='str'>import/ignore-green-02.hea</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>x-a</id>
+<punct type='='/>
+<lit type='int'>12</lit>
+</seq>
+</seq>

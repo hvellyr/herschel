@@ -27,6 +27,8 @@ namespace heather
   class FunctionParameter;
   class TypeCtx;
   class TypeEnumMaker;
+  class Scope;
+  class SrcPos;
 
   typedef std::vector<Type> TypeVector;
   typedef std::vector<TypeConstraint> TypeConstVector;
@@ -79,13 +81,15 @@ namespace heather
   public:
     virtual TypeImpl* clone() const = 0;
     virtual bool isEqual(const TypeImpl* other) const = 0;
-    virtual bool isCovariant(const TypeImpl* other) const = 0;
-    virtual bool isContravariant(const TypeImpl* other) const;
-    virtual bool isInvariant(const TypeImpl* other) const;
+
+    virtual bool isOpen() const = 0;
 
     virtual void replaceGenerics(const TypeCtx& typeMap) = 0;
 
     virtual String toString(bool isValue) const = 0;
+
+    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                               Scope* scope, const SrcPos& srcpos) const = 0;
   };
 
 
@@ -100,19 +104,32 @@ namespace heather
     static Type newTypeRef(const String& name, const TypeVector& genericArgs,
                            const TypeConstVector& constraints,
                            bool isValue);
-    static Type newTypeRef(const String& name, bool isValue);
-    static Type newTypeRef(const String& name, bool isGeneric,
-                           const TypeConstVector& constraints,
+    static Type newTypeRef(const String& name, const TypeVector& genericArgs,
                            bool isValue);
+    static Type newTypeRef(const String& name, bool isValue);
+    static Type newTypeRef(const char* name, bool isValue = true);
+    static Type newTypeRef(const String& name, bool isOpen,
+                           const TypeConstVector& constraints, bool isValue);
+    static Type newTypeRef(const String& name, bool isOpen, bool isValue);
 
-    static Type newArray(const Type& base, int siceIndicator, bool isValue);
+    //! rewrite \p old to a new typeref with name.
+    static Type newTypeRef(const String& name, const Type& old);
+
+    //! creates a lang|Class<type>
+    static Type newClassOf(const Type& type, bool isValue = true);
+
+    static Type newArray(const Type& base, int sizeIndicator, bool isValue);
 
     static Type newAny(bool isValue = true);
 
     static Type newInt(bool isValue = true);
+    static Type newOrdinal(bool isValue = true);
+    static Type newImaginaryInt(bool isValue = true);
     static Type newRational(bool isValue = true);
     static Type newReal(bool isValue = true);
+    static Type newImaginaryReal(bool isValue = true);
     static Type newString(bool isValue = true);
+    static Type newBool(bool isValue = true);
 
     //! Creates a new Type type-instance.  This represents a specific type,
     //! not the type template/definition.  Therefore all (possible) type
@@ -127,7 +144,6 @@ namespace heather
                          const Type& inherit);
     static Type newClass(const String& name, const TypeVector& generics,
                          const Type& inherit,
-                         const FunctionSignature& defApplySign,
                          const FunctionSignatureVector& protocol);
 
     static Type newAlias(const String& name, const TypeVector& generics,
@@ -151,17 +167,10 @@ namespace heather
     //! Compare operator
     bool operator!=(const Type& other) const;
 
-    //! Indicates whether two types are co-variant.  If this returns false \p
-    //! other is either contravariant or invariant.  Use isInvariant to check.
-    bool isCovariant(const Type& other) const;
-    bool isContravariant(const Type& other) const;
-    //! Indicates whether two types are invariant.
-    bool isInvariant(const Type& other) const;
-
 
     bool isDef() const;
 
-
+    TypeKind kind() const;
 
     //!@ base and builtin types
     //! indicates whether the type is a base type
@@ -172,19 +181,44 @@ namespace heather
     bool isInt() const;
     bool isString() const;
     bool isReal() const;
+    bool isNumber() const;
+    bool isComplex() const;
+    bool isAnyFloat() const;
+    bool isAnyReal() const;
+    bool isRational() const;
+    bool isOrdinal() const;
+    bool isAnyInt() const;
+    bool isAnyUInt() const;
+    bool isAnySignedInt() const;
+    bool isChar() const;
+    bool isBool() const;
+    bool isKeyword() const;
+
+    bool isAnyNumber() const;
+
+    bool isClassOf() const;
+
+    bool isImaginary() const;
+    void setIsImaginary(bool value);
 
     TypeEnumMaker* newBaseTypeEnumMaker() const;
 
     //!@ custom types
     bool isClass() const;
-    const Type& classInheritance() const;
-    const FunctionSignature& defaultApplySignature() const;
-    const FunctionSignatureVector& classProtocol() const;
 
     //!@ custom types
     bool isType() const;
     const Type& typeInheritance() const;
     const FunctionSignatureVector& typeProtocol() const;
+
+
+    //@ is anything on this type is generic (i.e. a variable type
+    //expression).  For references the type itself must be marked as generic
+    //(e.g. 'T); for complex type any subtype (generics, parameters, etc.)
+    //must be a Generic type reference (e.g. 'T[], List<'T>, &('T, Bool = false))
+    bool isOpen() const;
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       Scope* scope, const SrcPos& srcpos) const;
 
 
     //!@ alias types
@@ -221,7 +255,7 @@ namespace heather
     //!@ measure types
     bool isMeasure() const;
     const Type& measureBaseType() const;
-
+    String measureUnit() const;
 
     //!@ has constraints?
     bool hasConstraints() const;
@@ -233,6 +267,7 @@ namespace heather
 
     bool isRef() const;
     String typeName() const;
+    String typeId() const;
 
     String toString() const;
 
@@ -242,35 +277,14 @@ namespace heather
     bool isValueType() const;
     Type& setIsValueType(bool value);
 
-    static const String kAnyTypeName;
-    static const String kBoolTypeName;
-    static const String kCharTypeName;
-    static const String kDoubleTypeName;
-    static const String kEofTypeName;
-    static const String kFloatTypeName;
-    static const String kIntTypeName;
-    static const String kKeywordTypeName;
-    static const String kLongDoubleTypeName;
-    static const String kLongTypeName;
-    static const String kNilTypeName;
-    static const String kOctetTypeName;
-    static const String kRationalTypeName;
-    static const String kRealTypeName;
-    static const String kShortTypeName;
-    static const String kStringTypeName;
-    static const String kULongTypeName;
-    static const String kUShortTypeName;
-    static const String kUWordTypeName;
-    static const String kUnspecifiedTypeName;
-    static const String kWordTypeName;
+    bool isBuiltinType(const String& name) const;
 
   private:
-    Type(TypeKind kind, bool isValue, TypeImpl* impl);
-
-    bool isBuiltinType(const String& name) const;
+    Type(TypeKind kind, bool isValue, bool isImaginary, TypeImpl* impl);
 
     TypeKind      fKind;
     bool          fIsValue;
+    bool          fIsImaginary;
     Ptr<TypeImpl> fImpl;
   };
 
@@ -327,10 +341,6 @@ namespace heather
     bool operator==(const TypeConstraint& other) const;
     //! Compare operator
     bool operator!=(const TypeConstraint& other) const;
-
-    bool isCovariant(const TypeConstraint& other) const;
-    bool isContravariant(const TypeConstraint& other) const;
-    bool isInvariant(const TypeConstraint& other) const;
 
     //! returns the constraint operator
     TypeConstOperator constOp() const;
@@ -395,15 +405,6 @@ namespace heather
     //! Compare operator
     bool operator!=(const FunctionParameter& other) const;
 
-    //! Indicates whether two function parameters are co-variant.  If this
-    //! returns false \p other is either contravariant or invariant.  Use
-    //! isInvariant to check.
-    bool isCovariant(const FunctionParameter& other) const;
-    //! Indicates whether two function parameters are invariant.
-    bool isInvariant(const FunctionParameter& other) const;
-    bool isContravariant(const FunctionParameter& other) const;
-
-
     //! Returns the kind of the parameter.
     ParameterKind kind() const;
 
@@ -452,16 +453,13 @@ namespace heather
     //! Compare operator
     bool operator!=(const FunctionSignature& other) const;
 
-    //! Indicates whether two function signatures are co-variant.  If this
-    //! returns false \p other is either contravariant or invariant.  Use
-    //! isInvariant to check.
-    bool isCovariant(const FunctionSignature& other) const;
-    //! Indicates whether two function signatures are invariant.
-    bool isInvariant(const FunctionSignature& other) const;
-    bool isContravariant(const FunctionSignature& other) const;
-
     //! Indicates whether the signature refers to a generic function.
     bool isGeneric() const;
+
+    bool isOpen() const;
+
+    bool matchGenerics(TypeCtx& localCtx, const FunctionSignature& right0,
+                       Scope* scope, const SrcPos& srcpos) const;
 
     //! Returns the name of the method.  May be empty if the function is
     //! anonymous.
@@ -479,6 +477,7 @@ namespace heather
     FunctionSignature replaceGenerics(const TypeCtx& typeMap);
 
     String toString() const;
+    String typeId() const;
 
   private:
     bool                fIsGeneric;
@@ -513,6 +512,48 @@ namespace heather
   };
 
 
+  //--------------------------------------------------------------------------
+
+  bool inheritsFrom(const Type& left, const Type& right, Scope* scope,
+                    const SrcPos& srcpos, bool reportErrors = true);
+
+  bool isSameType(const Type& left, const Type& right, Scope* scope,
+                  const SrcPos& srcpos, bool reportErrors = true);
+  bool isCovariant(const Type& left, const Type& right, Scope* scope,
+                   const SrcPos& srcpos, bool reportErrors = true);
+  bool isContravariant(const Type& left, const Type& right, Scope* scope,
+                       const SrcPos& srcpos, bool reportErrors = true);
+  bool isInvariant(const Type& left, const Type& right, Scope* scope,
+                   const SrcPos& srcpos, bool reportErrors = true);
+
+
+  TypeVector newTypeVector();
+  TypeVector newTypeVector(const Type& ty1);
+  TypeVector newTypeVector(const Type& ty1, const Type& ty2);
+  TypeVector newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3);
+  TypeVector newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
+                           const Type& ty4);
+  TypeVector newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
+                           const Type& ty4, const Type& ty5);
+
+  TypeConstVector newTypeConstVector();
+
+  Type newRangeType(const Type& generic);
+
+
+  void tyerror(const Type& type, const char* msg);
+
+  int floatTypeBitsize(const Type& ty);
+  int intTypeBitsize(const Type& ty);
+
+  Type maxFloatType(const Type& leftty, const Type& rightty);
+  Type maxIntType(const Type& leftty, const Type& rightty);
+
+  Type degeneralizeType(const SrcPos& srcpos, const Type& type,
+                        const TypeVector& srcGenerics);
+
 };                              // namespace
+
+
 
 #endif                          // bootstrap_type_h

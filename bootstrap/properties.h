@@ -52,10 +52,12 @@ namespace heather
     static void setTraces(const String& argument);
 
     static bool isTraceTokenizer();
+    static bool isTracePass(int level);
     static bool isTracePass1();
     static bool isTracePass2();
     static bool isTraceAnnotate();
     static bool isTraceTransform();
+    static bool isTraceTypify();
 
     static bool isTraceImportFile();
     static bool isTraceMacro();
@@ -65,6 +67,9 @@ namespace heather
 
     static void addInputDir(const String& dir);
     static const StringVector& inputDirSearchPath();
+
+    static void addSystemDir(const String& dir);
+    static const StringVector& systemDirSearchPath();
 
 #if defined(UNITTESTS)
     static void test_setDontImport(bool value);

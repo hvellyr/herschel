@@ -10,12 +10,14 @@
 
 #include <string.h>
 
-#include "token.h"
-#include "str.h"
 #include "exception.h"
 #include "parsertypes.h"
+#include "predefined.h"
+#include "str.h"
 #include "strbuf.h"
 #include "symbol.h"
+#include "token.h"
+#include "xmlout.h"
 
 #if defined(UNITTESTS)
 #  include <iostream>
@@ -115,7 +117,7 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      display(port, String("<id>") + xmlEncode(fStr) + "</id>");
+      xml::displayTag(port, "id", xmlEncode(fStr));
     }
 
 
@@ -185,6 +187,7 @@ namespace heather
           return fBoolValue == other.boolValue();
 
         case kInt:
+        case kUInt:
           return ( fIntValue == other.intValue() &&
                    fIsImaginary == other.isImaginary() );
         case kReal:
@@ -213,6 +216,7 @@ namespace heather
           return fBoolValue < other.boolValue();
 
         case kInt:
+        case kUInt:
           return ( fIsImaginary == other.isImaginary()
                    ? fIntValue < other.intValue()
                    : false );
@@ -235,23 +239,24 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      String tokstr = xmlEncode(toString());
-
       switch (fType) {
       case kChar:
-        display(port, String("<lit type='char'>") + tokstr + "</lit>");
+        xml::displayTagAttr(port, "lit", "type='char'", toString());
         break;
       case kBool:
-        display(port, String("<lit type='bool'>") + tokstr + "</lit>");
+        xml::displayTagAttr(port, "lit", "type='bool'", toString());
         break;
       case kInt:
-        display(port, String("<lit type='int'>") + tokstr + "</lit>");
+        xml::displayTagAttr(port, "lit", "type='int'", toString());
+        break;
+      case kUInt:
+        xml::displayTagAttr(port, "lit", "type='uint'", toString());
         break;
       case kReal:
-        display(port, String("<lit type='real'>") + tokstr + "</lit>");
+        xml::displayTagAttr(port, "lit", "type='real'", toString());
         break;
       case kRational:
-        display(port, String("<lit type='ratio'>") + tokstr + "</lit>");
+        xml::displayTagAttr(port, "lit", "type='ratio'", toString());
         break;
 
       default:
@@ -266,6 +271,7 @@ namespace heather
       case kBool:
         return fBoolValue ? String("true") : String("false");
       case kInt:
+      case kUInt:
         return ( !fIsImaginary
                  ? fromInt(fIntValue)
                  : (fromInt(fIntValue) + "i") );
@@ -335,17 +341,15 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      String tokstr = xmlEncode(toString());
-
       switch (fType) {
       case kString:
-        display(port, String("<lit type='str'>") + xmlEncode(fStrValue) + "</lit>");
+        xml::displayTagAttr(port, "lit", "type='str'", fStrValue);
         break;
       case kDocString:
-        display(port, String("<lit type='docstr'>") + xmlEncode(fStrValue) + "</lit>");
+        xml::displayTagAttr(port, "lit", "type='docstr'", fStrValue);
         break;
       case kKeyword:
-        display(port, String("<lit type='keyw'>") + tokstr + "</lit>");
+        xml::displayTagAttr(port, "lit", "type='keyw'", toString());
         break;
       default:
         assert(0);
@@ -409,10 +413,10 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      display(port, "<seq>");
+      xml::displayOpenTag(port, "seq");
       for (unsigned int i = 0; i < fChildren.size(); i++)
         fChildren[i].toPort(port);
-      display(port, "</seq>");
+      xml::displayCloseTag(port, "seq");
     }
 
 
@@ -466,16 +470,18 @@ namespace heather
 
     virtual void toPort(Port<Octet>* port) const
     {
-      display(port, ( String("<nested left='") + xmlEncode(tokenTypeToString(fLeft))
-                      + "' right='" + xmlEncode(tokenTypeToString(fRight)) + "'"));
+      StringBuffer attrs;
+      attrs << "left='" << xmlEncode(tokenTypeToString(fLeft)) << "'"
+            << " right='" << xmlEncode(tokenTypeToString(fRight)) << "'";
+
       if (!fChildren.empty()) {
-        display(port, ">");
+        xml::displayOpenTagAttrs(port, "nested", StrHelper(attrs.toString()));
         for (unsigned int i = 0; i < fChildren.size(); i++)
           fChildren[i].toPort(port);
-        display(port, "</nested>");
+        xml::displayCloseTag(port, "nested");
       }
       else
-        display(port, "/>");
+        xml::displayEmptyTagAttrs(port, "nested", StrHelper(attrs.toString()));
     }
 
 
@@ -868,6 +874,7 @@ Token::type() const
   case kChar:
   case kBool:
   case kInt:
+  case kUInt:
   case kReal:
   case kRational:
   case kKeyword:
@@ -948,7 +955,8 @@ Token::isLit() const
 bool
 Token::isNumber() const
 {
-  return ( (fType == kInt || fType == kReal || fType == kRational)
+  return ( (fType == kInt || fType == kUInt ||
+            fType == kReal || fType == kRational)
            && fImpl != NULL );
 }
 
@@ -1154,7 +1162,7 @@ Token::boolValue() const
 int
 Token::intValue() const
 {
-  if (fType != kInt)
+  if (fType != kInt && fType != kUInt)
     throw NotSupportedException(__FUNCTION__);
   return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIntValue;
 }
@@ -1329,7 +1337,7 @@ Token::isBool() const
 bool
 Token::isInt() const
 {
-  return fType == kInt;
+  return fType == kInt || fType == kUInt;
 }
 
 
@@ -1367,6 +1375,8 @@ Token::isNegative() const
   switch (fType) {
   case kInt:
     return intValue() < 0;
+  case kUInt:
+    return false;
   case kReal:
     return realValue() < 0;
   case kRational:
@@ -1454,16 +1464,16 @@ Token::toPort(Port<Octet>* port) const
     case kSymbol:
       return fImpl->toPort(port);
     case kMacroParam:
-      display(port, String("<id type='macparm'>") +
-              dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</id>");
+      xml::displayTagAttr(port, "id", "type='macparm'",
+                          dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr);
       break;
     case kMacroParamAsStr:
-      display(port, String("<id type='strparm'>") +
-              dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</id>");
+      xml::displayTagAttr(port, "id", "type='strparm'",
+                          dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr);
       break;
     case kKeyarg:
-      display(port, String("<id type='keyarg'>") +
-              dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + "</id>");
+      xml::displayTagAttr(port, "id", "type='keyarg'",
+                          dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr);
       break;
     case kDefId:
     case kElseId:
@@ -1488,7 +1498,7 @@ Token::toPort(Port<Octet>* port) const
     case kWhenId:
     case kWhereId:
     case kWhileId:
-      display(port, String("<id>") + toString() + "</id>");
+      xml::displayTag(port, "id", toString());
       break;
     default:
       assert(0);
@@ -1496,8 +1506,9 @@ Token::toPort(Port<Octet>* port) const
     break;
 
   case kPunct:
-    display(port, ( String("<punct type='") +
-                    xmlEncode(tokenTypeToString(fType)) + "'/>") );
+    xml::displayEmptyTagAttrs(port, "punct",
+                              StrHelper(String("type='") +
+                                        xmlEncode(tokenTypeToString(fType)) + "'"));
     break;
   }
 }

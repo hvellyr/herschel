@@ -101,7 +101,7 @@ def macro max
                                      {
                                        let tmp1 = ?one
                                        let tmp2 = ?two
-                                       if (tmp1 > tmp2) 
+                                       if (tmp1 > tmp2)
                                          tmp1
                                        else
                                          tmp2

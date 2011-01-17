@@ -30,6 +30,7 @@ static OptimizeLevel sOptLevel = kOptLevelBasic;
 static Ptr<ConfigVarRegistry> sConfigVarRegistry;
 static String sOutdir;
 static StringVector sInputSearchPath;
+static StringVector sSystemSearchPath;
 static bool sIsImportFileTracing = false;
 static bool sIsMacroTracing = false;
 static bool sIsPass1Tracing = false;
@@ -37,7 +38,8 @@ static bool sIsPass2Tracing = false;
 static bool sIsAnnotateTracing = false;
 static bool sIsTransformTracing = false;
 static bool sIsTokenizerTracing = false;
-static int sPassLevel = 4;
+static bool sIsTypifyTracing = false;
+static int sPassLevel = 5;
 static bool sShouldIgnoreDocStrings = true;
 static bool sVerbose = false;
 
@@ -110,6 +112,8 @@ Properties::setTrace(const String& key, bool value)
     sIsAnnotateTracing = value;
   else if (key == String("transform"))
     sIsTransformTracing = value;
+  else if (key == String("typify"))
+    sIsTypifyTracing = value;
   else if (key == String("import"))
     sIsImportFileTracing = value;
   else if (key == String("macro"))
@@ -140,6 +144,23 @@ Properties::isTraceTokenizer()
 
 
 bool
+Properties::isTracePass(int level)
+{
+  switch (level) {
+  case 0: return false;
+  case 1: return sIsPass1Tracing;
+  case 2: return sIsPass2Tracing;
+  case 3: return sIsTransformTracing;
+  case 4: return sIsAnnotateTracing;
+  case 5: return sIsTypifyTracing;
+  default:
+    assert(0 && "Missing pass level setting");
+  }
+  return false;
+}
+
+
+bool
 Properties::isTracePass1()
 {
   return sIsPass1Tracing;
@@ -164,6 +185,13 @@ bool
 Properties::isTraceTransform()
 {
   return sIsTransformTracing;
+}
+
+
+bool
+Properties::isTraceTypify()
+{
+  return sIsTypifyTracing;
 }
 
 
@@ -267,4 +295,18 @@ Properties::inputDirSearchPath()
     sInputSearchPath.push_back(String("."));
 
   return sInputSearchPath;
+}
+
+
+void
+Properties::addSystemDir(const String& dir)
+{
+  sSystemSearchPath.push_back(dir);
+}
+
+
+const StringVector&
+Properties::systemDirSearchPath()
+{
+  return sSystemSearchPath;
 }
