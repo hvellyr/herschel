@@ -1,4 +1,0 @@
-def alias IntVector = Vector<Int>
-def alias Point = Point*
-
-def alias KeyMap = Map<String, Record<Int, Vector<Byte>, Real> >
