@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='Person'>
+<isa>
+<ty:type nm='Person' inst='t'>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='Person|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='Person' inst='t'>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='Person' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<symbol  ty='Person'>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='foo'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+<init>
+<cast>
+<base>
+<apply  ty='Person'>
+<symbol  ty='lambda(Person):Person'>Person|init</symbol>
+<args>
+<apply  ty='Person'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|allocate</symbol>
+<args>
+<type  ty='lang|Class&lt;Person>'/>
+</args>
+</apply>
+</args>
+</apply>
+</base>
+<as>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</as>
+</cast>
+</init>
+</vardef>
+</let>
+<symbol  ty='&apos;T'>t</symbol>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='Person' inst='t'>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:type nm='Person' inst='t'>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:type nm='Person' inst='t'>
+</ty:type>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:type nm='Person' inst='t'>
+</ty:type>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>
