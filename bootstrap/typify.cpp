@@ -474,8 +474,9 @@ Typifier::findKeyedArg(const NodeList& args, size_t argidx, const String& key)
 }
 
 
-void
-Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
+Type
+Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos,
+                                        const NodeList& args,
                                         const FunctionNode* funcNode,
                                         const NodeList& funcParams)
 {
@@ -523,8 +524,6 @@ Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
     error(wrong number of args)
   */
 
-  NodeList args = node->children();
-
   TypeCtx localCtx;
   size_t argidx = 0;
   std::set<int> argIndicesUsed;
@@ -536,8 +535,8 @@ Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
         AptNode* arg = args[argidx].obj();
 
         if (i >= args.size()) {
-          errorf(node->srcpos(), E_BadArgNumber, "not enough arguments");
-          return;
+          errorf(srcpos, E_BadArgNumber, "not enough arguments");
+          return Type();
         }
         checkArgParamType(localCtx, param, arg, i);
         argidx++;
@@ -574,7 +573,7 @@ Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
   }
 
   if (argidx < args.size()) {
-    errorf(node->srcpos(), E_BadArgNumber,
+    errorf(srcpos, E_BadArgNumber,
            "Too much arguments");
   }
 
@@ -583,9 +582,9 @@ Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
     // fprintf(stderr, "RETTY: %s\n", (const char*)StrHelper(retty.toString()));
 
     if (retty.isDef())
-      node->setType(retty);
+      return retty;
     else
-      errorf(node->srcpos(), E_TypeMismatch,
+      errorf(srcpos, E_TypeMismatch,
              "function has unmatched generic return type.");
 
     // Type retty = funcNode->retType();
@@ -596,10 +595,23 @@ Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
     //   errorf(node->srcpos(), E_TypeMismatch,
     //          "function has unmatched generic return type.");
     // }
- }
-  else {
-    node->setType(funcNode->retType());
+
+    return Type();
   }
+  else
+    return funcNode->retType();
+}
+
+
+void
+Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
+                                        const FunctionNode* funcNode,
+                                        const NodeList& funcParams)
+{
+  Type type = typifyMatchAndCheckParameters(node->srcpos(), node->children(),
+                                            funcNode, funcParams);
+  if (type.isDef())
+    node->setType(type);
 }
 
 
@@ -678,9 +690,80 @@ Typifier::typify(AssignNode* node)
 }
 
 
+String
+Typifier::operatorNameByOp(OperatorType type) const
+{
+  switch (type) {
+  case kOpAppend:       return String("append");
+  case kOpBitAnd:       return String("bitand");
+  case kOpBitOr:        return String("bitor");
+  case kOpBitXor:       return String("bitxor");
+  case kOpCompare:      return String("compare");
+  case kOpDivide:       return String("divide");
+  case kOpEqual:        return String("equal?");
+  case kOpExponent:     return String("exponent");
+  case kOpFold:         return String("fold");
+  case kOpGreater:      return String("greater?");
+  case kOpGreaterEqual: return String("greater-equal?");
+  case kOpIn:           return String("in");
+  case kOpIsa:          return String("isa?");
+  case kOpLess:         return String("less?");
+  case kOpLessEqual:    return String("less-equal?");
+  case kOpLogicalAnd:   return String("logand");
+  case kOpLogicalOr:    return String("logor");
+  case kOpMinus:        return String("subtract");
+  case kOpMod:          return String("mod");
+  case kOpMultiply:     return String("multiply");
+  case kOpPlus:         return String("add");
+  case kOpShiftLeft:    return String("shift-left");
+  case kOpShiftRight:   return String("shift-right");
+  case kOpUnequal:      return String("unequal?");
+
+  case kOpInvalid:
+  case kOpAssign:       return String("=");
+  case kOpAs:           return String("cast-to");
+  case kOpBy:           return String("by");
+  case kOpMapTo:        return String("map-to");
+  case kOpRange:        return String("..");
+  case kOpThen:         return String("then");
+  case kOpWhile:        return String("while");
+    assert(0);
+  }
+
+  return String();
+}
+
+
+bool
+Typifier::checkBinaryFunctionCall(BinaryNode* node,
+                                  const String& funcName,
+                                  AptNode* leftArg, AptNode* rightArg)
+{
+  const FunctionNode* funcNode = dynamic_cast<const FunctionNode*>(
+    node->scope()->lookupFunction(funcName, true));
+
+  if (funcNode != NULL) {
+    // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
+    // out->render(const_cast<FunctionNode*>(funcNode));
+    Type type = typifyMatchAndCheckParameters(node->srcpos(),
+                                              newNodeList(leftArg, rightArg),
+                                              funcNode,
+                                              funcNode->params());
+    if (type.isDef()) {
+      node->setType(type);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 void
 Typifier::typify(BinaryNode* node)
 {
+  Type retty;
+
   if (fPhase == kTypify) {
     typifyNode(node->left());
     typifyNode(node->right());
@@ -750,6 +833,13 @@ Typifier::typify(BinaryNode* node)
         return;
       }
 
+
+      if (checkBinaryFunctionCall(node, operatorNameByOp(node->op()),
+                                  node->left(), node->right()))
+        return;
+
+      tyerror(leftty, "left");
+      tyerror(rightty, "right");
       // TODO: try to lookup a method which enables add(leftty, rightty) and use
       // it's returntype
       errorf(node->srcpos(), E_BinaryTypeMismatch,
@@ -999,8 +1089,9 @@ Typifier::typify(RangeNode* node)
 {
   typifyNode(node->from());
   typifyNode(node->to());
-  if (node->by() != NULL)
+  if (node->by() != NULL) {
     typifyNode(node->by());
+  }
 
   if (fPhase == kTypify) {
     Type fromType = node->from()->type();

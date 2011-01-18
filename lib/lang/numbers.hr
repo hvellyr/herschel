@@ -154,4 +154,21 @@ def alias Double     = Float64
 def alias LongDouble = Float128
 
 
+----------------------------------------------------------------------
+-- actions
+----------------------------------------------------------------------
+
+def generic add(left @ 'T, right @ 'T) : 'T ...
+    ~ Computes the addition of @var{left} and @var{right}. ~
+
+def generic subtract(left @ 'T, right @ 'T) : 'T ...
+    ~ Computes the difference of @var{left} and @var{right}. ~
+
+def generic multiply(left @ 'T, right @ 'T) : 'T ...
+    ~ Computes the product of @var{left} and @var{right}. ~
+
+def generic divide(dividend @ 'T, divisor @ 'T) : 'T ...
+    ~ Computes the quotient of @var{dividend} and @var{divisor}.  If
+    @var{divisor} is 0 an @type{DivisionByZero} exception is raised. ~
+
 -- end of lang/numbers
