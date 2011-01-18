@@ -3058,10 +3058,21 @@ namespace herschel
       // TODO: handle complex generic types like 'T[]
       return isSameType(left0, right0, scope, srcpos, reportErrors);
 
-    Type left = resolveType(left0, scope);
     Type right = resolveType(right0, scope);
+    if (!right.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return false;
+    }
 
-    if (!left.isDef() || !right.isDef()) {
+    if (left0.isOpen() && isCovariant(right, Type::newAny(), scope, srcpos, reportErrors)) {
+      // a generic open type is covariant to Any.  This needs special treatment
+      // in the compiler though
+      return true;
+    }
+
+    Type left = resolveType(left0, scope);
+    if (!left.isDef()) {
       if (reportErrors)
         errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
       return false;
@@ -3150,8 +3161,8 @@ namespace herschel
       return false;
     }
 
-    fprintf(stderr, "LEFT: %s\n", (const char*)StrHelper(left.toString()));
-    fprintf(stderr, "RIGHT: %s\n", (const char*)StrHelper(right.toString()));
+    tyerror(left, "LEFT");
+    tyerror(right, "RIGHT");
     assert(0 && "unhandled type?");
     return false;
   }
@@ -3313,6 +3324,15 @@ namespace herschel
   Type
   maxIntType(const Type& leftty, const Type& rightty)
   {
+    if (leftty.isBuiltinType(Names::kOrdinalTypeName))
+      return leftty;
+    else if (rightty.isBuiltinType(Names::kOrdinalTypeName))
+      return rightty;
+    else if (leftty.isBuiltinType(Names::kIntTypeName))
+      return leftty;
+    else if (rightty.isBuiltinType(Names::kIntTypeName))
+      return rightty;
+
     int righttysize = intTypeBitsize(rightty);
     if (intTypeBitsize(leftty) < righttysize) {
       if (leftty.isAnyUInt()) {

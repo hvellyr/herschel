@@ -130,6 +130,14 @@ namespace herschel
     void typifyMatchAndCheckParameters(ApplyNode* node,
                                        const FunctionNode* funcNode,
                                        const NodeList& funcParams);
+    Type typifyMatchAndCheckParameters(const SrcPos& srcpos,
+                                       const NodeList& args,
+                                       const FunctionNode* funcNode,
+                                       const NodeList& funcParams);
+    bool checkBinaryFunctionCall(BinaryNode* node,
+                                 const String& funcName,
+                                 AptNode* leftArg, AptNode* rightArg);
+    String operatorNameByOp(OperatorType type) const;
 
     struct KeyargReturn
     {
