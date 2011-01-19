@@ -1,4 +1,4 @@
--- test to import (failing) missing-01
+;; test to import (failing) missing-01
 
 import "missing-01"
 

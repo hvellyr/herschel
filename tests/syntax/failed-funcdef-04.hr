@@ -1,5 +1,5 @@
 
--- there must be no quote before the T in the where clause
+;; there must be no quote before the T in the where clause
 def generic f(a @ 'T) : 'T
     where 'T isa Copyable
   a

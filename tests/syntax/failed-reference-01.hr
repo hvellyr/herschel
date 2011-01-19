@@ -1,26 +1,26 @@
--- double reference is nonsense, warning
+;; double reference is nonsense, warning
 def a : ^(^Int) = nil
 
--- dto, but in sequence
+;; dto, but in sequence
 def b : ^(^String, ^Bool) = nil
 
 
--- heterogen ref/value union
+;; heterogen ref/value union
 def c : &(^String, Bool) 
 
 
--- mixed ref/value union
+;; mixed ref/value union
 def d : (^String, Bool) 
 
--- mixed ref/value union and double reference
+;; mixed ref/value union and double reference
 def e : ^(^String, Bool) 
 
--- mixed ref/value union
+;; mixed ref/value union
 def f : ^(String, ^Bool) 
 
--- double ref type warning
+;; double ref type warning
 def g : ^(^String, ^Bool) 
 
 
--- references to function types are ignored
+;; references to function types are ignored
 def m : ^Function() : Bool

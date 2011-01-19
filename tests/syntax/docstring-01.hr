@@ -72,4 +72,4 @@ def char gspace ~ General Space char ~
 def char sol    ~ Solidus, slash ~
     = 2fh
  
--- def macro
+;; def macro

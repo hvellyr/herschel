@@ -1,5 +1,5 @@
--- test: the return type of foo must be an Int in bar(), and a String in
--- wiz()
+;; test: the return type of foo must be an Int in bar(), and a String in
+;; wiz()
 def type Container<A> : Object
 
 def foo(x : Container<'T>, y : 'T) : 'T

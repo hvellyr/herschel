@@ -1,4 +1,4 @@
--- blocks with single "on signal" members can be dropped completely.
+;; blocks with single "on signal" members can be dropped completely.
 
 def foo()
   let a = 0

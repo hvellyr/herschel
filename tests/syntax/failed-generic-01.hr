@@ -1,4 +1,4 @@
--- there must be no quote before the T in the type generics list
+;; there must be no quote before the T in the type generics list
 
 def type Container<'T> : Object
 

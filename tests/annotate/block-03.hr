@@ -1,5 +1,5 @@
--- we can infer the type of r and foo's return type by x alone.  x and r
--- must match.
+;; we can infer the type of r and foo's return type by x alone.  x and r
+;; must match.
 def foo(x : String)
   on exit(r) {
     r

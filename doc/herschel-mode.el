@@ -1,13 +1,13 @@
 ;;; herschel-mode.el --- major mode for editing herschel files and modules.
 ;;
-;; copyright (c) 2003, 2007, 2008, 2009 Gregor Klinke
+;; copyright (c) 2003, 2007, 2008, 2009-2011 Gregor Klinke
 ;;
 ;; Some parts of this mode are based on the vera-mode by Reto Zimmermann,
 ;; Synopsys Inc. (c 1999)
 ;;
 ;; Author:      Gregor Klinke <gck@eyestep.org>
 ;; Maintainer:  Gregor Klinke <gck@eyestep.org>
-;; Version:     0.0.1
+;; Version:     0.0.3
 ;; Keywords:    languages herschel
 ;; WWW:         http://www.eyestep.org/herschel
 ;;
@@ -56,10 +56,10 @@
 ;;   (setq auto-mode-alist (cons '("\\.hr\\'" . herschel-mode) auto-mode-alist))
 
 
-;; ----------------------------------------------------------------------
+;; ---------------------------------------------------------------------------
 ;; VARIABLES
 ;; Set a number of global variable for customization, global constants, etc.
-;; ----------------------------------------------------------------------
+;; ---------------------------------------------------------------------------
 (defgroup herschel nil
   "Customizations for Herschel Mode."
   :prefix "herschel-"
@@ -70,7 +70,7 @@
   :type 'integer
   :group 'herschel)
 
-(defconst herschel-version "0.0.2"
+(defconst herschel-version "0.0.3"
   "Herschel Mode version number.")
 
 ;; XEmacs handling
@@ -78,10 +78,10 @@
   "Non-nil if XEmacs is used.")
 
 
-;; ----------------------------------------------------------------------
+;; ---------------------------------------------------------------------------
 ;; KEY BINDINGS
 ;; Define the keymap for herschel map.
-;; ----------------------------------------------------------------------
+;; ---------------------------------------------------------------------------
 (defvar herschel-mode-map ()
   "Keymap for Herschel Mode.")
 
@@ -98,7 +98,6 @@
 
 ;; mode specific key bindings
 (define-key herschel-mode-map "\C-c\t"   'indent-relative)
-(define-key herschel-mode-map "\M-\C-\\" 'herschel-indent-region)
 (define-key herschel-mode-map "\C-c\C-c" 'herschel-comment-uncomment-region)
 (define-key herschel-mode-map "\C-c\C-f" 'herschel-fontify-buffer)
 (define-key herschel-mode-map "\C-c\C-h" 'herschel-doc-mode)
@@ -106,9 +105,9 @@
 (define-key herschel-mode-map "\M-\t"    'tab-to-tab-stop)
 
 
-;; ----------------------------------------------------------------------
+;; ---------------------------------------------------------------------------
 ;; Menu
-;; ----------------------------------------------------------------------
+;; ---------------------------------------------------------------------------
 (defvar herschel-mode-menu-list
   '("Herschel"
     ["(Un)Comment Out Region"	   herschel-comment-uncomment-region (mark)]
@@ -118,12 +117,8 @@
     ["Move Forward Same Indent"  herschel-forward-same-indent t]
     ["Move Backward Same Indent" herschel-backward-same-indent t]
     "--"
-    ["Indent Region"             herschel-indent-region (mark)]
-    ["Indent Buffer"             herschel-indent-buffer t]
-    "--"
     ["Documentation"             herschel-doc-mode :keys "C-c C-h"]
     ["Version"                   herschel-version t]
-    ["Bug Report..."             herschel-mode-submit-bug-report t]
     "--"
     ["Customize..."              herschel-customize t]
     )
@@ -132,9 +127,9 @@
 (require 'easymenu)
 
 
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 ;;; Syntax table
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 (defvar herschel-mode-syntax-table nil
   "Syntax table used in `herschel-mode' buffers.")
 
@@ -156,7 +151,7 @@
 (modify-syntax-entry ?\% "w"    herschel-mode-syntax-table)
 (modify-syntax-entry ?\/ "w"    herschel-mode-syntax-table)
 (modify-syntax-entry ?\+ "."    herschel-mode-syntax-table)
-;(modify-syntax-entry ?\- "."    herschel-mode-syntax-table)
+(modify-syntax-entry ?\- "."    herschel-mode-syntax-table)
 (modify-syntax-entry ?\* "."    herschel-mode-syntax-table)
 (modify-syntax-entry ?\: "."    herschel-mode-syntax-table)
 (modify-syntax-entry ?\! "w"    herschel-mode-syntax-table)
@@ -173,15 +168,17 @@
 (modify-syntax-entry ?\{ "(}"   herschel-mode-syntax-table)
 (modify-syntax-entry ?\} "){"   herschel-mode-syntax-table)
 
+;; generic comment for the inline documentation
 (modify-syntax-entry ?\~ "!"    herschel-mode-syntax-table)
 
-(modify-syntax-entry ?\- ". 12" herschel-mode-syntax-table)
+;; 'real' line comments start with ;;
+(modify-syntax-entry ?\; ". 12" herschel-mode-syntax-table)
 (modify-syntax-entry ?\n ">"    herschel-mode-syntax-table)
 
 
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 ;;; Mode definition
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 
 ;;;###autoload
 (defun herschel-mode ()
@@ -190,13 +187,10 @@
 Usage:
 ------
 
-- WORD/COMMAND COMPLETION:  Typing `\\[herschel-electric-tab]' after a (not completed) word looks
+- WORD/COMMAND COMPLETION:  Typing `\\[herschel-expand-abbrev]' after a (not completed) word looks
   for a word in the buffer or a Herschel keyword that starts alike, inserts it
-  and adjusts case.  Re-typing `\\[herschel-electric-tab]' toggles through alternative word
+  and adjusts case.  Re-typing `\\[herschel-expand-abbrev]' toggles through alternative word
   completions.
-
-  Typing `\\[herschel-electric-tab]' after a non-word character inserts a tabulator stop (if
-  not at the beginning of a line).  `\\[tab-to-tab-stop]' always inserts a tabulator stop.
 
 - COMMENTS:  `\\[herschel-comment-uncomment-region]' comments out a region if not commented out, and
   uncomments a region if already commented out.
@@ -209,16 +203,18 @@ Usage:
 Maintenance:
 ------------
 
-To submit a bug report, use the corresponding menu entry within Herschel Mode.
-Add a description of the problem and include a reproducible test case.
+To submit a bug report please write to the maintainer.  Add a description
+of the problem and include a reproducible test case.
 
 Feel free to send questions and enhancement requests to <gck@eyestep.org>.
 
-Official distribution is at <http://www.eyestep.org/herschel/herschel-mode.html>.
+Official distribution is as part of the herschel compiler package;
+see <http://www.eyestep.org/herschel.html> for details.
 
 
                                                   The Herschel Mode Maintainer
                                                Gregor Klinke <gck@eyestep.org>
+
 
 Key bindings:
 -------------
@@ -239,8 +235,8 @@ Key bindings:
   (set-syntax-table herschel-mode-syntax-table)
 
   ;; set local variables
-  (set (make-local-variable 'comment-start-skip) "\\(--[!]?\\) *")
-  (set (make-local-variable 'comment-start) "--")
+  (set (make-local-variable 'comment-start-skip) "\\(;;[!]?\\) *")
+  (set (make-local-variable 'comment-start) ";;")
   (set (make-local-variable 'comment-end) "")
   (set (make-local-variable 'comment-column) 40)
   (set (make-local-variable 'comment-indent-function) 'c-comment-indent) ;; TODO
@@ -249,7 +245,6 @@ Key bindings:
   (set (make-local-variable 'paragraph-separate) "[ \t\f]*$\\|^\s*{\\|^\s*}")
   (set (make-local-variable 'require-final-newline) t)
   (set (make-local-variable 'indent-tabs-mode) nil)
-  (set (make-local-variable 'indent-line-function) 'indent-relative);; 'herschel-indent-line)
   (set (make-local-variable 'parse-sexp-ignore-comments) t) ;; ???
 
   ;; set local abbreviation table
@@ -282,13 +277,13 @@ Key bindings:
 
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Herschel definitions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ----------------------------------------------------------------------
+;; ---------------------------------------------------------------------------
 ;; Keywords
-;; ----------------------------------------------------------------------
+;; ---------------------------------------------------------------------------
 (defconst herschel-keywords
   '(
     "module" "import" "export" "extend" "when"
@@ -371,9 +366,9 @@ Key bindings:
   "Regexp for herschel predefined constants.")
 
 
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 ;;; Font locking
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 ;; XEmacs compatibility
 (when herschel-xemacs
   (require 'font-lock)
@@ -530,80 +525,7 @@ Key bindings:
 
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Indentation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defvar herschel-echo-syntactic-information-p t
-  "If non-nil, syntactic info is echoed when the line is indented.")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; offset functions
-
-(defconst herschel-offsets-alist
-  '((comment        . herschel-lineup-C-comments)
-    (string         . -1000)
-    (directive      . -1000)
-    (block-open     . 0)
-    (block-intro    . +)
-    (block-close    . 0)
-    (arglist-intro  . +)
-    (arglist-cont   . +)
-    (arglist-cont-nonempty . 0)
-    (arglist-close  . 0)
-    (statement      . 0)
-    (statement-cont . +)
-    (substatement   . +)
-    (else-clause    . 0))
-  "Association list of syntactic element symbols and indentation offsets.
-Adapted from `c-offsets-alist'.")
-
-(defun herschel-evaluate-offset (offset langelem symbol)
-  "Offset can be a number, a function, a variable, a list, or one of
-the symbols + or -."
-  (cond
-   ((eq offset '+)         (setq offset herschel-basic-offset))
-   ((eq offset '-)         (setq offset (- herschel-basic-offset)))
-   ((eq offset '++)        (setq offset (* 2 herschel-basic-offset)))
-   ((eq offset '--)        (setq offset (* 2 (- herschel-basic-offset))))
-   ((eq offset '*)         (setq offset (/ herschel-basic-offset 2)))
-   ((eq offset '/)         (setq offset (/ (- herschel-basic-offset) 2)))
-   ((functionp offset)     (setq offset (funcall offset langelem)))
-   ((listp offset)
-    (setq offset
-	  (let (done)
-	    (while (and (not done) offset)
-	      (setq done (herschel-evaluate-offset (car offset) langelem symbol)
-		    offset (cdr offset)))
-	    (if (not done)
-		0
-	      done))))
-   ((not (numberp offset)) (setq offset (symbol-value offset))))
-  offset)
-
-(defun herschel-get-offset (langelem)
-  "Get offset from LANGELEM which is a cons cell of the form:
-\(SYMBOL . RELPOS).  The symbol is matched against
-herschel-offsets-alist and the offset found there is either returned,
-or added to the indentation at RELPOS.  If RELPOS is nil, then
-the offset is simply returned."
-  (let* ((symbol (car langelem))
-	 (relpos (cdr langelem))
-	 (match  (assq symbol herschel-offsets-alist))
-	 (offset (cdr-safe match)))
-    (if (not match)
-	(setq offset 0
-	      relpos 0)
-      (setq offset (herschel-evaluate-offset offset langelem symbol)))
-    (+ (if (and relpos
-		(< relpos (save-excursion (beginning-of-line) (point))))
-	   (save-excursion
-	     (goto-char relpos)
-	     (current-column))
-	 0)
-       (herschel-evaluate-offset offset langelem symbol))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; help functions
 
 (defsubst herschel-point (position)
@@ -628,15 +550,6 @@ This function does not modify point or mark."
      ((eq position 'ionl) (forward-line 1) (back-to-indentation))
      (t (error "Unknown buffer position requested: %s" position)))
     (point)))
-
-(defun herschel-in-literal (&optional lim)
-  "Determine if point is in a Herschel literal."
-  (save-excursion
-    (let ((state (parse-partial-sexp (or lim (point-min)) (point))))
-      (cond
-       ((nth 3 state) 'string)
-       ((nth 4 state) 'comment)
-       (t nil)))))
 
 (defun herschel-skip-forward-literal ()
   "Skip forward literal and return t if within one."
@@ -703,7 +616,7 @@ This function does not modify point or mark."
 				     (= (following-char) ?\#)))
 	    (beginning-of-line)))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; comment indentation functions
 
 (defsubst herschel-langelem-col (langelem &optional preserve-point)
@@ -751,14 +664,19 @@ Nicked from `c-lineup-C-comments'."
 		(- (current-column) -1 langelem-col))
 	    (- (current-column) stars langelem-col)))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; move functions
 
-(defconst herschel-beg-block-re "{\\|\\<\\(begin\\|fork\\)\\>")
+(defconst herschel-beg-block-re
+  "{\\|\\<\\(begin\\|fork\\)\\>")
 
-(defconst herschel-end-block-re "}\\|\\<\\(end\\|join\\(\\s-+\\(all\\|any\\|none\\)\\)?\\)\\>")
+(defconst herschel-end-block-re
+  "}\\|\\<\\(end\\|join\\(\\s-+\\(all\\|any\\|none\\)\\)?\\)\\>")
 
-(defconst herschel-beg-substatement-re "\\<\\(else\\|for\\|if\\|repeat\\|while\\)\\>")
+(defconst herschel-beg-substatement-re
+  "\\<\\(else\\|for\\|if\\|repeat\\|while\\)\\>")
 
 (defun herschel-corresponding-begin ()
   "Find corresponding block begin if cursor is at a block end."
@@ -845,183 +763,9 @@ Nicked from `c-lineup-C-comments'."
   (herschel-beginning-of-substatement))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; syntax analysis
-
-(defmacro herschel-add-syntax (symbol &optional relpos)
-  "A simple macro to append the syntax in symbol to the syntax list.
-try to increase performance by using this macro."
-  `(setq syntax (cons (cons ,symbol ,(or relpos 0)) syntax)))
-
-(defun herschel-guess-basic-syntax ()
-  "Determine syntactic context of current line of code."
-  (save-excursion
-    (beginning-of-line)
-    (let (syntax state placeholder pos)
-      ;; determine syntax state
-      (setq state (parse-partial-sexp (point-min) (point)))
-      (cond
-       ;; CASE 1: in a comment?
-       ((nth 4 state)
-	;; skip empty lines
-	(while (and (zerop (forward-line -1))
-		    (looking-at "^\\s-*$")))
-	(herschel-add-syntax 'comment (herschel-point 'boi)))
-       ;; CASE 2: in a string?
-       ((nth 3 state)
-	(herschel-add-syntax 'string))
-       ;; CASE 3: at a directive?
-       ((save-excursion (back-to-indentation) (= (following-char) ?\#))
-	(herschel-add-syntax 'directive (point)))
-       ;; CASE 4: after an opening parenthesis (argument list continuation)?
-       ((= (char-after (nth 1 state)) ?\()
-	(goto-char (1+ (nth 1 state)))
-	;; is there code after the opening parenthesis on the same line?
-	(if (looking-at "\\s-*$")
-	    (herschel-add-syntax 'arglist-cont (herschel-point 'boi))
-	  (herschel-add-syntax 'arglist-cont-nonempty (point))))
-       ;; CASE 5: at a block closing?
-       ((save-excursion (back-to-indentation) (looking-at herschel-end-block-re))
-	;; look for the corresponding begin
-	(herschel-corresponding-begin)
-	(herschel-add-syntax 'block-close (herschel-point 'boi)))
-       ;; CASE 6: at a block intro (the first line after a block opening)?
-       ((and (save-excursion
-	       (herschel-backward-syntactic-ws nil t)
-	       ;; previous line ends with a block opening?
-	       (or (/= (skip-chars-backward "{") 0) (backward-word 1))
-	       (when (looking-at herschel-beg-block-re)
-		 ;; go to beginning of substatement
-		 (herschel-beginning-of-substatement)
-		 (setq placeholder (point))))
-	     ;; not if "fork" is followed by "{"
-	     (save-excursion
-	       (not (and (progn (back-to-indentation) (looking-at "{"))
-			 (progn (goto-char placeholder)
-				(looking-at "\\<fork\\>"))))))
-	(goto-char placeholder)
-	(herschel-add-syntax 'block-intro (herschel-point 'boi)))
-       ;; CASE 7: at the beginning of an else clause?
-       ((save-excursion (back-to-indentation) (looking-at "\\<else\\>"))
-	;; find corresponding if
-	(herschel-corresponding-if)
-	(herschel-add-syntax 'else-clause (herschel-point 'boi)))
-       ;; CASE 8: at the beginning of a statement?
-       ;; is the previous command completed?
-       ((or (save-excursion
-	      (herschel-backward-syntactic-ws nil t)
-	      (setq placeholder (point))
-	      ;; at the beginning of the buffer?
-	      (or (bobp)
-		  ;; previous line ends with a semicolon or
-		  ;; is a block opening or closing?
-		  (when (or (/= (skip-chars-backward "{};") 0)
-			    (progn (back-to-indentation)
-				   (looking-at (concat herschel-beg-block-re "\\|"
-						       herschel-end-block-re))))
-		    ;; if at a block closing, go to beginning
-		    (when (looking-at herschel-end-block-re)
-		      (herschel-corresponding-begin))
-		    ;; go to beginning of the statement
-		    (herschel-beginning-of-statement)
-		    (setq placeholder (point)))
-		  ;; at a directive?
-		  (when (progn (back-to-indentation) (looking-at "#"))
-		    ;; go to previous statement
-		    (herschel-beginning-of-statement)
-		    (setq placeholder (point)))))
-	    ;; at a block opening?
-	    (when (save-excursion (back-to-indentation)
-				  (looking-at herschel-beg-block-re))
-	      ;; go to beginning of the substatement
-	      (herschel-beginning-of-substatement)
-	      (setq placeholder (point))))
-	(goto-char placeholder)
-	(herschel-add-syntax 'statement (herschel-point 'boi)))
-       ;; CASE 9: at the beginning of a substatement?
-       ;; is this line preceeded by a substatement opening statement?
-       ((save-excursion (herschel-backward-syntactic-ws nil t)
-			(when (= (preceding-char) ?\)) (backward-sexp))
-			(backward-word 1)
-			(setq placeholder (point))
-			(looking-at herschel-beg-substatement-re))
-	(goto-char placeholder)
-	(herschel-add-syntax 'substatement (herschel-point 'boi)))
-       ;; CASE 10: it must be a statement continuation!
-       (t
-	;; go to beginning of statement
-	(herschel-beginning-of-substatement)
-	(herschel-add-syntax 'statement-cont (herschel-point 'boi))))
-      syntax)))
-
-
-
-(defun herschel-forward-comment ()
-  "ashddhaksdasldashk"
-  (interactive)
-  (forward-comment -1))
-
-;; ----------------------------------------------------------------------
-(defun herschel-indent-line ()
-  "Indent the current line as herschel code. Optional SYNTAX is the
-syntactic information for the current line. Returns the amount of
-indentation change (in columns)."
-  (interactive)
-  (let* ((syntax (herschel-guess-basic-syntax))
-	 (pos (- (point-max) (point)))
-	 (indent (apply '+ (mapcar 'herschel-get-offset syntax)))
-	 (shift-amt  (- (current-indentation) indent)))
-    (when herschel-echo-syntactic-information-p
-      (message "syntax: %s, indent= %d" syntax indent))
-    (unless (zerop shift-amt)
-      (beginning-of-line)
-      (delete-region (point) (herschel-point 'boi))
-      (indent-to indent))
-    (if (< (point) (herschel-point 'boi))
-	(back-to-indentation)
-      ;; If initial point was within line's indentation, position after
-      ;; the indentation.  Else stay at same point in text.
-      (when (> (- (point-max) pos) (point))
-	(goto-char (- (point-max) pos))))
-    shift-amt))
-
-(defun herschel-indent-buffer ()
-  "Indent whole buffer as Herschel code.
-Calls `indent-region' for whole buffer."
-  (interactive)
-  (message "Indenting buffer...")
-  (indent-region (point-min) (point-max) nil)
-  (message "Indenting buffer...done"))
-
-(defun herschel-indent-region (start end column)
-  "Indent region as Herschel code."
-  (interactive "r\nP")
-  (message "Indenting region...")
-  (indent-region start end column)
-  (message "Indenting region...done"))
-
-(defsubst herschel-indent-block-closing ()
-  "If previous word is a block closing or `else', indent line again."
-  (when (= (char-syntax (preceding-char)) ?w)
-    (save-excursion
-      (backward-word 1)
-      (when (and (not (herschel-in-literal))
-		 (looking-at (concat herschel-end-block-re "\\|\\<else\\>")))
-	(herschel-indent-line)))))
-
-
-
-
-
-
-
-
-
-
-
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 ;; Comments
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 (defun herschel-comment-uncomment-region (beg end &optional arg)
   "Comment region if not commented, uncomment region if already commented."
   (interactive "r\nP")
@@ -1031,55 +775,28 @@ Calls `indent-region' for whole buffer."
     (comment-region beg end)))
 
 
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 ;;; Help functions
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 (defun herschel-customize ()
   "Call the customize function with `herschel' as argument."
   (interactive)
   (customize-browse 'herschel))
 
 
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 ;;; Other
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 ;; remove ".herschel" and ".mod" from `completion-ignored-extensions'
 (setq completion-ignored-extensions
-      (delete ".herschel" completion-ignored-extensions))
+      (delete ".hr" completion-ignored-extensions))
 (setq completion-ignored-extensions
-      (delete ".mod" completion-ignored-extensions))
+      (delete ".h7" completion-ignored-extensions))
 
 
-;;; ----------------------------------------------------------------------
-;;; Bug reports
-;;; ----------------------------------------------------------------------
-(defconst herschel-mode-help-address "Herschel Mode Maintainer <gck@eyestep.org>"
-  "Address for Herschel Mode bug reports.")
-
-;; get reporter-submit-bug-report when byte-compiling
-(eval-when-compile
-  (require 'reporter))
-
-(defun herschel-mode-submit-bug-report ()
-  "Submit via mail a bug report on Herschel Mode."
-  (interactive)
-  ;; load in reporter
-  (and
-   (y-or-n-p "Do you want to submit a report on Herschel Mode? ")
-   (require 'reporter)
-   (reporter-submit-bug-report
-    herschel-mode-help-address
-    (concat "Herschel Mode " herschel-version)
-    (list
-     ;; report all important variables
-     'herschel-basic-offset
-     )
-    nil nil
-    "Dear Herschel Mode maintainer,")))
-
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 ;;; Documentation
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 (defun herschel-version ()
   "Echo the current version of Herschel Mode in the minibuffer."
   (interactive)
@@ -1099,15 +816,10 @@ Calls `indent-region' for whole buffer."
       (help-mode))
     (print-help-return-message)))
 
-;;; ----------------------------------------------------------------------
+;;; --------------------------------------------------------------------------
 
 
-;;;;;;;;; to be done .........
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Miscellaneous
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Hippie expand customization (for expansion of Herschel commands)
 
 (defvar herschel-abbrev-list
@@ -1127,29 +839,29 @@ Calls `indent-region' for whole buffer."
   (unless old
     (he-init-string (he-dabbrev-beg) (point))
     (setq he-expand-list
-	  (let ((abbrev-list herschel-abbrev-list)
-		(sel-abbrev-list '()))
-	    (while abbrev-list
-	      (when (or (not (stringp (car abbrev-list)))
-			(string-match
-			 (concat "^" he-search-string) (car abbrev-list)))
-		(setq sel-abbrev-list
-		      (cons (car abbrev-list) sel-abbrev-list)))
-	      (setq abbrev-list (cdr abbrev-list)))
-	    (nreverse sel-abbrev-list))))
+          (let ((abbrev-list herschel-abbrev-list)
+                (sel-abbrev-list '()))
+            (while abbrev-list
+              (when (or (not (stringp (car abbrev-list)))
+                        (string-match
+                         (concat "^" he-search-string) (car abbrev-list)))
+                (setq sel-abbrev-list
+                      (cons (car abbrev-list) sel-abbrev-list)))
+              (setq abbrev-list (cdr abbrev-list)))
+            (nreverse sel-abbrev-list))))
   (while (and he-expand-list
-	      (or (not (stringp (car he-expand-list)))
-		  (he-string-member (car he-expand-list) he-tried-table t)))
-;		  (equal (car he-expand-list) he-search-string)))
+              (or (not (stringp (car he-expand-list)))
+                  (he-string-member (car he-expand-list) he-tried-table t)))
+                                        ;		  (equal (car he-expand-list) he-search-string)))
     (unless (stringp (car he-expand-list))
       (setq herschel-expand-upper-case (car he-expand-list)))
     (setq he-expand-list (cdr he-expand-list)))
   (if (null he-expand-list)
       (progn (when old (he-reset-string))
-	     nil)
+             nil)
     (he-substitute-string
      (if herschel-expand-upper-case
-	 (upcase (car he-expand-list))
+         (upcase (car he-expand-list))
        (car he-expand-list))
      t)
     (setq he-expand-list (cdr he-expand-list))
@@ -1158,9 +870,9 @@ Calls `indent-region' for whole buffer."
 ;; function for expanding abbrevs and dabbrevs
 (defun herschel-expand-abbrev (arg))
 (fset 'herschel-expand-abbrev (make-hippie-expand-function
-			       '(try-expand-dabbrev
-				 try-expand-dabbrev-all-buffers
-				 herschel-try-expand-abbrev)))
+                               '(try-expand-dabbrev
+                                 try-expand-dabbrev-all-buffers
+                                 herschel-try-expand-abbrev)))
 
 (provide 'herschel-mode)
 

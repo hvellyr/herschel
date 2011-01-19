@@ -1,43 +1,43 @@
--- This file is part of the herschel package
---
--- Copyright (c) 2010-2011 Gregor Klinke
--- All rights reserved.
---
--- Redistribution and use in source and binary forms, with or without
--- modification, are permitted provided that the following conditions are
--- met:
---
--- - Redistributions of source code must retain the above copyright notice,
---   this list of conditions and the following disclaimer.
---
--- - Redistributions in binary form must reproduce the above copyright
---   notice, this list of conditions and the following disclaimer in the
---   documentation and/or other materials provided with the distribution.
---
--- - Neither the name of the author nor the names of other contributors may
---   be used to endorse or promote products derived from this software
---   without specific prior written permission.
---
--- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
--- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
--- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
--- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
--- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
--- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
--- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
--- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
--- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
--- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
--- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;; This file is part of the herschel package
+;;
+;; Copyright (c) 2010-2011 Gregor Klinke
+;; All rights reserved.
+;;
+;; Redistribution and use in source and binary forms, with or without
+;; modification, are permitted provided that the following conditions are
+;; met:
+;;
+;; - Redistributions of source code must retain the above copyright notice,
+;;   this list of conditions and the following disclaimer.
+;;
+;; - Redistributions in binary form must reproduce the above copyright
+;;   notice, this list of conditions and the following disclaimer in the
+;;   documentation and/or other materials provided with the distribution.
+;;
+;; - Neither the name of the author nor the names of other contributors may
+;;   be used to endorse or promote products derived from this software
+;;   without specific prior written permission.
+;;
+;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+;; IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+;; TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+;; PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+;; OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+;; EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+;; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+;; PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;; LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module lang ("eyestep/herschel 1.0:lang")
 
 export public (*)
 
 
-------------------------------------------------------------------------------
--- general type specifications
-------------------------------------------------------------------------------
+;;----------------------------------------------------------------------------
+;; general type specifications
+;;----------------------------------------------------------------------------
 
 def type Number : Object
     ~ Any number. ~
@@ -56,9 +56,9 @@ def type Int : Number
     ~ Whole numbers, positive or negative. ~
 
 
-------------------------------------------------------------------------------
--- Marker types
-------------------------------------------------------------------------------
+;;----------------------------------------------------------------------------
+;; Marker types
+;;----------------------------------------------------------------------------
 
 def type Exact
     ~ Marker typer to declare a number type as being an (arbitrary) exact
@@ -82,9 +82,9 @@ def type Unsigned
     representing signed numbers. ~
 
 
-------------------------------------------------------------------------------
--- Real data types
-------------------------------------------------------------------------------
+;;----------------------------------------------------------------------------
+;; Real data types
+;;----------------------------------------------------------------------------
 
 def type Int8 : (Int, Exact, Bounded)
     ~ Signed 8bit integer, range is -2^7 .. 2^7-1 ~
@@ -128,16 +128,16 @@ def type BigReal : (Real, Exact)
     limited by system resources. ~
 
 
-------------------------------------------------------------------------------
--- derived types
-------------------------------------------------------------------------------
+;;----------------------------------------------------------------------------
+;; derived types
+;;----------------------------------------------------------------------------
 
 def type Ordinal : (Int >= 0, BoundedBelow, Unsigned)
     ~ A positive, arbitrary precise integer. ~
 
-------------------------------------------------------------------------------
--- Other names for the more technical names
-------------------------------------------------------------------------------
+;;----------------------------------------------------------------------------
+;; Other names for the more technical names
+;;----------------------------------------------------------------------------
 
 def alias Byte   = Int8
 def alias UByte  = UInt8
@@ -154,9 +154,9 @@ def alias Double     = Float64
 def alias LongDouble = Float128
 
 
-----------------------------------------------------------------------
--- actions
-----------------------------------------------------------------------
+;;--------------------------------------------------------------------
+;; actions
+;;--------------------------------------------------------------------
 
 def generic add(left @ 'T, right @ 'T) : 'T ...
     ~ Computes the addition of @var{left} and @var{right}. ~
@@ -171,4 +171,4 @@ def generic divide(dividend @ 'T, divisor @ 'T) : 'T ...
     ~ Computes the quotient of @var{dividend} and @var{divisor}.  If
     @var{divisor} is 0 an @type{DivisionByZero} exception is raised. ~
 
--- end of lang/numbers
+;; end of lang/numbers

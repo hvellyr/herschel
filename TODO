@@ -17,6 +17,9 @@ Documentation
 
 Bootstrap compiler
 
+  - line comments start with ';;'.  We gain '--' as a logical counterpart
+    to '++' operator.
+
   - constructions of 'T are not allowed in a function body.  Generics are
     however allowed in type spec locations (incl. casting).  These are
     treated as Any for direct comparison and needs type-check boundaries at
@@ -25,6 +28,8 @@ Bootstrap compiler
 
   - call superclass ctors from init-functor.  Do we need the 'on
     super(super-type)' construct?
+
+  - constraints
 
   - BUG: syntax errors from import files are not shown (handled) properly.
 

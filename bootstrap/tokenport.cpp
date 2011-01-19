@@ -153,7 +153,7 @@ TEST(TokenPort)
   static const char* fTest =
     "module zero (\"eyestep/zero 1.0:portables\")\n"
     "  export public(*)\n"
-    "-- a simple portable class\n"
+    ";; a simple portable class\n"
     "def class Portable<T>(x @ Int) : (Copyable, Comparable)\n"
     "{\n"
     "  slot first : T = x ;\n"

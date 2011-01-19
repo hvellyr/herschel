@@ -1,4 +1,4 @@
--- test to import ignore-green-01.hr
+;; test to import ignore-green-01.hr
 
 import "import/ignore-green-01.hr"
 

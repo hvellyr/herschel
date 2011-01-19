@@ -2,4 +2,4 @@ module xyz ("xyz")
 
 import "import/ignore-green-03b.hr"
 
---def alias MyNumber = Real
+;; def alias MyNumber = Real
