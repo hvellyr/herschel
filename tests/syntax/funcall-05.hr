@@ -1,4 +1,4 @@
--- the ')' is the last char in the file; check that EOF is detected
--- properly
+;; the ')' is the last char in the file; check that EOF is detected
+;; properly
 def f()
   a.b[1]( )

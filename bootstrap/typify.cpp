@@ -715,6 +715,7 @@ Typifier::operatorNameByOp(OperatorType type) const
   case kOpMod:          return String("mod");
   case kOpMultiply:     return String("multiply");
   case kOpPlus:         return String("add");
+  case kOpRemove:       return String("remove");
   case kOpShiftLeft:    return String("shift-left");
   case kOpShiftRight:   return String("shift-right");
   case kOpUnequal:      return String("unequal?");
@@ -904,7 +905,7 @@ Typifier::typify(BinaryNode* node)
       // TODO: try to lookup a method which enables append(leftty, rightty)
       // and use it's returntype
       errorf(node->srcpos(), E_BinaryTypeMismatch,
-             "incompatible types in append operation");
+             "incompatible types in append() operation");
       node->setType(Type::newAny());
       break;
 
@@ -917,7 +918,15 @@ Typifier::typify(BinaryNode* node)
       // TODO: try to lookup a method which enables fold(leftty, rightty) and
       // use it's returntype
       errorf(node->srcpos(), E_BinaryTypeMismatch,
-             "incompatible types in fold operation");
+             "incompatible types in fold() operation");
+      node->setType(Type::newAny());
+      break;
+
+    case kOpRemove:
+      // TODO: try to lookup a method which enables remove(leftty, rightty)
+      // and use it's returntype
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in remove() operation");
       node->setType(Type::newAny());
       break;
 

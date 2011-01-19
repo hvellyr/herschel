@@ -1,4 +1,4 @@
--- test for importing and modules
+;; test for importing and modules
 
 module a1 ("a1")
 

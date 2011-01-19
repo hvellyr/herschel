@@ -1,5 +1,5 @@
--- measures and units are namespaces also.  Test that non-exported units
--- don't interfere with globally defined ones.
+;; measures and units are namespaces also.  Test that non-exported units
+;; don't interfere with globally defined ones.
 
 module red ("test/red")
 {
@@ -8,7 +8,7 @@ module red ("test/red")
   def measure Xyz (xyz) : Real
   def measure Abc (abc) : Real
 
-  -- units and symbol don't share the same namespace
+  ;; units and symbol don't share the same namespace
   def xyz = 1234
   def abc = 512
 
@@ -23,6 +23,6 @@ def measure Abc (abc) : Int
 def b0 = 12'red|xyz
 def b1 = 12'|xyz
 
--- we can use abc directly here since abc is not exported from abc
+;; we can use abc directly here since abc is not exported from abc
 def b2 = 12'abc
 

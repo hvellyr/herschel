@@ -263,6 +263,7 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       { String("as"),            kAs           },
       { String("by"),            kBy           },
       { String("++"),            kAppend       },
+      { String("--"),            kRemove       },
       { String(MID_DefId),       kDefId        },
       { String(MID_ElseId),      kElseId       },
       { String(MID_EofId),       kEofId        },
@@ -628,8 +629,7 @@ Tokenizer::nextTokenImpl()
     beginSrcpos = srcpos();
     switch (fCC) {
       // whitespace
-    case ' ': case '\n': case '\r': case '\t':
-    case '\f': case '\v':
+    case ' ': case '\n': case '\r': case '\t': case '\f': case '\v':
       nextChar();
       continue;
 
@@ -646,10 +646,19 @@ Tokenizer::nextTokenImpl()
     case 0x300d: return makeTokenAndNext(srcpos(), kMacroClose);
 
     case ',': return makeTokenAndNext(srcpos(), kComma);
-    case ';': return makeTokenAndNext(srcpos(), kSemicolon);
-    case ':': return makeTokenAndNext(srcpos(), kColon);
+    case ';':
+      nextChar();
+      switch (fCC) {
+      case ';':
+        readCommentLine();
+        continue;
+      default:
+        return Token(beginSrcpos, kSemicolon);
+      }
 
+    case ':': return makeTokenAndNext(srcpos(), kColon);
     case '@': return makeTokenAndNext(srcpos(), kAt);
+
     case '|':
       nextChar();
       if (isSymbolChar(fCC))
@@ -687,8 +696,12 @@ Tokenizer::nextTokenImpl()
       nextChar();
       switch (fCC) {
       case '-':
-        readCommentLine();
-        continue;
+        nextChar();
+        if (isSymbolChar(fCC))
+          return readIdentifier(beginSrcpos, String("--"), kSymbol, true);
+        else
+          return Token(beginSrcpos, kRemove);
+
       case '>':
         nextChar();
         if (isSymbolChar(fCC))
@@ -800,7 +813,7 @@ SUITE(Tokenizer)
     static const char* test =
       "module zero (\"eyestep/zero 1.0:portables\")\n"
       "  export public(*)\n"
-      "-- a simple portable class\n"
+      ";; a simple portable class\n"
       "def class Portable<T>(x @ Int) : (Copyable, Comparable)\n"
       "{\n"
       "  slot first : T = x ;\n"
@@ -1077,7 +1090,10 @@ SUITE(Tokenizer)
       "a + b  \"a\" ++ \"b\" a - b  a * b  a / b  a ** 2  a mod 5\n"
       "1 XOR 2  1 OR 2  1 AND 2\n"
       "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n"
-      "|abc ->abc\n";
+      "|abc ->abc\n"
+      "123 -- 456\n"
+      "123 --- 456\n"
+      " --abc<T>\n";
     Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                   String("n.n."));
 
@@ -1217,6 +1233,19 @@ SUITE(Tokenizer)
 
       CHECK_EQUAL(tnz.nextToken(), Token(sp, String("|abc")));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, String("->abc")));
+
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 123));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kRemove));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 456));
+
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 123));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, String("---")));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 456));
+
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, String("--abc")));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kGenericOpen));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, String("T")));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kGenericClose));
     }
     catch (const Exception& ne) {
       logf(kError, StrHelper(ne.message()));

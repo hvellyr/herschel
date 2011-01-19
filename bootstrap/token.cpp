@@ -32,6 +32,7 @@ namespace herschel
     case kPlus:              return String("+");
     case kAppend:            return String("++");
     case kMinus:             return String("-");
+    case kRemove:            return String("--");
     case kDivide:            return String("/");
     case kMultiply:          return String("*");
     case kExponent:          return String("**");
@@ -840,6 +841,7 @@ Token::type() const
   case kShiftLeft:
   case kShiftRight:
   case kAppend:
+  case kRemove:
   case kParanOpen:
   case kParanClose:
   case kBracketOpen:

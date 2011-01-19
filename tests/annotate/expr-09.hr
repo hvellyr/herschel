@@ -1,5 +1,5 @@
--- type declarations and casts to generic types are allowed in function
--- bodies.
+;; type declarations and casts to generic types are allowed in function
+;; bodies.
 def class Person
 
 def foo(a : 'T) : 'T

@@ -15,9 +15,7 @@
 
 @titlepage
 @title Herschel
-@sp 2
 @subtitle Language specification
-@sp 1
 @subtitle Version @value{VERSION}
 @c @center @image{bg2,,8cm}
 @author by Gregor C. Klinke
@@ -172,15 +170,15 @@ sources, which are sometimes not obvious (like D and Go).
 @node Source code representation, Storage model, Basic concepts, Basic concepts
 @section Source code representation
 
-Herschel code is written in source files, normally taking the extension
-@file{.hr}.  No formal distinction between implementation and
-declaration files (``source'' and ``header'') is imposed by the
-language (see @ref{Source code organization} for details).  A file can
-contain any number of modules, classes, types, and function
-definitions.  Technically the language does not impose any constraint
-on the way a source file is to be named or where it is to be located;
-there's especially no coupling of module and folder structure or class
-and file name.
+Herschel code is written in source files, normally taking the
+extension @file{.hr} or @file{.h7}.  No formal distinction between
+implementation and declaration files (``source'' and ``header'') is
+imposed by the language (see @ref{Source code organization} for
+details).  A file can contain any number of modules, classes, types,
+and function definitions.  Technically the language does not impose
+any constraint on the way a source file is to be named or where it is
+to be located; there's especially no coupling of module and folder
+structure or class and file name.
 
 Source files are expected to be encoded in @acronym{UTF}-8 encoding.  Note that
 the text is taken as is, i.e.@ no normalization is expected or applied.
@@ -267,7 +265,9 @@ Float128     128bit ieee754 float                   +/- 1.18 +/- 4932
 @c ....................................................................
 @section Comments
 
-Comments start with the character sequence @code{--} and continue
+@findex ;;
+
+Comments start with the character sequence @code{;;} and continue
 through the next newline.  There are no block comments.
 
 @c ....................................................................
@@ -289,8 +289,9 @@ _a/string_
 ->xyz
 @end example
 
-Not that a minus (`-') at the beginning of an identifier is only
-accepted if it directly is followed by a greater (`>') char.
+Note that a minus (`-') at the beginning of an identifier is only
+accepted if it directly is followed by a greater (`>') or minus (`-')
+char.
 
 Even though the source code itself is encoded in UTF-8 identifiers are
 not allowed to contain arbitrary Unicode characters.
@@ -332,9 +333,9 @@ sync      type      unit
 The following identifiers are reserved and handled as operators:
 
 @verbatim
-%    *    **   +    -    ->   ..   ...  /    ++   <    <<   <=
-<=>  <>   ==   >    >=   >>   and  by   in   mod  or   AND  OR
-XOR  isa  as
+%    *    **   +    -    --   ->   ..   ...  /    ++   <    >
+<<   >>   <=   <>   ==   >=   <=>  and  by   in   mod  or   AND
+OR   XOR  isa  as
 @end verbatim
 
 Note that operators are really identifiers @emph{not} delimiters.
@@ -355,9 +356,9 @@ General delimiters in Herschel.
 
 @findex true
 @findex false
-@findex Boolean
+@findex Bool
 The predefined Boolean constants @code{true} and @code{false} are
-logically realized by singleton instances of the class @code{Boolean}.
+logically realized by singleton instances of the class @code{Bool}.
 
 @example
 true
@@ -491,10 +492,10 @@ a constant array: #[1, 2, 3, 4, 5]
 
 @example
 #("abc" -> #[1, 2, 3],
-  "def" -> #symbol,            -- symbol
-  "xyz" -> \a,                 -- char
-  "mmm" -> \u41h,              -- char
-  "ch1" -> \space              -- char
+  "def" -> #symbol,            ;; symbol
+  "xyz" -> \a,                 ;; char
+  "mmm" -> \u41h,              ;; char
+  "ch1" -> \space              ;; char
 )
 @end example
 
@@ -507,44 +508,44 @@ octal writing.  To distinguish a corresponding letter is @emph{appended}
 to the number:
 
 @example
-100                     -- decimal
-100h                    -- hexadecimal
-100y                    -- binary
-100t                    -- octal
+100                     ;; decimal
+100h                    ;; hexadecimal
+100y                    ;; binary
+100t                    ;; octal
 @end example
 
 More complex notations exist for complex and rational numbers:
 
 @example
-1234                    -- precise integer
-123.4                   -- precise real
-12/34                   -- precise rational
-12 + 34i                -- precise complex
-12.3+34j                -- precise complex
-1.23e-45                -- precise integer (exp.@ not.)
+1234                    ;; precise integer
+123.4                   ;; precise real
+12/34                   ;; precise rational
+12 + 34i                ;; precise complex
+12.3+34j                ;; precise complex
+1.23e-45                ;; precise integer (exp.@ not.)
 @end example
 
 Integer numbers can be notated as unsigned by appending an @code{u}:
 
 @example
 1234u
-0ffhu                   -- unsigned integer, hexadecimal notation
+0ffhu                   ;; unsigned integer, hexadecimal notation
 @end example
 
 To give a specific type for approximate numbers the constant itself can
 be typed:
 
 @example
-123 : UInt8             -- (approx) octet
-123 : Int16             -- (approx) signed short
-123 : UInt16            -- (approx) unsigned short
-123 : Int32             -- (approx) word
-123 : UInt32            -- (approx) unsigned word
-123 : Int64             -- (approx) long
-123 : UInt64            -- (approx) unsigned long
-123.4 : Float32         -- (approx) ieee754 float
-123.4 : Float64         -- (approx) ieee754 double
-123.4 : Float128        -- (approx) ieee754 long double
+123 : UInt8             ;; (approx) octet
+123 : Int16             ;; (approx) signed short
+123 : UInt16            ;; (approx) unsigned short
+123 : Int32             ;; (approx) word
+123 : UInt32            ;; (approx) unsigned word
+123 : Int64             ;; (approx) long
+123 : UInt64            ;; (approx) unsigned long
+123.4 : Float32         ;; (approx) ieee754 float
+123.4 : Float64         ;; (approx) ieee754 double
+123.4 : Float128        ;; (approx) ieee754 long double
 @end example
 
 It is an error to specify a non-matching type to a numerical constant.
@@ -566,8 +567,8 @@ the associated type (see @ref{Measure types} for details).  The tags are
 user definable and are notated using a quote:
 
 @example
-12'px      -- 12 pixel
-56.4'cm    -- 56.4 centimeter
+12'px      ;; 12 pixel
+56.4'cm    ;; 56.4 centimeter
 @end example
 
 
@@ -781,7 +782,7 @@ following example accepts any number of Strings, Uris, or Booleans,
 probably in any combination.
 
 @example
-def f(args : &(String, Uri, Boolean)[] ...) ...
+def f(args : &(String, Uri, Bool)[] ...) ...
 @end example
 
 
@@ -1754,10 +1755,10 @@ leading @emph{quote}.  All quoted types with the same name refer to
 the same type.
 
 @example
--- for all type @@var@{T@} copies all elements from @@var@{src@} into
--- @@var@{dst@} and returns the last elements copied.  Only those
--- elements in the range @@code@{src[offset .. offset + items]@}
--- are copied.
+;; for all type @@var@{T@} copies all elements from @@var@{src@} into
+;; @@var@{dst@} and returns the last elements copied.  Only those
+;; elements in the range @@code@{src[offset .. offset + items]@}
+;; are copied.
 def add-from-vector(dst @@ Container<'T>,
                     src @@ Vector<'T>,
                     offset : 'K, items : 'K) : 'T ...
@@ -1954,7 +1955,7 @@ def enum MidiController : Ordinal
   modulation     = 1
   breath         = 2
   foot-pedal     = 3
-  -- ...
+  ;; ...
   poly-operation = 127
 @}
 
@@ -1980,9 +1981,9 @@ assigned.  The first enumeration item is @code{0}:
 @example
 def enum Slot
 @{
-  first-slot      -- -> 0
-  second-slot     -- -> 1
-  third-slot      -- -> 2
+  first-slot      ;; -> 0
+  second-slot     ;; -> 1
+  third-slot      ;; -> 2
 @}
 @end example
 
@@ -2405,6 +2406,7 @@ methods.
 @findex +
 @findex ++
 @findex -
+@findex --
 @findex /
 @findex *
 @findex **
@@ -2426,6 +2428,8 @@ methods.
 @code{append}
 @item -
 @code{subtract}
+@item --
+@code{remove}
 @item /
 @code{divide}
 @item *
@@ -2535,6 +2539,11 @@ Return @var{op1} transformed into type @var{type} (cast operator).  If
 @deftypefn Method @var{type} append (@var{op1}, @var{op2})
 Append @var{op2} to @var{op1}.  As such the @code{++} operator returns a
 new and modified copy of @var{op1}.
+@end deftypefn
+
+@deftypefn Method @var{type} remove (@var{op1}, @var{op2})
+Remove @var{op2} from @var{op1}.  As such the @code{--} operator
+returns a new and modified copy of @var{op1}.
 @end deftypefn
 
 
@@ -3718,10 +3727,10 @@ The @code{when} expression can replace typical applications of
 @example
 when (os == "linux") @{
   when (cpu == "LittleEndian") @{
-    -- little endian specific code
+    ;; little endian specific code
   @}
   else when (cpu == "BigEndian") @{
-    -- big endian specific code
+    ;; big endian specific code
   @}
   else @{
   @}
@@ -5027,13 +5036,14 @@ codepoint       := INT-NUMBER
 unary-op        := `-' | `not'
 
 binary-op       := COMPARE-OP | ARITHM-OP | BITW-OP | LOGIC-OP
-                |  MISC-OP
+                |  MISC-OP | SET-OP
 arithm-op       := `+' | `-' | `/' | `*' | `mod' | `**'
 logic-op        := `and' | `or'
 bitw-op         := `<<' | `>>' | `AND' | `OR' | `XOR'
 compare-op      := `==' | `<>' | `<' | `>' | `<=' | `>='
                 |  `<=>' | `in'
 misc-op         := `%' | `isa'
+set-op          := `++' | `--'
 
 range-op        := `..'
 map-op          := `->'
@@ -5044,7 +5054,7 @@ map-op          := `->'
 
 @smallformat
 @verbatim
-comment         := `--' { any char until end-of-line }
+comment         := `;;' { any char until end-of-line }
 @end verbatim
 @end smallformat
 

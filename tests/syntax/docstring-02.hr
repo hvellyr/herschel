@@ -35,6 +35,6 @@ def alias SortableList<T>
     ~ A list of strings ~
     = List<String>
 
--- def x : SortableList<Char>
+;; def x : SortableList<Char>
 
 
