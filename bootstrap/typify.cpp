@@ -477,8 +477,7 @@ Typifier::findKeyedArg(const NodeList& args, size_t argidx, const String& key)
 Type
 Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos,
                                         const NodeList& args,
-                                        const FunctionNode* funcNode,
-                                        const NodeList& funcParams)
+                                        const FunctionNode* funcNode)
 {
 /*
   def param.is-generic-type():
@@ -523,6 +522,8 @@ Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos,
   if more args than params (and not rest-param):
     error(wrong number of args)
   */
+
+  const NodeList& funcParams = funcNode->params();
 
   TypeCtx localCtx;
   size_t argidx = 0;
@@ -605,11 +606,10 @@ Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos,
 
 void
 Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
-                                        const FunctionNode* funcNode,
-                                        const NodeList& funcParams)
+                                        const FunctionNode* funcNode)
 {
   Type type = typifyMatchAndCheckParameters(node->srcpos(), node->children(),
-                                            funcNode, funcParams);
+                                            funcNode);
   if (type.isDef())
     node->setType(type);
 }
@@ -629,7 +629,7 @@ Typifier::typify(ApplyNode* node)
       if (funcNode != NULL) {
         // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
         // out->render(const_cast<FunctionNode*>(funcNode));
-        typifyMatchAndCheckParameters(node, funcNode, funcNode->params());
+        typifyMatchAndCheckParameters(node, funcNode);
       }
     }
     else {
@@ -748,8 +748,7 @@ Typifier::checkBinaryFunctionCall(BinaryNode* node,
     // out->render(const_cast<FunctionNode*>(funcNode));
     Type type = typifyMatchAndCheckParameters(node->srcpos(),
                                               newNodeList(leftArg, rightArg),
-                                              funcNode,
-                                              funcNode->params());
+                                              funcNode);
     if (type.isDef()) {
       node->setType(type);
       return true;
