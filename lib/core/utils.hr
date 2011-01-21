@@ -93,6 +93,20 @@ def macro enforce
 }
 
 
+def macro saferef
+{
+  { saferef(?val:expr, ?default:expr) } -> {
+                                             {
+                                               let tmp = ?val
+                                               if (tmp.nil?)
+                                                 default
+                                               else
+                                                 tmp
+                                             }
+                                           }
+}
+
+
 def macro max
     ~ Returns the larger of two values @var{one} and @var{two}.  Both
     parameters are evaluated once only. ~
