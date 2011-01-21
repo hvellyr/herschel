@@ -17,9 +17,6 @@ Documentation
 
 Bootstrap compiler
 
-  - line comments start with ';;'.  We gain '--' as a logical counterpart
-    to '++' operator.
-
   - constructions of 'T are not allowed in a function body.  Generics are
     however allowed in type spec locations (incl. casting).  These are
     treated as Any for direct comparison and needs type-check boundaries at
@@ -29,54 +26,67 @@ Bootstrap compiler
   - call superclass ctors from init-functor.  Do we need the 'on
     super(super-type)' construct?
 
-  - constraints
+  - reference types.
+     - type checks.  When is T = ^T allowed?
+     - do we need a special syntax for dereferencing references?
+     - review special construct to check whether a ^T is nil or not?
+       if (a as* T == nil)
 
-  - BUG: syntax errors from import files are not shown (handled) properly.
+       def foo(a : ^String)
+         let x : String = enforce(a, "a is nil")    ;; throws an exception
+         let x : String = saferef(a, "n.n.")        ;; returns a or "n.n."
 
-  - BinaryNode: in case the builtin types are not recognized from the
-    compiler, lookup an add(), subtract(), multiply(), ... function and use
-    its type signature to check whether the binary operator is possible and
-    correct.
+     - how to express nil-ness with the normal type machine
 
-    The same for binary compare operators.
 
-    The same for append(), fold()
+       - constraints
 
-  - Missing node support:
-     - match
-     - select
-     - on
-     - slotdef
-     - typedef
-     - UnitConst
+       - BUG: syntax errors from import files are not shown (handled) properly.
 
-  - replace the UnitConstant node by a proper Measure() ctor call.  Apply
-    the unit transformation inplace (if simple enough).  Register
-    unit-transform calls as special functions.
+       - BinaryNode: in case the builtin types are not recognized from the
+         compiler, lookup an add(), subtract(), multiply(), ... function and use
+         its type signature to check whether the binary operator is possible and
+         correct.
 
-  - get rid of nested functions
-    - detect closure variable access
+         The same for binary compare operators.
 
-    - detect whether nested functions can simply be inlined
+         The same for append(), fold()
 
-    - otherwise lambda lift functions to outside.
+       - Missing node support:
+          - match
+          - select
+          - on
+          - slotdef
+          - typedef
+          - UnitConst
 
-  - array access
+       - replace the UnitConstant node by a proper Measure() ctor call.  Apply
+         the unit transformation inplace (if simple enough).  Register
+         unit-transform calls as special functions.
 
-  - vardef parameters
+       - get rid of nested functions
+         - detect closure variable access
 
-  - enum:
-    - construct proper enum constraint type
-    - check that init values match the base type
+         - detect whether nested functions can simply be inlined
 
-  - extend macro parameter types (like ?a:type-spec)
+         - otherwise lambda lift functions to outside.
 
-  - macros
-    - subpatterns
+       - array access
 
-  - continue with pexpreval (add the missing operators)
+       - vardef parameters
 
-  - docstrings in pass2 -> extracted documentation
+       - enum:
+         - construct proper enum constraint type
+         - check that init values match the base type
+
+       - extend macro parameter types (like ?a:type-spec)
+
+       - macros
+         - subpatterns
+
+       - continue with pexpreval (add the missing operators)
+
+       - docstrings in pass2 -> extracted documentation
 
 
 Language and ideas:
