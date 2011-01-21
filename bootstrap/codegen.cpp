@@ -82,10 +82,14 @@ CodeGenerator::CodeGenerator()
 
 CodeGenerator::~CodeGenerator()
 {
-  if (fOptPassManager != NULL)
+  if (fOptPassManager != NULL) {
     delete fOptPassManager;
-  if (fModule != NULL)
+    fOptPassManager = NULL;
+  }
+  if (fModule != NULL) {
     delete fModule;
+    fModule = NULL;
+  }
 }
 
 
