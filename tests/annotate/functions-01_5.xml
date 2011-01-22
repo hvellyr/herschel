@@ -100,7 +100,7 @@
 </rettype>
 <body>
 <apply  ty='lang|Any'>
-<symbol  ty='lambda(lang|Any):lang|Any'>outln</symbol>
+<symbol  ty='lambda(lang|Any):lang|Any' refer='function'>outln</symbol>
 <args>
 <str>Car crashed into car</str>
 </args>
@@ -138,7 +138,7 @@
 </rettype>
 <body>
 <apply  ty='lang|Any'>
-<symbol  ty='lambda(lang|Any):lang|Any'>outln</symbol>
+<symbol  ty='lambda(lang|Any):lang|Any' refer='function'>outln</symbol>
 <args>
 <str>Ufo crashed into car</str>
 </args>
@@ -159,7 +159,7 @@
 <body>
 <block>
 <apply  ty='lang|Any'>
-<symbol  ty='lambda(&apos;T, &apos;T):lang|Any'>crash-into</symbol>
+<symbol  ty='lambda(&apos;T, &apos;T):lang|Any' refer='generic'>crash-into</symbol>
 <args>
 <int ty='lang|Int'>5</int>
 <int ty='lang|Int'>8</int>

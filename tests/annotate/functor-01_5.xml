@@ -64,7 +64,7 @@
 </rettype>
 <body>
 <apply  ty='lambda(lang|Int, lang|Any):lang|Int'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>):lambda(&apos;T, lang|Any):&apos;T'>init-functor</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):lambda(&apos;T, lang|Any):&apos;T' refer='generic'>init-functor</symbol>
 <args>
 <symbol  ty='lang|Class&lt;lang|Int>'>lang|Int</symbol>
 </args>

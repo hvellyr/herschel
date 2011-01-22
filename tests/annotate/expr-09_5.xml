@@ -24,7 +24,7 @@
 </rettype>
 <body>
 <block>
-<symbol  ty='Person'>__obj_0</symbol>
+<symbol  ty='Person' refer='param'>__obj_0</symbol>
 </block>
 </body>
 </func>
@@ -55,10 +55,10 @@
 <cast>
 <base>
 <apply  ty='Person'>
-<symbol  ty='lambda(Person):Person'>Person|init</symbol>
+<symbol  ty='lambda(Person):Person' refer='function'>Person|init</symbol>
 <args>
 <apply  ty='Person'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|allocate</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T' refer='generic'>lang|allocate</symbol>
 <args>
 <type  ty='lang|Class&lt;Person>'/>
 </args>
@@ -74,7 +74,7 @@
 </init>
 </vardef>
 </let>
-<symbol  ty='&apos;T'>t</symbol>
+<symbol  ty='&apos;T' refer='local'>t</symbol>
 </block>
 </body>
 </func>

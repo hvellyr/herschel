@@ -41,7 +41,7 @@
 </ty:ref>
 </rettype>
 <body>
-<symbol  ty='&apos;T'>y</symbol>
+<symbol  ty='&apos;T' refer='param'>y</symbol>
 </body>
 </func>
 </def>
@@ -70,9 +70,9 @@
 </vardef>
 </let>
 <apply  ty='lang|Int'>
-<symbol  ty='lambda(Container&lt;&apos;T>, &apos;T):&apos;T'>foo</symbol>
+<symbol  ty='lambda(Container&lt;&apos;T>, &apos;T):&apos;T' refer='function'>foo</symbol>
 <args>
-<symbol  ty='Container&lt;lang|Int>'>y</symbol>
+<symbol  ty='Container&lt;lang|Int>' refer='local'>y</symbol>
 <int ty='lang|Int'>5</int>
 </args>
 </apply>
@@ -105,9 +105,9 @@
 </vardef>
 </let>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(Container&lt;&apos;T>, &apos;T):&apos;T'>foo</symbol>
+<symbol  ty='lambda(Container&lt;&apos;T>, &apos;T):&apos;T' refer='function'>foo</symbol>
 <args>
-<symbol  ty='Container&lt;lang|String>'>z</symbol>
+<symbol  ty='Container&lt;lang|String>' refer='local'>z</symbol>
 <str>hello world</str>
 </args>
 </apply>

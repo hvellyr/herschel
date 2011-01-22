@@ -51,12 +51,12 @@
 <init>
 <binary op='and' ty='lang|Any'>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|Int8'>a</symbol>
-<true ty='lang|Bool'/>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<true  ty='lang|Bool'/>
 </binary>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|Int8'>b</symbol>
-<true ty='lang|Bool'/>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
+<true  ty='lang|Bool'/>
 </binary>
 </binary>
 </init>
@@ -71,12 +71,12 @@
 <init>
 <binary op='or' ty='lang|Any'>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|Int8'>a</symbol>
-<true ty='lang|Bool'/>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<true  ty='lang|Bool'/>
 </binary>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|Int8'>b</symbol>
-<true ty='lang|Bool'/>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
+<true  ty='lang|Bool'/>
 </binary>
 </binary>
 </init>

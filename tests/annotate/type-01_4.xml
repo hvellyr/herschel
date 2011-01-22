@@ -24,7 +24,7 @@
 </rettype>
 <body>
 <block>
-<symbol>__obj_0</symbol>
+<symbol  refer='param'>__obj_0</symbol>
 </block>
 </body>
 </func>
@@ -41,7 +41,7 @@
 <vardef sym='x'>
 <init>
 <apply>
-<symbol>lang|allocate*</symbol>
+<symbol  refer='generic'>lang|allocate*</symbol>
 <args>
 <symbol>abc|Person</symbol>
 <int ty='lang|Ordinal'>12</int>
@@ -50,7 +50,7 @@
 </init>
 </vardef>
 </let>
-<symbol>x</symbol>
+<symbol  refer='local'>x</symbol>
 </block>
 </body>
 </func>
@@ -67,10 +67,10 @@
 <vardef sym='x'>
 <init>
 <apply>
-<symbol>abc|Person|init</symbol>
+<symbol  refer='function'>abc|Person|init</symbol>
 <args>
 <apply>
-<symbol>lang|allocate</symbol>
+<symbol  refer='generic'>lang|allocate</symbol>
 <args>
 <type  ty='abc|Person'/>
 </args>
@@ -80,7 +80,7 @@
 </init>
 </vardef>
 </let>
-<symbol>x</symbol>
+<symbol  refer='local'>x</symbol>
 </block>
 </body>
 </func>

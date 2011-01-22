@@ -36,12 +36,12 @@
 </type>
 <init>
 <neg  ty='lang|Int'>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </neg>
 </init>
 </vardef>
 </let>
-<symbol  ty='lang|Int'>x</symbol>
+<symbol  ty='lang|Int' refer='local'>x</symbol>
 </block>
 </body>
 </func>

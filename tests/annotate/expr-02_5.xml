@@ -70,8 +70,8 @@
 </type>
 <init>
 <binary op='+' ty='lang|Int8'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -94,8 +94,8 @@
 </type>
 <init>
 <binary op='-' ty='lang|Int8'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -118,8 +118,8 @@
 </type>
 <init>
 <binary op='*' ty='lang|Int8'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -142,8 +142,8 @@
 </type>
 <init>
 <binary op='/' ty='lang|Int8'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -166,8 +166,8 @@
 </type>
 <init>
 <binary op='**' ty='lang|Int8'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -190,8 +190,8 @@
 </type>
 <init>
 <binary op='mod' ty='lang|Int8'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -250,8 +250,8 @@
 </type>
 <init>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -264,8 +264,8 @@
 </type>
 <init>
 <binary op='&lt;>' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -278,8 +278,8 @@
 </type>
 <init>
 <binary op='&lt;' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -292,8 +292,8 @@
 </type>
 <init>
 <binary op='>' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -306,8 +306,8 @@
 </type>
 <init>
 <binary op='>=' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -320,8 +320,8 @@
 </type>
 <init>
 <binary op='&lt;=' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -334,8 +334,8 @@
 </type>
 <init>
 <binary op='&lt;=>' ty='lang|Int'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -348,8 +348,8 @@
 </type>
 <init>
 <binary op='in' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -409,11 +409,11 @@
 <init>
 <binary op='and' ty='lang|Bool'>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
 <int ty='lang|Int'>0</int>
 </binary>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 <int ty='lang|Int'>5</int>
 </binary>
 </binary>
@@ -429,12 +429,12 @@
 <init>
 <binary op='or' ty='lang|Bool'>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Int8'>a</symbol>
-<symbol  ty='lang|Int8'>b</symbol>
+<symbol  ty='lang|Int8' refer='param'>a</symbol>
+<symbol  ty='lang|Int8' refer='param'>b</symbol>
 </binary>
 </binary>
 </init>

@@ -19,7 +19,7 @@
 </ty:array>
 </rettype>
 <body>
-<symbol  ty='&apos;T[]'>x</symbol>
+<symbol  ty='&apos;T[]' refer='param'>x</symbol>
 </body>
 </func>
 </def>
@@ -52,9 +52,9 @@
 </vardef>
 </let>
 <apply  ty='lang|Int[]'>
-<symbol  ty='lambda(&apos;T[]):&apos;T[]'>foo</symbol>
+<symbol  ty='lambda(&apos;T[]):&apos;T[]' refer='function'>foo</symbol>
 <args>
-<symbol  ty='lang|Int[]'>y</symbol>
+<symbol  ty='lang|Int[]' refer='local'>y</symbol>
 </args>
 </apply>
 </block>

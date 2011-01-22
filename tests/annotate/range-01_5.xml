@@ -20,7 +20,7 @@
 </rettype>
 <body>
 <range  ty='lang|Range&lt;&apos;T>'>
-<symbol  ty='&apos;T'>x</symbol>
+<symbol  ty='&apos;T' refer='param'>x</symbol>
 <cast>
 <base>
 <int ty='lang|Int'>100</int>
@@ -66,9 +66,9 @@
 </rettype>
 <body>
 <range  ty='lang|Range&lt;&apos;T>'>
-<symbol  ty='&apos;T'>x</symbol>
-<symbol  ty='&apos;T'>y</symbol>
-<symbol  ty='&apos;T'>z</symbol>
+<symbol  ty='&apos;T' refer='param'>x</symbol>
+<symbol  ty='&apos;T' refer='param'>y</symbol>
+<symbol  ty='&apos;T' refer='param'>z</symbol>
 </range>
 </body>
 </func>
@@ -105,7 +105,7 @@
 </type>
 <init>
 <apply  ty='lang|Range&lt;lang|Int>'>
-<symbol  ty='lambda(&apos;T):lang|Range&lt;&apos;T>'>foo</symbol>
+<symbol  ty='lambda(&apos;T):lang|Range&lt;&apos;T>' refer='function'>foo</symbol>
 <args>
 <int ty='lang|Int'>5</int>
 </args>
@@ -129,7 +129,7 @@
 </type>
 <init>
 <apply  ty='lang|Range&lt;lang|Char>'>
-<symbol  ty='lambda(&apos;T, &apos;T, &apos;T):lang|Range&lt;&apos;T>'>bar</symbol>
+<symbol  ty='lambda(&apos;T, &apos;T, &apos;T):lang|Range&lt;&apos;T>' refer='function'>bar</symbol>
 <args>
 <char>97</char>
 <char>122</char>

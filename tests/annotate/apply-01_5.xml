@@ -39,7 +39,7 @@
 </rettype>
 <body>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(lang|Int):lang|String'>foo</symbol>
+<symbol  ty='lambda(lang|Int):lang|String' refer='function'>foo</symbol>
 <args>
 <int ty='lang|Int'>5</int>
 </args>

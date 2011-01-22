@@ -51,7 +51,7 @@
 </ty:seq>
 </rettype>
 <body>
-<symbol  ty='(lang|Int, lang|String, lang|Bool)'>x</symbol>
+<symbol  ty='(lang|Int, lang|String, lang|Bool)' refer='param'>x</symbol>
 </body>
 </func>
 </def>
@@ -108,9 +108,9 @@
 </vardef>
 </let>
 <apply  ty='(lang|Int, lang|String, lang|Bool)'>
-<symbol  ty='lambda((lang|Int, lang|String, lang|Bool)):(lang|Int, lang|String, lang|Bool)'>foo</symbol>
+<symbol  ty='lambda((lang|Int, lang|String, lang|Bool)):(lang|Int, lang|String, lang|Bool)' refer='function'>foo</symbol>
 <args>
-<symbol  ty='(lang|Int, lang|String, lang|Bool)'>y</symbol>
+<symbol  ty='(lang|Int, lang|String, lang|Bool)' refer='local'>y</symbol>
 </args>
 </apply>
 </block>

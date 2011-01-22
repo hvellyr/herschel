@@ -25,7 +25,7 @@
 <let>
 <vardef sym='n' alloc='shared'>
 <init>
-<symbol>a</symbol>
+<symbol  refer='param'>a</symbol>
 </init>
 </vardef>
 </let>
@@ -55,8 +55,8 @@
 <vardef sym='t1'>
 <init>
 <binary op='*'>
-<symbol acc='shared'>n</symbol>
-<symbol>x</symbol>
+<symbol  refer='local' acc='shared'>n</symbol>
+<symbol  refer='param'>x</symbol>
 </binary>
 </init>
 </vardef>
@@ -65,15 +65,15 @@
 <vardef sym='t2'>
 <init>
 <binary op='**'>
-<symbol>y</symbol>
+<symbol  refer='param'>y</symbol>
 <int ty='lang|Int'>2</int>
 </binary>
 </init>
 </vardef>
 </let>
 <binary op='+'>
-<symbol>t1</symbol>
-<symbol>t2</symbol>
+<symbol  refer='local'>t1</symbol>
+<symbol  refer='local'>t2</symbol>
 </binary>
 </block>
 </body>
@@ -86,10 +86,10 @@
 </rettype>
 <body>
 <apply>
-<symbol>pythagoras</symbol>
+<symbol  refer='function'>pythagoras</symbol>
 <args>
-<symbol acc='shared'>a</symbol>
-<symbol acc='shared'>b</symbol>
+<symbol  refer='param' acc='shared'>a</symbol>
+<symbol  refer='param' acc='shared'>b</symbol>
 </args>
 </apply>
 </body>

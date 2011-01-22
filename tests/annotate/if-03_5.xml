@@ -86,23 +86,23 @@
 <if  ty='lang|String'>
 <test>
 <binary op='>' ty='lang|Bool'>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 <int ty='lang|Int'>0</int>
 </binary>
 </test>
 <then>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(lang|Int):lang|String'>to-string</symbol>
+<symbol  ty='lambda(lang|Int):lang|String' refer='function'>to-string</symbol>
 <args>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </args>
 </apply>
 </then>
 <else>
 <apply  ty='MutualString'>
-<symbol  ty='lambda(lang|Int):MutualString'>mutate</symbol>
+<symbol  ty='lambda(lang|Int):MutualString' refer='function'>mutate</symbol>
 <args>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </args>
 </apply>
 </else>
@@ -136,23 +136,23 @@
 <if  ty='lang|String'>
 <test>
 <binary op='>' ty='lang|Bool'>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 <int ty='lang|Int'>0</int>
 </binary>
 </test>
 <then>
 <apply  ty='MutualString'>
-<symbol  ty='lambda(lang|Int):MutualString'>mutate</symbol>
+<symbol  ty='lambda(lang|Int):MutualString' refer='function'>mutate</symbol>
 <args>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </args>
 </apply>
 </then>
 <else>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(lang|Int):lang|String'>to-string</symbol>
+<symbol  ty='lambda(lang|Int):lang|String' refer='function'>to-string</symbol>
 <args>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </args>
 </apply>
 </else>

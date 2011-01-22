@@ -29,7 +29,7 @@
 <init>
 <cast>
 <base>
-<symbol  ty='lang|String'>a</symbol>
+<symbol  ty='lang|String' refer='param'>a</symbol>
 </base>
 <as>
 <ty:ref nm='lang|Any'>
@@ -39,7 +39,7 @@
 </init>
 </vardef>
 </let>
-<symbol  ty='lang|Any'>t</symbol>
+<symbol  ty='lang|Any' refer='local'>t</symbol>
 </block>
 </body>
 </func>

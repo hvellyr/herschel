@@ -20,7 +20,7 @@
 </rettype>
 <body>
 <range  ty='lang|Range&lt;lang|Any>'>
-<symbol  ty='&apos;T'>x</symbol>
+<symbol  ty='&apos;T' refer='param'>x</symbol>
 <int ty='lang|Int'>100</int>
 </range>
 </body>

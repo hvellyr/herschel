@@ -38,10 +38,10 @@
 </param>
 </params>
 <body>
-<symbol  ty='lang|String'>r</symbol>
+<symbol  ty='lang|String' refer='param'>r</symbol>
 </body>
 </on>
-<symbol  ty='lang|String'>x</symbol>
+<symbol  ty='lang|String' refer='param'>x</symbol>
 </block>
 </body>
 </func>

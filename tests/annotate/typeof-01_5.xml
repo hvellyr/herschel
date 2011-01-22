@@ -20,9 +20,9 @@
 </type>
 <init>
 <apply  ty='&apos;T'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|null-value</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T' refer='generic'>lang|null-value</symbol>
 <args>
-<symbol  ty='lang|Class&lt;&apos;T>'>ty</symbol>
+<symbol  ty='lang|Class&lt;&apos;T>' refer='param'>ty</symbol>
 </args>
 </apply>
 </init>
@@ -33,7 +33,7 @@
 </ty:ref>
 </rettype>
 <body>
-<symbol  ty='&apos;T'>value</symbol>
+<symbol  ty='&apos;T' refer='param'>value</symbol>
 </body>
 </func>
 </def>
@@ -53,12 +53,12 @@
 </type>
 <init>
 <apply  ty='&apos;T'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|null-value</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T' refer='generic'>lang|null-value</symbol>
 <args>
 <apply  ty='lang|Class&lt;&apos;T>'>
-<symbol  ty='lambda(&apos;T):lang|Class&lt;&apos;T>'>lang|type-of</symbol>
+<symbol  ty='lambda(&apos;T):lang|Class&lt;&apos;T>' refer='generic'>lang|type-of</symbol>
 <args>
-<symbol  ty='&apos;T'>n</symbol>
+<symbol  ty='&apos;T' refer='param'>n</symbol>
 </args>
 </apply>
 </args>
@@ -71,7 +71,7 @@
 </ty:ref>
 </rettype>
 <body>
-<symbol  ty='&apos;T'>value</symbol>
+<symbol  ty='&apos;T' refer='param'>value</symbol>
 </body>
 </func>
 </def>
@@ -102,12 +102,12 @@
 </type>
 <init>
 <apply  ty='lang|Int'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|null-value</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T' refer='generic'>lang|null-value</symbol>
 <args>
 <apply  ty='lang|Class&lt;lang|Int>'>
-<symbol  ty='lambda(&apos;T):lang|Class&lt;&apos;T>'>lang|type-of</symbol>
+<symbol  ty='lambda(&apos;T):lang|Class&lt;&apos;T>' refer='generic'>lang|type-of</symbol>
 <args>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='global'>a</symbol>
 </args>
 </apply>
 </args>

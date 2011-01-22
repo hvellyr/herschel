@@ -53,11 +53,11 @@
 <init>
 <binary op='and' ty='lang|Any'>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt16' refer='param'>a</symbol>
 <int ty='lang|Int'>0</int>
 </binary>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Int16'>b</symbol>
+<symbol  ty='lang|Int16' refer='param'>b</symbol>
 <int ty='lang|Int'>5</int>
 </binary>
 </binary>
@@ -73,12 +73,12 @@
 <init>
 <binary op='or' ty='lang|Any'>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|UInt16'>a</symbol>
-<symbol  ty='lang|Int16'>b</symbol>
+<symbol  ty='lang|UInt16' refer='param'>a</symbol>
+<symbol  ty='lang|Int16' refer='param'>b</symbol>
 </binary>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|UInt16'>a</symbol>
-<symbol  ty='lang|Int16'>b</symbol>
+<symbol  ty='lang|UInt16' refer='param'>a</symbol>
+<symbol  ty='lang|Int16' refer='param'>b</symbol>
 </binary>
 </binary>
 </init>
@@ -134,11 +134,11 @@
 <init>
 <binary op='and' ty='lang|Any'>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|Ordinal'>a</symbol>
+<symbol  ty='lang|Ordinal' refer='param'>a</symbol>
 <int ty='lang|Int'>0</int>
 </binary>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Int'>b</symbol>
+<symbol  ty='lang|Int' refer='param'>b</symbol>
 <int ty='lang|Int'>5</int>
 </binary>
 </binary>
@@ -154,12 +154,12 @@
 <init>
 <binary op='or' ty='lang|Any'>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|Ordinal'>a</symbol>
-<symbol  ty='lang|Int'>b</symbol>
+<symbol  ty='lang|Ordinal' refer='param'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>b</symbol>
 </binary>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|Ordinal'>a</symbol>
-<symbol  ty='lang|Int'>b</symbol>
+<symbol  ty='lang|Ordinal' refer='param'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>b</symbol>
 </binary>
 </binary>
 </init>

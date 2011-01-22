@@ -12,10 +12,10 @@
 </type>
 <init>
 <apply  ty='lang|Range&lt;lang|Int>'>
-<symbol  ty='lambda(lang|Range&lt;&apos;T>, &apos;T, &apos;T, &apos;T):lang|Range&lt;&apos;T>'>lang|Range|init</symbol>
+<symbol  ty='lambda(lang|Range&lt;&apos;T>, &apos;T, &apos;T, &apos;T):lang|Range&lt;&apos;T>' refer='function'>lang|Range|init</symbol>
 <args>
 <apply  ty='lang|Range&lt;lang|Int>'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|allocate</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T' refer='generic'>lang|allocate</symbol>
 <args>
 <type  ty='lang|Class&lt;lang|Range&lt;lang|Int>>'/>
 </args>
@@ -78,7 +78,7 @@
 <ty:used-type>
 <ty:fun nm=''>
 <ty:prms>
-<ty:prm is='pos' spec='t'>
+<ty:prm is='pos'>
 <ty:ref nm='lang|Range'>
 <ty:gen>
 <ty:ref gen='t' nm='T'>

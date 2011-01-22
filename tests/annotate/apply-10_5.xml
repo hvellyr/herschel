@@ -80,12 +80,12 @@
 </vardef>
 </let>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(&amp;(&apos;Z, lang|Bool)):&apos;Z'>sep</symbol>
+<symbol  ty='lambda(&amp;(&apos;Z, lang|Bool)):&apos;Z' refer='function'>sep</symbol>
 <args>
 <apply  ty='&amp;(lang|String, lang|Bool)'>
-<symbol  ty='lambda(&amp;(&apos;T, lang|Bool)):&amp;(&apos;T, lang|Bool)'>foo</symbol>
+<symbol  ty='lambda(&amp;(&apos;T, lang|Bool)):&amp;(&apos;T, lang|Bool)' refer='function'>foo</symbol>
 <args>
-<symbol  ty='&amp;(lang|String, lang|Bool)'>y</symbol>
+<symbol  ty='&amp;(lang|String, lang|Bool)' refer='local'>y</symbol>
 </args>
 </apply>
 </args>

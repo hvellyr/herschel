@@ -37,7 +37,7 @@
 </rettype>
 <body>
 <assign  ty='lang|String'>
-<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' acc='shared'>x</symbol>
+<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' refer='global' acc='shared'>x</symbol>
 <str>hello world</str>
 </assign>
 </body>
@@ -55,7 +55,7 @@
 </rettype>
 <body>
 <assign  ty='lang|Int'>
-<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' acc='shared'>x</symbol>
+<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' refer='global' acc='shared'>x</symbol>
 <int ty='lang|Int'>42</int>
 </assign>
 </body>
@@ -83,8 +83,8 @@
 </rettype>
 <body>
 <assign  ty='lang|Unspecified'>
-<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' acc='shared'>x</symbol>
-<symbol  ty='lang|Unspecified' acc='shared'>lang|unspecified</symbol>
+<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' refer='global' acc='shared'>x</symbol>
+<symbol  ty='lang|Unspecified' refer='global' acc='shared'>lang|unspecified</symbol>
 </assign>
 </body>
 </func>

@@ -26,15 +26,15 @@
 <vardef sym='c'>
 <init>
 <binary op='+'>
-<symbol>a</symbol>
-<symbol>b</symbol>
+<symbol  refer='param'>a</symbol>
+<symbol  refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
 </let>
 <binary op='*'>
-<symbol>c</symbol>
-<symbol>c</symbol>
+<symbol  refer='local'>c</symbol>
+<symbol  refer='local'>c</symbol>
 </binary>
 </block>
 </body>
@@ -57,16 +57,16 @@
 <body>
 <binary op='*'>
 <apply>
-<symbol>abc|foo</symbol>
+<symbol  refer='function'>abc|foo</symbol>
 <args>
-<symbol>x</symbol>
+<symbol  refer='param'>x</symbol>
 <binary op='-'>
-<symbol>x</symbol>
+<symbol  refer='param'>x</symbol>
 <int ty='lang|Int'>2</int>
 </binary>
 </args>
 </apply>
-<symbol>x</symbol>
+<symbol  refer='param'>x</symbol>
 </binary>
 </body>
 </func>
@@ -79,7 +79,7 @@
 </rettype>
 <body>
 <apply>
-<symbol>abc|hinz|bar</symbol>
+<symbol  refer='function'>abc|hinz|bar</symbol>
 <args>
 <int ty='lang|Int'>5</int>
 </args>

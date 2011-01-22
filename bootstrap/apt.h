@@ -193,6 +193,7 @@ namespace herschel
     kParam,
     kSlot,
     kFunction,
+    kGeneric,
     kType,
   };
 
