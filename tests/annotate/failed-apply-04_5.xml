@@ -65,7 +65,7 @@
 </ty:type>
 </rettype>
 <body>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </body>
 </func>
 </def>
@@ -82,13 +82,13 @@
 <body>
 <block>
 <apply>
-<symbol  ty='lambda(lang|Int, lang|Char, lang|String, lang|Real, lang|Any):lang|Int'>foo</symbol>
+<symbol  ty='lambda(lang|Int, lang|Char, lang|String, lang|Real, lang|Any):lang|Int' refer='function'>foo</symbol>
 <args>
 <str>abc</str>
 </args>
 </apply>
 <apply  ty='lang|Int'>
-<symbol  ty='lambda(lang|Int, lang|Char, lang|String, lang|Real, lang|Any):lang|Int'>foo</symbol>
+<symbol  ty='lambda(lang|Int, lang|Char, lang|String, lang|Real, lang|Any):lang|Int' refer='function'>foo</symbol>
 <args>
 <int ty='lang|Int'>6</int>
 <keyw>ji</keyw>
@@ -100,11 +100,11 @@
 </arg>
 <int ty='lang|Int'>11</int>
 <keyw>read</keyw>
-<true ty='lang|Bool'/>
+<true  ty='lang|Bool'/>
 </args>
 </apply>
 <apply  ty='lang|Int'>
-<symbol  ty='lambda(lang|Int, lang|Char, lang|String, lang|Real, lang|Any):lang|Int'>foo</symbol>
+<symbol  ty='lambda(lang|Int, lang|Char, lang|String, lang|Real, lang|Any):lang|Int' refer='function'>foo</symbol>
 <args>
 <int ty='lang|Int'>7</int>
 <char>97</char>
@@ -116,7 +116,7 @@
 </arg>
 <int ty='lang|Int'>11</int>
 <keyw>read</keyw>
-<true ty='lang|Bool'/>
+<true  ty='lang|Bool'/>
 </args>
 </apply>
 </block>

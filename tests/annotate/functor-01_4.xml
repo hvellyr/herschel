@@ -42,7 +42,7 @@
 </rettype>
 <body>
 <apply>
-<symbol>init-functor</symbol>
+<symbol  refer='generic'>init-functor</symbol>
 <args>
 <symbol>lang|Int</symbol>
 </args>

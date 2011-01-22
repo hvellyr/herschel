@@ -42,9 +42,9 @@
 </type>
 <init>
 <apply  ty='lang|Int'>
-<symbol  ty='lambda(&apos;T[]):lang|Int'>lang|num-items</symbol>
+<symbol  ty='lambda(&apos;T[]):lang|Int' refer='generic'>lang|num-items</symbol>
 <args>
-<symbol  ty='&apos;T[]'>a</symbol>
+<symbol  ty='&apos;T[]' refer='param'>a</symbol>
 </args>
 </apply>
 </init>
@@ -80,48 +80,48 @@
 </ty:union>
 </type>
 <init>
-<symbol  ty='lang|Unspecified' acc='shared'>lang|unspecified</symbol>
+<symbol  ty='lang|Unspecified' refer='global' acc='shared'>lang|unspecified</symbol>
 </init>
 </vardef>
 </let>
 <while  ty='lang|Int'>
 <test>
 <binary op='&lt;=' ty='lang|Bool'>
-<symbol  ty='lang|Int'>i</symbol>
-<symbol  ty='lang|Int'>__end_0</symbol>
+<symbol  ty='lang|Int' refer='local'>i</symbol>
+<symbol  ty='lang|Int' refer='local'>__end_0</symbol>
 </binary>
 </test>
 <body>
 <block>
 <assign  ty='&apos;T'>
-<symbol  ty='&amp;(lang|Any, lang|Unspecified)'>__return_1</symbol>
+<symbol  ty='&amp;(lang|Any, lang|Unspecified)' refer='local'>__return_1</symbol>
 <assign  ty='&apos;T'>
-<symbol  ty='&apos;T'>sum</symbol>
+<symbol  ty='&apos;T' refer='local'>sum</symbol>
 <binary op='+' ty='&apos;T'>
-<symbol  ty='&apos;T'>sum</symbol>
+<symbol  ty='&apos;T' refer='local'>sum</symbol>
 <apply  ty='&apos;T'>
-<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E'>lang|slice</symbol>
+<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
 <args>
-<symbol  ty='&apos;T[]'>a</symbol>
-<symbol  ty='lang|Int'>i</symbol>
+<symbol  ty='&apos;T[]' refer='param'>a</symbol>
+<symbol  ty='lang|Int' refer='local'>i</symbol>
 </args>
 </apply>
 </binary>
 </assign>
 </assign>
 <assign  ty='lang|Int'>
-<symbol  ty='lang|Int'>i</symbol>
+<symbol  ty='lang|Int' refer='local'>i</symbol>
 <binary op='+' ty='lang|Int'>
-<symbol  ty='lang|Int'>i</symbol>
+<symbol  ty='lang|Int' refer='local'>i</symbol>
 <int ty='lang|Int'>1</int>
 </binary>
 </assign>
 </block>
 </body>
 </while>
-<symbol  ty='&amp;(lang|Any, lang|Unspecified)'>__return_1</symbol>
+<symbol  ty='&amp;(lang|Any, lang|Unspecified)' refer='local'>__return_1</symbol>
 </block>
-<symbol  ty='&apos;T'>sum</symbol>
+<symbol  ty='&apos;T' refer='local'>sum</symbol>
 </block>
 </body>
 </func>

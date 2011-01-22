@@ -129,17 +129,17 @@
 </vardef>
 </let>
 <apply  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>'>
-<symbol  ty='lambda(Pair&lt;&apos;T, ListPair&lt;&apos;T>>, &apos;T, lang|Int):Pair&lt;&apos;T, ListPair&lt;&apos;T>>'>insert!</symbol>
+<symbol  ty='lambda(Pair&lt;&apos;T, ListPair&lt;&apos;T>>, &apos;T, lang|Int):Pair&lt;&apos;T, ListPair&lt;&apos;T>>' refer='generic'>insert!</symbol>
 <args>
-<symbol  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>'>p</symbol>
+<symbol  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>' refer='local'>p</symbol>
 <str>hello world</str>
 <int ty='lang|Int'>0</int>
 </args>
 </apply>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(Pair&lt;&apos;T, ListPair&lt;&apos;T>>, lang|Int):&apos;T'>remove-at!</symbol>
+<symbol  ty='lambda(Pair&lt;&apos;T, ListPair&lt;&apos;T>>, lang|Int):&apos;T' refer='generic'>remove-at!</symbol>
 <args>
-<symbol  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>'>p</symbol>
+<symbol  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>' refer='local'>p</symbol>
 <int ty='lang|Int'>1</int>
 </args>
 </apply>

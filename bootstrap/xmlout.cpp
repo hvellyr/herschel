@@ -338,6 +338,21 @@ XmlRenderer::renderNode(const SymbolNode* node)
   if (fShowNodeType && node->type().isDef())
     attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
 
+  char* referTag = NULL;
+  switch (node->refersTo()) {
+  case kFreeVar:   referTag = NULL; break;
+  case kGlobalVar: referTag = "global"; break;
+  case kLocalVar:  referTag = "local"; break;
+  case kParam:     referTag = "param"; break;
+  case kSlot:      referTag = "slot"; break;
+  case kFunction:  referTag = "function"; break;
+  case kGeneric:   referTag = "generic"; break;
+  case kType:      referTag = "type"; break;
+  }
+
+  if (referTag != NULL)
+    attrs << " refer='" << referTag << "'";
+
   if (node->generics().empty()) {
     if (node->isShared())
       attrs << " acc='shared'";

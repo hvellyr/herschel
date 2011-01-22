@@ -43,8 +43,8 @@
 </vardef>
 </let>
 <assign  ty='lang|Int'>
-<symbol  ty='lang|Any'>x</symbol>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Any' refer='local'>x</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </assign>
 </block>
 </body>

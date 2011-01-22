@@ -28,7 +28,7 @@
 </rettype>
 <body>
 <range  ty='lang|Range&lt;&apos;T>'>
-<symbol  ty='&apos;T'>x</symbol>
+<symbol  ty='&apos;T' refer='param'>x</symbol>
 <cast>
 <base>
 <int ty='lang|Int'>100</int>

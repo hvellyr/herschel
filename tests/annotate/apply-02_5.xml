@@ -21,7 +21,7 @@
 </ty:ref>
 </rettype>
 <body>
-<symbol  ty='&apos;T'>x</symbol>
+<symbol  ty='&apos;T' refer='param'>x</symbol>
 </body>
 </func>
 </def>
@@ -38,14 +38,14 @@
 <body>
 <block>
 <apply  ty='lang|Int'>
-<symbol  ty='lambda(&apos;T, &apos;T):&apos;T'>foo</symbol>
+<symbol  ty='lambda(&apos;T, &apos;T):&apos;T' refer='function'>foo</symbol>
 <args>
 <int ty='lang|Int'>5</int>
 <int ty='lang|Int'>6</int>
 </args>
 </apply>
 <apply  ty='lang|Keyword'>
-<symbol  ty='lambda(&apos;T, &apos;T):&apos;T'>foo</symbol>
+<symbol  ty='lambda(&apos;T, &apos;T):&apos;T' refer='function'>foo</symbol>
 <args>
 <keyw>hello</keyw>
 <keyw>world</keyw>
@@ -76,7 +76,7 @@
 </ty:ref>
 </rettype>
 <body>
-<symbol  ty='&apos;T'>x</symbol>
+<symbol  ty='&apos;T' refer='param'>x</symbol>
 </body>
 </func>
 </def>
@@ -92,7 +92,7 @@
 </rettype>
 <body>
 <apply  ty='lang|Int'>
-<symbol  ty='lambda(&apos;T, &apos;Z):&apos;T'>foo2</symbol>
+<symbol  ty='lambda(&apos;T, &apos;Z):&apos;T' refer='function'>foo2</symbol>
 <args>
 <int ty='lang|Int'>5</int>
 <char>32</char>

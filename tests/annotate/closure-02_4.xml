@@ -30,10 +30,10 @@
 </rettype>
 <body>
 <assign>
-<symbol acc='shared'>n</symbol>
+<symbol  refer='param' acc='shared'>n</symbol>
 <binary op='+'>
-<symbol acc='shared'>n</symbol>
-<symbol>i</symbol>
+<symbol  refer='param' acc='shared'>n</symbol>
+<symbol  refer='param'>i</symbol>
 </binary>
 </assign>
 </body>

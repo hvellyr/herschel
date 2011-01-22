@@ -8,10 +8,10 @@
 </type>
 <init>
 <apply  ty='japan|City'>
-<symbol  ty='lambda(japan|City, lang|Any, lang|Any):japan|City'>japan|City|init</symbol>
+<symbol  ty='lambda(japan|City, lang|Any, lang|Any):japan|City' refer='function'>japan|City|init</symbol>
 <args>
 <apply  ty='japan|City'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|allocate</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T' refer='generic'>lang|allocate</symbol>
 <args>
 <type  ty='lang|Class&lt;japan|City>'/>
 </args>

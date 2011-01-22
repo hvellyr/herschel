@@ -36,7 +36,7 @@
 </rettype>
 <body>
 <block>
-<symbol  ty='Seq&lt;&apos;T>'>__obj_0</symbol>
+<symbol  ty='Seq&lt;&apos;T>' refer='param'>__obj_0</symbol>
 </block>
 </body>
 </func>
@@ -83,7 +83,7 @@
 </rettype>
 <body>
 <block>
-<symbol  ty='Dict&lt;&apos;K, &apos;V>'>__obj_1</symbol>
+<symbol  ty='Dict&lt;&apos;K, &apos;V>' refer='param'>__obj_1</symbol>
 </block>
 </body>
 </func>
@@ -114,7 +114,7 @@
 </type>
 <init>
 <apply  ty='Seq&lt;lang|Int>[]'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]'>lang|allocate*</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]' refer='generic'>lang|allocate*</symbol>
 <args>
 <type  ty='lang|Class&lt;Seq&lt;lang|Int>>'/>
 <int ty='lang|Ordinal'>1024</int>
@@ -140,9 +140,9 @@
 </vardef>
 </let>
 <apply  ty='Seq&lt;lang|Int>'>
-<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E'>lang|slice</symbol>
+<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
 <args>
-<symbol  ty='Seq&lt;lang|Int>[]'>x</symbol>
+<symbol  ty='Seq&lt;lang|Int>[]' refer='local'>x</symbol>
 <int ty='lang|Int'>34</int>
 </args>
 </apply>

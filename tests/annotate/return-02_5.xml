@@ -73,9 +73,9 @@
 </rettype>
 <body>
 <apply  ty='lang|Int'>
-<symbol>lang|return</symbol>
+<symbol  refer='function'>lang|return</symbol>
 <args>
-<symbol  ty='lang|Int'>z</symbol>
+<symbol  ty='lang|Int' refer='param'>z</symbol>
 </args>
 </apply>
 </body>
@@ -115,28 +115,28 @@
 </rettype>
 <body>
 <apply  ty='lang|Keyword'>
-<symbol>lang|return</symbol>
+<symbol  refer='function'>lang|return</symbol>
 <args>
-<symbol  ty='lang|Keyword'>g</symbol>
+<symbol  ty='lang|Keyword' refer='param'>g</symbol>
 </args>
 </apply>
 </body>
 </func>
 </let>
 <apply  ty='lang|String'>
-<symbol>lang|return</symbol>
+<symbol  refer='function'>lang|return</symbol>
 <args>
 <str>hello world</str>
 </args>
 </apply>
 <apply  ty='lang|String'>
-<symbol>lang|return</symbol>
+<symbol  refer='function'>lang|return</symbol>
 <args>
-<symbol  ty='lang|String'>y</symbol>
+<symbol  ty='lang|String' refer='local'>y</symbol>
 </args>
 </apply>
 </block>
-<symbol  ty='MutualString'>x</symbol>
+<symbol  ty='MutualString' refer='param'>x</symbol>
 </block>
 </body>
 </func>

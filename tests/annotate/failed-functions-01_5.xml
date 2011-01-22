@@ -22,8 +22,8 @@
 </rettype>
 <body>
 <binary op='+' ty='lang|Any'>
-<symbol  ty='lang|Any'>a</symbol>
-<symbol  ty='lang|Any'>b</symbol>
+<symbol  ty='lang|Any' refer='param'>a</symbol>
+<symbol  ty='lang|Any' refer='param'>b</symbol>
 </binary>
 </body>
 </func>

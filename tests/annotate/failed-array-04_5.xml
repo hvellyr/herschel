@@ -81,12 +81,12 @@
 </vardef>
 </let>
 <apply  ty='&apos;E'>
-<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E'>lang|slice</symbol>
+<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
 <args>
 <apply  ty='&amp;(lang|String, lang|Bool)'>
-<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E'>lang|slice</symbol>
+<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
 <args>
-<symbol  ty='&amp;(lang|String, lang|Bool)[]'>x</symbol>
+<symbol  ty='&amp;(lang|String, lang|Bool)[]' refer='local'>x</symbol>
 <int ty='lang|Int'>34</int>
 </args>
 </apply>

@@ -32,7 +32,7 @@
 </type>
 <init>
 <apply  ty='lang|Int'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>null-value</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T' refer='generic'>null-value</symbol>
 <args>
 <symbol  ty='lang|Class&lt;lang|Int>'>lang|Int</symbol>
 </args>

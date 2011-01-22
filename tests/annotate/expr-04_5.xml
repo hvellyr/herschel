@@ -76,8 +76,8 @@
 </type>
 <init>
 <binary op='+' ty='lang|UInt64'>
-<symbol  ty='lang|Int16'>a</symbol>
-<symbol  ty='lang|UInt64'>b</symbol>
+<symbol  ty='lang|Int16' refer='param'>a</symbol>
+<symbol  ty='lang|UInt64' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -102,8 +102,8 @@
 </type>
 <init>
 <binary op='-' ty='lang|UInt64'>
-<symbol  ty='lang|Int16'>a</symbol>
-<symbol  ty='lang|UInt64'>b</symbol>
+<symbol  ty='lang|Int16' refer='param'>a</symbol>
+<symbol  ty='lang|UInt64' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -128,8 +128,8 @@
 </type>
 <init>
 <binary op='*' ty='lang|UInt64'>
-<symbol  ty='lang|Int16'>a</symbol>
-<symbol  ty='lang|UInt64'>b</symbol>
+<symbol  ty='lang|Int16' refer='param'>a</symbol>
+<symbol  ty='lang|UInt64' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -154,8 +154,8 @@
 </type>
 <init>
 <binary op='/' ty='lang|UInt64'>
-<symbol  ty='lang|Int16'>a</symbol>
-<symbol  ty='lang|UInt64'>b</symbol>
+<symbol  ty='lang|Int16' refer='param'>a</symbol>
+<symbol  ty='lang|UInt64' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -180,8 +180,8 @@
 </type>
 <init>
 <binary op='**' ty='lang|UInt64'>
-<symbol  ty='lang|Int16'>a</symbol>
-<symbol  ty='lang|UInt64'>b</symbol>
+<symbol  ty='lang|Int16' refer='param'>a</symbol>
+<symbol  ty='lang|UInt64' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -206,8 +206,8 @@
 </type>
 <init>
 <binary op='mod' ty='lang|UInt64'>
-<symbol  ty='lang|Int16'>a</symbol>
-<symbol  ty='lang|UInt64'>b</symbol>
+<symbol  ty='lang|Int16' refer='param'>a</symbol>
+<symbol  ty='lang|UInt64' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -269,11 +269,11 @@
 <init>
 <binary op='and' ty='lang|Bool'>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt16' refer='param'>a</symbol>
 <int ty='lang|UInt32'>0</int>
 </binary>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Int64'>b</symbol>
+<symbol  ty='lang|Int64' refer='param'>b</symbol>
 <int ty='lang|Int32'>5</int>
 </binary>
 </binary>
@@ -289,12 +289,12 @@
 <init>
 <binary op='or' ty='lang|Bool'>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt16' refer='param'>a</symbol>
 <cast>
 <base>
 <cast>
 <base>
-<symbol  ty='lang|Int64'>b</symbol>
+<symbol  ty='lang|Int64' refer='param'>b</symbol>
 </base>
 <as>
 <ty:type nm='lang|Int'>
@@ -324,10 +324,10 @@
 </cast>
 </binary>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Int64'>b</symbol>
+<symbol  ty='lang|Int64' refer='param'>b</symbol>
 <cast>
 <base>
-<symbol  ty='lang|UInt16'>a</symbol>
+<symbol  ty='lang|UInt16' refer='param'>a</symbol>
 </base>
 <as>
 <ty:type nm='lang|Int'>

@@ -138,8 +138,11 @@ Annotator::annotate(SymbolNode* node)
         node->setRefersTo(vardef->isLocal() ? kLocalVar : kGlobalVar,
                           isShared);
       }
-      else if (dynamic_cast<const FuncDefNode*>(var) != NULL) {
-        node->setRefersTo(kFunction, false);
+      else if (const FuncDefNode* funcdef = dynamic_cast<const FuncDefNode*>(var)) {
+        if (funcdef->isGeneric())
+          node->setRefersTo(kGeneric, false);
+        else
+          node->setRefersTo(kFunction, false);
       }
       else if (dynamic_cast<const ParamNode*>(var) != NULL) {
         bool isShared = updateAllocType(node, var);

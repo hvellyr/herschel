@@ -37,12 +37,12 @@
 </vardef>
 </let>
 <apply  ty='&apos;E'>
-<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E'>lang|slice</symbol>
+<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
 <args>
 <apply  ty='lang|Int'>
-<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E'>lang|slice</symbol>
+<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
 <args>
-<symbol  ty='lang|Int[]'>y</symbol>
+<symbol  ty='lang|Int[]' refer='local'>y</symbol>
 <int ty='lang|Int'>34</int>
 </args>
 </apply>

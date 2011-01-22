@@ -46,20 +46,20 @@
 <if  ty='lang|Any'>
 <test>
 <binary op='>' ty='lang|Bool'>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 <int ty='lang|Int'>0</int>
 </binary>
 </test>
 <then>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(lang|Int):lang|String'>to-string</symbol>
+<symbol  ty='lambda(lang|Int):lang|String' refer='function'>to-string</symbol>
 <args>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </args>
 </apply>
 </then>
 <else>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </else>
 </if>
 </body>
@@ -92,20 +92,20 @@
 <if  ty='lang|Any'>
 <test>
 <binary op='>' ty='lang|Bool'>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 <int ty='lang|Int'>0</int>
 </binary>
 </test>
 <then>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(lang|Int):lang|String'>to-string</symbol>
+<symbol  ty='lambda(lang|Int):lang|String' refer='function'>to-string</symbol>
 <args>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </args>
 </apply>
 </then>
 <else>
-<symbol  ty='lang|Int'>a</symbol>
+<symbol  ty='lang|Int' refer='param'>a</symbol>
 </else>
 </if>
 <keyw>nothing</keyw>

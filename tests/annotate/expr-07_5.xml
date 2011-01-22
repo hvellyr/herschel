@@ -38,8 +38,8 @@
 </type>
 <init>
 <binary op='+' ty='lang|Rational'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -52,8 +52,8 @@
 </type>
 <init>
 <binary op='-' ty='lang|Rational'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -66,8 +66,8 @@
 </type>
 <init>
 <binary op='*' ty='lang|Rational'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -80,8 +80,8 @@
 </type>
 <init>
 <binary op='/' ty='lang|Rational'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -94,8 +94,8 @@
 </type>
 <init>
 <binary op='**' ty='lang|Rational'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -108,8 +108,8 @@
 </type>
 <init>
 <binary op='mod' ty='lang|Rational'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -156,8 +156,8 @@
 </type>
 <init>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -170,8 +170,8 @@
 </type>
 <init>
 <binary op='&lt;>' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -184,8 +184,8 @@
 </type>
 <init>
 <binary op='&lt;' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -198,8 +198,8 @@
 </type>
 <init>
 <binary op='>' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -212,8 +212,8 @@
 </type>
 <init>
 <binary op='>=' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -226,8 +226,8 @@
 </type>
 <init>
 <binary op='&lt;=' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -240,8 +240,8 @@
 </type>
 <init>
 <binary op='&lt;=>' ty='lang|Int'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -254,8 +254,8 @@
 </type>
 <init>
 <binary op='in' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -298,7 +298,7 @@
 </type>
 <init>
 <binary op='isa' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
 <symbol  ty='lang|Class&lt;lang|Int>'>lang|Int</symbol>
 </binary>
 </init>
@@ -312,8 +312,8 @@
 </type>
 <init>
 <binary op='isa' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Any'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Any' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -361,12 +361,12 @@
 <init>
 <binary op='and' ty='lang|Bool'>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
 <real ty='lang|Rational'>3/4</real>
 </binary>
 <binary op='==' ty='lang|Bool'>
 <real ty='lang|Rational'>4/127</real>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </binary>
 </init>
@@ -381,12 +381,12 @@
 <init>
 <binary op='or' ty='lang|Bool'>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Rational'>a</symbol>
-<symbol  ty='lang|Rational'>b</symbol>
+<symbol  ty='lang|Rational' refer='param'>a</symbol>
+<symbol  ty='lang|Rational' refer='param'>b</symbol>
 </binary>
 </binary>
 </init>

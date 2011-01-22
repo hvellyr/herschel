@@ -26,7 +26,7 @@
 </type>
 <init>
 <apply  ty='lang|Int[]'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]'>lang|allocate*</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]' refer='generic'>lang|allocate*</symbol>
 <args>
 <symbol  ty='lang|Class&lt;lang|Int>'>lang|Int</symbol>
 <int ty='lang|Ordinal'>1024</int>
@@ -50,9 +50,9 @@
 </vardef>
 </let>
 <apply  ty='lang|Int'>
-<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E'>lang|slice</symbol>
+<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
 <args>
-<symbol  ty='lang|Int[]'>x</symbol>
+<symbol  ty='lang|Int[]' refer='local'>x</symbol>
 <int ty='lang|Int'>34</int>
 </args>
 </apply>

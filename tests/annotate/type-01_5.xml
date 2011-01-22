@@ -24,7 +24,7 @@
 </rettype>
 <body>
 <block>
-<symbol  ty='abc|Person'>__obj_0</symbol>
+<symbol  ty='abc|Person' refer='param'>__obj_0</symbol>
 </block>
 </body>
 </func>
@@ -49,7 +49,7 @@
 </type>
 <init>
 <apply  ty='abc|Person[]'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]'>lang|allocate*</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]' refer='generic'>lang|allocate*</symbol>
 <args>
 <symbol  ty='lang|Class&lt;abc|Person>'>abc|Person</symbol>
 <int ty='lang|Ordinal'>12</int>
@@ -58,7 +58,7 @@
 </init>
 </vardef>
 </let>
-<symbol  ty='abc|Person[]'>x</symbol>
+<symbol  ty='abc|Person[]' refer='local'>x</symbol>
 </block>
 </body>
 </func>
@@ -79,10 +79,10 @@
 </type>
 <init>
 <apply  ty='abc|Person'>
-<symbol  ty='lambda(abc|Person):abc|Person'>abc|Person|init</symbol>
+<symbol  ty='lambda(abc|Person):abc|Person' refer='function'>abc|Person|init</symbol>
 <args>
 <apply  ty='abc|Person'>
-<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T'>lang|allocate</symbol>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T' refer='generic'>lang|allocate</symbol>
 <args>
 <type  ty='lang|Class&lt;abc|Person>'/>
 </args>
@@ -92,7 +92,7 @@
 </init>
 </vardef>
 </let>
-<symbol  ty='abc|Person'>x</symbol>
+<symbol  ty='abc|Person' refer='local'>x</symbol>
 </block>
 </body>
 </func>

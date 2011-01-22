@@ -89,12 +89,12 @@
 </vardef>
 </let>
 <apply  ty='lang|String'>
-<symbol  ty='lambda((&apos;Z, lang|Char, lang|Bool)):&apos;Z'>sep</symbol>
+<symbol  ty='lambda((&apos;Z, lang|Char, lang|Bool)):&apos;Z' refer='function'>sep</symbol>
 <args>
 <apply  ty='(lang|String, lang|Char, lang|Bool)'>
-<symbol  ty='lambda((lang|Int, &apos;T, lang|Bool)):(&apos;T, lang|Char, lang|Bool)'>foo</symbol>
+<symbol  ty='lambda((lang|Int, &apos;T, lang|Bool)):(&apos;T, lang|Char, lang|Bool)' refer='function'>foo</symbol>
 <args>
-<symbol  ty='(lang|Int, lang|String, lang|Bool)'>y</symbol>
+<symbol  ty='(lang|Int, lang|String, lang|Bool)' refer='local'>y</symbol>
 </args>
 </apply>
 </args>

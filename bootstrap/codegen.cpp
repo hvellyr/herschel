@@ -726,8 +726,9 @@ CodeGenerator::codegen(const ApplyNode* node)
 
   const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->base());
   if (symNode != NULL) {
-    assert(symNode->refersTo() == kFunction);
+    assert(symNode->refersTo() == kFunction || symNode->refersTo() == kGeneric);
 
+    // TODO handle generic function calls
     const AptNode* fn = symNode->scope()->lookupFunction(symNode->name(), false);
     const FuncDefNode* fdn = dynamic_cast<const FuncDefNode*>(fn);
     assert(fdn != NULL);
