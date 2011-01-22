@@ -113,6 +113,8 @@ namespace herschel
     E_InvalidRestParam    = 0x4101,
     E_ParamOrder          = 0x4102,
     E_SpecNamedParam      = 0x4103,
+    E_AbstractMethod      = 0x4104,
+    E_GenericNoSpecPrm    = 0x4105,
 
     // loops
     E_BadForLoopClause    = 0x4200,

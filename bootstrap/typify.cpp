@@ -248,8 +248,9 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
       node->setRetType(node->body()->type());
     }
     else {
-      warningf(node->srcpos(), E_UndefinedType,
-               "undefined return type on function defaults to lang|Any");
+      // TODO: make warnings like this optional
+      // warningf(node->srcpos(), E_UndefinedType,
+      //          "undefined return type on function defaults to lang|Any");
       node->setRetType(Type::newAny());
     }
   }

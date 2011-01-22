@@ -4,7 +4,7 @@
 <type nm='core|Comparable'>
 <proto>
 <def>
-<method sym='core|compare' abstract='true'>
+<generic sym='core|compare' abstract='true'>
 <params>
 <param sym='one' type='spec'>
 <type>
@@ -23,10 +23,10 @@
 <ty:ref nm='lang|Int'>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 <def>
-<method sym='core|equal?' abstract='true'>
+<generic sym='core|equal?' abstract='true'>
 <params>
 <param sym='one' type='spec'>
 <type>
@@ -45,7 +45,7 @@
 <ty:ref nm='lang|Bool'>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 </proto>
 <isa>

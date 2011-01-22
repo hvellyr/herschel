@@ -565,10 +565,10 @@ namespace herschel
 
 
   enum ParamFlags {
-    kPosArg,
-    kSpecArg,
-    kNamedArg,
-    kRestArg
+    kPosArg   = 1 << 0,
+    kSpecArg  = 1 << 1,
+    kNamedArg = 1 << 2,
+    kRestArg  = 1 << 3
   };
 
 
@@ -585,7 +585,11 @@ namespace herschel
     ParamFlags flags() const;
     const String& key() const;
 
+    //! indicates whether this is a rest parameter ("...").
     bool isRestArg() const;
+
+    //! Indicates whether this is a specialized parameter ("@").
+    bool isSpecArg() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
@@ -1021,8 +1025,9 @@ namespace herschel
 
 
   enum {
-    kFuncIsGeneric = 1 << 0,
-    kFuncIsAbstract = 1 << 1,
+    kFuncIsGeneric  = 1 << 0,   // generic function
+    kFuncIsAbstract = 1 << 1,   // abstract function definition
+    kFuncIsMethod   = 1 << 2,   // generic function implementation
   };
 
 
@@ -1040,6 +1045,7 @@ namespace herschel
 
     virtual const String& name() const;
     bool isGeneric() const;
+    bool isMethod() const;
     bool isAbstract() const;
 
     const String& linkage() const;

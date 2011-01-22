@@ -50,9 +50,9 @@
 </slots>
 <proto>
 <def>
-<method sym='f' abstract='true'>
+<generic sym='f' abstract='true'>
 <params>
-<param sym='x' type='pos'>
+<param sym='x' type='spec'>
 <type>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
@@ -63,7 +63,7 @@
 <ty:ref nm='lang|Any'>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 </proto>
 <isa>
@@ -95,7 +95,7 @@
 <ty:proto>
 <ty:fun nm='f' gen='t'>
 <ty:prms>
-<ty:prm is='pos'>
+<ty:prm is='pos' spec='t'>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
 </ty:prm>
@@ -143,7 +143,7 @@
 <ty:proto>
 <ty:fun nm='f' gen='t'>
 <ty:prms>
-<ty:prm is='pos'>
+<ty:prm is='pos' spec='t'>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
 </ty:prm>
@@ -199,7 +199,7 @@
 <ty:proto>
 <ty:fun nm='f' gen='t'>
 <ty:prms>
-<ty:prm is='pos'>
+<ty:prm is='pos' spec='t'>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
 </ty:prm>

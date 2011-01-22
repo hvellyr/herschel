@@ -4,7 +4,7 @@
 <type nm='XYZ'>
 <proto>
 <def>
-<method sym='core|to-string' abstract='true'>
+<generic sym='core|to-string' abstract='true'>
 <params>
 <param sym='o' type='spec'>
 <type>
@@ -17,15 +17,23 @@
 <ty:ref nm='lang|String'>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 <def>
-<method sym='meuble' abstract='true'>
+<generic sym='meuble' abstract='true'>
+<params>
+<param sym='o' type='spec'>
+<type>
+<ty:ref nm='XYZ'>
+</ty:ref>
+</type>
+</param>
+</params>
 <rettype>
 <ty:ref nm='lang|Any'>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 </proto>
 <isa>
@@ -44,6 +52,12 @@
 </ty:ret>
 </ty:fun>
 <ty:fun nm='meuble' gen='t'>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='XYZ'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
 <ty:ret>
 <ty:ref nm='lang|Any'>
 </ty:ref>

@@ -31,7 +31,13 @@
 <id>def</id>
 <id>generic</id>
 <id>meuble</id>
-<nested left='(' right=')'/>
+<nested left='(' right=')'>
+<seq>
+<id>o</id>
+<punct type='@'/>
+<id>XYZ</id>
+</seq>
+</nested>
 <punct type=':'/>
 <id>Any</id>
 <punct type='...'/>
@@ -39,3 +45,4 @@
 </nested>
 </seq>
 </seq>
+

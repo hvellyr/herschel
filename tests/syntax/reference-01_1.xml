@@ -22,6 +22,7 @@
 </seq>
 <seq>
 <id>def</id>
+<id>generic</id>
 <id>f1</id>
 <nested left='(' right=')'>
 <seq>
@@ -204,3 +205,4 @@
 <punct type='...'/>
 </seq>
 </seq>
+

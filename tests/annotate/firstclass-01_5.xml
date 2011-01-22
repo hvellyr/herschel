@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
 <def>
-<method sym='null-value' abstract='true'>
+<generic sym='null-value' abstract='true'>
 <params>
 <param sym='ty' type='spec'>
 <type>
@@ -18,7 +18,7 @@
 <ty:ref gen='t' nm='T'>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 <def>
 <vardef sym='x'>

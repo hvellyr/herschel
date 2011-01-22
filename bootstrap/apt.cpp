@@ -929,6 +929,13 @@ ParamNode::isRestArg() const
 }
 
 
+bool
+ParamNode::isSpecArg() const
+{
+  return (fFlags & kSpecArg) != 0;
+}
+
+
 const String&
 ParamNode::key() const
 {
@@ -1798,6 +1805,13 @@ bool
 FuncDefNode::isGeneric() const
 {
   return (fFlags & kFuncIsGeneric) != 0;
+}
+
+
+bool
+FuncDefNode::isMethod() const
+{
+  return (fFlags & kFuncIsMethod) != 0;
 }
 
 

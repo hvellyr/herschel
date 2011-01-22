@@ -48,6 +48,8 @@ namespace herschel
     void parseTopExprlist(const Token& expr);
 
     NodeList rewriteDefNode(AptNode* node, bool isLet);
+    NodeList rewriteDefNodes(const NodeList& nodes, bool isLet);
+
     NodeList parseDef(const Token& expr, bool isLocal);
     AptNode* parseIf(const Token& expr);
     AptNode* parseOn(const Token& expr);
@@ -85,7 +87,7 @@ namespace herschel
     AptNode* parseUnitDef(const Token& expr, size_t ofs, bool isLocal);
     AptNode* parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
                          bool isLocal, const String& linkage);
-    AptNode* parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
+    NodeList parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
                               const String& linkage);
 
     AptNode* parseLiteralArray(const Token& expr);
@@ -143,6 +145,8 @@ namespace herschel
     Type normalizeType(const Type& type);
 
 
+    //@{ Parsing functions
+
     struct FundefClauseData
     {
       FundefClauseData()
@@ -159,6 +163,30 @@ namespace herschel
     void parseFundefClause(const TokenVector& seq, size_t& ofs,
                            FundefClauseData& data);
 
+    //! indicates whether the node list \p params (a list of ParamNodes)
+    //! contains a parameter which is specialized (isSpecArg()).
+    bool hasSpecParameters(const NodeList& params) const;
+
+    //! make and register a generic function declaration for name \p sym and
+    //! parsed function data \p data.  Since generic functions are never local
+    //! or may have a special linkage this can be passed here.
+    AptNode* makeGenericFunction(const SrcPos& srcpos,
+                                 const String& sym,
+                                 const FundefClauseData& data);
+
+    //! make a method (i.e. a generic function implementation) for the generic
+    //! function called \p sym with parsed function data \p data.
+    AptNode* makeMethod(const SrcPos& srcpos, const String& sym,
+                        const FundefClauseData& data);
+
+    //! make a normal function named \p sym with parsed function data \p
+    //! data.  The function data must not contain specialized parameters, nor
+    //! must the function be flagged as generic.
+    AptNode* makeNormalFunction(const SrcPos& srcpos, const String& sym,
+                                const FundefClauseData& data,
+                                bool isLocal,
+                                const String& linkage);
+    //@}
 
     Type parseBinaryTypeSpec(const Token& expr, bool forceGeneric,
                              bool isValue);

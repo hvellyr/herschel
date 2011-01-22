@@ -27,7 +27,7 @@
 </func>
 </def>
 <def>
-<func sym='f1'>
+<method sym='f1'>
 <params>
 <param sym='a' type='spec'>
 <type>
@@ -45,6 +45,6 @@
 <body>
 <symbol>a</symbol>
 </body>
-</func>
+</method>
 </def>
 </compile-unit>
