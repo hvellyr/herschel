@@ -94,7 +94,7 @@ module Range ("eyestep/herschel 1.0:range")
 {
   export public (init)
 
-  def generic init(range @ Range<'T>, from : 'T, to : 'T, step : 'T) : Range<'T> ...
+  def init(range : Range<'T>, from : 'T, to : 'T, step : 'T) : Range<'T> ...
 }
 
 
