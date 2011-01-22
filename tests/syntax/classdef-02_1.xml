@@ -71,7 +71,7 @@
 <nested left='(' right=')'>
 <seq>
 <id>x</id>
-<punct type=':'/>
+<punct type='@'/>
 <seq>
 <punct type='&apos;'/>
 <id>T</id>
@@ -94,3 +94,4 @@
 </nested>
 </seq>
 </seq>
+

@@ -51,7 +51,7 @@
 </slots>
 <proto>
 <def>
-<method sym='req' abstract='true'>
+<generic sym='req' abstract='true'>
 <params>
 <param sym='x' type='spec'>
 <type>
@@ -80,7 +80,7 @@
 </ty:gen>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 </proto>
 <isa>
@@ -290,41 +290,39 @@
 </type>
 </def>
 <def>
-<method sym='f0' abstract='true'>
+<func sym='f0' abstract='true'>
 <rettype>
 <ty:ref nm='lang|Any'>
 </ty:ref>
 </rettype>
-</method>
+</func>
 </def>
 <def>
 <type nm='Y2'>
-<proto>
-<def>
-<method sym='f3' abstract='true'>
-<rettype>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-</rettype>
-</method>
-</def>
-</proto>
 <isa>
 <ty:type nm='Y2'>
 <ty:isa>
 <ty:ref nm='Z2'>
 </ty:ref>
 </ty:isa>
-<ty:proto>
-<ty:fun nm='f3' gen='t'>
-<ty:ret>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-</ty:ret>
-</ty:fun>
-</ty:proto>
 </ty:type>
 </isa>
 </type>
+</def>
+<def>
+<generic sym='f3' abstract='true'>
+<params>
+<param sym='t' type='spec'>
+<type>
+<ty:ref nm='Y2'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+</generic>
 </def>
 </compile-unit>

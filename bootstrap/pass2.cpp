@@ -1473,16 +1473,107 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
 }
 
 
+//------------------------------------------------------------------------------
+
+bool
+SecondPass::hasSpecParameters(const NodeList& params) const
+{
+  for (size_t i = 0; i < params.size(); i++) {
+    const ParamNode* pParam = dynamic_cast<const ParamNode*>(params[i].obj());
+    if (pParam->isSpecArg())
+      return true;
+  }
+  return false;
+}
+
+
 AptNode*
+SecondPass::makeGenericFunction(const SrcPos& srcpos,
+                                const String& sym,
+                                const FundefClauseData& data)
+{
+  assert((data.fFlags & kFuncIsGeneric) != 0);
+
+  String fullFuncName = qualifyId(currentModuleName(), sym);
+
+  if (fScope->checkForRedefinition(srcpos, Scope::kNormal, fullFuncName))
+    return NULL;
+
+  Ptr<FuncDefNode> func = new FuncDefNode(srcpos,
+                                          fullFuncName,
+                                          // force abstractedness
+                                          data.fFlags | kFuncIsAbstract,
+                                          data.fParams,
+                                          data.fType,
+                                          // no body for generic functions
+                                          NULL);
+  fScope->registerFunction(srcpos, fullFuncName, func);
+  return func.release();
+}
+
+
+AptNode*
+SecondPass::makeMethod(const SrcPos& srcpos, const String& sym,
+                       const FundefClauseData& data)
+{
+  assert((data.fFlags & kFuncIsGeneric) == 0);
+  assert((data.fFlags & kFuncIsAbstract) == 0);
+
+  String fullFuncName = qualifyId(currentModuleName(), sym);
+
+  Ptr<FuncDefNode> func = new FuncDefNode(srcpos,
+                                          fullFuncName,
+                                          // force abstractedness
+                                          data.fFlags | kFuncIsMethod,
+                                          data.fParams,
+                                          data.fType,
+                                          data.fBody);
+  return func.release();
+}
+
+
+AptNode*
+SecondPass::makeNormalFunction(const SrcPos& srcpos, const String& sym,
+                               const FundefClauseData& data,
+                               bool isLocal,
+                               const String& linkage)
+{
+  assert((data.fFlags & kFuncIsGeneric) == 0);
+  assert((data.fFlags & kFuncIsMethod) == 0);
+
+  String fullFuncName = ( isLocal
+                          ? sym
+                          : qualifyId(currentModuleName(), sym) );
+
+  if (fScope->checkForRedefinition(srcpos, Scope::kNormal, fullFuncName))
+    return NULL;
+
+  Ptr<FuncDefNode> func = new FuncDefNode(srcpos,
+                                          fullFuncName,
+                                          data.fFlags,
+                                          data.fParams,
+                                          data.fType,
+                                          data.fBody);
+  func->setLinkage(linkage);
+  fScope->registerFunction(srcpos, fullFuncName, func);
+
+  return func.release();
+}
+
+
+NodeList
 SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
                              const String& linkage)
 {
   assert(expr.isSeq());
   assert(expr.count() >= ofs + 2);
 
+  NodeList retval;
+
   FundefClauseData data;
 
   if (expr[ofs] == Compiler::genericToken) {
+    assert(!isLocal);
     data.fFlags |= kFuncIsGeneric;
     ofs++;
   }
@@ -1501,26 +1592,54 @@ SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
   const TokenVector& seq = expr.children();
   parseFundefClause(seq, ofs, data);
 
-  String fullFuncName = ( isLocal
-                          ? sym
-                          : qualifyId(currentModuleName(), sym) );
+  bool hasSpecParams = hasSpecParameters(data.fParams);
+  if (hasSpecParams) {
+    if ((data.fFlags & kFuncIsGeneric) == 0) {
+      // a method implementation
+      if ((data.fFlags & kFuncIsAbstract) != 0) {
+        errorf(expr.srcpos(), E_AbstractMethod,
+               "Generic function implementations must not be abstract");
+        return NodeList();
+      }
+      data.fFlags |= kFuncIsMethod;
 
-  if (fScope->checkForRedefinition(expr.srcpos(),
-                                   Scope::kNormal, fullFuncName))
-    return NULL;
+      retval.push_back(makeMethod(expr.srcpos(), sym, data));
+    }
+    else {
+      // generic functions
+      if ((data.fFlags & kFuncIsAbstract) != 0) {
+        // generic function definition
+        retval.push_back(makeGenericFunction(expr.srcpos(), sym, data));
+      }
+      else {
+        // generic function with default implementation
+        retval.push_back(makeGenericFunction(expr.srcpos(), sym, data));
 
-  Ptr<FuncDefNode> func = new FuncDefNode(expr.srcpos(),
-                                          fullFuncName,
-                                          data.fFlags,
-                                          data.fParams,
-                                          data.fType,
-                                          data.fBody);
-  func->setLinkage(linkage);
-  fScope->registerFunction(expr.srcpos(), fullFuncName, func);
+        data.fFlags &= ~kFuncIsGeneric;
+        data.fFlags |= kFuncIsMethod;
 
-  return func.release();
+        retval.push_back(makeMethod(expr.srcpos(), sym, data));
+      }
+    }
+  }
+  else {
+    if ((data.fFlags & kFuncIsGeneric) != 0) {
+      // generic function without specialized parameter?
+      errorf(expr.srcpos(), E_GenericNoSpecPrm,
+             "Generic function without specialized parameter");
+      return NodeList();
+    }
+
+    // else: normal function
+    retval.push_back(makeNormalFunction(expr.srcpos(), sym, data,
+                                        isLocal, linkage));
+  }
+
+  return retval;
 }
 
+
+//------------------------------------------------------------------------------
 
 AptNode*
 SecondPass::newDefNode(AptNode* node, bool isLet)
@@ -1538,6 +1657,19 @@ SecondPass::rewriteDefNode(AptNode* node, bool isLet)
   if (node != NULL)
     return newNodeList(newDefNode(node, isLet));
   return NodeList();
+}
+
+
+NodeList
+SecondPass::rewriteDefNodes(const NodeList& nodes, bool isLet)
+{
+  NodeList retval;
+  for (size_t i = 0; i < nodes.size(); i++) {
+    AptNode* node = nodes[i];
+    if (node != NULL)
+      retval.push_back(newDefNode(node, isLet));
+  }
+  return retval;
 }
 
 
@@ -1627,8 +1759,8 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
 
   else if (expr[ofs] == Compiler::genericToken) {
     assert(linkage.isEmpty());
-    return rewriteDefNode(parseFunctionDef(expr, ofs, isLocal, String()),
-                          isLocal);
+    return rewriteDefNodes(parseFunctionDef(expr, ofs, isLocal, String()),
+                           isLocal);
   }
 
   else if (expr[ofs] == Compiler::charToken) {
@@ -1646,8 +1778,8 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
   else if (expr[ofs] == kSymbol) {
     if (expr.count() >= ofs + 2) {
       if (expr[ofs + 1].isNested())
-        return rewriteDefNode(parseFunctionDef(expr, ofs, isLocal, linkage),
-                              isLocal);
+        return rewriteDefNodes(parseFunctionDef(expr, ofs, isLocal, linkage),
+                               isLocal);
 
       assert(expr[ofs + 1] == kAssign || expr[ofs + 1] == kColon);
       return rewriteDefNode(parseVarDef(expr, kNormalVar, ofs, isLocal, linkage),

@@ -1,0 +1,227 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='outln' abstract='true'>
+<params>
+<param sym='str' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<type nm='Vehicle'>
+<isa>
+<ty:type nm='Vehicle'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='Car'>
+<isa>
+<ty:type nm='Car'>
+<ty:isa>
+<ty:ref nm='Vehicle'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='Ufo'>
+<isa>
+<ty:type nm='Ufo'>
+<ty:isa>
+<ty:ref nm='Vehicle'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<generic sym='crash-into' abstract='true'>
+<params>
+<param sym='object1' type='spec'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+<param sym='object2' type='spec'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+<def>
+<method sym='crash-into'>
+<params>
+<param sym='o1' type='spec'>
+<type>
+<ty:type nm='Car'>
+<ty:isa>
+<ty:ref nm='Vehicle'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='o2' type='spec'>
+<type>
+<ty:type nm='Car'>
+<ty:isa>
+<ty:ref nm='Vehicle'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<apply  ty='lang|Any'>
+<symbol  ty='lambda(lang|Any):lang|Any'>outln</symbol>
+<args>
+<str>Car crashed into car</str>
+</args>
+</apply>
+</body>
+</method>
+</def>
+<def>
+<method sym='crash-into'>
+<params>
+<param sym='o1' type='spec'>
+<type>
+<ty:type nm='Ufo'>
+<ty:isa>
+<ty:ref nm='Vehicle'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='o2' type='spec'>
+<type>
+<ty:type nm='Car'>
+<ty:isa>
+<ty:ref nm='Vehicle'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<apply  ty='lang|Any'>
+<symbol  ty='lambda(lang|Any):lang|Any'>outln</symbol>
+<args>
+<str>Ufo crashed into car</str>
+</args>
+</apply>
+</body>
+</method>
+</def>
+<def>
+<func sym='bar'>
+<rettype>
+<ty:type nm='lang|Bool'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<block>
+<apply  ty='lang|Any'>
+<symbol  ty='lambda(&apos;T, &apos;T):lang|Any'>crash-into</symbol>
+<args>
+<int ty='lang|Int'>5</int>
+<int ty='lang|Int'>8</int>
+</args>
+</apply>
+<true  ty='lang|Bool'/>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Bool'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

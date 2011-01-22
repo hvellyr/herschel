@@ -16,15 +16,15 @@ def class Abc<X>(x : X) : Collection<X>
 def type Y : Z
     ~ Another Y ~
 
-def generic f0() ...
+def f0() ...
     ~ Some f0 ~
 
 def type Y2 : Z2
     ~ Some Y2 ~
-{
-  def generic f3() ...
-      ~ more on that ~
-}
+
+def generic f3(t @ Y2) ...
+    ~ more on that ~
+
 
 def alias StringList 
     ~ A list of strings ~

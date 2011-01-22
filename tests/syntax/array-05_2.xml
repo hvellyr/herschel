@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
 <def>
-<func sym='foo'>
+<method sym='foo'>
 <params>
 <param sym='a' type='spec'>
 <type>
@@ -77,6 +77,6 @@
 <symbol>t</symbol>
 </block>
 </body>
-</func>
+</method>
 </def>
 </compile-unit>

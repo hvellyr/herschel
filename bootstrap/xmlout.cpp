@@ -930,7 +930,13 @@ XmlRenderer::renderNode(const FunctionNode* node)
 void
 XmlRenderer::renderNode(const FuncDefNode* node)
 {
-  const char* tag = node->isGeneric() ? "method" : "func";
+  const char* tag = NULL;
+  if (node->isGeneric())
+    tag = "generic";
+  else if (node->isMethod())
+    tag = "method";
+  else
+    tag = "func";
 
   StringBuffer attrs;
   attrs << "sym='" << node->name() << "'";

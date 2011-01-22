@@ -17,7 +17,7 @@
 </func>
 </def>
 <def>
-<func sym='f1' abstract='true'>
+<generic sym='f1' abstract='true'>
 <params>
 <param sym='a' type='spec'>
 <type>
@@ -30,7 +30,7 @@
 <ty:ref ref='t' nm='lang|Bool'>
 </ty:ref>
 </rettype>
-</func>
+</generic>
 </def>
 <def>
 <func sym='f2' abstract='true'>

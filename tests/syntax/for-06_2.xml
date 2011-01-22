@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
 <def>
-<func sym='find-last-node'>
+<method sym='find-last-node'>
 <params>
 <param sym='node' type='spec'>
 <type>
@@ -95,7 +95,7 @@
 <symbol>p</symbol>
 </block>
 </body>
-</func>
+</method>
 </def>
 <def>
 <func sym='f0'>

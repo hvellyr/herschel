@@ -15,7 +15,7 @@
 </type>
 </def>
 <def>
-<func sym='insert!' abstract='true'>
+<generic sym='insert!' abstract='true'>
 <params>
 <param sym='self' type='spec'>
 <type>
@@ -64,10 +64,10 @@
 </ty:gen>
 </ty:ref>
 </rettype>
-</func>
+</generic>
 </def>
 <def>
-<func sym='remove-at!' abstract='true'>
+<generic sym='remove-at!' abstract='true'>
 <params>
 <param sym='self' type='spec'>
 <type>
@@ -100,7 +100,7 @@
 <ty:ref gen='t' nm='T'>
 </ty:ref>
 </rettype>
-</func>
+</generic>
 </def>
 <def>
 <func sym='foo'>

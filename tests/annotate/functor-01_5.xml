@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
 <def>
-<method sym='init-functor' abstract='true'>
+<generic sym='init-functor' abstract='true'>
 <params>
 <param sym='ty' type='spec'>
 <type>
@@ -32,7 +32,7 @@
 </ty:ret>
 </ty:fun>
 </rettype>
-</method>
+</generic>
 </def>
 <def>
 <func sym='foo'>

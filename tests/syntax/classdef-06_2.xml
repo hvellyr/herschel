@@ -16,7 +16,7 @@
 </params>
 <proto>
 <def>
-<method sym='item' abstract='true'>
+<generic sym='item' abstract='true'>
 <params>
 <param sym='k' type='spec'>
 <type>
@@ -37,10 +37,10 @@
 </ty:const>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 <def>
-<method sym='itemx' abstract='true'>
+<generic sym='itemx' abstract='true'>
 <params>
 <param sym='k' type='spec'>
 <type>
@@ -63,10 +63,10 @@
 </ty:const>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 <def>
-<method sym='itemy' abstract='true'>
+<generic sym='itemy' abstract='true'>
 <params>
 <param sym='k' type='spec'>
 <type>
@@ -89,10 +89,10 @@
 </ty:const>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 <def>
-<method sym='itemz' abstract='true'>
+<generic sym='itemz' abstract='true'>
 <params>
 <param sym='k' type='spec'>
 <type>
@@ -113,10 +113,10 @@
 </ty:const>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 <def>
-<method sym='itemf' abstract='true'>
+<generic sym='itemf' abstract='true'>
 <params>
 <param sym='k' type='spec'>
 <type>
@@ -137,7 +137,7 @@
 </ty:const>
 </ty:ref>
 </rettype>
-</method>
+</generic>
 </def>
 </proto>
 <isa>
