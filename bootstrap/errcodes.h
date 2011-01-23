@@ -115,6 +115,8 @@ namespace herschel
     E_SpecNamedParam      = 0x4103,
     E_AbstractMethod      = 0x4104,
     E_GenericNoSpecPrm    = 0x4105,
+    E_NoGenericFunction   = 0x4106,
+    E_BadGenericReferrer  = 0x4107,
 
     // loops
     E_BadForLoopClause    = 0x4200,
