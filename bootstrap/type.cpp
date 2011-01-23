@@ -2795,8 +2795,8 @@ namespace herschel
       return false;
     }
 
-    // fprintf(stderr, "LEFT IS:  %s\n", (const char*)StrHelper(left0.toString()));
-    // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right0.toString()));
+    // tyerror(left0, "LEFT IS");
+    // tyerror(right0, "RIGHT IS");
     if (left0.isOpen() && right0.isOpen())
       // TODO: handle complex generic types like 'T[]
       return left0.typeName() == right0.typeName();
@@ -2805,8 +2805,8 @@ namespace herschel
     Type left = resolveType(left0, scope);
     Type right = resolveType(right0, scope);
 
-    // fprintf(stderr, "LEFT IS: %s\n", (const char*)StrHelper(left.toString()));
-    // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right.toString()));
+    // tyerror(left, "LEFT IS");
+    // tyerror(right, "RIGHT IS");
     if (!left.isDef()) {
       if (reportErrors)
         errorf(srcpos, E_UndefinedType,
@@ -3032,9 +3032,26 @@ namespace herschel
       const FunctionParameter& leftprm = leftsig.parameters()[i];
       const FunctionParameter& rightprm = rightsig.parameters()[i];
 
-      if (leftprm.kind() != rightprm.kind() ||
-          !isContravariant(leftprm.type(), rightprm.type(), scope, srcpos,
+      if (leftprm.kind() == rightprm.kind()) {
+        if (leftprm.isSpecialized() && rightprm.isSpecialized()) {
+          if (!isCovariant(leftprm.type(), rightprm.type(), scope, srcpos,
                            reportErrors))
+            return false;
+        }
+        else if (leftprm.isSpecialized()) {
+          // parameters are not symmetrical specialized
+          return false;
+        }
+        else {
+          if (!isContravariant(leftprm.type(), rightprm.type(), scope, srcpos,
+                               reportErrors) &&
+              // special case: a function taking lang|Any types accepts
+              // everything.
+              !rightprm.type().isAny())
+            return false;
+        }
+      }
+      else
         return false;
     }
     return true;
@@ -3133,7 +3150,11 @@ namespace herschel
     else if (left.isFunction()) {
       if (isSameType(left, right, scope, srcpos, reportErrors))
         return true;
-      return isCovariant(left, right, scope, srcpos, reportErrors);
+      if (right.isFunction())
+        return isCovariant(left.functionSignature(), right.functionSignature(),
+                           scope, srcpos, reportErrors);
+      else
+        return false;
     }
     else if (left.isType() || left.isClass()) {
       if (isSameType(left, right, scope, srcpos, reportErrors))

@@ -337,14 +337,39 @@ Typifier::typify(FuncDefNode* node)
   if (node->body() != NULL) {
     typifyNode(node->body());
 
-    if (!node->body()->type().isDef())
-      node->body()->setType(Type::newAny());
+    if (fPhase == kTypify) {
+      if (!node->body()->type().isDef())
+        node->body()->setType(Type::newAny());
+    }
   }
 
-  if (fPhase == kTypify)
+  if (fPhase == kTypify) {
     setupFunctionNodeType(node);
-  else if (fPhase == kCheck)
+  }
+  else if (fPhase == kCheck) {
     checkFunctionReturnType(node);
+
+    if (node->isMethod()) {
+      // for methods check that the function signature matches the generic
+      // function implementation.  The following conditions are checked in
+      // annotate.cpp already.
+      const FuncDefNode* genericDef = NULL;
+      const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
+      if (var != NULL &&
+          (genericDef = dynamic_cast<const FuncDefNode*>(var)) != NULL &&
+          genericDef->isGeneric())
+      {
+        if (!isContravariant(genericDef->type(), node->type(),
+                             node->scope(), node->srcpos()))
+        {
+          errorf(node->srcpos(), E_TypeMismatch,
+                 "method does not match generic function definition");
+          // tyerror(genericDef->type(), "Generic");
+          // tyerror(node->type(), "This");
+        }
+      }
+    }
+  }
 }
 
 
