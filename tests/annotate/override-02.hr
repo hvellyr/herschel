@@ -1,0 +1,13 @@
+def type Vehicle
+def type Car : Vehicle
+def type Truck : Car
+def type Bike : Vehicle
+
+
+def generic foo(a @ Int, b : Car) : Car ...
+
+;; methods' return values must be covariant to their generic functions',
+;; non-specialized parameter types must be contravariant.
+def foo(a @ UInt32, b : Vehicle) : Truck
+  let t : Truck
+  t

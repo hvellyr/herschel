@@ -852,7 +852,7 @@ The definition of generic functions take the following form:
 
 @example
 def generic @var{name} ([@var{parameters}]) [: @var{return-type}] ...
-def generic @var{name} ([@var{parameters}]) [: @var{return-type}] 
+def generic @var{name} ([@var{parameters}]) [: @var{return-type}]
     @var{function-body}
 @end example
 
@@ -902,18 +902,25 @@ def add-x(self @@ XMap, value @@ Int)
   self.insert(value, -1)
 @end example
 
-Implementing a method may restate the @code{generic} keyword; the
-specialized parameters must be marked as specialized however (using
-the @@ marker).  Restating the @code{generic} keyword is generally not
-recommended, since it may hide overwrite ambiguities.@footnote{A
-specialized method @code{m()} requires a matching generic function
-@code{g()} being declared somewhere before.  If the generic function
-is later changed the compiler will complain about the method not
-matching any known generic function.  This is comparable to the
-@code{overwrite} modifier in languages like @acronym{D} or
-@acronym{C#}.}
+Re-definition of generic functions is not allowed.  Therefore the
+generic keyword can not be re-stated in a method implementation.  This
+however helps to detect later generic function
+modifications.@footnote{A specialized method @code{m()} requires a
+matching generic function @code{g()} being declared somewhere before.
+If the generic function is later changed the compiler will complain
+about the method not matching any known generic function.  This is
+comparable to the @code{override} modifier in languages like
+@acronym{D} or @acronym{C#}.}
 
-Methods must be co-variant with their generic function:
+Methods are said to match their generic function definition if
+
+@itemize
+@item specialized parameters in the method are @emph{contravariant} to the
+corresponding ones in the GF
+@item non-specialized parameters in the
+method are @emph{covariant} to the corresponding ones in the GF
+@item the method's return type is @emph{contravariant} to the GF's one.
+@end itemize
 
 @example
 def generic f(x @@ Any) : Number ...
@@ -1642,7 +1649,7 @@ def bar()
 
 the parameter @code{a} is changed locally in @code{foo} only.  On the
 other hand in the following form it is possible to modify members of
-reference typed parameters: 
+reference typed parameters:
 
 @example
 def foo(a : ^Person)

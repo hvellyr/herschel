@@ -53,13 +53,13 @@
 <params>
 <param sym='object1' type='spec'>
 <type>
-<ty:ref gen='t' nm='T'>
+<ty:ref nm='lang|Any'>
 </ty:ref>
 </type>
 </param>
 <param sym='object2' type='spec'>
 <type>
-<ty:ref gen='t' nm='T'>
+<ty:ref nm='lang|Any'>
 </ty:ref>
 </type>
 </param>
@@ -159,7 +159,7 @@
 <body>
 <block>
 <apply  ty='lang|Any'>
-<symbol  ty='lambda(&apos;T, &apos;T):lang|Any' refer='generic'>crash-into</symbol>
+<symbol  ty='lambda(lang|Any, lang|Any):lang|Any' refer='generic'>crash-into</symbol>
 <args>
 <int ty='lang|Int'>5</int>
 <int ty='lang|Int'>8</int>
@@ -194,12 +194,8 @@
 <ty:used-type>
 <ty:fun nm=''>
 <ty:prms>
-<ty:prm is='pos' spec='t'>
-<ty:ref gen='t' nm='T'>
-</ty:ref>
-</ty:prm>
-<ty:prm is='pos' spec='t'>
-<ty:ref gen='t' nm='T'>
+<ty:prm is='pos'>
+<ty:ref nm='lang|Any'>
 </ty:ref>
 </ty:prm>
 </ty:prms>
@@ -212,7 +208,11 @@
 <ty:used-type>
 <ty:fun nm=''>
 <ty:prms>
-<ty:prm is='pos'>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos' spec='t'>
 <ty:ref nm='lang|Any'>
 </ty:ref>
 </ty:prm>
