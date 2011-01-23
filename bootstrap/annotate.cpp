@@ -258,8 +258,30 @@ void
 Annotator::annotate(FuncDefNode* node, bool isLocal)
 {
   if (fPhase == kRegister) {
-    if (isLocal)
+    if (isLocal) {
       fScope->registerFunction(node->srcpos(), node->name(), node);
+    }
+    else if (node->isMethod()) {
+      const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
+      if (var == NULL) {
+        errorf(node->srcpos(), E_NoGenericFunction,
+               "No generic function definition found for method");
+      }
+      else if (const FuncDefNode* funcdef = dynamic_cast<const FuncDefNode*>(var)) {
+        if (!funcdef->isGeneric()) {
+          errorf(node->srcpos(), E_BadGenericReferrer,
+                 "Bad method binding type (referred symbol is not a generic function).");
+          errorf(var->srcpos(), E_BadGenericReferrer,
+                 "Referred function definition was here");
+        }
+      }
+      else {
+        errorf(node->srcpos(), E_BadGenericReferrer,
+               "Bad method binding type (referred symbol is not a generic function).");
+        errorf(var->srcpos(), E_BadGenericReferrer,
+               "Referred symbol definition was here");
+      }
+    }
   }
 
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
