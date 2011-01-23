@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='bar'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<func sym='foo'>
+<params>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<binary op='+'>
+<symbol>b</symbol>
+<symbol>b</symbol>
+</binary>
+</body>
+</func>
+</let>
+<symbol>a</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='bar2'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Int'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<func sym='foo'>
+<params>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<symbol>b</symbol>
+</body>
+</func>
+</let>
+<apply>
+<symbol>to-string</symbol>
+<args>
+<symbol>a</symbol>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

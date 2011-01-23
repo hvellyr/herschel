@@ -3136,31 +3136,30 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal,
 
   const Macro* macro = fScope->lookupMacro(symToken.srcpos(),
                                            symToken.idValue(), true);
-  Token macroName = Token(symToken.srcpos(), baseName(symToken.idValue()));
-
   if (macro != NULL) {
-    if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for macro appliance ignored");
+    Token macroName = Token(symToken.srcpos(), baseName(symToken.idValue()));
 
-    TokenVector dummyArgs;
-    Token expr= parseMakeMacroCall(macroName, dummyArgs, macro,
-                                   true /* parseParams */, isLocal,
-                                   kNonScopedDef);
-    return expr.toTokenVector();
-  }
-  else
-  {
-    nextToken();
-    if (fToken == kParanOpen)
-      return parseFunctionDef(defToken, Token(), symToken, isLocal,
-                              linkage).toTokenVector();
+    if (macro->type() == kMacro_Def) {
+      if (linkage.isSet())
+        errorf(linkage.srcpos(), E_UnexpLinkage,
+               "Unsupported linkage for macro appliance ignored");
 
-    return parseVarDef2(defToken, Token(), symToken, isLocal,
-                        linkage);
+      TokenVector dummyArgs;
+      Token expr= parseMakeMacroCall(macroName, dummyArgs, macro,
+                                     true /* parseParams */, isLocal,
+                                     kNonScopedDef);
+      return expr.toTokenVector();
+    }
+    // the macro is silently ignored here
   }
 
-  return TokenVector();
+  nextToken();
+  if (fToken == kParanOpen)
+    return parseFunctionDef(defToken, Token(), symToken, isLocal,
+                            linkage).toTokenVector();
+
+  return parseVarDef2(defToken, Token(), symToken, isLocal,
+                      linkage);
 }
 
 
