@@ -3047,7 +3047,8 @@ namespace herschel
                                reportErrors) &&
               // special case: a function taking lang|Any types accepts
               // everything.
-              !rightprm.type().isAny())
+              !isCovariant(rightprm.type(), Type::newAny(), scope, srcpos,
+                           reportErrors))
             return false;
         }
       }
