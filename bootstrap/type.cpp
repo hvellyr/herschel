@@ -3075,20 +3075,46 @@ namespace herschel
       // TODO: handle complex generic types like 'T[]
       return isSameType(left0, right0, scope, srcpos, reportErrors);
 
-    Type right = resolveType(right0, scope);
+    Type right;
+    Type left;
+    if (left0.isOpen()) {
+      right = resolveType(right0, scope);
+      if (!right.isDef()) {
+        if (reportErrors)
+          errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+        return false;
+      }
+      if (isCovariant(right, Type::newAny(), scope, srcpos, reportErrors)) {
+        // a generic open type is covariant to Any.  This needs special treatment
+        // in the compiler though
+        return true;
+      }
+    }
+    else if (right0.isOpen()) {
+      left = resolveType(left0, scope);
+
+      if (!left.isDef()) {
+        if (reportErrors)
+          errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+        return false;
+      }
+
+      if (isCovariant(left, Type::newAny(), scope, srcpos, reportErrors)) {
+        // a generic open type is covariant to Any.  This needs special treatment
+        // in the compiler though
+        return true;
+      }
+    }
+    else {
+      right = resolveType(right0, scope);
+      left = resolveType(left0, scope);
+    }
+
     if (!right.isDef()) {
       if (reportErrors)
         errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
       return false;
     }
-
-    if (left0.isOpen() && isCovariant(right, Type::newAny(), scope, srcpos, reportErrors)) {
-      // a generic open type is covariant to Any.  This needs special treatment
-      // in the compiler though
-      return true;
-    }
-
-    Type left = resolveType(left0, scope);
     if (!left.isDef()) {
       if (reportErrors)
         errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
