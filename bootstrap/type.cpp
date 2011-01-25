@@ -119,6 +119,12 @@ namespace herschel
     }
 
 
+    bool isOpenSelf() const
+    {
+      return false;
+    }
+
+
     const TypeVector& types() const
     {
       return fTypes;
@@ -254,6 +260,12 @@ namespace herschel
     }
 
 
+    bool isOpenSelf() const
+    {
+      return false;
+    }
+
+
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                                Scope* scope, const SrcPos& srcpos) const
     {
@@ -330,6 +342,12 @@ namespace herschel
     bool isOpen() const
     {
       return ( fInherit.isOpen() || herschel::isOpen(fGenerics));
+    }
+
+
+    bool isOpenSelf() const
+    {
+      return false;
     }
 
 
@@ -470,6 +488,12 @@ namespace herschel
     }
 
 
+    bool isOpenSelf() const
+    {
+      return false;
+    }
+
+
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                                Scope* scope, const SrcPos& srcpos) const
     {
@@ -562,6 +586,12 @@ namespace herschel
     bool isOpen() const
     {
       return fBaseType.isOpen();
+    }
+
+
+    bool isOpenSelf() const
+    {
+      return fBaseType.isOpenSelf();
     }
 
 
@@ -821,6 +851,12 @@ namespace herschel
     bool isOpen() const
     {
       return fBase.isOpen();
+    }
+
+
+    bool isOpenSelf() const
+    {
+      return fBase.isOpenSelf();
     }
 
 
@@ -1759,6 +1795,13 @@ bool
 Type::isOpen() const
 {
   return (fImpl != NULL && fImpl->isOpen());
+}
+
+
+bool
+Type::isOpenSelf() const
+{
+  return fKind == kType_Ref && fImpl != NULL && fImpl->isOpenSelf();
 }
 
 
@@ -2797,13 +2840,41 @@ namespace herschel
 
     // tyerror(left0, "LEFT IS");
     // tyerror(right0, "RIGHT IS");
-    if (left0.isOpen() && right0.isOpen())
+    if (left0.isOpenSelf() && right0.isOpenSelf())
       // TODO: handle complex generic types like 'T[]
       return left0.typeName() == right0.typeName();
 
+    Type left;
+    Type right;
 
-    Type left = resolveType(left0, scope);
-    Type right = resolveType(right0, scope);
+    if (left0.isOpenSelf()) {
+      right = resolveType(right0, scope);
+      if (!right.isDef()) {
+        if (reportErrors)
+          errorf(srcpos, E_UndefinedType,
+                 "Undefined type: '%s' (%s:%d)",
+                 (const char*)StrHelper(right0.typeId()), __FILE__, __LINE__);
+        return false;
+      }
+      // if only one of both types is open is can not be the same type.
+      return false;
+    }
+    else if (right0.isOpenSelf()) {
+      left = resolveType(left0, scope);
+      if (!left.isDef()) {
+        if (reportErrors)
+          errorf(srcpos, E_UndefinedType,
+                 "Undefined type: '%s' (%s:%d)",
+                 (const char*)StrHelper(left0.typeId()), __FILE__, __LINE__);
+        return false;
+      }
+      // if only one of both types is open is can not be the same type.
+      return false;
+    }
+    else {
+      left = resolveType(left0, scope);
+      right = resolveType(right0, scope);
+    }
 
     // tyerror(left, "LEFT IS");
     // tyerror(right, "RIGHT IS");
@@ -3028,6 +3099,8 @@ namespace herschel
     if (leftsig.parameters().size() != rightsig.parameters().size())
       return false;
 
+    TypeCtx localCtx;
+
     for (size_t i = 0; i < leftsig.parameters().size(); i++) {
       const FunctionParameter& leftprm = leftsig.parameters()[i];
       const FunctionParameter& rightprm = rightsig.parameters()[i];
@@ -3050,6 +3123,19 @@ namespace herschel
               !isCovariant(rightprm.type(), Type::newAny(), scope, srcpos,
                            reportErrors))
             return false;
+        }
+
+        if (rightprm.type().isOpenSelf()) {
+          String genName = rightprm.type().typeName();
+
+          Type knownType = localCtx.lookupType(genName);
+          if (knownType.isDef()) {
+            if (!isContravariant(leftprm.type(), knownType, scope, srcpos,
+                                 reportErrors))
+              return false;
+          }
+
+          localCtx.registerType(genName, leftprm.type());
         }
       }
       else
@@ -3078,7 +3164,7 @@ namespace herschel
 
     Type right;
     Type left;
-    if (left0.isOpen()) {
+    if (left0.isOpenSelf()) {
       right = resolveType(right0, scope);
       if (!right.isDef()) {
         if (reportErrors)
@@ -3091,7 +3177,7 @@ namespace herschel
         return true;
       }
     }
-    else if (right0.isOpen()) {
+    else if (right0.isOpenSelf()) {
       left = resolveType(left0, scope);
 
       if (!left.isDef()) {

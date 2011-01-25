@@ -83,6 +83,7 @@ namespace herschel
     virtual bool isEqual(const TypeImpl* other) const = 0;
 
     virtual bool isOpen() const = 0;
+    virtual bool isOpenSelf() const = 0;
 
     virtual void replaceGenerics(const TypeCtx& typeMap) = 0;
 
@@ -217,6 +218,8 @@ namespace herschel
     //(e.g. 'T); for complex type any subtype (generics, parameters, etc.)
     //must be a Generic type reference (e.g. 'T[], List<'T>, &('T, Bool = false))
     bool isOpen() const;
+    bool isOpenSelf() const;
+
     bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                        Scope* scope, const SrcPos& srcpos) const;
 
