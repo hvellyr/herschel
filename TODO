@@ -39,54 +39,54 @@ Bootstrap compiler
      - how to express nil-ness with the normal type machine
 
 
-       - constraints
+  - constraints
 
-       - BUG: syntax errors from import files are not shown (handled) properly.
+  - BUG: syntax errors from import files are not shown (handled) properly.
 
-       - BinaryNode: in case the builtin types are not recognized from the
-         compiler, lookup an add(), subtract(), multiply(), ... function and use
-         its type signature to check whether the binary operator is possible and
-         correct.
+  - BinaryNode: in case the builtin types are not recognized from the
+    compiler, lookup an add(), subtract(), multiply(), ... function and use
+    its type signature to check whether the binary operator is possible and
+    correct.
 
-         The same for binary compare operators.
+    The same for binary compare operators.
 
-         The same for append(), fold()
+    The same for append(), fold()
 
-       - Missing node support:
-          - match
-          - select
-          - on
-          - slotdef
-          - typedef
-          - UnitConst
+  - Missing node support:
+     - match
+     - select
+     - on
+     - slotdef
+     - typedef
+     - UnitConst
 
-       - replace the UnitConstant node by a proper Measure() ctor call.  Apply
-         the unit transformation inplace (if simple enough).  Register
-         unit-transform calls as special functions.
+  - replace the UnitConstant node by a proper Measure() ctor call.  Apply
+    the unit transformation inplace (if simple enough).  Register
+    unit-transform calls as special functions.
 
-       - get rid of nested functions
-         - detect closure variable access
+  - get rid of nested functions
+    - detect closure variable access
 
-         - detect whether nested functions can simply be inlined
+    - detect whether nested functions can simply be inlined
 
-         - otherwise lambda lift functions to outside.
+    - otherwise lambda lift functions to outside.
 
-       - array access
+  - array access
 
-       - vardef parameters
+  - vardef parameters
 
-       - enum:
-         - construct proper enum constraint type
-         - check that init values match the base type
+  - enum:
+    - construct proper enum constraint type
+    - check that init values match the base type
 
-       - extend macro parameter types (like ?a:type-spec)
+  - extend macro parameter types (like ?a:type-spec)
 
-       - macros
-         - subpatterns
+  - macros
+    - subpatterns
 
-       - continue with pexpreval (add the missing operators)
+  - continue with pexpreval (add the missing operators)
 
-       - docstrings in pass2 -> extracted documentation
+  - docstrings in pass2 -> extracted documentation
 
 
 Language and ideas:
