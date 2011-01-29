@@ -664,6 +664,10 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
   if (node->body() != NULL) {
     llvm::Function::arg_iterator aiter = func->arg_begin();
     llvm::Function::arg_iterator aiter_e = func->arg_end();
+
+    llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", func);
+    fBuilder.SetInsertPoint(bb);
+
     for (size_t pidx = 0;
          pidx < node->params().size() && aiter != aiter_e;
          pidx++, ++aiter)
@@ -675,10 +679,6 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
       fBuilder.CreateStore(aiter, stackSlot);
       fNamedValues[param->name()] = stackSlot;
     }
-
-    llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(),
-                                                  "entry", func);
-    fBuilder.SetInsertPoint(bb);
 
     const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->body());
     if (blockNode != NULL) {
