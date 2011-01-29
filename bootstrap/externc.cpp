@@ -54,7 +54,7 @@ makeCTypeName(const String& base, bool isSigned, int ptrDepth)
 {
   StringBuffer buf;
 
-  buf << "C|";
+  buf << "clang|";
 
   if (!isSigned && (base == String("int") || base == String("short") ||
                     base == String("char") || base == String("long")) )
