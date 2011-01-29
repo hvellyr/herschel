@@ -880,8 +880,7 @@ Typifier::typify(BinaryNode* node)
     case kOpLess:
     case kOpLessEqual:
     case kOpUnequal:
-      if ( (leftty.isAny() && rightty.isBool()) ||
-           (leftty.isBool() && rightty.isAny()) ||
+      if ( leftty.isAny() || rightty.isAny() ||
            (leftty.isAnySignedInt() && rightty.isAnySignedInt()) ||
            (leftty.isAnyUInt() && rightty.isAnyUInt()) ||
            (leftty.isAnyReal() && rightty.isAnyReal()) ||
@@ -890,7 +889,7 @@ Typifier::typify(BinaryNode* node)
            (leftty.isOrdinal() && rightty.isOrdinal()) ||
            (leftty.isInt() && rightty.isInt()) ||
            (leftty.isNumber() && rightty.isNumber()) ||
-           (isSameType(leftty, rightty, node->scope(), node->srcpos())) )
+           isSameType(leftty, rightty, node->scope(), node->srcpos()) )
       {
         // any is always ok.
         node->setType(Type::newBool());
