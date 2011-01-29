@@ -27,11 +27,12 @@ Here's what
 (http://steve-yegge.blogspot.com/2007/02/next-big-language.html) thinks the
 Next-Big-Thing will contain:
 
-
 Here's a short list of programming-language features that have become
 ad-hoc standards that everyone expects:
 
                                                                         Herschel?
+- C-like syntax                                                         Mmh
+- Performance                                                            ?
 - Object-literal syntax for arrays and hashes                           yes
 - Array slicing and other intelligent collection operators              yes
 - Perl 5 compatible regular expression literals
@@ -42,10 +43,10 @@ ad-hoc standards that everyone expects:
 - Iterators and generators                                              yes
 - List comprehensions                                                   yes
 + Namespaces and packages                                               yes
-- Cross-platform GUI                                                    future
+- Cross-platform GUI
 + Operator overloading                                                  yes
 + Keyword and rest parameters                                           yes
-- First-class parser and AST support                                    yes
+- First-class parser and AST support
 - Static typing and duck typing                                         yes
 - Type expressions and statically checkable semantics
 - Solid string and collection libraries                                 yes
