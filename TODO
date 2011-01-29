@@ -14,8 +14,12 @@ Documentation
 
   - document call-by-value, reference types.
 
+  - write/extend/update section on object creation ("auto" slots)
+
 
 Bootstrap compiler
+
+  - support 'auto' slots in ctor construction.
 
   - constructions of 'T are not allowed in a function body.  Generics are
     however allowed in type spec locations (incl. casting).  These are
