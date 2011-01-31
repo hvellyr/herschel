@@ -65,6 +65,7 @@ namespace herschel
   class SymbolNode;
   class TypeDefNode;
   class TypeNode;
+  class Type;
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
@@ -130,8 +131,10 @@ namespace herschel
     llvm::LLVMContext& context();
 
     llvm::FunctionType* createFunctionSignature(const FunctionNode* node);
+    llvm::FunctionType* createFunctionSignature2(const FunctionNode* node,
+                                                 bool inlineRetv);
 
-    void codegen(const NodeList& nl);
+    llvm::Value* codegen(const NodeList& nl);
 
     void createDefaultCMainFunc();
 
@@ -147,6 +150,21 @@ namespace herschel
 
     llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
                                              const String& name);
+
+    const llvm::Type* getAtomType();
+    const llvm::Type* getType(const Type& type);
+
+    llvm::Value* makeTypeCastAtomToClangInt(llvm::Value* val);
+    llvm::Value* makeTypeCastAtomToClangChar(llvm::Value* val);
+
+    void setAtom(llvm::AllocaInst* atom, int typid, llvm::Value* value);
+    void assignAtom(llvm::Value* src, llvm::Value* dst);
+
+    llvm::Function* getIntrinsic(unsigned int iid,
+                 const llvm::Type** tys, unsigned int numTys);
+    llvm::Function* getMemCpyFn(const llvm::Type* dstType,
+                                const llvm::Type* srcType,
+                                const llvm::Type* sizeType);
 
     //-------- data members
 
