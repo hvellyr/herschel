@@ -470,7 +470,9 @@ Typifier::checkArgParamType(TypeCtx& localCtx,
   }
   else {
     if (!isContravariant(param->type(), arg->type(), arg->scope(),
-                         arg->srcpos()))
+                         arg->srcpos()) &&
+        !isCovariant(arg->type(), Type::newAny(), arg->scope(),
+                     arg->srcpos()))
     {
       errorf(arg->srcpos(), E_TypeMismatch,
              "type mismatch for argument %d", idx);
