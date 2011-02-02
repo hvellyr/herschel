@@ -1,2 +1,1 @@
-8 ; error ; 4417
-8 ; error ; 4413
+8 ; error ; 4417 ; unspecified alternate branch do not match type with consequent

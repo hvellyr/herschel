@@ -3120,8 +3120,7 @@ namespace herschel
                                reportErrors) &&
               // special case: a function taking lang|Any types accepts
               // everything.
-              !isCovariant(rightprm.type(), Type::newAny(), scope, srcpos,
-                           reportErrors))
+              !containsAny(rightprm.type(), srcpos, reportErrors))
             return false;
         }
 
@@ -3142,6 +3141,29 @@ namespace herschel
         return false;
     }
     return true;
+  }
+
+
+  bool
+  containsAny(const Type& left, const SrcPos& srcpos, bool reportErrors)
+  {
+    if (!left.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return false;
+    }
+
+    if (left.isAny())
+      return true;
+    if (left.isUnion()) {
+      const TypeVector& vect = left.unionTypes();
+      for (size_t i = 0; i < vect.size(); i++) {
+        if (containsAny(vect[i], srcpos, reportErrors))
+          return true;
+      }
+    }
+
+    return false;
   }
 
 
@@ -3405,7 +3427,7 @@ namespace herschel
   void
   tyerror(const Type& type, const char* msg)
   {
-    fprintf(stderr, "%s: %s\n", msg, (const char*)StrHelper(type.toString()));
+    fprintf(stderr, "%s: %s\n", msg, (const char*)StrHelper(type.typeId()));
   }
 
 

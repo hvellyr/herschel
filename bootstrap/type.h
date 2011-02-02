@@ -528,7 +528,8 @@ namespace herschel
                        const SrcPos& srcpos, bool reportErrors = true);
   bool isInvariant(const Type& left, const Type& right, Scope* scope,
                    const SrcPos& srcpos, bool reportErrors = true);
-
+  bool containsAny(const Type& left, const SrcPos& srcpos,
+                   bool reportErrors = true);
 
   TypeVector newTypeVector();
   TypeVector newTypeVector(const Type& ty1);

@@ -471,8 +471,7 @@ Typifier::checkArgParamType(TypeCtx& localCtx,
   else {
     if (!isContravariant(param->type(), arg->type(), arg->scope(),
                          arg->srcpos()) &&
-        !isCovariant(arg->type(), Type::newAny(), arg->scope(),
-                     arg->srcpos()))
+        !containsAny(arg->type(), arg->srcpos()))
     {
       errorf(arg->srcpos(), E_TypeMismatch,
              "type mismatch for argument %d", idx);
@@ -703,8 +702,9 @@ Typifier::typify(AssignNode* node)
       errorf(node->rvalue()->srcpos(), E_TypeMismatch,
              "Undefined type in assignment right hand value");
     }
-    else if (!isContravariant(ltype, rtype,
-                              node->scope(), node->srcpos())) {
+    else if (!isContravariant(ltype, rtype, node->scope(), node->srcpos()) &&
+             !containsAny(rtype, node->srcpos()))
+    {
       errorf(node->rvalue()->srcpos(), E_TypeMismatch,
              "type mismatch in assignment");
     }
