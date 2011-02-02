@@ -43,7 +43,6 @@ CodeGenerator::CodeGenerator()
     fModule(NULL),
     fBuilder(context()),
     fOptPassManager(NULL),
-//    fCurrentValue(NULL),
     fHasMainFunc(false)
 {
   llvm::InitializeNativeTarget();
@@ -68,6 +67,28 @@ CodeGenerator::CodeGenerator()
   fOptPassManager->add(new llvm::TargetData(*theExecutionEngine->getTargetData()));
   // Promote allocas to registers.
   fOptPassManager->add(llvm::createPromoteMemoryToRegisterPass());
+
+  fOptPassManager->add(llvm::createScalarReplAggregatesPass());
+  // fOptPassManager->add(llvm::createGlobalDCEPass());
+  // fOptPassManager->add(llvm::createDeadArgEliminationPass());
+
+  // fOptPassManager->add(llvm::createFunctionInliningPass());
+  // fOptPassManager->add(llvm::createCondPropagationPass());
+  fOptPassManager->add(llvm::createLoopRotatePass());
+
+  fOptPassManager->add(llvm::createLICMPass());                  // Hoist loop invariants
+  fOptPassManager->add(llvm::createLoopUnswitchPass());
+  fOptPassManager->add(llvm::createLoopIndexSplitPass());        // Split loop index
+  fOptPassManager->add(llvm::createInstructionCombiningPass());  
+  fOptPassManager->add(llvm::createIndVarSimplifyPass());        // Canonicalize indvars
+  fOptPassManager->add(llvm::createLoopDeletionPass());          // Delete dead loops
+  fOptPassManager->add(llvm::createLoopUnrollPass());          // Unroll small loops
+  fOptPassManager->add(llvm::createInstructionCombiningPass());  // Clean up after the unroller
+  fOptPassManager->add(llvm::createGVNPass());                   // Remove redundancies
+  fOptPassManager->add(llvm::createMemCpyOptPass());             // Remove memcpy / form memset
+  fOptPassManager->add(llvm::createSCCPPass());                  // Constant prop with SCCP
+  fOptPassManager->add(llvm::createTailCallEliminationPass());
+
   // Do simple "peephole" optimizations and bit-twiddling optzns.
   fOptPassManager->add(llvm::createInstructionCombiningPass());
   // Reassociate expressions.
@@ -194,18 +215,25 @@ CodeGenerator::getType(const Type& type)
 }
 
 
-// bool
-// CodeGenerator::needWrap()
-// {
-// }
-
-
 //------------------------------------------------------------------------------
 
 llvm::Value*
-CodeGenerator::codegenNode(const AptNode* node)
+CodeGenerator::wrapLoad(llvm::Value* val)
 {
-  return node->codegen(this);
+  if (val != NULL && llvm::AllocaInst::classof(val))
+    return fBuilder.CreateLoad(val);
+  return val;
+}
+
+
+llvm::Value*
+CodeGenerator::codegenNode(const AptNode* node, bool autoloadAllocInst)
+{
+  llvm::Value* val = node->codegen(this);
+  if (autoloadAllocInst && llvm::AllocaInst::classof(val)) {
+    val = fBuilder.CreateLoad(val);
+  }
+  return val;
 }
 
 
@@ -283,8 +311,7 @@ CodeGenerator::codegen(const SymbolNode* node)
 {
   if (node->name() == String("lang|unspecified")) {
     // TODO
-    return llvm::ConstantInt::get(context(),
-                                  llvm::APInt(32, 0, true));
+    return makeIntAtom(0);
   }
 
   llvm::Value* val = NULL;
@@ -306,7 +333,7 @@ CodeGenerator::codegen(const SymbolNode* node)
     return NULL;
   }
 
-  return fBuilder.CreateLoad(val, node->string());
+  return val;
 }
 
 
@@ -350,7 +377,7 @@ CodeGenerator::addGlobalCtor(llvm::Function* ctor, int priority)
 void
 CodeGenerator::addGlobalDtor(llvm::Function* dtor, int priority)
 {
-  // FIXME: Type coercion of void()* types.
+  // FIXME: Type coercing of void()* types.
   fGlobalDtors.push_back(std::make_pair(dtor, priority));
 }
 
@@ -420,7 +447,7 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
                            llvm::GlobalValue::ExternalLinkage,
                            llvm::ConstantInt::get(context(),
                                                   // TODO
-                                                  llvm::APInt(32, 0, true)),
+                                                  llvm::APInt(32, 1013, true)),
                            llvm::Twine(varnm),
                            false, // ThreadLocal
                            0);    // AddressSpace
@@ -448,13 +475,14 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
     initval = codegenNode(node->initExpr());
   }
   else {
+    assert(0 && "no initval");
     // TODO: init the temporary value.  We shouldn't really have to care about
     // this here, since this can be better done in the AST analysis.
-    initval = llvm::ConstantInt::get(context(),
-                                     llvm::APInt(32, 0, true));
+    // initval = llvm::ConstantInt::get(context(),
+    //                                  llvm::APInt(32, 1011, true));
   }
 
-  fBuilder.CreateStore(initval, gv);
+  fBuilder.CreateStore(wrapLoad(initval), gv);
   fBuilder.CreateRetVoid();
 
   verifyFunction(*func);
@@ -474,26 +502,27 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 llvm::Value*
 CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 {
-  if (!isLocal) {
+  if (!isLocal)
     return codegenForGlobalVars(node);
-  }
 
   llvm::Value* initval = NULL;
   if (node->initExpr() != NULL) {
     initval = codegenNode(node->initExpr());
   }
   else {
+    assert(0 && "no initval");
     // TODO: init the temporary value.  We shouldn't really have to care about
     // this here, since this can be better done in the AST analysis.
-    initval = llvm::ConstantInt::get(context(),
-                                     llvm::APInt(32, 0, true));
+    // initval = llvm::ConstantInt::get(context(),
+    //                                  llvm::APInt(32, 1014, true));
   }
 
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
 
   llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
                                                        node->name());
-  fBuilder.CreateStore(initval, stackSlot);
+  assignAtom(initval, stackSlot);
+
   fNamedValues[node->name()] = stackSlot;
 
   return initval;
@@ -516,7 +545,8 @@ CodeGenerator::codegen(const AssignNode* node)
       return NULL;
     }
 
-    fBuilder.CreateStore(rvalue, var);
+    assignAtom(rvalue, var);
+    // fBuilder.CreateStore(wrapLoad(rvalue), var);
     return rvalue;
   }
 
@@ -563,7 +593,6 @@ CodeGenerator::codegen(const LetNode* node)
 llvm::Value*
 CodeGenerator::codegen(const NodeList& nl)
 {
-  //assert(fCurrentValue != NULL);
   llvm::Value* lastVal = NULL;
 
   for (size_t bidx = 0; bidx < nl.size(); bidx++) {
@@ -594,7 +623,7 @@ CodeGenerator::codegen(const BlockNode* node)
   fBuilder.CreateBr(contBB);
   fBuilder.SetInsertPoint(contBB);
 
-  return lastVal; //fCurrentValue;
+  return lastVal;
 }
 
 
@@ -627,15 +656,51 @@ CodeGenerator::codegen(const KeywordNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const IntNode* node)
+CodeGenerator::makeIntAtom(int val)
+{
+  return makeIntAtom(llvm::ConstantInt::get(context(),
+                                            llvm::APInt(32, val, true)));
+}
+
+
+llvm::Value*
+CodeGenerator::makeIntAtom(llvm::Value* val)
 {
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("intnd"));
+  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("int"));
 
-  setAtom(atom, 0, llvm::ConstantInt::get(context(),
-                                          llvm::APInt(32, node->value(), true)));
+  // set typeid
+  setAtom(atom, kAtomInt, val);
 
-  return fBuilder.CreateLoad(atom);
+  return atom;
+}
+
+
+llvm::Value*
+CodeGenerator::makeBoolAtom(llvm::Value* val)
+{
+  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
+  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("bool"));
+
+  // set typeid
+  setAtom(atom, kAtomBool, val);
+
+  return atom;
+}
+
+
+llvm::Value*
+CodeGenerator::makeBoolAtom(bool val)
+{
+  return makeBoolAtom(llvm::ConstantInt::get(context(),
+                                             llvm::APInt(1, val, true)));
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const IntNode* node)
+{
+  return makeIntAtom(node->value());
 }
 
 
@@ -762,8 +827,6 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
   // avoid nested functions by lambda lifting.
   fNamedValues.clear();
 
-  fprintf(stderr, "funcdefnode: %s\n", (const char*)StrHelper(node->name()));
-
   bool inlineRetv = false;
   String funcnm;
   if (node->linkage() == String("C")) {
@@ -818,14 +881,12 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
     }
 
     if (inlineRetv) {
-      llvm::AllocaInst* loc = createEntryBlockAlloca(func, String("retvalloc"));
-      fBuilder.CreateStore(retv, loc);
-
-      assignAtom(loc, func->arg_begin());
+      // no wrap-load!
+      assignAtom(retv, func->arg_begin());
       fBuilder.CreateRetVoid();
     }
     else
-      fBuilder.CreateRet(retv);
+      fBuilder.CreateRet(wrapLoad(retv));
 
     verifyFunction(*func);
 
@@ -883,6 +944,30 @@ CodeGenerator::makeTypeCastAtomToClangChar(llvm::Value* val)
 
 
 llvm::Value*
+CodeGenerator::makeTypeCastAtomToClangBool(llvm::Value* val)
+{
+  std::vector<const llvm::Type*> sign;
+  sign.push_back(getAtomType());
+
+  llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt1Ty(context()),
+                                                   sign,
+                                                   false);
+
+  llvm::Function* convFunc = fModule->getFunction(llvm::StringRef("atom_2_bool"));
+  if (convFunc == NULL) {
+    convFunc = llvm::Function::Create(ft,
+                                      llvm::Function::ExternalLinkage,
+                                      llvm::Twine("atom_2_bool"),
+                                      fModule);
+  }
+
+  std::vector<llvm::Value*> argv;
+  argv.push_back(val);
+  return fBuilder.CreateCall(convFunc, argv.begin(), argv.end(), "calltmp");
+}
+
+
+llvm::Value*
 CodeGenerator::codegen(const ApplyNode* node)
 {
   llvm::Function *calleeFunc = NULL;
@@ -928,10 +1013,6 @@ CodeGenerator::codegen(const ApplyNode* node)
     return NULL;
   }
 
-  fprintf(stderr, "Apply function %s %d\n",
-          (const char*)StrHelper(symNode->name()), inlineRetv);
-
-
   llvm::AllocaInst* retv = NULL;
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
   retv = createEntryBlockAlloca(curFunction, String("local_retv"));
@@ -941,7 +1022,7 @@ CodeGenerator::codegen(const ApplyNode* node)
     argv.push_back(retv);
 
   for (unsigned i = 0, e = nl.size(); i != e; ++i) {
-    llvm::Value* val = codegenNode(nl[i]);
+    llvm::Value* val = wrapLoad(codegenNode(nl[i]));
 
     if (fdn->params()[i]->type().typeName() == String("clang|int")) {
       val = makeTypeCastAtomToClangInt(val);
@@ -958,19 +1039,15 @@ CodeGenerator::codegen(const ApplyNode* node)
 
   if (inlineRetv) {
     fBuilder.CreateCall(calleeFunc, argv.begin(), argv.end());
-    if (node->isInTailPos())
-//KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
-      return fBuilder.CreateLoad(retv);
-    else
-      return retv;
+    return retv;
   }
   else {
     llvm::Value* funcVal = fBuilder.CreateCall(calleeFunc, argv.begin(), argv.end(),
                                                "xxx");
     if (node->isInTailPos()) {
-      setAtom(retv, 0, funcVal);
-//KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
-      return fBuilder.CreateLoad(retv);
+      // TODO: return type id
+      setAtom(retv, kAtomInt, funcVal);
+      return retv;
     }
     else
       return funcVal;
@@ -1001,28 +1078,45 @@ CodeGenerator::codegen(const ParamNode* node)
 llvm::Value*
 CodeGenerator::codegen(const BinaryNode* node)
 {
-  llvm::Value *left = codegenNode(node->left());
-  llvm::Value *right = codegenNode(node->right());
+  llvm::Value *left = wrapLoad(codegenNode(node->left()));
+  llvm::Value *right = wrapLoad(codegenNode(node->right()));
   if (left == NULL || right == NULL)
     return NULL;
 
-  switch (node->op()) {
-  case kOpPlus:     return fBuilder.CreateAdd(left, right, "addtmp");
-  case kOpMinus:    return fBuilder.CreateSub(left, right, "subtmp");
-  case kOpMultiply: return fBuilder.CreateMul(left, right, "multmp");
-  case kOpLess:
-    return fBuilder.CreateICmpULT(left, right, "cmptmp");
-  default:
-    printf("invalid binary operator");
-    return NULL;
+  if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt()) {
+    llvm::Value* li = makeTypeCastAtomToClangInt(left);
+    llvm::Value* ri = makeTypeCastAtomToClangInt(right);
+    llvm::Value* rv = NULL;
+
+    switch (node->op()) {
+    case kOpPlus:     return makeIntAtom(fBuilder.CreateAdd(li, ri, "addtmp"));
+    case kOpMinus:    return makeIntAtom(fBuilder.CreateSub(li, ri, "subtmp"));
+    case kOpMultiply: return makeIntAtom(fBuilder.CreateMul(li, ri, "multmp"));
+    case kOpLess:     return makeBoolAtom(fBuilder.CreateICmpULT(li, ri, "lttmp"));
+    case kOpLessEqual: return makeBoolAtom(fBuilder.CreateICmpULE(li, ri, "letmp"));
+    case kOpEqual:    return makeBoolAtom(fBuilder.CreateICmpEQ(li, ri, "eqtmp"));
+    case kOpUnequal:  return makeBoolAtom(fBuilder.CreateICmpNE(li, ri, "netmp"));
+    case kOpGreater:  return makeBoolAtom(fBuilder.CreateICmpUGT(li, ri, "gttmp"));
+    case kOpGreaterEqual:
+      return makeBoolAtom(fBuilder.CreateICmpUGE(li, ri, "getmp"));
+    default:
+      fprintf(stderr, "invalid binary operator: %d", node->op());
+      return NULL;
+    }
+
+    return rv;
   }
+
+  tyerror(node->left()->type(), "unsupported type in binary operator");
+  tyerror(node->right()->type(), "unsupported type in binary operator");
+  return NULL;
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const NegateNode* node)
 {
-  llvm::Value *base = codegenNode(node->base());
+  llvm::Value *base = wrapLoad(codegenNode(node->base()));
   if (base == NULL)
     return NULL;
 
@@ -1038,12 +1132,13 @@ CodeGenerator::codegen(const NegateNode* node)
 llvm::Value*
 CodeGenerator::codegen(const IfNode* node)
 {
-  llvm::Value *testValue = codegenNode(node->test());
+  llvm::Value *testValue = wrapLoad(codegenNode(node->test()));
   if (testValue == NULL)
     return NULL;
 
+  llvm::Value* extrTestVal = makeTypeCastAtomToClangBool(testValue);
   // Convert condition to a bool by comparing equal to 1
-  testValue = fBuilder.CreateICmpEQ(testValue,
+  testValue = fBuilder.CreateICmpEQ(extrTestVal,
                                     llvm::ConstantInt::get(context(),
                                                            llvm::APInt(1, 1, true)),
                                     "ifcond");
@@ -1064,7 +1159,7 @@ CodeGenerator::codegen(const IfNode* node)
   // Emit then value.
   fBuilder.SetInsertPoint(thenBB);
 
-  llvm::Value *thenValue = codegenNode(node->consequent());
+  llvm::Value *thenValue = wrapLoad(codegenNode(node->consequent()));
   if (thenValue == NULL)
     return NULL;
 
@@ -1077,7 +1172,7 @@ CodeGenerator::codegen(const IfNode* node)
   curFunction->getBasicBlockList().push_back(elseBB);
   fBuilder.SetInsertPoint(elseBB);
 
-  llvm::Value *elseValue = codegenNode(node->alternate());
+  llvm::Value *elseValue = wrapLoad(codegenNode(node->alternate()));
   if (elseValue == NULL)
     return NULL;
 
@@ -1162,12 +1257,13 @@ CodeGenerator::codegen(const WhileNode* node)
   // Start insertion in loopBB.
   fBuilder.SetInsertPoint(loopHeadBB);
 
-  llvm::Value *testValue = codegenNode(node->test());
+  llvm::Value *testValue = wrapLoad(codegenNode(node->test()));
   if (testValue == NULL)
     return NULL;
 
+  llvm::Value* extrTestVal = makeTypeCastAtomToClangBool(testValue);
   // Convert condition to a bool by comparing equal to 1
-  testValue = fBuilder.CreateICmpEQ(testValue,
+  testValue = fBuilder.CreateICmpEQ(extrTestVal,
                                     llvm::ConstantInt::get(context(),
                                                            llvm::APInt(1, 1, true)),
                                     "loopcond");
@@ -1187,7 +1283,7 @@ CodeGenerator::codegen(const WhileNode* node)
   // Any new code will be inserted in AfterBB.
   fBuilder.SetInsertPoint(afterBB);
 
-  return bodyValue; //fCurrentValue;
+  return bodyValue;
 }
 
 
@@ -1227,16 +1323,22 @@ CodeGenerator::getMemCpyFn(const llvm::Type* dstType,
 
 
 void
-CodeGenerator::setAtom(llvm::AllocaInst* atom, int typid, llvm::Value* value)
+CodeGenerator::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
 {
   llvm::Value* typidSlot = fBuilder.CreateStructGEP(atom, 0);
   fBuilder.CreateStore(llvm::ConstantInt::get(context(),
-                                              llvm::APInt(32, typid, true)),
+                                              llvm::APInt(32, (int)typid, true)),
                        typidSlot);
 
   llvm::Value* payload = fBuilder.CreateStructGEP(atom, 1);
-  llvm::Value* plSlot = fBuilder.CreateStructGEP(payload, 0);
-  fBuilder.CreateStore(value, plSlot);
+  llvm::Value* slot = fBuilder.CreateStructGEP(payload, 0);
+
+  if (typid == kAtomBool) {
+    const llvm::Type *dstBasePtr = llvm::Type::getInt1PtrTy(context());
+    slot = fBuilder.CreateBitCast(slot, dstBasePtr, "tmp");
+  }
+
+  fBuilder.CreateStore(value, slot);
 }
 
 
