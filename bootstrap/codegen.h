@@ -87,7 +87,7 @@ namespace herschel
 
     bool compileToCode(const CompileUnitNode* node, const String& outputFile);
 
-    llvm::Value* codegenNode(const AptNode* node);
+    llvm::Value* codegenNode(const AptNode* node, bool autoloadAllocInst = false);
 
     llvm::Value* codegen(const ApplyNode* node);
     llvm::Value* codegen(const ArrayNode* node);
@@ -154,10 +154,18 @@ namespace herschel
     const llvm::Type* getAtomType();
     const llvm::Type* getType(const Type& type);
 
+    llvm::Value* makeTypeCastAtomToClangBool(llvm::Value* val);
     llvm::Value* makeTypeCastAtomToClangInt(llvm::Value* val);
     llvm::Value* makeTypeCastAtomToClangChar(llvm::Value* val);
 
-    void setAtom(llvm::AllocaInst* atom, int typid, llvm::Value* value);
+    enum Typeid {
+      kAtomInt  = 0,
+      kAtomBool = 1,
+      kAtomChar = 2,
+    };
+
+    void setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value);
+
     void assignAtom(llvm::Value* src, llvm::Value* dst);
 
     llvm::Function* getIntrinsic(unsigned int iid,
@@ -165,6 +173,13 @@ namespace herschel
     llvm::Function* getMemCpyFn(const llvm::Type* dstType,
                                 const llvm::Type* srcType,
                                 const llvm::Type* sizeType);
+
+    llvm::Value* wrapLoad(llvm::Value* val);
+
+    llvm::Value* makeIntAtom(int val);
+    llvm::Value* makeIntAtom(llvm::Value* val);
+    llvm::Value* makeBoolAtom(llvm::Value* val);
+    llvm::Value* makeBoolAtom(bool val);
 
     //-------- data members
 
