@@ -5,13 +5,13 @@
 <params>
 <param sym='any' type='pos'>
 <type>
-<ty:ref nm='C|char*'>
+<ty:ref nm='clang|char*'>
 </ty:ref>
 </type>
 </param>
 </params>
 <rettype>
-<ty:ref nm='C|char*'>
+<ty:ref nm='clang|char*'>
 </ty:ref>
 </rettype>
 </func>
@@ -21,7 +21,7 @@
 <params>
 <param sym='format' type='pos'>
 <type>
-<ty:ref nm='C|char*'>
+<ty:ref nm='clang|char*'>
 </ty:ref>
 </type>
 </param>
@@ -29,7 +29,7 @@
 </param>
 </params>
 <rettype>
-<ty:ref nm='C|int'>
+<ty:ref nm='clang|int'>
 </ty:ref>
 </rettype>
 </func>
