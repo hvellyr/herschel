@@ -20,11 +20,11 @@
 <seq>
 <id>any</id>
 <punct type=':'/>
-<id>C|char*</id>
+<id>clang|char*</id>
 </seq>
 </nested>
 <punct type=':'/>
-<id>C|char*</id>
+<id>clang|char*</id>
 <punct type='...'/>
 </seq>
 <seq>
@@ -40,7 +40,7 @@
 <seq>
 <id>format</id>
 <punct type=':'/>
-<id>C|char*</id>
+<id>clang|char*</id>
 </seq>
 <punct type=','/>
 <seq>
@@ -49,7 +49,7 @@
 </seq>
 </nested>
 <punct type=':'/>
-<id>C|int</id>
+<id>clang|int</id>
 <punct type='...'/>
 </seq>
 <seq>
@@ -71,3 +71,4 @@
 </nested>
 </seq>
 </seq>
+
