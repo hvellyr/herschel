@@ -1312,13 +1312,8 @@ CodeGenerator::getMemCpyFn(const llvm::Type* dstType,
                            const llvm::Type* srcType,
                            const llvm::Type* sizeType)
 {
-  // 2.8:
-  // const llvm::Type* argTypes[3] = { dstType, srcType, sizeType };
-  // return getIntrinsic(llvm::Intrinsic::memcpy, argTypes, 3);
-
-  // 2.7.
-  const llvm::Type* argTypes[1] = { sizeType };
-  return getIntrinsic(llvm::Intrinsic::memcpy, argTypes, 1);
+  const llvm::Type* argTypes[3] = { dstType, srcType, sizeType };
+  return getIntrinsic(llvm::Intrinsic::memcpy, argTypes, 3);
 }
 
 
@@ -1345,9 +1340,6 @@ CodeGenerator::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
 void
 CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
 {
-  // 2.7:
-  // declare void @llvm.memcpy.i8(i8 * <dest>, i8 * <src>, i8 <len>, i32 <align>)
-
   const llvm::Type* dstBasePtr = llvm::Type::getInt8PtrTy(context());
   llvm::Value* dst2 = fBuilder.CreateBitCast(dst, dstBasePtr, "tmp");
 
@@ -1358,25 +1350,19 @@ CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
   argv.push_back(dst2);
   argv.push_back(src2);
   // number
-  // argv.push_back(llvm::ConstantInt::get(context(),
-  //                                       llvm::APInt(32, 8, true)));
-  // // align
-  // argv.push_back(llvm::ConstantInt::get(context(),
-  //                                       llvm::APInt(32, 4, true)));
-  // // is volatile
-  // argv.push_back(llvm::ConstantInt::getFalse(context()));
-
   argv.push_back(llvm::ConstantInt::get(context(),
-                                        llvm::APInt(8, 8, true)));
+                                        llvm::APInt(32, 8, true)));
   // align
   argv.push_back(llvm::ConstantInt::get(context(),
                                         llvm::APInt(32, 4, true)));
+  // is volatile
+  argv.push_back(llvm::ConstantInt::getFalse(context()));
 
-  // llvm::Function* memcpy_fn = getMemCpyFn(dst2->getType(), src2->getType(),
-  //                                         llvm::Type::getInt32Ty(context()));
+
   fBuilder.CreateCall(getMemCpyFn(dst2->getType(), src2->getType(),
-                                          llvm::Type::getInt8Ty(context())),
+                                  llvm::Type::getInt32Ty(context())),
                       argv.begin(), argv.end());
+
 }
 
 
