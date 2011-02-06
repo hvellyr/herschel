@@ -51,6 +51,8 @@ CodeGenerator::CodeGenerator()
 
   fModule = new llvm::Module("compile-unit", fContext);
 
+  // const llvm::Target *TheTarget = TargetRegistry::lookupTarget(Triple, Error);
+
   // Create the JIT.  This takes ownership of the module.
   std::string errStr;
   theExecutionEngine = llvm::EngineBuilder(fModule).setErrorStr(&errStr)
@@ -79,7 +81,7 @@ CodeGenerator::CodeGenerator()
   fOptPassManager->add(llvm::createLICMPass());                  // Hoist loop invariants
   fOptPassManager->add(llvm::createLoopUnswitchPass());
   fOptPassManager->add(llvm::createLoopIndexSplitPass());        // Split loop index
-  fOptPassManager->add(llvm::createInstructionCombiningPass());  
+  fOptPassManager->add(llvm::createInstructionCombiningPass());
   fOptPassManager->add(llvm::createIndVarSimplifyPass());        // Canonicalize indvars
   fOptPassManager->add(llvm::createLoopDeletionPass());          // Delete dead loops
   fOptPassManager->add(llvm::createLoopUnrollPass());          // Unroll small loops
@@ -120,6 +122,8 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
                              const String& outputFile)
 {
   node->codegen(this);
+
+  emitClassInitFunc();
 
   emitCtorList(fGlobalCtors, "llvm.global_ctors");
   emitCtorList(fGlobalDtors, "llvm.global_dtors");
@@ -342,6 +346,7 @@ CodeGenerator::codegen(const ArrayTypeNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
+
   return NULL;
 }
 
@@ -351,6 +356,7 @@ CodeGenerator::codegen(const TypeNode* node)
 {
   logf(kError, "Not supported yet: %s", __FUNCTION__);
   // TODO
+
   return NULL;
 }
 
@@ -442,15 +448,15 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
   String varnm = herschel::mangleToC(node->name());
   llvm::GlobalVariable* gv =
-  new llvm::GlobalVariable(getAtomType(), //llvm::Type::getInt32Ty(context()),
-                           false, // isConstant,
-                           llvm::GlobalValue::ExternalLinkage,
-                           llvm::ConstantInt::get(context(),
-                                                  // TODO
-                                                  llvm::APInt(32, 1013, true)),
-                           llvm::Twine(varnm),
-                           false, // ThreadLocal
-                           0);    // AddressSpace
+    new llvm::GlobalVariable(getAtomType(), //llvm::Type::getInt32Ty(context()),
+                             false, // isConstant,
+                             llvm::GlobalValue::ExternalLinkage,
+                             llvm::ConstantInt::get(context(),
+                                                    // TODO
+                                                    llvm::APInt(32, 1013, true)),
+                             llvm::Twine(varnm),
+                             false, // ThreadLocal
+                             0);    // AddressSpace
   assert(gv != NULL);
   fModule->getGlobalList().push_back(gv);
 
@@ -490,7 +496,7 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
   if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
     fOptPassManager->run(*func);
 
-  addGlobalCtor(func, 1);
+  addGlobalCtor(func, 2);
 
   assert(fGlobalVariables.find(node->name()) == fGlobalVariables.end());
   fGlobalVariables[node->name()] = gv;
@@ -565,6 +571,10 @@ CodeGenerator::codegen(const DefNode* node)
   const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->defNode());
   if (func != NULL)
     return codegen(func, false);
+
+  const TypeDefNode* type = dynamic_cast<const TypeDefNode*>(node->defNode());
+  if (type != NULL)
+    return codegen(type);
 
   // TODO
   return NULL;
@@ -692,8 +702,10 @@ CodeGenerator::makeBoolAtom(llvm::Value* val)
 llvm::Value*
 CodeGenerator::makeBoolAtom(bool val)
 {
-  return makeBoolAtom(llvm::ConstantInt::get(context(),
-                                             llvm::APInt(1, val, true)));
+  if (val)
+    return makeBoolAtom(llvm::ConstantInt::getTrue(context()));
+  else
+    return makeBoolAtom(llvm::ConstantInt::getFalse(context()));
 }
 
 
@@ -912,17 +924,49 @@ CodeGenerator::codegen(const FunctionNode* node)
 
 
 llvm::Value*
+CodeGenerator::makeClassRegisterCall(const String& typeName, bool instantiable,
+                                     int isize)
+{
+  llvm::Function* regFunc = fModule->getFunction(llvm::StringRef("class_register"));
+  if (regFunc == NULL) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(llvm::Type::getInt8PtrTy(context()));
+    sign.push_back(llvm::Type::getInt1Ty(context()));
+    sign.push_back(llvm::Type::getInt32Ty(context()));
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
+                                                     sign,
+                                                     false);
+
+    regFunc = llvm::Function::Create(ft,
+                                     llvm::Function::ExternalLinkage,
+                                     llvm::Twine("class_register"),
+                                     fModule);
+  }
+
+  std::vector<llvm::Value*> argv;
+  argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("str")));
+  argv.push_back(instantiable
+                 ? llvm::ConstantInt::getTrue(context())
+                 : llvm::ConstantInt::getFalse(context()));
+  argv.push_back(llvm::ConstantInt::get(context(),
+                                        llvm::APInt(32, isize, true)));
+  return fBuilder.CreateCall(regFunc, argv.begin(), argv.end(), "callreg");
+}
+
+
+llvm::Value*
 CodeGenerator::makeTypeCastAtomToClangInt(llvm::Value* val)
 {
-  std::vector<const llvm::Type*> sign;
-  sign.push_back(getAtomType());
-
-  llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
-                                                   sign,
-                                                   false);
-
   llvm::Function* convFunc = fModule->getFunction(llvm::StringRef("atom_2_int"));
   if (convFunc == NULL) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(getAtomType());
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
+                                                     sign,
+                                                     false);
+
     convFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
                                       llvm::Twine("atom_2_int"),
@@ -1223,9 +1267,38 @@ CodeGenerator::codegen(const SelectNode* node)
 llvm::Value*
 CodeGenerator::codegen(const TypeDefNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
+  fClassInitFuncs.push_back(node);
   return NULL;
+}
+
+
+void
+CodeGenerator::emitClassInitFunc()
+{
+  const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
+                                                         false);
+  String tmpName = uniqueName("classreg");
+  String funcnm = herschel::mangleToC(tmpName);
+
+  llvm::Function *regFunc = createGlobalInitOrDtorFunction(ft, funcnm);
+
+  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", regFunc);
+  fBuilder.SetInsertPoint(bb);
+
+  for (size_t i = 0; i < fClassInitFuncs.size(); i++) {
+    const TypeDefNode* tdnode = fClassInitFuncs[i];
+    makeClassRegisterCall(herschel::mangleToC(tdnode->name()),
+                          tdnode->isClass(),
+                          42);
+  }
+  fBuilder.CreateRetVoid();
+
+  verifyFunction(*regFunc);
+
+  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+    fOptPassManager->run(*regFunc);
+
+  addGlobalCtor(regFunc, 1);
 }
 
 
