@@ -27,7 +27,7 @@ SOURCES =         \
 	compiler.cpp    \
 	externc.cpp     \
 	file.cpp        \
-	herschel.cpp    \
+	hrc.cpp         \
 	log.cpp         \
 	macro.cpp       \
 	numbers.cpp     \
