@@ -180,7 +180,7 @@ Review ^ again
     let c : ^Person = a                 -- ref to a (a and c ref to same object)
     a.name!("xxx")                      -- modify passed in object
     b.name!("xxx")                      -- modify b
-    c.name!("xxx")                      -- modify passed in object 
+    c.name!("xxx")                      -- modify passed in object (i.e. a)
 
     c = b                               -- c refs to object of b now
     c.name!("xxx")                      -- c and b changed now
@@ -213,7 +213,7 @@ Review ^ again
 
     - assign values to a ref-type vars resets the reference only (point
       the ref-type var to a different object).  You can't have
-      reference-out variable ('double-pointer variables'):
+      reference-out variables ('double-pointer variables'):
 
         def foo(a : ^Person)
           let b : Person = Person("Heinz")
@@ -245,6 +245,81 @@ Review ^ again
 ====> we don't need the 'take a reference' syntax with '^var'
 
 Only the 'reference type' syntax with '^type' is required
+
+A consequence of this is that references to immutable types like Int, Bool,
+Char etc. are useless.
+
+
+How is the copy-on-write implemented?
+-------------------------------------
+
+Problem:  We would like to do as less copying of objects as possible, and
+probably as late as possible.  We must make sure however that the copying
+is precise.  The the following example
+
+  def foo(a : ^Person)
+    let b : Person = a
+    let c : Person = a
+
+here both 'b' and 'c' are supposed to take a copy of 'a'.  Naively one
+could do a lazy copy (i.e. a ref-counted copy) only.  If 'a' is however
+changed from somewhere else (it is a reference from the outside of foo(),
+e.g. it can be changed from a different thread, too), we would have to copy
+'b' and 'c' really.  This sounds like technical overkill.
+
+So as simple rules for assigning:
+
+      to     | ref type         value type
+  -----------+---------------------------------
+  ref type   | A update ref     C copy immediately
+  value type | B unshare value  D copy lazy
+
+En detail
+
+A: ref to ref:     only the reference is updated
+
+B: value to ref:   the value is unshared (i.e. copied if not the only
+                   referer) and the ref is updated.  Value *must not be*
+                   immediate (the compiler has to ensure this).
+
+C: ref to value:   the value referred to by ref is copied and the new
+                   instance is given to value.  ref keeps its old
+                   reference.  Value may be immediated.
+
+D: value to value: value(1) is set as shared to value(2)
+
+
+-> all objects which should be referable must bear a ref-count.  But how to
+   do this with base types like integers, chars, bools, etc.?  Isn't it
+   that base types can always be simply copied in the cases C and D?
+
+????
+
+
+Note:
+
+  let x : ^Int = 5         (1)
+
+and
+
+  let y = 5                (2)
+  let z = y
+  let x : ^Int = y
+
+is different.  In (1) x points to an "anonymous" object '5'.  In (2) x
+takes the address of 'y' and points to it.  If you do now:
+
+  let y = 6;
+
+'x' gives you 5, still, since 'x' refers to the former value of 'y', not to
+the variable 'y' itself.  z however stays a 5.
+
+
+
+
+
+
+
 
 
 Allocation and initialization of class based object
@@ -335,6 +410,7 @@ Here two parameters (name and surname) are fixed and mandatory; the other
 two (birthday and gender) are optional named parameters.
 
 
+
 Allocation and initialization of array objects
 ----------------------------------------------
 
@@ -352,17 +428,6 @@ can be short notated as:
 
   let x : Int[42]
 
-
-        How to distinguish between a slice expression and the allocation of
-        an array type?
-        
-          myvect[12]
-
-        is syntactically identical to
-
-          Int[]
-
-        ?  Let's distinguish here by the missing slice operator!
 
 
 Allocation of base types
@@ -385,5 +450,144 @@ than is the **default** value of the particular type:
   String()     -> ""
   Keyword()    -> #keyword
   Nil()        -> nil
+
+
+
+The meta class type
+-------------------
+
+Every type has a meta type.  The common notation for this
+
+  Class<T>
+
+where T is the respective type, i.e. Class<Int>, Class<Person>, etc.
+
+Generic functions can be typed on this, which makes them effectively class
+methods.
+
+
+
+
+Implementation details for the runtime
+--------------------------------------
+
+MODEL A:
+
+- The compiler will handle base types (like Int, Char, Bool) different to
+  complex types (like Strings, Person).
+
+
+- base types are kept in place as long as the compiler can prove that it
+  knows the types statically.  Once the type gets blurry (e.g. add Any to
+  Int), base types are wrapped in a CELL object.
+
+
+- Complex objects' payload is held on heap.  They are based otherwise in a
+  CELL object, too.
+
+  struct ComplexObject {
+    Class* class;
+    Size_t refCount;
+    ...                   // payload
+  }
+
+  refcount is the reference counter required for the write-barrier.
+
+
+- The CONS object is a struct of the base form:
+
+  struct CELL {
+    TypeId typeId;
+    union {
+      int32 i_int32;
+      octet i_int8;
+      float i_float32;
+      uchar i_char;
+      void* obj;
+    } payload;
+  }
+
+  TypeId an integer identifying the type of the value.  The typeid does not
+  need to be a pointer to the real class struct since it is mostly used for
+  method lookup.  Additionally the typeid is an index into a type table.
+
+  The minimum struct is therefore 8 octets on a 32bit system resp. 16
+  octets on a 64bit system.
+
+  Note that this only applies to wrapped and complex objects.
+
+  Wrapped base types which fit into the platform register size are stored
+  in the payload members i_int32, i_int8, etc. directly, without heap
+  allocation.  Only larger types are heap allocated.
+
+
+  PRO:
+  - base types never require heap allocation (unless shared by closures)
+  - wrapping is cheap
+  - access to type is cheap and direct
+
+  CONTRA:
+  - a lot of ugly code (struct copying, initialization)
+  - typeid is stored in every CELL
+  - a lot of copying work
+
+
+Model B: why not the following implementation?
+
+- unwrapped object stay as they are (immediate).
+
+- complex wrapped objects:
+
+  typedef void* Complex;
+
+  struct ComplexObj {
+    TypeId typeid;
+    size_t refcount;
+    ....                    // payload
+  }
+
+
+  PRO:
+  - code will become much easier (no struct gehampel)
+  - the typeid is stored only once in the system and not with every
+    reference.
+  - less copy work on value assignment.
+  - shared objects for closures are easier to implement.
+
+  CONTRA:
+  - wrapping is expensive (requires heap access)
+  - method lookup requires indirection to heap object to get typeid.
+
+
+Lookup functions on base types
+------------------------------
+
+ - how is method lookup for base types done?  Does the compiler have to
+   generate something like:
+
+     call(lookup("add_2", typeid("UInt32"), typeid("UInt32")), 5, 8)
+
+   for a call
+
+     add(5, 8)
+
+
+   For a wrapped int this would be:
+
+     call(lookup("add_2", %a->typeId, %b->typeId), (int)%a->payload, (int)%b->payload)
+
+
+
+
+Auto Typechecks
+---------------
+
+Whenever the compiler does some default type acceptance (like pass an
+lang|Any to a lang|UInt32 parameter) it has to generate some type check
+code:
+
+    call ass_isa(%a->typeid, typeid("UInt32"))
+
+This will throw a TypeMismatchException if %a is not an "UInt32".
 
 
