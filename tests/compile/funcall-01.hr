@@ -1,0 +1,16 @@
+import "clang/types.hr"
+
+extern ("C") {
+  int putchar(int c);
+}
+
+
+def foo(c)
+  putchar(c)
+  c
+
+def app|main()
+  for (i in 0 .. 100000)
+    for (c in 20h .. 7eh)
+      foo(c)
+  foo(10)
