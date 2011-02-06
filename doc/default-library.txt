@@ -7,7 +7,8 @@ Base types
 
   Bool
   Char  (Unicode)
-  Octet = UnsignedInt8
+  Octet = UInt8
+  Ordinal = Int >= 0
 
   Numbers
     Int
@@ -16,10 +17,10 @@ Base types
     Int16
     Int32
     Int64
-    UnsignedInt8
-    UnsignedInt16
-    UnsignedInt32
-    UnsignedInt64
+    UInt8
+    UInt16
+    UInt32
+    UInt64
     Float32
     Float64
     Float128
@@ -36,11 +37,12 @@ Extended String support
   MutableString
   StringBuffer
 
-  Encoding support      - encode to an fro using Octet[]<->String
+  Encoding support      - encode to and fro using Octet[]<->String
 
   Date formating
 
   Regex
+
 
 
 Extended data type support
@@ -159,9 +161,10 @@ Options / Configuration
 
   ConfigParser
   getopt
+  Properties (a la NeXT)
 
 
-Data persistance
+Data persistancy
 
 
 GUI
@@ -212,6 +215,7 @@ XML
 
   SaxParser
   Dom
+  Serialization
 
 
 Internationalization
