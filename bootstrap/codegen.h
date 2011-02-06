@@ -181,6 +181,10 @@ namespace herschel
     llvm::Value* makeBoolAtom(llvm::Value* val);
     llvm::Value* makeBoolAtom(bool val);
 
+    llvm::Value* makeClassRegisterCall(const String& typeName, bool instantiable,
+                                       int isize);
+    void emitClassInitFunc();
+
     //-------- data members
 
     llvm::LLVMContext& fContext;
@@ -194,6 +198,8 @@ namespace herschel
     // takes llvm::Value or llvm::GlobalVariable
     std::map<String, llvm::AllocaInst*> fNamedValues;
     std::map<String, llvm::GlobalVariable*> fGlobalVariables;
+
+    std::vector<const TypeDefNode*> fClassInitFuncs;
   };
 };                              // namespace
 
