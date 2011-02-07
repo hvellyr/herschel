@@ -161,6 +161,7 @@ main(int argc, char** argv)
 
       case kOptParse:
         func = kParseFiles;
+        hrcOptions.push_back(String("-P"));
         break;
       case kOptCompile:
         hrcOptions.push_back(String("-c"));
