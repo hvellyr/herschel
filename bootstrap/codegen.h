@@ -184,6 +184,7 @@ namespace herschel
     llvm::Value* makeClassRegisterCall(const String& typeName, bool instantiable,
                                        int isize);
     void emitClassInitFunc();
+    void emitGlobalVarInitFunc();
 
     //-------- data members
 
@@ -200,6 +201,7 @@ namespace herschel
     std::map<String, llvm::GlobalVariable*> fGlobalVariables;
 
     std::vector<const TypeDefNode*> fClassInitFuncs;
+    std::vector<const VardefNode*> fGlobalInitVars;
   };
 };                              // namespace
 
