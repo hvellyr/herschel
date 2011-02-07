@@ -124,6 +124,7 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
   node->codegen(this);
 
   emitClassInitFunc();
+  emitGlobalVarInitFunc();
 
   emitCtorList(fGlobalCtors, "llvm.global_ctors");
   emitCtorList(fGlobalDtors, "llvm.global_dtors");
@@ -220,8 +221,11 @@ CodeGenerator::getType(const Type& type)
 llvm::Value*
 CodeGenerator::wrapLoad(llvm::Value* val)
 {
-  if (val != NULL && llvm::AllocaInst::classof(val))
-    return fBuilder.CreateLoad(val);
+  if (val != NULL) {
+    if (llvm::AllocaInst::classof(val) ||
+        llvm::GlobalValue::classof(val))
+      return fBuilder.CreateLoad(val);
+  }
   return val;
 }
 
@@ -390,7 +394,7 @@ CodeGenerator::emitCtorList(const CtorList &fns, const char *globalName)
   llvm::FunctionType* ctorFTy = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                         std::vector<const llvm::Type*>(),
                                                         false);
-  llvm::Type *ctorPFTy = llvm::PointerType::getUnqual(ctorFTy);
+  llvm::Type* ctorPFTy = llvm::PointerType::getUnqual(ctorFTy);
 
   // Get the type of a ctor entry, { i32, void ()* }.
   llvm::StructType* ctorStructTy = llvm::StructType::get(context(),
@@ -443,19 +447,28 @@ llvm::Value*
 CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
   String varnm = herschel::mangleToC(node->name());
+  const llvm::Type* constTy = getAtomType(); // getType(node->type()),
+  llvm::Constant* initConst = llvm::ConstantAggregateZero::get(constTy);
+
+  // TODO: base type if possible
   llvm::GlobalVariable* gv =
-    new llvm::GlobalVariable(getAtomType(), //llvm::Type::getInt32Ty(context()),
+    new llvm::GlobalVariable(constTy,
                              false, // isConstant,
                              llvm::GlobalValue::ExternalLinkage,
-                             llvm::ConstantInt::get(context(),
-                                                    // TODO
-                                                    llvm::APInt(32, 1013, true)),
+                             initConst,
                              llvm::Twine(varnm),
                              false, // ThreadLocal
                              0);    // AddressSpace
   assert(gv != NULL);
   fModule->getGlobalList().push_back(gv);
 
+  fGlobalInitVars.push_back(node);
+
+  assert(fGlobalVariables.find(node->name()) == fGlobalVariables.end());
+  fGlobalVariables[node->name()] = gv;
+
+  return gv;
+#if 0
   fNamedValues.clear();
 
   const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
@@ -484,7 +497,7 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
     //                                  llvm::APInt(32, 1011, true));
   }
 
-  fBuilder.CreateStore(wrapLoad(initval), gv);
+  assignAtom(initval, gv);
   fBuilder.CreateRetVoid();
 
   verifyFunction(*func);
@@ -498,6 +511,57 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
   fGlobalVariables[node->name()] = gv;
 
   return initval;
+#endif
+}
+
+
+void
+CodeGenerator::emitGlobalVarInitFunc()
+{
+  if (!fGlobalInitVars.empty())
+  {
+    const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
+                                                           false);
+    String tmpName = uniqueName("gvinit");
+    String funcnm = herschel::mangleToC(tmpName);
+
+    llvm::Function *regFunc = createGlobalInitOrDtorFunction(ft, funcnm);
+
+    llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", regFunc);
+    fBuilder.SetInsertPoint(bb);
+
+    for (size_t i = 0; i < fGlobalInitVars.size(); i++) {
+      const VardefNode* varnode = fGlobalInitVars[i];
+
+      String varnm = herschel::mangleToC(varnode->name());
+
+      llvm::Value* initval = NULL;
+      if (varnode->initExpr() != NULL) {
+        initval = codegenNode(varnode->initExpr());
+      }
+      else {
+        assert(0 && "no initval");
+        // TODO: init the temporary value.  We shouldn't really have to care about
+        // this here, since this can be better done in the AST analysis.
+        // initval = llvm::ConstantInt::get(context(),
+        //                                  llvm::APInt(32, 1011, true));
+      }
+
+      std::map<String, llvm::GlobalVariable*>::iterator it =
+      fGlobalVariables.find(varnode->name());
+      assert(it != fGlobalVariables.end());
+
+      assignAtom(initval, it->second);
+    }
+    fBuilder.CreateRetVoid();
+
+    verifyFunction(*regFunc);
+
+    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+      fOptPassManager->run(*regFunc);
+
+    addGlobalCtor(regFunc, 2);
+  }
 }
 
 
@@ -548,7 +612,6 @@ CodeGenerator::codegen(const AssignNode* node)
     }
 
     assignAtom(rvalue, var);
-    // fBuilder.CreateStore(wrapLoad(rvalue), var);
     return rvalue;
   }
 
@@ -1271,30 +1334,33 @@ CodeGenerator::codegen(const TypeDefNode* node)
 void
 CodeGenerator::emitClassInitFunc()
 {
-  const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
+  if (!fClassInitFuncs.empty())
+  {
+    const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                          false);
-  String tmpName = uniqueName("classreg");
-  String funcnm = herschel::mangleToC(tmpName);
+    String tmpName = uniqueName("classreg");
+    String funcnm = herschel::mangleToC(tmpName);
 
-  llvm::Function *regFunc = createGlobalInitOrDtorFunction(ft, funcnm);
+    llvm::Function *regFunc = createGlobalInitOrDtorFunction(ft, funcnm);
 
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", regFunc);
-  fBuilder.SetInsertPoint(bb);
+    llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", regFunc);
+    fBuilder.SetInsertPoint(bb);
 
-  for (size_t i = 0; i < fClassInitFuncs.size(); i++) {
-    const TypeDefNode* tdnode = fClassInitFuncs[i];
-    makeClassRegisterCall(herschel::mangleToC(tdnode->name()),
-                          tdnode->isClass(),
-                          42);
+    for (size_t i = 0; i < fClassInitFuncs.size(); i++) {
+      const TypeDefNode* tdnode = fClassInitFuncs[i];
+      makeClassRegisterCall(herschel::mangleToC(tdnode->name()),
+                            tdnode->isClass(),
+                            42);
+    }
+    fBuilder.CreateRetVoid();
+
+    verifyFunction(*regFunc);
+
+    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+      fOptPassManager->run(*regFunc);
+
+    addGlobalCtor(regFunc, 1);
   }
-  fBuilder.CreateRetVoid();
-
-  verifyFunction(*regFunc);
-
-  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-    fOptPassManager->run(*regFunc);
-
-  addGlobalCtor(regFunc, 1);
 }
 
 
