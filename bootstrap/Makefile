@@ -8,43 +8,91 @@ top_srcdir=..
 
 include $(top_srcdir)/config.mk
 
+#------------------------------------------------------------------------------
+# libhrcommon - common library stuff
+#------------------------------------------------------------------------------
+
+LIBHRCOMMON_SOURCES =  \
+	file.cpp             \
+	filetool.cpp         \
+	job.cpp              \
+	log.cpp              \
+	option.cpp           \
+	port.cpp             \
+	setup.cpp            \
+	str.cpp              \
+	strbuf.cpp           \
+	valuesaver.cpp
+
+LIBHRCOMMON_HEADERS =  \
+	file.h               \
+	filetool.h           \
+	job.h                \
+	log.h                \
+	option.h             \
+	port.h               \
+	setup.h              \
+	str.h                \
+	strbuf.h             \
+	valuesaver.h
+
+ifeq ($(TARGET_OS),mac)
+# HRC_HEADERS +=
+LIBHRCOMMON_SOURCES += setup-unix.cpp
+# HRC_LIBS = $(LIBS) -framework Carbon
+endif
+
+ifeq ($(TARGET_OS),linux)
+# HRC_HEADERS +=
+LIBHRCOMMON_SOURCES += setup-unix.cpp
+endif
+
+ifeq ($(TARGET_OS),win)
+# HRC_HEADERS +=
+LIBHRCOMMON_SOURCES += setup-win.cpp
+endif
+
+
+LIBHRCOMMON_OBJS = $(LIBHRCOMMON_SOURCES:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
+
+COMMON_LIB = $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
+
+
+#------------------------------------------------------------------------------
+# hrc - compiler
+#------------------------------------------------------------------------------
 LLVM_ROOT = $(top_srcdir)/external/llvm/
 
 LLVM_CPPFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --cppflags)
 LLVM_LDFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --ldflags)
 LLVM_LIBS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --libs)
 
-CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/external/UnitTest++/src \
-	$(LLVM_CPPFLAGS)
+CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src \
+	-I$(top_srcdir)/external/UnitTest++/src $(LLVM_CPPFLAGS)
 
-LDFLAGS += $(LLVM_LDFLAGS)
+HRC_LDFLAGS = $(LDFLAGS) $(LLVM_LDFLAGS)
 
-SOURCES =         \
+HRC_LIBS = $(LIBS) $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
+
+HRC_SOURCES =     \
 	annotate.cpp    \
 	apt.cpp         \
 	codegen.cpp     \
 	compilepass.cpp \
 	compiler.cpp    \
 	externc.cpp     \
-	file.cpp        \
 	hrc.cpp         \
-	log.cpp         \
 	macro.cpp       \
 	numbers.cpp     \
-	option.cpp      \
 	parsertypes.cpp \
 	pass.cpp        \
 	pass1.cpp       \
 	pass2.cpp       \
-	port.cpp        \
 	predefined.cpp  \
 	properties.cpp  \
 	rootscope.cpp   \
 	scope.cpp       \
-	setup.cpp       \
 	srcpos.cpp      \
-	str.cpp         \
-	strbuf.cpp      \
 	symbol.cpp      \
 	token.cpp       \
 	tokeneval.cpp   \
@@ -56,10 +104,9 @@ SOURCES =         \
 	typeenum.cpp    \
 	typectx.cpp     \
 	typify.cpp      \
-	valuesaver.cpp  \
 	xmlout.cpp
 
-HEADERS =         \
+HRC_HEADERS =     \
 	annotate.h      \
 	apt.h           \
 	codegen.h       \
@@ -69,16 +116,12 @@ HEADERS =         \
 	errcodes.h      \
 	exception.h     \
 	externc.h       \
-	file.h          \
-	log.h           \
 	macro.h         \
 	numbers.h       \
-	option.h        \
 	parsertypes.h   \
 	pass.h          \
 	pass1.h         \
 	pass2.h         \
-	port.h          \
 	predefined.h    \
 	properties.h    \
 	ptr.h           \
@@ -86,10 +129,7 @@ HEADERS =         \
 	registry.h      \
 	rootscope.h     \
 	scope.h         \
-	setup.h         \
 	srcpos.h        \
-	str.h           \
-	strbuf.h        \
 	symbol.h        \
 	token.h         \
 	tokeneval.h     \
@@ -101,49 +141,96 @@ HEADERS =         \
 	typeenum.h      \
 	typectx.h       \
 	typify.h        \
-	valuesaver.h    \
 	xmlout.h
 
 
 ifeq ($(TARGET_OS),mac)
-# HEADERS +=
-SOURCES += setup-unix.cpp
-LIBS += -framework Carbon
+# HRC_HEADERS +=
+HRC_LIBS += -framework Carbon
 endif
 
 ifeq ($(TARGET_OS),linux)
-# HEADERS +=
-SOURCES += setup-unix.cpp
+# HRC_HEADERS +=
 endif
 
 ifeq ($(TARGET_OS),win)
-# HEADERS +=
-SOURCES += setup-win.cpp
+# HRC_HEADERS +=
 endif
 
-CPP_OBJS =  $(SOURCES:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
+HRC_OBJS = $(HRC_SOURCES:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
 
-OBJS = $(CPP_OBJS)
-
-DISTFILES = Makefile \
-	$(SOURCES) $(HEADERS)
+HRC_APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/hrc$(APPEXT)
 
 
+#------------------------------------------------------------------------------
+# herschel - driver
+#------------------------------------------------------------------------------
+
+HERSCHEL_SOURCES = herschel.cpp
+HERSCHEL_HEADERS =
+
+HERSCHEL_LIBS = $(LIBS) $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
+
+ifeq ($(TARGET_OS),mac)
+# HRC_HEADERS +=
+HERSCHEL_LIBS += -framework Carbon
+endif
+
+ifeq ($(TARGET_OS),linux)
+# HRC_HEADERS +=
+endif
+
+ifeq ($(TARGET_OS),win)
+# HRC_HEADERS +=
+endif
+
+
+HERSCHEL_OBJS = $(HERSCHEL_SOURCES:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
+
+HERSCHEL_LDFLAGS = $(LDFLAGS)
+
+HERSCHEL_APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/herschel$(APPEXT)
+
+
+#------------------------------------------------------------------------------
+# targets
+#------------------------------------------------------------------------------
+
+SOURCES = $(HRC_SOURCES) $(LIBHRCOMMON_SOURCES) $(HERSCHEL_SOURCES)
+HEADERS = $(HRC_HEADERS) $(LIBHRCOMMON_HEADERS) $(HERSCHEL_HEADERS)
 
 include $(top_srcdir)/build/pre.mk
 
-all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) APPX
-
-APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/hrc$(APPEXT)
-APPX: $(APPBINARY)
-
-$(APPBINARY): $(OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS) $(LLVM_LIBS)
+all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) COMMON_LIBX HRC_APPX HERSCHEL_APPX
 
 
+#--------
+COMMON_LIBX: $(COMMON_LIB)
+
+$(COMMON_LIB): $(LIBHRCOMMON_OBJS)
+	$(AR) cru $@ $^
+
+
+#--------
+HRC_APPX: $(HRC_APPBINARY)
+
+$(HRC_APPBINARY): $(HRC_OBJS) $(COMMON_LIB)
+	$(CXX) $(CXXFLAGS) $(HRC_LDFLAGS) -o $@ $^ $(HRC_LIBS) $(LLVM_LIBS)
+
+
+#--------
+HERSCHEL_APPX: $(HERSCHEL_APPBINARY)
+
+$(HERSCHEL_APPBINARY): $(HERSCHEL_OBJS) $(COMMON_LIB)
+	$(CXX) $(CXXFLAGS) $(HERSCHEL_LDFLAGS) -o $@ $^ $(HERSCHEL_LIBS)
+
+
+#------------------------------------------------------------------------------
+DISTFILES = Makefile \
+	$(SOURCES) $(HEADERS)
 
 clean-local:
-	rm -f $(BUILDDIR)/$(BUILDSTYLE)/*$(OBJEXT) $(APP) $(DISTAPP)
+	rm -f $(BUILDDIR)/$(BUILDSTYLE)/*$(OBJEXT) $(HRC_APPBINARY) $(COMMON_LIB)
 
 distclean-local: clean-local
 	-rm -rf $(DEPS_DIR) TAGS
@@ -161,9 +248,9 @@ distclean-local: clean-local
 rebuild: clean all
 
 
-TAGS: $(HEADERS) $(SOURCES)
-	find -E . -regex ".*\.mm$$|.*\.cpp$$|.*\.h$$" -print | etags --members -
 
+TAGS: $(HRC_HEADERS) $(SOURCES)
+	find -E . -regex ".*\.mm$$|.*\.cpp$$|.*\.h$$" -print | etags --members -
 
 DEPS = $(patsubst %.cpp,$(DEPS_DIR)/%.d,$(SOURCES))
 

@@ -139,13 +139,9 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
   }
 
   switch (Properties::compileOutFormat()) {
-  case kNativeObject:
-    logf(kError, "Unsupported outputformat.");
-    return false;
   case kLLVM_IR:
     fModule->print(outstream, NULL);
     break;
-
   case kLLVM_BC:
     llvm::WriteBitcodeToFile(fModule, outstream);
     break;

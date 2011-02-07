@@ -25,4 +25,11 @@ typedef unsigned short Char;
 //! Macro which evaluates _condA IMP _condB
 #define implies(_condA, _condB)  (!(_condA) || ((_condA) && (_condB)))
 
+
+enum CompileOutFormat
+{
+  kLLVM_IR,
+  kLLVM_BC
+};
+
 #endif

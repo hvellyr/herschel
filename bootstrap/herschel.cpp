@@ -13,34 +13,21 @@
 
 #include <vector>
 
-#if defined(UNITTESTS)
-#  include <iostream>
-#  include <UnitTest++.h>
-#  include <TestReporterStdout.h>
-#  include <XmlTestReporter.h>
-#endif
-
-#include "apt.h"
 #include "common.h"
-#include "compiler.h"
-#include "log.h"
-#include "option.h"
-#include "properties.h"
-#include "ptr.h"
 #include "str.h"
 #include "setup.h"
+#include "option.h"
+#include "log.h"
+#include "job.h"
+#include "filetool.h"
 
 
 using namespace herschel;
 
-#if defined(UNITTESTS)
-static int runUnitTests();
-#endif
-
 static void
 displayVersion()
 {
-  printf("%s %s - herschel compiler\n", "hrc", VERSION);
+  printf("%s %s - herschel compiler\n", "herschel", VERSION);
   printf("Copyright (c) %s, %s\n", COPYRIGHTYEAR, COPYRIGHTOWNER);
   printf("(base revision: %s)\n", HR_BASE_REVISION);
 }
@@ -53,7 +40,7 @@ displayHelp()
   /*      123456789012345678901234567890123456789012345678901234567890123456789012*/
   /*               1         2         3         4         5         6         7  */
   printf("\n");
-  printf("Usage: hrc [options] files...\n");
+  printf("Usage: herschel [options] files...\n");
   printf("Options:\n");
   printf("  -h,      --help              Display this information\n");
   printf("  -v,      --version           Display the version\n");
@@ -67,27 +54,18 @@ displayHelp()
   printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
   printf("  -O                           Optimize code more\n");
   printf("  -On                          Turn off any (even basic) optimization\n");
-#if defined(UNITTESTS)
-  printf("  -UT,     --run-unit-tests    Run unit tests for the compiler\n");
-  printf("           --ut-format=FORMAT  Output format of unit tests {xml|txt}\n");
-  printf("           --parse-1           Only do pass1 phase\n");
-  printf("           --parse-2           Only do pass1 + pass2 phase\n");
-  printf("           --parse-3           Only do pass1, 2, 3 phase\n");
-  printf("           --parse-4           Only do pass1..4 phase\n");
-#endif
   printf("  -P,      --parse             Only parse the source files\n");
   printf("  -c                           Only compile the source files, no link\n");
-  printf("  -s                           Compile to LLVM IR\n");
+  printf("  -s                           Compile to LLVM IR, no link\n");
 }
 
 
 enum CompileFunction {
   kDisplayHelp,
-#if defined(UNITTESTS)
-  kRunUnitTests,
-#endif
   kParseFiles,
   kCompileFiles,
+  kCompileFilesToIR,
+  kLinkAndCompileFiles,
 };
 
 
@@ -102,28 +80,10 @@ enum {
   kOptDefine,
   kOptInputDir,
   kOptCompile,
+  kOptCompileToBC,
   kOptCompileToIR,
   kOptOptimizeMore,
   kOptOptimizeNone,
-
-#if defined(UNITTESTS)
-  kOptRunUnitTests,
-  kOptUTFormat,
-  kOptDontImport,
-  kOptParse1,
-  kOptParse2,
-  kOptParse3,
-  kOptParse4,
-#endif
-};
-
-#if defined(UNITTESTS)
-static String sUnitTestFormat;
-#endif
-
-namespace herschel
-{
-  static void setupDefaultPath();
 };
 
 
@@ -145,25 +105,20 @@ main(int argc, char** argv)
     { kOptOptimizeMore, "-O",  NULL,               false },
     { kOptOptimizeMore, "-O1", NULL,               false },
     { kOptOptimizeNone, "-On", NULL,               false },
-#if defined(UNITTESTS)
-    { kOptRunUnitTests, "-UT", "--run-unit-tests", false },
-    { kOptUTFormat,     NULL,  "--ut-format",      true },
-    { kOptDontImport,   NULL,  "--dont-import",    false },
-    { kOptParse1,       NULL,  "--parse-1",        false },
-    { kOptParse2,       NULL,  "--parse-2",        false },
-    { kOptParse3,       NULL,  "--parse-3",        false },
-    { kOptParse4,       NULL,  "--parse-4",        false },
-#endif
     { 0,                NULL,  NULL,               false } // sentinel
   };
 
-  String outputFile;
+  String outputFileName;
+  String outdir;
+  std::vector<String> hrcOptions;
 
   CompileFunction func = kDisplayHelp;
   std::vector<String> files;
   OptionsParser::ArgumentType type;
   OptionsParser::Option option;
   OptionsParser optp(herschelOptions, argc, (const char**)argv);
+
+  bool verbose = false;
 
   while ((type = optp.nextOption(&option)) != OptionsParser::kNoMoreArgs) {
     switch (type) {
@@ -172,79 +127,60 @@ main(int argc, char** argv)
       case kOptHelp:
         displayHelp();
         exit(0);
-        break;
 
       case kOptVersion:
         displayVersion();
         exit(0);
-        break;
 
       case kOptOutdir:
-        Properties::setOutdir(option.fArgument);
+        outdir = option.fArgument;
+        hrcOptions.push_back(String("-d"));
+        hrcOptions.push_back(option.fArgument);
         break;
 
       case kOptOutput:
-        outputFile = option.fArgument;
+        outputFileName = option.fArgument;
+        // don't pass outdir to hrc.  We handle it outselves
         break;
 
       case kOptVerbose:
-        Properties::setIsVerbose(true);
+        verbose = true;
+        hrcOptions.push_back(String("-v"));
         break;
 
       case kOptTrace:
-        Properties::setTraces(option.fArgument);
+        hrcOptions.push_back(String("-T"));
+        hrcOptions.push_back(option.fArgument);
         break;
 
       case kOptParse:
         func = kParseFiles;
         break;
       case kOptCompile:
+        hrcOptions.push_back(String("-c"));
         func = kCompileFiles;
-        Properties::setCompileOutFormat(kLLVM_BC);
         break;
       case kOptCompileToIR:
-        func = kCompileFiles;
-        Properties::setCompileOutFormat(kLLVM_IR);
+        hrcOptions.push_back(String("-s"));
+        func = kCompileFilesToIR;
         break;
 
       case kOptDefine:
-        Properties::setConfigVar(option.fArgument);
+        hrcOptions.push_back(String("-D"));
+        hrcOptions.push_back(option.fArgument);
         break;
 
       case kOptInputDir:
-        Properties::addInputDir(option.fArgument);
+        hrcOptions.push_back(String("-I"));
+        hrcOptions.push_back(option.fArgument);
         break;
 
       case kOptOptimizeMore:
-        Properties::setOptimizeLevel(kOptLevelBasic);
+        hrcOptions.push_back(String("-O"));
         break;
       case kOptOptimizeNone:
-        Properties::setOptimizeLevel(kOptLevelNone);
+        hrcOptions.push_back(String("-On"));
         break;
-
-#if defined(UNITTESTS)
-      case kOptUTFormat:
-        sUnitTestFormat = option.fArgument;
-        break;
-      case kOptRunUnitTests:
-        func = kRunUnitTests;
-        break;
-      case kOptDontImport:
-        Properties::test_setDontImport(true);
-        break;
-      case kOptParse1:
-        Properties::test_setPassLevel(1);
-        break;
-      case kOptParse2:
-        Properties::test_setPassLevel(2);
-        break;
-      case kOptParse3:
-        Properties::test_setPassLevel(3);
-        break;
-      case kOptParse4:
-        Properties::test_setPassLevel(4);
-        break;
-#endif
       }
       break;
 
@@ -259,6 +195,9 @@ main(int argc, char** argv)
 
     case OptionsParser::kNotAnOption:
       files.push_back(option.fArgument);
+
+      if (func == kDisplayHelp)
+        func = kLinkAndCompileFiles;
       break;
 
     default: ;
@@ -266,69 +205,68 @@ main(int argc, char** argv)
   }
 
 
-  setupDefaultPath();
+  Setup setup = herschel::findResources("herschel");
+
+  for (size_t i = 0; i < files.size(); i++)
+    hrcOptions.push_back(files[i]);
 
   switch (func) {
   case kDisplayHelp:
     displayHelp();
     break;
 
-#if defined(UNITTESTS)
-  case kRunUnitTests:
-    return runUnitTests();
-#endif
-
   case kParseFiles:
-    parseFiles(files, outputFile);
+  case kCompileFilesToIR:
+  case kCompileFiles:
+    startProcess(setup.fHrcPath, hrcOptions);
     break;
 
-  case kCompileFiles:
-    compileFiles(files, outputFile);
+  case kLinkAndCompileFiles:
+    hrcOptions.insert(hrcOptions.begin(), String("-c"));
+    if (startProcess(setup.fHrcPath, hrcOptions) >= 0) {
+      if (!setup.fAsPath.isEmpty()) {
+        // TODO
+      }
+
+      std::vector<String> outFiles;
+      for (size_t i = 0; i < files.size(); i++) {
+        String outExt = makeCompileOutputFileExt(kLLVM_BC);
+        String outFile = makeOutputFileName(outdir, String(),
+                                            files[i], outExt);
+        outFiles.push_back(outFile);
+      }
+
+      std::vector<String> ldOptions;
+      ldOptions.insert(ldOptions.end(),
+                       setup.fLdFlags.begin(),
+                       setup.fLdFlags.end());
+
+      if (!outputFileName.isEmpty())
+      {
+        ldOptions.push_back(String("-o"));
+        ldOptions.push_back(outputFileName);
+      }
+
+      ldOptions.push_back(String("-b=") + makeOutputFileName(outdir, String(),
+                                                             outputFileName, String("bc")));
+      ldOptions.insert(ldOptions.end(),
+                       outFiles.begin(), outFiles.end());
+      ldOptions.push_back(setup.fRuntimeLib);
+      startProcess(setup.fLdPath, ldOptions);
+    }
     break;
+  }
+
+  if (verbose) {
+    printf("------------------------------\n");
+    printf("Setup:\n");
+    printf("  hrc:    %s\n", (const char*)StrHelper(setup.fHrcPath));
+    printf("  as:     %s %s\n", (const char*)StrHelper(setup.fAsPath),
+           (const char*)StrHelper(setup.fAsFlags));
+    printf("  linker: %s\n", (const char*)StrHelper(setup.fLdPath));
+    printf("  rtlib:  %s\n", (const char*)StrHelper(setup.fRuntimeLib));
   }
 
   return 0;
 }
-
-
-static void
-herschel::setupDefaultPath()
-{
-  Setup setup = findResources("hrc");
-
-  for (StringVector::iterator it = setup.fSysPath.begin(), e = setup.fSysPath.end();
-       it != e; ++it)
-  {
-    if (!it->isEmpty())
-      Properties::addSystemDir(*it);
-  }
-}
-
-
-#if defined(UNITTESTS)
-static int
-runUnitTestsWithRunner(UnitTest::TestRunner& runner)
-{
-  return runner.RunTestsIf(UnitTest::Test::GetTestList(),
-                           NULL, UnitTest::True(), 0);
-}
-
-
-static int
-runUnitTests()
-{
-  // return UnitTest::RunAllTests();
-  if (sUnitTestFormat == String("xml")) {
-    UnitTest::XmlTestReporter reporter(std::cerr);
-    UnitTest::TestRunner runner(reporter);
-    return runUnitTestsWithRunner(runner);
-  }
-  else {
-    UnitTest::TestReporterStdout reporter;
-    UnitTest::TestRunner runner(reporter);
-    return runUnitTestsWithRunner(runner);
-  }
-}
-#endif
-
 

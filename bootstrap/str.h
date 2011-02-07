@@ -129,6 +129,11 @@ namespace herschel
       return &fBuffer[0];
     }
 
+    const char* c_str() const
+    {
+      return &fBuffer[0];
+    }
+
   private:
     std::vector<char> fBuffer;
     int fLength;
