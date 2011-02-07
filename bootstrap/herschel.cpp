@@ -21,22 +21,27 @@
 #include "job.h"
 #include "filetool.h"
 
+#include "llvm/Config/config.h"
 
 using namespace herschel;
 
 static void
-displayVersion()
+displayVersion(bool verbose)
 {
   printf("%s %s - herschel compiler\n", "herschel", VERSION);
   printf("Copyright (c) %s, %s\n", COPYRIGHTYEAR, COPYRIGHTOWNER);
   printf("(base revision: %s)\n", HR_BASE_REVISION);
+
+  if (verbose) {
+    printf("Using LLVM: %s (%s)\n", PACKAGE_STRING, LLVM_CONFIGTIME);
+  }
 }
 
 
 static void
 displayHelp()
 {
-  displayVersion();
+  displayVersion(false);
   /*      123456789012345678901234567890123456789012345678901234567890123456789012*/
   /*               1         2         3         4         5         6         7  */
   printf("\n");
@@ -62,6 +67,7 @@ displayHelp()
 
 enum CompileFunction {
   kDisplayHelp,
+  kDisplayVersion,
   kParseFiles,
   kCompileFiles,
   kCompileFilesToIR,
@@ -129,8 +135,8 @@ main(int argc, char** argv)
         exit(0);
 
       case kOptVersion:
-        displayVersion();
-        exit(0);
+        func = kDisplayVersion;
+        break;
 
       case kOptOutdir:
         outdir = option.fArgument;
@@ -214,6 +220,9 @@ main(int argc, char** argv)
   case kDisplayHelp:
     displayHelp();
     break;
+  case kDisplayVersion:
+    displayVersion(verbose);
+    exit(0);
 
   case kParseFiles:
   case kCompileFilesToIR:
