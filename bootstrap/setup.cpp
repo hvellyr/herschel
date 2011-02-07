@@ -26,7 +26,7 @@ using namespace herschel;
 
 namespace herschel
 {
-extern StringVector findSysResourceBundle();
+extern Setup findSysResources(const char* exeName);
 };
 
 #else
@@ -34,55 +34,54 @@ extern StringVector findSysResourceBundle();
 namespace herschel
 {
   /* a generic implementation */
-  StringVector
-  findSysResourceBundle()
+  Setup
+  findSysResources(const char* exeName)
   {
-    StringVector result;
+    Setup setup;
 
 #if defined(IS_DEBUG)
     /* check whether we run from the development folder */
     {
       String cwd = file::workingDir();
-      if (file::isFile(file::appendFile(cwd, String("temp/debug/herschel"))) ||
-          file::isFile(file::appendFile(cwd, String("temp/release/herschel"))) ) {
+      String binpath;
 
-        result.push_back(file::appendDir(cwd, String("lib")));
-        return result;
+      if (file::isFile(file::appendFile(cwd, String("temp/debug/") + exeName)))
+        binpath = file::appendFile(cwd, String("temp/debug/"));
+      else if (file::isFile(file::appendFile(cwd, String("temp/release/") + exeName)))
+        binpath = file::appendFile(cwd, String("temp/release/"));
+
+      if (!binpath.isEmpty()) {
+        setup.fSysPath.push_back(file::appendDir(cwd, String("lib")));
+        setup.fHrcPath = file::appendFile(binpath, String("hrc"));
+        // setup.fAsPath = String();
+        // setup.fAsFlags = String();
+        setup.fLdPath = file::appendFile(cwd, String("external/llvm/Release/bin/llvm-ld"));
+        setup.fLdFlags.push_back(String("-native"));
+        return setup;
       }
     }
 #endif
 
-    result.push_back(file::appendDir(
-                       file::makeDir(String(HR_INSTDIR_pkglibdir)),
-                       String(VERSION)),
-                       String("include"));
-    return result;
+    setup.fSysPath.push_back(file::appendDir(
+                               file::makeDir(String(HR_INSTDIR_pkglibdir)),
+                               String(VERSION)),
+                             String("include"));
+    setup.fHrcPath = file::appendFile(file::makeDir(String(HR_INSTDIR_bindir)),
+                                      String("hrc"));
+    // setup.fAsPath = String();
+    // setup.fAsFlags = String();
+    setup.fLdPath = String("llvm-ld");
+    setup.fLdFlags.push_back(String("-native"));
+
+    return setup;
   }
 };
 
 #endif
 
 
-namespace herschel
+Setup
+herschel::findResources(const char* exeName)
 {
-  static StringVector
-  findResourceBundle()
-  {
-    return findSysResourceBundle();
-  }
-};
-
-
-void
-herschel::setupDefaultPath()
-{
-  StringVector syspaths = findResourceBundle();
-
-  for (StringVector::iterator it = syspaths.begin(), e = syspaths.end();
-       it != e; ++it)
-  {
-    if (!it->isEmpty())
-      Properties::addSystemDir(*it);
-  }
+  return findSysResources(exeName);
 }
-

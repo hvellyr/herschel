@@ -28,6 +28,7 @@
 #include "str.h"
 #include "file.h"
 #include "log.h"
+#include "setup.h"
 
 
 using namespace herschel;
@@ -159,23 +160,23 @@ namespace herschel
 #endif
 
 
-  #define APPFILE "hrc"
-
   static bool
-  exeFromDevpath(const String& exedir, String& syspath)
+  exeFromDevpath(const char* exeName, const String& exedir,
+                 String& syspath, String& binpath)
   {
     static char* possible_paths[] = {
-      "/temp/debug/" APPFILE,
-      "/temp/release/" APPFILE,
+      "/temp/debug/",
+      "/temp/release/",
       NULL
     };
     char** p = possible_paths;
 
     for ( ; *p; p++) {
-      if (exedir.endsWith(String(*p))) {
-        String basepath = exedir.part(0, exedir.length() - strlen(*p) + 1);
-        syspath = file::appendDir(file::makeDir(basepath),
-                                  String("lib"));
+      String fullpath = String(*p) + exeName;
+
+      if (exedir.endsWith(fullpath)) {
+        binpath = exedir.part(0, exedir.length() - strlen(exeName));
+        syspath = exedir.part(0, exedir.length() - fullpath.length() + 1);
         return true;
       }
     }
@@ -187,18 +188,20 @@ namespace herschel
 #if defined(OS_mac) || defined(OS_linux)
 
   static bool
-  exeFromRuntimeInstallation(const String& exedir, String& syspath)
+  exeFromRuntimeInstallation(const char* exeName, const String& exedir,
+                             String& syspath, String& binpath)
   {
     static char* possible_paths[] = {
-      "/bin/" APPFILE,
-      "/sbin/" APPFILE,
+      "/bin/",
+      "/sbin/",
       NULL
     };
     char** p = possible_paths;
 
     for ( ; *p; p++) {
-      if (exedir.endsWith(String(*p))) {
+      if (exedir.endsWith(String(*p) + exeName)) {
         String basepath = exedir.part(0, exedir.length() - strlen(*p) + 1);
+
         syspath = file::appendDir(file::makeDir(basepath),
                                   String("lib/herschel"), 
                                   String(VERSION),
@@ -213,38 +216,70 @@ namespace herschel
 #else
 
   static bool
-  exeFromRuntimeInstallation(const String& exedir, String& syspath)
+  exeFromRuntimeInstallation(const char* exeName, const String& exedir,
+                             String& syspath, String& binpath)
   {
     return false;
   }
 
 #endif
 
-
-  StringVector
-  findSysResourceBundle()
+  Setup
+  findSysResources(const char* exeName)
   {
+    Setup setup;
+
     String syspath;
+    String binpath;
     StringVector result;
 
     String exedir = getExeLocation();
     if (!exedir.isEmpty()) {
       /* check whether we run from build environment */
-      if (exeFromDevpath(exedir, syspath)) {
-        result.push_back(syspath);
+      if (exeFromDevpath(exeName, exedir, syspath, binpath)) {
+        setup.fSysPath.push_back(file::appendDir(file::makeDir(syspath),
+                                                 String("lib")));
+        setup.fHrcPath = file::appendFile(file::makeDir(binpath),
+                                          String("hrc"));
+        setup.fLdPath = file::appendFile(file::makeDir(syspath),
+                                         String("external/llvm/Release/bin/llvm-ld"));
+        setup.fLdFlags.push_back(String("-native"));
+        setup.fRuntimeLib = file::appendFile(file::makeDir(binpath),
+                                             String("libhr.a"));
       }
-      else if (exeFromRuntimeInstallation(exedir, syspath)) {
-        result.push_back(syspath);
+      else if (exeFromRuntimeInstallation(exeName, exedir, syspath, binpath)) {
+        // TODO
+        setup.fSysPath.push_back(syspath);
+        setup.fHrcPath = file::appendFile(file::makeDir(binpath),
+                                          String("hrc"));
+        // setup.fAsPath = String();
+        // setup.fAsFlags = String();
+        // TODO: configurable?
+        setup.fLdPath = String("llvm-ld");
+        setup.fLdFlags.push_back(String("-native"));
+        // setup.fRuntimeLib = file::appendFile(file::makeDir(binpath),
+        //                                      String("libhrt.a"));
       }
       else {
-        syspath = file::appendDir(file::makeDir(String(HR_INSTDIR_pkglibdir)),
-                                  String(VERSION),
-                                  String("include"));
-        result.push_back(syspath);
+        setup.fSysPath.push_back(file::appendDir(file::makeDir(String(HR_INSTDIR_pkglibdir)),
+                                                 String(VERSION),
+                                                 String("include")));
+        setup.fHrcPath = file::appendFile(file::makeDir(String(HR_INSTDIR_bindir)),
+                                          String("hrc"));
+        // setup.fAsPath = String();
+        // setup.fAsFlags = String();
+        setup.fLdPath = String("llvm-ld");
+        setup.fLdFlags.push_back(String("-native"));
       }
     }
 
-    return result;
+    return setup;
   }
 
+
+  String
+  findSysBasePath(const char* exeName)
+  {
+    return file::makeDir(String(HR_INSTDIR_bindir));
+  }
 };                              // namespace

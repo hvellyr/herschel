@@ -25,6 +25,7 @@
 #include "tokenizer.h"
 #include "transform.h"
 #include "typify.h"
+#include "filetool.h"
 
 using namespace herschel;
 
@@ -373,40 +374,6 @@ Compiler::PortStackHelper::~PortStackHelper()
 
 namespace herschel
 {
-
-  static String
-  makeCompileOutputFileExt()
-  {
-    switch (Properties::compileOutFormat()) {
-    case kNativeObject:
-      return String("o");
-    case kLLVM_IR:
-      return String("ll");
-    case kLLVM_BC:
-      return String("bc");
-    }
-    assert(0);
-    return String();
-  }
-
-
-  static String
-  makeOutputFileName(const String& outdir, const String& outfileName,
-                     const String& file,
-                     const String& outExt)
-  {
-    if (!outfileName.isEmpty())
-      return outfileName;
-
-    if (!outdir.isEmpty())
-      return file::append(outdir,
-                          file::appendExt(file::baseName(file::namePart(file)),
-                                          outExt));
-
-    return file::appendExt(file::baseName(file), outExt);
-  }
-
-
   void
   compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
               const String& outfileName)
@@ -423,7 +390,7 @@ namespace herschel
           assert(unit != NULL);
 
           if (unit != NULL) {
-            String outExt = makeCompileOutputFileExt();
+            String outExt = makeCompileOutputFileExt(Properties::compileOutFormat());
             String outFile = makeOutputFileName(Properties::outdir(),
                                                 outfileName, file, outExt);
 

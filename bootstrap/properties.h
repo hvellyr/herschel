@@ -11,6 +11,7 @@
 
 #include <vector>
 
+#include "common.h"
 #include "parsertypes.h"
 
 namespace herschel
@@ -19,13 +20,6 @@ namespace herschel
   class String;
 
   typedef std::vector<String> StringVector;
-
-  enum CompileOutFormat
-  {
-    kNativeObject,
-    kLLVM_IR,
-    kLLVM_BC
-  };
 
   enum OptimizeLevel
   {
