@@ -19,16 +19,38 @@ Documentation
 
 Bootstrap compiler
 
+  - check that left hand variables are not const.
+
+  - do an error counter.
+
+  - review some kind of auto-number coercion?
+
   - support 'auto' slots in ctor construction.
 
-  - constructions of 'T are not allowed in a function body.  Generics are
-    however allowed in type spec locations (incl. casting).  These are
-    treated as Any for direct comparison and needs type-check boundaries at
-    runtime.  The type checker must make sure that a 'T is only assigned to
-    'T and not 'K or 'V.
+  - 'T are treated as Any inside of function bodie for direct comparison
+    and need type-check boundaries at runtime.  The type checker must make
+    sure that a 'T is only assigned to 'T and not 'K or 'V.
 
   - call superclass ctors from init-functor.  Do we need the 'on
     super(super-type)' construct?
+
+      def class Y(n) : ...
+      def class Z(n = 42) : ...
+
+      def class X : (Y, Z)
+      {
+        def slot a
+        def slot b
+
+        on super X(11),
+                 Z(n: 1234)    ;; not necessary but possible
+
+        on init() {
+          a = 5
+          b = 7
+        }
+      }
+    
 
   - reference types.
      - type checks.  When is T = ^T allowed?
