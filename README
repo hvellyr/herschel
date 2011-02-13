@@ -1,6 +1,6 @@
 What's it
 
-  Herschel is an general-purpose multiparadigm programming language.  It is
+  Herschel is a general-purpose multiparadigm programming language.  It is
   strongly typed, offering type inference and parametric polymorphism
   ("generics").  It is thoroughly object oriented (everything is a object),
   while its consequent multiple dispatch approach gives it a strong
@@ -12,11 +12,16 @@ What's it
 
   - object oriented ("everything's an object")
   - multi dispatch functions
-  - first class functions
-  - fully lexical scoped
   - strong functional aproach (while being not strictly functional)
-  - garbage collected
+  - first class functions and "real" closures
+  - fully lexical scoped
+  - automatic memory management (garbage collected)
   - returnable exceptions
+  - multiple returnvalues
+  - named parameters
+  - modules and namespaces
+  - classes and types ("interfaces")
+  - optional static typing
   - compiled, though not required by specification
 
 
