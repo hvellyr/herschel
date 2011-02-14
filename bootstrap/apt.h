@@ -54,6 +54,14 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  enum TypeConvKind
+  {
+    kNoConv,
+    kTypeCheckConv,
+    kAtom2PlainConv,
+    kPlain2AtomConv,
+  };
+
   //! AptNode is the base of all abstract part tree nodes.  Since it is a
   //! refcounted object, keep it always in Ptr<>.
   class AptNode : public RefCountable
@@ -73,6 +81,11 @@ namespace herschel
 
     const Type& type() const;
     void setType(const Type& type);
+
+    const Type& dstType() const;
+    void setDstType(const Type& type);
+    TypeConvKind typeConv() const;
+    void setTypeConv(TypeConvKind typeConv);
 
     bool isInTailPos() const;
     void setIsInTailPos(bool value);
@@ -98,11 +111,13 @@ namespace herschel
     virtual void typify(Typifier* typifier) = 0;
 
   protected:
-    SrcPos     fSrcPos;
-    Ptr<Scope> fScope;
-    Type       fType;
-    bool       fIsInTailPos;
-    bool       fIsSingleTypeRequired;
+    SrcPos       fSrcPos;
+    Ptr<Scope>   fScope;
+    Type         fType;
+    Type         fDstType;
+    TypeConvKind fTypeConvKind;
+    bool         fIsInTailPos;
+    bool         fIsSingleTypeRequired;
   };
 
 
@@ -216,6 +231,9 @@ namespace herschel
     void setRefersTo(SymReferType type, bool isShared);
     bool isShared() const;
 
+    String linkage() const;
+    void setLinkage(const String& linkage);
+
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* an);
@@ -229,6 +247,7 @@ namespace herschel
     SymReferType fRefersTo;
     bool         fIsShared;     // refers to a variable outside of owning
                                 // frame (= closed variable)
+    String       fLinkage;
   };
 
 

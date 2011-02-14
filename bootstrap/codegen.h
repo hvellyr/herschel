@@ -130,9 +130,9 @@ namespace herschel
 
     llvm::LLVMContext& context();
 
-    llvm::FunctionType* createFunctionSignature(const FunctionNode* node);
-    llvm::FunctionType* createFunctionSignature2(const FunctionNode* node,
-                                                 bool inlineRetv);
+    llvm::FunctionType* createFunctionSignature(const FunctionNode* node,
+                                                bool inlineRetv,
+                                                const Type& retty);
 
     llvm::Value* codegen(const NodeList& nl);
 
@@ -149,7 +149,8 @@ namespace herschel
     llvm::Value* codegenForGlobalVars(const VardefNode* node);
 
     llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
-                                             const String& name);
+                                             const String& name,
+                                             const llvm::Type* type);
 
     const llvm::Type* getAtomType();
     const llvm::Type* getType(const Type& type);

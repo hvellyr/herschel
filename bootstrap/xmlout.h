@@ -109,6 +109,8 @@ namespace herschel
     void renderNode(const WhileNode* node);
     void renderNode(const CastNode* node);
 
+    static const char* operatorName(OperatorType type);
+
   private:
     void displayOpenTag(const char* tagName, bool newline = true);
     void displayOpenTagAttrs(const char* tagName, const char* attrs,
