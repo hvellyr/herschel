@@ -1258,6 +1258,34 @@ Type::isBaseType() const
 
 
 bool
+Type::isPlainType() const
+{
+  String nm;
+  if (isRef() || isType() || isClass()) {
+    nm = typeName();
+  }
+
+  if (!nm.isEmpty()) {
+    return (nm == Names::kBoolTypeName ||
+            nm == Names::kCharTypeName ||
+            nm == Names::kFloat32TypeName ||
+            nm == Names::kFloat64TypeName ||
+            nm == Names::kFloat128TypeName ||
+            nm == Names::kInt8TypeName ||
+            nm == Names::kUInt8TypeName ||
+            nm == Names::kInt16TypeName ||
+            nm == Names::kUInt16TypeName ||
+            nm == Names::kInt32TypeName ||
+            nm == Names::kUInt32TypeName ||
+            nm == Names::kInt64TypeName ||
+            nm == Names::kUInt64TypeName);
+  }
+
+  return false;
+}
+
+
+bool
 Type::isBuiltinType(const String& name) const
 {
   return typeName() == name;
@@ -1550,6 +1578,7 @@ Type::typeId() const
   switch (fKind) {
   case kType_Undefined:
     assert(0);
+    break;
 
   case kType_Ref:
     {

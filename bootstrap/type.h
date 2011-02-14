@@ -177,6 +177,10 @@ namespace herschel
     //! indicates whether the type is a base type
     bool isBaseType() const;
 
+    //! indicates whether thi type is a plain type.  A plain type is a type
+    //! which can be represented as non-complex machine types.
+    bool isPlainType() const;
+
     bool isAny() const;
 
     bool isInt() const;

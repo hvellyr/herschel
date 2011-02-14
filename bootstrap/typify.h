@@ -154,6 +154,8 @@ namespace herschel
     void typify(FuncDefNode* node);
 
   private:
+    void annotateTypeConv(AptNode* toNode, const Type& type);
+
     //! Typify \p node
     void typifyNode(AptNode* node);
 

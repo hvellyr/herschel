@@ -736,8 +736,8 @@ XmlRenderer::renderNode(const DictNode* node)
 }
 
 
-static const char*
-operatorName(OperatorType type)
+const char*
+XmlRenderer::operatorName(OperatorType type)
 {
   switch (type) {
   case kOpAppend:       return "++";
