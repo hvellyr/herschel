@@ -155,9 +155,9 @@ namespace herschel
     const llvm::Type* getAtomType();
     const llvm::Type* getType(const Type& type);
 
+    llvm::Value* makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType);
+
     llvm::Value* makeTypeCastAtomToClangBool(llvm::Value* val);
-    llvm::Value* makeTypeCastAtomToClangInt(llvm::Value* val);
-    llvm::Value* makeTypeCastAtomToClangChar(llvm::Value* val);
 
     enum Typeid {
       kAtomInt  = 0,
@@ -186,6 +186,20 @@ namespace herschel
                                        int isize);
     void emitClassInitFunc();
     void emitGlobalVarInitFunc();
+
+
+    //------------------------------ emit operators
+    bool isPlainInt(const Type& type) const;
+
+    llvm::Value* wrapInt(llvm::Value* value, const Type& type);
+    llvm::Value* wrapBool(llvm::Value* value, const Type& type);
+
+    llvm::Value* coerceIntOperand(const Type& dstType, const Type& isType,
+                                  llvm::Value* value);
+
+    llvm::Value* codegenOpIntInt(const BinaryNode* node,
+                                 llvm::Value* left,
+                                 llvm::Value* right);
 
     //-------- data members
 

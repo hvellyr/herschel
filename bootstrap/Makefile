@@ -78,6 +78,7 @@ HRC_SOURCES =     \
 	annotate.cpp    \
 	apt.cpp         \
 	codegen.cpp     \
+	codegen-op.cpp  \
 	compilepass.cpp \
 	compiler.cpp    \
 	externc.cpp     \

@@ -29,7 +29,6 @@ const String herschel::Names::kRationalTypeName    = String(MID_RationalTypeName
 const String herschel::Names::kRealTypeName        = String(MID_RealTypeName);
 const String herschel::Names::kOrdinalTypeName     = String(MID_OrdinalTypeName);
 
-
 const String herschel::Names::kFloat32TypeName     = String(MID_Float32TypeName);
 const String herschel::Names::kFloat64TypeName     = String(MID_Float64TypeName);
 const String herschel::Names::kFloat128TypeName    = String(MID_Float128TypeName);

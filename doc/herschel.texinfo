@@ -307,8 +307,8 @@ The following identifiers are reserved and have a special meaning:
 AND       and       as        by        def       else      eof
 export    extend    false     for       Function  function  if
 import    in        isa       let       match     mod       module
-nil       not       on        OR        or        reify     select
-then      true      when      where     while     XOR
+nil       not       on        OR        or        reify     rem
+select    then      true      when      where     while     XOR
 @end verbatim
 
 The following identifiers are predefined and used by the language
@@ -2445,6 +2445,8 @@ methods.
 @code{exponent}
 @item mod
 @code{modulo}
+@item rem
+@code{remainder}
 @item and
 @code{and}
 @item or
@@ -2496,6 +2498,11 @@ Computes the exponent
 @deftypefn Method Number modulo (@var{op1}, @var{op2})
 Modulo arithmetic.  Only defined on integers and approximate non
 floating point numbers
+@end deftypefn
+
+@deftypefn Method Number remainder (@var{op1}, @var{op2})
+Computes the remainder of @var{op1} devided by @var{op2}.  Only
+defined on integers and approximate non floating point numbers
 @end deftypefn
 
 @deftypefn Method Number logand (@var{op1}, @var{op2})

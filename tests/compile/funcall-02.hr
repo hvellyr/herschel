@@ -1,0 +1,21 @@
+import "clang/types.hr"
+
+extern ("C") {
+  int putchar(int c);
+}
+
+
+def foo(c : Int32)
+  putchar(c)
+  c
+
+def app|main()
+  for (i : Int32 = 0 : Int32 then i + 1 : Int32 while i < 100000 : Int32) {
+    for (c : Int32 = 20h : Int32 then c + 1 : Int32 while c < 7eh : Int32)
+      foo(c)
+    else
+      0 : Int32
+  }
+  else
+    0 : Int32
+  foo(10 : Int32)

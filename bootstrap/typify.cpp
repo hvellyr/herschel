@@ -100,36 +100,39 @@ Typifier::annotateTypeConv(AptNode* node, const Type& dstType)
   if (dstType.isPlainType()) {
     if (node->type().isPlainType()) {
       // ok.  maybe some bitcast between int/short/long, etc.
-      node->setDstType(dstType);
     }
     else {
       // req. atom_2_x
       node->setTypeConv(kAtom2PlainConv);
-      node->setDstType(dstType);
     }
   }
   else {
     if (node->type().isPlainType()) {
       // req. wrap_atom
       node->setTypeConv(kPlain2AtomConv);
-      node->setDstType(dstType);
     }
     else if (node->type().isAny()) {
       // requires type_check
       node->setTypeConv(kTypeCheckConv);
-      node->setDstType(dstType);
     }
     else {
       // OK
-      node->setDstType(dstType);
     }
   }
 
-  // if (dstType.typeName() == String("clang|int") ||
-  //     dstType.typeName() == String("clang|bool") ||
-  //     dstType.typeName() == String("clang|long") ||
-  //     dstType.typeName() == String("clang|char"))
-  //   node->setDstType(dstType);
+  node->setDstType(dstType);
+}
+
+
+void
+Typifier::setBodyLastDstType(AptNode* body, const Type& dstType)
+{
+  body->setDstType(dstType);
+  if (BlockNode* block = dynamic_cast<BlockNode*>(body)) {
+    assert(!block->children().empty());
+
+    setBodyLastDstType(block->children().back(), dstType);
+  }
 }
 
 
@@ -236,6 +239,7 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
       if (bindty.isAny()) {
         // infer the vardef type from the init expression
         node->setType(node->initExpr()->type());
+        node->initExpr()->setDstType(node->initExpr()->type());
       }
       else if (!node->initExpr()->type().isDef()) {
         errorf(node->initExpr()->srcpos(), E_TypeMismatch,
@@ -368,7 +372,8 @@ Typifier::checkFunctionReturnType(FunctionNode* node)
 {
   if (node->body() != NULL) {
     if (!isContravariant(node->retType(), node->body()->type(),
-                         node->scope(), node->srcpos()))
+                         node->scope(), node->srcpos()) &&
+        !containsAny(node->body()->type(), node->srcpos()))
     {
       errorf(node->srcpos(), E_TypeMismatch,
              "function's body type does not match its return type");
@@ -406,8 +411,22 @@ Typifier::typify(FuncDefNode* node)
 
   if (fPhase == kTypify) {
     setupFunctionNodeType(node);
-    if (node->body() != NULL)
+    if (node->name() == String("app|main")) {
+      if (!node->retType().isAny()) {
+        if (node->retType().typeName() != String("lang|Int32"))
+        {
+          errorf(node->srcpos(), E_TypeMismatch,
+                 "return type of app|main() must be lang|Int32");
+        }
+      }
+
+      node->setRetType(Type::newTypeRef("lang|Int32"));
+    }
+
+    if (node->body() != NULL) {
       annotateTypeConv(node->body(), node->retType());
+      setBodyLastDstType(node->body(), node->retType());
+    }
   }
   else if (fPhase == kCheck) {
     checkFunctionReturnType(node);
@@ -785,7 +804,10 @@ Typifier::typify(AssignNode* node)
     }
 
     node->setType(rtype);
+
     annotateTypeConv(node->rvalue(), ltype);
+    annotateTypeConv(node->lvalue(), ltype);
+    annotateTypeConv(node, rtype);
   }
 }
 
@@ -813,6 +835,7 @@ Typifier::operatorNameByOp(OperatorType type) const
   case kOpLogicalOr:    return String("logor");
   case kOpMinus:        return String("subtract");
   case kOpMod:          return String("mod");
+  case kOpRem:          return String("rem");
   case kOpMultiply:     return String("multiply");
   case kOpPlus:         return String("add");
   case kOpRemove:       return String("remove");
@@ -880,27 +903,32 @@ Typifier::typify(BinaryNode* node)
     case kOpMultiply:
     case kOpDivide:
     case kOpMod:
+    case kOpRem:
     case kOpExponent:
       if (leftty.isAny() || rightty.isAny()) {
         node->setType(Type::newAny());
-        annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node->left(), node->type());
+        annotateTypeConv(node->right(), node->type());
         return;
       }
       if (leftty.isNumber() || rightty.isNumber()) {
         node->setType(Type::newTypeRef(Names::kNumberTypeName, true));
-        annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node->left(), node->type());
+        annotateTypeConv(node->right(), node->type());
         return;
       }
 
       if (leftty.isComplex() || rightty.isComplex()) {
         node->setType(Type::newTypeRef(Names::kComplexTypeName, true));
-        annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node->left(), node->type());
+        annotateTypeConv(node->right(), node->type());
         return;
       }
 
       if (leftty.isReal() || rightty.isReal()) {
         node->setType(Type::newTypeRef(Names::kRealTypeName, true));
-        annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node->left(), node->type());
+        annotateTypeConv(node->right(), node->type());
         return;
       }
 
@@ -909,6 +937,7 @@ Typifier::typify(BinaryNode* node)
           node->setType(maxFloatType(leftty, rightty));
         else
           node->setType(leftty);
+        annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
         return;
       }
@@ -917,30 +946,35 @@ Typifier::typify(BinaryNode* node)
           node->setType(maxFloatType(leftty, rightty));
         else
           node->setType(rightty);
+        annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
         return;
       }
 
       if (leftty.isRational() || rightty.isRational()) {
         node->setType(Type::newTypeRef(Names::kRationalTypeName, true));
-        annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node->left(), node->type());
+        annotateTypeConv(node->right(), node->type());
         return;
       }
 
       if (leftty.isOrdinal() || rightty.isOrdinal()) {
         node->setType(Type::newTypeRef(Names::kOrdinalTypeName, true));
-        annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node->left(), node->type());
+        annotateTypeConv(node->right(), node->type());
         return;
       }
       if (leftty.isInt() || rightty.isInt()) {
         node->setType(Type::newTypeRef(Names::kIntTypeName, true));
-        annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node->left(), node->type());
+        annotateTypeConv(node->right(), node->type());
         return;
       }
 
       if (leftty.isAnyInt() && rightty.isAnyInt()) {
         node->setType(maxIntType(leftty, rightty));
-        annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node->left(), node->type());
+        annotateTypeConv(node->right(), node->type());
         return;
       }
 
@@ -1449,6 +1483,7 @@ namespace herschel
     Type ty = ( type.isDef()
                 ? node->scope()->lookupType(type)
                 : node->scope()->lookupType(defaultTypeName, true) );
+
     if (!ty.isDef()) {
       errorf(node->srcpos(), E_UndefinedType,
              "undefined type '%s'", (const char*)StrHelper(defaultTypeName));

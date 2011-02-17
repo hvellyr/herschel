@@ -201,6 +201,8 @@ namespace herschel
 
     bool isAnyNumber() const;
 
+    bool isSigned() const;
+
     bool isClassOf() const;
 
     bool isImaginary() const;
