@@ -254,6 +254,7 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       { String("and"),           kLogicalAnd   },
       { String("or"),            kLogicalOr    },
       { String("mod"),           kMod          },
+      { String("rem"),           kRem          },
       { String("AND"),           kBitAnd       },
       { String("OR"),            kBitOr        },
       { String("XOR"),           kBitXor       },
@@ -1087,7 +1088,7 @@ SUITE(Tokenizer)
       "T<S<Y>>  T<S<Y> >  a < b\n"
       "val << 5 val >> 2\n"
       "2 < 1  2 <= 1  2 > 1  2 >= 1  2 <=> 1  2 <> 1  2 == 1\n"
-      "a + b  \"a\" ++ \"b\" a - b  a * b  a / b  a ** 2  a mod 5\n"
+      "a + b  \"a\" ++ \"b\" a - b  a * b  a / b  a ** 2  a mod 5  a rem 5\n"
       "1 XOR 2  1 OR 2  1 AND 2\n"
       "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n"
       "|abc ->abc\n"
@@ -1195,6 +1196,10 @@ SUITE(Tokenizer)
 
       CHECK_EQUAL(tnz.nextToken(), Token(sp, String("a")));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kMod));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 5));
+
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, String("a")));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kRem));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 5));
 
 

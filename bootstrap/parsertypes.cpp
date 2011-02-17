@@ -34,6 +34,7 @@ herschel::tokenTypeToOperator(TokenType type)
   case kAssign:        return kOpAssign;
   case kIn:            return kOpIn;
   case kMod:           return kOpMod;
+  case kRem:           return kOpRem;
   case kIsa:           return kOpIsa;
   case kAs:            return kOpAs;
   case kBy:            return kOpBy;
@@ -76,6 +77,7 @@ herschel::operatorToTokenType(OperatorType op)
   case kOpAssign:        return kAssign;
   case kOpIn:            return kIn;
   case kOpMod:           return kMod;
+  case kOpRem:           return kRem;
   case kOpIsa:           return kIsa;
   case kOpAs:            return kAs;
   case kOpBy:            return kBy;

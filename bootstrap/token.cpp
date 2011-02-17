@@ -48,6 +48,7 @@ namespace herschel
     case kMapTo:             return String("->");
     case kIn:                return String("in");
     case kMod:               return String("mod");
+    case kRem:               return String("rem");
     case kIsa:               return String("isa");
     case kAs:                return String("as");
     case kBy:                return String("by");
@@ -830,6 +831,7 @@ Token::type() const
   case kMapTo:
   case kIn:
   case kMod:
+  case kRem:
   case kIsa:
   case kAs:
   case kBy:
@@ -1543,6 +1545,7 @@ Token::isCharOrUnitName() const
           fType == kLogicalAnd ||
           fType == kLogicalOr ||
           fType == kMod ||
+          fType == kRem ||
           fType == kBitAnd ||
           fType == kBitOr ||
           fType == kBitXor ||

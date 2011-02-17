@@ -334,7 +334,7 @@ CodeGenerator::createDefaultCMainFunc()
   fBuilder.CreateCall(appMainFunc, argv.begin(), argv.end());
 
   llvm::Value* retv2 = fBuilder.CreateLoad(retv);
-  fBuilder.CreateRet(wrapLoad(retv2)); //makeTypeCastAtomToClangInt(retv2));
+  fBuilder.CreateRet(retv2);
 
   verifyFunction(*func);
 
@@ -424,6 +424,7 @@ CodeGenerator::addGlobalCtor(llvm::Function* ctor, int priority)
   fGlobalCtors.push_back(std::make_pair(ctor, priority));
 }
 
+
 //! Add a function to the list that will be called when the module is
 //! unloaded.
 void
@@ -432,6 +433,7 @@ CodeGenerator::addGlobalDtor(llvm::Function* dtor, int priority)
   // FIXME: Type coercing of void()* types.
   fGlobalDtors.push_back(std::make_pair(dtor, priority));
 }
+
 
 void
 CodeGenerator::emitCtorList(const CtorList &fns, const char *globalName)
@@ -617,7 +619,11 @@ CodeGenerator::codegen(const AssignNode* node)
       return NULL;
     }
 
-    assignAtom(rvalue, var);
+    if (node->lvalue()->type().isPlainType())
+      fBuilder.CreateStore(wrapLoad(rvalue), var);
+    else
+      assignAtom(rvalue, var);
+
     return rvalue;
   }
 
@@ -713,8 +719,8 @@ CodeGenerator::codegen(const BoolNode* node)
     else
       return fBuilder.getFalse();
   }
-  else
-    return makeBoolAtom(node->value());
+
+  return makeBoolAtom(node->value());
 }
 
 
@@ -785,7 +791,9 @@ llvm::Value*
 CodeGenerator::codegen(const IntNode* node)
 {
   if (node->dstType().isPlainType())
-    return fBuilder.getInt32(node->value());
+    return fBuilder.CreateIntCast(fBuilder.getInt32(node->value()),
+                                  getType(node->type()),
+                                  node->type().isSigned());
   else
     return makeIntAtom(node->value());
 }
@@ -860,10 +868,8 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv
 {
   std::vector<const llvm::Type*> sign;
 
-  if (inlineRetv) {
-    // sign.push_back(getAtomType()->getPointerTo());
+  if (inlineRetv)
     sign.push_back(getType(retty)->getPointerTo());
-  }
 
   bool isVarArgs = false;
   for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
@@ -875,13 +881,11 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv
       sign.push_back(getType(param->type()));
   }
 
-  llvm::FunctionType *ft = llvm::FunctionType::get(( inlineRetv
-                                                     ? llvm::Type::getVoidTy(context())
-                                                     : getType(node->retType()) ),
-                                                   sign,
-                                                   isVarArgs);
-
-  return ft;
+  return llvm::FunctionType::get(( inlineRetv
+                                   ? llvm::Type::getVoidTy(context())
+                                   : getType(node->retType()) ),
+                                 sign,
+                                 isVarArgs);
 }
 
 
@@ -958,10 +962,14 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
       if (node->name() == String("app|main")) {
         // the app|main function always returns lang|Int32
         if (node->body()->type().isPlainType()) {
-          fBuilder.CreateStore(wrapLoad(retv), func->arg_begin());
+          fBuilder.CreateStore(fBuilder.CreateIntCast(wrapLoad(retv),
+                                                      llvm::Type::getInt32Ty(context()),
+                                                      true),
+                               func->arg_begin());
         }
         else {
-          llvm::Value* convertedRetv = makeTypeCastAtomToClangInt(wrapLoad(retv));
+          llvm::Value* convertedRetv = makeTypeCastAtomToPlain(wrapLoad(retv),
+                                                               Type::newTypeRef("clang|int"));
           fBuilder.CreateStore(convertedRetv, func->arg_begin());
         }
       }
@@ -1033,35 +1041,69 @@ CodeGenerator::makeClassRegisterCall(const String& typeName, bool instantiable,
 }
 
 
-llvm::Value*
-CodeGenerator::makeTypeCastAtomToClangInt(llvm::Value* val)
+static const char*
+getConvFuncNameByType(const Type& type)
 {
-  llvm::Function* convFunc = fModule->getFunction(llvm::StringRef("atom_2_int"));
+  if (type.typeName() == String("lang|Int")) // TODO
+    return "atom_2_int32";
+  else if (type.typeName() == String("lang|Ordinal")) // TODO
+    return "atom_2_uint32";
+  else if (type.typeName() == String("lang|Int32"))
+    return "atom_2_int32";
+  else if (type.typeName() == String("lang|Int64"))
+    return "atom_2_int64";
+  else if (type.typeName() == String("lang|Int16"))
+    return "atom_2_int16";
+  else if (type.typeName() == String("lang|Int8"))
+    return "atom_2_int8";
+  else if (type.typeName() == String("lang|UInt32"))
+    return "atom_2_uint32";
+  else if (type.typeName() == String("lang|UInt64"))
+    return "atom_2_uint64";
+  else if (type.typeName() == String("lang|UInt16"))
+    return "atom_2_uint16";
+  else if (type.typeName() == String("lang|UInt8"))
+    return "atom_2_uint8";
+  else if (type.typeName() == String("lang|Float32"))
+    return "atom_2_float32";
+  else if (type.typeName() == String("lang|Float64"))
+    return "atom_2_float64";
+  else if (type.typeName() == String("lang|Char"))
+    return "atom_2_char";
+  else if (type.typeName() == String("lang|Bool"))
+    return "atom_2_bool";
+
+  if (type.typeName() == String("clang|int")) // TODO
+    return "atom_2_int32";
+
+  assert(0 && "unhandled type");
+  return NULL;
+}
+
+
+llvm::Value*
+CodeGenerator::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType)
+{
+  const char* funcName = getConvFuncNameByType(dstType);
+
+  llvm::Function* convFunc = fModule->getFunction(llvm::StringRef(funcName));
   if (convFunc == NULL) {
     std::vector<const llvm::Type*> sign;
     sign.push_back(getAtomType());
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
+    llvm::FunctionType *ft = llvm::FunctionType::get(getType(dstType),
                                                      sign,
                                                      false);
 
     convFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
-                                      llvm::Twine("atom_2_int"),
+                                      llvm::Twine(funcName),
                                       fModule);
   }
 
   std::vector<llvm::Value*> argv;
   argv.push_back(val);
   return fBuilder.CreateCall(convFunc, argv.begin(), argv.end(), "calltmp");
-}
-
-
-llvm::Value*
-CodeGenerator::makeTypeCastAtomToClangChar(llvm::Value* val)
-{
-  printf("->clang|char\n");
-  return val;
 }
 
 
@@ -1143,13 +1185,7 @@ CodeGenerator::codegen(const ApplyNode* node)
 
     if (nl[i]->dstType().isDef()) {
       if (nl[i]->typeConv() == kAtom2PlainConv) {
-        printf("[1]\n");
-        if (nl[i]->dstType().typeName() == String("clang|int")) {
-          val = makeTypeCastAtomToClangInt(val);
-        }
-        else if (nl[i]->dstType().typeName() == String("clang|char")) {
-          val = makeTypeCastAtomToClangChar(val);
-        }
+        val = makeTypeCastAtomToPlain(val, nl[i]->dstType());
       }
     }
 
@@ -1200,11 +1236,10 @@ CodeGenerator::codegen(const ParamNode* node)
 llvm::Value*
 CodeGenerator::codegen(const BinaryNode* node)
 {
-  fprintf(stderr, "BinaryNode: %s [%d]\n", XmlRenderer::operatorName(node->op()),
-          node->typeConv());
-  tyerror(node->type(), "type");
-  tyerror(node->dstType(), "dsttype");
-
+  // fprintf(stderr, "BinaryNode: %s [%d]\n", XmlRenderer::operatorName(node->op()),
+  //         node->typeConv());
+  // tyerror(node->type(), "type");
+  // tyerror(node->dstType(), "dsttype");
   llvm::Value *left = wrapLoad(codegenNode(node->left()));
   llvm::Value *right = wrapLoad(codegenNode(node->right()));
   if (left == NULL || right == NULL)
@@ -1218,62 +1253,8 @@ CodeGenerator::codegen(const BinaryNode* node)
     atom -> call operator(), dsttype is plain -> make_plain
   */
 
-  // TODO: extract the proper values and apply conversion functions according
-  // to dstType()/typeConv() functions.
-  if (node->left()->type().typeName() == String("lang|Int32") &&
-      node->right()->type().typeName() == String("lang|Int32")) {
-    llvm::Value* rv = NULL;
-
-    // TODO: only make atoms for return value if the dstType()/typeConv()
-    // tells us so.
-    switch (node->op()) {
-    case kOpPlus:      rv = fBuilder.CreateAdd(    left, right, "addtmp"); break;
-    case kOpMinus:     rv = fBuilder.CreateSub(    left, right, "subtmp"); break;
-    case kOpMultiply:  rv = fBuilder.CreateMul(    left, right, "multmp"); break;
-
-    case kOpLess:      rv = fBuilder.CreateICmpULT(left, right, "lttmp"); break;
-    case kOpLessEqual: rv = fBuilder.CreateICmpULE(left, right, "letmp"); break;
-    case kOpEqual:     rv = fBuilder.CreateICmpEQ( left, right, "eqtmp"); break;
-    case kOpUnequal:   rv = fBuilder.CreateICmpNE( left, right, "netmp"); break;
-    case kOpGreater:   rv = fBuilder.CreateICmpUGT(left, right, "gttmp"); break;
-    case kOpGreaterEqual: rv = fBuilder.CreateICmpUGE(left, right, "getmp"); break;
-    default:
-      fprintf(stderr, "invalid binary operator: %d", node->op());
-      return NULL;
-    }
-
-    if (node->dstType().isPlainType())
-      return rv;
-    else if (node->dstType().isBool())
-      return makeBoolAtom(rv);
-    else
-      return makeIntAtom(rv);
-  }
-  else if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt()) {
-    printf("[2]\n");
-    llvm::Value* li = makeTypeCastAtomToClangInt(left);
-    llvm::Value* ri = makeTypeCastAtomToClangInt(right);
-    llvm::Value* rv = NULL;
-
-    // TODO: only make atoms for return value if the dstType()/typeConv()
-    // tells us so.
-    switch (node->op()) {
-    case kOpPlus:     return makeIntAtom(fBuilder.CreateAdd(li, ri, "addtmp"));
-    case kOpMinus:    return makeIntAtom(fBuilder.CreateSub(li, ri, "subtmp"));
-    case kOpMultiply: return makeIntAtom(fBuilder.CreateMul(li, ri, "multmp"));
-    case kOpLess:     return makeBoolAtom(fBuilder.CreateICmpULT(li, ri, "lttmp"));
-    case kOpLessEqual: return makeBoolAtom(fBuilder.CreateICmpULE(li, ri, "letmp"));
-    case kOpEqual:    return makeBoolAtom(fBuilder.CreateICmpEQ(li, ri, "eqtmp"));
-    case kOpUnequal:  return makeBoolAtom(fBuilder.CreateICmpNE(li, ri, "netmp"));
-    case kOpGreater:  return makeBoolAtom(fBuilder.CreateICmpUGT(li, ri, "gttmp"));
-    case kOpGreaterEqual:
-      return makeBoolAtom(fBuilder.CreateICmpUGE(li, ri, "getmp"));
-    default:
-      fprintf(stderr, "invalid binary operator: %d", node->op());
-      return NULL;
-    }
-
-    return rv;
+  if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt()) {
+    return codegenOpIntInt(node, left, right);
   }
 
   tyerror(node->left()->type(), "unsupported type in binary operator");
@@ -1462,7 +1443,13 @@ CodeGenerator::codegen(const WhileNode* node)
   if (testValue == NULL)
     return NULL;
 
-  llvm::Value* extrTestVal = makeTypeCastAtomToClangBool(testValue);
+  llvm::Value* extrTestVal = testValue;
+  if (node->test()->dstType().isDef()) {
+    if (node->test()->typeConv() == kAtom2PlainConv) {
+      extrTestVal = makeTypeCastAtomToPlain(testValue, node->test()->dstType());
+    }
+  }
+
   // Convert condition to a bool by comparing equal to 1
   testValue = fBuilder.CreateICmpEQ(extrTestVal,
                                     llvm::ConstantInt::get(context(),
@@ -1563,7 +1550,6 @@ CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
   fBuilder.CreateCall(getMemCpyFn(dst2->getType(), src2->getType(),
                                   llvm::Type::getInt32Ty(context())),
                       argv.begin(), argv.end());
-
 }
 
 

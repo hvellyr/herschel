@@ -2578,14 +2578,18 @@ SecondPass::parseFor(const Token& expr)
   Token returnSym = Token::newUniqueSymbolToken(expr.srcpos(), "return");
 
   if (requiresReturnValue) {
-    if (alternate == NULL)
+    Type retType;
+
+    if (alternate == NULL) {
       alternate = new SymbolNode(expr.srcpos(), Names::kLangUnspecified);
 
-    TypeVector unionTypes;
-    unionTypes.push_back(Type::newAny());
-    unionTypes.push_back(Type::newTypeRef(Names::kUnspecifiedTypeName, true));
+      TypeVector unionTypes;
+      unionTypes.push_back(Type::newAny());
+      unionTypes.push_back(Type::newTypeRef(Names::kUnspecifiedTypeName, true));
 
-    Type retType = Type::newUnion(unionTypes, true);
+      retType = Type::newUnion(unionTypes, true);
+    }
+
     Ptr<AptNode> returnVardef = new VardefNode(expr.srcpos(),
                                                returnSym.idValue(), kNormalVar,
                                                true, retType, alternate);

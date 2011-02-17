@@ -763,6 +763,7 @@ XmlRenderer::operatorName(OperatorType type)
   case kOpMapTo:        return "->";
   case kOpMinus:        return "-";
   case kOpMod:          return "mod";
+  case kOpRem:          return "rem";
   case kOpMultiply:     return "*";
   case kOpPlus:         return "+";
   case kOpRange:        return "..";

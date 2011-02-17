@@ -155,6 +155,7 @@ namespace herschel
 
   private:
     void annotateTypeConv(AptNode* toNode, const Type& type);
+    void setBodyLastDstType(AptNode* body, const Type& dstType);
 
     //! Typify \p node
     void typifyNode(AptNode* node);

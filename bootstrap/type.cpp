@@ -1278,7 +1278,8 @@ Type::isPlainType() const
             nm == Names::kInt32TypeName ||
             nm == Names::kUInt32TypeName ||
             nm == Names::kInt64TypeName ||
-            nm == Names::kUInt64TypeName);
+            nm == Names::kUInt64TypeName ||
+            nm == String("clang|int"));
   }
 
   return false;
@@ -1347,6 +1348,24 @@ bool
 Type::isAny() const
 {
   return isBuiltinType(Names::kAnyTypeName);
+}
+
+
+bool
+Type::isSigned() const
+{
+  return ( isBuiltinType(Names::kNumberTypeName) ||
+           isBuiltinType(Names::kComplexTypeName) ||
+           isBuiltinType(Names::kRationalTypeName) ||
+           isBuiltinType(Names::kRealTypeName) ||
+           isBuiltinType(Names::kIntTypeName) ||
+           isBuiltinType(Names::kInt8TypeName) ||
+           isBuiltinType(Names::kInt16TypeName) ||
+           isBuiltinType(Names::kInt32TypeName) ||
+           isBuiltinType(Names::kInt64TypeName) ||
+           isBuiltinType(Names::kFloat32TypeName) ||
+           isBuiltinType(Names::kFloat64TypeName) ||
+           isBuiltinType(Names::kFloat128TypeName) );
 }
 
 

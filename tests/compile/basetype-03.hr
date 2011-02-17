@@ -1,0 +1,7 @@
+def foo(i : Int16) : Int32
+  i * 2 : Int32
+
+def app|main()
+  let t : Int16 = 21 : Int16
+  foo(t)
+
