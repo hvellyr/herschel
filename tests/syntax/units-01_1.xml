@@ -8,7 +8,7 @@
 <id>in</id>
 </nested>
 <punct type=':'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 <seq>
 <id>def</id>
@@ -18,7 +18,7 @@
 <id>cm</id>
 </nested>
 <punct type=':'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 <seq>
 <id>def</id>
@@ -28,7 +28,7 @@
 <id>m/s</id>
 </nested>
 <punct type=':'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 <seq>
 <id>def</id>
@@ -55,7 +55,7 @@
 <id>y</id>
 <punct type='='/>
 <seq>
-<lit type='real'>12.340000</lit>
+<lit type='float'>12.340000</lit>
 <punct type='&apos;'/>
 <id>cm</id>
 </seq>
@@ -89,3 +89,4 @@
 </nested>
 </seq>
 </seq>
+

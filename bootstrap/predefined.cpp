@@ -24,10 +24,7 @@ const String herschel::Names::kClassTypeName       = String(MID_ClassTypeName);
 
 const String herschel::Names::kNumberTypeName      = String(MID_NumberTypeName);
 const String herschel::Names::kComplexTypeName     = String(MID_ComplexTypeName);
-const String herschel::Names::kIntTypeName         = String(MID_IntTypeName);
 const String herschel::Names::kRationalTypeName    = String(MID_RationalTypeName);
-const String herschel::Names::kRealTypeName        = String(MID_RealTypeName);
-const String herschel::Names::kOrdinalTypeName     = String(MID_OrdinalTypeName);
 
 const String herschel::Names::kFloat32TypeName     = String(MID_Float32TypeName);
 const String herschel::Names::kFloat64TypeName     = String(MID_Float64TypeName);

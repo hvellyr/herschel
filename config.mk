@@ -15,7 +15,7 @@ COPYRIGHTOWNER = Gregor C. Klinke
 # human readable package name, used for Mac packages, etc.
 HR_PACKAGE = Herschel
 
-LANG_VERSION = 0.2.2
+LANG_VERSION = 0.3.0
 
 # ----------------------------------------------------------------------
 # plattfrom settings

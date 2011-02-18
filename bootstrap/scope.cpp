@@ -429,6 +429,17 @@ Scope::normalizeType(const Type& type, const Type& refType) const
   }
   else if (type.isAlias()) {
     baseType = type.aliasReplaces();
+    baseType.setIsValueType(refType.isValueType());
+
+    if (refType.hasConstraints()) {
+      if (baseType.hasConstraints())
+        throw TypeConstraintsConflictException(
+          refType,
+          String("Alias and using type ref has conflicting type constraints"));
+      else
+        baseType = baseType.setConstraints(refType.constraints());
+    }
+
     returnType = baseType;
   }
 

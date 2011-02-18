@@ -1,6 +1,6 @@
-def measure Inch (in) : Real
-def measure Centimer (cm) : Real
-def measure Speed (m/s) : Real
+def measure Inch (in) : Float
+def measure Centimer (cm) : Float
+def measure Speed (m/s) : Float
 def measure Pixel (px) : Int
 
 def x = 12'in

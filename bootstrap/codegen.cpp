@@ -1044,11 +1044,7 @@ CodeGenerator::makeClassRegisterCall(const String& typeName, bool instantiable,
 static const char*
 getConvFuncNameByType(const Type& type)
 {
-  if (type.typeName() == String("lang|Int")) // TODO
-    return "atom_2_int32";
-  else if (type.typeName() == String("lang|Ordinal")) // TODO
-    return "atom_2_uint32";
-  else if (type.typeName() == String("lang|Int32"))
+  if (type.typeName() == String("lang|Int32"))
     return "atom_2_int32";
   else if (type.typeName() == String("lang|Int64"))
     return "atom_2_int64";

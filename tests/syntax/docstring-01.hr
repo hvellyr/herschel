@@ -56,7 +56,7 @@ def enum Color : Keyword
   white  ~ Web #ffffff ~
 }
 
-def measure Duration(s) : Real
+def measure Duration(s) : Float
     ~ Denotes durations in time; its base unit is seconds (s) ~
 
 def unit h -> s (x)

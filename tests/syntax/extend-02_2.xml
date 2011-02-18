@@ -26,7 +26,7 @@
 </ty:ref>
 </rettype>
 <body>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </body>
 </func>
 </def>
@@ -47,7 +47,7 @@
 <body>
 <binary op='**'>
 <symbol>a</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </body>
 </func>
@@ -81,7 +81,7 @@
 </ty:ref>
 </rettype>
 <body>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </body>
 </func>
 </def>

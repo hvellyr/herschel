@@ -16,12 +16,12 @@
 </rettype>
 <body>
 <range>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 <binary op='-'>
 <symbol>k</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </binary>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </range>
 </body>
 </func>
@@ -31,14 +31,14 @@
 <params>
 <param sym='a' type='spec'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 <ty:const k='in'>%(5 .. 100 by 2 %)</ty:const>
 </ty:ref>
 </type>
 </param>
 </params>
 <rettype>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 <ty:const k='geq'>0</ty:const>
 </ty:ref>
 </rettype>

@@ -57,8 +57,8 @@ herschel::type::newRootScope(bool forUnitTests)
                                      TypeVector(),
                                      Type::newTypeRef(Names::kObjectTypeName, true)));
 
-    root->registerType(sp, Names::kIntTypeName,
-                       Type::newType(Names::kIntTypeName,
+    root->registerType(sp, Names::kInt32TypeName,
+                       Type::newType(Names::kInt32TypeName,
                                      TypeVector(),
                                      Type::newTypeRef(Names::kNumberTypeName, true)));
   }

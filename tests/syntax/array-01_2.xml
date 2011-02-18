@@ -12,7 +12,7 @@
 <vardef sym='x'>
 <type>
 <ty:array ind='0'>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:array>
 </type>
@@ -21,7 +21,7 @@
 <symbol>lang|allocate*</symbol>
 <args>
 <symbol>Int</symbol>
-<int ty='lang|Int'>1024</int>
+<int ty='lang|Int32'>1024</int>
 </args>
 </apply>
 </init>
@@ -31,7 +31,7 @@
 <vardef sym='y'>
 <type>
 <ty:array ind='12'>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:array>
 </type>
@@ -41,7 +41,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>x</symbol>
-<int ty='lang|Int'>34</int>
+<int ty='lang|Int32'>34</int>
 </args>
 </apply>
 </block>

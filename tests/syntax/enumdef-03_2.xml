@@ -4,9 +4,9 @@
 <vardef sym='a1' type='const'>
 <init>
 <array>
-<int ty='lang|Int'>0</int>
-<int ty='lang|Int'>1</int>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>1</int>
+<int ty='lang|Int32'>2</int>
 </array>
 </init>
 </vardef>
@@ -15,11 +15,11 @@
 <vardef sym='a2' type='const'>
 <init>
 <array>
-<int ty='lang|Int'>-42</int>
-<int ty='lang|Int'>0</int>
-<int ty='lang|Int'>1</int>
-<int ty='lang|Int'>127</int>
-<int ty='lang|Int'>128</int>
+<int ty='lang|Int32'>-42</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>1</int>
+<int ty='lang|Int32'>127</int>
+<int ty='lang|Int32'>128</int>
 </array>
 </init>
 </vardef>

@@ -11,29 +11,29 @@
 <let>
 <vardef sym='y'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>42</int>
+<int ty='lang|Int32'>42</int>
 </init>
 </vardef>
 </let>
 <let>
 <vardef sym='x'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>5</int>
+<int ty='lang|Int32'>5</int>
 </init>
 </vardef>
 </let>
 <let>
 <vardef sym='px'>
 <type>
-<ty:ref ref='t' nm='lang|Int'>
+<ty:ref ref='t' nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
@@ -44,7 +44,7 @@
 <let>
 <vardef sym='qx'>
 <type>
-<ty:ref ref='t' nm='lang|Int'>
+<ty:ref ref='t' nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
@@ -62,7 +62,7 @@
 </assign>
 <assign>
 <symbol>qx</symbol>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </assign>
 <assign>
 <symbol>px</symbol>

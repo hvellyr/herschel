@@ -886,9 +886,9 @@ SecondPass::defaultSlotInitValue(const SlotdefNode* slot)
   else if (slot->type().isDef()) {
     if (slot->type().isAnyInt())
       return new IntNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
-    else if (slot->type().isAnyFloat() || slot->type().isReal())
+    else if (slot->type().isAnyFloat())
       return new RealNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
-    else if (slot->type().isAnyFloat() || slot->type().isRational())
+    else if (slot->type().isRational())
       return new RationalNode(slot->srcpos(), Rational(0, 1),
                               slot->type().isImaginary(), slot->type());
     else if (slot->type().isString())
@@ -1138,6 +1138,7 @@ SecondPass::nextEnumInitValue(const SrcPos& srcpos,
   }
   else {
     errorf(srcpos, E_EnumNotBaseType, "Enum init value is not of base type");
+    tyerror(baseType, "Enum Basetype");
   }
 
   return initExpr.release();
@@ -1176,7 +1177,7 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
     ofs += 2;
   }
   else
-    baseType = Type::newTypeRef(Names::kIntTypeName, true);
+    baseType = Type::newInt32();
 
   if (!baseType.isBaseType()) {
     errorf(expr.srcpos(), E_EnumNotBaseType, "Enum base is not a base type.");
@@ -2261,11 +2262,11 @@ SecondPass::transformRangeForClause(const Token& token,
   RangeForClauseCountDir direct = kRangeUnknown;
   if (token[2].count() == 3) {
     direct = kRangeUpwards;
-    stepValueNode = new IntNode(srcpos, 1, false, Type::newInt());
+    stepValueNode = new IntNode(srcpos, 1, false, Type::newInt32());
   }
   else if (token[2].count() == 5) {
     Token byToken = token[2][4];
-    if (byToken.isInt() || byToken.isReal() || byToken.isRational() ||
+    if (byToken.isInt() || byToken.isFloat() || byToken.isRational() ||
         byToken.isChar())
     {
       direct = byToken.isNegative() ? kRangeDownwards : kRangeUpwards;
@@ -3088,7 +3089,7 @@ SecondPass::parseSeq(const Token& expr)
         return newNodeList(parseIntNumber(expr));
       case kRational:
         return newNodeList(parseRationalNumber(expr));
-      case kReal:
+      case kFloat:
         return newNodeList(parseRealNumber(expr));
       default:
         fprintf(stderr, "%d\n", expr.tokenType());
@@ -3280,13 +3281,13 @@ AptNode*
 SecondPass::parseIntNumber(const Token& expr)
 {
   if (expr.tokenType() == kInt) {
-    Type type = Type::newInt();
+    Type type = Type::newInt32();
     type.setIsImaginary(expr.isImaginary());
     return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
                        type);
   }
   else if (expr.tokenType() == kUInt) {
-    Type type = Type::newOrdinal();
+    Type type = Type::newUInt32();
     type.setIsImaginary(expr.isImaginary());
     return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
                        type);
@@ -3336,10 +3337,10 @@ SecondPass::parseRationalNumber(const Token& expr)
 AptNode*
 SecondPass::parseRealNumber(const Token& expr)
 {
-  if (expr.tokenType() == kReal) {
-    Type type = Type::newReal();
+  if (expr.tokenType() == kFloat) {
+    Type type = Type::newFloat32();
     type.setIsImaginary(expr.isImaginary());
-    return new RealNode(expr.srcpos(), expr.realValue(),
+    return new RealNode(expr.srcpos(), expr.floatValue(),
                         expr.isImaginary(), type);
   }
   else if (expr.isSeq() && expr.count() == 3 &&
@@ -3350,7 +3351,7 @@ SecondPass::parseRealNumber(const Token& expr)
     if (type.isDef())
       type.setIsImaginary(expr[0].isImaginary());
 
-    return new RealNode(expr.srcpos(), expr[0].realValue(),
+    return new RealNode(expr.srcpos(), expr[0].floatValue(),
                         expr[0].isImaginary(), type);
   }
 
@@ -3382,7 +3383,7 @@ SecondPass::parseExpr(const Token& expr)
       return newNodeList(parseIntNumber(expr));
     case kRational:
       return newNodeList(parseRationalNumber(expr));
-    case kReal:
+    case kFloat:
       return newNodeList(parseRealNumber(expr));
     case kChar:
       return newNodeList(new CharNode(expr.srcpos(), expr.charValue()));

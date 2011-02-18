@@ -14,7 +14,7 @@
 <ty:array ind='0'>
 <ty:ref nm='lang|Vector'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:ref>
@@ -24,8 +24,8 @@
 <apply>
 <symbol>lang|allocate*</symbol>
 <args>
-<type  ty='lang|Vector&lt;lang|Int>'/>
-<int ty='lang|Int'>1024</int>
+<type  ty='lang|Vector&lt;lang|Int32>'/>
+<int ty='lang|Int32'>1024</int>
 </args>
 </apply>
 </init>
@@ -39,7 +39,7 @@
 <ty:gen>
 <ty:ref nm='lang|String'>
 </ty:ref>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:ref>
@@ -51,7 +51,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>x</symbol>
-<int ty='lang|Int'>34</int>
+<int ty='lang|Int32'>34</int>
 </args>
 </apply>
 </block>
