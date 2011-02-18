@@ -5,19 +5,19 @@
 <params>
 <param sym='a' type='spec'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
 </params>
 <rettype>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </rettype>
 <body>
 <binary op='*'>
 <symbol>a</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </body>
 </method>

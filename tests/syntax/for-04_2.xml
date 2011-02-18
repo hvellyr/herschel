@@ -24,14 +24,6 @@
 <block>
 <let>
 <vardef sym='__return_0'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
 <init>
 <symbol>eof</symbol>
 </init>
@@ -89,20 +81,12 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
 <let>
 <vardef sym='__return_1'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
 <init>
 <symbol>eof</symbol>
 </init>
@@ -113,7 +97,7 @@
 <binary op='&lt;>'>
 <binary op='mod'>
 <symbol>i</symbol>
-<int ty='lang|Int'>211</int>
+<int ty='lang|Int32'>211</int>
 </binary>
 <symbol>m</symbol>
 </binary>
@@ -151,7 +135,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </binary>
 </assign>
 </block>

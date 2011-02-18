@@ -6,7 +6,7 @@
 <neg>
 <binary op='*'>
 <symbol>a</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </neg>
 </init>
@@ -19,7 +19,7 @@
 <neg>
 <symbol>a</symbol>
 </neg>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </init>
 </vardef>
@@ -30,7 +30,7 @@
 <neg>
 <binary op='*'>
 <symbol>a</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </neg>
 </init>

@@ -11,7 +11,7 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -34,7 +34,7 @@
 <test>
 <binary op='&lt;'>
 <symbol>i</symbol>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </binary>
 </test>
 <body>
@@ -52,7 +52,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </assign>
 </block>
@@ -74,7 +74,7 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -94,7 +94,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>3</int>
+<int ty='lang|Int32'>3</int>
 </binary>
 </assign>
 </block>
@@ -129,14 +129,6 @@
 </let>
 <let>
 <vardef sym='__return_2'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
 <init>
 <str>monday</str>
 </init>
@@ -161,7 +153,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>4</int>
+<int ty='lang|Int32'>4</int>
 </binary>
 </assign>
 </block>

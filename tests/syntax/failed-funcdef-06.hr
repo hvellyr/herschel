@@ -1,5 +1,5 @@
 ;; positional parameters out of order
-def g(x @ Int, y : Real, m = 34, n = 11, o, args ...)
+def g(x @ Int, y : Float, m = 34, n = 11, o, args ...)
   x * y + m * { n m }
   if (a + a) {
     b.c.d

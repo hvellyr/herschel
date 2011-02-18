@@ -46,7 +46,7 @@
 <nested left='#(' right=')'>
 <lit type='int'>1</lit>
 <punct type=','/>
-<lit type='real'>3.141500i</lit>
+<lit type='float'>3.141500i</lit>
 </nested>
 <punct type=','/>
 <nested left='#(' right=')'>

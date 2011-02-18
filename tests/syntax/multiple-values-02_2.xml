@@ -14,7 +14,7 @@
 <apply>
 <symbol>foo</symbol>
 <args>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
 </init>
@@ -26,7 +26,7 @@
 <apply>
 <symbol>foo</symbol>
 <args>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </args>
 </apply>
 </init>
@@ -39,7 +39,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Ordinal'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 </init>
@@ -52,7 +52,7 @@
 <symbol>slice*</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Ordinal'>1</int>
+<int ty='lang|UInt32'>1</int>
 </args>
 </apply>
 </init>

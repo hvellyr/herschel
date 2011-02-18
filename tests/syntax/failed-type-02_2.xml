@@ -3,14 +3,14 @@
 <def>
 <vardef sym='a'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </def>
 <def>
 <vardef sym='b'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </def>

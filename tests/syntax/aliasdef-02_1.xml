@@ -129,7 +129,7 @@
 <seq>
 <id>PairIteratorAccessorFunc</id>
 <nested left='&lt;' right='>'>
-<id>Real</id>
+<id>Float</id>
 </nested>
 </seq>
 </seq>
@@ -139,3 +139,4 @@
 <punct type='...'/>
 </seq>
 </seq>
+

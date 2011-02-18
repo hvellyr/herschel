@@ -5,7 +5,7 @@
 <isa>
 <ty:measure nm='red|Xyz' unit='red|xyz'>
 <ty:isa>
-<ty:ref nm='lang|Real'>
+<ty:ref nm='lang|Float32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>
@@ -15,7 +15,7 @@
 <def>
 <vardef sym='red|xyz'>
 <init>
-<int ty='lang|Int'>1234</int>
+<int ty='lang|Int32'>1234</int>
 </init>
 </vardef>
 </def>
@@ -26,12 +26,12 @@
 <type>
 <ty:measure nm='red|Xyz' unit='red|xyz'>
 <ty:isa>
-<ty:ref nm='lang|Real'>
+<ty:ref nm='lang|Float32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>
 </type>
-<int ty='lang|Int'>12</int>
+<int ty='lang|Int32'>12</int>
 </uvalue>
 </init>
 </vardef>
@@ -41,7 +41,7 @@
 <isa>
 <ty:measure nm='Xyz' unit='xyz'>
 <ty:isa>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>
@@ -55,12 +55,12 @@
 <type>
 <ty:measure nm='red|Xyz' unit='red|xyz'>
 <ty:isa>
-<ty:ref nm='lang|Real'>
+<ty:ref nm='lang|Float32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>
 </type>
-<int ty='lang|Int'>12</int>
+<int ty='lang|Int32'>12</int>
 </uvalue>
 </init>
 </vardef>

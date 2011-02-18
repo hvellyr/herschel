@@ -156,7 +156,7 @@ namespace herschel
     kBool,
     kInt,
     kUInt,
-    kReal,
+    kFloat,
     kRational,
     kKeyword,
 
@@ -301,7 +301,7 @@ namespace herschel
     TokenType rightToken() const;
     bool boolValue() const;
     int intValue() const;
-    double realValue() const;
+    double floatValue() const;
     Rational rationalValue() const;
     String stringValue() const;
     Char charValue() const;
@@ -322,7 +322,7 @@ namespace herschel
     bool isDocString() const;
     bool isBool() const;
     bool isInt() const;
-    bool isReal() const;
+    bool isFloat() const;
     bool isRational() const;
     bool isChar() const;
     bool isKeyArg() const;

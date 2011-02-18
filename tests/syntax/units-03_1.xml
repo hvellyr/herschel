@@ -8,7 +8,7 @@
 <id>px</id>
 </nested>
 <punct type=':'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 <seq>
 <id>def</id>
@@ -18,7 +18,7 @@
 <id>mol</id>
 </nested>
 <punct type=':'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 <seq>
 <id>def</id>
@@ -28,6 +28,6 @@
 <id>kg/m2</id>
 </nested>
 <punct type=':'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 </seq>
