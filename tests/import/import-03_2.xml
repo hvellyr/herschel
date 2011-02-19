@@ -7,7 +7,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>12</int>
+<int ty='lang|Int32'>12</int>
 </init>
 </vardef>
 </def>
