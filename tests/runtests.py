@@ -35,7 +35,14 @@ class TestRunner:
         self.test_run = 0
         self.input_dir = False
         self.last_passid = -1
+        self.column_count = 0
         self.failures = []
+
+
+    def break_cols(self):
+        if self.column_count > 75:
+            sys.stdout.write("\n")
+            self.column_count = 0
 
 
     def report_failure(self, msg):
@@ -43,9 +50,11 @@ class TestRunner:
         if self.verbose:
             print full_msg
         else:
+            self.break_cols()
             if self.last_passid >= 0:
                 sys.stdout.write('\b.')
             sys.stdout.write("E")
+            self.column_count = self.column_count + 1
             self.failures.append(full_msg)
             self.last_passid = -1
 
@@ -55,9 +64,11 @@ class TestRunner:
         if self.verbose:
             print full_msg
         else:
+            self.break_cols()
             if self.last_passid >= 0:
                 sys.stdout.write('\b.')
             sys.stdout.write("i")
+            self.column_count = self.column_count + 1
             self.failures.append(full_msg)
             self.last_passid = -1
 
@@ -66,16 +77,26 @@ class TestRunner:
         if self.verbose:
             print "OK: %s" % msg
         else:
-            np = int(passid)
+            self.break_cols()
             if self.last_passid >= 0:
-                if np <= self.last_passid:
-                    sys.stdout.write("\b")
-                else:
-                    sys.stdout.write("\b.")
-            sys.stdout.write("%d" % np)
+                sys.stdout.write("\b")
+                self.column_count = self.column_count - 1
+            np = int(passid)
+            sys.stdout.write(passid)
+            self.column_count = self.column_count + len(passid)
             sys.stdout.flush()
             #print "%d" % passid,
             self.last_passid = np
+
+
+    def open_report(self):
+        self.last_passid = -1
+
+    def close_report(self):
+        if not self.verbose:
+            self.break_cols()
+            if self.last_passid >= 0:
+                sys.stdout.write("\b.")
 
 
     def run_herschel_on_test(self, test_file, options):
@@ -265,7 +286,9 @@ class TestRunner:
     def run_all_tests(self, test_dir, domain):
         for f in os.listdir(test_dir):
             if f.endswith(".hr"):
+                self.open_report()
                 self.run_test(test_dir, f, domain)
+                self.close_report()
 
         if not self.verbose:
             sys.stdout.write("\b.\n")
