@@ -243,7 +243,24 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
 Token
 TokenEvalContext::evalModulo(const Token& lexpr, const Token& rexpr) const
 {
-  // TODO
+  Token left = evalToken(lexpr);
+  Token right = evalToken(rexpr);
+
+  if (left.isInt()) {
+    if (right.isInt()) {
+      int rvalue = right.intValue();
+
+      if (rvalue == 0)
+        throw DivisionByZeroException();
+
+      int value = left.intValue() % rvalue;
+      if ( (value > 0 && rvalue < 0) ||
+           (value < 0 && rvalue > 0) )
+        value = value + rvalue;
+      return Token(left.srcpos(), kInt, value);
+    }
+  }
+
   throw BadExpressionException(fromInt(__LINE__));
 }
 
@@ -255,15 +272,13 @@ TokenEvalContext::evalRemainder(const Token& lexpr, const Token& rexpr) const
   Token right = evalToken(rexpr);
 
   if (left.isInt()) {
-    int value = left.intValue();
-    if (value == 0)
-      throw DivisionByZeroException();
+    if (right.isInt()) {
+      if (right.intValue() == 0)
+        throw DivisionByZeroException();
 
-    if (right.isInt())
       return Token(left.srcpos(),
-                   kInt, value % right.intValue());
-    else
-      throw BadExpressionException(fromInt(__LINE__));
+                   kInt, left.intValue() % right.intValue());
+    }
   }
 
   throw BadExpressionException(fromInt(__LINE__));
@@ -791,7 +806,7 @@ SUITE(TokenEvalContext)
 
   TEST_FIXTURE(TokenEvalContextFixture, Modulo)
   {
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, -340, kRem, kInt, 60));
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, -340, kMod, kInt, 60));
     CHECK(t.isInt() && t.intValue() == 20);
   }
 
