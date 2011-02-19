@@ -93,7 +93,7 @@
 <rettype>
 <ty:type nm='Seq' inst='t'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -106,18 +106,18 @@
 <ty:array ind='0'>
 <ty:type nm='Seq' inst='t'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
 </ty:array>
 </type>
 <init>
-<apply  ty='Seq&lt;lang|Int>[]'>
+<apply  ty='Seq&lt;lang|Int32>[]'>
 <symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]' refer='generic'>lang|allocate*</symbol>
 <args>
-<type  ty='lang|Class&lt;Seq&lt;lang|Int>>'/>
-<int ty='lang|Ordinal'>1024</int>
+<type  ty='lang|Class&lt;Seq&lt;lang|Int32>>'/>
+<int ty='lang|UInt32'>1024</int>
 </args>
 </apply>
 </init>
@@ -131,7 +131,7 @@
 <ty:gen>
 <ty:ref nm='lang|String'>
 </ty:ref>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -139,11 +139,11 @@
 </type>
 </vardef>
 </let>
-<apply  ty='Seq&lt;lang|Int>'>
+<apply  ty='Seq&lt;lang|Int32>'>
 <symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
 <args>
-<symbol  ty='Seq&lt;lang|Int>[]' refer='local'>x</symbol>
-<int ty='lang|Int'>34</int>
+<symbol  ty='Seq&lt;lang|Int32>[]' refer='local'>x</symbol>
+<int ty='lang|Int32'>34</int>
 </args>
 </apply>
 </block>
@@ -160,10 +160,32 @@
 </ty:type>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|UInt32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
@@ -178,24 +200,9 @@
 </ty:type>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Ordinal'>
-<ty:isa>
-<ty:seq>
-<ty:ref nm='lang|Int'>
-<ty:const k='geq'>0</ty:const>
-</ty:ref>
-<ty:ref nm='lang|BoundedBelow'>
-</ty:ref>
-<ty:ref nm='lang|Unsigned'>
-</ty:ref>
-</ty:seq>
-</ty:isa>
-</ty:type>
-</ty:used-type>
-<ty:used-type>
 <ty:type nm='Seq' inst='t'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -204,7 +211,7 @@
 <ty:array ind='0'>
 <ty:type nm='Seq' inst='t'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -215,7 +222,7 @@
 <ty:gen>
 <ty:type nm='Seq' inst='t'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>

@@ -44,7 +44,7 @@
 <symbol  refer='generic'>lang|allocate*</symbol>
 <args>
 <symbol>abc|Person</symbol>
-<int ty='lang|Ordinal'>12</int>
+<int ty='lang|UInt32'>12</int>
 </args>
 </apply>
 </init>

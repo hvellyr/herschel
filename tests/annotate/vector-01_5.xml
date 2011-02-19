@@ -5,20 +5,26 @@
 <type>
 <ty:ref nm='lang|Vector'>
 <ty:gen>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:gen>
 </ty:ref>
 </type>
 <init>
-<vector  ty='lang|Vector&lt;lang|Int>'>
-<int ty='lang|Int'>1</int>
-<int ty='lang|Int'>2</int>
-<int ty='lang|Int'>3</int>
+<vector  ty='lang|Vector&lt;lang|Int32>'>
+<int ty='lang|Int32'>1</int>
+<int ty='lang|Int32'>2</int>
+<int ty='lang|Int32'>3</int>
 </vector>
 </init>
 </vardef>
@@ -60,7 +66,7 @@
 <vector  ty='lang|Vector&lt;lang|Any>'>
 <str>abc</str>
 <keyw>xyz</keyw>
-<true ty='lang|Bool'/>
+<true  ty='lang|Bool'/>
 </vector>
 </init>
 </vardef>
@@ -83,18 +89,24 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Bool'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:ref nm='lang|Object'>
 </ty:ref>
 </ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Bool'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
@@ -109,10 +121,16 @@
 <ty:used-type>
 <ty:ref nm='lang|Vector'>
 <ty:gen>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:gen>

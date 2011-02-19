@@ -6,7 +6,7 @@
 <param sym='x' type='pos'>
 <type>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
@@ -66,10 +66,16 @@
 <vardef sym='y'>
 <type>
 <ty:seq>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|String'>
@@ -92,9 +98,9 @@
 <symbol  ty='lambda((&apos;Z, lang|Char, lang|Bool)):&apos;Z' refer='function'>sep</symbol>
 <args>
 <apply  ty='(lang|String, lang|Char, lang|Bool)'>
-<symbol  ty='lambda((lang|Int, &apos;T, lang|Bool)):(&apos;T, lang|Char, lang|Bool)' refer='function'>foo</symbol>
+<symbol  ty='lambda((lang|Int32, &apos;T, lang|Bool)):(&apos;T, lang|Char, lang|Bool)' refer='function'>foo</symbol>
 <args>
-<symbol  ty='(lang|Int, lang|String, lang|Bool)' refer='local'>y</symbol>
+<symbol  ty='(lang|Int32, lang|String, lang|Bool)' refer='local'>y</symbol>
 </args>
 </apply>
 </args>
@@ -114,10 +120,30 @@
 </ty:used-type>
 <ty:used-type>
 <ty:seq>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|String'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:ref nm='lang|Object'>
 </ty:ref>
+</ty:isa>
+</ty:type>
+<ty:ref nm='lang|Char'>
+</ty:ref>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</ty:seq>
+</ty:used-type>
+<ty:used-type>
+<ty:seq>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|String'>
@@ -132,20 +158,6 @@
 </ty:ref>
 </ty:isa>
 </ty:type>
-</ty:seq>
-</ty:used-type>
-<ty:used-type>
-<ty:seq>
-<ty:type nm='lang|String'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-<ty:ref nm='lang|Char'>
-</ty:ref>
-<ty:ref nm='lang|Bool'>
-</ty:ref>
 </ty:seq>
 </ty:used-type>
 <ty:used-type>
@@ -173,7 +185,7 @@
 <ty:prms>
 <ty:prm is='pos'>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 <ty:ref gen='t' nm='T'>
 </ty:ref>

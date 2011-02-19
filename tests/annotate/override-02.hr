@@ -4,7 +4,7 @@ def type Truck : Car
 def type Bike : Vehicle
 
 
-def generic foo(a @ Int, b : Car) : Car ...
+def generic foo(a @ Integer, b : Car) : Car ...
 
 ;; methods' return values must be covariant to their generic functions',
 ;; non-specialized parameter types must be contravariant.

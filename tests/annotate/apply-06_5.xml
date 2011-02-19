@@ -27,10 +27,16 @@
 <func sym='bar'>
 <rettype>
 <ty:array ind='0'>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:array>
@@ -41,20 +47,26 @@
 <vardef sym='y'>
 <type>
 <ty:array ind='0'>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:array>
 </type>
 </vardef>
 </let>
-<apply  ty='lang|Int[]'>
+<apply  ty='lang|Int32[]'>
 <symbol  ty='lambda(&apos;T[]):&apos;T[]' refer='function'>foo</symbol>
 <args>
-<symbol  ty='lang|Int[]' refer='local'>y</symbol>
+<symbol  ty='lang|Int32[]' refer='local'>y</symbol>
 </args>
 </apply>
 </block>
@@ -70,10 +82,16 @@
 </ty:used-type>
 <ty:used-type>
 <ty:array ind='0'>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:array>

@@ -66,7 +66,7 @@
 <init>
 <binary op='**'>
 <symbol  refer='param'>y</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </init>
 </vardef>
