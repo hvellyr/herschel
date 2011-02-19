@@ -49,7 +49,7 @@
 <params>
 <param sym='a' type='spec'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Integer'>
 <ty:isa>
 <ty:ref nm='lang|Number'>
 </ty:ref>
@@ -86,7 +86,7 @@
 <ty:type nm='lang|UInt32'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>

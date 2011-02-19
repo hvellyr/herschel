@@ -5,10 +5,16 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -29,10 +35,16 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -46,20 +58,20 @@
 <if  ty='lang|Any'>
 <test>
 <binary op='>' ty='lang|Bool'>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
-<int ty='lang|Int'>0</int>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <then>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(lang|Int):lang|String' refer='function'>to-string</symbol>
+<symbol  ty='lambda(lang|Int32):lang|String' refer='function'>to-string</symbol>
 <args>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
 </args>
 </apply>
 </then>
 <else>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
 </else>
 </if>
 </body>
@@ -70,10 +82,16 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -92,20 +110,20 @@
 <if  ty='lang|Any'>
 <test>
 <binary op='>' ty='lang|Bool'>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
-<int ty='lang|Int'>0</int>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <then>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(lang|Int):lang|String' refer='function'>to-string</symbol>
+<symbol  ty='lambda(lang|Int32):lang|String' refer='function'>to-string</symbol>
 <args>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
 </args>
 </apply>
 </then>
 <else>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
 </else>
 </if>
 <keyw>nothing</keyw>
@@ -119,16 +137,22 @@
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:used-type>
-<ty:used-type>
 <ty:ref nm='lang|Bool'>
 </ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|String'>
@@ -142,10 +166,16 @@
 <ty:fun nm=''>
 <ty:prms>
 <ty:prm is='pos'>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:prm>

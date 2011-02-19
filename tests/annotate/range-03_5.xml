@@ -5,24 +5,24 @@
 <type>
 <ty:type nm='lang|Range'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
 </type>
 <init>
-<apply  ty='lang|Range&lt;lang|Int>'>
+<apply  ty='lang|Range&lt;lang|Int32>'>
 <symbol  ty='lambda(lang|Range&lt;&apos;T>, &apos;T, &apos;T, &apos;T):lang|Range&lt;&apos;T>' refer='function'>lang|Range|init</symbol>
 <args>
-<apply  ty='lang|Range&lt;lang|Int>'>
+<apply  ty='lang|Range&lt;lang|Int32>'>
 <symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T' refer='generic'>lang|allocate</symbol>
 <args>
-<type  ty='lang|Class&lt;lang|Range&lt;lang|Int>>'/>
+<type  ty='lang|Class&lt;lang|Range&lt;lang|Int32>>'/>
 </args>
 </apply>
-<int ty='lang|Int'>5</int>
-<int ty='lang|Int'>6</int>
-<int ty='lang|Int'>7</int>
+<int ty='lang|Int32'>5</int>
+<int ty='lang|Int32'>6</int>
+<int ty='lang|Int32'>7</int>
 </args>
 </apply>
 </init>
@@ -30,17 +30,23 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|Range'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -68,7 +74,7 @@
 <ty:gen>
 <ty:type nm='lang|Range'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>

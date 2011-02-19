@@ -54,10 +54,16 @@
 <params>
 <param sym='z' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -72,10 +78,10 @@
 </ty:type>
 </rettype>
 <body>
-<apply  ty='lang|Int'>
+<apply  ty='lang|Int32'>
 <symbol  refer='function'>lang|return</symbol>
 <args>
-<symbol  ty='lang|Int' refer='param'>z</symbol>
+<symbol  ty='lang|Int32' refer='param'>z</symbol>
 </args>
 </apply>
 </body>
@@ -143,10 +149,16 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>

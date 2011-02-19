@@ -25,7 +25,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -33,16 +33,22 @@
 <let>
 <vardef sym='__end_0'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
 <init>
-<apply  ty='lang|Int'>
-<symbol  ty='lambda(&apos;T[]):lang|Int' refer='generic'>lang|num-items</symbol>
+<apply  ty='lang|Int32'>
+<symbol  ty='lambda(&apos;T[]):lang|Int32' refer='generic'>lang|num-items</symbol>
 <args>
 <symbol  ty='&apos;T[]' refer='param'>a</symbol>
 </args>
@@ -53,15 +59,21 @@
 <let>
 <vardef sym='i'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -84,11 +96,11 @@
 </init>
 </vardef>
 </let>
-<while  ty='lang|Int'>
+<while  ty='lang|Int32'>
 <test>
 <binary op='&lt;=' ty='lang|Bool'>
-<symbol  ty='lang|Int' refer='local'>i</symbol>
-<symbol  ty='lang|Int' refer='local'>__end_0</symbol>
+<symbol  ty='lang|Int32' refer='local'>i</symbol>
+<symbol  ty='lang|Int32' refer='local'>__end_0</symbol>
 </binary>
 </test>
 <body>
@@ -103,17 +115,17 @@
 <symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
 <args>
 <symbol  ty='&apos;T[]' refer='param'>a</symbol>
-<symbol  ty='lang|Int' refer='local'>i</symbol>
+<symbol  ty='lang|Int32' refer='local'>i</symbol>
 </args>
 </apply>
 </binary>
 </assign>
 </assign>
-<assign  ty='lang|Int'>
-<symbol  ty='lang|Int' refer='local'>i</symbol>
-<binary op='+' ty='lang|Int'>
-<symbol  ty='lang|Int' refer='local'>i</symbol>
-<int ty='lang|Int'>1</int>
+<assign  ty='lang|Int32'>
+<symbol  ty='lang|Int32' refer='local'>i</symbol>
+<binary op='+' ty='lang|Int32'>
+<symbol  ty='lang|Int32' refer='local'>i</symbol>
+<int ty='lang|Int32'>1</int>
 </binary>
 </assign>
 </block>
@@ -138,16 +150,22 @@
 </ty:array>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:used-type>
-<ty:used-type>
 <ty:ref nm='lang|Bool'>
 </ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|Unspecified'>
@@ -168,10 +186,16 @@
 </ty:prm>
 </ty:prms>
 <ty:ret>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:ret>

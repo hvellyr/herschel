@@ -58,7 +58,7 @@
 <rettype>
 <ty:type nm='Abc' inst='t'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
@@ -70,14 +70,14 @@
 <type>
 <ty:type nm='Abc' inst='t'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
 </type>
 </vardef>
 </let>
-<symbol  ty='Abc&lt;lang|Int>' refer='local'>v</symbol>
+<symbol  ty='Abc&lt;lang|Int32>' refer='local'>v</symbol>
 </block>
 </body>
 </func>
@@ -94,7 +94,7 @@
 <ty:used-type>
 <ty:type nm='Abc' inst='t'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
