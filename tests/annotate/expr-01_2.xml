@@ -1,0 +1,421 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='f0'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<init>
+<binary op='+'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<init>
+<binary op='-'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<init>
+<binary op='*'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<init>
+<binary op='/'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<init>
+<binary op='**'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<init>
+<binary op='mod'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f1'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<init>
+<binary op='=='>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<init>
+<binary op='&lt;>'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<init>
+<binary op='&lt;'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<init>
+<binary op='>'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<init>
+<binary op='>='>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t5'>
+<init>
+<binary op='&lt;='>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t6'>
+<init>
+<binary op='&lt;=>'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t7'>
+<init>
+<binary op='in'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f2'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<init>
+<binary op='%'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<init>
+<binary op='++'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f3'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<init>
+<binary op='AND'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<init>
+<binary op='OR'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<init>
+<binary op='XOR'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t3'>
+<init>
+<binary op='&lt;&lt;'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t4'>
+<init>
+<binary op='>>'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f4'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<init>
+<binary op='isa'>
+<symbol>a</symbol>
+<symbol>Int</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<init>
+<binary op='isa'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f5'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t0'>
+<init>
+<binary op='and'>
+<binary op='=='>
+<symbol>a</symbol>
+<true/>
+</binary>
+<binary op='=='>
+<symbol>b</symbol>
+<true/>
+</binary>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t1'>
+<init>
+<binary op='or'>
+<binary op='=='>
+<symbol>a</symbol>
+<true/>
+</binary>
+<binary op='=='>
+<symbol>b</symbol>
+<true/>
+</binary>
+</binary>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

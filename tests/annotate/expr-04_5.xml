@@ -8,7 +8,7 @@
 <ty:type nm='lang|Int16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -24,7 +24,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -42,7 +42,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -62,7 +62,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -88,7 +88,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -114,7 +114,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -140,7 +140,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -166,7 +166,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -192,7 +192,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -224,7 +224,7 @@
 <ty:type nm='lang|UInt16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -242,7 +242,7 @@
 <ty:type nm='lang|Int64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -297,7 +297,7 @@
 <symbol  ty='lang|Int64' refer='param'>b</symbol>
 </base>
 <as>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Integer'>
 <ty:isa>
 <ty:ref nm='lang|Number'>
 </ty:ref>
@@ -307,13 +307,14 @@
 </cast>
 </base>
 <as>
-<ty:type nm='lang|Ordinal'>
+<ty:type nm='lang|UInt32'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
-<ty:const k='geq'>0</ty:const>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
-<ty:ref nm='lang|BoundedBelow'>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
 </ty:ref>
 <ty:ref nm='lang|Unsigned'>
 </ty:ref>
@@ -327,13 +328,31 @@
 <symbol  ty='lang|Int64' refer='param'>b</symbol>
 <cast>
 <base>
+<cast>
+<base>
 <symbol  ty='lang|UInt16' refer='param'>a</symbol>
 </base>
 <as>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Integer'>
 <ty:isa>
 <ty:ref nm='lang|Number'>
 </ty:ref>
+</ty:isa>
+</ty:type>
+</as>
+</cast>
+</base>
+<as>
+<ty:type nm='lang|Int64'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </as>
@@ -356,7 +375,7 @@
 <ty:type nm='lang|Int16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -370,7 +389,7 @@
 <ty:type nm='lang|Int32'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -384,7 +403,7 @@
 <ty:type nm='lang|Int64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -398,7 +417,7 @@
 <ty:type nm='lang|UInt16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -414,7 +433,7 @@
 <ty:type nm='lang|UInt32'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -430,7 +449,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>

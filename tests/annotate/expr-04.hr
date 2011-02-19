@@ -13,6 +13,6 @@ def f5(a : UInt16, b : Int64)
        and
     (b == 5 : Int32)
   let t1 =
-    (a == (b as Int) as Ordinal)
+    (a == (b as Integer) as Ordinal)
        or
-    (b == a as Int)
+    (b == (a as Integer) as Int64)

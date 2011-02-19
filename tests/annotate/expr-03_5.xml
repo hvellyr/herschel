@@ -8,7 +8,7 @@
 <ty:type nm='lang|UInt16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -26,7 +26,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -142,7 +142,7 @@
 <ty:type nm='lang|UInt16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -160,7 +160,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -267,11 +267,11 @@
 <let>
 <vardef sym='t6'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<binary op='&lt;=>' ty='lang|Int'>
+<binary op='&lt;=>' ty='lang|Int32'>
 <symbol  ty='lang|UInt16' refer='param'>a</symbol>
 <symbol  ty='lang|UInt64' refer='param'>b</symbol>
 </binary>
@@ -304,7 +304,7 @@
 <ty:type nm='lang|UInt16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -322,7 +322,7 @@
 <ty:type nm='lang|UInt64'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -388,18 +388,18 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Bool'>
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
-<ty:ref nm='lang|Bool'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|UInt16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -415,7 +415,7 @@
 <ty:type nm='lang|UInt32'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
