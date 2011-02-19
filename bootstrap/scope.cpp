@@ -416,6 +416,28 @@ Scope::lookupUnit(const String& name, bool showAmbiguousSymDef) const
 
 
 Type
+Scope::normalizeType(const Type& type)
+{
+  if (type.isRef()) {
+    Type referedType = lookupType(type.typeName(), true);
+    if (referedType.isDef()) {
+      if (referedType.isAlias())
+        return normalizeType(referedType, type);
+
+      // we normally don't want to have full types here (these would lead to
+      // unnecessary data expansion and possible issues with recursive types).
+      // Rewrite the typeref to have the fully qualified type name
+      return Type::newTypeRef(referedType.typeName(), type);
+    }
+  }
+  else if (type.isAlias())
+    return type.aliasReplaces();
+
+  return type;
+}
+
+
+Type
 Scope::normalizeType(const Type& type, const Type& refType) const
 {
   Type baseType = type;

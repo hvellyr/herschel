@@ -297,31 +297,12 @@ SecondPass::parseTypeVector(TypeVector* generics, const Token& expr,
 
 
 Type
-SecondPass::normalizeType(const Type& type)
-{
-  if (type.isRef()) {
-    Type referedType = fScope->lookupType(type.typeName(), true);
-    if (referedType.isDef()) {
-      if (referedType.isAlias())
-        return fScope->normalizeType(referedType, type);
-
-      // we normally don't want to have full types here (these would lead to
-      // unnecessary data expansion and possible issues with recursive types).
-      // Rewrite the typeref to have the fully qualified type name
-      return Type::newTypeRef(referedType.typeName(), type);
-    }
-  }
-  return type;
-}
-
-
-Type
 SecondPass::parseTypeSpec(const Token& expr, bool forceOpenType)
 {
   Type ty = parseTypeSpecImpl(expr, forceOpenType);
   if (forceOpenType)
     return ty;
-  return normalizeType(ty);
+  return fScope->normalizeType(ty);
 }
 
 

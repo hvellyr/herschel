@@ -152,9 +152,11 @@ Typifier::typify(SymbolNode* node)
     }
 
     Type type0 = node->scope()->lookupType(node->name(), true);
-    Type type1 = degeneralizeType(node->srcpos(), type0, node->generics());
-    if (type1.isDef())
-      node->setType(Type::newClassOf(type1));
+    Type type1 = node->scope()->normalizeType(type0);
+
+    Type type2 = degeneralizeType(node->srcpos(), type1, node->generics());
+    if (type2.isDef())
+      node->setType(Type::newClassOf(type2));
   }
 }
 
@@ -169,7 +171,8 @@ Typifier::typify(ArrayTypeNode* node)
     Type type = ( symnd != NULL
                   ? symnd->type()
                   : node->typeNode()->type() );
-    node->setType(Type::newClassOf(Type::newArray(type, 0, true)));
+    Type type1 = node->scope()->normalizeType(type);
+    node->setType(Type::newClassOf(Type::newArray(type1, 0, true)));
   }
 }
 
@@ -179,7 +182,8 @@ Typifier::typify(TypeNode* node)
 {
   if (fPhase == kTypify) {
     assert(node->type().isDef());
-    node->setType(Type::newClassOf(node->type()));
+    Type type1 = node->scope()->normalizeType(node->type());
+    node->setType(Type::newClassOf(type1));
   }
 }
 
