@@ -5,10 +5,16 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -25,10 +31,16 @@
 </param>
 </params>
 <rettype>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </rettype>
@@ -42,9 +54,9 @@
 </type>
 </vardef>
 </let>
-<assign  ty='lang|Int'>
+<assign  ty='lang|Int32'>
 <symbol  ty='lang|Any' refer='local'>x</symbol>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
 </assign>
 </block>
 </body>
@@ -56,10 +68,16 @@
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
