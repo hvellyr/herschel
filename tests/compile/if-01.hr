@@ -1,0 +1,8 @@
+def foo(c : Int, d : Int)
+  if (c < d)
+    c
+  else
+    d
+
+def app|main()
+  foo(5, 10) + foo(7, 2)
