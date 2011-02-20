@@ -5,41 +5,73 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:type nm='lang|Real'>
+<ty:type nm='lang|Float32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
 </param>
 </params>
 <rettype>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </rettype>
 <body>
 <block>
 <let>
 <vardef sym='t0'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='+' ty='lang|Real'>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<binary op='+' ty='lang|Float32'>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -47,13 +79,23 @@
 <let>
 <vardef sym='t1'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='-' ty='lang|Real'>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<binary op='-' ty='lang|Float32'>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -61,13 +103,23 @@
 <let>
 <vardef sym='t2'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='*' ty='lang|Real'>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<binary op='*' ty='lang|Float32'>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -75,13 +127,23 @@
 <let>
 <vardef sym='t3'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='/' ty='lang|Real'>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<binary op='/' ty='lang|Float32'>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -89,13 +151,23 @@
 <let>
 <vardef sym='t4'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='**' ty='lang|Real'>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<binary op='**' ty='lang|Float32'>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -103,13 +175,23 @@
 <let>
 <vardef sym='t5'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='mod' ty='lang|Real'>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<binary op='mod' ty='lang|Float32'>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -123,41 +205,73 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:type nm='lang|Real'>
+<ty:type nm='lang|Float32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
 </param>
 </params>
 <rettype>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </rettype>
 <body>
 <block>
 <let>
 <vardef sym='t0'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='+' ty='lang|Real'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
-<symbol  ty='lang|Int' refer='param'>b</symbol>
+<binary op='+' ty='lang|Float32'>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -165,13 +279,23 @@
 <let>
 <vardef sym='t1'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='-' ty='lang|Real'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
-<symbol  ty='lang|Int' refer='param'>b</symbol>
+<binary op='-' ty='lang|Float32'>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -179,13 +303,23 @@
 <let>
 <vardef sym='t2'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='*' ty='lang|Real'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
-<symbol  ty='lang|Int' refer='param'>b</symbol>
+<binary op='*' ty='lang|Float32'>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -193,13 +327,23 @@
 <let>
 <vardef sym='t3'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='/' ty='lang|Real'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
-<symbol  ty='lang|Int' refer='param'>b</symbol>
+<binary op='/' ty='lang|Float32'>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -207,13 +351,23 @@
 <let>
 <vardef sym='t4'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='**' ty='lang|Real'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
-<symbol  ty='lang|Int' refer='param'>b</symbol>
+<binary op='**' ty='lang|Float32'>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -221,13 +375,23 @@
 <let>
 <vardef sym='t5'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='mod' ty='lang|Real'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
-<symbol  ty='lang|Int' refer='param'>b</symbol>
+<binary op='mod' ty='lang|Float32'>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -251,31 +415,57 @@
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:type nm='lang|Real'>
+<ty:type nm='lang|Float32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
 </param>
 </params>
 <rettype>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </rettype>
 <body>
 <block>
 <let>
 <vardef sym='t0'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='+' ty='lang|Real'>
+<binary op='+' ty='lang|Float32'>
 <symbol  ty='lang|Rational' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -283,13 +473,23 @@
 <let>
 <vardef sym='t1'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='-' ty='lang|Real'>
+<binary op='-' ty='lang|Float32'>
 <symbol  ty='lang|Rational' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -297,13 +497,23 @@
 <let>
 <vardef sym='t2'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='*' ty='lang|Real'>
+<binary op='*' ty='lang|Float32'>
 <symbol  ty='lang|Rational' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -311,13 +521,23 @@
 <let>
 <vardef sym='t3'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='/' ty='lang|Real'>
+<binary op='/' ty='lang|Float32'>
 <symbol  ty='lang|Rational' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -325,13 +545,23 @@
 <let>
 <vardef sym='t4'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='**' ty='lang|Real'>
+<binary op='**' ty='lang|Float32'>
 <symbol  ty='lang|Rational' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -339,13 +569,23 @@
 <let>
 <vardef sym='t5'>
 <type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
 <ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 <init>
-<binary op='mod' ty='lang|Real'>
+<binary op='mod' ty='lang|Float32'>
 <symbol  ty='lang|Rational' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -369,10 +609,16 @@
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:type nm='lang|Real'>
+<ty:type nm='lang|Float32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -393,7 +639,7 @@
 <init>
 <binary op='+' ty='lang|Complex'>
 <symbol  ty='lang|Complex' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -407,7 +653,7 @@
 <init>
 <binary op='-' ty='lang|Complex'>
 <symbol  ty='lang|Complex' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -421,7 +667,7 @@
 <init>
 <binary op='*' ty='lang|Complex'>
 <symbol  ty='lang|Complex' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -435,7 +681,7 @@
 <init>
 <binary op='/' ty='lang|Complex'>
 <symbol  ty='lang|Complex' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -449,7 +695,7 @@
 <init>
 <binary op='**' ty='lang|Complex'>
 <symbol  ty='lang|Complex' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -463,7 +709,7 @@
 <init>
 <binary op='mod' ty='lang|Complex'>
 <symbol  ty='lang|Complex' refer='param'>a</symbol>
-<symbol  ty='lang|Real' refer='param'>b</symbol>
+<symbol  ty='lang|Float32' refer='param'>b</symbol>
 </binary>
 </init>
 </vardef>
@@ -477,10 +723,16 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:type nm='lang|Real'>
+<ty:type nm='lang|Float32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -510,7 +762,7 @@
 </type>
 <init>
 <binary op='+' ty='lang|Complex'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
 <symbol  ty='lang|Complex' refer='param'>b</symbol>
 </binary>
 </init>
@@ -524,7 +776,7 @@
 </type>
 <init>
 <binary op='-' ty='lang|Complex'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
 <symbol  ty='lang|Complex' refer='param'>b</symbol>
 </binary>
 </init>
@@ -538,7 +790,7 @@
 </type>
 <init>
 <binary op='*' ty='lang|Complex'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
 <symbol  ty='lang|Complex' refer='param'>b</symbol>
 </binary>
 </init>
@@ -552,7 +804,7 @@
 </type>
 <init>
 <binary op='/' ty='lang|Complex'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
 <symbol  ty='lang|Complex' refer='param'>b</symbol>
 </binary>
 </init>
@@ -566,7 +818,7 @@
 </type>
 <init>
 <binary op='**' ty='lang|Complex'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
 <symbol  ty='lang|Complex' refer='param'>b</symbol>
 </binary>
 </init>
@@ -580,7 +832,7 @@
 </type>
 <init>
 <binary op='mod' ty='lang|Complex'>
-<symbol  ty='lang|Real' refer='param'>a</symbol>
+<symbol  ty='lang|Float32' refer='param'>a</symbol>
 <symbol  ty='lang|Complex' refer='param'>b</symbol>
 </binary>
 </init>
@@ -1098,16 +1350,18 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
-</ty:used-type>
-<ty:used-type>
-<ty:ref nm='lang|Real'>
-</ty:ref>
 </ty:used-type>
 <ty:used-type>
 <ty:ref nm='lang|Complex'>

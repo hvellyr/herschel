@@ -66,7 +66,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -85,7 +85,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -116,7 +116,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -208,7 +208,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -227,7 +227,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -258,7 +258,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -293,7 +293,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 </params>
@@ -315,7 +315,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 </params>
@@ -333,11 +333,11 @@
 <params>
 <param sym='a' type='key' key='x'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 </params>
@@ -355,13 +355,13 @@
 <params>
 <param sym='a' type='key' key='x'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
 <on key='sync'>
 <body>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </body>
 </on>
 </init>
@@ -385,7 +385,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 <param sym='b' type='key' key='b'>
@@ -425,7 +425,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 <param sym='b' type='key' key='y'>
@@ -461,11 +461,11 @@
 <params>
 <param sym='a' type='key' key='x'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 <param sym='b' type='key' key='y'>
@@ -501,11 +501,11 @@
 <params>
 <param sym='a' type='key' key='x'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 <param sym='b' type='key' key='b'>
@@ -541,11 +541,11 @@
 <params>
 <param sym='a' type='key' key='x'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 <param sym='b' type='key' key='b'>
@@ -581,11 +581,11 @@
 <params>
 <param sym='a' type='key' key='a'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 <param sym='b' type='key' key='y'>
@@ -674,7 +674,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 </params>
@@ -717,7 +717,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 </params>
@@ -735,7 +735,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -760,7 +760,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 </params>
@@ -853,7 +853,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -884,7 +884,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -900,7 +900,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 <param sym='d' type='key' key='d'>
@@ -933,7 +933,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -949,7 +949,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 <param sym='d' type='key' key='y'>
@@ -982,7 +982,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -994,11 +994,11 @@
 </param>
 <param sym='c' type='key' key='x'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 <param sym='d' type='key' key='y'>
@@ -1052,17 +1052,17 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
 <param sym='c' type='key' key='x'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 <param sym='r' type='rest'>

@@ -20,7 +20,7 @@
 </param>
 </params>
 <rettype>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </rettype>
 </generic>
@@ -63,7 +63,7 @@
 </ty:prm>
 </ty:prms>
 <ty:ret>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:ret>
 </ty:fun>

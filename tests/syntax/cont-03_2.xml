@@ -5,12 +5,12 @@
 <init>
 <dict>
 <binary op='->'>
-<int ty='lang|Int'>1</int>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>1</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 <binary op='->'>
-<int ty='lang|Int'>3</int>
-<int ty='lang|Int'>4</int>
+<int ty='lang|Int32'>3</int>
+<int ty='lang|Int32'>4</int>
 </binary>
 </dict>
 </init>
@@ -46,12 +46,12 @@
 <vector>
 <dict>
 <binary op='->'>
-<int ty='lang|Int'>1</int>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>1</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </dict>
 <vector>
-<int ty='lang|Int'>3</int>
+<int ty='lang|Int32'>3</int>
 </vector>
 <vector>
 </vector>

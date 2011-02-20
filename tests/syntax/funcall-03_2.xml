@@ -12,7 +12,7 @@
 <symbol>f</symbol>
 </args>
 </apply>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
 </init>

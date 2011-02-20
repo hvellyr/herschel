@@ -3,11 +3,11 @@
 <def>
 <vardef sym='a0'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </def>
@@ -25,11 +25,11 @@
 <def>
 <vardef sym='a2'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>3</int>
+<int ty='lang|Int32'>3</int>
 </init>
 </vardef>
 </def>

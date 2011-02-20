@@ -152,9 +152,11 @@ Typifier::typify(SymbolNode* node)
     }
 
     Type type0 = node->scope()->lookupType(node->name(), true);
-    Type type1 = degeneralizeType(node->srcpos(), type0, node->generics());
-    if (type1.isDef())
-      node->setType(Type::newClassOf(type1));
+    Type type1 = node->scope()->normalizeType(type0);
+
+    Type type2 = degeneralizeType(node->srcpos(), type1, node->generics());
+    if (type2.isDef())
+      node->setType(Type::newClassOf(type2));
   }
 }
 
@@ -169,7 +171,8 @@ Typifier::typify(ArrayTypeNode* node)
     Type type = ( symnd != NULL
                   ? symnd->type()
                   : node->typeNode()->type() );
-    node->setType(Type::newClassOf(Type::newArray(type, 0, true)));
+    Type type1 = node->scope()->normalizeType(type);
+    node->setType(Type::newClassOf(Type::newArray(type1, 0, true)));
   }
 }
 
@@ -179,7 +182,8 @@ Typifier::typify(TypeNode* node)
 {
   if (fPhase == kTypify) {
     assert(node->type().isDef());
-    node->setType(Type::newClassOf(node->type()));
+    Type type1 = node->scope()->normalizeType(node->type());
+    node->setType(Type::newClassOf(type1));
   }
 }
 
@@ -925,13 +929,6 @@ Typifier::typify(BinaryNode* node)
         return;
       }
 
-      if (leftty.isReal() || rightty.isReal()) {
-        node->setType(Type::newTypeRef(Names::kRealTypeName, true));
-        annotateTypeConv(node->left(), node->type());
-        annotateTypeConv(node->right(), node->type());
-        return;
-      }
-
       if (leftty.isAnyFloat()) {
         if (rightty.isAnyFloat())
           node->setType(maxFloatType(leftty, rightty));
@@ -953,19 +950,6 @@ Typifier::typify(BinaryNode* node)
 
       if (leftty.isRational() || rightty.isRational()) {
         node->setType(Type::newTypeRef(Names::kRationalTypeName, true));
-        annotateTypeConv(node->left(), node->type());
-        annotateTypeConv(node->right(), node->type());
-        return;
-      }
-
-      if (leftty.isOrdinal() || rightty.isOrdinal()) {
-        node->setType(Type::newTypeRef(Names::kOrdinalTypeName, true));
-        annotateTypeConv(node->left(), node->type());
-        annotateTypeConv(node->right(), node->type());
-        return;
-      }
-      if (leftty.isInt() || rightty.isInt()) {
-        node->setType(Type::newTypeRef(Names::kIntTypeName, true));
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
         return;
@@ -1002,11 +986,9 @@ Typifier::typify(BinaryNode* node)
       if ( leftty.isAny() || rightty.isAny() ||
            (leftty.isAnySignedInt() && rightty.isAnySignedInt()) ||
            (leftty.isAnyUInt() && rightty.isAnyUInt()) ||
-           (leftty.isAnyReal() && rightty.isAnyReal()) ||
+           (leftty.isAnyFloat() && rightty.isAnyFloat()) ||
            (leftty.isRational() && rightty.isRational()) ||
            (leftty.isComplex() && rightty.isComplex()) ||
-           (leftty.isOrdinal() && rightty.isOrdinal()) ||
-           (leftty.isInt() && rightty.isInt()) ||
            (leftty.isNumber() && rightty.isNumber()) ||
            isSameType(leftty, rightty, node->scope(), node->srcpos()) )
       {
@@ -1024,7 +1006,7 @@ Typifier::typify(BinaryNode* node)
 
     case kOpCompare:
       // TODO: check that left and right type are comparable
-      node->setType(Type::newInt());
+      node->setType(Type::newInt32());
       annotateTypeConv(node->right(), node->type());
       break;
 
@@ -1532,7 +1514,7 @@ void
 Typifier::typify(RealNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, node->type(), Names::kRealTypeName, true);
+    typifyNodeType(node, node->type(), Names::kFloat32TypeName, true);
   }
 }
 
@@ -1541,7 +1523,7 @@ void
 Typifier::typify(IntNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, node->type(), Names::kIntTypeName, true);
+    typifyNodeType(node, node->type(), Names::kInt32TypeName, true);
   }
 }
 

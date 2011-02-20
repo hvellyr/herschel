@@ -20,7 +20,7 @@
 <punct type=':'/>
 <seq>
 <punct type='^'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 </seq>
 <seq>

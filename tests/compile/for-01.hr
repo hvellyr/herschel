@@ -1,11 +1,19 @@
 def foo()
-  let k : Int32 = 0 : Int32
-  for (i : Int32 = 0 : Int32 then i + 1 : Int32 while i < 100 : Int32)
-    k = k + 1 : Int32
+  let k = 0
+  for (i = 0 then i + 1 while i < 100)
+    k = k + 1
   else
-    0 : Int32
+    0
+  k
+
+def foo2()
+  let k = 0
+  for (i in 0 .. 100 - 1)
+    k = k + 1
+  else
+    0
   k
 
 def app|main()
-  foo()
+  foo() + foo2()
 

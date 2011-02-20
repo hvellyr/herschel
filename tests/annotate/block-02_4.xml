@@ -11,7 +11,7 @@
 <let>
 <vardef sym='x'>
 <init>
-<int ty='lang|Int'>42</int>
+<int ty='lang|Int32'>42</int>
 </init>
 </vardef>
 </let>
@@ -19,7 +19,7 @@
 <let>
 <vardef sym='x'>
 <init>
-<int ty='lang|Int'>5</int>
+<int ty='lang|Int32'>5</int>
 </init>
 </vardef>
 </let>
@@ -40,12 +40,12 @@
 <let>
 <vardef sym='x'>
 <init>
-<int ty='lang|Int'>42</int>
+<int ty='lang|Int32'>42</int>
 </init>
 </vardef>
 </let>
 </block>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </binary>
 </body>
 </func>
@@ -61,7 +61,7 @@
 <let>
 <vardef sym='x'>
 <init>
-<int ty='lang|Int'>42</int>
+<int ty='lang|Int32'>42</int>
 </init>
 </vardef>
 </let>
@@ -70,12 +70,12 @@
 <let>
 <vardef sym='x'>
 <init>
-<int ty='lang|Int'>5</int>
+<int ty='lang|Int32'>5</int>
 </init>
 </vardef>
 </let>
 </block>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </binary>
 </block>
 </body>

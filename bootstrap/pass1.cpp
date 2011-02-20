@@ -2012,7 +2012,7 @@ FirstPass::parseAtomicExpr()
   switch (fToken.tokenType()) {
   case kInt:
   case kUInt:
-  case kReal:
+  case kFloat:
   case kRational:
     return parseExplicitTypedNumber(parseUnitNumber(fToken));
 

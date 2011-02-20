@@ -21,7 +21,7 @@
 <init>
 <binary op='-'>
 <symbol>k</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </binary>
 </init>
 </vardef>
@@ -29,20 +29,12 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
 <let>
 <vardef sym='__return_1'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
 <init>
 <false/>
 </init>
@@ -70,7 +62,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </binary>
 </assign>
 </block>
@@ -102,7 +94,7 @@
 <init>
 <binary op='-'>
 <symbol>k</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </binary>
 </init>
 </vardef>
@@ -110,20 +102,12 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
 <let>
 <vardef sym='__return_3'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
 <init>
 <false/>
 </init>
@@ -151,7 +135,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </assign>
 </block>
@@ -183,7 +167,7 @@
 <init>
 <binary op='-'>
 <symbol>k</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </binary>
 </init>
 </vardef>
@@ -191,7 +175,7 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -232,7 +216,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </assign>
 </block>
@@ -262,7 +246,7 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </init>
 </vardef>
 </let>
@@ -285,7 +269,7 @@
 <test>
 <binary op='>='>
 <symbol>i</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <body>
@@ -303,7 +287,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>-1</int>
+<int ty='lang|Int32'>-1</int>
 </binary>
 </assign>
 </block>
@@ -333,7 +317,7 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </init>
 </vardef>
 </let>
@@ -356,7 +340,7 @@
 <test>
 <binary op='>='>
 <symbol>i</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <body>
@@ -374,7 +358,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>-2</int>
+<int ty='lang|Int32'>-2</int>
 </binary>
 </assign>
 </block>
@@ -411,7 +395,7 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </init>
 </vardef>
 </let>
@@ -422,14 +406,14 @@
 <test>
 <binary op='&lt;'>
 <symbol>i</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <then>
 <symbol>i</symbol>
 </then>
 <else>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </else>
 </if>
 </init>
@@ -442,11 +426,11 @@
 <test>
 <binary op='&lt;'>
 <symbol>i</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <then>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </then>
 <else>
 <symbol>i</symbol>
@@ -462,7 +446,7 @@
 <test>
 <binary op='&lt;'>
 <symbol>__step_8</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <then>

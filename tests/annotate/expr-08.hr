@@ -1,5 +1,5 @@
 ;; binary operations are possible with untyped expressions (for rapid prototyping)
-def f0(a : Int, b : Real)
+def f0(a : Int, b : Float)
   let t0 = a + b
   let t1 = a - b
   let t2 = a * b
@@ -7,7 +7,7 @@ def f0(a : Int, b : Real)
   let t4 = a ** b
   let t5 = a mod b
 
-def f1(a : Real, b : Int)
+def f1(a : Float, b : Int)
   let t0 = a + b
   let t1 = a - b
   let t2 = a * b
@@ -15,7 +15,7 @@ def f1(a : Real, b : Int)
   let t4 = a ** b
   let t5 = a mod b
 
-def f2(a : Rational, b : Real)
+def f2(a : Rational, b : Float)
   let t0 = a + b
   let t1 = a - b
   let t2 = a * b
@@ -23,7 +23,7 @@ def f2(a : Rational, b : Real)
   let t4 = a ** b
   let t5 = a mod b
 
-def f3(a : Complex, b : Real)
+def f3(a : Complex, b : Float)
   let t0 = a + b
   let t1 = a - b
   let t2 = a * b
@@ -31,7 +31,7 @@ def f3(a : Complex, b : Real)
   let t4 = a ** b
   let t5 = a mod b
 
-def f4(a : Real, b : Complex)
+def f4(a : Float, b : Complex)
   let t0 = a + b
   let t1 = a - b
   let t2 = a * b

@@ -3,7 +3,7 @@
 <def>
 <vardef sym='b' type='const'>
 <init>
-<int ty='lang|Int'>42</int>
+<int ty='lang|Int32'>42</int>
 </init>
 </vardef>
 </def>
@@ -25,7 +25,7 @@
 </ty:ref>
 </type>
 <init>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </init>
 </param>
 </params>
@@ -69,7 +69,7 @@
 </assign>
 <assign>
 <symbol>c</symbol>
-<int ty='lang|Int'>11</int>
+<int ty='lang|Int32'>11</int>
 </assign>
 </array>
 </body>
@@ -95,9 +95,9 @@
 <vardef sym='__value_0'>
 <init>
 <array>
-<int ty='lang|Int'>0</int>
-<int ty='lang|Int'>0</int>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>0</int>
 </array>
 </init>
 </vardef>
@@ -109,7 +109,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Ordinal'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 </init>
@@ -122,7 +122,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Ordinal'>1</int>
+<int ty='lang|UInt32'>1</int>
 </args>
 </apply>
 </init>
@@ -135,7 +135,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Ordinal'>2</int>
+<int ty='lang|UInt32'>2</int>
 </args>
 </apply>
 </init>
@@ -145,7 +145,7 @@
 <let>
 <vardef sym='a'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -192,7 +192,7 @@
 <symbol>a</symbol>
 <binary op='+'>
 <symbol>a</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </range>
 </args>
@@ -206,7 +206,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_1</symbol>
-<int ty='lang|Ordinal'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 </assign>
@@ -216,7 +216,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_1</symbol>
-<int ty='lang|Ordinal'>1</int>
+<int ty='lang|UInt32'>1</int>
 </args>
 </apply>
 </assign>
@@ -226,7 +226,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_1</symbol>
-<int ty='lang|Ordinal'>2</int>
+<int ty='lang|UInt32'>2</int>
 </args>
 </apply>
 </assign>
@@ -236,7 +236,7 @@
 <symbol>a</symbol>
 <binary op='+'>
 <symbol>a</symbol>
-<int ty='lang|Int'>3</int>
+<int ty='lang|Int32'>3</int>
 </binary>
 </assign>
 </block>
@@ -258,9 +258,9 @@
 <vardef sym='__value_2'>
 <init>
 <array>
-<int ty='lang|Int'>255</int>
-<int ty='lang|Int'>0</int>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>255</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>0</int>
 </array>
 </init>
 </vardef>
@@ -271,7 +271,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_2</symbol>
-<int ty='lang|Ordinal'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 </assign>
@@ -281,7 +281,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_2</symbol>
-<int ty='lang|Ordinal'>1</int>
+<int ty='lang|UInt32'>1</int>
 </args>
 </apply>
 </assign>
@@ -291,7 +291,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_2</symbol>
-<int ty='lang|Ordinal'>2</int>
+<int ty='lang|UInt32'>2</int>
 </args>
 </apply>
 </assign>
@@ -308,9 +308,9 @@
 <vardef sym='__value_3'>
 <init>
 <array>
-<int ty='lang|Int'>0</int>
-<int ty='lang|Int'>255</int>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>255</int>
+<int ty='lang|Int32'>0</int>
 </array>
 </init>
 </vardef>
@@ -321,7 +321,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_3</symbol>
-<int ty='lang|Ordinal'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 </assign>
@@ -331,7 +331,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_3</symbol>
-<int ty='lang|Ordinal'>1</int>
+<int ty='lang|UInt32'>1</int>
 </args>
 </apply>
 </assign>
@@ -341,7 +341,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_3</symbol>
-<int ty='lang|Ordinal'>2</int>
+<int ty='lang|UInt32'>2</int>
 </args>
 </apply>
 </assign>
@@ -358,9 +358,9 @@
 <vardef sym='__value_4'>
 <init>
 <array>
-<int ty='lang|Int'>0</int>
-<int ty='lang|Int'>0</int>
-<int ty='lang|Int'>255</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>255</int>
 </array>
 </init>
 </vardef>
@@ -371,7 +371,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_4</symbol>
-<int ty='lang|Ordinal'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 </assign>
@@ -381,7 +381,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_4</symbol>
-<int ty='lang|Ordinal'>1</int>
+<int ty='lang|UInt32'>1</int>
 </args>
 </apply>
 </assign>
@@ -391,7 +391,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_4</symbol>
-<int ty='lang|Ordinal'>2</int>
+<int ty='lang|UInt32'>2</int>
 </args>
 </apply>
 </assign>

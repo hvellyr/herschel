@@ -3,7 +3,7 @@
 <def>
 <vardef sym='a1|a2'>
 <type>
-<ty:ref nm='MidiControllerX'>
+<ty:ref nm='lang|Any'>
 </ty:ref>
 </type>
 <init>

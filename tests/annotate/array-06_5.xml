@@ -4,19 +4,25 @@
 <vardef sym='ints'>
 <type>
 <ty:array ind='3'>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:array>
 </type>
 <init>
-<array  ty='lang|Int[]'>
-<int ty='lang|Int'>1</int>
-<int ty='lang|Int'>2</int>
-<int ty='lang|Int'>3</int>
+<array  ty='lang|Int32[]'>
+<int ty='lang|Int32'>1</int>
+<int ty='lang|Int32'>2</int>
+<int ty='lang|Int32'>3</int>
 </array>
 </init>
 </vardef>
@@ -53,7 +59,7 @@
 <array  ty='lang|Any[]'>
 <keyw>abc</keyw>
 <str>abc</str>
-<true ty='lang|Bool'/>
+<true  ty='lang|Bool'/>
 </array>
 </init>
 </vardef>
@@ -74,14 +80,6 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:used-type>
-<ty:used-type>
 <ty:type nm='lang|Bool'>
 <ty:isa>
 <ty:ref nm='lang|Object'>
@@ -96,11 +94,31 @@
 </ty:array>
 </ty:used-type>
 <ty:used-type>
-<ty:array ind='3'>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:array ind='3'>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:array>

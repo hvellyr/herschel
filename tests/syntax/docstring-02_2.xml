@@ -43,7 +43,7 @@
 <init>
 <binary op='*'>
 <symbol>x</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </init>
 </slot>
@@ -268,7 +268,7 @@
 <keyw>b</keyw>
 <binary op='*'>
 <symbol>x</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </args>
 </apply>

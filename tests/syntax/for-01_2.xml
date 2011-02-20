@@ -196,14 +196,6 @@
 </let>
 <let>
 <vardef sym='__return_5'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
 <init>
 <false/>
 </init>

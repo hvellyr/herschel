@@ -766,8 +766,8 @@ namespace herschel
             for (size_t i = 0; i < fGenerics.size(); ++i) {
               if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
                                               scope, srcpos)) {
-                fprintf(stderr, "<1>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
-                fprintf(stderr, "<1>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
+                // fprintf(stderr, "<1>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
+                // fprintf(stderr, "<1>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
                 return false;
               }
             }
@@ -798,7 +798,7 @@ namespace herschel
         // otherwise not first class entities.
         if (name() == Names::kSliceableTypeName || name() == Names::kSliceableXTypeName) {
           if (fGenerics.size() == 2) {
-            localCtx.registerType(fGenerics[0].typeName(), Type::newInt(true));
+            localCtx.registerType(fGenerics[0].typeName(), Type::newInt32());
             localCtx.registerType(fGenerics[1].typeName(), right0.arrayBaseType());
 
             return true;
@@ -1039,25 +1039,16 @@ Type::newAny(bool isValue)
 
 
 Type
-Type::newInt(bool isValue)
+Type::newInt32(bool isValue)
 {
-  return newTypeRef(Names::kIntTypeName, isValue);
+  return newTypeRef(Names::kInt32TypeName, isValue);
 }
 
 
 Type
-Type::newOrdinal(bool isValue)
+Type::newUInt32(bool isValue)
 {
-  return newTypeRef(Names::kOrdinalTypeName, isValue);
-}
-
-
-Type
-Type::newImaginaryInt(bool isValue)
-{
-  Type ty = newTypeRef(Names::kIntTypeName, isValue);
-  ty.setIsImaginary(true);
-  return ty;
+  return newTypeRef(Names::kUInt32TypeName, isValue);
 }
 
 
@@ -1069,18 +1060,9 @@ Type::newRational(bool isValue)
 
 
 Type
-Type::newReal(bool isValue)
+Type::newFloat32(bool isValue)
 {
-  return newTypeRef(Names::kRealTypeName, isValue);
-}
-
-
-Type
-Type::newImaginaryReal(bool isValue)
-{
-  Type ty = newTypeRef(Names::kRealTypeName, isValue);
-  ty.setIsImaginary(true);
-  return ty;
+  return newTypeRef(Names::kFloat32TypeName, isValue);
 }
 
 
@@ -1237,11 +1219,9 @@ Type::isBaseType() const
             nm == Names::kFloat32TypeName ||
             nm == Names::kFloat64TypeName ||
             nm == Names::kFloat128TypeName ||
-            nm == Names::kIntTypeName ||
             nm == Names::kKeywordTypeName ||
             nm == Names::kNilTypeName ||
             nm == Names::kRationalTypeName ||
-            nm == Names::kRealTypeName ||
             nm == Names::kStringTypeName ||
             nm == Names::kInt8TypeName ||
             nm == Names::kUInt8TypeName ||
@@ -1298,46 +1278,26 @@ Type::newBaseTypeEnumMaker() const
 {
   if (fKind == kType_Ref) {
     String nm = typeName();
-    if (nm == Names::kBoolTypeName)
-      return new BoolTypeEnumMaker;
-    else if (nm == Names::kCharTypeName)
-      return new CharTypeEnumMaker;
-    else if (nm == Names::kFloat32TypeName)
-      return new Float32TypeEnumMaker;
-    else if (nm == Names::kFloat64TypeName)
-      return new Float64TypeEnumMaker;
-    else if (nm == Names::kFloat128TypeName)
-      return new Float128TypeEnumMaker;
-    else if (nm == Names::kEofTypeName)
-      return new EofTypeEnumMaker;
-    else if (nm == Names::kIntTypeName)
-      return new IntTypeEnumMaker;
-    else if (nm == Names::kKeywordTypeName)
-      return new KeywordTypeEnumMaker;
-    else if (nm == Names::kNilTypeName)
-      return new NilTypeEnumMaker;
-    else if (nm == Names::kRationalTypeName)
-      return new RationalTypeEnumMaker;
-    else if (nm == Names::kRealTypeName)
-      return new RealTypeEnumMaker;
-    else if (nm == Names::kStringTypeName)
-      return new StringTypeEnumMaker;
-    else if (nm == Names::kInt8TypeName)
-      return new Int8TypeEnumMaker;
-    else if (nm == Names::kUInt8TypeName)
-      return new UInt8TypeEnumMaker;
-    else if (nm == Names::kInt16TypeName)
-      return new Int16TypeEnumMaker;
-    else if (nm == Names::kUInt16TypeName)
-      return new UInt16TypeEnumMaker;
-    else if (nm == Names::kUInt32TypeName)
-      return new Int32TypeEnumMaker;
-    else if (nm == Names::kUInt32TypeName)
-      return new UInt32TypeEnumMaker;
-    else if (nm == Names::kInt64TypeName)
-      return new Int64TypeEnumMaker;
-    else if (nm == Names::kUInt64TypeName)
-      return new UInt64TypeEnumMaker;
+    if      (nm == Names::kBoolTypeName)     return new BoolTypeEnumMaker;
+    else if (nm == Names::kCharTypeName)     return new CharTypeEnumMaker;
+    else if (nm == Names::kFloat32TypeName)  return new Float32TypeEnumMaker;
+    else if (nm == Names::kFloat64TypeName)  return new Float64TypeEnumMaker;
+    else if (nm == Names::kFloat128TypeName) return new Float128TypeEnumMaker;
+    else if (nm == Names::kEofTypeName)      return new EofTypeEnumMaker;
+    else if (nm == Names::kKeywordTypeName)  return new KeywordTypeEnumMaker;
+    else if (nm == Names::kNilTypeName)      return new NilTypeEnumMaker;
+    else if (nm == Names::kRationalTypeName) return new RationalTypeEnumMaker;
+    else if (nm == Names::kStringTypeName)   return new StringTypeEnumMaker;
+
+    else if (nm == Names::kInt8TypeName)     return new Int8TypeEnumMaker;
+    else if (nm == Names::kInt16TypeName)    return new Int16TypeEnumMaker;
+    else if (nm == Names::kInt32TypeName)    return new Int32TypeEnumMaker;
+    else if (nm == Names::kInt64TypeName)    return new Int64TypeEnumMaker;
+
+    else if (nm == Names::kUInt8TypeName)    return new UInt8TypeEnumMaker;
+    else if (nm == Names::kUInt16TypeName)   return new UInt16TypeEnumMaker;
+    else if (nm == Names::kUInt32TypeName)   return new UInt32TypeEnumMaker;
+    else if (nm == Names::kUInt64TypeName)   return new UInt64TypeEnumMaker;
   }
 
   return NULL;
@@ -1357,8 +1317,6 @@ Type::isSigned() const
   return ( isBuiltinType(Names::kNumberTypeName) ||
            isBuiltinType(Names::kComplexTypeName) ||
            isBuiltinType(Names::kRationalTypeName) ||
-           isBuiltinType(Names::kRealTypeName) ||
-           isBuiltinType(Names::kIntTypeName) ||
            isBuiltinType(Names::kInt8TypeName) ||
            isBuiltinType(Names::kInt16TypeName) ||
            isBuiltinType(Names::kInt32TypeName) ||
@@ -1375,9 +1333,6 @@ Type::isAnyNumber() const
   return ( isBuiltinType(Names::kNumberTypeName) ||
            isBuiltinType(Names::kComplexTypeName) ||
            isBuiltinType(Names::kRationalTypeName) ||
-           isBuiltinType(Names::kRealTypeName) ||
-           isBuiltinType(Names::kIntTypeName) ||
-           isBuiltinType(Names::kOrdinalTypeName) ||
            isBuiltinType(Names::kInt8TypeName) ||
            isBuiltinType(Names::kUInt8TypeName) ||
            isBuiltinType(Names::kInt16TypeName) ||
@@ -1393,9 +1348,9 @@ Type::isAnyNumber() const
 
 
 bool
-Type::isInt() const
+Type::isInt32() const
 {
-  return isBuiltinType(Names::kIntTypeName);
+  return isBuiltinType(Names::kInt32TypeName);
 }
 
 
@@ -1414,9 +1369,9 @@ Type::isKeyword() const
 
 
 bool
-Type::isReal() const
+Type::isFloat32() const
 {
-  return isBuiltinType(Names::kRealTypeName);
+  return isBuiltinType(Names::kFloat32TypeName);
 }
 
 
@@ -1442,9 +1397,9 @@ Type::isRational() const
 
 
 bool
-Type::isOrdinal() const
+Type::isUInt32() const
 {
-  return isBuiltinType(Names::kOrdinalTypeName);
+  return isBuiltinType(Names::kUInt32TypeName);
 }
 
 
@@ -1472,16 +1427,6 @@ Type::isAnyFloat() const
 
 
 bool
-Type::isAnyReal() const
-{
-  return ( isBuiltinType(Names::kRealTypeName) ||
-           isBuiltinType(Names::kFloat32TypeName) ||
-           isBuiltinType(Names::kFloat64TypeName) ||
-           isBuiltinType(Names::kFloat128TypeName) );
-}
-
-
-bool
 Type::isAnyInt() const
 {
   return ( isAnySignedInt() || isAnyUInt() );
@@ -1491,8 +1436,7 @@ Type::isAnyInt() const
 bool
 Type::isAnySignedInt() const
 {
-  return ( isBuiltinType(Names::kIntTypeName) ||
-           isBuiltinType(Names::kInt8TypeName) ||
+  return ( isBuiltinType(Names::kInt8TypeName) ||
            isBuiltinType(Names::kInt16TypeName) ||
            isBuiltinType(Names::kInt32TypeName) ||
            isBuiltinType(Names::kInt64TypeName) );
@@ -1502,8 +1446,7 @@ Type::isAnySignedInt() const
 bool
 Type::isAnyUInt() const
 {
-  return ( isBuiltinType(Names::kOrdinalTypeName) ||
-           isBuiltinType(Names::kUInt8TypeName) ||
+  return ( isBuiltinType(Names::kUInt8TypeName) ||
            isBuiltinType(Names::kUInt16TypeName) ||
            isBuiltinType(Names::kUInt32TypeName) ||
            isBuiltinType(Names::kUInt64TypeName) );
@@ -1836,6 +1779,22 @@ Type::constraints() const
 
   static TypeConstVector dummy;
   return dummy;
+}
+
+
+Type
+Type::setConstraints(const TypeConstVector& newConstraints) const
+{
+  if (fKind == kType_Ref) {
+    Type clonedTy = Type::newTypeRef(typeName(),
+                                     generics(),
+                                     newConstraints,
+                                     isValueType());
+    clonedTy.setIsImaginary(fIsImaginary);
+    return clonedTy;
+  }
+
+  return *this;
 }
 
 
@@ -3297,7 +3256,7 @@ namespace herschel
       if (right.isType() && (right.typeName() == Names::kSliceableTypeName ||
                              right.typeName() == Names::kSliceableXTypeName) &&
           right.generics().size() == 2 &&
-          isSameType(right.generics()[0], Type::newInt(true), scope,
+          isSameType(right.generics()[0], Type::newInt32(), scope,
                      srcpos, reportErrors) &&
           isSameType(left.arrayBaseType(), right.generics()[1],
                      scope, srcpos, reportErrors))
@@ -3528,15 +3487,6 @@ namespace herschel
   Type
   maxIntType(const Type& leftty, const Type& rightty)
   {
-    if (leftty.isBuiltinType(Names::kOrdinalTypeName))
-      return leftty;
-    else if (rightty.isBuiltinType(Names::kOrdinalTypeName))
-      return rightty;
-    else if (leftty.isBuiltinType(Names::kIntTypeName))
-      return leftty;
-    else if (rightty.isBuiltinType(Names::kIntTypeName))
-      return rightty;
-
     int righttysize = intTypeBitsize(rightty);
     if (intTypeBitsize(leftty) < righttysize) {
       if (leftty.isAnyUInt()) {
@@ -4081,21 +4031,21 @@ SUITE(Type_Covariance)
     CHECK(herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), true),
                                                0, true),
                                 Type::newType(Names::kSliceableTypeName,
-                                              newTypeVector(Type::newInt(true),
+                                              newTypeVector(Type::newInt32(),
                                                             Type::newTypeRef("Ultra")),
                                               Type()),
                                 scope, SrcPos(), false));
     CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Special"), true),
                                                 0, true),
                                  Type::newType(Names::kSliceableTypeName,
-                                               newTypeVector(Type::newInt(true),
+                                               newTypeVector(Type::newInt32(),
                                                              Type::newTypeRef("Ultra")),
                                                Type()),
                                  scope, SrcPos(), false));
     CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), true),
                                                 0, true),
                                  Type::newType(Names::kSliceableTypeName,
-                                               newTypeVector(Type::newInt(true),
+                                               newTypeVector(Type::newInt32(),
                                                              Type::newTypeRef("Special")),
                                                Type()),
                                  scope, SrcPos(), false));
@@ -4151,9 +4101,9 @@ SUITE(TypeConstraint)
   {
     SrcPos sp;
     TypeConstraint t0 = TypeConstraint::newType(kConstOp_isa,
-                                                Type::newInt());
+                                                Type::newInt32());
     CHECK_EQUAL(t0.constOp(), kConstOp_isa);
-    CHECK_EQUAL(t0.typeConstraint(), Type::newInt());
+    CHECK_EQUAL(t0.typeConstraint(), Type::newInt32());
   }
 }
 
@@ -4164,8 +4114,8 @@ SUITE(FunctionParameter)
 {
   TEST(posParamCtor)
   {
-    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt());
-    CHECK(p0.type().isInt());
+    FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt32());
+    CHECK(p0.type().isInt32());
     CHECK(!p0.isSpecialized());
     CHECK(p0.key().isEmpty());
     CHECK_EQUAL(p0.kind(), FunctionParameter::kParamPos);
@@ -4173,8 +4123,8 @@ SUITE(FunctionParameter)
 
   TEST(specParamCtor)
   {
-    FunctionParameter p0 = FunctionParameter::newSpecParam(Type::newInt());
-    CHECK(p0.type().isInt());
+    FunctionParameter p0 = FunctionParameter::newSpecParam(Type::newInt32());
+    CHECK(p0.type().isInt32());
     CHECK(p0.isSpecialized());
     CHECK(p0.key().isEmpty());
     CHECK_EQUAL(p0.kind(), FunctionParameter::kParamPos);
@@ -4183,8 +4133,8 @@ SUITE(FunctionParameter)
   TEST(namedParamCtor)
   {
     FunctionParameter p0 = FunctionParameter::newNamedParam(String("abc"),
-                                                            Type::newInt());
-    CHECK(p0.type().isInt());
+                                                            Type::newInt32());
+    CHECK(p0.type().isInt32());
     CHECK(!p0.isSpecialized());
     CHECK_EQUAL(p0.key(), String("abc"));
     CHECK_EQUAL(p0.kind(), FunctionParameter::kParamNamed);
@@ -4192,8 +4142,8 @@ SUITE(FunctionParameter)
 
   TEST(restParamCtor)
   {
-    FunctionParameter p0 = FunctionParameter::newRestParam(Type::newInt());
-    CHECK(p0.type().isInt());
+    FunctionParameter p0 = FunctionParameter::newRestParam(Type::newInt32());
+    CHECK(p0.type().isInt32());
     CHECK(!p0.isSpecialized());
     CHECK(p0.key().isEmpty());
     CHECK_EQUAL(p0.kind(), FunctionParameter::kParamRest);
@@ -4205,34 +4155,34 @@ SUITE(FunctionParameter)
 
 TEST(FunctionSignature)
 {
-  FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt());
+  FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt32());
 
   FunctionParamVector params1;
   params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
-  params1.push_back(FunctionParameter::newPosParam(Type::newInt()));
-  params1.push_back(FunctionParameter::newNamedParam(String("xyz"), Type::newReal()));
+  params1.push_back(FunctionParameter::newPosParam(Type::newInt32()));
+  params1.push_back(FunctionParameter::newNamedParam(String("xyz"), Type::newFloat32()));
   params1.push_back(FunctionParameter::newRestParam(Type::newAny()));
 
-  FunctionSignature fs1 = FunctionSignature(true, String("man"), Type::newInt(),
+  FunctionSignature fs1 = FunctionSignature(true, String("man"), Type::newInt32(),
                                             params1);
 
   CHECK(!fs0.isGeneric());
   CHECK_EQUAL(fs0.methodName(), String("abc"));
-  CHECK_EQUAL(fs0.returnType(), Type::newInt());
+  CHECK_EQUAL(fs0.returnType(), Type::newInt32());
   CHECK(fs0.parameters().empty());
 
   CHECK(fs1.isGeneric());
   CHECK_EQUAL(fs1.methodName(), String("man"));
-  CHECK_EQUAL(fs1.returnType(), Type::newInt());
+  CHECK_EQUAL(fs1.returnType(), Type::newInt32());
   CHECK_EQUAL(fs1.parameters().size(), (size_t)4);
   CHECK(fs1.parameters()[0].type().isString());
   CHECK_EQUAL(fs1.parameters()[0].kind(), FunctionParameter::kParamPos);
   CHECK(fs1.parameters()[0].isSpecialized());
 
-  CHECK(fs1.parameters()[1].type().isInt());
+  CHECK(fs1.parameters()[1].type().isInt32());
   CHECK_EQUAL(fs1.parameters()[1].kind(), FunctionParameter::kParamPos);
 
-  CHECK(fs1.parameters()[2].type().isReal());
+  CHECK(fs1.parameters()[2].type().isFloat32());
   CHECK_EQUAL(fs1.parameters()[2].kind(), FunctionParameter::kParamNamed);
 
   CHECK(fs1.parameters()[3].type().isAny());
@@ -4242,7 +4192,7 @@ TEST(FunctionSignature)
 
 TEST(FunctionSignIsOpen)
 {
-  FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt());
+  FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt32());
   CHECK(!fs0.isOpen());
 
   FunctionParamVector params1;

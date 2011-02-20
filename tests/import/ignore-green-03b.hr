@@ -2,4 +2,4 @@ module mno ("mno")
 
 export public (MyNumber)
 
-def alias MyNumber = Real
+def alias MyNumber = Float
