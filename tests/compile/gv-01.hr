@@ -8,7 +8,7 @@ extern ("C")
 
 def foo(c)
   putchar(c)
-
+  c
 
 def o = 6fh
 def const nl = 10
@@ -19,5 +19,5 @@ def app|main()
   foo(111)
   foo(o)
   foo(nl)
-
+  0
 
