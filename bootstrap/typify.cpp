@@ -994,6 +994,7 @@ Typifier::typify(BinaryNode* node)
       {
         // any is always ok.
         node->setType(Type::newBool());
+        annotateTypeConv(node->left(), leftty);
         annotateTypeConv(node->right(), leftty);
         return;
       }
@@ -1007,12 +1008,14 @@ Typifier::typify(BinaryNode* node)
     case kOpCompare:
       // TODO: check that left and right type are comparable
       node->setType(Type::newInt32());
-      annotateTypeConv(node->right(), node->type());
+      annotateTypeConv(node->left(), leftty);
+      annotateTypeConv(node->right(), leftty);
       break;
 
     case kOpIsa:
       if (rightty.isAny() || rightty.isClassOf()) {
         node->setType(Type::newBool());
+        annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
         return;
       }
@@ -1027,6 +1030,7 @@ Typifier::typify(BinaryNode* node)
       if (leftty.isString() || leftty.isAny()) {
         if (rightty.isString() || rightty.isChar() || rightty.isAny()) {
           node->setType(leftty);
+          annotateTypeConv(node->left(), leftty);
           annotateTypeConv(node->right(), leftty);
           return;
         }
@@ -1042,6 +1046,7 @@ Typifier::typify(BinaryNode* node)
       if (leftty.isString() || leftty.isAny()) {
         // accept everything on the right hand side
         node->setType(leftty);
+        annotateTypeConv(node->left(), leftty);
         annotateTypeConv(node->right(), leftty);
         return;
       }
@@ -1064,6 +1069,7 @@ Typifier::typify(BinaryNode* node)
     case kOpLogicalOr:
       if (leftty.isBool() && rightty.isBool()) {
         node->setType(Type::newBool());
+        annotateTypeConv(node->left(), leftty);
         annotateTypeConv(node->right(), leftty);
         return;
       }
@@ -1078,6 +1084,7 @@ Typifier::typify(BinaryNode* node)
       if ((leftty.isAnyUInt() || leftty.isAny()) &&
           (rightty.isAnyUInt() || rightty.isAny()) ) {
         node->setType(leftty);
+        annotateTypeConv(node->left(), leftty);
         annotateTypeConv(node->right(), leftty);
       }
       else {
@@ -1092,6 +1099,7 @@ Typifier::typify(BinaryNode* node)
       if (leftty.isAnyUInt() || leftty.isAny()) {
         if (rightty.isAnyInt() || rightty.isAny()) {
           node->setType(leftty);
+          annotateTypeConv(node->left(), leftty);
           annotateTypeConv(node->right(), leftty);
         }
         else {
