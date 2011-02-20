@@ -56,7 +56,7 @@
 <args>
 <str>%d
 </str>
-<int ty='lang|Int'>4711</int>
+<int ty='lang|Int32'>4711</int>
 </args>
 </apply>
 </body>

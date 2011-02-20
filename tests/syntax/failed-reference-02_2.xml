@@ -17,7 +17,7 @@
 <isa>
 <ty:measure nm='Ixwick' unit='iw'>
 <ty:isa>
-<ty:ref nm='lang|Real'>
+<ty:ref nm='lang|Float32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>

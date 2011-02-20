@@ -5,14 +5,14 @@
 <params>
 <param sym='v' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
 </params>
 <rettype>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 <ty:ref nm='lang|Char'>
 </ty:ref>
@@ -43,7 +43,7 @@
 <apply>
 <symbol>foo</symbol>
 <args>
-<int ty='lang|Int'>256</int>
+<int ty='lang|Int32'>256</int>
 </args>
 </apply>
 </init>
@@ -56,7 +56,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Ordinal'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 </init>
@@ -69,7 +69,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Ordinal'>1</int>
+<int ty='lang|UInt32'>1</int>
 </args>
 </apply>
 </init>
@@ -82,7 +82,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_0</symbol>
-<int ty='lang|Ordinal'>2</int>
+<int ty='lang|UInt32'>2</int>
 </args>
 </apply>
 </init>
@@ -99,7 +99,7 @@
 <param sym='val' type='pos'>
 <type>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 <ty:ref nm='lang|Char'>
 </ty:ref>
@@ -122,7 +122,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>val</symbol>
-<int ty='lang|Ordinal'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 </init>
@@ -135,7 +135,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>val</symbol>
-<int ty='lang|Ordinal'>1</int>
+<int ty='lang|UInt32'>1</int>
 </args>
 </apply>
 </init>
@@ -148,7 +148,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>val</symbol>
-<int ty='lang|Ordinal'>2</int>
+<int ty='lang|UInt32'>2</int>
 </args>
 </apply>
 </init>
@@ -184,7 +184,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>val</symbol>
-<int ty='lang|Ordinal'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 </init>
@@ -197,7 +197,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>val</symbol>
-<int ty='lang|Ordinal'>1</int>
+<int ty='lang|UInt32'>1</int>
 </args>
 </apply>
 </init>
@@ -210,7 +210,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>val</symbol>
-<int ty='lang|Ordinal'>2</int>
+<int ty='lang|UInt32'>2</int>
 </args>
 </apply>
 </init>
@@ -247,8 +247,8 @@
 <args>
 <symbol>val</symbol>
 <range>
-<int ty='lang|Int'>0</int>
-<int ty='lang|Int'>3</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>3</int>
 </range>
 </args>
 </apply>
@@ -262,7 +262,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_1</symbol>
-<int ty='lang|Ordinal'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 </init>
@@ -275,7 +275,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_1</symbol>
-<int ty='lang|Ordinal'>1</int>
+<int ty='lang|UInt32'>1</int>
 </args>
 </apply>
 </init>
@@ -288,7 +288,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>__value_1</symbol>
-<int ty='lang|Ordinal'>2</int>
+<int ty='lang|UInt32'>2</int>
 </args>
 </apply>
 </init>

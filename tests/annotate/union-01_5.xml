@@ -10,10 +10,16 @@
 </ty:ref>
 </ty:isa>
 </ty:type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:ref nm='lang|Any'>
@@ -37,7 +43,7 @@
 </rettype>
 <body>
 <assign  ty='lang|String'>
-<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' refer='global' acc='shared'>x</symbol>
+<symbol  ty='&amp;(lang|String, lang|Int32, lang|Any)' refer='global' acc='shared'>x</symbol>
 <str>hello world</str>
 </assign>
 </body>
@@ -46,17 +52,23 @@
 <def>
 <func sym='goo'>
 <rettype>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </rettype>
 <body>
-<assign  ty='lang|Int'>
-<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' refer='global' acc='shared'>x</symbol>
-<int ty='lang|Int'>42</int>
+<assign  ty='lang|Int32'>
+<symbol  ty='&amp;(lang|String, lang|Int32, lang|Any)' refer='global' acc='shared'>x</symbol>
+<int ty='lang|Int32'>42</int>
 </assign>
 </body>
 </func>
@@ -71,10 +83,16 @@
 </ty:ref>
 </ty:isa>
 </ty:type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:ref nm='lang|Any'>
@@ -83,7 +101,7 @@
 </rettype>
 <body>
 <assign  ty='lang|Unspecified'>
-<symbol  ty='&amp;(lang|String, lang|Int, lang|Any)' refer='global' acc='shared'>x</symbol>
+<symbol  ty='&amp;(lang|String, lang|Int32, lang|Any)' refer='global' acc='shared'>x</symbol>
 <symbol  ty='lang|Unspecified' refer='global' acc='shared'>lang|unspecified</symbol>
 </assign>
 </body>
@@ -91,10 +109,16 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
@@ -122,10 +146,16 @@
 </ty:ref>
 </ty:isa>
 </ty:type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:ref nm='lang|Any'>

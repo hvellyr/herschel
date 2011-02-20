@@ -62,7 +62,7 @@
 <symbol  refer='param'>x</symbol>
 <binary op='-'>
 <symbol  refer='param'>x</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </args>
 </apply>
@@ -81,7 +81,7 @@
 <apply>
 <symbol  refer='function'>abc|hinz|bar</symbol>
 <args>
-<int ty='lang|Int'>5</int>
+<int ty='lang|Int32'>5</int>
 </args>
 </apply>
 </body>

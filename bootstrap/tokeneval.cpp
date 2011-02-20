@@ -30,26 +30,26 @@ TokenEvalContext::evalAdd(const Token& lexpr, const Token& rexpr) const
     if (right.isInt())
       return Token(left.srcpos(),
                    kInt, value + right.intValue());
-    else if (right.isReal())
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, double(value) + right.realValue());
+                   kFloat, double(value) + right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
                    kRational, Rational(value, 1) + right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isReal()) {
-    double value = left.realValue();
+  else if (left.isFloat()) {
+    double value = left.floatValue();
     if (right.isInt())
       return Token(left.srcpos(),
-                   kReal, value + double(right.intValue()));
-    else if (right.isReal())
+                   kFloat, value + double(right.intValue()));
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, value + right.realValue());
+                   kFloat, value + right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
-                   kReal, value + right.rationalValue().toReal());
+                   kFloat, value + right.rationalValue().toFloat());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -58,9 +58,9 @@ TokenEvalContext::evalAdd(const Token& lexpr, const Token& rexpr) const
     if (right.isInt())
       return Token(left.srcpos(),
                    kRational, value + Rational(right.intValue(), 1));
-    else if (right.isReal())
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, value.toReal() + right.realValue());
+                   kFloat, value.toFloat() + right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
                    kRational, value + right.rationalValue());
@@ -83,26 +83,26 @@ TokenEvalContext::evalMinus(const Token& lexpr, const Token& rexpr) const
     if (right.isInt())
       return Token(left.srcpos(),
                    kInt, value - right.intValue());
-    else if (right.isReal())
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, double(value) - right.realValue());
+                   kFloat, double(value) - right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
                    kRational, Rational(value, 1) - right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isReal()) {
-    double value = left.realValue();
+  else if (left.isFloat()) {
+    double value = left.floatValue();
     if (right.isInt())
       return Token(left.srcpos(),
-                   kReal, value - double(right.intValue()));
-    else if (right.isReal())
+                   kFloat, value - double(right.intValue()));
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, value - right.realValue());
+                   kFloat, value - right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
-                   kReal, value - right.rationalValue().toReal());
+                   kFloat, value - right.rationalValue().toFloat());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -111,9 +111,9 @@ TokenEvalContext::evalMinus(const Token& lexpr, const Token& rexpr) const
     if (right.isInt())
       return Token(left.srcpos(),
                    kRational, value - Rational(right.intValue(), 1));
-    else if (right.isReal())
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, value.toReal() - right.realValue());
+                   kFloat, value.toFloat() - right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
                    kRational, value - right.rationalValue());
@@ -136,26 +136,26 @@ TokenEvalContext::evalMultiply(const Token& lexpr, const Token& rexpr) const
     if (right.isInt())
       return Token(left.srcpos(),
                    kInt, value * right.intValue());
-    else if (right.isReal())
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, double(value) * right.realValue());
+                   kFloat, double(value) * right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
                    kRational, Rational(value, 1) * right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isReal()) {
-    double value = left.realValue();
+  else if (left.isFloat()) {
+    double value = left.floatValue();
     if (right.isInt())
       return Token(left.srcpos(),
-                   kReal, value * double(right.intValue()));
-    else if (right.isReal())
+                   kFloat, value * double(right.intValue()));
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, value * right.realValue());
+                   kFloat, value * right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
-                   kReal, value * right.rationalValue().toReal());
+                   kFloat, value * right.rationalValue().toFloat());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -164,9 +164,9 @@ TokenEvalContext::evalMultiply(const Token& lexpr, const Token& rexpr) const
     if (right.isInt())
       return Token(left.srcpos(),
                    kRational, value * Rational(right.intValue(), 1));
-    else if (right.isReal())
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, value.toReal() * right.realValue());
+                   kFloat, value.toFloat() * right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
                    kRational, value * right.rationalValue());
@@ -192,29 +192,29 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
     if (right.isInt())
       return Token(left.srcpos(),
                    kInt, value / right.intValue());
-    else if (right.isReal())
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, double(value) / right.realValue());
+                   kFloat, double(value) / right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
                    kRational, Rational(value, 1) / right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isReal()) {
-    double value = left.realValue();
+  else if (left.isFloat()) {
+    double value = left.floatValue();
     if (value == 0)
       throw DivisionByZeroException();
 
     if (right.isInt())
       return Token(left.srcpos(),
-                   kReal, value / double(right.intValue()));
-    else if (right.isReal())
+                   kFloat, value / double(right.intValue()));
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, value / right.realValue());
+                   kFloat, value / right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
-                   kReal, value / right.rationalValue().toReal());
+                   kFloat, value / right.rationalValue().toFloat());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -226,9 +226,9 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
     if (right.isInt())
       return Token(left.srcpos(),
                    kRational, value / Rational(right.intValue(), 1));
-    else if (right.isReal())
+    else if (right.isFloat())
       return Token(left.srcpos(),
-                   kReal, value.toReal() / right.realValue());
+                   kFloat, value.toFloat() / right.floatValue());
     else if (right.isRational())
       return Token(left.srcpos(),
                    kRational, value / right.rationalValue());
@@ -243,7 +243,24 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
 Token
 TokenEvalContext::evalModulo(const Token& lexpr, const Token& rexpr) const
 {
-  // TODO
+  Token left = evalToken(lexpr);
+  Token right = evalToken(rexpr);
+
+  if (left.isInt()) {
+    if (right.isInt()) {
+      int rvalue = right.intValue();
+
+      if (rvalue == 0)
+        throw DivisionByZeroException();
+
+      int value = left.intValue() % rvalue;
+      if ( (value > 0 && rvalue < 0) ||
+           (value < 0 && rvalue > 0) )
+        value = value + rvalue;
+      return Token(left.srcpos(), kInt, value);
+    }
+  }
+
   throw BadExpressionException(fromInt(__LINE__));
 }
 
@@ -255,15 +272,13 @@ TokenEvalContext::evalRemainder(const Token& lexpr, const Token& rexpr) const
   Token right = evalToken(rexpr);
 
   if (left.isInt()) {
-    int value = left.intValue();
-    if (value == 0)
-      throw DivisionByZeroException();
+    if (right.isInt()) {
+      if (right.intValue() == 0)
+        throw DivisionByZeroException();
 
-    if (right.isInt())
       return Token(left.srcpos(),
-                   kInt, value % right.intValue());
-    else
-      throw BadExpressionException(fromInt(__LINE__));
+                   kInt, left.intValue() % right.intValue());
+    }
   }
 
   throw BadExpressionException(fromInt(__LINE__));
@@ -285,14 +300,14 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
-  else if (left.isReal()) {
-    double value = left.realValue();
+  else if (left.isFloat()) {
+    double value = left.floatValue();
     if (value == 0)
       throw DivisionByZeroException();
 
     if (right.isInt())
       return Token(left.srcpos(),
-                   kReal, herschel::exponent(value, right.intValue()));
+                   kFloat, herschel::exponent(value, right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -358,10 +373,10 @@ TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
         return Token(left.srcpos(), kInt, -1);
     case kInt:
       return Token(left.srcpos(), kInt, left.intValue() - right.intValue());
-    case kReal:
-      if (left.realValue() < right.realValue())
+    case kFloat:
+      if (left.floatValue() < right.floatValue())
         return Token(left.srcpos(), kInt, -1);
-      else if (left.realValue() > right.realValue())
+      else if (left.floatValue() > right.floatValue())
         return Token(left.srcpos(), kInt, 1);
       else
         return Token(left.srcpos(), kInt, 0);
@@ -562,7 +577,7 @@ TokenEvalContext::evalToken(const Token& expr) const
     case kChar:
     case kBool:
     case kInt:
-    case kReal:
+    case kFloat:
     case kRational:
       return expr;
     default:
@@ -617,8 +632,8 @@ SUITE(TokenEvalContext)
     t = ctx.evalToken(Token(sp, kInt, 25));
     CHECK(t.isInt() && t.intValue() == 25);
 
-    t = ctx.evalToken(Token(sp, kReal, 3.1415));
-    CHECK(t.isReal() && t.realValue() == 3.1415);
+    t = ctx.evalToken(Token(sp, kFloat, 3.1415));
+    CHECK(t.isFloat() && t.floatValue() == 3.1415);
 
     t = ctx.evalToken(Token(sp, kRational, Rational(101, 127)));
     CHECK(t.isRational() && t.rationalValue() == Rational(101, 127));
@@ -641,28 +656,28 @@ SUITE(TokenEvalContext)
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kPlus, kInt, 17));
     CHECK(t.isInt() && t.intValue() == 42);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kPlus, kReal, 3.1415));
-    CHECK(t.isReal() && t.realValue() == 28.1415);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kPlus, kFloat, 3.1415));
+    CHECK(t.isFloat() && t.floatValue() == 28.1415);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kPlus, kRational, Rational(3, 4)));
     CHECK(t.isRational() && t.rationalValue() == Rational(103, 4));
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kPlus, kInt, 25));
-    CHECK(t.isReal() && t.realValue() == 28.1415);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kPlus, kInt, 25));
+    CHECK(t.isFloat() && t.floatValue() == 28.1415);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kPlus, kReal, 3.1415));
-    CHECK(t.isReal() && int(t.realValue() * 1000) == 6283);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kPlus, kFloat, 3.1415));
+    CHECK(t.isFloat() && int(t.floatValue() * 1000) == 6283);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kPlus, kRational, Rational(3, 4)));
-    CHECK(t.isReal() && t.realValue() == 3.8915);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kPlus, kRational, Rational(3, 4)));
+    CHECK(t.isFloat() && t.floatValue() == 3.8915);
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kInt, 25));
     CHECK(t.isRational() && t.rationalValue() == Rational(103, 4));
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kReal, 3.1415));
-    CHECK(t.isReal() && t.realValue() == 3.8915);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kFloat, 3.1415));
+    CHECK(t.isFloat() && t.floatValue() == 3.8915);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus,
                                       kRational, Rational(3, 4)));
@@ -679,28 +694,28 @@ SUITE(TokenEvalContext)
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMinus, kInt, 17));
     CHECK(t.isInt() && t.intValue() == 8);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMinus, kReal, 3.1415));
-    CHECK(t.isReal() && t.realValue() == 21.8585);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMinus, kFloat, 3.1415));
+    CHECK(t.isFloat() && t.floatValue() == 21.8585);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMinus, kRational, Rational(3, 4)));
     CHECK(t.isRational() && t.rationalValue() == Rational(97, 4));
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kInt, 25));
-    CHECK(t.isReal() && t.realValue() == -21.8585);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kMinus, kInt, 25));
+    CHECK(t.isFloat() && t.floatValue() == -21.8585);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kReal, 3.1415));
-    CHECK(t.isReal() && int(t.realValue() * 1000) == 0.0);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kMinus, kFloat, 3.1415));
+    CHECK(t.isFloat() && int(t.floatValue() * 1000) == 0.0);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMinus, kRational, Rational(3, 4)));
-    CHECK(t.isReal() && t.realValue() == 2.3915);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kMinus, kRational, Rational(3, 4)));
+    CHECK(t.isFloat() && t.floatValue() == 2.3915);
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kInt, 25));
     CHECK(t.isRational() && t.rationalValue() == Rational(-97, 4));
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kReal, 3.1415));
-    CHECK(t.isReal() && t.realValue() == -2.3915);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kFloat, 3.1415));
+    CHECK(t.isFloat() && t.floatValue() == -2.3915);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus,
                                       kRational, Rational(3, 4)));
@@ -717,28 +732,28 @@ SUITE(TokenEvalContext)
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMultiply, kInt, 17));
     CHECK(t.isInt() && t.intValue() == 425);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMultiply, kReal, 3.1415));
-    CHECK(t.isReal() && int(t.realValue() * 10000) == 785375);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMultiply, kFloat, 3.1415));
+    CHECK(t.isFloat() && int(t.floatValue() * 10000) == 785375);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kMultiply, kRational, Rational(3, 4)));
     CHECK(t.isRational() && t.rationalValue() == Rational(75, 4));
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kInt, 25));
-    CHECK(t.isReal() && int(t.realValue() * 10000) == 785375);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kMultiply, kInt, 25));
+    CHECK(t.isFloat() && int(t.floatValue() * 10000) == 785375);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kReal, 3.1415));
-    CHECK(t.isReal() && int(t.realValue() * 100000000) == 986902225);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kMultiply, kFloat, 3.1415));
+    CHECK(t.isFloat() && int(t.floatValue() * 100000000) == 986902225);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kMultiply, kRational, Rational(3, 4)));
-    CHECK(t.isReal() && int(t.realValue() * 1000000) == 2356125);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kMultiply, kRational, Rational(3, 4)));
+    CHECK(t.isFloat() && int(t.floatValue() * 1000000) == 2356125);
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kInt, 25));
     CHECK(t.isRational() && t.rationalValue() == Rational(75, 4));
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kReal, 3.1415));
-    CHECK(t.isReal() && int(t.realValue() * 1000000) == 2356125);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kFloat, 3.1415));
+    CHECK(t.isFloat() && int(t.floatValue() * 1000000) == 2356125);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply,
                                       kRational, Rational(3, 4)));
@@ -755,29 +770,29 @@ SUITE(TokenEvalContext)
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kDivide, kInt, 17));
     CHECK(t.isInt() && t.intValue() == 1);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kDivide, kReal, 3.1415));
-    CHECK(t.isReal() && int(t.realValue() * 100000000) == 795798185);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kDivide, kFloat, 3.1415));
+    CHECK(t.isFloat() && int(t.floatValue() * 100000000) == 795798185);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 25, kDivide, kRational, Rational(3, 4)));
     CHECK(t.isRational() && t.rationalValue() == Rational(100, 3));
 
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kInt, 25));
-    CHECK(t.isReal());
-    CHECK_CLOSE(t.realValue(), 0.12566, 0.0001);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kDivide, kInt, 25));
+    CHECK(t.isFloat());
+    CHECK_CLOSE(t.floatValue(), 0.12566, 0.0001);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kReal, 3.1415));
-    CHECK(t.isReal() && t.realValue() == 1.0);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kDivide, kFloat, 3.1415));
+    CHECK(t.isFloat() && t.floatValue() == 1.0);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kDivide, kRational, Rational(3, 4)));
-    CHECK(t.isReal() && int(t.realValue() * 100000000) == 418866666);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kDivide, kRational, Rational(3, 4)));
+    CHECK(t.isFloat() && int(t.floatValue() * 100000000) == 418866666);
 
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kInt, 25));
     CHECK(t.isRational() && t.rationalValue() == Rational(3, 100));
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kReal, 3.1415));
-    CHECK(t.isReal() && int(t.realValue() * 100000000) == 23873945);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kFloat, 3.1415));
+    CHECK(t.isFloat() && int(t.floatValue() * 100000000) == 23873945);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide,
                                       kRational, Rational(3, 4)));
@@ -791,7 +806,7 @@ SUITE(TokenEvalContext)
 
   TEST_FIXTURE(TokenEvalContextFixture, Modulo)
   {
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, -340, kRem, kInt, 60));
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, -340, kMod, kInt, 60));
     CHECK(t.isInt() && t.intValue() == 20);
   }
 
@@ -808,8 +823,8 @@ SUITE(TokenEvalContext)
     t = ctx.evalToken(MAKE_BINARY_SEQ(kInt, 2, kExponent, kInt, 16));
     CHECK(t.isInt() && t.intValue() == 65536);
 
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kReal, 3.1415, kExponent, kInt, 4));
-    CHECK(t.isReal() && int(t.realValue() * 10000) == 973976);
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kExponent, kInt, 4));
+    CHECK(t.isFloat() && int(t.floatValue() * 10000) == 973976);
 
     t = ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kExponent,
                                       kInt, 4));

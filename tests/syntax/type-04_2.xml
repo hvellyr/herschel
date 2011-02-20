@@ -3,7 +3,7 @@
 <def>
 <vardef sym='x'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </vardef>
@@ -13,7 +13,7 @@
 <type>
 <ty:ref nm='lang|Vector'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:ref>
@@ -24,7 +24,7 @@
 <vardef sym='x2'>
 <type>
 <ty:array ind='0'>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:array>
 </type>
@@ -36,7 +36,7 @@
 <ty:array ind='0'>
 <ty:ref nm='lang|Vector'>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:ref>
@@ -48,7 +48,7 @@
 <vardef sym='x4'>
 <type>
 <ty:array ind='10'>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:array>
 </type>
@@ -57,7 +57,7 @@
 <def>
 <vardef sym='*slots*' type='config'>
 <init>
-<int ty='lang|Int'>22</int>
+<int ty='lang|Int32'>22</int>
 </init>
 </vardef>
 </def>
@@ -65,7 +65,7 @@
 <vardef sym='x5'>
 <type>
 <ty:array ind='22'>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:array>
 </type>

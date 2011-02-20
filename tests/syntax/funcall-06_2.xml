@@ -55,9 +55,9 @@
 <arg key='b'>
 <false/>
 </arg>
-<int ty='lang|Int'>2</int>
-<int ty='lang|Int'>3</int>
-<int ty='lang|Int'>4</int>
+<int ty='lang|Int32'>2</int>
+<int ty='lang|Int32'>3</int>
+<int ty='lang|Int32'>4</int>
 </args>
 </apply>
 </body>

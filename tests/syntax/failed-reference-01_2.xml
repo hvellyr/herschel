@@ -3,7 +3,7 @@
 <def>
 <vardef sym='a'>
 <type>
-<ty:ref ref='t' nm='lang|Int'>
+<ty:ref ref='t' nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>

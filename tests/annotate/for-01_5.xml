@@ -5,10 +5,16 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -43,15 +49,21 @@
 <let>
 <vardef sym='i'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -74,11 +86,11 @@
 </init>
 </vardef>
 </let>
-<while  ty='lang|Int'>
+<while  ty='lang|Int32'>
 <test>
 <binary op='&lt;=' ty='lang|Bool'>
-<symbol  ty='lang|Int' refer='local'>i</symbol>
-<int ty='lang|Int'>100</int>
+<symbol  ty='lang|Int32' refer='local'>i</symbol>
+<int ty='lang|Int32'>100</int>
 </binary>
 </test>
 <body>
@@ -86,17 +98,17 @@
 <assign  ty='lang|String'>
 <symbol  ty='&amp;(lang|Any, lang|Unspecified)' refer='local'>__return_0</symbol>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(lang|Int):lang|String' refer='function'>to-string</symbol>
+<symbol  ty='lambda(lang|Int32):lang|String' refer='function'>to-string</symbol>
 <args>
-<symbol  ty='lang|Int' refer='local'>i</symbol>
+<symbol  ty='lang|Int32' refer='local'>i</symbol>
 </args>
 </apply>
 </assign>
-<assign  ty='lang|Int'>
-<symbol  ty='lang|Int' refer='local'>i</symbol>
-<binary op='+' ty='lang|Int'>
-<symbol  ty='lang|Int' refer='local'>i</symbol>
-<int ty='lang|Int'>1</int>
+<assign  ty='lang|Int32'>
+<symbol  ty='lang|Int32' refer='local'>i</symbol>
+<binary op='+' ty='lang|Int32'>
+<symbol  ty='lang|Int32' refer='local'>i</symbol>
+<int ty='lang|Int32'>1</int>
 </binary>
 </assign>
 </block>
@@ -109,16 +121,22 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:used-type>
-<ty:used-type>
 <ty:ref nm='lang|Bool'>
 </ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|String'>
@@ -137,13 +155,31 @@
 </ty:type>
 </ty:used-type>
 <ty:used-type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:type nm='lang|Unspecified'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:union>
+</ty:used-type>
+<ty:used-type>
 <ty:fun nm=''>
 <ty:prms>
 <ty:prm is='pos'>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:prm>
@@ -157,18 +193,6 @@
 </ty:type>
 </ty:ret>
 </ty:fun>
-</ty:used-type>
-<ty:used-type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:type nm='lang|Unspecified'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:union>
 </ty:used-type>
 </ty:node-types>
 </compile-unit>

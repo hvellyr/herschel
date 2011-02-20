@@ -5,13 +5,13 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
 </params>
 <rettype>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </rettype>
 <body>
@@ -48,7 +48,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>

@@ -7,7 +7,7 @@
 </ty:ref>
 </rettype>
 <body>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </body>
 </func>
 </def>
@@ -18,7 +18,7 @@
 </ty:ref>
 </rettype>
 <body>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </body>
 </func>
 </def>
@@ -29,7 +29,7 @@
 </ty:ref>
 </rettype>
 <body>
-<int ty='lang|Int'>3</int>
+<int ty='lang|Int32'>3</int>
 </body>
 </func>
 </def>

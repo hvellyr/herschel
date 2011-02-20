@@ -181,7 +181,7 @@ SUITE(RationalNumber)
 
   TEST(toreal)
   {
-    CHECK_EQUAL(Rational(22, 11).toReal(), 2.0);
+    CHECK_EQUAL(Rational(22, 11).toFloat(), 2.0);
   }
 
 

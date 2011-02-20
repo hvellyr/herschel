@@ -2,7 +2,7 @@ module red ("test/red")
 {
   export public (Xyz, xyz : unit)
 
-  def measure Xyz (xyz) : Real
+  def measure Xyz (xyz) : Float
 
   ;; units and symbol don't share the same namespace
   def xyz = 1234

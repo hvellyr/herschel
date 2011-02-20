@@ -27,17 +27,6 @@ namespace herschel
   };
 
 
-  class IntTypeEnumMaker : public TypeEnumMaker
-  {
-  public:
-    ~IntTypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
-  };
-
-
   class BoolTypeEnumMaker : public TypeEnumMaker
   {
   public:
@@ -75,17 +64,6 @@ namespace herschel
   {
   public:
     ~RationalTypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
-  };
-
-
-  class RealTypeEnumMaker : public TypeEnumMaker
-  {
-  public:
-    ~RealTypeEnumMaker() { }
 
     virtual Token nextEnumItem(const SrcPos& srcpos,
                                const Token& enumItemSymbol,

@@ -5,7 +5,7 @@
 <isa>
 <ty:measure nm='red|Abc' unit='red|abc'>
 <ty:isa>
-<ty:ref nm='lang|Real'>
+<ty:ref nm='lang|Float32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>
@@ -17,7 +17,7 @@
 <isa>
 <ty:measure nm='red|Xyz' unit='red|xyz'>
 <ty:isa>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>

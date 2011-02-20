@@ -11,6 +11,7 @@
 
 #include "refcountable.h"
 #include "ptr.h"
+#include "apt.h"
 
 #include <map>
 #include <vector>
@@ -200,6 +201,10 @@ namespace herschel
     llvm::Value* codegenOpIntInt(const BinaryNode* node,
                                  llvm::Value* left,
                                  llvm::Value* right);
+
+    llvm::Value* emitPackCode(const Type& dstType, TypeConvKind convKind,
+                              llvm::Value* value,
+                              const Type& valType);
 
     //-------- data members
 

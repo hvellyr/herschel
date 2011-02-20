@@ -12,7 +12,7 @@
 </params>
 <rettype>
 <ty:union>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 <ty:ref nm='lang|Bool'>
 <ty:const k='eq'>false</ty:const>
@@ -26,7 +26,7 @@
 </base>
 <as>
 <ty:union>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 <ty:ref nm='lang|Bool'>
 <ty:const k='eq'>false</ty:const>

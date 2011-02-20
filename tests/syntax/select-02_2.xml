@@ -36,9 +36,9 @@
 </test>
 <map>
 <values>
-<int ty='lang|Int'>1</int>
-<int ty='lang|Int'>2</int>
-<int ty='lang|Int'>3</int>
+<int ty='lang|Int32'>1</int>
+<int ty='lang|Int32'>2</int>
+<int ty='lang|Int32'>3</int>
 </values>
 <cons>
 <apply>
@@ -51,9 +51,9 @@
 </map>
 <map>
 <values>
-<int ty='lang|Int'>4</int>
-<int ty='lang|Int'>5</int>
-<int ty='lang|Int'>6</int>
+<int ty='lang|Int32'>4</int>
+<int ty='lang|Int32'>5</int>
+<int ty='lang|Int32'>6</int>
 </values>
 <cons>
 <apply>

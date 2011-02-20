@@ -303,10 +303,10 @@ Key bindings:
   '(
     "Any"
     "Bool" "Char"
-    "Int" "Rational" "Real" "Complex"
-    "Int8" "UInt8" "Int16" "UInt16" "Int32" "UInt32" "Int64" "UInt64"
+    "Rational" "Real" "Complex" "Integer"
+    "Int" "Int8" "UInt8" "Int16" "UInt16" "Int32" "UInt32" "Int64" "UInt64"
      "Octet" "Ordinal"
-    "Float" "Double" "LongDouble"
+    "Float" "Double" "LongDouble" "Float32" "Float64" "Float128"
     "String"
     "Vector"
     "Number" "ExactNumber" "ApproxNumber" "Ordered" "Unordered"

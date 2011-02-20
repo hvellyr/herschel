@@ -140,7 +140,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>p</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </args>
 </apply>
 </test>
@@ -214,7 +214,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>p</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </args>
 </apply>
 </args>

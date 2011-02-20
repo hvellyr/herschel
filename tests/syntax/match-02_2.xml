@@ -60,7 +60,7 @@
 </map>
 <map nm='idx'>
 <type>
-<ty:ref nm='lang|Ordinal'>
+<ty:ref nm='lang|UInt32'>
 </ty:ref>
 </type>
 <cons>
@@ -68,7 +68,7 @@
 <let>
 <vardef sym='idx'>
 <type>
-<ty:ref nm='lang|Ordinal'>
+<ty:ref nm='lang|UInt32'>
 </ty:ref>
 </type>
 <init>
@@ -77,7 +77,7 @@
 <symbol>__match_0</symbol>
 </base>
 <as>
-<ty:ref nm='lang|Ordinal'>
+<ty:ref nm='lang|UInt32'>
 </ty:ref>
 </as>
 </cast>

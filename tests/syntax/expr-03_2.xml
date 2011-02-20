@@ -9,7 +9,7 @@
 <apply>
 <symbol>lang|allocate</symbol>
 <args>
-<type  ty='lang|Vector&lt;lang|Int>'/>
+<type  ty='lang|Vector&lt;lang|Int32>'/>
 </args>
 </apply>
 </args>
