@@ -1119,30 +1119,6 @@ CodeGenerator::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType)
 
 
 llvm::Value*
-CodeGenerator::makeTypeCastAtomToClangBool(llvm::Value* val)
-{
-  std::vector<const llvm::Type*> sign;
-  sign.push_back(getAtomType());
-
-  llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt1Ty(context()),
-                                                   sign,
-                                                   false);
-
-  llvm::Function* convFunc = fModule->getFunction(llvm::StringRef("atom_2_bool"));
-  if (convFunc == NULL) {
-    convFunc = llvm::Function::Create(ft,
-                                      llvm::Function::ExternalLinkage,
-                                      llvm::Twine("atom_2_bool"),
-                                      fModule);
-  }
-
-  std::vector<llvm::Value*> argv;
-  argv.push_back(val);
-  return fBuilder.CreateCall(convFunc, argv.begin(), argv.end(), "calltmp_bool");
-}
-
-
-llvm::Value*
 CodeGenerator::emitPackCode(const Type& dstType, TypeConvKind convKind,
                             llvm::Value* value,
                             const Type& valType)
@@ -1331,7 +1307,11 @@ CodeGenerator::codegen(const IfNode* node)
   if (testValue == NULL)
     return NULL;
 
-  llvm::Value* extrTestVal = makeTypeCastAtomToClangBool(testValue);
+  llvm::Value* extrTestVal = emitPackCode(node->test()->dstType(),
+                                          node->test()->typeConv(),
+                                          testValue,
+                                          node->test()->type());
+
   // Convert condition to a bool by comparing equal to 1
   testValue = fBuilder.CreateICmpEQ(extrTestVal,
                                     llvm::ConstantInt::get(context(),
@@ -1378,8 +1358,7 @@ CodeGenerator::codegen(const IfNode* node)
   // Emit merge block.
   curFunction->getBasicBlockList().push_back(mergeBB);
   fBuilder.SetInsertPoint(mergeBB);
-  llvm::PHINode *pn = fBuilder.CreatePHI(getAtomType(), //llvm::Type::getInt32Ty(context()),
-                                         "iftmp");
+  llvm::PHINode *pn = fBuilder.CreatePHI(getType(node->type()), "iftmp");
 
   pn->addIncoming(thenValue, thenBB);
   pn->addIncoming(elseValue, elseBB);
