@@ -158,8 +158,6 @@ namespace herschel
 
     llvm::Value* makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType);
 
-    llvm::Value* makeTypeCastAtomToClangBool(llvm::Value* val);
-
     enum Typeid {
       kAtomInt  = 0,
       kAtomBool = 1,
