@@ -110,9 +110,6 @@ namespace herschel
     virtual AptNode* transform(Transformator* annotator) = 0;
     virtual void typify(Typifier* typifier) = 0;
 
-    bool         fDelayTypeSpec;
-    int          fLoopId;
-
   protected:
     SrcPos       fSrcPos;
     Ptr<Scope>   fScope;
@@ -121,6 +118,41 @@ namespace herschel
     TypeConvKind fTypeConvKind;
     bool         fIsInTailPos;
     bool         fIsSingleTypeRequired;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  //! Mixin class to add support to AptNodes as being part of a loop
+  //! transformation.  All nodes having the same loopId belong to the same
+  //! compiled loop construct.
+  class LoopAnnotatable
+  {
+  public:
+    int loopId() const;
+    void setLoopId(int loopId);
+
+  protected:
+    LoopAnnotatable();
+
+    int fLoopId;
+  };
+
+
+  //! Mixin class to add support for delayed type speciation.  This is used on
+  //! VardefNodes and AssignNodes to flag the variable type to be inferred not
+  //! from the (probably undefined init expression) but the first assign to
+  //! come.
+  class DelayTypeAnnotatable
+  {
+  public:
+    bool isTypeSpecDelayed() const;
+    void setTypeSpecDelayed(bool value);
+
+  protected:
+    DelayTypeAnnotatable();
+
+    bool fDelayTypeSpec;
   };
 
 
@@ -240,7 +272,7 @@ namespace herschel
     kType,
   };
 
-  class SymbolNode : public AptNode
+  class SymbolNode : public AptNode, public LoopAnnotatable
   {
   public:
     SymbolNode(const SrcPos& srcpos, const String& value);
@@ -511,7 +543,7 @@ namespace herschel
   };
 
 
-  class LetNode : public BaseDefNode
+  class LetNode : public BaseDefNode, public LoopAnnotatable
   {
   public:
     LetNode(AptNode* node);
@@ -578,7 +610,8 @@ namespace herschel
     kEnumVar
   };
 
-  class VardefNode : public BindingNode
+  class VardefNode : public BindingNode,
+                     public DelayTypeAnnotatable
   {
   public:
     VardefNode(const SrcPos& srcpos,
@@ -834,7 +867,9 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  class AssignNode : public AptNode
+  class AssignNode : public AptNode,
+                     public LoopAnnotatable,
+                     public DelayTypeAnnotatable
   {
   public:
     AssignNode(const SrcPos& srcpos,
