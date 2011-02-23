@@ -2592,7 +2592,7 @@ SecondPass::parseFor(const Token& expr)
 
 
   const bool requiresReturnValue = alternate != NULL || !testExprs.empty();
-  const bool explicitReturnValue = alternate != NULL;
+  const bool hasAlternateBranch = alternate != NULL;
 
   Ptr<AptNode> testNode = constructWhileTestNode(expr, testExprs);
   Ptr<AptNode> evalNextStepTestNode;
@@ -2632,7 +2632,7 @@ SecondPass::parseFor(const Token& expr)
     defReturnNode->setLoopId(loopId);
     loopDefines.push_back(defReturnNode.obj());
 
-    if (explicitReturnValue) {
+    if (hasAlternateBranch) {
       // evaluate the tests once into a temporary variable
       Ptr<AptNode> tmpTestNode = new VardefNode(expr.srcpos(),
                                                 tmpTestSym.idValue(), kNormalVar,
@@ -2678,7 +2678,7 @@ SecondPass::parseFor(const Token& expr)
   Ptr<SymbolNode> returnNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
   returnNode->setLoopId(loopId);
 
-  if (explicitReturnValue) {
+  if (hasAlternateBranch) {
     Ptr<BlockNode> consequent = new BlockNode(expr.srcpos());
     consequent->appendNode(whileNode);
     consequent->appendNode(returnNode);
