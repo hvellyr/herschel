@@ -77,25 +77,6 @@
 </init>
 </vardef>
 </let>
-<let>
-<vardef sym='__return_1'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:type nm='lang|Unspecified'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:union>
-</type>
-<init>
-<symbol  ty='lang|Unspecified' refer='global' acc='shared'>lang|unspecified</symbol>
-</init>
-</vardef>
-</let>
 <while  ty='lang|Int32'>
 <test>
 <binary op='&lt;=' ty='lang|Bool'>
@@ -105,8 +86,6 @@
 </test>
 <body>
 <block>
-<assign  ty='&apos;T'>
-<symbol  ty='&amp;(lang|Any, lang|Unspecified)' refer='local'>__return_1</symbol>
 <assign  ty='&apos;T'>
 <symbol  ty='&apos;T' refer='local'>sum</symbol>
 <binary op='+' ty='&apos;T'>
@@ -120,7 +99,6 @@
 </apply>
 </binary>
 </assign>
-</assign>
 <assign  ty='lang|Int32'>
 <symbol  ty='lang|Int32' refer='local'>i</symbol>
 <binary op='+' ty='lang|Int32'>
@@ -131,7 +109,6 @@
 </block>
 </body>
 </while>
-<symbol  ty='&amp;(lang|Any, lang|Unspecified)' refer='local'>__return_1</symbol>
 </block>
 <symbol  ty='&apos;T' refer='local'>sum</symbol>
 </block>
@@ -168,14 +145,6 @@
 </ty:type>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Unspecified'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:used-type>
-<ty:used-type>
 <ty:fun nm=''>
 <ty:prms>
 <ty:prm is='pos' spec='t'>
@@ -200,18 +169,6 @@
 </ty:type>
 </ty:ret>
 </ty:fun>
-</ty:used-type>
-<ty:used-type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:type nm='lang|Unspecified'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:union>
 </ty:used-type>
 <ty:used-type>
 <ty:fun nm=''>
