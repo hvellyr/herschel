@@ -189,7 +189,7 @@ else
     let _result = unspecified
 
     while (e <> nil) {
-      <body>
+      _result = <body>
       e = e.cdr
     }
     _result
@@ -197,3 +197,19 @@ else
   else
     <alternate>
 }
+
+::
+{
+  let e = root()
+  let t = e <> nil
+  if (t) {
+    let _result = unspecified
+    while (t)
+      _result = <body>
+      e = e.cdr
+      t = e <> nil
+    }
+    _result
+  }
+  else
+    <alternate>

@@ -48,6 +48,7 @@ namespace herschel
   class SymbolNode;
   class TypeDefNode;
   class TypeNode;
+  class UndefNode;
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
@@ -117,6 +118,7 @@ namespace herschel
     void traverse(WhileNode* node);
     void traverse(VardefNode* node);
     void traverse(FuncDefNode* node);
+    void traverse(UndefNode* node);
 
   private:
     void traverseNodeList(NodeList& nl);

@@ -17,6 +17,7 @@
 #include "symbol.h"
 #include "compiler.h"
 #include "rootscope.h"
+#include "traverse.h"
 
 
 #include <typeinfo>  //for 'typeid' to work
@@ -319,10 +320,83 @@ Annotator::annotate(SlotdefNode* node)
 }
 
 
+namespace herschel
+{
+  class StripLoopNodesTraverseDelegate : public TraverseDelegate
+  {
+  public:
+    StripLoopNodesTraverseDelegate(int loopId)
+      : fLoopId(loopId)
+    {}
+
+    virtual bool preApply(AptNode* node)
+    {
+      if (BlockNode* blockNode = dynamic_cast<BlockNode*>(node)) {
+        NodeList& nl = blockNode->children();
+        for (size_t i = 0; i < nl.size(); ) {
+          if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(nl[i].obj())) {
+            if (symNode->fLoopId == fLoopId) {
+              nl.erase(nl.begin() + i);
+              continue;
+            }
+          }
+          else if (LetNode* letNode = dynamic_cast<LetNode*>(nl[i].obj())) {
+            if (letNode->fLoopId == fLoopId) {
+              nl.erase(nl.begin() + i);
+              continue;
+            }
+          }
+          else if (AssignNode* assignNode = dynamic_cast<AssignNode*>(nl[i].obj())) {
+            if (assignNode->fLoopId == fLoopId)
+              nl[i] = assignNode->rvalue();
+          }
+
+          i++;
+        }
+      }
+      return true;
+    }
+
+    virtual void postApply(AptNode* node)
+    {
+    }
+
+    int fLoopId;
+  };
+};
+
+
 void
 Annotator::annotate(BlockNode* node)
 {
   ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
+
+  if (!node->isInTailPos()) {
+    int loopId = 0;
+
+    NodeList& nl = node->children();
+    const size_t nlsize = nl.size();
+    for (size_t i = 0; i < nlsize; i++) {
+      if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(nl[i].obj())) {
+        if (symNode->fLoopId > 0) {
+          loopId = symNode->fLoopId;
+          break;
+        }
+      }
+      else if (LetNode* letNode = dynamic_cast<LetNode*>(nl[i].obj())) {
+        if (letNode->fLoopId > 0) {
+          loopId = letNode->fLoopId;
+          break;
+        }
+      }
+    }
+
+    if (loopId > 0) {
+      StripLoopNodesTraverseDelegate delegate(loopId);
+      Traversator(delegate).traverseNode(node);
+    }
+  }
+
   annotateNodeList(node->children(), node->isInTailPos(), false);
 }
 
@@ -559,4 +633,11 @@ void
 Annotator::annotate(UnitConstNode* node)
 {
   annotateNode(node->value());
+}
+
+
+void
+Annotator::annotate(UndefNode* node)
+{
+  // Nothing to annotate here
 }

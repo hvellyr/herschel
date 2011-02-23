@@ -55,6 +55,7 @@ namespace herschel
   class VectorNode;
   class WhileNode;
   class Type;
+  class UndefNode;
 
 
   typedef std::vector<Ptr<AptNode> > NodeList;
@@ -152,6 +153,8 @@ namespace herschel
     void typify(VardefNode* node);
     //! Typify implementation for FuncDefNodes (cf. TypifyPass)
     void typify(FuncDefNode* node);
+    //! Typify implementation for UndefNodes (cf. TypifyPass)
+    void typify(UndefNode* node);
 
   private:
     void annotateTypeConv(AptNode* toNode, const Type& type);

@@ -2512,6 +2512,41 @@ SecondPass::transformCollForClause(const Token& token,
 
 
 AptNode*
+SecondPass::constructWhileTestNode(const Token& expr, NodeList& testExprs)
+{
+  Ptr<AptNode> testNode;
+
+  int nodeCount = 0;
+  for (size_t i = 0; i < testExprs.size(); i++) {
+    if (nodeCount > 1) {
+      Ptr<BinaryNode> prevBin = dynamic_cast<BinaryNode*>(testNode.obj());
+      assert(prevBin != NULL);
+      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
+                                            prevBin->right(),
+                                            kOpLogicalAnd, testExprs[i]);
+      prevBin->setRight(binNode);
+    }
+    else if (nodeCount == 1) {
+      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
+                                            testNode, kOpLogicalAnd, testExprs[i]);
+      testNode = binNode;
+    }
+    else
+      testNode = testExprs[i];
+    nodeCount++;
+  }
+
+  // if we don't have a test node yet all loop clauses are unconditional
+  // ones.  Take a simple 'true' therefore.
+  if (testNode == NULL) {
+    testNode = new BoolNode(expr.srcpos(), true);
+  }
+
+  return testNode.release();
+}
+
+
+AptNode*
 SecondPass::parseFor(const Token& expr)
 {
   assert(!fCompiler->isParsingInterface());
@@ -2555,59 +2590,69 @@ SecondPass::parseFor(const Token& expr)
     }
   }
 
+
   const bool requiresReturnValue = alternate != NULL || !testExprs.empty();
+  const bool explicitReturnValue = alternate != NULL;
+
+  Ptr<AptNode> testNode = constructWhileTestNode(expr, testExprs);
+  Ptr<AptNode> evalNextStepTestNode;
 
   Token returnSym = Token::newUniqueSymbolToken(expr.srcpos(), "return");
+  Token tmpTestSym = Token::newUniqueSymbolToken(expr.srcpos(), "test");
 
+  static int loopId = 0;
+  loopId++;
+
+  bool delayTypeSpec = false;
   if (requiresReturnValue) {
     Type retType;
 
+    Ptr<AptNode> defaultRetVal;
     if (alternate == NULL) {
-      alternate = new SymbolNode(expr.srcpos(), Names::kLangUnspecified);
-
       TypeVector unionTypes;
       unionTypes.push_back(Type::newAny());
       unionTypes.push_back(Type::newTypeRef(Names::kUnspecifiedTypeName, true));
 
       retType = Type::newUnion(unionTypes, true);
+      defaultRetVal = new SymbolNode(expr.srcpos(),
+                                     Names::kLangUnspecified);
+    }
+    else {
+      defaultRetVal = new UndefNode();
+      delayTypeSpec = true;
     }
 
     Ptr<AptNode> returnVardef = new VardefNode(expr.srcpos(),
                                                returnSym.idValue(), kNormalVar,
-                                               true, retType, alternate);
+                                               true, retType,
+                                               defaultRetVal);
+    returnVardef->fDelayTypeSpec = delayTypeSpec;
     Ptr<AptNode> defReturnNode = new LetNode(returnVardef);
+    defReturnNode->fLoopId = loopId;
     loopDefines.push_back(defReturnNode);
+
+    if (explicitReturnValue) {
+      // evaluate the tests once into a temporary variable
+      Ptr<AptNode> tmpTestNode = new VardefNode(expr.srcpos(),
+                                                tmpTestSym.idValue(), kNormalVar,
+                                                true, Type::newBool(),
+                                                testNode);
+      Ptr<AptNode> defTmpTestNode = new LetNode(tmpTestNode);
+      loopDefines.push_back(defTmpTestNode);
+
+      // construct the next step evaluation of the test variable
+      evalNextStepTestNode = new AssignNode(expr.srcpos(),
+                                            new SymbolNode(expr.srcpos(),
+                                                           tmpTestSym.idValue()),
+                                            testNode->clone());
+
+      // the test is actually to check the temporary test variable
+      testNode = new SymbolNode(expr.srcpos(), tmpTestSym.idValue());
+    }
   }
 
   Ptr<BlockNode> block = new BlockNode(expr.srcpos());
   block->appendNodes(loopDefines);
-
-  Ptr<AptNode> testNode;
-  int nodeCount = 0;
-  for (size_t i = 0; i < testExprs.size(); i++) {
-    if (nodeCount > 1) {
-      Ptr<BinaryNode> prevBin = dynamic_cast<BinaryNode*>(testNode.obj());
-      assert(prevBin != NULL);
-      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
-                                            prevBin->right(),
-                                            kOpLogicalAnd, testExprs[i]);
-      prevBin->setRight(binNode);
-    }
-    else if (nodeCount == 1) {
-      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
-                                            testNode, kOpLogicalAnd, testExprs[i]);
-      testNode = binNode;
-    }
-    else
-      testNode = testExprs[i];
-    nodeCount++;
-  }
-
-  // if we don't have a test node yet all loop clauses are unconditional
-  // ones.  Take a simple 'true' therefore.
-  if (testNode == NULL) {
-    testNode = new BoolNode(expr.srcpos(), true);
-  }
 
   Ptr<BlockNode> bodyNode = new BlockNode(expr.srcpos());
 
@@ -2616,21 +2661,37 @@ SecondPass::parseFor(const Token& expr)
                                           returnSym.idValue());
     Ptr<AptNode> saveRetNode = new AssignNode(expr.srcpos(),
                                               retNode, body);
+    saveRetNode->fDelayTypeSpec = delayTypeSpec;
+    saveRetNode->fLoopId = loopId;
     bodyNode->appendNode(saveRetNode);
   }
   else
     bodyNode->appendNode(body);
+
   bodyNode->appendNodes(stepExprs);
+  if (evalNextStepTestNode != NULL)
+    bodyNode->appendNode(evalNextStepTestNode->clone());
 
-  Ptr<AptNode> returnNode;
-  if (requiresReturnValue)
-    returnNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
+  Ptr<WhileNode> whileNode = new WhileNode(expr.srcpos(), testNode->clone(), bodyNode);
 
-  Ptr<WhileNode> whileNode = new WhileNode(expr.srcpos(), testNode, bodyNode);
-  block->appendNode(whileNode);
+  Ptr<AptNode> returnNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
+  returnNode->fLoopId = loopId;
 
-  if (returnNode != NULL)
-    block->appendNode(returnNode);
+  if (explicitReturnValue) {
+    Ptr<BlockNode> consequent = new BlockNode(expr.srcpos());
+    consequent->appendNode(whileNode);
+    consequent->appendNode(returnNode);
+
+    Ptr<IfNode> ifNode = new IfNode(expr.srcpos(),
+                                    testNode->clone(), consequent, alternate);
+    block->appendNode(ifNode);
+  }
+  else {
+    block->appendNode(whileNode);
+
+    if (requiresReturnValue)
+      block->appendNode(returnNode);
+  }
 
   return block.release();
 }

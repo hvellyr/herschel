@@ -110,6 +110,9 @@ namespace herschel
     virtual AptNode* transform(Transformator* annotator) = 0;
     virtual void typify(Typifier* typifier) = 0;
 
+    bool         fDelayTypeSpec;
+    int          fLoopId;
+
   protected:
     SrcPos       fSrcPos;
     Ptr<Scope>   fScope;
@@ -141,6 +144,31 @@ namespace herschel
 
   protected:
     NodeList   fChildren;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  //! Represents an undefined value.
+  //!
+  //!  This is only used for delayed variable initialization and marks that
+  //! the (local) variable is not to be initialized at all.  Normally this is
+  //! not desirable, but when the compiler can prove that the variable is not
+  //! accessed before an following assignment, it does not need to generate an
+  //! initialization.  Ultimatively this helps in delaying the type defering
+  //! for the variable.
+  class UndefNode : public AptNode
+  {
+  public:
+    UndefNode();
+
+    virtual UndefNode* clone() const;
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
+    virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 

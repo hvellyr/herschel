@@ -195,6 +195,7 @@ namespace herschel
     size_t getWhereOfs(const Token& expr) const;
     size_t getWhereOfs(const TokenVector& seq, size_t ofs) const;
 
+    AptNode* constructWhileTestNode(const Token& expr, NodeList& testExprs);
 
     typedef std::map<String, Type> TSharedGenericTable;
     class TSharedGenericScopeHelper

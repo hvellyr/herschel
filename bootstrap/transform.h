@@ -50,6 +50,7 @@ namespace herschel
   class SymbolNode;
   class TypeDefNode;
   class TypeNode;
+  class UndefNode;
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
@@ -108,6 +109,7 @@ namespace herschel
     AptNode* transform(WhileNode* node);
     AptNode* transform(VardefNode* node);
     AptNode* transform(FuncDefNode* node);
+    AptNode* transform(UndefNode* node);
 
   private:
     void transformNodeList(NodeList& nl);

@@ -72,7 +72,9 @@ herschel::copyNodes(const NodeList& src)
 //----------------------------------------------------------------------------
 
 AptNode::AptNode(const SrcPos& srcpos)
-  : fSrcPos(srcpos),
+  : fDelayTypeSpec(false),
+    fLoopId(0),
+    fSrcPos(srcpos),
     fTypeConvKind(kNoConv),
     fIsInTailPos(false),
     fIsSingleTypeRequired(false)
@@ -81,7 +83,9 @@ AptNode::AptNode(const SrcPos& srcpos)
 
 
 AptNode::AptNode(const SrcPos& srcpos, const Type& type)
-  : fSrcPos(srcpos),
+  : fDelayTypeSpec(false),
+    fLoopId(0),
+    fSrcPos(srcpos),
     fType(type),
     fTypeConvKind(kNoConv),
     fIsInTailPos(false),
@@ -275,6 +279,28 @@ _type::typify(Typifier* typifier)               \
 
 //----------------------------------------------------------------------------
 
+UndefNode::UndefNode()
+  : AptNode(SrcPos())
+{ }
+
+
+UndefNode*
+UndefNode::clone() const
+{
+  return new UndefNode();
+}
+
+
+DEF_RENDER(UndefNode)
+DEF_CODEGEN(UndefNode)
+DEF_ANNOTATE(UndefNode)
+DEF_TRAVERSE(UndefNode)
+DEF_TRANSFORM(UndefNode)
+DEF_TYPIFY(UndefNode)
+
+
+//----------------------------------------------------------------------------
+
 namespace herschel {
   template<typename T>
   T* cloneScope(const T* src, T* dst)
@@ -283,6 +309,7 @@ namespace herschel {
     dst->setType(src->type());
     dst->setDstType(src->dstType());
     dst->setTypeConv(src->typeConv());
+    dst->fDelayTypeSpec = src->fDelayTypeSpec;
     return dst;
   }
 }

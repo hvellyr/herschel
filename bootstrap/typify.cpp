@@ -203,7 +203,7 @@ void
 Typifier::typify(LetNode* node)
 {
   typifyNode(node->defNode());
-  if (fPhase == kTypify)
+  if (fPhase == kTypify && !node->defNode()->fDelayTypeSpec)
     node->setType(node->defNode()->type());
 }
 
@@ -271,7 +271,11 @@ Typifier::typify(VardefNode* node)
     typifyNode(node->initExpr());
 
   if (fPhase == kTypify) {
-    setupBindingNodeType(node, "variable");
+    if (!node->fDelayTypeSpec)
+      setupBindingNodeType(node, "variable");
+  }
+  else {
+    assert(!node->fDelayTypeSpec);
   }
 }
 
@@ -781,8 +785,24 @@ Typifier::typify(ApplyNode* node)
 void
 Typifier::typify(AssignNode* node)
 {
-  typifyNode(node->lvalue());
   typifyNode(node->rvalue());
+
+  if (node->fDelayTypeSpec) {
+    SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->lvalue());
+    assert(symNode != NULL);
+
+    const AptNode* var = node->scope()->lookupVarOrFunc(symNode->name(), true);
+    VardefNode* vardefNode = const_cast<VardefNode*>(dynamic_cast<const VardefNode*>(var));
+    assert(vardefNode != NULL);
+
+    symNode->setType(node->rvalue()->type());
+    vardefNode->setType(node->rvalue()->type());
+
+    node->fDelayTypeSpec = false;
+    vardefNode->fDelayTypeSpec = false;
+  }
+  else
+    typifyNode(node->lvalue());
 
   if (fPhase == kTypify) {
     Type ltype = node->lvalue()->type();
@@ -811,7 +831,7 @@ Typifier::typify(AssignNode* node)
 
     annotateTypeConv(node->rvalue(), ltype);
     annotateTypeConv(node->lvalue(), ltype);
-    annotateTypeConv(node, rtype);
+    annotateTypeConv(node, ltype);
   }
 }
 
@@ -1458,6 +1478,8 @@ Typifier::typify(CastNode* node)
           node->setType(type);
       }
     }
+
+    annotateTypeConv(node->base(), node->type());
   }
 }
 
@@ -1559,4 +1581,11 @@ Typifier::typify(UnitConstNode* node)
 {
   // TODO
   typifyNode(node->value());
+}
+
+
+void
+Typifier::typify(UndefNode* node)
+{
+  // Nothing to be done here
 }

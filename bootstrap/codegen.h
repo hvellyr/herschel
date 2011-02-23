@@ -70,6 +70,7 @@ namespace herschel
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
+  class UndefNode;
   class WhileNode;
 
   class String;
@@ -124,6 +125,7 @@ namespace herschel
     llvm::Value* codegen(const UnitConstNode* node);
     llvm::Value* codegen(const VectorNode* node);
     llvm::Value* codegen(const WhileNode* node);
+    llvm::Value* codegen(const UndefNode* node);
 
   private:
     llvm::Value* codegen(const FuncDefNode* node, bool isLocal);

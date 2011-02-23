@@ -1048,3 +1048,10 @@ XmlRenderer::renderNode(const CastNode* node)
   displayType("as", node->type());
   displayCloseTag("cast");
 }
+
+
+void
+XmlRenderer::renderNode(const UndefNode* node)
+{
+  displayEmptyTag("undef");
+}
