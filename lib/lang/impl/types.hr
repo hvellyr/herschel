@@ -1,0 +1,193 @@
+;; This file is part of the herschel package 
+;;
+;; Copyright (c) 2010-2011 Gregor Klinke
+;; All rights reserved.
+;;
+;; Redistribution and use in source and binary forms, with or without
+;; modification, are permitted provided that the following conditions are
+;; met:
+;;
+;; - Redistributions of source code must retain the above copyright notice,
+;;   this list of conditions and the following disclaimer.
+;;
+;; - Redistributions in binary form must reproduce the above copyright
+;;   notice, this list of conditions and the following disclaimer in the
+;;   documentation and/or other materials provided with the distribution.
+;;
+;; - Neither the name of the author nor the names of other contributors may
+;;   be used to endorse or promote products derived from this software
+;;   without specific prior written permission.
+;;
+;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+;; IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+;; TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+;; PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+;; OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+;; EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+;; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+;; PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;; LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+module lang ("eyestep/herschel 1.0:lang")
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<Int>) : Int
+  0
+
+def min-value(ty @ Class<Int>) : Int
+  -INFINITIY
+
+def max-value(ty @ Class<Int>) : Int
+  INFINITY
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<Real>) : Real
+  0.0
+
+def min-value(ty @ Class<Real>) : Real
+  -INFINITIY
+
+def max-value(ty @ Class<Real>) : Real
+  INFINITY
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<Ordinal>) : Ordinal
+  0
+
+def min-value(ty @ Class<Ordinal>) : Ordinal
+  0
+
+def max-value(ty @ Class<Ordinal>) : Ordinal
+  INFINITY
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<Int8>) : Int8
+  0
+
+def min-value(ty @ Class<Int8>) : Int8
+  -128
+
+def max-value(ty @ Class<Int8>) : Int8
+  127
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<UInt8>) : UInt8
+  0
+
+def min-value(ty @ Class<UInt8>) : UInt8
+  0
+
+def max-value(ty @ Class<UInt8>) : UInt8
+  255
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<Int16>) : Int16
+  0
+
+def min-value(ty @ Class<Int16>) : Int16
+  -32768
+
+def max-value(ty @ Class<Int16>) : Int16
+  32767
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<UInt16>) : UInt16
+  0
+
+def min-value(ty @ Class<UInt16>) : UInt16
+  0
+
+def max-value(ty @ Class<UInt16>) : UInt16
+  65535
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<Int32>) : Int32
+  0
+
+def min-value(ty @ Class<Int32>) : Int32
+  -2147483648
+
+def max-value(ty @ Class<Int32>) : Int32
+  2147483647
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<UInt32>) : UInt32
+  0
+
+def min-value(ty @ Class<UInt32>) : UInt32
+  0
+
+def max-value(ty @ Class<UInt32>) : UInt32
+  4294967295
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<Int64>) : Int64
+  0
+
+def min-value(ty @ Class<Int64>) : Int64
+  -9223372036854775808
+
+def max-value(ty @ Class<Int64>) : Int64
+  9223372036854775807
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<UInt64>) : UInt64
+  0
+
+def min-value(ty @ Class<UInt64>) : UInt64
+  0
+
+def max-value(ty @ Class<UInt64>) : UInt64
+  18446744073709551615
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<Char>) : Char
+  \nul
+
+def min-value(ty @ Class<Char>) : Char
+  \nul
+
+def max-value(ty @ Class<Char>) : Char
+  \u10ffffh
+
+
+;;----------------------------------------------------------------------------
+
+def null-value(ty @ Class<Object>) : Object
+  nil
+
+def min-value(ty @ Class<Object>) : Object
+  -- not defined
+  nil
+
+def max-value(ty @ Class<Object>) : Object
+  -- not defined
+  nil
+
+;; end of types.hr

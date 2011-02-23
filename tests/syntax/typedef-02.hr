@@ -1,0 +1,5 @@
+def type Collection<T>
+
+def type OrderedCollection<T> : Collection<T>
+
+def type AssocCollection<K, V> : Collection<Assoc<K, V> >

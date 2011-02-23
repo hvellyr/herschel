@@ -1,0 +1,13 @@
+def type Vehicle
+def type Car : Vehicle
+def type Truck : Car
+def type Bike : Vehicle
+
+
+def generic foo(a @ 'T, b : 'T) : 'T ...
+
+;; error here: a method's type must fit somehow into the generic pattern
+;; scheme of generic function.  Here 'T can be Int and Vehicle at the same
+;; time.
+def foo(a @ Int, b : Vehicle) : Vehicle
+  b

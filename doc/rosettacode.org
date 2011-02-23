@@ -1,0 +1,173 @@
+Better name for it
+------------------
+
+Name            file extension      origin
+heather         .hea                (from the plant erica carnea)
+andle           .an                 The andle stone
+herschel        .hr                 After william herschel
+
+
+
+Comparison
+----------
+
+Paradigms                              imperative, functional, procedural,
+                                       generic, object-oriented
+Standardized                           No
+Type strength                          strong
+Type safety                            safe (unsafe allowed)
+Expression of types                    explicit, optional inferred
+Type compatibility                     nominative, structural
+Type checking                          static, dynamic
+Parameter passing methods available    by value, by safe reference (if
+                                       immutable), by reference (reference
+                                       types)
+Garbage collection                     Yes
+Intended use                           Application, General
+Design goals                           Compilability, Correctness,
+                                       Efficiency, Expressiveness,
+                                       Uniformity, Lexical Scoping
+Execution method                       Compiled (machine code)
+Lang tags                              andle
+
+
+Language properties
+-------------------
+
+exec	                                 machine
+site	                                 http://www.eyestep.org/heather
+gc	                                   yes
+parampass	                             both
+safety	                               safe
+strength	                             strong
+compat                                 both
+express                                explicit
+checking                               both
+untyped
+tags                                   andle
+LCT                                    no
+bnf                                    http://www.eyestep.org/heather-spec.pdf
+
+
+Description
+-----------
+
+Heather is a general-purpose multiparadigm programming language.  It is
+strongly typed, offering type inference and parametric polymorphism
+("generics").  It is thoroughly object oriented (everything is an object),
+while its consequent multiple dispatch approach gives it a strong
+functional touch.  The object model is class-oriented, supporting multiple
+inheritance just as a separation of types ("protocols", "interfaces") and
+classes.
+
+
+Links
+-----
+
+Language specification: http://www.eyestep.org/heather-spec.pdf
+
+
+Implementations
+---------------
+
+Source code of the compiler: https://bitbucket.org/hvellyr/heather
+
+
+99 Bottles of Beer
+------------------
+
+module beer99
+import "io/io.h"
+
+def bottles(n : Int)
+  for (i in n .. 0 by -1) {
+    let number-str = select (i) {
+                       | 0 -> "No more bottles"
+                       | 1 -> "One bottle" |
+                       | else -> "%d bottles" % i
+                     }
+    outln("%s of beer on the wall" % number-str)
+    outln("%s of beer" % number-str)
+    outln("Take one down, pass it around")
+    outln("%s of beer on the wall" % number-str)
+    outln()
+
+def app|main()
+  bottles(99)
+
+
+Factorial
+---------
+
+Iterative:
+
+def factorial(n : Int) : Int
+  let result = 1
+  for (i = 1 .. n)
+    result = result * i
+  result
+
+
+Recursive:
+
+def factorial(n : Int) : Int
+  if (n == 0)
+    1
+  else
+    n * factorial(n - 1)
+
+
+Arrays
+------
+
+def v0 : Int[]           -- empty (static allocated) array
+def v1 : Int[12]         -- static allocated array with twelve int slots
+                         -- initialized to 0
+def v2 = Int[](256, 7)   -- dynamic allocated array with 256 slots assigned
+                         -- to 7
+def v3 = #[1, 2, 3, 4]   -- literal array
+
+def foo()
+  v1[1] = v2[5] + v3[2]
+
+
+Comments
+--------
+
+-- a single line comment
+
+when ignore {
+  larger portions of code can be commented using the
+  'when ignore' statement.  This requires properly paired
+  braces however.
+}
+
+def foo()
+    ~ inline documentation is ignored by the compiler, but used by doc
+    generators ~
+
+
+
+
+
+----------------------------------------------------------------------
+
+Dependecies:
+
+  from scheme:       - closures
+                     - lexical scoping
+
+  from cecil|diesel: - multi-dispatch and specified params
+                     - generic functions
+                     - function/type separation
+
+  from dylan:        - multi-dispatch
+
+  from alice (?):    - spawn functions
+                     - futures/promisses
+
+  from modula-3:     - ?
+
+  from D:            - ?
+
+  from Go            - ?

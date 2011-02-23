@@ -1,0 +1,11 @@
+module abc ("-/abc:1")
+
+def class Person
+
+def foo()
+  let x = Person[](12u)
+  x
+
+def bar()
+  let x = Person()
+  x

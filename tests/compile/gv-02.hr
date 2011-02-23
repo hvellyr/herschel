@@ -1,0 +1,5 @@
+def a = 42
+def b = a + 1
+
+def app|main()
+   b

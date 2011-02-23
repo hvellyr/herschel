@@ -1,0 +1,13 @@
+def to-string(a : Int) : String ...
+
+def to-keyw(a : Int) : Keyword ...
+
+def foo(a : Int)
+  ;; if the expression is not in tail position it doesn't need an ambiguous
+  ;; type
+  if (a > 0)
+    a.to-string
+  else
+    a.to-keyw
+
+  1.2345

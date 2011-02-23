@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>module</id>
+<id>theatre</id>
+<nested left='(' right=')'>
+<lit type='str'>eyestep/theatre 1.0</lit>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>f0</id>
+<nested left='(' right=')'>
+<seq>
+<id>x</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Int</id>
+<nested left='{' right='}'>
+<seq>
+<id>x</id>
+<punct type='*'/>
+<lit type='int'>2</lit>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>f1</id>
+<nested left='(' right=')'>
+<seq>
+<id>x</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Int</id>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>x</id>
+<punct type='='/>
+<lit type='int'>5</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>x2</id>
+<punct type=':'/>
+<id>Int</id>
+<punct type='='/>
+<lit type='int'>5</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>fluid</id>
+<id>*stdout*</id>
+<punct type=':'/>
+<id>Port</id>
+<punct type='='/>
+<seq>
+<id>TTYPort</id>
+<nested left='(' right=')'>
+<lit type='int'>0</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>config</id>
+<id>OS</id>
+<punct type='='/>
+<lit type='str'>mac-os-x</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>enum</id>
+<id>FileMode</id>
+<nested left='{' right='}'>
+<seq>
+<id>read</id>
+<punct type='='/>
+<seq>
+<lit type='int'>1</lit>
+<punct type='&lt;&lt;'/>
+<lit type='int'>0</lit>
+</seq>
+</seq>
+<seq>
+<id>write</id>
+<punct type='='/>
+<seq>
+<lit type='int'>1</lit>
+<punct type='&lt;&lt;'/>
+<lit type='int'>1</lit>
+</seq>
+</seq>
+<seq>
+<id>append</id>
+<punct type='='/>
+<seq>
+<lit type='int'>1</lit>
+<punct type='&lt;&lt;'/>
+<lit type='int'>2</lit>
+</seq>
+</seq>
+<seq>
+<id>create</id>
+<punct type='='/>
+<seq>
+<lit type='int'>1</lit>
+<punct type='&lt;&lt;'/>
+<lit type='int'>3</lit>
+</seq>
+</seq>
+<seq>
+<id>exclusive</id>
+<punct type='='/>
+<seq>
+<lit type='int'>1</lit>
+<punct type='&lt;&lt;'/>
+<lit type='int'>4</lit>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>enum</id>
+<id>Color</id>
+<punct type=':'/>
+<id>Keyword</id>
+<nested left='{' right='}'>
+<id>black</id>
+<id>blue</id>
+<id>green</id>
+<id>red</id>
+<id>white</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>measure</id>
+<id>Duration</id>
+<nested left='(' right=')'>
+<id>s</id>
+</nested>
+<punct type=':'/>
+<id>Float</id>
+</seq>
+<seq>
+<id>def</id>
+<id>unit</id>
+<id>h</id>
+<punct type='->'/>
+<id>s</id>
+<nested left='(' right=')'>
+<seq>
+<id>x</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<seq>
+<id>x</id>
+<punct type='*'/>
+<seq>
+<lit type='int'>60</lit>
+<punct type='*'/>
+<lit type='int'>60</lit>
+</seq>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>unit</id>
+<id>min</id>
+<punct type='->'/>
+<id>s</id>
+<nested left='(' right=')'>
+<seq>
+<id>x</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<seq>
+<id>x</id>
+<punct type='*'/>
+<lit type='int'>60</lit>
+</seq>
+</seq>
+</seq>

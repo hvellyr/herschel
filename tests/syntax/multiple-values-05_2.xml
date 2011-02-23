@@ -1,0 +1,406 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<vardef sym='b' type='const'>
+<init>
+<int ty='lang|Int32'>42</int>
+</init>
+</vardef>
+</def>
+<def>
+<func sym='foo'>
+<params>
+<param sym='a' type='key' key='a'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+<init>
+<symbol>b</symbol>
+</init>
+</param>
+<param sym='c' type='key' key='c'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+<init>
+<int ty='lang|Int32'>11</int>
+</init>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<binary op='+'>
+<symbol>a</symbol>
+<symbol>c</symbol>
+</binary>
+</body>
+</func>
+</def>
+<def>
+<func sym='foo2'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='c' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<array>
+<assign>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</assign>
+<assign>
+<symbol>c</symbol>
+<int ty='lang|Int32'>11</int>
+</assign>
+</array>
+</body>
+</func>
+</def>
+<def>
+<func sym='foo3'>
+<params>
+<param sym='c' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='__value_0'>
+<init>
+<array>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>0</int>
+</array>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='r'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|UInt32'>0</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='g'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|UInt32'>1</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='b'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|UInt32'>2</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<block>
+<let>
+<vardef sym='a'>
+<init>
+<int ty='lang|Int32'>0</int>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__return_5'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
+<init>
+<symbol>lang|unspecified</symbol>
+</init>
+</vardef>
+</let>
+<while>
+<test>
+<binary op='&lt;'>
+<symbol>a</symbol>
+<apply>
+<symbol>size</symbol>
+<args>
+<symbol>c</symbol>
+</args>
+</apply>
+</binary>
+</test>
+<body>
+<block>
+<assign>
+<symbol>__return_5</symbol>
+<block>
+<let>
+<vardef sym='__value_1'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>c</symbol>
+<range>
+<symbol>a</symbol>
+<binary op='+'>
+<symbol>a</symbol>
+<int ty='lang|Int32'>2</int>
+</binary>
+</range>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<assign>
+<symbol>r</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_1</symbol>
+<int ty='lang|UInt32'>0</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>g</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_1</symbol>
+<int ty='lang|UInt32'>1</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>b</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_1</symbol>
+<int ty='lang|UInt32'>2</int>
+</args>
+</apply>
+</assign>
+</block>
+</assign>
+<assign>
+<symbol>a</symbol>
+<binary op='+'>
+<symbol>a</symbol>
+<int ty='lang|Int32'>3</int>
+</binary>
+</assign>
+</block>
+</body>
+</while>
+<symbol>__return_5</symbol>
+</block>
+<select>
+<test>
+<symbol>c</symbol>
+</test>
+<map>
+<values>
+<keyw>red</keyw>
+</values>
+<cons>
+<block>
+<let>
+<vardef sym='__value_2'>
+<init>
+<array>
+<int ty='lang|Int32'>255</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>0</int>
+</array>
+</init>
+</vardef>
+</let>
+<assign>
+<symbol>r</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_2</symbol>
+<int ty='lang|UInt32'>0</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>g</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_2</symbol>
+<int ty='lang|UInt32'>1</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>b</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_2</symbol>
+<int ty='lang|UInt32'>2</int>
+</args>
+</apply>
+</assign>
+</block>
+</cons>
+</map>
+<map>
+<values>
+<keyw>green</keyw>
+</values>
+<cons>
+<block>
+<let>
+<vardef sym='__value_3'>
+<init>
+<array>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>255</int>
+<int ty='lang|Int32'>0</int>
+</array>
+</init>
+</vardef>
+</let>
+<assign>
+<symbol>r</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_3</symbol>
+<int ty='lang|UInt32'>0</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>g</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_3</symbol>
+<int ty='lang|UInt32'>1</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>b</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_3</symbol>
+<int ty='lang|UInt32'>2</int>
+</args>
+</apply>
+</assign>
+</block>
+</cons>
+</map>
+<map>
+<values>
+<keyw>blue</keyw>
+</values>
+<cons>
+<block>
+<let>
+<vardef sym='__value_4'>
+<init>
+<array>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>255</int>
+</array>
+</init>
+</vardef>
+</let>
+<assign>
+<symbol>r</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_4</symbol>
+<int ty='lang|UInt32'>0</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>g</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_4</symbol>
+<int ty='lang|UInt32'>1</int>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>b</symbol>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_4</symbol>
+<int ty='lang|UInt32'>2</int>
+</args>
+</apply>
+</assign>
+</block>
+</cons>
+</map>
+</select>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

@@ -1,0 +1,289 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>foo</id>
+<nested left='(' right=')'>
+<seq>
+<id>v</id>
+<punct type=':'/>
+<id>Int</id>
+</seq>
+</nested>
+<punct type=':'/>
+<nested left='(' right=')'>
+<id>Int</id>
+<punct type=','/>
+<id>Char</id>
+<punct type=','/>
+<id>Bool</id>
+</nested>
+<nested left='{' right='}'>
+<nested left='#[' right=']'>
+<id>v</id>
+<punct type=','/>
+<lit type='char'>\u061;</lit>
+<punct type=','/>
+<lit type='bool'>true</lit>
+</nested>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>bar</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>let</id>
+<id>__value_0</id>
+<punct type='='/>
+<seq>
+<id>foo</id>
+<nested left='(' right=')'>
+<lit type='int'>256</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>a</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>__value_0</id>
+<punct type=','/>
+<lit type='uint'>0</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>b</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>__value_0</id>
+<punct type=','/>
+<lit type='uint'>1</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>c</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>__value_0</id>
+<punct type=','/>
+<lit type='uint'>2</lit>
+</nested>
+</seq>
+</seq>
+<lit type='bool'>true</lit>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>foo2</id>
+<nested left='(' right=')'>
+<seq>
+<id>val</id>
+<punct type=':'/>
+<nested left='(' right=')'>
+<id>Int</id>
+<punct type=','/>
+<id>Char</id>
+<punct type=','/>
+<id>Bool</id>
+</nested>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>let</id>
+<id>x</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>val</id>
+<punct type=','/>
+<lit type='uint'>0</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>y</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>val</id>
+<punct type=','/>
+<lit type='uint'>1</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>z</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>val</id>
+<punct type=','/>
+<lit type='uint'>2</lit>
+</nested>
+</seq>
+</seq>
+<lit type='bool'>true</lit>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>foo3</id>
+<nested left='(' right=')'>
+<seq>
+<id>val</id>
+<punct type=':'/>
+<seq>
+<seq>
+<punct type='&apos;'/>
+<id>T</id>
+</seq>
+<nested left='[' right=']'/>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>let</id>
+<id>x</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>val</id>
+<punct type=','/>
+<lit type='uint'>0</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>y</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>val</id>
+<punct type=','/>
+<lit type='uint'>1</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>z</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>val</id>
+<punct type=','/>
+<lit type='uint'>2</lit>
+</nested>
+</seq>
+</seq>
+<lit type='bool'>true</lit>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>foo4</id>
+<nested left='(' right=')'>
+<seq>
+<id>val</id>
+<punct type=':'/>
+<seq>
+<id>Any</id>
+<nested left='[' right=']'/>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>let</id>
+<id>__value_1</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>val</id>
+<punct type=','/>
+<seq>
+<lit type='int'>0</lit>
+<punct type='..'/>
+<lit type='int'>3</lit>
+</seq>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>x</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>__value_1</id>
+<punct type=','/>
+<lit type='uint'>0</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>y</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>__value_1</id>
+<punct type=','/>
+<lit type='uint'>1</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>z</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>__value_1</id>
+<punct type=','/>
+<lit type='uint'>2</lit>
+</nested>
+</seq>
+</seq>
+<lit type='bool'>true</lit>
+</nested>
+</seq>
+</seq>
+

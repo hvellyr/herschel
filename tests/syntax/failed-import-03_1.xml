@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>import</id>
+<lit type='str'>core.hr</lit>
+<nested left='(' right=')'>
+<seq>
+<id>abc</id>
+<punct type='->'/>
+<id>xyz</id>
+</seq>
+<seq>
+<id>x</id>
+<punct type='->'/>
+<id>y</id>
+</seq>
+</nested>
+</seq>
+</seq>

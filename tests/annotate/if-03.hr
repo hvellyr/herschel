@@ -1,0 +1,20 @@
+def type MutualString : String
+
+
+def to-string(a : Int) : String ...
+
+def mutate(a : Int) : MutualString ...
+
+
+def foo(a : Int)
+  if (a > 0)
+    a.to-string
+  else
+    a.mutate
+
+
+def bar(a : Int)
+  if (a > 0)
+    a.mutate
+  else
+    a.to-string

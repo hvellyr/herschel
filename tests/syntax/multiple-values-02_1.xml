@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>bar2</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>let</id>
+<id>a</id>
+<punct type='='/>
+<seq>
+<id>foo</id>
+<nested left='(' right=')'>
+<lit type='int'>1</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>__value_0</id>
+<punct type='='/>
+<seq>
+<id>foo</id>
+<nested left='(' right=')'>
+<lit type='int'>2</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>b</id>
+<punct type='='/>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<id>__value_0</id>
+<punct type=','/>
+<lit type='uint'>0</lit>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>let</id>
+<id>c</id>
+<punct type='='/>
+<seq>
+<id>slice*</id>
+<nested left='(' right=')'>
+<id>__value_0</id>
+<punct type=','/>
+<lit type='uint'>1</lit>
+</nested>
+</seq>
+</seq>
+<lit type='bool'>true</lit>
+</nested>
+</seq>
+</seq>
+

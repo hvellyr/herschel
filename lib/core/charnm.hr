@@ -1,0 +1,227 @@
+;; This file is part of the herschel package
+;;
+;; Copyright (c) 2010-2011 Gregor Klinke
+;; All rights reserved.
+;;
+;; Redistribution and use in source and binary forms, with or without
+;; modification, are permitted provided that the following conditions are
+;; met:
+;;
+;; - Redistributions of source code must retain the above copyright notice,
+;;   this list of conditions and the following disclaimer.
+;;
+;; - Redistributions in binary form must reproduce the above copyright
+;;   notice, this list of conditions and the following disclaimer in the
+;;   documentation and/or other materials provided with the distribution.
+;;
+;; - Neither the name of the author nor the names of other contributors may
+;;   be used to endorse or promote products derived from this software
+;;   without specific prior written permission.
+;;
+;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+;; IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+;; TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+;; PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+;; OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+;; EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+;; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+;; PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;; LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+module core ("eyestep/herschel 1.0:core")
+export public(*)
+
+;; Character names from the ASCII-range.
+
+def char nul     = 0000h      def char null = 0000h
+def char soh     = 0001h
+def char stx     = 0002h
+def char etc     = 0003h
+def char eot     = 0004h
+def char enq     = 0005h
+def char ack     = 0006h
+def char bel     = 0007h      def char bell = 0007h
+def char bs      = 0008h      def char backspace = 0008h
+def char ht      = 0009h      def char tab = 0009h
+def char nl      = 000ah      def char newline = 000ah
+def char vt      = 000bh
+def char np      = 000ch      def char formfeed = 000ch
+def char cr      = 000dh      def char return = 000dh
+def char so      = 000eh
+def char si      = 000fh
+
+def char dle     = 0010h
+def char dc1     = 0011h
+def char dc2     = 0012h
+def char dc3     = 0013h
+def char dc4     = 0014h
+def char nak     = 0015h
+def char syn     = 0016h
+def char etb     = 0017h
+def char can     = 0018h
+def char em      = 0019h
+def char sub     = 001ah
+def char esc     = 001bh      def char escape = 001bh
+def char fs      = 001ch
+def char gs      = 001dh
+def char rs      = 001eh
+def char us      = 001fh
+def char sp      = 0020h      def char space = 0020h
+def char excl    = 0021h
+def char quot    = 0022h
+def char num     = 0023h
+def char dollar  = 0024h
+def char percnt  = 0025h
+def char amp     = 0026h
+def char apos    = 0027h
+def char lpar    = 0028h
+def char rpar    = 0029h
+def char ast     = 002ah
+def char plus    = 002bh
+def char comma   = 002ch
+def char dash    = 002dh
+def char period  = 002eh
+def char sol     = 002fh
+def char n0      = 0030h
+def char n1      = 0031h
+def char n2      = 0032h
+def char n3      = 0033h
+def char n4      = 0034h
+def char n5      = 0035h
+def char n6      = 0036h
+def char n7      = 0037h
+def char n8      = 0038h
+def char n9      = 0039h
+def char colon   = 003ah
+def char semi    = 003bh
+def char lt      = 003ch
+def char equals  = 003dh
+def char gt      = 003eh
+def char quest   = 003fh
+def char at      = 0040h
+
+def char lsqb    = 005bh
+def char bsol    = 005ch      def char backslash = 005ch
+def char rsqb    = 005dh
+def char circ    = 005eh
+def char lowbar  = 005fh
+
+def char grave   = 0060h
+def char lcurlyb = 007bh
+def char verbar  = 007ch
+def char rcurlyb = 007dh
+def char tilde   = 007eh
+def char del     = 007fh      def char delete = 007fh
+
+;; Characters from the Latin-1 Supplement range (u-00a1 .. u-00ff)
+
+def char nbsp    = 00a0h
+def char iexcl   = 00a1h
+def char cent    = 00a2h
+def char pound   = 00a3h
+def char curren  = 00a4h
+def char yen     = 00a5h
+def char brvbar  = 00a6h
+def char sect    = 00a7h
+def char uml     = 00a8h
+def char copy    = 00a9h
+def char ordf    = 00aah
+def char laquo   = 00abh
+def char not     = 00ach
+def char shy     = 00adh
+def char reg     = 00aeh
+def char macr    = 00afh
+def char deg     = 00b0h
+def char plusmn  = 00b1h
+def char sup2    = 00b2h
+def char sup3    = 00b3h
+def char acute   = 00b4h
+def char micro   = 00b5h
+def char para    = 00b6h
+def char middot  = 00b7h
+def char cedil   = 00b8h
+def char sup1    = 00b9h
+def char ordm    = 00bah
+def char raquo   = 00bbh
+def char frac14  = 00bch
+def char frac12  = 00bdh
+def char frac34  = 00beh
+def char iquest  = 00bfh
+def char Agrave  = 00c0h
+def char Aacute  = 00c1h
+def char Acirc   = 00c2h
+def char Atilde  = 00c3h
+def char Auml    = 00c4h
+def char Aring   = 00c5h
+def char AElig   = 00c6h
+def char Ccedil  = 00c7h
+def char Egrave  = 00c8h
+def char Eacute  = 00c9h
+def char Ecirc   = 00cah
+def char Euml    = 00cbh
+def char Igrave  = 00cch
+def char Iacute  = 00cdh
+def char Icirc   = 00ceh
+def char Iuml    = 00cfh
+def char Eth     = 00d0h
+def char Ntilde  = 00d1h
+def char Ograve  = 00d2h
+def char Oacute  = 00d3h
+def char Ocirc   = 00d4h
+def char Otilde  = 00d5h
+def char Ouml    = 00d6h
+def char times   = 00d7h
+def char Oslash  = 00d8h
+def char Ugrave  = 00d9h
+def char Uacute  = 00dah
+def char Ucirc   = 00dbh
+def char Uuml    = 00dch
+def char Yacute  = 00ddh
+def char Thorn   = 00deh
+def char szlig   = 00dfh
+def char agrave  = 00e0h
+def char aacute  = 00e1h
+def char acirc   = 00e2h
+def char atilde  = 00e3h
+def char auml    = 00e4h
+def char aring   = 00e5h
+def char aelig   = 00e6h
+def char ccedil  = 00e7h
+def char egrave  = 00e8h
+def char eacute  = 00e9h
+def char ecirc   = 00eah
+def char euml    = 00ebh
+def char igrave  = 00ech
+def char iacute  = 00edh
+def char icirc   = 00eeh
+def char iuml    = 00efh
+def char eth     = 00f0h
+def char ntilde  = 00f1h
+def char ograve  = 00f2h
+def char oacute  = 00f3h
+def char ocirc   = 00f4h
+def char otilde  = 00f5h
+def char ouml    = 00f6h
+def char divide  = 00f7h
+def char oslash  = 00f8h
+def char ugrave  = 00f9h
+def char uacute  = 00fah
+def char ucirc   = 00fbh
+def char uuml    = 00fch
+def char yacute  = 00fdh
+def char thorn   = 00feh
+def char yuml    = 00ffh
+
+def char euro    = 20ach
+def char lsquo   = 2018h
+def char rsquo   = 2019h
+def char ldquo   = 201ch
+def char rdquo   = 201dh
+def char trade   = 2122h
+
+def char objreplc = 0fffch
+def char replc   = 0fffdh
+
+;; end of charnm

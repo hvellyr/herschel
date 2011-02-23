@@ -1,0 +1,6 @@
+module red ("test/red")
+export public (abc : 12,
+               xyz : Key)
+
+def measure Abc (abc) : Float
+def measure Xyz (xyz) : Int

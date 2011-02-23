@@ -1,0 +1,359 @@
+;; This file is part of the herschel package
+;;
+;; Copyright (c) 2006-2011 Gregor Klinke
+;; All rights reserved.
+;;
+;; Redistribution and use in source and binary forms, with or without
+;; modification, are permitted provided that the following conditions are
+;; met:
+;;
+;; - Redistributions of source code must retain the above copyright notice,
+;;   this list of conditions and the following disclaimer.
+;;
+;; - Redistributions in binary form must reproduce the above copyright
+;;   notice, this list of conditions and the following disclaimer in the
+;;   documentation and/or other materials provided with the distribution.
+;;
+;; - Neither the name of the author nor the names of other contributors may
+;;   be used to endorse or promote products derived from this software
+;;   without specific prior written permission.
+;;
+;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+;; IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+;; TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+;; PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+;; OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+;; EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+;; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+;; PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;; LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import "collection"
+
+module coll ("eyestep/herschel 1.0:collections")
+export public(List)
+
+
+def find-last-node(node @ Pair<'L, 'R>) : Pair<'L, 'R>
+  let p = node
+  if (p <> nil) {
+    for (p.cdr <> nil)
+      p = p.cdr
+  }
+  p
+
+
+def alias ListPair<Elt> = Pair<Elt, ListPair<Elt>>
+
+def class List<Elt>(root: _root : ListPair<Elt> = nil)
+    : Sequence<Elt>
+{
+  def slot root : ListPair<Elt> = _root
+  def slot last : ListPair<Elt> = nil
+
+  on init(self) {
+    -- set self.last to the last element in the list
+    self.last = find-last-node(self.root)
+  }
+}
+
+
+def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
+  select () {
+    | (before-index == self.num-items) -> {
+        let nl = ListPair<'T>(car: value)
+        if (self.last.nil?)
+          self.root = self.last = nl
+        else {
+          self.last.cdr = nl
+          self.last = nl
+        }
+        self
+      }
+
+    | (before-index == 0 and self.root.nil?) -> {
+        self.root = self.last = ListPair<'T>(car: value)
+        self
+      }
+
+    | else {
+        let p = self.root
+        let prev = nil
+        let n = 0
+
+        for (p <> nil) {
+          if (n == before-index) {
+            if (prev <> nil)
+              prev.cdr = ListPair<'T>(car: value, cdr: p)
+            else
+              self.root = ListPair<'T>(car: value, cdr: p)
+            return self
+          }
+
+          prev = p
+          p = p.cdr
+          n.incr!
+        }
+
+        OutOfRangeException("index %d is beyond %d" % #[index,
+                                                        self.num-items]).raise
+      }
+  }
+
+
+def remove-at!(self @ List<'T>, index : Ordinal) : 'T
+  let p = self.root
+  let prev = nil
+  let n = 0
+
+  for (p <> nil) {
+    if (n == index) {
+      if (prev <> nil) {
+        prev.cdr = p.cdr
+        if (p.cdr.nil?)
+          self.last = prev
+      }
+      else {
+        self.root = p.cdr
+        if (p.cdr.nil?)
+          self.last = nil
+      }
+
+      return self
+    }
+
+    prev = p
+    p = p.cdr
+    n.incr!
+  }
+
+  OutOfRangeException("index %d is beyond %d" % #[index,
+                                                  self.num-items]).raise
+
+
+def add!(self @ List<'T>, elt @ 'T) : List<'T>
+  self.insert!(elt, -1)
+
+
+def remove!(self @ List<'T>, elt @ 'T) : List<'T>
+  match (self.index-of(elt)) {
+    | e : Bool      -> self
+    | idx : Ordinal -> {
+                         self.remove-at!(idx)
+                         self
+                       }
+  }
+
+
+def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrFalse
+  let p = self.root
+  let n : Ordinal = 0
+
+  for (p <> nil) {
+    if (p.cdr == elt)
+      return(n)
+    p = p.cdr
+    n.incr!
+  }
+  false
+
+
+def contains?(self @ List<'T>, elt @ 'T) : Bool
+  self.index-of(elt) isa Ordinal
+
+
+def core|size(self @ List<'T>) : Ordinal
+  let n : Ordinal = 0
+  for (p = self.root then p.cdr while p <> nil)
+    n.incr!(p.car.size)
+  n
+
+
+def num-items(self @ List<'T>) : Ordinal
+  let n : Ordinal = 0
+  for (p = self.root then p.cdr while p <> nil)
+    n.incr!
+  n
+
+
+def empty?(self @ List<'T>) : Bool
+  self.root.nil?
+
+
+def empty!(self @ List<'T>) : List<'T>
+  self.root = self.last = nil
+  self
+
+
+def first(self @ List<'T>) : 'T
+  if (self.root <> nil)
+    self.root.car
+  else
+    eof
+
+
+def last(self @ List<'T>) : 'T
+  if (self.last <> nil)
+    self.last.car
+  else
+    eof
+
+
+def for-each(self @ Collection<'T>,
+             func : ForEachVisitor<'T>) : List<'T>
+  for (p = self.root then p.cdr while p <> nil)
+    func(p.car)
+  self
+
+
+def iterator(self @ List<'T>) : Iterator<'T>
+  PairIterator<'T, Function(node : ListPair<'T>) : 'T>(
+    self.root, function(node) { node.car })
+
+
+def add-all!(self @ List<'T>, other @ Collection<'T>) : List<'T>
+  for (e = other.iterator)
+    self.add!(e)
+  self
+
+
+def has-all?(self @ List<'T>, other @ Collection<'T>) : Bool
+  for (e = other.iterator) {
+    if (not self.contains?(e))
+      return false
+  }
+  true
+
+
+def retain-all!(self @ List<'T>, other @ Collection<'T>) : List<'T> ...
+  -- TODO
+
+
+def remove-all!(self @ List<'T>, other @ Collection<'T>) : List<'T>
+  for (e = other.iterator) {
+    self.remove!(e)
+  }
+  self
+
+
+def swap!(self @ List<'T>, from-idx : Ordinal, to-idx : Ordinal) : List<'T> ...
+  -- TODO
+
+
+def merge-split(nl : ListPair<'T>) : ListPair<'T>
+  let split-h(nl, nl1, nl2) {
+    if (nl.nil? or nl.cdr.nil?)
+      Pair(car: nl2.reverse, cdr: nl1)
+    else
+      split-h(nl.cdr.cdr, nl1.cdr, Pair(car: nl1.car, cdr: nl2))
+  }
+  split-h(nl, nl, Pair())
+
+
+def merge(pred : (Function(left, right) : Bool),
+          nl1 : ListPair<'T>,
+          nl2 : ListPair<'T>) : ListPair<'T>
+  select () {
+    | (nl1.nil?) -> nl2
+    | (nl2.nil?) -> nl1
+    | pred(nl1.car, nl2.car) -> ListPair<'T>(car: nl1.car,
+                                             cdr: merge(pred, nl1.cdr, nl2))
+    | else ListPair<'T>(car: nl2.car,
+                              cdr: merge(pred, nl1, nl2.cdr))
+  }
+
+
+def merge-sort(nl : ListPair<'T>,
+               pred : (Function(left, right) : Bool)) : ListPair<'T>
+  select () {
+    | (nl.nil?)     -> nl
+    | (nl.cdr.nil?) -> nl
+    | else {
+        let splits = merge-split(nl)
+        merge(pred, merge-sort(splits.car, pred),
+              merge-sort(splits.cdr, pred))
+      }
+  }
+
+
+def sort(self @ List<'T>,
+         pred @ (Function(left, right) : Bool)) : List<'T>
+  List<'T>(root: merge-sort(self.root, less-equal?))
+
+
+def sort!(self @ List<'T>) : List<'T>
+  self.root = merge-sort(self.root, less-equal?)
+  self.last = find-last-node(self.root)
+  self
+
+
+def reverse(self @ List<'T>) : List<'T>
+  let newlist = List<'T>()
+  for (p = self.root then p.cdr while p <> nil)
+    newlist.insert!(p.car, 0)
+  newlist
+
+
+def reverse!(self @ List<'T>) : List<'T>
+  let newroot = nil
+  if (self.root <> nil) {
+    newroot = self.last = ListPair<'T>(car: self.root.car, cdr: nil)
+
+    for (p = self.root.cdr then p.cdr while p <> nil)
+      newroot = ListPair<'T>(car: p.car, cdr: newroot)
+    self.root = newroot
+  }
+  self
+
+
+;; operators [] and [] =
+def slice(self @ List<'T>, index @ Ordinal) : 'T
+  let n : Ordinal = 0
+  for (p = self.root then p.cdr while p <> nil) {
+    if (n == index)
+      return p.car
+    n.incr!
+  }
+  OutOfRangeException("index %d is beyond %d" % #[index, n]).raise
+
+
+def slice(self @ List<'T>, from @ Ordinal, to @ Ordinal) : Collection<'T>
+  let n : Ordinal = 0
+  let result = List<'T>()
+
+  for (p = self.root then p.cdr while p <> nil) {
+    if (n >= from) {
+      result.add!(p.car)
+      if (n >= to)
+        return p.car
+    }
+    n.incr!
+  }
+  OutOfRangeException("index %d is beyond %d" % #[index,
+                                                  self.num-items]).raise
+
+
+def slice!(self @ List<'T>,
+           index @ Ordinal,
+           value @ 'T) : List<'T>
+  let n : Ordinal = 0
+  for (p = self.root then p.cdr while p <> nil) {
+    if (n == index) {
+      p.car = value
+      return self
+    }
+  }
+  OutOfRangeException("index %d is beyond %d" % #[index,
+                                                  self.num-items]).raise
+
+
+def lang|to-string(self @ List<'T>) : String
+  if (self.root.nil?)
+    "()"
+  else
+    self.root.to-string
+
+
+;; end of List

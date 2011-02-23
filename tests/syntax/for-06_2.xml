@@ -1,0 +1,237 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<method sym='find-last-node'>
+<params>
+<param sym='node' type='spec'>
+<type>
+<ty:ref nm='Pair'>
+<ty:gen>
+<ty:ref gen='t' nm='L'>
+</ty:ref>
+<ty:ref gen='t' nm='R'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='Pair'>
+<ty:gen>
+<ty:ref gen='t' nm='L'>
+</ty:ref>
+<ty:ref gen='t' nm='R'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='p'>
+<init>
+<symbol>node</symbol>
+</init>
+</vardef>
+</let>
+<if>
+<test>
+<binary op='&lt;>'>
+<symbol>p</symbol>
+<symbol>nil</symbol>
+</binary>
+</test>
+<then>
+<block>
+<let>
+<vardef sym='__return_0'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
+<init>
+<symbol>lang|unspecified</symbol>
+</init>
+</vardef>
+</let>
+<while>
+<test>
+<binary op='&lt;>'>
+<apply>
+<symbol>cdr</symbol>
+<args>
+<symbol>p</symbol>
+</args>
+</apply>
+<symbol>nil</symbol>
+</binary>
+</test>
+<body>
+<block>
+<assign>
+<symbol>__return_0</symbol>
+<assign>
+<symbol>p</symbol>
+<apply>
+<symbol>cdr</symbol>
+<args>
+<symbol>p</symbol>
+</args>
+</apply>
+</assign>
+</assign>
+</block>
+</body>
+</while>
+<symbol>__return_0</symbol>
+</block>
+</then>
+</if>
+<symbol>p</symbol>
+</block>
+</body>
+</method>
+</def>
+<def>
+<func sym='f0'>
+<params>
+<param sym='p' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='k' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='__return_1'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
+<init>
+<symbol>lang|unspecified</symbol>
+</init>
+</vardef>
+</let>
+<while>
+<test>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>p</symbol>
+<int ty='lang|Int32'>0</int>
+</args>
+</apply>
+</test>
+<body>
+<block>
+<assign>
+<symbol>__return_1</symbol>
+<symbol>k</symbol>
+</assign>
+</block>
+</body>
+</while>
+<symbol>__return_1</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f1'>
+<params>
+<param sym='p' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='k' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='__return_2'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
+<init>
+<symbol>lang|unspecified</symbol>
+</init>
+</vardef>
+</let>
+<while>
+<test>
+<apply>
+<symbol>do</symbol>
+<args>
+<apply>
+<symbol  nm='T'>
+<gen>
+<ty:ref nm='A'>
+</ty:ref>
+</gen>
+</symbol>
+<args>
+</args>
+</apply>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>p</symbol>
+<int ty='lang|Int32'>0</int>
+</args>
+</apply>
+</args>
+</apply>
+</test>
+<body>
+<block>
+<assign>
+<symbol>__return_2</symbol>
+<symbol>k</symbol>
+</assign>
+</block>
+</body>
+</while>
+<symbol>__return_2</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

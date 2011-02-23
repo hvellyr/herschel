@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='X'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<slots>
+<def>
+<slot sym='x'>
+</slot>
+</def>
+<def>
+<slot sym='y'>
+</slot>
+</def>
+</slots>
+<on>
+<on key='init'>
+<params>
+<param sym='self' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<body>
+<block>
+<apply>
+<symbol>x!</symbol>
+<args>
+<symbol>self</symbol>
+<symbol>a</symbol>
+</args>
+</apply>
+<apply>
+<symbol>y!</symbol>
+<args>
+<symbol>self</symbol>
+<binary op='+'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</args>
+</apply>
+</block>
+</body>
+</on>
+<on key='delete'>
+<params>
+<param sym='self' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<body>
+<symbol>lang|unspecified</symbol>
+</body>
+</on>
+</on>
+<isa>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:ref nm='All'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='X|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:ref nm='All'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:ref nm='All'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<block>
+<apply>
+<symbol>lang|slot!</symbol>
+<args>
+<symbol>__obj_0</symbol>
+<keyw>x</keyw>
+<symbol>lang|nil</symbol>
+</args>
+</apply>
+<apply>
+<symbol>lang|slot!</symbol>
+<args>
+<symbol>__obj_0</symbol>
+<keyw>y</keyw>
+<symbol>lang|nil</symbol>
+</args>
+</apply>
+<apply>
+<function>
+<params>
+<param sym='self' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<body>
+<block>
+<apply>
+<symbol>x!</symbol>
+<args>
+<symbol>self</symbol>
+<symbol>a</symbol>
+</args>
+</apply>
+<apply>
+<symbol>y!</symbol>
+<args>
+<symbol>self</symbol>
+<binary op='+'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</args>
+</apply>
+</block>
+</body>
+</function>
+<args>
+<symbol>__obj_0</symbol>
+</args>
+</apply>
+<symbol>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

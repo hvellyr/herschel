@@ -1,0 +1,102 @@
+;; This file is part of the herschel package
+;;
+;; Copyright (c) 2010-2011 Gregor Klinke
+;; All rights reserved.
+;;
+;; Redistribution and use in source and binary forms, with or without
+;; modification, are permitted provided that the following conditions are
+;; met:
+;;
+;; - Redistributions of source code must retain the above copyright notice,
+;;   this list of conditions and the following disclaimer.
+;;
+;; - Redistributions in binary form must reproduce the above copyright
+;;   notice, this list of conditions and the following disclaimer in the
+;;   documentation and/or other materials provided with the distribution.
+;;
+;; - Neither the name of the author nor the names of other contributors may
+;;   be used to endorse or promote products derived from this software
+;;   without specific prior written permission.
+;;
+;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+;; IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+;; TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+;; PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+;; OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+;; EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+;; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+;; PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;; LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+module lang ("eyestep/herschel 1.0:lang")
+
+import "lang.hr"
+import "string.hr"
+
+
+def class StringImpl : String
+{
+  def slot data : Char[]
+}
+
+
+;;----------------------------------------------------------------------------
+;; Slice special for string
+;;----------------------------------------------------------------------------
+
+def class StringSlice(_str : StringImpl,
+                      _from : Ordinal,
+                      _to : Ordinal) : Slice<Ordinal, Char>
+{
+  def slot str = _str
+  def slot from = _from
+  def slot to = _to
+}
+
+
+def num-items(sl @ StringSlice) : Ordinal
+  sl.to - sl.from
+
+
+def empty?(sl @ StringSlice) : Bool
+  sl.num-items == 0
+
+
+def core|slice(sl @ StringSlice, idx @ Ordinal) : Char
+  sl.str[sl.from + idx]
+
+
+def core|slice(sl @ StringSlice, from @ Ordinal, to @ Ordinal)
+    : Slice<Ordinal, Char>
+  sl.str.slice(sl.from + from, sl.from + to)
+
+
+;;----------------------------------------------------------------------------
+;; String implementation
+;;----------------------------------------------------------------------------
+
+def length(str @ StringImpl) : Ordinal
+  str.data.num-items
+
+
+def empty?(str @ StringImpl) : Bool
+  str.data.num-items == 0
+
+
+def core|slice(str @ StringImpl, n @ Ordinal) : Char
+  str.data[n]
+
+
+def core|slice(str @ StringImpl, from @ Ordinal, to @ Ordinal)
+    : Slice<Ordinal, Char>
+  if (from > str.data.num-items or to > str.data.num-items)
+    OutOfBoundsException(str.data.num-items, from, to).raise
+  StringSlice(str, from, to)
+
+
+def compare(one @ StringImpl, two @ StringImpl) : Int
+  one.data <=> two.data
+
+;; end of impl/string

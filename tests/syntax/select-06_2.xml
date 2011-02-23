@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='f'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<if>
+<test>
+<binary op='>'>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</test>
+<then>
+<apply>
+<symbol>outln</symbol>
+<args>
+<str>greater</str>
+</args>
+</apply>
+</then>
+<else>
+<if>
+<test>
+<binary op='=='>
+<symbol>a</symbol>
+<symbol>b</symbol>
+</binary>
+</test>
+<then>
+<apply>
+<symbol>outln</symbol>
+<args>
+<str>equal</str>
+</args>
+</apply>
+</then>
+<else>
+<apply>
+<symbol>outln</symbol>
+<args>
+<str>less</str>
+</args>
+</apply>
+</else>
+</if>
+</else>
+</if>
+</body>
+</func>
+</def>
+</compile-unit>

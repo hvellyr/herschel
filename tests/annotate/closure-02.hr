@@ -1,0 +1,2 @@
+def accumulator(n)
+  function(i) n = n + i
