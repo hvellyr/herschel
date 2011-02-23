@@ -1,0 +1,10 @@
+def foo(n : Int)
+  let k = 0
+  for (i in 0 .. n)
+    k = k + 1
+  else
+    0
+
+
+def app|main()
+  foo(10)
