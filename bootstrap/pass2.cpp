@@ -2622,14 +2622,15 @@ SecondPass::parseFor(const Token& expr)
       delayTypeSpec = true;
     }
 
-    Ptr<AptNode> returnVardef = new VardefNode(expr.srcpos(),
-                                               returnSym.idValue(), kNormalVar,
-                                               true, retType,
-                                               defaultRetVal);
-    returnVardef->fDelayTypeSpec = delayTypeSpec;
-    Ptr<AptNode> defReturnNode = new LetNode(returnVardef);
-    defReturnNode->fLoopId = loopId;
-    loopDefines.push_back(defReturnNode);
+    Ptr<VardefNode> returnVardef = new VardefNode(expr.srcpos(),
+                                                  returnSym.idValue(), kNormalVar,
+                                                  true, retType,
+                                                  defaultRetVal);
+    returnVardef->setTypeSpecDelayed(delayTypeSpec);
+
+    Ptr<LetNode> defReturnNode = new LetNode(returnVardef);
+    defReturnNode->setLoopId(loopId);
+    loopDefines.push_back(defReturnNode.obj());
 
     if (explicitReturnValue) {
       // evaluate the tests once into a temporary variable
@@ -2659,10 +2660,10 @@ SecondPass::parseFor(const Token& expr)
   if (requiresReturnValue) {
     Ptr<AptNode> retNode = new SymbolNode(expr.srcpos(),
                                           returnSym.idValue());
-    Ptr<AptNode> saveRetNode = new AssignNode(expr.srcpos(),
-                                              retNode, body);
-    saveRetNode->fDelayTypeSpec = delayTypeSpec;
-    saveRetNode->fLoopId = loopId;
+    Ptr<AssignNode> saveRetNode = new AssignNode(expr.srcpos(),
+                                                 retNode, body);
+    saveRetNode->setTypeSpecDelayed(delayTypeSpec);
+    saveRetNode->setLoopId(loopId);
     bodyNode->appendNode(saveRetNode);
   }
   else
@@ -2674,8 +2675,8 @@ SecondPass::parseFor(const Token& expr)
 
   Ptr<WhileNode> whileNode = new WhileNode(expr.srcpos(), testNode->clone(), bodyNode);
 
-  Ptr<AptNode> returnNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
-  returnNode->fLoopId = loopId;
+  Ptr<SymbolNode> returnNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
+  returnNode->setLoopId(loopId);
 
   if (explicitReturnValue) {
     Ptr<BlockNode> consequent = new BlockNode(expr.srcpos());

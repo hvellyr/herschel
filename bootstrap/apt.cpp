@@ -72,9 +72,7 @@ herschel::copyNodes(const NodeList& src)
 //----------------------------------------------------------------------------
 
 AptNode::AptNode(const SrcPos& srcpos)
-  : fDelayTypeSpec(false),
-    fLoopId(0),
-    fSrcPos(srcpos),
+  : fSrcPos(srcpos),
     fTypeConvKind(kNoConv),
     fIsInTailPos(false),
     fIsSingleTypeRequired(false)
@@ -83,9 +81,7 @@ AptNode::AptNode(const SrcPos& srcpos)
 
 
 AptNode::AptNode(const SrcPos& srcpos, const Type& type)
-  : fDelayTypeSpec(false),
-    fLoopId(0),
-    fSrcPos(srcpos),
+  : fSrcPos(srcpos),
     fType(type),
     fTypeConvKind(kNoConv),
     fIsInTailPos(false),
@@ -190,6 +186,48 @@ void
 AptNode::setIsSingleTypeRequired(bool value)
 {
   fIsSingleTypeRequired = value;
+}
+
+
+//----------------------------------------------------------------------------
+
+LoopAnnotatable::LoopAnnotatable()
+  : fLoopId(0)
+{}
+
+
+int
+LoopAnnotatable::loopId() const
+{
+  return fLoopId;
+}
+
+
+void
+LoopAnnotatable::setLoopId(int loopId)
+{
+  fLoopId = loopId;
+}
+
+
+//----------------------------------------------------------------------------
+
+DelayTypeAnnotatable::DelayTypeAnnotatable()
+  : fDelayTypeSpec(false)
+{}
+
+
+bool
+DelayTypeAnnotatable::isTypeSpecDelayed() const
+{
+  return fDelayTypeSpec;
+}
+
+
+void
+DelayTypeAnnotatable::setTypeSpecDelayed(bool value)
+{
+  fDelayTypeSpec = value;
 }
 
 
@@ -309,7 +347,6 @@ namespace herschel {
     dst->setType(src->type());
     dst->setDstType(src->dstType());
     dst->setTypeConv(src->typeConv());
-    dst->fDelayTypeSpec = src->fDelayTypeSpec;
     return dst;
   }
 }

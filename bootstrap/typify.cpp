@@ -203,8 +203,13 @@ void
 Typifier::typify(LetNode* node)
 {
   typifyNode(node->defNode());
-  if (fPhase == kTypify && !node->defNode()->fDelayTypeSpec)
+  if (fPhase == kTypify) {
+    if (DelayTypeAnnotatable* nd = dynamic_cast<DelayTypeAnnotatable*>(node->defNode())) {
+      if (nd->isTypeSpecDelayed())
+        return;
+    }
     node->setType(node->defNode()->type());
+  }
 }
 
 
@@ -271,11 +276,11 @@ Typifier::typify(VardefNode* node)
     typifyNode(node->initExpr());
 
   if (fPhase == kTypify) {
-    if (!node->fDelayTypeSpec)
+    if (!node->isTypeSpecDelayed())
       setupBindingNodeType(node, "variable");
   }
   else {
-    assert(!node->fDelayTypeSpec);
+    assert(!node->isTypeSpecDelayed());
   }
 }
 
@@ -787,7 +792,7 @@ Typifier::typify(AssignNode* node)
 {
   typifyNode(node->rvalue());
 
-  if (node->fDelayTypeSpec) {
+  if (node->isTypeSpecDelayed()) {
     SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->lvalue());
     assert(symNode != NULL);
 
@@ -798,8 +803,8 @@ Typifier::typify(AssignNode* node)
     symNode->setType(node->rvalue()->type());
     vardefNode->setType(node->rvalue()->type());
 
-    node->fDelayTypeSpec = false;
-    vardefNode->fDelayTypeSpec = false;
+    node->setTypeSpecDelayed(false);
+    vardefNode->setTypeSpecDelayed(false);
   }
   else
     typifyNode(node->lvalue());

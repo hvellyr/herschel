@@ -335,19 +335,19 @@ namespace herschel
         NodeList& nl = blockNode->children();
         for (size_t i = 0; i < nl.size(); ) {
           if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(nl[i].obj())) {
-            if (symNode->fLoopId == fLoopId) {
+            if (symNode->loopId() == fLoopId) {
               nl.erase(nl.begin() + i);
               continue;
             }
           }
           else if (LetNode* letNode = dynamic_cast<LetNode*>(nl[i].obj())) {
-            if (letNode->fLoopId == fLoopId) {
+            if (letNode->loopId() == fLoopId) {
               nl.erase(nl.begin() + i);
               continue;
             }
           }
           else if (AssignNode* assignNode = dynamic_cast<AssignNode*>(nl[i].obj())) {
-            if (assignNode->fLoopId == fLoopId)
+            if (assignNode->loopId() == fLoopId)
               nl[i] = assignNode->rvalue();
           }
 
@@ -378,14 +378,14 @@ Annotator::annotate(BlockNode* node)
     const size_t nlsize = nl.size();
     for (size_t i = 0; i < nlsize; i++) {
       if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(nl[i].obj())) {
-        if (symNode->fLoopId > 0) {
-          loopId = symNode->fLoopId;
+        if (symNode->loopId() > 0) {
+          loopId = symNode->loopId();
           break;
         }
       }
       else if (LetNode* letNode = dynamic_cast<LetNode*>(nl[i].obj())) {
-        if (letNode->fLoopId > 0) {
-          loopId = letNode->fLoopId;
+        if (letNode->loopId() > 0) {
+          loopId = letNode->loopId();
           break;
         }
       }
