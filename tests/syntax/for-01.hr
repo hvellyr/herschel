@@ -16,3 +16,9 @@ def f2()
     false
 
 
+def f3()
+  for (i : Int in collection)
+    outln(i)
+  false
+
+

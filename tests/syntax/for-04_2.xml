@@ -25,16 +25,33 @@
 <let>
 <vardef sym='__return_0'>
 <init>
-<symbol>eof</symbol>
+<undef/>
 </init>
 </vardef>
 </let>
-<while>
-<test>
+<let>
+<vardef sym='__test_1'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
 <binary op='>'>
 <symbol>k</symbol>
 <symbol>m</symbol>
 </binary>
+</init>
+</vardef>
+</let>
+<if>
+<test>
+<symbol>__test_1</symbol>
+</test>
+<then>
+<block>
+<while>
+<test>
+<symbol>__test_1</symbol>
 </test>
 <body>
 <block>
@@ -48,10 +65,23 @@
 </args>
 </apply>
 </assign>
+<assign>
+<symbol>__test_1</symbol>
+<binary op='>'>
+<symbol>k</symbol>
+<symbol>m</symbol>
+</binary>
+</assign>
 </block>
 </body>
 </while>
 <symbol>__return_0</symbol>
+</block>
+</then>
+<else>
+<symbol>eof</symbol>
+</else>
+</if>
 </block>
 </body>
 </func>
@@ -86,14 +116,19 @@
 </vardef>
 </let>
 <let>
-<vardef sym='__return_1'>
+<vardef sym='__return_2'>
 <init>
-<symbol>eof</symbol>
+<undef/>
 </init>
 </vardef>
 </let>
-<while>
-<test>
+<let>
+<vardef sym='__test_3'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
 <binary op='&lt;>'>
 <binary op='mod'>
 <symbol>i</symbol>
@@ -101,11 +136,23 @@
 </binary>
 <symbol>m</symbol>
 </binary>
+</init>
+</vardef>
+</let>
+<if>
+<test>
+<symbol>__test_3</symbol>
+</test>
+<then>
+<block>
+<while>
+<test>
+<symbol>__test_3</symbol>
 </test>
 <body>
 <block>
 <assign>
-<symbol>__return_1</symbol>
+<symbol>__return_2</symbol>
 <if>
 <test>
 <binary op='=='>
@@ -138,10 +185,26 @@
 <int ty='lang|Int32'>1</int>
 </binary>
 </assign>
+<assign>
+<symbol>__test_3</symbol>
+<binary op='&lt;>'>
+<binary op='mod'>
+<symbol>i</symbol>
+<int ty='lang|Int32'>211</int>
+</binary>
+<symbol>m</symbol>
+</binary>
+</assign>
 </block>
 </body>
 </while>
-<symbol>__return_1</symbol>
+<symbol>__return_2</symbol>
+</block>
+</then>
+<else>
+<symbol>eof</symbol>
+</else>
+</if>
 </block>
 </body>
 </func>
