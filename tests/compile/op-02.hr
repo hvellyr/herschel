@@ -4,7 +4,7 @@ def foo(n : Int) : Bool
 
 def app|main()
   if (foo(3))
-    0
-  else
     1
+  else
+    0
 
