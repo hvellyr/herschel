@@ -10,7 +10,7 @@ include $(top_srcdir)/config.mk
 
 include $(top_srcdir)/build/pre.mk
 
-all-local: syntax-tests import-tests transform-tests annotate-tests
+all-local: syntax-tests import-tests transform-tests annotate-tests compile-tests
 
 testtemp_dir = $(BUILDDIR)/temp
 
@@ -32,6 +32,10 @@ transform-tests:
 annotate-tests:
 	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/hrc \
 		-I $(top_srcdir)/tests -D annotate annotate/
+
+compile-tests: $(testtemp_dir)
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/herschel \
+		-I $(top_srcdir)/tests -D compile -t $(testtemp_dir) compile/
 
 include $(top_srcdir)/build/generic.mk
 
