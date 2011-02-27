@@ -27,6 +27,7 @@ namespace llvm
   class LLVMContext;
   class Module;
   class Value;
+  // class DIBuilder;
 };
 
 
@@ -190,6 +191,7 @@ namespace herschel
 
     llvm::LLVMContext& fContext;
     llvm::Module*     fModule;
+    // llvm::DIBuilder*  fDIBuilder;
     llvm::IRBuilder<> fBuilder;
     llvm::FunctionPassManager* fOptPassManager;
     llvm::AllocaInst *fCurrentValue;

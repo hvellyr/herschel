@@ -32,6 +32,7 @@
 #include "llvm/GlobalVariable.h"
 #include "llvm/DerivedTypes.h"
 #include "llvm/Intrinsics.h"
+//#include "llvm/DIBuilder.h"
 
 using namespace herschel;
 
@@ -41,6 +42,7 @@ using namespace herschel;
 CodeGenerator::CodeGenerator()
   : fContext(llvm::getGlobalContext()),
     fModule(NULL),
+    // fDIBuilder(NULL),
     fBuilder(context()),
     fOptPassManager(NULL),
     fHasMainFunc(false)
@@ -50,6 +52,16 @@ CodeGenerator::CodeGenerator()
   static llvm::ExecutionEngine *theExecutionEngine = NULL;
 
   fModule = new llvm::Module("compile-unit", fContext);
+
+  // fDIBuilder = new llvm::DIBuilder(fModule);
+
+  // fDIBuilder->createCompileUnit(dwarf::DW_LANG_C99,
+  //                               "hello-world.c",
+  //                               "/Users/gck/Dev/herschel/tests",
+  //                               "herschel 1.0",
+  //                               true, // isOptimized,
+  //                               "",
+  //                               0); // obj-c runtime version
 
   // const llvm::Target *TheTarget = TargetRegistry::lookupTarget(Triple, Error);
 
