@@ -355,7 +355,7 @@ namespace herschel
         scope = parent;
       }
 
-      assert(scope == prevScope);
+      hr_assert(scope == prevScope);
       scopeLoc = scope;
     }
 

@@ -98,7 +98,7 @@ herschel::operatorToTokenType(OperatorType op)
     return kInvalid;
 
   case kOpInvalid:
-    assert(0);
+    hr_invalid("invalid operator");
   }
 
   return kInvalid;

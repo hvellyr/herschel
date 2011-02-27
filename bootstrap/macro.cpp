@@ -95,7 +95,7 @@ SyntaxTreeNode::hasEndSet() const
 const TokenVector&
 SyntaxTreeNode::replacement() const
 {
-  assert(fHasEndPattern);
+  hr_assert(fHasEndPattern);
   return fEndReplacement;
 }
 
@@ -179,7 +179,7 @@ SyntaxTable::mixinPatternPart(SyntaxTreeNode* patternTree,
     node = step;
   }
 
-  assert(node != NULL);
+  hr_assert(node != NULL);
   node->setEndNode(rplcmnt);
 }
 
@@ -263,7 +263,7 @@ herschel::toString(MacroType type)
 MacroParamType
 herschel::macroParamType(const Token& token, String* paramName)
 {
-  assert(token == kMacroParam ||
+  hr_assert(token == kMacroParam ||
          token == kMacroParamAsStr);
 
   String str = token.idValue();

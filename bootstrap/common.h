@@ -9,11 +9,10 @@
 #ifndef bootstrap_common_h
 #define bootstrap_common_h
 
-#include <assert.h>
-
 #include "config-local.h"
 #include "version.h"
 #include "sysconf.h"
+#include "require.h"
 
 //! Type abstraction for a byte.
 typedef unsigned char Octet;

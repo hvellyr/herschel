@@ -8,11 +8,11 @@
 
 #include "common.h"
 
-#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "require.h"
 #include "str.h"
 #include "strbuf.h"
 #include "refcountable.h"
@@ -75,21 +75,21 @@ namespace herschel
 
     Char* dataFromEnd(int offset)
     {
-      assert(offset >= 0 && offset <= fLength);
+      hr_assert(offset >= 0 && offset <= fLength);
       return &fData[fLength - offset];
     }
 
 
     const Char* data(int offset) const
     {
-      assert(offset >= 0 && offset < fLength);
+      hr_assert(offset >= 0 && offset < fLength);
       return &fData[offset];
     }
 
 
     Char* data(int offset)
     {
-      assert(offset >= 0 && offset < fLength);
+      hr_assert(offset >= 0 && offset < fLength);
       return &fData[offset];
     }
 
@@ -100,7 +100,7 @@ namespace herschel
 
       reallocate(reqlen);
       int reallen = str_utf8_to_wcs(utf8, items, fData, reqlen);
-      assert(reallen == reqlen);
+      hr_assert(reallen == reqlen);
 
       fLength = reallen;
     }
@@ -108,7 +108,7 @@ namespace herschel
 
     void copyFromWcs(int offset, const Char* wcs, int items)
     {
-      assert(offset + items <= fLength);
+      hr_assert(offset + items <= fLength);
 
       Char* dp = &fData[offset];
       const Char* sp = wcs;
@@ -411,7 +411,7 @@ String::operator+(char c) const
 Char
 String::operator[] (int atIndex) const
 {
-  assert(atIndex >= 0 && atIndex < fImpl->fLength);
+  hr_assert(atIndex >= 0 && atIndex < fImpl->fLength);
   return fImpl->fData[atIndex];
 }
 

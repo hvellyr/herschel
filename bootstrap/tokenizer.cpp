@@ -36,7 +36,7 @@ Tokenizer::Tokenizer(Port<Char>* port, const String& srcName,
     fInGenericContext(0),
     fCharRegistry(charRegistry)
 {
-  assert(port != NULL);
+  hr_assert(port != NULL);
 
   nextChar();
 }
@@ -330,7 +330,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
   bool isImaginary = false;
   bool isUnsigned = false;
 
-  assert(!first.isEmpty());
+  hr_assert(!first.isEmpty());
 
   if (fCC == '.') {
     type = kFloat;
@@ -426,7 +426,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
     break;
 
   default:
-    assert(0);
+    hr_invalid("");
   }
 
   token.setIsImaginary(isImaginary);
@@ -1328,9 +1328,9 @@ SUITE(Tokenizer)
                   String("n.n."));
 
     try {
-      assert(tnz.nextToken() == Token(sp, kMacroOpen));
-      assert(tnz.nextToken() == Token(sp, kSymbol, "xyz"));
-      assert(tnz.nextToken() == Token(sp, kMacroClose));
+      hr_assert(tnz.nextToken() == Token(sp, kMacroOpen));
+      hr_assert(tnz.nextToken() == Token(sp, kSymbol, "xyz"));
+      hr_assert(tnz.nextToken() == Token(sp, kMacroClose));
     }
     catch (const Exception& ne) {
       logf(kError, StrHelper(ne.message()));

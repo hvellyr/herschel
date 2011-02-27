@@ -378,7 +378,7 @@ namespace herschel
     virtual void replaceGenerics(const TypeCtx& typeMap)
     {
       for (size_t i = 0; i < fGenerics.size(); i++) {
-        assert(fGenerics[i].isRef());
+        hr_assert(fGenerics[i].isRef());
 
         // fprintf(stderr, "REPLACE GENERIC: %s\n", (const char*)StrHelper(fGenerics[i].toString()));
 
@@ -497,7 +497,7 @@ namespace herschel
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                                Scope* scope, const SrcPos& srcpos) const
     {
-      assert(0 && "when does this happen?");
+      hr_invalid("when does this happen?");
       return false;
     }
 
@@ -523,7 +523,7 @@ namespace herschel
     virtual void replaceGenerics(const TypeCtx& typeMap)
     {
       // TODO
-      assert(0);
+      hr_invalid("");
     }
 
 
@@ -1006,7 +1006,7 @@ Type::newTypeRef(const String& name, bool isOpen, bool isValue)
 Type
 Type::newTypeRef(const String& name, const Type& old)
 {
-  assert(old.isRef());
+  hr_assert(old.isRef());
 
   return Type(kType_Ref, old.isValueType(), old.isImaginary(),
               new TypeRefTypeImpl(name,
@@ -1185,7 +1185,7 @@ Type::operator==(const Type& other) const
   if (fIsValue != other.fIsValue)
     return false;
 
-  assert(fImpl != NULL);
+  hr_assert(fImpl != NULL);
   return fImpl->isEqual(other.fImpl);
 }
 
@@ -1507,7 +1507,7 @@ Type::typeName() const
 {
   switch (fKind) {
   case kType_Undefined:
-    assert(0);
+    hr_invalid("");
 
   case kType_Ref:
     return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->name();
@@ -1539,7 +1539,7 @@ Type::typeId() const
 
   switch (fKind) {
   case kType_Undefined:
-    assert(0);
+    hr_invalid("");
     break;
 
   case kType_Ref:
@@ -1619,7 +1619,7 @@ Type::isType() const
 const Type&
 Type::typeInheritance() const
 {
-  assert(isType() || isClass());
+  hr_assert(isType() || isClass());
   return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->inherit();
 }
 
@@ -1627,7 +1627,7 @@ Type::typeInheritance() const
 const FunctionSignatureVector&
 Type::typeProtocol() const
 {
-  assert(isType() || isClass());
+  hr_assert(isType() || isClass());
   return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->protocol();
 }
 
@@ -1642,7 +1642,7 @@ Type::isAlias() const
 const Type&
 Type::aliasReplaces() const
 {
-  assert(isAlias());
+  hr_assert(isAlias());
   return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->inherit();
 }
 
@@ -1657,7 +1657,7 @@ Type::isFunction() const
 const FunctionSignature&
 Type::functionSignature() const
 {
-  assert(isFunction());
+  hr_assert(isFunction());
   return dynamic_cast<const FunctionTypeImpl*>(fImpl.obj())->functionSignature();
 }
 
@@ -1672,7 +1672,7 @@ Type::isArray() const
 const Type&
 Type::arrayBaseType() const
 {
-  assert(isArray());
+  hr_assert(isArray());
   return dynamic_cast<const ArrayTypeImpl*>(fImpl.obj())->baseType();
 }
 
@@ -1702,7 +1702,7 @@ Type::rebase(const Type& newBaseType) const
 int
 Type::arraySizeIndicator() const
 {
-  assert(isArray());
+  hr_assert(isArray());
   return dynamic_cast<const ArrayTypeImpl*>(fImpl.obj())->sizeIndicator();
 }
 
@@ -1717,7 +1717,7 @@ Type::isUnion() const
 const TypeVector&
 Type::unionTypes() const
 {
-  assert(isUnion());
+  hr_assert(isUnion());
   return dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->types();
 }
 
@@ -1732,7 +1732,7 @@ Type::isSequence() const
 const TypeVector&
 Type::seqTypes() const
 {
-  assert(isSequence());
+  hr_assert(isSequence());
   return dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->types();
 }
 
@@ -1747,7 +1747,7 @@ Type::isMeasure() const
 const Type&
 Type::measureBaseType() const
 {
-  assert(isMeasure());
+  hr_assert(isMeasure());
   return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->inherit();
 }
 
@@ -1755,7 +1755,7 @@ Type::measureBaseType() const
 String
 Type::measureUnit() const
 {
-  assert(isMeasure());
+  hr_assert(isMeasure());
   return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->defUnit();
 }
 
@@ -2009,7 +2009,7 @@ namespace herschel
       case kConstOp_and:           return "and";
       case kConstOp_or:            return "or";
       default:
-        assert(0);
+        hr_invalid("");
       }
       return "??";
     }
@@ -2080,8 +2080,8 @@ namespace herschel
     const char* optostr(TypeConstOperator op) const
     {
       switch (op) {
-      case kConstOp_and:           assert(0);
-      case kConstOp_or:            assert(0);
+      case kConstOp_and:           hr_invalid("");
+      case kConstOp_or:            hr_invalid("");
       case kConstOp_equal:         return "eq";
       case kConstOp_notEqual:      return "neq";
       case kConstOp_less:          return "lt";
@@ -2089,7 +2089,7 @@ namespace herschel
       case kConstOp_greater:       return "gt";
       case kConstOp_greaterEqual:  return "geq";
       case kConstOp_in:            return "in";
-      case kConstOp_isa:           assert(0);
+      case kConstOp_isa:           hr_invalid("");
       }
       return "??";
     }
@@ -2288,7 +2288,7 @@ TypeConstraint::isValueConstraint() const
 Token
 TypeConstraint::constraintValue() const
 {
-  assert(isValueConstraint());
+  hr_assert(isValueConstraint());
   return dynamic_cast<ValueConstraintImpl*>(fImpl.obj())->token();
 }
 
@@ -2320,7 +2320,7 @@ TypeConstraint::isLogicalConstraint() const
 const TypeConstraint&
 TypeConstraint::leftConstraint() const
 {
-  assert(isLogicalConstraint());
+  hr_assert(isLogicalConstraint());
   return dynamic_cast<const LogicalConstraintImpl*>(fImpl.obj())->left();
 }
 
@@ -2328,7 +2328,7 @@ TypeConstraint::leftConstraint() const
 const TypeConstraint&
 TypeConstraint::rightConstraint() const
 {
-  assert(isLogicalConstraint());
+  hr_assert(isLogicalConstraint());
   return dynamic_cast<const LogicalConstraintImpl*>(fImpl.obj())->right();
 }
 
@@ -2360,7 +2360,7 @@ TypeConstraint::isTypeConstraint() const
 Type
 TypeConstraint::typeConstraint() const
 {
-  assert(isTypeConstraint());
+  hr_assert(isTypeConstraint());
   return dynamic_cast<TypeConstraintImpl*>(fImpl.obj())->type();
 }
 
@@ -2961,7 +2961,7 @@ namespace herschel
 
     fprintf(stderr, "LEFT: %s\n", (const char*)StrHelper(left.toString()));
     fprintf(stderr, "RIGHT: %s\n", (const char*)StrHelper(right.toString()));
-    assert(0 && "unhandled type?");
+    hr_invalid("unhandled type?");
     return false;
   }
 
@@ -3027,7 +3027,7 @@ namespace herschel
       return false;
     }
 
-    assert(0 && "unexpected type kind");
+    hr_invalid("unexpected type kind");
     return false;
   }
 
@@ -3326,7 +3326,7 @@ namespace herschel
 
     tyerror(left, "LEFT");
     tyerror(right, "RIGHT");
-    assert(0 && "unhandled type?");
+    hr_invalid("unhandled type?");
     return false;
   }
 
@@ -3448,7 +3448,7 @@ namespace herschel
     else if (ty.isBuiltinType(Names::kFloat128TypeName))
       return 128;
 
-    assert(0 && "unhandled floating type");
+    hr_invalid("unhandled floating type");
     return 0;
   }
 
@@ -3479,7 +3479,7 @@ namespace herschel
              ty.isBuiltinType(Names::kUInt64TypeName))
       return 64;
 
-    assert(0 && "unhandled int type");
+    hr_invalid("unhandled int type");
     return 0;
   }
 
@@ -3500,7 +3500,7 @@ namespace herschel
         case 64:
           return Type::newTypeRef(Names::kUInt64TypeName, true);
         default:
-          assert(0 && "unhandled int type size");
+          hr_invalid("unhandled int type size");
         }
       }
       return rightty;
@@ -3530,7 +3530,7 @@ namespace herschel
         TypeCtx localCtx;
         for (size_t i = 0; i < type.generics().size(); i++) {
           Type gen = type.generics()[i];
-          assert(gen.isRef());
+          hr_assert(gen.isRef());
 
           String genName = gen.typeName();
           localCtx.registerType(genName, srcGenerics[i]);

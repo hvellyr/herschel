@@ -135,7 +135,7 @@ ExternCParser::parseCFunction(const Token& sym, const Token& retType)
 {
   SrcPos paranPos = fToken.srcpos();
 
-  assert(fToken == kParanOpen);
+  hr_assert(fToken == kParanOpen);
 
   Token retval;
   retval << makeExternDefHead(fToken.srcpos()) << sym;

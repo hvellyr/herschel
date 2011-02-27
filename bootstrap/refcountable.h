@@ -10,8 +10,7 @@
 #define bootstrap_refcountable_h
 
 #include "common.h"
-
-#include <assert.h>
+#include "require.h"
 
 //----------------------------------------------------------------------------
 
@@ -45,14 +44,14 @@ namespace herschel
 
     virtual void decRefWithoutDelete()
     {
-      assert(fRefCount > 0);
+      hr_assert(fRefCount > 0);
       fRefCount--;
     }
 
 
     virtual void decRef()
     {
-      assert(fRefCount > 0);
+      hr_assert(fRefCount > 0);
       fRefCount--;
 
       if (fRefCount == 0) {

@@ -144,7 +144,7 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
   emitCtorList(fGlobalCtors, "llvm.global_ctors");
   emitCtorList(fGlobalDtors, "llvm.global_dtors");
 
-  assert(!outputFile.isEmpty());
+  hr_assert(!outputFile.isEmpty());
 
   std::string errInfo;
   llvm::raw_fd_ostream outstream(StrHelper(outputFile), errInfo, 0);
@@ -325,7 +325,7 @@ CodeGenerator::createDefaultCMainFunc()
   llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
                           sign,
                           false);
-  assert(ft != NULL);
+  hr_assert(ft != NULL);
 
   llvm::Function *func = llvm::Function::Create(ft,
                                                 llvm::Function::ExternalLinkage,
@@ -338,7 +338,7 @@ CodeGenerator::createDefaultCMainFunc()
 
   String appMainFuncNm = herschel::mangleToC(String("app|main"));
   llvm::Function* appMainFunc = fModule->getFunction(llvm::StringRef(appMainFuncNm));
-  assert(appMainFunc != NULL);
+  hr_assert(appMainFunc != NULL);
 
   llvm::AllocaInst* retv = createEntryBlockAlloca(func, String("tmp2"),
                                                   llvm::Type::getInt32Ty(context()));
@@ -388,7 +388,7 @@ CodeGenerator::codegen(const SymbolNode* node)
     val = fGlobalVariables[node->name()];
     break;
   default:
-    assert(false && "unexpected symbol reference");
+    hr_assert(false && "unexpected symbol reference");
   }
 
   if (val == NULL) {
@@ -520,12 +520,12 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
                              llvm::Twine(varnm),
                              false, // ThreadLocal
                              0);    // AddressSpace
-  assert(gv != NULL);
+  hr_assert(gv != NULL);
   fModule->getGlobalList().push_back(gv);
 
   fGlobalInitVars.push_back(node);
 
-  assert(fGlobalVariables.find(node->name()) == fGlobalVariables.end());
+  hr_assert(fGlobalVariables.find(node->name()) == fGlobalVariables.end());
   fGlobalVariables[node->name()] = gv;
 
   return gv;
@@ -557,7 +557,7 @@ CodeGenerator::emitGlobalVarInitFunc()
         initval = codegenNode(varnode->initExpr());
       }
       else {
-        assert(0 && "no initval");
+        hr_invalid("no initval");
         // TODO: init the temporary value.  We shouldn't really have to care about
         // this here, since this can be better done in the AST analysis.
         // initval = llvm::ConstantInt::get(context(),
@@ -566,7 +566,7 @@ CodeGenerator::emitGlobalVarInitFunc()
 
       std::map<String, llvm::GlobalVariable*>::iterator it =
       fGlobalVariables.find(varnode->name());
-      assert(it != fGlobalVariables.end());
+      hr_assert(it != fGlobalVariables.end());
 
       llvm::Value* val = emitPackCode(varnode->initExpr()->dstType(),
                                       varnode->initExpr()->typeConv(),
@@ -612,7 +612,7 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
     }
   }
   else {
-    assert(0 && "no initval");
+    hr_invalid("no initval");
     // TODO: init the temporary value.  We shouldn't really have to care about
     // this here, since this can be better done in the AST analysis.
     // initval = llvm::ConstantInt::get(context(),
@@ -946,7 +946,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 
 
   llvm::FunctionType* ft = createFunctionSignature(node, inlineRetv, retty);
-  assert(ft != NULL);
+  hr_assert(ft != NULL);
 
   llvm::Function *func = llvm::Function::Create(ft,
                                                 llvm::Function::ExternalLinkage,
@@ -1107,7 +1107,7 @@ getConvFuncNameByType(const Type& type)
   if (type.typeName() == String("clang|int")) // TODO
     return "atom_2_int32";
 
-  assert(0 && "unhandled type");
+  hr_invalid("unhandled type");
   return NULL;
 }
 
@@ -1164,7 +1164,7 @@ CodeGenerator::emitPackCode(const Type& dstType, TypeConvKind convKind,
 
     case kTypeCheckConv:
       fprintf(stderr, "Not implemented yet\n");
-      assert(0 && "not implemented yet");
+      hr_invalid("not implemented yet");
     }
   }
 
@@ -1180,7 +1180,7 @@ CodeGenerator::codegen(const ApplyNode* node)
 
   const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->base());
   if (symNode != NULL) {
-    assert(symNode->refersTo() == kFunction || symNode->refersTo() == kGeneric);
+    hr_assert(symNode->refersTo() == kFunction || symNode->refersTo() == kGeneric);
 
     String funcnm;
     if (symNode->linkage() == String("C")) {
@@ -1203,7 +1203,7 @@ CodeGenerator::codegen(const ApplyNode* node)
   }
   else {
     // TODO
-    assert(0);
+    hr_invalid("apply(!symbol) -> TODO");
   }
 
   const NodeList& nl = node->children();
@@ -1549,7 +1549,7 @@ CodeGenerator::codegen(const CastNode* node)
 llvm::Value*
 CodeGenerator::codegen(const UndefNode* node)
 {
-  assert(0 && "You shouldn't be here");
+  hr_invalid("You shouldn't be here");
   return NULL;
 }
 

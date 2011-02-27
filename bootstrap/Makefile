@@ -19,18 +19,21 @@ LIBHRCOMMON_SOURCES =  \
 	log.cpp              \
 	option.cpp           \
 	port.cpp             \
+	require.cpp          \
 	setup.cpp            \
 	str.cpp              \
 	strbuf.cpp           \
 	valuesaver.cpp
 
 LIBHRCOMMON_HEADERS =  \
+	common.h             \
 	file.h               \
 	filetool.h           \
 	job.h                \
 	log.h                \
 	option.h             \
 	port.h               \
+	require.h            \
 	setup.h              \
 	str.h                \
 	strbuf.h             \
@@ -111,7 +114,6 @@ HRC_HEADERS =     \
 	annotate.h      \
 	apt.h           \
 	codegen.h       \
-	common.h        \
 	compilepass.h   \
 	compiler.h      \
 	errcodes.h      \
