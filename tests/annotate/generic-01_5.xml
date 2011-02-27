@@ -109,6 +109,7 @@
 </block>
 </body>
 </while>
+<symbol  ty='lang|Unspecified' refer='global' acc='shared'>lang|unspecified</symbol>
 </block>
 <symbol  ty='&apos;T' refer='local'>sum</symbol>
 </block>
@@ -141,6 +142,14 @@
 <ty:ref nm='lang|Bounded'>
 </ty:ref>
 </ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Unspecified'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
 </ty:isa>
 </ty:type>
 </ty:used-type>
