@@ -1006,7 +1006,8 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
     else
       fBuilder.CreateRet(wrapLoad(retv));
 
-    // func->dump();
+    if (Properties::isCodeDump())
+      func->dump();
 
     verifyFunction(*func);
 
