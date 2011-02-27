@@ -1182,11 +1182,13 @@ Typifier::typify(IfNode* node)
         node->setType(alttype);
         annotateTypeConv(node->consequent(), alttype);
         annotateTypeConv(node->alternate(), alttype);
+        annotateTypeConv(node, alttype);
       }
       else if (isCovariant(alttype, cotype, node->scope(), node->srcpos())) {
         node->setType(cotype);
         annotateTypeConv(node->consequent(), cotype);
         annotateTypeConv(node->alternate(), cotype);
+        annotateTypeConv(node, cotype);
       }
       else {
         // if the if expression is not in tail position, the branch type
@@ -1198,6 +1200,7 @@ Typifier::typify(IfNode* node)
         node->setType(Type::newAny(true));
         annotateTypeConv(node->consequent(), Type::newAny());
         annotateTypeConv(node->alternate(), Type::newAny());
+        annotateTypeConv(node, Type::newAny());
       }
     }
     else {
@@ -1211,6 +1214,8 @@ Typifier::typify(IfNode* node)
       else {
         node->setType(node->consequent()->type());
       }
+      annotateTypeConv(node->consequent(), node->type());
+      annotateTypeConv(node, node->type());
     }
   }
   // TODO

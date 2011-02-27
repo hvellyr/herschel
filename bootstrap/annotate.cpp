@@ -18,6 +18,7 @@
 #include "compiler.h"
 #include "rootscope.h"
 #include "traverse.h"
+#include "predefined.h"
 
 
 #include <typeinfo>  //for 'typeid' to work
@@ -336,8 +337,11 @@ namespace herschel
         for (size_t i = 0; i < nl.size(); ) {
           if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(nl[i].obj())) {
             if (symNode->loopId() == fLoopId) {
-              nl.erase(nl.begin() + i);
-              continue;
+              // replace the return symbol with a simple lang|unspecified.
+              // This is required to give the expression a concrete return
+              // value.  Otherwise SSA compilation in codegen becomes more
+              // complicated.
+              nl[i] = new SymbolNode(nl[i]->srcpos(), Names::kLangUnspecified);
             }
           }
           else if (LetNode* letNode = dynamic_cast<LetNode*>(nl[i].obj())) {

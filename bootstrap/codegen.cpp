@@ -1137,7 +1137,7 @@ CodeGenerator::emitPackCode(const Type& dstType, TypeConvKind convKind,
     // tyerror(dstType, "dstType");
     // tyerror(valType, "valType");
     // fprintf(stderr, "Value to emit: "); value->dump();
-    
+
     switch (convKind) {
     case kNoConv:
       return value;
@@ -1345,9 +1345,14 @@ CodeGenerator::codegen(const IfNode* node)
   llvm::Value *thenValue = wrapLoad(codegenNode(node->consequent()));
   if (thenValue == NULL)
     return NULL;
+  llvm::Value* thenValue2 = emitPackCode(node->consequent()->dstType(),
+                                         node->consequent()->typeConv(),
+                                         thenValue,
+                                         node->consequent()->type());
 
   fBuilder.CreateBr(mergeBB);
-  // Codegen of 'then' can change the current block, update thenBB for the PHI.
+  // Get a reference to the current thenBB, since codegen of 'then' can change
+  // the current block, update thenBB for the PHI.
   thenBB = fBuilder.GetInsertBlock();
 
 
@@ -1355,15 +1360,18 @@ CodeGenerator::codegen(const IfNode* node)
   curFunction->getBasicBlockList().push_back(elseBB);
   fBuilder.SetInsertPoint(elseBB);
 
-  llvm::Value *elseValue = NULL;
+  llvm::Value* elseValue = NULL;
   if (node->alternate() != NULL) {
-    elseValue = wrapLoad(codegenNode(node->alternate()));
-    if (elseValue == NULL)
+    llvm::Value* elseValue0 = wrapLoad(codegenNode(node->alternate()));
+    if (elseValue0 == NULL)
       return NULL;
+    elseValue = emitPackCode(node->alternate()->dstType(),
+                             node->alternate()->typeConv(),
+                             elseValue0,
+                             node->alternate()->type());
   }
-  else {
+  else
     elseValue = llvm::ConstantAggregateZero::get(getType(node->type()));
-  }
 
   fBuilder.CreateBr(mergeBB);
   // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
@@ -1372,9 +1380,10 @@ CodeGenerator::codegen(const IfNode* node)
   // Emit merge block.
   curFunction->getBasicBlockList().push_back(mergeBB);
   fBuilder.SetInsertPoint(mergeBB);
+
   llvm::PHINode *pn = fBuilder.CreatePHI(getType(node->type()), "iftmp");
 
-  pn->addIncoming(thenValue, thenBB);
+  pn->addIncoming(thenValue2, thenBB);
   pn->addIncoming(elseValue, elseBB);
 
   return pn;

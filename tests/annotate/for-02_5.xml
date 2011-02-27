@@ -299,6 +299,7 @@
 </block>
 </body>
 </while>
+<symbol  ty='lang|Unspecified' refer='global' acc='shared'>lang|unspecified</symbol>
 </block>
 <int ty='lang|Int32'>0</int>
 </block>
@@ -398,6 +399,7 @@
 </block>
 </body>
 </while>
+<symbol  ty='lang|Unspecified' refer='global' acc='shared'>lang|unspecified</symbol>
 </block>
 </then>
 <else>
