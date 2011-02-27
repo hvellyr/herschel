@@ -107,11 +107,11 @@ namespace herschel
     }
 
 
-    //! Derefence the referenced object.  Asserts (and most likely crashes) if
+    //! Derefence the referenced object.  Requires (and most likely crashes) if
     //! *this points to NULL.
     T* operator->() const
     {
-      assert(fObject);
+      hr_assert(fObject);
       return fObject;
     }
 

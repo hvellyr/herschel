@@ -27,7 +27,7 @@ herschel::makeCompileOutputFileExt(CompileOutFormat format)
     return String("bc");
   }
 
-  assert(0);
+  hr_invalid("invalid compile out format");
   return String();
 }
 

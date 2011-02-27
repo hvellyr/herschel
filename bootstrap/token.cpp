@@ -88,7 +88,7 @@ namespace herschel
     case kEOF:     return String("EOF");
     case kInvalid: return String("INVALID");
     default:
-      assert(0);
+      hr_invalid("");
     }
     return String("??");
   }
@@ -112,7 +112,7 @@ namespace herschel
 
     virtual bool operator<(const Token& other) const
     {
-      assert(other.type() == kId);
+      hr_assert(other.type() == kId);
       return fStr < dynamic_cast<const IdTokenImpl*>(other.fImpl.obj())->fStr;
     }
 
@@ -146,7 +146,7 @@ namespace herschel
         fDoubleValue(0.0),
         fIsImaginary(false)
     {
-      assert(type != kBool);
+      hr_assert(type != kBool);
     }
 
 
@@ -157,7 +157,7 @@ namespace herschel
         fDoubleValue(0.0),
         fIsImaginary(false)
     {
-      assert(type == kBool);
+      hr_assert(type == kBool);
     }
 
     NumberTokenImpl(TokenType type, double value)
@@ -262,7 +262,7 @@ namespace herschel
         break;
 
       default:
-        assert(0);
+        hr_invalid("");
       }
     }
 
@@ -299,7 +299,7 @@ namespace herschel
       }
 
       default:
-        assert(0);
+        hr_invalid("");
       }
 
       return String();
@@ -354,7 +354,7 @@ namespace herschel
         xml::displayTagAttr(port, "lit", "type='keyw'", toString());
         break;
       default:
-        assert(0);
+        hr_invalid("");
       }
     }
 
@@ -366,7 +366,7 @@ namespace herschel
       case kDocString:  return String("~") + fStrValue + "~";
       case kKeyword:    return String("#") + fStrValue;
       default:
-        assert(0);
+        hr_invalid("");
       }
       return String();
     }
@@ -565,7 +565,7 @@ Token::Token(const SrcPos& where, TokenType ttype, const String& str)
     fImpl = new IdTokenImpl(str);
   else
     fImpl = new StringTokenImpl(ttype, str);
-  assert(type() == kId || type() == kLit);
+  hr_assert(type() == kId || type() == kLit);
 }
 
 
@@ -578,7 +578,7 @@ Token::Token(const SrcPos& where, TokenType ttype, const char* str)
     fImpl = new IdTokenImpl(String(str));
   else
     fImpl = new StringTokenImpl(ttype, String(str));
-  assert(type() == kId || type() == kLit);
+  hr_assert(type() == kId || type() == kLit);
 }
 
 
@@ -587,7 +587,7 @@ Token::Token(const SrcPos& where, TokenType ttype, int value)
     fImpl(new NumberTokenImpl(ttype, value)),
     fSrcPos(where)
 {
-  assert(type() == kLit);
+  hr_assert(type() == kLit);
 }
 
 
@@ -596,7 +596,7 @@ Token::Token(const SrcPos& where, TokenType ttype, double value)
     fImpl(new NumberTokenImpl(ttype, value)),
     fSrcPos(where)
 {
-  assert(type() == kLit);
+  hr_assert(type() == kLit);
 }
 
 
@@ -605,7 +605,7 @@ Token::Token(const SrcPos& where, TokenType ttype, Rational value)
     fImpl(new NumberTokenImpl(ttype, value)),
     fSrcPos(where)
 {
-  assert(type() == kLit);
+  hr_assert(type() == kLit);
 }
 
 
@@ -614,7 +614,7 @@ Token::Token(const SrcPos& where, TokenType ttype, bool value)
     fImpl(new NumberTokenImpl(ttype, value)),
     fSrcPos(where)
 {
-  assert(type() == kLit);
+  hr_assert(type() == kLit);
 }
 
 
@@ -655,7 +655,7 @@ Token::operator<(const Token& other) const
     case kSeq:
     case kNested:
     case kLit:
-      assert(fImpl != NULL);
+      hr_assert(fImpl != NULL);
       return fImpl->operator<(other);
       break;
     case kId:
@@ -690,7 +690,7 @@ Token::operator<(const Token& other) const
       case kWhileId:
         return fType < other.fType;
       default:
-        assert(0);
+        hr_invalid("");
       }
       break;
 
@@ -756,7 +756,7 @@ Token::toString() const
   case kSeq:
   case kNested:
   case kLit:
-    assert(fImpl != NULL);
+    hr_assert(fImpl != NULL);
     return fImpl->toString();
 
   case kId:
@@ -794,7 +794,7 @@ Token::toString() const
     case kWhileId:     return String(MID_WhileId);
 
     default:
-      assert(0);
+      hr_invalid("");
     }
 
   case kPunct:
@@ -915,7 +915,7 @@ Token::type() const
 
   default:
     fprintf(stderr, "Type: %d\n", fType);
-    assert(0);
+    hr_invalid("");
   }
 
   return kPunct;
@@ -1006,7 +1006,7 @@ Token::children() const
   switch (type()) {
   case kSeq:
   case kNested:
-    assert(fImpl != NULL);
+    hr_assert(fImpl != NULL);
     return dynamic_cast<const SeqTokenImpl*>(fImpl.obj())->fChildren;
 
   default:
@@ -1021,7 +1021,7 @@ Token::children()
   switch (type()) {
   case kSeq:
   case kNested:
-    assert(fImpl != NULL);
+    hr_assert(fImpl != NULL);
     unshare();
     return dynamic_cast<SeqTokenImpl*>(fImpl.obj())->fChildren;
 
@@ -1147,7 +1147,7 @@ Token::idValue() const
   case kKeyarg:
     return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr;
   default:
-    assert(0);
+    hr_invalid("");
   }
 
   return String();
@@ -1389,7 +1389,7 @@ Token::isNegative() const
     return false;
 
   default:
-    assert(0);
+    hr_invalid("");
   }
   return false;
 }
@@ -1460,7 +1460,7 @@ Token::toPort(Port<Octet>* port) const
   case kSeq:
   case kNested:
   case kLit:
-    assert(fImpl != NULL);
+    hr_assert(fImpl != NULL);
     fImpl->toPort(port);
     break;
   case kId:
@@ -1505,7 +1505,7 @@ Token::toPort(Port<Octet>* port) const
       xml::displayTag(port, "id", toString());
       break;
     default:
-      assert(0);
+      hr_invalid("");
     }
     break;
 

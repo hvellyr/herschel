@@ -228,9 +228,9 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
   // situation is most likely a programming error.
   warningf(onnd->srcpos(), E_OrphanedOnExit,
            "orphaned 'on exit' handler parameter");
-  assert(onnd->params().size() == 1);
+  hr_assert(onnd->params().size() == 1);
   ParamNode* onPrmNode = dynamic_cast<ParamNode*>(onnd->params()[0].obj());
-  assert(onPrmNode != NULL);
+  hr_assert(onPrmNode != NULL);
 
   Ptr<AptNode> initExpr = ( onPrmNode->initExpr() != NULL
                             ? onPrmNode->initExpr()

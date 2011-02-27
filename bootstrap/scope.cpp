@@ -154,7 +154,7 @@ namespace herschel
 Scope::Scope(ScopeLevel level)
   : fLevel(level)
 {
-  assert(level == kScopeL_CompileUnit);
+  hr_assert(level == kScopeL_CompileUnit);
 }
 
 
@@ -162,7 +162,7 @@ Scope::Scope(ScopeLevel level, Scope* parent)
   : fParent(parent),
     fLevel(level)
 {
-  assert(implies(level > kScopeL_CompileUnit, parent != NULL));
+  hr_assert(implies(level > kScopeL_CompileUnit, parent != NULL));
 }
 
 
@@ -183,8 +183,8 @@ Scope::scopeLevel() const
 void
 Scope::registerScopeItem(const ScopeName& name, ScopeItem* item)
 {
-  assert(item != NULL);
-  assert(lookupItemLocalImpl(SrcPos(), name, false, false).fItem == NULL);
+  hr_assert(item != NULL);
+  hr_assert(lookupItemLocalImpl(SrcPos(), name, false, false).fItem == NULL);
 
   ScopeName base(name.fDomain, herschel::baseName(name.fName));
   String ns(herschel::nsName(name.fName));
@@ -370,7 +370,7 @@ void
 Scope::addImportedScope(const String& absPath, Scope* scope)
 {
   ImportedScope::iterator it = fImportedScopes.find(absPath);
-  assert(it == fImportedScopes.end());
+  hr_assert(it == fImportedScopes.end());
   fImportedScopes.insert(std::make_pair(absPath, scope));
 }
 
@@ -381,8 +381,8 @@ void
 Scope::registerType(const SrcPos& srcpos,
                     const String& name, const Type& type)
 {
-  assert(!type.isArray());
-  assert(type.isDef());
+  hr_assert(!type.isArray());
+  hr_assert(type.isDef());
 
   registerScopeItem(ScopeName(kNormal, name),
                     new TypeScopeItem(srcpos, type));
@@ -465,7 +465,7 @@ Scope::normalizeType(const Type& type, const Type& refType) const
     returnType = baseType;
   }
 
-  assert(baseType.isDef());
+  hr_assert(baseType.isDef());
 
   if (type.generics().size() != refType.generics().size())
     throw TypeRefMatchException(refType,
@@ -479,7 +479,7 @@ Scope::normalizeType(const Type& type, const Type& refType) const
     TypeCtx localCtx;
     for (size_t i = 0; i < type.generics().size(); i++) {
       Type gen = type.generics()[i];
-      assert(gen.isRef());
+      hr_assert(gen.isRef());
 
       String genName = gen.typeName();
       Type genReplacement = refType.generics()[i];
@@ -840,7 +840,7 @@ Scope::reduceVizType(VizType in) const
   case kPublic:
     return kPublic;
   }
-  assert(0);
+  hr_invalid("");
   return kPrivate;
 }
 
@@ -943,7 +943,7 @@ Scope::exportSymbols(Scope* dstScope, bool propagateOuter) const
 void
 Scope::propagateImportedScopes(Scope* dstScope) const
 {
-  assert(this != dstScope);
+  hr_assert(this != dstScope);
 
   for (ImportedScope::const_iterator it = fImportedScopes.begin();
        it != fImportedScopes.end();

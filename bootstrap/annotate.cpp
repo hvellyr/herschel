@@ -108,7 +108,7 @@ Annotator::takeFullNameFromNode(SymbolNode* node, const AptNode* otherNode)
 
   // TODO: unexpected type here.
   logf(kError, "Unexpected type here: %s", typeid(*otherNode).name());
-  assert(0);
+  hr_invalid("Unexpected type");
 }
 
 
@@ -117,7 +117,7 @@ Annotator::updateAllocType(SymbolNode* usingNode, const AptNode* referedNode)
 {
   if (usingNode->scope()->isVarInOuterFunction(usingNode->name())) {
     const BindingNode* bindNode = dynamic_cast<const BindingNode*>(referedNode);
-    assert(bindNode != NULL);
+    hr_assert(bindNode != NULL);
 
     const_cast<BindingNode*>(bindNode)->setAllocType(kAlloc_Shared);
     return true;
@@ -155,7 +155,7 @@ Annotator::annotate(SymbolNode* node)
         node->setRefersTo(kSlot, isShared);
       }
       else {
-        assert(0 && "unhandled registered symbol def");
+        hr_invalid("unhandled registered symbol def");
       }
 
       return;

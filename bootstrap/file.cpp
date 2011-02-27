@@ -125,7 +125,7 @@ herschel::file::baseName(const String& path)
 String
 herschel::file::appendDir(const String& path, const String& dirName)
 {
-  assert(!isFilePath(path));
+  hr_assert(!isFilePath(path));
   return makeDir(path + dirName);
 }
 
@@ -134,7 +134,7 @@ String
 herschel::file::appendDir(const String& path, const String& dirName,
                          const String& dirName2)
 {
-  assert(!isFilePath(path));
+  hr_assert(!isFilePath(path));
   return appendDir(appendDir(path, dirName), dirName2);
 }
 
@@ -143,7 +143,7 @@ String
 herschel::file::appendDir(const String& path, const String& dirName1,
                          const String& dirName2, const String& dirName3)
 {
-  assert(!isFilePath(path));
+  hr_assert(!isFilePath(path));
   return appendDir(appendDir(appendDir(path, dirName1),
                              dirName2),
                    dirName3);
@@ -155,7 +155,7 @@ herschel::file::appendDir(const String& path, const String& dirName1,
                          const String& dirName2, const String& dirName3,
                          const String& dirName4)
 {
-  assert(!isFilePath(path));
+  hr_assert(!isFilePath(path));
   return appendDir(appendDir(appendDir(appendDir(path, dirName1),
                                        dirName2),
                              dirName3),
@@ -166,7 +166,7 @@ herschel::file::appendDir(const String& path, const String& dirName1,
 String
 herschel::file::appendFile(const String& path, const String& name)
 {
-  assert(!isFilePath(path));
+  hr_assert(!isFilePath(path));
   return path + name;
 }
 
@@ -206,7 +206,7 @@ herschel::file::workingDir()
     buffer.resize(size);
   }
 
-  assert(0);
+  hr_invalid("?");
   return String();
 }
 
@@ -320,7 +320,7 @@ public:
 
   void makeLastEltToPath()
   {
-    assert(!fElts.empty());
+    hr_assert(!fElts.empty());
     fElts.back().setIsPath(true);
   }
 

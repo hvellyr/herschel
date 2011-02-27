@@ -402,7 +402,7 @@ XmlRenderer::renderNode(const ArrayTypeNode* node)
   }
   else if (rootType) {
     fprintf(stderr, "Unexpected type node: %p %s\n", rootType, typeid(*rootType).name());
-    assert(0 && "unexpected type node");
+    hr_invalid("unexpected type node");
   }
 }
 
@@ -777,7 +777,7 @@ XmlRenderer::operatorName(OperatorType type)
   case kOpWhile:        return "while";
 
   case kOpInvalid:
-    assert(0);
+    hr_invalid("");
   }
 
   return NULL;

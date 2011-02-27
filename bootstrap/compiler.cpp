@@ -142,7 +142,7 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
 {
   fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
 
-  assert(fState.fScope != NULL);
+  hr_assert(fState.fScope != NULL);
 
   try {
     Ptr<AptNode> apt;
@@ -357,7 +357,7 @@ Compiler::PortStackHelper::PortStackHelper(Compiler* compiler, TokenPort* port)
 
 Compiler::PortStackHelper::~PortStackHelper()
 {
-  assert(!fCompiler->fCompilerStates.empty());
+  hr_assert(!fCompiler->fCompilerStates.empty());
 
   CompilerState current = fCompiler->fState;
   fCompiler->fState = fCompiler->fCompilerStates.front();
@@ -385,9 +385,9 @@ namespace herschel
                                                new FilePort(file, "rb")),
                                              file);
         if (doCompile) {
-          assert(apt);
+          hr_assert(apt);
           CompileUnitNode* unit = dynamic_cast<CompileUnitNode*>(apt.obj());
-          assert(unit != NULL);
+          hr_assert(unit != NULL);
 
           if (unit != NULL) {
             String outExt = makeCompileOutputFileExt(Properties::compileOutFormat());

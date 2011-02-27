@@ -991,8 +991,7 @@ DEF_TYPIFY(VardefNode)
 llvm::Value*
 VardefNode::codegen(CodeGenerator* generator) const
 {
-  // this should never be called directly.  See codegen::DefNode
-  assert(0);
+  hr_invalid("this should never be called directly.  See codegen::DefNode");
   return NULL;
 }
 
@@ -1000,8 +999,7 @@ VardefNode::codegen(CodeGenerator* generator) const
 void
 VardefNode::annotate(Annotator* annotator)
 {
-  // this should never be called directly.  See Annotator::DefNode
-  assert(0);
+  hr_invalid("this should never be called directly.  See Annotator::DefNode");
 }
 
 
@@ -1015,7 +1013,7 @@ ParamNode::ParamNode(const SrcPos& srcpos,
     fKey(keyName),
     fFlags(flags)
 {
-  assert(implies(fFlags == kNamedArg, !fKey.isEmpty()));
+  hr_assert(implies(fFlags == kNamedArg, !fKey.isEmpty()));
 }
 
 
@@ -1166,8 +1164,8 @@ DictNode::clone() const
 void
 DictNode::addPair(AptNode* key, AptNode* value)
 {
-  assert(key != NULL);
-  assert(value != NULL);
+  hr_assert(key != NULL);
+  hr_assert(value != NULL);
 
   appendNode(new BinaryNode(key->srcpos(), key, kOpMapTo, value));
 }
@@ -1190,7 +1188,7 @@ BinaryNode::BinaryNode(const SrcPos& srcpos,
     fRight(right),
     fOp(op)
 {
-  assert(fOp != kOpInvalid);
+  hr_assert(fOp != kOpInvalid);
 }
 
 
@@ -1959,8 +1957,7 @@ FuncDefNode::setLinkage(const String& linkage)
 llvm::Value*
 FuncDefNode::codegen(CodeGenerator* generator) const
 {
-  // this should never be called directly.  See codegen::DefNode
-  assert(0);
+  hr_invalid("this should never be called directly.  See codegen::DefNode");
   return NULL;
 }
 
@@ -1968,8 +1965,7 @@ FuncDefNode::codegen(CodeGenerator* generator) const
 void
 FuncDefNode::annotate(Annotator* annotator)
 {
-  // this should never be called directly.  See Annotator::DefNode
-  assert(0);
+  hr_invalid("this should never be called directly.  See Annotator::DefNode");
 }
 
 DEF_RENDER(FuncDefNode)
@@ -2062,7 +2058,7 @@ KeyargNode::KeyargNode(const SrcPos& srcpos,
     fKey(key),
     fValue(value)
 {
-  assert(fValue != NULL);
+  hr_assert(fValue != NULL);
 }
 
 
@@ -2358,7 +2354,7 @@ herschel::appendNodes(NodeList& dst, const NodeList& nl)
 AptNode*
 herschel::singletonNodeListOrNull(const NodeList& nl)
 {
-  assert(nl.size() < 2);
+  hr_assert(nl.size() < 2);
   if (nl.size() == 1)
     return nl[0].obj();
   return NULL;

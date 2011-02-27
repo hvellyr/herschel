@@ -8,12 +8,12 @@
 
 #include "common.h"
 
-#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
+#include "require.h"
 #include "str.h"
 #include "refcountable.h"
 #include "port.h"
@@ -377,7 +377,7 @@ DataPort::length() const
 CharPort::CharPort(Port<Octet>* slave)
   : fSlave(slave)
 {
-  assert(fSlave != NULL);
+  hr_assert(fSlave != NULL);
 }
 
 

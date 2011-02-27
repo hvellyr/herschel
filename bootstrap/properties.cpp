@@ -157,7 +157,7 @@ Properties::isTracePass(int level)
   case 4: return sIsAnnotateTracing;
   case 5: return sIsTypifyTracing;
   default:
-    assert(0 && "Missing pass level setting");
+    hr_invalid("Missing pass level setting");
   }
   return false;
 }

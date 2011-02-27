@@ -54,7 +54,7 @@ CodeGenerator::wrapInt(llvm::Value* value, const Type& type)
   if (type.isPlainType())
     return coerceIntOperand(type, type, value);
 
-  assert(type.isAnyInt());
+  hr_assert(type.isAnyInt());
   return makeIntAtom(value);
 }
 
@@ -66,7 +66,7 @@ CodeGenerator::wrapBool(llvm::Value* value, const Type& type)
   if (type.isPlainType())
     return value;
 
-  assert(type.isBool());
+  hr_assert(type.isBool());
   return makeBoolAtom(value);
 }
 

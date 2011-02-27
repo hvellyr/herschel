@@ -26,7 +26,7 @@ StringBuffer::StringBuffer(const StringBuffer& other)
 {
   fBuffer.reserve(64);
   *this << other;
-  assert(fBuffer.size() == other.fBuffer.size());
+  hr_assert(fBuffer.size() == other.fBuffer.size());
 }
 
 
@@ -34,7 +34,7 @@ StringBuffer::StringBuffer(const String& other)
 {
   fBuffer.reserve(64);
   *this << other;
-  assert(int(fBuffer.size()) == other.length());
+  hr_assert(int(fBuffer.size()) == other.length());
 }
 
 
@@ -42,7 +42,7 @@ StringBuffer::StringBuffer(const char* c)
 {
   fBuffer.reserve(64);
   *this << c;
-  assert(fBuffer.size() == ::strlen(c));
+  hr_assert(fBuffer.size() == ::strlen(c));
 }
 
 
@@ -92,7 +92,7 @@ StringBuffer::operator<<(const char* utf8)
 
   int reallen = str_utf8_to_wcs(utf8, utf8len,
                                 &fBuffer[endidx], reqlen);
-  assert(reallen == reqlen);
+  hr_assert(reallen == reqlen);
   return *this;
 }
 
@@ -114,7 +114,7 @@ StringBuffer::toString() const
 Char
 StringBuffer::operator[] (int atIndex) const
 {
-  assert(atIndex >= 0 && atIndex < int(fBuffer.size()));
+  hr_assert(atIndex >= 0 && atIndex < int(fBuffer.size()));
   return fBuffer[atIndex];
 }
 
@@ -122,7 +122,7 @@ StringBuffer::operator[] (int atIndex) const
 void
 StringBuffer::setAtIndex(int atIndex, Char c)
 {
-  assert(atIndex >= 0 && atIndex < int(fBuffer.size()));
+  hr_assert(atIndex >= 0 && atIndex < int(fBuffer.size()));
   fBuffer[atIndex] = c;
 }
 
@@ -130,7 +130,7 @@ StringBuffer::setAtIndex(int atIndex, Char c)
 void
 StringBuffer::setAtIndex(int atIndex, const String& other)
 {
-  assert(atIndex >= 0 && atIndex + other.length() < int(fBuffer.size()));
+  hr_assert(atIndex >= 0 && atIndex + other.length() < int(fBuffer.size()));
   for (int i = 0; i < other.length(); i++)
     fBuffer[atIndex + i] = other[i];
 }
@@ -166,7 +166,7 @@ StringBuffer::insertAt(int atIndex, const char* utf8)
 
     int reallen = str_utf8_to_wcs(utf8, utf8len,
                                   &fBuffer[atIndex], reqlen);
-    assert(reallen == reqlen);
+    hr_assert(reallen == reqlen);
   }
   return *this;
 }

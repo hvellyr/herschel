@@ -144,7 +144,7 @@ namespace herschel
 
     size_t readFromUnreadBuffer(T* dstbuffer, int items)
     {
-#if !defined(NDEBUG)
+#if defined(IS_DEBUG)
       size_t oldsize = fUnreadBuffer.size();
 #endif
       size_t step = items;
@@ -153,7 +153,7 @@ namespace herschel
         dstbuffer[i] = fUnreadBuffer.front();
         fUnreadBuffer.pop_front();
       }
-      assert(fUnreadBuffer.size() + first == oldsize);
+      hr_assert(fUnreadBuffer.size() + first == oldsize);
       return first;
     }
 

@@ -37,10 +37,10 @@ TypeCtx::parent() const
 void
 TypeCtx::registerType(const String& name, const Type& type)
 {
-  assert(fMap.find(name) == fMap.end());
-  // assert(!type.isRef());
-//  assert(!type.isArray());
-  assert(type.isDef());
+  hr_assert(fMap.find(name) == fMap.end());
+  // hr_assert(!type.isRef());
+//  hr_assert(!type.isArray());
+  hr_assert(type.isDef());
 
   fMap.insert(std::make_pair(name, type));
 }

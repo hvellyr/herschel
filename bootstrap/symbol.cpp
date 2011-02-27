@@ -79,7 +79,7 @@ fastMangleSymPart(StringBuffer& result, const String& sym)
           result << sym[j];
       }
 
-      assert(c > 0 && c < 256);
+      hr_assert(c > 0 && c < 256);
       char tmp[16];
       sprintf(tmp, "/%02x", c);
       result << tmp;
@@ -90,7 +90,7 @@ fastMangleSymPart(StringBuffer& result, const String& sym)
     result << sym;
 
   int symLength = result.length() - startPos;
-  assert(symLength >= sym.length());
+  hr_assert(symLength >= sym.length());
 
   char tmp[32];
   sprintf(tmp, "%d", symLength);

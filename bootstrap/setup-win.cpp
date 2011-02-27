@@ -32,7 +32,7 @@ namespace herschel
   {
     char buf[MAX_PATH];
     DWORD len = ::GetModuleFileName(NULL, buf, sizeof(buf));
-    assert(len > 0 && "GetModuleFileName failed");
+    hr_assert(len > 0 && "GetModuleFileName failed");
 
     return file::canonicalPathName(String(buf));
   }

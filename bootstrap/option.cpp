@@ -6,9 +6,9 @@
    All rights reserved.
 */
 
-#include <assert.h>
 #include <stdio.h>
 
+#include "require.h"
 #include "option.h"
 
 
@@ -24,7 +24,7 @@ OptionsParser::OptionsParser(const OptionsDefine optDefs[],
     fArguments(argv),
     fArgp(0)
 {
-  assert(fOptionDefines);
+  hr_assert(fOptionDefines);
 
   // start from 1 to ignore the app name itself
   fArgp++;
@@ -63,7 +63,7 @@ OptionsParser::findOption(const String& option,
 OptionsParser::ArgumentType
 OptionsParser::nextOption(Option* option)
 {
-  assert(option);
+  hr_assert(option);
 
   option->fId = -1;
   option->fOption = String();

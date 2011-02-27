@@ -129,7 +129,7 @@ Typifier::setBodyLastDstType(AptNode* body, const Type& dstType)
 {
   body->setDstType(dstType);
   if (BlockNode* block = dynamic_cast<BlockNode*>(body)) {
-    assert(!block->children().empty());
+    hr_assert(!block->children().empty());
 
     setBodyLastDstType(block->children().back(), dstType);
   }
@@ -181,7 +181,7 @@ void
 Typifier::typify(TypeNode* node)
 {
   if (fPhase == kTypify) {
-    assert(node->type().isDef());
+    hr_assert(node->type().isDef());
     Type type1 = node->scope()->normalizeType(node->type());
     node->setType(Type::newClassOf(type1));
   }
@@ -216,7 +216,7 @@ Typifier::typify(LetNode* node)
 void
 Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
 {
-  assert(node->scope() != NULL);
+  hr_assert(node->scope() != NULL);
 
   if (node->type().isDef() && node->type().isOpen())
     return;
@@ -237,7 +237,7 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
       node->initExpr()->setDstType(Type::newAny());
   }
   else {
-    assert(bindty.isDef());
+    hr_assert(bindty.isDef());
     // if (bindty.isOpen()) {
     //   if (node->type().isDef())
     //     bindty = node->scope()->normalizeType(bindty, node->type());
@@ -280,7 +280,7 @@ Typifier::typify(VardefNode* node)
       setupBindingNodeType(node, "variable");
   }
   else {
-    assert(!node->isTypeSpecDelayed());
+    hr_assert(!node->isTypeSpecDelayed());
   }
 }
 
@@ -291,7 +291,7 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
   FunctionParamVector params;
   for (size_t i = 0; i < node->params().size(); i++) {
     ParamNode* prmnd = dynamic_cast<ParamNode*>(node->params()[i].obj());
-    assert(prmnd != NULL);
+    hr_assert(prmnd != NULL);
 
     if (prmnd->flags() == kPosArg) {
       params.push_back(FunctionParameter(FunctionParameter::kParamPos,
@@ -314,7 +314,7 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
                                          prmnd->type()));
     }
     else {
-      assert(0 && "undefined parameter type?");
+      hr_invalid("undefined parameter type?");
     }
   }
 
@@ -499,7 +499,7 @@ Typifier::typify(SlotdefNode* node)
 void
 Typifier::typify(BlockNode* node)
 {
-  assert(!node->children().empty());
+  hr_assert(!node->children().empty());
 
   typifyNodeList(node->children());
 
@@ -510,10 +510,10 @@ Typifier::typify(BlockNode* node)
     for (size_t i = 0; i < node->children().size(); ++i) {
       OnNode* onnd = dynamic_cast<OnNode*>(node->children()[i].obj());
       if (onnd != NULL && onnd->key() == Names::kExitKeyword) {
-        assert(!onnd->params().empty());
+        hr_assert(!onnd->params().empty());
 
         ParamNode* firstPrm = dynamic_cast<ParamNode*>(onnd->params()[0].obj());
-        assert(firstPrm != NULL);
+        hr_assert(firstPrm != NULL);
 
         if (firstPrm->type().isAny()) {
           // infer parameters type from block type
@@ -698,7 +698,7 @@ Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos,
         argidx = args.size();
       }
       else {
-        assert(0);
+        hr_invalid("");
       }
     }
   }
@@ -778,7 +778,7 @@ Typifier::typify(ApplyNode* node)
           // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->base()->type().toString()));
           // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
           // out->render(node->base());
-          assert(0 && "Unhandled apply base node");
+          hr_invalid("Unhandled apply base node");
         }
       }
     }
@@ -794,11 +794,11 @@ Typifier::typify(AssignNode* node)
 
   if (node->isTypeSpecDelayed()) {
     SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->lvalue());
-    assert(symNode != NULL);
+    hr_assert(symNode != NULL);
 
     const AptNode* var = node->scope()->lookupVarOrFunc(symNode->name(), true);
     VardefNode* vardefNode = const_cast<VardefNode*>(dynamic_cast<const VardefNode*>(var));
-    assert(vardefNode != NULL);
+    hr_assert(vardefNode != NULL);
 
     symNode->setType(node->rvalue()->type());
     vardefNode->setType(node->rvalue()->type());
@@ -880,7 +880,7 @@ Typifier::operatorNameByOp(OperatorType type) const
   case kOpRange:        return String("..");
   case kOpThen:         return String("then");
   case kOpWhile:        return String("while");
-    assert(0);
+    hr_invalid("");
   }
 
   return String();
@@ -925,7 +925,7 @@ Typifier::typify(BinaryNode* node)
 
     switch (node->op()) {
     case kOpInvalid:
-      assert(0 && "type not determined yet");
+      hr_invalid("type not determined yet");
 
     case kOpPlus:
     case kOpMinus:
@@ -1147,7 +1147,7 @@ Typifier::typify(BinaryNode* node)
     case kOpAssign:
     case kOpThen:
     case kOpWhile:
-      assert(0 && "???");
+      hr_invalid("not handled operators?");
     }
   }
 }
@@ -1413,8 +1413,8 @@ Typifier::typify(DictNode* node)
   NodeList& nl = node->children();
   for (size_t i = 0; i < nl.size(); i++) {
     BinaryNode* pair = dynamic_cast<BinaryNode*>(nl[i].obj());
-    assert(pair != NULL);
-    assert(pair->op() == kOpMapTo);
+    hr_assert(pair != NULL);
+    hr_assert(pair->op() == kOpMapTo);
 
     typifyNode(pair->left());
     typifyNode(pair->right());
@@ -1430,8 +1430,8 @@ Typifier::typify(DictNode* node)
 
   for (size_t i = 0; i < nl.size(); i++) {
     BinaryNode* pair = dynamic_cast<BinaryNode*>(nl[i].obj());
-    assert(pair != NULL);
-    assert(pair->op() == kOpMapTo);
+    hr_assert(pair != NULL);
+    hr_assert(pair->op() == kOpMapTo);
     annotateTypeConv(pair->right(), valueType);
     annotateTypeConv(pair->left(), keyType);
   }

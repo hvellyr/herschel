@@ -346,7 +346,7 @@ TokenEvalContext::evalBitOp(const Token& lexpr, const Token& rexpr,
     case kOpShiftLeft:  result = lvalue << rvalue; break;
     case kOpShiftRight: result = lvalue >> rvalue; break;
     default:
-      assert(0);
+      hr_invalid("");
     }
     return Token(left.srcpos(), kInt, result);
   }
@@ -416,7 +416,7 @@ TokenEvalContext::evalLogical(const Token& lexpr, const Token& rexpr,
     case kOpLess:         result = p.intValue() < 0; break;
     case kOpLessEqual:    result = p.intValue() <= 0; break;
     default:
-      assert(0);
+      hr_invalid("");
     }
   }
 

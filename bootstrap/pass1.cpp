@@ -546,7 +546,7 @@ namespace herschel
 Token
 FirstPass::parseSimpleType(const Token& baseToken, bool nextIsParsedYet)
 {
-  assert(baseToken == kSymbol || baseToken == kQuote);
+  hr_assert(baseToken == kSymbol || baseToken == kQuote);
 
   Token typeName = baseToken;
   if (baseToken == kQuote) {
@@ -726,7 +726,7 @@ FirstPass::parseFunctionType()
 Token
 FirstPass::parseQuotedType()
 {
-  assert(fToken == kQuote);
+  hr_assert(fToken == kQuote);
   Token quote = fToken;
   nextToken();
 
@@ -1529,7 +1529,7 @@ namespace herschel
 
       Token mapToToken;
       if (mapToReq) {
-        assert(pass->fToken == kMapTo);
+        hr_assert(pass->fToken == kMapTo);
         mapToToken = pass->fToken;
         pass->nextToken();
       }
@@ -1646,7 +1646,7 @@ namespace herschel
 Token
 FirstPass::parseSelect()
 {
-  assert(fToken == kSelectId);
+  hr_assert(fToken == kSelectId);
   Token selectToken = fToken;
   nextToken();
 
@@ -1748,7 +1748,7 @@ namespace herschel
 Token
 FirstPass::parseMatch()
 {
-  assert(fToken == kMatchId);
+  hr_assert(fToken == kMatchId);
   Token matchToken = fToken;
   nextToken();
 
@@ -1787,7 +1787,7 @@ namespace herschel
                            const Token& colonToken,
                            const Token& type)
     {
-      assert(pass->fToken == kIn);
+      hr_assert(pass->fToken == kIn);
       Token inToken = pass->fToken;
       pass->nextToken();
 
@@ -1818,7 +1818,7 @@ namespace herschel
                              const Token& colonToken,
                              const Token& type)
     {
-      assert(pass->fToken == kAssign);
+      hr_assert(pass->fToken == kAssign);
       Token assignToken = pass->fToken;
       pass->nextToken();
 
@@ -1921,7 +1921,7 @@ namespace herschel
 Token
 FirstPass::parseFor()
 {
-  assert(fToken == kForId);
+  hr_assert(fToken == kForId);
   Token forToken = fToken;
   nextToken();
 
@@ -2050,7 +2050,7 @@ FirstPass::parseAtomicExpr()
     return parseFor();
 
   case kLetId:
-    assert(0);
+    hr_invalid("unexpected let token");
     break;
 
   case kSymbol:
@@ -2145,7 +2145,7 @@ FirstPass::makeAssignToken(const TokenVector& exprs, const Token& expr2,
     return block;
   }
 
-  assert(exprs.size() == 1);
+  hr_assert(exprs.size() == 1);
   return makeAssignToken(exprs[0], expr2, op1Srcpos);
 }
 
@@ -2250,7 +2250,7 @@ FirstPass::weightOperator(OperatorType op1) const
   case kOpAssign:         return 999999;
 
   case kOpInvalid:
-    assert(0);
+    hr_invalid("invalid operator");
   }
 
   return 999999;
@@ -2269,7 +2269,7 @@ FirstPass::parseExprRec(const TokenVector& exprs,
                         OperatorType op1, const SrcPos& op1Srcpos,
                         bool hasRest)
 {
-  assert(exprs.size() > 0);
+  hr_assert(exprs.size() > 0);
 
   if (op1 == kOpInvalid) {
     if (exprs.size() > 1)
@@ -2579,7 +2579,7 @@ FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
   else if (inclAlternate)
     return alternate;
 
-  assert(0);
+  hr_invalid("");
   return Token();
 }
 
@@ -2587,7 +2587,7 @@ FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
 Token
 FirstPass::parseExtend(ScopeType scope)
 {
-  assert(fToken == kExtendId);
+  hr_assert(fToken == kExtendId);
   Token extendToken = fToken;
   nextToken();
 
@@ -2630,7 +2630,7 @@ FirstPass::parseExtend(ScopeType scope)
 TokenVector
 FirstPass::parseExtern()
 {
-  assert(fToken == kExternId);
+  hr_assert(fToken == kExternId);
   Token externToken = fToken;
   nextToken();
 
@@ -2716,7 +2716,7 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
     Token colonToken;
     Token type;
 
-    assert(!ellipsisToken.isSet());
+    hr_assert(!ellipsisToken.isSet());
 
     if (fToken == kColon) {
       colonToken = fToken;
@@ -2812,7 +2812,7 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
 
     Token effInitExpr;
     if (leftHands.size() > 1) {
-      assert(initValueSym.isSet());
+      hr_assert(initValueSym.isSet());
 
       const char* funcName = ( i == leftHands.size() - 1 && ellipsisToken.isSet()
                                ? "slice*"
@@ -2922,7 +2922,7 @@ FirstPass::parseCharDef(const Token& defToken)
 Token
 FirstPass::parseWhereClause()
 {
-  assert(fToken == kWhereId);
+  hr_assert(fToken == kWhereId);
 
   Token whereToken = fToken;
   nextToken();
@@ -2996,7 +2996,7 @@ FirstPass::parseWhereClause()
 Token
 FirstPass::parseReifyClause()
 {
-  assert(fToken == kReifyId);
+  hr_assert(fToken == kReifyId);
   Token reifyToken = fToken;
 
   nextToken();
@@ -3038,7 +3038,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
                             const Token& symToken, bool isLocal,
                             const Token& linkage)
 {
-  assert(fToken == kParanOpen);
+  hr_assert(fToken == kParanOpen);
   Token paranOpenToken = fToken;
 
   Token result;
@@ -3131,7 +3131,7 @@ TokenVector
 FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal,
                                  const Token& linkage)
 {
-  assert(fToken == kSymbol);
+  hr_assert(fToken == kSymbol);
 
   Token symToken = fToken;
 
@@ -3195,7 +3195,7 @@ FirstPass::parseGenericFunctionDef(const Token& defToken, bool isLocal)
 Token
 FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
 {
-  assert(fToken == Compiler::aliasToken);
+  hr_assert(fToken == Compiler::aliasToken);
 
   Token tagToken = fToken;
   nextToken();
@@ -3269,7 +3269,7 @@ FirstPass::parseOptDocString()
 Token
 FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 {
-  assert((isClass && fToken == Compiler::classToken) ||
+  hr_assert((isClass && fToken == Compiler::classToken) ||
          (!isClass && fToken == Compiler::typeToken) );
 
   Token tagToken;
@@ -3369,7 +3369,7 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 Token
 FirstPass::parseSlotDef(const Token& defToken)
 {
-  assert(fToken == Compiler::slotToken);
+  hr_assert(fToken == Compiler::slotToken);
   Token tagToken = fToken;
   nextToken();
 
@@ -3456,7 +3456,7 @@ FirstPass::parseSlotDef(const Token& defToken)
 Token
 FirstPass::parseMeasure(const Token& defToken, bool isLocal)
 {
-  assert(fToken == Compiler::measureToken);
+  hr_assert(fToken == Compiler::measureToken);
   Token tagToken = fToken;
   nextToken();
 
@@ -3521,7 +3521,7 @@ FirstPass::parseMeasure(const Token& defToken, bool isLocal)
 Token
 FirstPass::parseUnit(const Token& defToken, bool isLocal)
 {
-  assert(fToken == Compiler::unitToken);
+  hr_assert(fToken == Compiler::unitToken);
   Token tagToken = fToken;
   nextToken();
 
@@ -3624,7 +3624,7 @@ namespace herschel
 Token
 FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
 {
-  assert(fToken == Compiler::enumToken);
+  hr_assert(fToken == Compiler::enumToken);
   Token tagToken = fToken;
   nextToken();
 
@@ -3811,7 +3811,7 @@ FirstPass::parseMacroComponent(TokenVector* component,
     }
   }
 
-  assert(0);
+  hr_invalid("");
   return true;
 }
 
@@ -3913,7 +3913,7 @@ FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
 Token
 FirstPass::parseMacroDef(const Token& defToken)
 {
-  assert(fToken == Compiler::macroToken);
+  hr_assert(fToken == Compiler::macroToken);
   Token tagToken = fToken;
   nextToken();
 
@@ -3966,7 +3966,7 @@ FirstPass::parseMacroDef(const Token& defToken)
 Token
 FirstPass::parseLinkageType()
 {
-  assert(fToken == kExternId);
+  hr_assert(fToken == kExternId);
 
   Token externToken = fToken;
   nextToken();
@@ -4381,7 +4381,7 @@ namespace herschel {
                        NamedReplacementMap* bindings,
                        SyntaxTreeNode* followSet)
     {
-      assert(0);
+      hr_invalid("");
       return false;
     }
   };
@@ -4567,7 +4567,7 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
 {
 
   SyntaxTreeNode* node = syntaxTable->rootNode();
-  assert(node != NULL);
+  hr_assert(node != NULL);
 
   NamedReplacementMap bindings;
 
@@ -4645,7 +4645,7 @@ FirstPass::parseDoMatchSyntaxFunc(TokenVector* result,
       unreadToken(nextTk);
       if (nextTk != kParanClose)
         unreadToken(Token(nextTk.srcpos(), kComma));
-      assert(args.size() == 1);
+      hr_assert(args.size() == 1);
       unreadToken(args[0]);
     }
 
@@ -4722,15 +4722,15 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
                               bool isLocal,
                               ScopeType scopeType)
 {
-  assert(expr == kSymbol);
-  assert(!isQualified(expr.idValue()));
+  hr_assert(expr == kSymbol);
+  hr_assert(!isQualified(expr.idValue()));
 
   Ptr<SyntaxTable> syntaxTable = macro->syntaxTable();
 
   TokenVector filtered;
   switch (macro->type()) {
   case kMacro_Invalid:
-    // assert(0);
+    // hr_invalid("");
     return Token();
 
   case kMacro_Any:
