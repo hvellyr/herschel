@@ -532,6 +532,8 @@ XmlRenderer::renderNode(const CompileUnitNode* node)
   }
 
   displayCloseTag("compile-unit");
+
+  fPort->flush();
 }
 
 
