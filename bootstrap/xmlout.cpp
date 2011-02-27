@@ -927,6 +927,14 @@ XmlRenderer::renderNode(const OnNode* node)
 void
 XmlRenderer::renderNode(const BlockNode* node)
 {
+  // StringBuffer attrs;
+
+  // if (fShowNodeType && node->type().isDef())
+  //   attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+
+  // displayOpenTagAttrs("block", StrHelper(attrs.toString()));
+  // displayNodeList(NULL, node->children());
+  // displayCloseTag("block");
   displayNodeList("block", node->children());
 }
 
