@@ -1053,7 +1053,8 @@ expression.  This induces runtime type checks.
 All values in Herschel are objects, i.e.@ instances of a specific
 type.  Nevertheless it knows also about @emph{primitive} types which
 are recognized by the compiler and handled in a special (more
-efficient) way.
+efficient) way.  Except for being constraint with inheritance these
+primitive types behave like other types.
 
 Herschel distinguishes between @dfn{types} and @dfn{classes}.  Every class
 has exactly one type, but not every type is represented by a class.
