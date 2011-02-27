@@ -1,0 +1,7 @@
+def foo(i)
+  i
+
+def app|main()
+  let t = 21
+  foo(t)
+

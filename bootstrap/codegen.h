@@ -11,6 +11,7 @@
 
 #include "refcountable.h"
 #include "ptr.h"
+#include "apt.h"
 
 #include <map>
 #include <vector>
@@ -70,6 +71,7 @@ namespace herschel
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
+  class UndefNode;
   class WhileNode;
 
   class String;
@@ -124,6 +126,7 @@ namespace herschel
     llvm::Value* codegen(const UnitConstNode* node);
     llvm::Value* codegen(const VectorNode* node);
     llvm::Value* codegen(const WhileNode* node);
+    llvm::Value* codegen(const UndefNode* node);
 
   private:
     llvm::Value* codegen(const FuncDefNode* node, bool isLocal);
@@ -131,9 +134,9 @@ namespace herschel
 
     llvm::LLVMContext& context();
 
-    llvm::FunctionType* createFunctionSignature(const FunctionNode* node);
-    llvm::FunctionType* createFunctionSignature2(const FunctionNode* node,
-                                                 bool inlineRetv);
+    llvm::FunctionType* createFunctionSignature(const FunctionNode* node,
+                                                bool inlineRetv,
+                                                const Type& retty);
 
     llvm::Value* codegen(const NodeList& nl);
 
@@ -150,14 +153,13 @@ namespace herschel
     llvm::Value* codegenForGlobalVars(const VardefNode* node);
 
     llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
-                                             const String& name);
+                                             const String& name,
+                                             const llvm::Type* type);
 
     const llvm::Type* getAtomType();
     const llvm::Type* getType(const Type& type);
 
-    llvm::Value* makeTypeCastAtomToClangBool(llvm::Value* val);
-    llvm::Value* makeTypeCastAtomToClangInt(llvm::Value* val);
-    llvm::Value* makeTypeCastAtomToClangChar(llvm::Value* val);
+    llvm::Value* makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType);
 
     enum Typeid {
       kAtomInt  = 0,
@@ -186,6 +188,24 @@ namespace herschel
                                        int isize);
     void emitClassInitFunc();
     void emitGlobalVarInitFunc();
+
+
+    //------------------------------ emit operators
+    bool isPlainInt(const Type& type) const;
+
+    llvm::Value* wrapInt(llvm::Value* value, const Type& type);
+    llvm::Value* wrapBool(llvm::Value* value, const Type& type);
+
+    llvm::Value* coerceIntOperand(const Type& dstType, const Type& isType,
+                                  llvm::Value* value);
+
+    llvm::Value* codegenOpIntInt(const BinaryNode* node,
+                                 llvm::Value* left,
+                                 llvm::Value* right);
+
+    llvm::Value* emitPackCode(const Type& dstType, TypeConvKind convKind,
+                              llvm::Value* value,
+                              const Type& valType);
 
     //-------- data members
 

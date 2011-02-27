@@ -3,5 +3,5 @@ module mno ("mno")
 export public (MyNumber)
 export outer (MyString)
 
-def alias MyNumber = Real
+def alias MyNumber = Float
 def alias MyString = String

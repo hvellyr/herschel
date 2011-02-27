@@ -23,7 +23,7 @@
 <symbol  ty='&apos;T' refer='param'>x</symbol>
 <cast>
 <base>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </base>
 <as>
 <ty:ref gen='t' nm='T'>
@@ -94,20 +94,26 @@
 <type>
 <ty:ref nm='lang|Range'>
 <ty:gen>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:gen>
 </ty:ref>
 </type>
 <init>
-<apply  ty='lang|Range&lt;lang|Int>'>
+<apply  ty='lang|Range&lt;lang|Int32>'>
 <symbol  ty='lambda(&apos;T):lang|Range&lt;&apos;T>' refer='function'>foo</symbol>
 <args>
-<int ty='lang|Int'>5</int>
+<int ty='lang|Int32'>5</int>
 </args>
 </apply>
 </init>
@@ -149,18 +155,24 @@
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Char'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:ref nm='lang|Object'>
 </ty:ref>
 </ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Char'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
@@ -175,9 +187,9 @@
 <ty:used-type>
 <ty:ref nm='lang|Range'>
 <ty:gen>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Char'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:ref nm='lang|Object'>
 </ty:ref>
 </ty:isa>
 </ty:type>
@@ -187,10 +199,16 @@
 <ty:used-type>
 <ty:ref nm='lang|Range'>
 <ty:gen>
-<ty:type nm='lang|Char'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:gen>

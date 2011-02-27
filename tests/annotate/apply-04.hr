@@ -1,6 +1,6 @@
 def foo(a : Int, b : Char,
         c : String = "hello world",
-        d : Real = 0.1234,
+        d : Float = 0.1234,
         r ...) : Int
   a
 

@@ -52,7 +52,7 @@ def type Real : Number
 def type Rational : Number
     ~ A rational of type p/q, where p and q are integers. ~
 
-def type Int : Number
+def type Integer : Number
     ~ Whole numbers, positive or negative. ~
 
 
@@ -86,28 +86,28 @@ def type Unsigned
 ;; Real data types
 ;;----------------------------------------------------------------------------
 
-def type Int8 : (Int, Exact, Bounded)
+def type Int8 : (Integer, Exact, Bounded)
     ~ Signed 8bit integer, range is -2^7 .. 2^7-1 ~
 
-def type UInt8 : (Int, Exact, Bounded, Unsigned)
+def type UInt8 : (Integer, Exact, Bounded, Unsigned)
     ~ Unsigned 8bit integer, range is 0 .. 2^8-1 ~
 
-def type Int16 : (Int, Exact, Bounded)
+def type Int16 : (Integer, Exact, Bounded)
     ~ Signed 16bit integer, range is -2^15 .. 2^15-1 ~
 
-def type UInt16 : (Int, Exact, Bounded, Unsigned)
+def type UInt16 : (Integer, Exact, Bounded, Unsigned)
     ~ Unsigned 16bit integer, range is 0 .. 2^16-1 ~
 
-def type Int32 : (Int, Exact, Bounded)
+def type Int32 : (Integer, Exact, Bounded)
     ~ Signed 32bit integer, range is -2^31 .. 2^31-1 ~
 
-def type UInt32 : (Int, Exact, Bounded, Unsigned)
+def type UInt32 : (Integer, Exact, Bounded, Unsigned)
     ~ Unsigned 32bit integer, range is 0 .. 2^32-1 ~
 
-def type Int64 : (Int, Exact, Bounded)
+def type Int64 : (Integer, Exact, Bounded)
     ~ Signed 64bit integer, range is -2^63 .. 2^63-1 ~
 
-def type UInt64 : (Int, Exact, Bounded, Unsigned)
+def type UInt64 : (Integer, Exact, Bounded, Unsigned)
     ~ Unsigned 64bit integer, range is 0 .. 2^64-1 ~
 
 def type Float32 : (Real, Approximate, Bounded)
@@ -119,7 +119,7 @@ def type Float64 : (Real, Approximate, Bounded)
 def type Float128 : (Real, Approximate, Bounded)
     ~ 128bit ieee754 float, range is +/- 1.18 +/- 4932 ~
 
-def type BigInt : (Int, Exact)
+def type BigInt : (Integer, Exact)
     ~ Arbitrary large integer.  Under normal conditions only limited by
     system resources. ~
 
@@ -132,9 +132,6 @@ def type BigReal : (Real, Exact)
 ;; derived types
 ;;----------------------------------------------------------------------------
 
-def type Ordinal : (Int >= 0, BoundedBelow, Unsigned)
-    ~ A positive, arbitrary precise integer. ~
-
 ;;----------------------------------------------------------------------------
 ;; Other names for the more technical names
 ;;----------------------------------------------------------------------------
@@ -142,10 +139,14 @@ def type Ordinal : (Int >= 0, BoundedBelow, Unsigned)
 def alias Byte   = Int8
 def alias UByte  = UInt8
 def alias Octet  = UInt8
+
 def alias Short  = Int16
 def alias UShort = UInt16
-def alias Word   = Int32
-def alias UWord  = UInt32
+
+def alias Int    = Int32
+def alias UInt   = UInt32
+def alias Ordinal = UInt32
+
 def alias Long   = Int64
 def alias ULong  = UInt64
 

@@ -66,7 +66,7 @@
 <def>
 <func sym='bar'>
 <rettype>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </rettype>
 <body>
@@ -80,20 +80,20 @@
 </ty:ref>
 </ty:isa>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>
 </type>
 </vardef>
 </let>
-<apply  ty='lang|Int'>
+<apply  ty='lang|Int32'>
 <symbol  ty='lambda(Container&lt;&apos;T>):&apos;T' refer='function'>item</symbol>
 <args>
-<apply  ty='Container&lt;lang|Int>'>
+<apply  ty='Container&lt;lang|Int32>'>
 <symbol  ty='lambda(Container&lt;&apos;T>):Container&lt;&apos;T>' refer='function'>foo</symbol>
 <args>
-<symbol  ty='Container&lt;lang|Int>' refer='local'>y</symbol>
+<symbol  ty='Container&lt;lang|Int32>' refer='local'>y</symbol>
 </args>
 </apply>
 </args>
@@ -104,7 +104,7 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
@@ -122,7 +122,7 @@
 </ty:ref>
 </ty:isa>
 <ty:gen>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:gen>
 </ty:type>

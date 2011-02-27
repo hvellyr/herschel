@@ -235,11 +235,11 @@
 <let>
 <vardef sym='t6'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
-<binary op='&lt;=>' ty='lang|Int'>
+<binary op='&lt;=>' ty='lang|Int32'>
 <symbol  ty='lang|Complex' refer='param'>a</symbol>
 <symbol  ty='lang|Complex' refer='param'>b</symbol>
 </binary>
@@ -299,7 +299,7 @@
 <init>
 <binary op='isa' ty='lang|Bool'>
 <symbol  ty='lang|Complex' refer='param'>a</symbol>
-<symbol  ty='lang|Class&lt;lang|Int>'>lang|Int</symbol>
+<symbol  ty='lang|Class&lt;lang|Int32>'>lang|Int</symbol>
 </binary>
 </init>
 </vardef>
@@ -363,15 +363,15 @@
 <binary op='==' ty='lang|Bool'>
 <symbol  ty='lang|Complex' refer='param'>a</symbol>
 <binary op='+' ty='lang|Complex'>
-<real ty='lang|Real'>3.141500</real>
-<int ty='i&lt;lang|Int>' imag='t'>1</int>
+<real ty='lang|Float32'>3.141500</real>
+<int ty='i&lt;lang|Int32>' imag='t'>1</int>
 </binary>
 </binary>
 <binary op='==' ty='lang|Bool'>
 <symbol  ty='lang|Complex' refer='param'>b</symbol>
 <binary op='+' ty='lang|Complex'>
-<int ty='lang|Int'>42</int>
-<int ty='i&lt;lang|Int>' imag='t'>2</int>
+<int ty='lang|Int32'>42</int>
+<int ty='i&lt;lang|Int32>' imag='t'>2</int>
 </binary>
 </binary>
 </binary>
@@ -408,42 +408,50 @@
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
-<ty:ref nm='lang|Int'>
-</ty:ref>
-</ty:used-type>
-<ty:used-type>
 <ty:ref nm='lang|Bool'>
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Real'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
-</ty:isa>
-</ty:type>
-</ty:used-type>
-<ty:used-type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:ref nm='lang|Complex'>
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
-<ty:ref nm='lang|Class'>
-<ty:gen>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Float32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Real'>
 </ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
 </ty:gen>
 </ty:ref>
 </ty:used-type>

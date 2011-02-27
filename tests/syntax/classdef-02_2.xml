@@ -20,7 +20,7 @@
 <def>
 <slot sym='x' readonly='t'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>
@@ -31,7 +31,7 @@
 <def>
 <slot sym='y' readonly='t' observable='t'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 <init>

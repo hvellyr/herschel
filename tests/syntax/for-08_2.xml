@@ -21,7 +21,7 @@
 <init>
 <binary op='-'>
 <symbol>k</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </binary>
 </init>
 </vardef>
@@ -29,31 +29,40 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
 <let>
 <vardef sym='__return_1'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
 <init>
-<false/>
+<undef/>
 </init>
 </vardef>
 </let>
-<while>
-<test>
+<let>
+<vardef sym='__test_2'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
 <binary op='&lt;='>
 <symbol>i</symbol>
 <symbol>__end_0</symbol>
 </binary>
+</init>
+</vardef>
+</let>
+<if>
+<test>
+<symbol>__test_2</symbol>
+</test>
+<then>
+<block>
+<while>
+<test>
+<symbol>__test_2</symbol>
 </test>
 <body>
 <block>
@@ -70,13 +79,26 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
+</binary>
+</assign>
+<assign>
+<symbol>__test_2</symbol>
+<binary op='&lt;='>
+<symbol>i</symbol>
+<symbol>__end_0</symbol>
 </binary>
 </assign>
 </block>
 </body>
 </while>
 <symbol>__return_1</symbol>
+</block>
+</then>
+<else>
+<false/>
+</else>
+</if>
 </block>
 </body>
 </func>
@@ -98,11 +120,11 @@
 <body>
 <block>
 <let>
-<vardef sym='__end_2'>
+<vardef sym='__end_3'>
 <init>
 <binary op='-'>
 <symbol>k</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </binary>
 </init>
 </vardef>
@@ -110,36 +132,45 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
 <let>
-<vardef sym='__return_3'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
+<vardef sym='__return_4'>
 <init>
-<false/>
+<undef/>
 </init>
 </vardef>
 </let>
-<while>
-<test>
+<let>
+<vardef sym='__test_5'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
 <binary op='&lt;='>
 <symbol>i</symbol>
-<symbol>__end_2</symbol>
+<symbol>__end_3</symbol>
 </binary>
+</init>
+</vardef>
+</let>
+<if>
+<test>
+<symbol>__test_5</symbol>
+</test>
+<then>
+<block>
+<while>
+<test>
+<symbol>__test_5</symbol>
 </test>
 <body>
 <block>
 <assign>
-<symbol>__return_3</symbol>
+<symbol>__return_4</symbol>
 <apply>
 <symbol>outln</symbol>
 <args>
@@ -151,13 +182,26 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
+</binary>
+</assign>
+<assign>
+<symbol>__test_5</symbol>
+<binary op='&lt;='>
+<symbol>i</symbol>
+<symbol>__end_3</symbol>
 </binary>
 </assign>
 </block>
 </body>
 </while>
-<symbol>__return_3</symbol>
+<symbol>__return_4</symbol>
+</block>
+</then>
+<else>
+<false/>
+</else>
+</if>
 </block>
 </body>
 </func>
@@ -179,11 +223,11 @@
 <body>
 <block>
 <let>
-<vardef sym='__end_4'>
+<vardef sym='__end_6'>
 <init>
 <binary op='-'>
 <symbol>k</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </binary>
 </init>
 </vardef>
@@ -191,12 +235,12 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
 <let>
-<vardef sym='__return_5'>
+<vardef sym='__return_7'>
 <type>
 <ty:union>
 <ty:ref nm='lang|Any'>
@@ -214,13 +258,13 @@
 <test>
 <binary op='&lt;='>
 <symbol>i</symbol>
-<symbol>__end_4</symbol>
+<symbol>__end_6</symbol>
 </binary>
 </test>
 <body>
 <block>
 <assign>
-<symbol>__return_5</symbol>
+<symbol>__return_7</symbol>
 <apply>
 <symbol>outln</symbol>
 <args>
@@ -232,13 +276,13 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </assign>
 </block>
 </body>
 </while>
-<symbol>__return_5</symbol>
+<symbol>__return_7</symbol>
 </block>
 </body>
 </func>
@@ -262,12 +306,12 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </init>
 </vardef>
 </let>
 <let>
-<vardef sym='__return_6'>
+<vardef sym='__return_9'>
 <type>
 <ty:union>
 <ty:ref nm='lang|Any'>
@@ -285,13 +329,13 @@
 <test>
 <binary op='>='>
 <symbol>i</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <body>
 <block>
 <assign>
-<symbol>__return_6</symbol>
+<symbol>__return_9</symbol>
 <apply>
 <symbol>outln</symbol>
 <args>
@@ -303,13 +347,13 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>-1</int>
+<int ty='lang|Int32'>-1</int>
 </binary>
 </assign>
 </block>
 </body>
 </while>
-<symbol>__return_6</symbol>
+<symbol>__return_9</symbol>
 </block>
 </body>
 </func>
@@ -333,12 +377,12 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </init>
 </vardef>
 </let>
 <let>
-<vardef sym='__return_7'>
+<vardef sym='__return_11'>
 <type>
 <ty:union>
 <ty:ref nm='lang|Any'>
@@ -356,13 +400,13 @@
 <test>
 <binary op='>='>
 <symbol>i</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <body>
 <block>
 <assign>
-<symbol>__return_7</symbol>
+<symbol>__return_11</symbol>
 <apply>
 <symbol>outln</symbol>
 <args>
@@ -374,13 +418,13 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>-2</int>
+<int ty='lang|Int32'>-2</int>
 </binary>
 </assign>
 </block>
 </body>
 </while>
-<symbol>__return_7</symbol>
+<symbol>__return_11</symbol>
 </block>
 </body>
 </func>
@@ -402,7 +446,7 @@
 <body>
 <block>
 <let>
-<vardef sym='__step_8'>
+<vardef sym='__step_13'>
 <init>
 <symbol>k</symbol>
 </init>
@@ -411,42 +455,42 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </init>
 </vardef>
 </let>
 <let>
-<vardef sym='__abs_i_10'>
+<vardef sym='__abs_i_15'>
 <init>
 <if>
 <test>
 <binary op='&lt;'>
 <symbol>i</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <then>
 <symbol>i</symbol>
 </then>
 <else>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </else>
 </if>
 </init>
 </vardef>
 </let>
 <let>
-<vardef sym='__abs_end_9'>
+<vardef sym='__abs_end_14'>
 <init>
 <if>
 <test>
 <binary op='&lt;'>
 <symbol>i</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <then>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </then>
 <else>
 <symbol>i</symbol>
@@ -456,29 +500,29 @@
 </vardef>
 </let>
 <let>
-<vardef sym='__abs_step_11'>
+<vardef sym='__abs_step_16'>
 <init>
 <if>
 <test>
 <binary op='&lt;'>
-<symbol>__step_8</symbol>
-<int ty='lang|Int'>0</int>
+<symbol>__step_13</symbol>
+<int ty='lang|Int32'>0</int>
 </binary>
 </test>
 <then>
 <neg>
-<symbol>__step_8</symbol>
+<symbol>__step_13</symbol>
 </neg>
 </then>
 <else>
-<symbol>__step_8</symbol>
+<symbol>__step_13</symbol>
 </else>
 </if>
 </init>
 </vardef>
 </let>
 <let>
-<vardef sym='__return_12'>
+<vardef sym='__return_17'>
 <type>
 <ty:union>
 <ty:ref nm='lang|Any'>
@@ -495,14 +539,14 @@
 <while>
 <test>
 <binary op='&lt;='>
-<symbol>__abs_i_10</symbol>
-<symbol>__abs_end_9</symbol>
+<symbol>__abs_i_15</symbol>
+<symbol>__abs_end_14</symbol>
 </binary>
 </test>
 <body>
 <block>
 <assign>
-<symbol>__return_12</symbol>
+<symbol>__return_17</symbol>
 <apply>
 <symbol>outln</symbol>
 <args>
@@ -514,20 +558,20 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<symbol>__step_8</symbol>
+<symbol>__step_13</symbol>
 </binary>
 </assign>
 <assign>
-<symbol>__abs_i_10</symbol>
+<symbol>__abs_i_15</symbol>
 <binary op='+'>
-<symbol>__abs_i_10</symbol>
-<symbol>__abs_step_11</symbol>
+<symbol>__abs_i_15</symbol>
+<symbol>__abs_step_16</symbol>
 </binary>
 </assign>
 </block>
 </body>
 </while>
-<symbol>__return_12</symbol>
+<symbol>__return_17</symbol>
 </block>
 </body>
 </func>

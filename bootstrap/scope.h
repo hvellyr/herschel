@@ -149,6 +149,9 @@ namespace herschel
     //! does not match the number of generics expected in \p type.
     Type normalizeType(const Type& type, const Type& refType) const;
 
+    //! Try to normalize \p type.  If it is an alias lookup the refered type.
+    Type normalizeType(const Type& type);
+
     //! register a unit \p unitName defined in terms of \p baseUnit, refering
     //! to the type \p baseType.  The unit \p unitName can be computed into \p
     //! baseUnit by \p transformFunc.  If \p transformFunc is NULL this is a

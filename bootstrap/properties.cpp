@@ -33,6 +33,7 @@ static StringVector sInputSearchPath;
 static StringVector sSystemSearchPath;
 static bool sIsImportFileTracing = false;
 static bool sIsMacroTracing = false;
+static bool sIsCodeDump = false;
 static bool sIsPass1Tracing = false;
 static bool sIsPass2Tracing = false;
 static bool sIsAnnotateTracing = false;
@@ -118,6 +119,8 @@ Properties::setTrace(const String& key, bool value)
     sIsImportFileTracing = value;
   else if (key == String("macro"))
     sIsMacroTracing = value;
+  else if (key == String("codedump"))
+    sIsCodeDump = value;
 }
 
 
@@ -206,6 +209,13 @@ bool
 Properties::isTraceMacro()
 {
   return sIsMacroTracing;
+}
+
+
+bool
+Properties::isCodeDump()
+{
+  return sIsCodeDump;
 }
 
 

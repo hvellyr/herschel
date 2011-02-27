@@ -11,14 +11,14 @@
 <let>
 <vardef sym='count'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
 <let>
 <vardef sym='idx'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -78,7 +78,7 @@
 <binary op='and'>
 <binary op='&lt;='>
 <symbol>count</symbol>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </binary>
 <binary op='and'>
 <binary op='and'>
@@ -86,7 +86,7 @@
 <binary op='and'>
 <binary op='&lt;='>
 <symbol>idx</symbol>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </binary>
 <binary op='&lt;>'>
 <symbol>n</symbol>
@@ -157,14 +157,14 @@
 <symbol>count</symbol>
 <binary op='+'>
 <symbol>count</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </assign>
 <assign>
 <symbol>idx</symbol>
 <binary op='+'>
 <symbol>idx</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </binary>
 </assign>
 <assign>

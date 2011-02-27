@@ -52,7 +52,7 @@
 <symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]' refer='generic'>lang|allocate*</symbol>
 <args>
 <symbol  ty='lang|Class&lt;abc|Person>'>abc|Person</symbol>
-<int ty='lang|Ordinal'>12</int>
+<int ty='lang|UInt32'>12</int>
 </args>
 </apply>
 </init>
@@ -103,25 +103,26 @@
 </ty:type>
 </ty:used-type>
 <ty:used-type>
-<ty:array ind='0'>
-<ty:type nm='abc|Person' inst='t'>
-</ty:type>
-</ty:array>
-</ty:used-type>
-<ty:used-type>
-<ty:type nm='lang|Ordinal'>
+<ty:type nm='lang|UInt32'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
-<ty:const k='geq'>0</ty:const>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
-<ty:ref nm='lang|BoundedBelow'>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
 </ty:ref>
 <ty:ref nm='lang|Unsigned'>
 </ty:ref>
 </ty:seq>
 </ty:isa>
 </ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:array ind='0'>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:array>
 </ty:used-type>
 <ty:used-type>
 <ty:ref nm='lang|Class'>

@@ -519,5 +519,11 @@ Transformator::transform(UnitConstNode* node)
 }
 
 
+AptNode*
+Transformator::transform(UndefNode* node)
+{
+  // Nothing to transform here
+  return node;
+}
 
 

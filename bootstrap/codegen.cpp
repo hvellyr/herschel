@@ -12,8 +12,11 @@
 #include "log.h"
 #include "properties.h"
 #include "symbol.h"
+#include "xmlout.h"
+#include "predefined.h"
 
 #include <vector>
+#include <typeinfo>
 
 #include "llvm/Analysis/Verifier.h"
 #include "llvm/DerivedTypes.h"
@@ -224,6 +227,49 @@ CodeGenerator::getType(const Type& type)
     return llvm::Type::getInt8Ty(context());
   }
 
+  else if (type.typeName() == String("lang|Int8")) {
+    return llvm::Type::getInt8Ty(context());
+  }
+  else if (type.typeName() == String("lang|Int16")) {
+    return llvm::Type::getInt16Ty(context());
+  }
+  else if (type.typeName() == String("lang|Int32")) {
+    return llvm::Type::getInt32Ty(context());
+  }
+  else if (type.typeName() == String("lang|Int64")) {
+    return llvm::Type::getInt64Ty(context());
+  }
+
+  else if (type.typeName() == String("lang|UInt8")) {
+    return llvm::Type::getInt8Ty(context());
+  }
+  else if (type.typeName() == String("lang|UInt16")) {
+    return llvm::Type::getInt16Ty(context());
+  }
+  else if (type.typeName() == String("lang|UInt32")) {
+    return llvm::Type::getInt32Ty(context());
+  }
+  else if (type.typeName() == String("lang|UInt64")) {
+    return llvm::Type::getInt64Ty(context());
+  }
+
+  else if (type.typeName() == String("lang|Char")) {
+    return llvm::Type::getInt32Ty(context());
+  }
+  else if (type.typeName() == String("lang|Bool")) {
+    return llvm::Type::getInt1Ty(context());
+  }
+
+  else if (type.typeName() == String("lang|Float32")) {
+    return llvm::Type::getFloatTy(context());
+  }
+  else if (type.typeName() == String("lang|Float64")) {
+    return llvm::Type::getDoubleTy(context());
+  }
+  // else if (type.typeName() == String("lang|Float128")) {
+  //   return llvm::Type::getInt1Ty(context());
+  // }
+
   return getAtomType();
 }
 
@@ -294,13 +340,14 @@ CodeGenerator::createDefaultCMainFunc()
   llvm::Function* appMainFunc = fModule->getFunction(llvm::StringRef(appMainFuncNm));
   assert(appMainFunc != NULL);
 
-  llvm::AllocaInst* retv = createEntryBlockAlloca(func, String("tmp2"));
+  llvm::AllocaInst* retv = createEntryBlockAlloca(func, String("tmp2"),
+                                                  llvm::Type::getInt32Ty(context()));
   std::vector<llvm::Value*> argv;
   argv.push_back(retv);
   fBuilder.CreateCall(appMainFunc, argv.begin(), argv.end());
 
   llvm::Value* retv2 = fBuilder.CreateLoad(retv);
-  fBuilder.CreateRet(makeTypeCastAtomToClangInt(retv2));
+  fBuilder.CreateRet(retv2);
 
   verifyFunction(*func);
 
@@ -312,11 +359,11 @@ CodeGenerator::createDefaultCMainFunc()
 //------------------------------------------------------------------------------
 
 llvm::AllocaInst*
-CodeGenerator::createEntryBlockAlloca(llvm::Function *func, const String& name)
+CodeGenerator::createEntryBlockAlloca(llvm::Function *func, const String& name,
+                                      const llvm::Type* type)
 {
   llvm::IRBuilder<> tmp(&func->getEntryBlock(), func->getEntryBlock().begin());
-  return tmp.CreateAlloca(getAtomType(), //llvm::Type::getInt32Ty(context()),
-                          0, llvm::Twine(name));
+  return tmp.CreateAlloca(type, 0, llvm::Twine(name));
 }
 
 
@@ -327,7 +374,7 @@ CodeGenerator::codegen(const SymbolNode* node)
 {
   if (node->name() == String("lang|unspecified")) {
     // TODO
-    return makeIntAtom(0);
+    return llvm::ConstantAggregateZero::get(getType(node->type()));
   }
 
   llvm::Value* val = NULL;
@@ -356,7 +403,7 @@ CodeGenerator::codegen(const SymbolNode* node)
 llvm::Value*
 CodeGenerator::codegen(const ArrayTypeNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
 
   return NULL;
@@ -366,7 +413,7 @@ CodeGenerator::codegen(const ArrayTypeNode* node)
 llvm::Value*
 CodeGenerator::codegen(const TypeNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
 
   return NULL;
@@ -376,7 +423,7 @@ CodeGenerator::codegen(const TypeNode* node)
 llvm::Value*
 CodeGenerator::codegen(const SlotdefNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -390,6 +437,7 @@ CodeGenerator::addGlobalCtor(llvm::Function* ctor, int priority)
   fGlobalCtors.push_back(std::make_pair(ctor, priority));
 }
 
+
 //! Add a function to the list that will be called when the module is
 //! unloaded.
 void
@@ -398,6 +446,7 @@ CodeGenerator::addGlobalDtor(llvm::Function* dtor, int priority)
   // FIXME: Type coercing of void()* types.
   fGlobalDtors.push_back(std::make_pair(dtor, priority));
 }
+
 
 void
 CodeGenerator::emitCtorList(const CtorList &fns, const char *globalName)
@@ -459,7 +508,7 @@ llvm::Value*
 CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
   String varnm = herschel::mangleToC(node->name());
-  const llvm::Type* constTy = getAtomType(); // getType(node->type()),
+  const llvm::Type* constTy = getType(node->type());
   llvm::Constant* initConst = llvm::ConstantAggregateZero::get(constTy);
 
   // TODO: base type if possible
@@ -480,50 +529,6 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
   fGlobalVariables[node->name()] = gv;
 
   return gv;
-#if 0
-  fNamedValues.clear();
-
-  const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                         false);
-
-  assert(ft != NULL);
-
-  String tmpName = uniqueName("gv");
-  String funcnm = herschel::mangleToC(tmpName);
-
-  llvm::Function *func = createGlobalInitOrDtorFunction(ft, funcnm);
-
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(),
-                                                  "entry", func);
-  fBuilder.SetInsertPoint(bb);
-
-  llvm::Value* initval = NULL;
-  if (node->initExpr() != NULL) {
-    initval = codegenNode(node->initExpr());
-  }
-  else {
-    assert(0 && "no initval");
-    // TODO: init the temporary value.  We shouldn't really have to care about
-    // this here, since this can be better done in the AST analysis.
-    // initval = llvm::ConstantInt::get(context(),
-    //                                  llvm::APInt(32, 1011, true));
-  }
-
-  assignAtom(initval, gv);
-  fBuilder.CreateRetVoid();
-
-  verifyFunction(*func);
-
-  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-    fOptPassManager->run(*func);
-
-  addGlobalCtor(func, 2);
-
-  assert(fGlobalVariables.find(node->name()) == fGlobalVariables.end());
-  fGlobalVariables[node->name()] = gv;
-
-  return initval;
-#endif
 }
 
 
@@ -563,7 +568,10 @@ CodeGenerator::emitGlobalVarInitFunc()
       fGlobalVariables.find(varnode->name());
       assert(it != fGlobalVariables.end());
 
-      assignAtom(initval, it->second);
+      llvm::Value* val = emitPackCode(varnode->initExpr()->dstType(),
+                                      varnode->initExpr()->typeConv(),
+                                      initval, varnode->initExpr()->type());
+      fBuilder.CreateStore(val, it->second);
     }
     fBuilder.CreateRetVoid();
 
@@ -584,8 +592,24 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
     return codegenForGlobalVars(node);
 
   llvm::Value* initval = NULL;
+  Type dstType;
+  Type type;
+  TypeConvKind convKind = kNoConv;
   if (node->initExpr() != NULL) {
-    initval = codegenNode(node->initExpr());
+    if (dynamic_cast<UndefNode*>(node->initExpr())) {
+      initval = llvm::ConstantAggregateZero::get(getType(node->type()));
+
+      dstType = node->type();
+      type = node->type();
+      convKind = kNoConv;
+    }
+    else {
+      initval = wrapLoad(codegenNode(node->initExpr()));
+
+      dstType = node->initExpr()->dstType();
+      type = node->initExpr()->type();
+      convKind = node->initExpr()->typeConv();
+    }
   }
   else {
     assert(0 && "no initval");
@@ -598,8 +622,11 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
 
   llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
-                                                       node->name());
-  assignAtom(initval, stackSlot);
+                                                       node->name(),
+                                                       getType(node->type()));
+
+  llvm::Value* val = emitPackCode(dstType, convKind, initval, type);
+  fBuilder.CreateStore(val, stackSlot);
 
   fNamedValues[node->name()] = stackSlot;
 
@@ -623,11 +650,16 @@ CodeGenerator::codegen(const AssignNode* node)
       return NULL;
     }
 
-    assignAtom(rvalue, var);
+    llvm::Value* val = emitPackCode(node->rvalue()->dstType(),
+                                    node->rvalue()->typeConv(),
+                                    wrapLoad(rvalue),
+                                    node->rvalue()->type());
+    fBuilder.CreateStore(val, var);
+
     return rvalue;
   }
 
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   return NULL;
 }
 
@@ -661,7 +693,7 @@ CodeGenerator::codegen(const LetNode* node)
 
   const FuncDefNode* funcDefNode = dynamic_cast<const FuncDefNode*>(node->defNode());
   if (funcDefNode != NULL) {
-    logf(kError, "Compiling local functions not supported yet: %s", __FUNCTION__);
+    logf(kError, "Compiling local functions not supported yet: %s", typeid(node).name());
     return NULL;
   }
 
@@ -713,16 +745,22 @@ CodeGenerator::codegen(const BlockNode* node)
 llvm::Value*
 CodeGenerator::codegen(const BoolNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
-  return NULL;
+// TODO plaintype?
+  if (node->dstType().isPlainType()) {
+    if (node->value())
+      return fBuilder.getTrue();
+    else
+      return fBuilder.getFalse();
+  }
+
+  return makeBoolAtom(node->value());
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const CharNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -731,7 +769,7 @@ CodeGenerator::codegen(const CharNode* node)
 llvm::Value*
 CodeGenerator::codegen(const KeywordNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   return NULL;
 }
 
@@ -748,7 +786,8 @@ llvm::Value*
 CodeGenerator::makeIntAtom(llvm::Value* val)
 {
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("int"));
+  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("int"),
+                                                  getAtomType());
 
   // set typeid
   setAtom(atom, kAtomInt, val);
@@ -761,7 +800,8 @@ llvm::Value*
 CodeGenerator::makeBoolAtom(llvm::Value* val)
 {
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("bool"));
+  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("bool"),
+                                                  getAtomType());
 
   // set typeid
   setAtom(atom, kAtomBool, val);
@@ -783,7 +823,9 @@ CodeGenerator::makeBoolAtom(bool val)
 llvm::Value*
 CodeGenerator::codegen(const IntNode* node)
 {
-  return makeIntAtom(node->value());
+  return fBuilder.CreateIntCast(fBuilder.getInt32(node->value()),
+                                getType(node->type()),
+                                node->type().isSigned());
 }
 
 
@@ -798,7 +840,7 @@ CodeGenerator::codegen(const RealNode* node)
 llvm::Value*
 CodeGenerator::codegen(const StringNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   return NULL;
 }
 
@@ -806,7 +848,7 @@ CodeGenerator::codegen(const StringNode* node)
 llvm::Value*
 CodeGenerator::codegen(const RationalNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -815,7 +857,7 @@ CodeGenerator::codegen(const RationalNode* node)
 llvm::Value*
 CodeGenerator::codegen(const ArrayNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -824,7 +866,7 @@ CodeGenerator::codegen(const ArrayNode* node)
 llvm::Value*
 CodeGenerator::codegen(const DictNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -833,7 +875,7 @@ CodeGenerator::codegen(const DictNode* node)
 llvm::Value*
 CodeGenerator::codegen(const VectorNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -842,7 +884,7 @@ CodeGenerator::codegen(const VectorNode* node)
 llvm::Value*
 CodeGenerator::codegen(const RangeNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -851,37 +893,13 @@ CodeGenerator::codegen(const RangeNode* node)
 //------------------------------------------------------------------------------
 
 llvm::FunctionType*
-CodeGenerator::createFunctionSignature(const FunctionNode* node)
+CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv,
+                                       const Type& retty)
 {
   std::vector<const llvm::Type*> sign;
 
-  bool isVarArgs = false;
-  for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
-    const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
-    // TODO
-    if (param->isRestArg())
-      isVarArgs = true;
-    else
-      sign.push_back(llvm::Type::getInt32Ty(context()));
-  }
-
-  llvm::FunctionType *ft =
-    llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
-                            sign,
-                            isVarArgs);
-
-  return ft;
-}
-
-
-llvm::FunctionType*
-CodeGenerator::createFunctionSignature2(const FunctionNode* node, bool inlineRetv)
-{
-  std::vector<const llvm::Type*> sign;
-
-  if (inlineRetv) {
-    sign.push_back(getAtomType()->getPointerTo());
-  }
+  if (inlineRetv)
+    sign.push_back(getType(retty)->getPointerTo());
 
   bool isVarArgs = false;
   for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
@@ -893,13 +911,11 @@ CodeGenerator::createFunctionSignature2(const FunctionNode* node, bool inlineRet
       sign.push_back(getType(param->type()));
   }
 
-  llvm::FunctionType *ft = llvm::FunctionType::get(( inlineRetv
-                                                     ? llvm::Type::getVoidTy(context())
-                                                     : getType(node->retType()) ),
-                                                   sign,
-                                                   isVarArgs);
-
-  return ft;
+  return llvm::FunctionType::get(( inlineRetv
+                                   ? llvm::Type::getVoidTy(context())
+                                   : getType(node->retType()) ),
+                                 sign,
+                                 isVarArgs);
 }
 
 
@@ -921,7 +937,15 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
     inlineRetv = true;
   }
 
-  llvm::FunctionType* ft = createFunctionSignature2(node, inlineRetv);
+  Type retty;
+  if (node->name() == String("app|main")) {
+    retty = Type::newTypeRef(Names::kInt32TypeName, true);
+  }
+  else
+    retty = node->retType();
+
+
+  llvm::FunctionType* ft = createFunctionSignature(node, inlineRetv, retty);
   assert(ft != NULL);
 
   llvm::Function *func = llvm::Function::Create(ft,
@@ -946,8 +970,10 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
       const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
 
       // TODO ende name
-      llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func, param->name());
+      llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func, param->name(),
+                                                           getType(param->type()));
       fBuilder.CreateStore(aiter, stackSlot);
+
       fNamedValues[param->name()] = stackSlot;
     }
 
@@ -964,12 +990,36 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
     }
 
     if (inlineRetv) {
-      // no wrap-load!
-      assignAtom(retv, func->arg_begin());
+      if (node->name() == String("app|main")) {
+        // the app|main function always returns lang|Int32
+        if (node->body()->type().isPlainType()) {
+          fBuilder.CreateStore(fBuilder.CreateIntCast(wrapLoad(retv),
+                                                      llvm::Type::getInt32Ty(context()),
+                                                      true),
+                               func->arg_begin());
+        }
+        else {
+          llvm::Value* convertedRetv = makeTypeCastAtomToPlain(wrapLoad(retv),
+                                                               Type::newTypeRef("clang|int"));
+          fBuilder.CreateStore(convertedRetv, func->arg_begin());
+        }
+      }
+// TODO plaintype?
+      else if (retty.isPlainType()) {
+        fBuilder.CreateStore(wrapLoad(retv), func->arg_begin());
+      }
+      else {
+        // no wrap-load!
+        assignAtom(retv, func->arg_begin());
+      }
+
       fBuilder.CreateRetVoid();
     }
     else
       fBuilder.CreateRet(wrapLoad(retv));
+
+    if (Properties::isCodeDump())
+      func->dump();
 
     verifyFunction(*func);
 
@@ -988,7 +1038,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 llvm::Value*
 CodeGenerator::codegen(const FunctionNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -1026,21 +1076,59 @@ CodeGenerator::makeClassRegisterCall(const String& typeName, bool instantiable,
 }
 
 
-llvm::Value*
-CodeGenerator::makeTypeCastAtomToClangInt(llvm::Value* val)
+static const char*
+getConvFuncNameByType(const Type& type)
 {
-  llvm::Function* convFunc = fModule->getFunction(llvm::StringRef("atom_2_int"));
+  if (type.typeName() == String("lang|Int32"))
+    return "atom_2_int32";
+  else if (type.typeName() == String("lang|Int64"))
+    return "atom_2_int64";
+  else if (type.typeName() == String("lang|Int16"))
+    return "atom_2_int16";
+  else if (type.typeName() == String("lang|Int8"))
+    return "atom_2_int8";
+  else if (type.typeName() == String("lang|UInt32"))
+    return "atom_2_uint32";
+  else if (type.typeName() == String("lang|UInt64"))
+    return "atom_2_uint64";
+  else if (type.typeName() == String("lang|UInt16"))
+    return "atom_2_uint16";
+  else if (type.typeName() == String("lang|UInt8"))
+    return "atom_2_uint8";
+  else if (type.typeName() == String("lang|Float32"))
+    return "atom_2_float32";
+  else if (type.typeName() == String("lang|Float64"))
+    return "atom_2_float64";
+  else if (type.typeName() == String("lang|Char"))
+    return "atom_2_char";
+  else if (type.typeName() == String("lang|Bool"))
+    return "atom_2_bool";
+
+  if (type.typeName() == String("clang|int")) // TODO
+    return "atom_2_int32";
+
+  assert(0 && "unhandled type");
+  return NULL;
+}
+
+
+llvm::Value*
+CodeGenerator::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType)
+{
+  const char* funcName = getConvFuncNameByType(dstType);
+
+  llvm::Function* convFunc = fModule->getFunction(llvm::StringRef(funcName));
   if (convFunc == NULL) {
     std::vector<const llvm::Type*> sign;
     sign.push_back(getAtomType());
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
+    llvm::FunctionType *ft = llvm::FunctionType::get(getType(dstType),
                                                      sign,
                                                      false);
 
     convFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
-                                      llvm::Twine("atom_2_int"),
+                                      llvm::Twine(funcName),
                                       fModule);
   }
 
@@ -1051,34 +1139,36 @@ CodeGenerator::makeTypeCastAtomToClangInt(llvm::Value* val)
 
 
 llvm::Value*
-CodeGenerator::makeTypeCastAtomToClangChar(llvm::Value* val)
+CodeGenerator::emitPackCode(const Type& dstType, TypeConvKind convKind,
+                            llvm::Value* value,
+                            const Type& valType)
 {
-  printf("->clang|char\n");
-  return val;
-}
+  if (dstType.isDef()) {
+    // fprintf(stderr, "-----------------------\n");
+    // fprintf(stderr, "type conv: %d\n", convKind);
+    // tyerror(dstType, "dstType");
+    // tyerror(valType, "valType");
+    // fprintf(stderr, "Value to emit: "); value->dump();
 
+    switch (convKind) {
+    case kNoConv:
+      return value;
+    case kAtom2PlainConv:
+      return makeTypeCastAtomToPlain(value, dstType);
+    case kPlain2AtomConv:
+      if (valType.typeName() == String("lang|Int32"))
+        return wrapLoad(makeIntAtom(value));
+      else if (valType.typeName() == String("lang|Bool"))
+        return wrapLoad(makeBoolAtom(value));
+      //return value;
 
-llvm::Value*
-CodeGenerator::makeTypeCastAtomToClangBool(llvm::Value* val)
-{
-  std::vector<const llvm::Type*> sign;
-  sign.push_back(getAtomType());
-
-  llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt1Ty(context()),
-                                                   sign,
-                                                   false);
-
-  llvm::Function* convFunc = fModule->getFunction(llvm::StringRef("atom_2_bool"));
-  if (convFunc == NULL) {
-    convFunc = llvm::Function::Create(ft,
-                                      llvm::Function::ExternalLinkage,
-                                      llvm::Twine("atom_2_bool"),
-                                      fModule);
+    case kTypeCheckConv:
+      fprintf(stderr, "Not implemented yet\n");
+      assert(0 && "not implemented yet");
+    }
   }
 
-  std::vector<llvm::Value*> argv;
-  argv.push_back(val);
-  return fBuilder.CreateCall(convFunc, argv.begin(), argv.end(), "calltmp");
+  return value;
 }
 
 
@@ -1086,20 +1176,14 @@ llvm::Value*
 CodeGenerator::codegen(const ApplyNode* node)
 {
   llvm::Function *calleeFunc = NULL;
-  const FuncDefNode* fdn = NULL;
   bool inlineRetv = false;
 
   const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->base());
   if (symNode != NULL) {
     assert(symNode->refersTo() == kFunction || symNode->refersTo() == kGeneric);
 
-    // TODO handle generic function calls
-    const AptNode* fn = symNode->scope()->lookupFunction(symNode->name(), false);
-    fdn = dynamic_cast<const FuncDefNode*>(fn);
-    assert(fdn != NULL);
-
     String funcnm;
-    if (fdn->linkage() == String("C")) {
+    if (symNode->linkage() == String("C")) {
       funcnm = symNode->name();
       inlineRetv = false;
     }
@@ -1130,7 +1214,8 @@ CodeGenerator::codegen(const ApplyNode* node)
 
   llvm::AllocaInst* retv = NULL;
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-  retv = createEntryBlockAlloca(curFunction, String("local_retv"));
+  retv = createEntryBlockAlloca(curFunction, String("local_retv"),
+                                getType(node->type()));
 
   std::vector<llvm::Value*> argv;
   if (inlineRetv)
@@ -1139,12 +1224,11 @@ CodeGenerator::codegen(const ApplyNode* node)
   for (unsigned i = 0, e = nl.size(); i != e; ++i) {
     llvm::Value* val = wrapLoad(codegenNode(nl[i]));
 
-    if (fdn->params()[i]->type().typeName() == String("clang|int")) {
-      val = makeTypeCastAtomToClangInt(val);
-    }
-    else if (fdn->params()[i]->type().typeName() == String("clang|char")) {
-      val = makeTypeCastAtomToClangChar(val);
-    }
+    // warningf(nl[i]->srcpos(), 0, "emit pack code");
+    val = emitPackCode(nl[i]->dstType(), nl[i]->typeConv(),
+                       val, nl[i]->type());
+
+    // val->dump();
 
     if (val != NULL)
       argv.push_back(val);
@@ -1173,7 +1257,7 @@ CodeGenerator::codegen(const ApplyNode* node)
 llvm::Value*
 CodeGenerator::codegen(const KeyargNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -1182,7 +1266,7 @@ CodeGenerator::codegen(const KeyargNode* node)
 llvm::Value*
 CodeGenerator::codegen(const ParamNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -1193,33 +1277,25 @@ CodeGenerator::codegen(const ParamNode* node)
 llvm::Value*
 CodeGenerator::codegen(const BinaryNode* node)
 {
+  // fprintf(stderr, "BinaryNode: %s [%d]\n", XmlRenderer::operatorName(node->op()),
+  //         node->typeConv());
+  // tyerror(node->type(), "type");
+  // tyerror(node->dstType(), "dsttype");
   llvm::Value *left = wrapLoad(codegenNode(node->left()));
   llvm::Value *right = wrapLoad(codegenNode(node->right()));
   if (left == NULL || right == NULL)
     return NULL;
 
+  /*
+    int -> to plain int, op, dsttype is atom -> make_int_atom
+    float -> to plain float, op, dsttype is atom -> make_float_atom
+    char -> to plain float, op, dsttype is atom -> make_char_atom
+    bool -> to plain bool, op, dsttype is atom -> make_bool_atom
+    atom -> call operator(), dsttype is plain -> make_plain
+  */
+
   if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt()) {
-    llvm::Value* li = makeTypeCastAtomToClangInt(left);
-    llvm::Value* ri = makeTypeCastAtomToClangInt(right);
-    llvm::Value* rv = NULL;
-
-    switch (node->op()) {
-    case kOpPlus:     return makeIntAtom(fBuilder.CreateAdd(li, ri, "addtmp"));
-    case kOpMinus:    return makeIntAtom(fBuilder.CreateSub(li, ri, "subtmp"));
-    case kOpMultiply: return makeIntAtom(fBuilder.CreateMul(li, ri, "multmp"));
-    case kOpLess:     return makeBoolAtom(fBuilder.CreateICmpULT(li, ri, "lttmp"));
-    case kOpLessEqual: return makeBoolAtom(fBuilder.CreateICmpULE(li, ri, "letmp"));
-    case kOpEqual:    return makeBoolAtom(fBuilder.CreateICmpEQ(li, ri, "eqtmp"));
-    case kOpUnequal:  return makeBoolAtom(fBuilder.CreateICmpNE(li, ri, "netmp"));
-    case kOpGreater:  return makeBoolAtom(fBuilder.CreateICmpUGT(li, ri, "gttmp"));
-    case kOpGreaterEqual:
-      return makeBoolAtom(fBuilder.CreateICmpUGE(li, ri, "getmp"));
-    default:
-      fprintf(stderr, "invalid binary operator: %d", node->op());
-      return NULL;
-    }
-
-    return rv;
+    return codegenOpIntInt(node, left, right);
   }
 
   tyerror(node->left()->type(), "unsupported type in binary operator");
@@ -1251,7 +1327,11 @@ CodeGenerator::codegen(const IfNode* node)
   if (testValue == NULL)
     return NULL;
 
-  llvm::Value* extrTestVal = makeTypeCastAtomToClangBool(testValue);
+  llvm::Value* extrTestVal = emitPackCode(node->test()->dstType(),
+                                          node->test()->typeConv(),
+                                          testValue,
+                                          node->test()->type());
+
   // Convert condition to a bool by comparing equal to 1
   testValue = fBuilder.CreateICmpEQ(extrTestVal,
                                     llvm::ConstantInt::get(context(),
@@ -1277,9 +1357,14 @@ CodeGenerator::codegen(const IfNode* node)
   llvm::Value *thenValue = wrapLoad(codegenNode(node->consequent()));
   if (thenValue == NULL)
     return NULL;
+  llvm::Value* thenValue2 = emitPackCode(node->consequent()->dstType(),
+                                         node->consequent()->typeConv(),
+                                         thenValue,
+                                         node->consequent()->type());
 
   fBuilder.CreateBr(mergeBB);
-  // Codegen of 'then' can change the current block, update thenBB for the PHI.
+  // Get a reference to the current thenBB, since codegen of 'then' can change
+  // the current block, update thenBB for the PHI.
   thenBB = fBuilder.GetInsertBlock();
 
 
@@ -1287,9 +1372,18 @@ CodeGenerator::codegen(const IfNode* node)
   curFunction->getBasicBlockList().push_back(elseBB);
   fBuilder.SetInsertPoint(elseBB);
 
-  llvm::Value *elseValue = wrapLoad(codegenNode(node->alternate()));
-  if (elseValue == NULL)
-    return NULL;
+  llvm::Value* elseValue = NULL;
+  if (node->alternate() != NULL) {
+    llvm::Value* elseValue0 = wrapLoad(codegenNode(node->alternate()));
+    if (elseValue0 == NULL)
+      return NULL;
+    elseValue = emitPackCode(node->alternate()->dstType(),
+                             node->alternate()->typeConv(),
+                             elseValue0,
+                             node->alternate()->type());
+  }
+  else
+    elseValue = llvm::ConstantAggregateZero::get(getType(node->type()));
 
   fBuilder.CreateBr(mergeBB);
   // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
@@ -1298,10 +1392,10 @@ CodeGenerator::codegen(const IfNode* node)
   // Emit merge block.
   curFunction->getBasicBlockList().push_back(mergeBB);
   fBuilder.SetInsertPoint(mergeBB);
-  llvm::PHINode *pn = fBuilder.CreatePHI(getAtomType(), //llvm::Type::getInt32Ty(context()),
-                                         "iftmp");
 
-  pn->addIncoming(thenValue, thenBB);
+  llvm::PHINode *pn = fBuilder.CreatePHI(getType(node->type()), "iftmp");
+
+  pn->addIncoming(thenValue2, thenBB);
   pn->addIncoming(elseValue, elseBB);
 
   return pn;
@@ -1311,7 +1405,7 @@ CodeGenerator::codegen(const IfNode* node)
 llvm::Value*
 CodeGenerator::codegen(const MatchNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -1320,7 +1414,7 @@ CodeGenerator::codegen(const MatchNode* node)
 llvm::Value*
 CodeGenerator::codegen(const OnNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -1329,7 +1423,7 @@ CodeGenerator::codegen(const OnNode* node)
 llvm::Value*
 CodeGenerator::codegen(const SelectNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -1379,7 +1473,7 @@ CodeGenerator::emitClassInitFunc()
 llvm::Value*
 CodeGenerator::codegen(const UnitConstNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
+  logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
   return NULL;
 }
@@ -1408,7 +1502,11 @@ CodeGenerator::codegen(const WhileNode* node)
   if (testValue == NULL)
     return NULL;
 
-  llvm::Value* extrTestVal = makeTypeCastAtomToClangBool(testValue);
+  llvm::Value* extrTestVal = emitPackCode(node->test()->dstType(),
+                                          node->test()->typeConv(),
+                                          testValue,
+                                          node->test()->type());
+
   // Convert condition to a bool by comparing equal to 1
   testValue = fBuilder.CreateICmpEQ(extrTestVal,
                                     llvm::ConstantInt::get(context(),
@@ -1437,8 +1535,21 @@ CodeGenerator::codegen(const WhileNode* node)
 llvm::Value*
 CodeGenerator::codegen(const CastNode* node)
 {
-  logf(kError, "Not supported yet: %s", __FUNCTION__);
-  // TODO
+  llvm::Value *val = wrapLoad(codegenNode(node->base()));
+  if (val == NULL)
+    return NULL;
+
+  return emitPackCode(node->base()->dstType(),
+                      node->base()->typeConv(),
+                      val,
+                      node->base()->type());
+}
+
+
+llvm::Value*
+CodeGenerator::codegen(const UndefNode* node)
+{
+  assert(0 && "You shouldn't be here");
   return NULL;
 }
 
@@ -1509,7 +1620,6 @@ CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
   fBuilder.CreateCall(getMemCpyFn(dst2->getType(), src2->getType(),
                                   llvm::Type::getInt32Ty(context())),
                       argv.begin(), argv.end());
-
 }
 
 

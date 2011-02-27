@@ -3,7 +3,7 @@
 <def>
 <vardef sym='a' type='const'>
 <init>
-<int ty='lang|Int'>5</int>
+<int ty='lang|Int32'>5</int>
 </init>
 </vardef>
 </def>

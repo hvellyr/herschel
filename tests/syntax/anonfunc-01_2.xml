@@ -7,7 +7,7 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>
@@ -30,7 +30,7 @@
 <params>
 <param sym='b' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>

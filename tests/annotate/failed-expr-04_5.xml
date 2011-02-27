@@ -8,7 +8,7 @@
 <ty:type nm='lang|UInt16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -26,7 +26,7 @@
 <ty:type nm='lang|Int16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -54,11 +54,11 @@
 <binary op='and' ty='lang|Any'>
 <binary op='==' ty='lang|Any'>
 <symbol  ty='lang|UInt16' refer='param'>a</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </binary>
 <binary op='==' ty='lang|Bool'>
 <symbol  ty='lang|Int16' refer='param'>b</symbol>
-<int ty='lang|Int'>5</int>
+<int ty='lang|Int32'>5</int>
 </binary>
 </binary>
 </init>
@@ -93,13 +93,14 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:type nm='lang|Ordinal'>
+<ty:type nm='lang|UInt32'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
-<ty:const k='geq'>0</ty:const>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
-<ty:ref nm='lang|BoundedBelow'>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
 </ty:ref>
 <ty:ref nm='lang|Unsigned'>
 </ty:ref>
@@ -110,10 +111,16 @@
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -134,12 +141,12 @@
 <init>
 <binary op='and' ty='lang|Any'>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|Ordinal' refer='param'>a</symbol>
-<int ty='lang|Int'>0</int>
+<symbol  ty='lang|UInt32' refer='param'>a</symbol>
+<int ty='lang|Int32'>0</int>
 </binary>
 <binary op='==' ty='lang|Bool'>
-<symbol  ty='lang|Int' refer='param'>b</symbol>
-<int ty='lang|Int'>5</int>
+<symbol  ty='lang|Int32' refer='param'>b</symbol>
+<int ty='lang|Int32'>5</int>
 </binary>
 </binary>
 </init>
@@ -154,12 +161,12 @@
 <init>
 <binary op='or' ty='lang|Any'>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|Ordinal' refer='param'>a</symbol>
-<symbol  ty='lang|Int' refer='param'>b</symbol>
+<symbol  ty='lang|UInt32' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>b</symbol>
 </binary>
 <binary op='==' ty='lang|Any'>
-<symbol  ty='lang|Ordinal' refer='param'>a</symbol>
-<symbol  ty='lang|Int' refer='param'>b</symbol>
+<symbol  ty='lang|UInt32' refer='param'>a</symbol>
+<symbol  ty='lang|Int32' refer='param'>b</symbol>
 </binary>
 </binary>
 </init>
@@ -175,14 +182,6 @@
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Int'>
-<ty:isa>
-<ty:ref nm='lang|Number'>
-</ty:ref>
-</ty:isa>
-</ty:type>
-</ty:used-type>
-<ty:used-type>
 <ty:ref nm='lang|Bool'>
 </ty:ref>
 </ty:used-type>
@@ -190,7 +189,21 @@
 <ty:type nm='lang|Int16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -204,7 +217,7 @@
 <ty:type nm='lang|UInt16'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
 <ty:ref nm='lang|Exact'>
 </ty:ref>
@@ -217,13 +230,14 @@
 </ty:type>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Ordinal'>
+<ty:type nm='lang|UInt32'>
 <ty:isa>
 <ty:seq>
-<ty:ref nm='lang|Int'>
-<ty:const k='geq'>0</ty:const>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
-<ty:ref nm='lang|BoundedBelow'>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
 </ty:ref>
 <ty:ref nm='lang|Unsigned'>
 </ty:ref>

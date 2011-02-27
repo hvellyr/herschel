@@ -11,7 +11,7 @@
 <let>
 <vardef sym='a'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -45,7 +45,7 @@
 <let>
 <vardef sym='a'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>

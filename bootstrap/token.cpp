@@ -48,6 +48,7 @@ namespace herschel
     case kMapTo:             return String("->");
     case kIn:                return String("in");
     case kMod:               return String("mod");
+    case kRem:               return String("rem");
     case kIsa:               return String("isa");
     case kAs:                return String("as");
     case kBy:                return String("by");
@@ -191,8 +192,8 @@ namespace herschel
         case kUInt:
           return ( fIntValue == other.intValue() &&
                    fIsImaginary == other.isImaginary() );
-        case kReal:
-          return ( fDoubleValue == other.realValue() &&
+        case kFloat:
+          return ( fDoubleValue == other.floatValue() &&
                    fIsImaginary == other.isImaginary() );
         case kRational:
           return ( fRationalValue == other.rationalValue() &&
@@ -221,9 +222,9 @@ namespace herschel
           return ( fIsImaginary == other.isImaginary()
                    ? fIntValue < other.intValue()
                    : false );
-        case kReal:
+        case kFloat:
           return ( fIsImaginary == other.isImaginary()
-                   ? fDoubleValue < other.realValue()
+                   ? fDoubleValue < other.floatValue()
                    : false );
         case kRational:
           return ( fIsImaginary == other.isImaginary()
@@ -253,8 +254,8 @@ namespace herschel
       case kUInt:
         xml::displayTagAttr(port, "lit", "type='uint'", toString());
         break;
-      case kReal:
-        xml::displayTagAttr(port, "lit", "type='real'", toString());
+      case kFloat:
+        xml::displayTagAttr(port, "lit", "type='float'", toString());
         break;
       case kRational:
         xml::displayTagAttr(port, "lit", "type='ratio'", toString());
@@ -276,7 +277,7 @@ namespace herschel
         return ( !fIsImaginary
                  ? fromInt(fIntValue)
                  : (fromInt(fIntValue) + "i") );
-      case kReal:
+      case kFloat:
         return ( !fIsImaginary
                  ? fromDouble(fDoubleValue)
                  : (fromDouble(fDoubleValue) + "i") );
@@ -830,6 +831,7 @@ Token::type() const
   case kMapTo:
   case kIn:
   case kMod:
+  case kRem:
   case kIsa:
   case kAs:
   case kBy:
@@ -877,7 +879,7 @@ Token::type() const
   case kBool:
   case kInt:
   case kUInt:
-  case kReal:
+  case kFloat:
   case kRational:
   case kKeyword:
     return kLit;
@@ -958,7 +960,7 @@ bool
 Token::isNumber() const
 {
   return ( (fType == kInt || fType == kUInt ||
-            fType == kReal || fType == kRational)
+            fType == kFloat || fType == kRational)
            && fImpl != NULL );
 }
 
@@ -1171,9 +1173,9 @@ Token::intValue() const
 
 
 double
-Token::realValue() const
+Token::floatValue() const
 {
-  if (fType != kReal)
+  if (fType != kFloat)
     throw NotSupportedException(__FUNCTION__);
   return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fDoubleValue;
 }
@@ -1344,9 +1346,9 @@ Token::isInt() const
 
 
 bool
-Token::isReal() const
+Token::isFloat() const
 {
-  return fType == kReal;
+  return fType == kFloat;
 }
 
 
@@ -1379,8 +1381,8 @@ Token::isNegative() const
     return intValue() < 0;
   case kUInt:
     return false;
-  case kReal:
-    return realValue() < 0;
+  case kFloat:
+    return floatValue() < 0;
   case kRational:
     return rationalValue() < Rational(0, 1);
   case kChar:
@@ -1543,6 +1545,7 @@ Token::isCharOrUnitName() const
           fType == kLogicalAnd ||
           fType == kLogicalOr ||
           fType == kMod ||
+          fType == kRem ||
           fType == kBitAnd ||
           fType == kBitOr ||
           fType == kBitXor ||
@@ -1679,7 +1682,7 @@ SUITE(Token)
   {
     SrcPos sp;
 
-    CHECK_EQUAL(Token(sp, kReal,     3.1415),         Token(sp, kReal,     3.1415));
+    CHECK_EQUAL(Token(sp, kFloat,    3.1415),         Token(sp, kFloat,    3.1415));
     CHECK_EQUAL(Token(sp, kInt,      12345),          Token(sp, kInt,      12345));
     CHECK_EQUAL(Token(sp, kChar,     0xac00),         Token(sp, kChar,     0xac00));
     CHECK_EQUAL(Token(sp, kString,   "abc"),          Token(sp, kString,   "abc"));
@@ -1699,8 +1702,8 @@ SUITE(Token)
     CHECK_EQUAL(( Token(sp, kMacroOpen, kMacroClose) << Token(sp, kInt, 25) ),
                 ( Token(sp, kMacroOpen, kMacroClose) << Token(sp, kInt, 25) ));
 
-    CHECK_EQUAL(Token(sp, kReal, 3.1415).realValue(), 3.1415);
-    CHECK_EQUAL(Token(sp, kReal, 1.2345).tokenType(), kReal);
+    CHECK_EQUAL(Token(sp, kFloat, 3.1415).floatValue(), 3.1415);
+    CHECK_EQUAL(Token(sp, kFloat, 1.2345).tokenType(), kFloat);
     CHECK_EQUAL(Token(sp, kBool, true).boolValue(),   true);
     CHECK_EQUAL(Token(sp, kInt, 0x10000).intValue(),  0x10000);
     CHECK_EQUAL(Token(sp, kRational, Rational(23, 27)).rationalValue(), Rational(23, 27));
@@ -1736,15 +1739,15 @@ SUITE(Token)
              << Token(sp, kBy)                                      \
              << Token(sp, _stepty, _stepv))
 
-    CHECK(MAKE_RANGE(kInt,     0,     kInt,     25).isConstRange());
-    CHECK(MAKE_RANGE(kReal,    0.0,   kReal,    25.0).isConstRange());
+    CHECK(MAKE_RANGE(kInt,     0,     kInt,      25).isConstRange());
+    CHECK(MAKE_RANGE(kFloat,   0.0,   kFloat,  25.0).isConstRange());
     CHECK(MAKE_RANGE(kChar,    'a',   kChar,    'z').isConstRange());
-    CHECK(MAKE_RANGE(kBool,    false, kBool,    true).isConstRange());
+    CHECK(MAKE_RANGE(kBool,    false, kBool,   true).isConstRange());
     CHECK(MAKE_RANGE(kString,  "a",   kString,  "z").isConstRange());
     CHECK(MAKE_RANGE(kKeyword, "a",   kKeyword, "z").isConstRange());
 
     CHECK(MAKE_RANGE_2(kInt,     0,     kInt,     25,   kInt,  2).isConstRange());
-    CHECK(MAKE_RANGE_2(kReal,    0.0,   kReal,    25.0, kReal, 0.2).isConstRange());
+    CHECK(MAKE_RANGE_2(kFloat,   0.0,   kFloat,  25.0, kFloat, 0.2).isConstRange());
     CHECK(MAKE_RANGE_2(kChar,    'a',   kChar,    'z',  kInt,  1).isConstRange());
     CHECK(MAKE_RANGE_2(kString,  "a",   kString,  "z",  kInt,  1).isConstRange());
     CHECK(MAKE_RANGE_2(kKeyword, "a",   kKeyword, "z",  kInt,  2).isConstRange());
@@ -1765,7 +1768,7 @@ SUITE(Token)
       CHECK_EQUAL(t._member(), _value);                     \
     }
 
-    TEST_ASSIGNOP2(kReal, 3.1415, realValue);
+    TEST_ASSIGNOP2(kFloat, 3.1415, floatValue);
     TEST_ASSIGNOP2(kBool, true, boolValue);
     TEST_ASSIGNOP2(kInt, 0x20000, intValue);
     TEST_ASSIGNOP2(kRational, Rational(1, 127), rationalValue);
@@ -1785,7 +1788,7 @@ SUITE(Token)
       CHECK_EQUAL(t._member(), _value);                     \
     }
 
-    TEST_COPYCTOR2(kReal, 3.1415, realValue);
+    TEST_COPYCTOR2(kFloat, 3.1415, floatValue);
     TEST_COPYCTOR2(kBool, true, boolValue);
     TEST_COPYCTOR2(kInt, 0x20000, intValue);
     TEST_COPYCTOR2(kRational, Rational(1, 127), rationalValue);
@@ -1797,9 +1800,9 @@ SUITE(Token)
   TEST(Imaginary)
   {
     SrcPos sp;
-    Token t(Token(sp, kReal, 12.345).setIsImaginary(true));
-    CHECK_EQUAL(t.tokenType(), kReal);
-    CHECK_EQUAL(t.realValue(), 12.345);
+    Token t(Token(sp, kFloat, 12.345).setIsImaginary(true));
+    CHECK_EQUAL(t.tokenType(), kFloat);
+    CHECK_EQUAL(t.floatValue(), 12.345);
     CHECK(t.isImaginary());
   }
 

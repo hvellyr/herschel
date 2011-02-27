@@ -41,10 +41,16 @@
 </param>
 <param sym='before-index' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -87,10 +93,16 @@
 </param>
 <param sym='index' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
@@ -129,18 +141,18 @@
 </vardef>
 </let>
 <apply  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>'>
-<symbol  ty='lambda(Pair&lt;&apos;T, ListPair&lt;&apos;T>>, &apos;T, lang|Int):Pair&lt;&apos;T, ListPair&lt;&apos;T>>' refer='generic'>insert!</symbol>
+<symbol  ty='lambda(Pair&lt;&apos;T, ListPair&lt;&apos;T>>, &apos;T, lang|Int32):Pair&lt;&apos;T, ListPair&lt;&apos;T>>' refer='generic'>insert!</symbol>
 <args>
 <symbol  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>' refer='local'>p</symbol>
 <str>hello world</str>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </args>
 </apply>
 <apply  ty='lang|String'>
-<symbol  ty='lambda(Pair&lt;&apos;T, ListPair&lt;&apos;T>>, lang|Int):&apos;T' refer='generic'>remove-at!</symbol>
+<symbol  ty='lambda(Pair&lt;&apos;T, ListPair&lt;&apos;T>>, lang|Int32):&apos;T' refer='generic'>remove-at!</symbol>
 <args>
 <symbol  ty='Pair&lt;lang|String, ListPair&lt;lang|String>>' refer='local'>p</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
 </block>
@@ -149,10 +161,16 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
@@ -192,10 +210,16 @@
 </ty:ref>
 </ty:prm>
 <ty:prm is='pos'>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:prm>
@@ -228,10 +252,16 @@
 </ty:ref>
 </ty:prm>
 <ty:prm is='pos'>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:prm>

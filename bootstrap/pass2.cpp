@@ -297,31 +297,12 @@ SecondPass::parseTypeVector(TypeVector* generics, const Token& expr,
 
 
 Type
-SecondPass::normalizeType(const Type& type)
-{
-  if (type.isRef()) {
-    Type referedType = fScope->lookupType(type.typeName(), true);
-    if (referedType.isDef()) {
-      if (referedType.isAlias())
-        return fScope->normalizeType(referedType, type);
-
-      // we normally don't want to have full types here (these would lead to
-      // unnecessary data expansion and possible issues with recursive types).
-      // Rewrite the typeref to have the fully qualified type name
-      return Type::newTypeRef(referedType.typeName(), type);
-    }
-  }
-  return type;
-}
-
-
-Type
 SecondPass::parseTypeSpec(const Token& expr, bool forceOpenType)
 {
   Type ty = parseTypeSpecImpl(expr, forceOpenType);
   if (forceOpenType)
     return ty;
-  return normalizeType(ty);
+  return fScope->normalizeType(ty);
 }
 
 
@@ -886,9 +867,9 @@ SecondPass::defaultSlotInitValue(const SlotdefNode* slot)
   else if (slot->type().isDef()) {
     if (slot->type().isAnyInt())
       return new IntNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
-    else if (slot->type().isAnyFloat() || slot->type().isReal())
+    else if (slot->type().isAnyFloat())
       return new RealNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
-    else if (slot->type().isAnyFloat() || slot->type().isRational())
+    else if (slot->type().isRational())
       return new RationalNode(slot->srcpos(), Rational(0, 1),
                               slot->type().isImaginary(), slot->type());
     else if (slot->type().isString())
@@ -1138,6 +1119,7 @@ SecondPass::nextEnumInitValue(const SrcPos& srcpos,
   }
   else {
     errorf(srcpos, E_EnumNotBaseType, "Enum init value is not of base type");
+    tyerror(baseType, "Enum Basetype");
   }
 
   return initExpr.release();
@@ -1176,7 +1158,7 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
     ofs += 2;
   }
   else
-    baseType = Type::newTypeRef(Names::kIntTypeName, true);
+    baseType = Type::newInt32();
 
   if (!baseType.isBaseType()) {
     errorf(expr.srcpos(), E_EnumNotBaseType, "Enum base is not a base type.");
@@ -2261,11 +2243,11 @@ SecondPass::transformRangeForClause(const Token& token,
   RangeForClauseCountDir direct = kRangeUnknown;
   if (token[2].count() == 3) {
     direct = kRangeUpwards;
-    stepValueNode = new IntNode(srcpos, 1, false, Type::newInt());
+    stepValueNode = new IntNode(srcpos, 1, false, Type::newInt32());
   }
   else if (token[2].count() == 5) {
     Token byToken = token[2][4];
-    if (byToken.isInt() || byToken.isReal() || byToken.isRational() ||
+    if (byToken.isInt() || byToken.isFloat() || byToken.isRational() ||
         byToken.isChar())
     {
       direct = byToken.isNegative() ? kRangeDownwards : kRangeUpwards;
@@ -2530,6 +2512,41 @@ SecondPass::transformCollForClause(const Token& token,
 
 
 AptNode*
+SecondPass::constructWhileTestNode(const Token& expr, NodeList& testExprs)
+{
+  Ptr<AptNode> testNode;
+
+  int nodeCount = 0;
+  for (size_t i = 0; i < testExprs.size(); i++) {
+    if (nodeCount > 1) {
+      Ptr<BinaryNode> prevBin = dynamic_cast<BinaryNode*>(testNode.obj());
+      assert(prevBin != NULL);
+      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
+                                            prevBin->right(),
+                                            kOpLogicalAnd, testExprs[i]);
+      prevBin->setRight(binNode);
+    }
+    else if (nodeCount == 1) {
+      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
+                                            testNode, kOpLogicalAnd, testExprs[i]);
+      testNode = binNode;
+    }
+    else
+      testNode = testExprs[i];
+    nodeCount++;
+  }
+
+  // if we don't have a test node yet all loop clauses are unconditional
+  // ones.  Take a simple 'true' therefore.
+  if (testNode == NULL) {
+    testNode = new BoolNode(expr.srcpos(), true);
+  }
+
+  return testNode.release();
+}
+
+
+AptNode*
 SecondPass::parseFor(const Token& expr)
 {
   assert(!fCompiler->isParsingInterface());
@@ -2573,78 +2590,109 @@ SecondPass::parseFor(const Token& expr)
     }
   }
 
+
   const bool requiresReturnValue = alternate != NULL || !testExprs.empty();
+  const bool hasAlternateBranch = alternate != NULL;
+
+  Ptr<AptNode> testNode = constructWhileTestNode(expr, testExprs);
+  Ptr<AptNode> evalNextStepTestNode;
 
   Token returnSym = Token::newUniqueSymbolToken(expr.srcpos(), "return");
+  Token tmpTestSym = Token::newUniqueSymbolToken(expr.srcpos(), "test");
 
+  static int loopId = 0;
+  loopId++;
+
+  bool delayTypeSpec = false;
   if (requiresReturnValue) {
-    if (alternate == NULL)
-      alternate = new SymbolNode(expr.srcpos(), Names::kLangUnspecified);
+    Type retType;
 
-    TypeVector unionTypes;
-    unionTypes.push_back(Type::newAny());
-    unionTypes.push_back(Type::newTypeRef(Names::kUnspecifiedTypeName, true));
+    Ptr<AptNode> defaultRetVal;
+    if (alternate == NULL) {
+      TypeVector unionTypes;
+      unionTypes.push_back(Type::newAny());
+      unionTypes.push_back(Type::newTypeRef(Names::kUnspecifiedTypeName, true));
 
-    Type retType = Type::newUnion(unionTypes, true);
-    Ptr<AptNode> returnVardef = new VardefNode(expr.srcpos(),
-                                               returnSym.idValue(), kNormalVar,
-                                               true, retType, alternate);
-    Ptr<AptNode> defReturnNode = new LetNode(returnVardef);
-    loopDefines.push_back(defReturnNode);
+      retType = Type::newUnion(unionTypes, true);
+      defaultRetVal = new SymbolNode(expr.srcpos(),
+                                     Names::kLangUnspecified);
+    }
+    else {
+      defaultRetVal = new UndefNode();
+      delayTypeSpec = true;
+    }
+
+    Ptr<VardefNode> returnVardef = new VardefNode(expr.srcpos(),
+                                                  returnSym.idValue(), kNormalVar,
+                                                  true, retType,
+                                                  defaultRetVal);
+    returnVardef->setTypeSpecDelayed(delayTypeSpec);
+
+    Ptr<LetNode> defReturnNode = new LetNode(returnVardef);
+    defReturnNode->setLoopId(loopId);
+    loopDefines.push_back(defReturnNode.obj());
+
+    if (hasAlternateBranch) {
+      // evaluate the tests once into a temporary variable
+      Ptr<AptNode> tmpTestNode = new VardefNode(expr.srcpos(),
+                                                tmpTestSym.idValue(), kNormalVar,
+                                                true, Type::newBool(),
+                                                testNode);
+      Ptr<AptNode> defTmpTestNode = new LetNode(tmpTestNode);
+      loopDefines.push_back(defTmpTestNode);
+
+      // construct the next step evaluation of the test variable
+      evalNextStepTestNode = new AssignNode(expr.srcpos(),
+                                            new SymbolNode(expr.srcpos(),
+                                                           tmpTestSym.idValue()),
+                                            testNode->clone());
+
+      // the test is actually to check the temporary test variable
+      testNode = new SymbolNode(expr.srcpos(), tmpTestSym.idValue());
+    }
   }
 
   Ptr<BlockNode> block = new BlockNode(expr.srcpos());
   block->appendNodes(loopDefines);
-
-  Ptr<AptNode> testNode;
-  int nodeCount = 0;
-  for (size_t i = 0; i < testExprs.size(); i++) {
-    if (nodeCount > 1) {
-      Ptr<BinaryNode> prevBin = dynamic_cast<BinaryNode*>(testNode.obj());
-      assert(prevBin != NULL);
-      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
-                                            prevBin->right(),
-                                            kOpLogicalAnd, testExprs[i]);
-      prevBin->setRight(binNode);
-    }
-    else if (nodeCount == 1) {
-      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
-                                            testNode, kOpLogicalAnd, testExprs[i]);
-      testNode = binNode;
-    }
-    else
-      testNode = testExprs[i];
-    nodeCount++;
-  }
-
-  // if we don't have a test node yet all loop clauses are unconditional
-  // ones.  Take a simple 'true' therefore.
-  if (testNode == NULL) {
-    testNode = new BoolNode(expr.srcpos(), true);
-  }
 
   Ptr<BlockNode> bodyNode = new BlockNode(expr.srcpos());
 
   if (requiresReturnValue) {
     Ptr<AptNode> retNode = new SymbolNode(expr.srcpos(),
                                           returnSym.idValue());
-    Ptr<AptNode> saveRetNode = new AssignNode(expr.srcpos(),
-                                              retNode, body);
+    Ptr<AssignNode> saveRetNode = new AssignNode(expr.srcpos(),
+                                                 retNode, body);
+    saveRetNode->setTypeSpecDelayed(delayTypeSpec);
+    saveRetNode->setLoopId(loopId);
     bodyNode->appendNode(saveRetNode);
   }
   else
     bodyNode->appendNode(body);
+
   bodyNode->appendNodes(stepExprs);
+  if (evalNextStepTestNode != NULL)
+    bodyNode->appendNode(evalNextStepTestNode->clone());
 
-  Ptr<AptNode> returnNode;
-  if (requiresReturnValue)
-    returnNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
+  Ptr<WhileNode> whileNode = new WhileNode(expr.srcpos(), testNode->clone(), bodyNode);
 
-  Ptr<WhileNode> whileNode = new WhileNode(expr.srcpos(), testNode, bodyNode);
-  block->appendNode(whileNode);
+  Ptr<SymbolNode> returnNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
+  returnNode->setLoopId(loopId);
 
-  if (returnNode != NULL)
-    block->appendNode(returnNode);
+  if (hasAlternateBranch) {
+    Ptr<BlockNode> consequent = new BlockNode(expr.srcpos());
+    consequent->appendNode(whileNode);
+    consequent->appendNode(returnNode);
+
+    Ptr<IfNode> ifNode = new IfNode(expr.srcpos(),
+                                    testNode->clone(), consequent, alternate);
+    block->appendNode(ifNode);
+  }
+  else {
+    block->appendNode(whileNode);
+
+    if (requiresReturnValue)
+      block->appendNode(returnNode);
+  }
 
   return block.release();
 }
@@ -3084,7 +3132,7 @@ SecondPass::parseSeq(const Token& expr)
         return newNodeList(parseIntNumber(expr));
       case kRational:
         return newNodeList(parseRationalNumber(expr));
-      case kReal:
+      case kFloat:
         return newNodeList(parseRealNumber(expr));
       default:
         fprintf(stderr, "%d\n", expr.tokenType());
@@ -3276,13 +3324,13 @@ AptNode*
 SecondPass::parseIntNumber(const Token& expr)
 {
   if (expr.tokenType() == kInt) {
-    Type type = Type::newInt();
+    Type type = Type::newInt32();
     type.setIsImaginary(expr.isImaginary());
     return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
                        type);
   }
   else if (expr.tokenType() == kUInt) {
-    Type type = Type::newOrdinal();
+    Type type = Type::newUInt32();
     type.setIsImaginary(expr.isImaginary());
     return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
                        type);
@@ -3332,10 +3380,10 @@ SecondPass::parseRationalNumber(const Token& expr)
 AptNode*
 SecondPass::parseRealNumber(const Token& expr)
 {
-  if (expr.tokenType() == kReal) {
-    Type type = Type::newReal();
+  if (expr.tokenType() == kFloat) {
+    Type type = Type::newFloat32();
     type.setIsImaginary(expr.isImaginary());
-    return new RealNode(expr.srcpos(), expr.realValue(),
+    return new RealNode(expr.srcpos(), expr.floatValue(),
                         expr.isImaginary(), type);
   }
   else if (expr.isSeq() && expr.count() == 3 &&
@@ -3346,7 +3394,7 @@ SecondPass::parseRealNumber(const Token& expr)
     if (type.isDef())
       type.setIsImaginary(expr[0].isImaginary());
 
-    return new RealNode(expr.srcpos(), expr[0].realValue(),
+    return new RealNode(expr.srcpos(), expr[0].floatValue(),
                         expr[0].isImaginary(), type);
   }
 
@@ -3378,7 +3426,7 @@ SecondPass::parseExpr(const Token& expr)
       return newNodeList(parseIntNumber(expr));
     case kRational:
       return newNodeList(parseRationalNumber(expr));
-    case kReal:
+    case kFloat:
       return newNodeList(parseRealNumber(expr));
     case kChar:
       return newNodeList(new CharNode(expr.srcpos(), expr.charValue()));

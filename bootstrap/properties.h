@@ -55,6 +55,8 @@ namespace herschel
 
     static bool isTraceImportFile();
     static bool isTraceMacro();
+    static bool isCodeDump();
+
 
     static void setConfigVar(const String& keyValuePair);
     static ConfigVarRegistry* globalConfigVarRegistry();

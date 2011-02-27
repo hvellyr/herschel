@@ -11,7 +11,7 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -34,7 +34,7 @@
 <test>
 <binary op='&lt;'>
 <symbol>i</symbol>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </binary>
 </test>
 <body>
@@ -52,7 +52,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </assign>
 </block>
@@ -74,7 +74,7 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
@@ -94,7 +94,7 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>3</int>
+<int ty='lang|Int32'>3</int>
 </binary>
 </assign>
 </block>
@@ -128,28 +128,37 @@
 </vardef>
 </let>
 <let>
-<vardef sym='__return_2'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
+<vardef sym='__return_4'>
 <init>
-<str>monday</str>
+<undef/>
 </init>
 </vardef>
 </let>
+<let>
+<vardef sym='__test_5'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
+<true/>
+</init>
+</vardef>
+</let>
+<if>
+<test>
+<symbol>__test_5</symbol>
+</test>
+<then>
+<block>
 <while>
 <test>
-<true/>
+<symbol>__test_5</symbol>
 </test>
 <body>
 <block>
 <assign>
-<symbol>__return_2</symbol>
+<symbol>__return_4</symbol>
 <apply>
 <symbol>cont-count</symbol>
 <args>
@@ -161,13 +170,75 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>4</int>
+<int ty='lang|Int32'>4</int>
+</binary>
+</assign>
+<assign>
+<symbol>__test_5</symbol>
+<true/>
+</assign>
+</block>
+</body>
+</while>
+<symbol>__return_4</symbol>
+</block>
+</then>
+<else>
+<str>monday</str>
+</else>
+</if>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f3'>
+<params>
+<param sym='k' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<block>
+<let>
+<vardef sym='i'>
+<init>
+<symbol>k</symbol>
+</init>
+</vardef>
+</let>
+<while>
+<test>
+<true/>
+</test>
+<body>
+<block>
+<apply>
+<symbol>cont-count</symbol>
+<args>
+<symbol>i</symbol>
+</args>
+</apply>
+<assign>
+<symbol>i</symbol>
+<binary op='+'>
+<symbol>i</symbol>
+<int ty='lang|Int32'>4</int>
 </binary>
 </assign>
 </block>
 </body>
 </while>
-<symbol>__return_2</symbol>
+</block>
+<str>monday</str>
 </block>
 </body>
 </func>

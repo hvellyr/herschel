@@ -66,7 +66,7 @@
 </binary>
 <binary op='->'>
 <keyw>age</keyw>
-<int ty='lang|Int'>39</int>
+<int ty='lang|Int32'>39</int>
 </binary>
 </dict>
 </init>
@@ -74,10 +74,16 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
