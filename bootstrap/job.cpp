@@ -62,8 +62,15 @@ herschel::startProcess(const String& cmd, const std::vector<String>& args)
   }
   else {
     /* This is the parent process.  Wait for the child to complete.  */
-    if (waitpid (pid, &status, 0) != pid)
+    if (waitpid(pid, &status, 0) != pid)
       status = -1;
+
+    if (WIFEXITED(status))
+      status = 0;
+    else {
+      fprintf(stderr, "ERROR: subprocess '%s' crashed\n", (const char*)StrHelper(cmd));
+      status = -1;
+    }
   }
 
   return status;

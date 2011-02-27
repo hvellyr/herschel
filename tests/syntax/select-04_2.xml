@@ -50,8 +50,8 @@
 <map>
 <values>
 <range>
-<int ty='lang|Int'>1</int>
-<int ty='lang|Int'>3</int>
+<int ty='lang|Int32'>1</int>
+<int ty='lang|Int32'>3</int>
 </range>
 </values>
 <cons>
@@ -66,8 +66,8 @@
 <map>
 <values>
 <range>
-<int ty='lang|Int'>4</int>
-<int ty='lang|Int'>6</int>
+<int ty='lang|Int32'>4</int>
+<int ty='lang|Int32'>6</int>
 </range>
 </values>
 <cons>

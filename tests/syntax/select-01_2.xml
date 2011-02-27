@@ -61,7 +61,7 @@
 <apply>
 <symbol>return</symbol>
 <args>
-<int ty='lang|Int'>22</int>
+<int ty='lang|Int32'>22</int>
 </args>
 </apply>
 </block>

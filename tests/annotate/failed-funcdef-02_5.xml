@@ -5,25 +5,37 @@
 <params>
 <param sym='x' type='pos'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
 </param>
 </params>
 <rettype>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </rettype>
 <body>
-<symbol  ty='lang|Int' refer='param'>x</symbol>
+<symbol  ty='lang|Int32' refer='param'>x</symbol>
 </body>
 </func>
 </def>
@@ -32,37 +44,55 @@
 <params>
 <param sym='a' type='spec'>
 <type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </type>
 </param>
 </params>
 <rettype>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </rettype>
 <body>
-<binary op='*' ty='lang|Int'>
-<symbol  ty='lang|Int' refer='param'>a</symbol>
-<int ty='lang|Int'>2</int>
+<binary op='*' ty='lang|Int32'>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
+<int ty='lang|Int32'>2</int>
 </binary>
 </body>
 </method>
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>

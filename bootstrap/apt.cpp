@@ -73,6 +73,7 @@ herschel::copyNodes(const NodeList& src)
 
 AptNode::AptNode(const SrcPos& srcpos)
   : fSrcPos(srcpos),
+    fTypeConvKind(kNoConv),
     fIsInTailPos(false),
     fIsSingleTypeRequired(false)
 {
@@ -82,6 +83,7 @@ AptNode::AptNode(const SrcPos& srcpos)
 AptNode::AptNode(const SrcPos& srcpos, const Type& type)
   : fSrcPos(srcpos),
     fType(type),
+    fTypeConvKind(kNoConv),
     fIsInTailPos(false),
     fIsSingleTypeRequired(false)
 {
@@ -124,6 +126,34 @@ AptNode::setType(const Type& type)
 }
 
 
+const Type&
+AptNode::dstType() const
+{
+  return fDstType;
+}
+
+
+void
+AptNode::setDstType(const Type& type)
+{
+  fDstType = type;
+}
+
+
+TypeConvKind
+AptNode::typeConv() const
+{
+  return fTypeConvKind;
+}
+
+
+void
+AptNode::setTypeConv(TypeConvKind typeConv)
+{
+  fTypeConvKind = typeConv;
+}
+
+
 llvm::Value*
 AptNode::codegen(CodeGenerator* generator) const
 {
@@ -156,6 +186,48 @@ void
 AptNode::setIsSingleTypeRequired(bool value)
 {
   fIsSingleTypeRequired = value;
+}
+
+
+//----------------------------------------------------------------------------
+
+LoopAnnotatable::LoopAnnotatable()
+  : fLoopId(0)
+{}
+
+
+int
+LoopAnnotatable::loopId() const
+{
+  return fLoopId;
+}
+
+
+void
+LoopAnnotatable::setLoopId(int loopId)
+{
+  fLoopId = loopId;
+}
+
+
+//----------------------------------------------------------------------------
+
+DelayTypeAnnotatable::DelayTypeAnnotatable()
+  : fDelayTypeSpec(false)
+{}
+
+
+bool
+DelayTypeAnnotatable::isTypeSpecDelayed() const
+{
+  return fDelayTypeSpec;
+}
+
+
+void
+DelayTypeAnnotatable::setTypeSpecDelayed(bool value)
+{
+  fDelayTypeSpec = value;
 }
 
 
@@ -245,11 +317,36 @@ _type::typify(Typifier* typifier)               \
 
 //----------------------------------------------------------------------------
 
+UndefNode::UndefNode()
+  : AptNode(SrcPos())
+{ }
+
+
+UndefNode*
+UndefNode::clone() const
+{
+  return new UndefNode();
+}
+
+
+DEF_RENDER(UndefNode)
+DEF_CODEGEN(UndefNode)
+DEF_ANNOTATE(UndefNode)
+DEF_TRAVERSE(UndefNode)
+DEF_TRANSFORM(UndefNode)
+DEF_TYPIFY(UndefNode)
+
+
+//----------------------------------------------------------------------------
+
 namespace herschel {
   template<typename T>
   T* cloneScope(const T* src, T* dst)
   {
     dst->setScope(src->scope());
+    dst->setType(src->type());
+    dst->setDstType(src->dstType());
+    dst->setTypeConv(src->typeConv());
     return dst;
   }
 }
@@ -343,7 +440,9 @@ SymbolNode::SymbolNode(const SrcPos& srcpos,
 SymbolNode*
 SymbolNode::clone() const
 {
-  return cloneScope(this, new SymbolNode(fSrcPos, fValue));
+  SymbolNode* newnd = new SymbolNode(fSrcPos, fValue);
+  newnd->setLinkage(linkage());
+  return cloneScope(this, newnd);
 }
 
 
@@ -394,6 +493,20 @@ bool
 SymbolNode::isShared() const
 {
   return fIsShared;
+}
+
+
+String
+SymbolNode::linkage() const
+{
+  return fLinkage;
+}
+
+
+void
+SymbolNode::setLinkage(const String& linkage)
+{
+  fLinkage = linkage;
 }
 
 

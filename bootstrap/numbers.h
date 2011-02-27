@@ -74,7 +74,7 @@ namespace herschel
     }
 
 
-    double toReal() const
+    double toFloat() const
     {
       return double(fNumerator) / double(fDenominator);
     }

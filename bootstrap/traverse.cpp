@@ -314,6 +314,12 @@ Traversator::traverse(KeywordNode* node)
 
 
 void
+Traversator::traverse(UndefNode* node)
+{
+}
+
+
+void
 Traversator::traverse(UnitConstNode* node)
 {
   traverseNode(node->value());

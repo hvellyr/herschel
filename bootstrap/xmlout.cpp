@@ -532,6 +532,8 @@ XmlRenderer::renderNode(const CompileUnitNode* node)
   }
 
   displayCloseTag("compile-unit");
+
+  fPort->flush();
 }
 
 
@@ -736,8 +738,8 @@ XmlRenderer::renderNode(const DictNode* node)
 }
 
 
-static const char*
-operatorName(OperatorType type)
+const char*
+XmlRenderer::operatorName(OperatorType type)
 {
   switch (type) {
   case kOpAppend:       return "++";
@@ -763,6 +765,7 @@ operatorName(OperatorType type)
   case kOpMapTo:        return "->";
   case kOpMinus:        return "-";
   case kOpMod:          return "mod";
+  case kOpRem:          return "rem";
   case kOpMultiply:     return "*";
   case kOpPlus:         return "+";
   case kOpRange:        return "..";
@@ -1054,4 +1057,11 @@ XmlRenderer::renderNode(const CastNode* node)
   displayNode("base", node->base());
   displayType("as", node->type());
   displayCloseTag("cast");
+}
+
+
+void
+XmlRenderer::renderNode(const UndefNode* node)
+{
+  displayEmptyTag("undef");
 }

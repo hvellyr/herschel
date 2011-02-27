@@ -25,7 +25,7 @@
 <body>
 <binary op='**'>
 <symbol>a</symbol>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </binary>
 </body>
 </func>

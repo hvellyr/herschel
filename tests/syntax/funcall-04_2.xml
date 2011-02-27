@@ -7,7 +7,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>f</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
 </init>
@@ -23,10 +23,10 @@
 <symbol>slice</symbol>
 <args>
 <symbol>f</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </args>
 </apply>
 </init>
@@ -42,7 +42,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>f</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
 </args>
@@ -63,10 +63,10 @@
 <symbol>slice</symbol>
 <args>
 <symbol>f</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </args>
 </apply>
 </args>
@@ -85,7 +85,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>g</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
 </args>
@@ -104,14 +104,14 @@
 <symbol>slice</symbol>
 <args>
 <symbol>f</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
 <args>
-<int ty='lang|Int'>2</int>
+<int ty='lang|Int32'>2</int>
 </args>
 </apply>
-<int ty='lang|Int'>3</int>
+<int ty='lang|Int32'>3</int>
 </args>
 </apply>
 </init>
@@ -133,7 +133,7 @@
 </apply>
 </args>
 </apply>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
 </init>
@@ -155,7 +155,7 @@
 </apply>
 </args>
 </apply>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
 </args>
 </apply>
 </init>

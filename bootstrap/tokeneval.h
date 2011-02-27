@@ -53,6 +53,7 @@ namespace herschel
     Token evalMultiply(const Token& lexpr, const Token& rexpr) const;
     Token evalDivide(const Token& lexpr, const Token& rexpr) const;
     Token evalModulo(const Token& lexpr, const Token& rexpr) const;
+    Token evalRemainder(const Token& lexpr, const Token& rexpr) const;
     Token evalExponent(const Token& lexpr, const Token& rexpr) const;
 
     Token evalBitOp(const Token& lexpr, const Token& rexpr,

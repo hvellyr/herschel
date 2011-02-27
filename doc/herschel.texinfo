@@ -162,9 +162,8 @@ sources, which are sometimes not obvious (like D and Go).
 @chapter Basic concepts
 
 @menu
-* Source code representation::
+* Source code representation::  Source code representation
 * Storage model::               Storage model
-* Numbers::                     Numbers
 * Tail recursion::              Tail recursion
 @end menu
 
@@ -194,7 +193,7 @@ statement) the file extension is typically not specified (see
 
 
 @c --------------------------------------------------------------------
-@node Storage model, Numbers, Source code representation, Basic concepts
+@node Storage model, Tail recursion, Source code representation, Basic concepts
 @section Storage model
 
 @c todo
@@ -208,53 +207,7 @@ statement) the file extension is typically not specified (see
 
 
 @c --------------------------------------------------------------------
-@node Numbers, Tail recursion, Storage model, Basic concepts
-@section Numbers
-
-Herschel provides a rather complex number model with both exact and
-approximate number representations.  Normal development should always
-use exact and unlimited numbers like @code{Int} or @code{Real}.  The
-approximate and limited types like @code{Float32}, @code{UInt32} or
-@code{Octet} are supported mostly for interfacing to existing software
-components.
-
-The exact number types are (from least specific) @code{Number << Exact
-<< Complex << Real << Rational << Int << Ordinal}, i.e.@ each
-@code{Ordinal} is an @code{Integer}, each @code{Integer} is a
-@code{Rational}, etc.
-
-The approximate number integer types all inherit from @code{Number <<
-Approximate << ApproxInt} whereas the approximate floating point types
-inherit from @code{Number << Approximate << ApproxFloat}.
-
-All standard types and their properties:
-
-@smallexample
-Type         Description                           Value range
-
-Number       (abstract)
-Complex      arbitrary precise complex like 3+2i     -INF .. INF
-Real         arbitrary precise real                  -INF .. INF
-Rational     arbitrary precise quotient like 3/4     -INF .. INF
-Int          signed, arbitrary precise integer       -INF .. INF
-Ordinal      positive, arbitrary precise integer        0 .. INF
-
-Int8         signed 8bit                             -2^7 .. 2^7-1
-UInt8        unsigned 8bit                              0 .. 2^8-1
-Int16        signed 16bit                           -2^15 .. 2^15-1
-UInt16       unsigned 16bit                             0 .. 2^16-1
-Int32        signed 32bit                           -2^31 .. 2^31-1
-UInt32       unsigned 32bit                             0 .. 2^32-1
-Int64        signed 64bit                           -2^63 .. 2^63-1
-UInt64       unsigned 64bit                             0 .. 2^64-1
-Float32      32bit ieee754 float                    +/- 3.4E +/- 38
-Float64      64bit ieee754 float                    +/- 1.7E +/- 308
-Float128     128bit ieee754 float                   +/- 1.18 +/- 4932
-@end smallexample
-
-
-@c --------------------------------------------------------------------
-@node Tail recursion,  , Numbers, Basic concepts
+@node Tail recursion,  , Storage model, Basic concepts
 @section Tail recursion
 
 @c todo
@@ -310,8 +263,8 @@ The following identifiers are reserved and have a special meaning:
 AND       and       as        by        def       else      eof
 export    extend    false     for       Function  function  if
 import    in        isa       let       match     mod       module
-nil       not       on        OR        or        reify     select
-then      true      when      where     while     XOR
+nil       not       on        OR        or        reify     rem
+select    then      true      when      where     while     XOR
 @end verbatim
 
 The following identifiers are predefined and used by the language
@@ -362,11 +315,6 @@ General delimiters in Herschel.
 @findex Bool
 The predefined Boolean constants @code{true} and @code{false} are
 logically realized by singleton instances of the class @code{Bool}.
-
-@example
-true
-false
-@end example
 
 
 @c ....................................................................
@@ -467,8 +415,10 @@ Returns the string representation of @var{keyword}.
 @c todo
 @emph{To write}
 
+A literal array:
+
 @example
-a constant array: #[1, 2, 3, 4, 5]
+#[1, 2, 3, 4, 5]
 @end example
 
 
@@ -479,6 +429,8 @@ a constant array: #[1, 2, 3, 4, 5]
 
 @c todo
 @emph{To write}
+
+A literal vector
 
 @example
 #(1, 2, 3)
@@ -493,12 +445,14 @@ a constant array: #[1, 2, 3, 4, 5]
 @c todo
 @emph{To write}
 
+A literal dictionary:
+
 @example
 #("abc" -> #[1, 2, 3],
-  "def" -> #symbol,            ;; symbol
-  "xyz" -> \a,                 ;; char
-  "mmm" -> \u41h,              ;; char
-  "ch1" -> \space              ;; char
+  "def" -> #symbol,
+  "xyz" -> \a,
+  "mmm" -> \u41h,
+  "ch1" -> \space
 )
 @end example
 
@@ -506,9 +460,9 @@ a constant array: #[1, 2, 3, 4, 5]
 @c ....................................................................
 @section Numbers
 
-Constant numbers can be notated in decimal, hexadecimal, binary and
-octal writing.  To distinguish a corresponding letter is @emph{appended}
-to the number:
+Literal numbers can be notated in decimal, hexadecimal, binary and
+octal writing.  To distinguish a corresponding letter is
+@emph{appended} to the number:
 
 @example
 100                     ;; decimal
@@ -517,38 +471,45 @@ to the number:
 100t                    ;; octal
 @end example
 
-More complex notations exist for complex and rational numbers:
+More notations exist for literal complex and rational numbers:
 
 @example
-1234                    ;; precise integer
-123.4                   ;; precise real
-12/34                   ;; precise rational
-12 + 34i                ;; precise complex
-12.3+34j                ;; precise complex
-1.23e-45                ;; precise integer (exp.@ not.)
+1234                    ;; integer
+123.4                   ;; real
+12/34                   ;; rational
+12 + 34i                ;; complex
+12.3+34j                ;; complex
+1.23e-45                ;; integer (exp.@ not.)
 @end example
 
-Integer numbers can be notated as unsigned by appending an @code{u}:
+By default literal integer numbers are of type @code{Int32}.  By
+appending an @code{u} they can be specified to be @emph{unsigned}, by
+appending an @code{l} or @code{L} they can be specified to be of type @emph{Int64}:
 
 @example
-1234u
-0ffhu                   ;; unsigned integer, hexadecimal notation
+1234u                   ;; type: UInt32
+0ffhu                   ;; type: UInt32
+9223372036854775807L    ;; type: Int64
+727379968ul             ;; type: UInt64
 @end example
 
-To give a specific type for approximate numbers the constant itself can
+Literal floats numbers are by default of type @code{Float}.  Similarly
+to literal integers floats can be typed to be @code{Float64} by
+appending an @code{l} or @code{L}:
+
+@example
+-3.1415                 ;; type: Float32
+-3.1415L                ;; type: Float64
+@end example
+
+An literal number can be typed to a specific type by declaring its type:
 be typed:
 
 @example
-123 : UInt8             ;; (approx) octet
-123 : Int16             ;; (approx) signed short
-123 : UInt16            ;; (approx) unsigned short
-123 : Int32             ;; (approx) word
-123 : UInt32            ;; (approx) unsigned word
-123 : Int64             ;; (approx) long
-123 : UInt64            ;; (approx) unsigned long
-123.4 : Float32         ;; (approx) ieee754 float
-123.4 : Float64         ;; (approx) ieee754 double
-123.4 : Float128        ;; (approx) ieee754 long double
+123 : UInt8
+123 : UInt64
+123.4 : Float64
+123.4 : Float128
 @end example
 
 It is an error to specify a non-matching type to a numerical constant.
@@ -564,10 +525,10 @@ In combination with different notations, the typing is always last:
 @c ....................................................................
 @section Measures
 
-Herschel supports numerical constants with @dfn{units}.  Units are tags
-which are bound to types and automatically type a numerical constant to
-the associated type (see @ref{Measure types} for details).  The tags are
-user definable and are notated using a quote:
+Herschel supports numerical constants with @dfn{units}.  Units are
+tags which are bound to types and automatically type a literal number
+constant to the associated type (see @ref{Measure types} for details).
+The tags are user definable and are notated using a quote:
 
 @example
 12'px      ;; 12 pixel
@@ -1058,6 +1019,7 @@ different specializations.
 
 @menu
 * Type Introduction::           Type Introduction
+* Primitive types::             Primitive types
 * Defining types::              Defining types
 * Slots::                       Slots
 * Constructors::                Constructors
@@ -1077,13 +1039,25 @@ different specializations.
 
 
 @c --------------------------------------------------------------------
-@node Type Introduction, Defining types, Types, Types
+@node Type Introduction, Primitive types, Types, Types
 @section Type Introduction
 
 @cindex classes
 @cindex classes, defining
 @cindex types
 @cindex types, defining
+
+Herschel is a mostly strongly typed language, which means that the
+compiler knows the types of every variable and expression at compile
+time.  It is `mostly' strongly typed since an expression can be
+declared to be of @code{Any} type and thus is treated as weakly typed
+expression.  This induces runtime type checks.
+
+All values in Herschel are objects, i.e.@ instances of a specific
+type.  Nevertheless it knows also about @emph{primitive} types which
+are recognized by the compiler and handled in a special (more
+efficient) way.  Except for being constraint with inheritance these
+primitive types behave like other types.
 
 Herschel distinguishes between @dfn{types} and @dfn{classes}.  Every class
 has exactly one type, but not every type is represented by a class.
@@ -1138,7 +1112,68 @@ notation (see @ref{Measure types}).
 
 
 @c --------------------------------------------------------------------
-@node Defining types, Slots, Type Introduction, Types
+@node Primitive types, Defining types, Type Introduction, Types
+@section Primitive types
+
+The following primitive types are defined in Herschel:
+
+@findex Bool
+@findex Int8
+@findex UInt8
+@findex Int16
+@findex UInt16
+@findex Int32
+@findex UInt32
+@findex Int64
+@findex UInt64
+@findex Float32
+@findex Float64
+@findex Int
+@findex Short
+@findex Octet
+@findex Long
+@findex Float
+@findex Double
+@itemize
+@item
+the boolean type @code{Bool};
+@item
+the number types, @code{Int8}, @code{Int16}, @code{Int32},
+@code{Int64}, @code{Float32}, @code{Float64}.  The integer type exist
+in @emph{signed} and @emph{unsigned} variants (@code{UInt8},
+@code{UInt16}, @code{UInt32}, @code{UInt64});
+@item
+character type @code{Char}.
+@end itemize
+
+The names @code{Octet}, @code{Short}, @code{Int}, and @code{Long} are
+more traditional aliases for the types @code{UInt8}, @code{Int16},
+@code{Int32}, and @code{Int64} respectively.
+
+The number types are defined always like the following, independant of
+the respective hardware:
+
+@smallexample
+Int8         signed 8bit                             -2^7 .. 2^7-1
+UInt8        unsigned 8bit                              0 .. 2^8-1
+Int16        signed 16bit                           -2^15 .. 2^15-1
+UInt16       unsigned 16bit                             0 .. 2^16-1
+Int32        signed 32bit                           -2^31 .. 2^31-1
+UInt32       unsigned 32bit                             0 .. 2^32-1
+Int64        signed 64bit                           -2^63 .. 2^63-1
+UInt64       unsigned 64bit                             0 .. 2^64-1
+Float32      32bit ieee754 float                    +/- 3.4E +/- 38
+Float64      64bit ieee754 float                    +/- 1.7E +/- 308
+Float128     128bit ieee754 float                   +/- 1.18 +/- 4932
+@end smallexample
+
+@findex Char
+The @code{Char} type is large enough to hold all possible code
+points defined in Unicode.
+
+
+@c --------------------------------------------------------------------
+@node Defining types, Slots, Primitive types, Types
 @section Defining types
 
 @anchor{def class}
@@ -2448,6 +2483,8 @@ methods.
 @code{exponent}
 @item mod
 @code{modulo}
+@item rem
+@code{remainder}
 @item and
 @code{and}
 @item or
@@ -2499,6 +2536,11 @@ Computes the exponent
 @deftypefn Method Number modulo (@var{op1}, @var{op2})
 Modulo arithmetic.  Only defined on integers and approximate non
 floating point numbers
+@end deftypefn
+
+@deftypefn Method Number remainder (@var{op1}, @var{op2})
+Computes the remainder of @var{op1} devided by @var{op2}.  Only
+defined on integers and approximate non floating point numbers
 @end deftypefn
 
 @deftypefn Method Number logand (@var{op1}, @var{op2})
@@ -4264,7 +4306,7 @@ def class Pair<Car, Cdr>(car: _car : Car = nil,
 def alias StringCell
     ~ A Pair defined for string lists.
     @@deprecated ~
-    = Pair<String, _>
+    = Pair<String, StringCell>
 
 def generic for-each(cltn @@ 'C, func : ForEachVisitor<T>) : 'C
     where C isa Collection<T> ...
@@ -4986,8 +5028,11 @@ number          := [ `-' ]
                    [ `'' UNIT-TAG ]
 unit-tag        := SYMBOL
 
-simple-number   := INT-NUMBER | REAL-NUMBER
+simple-number   := TYPED-INT-NUM | TYPED-REAL-NUM
 
+typed-int-num   := INT-NUMBER [ INT-TYPE-MARKER ]
+INT-TYPE-MARKER := [ `u' | `U' ] [ `l' | `L' ]
+                |  `:' SYMBOL
 int-number      := DEC-INT-NUMBER
                 |  HEX-INT-NUMBER
                 |  OCT-INT-NUMBER
@@ -4997,6 +5042,9 @@ hex-int-number  := DEC-DIGIT { HEX-DIGIT } ( `h' | `H' )
 oct-int-number  := OCT-DIGIT { OCT-DIGIT } ( `t' | `T' )
 bin-int-number  := BIN-DIGIT { BIN-DIGIT } ( `y' | `Y' )
 
+typed-real-num  := real-number [ REAL-TYPE-MARK ]
+REAL-TYPE-MARK  := [ `l' | `L' ]
+                |  `:' SYMBOL
 real-number     := DEC-INT-NUMBER `.' DEC-INT-NUMBER
                    [ eng-num-clause ]
 eng-num-clause  := ( `e' | `E' ) ( `-' | `+' ) DEC-INT-NUMBER

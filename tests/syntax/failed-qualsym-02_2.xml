@@ -5,7 +5,7 @@
 <params>
 <param sym='x' type='pos'>
 <type>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </type>
 </param>

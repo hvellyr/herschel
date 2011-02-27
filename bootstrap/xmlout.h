@@ -51,6 +51,7 @@ namespace herschel
   class StringNode;
   class SymbolNode;
   class TypeDefNode;
+  class UndefNode;
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
@@ -108,6 +109,9 @@ namespace herschel
     void renderNode(const VectorNode* node);
     void renderNode(const WhileNode* node);
     void renderNode(const CastNode* node);
+    void renderNode(const UndefNode* node);
+
+    static const char* operatorName(OperatorType type);
 
   private:
     void displayOpenTag(const char* tagName, bool newline = true);

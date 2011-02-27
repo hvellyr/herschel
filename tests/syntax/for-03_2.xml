@@ -32,27 +32,24 @@
 <let>
 <vardef sym='i'>
 <init>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </init>
 </vardef>
 </let>
 <let>
 <vardef sym='__return_0'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
 <init>
-<symbol>eof</symbol>
+<undef/>
 </init>
 </vardef>
 </let>
-<while>
-<test>
+<let>
+<vardef sym='__test_1'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
 <binary op='and'>
 <binary op='&lt;>'>
 <symbol>n</symbol>
@@ -63,6 +60,18 @@
 <symbol>element</symbol>
 </binary>
 </binary>
+</init>
+</vardef>
+</let>
+<if>
+<test>
+<symbol>__test_1</symbol>
+</test>
+<then>
+<block>
+<while>
+<test>
+<symbol>__test_1</symbol>
 </test>
 <body>
 <block>
@@ -83,13 +92,32 @@
 <symbol>i</symbol>
 <binary op='+'>
 <symbol>i</symbol>
-<int ty='lang|Int'>1</int>
+<int ty='lang|Int32'>1</int>
+</binary>
+</assign>
+<assign>
+<symbol>__test_1</symbol>
+<binary op='and'>
+<binary op='&lt;>'>
+<symbol>n</symbol>
+<symbol>nil</symbol>
+</binary>
+<binary op='&lt;>'>
+<symbol>n</symbol>
+<symbol>element</symbol>
+</binary>
 </binary>
 </assign>
 </block>
 </body>
 </while>
 <symbol>__return_0</symbol>
+</block>
+</then>
+<else>
+<symbol>eof</symbol>
+</else>
+</if>
 </block>
 </body>
 </func>

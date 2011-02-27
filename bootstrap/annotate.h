@@ -50,6 +50,7 @@ namespace herschel
   class SymbolNode;
   class TypeDefNode;
   class TypeNode;
+  class UndefNode;
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
@@ -118,6 +119,7 @@ namespace herschel
     void annotate(UnitConstNode* node);
     void annotate(VectorNode* node);
     void annotate(WhileNode* node);
+    void annotate(UndefNode* node);
 
   private:
     void annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype);

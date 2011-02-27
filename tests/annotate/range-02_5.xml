@@ -7,7 +7,7 @@
 <type>
 <ty:ref gen='t' nm='T'>
 <ty:const k='isa'>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:const>
 </ty:ref>
@@ -19,7 +19,7 @@
 <ty:gen>
 <ty:ref gen='t' nm='T'>
 <ty:const k='isa'>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:const>
 </ty:ref>
@@ -31,12 +31,12 @@
 <symbol  ty='&apos;T' refer='param'>x</symbol>
 <cast>
 <base>
-<int ty='lang|Int'>100</int>
+<int ty='lang|Int32'>100</int>
 </base>
 <as>
 <ty:ref gen='t' nm='T'>
 <ty:const k='isa'>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:const>
 </ty:ref>
@@ -50,16 +50,22 @@
 <ty:used-type>
 <ty:ref gen='t' nm='T'>
 <ty:const k='isa'>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:const>
 </ty:ref>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Int'>
+<ty:type nm='lang|Int32'>
 <ty:isa>
-<ty:ref nm='lang|Number'>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
 </ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
@@ -68,7 +74,7 @@
 <ty:gen>
 <ty:ref gen='t' nm='T'>
 <ty:const k='isa'>
-<ty:ref nm='lang|Int'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
 </ty:const>
 </ty:ref>

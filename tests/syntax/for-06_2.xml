@@ -120,7 +120,7 @@
 <body>
 <block>
 <let>
-<vardef sym='__return_1'>
+<vardef sym='__return_2'>
 <type>
 <ty:union>
 <ty:ref nm='lang|Any'>
@@ -140,20 +140,20 @@
 <symbol>slice</symbol>
 <args>
 <symbol>p</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </args>
 </apply>
 </test>
 <body>
 <block>
 <assign>
-<symbol>__return_1</symbol>
+<symbol>__return_2</symbol>
 <symbol>k</symbol>
 </assign>
 </block>
 </body>
 </while>
-<symbol>__return_1</symbol>
+<symbol>__return_2</symbol>
 </block>
 </body>
 </func>
@@ -181,7 +181,7 @@
 <body>
 <block>
 <let>
-<vardef sym='__return_2'>
+<vardef sym='__return_4'>
 <type>
 <ty:union>
 <ty:ref nm='lang|Any'>
@@ -201,12 +201,7 @@
 <symbol>do</symbol>
 <args>
 <apply>
-<symbol  nm='T'>
-<gen>
-<ty:ref nm='A'>
-</ty:ref>
-</gen>
-</symbol>
+<symbol>T</symbol>
 <args>
 </args>
 </apply>
@@ -214,7 +209,7 @@
 <symbol>slice</symbol>
 <args>
 <symbol>p</symbol>
-<int ty='lang|Int'>0</int>
+<int ty='lang|Int32'>0</int>
 </args>
 </apply>
 </args>
@@ -223,13 +218,13 @@
 <body>
 <block>
 <assign>
-<symbol>__return_2</symbol>
+<symbol>__return_4</symbol>
 <symbol>k</symbol>
 </assign>
 </block>
 </body>
 </while>
-<symbol>__return_2</symbol>
+<symbol>__return_4</symbol>
 </block>
 </body>
 </func>

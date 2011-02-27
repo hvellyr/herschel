@@ -13,7 +13,7 @@
 <seq>
 <id>y</id>
 <punct type=':'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 <punct type=','/>
 <seq>

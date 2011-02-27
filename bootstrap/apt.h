@@ -54,6 +54,14 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  enum TypeConvKind
+  {
+    kNoConv,
+    kTypeCheckConv,
+    kAtom2PlainConv,
+    kPlain2AtomConv,
+  };
+
   //! AptNode is the base of all abstract part tree nodes.  Since it is a
   //! refcounted object, keep it always in Ptr<>.
   class AptNode : public RefCountable
@@ -73,6 +81,11 @@ namespace herschel
 
     const Type& type() const;
     void setType(const Type& type);
+
+    const Type& dstType() const;
+    void setDstType(const Type& type);
+    TypeConvKind typeConv() const;
+    void setTypeConv(TypeConvKind typeConv);
 
     bool isInTailPos() const;
     void setIsInTailPos(bool value);
@@ -98,11 +111,48 @@ namespace herschel
     virtual void typify(Typifier* typifier) = 0;
 
   protected:
-    SrcPos     fSrcPos;
-    Ptr<Scope> fScope;
-    Type       fType;
-    bool       fIsInTailPos;
-    bool       fIsSingleTypeRequired;
+    SrcPos       fSrcPos;
+    Ptr<Scope>   fScope;
+    Type         fType;
+    Type         fDstType;
+    TypeConvKind fTypeConvKind;
+    bool         fIsInTailPos;
+    bool         fIsSingleTypeRequired;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  //! Mixin class to add support to AptNodes as being part of a loop
+  //! transformation.  All nodes having the same loopId belong to the same
+  //! compiled loop construct.
+  class LoopAnnotatable
+  {
+  public:
+    int loopId() const;
+    void setLoopId(int loopId);
+
+  protected:
+    LoopAnnotatable();
+
+    int fLoopId;
+  };
+
+
+  //! Mixin class to add support for delayed type speciation.  This is used on
+  //! VardefNodes and AssignNodes to flag the variable type to be inferred not
+  //! from the (probably undefined init expression) but the first assign to
+  //! come.
+  class DelayTypeAnnotatable
+  {
+  public:
+    bool isTypeSpecDelayed() const;
+    void setTypeSpecDelayed(bool value);
+
+  protected:
+    DelayTypeAnnotatable();
+
+    bool fDelayTypeSpec;
   };
 
 
@@ -126,6 +176,31 @@ namespace herschel
 
   protected:
     NodeList   fChildren;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  //! Represents an undefined value.
+  //!
+  //!  This is only used for delayed variable initialization and marks that
+  //! the (local) variable is not to be initialized at all.  Normally this is
+  //! not desirable, but when the compiler can prove that the variable is not
+  //! accessed before an following assignment, it does not need to generate an
+  //! initialization.  Ultimatively this helps in delaying the type defering
+  //! for the variable.
+  class UndefNode : public AptNode
+  {
+  public:
+    UndefNode();
+
+    virtual UndefNode* clone() const;
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
+    virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
   };
 
 
@@ -197,7 +272,7 @@ namespace herschel
     kType,
   };
 
-  class SymbolNode : public AptNode
+  class SymbolNode : public AptNode, public LoopAnnotatable
   {
   public:
     SymbolNode(const SrcPos& srcpos, const String& value);
@@ -216,6 +291,9 @@ namespace herschel
     void setRefersTo(SymReferType type, bool isShared);
     bool isShared() const;
 
+    String linkage() const;
+    void setLinkage(const String& linkage);
+
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* an);
@@ -229,6 +307,7 @@ namespace herschel
     SymReferType fRefersTo;
     bool         fIsShared;     // refers to a variable outside of owning
                                 // frame (= closed variable)
+    String       fLinkage;
   };
 
 
@@ -464,7 +543,7 @@ namespace herschel
   };
 
 
-  class LetNode : public BaseDefNode
+  class LetNode : public BaseDefNode, public LoopAnnotatable
   {
   public:
     LetNode(AptNode* node);
@@ -531,7 +610,8 @@ namespace herschel
     kEnumVar
   };
 
-  class VardefNode : public BindingNode
+  class VardefNode : public BindingNode,
+                     public DelayTypeAnnotatable
   {
   public:
     VardefNode(const SrcPos& srcpos,
@@ -787,7 +867,9 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  class AssignNode : public AptNode
+  class AssignNode : public AptNode,
+                     public LoopAnnotatable,
+                     public DelayTypeAnnotatable
   {
   public:
     AssignNode(const SrcPos& srcpos,

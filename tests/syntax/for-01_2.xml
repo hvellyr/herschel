@@ -95,7 +95,7 @@
 <body>
 <block>
 <let>
-<vardef sym='__seq_2'>
+<vardef sym='__seq_3'>
 <init>
 <symbol>collection</symbol>
 </init>
@@ -109,7 +109,7 @@
 </vardef>
 </let>
 <let>
-<vardef sym='__return_3'>
+<vardef sym='__return_4'>
 <type>
 <ty:union>
 <ty:ref nm='lang|Any'>
@@ -130,7 +130,7 @@
 <apply>
 <symbol>lang|end?</symbol>
 <args>
-<symbol>__seq_2</symbol>
+<symbol>__seq_3</symbol>
 </args>
 </apply>
 </test>
@@ -144,7 +144,7 @@
 <apply>
 <symbol>lang|next</symbol>
 <args>
-<symbol>__seq_2</symbol>
+<symbol>__seq_3</symbol>
 </args>
 </apply>
 </assign>
@@ -156,7 +156,7 @@
 <body>
 <block>
 <assign>
-<symbol>__return_3</symbol>
+<symbol>__return_4</symbol>
 <apply>
 <symbol>outln</symbol>
 <args>
@@ -167,7 +167,7 @@
 </block>
 </body>
 </while>
-<symbol>__return_3</symbol>
+<symbol>__return_4</symbol>
 </block>
 </body>
 </func>
@@ -181,7 +181,7 @@
 <body>
 <block>
 <let>
-<vardef sym='__seq_4'>
+<vardef sym='__seq_6'>
 <init>
 <symbol>collection</symbol>
 </init>
@@ -195,28 +195,25 @@
 </vardef>
 </let>
 <let>
-<vardef sym='__return_5'>
-<type>
-<ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
-<ty:ref nm='lang|Unspecified'>
-</ty:ref>
-</ty:union>
-</type>
+<vardef sym='__return_7'>
 <init>
-<false/>
+<undef/>
 </init>
 </vardef>
 </let>
-<while>
-<test>
+<let>
+<vardef sym='__test_8'>
+<type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</type>
+<init>
 <if>
 <test>
 <apply>
 <symbol>lang|end?</symbol>
 <args>
-<symbol>__seq_4</symbol>
+<symbol>__seq_6</symbol>
 </args>
 </apply>
 </test>
@@ -230,7 +227,142 @@
 <apply>
 <symbol>lang|next</symbol>
 <args>
-<symbol>__seq_4</symbol>
+<symbol>__seq_6</symbol>
+</args>
+</apply>
+</assign>
+<true/>
+</block>
+</else>
+</if>
+</init>
+</vardef>
+</let>
+<if>
+<test>
+<symbol>__test_8</symbol>
+</test>
+<then>
+<block>
+<while>
+<test>
+<symbol>__test_8</symbol>
+</test>
+<body>
+<block>
+<assign>
+<symbol>__return_7</symbol>
+<apply>
+<symbol>outln</symbol>
+<args>
+<symbol>i</symbol>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>__test_8</symbol>
+<if>
+<test>
+<apply>
+<symbol>lang|end?</symbol>
+<args>
+<symbol>__seq_6</symbol>
+</args>
+</apply>
+</test>
+<then>
+<false/>
+</then>
+<else>
+<block>
+<assign>
+<symbol>i</symbol>
+<apply>
+<symbol>lang|next</symbol>
+<args>
+<symbol>__seq_6</symbol>
+</args>
+</apply>
+</assign>
+<true/>
+</block>
+</else>
+</if>
+</assign>
+</block>
+</body>
+</while>
+<symbol>__return_7</symbol>
+</block>
+</then>
+<else>
+<false/>
+</else>
+</if>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='f3'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<block>
+<let>
+<vardef sym='__seq_9'>
+<init>
+<symbol>collection</symbol>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='i'>
+<init>
+<symbol>lang|unspecified</symbol>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__return_10'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
+<init>
+<symbol>lang|unspecified</symbol>
+</init>
+</vardef>
+</let>
+<while>
+<test>
+<if>
+<test>
+<apply>
+<symbol>lang|end?</symbol>
+<args>
+<symbol>__seq_9</symbol>
+</args>
+</apply>
+</test>
+<then>
+<false/>
+</then>
+<else>
+<block>
+<assign>
+<symbol>i</symbol>
+<apply>
+<symbol>lang|next</symbol>
+<args>
+<symbol>__seq_9</symbol>
 </args>
 </apply>
 </assign>
@@ -242,7 +374,7 @@
 <body>
 <block>
 <assign>
-<symbol>__return_5</symbol>
+<symbol>__return_10</symbol>
 <apply>
 <symbol>outln</symbol>
 <args>
@@ -253,7 +385,9 @@
 </block>
 </body>
 </while>
-<symbol>__return_5</symbol>
+<symbol>__return_10</symbol>
+</block>
+<false/>
 </block>
 </body>
 </func>

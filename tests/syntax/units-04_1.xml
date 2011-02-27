@@ -8,7 +8,7 @@
 <id>K</id>
 </nested>
 <punct type=':'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 <seq>
 <id>def</id>
@@ -18,7 +18,7 @@
 <id>Hz</id>
 </nested>
 <punct type=':'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 <seq>
 <id>def</id>
@@ -39,7 +39,7 @@
 <seq>
 <id>x</id>
 <punct type='-'/>
-<lit type='real'>273.150000</lit>
+<lit type='float'>273.150000</lit>
 </seq>
 </nested>
 </seq>
@@ -120,3 +120,4 @@
 </seq>
 </seq>
 </seq>
+

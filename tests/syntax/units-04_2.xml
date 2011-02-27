@@ -5,7 +5,7 @@
 <isa>
 <ty:measure nm='Temperature' unit='K'>
 <ty:isa>
-<ty:ref nm='lang|Real'>
+<ty:ref nm='lang|Float32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>
@@ -17,7 +17,7 @@
 <isa>
 <ty:measure nm='Frequency' unit='Hz'>
 <ty:isa>
-<ty:ref nm='lang|Real'>
+<ty:ref nm='lang|Float32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>
@@ -31,12 +31,12 @@
 <type>
 <ty:measure nm='Temperature' unit='K'>
 <ty:isa>
-<ty:ref nm='lang|Real'>
+<ty:ref nm='lang|Float32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>
 </type>
-<int ty='lang|Int'>12</int>
+<int ty='lang|Int32'>12</int>
 </uvalue>
 </init>
 </vardef>
@@ -48,12 +48,12 @@
 <type>
 <ty:measure nm='Temperature' unit='K'>
 <ty:isa>
-<ty:ref nm='lang|Real'>
+<ty:ref nm='lang|Float32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>
 </type>
-<int ty='lang|Int'>23</int>
+<int ty='lang|Int32'>23</int>
 </uvalue>
 </init>
 </vardef>
@@ -65,12 +65,12 @@
 <type>
 <ty:measure nm='Frequency' unit='Hz'>
 <ty:isa>
-<ty:ref nm='lang|Real'>
+<ty:ref nm='lang|Float32'>
 </ty:ref>
 </ty:isa>
 </ty:measure>
 </type>
-<int ty='lang|Int'>42</int>
+<int ty='lang|Int32'>42</int>
 </uvalue>
 </init>
 </vardef>

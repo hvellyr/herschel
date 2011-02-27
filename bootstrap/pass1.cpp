@@ -2012,7 +2012,7 @@ FirstPass::parseAtomicExpr()
   switch (fToken.tokenType()) {
   case kInt:
   case kUInt:
-  case kReal:
+  case kFloat:
   case kRational:
     return parseExplicitTypedNumber(parseUnitNumber(fToken));
 
@@ -2240,6 +2240,7 @@ FirstPass::weightOperator(OperatorType op1) const
 
   case kOpMultiply:
   case kOpDivide:
+  case kOpRem:
   case kOpMod:            return 100;
 
   case kOpExponent:       return 110;

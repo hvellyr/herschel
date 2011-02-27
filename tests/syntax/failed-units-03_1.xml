@@ -27,7 +27,7 @@
 <id>abc</id>
 </nested>
 <punct type=':'/>
-<id>Real</id>
+<id>Float</id>
 </seq>
 <seq>
 <id>def</id>

@@ -41,11 +41,9 @@ _TypeName ## TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,          \
 
 
 //                     _TypeName,  _kind,    _method, _init, _step
-NUMBER_TYPE_ENUM_MAKER(Int,        Int,      int,     0,     1)
-NUMBER_TYPE_ENUM_MAKER(Real,       Real,     real,    0.0,   1.0)
-NUMBER_TYPE_ENUM_MAKER(Float32,    Real,     real,    0.0,   1.0)
-NUMBER_TYPE_ENUM_MAKER(Float64,    Real,     real,    0.0,   1.0)
-NUMBER_TYPE_ENUM_MAKER(Float128,   Real,     real,    0.0,   1.0)
+NUMBER_TYPE_ENUM_MAKER(Float32,    Float,    float,   0.0,   1.0)
+NUMBER_TYPE_ENUM_MAKER(Float64,    Float,    float,   0.0,   1.0)
+NUMBER_TYPE_ENUM_MAKER(Float128,   Float,    float,   0.0,   1.0)
 NUMBER_TYPE_ENUM_MAKER(Rational,   Rational, rational, Rational(), Rational(1, 1))
 NUMBER_TYPE_ENUM_MAKER(Char,       Char,     char,    0,     1)
 

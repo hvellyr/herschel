@@ -123,12 +123,10 @@ namespace herschel
 
     static Type newAny(bool isValue = true);
 
-    static Type newInt(bool isValue = true);
-    static Type newOrdinal(bool isValue = true);
-    static Type newImaginaryInt(bool isValue = true);
+    static Type newInt32(bool isValue = true);
+    static Type newUInt32(bool isValue = true);
     static Type newRational(bool isValue = true);
-    static Type newReal(bool isValue = true);
-    static Type newImaginaryReal(bool isValue = true);
+    static Type newFloat32(bool isValue = true);
     static Type newString(bool isValue = true);
     static Type newBool(bool isValue = true);
 
@@ -177,17 +175,20 @@ namespace herschel
     //! indicates whether the type is a base type
     bool isBaseType() const;
 
+    //! indicates whether thi type is a plain type.  A plain type is a type
+    //! which can be represented as non-complex machine types.
+    bool isPlainType() const;
+
     bool isAny() const;
 
-    bool isInt() const;
+    bool isInt32() const;
     bool isString() const;
-    bool isReal() const;
+    bool isFloat32() const;
     bool isNumber() const;
     bool isComplex() const;
     bool isAnyFloat() const;
-    bool isAnyReal() const;
     bool isRational() const;
-    bool isOrdinal() const;
+    bool isUInt32() const;
     bool isAnyInt() const;
     bool isAnyUInt() const;
     bool isAnySignedInt() const;
@@ -196,6 +197,8 @@ namespace herschel
     bool isKeyword() const;
 
     bool isAnyNumber() const;
+
+    bool isSigned() const;
 
     bool isClassOf() const;
 
@@ -263,6 +266,7 @@ namespace herschel
     //!@ has constraints?
     bool hasConstraints() const;
     const TypeConstVector& constraints() const;
+    Type setConstraints(const TypeConstVector& constraints) const;
 
     bool hasGenerics() const;
     const TypeVector& generics() const;

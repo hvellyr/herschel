@@ -254,6 +254,7 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       { String("and"),           kLogicalAnd   },
       { String("or"),            kLogicalOr    },
       { String("mod"),           kMod          },
+      { String("rem"),           kRem          },
       { String("AND"),           kBitAnd       },
       { String("OR"),            kBitOr        },
       { String("XOR"),           kBitXor       },
@@ -332,7 +333,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
   assert(!first.isEmpty());
 
   if (fCC == '.') {
-    type = kReal;
+    type = kFloat;
     nextChar();
     second = readIntNumberPart(false);
 
@@ -405,14 +406,14 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
       token = Token(startPos, kInt, first.toInt(radix) * sign);
     break;
 
-  case kReal:
+  case kFloat:
     {
       StringBuffer tmp(first);
       tmp << "." << second;
       if (!exponent.isEmpty())
         tmp << "e" << (expSign < 0 ? '-' : '+') << exponent;
 
-      token = Token(startPos, kReal, tmp.toString().toDouble() * sign);
+      token = Token(startPos, kFloat, tmp.toString().toDouble() * sign);
     }
     break;
 
@@ -899,17 +900,17 @@ SUITE(Tokenizer)
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 3));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 4));
 
-      CHECK_EQUAL(tnz.nextToken(), Token(sp, kReal, 12.34));
-      CHECK_EQUAL(tnz.nextToken(), Token(sp, kReal, 0.12345e+10));
-      CHECK_EQUAL(tnz.nextToken(), Token(sp, kReal, 0.12345e+10)); // normalized 123.45e+7
-      CHECK_EQUAL(tnz.nextToken(), Token(sp, kReal, 0.000123456)); // normalized
-      CHECK_EQUAL(tnz.nextToken(), Token(sp, kReal, -3.1415));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kFloat, 12.34));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kFloat, 0.12345e+10));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kFloat, 0.12345e+10)); // normalized 123.45e+7
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kFloat, 0.000123456)); // normalized
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kFloat, -3.1415));
 
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kRational, Rational(2, 3)));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kRational, Rational(120, 33)));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kRational, Rational(1, 1024)));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 5).setIsImaginary(true));
-      CHECK_EQUAL(tnz.nextToken(), Token(sp, kReal, 3.1415).setIsImaginary(true));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kFloat, 3.1415).setIsImaginary(true));
     }
     catch (const Exception& ne) {
       logf(kError, StrHelper(ne.message()));
@@ -1087,7 +1088,7 @@ SUITE(Tokenizer)
       "T<S<Y>>  T<S<Y> >  a < b\n"
       "val << 5 val >> 2\n"
       "2 < 1  2 <= 1  2 > 1  2 >= 1  2 <=> 1  2 <> 1  2 == 1\n"
-      "a + b  \"a\" ++ \"b\" a - b  a * b  a / b  a ** 2  a mod 5\n"
+      "a + b  \"a\" ++ \"b\" a - b  a * b  a / b  a ** 2  a mod 5  a rem 5\n"
       "1 XOR 2  1 OR 2  1 AND 2\n"
       "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n"
       "|abc ->abc\n"
@@ -1195,6 +1196,10 @@ SUITE(Tokenizer)
 
       CHECK_EQUAL(tnz.nextToken(), Token(sp, String("a")));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kMod));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 5));
+
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, String("a")));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kRem));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kInt, 5));
 
 
