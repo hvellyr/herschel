@@ -1,7 +1,7 @@
 \input texinfo @c -*-texinfo-*-
 @c %**start of header
 @setfilename herschel.info
-@settitle Herschel -- Language specification
+@settitle The Herschel Programming Language -- Specification
 @finalout
 @setchapternewpage off
 @paragraphindent 0
@@ -14,8 +14,11 @@
 @c @shorttitlepage Herschel
 
 @titlepage
-@title Herschel
-@subtitle Language specification
+@titlefont{The Herschel}
+@sp 1
+@title Programming Language
+@sp 1
+@subtitle Specification
 @subtitle Version @value{VERSION}
 @c @center @image{bg2,,8cm}
 @author by Gregor C. Klinke
