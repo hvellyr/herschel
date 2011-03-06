@@ -2,19 +2,19 @@
 
 Documentation
 
-  - Write nested modules section.
-
-  - rewrite exporting, visibility, and importing section
-
-  - Mention explicitely: coercing.  Where?
+  - write/extend/update section on object creation ("auto" slots)
 
   - Write assignment section.
+
+  - Document how to specify class functions:
+
+      def generic apply(self @ Class<Abc>) ... ???
+
+  - Mention explicitely: coercing.  Where?
 
   - Rewrite the "def xxx" to the new deffn-form-example style.
 
   - document call-by-value, reference types.
-
-  - write/extend/update section on object creation ("auto" slots)
 
 
 Bootstrap compiler
@@ -25,7 +25,9 @@ Bootstrap compiler
 
   - review some kind of auto-number coercion?
 
-  - support 'auto' slots in ctor construction.
+  - support 'auto', 'public', 'outer', 'inner', slots in ctor construction.
+
+  - auto create accessor/modifier functions for slots
 
   - 'T are treated as Any inside of function bodie for direct comparison
     and need type-check boundaries at runtime.  The type checker must make
@@ -117,28 +119,11 @@ Bootstrap compiler
 
 Language and ideas:
 
-  - drop the public id from module specs
-
-  - drop the rename facility from the import statement.
-
-  - review fluids.  Do we really need them?  They clash unhealthily with
-    threading.
-
-  - clearify: do we support multiple functions with the same base name but
-    different parameter counts?
+  - remove function signature overwriting.  We do not support multiple
+    functions with the same base name but different parameter counts?
 
       def generic init(a @ Int) ...
       def generic init(a @ Int, b @ String) ...
-
-  - Document how to specify class functions:
-
-      def generic apply(self @ Class<Abc>) ... ???
-
-  - write up about module/interface.  Review import, export, module, etc.
-    See CHANGES.
-
-  - notation for classes and types.  This is required if you need to pass a
-    first-class class into a function.  (Isn't this Class<'T> ?)
 
   - structs ?  Contrary to classes do not support inheritance, but provide
     fixed, controlled, and fast slot layout.
@@ -146,7 +131,7 @@ Language and ideas:
   - Think about non-gc objects.
 
   - Think about lazy evaluation (generalize the 'promise' concept
-    introduced en passent with sync).  See x10 -> futures.
+    introduced en passent with sync).  See x10 -> futures.  (cf. doc/CHANGES)
 
   - checked exceptions.  Declare as
 
@@ -164,5 +149,5 @@ Language and ideas:
 
     to document that a function does not pass exceptions.
 
-
+  - Function contracts (cf. doc/CHANGES)
 
