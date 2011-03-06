@@ -118,6 +118,7 @@ class TestRunner:
                 sys.stdout.write('\b.')
             self.break_cols()
             sys.stdout.write("E")
+            sys.stdout.flush()
             self.column_count = self.column_count + 1
             self.failures.append(full_msg)
             self.last_passid = -1
@@ -132,6 +133,7 @@ class TestRunner:
                 sys.stdout.write('\b.')
             self.break_cols()
             sys.stdout.write("i")
+            sys.stdout.flush()
             self.column_count = self.column_count + 1
             self.failures.append(full_msg)
             self.last_passid = -1
