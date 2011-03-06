@@ -399,48 +399,6 @@ FirstPass::parseExport()
 }
 
 
-namespace herschel
-{
-  struct ImportRenameParser
-  {
-    bool operator() (FirstPass* pass, Token& result)
-    {
-      if (pass->fToken != kSymbol) {
-        errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
-        pass->scanUntilNextParameter();
-      }
-      else {
-        Token first = pass->fToken;
-
-        pass->nextToken();
-        if (pass->fToken != kMapTo) {
-          errorf(pass->fToken.srcpos(), E_MapToExpected, "expected '->'");
-          pass->scanUntilNextParameter();
-        }
-        else {
-          Token maptoToken = pass->fToken;
-
-          pass->nextToken();
-          if (pass->fToken != kSymbol) {
-            errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
-            pass->scanUntilNextParameter();
-          }
-          else {
-            Token second = pass->fToken;
-
-            result << ( Token() << first << maptoToken << second );
-
-            pass->nextToken();
-          }
-        }
-      }
-
-      return true;
-    }
-  };
-};
-
-
 Token
 FirstPass::parseImport()
 {
@@ -457,16 +415,6 @@ FirstPass::parseImport()
   expr << importFile;
 
   nextToken();
-  if (fToken == kParanOpen) {
-    Token renames = Token(fToken.srcpos(), kParanOpen, kParanClose);
-
-    parseSequence(ImportRenameParser(),
-                  kParanOpen, kParanClose, true, E_BadParameterList,
-                  renames,
-                  "import-renames");
-
-    expr << renames;
-  }
 
   bool canImport = true;
 #if defined(UNITTESTS)

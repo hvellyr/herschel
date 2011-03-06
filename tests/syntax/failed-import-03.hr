@@ -1,1 +1,2 @@
-import "core.hr" (abc -> xyz x -> y)
+;; this is not herschel, but python
+from core import *
