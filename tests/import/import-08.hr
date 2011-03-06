@@ -1,6 +1,0 @@
-module a1
-
-import "import/ignore-classdef-02.hr"
-
-def place = City("Tokio", "Japan")
-

@@ -53,7 +53,7 @@
 ;; (`.emacs'):
 ;;
 ;;   (autoload 'herschel-mode "herschel-mode" "Herschel Mode" t)
-;;   (setq auto-mode-alist (cons '("\\.hr\\'" . herschel-mode) auto-mode-alist))
+;;   (setq auto-mode-alist (cons '("\\.h7\\'" . herschel-mode) auto-mode-alist))
 
 
 ;; ---------------------------------------------------------------------------
@@ -787,7 +787,7 @@ Nicked from `c-lineup-C-comments'."
 ;;; --------------------------------------------------------------------------
 ;;; Other
 ;;; --------------------------------------------------------------------------
-;; remove ".herschel" and ".mod" from `completion-ignored-extensions'
+;; remove ".hr" and ".h7" from `completion-ignored-extensions'
 (setq completion-ignored-extensions
       (delete ".hr" completion-ignored-extensions))
 (setq completion-ignored-extensions

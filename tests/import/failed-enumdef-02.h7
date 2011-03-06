@@ -1,0 +1,5 @@
+module a1
+
+import "import/ignore-enumdef-02.h7"
+
+def a2 : MidiController = foot-pedal

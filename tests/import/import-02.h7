@@ -1,0 +1,5 @@
+;; test to import ignore-green-02.h7
+
+import "import/ignore-green-02.h7"
+
+def abc a = 12

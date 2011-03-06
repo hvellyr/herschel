@@ -44,6 +44,6 @@ include $(top_srcdir)/build/generic.mk
 #----------------------------------------------------------------------
 
 prepare-syntax-tests:
-	for a in syntax/*.hr; do \
-	  $(BUILDDIR)/$(BUILDSTYLE)/hrc -P $$a > `dirname $$a`/`basename $$a .hr`.xml; \
+	for a in syntax/*.h7; do \
+	  $(BUILDDIR)/$(BUILDSTYLE)/hrc -P $$a > `dirname $$a`/`basename $$a .h7`.xml; \
   done

@@ -1,0 +1,190 @@
+;; This file is part of the herschel package
+;;
+;; Copyright (c) 2010-2011 Gregor Klinke
+;; All rights reserved.
+;;
+;; Redistribution and use in source and binary forms, with or without
+;; modification, are permitted provided that the following conditions are
+;; met:
+;;
+;; - Redistributions of source code must retain the above copyright notice,
+;;   this list of conditions and the following disclaimer.
+;;
+;; - Redistributions in binary form must reproduce the above copyright
+;;   notice, this list of conditions and the following disclaimer in the
+;;   documentation and/or other materials provided with the distribution.
+;;
+;; - Neither the name of the author nor the names of other contributors may
+;;   be used to endorse or promote products derived from this software
+;;   without specific prior written permission.
+;;
+;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+;; IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+;; TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+;; PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+;; OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+;; EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+;; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+;; PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;; LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+module lang
+export public(*)
+
+def class Charset(name: _name : String = "")
+    ~ @author: Gregor Klinke
+      @version 1.0
+
+     This class represents sets of characters, which are organized by a
+     common super type.  The system maintains proper set up collections of
+     characters, which are oftenly used, e.g. a set of all alphanumeric
+     characters, hexadecimal digits or interpunction characters.
+
+     Pre-organized sets are cached by the class system properly.
+
+     Normaly charsets are used in the following way:
+
+     @example
+     alphanumeric-charset().contains?(\\b)
+     @end example
+
+     It is possible to setup custom charsets, either by modifying copies of
+     predefined sets, or by creating sets from scratch.  Custom charsets
+     are not cached by the system, but released by the memory management,
+     if no valid reference to them is found.  Since charsets are expensive
+     objects to create, one should cache such charsets properly, if they
+     are used regularly.
+
+     @head Creating a Standard Character Set
+
+     These methods are the central indented way for requesting and creating
+     charset instances.  They represent common used charsets as defined by
+     the Unicode standard and provide a properly cached access.  Even if
+     charsets are compressed bitmap representations, each charset uses an
+     certain amount of memory.  It is therefore good practice to use as
+     much these (const) representations. ~
+{
+  def slot name : String = _name
+  ;; TODO
+}
+
+
+;;----------------------------------------------------------------------------
+;; loading and managing char sets
+;;----------------------------------------------------------------------------
+
+def charset-for-name(name : String) : Charset ...
+    ~ Returns a character set described by the name @var{name}.  If no such
+    character set is provided by the system an exception of kind
+    @type{CharsetException} is thrown. ~
+
+
+;;----------------------------------------------------------------------------
+;; Creating new Standard Character Set
+;;----------------------------------------------------------------------------
+
+def alphanumeric-charset() : Charset ...
+    ~ Returns a character set containing the uppercase and lowercase
+     alphabetic characters (a-z, A-Z, other alphabetic characters such as
+     u0ddh, u089h, u0dbh, u087h, and so on) and the decimal digit
+     characters (0-9). ~
+
+
+def control-charset() : Charset ...
+    ~ Returns a character set containing the control characters (characters
+     with decimal Unicode values 0 to 31 and 127 to 159). ~
+
+
+def decimal-digit-charset() : Charset ...
+    ~ Returns a character set containing only decimal digit characters
+     (0-9). ~
+
+
+def hexadecimal-digit-charset() : Charset ...
+    ~ Returns a character set containing only decimal digit characters
+     (0-9, a-f, A-F). ~
+
+
+def decomposable-charset() : Charset ...
+    ~ Returns a character set containing all individual Unicode characters
+     that can also be represented as composed character sequences. ~
+
+
+def illegal-charset() : Charset ...
+    ~ Returns a character set containing the illegal Unicode values. ~
+
+
+def letter-charset() : Charset ...
+    ~ Returns a character set containing the uppercase and lowercase
+     alphabetic characters (a&ndash;z, A&ndash;Z, other alphabetic characters
+     such as u0ddh, u089h, u0dbh, u087h, and so on). ~
+
+
+def lowercase-letter-charset() : Charset ...
+    ~ Returns a character set containing only lowercase alphabetic characters
+     (a-z, other alphabetic characters such as u0ddh, u0dbh, and so on). ~
+
+
+def nonbase-charset() : Charset ...
+    ~ Returns a set containing all characters which are not defined to be base
+     characters for purposes of dynamic character composition. ~
+
+
+def uppercase-letter-charset() : Charset ...
+    ~ Returns a character set containing only uppercase alphabetic characters
+     (A-Z, other alphabetic characters such as u089h, u087h, and so on). ~
+
+
+def whitespace-and-newline-charset() : Charset ...
+    ~ Returns a character set containing only whitespace characters (space and
+      tab) and the newline character. ~
+
+
+def whitespace-charset() : Charset ...
+    ~ Returns a character set containing only in-line whitespace characters
+     (space and tab). This set doesn't contain the newline or carriage return
+     characters. ~
+
+
+def ascii-charset() : Charset ...
+    ~ Returns a character set containing ascii characters set used for path
+     names, etc. ~
+
+
+def interpunct-charset() : Charset ...
+    ~ Returns a character set containing interpunctuation characters. ~
+
+
+;;----------------------------------------------------------------------------
+;; Creating a Custom Character Set
+;;----------------------------------------------------------------------------
+
+def charset-with-chars-in-string(str : String) : Charset ...
+    ~ Returns a character set containing the characters in <prm>aString</>.
+     If @var{str} is empty, an empty character set is returned. ~
+
+
+def charset-with-range(rng : Range<Char>) : Charset
+    ~ Returns a character set containing characters whose Unicode values are
+     given by @var{rng}. ~
+
+
+;;----------------------------------------------------------------------------
+;; Testing Set Membership
+;;----------------------------------------------------------------------------
+
+def generic contains?(cs @ Charset, c : Char) : Bool ...
+    ~ Indicates whether char @var{c} is in charset @var{cs}. ~
+
+
+;;----------------------------------------------------------------------------
+;; Inverting a Character Set
+;;----------------------------------------------------------------------------
+
+def generic inverted-set(cs @ Charset) : Charset ...
+    ~ Returns a character set containing only characters that @em{don't}
+     exist in the receiver. ~
+
+;; end of charset.h7
