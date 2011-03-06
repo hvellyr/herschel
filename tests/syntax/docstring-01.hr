@@ -17,7 +17,7 @@ def const x2 : Int
     = 5
 
 
-def fluid *stdout* : Port
+def *stdout* : Port
     ~ standard out ~
     = TTYPort(0)
 

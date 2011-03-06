@@ -81,7 +81,6 @@ namespace herschel
     static const Token enumToken;
     static const Token exitToken;
     static const Token finalToken;
-    static const Token fluidToken;
     static const Token genericToken;
     static const Token ignoreToken;
     static const Token includeToken;

@@ -288,7 +288,7 @@ Key bindings:
   '(
     "module" "import" "export" "extend" "when"
     "def" "let"
-    "type" "class" "macro" "alias" "fluid" "const" "generic" "enum" "char"
+    "type" "class" "macro" "alias" "const" "generic" "enum" "char"
     "measure" "unit"
     "slot" "slot!"
     "if" "else" "on"
@@ -439,7 +439,7 @@ Key bindings:
 
 
    ;; highlight variable declarations.
-   '("\\(def\\|let\\)\\s-+\\(\\(const\\|fluid\\)\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*\\(:\\|=\\)"
+   '("\\(def\\|let\\)\\s-+\\(const\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*\\(:\\|=\\)"
      (4 font-lock-variable-name-face))
 
    '("slot\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-*"

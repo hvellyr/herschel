@@ -604,7 +604,6 @@ namespace herschel
 
   enum VardefFlags {
     kNormalVar,
-    kFluidVar,
     kConstVar,
     kConfigVar,
     kEnumVar
