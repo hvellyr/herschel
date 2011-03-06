@@ -188,25 +188,6 @@ SecondPass::parseImport(const Token& expr)
   hr_assert(expr[1].isString());
 
   String importFile = expr[1].stringValue();
-  // StringStringMap renames;
-
-  // if (expr.count() >= 3) {
-  //   hr_assert(expr[2].isNested() && expr[2].leftToken() == kParanOpen);
-
-  //   Token renExprs = expr[2];
-  //   for (int i = 0; i < renExprs.count(); i++) {
-  //     Token renExpr = renExprs[i];
-  //     if (renExpr.isBinarySeq(kMapTo)) {
-  //       hr_assert(renExpr[0].isSymbol());
-  //       hr_assert(renExpr[2].isSymbol());
-
-  //       renames.insert(std::make_pair(
-  //                        renExpr[0].idValue(), renExpr[2].idValue()));
-  //     }
-  //   }
-  // }
-
-  // return new ImportNode(expr[1].srcpos(), importFile, renames);
 
   bool canImport = true;
 #if defined(UNITTESTS)

@@ -1,1 +1,2 @@
-import "core.hr" (abc)
+;; this looks not like herschel?
+import core as blabla
