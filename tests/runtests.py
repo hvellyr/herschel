@@ -492,7 +492,7 @@ class TestRunner:
 
     def run_all_tests(self, test_dir, domain):
         for f in os.listdir(test_dir):
-            if f.endswith(".hr"):
+            if f.endswith(".h7"):
                 self.open_report()
                 self.run_test(test_dir, f, domain)
                 self.close_report()

@@ -222,9 +222,9 @@ Compiler::importSystemHeader(const String& header, const String& avoidPath)
 void
 Compiler::importSystemHeaders(const String& avoidPath)
 {
-  importSystemHeader(String("builtin:lang/numbers.hr"), avoidPath);
-  importSystemHeader(String("builtin:lang/runtime.hr"), avoidPath);
-  importSystemHeader(String("builtin:lang/sliceable.hr"),   avoidPath);
+  importSystemHeader(String("builtin:lang/numbers.h7"), avoidPath);
+  importSystemHeader(String("builtin:lang/runtime.h7"), avoidPath);
+  importSystemHeader(String("builtin:lang/sliceable.h7"),   avoidPath);
 }
 
 
