@@ -3,9 +3,6 @@
 <seq>
 <id>module</id>
 <id>core</id>
-<nested left='(' right=')'>
-<lit type='str'>sijo/ixwick 0.1: core</lit>
-</nested>
 </seq>
 <seq>
 <id>def</id>
@@ -20,9 +17,6 @@
 <seq>
 <id>module</id>
 <id>cool</id>
-<nested left='(' right=')'>
-<lit type='str'>sijo/ixwick 0.1: cool</lit>
-</nested>
 </seq>
 <seq>
 <id>def</id>

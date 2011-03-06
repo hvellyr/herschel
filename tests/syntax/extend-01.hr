@@ -1,4 +1,4 @@
-module core ("xyz")
+module core
 
 def f0(a) a
 

@@ -30,7 +30,7 @@
 ;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module lang ("eyestep/herschel 1.0:lang")
+module lang
 export public(*)
 
 import "lang/numbers.hr"
@@ -90,7 +90,7 @@ def generic allocate*(ty @ Class<'T>,
 
 def type Range<T>
 
-module Range ("eyestep/herschel 1.0:range")
+module Range
 {
   export public (init)
 

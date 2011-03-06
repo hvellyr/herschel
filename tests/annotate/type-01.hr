@@ -1,4 +1,4 @@
-module abc ("-/abc:1")
+module abc
 
 def class Person
 

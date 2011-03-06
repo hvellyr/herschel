@@ -1,4 +1,4 @@
-module mno ("mno")
+module mno
 
 export public (MyNumber)
 

@@ -1,8 +1,8 @@
-module core ("sijo/ixwick 0.1"
+module core
 {
   def i = 0
 }
 
-module xyz ("sijo/xyz 0.2")
+module xyz
 
   def e = 2

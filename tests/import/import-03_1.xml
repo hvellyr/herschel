@@ -3,9 +3,6 @@
 <seq>
 <id>module</id>
 <id>a1</id>
-<nested left='(' right=')'>
-<lit type='str'>a1</lit>
-</nested>
 </seq>
 <seq>
 <id>import</id>

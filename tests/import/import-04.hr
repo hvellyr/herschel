@@ -6,7 +6,7 @@
 ;; 'outer' only in green-04b and therefore not visibile here (i.e. a is of
 ;; type 'lang|Float', not 'MyNumber').
 
-module a1 ("a1")
+module a1
 
 import "import/ignore-green-04.hr"
 

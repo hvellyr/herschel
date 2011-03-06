@@ -1,7 +1,7 @@
-module core ("xyz")
+module core
 {
 
-module inner ("inner")
+module inner
 {
   def f0(a) a
 

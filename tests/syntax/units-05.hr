@@ -1,7 +1,7 @@
 ;; measures and units are namespaces also.  Test that non-exported units
 ;; don't interfere with globally defined ones.
 
-module red ("test/red")
+module red
 {
   export public (Xyz, xyz : unit, Abc)
 

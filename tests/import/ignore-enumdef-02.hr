@@ -1,5 +1,5 @@
 ;; effective type: Int in #[0, 1, 2, 3, 127]
-module midi ("midi")
+module midi
 {
   export public (MidiController)
 

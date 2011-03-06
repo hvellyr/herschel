@@ -1,4 +1,4 @@
-module red ("test/red")
+module red
 {
   export public (Xyz, xyz : unit)
 

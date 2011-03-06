@@ -1,6 +1,6 @@
-module core ("sijo/ixwick 0.1: core")
+module core
 {
-  module cool ("sijo/ixwick 0.1: cool")
+  module cool
   {
     export inner (abc)
 
@@ -15,9 +15,9 @@ module core ("sijo/ixwick 0.1: core")
 }
 
 
-module core2 ("sijo/ixwick 0.1: core2")
+module core2
 {
-  module cool ("sijo/ixwick 0.1: cool")
+  module cool
   ;; test: this export refers to the unbraced 'module cool'.  The inner
   ;; realy exports 'abc' only to 'core2' level not to the outside.  The
   ;; core2 module therefore is synonym to the explicitly braced module core

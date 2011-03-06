@@ -233,37 +233,10 @@ FirstPass::parseModule()
   if (fToken == kSymbol) {
     Token modName = fToken;
 
+    modExpr = Token() << tagToken
+                      << modName;
+
     nextToken();
-    if (fToken == kParanOpen) {
-      SrcPos begSp = fToken.srcpos();
-      nextToken();
-
-      if (fToken == kString) {
-        Token publicId = fToken;
-
-        nextToken();
-        if (fToken != kParanClose) {
-          errorf(fToken.srcpos(), E_ParamMissParanClose,
-                 "Syntax error, missing ')'");
-        }
-        else
-          nextToken();
-
-        modExpr = Token()
-          << tagToken
-          << modName
-          << ( Token(begSp, kParanOpen, kParanClose)
-               << publicId );
-      }
-      else {
-        errorf(fToken.srcpos(), E_MissingModName,
-               "Syntax error, missing module name");
-        return scanUntilTopExprAndResume();
-      }
-    }
-    else
-      modExpr = Token() << tagToken
-                        << modName;
 
     Token docString = parseOptDocString();
     if (docString.isSet())
@@ -358,6 +331,10 @@ FirstPass::parseExport()
     }
     else if (fToken == Compiler::outerToken) {
       vizType = kOuter;
+      expr << fToken;
+    }
+    else if (fToken == Compiler::privateToken) {
+      vizType = kPrivate;
       expr << fToken;
     }
     else

@@ -1,4 +1,4 @@
-module abc ("abc")
+module abc
 
 export (*)
 export (abc, xyz)

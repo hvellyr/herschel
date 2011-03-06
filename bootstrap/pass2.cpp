@@ -81,25 +81,15 @@ SecondPass::parseModule(const Token& expr)
   hr_assert(expr[1].isSymbol());
 
   String modName = expr[1].idValue();
-  String publicId;
 
   if (expr.count() > 2) {
-    hr_assert(expr[2].isNested() && expr[2].leftToken() == kParanOpen);
-    hr_assert(expr[2].count() == 1);
-    hr_assert(expr[2][0].isString());
-
-    publicId = expr[2][0].stringValue();
-  }
-
-
-  if (expr.count() > 3) {
-    hr_assert(expr[3].isNested() && expr[3].leftToken() == kBraceOpen);
+    hr_assert(expr[2].isNested() && expr[2].leftToken() == kBraceOpen);
 
     {
       ScopeHelper scopeHelper(fScope, true, true, kScopeL_Module);
 
       ModuleHelper moduleHelper(this, modName);
-      parseTopExprlist(expr[3]);
+      parseTopExprlist(expr[2]);
     }
   }
   else {
@@ -126,6 +116,8 @@ SecondPass::parseExport(const Token& expr)
       vizType = kInner;
     else if (expr[1] == Compiler::outerToken)
       vizType = kOuter;
+    else if (expr[1] == Compiler::privateToken)
+      vizType = kPrivate;
     else {
       error(expr[1].srcpos(), E_UnknownVisibility,
             String("unknown visibility level: ") + expr[1]);

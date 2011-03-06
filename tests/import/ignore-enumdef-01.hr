@@ -1,4 +1,4 @@
-module port ("port")
+module port
 {
   export public (PortCursorWhenceType)
 
@@ -11,7 +11,7 @@ module port ("port")
 }
 
 
-module colors ("colors")
+module colors
 {
   export public (*)
 
@@ -28,7 +28,7 @@ module colors ("colors")
 
 
 ;; effective type: Int in #[0, 1, 2, 3, 127]
-module midi ("midi")
+module midi
 {
   export outer (MidiController)
 

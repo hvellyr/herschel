@@ -4,7 +4,7 @@
 ;; **inside** of its module definition.  The imported MyNumber declaration
 ;; is therefore not visible here (i.e. a is of type 'MyNumber', not 'lang|Float').
 
-module a1 ("a1")
+module a1
 
 import "import/ignore-green-03.hr"
 
