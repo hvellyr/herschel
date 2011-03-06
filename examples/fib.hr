@@ -1,4 +1,4 @@
-module fibonacci("eyestep/herschel:examples")
+module fibonacci
 
 def fib(n @ 'T)
   select (n) {

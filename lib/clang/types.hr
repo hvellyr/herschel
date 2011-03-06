@@ -31,7 +31,7 @@
 ;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-module clang ("eyestep/herschel 1.0:C")
+module clang
 
 export public (*)
 
