@@ -164,12 +164,12 @@ namespace herschel
   exeFromDevpath(const char* exeName, const String& exedir,
                  String& syspath, String& binpath)
   {
-    static char* possible_paths[] = {
+    static const char* possible_paths[] = {
       "/temp/debug/",
       "/temp/release/",
       NULL
     };
-    char** p = possible_paths;
+    const char** p = possible_paths;
 
     for ( ; *p; p++) {
       String fullpath = String(*p) + exeName;
@@ -191,12 +191,12 @@ namespace herschel
   exeFromRuntimeInstallation(const char* exeName, const String& exedir,
                              String& syspath, String& binpath)
   {
-    static char* possible_paths[] = {
+    static const char* possible_paths[] = {
       "/bin/",
       "/sbin/",
       NULL
     };
-    char** p = possible_paths;
+    const char** p = possible_paths;
 
     for ( ; *p; p++) {
       if (exedir.endsWith(String(*p) + exeName)) {
