@@ -4016,7 +4016,6 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
       return parseUnit(defToken, isLocal).toTokenVector();
     }
     else if (fToken == Compiler::constToken ||
-             fToken == Compiler::fluidToken ||
              fToken == Compiler::configToken) {
       if (linkage.isSet())
         errorf(linkage.srcpos(), E_UnexpLinkage,

@@ -1701,11 +1701,6 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
     return rewriteDefNode(parseVarDef(expr, kConstVar, ofs + 1, isLocal, String()),
                           isLocal);
   }
-  else if (expr[ofs] == Compiler::fluidToken) {
-    hr_assert(linkage.isEmpty());
-    return rewriteDefNode(parseVarDef(expr, kFluidVar, ofs + 1, isLocal, String()),
-                          isLocal);
-  }
   else if (expr[ofs] == Compiler::configToken) {
     hr_assert(linkage.isEmpty());
     return rewriteDefNode(parseVarDef(expr, kConfigVar, ofs + 1, isLocal, String()),

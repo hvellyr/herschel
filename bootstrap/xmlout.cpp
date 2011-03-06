@@ -567,9 +567,6 @@ XmlRenderer::renderNode(const VardefNode* node)
   switch (node->flags()) {
   case kNormalVar:
     break;
-  case kFluidVar:
-    attrs << " type='fluid'";
-    break;
   case kConstVar:
     attrs << " type='const'";
     break;

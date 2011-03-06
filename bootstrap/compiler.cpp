@@ -42,7 +42,6 @@ const Token Compiler::deleteToken    = Token(SrcPos(), kSymbol, "delete");
 const Token Compiler::enumToken      = Token(SrcPos(), kSymbol, "enum");
 const Token Compiler::exitToken      = Token(SrcPos(), kSymbol, MID_exitKeyword);
 const Token Compiler::finalToken     = Token(SrcPos(), kSymbol, "final");
-const Token Compiler::fluidToken     = Token(SrcPos(), kSymbol, "fluid");
 const Token Compiler::genericToken   = Token(SrcPos(), kSymbol, "generic");
 const Token Compiler::ignoreToken    = Token(SrcPos(), kSymbol, "ignore");
 const Token Compiler::includeToken   = Token(SrcPos(), kSymbol, "include");

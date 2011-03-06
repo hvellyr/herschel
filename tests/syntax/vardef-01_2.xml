@@ -5,7 +5,7 @@
 </vardef>
 </def>
 <def>
-<vardef sym='xyz' type='fluid'>
+<vardef sym='xyz'>
 </vardef>
 </def>
 </compile-unit>

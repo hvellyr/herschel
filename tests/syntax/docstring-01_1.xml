@@ -56,7 +56,6 @@
 </seq>
 <seq>
 <id>def</id>
-<id>fluid</id>
 <id>*stdout*</id>
 <punct type=':'/>
 <id>Port</id>

@@ -277,9 +277,9 @@ returns the implementing class for an object.}:
 
 @verbatim
 alias     char      class     config    const     enum      exit
-fluid     generic   ignore    include   init      inner     macro
-measure   outer     public    private   signal    slot      sync
-type      unit
+generic   ignore    include   init      inner     macro     measure
+outer     public    private   signal    slot      sync      type
+unit
 @end verbatim
 
 
@@ -2179,7 +2179,6 @@ let tmp = self.ack(n)
 * Scope::                       Scope
 * Variable bindings::           Variable bindings
 * Immutable bindings::          Immutable Bindings
-* Fluid bindings::              Fluid bindings
 * Config bindings::             Config bindings
 @end menu
 
@@ -2240,7 +2239,7 @@ declared.
 
 
 @c --------------------------------------------------------------------
-@node Immutable bindings, Fluid bindings, Variable bindings, Bindings
+@node Immutable bindings, Config bindings, Variable bindings, Bindings
 @section Immutable Bindings
 
 Adding the keyword @code{const} to a declaration makes the binding
@@ -2248,46 +2247,7 @@ Adding the keyword @code{const} to a declaration makes the binding
 
 
 @c --------------------------------------------------------------------
-@node Fluid bindings, Config bindings, Immutable bindings, Bindings
-@section Fluid Bindings
-
-Fluid variables (which drill wholes into lexical scoping):
-
-@example
-def fluid *stdin* = io|StdPort(0)
-def fluid *stdout* = io|StdPort(1)
-def fluid *stderr* = io|StdPort(2)
-@end example
-
-Such fluid variables can be set later with @samp{let fluid x} to change
-temporarily their value.  The value is reset to the previous value when
-the variable falls out of scope:
-
-@example
-def fluid x = 5
-
-def g()
-  outln(x)
-
-def f()
-  outln(x)
-  @{
-    let fluid x = 11
-    g()
-  @}
-  outln(x)
-
-@print{} 5
-@print{} 11
-@print{} 5
-@end example
-
-Variables not being declared @code{fluid} globally before a local
-@code{let fluid} is an error.
-
-
-@c --------------------------------------------------------------------
-@node Config bindings,  , Fluid bindings, Bindings
+@node Config bindings,  , Immutable bindings, Bindings
 @section Config Bindings
 
 A rather special type of bindings are @dfn{Config bindings}.  They
@@ -3231,7 +3191,7 @@ on sync(pending-ticket-list-mutex,
 @end example
 @end deffn
 
-@emph{TO DISCUSS: spawn + conditions, spawn + fluid}
+@emph{TO DISCUSS: spawn + conditions}
 
 
 @c --------------------------------------------------------------------
@@ -4419,7 +4379,6 @@ define-decl     := `def' define-clause
 
 define-clause   := func-decl
                 |  vardef-clause
-                |  fluiddef-clause
                 |  classdef-clause
                 |  typedef-clause
                 |  aliasdef-clause
@@ -4523,10 +4482,6 @@ vardef-binding  := [ `const' ] var-name [ `:' type-clause ]
 
 var-name        := SYMBOL
 varinit-value   := expression
-
-fluiddef-clause := `fluid' var-name [ `:' type-clause ]
-                   [ DOCSTRING ]
-                   `=' varinit-value
 @end verbatim
 @end smallformat
 
