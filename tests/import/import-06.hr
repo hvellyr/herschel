@@ -1,6 +1,6 @@
 ;; test for importing and modules
 
-module a1 ("a1")
+module a1
 
 import "import/ignore-green-06.hr"
 import "import/ignore-green-06.hr"

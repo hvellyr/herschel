@@ -1,4 +1,4 @@
-module core ("core")
+module core
 {
   export outer (abc, cool|abc)
 

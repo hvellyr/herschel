@@ -33,7 +33,7 @@
 import "io/port.hr"
 import "io/io-types.hr"
 
-module io ("eyestep/herschel 1.0:io")
+module io
 export public (*)
 
 

@@ -1,25 +1,25 @@
-module core ("sijo/ixwick 0.1: core")
+module core
 
 def f()
   1
 
-module red ("sijo/ixwick 0.1: red")
+module red
 {
   def f()
     2
 }
 
-module blue ("sijo/ixwick 0.1: blue")
+module blue
 {
   def f()
     3
 
-  module violet ("sijo/ixwick 0.1: violet")
+  module violet
 
   def f()
     4
 
-  module pink ("sijo/ixwick 0.1: pink")
+  module pink
   {
     def f()
       5

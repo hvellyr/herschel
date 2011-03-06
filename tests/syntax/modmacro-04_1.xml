@@ -3,23 +3,14 @@
 <seq>
 <id>module</id>
 <id>colors</id>
-<nested left='(' right=')'>
-<lit type='str'>colors</lit>
-</nested>
 <nested left='{' right='}'>
 <seq>
 <id>module</id>
 <id>red</id>
-<nested left='(' right=')'>
-<lit type='str'>red</lit>
-</nested>
 <nested left='{' right='}'>
 <seq>
 <id>module</id>
 <id>apple</id>
-<nested left='(' right=')'>
-<lit type='str'>apple</lit>
-</nested>
 <nested left='{' right='}'>
 <seq>
 <id>export</id>
@@ -50,9 +41,6 @@
 <seq>
 <id>module</id>
 <id>cherry</id>
-<nested left='(' right=')'>
-<lit type='str'>cherry</lit>
-</nested>
 <nested left='{' right='}'>
 <seq>
 <id>def</id>
@@ -71,16 +59,10 @@
 <seq>
 <id>module</id>
 <id>green</id>
-<nested left='(' right=')'>
-<lit type='str'>green</lit>
-</nested>
 <nested left='{' right='}'>
 <seq>
 <id>module</id>
 <id>apple</id>
-<nested left='(' right=')'>
-<lit type='str'>apple</lit>
-</nested>
 <nested left='{' right='}'>
 <seq>
 <id>export</id>
@@ -108,9 +90,6 @@
 <seq>
 <id>module</id>
 <id>melon</id>
-<nested left='(' right=')'>
-<lit type='str'>melon</lit>
-</nested>
 <nested left='{' right='}'/>
 </seq>
 </nested>

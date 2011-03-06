@@ -1,6 +1,6 @@
-module core ("sijo/ixwick 0.1: core")
+module core
 {
-  module cool ("sijo/ixwick 0.1: cool")
+  module cool
   export public (abc)
 
   def macro abc

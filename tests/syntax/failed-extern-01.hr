@@ -1,4 +1,4 @@
-module samba ("-/core:1.0")
+module samba
 
 def extern("C") type HelloWorld : Object
 def extern("C") alias dlroWolleH = Int

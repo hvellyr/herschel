@@ -32,7 +32,7 @@
 
 import "lang/uri.hr"
 
-module io ("eyestep/herschel 1.0:io")
+module io
 export public (*)
 
 

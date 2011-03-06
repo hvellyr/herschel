@@ -1,4 +1,4 @@
-module ixwick ("sijo/ixwick 0.1")
+module ixwick
 
 def macro abc
 {

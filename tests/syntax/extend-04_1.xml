@@ -3,9 +3,6 @@
 <seq>
 <id>module</id>
 <id>core</id>
-<nested left='(' right=')'>
-<lit type='str'>core</lit>
-</nested>
 <nested left='{' right='}'>
 <seq>
 <id>export</id>

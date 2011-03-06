@@ -1,4 +1,4 @@
-module theatre ("eyestep/theatre 1.0")
+module theatre
   ~ The @code{theatre} module contains the public theatre API. ~
 
 def f0(x) : Int

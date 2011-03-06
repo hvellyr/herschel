@@ -1,8 +1,8 @@
-module colors ("colors")
+module colors
 {
-  module red ("red")
+  module red
   {
-    module apple ("apple")
+    module apple
     {
       export inner (abc)
       export outer (xyz)
@@ -21,16 +21,16 @@ module colors ("colors")
         abc()
     }
 
-    module cherry ("cherry")
+    module cherry
     {
       def g()
         abc()
     }
   }
 
-  module green ("green")
+  module green
   {
-    module apple ("apple")
+    module apple
     {
       export public (mno)
       def macro mno
@@ -43,7 +43,7 @@ module colors ("colors")
         xyz()
     }
 
-    module melon ("melon")
+    module melon
     {
       def macro uvw
       {

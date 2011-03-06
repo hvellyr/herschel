@@ -1,4 +1,4 @@
-module xyz ("xyz")
+module xyz
 
 import "import/ignore-green-03b.hr"
 

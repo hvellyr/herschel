@@ -277,9 +277,9 @@ returns the implementing class for an object.}:
 
 @verbatim
 alias     char      class     config    const     enum      exit
-final     fluid     generic   ignore    include   init      inner
-macro     measure   outer     public    private   signal    slot
-sync      type      unit
+fluid     generic   ignore    include   init      inner     macro
+measure   outer     public    private   signal    slot      sync
+type      unit
 @end verbatim
 
 
@@ -1371,7 +1371,7 @@ separated by a @code{;}.  The following annotations are defined:
 @itemx outer
 @itemx inner
 This controls the automatic export of autocreated accessor and/or
-mutator functions for the slot.
+mutator functions for the slot (see @ref{Visibility}).
 @item transient
 The slot is flag as being transient, i.e.@ it is not included in
 automatic serialization.
@@ -2196,7 +2196,7 @@ inside the scope they are declare in.  The following scopes exist:
 Predeclared bindings have universal scope.  They can not be rebound.
 @item
 Bindings declared on top-level are only visible throughout the compile
-unit unless they are exported.  They can be rebound in local scopes.
+unit unless they are exported (see @ref{Visibility}).  They can be rebound in local scopes.
 @item
 Bindings imported from other units are visible only in the scope
 importing the unit.
@@ -3231,7 +3231,8 @@ on sync(pending-ticket-list-mutex,
 @end example
 @end deffn
 
-TO DISCUSS: spawn + conditions, spawn + fluid
+@emph{TO DISCUSS: spawn + conditions, spawn + fluid}
+
 
 @c --------------------------------------------------------------------
 @node NonLocalExists, Multiple return values, Concurrency, Expressions
@@ -3352,13 +3353,14 @@ def f(val : Any[])
 @chapter Program structure
 
 @menu
+* Import::                      Import
 * Modules::                     Modules
 * Qualified identifiers::       Qualified identifier
 * Extending modules::           Extending modules
 * Visibility::                  Visibility
+* Propagate exports::           Propagate exports
 * Nested modules::              Nested modules
-* Import::                      Importing modules
-* Finalizing::                  Finalizing
+* Hide not protect::            Visibility is not security
 * Source code organization::    Source code organization
 * Conditional compiling::       Conditional compiling
 * Program entry::               Program main entry point
@@ -3366,7 +3368,49 @@ def f(val : Any[])
 
 
 @c --------------------------------------------------------------------
-@node Modules, Qualified identifiers, Program structure, Program structure
+@node Import, Modules, Program structure, Program structure
+@section Import
+
+Symbols that are not defined in the current compile unit must be
+imported before they can be used (i.e.@ referenced).  Symbols are
+imported by making the definitions of other source files visible in
+the scope of the current compile unit with the @code{import}
+expression.
+
+Definitions from the importing file are not visible in the embedded
+file.  I.e.@ the import file is treated as closure and is never
+affected by the context it is imported into.
+
+@deffn Special import
+The @code{import} expression has the following form:
+
+@example
+import @var{code-file}
+@end example
+
+The unit to be imported is referenced by the source file name
+@var{code-file}, which may include a partial path part.  The name is
+resolved relatively to the current compile units file location.
+There's no difference between system and local include files.
+
+Files are imported once per compile unit only, i.e.@ the @code{import}
+expression is not a general include facility.  The @code{import}
+expression does import explicitely only the definitions of the other
+code file; no implementations or global variable locations are taken over.
+
+@example
+import "stack.hr"
+import "lib/collection.hr"
+@end example
+
+The @code{import} expression is only possible on module level (i.e.@
+not inside of functions).  It is possible, however, to import from inside macro
+expansion (if the macro expands to a module level construct).
+@end deffn
+
+
+@c --------------------------------------------------------------------
+@node Modules, Qualified identifiers, Import, Program structure
 @section Modules
 
 All declarations are grouped into @dfn{modules}, implicit or explicit.
@@ -3377,41 +3421,24 @@ Modules are declared using the @code{module} statement with the
 form:
 
 @example
-module @var{name} @r{[} ( @var{public-id} )@r{]}
+module @var{name}
   @r{[} @{ @r{]}
   @var{declarations}
   @r{[} @} @r{]}
 @end example
 
-Modules have an identifier given as @var{name}.  If the module is a
-public API module it is recommended to add an unique public identifier
-(@var{public-id}).  The public identifier is used to distinguish modules
-with clashing names.  If the public-id is missing it is identical to
-@var{name}.
+Modules have an identifier given as @var{name}.  @var{name} specifies
+the namespace for all symbols bound in the scope of the module.
 @end deffn
-
-Even if @var{public-id} is a simple string all standard library modules
-have public identifier of the following basic form:
-
-@example
-owner `/' package ` ' version `:' module-scope
-@end example
-
-For example:
-
-@example
-"eyestep/herschel 1.0:io"
-@end example
 
 The grouping of the @var{declarations} with @code{@{} and @code{@}} is
 optional.  If this grouping is missing the module's scope extends until
 the end of the source file.
 
-Note: The @code{module} statement is @emph{not} a definition; there
-can be multiple module statements with the same module name and public
-id (possible in different files).  All definitions from modules with
-the same public id are put into the same logical module (independant
-of what the module name was).
+The @code{module} statement is @emph{not} a definition; there can be
+multiple module statements with the same module name (probably in
+different files).  All definitions from modules with the same name are
+put into the same logical module.
 
 
 @c --------------------------------------------------------------------
@@ -3423,10 +3450,8 @@ of what the module name was).
 Beside visibility control (see below) modules provide namespaces to
 organize public symbols in source code.  Each symbol defined inside a
 module is implicitly defined in the name space of that module.  When
-such symbols are imported from other modules name clashes can be avoided
-either by renaming the module on import (see @ref{Import}) or by using
-@dfn{fully qualified identifiers} which explicitly mention the name
-space.
+referring to symbols name conflicts can be avoided by using @dfn{fully
+qualified identifiers} which explicitly mention the name space.
 
 Fully qualified identifiers put the name space (the module name) in
 front using the @code{|} sign as delimiter:
@@ -3447,9 +3472,6 @@ also if necessary:
 @example
 self.io|write()
 @end example
-
-If a module is renamed on import (see @ref{Import}) the qualified name
-in the respective module has to use the renamed form, of course.
 
 
 @c --------------------------------------------------------------------
@@ -3487,7 +3509,7 @@ extend module @var{module-name} @{
 where @var{module-name} is the name of the module to be extended.  All
 declarations inside this @code{extend} section are actually done as if
 written inside the mentioned @code{module}, except that visibility and
-export is controlled by the enclosing `real' module.
+export is controlled by the enclosing `real' module (see @ref{Visibility}).
 
 @example
 module stack
@@ -3502,148 +3524,141 @@ extend module core
 
 
 @c --------------------------------------------------------------------
-@node Visibility, Nested modules, Extending modules, Program structure
+@node Visibility, Propagate exports, Extending modules, Program structure
 @section Visibility
 
-Normally all declared identifiers from a module are restricted in
-visibility to the module and the compile unit they are defined in, i.e.@
-they're defined as @dfn{private}.  If other compile units in the same module
-or in other modules should use them identifiers have to be @dfn{exported}.
+Definitions are not visible outside of a module declaration and a
+compile unit scope unless @dfn{exported}.  This applies to all names
+bound on top level; names bound inside of classes (slots) or functions
+are not exportable at all, of course.  I.e.@ definitions to be
+exported are: functions, types and classes, macros, (global) variables
+and constants, char name declarations, unit definitions.
+
 
 @deffn Special export
 The @code{export} declaration has the form:
 
 @example
-export @r{[} @var{keywords} @r{]} ( @var{symbols} )
+export @r{[} @var{visibility} @r{]} ( @var{definition-specs} )
 @end example
 
-with @var{keywords} being a list of the following visibility specifiers:
-@code{public}, @code{protected}, and @code{final}.  @var{symbols} is a
-comma separated list all identifiers from the module which should be
-exported in the export domain specified by @var{keywords}.
+with @var{visibility} being one of the following specifiers:
+@code{public}, @code{outer}, @code{inner}.  @var{definition-specs} is
+a comma separated list of definition specifiers which identify the
+name to be exported from the module.
 
-The @code{export} declaration is normally given inside a @code{module}
-declaration and refers to the declarations in the module only.
+The definition specifier takes one of the following forms:
+
+@table @code
+@item *
+This is a ``catch-all'' rule which applies to all definitions in the
+module, including char name and unit declarations.
+@item @var{name}
+Export the specified name which is a normal function, variable, macro
+or type name.
+@item @var{name} : char
+Export a char declaration.
+@item @var{name} : unit
+Export a unit declaration.
+@end table
+
+@findex outer
+@findex inner
+@findex public
+@findex private
+@findex export outer
+@findex export inner
+@findex export public
+@findex export private
+The @var{visibility} keyword declares who should see the export
+symbols.  The keywords @code{outer}, @code{inner}, and @code{private}
+are used with nested modules only (see @ref{Nested modules}).  The
+keyword @code{public} publishes the listed symbols to everyone.
 
 @example
-module xxx ("de.sijo.what")
-  export public(display, to-string)
-  export protected(do-copy, self-contain)
+module xxx
+  export public (display, to-string)
+  export outer (abc : char, nm : unit)
 @end example
 
-As a abbreviated notation the special symbol @code{*} can be used to
-export everything from a module:
+The @code{export} declaration refers to the definitions of the module
+it is specified in.  It can only apply to definition in the current
+compile unit, not to definitions in other (probably imported) source
+files, even if in a module with the same name.
 
-@example
-module xxx ("de.sijo.what")
-  export public(*)
-@end example
+Symbols defines outside of a formal module declaration must be
+exported, too.  The corresponding @code{export} expression refers to
+an annonymous implicit module of the compile unit.
 @end deffn
-
-Note that this visibility control should and cannot be used reliable as
-a security feature.  Especially for generic functions it is always
-possible that a generic function declared to be private can be ``seen''
-by other compile units by means of type matching.
-
-Take for instance the following definition:
-
-@example
-def generic crash-detect(one : @@SpaceShip, two : @@Planet)
-  display("Spaceship crashes into Planet")
-@end example
-
-@findex MethodNotImplemented
-If not exported the function should be invisible to all other compile
-units.  If however in an unrelated second file the following code
-appears:
-
-@example
-def generic crash-detect(one : @@Plane, two : @@House)
-  display("Plane crashes into House")
-
-def do-a-crash()
-  SpaceShip().crash-detect(Planet())
-@end example
-
-On the first view one would expect a @code{MethodNotImplemented}
-exception to be raised.  The runtime however folds all three definition
-into one generic function and thus the code in @code{do-a-crash}
-displays happily @code{SpaceShip crashes into star}.  This cross
-influence happens of course only for generic functions defined in the
-@emph{same} name space.
 
 
 @c --------------------------------------------------------------------
-@node Nested modules, Import, Visibility, Program structure
+@node Propagate exports, Nested modules, Visibility, Program structure
+@section Propagate exports
+
+@findex public
+@findex export public
+When definitions are imported the @code{public}ly exported definitions
+are visible in the importing context only.  If the @code{import} expression
+is placed inside a module definition, the imported definitions are not seen
+outside of this module (unless explicitely imported there, too).  If
+the @code{import} expression is placed on top level outside of any
+(explicit) module, @code{public}ly exported definitions propagate as
+@code{public} to any importer of the current source file.
+
+This rule helps to avoid namespace cluttering.
+
+
+@c --------------------------------------------------------------------
+@node Nested modules, Hide not protect, Propagate exports, Program structure
 @section Nested modules
 
-@c todo
-@emph{To write}
+@findex outer
+@findex inner
+@findex private
+@findex export outer
+@findex export inner
+@findex export private
+Normally exporting of definitions is only relevant if source code is
+spread across multiple files, eventually split in include and
+implementation files.  Inside of a single module symbols are always
+visible to everyone, even across class and type borders.
+
+This changes when modules are nested.  Since definitions are private
+to a module by default nested modules can't access symbols from the
+ancestor or descendant module.  This needs explicit exporting using
+the visibility keywords @code{outer} and @code{inner}.
+
+@table @code
+@item outer
+This makes definitions visible to all modules up to the file (compile
+unit) level, but not to importers of the current file (i.e.@ the
+``outer'' circle of relations).
+@item inner
+This makes definitions visible to the current parent module and
+sibling modules (and their submodules), but not to any ancestor module
+(i.e.@ the ``inner'' circle of relations).
+@end table
+
+If definitions should never be visible in ancestor or nested modules
+at all, they can be exported as @code{private}.
 
 
 @c --------------------------------------------------------------------
-@node Import, Finalizing, Nested modules, Program structure
-@section Import
+@node Hide not protect, Source code organization, Nested modules, Program structure
+@section Visibility is not security
 
-Other modules are imported into the current compile unit using the
-import expression.  The @code{import} is only possible on module level (i.e.@ not
-inside of functions).  It is possible to import from inside macro
-expansion of course (if the macro expands to a module level construct).
-
-@deffn Special import
-The @code{import} expression has the following form:
-
-@example
-import @var{code-file} @r{[} ( @var{rename-clauses} ) @r{]}
-@end example
-
-where the optional @var{rename-clauses} has the form:
-
-@example
-@r{modname} -> @r{new-modname}, @r{modname2} -> @r{new-modname2}, ...
-@end example
-
-The unit to be imported is referenced by the source file name
-(code-file), which may include a partial path part.  The name is
-resolved relative to the current compile units file location.  There's
-no difference between system and local include files.
-
-Files are imported once per compile unit only, i.e.@ the import is not a
-general include facility.
-
-If @var{rename-clauses} are specified modules from @var{code-file}
-matching @var{modname}, @var{modname2}, etc.@ are are renamed locally to
-@var{new-modname}, @var{new-modname2}, etc.@ during import.  This can be
-used to avoid name clashes.
-
-@example
-import "stack.hr"
-import "lib/collection.hr"
-import "zip/io.hr" (zip -> zipio)
-@end example
-@end deffn
+Note that the visibility control should and can not be used as a
+security feature.  Especially for generic functions it is always
+possible that a generic function implementation -- even if not
+exported to the public -- can be ``used by other compile units by
+means of type matching.  In other words, if the generic function
+definition is public the implementation does not need to be exported
+explicitely: they attach to the public generic function.
 
 
 @c --------------------------------------------------------------------
-@node Finalizing, Source code organization, Import, Program structure
-@section Finalizing
-
-Identifiers declared as @code{final} in an export declaration are
-``sealed'' for other users, i.e.@ finalized
-
-@itemize
-@item classes can not be inherited
-@item generic functions can not be extended by new concrete methods.
-@end itemize
-
-@example
-module stack
-  export final public (Stack)
-@end example
-
-
-@c --------------------------------------------------------------------
-@node Source code organization, Conditional compiling, Finalizing, Program structure
+@node Source code organization, Conditional compiling, Hide not protect, Program structure
 @section Source code organization
 
 Herschel does not require separate interface and implementation files.
@@ -3680,8 +3695,8 @@ declarations must be repeated and completed in the implementation
 file.  The compiler will check that the interface and program
 declaration matches.
 
-All program files typically get the file extension @file{.hr},
-independant of whether interface or implementation file.
+All program files typically get the file extension @file{.hr} or
+@file{.h7}, independant of whether interface or implementation file.
 
 
 @subsection Source organization example
@@ -3691,7 +3706,7 @@ In the public API (aka "header" file) only the modules interface is
 declared and the necessary symbols published:
 
 @example
-module stack ("eyestep/herschel 1.0:stack")
+module stack
   export public (Stack, push, pop)
 
 def type Stack<T>
@@ -3713,7 +3728,7 @@ There's no need to re-export the symbols @code{Stack}, @code{push} and
 @example
 import "headers/stack"
 
-module stack ("eyestep/herschel 1.0:stack")
+module stack
 
 def class StackItem<T, _>(_obj, _tail)
 @{
@@ -4421,9 +4436,9 @@ define-clause   := func-decl
 @emph{The export statement publishes the symbols to other modules.}
 @smallformat
 @verbatim
-export-stmt     := `export' { export-flag }
+export-stmt     := `export' [ export-flag ]
                    `(' all-symbol | symbol-list `)'
-export-flag     := `public' | `protected' | `final'
+export-flag     := `public' | `outer' | `inner'
 symbol-list     := export-symbol { `,' export-symbol }
 export-symbol   := IDENTIFIER [ `:' domain-id ]
 domain-id       := `char' | `unit'
@@ -4435,10 +4450,8 @@ all-symbol      := `*'
 
 @smallformat
 @verbatim
-import-stmt     := `import' file-name [ rename-clauses ]
+import-stmt     := `import' file-name
 file-name       := STRING
-rename-clauses  := `(' rename-clause { `,' rename-clause } `)'
-rename-clause   := mod-name MAP-OP mod-name
 @end verbatim
 @end smallformat
 
@@ -4448,7 +4461,7 @@ rename-clause   := mod-name MAP-OP mod-name
 missing the module extends until the end of the file.}
 @smallformat
 @verbatim
-module-stmt     := `module' mod-name [ `(' PUBLIC-ID `)' ]
+module-stmt     := `module' mod-name
                    [ DOCSTRING ]
                    [ mod-decls ]
 mod-name        := SYMBOL
@@ -5115,15 +5128,6 @@ map-op          := `->'
 comment         := `;;' { any char until end-of-line }
 @end verbatim
 @end smallformat
-
-@sp 1
-
-@smallformat
-@verbatim
-public-id  := STRING
-@end verbatim
-@end smallformat
-
 
 @sp 1
 
