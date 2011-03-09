@@ -1,0 +1,57 @@
+Constructors
+----------------------------------------------------------------------
+
+def Ixable(_n) ...
+
+def Wexable(_color, _x) ...
+
+def class Abc<T>(_a, _b) : (Ixable, Wexable)
+{
+  def slot a = _a
+  def slot b = _b
+  def slot c = false
+
+  on super(Ixable, 5)
+  on super(Wexable, 0ffffh, 42)
+
+  on init(self) {
+    self.c = (_a > _b)
+  }
+}
+
+def x = Abc<Int>(5, 7)
+
+
+=>
+
+def Abc|init(self : Abc<T>, _a, _b) : Abc<T>
+  slot!(self, #a, _a)
+  slot!(self, #b, _b)
+  slot!(self, #c, false)
+
+  Ixable|init(self, 5)
+  Wexable|init(self, 0ffffh, 42)
+
+  function(self) {
+    self.c = (_a > _b)
+  }(self)
+  self
+
+def x = lang|allocate(Abc<Int>).Abc|init(5, 7)
+
+
+
+
+
+
+How to address types and class
+----------------------------------------------------------------------
+
+def class Abc { }
+
+
+=>
+
+def const Abc-Int-class = "lang|Abc<Int>"
+lang|register-class(Class(#Abc, ...))
+lang|lookup-type(lang|to-keyword("lang|Abc<Int>"))

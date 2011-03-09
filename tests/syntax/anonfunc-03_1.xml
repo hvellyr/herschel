@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'>
+<seq>
+<id>self</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>proc</id>
+<punct type=':'/>
+<seq>
+<id>Function</id>
+<nested left='(' right=')'>
+<seq>
+<id>item</id>
+<punct type=':'/>
+<id>Item</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+</seq>
+<punct type='='/>
+<seq>
+<id>function</id>
+<nested left='(' right=')'>
+<seq>
+<id>item</id>
+<punct type=':'/>
+<id>Item</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<id>item</id>
+</nested>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>for-each</id>
+<nested left='(' right=')'>
+<id>self</id>
+<punct type=','/>
+<id>proc</id>
+</nested>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>g</id>
+<nested left='(' right=')'>
+<seq>
+<id>self</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>proc</id>
+<punct type=':'/>
+<nested left='(' right=')'>
+<seq>
+<id>Function</id>
+<nested left='(' right=')'>
+<seq>
+<id>item</id>
+<punct type=':'/>
+<id>Item</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+</seq>
+</nested>
+<punct type='='/>
+<seq>
+<id>function</id>
+<nested left='(' right=')'>
+<seq>
+<id>item</id>
+<punct type=':'/>
+<id>Item</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<id>item</id>
+</nested>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>for-each</id>
+<nested left='(' right=')'>
+<id>self</id>
+<punct type=','/>
+<id>proc</id>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>

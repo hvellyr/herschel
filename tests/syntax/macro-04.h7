@@ -1,0 +1,11 @@
+def macro xyz
+{
+  { xyz() }                 -> { xyz(-1, 1) }
+  { xyz(?a:expr, ?b:expr) } -> { ?a + ?b }
+}
+
+def g0()
+  xyz(5, 7)
+
+def g1()
+  xyz()

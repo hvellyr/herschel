@@ -1,0 +1,6 @@
+;; generic functions must specialize at list one parameter
+
+def generic foo(a : Int) : String ...
+
+def x = 0
+

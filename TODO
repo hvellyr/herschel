@@ -1,0 +1,153 @@
+-*-org-*-
+
+Documentation
+
+  - write/extend/update section on object creation ("auto" slots)
+
+  - Write assignment section.
+
+  - Document how to specify class functions:
+
+      def generic apply(self @ Class<Abc>) ... ???
+
+  - Mention explicitely: coercing.  Where?
+
+  - Rewrite the "def xxx" to the new deffn-form-example style.
+
+  - document call-by-value, reference types.
+
+
+Bootstrap compiler
+
+  - check that left hand variables are not const.
+
+  - do an error counter.
+
+  - review some kind of auto-number coercion?
+
+  - support 'auto', 'public', 'outer', 'inner', slots in ctor construction.
+
+  - auto create accessor/modifier functions for slots
+
+  - 'T are treated as Any inside of function bodie for direct comparison
+    and need type-check boundaries at runtime.  The type checker must make
+    sure that a 'T is only assigned to 'T and not 'K or 'V.
+
+  - call superclass ctors from init-functor.  Do we need the 'on
+    super(super-type)' construct?
+
+      def class Y(n) : ...
+      def class Z(n = 42) : ...
+
+      def class X : (Y, Z)
+      {
+        def slot a
+        def slot b
+
+        on super X(11),
+                 Z(n: 1234)    ;; not necessary but possible
+
+        on init() {
+          a = 5
+          b = 7
+        }
+      }
+    
+
+  - reference types.
+     - type checks.  When is T = ^T allowed?
+     - do we need a special syntax for dereferencing references?
+     - review special construct to check whether a ^T is nil or not?
+       if (a as* T == nil)
+
+       def foo(a : ^String)
+         let x : String = enforce(a, "a is nil")    ;; throws an exception
+         let x : String = saferef(a, "n.n.")        ;; returns a or "n.n."
+
+     - how to express nil-ness with the normal type machine
+
+
+  - constraints
+
+  - BUG: syntax errors from import files are not shown (handled) properly.
+
+  - BinaryNode: in case the builtin types are not recognized from the
+    compiler, lookup an add(), subtract(), multiply(), ... function and use
+    its type signature to check whether the binary operator is possible and
+    correct.
+
+    The same for binary compare operators.
+
+    The same for append(), fold()
+
+  - Missing node support:
+     - match
+     - select
+     - on
+     - slotdef
+     - typedef
+     - UnitConst
+
+  - replace the UnitConstant node by a proper Measure() ctor call.  Apply
+    the unit transformation inplace (if simple enough).  Register
+    unit-transform calls as special functions.
+
+  - get rid of nested functions
+    - detect closure variable access
+
+    - detect whether nested functions can simply be inlined
+
+    - otherwise lambda lift functions to outside.
+
+  - array access
+
+  - vardef parameters
+
+  - enum:
+    - construct proper enum constraint type
+    - check that init values match the base type
+
+  - extend macro parameter types (like ?a:type-spec)
+
+  - macros
+    - subpatterns
+
+  - continue with pexpreval (add the missing operators)
+
+  - docstrings in pass2 -> extracted documentation
+
+
+Language and ideas:
+
+  - remove function signature overwriting.  We do not support multiple
+    functions with the same base name but different parameter counts?
+
+      def generic init(a @ Int) ...
+      def generic init(a @ Int, b @ String) ...
+
+  - structs ?  Contrary to classes do not support inheritance, but provide
+    fixed, controlled, and fast slot layout.
+
+  - Think about non-gc objects.
+
+  - Think about lazy evaluation (generalize the 'promise' concept
+    introduced en passent with sync).  See x10 -> futures.  (cf. doc/CHANGES)
+
+  - checked exceptions.  Declare as
+
+      def generic f() : 'X
+          raises 'B
+          reify () : N, () : P
+          where B isa Throwable
+        ...
+
+    additionally
+
+      def generic f() : 'X
+          no-raise
+          reify ....
+
+    to document that a function does not pass exceptions.
+
+  - Function contracts (cf. doc/CHANGES)
+

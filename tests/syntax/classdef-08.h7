@@ -1,0 +1,27 @@
+def class Y<T>(n : T)
+{
+  def slot _n = n
+}
+
+
+def class Z<K>(n = 42)
+{
+  def slot _n = n
+}
+
+
+def class X<T, K> : (Y<T>, Z<K>)
+    where T isa Int,
+          K isa String
+    prime Y<T>(11),
+          Z<K>(n: 1234)
+    ~ some comment ~
+{
+  def slot a
+  def slot b
+
+  on init() {
+    a = 5
+    b = 7
+  }
+}

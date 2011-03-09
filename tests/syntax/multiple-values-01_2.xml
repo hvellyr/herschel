@@ -1,0 +1,302 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='v' type='pos'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:seq>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+<ty:ref nm='lang|Char'>
+</ty:ref>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</ty:seq>
+</rettype>
+<body>
+<array>
+<symbol>v</symbol>
+<char>97</char>
+<true/>
+</array>
+</body>
+</func>
+</def>
+<def>
+<func sym='bar'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='__value_0'>
+<init>
+<apply>
+<symbol>foo</symbol>
+<args>
+<int ty='lang|Int32'>256</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='a'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|UInt32'>0</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='b'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|UInt32'>1</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='c'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|UInt32'>2</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<true/>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='foo2'>
+<params>
+<param sym='val' type='pos'>
+<type>
+<ty:seq>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+<ty:ref nm='lang|Char'>
+</ty:ref>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</ty:seq>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>val</symbol>
+<int ty='lang|UInt32'>0</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='y'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>val</symbol>
+<int ty='lang|UInt32'>1</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='z'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>val</symbol>
+<int ty='lang|UInt32'>2</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<true/>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='foo3'>
+<params>
+<param sym='val' type='pos'>
+<type>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:array>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>val</symbol>
+<int ty='lang|UInt32'>0</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='y'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>val</symbol>
+<int ty='lang|UInt32'>1</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='z'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>val</symbol>
+<int ty='lang|UInt32'>2</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<true/>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='foo4'>
+<params>
+<param sym='val' type='pos'>
+<type>
+<ty:array ind='0'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:array>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='__value_1'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>val</symbol>
+<range>
+<int ty='lang|Int32'>0</int>
+<int ty='lang|Int32'>3</int>
+</range>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='x'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_1</symbol>
+<int ty='lang|UInt32'>0</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='y'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_1</symbol>
+<int ty='lang|UInt32'>1</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='z'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_1</symbol>
+<int ty='lang|UInt32'>2</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<true/>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

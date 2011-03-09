@@ -1,0 +1,14 @@
+
+def generic f(a @ 'T) : 'T
+    where T in -127 .. 127
+  a
+
+def generic put(value @ 'V, key @ 'K) : ('V, 'T)
+    where V isa Serializable,
+          K >= 0
+  #[value, key]
+
+
+def value(cont @ 'C)
+    where C isa (Collection, Nullable)
+  cont

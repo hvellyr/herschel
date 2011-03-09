@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>module</id>
+<id>samba</id>
+</seq>
+<seq>
+<id>def</id>
+<seq>
+<id>extern</id>
+<nested left='(' right=')'>
+<lit type='str'>C</lit>
+</nested>
+</seq>
+<id>getcwd</id>
+<nested left='(' right=')'>
+<seq>
+<id>any</id>
+<punct type=':'/>
+<id>clang|char*</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>clang|char*</id>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<seq>
+<id>extern</id>
+<nested left='(' right=')'>
+<lit type='str'>C</lit>
+</nested>
+</seq>
+<id>printf</id>
+<nested left='(' right=')'>
+<seq>
+<id>format</id>
+<punct type=':'/>
+<id>clang|char*</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>_rest</id>
+<punct type='...'/>
+</seq>
+</nested>
+<punct type=':'/>
+<id>clang|int</id>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>foo</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>printf</id>
+<nested left='(' right=')'>
+<lit type='str'>%d
+</lit>
+<punct type=','/>
+<lit type='int'>4711</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>
+

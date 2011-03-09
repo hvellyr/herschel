@@ -1,0 +1,12 @@
+def type Vehicle
+def type Car : Vehicle
+def type Bike : Vehicle
+
+
+def generic foo(a @ Any, b : Any) : Any ...
+
+
+def foo(a @ Int, b : Car) : Car
+  b
+
+

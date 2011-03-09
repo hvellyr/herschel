@@ -1,0 +1,4 @@
+;; defined an fixed-size array of of vectors of byte arrays
+def const xyz : Vector<Byte[]>[100] = nil
+
+def buffer : Byte[256]

@@ -1,0 +1,101 @@
+;; This file is part of the herschel package
+;;
+;; Copyright (c) 2010-2011 Gregor Klinke
+;; All rights reserved.
+;;
+;; Redistribution and use in source and binary forms, with or without
+;; modification, are permitted provided that the following conditions are
+;; met:
+;;
+;; - Redistributions of source code must retain the above copyright notice,
+;;   this list of conditions and the following disclaimer.
+;;
+;; - Redistributions in binary form must reproduce the above copyright
+;;   notice, this list of conditions and the following disclaimer in the
+;;   documentation and/or other materials provided with the distribution.
+;;
+;; - Neither the name of the author nor the names of other contributors may
+;;   be used to endorse or promote products derived from this software
+;;   without specific prior written permission.
+;;
+;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+;; IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+;; TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+;; PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+;; OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+;; EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+;; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+;; PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;; LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+module lang
+export public(*)
+
+import "lang/numbers.h7"
+
+
+def type Class<T>
+    ~ The type of classes themselves. ~
+
+
+def generic init-functor(ty @ Class<'T>) : Function(o : 'T, rest-args ...) : 'T ...
+    ~ Returns the init function for type @var{ty}. ~
+
+
+def generic type-of(obj @ 'T) : Class<'T> ...
+    ~ Returns the type of an object @var{obj}. ~
+
+
+def generic slot(obj @ 'T, slot-name : Keyword) : 'K ...
+def generic slot!(obj @ 'T, slot-name : Keyword, value : 'K) : 'K ...
+
+
+;;----------------------------------------------------------------------------
+;; Default value
+;;----------------------------------------------------------------------------
+
+def generic null-value(ty @ Class<'T>) : 'T ...
+  ~ Returns the default null value for type @type{T}.
+
+  For reference types this is normally always @val{nil}, for integers this
+  is @val{0}, for chars @val{#\\0000}, etc. ~
+
+
+def generic min-value(ty @ Class<'T>) : 'T ...
+def generic max-value(ty @ Class<'T>) : 'T ...
+
+
+
+;;----------------------------------------------------------------------------
+;; allocation
+;;----------------------------------------------------------------------------
+
+def generic allocate(ty @ Class<'T>) : 'T ...
+    ~ Allocate a new instance of type @var{ty}.  Note that the allocated
+    object is not initialized! ~
+
+
+def generic allocate*(ty @ Class<'T>,
+                      value : 'T = ty.null-value,
+                      sizes ...) : 'T[] ...
+    ~ Allocate an array of @var{ty} with @var{sizes} slots.  Each slot is
+    initialized to @var{value}.  The size is computed from all the product of
+    all values in @var{sizes}, i.e. three value @code{3, 7, 11} would result
+    in (three dimensional) array of 231 slots. ~
+
+
+;;----------------------------------------------------------------------------
+
+def type Range<T>
+
+module Range
+{
+  export public (init)
+
+  def init(range : Range<'T>, from : 'T, to : 'T, step : 'T) : Range<'T> ...
+}
+
+
+;; end of runtime

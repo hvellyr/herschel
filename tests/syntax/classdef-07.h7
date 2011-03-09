@@ -1,0 +1,24 @@
+def class Y(n)
+{
+  def slot _n = n
+}
+
+
+def class Z(n = 42)
+{
+  def slot _n = n
+}
+
+
+def class X : (Y, Z)
+    prime Y(11),
+          Z(n: 1234)
+{
+  def slot a
+  def slot b
+
+  on init() {
+    a = 5
+    b = 7
+  }
+}

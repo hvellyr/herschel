@@ -1,0 +1,12 @@
+module samba
+
+def extern("C") type HelloWorld : Object
+def extern("C") alias dlroWolleH = Int
+
+def class X
+{
+  def extern("C") generic foo() ...
+}
+
+def extern("C") generic bar() ...
+

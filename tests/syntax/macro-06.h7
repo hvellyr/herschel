@@ -1,0 +1,8 @@
+def macro abc
+{
+  { abc(?a:expr) } -> { #[?a] }
+  { abc(?a:expr, ?b:expr) } -> { #[?a, ?b] }
+}
+
+def f(x)
+  x.abc ++ x.abc(12)

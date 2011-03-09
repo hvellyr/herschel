@@ -1,0 +1,49 @@
+Normalizing types:
+
+   Int           & T=String               -> Int
+   Vector<T>     & T=String               -> Vector<String>
+   Vector<Vector<T>> & T=String           -> Vector<Vector<String>>
+   Vector<T>     & T=Int in 0 .. 20       -> Vector<Int in 0 .. 20>
+   Vector<T>     & Y=String               -> Vector<T>
+   Map<T, Pair<T, T>> & T=String          -> Map<String, Pair<String, String>>
+   T<Y>          & T=String, Y=Int     **not defined**
+                                       Generics variables can not be
+                                       generic itself!
+
+   &(T, Y)       & T=String, Y=Int        -> &(String, Int)
+   &(T, Y)       & Y=Int                  -> &(T, Int)
+   (T, Y)        & T=String, Y=Int        -> (String, Int)
+   (T, Y)        & Y=Int                  -> (T, Int)
+   T in 0 .. 10  & T=String               -> String in 0 .. 10
+
+   T in 0 .. 10  & T=Int in 0 .. 20    **constraints conflict**
+
+   T[][]         & T=&(Int, Bool)         -> &(Int, Bool)[][]
+   
+
+
+
+
+  a : MyVector   
+
+with
+
+  def alias MyVector = Vector<Int>
+
+-> Vector<Int>
+
+
+  a : MyMap<Int>
+
+with
+
+  def alias MyMap<V> = Map<String, V>
+
+-> Map<String, Int>
+
+
+
+
+  a : Int
+
+-> Int

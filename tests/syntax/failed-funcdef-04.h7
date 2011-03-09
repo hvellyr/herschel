@@ -1,0 +1,10 @@
+
+;; there must be no quote before the T in the where clause
+def generic f(a @ 'T) : 'T
+    where 'T isa Copyable
+  a
+
+def generic put(value @ 'V, key @ 'K) : ('V, 'T)
+    where 'V isa Serializable,
+          K >= 0
+  #[value, key]

@@ -1,0 +1,64 @@
+module colors
+{
+  module red
+  {
+    module apple
+    {
+      export inner (abc)
+      export outer (xyz)
+
+      def macro abc
+      {
+        { abc() } -> { "hello" }
+      }
+
+      def macro xyz
+      {
+        { xyz() } -> { "world" }
+      }
+
+      def f()
+        abc()
+    }
+
+    module cherry
+    {
+      def g()
+        abc()
+    }
+  }
+
+  module green
+  {
+    module apple
+    {
+      export public (mno)
+      def macro mno
+      {
+        { mno() } -> { "green apples" }
+      }
+
+      def h()
+        abc()
+        xyz()
+    }
+
+    module melon
+    {
+      def macro uvw
+      {
+        { uvw() } -> { "melon" }
+      }
+    }
+  }
+}
+
+
+export public (*)
+
+def i()
+  abc()
+  xyz()
+  uvw()
+  mno()
+

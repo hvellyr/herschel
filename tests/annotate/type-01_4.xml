@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='abc|Person'>
+<isa>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='abc|Person|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<symbol  refer='param'>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='abc|foo'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<apply>
+<symbol  refer='generic'>lang|allocate*</symbol>
+<args>
+<symbol>abc|Person</symbol>
+<int ty='lang|UInt32'>12</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<symbol  refer='local'>x</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='abc|bar'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<apply>
+<symbol  refer='function'>abc|Person|init</symbol>
+<args>
+<apply>
+<symbol  refer='generic'>lang|allocate</symbol>
+<args>
+<type  ty='abc|Person'/>
+</args>
+</apply>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<symbol  refer='local'>x</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

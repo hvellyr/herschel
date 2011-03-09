@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>class</id>
+<id>Y</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+<nested left='(' right=')'>
+<seq>
+<id>n</id>
+<punct type=':'/>
+<id>T</id>
+</seq>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>_n</id>
+<punct type='='/>
+<id>n</id>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>class</id>
+<id>Z</id>
+<nested left='&lt;' right='>'>
+<id>K</id>
+</nested>
+<nested left='(' right=')'>
+<seq>
+<id>n</id>
+<punct type=':'/>
+<id>Any</id>
+<punct type='='/>
+<lit type='int'>42</lit>
+</seq>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>_n</id>
+<punct type='='/>
+<id>n</id>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>class</id>
+<id>X</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+<punct type=','/>
+<id>K</id>
+</nested>
+<punct type=':'/>
+<nested left='(' right=')'>
+<seq>
+<id>Y</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+</seq>
+<punct type=','/>
+<seq>
+<id>Z</id>
+<nested left='&lt;' right='>'>
+<id>K</id>
+</nested>
+</seq>
+</nested>
+<seq>
+<id>where</id>
+<seq>
+<id>T</id>
+<punct type='isa'/>
+<id>Int</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>K</id>
+<punct type='isa'/>
+<id>String</id>
+</seq>
+</seq>
+<seq>
+<id>prime</id>
+<seq>
+<seq>
+<id>Y</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+</seq>
+<nested left='(' right=')'>
+<lit type='int'>11</lit>
+</nested>
+</seq>
+<punct type=','/>
+<seq>
+<seq>
+<id>Z</id>
+<nested left='&lt;' right='>'>
+<id>K</id>
+</nested>
+</seq>
+<nested left='(' right=')'>
+<id type='keyarg'>n</id>
+<lit type='int'>1234</lit>
+</nested>
+</seq>
+</seq>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>a</id>
+</seq>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>b</id>
+</seq>
+<seq>
+<id>on</id>
+<id>init</id>
+<nested left='(' right=')'/>
+<nested left='{' right='}'>
+<seq>
+<id>a</id>
+<punct type='='/>
+<lit type='int'>5</lit>
+</seq>
+<seq>
+<id>b</id>
+<punct type='='/>
+<lit type='int'>7</lit>
+</seq>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>
+

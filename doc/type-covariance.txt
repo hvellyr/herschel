@@ -1,0 +1,113 @@
+When two types A and B are covariant?
+
+  Notation: T    BaseType
+            T[]  Array
+            T<>  Generic
+            (T)  Sequence
+            &(T) Union
+            T'm  United type
+            fT   Function type
+
+A is covariant to B if it is narrower:
+
+     A       B
+------------------------------------------------------------------------------
+1    T    -> T          if A == B || A inherits B                                         |
+
+2    T<>  -> T<>        if A == B || (A(generics) == B(generics) and A inherits B)        |
+
+3    T[]  -> T[]        if A == B                                                         |
+
+4    &(T) -> &(T)       if A == B || for every T in A -> T is covariant or invariant      |
+                        to every T' in B                                                  |
+5    (T)  -> (T)        if A == B || for every T in A -> T must have a covariant T' in B  |
+                                     and num(A) == num(B)                                 |
+
+6    &(T) -> T          NEVER                                                             |
+7    (T)  -> T          NEVER                                                             |
+8    T    -> &(T)       if A is covariant or invariant to every T in B, but at least
+                        covariant to one T in B
+9    T    -> (T)        if A is covariant to every T in B                                 |
+
+10   T'm  -> T          if base-type of A covariant to B                                  |
+11   T    -> T'm        NEVER                                                             |
+12   T'm  -> T'm        if A == B                                                         |
+
+13   fT   -> fT         if A == B || every parameter in A is CONTRAVARIANT to that in B   |
+                                     and A's returntype is COVARIANT to B's               |
+
+14   T    -> ANY        ALWAYS                                                            |
+15   ANY  -> T          NEVER                                                             |
+
+
+ad 3:
+   NB: even if Int > Number  Int[] <> Number[] !  Aliasing!
+
+ad 4:
+   &(Int, MutualString) -> &(Number, String)        √
+   &(Int, MutualString) -> &(Number, String, Bool)  √
+   &(Int, Bool)         -> &(Number, String)        W
+
+
+ad 10 & 11:
+   let x : Pixel = 7    √
+   let x : Int = 7'px   W
+
+
+ad 13:
+   let f1 : Function(a : Int) : String          = lambda(a : Int) : String { }             (√, √)
+   let f2 : Function(a : Int) : String          = lambda(a : Number) : MutualString { }    (√, √)
+   let f3 : Function(a : Number) : MutualString = lambda(a : Int) : String { }             (W, W)
+   let f4 : Function(a : Number) : String       = lambda(a : Int) : MutualString { }       (W, √)
+
+
+   in type A:
+      foo(a : Int) : String
+
+   in type B (inherits from A):
+      foo(a : Int) : String           √
+      foo(a : Number) : MutualString  √
+      foo(a : Number) : Object        W
+      foo(a : SpecInt) : String       W
+
+      ergo: overwritten functions must be contravariant to functions in base classes
+
+
+
+- whether value or reference type is irrelavant.  Assigning a ref to value
+  and v.v. only affects the value itself, not the type.
+
+
+- additional rule:  a type T[] is covariant to Sliceable<Int, T>
+
+
+
+------------------------------------------------------------------------------
+
+Beware of aliasing
+
+  let a : List<String> = List<String>()
+  let b : List<Object> = a
+
+looks ok, doesn't it?  But if now later on
+
+  b.add("abc")  -- ok
+  b.add(4567)   -- problem!
+
+4567 is a number (and therefore an Object) and thus can be added to b (it's
+a List<Object>).  But since b and a point to the same object in memory the
+type contract a isa List<String> is broken!
+
+Thus two parameterized types A<X> and B<Y> are covariant only if A and B
+are covariant and X and Y are identical.
+
+
+The 'isa' constraint is valueable?
+
+  def generic foo(a : 'T) ...                     -- accepts really any type
+  def generic foo(a : Any) ...                    -- accepts Any type
+  def generic foo(a : 'T isa Shape) ...           -- accepts any type being
+                                                  -- Shape or subclass
+  def generic foo(a : 'T) where T isa Shape ...   -- dto.
+
+

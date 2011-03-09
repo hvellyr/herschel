@@ -1,0 +1,9 @@
+def type XYZ
+{
+  extend module core
+  {
+    def generic to-string(o @ XYZ) : String ...
+  }
+
+  def generic meuble(o @ XYZ) ...
+}
