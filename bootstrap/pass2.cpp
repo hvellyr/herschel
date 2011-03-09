@@ -650,6 +650,85 @@ SecondPass::getWhereOfs(const TokenVector& seq, size_t ofs) const
 }
 
 
+AptNode*
+SecondPass::parsePrime(const Token& primeToken)
+{
+  hr_assert(primeToken.isSeq() && primeToken.count() == 2);
+
+  String primeName;
+  if (primeToken[0] == kSymbol) {
+    primeName = primeToken[0].idValue();
+  }
+  else if (primeToken[0].isSeq() && primeToken[0].count() == 2) {
+    if (primeToken[0][0] == kSymbol) {
+      if (primeToken[0][1].isNested() && primeToken[0][1].leftToken() == kGenericOpen)
+      {
+        primeName = primeToken[0][0].idValue();
+      }
+      else {
+        errorf(primeToken[0][1].srcpos(), E_GenericTypeList,
+               "Expected '<' for generic class prime expression");
+        return NULL;
+      }
+    }
+    else {
+      errorf(primeToken[0][0].srcpos(), E_SymbolExpected,
+             "Expected generic class prime expression");
+      return NULL;
+    }
+  }
+  else {
+    errorf(primeToken[0][0].srcpos(), E_SymbolExpected,
+           "Expected generic class prime expression");
+    return NULL;
+  }
+
+  if (primeToken[1].isNested() && primeToken[1].leftToken() == kParanOpen)
+  {
+    hr_assert(primeToken[1].rightToken() == kParanClose);
+    //NodeList args = parseFunCallArgs(primeToken[1].children());
+
+    Type referedType = fScope->lookupType(primeName, true);
+    if (!referedType.isDef())
+      referedType = Type::newTypeRef(primeName, true);
+
+    return generateInitObjectCall(primeToken.srcpos(),
+                                  new SymbolNode(primeToken.srcpos(),
+                                                 String("self")),
+                                  referedType, primeToken[1].children());
+
+  }
+  else {
+    errorf(primeToken[1].srcpos(), E_MissingParanOpen,
+           "Expected generic class prime expression");
+    return NULL;
+  }
+
+  return NULL;
+}
+
+
+NodeList
+SecondPass::parsePrimeClauses(const TokenVector& primeClause)
+{
+  hr_assert(primeClause[0] == kPrimeId);
+  hr_assert(primeClause.size() > 1);
+
+  NodeList nl;
+
+  for (size_t i = 1; i < primeClause.size(); i++) {
+    if (primeClause[i] == kComma)
+      continue;
+
+    Ptr<AptNode> prime = parsePrime(primeClause[i]);
+    if (prime != NULL)
+      nl.push_back(prime);
+  }
+
+  return nl;
+}
+
+
 size_t
 SecondPass::getWhereOfs(const Token& expr) const
 {
@@ -723,6 +802,17 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
   if (ofs == whereOfs)
     ofs++;
 
+  NodeList primes;
+  if (ofs < seq.size() &&
+      seq[ofs].children().size() > 0 && seq[ofs][0] == kPrimeId)
+  {
+    const TokenVector& primeTokens = seq[ofs].children();
+
+    primes = parsePrimeClauses(primeTokens);
+
+    ofs++;
+  }
+
   NodeList slotDefs;
   NodeList reqProtocol;
   NodeList onExprs;
@@ -735,8 +825,8 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
     for (size_t i = 0; i < defs.size(); i++) {
       hr_assert(defs[i].isSeq() && defs[i].count() > 1);
       hr_assert(defs[i][0] == kDefId ||
-             defs[i][0] == kOnId ||
-             defs[i][0] == kExtendId);
+                defs[i][0] == kOnId ||
+                defs[i][0] == kExtendId);
 
       if (defs[i][0] == kDefId) {
         if (defs[i][1] == Compiler::slotToken) {
@@ -824,6 +914,7 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
     Ptr<AptNode> ctor = generateConstructor(expr, fullTypeName, defType,
                                             defaultApplyParams,
                                             slotDefs,
+                                            primes,
                                             onExprs);
     result.push_back(ctor);
   }
@@ -867,6 +958,7 @@ SecondPass::generateConstructor(const Token& typeExpr,
                                 const Type& defType,
                                 const NodeList& defaultApplyParams,
                                 const NodeList& slotDefs,
+                                const NodeList& primes,
                                 const NodeList& onExprs)
 {
   const SrcPos& srcpos = typeExpr.srcpos();
@@ -881,8 +973,19 @@ SecondPass::generateConstructor(const Token& typeExpr,
 
   Ptr<ListNode> body = new BlockNode(srcpos);
 
-  // TODO: call init functions of super classes.  If we have "on super"
-  // constructs, use them, otherwise generate default calls.
+  // call prime functions of super classes.  Before that replace the arguments
+  // to these functions with selfParamSym.
+  for (size_t i = 0; i < primes.size(); i++) {
+    Ptr<AptNode> prime = primes[i]->clone();
+    ApplyNode* apply = dynamic_cast<ApplyNode*>(prime.obj());
+    hr_assert(apply != NULL);
+    hr_assert(apply->children().size() > 0);
+
+    apply->children()[0] = new SymbolNode(apply->children()[0]->srcpos(),
+                                          selfParamSym);
+    body->appendNode(apply);
+  }
+
 
   // initialize slots
   for (unsigned int i = 0; i < slotDefs.size(); i++) {
@@ -2028,6 +2131,36 @@ SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
 
 
 AptNode*
+SecondPass::generateInitObjectCall(const SrcPos& srcpos,
+                                   AptNode* newObjAllocExpr,
+                                   const Type& type, const TokenVector& argTokens)
+{
+  //---
+  Ptr<AptNode> funcNode;
+  if (type.isOpen()) {
+    Ptr<ApplyNode> apply = new ApplyNode(srcpos,
+                                         new SymbolNode(srcpos,
+                                                        Names::kLangInitFunctor));
+    apply->appendNode(new TypeNode(srcpos, type));
+    funcNode = apply;
+  }
+  else {
+    String initName = qualifyId(type.typeName(), Names::kInitFuncName);
+    funcNode = new SymbolNode(srcpos, initName);
+  }
+
+  Ptr<ApplyNode> initExpr = new ApplyNode(srcpos, funcNode);
+  initExpr->appendNode(newObjAllocExpr);
+
+  //---
+  NodeList args = parseFunCallArgs(argTokens);
+  initExpr->appendNodes(args);
+
+  return initExpr.release();
+}
+
+
+AptNode*
 SecondPass::generateAlloc(const Token& expr, const Type& type)
 {
   Ptr<ApplyNode> newObjAllocExpr = new ApplyNode(expr.srcpos(),
@@ -2035,28 +2168,8 @@ SecondPass::generateAlloc(const Token& expr, const Type& type)
                                                                 Names::kLangAllocate));
   newObjAllocExpr->appendNode(new TypeNode(expr.srcpos(), type));
 
-  //---
-  Ptr<AptNode> funcNode;
-  if (type.isOpen()) {
-    Ptr<ApplyNode> apply = new ApplyNode(expr.srcpos(),
-                                         new SymbolNode(expr.srcpos(),
-                                                        Names::kLangInitFunctor));
-    apply->appendNode(new TypeNode(expr.srcpos(), type));
-    funcNode = apply;
-  }
-  else {
-    String initName = qualifyId(type.typeName(), Names::kInitFuncName);
-    funcNode = new SymbolNode(expr.srcpos(), initName);
-  }
-
-  Ptr<ApplyNode> initExpr = new ApplyNode(expr.srcpos(), funcNode);
-  initExpr->appendNode(newObjAllocExpr);
-
-  //---
-  NodeList args = parseFunCallArgs(expr[1].children());
-  initExpr->appendNodes(args);
-
-  return initExpr.release();
+  return generateInitObjectCall(expr.srcpos(),
+                                newObjAllocExpr, type, expr[1].children());
 }
 
 

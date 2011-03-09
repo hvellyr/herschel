@@ -184,6 +184,7 @@ namespace herschel
     kNilId,
     kNotId,
     kOnId,
+    kPrimeId,
     kReifyId,
     kSelectId,
     kThenId,

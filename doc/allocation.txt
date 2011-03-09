@@ -411,6 +411,45 @@ two (birthday and gender) are optional named parameters.
 
 
 
+Ctors of superclasses with specific arguments
+---------------------------------------------
+
+  def class Y(n) : ...
+  def class Z(n = 42) : ...
+
+  def class X : (Y, Z)
+  {
+    def slot a
+    def slot b
+
+    on super Y(11),
+             Z(n: 1234)    ;; not necessary but possible
+
+    on init() {
+      a = 5
+      b = 7
+    }
+  }
+
+
+Or?
+
+  def class X : (Y, Z)
+      prime Y(11),
+            Z(n: 1234)
+  {
+    def slot a
+    def slot b
+
+    on init() {
+      a = 5
+      b = 7
+    }
+  }
+
+
+
+
 Allocation and initialization of array objects
 ----------------------------------------------
 

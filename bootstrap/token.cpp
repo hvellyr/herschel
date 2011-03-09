@@ -682,6 +682,7 @@ Token::operator<(const Token& other) const
       case kNilId:
       case kNotId:
       case kOnId:
+      case kPrimeId:
       case kReifyId:
       case kSelectId:
       case kThenId:
@@ -786,6 +787,7 @@ Token::toString() const
     case kNilId:       return String(MID_NilId);
     case kNotId:       return String(MID_NotId);
     case kOnId:        return String(MID_OnId);
+    case kPrimeId:     return String(MID_PrimeId);
     case kReifyId:     return String(MID_ReifyId);
     case kSelectId:    return String(MID_SelectId);
     case kThenId:      return String(MID_ThenId);
@@ -905,6 +907,7 @@ Token::type() const
   case kNilId:
   case kNotId:
   case kOnId:
+  case kPrimeId:
   case kReifyId:
   case kSelectId:
   case kThenId:
@@ -1134,6 +1137,7 @@ Token::idValue() const
   case kNilId:
   case kNotId:
   case kOnId:
+  case kPrimeId:
   case kReifyId:
   case kSelectId:
   case kThenId:
@@ -1496,6 +1500,7 @@ Token::toPort(Port<Octet>* port) const
     case kNilId:
     case kNotId:
     case kOnId:
+    case kPrimeId:
     case kReifyId:
     case kSelectId:
     case kThenId:
@@ -1569,6 +1574,7 @@ Token::isCharOrUnitName() const
           fType == kNilId ||
           fType == kNotId ||
           fType == kOnId ||
+          fType == kPrimeId ||
           fType == kReifyId ||
           fType == kSelectId ||
           fType == kThenId ||

@@ -74,8 +74,11 @@ namespace herschel
                                  const Type& defType,
                                  const NodeList& defaultApplyParams,
                                  const NodeList& slotDefs,
+                                 const NodeList& primes,
                                  const NodeList& onExprs);
     AptNode* defaultSlotInitValue(const SlotdefNode* slot);
+    AptNode* parsePrime(const Token& primeToken);
+    NodeList parsePrimeClauses(const TokenVector& primeTokens);
 
     AptNode* parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
     AptNode* parseSlotDef(const Token& expr, size_t ofs);
@@ -141,6 +144,9 @@ namespace herschel
 
     AptNode* generateArrayAlloc(const Token& expr, AptNode* typeNode);
     AptNode* generateAlloc(const Token& expr, const Type& type);
+    AptNode* generateInitObjectCall(const SrcPos& srcpos,
+                                    AptNode* newObjAllocExpr,
+                                    const Type& type, const TokenVector& argTokens);
 
 
     //@{ Parsing functions

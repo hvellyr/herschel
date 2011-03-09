@@ -51,6 +51,7 @@ const Token Compiler::macroToken     = Token(SrcPos(), kSymbol, "macro");
 const Token Compiler::measureToken   = Token(SrcPos(), kSymbol, "measure");
 const Token Compiler::observableToken = Token(SrcPos(), kSymbol, "observable");
 const Token Compiler::outerToken     = Token(SrcPos(), kSymbol, "outer");
+const Token Compiler::primeToken     = Token(SrcPos(), kSymbol, "prime");
 const Token Compiler::privateToken   = Token(SrcPos(), kSymbol, "private");
 const Token Compiler::publicToken    = Token(SrcPos(), kSymbol, "public");
 const Token Compiler::readonlyToken  = Token(SrcPos(), kSymbol, "readonly");

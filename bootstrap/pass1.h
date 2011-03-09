@@ -181,6 +181,7 @@ namespace herschel
     Token evaluateConfigExpr(const Token& initExpr);
 
     Token parseWhereClause();
+    Token parsePrimeClause();
     Token parseReifyClause();
 
     Token parseMeasure(const Token& defToken, bool isLocal);

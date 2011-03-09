@@ -241,7 +241,7 @@ Key bindings:
   (set (make-local-variable 'comment-column) 40)
   (set (make-local-variable 'comment-indent-function) 'c-comment-indent) ;; TODO
   (set (make-local-variable 'end-comment-column) 79)
-  (set (make-local-variable 'paragraph-start) "^\s*~\\|def\\|module\\|export\\|import\\|on\\|when\\|where")
+  (set (make-local-variable 'paragraph-start) "^\s*~\\|def\\|module\\|export\\|import\\|when\\|where")
   (set (make-local-variable 'paragraph-separate) "[ \t\f]*$\\|^\s*{\\|^\s*}")
   (set (make-local-variable 'require-final-newline) t)
   (set (make-local-variable 'indent-tabs-mode) nil)
@@ -293,7 +293,7 @@ Key bindings:
     "slot" "slot!"
     "if" "else" "on"
     "public" "private" "protected" "final"
-    "reify" "where"
+    "reify" "where" "prime"
     "function"
     "init" "delete" "signal" "exit" "sync"
     )
