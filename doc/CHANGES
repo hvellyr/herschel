@@ -1,4 +1,5 @@
 Lazy evaluation
+---------------
 
   The typical log problem.  The string is created before we decide whether
   we should log.  Either use macros:
@@ -67,6 +68,7 @@ Lazy evaluation
 
 
 Function contracts
+------------------
 
   Functions can be annotated by pre and post conditions.  These are
   actually part of the function signature and can be specified for abstract
@@ -112,7 +114,9 @@ Function contracts
   Pre and post conditions are normally not compiled in release versions.
 
 
-Used character in the Ascii table:
+Used character of Ascii
+-----------------------
+
 
     Herschel                            C
 -------------------------------------------------------------
