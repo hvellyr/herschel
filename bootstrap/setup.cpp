@@ -55,7 +55,7 @@ namespace herschel
         setup.fHrcPath = file::appendFile(binpath, String("hrc"));
         // setup.fAsPath = String();
         // setup.fAsFlags = String();
-        setup.fLdPath = file::appendFile(cwd, String("external/llvm/Release/bin/llvm-ld"));
+        setup.fLdPath = file::appendFile(cwd, String("external/llvm/llvm-ld"));
         setup.fLdFlags.push_back(String("-native"));
         return setup;
       }
