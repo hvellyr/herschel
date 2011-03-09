@@ -64,11 +64,11 @@ COMMON_LIB = $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 #------------------------------------------------------------------------------
 # hrc - compiler
 #------------------------------------------------------------------------------
-LLVM_ROOT = $(top_srcdir)/external/llvm/
+LLVM_EXE = $(top_srcdir)/external/llvm/
 
-LLVM_CPPFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --cppflags)
-LLVM_LDFLAGS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --ldflags)
-LLVM_LIBS = $(shell $(LLVM_ROOT)/Release/bin/llvm-config --libs)
+LLVM_CPPFLAGS = $(shell $(LLVM_EXE)/llvm-config --cppflags)
+LLVM_LDFLAGS = $(shell $(LLVM_EXE)/llvm-config --ldflags)
+LLVM_LIBS = $(shell $(LLVM_EXE)/llvm-config --libs)
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src \
 	-I$(top_srcdir)/external/UnitTest++/src $(LLVM_CPPFLAGS)

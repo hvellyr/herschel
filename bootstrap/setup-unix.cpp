@@ -242,7 +242,7 @@ namespace herschel
         setup.fHrcPath = file::appendFile(file::makeDir(binpath),
                                           String("hrc"));
         setup.fLdPath = file::appendFile(file::makeDir(syspath),
-                                         String("external/llvm/Release/bin/llvm-ld"));
+                                         String("external/llvm/llvm-ld"));
         setup.fLdFlags.push_back(String("-native"));
         setup.fRuntimeLib = file::appendFile(file::makeDir(binpath),
                                              String("libhr.a"));
