@@ -653,21 +653,30 @@ SecondPass::getWhereOfs(const TokenVector& seq, size_t ofs) const
 AptNode*
 SecondPass::parsePrime(const Token& primeToken)
 {
-  hr_assert(primeToken.isSeq() && primeToken.count() == 2);
-
-  String primeName;
-  if (primeToken[0] == kSymbol) {
-    primeName = primeToken[0].idValue();
-  }
-  else if (primeToken[0].isSeq() && primeToken[0].count() == 2) {
-    if (primeToken[0][0] == kSymbol) {
-      if (primeToken[0][1].isNested() && primeToken[0][1].leftToken() == kGenericOpen)
-      {
-        primeName = primeToken[0][0].idValue();
+  if (primeToken.isSeq() &&
+      primeToken.count() == 2 &&
+      primeToken[1].isNested() &&
+      primeToken[1].leftToken() == kParanOpen)
+  {
+    String primeName;
+    if (primeToken[0] == kSymbol) {
+      primeName = primeToken[0].idValue();
+    }
+    else if (primeToken[0].isSeq() && primeToken[0].count() == 2) {
+      if (primeToken[0][0] == kSymbol) {
+        if (primeToken[0][1].isNested() && primeToken[0][1].leftToken() == kGenericOpen)
+        {
+          primeName = primeToken[0][0].idValue();
+        }
+        else {
+          errorf(primeToken[0][1].srcpos(), E_GenericTypeList,
+                 "Expected '<' for generic class prime expression");
+          return NULL;
+        }
       }
       else {
-        errorf(primeToken[0][1].srcpos(), E_GenericTypeList,
-               "Expected '<' for generic class prime expression");
+        errorf(primeToken[0][0].srcpos(), E_SymbolExpected,
+               "Expected generic class prime expression");
         return NULL;
       }
     }
@@ -676,31 +685,30 @@ SecondPass::parsePrime(const Token& primeToken)
              "Expected generic class prime expression");
       return NULL;
     }
+
+    if (primeToken[1].isNested() && primeToken[1].leftToken() == kParanOpen)
+    {
+      hr_assert(primeToken[1].rightToken() == kParanClose);
+      //NodeList args = parseFunCallArgs(primeToken[1].children());
+
+      Type referedType = fScope->lookupType(primeName, true);
+      if (!referedType.isDef())
+        referedType = Type::newTypeRef(primeName, true);
+
+      return generateInitObjectCall(primeToken.srcpos(),
+                                    new SymbolNode(primeToken.srcpos(),
+                                                   String("self")),
+                                    referedType, primeToken[1].children());
+    }
+    else {
+      errorf(primeToken[1].srcpos(), E_MissingParanOpen,
+             "Expected generic class prime expression");
+      return NULL;
+    }
   }
   else {
-    errorf(primeToken[0][0].srcpos(), E_SymbolExpected,
-           "Expected generic class prime expression");
-    return NULL;
-  }
-
-  if (primeToken[1].isNested() && primeToken[1].leftToken() == kParanOpen)
-  {
-    hr_assert(primeToken[1].rightToken() == kParanClose);
-    //NodeList args = parseFunCallArgs(primeToken[1].children());
-
-    Type referedType = fScope->lookupType(primeName, true);
-    if (!referedType.isDef())
-      referedType = Type::newTypeRef(primeName, true);
-
-    return generateInitObjectCall(primeToken.srcpos(),
-                                  new SymbolNode(primeToken.srcpos(),
-                                                 String("self")),
-                                  referedType, primeToken[1].children());
-
-  }
-  else {
-    errorf(primeToken[1].srcpos(), E_MissingParanOpen,
-           "Expected generic class prime expression");
+    errorf(primeToken.srcpos(), E_BadClassOnAlloc,
+           "Unexpected 'on alloc' specifications");
     return NULL;
   }
 
@@ -709,23 +717,35 @@ SecondPass::parsePrime(const Token& primeToken)
 
 
 NodeList
-SecondPass::parsePrimeClauses(const TokenVector& primeClause)
+SecondPass::parseOnAllocExpr(const Token& expr)
 {
-  hr_assert(primeClause[0] == kPrimeId);
-  hr_assert(primeClause.size() > 1);
+  hr_assert(expr.count() == 4);
+  hr_assert(expr[0] == kOnId);
+  hr_assert(expr[1] == Compiler::allocToken);
+  hr_assert(expr[2].isNested());
 
-  NodeList nl;
-
-  for (size_t i = 1; i < primeClause.size(); i++) {
-    if (primeClause[i] == kComma)
-      continue;
-
-    Ptr<AptNode> prime = parsePrime(primeClause[i]);
-    if (prime != NULL)
-      nl.push_back(prime);
+  if (expr[2].count() > 0) {
+    warningf(expr[2].srcpos(), E_BadClassOnAlloc,
+             "'on alloc' takes no parameters");
   }
 
-  return nl;
+  NodeList primes;
+  if (expr[3].isNested() && expr[3].leftToken() == kBraceOpen) {
+    const TokenVector& primeTokens = expr[3].children();
+
+    for (size_t i = 0; i < primeTokens.size(); i++) {
+      Ptr<AptNode> prime = parsePrime(primeTokens[i]);
+      if (prime != NULL)
+        primes.push_back(prime);
+    }
+  }
+  else {
+    Ptr<AptNode> prime = parsePrime(expr[3]);
+    if (prime != NULL)
+      primes.push_back(prime);
+  }
+
+  return primes;
 }
 
 
@@ -803,16 +823,6 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
     ofs++;
 
   NodeList primes;
-  if (ofs < seq.size() &&
-      seq[ofs].children().size() > 0 && seq[ofs][0] == kPrimeId)
-  {
-    const TokenVector& primeTokens = seq[ofs].children();
-
-    primes = parsePrimeClauses(primeTokens);
-
-    ofs++;
-  }
-
   NodeList slotDefs;
   NodeList reqProtocol;
   NodeList onExprs;
@@ -848,6 +858,10 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
         if (!isClass) {
           errorf(defs[i].srcpos(), E_OnExprInType,
                  "Unexpected on expression in type body");
+        }
+        else if (defs[i].count() > 1 && defs[i][1] == Compiler::allocToken) {
+          NodeList nl = parseOnAllocExpr(defs[i]);
+          appendNodes(primes, nl);
         }
         else {
           NodeList nl = parseExpr(defs[i]);

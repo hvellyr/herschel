@@ -33,6 +33,7 @@ using namespace herschel;
 //----------------------------------------------------------------------------
 
 const Token Compiler::aliasToken     = Token(SrcPos(), kSymbol, "alias");
+const Token Compiler::allocToken     = Token(SrcPos(), kSymbol, "alloc");
 const Token Compiler::autoToken      = Token(SrcPos(), kSymbol, "auto");
 const Token Compiler::charToken      = Token(SrcPos(), kSymbol, "char");
 const Token Compiler::classToken     = Token(SrcPos(), kSymbol, "class");

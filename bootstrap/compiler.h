@@ -72,6 +72,7 @@ namespace herschel
 
     // predefined symbol tokens to speed up parsing
     static const Token aliasToken;
+    static const Token allocToken;
     static const Token autoToken;
     static const Token charToken;
     static const Token classToken;

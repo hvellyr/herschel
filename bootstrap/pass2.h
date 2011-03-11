@@ -78,7 +78,7 @@ namespace herschel
                                  const NodeList& onExprs);
     AptNode* defaultSlotInitValue(const SlotdefNode* slot);
     AptNode* parsePrime(const Token& primeToken);
-    NodeList parsePrimeClauses(const TokenVector& primeTokens);
+    NodeList parseOnAllocExpr(const Token& expr);
 
     AptNode* parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
     AptNode* parseSlotDef(const Token& expr, size_t ofs);

@@ -1084,6 +1084,7 @@ FirstPass::parseOn(ScopeType scopeType)
     bool ignoreStmt = false;
 
     if (keyToken != Compiler::syncToken &&
+        keyToken != Compiler::allocToken &&
         keyToken != Compiler::initToken &&
         keyToken != Compiler::deleteToken &&
         keyToken != Compiler::exitToken &&
@@ -2919,51 +2920,6 @@ FirstPass::parseWhereClause()
 
 
 Token
-FirstPass::parsePrimeClause()
-{
-  hr_assert(fToken == kPrimeId);
-
-  Token primeToken = fToken;
-  nextToken();
-
-  TokenVector primes;
-  Token delayedCommaToken;
-
-  for ( ; ; ) {
-    if (fToken == kEOF) {
-      errorf(fToken.srcpos(), E_UnexpectedEOF,
-             "unexpected eof while scanning 'prime' clause");
-      return Token();
-    }
-
-    if (fToken != kSymbol) {
-      errorf(fToken.srcpos(), E_SymbolExpected, "missing type name");
-      return Token();
-    }
-
-    Token primeCall = parseAccess(parseSimpleType(fToken, false));
-
-    if (delayedCommaToken.isSet()) {
-      primes.push_back(delayedCommaToken);
-      delayedCommaToken = Token();
-    }
-    primes.push_back(primeCall);
-
-    if (fToken == kComma) {
-      delayedCommaToken = fToken;
-      nextToken();
-    }
-    else
-      break;
-  }
-
-  if (!primes.empty())
-    return Token() << primeToken << primes;
-  return Token();
-}
-
-
-Token
 FirstPass::parseReifyClause()
 {
   hr_assert(fToken == kReifyId);
@@ -3303,10 +3259,6 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
   if (fToken == kWhereId)
     whereClause = parseWhereClause();
 
-  Token primeClause;
-  if (fToken == kPrimeId)
-    primeClause = parsePrimeClause();
-
   Token docString = parseOptDocString();
 
   TokenVector requiredProtocols;
@@ -3329,9 +3281,6 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 
   if (whereClause.isSet())
     result << whereClause;
-
-  if (primeClause.isSet())
-    result << primeClause;
 
   if (docString.isSet())
     result << docString;

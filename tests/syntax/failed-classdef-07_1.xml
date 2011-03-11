@@ -68,7 +68,13 @@
 <seq>
 <id>on</id>
 <id>alloc</id>
-<nested left='(' right=')'/>
+<nested left='(' right=')'>
+<seq>
+<id>self</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
 <nested left='{' right='}'>
 <seq>
 <id>Y</id>

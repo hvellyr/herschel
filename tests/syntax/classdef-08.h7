@@ -13,12 +13,15 @@ def class Z<K>(n = 42)
 def class X<T, K> : (Y<T>, Z<K>)
     where T isa Int,
           K isa String
-    prime Y<T>(11),
-          Z<K>(n: 1234)
     ~ some comment ~
 {
   def slot a
   def slot b
+
+  on alloc() {
+    Y<T>(11)
+    Z<K>(n: 1234)
+  }
 
   on init() {
     a = 5
