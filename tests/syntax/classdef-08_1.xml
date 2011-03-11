@@ -89,8 +89,22 @@
 <id>String</id>
 </seq>
 </seq>
+<nested left='{' right='}'>
 <seq>
-<id>prime</id>
+<id>def</id>
+<id>slot</id>
+<id>a</id>
+</seq>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>b</id>
+</seq>
+<seq>
+<id>on</id>
+<id>alloc</id>
+<nested left='(' right=')'/>
+<nested left='{' right='}'>
 <seq>
 <seq>
 <id>Y</id>
@@ -102,7 +116,6 @@
 <lit type='int'>11</lit>
 </nested>
 </seq>
-<punct type=','/>
 <seq>
 <seq>
 <id>Z</id>
@@ -115,17 +128,7 @@
 <lit type='int'>1234</lit>
 </nested>
 </seq>
-</seq>
-<nested left='{' right='}'>
-<seq>
-<id>def</id>
-<id>slot</id>
-<id>a</id>
-</seq>
-<seq>
-<id>def</id>
-<id>slot</id>
-<id>b</id>
+</nested>
 </seq>
 <seq>
 <id>on</id>

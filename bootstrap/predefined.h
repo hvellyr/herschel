@@ -34,7 +34,6 @@ namespace herschel
 #define MID_NilId       "nil"
 #define MID_NotId       "not"
 #define MID_OnId        "on"
-#define MID_PrimeId     "prime"
 #define MID_ReifyId     "reify"
 #define MID_SelectId    "select"
 #define MID_ThenId      "then"

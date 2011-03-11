@@ -448,6 +448,29 @@ Or?
   }
 
 
+Or?
+
+  def class X : (Y, Z)
+  {
+    def slot a
+    def slot b
+
+    on alloc() {
+      X(11)
+      Z(n: 1234)
+    }
+
+    on init() {
+      a = 5
+      b = 7
+    }
+
+    on assert() {
+      assert(a <> 0)
+      assert(b <> 0)
+    }
+  }
+
 
 
 Allocation and initialization of array objects

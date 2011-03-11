@@ -15,7 +15,7 @@ def class X : (Y, Z)
   def slot a
   def slot b
 
-  on alloc() {
+  on alloc(self) {
     Y(11)
     Z(n: 1234)
   }
