@@ -87,6 +87,8 @@ namespace herschel
                             const Type& defType,
                             const std::vector<PrimeTuple>& primes,
                             const String& selfParamSym);
+    AptNode* findPrimeForType(const Type& reqTypeInit,
+                              const std::vector<PrimeTuple>& primes);
     AptNode* getPrimeForType(const Type& reqTypeInit,
                              const std::vector<PrimeTuple>& primes,
                              const String& selfParamSym);
