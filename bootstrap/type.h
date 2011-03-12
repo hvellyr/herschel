@@ -140,9 +140,9 @@ namespace herschel
                         const FunctionSignatureVector& protocol);
 
     static Type newClass(const String& name, const TypeVector& generics,
-                         const Type& inherit);
+                         const Type& inherit, const FunctionSignature& applySign);
     static Type newClass(const String& name, const TypeVector& generics,
-                         const Type& inherit,
+                         const Type& inherit, const FunctionSignature& applySign,
                          const FunctionSignatureVector& protocol);
 
     static Type newAlias(const String& name, const TypeVector& generics,
@@ -214,6 +214,7 @@ namespace herschel
     bool isType() const;
     const Type& typeInheritance() const;
     const FunctionSignatureVector& typeProtocol() const;
+    const FunctionSignature& applySignature() const;
 
 
     //@ is anything on this type is generic (i.e. a variable type
@@ -256,7 +257,7 @@ namespace herschel
     //!@ sequence types
     bool isSequence() const;
     const TypeVector& seqTypes() const;
-
+    bool containsType(const Type& type) const;
 
     //!@ measure types
     bool isMeasure() const;
@@ -485,6 +486,8 @@ namespace herschel
 
     String toString() const;
     String typeId() const;
+
+    bool hasPositionalParam() const;
 
   private:
     bool                fIsGeneric;
