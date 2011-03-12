@@ -1,0 +1,1 @@
+18 ; error ; 4040 ; Explicit 'on alloc' prime call for non allocable type 'Z<'K>'

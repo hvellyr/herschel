@@ -1068,6 +1068,7 @@ struct ReqTypeInitTuple
 {
   Type fType;
   bool fReqExplicitPrime;
+  bool fIsClass;
 };
 
 
@@ -1082,7 +1083,15 @@ reqTypeInitTupleForType(const Type& type, Scope* scope)
   else if (superType.isClass()) {
     ReqTypeInitTuple tuple;
     tuple.fType = type;
+    tuple.fIsClass = true;
     tuple.fReqExplicitPrime = superType.applySignature().hasPositionalParam();
+    return tuple;
+  }
+  else {
+    ReqTypeInitTuple tuple;
+    tuple.fType = type;
+    tuple.fIsClass = false;
+    tuple.fReqExplicitPrime = false;
     return tuple;
   }
 
@@ -1117,25 +1126,37 @@ getDirectInheritedTypes(const Type& defType, Scope* scope)
 
 
 AptNode*
-SecondPass::getPrimeForType(const Type& reqTypeInit,
-                            const std::vector<PrimeTuple>& primes,
-                            const String& selfParamSym)
+SecondPass::findPrimeForType(const Type& reqTypeInit,
+                             const std::vector<PrimeTuple>& primes)
 {
   String reqTypeId = reqTypeInit.typeId();
 
   // call prime functions of super classes.  Before that replace the arguments
   // to these functions with selfParamSym.
   for (size_t i = 0; i < primes.size(); i++) {
-    if (primes[i].fType.typeId() == reqTypeId) {
-      Ptr<AptNode> prime = primes[i].fPrime->clone();
-      ApplyNode* apply = dynamic_cast<ApplyNode*>(prime.obj());
-      hr_assert(apply != NULL);
-      hr_assert(apply->children().size() > 0);
+    if (primes[i].fType.typeId() == reqTypeId)
+      return primes[i].fPrime;
+  }
 
-      apply->children()[0] = new SymbolNode(apply->children()[0]->srcpos(),
-                                            selfParamSym);
-      return prime.release();
-    }
+  return NULL;
+}
+
+
+AptNode*
+SecondPass::getPrimeForType(const Type& reqTypeInit,
+                            const std::vector<PrimeTuple>& primes,
+                            const String& selfParamSym)
+{
+  Ptr<AptNode> prime0 = findPrimeForType(reqTypeInit, primes);
+  if (prime0 != NULL) {
+    Ptr<AptNode> prime = prime0->clone();
+    ApplyNode* apply = dynamic_cast<ApplyNode*>(prime.obj());
+    hr_assert(apply != NULL);
+    hr_assert(apply->children().size() > 0);
+
+    apply->children()[0] = new SymbolNode(apply->children()[0]->srcpos(),
+                                          selfParamSym);
+    return prime.release();
   }
 
   return NULL;
@@ -1153,27 +1174,37 @@ SecondPass::generatePrimeInits(const SrcPos& srcpos,
 
   for (size_t i = 0; i < reqTypeInits.size(); i++) {
     // does the super type requires an explicit prime?
-    if (reqTypeInits[i].fReqExplicitPrime) {
-      Ptr<AptNode> apply = getPrimeForType(reqTypeInits[i].fType,
-                                           primes,
-                                           selfParamSym);
-      if (apply == NULL) {
+    if (reqTypeInits[i].fIsClass) {
+      if (reqTypeInits[i].fReqExplicitPrime) {
+        Ptr<AptNode> apply = getPrimeForType(reqTypeInits[i].fType,
+                                             primes,
+                                             selfParamSym);
+        if (apply == NULL) {
+          errorf(srcpos, E_BadClassOnAlloc,
+                 "No 'on alloc' prime call for super class '%s'",
+                 (const char*)StrHelper(reqTypeInits[i].fType.typeId()));
+        }
+        else
+          body->appendNode(apply);
+      }
+      else {
+        Ptr<AptNode> apply = getPrimeForType(reqTypeInits[i].fType,
+                                             primes,
+                                             selfParamSym);
+        if (apply == NULL)
+          apply = generateInitObjectCall(SrcPos(),
+                                         new SymbolNode(SrcPos(), selfParamSym),
+                                         reqTypeInits[i].fType, TokenVector());
+        body->appendNode(apply);
+      }
+    }
+    else if (reqTypeInits[i].fType.isDef()) {
+      Ptr<AptNode> prime = findPrimeForType(reqTypeInits[i].fType, primes);
+      if (prime != NULL) {
         errorf(srcpos, E_BadClassOnAlloc,
-               "No 'on alloc' prime call for super class '%s'",
+               "Explicit 'on alloc' prime call for non allocable type '%s'",
                (const char*)StrHelper(reqTypeInits[i].fType.typeId()));
       }
-      else
-        body->appendNode(apply);
-    }
-    else {
-      Ptr<AptNode> apply = getPrimeForType(reqTypeInits[i].fType,
-                                           primes,
-                                           selfParamSym);
-      if (apply == NULL)
-        apply = generateInitObjectCall(SrcPos(),
-                                       new SymbolNode(SrcPos(), selfParamSym),
-                                       reqTypeInits[i].fType, TokenVector());
-      body->appendNode(apply);
     }
   }
 }
