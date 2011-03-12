@@ -650,9 +650,11 @@ SecondPass::getWhereOfs(const TokenVector& seq, size_t ofs) const
 }
 
 
-AptNode*
+SecondPass::PrimeTuple
 SecondPass::parsePrime(const Token& primeToken)
 {
+  PrimeTuple result;
+
   if (primeToken.isSeq() &&
       primeToken.count() == 2 &&
       primeToken[1].isNested() &&
@@ -671,19 +673,19 @@ SecondPass::parsePrime(const Token& primeToken)
         else {
           errorf(primeToken[0][1].srcpos(), E_GenericTypeList,
                  "Expected '<' for generic class prime expression");
-          return NULL;
+          return result;
         }
       }
       else {
         errorf(primeToken[0][0].srcpos(), E_SymbolExpected,
                "Expected generic class prime expression");
-        return NULL;
+        return result;
       }
     }
     else {
       errorf(primeToken[0][0].srcpos(), E_SymbolExpected,
              "Expected generic class prime expression");
-      return NULL;
+      return result;
     }
 
     if (primeToken[1].isNested() && primeToken[1].leftToken() == kParanOpen)
@@ -695,28 +697,30 @@ SecondPass::parsePrime(const Token& primeToken)
       if (!referedType.isDef())
         referedType = Type::newTypeRef(primeName, true);
 
-      return generateInitObjectCall(primeToken.srcpos(),
-                                    new SymbolNode(primeToken.srcpos(),
-                                                   String("self")),
-                                    referedType, primeToken[1].children());
+      result.fType = referedType;
+      result.fPrime = generateInitObjectCall(primeToken.srcpos(),
+                                             new SymbolNode(primeToken.srcpos(),
+                                                            String("self")),
+                                             referedType, primeToken[1].children());
+      return result;
     }
     else {
       errorf(primeToken[1].srcpos(), E_MissingParanOpen,
              "Expected generic class prime expression");
-      return NULL;
+      return result;
     }
   }
   else {
     errorf(primeToken.srcpos(), E_BadClassOnAlloc,
            "Unexpected 'on alloc' specifications");
-    return NULL;
+    return result;
   }
 
-  return NULL;
+  return result;
 }
 
 
-NodeList
+std::vector<SecondPass::PrimeTuple>
 SecondPass::parseOnAllocExpr(const Token& expr)
 {
   hr_assert(expr.count() == 4);
@@ -729,23 +733,23 @@ SecondPass::parseOnAllocExpr(const Token& expr)
              "'on alloc' takes no parameters");
   }
 
-  NodeList primes;
+  std::vector<PrimeTuple> primeTuples;
   if (expr[3].isNested() && expr[3].leftToken() == kBraceOpen) {
     const TokenVector& primeTokens = expr[3].children();
 
     for (size_t i = 0; i < primeTokens.size(); i++) {
-      Ptr<AptNode> prime = parsePrime(primeTokens[i]);
-      if (prime != NULL)
-        primes.push_back(prime);
+      PrimeTuple tuple = parsePrime(primeTokens[i]);
+      if (tuple.fPrime != NULL)
+        primeTuples.push_back(tuple);
     }
   }
   else {
-    Ptr<AptNode> prime = parsePrime(expr[3]);
-    if (prime != NULL)
-      primes.push_back(prime);
+    PrimeTuple tuple = parsePrime(expr[3]);
+    if (tuple.fPrime != NULL)
+      primeTuples.push_back(tuple);
   }
 
-  return primes;
+  return primeTuples;
 }
 
 
@@ -822,7 +826,7 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
   if (ofs == whereOfs)
     ofs++;
 
-  NodeList primes;
+  std::vector<PrimeTuple> primeTuples;
   NodeList slotDefs;
   NodeList reqProtocol;
   NodeList onExprs;
@@ -860,8 +864,9 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
                  "Unexpected on expression in type body");
         }
         else if (defs[i].count() > 1 && defs[i][1] == Compiler::allocToken) {
-          NodeList nl = parseOnAllocExpr(defs[i]);
-          appendNodes(primes, nl);
+          std::vector<PrimeTuple> tuples = parseOnAllocExpr(defs[i]);
+          primeTuples.insert(primeTuples.begin(),
+                             tuples.begin(), tuples.end());
         }
         else {
           NodeList nl = parseExpr(defs[i]);
@@ -880,6 +885,17 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
     ofs++;
   }
 
+  std::vector<PrimeTuple> primes;
+  for (size_t i = 0; i < primeTuples.size(); i++) {
+    if (!inheritsFrom.containsType(primeTuples[i].fType)) {
+      errorf(primeTuples[i].fPrime->srcpos(), E_BadClassOnAlloc,
+             "Super class initialization for unknown type %s",
+             (const char*)StrHelper(primeTuples[i].fType.typeId()));
+    }
+    else {
+      primes.push_back(primeTuples[i]);
+    }
+  }
 
   FunctionSignatureVector protoSignatures;
   protocolNodeListToType(&protoSignatures, reqProtocol);
@@ -889,13 +905,21 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
     FunctionParamVector funcParams;
     paramsNodeListToType(&funcParams, defaultApplyParams);
 
+    String ctorFuncName = qualifyId(fullTypeName, Names::kInitFuncName);
+    FunctionSignature sign = FunctionSignature(false,        // generic?
+                                               ctorFuncName, // func name
+                                               // rettype
+                                               Type::newTypeRef(fullTypeName,
+                                                                generics, true),
+                                               funcParams);
+
     TypeVector genGenerics;
     for (size_t i = 0; i < generics.size(); i++) {
       hr_assert(generics[i].isRef());
       genGenerics.push_back(genericTypeRef(generics[i].typeName(), true));
     }
 
-    defType = Type::newClass(fullTypeName, generics, inheritsFrom,
+    defType = Type::newClass(fullTypeName, generics, inheritsFrom, sign,
                              protoSignatures);
   }
   else {
@@ -972,7 +996,7 @@ SecondPass::generateConstructor(const Token& typeExpr,
                                 const Type& defType,
                                 const NodeList& defaultApplyParams,
                                 const NodeList& slotDefs,
-                                const NodeList& primes,
+                                const std::vector<PrimeTuple>& primes,
                                 const NodeList& onExprs)
 {
   const SrcPos& srcpos = typeExpr.srcpos();
@@ -987,19 +1011,7 @@ SecondPass::generateConstructor(const Token& typeExpr,
 
   Ptr<ListNode> body = new BlockNode(srcpos);
 
-  // call prime functions of super classes.  Before that replace the arguments
-  // to these functions with selfParamSym.
-  for (size_t i = 0; i < primes.size(); i++) {
-    Ptr<AptNode> prime = primes[i]->clone();
-    ApplyNode* apply = dynamic_cast<ApplyNode*>(prime.obj());
-    hr_assert(apply != NULL);
-    hr_assert(apply->children().size() > 0);
-
-    apply->children()[0] = new SymbolNode(apply->children()[0]->srcpos(),
-                                          selfParamSym);
-    body->appendNode(apply);
-  }
-
+  generatePrimeInits(srcpos, body, defType, primes, selfParamSym);
 
   // initialize slots
   for (unsigned int i = 0; i < slotDefs.size(); i++) {
@@ -1049,6 +1061,121 @@ SecondPass::generateConstructor(const Token& typeExpr,
   fScope->attachSymbolForExport(Scope::kNormal, fullTypeName, ctorFuncName);
 
   return newDefNode(ctorFunc.release(), false);
+}
+
+
+struct ReqTypeInitTuple
+{
+  Type fType;
+  bool fReqExplicitPrime;
+};
+
+
+static ReqTypeInitTuple
+reqTypeInitTupleForType(const Type& type, Scope* scope)
+{
+  Type superType = scope->lookupType(type.typeName(), true);
+  if (!superType.isDef()) {
+    errorf(SrcPos(), E_UnknownType, "Unknown super type: %s",
+           (const char*)StrHelper(type.typeId()));
+  }
+  else if (superType.isClass()) {
+    ReqTypeInitTuple tuple;
+    tuple.fType = type;
+    tuple.fReqExplicitPrime = superType.applySignature().hasPositionalParam();
+    return tuple;
+  }
+
+  return ReqTypeInitTuple();
+}
+
+
+static std::vector<ReqTypeInitTuple>
+getDirectInheritedTypes(const Type& defType, Scope* scope)
+{
+  std::vector<ReqTypeInitTuple> reqTypeInits;
+
+  if (defType.typeInheritance().isDef()) {
+    if (defType.typeInheritance().isSequence()) {
+      const TypeVector& inheritedTypes = defType.typeInheritance().seqTypes();
+
+      for (size_t i = 0; i < inheritedTypes.size(); i++) {
+        ReqTypeInitTuple tuple = reqTypeInitTupleForType(inheritedTypes[i], scope);
+        if (tuple.fType.isDef())
+          reqTypeInits.push_back(tuple);
+      }
+    }
+    else {
+      ReqTypeInitTuple tuple = reqTypeInitTupleForType(defType.typeInheritance(), scope);
+      if (tuple.fType.isDef())
+        reqTypeInits.push_back(tuple);
+    }
+  }
+
+  return reqTypeInits;
+}
+
+
+AptNode*
+SecondPass::getPrimeForType(const Type& reqTypeInit,
+                            const std::vector<PrimeTuple>& primes,
+                            const String& selfParamSym)
+{
+  String reqTypeId = reqTypeInit.typeId();
+
+  // call prime functions of super classes.  Before that replace the arguments
+  // to these functions with selfParamSym.
+  for (size_t i = 0; i < primes.size(); i++) {
+    if (primes[i].fType.typeId() == reqTypeId) {
+      Ptr<AptNode> prime = primes[i].fPrime->clone();
+      ApplyNode* apply = dynamic_cast<ApplyNode*>(prime.obj());
+      hr_assert(apply != NULL);
+      hr_assert(apply->children().size() > 0);
+
+      apply->children()[0] = new SymbolNode(apply->children()[0]->srcpos(),
+                                            selfParamSym);
+      return prime.release();
+    }
+  }
+
+  return NULL;
+}
+
+
+void
+SecondPass::generatePrimeInits(const SrcPos& srcpos,
+                               ListNode* body,
+                               const Type& defType,
+                               const std::vector<PrimeTuple>& primes,
+                               const String& selfParamSym)
+{
+  std::vector<ReqTypeInitTuple> reqTypeInits = getDirectInheritedTypes(defType, fScope);
+
+  for (size_t i = 0; i < reqTypeInits.size(); i++) {
+    // does the super type requires an explicit prime?
+    if (reqTypeInits[i].fReqExplicitPrime) {
+      Ptr<AptNode> apply = getPrimeForType(reqTypeInits[i].fType,
+                                           primes,
+                                           selfParamSym);
+      if (apply == NULL) {
+        errorf(srcpos, E_BadClassOnAlloc,
+               "No 'on alloc' prime call for super class '%s'",
+               (const char*)StrHelper(reqTypeInits[i].fType.typeId()));
+      }
+      else
+        body->appendNode(apply);
+    }
+    else {
+      Ptr<AptNode> apply = getPrimeForType(reqTypeInits[i].fType,
+                                           primes,
+                                           selfParamSym);
+      if (apply == NULL)
+        apply = generateInitObjectCall(SrcPos(),
+                                       new SymbolNode(SrcPos(), selfParamSym),
+                                       reqTypeInits[i].fType, TokenVector());
+      body->appendNode(apply);
+    }
+  }
 }
 
 

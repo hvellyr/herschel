@@ -37,6 +37,12 @@ namespace herschel
     AptNode* parse(const Token& exprs);
 
   private:
+    struct PrimeTuple
+    {
+      Ptr<AptNode> fPrime;
+      Type         fType;
+    };
+
     NodeList parseExpr(const Token& expr);
     NodeList parseSeq(const Token& expr);
 
@@ -74,11 +80,20 @@ namespace herschel
                                  const Type& defType,
                                  const NodeList& defaultApplyParams,
                                  const NodeList& slotDefs,
-                                 const NodeList& primes,
+                                 const std::vector<PrimeTuple>& primes,
                                  const NodeList& onExprs);
+    void generatePrimeInits(const SrcPos& srcpos,
+                            ListNode* body,
+                            const Type& defType,
+                            const std::vector<PrimeTuple>& primes,
+                            const String& selfParamSym);
+    AptNode* getPrimeForType(const Type& reqTypeInit,
+                             const std::vector<PrimeTuple>& primes,
+                             const String& selfParamSym);
+
     AptNode* defaultSlotInitValue(const SlotdefNode* slot);
-    AptNode* parsePrime(const Token& primeToken);
-    NodeList parseOnAllocExpr(const Token& expr);
+    PrimeTuple parsePrime(const Token& primeToken);
+    std::vector<SecondPass::PrimeTuple> parseOnAllocExpr(const Token& expr);
 
     AptNode* parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
     AptNode* parseSlotDef(const Token& expr, size_t ofs);

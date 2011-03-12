@@ -94,6 +94,7 @@ namespace herschel
     E_MultiDimenArray     = 0x403e,
     E_BadGenericType      = 0x403f,
     E_BadClassOnAlloc     = 0x4040,
+    E_UnknownType         = 0x4041,
 
     // enums
     E_BadEnumItemList     = 0x4050,

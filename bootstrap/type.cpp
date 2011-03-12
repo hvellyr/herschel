@@ -137,6 +137,18 @@ namespace herschel
     }
 
 
+    virtual bool containsType(const Type& type) const
+    {
+      if (type.isDef()) {
+        for (size_t i = 0; i < fTypes.size(); i++) {
+          if (fTypes[i].typeName() == type.typeName())
+            return true;
+        }
+      }
+      return false;
+    }
+
+
   protected:
     TypeVector fTypes;
   };
@@ -307,11 +319,13 @@ namespace herschel
                  bool isInstantiatable,
                  const TypeVector& generics,
                  const Type& inherit,
+                 const FunctionSignature& applySign,
                  const FunctionSignatureVector& protocol)
       : fName(name),
         fIsInstantiatable(isInstantiatable),
         fGenerics(generics),
         fInherit(inherit),
+        fApplySign(applySign),
         fProtocol(protocol)
     { }
 
@@ -321,6 +335,7 @@ namespace herschel
       return new TypeTypeImpl(fName, fIsInstantiatable,
                               vectorClone(fGenerics),
                               fInherit.clone(),
+                              fApplySign.clone(),
                               vectorClone(fProtocol));
     }
 
@@ -443,11 +458,19 @@ namespace herschel
       return false;
     }
 
+
+    const FunctionSignature& applySignature() const
+    {
+      return fApplySign;
+    }
+
+
   protected:
     String                  fName;
     bool                    fIsInstantiatable;
     TypeVector              fGenerics;
     Type                    fInherit;
+    FunctionSignature       fApplySign;
     FunctionSignatureVector fProtocol;
   };
 
@@ -1087,6 +1110,7 @@ Type::newType(const String& name, const TypeVector& generics,
   FunctionSignatureVector dummyProtocol;
   return Type(kType_Type, true, false,
               new TypeTypeImpl(name, false, generics, inherit,
+                               FunctionSignature(),
                                dummyProtocol));
 }
 
@@ -1098,28 +1122,29 @@ Type::newType(const String& name, const TypeVector& generics,
 {
   return Type(kType_Type, true, false,
               new TypeTypeImpl(name, false, generics, inherit,
+                               FunctionSignature(),
                                protocol));
 }
 
 
 Type
 Type::newClass(const String& name, const TypeVector& generics,
-               const Type& inherit)
+               const Type& inherit, const FunctionSignature& applySign)
 {
   FunctionSignatureVector dummyProtocol;
   return Type(kType_Class, true, false,
-              new TypeTypeImpl(name, true, generics, inherit,
+              new TypeTypeImpl(name, true, generics, inherit, applySign,
                                dummyProtocol));
 }
 
 
 Type
 Type::newClass(const String& name, const TypeVector& generics,
-               const Type& inherit,
+               const Type& inherit, const FunctionSignature& applySign,
                const FunctionSignatureVector& protocol)
 {
   return Type(kType_Class, true, false,
-              new TypeTypeImpl(name, true, generics, inherit,
+              new TypeTypeImpl(name, true, generics, inherit, applySign,
                                protocol));
 }
 
@@ -1632,6 +1657,14 @@ Type::typeProtocol() const
 }
 
 
+const FunctionSignature&
+Type::applySignature() const
+{
+  hr_assert(isClass());
+  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->applySignature();
+}
+
+
 bool
 Type::isAlias() const
 {
@@ -1734,6 +1767,19 @@ Type::seqTypes() const
 {
   hr_assert(isSequence());
   return dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->types();
+}
+
+
+bool
+Type::containsType(const Type& type) const
+{
+  if (isSequence())
+    return dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->containsType(type);
+  else if (isUnion())
+    return dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->containsType(type);
+
+  hr_invalid("no sequence or union type");
+  return false;
 }
 
 
@@ -2689,6 +2735,18 @@ FunctionSignature::toString() const
   buf << "<ty:ret>\n" << fReturnType.toString() << "</ty:ret>\n";
   buf << "</ty:fun>\n";
   return buf.toString();
+}
+
+
+bool
+FunctionSignature::hasPositionalParam() const
+{
+  for (size_t i = 0; i < fParameters.size(); i++) {
+    if (fParameters[i].kind() == FunctionParameter::kParamPos)
+      return true;
+  }
+
+  return false;
 }
 
 
