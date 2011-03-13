@@ -1,6 +1,38 @@
 <?xml version='1.0' encoding='utf-8'?>
 <compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
 <def>
+<type nm='C'>
+<isa>
+<ty:type nm='C'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='D'>
+<isa>
+<ty:type nm='D'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='E'>
+<isa>
+<ty:type nm='E'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='F'>
+<isa>
+<ty:type nm='F'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
 <class nm='X'>
 <params>
 <param sym='a' type='pos'>
@@ -72,12 +104,10 @@
 <ty:seq>
 <ty:ref nm='C'>
 </ty:ref>
-<ty:union>
 <ty:ref nm='D'>
 </ty:ref>
 <ty:ref nm='E'>
 </ty:ref>
-</ty:union>
 <ty:ref nm='F'>
 <ty:gen>
 <ty:ref gen='t' nm='B'>
@@ -120,12 +150,10 @@
 <ty:seq>
 <ty:ref nm='C'>
 </ty:ref>
-<ty:union>
 <ty:ref nm='D'>
 </ty:ref>
 <ty:ref nm='E'>
 </ty:ref>
-</ty:union>
 <ty:ref nm='F'>
 <ty:gen>
 <ty:ref gen='t' nm='B'>
@@ -176,12 +204,10 @@
 <ty:seq>
 <ty:ref nm='C'>
 </ty:ref>
-<ty:union>
 <ty:ref nm='D'>
 </ty:ref>
 <ty:ref nm='E'>
 </ty:ref>
-</ty:union>
 <ty:ref nm='F'>
 <ty:gen>
 <ty:ref gen='t' nm='B'>

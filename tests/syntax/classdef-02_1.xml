@@ -2,6 +2,26 @@
 <seq>
 <seq>
 <id>def</id>
+<id>type</id>
+<id>C</id>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>D</id>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>E</id>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>F</id>
+</seq>
+<seq>
+<id>def</id>
 <id>class</id>
 <id>X</id>
 <nested left='&lt;' right='>'>
@@ -26,11 +46,9 @@
 <nested left='(' right=')'>
 <id>C</id>
 <punct type=','/>
-<nested left='&amp;(' right=')'>
 <id>D</id>
 <punct type=','/>
 <id>E</id>
-</nested>
 <punct type=','/>
 <seq>
 <id>F</id>

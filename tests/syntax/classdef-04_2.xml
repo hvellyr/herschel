@@ -1,6 +1,30 @@
 <?xml version='1.0' encoding='utf-8'?>
 <compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
 <def>
+<type nm='Ixable'>
+<isa>
+<ty:type nm='Ixable'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='Wexable'>
+<isa>
+<ty:type nm='Wexable'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
 <class nm='X'>
 <params>
 <param sym='a' type='pos'>

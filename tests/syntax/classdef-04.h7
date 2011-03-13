@@ -1,3 +1,6 @@
+def type Ixable<T>
+def type Wexable<T>
+
 def class X<T, Y>(a : T, b : Y) : (Ixable<T>, Wexable<Y>)
 {
   def slot a0

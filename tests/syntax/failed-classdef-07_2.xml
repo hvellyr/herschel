@@ -138,22 +138,6 @@
 </slot>
 </def>
 </slots>
-<on>
-<on key='init'>
-<body>
-<block>
-<assign>
-<symbol>a</symbol>
-<int ty='lang|Int32'>5</int>
-</assign>
-<assign>
-<symbol>b</symbol>
-<int ty='lang|Int32'>7</int>
-</assign>
-</block>
-</body>
-</on>
-</on>
 <isa>
 <ty:type nm='X' inst='t'>
 <ty:isa>
@@ -230,25 +214,6 @@
 <symbol>__obj_2</symbol>
 <keyw>b</keyw>
 <symbol>lang|nil</symbol>
-</args>
-</apply>
-<apply>
-<function>
-<body>
-<block>
-<assign>
-<symbol>a</symbol>
-<int ty='lang|Int32'>5</int>
-</assign>
-<assign>
-<symbol>b</symbol>
-<int ty='lang|Int32'>7</int>
-</assign>
-</block>
-</body>
-</function>
-<args>
-<symbol>__obj_2</symbol>
 </args>
 </apply>
 <symbol>__obj_2</symbol>

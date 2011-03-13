@@ -1,3 +1,6 @@
+;; check that explicit super initializer (primes) to unknown/undeclared
+;; super classes are not generated
+
 def class Y(n)
 {
   def slot _n = n

@@ -1,3 +1,5 @@
+def type All
+
 def class X(a, b) : All
 {
   def slot x

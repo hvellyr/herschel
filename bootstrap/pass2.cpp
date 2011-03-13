@@ -729,7 +729,7 @@ SecondPass::parseOnAllocExpr(const Token& expr)
   hr_assert(expr[2].isNested());
 
   if (expr[2].count() > 0) {
-    warningf(expr[2].srcpos(), E_BadClassOnAlloc,
+    warningf(expr[2].srcpos(), E_BadFunctionArity,
              "'on alloc' takes no parameters");
   }
 
@@ -909,13 +909,25 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
   std::vector<PrimeTuple> primes;
   for (size_t i = 0; i < primeTuples.size(); i++) {
-    if (!inheritsFrom.containsType(primeTuples[i].fType)) {
-      errorf(primeTuples[i].fPrime->srcpos(), E_BadClassOnAlloc,
-             "Super class initialization for unknown type %s",
-             (const char*)StrHelper(primeTuples[i].fType.typeId()));
+    if (inheritsFrom.isSequence()) {
+      if (!inheritsFrom.containsType(primeTuples[i].fType)) {
+        errorf(primeTuples[i].fPrime->srcpos(), E_BadClassOnAlloc,
+               "Super class initialization for unknown type %s",
+               (const char*)StrHelper(primeTuples[i].fType.typeId()));
+      }
+      else {
+        primes.push_back(primeTuples[i]);
+      }
     }
-    else {
-      primes.push_back(primeTuples[i]);
+    else if (inheritsFrom.isDef()) {
+      if (inheritsFrom.typeName() != primeTuples[i].fType.typeName()) {
+        errorf(primeTuples[i].fPrime->srcpos(), E_BadClassOnAlloc,
+               "Super class initialization for unknown type %s",
+               (const char*)StrHelper(primeTuples[i].fType.typeId()));
+      }
+      else {
+        primes.push_back(primeTuples[i]);
+      }
     }
   }
 
