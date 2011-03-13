@@ -868,6 +868,28 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
           primeTuples.insert(primeTuples.begin(),
                              tuples.begin(), tuples.end());
         }
+        else if (defs[i].count() > 1 && defs[i][1] == Compiler::initToken) {
+          NodeList nl = parseExpr(defs[i]);
+          if (!nl.empty()) {
+            if (OnNode* onNode = dynamic_cast<OnNode*>(nl[0].obj())) {
+              if (onNode->params().size() != 1) {
+                errorf(onNode->srcpos(), E_BadFunctionArity,
+                       "wrong number of parameters to 'on init' hook.  Expected 1, found %d",
+                       onNode->params().size());
+              }
+              else if (ParamNode* param = dynamic_cast<ParamNode*>(onNode->params()[0].obj())) {
+                if (!param->isPositional()) {
+                  errorf(param->srcpos(), E_BadFunctionArity,
+                         "non-positional parameter detected in 'on init' hook");
+                }
+                else
+                  appendNodes(onExprs, nl);
+              }
+              else
+                appendNodes(onExprs, nl);
+            }
+          }
+        }
         else {
           NodeList nl = parseExpr(defs[i]);
           appendNodes(onExprs, nl);

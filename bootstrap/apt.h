@@ -665,6 +665,9 @@ namespace herschel
     ParamFlags flags() const;
     const String& key() const;
 
+    //! indicates whether this is a position parameter.
+    bool isPositional() const;
+
     //! indicates whether this is a rest parameter ("...").
     bool isRestArg() const;
 

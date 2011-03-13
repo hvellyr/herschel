@@ -1,0 +1,1 @@
+25 ; error ; 4108 ; non-positional parameter detected in 'on init' hook

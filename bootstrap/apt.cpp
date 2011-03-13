@@ -1034,6 +1034,13 @@ ParamNode::flags() const
 
 
 bool
+ParamNode::isPositional() const
+{
+  return (fFlags & kPosArg) != 0;
+}
+
+
+bool
 ParamNode::isRestArg() const
 {
   return (fFlags & kRestArg) != 0;
