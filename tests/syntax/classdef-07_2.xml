@@ -140,16 +140,30 @@
 </slots>
 <on>
 <on key='init'>
+<params>
+<param sym='self' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
 <body>
 <block>
-<assign>
-<symbol>a</symbol>
+<apply>
+<symbol>a!</symbol>
+<args>
+<symbol>self</symbol>
 <int ty='lang|Int32'>5</int>
-</assign>
-<assign>
-<symbol>b</symbol>
+</args>
+</apply>
+<apply>
+<symbol>b!</symbol>
+<args>
+<symbol>self</symbol>
 <int ty='lang|Int32'>7</int>
-</assign>
+</args>
+</apply>
 </block>
 </body>
 </on>
@@ -234,16 +248,30 @@
 </apply>
 <apply>
 <function>
+<params>
+<param sym='self' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
 <body>
 <block>
-<assign>
-<symbol>a</symbol>
+<apply>
+<symbol>a!</symbol>
+<args>
+<symbol>self</symbol>
 <int ty='lang|Int32'>5</int>
-</assign>
-<assign>
-<symbol>b</symbol>
+</args>
+</apply>
+<apply>
+<symbol>b!</symbol>
+<args>
+<symbol>self</symbol>
 <int ty='lang|Int32'>7</int>
-</assign>
+</args>
+</apply>
 </block>
 </body>
 </function>
