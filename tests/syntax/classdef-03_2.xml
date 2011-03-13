@@ -1,6 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
 <compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
 <def>
+<type nm='All'>
+<isa>
+<ty:type nm='All'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
 <class nm='X'>
 <params>
 <param sym='a' type='pos'>

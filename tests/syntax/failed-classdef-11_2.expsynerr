@@ -1,1 +1,1 @@
-23 ; error ; 4040 ; Super class initialization for unknown type M
+27 ; error ; 4040 ; Super class initialization for unknown type M

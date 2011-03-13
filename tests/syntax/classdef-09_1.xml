@@ -55,17 +55,29 @@
 <seq>
 <id>on</id>
 <id>init</id>
-<nested left='(' right=')'/>
+<nested left='(' right=')'>
+<seq>
+<id>self</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
 <nested left='{' right='}'>
 <seq>
-<id>a</id>
-<punct type='='/>
+<id>a!</id>
+<nested left='(' right=')'>
+<id>self</id>
+<punct type=','/>
 <lit type='int'>5</lit>
+</nested>
 </seq>
 <seq>
-<id>b</id>
-<punct type='='/>
+<id>b!</id>
+<nested left='(' right=')'>
+<id>self</id>
+<punct type=','/>
 <lit type='int'>7</lit>
+</nested>
 </seq>
 </nested>
 </seq>

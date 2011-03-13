@@ -23,8 +23,8 @@ def class X<T, K> : (Y<T>, Z<K>)
     Z<K>(n: 1234)
   }
 
-  on init() {
-    a = 5
-    b = 7
+  on init(self) {
+    self.a = 5
+    self.b = 7
   }
 }

@@ -2,6 +2,11 @@
 <seq>
 <seq>
 <id>def</id>
+<id>type</id>
+<id>All</id>
+</seq>
+<seq>
+<id>def</id>
 <id>class</id>
 <id>X</id>
 <nested left='(' right=')'>
