@@ -34,31 +34,30 @@ module core
 export public(Iterator, RewindableIterator)
 
 def type Iterator<T>
-{
-  def generic end?(iter @ Iterator<T>) : Bool ...
-      ~ Indicates whether @var{iter} is at the end.
 
-      @returns @const{false} if there are more elements to be returned by
-               @code{next}. ~
+def generic end?(iter @ Iterator<'T>) : Bool ...
+    ~ Indicates whether @var{iter} is at the end.
 
-  def generic next(iter @ ^Iterator<T>) : T ...
-      ~ Returns the next element from @var{iter}.
+    @returns @const{false} if there are more elements to be returned by
+             @code{next}. ~
 
-      @returns @const{eof} if all elements has been delivered.  Repeated
-               calling of @code{next} returns @const{eof}. ~
-}
+def generic next(iter @ ^Iterator<'T>) : 'T ...
+    ~ Returns the next element from @var{iter}.
+
+    @returns @const{eof} if all elements has been delivered.  Repeated
+             calling of @code{next} returns @const{eof}. ~
 
 
 def type RewindableIterator<T> : Iterator<T>
-{
-  def generic rewind(iter @ ^'R) : ^'R
-      where R isa RewindableIterator<T> ...
-      ~ Rewinds @var{iter} to restart with the first item.
 
-      Even if a previous call to @fun{end?} returned true this method must
-      reset @var{iter} to deliver that element it returned first.
+def generic rewind(iter @ ^'R) : ^'R
+    where R isa RewindableIterator<'T> ...
+    ~ Rewinds @var{iter} to restart with the first item.
 
-      @returns @var{iter} ~
-}
+    Even if a previous call to @fun{end?} returned true this method must
+    reset @var{iter} to deliver that element it returned first.
+
+    @returns @var{iter} ~
+
 
 ;; end of iterator
