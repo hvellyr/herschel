@@ -45,15 +45,17 @@ def class Slice<K, T> : OrderedSliceable<K, T>
     Since a slice is a view and 0-based it translates sub element access
     into the key position metric of the referenced collection. ~
 {
-  def generic num-items(slice @ Slice<K, T>) : Ordinal ...
-      ~ Returns the number of items in @var{slice}. ~
-
-  def generic empty?(slice @ Slice<K, T>) : Bool ...
-      ~ Indicates whether @var{slice} is empty. ~
-
-  def generic slice-range(slice @ Slice<K, T>) : Range<K> ...
-      ~ Returns the outer range of @var{slice} against the referenced
-      container. ~
 }
+
+def generic num-items(slice @ Slice<'K, 'T>) : Ordinal ...
+    ~ Returns the number of items in @var{slice}. ~
+
+def generic empty?(slice @ Slice<'K, 'T>) : Bool ...
+    ~ Indicates whether @var{slice} is empty. ~
+
+def generic slice-range(slice @ Slice<'K, 'T>) : Range<'K> ...
+    ~ Returns the outer range of @var{slice} against the referenced
+    container. ~
+
 
 ;; end of iterator
