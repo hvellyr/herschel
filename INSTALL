@@ -22,21 +22,26 @@ Build on Mac OS X:
 
   1. build llvm (e.g. in ~/tmp/llvm-build)
 
-    $ mkdir $TMP_DIR/llvm-build
-    $ cd $TMP_DIR/llvm-build
-    $ $LLVM_SRC_ROOT/configure
-    $ make
+      $ mkdir $TMP_DIR/llvm-build
+      $ cd $TMP_DIR/llvm-build
+      $ $LLVM_SRC_ROOT/configure
+      $ make
 
-  2. create a link to the build directory in $HERSCHEL_DIR/external:
+  2. create a link to the executable build directory in
+     $HERSCHEL_DIR/external:
 
-    $ ln -s $TMP_DIR/llvm-build $HERSCHEL_ROOT/external/llvm
+      $ ln -s $TMP_DIR/llvm-build/Release/bin $HERSCHEL_ROOT/external/llvm
+
+     or for llvm-2.9
+
+      $ ln -s $TMP_DIR/llvm-build/Release+Asserts/bin $HERSCHEL_ROOT/external/llvm
 
   3. review the settings in $HERSCHEL_ROOT/config.mk; probably create a
      config-local.mk and overwrite settings
 
   4. go to $HERSCHEL_ROOT and type 'make'
 
-    $ make
+      $ make
 
      This should build the compiler, runtime libraries, prepare the
      documentation, and runs all available tests.  If everything went

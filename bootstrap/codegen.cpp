@@ -95,7 +95,7 @@ CodeGenerator::CodeGenerator()
 
   fOptPassManager->add(llvm::createLICMPass());                  // Hoist loop invariants
   fOptPassManager->add(llvm::createLoopUnswitchPass());
-  fOptPassManager->add(llvm::createLoopIndexSplitPass());        // Split loop index
+  // fOptPassManager->add(llvm::createLoopIndexSplitPass());        // Split loop index
   fOptPassManager->add(llvm::createInstructionCombiningPass());
   fOptPassManager->add(llvm::createIndVarSimplifyPass());        // Canonicalize indvars
   fOptPassManager->add(llvm::createLoopDeletionPass());          // Delete dead loops
@@ -374,7 +374,7 @@ CodeGenerator::codegen(const SymbolNode* node)
 {
   if (node->name() == String("lang|unspecified")) {
     // TODO
-    return llvm::ConstantAggregateZero::get(getType(node->type()));
+    return llvm::Constant::getNullValue(getType(node->type()));
   }
 
   llvm::Value* val = NULL;
@@ -509,7 +509,7 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
   String varnm = herschel::mangleToC(node->name());
   const llvm::Type* constTy = getType(node->type());
-  llvm::Constant* initConst = llvm::ConstantAggregateZero::get(constTy);
+  llvm::Constant* initConst = llvm::Constant::getNullValue(constTy);
 
   // TODO: base type if possible
   llvm::GlobalVariable* gv =
@@ -597,7 +597,7 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
   TypeConvKind convKind = kNoConv;
   if (node->initExpr() != NULL) {
     if (dynamic_cast<UndefNode*>(node->initExpr())) {
-      initval = llvm::ConstantAggregateZero::get(getType(node->type()));
+      initval = llvm::Constant::getNullValue(getType(node->type()));
 
       dstType = node->type();
       type = node->type();
@@ -1383,7 +1383,7 @@ CodeGenerator::codegen(const IfNode* node)
                              node->alternate()->type());
   }
   else
-    elseValue = llvm::ConstantAggregateZero::get(getType(node->type()));
+    elseValue = llvm::Constant::getNullValue(getType(node->type()));
 
   fBuilder.CreateBr(mergeBB);
   // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
