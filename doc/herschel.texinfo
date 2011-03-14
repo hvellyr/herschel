@@ -1024,7 +1024,6 @@ different specializations.
 * Slots::                       Slots
 * Allocation::                  Allocation
 * Explicit superclass init::    Explicit superclass initialization
-* Required Functions::          Required Functions
 * Finalization::                Finalization
 * Reference types::             Reference types
 * Array types::                 Array types
@@ -1082,11 +1081,10 @@ corresponding methods are implemented outside.
 
 @cindex multiple inheritance
 Herschel supports multiple inheritance.  All inherited types must be
-compatible in required functions and slot names, neither in public nor
-private ones.  If two inherited types have exactly the same slot (they
-are identical in name, type and initial value), they share the same
-physical allocation space.  If two inherited types have exactly the same
-required function it is treated to be the same required function.
+compatible in slot names, both in public and private ones.  If two
+inherited types have exactly the same slot (they are identical in
+name, type and initial value), they share the same physical allocation
+space.
 
 Cyclic inheritance is not possible.
 
@@ -1183,7 +1181,7 @@ points defined in Unicode.
 @deffn Special def @code{class} @var{name} @
        [<@var{types}>] [(@var{params})] [@code{:} @var{inheritance}] @
        [@var{generics-const} ] @
-       @{ [ @var{slots} ] [ @var{protocol} ] @}
+       @{ [ @var{slots} ] @}
 Define a class @var{name} with @var{params}.  The class derives from
 @var{inheritance} and have @var{slots} slots.
 
@@ -1209,11 +1207,6 @@ automatically added to the inheritance list if not specified.
 @var{slots} defines the slots (aka `member variables', aka `fields') of
 the class; their order defines the order of initialization.
 
-@var{protocol} gives the list of all functions required by this type,
-i.e.@ all generic functions which must be implemented as methods
-specialized (at least) for this type; see @ref{Required Functions} for
-details.
-
 @end deffn
 
 
@@ -1223,7 +1216,6 @@ details.
 @deffn Special def @code{type} @var{name} @
        [<@var{types}>] [@code{:} @var{inheritance}]
        [ @var{generics-const} ]
-       [ @{ [ @var{protocol} ] @} ]
 Defines a new type @var{name} which is derived from @var{inheritance}.
 @var{inheritance} is either a simple type declarations or a list of type
 declarations.
@@ -1232,17 +1224,13 @@ As with classes @var{types} specifies the type to be parametrized.  For
 the specification and function of the @var{generics-const} see
 @ref{Parametrized types}.
 
-@var{protocol} gives the list of all functions required by this type.
-See @ref{Required Functions} for details.
-
 @example
 def type RandomAccessStream : (InputStream, OutputStream,
                                RepositionableStream)
 @end example
 
 The resulting type is a new type with its own run-time representation
-which is different to those of its inherited types -- even in case of
-single inheritance and no added required function:
+which is different to those of its inherited types:
 
 @example
 def type T : X
@@ -1258,10 +1246,9 @@ in Java) and even mixins:
 
 @example
 def type Comparable
-@{
-  def generic compare(one @@ Comparable,
-                      two @@ Comparable) : Int ...
-@}
+
+def generic compare(one @@ Comparable,
+                    two @@ Comparable) : Int ...
 
 def generic less?(one @@ Comparable, two @@ Comparable) : Bool
   (one <=> two) < 0
@@ -1575,7 +1562,7 @@ def class Person(name) : Object
 
 
 @c --------------------------------------------------------------------
-@node Explicit superclass init, Required Functions, Allocation, Types
+@node Explicit superclass init, Finalization, Allocation, Types
 @section Explicit superclass initialization
 
 It is possibly to specify how super classes are to be initialized
@@ -1620,43 +1607,7 @@ def class Student(name) : (Person, PersistentObject)
 
 
 @c --------------------------------------------------------------------
-@node Required Functions, Finalization, Explicit superclass init, Types
-@section Required Functions
-
-A type can define a list of required functions which must be implemented
-at least by one specialized method to fulfill the type's protocol.  For
-a class it is an error if a function is not implemented.
-
-@example
-def type Collection<Elt>
-@{
-  def generic add(self @@, item @@ Any) : self.Type ...
-  def generic contains?(self @@, item @@ Any) : Bool ...
-@}
-@end example
-
-Such defined required functions must be defined without body (i.e.@
-require the ellipsis on the line end) and must by default be defined
-as generic functions.  Functions declared in this way must be
-compatible with generic functions of same name defined in other places
-(independent whether defined as standalone or required generic
-functions).
-
-@c For required functions specialized parameters which refer to the
-@c enclosing type can be abbreviated with a simple `@@' marker.
-
-Required functions are inherited to subtypes. If a subtype requires the
-same function as an inherited type the ``overloaded'' function must be
-co-variant to the overwritten function, i.e.@ its return type must be
-`larger' or equal to the one of the overwritten function, etc.
-
-Note that the definition of a type protocols specifies the list of
-required functions only -- there may exist much more functions which are
-specialized on this type.
-
-
-@c --------------------------------------------------------------------
-@node Finalization, Reference types, Required Functions, Types
+@node Finalization, Reference types, Explicit superclass init, Types
 @section Finalization
 
 @cindex finalization
@@ -1887,10 +1838,9 @@ This method will match for Int-Int-Pairs only.
 @section Implicit type parameters
 
 Inside class or type declarations the type parameters are visible in
-the declaration scope: i.e.@ required methods, slot declarations,
-@code{on init} and @code{on delete} statements, the class parameters,
-and even the inheritance declaration can directly refer to these type
-parameters.
+the declaration scope: i.e.@ for slot declarations, @code{on init} and
+@code{on delete} statements, the class parameters, and even the
+inheritance declaration can directly refer to these type parameters.
 
 In the following example the class @code{MyContainer} is a possible
 collection for all types @code{T}, which can be initialized with an
@@ -1905,9 +1855,9 @@ def class MyContainer<T>(items : T[]) : (Vector<T>, Comparable)
   def generic compare(one @@ MyContainer<T>,
                       two @@ MyContainer<T>) : Int
     one._data <=> two._data
-
-  def generic slice(self @@ MyContainer<T>, index : Ordinal) : T ...
 @}
+
+def generic slice(self @@ MyContainer<'T>, index : Ordinal) : 'T ...
 @end example
 
 @cindex implicit type parametrization
@@ -1978,8 +1928,7 @@ the compiler will complain about a generic function redefinition.
 @findex isa
 @cindex type constraints
 Sometimes it is useful to further specify a type parameter, e.g.@ to
-limit possibly accepted subtypes or certain expected signatures
-(protocols).
+limit possibly accepted subtypes or certain expected signatures.
 
 This limitation can be achieved by the @code{where} special clause on
 function, class, or type declarations:
@@ -3789,10 +3738,9 @@ module stack
   export public (Stack, push, pop)
 
 def type Stack<T>
-@{
-  def generic push(stack @@ Stack<T>, obj @@ T) : Stack<T> ...
-  def generic pop(stack @@ Stack<T>) : T ...
-@}
+
+def generic push(stack @@ Stack<'T>, obj @@ 'T) : Stack<'T> ...
+def generic pop(stack @@ Stack<'T>) : 'T ...
 @end example
 
 The stack class @code{StackImpl} however is hidden in the
@@ -4389,13 +4337,14 @@ def class Pair<Car, Cdr>(car: _car : Car = nil,
     @@author gck
     @@version 1.0 ~
 @{
-  def slot car : Car
-      ~ The left side of a cell. ~
-      = _car ; public
-  def slot cdr : Cdr
-      ~ The right side of a cell. ~
-      = _cdr ; public
 @}
+
+def slot car : Car
+    ~ The left side of a cell. ~
+    = _car ; public
+def slot cdr : Cdr
+    ~ The right side of a cell. ~
+    = _cdr ; public
 
 def alias StringCell
     ~ A Pair defined for string lists.
@@ -4613,12 +4562,11 @@ classdef-clause := `class' type-name
                    [ generics-spec ] [ ctor-clause ] [ `:' inheritance ]
                    [ generics-const ]
                    [ DOCSTRING ]
-                   [ `{' { slot-def } { protocol-decl } `}' ]
+                   [ `{' { slot-def } { on-expr } `}' ]
 typedef-clause  := `type' type-name
                    [ generics-spec ] [ `:' inheritance ]
                    [ generics-const ]
                    [ DOCSTRING ]
-                   [ `{' { protocol-decl } `}' ]
 
 aliasdef-clause := `alias' type-name [ generics-spec ]
                    [ generics-const ]
@@ -4665,22 +4613,6 @@ slot-annos      := slot-annotation { `,' slot-annotation }
 slot-annotation := SYMBOL
 @end verbatim
 @end smallformat
-
-@sp 1
-
-@emph{Protocols are generic functions required on a type declaration.
-They must be declared as abstract and generic (for simplicity this
-restriction on the func-decl production is not reflected in the
-grammar).}
-@smallformat
-@verbatim
-protocol-decl   := func-decl
-                |  when-stmt
-                |  extend-stmt
-
-@end verbatim
-@end smallformat
-
 
 @sp 1
 
