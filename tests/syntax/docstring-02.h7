@@ -2,16 +2,17 @@ def class Abc<X>(x : X) : Collection<X>
     where X isa Copyable
     ~ Some X for a U ~
 {
-  def slot a : X
-      ~ The a of X ~
-      = x ; readonly
-  def slot b : X
-      ~ X's b ~
-      = x * 2
-
-  def generic req(x @ Abc<X>) : Abc<X> ...
-      ~ required! ~
+def slot a : X
+    ~ The a of X ~
+    = x ; readonly
+def slot b : X
+    ~ X's b ~
+    = x * 2
 }
+
+def generic req(x @ Abc<'X>) : Abc<'X> ...
+    ~ required! ~
+
 
 def type Y : Z
     ~ Another Y ~

@@ -127,7 +127,7 @@ namespace herschel
     Type parseGroupType(const Token& expr, bool isValue);
     Type rephraseRefType(const SrcPos& srcpos, const Type& inType, bool isValue);
 
-    void parseExtendImpl(NodeList* reqProtocol, const Token& expr);
+    void parseExtendImpl(NodeList* functions, const Token& expr);
 
 
     void transformCollForClause(const Token& token,
@@ -146,9 +146,6 @@ namespace herschel
                          bool forceOpenType = false);
     void paramsNodeListToType(FunctionParamVector* funcParams,
                               const NodeList& nl) const;
-    void protocolNodeListToType(FunctionSignatureVector* protoSignatures,
-                                const NodeList& nl) const;
-    FunctionSignature nodeToFunSignature(const FuncDefNode* node) const;
 
     AptNode* parseIntNumber(const Token& expr);
     AptNode* parseRationalNumber(const Token& expr);
