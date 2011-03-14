@@ -42,7 +42,7 @@
 <id>Slotable</id>
 </seq>
 </seq>
-<nested left='{' right='}'>
+</seq>
 <seq>
 <id>def</id>
 <id>generic</id>
@@ -51,11 +51,17 @@
 <seq>
 <id>k</id>
 <punct type='@'/>
+<seq>
+<punct type='&apos;'/>
 <id>K</id>
+</seq>
 </seq>
 </nested>
 <punct type=':'/>
+<seq>
+<punct type='&apos;'/>
 <id>V</id>
+</seq>
 <punct type='...'/>
 </seq>
 <seq>
@@ -142,11 +148,17 @@
 <seq>
 <id>k</id>
 <punct type='@'/>
+<seq>
+<punct type='&apos;'/>
 <id>K</id>
+</seq>
 </seq>
 </nested>
 <punct type=':'/>
+<seq>
+<punct type='&apos;'/>
 <id>V</id>
+</seq>
 <punct type='...'/>
 </seq>
 <seq>
@@ -157,7 +169,10 @@
 <seq>
 <id>k</id>
 <punct type='@'/>
+<seq>
+<punct type='&apos;'/>
 <id>K</id>
+</seq>
 </seq>
 </nested>
 <punct type=':'/>
@@ -175,6 +190,5 @@
 </seq>
 <punct type='...'/>
 </seq>
-</nested>
 </seq>
-</seq>
+

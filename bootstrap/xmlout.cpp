@@ -1041,7 +1041,6 @@ XmlRenderer::renderNode(const TypeDefNode* node)
   displayNodeList("params", node->params());
   displayNodeList("slots", node->slots());
   displayNodeList("on", node->onExprs());
-  displayNodeList("proto", node->reqProtocol());
   displayType("isa", node->defType());
   displayCloseTag(tagName);
 }

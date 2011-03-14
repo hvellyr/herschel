@@ -3951,16 +3951,10 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
                "Unsupported linkage for slot definition ignored");
       return parseSlotDef(defToken).toTokenVector();
     }
-    else if (fToken == Compiler::genericToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for generic method ignored");
-      return parseGenericFunctionDef(defToken, isLocal).toTokenVector();
-    }
     else {
       error(fToken.srcpos(), E_UnexpDefInClass,
             ( String("unexpected definition type '") + fToken.toString()
-              + "'in class") );
+              + "' in class") );
       return scanUntilTopExprAndResume().toTokenVector();
     }
     break;

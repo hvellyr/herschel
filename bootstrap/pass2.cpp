@@ -211,7 +211,7 @@ SecondPass::parseImport(const Token& expr)
 //------------------------------------------------------------------------------
 
 void
-SecondPass::parseExtendImpl(NodeList* reqProtocol, const Token& expr)
+SecondPass::parseExtendImpl(NodeList* functions, const Token& expr)
 {
   hr_assert(expr.isSeq() && expr.count() == 4);
   hr_assert(expr[0] == kExtendId);
@@ -228,7 +228,7 @@ SecondPass::parseExtendImpl(NodeList* reqProtocol, const Token& expr)
     const TokenVector& children = expr[3].children();
     for (size_t i = 0; i < children.size(); i++) {
       NodeList nl = parseExpr(children[i]);
-      appendNodes(*reqProtocol, nl);
+      appendNodes(*functions, nl);
     }
   }
 }
@@ -574,34 +574,6 @@ SecondPass::paramsNodeListToType(FunctionParamVector* funcParams,
 }
 
 
-FunctionSignature
-SecondPass::nodeToFunSignature(const FuncDefNode* node) const
-{
-  FunctionParamVector funcParams;
-  paramsNodeListToType(&funcParams, node->params());
-
-  return FunctionSignature(node->isGeneric(),
-                           node->name(),
-                           node->retType(),
-                           funcParams);
-}
-
-
-void
-SecondPass::protocolNodeListToType(FunctionSignatureVector* protoSignatures,
-                                   const NodeList& nl) const
-{
-  for (size_t i = 0; i < nl.size(); i++) {
-    const BaseDefNode* defnd = dynamic_cast<const BaseDefNode*>(nl[i].obj());
-    if (defnd != NULL) {
-      const FuncDefNode* fnd = dynamic_cast<const FuncDefNode*>(defnd->defNode());
-      if (fnd != NULL)
-        protoSignatures->push_back(nodeToFunSignature(fnd));
-    }
-  }
-}
-
-
 Type
 SecondPass::parseWhereConstraint(const Token& whereConstrSeq)
 {
@@ -828,7 +800,6 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
   std::vector<PrimeTuple> primeTuples;
   NodeList slotDefs;
-  NodeList reqProtocol;
   NodeList onExprs;
 
   if (ofs < seq.size() &&
@@ -848,10 +819,6 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
           NodeList nl = parseExpr(defs[i]);
           appendNodes(slotDefs, nl);
-        }
-        else if (defs[i][1] == Compiler::genericToken) {
-          NodeList nl = parseExpr(defs[i]);
-          appendNodes(reqProtocol, nl);
         }
         else {
           errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
@@ -895,9 +862,6 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
           appendNodes(onExprs, nl);
         }
       }
-      else if (defs[i][0] == kExtendId) {
-        parseExtendImpl(&reqProtocol, defs[i]);
-      }
       else {
         errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
                "Unexpected expression in type body");
@@ -931,9 +895,6 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
     }
   }
 
-  FunctionSignatureVector protoSignatures;
-  protocolNodeListToType(&protoSignatures, reqProtocol);
-
   Type defType;
   if (isClass) {
     FunctionParamVector funcParams;
@@ -953,12 +914,10 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
       genGenerics.push_back(genericTypeRef(generics[i].typeName(), true));
     }
 
-    defType = Type::newClass(fullTypeName, generics, inheritsFrom, sign,
-                             protoSignatures);
+    defType = Type::newClass(fullTypeName, generics, inheritsFrom, sign);
   }
   else {
-    defType = Type::newType(fullTypeName, generics, inheritsFrom,
-                            protoSignatures);
+    defType = Type::newType(fullTypeName, generics, inheritsFrom);
   }
 
 
@@ -978,7 +937,6 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
                                               defType,
                                               defaultApplyParams,
                                               slotDefs,
-                                              reqProtocol,
                                               onExprs),
                               isLocal));
 
@@ -1579,7 +1537,6 @@ SecondPass::parseMeasureDef(const Token& expr, size_t ofs, bool isLocal)
 
   NodeList dummyApplyParams;
   NodeList dummySlotDefs;
-  NodeList dummyReqProtocol;
   NodeList dummyOnExprs;
 
   return new TypeDefNode(expr.srcpos(),
@@ -1588,7 +1545,6 @@ SecondPass::parseMeasureDef(const Token& expr, size_t ofs, bool isLocal)
                          defMeasureType,
                          dummyApplyParams,
                          dummySlotDefs,
-                         dummyReqProtocol,
                          dummyOnExprs);
 }
 

@@ -1243,7 +1243,6 @@ namespace herschel
                 const Type&     isa,
                 const NodeList& params,
                 const NodeList& slots,
-                const NodeList& reqProtocol,
                 const NodeList& onExprs);
 
     virtual TypeDefNode* clone() const;
@@ -1260,7 +1259,6 @@ namespace herschel
     bool isClass() const;
     const NodeList& params() const;
     const NodeList& slots() const;
-    const NodeList& reqProtocol() const;
     const NodeList& onExprs() const;
 
   private:
@@ -1268,7 +1266,6 @@ namespace herschel
     bool   fIsClass;
     NodeList fParams;
     NodeList fSlots;
-    NodeList fReqProtocol;
     NodeList fOnExprs;
     Type     fIsa;
   };
