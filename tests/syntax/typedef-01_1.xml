@@ -13,7 +13,7 @@
 <id>smallgroup</id>
 <punct type=':'/>
 <id>group</id>
-<nested left='{' right='}'>
+</seq>
 <seq>
 <id>def</id>
 <id>generic</id>
@@ -29,6 +29,5 @@
 <id>smallgroup</id>
 <punct type='...'/>
 </seq>
-</nested>
 </seq>
-</seq>
+
