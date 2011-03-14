@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<type nm='Collection'>
+<isa>
+<ty:type nm='Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<generic sym='add-all!' abstract='true'>
+<params>
+<param sym='cltn' type='spec'>
+<type>
+<ty:ref gen='t' nm='C'>
+<ty:const k='isa'>
+<ty:ref nm='Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+<param sym='other' type='spec'>
+<type>
+<ty:ref gen='t' nm='X'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='C'>
+<ty:const k='isa'>
+<ty:ref nm='Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+<def>
+<type nm='OrderedCollection'>
+<isa>
+<ty:type nm='OrderedCollection'>
+<ty:isa>
+<ty:ref nm='Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<generic sym='first' abstract='true'>
+<params>
+<param sym='cltn' type='spec'>
+<type>
+<ty:ref gen='t' nm='C'>
+<ty:const k='isa'>
+<ty:ref nm='OrderedCollection'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+<def>
+<generic sym='last' abstract='true'>
+<params>
+<param sym='cltn' type='spec'>
+<type>
+<ty:ref gen='t' nm='C'>
+<ty:const k='isa'>
+<ty:ref nm='OrderedCollection'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+</compile-unit>

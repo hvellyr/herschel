@@ -73,7 +73,6 @@ namespace herschel
 
     enum ScopeType {
       kNonScopedDef,
-      kInTypeDef,
       kInClassDef
     };
 
