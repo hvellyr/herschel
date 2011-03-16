@@ -87,7 +87,7 @@
 </slot>
 </def>
 <def>
-<slot sym='a5' observable='t'>
+<slot sym='a5' viz='public'>
 <type>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
@@ -109,7 +109,7 @@
 </slot>
 </def>
 <def>
-<slot sym='a7' transient='t' readonly='t' observable='t'>
+<slot sym='a7' transient='t' readonly='t' viz='inner'>
 <type>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
@@ -136,7 +136,7 @@
 </slot>
 </def>
 <def>
-<slot sym='a10' observable='t'>
+<slot sym='a10' viz='public'>
 <type>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
@@ -152,7 +152,7 @@
 </slot>
 </def>
 <def>
-<slot sym='a12' transient='t' readonly='t' observable='t'>
+<slot sym='a12' transient='t' readonly='t' viz='inner'>
 <type>
 <ty:ref gen='t' nm='T'>
 </ty:ref>
@@ -160,7 +160,7 @@
 </slot>
 </def>
 <def>
-<slot sym='a13' observable='t'>
+<slot sym='a13' viz='outer'>
 <type>
 <ty:union>
 <ty:ref gen='t' nm='T'>

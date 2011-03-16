@@ -61,7 +61,7 @@
 </slot>
 </def>
 <def>
-<slot sym='y' readonly='t' observable='t'>
+<slot sym='y' readonly='t' transient='t'>
 <type>
 <ty:ref nm='lang|Int32'>
 </ty:ref>

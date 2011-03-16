@@ -107,7 +107,7 @@
 <punct type='='/>
 <id>a</id>
 <punct type=';'/>
-<id>observable</id>
+<id>public</id>
 </seq>
 <seq>
 <id>def</id>
@@ -135,7 +135,7 @@
 <punct type=','/>
 <id>transient</id>
 <punct type=','/>
-<id>observable</id>
+<id>inner</id>
 </seq>
 <seq>
 <id>def</id>
@@ -162,7 +162,7 @@
 <punct type=':'/>
 <id>T</id>
 <punct type=';'/>
-<id>observable</id>
+<id>public</id>
 </seq>
 <seq>
 <id>def</id>
@@ -186,7 +186,7 @@
 <punct type=','/>
 <id>transient</id>
 <punct type=','/>
-<id>observable</id>
+<id>inner</id>
 </seq>
 <seq>
 <id>def</id>
@@ -199,7 +199,7 @@
 <id>Bool</id>
 </nested>
 <punct type=';'/>
-<id>observable</id>
+<id>outer</id>
 </seq>
 </nested>
 </seq>

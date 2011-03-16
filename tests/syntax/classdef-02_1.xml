@@ -80,7 +80,7 @@
 <punct type=';'/>
 <id>readonly</id>
 <punct type=','/>
-<id>observable</id>
+<id>transient</id>
 </seq>
 <seq>
 <id>def</id>

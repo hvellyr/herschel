@@ -1324,9 +1324,6 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
       else if (seq[ofs] == Compiler::readonlyToken) {
         slotFlags |= kReadonlySlot;
       }
-      else if (seq[ofs] == Compiler::observableToken) {
-        slotFlags |= kObservableSlot;
-      }
       else if (seq[ofs] == Compiler::autoToken) {
         slotFlags |= kAutoSlot;
       }
