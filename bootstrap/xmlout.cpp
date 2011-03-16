@@ -652,9 +652,6 @@ XmlRenderer::renderNode(const SlotdefNode* node)
   if ((node->flags() & kReadonlySlot) != 0) {
     attrs << " readonly='t'";
   }
-  if ((node->flags() & kObservableSlot) != 0) {
-    attrs << " observable='t'";
-  }
   if ((node->flags() & kAutoSlot) != 0) {
     attrs << " auto='t'";
   }

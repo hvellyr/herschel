@@ -1353,8 +1353,6 @@ separated by a @code{;}.  The following annotations are defined:
 @findex public
 @findex outer
 @findex inner
-@findex observable
-@findex Observable
 @findex slot!
 @findex auto
 @table @code
@@ -1374,12 +1372,6 @@ automatic serialization.
 Not mutator function is created automaticly for this slot.  The
 function can be add later manually using the @code{slot!()} builtin,
 of course (see @ref{SlotAccess, Access to type slots}).
-@item observable
-The slot is created as @dfn{observable}, i.e.@ changing its value
-emits a message to all connected observers.  The message emitted is
-constructed from the slot name like this
-@code{on-<slotname>-changed}.  Note that the class itself
-automatically becomes an @code{Observable} by this flag.
 @end table
 
 Some examples:
@@ -1397,7 +1389,7 @@ An example of an annotated slot:
 @example
 def class Button : Widget
 @{
-  def slot state : ButtonState = ButtonState.down ; observable
+  def slot state : ButtonState = ButtonState.down ; transient
 @}
 @end example
 @end deffn

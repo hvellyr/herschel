@@ -89,7 +89,6 @@ namespace herschel
     static const Token innerToken;
     static const Token macroToken;
     static const Token measureToken;
-    static const Token observableToken;
     static const Token outerToken;
     static const Token primeToken;
     static const Token privateToken;
