@@ -3261,13 +3261,20 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 
   Token docString = parseOptDocString();
 
-  TokenVector requiredProtocols;
+  TokenVector classInternals;
   SrcPos bracePos;
   if (fToken == kBraceOpen) {
-    bracePos = fToken.srcpos();
-    requiredProtocols = parseTopOrExprList(true, (isClass
-                                                  ? kInClassDef
-                                                  : kInTypeDef) );
+    if (isClass) {
+      bracePos = fToken.srcpos();
+      classInternals = parseTopOrExprList(true, kInClassDef);
+    }
+    else {
+      warningf(fToken.srcpos(), E_TypeHasNoBraces,
+             "def type does not accept body");
+      scanUntilBrace();
+      // and furtheron remove the following }
+      nextToken();
+    }
   }
 
   Token result = Token() << defToken << tagToken << symToken;
@@ -3285,8 +3292,8 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
   if (docString.isSet())
     result << docString;
 
-  if (!requiredProtocols.empty())
-    result << wrapInBlock(bracePos, requiredProtocols);
+  if (!classInternals.empty())
+    result << wrapInBlock(bracePos, classInternals);
 
   return result;
 }
@@ -3937,22 +3944,6 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
   }
 
   switch (scope) {
-  case kInTypeDef:
-    if (fToken == Compiler::genericToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for generic method ignored");
-
-      return parseGenericFunctionDef(defToken, isLocal).toTokenVector();
-    }
-    else {
-      error(fToken.srcpos(), E_UnexpDefInClass,
-            ( String("unexpected definition type '") + fToken.toString()
-              + "'in class") );
-      return scanUntilTopExprAndResume().toTokenVector();
-    }
-    break;
-
   case kInClassDef:
     if (fToken == Compiler::slotToken) {
       if (linkage.isSet())
@@ -3960,16 +3951,10 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
                "Unsupported linkage for slot definition ignored");
       return parseSlotDef(defToken).toTokenVector();
     }
-    else if (fToken == Compiler::genericToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for generic method ignored");
-      return parseGenericFunctionDef(defToken, isLocal).toTokenVector();
-    }
     else {
       error(fToken.srcpos(), E_UnexpDefInClass,
             ( String("unexpected definition type '") + fToken.toString()
-              + "'in class") );
+              + "' in class") );
       return scanUntilTopExprAndResume().toTokenVector();
     }
     break;

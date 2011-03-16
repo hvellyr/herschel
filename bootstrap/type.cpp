@@ -319,14 +319,12 @@ namespace herschel
                  bool isInstantiatable,
                  const TypeVector& generics,
                  const Type& inherit,
-                 const FunctionSignature& applySign,
-                 const FunctionSignatureVector& protocol)
+                 const FunctionSignature& applySign)
       : fName(name),
         fIsInstantiatable(isInstantiatable),
         fGenerics(generics),
         fInherit(inherit),
-        fApplySign(applySign),
-        fProtocol(protocol)
+        fApplySign(applySign)
     { }
 
 
@@ -335,8 +333,7 @@ namespace herschel
       return new TypeTypeImpl(fName, fIsInstantiatable,
                               vectorClone(fGenerics),
                               fInherit.clone(),
-                              fApplySign.clone(),
-                              vectorClone(fProtocol));
+                              fApplySign.clone());
     }
 
 
@@ -349,8 +346,7 @@ namespace herschel
               fName == o->fName &&
               fIsInstantiatable == o->fIsInstantiatable &&
               fInherit == o->fInherit &&
-              herschel::isEqual(fGenerics, o->fGenerics) &&
-              herschel::isEqual(fProtocol, o->fProtocol));
+              herschel::isEqual(fGenerics, o->fGenerics));
     }
 
 
@@ -378,12 +374,6 @@ namespace herschel
     }
 
 
-    const FunctionSignatureVector& protocol() const
-    {
-      return fProtocol;
-    }
-
-
     const TypeVector& generics() const
     {
       return fGenerics;
@@ -404,10 +394,6 @@ namespace herschel
         }
       }
       fInherit = fInherit.replaceGenerics(typeMap);
-
-      for (size_t i = 0; i < fProtocol.size(); ++i) {
-        fProtocol[i].replaceGenerics(typeMap);
-      }
     }
 
 
@@ -424,13 +410,6 @@ namespace herschel
         for (size_t i = 0; i < fGenerics.size(); i++)
           buf << fGenerics[i].toString();
         buf << "</ty:gen>\n";
-      }
-
-      if (!fProtocol.empty()) {
-        buf << "<ty:proto>\n";
-        for (size_t i = 0; i < fProtocol.size(); i++)
-          buf << fProtocol[i].toString();
-        buf << "</ty:proto>\n";
       }
 
       buf << "</ty:type>\n";
@@ -471,7 +450,6 @@ namespace herschel
     TypeVector              fGenerics;
     Type                    fInherit;
     FunctionSignature       fApplySign;
-    FunctionSignatureVector fProtocol;
   };
 
 
@@ -1107,23 +1085,9 @@ Type
 Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit)
 {
-  FunctionSignatureVector dummyProtocol;
   return Type(kType_Type, true, false,
               new TypeTypeImpl(name, false, generics, inherit,
-                               FunctionSignature(),
-                               dummyProtocol));
-}
-
-
-Type
-Type::newType(const String& name, const TypeVector& generics,
-              const Type& inherit,
-              const FunctionSignatureVector& protocol)
-{
-  return Type(kType_Type, true, false,
-              new TypeTypeImpl(name, false, generics, inherit,
-                               FunctionSignature(),
-                               protocol));
+                               FunctionSignature()));
 }
 
 
@@ -1131,21 +1095,8 @@ Type
 Type::newClass(const String& name, const TypeVector& generics,
                const Type& inherit, const FunctionSignature& applySign)
 {
-  FunctionSignatureVector dummyProtocol;
   return Type(kType_Class, true, false,
-              new TypeTypeImpl(name, true, generics, inherit, applySign,
-                               dummyProtocol));
-}
-
-
-Type
-Type::newClass(const String& name, const TypeVector& generics,
-               const Type& inherit, const FunctionSignature& applySign,
-               const FunctionSignatureVector& protocol)
-{
-  return Type(kType_Class, true, false,
-              new TypeTypeImpl(name, true, generics, inherit, applySign,
-                               protocol));
+              new TypeTypeImpl(name, true, generics, inherit, applySign));
 }
 
 
@@ -1646,14 +1597,6 @@ Type::typeInheritance() const
 {
   hr_assert(isType() || isClass());
   return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->inherit();
-}
-
-
-const FunctionSignatureVector&
-Type::typeProtocol() const
-{
-  hr_assert(isType() || isClass());
-  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->protocol();
 }
 
 

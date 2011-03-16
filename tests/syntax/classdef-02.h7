@@ -8,7 +8,5 @@ def class X<A, B>(a, b) : (C, D, E, F<B>)
   def slot x : Int = a ; readonly
   def slot y : Int = b ; readonly, observable
 
-  def generic f(x @ 'T) ...
-
   def slot z : Cache ; transient
 }

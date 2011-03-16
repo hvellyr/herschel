@@ -2,6 +2,5 @@ def type smallint : Int16
 
 
 def type smallgroup : group
-{
-  def generic init(grp @ smallgroup) : smallgroup ...
-}
+
+def generic init(grp @ smallgroup) : smallgroup ...

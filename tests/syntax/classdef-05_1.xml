@@ -15,7 +15,7 @@
 <id>def</id>
 <id>type</id>
 <id>Comparable</id>
-<nested left='{' right='}'>
+</seq>
 <seq>
 <id>def</id>
 <id>generic</id>
@@ -70,6 +70,5 @@
 <id>Bool</id>
 <punct type='...'/>
 </seq>
-</nested>
 </seq>
-</seq>
+

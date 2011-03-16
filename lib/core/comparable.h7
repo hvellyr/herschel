@@ -37,14 +37,14 @@ import "core/core.h7"
 
 
 def type Comparable
-{
-  def generic compare(one @ 'S, two @ 'T) : Int ...
-      ~ Compare value @var{one} with @var{two}.
 
-      @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
-               @var{one} is greater than @var{two}, and a value below 0 if
-               @var{one} is less. ~
-}
+def generic compare(one @ 'S, two @ 'T) : Int ...
+    ~ Compare value @var{one} with @var{two}.
+
+    @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
+             @var{one} is greater than @var{two}, and a value below 0 if
+             @var{one} is less. ~
+
 
 def generic equal?(one @ 'S, two @ 'T) : Bool ...
     ~ Indicates whether @var{one} is equal to @var{two}. ~

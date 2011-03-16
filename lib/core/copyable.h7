@@ -35,16 +35,16 @@ export public(Copyable, deep-copy)
 
 
 def type Copyable
-{
-  def generic copy(obj @ 'T) : 'T
-      where T isa Copyable ...
-      ~ Returns a shallow copy of @var{obj}. ~
 
-  def generic deepen(obj @ 'T) : 'T
-      where T isa Copyable ...
-      ~ Copies all child objects using @code{copy} and @code{deepen} on
-      them. ~
-}
+def generic copy(obj @ 'T) : 'T
+    where T isa Copyable ...
+    ~ Returns a shallow copy of @var{obj}. ~
+
+def generic deepen(obj @ 'T) : 'T
+    where T isa Copyable ...
+    ~ Copies all child objects using @code{copy} and @code{deepen} on
+    them. ~
+
 
 def generic deep-copy(obj @ 'T) : 'T
     where T isa Copyable ...
