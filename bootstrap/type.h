@@ -32,7 +32,6 @@ namespace herschel
 
   typedef std::vector<Type> TypeVector;
   typedef std::vector<TypeConstraint> TypeConstVector;
-  typedef std::vector<FunctionSignature> FunctionSignatureVector;
   typedef std::vector<FunctionParameter> FunctionParamVector;
   typedef std::map<String, Token> StringTokenMap;
 
@@ -135,15 +134,9 @@ namespace herschel
     //! parameters must be fill in (in generics).
     static Type newType(const String& name, const TypeVector& generics,
                         const Type& inherit);
-    static Type newType(const String& name, const TypeVector& generics,
-                        const Type& inherit,
-                        const FunctionSignatureVector& protocol);
 
     static Type newClass(const String& name, const TypeVector& generics,
                          const Type& inherit, const FunctionSignature& applySign);
-    static Type newClass(const String& name, const TypeVector& generics,
-                         const Type& inherit, const FunctionSignature& applySign,
-                         const FunctionSignatureVector& protocol);
 
     static Type newAlias(const String& name, const TypeVector& generics,
                          const Type& isa);
@@ -213,7 +206,6 @@ namespace herschel
     //!@ custom types
     bool isType() const;
     const Type& typeInheritance() const;
-    const FunctionSignatureVector& typeProtocol() const;
     const FunctionSignature& applySignature() const;
 
 

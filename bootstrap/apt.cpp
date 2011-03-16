@@ -2167,14 +2167,12 @@ TypeDefNode::TypeDefNode(const SrcPos&   srcpos,
                          const Type&     isa,
                          const NodeList& params,
                          const NodeList& slots,
-                         const NodeList& reqProtocol,
                          const NodeList& onExprs)
   : AptNode(srcpos),
     fTypeName(typeName),
     fIsClass(isClass),
     fParams(params),
     fSlots(slots),
-    fReqProtocol(reqProtocol),
     fOnExprs(onExprs),
     fIsa(isa)
 { }
@@ -2187,7 +2185,6 @@ TypeDefNode::clone() const
                     new TypeDefNode(fSrcPos, fTypeName, fIsClass, fIsa.clone(),
                                     copyNodes(fParams),
                                     copyNodes(fSlots),
-                                    copyNodes(fReqProtocol),
                                     copyNodes(fOnExprs)));
 }
 
@@ -2224,13 +2221,6 @@ const NodeList&
 TypeDefNode::slots() const
 {
   return fSlots;
-}
-
-
-const NodeList&
-TypeDefNode::reqProtocol() const
-{
-  return fReqProtocol;
 }
 
 

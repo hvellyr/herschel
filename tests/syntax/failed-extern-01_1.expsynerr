@@ -1,4 +1,3 @@
-3  ; error ; e001
-4  ; error ; e001
-8  ; error ; e001
-11 ; error ; e001
+3  ; error ; e001 ; Unsupported linkage for type definition ignored
+4  ; error ; e001 ; Unsupported linkage for alias definition ignored
+6  ; error ; e001 ; Unsupported linkage for generic method ignored

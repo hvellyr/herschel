@@ -4,7 +4,7 @@
 <id>def</id>
 <id>type</id>
 <id>XYZ</id>
-<nested left='{' right='}'>
+</seq>
 <seq>
 <id>extend</id>
 <id>module</id>
@@ -41,8 +41,6 @@
 <punct type=':'/>
 <id>Any</id>
 <punct type='...'/>
-</seq>
-</nested>
 </seq>
 </seq>
 

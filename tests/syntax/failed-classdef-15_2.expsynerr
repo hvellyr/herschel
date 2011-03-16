@@ -1,0 +1,5 @@
+8  ; error ; 4025 ; unexpected definition type 'generic'in class
+10 ; error ; 4025 ; unexpected definition type 'generic'in class
+14 ; error ; 4025 ; unexpected definition type 'generic'in class
+18 ; error ; 4025 ; unexpected definition type 'generic'in class
+20 ; error ; 4025 ; unexpected definition type 'generic'in class

@@ -14,6 +14,15 @@
 </type>
 </param>
 </params>
+<slots>
+<def>
+<slot sym='a'>
+<init>
+<int ty='lang|Int32'>45</int>
+</init>
+</slot>
+</def>
+</slots>
 <isa>
 <ty:type nm='Abc' inst='t'>
 <ty:isa>
@@ -106,113 +115,17 @@
 </rettype>
 <body>
 <block>
+<apply>
+<symbol>lang|slot!</symbol>
+<args>
+<symbol>__obj_0</symbol>
+<keyw>a</keyw>
+<int ty='lang|Int32'>45</int>
+</args>
+</apply>
 <symbol>__obj_0</symbol>
 </block>
 </body>
 </func>
-</def>
-<def>
-<generic sym='item' abstract='true'>
-<params>
-<param sym='k' type='spec'>
-<type>
-<ty:ref gen='t' nm='K'>
-</ty:ref>
-</type>
-</param>
-</params>
-<rettype>
-<ty:ref gen='t' nm='V'>
-</ty:ref>
-</rettype>
-</generic>
-</def>
-<def>
-<generic sym='itemx' abstract='true'>
-<params>
-<param sym='k' type='spec'>
-<type>
-<ty:array ind='0'>
-<ty:ref gen='t' nm='X'>
-<ty:const k='isa'>
-<ty:ref nm='VeryComparable'>
-</ty:ref>
-</ty:const>
-</ty:ref>
-</ty:array>
-</type>
-</param>
-</params>
-<rettype>
-<ty:ref gen='t' nm='Y'>
-<ty:const k='isa'>
-<ty:ref nm='NearlySlotable'>
-</ty:ref>
-</ty:const>
-</ty:ref>
-</rettype>
-</generic>
-</def>
-<def>
-<generic sym='itemy' abstract='true'>
-<params>
-<param sym='k' type='spec'>
-<type>
-<ty:array ind='0'>
-<ty:ref gen='t' nm='K'>
-<ty:const k='isa'>
-<ty:ref nm='VeryComparable'>
-</ty:ref>
-</ty:const>
-</ty:ref>
-</ty:array>
-</type>
-</param>
-</params>
-<rettype>
-<ty:ref gen='t' nm='V'>
-<ty:const k='isa'>
-<ty:ref nm='NearlySlotable'>
-</ty:ref>
-</ty:const>
-</ty:ref>
-</rettype>
-</generic>
-</def>
-<def>
-<generic sym='itemz' abstract='true'>
-<params>
-<param sym='k' type='spec'>
-<type>
-<ty:ref gen='t' nm='K'>
-</ty:ref>
-</type>
-</param>
-</params>
-<rettype>
-<ty:ref gen='t' nm='V'>
-</ty:ref>
-</rettype>
-</generic>
-</def>
-<def>
-<generic sym='itemf' abstract='true'>
-<params>
-<param sym='k' type='spec'>
-<type>
-<ty:ref gen='t' nm='K'>
-</ty:ref>
-</type>
-</param>
-</params>
-<rettype>
-<ty:ref gen='t' nm='V'>
-<ty:const k='isa'>
-<ty:ref nm='Copyable'>
-</ty:ref>
-</ty:const>
-</ty:ref>
-</rettype>
-</generic>
 </def>
 </compile-unit>
