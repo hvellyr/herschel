@@ -19,19 +19,13 @@ Documentation
 
 Bootstrap compiler
 
-  - check that left hand variables are not const.
-
-  - do an error counter and stop after xxx errors.  Generally don't go into
-    real compilation, when we found (severe) errors.  LLVM crashes to easily.
-
-  - review some kind of auto-number coercion?
+  - auto create accessor/modifier functions for slots
 
   - support 'auto', 'public', 'outer', 'inner', slots in ctor construction.
 
-  - auto create accessor/modifier functions for slots
+  - check that left hand variables are not const.
 
-  - call superclass ctors from init-functor.  Do we need the 'on
-    super(super-type)' construct?
+  - review some kind of auto-number coercion?
 
   - 'T are treated as Any inside of function bodie for direct comparison
     and need type-check boundaries at runtime.  The type checker must make
@@ -49,6 +43,9 @@ Bootstrap compiler
 
      - how to express nil-ness with the normal type machine
 
+
+  - do an error counter and stop after xxx errors.  Generally don't go into
+    real compilation, when we found (severe) errors.  LLVM crashes to easily.
 
   - constraints
 
@@ -75,7 +72,7 @@ Bootstrap compiler
     the unit transformation inplace (if simple enough).  Register
     unit-transform calls as special functions.
 
-  - get rid of nested functions
+  - transform nested functions
     - detect closure variable access
 
     - detect whether nested functions can simply be inlined
@@ -101,8 +98,6 @@ Bootstrap compiler
 
 
 Language and ideas:
-
-  - remove required protocols from class/type specifications.
 
   - remove function signature overwriting.  We do not support multiple
     functions with the same base name but different parameter counts?
