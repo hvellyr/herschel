@@ -110,7 +110,7 @@ ExternCParser::parseTypeSpec()
   }
 
   if (type == String("void") || type == String("float") || type == String("double"))
-    return Token(srcpos, makeCTypeName(type, true, ptrDepth));
+    return Token(srcpos, makeCTypeName(type, K(isSigned), ptrDepth));
   else if (type == String("char") || type == String("short") ||
            type == String("int") || type == String("long"))
     return Token(srcpos, makeCTypeName(type, isSigned, ptrDepth));

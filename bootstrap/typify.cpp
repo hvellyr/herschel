@@ -30,7 +30,7 @@ using namespace herschel;
 //----------------------------------------------------------------------------
 
 TypifyPass::TypifyPass(int level)
-  : AptNodeCompilePass(level, true)
+  : AptNodeCompilePass(level, K(showNodeType))
 {}
 
 
@@ -142,7 +142,8 @@ void
 Typifier::typify(SymbolNode* node)
 {
   if (fPhase == kTypify) {
-    const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
+    const AptNode* var = node->scope()->lookupVarOrFunc(node->name(),
+                                                        K(showAmbiguousSymDef));
     if (var != NULL) {
       if (const FuncDefNode* fdn = dynamic_cast<const FuncDefNode*>(var))
         node->setLinkage(fdn->linkage());
@@ -151,7 +152,7 @@ Typifier::typify(SymbolNode* node)
       return;
     }
 
-    Type type0 = node->scope()->lookupType(node->name(), true);
+    Type type0 = node->scope()->lookupType(node->name(), K(showAmbiguousSymDef));
     Type type1 = node->scope()->normalizeType(type0);
 
     Type type2 = degeneralizeType(node->srcpos(), type1, node->generics());
@@ -172,7 +173,7 @@ Typifier::typify(ArrayTypeNode* node)
                   ? symnd->type()
                   : node->typeNode()->type() );
     Type type1 = node->scope()->normalizeType(type);
-    node->setType(Type::newClassOf(Type::newArray(type1, 0, true)));
+    node->setType(Type::newClassOf(Type::newArray(type1, 0, K(isValue))));
   }
 }
 
@@ -226,7 +227,8 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
                     : Names::kAnyTypeName );
   Type bindty = ( node->type().isDef()
                   ? node->scope()->lookupType(node->type())
-                  : node->scope()->lookupType(Names::kAnyTypeName, true) );
+                  : node->scope()->lookupType(Names::kAnyTypeName,
+                                              K(showAmbiguousSymDef)) );
   if (!bindty.isDef()) {
     errorf(node->srcpos(), E_UndefinedType,
            "undefined type '%s' in %s",
@@ -295,22 +297,22 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
 
     if (prmnd->flags() == kPosArg) {
       params.push_back(FunctionParameter(FunctionParameter::kParamPos,
-                                         false, String(),
+                                         !K(isSpec), String(),
                                          prmnd->type()));
     }
     else if (prmnd->flags() == kSpecArg) {
       params.push_back(FunctionParameter(FunctionParameter::kParamPos,
-                                         true, String(),
+                                         K(isSpec), String(),
                                          prmnd->type()));
     }
     else if (prmnd->flags() == kNamedArg) {
       params.push_back(FunctionParameter(FunctionParameter::kParamNamed,
-                                         false, prmnd->key(),
+                                         !K(isSpec), prmnd->key(),
                                          prmnd->type()));
     }
     else if (prmnd->flags() == kRestArg) {
       params.push_back(FunctionParameter(FunctionParameter::kParamRest,
-                                         false, String(),
+                                         !K(isSpec), String(),
                                          prmnd->type()));
     }
     else {
@@ -336,7 +338,8 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
                       : Names::kAnyTypeName );
     Type retty = ( node->retType().isDef()
                    ? node->scope()->lookupType(node->retType())
-                   : node->scope()->lookupType(Names::kAnyTypeName, true) );
+                   : node->scope()->lookupType(Names::kAnyTypeName,
+                                               K(showAmbiguousSymDef)) );
     if (!retty.isDef()) {
       errorf(node->srcpos(), E_UndefinedType,
              "undefined return type '%s'",
@@ -348,7 +351,7 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
     }
   }
 
-  FunctionSignature sign(false, String(), node->retType(), params);
+  FunctionSignature sign(!K(isGeneric), String(), node->retType(), params);
   node->setType(Type::newFunction(sign));
 }
 
@@ -449,7 +452,8 @@ Typifier::typify(FuncDefNode* node)
       // function implementation.  The following conditions are checked in
       // annotate.cpp already.
       const FuncDefNode* genericDef = NULL;
-      const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
+      const AptNode* var = node->scope()->lookupVarOrFunc(node->name(),
+                                                          K(showAmbiguousSymDef));
       if (var != NULL &&
           (genericDef = dynamic_cast<const FuncDefNode*>(var)) != NULL &&
           genericDef->isGeneric())
@@ -755,7 +759,8 @@ Typifier::typify(ApplyNode* node)
     if (node->isSimpleCall()) {
       const FunctionNode* funcNode = (
         dynamic_cast<const FunctionNode*>(node->scope()
-                                          ->lookupFunction(node->simpleCallName(), true)) );
+                                          ->lookupFunction(node->simpleCallName(),
+                                                           K(showAmbiguousSymDef))) );
       if (funcNode != NULL) {
         // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
         // out->render(const_cast<FunctionNode*>(funcNode));
@@ -796,7 +801,8 @@ Typifier::typify(AssignNode* node)
     SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->lvalue());
     hr_assert(symNode != NULL);
 
-    const AptNode* var = node->scope()->lookupVarOrFunc(symNode->name(), true);
+    const AptNode* var = node->scope()->lookupVarOrFunc(symNode->name(),
+                                                        K(showAmbiguousSymDef));
     VardefNode* vardefNode = const_cast<VardefNode*>(dynamic_cast<const VardefNode*>(var));
     hr_assert(vardefNode != NULL);
 
@@ -893,7 +899,8 @@ Typifier::checkBinaryFunctionCall(BinaryNode* node,
                                   AptNode* leftArg, AptNode* rightArg)
 {
   const FunctionNode* funcNode = dynamic_cast<const FunctionNode*>(
-    node->scope()->lookupFunction(funcName, true));
+    node->scope()->lookupFunction(funcName,
+                                  K(showAmbiguousSymDef)));
 
   if (funcNode != NULL) {
     // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
@@ -941,14 +948,14 @@ Typifier::typify(BinaryNode* node)
         return;
       }
       if (leftty.isNumber() || rightty.isNumber()) {
-        node->setType(Type::newTypeRef(Names::kNumberTypeName, true));
+        node->setType(Type::newTypeRef(Names::kNumberTypeName, K(isValue)));
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
         return;
       }
 
       if (leftty.isComplex() || rightty.isComplex()) {
-        node->setType(Type::newTypeRef(Names::kComplexTypeName, true));
+        node->setType(Type::newTypeRef(Names::kComplexTypeName, K(isValue)));
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
         return;
@@ -974,7 +981,8 @@ Typifier::typify(BinaryNode* node)
       }
 
       if (leftty.isRational() || rightty.isRational()) {
-        node->setType(Type::newTypeRef(Names::kRationalTypeName, true));
+        node->setType(Type::newTypeRef(Names::kRationalTypeName,
+                                       K(isValue)));
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
         return;
@@ -1197,7 +1205,7 @@ Typifier::typify(IfNode* node)
           errorf(node->srcpos(), E_IfConsqTypeMismatch,
                  "types for if consequent and alternate branch do not match");
         }
-        node->setType(Type::newAny(true));
+        node->setType(Type::newAny(K(isValue)));
         annotateTypeConv(node->consequent(), Type::newAny());
         annotateTypeConv(node->alternate(), Type::newAny());
         annotateTypeConv(node, Type::newAny());
@@ -1209,7 +1217,7 @@ Typifier::typify(IfNode* node)
         // have an alternate branch.
         errorf(node->srcpos(), E_IfAltTypeMismatch,
                "unspecified alternate branch do not match type with consequent");
-        node->setType(Type::newAny(true));
+        node->setType(Type::newAny(K(isValue)));
       }
       else {
         node->setType(node->consequent()->type());
@@ -1296,14 +1304,14 @@ Typifier::typify(RangeNode* node)
     {
       errorf(node->srcpos(), E_RangeTypeMismatch,
              "partial open types in range declaration defeats generics usage");
-      node->setType(newRangeType(Type::newAny(true)));
+      node->setType(newRangeType(Type::newAny(K(isValue))));
       return;
     }
 
     if (!isSameType(fromType, toType, node->scope(), node->srcpos()))
     {
       errorf(node->srcpos(), E_RangeTypeMismatch, "type of range is ambiguous");
-      node->setType(newRangeType(Type::newAny(true)));
+      node->setType(newRangeType(Type::newAny(K(isValue))));
       return;
     }
 
@@ -1314,7 +1322,7 @@ Typifier::typify(RangeNode* node)
       if (byIsOpen && byIsOpen != fromIsOpen) {
         errorf(node->srcpos(), E_RangeTypeMismatch,
                "partial open types in range declaration defeats generics usage");
-        node->setType(newRangeType(Type::newAny(true)));
+        node->setType(newRangeType(Type::newAny(K(isValue))));
         return;
       }
 
@@ -1322,7 +1330,7 @@ Typifier::typify(RangeNode* node)
       {
         errorf(node->srcpos(), E_RangeTypeMismatch,
                "step type does not match range type");
-        node->setType(newRangeType(Type::newAny(true)));
+        node->setType(newRangeType(Type::newAny(K(isValue))));
         return;
       }
     }
@@ -1353,7 +1361,7 @@ Typifier::typify(WhileNode* node)
     // the while expression should never be in tail position
     warningf(node->srcpos(), E_WhileTypeMismatch,
              "while in tail position enforces Any type");
-    node->setType(Type::newAny(true));
+    node->setType(Type::newAny(K(isValue)));
   }
   else
     node->setType(node->body()->type());
@@ -1370,7 +1378,7 @@ mapCommonType(Type& resultType, AptNode* node)
     resultType = ty0;
   }
   else if (!isSameType(ty0, resultType, node->scope(), node->srcpos())) {
-    resultType = Type::newAny(true);
+    resultType = Type::newAny(K(isValue));
     return false;
   }
 
@@ -1392,7 +1400,7 @@ Typifier::typify(VectorNode* node)
   }
 
   if (!valueType.isDef())
-    valueType = Type::newAny(true);
+    valueType = Type::newAny(K(isValue));
 
   for (size_t i = 0; i < nl.size(); i++)
     annotateTypeConv(nl[i], valueType);
@@ -1400,7 +1408,7 @@ Typifier::typify(VectorNode* node)
   node->setType(Type::newTypeRef(Names::kVectorTypeName,
                                  newTypeVector(valueType),
                                  newTypeConstVector(),
-                                 true));
+                                 K(isValue)));
 }
 
 
@@ -1424,9 +1432,9 @@ Typifier::typify(DictNode* node)
   }
 
   if (!keyType.isDef())
-    keyType = Type::newAny(true);
+    keyType = Type::newAny(K(isValue));
   if (!valueType.isDef())
-    valueType = Type::newAny(true);
+    valueType = Type::newAny(K(isValue));
 
   for (size_t i = 0; i < nl.size(); i++) {
     BinaryNode* pair = dynamic_cast<BinaryNode*>(nl[i].obj());
@@ -1439,7 +1447,7 @@ Typifier::typify(DictNode* node)
   node->setType(Type::newTypeRef(Names::kMapTypeName,
                                  newTypeVector(keyType, valueType),
                                  newTypeConstVector(),
-                                 true));
+                                 K(isValue)));
 }
 
 
@@ -1457,12 +1465,12 @@ Typifier::typify(ArrayNode* node)
   }
 
   if (!valueType.isDef())
-    valueType = Type::newAny(true);
+    valueType = Type::newAny(K(isValue));
 
   for (size_t i = 0; i < nl.size(); i++)
     annotateTypeConv(nl[i], valueType);
 
-  node->setType(Type::newArray(valueType, nl.size(), true));
+  node->setType(Type::newArray(valueType, nl.size(), K(isValue)));
 }
 
 
@@ -1477,12 +1485,12 @@ Typifier::typify(CastNode* node)
       if (!type.isDef()) {
         errorf(node->srcpos(), E_UndefinedType,
                "undefined type '%s'", (const char*)StrHelper(node->type().toString()));
-        node->setType(Type::newAny(true));
+        node->setType(Type::newAny(K(isValue)));
       }
       else {
         if (isInvariant(node->base()->type(), type, node->scope(), node->srcpos())) {
           errorf(node->srcpos(), E_InvariantType, "Cast to invariant type");
-          node->setType(Type::newAny(true));
+          node->setType(Type::newAny(K(isValue)));
         }
         else
           node->setType(type);
@@ -1504,12 +1512,12 @@ namespace herschel
   {
     Type ty = ( type.isDef()
                 ? node->scope()->lookupType(type)
-                : node->scope()->lookupType(defaultTypeName, true) );
+                : node->scope()->lookupType(defaultTypeName, K(showAmbiguousSymDef)) );
 
     if (!ty.isDef()) {
       errorf(node->srcpos(), E_UndefinedType,
              "undefined type '%s'", (const char*)StrHelper(defaultTypeName));
-      node->setType(Type::newAny(true));
+      node->setType(Type::newAny(K(isValue)));
     }
     else {
       if (maybeImaginary && ty.isAnyNumber()) {
@@ -1526,7 +1534,8 @@ void
 Typifier::typify(BoolNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Names::kBoolTypeName, false);
+    typifyNodeType(node, Type(), Names::kBoolTypeName,
+                   !K(maybeImaginary));
   }
 }
 
@@ -1535,7 +1544,8 @@ void
 Typifier::typify(CharNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Names::kCharTypeName, false);
+    typifyNodeType(node, Type(), Names::kCharTypeName,
+                   !K(maybeImaginary));
   }
 }
 
@@ -1545,7 +1555,7 @@ Typifier::typify(RationalNode* node)
 {
   if (fPhase == kTypify) {
     typifyNodeType(node, node->type(), Names::kRationalTypeName,
-                   true);
+                   K(maybeImaginary));
   }
 }
 
@@ -1554,7 +1564,8 @@ void
 Typifier::typify(RealNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, node->type(), Names::kFloat32TypeName, true);
+    typifyNodeType(node, node->type(), Names::kFloat32TypeName,
+                   K(maybeImaginary));
   }
 }
 
@@ -1563,7 +1574,8 @@ void
 Typifier::typify(IntNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, node->type(), Names::kInt32TypeName, true);
+    typifyNodeType(node, node->type(), Names::kInt32TypeName,
+                   K(maybeImaginary));
   }
 }
 
@@ -1572,7 +1584,8 @@ void
 Typifier::typify(StringNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Names::kStringTypeName, false);
+    typifyNodeType(node, Type(), Names::kStringTypeName,
+                   !K(maybeImaginary));
   }
 }
 
@@ -1581,7 +1594,8 @@ void
 Typifier::typify(KeywordNode* node)
 {
   if (fPhase == kTypify) {
-    typifyNodeType(node, Type(), Names::kKeywordTypeName, false);
+    typifyNodeType(node, Type(), Names::kKeywordTypeName,
+                   !K(maybeImaginary));
   }
 }
 

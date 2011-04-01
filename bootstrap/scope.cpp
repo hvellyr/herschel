@@ -184,7 +184,8 @@ void
 Scope::registerScopeItem(const ScopeName& name, ScopeItem* item)
 {
   hr_assert(item != NULL);
-  hr_assert(lookupItemLocalImpl(SrcPos(), name, false, false).fItem == NULL);
+  hr_assert(lookupItemLocalImpl(SrcPos(), name,
+                                !K(showError), !K(doAutoMatch)).fItem == NULL);
 
   ScopeName base(name.fDomain, herschel::baseName(name.fName));
   String ns(herschel::nsName(name.fName));
@@ -201,7 +202,7 @@ Scope::LookupResult
 Scope::lookupItemLocal(const SrcPos& srcpos,
                        const ScopeName& name, bool showError) const
 {
-  return lookupItemLocalImpl(srcpos, name, showError, true);
+  return lookupItemLocalImpl(srcpos, name, showError, K(doAutoMatch));
 }
 
 
@@ -217,25 +218,27 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
   if (it != fMap.end()) {
     if (doAutoMatch && !isQualified(name.fName)) {
       if (it->second.size() == 1) {
-        return LookupResult(it->second.begin()->second.obj(), false);
+        return LookupResult(it->second.begin()->second.obj(),
+                            !K(inOuterFunc));
       }
       else if (showError) {
-        errorf(srcpos, E_AmbiguousSym,
-               "ambiguous symbol '%s' usage", (const char*)StrHelper(base.fName));
+        errorf(srcpos, E_AmbiguousSym, "ambiguous symbol '%s' usage",
+               (const char*)StrHelper(base.fName));
         for (BaseScopeMap::const_iterator vit = it->second.begin();
              vit != it->second.end();
              vit++)
         {
           String fullKey = qualifyId(vit->first, it->first.fName);
           errorf(vit->second->srcpos(), E_AmbiguousSym,
-                 "symbol '%s' was defined here", (const char*)StrHelper(fullKey));
+                 "symbol '%s' was defined here",
+                 (const char*)StrHelper(fullKey));
         }
       }
     }
     else {
       BaseScopeMap::const_iterator vit = it->second.find(ns.fName);
       if (vit != it->second.end()) {
-        return LookupResult(vit->second.obj(), false);
+        return LookupResult(vit->second.obj(), !K(inOuterFunc));
       }
     }
   }
@@ -265,7 +268,7 @@ Scope::lookupItem(const SrcPos& srcpos,
 
   while (scope != NULL) {
     LookupResult lv = scope->lookupItemLocalImpl(srcpos, name,
-                                                 showError, true);
+                                                 showError, K(doAutoMatch));
     if (lv.fItem != NULL)
       return LookupResult(lv.fItem, crossedFuncLevel);
 
@@ -281,7 +284,8 @@ Scope::lookupItem(const SrcPos& srcpos,
 bool
 Scope::hasName(ScopeDomain domain, const String& name, SrcPos* srcpos) const
 {
-  LookupResult lv = lookupItem(SrcPos(), ScopeName(domain, name), false);
+  LookupResult lv = lookupItem(SrcPos(), ScopeName(domain, name),
+                               !K(showError));
   if (lv.fItem != NULL) {
     *srcpos = lv.fItem->srcpos();
     return true;
@@ -295,7 +299,7 @@ Scope::hasNameLocal(ScopeDomain domain, const String& name, SrcPos* srcpos,
                     bool doAutoMatch) const
 {
   LookupResult lv = lookupItemLocalImpl(SrcPos(), ScopeName(domain, name),
-                                        false, doAutoMatch);
+                                        !K(showError), doAutoMatch);
   if (lv.fItem != NULL) {
     *srcpos = lv.fItem->srcpos();
     return true;
@@ -319,7 +323,7 @@ Scope::checkForRedefinition(const SrcPos& srcpos,
                             const String& sym) const
 {
   SrcPos firstSrcpos;
-  if (hasNameLocal(domain, sym, &firstSrcpos, false)) {
+  if (hasNameLocal(domain, sym, &firstSrcpos, !K(doAutoMatch))) {
     errorf(srcpos, E_Redefinition,
            "Redefinition of '%s'.", (const char*)StrHelper(sym));
     errorf(firstSrcpos, E_Redefinition,
@@ -419,7 +423,7 @@ Type
 Scope::normalizeType(const Type& type)
 {
   if (type.isRef()) {
-    Type referedType = lookupType(type.typeName(), true);
+    Type referedType = lookupType(type.typeName(), K(showAmbiguousSymDef));
     if (referedType.isDef()) {
       if (referedType.isAlias())
         return normalizeType(referedType, type);
@@ -515,7 +519,7 @@ Scope::lookupType(const Type& type) const
                             type.measureUnit());
   }
   else if (type.isRef()) {
-    Type resolvedType = lookupType(type.typeName(), true);
+    Type resolvedType = lookupType(type.typeName(), K(showAmbiguousSymDef));
     if (resolvedType.isDef()) {
       if (resolvedType.isOpen())
         return normalizeType(resolvedType, type);
@@ -557,7 +561,7 @@ Scope::lookupType_unused(const Type& type) const
   }
 
   if (baseType.isDef()) {
-    Type fullType = lookupType(baseType.typeName(), true);
+    Type fullType = lookupType(baseType.typeName(), K(showAmbiguousSymDef));
     if (fullType.isDef())
       return normalizeType(fullType, type);
   }
@@ -667,7 +671,7 @@ Scope::isVarInOuterFunction(const String& name) const
 {
   LookupResult lv = lookupItem(SrcPos(),
                                ScopeName(kNormal, name),
-                               false);
+                               !K(showError));
   return lv.fItem != NULL && lv.fInOuterFunc;
 }
 
@@ -969,9 +973,10 @@ SUITE(Scope)
   {
     SrcPos sp;
     TypeVector generics;
-    generics.push_back(Type::newTypeRef(String("Char"), true));
+    generics.push_back(Type::newTypeRef(String("Char"), K(isValue)));
     TypeConstVector constraints;
-    Type t0 = Type::newTypeRef(String("Foo"), generics, constraints, true);
+    Type t0 = Type::newTypeRef(String("Foo"), generics, constraints,
+                               K(isValue));
 
     Ptr<Scope> s0 = new Scope(kScopeL_CompileUnit);
     Type t1 = s0->lookupType_unused(t0);

@@ -950,8 +950,9 @@ Type
 Type::newTypeRef(const String& name, const TypeVector& genericArgs,
                  const TypeConstVector& constraints, bool isValue)
 {
-  return Type(kType_Ref, isValue, false,
-              new TypeRefTypeImpl(name, false, genericArgs, constraints));
+  return Type(kType_Ref, isValue, !K(isImg),
+              new TypeRefTypeImpl(name, !K(isOpen), genericArgs,
+                                  constraints));
 }
 
 
@@ -959,8 +960,9 @@ Type
 Type::newTypeRef(const String& name, const TypeVector& genericArgs,
                  bool isValue)
 {
-  return Type(kType_Ref, isValue, false,
-              new TypeRefTypeImpl(name, false, genericArgs, TypeConstVector()));
+  return Type(kType_Ref, isValue, !K(isImg),
+              new TypeRefTypeImpl(name, !K(isOpen), genericArgs,
+                                  TypeConstVector()));
 }
 
 
@@ -969,8 +971,8 @@ Type::newTypeRef(const String& name, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
-  return Type(kType_Ref, isValue, false,
-              new TypeRefTypeImpl(name, false,
+  return Type(kType_Ref, isValue, !K(isImg),
+              new TypeRefTypeImpl(name, !K(isOpen),
                                   dummyGenerics, dummyConstraints));
 }
 
@@ -987,7 +989,7 @@ Type::newTypeRef(const String& name, bool isOpen,
                  const TypeConstVector& constraints, bool isValue)
 {
   TypeVector dummyGenerics;
-  return Type(kType_Ref, isValue, false,
+  return Type(kType_Ref, isValue, !K(isImg),
               new TypeRefTypeImpl(name, isOpen, dummyGenerics,
                                   constraints));
 }
@@ -998,7 +1000,7 @@ Type::newTypeRef(const String& name, bool isOpen, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
-  return Type(kType_Ref, isValue, false,
+  return Type(kType_Ref, isValue, !K(isImg),
               new TypeRefTypeImpl(name, isOpen, dummyGenerics,
                                   dummyConstraints));
 }
@@ -1027,7 +1029,7 @@ Type::newClassOf(const Type& type, bool isValue)
 Type
 Type::newArray(const Type& base, int sizeIndicator, bool isValue)
 {
-  return Type(kType_Array, isValue, false,
+  return Type(kType_Array, isValue, !K(isImg),
               new ArrayTypeImpl(base, sizeIndicator));
 }
 
@@ -1085,8 +1087,8 @@ Type
 Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit)
 {
-  return Type(kType_Type, true, false,
-              new TypeTypeImpl(name, false, generics, inherit,
+  return Type(kType_Type, K(isValue), !K(isImg),
+              new TypeTypeImpl(name, !K(isInstantiable), generics, inherit,
                                FunctionSignature()));
 }
 
@@ -1095,8 +1097,9 @@ Type
 Type::newClass(const String& name, const TypeVector& generics,
                const Type& inherit, const FunctionSignature& applySign)
 {
-  return Type(kType_Class, true, false,
-              new TypeTypeImpl(name, true, generics, inherit, applySign));
+  return Type(kType_Class, K(isValue), !K(isImg),
+              new TypeTypeImpl(name, K(isInstantiable),
+                               generics, inherit, applySign));
 }
 
 
@@ -1104,7 +1107,7 @@ Type
 Type::newAlias(const String& name, const TypeVector& generics,
                const Type& isa)
 {
-  return Type(kType_Alias, true, false,
+  return Type(kType_Alias, K(isValue), !K(isImg),
               new AliasTypeImpl(name, generics, isa));
 }
 
@@ -1113,7 +1116,7 @@ Type
 Type::newMeasure(const String& name, const Type& baseType,
                  const String& defUnit)
 {
-  return Type(kType_Measure, true, false,
+  return Type(kType_Measure, K(isValue), !K(isImg),
               new MeasureTypeImpl(name, baseType, defUnit));
 }
 
@@ -1121,7 +1124,7 @@ Type::newMeasure(const String& name, const Type& baseType,
 Type
 Type::newFunction(const FunctionSignature& sign)
 {
-  return Type(kType_Function, true, false,
+  return Type(kType_Function, K(isValue), !K(isImg),
               new FunctionTypeImpl(sign));
 }
 
@@ -1129,14 +1132,14 @@ Type::newFunction(const FunctionSignature& sign)
 Type
 Type::newUnion(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Union, isValue, false, new UnionTypeImpl(types));
+  return Type(kType_Union, isValue, !K(isImg), new UnionTypeImpl(types));
 }
 
 
 Type
 Type::newSeq(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Sequence, isValue, false, new SeqTypeImpl(types));
+  return Type(kType_Sequence, isValue, !K(isImg), new SeqTypeImpl(types));
 }
 
 
@@ -2381,28 +2384,28 @@ FunctionParameter::FunctionParameter(const FunctionParameter& other)
 FunctionParameter
 FunctionParameter::newPosParam(const Type& type)
 {
-  return FunctionParameter(kParamPos, false, String(), type);
+  return FunctionParameter(kParamPos, !K(isSpec), String(), type);
 }
 
 
 FunctionParameter
 FunctionParameter::newSpecParam(const Type& type)
 {
-  return FunctionParameter(kParamPos, true, String(), type);
+  return FunctionParameter(kParamPos, K(isSpec), String(), type);
 }
 
 
 FunctionParameter
 FunctionParameter::newNamedParam(const String& key, const Type& type)
 {
-  return FunctionParameter(kParamNamed, false, key, type);
+  return FunctionParameter(kParamNamed, !K(isSpec), key, type);
 }
 
 
 FunctionParameter
 FunctionParameter::newRestParam(const Type& type)
 {
-  return FunctionParameter(kParamRest, false, String(), type);
+  return FunctionParameter(kParamRest, !K(isSpec), String(), type);
 }
 
 
@@ -2787,7 +2790,7 @@ namespace herschel
   resolveType(const Type& type, Scope* scope)
   {
     Type ty = ( type.isDef() && type.isRef()
-                ? scope->lookupType(type.typeName(), true)
+                ? scope->lookupType(type.typeName(), K(showAmbiguousSymDef))
                 : type );
     if (ty.isDef() && ty.isOpen()) {
       if (type.isDef())
@@ -3002,7 +3005,8 @@ namespace herschel
       return false;
     }
     else if (inheritance.isRef()) {
-      inheritance = scope->lookupType(inheritance.typeName(), true);
+      inheritance = scope->lookupType(inheritance.typeName(),
+                                      K(showAmbiguousSymDef));
     }
 
     if (!inheritance.isDef()) {
@@ -3493,13 +3497,13 @@ namespace herschel
       if (leftty.isAnyUInt()) {
         switch (righttysize) {
         case 8:
-          return Type::newTypeRef(Names::kUInt8TypeName, true);
+          return Type::newTypeRef(Names::kUInt8TypeName, K(isValue));
         case 16:
-          return Type::newTypeRef(Names::kUInt16TypeName, true);
+          return Type::newTypeRef(Names::kUInt16TypeName, K(isValue));
         case 32:
-          return Type::newTypeRef(Names::kUInt32TypeName, true);
+          return Type::newTypeRef(Names::kUInt32TypeName, K(isValue));
         case 64:
-          return Type::newTypeRef(Names::kUInt64TypeName, true);
+          return Type::newTypeRef(Names::kUInt64TypeName, K(isValue));
         default:
           hr_invalid("unhandled int type size");
         }
@@ -3598,7 +3602,7 @@ namespace herschel
 
 static Scope* testScopeSetup()
 {
-  Ptr<Scope> scope = herschel::type::newRootScope(true);
+  Ptr<Scope> scope = herschel::type::newRootScope(K(forUnitTests));
 
   TypeVector generics;
 
@@ -3643,7 +3647,7 @@ static Scope* testScopeSetup()
   scope->registerType(SrcPos(), String("Special"),
                       Type::newType(String("Special"),
                                     generics,
-                                    Type::newSeq(isa, true)));
+                                    Type::newSeq(isa, K(isValue))));
   scope->registerType(SrcPos(), String("Ultra"),
                       Type::newType(String("Ultra"),
                                     generics,
@@ -3661,17 +3665,17 @@ SUITE(Type_IsSameType)
 
     CHECK(herschel::isSameType(Type::newTypeRef("Base"),
                                Type::newTypeRef("Base"),
-                               scope, SrcPos(), false));
+                               scope, SrcPos(), !K(reportError)));
     CHECK(herschel::isSameType(Type::newTypeRef("Xyz"),
                                Type::newTypeRef("Xyz"),
-                               scope, SrcPos(), false));
+                               scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::isSameType(Type::newTypeRef("Base"),
                                 Type::newTypeRef("Medium"),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportError)));
 
     CHECK(!herschel::isSameType(Type::newTypeRef("Base"),
                                 Type::newTypeRef("Hello"),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportError)));
   }
 
 
@@ -3680,24 +3684,24 @@ SUITE(Type_IsSameType)
     Ptr<Scope> scope = testScopeSetup();
 
     CHECK(herschel::isSameType(
-            Type::newArray(Type::newTypeRef("Base"), 5, true),
-            Type::newArray(Type::newTypeRef("Base"), 17, false),
-            scope, SrcPos(), false));
+            Type::newArray(Type::newTypeRef("Base"), 5, K(isValue)),
+            Type::newArray(Type::newTypeRef("Base"), 17, !K(isValue)),
+            scope, SrcPos(), !K(reportErrors)));
 
     CHECK(!herschel::isSameType(
-            Type::newArray(Type::newTypeRef("Base"), 5, true),
-            Type::newArray(Type::newTypeRef("Xyz"), 17, false),
-            scope, SrcPos(), false));
+            Type::newArray(Type::newTypeRef("Base"), 5, K(isValue)),
+            Type::newArray(Type::newTypeRef("Xyz"), 17, !K(isValue)),
+            scope, SrcPos(), !K(reportErrors)));
 
     CHECK(herschel::isSameType(
-            Type::newArray(Type::newAny(true), 5, true),
-            Type::newArray(Type::newAny(true), 17, false),
-            scope, SrcPos(), false));
+            Type::newArray(Type::newAny(K(isValue)), 5, K(isValue)),
+            Type::newArray(Type::newAny(K(isValue)), 17, !K(isValue)),
+            scope, SrcPos(), !K(reportErrors)));
 
     CHECK(!herschel::isSameType(
-            Type::newArray(Type::newTypeRef("Base"), 5, true),
+            Type::newArray(Type::newTypeRef("Base"), 5, K(isValue)),
             Type::newTypeRef("Base"),
-            scope, SrcPos(), false));
+            scope, SrcPos(), !K(reportErrors)));
   }
 
 
@@ -3705,17 +3709,17 @@ SUITE(Type_IsSameType)
   {
     Ptr<Scope> scope = testScopeSetup();
 
-    CHECK(herschel::isSameType(Type::newAny(true),
-                               Type::newAny(true),
-                               scope, SrcPos(), false));
+    CHECK(herschel::isSameType(Type::newAny(K(isValue)),
+                               Type::newAny(K(isValue)),
+                               scope, SrcPos(), !K(reportErrors)));
 
-    CHECK(!herschel::isSameType(Type::newAny(true),
+    CHECK(!herschel::isSameType(Type::newAny(K(isValue)),
                                 Type::newTypeRef("Medium"),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportErrors)));
 
     CHECK(!herschel::isSameType(Type::newTypeRef("Xyz"),
-                                Type::newAny(true),
-                                scope, SrcPos(), true));
+                                Type::newAny(K(isValue)),
+                                scope, SrcPos(), K(reportErrors)));
   }
 
 
@@ -3731,21 +3735,21 @@ SUITE(Type_IsSameType)
     union1.push_back(Type::newTypeRef("Medium"));
     union1.push_back(Type::newTypeRef("Xyz"));
 
-    CHECK(herschel::isSameType(Type::newUnion(union0, true),
-                               Type::newUnion(union0, true),
-                               scope, SrcPos(), true));
-    CHECK(!herschel::isSameType(Type::newUnion(union0, true),
-                                Type::newUnion(union1, true),
-                                scope, SrcPos(), true));
+    CHECK(herschel::isSameType(Type::newUnion(union0, K(isValue)),
+                               Type::newUnion(union0, K(isValue)),
+                               scope, SrcPos(), K(reportErrors)));
+    CHECK(!herschel::isSameType(Type::newUnion(union0, K(isValue)),
+                                Type::newUnion(union1, K(isValue)),
+                                scope, SrcPos(), K(reportErrors)));
 
     TypeVector union2;
     union2.push_back(Type::newTypeRef("Medium"));
     union2.push_back(Type::newTypeRef("Ultra"));
     union2.push_back(Type::newTypeRef("Abstract"));
 
-    CHECK(!herschel::isSameType(Type::newUnion(union0, true),
-                                Type::newUnion(union2, true),
-                                scope, SrcPos(), true));
+    CHECK(!herschel::isSameType(Type::newUnion(union0, K(isValue)),
+                                Type::newUnion(union2, K(isValue)),
+                                scope, SrcPos(), K(reportErrors)));
   }
 
 
@@ -3761,21 +3765,21 @@ SUITE(Type_IsSameType)
     seq1.push_back(Type::newTypeRef("Medium"));
     seq1.push_back(Type::newTypeRef("Xyz"));
 
-    CHECK(herschel::isSameType(Type::newSeq(seq0, true),
-                               Type::newSeq(seq0, true),
-                               scope, SrcPos(), true));
-    CHECK(!herschel::isSameType(Type::newSeq(seq0, true),
-                                Type::newSeq(seq1, true),
-                                scope, SrcPos(), true));
+    CHECK(herschel::isSameType(Type::newSeq(seq0, K(isValue)),
+                               Type::newSeq(seq0, K(isValue)),
+                               scope, SrcPos(), K(reportErrors)));
+    CHECK(!herschel::isSameType(Type::newSeq(seq0, K(isValue)),
+                                Type::newSeq(seq1, K(isValue)),
+                                scope, SrcPos(), K(reportErrors)));
 
     TypeVector seq2;
     seq2.push_back(Type::newTypeRef("Medium"));
     seq2.push_back(Type::newTypeRef("Ultra"));
     seq2.push_back(Type::newTypeRef("Abstract"));
 
-    CHECK(!herschel::isSameType(Type::newSeq(seq0, true),
-                                Type::newSeq(seq2, true),
-                                scope, SrcPos(), true));
+    CHECK(!herschel::isSameType(Type::newSeq(seq0, K(isValue)),
+                                Type::newSeq(seq2, K(isValue)),
+                                scope, SrcPos(), K(reportErrors)));
   }
 
 
@@ -3789,13 +3793,13 @@ SUITE(Type_IsSameType)
                                Type::newMeasure(String("Maiko"),
                                                 Type::newTypeRef("Xyz"),
                                                 String("mk")),
-                               scope, SrcPos(), false));
+                               scope, SrcPos(), !K(reportError)));
 
     CHECK(!herschel::isSameType(Type::newMeasure(String("Maiko"),
                                                  Type::newTypeRef("Xyz"),
                                                  String("mk")),
-                                Type::newTypeRef(String("Xyz"), true),
-                                scope, SrcPos(), false));
+                                Type::newTypeRef(String("Xyz"), K(isValue)),
+                                scope, SrcPos(), !K(reportErrors)));
 
     CHECK(!herschel::isSameType(Type::newMeasure(String("Maiko"),
                                                  Type::newTypeRef("Xyz"),
@@ -3803,7 +3807,7 @@ SUITE(Type_IsSameType)
                                 Type::newMeasure(String("Tomoko"),
                                                  Type::newTypeRef("Xyz"),
                                                  String("to")),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportErrors)));
   }
 
 
@@ -3813,77 +3817,77 @@ SUITE(Type_IsSameType)
 
     FunctionParamVector params0;
     CHECK(herschel::isSameType(Type::newFunction(
-                                 FunctionSignature(false, String("foo"),
+                                 FunctionSignature(!K(isGeneric), String("foo"),
                                                    Type::newTypeRef("Xyz"),
                                                    params0)),
                                Type::newFunction(
-                                 FunctionSignature(false, String("foo"),
+                                 FunctionSignature(!K(isGeneric), String("foo"),
                                                    Type::newTypeRef("Xyz"),
                                                    params0)),
-                               scope, SrcPos(), false));
+                               scope, SrcPos(), !K(reportErrors)));
 
     CHECK(herschel::isSameType(Type::newFunction(
-                                 FunctionSignature(false, String("foo"),
+                                 FunctionSignature(!K(isGeneric), String("foo"),
                                                    Type::newTypeRef("Xyz"),
                                                    params0)),
                                Type::newFunction(
-                                 FunctionSignature(false, String("bar"),
+                                 FunctionSignature(!K(isGeneric), String("bar"),
                                                    Type::newTypeRef("Xyz"),
                                                    params0)),
-                               scope, SrcPos(), false));
+                               scope, SrcPos(), !K(reportErrors)));
 
     CHECK(!herschel::isSameType(Type::newFunction(
-                                  FunctionSignature(false, String("foo"),
+                                  FunctionSignature(!K(isGeneric), String("foo"),
                                                     Type::newTypeRef("Xyz"),
                                                     params0)),
                                 Type::newFunction(
-                                  FunctionSignature(false, String("bar"),
+                                  FunctionSignature(!K(isGeneric), String("bar"),
                                                     Type::newTypeRef("Abstract"),
                                                     params0)),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportErrors)));
 
     FunctionParamVector params1;
-    params1.push_back(FunctionParameter(FunctionParameter::kParamPos, false,
+    params1.push_back(FunctionParameter(FunctionParameter::kParamPos, !K(isSpec),
                                         String(), Type::newTypeRef("Medium")));
     CHECK(herschel::isSameType(Type::newFunction(
-                                 FunctionSignature(false, String("foo"),
+                                 FunctionSignature(!K(isGeneric), String("foo"),
                                                    Type::newTypeRef("Xyz"),
                                                    params1)),
                                Type::newFunction(
-                                 FunctionSignature(false, String("bar"),
+                                 FunctionSignature(!K(isGeneric), String("bar"),
                                                    Type::newTypeRef("Xyz"),
                                                    params1)),
-                               scope, SrcPos(), false));
+                               scope, SrcPos(), !K(reportErrors)));
 
     CHECK(!herschel::isSameType(Type::newFunction(
-                                  FunctionSignature(false, String("foo"),
+                                  FunctionSignature(!K(isGeneric), String("foo"),
                                                     Type::newTypeRef("Xyz"),
                                                     params1)),
                                 Type::newFunction(
-                                  FunctionSignature(false, String("bar"),
+                                  FunctionSignature(!K(isGeneric), String("bar"),
                                                     Type::newTypeRef("Xyz"),
                                                     params0)),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportErrors)));
 
-    params1.push_back(FunctionParameter(FunctionParameter::kParamNamed, false,
+    params1.push_back(FunctionParameter(FunctionParameter::kParamNamed, !K(isSpec),
                                         String("na"),
                                         Type::newTypeRef("Xyz")));
-    params1.push_back(FunctionParameter(FunctionParameter::kParamNamed, false,
+    params1.push_back(FunctionParameter(FunctionParameter::kParamNamed, !K(isSpec),
                                         String("nu"),
                                         Type::newTypeRef("Abstract")));
-    params1.push_back(FunctionParameter(FunctionParameter::kParamRest, false,
+    params1.push_back(FunctionParameter(FunctionParameter::kParamRest, !K(isSpec),
                                         String("rest"),
-                                        Type::newAny(true)));
+                                        Type::newAny(K(isValue))));
 
     CHECK(herschel::isSameType(Type::newFunction(
-                                 FunctionSignature(false, String("foo"),
+                                 FunctionSignature(!K(isGeneric), String("foo"),
                                                    Type::newTypeRef("Xyz"),
                                                    params1)),
                                Type::newFunction(
-                                 FunctionSignature(false, String("bar"),
+                                 FunctionSignature(!K(isGeneric), String("bar"),
                                                    Type::newTypeRef("Xyz"),
                                                    params1)),
-                               scope, SrcPos(), false));
+                               scope, SrcPos(), !K(reportErrors)));
   }
 
   // TODO check generic types
@@ -3912,23 +3916,23 @@ SUITE(Type_Inheritance)
     // a type A does not inherit itself
     CHECK(!herschel::inheritsFrom(Type::newTypeRef("Base"),
                                   Type::newTypeRef("Base"),
-                                  scope, SrcPos(), false));
+                                  scope, SrcPos(), !K(reportError)));
     CHECK(herschel::inheritsFrom(Type::newTypeRef("Ultra"),
                                  Type::newTypeRef("Obj"),
-                                 scope, SrcPos(), false));
+                                 scope, SrcPos(), !K(reportError)));
     CHECK(herschel::inheritsFrom(Type::newTypeRef("Special"),
                                  Type::newTypeRef("Base"),
-                                 scope, SrcPos(), false));
+                                 scope, SrcPos(), !K(reportError)));
     CHECK(herschel::inheritsFrom(Type::newTypeRef("Special"),
                                  Type::newTypeRef("Abstract"),
-                                 scope, SrcPos(), false));
+                                 scope, SrcPos(), !K(reportError)));
 
     CHECK(!herschel::inheritsFrom(Type::newTypeRef("Top"),
                                   Type::newTypeRef("Abstract"),
-                                  scope, SrcPos(), false));
+                                  scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::inheritsFrom(Type::newTypeRef("Xyz"),
                                   Type::newTypeRef("Base"),
-                                  scope, SrcPos(), false));
+                                  scope, SrcPos(), !K(reportError)));
   }
 
   // TODO check generic types
@@ -3943,18 +3947,18 @@ SUITE(Type_Inheritance)
                                   Type::newMeasure(String("Maiko"),
                                                    Type::newTypeRef("Xyz"),
                                                    String("mk")),
-                                  scope, SrcPos(), false));
+                                  scope, SrcPos(), !K(reportError)));
 
     CHECK(herschel::inheritsFrom(Type::newMeasure(String("Maiko"),
                                                   Type::newTypeRef("Ultra"),
                                                   String("mk")),
-                                 Type::newTypeRef(String("Abstract"), true),
-                                 scope, SrcPos(), false));
+                                 Type::newTypeRef(String("Abstract"), K(isValue)),
+                                 scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::inheritsFrom(Type::newMeasure(String("Maiko"),
                                                    Type::newTypeRef("Xyz"),
                                                    String("mk")),
-                                  Type::newTypeRef(String("Base"), true),
-                                  scope, SrcPos(), false));
+                                  Type::newTypeRef(String("Base"), K(isValue)),
+                                  scope, SrcPos(), !K(reportError)));
 
     CHECK(!herschel::inheritsFrom(Type::newMeasure(String("Maiko"),
                                                    Type::newTypeRef("Ultra"),
@@ -3962,7 +3966,7 @@ SUITE(Type_Inheritance)
                                   Type::newMeasure(String("Tomoko"),
                                                    Type::newTypeRef("Abstract"),
                                                    String("to")),
-                                  scope, SrcPos(), false));
+                                  scope, SrcPos(), !K(reportError)));
   }
 }
 
@@ -3984,32 +3988,32 @@ SUITE(Type_Covariance)
 
     CHECK(herschel::isCovariant(Type::newTypeRef("Base"),
                                 Type::newTypeRef("Base"),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportError)));
     CHECK(herschel::isCovariant(Type::newTypeRef("Xyz"),
                                 Type::newTypeRef("Xyz"),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportError)));
     CHECK(herschel::isCovariant(Type::newTypeRef("Medium"),
                                 Type::newTypeRef("Base"),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::isCovariant(Type::newTypeRef("Base"),
                                  Type::newTypeRef("Medium"),
-                                 scope, SrcPos(), false));
+                                 scope, SrcPos(), !K(reportError)));
     CHECK(herschel::isContravariant(Type::newTypeRef("Base"),
                                     Type::newTypeRef("Medium"),
-                                    scope, SrcPos(), false));
+                                    scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::isContravariant(Type::newTypeRef("Medium"),
                                      Type::newTypeRef("Base"),
-                                     scope, SrcPos(), false));
+                                     scope, SrcPos(), !K(reportError)));
 
     CHECK(!herschel::isCovariant(Type::newTypeRef("Top"),
                                  Type::newTypeRef("Xyz"),
-                                 scope, SrcPos(), false));
+                                 scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::isContravariant(Type::newTypeRef("Top"),
                                      Type::newTypeRef("Xyz"),
-                                     scope, SrcPos(), false));
+                                     scope, SrcPos(), !K(reportError)));
     CHECK(herschel::isInvariant(Type::newTypeRef("Top"),
                                 Type::newTypeRef("Xyz"),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportError)));
   }
 
 
@@ -4019,37 +4023,37 @@ SUITE(Type_Covariance)
 
     CHECK(herschel::isCovariant(Type::newTypeRef("Ultra"),
                                 Type::newTypeRef("Base"),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportError)));
     CHECK(herschel::isCovariant(Type::newTypeRef("Ultra"),
                                 Type::newTypeRef("Abstract"),
-                                scope, SrcPos(), false));
+                                scope, SrcPos(), !K(reportError)));
   }
 
   TEST(SliceableArrays)
   {
     Ptr<Scope> scope = testScopeSetup();
 
-    CHECK(herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), true),
-                                               0, true),
+    CHECK(herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), K(isValue)),
+                                               0, K(isValue)),
                                 Type::newType(Names::kSliceableTypeName,
                                               newTypeVector(Type::newInt32(),
                                                             Type::newTypeRef("Ultra")),
                                               Type()),
-                                scope, SrcPos(), false));
-    CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Special"), true),
-                                                0, true),
+                                scope, SrcPos(), !K(reportError)));
+    CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Special"), K(isValue)),
+                                                0, K(isValue)),
                                  Type::newType(Names::kSliceableTypeName,
                                                newTypeVector(Type::newInt32(),
                                                              Type::newTypeRef("Ultra")),
                                                Type()),
-                                 scope, SrcPos(), false));
-    CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), true),
-                                                0, true),
+                                 scope, SrcPos(), !K(reportError)));
+    CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), K(isValue)),
+                                                0, K(isValue)),
                                  Type::newType(Names::kSliceableTypeName,
                                                newTypeVector(Type::newInt32(),
                                                              Type::newTypeRef("Special")),
                                                Type()),
-                                 scope, SrcPos(), false));
+                                 scope, SrcPos(), !K(reportError)));
   }
 }
 
@@ -4156,7 +4160,8 @@ SUITE(FunctionParameter)
 
 TEST(FunctionSignature)
 {
-  FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt32());
+  FunctionSignature fs0 = FunctionSignature(!K(isGeneric),
+                                            String("abc"), Type::newInt32());
 
   FunctionParamVector params1;
   params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
@@ -4164,7 +4169,8 @@ TEST(FunctionSignature)
   params1.push_back(FunctionParameter::newNamedParam(String("xyz"), Type::newFloat32()));
   params1.push_back(FunctionParameter::newRestParam(Type::newAny()));
 
-  FunctionSignature fs1 = FunctionSignature(true, String("man"), Type::newInt32(),
+  FunctionSignature fs1 = FunctionSignature(K(isGeneric),
+                                            String("man"), Type::newInt32(),
                                             params1);
 
   CHECK(!fs0.isGeneric());
@@ -4193,15 +4199,18 @@ TEST(FunctionSignature)
 
 TEST(FunctionSignIsOpen)
 {
-  FunctionSignature fs0 = FunctionSignature(false, String("abc"), Type::newInt32());
+  FunctionSignature fs0 = FunctionSignature(!K(isGeneric),
+                                            String("abc"), Type::newInt32());
   CHECK(!fs0.isOpen());
 
   FunctionParamVector params1;
   params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
-  params1.push_back(FunctionParameter::newPosParam(Type::newTypeRef(String("x"), true, false)));
+  params1.push_back(FunctionParameter::newPosParam(Type::newTypeRef(String("x"),
+                                                                    K(isOpen), !K(isValue))));
 
-  FunctionSignature fs1 = FunctionSignature(true, String("man"),
-                                            Type::newTypeRef(String("y"), true, false),
+  FunctionSignature fs1 = FunctionSignature(K(isGeneric), String("man"),
+                                            Type::newTypeRef(String("y"),
+                                                             K(isOpen), !K(isValue)),
                                             params1);
   CHECK(fs1.isOpen());
 }

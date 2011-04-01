@@ -84,7 +84,7 @@ OptionsParser::nextOption(Option* option)
   if (optType == kShortForm) {
     option->fOption = arg;
 
-    if ((optDefine = findOption(arg, true)) != NULL) {
+    if ((optDefine = findOption(arg, K(compareShortForm))) != NULL) {
       option->fId = optDefine->fId;
 
       if (optDefine->fExpectsArgument) {
@@ -113,7 +113,7 @@ OptionsParser::nextOption(Option* option)
       option->fOption = key;
       option->fArgument = value;
 
-      if ((optDefine = findOption(key, false)) != NULL) {
+      if ((optDefine = findOption(key, !K(compareShortForm))) != NULL) {
         option->fId = optDefine->fId;
         return kOption;
       }
@@ -121,7 +121,7 @@ OptionsParser::nextOption(Option* option)
     }
 
     option->fOption = arg;
-    if ((optDefine = findOption(arg, false)) != NULL) {
+    if ((optDefine = findOption(arg, !K(compareShortForm))) != NULL) {
       if (optDefine->fExpectsArgument)
         return kMissingArgument;
 
@@ -146,14 +146,14 @@ OptionsParser::nextOption(Option* option)
 SUITE(OptionsParser)
 {
   static const OptionsParser::OptionsDefine options[] = {
-    { 1, "-h", "--help",    false },
-    { 2, "-v", "--version", false },
-    { 3, "-d", "--outdir",  true },
-    { 4, NULL, "--verbose", false },
-    { 5, "-U", NULL,        false },
-    { 6, NULL, "--level",   true },
-    { 7, "-P", NULL,        true },
-    { 0, NULL, NULL,        false } // sentinel
+    { 1, "-h", "--help",    !K(argument) },
+    { 2, "-v", "--version", !K(argument) },
+    { 3, "-d", "--outdir",   K(argument) },
+    { 4, NULL, "--verbose", !K(argument) },
+    { 5, "-U", NULL,        !K(argument) },
+    { 6, NULL, "--level",    K(argument) },
+    { 7, "-P", NULL,         K(argument) },
+    { 0, NULL, NULL,        !K(argument) } // sentinel
   };
 
   OptionsParser::Option option;

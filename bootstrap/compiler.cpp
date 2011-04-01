@@ -133,7 +133,7 @@ Compiler::process(Port<Char>* port, const String& srcName)
 {
   fState.fScope = new Scope(kScopeL_CompileUnit, fState.fScope);
   importSystemHeaders(srcName);
-  return processImpl(port, srcName, true);
+  return processImpl(port, srcName, K(doTrace));
 }
 
 
@@ -156,7 +156,10 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
 
     // let all following passes run beneath the same root-scope.
     {
-      ScopeHelper scopeHelper(fState.fScope, true, false, kScopeL_CompileUnit);
+      ScopeHelper scopeHelper(fState.fScope,
+                              K(doExport),
+                              !K(isInnerScope),
+                              kScopeL_CompileUnit);
 
       Ptr<NodifyPass> nodifyPass = new NodifyPass(2, this, fState.fScope);
       apt = nodifyPass->apply(parsedExprs, doTrace);
@@ -194,14 +197,14 @@ Compiler::importFile(const SrcPos& srcpos,
                      Scope* currentScope)
 {
   String absPath = lookupFile(srcName, isPublic);
-  return importFileImpl(srcpos, srcName, absPath, currentScope, true);
+  return importFileImpl(srcpos, srcName, absPath, currentScope, K(preload));
 }
 
 
 void
 Compiler::importSystemHeader(const String& header, const String& avoidPath)
 {
-  String absPath = lookupFile(header, false);
+  String absPath = lookupFile(header, !K(isPublic));
 
   String fullAvoidPath = file::canonicalPathName(avoidPath);
   if (Properties::isTraceImportFile())
@@ -215,7 +218,7 @@ Compiler::importSystemHeader(const String& header, const String& avoidPath)
 
   if (Properties::isTraceImportFile())
     logf(kDebug, "Preload '%s'", (const char*)StrHelper(header));
-  importFileImpl(SrcPos(), header, absPath, fState.fScope, false);
+  importFileImpl(SrcPos(), header, absPath, fState.fScope, !K(preload));
 }
 
 
@@ -262,13 +265,13 @@ Compiler::importFileImpl(const SrcPos& srcpos,
     logf(kDebug, "Import '%s'", (const char*)StrHelper(srcName));
 
   try {
-    Ptr<Compiler> compiler = new Compiler(true);
+    Ptr<Compiler> compiler = new Compiler(K(isParsingInterface));
     if (preload)
       compiler->importSystemHeaders(absPath);
 
     Ptr<AptNode> apt = compiler->processImpl(new CharPort(
                                                new FilePort(absPath, "rb")),
-                                             srcName, false);
+                                             srcName, !K(doTrace));
     Ptr<Scope> scope = compiler->scope();
 
     currentScope->addImportedScope(absPath, scope);
@@ -421,7 +424,7 @@ namespace herschel
          it != e;
          it++)
     {
-      compileFile(*it, true, false, false, outputFile);
+      compileFile(*it, K(doParse), !K(doCompile), !K(doLink), outputFile);
     }
   }
 
@@ -438,7 +441,7 @@ namespace herschel
          it != e;
          it++)
     {
-      compileFile(*it, true, true, false, outputFile);
+      compileFile(*it, K(doParse), K(doCompile), !K(doLink), outputFile);
     }
   }
 };                              // namespace

@@ -307,10 +307,10 @@ public:
       qidx = path.indexOf('/', pidx);
 
       if (qidx >= pidx) {
-        fElts.push_back(CanonicalPathElt(path.part(pidx, qidx), true));
+        fElts.push_back(CanonicalPathElt(path.part(pidx, qidx), K(isPathElt)));
       }
       else {
-        fElts.push_back(CanonicalPathElt(path.part(pidx, plen), false));
+        fElts.push_back(CanonicalPathElt(path.part(pidx, plen), !K(isPathElt)));
         break;
       }
       pidx = qidx + 1;

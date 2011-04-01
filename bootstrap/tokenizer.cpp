@@ -322,7 +322,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
 {
   TokenType type = kInt;
 
-  String first = readIntNumberPart(true);
+  String first = readIntNumberPart(K(acceptHex));
   String second;
   String exponent;
   int expSign = 1;
@@ -335,14 +335,14 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
   if (fCC == '.') {
     type = kFloat;
     nextChar();
-    second = readIntNumberPart(false);
+    second = readIntNumberPart(!K(acceptHex));
 
     if (fCC == 'e' || fCC == 'E') {
       nextChar();
       if (fCC == '-' || fCC == '+') {
         expSign = fCC == '-' ? -1 : 1;
         nextChar();
-        exponent = readIntNumberPart(false);
+        exponent = readIntNumberPart(!K(acceptHex));
       }
       else {
         errorf(srcpos(), E_BadNumberNotation,
@@ -354,7 +354,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
   else if (fCC == '/') {
     type = kRational;
     nextChar();
-    second = readIntNumberPart(true);
+    second = readIntNumberPart(K(acceptHex));
   }
 
   if (fCC == 'h' || fCC == 'H') {
@@ -505,8 +505,7 @@ Tokenizer::translateChar(const SrcPos& startPos, const String& charnm)
 Token
 Tokenizer::readSymbolCharacter(const SrcPos& startPos, bool needsTerminator)
 {
-  Token sym = readIdentifier(startPos, String(), kSymbol,
-                             false /* don't accept generics */);
+  Token sym = readIdentifier(startPos, String(), kSymbol, !K(acceptGenerics));
   if (sym.type() != kId) {
     errorf(startPos, E_ExpectedCharName, "expected character symbol");
     return sym;
@@ -584,7 +583,7 @@ Tokenizer::readString(const SrcPos& startPos, int endChar, TokenType type)
       else if (fCC == '\\') {
         SrcPos charSp = srcpos();
         nextChar();
-        Token ct = readCharacter(charSp, true /* needs terminator */);
+        Token ct = readCharacter(charSp, K(needsTerminator));
         if (ct == kChar)
           result << ct.charValue();
       }
@@ -663,7 +662,8 @@ Tokenizer::nextTokenImpl()
     case '|':
       nextChar();
       if (isSymbolChar(fCC))
-        return readIdentifier(beginSrcpos, String("|"), kSymbol, true);
+        return readIdentifier(beginSrcpos, String("|"), kSymbol,
+                              K(acceptGenerics));
       else
         return Token(beginSrcpos, kPipe);
 
@@ -677,21 +677,21 @@ Tokenizer::nextTokenImpl()
       return Token(beginSrcpos, kAmpersand);
 
     case '+': case '/': case '*': case '%': case '=':
-      return readSymbolOrOperator(true);
+      return readSymbolOrOperator(K(acceptGenerics));
     case '<':
       if (fNextCharIsGenericOpen) {
         fNextCharIsGenericOpen = false;
         fInGenericContext++;
         return makeTokenAndNext(srcpos(), kGenericOpen);
       }
-      return readSymbolOrOperator(false);
+      return readSymbolOrOperator(!K(acceptGenerics));
 
     case '>':
       if (fInGenericContext > 0) {
         fInGenericContext--;
         return makeTokenAndNext(srcpos(), kGenericClose);
       }
-      return readSymbolOrOperator(false);
+      return readSymbolOrOperator(!K(acceptGenerics));
 
     case '-':
       nextChar();
@@ -699,14 +699,16 @@ Tokenizer::nextTokenImpl()
       case '-':
         nextChar();
         if (isSymbolChar(fCC))
-          return readIdentifier(beginSrcpos, String("--"), kSymbol, true);
+          return readIdentifier(beginSrcpos, String("--"), kSymbol,
+                                K(acceptGenerics));
         else
           return Token(beginSrcpos, kRemove);
 
       case '>':
         nextChar();
         if (isSymbolChar(fCC))
-          return readIdentifier(beginSrcpos, String("->"), kSymbol, true);
+          return readIdentifier(beginSrcpos, String("->"), kSymbol,
+                                K(acceptGenerics));
         else
           return Token(beginSrcpos, kMapTo);
       default:
@@ -720,7 +722,8 @@ Tokenizer::nextTokenImpl()
       nextChar();
       if (fCC == '"') {
         nextChar();
-        Token param = readIdentifier(beginSrcpos, String(), kMacroParamAsStr, false);
+        Token param = readIdentifier(beginSrcpos, String(), kMacroParamAsStr,
+                                     !K(acceptGenerics));
         if (fCC != '"') {
           errorf(srcpos(), E_MissingApos, "Missing \" in ?\"-notation");
         }
@@ -733,7 +736,8 @@ Tokenizer::nextTokenImpl()
 
         return param;
       }
-      return readIdentifier(beginSrcpos, String(), kMacroParam, false);
+      return readIdentifier(beginSrcpos, String(), kMacroParam,
+                            !K(acceptGenerics));
 
     case '.':
       nextChar();
@@ -755,7 +759,8 @@ Tokenizer::nextTokenImpl()
       case '#': return makeTokenAndNext(beginSrcpos, kSangHash);
       default:
         if (isSymbolChar(fCC))
-          return readIdentifier(beginSrcpos, String(), kKeyword, false);
+          return readIdentifier(beginSrcpos, String(), kKeyword,
+                                !K(acceptGenerics));
         else {
           errorf(beginSrcpos, E_BadHashNotation,
                  "Unknown #-notation: %C", Char(fCC));
@@ -775,7 +780,7 @@ Tokenizer::nextTokenImpl()
     case '\\':
       {
         nextChar();
-        Token ct = readCharacter(beginSrcpos, false); // need a terminator?
+        Token ct = readCharacter(beginSrcpos, !K(needsTerminator));
         if (ct.isSet())
           return ct;
         continue;
@@ -783,7 +788,7 @@ Tokenizer::nextTokenImpl()
 
     default:
       if (isAlpha(fCC) || isAlphaSpec(fCC))
-        return readSymbolOrOperator(true);
+        return readSymbolOrOperator(K(acceptGenerics));
       else if (isDigit(fCC))
         return readNumber(beginSrcpos, 1);
       else {

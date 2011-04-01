@@ -238,7 +238,8 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
                                              String("lang|unspecified")) );
   NodeList nl;
   nl.push_back(new LetNode(new VardefNode(onPrmNode->srcpos(),
-                                          onPrmNode->name(), kNormalVar, true,
+                                          onPrmNode->name(), kNormalVar,
+                                          K(isLocal),
                                           onPrmNode->type(),
                                           initExpr)));
   nl.push_back(onnd->body());
