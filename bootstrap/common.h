@@ -25,6 +25,9 @@ typedef unsigned short Char;
 #define implies(_condA, _condB)  (!(_condA) || ((_condA) && (_condB)))
 
 
+#define K(_arg) true
+
+
 enum CompileOutFormat
 {
   kLLVM_IR,

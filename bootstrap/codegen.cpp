@@ -388,7 +388,7 @@ CodeGenerator::codegen(const SymbolNode* node)
     val = fGlobalVariables[node->name()];
     break;
   default:
-    hr_assert(false && "unexpected symbol reference");
+    hr_invalid("unexpected symbol reference");
   }
 
   if (val == NULL) {
@@ -669,11 +669,11 @@ CodeGenerator::codegen(const DefNode* node)
 {
   const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->defNode());
   if (vardefNode != NULL)
-    return codegen(vardefNode, false);
+    return codegen(vardefNode, !K(isLocal));
 
   const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->defNode());
   if (func != NULL)
-    return codegen(func, false);
+    return codegen(func, !K(isLocal));
 
   const TypeDefNode* type = dynamic_cast<const TypeDefNode*>(node->defNode());
   if (type != NULL)
@@ -689,7 +689,7 @@ CodeGenerator::codegen(const LetNode* node)
 {
   const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->defNode());
   if (vardefNode != NULL)
-    return codegen(vardefNode, true);
+    return codegen(vardefNode, K(isLocal));
 
   const FuncDefNode* funcDefNode = dynamic_cast<const FuncDefNode*>(node->defNode());
   if (funcDefNode != NULL) {
@@ -939,7 +939,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 
   Type retty;
   if (node->name() == String("app|main")) {
-    retty = Type::newTypeRef(Names::kInt32TypeName, true);
+    retty = Type::newTypeRef(Names::kInt32TypeName, K(isValue));
   }
   else
     retty = node->retType();

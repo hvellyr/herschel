@@ -98,21 +98,21 @@ int
 main(int argc, char** argv)
 {
   static const OptionsParser::OptionsDefine herschelOptions[] = {
-    { kOptHelp,         "-h",  "--help",           false },
-    { kOptVersion,      "-v",  "--version",        false },
-    { kOptOutdir,       "-d",  "--outdir",         true  },
-    { kOptOutput,       "-o",  "--output",         true  },
-    { kOptVerbose,      NULL,  "--verbose",        false },
-    { kOptTrace,        "-T",  "--trace",          true  },
-    { kOptParse,        "-P",  "--parse",          false },
-    { kOptDefine,       "-D",  "--define",         true  },
-    { kOptInputDir,     "-I",  "--input",          true  },
-    { kOptCompileToIR,  "-s",  NULL,               false },
-    { kOptCompile,      "-c",  NULL,               false },
-    { kOptOptimizeMore, "-O",  NULL,               false },
-    { kOptOptimizeMore, "-O1", NULL,               false },
-    { kOptOptimizeNone, "-On", NULL,               false },
-    { 0,                NULL,  NULL,               false } // sentinel
+    { kOptHelp,         "-h",  "--help",           !K(argument) },
+    { kOptVersion,      "-v",  "--version",        !K(argument) },
+    { kOptOutdir,       "-d",  "--outdir",          K(argument) },
+    { kOptOutput,       "-o",  "--output",          K(argument) },
+    { kOptVerbose,      NULL,  "--verbose",        !K(argument) },
+    { kOptTrace,        "-T",  "--trace",           K(argument) },
+    { kOptParse,        "-P",  "--parse",          !K(argument) },
+    { kOptDefine,       "-D",  "--define",          K(argument) },
+    { kOptInputDir,     "-I",  "--input",           K(argument) },
+    { kOptCompileToIR,  "-s",  NULL,               !K(argument) },
+    { kOptCompile,      "-c",  NULL,               !K(argument) },
+    { kOptOptimizeMore, "-O",  NULL,               !K(argument) },
+    { kOptOptimizeMore, "-O1", NULL,               !K(argument) },
+    { kOptOptimizeNone, "-On", NULL,               !K(argument) },
+    { 0,                NULL,  NULL,               !K(argument) } // sentinel
   };
 
   String outputFileName;

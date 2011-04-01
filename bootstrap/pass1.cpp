@@ -246,11 +246,14 @@ FirstPass::parseModule()
       Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
 
       {
-        ScopeHelper scopeHelper(fScope, true, true, kScopeL_Module);
+        ScopeHelper scopeHelper(fScope,
+                                K(doExport), K(isInnerScope),
+                                kScopeL_Module);
 
         ModuleHelper moduleScope(this, modName.idValue());
         parseSequence(ModuleParser(),
-                      kBraceOpen, kBraceClose, false, E_MissingBraceClose,
+                      kBraceOpen, kBraceClose,
+                      !K(hasSeparator), E_MissingBraceClose,
                       defines,
                       "module-body");
       }
@@ -352,7 +355,7 @@ FirstPass::parseExport()
   bool ignore = false;
   Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
   parseSequence(ExportParser(),
-                kParanOpen, kParanClose, true, E_BadParameterList,
+                kParanOpen, kParanClose, K(hasSeparator), E_BadParameterList,
                 symbols,
                 "export-symbols");
   if (symbols.isEmpty()) {
@@ -425,7 +428,8 @@ FirstPass::parseImport()
     try
     {
       String srcName = importFile.stringValue();
-      if (!fCompiler->importFile(importFile.srcpos(), srcName, false, fScope))
+      if (!fCompiler->importFile(importFile.srcpos(), srcName,
+                                 !K(isPublic), fScope))
         return Token();
     }
     catch (const Exception& e) {
@@ -451,7 +455,7 @@ namespace herschel
     bool operator() (FirstPass* pass, Token& result)
     {
       SrcPos pos = pass->fToken.srcpos();
-      Token type = pass->parseTypeSpec(false);
+      Token type = pass->parseTypeSpec(!K(onlyNestedConstr));
       if (!type.isSet()) {
         errorf(pos, E_UnexpectedToken,
                "returntype expression expected, but found: %s",
@@ -492,7 +496,8 @@ FirstPass::parseSimpleType(const Token& baseToken, bool nextIsParsedYet)
   if (fToken == kGenericOpen) {
     Token generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
     parseSequence(TypeParser(kGenericClose),
-                  kGenericOpen, kGenericClose, true, E_GenericTypeList,
+                  kGenericOpen, kGenericClose,
+                  K(hasSeparator), E_GenericTypeList,
                   generics,
                   "type-params");
     return Token() << typeName << generics;
@@ -512,7 +517,7 @@ FirstPass::parseGroupType()
 
   Token nested = Token(fToken.srcpos(), kParanOpen, kParanClose);
   parseSequence(TypeParser(kParanClose),
-                kParanOpen, kParanClose, true, E_BadParameterList,
+                kParanOpen, kParanClose, K(hasSeparator), E_BadParameterList,
                 nested,
                 "group-type");
 
@@ -525,7 +530,7 @@ FirstPass::parseUnionType()
 {
   Token nested = Token(fToken.srcpos(), kUnionOpen, kParanClose);
   parseSequence(TypeParser(kParanClose),
-                kUnionOpen, kParanClose, true, E_BadParameterList,
+                kUnionOpen, kParanClose, K(hasSeparator), E_BadParameterList,
                 nested,
                 "union-type");
   return nested;
@@ -544,7 +549,7 @@ FirstPass::parseArrayExtend(const Token& baseType)
     Token idxExpr;
     if (fToken != kBracketClose) {
       SrcPos idxPos = fToken.srcpos();
-      idxExpr = parseExpr(false);
+      idxExpr = parseExpr(!K(acceptComma));
       if (!idxExpr.isSet())
         errorf(idxPos, E_UnexpectedToken, "expected index expression");
       else
@@ -581,7 +586,7 @@ FirstPass::parseConstraintExtend(const Token& baseType)
     Token op = fToken;
     nextToken();
 
-    Token constExpr = parseExpr(false);
+    Token constExpr = parseExpr(!K(acceptComma));
     if ( !(constExpr.isLit() || constExpr.isSymbol() ||
            constExpr.isConstRange()))
     {
@@ -615,7 +620,7 @@ FirstPass::parseFunctionSignature()
       colonToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
-      returnType = parseTypeSpec(true);
+      returnType = parseTypeSpec(K(onlyNestedConstr));
       if (!returnType.isSet()) {
         errorf(pos, E_MissingType, "returntype expression expected");
         returnType = Token(pos, kSymbol, "Any");
@@ -718,7 +723,7 @@ namespace herschel
 
     bool operator() (FirstPass* pass, Token& result)
     {
-      Token expr = pass->parseExpr(false);
+      Token expr = pass->parseExpr(!K(acceptComma));
 
       if (!expr.isSet()) {
         pass->scanUntilNextParameter();
@@ -737,7 +742,7 @@ namespace herschel
           Token mapToken = pass->fToken;
           pass->nextToken();
 
-          Token toValue = pass->parseExpr(false);
+          Token toValue = pass->parseExpr(!K(acceptComma));
           if (!toValue.isSet()) {
             errorf(mapToken.srcpos(), E_MissingRHExpr,
                    "'->' requires a second expression");
@@ -770,7 +775,8 @@ FirstPass::parseLiteralVector()
 {
   Token nested = Token(fToken.srcpos(), kLiteralVectorOpen, kParanClose);
   parseSequence(LiteralVectorParser(),
-                kLiteralVectorOpen, kParanClose, true, E_BadParameterList,
+                kLiteralVectorOpen, kParanClose,
+                K(hasSeparator), E_BadParameterList,
                 nested,
                 "literal-vector");
   return nested;
@@ -783,7 +789,7 @@ namespace herschel
   {
     bool operator() (FirstPass* pass, Token& result)
     {
-      Token n = pass->parseExpr(false);
+      Token n = pass->parseExpr(!K(acceptComma));
       if (n.isSet())
         result << n;
       else {
@@ -804,7 +810,8 @@ FirstPass::parseLiteralArray()
 {
   Token array = Token(fToken.srcpos(), kLiteralArrayOpen, kBracketClose);
   parseSequence(LiteralArrayParser(),
-                kLiteralArrayOpen, kBracketClose, true, E_BadParameterList,
+                kLiteralArrayOpen, kBracketClose,
+                K(hasSeparator), E_BadParameterList,
                 array,
                 "literal-array");
   return array;
@@ -825,7 +832,7 @@ FirstPass::parseIf()
   SrcPos paranPos = fToken.srcpos();
   nextToken();
 
-  Token test = parseExpr(false);
+  Token test = parseExpr(!K(acceptComma));
   if (fToken != kParanClose) {
     errorf(fToken.srcpos(), E_ParamMissParanClose,
            "Syntax error, missing ')'");
@@ -833,7 +840,7 @@ FirstPass::parseIf()
   else
     nextToken();
 
-  Token consequent = parseExpr(false);
+  Token consequent = parseExpr(!K(acceptComma));
 
   Token result;
   result << ifToken;
@@ -850,7 +857,7 @@ FirstPass::parseIf()
     Token elseToken = fToken;
     nextToken();
 
-    Token alternate = parseExpr(false);
+    Token alternate = parseExpr(!K(acceptComma));
 
     result << elseToken << alternate;
   }
@@ -931,7 +938,7 @@ FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
         nextToken();
 
         SrcPos pos = fToken.srcpos();
-        Token type = parseTypeSpec(true);
+        Token type = parseTypeSpec(K(onlyNestedConstr));
         if (!type.isSet()) {
           errorf(pos, E_MissingType,
                  "type expression expected");
@@ -950,7 +957,7 @@ FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
         nextToken();
 
         SrcPos pos = fToken.srcpos();
-        Token initExpr = parseExpr(false);
+        Token initExpr = parseExpr(!K(acceptComma));
         if (!initExpr.isSet())
           errorf(pos, E_MissingRHExpr, "no value in keyed argument");
         else {
@@ -1028,7 +1035,7 @@ FirstPass::parseFunctionsParamsFull(TokenVector* exprlist,
 {
   Token params;
   parseSequence(ParseFuncParamsParser(autoCompleteType),
-                startToken, endToken, true, E_BadParameterList,
+                startToken, endToken, K(hasSeparator), E_BadParameterList,
                 params,
                 "func-params",
                 skipFirst, eatLast);
@@ -1050,7 +1057,7 @@ FirstPass::parseFunctionsParams(TokenVector* exprlist, bool autoCompleteType,
                                   kParanOpen, kParanClose,
                                   autoCompleteType,
                                   acceptEmptyList,
-                                  true, true);
+                                  K(skipFirst), K(eatLast));
 }
 
 
@@ -1068,14 +1075,14 @@ FirstPass::parseOn(ScopeType scopeType)
   Token keyToken = fToken;
 
   const Macro* macro = fScope->lookupMacro(keyToken.srcpos(),
-                                           keyToken.idValue(), true);
+                                           keyToken.idValue(),
+                                           K(showAmbiguousSymDef));
   Token macroName = Token(keyToken.srcpos(), baseName(keyToken.idValue()));
 
   if (macro != NULL) {
     TokenVector dummyArgs;
     Token expr= parseMakeMacroCall(macroName, dummyArgs, macro,
-                                   true, /* parseParams */
-                                   true, /* is local*/
+                                   K(shouldParseParams), K(isLocal),
                                    scopeType);
     return expr;
   }
@@ -1102,7 +1109,7 @@ FirstPass::parseOn(ScopeType scopeType)
 
     TokenVector params;
     if (parseFunctionsParams(&params)) {
-      Token body = parseExpr(false);
+      Token body = parseExpr(!K(acceptComma));
 
       if (!ignoreStmt && body.isSet())
         return Token() << tagToken << keyToken
@@ -1139,7 +1146,7 @@ FirstPass::parseAnonFun()
       colonToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
-      returnType = parseTypeSpec(true);
+      returnType = parseTypeSpec(K(onlyNestedConstr));
       if (!returnType.isSet()) {
         errorf(pos, E_MissingType, "returntype expression expected");
         returnType = Token(pos, kSymbol, "Any");
@@ -1150,7 +1157,7 @@ FirstPass::parseAnonFun()
       returnType = Token(fToken.srcpos(), kSymbol, "Any");
     }
 
-    Token body = parseExpr(false);
+    Token body = parseExpr(!K(acceptComma));
     if (body.isSet())
       return Token() << funcToken
                      << ( Token(paranPos, kParanOpen, kParanClose)
@@ -1172,7 +1179,7 @@ namespace herschel
         Token key = pass->fToken;
         pass->nextToken();
 
-        Token val = pass->parseExpr(false);
+        Token val = pass->parseExpr(!K(acceptComma));
         if (!val.isSet()) {
           errorf(pass->fToken.srcpos(), E_UnexpectedToken,
                  "Unexpected token while parsing function keyed argument's expr:",
@@ -1184,7 +1191,7 @@ namespace herschel
         result << val;
       }
       else {
-        Token val = pass->parseExpr(false);
+        Token val = pass->parseExpr(!K(acceptComma));
         if (!val.isSet()) {
           errorf(pass->fToken.srcpos(), E_UnexpectedToken,
                  "unexpected token while parsing function arguments: ",
@@ -1206,8 +1213,8 @@ FirstPass::parseFuncallArgs(TokenVector* argsVector)
 {
   Token args;
   parseSequence(FuncallArgsParser(),
-                kParanOpen, kParanClose, true, E_BadParameterList,
-                args, "funcall-args", false);
+                kParanOpen, kParanClose, K(hasSeparator), E_BadParameterList,
+                args, "funcall-args", !K(skipFirst));
 
   if (args.isSeq())
     *argsVector = args.children();
@@ -1248,13 +1255,12 @@ FirstPass::parseParamCall(const Token& expr,
 {
   if (expr.isSymbol()) {
     const Macro* macro = fScope->lookupMacro(expr.srcpos(),
-                                             expr.idValue(), true);
+                                             expr.idValue(), K(showAmbiguousSymDef));
     Token macroName = Token(expr.srcpos(), baseName(expr.idValue()));
 
     if (macro != NULL) {
-      Token expr= parseMakeMacroCall(macroName, preScannedArgs,
-                                     macro,
-                                     shouldParseParams, true,
+      Token expr= parseMakeMacroCall(macroName, preScannedArgs, macro,
+                                     shouldParseParams, K(isLocal),
                                      kNonScopedDef);
       return expr;
     }
@@ -1277,7 +1283,7 @@ FirstPass::parseSlice(const Token& expr)
     return Token() << expr << Token(startPos, kBracketOpen, kBracketClose);
   }
   else {
-    Token idx = parseExpr(false);
+    Token idx = parseExpr(!K(acceptComma));
 
     if (fToken != kBracketClose)
       errorf(fToken.srcpos(), E_MissingBracketClose, "expected ']'");
@@ -1300,7 +1306,7 @@ FirstPass::parseAccess(const Token& expr)
 
   if (fToken == kParanOpen) {
     nextToken();
-    return parseAccess(parseParamCall(expr, args, true));
+    return parseAccess(parseParamCall(expr, args, K(shouldParseParams)));
   }
   else if (fToken == kBracketOpen) {
     return parseAccess(parseSlice(expr));
@@ -1317,12 +1323,14 @@ FirstPass::parseAccess(const Token& expr)
     args.push_back(expr);
     if (fToken == kParanOpen) {
       nextToken();
-      return parseAccess(parseParamCall(symToken, args, true));
+      return parseAccess(parseParamCall(symToken, args,
+                                        K(shouldParseParams)));
     }
     else if (fToken == kBracketOpen || fToken == kDot)
-      return parseAccess(parseParamCall(symToken, args, false));
+      return parseAccess(parseParamCall(symToken, args,
+                                        !K(shouldParseParams)));
     else
-      return parseParamCall(symToken, args, false);
+      return parseParamCall(symToken, args, !K(shouldParseParams));
   }
 
   return expr;
@@ -1332,7 +1340,7 @@ FirstPass::parseAccess(const Token& expr)
 Token
 FirstPass::parseGroup()
 {
-  Token expr = parseExpr(true);
+  Token expr = parseExpr(K(acceptComma));
   if (fToken != kParanClose) {
     errorf(fToken.srcpos(), E_MissingParanClose, "expected closing ')'");
   }
@@ -1389,7 +1397,7 @@ FirstPass::parseExprListUntilBrace(TokenVector* result,
     else {
       Token before = fToken;
       SrcPos startPos = fToken.srcpos();
-      Token expr = parseExpr(true);
+      Token expr = parseExpr(K(acceptComma));
 
       if (!expr.isSet()) {
         error(startPos, E_UnexpectedToken,
@@ -1411,7 +1419,7 @@ FirstPass::parseBlock()
   nextToken();
 
   TokenVector exprlist;
-  parseExprListUntilBrace(&exprlist, false, true);
+  parseExprListUntilBrace(&exprlist, !K(endAtToplevelId), K(isLocal));
 
   SrcPos bosp = fToken.srcpos();
   if (fToken != kBraceClose) {
@@ -1461,7 +1469,7 @@ namespace herschel
       }
 
       SrcPos bodySrcpos = pass->fToken.srcpos();
-      Token body = pass->parseExpr(true);
+      Token body = pass->parseExpr(K(acceptComma));
       if (body.isSet()) {
         if (mapToReq)
           result.push_back(mapToToken);
@@ -1511,7 +1519,7 @@ namespace herschel
           pass->nextToken();
         }
 
-        TokenVector consq = parseConsequent(pass, false);
+        TokenVector consq = parseConsequent(pass, !K(mapToReq));
         if (!ignore && !consq.empty())
           result << ( Token() << pipeToken << elseToken << consq );
       }
@@ -1528,7 +1536,7 @@ namespace herschel
             return false;
           }
           else {
-            Token test = pass->parseExpr(false);
+            Token test = pass->parseExpr(!K(acceptComma));
             if (test.isSet()) {
               pattern.push_back(test);
 
@@ -1552,7 +1560,7 @@ namespace herschel
           }
         }
 
-        TokenVector consq = parseConsequent(pass, true);
+        TokenVector consq = parseConsequent(pass, K(mapToReq));
         if (!pattern.empty() && !consq.empty()) {
           result << ( Token() << pipeToken << ( pattern.size() == 1
                                                 ? pattern[0]
@@ -1593,7 +1601,7 @@ FirstPass::parseSelect()
 
   Token patterns = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
   parseSequence(SelectPatternParser(),
-                kBraceOpen, kBraceClose, false, E_BadPatternList,
+                kBraceOpen, kBraceClose, !K(hasSeparator), E_BadPatternList,
                 patterns, "select-pattern");
 
   return Token() << selectToken << ( Token(paranPos, kParanOpen, kParanClose)
@@ -1639,7 +1647,7 @@ namespace herschel
       Token colonToken = pass->fToken;
       pass->nextToken();
 
-      Token matchType = pass->parseTypeSpec(true);
+      Token matchType = pass->parseTypeSpec(K(onlyNestedConstr));
       if (!matchType.isSet()) {
         pass->scanUntilBrace();
         return false;
@@ -1652,7 +1660,7 @@ namespace herschel
         return false;
       }
 
-      TokenVector consq = parseConsequent(pass, true);
+      TokenVector consq = parseConsequent(pass, K(mapToReq));
       if (colonToken.isSet() && matchType.isSet() && !consq.empty()) {
         if (varToken.isSet())
           result << ( Token()
@@ -1695,7 +1703,7 @@ FirstPass::parseMatch()
 
   Token patterns = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
   parseSequence(MatchPatternParser(),
-                kBraceOpen, kBraceClose, false, E_BadPatternList,
+                kBraceOpen, kBraceClose, !K(hasSeparator), E_BadPatternList,
                 patterns, "match-pattern");
 
   return Token() << matchToken << ( Token(paranPos, kParanOpen, kParanClose)
@@ -1717,7 +1725,7 @@ namespace herschel
       Token inToken = pass->fToken;
       pass->nextToken();
 
-      Token collToken = pass->parseExpr(false);
+      Token collToken = pass->parseExpr(!K(acceptComma));
       if (!collToken.isSet()) {
         error(pass->fToken.srcpos(), E_MissingRHExpr,
               String("unexpected token: ") + pass->fToken.toString());
@@ -1748,7 +1756,7 @@ namespace herschel
       Token assignToken = pass->fToken;
       pass->nextToken();
 
-      Token iterator = pass->parseExpr(false);
+      Token iterator = pass->parseExpr(!K(acceptComma));
       if (!iterator.isSet()) {
         error(pass->fToken.srcpos(), E_MissingRHExpr,
               String("unexpected token: ") + pass->fToken.toString());
@@ -1785,7 +1793,7 @@ namespace herschel
           colonToken = pass->fToken;
           pass->nextToken();
           SrcPos pos = pass->fToken.srcpos();
-          type = pass->parseTypeSpec(true);
+          type = pass->parseTypeSpec(K(onlyNestedConstr));
           if (!type.isSet()) {
             errorf(pos, E_MissingType, "type expression expected");
             type = Token(pos, kSymbol, "Any");
@@ -1801,14 +1809,15 @@ namespace herschel
                                      symToken, colonToken, type);
         }
         else {
-          Token first = pass->parseAccess(pass->parseSimpleType(symToken, true));
+          Token first = pass->parseAccess(pass->parseSimpleType(symToken,
+                                                                K(nextIsParsedYet)));
           if (allowNormalExpr) {
             OperatorType op1 = tokenTypeToOperator(pass->fToken.tokenType());
             SrcPos op1Srcpos = pass->fToken.srcpos();
 
             if (op1 != kOpInvalid) {
               Token expr = pass->parseExprRec(first.toTokenVector(), op1,
-                                              op1Srcpos, false);
+                                              op1Srcpos, !K(hasRest));
               if (expr.isSet()) {
                 result << expr;
                 return true;
@@ -1827,7 +1836,7 @@ namespace herschel
         }
       }
       else {
-        Token expr = pass->parseExpr(false);
+        Token expr = pass->parseExpr(!K(acceptComma));
         if (expr.isSet()) {
           result << expr;
           return true;
@@ -1860,10 +1869,10 @@ FirstPass::parseFor()
 
   Token args = Token(paranPos, kParanOpen, kParanClose);
   parseSequence(ForClauseParser(),
-                kParanOpen, kParanClose, true, E_BadParameterList,
-                args, "for-clauses", false);
+                kParanOpen, kParanClose, K(hasSeparator), E_BadParameterList,
+                args, "for-clauses", !K(skipFirst));
 
-  Token body = parseExpr(true);
+  Token body = parseExpr(K(acceptComma));
 
   Token elseToken;
   Token alternate;
@@ -1871,7 +1880,7 @@ FirstPass::parseFor()
     elseToken = fToken;
     nextToken();
 
-    alternate = parseExpr(false);
+    alternate = parseExpr(!K(acceptComma));
   }
 
   if (body.isSet()) {
@@ -1920,7 +1929,7 @@ FirstPass::parseExplicitTypedNumber(const Token& token)
     nextToken();
 
     SrcPos typePos = fToken.srcpos();
-    Token type = parseTypeSpec(true);
+    Token type = parseTypeSpec(K(onlyNestedConstr));
     if (!type.isSet()) {
       errorf(typePos, E_MissingType, "expected type specifier");
       return number;
@@ -1967,7 +1976,7 @@ FirstPass::parseAtomicExpr()
     return parseUnaryOp(fToken);
 
   case kWhenId:
-    return parseWhen(false, kNonScopedDef);
+    return parseWhen(!K(isTopLevel), kNonScopedDef);
   case kSelectId:
     return parseSelect();
   case kMatchId:
@@ -2213,7 +2222,7 @@ FirstPass::parseExprRec(const TokenVector& exprs,
   Token expr2;
 
   if (op1 == kOpAs)
-    expr2 = parseTypeSpec(true);
+    expr2 = parseTypeSpec(K(onlyNestedConstr));
   else
     expr2 = parseAtomicExpr();
   OperatorType op2 = tokenTypeToOperator(fToken.tokenType());
@@ -2250,11 +2259,11 @@ FirstPass::parseExprRec(const TokenVector& exprs,
       return parseExprRec(makeBinaryToken(exprs[0], op1,
                                           expr2, op1Srcpos).toTokenVector(),
                           op2,
-                          op2Srcpos, false);
+                          op2Srcpos, !K(hasRest));
     else
       return makeBinaryToken(exprs[0], op1,
                              parseExprRec(expr2.toTokenVector(),
-                                          op2, op2Srcpos, false),
+                                          op2, op2Srcpos, !K(hasRest)),
                              op1Srcpos);
   }
 }
@@ -2328,7 +2337,7 @@ FirstPass::parseTopOrExprList(bool isTopLevel, ScopeType scope)
     TokenVector exprs = parseTop(scope);
     return exprs;
   }
-  return parseExpr(false).toTokenVector();
+  return parseExpr(!K(acceptComma)).toTokenVector();
 }
 
 
@@ -2385,7 +2394,7 @@ FirstPass::scanBlock(bool isTopLevel, ScopeType scope)
   if (isTopLevel)
     parseTop(scope);
   else
-    parseExpr(true);
+    parseExpr(K(acceptComma));
   return true;
 }
 
@@ -2421,7 +2430,7 @@ FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
     SrcPos paranPos = fToken.srcpos();
     nextToken();
 
-    Token test = parseExpr(false);
+    Token test = parseExpr(!K(acceptComma));
     if (fToken != kParanClose) {
       errorf(fToken.srcpos(), E_ParamMissParanClose, "missing ')'");
       if (fToken == kBraceOpen) {
@@ -2540,9 +2549,9 @@ FirstPass::parseExtend(ScopeType scope)
 
   Token code;
   {
-    ModuleHelper modHelper(this, modNameToken.idValue(), true);
+    ModuleHelper modHelper(this, modNameToken.idValue(), K(setName));
 
-    code = wrapInBlock(fToken.srcpos(), parseTopOrExprList(true, scope));
+    code = wrapInBlock(fToken.srcpos(), parseTopOrExprList(K(isTopLevel), scope));
   }
 
   if (code.isSet())
@@ -2648,7 +2657,7 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
       colonToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
-      type = parseTypeSpec(true);
+      type = parseTypeSpec(K(onlyNestedConstr));
       if (!type.isSet()) {
         errorf(pos, E_MissingType, "type expression expected");
         type = Token(pos, kSymbol, "Any");
@@ -2705,7 +2714,7 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
     nextToken();
 
     SrcPos pos = fToken.srcpos();
-    initExpr = parseExpr(false);
+    initExpr = parseExpr(!K(acceptComma));
     if (!initExpr.isSet())
       errorf(pos, E_MissingRHExpr, "no value in var init");
   }
@@ -2879,7 +2888,7 @@ FirstPass::parseWhereClause()
     {
       nextToken();
 
-      Token constrExpr = parseExpr(false);
+      Token constrExpr = parseExpr(!K(acceptComma));
       if (constrExpr.isSet()) {
         if (delayedCommaToken.isSet()) {
           constraints.push_back(delayedCommaToken);
@@ -2892,7 +2901,7 @@ FirstPass::parseWhereClause()
     else if (op1 == kOpIsa) {
       nextToken();
 
-      Token typeConstraint = parseTypeSpec(false);
+      Token typeConstraint = parseTypeSpec(!K(onlyNestedConstr));
       if (delayedCommaToken.isSet()) {
         constraints.push_back(delayedCommaToken);
         delayedCommaToken = Token();
@@ -2986,7 +2995,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       colonToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
-      returnType = parseTypeSpec(true);
+      returnType = parseTypeSpec(K(onlyNestedConstr));
       if (!returnType.isSet()) {
         errorf(pos, E_MissingType, "type expression expected");
         returnType = Token(pos, kSymbol, "Any");
@@ -3016,7 +3025,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       docString = parseOptDocString();
 
       if (isLocal) {
-        body = parseExpr(false);
+        body = parseExpr(!K(acceptComma));
         if (!body.isSet()) {
           errorf(bodyPos, E_MissingBody, "expected function body");
           return Token();
@@ -3024,7 +3033,7 @@ FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       }
       else {
         TokenVector bodyExprs;
-        parseExprListUntilBrace(&bodyExprs, !isLocal, true);
+        parseExprListUntilBrace(&bodyExprs, !isLocal, K(isLocal));
 
         body = wrapInBlock(bodyPos, bodyExprs);
       }
@@ -3062,7 +3071,8 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal,
   Token symToken = fToken;
 
   const Macro* macro = fScope->lookupMacro(symToken.srcpos(),
-                                           symToken.idValue(), true);
+                                           symToken.idValue(),
+                                           K(showAmbiguousSymDef));
   if (macro != NULL) {
     Token macroName = Token(symToken.srcpos(), baseName(symToken.idValue()));
 
@@ -3073,7 +3083,7 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal,
 
       TokenVector dummyArgs;
       Token expr= parseMakeMacroCall(macroName, dummyArgs, macro,
-                                     true /* parseParams */, isLocal,
+                                     K(shouldParseParams), isLocal,
                                      kNonScopedDef);
       return expr.toTokenVector();
     }
@@ -3137,7 +3147,8 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
   if (fToken == kGenericOpen) {
     generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
     parseSequence(TypeParser(kGenericClose),
-                  kGenericOpen, kGenericClose, true, E_GenericTypeList,
+                  kGenericOpen, kGenericClose,
+                  K(hasSeparator), E_GenericTypeList,
                   generics,
                   "alias-params");
   }
@@ -3156,7 +3167,7 @@ FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
   nextToken();
 
   SrcPos pos = fToken.srcpos();
-  Token type = parseTypeSpec(false);
+  Token type = parseTypeSpec(!K(onlyNestedConstr));
   if (!type.isSet()) {
     errorf(pos, E_MissingType, "type expression expected");
     return scanUntilTopExprAndResume();
@@ -3219,7 +3230,8 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
   if (fToken == kGenericOpen) {
     generics = Token(fToken.srcpos(), kGenericOpen, kGenericClose);
     parseSequence(TypeParser(kGenericClose),
-                  kGenericOpen, kGenericClose, true, E_GenericTypeList,
+                  kGenericOpen, kGenericClose,
+                  K(hasSeparator), E_GenericTypeList,
                   generics,
                   "typedef-params");
   }
@@ -3248,7 +3260,7 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
     colonToken = fToken;
     nextToken();
     SrcPos pos = fToken.srcpos();
-    isaType = parseTypeSpec(true);
+    isaType = parseTypeSpec(K(onlyNestedConstr));
     if (!isaType.isSet()) {
       errorf(pos, E_MissingType, "type expression expected");
       isaType = Token(fToken.srcpos(), kSymbol, "Any");
@@ -3266,7 +3278,7 @@ FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
   if (fToken == kBraceOpen) {
     if (isClass) {
       bracePos = fToken.srcpos();
-      classInternals = parseTopOrExprList(true, kInClassDef);
+      classInternals = parseTopOrExprList(K(isTopLevel), kInClassDef);
     }
     else {
       warningf(fToken.srcpos(), E_TypeHasNoBraces,
@@ -3319,7 +3331,7 @@ FirstPass::parseSlotDef(const Token& defToken)
     colonToken = fToken;
     nextToken();
     SrcPos pos = fToken.srcpos();
-    isaType = parseTypeSpec(true);
+    isaType = parseTypeSpec(K(onlyNestedConstr));
     if (!isaType.isSet()) {
       errorf(pos, E_MissingType, "type expression expected");
       isaType = Token(fToken.srcpos(), kSymbol, "Any");
@@ -3335,7 +3347,7 @@ FirstPass::parseSlotDef(const Token& defToken)
     nextToken();
 
     SrcPos pos = fToken.srcpos();
-    initExpr = parseExpr(false);
+    initExpr = parseExpr(!K(acceptComma));
     if (!initExpr.isSet())
       errorf(pos, E_MissingRHExpr, "no value in var init");
   }
@@ -3433,7 +3445,7 @@ FirstPass::parseMeasure(const Token& defToken, bool isLocal)
   nextToken();
 
   SrcPos pos = fToken.srcpos();
-  Token isaType = parseTypeSpec(true);
+  Token isaType = parseTypeSpec(K(onlyNestedConstr));
   if (!isaType.isSet()) {
     errorf(pos, E_MissingType, "type expression expected");
     isaType = Token(fToken.srcpos(), kSymbol, "Any");
@@ -3491,7 +3503,7 @@ FirstPass::parseUnit(const Token& defToken, bool isLocal)
   Token docString = parseOptDocString();
 
   SrcPos bodyPos = fToken.srcpos();
-  Token body = parseExpr(false);
+  Token body = parseExpr(!K(acceptComma));
   if (!body.isSet()) {
     errorf(bodyPos, E_MissingBody, "expected unit def function body");
     return Token();
@@ -3536,7 +3548,7 @@ namespace herschel
         Token assignToken = pass->fToken;
         pass->nextToken();
 
-        Token value = pass->parseExpr(false);
+        Token value = pass->parseExpr(!K(acceptComma));
         if (value.isSet()) {
           resultValue.push_back(assignToken);
           resultValue.push_back(value);
@@ -3574,7 +3586,7 @@ FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
     colonToken = fToken;
     nextToken();
     SrcPos pos = fToken.srcpos();
-    isaType = parseTypeSpec(true);
+    isaType = parseTypeSpec(K(onlyNestedConstr));
     if (!isaType.isSet()) {
       errorf(pos, E_MissingType, "type expression expected");
       isaType = Token(fToken.srcpos(), kSymbol, "Any");
@@ -3590,7 +3602,7 @@ FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
 
   Token items = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
   parseSequence(EnumItemParser(),
-                kBraceOpen, kBraceClose, false, E_BadEnumItemList,
+                kBraceOpen, kBraceClose, !K(hasSeparator), E_BadEnumItemList,
                 items, "enum-items");
 
   Token enumDefToken = Token() << defToken << tagToken << enumToken;
@@ -3964,13 +3976,13 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
       if (linkage.isSet())
         errorf(linkage.srcpos(), E_UnexpLinkage,
                "Unsupported linkage for type definition ignored");
-      return parseTypeDef(defToken, false, isLocal).toTokenVector();
+      return parseTypeDef(defToken, !K(isClass), isLocal).toTokenVector();
     }
     else if (fToken == Compiler::classToken) {
       if (linkage.isSet())
         errorf(linkage.srcpos(), E_UnexpLinkage,
                "Unsupported linkage for class definition ignored");
-      return parseTypeDef(defToken, true, isLocal).toTokenVector();
+      return parseTypeDef(defToken, K(isClass), isLocal).toTokenVector();
     }
     else if (fToken == Compiler::aliasToken) {
       if (linkage.isSet())
@@ -4054,10 +4066,10 @@ FirstPass::parseTop(ScopeType scope)
     return parseImport().toTokenVector();
   }
   else if (fToken == kDefId) {
-    return parseDef(false, scope);
+    return parseDef(!K(isLocal), scope);
   }
   else if (fToken == kWhenId) {
-    return parseWhen(true, scope).toTokenVector();
+    return parseWhen(K(isTopLevel), scope).toTokenVector();
   }
   else if (fToken == kExtendId) {
     return parseExtend(scope).toTokenVector();
@@ -4092,7 +4104,9 @@ FirstPass::parse()
   {
     // let the complete parse run in its own scope to force an explicit export
     // run
-    ScopeHelper scopeHelper(fScope, true, false, kScopeL_CompileUnit);
+    ScopeHelper scopeHelper(fScope,
+                            K(doExport), !K(isInnerScope),
+                            kScopeL_CompileUnit);
 
     nextToken();
     while (fToken != kEOF) {
@@ -4305,7 +4319,7 @@ namespace herschel {
                        SyntaxTreeNode* followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
-      Token expr = pass->parseExpr(false);
+      Token expr = pass->parseExpr(!K(acceptComma));
       if (!expr.isSet()) {
         errorf(pos, E_MacroParamMismatch,
                "Macro parameter %s requires expression",
@@ -4353,7 +4367,8 @@ namespace herschel {
     {
       SrcPos pos = pass->fToken.srcpos();
       FirstPass::ParamType expected = FirstPass::kPositional;
-      Token param = pass->parseParameter(&expected, false);
+      Token param = pass->parseParameter(&expected,
+                                         !K(autoCompleteTypes));
 
       if (!param.isSet()) {
         errorf(pos, E_MacroParamMismatch,
@@ -4385,7 +4400,8 @@ namespace herschel {
     {
       SrcPos pos = pass->fToken.srcpos();
       FirstPass::ParamType expected = FirstPass::kPositional;
-      Token param = pass->parseParameter(&expected, false);
+      Token param = pass->parseParameter(&expected,
+                                         !K(autoCompleteTypes));
 
       if (expected != fReqType || !param.isSet()) {
         errorf(pos, E_MacroParamMismatch,
@@ -4417,10 +4433,10 @@ namespace herschel {
       TokenType endTokenType = kParanClose;
       if (!pass->parseFunctionsParamsFull(&params,
                                           kParanOpen, endTokenType,
-                                          true /* autoCompleteType */,
-                                          true /* acceptEmptyList */,
-                                          false /* skipFirst */,
-                                          false /* don't eat last */)) {
+                                          K(autoCompleteType),
+                                          K(acceptEmptyList),
+                                          !K(skipFirst),
+                                          !K(eatLast))) {
         return false;
       }
 
@@ -4609,7 +4625,7 @@ FirstPass::parseExprStream(TokenVector* result, bool isTopLevel,
     if (isTopLevel)
       exprs = parseTop(scopeType);
     else
-      exprs = parseExpr(true).toTokenVector();
+      exprs = parseExpr(K(acceptComma)).toTokenVector();
 
     if (!exprs.empty())
       result->insert(result->end(), exprs.begin(), exprs.end());

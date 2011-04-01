@@ -83,7 +83,7 @@ void
 herschel::xml::displayTag(Port<Octet>* port,
                          const char* tagName, const String& value)
 {
-  displayOpenTag(port, tagName, false);
+  displayOpenTag(port, tagName, !K(newline));
   herschel::display(port, xmlEncode(value));
   displayCloseTag(port, tagName);
 }
@@ -97,7 +97,7 @@ herschel::xml::displayTagAttr(Port<Octet>* port,
 {
   String encodedValue = xmlEncode(value);
   if (!encodedValue.isEmpty()) {
-    displayOpenTagAttrs(port, tagName, attrs, false);
+    displayOpenTagAttrs(port, tagName, attrs, !K(newline));
     herschel::display(port, encodedValue);
     displayCloseTag(port, tagName);
   }
@@ -119,7 +119,7 @@ herschel::xml::displayStringList(Port<Octet>* port,
        it++)
   {
     String str = (*it);
-    displayOpenTag(port, tagName, false);
+    displayOpenTag(port, tagName, !K(newline));
     herschel::display(port, str);
     displayCloseTag(port, tagName);
   }
@@ -430,7 +430,7 @@ XmlRenderer::renderNode(const IntNode* node)
   if (node->isImaginary())
     attrs << " imag='t'";
 
-  displayOpenTagAttrs("int", StrHelper(attrs.toString()), false);
+  displayOpenTagAttrs("int", StrHelper(attrs.toString()), !K(newline));
   herschel::display(fPort, xmlEncode(String() + node->value()));
   displayCloseTag("int");
 

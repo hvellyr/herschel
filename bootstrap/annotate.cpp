@@ -77,7 +77,7 @@ Annotator::annotateNode(AptNode* node)
 void
 Annotator::annotate(CompileUnitNode* node)
 {
-  annotateNodeList(node->children(), false, false);
+  annotateNodeList(node->children(), !K(markTailPos), !K(markSingleType));
 }
 
 
@@ -130,7 +130,8 @@ void
 Annotator::annotate(SymbolNode* node)
 {
   if (fPhase == kLookup) {
-    const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
+    const AptNode* var = node->scope()->lookupVarOrFunc(node->name(),
+                                                        K(showAmbiguousSymDef));
     if (var != NULL) {
       takeFullNameFromNode(node, var);
 
@@ -142,9 +143,9 @@ Annotator::annotate(SymbolNode* node)
       }
       else if (const FuncDefNode* funcdef = dynamic_cast<const FuncDefNode*>(var)) {
         if (funcdef->isGeneric())
-          node->setRefersTo(kGeneric, false);
+          node->setRefersTo(kGeneric, !K(isShared));
         else
-          node->setRefersTo(kFunction, false);
+          node->setRefersTo(kFunction, !K(isShared));
       }
       else if (dynamic_cast<const ParamNode*>(var) != NULL) {
         bool isShared = updateAllocType(node, var);
@@ -161,7 +162,8 @@ Annotator::annotate(SymbolNode* node)
       return;
     }
 
-    Type type = node->scope()->lookupType(node->name(), true);
+    Type type = node->scope()->lookupType(node->name(),
+                                          K(showAmbiguousSymDef));
     if (type.isDef()) {
       node->setName(type.typeName());
       return;
@@ -199,7 +201,7 @@ Annotator::annotate(DefNode* node)
   if (vardefNode != NULL) {
     if (fPhase == kRegister)
       vardefNode->setScope(fScope);
-    annotate(vardefNode, false);
+    annotate(vardefNode, !K(isLocal));
     return;
   }
 
@@ -207,7 +209,7 @@ Annotator::annotate(DefNode* node)
   if (funcNode != NULL) {
     if (fPhase == kRegister)
       funcNode->setScope(fScope);
-    annotate(funcNode, false);
+    annotate(funcNode, !K(isLocal));
     return;
   }
 
@@ -222,7 +224,7 @@ Annotator::annotate(LetNode* node)
   if (vardefNode != NULL) {
     if (fPhase == kRegister)
       vardefNode->setScope(fScope);
-    annotate(vardefNode, true);
+    annotate(vardefNode, K(isLocal));
     return;
   }
 
@@ -230,7 +232,7 @@ Annotator::annotate(LetNode* node)
   if (funcNode != NULL) {
     if (fPhase == kRegister)
       funcNode->setScope(fScope);
-    annotate(funcNode, true);
+    annotate(funcNode, K(isLocal));
     return;
   }
 
@@ -264,7 +266,8 @@ Annotator::annotate(FuncDefNode* node, bool isLocal)
       fScope->registerFunction(node->srcpos(), node->name(), node);
     }
     else if (node->isMethod()) {
-      const AptNode* var = node->scope()->lookupVarOrFunc(node->name(), true);
+      const AptNode* var = node->scope()->lookupVarOrFunc(node->name(),
+                                                          K(showAmbiguousSymDef));
       if (var == NULL) {
         errorf(node->srcpos(), E_NoGenericFunction,
                "No generic function definition found for method");
@@ -286,9 +289,10 @@ Annotator::annotate(FuncDefNode* node, bool isLocal)
     }
   }
 
-  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
+  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope),
+                          kScopeL_Function);
 
-  annotateNodeList(node->params(), false, true);
+  annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
   if (node->body() != NULL) {
     node->body()->setIsInTailPos(true);
     annotateNode(node->body());
@@ -299,9 +303,10 @@ Annotator::annotate(FuncDefNode* node, bool isLocal)
 void
 Annotator::annotate(FunctionNode* node)
 {
-  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Function);
+  ScopeHelper scopeHelper(fScope, !K(doExport), !K(isInnerScope),
+                          kScopeL_Function);
 
-  annotateNodeList(node->params(), false, true);
+  annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
   if (node->body() != NULL) {
     node->body()->setIsInTailPos(true);
     annotateNode(node->body());
@@ -373,7 +378,8 @@ namespace herschel
 void
 Annotator::annotate(BlockNode* node)
 {
-  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
+  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope),
+                          kScopeL_Local);
 
   if (!node->isInTailPos()) {
     int loopId = 0;
@@ -401,7 +407,7 @@ Annotator::annotate(BlockNode* node)
     }
   }
 
-  annotateNodeList(node->children(), node->isInTailPos(), false);
+  annotateNodeList(node->children(), node->isInTailPos(), !K(markSingleType));
 }
 
 
@@ -426,14 +432,14 @@ Annotator::annotate(ApplyNode* node)
 {
   node->base()->setIsSingleTypeRequired(true);
   annotateNode(node->base());
-  annotateNodeList(node->children(), false, true);
+  annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
 }
 
 
 void
 Annotator::annotate(ArrayNode* node)
 {
-  annotateNodeList(node->children(), false, true);
+  annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
 }
 
 
@@ -520,9 +526,10 @@ void
 Annotator::annotate(OnNode* node)
 {
   // TODO : set tail node position
-  ScopeHelper scopeHelper(fScope, false, true, kScopeL_Local);
+  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope),
+                          kScopeL_Local);
 
-  annotateNodeList(node->params(), false, true);
+  annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
   annotateNode(node->body());
 }
 
@@ -563,14 +570,14 @@ Annotator::annotate(WhileNode* node)
 void
 Annotator::annotate(VectorNode* node)
 {
-  annotateNodeList(node->children(), false, true);
+  annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
 }
 
 
 void
 Annotator::annotate(DictNode* node)
 {
-  annotateNodeList(node->children(), false, true);
+  annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
 }
 
 
