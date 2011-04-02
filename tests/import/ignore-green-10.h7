@@ -1,0 +1,15 @@
+;; imported file
+
+module green
+
+export public (*)
+
+def alias MyNumber = Int
+
+def %slots% : MyNumber = 10
+
+def type YourNumber : Int32
+
+
+def foo(a : MyNumber, b : 'T)
+  a

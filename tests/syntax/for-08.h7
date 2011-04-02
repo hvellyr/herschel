@@ -1,0 +1,38 @@
+def f0(k)
+  for (i : Int in 0 .. k - 1) {
+    outln(i)
+  }
+  else
+    false
+
+
+def f1(k)
+  for (i : Int in 0 .. k - 1 by 2) {
+    outln(i)
+  }
+  else
+    false
+
+
+def f2(k)
+  for (i : Int in 0 .. k - 1 by 2) {
+    outln(i)
+  }
+
+
+def fd0(k)
+  for (i : Int in 100 .. 0 by -1) {
+    outln(i)
+  }
+
+
+def fd1(k)
+  for (i : Int in 100 .. 0 by -2) {
+    outln(i)
+  }
+
+
+def fx0(k)
+  for (i : Int in 100 .. 0 by k) {
+    outln(i)
+  }

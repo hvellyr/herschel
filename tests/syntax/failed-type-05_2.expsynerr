@@ -1,0 +1,2 @@
+2 ; error ; 4411 ; bad base type in array type: %(%(Person () %) [] %)
+6 ; error ; 403f ; Generic type is not allowed here

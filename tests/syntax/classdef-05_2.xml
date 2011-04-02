@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<type nm='core|Comparable'>
+<isa>
+<ty:type nm='core|Comparable'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<generic sym='core|compare' abstract='true'>
+<params>
+<param sym='one' type='spec'>
+<type>
+<ty:ref gen='t' nm='S'>
+</ty:ref>
+</type>
+</param>
+<param sym='two' type='spec'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+<def>
+<generic sym='core|equal?' abstract='true'>
+<params>
+<param sym='one' type='spec'>
+<type>
+<ty:ref gen='t' nm='S'>
+</ty:ref>
+</type>
+</param>
+<param sym='two' type='spec'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+</compile-unit>

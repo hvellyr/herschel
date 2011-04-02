@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<generic sym='init-functor' abstract='true'>
+<params>
+<param sym='ty' type='spec'>
+<type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</rettype>
+</generic>
+</def>
+<def>
+<func sym='foo'>
+<rettype>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</rettype>
+<body>
+<apply  ty='lambda(lang|Int32, lang|Any):lang|Int32'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):lambda(&apos;T, lang|Any):&apos;T' refer='generic'>init-functor</symbol>
+<args>
+<symbol  ty='lang|Class&lt;lang|Int32>'>lang|Int</symbol>
+</args>
+</apply>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

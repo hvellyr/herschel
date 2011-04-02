@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>module</id>
+<id>red</id>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<punct type=','/>
+<seq>
+<id>xyz</id>
+<punct type=':'/>
+<id>Key</id>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>measure</id>
+<id>Abc</id>
+<nested left='(' right=')'>
+<id>abc</id>
+</nested>
+<punct type=':'/>
+<id>Float</id>
+</seq>
+<seq>
+<id>def</id>
+<id>measure</id>
+<id>Xyz</id>
+<nested left='(' right=')'>
+<id>xyz</id>
+</nested>
+<punct type=':'/>
+<id>Int</id>
+</seq>
+</seq>

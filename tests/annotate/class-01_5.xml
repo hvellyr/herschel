@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='Abc'>
+<isa>
+<ty:type nm='Abc' inst='t'>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='Abc|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='Abc' inst='t'>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='Abc' inst='t'>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</rettype>
+<body>
+<block>
+<symbol  ty='Abc&lt;&apos;X>' refer='param'>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<vardef sym='g'>
+<type>
+<ty:type nm='Abc' inst='t'>
+<ty:gen>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</type>
+</vardef>
+</def>
+<def>
+<func sym='foo'>
+<rettype>
+<ty:type nm='Abc' inst='t'>
+<ty:gen>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='v'>
+<type>
+<ty:type nm='Abc' inst='t'>
+<ty:gen>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</type>
+</vardef>
+</let>
+<symbol  ty='Abc&lt;lang|Int32>' refer='local'>v</symbol>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='Abc' inst='t'>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='Abc' inst='t'>
+<ty:gen>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

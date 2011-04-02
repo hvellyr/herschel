@@ -1,0 +1,11 @@
+;; a function macro must not be resolved in a definition where a definition
+;; symbol is expected.
+
+def macro foo
+{
+  { foo(?a:expr) } -> { ?a }
+}
+
+
+def foo(a @ Int) : Int
+  a * 2

@@ -1,0 +1,17 @@
+module japan
+
+def class City(_name, _country)
+{
+  def slot name = _name
+  def slot country = _country
+}
+
+
+def class Person(_name, _job)
+{
+  def slot name = _name
+  def slot job = _job
+}
+
+export public(*)
+

@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='bar2'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='a'>
+<init>
+<apply>
+<symbol>foo</symbol>
+<args>
+<int ty='lang|Int32'>1</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__value_0'>
+<init>
+<apply>
+<symbol>foo</symbol>
+<args>
+<int ty='lang|Int32'>2</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='b'>
+<init>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|UInt32'>0</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='c'>
+<init>
+<apply>
+<symbol>slice*</symbol>
+<args>
+<symbol>__value_0</symbol>
+<int ty='lang|UInt32'>1</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<true/>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

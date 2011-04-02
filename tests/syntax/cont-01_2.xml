@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<vardef sym='a' type='const'>
+<init>
+<array>
+<int ty='lang|Int32'>1</int>
+<int ty='lang|Int32'>2</int>
+<int ty='lang|Int32'>3</int>
+<int ty='lang|Int32'>4</int>
+</array>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='b' type='const'>
+<init>
+<array>
+</array>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='c' type='const'>
+<init>
+<array>
+<str>hello</str>
+<str>, </str>
+<str>world</str>
+<str>!</str>
+</array>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='d' type='const'>
+<init>
+<array>
+<array>
+<int ty='lang|Int32'>1</int>
+<int ty='lang|Int32'>2</int>
+</array>
+<array>
+<int ty='lang|Int32'>3</int>
+</array>
+<array>
+</array>
+</array>
+</init>
+</vardef>
+</def>
+</compile-unit>

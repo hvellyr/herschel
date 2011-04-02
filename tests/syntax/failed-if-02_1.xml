@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>a</id>
+<punct type='='/>
+<seq>
+<id>if</id>
+<nested left='(' right=')'>
+<lit type='bool'>true</lit>
+</nested>
+<lit type='int'>27</lit>
+</seq>
+</seq>
+</seq>

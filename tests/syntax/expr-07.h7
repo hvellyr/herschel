@@ -1,0 +1,6 @@
+def f()
+  {
+    let t(x)
+      outln(x)
+    t(10)
+  }

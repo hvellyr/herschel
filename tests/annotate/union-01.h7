@@ -1,0 +1,14 @@
+def alias StringIntAny = &(String, Int, Any)
+
+def x : StringIntAny = "abc"
+
+def foo()
+  x = "hello world"
+
+
+def goo()
+  x = 42
+
+
+def bar() : StringIntAny
+  x = unspecified

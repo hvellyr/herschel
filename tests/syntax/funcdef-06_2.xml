@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<generic sym='f' abstract='true'>
+<params>
+<param sym='a' type='spec'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+<def>
+<method sym='f'>
+<params>
+<param sym='a' type='spec'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</rettype>
+<body>
+<symbol>a</symbol>
+</body>
+</method>
+</def>
+<def>
+<generic sym='put' abstract='true'>
+<params>
+<param sym='value' type='spec'>
+<type>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Serializable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+<param sym='key' type='spec'>
+<type>
+<ty:ref gen='t' nm='K'>
+<ty:const k='geq'>0</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:seq>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Serializable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:seq>
+</rettype>
+</generic>
+</def>
+<def>
+<method sym='put'>
+<params>
+<param sym='value' type='spec'>
+<type>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Serializable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+<param sym='key' type='spec'>
+<type>
+<ty:ref gen='t' nm='K'>
+<ty:const k='geq'>0</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:seq>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Serializable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:seq>
+</rettype>
+<body>
+<array>
+<symbol>value</symbol>
+<symbol>key</symbol>
+</array>
+</body>
+</method>
+</def>
+</compile-unit>

@@ -1,0 +1,2 @@
+def foo(a : Any) : &(Int, Bool == false)
+  a as &(Int, Bool == false)

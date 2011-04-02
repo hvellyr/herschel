@@ -1,0 +1,9 @@
+def macro x
+{
+  { x(?a:value) ?n:expr } -> { ?a }
+}
+
+
+def f()
+  x(1)
+

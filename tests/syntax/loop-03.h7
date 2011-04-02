@@ -1,0 +1,9 @@
+def f(i)
+  for (i < 100)
+    if (i.odd?)
+      i.incr!
+    else
+      i = i + 2
+  else
+    i
+
