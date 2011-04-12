@@ -42,6 +42,12 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
+#define K_RUNTIME_INIT_PRIORITY     0
+#define K_CLASS_REG_PRIORITY        1
+#define K_GLOBAL_VAR_REG_PRIORITY   2
+
+//----------------------------------------------------------------------------
+
 CodeGenerator::CodeGenerator()
   : fContext(llvm::getGlobalContext()),
     fModule(NULL),
@@ -138,6 +144,7 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
 {
   node->codegen(this);
 
+  emitRuntimeInitFunc();
   emitClassInitFunc();
   emitGlobalVarInitFunc();
 
@@ -214,6 +221,20 @@ CodeGenerator::getAtomType()
   }
 
   return atomType;
+}
+
+
+const llvm::Type*
+CodeGenerator::getTypeType()
+{
+  return llvm::Type::getInt8PtrTy(context());
+}
+
+
+const llvm::Type*
+CodeGenerator::getTypeSlotPairType()
+{
+  return llvm::Type::getInt8PtrTy(context());
 }
 
 
@@ -580,7 +601,7 @@ CodeGenerator::emitGlobalVarInitFunc()
     if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
       fOptPassManager->run(*regFunc);
 
-    addGlobalCtor(regFunc, 2);
+    addGlobalCtor(regFunc, K_GLOBAL_VAR_REG_PRIORITY);
   }
 }
 
@@ -1045,34 +1066,155 @@ CodeGenerator::codegen(const FunctionNode* node)
 
 
 llvm::Value*
-CodeGenerator::makeClassRegisterCall(const String& typeName, bool instantiable,
-                                     int isize)
+CodeGenerator::makeTypeLookupCall(const Type& ty)
 {
-  llvm::Function* regFunc = fModule->getFunction(llvm::StringRef("class_register"));
+  llvm::Function* lookupFunc = fModule->getFunction(llvm::StringRef("type_lookup_by_name"));
+  if (lookupFunc == NULL) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(llvm::Type::getInt8PtrTy(context())); // char8*
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(getTypeType(),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    lookupFunc = llvm::Function::Create(ft,
+                                        llvm::Function::ExternalLinkage,
+                                        llvm::Twine("type_lookup_by_name"),
+                                        fModule);
+  }
+
+  String typeName = herschel::mangleToC(ty.typeName());
+
+  std::vector<llvm::Value*> argv;
+  argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("typename")));
+
+  return fBuilder.CreateCall(lookupFunc, argv.begin(), argv.end()); //, "callreg");
+
+  // TODO
+  return llvm::Constant::getNullValue(getTypeType());
+}
+
+
+llvm::Value*
+CodeGenerator::makeTypeRegisterCall(llvm::Value* newType)
+{
+  llvm::Function* regFunc = fModule->getFunction(llvm::StringRef("register_type"));
   if (regFunc == NULL) {
     std::vector<const llvm::Type*> sign;
-    sign.push_back(llvm::Type::getInt8PtrTy(context()));
-    sign.push_back(llvm::Type::getInt1Ty(context()));
-    sign.push_back(llvm::Type::getInt32Ty(context()));
+    sign.push_back(getTypeType());                     // Type*
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
+    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                      sign,
-                                                     false);
+                                                     !K(isVarArg));
 
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
-                                     llvm::Twine("class_register"),
+                                     llvm::Twine("register_type"),
                                      fModule);
   }
 
   std::vector<llvm::Value*> argv;
-  argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("str")));
-  argv.push_back(instantiable
-                 ? llvm::ConstantInt::getTrue(context())
-                 : llvm::ConstantInt::getFalse(context()));
+  argv.push_back(newType);
+
+  return fBuilder.CreateCall(regFunc, argv.begin(), argv.end()); //, "callreg");
+}
+
+
+llvm::Value*
+CodeGenerator::makeClassAllocCall(const String& typeName, const TypeDefNode* tdnode)
+{
+  llvm::Function* allocFunc = fModule->getFunction(llvm::StringRef("class_alloc"));
+  if (allocFunc == NULL) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(llvm::Type::getInt8PtrTy(context())); // typename
+    sign.push_back(llvm::Type::getInt32Ty(context()));   // instance size
+    sign.push_back(getTypeSlotPairType());               // const TypeSlotPair*
+    sign.push_back(llvm::Type::getInt32Ty(context()));   // isa_size
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(getTypeType(),
+                                                     sign,
+                                                     K(isVarArg));
+
+    allocFunc = llvm::Function::Create(ft,
+                                     llvm::Function::ExternalLinkage,
+                                     llvm::Twine("class_alloc"),
+                                     fModule);
+  }
+
+  size_t instance_size = 0;
+
+  std::vector<llvm::Value*> argv;
+  argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("classname")));
   argv.push_back(llvm::ConstantInt::get(context(),
-                                        llvm::APInt(32, isize, true)));
-  return fBuilder.CreateCall(regFunc, argv.begin(), argv.end(), "callreg");
+                                        llvm::APInt(32, instance_size, true)));
+  // TODO
+  argv.push_back(llvm::Constant::getNullValue(getTypeSlotPairType()));
+
+  Type isa = tdnode->defType();
+  if (isa.isSequence()) {
+    argv.push_back(llvm::ConstantInt::get(context(),
+                                          llvm::APInt(32, isa.seqTypes().size(), true)));
+    for (size_t i = 0; i < isa.seqTypes().size(); i++)
+      argv.push_back(makeTypeLookupCall(isa.seqTypes()[i]));
+  }
+  else {
+    argv.push_back(llvm::ConstantInt::get(context(),
+                                          llvm::APInt(32, 1, true)));
+    argv.push_back(makeTypeLookupCall(isa));
+  }
+
+  return fBuilder.CreateCall(allocFunc, argv.begin(), argv.end(), "call_class_alloc");
+}
+
+
+llvm::Value*
+CodeGenerator::makeTypeAllocCall(const String& typeName, const TypeDefNode* tdnode)
+{
+  llvm::Function* allocFunc = fModule->getFunction(llvm::StringRef("type_alloc"));
+  if (allocFunc == NULL) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(llvm::Type::getInt8PtrTy(context())); // typename
+    sign.push_back(llvm::Type::getInt32Ty(context()));   // isa_size
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(getTypeType(),
+                                                     sign,
+                                                     K(isVarArg));
+
+    allocFunc = llvm::Function::Create(ft,
+                                     llvm::Function::ExternalLinkage,
+                                     llvm::Twine("type_alloc"),
+                                     fModule);
+  }
+
+  std::vector<llvm::Value*> argv;
+  argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("typename")));
+
+  Type isa = tdnode->defType();
+  if (isa.isSequence()) {
+    argv.push_back(llvm::ConstantInt::get(context(),
+                                          llvm::APInt(32, isa.seqTypes().size(), true)));
+    for (size_t i = 0; i < isa.seqTypes().size(); i++)
+      argv.push_back(makeTypeLookupCall(isa.seqTypes()[i]));
+  }
+  else {
+    argv.push_back(llvm::ConstantInt::get(context(),
+                                          llvm::APInt(32, 1, true)));
+    argv.push_back(makeTypeLookupCall(isa));
+  }
+
+  return fBuilder.CreateCall(allocFunc, argv.begin(), argv.end(), "call_type_alloc");
+}
+
+
+llvm::Value*
+CodeGenerator::makeTypeOrCallRegistration(const TypeDefNode* tdnode)
+{
+  if (tdnode->isClass())
+    return makeTypeRegisterCall(makeClassAllocCall(herschel::mangleToC(tdnode->name()),
+                                                   tdnode));
+
+  return makeTypeRegisterCall(makeTypeAllocCall(herschel::mangleToC(tdnode->name()),
+                                                tdnode));
 }
 
 
@@ -1438,6 +1580,44 @@ CodeGenerator::codegen(const TypeDefNode* node)
 
 
 void
+CodeGenerator::emitRuntimeInitFunc()
+{
+  const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
+                                                         false);
+  String tmpName = uniqueName("rtinit");
+  String funcnm = herschel::mangleToC(tmpName);
+
+  llvm::Function *regFunc = createGlobalInitOrDtorFunction(ft, funcnm);
+
+  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", regFunc);
+  fBuilder.SetInsertPoint(bb);
+
+  std::vector<const llvm::Type*> sign;
+
+  llvm::FunctionType *ft2 = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
+                                                    sign,
+                                                    !K(isVarArg));
+
+  llvm::Function* rtinitFunc = llvm::Function::Create(ft2,
+                                                      llvm::Function::ExternalLinkage,
+                                                      llvm::Twine("runtime_init"),
+                                                      fModule);
+
+  std::vector<llvm::Value*> argv;
+  fBuilder.CreateCall(rtinitFunc, argv.begin(), argv.end());
+
+  fBuilder.CreateRetVoid();
+
+  verifyFunction(*regFunc);
+
+  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+    fOptPassManager->run(*regFunc);
+
+  addGlobalCtor(regFunc, K_RUNTIME_INIT_PRIORITY);
+}
+
+
+void
 CodeGenerator::emitClassInitFunc()
 {
   if (!fClassInitFuncs.empty())
@@ -1454,9 +1634,7 @@ CodeGenerator::emitClassInitFunc()
 
     for (size_t i = 0; i < fClassInitFuncs.size(); i++) {
       const TypeDefNode* tdnode = fClassInitFuncs[i];
-      makeClassRegisterCall(herschel::mangleToC(tdnode->name()),
-                            tdnode->isClass(),
-                            42);
+      makeTypeOrCallRegistration(tdnode);
     }
     fBuilder.CreateRetVoid();
 
@@ -1465,7 +1643,7 @@ CodeGenerator::emitClassInitFunc()
     if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
       fOptPassManager->run(*regFunc);
 
-    addGlobalCtor(regFunc, 1);
+    addGlobalCtor(regFunc, K_CLASS_REG_PRIORITY);
   }
 }
 

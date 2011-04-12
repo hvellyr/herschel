@@ -157,6 +157,8 @@ namespace herschel
                                              const llvm::Type* type);
 
     const llvm::Type* getAtomType();
+    const llvm::Type* getTypeType();
+    const llvm::Type* getTypeSlotPairType();
     const llvm::Type* getType(const Type& type);
 
     llvm::Value* makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType);
@@ -184,11 +186,15 @@ namespace herschel
     llvm::Value* makeBoolAtom(llvm::Value* val);
     llvm::Value* makeBoolAtom(bool val);
 
-    llvm::Value* makeClassRegisterCall(const String& typeName, bool instantiable,
-                                       int isize);
+    llvm::Value* makeTypeRegisterCall(llvm::Value* newType);
+    llvm::Value* makeClassAllocCall(const String& typeName, const TypeDefNode* tdnode);
+    llvm::Value* makeTypeAllocCall(const String& typeName, const TypeDefNode* tdnode);
+    llvm::Value* makeTypeOrCallRegistration(const TypeDefNode* tdnode);
+    llvm::Value* makeTypeLookupCall(const Type& ty);
+
+    void emitRuntimeInitFunc();
     void emitClassInitFunc();
     void emitGlobalVarInitFunc();
-
 
     //------------------------------ emit operators
     bool isPlainInt(const Type& type) const;
