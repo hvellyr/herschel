@@ -48,7 +48,19 @@ Slots
 -----
 
   Every class has a table<Keyword, Offset> mapping slots names to store
-  offsets into instances.
+  offsets into instances.  In addition there's one offset per inherited class
+
+  The slot functions (slot() and slot!() use the keyword name to lookup the
+  offset from the current class and access withit the memory location in
+  the instance blob.
+
+  The address of a slot memory location is computed as such:
+
+    instance-address + slot-offset
+
+  The offsets have to be computed by the compiler and set up at class
+  allocation and registration time.
+
 
 
 Keywords
