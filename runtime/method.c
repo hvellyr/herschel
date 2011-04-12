@@ -146,8 +146,9 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
 
 
 Method*
-lookup_func1(GenericFunction* gf, Type* ty0)
+lookup_func1(GenericFunction* gf, TagId ty0_id)
 {
+  Type* ty0 = type_lookup_by_tag(ty0_id);
   List* l = gf->methods;
 
   assert(gf->argc == 1);
@@ -166,8 +167,10 @@ lookup_func1(GenericFunction* gf, Type* ty0)
 
 
 Method*
-lookup_func2(GenericFunction* gf, Type* ty0, Type* ty1)
+lookup_func2(GenericFunction* gf, TagId ty0_id, TagId ty1_id)
 {
+  Type* ty0 = type_lookup_by_tag(ty0_id);
+  Type* ty1 = type_lookup_by_tag(ty1_id);
   List* l = gf->methods;
 
   assert(gf->argc == 2);
@@ -187,8 +190,12 @@ lookup_func2(GenericFunction* gf, Type* ty0, Type* ty1)
 
 
 Method*
-lookup_func3(GenericFunction* gf, Type* ty0, Type* ty1, Type* ty2)
+lookup_func3(GenericFunction* gf, TagId ty0_id, TagId ty1_id, TagId ty2_id)
 {
+  Type* ty0 = type_lookup_by_tag(ty0_id);
+  Type* ty1 = type_lookup_by_tag(ty1_id);
+  Type* ty2 = type_lookup_by_tag(ty2_id);
+
   List* l = gf->methods;
 
   assert(gf->argc == 3);
