@@ -1150,17 +1150,21 @@ CodeGenerator::makeClassAllocCall(const String& typeName, const TypeDefNode* tdn
   // TODO
   argv.push_back(llvm::Constant::getNullValue(getTypeSlotPairType()));
 
-  Type isa = tdnode->defType();
+  Type isa = tdnode->defType().typeInheritance();
   if (isa.isSequence()) {
     argv.push_back(llvm::ConstantInt::get(context(),
                                           llvm::APInt(32, isa.seqTypes().size(), true)));
     for (size_t i = 0; i < isa.seqTypes().size(); i++)
       argv.push_back(makeTypeLookupCall(isa.seqTypes()[i]));
   }
-  else {
+  else if (isa.isDef()) {
     argv.push_back(llvm::ConstantInt::get(context(),
                                           llvm::APInt(32, 1, true)));
     argv.push_back(makeTypeLookupCall(isa));
+  }
+  else {
+    argv.push_back(llvm::ConstantInt::get(context(),
+                                          llvm::APInt(32, 0, true)));
   }
 
   return fBuilder.CreateCall(allocFunc, argv.begin(), argv.end(), "call_class_alloc");
@@ -1189,17 +1193,21 @@ CodeGenerator::makeTypeAllocCall(const String& typeName, const TypeDefNode* tdno
   std::vector<llvm::Value*> argv;
   argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("typename")));
 
-  Type isa = tdnode->defType();
+  Type isa = tdnode->defType().typeInheritance();
   if (isa.isSequence()) {
     argv.push_back(llvm::ConstantInt::get(context(),
                                           llvm::APInt(32, isa.seqTypes().size(), true)));
     for (size_t i = 0; i < isa.seqTypes().size(); i++)
       argv.push_back(makeTypeLookupCall(isa.seqTypes()[i]));
   }
-  else {
+  else if (isa.isDef()) {
     argv.push_back(llvm::ConstantInt::get(context(),
                                           llvm::APInt(32, 1, true)));
     argv.push_back(makeTypeLookupCall(isa));
+  }
+  else {
+    argv.push_back(llvm::ConstantInt::get(context(),
+                                          llvm::APInt(32, 0, true)));
   }
 
   return fBuilder.CreateCall(allocFunc, argv.begin(), argv.end(), "call_type_alloc");
