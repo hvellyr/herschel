@@ -41,6 +41,12 @@ register_type(Type* type)
   type_tag_id_counter++;
   type->tag_id = type_tag_id_counter;
 
+  if (hashtable_get(types_name_to_type_map, (void*)type->name) != NULL)
+  {
+    fprintf(stderr, "Multiple occurance of type '%s' clash.\n", type->name);
+    return;
+  }
+
   hashtable_add(types_name_to_type_map, (void*)type->name, (void*)type);
   /* hashtable_add(types_tag_to_type_map, (void*)type->tag_id, (void*)type); */
 
@@ -50,7 +56,7 @@ register_type(Type* type)
   }
   types_tag_vector[type->tag_id] = type;
 
-//  fprintf(stderr, "Register type: %s\n", type->name);
+  fprintf(stderr, "Register type: %s\n", type->name);
 }
 
 
@@ -150,7 +156,10 @@ class_alloc(const char* nm,
 Type*
 type_lookup_by_name(const char* nm)
 {
-  return hashtable_get(types_name_to_type_map, (void*)nm);
+  Type* ty = hashtable_get(types_name_to_type_map, (void*)nm);
+  if (ty == NULL)
+    fprintf(stderr, "Type '%s' could not be resolved\n", nm);
+  return ty;
 }
 
 
