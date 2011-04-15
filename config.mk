@@ -135,7 +135,7 @@ mandir        ?= $(prefix)/man
 
 BUILDDIR = $(top_srcdir)/temp
 PKGDIR = $(top_srcdir)/packages
-
+BUILDTESTSDIR = $(top_srcdir)/temp/tests
 
 distdir = $(BUILDDIR)/$(PACKAGE)-$(VERSION)
 info-distdir = $(PACKAGE)-docs-info-$(VERSION)
