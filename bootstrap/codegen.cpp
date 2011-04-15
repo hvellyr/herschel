@@ -147,6 +147,7 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
   emitRuntimeInitFunc();
   emitClassInitFunc();
   emitGlobalVarInitFunc();
+  emitTypeGetterFunctions();
 
   emitCtorList(fGlobalCtors, "llvm.global_ctors");
   emitCtorList(fGlobalDtors, "llvm.global_dtors");
@@ -1089,9 +1090,131 @@ CodeGenerator::makeTypeLookupCall(const Type& ty)
   argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("typename")));
 
   return fBuilder.CreateCall(lookupFunc, argv.begin(), argv.end()); //, "callreg");
+}
 
-  // TODO
-  return llvm::Constant::getNullValue(getTypeType());
+
+void
+CodeGenerator::emitTypeGetterFunctions()
+{
+  for (size_t i = 0; i < fTypesGetters.size(); i++) {
+    const Type& ty = fTypesGetters[i];
+
+    String typeClassLookupFuncName = String() + "get_" + ty.typeName() + "_type";
+    String typeClassLookupGVName = ty.typeName() + "_type";
+
+    String gvNm = herschel::mangleToC(typeClassLookupGVName);
+    const llvm::Type* gvTy = llvm::Type::getInt8PtrTy(context());
+    llvm::Constant* initGv = llvm::Constant::getNullValue(gvTy);
+
+    llvm::GlobalVariable* gv = new llvm::GlobalVariable(gvTy,
+                                                        !K(isConstant),
+                                                        llvm::GlobalValue::InternalLinkage,
+                                                        initGv,
+                                                        llvm::Twine(gvNm),
+                                                        !K(threadLocal),
+                                                        0);    // AddressSpace
+    hr_assert(gv != NULL);
+    fModule->getGlobalList().push_back(gv);
+
+
+    String funcName = herschel::mangleToC(typeClassLookupFuncName);
+    llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
+
+    if (typeFunc == NULL)
+    {
+      std::vector<const llvm::Type*> sign;
+
+      llvm::FunctionType *ft = llvm::FunctionType::get(getTypeType(),
+                                                       sign,
+                                                       !K(isVarArg));
+      typeFunc = llvm::Function::Create(ft,
+                                        llvm::Function::ExternalLinkage,
+                                        llvm::Twine(funcName),
+                                        fModule);
+    }
+
+    llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", typeFunc);
+    fBuilder.SetInsertPoint(bb);
+
+    //-------- test
+    llvm::Value* testValue = fBuilder.CreateIsNull(fBuilder.CreateLoad(gv));
+
+    llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(context(), "then", typeFunc);
+    llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(context(), "else");
+    llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(context(), "ifcont");
+
+    fBuilder.CreateCondBr(testValue, thenBB, elseBB);
+
+    //-------- then
+    fBuilder.SetInsertPoint(thenBB);
+
+    llvm::Value* thenValue = makeTypeOrCallRegistration(ty);
+    fBuilder.CreateStore(thenValue, gv);
+    llvm::Value* thenValue2 = fBuilder.CreateLoad(gv);
+
+    fBuilder.CreateBr(mergeBB);
+    // Get a reference to the current thenBB, since codegen of 'then' can change
+    // the current block, update thenBB for the PHI.
+    thenBB = fBuilder.GetInsertBlock();
+
+    //-------- else
+    typeFunc->getBasicBlockList().push_back(elseBB);
+    fBuilder.SetInsertPoint(elseBB);
+
+    llvm::Value* elseValue = fBuilder.CreateLoad(gv);
+
+    fBuilder.CreateBr(mergeBB);
+
+    elseBB = fBuilder.GetInsertBlock();
+
+    // Emit merge block.
+    typeFunc->getBasicBlockList().push_back(mergeBB);
+    fBuilder.SetInsertPoint(mergeBB);
+
+    llvm::PHINode *pn = fBuilder.CreatePHI(getTypeType(), "iftmp");
+
+    pn->addIncoming(thenValue2, thenBB);
+    pn->addIncoming(elseValue, elseBB);
+
+    fBuilder.CreateRet(pn);
+
+    // llvm::Value* val = makeTypeLookupCall(ty);
+    // fBuilder.CreateRet(val);
+
+    if (Properties::isCodeDump())
+      typeFunc->dump();
+
+    verifyFunction(*typeFunc);
+
+    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+      fOptPassManager->run(*typeFunc);
+  }
+}
+
+
+llvm::Value*
+CodeGenerator::makeIsaTypeLookupCall(const Type& ty)
+{
+  String typeClassLookupFuncName = String() + "get_" + ty.typeName() + "_type";
+  String funcName = herschel::mangleToC(typeClassLookupFuncName);
+  llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
+
+  if (typeFunc == NULL)
+  {
+    std::vector<const llvm::Type*> sign;
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(getTypeType(),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    typeFunc = llvm::Function::Create(ft,
+                                      llvm::Function::ExternalLinkage,
+                                      llvm::Twine(funcName),
+                                      fModule);
+  }
+
+  std::vector<llvm::Value*> argv;
+  return fBuilder.CreateCall(typeFunc, argv.begin(), argv.end());
 }
 
 
@@ -1116,13 +1239,16 @@ CodeGenerator::makeTypeRegisterCall(llvm::Value* newType)
   std::vector<llvm::Value*> argv;
   argv.push_back(newType);
 
-  return fBuilder.CreateCall(regFunc, argv.begin(), argv.end()); //, "callreg");
+  fBuilder.CreateCall(regFunc, argv.begin(), argv.end()); //, "callreg");
+  return newType;
 }
 
 
 llvm::Value*
-CodeGenerator::makeClassAllocCall(const String& typeName, const TypeDefNode* tdnode)
+CodeGenerator::makeClassAllocCall(const Type& ty)
 {
+  const String& typeName = herschel::mangleToC(ty.typeName());
+
   llvm::Function* allocFunc = fModule->getFunction(llvm::StringRef("class_alloc"));
   if (allocFunc == NULL) {
     std::vector<const llvm::Type*> sign;
@@ -1139,6 +1265,8 @@ CodeGenerator::makeClassAllocCall(const String& typeName, const TypeDefNode* tdn
                                      llvm::Function::ExternalLinkage,
                                      llvm::Twine("class_alloc"),
                                      fModule);
+
+    //fTypesGetters.push_back(ty);
   }
 
   size_t instance_size = 0;
@@ -1150,17 +1278,17 @@ CodeGenerator::makeClassAllocCall(const String& typeName, const TypeDefNode* tdn
   // TODO
   argv.push_back(llvm::Constant::getNullValue(getTypeSlotPairType()));
 
-  Type isa = tdnode->defType().typeInheritance();
+  Type isa = ty.typeInheritance();
   if (isa.isSequence()) {
     argv.push_back(llvm::ConstantInt::get(context(),
                                           llvm::APInt(32, isa.seqTypes().size(), true)));
     for (size_t i = 0; i < isa.seqTypes().size(); i++)
-      argv.push_back(makeTypeLookupCall(isa.seqTypes()[i]));
+      argv.push_back(makeIsaTypeLookupCall(isa.seqTypes()[i]));
   }
   else if (isa.isDef()) {
     argv.push_back(llvm::ConstantInt::get(context(),
                                           llvm::APInt(32, 1, true)));
-    argv.push_back(makeTypeLookupCall(isa));
+    argv.push_back(makeIsaTypeLookupCall(isa));
   }
   else {
     argv.push_back(llvm::ConstantInt::get(context(),
@@ -1172,8 +1300,10 @@ CodeGenerator::makeClassAllocCall(const String& typeName, const TypeDefNode* tdn
 
 
 llvm::Value*
-CodeGenerator::makeTypeAllocCall(const String& typeName, const TypeDefNode* tdnode)
+CodeGenerator::makeTypeAllocCall(const Type& ty)
 {
+  const String& typeName = herschel::mangleToC(ty.typeName());
+
   llvm::Function* allocFunc = fModule->getFunction(llvm::StringRef("type_alloc"));
   if (allocFunc == NULL) {
     std::vector<const llvm::Type*> sign;
@@ -1188,22 +1318,24 @@ CodeGenerator::makeTypeAllocCall(const String& typeName, const TypeDefNode* tdno
                                      llvm::Function::ExternalLinkage,
                                      llvm::Twine("type_alloc"),
                                      fModule);
+
+    //fTypesGetters.push_back(ty);
   }
 
   std::vector<llvm::Value*> argv;
   argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("typename")));
 
-  Type isa = tdnode->defType().typeInheritance();
+  Type isa = ty.typeInheritance();
   if (isa.isSequence()) {
     argv.push_back(llvm::ConstantInt::get(context(),
                                           llvm::APInt(32, isa.seqTypes().size(), true)));
     for (size_t i = 0; i < isa.seqTypes().size(); i++)
-      argv.push_back(makeTypeLookupCall(isa.seqTypes()[i]));
+      argv.push_back(makeIsaTypeLookupCall(isa.seqTypes()[i]));
   }
   else if (isa.isDef()) {
     argv.push_back(llvm::ConstantInt::get(context(),
                                           llvm::APInt(32, 1, true)));
-    argv.push_back(makeTypeLookupCall(isa));
+    argv.push_back(makeIsaTypeLookupCall(isa));
   }
   else {
     argv.push_back(llvm::ConstantInt::get(context(),
@@ -1215,14 +1347,27 @@ CodeGenerator::makeTypeAllocCall(const String& typeName, const TypeDefNode* tdno
 
 
 llvm::Value*
+CodeGenerator::makeTypeOrCallRegistration(const Type& ty)
+{
+  if (ty.isClass())
+    return makeTypeRegisterCall(makeClassAllocCall(ty));
+
+  return makeTypeRegisterCall(makeTypeAllocCall(ty));
+}
+
+
+llvm::Value*
 CodeGenerator::makeTypeOrCallRegistration(const TypeDefNode* tdnode)
 {
-  if (tdnode->isClass())
-    return makeTypeRegisterCall(makeClassAllocCall(herschel::mangleToC(tdnode->name()),
-                                                   tdnode));
+  Type ty = tdnode->defType();
 
-  return makeTypeRegisterCall(makeTypeAllocCall(herschel::mangleToC(tdnode->name()),
-                                                tdnode));
+  fTypesGetters.push_back(ty);
+  return makeIsaTypeLookupCall(ty);
+
+  // if (tdnode->isClass())
+  //   return makeTypeRegisterCall(makeClassAllocCall(tdnode->defType()));
+
+  // return makeTypeRegisterCall(makeTypeAllocCall(tdnode->defType()));
 }
 
 

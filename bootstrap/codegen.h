@@ -187,14 +187,17 @@ namespace herschel
     llvm::Value* makeBoolAtom(bool val);
 
     llvm::Value* makeTypeRegisterCall(llvm::Value* newType);
-    llvm::Value* makeClassAllocCall(const String& typeName, const TypeDefNode* tdnode);
-    llvm::Value* makeTypeAllocCall(const String& typeName, const TypeDefNode* tdnode);
+    llvm::Value* makeClassAllocCall(const Type& ty);
+    llvm::Value* makeTypeAllocCall(const Type& ty);
     llvm::Value* makeTypeOrCallRegistration(const TypeDefNode* tdnode);
+    llvm::Value* makeTypeOrCallRegistration(const Type& ty);
     llvm::Value* makeTypeLookupCall(const Type& ty);
+    llvm::Value* makeIsaTypeLookupCall(const Type& ty);
 
     void emitRuntimeInitFunc();
     void emitClassInitFunc();
     void emitGlobalVarInitFunc();
+    void emitTypeGetterFunctions();
 
     //------------------------------ emit operators
     bool isPlainInt(const Type& type) const;
@@ -230,6 +233,8 @@ namespace herschel
 
     std::vector<const TypeDefNode*> fClassInitFuncs;
     std::vector<const VardefNode*> fGlobalInitVars;
+
+    std::vector<Type> fTypesGetters;
   };
 };                              // namespace
 
