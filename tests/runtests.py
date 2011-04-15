@@ -32,6 +32,11 @@ OPTIONS = { 'syntax':    { '1': ['-T', 'pass1',     '-P', '--dont-import', '--pa
 
 PHASES = ['1', '2', '3', '4', '5']
 
+EXECUTABLES = { 'syntax': 'hrc',
+                'import': 'hrc',
+                'transform': 'hrc',
+                'annotate': 'hrc',
+                'compile': 'herschel' }
 
 
 #----------------------------------------------------------------------------
@@ -92,10 +97,13 @@ def kill_process(p, timed_out_mutable, process_name):
 class TestRunner:
 
     def __init__(self):
-        self.executable_path = os.path.abspath("../temp/debug/hrc")
+        self.executable_path = os.path.abspath("../temp/debug/")
+        self.current_executable = ''
         self.verbose = False
         self.test_succeeded = 0
         self.test_run = 0
+        self.total_test_succeeded = 0
+        self.total_test_run = 0
         self.input_dir = False
         self.temp_dir = None
         self.last_passid = -1
@@ -165,17 +173,52 @@ class TestRunner:
             self.break_cols()
 
 
-    def run_herschel_on_test(self, test_file, options):
-        cmd = [self.executable_path]
+    def reset_status_count(self):
+        self.test_run = 0
+        self.test_succeeded = 0
+
+
+    def report_summary(self, title, run, succeeded):
+        if succeeded <> run:
+            print "%s: %d tests of %d failed" % (title, run - succeeded, run)
+        else:
+            print "%s: %d tests succeeded" % (title, succeeded)
+        print
+
+
+    def run_herschel_on_test(self, test_file, options, env=None):
+        cmd = [os.path.join(self.executable_path, self.current_executable)]
         cmd.extend(options)
         if self.input_dir:
             cmd.append('-I')
             cmd.append(self.input_dir)
         cmd.append(test_file)
 
+        #print cmd
+
+        use_env = os.environ
+        if env is not None:
+            use_env = use_env.copy()
+            use_env.update(env)
+
         return subprocess.Popen(cmd,
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE).communicate()
+                                stderr=subprocess.PIPE,
+                                env=use_env).communicate()
+
+
+    def run_make_on_test(self, options, env=None):
+        cmd = ["make"]
+        cmd.extend(options)
+
+        use_env = os.environ
+        if env is not None:
+            use_env = use_env.copy()
+            use_env.update(env)
+        return subprocess.Popen(cmd,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                env=use_env).communicate()
 
 
     def compare_XML_result_with_file(self, test_name, test_str, expected_file):
@@ -471,13 +514,44 @@ class TestRunner:
 
                 self.run_test_binary_impl(tmp_binary, compiledesc, passid, what_tag)
 
-            return
+
+    def run_complex_compile_test(self, test_dir, f, passid):
+        """Run a makefile inside of the folder $test_dir/$f
+We expect that the makefile generates an executable named $f in the temporary
+folder we give in the environment variable TESTDIR.  The expected name is passed
+in the environment variable APPNAME to the makefile.
+
+The expected test data is expected in a test description file $test_dir/$f/$f.testdesc."""
+        full_test_path = os.path.join(test_dir, f)
+
+        with TmpDirCtx("test_", base_dir=self.temp_dir, delete_on_exit=True) as tmp_dir:
+            abs_tmp_dir = os.path.abspath(tmp_dir)
+
+            with DirSaver(full_test_path):
+                compiledesc = self.load_testdesc(os.path.abspath(f + ".testdesc"))
+                tmp_binary = os.path.abspath(os.path.join(abs_tmp_dir, f + self.os_ext()))
+
+                output, erroutput = self.run_make_on_test([],
+                                                          {'TESTDIR': abs_tmp_dir,
+                                                           'APPNAME': f})
+                what_tag = "[%s] %s" % (passid, f)
+
+                if erroutput:
+                    self.report_failure("%s: %s" % (what_tag, erroutput))
+                    self.test_run += 1
+                    return
+#                if output:
+#                    print "Output: %s" % output
+
+                self.run_test_binary_impl(tmp_binary, compiledesc, passid, what_tag)
 
 
     #----------------------------------------------------------------------------
 
     def run_test(self, test_dir, src_file, domain):
         test_file = os.path.join(test_dir, src_file)
+
+        self.current_executable = EXECUTABLES[domain]
 
         if domain == "compile":
             self.run_compile_test(test_file, "", "6")
@@ -488,13 +562,19 @@ class TestRunner:
                 pass
             else:
                 self.run_pass_test(test_file, domain)
+        self.current_executable = ''
 
 
     def run_all_tests(self, test_dir, domain):
+        print "Run tests in %s:" % (domain)
         for f in os.listdir(test_dir):
             if f.endswith(".h7"):
                 self.open_report()
                 self.run_test(test_dir, f, domain)
+                self.close_report()
+            elif os.path.isdir(os.path.join(test_dir, f)):
+                self.open_report()
+                self.run_complex_compile_test(test_dir, f, "6")
                 self.close_report()
 
         if not self.verbose:
@@ -506,22 +586,26 @@ class TestRunner:
                 for f in self.failures:
                     print f
 
-            print
+        #self.report_summary("SUMMARY", self.test_run, self.test_succeeded)
 
-        if self.test_succeeded <> self.test_run:
-            print "SUMMARY: %d tests of %d failed in %s" % (self.test_run - self.test_succeeded,
-                                                            self.test_run,
-                                                            domain)
-        else:
-            print "SUMMARY: %d tests succeeded in %s" % (self.test_succeeded, domain)
+        self.total_test_succeeded = self.total_test_succeeded + self.test_succeeded
+        self.total_test_run = self.total_test_run + self.test_run
 
 
 #----------------------------------------------------------------------------
 
+def run_tests(tr, domains):
+    for dom in domains:
+        if os.path.isdir(arg):
+            tr.run_all_tests(dom, dom)
+
+    tr.report_summary("TOTAL", tr.total_test_run, tr.total_test_succeeded)
+
+
 def main():
     parser = OptionParser()
     parser.add_option("-e", "--executable", dest="executable",
-                      help="sets the path to the compiler to use", metavar="FILE")
+                      help="sets the dir to the compiler to use", metavar="FILE")
     parser.add_option("-V", "--verbose", action="store_true",
                       dest="verbose", default=False,
                       help="be more verbose")
@@ -551,11 +635,16 @@ def main():
         tr.temp_dir = options.temp_dir
 
     for arg in args:
+        tr.reset_status_count()
+
         if os.path.isdir(arg):
-            tr.run_all_tests(arg, options.domain)
+            d, f = os.path.split(arg)
+            tr.run_all_tests(arg, f)
         else:
             d, f = os.path.split(arg)
             tr.run_test(d, f, options.domain)
+
+    tr.report_summary("TOTAL", tr.total_test_run, tr.total_test_succeeded)
 
 
 if __name__ == "__main__":

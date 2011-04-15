@@ -50,6 +50,7 @@ DYLIBEXT = .dylib
 PIC = -fPIC -dynamic
 endif
 
+LLVM_EXE = $(top_srcdir)/external/llvm/Release/bin
 
 # do we have a readline installed?
 

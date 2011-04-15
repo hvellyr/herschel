@@ -10,32 +10,36 @@ include $(top_srcdir)/config.mk
 
 include $(top_srcdir)/build/pre.mk
 
-all-local: syntax-tests import-tests transform-tests annotate-tests compile-tests
+all-local: all-tests
 
 testtemp_dir = $(BUILDDIR)/temp
 
 $(testtemp_dir):
 	@if [ ! -d "$@" ]; then mkdir $@; fi
 
+all-tests:
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		-I $(top_srcdir)/tests -t $(testtemp_dir) syntax import transform annotate compile
+
 syntax-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/hrc \
-		-I $(top_srcdir)/tests -D syntax syntax/
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		-I $(top_srcdir)/tests syntax
 
 import-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/hrc \
-		-I $(top_srcdir)/tests -D import import/
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		-I $(top_srcdir)/tests import
 
 transform-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/hrc \
-		-I $(top_srcdir)/tests -D transform transform/
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		-I $(top_srcdir)/tests transform
 
 annotate-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/hrc \
-		-I $(top_srcdir)/tests -D annotate annotate/
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		-I $(top_srcdir)/tests annotate
 
 compile-tests: $(testtemp_dir)
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE)/herschel \
-		-I $(top_srcdir)/tests -D compile -t $(testtemp_dir) compile/
+	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		-I $(top_srcdir)/tests -t $(testtemp_dir) compile
 
 include $(top_srcdir)/build/generic.mk
 

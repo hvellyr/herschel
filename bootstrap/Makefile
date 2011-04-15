@@ -64,7 +64,6 @@ COMMON_LIB = $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 #------------------------------------------------------------------------------
 # hrc - compiler
 #------------------------------------------------------------------------------
-LLVM_EXE = $(top_srcdir)/external/llvm/Release/bin
 
 LLVM_CPPFLAGS = $(shell $(LLVM_EXE)/llvm-config --cppflags)
 LLVM_LDFLAGS = $(shell $(LLVM_EXE)/llvm-config --ldflags)
@@ -191,8 +190,6 @@ endif
 HERSCHEL_OBJS = $(HERSCHEL_SOURCES:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
 
 HERSCHEL_LDFLAGS = $(LDFLAGS)
-
-HERSCHEL_APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/herschel$(APPEXT)
 
 
 #------------------------------------------------------------------------------
