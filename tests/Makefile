@@ -17,7 +17,7 @@ testtemp_dir = $(BUILDDIR)/temp
 $(testtemp_dir):
 	@if [ ! -d "$@" ]; then mkdir $@; fi
 
-all-tests:
+all-tests: $(testtemp_dir)
 	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
 		-I $(top_srcdir)/tests -t $(testtemp_dir) syntax import transform annotate compile
 
