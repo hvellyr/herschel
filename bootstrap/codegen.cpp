@@ -42,18 +42,14 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-#define K_RUNTIME_INIT_PRIORITY     0
-#define K_CLASS_REG_PRIORITY        1
-#define K_GLOBAL_VAR_REG_PRIORITY   2
-
-//----------------------------------------------------------------------------
-
 CodeGenerator::CodeGenerator()
   : fContext(llvm::getGlobalContext()),
     fModule(NULL),
     // fDIBuilder(NULL),
     fBuilder(context()),
     fOptPassManager(NULL),
+    fInitializer(this),
+    fTypes(this),
     fHasMainFunc(false)
 {
   llvm::InitializeNativeTarget();
@@ -61,18 +57,6 @@ CodeGenerator::CodeGenerator()
   static llvm::ExecutionEngine *theExecutionEngine = NULL;
 
   fModule = new llvm::Module("compile-unit", fContext);
-
-  // fDIBuilder = new llvm::DIBuilder(fModule);
-
-  // fDIBuilder->createCompileUnit(dwarf::DW_LANG_C99,
-  //                               "hello-world.c",
-  //                               "/Users/gck/Dev/herschel/tests",
-  //                               "herschel 1.0",
-  //                               true, // isOptimized,
-  //                               "",
-  //                               0); // obj-c runtime version
-
-  // const llvm::Target *TheTarget = TargetRegistry::lookupTarget(Triple, Error);
 
   // Create the JIT.  This takes ownership of the module.
   std::string errStr;
@@ -138,19 +122,20 @@ CodeGenerator::~CodeGenerator()
 }
 
 
+llvm::LLVMContext&
+CodeGenerator::context()
+{
+  return fContext;
+}
+
+
 bool
 CodeGenerator::compileToCode(const CompileUnitNode* node,
                              const String& outputFile)
 {
   node->codegen(this);
 
-  emitRuntimeInitFunc();
-  emitClassInitFunc();
-  emitGlobalVarInitFunc();
-  emitTypeGetterFunctions();
-
-  emitCtorList(fGlobalCtors, "llvm.global_ctors");
-  emitCtorList(fGlobalDtors, "llvm.global_dtors");
+  fInitializer.finish();
 
   hr_assert(!outputFile.isEmpty());
 
@@ -175,126 +160,6 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
 
 
 //------------------------------------------------------------------------------
-
-static std::vector<const llvm::Type*>
-newLlvmTypeVector(const llvm::Type* ty)
-{
-  std::vector<const llvm::Type*> v;
-  v.push_back(ty);
-  return v;
-}
-
-
-static std::vector<const llvm::Type*>
-newLlvmTypeVector(const llvm::Type* ty1, const llvm::Type* ty2)
-{
-  std::vector<const llvm::Type*> v;
-  v.push_back(ty1);
-  v.push_back(ty2);
-  return v;
-}
-
-
-//------------------------------------------------------------------------------
-
-const llvm::Type*
-CodeGenerator::getAtomType()
-{
-  llvm::StringRef typeName("struct.ATOM");
-
-  const llvm::Type* atomType = fModule->getTypeByName(typeName);
-  if (atomType == NULL) {
-    const llvm::Type* payloadType = NULL;
-    if (fModule->getPointerSize() == llvm::Module::Pointer64)
-      payloadType = llvm::Type::getInt64Ty(context());
-    else
-      payloadType = llvm::Type::getInt32Ty(context());
-
-    const llvm::StructType* payloadStruct =
-      llvm::StructType::get(context(), newLlvmTypeVector(payloadType), false);
-    atomType =
-      llvm::StructType::get(context(),
-                            newLlvmTypeVector(llvm::Type::getInt32Ty(context()),
-                                              payloadStruct),
-                            false);
-    fModule->addTypeName(llvm::StringRef("union.AtomPayload"), payloadStruct);
-    fModule->addTypeName(typeName, atomType);
-  }
-
-  return atomType;
-}
-
-
-const llvm::Type*
-CodeGenerator::getTypeType()
-{
-  return llvm::Type::getInt8PtrTy(context());
-}
-
-
-const llvm::Type*
-CodeGenerator::getTypeSlotPairType()
-{
-  return llvm::Type::getInt8PtrTy(context());
-}
-
-
-const llvm::Type*
-CodeGenerator::getType(const Type& type)
-{
-  if (type.typeName() == String("clang|int")) {
-    return llvm::Type::getInt32Ty(context());
-  }
-  else if (type.typeName() == String("clang|char")) {
-    return llvm::Type::getInt8Ty(context());
-  }
-
-  else if (type.typeName() == String("lang|Int8")) {
-    return llvm::Type::getInt8Ty(context());
-  }
-  else if (type.typeName() == String("lang|Int16")) {
-    return llvm::Type::getInt16Ty(context());
-  }
-  else if (type.typeName() == String("lang|Int32")) {
-    return llvm::Type::getInt32Ty(context());
-  }
-  else if (type.typeName() == String("lang|Int64")) {
-    return llvm::Type::getInt64Ty(context());
-  }
-
-  else if (type.typeName() == String("lang|UInt8")) {
-    return llvm::Type::getInt8Ty(context());
-  }
-  else if (type.typeName() == String("lang|UInt16")) {
-    return llvm::Type::getInt16Ty(context());
-  }
-  else if (type.typeName() == String("lang|UInt32")) {
-    return llvm::Type::getInt32Ty(context());
-  }
-  else if (type.typeName() == String("lang|UInt64")) {
-    return llvm::Type::getInt64Ty(context());
-  }
-
-  else if (type.typeName() == String("lang|Char")) {
-    return llvm::Type::getInt32Ty(context());
-  }
-  else if (type.typeName() == String("lang|Bool")) {
-    return llvm::Type::getInt1Ty(context());
-  }
-
-  else if (type.typeName() == String("lang|Float32")) {
-    return llvm::Type::getFloatTy(context());
-  }
-  else if (type.typeName() == String("lang|Float64")) {
-    return llvm::Type::getDoubleTy(context());
-  }
-  // else if (type.typeName() == String("lang|Float128")) {
-  //   return llvm::Type::getInt1Ty(context());
-  // }
-
-  return getAtomType();
-}
-
 
 //------------------------------------------------------------------------------
 
@@ -396,7 +261,7 @@ CodeGenerator::codegen(const SymbolNode* node)
 {
   if (node->name() == String("lang|unspecified")) {
     // TODO
-    return llvm::Constant::getNullValue(getType(node->type()));
+    return llvm::Constant::getNullValue(fTypes.getType(node->type()));
   }
 
   llvm::Value* val = NULL;
@@ -451,86 +316,11 @@ CodeGenerator::codegen(const SlotdefNode* node)
 }
 
 
-//! Add a function to the list that will be called before main() runs.
-void
-CodeGenerator::addGlobalCtor(llvm::Function* ctor, int priority)
-{
-  // FIXME: Type coercion of void()* types.
-  fGlobalCtors.push_back(std::make_pair(ctor, priority));
-}
-
-
-//! Add a function to the list that will be called when the module is
-//! unloaded.
-void
-CodeGenerator::addGlobalDtor(llvm::Function* dtor, int priority)
-{
-  // FIXME: Type coercing of void()* types.
-  fGlobalDtors.push_back(std::make_pair(dtor, priority));
-}
-
-
-void
-CodeGenerator::emitCtorList(const CtorList &fns, const char *globalName)
-{
-  // Ctor function type is void()*.
-  llvm::FunctionType* ctorFTy = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                        std::vector<const llvm::Type*>(),
-                                                        false);
-  llvm::Type* ctorPFTy = llvm::PointerType::getUnqual(ctorFTy);
-
-  // Get the type of a ctor entry, { i32, void ()* }.
-  llvm::StructType* ctorStructTy = llvm::StructType::get(context(),
-                                                         llvm::Type::getInt32Ty(context()),
-                                                         llvm::PointerType::getUnqual(ctorFTy),
-                                                         NULL);
-
-  // Construct the constructor and destructor arrays.
-  std::vector<llvm::Constant*> ctors;
-  for (CtorList::const_iterator i = fns.begin(), e = fns.end(); i != e; ++i) {
-    std::vector<llvm::Constant*> s;
-    s.push_back(llvm::ConstantInt::get(llvm::Type::getInt32Ty(context()),
-                                       i->second, false));
-    s.push_back(llvm::ConstantExpr::getBitCast(i->first, ctorPFTy));
-    ctors.push_back(llvm::ConstantStruct::get(ctorStructTy, s));
-  }
-
-  if (!ctors.empty()) {
-    llvm::ArrayType *at = llvm::ArrayType::get(ctorStructTy, ctors.size());
-    new llvm::GlobalVariable(*fModule, at, false,
-                             llvm::GlobalValue::AppendingLinkage,
-                             llvm::ConstantArray::get(at, ctors),
-                             globalName);
-  }
-}
-
-
-llvm::Function*
-CodeGenerator::createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
-                                              const String& name)
-{
-  llvm::Function* fn =
-  llvm::Function::Create(ft, llvm::GlobalValue::InternalLinkage,
-                         llvm::Twine(name), fModule);
-
-  // clang adds the following __TEXT,__StaticInit, etc. section to static
-  // initializer functions.  Initialization however seems to work without
-  // also.(?)
-
-  // Set the section if needed.
-  // if (const char* section = context().Target.getStaticInitSectionSpecifier())
-  //   fn->setSection("__TEXT,__StaticInit,regular,pure_instructions");
-
-  // fn->setDoesNotThrow();
-  return fn;
-}
-
-
 llvm::Value*
 CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
   String varnm = herschel::mangleToC(node->name());
-  const llvm::Type* constTy = getType(node->type());
+  const llvm::Type* constTy = fTypes.getType(node->type());
   llvm::Constant* initConst = llvm::Constant::getNullValue(constTy);
 
   // TODO: base type if possible
@@ -545,65 +335,12 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
   hr_assert(gv != NULL);
   fModule->getGlobalList().push_back(gv);
 
-  fGlobalInitVars.push_back(node);
+  fInitializer.addGlobalVariable(node);
 
   hr_assert(fGlobalVariables.find(node->name()) == fGlobalVariables.end());
   fGlobalVariables[node->name()] = gv;
 
   return gv;
-}
-
-
-void
-CodeGenerator::emitGlobalVarInitFunc()
-{
-  if (!fGlobalInitVars.empty())
-  {
-    const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                           false);
-    String tmpName = uniqueName("gvinit");
-    String funcnm = herschel::mangleToC(tmpName);
-
-    llvm::Function *regFunc = createGlobalInitOrDtorFunction(ft, funcnm);
-
-    llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", regFunc);
-    fBuilder.SetInsertPoint(bb);
-
-    for (size_t i = 0; i < fGlobalInitVars.size(); i++) {
-      const VardefNode* varnode = fGlobalInitVars[i];
-
-      String varnm = herschel::mangleToC(varnode->name());
-
-      llvm::Value* initval = NULL;
-      if (varnode->initExpr() != NULL) {
-        initval = codegenNode(varnode->initExpr());
-      }
-      else {
-        hr_invalid("no initval");
-        // TODO: init the temporary value.  We shouldn't really have to care about
-        // this here, since this can be better done in the AST analysis.
-        // initval = llvm::ConstantInt::get(context(),
-        //                                  llvm::APInt(32, 1011, true));
-      }
-
-      std::map<String, llvm::GlobalVariable*>::iterator it =
-      fGlobalVariables.find(varnode->name());
-      hr_assert(it != fGlobalVariables.end());
-
-      llvm::Value* val = emitPackCode(varnode->initExpr()->dstType(),
-                                      varnode->initExpr()->typeConv(),
-                                      initval, varnode->initExpr()->type());
-      fBuilder.CreateStore(val, it->second);
-    }
-    fBuilder.CreateRetVoid();
-
-    verifyFunction(*regFunc);
-
-    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-      fOptPassManager->run(*regFunc);
-
-    addGlobalCtor(regFunc, K_GLOBAL_VAR_REG_PRIORITY);
-  }
 }
 
 
@@ -619,7 +356,7 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
   TypeConvKind convKind = kNoConv;
   if (node->initExpr() != NULL) {
     if (dynamic_cast<UndefNode*>(node->initExpr())) {
-      initval = llvm::Constant::getNullValue(getType(node->type()));
+      initval = llvm::Constant::getNullValue(fTypes.getType(node->type()));
 
       dstType = node->type();
       type = node->type();
@@ -645,7 +382,7 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 
   llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
                                                        node->name(),
-                                                       getType(node->type()));
+                                                       fTypes.getType(node->type()));
 
   llvm::Value* val = emitPackCode(dstType, convKind, initval, type);
   fBuilder.CreateStore(val, stackSlot);
@@ -809,7 +546,7 @@ CodeGenerator::makeIntAtom(llvm::Value* val)
 {
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
   llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("int"),
-                                                  getAtomType());
+                                                  fTypes.getAtomType());
 
   // set typeid
   setAtom(atom, kAtomInt, val);
@@ -823,7 +560,7 @@ CodeGenerator::makeBoolAtom(llvm::Value* val)
 {
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
   llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("bool"),
-                                                  getAtomType());
+                                                  fTypes.getAtomType());
 
   // set typeid
   setAtom(atom, kAtomBool, val);
@@ -846,7 +583,7 @@ llvm::Value*
 CodeGenerator::codegen(const IntNode* node)
 {
   return fBuilder.CreateIntCast(fBuilder.getInt32(node->value()),
-                                getType(node->type()),
+                                fTypes.getType(node->type()),
                                 node->type().isSigned());
 }
 
@@ -921,7 +658,7 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv
   std::vector<const llvm::Type*> sign;
 
   if (inlineRetv)
-    sign.push_back(getType(retty)->getPointerTo());
+    sign.push_back(fTypes.getType(retty)->getPointerTo());
 
   bool isVarArgs = false;
   for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
@@ -930,12 +667,12 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv
     if (param->isRestArg())
       isVarArgs = true;
     else
-      sign.push_back(getType(param->type()));
+      sign.push_back(fTypes.getType(param->type()));
   }
 
   return llvm::FunctionType::get(( inlineRetv
                                    ? llvm::Type::getVoidTy(context())
-                                   : getType(node->retType()) ),
+                                   : fTypes.getType(node->retType()) ),
                                  sign,
                                  isVarArgs);
 }
@@ -993,7 +730,7 @@ CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 
       // TODO ende name
       llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func, param->name(),
-                                                           getType(param->type()));
+                                                           fTypes.getType(param->type()));
       fBuilder.CreateStore(aiter, stackSlot);
 
       fNamedValues[param->name()] = stackSlot;
@@ -1066,311 +803,6 @@ CodeGenerator::codegen(const FunctionNode* node)
 }
 
 
-llvm::Value*
-CodeGenerator::makeTypeLookupCall(const Type& ty)
-{
-  llvm::Function* lookupFunc = fModule->getFunction(llvm::StringRef("type_lookup_by_name"));
-  if (lookupFunc == NULL) {
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(llvm::Type::getInt8PtrTy(context())); // char8*
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(getTypeType(),
-                                                     sign,
-                                                     !K(isVarArg));
-
-    lookupFunc = llvm::Function::Create(ft,
-                                        llvm::Function::ExternalLinkage,
-                                        llvm::Twine("type_lookup_by_name"),
-                                        fModule);
-  }
-
-  String typeName = herschel::mangleToC(ty.typeName());
-
-  std::vector<llvm::Value*> argv;
-  argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("typename")));
-
-  return fBuilder.CreateCall(lookupFunc, argv.begin(), argv.end()); //, "callreg");
-}
-
-
-void
-CodeGenerator::emitTypeGetterFunctions()
-{
-  for (size_t i = 0; i < fTypesGetters.size(); i++) {
-    const Type& ty = fTypesGetters[i];
-
-    String typeClassLookupFuncName = String() + "get_" + ty.typeName() + "_type";
-    String typeClassLookupGVName = ty.typeName() + "_type";
-
-    String gvNm = herschel::mangleToC(typeClassLookupGVName);
-    const llvm::Type* gvTy = llvm::Type::getInt8PtrTy(context());
-    llvm::Constant* initGv = llvm::Constant::getNullValue(gvTy);
-
-    llvm::GlobalVariable* gv = new llvm::GlobalVariable(gvTy,
-                                                        !K(isConstant),
-                                                        llvm::GlobalValue::InternalLinkage,
-                                                        initGv,
-                                                        llvm::Twine(gvNm),
-                                                        !K(threadLocal),
-                                                        0);    // AddressSpace
-    hr_assert(gv != NULL);
-    fModule->getGlobalList().push_back(gv);
-
-
-    String funcName = herschel::mangleToC(typeClassLookupFuncName);
-    llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
-
-    if (typeFunc == NULL)
-    {
-      std::vector<const llvm::Type*> sign;
-
-      llvm::FunctionType *ft = llvm::FunctionType::get(getTypeType(),
-                                                       sign,
-                                                       !K(isVarArg));
-      typeFunc = llvm::Function::Create(ft,
-                                        llvm::Function::ExternalLinkage,
-                                        llvm::Twine(funcName),
-                                        fModule);
-    }
-
-    llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", typeFunc);
-    fBuilder.SetInsertPoint(bb);
-
-    //-------- test
-    llvm::Value* testValue = fBuilder.CreateIsNull(fBuilder.CreateLoad(gv));
-
-    llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(context(), "then", typeFunc);
-    llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(context(), "else");
-    llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(context(), "ifcont");
-
-    fBuilder.CreateCondBr(testValue, thenBB, elseBB);
-
-    //-------- then
-    fBuilder.SetInsertPoint(thenBB);
-
-    llvm::Value* thenValue = makeTypeOrCallRegistration(ty);
-    fBuilder.CreateStore(thenValue, gv);
-    llvm::Value* thenValue2 = fBuilder.CreateLoad(gv);
-
-    fBuilder.CreateBr(mergeBB);
-    // Get a reference to the current thenBB, since codegen of 'then' can change
-    // the current block, update thenBB for the PHI.
-    thenBB = fBuilder.GetInsertBlock();
-
-    //-------- else
-    typeFunc->getBasicBlockList().push_back(elseBB);
-    fBuilder.SetInsertPoint(elseBB);
-
-    llvm::Value* elseValue = fBuilder.CreateLoad(gv);
-
-    fBuilder.CreateBr(mergeBB);
-
-    elseBB = fBuilder.GetInsertBlock();
-
-    // Emit merge block.
-    typeFunc->getBasicBlockList().push_back(mergeBB);
-    fBuilder.SetInsertPoint(mergeBB);
-
-    llvm::PHINode *pn = fBuilder.CreatePHI(getTypeType(), "iftmp");
-
-    pn->addIncoming(thenValue2, thenBB);
-    pn->addIncoming(elseValue, elseBB);
-
-    fBuilder.CreateRet(pn);
-
-    // llvm::Value* val = makeTypeLookupCall(ty);
-    // fBuilder.CreateRet(val);
-
-    if (Properties::isCodeDump())
-      typeFunc->dump();
-
-    verifyFunction(*typeFunc);
-
-    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-      fOptPassManager->run(*typeFunc);
-  }
-}
-
-
-llvm::Value*
-CodeGenerator::makeIsaTypeLookupCall(const Type& ty)
-{
-  String typeClassLookupFuncName = String() + "get_" + ty.typeName() + "_type";
-  String funcName = herschel::mangleToC(typeClassLookupFuncName);
-  llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
-
-  if (typeFunc == NULL)
-  {
-    std::vector<const llvm::Type*> sign;
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(getTypeType(),
-                                                     sign,
-                                                     !K(isVarArg));
-
-    typeFunc = llvm::Function::Create(ft,
-                                      llvm::Function::ExternalLinkage,
-                                      llvm::Twine(funcName),
-                                      fModule);
-  }
-
-  std::vector<llvm::Value*> argv;
-  return fBuilder.CreateCall(typeFunc, argv.begin(), argv.end());
-}
-
-
-llvm::Value*
-CodeGenerator::makeTypeRegisterCall(llvm::Value* newType)
-{
-  llvm::Function* regFunc = fModule->getFunction(llvm::StringRef("register_type"));
-  if (regFunc == NULL) {
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(getTypeType());                     // Type*
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                     sign,
-                                                     !K(isVarArg));
-
-    regFunc = llvm::Function::Create(ft,
-                                     llvm::Function::ExternalLinkage,
-                                     llvm::Twine("register_type"),
-                                     fModule);
-  }
-
-  std::vector<llvm::Value*> argv;
-  argv.push_back(newType);
-
-  fBuilder.CreateCall(regFunc, argv.begin(), argv.end()); //, "callreg");
-  return newType;
-}
-
-
-llvm::Value*
-CodeGenerator::makeClassAllocCall(const Type& ty)
-{
-  const String& typeName = herschel::mangleToC(ty.typeName());
-
-  llvm::Function* allocFunc = fModule->getFunction(llvm::StringRef("class_alloc"));
-  if (allocFunc == NULL) {
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(llvm::Type::getInt8PtrTy(context())); // typename
-    sign.push_back(llvm::Type::getInt32Ty(context()));   // instance size
-    sign.push_back(getTypeSlotPairType());               // const TypeSlotPair*
-    sign.push_back(llvm::Type::getInt32Ty(context()));   // isa_size
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(getTypeType(),
-                                                     sign,
-                                                     K(isVarArg));
-
-    allocFunc = llvm::Function::Create(ft,
-                                     llvm::Function::ExternalLinkage,
-                                     llvm::Twine("class_alloc"),
-                                     fModule);
-
-    //fTypesGetters.push_back(ty);
-  }
-
-  size_t instance_size = 0;
-
-  std::vector<llvm::Value*> argv;
-  argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("classname")));
-  argv.push_back(llvm::ConstantInt::get(context(),
-                                        llvm::APInt(32, instance_size, true)));
-  // TODO
-  argv.push_back(llvm::Constant::getNullValue(getTypeSlotPairType()));
-
-  Type isa = ty.typeInheritance();
-  if (isa.isSequence()) {
-    argv.push_back(llvm::ConstantInt::get(context(),
-                                          llvm::APInt(32, isa.seqTypes().size(), true)));
-    for (size_t i = 0; i < isa.seqTypes().size(); i++)
-      argv.push_back(makeIsaTypeLookupCall(isa.seqTypes()[i]));
-  }
-  else if (isa.isDef()) {
-    argv.push_back(llvm::ConstantInt::get(context(),
-                                          llvm::APInt(32, 1, true)));
-    argv.push_back(makeIsaTypeLookupCall(isa));
-  }
-  else {
-    argv.push_back(llvm::ConstantInt::get(context(),
-                                          llvm::APInt(32, 0, true)));
-  }
-
-  return fBuilder.CreateCall(allocFunc, argv.begin(), argv.end(), "call_class_alloc");
-}
-
-
-llvm::Value*
-CodeGenerator::makeTypeAllocCall(const Type& ty)
-{
-  const String& typeName = herschel::mangleToC(ty.typeName());
-
-  llvm::Function* allocFunc = fModule->getFunction(llvm::StringRef("type_alloc"));
-  if (allocFunc == NULL) {
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(llvm::Type::getInt8PtrTy(context())); // typename
-    sign.push_back(llvm::Type::getInt32Ty(context()));   // isa_size
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(getTypeType(),
-                                                     sign,
-                                                     K(isVarArg));
-
-    allocFunc = llvm::Function::Create(ft,
-                                     llvm::Function::ExternalLinkage,
-                                     llvm::Twine("type_alloc"),
-                                     fModule);
-
-    //fTypesGetters.push_back(ty);
-  }
-
-  std::vector<llvm::Value*> argv;
-  argv.push_back(fBuilder.CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("typename")));
-
-  Type isa = ty.typeInheritance();
-  if (isa.isSequence()) {
-    argv.push_back(llvm::ConstantInt::get(context(),
-                                          llvm::APInt(32, isa.seqTypes().size(), true)));
-    for (size_t i = 0; i < isa.seqTypes().size(); i++)
-      argv.push_back(makeIsaTypeLookupCall(isa.seqTypes()[i]));
-  }
-  else if (isa.isDef()) {
-    argv.push_back(llvm::ConstantInt::get(context(),
-                                          llvm::APInt(32, 1, true)));
-    argv.push_back(makeIsaTypeLookupCall(isa));
-  }
-  else {
-    argv.push_back(llvm::ConstantInt::get(context(),
-                                          llvm::APInt(32, 0, true)));
-  }
-
-  return fBuilder.CreateCall(allocFunc, argv.begin(), argv.end(), "call_type_alloc");
-}
-
-
-llvm::Value*
-CodeGenerator::makeTypeOrCallRegistration(const Type& ty)
-{
-  if (ty.isClass())
-    return makeTypeRegisterCall(makeClassAllocCall(ty));
-
-  return makeTypeRegisterCall(makeTypeAllocCall(ty));
-}
-
-
-llvm::Value*
-CodeGenerator::makeTypeOrCallRegistration(const TypeDefNode* tdnode)
-{
-  Type ty = tdnode->defType();
-
-  fTypesGetters.push_back(ty);
-  return makeIsaTypeLookupCall(ty);
-
-  // if (tdnode->isClass())
-  //   return makeTypeRegisterCall(makeClassAllocCall(tdnode->defType()));
-
-  // return makeTypeRegisterCall(makeTypeAllocCall(tdnode->defType()));
-}
-
-
 static const char*
 getConvFuncNameByType(const Type& type)
 {
@@ -1415,9 +847,9 @@ CodeGenerator::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType)
   llvm::Function* convFunc = fModule->getFunction(llvm::StringRef(funcName));
   if (convFunc == NULL) {
     std::vector<const llvm::Type*> sign;
-    sign.push_back(getAtomType());
+    sign.push_back(fTypes.getAtomType());
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(getType(dstType),
+    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes.getType(dstType),
                                                      sign,
                                                      false);
 
@@ -1510,7 +942,7 @@ CodeGenerator::codegen(const ApplyNode* node)
   llvm::AllocaInst* retv = NULL;
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
   retv = createEntryBlockAlloca(curFunction, String("local_retv"),
-                                getType(node->type()));
+                                fTypes.getType(node->type()));
 
   std::vector<llvm::Value*> argv;
   if (inlineRetv)
@@ -1678,7 +1110,7 @@ CodeGenerator::codegen(const IfNode* node)
                              node->alternate()->type());
   }
   else
-    elseValue = llvm::Constant::getNullValue(getType(node->type()));
+    elseValue = llvm::Constant::getNullValue(fTypes.getType(node->type()));
 
   fBuilder.CreateBr(mergeBB);
   // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
@@ -1688,7 +1120,7 @@ CodeGenerator::codegen(const IfNode* node)
   curFunction->getBasicBlockList().push_back(mergeBB);
   fBuilder.SetInsertPoint(mergeBB);
 
-  llvm::PHINode *pn = fBuilder.CreatePHI(getType(node->type()), "iftmp");
+  llvm::PHINode *pn = fBuilder.CreatePHI(fTypes.getType(node->type()), "iftmp");
 
   pn->addIncoming(thenValue2, thenBB);
   pn->addIncoming(elseValue, elseBB);
@@ -1727,77 +1159,8 @@ CodeGenerator::codegen(const SelectNode* node)
 llvm::Value*
 CodeGenerator::codegen(const TypeDefNode* node)
 {
-  fClassInitFuncs.push_back(node);
+  fInitializer.addTypeDef(node);
   return NULL;
-}
-
-
-void
-CodeGenerator::emitRuntimeInitFunc()
-{
-  const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                         false);
-  String tmpName = uniqueName("rtinit");
-  String funcnm = herschel::mangleToC(tmpName);
-
-  llvm::Function *regFunc = createGlobalInitOrDtorFunction(ft, funcnm);
-
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", regFunc);
-  fBuilder.SetInsertPoint(bb);
-
-  std::vector<const llvm::Type*> sign;
-
-  llvm::FunctionType *ft2 = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                    sign,
-                                                    !K(isVarArg));
-
-  llvm::Function* rtinitFunc = llvm::Function::Create(ft2,
-                                                      llvm::Function::ExternalLinkage,
-                                                      llvm::Twine("runtime_init"),
-                                                      fModule);
-
-  std::vector<llvm::Value*> argv;
-  fBuilder.CreateCall(rtinitFunc, argv.begin(), argv.end());
-
-  fBuilder.CreateRetVoid();
-
-  verifyFunction(*regFunc);
-
-  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-    fOptPassManager->run(*regFunc);
-
-  addGlobalCtor(regFunc, K_RUNTIME_INIT_PRIORITY);
-}
-
-
-void
-CodeGenerator::emitClassInitFunc()
-{
-  if (!fClassInitFuncs.empty())
-  {
-    const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                         false);
-    String tmpName = uniqueName("classreg");
-    String funcnm = herschel::mangleToC(tmpName);
-
-    llvm::Function *regFunc = createGlobalInitOrDtorFunction(ft, funcnm);
-
-    llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", regFunc);
-    fBuilder.SetInsertPoint(bb);
-
-    for (size_t i = 0; i < fClassInitFuncs.size(); i++) {
-      const TypeDefNode* tdnode = fClassInitFuncs[i];
-      makeTypeOrCallRegistration(tdnode);
-    }
-    fBuilder.CreateRetVoid();
-
-    verifyFunction(*regFunc);
-
-    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-      fOptPassManager->run(*regFunc);
-
-    addGlobalCtor(regFunc, K_CLASS_REG_PRIORITY);
-  }
 }
 
 
@@ -1951,13 +1314,4 @@ CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
   fBuilder.CreateCall(getMemCpyFn(dst2->getType(), src2->getType(),
                                   llvm::Type::getInt32Ty(context())),
                       argv.begin(), argv.end());
-}
-
-
-//------------------------------------------------------------------------------
-
-llvm::LLVMContext&
-CodeGenerator::context()
-{
-  return fContext;
 }

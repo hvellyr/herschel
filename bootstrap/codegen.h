@@ -74,9 +74,90 @@ namespace herschel
   class UndefNode;
   class WhileNode;
 
+  class CodegenTypeUtils;
+
   class String;
 
   typedef std::vector<Ptr<AptNode> > NodeList;
+
+
+  //----------------------------------------------------------------------------
+
+  class ModuleRuntimeInitializer
+  {
+  public:
+    ModuleRuntimeInitializer(CodeGenerator* generator);
+
+    void finish();
+
+    void addGlobalCtor(llvm::Function* ctor, int priority);
+    void addGlobalDtor(llvm::Function* dtor, int priority);
+
+    void addGlobalVariable(const VardefNode* vardefNode);
+    void addTypeDef(const TypeDefNode* typedefNode);
+
+  private:
+    typedef std::vector<std::pair<llvm::Constant*, int> > CtorList;
+
+    llvm::LLVMContext& context();
+    llvm::IRBuilder<>& builder();
+    llvm::Module* module();
+    CodegenTypeUtils& types();
+
+    void emitRuntimeInitFunc();
+    void emitClassInitFunc();
+    void emitGlobalVarInitFunc();
+    void emitTypeGetterFunctions();
+
+    void emitCtorList(const CtorList &fns, const char *globalName);
+
+    llvm::Function* createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
+                                                   const String& name);
+
+    llvm::Value* makeTypeRegisterCall(llvm::Value* newType);
+    llvm::Value* makeClassAllocCall(const Type& ty);
+    llvm::Value* makeTypeAllocCall(const Type& ty);
+    llvm::Value* makeTypeOrCallRegistration(const TypeDefNode* tdnode);
+    llvm::Value* makeTypeOrCallRegistration(const Type& ty);
+    llvm::Value* makeTypeLookupCall(const Type& ty);
+    llvm::Value* makeIsaTypeLookupCall(const Type& ty);
+
+
+    //-------- data members
+
+    Ptr<CodeGenerator> fGenerator; 
+
+    CtorList fGlobalCtors;
+    CtorList fGlobalDtors;
+
+    std::vector<const TypeDefNode*> fClassInitFuncs;
+    std::vector<const VardefNode*> fGlobalInitVars;
+
+    std::vector<Type> fTypesGetters;
+  };
+
+
+  //----------------------------------------------------------------------------
+
+  class CodegenTypeUtils
+  {
+  public:
+    CodegenTypeUtils(CodeGenerator* generator);
+
+    const llvm::Type* getAtomType();
+    const llvm::Type* getTypeType();
+    const llvm::Type* getTypeSlotPairType();
+    const llvm::Type* getType(const Type& type);
+
+  private:
+    llvm::LLVMContext& context();
+    llvm::IRBuilder<>& builder();
+    llvm::Module* module();
+
+    //-------- data members
+
+    Ptr<CodeGenerator> fGenerator; 
+  };
 
 
   //----------------------------------------------------------------------------
@@ -129,6 +210,9 @@ namespace herschel
     llvm::Value* codegen(const UndefNode* node);
 
   private:
+    friend class ModuleRuntimeInitializer;
+    friend class CodegenTypeUtils;
+
     llvm::Value* codegen(const FuncDefNode* node, bool isLocal);
     llvm::Value* codegen(const VardefNode* node, bool isLocal);
 
@@ -142,24 +226,11 @@ namespace herschel
 
     void createDefaultCMainFunc();
 
-    void addGlobalCtor(llvm::Function* ctor, int priority);
-    void addGlobalDtor(llvm::Function* dtor, int priority);
-
-    typedef std::vector<std::pair<llvm::Constant*, int> > CtorList;
-    void emitCtorList(const CtorList &fns, const char *globalName);
-    llvm::Function*
-    createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
-                                   const String& name);
     llvm::Value* codegenForGlobalVars(const VardefNode* node);
 
     llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
                                              const String& name,
                                              const llvm::Type* type);
-
-    const llvm::Type* getAtomType();
-    const llvm::Type* getTypeType();
-    const llvm::Type* getTypeSlotPairType();
-    const llvm::Type* getType(const Type& type);
 
     llvm::Value* makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType);
 
@@ -186,19 +257,6 @@ namespace herschel
     llvm::Value* makeBoolAtom(llvm::Value* val);
     llvm::Value* makeBoolAtom(bool val);
 
-    llvm::Value* makeTypeRegisterCall(llvm::Value* newType);
-    llvm::Value* makeClassAllocCall(const Type& ty);
-    llvm::Value* makeTypeAllocCall(const Type& ty);
-    llvm::Value* makeTypeOrCallRegistration(const TypeDefNode* tdnode);
-    llvm::Value* makeTypeOrCallRegistration(const Type& ty);
-    llvm::Value* makeTypeLookupCall(const Type& ty);
-    llvm::Value* makeIsaTypeLookupCall(const Type& ty);
-
-    void emitRuntimeInitFunc();
-    void emitClassInitFunc();
-    void emitGlobalVarInitFunc();
-    void emitTypeGetterFunctions();
-
     //------------------------------ emit operators
     bool isPlainInt(const Type& type) const;
 
@@ -223,18 +281,15 @@ namespace herschel
     // llvm::DIBuilder*  fDIBuilder;
     llvm::IRBuilder<> fBuilder;
     llvm::FunctionPassManager* fOptPassManager;
-    llvm::AllocaInst *fCurrentValue;
+
+    ModuleRuntimeInitializer fInitializer;
+    CodegenTypeUtils fTypes;
+
     bool fHasMainFunc;
-    CtorList fGlobalCtors;
-    CtorList fGlobalDtors;
+
     // takes llvm::Value or llvm::GlobalVariable
     std::map<String, llvm::AllocaInst*> fNamedValues;
     std::map<String, llvm::GlobalVariable*> fGlobalVariables;
-
-    std::vector<const TypeDefNode*> fClassInitFuncs;
-    std::vector<const VardefNode*> fGlobalInitVars;
-
-    std::vector<Type> fTypesGetters;
   };
 };                              // namespace
 

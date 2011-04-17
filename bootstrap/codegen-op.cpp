@@ -44,7 +44,7 @@ llvm::Value*
 CodeGenerator::coerceIntOperand(const Type& dstType, const Type& isType,
                                 llvm::Value* value)
 {
-  return fBuilder.CreateIntCast(value, getType(dstType), isType.isSigned());
+  return fBuilder.CreateIntCast(value, fTypes.getType(dstType), isType.isSigned());
 }
 
 
