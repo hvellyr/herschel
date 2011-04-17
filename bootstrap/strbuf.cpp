@@ -90,8 +90,11 @@ StringBuffer::operator<<(const char* utf8)
   int endidx = fBuffer.size();
   fBuffer.insert(fBuffer.end(), reqlen, ' ');
 
-  int reallen = str_utf8_to_wcs(utf8, utf8len,
-                                &fBuffer[endidx], reqlen);
+#if defined(IS_DEBUG)
+  int reallen =
+#endif
+    str_utf8_to_wcs(utf8, utf8len, &fBuffer[endidx], reqlen);
+
   hr_assert(reallen == reqlen);
   return *this;
 }
@@ -164,8 +167,10 @@ StringBuffer::insertAt(int atIndex, const char* utf8)
   if (reqlen > 0) {
     fBuffer.insert(fBuffer.begin() + atIndex, reqlen, ' ');
 
-    int reallen = str_utf8_to_wcs(utf8, utf8len,
-                                  &fBuffer[atIndex], reqlen);
+#if defined(IS_DEBUG)
+    int reallen =
+#endif
+      str_utf8_to_wcs(utf8, utf8len, &fBuffer[atIndex], reqlen);
     hr_assert(reallen == reqlen);
   }
   return *this;

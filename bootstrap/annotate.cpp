@@ -169,11 +169,13 @@ Annotator::annotate(SymbolNode* node)
       return;
     }
 
+#if defined(UNITTESTS)
     if (Properties::test_passLevel() > 2) {
       errorf(node->srcpos(), E_UndefinedVar,
              "Unknown symbol '%s'", (const char*)StrHelper(node->name()));
       // node->scope()->dumpDebug(true);
     }
+#endif
   }
 }
 
