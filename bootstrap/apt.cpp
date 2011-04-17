@@ -233,6 +233,29 @@ DelayTypeAnnotatable::setTypeSpecDelayed(bool value)
 
 //----------------------------------------------------------------------------
 
+const String&
+LinkableSymbol::linkage() const
+{
+  return fLinkage;
+}
+
+
+void
+LinkableSymbol::setLinkage(const String& linkage)
+{
+  fLinkage = linkage;
+}
+
+
+bool
+LinkableSymbol::hasCLinkage() const
+{
+  return fLinkage == String("C");
+}
+
+
+//----------------------------------------------------------------------------
+
 ListNode::ListNode(const SrcPos& srcpos)
   : AptNode(srcpos)
 {
@@ -493,20 +516,6 @@ bool
 SymbolNode::isShared() const
 {
   return fIsShared;
-}
-
-
-String
-SymbolNode::linkage() const
-{
-  return fLinkage;
-}
-
-
-void
-SymbolNode::setLinkage(const String& linkage)
-{
-  fLinkage = linkage;
 }
 
 
@@ -965,20 +974,6 @@ VardefFlags
 VardefNode::flags() const
 {
   return fFlags;
-}
-
-
-const String&
-VardefNode::linkage() const
-{
-  return fLinkage;
-}
-
-
-void
-VardefNode::setLinkage(const String& linkage)
-{
-  fLinkage = linkage;
 }
 
 
@@ -1947,17 +1942,10 @@ FuncDefNode::name() const
 }
 
 
-const String&
-FuncDefNode::linkage() const
+bool
+FuncDefNode::isAppMain() const
 {
-  return fLinkage;
-}
-
-
-void
-FuncDefNode::setLinkage(const String& linkage)
-{
-  fLinkage = linkage;
+  return name() == String("app|main");
 }
 
 
