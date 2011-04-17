@@ -51,21 +51,21 @@ CodegenTypeUtils::CodegenTypeUtils(CodeGenerator* generator)
 //------------------------------------------------------------------------------
 
 llvm::LLVMContext&
-CodegenTypeUtils::context()
+CodegenTypeUtils::context() const
 {
   return fGenerator->fContext;
 }
 
 
 llvm::IRBuilder<>&
-CodegenTypeUtils::builder()
+CodegenTypeUtils::builder() const
 {
   return fGenerator->fBuilder;
 }
 
 
 llvm::Module*
-CodegenTypeUtils::module()
+CodegenTypeUtils::module() const
 {
   return fGenerator->fModule;
 }
@@ -91,7 +91,7 @@ newLlvmTypeVector(const llvm::Type* ty1, const llvm::Type* ty2)
 
 
 const llvm::Type*
-CodegenTypeUtils::getAtomType()
+CodegenTypeUtils::getAtomType() const
 {
   llvm::StringRef typeName("struct.ATOM");
 
@@ -119,21 +119,31 @@ CodegenTypeUtils::getAtomType()
 
 
 const llvm::Type*
-CodegenTypeUtils::getTypeType()
+CodegenTypeUtils::getTypeType() const
 {
+  // TODO
   return llvm::Type::getInt8PtrTy(context());
 }
 
 
 const llvm::Type*
-CodegenTypeUtils::getTypeSlotPairType()
+CodegenTypeUtils::getTypeSlotPairType() const
 {
+  // TODO
   return llvm::Type::getInt8PtrTy(context());
 }
 
 
 const llvm::Type*
-CodegenTypeUtils::getType(const Type& type)
+CodegenTypeUtils::getGenericFuncType() const
+{
+  // TODO
+  return llvm::Type::getInt8PtrTy(context());
+}
+
+
+const llvm::Type*
+CodegenTypeUtils::getType(const Type& type) const
 {
   if (type.typeName() == String("clang|int")) {
     return llvm::Type::getInt32Ty(context());

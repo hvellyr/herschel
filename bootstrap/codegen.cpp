@@ -129,6 +129,27 @@ CodeGenerator::context()
 }
 
 
+llvm::IRBuilder<>&
+CodeGenerator::builder()
+{
+  return fBuilder;
+}
+
+
+llvm::Module*
+CodeGenerator::module()
+{
+  return fModule;
+}
+
+
+llvm::FunctionPassManager*
+CodeGenerator::optPassManager()
+{
+  return fOptPassManager;
+}
+
+
 bool
 CodeGenerator::compileToCode(const CompileUnitNode* node,
                              const String& outputFile)
