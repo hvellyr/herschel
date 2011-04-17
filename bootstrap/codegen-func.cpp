@@ -46,24 +46,25 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv
 {
   std::vector<const llvm::Type*> sign;
 
-  if (inlineRetv)
+  const llvm::Type* llvmRetty = NULL;
+  if (inlineRetv) {
     sign.push_back(fTypes.getType(retty)->getPointerTo());
+    llvmRetty = llvm::Type::getVoidTy(context());
+  }
+  else
+    llvmRetty = fTypes.getType(node->retType());
 
   bool isVarArgs = false;
   for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
     const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
-    // TODO
+    // TODO: restargs
     if (param->isRestArg())
       isVarArgs = true;
     else
       sign.push_back(fTypes.getType(param->type()));
   }
 
-  return llvm::FunctionType::get(( inlineRetv
-                                   ? llvm::Type::getVoidTy(context())
-                                   : fTypes.getType(node->retType()) ),
-                                 sign,
-                                 isVarArgs);
+  return llvm::FunctionType::get(llvmRetty, sign, isVarArgs);
 }
 
 
