@@ -651,146 +651,28 @@ CodeGenerator::codegen(const RangeNode* node)
 
 //------------------------------------------------------------------------------
 
-llvm::FunctionType*
-CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv,
-                                       const Type& retty)
-{
-  std::vector<const llvm::Type*> sign;
-
-  if (inlineRetv)
-    sign.push_back(fTypes.getType(retty)->getPointerTo());
-
-  bool isVarArgs = false;
-  for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
-    const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
-    // TODO
-    if (param->isRestArg())
-      isVarArgs = true;
-    else
-      sign.push_back(fTypes.getType(param->type()));
-  }
-
-  return llvm::FunctionType::get(( inlineRetv
-                                   ? llvm::Type::getVoidTy(context())
-                                   : fTypes.getType(node->retType()) ),
-                                 sign,
-                                 isVarArgs);
-}
-
-
 llvm::Value*
 CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 {
   // TODO: nested functions need special treatment here.  Or even better:
-  // avoid nested functions by lambda lifting.
+  // avoid nested functions by lambda lifting in the transform passes above.
   fNamedValues.clear();
 
-  bool inlineRetv = false;
-  String funcnm;
-  if (node->linkage() == String("C")) {
-    funcnm = node->name();
-    inlineRetv = false;
+  if (node->isGeneric()) {
+    hr_assert(!isLocal);
+    return compileGenericFunctionDef(node);
+  }
+  else if (node->isMethod()) {
+    hr_assert(!isLocal);
+    return compileMethodDef(node);
+  }
+  else if (node->isAbstract()) {
+    hr_assert(!isLocal);
+    return compileAbstractFuncDef(node);
   }
   else {
-    funcnm = herschel::mangleToC(node->name());
-    inlineRetv = true;
+    return compileNormalFuncDef(node, isLocal);
   }
-
-  Type retty;
-  if (node->name() == String("app|main")) {
-    retty = Type::newTypeRef(Names::kInt32TypeName, K(isValue));
-  }
-  else
-    retty = node->retType();
-
-
-  llvm::FunctionType* ft = createFunctionSignature(node, inlineRetv, retty);
-  hr_assert(ft != NULL);
-
-  llvm::Function *func = llvm::Function::Create(ft,
-                                                llvm::Function::ExternalLinkage,
-                                                llvm::Twine(funcnm),
-                                                fModule);
-
-  if (node->body() != NULL) {
-    llvm::Function::arg_iterator aiter = func->arg_begin();
-    llvm::Function::arg_iterator aiter_e = func->arg_end();
-
-    if (inlineRetv)
-      aiter++;
-
-    llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", func);
-    fBuilder.SetInsertPoint(bb);
-
-    for (size_t pidx = 0;
-         pidx < node->params().size() && aiter != aiter_e;
-         pidx++, ++aiter)
-    {
-      const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
-
-      // TODO ende name
-      llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func, param->name(),
-                                                           fTypes.getType(param->type()));
-      fBuilder.CreateStore(aiter, stackSlot);
-
-      fNamedValues[param->name()] = stackSlot;
-    }
-
-    const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->body());
-    llvm::Value* retv = NULL;
-    if (blockNode != NULL) {
-      retv = codegen(blockNode->children());
-    }
-    else {
-      llvm::Value* val = codegenNode(node->body());
-      if (val == NULL)
-        return NULL;
-      retv = val;
-    }
-
-    if (inlineRetv) {
-      if (node->name() == String("app|main")) {
-        // the app|main function always returns lang|Int32
-        if (node->body()->type().isPlainType()) {
-          fBuilder.CreateStore(fBuilder.CreateIntCast(wrapLoad(retv),
-                                                      llvm::Type::getInt32Ty(context()),
-                                                      true),
-                               func->arg_begin());
-        }
-        else {
-          llvm::Value* convertedRetv = makeTypeCastAtomToPlain(wrapLoad(retv),
-                                                               Type::newTypeRef("clang|int"));
-          fBuilder.CreateStore(convertedRetv, func->arg_begin());
-        }
-      }
-// TODO plaintype?
-      else if (retty.isPlainType()) {
-        fBuilder.CreateStore(wrapLoad(retv), func->arg_begin());
-      }
-      else {
-        // no wrap-load!
-        assignAtom(retv, func->arg_begin());
-      }
-
-      fBuilder.CreateRetVoid();
-    }
-    else
-      fBuilder.CreateRet(wrapLoad(retv));
-
-    if (Properties::isCodeDump())
-      func->dump();
-
-    verifyFunction(*func);
-
-    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-      fOptPassManager->run(*func);
-
-    if (!isLocal && node->name() == String("app|main")) {
-      fHasMainFunc = true;
-    }
-  }
-
-  return func;
 }
 
 
@@ -910,7 +792,7 @@ CodeGenerator::codegen(const ApplyNode* node)
     hr_assert(symNode->refersTo() == kFunction || symNode->refersTo() == kGeneric);
 
     String funcnm;
-    if (symNode->linkage() == String("C")) {
+    if (symNode->hasCLinkage()) {
       funcnm = symNode->name();
       inlineRetv = false;
     }

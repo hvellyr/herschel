@@ -81,6 +81,7 @@ HRC_SOURCES =     \
 	apt.cpp         \
 	codegen.cpp     \
 	codegen-init.cpp \
+	codegen-func.cpp \
 	codegen-op.cpp  \
 	codegen-types.cpp \
 	compilepass.cpp \
