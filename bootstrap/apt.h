@@ -156,6 +156,21 @@ namespace herschel
   };
 
 
+  //! Mixin class to add support for linkage specification.  Special type
+  //! predicate is implemented for 'C' linkage.
+  class LinkableSymbol
+  {
+  public:
+    const String& linkage() const;
+    void setLinkage(const String& linkage);
+
+    bool hasCLinkage() const;
+
+  protected:
+    String fLinkage;
+  };
+
+
   //--------------------------------------------------------------------------
 
   class ListNode : public AptNode
@@ -272,7 +287,8 @@ namespace herschel
     kType,
   };
 
-  class SymbolNode : public AptNode, public LoopAnnotatable
+  class SymbolNode : public AptNode, public LoopAnnotatable,
+                     public LinkableSymbol
   {
   public:
     SymbolNode(const SrcPos& srcpos, const String& value);
@@ -291,9 +307,6 @@ namespace herschel
     void setRefersTo(SymReferType type, bool isShared);
     bool isShared() const;
 
-    String linkage() const;
-    void setLinkage(const String& linkage);
-
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* an);
@@ -307,7 +320,6 @@ namespace herschel
     SymReferType fRefersTo;
     bool         fIsShared;     // refers to a variable outside of owning
                                 // frame (= closed variable)
-    String       fLinkage;
   };
 
 
@@ -610,7 +622,8 @@ namespace herschel
   };
 
   class VardefNode : public BindingNode,
-                     public DelayTypeAnnotatable
+                     public DelayTypeAnnotatable,
+                     public LinkableSymbol
   {
   public:
     VardefNode(const SrcPos& srcpos,
@@ -627,9 +640,6 @@ namespace herschel
 
     VardefFlags flags() const;
 
-    const String& linkage() const;
-    void setLinkage(const String& linkage);
-
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
@@ -640,7 +650,6 @@ namespace herschel
   private:
     bool fIsLocal;
     VardefFlags fFlags;
-    String fLinkage;
   };
 
 
@@ -1115,7 +1124,8 @@ namespace herschel
   };
 
 
-  class FuncDefNode : public FunctionNode, public NamedNode
+  class FuncDefNode : public FunctionNode, public NamedNode,
+                      public LinkableSymbol
   {
   public:
     FuncDefNode(const SrcPos&   srcpos,
@@ -1132,9 +1142,6 @@ namespace herschel
     bool isMethod() const;
     bool isAbstract() const;
 
-    const String& linkage() const;
-    void setLinkage(const String& linkage);
-
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
     virtual void annotate(Annotator* annotator);
@@ -1142,10 +1149,11 @@ namespace herschel
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
+    bool isAppMain() const;
+
   private:
     String       fSym;
     unsigned int fFlags;
-    String       fLinkage;
   };
 
 
