@@ -40,7 +40,9 @@ static bool sIsAnnotateTracing = false;
 static bool sIsTransformTracing = false;
 static bool sIsTokenizerTracing = false;
 static bool sIsTypifyTracing = false;
+#if defined(UNITTESTS)
 static int sPassLevel = 5;
+#endif
 static bool sShouldIgnoreDocStrings = true;
 static bool sVerbose = false;
 
