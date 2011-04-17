@@ -257,7 +257,22 @@ namespace herschel
     llvm::Value* makeBoolAtom(llvm::Value* val);
     llvm::Value* makeBoolAtom(bool val);
 
+    //------------------------------ functions
+
+    llvm::Value* compileGenericFunctionDef(const FuncDefNode* node);
+    llvm::Value* compileMethodDef(const FuncDefNode* node);
+    llvm::Value* compileAbstractFuncDef(const FuncDefNode* node);
+    llvm::Value* compileNormalFuncDef(const FuncDefNode* node, bool isLocal);
+
+    struct FuncPair
+    {
+      llvm::Function* fFunc;
+      Type fRetType;
+    };
+    FuncPair createFunction(const FuncDefNode* node);
+
     //------------------------------ emit operators
+
     bool isPlainInt(const Type& type) const;
 
     llvm::Value* wrapInt(llvm::Value* value, const Type& type);
