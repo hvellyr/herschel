@@ -71,7 +71,7 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv
 llvm::Value*
 CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
 {
-  hr_invalid("TODO");
+  fInitializer.addGenericFunctionDef(node);
   return NULL;
 }
 
