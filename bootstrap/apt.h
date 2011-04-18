@@ -1150,6 +1150,7 @@ namespace herschel
     virtual void typify(Typifier* typifier);
 
     bool isAppMain() const;
+    size_t specializedArgsCount() const;
 
   private:
     String       fSym;

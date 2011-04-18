@@ -105,7 +105,11 @@ namespace herschel
     const CodegenTypeUtils& types() const;
 
     llvm::Value* makeTypeOrCallRegistration(const Type& ty) const;
+
     llvm::Value* makeGenericFunctionRegistration(const FuncDefNode* node) const;
+    llvm::Value* makeGenericFuncRegisterCall(llvm::Value* newType) const;
+    llvm::Value* makeGenericFuncAllocCall(const FuncDefNode* node) const;
+    llvm::Value* makeGetGenericFuncLookupCall(const FuncDefNode* node) const;
 
   private:
     friend class ClassInitStrategy;
@@ -131,7 +135,8 @@ namespace herschel
     template<typename NodeT, typename StrategyT>
     void emitEntityInitFunc(const char* suggestedTmpName,
                             const std::vector<NodeT>& entities,
-                            StrategyT strategy);
+                            StrategyT strategy,
+                            int priority);
 
     //-------- data members
 
