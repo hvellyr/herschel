@@ -1,0 +1,10 @@
+module xi
+
+import "cat.h7"
+import "dog.h7"
+
+def generic make-noise(o @ Cat) ...
+def generic like?(o @ Cat, two @ Cat) : Bool ...
+
+def app|main()
+  42
