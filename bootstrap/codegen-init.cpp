@@ -39,7 +39,8 @@
 
 #define K_RUNTIME_INIT_PRIORITY     0
 #define K_CLASS_REG_PRIORITY        1
-#define K_GLOBAL_VAR_REG_PRIORITY   2
+#define K_GF_REG_PRIORITY           2
+#define K_GLOBAL_VAR_REG_PRIORITY   3
 
 //----------------------------------------------------------------------------
 
@@ -48,22 +49,6 @@ using namespace herschel;
 
 namespace herschel
 {
-  static String
-  typeGetterFunctionName(const Type& ty)
-  {
-    return String() + "get_" + ty.typeName() + "_type";
-  }
-
-
-  static String
-  typeGetterGlobalVarName(const Type& ty)
-  {
-    return ty.typeName() + "_type";
-  }
-
-
-  //--------------------------------------------------------------------------
-
   class LazyCodeInitializingEmitter
   {
   protected:
@@ -108,15 +93,21 @@ namespace herschel
     }
 
 
+    static String getterFunctionName(const Type& ty)
+    {
+      return String() + "get_" + ty.typeName() + "_type";
+    }
+
+
     virtual String entityGetterFunctionName() const
     {
-      return typeGetterFunctionName(fType);
+      return getterFunctionName(fType);
     }
 
 
     virtual String entityGetterGlobalVarName() const
     {
-      return typeGetterGlobalVarName(fType);
+      return fType.typeName() + "_type";
     }
 
 
@@ -149,9 +140,15 @@ namespace herschel
     }
 
 
+    static String getterFunctionName(const String& funName)
+    {
+      return String() + "get_" + funName + "_generic_function";
+    }
+
+
     virtual String entityGetterFunctionName() const
     {
-      return String() + "get_" + fNode->name() + "_generic_function";
+      return getterFunctionName(fNode->name());
     }
 
 
@@ -431,7 +428,8 @@ template<typename NodeT, typename StrategyT>
 void
 ModuleRuntimeInitializer::emitEntityInitFunc(const char* suggestedTmpName,
                                              const std::vector<NodeT>& entities,
-                                             StrategyT strategy)
+                                             StrategyT strategy,
+                                             int priority)
 {
   if (!entities.empty())
   {
@@ -455,7 +453,7 @@ ModuleRuntimeInitializer::emitEntityInitFunc(const char* suggestedTmpName,
     if (fGenerator->fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
       fGenerator->fOptPassManager->run(*regFunc);
 
-    addGlobalCtor(regFunc, K_CLASS_REG_PRIORITY);
+    addGlobalCtor(regFunc, priority);
 
 
     for (size_t i = 0; i < entities.size(); i++) {
@@ -488,7 +486,7 @@ namespace herschel
 void
 ModuleRuntimeInitializer::emitClassInitFunc()
 {
-  emitEntityInitFunc("classreg", fClassInitFuncs, ClassInitStrategy());
+  emitEntityInitFunc("classreg", fClassInitFuncs, ClassInitStrategy(), K_CLASS_REG_PRIORITY);
 }
 
 
@@ -499,8 +497,7 @@ namespace herschel
   public:
     void emitInitCall(const FuncDefNode* fd, ModuleRuntimeInitializer* initializer)
     {
-      // Type ty = tdnode->defType();
-      // initializer->makeGetGenericFuncLookupCall(ty);
+      initializer->makeGetGenericFuncLookupCall(fd);
     }
 
     void emitEnityGetter(const FuncDefNode* fd, ModuleRuntimeInitializer* initializer)
@@ -515,7 +512,8 @@ namespace herschel
 void
 ModuleRuntimeInitializer::emitGenericsInitFunc()
 {
-  emitEntityInitFunc("generic_reg", fGenericsInitFuncs, GenericsInitStrategy());
+  emitEntityInitFunc("generic_reg", fGenericsInitFuncs, GenericsInitStrategy(),
+                     K_GF_REG_PRIORITY);
 }
 
 
@@ -524,7 +522,7 @@ ModuleRuntimeInitializer::emitGenericsInitFunc()
 llvm::Value*
 ModuleRuntimeInitializer::makeGetTypeLookupCall(const Type& ty) const
 {
-  String typeClassLookupFuncName = typeGetterFunctionName(ty);
+  String typeClassLookupFuncName = TypeLazyCodeInitializingEmitter::getterFunctionName(ty);
   String funcName = herschel::mangleToC(typeClassLookupFuncName);
   llvm::Function* typeFunc = module()->getFunction(llvm::StringRef(funcName));
 
@@ -568,7 +566,7 @@ ModuleRuntimeInitializer::makeTypeRegisterCall(llvm::Value* newType) const
   std::vector<llvm::Value*> argv;
   argv.push_back(newType);
 
-  builder().CreateCall(regFunc, argv.begin(), argv.end()); //, "callreg");
+  builder().CreateCall(regFunc, argv.begin(), argv.end());
   return newType;
 }
 
@@ -684,9 +682,91 @@ ModuleRuntimeInitializer::makeTypeOrCallRegistration(const Type& ty) const
 //----------------------------------------------------------------------------
 
 llvm::Value*
+ModuleRuntimeInitializer::makeGetGenericFuncLookupCall(const FuncDefNode* node) const
+{
+  String gfLookupFuncName = GenericsLazyCodeInitializingEmitter::getterFunctionName(node->name());
+  String funcName = herschel::mangleToC(gfLookupFuncName);
+  llvm::Function* gfFunc = module()->getFunction(llvm::StringRef(funcName));
+
+  if (gfFunc == NULL)
+  {
+    std::vector<const llvm::Type*> sign;
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(types().getGenericFuncType(),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    gfFunc = llvm::Function::Create(ft,
+                                    llvm::Function::ExternalLinkage,
+                                    llvm::Twine(funcName),
+                                    module());
+  }
+
+  std::vector<llvm::Value*> argv;
+  return builder().CreateCall(gfFunc, argv.begin(), argv.end());
+}
+
+
+llvm::Value*
+ModuleRuntimeInitializer::makeGenericFuncRegisterCall(llvm::Value* newGF) const
+{
+  llvm::Function* regFunc = module()->getFunction(llvm::StringRef("register_generic_function"));
+  if (regFunc == NULL) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(types().getGenericFuncType()); // GenericFunction*
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    regFunc = llvm::Function::Create(ft,
+                                     llvm::Function::ExternalLinkage,
+                                     llvm::Twine("register_generic_function"),
+                                     module());
+  }
+
+  std::vector<llvm::Value*> argv;
+  argv.push_back(newGF);
+
+  builder().CreateCall(regFunc, argv.begin(), argv.end());
+  return newGF;
+}
+
+
+llvm::Value*
+ModuleRuntimeInitializer::makeGenericFuncAllocCall(const FuncDefNode* node) const
+{
+  const String& funcName = herschel::mangleToC(node->name());
+
+  llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("generic_function_alloc"));
+  if (allocFunc == NULL) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(llvm::Type::getInt8PtrTy(context())); // typename
+    sign.push_back(llvm::Type::getInt32Ty(context()));   // argc
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(types().getGenericFuncType(),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    allocFunc = llvm::Function::Create(ft,
+                                     llvm::Function::ExternalLinkage,
+                                     llvm::Twine("generic_function_alloc"),
+                                     module());
+  }
+
+  std::vector<llvm::Value*> argv;
+  argv.push_back(builder().CreateGlobalStringPtr(StrHelper(funcName), llvm::Twine("funname")));
+  argv.push_back(llvm::ConstantInt::get(context(),
+                                        llvm::APInt(32, node->specializedArgsCount(), true)));
+
+  return builder().CreateCall(allocFunc, argv.begin(), argv.end(), "call_gf_alloc");
+}
+
+
+llvm::Value*
 ModuleRuntimeInitializer::makeGenericFunctionRegistration(const FuncDefNode* node) const
 {
-  return NULL;
+  return makeGenericFuncRegisterCall(makeGenericFuncAllocCall(node));
 }
 
 

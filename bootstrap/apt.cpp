@@ -1949,6 +1949,25 @@ FuncDefNode::isAppMain() const
 }
 
 
+size_t
+FuncDefNode::specializedArgsCount() const
+{
+  size_t specArgCount = 0;
+
+  for (NodeList::const_iterator it = params().begin(), e = params().end();
+       it != e;
+       it++)
+  {
+    if (const ParamNode* prm = dynamic_cast<const ParamNode*>(it->obj())) {
+      if (prm->isSpecArg())
+        specArgCount++;
+    }
+  }
+
+  return specArgCount;
+}
+
+
 llvm::Value*
 FuncDefNode::codegen(CodeGenerator* generator) const
 {
