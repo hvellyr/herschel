@@ -40,6 +40,7 @@ void
 register_generic_function(GenericFunction* genfun)
 {
   hashtable_add(generic_functions, (void*)genfun->name, (void*)genfun);
+  fprintf(stderr, "Register generic function: %s [arity %ld]\n", genfun->name, genfun->argc);
 }
 
 
