@@ -33,6 +33,13 @@ case "${UNAME_ARCH}:${UNAME_OS}:${UNAME_RELEASE}" in
     RELEASE=${UNAME_RELEASE}
     ;;
 
+  x86_64:Darwin:*)
+    ARCH=x86_64
+    OS=mac
+    FLAVOUR=plain
+    RELEASE=${UNAME_RELEASE}
+    ;;
+
   i*86:OpenBSD:*)
     ARCH=i386
     OS=openbsd
