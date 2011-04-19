@@ -338,7 +338,7 @@ XmlRenderer::renderNode(const SymbolNode* node)
   if (fShowNodeType && node->type().isDef())
     attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
 
-  char* referTag = NULL;
+  const char* referTag = NULL;
   switch (node->refersTo()) {
   case kFreeVar:   referTag = NULL; break;
   case kGlobalVar: referTag = "global"; break;
