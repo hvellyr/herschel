@@ -1,4 +1,4 @@
-/* -*-c++-*-
+/* -*-c-*-
 
    This file is part of the herschel package
 
@@ -10,8 +10,6 @@
 
 #include "runtime/rt.h"
 
-
-//------------------------------------------------------------------------------
 
 int8_t
 atom_2_int8(struct ATOM a)
@@ -115,13 +113,21 @@ atom_2_float64(struct ATOM a)
 }
 
 
-/* ------------------------------------------------------------------------------
-   ------------------------------------------------------------------------------ */
-int
-class_register(const char* typeid, int instantiable, int isize)
+/* ------------------------------------------------------------------------
+   class register
+   ------------------------------------------------------------------------ */
+extern void type_init();
+extern void methods_init();
+
+void
+runtime_init()
 {
-  /* stub */
-  printf("Register class '%s' (%s, %d oct)\n", typeid,
-         (instantiable ? "yes" : "no"), isize);
-  return 0;
+  static int is_initialized = 0;
+
+  if (!is_initialized) {
+    is_initialized = 1;
+
+    type_init();
+    methods_init();
+  }
 }

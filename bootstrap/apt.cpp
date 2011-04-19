@@ -233,6 +233,29 @@ DelayTypeAnnotatable::setTypeSpecDelayed(bool value)
 
 //----------------------------------------------------------------------------
 
+const String&
+LinkableSymbol::linkage() const
+{
+  return fLinkage;
+}
+
+
+void
+LinkableSymbol::setLinkage(const String& linkage)
+{
+  fLinkage = linkage;
+}
+
+
+bool
+LinkableSymbol::hasCLinkage() const
+{
+  return fLinkage == String("C");
+}
+
+
+//----------------------------------------------------------------------------
+
 ListNode::ListNode(const SrcPos& srcpos)
   : AptNode(srcpos)
 {
@@ -493,20 +516,6 @@ bool
 SymbolNode::isShared() const
 {
   return fIsShared;
-}
-
-
-String
-SymbolNode::linkage() const
-{
-  return fLinkage;
-}
-
-
-void
-SymbolNode::setLinkage(const String& linkage)
-{
-  fLinkage = linkage;
 }
 
 
@@ -965,20 +974,6 @@ VardefFlags
 VardefNode::flags() const
 {
   return fFlags;
-}
-
-
-const String&
-VardefNode::linkage() const
-{
-  return fLinkage;
-}
-
-
-void
-VardefNode::setLinkage(const String& linkage)
-{
-  fLinkage = linkage;
 }
 
 
@@ -1947,17 +1942,29 @@ FuncDefNode::name() const
 }
 
 
-const String&
-FuncDefNode::linkage() const
+bool
+FuncDefNode::isAppMain() const
 {
-  return fLinkage;
+  return name() == String("app|main");
 }
 
 
-void
-FuncDefNode::setLinkage(const String& linkage)
+size_t
+FuncDefNode::specializedArgsCount() const
 {
-  fLinkage = linkage;
+  size_t specArgCount = 0;
+
+  for (NodeList::const_iterator it = params().begin(), e = params().end();
+       it != e;
+       it++)
+  {
+    if (const ParamNode* prm = dynamic_cast<const ParamNode*>(it->obj())) {
+      if (prm->isSpecArg())
+        specArgCount++;
+    }
+  }
+
+  return specArgCount;
 }
 
 

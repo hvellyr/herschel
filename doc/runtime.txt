@@ -1,0 +1,145 @@
+Runtime implementation
+======================
+
+Some ideas on the architecture of the runtime.
+
+
+Types
+-----
+
+  Each type gets a type instance registered in a global registry (a hash
+  table<name, instance>).
+
+    struct Type
+    {
+      char* id;
+    };
+
+    const char* typeid = "_Q4lang4type";
+    Type type;
+    type.id = typeid;
+
+    void h7_register_type(&type);
+    Type* h7_lookup_type(typeid);
+
+  Each type gets an global integer id assigned at registration time.  This
+  integer id is used in atom tags.
+
+
+Classes
+-------
+
+    struct Class
+    {
+      char* id;
+      ...
+    };
+
+
+    const char* classid = "_Q4lang5class";
+    Class cl;
+    cl.id = classid;
+
+    void h7_register_type(&class);
+    Type* h7_lookup_type(classid);
+
+
+Slots
+-----
+
+  Every class has a table<Keyword, Offset> mapping slots names to store
+  offsets into instances.  In addition there's one offset per inherited class
+
+  The slot functions (slot() and slot!() use the keyword name to lookup the
+  offset from the current class and access withit the memory location in
+  the instance blob.
+
+  The address of a slot memory location is computed as such:
+
+    instance-address + slot-offset
+
+  The offsets have to be computed by the compiler and set up at class
+  allocation and registration time.
+
+
+
+Keywords
+--------
+
+  Keywords are registered const chars in a global hashtable (int -> name,
+  name -> int).  Each compile unit gets a global array.  Keyword usages are
+  compiled as index access to this array.  Ctor functions register the
+  names and put the (global) int into the index array.
+
+
+Generic types
+-------------
+
+    struct ATOM
+    {
+      int32 tag;
+      ptr   value;
+    };
+
+  The tag is a global type id.  Each type can be address by this int which
+  is given when registering a type/class.  A number of types are predefined
+  and have fixed type id: Int8, Int 16, Int32, Int64, ...
+
+
+Generic functions
+-----------------
+
+  - non-generic functions are directly called (like C functions)
+
+  - generic functions with a single specialized parameter can be
+    implemented similar to single dispatch languages (having a hash table
+    per type mapping method names to function implementations)
+
+  - it needs special encoding only for multi dispatch variants.
+
+
+  Some notes:
+
+  - avoid ambiguities.  Try to catch them at compile time, throw on them at
+    runtime.
+
+  - methods are ordered in precendence according to their subtyping order
+    (denoted as ≤).  A type T^1 ≤ T^2 if T^1 is a subtype of T^2.
+
+  - method signatures T^1..T^n ≤ T'^1..T'^n if for all i T^i ≤ T'^i.
+
+  - method dispatch has find to the @em{Most specific applicable} method.
+
+  - @em{argument subtype precedence}: a method m_i is more specific than a
+    method m_j if all target arguments of m_i a subtypes of those of m_j.
+
+
+
+  Each generic function gets a runtime representation:
+
+    struct GenericFunction
+    {
+      char* name;
+    };
+
+  It carries the dispatch table for this function.
+
+
+   foo(@Int, @String)           [1]
+   foo(@Number, @MutableString) [2]
+   foo(@Real, @Vector)          [3]
+   foo(@Real, @MutableString)   [4]
+   foo(@Int, @Vector)           [5]
+
+
+   Int    -> String        -> [1]
+             Vector        -> [5]
+   Number -> MutableString -> [2]
+   Real   -> Vector        -> [3]
+             MutableString -> [4]
+
+
+   foo(@SpecInt, @String)
+   foo(@SpecInt, @MutableString)
+
+

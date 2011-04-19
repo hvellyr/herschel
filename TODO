@@ -19,6 +19,11 @@ Documentation
 
 Bootstrap compiler
 
+  - review how to make sure that types used by other type registration are
+    registered/alloced first.  What is the order of ctor calls with
+    multiple compile units?
+
+
   - auto create accessor/modifier functions for slots
 
   - support 'auto', 'public', 'outer', 'inner', slots in ctor construction.

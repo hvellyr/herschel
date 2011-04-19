@@ -74,9 +74,105 @@ namespace herschel
   class UndefNode;
   class WhileNode;
 
+  class CodegenTypeUtils;
+
   class String;
 
   typedef std::vector<Ptr<AptNode> > NodeList;
+
+
+  //----------------------------------------------------------------------------
+
+  class ModuleRuntimeInitializer
+  {
+  public:
+    ModuleRuntimeInitializer(CodeGenerator* generator);
+
+    void finish();
+
+    void addGlobalCtor(llvm::Function* ctor, int priority);
+    void addGlobalDtor(llvm::Function* dtor, int priority);
+
+    void addGlobalVariable(const VardefNode* vardefNode);
+    void addTypeDef(const TypeDefNode* typedefNode);
+    void addGenericFunctionDef(const FuncDefNode* node);
+
+    CodeGenerator* generator() const;
+    llvm::LLVMContext& context() const;
+    llvm::IRBuilder<>& builder() const;
+    llvm::Module* module() const;
+    CodegenTypeUtils& types();
+    const CodegenTypeUtils& types() const;
+
+    llvm::Value* makeTypeOrCallRegistration(const Type& ty) const;
+
+    llvm::Value* makeGenericFunctionRegistration(const FuncDefNode* node) const;
+    llvm::Value* makeGenericFuncRegisterCall(llvm::Value* newType) const;
+    llvm::Value* makeGenericFuncAllocCall(const FuncDefNode* node) const;
+    llvm::Value* makeGetGenericFuncLookupCall(const FuncDefNode* node) const;
+
+  private:
+    friend class ClassInitStrategy;
+
+    typedef std::vector<std::pair<llvm::Constant*, int> > CtorList;
+
+    void emitRuntimeInitFunc();
+    void emitClassInitFunc();
+    void emitGlobalVarInitFunc();
+    void emitGenericsInitFunc();
+
+    void emitCtorList(const CtorList &fns, const char *globalName);
+
+    llvm::Function* createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
+                                                   const String& name);
+
+    llvm::Value* makeTypeRegisterCall(llvm::Value* newType) const;
+    llvm::Value* makeClassAllocCall(const Type& ty) const;
+    llvm::Value* makeTypeAllocCall(const Type& ty) const;
+    llvm::Value* makeGetTypeLookupCall(const Type& ty) const;
+
+
+    template<typename NodeT, typename StrategyT>
+    void emitEntityInitFunc(const char* suggestedTmpName,
+                            const std::vector<NodeT>& entities,
+                            StrategyT strategy,
+                            int priority);
+
+    //-------- data members
+
+    Ptr<CodeGenerator> fGenerator; 
+
+    CtorList fGlobalCtors;
+    CtorList fGlobalDtors;
+
+    std::vector<const TypeDefNode*> fClassInitFuncs;
+    std::vector<const VardefNode*> fGlobalInitVars;
+    std::vector<const FuncDefNode*> fGenericsInitFuncs;
+  };
+
+
+  //----------------------------------------------------------------------------
+
+  class CodegenTypeUtils
+  {
+  public:
+    CodegenTypeUtils(CodeGenerator* generator);
+
+    const llvm::Type* getAtomType() const;
+    const llvm::Type* getTypeType() const;
+    const llvm::Type* getTypeSlotPairType() const;
+    const llvm::Type* getGenericFuncType() const;
+    const llvm::Type* getType(const Type& type) const;
+
+  private:
+    llvm::LLVMContext& context() const;
+    llvm::IRBuilder<>& builder() const;
+    llvm::Module* module() const;
+
+    //-------- data members
+
+    Ptr<CodeGenerator> fGenerator; 
+  };
 
 
   //----------------------------------------------------------------------------
@@ -128,11 +224,17 @@ namespace herschel
     llvm::Value* codegen(const WhileNode* node);
     llvm::Value* codegen(const UndefNode* node);
 
+    llvm::LLVMContext& context();
+    llvm::IRBuilder<>& builder();
+    llvm::Module* module();
+    llvm::FunctionPassManager* optPassManager();
+
   private:
+    friend class ModuleRuntimeInitializer;
+    friend class CodegenTypeUtils;
+
     llvm::Value* codegen(const FuncDefNode* node, bool isLocal);
     llvm::Value* codegen(const VardefNode* node, bool isLocal);
-
-    llvm::LLVMContext& context();
 
     llvm::FunctionType* createFunctionSignature(const FunctionNode* node,
                                                 bool inlineRetv,
@@ -142,22 +244,11 @@ namespace herschel
 
     void createDefaultCMainFunc();
 
-    void addGlobalCtor(llvm::Function* ctor, int priority);
-    void addGlobalDtor(llvm::Function* dtor, int priority);
-
-    typedef std::vector<std::pair<llvm::Constant*, int> > CtorList;
-    void emitCtorList(const CtorList &fns, const char *globalName);
-    llvm::Function*
-    createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
-                                   const String& name);
     llvm::Value* codegenForGlobalVars(const VardefNode* node);
 
     llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
                                              const String& name,
                                              const llvm::Type* type);
-
-    const llvm::Type* getAtomType();
-    const llvm::Type* getType(const Type& type);
 
     llvm::Value* makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType);
 
@@ -184,13 +275,22 @@ namespace herschel
     llvm::Value* makeBoolAtom(llvm::Value* val);
     llvm::Value* makeBoolAtom(bool val);
 
-    llvm::Value* makeClassRegisterCall(const String& typeName, bool instantiable,
-                                       int isize);
-    void emitClassInitFunc();
-    void emitGlobalVarInitFunc();
+    //------------------------------ functions
 
+    llvm::Value* compileGenericFunctionDef(const FuncDefNode* node);
+    llvm::Value* compileMethodDef(const FuncDefNode* node);
+    llvm::Value* compileAbstractFuncDef(const FuncDefNode* node);
+    llvm::Value* compileNormalFuncDef(const FuncDefNode* node, bool isLocal);
+
+    struct FuncPair
+    {
+      llvm::Function* fFunc;
+      Type fRetType;
+    };
+    FuncPair createFunction(const FuncDefNode* node);
 
     //------------------------------ emit operators
+
     bool isPlainInt(const Type& type) const;
 
     llvm::Value* wrapInt(llvm::Value* value, const Type& type);
@@ -214,16 +314,15 @@ namespace herschel
     // llvm::DIBuilder*  fDIBuilder;
     llvm::IRBuilder<> fBuilder;
     llvm::FunctionPassManager* fOptPassManager;
-    llvm::AllocaInst *fCurrentValue;
+
+    ModuleRuntimeInitializer fInitializer;
+    CodegenTypeUtils fTypes;
+
     bool fHasMainFunc;
-    CtorList fGlobalCtors;
-    CtorList fGlobalDtors;
+
     // takes llvm::Value or llvm::GlobalVariable
     std::map<String, llvm::AllocaInst*> fNamedValues;
     std::map<String, llvm::GlobalVariable*> fGlobalVariables;
-
-    std::vector<const TypeDefNode*> fClassInitFuncs;
-    std::vector<const VardefNode*> fGlobalInitVars;
   };
 };                              // namespace
 

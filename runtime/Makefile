@@ -11,9 +11,15 @@ include $(top_srcdir)/config.mk
 CFLAGS += -I$(top_srcdir) -I$(top_srcdir)/runtime 
 
 SOURCES =         \
-	rt.c
+	hash.c          \
+	list.c          \
+	method.c        \
+	rt.c            \
+  typeid.c
 
 HEADERS =         \
+	hash.h          \
+	list.h          \
 	rt.h
 
 
@@ -21,17 +27,38 @@ C_OBJS =  $(SOURCES:%.c=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
 
 OBJS = $(C_OBJS)
 
+
+#--------
+RTUT_SOURCES = unittest.c
+
+RTUT_OBJS = $(RTUT_SOURCES:%.c=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
+
+RTUT_LDFLAGS = $(LDFLAGS)
+
+RTUT_APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/rtut$(APPEXT)
+
+#--------
 DISTFILES = Makefile \
-	$(SOURCES) $(HEADERS)
+	$(SOURCES) $(HEADERS) $(RTUT_SOURCES)
+
 
 
 
 include $(top_srcdir)/build/pre.mk
 
-all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) RTLIBX
+all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) RTLIBX RTUT_APPX
 
+#--------
 RTLIB = $(BUILDDIR)/$(BUILDSTYLE)/libhr$(LIBEXT)
 RTLIBX: $(RTLIB)
+
+
+#--------
+RTUT_APPX: $(RTUT_APPBINARY)
+
+$(RTUT_APPBINARY): $(RTUT_OBJS) $(RTLIB)
+	$(CC) $(CFLAGS) $(RTUT_LDFLAGS) -o $@ $^ $(RTLIB)
+
 
 # %$(LIBEXT)(%$(OBJEXT)): %$(OBJEXT)
 # 	$(AR) cru $@ $%

@@ -1,4 +1,4 @@
-#  This file is part of the herschel package 
+#  This file is part of the herschel package
 #
 #  Copyright (c) 2010-2011 Gregor Klinke
 #  All rights reserved.
@@ -29,7 +29,7 @@ endif
 
 
 REC_TARGETS = all-rec clean-rec distclean-rec dist-rec
-$(REC_TARGETS): 
+$(REC_TARGETS):
 	target=`echo $@ | sed s/-rec//`; \
 	for subdir in $(SUBDIRS); do \
 	  echo "Making $$target in $$subdir"; \
@@ -37,13 +37,18 @@ $(REC_TARGETS):
 	done
 
 
-$(BUILDDIR): 
+$(BUILDDIR):
 	@if [ ! -d $@ ]; then mkdir $@; fi
 
 $(BUILDDIR)/$(BUILDSTYLE): $(BUILDDIR)
 	@if [ ! -d $@ ]; then mkdir $@; fi
 
-$(PKGDIR): 
+$(PKGDIR):
+	@if [ ! -d $@ ]; then mkdir $@; fi
+
+$(BUILDTESTSDIR): $(BUILDDIR)
 	@if [ ! -d $@ ]; then mkdir $@; fi
 
 DEPS_DIR = $(BUILDDIR)/$(BUILDSTYLE)/.deps
+
+HERSCHEL_APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/herschel$(APPEXT)
