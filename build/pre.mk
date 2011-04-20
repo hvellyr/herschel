@@ -27,11 +27,11 @@ distclean: distclean-local distclean-post
 
 endif
 
-
+ALL_SUBDIRS ?= $(SUBDIRS)
 REC_TARGETS = all-rec clean-rec distclean-rec dist-rec
 $(REC_TARGETS):
 	target=`echo $@ | sed s/-rec//`; \
-	for subdir in $(SUBDIRS); do \
+	for subdir in $(ALL_SUBDIRS); do \
 	  echo "Making $$target in $$subdir"; \
 		$(MAKE) -C $$subdir  $$target; \
 	done

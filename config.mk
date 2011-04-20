@@ -91,19 +91,16 @@ BASE_REVISION = $(shell $(SHELL) $(top_srcdir)/build/reprevision.sh)
 
 BUILDSTYLE ?= debug
 
-ifeq ($(BUILDSTYLE),debug)
+ifeq ($(BUILDSTYLE),dqemuebug)
 CBUILDFLAG = $(CDEBUG) -DIS_DEBUG -DUNITTESTS
 endif
 ifeq ($(BUILDSTYLE),release)
-# CBUILDFLAG = -DNDEBUG $(COPT) -DIS_RELEASE
-CBUILDFLAG = $(COPT) -DIS_RELEASE
+CBUILDFLAG = $(COPT) -DIS_RELEASE -DUNITTESTS
 endif
 
-# don't use the Buildstyle dist-release explicitely, it is automatically
-# used when calling make dist-bin-pkg on toplevel.
+# use dist-release to make a build for a distribution.  This version won't include unit test code and a number of options.
 ifeq ($(BUILDSTYLE),dist-release)
-# CBUILDFLAG = -DNDEBUG $(COPT) -DIS_RELEASE -DIS_DIST
-CBUILDFLAG = $(COPT) -DIS_RELEASE -DIS_DIST
+CBUILDFLAG = $(COPT) -DIS_RELEASE
 endif
 
 

@@ -1,4 +1,4 @@
-#  This file is part of the herschel package 
+#  This file is part of the herschel package
 #
 #  Copyright (c) 2010-2011 Gregor Klinke
 #  All rights reserved.
@@ -12,6 +12,8 @@ include $(top_srcdir)/config.mk
 
 SUBDIRS = external bootstrap runtime build doc tests
 
+ALL_SUBDIRS = external bootstrap runtime
+
 DISTFILES = \
 	AUTHORS   \
 	BUGS      \
@@ -21,11 +23,11 @@ DISTFILES = \
 	Makefile  \
 	README    \
 	TODO      \
-	config.mk 
+	config.mk
 
 include $(top_srcdir)/build/pre.mk
 
-.PHONY: build tests docs 
+.PHONY: build tests docs
 
 build: version.h config-local.h $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 	(cd bootstrap && $(MAKE) all)
@@ -33,14 +35,22 @@ build: version.h config-local.h $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 tests: build
 	(cd tests/ && $(MAKE) all)
 
-docs: doc/version.texinfo $(BUILDDIR) 
+docs: doc/version.texinfo $(BUILDDIR)
 	(cd doc/ && $(MAKE) all)
 
-all-post: run-unittest
+ifeq ($(BUILDSTYLE),dist-release)
+RUN_UNITTEST_TARGET = no-unittest-in-release
+else
+RUN_UNITTEST_TARGET = run-unittest
+endif
+all-post: $(RUN_UNITTEST_TARGET)
 
 run-unittest:
 	@echo "Running unit tests..."
 	$(BUILDDIR)/$(BUILDSTYLE)/hrc$(APPEXT) -UT
+
+no-unittest-in-release:
+
 
 all-local: version.h config-local.h doc/version.texinfo $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 
@@ -136,7 +146,7 @@ dist-bin-pkg: all-local
 
 # windows binary distribution
 
-dist-windows: $(PKGDIR) 
+dist-windows: $(PKGDIR)
 	(BUILDSTYLE=release $(MAKE) dist-bin-pkg); \
 	(cd build/dist/win && $(MAKE) all); \
 	cp build/dist/win/hrc-*.exe $(PKGDIR)
@@ -146,7 +156,7 @@ dist-windows: $(PKGDIR)
 
 # mac os-x binary distribution
 
-dist-macosx: $(PKGDIR) 
+dist-macosx: $(PKGDIR)
 	(BUILDSTYLE=release $(MAKE) dist-bin-pkg); \
 	(cd build/dist/mac && $(MAKE) all)
 
@@ -175,7 +185,7 @@ doc/version.texinfo: Makefile config.mk
 	@echo "@set COPYRIGHTOWNER $(COPYRIGHTOWNER) " >> $@
 	@echo "@set BASEREVISION $(BASE_REVISION) " >> $@
 
-config-local.h: Makefile config.mk 
+config-local.h: Makefile config.mk
 	@echo "/* Don't edit this file.  It has been created automatically. */" > $@
 	@echo "#ifndef herschel_config_local_h" > $@
 	@echo "#define herschel_config_local_h" >> $@
