@@ -10,85 +10,51 @@ UNAME_ARCH=`(uname -m) 2>/dev/null` || UNAME_ARCH=unknown
 UNAME_OS=`(uname -s) 2>/dev/null` || UNAME_OS=unknown
 UNAME_RELEASE=`(uname -r) 2>/dev/null` || UNAME_RELEASE=unknown
 
-
-case "${UNAME_ARCH}:${UNAME_OS}:${UNAME_RELEASE}" in
-  BePC:Haiku:*)
+case "${UNAME_ARCH}" in
+  BePC)
     ARCH=i386
-    OS=haiku
-    FLAVOUR=plain
-    RELEASE=${UNAME_RELEASE}
     ;;
-
-  "Power Macintosh:Darwin:*")
+  "Power Macintosh")
     ARCH=ppc
-    OS=mac
-    FLAVOUR=plain
-    RELEASE=${UNAME_RELEASE}
     ;;
-
-  i386:Darwin:*)
+  i386)
     ARCH=i386
-    OS=mac
-    FLAVOUR=plain
-    RELEASE=${UNAME_RELEASE}
     ;;
-
-  x86_64:Darwin:*)
+  x86_64)
     ARCH=x86_64
-    OS=mac
-    FLAVOUR=plain
-    RELEASE=${UNAME_RELEASE}
     ;;
-
-  i*86:OpenBSD:*)
-    ARCH=i386
-    OS=openbsd
-    FLAVOUR=plain
-    RELEASE=${UNAME_RELEASE}
-    ;;
-
-  *:Darwin:*)
-    # guess this is ppc
-    ARCH=ppc
-    OS=mac
-    FLAVOUR=plain
-    RELEASE=${UNAME_RELEASE}
-    ;;
-
-  i*86:OpenBSD:*)
-    ARCH=i386
-    OS=openbsd
-    FLAVOUR=plain
-    RELEASE=${UNAME_RELEASE}
-    ;;
-
-  i*86:Linux:*)
-    ARCH=i386
-    OS=linux
-    FLAVOUR=unknown
-    RELEASE=${UNAME_RELEASE}
-    ;;
-
-  i*:MINGW*:*)
-    ARCH=i386
-    OS=win
-    FLAVOUR=mingw32
-    RELEASE=${UNAME_RELEASE}
-    ;;
-
-  i*:CYGWIN*:*)
-    ARCH=i386
-    OS=win
-    FLAVOUR=cygwin
-    RELEASE=${UNAME_RELEASE}
-    ;;
-
   *)
     ARCH=unknown
-    OS=unknown
-    FLAVOUR=unknown
-    RELEASE=unknown
 esac
+
+FLAVOUR=plain
+case "${UNAME_OS}" in
+  Darwin)
+    OS=mac
+    ;;
+  Haiku)
+    OS=haiku
+    ;;
+  OpenBSD)
+    OS=openbsd
+    ;;
+  Linux|linux)
+    OS=linux
+    ;;
+  MINGW*)
+    OS=win
+    FLAVOUR=mingw32
+    ;;
+  CYGWIN)
+    OS=win
+    FLAVOUR=cygwin
+    ;;
+  *)
+    OS=unknown
+esac
+
+RELEASE=${UNAME_RELEASE}
+
 
 if [ "$1" = "-a" ]; then
   echo ${ARCH}
