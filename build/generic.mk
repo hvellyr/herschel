@@ -1,4 +1,4 @@
-#  This file is part of the herschel package 
+#  This file is part of the herschel package
 #
 #  Copyright (c) 2010-2011 Gregor Klinke
 #  All rights reserved.
@@ -20,7 +20,7 @@ distclean-post:
 
 dist-post:
 
-distdir: $(DISTFILES) 
+distdir: $(DISTFILES)
 	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
 	mkdir $(distdir)
 	for file in $(DISTFILES); do \
@@ -63,7 +63,7 @@ $(BUILDDIR)/$(BUILDSTYLE)/%$(DYOEXT) : %.c
 $(BUILDDIR)/$(BUILDSTYLE)/%$(DYOEXT) : %.cpp
 	$(CXX) $(PIC) $(CXXFLAGS) -c -o $@ $<
 
-$(DEPS_DIR)/%.d: %.c $(PRE_DEPS) 
+$(DEPS_DIR)/%.d: %.c $(PRE_DEPS)
 	$(top_srcdir)/build/mkinstalldirs $(DEPS_DIR); \
 	$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\$(OBJEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)/\1$(OBJEXT) $@ : ,g' < $@.$$$$ > $@; \
@@ -75,13 +75,13 @@ $(DEPS_DIR)/%.d: %.cpp $(PRE_DEPS)
 	sed 's,\($*\)\$(OBJEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)/\1$(OBJEXT) $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 
-$(DEPS_DIR)/%.ld: %.c $(PRE_DEPS) 
+$(DEPS_DIR)/%.ld: %.c $(PRE_DEPS)
 	$(top_srcdir)/build/mkinstalldirs $(DEPS_DIR); \
 	$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\$(DYOEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)/\1$(DYOEXT) $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 
-$(DEPS_DIR)/%.ld: %.cpp $(PRE_DEPS) 
+$(DEPS_DIR)/%.ld: %.cpp $(PRE_DEPS)
 	$(top_srcdir)/build/mkinstalldirs $(DEPS_DIR); \
 	$(CXX) -MM $(CFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\$(DYOEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)/\1$(DYOEXT) $@ : ,g' < $@.$$$$ > $@; \
