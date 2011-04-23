@@ -91,7 +91,7 @@ BASE_REVISION = $(shell $(SHELL) $(top_srcdir)/build/reprevision.sh)
 
 BUILDSTYLE ?= debug
 
-ifeq ($(BUILDSTYLE),dqemuebug)
+ifeq ($(BUILDSTYLE),debug)
 CBUILDFLAG = $(CDEBUG) -DIS_DEBUG -DUNITTESTS
 endif
 ifeq ($(BUILDSTYLE),release)

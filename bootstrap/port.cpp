@@ -342,12 +342,8 @@ DataPort::canSetCursor() const
 void
 DataPort::setCursor(size_t cursor)
 {
-  if (cursor >= 0) {
-    resetUnreadBuffer();
-    fPos = cursor;
-  }
-  else
-    throw IOException(String("Negative cursor"), ENOTSUP);
+  resetUnreadBuffer();
+  fPos = cursor;
 }
 
 
