@@ -1,8 +1,9 @@
 Requirements
 
   for the code itself:
-    - c++ (tested with gcc 4.0.1 on Mac OS X, 4.5.0 on mingw/linux)
-    - llvm >=2.8 (http://www.llvm.org)
+    - c++ (tested with gcc 4.0.1 and 4.2.1 on Mac OS X, 4.5.0 on
+      mingw/linux; clang 2.8 on Mac OS X)
+    - llvm 2.8 (http://www.llvm.org)
 
   for building and testing:
   - a shell (posix compliant shell)
@@ -12,10 +13,11 @@ Requirements
 
 
   for the documentation:
-  - texinfo (the makefile refers to texi2pdf and makeinfo)
+  - texinfo (the makefile refers to texi2pdf and makeinfo).  For the PDF
+    documentation you need a substantial tex installation
 
 
-Developed on Mac OS X (10.5), Linux, and Windows XP.
+Developed on Mac OS X (10.5 and 10.6), Linux, and Windows XP.
 
 
 Build on Mac OS X:
@@ -44,9 +46,14 @@ Build on Mac OS X:
       $ make
 
      This should build the compiler, runtime libraries, prepare the
-     documentation, and runs all available tests.  If everything went
-     smooth you can find the created tools and documentation in the 'temp'
-     folder.
+     documentation, and runs the basic tests.  To run the complete test suite type
+
+      $ make tests
+
+     from the toplevel development folder.  To create the documentation type
+
+      $ make docs.  If everything went smooth you can find the created
+     tools and documentation in the 'temp' folder.
 
 
 Build on Windows XP:

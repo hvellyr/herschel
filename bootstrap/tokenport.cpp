@@ -21,7 +21,7 @@ using namespace herschel;
 //----------------------------------------------------------------------------
 
 size_t
-TokenPort::write(Token* /* data */, size_t /* items */)
+TokenPort::write(const Token* /* data */, size_t /* items */)
 {
   throw NotSupportedException(__FUNCTION__);
 }

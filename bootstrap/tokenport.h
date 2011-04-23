@@ -22,7 +22,7 @@ namespace herschel
   class TokenPort : public Port<Token>
   {
   public:
-    virtual size_t write(Token* data, size_t items);
+    virtual size_t write(const Token* data, size_t items);
     virtual int write(Token item);
 
     virtual void flush();
