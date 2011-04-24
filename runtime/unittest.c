@@ -9,6 +9,7 @@
 /* ---------------------------------------------------------------------------- */
 
 #include <assert.h>
+#include <string.h>
 
 #include "runtime/rt.h"
 
@@ -127,32 +128,32 @@ test_func1()
   {
     Method* _m = lookup_func1(m1, ty_ABC->tag_id);
     assert(_m != NULL);
-    assert(_m->func == "on_m1abc");
+    assert(strcmp(_m->func, "on_m1abc") == 0);
   }
 
   {
     Method* _m = lookup_func1(m2, ty_A->tag_id);
     assert(_m != NULL);
-    assert(_m->func == "on_m2a");
+    assert(strcmp(_m->func, "on_m2a") == 0);
   }
 
   {
     Method* _m = lookup_func1(m3, ty_AB->tag_id);
     assert(_m != NULL);
-    assert(_m->func == "on_m3ab");
+    assert(strcmp(_m->func, "on_m3ab") == 0);
   }
 
   {
     Method* _m = lookup_func1(m3, ty_AC->tag_id);
     assert(_m != NULL);
-    assert(_m->func == "on_m3ac");
+    assert(strcmp(_m->func, "on_m3ac") == 0);
   }
 
   /* this should actually complain about ambiguous method declaration */
   {
     Method* _m = lookup_func1(m3, ty_ABC->tag_id);
     assert(_m != NULL);
-    assert(_m->func == "on_m3ab");
+    assert(strcmp(_m->func, "on_m3ab") == 0);
   }
 }
 
@@ -192,13 +193,13 @@ test_func2()
   {
     Method* _m = lookup_func2(n1, ty_ABC->tag_id, ty_XYZ->tag_id);
     assert(_m != NULL);
-    assert(_m->func == "on_m1a_xz");
+    assert(strcmp(_m->func, "on_m1a_xz") == 0);
   }
 
   {
     Method* _m = lookup_func2(n3, ty_AB->tag_id, ty_XY->tag_id);
     assert(_m != NULL);
-    assert(_m->func == "on_m3ab_xy");
+    assert(strcmp(_m->func, "on_m3ab_xy") == 0);
   }
 
   {
@@ -211,7 +212,7 @@ test_func2()
     Method* _m = lookup_func2(n5, ty_ABC->tag_id, ty_XYZ->tag_id);
     assert(_m != NULL);
     /* this should actually throw since it's ambiguous */
-    assert(_m->func == "on_m5a_xz");
+    assert(strcmp(_m->func, "on_m5a_xz") == 0);
   }
 
   {
@@ -222,7 +223,7 @@ test_func2()
   {
     Method* _m = lookup_func2(n6, ty_AC->tag_id, ty_XYZ->tag_id);
     assert(_m != NULL);
-    assert(_m->func == "on_m4ac_xyz");
+    assert(strcmp(_m->func, "on_m4ac_xyz") == 0);
   }
 
   {
@@ -235,7 +236,7 @@ test_func2()
     for (i = 0; i < 10000000; i++) {
       Method* _m = lookup_func2(n6, ty_AC->tag_id, ty_XYZ->tag_id);
       assert(_m != NULL);
-      assert(_m->func == "on_m4ac_xyz");
+      assert(strcmp(_m->func, "on_m4ac_xyz") == 0);
     }
   }
 }
