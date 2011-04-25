@@ -15,6 +15,7 @@
 #include "runtime/rt.h"
 #include "runtime/hash.h"
 #include "runtime/list.h"
+#include "runtime/trace.h"
 
 static HashTable* generic_functions = NULL; /* hash<char*, GenericFunction*> */
 
@@ -40,7 +41,11 @@ void
 register_generic_function(GenericFunction* genfun)
 {
   hashtable_add(generic_functions, (void*)genfun->name, (void*)genfun);
-  fprintf(stderr, "Register generic function: %s [arity %ld]\n", genfun->name, genfun->argc);
+
+#if defined(UNITTESTS)
+  hr_trace("register", "Register generic function: %s [arity %ld]",
+           genfun->name, genfun->argc);
+#endif
 }
 
 
@@ -84,7 +89,10 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
   m->argc = argc;
   m->func = func;
 
-  fprintf(stderr, "Register method: %s [%p, arity %d]\n", gf->name, func, argc);
+#if defined(UNITTESTS)
+  hr_trace("register", "Register method: %s [%p, arity %d]",
+           gf->name, func, argc);
+#endif
 
   if (argc > 0) {
     va_list vp;

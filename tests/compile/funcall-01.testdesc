@@ -1,5 +1,5 @@
 {
   'retc': 10,
-  'output': [ "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-              "0123456789" ]
+  'stdout': [ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+              '0123456789' ]
 }

@@ -15,12 +15,14 @@ SOURCES =         \
 	list.c          \
 	method.c        \
 	rt.c            \
+	trace.c         \
   typeid.c
 
 HEADERS =         \
 	hash.h          \
 	list.h          \
-	rt.h
+	rt.h            \
+	trace.h
 
 
 C_OBJS =  $(SOURCES:%.c=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
@@ -29,24 +31,24 @@ OBJS = $(C_OBJS)
 
 
 #--------
-RTUT_SOURCES = unittest.c
+RTTESTS_SOURCES = unittest.c
 
-RTUT_OBJS = $(RTUT_SOURCES:%.c=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
+RTTESTS_OBJS = $(RTTESTS_SOURCES:%.c=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
 
-RTUT_LDFLAGS = $(LDFLAGS)
+RTTESTS_LDFLAGS = $(LDFLAGS)
 
-RTUT_APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/rtut$(APPEXT)
+RTTESTS_APPBINARY = $(BUILDDIR)/$(BUILDSTYLE)/rt-tests$(APPEXT)
 
 #--------
 DISTFILES = Makefile \
-	$(SOURCES) $(HEADERS) $(RTUT_SOURCES)
+	$(SOURCES) $(HEADERS) $(RTTESTS_SOURCES)
 
 
 
 
 include $(top_srcdir)/build/pre.mk
 
-all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) RTLIBX RTUT_APPX
+all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) RTLIBX RTTESTS_APPX
 
 #--------
 RTLIB = $(BUILDDIR)/$(BUILDSTYLE)/libhr$(LIBEXT)
@@ -54,10 +56,10 @@ RTLIBX: $(RTLIB)
 
 
 #--------
-RTUT_APPX: $(RTUT_APPBINARY)
+RTTESTS_APPX: $(RTTESTS_APPBINARY)
 
-$(RTUT_APPBINARY): $(RTUT_OBJS) $(RTLIB)
-	$(CC) $(CFLAGS) $(RTUT_LDFLAGS) -o $@ $^ $(RTLIB)
+$(RTTESTS_APPBINARY): $(RTTESTS_OBJS) $(RTLIB)
+	$(CC) $(CFLAGS) $(RTTESTS_LDFLAGS) -o $@ $^ $(RTLIB)
 
 
 # %$(LIBEXT)(%$(OBJEXT)): %$(OBJEXT)
@@ -71,7 +73,7 @@ $(RTLIB): $(OBJS)
 
 
 clean-local:
-	rm -f $(RTLIB)
+	rm -f $(RTLIB) $(RTTESTS_APPBINARY)
 
 distclean-local: clean-local
 	-rm -rf $(DEPS_DIR) TAGS
