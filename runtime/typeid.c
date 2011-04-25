@@ -12,6 +12,7 @@
 
 #include "runtime/rt.h"
 #include "runtime/hash.h"
+#include "runtime/trace.h"
 
 
 
@@ -43,7 +44,8 @@ register_type(Type* type)
 
   if (hashtable_get(types_name_to_type_map, (void*)type->name) != NULL)
   {
-    fprintf(stderr, "Multiple occurance of type '%s' clash.\n", type->name);
+    fprintf(stderr, "error: Multiple occurance of type '%s' clash.\n",
+            type->name);
     return;
   }
 
@@ -56,7 +58,9 @@ register_type(Type* type)
   }
   types_tag_vector[type->tag_id] = type;
 
-  fprintf(stderr, "Register type: %s\n", type->name);
+#if defined(UNITTESTS)
+  hr_trace("register", "Register type: %s", type->name);
+#endif
 }
 
 
@@ -158,7 +162,7 @@ type_lookup_by_name(const char* nm)
 {
   Type* ty = hashtable_get(types_name_to_type_map, (void*)nm);
   if (ty == NULL)
-    fprintf(stderr, "Type '%s' could not be resolved\n", nm);
+    fprintf(stderr, "error: Type '%s' could not be resolved\n", nm);
   return ty;
 }
 

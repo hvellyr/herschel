@@ -394,13 +394,19 @@ class TestRunner:
 
 
     # returns [ Success, output, errout, returncode ]
-    def run_test_binary(self, test_file, options, timeout=20):
+    def run_test_binary(self, test_file, options, timeout=20, env=None):
         cmd = [test_file]
         cmd.extend(options)
 
+        use_env = os.environ
+        if env is not None:
+            use_env = use_env.copy()
+            use_env.update(env)
+
         p = subprocess.Popen(cmd,
                              stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
+                             stderr=subprocess.PIPE,
+                             env=use_env)
         timed_out_mutable = [False]
 
         timer = threading.Timer(float(timeout), kill_process,
@@ -452,6 +458,13 @@ class TestRunner:
             self.report_success(passid, "%s: test succeeds" % what_tag)
             self.test_succeeded += 1
 
+    def check_output(self, compiledesc, key, output, what_tag):
+        if compiledesc.has_key(key):
+            if not self.check_contains_patterns(output, compiledesc[key]):
+                print "BIN%s: <%s>" % (key, output)
+                print "EXP%s: <%s>" % (key, compiledesc[key])
+                self.report_failure("%s: differs from expected %s output" % (what_tag, key))
+                return
 
     def check_tmp_run_detailed(self, passid, what_tag, retc, binout, binerr, compiledesc):
         if "retc" in compiledesc:
@@ -464,12 +477,8 @@ class TestRunner:
             self.report_failure("%s: test failed with returncode != 0" % what_tag)
             return
 
-        if compiledesc.has_key("output"):
-            if not self.check_contains_patterns(binout, compiledesc["output"]):
-                print "BINOUT: <%s>" % binout
-                print "EXPOUT: <%s>" % compiledesc["output"]
-                self.report_failure("%s: differs from expected output" % what_tag)
-                return
+        self.check_output(compiledesc, "stdout", binout, what_tag)
+        self.check_output(compiledesc, "stderr", binerr, what_tag)
 
         self.report_success(passid, "%s: test succeeds" % what_tag)
         self.test_succeeded += 1
@@ -477,7 +486,13 @@ class TestRunner:
 
     def run_test_binary_impl(self, tmp_binary, compiledesc, passid, what_tag):
         try:
-            retc, binout, binerr = self.run_test_binary(tmp_binary, [])
+            env = { }
+            if compiledesc is not None:
+                if 'runtime-options' in compiledesc:
+                    rt_options = { 'HR_RUNTIME_DEBUG': compiledesc['runtime-options'] }
+                    env.update(rt_options)
+
+            retc, binout, binerr = self.run_test_binary(tmp_binary, [], env=env)
 
             if compiledesc is None:
                 self.check_tmp_run_simple(passid, what_tag, retc, binout, binerr)
