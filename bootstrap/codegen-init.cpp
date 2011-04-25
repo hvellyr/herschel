@@ -40,7 +40,8 @@
 #define K_RUNTIME_INIT_PRIORITY     0
 #define K_CLASS_REG_PRIORITY        1
 #define K_GF_REG_PRIORITY           2
-#define K_GLOBAL_VAR_REG_PRIORITY   3
+#define K_METHOD_REG_PRIORITY       3
+#define K_GLOBAL_VAR_REG_PRIORITY   4
 
 //----------------------------------------------------------------------------
 
@@ -181,6 +182,7 @@ ModuleRuntimeInitializer::finish()
   emitRuntimeInitFunc();
   emitClassInitFunc();
   emitGenericsInitFunc();
+  emitMethodInitFunc();
   emitGlobalVarInitFunc();
 
   emitCtorList(fGlobalCtors, "llvm.global_ctors");
@@ -272,6 +274,14 @@ ModuleRuntimeInitializer::addGenericFunctionDef(const FuncDefNode* node)
   hr_assert(!node->isMethod());
 
   fGenericsInitFuncs.push_back(node);
+}
+
+
+void
+ModuleRuntimeInitializer::addMethodDef(const FuncDefNode* node,
+                                       const String& methodImplName)
+{
+  fMethodInitFuncs.push_back(MethodImpl(node, methodImplName));
 }
 
 
@@ -457,7 +467,7 @@ ModuleRuntimeInitializer::emitEntityInitFunc(const char* suggestedTmpName,
 
 
     for (size_t i = 0; i < entities.size(); i++) {
-      strategy.emitEnityGetter(entities[i], this);
+      strategy.emitEntityGetter(entities[i], this);
     }
   }
 }
@@ -474,7 +484,7 @@ namespace herschel
       initializer->makeGetTypeLookupCall(ty);
     }
 
-    void emitEnityGetter(const TypeDefNode* tdnode, ModuleRuntimeInitializer* initializer)
+    void emitEntityGetter(const TypeDefNode* tdnode, ModuleRuntimeInitializer* initializer)
     {
       TypeLazyCodeInitializingEmitter emitter(tdnode->defType(), initializer);
       emitter.emit();
@@ -500,7 +510,7 @@ namespace herschel
       initializer->makeGetGenericFuncLookupCall(fd);
     }
 
-    void emitEnityGetter(const FuncDefNode* fd, ModuleRuntimeInitializer* initializer)
+    void emitEntityGetter(const FuncDefNode* fd, ModuleRuntimeInitializer* initializer)
     {
       GenericsLazyCodeInitializingEmitter emitter(fd, initializer);
       emitter.emit();
@@ -514,6 +524,34 @@ ModuleRuntimeInitializer::emitGenericsInitFunc()
 {
   emitEntityInitFunc("generic_reg", fGenericsInitFuncs, GenericsInitStrategy(),
                      K_GF_REG_PRIORITY);
+}
+
+
+namespace herschel
+{
+  class MethodInitStrategy
+  {
+  public:
+    void emitInitCall(const ModuleRuntimeInitializer::MethodImpl& methImpl,
+                      ModuleRuntimeInitializer* initializer)
+    {
+      initializer->makeMethodRegisterCall(methImpl);
+    }
+
+    void emitEntityGetter(const ModuleRuntimeInitializer::MethodImpl& methImpl,
+                         ModuleRuntimeInitializer* initializer)
+    {
+      // NOP.  This is not needed for method registration
+    }
+  };
+};
+
+
+void
+ModuleRuntimeInitializer::emitMethodInitFunc()
+{
+  emitEntityInitFunc("method_reg", fMethodInitFuncs, MethodInitStrategy(),
+                     K_METHOD_REG_PRIORITY);
 }
 
 
@@ -767,6 +805,66 @@ llvm::Value*
 ModuleRuntimeInitializer::makeGenericFunctionRegistration(const FuncDefNode* node) const
 {
   return makeGenericFuncRegisterCall(makeGenericFuncAllocCall(node));
+}
+
+
+//----------------------------------------------------------------------------
+
+void
+ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
+{
+  llvm::Function* regFunc = module()->getFunction(llvm::StringRef("register_method"));
+  if (regFunc == NULL) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(types().getGenericFuncType()); // GenericFunction*
+    sign.push_back(types().getMethodType());      // void*
+    sign.push_back(llvm::Type::getInt32Ty(context())); // argc
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
+                                                     sign,
+                                                     K(isVarArg));
+
+    regFunc = llvm::Function::Create(ft,
+                                     llvm::Function::ExternalLinkage,
+                                     llvm::Twine("register_method"),
+                                     module());
+  }
+
+  llvm::Value* gfFuncCall = makeGetGenericFuncLookupCall(impl.fNode);
+  hr_assert(gfFuncCall != NULL);
+
+  llvm::Function* method = module()->getFunction(llvm::StringRef(StrHelper(impl.fMethodImplName)));
+  // we should have registered the function before otherwise we wouldn't
+  // had the name of the method in the list of methods to register.
+  hr_assert(method != NULL);
+
+  size_t countOfSpecs = impl.fNode->specializedArgsCount();
+
+  std::vector<llvm::Value*> argv;
+  argv.push_back(gfFuncCall);
+  // push the function pointer as second argument.  This is the function to
+  // be called for this method (properly casted to void*, as we need a
+  // "general function signature" for all functions).
+  argv.push_back(llvm::ConstantExpr::getBitCast(method, types().getMethodType()));
+  // push the number of specialized type arguments as third argument
+  argv.push_back(llvm::ConstantInt::get(context(),
+                                        llvm::APInt(32, countOfSpecs, true)));
+  // now push type lookups as 4th, etc. argument for the specialized
+  // arguments.
+  for (NodeList::const_iterator it = impl.fNode->params().begin(),
+                                e = impl.fNode->params().end();
+       it != e;
+       it++)
+  {
+    if (const ParamNode* prm = dynamic_cast<const ParamNode*>(it->obj())) {
+      if (prm->isSpecArg()) {
+        llvm::Value* typeLookup = makeGetTypeLookupCall(prm->type());
+        argv.push_back(typeLookup);
+      }
+    }
+  }
+
+  builder().CreateCall(regFunc, argv.begin(), argv.end());
 }
 
 

@@ -86,6 +86,18 @@ namespace herschel
   class ModuleRuntimeInitializer
   {
   public:
+    struct MethodImpl
+    {
+      const FuncDefNode* fNode;
+      String fMethodImplName;
+
+      MethodImpl(const FuncDefNode* node, const String& methImplNm)
+        : fNode(node),
+          fMethodImplName(methImplNm)
+      {}
+    };
+
+
     ModuleRuntimeInitializer(CodeGenerator* generator);
 
     void finish();
@@ -96,6 +108,8 @@ namespace herschel
     void addGlobalVariable(const VardefNode* vardefNode);
     void addTypeDef(const TypeDefNode* typedefNode);
     void addGenericFunctionDef(const FuncDefNode* node);
+    void addMethodDef(const FuncDefNode* node,
+                      const String& methodImplName);
 
     CodeGenerator* generator() const;
     llvm::LLVMContext& context() const;
@@ -111,8 +125,11 @@ namespace herschel
     llvm::Value* makeGenericFuncAllocCall(const FuncDefNode* node) const;
     llvm::Value* makeGetGenericFuncLookupCall(const FuncDefNode* node) const;
 
+    void makeMethodRegisterCall(const MethodImpl& impl) const;
+
   private:
     friend class ClassInitStrategy;
+    friend class MethodInitStrategy;
 
     typedef std::vector<std::pair<llvm::Constant*, int> > CtorList;
 
@@ -120,6 +137,7 @@ namespace herschel
     void emitClassInitFunc();
     void emitGlobalVarInitFunc();
     void emitGenericsInitFunc();
+    void emitMethodInitFunc();
 
     void emitCtorList(const CtorList &fns, const char *globalName);
 
@@ -146,8 +164,9 @@ namespace herschel
     CtorList fGlobalDtors;
 
     std::vector<const TypeDefNode*> fClassInitFuncs;
-    std::vector<const VardefNode*> fGlobalInitVars;
+    std::vector<const VardefNode*>  fGlobalInitVars;
     std::vector<const FuncDefNode*> fGenericsInitFuncs;
+    std::vector<MethodImpl>         fMethodInitFuncs;
   };
 
 
@@ -162,6 +181,7 @@ namespace herschel
     const llvm::Type* getTypeType() const;
     const llvm::Type* getTypeSlotPairType() const;
     const llvm::Type* getGenericFuncType() const;
+    const llvm::Type* getMethodType() const;
     const llvm::Type* getType(const Type& type) const;
 
   private:
@@ -281,13 +301,18 @@ namespace herschel
     llvm::Value* compileMethodDef(const FuncDefNode* node);
     llvm::Value* compileAbstractFuncDef(const FuncDefNode* node);
     llvm::Value* compileNormalFuncDef(const FuncDefNode* node, bool isLocal);
+    String makeFunctionName(const FuncDefNode* node,
+                            const String& methodNameSuffix) const;
 
     struct FuncPair
     {
       llvm::Function* fFunc;
       Type fRetType;
     };
-    FuncPair createFunction(const FuncDefNode* node);
+    FuncPair createFunction(const FuncDefNode* node,
+                            const String& methodNameSuffix);
+    llvm::Value* compileNormalFuncDefImpl(const FuncPair& func,
+                                          const FuncDefNode* node, bool isLocal);
 
     //------------------------------ emit operators
 

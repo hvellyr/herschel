@@ -13,6 +13,7 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "strbuf.h"
 
 #include <vector>
 
@@ -76,29 +77,61 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
 }
 
 
+String
+CodeGenerator::makeFunctionName(const FuncDefNode* node,
+                                const String& methodNameSuffix) const
+{
+  if (node->hasCLinkage()) {
+    hr_assert(methodNameSuffix.isEmpty());
+    return node->name();
+  }
+  else {
+    String nm = node->name();
+    if (!methodNameSuffix.isEmpty())
+      nm = nm + methodNameSuffix;
+
+    return herschel::mangleToC(nm);
+  }
+}
+
+
 llvm::Value*
 CodeGenerator::compileMethodDef(const FuncDefNode* node)
 {
-  hr_invalid("TODO");
-  return NULL;
+  StringBuffer msgbuf;
+  msgbuf << "=method";
+
+  for (NodeList::const_iterator it = node->params().begin(),
+                                e = node->params().end();
+       it != e;
+       it++)
+  {
+    if (const ParamNode* prm = dynamic_cast<const ParamNode*>(it->obj())) {
+      if (prm->isSpecArg())
+        msgbuf << String(".") << prm->type().typeId();
+    }
+  }
+
+  String methodNameSuffix = msgbuf.toString();
+  fInitializer.addMethodDef(node, makeFunctionName(node, methodNameSuffix));
+
+  FuncPair func = createFunction(node, methodNameSuffix);
+  return compileNormalFuncDefImpl(func, node, !K(isLocal));
 }
 
 
 CodeGenerator::FuncPair
-CodeGenerator::createFunction(const FuncDefNode* node)
+CodeGenerator::createFunction(const FuncDefNode* node,
+                              const String& methodNameSuffix)
 {
   FuncPair p;
 
-  bool inlineRetv = false;
-  String funcnm;
-  if (node->hasCLinkage()) {
-    funcnm = node->name();
-    inlineRetv = false;
-  }
-  else {
-    funcnm = herschel::mangleToC(node->name());
-    inlineRetv = true;
-  }
+  bool inlineRetv = !node->hasCLinkage();
+  String funcnm = makeFunctionName(node, methodNameSuffix);
+
+  llvm::Function* func = module()->getFunction(llvm::StringRef(funcnm));
+  if (func != NULL)
+    logf(kError, "Redefinition of method: %s", (const char*)StrHelper(funcnm));
 
   Type retty;
   if (node->isAppMain()) {
@@ -106,7 +139,6 @@ CodeGenerator::createFunction(const FuncDefNode* node)
   }
   else
     p.fRetType = node->retType();
-
 
   llvm::FunctionType* ft = createFunctionSignature(node, inlineRetv, p.fRetType);
   hr_assert(ft != NULL);
@@ -122,7 +154,7 @@ CodeGenerator::createFunction(const FuncDefNode* node)
 llvm::Value*
 CodeGenerator::compileAbstractFuncDef(const FuncDefNode* node)
 {
-  FuncPair func = createFunction(node);
+  FuncPair func = createFunction(node, String());
 
   hr_assert(node->body() == NULL);
 
@@ -133,9 +165,18 @@ CodeGenerator::compileAbstractFuncDef(const FuncDefNode* node)
 llvm::Value*
 CodeGenerator::compileNormalFuncDef(const FuncDefNode* node, bool isLocal)
 {
-  FuncPair func = createFunction(node);
+  FuncPair func = createFunction(node, String());
+  return compileNormalFuncDefImpl(func, node, isLocal);
+}
 
+
+llvm::Value*
+CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
+                                        const FuncDefNode* node,
+                                        bool isLocal)
+{
   hr_assert(!node->isAbstract());
+
   if (node->body() != NULL) {
     llvm::Function::arg_iterator aiter = func.fFunc->arg_begin();
     llvm::Function::arg_iterator aiter_e = func.fFunc->arg_end();
