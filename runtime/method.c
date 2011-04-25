@@ -84,6 +84,8 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
   m->argc = argc;
   m->func = func;
 
+  fprintf(stderr, "Register method: %s [%p, arity %d]\n", gf->name, func, argc);
+
   if (argc > 0) {
     va_list vp;
     size_t i = 0;
