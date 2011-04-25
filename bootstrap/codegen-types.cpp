@@ -143,6 +143,14 @@ CodegenTypeUtils::getGenericFuncType() const
 
 
 const llvm::Type*
+CodegenTypeUtils::getMethodType() const
+{
+  // TODO
+  return llvm::Type::getInt8PtrTy(context());
+}
+
+
+const llvm::Type*
 CodegenTypeUtils::getType(const Type& type) const
 {
   if (type.typeName() == String("clang|int")) {
