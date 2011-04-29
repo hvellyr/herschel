@@ -80,6 +80,7 @@ HRC_SOURCES =     \
 	annotate.cpp    \
 	apt.cpp         \
 	codegen.cpp     \
+	codegen-alloc.cpp \
 	codegen-init.cpp \
 	codegen-func.cpp \
 	codegen-op.cpp  \

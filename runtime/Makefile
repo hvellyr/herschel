@@ -95,7 +95,8 @@ TAGS: $(HEADERS) $(SOURCES)
 	find -E . -regex ".*\.mm$$|.*\.cpp$$|.*\.h$$" -print | etags --members -
 
 
-DEPS = $(patsubst %.c,$(DEPS_DIR)/%.d,$(SOURCES))
+DEPS = $(patsubst %.c,$(DEPS_DIR)/%.d,$(SOURCES)) \
+	$(patsubst %.c,$(DEPS_DIR)/%.d,$(RTTESTS_SOURCES))
 
 .PRECIOUS: $(DEPS_DIR)/%.d
 

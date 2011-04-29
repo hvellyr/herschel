@@ -204,14 +204,21 @@ type_slot_get(Type* ty, const char* slot_name)
 /* ---------------------------------------------------------------------------
    ------------------------------------------------------------------------ */
 
-ATOM
-allocate(Type* ty)
+void
+allocate(ATOM* instance, Type* ty)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(ty->instance_size);
-  memset(obj.u.v_obj, 0, ty->instance_size);
-  return obj;
+#if defined(UNITTESTS)
+  hr_trace("allocate", "Create instance of type '%s', size: %ld",
+           ty->name, ty->instance_size);
+#endif
+
+  instance->typeid = ty->tag_id;
+  if (ty->instance_size > 0) {
+    instance->u.v_obj = malloc(ty->instance_size);
+    memset(instance->u.v_obj, 0, ty->instance_size);
+  }
+  else
+    instance->u.v_obj = NULL;
 }
 
 
