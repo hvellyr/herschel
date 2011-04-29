@@ -560,26 +560,7 @@ ModuleRuntimeInitializer::emitMethodInitFunc()
 llvm::Value*
 ModuleRuntimeInitializer::makeGetTypeLookupCall(const Type& ty) const
 {
-  String typeClassLookupFuncName = TypeLazyCodeInitializingEmitter::getterFunctionName(ty);
-  String funcName = herschel::mangleToC(typeClassLookupFuncName);
-  llvm::Function* typeFunc = module()->getFunction(llvm::StringRef(funcName));
-
-  if (typeFunc == NULL)
-  {
-    std::vector<const llvm::Type*> sign;
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(types().getTypeType(),
-                                                     sign,
-                                                     !K(isVarArg));
-
-    typeFunc = llvm::Function::Create(ft,
-                                      llvm::Function::ExternalLinkage,
-                                      llvm::Twine(funcName),
-                                      module());
-  }
-
-  std::vector<llvm::Value*> argv;
-  return builder().CreateCall(typeFunc, argv.begin(), argv.end());
+  return fGenerator->makeGetTypeLookupCall(ty);
 }
 
 
@@ -956,6 +937,35 @@ LazyCodeInitializingEmitter::emit()
 
   if (fGenerator->optPassManager() != NULL && Properties::optimizeLevel() > kOptLevelNone)
     fGenerator->optPassManager()->run(*typeFunc);
+}
+
+
+//============================================================================
+
+llvm::Value*
+CodeGenerator::makeGetTypeLookupCall(const Type& ty) const
+{
+  String typeClassLookupFuncName =
+    TypeLazyCodeInitializingEmitter::getterFunctionName(ty);
+  String funcName = herschel::mangleToC(typeClassLookupFuncName);
+  llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
+
+  if (typeFunc == NULL)
+  {
+    std::vector<const llvm::Type*> sign;
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes.getTypeType(),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    typeFunc = llvm::Function::Create(ft,
+                                      llvm::Function::ExternalLinkage,
+                                      llvm::Twine(funcName),
+                                      fModule);
+  }
+
+  std::vector<llvm::Value*> argv;
+  return builder().CreateCall(typeFunc, argv.begin(), argv.end());
 }
 
 

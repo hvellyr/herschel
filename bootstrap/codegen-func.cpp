@@ -193,6 +193,7 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
     {
       const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
 
+      // TODO: enforce ATOM types for spec args and returnvalue in generic functions
       // TODO ende name
       llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func.fFunc, param->name(),
                                                            fTypes.getType(param->type()));

@@ -123,28 +123,28 @@ CodeGenerator::~CodeGenerator()
 
 
 llvm::LLVMContext&
-CodeGenerator::context()
+CodeGenerator::context() const
 {
   return fContext;
 }
 
 
 llvm::IRBuilder<>&
-CodeGenerator::builder()
+CodeGenerator::builder() const
 {
-  return fBuilder;
+  return const_cast<llvm::IRBuilder<>&>(fBuilder);
 }
 
 
 llvm::Module*
-CodeGenerator::module()
+CodeGenerator::module() const
 {
   return fModule;
 }
 
 
 llvm::FunctionPassManager*
-CodeGenerator::optPassManager()
+CodeGenerator::optPassManager() const
 {
   return fOptPassManager;
 }
@@ -807,22 +807,28 @@ CodeGenerator::codegen(const ApplyNode* node)
 {
   llvm::Function *calleeFunc = NULL;
   bool inlineRetv = false;
+  bool alwaysPassAtom = false;
 
   const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->base());
   if (symNode != NULL) {
     hr_assert(symNode->refersTo() == kFunction || symNode->refersTo() == kGeneric);
 
     String funcnm;
+
+    if (symNode->name() == Names::kLangAllocate)
+      return emitAllocateApply(node);
+
     if (symNode->hasCLinkage()) {
+      // generic functions are not allowed to have C linkage
+      hr_assert(symNode->refersTo() != kGeneric);
       funcnm = symNode->name();
       inlineRetv = false;
     }
     else {
       funcnm = herschel::mangleToC(symNode->name());
       inlineRetv = true;
+      alwaysPassAtom = symNode->refersTo() == kGeneric;
     }
-
-    // bool alwaysPassAtom = fdn->isGeneric() || fdn->isMethod();
 
     calleeFunc = fModule->getFunction(llvm::StringRef(funcnm));
     if (calleeFunc == NULL) {
@@ -836,38 +842,43 @@ CodeGenerator::codegen(const ApplyNode* node)
     hr_invalid("apply(!symbol) -> TODO");
   }
 
-  const NodeList& nl = node->children();
-  if (calleeFunc->arg_size() != nl.size() + (inlineRetv ? 1 : 0)) {
+  const NodeList& args = node->children();
+  if (calleeFunc->arg_size() != args.size() + (inlineRetv ? 1 : 0)) {
     errorf(node->srcpos(), 0, "Incorrect # arguments passed");
     return NULL;
   }
 
   llvm::AllocaInst* retv = NULL;
-  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
+  llvm::Function* curFunction = fBuilder.GetInsertBlock()->getParent();
+  const llvm::Type* returnType = ( alwaysPassAtom
+                                   ? fTypes.getAtomType()
+                                   : fTypes.getType(node->type()) );
   retv = createEntryBlockAlloca(curFunction, String("local_retv"),
-                                fTypes.getType(node->type()));
+                                returnType);
 
   std::vector<llvm::Value*> argv;
   if (inlineRetv)
     argv.push_back(retv);
 
-  for (unsigned i = 0, e = nl.size(); i != e; ++i) {
-    llvm::Value* val = wrapLoad(codegenNode(nl[i]));
+  for (unsigned i = 0, e = args.size(); i != e; ++i) {
+    llvm::Value* val = wrapLoad(codegenNode(args[i]));
 
-    // warningf(nl[i]->srcpos(), 0, "emit pack code");
-    val = emitPackCode(nl[i]->dstType(), nl[i]->typeConv(),
-                       val, nl[i]->type());
+    // TODO: can we assert that spec args are ATOM typed.
+    // warningf(args[i]->srcpos(), 0, "emit pack code");
+    val = emitPackCode(args[i]->dstType(), args[i]->typeConv(),
+                       val, args[i]->type());
 
     // val->dump();
-
-    if (val != NULL)
-      argv.push_back(val);
-    else
+    if (val == NULL)
       return NULL;
+
+    argv.push_back(val);
   }
 
   if (inlineRetv) {
     fBuilder.CreateCall(calleeFunc, argv.begin(), argv.end());
+
+    // TODO: if in tail position enforce ATOM return type?
     return retv;
   }
   else {

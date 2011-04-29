@@ -257,10 +257,13 @@ test_func3()
 static void
 test_allocate1()
 {
-  ATOM x1 = allocate(ty_D);
+  ATOM x1;
+  ATOM x2;
+
+  allocate(&x1, ty_D);
   assert(x1.typeid == ty_D->tag_id);
 
-  ATOM x2 = allocate(ty_E);
+  allocate(&x2, ty_E);
   assert(x2.typeid == ty_E->tag_id);
 }
 

@@ -244,10 +244,10 @@ namespace herschel
     llvm::Value* codegen(const WhileNode* node);
     llvm::Value* codegen(const UndefNode* node);
 
-    llvm::LLVMContext& context();
-    llvm::IRBuilder<>& builder();
-    llvm::Module* module();
-    llvm::FunctionPassManager* optPassManager();
+    llvm::LLVMContext& context() const;
+    llvm::IRBuilder<>& builder() const;
+    llvm::Module* module() const;
+    llvm::FunctionPassManager* optPassManager() const;
 
   private:
     friend class ModuleRuntimeInitializer;
@@ -331,6 +331,13 @@ namespace herschel
     llvm::Value* emitPackCode(const Type& dstType, TypeConvKind convKind,
                               llvm::Value* value,
                               const Type& valType);
+
+    llvm::Value* makeGetTypeLookupCall(const Type& ty) const;
+
+    //------------------------------ allocation
+
+    llvm::Value* emitAllocateApply(const ApplyNode* node);
+    llvm::Value* emitTypeNameForAllocate(const AptNode* node);
 
     //-------- data members
 

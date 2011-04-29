@@ -99,7 +99,8 @@ Method* lookup_func2(GenericFunction* gf, TagId ty0, TagId ty1);
 Method* lookup_func3(GenericFunction* gf, TagId ty0, TagId ty1, TagId ty2);
 
 /* allocating instances */
-ATOM allocate(Type* ty);
+void allocate(ATOM* instance, Type* ty);
+
 ATOM allocate_array(Type* ty, ATOM init_value, size_t items);
 ATOM allocate_char_array(Type* ty, char init_value, size_t items);
 ATOM allocate_short_array(Type* ty, short init_value, size_t items);
