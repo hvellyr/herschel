@@ -107,6 +107,7 @@ CodegenTypeUtils::getAtomType() const
       llvm::StructType::get(context(), newLlvmTypeVector(payloadType), false);
     atomType =
       llvm::StructType::get(context(),
+                            // TODO: shouldn't the tag id be 64bit ?
                             newLlvmTypeVector(llvm::Type::getInt32Ty(context()),
                                               payloadStruct),
                             false);
