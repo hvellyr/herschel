@@ -24,6 +24,7 @@ namespace llvm
   class AllocaInst;
   class BasicBlock;
   class Function;
+  class FunctionType;
   class FunctionPassManager;
   class LLVMContext;
   class Module;
@@ -258,7 +259,8 @@ namespace herschel
 
     llvm::FunctionType* createFunctionSignature(const FunctionNode* node,
                                                 bool inlineRetv,
-                                                const Type& retty);
+                                                const Type& retty,
+                                                bool isGeneric);
 
     llvm::Value* codegen(const NodeList& nl);
 
@@ -306,11 +308,13 @@ namespace herschel
 
     struct FuncPair
     {
+      llvm::FunctionType* fType;
       llvm::Function* fFunc;
       Type fRetType;
     };
     FuncPair createFunction(const FuncDefNode* node,
-                            const String& methodNameSuffix);
+                            const String& methodNameSuffix,
+                            bool isGeneric);
     llvm::Value* compileNormalFuncDefImpl(const FuncPair& func,
                                           const FuncDefNode* node, bool isLocal);
 
@@ -333,6 +337,7 @@ namespace herschel
                               const Type& valType);
 
     llvm::Value* makeGetTypeLookupCall(const Type& ty) const;
+    llvm::Value* makeGetGenericFuncLookupCall(const FuncDefNode* node) const;
 
     //------------------------------ allocation
 
