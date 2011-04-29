@@ -99,7 +99,7 @@ Typifier::annotateTypeConv(AptNode* node, const Type& dstType)
    */
   if (dstType.isPlainType()) {
     if (node->type().isPlainType()) {
-      // ok.  maybe some bitcast between int/short/long, etc.
+      // ok.  TODO: maybe some bitcast between int/short/long, etc.
     }
     else {
       // req. atom_2_x
@@ -118,6 +118,30 @@ Typifier::annotateTypeConv(AptNode* node, const Type& dstType)
     else {
       // OK
     }
+  }
+
+  node->setDstType(dstType);
+}
+
+
+void
+Typifier::enforceAtomTypeConv(AptNode* node, const Type& dstType)
+{
+  /*
+    atom  <- atom      ok
+    atom  <- any       type_check
+    atom  <- plain     wrap_atom
+   */
+  if (node->type().isPlainType()) {
+    // req. wrap_atom
+    node->setTypeConv(kPlain2AtomConv);
+  }
+  else if (node->type().isAny()) {
+    // requires type_check
+    node->setTypeConv(kTypeCheckConv);
+  }
+  else {
+    // OK
   }
 
   node->setDstType(dstType);
@@ -582,7 +606,11 @@ Typifier::checkArgParamType(TypeCtx& localCtx,
     }
   }
 
-  annotateTypeConv(arg, param->type());
+  // if the parameter is specialized enforce passing to AtomType
+  if (param->flags() == kSpecArg)
+    enforceAtomTypeConv(arg, param->type());
+  else
+    annotateTypeConv(arg, param->type());
 }
 
 
