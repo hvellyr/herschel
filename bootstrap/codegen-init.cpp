@@ -703,26 +703,7 @@ ModuleRuntimeInitializer::makeTypeOrCallRegistration(const Type& ty) const
 llvm::Value*
 ModuleRuntimeInitializer::makeGetGenericFuncLookupCall(const FuncDefNode* node) const
 {
-  String gfLookupFuncName = GenericsLazyCodeInitializingEmitter::getterFunctionName(node->name());
-  String funcName = herschel::mangleToC(gfLookupFuncName);
-  llvm::Function* gfFunc = module()->getFunction(llvm::StringRef(funcName));
-
-  if (gfFunc == NULL)
-  {
-    std::vector<const llvm::Type*> sign;
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(types().getGenericFuncType(),
-                                                     sign,
-                                                     !K(isVarArg));
-
-    gfFunc = llvm::Function::Create(ft,
-                                    llvm::Function::ExternalLinkage,
-                                    llvm::Twine(funcName),
-                                    module());
-  }
-
-  std::vector<llvm::Value*> argv;
-  return builder().CreateCall(gfFunc, argv.begin(), argv.end());
+  return fGenerator->makeGetGenericFuncLookupCall(node);
 }
 
 
@@ -969,3 +950,28 @@ CodeGenerator::makeGetTypeLookupCall(const Type& ty) const
 }
 
 
+llvm::Value*
+CodeGenerator::makeGetGenericFuncLookupCall(const FuncDefNode* node) const
+{
+  String gfLookupFuncName =
+    GenericsLazyCodeInitializingEmitter::getterFunctionName(node->name());
+  String funcName = herschel::mangleToC(gfLookupFuncName);
+  llvm::Function* gfFunc = module()->getFunction(llvm::StringRef(funcName));
+
+  if (gfFunc == NULL)
+  {
+    std::vector<const llvm::Type*> sign;
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes.getGenericFuncType(),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    gfFunc = llvm::Function::Create(ft,
+                                    llvm::Function::ExternalLinkage,
+                                    llvm::Twine(funcName),
+                                    fModule);
+  }
+
+  std::vector<llvm::Value*> argv;
+  return builder().CreateCall(gfFunc, argv.begin(), argv.end());
+}

@@ -90,6 +90,18 @@ newLlvmTypeVector(const llvm::Type* ty1, const llvm::Type* ty2)
 }
 
 
+static std::vector<const llvm::Type*>
+newLlvmTypeVector(const llvm::Type* ty1, const llvm::Type* ty2,
+                  const llvm::Type* ty3)
+{
+  std::vector<const llvm::Type*> v;
+  v.push_back(ty1);
+  v.push_back(ty2);
+  v.push_back(ty3);
+  return v;
+}
+
+
 const llvm::Type*
 CodegenTypeUtils::getAtomType() const
 {
@@ -146,8 +158,21 @@ CodegenTypeUtils::getGenericFuncType() const
 const llvm::Type*
 CodegenTypeUtils::getMethodType() const
 {
-  // TODO
-  return llvm::Type::getInt8PtrTy(context());
+  llvm::StringRef typeName("struct.Method");
+
+  const llvm::Type* methodType = module()->getTypeByName(typeName);
+  if (methodType == NULL) {
+    methodType =
+      llvm::StructType::get(context(),
+                            newLlvmTypeVector(getTypeType()->getPointerTo(),
+                                              llvm::Type::getInt32Ty(context()),
+                                              llvm::Type::getInt8PtrTy(context())),
+                            !K(isPacked))->getPointerTo();
+
+    module()->addTypeName(typeName, methodType);
+  }
+
+  return methodType;
 }
 
 
