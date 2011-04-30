@@ -204,16 +204,23 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
     return NULL;
 
   // the function pointer in the Method* structure is the third member
-  llvm::Value* realFuncPtr = fBuilder.CreateLoad(fBuilder.CreateStructGEP(method, 2, "method"));
+  llvm::Value* realFuncPtr = fBuilder.CreateLoad(fBuilder.CreateStructGEP(method,
+                                                                          2,
+                                                                          "method"));
 
   for (size_t i = 0; i < realFuncArgv.size(); i++)
     realFuncArgv[i] = fBuilder.CreateLoad(realFuncArgv[i]);
 
   // insert the return value into the argument list
-  realFuncArgv.insert(realFuncArgv.begin(), func.fFunc->arg_begin());
+  llvm::AllocaInst *retv = createEntryBlockAlloca(func.fFunc, String("retv"),
+                                                  fTypes.getAtomType());
+  realFuncArgv.insert(realFuncArgv.begin(), retv); //func.fFunc->arg_begin());
 
   llvm::Value* f = fBuilder.CreateBitCast(realFuncPtr, func.fType->getPointerTo());
   fBuilder.CreateCall(f, realFuncArgv.begin(), realFuncArgv.end());
+
+  // no wrap-load!
+  assignAtom(retv, func.fFunc->arg_begin());
 
   fBuilder.CreateRetVoid();
 
