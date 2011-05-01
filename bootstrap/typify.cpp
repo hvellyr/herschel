@@ -87,6 +87,23 @@ Typifier::typifyNodeList(NodeList& nl)
 
 //------------------------------------------------------------------------------
 
+bool
+Typifier::isNodeCallToGenericFunction(const AptNode* node) const
+{
+  if (const ApplyNode* applyNode = dynamic_cast<const ApplyNode*>(node)) {
+    if (applyNode->isSimpleCall()) {
+      const FunctionNode* funcNode = (
+        dynamic_cast<const FunctionNode*>(applyNode->scope()
+                                          ->lookupFunction(applyNode->simpleCallName(),
+                                                           K(showAmbiguousSymDef))) );
+      if (funcNode != NULL)
+        return funcNode->hasSpecializedParams();
+    }
+  }
+  return false;
+}
+
+
 void
 Typifier::annotateTypeConv(AptNode* node, const Type& dstType)
 {
@@ -96,9 +113,18 @@ Typifier::annotateTypeConv(AptNode* node, const Type& dstType)
     atom  <- atom      ok
     atom  <- any       type_check
     atom  <- plain     wrap_atom
+
+    as a special check: if node is a function call to a generic function, it
+    always has ATOM return representation, even if the type is plain.
    */
+  bool isCallToGF = isNodeCallToGenericFunction(node);
+
   if (dstType.isPlainType()) {
-    if (node->type().isPlainType()) {
+    if (isCallToGF) {
+      // req. atom_2_x
+      node->setTypeConv(kAtom2PlainConv);
+    }
+    else if (node->type().isPlainType()) {
       // ok.  TODO: maybe some bitcast between int/short/long, etc.
     }
     else {
@@ -107,7 +133,11 @@ Typifier::annotateTypeConv(AptNode* node, const Type& dstType)
     }
   }
   else {
-    if (node->type().isPlainType()) {
+    if (isCallToGF) {
+      // requires type_check
+      node->setTypeConv(kTypeCheckConv);
+    }
+    else if (node->type().isPlainType()) {
       // req. wrap_atom
       node->setTypeConv(kPlain2AtomConv);
     }
@@ -132,7 +162,13 @@ Typifier::enforceAtomTypeConv(AptNode* node, const Type& dstType)
     atom  <- any       type_check
     atom  <- plain     wrap_atom
    */
-  if (node->type().isPlainType()) {
+  bool isCallToGF = isNodeCallToGenericFunction(node);
+
+  if (isCallToGF) {
+    // requires type_check
+    node->setTypeConv(kTypeCheckConv);
+  }
+  else if (node->type().isPlainType()) {
     // req. wrap_atom
     node->setTypeConv(kPlain2AtomConv);
   }
@@ -259,8 +295,10 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
            (const char*)StrHelper(typenm),
            errdesc);
     node->setType(Type::newAny());
-    if (node->initExpr() != NULL)
+    if (node->initExpr() != NULL) {
       node->initExpr()->setDstType(Type::newAny());
+      annotateTypeConv(node->initExpr(), node->type());
+    }
   }
   else {
     hr_assert(bindty.isDef());
@@ -275,6 +313,7 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
         // infer the vardef type from the init expression
         node->setType(node->initExpr()->type());
         node->initExpr()->setDstType(node->initExpr()->type());
+        annotateTypeConv(node->initExpr(), node->type());
       }
       else if (!node->initExpr()->type().isDef()) {
         errorf(node->initExpr()->srcpos(), E_TypeMismatch,
@@ -742,7 +781,6 @@ Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos,
 
   if (funcNode->retType().isOpen()) {
     Type retty = funcNode->retType().replaceGenerics(localCtx);
-    // fprintf(stderr, "RETTY: %s\n", (const char*)StrHelper(retty.toString()));
 
     if (retty.isDef())
       return retty;

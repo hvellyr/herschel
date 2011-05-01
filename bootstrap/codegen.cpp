@@ -793,8 +793,9 @@ CodeGenerator::emitPackCode(const Type& dstType, TypeConvKind convKind,
       //return value;
 
     case kTypeCheckConv:
-      fprintf(stderr, "Not implemented yet\n");
-      hr_invalid("not implemented yet");
+      // fprintf(stderr, "Not implemented yet\n");
+      // hr_invalid("not implemented yet");
+      return value;
     }
   }
 
