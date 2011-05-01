@@ -19,10 +19,15 @@ Documentation
 
 Bootstrap compiler
 
-  - review how to make sure that types used by other type registration are
-    registered/alloced first.  What is the order of ctor calls with
-    multiple compile units?
+  - test codegen for multiple specialized parameters (in various tyles:
+    @:@, @@:, @@@, ::@@@, etc.)
 
+  - test codegen and proper method dispatch for more complex type
+    hierarchies.  This is actually tested (somehow at least) in the UT for
+    the runtime, but we should probably have some tests with real generated
+    code...
+
+    - test multiple inheritance
 
   - auto create accessor/modifier functions for slots
 
@@ -32,7 +37,7 @@ Bootstrap compiler
 
   - review some kind of auto-number coercion?
 
-  - 'T are treated as Any inside of function bodie for direct comparison
+  - 'T are treated as Any inside of function body for direct comparison
     and need type-check boundaries at runtime.  The type checker must make
     sure that a 'T is only assigned to 'T and not 'K or 'V.
 
@@ -50,7 +55,7 @@ Bootstrap compiler
 
 
   - do an error counter and stop after xxx errors.  Generally don't go into
-    real compilation, when we found (severe) errors.  LLVM crashes to easily.
+    real compilation, when we found (severe) errors.  LLVM crashes too easily.
 
   - constraints
 
