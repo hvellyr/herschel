@@ -755,9 +755,12 @@ ModuleRuntimeInitializer::makeGenericFuncAllocCall(const FuncDefNode* node) cons
   }
 
   std::vector<llvm::Value*> argv;
-  argv.push_back(builder().CreateGlobalStringPtr(StrHelper(funcName), llvm::Twine("funname")));
+  argv.push_back(builder().CreateGlobalStringPtr(StrHelper(funcName),
+                                                 llvm::Twine("funname")));
   argv.push_back(llvm::ConstantInt::get(context(),
-                                        llvm::APInt(32, node->specializedArgsCount(), true)));
+                                        llvm::APInt(32,
+                                                    node->specializedParamsCount(),
+                                                    true)));
 
   return builder().CreateCall(allocFunc, argv.begin(), argv.end(), "call_gf_alloc");
 }
@@ -800,7 +803,7 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
   // had the name of the method in the list of methods to register.
   hr_assert(method != NULL);
 
-  size_t countOfSpecs = impl.fNode->specializedArgsCount();
+  size_t countOfSpecs = impl.fNode->specializedParamsCount();
 
   std::vector<llvm::Value*> argv;
   argv.push_back(gfFuncCall);

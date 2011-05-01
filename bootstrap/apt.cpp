@@ -1881,6 +1881,33 @@ FunctionNode::setBody(AptNode* node)
 }
 
 
+size_t
+FunctionNode::specializedParamsCount() const
+{
+  size_t specArgCount = 0;
+
+  for (NodeList::const_iterator it = params().begin(), e = params().end();
+       it != e;
+       it++)
+  {
+    if (const ParamNode* prm = dynamic_cast<const ParamNode*>(it->obj())) {
+      if (prm->isSpecArg())
+        specArgCount++;
+    }
+  }
+
+  return specArgCount;
+}
+
+
+bool
+FunctionNode::hasSpecializedParams() const
+{
+  return specializedParamsCount() > 0;
+}
+
+
+
 DEF_RENDER(FunctionNode)
 DEF_CODEGEN(FunctionNode)
 DEF_ANNOTATE(FunctionNode)
@@ -1946,25 +1973,6 @@ bool
 FuncDefNode::isAppMain() const
 {
   return name() == String("app|main");
-}
-
-
-size_t
-FuncDefNode::specializedArgsCount() const
-{
-  size_t specArgCount = 0;
-
-  for (NodeList::const_iterator it = params().begin(), e = params().end();
-       it != e;
-       it++)
-  {
-    if (const ParamNode* prm = dynamic_cast<const ParamNode*>(it->obj())) {
-      if (prm->isSpecArg())
-        specArgCount++;
-    }
-  }
-
-  return specArgCount;
 }
 
 
