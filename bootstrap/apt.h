@@ -1111,6 +1111,9 @@ namespace herschel
     const NodeList& params() const;
     NodeList& params();
 
+    size_t specializedParamsCount() const;
+    bool hasSpecializedParams() const;
+
   protected:
     Type         fRetType;
     Ptr<AptNode> fBody;
@@ -1150,7 +1153,6 @@ namespace herschel
     virtual void typify(Typifier* typifier);
 
     bool isAppMain() const;
-    size_t specializedArgsCount() const;
 
   private:
     String       fSym;
