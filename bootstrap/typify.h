@@ -160,6 +160,7 @@ namespace herschel
     void annotateTypeConv(AptNode* toNode, const Type& type);
     void enforceAtomTypeConv(AptNode* node, const Type& dstType);
     void setBodyLastDstType(AptNode* body, const Type& dstType);
+    bool isNodeCallToGenericFunction(const AptNode* node) const;
 
     //! Typify \p node
     void typifyNode(AptNode* node);
