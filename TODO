@@ -19,15 +19,10 @@ Documentation
 
 Bootstrap compiler
 
-  - test codegen for multiple specialized parameters (in various tyles:
-    @:@, @@:, @@@, ::@@@, etc.)
+  - test multiple inheritance
 
-  - test codegen and proper method dispatch for more complex type
-    hierarchies.  This is actually tested (somehow at least) in the UT for
-    the runtime, but we should probably have some tests with real generated
-    code...
-
-    - test multiple inheritance
+  - review possibilities for warnings about ambiguous multiple method
+    dispatch.
 
   - auto create accessor/modifier functions for slots
 
