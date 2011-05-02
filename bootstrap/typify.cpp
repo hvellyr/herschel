@@ -119,6 +119,14 @@ Typifier::annotateTypeConv(AptNode* node, const Type& dstType)
    */
   bool isCallToGF = isNodeCallToGenericFunction(node);
 
+  // this is a last resort stop hack, if either the node has not a valid type
+  // or the dstType is not valid.  This may happen if we had parsing or typify
+  // errors before.
+  if (!node->type().isDef() || !dstType.isDef()) {
+    node->setTypeConv(kTypeCheckConv);
+    return;
+  }
+
   if (dstType.isPlainType()) {
     if (isCallToGF) {
       // req. atom_2_x
