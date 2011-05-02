@@ -22,5 +22,8 @@ struct List
 
 List* list_insert(List* l, void* value);
 List* list_append(List* l, void* value);
+List* list_insert_before(List* l, void *ref, void *obj);
+
+size_t list_items(List* l);
 
 #endif  /* runtime_insert_h */

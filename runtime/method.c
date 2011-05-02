@@ -65,18 +65,18 @@ print_method(const char* funname, Method* m)
 }
 
 
-/* static void */
-/* print_generic_func(GenericFunction* gf) */
-/* { */
-/*   List *l = gf->methods; */
-/*   fprintf(stderr, "------------------------------------------\n"); */
-/*   while (l) { */
-/*     fprintf(stderr, "  "); */
-/*     print_method(gf->name, (Method*)l->fValue); */
-/*     fprintf(stderr, "\n"); */
-/*     l = l->fTail; */
-/*   } */
-/* } */
+void
+print_generic_func(GenericFunction* gf)
+{
+  List *l = gf->methods;
+  fprintf(stderr, "-- %ld ----------------------------------------\n", list_items(l));
+  while (l) {
+    fprintf(stderr, "  ");
+    print_method(gf->name, (Method*)l->fValue);
+    fprintf(stderr, "\n");
+    l = l->fTail;
+  }
+}
 
 
 void
@@ -149,9 +149,11 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
   }
 
   if (insert_before)
-    gf->methods = list_insert(insert_before, m);
+    gf->methods = list_insert_before(gf->methods, insert_before->fValue, m);
   else
     gf->methods = list_append(gf->methods, m);
+
+  /* print_generic_func(gf); */
 }
 
 

@@ -38,3 +38,49 @@ list_append(List* l, void* value)
 
   return nl;
 }
+
+
+List*
+list_insert_before(List* l, void *ref, void *obj)
+{
+  List* root = l;
+
+  if (l) {
+    List* p = l;
+    List* last = NULL;
+
+    while (p != NULL) {
+      if (p->fValue == ref) {
+        List* nl = malloc(sizeof(List));
+        nl->fValue = obj;
+        nl->fTail = p;
+
+        if (last)
+          last->fTail = nl;
+        else
+          root = nl;
+
+        return root;
+      }
+
+      last = p;
+      p = p->fTail;
+    }
+  }
+
+  return root;
+}
+
+
+size_t
+list_items(List* l)
+{
+  size_t count = 0;
+  List* p = l;
+
+  while (p != NULL) {
+    count++;
+    p = p->fTail;
+  }
+  return count;
+}
