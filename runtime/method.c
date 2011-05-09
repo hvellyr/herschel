@@ -157,6 +157,13 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
 }
 
 
+static void
+no_such_method_cb(ATOM* retv, ...)
+{
+  fprintf(stderr, "No such method. Abort\n");
+  exit(1);
+}
+
 
 Method*
 lookup_func1(GenericFunction* gf, TagId ty0_id)
@@ -175,7 +182,17 @@ lookup_func1(GenericFunction* gf, TagId ty0_id)
     l = l->fTail;
   }
 
-  return NULL;
+#if defined(UNITTESTS)
+  hr_trace("lookup", "lookup_func1: no method found for %s in %s",
+           ty0->name, gf->name);
+#endif
+
+  static Method no_such_method;
+  no_such_method.args = NULL;
+  no_such_method.argc = 1;
+  no_such_method.func = &no_such_method_cb;
+
+  return &no_such_method;
 }
 
 
@@ -198,7 +215,17 @@ lookup_func2(GenericFunction* gf, TagId ty0_id, TagId ty1_id)
     l = l->fTail;
   }
 
-  return NULL;
+#if defined(UNITTESTS)
+  hr_trace("lookup", "lookup_func2: no method found for (%s, %s) in %s",
+           ty0->name, ty1->name, gf->name);
+#endif
+
+  static Method no_such_method;
+  no_such_method.args = NULL;
+  no_such_method.argc = 2;
+  no_such_method.func = &no_such_method_cb;
+
+  return &no_such_method;
 }
 
 
@@ -224,5 +251,15 @@ lookup_func3(GenericFunction* gf, TagId ty0_id, TagId ty1_id, TagId ty2_id)
     l = l->fTail;
   }
 
-  return NULL;
+#if defined(UNITTESTS)
+  hr_trace("lookup", "lookup_func3: no method found for (%s, %s, %s) in %s",
+           ty0->name, ty1->name, ty2->name, gf->name);
+#endif
+
+  static Method no_such_method;
+  no_such_method.args = NULL;
+  no_such_method.argc = 3;
+  no_such_method.func = &no_such_method_cb;
+
+  return &no_such_method;
 }
