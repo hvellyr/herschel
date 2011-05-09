@@ -24,10 +24,11 @@ namespace llvm
   class AllocaInst;
   class BasicBlock;
   class Function;
-  class FunctionType;
   class FunctionPassManager;
+  class FunctionType;
   class LLVMContext;
   class Module;
+  class TargetData;
   class Value;
   // class DIBuilder;
 };
@@ -66,13 +67,13 @@ namespace herschel
   class SlotdefNode;
   class StringNode;
   class SymbolNode;
+  class Type;
   class TypeDefNode;
   class TypeNode;
-  class Type;
+  class UndefNode;
   class UnitConstNode;
   class VardefNode;
   class VectorNode;
-  class UndefNode;
   class WhileNode;
 
   class CodegenTypeUtils;
@@ -250,9 +251,14 @@ namespace herschel
     llvm::Module* module() const;
     llvm::FunctionPassManager* optPassManager() const;
 
+    bool is64Bit() const;
+    llvm::TargetData* targetData() const;
+
   private:
     friend class ModuleRuntimeInitializer;
     friend class CodegenTypeUtils;
+
+    void setupOptPassManager();
 
     llvm::Value* codegen(const FuncDefNode* node, bool isLocal);
     llvm::Value* codegen(const VardefNode* node, bool isLocal);
@@ -351,6 +357,7 @@ namespace herschel
     // llvm::DIBuilder*  fDIBuilder;
     llvm::IRBuilder<> fBuilder;
     llvm::FunctionPassManager* fOptPassManager;
+    llvm::TargetData*          fTargetData;
 
     ModuleRuntimeInitializer fInitializer;
     CodegenTypeUtils fTypes;

@@ -22,7 +22,6 @@
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
-#include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/PassManager.h"
 #include "llvm/Support/IRBuilder.h"
 #include "llvm/Target/TargetData.h"
