@@ -161,7 +161,9 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
     // TODO ende name
     llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func.fFunc, param->name(),
                                                          fTypes.getType(param->type()));
-    fBuilder.CreateStore(aiter, stackSlot);
+    llvm::Value* tmpValue = emitPackCode(param->dstType(), param->typeConv(),
+                                         aiter, param->type());
+    fBuilder.CreateStore(tmpValue, stackSlot);
 
     realFuncArgv.push_back(stackSlot);
 
@@ -186,7 +188,7 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
     sign.push_back(fTypes.getGenericFuncType());
     // add a list of tagid arguments
     for (size_t i = 0; i < specArgCount; i++)
-      sign.push_back(llvm::Type::getInt32Ty(context()));
+      sign.push_back(fTypes.getTagIdType());
 
     llvm::FunctionType *ft = llvm::FunctionType::get(fTypes.getMethodType(),
                                                      sign,
@@ -218,7 +220,7 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
   llvm::Value* f = fBuilder.CreateBitCast(realFuncPtr, func.fType->getPointerTo());
   fBuilder.CreateCall(f, realFuncArgv.begin(), realFuncArgv.end());
 
-  // no wrap-load!
+  // no wrap-load!  The generic function always returns as ATOM.
   assignAtom(retv, func.fFunc->arg_begin());
 
   fBuilder.CreateRetVoid();
@@ -258,9 +260,9 @@ CodeGenerator::compileMethodDef(const FuncDefNode* node)
   String methodNameSuffix = msgbuf.toString();
   fInitializer.addMethodDef(node, makeFunctionName(node, methodNameSuffix));
 
-  FuncPair func = createFunction(node, methodNameSuffix, !K(isGeneric));
+  FuncPair func = createFunction(node, methodNameSuffix, K(isGeneric));
 
-  return compileNormalFuncDefImpl(func, node, !K(isLocal));
+  return compileNormalFuncDefImpl(func, node, !K(isLocal), K(atomRetType));
 }
 
 
@@ -283,14 +285,15 @@ CodeGenerator::compileNormalFuncDef(const FuncDefNode* node, bool isLocal)
   hr_assert(fNamedValues.empty());
 
   FuncPair func = createFunction(node, String(), !K(isGeneric));
-  return compileNormalFuncDefImpl(func, node, isLocal);
+  return compileNormalFuncDefImpl(func, node, isLocal, !K(atomRetType));
 }
 
 
 llvm::Value*
 CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
                                         const FuncDefNode* node,
-                                        bool isLocal)
+                                        bool isLocal,
+                                        bool forceAtomReturnType)
 {
   hr_assert(!node->isAbstract());
 
@@ -309,12 +312,11 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
          pidx++, ++aiter)
     {
       const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
-
-      // TODO: enforce ATOM types for spec args and returnvalue in generic functions
-      // TODO ende name
       llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func.fFunc, param->name(),
                                                            fTypes.getType(param->type()));
-      fBuilder.CreateStore(aiter, stackSlot);
+      llvm::Value* tmpValue = emitPackCode(param->dstType(), param->typeConv(),
+                                           aiter, param->type());
+      fBuilder.CreateStore(tmpValue, stackSlot);
 
       fNamedValues[param->name()] = stackSlot;
     }
@@ -333,6 +335,7 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
 
     if (!node->hasCLinkage()) {
       if (node->isAppMain()) {
+        hr_assert(!node->isMethod());
         // the app|main function always returns lang|Int32
         if (node->body()->type().isPlainType()) {
           fBuilder.CreateStore(fBuilder.CreateIntCast(wrapLoad(retv),
@@ -345,6 +348,19 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
                                                                Type::newTypeRef("clang|int"));
           fBuilder.CreateStore(convertedRetv, func.fFunc->arg_begin());
         }
+      }
+      else if (forceAtomReturnType) {
+        if (node->body()->type().isPlainType()) {
+          llvm::Value* tmpValue = emitPackCode(node->body()->dstType(),
+                                               node->body()->typeConv(),
+                                               wrapLoad(retv),
+                                               node->body()->type());
+          // mmh.  Don't know why a createstore does work here.  But it does ...?
+          fBuilder.CreateStore(tmpValue, func.fFunc->arg_begin());
+          //assignAtom(tmpValue, func.fFunc->arg_begin());
+        }
+        else
+          assignAtom(retv, func.fFunc->arg_begin());
       }
       else if (func.fRetType.isPlainType()) {
         fBuilder.CreateStore(wrapLoad(retv), func.fFunc->arg_begin());

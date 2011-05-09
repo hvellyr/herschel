@@ -180,6 +180,7 @@ namespace herschel
     CodegenTypeUtils(CodeGenerator* generator);
 
     const llvm::Type* getAtomType() const;
+    const llvm::Type* getTagIdType() const;
     const llvm::Type* getTypeType() const;
     const llvm::Type* getTypeSlotPairType() const;
     const llvm::Type* getGenericFuncType() const;
@@ -281,9 +282,10 @@ namespace herschel
     llvm::Value* makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType);
 
     enum Typeid {
-      kAtomInt  = 0,
-      kAtomBool = 1,
-      kAtomChar = 2,
+      //kAtomAny    = 'A',
+      kAtomBool   = 'b',
+      kAtomInt32  = 'i',
+      kAtomChar   = 'c'
     };
 
     void setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value);
@@ -298,8 +300,8 @@ namespace herschel
 
     llvm::Value* wrapLoad(llvm::Value* val);
 
-    llvm::Value* makeIntAtom(int val);
-    llvm::Value* makeIntAtom(llvm::Value* val);
+    llvm::Value* makeInt32Atom(int val);
+    llvm::Value* makeIntAtom(llvm::Value* val, Typeid atomTypeId);
     llvm::Value* makeBoolAtom(llvm::Value* val);
     llvm::Value* makeBoolAtom(bool val);
 
@@ -322,7 +324,9 @@ namespace herschel
                             const String& methodNameSuffix,
                             bool isGeneric);
     llvm::Value* compileNormalFuncDefImpl(const FuncPair& func,
-                                          const FuncDefNode* node, bool isLocal);
+                                          const FuncDefNode* node,
+                                          bool isLocal,
+                                          bool forceAtomReturnType);
 
     //------------------------------ emit operators
 
@@ -352,15 +356,15 @@ namespace herschel
 
     //-------- data members
 
-    llvm::LLVMContext& fContext;
-    llvm::Module*     fModule;
-    // llvm::DIBuilder*  fDIBuilder;
-    llvm::IRBuilder<> fBuilder;
+    llvm::LLVMContext&         fContext;
+    llvm::Module*              fModule;
+    // llvm::DIBuilder*        fDIBuilder;
+    llvm::IRBuilder<>          fBuilder;
     llvm::FunctionPassManager* fOptPassManager;
     llvm::TargetData*          fTargetData;
 
-    ModuleRuntimeInitializer fInitializer;
-    CodegenTypeUtils fTypes;
+    ModuleRuntimeInitializer   fInitializer;
+    CodegenTypeUtils           fTypes;
 
     bool fHasMainFunc;
 

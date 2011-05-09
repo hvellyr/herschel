@@ -54,7 +54,12 @@ CodeGenerator::wrapInt(llvm::Value* value, const Type& type)
     return coerceIntOperand(type, type, value);
 
   hr_assert(type.isAnyInt());
-  return makeIntAtom(value);
+  if (type.isInt32())
+    return makeIntAtom(value, kAtomInt32);
+
+  hr_invalid("TODO unhandled int type");
+
+  return NULL;
 }
 
 

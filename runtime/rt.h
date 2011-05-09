@@ -17,9 +17,9 @@
 typedef struct ATOM ATOM;
 struct ATOM
 {
-  int typeid;
+  long typeid;
   union {
-    int   v_int;
+    long  v_int;
     float v_float;
     void* v_obj;                /* an heap allocated object */
   } u;

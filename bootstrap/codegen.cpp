@@ -591,22 +591,22 @@ CodeGenerator::codegen(const KeywordNode* node)
 
 
 llvm::Value*
-CodeGenerator::makeIntAtom(int val)
+CodeGenerator::makeInt32Atom(int val)
 {
   return makeIntAtom(llvm::ConstantInt::get(context(),
-                                            llvm::APInt(32, val, true)));
+                                            llvm::APInt(32, val, true)),
+                     kAtomInt32);
 }
 
 
 llvm::Value*
-CodeGenerator::makeIntAtom(llvm::Value* val)
+CodeGenerator::makeIntAtom(llvm::Value* val, Typeid atomTypeId)
 {
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
   llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("int"),
                                                   fTypes.getAtomType());
 
-  // set typeid
-  setAtom(atom, kAtomInt, val);
+  setAtom(atom, atomTypeId, val);
 
   return atom;
 }
@@ -773,7 +773,7 @@ getConvFuncNameByType(const Type& type)
   if (type.typeName() == String("clang|int")) // TODO
     return "atom_2_int32";
 
-  hr_invalid("unhandled type");
+  hr_invalid((const char*)StrHelper(String("unhandled type: ") + type.typeId()));
   return NULL;
 }
 
@@ -823,9 +823,10 @@ CodeGenerator::emitPackCode(const Type& dstType, TypeConvKind convKind,
       return makeTypeCastAtomToPlain(value, dstType);
     case kPlain2AtomConv:
       if (valType.typeName() == String("lang|Int32"))
-        return wrapLoad(makeIntAtom(value));
+        return wrapLoad(makeIntAtom(value, kAtomInt32));
       else if (valType.typeName() == String("lang|Bool"))
         return wrapLoad(makeBoolAtom(value));
+      // TODO
       //return value;
 
     case kTypeCheckConv:
@@ -923,7 +924,7 @@ CodeGenerator::codegen(const ApplyNode* node)
                                                "xxx");
     if (node->isInTailPos()) {
       // TODO: return type id
-      setAtom(retv, kAtomInt, funcVal);
+      setAtom(retv, kAtomInt32, funcVal);
       return retv;
     }
     else
@@ -1223,20 +1224,37 @@ CodeGenerator::getMemCpyFn(const llvm::Type* dstType,
 void
 CodeGenerator::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
 {
-  llvm::Value* typidSlot = fBuilder.CreateStructGEP(atom, 0);
-  fBuilder.CreateStore(llvm::ConstantInt::get(context(),
-                                              llvm::APInt(32, (int)typid, true)),
-                       typidSlot);
-
   llvm::Value* payload = fBuilder.CreateStructGEP(atom, 1);
   llvm::Value* slot = fBuilder.CreateStructGEP(payload, 0);
 
   if (typid == kAtomBool) {
     const llvm::Type *dstBasePtr = llvm::Type::getInt1PtrTy(context());
     slot = fBuilder.CreateBitCast(slot, dstBasePtr, "tmp");
+    fBuilder.CreateStore(value, slot);
   }
+  else if (typid == kAtomInt32) {
+    llvm::Value* val = ( is64Bit()
+                         ? fBuilder.CreateIntCast(value,
+                                                  llvm::Type::getInt64Ty(context()),
+                                                  K(isSigned),
+                                                  "tmp")
+                         : value );
+    fBuilder.CreateStore(val, slot);
+  }
+  else
+    fBuilder.CreateStore(value, slot);
 
-  fBuilder.CreateStore(value, slot);
+
+  llvm::Value* typidSlot = fBuilder.CreateStructGEP(atom, 0);
+  llvm::Value* typeIdValue = NULL;
+  if (is64Bit())
+    typeIdValue =llvm::ConstantInt::get(context(),
+                                        llvm::APInt(64, (int)typid, !K(isSigned)));
+  else
+    typeIdValue =llvm::ConstantInt::get(context(),
+                                        llvm::APInt(32, (int)typid, !K(isSigned)));
+
+  fBuilder.CreateStore(typeIdValue, typidSlot);
 }
 
 
@@ -1244,20 +1262,22 @@ void
 CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
 {
   const llvm::Type* dstBasePtr = llvm::Type::getInt8PtrTy(context());
-  llvm::Value* dst2 = fBuilder.CreateBitCast(dst, dstBasePtr, "tmp");
+  llvm::Value* dst2 = fBuilder.CreateBitCast(dst, dstBasePtr, "dst_tmp");
 
   const llvm::Type *srcBasePtr = llvm::Type::getInt8PtrTy(context());
-  llvm::Value* src2 = fBuilder.CreateBitCast(src, srcBasePtr, "tmp");
+  llvm::Value* src2 = fBuilder.CreateBitCast(src, srcBasePtr, "src_tmp");
 
   std::vector<llvm::Value*> argv;
   argv.push_back(dst2);
   argv.push_back(src2);
   // number
   argv.push_back(llvm::ConstantInt::get(context(),
-                                        llvm::APInt(32, 8, true)));
+                                        llvm::APInt(32, layout->getSizeInBytes(),
+                                                    K(isSigned))));
   // align
   argv.push_back(llvm::ConstantInt::get(context(),
-                                        llvm::APInt(32, 4, true)));
+                                        llvm::APInt(32, layout->getAlignment(),
+                                                    K(isSigned))));
   // is volatile
   argv.push_back(llvm::ConstantInt::getFalse(context()));
 

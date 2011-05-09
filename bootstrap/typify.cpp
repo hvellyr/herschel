@@ -511,7 +511,10 @@ Typifier::typify(FuncDefNode* node)
     }
 
     if (node->body() != NULL) {
-      annotateTypeConv(node->body(), node->retType());
+      if (node->isMethod())
+        enforceAtomTypeConv(node->body(), node->retType());
+      else
+        annotateTypeConv(node->body(), node->retType());
       setBodyLastDstType(node->body(), node->retType());
     }
   }
@@ -624,6 +627,18 @@ Typifier::typify(ParamNode* node)
 
   if (fPhase == kTypify) {
     setupBindingNodeType(node, "parameter");
+
+    if (node->type().isDef()) {
+      if (node->isSpecArg()) {
+        if (node->type().isPlainType())
+          node->setTypeConv(kAtom2PlainConv);
+        else if (node->type().isAny())
+          node->setTypeConv(kTypeCheckConv);
+        // else
+        //   ; //OK
+      }
+      node->setDstType(node->type());
+    }
   }
 }
 

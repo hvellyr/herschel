@@ -109,18 +109,22 @@ CodegenTypeUtils::getAtomType() const
   const llvm::Type* atomType = module()->getTypeByName(typeName);
   if (atomType == NULL) {
     const llvm::Type* payloadType = NULL;
-    if (module()->getPointerSize() == llvm::Module::Pointer64)
+    const llvm::Type* tagType = NULL;
+
+    if (fGenerator->is64Bit()) {
       payloadType = llvm::Type::getInt64Ty(context());
-    else
+      tagType = llvm::Type::getInt64Ty(context());
+    }
+    else {
       payloadType = llvm::Type::getInt32Ty(context());
+      tagType = llvm::Type::getInt32Ty(context());
+    }
 
     const llvm::StructType* payloadStruct =
       llvm::StructType::get(context(), newLlvmTypeVector(payloadType), false);
+
     atomType =
-      llvm::StructType::get(context(),
-                            // TODO: shouldn't the tag id be 64bit ?
-                            newLlvmTypeVector(llvm::Type::getInt32Ty(context()),
-                                              payloadStruct),
+      llvm::StructType::get(context(), newLlvmTypeVector(tagType, payloadStruct),
                             false);
     module()->addTypeName(llvm::StringRef("union.AtomPayload"), payloadStruct);
     module()->addTypeName(typeName, atomType);
@@ -129,6 +133,15 @@ CodegenTypeUtils::getAtomType() const
   return atomType;
 }
 
+
+const llvm::Type*
+CodegenTypeUtils::getTagIdType() const
+{
+  if (fGenerator->is64Bit())
+    return llvm::Type::getInt64Ty(context());
+  else
+    return llvm::Type::getInt32Ty(context());
+}
 
 const llvm::Type*
 CodegenTypeUtils::getTypeType() const
