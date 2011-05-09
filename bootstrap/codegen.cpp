@@ -1271,6 +1271,11 @@ CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
   argv.push_back(dst2);
   argv.push_back(src2);
   // number
+
+
+  const llvm::StructLayout* layout = fTargetData
+    ->getStructLayout((const llvm::StructType*)fTypes.getAtomType());
+
   argv.push_back(llvm::ConstantInt::get(context(),
                                         llvm::APInt(32, layout->getSizeInBytes(),
                                                     K(isSigned))));
