@@ -32,7 +32,7 @@ Lazy evaluation
                   let msg = nil
 
                   function() : String {
-                    if (msg.nil?) 
+                    if (msg.nil?)
                       msg = StringBuffer().append("error ")
                                           .append(exc.to-string)
                                           .append("(").append(exc.details).append(")")
@@ -109,9 +109,22 @@ Function contracts
       Date(date.day + day, date.hour)
 
   The "on assert" statement is automatically called as last command from
-  the class constructor, i.e. even after an "on init" statement.  
+  the class constructor, i.e. even after an "on init" statement.
 
   Pre and post conditions are normally not compiled in release versions.
+
+
+
+Better slot properties
+----------------------
+
+  Current syntax:
+
+    def slot name = "N.N." ; auto
+
+  Better syntax:
+
+    def slot(auto) name = "N.N."
 
 
 Used character of Ascii
