@@ -18,7 +18,7 @@
 
 static HashTable* types_name_to_type_map = NULL; /* hash<char*, Type*> */
 /*static HashTable* types_tag_to_type_map = NULL;*/  /* hash<int, Type*> */
-static int type_tag_id_counter = 0;
+static int type_tag_id_counter = 127;
 
 static Type** types_tag_vector = NULL;
 static size_t types_tag_size = 0;
@@ -30,17 +30,33 @@ type_init()
   types_name_to_type_map = hashtable_alloc(27);
   /* types_tag_to_type_map = hashtable_alloc(27); */
 
-  types_tag_size = 128;
+  types_tag_size = 256;
   types_tag_vector = malloc(types_tag_size * sizeof(Type*));
   memset(types_tag_vector, 0, types_tag_size * sizeof(Type*));
+}
+
+
+int
+tag_id_for_type(const Type* type)
+{
+  if (strcmp(type->name, "__QN4lang5Int32") == 0)
+    return (int)'i';
+  else if (strcmp(type->name, "__QN4lang4Bool") == 0)
+    return (int)'b';
+  else if (strcmp(type->name, "__QN4lang4Char") == 0)
+    return (int)'c';
+  else if (strcmp(type->name, "__QN4lang3Any") == 0)
+    return (int)'A';
+
+  type_tag_id_counter++;
+  return type_tag_id_counter;
 }
 
 
 void
 register_type(Type* type)
 {
-  type_tag_id_counter++;
-  type->tag_id = type_tag_id_counter;
+  type->tag_id = tag_id_for_type(type);
 
   if (hashtable_get(types_name_to_type_map, (void*)type->name) != NULL)
   {
@@ -181,8 +197,10 @@ type_isa(Type* one, Type* two)
   if (one == two)
     return 1;
 
-  if (one->isa_set != NULL)
+  if (one->isa_set != NULL) {
+    /* fprintf(stderr, "Lookup %s in %s\n", one->name, two->name); */
     return hashtable_get(one->isa_set, two) != NULL;
+  }
 
   return 0;
 }
