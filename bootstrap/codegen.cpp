@@ -20,10 +20,8 @@
 
 #include "llvm/Analysis/Verifier.h"
 #include "llvm/DerivedTypes.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/LLVMContext.h"
 #include "llvm/Module.h"
-#include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/PassManager.h"
 #include "llvm/Support/IRBuilder.h"
 #include "llvm/Target/TargetData.h"
@@ -32,9 +30,11 @@
 #include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/System/Host.h"
 #include "llvm/GlobalVariable.h"
 #include "llvm/DerivedTypes.h"
 #include "llvm/Intrinsics.h"
+#include "llvm/Target/TargetRegistry.h"
 //#include "llvm/DIBuilder.h"
 
 using namespace herschel;
@@ -48,64 +48,86 @@ CodeGenerator::CodeGenerator()
     // fDIBuilder(NULL),
     fBuilder(context()),
     fOptPassManager(NULL),
+    fTargetData(NULL),
     fInitializer(this),
     fTypes(this),
     fHasMainFunc(false)
 {
   llvm::InitializeNativeTarget();
 
-  static llvm::ExecutionEngine *theExecutionEngine = NULL;
-
   fModule = new llvm::Module("compile-unit", fContext);
+  fModule->setTargetTriple(llvm::sys::getHostTriple());
 
-  // Create the JIT.  This takes ownership of the module.
-  std::string errStr;
-  theExecutionEngine = llvm::EngineBuilder(fModule).setErrorStr(&errStr)
-                                                   .setEngineKind(llvm::EngineKind::JIT)
-                                                   .create();
-  if (!theExecutionEngine) {
-    logf(kError, "Could not create ExecutionEngine: %s", errStr.c_str());
+  std::string error;
+  const llvm::Target* target =
+    llvm::TargetRegistry::lookupTarget(fModule->getTargetTriple(), error);
+  if (target == NULL) {
+    logf(kError, "Compile setup failure: %s", error.c_str());
     exit(1);
   }
+
+  fTargetData = new llvm::TargetData(fModule);
+
+  // logf(kInfo, "Host triple: %s", fModule->getTargetTriple().c_str());
+  // logf(kInfo, "PointerSize: %d", fTargetData->getPointerSize());
+
   fOptPassManager = new llvm::FunctionPassManager(fModule);
 
-  // Set up the optimizer pipeline.  Start with registering info about how the
-  // target lays out data structures.
-  fOptPassManager->add(new llvm::TargetData(*theExecutionEngine->getTargetData()));
-  // Promote allocas to registers.
-  fOptPassManager->add(llvm::createPromoteMemoryToRegisterPass());
+  setupOptPassManager();
+}
 
-  fOptPassManager->add(llvm::createScalarReplAggregatesPass());
-  // fOptPassManager->add(llvm::createGlobalDCEPass());
-  // fOptPassManager->add(llvm::createDeadArgEliminationPass());
 
-  // fOptPassManager->add(llvm::createFunctionInliningPass());
-  // fOptPassManager->add(llvm::createCondPropagationPass());
-  fOptPassManager->add(llvm::createLoopRotatePass());
+void
+CodeGenerator::setupOptPassManager()
+{
+  if (Properties::optimizeLevel() > kOptLevelNone) {
+    // Set up the optimizer pipeline.  Start with registering info about how the
+    // target lays out data structures.
+    fOptPassManager->add(fTargetData);
+    // Promote allocas to registers.
+    fOptPassManager->add(llvm::createPromoteMemoryToRegisterPass());
 
-  fOptPassManager->add(llvm::createLICMPass());                  // Hoist loop invariants
-  fOptPassManager->add(llvm::createLoopUnswitchPass());
-  // fOptPassManager->add(llvm::createLoopIndexSplitPass());        // Split loop index
-  fOptPassManager->add(llvm::createInstructionCombiningPass());
-  fOptPassManager->add(llvm::createIndVarSimplifyPass());        // Canonicalize indvars
-  fOptPassManager->add(llvm::createLoopDeletionPass());          // Delete dead loops
-  fOptPassManager->add(llvm::createLoopUnrollPass());          // Unroll small loops
-  fOptPassManager->add(llvm::createInstructionCombiningPass());  // Clean up after the unroller
-  fOptPassManager->add(llvm::createGVNPass());                   // Remove redundancies
-  fOptPassManager->add(llvm::createMemCpyOptPass());             // Remove memcpy / form memset
-  fOptPassManager->add(llvm::createSCCPPass());                  // Constant prop with SCCP
-  fOptPassManager->add(llvm::createTailCallEliminationPass());
+    fOptPassManager->add(llvm::createScalarReplAggregatesPass());
+    // fOptPassManager->add(llvm::createGlobalDCEPass());
+    // fOptPassManager->add(llvm::createDeadArgEliminationPass());
 
-  // Do simple "peephole" optimizations and bit-twiddling optzns.
-  fOptPassManager->add(llvm::createInstructionCombiningPass());
-  // Reassociate expressions.
-  fOptPassManager->add(llvm::createReassociatePass());
-  // Eliminate Common SubExpressions.
-  fOptPassManager->add(llvm::createGVNPass());
-  // Simplify the control flow graph (deleting unreachable blocks, etc).
-  fOptPassManager->add(llvm::createCFGSimplificationPass());
+    // fOptPassManager->add(llvm::createFunctionInliningPass());
+    // fOptPassManager->add(llvm::createCondPropagationPass());
+    fOptPassManager->add(llvm::createLoopRotatePass());
 
-  fOptPassManager->doInitialization();
+    // Hoist loop invariants
+    fOptPassManager->add(llvm::createLICMPass());
+    fOptPassManager->add(llvm::createLoopUnswitchPass());
+    // Split loop index
+    // fOptPassManager->add(llvm::createLoopIndexSplitPass());
+    fOptPassManager->add(llvm::createInstructionCombiningPass());
+    // Canonicalize indvars
+    fOptPassManager->add(llvm::createIndVarSimplifyPass());
+    // Delete dead loops
+    fOptPassManager->add(llvm::createLoopDeletionPass());
+    // Unroll small loops
+    fOptPassManager->add(llvm::createLoopUnrollPass());
+    // Clean up after the unroller
+    fOptPassManager->add(llvm::createInstructionCombiningPass());
+    // Remove redundancies
+    fOptPassManager->add(llvm::createGVNPass());
+    // Remove memcpy / form memset
+    fOptPassManager->add(llvm::createMemCpyOptPass());
+    // Constant prop with SCCP
+    fOptPassManager->add(llvm::createSCCPPass());
+    fOptPassManager->add(llvm::createTailCallEliminationPass());
+
+    // Do simple "peephole" optimizations and bit-twiddling optzns.
+    fOptPassManager->add(llvm::createInstructionCombiningPass());
+    // Reassociate expressions.
+    fOptPassManager->add(llvm::createReassociatePass());
+    // Eliminate Common SubExpressions.
+    fOptPassManager->add(llvm::createGVNPass());
+    // Simplify the control flow graph (deleting unreachable blocks, etc).
+    fOptPassManager->add(llvm::createCFGSimplificationPass());
+
+    fOptPassManager->doInitialization();
+  }
 }
 
 
@@ -119,6 +141,20 @@ CodeGenerator::~CodeGenerator()
     delete fModule;
     fModule = NULL;
   }
+}
+
+
+bool
+CodeGenerator::is64Bit() const
+{
+  return fTargetData->getPointerSize() == 8;
+}
+
+
+llvm::TargetData*
+CodeGenerator::targetData() const
+{
+  return fTargetData;
 }
 
 
