@@ -1,8 +1,9 @@
-#  This file is part of the herschel package 
+#  This file is part of the herschel package
 #
 #  Copyright (c) 2010-2011 Gregor Klinke
 #  All rights reserved.
 #
+#  This source code is released under the BSD License.
 
 top_srcdir=../../..
 pc_top_srcdir="..\\\\..\\\\.."

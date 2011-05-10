@@ -5,8 +5,10 @@
    Copyright (c) 2010-2011 Gregor Klinke
    All rights reserved.
 
+   This source code is released under the BSD License.
+
    - precompile transformation (simplification, etc.)
- */
+*/
 
 #include "transform.h"
 #include "apt.h"

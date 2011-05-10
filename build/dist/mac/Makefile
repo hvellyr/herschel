@@ -1,8 +1,9 @@
-#  This file is part of the herschel package 
+#  This file is part of the herschel package
 #
 #  Copyright (c) 2010-2011 Gregor Klinke
 #  All rights reserved.
 #
+#  This source code is released under the BSD License.
 
 top_srcdir=../../..
 
@@ -18,7 +19,7 @@ include $(top_srcdir)/build/pre.mk
 all-local: $(MAC_DMG)
 
 clean-local:
-	-rm -rf $(top_srcdir)/build/mac/$(HR_PACKAGE)-$(VERSION)-image 
+	-rm -rf $(top_srcdir)/build/mac/$(HR_PACKAGE)-$(VERSION)-image
 	-rm -rf $(top_srcdir)/build/mac/$(HR_PACKAGE)-$(VERSION)
 
 distclean-local: clean-local
