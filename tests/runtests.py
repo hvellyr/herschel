@@ -1,5 +1,12 @@
 #!/usr/bin/env python2.5
 
+#  This file is part of the herschel package
+#
+#  Copyright (c) 2010-2011 Gregor Klinke
+#  All rights reserved.
+#
+#  This source code is released under the BSD License.
+
 from __future__ import with_statement
 
 from optparse import OptionParser
