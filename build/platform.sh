@@ -18,7 +18,7 @@ case "${UNAME_ARCH}" in
   "Power Macintosh")
     ARCH=ppc
     ;;
-  i386)
+  i386|i486|i586|i686)
     ARCH=i386
     ;;
   x86_64)

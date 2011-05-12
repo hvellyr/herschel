@@ -17,19 +17,25 @@ RANLIB ?= ranlib
 SHELL ?= /bin/sh
 DYLD ?= gcc
 
-PYTHON ?= python2.5
+# where is llvm-config installed?
+LLVM_EXE ?= $(top_srcdir)/external/llvm/bin
+LLVM_CPPFLAGS ?= $(shell $(LLVM_EXE)/llvm-config --cppflags backend bitwriter)
+LLVM_LDFLAGS ?= $(shell $(LLVM_EXE)/llvm-config --ldflags backend bitwriter)
+LLVM_LIBS ?= $(shell $(LLVM_EXE)/llvm-config --libs backend bitwriter)
+
+# python to use.  at least 2.5
+PYTHON ?= python
 
 ZIP ?= zip
 TAR ?= tar
 
+# mercurial version to use
 HG ?= hg
 
 INSTALL     = /usr/bin/install -c
 INSTALLDATA = /usr/bin/install -c -m 644
 
 
-DYLIBEXT = .so
-LYOEXT = .lo
 LIBEXT = .a
 OBJEXT = .o
 APPEXT =
@@ -40,26 +46,10 @@ ifeq ($(TARGET_OS),linux)
 PIC = -fpic -dynamic
 endif
 
-ifeq ($(TARGET_OS),openbsd)
-MAKE = gmake
-PIC = -fpic -dynamic
-endif
-
 ifeq ($(TARGET_OS),mac)
 DYLD = $(CC) -dynamiclib
-DYLIBEXT = .dylib
 PIC = -fPIC -dynamic
 endif
-
-LLVM_EXE = $(top_srcdir)/external/llvm/Release/bin
-
-# do we have a readline installed?
-
-
-# Path settings
-
-prefix      ?= /usr/local
-
 
 # =================== Windows paths and settings
 ifeq ($(TARGET_OS),win)
