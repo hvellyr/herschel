@@ -1,0 +1,8 @@
+;; test that the return value of foo() is really a Int[], not a
+;; Int (!) or a T[]
+def foo(x : 'T[]) : 'T[]
+  x
+
+def bar()
+  let y : Int[]
+  foo(y)

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>import</id>
+<lit type='str'>red</lit>
+</seq>
+<seq>
+<id>import</id>
+<lit type='str'>blue</lit>
+</seq>
+</seq>
+

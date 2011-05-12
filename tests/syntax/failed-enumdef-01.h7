@@ -1,0 +1,31 @@
+def enum PortCursorWhenceType : Int
+{
+  current = 0
+  begin   = 1
+  end     = 2
+}
+
+
+def enum Colors : Keyword
+{
+  none   = #transparent
+  red    = #red
+  orange = #orange
+  blue   = #blue
+  green  = #green
+  yellow = #yellow
+}
+
+
+def enum MidiController : (Ordinal in 0 .. 127)
+{
+  bank-select    = 0
+  modulation     = 1
+  breath         = 2
+  foot-pedal     = 3
+  ;; ...
+  poly-operation = 127
+}
+
+
+def a = 1

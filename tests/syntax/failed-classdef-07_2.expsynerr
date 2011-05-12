@@ -1,0 +1,2 @@
+18 ; warning ; 4108 ; 'on alloc' takes no parameters
+23 ; error   ; 4108 ; wrong number of parameters to 'on init' hook.  Expected 1, found 0

@@ -1,0 +1,5 @@
+module mno
+
+export public (MyNumber)
+
+def alias MyNumber = Float

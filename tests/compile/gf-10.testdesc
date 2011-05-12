@@ -1,0 +1,10 @@
+{
+  'retc': 1,
+  'stdout': [ '=2nd',
+              '=1st',
+              '=what',
+              '=both',
+              '=mostly 2nd',
+              '=somehow both' ]
+}
+

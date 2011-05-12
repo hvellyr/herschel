@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<type nm='smallint'>
+<isa>
+<ty:type nm='smallint'>
+<ty:isa>
+<ty:ref nm='lang|Int16'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='smallgroup'>
+<isa>
+<ty:type nm='smallgroup'>
+<ty:isa>
+<ty:ref nm='group'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<generic sym='init' abstract='true'>
+<params>
+<param sym='grp' type='spec'>
+<type>
+<ty:ref nm='smallgroup'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='smallgroup'>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+</compile-unit>

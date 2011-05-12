@@ -1,0 +1,15 @@
+def macro ixwick
+{
+  { on ixwick (?y:pos-param, ?a:expr) ?body:expr } 
+  -> {
+       {
+         let t(?y)
+           ?body
+         t(?a)
+       }
+     }
+}
+
+def f()
+  on ixwick (b : String, "hello world")
+    outln(b)

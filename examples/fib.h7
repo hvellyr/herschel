@@ -1,0 +1,14 @@
+module fibonacci
+
+def fib(n @ 'T)
+  select (n) {
+    | 0 -> 0
+    | 1 -> 1
+    | else fib(n - 1) + fib(n - 2)
+  }
+
+
+def app|main()
+  let const n = 28
+  outln("Fib(%d): %d" % #[n, fib(n)])
+

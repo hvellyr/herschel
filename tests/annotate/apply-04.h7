@@ -1,0 +1,10 @@
+def foo(a : Int, b : Char,
+        c : String = "hello world",
+        d : Float = 0.1234,
+        r ...) : Int
+  a
+
+
+def bar()
+  foo(5, \space)
+  foo(6, \x, c: "goodbye", d: 3.1415, 11, #read, true)

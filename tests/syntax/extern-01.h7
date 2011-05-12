@@ -1,0 +1,9 @@
+module samba
+
+extern ("C") {
+  char* getcwd (char*);
+  int printf(const char* format, ...);
+}
+
+def foo()
+  printf("%d\nl;", 4711)

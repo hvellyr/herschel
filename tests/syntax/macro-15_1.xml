@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>_tmp_xyz</id>
+<punct type='='/>
+<id>nil</id>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>_tmp_nmo_const</id>
+<punct type='='/>
+<id>nil</id>
+</seq>
+</seq>

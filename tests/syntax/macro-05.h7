@@ -1,0 +1,19 @@
+def macro templ
+{
+  { templ(?kind:name, ?msg:expr) } -> { templ_ ## ?kind (?msg) }
+}
+
+def macro templ_stdout
+{
+  { templ_stdout(?msg:expr) } -> { display(?msg) }
+}
+
+def macro templ_stderr
+{
+  { templ_stderr(?msg:expr) } -> { *stderr*.outln(?msg) }
+}
+
+
+def f()
+  templ(stdout, "hello world")
+  templ(stderr, "hello world")

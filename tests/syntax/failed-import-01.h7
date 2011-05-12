@@ -1,0 +1,2 @@
+;; import uses strings not symbols
+import core

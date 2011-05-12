@@ -1,0 +1,85 @@
+Symbol mangling
+---------------
+
+Static functions and variables:
+
+    __QN..mod..sym
+
+  where ".." is the length of the sym in decimal numbers and "mod" is the
+  name of the module and "sym" the name of the function.  The "..mod" part
+  can be repeated.
+
+  Special characters (other than a-zA-Z0-9 and _) are translated as
+  /2two-hexdigit.  The length of the part is computed *after* escaping.
+
+  Example
+
+    def core|hello|world-interface() ...
+
+  is encoded as
+
+    __QN4core5hello15world-interface
+
+
+Generic functions:
+
+  Generic functions are encoded in the same way as normal functions.
+
+
+Method implementations:
+
+  Though methods are never linked or looked up directly they use a slightly
+  extended encoding:
+
+    __QN..mod..sym_..typeid_..typeid
+
+  After the middle "_" a section of encoded typeid follows.  One "..typeid"
+  pattern per specialized parameter (in the order of definition).  The
+  typeid patterns are encoded like types, but without the "__QN" prefix.
+
+  Example:
+
+    def to-string(p @ String) ...
+
+  is encoded to
+
+    __QN4lang11to/2dstring_4lang5String
+
+
+Types:
+
+  Types are encoded in method implementation names and for class and type
+  implementations.
+
+  normal type:    symbol                   ..mod..symbol
+                  lang|Any                 a
+                  lang|Bool                b
+                  lang|Int                 I
+                  lang|Int8                i8                           ;; i8
+                  lang|Int16               i16                          ;; i16
+                  lang|Int32               i32                          ;; i32
+                  lang|Int64               i64                          ;; i64
+                  lang|UInt8               u8                           ;; u8
+                  lang|UInt16              u16                          ;; u16
+                  lang|UInt32              u32                          ;; u32
+                  lang|UInt64              u64                          ;; u64
+                  lang|Real                r
+                  lang|Float32             f32
+                  lang|Float64             f64
+                  lang|String              s
+                  lang|Char                c
+                  lang|Keyword             k
+                  lang|Object              o
+                  lang|Class               C
+  array type:     type[]                   type /5b/5d
+  reference type: ^type                    /5e type
+  union type:     &(type1, type2)          /26/28 type1 _ type2 /29
+  seq type:       (type1, type2)           /28 type1 _ type2 /29
+  generic type:   type<type1, type2>       type /3c type1 _ type2 /3e
+  function type:  &f(type1, type2)type3    /26f/28 type1 _ type2 /29 type3
+
+  Example:
+
+    ^coll|map<lang|string, xi|Person>[]   => __QN/5e4coll3map/3cs_2xi6Person/3e/5b/5d
+    lang|Class<'T>                        => __QNC/3ca/3e
+    lang|UInt64                           => __QNu64

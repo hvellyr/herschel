@@ -1,0 +1,3 @@
+def char dash = 2dh
+
+import "io\dash;map.h7"

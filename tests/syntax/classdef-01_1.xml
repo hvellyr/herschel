@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>class</id>
+<id>String</id>
+<punct type=':'/>
+<nested left='(' right=')'>
+<id>Copyable</id>
+<punct type=','/>
+<id>Comparable</id>
+<punct type=','/>
+<seq>
+<id>OrderedSliceable</id>
+<nested left='&lt;' right='>'>
+<id>Ordinal</id>
+<punct type=','/>
+<id>Char</id>
+</nested>
+</seq>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>data</id>
+<punct type=':'/>
+<seq>
+<id>Char</id>
+<nested left='[' right=']'/>
+</seq>
+</seq>
+</nested>
+</seq>
+</seq>
