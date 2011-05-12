@@ -19,9 +19,13 @@
 #include "str.h"
 
 
-#if defined(OS_mac) || defined(OS_Linux)
+#if defined(OS_mac) || defined(OS_linux)
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 using namespace herschel;
 

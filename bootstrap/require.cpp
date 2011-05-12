@@ -15,6 +15,7 @@
 #include "require.h"
 #include "log.h"
 
+#include <stdlib.h>
 
 using namespace herschel;
 
