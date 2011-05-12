@@ -5,8 +5,10 @@ doc/version.texinfo$
 .*~
 version.h$
 config-local.h$
-bootstrap/TAGS
-TAGS
+auto-config-local.mk$
+config-local.mk$
+bootstrap/TAGS$
+TAGS$
 tests/.*\.pyc$
 external/UnitTest\+\+/.*\.a
 external/UnitTest\+\+/src/.*\.o
