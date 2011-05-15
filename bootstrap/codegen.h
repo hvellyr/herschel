@@ -137,11 +137,10 @@ namespace herschel
 
     typedef std::vector<std::pair<llvm::Constant*, int> > CtorList;
 
+    void emitModuleInitFunction();
+
     void emitRuntimeInitFunc();
-    void emitClassInitFunc();
     void emitGlobalVarInitFunc();
-    void emitGenericsInitFunc();
-    void emitMethodInitFunc();
 
     void emitCtorList(const CtorList &fns, const char *globalName);
 
@@ -155,10 +154,11 @@ namespace herschel
 
 
     template<typename NodeT, typename StrategyT>
-    void emitEntityInitFunc(const char* suggestedTmpName,
-                            const std::vector<NodeT>& entities,
-                            StrategyT strategy,
-                            int priority);
+    void emitEntityInitFunc(const std::vector<NodeT>& entities,
+                            StrategyT strategy);
+    template<typename NodeT, typename StrategyT>
+    void emitEntityGetterFunc(const std::vector<NodeT>& entities,
+                              StrategyT strategy);
 
     //-------- data members
 
