@@ -262,11 +262,15 @@ fi
 
 
 if test "x$llvm_config_path" = xauto; then
-  llvm_config_path=llvm-config
+  llvm_config_path="$(pwd)"/llvm-config
 fi
 
 echo $ECHO_N "Check llvm version... $ECHO_C"
-llvm_version=$($llvm_config_path --version 2>/dev/null)
+llvm_config_dir=$(dirname "$llvm_config_path")
+llvm_config_file=$(basename "$llvm_config_path")
+abs_llvm_config_path=$(cd "$llvm_config_dir" && pwd)/"$llvm_config_file"
+
+llvm_version=$("$abs_llvm_config_path" --version 2>/dev/null)
 if test "x$llvm_version" = x"2.8"; then
   echo "${ECHO_T}$llvm_version"
 else
@@ -275,7 +279,7 @@ else
 fi
 
 echo $ECHO_N "Check llvm bindir... $ECHO_C"
-llvm_bindir=$($llvm_config_path --bindir 2>/dev/null)
+llvm_bindir=$("$abs_llvm_config_path" --bindir 2>/dev/null)
 if test "x$llvm_bindir" != x""; then
   echo "${ECHO_T}$llvm_bindir"
 else
@@ -284,7 +288,7 @@ else
 fi
 
 echo $ECHO_N "Get llvm cpp flags... $ECHO_C"
-llvm_cppflags=$($llvm_config_path --cppflags backend bitwriter 2>/dev/null)
+llvm_cppflags=$("$abs_llvm_config_path" --cppflags backend bitwriter 2>/dev/null)
 if test "x$verbose" = xyes; then
   echo "${ECHO_T}$llvm_cppflags"
 else
@@ -292,7 +296,7 @@ else
 fi
 
 echo $ECHO_N "Get llvm linker flags... $ECHO_C"
-llvm_ldflags=$($llvm_config_path --ldflags backend bitwriter 2>/dev/null)
+llvm_ldflags=$("$abs_llvm_config_path" --ldflags backend bitwriter 2>/dev/null)
 if test "x$verbose" = xyes; then
   echo "${ECHO_T}$llvm_ldflags"
 else
@@ -300,7 +304,7 @@ else
 fi
 
 echo $ECHO_N "Get llvm libraries... $ECHO_C"
-llvm_libs=$($llvm_config_path --libs backend bitwriter 2>/dev/null)
+llvm_libs=$("$abs_llvm_config_path" --libs backend bitwriter 2>/dev/null)
 if test "x$verbose" = xyes; then
   echo "${ECHO_T}$llvm_libs"
 else
