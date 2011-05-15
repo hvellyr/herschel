@@ -127,15 +127,15 @@ runtime_init()
 {
   static int is_initialized = 0;
 
+  if (!is_initialized) {
+    is_initialized = 1;
+
 #if defined(UNITTESTS)
   ATOM a;
   hr_trace("platform", "Sizeof ATOM struct: %ld", sizeof(ATOM));
   hr_trace("platform", "Offset typeid:      %ld", (char*)&a.typeid - (char*)&a);
   hr_trace("platform", "Offset u.v_obj:     %ld", (char*)&a.u.v_obj - (char*)&a);
 #endif
-
-  if (!is_initialized) {
-    is_initialized = 1;
 
     type_init();
     methods_init();
