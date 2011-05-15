@@ -75,6 +75,8 @@ struct Method {
 };
 
 
+extern void runtime_init();
+
 void type_init();
 void methods_init();
 
