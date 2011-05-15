@@ -36,6 +36,7 @@
 #include "llvm/GlobalVariable.h"
 #include "llvm/DerivedTypes.h"
 #include "llvm/Intrinsics.h"
+#include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetRegistry.h"
 //#include "llvm/DIBuilder.h"
 
@@ -68,7 +69,13 @@ CodeGenerator::CodeGenerator()
     exit(1);
   }
 
-  fTargetData = new llvm::TargetData(fModule);
+  llvm::TargetMachine* machine = target->createTargetMachine(fModule->getTargetTriple(),
+                                                             "");
+  if (machine == NULL) {
+    logf(kError, "Compile setup failure: no matching TargetMachine found");
+    exit(1);
+  }
+  fTargetData = const_cast<llvm::TargetData*>(machine->getTargetData());
 
   // logf(kInfo, "Host triple: %s", fModule->getTargetTriple().c_str());
   // logf(kInfo, "PointerSize: %d", fTargetData->getPointerSize());
