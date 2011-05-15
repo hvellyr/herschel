@@ -298,7 +298,8 @@ herschel::setupDefaultPath()
 {
   Setup setup = findResources("hrc");
 
-  for (StringVector::iterator it = setup.fSysPath.begin(), e = setup.fSysPath.end();
+  for (StringVector::iterator it = setup.fSysPath.begin(),
+         e = setup.fSysPath.end();
        it != e; ++it)
   {
     if (!it->isEmpty())

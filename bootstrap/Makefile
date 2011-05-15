@@ -42,7 +42,7 @@ LIBHRCOMMON_HEADERS =  \
 
 ifeq ($(TARGET_OS),mac)
 # HRC_HEADERS +=
-LIBHRCOMMON_SOURCES += setup-unix.cpp
+LIBHRCOMMON_SOURCES += setup-mac.cpp
 # HRC_LIBS = $(LIBS) -framework Carbon
 endif
 

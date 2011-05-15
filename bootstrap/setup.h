@@ -27,11 +27,6 @@ namespace herschel
     //! path to hrc executable
     String fHrcPath;
 
-    //! path to assembler executable
-    String fAsPath;
-    //! additional flags to the assembler
-    String fAsFlags;
-
     //! path to linker executable
     String fLdPath;
     //! additional flags to the linker

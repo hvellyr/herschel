@@ -237,10 +237,6 @@ main(int argc, char** argv)
   case kLinkAndCompileFiles:
     hrcOptions.insert(hrcOptions.begin(), String("-c"));
     if (startProcess(setup.fHrcPath, hrcOptions) >= 0) {
-      if (!setup.fAsPath.isEmpty()) {
-        // TODO
-      }
-
       std::vector<String> outFiles;
       for (size_t i = 0; i < files.size(); i++) {
         String outExt = makeCompileOutputFileExt(kLLVM_BC);
@@ -274,8 +270,6 @@ main(int argc, char** argv)
     printf("------------------------------\n");
     printf("Setup:\n");
     printf("  hrc:    %s\n", (const char*)StrHelper(setup.fHrcPath));
-    printf("  as:     %s %s\n", (const char*)StrHelper(setup.fAsPath),
-           (const char*)StrHelper(setup.fAsFlags));
     printf("  linker: %s\n", (const char*)StrHelper(setup.fLdPath));
     printf("  rtlib:  %s\n", (const char*)StrHelper(setup.fRuntimeLib));
   }

@@ -198,6 +198,7 @@ config-local.h: Makefile config.mk
 	@echo "#define HR_INSTDIR_pkgincludedir \"$(pkgincludedir)/\"" >> $@
 	@echo "#define HR_INSTDIR_datadir \"$(datadir)/\"" >> $@
 	@echo "#define HR_INSTDIR_pkgdatadir \"$(pkgdatadir)/\"" >> $@
+	@echo "#define HR_LLVM_EXE \"$(LLVM_EXE)\"" >> $@
 	@echo "#endif" >> $@
 
 
