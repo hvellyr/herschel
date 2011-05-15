@@ -1233,6 +1233,17 @@ CodeGenerator::getMemCpyFn(const llvm::Type* dstType,
 void
 CodeGenerator::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
 {
+  llvm::Value* typidSlot = fBuilder.CreateStructGEP(atom, 0);
+  llvm::Value* typeIdValue = NULL;
+  if (is64Bit())
+    typeIdValue =llvm::ConstantInt::get(context(),
+                                        llvm::APInt(64, (int)typid, !K(isSigned)));
+  else
+    typeIdValue =llvm::ConstantInt::get(context(),
+                                        llvm::APInt(32, (int)typid, !K(isSigned)));
+
+  fBuilder.CreateStore(typeIdValue, typidSlot);
+
   llvm::Value* payload = fBuilder.CreateStructGEP(atom, 1);
   llvm::Value* slot = fBuilder.CreateStructGEP(payload, 0);
 
@@ -1252,24 +1263,29 @@ CodeGenerator::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
   }
   else
     fBuilder.CreateStore(value, slot);
-
-
-  llvm::Value* typidSlot = fBuilder.CreateStructGEP(atom, 0);
-  llvm::Value* typeIdValue = NULL;
-  if (is64Bit())
-    typeIdValue =llvm::ConstantInt::get(context(),
-                                        llvm::APInt(64, (int)typid, !K(isSigned)));
-  else
-    typeIdValue =llvm::ConstantInt::get(context(),
-                                        llvm::APInt(32, (int)typid, !K(isSigned)));
-
-  fBuilder.CreateStore(typeIdValue, typidSlot);
 }
 
 
 void
 CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
 {
+#if 1
+  // this way is probably a tick slower on an i386, but the memcpy approach
+  // below does not work.  With that we get some strange byte ordering
+  // problems...  Performance wise it does not make any difference on x86_64
+  // (with full optimization).
+
+  llvm::Value* dst_pl = fBuilder.CreateStructGEP(dst, 1);
+  llvm::Value* dst_ty = fBuilder.CreateStructGEP(dst, 0);
+
+  llvm::Value* src_pl = fBuilder.CreateStructGEP(src, 1);
+  llvm::Value* src_ty = fBuilder.CreateStructGEP(src, 0);
+
+  fBuilder.CreateStore(fBuilder.CreateLoad(src_ty), dst_ty);
+  fBuilder.CreateStore(fBuilder.CreateLoad(src_pl), dst_pl);
+
+#else
+
   const llvm::Type* dstBasePtr = llvm::Type::getInt8PtrTy(context());
   llvm::Value* dst2 = fBuilder.CreateBitCast(dst, dstBasePtr, "dst_tmp");
 
@@ -1299,4 +1315,5 @@ CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
   fBuilder.CreateCall(getMemCpyFn(dst2->getType(), src2->getType(),
                                   llvm::Type::getInt32Ty(context())),
                       argv.begin(), argv.end());
+#endif
 }
