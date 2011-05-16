@@ -6,6 +6,7 @@ errstatus=0
 dirmode=""
 failure=no
 verbose=no
+srcdir=
 
 pkgname=herschel
 default_prefix=/usr/local
@@ -19,6 +20,12 @@ Options
   -h --help                display this help and exit
      --version             display version of this script and exit
      --verbose             display more details during configuration
+
+  --srcdir=DIR             specify where the sources are
+
+Architecture
+  --target-arch=ARCH       specify the target architecture to run on
+  --target-os=OS           specify the target platform to run on
 
 Installation directories
   --prefix=PREFIX          install architecture independant files in PREFIX
@@ -63,6 +70,10 @@ enable_dist_release=no
 enable_unittests=yes
 enable_traces=yes
 llvm_config_path=auto
+target_arch=auto
+target_os=auto
+target_osver=
+compile_inplace=no
 
 # paths
 prefix=NONE
@@ -89,6 +100,11 @@ while test $# -gt 0 ; do
       ;;
     --verbose)
       verbose=yes
+      shift
+      ;;
+
+    --srcdir=*)
+      srcdir=$(expr "x$1" : 'x[^=]*=\(.*\)')
       shift
       ;;
 
@@ -237,10 +253,29 @@ while test $# -gt 0 ; do
   esac
 done
 
+
+#----------------------------------------------------------------------
+# check source dir
+
+echo $ECHO_N "Source are in... $ECHO_C"
+
+if test -z "$srcdir"; then
+  srcdir=$(dirname "$0") 2>/dev/null
+fi
+
+echo "${ECHO_T}$srcdir"
+
+if test "x$srcdir" = "x."; then
+  compile_inplace=yes
+fi
+
+#----------------------------------------------------------------------
+
 # normalize path settings
 test "x$prefix" = xNONE && prefix=${default_prefix}
 test "x$exec_prefix" = xNONE && exec_prefix='${prefix}'
 
+#----------------------------------------------------------------------
 
 buildstyle_flag=debug
 unittests_flag=
@@ -250,16 +285,45 @@ if test "x$enable_dist_release" = xyes; then
   enable_unittests=no
   enable_traces=no
   buildstyle_flag=dist-release
+  echo "Build for external release"
 fi
 
 if test "x$enable_unittests" = xyes; then
   unittests_flag="-DUNITTESTS"
+  echo "Enable unit tests... yes"
 fi
 
 if test "x$enable_traces" = xyes; then
   traces_flag="-DTRACES"
+  echo "Enable debug traces... yes"
 fi
 
+
+#----------------------------------------------------------------------
+
+if test "x$target_arch" = xauto; then
+  echo $ECHO_N "Build for architecture... $ECHO_C"
+  target_arch=$(sh "$srcdir/build/platform.sh" -a 2>/dev/null)
+  echo "${ECHO_T}$target_arch"
+fi
+
+if test "x$target_os" = xauto; then
+  echo $ECHO_N "Build for OS... $ECHO_C"
+  target_os=$(sh "$srcdir/build/platform.sh" -m 2>/dev/null)
+  echo "${ECHO_T}$target_os"
+fi
+
+echo $ECHO_N "Build for OS version... $ECHO_C"
+target_osver=$(sh "$srcdir/build/platform.sh" -r 2>/dev/null)
+echo "${ECHO_T}$target_osver"
+
+
+echo $ECHO_N "Base repository revision... $ECHO_C"
+base_rep_revision=$(cd "$srcdir"; sh "build/reprevision.sh" 2>/dev/null)
+echo "${ECHO_T}$base_rep_revision"
+
+
+#----------------------------------------------------------------------
 
 if test "x$llvm_config_path" = xauto; then
   llvm_config_path="$(pwd)"/llvm-config
@@ -278,39 +342,40 @@ else
   failure=yes
 fi
 
-echo $ECHO_N "Check llvm bindir... $ECHO_C"
-llvm_bindir=$("$abs_llvm_config_path" --bindir 2>/dev/null)
-if test "x$llvm_bindir" != x""; then
-  echo "${ECHO_T}$llvm_bindir"
-else
-  echo "${ECHO_T}no llvm found"
-  failure=yes
-fi
+if test "x$failure" = xno; then
+  echo $ECHO_N "Check llvm bindir... $ECHO_C"
+  llvm_bindir=$("$abs_llvm_config_path" --bindir 2>/dev/null)
+  if test "x$llvm_bindir" != x""; then
+    echo "${ECHO_T}$llvm_bindir"
+  else
+    echo "${ECHO_T}no llvm found"
+    failure=yes
+  fi
 
-echo $ECHO_N "Get llvm cpp flags... $ECHO_C"
-llvm_cppflags=$("$abs_llvm_config_path" --cppflags backend bitwriter 2>/dev/null)
-if test "x$verbose" = xyes; then
-  echo "${ECHO_T}$llvm_cppflags"
-else
-  echo "${ECHO_T}ok"
-fi
+  echo $ECHO_N "Get llvm cpp flags... $ECHO_C"
+  llvm_cppflags=$("$abs_llvm_config_path" --cppflags backend bitwriter 2>/dev/null)
+  if test "x$verbose" = xyes; then
+    echo "${ECHO_T}$llvm_cppflags"
+  else
+    echo "${ECHO_T}ok"
+  fi
 
-echo $ECHO_N "Get llvm linker flags... $ECHO_C"
-llvm_ldflags=$("$abs_llvm_config_path" --ldflags backend bitwriter 2>/dev/null)
-if test "x$verbose" = xyes; then
-  echo "${ECHO_T}$llvm_ldflags"
-else
-  echo "${ECHO_T}ok"
-fi
+  echo $ECHO_N "Get llvm linker flags... $ECHO_C"
+  llvm_ldflags=$("$abs_llvm_config_path" --ldflags backend bitwriter 2>/dev/null)
+  if test "x$verbose" = xyes; then
+    echo "${ECHO_T}$llvm_ldflags"
+  else
+    echo "${ECHO_T}ok"
+  fi
 
-echo $ECHO_N "Get llvm libraries... $ECHO_C"
-llvm_libs=$("$abs_llvm_config_path" --libs backend bitwriter 2>/dev/null)
-if test "x$verbose" = xyes; then
-  echo "${ECHO_T}$llvm_libs"
-else
-  echo "${ECHO_T}ok"
+  echo $ECHO_N "Get llvm libraries... $ECHO_C"
+  llvm_libs=$("$abs_llvm_config_path" --libs backend bitwriter 2>/dev/null)
+  if test "x$verbose" = xyes; then
+    echo "${ECHO_T}$llvm_libs"
+  else
+    echo "${ECHO_T}ok"
+  fi
 fi
-
 
 # ----------------------------------------------------------------------
 # when everything was successful write the configuration
@@ -324,6 +389,9 @@ fi
 
 # ----------------------------------------------------------------------
 # write configuration file
+
+generated_file_name=auto-config-local.mk
+
 cat > auto-config-local.mk <<EOF
 # automatically created file.  Don't edit this file manually
 EOF
@@ -348,4 +416,11 @@ LLVM_EXE = $llvm_bindir
 LLVM_CPPFLAGS = $llvm_cppflags
 LLVM_LDFLAGS = $llvm_ldflags
 LLVM_LIBS = $llvm_libs
+
+TARGET_OS = $target_os
+TARGET_ARCH = $target_arch
+TARGET_OSVER = $target_osver
+
+BASE_REP_REVISION = $base_rep_revision
+
 EOF
