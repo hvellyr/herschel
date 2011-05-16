@@ -5,7 +5,7 @@
 #
 #  This source code is released under the BSD License.
 
-srcdir = .
+srcdir ?= .
 
 # ----------------------------------------------------------------------
 
@@ -26,7 +26,6 @@ LANG_VERSION = 0.3.0
 TARGET_OS    ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh -m)
 TARGET_ARCH  ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh -a)
 TARGET_OSVER ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh -r)
-HR_TARGET_DESC ?= $(shell $(SHELL) $(top_srcdir)/build/platform.sh)
 
 OS_FLAGS ?= -DOS_$(TARGET_OS) -DARCH_$(TARGET_ARCH)
 

@@ -175,7 +175,6 @@ version.h: Makefile config.mk
 	@echo "#define VERSION \"$(VERSION)\"" >> $@
 	@echo "#define COPYRIGHTYEAR \"$(COPYRIGHTYEAR)\"" >> $@
 	@echo "#define COPYRIGHTOWNER \"$(COPYRIGHTOWNER)\"" >> $@
-	@echo "#define HR_HOSTTYPE \"$(HR_TARGET_DESC)\"" >> $@
 	@echo "#define HR_BASE_REVISION \"$(BASE_REVISION)\"" >> $@
 	@echo "#endif" >> $@
 
