@@ -14,9 +14,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#if defined(HAVE_LIMITS_H)
 #include <limits.h>
-#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
