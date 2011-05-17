@@ -9,8 +9,8 @@ CDEBUG ?= -g
 COPT ?= -O3
 CWARNING += -Wall
 
-CC ?= gcc
-CXX ?= g++
+CC ?= cc
+CXX ?= c++
 MAKE ?= make
 AR ?= ar
 RANLIB ?= ranlib

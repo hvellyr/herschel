@@ -1,9 +1,13 @@
-CXX = g++
+top_srcdir = ../..
+
+include $(top_srcdir)/config.mk
+
+CXX ?= g++
 CXXFLAGS ?= -g -Wall -W -ansi # -pedantic
-LDFLAGS ?= 
-SED = sed
-MV = mv
-RM = rm
+LDFLAGS ?=
+SED ?= sed
+MV ?= mv
+RM ?= rm
 
 .SUFFIXES: .o .cpp
 
@@ -26,7 +30,7 @@ src = src/AssertException.cpp \
 	src/DeferredTestResult.cpp \
 	src/XmlTestReporter.cpp \
 	src/CurrentTest.cpp
-	
+
 ifeq ($(MSYSTEM), MINGW32)
   src += src/Win32/TimeHelpers.cpp
 else
@@ -71,10 +75,10 @@ endef
 all: $(test)
 
 
-$(lib): $(objects) 
+$(lib): $(objects)
 	@echo Creating $(lib) library...
 	@ar cr $(lib) $(objects)
-    
+
 $(test): $(lib) $(test_objects)
 	@echo Linking $(test)...
 	@$(CXX) $(LDFLAGS) -o $(test) $(test_objects) $(lib)

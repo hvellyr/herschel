@@ -55,6 +55,12 @@ Configure the build
 
   --with-llvm-config=PATH  path to llvm-config [auto]
 
+Environment variables which can be set:
+  CC          C compiler command
+  CFLAGS      additional C compiler flags
+  CXX         C++ compiler command
+  CXXFLAGS    additional c++ compiler flags
+
 Report bugs to <bug-herschel@eyestep.org>."
 
 case $(echo "testing\c"; echo 1,2,3),$(echo -n testing; echo 1,2,3) in
@@ -269,11 +275,13 @@ if test "x$srcdir" = "x."; then
   compile_inplace=yes
 fi
 
+
 #----------------------------------------------------------------------
 
 # normalize path settings
 test "x$prefix" = xNONE && prefix=${default_prefix}
 test "x$exec_prefix" = xNONE && exec_prefix='${prefix}'
+
 
 #----------------------------------------------------------------------
 
@@ -324,6 +332,96 @@ echo "${ECHO_T}$base_rep_revision"
 
 
 #----------------------------------------------------------------------
+# check c compiler
+
+echo $ECHO_N "Testing C compiler... $ECHO_C"
+if test -z "$CC"; then
+  CC=cc
+fi
+
+if test "$(cd "$(dirname "$CC")" && pwd)" != "$(pwd)"; then
+  CC=$(cd "$(dirname "$CC")" && pwd)/"$(basename $CC)"
+fi
+
+cc_failure=no
+current_dir=$(pwd)
+mkdir temp_0000 && cd temp_0000 || cc_failure=yes
+
+if test "x$cc_failure" = xno; then
+  cat > tmp.c <<EOF
+#include <stdio.h>
+int main(int argc, char** argv) {
+return 0;
+}
+EOF
+  $CC tmp.c 2>/dev/null
+  if test -f "./a.out"; then
+    ./a.out >/dev/null
+    echo "${ECHO_T}$CC"
+  elif test -f a.exe; then
+    ./a.exe >/dev/null
+    echo "${ECHO_T}$CC"
+  else
+    echo "${ECHO_T}unknown C compiler"
+  fi
+
+  cd $current_dir
+  rm -rf temp_0000
+else
+  echo "${ECHO_T}fail. C compiler seems not to work"
+fi
+
+
+echo $ECHO_N "Testing C++ compiler... $ECHO_C"
+if test -z "$CXX"; then
+  CXX=c++
+fi
+
+if test "$(cd "$(dirname "$CXX")" && pwd)" != "$(pwd)"; then
+  CXX=$(cd "$(dirname "$CXX")" && pwd)/"$(basename $CXX)"
+fi
+
+cxx_failure=no
+current_dir=$(pwd)
+mkdir temp_0000 && cd temp_0000 || cxx_failure=yes
+
+if test "x$cxx_failure" = xno; then
+  cat > tmp.cpp <<EOF
+#include <stdio.h>
+#include <vector>
+
+class Abc
+{
+public:
+  int m;
+  std::vector<int> v;
+  Abc() : m(42) { }
+};
+
+int main(int argc, char** argv) {
+  Abc abc;
+  return abc.m - 42;
+}
+EOF
+  $CXX tmp.cpp 2>/dev/null
+  if test -f "./a.out"; then
+    ./a.out >/dev/null
+    echo "${ECHO_T}$CXX"
+  elif test -f a.exe; then
+    ./a.exe >/dev/null
+    echo "${ECHO_T}$CXX"
+  else
+    echo "${ECHO_T}unknown C++ compiler"
+  fi
+
+  cd $current_dir
+  rm -rf temp_0000
+else
+  echo "${ECHO_T}fail. C++ compiler seems not to work"
+fi
+
+
+#----------------------------------------------------------------------
 
 if test "x$llvm_config_path" = xauto; then
   llvm_config_path="$(pwd)"/llvm-config
@@ -334,11 +432,12 @@ llvm_config_dir=$(dirname "$llvm_config_path")
 llvm_config_file=$(basename "$llvm_config_path")
 abs_llvm_config_path=$(cd "$llvm_config_dir" && pwd)/"$llvm_config_file"
 
+
 llvm_version=$("$abs_llvm_config_path" --version 2>/dev/null)
 if test "x$llvm_version" = x"2.8"; then
   echo "${ECHO_T}$llvm_version"
 else
-  echo "${ECHO_T}no matching installation found ($llvm_version)"
+  echo "${ECHO_T}no matching installation found"
   failure=yes
 fi
 
@@ -380,7 +479,7 @@ fi
 # ----------------------------------------------------------------------
 # when everything was successful write the configuration
 
-if test "x$failure" = xyes; then
+if test "x$failure" = xyes -o "x$cc_failure" = xyes -o "x$cxx_failure" = xyes; then
   echo ""
   echo "$pkgname could not be configured correctly.  Check the details"
   echo "above and try again, or configure the Makefile manually."
@@ -397,6 +496,11 @@ cat > auto-config-local.mk <<EOF
 EOF
 
 cat >> auto-config-local.mk <<EOF
+CC = $CC
+CXX = $CXX
+CFLAGS = $CFLAGS
+CXXFLAGS = $CXXFLAGS
+
 prefix = $prefix
 exec_prefix = $exec_prefix
 bindir = $bindir
