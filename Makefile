@@ -62,7 +62,7 @@ clean-local:
 	rm -rf $(distdir) $(info-distdir) $(pdf-distdir)
 
 distclean-post: clean-post
-	rm -rf TAGS temp/ version.h config-local.h $(PKGDIR) $(BUILDDIR)
+	rm -rf TAGS temp/ auto-config-local.mk version.h config-local.h doc/version.texinfo $(PKGDIR) $(BUILDDIR)
 
 
 #--- doc distribution ------------------------------
