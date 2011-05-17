@@ -21,7 +21,6 @@ LIBHRCOMMON_SOURCES =  \
 	option.cpp           \
 	port.cpp             \
 	require.cpp          \
-	setup.cpp            \
 	str.cpp              \
 	strbuf.cpp           \
 	valuesaver.cpp
@@ -42,13 +41,13 @@ LIBHRCOMMON_HEADERS =  \
 
 ifeq ($(TARGET_OS),mac)
 # HRC_HEADERS +=
-LIBHRCOMMON_SOURCES += setup-mac.cpp
+LIBHRCOMMON_SOURCES += setup-unix.cpp setup-mac.cpp
 # HRC_LIBS = $(LIBS) -framework Carbon
 endif
 
 ifeq ($(TARGET_OS),linux)
 # HRC_HEADERS +=
-LIBHRCOMMON_SOURCES += setup-unix.cpp
+LIBHRCOMMON_SOURCES += setup-unix.cpp setup-linux.cpp
 endif
 
 ifeq ($(TARGET_OS),win)
