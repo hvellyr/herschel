@@ -1,5 +1,7 @@
 top_srcdir = ../..
 
+PKG = /UnitTest++
+
 include $(top_srcdir)/config.mk
 
 CXX ?= g++
@@ -8,11 +10,12 @@ LDFLAGS ?=
 SED ?= sed
 MV ?= mv
 RM ?= rm
+AR ?= ar
 
 .SUFFIXES: .o .cpp
 
-lib = libUnitTest++.a
-test = TestUnitTest++
+LIB = $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/libUnitTest++.a
+TEST = $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/TestUnitTest++
 
 src = src/AssertException.cpp \
 	src/Test.cpp \
@@ -55,10 +58,11 @@ test_src = src/tests/Main.cpp \
 	src/tests/TestXmlTestReporter.cpp \
 	src/tests/TestCurrentTest.cpp
 
-objects = $(patsubst %.cpp, %.o, $(src))
-test_objects = $(patsubst %.cpp, %.o, $(test_src))
-dependencies = $(subst .o,.d,$(objects))
-test_dependencies = $(subst .o,.d,$(test_objects))
+CPP_OBJS = $(src:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(OBJEXT))
+TEST_OBJS = $(test_src:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(OBJEXT))
+
+DEPS = $(patsubst %.cpp,$(DEPS_DIR)/%.d,$(src))
+TEST_DEPS = $(patsubst %.cpp,$(DEPS_DIR)/%.d,$(test_src))
 
 define make-depend
   $(CXX) $(CXXFLAGS) -M $1 | \
@@ -72,29 +76,34 @@ define make-depend
 endef
 
 
-all: $(test)
+include $(top_srcdir)/build/pre.mk
+
+all-local: lib
+
+lib: $(LIB)
+
+$(BUILDDIR)/$(BUILDSTYLE)$(PKG): $(BUILDDIR)/$(BUILDSTYLE)
+	@if [ ! -d $@ ]; then mkdir $@; fi
+
+$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/UnitTest++: $(BUILDDIR)/$(BUILDSTYLE)$(PKG)
+	@if [ ! -d $@ ]; then mkdir $@; fi
 
 
-$(lib): $(objects)
-	@echo Creating $(lib) library...
-	@ar cr $(lib) $(objects)
+$(LIB): $(BUILDDIR)/$(BUILDSTYLE)$(PKG) $(CPP_OBJS)
+	@echo Creating $@ library...
+	@$(AR) cru $@ $(CPP_OBJS)
 
-$(test): $(lib) $(test_objects)
-	@echo Linking $(test)...
-	@$(CXX) $(LDFLAGS) -o $(test) $(test_objects) $(lib)
+$(TEST): $(BUILDDIR)/$(BUILDSTYLE)$(PKG) $(LIB) $(TEST_OBJS)
+	@echo Linking $(TEST)...
+	@$(CXX) $(LDFLAGS) -o $(TEST) $(TEST_OBJS) $(LIB)
 	@echo Running unit tests...
-	@./$(test)
+	@$(TEST)
 
 clean:
-	-@$(RM) $(objects) $(test_objects) $(dependencies) $(test_dependencies) $(test) $(lib) 2> /dev/null
+	-@$(RM) $(OBJS) $(TEST_OBJS) $(DEPS) $(TEST_DEPS) \
+				  $(TEST) $(LIB) 2> /dev/null
 
-%.o : %.cpp
-	@echo $<
-	@$(call make-depend,$<,$@,$(subst .o,.d,$@))
-	@$(CXX) $(CXXFLAGS) -c $< -o $(patsubst %.cpp, %.o, $<)
+-include $(DEPS)
+-include $(TEST_DEPS)
 
-
-ifneq "$(MAKECMDGOALS)" "clean"
--include $(dependencies)
--include $(test_dependencies)
-endif
+include $(top_srcdir)/build/generic.mk

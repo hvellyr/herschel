@@ -46,7 +46,8 @@ pdf: $(PDFS)
 
 $(BUILDDIR)/%.pdf : $(BUILDDIR)/pdf herschel.texinfo version.texinfo
 	texi2pdf --build-dir=$(BUILDDIR)/pdf \
-			     -I $(top_srcdir)/doc -o $@ herschel.texinfo
+			     -I $(top_srcdir)/doc -I $(curdir)doc \
+					 -o $@ herschel.texinfo
 
 $(BUILDDIR)/pdf: $(BUILDDIR)
 	@if [ ! -d "$@" ]; then mkdir $@; fi

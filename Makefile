@@ -30,7 +30,7 @@ include $(top_srcdir)/build/pre.mk
 
 .PHONY: build tests docs
 
-build: version.h config-local.h $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
+build: $(curdir)version.h $(curdir)config-local.h $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 	(cd bootstrap && $(MAKE) all)
 
 tests: build
@@ -47,13 +47,14 @@ endif
 all-post: $(RUN_UNITTEST_TARGET)
 
 run-unittest:
-	@echo "Running unit tests..."
+	@echo ""
+	@echo "**** Running unit tests **********"
 	$(BUILDDIR)/$(BUILDSTYLE)/hrc$(APPEXT) -UT
 
 no-unittest-in-release:
 
 
-all-local: version.h config-local.h doc/version.texinfo $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
+all-local: $(curdir)version.h $(curdir)config-local.h $(curdir)doc/version.texinfo $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE)
 
 TAGS:
 	find -E . -regex ".*\.mm$$|.*\.cpp$$|.*\.h$$" -print | etags -o TAGS -
@@ -62,7 +63,7 @@ clean-local:
 	rm -rf $(distdir) $(info-distdir) $(pdf-distdir)
 
 distclean-post: clean-post
-	rm -rf TAGS temp/ auto-config-local.mk version.h config-local.h doc/version.texinfo $(PKGDIR) $(BUILDDIR)
+	rm -rf TAGS $(curdir)temp/ $(curdir)auto-config-local.mk $(curdir)version.h $(curdir)config-local.h $(curdir)doc/version.texinfo $(PKGDIR) $(BUILDDIR)
 
 
 #--- doc distribution ------------------------------
@@ -167,7 +168,7 @@ dist-macosx: $(PKGDIR)
 dist-all: dist-src dist-doc
 
 
-version.h: Makefile config.mk
+$(curdir)version.h: Makefile config.mk
 	@echo "/* Don't edit this file.  It has been created automatically. */" > $@
 	@echo "#ifndef herschel_version_h" >> $@
 	@echo "#define herschel_version_h" >> $@
@@ -178,14 +179,17 @@ version.h: Makefile config.mk
 	@echo "#define HR_BASE_REVISION \"$(BASE_REVISION)\"" >> $@
 	@echo "#endif" >> $@
 
-doc/version.texinfo: Makefile config.mk
+$(curdir)doc:
+	@if [ ! -d $@ ]; then mkdir $@; fi
+
+$(curdir)doc/version.texinfo: $(curdir)doc Makefile config.mk
 	@echo "@c Don't edit this file.  It has been created automatically." > $@
 	@echo "@set VERSION $(LANG_VERSION) " > $@
 	@echo "@set COPYRIGHTYEAR $(COPYRIGHTYEAR) " >> $@
 	@echo "@set COPYRIGHTOWNER $(COPYRIGHTOWNER) " >> $@
 	@echo "@set BASEREVISION $(BASE_REVISION) " >> $@
 
-config-local.h: Makefile config.mk
+$(curdir)config-local.h: Makefile config.mk
 	@echo "/* Don't edit this file.  It has been created automatically. */" > $@
 	@echo "#ifndef herschel_config_local_h" > $@
 	@echo "#define herschel_config_local_h" >> $@
