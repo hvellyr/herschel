@@ -29,7 +29,7 @@ dist-local:
 		for f in $$d/*.plist $$d/*.icns; do \
 			if [ -f "$$f" ]; then \
 				echo "cp $$f $(top_distdir)/build/$$f"; \
-				cp -p $$f `dirname $(top_distdir)/build/$$f` >/dev/null 2>&1; \
+				cp -p $$f $$(dirname $(top_distdir)/build/$$f) >/dev/null 2>&1; \
 			fi; \
 		done; \
 	done

@@ -13,6 +13,7 @@ scriptversion=2004-02-15.20
 
 errstatus=0
 dirmode=""
+verbose=no
 
 usage="\
 Usage: mkinstalldirs [-h] [--help] [--version] [-m MODE] DIR ...
@@ -38,6 +39,10 @@ while test $# -gt 0 ; do
     --version)
       echo "$0 $scriptversion"
       exit 0
+      ;;
+    --verbose)
+      verbose=yes
+      shift
       ;;
     --)                         # stop option processing
       shift
@@ -75,7 +80,9 @@ esac
 case $dirmode in
   '')
     if mkdir -p --version . >/dev/null 2>&1 && test ! -d ./--version; then
-      echo "mkdir -p -- $*"
+      if test "x$verbose" = xyes; then
+        echo "mkdir -p -- $*"
+      fi
       exec mkdir -p -- "$@"
     else
       # On NextStep and OpenStep, the `mkdir' command does not
@@ -89,7 +96,9 @@ case $dirmode in
   *)
     if mkdir -m "$dirmode" -p --version . >/dev/null 2>&1 &&
        test ! -d ./--version; then
-      echo "mkdir -m $dirmode -p -- $*"
+      if test "x$verbose" = xyes; then
+        echo "mkdir -m $dirmode -p -- $*"
+      fi
       exec mkdir -m "$dirmode" -p -- "$@"
     else
       # Clean up after NextStep and OpenStep mkdir.
@@ -115,22 +124,25 @@ do
     esac
 
     if test ! -d "$pathcomp"; then
-      echo "mkdir $pathcomp"
-
+      if test "x$verbose" = xyes; then
+        echo "mkdir $pathcomp"
+      fi
       mkdir "$pathcomp" || lasterr=$?
 
       if test ! -d "$pathcomp"; then
-	errstatus=$lasterr
+        errstatus=$lasterr
       else
-	if test ! -z "$dirmode"; then
-	  echo "chmod $dirmode $pathcomp"
-	  lasterr=""
-	  chmod "$dirmode" "$pathcomp" || lasterr=$?
+	      if test ! -z "$dirmode"; then
+          if test "x$verbose" = xyes; then
+            echo "chmod $dirmode $pathcomp"
+          fi
+          lasterr=""
+          chmod "$dirmode" "$pathcomp" || lasterr=$?
 
-	  if test ! -z "$lasterr"; then
-	    errstatus=$lasterr
-	  fi
-	fi
+          if test ! -z "$lasterr"; then
+            errstatus=$lasterr
+          fi
+        fi
       fi
     fi
 

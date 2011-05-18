@@ -76,7 +76,7 @@ endif
 # prepare the settings for the compiler
 
 LIBS += -lUnitTest++
-LDFLAGS += -L$(top_srcdir)/external/UnitTest++
+LDFLAGS += -L$(BUILDDIR)/$(BUILDSTYLE)/UnitTest++
 
 CFLAGS += $(CBUILDFLAG) $(CWARNING) $(OS_FLAGS)
 CFLAGS += -I. -I$(top_srcdir)/build
@@ -99,9 +99,17 @@ datadir       ?= $(prefix)/share
 pkgdatadir    ?= $(prefix)/share/herschel
 mandir        ?= $(prefix)/man
 
+ifeq ($(curdir),)
 BUILDDIR = $(top_srcdir)/temp
 PKGDIR = $(top_srcdir)/packages
 BUILDTESTSDIR = $(top_srcdir)/temp/tests
+else
+BUILDDIR = $(curdir)/temp
+PKGDIR = $(curdir)/packages
+BUILDTESTSDIR = $(curdir)/temp/tests
+CFLAGS += -I$(curdir)
+CXXFLAGS += -I$(curdir)
+endif
 
 distdir = $(BUILDDIR)/$(PACKAGE)-$(VERSION)
 info-distdir = $(PACKAGE)-docs-info-$(VERSION)

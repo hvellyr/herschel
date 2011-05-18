@@ -493,9 +493,8 @@ generated_file_name=auto-config-local.mk
 
 cat > auto-config-local.mk <<EOF
 # automatically created file.  Don't edit this file manually
-EOF
+srcdir = $srcdir
 
-cat >> auto-config-local.mk <<EOF
 CC = $CC
 CXX = $CXX
 CFLAGS = $CFLAGS
@@ -528,3 +527,17 @@ TARGET_OSVER = $target_osver
 BASE_REP_REVISION = $base_rep_revision
 
 EOF
+
+
+if test "x$compile_inplace" = xno; then
+  cat > Makefile <<EOF
+# automatically created file.  Don't edit this file manually
+-include auto-config-local.mk
+
+AUTO_TARGETS = all build tests docs
+\$(AUTO_TARGETS):
+	@echo "Change to source dir \$(srcdir)"
+	@(echo "Making \$@ in \$\$subdir"; \\
+	  curdir=\$(shell pwd)/ \$(MAKE) -C \$(srcdir) \$@ )
+EOF
+fi

@@ -52,41 +52,45 @@ distdir: $(DISTFILES)
 
 ## ------- rules
 
-$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT) : %.c
+$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(OBJEXT) : %.c
+	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT) : %.cpp
+$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(OBJEXT) : %.cpp
+	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(BUILDDIR)/$(BUILDSTYLE)/%$(DYOEXT) : %.c
+$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(DYOEXT) : %.c
+	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
 	$(CC) $(PIC) $(CFLAGS) -c -o $@ $<
 
-$(BUILDDIR)/$(BUILDSTYLE)/%$(DYOEXT) : %.cpp
+$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(DYOEXT) : %.cpp
+	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
 	$(CXX) $(PIC) $(CXXFLAGS) -c -o $@ $<
 
 $(DEPS_DIR)/%.d: %.c $(PRE_DEPS)
-	$(top_srcdir)/build/mkinstalldirs $(DEPS_DIR); \
-	$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\$(OBJEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)/\1$(OBJEXT) $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
+	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
+	@($(CC) -MM $(CFLAGS) $< > $@.$$$$; \
+		sed 's,\($*\)\$(OBJEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/\1$(OBJEXT) $@ : ,g' < $@.$$$$ > $@; \
+		rm -f $@.$$$$ )
 
 $(DEPS_DIR)/%.d: %.cpp $(PRE_DEPS)
-	$(top_srcdir)/build/mkinstalldirs $(DEPS_DIR); \
-	$(CXX) -MM $(CXXFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\$(OBJEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)/\1$(OBJEXT) $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
+	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
+	@($(CXX) -MM $(CXXFLAGS) $< > $@.$$$$; \
+		sed 's,\($*\)\$(OBJEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/\1$(OBJEXT) $@ : ,g' < $@.$$$$ > $@; \
+		rm -f $@.$$$$ )
 
 $(DEPS_DIR)/%.ld: %.c $(PRE_DEPS)
-	$(top_srcdir)/build/mkinstalldirs $(DEPS_DIR); \
-	$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\$(DYOEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)/\1$(DYOEXT) $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
+	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
+	@($(CC) -MM $(CFLAGS) $< > $@.$$$$; \
+		sed 's,\($*\)\$(DYOEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/\1$(DYOEXT) $@ : ,g' < $@.$$$$ > $@; \
+		rm -f $@.$$$$ )
 
 $(DEPS_DIR)/%.ld: %.cpp $(PRE_DEPS)
-	$(top_srcdir)/build/mkinstalldirs $(DEPS_DIR); \
-	$(CXX) -MM $(CFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\$(DYOEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)/\1$(DYOEXT) $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
+	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
+	@($(CXX) -MM $(CFLAGS) $< > $@.$$$$; \
+		sed 's,\($*\)\$(DYOEXT)[ :]*,$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/\1$(DYOEXT) $@ : ,g' < $@.$$$$ > $@; \
+		rm -f $@.$$$$ )
 
 
 %$(LIBEXT)(%$(OBJEXT)): %$(OBJEXT)
