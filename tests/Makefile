@@ -14,32 +14,56 @@ all-local: all-tests
 
 testtemp_dir = $(BUILDDIR)/temp
 
+ifeq ($(srcdir),)
+TESTS_DIR = .
+else
+TESTS_DIR = $(srcdir)/tests
+endif
+
+ifeq ($(curdir),)
+BASE_DIR = .
+else
+BASE_DIR = $(curdir)
+endif
+
 $(testtemp_dir):
 	@if [ ! -d "$@" ]; then mkdir $@; fi
 
 all-tests: $(testtemp_dir)
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		-I $(top_srcdir)/tests -t $(testtemp_dir) syntax import transform annotate compile
+	@(cd $(BASE_DIR); \
+	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		-I $(TESTS_DIR) -t $(testtemp_dir) \
+	  $(TESTS_DIR)/syntax \
+	  $(TESTS_DIR)/import \
+	  $(TESTS_DIR)/transform \
+	  $(TESTS_DIR)/annotate \
+		$(TESTS_DIR)/compile )
 
 syntax-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		-I $(top_srcdir)/tests syntax
+	@(cd $(BASE_DIR); \
+	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		  -I $(TESTS_DIR) $(TESTS_DIR)/syntax )
 
 import-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		-I $(top_srcdir)/tests import
+	@(cd $(BASE_DIR); \
+	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		  -I $(TESTS_DIR) $(TESTS_DIR)/import )
 
 transform-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		-I $(top_srcdir)/tests transform
+	@(cd $(BASE_DIR); \
+	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		  -I $(TESTS_DIR) $(TESTS_DIR)/transform )
 
 annotate-tests:
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		-I $(top_srcdir)/tests annotate
+	@(cd $(BASE_DIR); \
+	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		  -I $(TESTS_DIR) $(TESTS_DIR)/annotate )
 
 compile-tests: $(testtemp_dir)
-	@$(PYTHON) runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		-I $(top_srcdir)/tests -t $(testtemp_dir) compile
+	@(cd $(BASE_DIR); \
+	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
+		 -I $(TESTS_DIR) -t $(testtemp_dir) \
+	   $(TESTS_DIR)/compile )
 
 include $(top_srcdir)/build/generic.mk
 

@@ -5,8 +5,6 @@
 #
 #  This source code is released under the BSD License.
 
-srcdir ?= .
-
 # ----------------------------------------------------------------------
 
 PACKAGE = herschel
@@ -43,7 +41,11 @@ BASE_REVISION ?= $(shell $(SHELL) $(top_srcdir)/build/reprevision.sh)
 
 
 # include automatic settings (if exist)
+ifeq ($(curdir),)
 -include $(top_srcdir)/auto-config-local.mk
+else
+-include $(curdir)/auto-config-local.mk
+endif
 # include manual user settings (if exist)
 -include $(top_srcdir)/config-local.mk
 # include system fallback settings
