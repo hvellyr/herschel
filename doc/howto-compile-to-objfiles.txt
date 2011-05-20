@@ -1,0 +1,21 @@
+this is function I use to emit an object file:
+
+void output_object (llvm::Module * Module, llvm::TargetMachine * Target, llvm::raw_ostream & Output)
+{
+    llvm::formatted_raw_ostream fOutput (Output);
+
+    FunctionPassManager Passes(Module);
+
+    Passes.add(new TargetData (*Target->getTargetData()));
+
+    if (Target->addPassesToEmitFile(Passes, fOutput, llvm::TargetMachine::CGFT_ObjectFile, llvm::CodeGenOpt::None))
+        throw std::runtime_error ("bad voodoo (Target->addPassesToEmitFile)");
+
+    Passes.doInitialization();
+
+    for (llvm::Module::iterator I = Module->begin(), E = Module->end(); I != E; ++I)
+        if (!I->isDeclaration())
+            Passes.run(*I);
+
+    Passes.doFinalization();
+}
