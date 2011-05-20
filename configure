@@ -493,7 +493,15 @@ generated_file_name=auto-config-local.mk
 
 cat > auto-config-local.mk <<EOF
 # automatically created file.  Don't edit this file manually
+EOF
+
+if test "x$compile_inplace" = xno; then
+  cat >> auto-config-local.mk <<EOF
 srcdir = $srcdir
+EOF
+fi
+
+cat >> auto-config-local.mk <<EOF
 
 CC = $CC
 CXX = $CXX

@@ -20,7 +20,7 @@ else
 TESTS_DIR = $(abspath ../tests)
 endif
 
-ifeq ($(srcdir),)
+ifeq ($(curdir),)
 RUNTIME_DIR = $(top_srcdir)/lib
 else
 RUNTIME_DIR = $(abspath ../lib)
