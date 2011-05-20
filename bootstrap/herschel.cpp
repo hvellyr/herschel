@@ -88,6 +88,7 @@ enum {
   kOptParse,
   kOptDefine,
   kOptInputDir,
+  kOptInputSysDir,
   kOptCompile,
   kOptCompileToBC,
   kOptCompileToIR,
@@ -109,6 +110,7 @@ main(int argc, char** argv)
     { kOptParse,        "-P",  "--parse",          !K(argument) },
     { kOptDefine,       "-D",  "--define",          K(argument) },
     { kOptInputDir,     "-I",  "--input",           K(argument) },
+    { kOptInputSysDir,  NULL,  "--isys",            K(argument) },
     { kOptCompileToIR,  "-s",  NULL,               !K(argument) },
     { kOptCompile,      "-c",  NULL,               !K(argument) },
     { kOptOptimizeMore, "-O",  NULL,               !K(argument) },
@@ -183,6 +185,9 @@ main(int argc, char** argv)
       case kOptInputDir:
         hrcOptions.push_back(String("-I"));
         hrcOptions.push_back(option.fArgument);
+        break;
+      case kOptInputSysDir:
+        hrcOptions.push_back(String("--isys=") + option.fArgument);
         break;
 
       case kOptOptimizeMore:
