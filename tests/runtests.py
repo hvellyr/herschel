@@ -112,6 +112,7 @@ class TestRunner:
         self.total_test_succeeded = 0
         self.total_test_run = 0
         self.input_dir = False
+        self.sys_dir = False
         self.temp_dir = None
         self.last_passid = -1
         self.column_count = 0
@@ -199,9 +200,13 @@ class TestRunner:
         if self.input_dir:
             cmd.append('-I')
             cmd.append(self.input_dir)
+        if self.sys_dir:
+            cmd.append('--isys=' + self.sys_dir)
         cmd.append(test_file)
 
-        #print cmd
+#        print ""
+#        print os.environ['PWD']
+#        print cmd
 
         use_env = os.environ
         if env is not None:
@@ -637,6 +642,9 @@ def main():
     parser.add_option("-I", "--input",
                       dest="input", default=".",
                       help="give the input directory to the compiler")
+    parser.add_option("-J", "--isys",
+                      dest="sysdir", default=".",
+                      help="give the system input directory to the compiler")
     parser.add_option("-t", "--temp-dir",
                       dest="temp_dir", default=None,
                       help="give a directory where temporary data can be stored")
@@ -652,6 +660,8 @@ def main():
 
     if options.input:
         tr.input_dir = options.input
+    if options.sysdir:
+        tr.sys_dir = options.sysdir
 
     if options.temp_dir:
         tr.temp_dir = options.temp_dir

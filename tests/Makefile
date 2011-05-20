@@ -15,9 +15,15 @@ all-local: all-tests
 testtemp_dir = $(BUILDDIR)/temp
 
 ifeq ($(srcdir),)
-TESTS_DIR = .
+TESTS_DIR = $(top_srcdir)/tests
 else
-TESTS_DIR = $(srcdir)/tests
+TESTS_DIR = $(abspath ../tests)
+endif
+
+ifeq ($(srcdir),)
+RUNTIME_DIR = $(top_srcdir)/lib
+else
+RUNTIME_DIR = $(abspath ../lib)
 endif
 
 ifeq ($(curdir),)
@@ -32,7 +38,7 @@ $(testtemp_dir):
 all-tests: $(testtemp_dir)
 	@(cd $(BASE_DIR); \
 	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		-I $(TESTS_DIR) -t $(testtemp_dir) \
+		-I $(TESTS_DIR) -t $(testtemp_dir) --isys $(RUNTIME_DIR) \
 	  $(TESTS_DIR)/syntax \
 	  $(TESTS_DIR)/import \
 	  $(TESTS_DIR)/transform \
@@ -42,27 +48,27 @@ all-tests: $(testtemp_dir)
 syntax-tests:
 	@(cd $(BASE_DIR); \
 	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		  -I $(TESTS_DIR) $(TESTS_DIR)/syntax )
+		  -I $(TESTS_DIR) --isys $(RUNTIME_DIR) $(TESTS_DIR)/syntax )
 
 import-tests:
 	@(cd $(BASE_DIR); \
 	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		  -I $(TESTS_DIR) $(TESTS_DIR)/import )
+		  -I $(TESTS_DIR) --isys $(RUNTIME_DIR) $(TESTS_DIR)/import )
 
 transform-tests:
 	@(cd $(BASE_DIR); \
 	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		  -I $(TESTS_DIR) $(TESTS_DIR)/transform )
+		  -I $(TESTS_DIR) --isys $(RUNTIME_DIR) $(TESTS_DIR)/transform )
 
 annotate-tests:
 	@(cd $(BASE_DIR); \
 	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		  -I $(TESTS_DIR) $(TESTS_DIR)/annotate )
+		  -I $(TESTS_DIR) --isys $(RUNTIME_DIR) $(TESTS_DIR)/annotate )
 
 compile-tests: $(testtemp_dir)
 	@(cd $(BASE_DIR); \
 	  $(PYTHON) $(TESTS_DIR)/runtests.py $(RUNTESTOPT) -e $(BUILDDIR)/$(BUILDSTYLE) \
-		 -I $(TESTS_DIR) -t $(testtemp_dir) \
+		 -I $(TESTS_DIR) -t $(testtemp_dir) --isys $(RUNTIME_DIR) \
 	   $(TESTS_DIR)/compile )
 
 include $(top_srcdir)/build/generic.mk

@@ -103,6 +103,7 @@ enum {
   kOptParse,
   kOptDefine,
   kOptInputDir,
+  kOptInputSysDir,
   kOptCompile,
   kOptCompileToIR,
   kOptOptimizeMore,
@@ -142,6 +143,7 @@ main(int argc, char** argv)
     { kOptParse,        "-P",  "--parse",          !K(argument) },
     { kOptDefine,       "-D",  "--define",          K(argument) },
     { kOptInputDir,     "-I",  "--input",           K(argument) },
+    { kOptInputSysDir,  NULL,  "--isys",            K(argument) },
     { kOptCompileToIR,  "-s",  NULL,               !K(argument) },
     { kOptCompile,      "-c",  NULL,               !K(argument) },
     { kOptOptimizeMore, "-O",  NULL,               !K(argument) },
@@ -166,6 +168,8 @@ main(int argc, char** argv)
   OptionsParser::ArgumentType type;
   OptionsParser::Option option;
   OptionsParser optp(herschelOptions, argc, (const char**)argv);
+
+  setupDefaultPath();
 
   while ((type = optp.nextOption(&option)) != OptionsParser::kNoMoreArgs) {
     switch (type) {
@@ -217,6 +221,10 @@ main(int argc, char** argv)
         Properties::addInputDir(option.fArgument);
         break;
 
+      case kOptInputSysDir:
+        Properties::addSystemDir(option.fArgument);
+        break;
+
       case kOptOptimizeMore:
         Properties::setOptimizeLevel(kOptLevelBasic);
         break;
@@ -266,9 +274,6 @@ main(int argc, char** argv)
     default: ;
     }
   }
-
-
-  setupDefaultPath();
 
   switch (func) {
   case kDisplayHelp:

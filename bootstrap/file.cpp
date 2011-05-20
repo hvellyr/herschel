@@ -467,8 +467,8 @@ checkForFileWithExts(const String& fullPath,
 
 String
 herschel::file::lookupInPath(const String& pattern,
-                            const StringVector& searchPath,
-                            const StringVector& altExtensions)
+                             const StringVector& searchPath,
+                             const StringVector& altExtensions)
 {
   if (file::isAbsolutePath(pattern)) {
     String result = checkForFileWithExts(file::canonicalPathName(pattern),
