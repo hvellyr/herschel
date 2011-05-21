@@ -164,10 +164,12 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
 
     // TODO: enforce ATOM types for spec args and returnvalue in generic functions
     // TODO ende name
-    llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func.fFunc, param->name(),
-                                                         fTypes->getType(param->type()));
-    llvm::Value* tmpValue = emitPackCode(param->dstType(), param->typeConv(),
-                                         aiter, param->type());
+    llvm::AllocaInst *stackSlot =
+      fTools->createEntryBlockAlloca(func.fFunc, param->name(),
+                                     fTypes->getType(param->type()));
+    llvm::Value* tmpValue = fTools->emitPackCode(param->dstType(),
+                                                 param->typeConv(),
+                                                 aiter, param->type());
     fBuilder.CreateStore(tmpValue, stackSlot);
 
     realFuncArgv.push_back(stackSlot);
@@ -218,8 +220,9 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
     realFuncArgv[i] = fBuilder.CreateLoad(realFuncArgv[i]);
 
   // insert the return value into the argument list
-  llvm::AllocaInst *retv = createEntryBlockAlloca(func.fFunc, String("retv"),
-                                                  fTypes->getAtomType());
+  llvm::AllocaInst *retv = fTools->createEntryBlockAlloca(func.fFunc,
+                                                          String("retv"),
+                                                          fTypes->getAtomType());
   realFuncArgv.insert(realFuncArgv.begin(), retv); //func.fFunc->arg_begin());
 
   llvm::Value* f = fBuilder.CreateBitCast(realFuncPtr, func.fType->getPointerTo());
@@ -317,10 +320,13 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
          pidx++, ++aiter)
     {
       const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
-      llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func.fFunc, param->name(),
-                                                           fTypes->getType(param->type()));
-      llvm::Value* tmpValue = emitPackCode(param->dstType(), param->typeConv(),
-                                           aiter, param->type());
+      llvm::AllocaInst *stackSlot =
+        fTools->createEntryBlockAlloca(func.fFunc,
+                                       param->name(),
+                                       fTypes->getType(param->type()));
+      llvm::Value* tmpValue = fTools->emitPackCode(param->dstType(),
+                                                   param->typeConv(),
+                                                   aiter, param->type());
       fBuilder.CreateStore(tmpValue, stackSlot);
 
       fNamedValues[param->name()] = stackSlot;
@@ -343,23 +349,25 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
         hr_assert(!node->isMethod());
         // the app|main function always returns lang|Int32
         if (node->body()->type().isPlainType()) {
-          fBuilder.CreateStore(fBuilder.CreateIntCast(wrapLoad(retv),
+          fBuilder.CreateStore(fBuilder.CreateIntCast(fTools->wrapLoad(retv),
                                                       llvm::Type::getInt32Ty(context()),
                                                       true),
                                func.fFunc->arg_begin());
         }
         else {
-          llvm::Value* convertedRetv = makeTypeCastAtomToPlain(wrapLoad(retv),
-                                                               Type::newTypeRef("clang|int"));
+          llvm::Value* convertedRetv =
+            fTools->makeTypeCastAtomToPlain(fTools->wrapLoad(retv),
+                                            Type::newTypeRef("clang|int"));
           fBuilder.CreateStore(convertedRetv, func.fFunc->arg_begin());
         }
       }
       else if (forceAtomReturnType) {
         if (node->body()->type().isPlainType()) {
-          llvm::Value* tmpValue = emitPackCode(node->body()->dstType(),
-                                               node->body()->typeConv(),
-                                               wrapLoad(retv),
-                                               node->body()->type());
+          llvm::Value* tmpValue =
+            fTools->emitPackCode(node->body()->dstType(),
+                                 node->body()->typeConv(),
+                                 fTools->wrapLoad(retv),
+                                 node->body()->type());
           // mmh.  Don't know why a createstore does work here.  But it does ...?
           fBuilder.CreateStore(tmpValue, func.fFunc->arg_begin());
           //assignAtom(tmpValue, func.fFunc->arg_begin());
@@ -368,7 +376,8 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
           fTools->assignAtom(retv, func.fFunc->arg_begin());
       }
       else if (func.fRetType.isPlainType()) {
-        fBuilder.CreateStore(wrapLoad(retv), func.fFunc->arg_begin());
+        fBuilder.CreateStore(fTools->wrapLoad(retv),
+                             func.fFunc->arg_begin());
       }
       else {
         // no wrap-load!
@@ -378,7 +387,7 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
       fBuilder.CreateRetVoid();
     }
     else
-      fBuilder.CreateRet(wrapLoad(retv));
+      fBuilder.CreateRet(fTools->wrapLoad(retv));
 
     if (Properties::isCodeDump())
       func.fFunc->dump();

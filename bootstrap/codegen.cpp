@@ -199,6 +199,8 @@ CodeGenerator::optPassManager() const
 }
 
 
+//------------------------------------------------------------------------------
+
 bool
 CodeGenerator::compileToCode(const CompileUnitNode* node,
                              const String& outputFile)
@@ -231,20 +233,6 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
 
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-
-llvm::Value*
-CodeGenerator::wrapLoad(llvm::Value* val)
-{
-  if (val != NULL) {
-    if (llvm::AllocaInst::classof(val) ||
-        llvm::GlobalValue::classof(val))
-      return fBuilder.CreateLoad(val);
-  }
-  return val;
-}
-
-
 llvm::Value*
 CodeGenerator::codegenNode(const AptNode* node, bool autoloadAllocInst)
 {
@@ -268,59 +256,6 @@ CodeGenerator::codegen(const CompileUnitNode* node)
   }
 
   return NULL;
-}
-
-
-void
-CodeGenerator::createDefaultCMainFunc()
-{
-  std::vector<const llvm::Type*> sign;
-  sign.push_back(llvm::Type::getInt32Ty(context()));
-  sign.push_back(llvm::Type::getInt8Ty(context())->getPointerTo()->getPointerTo());
-
-  llvm::FunctionType *ft =
-  llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
-                          sign,
-                          false);
-  hr_assert(ft != NULL);
-
-  llvm::Function *func = llvm::Function::Create(ft,
-                                                llvm::Function::ExternalLinkage,
-                                                std::string("main"),
-                                                fModule);
-
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(),
-                                                  "entry", func);
-  fBuilder.SetInsertPoint(bb);
-
-  String appMainFuncNm = herschel::mangleToC(String("app|main"));
-  llvm::Function* appMainFunc = fModule->getFunction(llvm::StringRef(appMainFuncNm));
-  hr_assert(appMainFunc != NULL);
-
-  llvm::AllocaInst* retv = createEntryBlockAlloca(func, String("tmp2"),
-                                                  llvm::Type::getInt32Ty(context()));
-  std::vector<llvm::Value*> argv;
-  argv.push_back(retv);
-  fBuilder.CreateCall(appMainFunc, argv.begin(), argv.end());
-
-  llvm::Value* retv2 = fBuilder.CreateLoad(retv);
-  fBuilder.CreateRet(retv2);
-
-  verifyFunction(*func);
-
-  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-    fOptPassManager->run(*func);
-}
-
-
-//------------------------------------------------------------------------------
-
-llvm::AllocaInst*
-CodeGenerator::createEntryBlockAlloca(llvm::Function *func, const String& name,
-                                      const llvm::Type* type)
-{
-  llvm::IRBuilder<> tmp(&func->getEntryBlock(), func->getEntryBlock().begin());
-  return tmp.CreateAlloca(type, 0, llvm::Twine(name));
 }
 
 
@@ -433,7 +368,7 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
       convKind = kNoConv;
     }
     else {
-      initval = wrapLoad(codegenNode(node->initExpr()));
+      initval = fTools->wrapLoad(codegenNode(node->initExpr()));
 
       dstType = node->initExpr()->dstType();
       type = node->initExpr()->type();
@@ -450,11 +385,11 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
 
-  llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
-                                                       node->name(),
-                                                       fTypes->getType(node->type()));
+  llvm::AllocaInst* stackSlot = fTools->createEntryBlockAlloca(curFunction,
+                                                               node->name(),
+                                                               fTypes->getType(node->type()));
 
-  llvm::Value* val = emitPackCode(dstType, convKind, initval, type);
+  llvm::Value* val = fTools->emitPackCode(dstType, convKind, initval, type);
   fBuilder.CreateStore(val, stackSlot);
 
   fNamedValues[node->name()] = stackSlot;
@@ -479,10 +414,10 @@ CodeGenerator::codegen(const AssignNode* node)
       return NULL;
     }
 
-    llvm::Value* val = emitPackCode(node->rvalue()->dstType(),
-                                    node->rvalue()->typeConv(),
-                                    wrapLoad(rvalue),
-                                    node->rvalue()->type());
+    llvm::Value* val = fTools->emitPackCode(node->rvalue()->dstType(),
+                                            node->rvalue()->typeConv(),
+                                            fTools->wrapLoad(rvalue),
+                                            node->rvalue()->type());
     fBuilder.CreateStore(val, var);
 
     return rvalue;
@@ -582,7 +517,7 @@ CodeGenerator::codegen(const BoolNode* node)
       return fBuilder.getFalse();
   }
 
-  return makeBoolAtom(node->value());
+  return fTools->makeBoolAtom(node->value());
 }
 
 
@@ -600,52 +535,6 @@ CodeGenerator::codegen(const KeywordNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   return NULL;
-}
-
-
-llvm::Value*
-CodeGenerator::makeInt32Atom(int val)
-{
-  return makeIntAtom(llvm::ConstantInt::get(context(),
-                                            llvm::APInt(32, val, true)),
-                     kAtomInt32);
-}
-
-
-llvm::Value*
-CodeGenerator::makeIntAtom(llvm::Value* val, Typeid atomTypeId)
-{
-  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("int"),
-                                                  fTypes->getAtomType());
-
-  setAtom(atom, atomTypeId, val);
-
-  return atom;
-}
-
-
-llvm::Value*
-CodeGenerator::makeBoolAtom(llvm::Value* val)
-{
-  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("bool"),
-                                                  fTypes->getAtomType());
-
-  // set typeid
-  setAtom(atom, kAtomBool, val);
-
-  return atom;
-}
-
-
-llvm::Value*
-CodeGenerator::makeBoolAtom(bool val)
-{
-  if (val)
-    return makeBoolAtom(llvm::ConstantInt::getTrue(context()));
-  else
-    return makeBoolAtom(llvm::ConstantInt::getFalse(context()));
 }
 
 
@@ -755,104 +644,6 @@ CodeGenerator::codegen(const FunctionNode* node)
 }
 
 
-static const char*
-getConvFuncNameByType(const Type& type)
-{
-  if (type.typeName() == String("lang|Int32"))
-    return "atom_2_int32";
-  else if (type.typeName() == String("lang|Int64"))
-    return "atom_2_int64";
-  else if (type.typeName() == String("lang|Int16"))
-    return "atom_2_int16";
-  else if (type.typeName() == String("lang|Int8"))
-    return "atom_2_int8";
-  else if (type.typeName() == String("lang|UInt32"))
-    return "atom_2_uint32";
-  else if (type.typeName() == String("lang|UInt64"))
-    return "atom_2_uint64";
-  else if (type.typeName() == String("lang|UInt16"))
-    return "atom_2_uint16";
-  else if (type.typeName() == String("lang|UInt8"))
-    return "atom_2_uint8";
-  else if (type.typeName() == String("lang|Float32"))
-    return "atom_2_float32";
-  else if (type.typeName() == String("lang|Float64"))
-    return "atom_2_float64";
-  else if (type.typeName() == String("lang|Char"))
-    return "atom_2_char";
-  else if (type.typeName() == String("lang|Bool"))
-    return "atom_2_bool";
-
-  if (type.typeName() == String("clang|int")) // TODO
-    return "atom_2_int32";
-
-  hr_invalid((const char*)StrHelper(String("unhandled type: ") + type.typeId()));
-  return NULL;
-}
-
-
-llvm::Value*
-CodeGenerator::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType)
-{
-  const char* funcName = getConvFuncNameByType(dstType);
-
-  llvm::Function* convFunc = fModule->getFunction(llvm::StringRef(funcName));
-  if (convFunc == NULL) {
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(fTypes->getAtomType());
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getType(dstType),
-                                                     sign,
-                                                     false);
-
-    convFunc = llvm::Function::Create(ft,
-                                      llvm::Function::ExternalLinkage,
-                                      llvm::Twine(funcName),
-                                      fModule);
-  }
-
-  std::vector<llvm::Value*> argv;
-  argv.push_back(val);
-  return fBuilder.CreateCall(convFunc, argv.begin(), argv.end(), "calltmp");
-}
-
-
-llvm::Value*
-CodeGenerator::emitPackCode(const Type& dstType, TypeConvKind convKind,
-                            llvm::Value* value,
-                            const Type& valType)
-{
-  if (dstType.isDef()) {
-    // fprintf(stderr, "-----------------------\n");
-    // fprintf(stderr, "type conv: %d\n", convKind);
-    // tyerror(dstType, "dstType");
-    // tyerror(valType, "valType");
-    // fprintf(stderr, "Value to emit: "); value->dump();
-
-    switch (convKind) {
-    case kNoConv:
-      return value;
-    case kAtom2PlainConv:
-      return makeTypeCastAtomToPlain(value, dstType);
-    case kPlain2AtomConv:
-      if (valType.typeName() == String("lang|Int32"))
-        return wrapLoad(makeIntAtom(value, kAtomInt32));
-      else if (valType.typeName() == String("lang|Bool"))
-        return wrapLoad(makeBoolAtom(value));
-      // TODO
-      //return value;
-
-    case kTypeCheckConv:
-      // fprintf(stderr, "Not implemented yet\n");
-      // hr_invalid("not implemented yet");
-      return value;
-    }
-  }
-
-  return value;
-}
-
-
 llvm::Value*
 CodeGenerator::codegen(const ApplyNode* node)
 {
@@ -904,20 +695,20 @@ CodeGenerator::codegen(const ApplyNode* node)
   const llvm::Type* returnType = ( alwaysPassAtom
                                    ? fTypes->getAtomType()
                                    : fTypes->getType(node->type()) );
-  retv = createEntryBlockAlloca(curFunction, String("local_retv"),
-                                returnType);
+  retv = fTools->createEntryBlockAlloca(curFunction, String("local_retv"),
+                                        returnType);
 
   std::vector<llvm::Value*> argv;
   if (inlineRetv)
     argv.push_back(retv);
 
   for (unsigned i = 0, e = args.size(); i != e; ++i) {
-    llvm::Value* val = wrapLoad(codegenNode(args[i]));
+    llvm::Value* val = fTools->wrapLoad(codegenNode(args[i]));
 
     // TODO: can we assert that spec args are ATOM typed.
     // warningf(args[i]->srcpos(), 0, "emit pack code");
-    val = emitPackCode(args[i]->dstType(), args[i]->typeConv(),
-                       val, args[i]->type());
+    val = fTools->emitPackCode(args[i]->dstType(), args[i]->typeConv(),
+                               val, args[i]->type());
 
     // val->dump();
     if (val == NULL)
@@ -937,7 +728,7 @@ CodeGenerator::codegen(const ApplyNode* node)
                                                "xxx");
     if (node->isInTailPos()) {
       // TODO: return type id
-      setAtom(retv, kAtomInt32, funcVal);
+      fTools->setAtom(retv, CodegenTools::kAtomInt32, funcVal);
       return retv;
     }
     else
@@ -973,8 +764,8 @@ CodeGenerator::codegen(const BinaryNode* node)
   //         node->typeConv());
   // tyerror(node->type(), "type");
   // tyerror(node->dstType(), "dsttype");
-  llvm::Value *left = wrapLoad(codegenNode(node->left()));
-  llvm::Value *right = wrapLoad(codegenNode(node->right()));
+  llvm::Value *left = fTools->wrapLoad(codegenNode(node->left()));
+  llvm::Value *right = fTools->wrapLoad(codegenNode(node->right()));
   if (left == NULL || right == NULL)
     return NULL;
 
@@ -999,7 +790,7 @@ CodeGenerator::codegen(const BinaryNode* node)
 llvm::Value*
 CodeGenerator::codegen(const NegateNode* node)
 {
-  llvm::Value *base = wrapLoad(codegenNode(node->base()));
+  llvm::Value *base = fTools->wrapLoad(codegenNode(node->base()));
   if (base == NULL)
     return NULL;
 
@@ -1015,14 +806,14 @@ CodeGenerator::codegen(const NegateNode* node)
 llvm::Value*
 CodeGenerator::codegen(const IfNode* node)
 {
-  llvm::Value *testValue = wrapLoad(codegenNode(node->test()));
+  llvm::Value *testValue = fTools->wrapLoad(codegenNode(node->test()));
   if (testValue == NULL)
     return NULL;
 
-  llvm::Value* extrTestVal = emitPackCode(node->test()->dstType(),
-                                          node->test()->typeConv(),
-                                          testValue,
-                                          node->test()->type());
+  llvm::Value* extrTestVal = fTools->emitPackCode(node->test()->dstType(),
+                                                  node->test()->typeConv(),
+                                                  testValue,
+                                                  node->test()->type());
 
   // Convert condition to a bool by comparing equal to 1
   testValue = fBuilder.CreateICmpEQ(extrTestVal,
@@ -1046,13 +837,13 @@ CodeGenerator::codegen(const IfNode* node)
   // Emit then value.
   fBuilder.SetInsertPoint(thenBB);
 
-  llvm::Value *thenValue = wrapLoad(codegenNode(node->consequent()));
+  llvm::Value *thenValue = fTools->wrapLoad(codegenNode(node->consequent()));
   if (thenValue == NULL)
     return NULL;
-  llvm::Value* thenValue2 = emitPackCode(node->consequent()->dstType(),
-                                         node->consequent()->typeConv(),
-                                         thenValue,
-                                         node->consequent()->type());
+  llvm::Value* thenValue2 = fTools->emitPackCode(node->consequent()->dstType(),
+                                                 node->consequent()->typeConv(),
+                                                 thenValue,
+                                                 node->consequent()->type());
 
   fBuilder.CreateBr(mergeBB);
   // Get a reference to the current thenBB, since codegen of 'then' can change
@@ -1066,13 +857,13 @@ CodeGenerator::codegen(const IfNode* node)
 
   llvm::Value* elseValue = NULL;
   if (node->alternate() != NULL) {
-    llvm::Value* elseValue0 = wrapLoad(codegenNode(node->alternate()));
+    llvm::Value* elseValue0 = fTools->wrapLoad(codegenNode(node->alternate()));
     if (elseValue0 == NULL)
       return NULL;
-    elseValue = emitPackCode(node->alternate()->dstType(),
-                             node->alternate()->typeConv(),
-                             elseValue0,
-                             node->alternate()->type());
+    elseValue = fTools->emitPackCode(node->alternate()->dstType(),
+                                     node->alternate()->typeConv(),
+                                     elseValue0,
+                                     node->alternate()->type());
   }
   else
     elseValue = llvm::Constant::getNullValue(fTypes->getType(node->type()));
@@ -1157,14 +948,14 @@ CodeGenerator::codegen(const WhileNode* node)
   // Start insertion in loopBB.
   fBuilder.SetInsertPoint(loopHeadBB);
 
-  llvm::Value *testValue = wrapLoad(codegenNode(node->test()));
+  llvm::Value *testValue = fTools->wrapLoad(codegenNode(node->test()));
   if (testValue == NULL)
     return NULL;
 
-  llvm::Value* extrTestVal = emitPackCode(node->test()->dstType(),
-                                          node->test()->typeConv(),
-                                          testValue,
-                                          node->test()->type());
+  llvm::Value* extrTestVal = fTools->emitPackCode(node->test()->dstType(),
+                                                  node->test()->typeConv(),
+                                                  testValue,
+                                                  node->test()->type());
 
   // Convert condition to a bool by comparing equal to 1
   testValue = fBuilder.CreateICmpEQ(extrTestVal,
@@ -1194,14 +985,14 @@ CodeGenerator::codegen(const WhileNode* node)
 llvm::Value*
 CodeGenerator::codegen(const CastNode* node)
 {
-  llvm::Value *val = wrapLoad(codegenNode(node->base()));
+  llvm::Value *val = fTools->wrapLoad(codegenNode(node->base()));
   if (val == NULL)
     return NULL;
 
-  return emitPackCode(node->base()->dstType(),
-                      node->base()->typeConv(),
-                      val,
-                      node->base()->type());
+  return fTools->emitPackCode(node->base()->dstType(),
+                              node->base()->typeConv(),
+                              val,
+                              node->base()->type());
 }
 
 
@@ -1211,43 +1002,3 @@ CodeGenerator::codegen(const UndefNode* node)
   hr_invalid("You shouldn't be here");
   return NULL;
 }
-
-
-//------------------------------------------------------------------------------
-
-void
-CodeGenerator::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
-{
-  llvm::Value* typidSlot = fBuilder.CreateStructGEP(atom, 0);
-  llvm::Value* typeIdValue = NULL;
-  if (is64Bit())
-    typeIdValue =llvm::ConstantInt::get(context(),
-                                        llvm::APInt(64, (int)typid, !K(isSigned)));
-  else
-    typeIdValue =llvm::ConstantInt::get(context(),
-                                        llvm::APInt(32, (int)typid, !K(isSigned)));
-
-  fBuilder.CreateStore(typeIdValue, typidSlot);
-
-  llvm::Value* payload = fBuilder.CreateStructGEP(atom, 1);
-  llvm::Value* slot = fBuilder.CreateStructGEP(payload, 0);
-
-  if (typid == kAtomBool) {
-    const llvm::Type *dstBasePtr = llvm::Type::getInt1PtrTy(context());
-    slot = fBuilder.CreateBitCast(slot, dstBasePtr, "tmp");
-    fBuilder.CreateStore(value, slot);
-  }
-  else if (typid == kAtomInt32) {
-    llvm::Value* val = ( is64Bit()
-                         ? fBuilder.CreateIntCast(value,
-                                                  llvm::Type::getInt64Ty(context()),
-                                                  K(isSigned),
-                                                  "tmp")
-                         : value );
-    fBuilder.CreateStore(val, slot);
-  }
-  else
-    fBuilder.CreateStore(value, slot);
-}
-
-

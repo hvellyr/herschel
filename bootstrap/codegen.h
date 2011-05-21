@@ -163,27 +163,6 @@ namespace herschel
 
     llvm::Value* codegenForGlobalVars(const VardefNode* node);
 
-    llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
-                                             const String& name,
-                                             const llvm::Type* type);
-
-    llvm::Value* makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType);
-
-    enum Typeid {
-      //kAtomAny    = 'A',
-      kAtomBool   = 'b',
-      kAtomInt32  = 'i',
-      kAtomChar   = 'c'
-    };
-
-    void setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value);
-
-    llvm::Value* wrapLoad(llvm::Value* val);
-
-    llvm::Value* makeInt32Atom(int val);
-    llvm::Value* makeIntAtom(llvm::Value* val, Typeid atomTypeId);
-    llvm::Value* makeBoolAtom(llvm::Value* val);
-    llvm::Value* makeBoolAtom(bool val);
 
     //------------------------------ functions
 
@@ -222,9 +201,6 @@ namespace herschel
                                  llvm::Value* left,
                                  llvm::Value* right);
 
-    llvm::Value* emitPackCode(const Type& dstType, TypeConvKind convKind,
-                              llvm::Value* value,
-                              const Type& valType);
 
     llvm::Value* makeGetTypeLookupCall(const Type& ty) const;
     llvm::Value* makeGetGenericFuncLookupCall(const FuncDefNode* node) const;

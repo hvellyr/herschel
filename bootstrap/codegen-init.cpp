@@ -16,6 +16,7 @@
 #include "xmlout.h"
 #include "predefined.h"
 #include "codegen-init.h"
+#include "codegen-tools.h"
 #include "codegen-types.h"
 
 #include <vector>
@@ -318,6 +319,13 @@ ModuleRuntimeInitializer::types() const
 }
 
 
+CodegenTools*
+ModuleRuntimeInitializer::tools() const
+{
+  return fGenerator->fTools;
+}
+
+
 //! Add a function to the list that will be called before main() runs.
 void
 ModuleRuntimeInitializer::addGlobalCtor(llvm::Function* ctor, int priority)
@@ -453,9 +461,9 @@ ModuleRuntimeInitializer::emitGlobalVarInitFunc()
       fGenerator->fGlobalVariables.find(varnode->name());
       hr_assert(it != fGenerator->fGlobalVariables.end());
 
-      llvm::Value* val = fGenerator->emitPackCode(varnode->initExpr()->dstType(),
-                                                  varnode->initExpr()->typeConv(),
-                                                  initval, varnode->initExpr()->type());
+      llvm::Value* val = tools()->emitPackCode(varnode->initExpr()->dstType(),
+                                               varnode->initExpr()->typeConv(),
+                                               initval, varnode->initExpr()->type());
       builder().CreateStore(val, it->second);
     }
   }
@@ -935,3 +943,49 @@ CodeGenerator::makeGetGenericFuncLookupCall(const FuncDefNode* node) const
   std::vector<llvm::Value*> argv;
   return builder().CreateCall(gfFunc, argv.begin(), argv.end());
 }
+
+
+//------------------------------------------------------------------------------
+
+void
+CodeGenerator::createDefaultCMainFunc()
+{
+  std::vector<const llvm::Type*> sign;
+  sign.push_back(llvm::Type::getInt32Ty(context()));
+  sign.push_back(llvm::Type::getInt8Ty(context())->getPointerTo()->getPointerTo());
+
+  llvm::FunctionType *ft =
+  llvm::FunctionType::get(llvm::Type::getInt32Ty(context()),
+                          sign,
+                          false);
+  hr_assert(ft != NULL);
+
+  llvm::Function *func = llvm::Function::Create(ft,
+                                                llvm::Function::ExternalLinkage,
+                                                std::string("main"),
+                                                fModule);
+
+  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(),
+                                                  "entry", func);
+  fBuilder.SetInsertPoint(bb);
+
+  String appMainFuncNm = herschel::mangleToC(String("app|main"));
+  llvm::Function* appMainFunc = fModule->getFunction(llvm::StringRef(appMainFuncNm));
+  hr_assert(appMainFunc != NULL);
+
+  llvm::AllocaInst* retv = fTools->createEntryBlockAlloca(func, String("tmp2"),
+                                                          llvm::Type::getInt32Ty(context()));
+  std::vector<llvm::Value*> argv;
+  argv.push_back(retv);
+  fBuilder.CreateCall(appMainFunc, argv.begin(), argv.end());
+
+  llvm::Value* retv2 = fBuilder.CreateLoad(retv);
+  fBuilder.CreateRet(retv2);
+
+  verifyFunction(*func);
+
+  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+    fOptPassManager->run(*func);
+}
+
+

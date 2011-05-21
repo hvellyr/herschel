@@ -15,6 +15,7 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "codegen-tools.h"
 #include "codegen-types.h"
 
 #include <vector>
@@ -58,7 +59,7 @@ CodeGenerator::wrapInt(llvm::Value* value, const Type& type)
 
   hr_assert(type.isAnyInt());
   if (type.isInt32())
-    return makeIntAtom(value, kAtomInt32);
+    return fTools->makeIntAtom(value, CodegenTools::kAtomInt32);
 
   hr_invalid("TODO unhandled int type");
 
@@ -74,7 +75,7 @@ CodeGenerator::wrapBool(llvm::Value* value, const Type& type)
     return value;
 
   hr_assert(type.isBool());
-  return makeBoolAtom(value);
+  return fTools->makeBoolAtom(value);
 }
 
 
@@ -103,12 +104,12 @@ CodeGenerator::codegenOpIntInt(const BinaryNode* node,
   if (isPlainInt(node->left()->type()))
     coleft = coerceIntOperand(node->left()->type(), node->left()->type(), left);
   else if (node->left()->type().isAnyInt())
-    coleft = makeTypeCastAtomToPlain(left, node->left()->type());
+    coleft = fTools->makeTypeCastAtomToPlain(left, node->left()->type());
 
   if (isPlainInt(node->left()->type()) && isPlainInt(node->right()->type()))
     coright = coerceIntOperand(node->left()->type(), node->right()->type(), right);
   else if (node->right()->type().isAnyInt())
-    coright = makeTypeCastAtomToPlain(right, node->left()->type());
+    coright = fTools->makeTypeCastAtomToPlain(right, node->left()->type());
 
   switch (node->op()) {
   case kOpPlus:
