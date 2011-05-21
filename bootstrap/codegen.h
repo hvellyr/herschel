@@ -153,6 +153,8 @@ namespace herschel
     friend class CodegenBinaryNode;
     friend class CodegenFuncDef;
     friend class CodeGeneratorProxy;
+    friend class CodegenApply;
+    friend class CodegenVardef;
 
     void setupOptPassManager();
 
@@ -163,18 +165,11 @@ namespace herschel
 
     void createDefaultCMainFunc();
 
-    llvm::Value* codegenForGlobalVars(const VardefNode* node);
-
 
     //------------------------------ emit operators
 
     llvm::Value* makeGetTypeLookupCall(const Type& ty) const;
     llvm::Value* makeGetGenericFuncLookupCall(const FuncDefNode* node) const;
-
-    //------------------------------ allocation
-
-    llvm::Value* emitAllocateApply(const ApplyNode* node);
-    llvm::Value* emitTypeNameForAllocate(const AptNode* node);
 
     //-------- data members
 
