@@ -10,6 +10,8 @@
 
 
 #include "codegen.h"
+#include "codegen-init.h"
+#include "codegen-types.h"
 #include "apt.h"
 #include "log.h"
 #include "properties.h"
