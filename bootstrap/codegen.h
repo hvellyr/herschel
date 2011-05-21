@@ -78,6 +78,7 @@ namespace herschel
   class WhileNode;
 
   class CodegenTypeUtils;
+  class CodegenTools;
   class ModuleRuntimeInitializer;
   class String;
 
@@ -144,6 +145,7 @@ namespace herschel
   private:
     friend class ModuleRuntimeInitializer;
     friend class CodegenTypeUtils;
+    friend class CodegenTools;
 
     void setupOptPassManager();
 
@@ -175,14 +177,6 @@ namespace herschel
     };
 
     void setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value);
-
-    void assignAtom(llvm::Value* src, llvm::Value* dst);
-
-    llvm::Function* getIntrinsic(unsigned int iid,
-                 const llvm::Type** tys, unsigned int numTys);
-    llvm::Function* getMemCpyFn(const llvm::Type* dstType,
-                                const llvm::Type* srcType,
-                                const llvm::Type* sizeType);
 
     llvm::Value* wrapLoad(llvm::Value* val);
 
@@ -251,6 +245,7 @@ namespace herschel
 
     Ptr<ModuleRuntimeInitializer> fInitializer;
     Ptr<CodegenTypeUtils>      fTypes;
+    Ptr<CodegenTools>          fTools;
 
     bool fHasMainFunc;
 

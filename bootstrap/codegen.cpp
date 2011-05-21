@@ -11,6 +11,7 @@
 
 #include "codegen.h"
 #include "codegen-init.h"
+#include "codegen-tools.h"
 #include "codegen-types.h"
 #include "apt.h"
 #include "log.h"
@@ -56,6 +57,7 @@ CodeGenerator::CodeGenerator()
     fTargetData(NULL),
     fInitializer(new ModuleRuntimeInitializer(this)),
     fTypes(new CodegenTypeUtils(this)),
+    fTools(new CodegenTools(this)),
     fHasMainFunc(false)
 {
   llvm::InitializeNativeTarget();
@@ -1213,25 +1215,6 @@ CodeGenerator::codegen(const UndefNode* node)
 
 //------------------------------------------------------------------------------
 
-llvm::Function*
-CodeGenerator::getIntrinsic(unsigned int iid,
-                            const llvm::Type** tys, unsigned int numTys)
-{
-  return llvm::Intrinsic::getDeclaration(fModule,
-                                         (llvm::Intrinsic::ID)iid, tys, numTys);
-}
-
-
-llvm::Function*
-CodeGenerator::getMemCpyFn(const llvm::Type* dstType,
-                           const llvm::Type* srcType,
-                           const llvm::Type* sizeType)
-{
-  const llvm::Type* argTypes[3] = { dstType, srcType, sizeType };
-  return getIntrinsic(llvm::Intrinsic::memcpy, argTypes, 3);
-}
-
-
 void
 CodeGenerator::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
 {
@@ -1268,54 +1251,3 @@ CodeGenerator::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
 }
 
 
-void
-CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
-{
-#if 1
-  // this way is probably a tick slower on an i386, but the memcpy approach
-  // below does not work.  With that we get some strange byte ordering
-  // problems...  Performance wise it does not make any difference on x86_64
-  // (with full optimization).
-
-  llvm::Value* dst_pl = fBuilder.CreateStructGEP(dst, 1);
-  llvm::Value* dst_ty = fBuilder.CreateStructGEP(dst, 0);
-
-  llvm::Value* src_pl = fBuilder.CreateStructGEP(src, 1);
-  llvm::Value* src_ty = fBuilder.CreateStructGEP(src, 0);
-
-  fBuilder.CreateStore(fBuilder.CreateLoad(src_ty), dst_ty);
-  fBuilder.CreateStore(fBuilder.CreateLoad(src_pl), dst_pl);
-
-#else
-
-  const llvm::Type* dstBasePtr = llvm::Type::getInt8PtrTy(context());
-  llvm::Value* dst2 = fBuilder.CreateBitCast(dst, dstBasePtr, "dst_tmp");
-
-  const llvm::Type *srcBasePtr = llvm::Type::getInt8PtrTy(context());
-  llvm::Value* src2 = fBuilder.CreateBitCast(src, srcBasePtr, "src_tmp");
-
-  std::vector<llvm::Value*> argv;
-  argv.push_back(dst2);
-  argv.push_back(src2);
-  // number
-
-
-  const llvm::StructLayout* layout = fTargetData
-    ->getStructLayout((const llvm::StructType*)fTypes->getAtomType());
-
-  argv.push_back(llvm::ConstantInt::get(context(),
-                                        llvm::APInt(32, layout->getSizeInBytes(),
-                                                    K(isSigned))));
-  // align
-  argv.push_back(llvm::ConstantInt::get(context(),
-                                        llvm::APInt(32, layout->getAlignment(),
-                                                    K(isSigned))));
-  // is volatile
-  argv.push_back(llvm::ConstantInt::getFalse(context()));
-
-
-  fBuilder.CreateCall(getMemCpyFn(dst2->getType(), src2->getType(),
-                                  llvm::Type::getInt32Ty(context())),
-                      argv.begin(), argv.end());
-#endif
-}
