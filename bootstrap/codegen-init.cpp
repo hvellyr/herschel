@@ -15,6 +15,7 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "codegen-init.h"
 
 #include <vector>
 
