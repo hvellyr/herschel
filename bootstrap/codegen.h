@@ -80,6 +80,8 @@ namespace herschel
   class CodegenTypeUtils;
   class CodegenTools;
   class ModuleRuntimeInitializer;
+  class CodegenBinaryNode;
+
   class String;
 
   typedef std::vector<Ptr<AptNode> > NodeList;
@@ -146,6 +148,7 @@ namespace herschel
     friend class ModuleRuntimeInitializer;
     friend class CodegenTypeUtils;
     friend class CodegenTools;
+    friend class CodegenBinaryNode;
 
     void setupOptPassManager();
 
