@@ -227,7 +227,7 @@ namespace herschel
 
 
 ModuleRuntimeInitializer::ModuleRuntimeInitializer(CodeGenerator* generator)
-  : fGenerator(generator)
+  : CodeGeneratorProxy(generator)
 {
 }
 
@@ -272,57 +272,6 @@ ModuleRuntimeInitializer::emitModuleInitFunction()
   emitEntityGetterFunc(fClassInitFuncs, ClassInitStrategy());
   emitEntityGetterFunc(fGenericsInitFuncs, GenericsInitStrategy());
   emitEntityGetterFunc(fMethodInitFuncs, MethodInitStrategy());
-}
-
-
-//------------------------------------------------------------------------------
-
-CodeGenerator*
-ModuleRuntimeInitializer::generator() const
-{
-  return fGenerator;
-}
-
-
-llvm::LLVMContext&
-ModuleRuntimeInitializer::context() const
-{
-  return fGenerator->fContext;
-}
-
-
-llvm::IRBuilder<>&
-ModuleRuntimeInitializer::builder() const
-{
-  return fGenerator->fBuilder;
-}
-
-
-llvm::Module*
-ModuleRuntimeInitializer::module() const
-{
-  return fGenerator->fModule;
-}
-
-
-CodegenTypeUtils*
-ModuleRuntimeInitializer::types()
-{
-  return fGenerator->fTypes;
-}
-
-
-const CodegenTypeUtils*
-ModuleRuntimeInitializer::types() const
-{
-  return fGenerator->fTypes;
-}
-
-
-CodegenTools*
-ModuleRuntimeInitializer::tools() const
-{
-  return fGenerator->fTools;
 }
 
 

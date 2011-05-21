@@ -11,6 +11,11 @@
 #ifndef bootstrap_codegen_binnode_h
 #define bootstrap_codegen_binnode_h
 
+#include "llvm/Support/IRBuilder.h"
+
+#include "codegen-proxy.h"
+
+
 namespace llvm
 {
   class Module;
@@ -24,9 +29,9 @@ namespace herschel
   class CodegenTypeUtils;
   class BinaryNode;
   class Type;
+  class CodegenTools;
 
-
-  class CodegenBinaryNode
+  class CodegenBinaryNode : public CodeGeneratorProxy
   {
   public:
     CodegenBinaryNode(CodeGenerator* generator);
@@ -43,16 +48,6 @@ namespace herschel
                                  llvm::Value* right) const;
 
     bool isPlainInt(const Type& type) const;
-
-    CodeGenerator* generator() const;
-    llvm::LLVMContext& context() const;
-    llvm::IRBuilder<>& builder() const;
-    llvm::Module* module() const;
-    CodegenTypeUtils* types();
-    const CodegenTypeUtils* types() const;
-    CodegenTools* tools() const;
-
-    Ptr<CodeGenerator> fGenerator;
   };
 };                              // namespace
 

@@ -15,6 +15,7 @@
 
 #include "str.h"
 #include "refcountable.h"
+#include "codegen-proxy.h"
 
 
 namespace llvm
@@ -41,7 +42,8 @@ namespace herschel
 
   //----------------------------------------------------------------------------
 
-  class ModuleRuntimeInitializer : public RefCountable
+  class ModuleRuntimeInitializer : public RefCountable,
+                                   public CodeGeneratorProxy
   {
   public:
     struct MethodImpl
@@ -68,14 +70,6 @@ namespace herschel
     void addGenericFunctionDef(const FuncDefNode* node);
     void addMethodDef(const FuncDefNode* node,
                       const String& methodImplName);
-
-    CodeGenerator* generator() const;
-    llvm::LLVMContext& context() const;
-    llvm::IRBuilder<>& builder() const;
-    llvm::Module* module() const;
-    CodegenTypeUtils* types();
-    const CodegenTypeUtils* types() const;
-    CodegenTools* tools() const;
 
     llvm::Value* makeTypeOrCallRegistration(const Type& ty) const;
 
@@ -116,8 +110,6 @@ namespace herschel
                               StrategyT strategy);
 
     //-------- data members
-
-    Ptr<CodeGenerator> fGenerator; 
 
     CtorList fGlobalCtors;
     CtorList fGlobalDtors;

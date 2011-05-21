@@ -81,6 +81,8 @@ namespace herschel
   class CodegenTools;
   class ModuleRuntimeInitializer;
   class CodegenBinaryNode;
+  class CodegenFuncDef;
+  class CodeGeneratorProxy;
 
   class String;
 
@@ -149,16 +151,13 @@ namespace herschel
     friend class CodegenTypeUtils;
     friend class CodegenTools;
     friend class CodegenBinaryNode;
+    friend class CodegenFuncDef;
+    friend class CodeGeneratorProxy;
 
     void setupOptPassManager();
 
     llvm::Value* codegen(const FuncDefNode* node, bool isLocal);
     llvm::Value* codegen(const VardefNode* node, bool isLocal);
-
-    llvm::FunctionType* createFunctionSignature(const FunctionNode* node,
-                                                bool inlineRetv,
-                                                const Type& retty,
-                                                bool isGeneric);
 
     llvm::Value* codegen(const NodeList& nl);
 
@@ -167,43 +166,7 @@ namespace herschel
     llvm::Value* codegenForGlobalVars(const VardefNode* node);
 
 
-    //------------------------------ functions
-
-    llvm::Value* compileGenericFunctionDef(const FuncDefNode* node);
-    llvm::Value* compileMethodDef(const FuncDefNode* node);
-    llvm::Value* compileAbstractFuncDef(const FuncDefNode* node);
-    llvm::Value* compileNormalFuncDef(const FuncDefNode* node, bool isLocal);
-    String makeFunctionName(const FuncDefNode* node,
-                            const String& methodNameSuffix) const;
-
-    struct FuncPair
-    {
-      llvm::FunctionType* fType;
-      llvm::Function* fFunc;
-      Type fRetType;
-    };
-    FuncPair createFunction(const FuncDefNode* node,
-                            const String& methodNameSuffix,
-                            bool isGeneric);
-    llvm::Value* compileNormalFuncDefImpl(const FuncPair& func,
-                                          const FuncDefNode* node,
-                                          bool isLocal,
-                                          bool forceAtomReturnType);
-
     //------------------------------ emit operators
-
-    bool isPlainInt(const Type& type) const;
-
-    llvm::Value* wrapInt(llvm::Value* value, const Type& type);
-    llvm::Value* wrapBool(llvm::Value* value, const Type& type);
-
-    llvm::Value* coerceIntOperand(const Type& dstType, const Type& isType,
-                                  llvm::Value* value);
-
-    llvm::Value* codegenOpIntInt(const BinaryNode* node,
-                                 llvm::Value* left,
-                                 llvm::Value* right);
-
 
     llvm::Value* makeGetTypeLookupCall(const Type& ty) const;
     llvm::Value* makeGetGenericFuncLookupCall(const FuncDefNode* node) const;

@@ -51,38 +51,8 @@ using namespace herschel;
 
 
 CodegenTools::CodegenTools(CodeGenerator* generator)
-  : fGenerator(generator)
+  : CodeGeneratorProxy(generator)
 {
-}
-
-
-//------------------------------------------------------------------------------
-
-llvm::LLVMContext&
-CodegenTools::context() const
-{
-  return fGenerator->fContext;
-}
-
-
-llvm::IRBuilder<>&
-CodegenTools::builder() const
-{
-  return fGenerator->fBuilder;
-}
-
-
-llvm::Module*
-CodegenTools::module() const
-{
-  return fGenerator->fModule;
-}
-
-
-const CodegenTypeUtils*
-CodegenTools::types() const
-{
-  return fGenerator->fTypes;
 }
 
 

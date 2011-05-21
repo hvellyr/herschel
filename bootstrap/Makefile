@@ -119,7 +119,9 @@ HRC_HEADERS =         \
 	apt.h               \
 	codegen.h           \
 	codegen-binnode.h   \
+	codegen-func.h      \
 	codegen-init.h      \
+	codegen-proxy.h     \
 	codegen-tools.h     \
 	codegen-types.h     \
 	compilepass.h       \
