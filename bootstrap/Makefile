@@ -84,6 +84,7 @@ HRC_SOURCES =     \
 	codegen-init.cpp \
 	codegen-func.cpp \
 	codegen-op.cpp  \
+	codegen-tools.cpp \
 	codegen-types.cpp \
 	compilepass.cpp \
 	compiler.cpp    \
@@ -117,6 +118,9 @@ HRC_HEADERS =     \
 	annotate.h      \
 	apt.h           \
 	codegen.h       \
+	codegen-init.h  \
+	codegen-tools.h \
+	codegen-types.h \
 	compilepass.h   \
 	compiler.h      \
 	errcodes.h      \

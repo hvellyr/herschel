@@ -18,6 +18,7 @@
 #include "strbuf.h"
 #include "codegen-init.h"
 #include "codegen-types.h"
+#include "codegen-tools.h"
 
 #include <vector>
 
@@ -225,7 +226,7 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
   fBuilder.CreateCall(f, realFuncArgv.begin(), realFuncArgv.end());
 
   // no wrap-load!  The generic function always returns as ATOM.
-  assignAtom(retv, func.fFunc->arg_begin());
+  fTools->assignAtom(retv, func.fFunc->arg_begin());
 
   fBuilder.CreateRetVoid();
 
@@ -364,14 +365,14 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
           //assignAtom(tmpValue, func.fFunc->arg_begin());
         }
         else
-          assignAtom(retv, func.fFunc->arg_begin());
+          fTools->assignAtom(retv, func.fFunc->arg_begin());
       }
       else if (func.fRetType.isPlainType()) {
         fBuilder.CreateStore(wrapLoad(retv), func.fFunc->arg_begin());
       }
       else {
         // no wrap-load!
-        assignAtom(retv, func.fFunc->arg_begin());
+        fTools->assignAtom(retv, func.fFunc->arg_begin());
       }
 
       fBuilder.CreateRetVoid();
