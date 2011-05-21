@@ -16,6 +16,8 @@
 #include "xmlout.h"
 #include "predefined.h"
 #include "strbuf.h"
+#include "codegen-init.h"
+#include "codegen-types.h"
 
 #include <vector>
 
@@ -51,15 +53,15 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv
 
   const llvm::Type* llvmRetty = NULL;
   if (isGeneric) {
-    sign.push_back(fTypes.getAtomType()->getPointerTo());
+    sign.push_back(fTypes->getAtomType()->getPointerTo());
     llvmRetty = llvm::Type::getVoidTy(context());
   }
   else if (inlineRetv) {
-    sign.push_back(fTypes.getType(retty)->getPointerTo());
+    sign.push_back(fTypes->getType(retty)->getPointerTo());
     llvmRetty = llvm::Type::getVoidTy(context());
   }
   else
-    llvmRetty = fTypes.getType(node->retType());
+    llvmRetty = fTypes->getType(node->retType());
 
   bool isVarArgs = false;
   for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
@@ -68,9 +70,9 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv
     if (param->isRestArg())
       isVarArgs = true;
     else if (param->isSpecArg())
-      sign.push_back(fTypes.getAtomType());
+      sign.push_back(fTypes->getAtomType());
     else
-      sign.push_back(fTypes.getType(param->type()));
+      sign.push_back(fTypes->getType(param->type()));
   }
 
   return llvm::FunctionType::get(llvmRetty, sign, isVarArgs);
@@ -136,7 +138,7 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
 {
   hr_assert(fNamedValues.empty());
 
-  fInitializer.addGenericFunctionDef(node);
+  fInitializer->addGenericFunctionDef(node);
 
   FuncPair func = createFunction(node, String(), K(isGeneric));
 
@@ -162,7 +164,7 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
     // TODO: enforce ATOM types for spec args and returnvalue in generic functions
     // TODO ende name
     llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func.fFunc, param->name(),
-                                                         fTypes.getType(param->type()));
+                                                         fTypes->getType(param->type()));
     llvm::Value* tmpValue = emitPackCode(param->dstType(), param->typeConv(),
                                          aiter, param->type());
     fBuilder.CreateStore(tmpValue, stackSlot);
@@ -187,12 +189,12 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
   if (lookupFunc == NULL) {
     // Method* m = lookup_func*(gf, ty0);
     std::vector<const llvm::Type*> sign;
-    sign.push_back(fTypes.getGenericFuncType());
+    sign.push_back(fTypes->getGenericFuncType());
     // add a list of tagid arguments
     for (size_t i = 0; i < specArgCount; i++)
-      sign.push_back(fTypes.getTagIdType());
+      sign.push_back(fTypes->getTagIdType());
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes.getMethodType(),
+    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getMethodType(),
                                                      sign,
                                                      !K(isVarArg));
     lookupFunc = llvm::Function::Create(ft,
@@ -216,7 +218,7 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
 
   // insert the return value into the argument list
   llvm::AllocaInst *retv = createEntryBlockAlloca(func.fFunc, String("retv"),
-                                                  fTypes.getAtomType());
+                                                  fTypes->getAtomType());
   realFuncArgv.insert(realFuncArgv.begin(), retv); //func.fFunc->arg_begin());
 
   llvm::Value* f = fBuilder.CreateBitCast(realFuncPtr, func.fType->getPointerTo());
@@ -260,7 +262,7 @@ CodeGenerator::compileMethodDef(const FuncDefNode* node)
   }
 
   String methodNameSuffix = msgbuf.toString();
-  fInitializer.addMethodDef(node, makeFunctionName(node, methodNameSuffix));
+  fInitializer->addMethodDef(node, makeFunctionName(node, methodNameSuffix));
 
   FuncPair func = createFunction(node, methodNameSuffix, K(isGeneric));
 
@@ -315,7 +317,7 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
     {
       const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
       llvm::AllocaInst *stackSlot = createEntryBlockAlloca(func.fFunc, param->name(),
-                                                           fTypes.getType(param->type()));
+                                                           fTypes->getType(param->type()));
       llvm::Value* tmpValue = emitPackCode(param->dstType(), param->typeConv(),
                                            aiter, param->type());
       fBuilder.CreateStore(tmpValue, stackSlot);

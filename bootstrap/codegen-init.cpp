@@ -16,6 +16,7 @@
 #include "xmlout.h"
 #include "predefined.h"
 #include "codegen-init.h"
+#include "codegen-types.h"
 
 #include <vector>
 
@@ -88,7 +89,7 @@ namespace herschel
 
     virtual const llvm::Type* entityType() const
     {
-      return fInitializer->types().getTypeType();
+      return fInitializer->types()->getTypeType();
     }
 
 
@@ -135,7 +136,7 @@ namespace herschel
 
     virtual const llvm::Type* entityType() const
     {
-      return fInitializer->types().getGenericFuncType();
+      return fInitializer->types()->getGenericFuncType();
     }
 
 
@@ -169,13 +170,15 @@ namespace herschel
   class ClassInitStrategy
   {
   public:
-    void emitInitCall(const TypeDefNode* tdnode, ModuleRuntimeInitializer* initializer)
+    void emitInitCall(const TypeDefNode* tdnode,
+                      ModuleRuntimeInitializer* initializer)
     {
       Type ty = tdnode->defType();
       initializer->makeGetTypeLookupCall(ty);
     }
 
-    void emitEntityGetter(const TypeDefNode* tdnode, ModuleRuntimeInitializer* initializer)
+    void emitEntityGetter(const TypeDefNode* tdnode,
+                          ModuleRuntimeInitializer* initializer)
     {
       TypeLazyCodeInitializingEmitter emitter(tdnode->defType(), initializer);
       emitter.emit();
@@ -186,12 +189,14 @@ namespace herschel
   class GenericsInitStrategy
   {
   public:
-    void emitInitCall(const FuncDefNode* fd, ModuleRuntimeInitializer* initializer)
+    void emitInitCall(const FuncDefNode* fd,
+                      ModuleRuntimeInitializer* initializer)
     {
       initializer->makeGetGenericFuncLookupCall(fd);
     }
 
-    void emitEntityGetter(const FuncDefNode* fd, ModuleRuntimeInitializer* initializer)
+    void emitEntityGetter(const FuncDefNode* fd,
+                          ModuleRuntimeInitializer* initializer)
     {
       GenericsLazyCodeInitializingEmitter emitter(fd, initializer);
       emitter.emit();
@@ -299,14 +304,14 @@ ModuleRuntimeInitializer::module() const
 }
 
 
-CodegenTypeUtils&
+CodegenTypeUtils*
 ModuleRuntimeInitializer::types()
 {
   return fGenerator->fTypes;
 }
 
 
-const CodegenTypeUtils&
+const CodegenTypeUtils*
 ModuleRuntimeInitializer::types() const
 {
   return fGenerator->fTypes;
@@ -517,7 +522,7 @@ ModuleRuntimeInitializer::makeTypeRegisterCall(llvm::Value* newType) const
   llvm::Function* regFunc = module()->getFunction(llvm::StringRef("register_type"));
   if (regFunc == NULL) {
     std::vector<const llvm::Type*> sign;
-    sign.push_back(types().getTypeType()); // Type*
+    sign.push_back(types()->getTypeType()); // Type*
 
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                      sign,
@@ -547,10 +552,10 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
     std::vector<const llvm::Type*> sign;
     sign.push_back(llvm::Type::getInt8PtrTy(context())); // typename
     sign.push_back(llvm::Type::getInt32Ty(context()));   // instance size
-    sign.push_back(types().getTypeSlotPairType());       // const TypeSlotPair*
+    sign.push_back(types()->getTypeSlotPairType());      // const TypeSlotPair*
     sign.push_back(llvm::Type::getInt32Ty(context()));   // isa_size
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(types().getTypeType(),
+    llvm::FunctionType *ft = llvm::FunctionType::get(types()->getTypeType(),
                                                      sign,
                                                      K(isVarArg));
 
@@ -567,7 +572,7 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
   argv.push_back(llvm::ConstantInt::get(context(),
                                         llvm::APInt(32, instance_size, true)));
   // TODO
-  argv.push_back(llvm::Constant::getNullValue(types().getTypeSlotPairType()));
+  argv.push_back(llvm::Constant::getNullValue(types()->getTypeSlotPairType()));
 
   Type isa = ty.typeInheritance();
   if (isa.isSequence()) {
@@ -601,7 +606,7 @@ ModuleRuntimeInitializer::makeTypeAllocCall(const Type& ty) const
     sign.push_back(llvm::Type::getInt8PtrTy(context())); // typename
     sign.push_back(llvm::Type::getInt32Ty(context()));   // isa_size
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(types().getTypeType(),
+    llvm::FunctionType *ft = llvm::FunctionType::get(types()->getTypeType(),
                                                      sign,
                                                      K(isVarArg));
 
@@ -660,7 +665,7 @@ ModuleRuntimeInitializer::makeGenericFuncRegisterCall(llvm::Value* newGF) const
   llvm::Function* regFunc = module()->getFunction(llvm::StringRef("register_generic_function"));
   if (regFunc == NULL) {
     std::vector<const llvm::Type*> sign;
-    sign.push_back(types().getGenericFuncType()); // GenericFunction*
+    sign.push_back(types()->getGenericFuncType()); // GenericFunction*
 
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                      sign,
@@ -691,7 +696,7 @@ ModuleRuntimeInitializer::makeGenericFuncAllocCall(const FuncDefNode* node) cons
     sign.push_back(llvm::Type::getInt8PtrTy(context())); // typename
     sign.push_back(llvm::Type::getInt32Ty(context()));   // argc
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(types().getGenericFuncType(),
+    llvm::FunctionType *ft = llvm::FunctionType::get(types()->getGenericFuncType(),
                                                      sign,
                                                      !K(isVarArg));
 
@@ -728,8 +733,8 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
   llvm::Function* regFunc = module()->getFunction(llvm::StringRef("register_method"));
   if (regFunc == NULL) {
     std::vector<const llvm::Type*> sign;
-    sign.push_back(types().getGenericFuncType()); // GenericFunction*
-    sign.push_back(types().getMethodType());      // void*
+    sign.push_back(types()->getGenericFuncType()); // GenericFunction*
+    sign.push_back(types()->getMethodType());      // void*
     sign.push_back(llvm::Type::getInt32Ty(context())); // argc
 
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
@@ -757,7 +762,7 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
   // push the function pointer as second argument.  This is the function to
   // be called for this method (properly casted to void*, as we need a
   // "general function signature" for all functions).
-  argv.push_back(llvm::ConstantExpr::getBitCast(method, types().getMethodType()));
+  argv.push_back(llvm::ConstantExpr::getBitCast(method, types()->getMethodType()));
   // push the number of specialized type arguments as third argument
   argv.push_back(llvm::ConstantInt::get(context(),
                                         llvm::APInt(32, countOfSpecs, true)));
@@ -890,7 +895,7 @@ CodeGenerator::makeGetTypeLookupCall(const Type& ty) const
   {
     std::vector<const llvm::Type*> sign;
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes.getTypeType(),
+    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getTypeType(),
                                                      sign,
                                                      !K(isVarArg));
 
@@ -917,7 +922,7 @@ CodeGenerator::makeGetGenericFuncLookupCall(const FuncDefNode* node) const
   {
     std::vector<const llvm::Type*> sign;
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes.getGenericFuncType(),
+    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getGenericFuncType(),
                                                      sign,
                                                      !K(isVarArg));
 

@@ -13,6 +13,8 @@
 
 #include "llvm/Support/IRBuilder.h"
 
+#include "refcountable.h"
+
 namespace llvm
 {
   class LLVMContext;
@@ -27,7 +29,7 @@ namespace herschel
 
   //----------------------------------------------------------------------------
 
-  class CodegenTypeUtils
+  class CodegenTypeUtils : public RefCountable
   {
   public:
     CodegenTypeUtils(CodeGenerator* generator);

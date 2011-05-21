@@ -15,6 +15,7 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "codegen-types.h"
 
 #include <vector>
 
@@ -72,8 +73,8 @@ CodeGenerator::emitAllocateApply(const ApplyNode* node)
   llvm::Function *allocFunc = fModule->getFunction(llvm::StringRef(funcnm));
   if (allocFunc == NULL) {
     std::vector<const llvm::Type*> sign;
-    sign.push_back(fTypes.getAtomType()->getPointerTo());
-    sign.push_back(fTypes.getTypeType()); // Type*
+    sign.push_back(fTypes->getAtomType()->getPointerTo());
+    sign.push_back(fTypes->getTypeType()); // Type*
 
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                      sign,
@@ -95,7 +96,7 @@ CodeGenerator::emitAllocateApply(const ApplyNode* node)
   llvm::Function* curFunction = fBuilder.GetInsertBlock()->getParent();
   llvm::AllocaInst* retv = createEntryBlockAlloca(curFunction,
                                                   String("local_retv"),
-                                                  fTypes.getAtomType());
+                                                  fTypes->getAtomType());
   hr_assert(retv != NULL);
   argv.push_back(retv);
 

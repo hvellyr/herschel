@@ -14,6 +14,7 @@
 #include "llvm/Support/IRBuilder.h"
 
 #include "str.h"
+#include "refcountable.h"
 
 
 namespace llvm
@@ -37,9 +38,10 @@ namespace herschel
 
   class CodegenTypeUtils;
 
+
   //----------------------------------------------------------------------------
 
-  class ModuleRuntimeInitializer
+  class ModuleRuntimeInitializer : public RefCountable
   {
   public:
     struct MethodImpl
@@ -71,8 +73,8 @@ namespace herschel
     llvm::LLVMContext& context() const;
     llvm::IRBuilder<>& builder() const;
     llvm::Module* module() const;
-    CodegenTypeUtils& types();
-    const CodegenTypeUtils& types() const;
+    CodegenTypeUtils* types();
+    const CodegenTypeUtils* types() const;
 
     llvm::Value* makeTypeOrCallRegistration(const Type& ty) const;
 

@@ -54,8 +54,8 @@ CodeGenerator::CodeGenerator()
     fBuilder(context()),
     fOptPassManager(NULL),
     fTargetData(NULL),
-    fInitializer(this),
-    fTypes(this),
+    fInitializer(new ModuleRuntimeInitializer(this)),
+    fTypes(new CodegenTypeUtils(this)),
     fHasMainFunc(false)
 {
   llvm::InitializeNativeTarget();
@@ -203,7 +203,7 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
 {
   node->codegen(this);
 
-  fInitializer.finish();
+  fInitializer->finish();
 
   hr_assert(!outputFile.isEmpty());
 
@@ -329,7 +329,7 @@ CodeGenerator::codegen(const SymbolNode* node)
 {
   if (node->name() == String("lang|unspecified")) {
     // TODO
-    return llvm::Constant::getNullValue(fTypes.getType(node->type()));
+    return llvm::Constant::getNullValue(fTypes->getType(node->type()));
   }
 
   llvm::Value* val = NULL;
@@ -388,7 +388,7 @@ llvm::Value*
 CodeGenerator::codegenForGlobalVars(const VardefNode* node)
 {
   String varnm = herschel::mangleToC(node->name());
-  const llvm::Type* constTy = fTypes.getType(node->type());
+  const llvm::Type* constTy = fTypes->getType(node->type());
   llvm::Constant* initConst = llvm::Constant::getNullValue(constTy);
 
   // TODO: base type if possible
@@ -403,7 +403,7 @@ CodeGenerator::codegenForGlobalVars(const VardefNode* node)
   hr_assert(gv != NULL);
   fModule->getGlobalList().push_back(gv);
 
-  fInitializer.addGlobalVariable(node);
+  fInitializer->addGlobalVariable(node);
 
   hr_assert(fGlobalVariables.find(node->name()) == fGlobalVariables.end());
   fGlobalVariables[node->name()] = gv;
@@ -424,7 +424,7 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
   TypeConvKind convKind = kNoConv;
   if (node->initExpr() != NULL) {
     if (dynamic_cast<UndefNode*>(node->initExpr())) {
-      initval = llvm::Constant::getNullValue(fTypes.getType(node->type()));
+      initval = llvm::Constant::getNullValue(fTypes->getType(node->type()));
 
       dstType = node->type();
       type = node->type();
@@ -450,7 +450,7 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 
   llvm::AllocaInst* stackSlot = createEntryBlockAlloca(curFunction,
                                                        node->name(),
-                                                       fTypes.getType(node->type()));
+                                                       fTypes->getType(node->type()));
 
   llvm::Value* val = emitPackCode(dstType, convKind, initval, type);
   fBuilder.CreateStore(val, stackSlot);
@@ -615,7 +615,7 @@ CodeGenerator::makeIntAtom(llvm::Value* val, Typeid atomTypeId)
 {
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
   llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("int"),
-                                                  fTypes.getAtomType());
+                                                  fTypes->getAtomType());
 
   setAtom(atom, atomTypeId, val);
 
@@ -628,7 +628,7 @@ CodeGenerator::makeBoolAtom(llvm::Value* val)
 {
   llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
   llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("bool"),
-                                                  fTypes.getAtomType());
+                                                  fTypes->getAtomType());
 
   // set typeid
   setAtom(atom, kAtomBool, val);
@@ -651,7 +651,7 @@ llvm::Value*
 CodeGenerator::codegen(const IntNode* node)
 {
   return fBuilder.CreateIntCast(fBuilder.getInt32(node->value()),
-                                fTypes.getType(node->type()),
+                                fTypes->getType(node->type()),
                                 node->type().isSigned());
 }
 
@@ -797,9 +797,9 @@ CodeGenerator::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType)
   llvm::Function* convFunc = fModule->getFunction(llvm::StringRef(funcName));
   if (convFunc == NULL) {
     std::vector<const llvm::Type*> sign;
-    sign.push_back(fTypes.getAtomType());
+    sign.push_back(fTypes->getAtomType());
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes.getType(dstType),
+    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getType(dstType),
                                                      sign,
                                                      false);
 
@@ -900,8 +900,8 @@ CodeGenerator::codegen(const ApplyNode* node)
   llvm::AllocaInst* retv = NULL;
   llvm::Function* curFunction = fBuilder.GetInsertBlock()->getParent();
   const llvm::Type* returnType = ( alwaysPassAtom
-                                   ? fTypes.getAtomType()
-                                   : fTypes.getType(node->type()) );
+                                   ? fTypes->getAtomType()
+                                   : fTypes->getType(node->type()) );
   retv = createEntryBlockAlloca(curFunction, String("local_retv"),
                                 returnType);
 
@@ -1073,7 +1073,7 @@ CodeGenerator::codegen(const IfNode* node)
                              node->alternate()->type());
   }
   else
-    elseValue = llvm::Constant::getNullValue(fTypes.getType(node->type()));
+    elseValue = llvm::Constant::getNullValue(fTypes->getType(node->type()));
 
   fBuilder.CreateBr(mergeBB);
   // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
@@ -1083,7 +1083,7 @@ CodeGenerator::codegen(const IfNode* node)
   curFunction->getBasicBlockList().push_back(mergeBB);
   fBuilder.SetInsertPoint(mergeBB);
 
-  llvm::PHINode *pn = fBuilder.CreatePHI(fTypes.getType(node->type()), "iftmp");
+  llvm::PHINode *pn = fBuilder.CreatePHI(fTypes->getType(node->type()), "iftmp");
 
   pn->addIncoming(thenValue2, thenBB);
   pn->addIncoming(elseValue, elseBB);
@@ -1122,7 +1122,7 @@ CodeGenerator::codegen(const SelectNode* node)
 llvm::Value*
 CodeGenerator::codegen(const TypeDefNode* node)
 {
-  fInitializer.addTypeDef(node);
+  fInitializer->addTypeDef(node);
   return NULL;
 }
 
@@ -1301,7 +1301,7 @@ CodeGenerator::assignAtom(llvm::Value* src, llvm::Value* dst)
 
 
   const llvm::StructLayout* layout = fTargetData
-    ->getStructLayout((const llvm::StructType*)fTypes.getAtomType());
+    ->getStructLayout((const llvm::StructType*)fTypes->getAtomType());
 
   argv.push_back(llvm::ConstantInt::get(context(),
                                         llvm::APInt(32, layout->getSizeInBytes(),
