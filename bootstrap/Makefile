@@ -80,12 +80,15 @@ HRC_SOURCES =         \
 	annotate.cpp        \
 	apt.cpp             \
 	codegen.cpp         \
-	codegen-alloc.cpp   \
+	codegen-apply.cpp   \
 	codegen-binnode.cpp \
+	codegen-if.cpp      \
 	codegen-init.cpp    \
 	codegen-func.cpp    \
 	codegen-tools.cpp   \
 	codegen-types.cpp   \
+	codegen-vardef.cpp  \
+	codegen-while.cpp   \
 	compilepass.cpp     \
 	compiler.cpp        \
 	externc.cpp         \
@@ -118,12 +121,16 @@ HRC_HEADERS =         \
 	annotate.h          \
 	apt.h               \
 	codegen.h           \
+	codegen-apply.h     \
 	codegen-binnode.h   \
 	codegen-func.h      \
+	codegen-if.h        \
 	codegen-init.h      \
 	codegen-proxy.h     \
 	codegen-tools.h     \
 	codegen-types.h     \
+	codegen-vardef.h    \
+	codegen-while.h     \
 	compilepass.h       \
 	compiler.h          \
 	errcodes.h          \

@@ -10,11 +10,15 @@
 
 
 #include "apt.h"
+#include "codegen-apply.h"
 #include "codegen-binnode.h"
 #include "codegen-func.h"
+#include "codegen-if.h"
 #include "codegen-init.h"
 #include "codegen-tools.h"
 #include "codegen-types.h"
+#include "codegen-vardef.h"
+#include "codegen-while.h"
 #include "codegen.h"
 #include "log.h"
 #include "predefined.h"
@@ -261,6 +265,21 @@ CodeGenerator::codegen(const CompileUnitNode* node)
 }
 
 
+llvm::Value*
+CodeGenerator::codegen(const NodeList& nl)
+{
+  llvm::Value* lastVal = NULL;
+
+  for (size_t bidx = 0; bidx < nl.size(); bidx++) {
+    llvm::Value* val = codegenNode(nl[bidx]);
+    if (val == NULL)
+      return NULL;
+    lastVal = val;
+  }
+  return lastVal;
+}
+
+
 //------------------------------------------------------------------------------
 
 llvm::Value*
@@ -324,79 +343,9 @@ CodeGenerator::codegen(const SlotdefNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegenForGlobalVars(const VardefNode* node)
-{
-  String varnm = herschel::mangleToC(node->name());
-  const llvm::Type* constTy = fTypes->getType(node->type());
-  llvm::Constant* initConst = llvm::Constant::getNullValue(constTy);
-
-  // TODO: base type if possible
-  llvm::GlobalVariable* gv =
-    new llvm::GlobalVariable(constTy,
-                             false, // isConstant,
-                             llvm::GlobalValue::ExternalLinkage,
-                             initConst,
-                             llvm::Twine(varnm),
-                             false, // ThreadLocal
-                             0);    // AddressSpace
-  hr_assert(gv != NULL);
-  fModule->getGlobalList().push_back(gv);
-
-  fInitializer->addGlobalVariable(node);
-
-  hr_assert(fGlobalVariables.find(node->name()) == fGlobalVariables.end());
-  fGlobalVariables[node->name()] = gv;
-
-  return gv;
-}
-
-
-llvm::Value*
 CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 {
-  if (!isLocal)
-    return codegenForGlobalVars(node);
-
-  llvm::Value* initval = NULL;
-  Type dstType;
-  Type type;
-  TypeConvKind convKind = kNoConv;
-  if (node->initExpr() != NULL) {
-    if (dynamic_cast<UndefNode*>(node->initExpr())) {
-      initval = llvm::Constant::getNullValue(fTypes->getType(node->type()));
-
-      dstType = node->type();
-      type = node->type();
-      convKind = kNoConv;
-    }
-    else {
-      initval = fTools->wrapLoad(codegenNode(node->initExpr()));
-
-      dstType = node->initExpr()->dstType();
-      type = node->initExpr()->type();
-      convKind = node->initExpr()->typeConv();
-    }
-  }
-  else {
-    hr_invalid("no initval");
-    // TODO: init the temporary value.  We shouldn't really have to care about
-    // this here, since this can be better done in the AST analysis.
-    // initval = llvm::ConstantInt::get(context(),
-    //                                  llvm::APInt(32, 1014, true));
-  }
-
-  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-
-  llvm::AllocaInst* stackSlot = fTools->createEntryBlockAlloca(curFunction,
-                                                               node->name(),
-                                                               fTypes->getType(node->type()));
-
-  llvm::Value* val = fTools->emitPackCode(dstType, convKind, initval, type);
-  fBuilder.CreateStore(val, stackSlot);
-
-  fNamedValues[node->name()] = stackSlot;
-
-  return initval;
+  return CodegenVardef(this).emit(node, isLocal);
 }
 
 
@@ -467,23 +416,6 @@ CodeGenerator::codegen(const LetNode* node)
 }
 
 
-//------------------------------------------------------------------------------
-
-llvm::Value*
-CodeGenerator::codegen(const NodeList& nl)
-{
-  llvm::Value* lastVal = NULL;
-
-  for (size_t bidx = 0; bidx < nl.size(); bidx++) {
-    llvm::Value* val = codegenNode(nl[bidx]);
-    if (val == NULL)
-      return NULL;
-    lastVal = val;
-  }
-  return lastVal;
-}
-
-
 llvm::Value*
 CodeGenerator::codegen(const BlockNode* node)
 {
@@ -505,8 +437,6 @@ CodeGenerator::codegen(const BlockNode* node)
   return lastVal;
 }
 
-
-//------------------------------------------------------------------------------
 
 llvm::Value*
 CodeGenerator::codegen(const BoolNode* node)
@@ -610,8 +540,6 @@ CodeGenerator::codegen(const RangeNode* node)
 }
 
 
-//------------------------------------------------------------------------------
-
 llvm::Value*
 CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 {
@@ -631,93 +559,7 @@ CodeGenerator::codegen(const FunctionNode* node)
 llvm::Value*
 CodeGenerator::codegen(const ApplyNode* node)
 {
-  llvm::Function *calleeFunc = NULL;
-  bool inlineRetv = false;
-  bool alwaysPassAtom = false;
-
-  const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->base());
-  if (symNode != NULL) {
-    hr_assert(symNode->refersTo() == kFunction || symNode->refersTo() == kGeneric);
-
-    String funcnm;
-
-    if (symNode->name() == Names::kLangAllocate)
-      return emitAllocateApply(node);
-
-    if (symNode->hasCLinkage()) {
-      // generic functions are not allowed to have C linkage
-      hr_assert(symNode->refersTo() != kGeneric);
-      funcnm = symNode->name();
-      inlineRetv = false;
-    }
-    else {
-      funcnm = herschel::mangleToC(symNode->name());
-      inlineRetv = true;
-      alwaysPassAtom = symNode->refersTo() == kGeneric;
-    }
-
-    calleeFunc = fModule->getFunction(llvm::StringRef(funcnm));
-    if (calleeFunc == NULL) {
-      errorf(node->srcpos(), 0, "Unknown function referenced: %s",
-             (const char*)StrHelper(funcnm));
-      return NULL;
-    }
-  }
-  else {
-    // TODO
-    hr_invalid("apply(!symbol) -> TODO");
-  }
-
-  const NodeList& args = node->children();
-  if (calleeFunc->arg_size() != args.size() + (inlineRetv ? 1 : 0)) {
-    errorf(node->srcpos(), 0, "Incorrect # arguments passed");
-    return NULL;
-  }
-
-  llvm::AllocaInst* retv = NULL;
-  llvm::Function* curFunction = fBuilder.GetInsertBlock()->getParent();
-  const llvm::Type* returnType = ( alwaysPassAtom
-                                   ? fTypes->getAtomType()
-                                   : fTypes->getType(node->type()) );
-  retv = fTools->createEntryBlockAlloca(curFunction, String("local_retv"),
-                                        returnType);
-
-  std::vector<llvm::Value*> argv;
-  if (inlineRetv)
-    argv.push_back(retv);
-
-  for (unsigned i = 0, e = args.size(); i != e; ++i) {
-    llvm::Value* val = fTools->wrapLoad(codegenNode(args[i]));
-
-    // TODO: can we assert that spec args are ATOM typed.
-    // warningf(args[i]->srcpos(), 0, "emit pack code");
-    val = fTools->emitPackCode(args[i]->dstType(), args[i]->typeConv(),
-                               val, args[i]->type());
-
-    // val->dump();
-    if (val == NULL)
-      return NULL;
-
-    argv.push_back(val);
-  }
-
-  if (inlineRetv) {
-    fBuilder.CreateCall(calleeFunc, argv.begin(), argv.end());
-
-    // TODO: if in tail position enforce ATOM return type?
-    return retv;
-  }
-  else {
-    llvm::Value* funcVal = fBuilder.CreateCall(calleeFunc, argv.begin(), argv.end(),
-                                               "xxx");
-    if (node->isInTailPos()) {
-      // TODO: return type id
-      fTools->setAtom(retv, CodegenTools::kAtomInt32, funcVal);
-      return retv;
-    }
-    else
-      return funcVal;
-  }
+  return CodegenApply(this).emit(node);
 }
 
 
@@ -738,8 +580,6 @@ CodeGenerator::codegen(const ParamNode* node)
   return NULL;
 }
 
-
-//------------------------------------------------------------------------------
 
 llvm::Value*
 CodeGenerator::codegen(const BinaryNode* node)
@@ -765,82 +605,7 @@ CodeGenerator::codegen(const NegateNode* node)
 llvm::Value*
 CodeGenerator::codegen(const IfNode* node)
 {
-  llvm::Value *testValue = fTools->wrapLoad(codegenNode(node->test()));
-  if (testValue == NULL)
-    return NULL;
-
-  llvm::Value* extrTestVal = fTools->emitPackCode(node->test()->dstType(),
-                                                  node->test()->typeConv(),
-                                                  testValue,
-                                                  node->test()->type());
-
-  // Convert condition to a bool by comparing equal to 1
-  testValue = fBuilder.CreateICmpEQ(extrTestVal,
-                                    llvm::ConstantInt::get(context(),
-                                                           llvm::APInt(1, 1, true)),
-                                    "ifcond");
-
-  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-
-  // Create blocks for the then and else cases.  Insert the 'then' block at the
-  // end of the function.
-  llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(context(),
-                                                      "then", curFunction);
-  llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(context(),
-                                                      "else");
-  llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(context(),
-                                                       "ifcont");
-
-  fBuilder.CreateCondBr(testValue, thenBB, elseBB);
-
-  // Emit then value.
-  fBuilder.SetInsertPoint(thenBB);
-
-  llvm::Value *thenValue = fTools->wrapLoad(codegenNode(node->consequent()));
-  if (thenValue == NULL)
-    return NULL;
-  llvm::Value* thenValue2 = fTools->emitPackCode(node->consequent()->dstType(),
-                                                 node->consequent()->typeConv(),
-                                                 thenValue,
-                                                 node->consequent()->type());
-
-  fBuilder.CreateBr(mergeBB);
-  // Get a reference to the current thenBB, since codegen of 'then' can change
-  // the current block, update thenBB for the PHI.
-  thenBB = fBuilder.GetInsertBlock();
-
-
-  // Emit else block.
-  curFunction->getBasicBlockList().push_back(elseBB);
-  fBuilder.SetInsertPoint(elseBB);
-
-  llvm::Value* elseValue = NULL;
-  if (node->alternate() != NULL) {
-    llvm::Value* elseValue0 = fTools->wrapLoad(codegenNode(node->alternate()));
-    if (elseValue0 == NULL)
-      return NULL;
-    elseValue = fTools->emitPackCode(node->alternate()->dstType(),
-                                     node->alternate()->typeConv(),
-                                     elseValue0,
-                                     node->alternate()->type());
-  }
-  else
-    elseValue = llvm::Constant::getNullValue(fTypes->getType(node->type()));
-
-  fBuilder.CreateBr(mergeBB);
-  // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
-  elseBB = fBuilder.GetInsertBlock();
-
-  // Emit merge block.
-  curFunction->getBasicBlockList().push_back(mergeBB);
-  fBuilder.SetInsertPoint(mergeBB);
-
-  llvm::PHINode *pn = fBuilder.CreatePHI(fTypes->getType(node->type()), "iftmp");
-
-  pn->addIncoming(thenValue2, thenBB);
-  pn->addIncoming(elseValue, elseBB);
-
-  return pn;
+  return CodegenIf(this).emit(node);
 }
 
 
@@ -891,53 +656,7 @@ CodeGenerator::codegen(const UnitConstNode* node)
 llvm::Value*
 CodeGenerator::codegen(const WhileNode* node)
 {
-  llvm::Function *curFunction = fBuilder.GetInsertBlock()->getParent();
-  llvm::BasicBlock *loopHeadBB = llvm::BasicBlock::Create(context(),
-                                                          "loophead", curFunction);
-  llvm::BasicBlock *loopBB = llvm::BasicBlock::Create(context(),
-                                                      "loop", curFunction);
-  // Create the "after loop" block and insert it.
-  llvm::BasicBlock *afterBB = llvm::BasicBlock::Create(context(),
-                                                       "afterloop",
-                                                       curFunction);
-
-  // Insert an explicit fall through from the current block to the loopBB.
-  fBuilder.CreateBr(loopHeadBB);
-
-  // Start insertion in loopBB.
-  fBuilder.SetInsertPoint(loopHeadBB);
-
-  llvm::Value *testValue = fTools->wrapLoad(codegenNode(node->test()));
-  if (testValue == NULL)
-    return NULL;
-
-  llvm::Value* extrTestVal = fTools->emitPackCode(node->test()->dstType(),
-                                                  node->test()->typeConv(),
-                                                  testValue,
-                                                  node->test()->type());
-
-  // Convert condition to a bool by comparing equal to 1
-  testValue = fBuilder.CreateICmpEQ(extrTestVal,
-                                    llvm::ConstantInt::get(context(),
-                                                           llvm::APInt(1, 1, true)),
-                                    "loopcond");
-  // Insert the conditional branch into the end of loopEndBB.
-  fBuilder.CreateCondBr(testValue, loopBB, afterBB);
-
-  // Start insertion in loopBB.
-  fBuilder.SetInsertPoint(loopBB);
-
-  llvm::Value* bodyValue = codegenNode(node->body());
-  if (bodyValue == NULL)
-    return NULL;
-
-  // jump back to loop start
-  fBuilder.CreateBr(loopHeadBB);
-
-  // Any new code will be inserted in AfterBB.
-  fBuilder.SetInsertPoint(afterBB);
-
-  return bodyValue;
+  return CodegenWhile(this).emit(node);
 }
 
 
