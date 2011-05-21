@@ -17,6 +17,7 @@
 #include "predefined.h"
 #include "strbuf.h"
 #include "codegen-init.h"
+#include "codegen-func.h"
 #include "codegen-types.h"
 #include "codegen-tools.h"
 
@@ -44,25 +45,53 @@
 
 using namespace herschel;
 
+CodegenFuncDef::CodegenFuncDef(CodeGenerator* generator)
+  : CodeGeneratorProxy(generator)
+{
+}
+
+
+llvm::Value*
+CodegenFuncDef::emit(const FuncDefNode* node, bool isLocal) const
+{
+  fGenerator->fNamedValues.clear();
+
+  if (node->isGeneric()) {
+    hr_assert(!isLocal);
+    return compileGenericFunctionDef(node);
+  }
+  else if (node->isMethod()) {
+    hr_assert(!isLocal);
+    return compileMethodDef(node);
+  }
+  else if (node->isAbstract()) {
+    hr_assert(!isLocal);
+    return compileAbstractFuncDef(node);
+  }
+  else {
+    return compileNormalFuncDef(node, isLocal);
+  }
+}
+
 
 llvm::FunctionType*
-CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv,
-                                       const Type& retty,
-                                       bool isGeneric)
+CodegenFuncDef::createFunctionSignature(const FunctionNode* node, bool inlineRetv,
+                                        const Type& retty,
+                                        bool isGeneric) const
 {
   std::vector<const llvm::Type*> sign;
 
   const llvm::Type* llvmRetty = NULL;
   if (isGeneric) {
-    sign.push_back(fTypes->getAtomType()->getPointerTo());
+    sign.push_back(types()->getAtomType()->getPointerTo());
     llvmRetty = llvm::Type::getVoidTy(context());
   }
   else if (inlineRetv) {
-    sign.push_back(fTypes->getType(retty)->getPointerTo());
+    sign.push_back(types()->getType(retty)->getPointerTo());
     llvmRetty = llvm::Type::getVoidTy(context());
   }
   else
-    llvmRetty = fTypes->getType(node->retType());
+    llvmRetty = types()->getType(node->retType());
 
   bool isVarArgs = false;
   for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
@@ -71,9 +100,9 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv
     if (param->isRestArg())
       isVarArgs = true;
     else if (param->isSpecArg())
-      sign.push_back(fTypes->getAtomType());
+      sign.push_back(types()->getAtomType());
     else
-      sign.push_back(fTypes->getType(param->type()));
+      sign.push_back(types()->getType(param->type()));
   }
 
   return llvm::FunctionType::get(llvmRetty, sign, isVarArgs);
@@ -81,8 +110,8 @@ CodeGenerator::createFunctionSignature(const FunctionNode* node, bool inlineRetv
 
 
 String
-CodeGenerator::makeFunctionName(const FuncDefNode* node,
-                                const String& methodNameSuffix) const
+CodegenFuncDef::makeFunctionName(const FuncDefNode* node,
+                                 const String& methodNameSuffix) const
 {
   if (node->hasCLinkage()) {
     hr_assert(methodNameSuffix.isEmpty());
@@ -98,10 +127,10 @@ CodeGenerator::makeFunctionName(const FuncDefNode* node,
 }
 
 
-CodeGenerator::FuncPair
-CodeGenerator::createFunction(const FuncDefNode* node,
-                              const String& methodNameSuffix,
-                              bool isGeneric)
+CodegenFuncDef::FuncPair
+CodegenFuncDef::createFunction(const FuncDefNode* node,
+                               const String& methodNameSuffix,
+                               bool isGeneric) const
 {
   FuncPair p;
 
@@ -129,17 +158,17 @@ CodeGenerator::createFunction(const FuncDefNode* node,
   p.fFunc = llvm::Function::Create(p.fType,
                                    llvm::Function::ExternalLinkage,
                                    llvm::Twine(funcnm),
-                                   fModule);
+                                   module());
   return p;
 }
 
 
 llvm::Value*
-CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
+CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
 {
-  hr_assert(fNamedValues.empty());
+  hr_assert(fGenerator->fNamedValues.empty());
 
-  fInitializer->addGenericFunctionDef(node);
+  fGenerator->fInitializer->addGenericFunctionDef(node);
 
   FuncPair func = createFunction(node, String(), K(isGeneric));
 
@@ -150,7 +179,7 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
   aiter++;
 
   llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", func.fFunc);
-  fBuilder.SetInsertPoint(bb);
+  builder().SetInsertPoint(bb);
 
   std::vector<llvm::Value*> realFuncArgv;
   std::vector<llvm::Value*> lookupArgv;
@@ -165,24 +194,24 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
     // TODO: enforce ATOM types for spec args and returnvalue in generic functions
     // TODO ende name
     llvm::AllocaInst *stackSlot =
-      fTools->createEntryBlockAlloca(func.fFunc, param->name(),
-                                     fTypes->getType(param->type()));
-    llvm::Value* tmpValue = fTools->emitPackCode(param->dstType(),
+      tools()->createEntryBlockAlloca(func.fFunc, param->name(),
+                                     types()->getType(param->type()));
+    llvm::Value* tmpValue = tools()->emitPackCode(param->dstType(),
                                                  param->typeConv(),
                                                  aiter, param->type());
-    fBuilder.CreateStore(tmpValue, stackSlot);
+    builder().CreateStore(tmpValue, stackSlot);
 
     realFuncArgv.push_back(stackSlot);
 
     if (param->isSpecArg()) {
       specArgCount++;
 
-      llvm::Value* typeidSlot = fBuilder.CreateStructGEP(stackSlot, 0, "typeid");
-      lookupArgv.push_back(fBuilder.CreateLoad(typeidSlot));
+      llvm::Value* typeidSlot = builder().CreateStructGEP(stackSlot, 0, "typeid");
+      lookupArgv.push_back(builder().CreateLoad(typeidSlot));
     }
   }
 
-  llvm::Value* gf = makeGetGenericFuncLookupCall(node);
+  llvm::Value* gf = fGenerator->makeGetGenericFuncLookupCall(node);
   hr_assert(gf != NULL);
 
   lookupArgv.insert(lookupArgv.begin(), gf);
@@ -192,46 +221,46 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
   if (lookupFunc == NULL) {
     // Method* m = lookup_func*(gf, ty0);
     std::vector<const llvm::Type*> sign;
-    sign.push_back(fTypes->getGenericFuncType());
+    sign.push_back(types()->getGenericFuncType());
     // add a list of tagid arguments
     for (size_t i = 0; i < specArgCount; i++)
-      sign.push_back(fTypes->getTagIdType());
+      sign.push_back(types()->getTagIdType());
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getMethodType(),
+    llvm::FunctionType *ft = llvm::FunctionType::get(types()->getMethodType(),
                                                      sign,
                                                      !K(isVarArg));
     lookupFunc = llvm::Function::Create(ft,
                                         llvm::Function::ExternalLinkage,
                                         llvm::Twine(lookupFuncName),
-                                        fModule);
+                                        module());
   }
 
-  llvm::CallInst* method = fBuilder.CreateCall(lookupFunc,
+  llvm::CallInst* method = builder().CreateCall(lookupFunc,
                                                lookupArgv.begin(), lookupArgv.end());
   if (method == NULL)
     return NULL;
 
   // the function pointer in the Method* structure is the third member
-  llvm::Value* realFuncPtr = fBuilder.CreateLoad(fBuilder.CreateStructGEP(method,
+  llvm::Value* realFuncPtr = builder().CreateLoad(builder().CreateStructGEP(method,
                                                                           2,
                                                                           "method"));
 
   for (size_t i = 0; i < realFuncArgv.size(); i++)
-    realFuncArgv[i] = fBuilder.CreateLoad(realFuncArgv[i]);
+    realFuncArgv[i] = builder().CreateLoad(realFuncArgv[i]);
 
   // insert the return value into the argument list
-  llvm::AllocaInst *retv = fTools->createEntryBlockAlloca(func.fFunc,
+  llvm::AllocaInst *retv = tools()->createEntryBlockAlloca(func.fFunc,
                                                           String("retv"),
-                                                          fTypes->getAtomType());
+                                                          types()->getAtomType());
   realFuncArgv.insert(realFuncArgv.begin(), retv); //func.fFunc->arg_begin());
 
-  llvm::Value* f = fBuilder.CreateBitCast(realFuncPtr, func.fType->getPointerTo());
-  fBuilder.CreateCall(f, realFuncArgv.begin(), realFuncArgv.end());
+  llvm::Value* f = builder().CreateBitCast(realFuncPtr, func.fType->getPointerTo());
+  builder().CreateCall(f, realFuncArgv.begin(), realFuncArgv.end());
 
   // no wrap-load!  The generic function always returns as ATOM.
-  fTools->assignAtom(retv, func.fFunc->arg_begin());
+  tools()->assignAtom(retv, func.fFunc->arg_begin());
 
-  fBuilder.CreateRetVoid();
+  builder().CreateRetVoid();
 
 
   if (Properties::isCodeDump())
@@ -239,17 +268,18 @@ CodeGenerator::compileGenericFunctionDef(const FuncDefNode* node)
 
   verifyFunction(*func.fFunc);
 
-  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-    fOptPassManager->run(*func.fFunc);
+  if (fGenerator->fOptPassManager != NULL &&
+      Properties::optimizeLevel() > kOptLevelNone)
+    fGenerator->fOptPassManager->run(*func.fFunc);
 
   return func.fFunc;
 }
 
 
 llvm::Value*
-CodeGenerator::compileMethodDef(const FuncDefNode* node)
+CodegenFuncDef::compileMethodDef(const FuncDefNode* node) const
 {
-  hr_assert(fNamedValues.empty());
+  hr_assert(fGenerator->fNamedValues.empty());
 
   StringBuffer msgbuf;
   msgbuf << "=method";
@@ -266,7 +296,7 @@ CodeGenerator::compileMethodDef(const FuncDefNode* node)
   }
 
   String methodNameSuffix = msgbuf.toString();
-  fInitializer->addMethodDef(node, makeFunctionName(node, methodNameSuffix));
+  fGenerator->fInitializer->addMethodDef(node, makeFunctionName(node, methodNameSuffix));
 
   FuncPair func = createFunction(node, methodNameSuffix, K(isGeneric));
 
@@ -275,9 +305,9 @@ CodeGenerator::compileMethodDef(const FuncDefNode* node)
 
 
 llvm::Value*
-CodeGenerator::compileAbstractFuncDef(const FuncDefNode* node)
+CodegenFuncDef::compileAbstractFuncDef(const FuncDefNode* node) const
 {
-  hr_assert(fNamedValues.empty());
+  hr_assert(fGenerator->fNamedValues.empty());
 
   FuncPair func = createFunction(node, String(), !K(isGeneric));
 
@@ -288,9 +318,10 @@ CodeGenerator::compileAbstractFuncDef(const FuncDefNode* node)
 
 
 llvm::Value*
-CodeGenerator::compileNormalFuncDef(const FuncDefNode* node, bool isLocal)
+CodegenFuncDef::compileNormalFuncDef(const FuncDefNode* node,
+                                     bool isLocal) const
 {
-  hr_assert(fNamedValues.empty());
+  hr_assert(fGenerator->fNamedValues.empty());
 
   FuncPair func = createFunction(node, String(), !K(isGeneric));
   return compileNormalFuncDefImpl(func, node, isLocal, !K(atomRetType));
@@ -298,10 +329,10 @@ CodeGenerator::compileNormalFuncDef(const FuncDefNode* node, bool isLocal)
 
 
 llvm::Value*
-CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
-                                        const FuncDefNode* node,
-                                        bool isLocal,
-                                        bool forceAtomReturnType)
+CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
+                                         const FuncDefNode* node,
+                                         bool isLocal,
+                                         bool forceAtomReturnType) const
 {
   hr_assert(!node->isAbstract());
 
@@ -313,7 +344,7 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
       aiter++;
 
     llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", func.fFunc);
-    fBuilder.SetInsertPoint(bb);
+    builder().SetInsertPoint(bb);
 
     for (size_t pidx = 0;
          pidx < node->params().size() && aiter != aiter_e;
@@ -321,24 +352,24 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
     {
       const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
       llvm::AllocaInst *stackSlot =
-        fTools->createEntryBlockAlloca(func.fFunc,
+        tools()->createEntryBlockAlloca(func.fFunc,
                                        param->name(),
-                                       fTypes->getType(param->type()));
-      llvm::Value* tmpValue = fTools->emitPackCode(param->dstType(),
+                                       types()->getType(param->type()));
+      llvm::Value* tmpValue = tools()->emitPackCode(param->dstType(),
                                                    param->typeConv(),
                                                    aiter, param->type());
-      fBuilder.CreateStore(tmpValue, stackSlot);
+      builder().CreateStore(tmpValue, stackSlot);
 
-      fNamedValues[param->name()] = stackSlot;
+      fGenerator->fNamedValues[param->name()] = stackSlot;
     }
 
     const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->body());
     llvm::Value* retv = NULL;
     if (blockNode != NULL) {
-      retv = codegen(blockNode->children());
+      retv = fGenerator->codegen(blockNode->children());
     }
     else {
-      llvm::Value* val = codegenNode(node->body());
+      llvm::Value* val = fGenerator->codegenNode(node->body());
       if (val == NULL)
         return NULL;
       retv = val;
@@ -349,56 +380,57 @@ CodeGenerator::compileNormalFuncDefImpl(const FuncPair& func,
         hr_assert(!node->isMethod());
         // the app|main function always returns lang|Int32
         if (node->body()->type().isPlainType()) {
-          fBuilder.CreateStore(fBuilder.CreateIntCast(fTools->wrapLoad(retv),
+          builder().CreateStore(builder().CreateIntCast(tools()->wrapLoad(retv),
                                                       llvm::Type::getInt32Ty(context()),
                                                       true),
                                func.fFunc->arg_begin());
         }
         else {
           llvm::Value* convertedRetv =
-            fTools->makeTypeCastAtomToPlain(fTools->wrapLoad(retv),
+            tools()->makeTypeCastAtomToPlain(tools()->wrapLoad(retv),
                                             Type::newTypeRef("clang|int"));
-          fBuilder.CreateStore(convertedRetv, func.fFunc->arg_begin());
+          builder().CreateStore(convertedRetv, func.fFunc->arg_begin());
         }
       }
       else if (forceAtomReturnType) {
         if (node->body()->type().isPlainType()) {
           llvm::Value* tmpValue =
-            fTools->emitPackCode(node->body()->dstType(),
+            tools()->emitPackCode(node->body()->dstType(),
                                  node->body()->typeConv(),
-                                 fTools->wrapLoad(retv),
+                                 tools()->wrapLoad(retv),
                                  node->body()->type());
           // mmh.  Don't know why a createstore does work here.  But it does ...?
-          fBuilder.CreateStore(tmpValue, func.fFunc->arg_begin());
+          builder().CreateStore(tmpValue, func.fFunc->arg_begin());
           //assignAtom(tmpValue, func.fFunc->arg_begin());
         }
         else
-          fTools->assignAtom(retv, func.fFunc->arg_begin());
+          tools()->assignAtom(retv, func.fFunc->arg_begin());
       }
       else if (func.fRetType.isPlainType()) {
-        fBuilder.CreateStore(fTools->wrapLoad(retv),
+        builder().CreateStore(tools()->wrapLoad(retv),
                              func.fFunc->arg_begin());
       }
       else {
         // no wrap-load!
-        fTools->assignAtom(retv, func.fFunc->arg_begin());
+        tools()->assignAtom(retv, func.fFunc->arg_begin());
       }
 
-      fBuilder.CreateRetVoid();
+      builder().CreateRetVoid();
     }
     else
-      fBuilder.CreateRet(fTools->wrapLoad(retv));
+      builder().CreateRet(tools()->wrapLoad(retv));
 
     if (Properties::isCodeDump())
       func.fFunc->dump();
 
     verifyFunction(*func.fFunc);
 
-    if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
-      fOptPassManager->run(*func.fFunc);
+    if (fGenerator->fOptPassManager != NULL &&
+        Properties::optimizeLevel() > kOptLevelNone)
+      fGenerator->fOptPassManager->run(*func.fFunc);
 
     if (!isLocal && node->isAppMain())
-      fHasMainFunc = true;
+      fGenerator->fHasMainFunc = true;
   }
 
   return func.fFunc;

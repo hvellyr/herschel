@@ -45,33 +45,12 @@ using namespace herschel;
 //------------------------------------------------------------------------------
 
 CodegenTypeUtils::CodegenTypeUtils(CodeGenerator* generator)
-  : fGenerator(generator)
+  : CodeGeneratorProxy(generator)
 {
 }
 
 
 //------------------------------------------------------------------------------
-
-llvm::LLVMContext&
-CodegenTypeUtils::context() const
-{
-  return fGenerator->fContext;
-}
-
-
-llvm::IRBuilder<>&
-CodegenTypeUtils::builder() const
-{
-  return fGenerator->fBuilder;
-}
-
-
-llvm::Module*
-CodegenTypeUtils::module() const
-{
-  return fGenerator->fModule;
-}
-
 
 static std::vector<const llvm::Type*>
 newLlvmTypeVector(const llvm::Type* ty)

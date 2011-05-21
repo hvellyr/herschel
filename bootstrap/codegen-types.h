@@ -14,6 +14,7 @@
 #include "llvm/Support/IRBuilder.h"
 
 #include "refcountable.h"
+#include "codegen-proxy.h"
 
 namespace llvm
 {
@@ -29,7 +30,8 @@ namespace herschel
 
   //----------------------------------------------------------------------------
 
-  class CodegenTypeUtils : public RefCountable
+  class CodegenTypeUtils : public RefCountable,
+                           public CodeGeneratorProxy
   {
   public:
     CodegenTypeUtils(CodeGenerator* generator);
@@ -41,15 +43,6 @@ namespace herschel
     const llvm::Type* getGenericFuncType() const;
     const llvm::Type* getMethodType() const;
     const llvm::Type* getType(const Type& type) const;
-
-  private:
-    llvm::LLVMContext& context() const;
-    llvm::IRBuilder<>& builder() const;
-    llvm::Module* module() const;
-
-    //-------- data members
-
-    Ptr<CodeGenerator> fGenerator; 
   };
 };                              // namespace
 

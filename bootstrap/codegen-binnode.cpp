@@ -46,57 +46,8 @@
 using namespace herschel;
 
 CodegenBinaryNode::CodegenBinaryNode(CodeGenerator* generator)
-  : fGenerator(generator)
+  : CodeGeneratorProxy(generator)
 {
-}
-
-
-CodeGenerator*
-CodegenBinaryNode::generator() const
-{
-  return fGenerator;
-}
-
-
-llvm::LLVMContext&
-CodegenBinaryNode::context() const
-{
-  return fGenerator->fContext;
-}
-
-
-llvm::IRBuilder<>&
-CodegenBinaryNode::builder() const
-{
-  return fGenerator->fBuilder;
-}
-
-
-llvm::Module*
-CodegenBinaryNode::module() const
-{
-  return fGenerator->fModule;
-}
-
-
-CodegenTypeUtils*
-CodegenBinaryNode::types()
-{
-  return fGenerator->fTypes;
-}
-
-
-const CodegenTypeUtils*
-CodegenBinaryNode::types() const
-{
-  return fGenerator->fTypes;
-}
-
-
-CodegenTools*
-CodegenBinaryNode::tools() const
-{
-  return fGenerator->fTools;
 }
 
 

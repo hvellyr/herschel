@@ -9,17 +9,18 @@
 */
 
 
-#include "codegen.h"
+#include "apt.h"
+#include "codegen-binnode.h"
+#include "codegen-func.h"
 #include "codegen-init.h"
 #include "codegen-tools.h"
 #include "codegen-types.h"
-#include "codegen-binnode.h"
-#include "apt.h"
+#include "codegen.h"
 #include "log.h"
+#include "predefined.h"
 #include "properties.h"
 #include "symbol.h"
 #include "xmlout.h"
-#include "predefined.h"
 
 #include <vector>
 #include <typeinfo>
@@ -614,25 +615,7 @@ CodeGenerator::codegen(const RangeNode* node)
 llvm::Value*
 CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 {
-  // TODO: nested functions need special treatment here.  Or even better:
-  // avoid nested functions by lambda lifting in the transform passes above.
-  fNamedValues.clear();
-
-  if (node->isGeneric()) {
-    hr_assert(!isLocal);
-    return compileGenericFunctionDef(node);
-  }
-  else if (node->isMethod()) {
-    hr_assert(!isLocal);
-    return compileMethodDef(node);
-  }
-  else if (node->isAbstract()) {
-    hr_assert(!isLocal);
-    return compileAbstractFuncDef(node);
-  }
-  else {
-    return compileNormalFuncDef(node, isLocal);
-  }
+  return CodegenFuncDef(this).emit(node, isLocal);
 }
 
 
@@ -778,8 +761,6 @@ CodeGenerator::codegen(const NegateNode* node)
                             "negtmp");
 }
 
-
-//------------------------------------------------------------------------------
 
 llvm::Value*
 CodeGenerator::codegen(const IfNode* node)
