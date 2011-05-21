@@ -37,7 +37,7 @@ namespace herschel
   class MethodImpl;
 
   class CodegenTypeUtils;
-
+  class CodegenTools;
 
   //----------------------------------------------------------------------------
 
@@ -75,6 +75,7 @@ namespace herschel
     llvm::Module* module() const;
     CodegenTypeUtils* types();
     const CodegenTypeUtils* types() const;
+    CodegenTools* tools() const;
 
     llvm::Value* makeTypeOrCallRegistration(const Type& ty) const;
 

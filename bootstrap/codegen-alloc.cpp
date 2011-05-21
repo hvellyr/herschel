@@ -15,6 +15,7 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "codegen-tools.h"
 #include "codegen-types.h"
 
 #include <vector>
@@ -94,9 +95,9 @@ CodeGenerator::emitAllocateApply(const ApplyNode* node)
 
   std::vector<llvm::Value*> argv;
   llvm::Function* curFunction = fBuilder.GetInsertBlock()->getParent();
-  llvm::AllocaInst* retv = createEntryBlockAlloca(curFunction,
-                                                  String("local_retv"),
-                                                  fTypes->getAtomType());
+  llvm::AllocaInst* retv = fTools->createEntryBlockAlloca(curFunction,
+                                                          String("local_retv"),
+                                                          fTypes->getAtomType());
   hr_assert(retv != NULL);
   argv.push_back(retv);
 
