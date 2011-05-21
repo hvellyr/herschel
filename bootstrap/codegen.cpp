@@ -13,6 +13,7 @@
 #include "codegen-init.h"
 #include "codegen-tools.h"
 #include "codegen-types.h"
+#include "codegen-binnode.h"
 #include "apt.h"
 #include "log.h"
 #include "properties.h"
@@ -760,30 +761,7 @@ CodeGenerator::codegen(const ParamNode* node)
 llvm::Value*
 CodeGenerator::codegen(const BinaryNode* node)
 {
-  // fprintf(stderr, "BinaryNode: %s [%d]\n", XmlRenderer::operatorName(node->op()),
-  //         node->typeConv());
-  // tyerror(node->type(), "type");
-  // tyerror(node->dstType(), "dsttype");
-  llvm::Value *left = fTools->wrapLoad(codegenNode(node->left()));
-  llvm::Value *right = fTools->wrapLoad(codegenNode(node->right()));
-  if (left == NULL || right == NULL)
-    return NULL;
-
-  /*
-    int -> to plain int, op, dsttype is atom -> make_int_atom
-    float -> to plain float, op, dsttype is atom -> make_float_atom
-    char -> to plain float, op, dsttype is atom -> make_char_atom
-    bool -> to plain bool, op, dsttype is atom -> make_bool_atom
-    atom -> call operator(), dsttype is plain -> make_plain
-  */
-
-  if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt()) {
-    return codegenOpIntInt(node, left, right);
-  }
-
-  tyerror(node->left()->type(), "unsupported type in binary operator");
-  tyerror(node->right()->type(), "unsupported type in binary operator");
-  return NULL;
+  return CodegenBinaryNode(this).emit(node);
 }
 
 
