@@ -15,8 +15,6 @@
 
 #include "refcountable.h"
 #include "ptr.h"
-#include "codegen-init.h"
-#include "codegen-types.h"
 #include "apt.h"
 
 #include <map>
@@ -79,6 +77,8 @@ namespace herschel
   class VectorNode;
   class WhileNode;
 
+  class CodegenTypeUtils;
+  class ModuleRuntimeInitializer;
   class String;
 
   typedef std::vector<Ptr<AptNode> > NodeList;
@@ -249,8 +249,8 @@ namespace herschel
     llvm::FunctionPassManager* fOptPassManager;
     llvm::TargetData*          fTargetData;
 
-    ModuleRuntimeInitializer   fInitializer;
-    CodegenTypeUtils           fTypes;
+    Ptr<ModuleRuntimeInitializer> fInitializer;
+    Ptr<CodegenTypeUtils>      fTypes;
 
     bool fHasMainFunc;
 

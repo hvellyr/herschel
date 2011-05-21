@@ -15,6 +15,7 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "codegen-types.h"
 
 #include <vector>
 
@@ -45,7 +46,7 @@ llvm::Value*
 CodeGenerator::coerceIntOperand(const Type& dstType, const Type& isType,
                                 llvm::Value* value)
 {
-  return fBuilder.CreateIntCast(value, fTypes.getType(dstType), isType.isSigned());
+  return fBuilder.CreateIntCast(value, fTypes->getType(dstType), isType.isSigned());
 }
 
 
