@@ -1310,7 +1310,7 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
   }
 
   unsigned int slotFlags = kSimpleSlot;
-  if (ofs < seq.size() && seq[ofs] == kSemicolon) {
+  if (ofs < seq.size() && seq[ofs] == kComma) {
     ofs++;
     for ( ; ofs < seq.size(); ofs++) {
       if (seq[ofs] == kComma)
