@@ -41,6 +41,10 @@ namespace herschel
   private:
     llvm::Value* emitTypeNameForAllocate(const AptNode* node) const;
     llvm::Value* emitAllocateApply(const ApplyNode* node) const;
+    llvm::Value* emitGetSlotApply(const ApplyNode* node) const;
+    llvm::Value* emitSetSlotApply(const ApplyNode* node) const;
+
+    llvm::Value* emitPtrToSlot(const ApplyNode* node) const;
   };
 };                              // namespace
 
