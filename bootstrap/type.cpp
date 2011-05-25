@@ -320,12 +320,14 @@ namespace herschel
                  bool isInstantiatable,
                  const TypeVector& generics,
                  const Type& inherit,
-                 const FunctionSignature& applySign)
+                 const FunctionSignature& applySign,
+                 const TypeSlotList& slots)
       : fName(name),
         fIsInstantiatable(isInstantiatable),
         fGenerics(generics),
         fInherit(inherit),
-        fApplySign(applySign)
+        fApplySign(applySign),
+        fSlots(slots)
     { }
 
 
@@ -334,7 +336,8 @@ namespace herschel
       return new TypeTypeImpl(fName, fIsInstantiatable,
                               vectorClone(fGenerics),
                               fInherit.clone(),
-                              fApplySign.clone());
+                              fApplySign.clone(),
+                              vectorClone(fSlots));
     }
 
 
@@ -395,6 +398,15 @@ namespace herschel
         }
       }
       fInherit = fInherit.replaceGenerics(typeMap);
+
+      for (size_t i = 0; i < fSlots.size(); i++)
+        fSlots[i].replaceGenerics(typeMap);
+    }
+
+
+    virtual const TypeSlotList& slots() const
+    {
+      return fSlots;
     }
 
 
@@ -451,6 +463,7 @@ namespace herschel
     TypeVector              fGenerics;
     Type                    fInherit;
     FunctionSignature       fApplySign;
+    TypeSlotList            fSlots;
   };
 
 
@@ -1090,17 +1103,20 @@ Type::newType(const String& name, const TypeVector& generics,
 {
   return Type(kType_Type, K(isValue), !K(isImg),
               new TypeTypeImpl(name, !K(isInstantiable), generics, inherit,
-                               FunctionSignature()));
+                               FunctionSignature(),
+                               TypeSlotList()));
 }
 
 
 Type
 Type::newClass(const String& name, const TypeVector& generics,
-               const Type& inherit, const FunctionSignature& applySign)
+               const Type& inherit, const FunctionSignature& applySign,
+               const TypeSlotList& slots)
 {
   return Type(kType_Class, K(isValue), !K(isImg),
               new TypeTypeImpl(name, K(isInstantiable),
-                               generics, inherit, applySign));
+                               generics, inherit, applySign,
+                               slots));
 }
 
 
@@ -1589,6 +1605,15 @@ Type::isClass() const
 }
 
 
+const TypeSlotList&
+Type::slots() const
+{
+  hr_assert(isClass());
+  const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
+  return tyimpl->slots();
+}
+
+
 bool
 Type::isType() const
 {
@@ -1934,6 +1959,124 @@ Type::matchGenerics(TypeCtx& localCtx, const Type& right0,
   if (fImpl != NULL)
     return fImpl->matchGenerics(localCtx, right0, scope, srcpos);
   return false;
+}
+
+
+//----------------------------------------------------------------------------
+
+TypeSlot::TypeSlot(const String& name, const Type& type, unsigned int flags)
+  : fName(name),
+    fType(type),
+    fFlags(flags)
+{
+}
+
+
+TypeSlot::TypeSlot(const TypeSlot& other)
+  : fName(other.fName),
+    fType(other.fType),
+    fFlags(other.fFlags)
+{
+}
+
+
+TypeSlot
+TypeSlot::clone() const
+{
+  return TypeSlot(fName, fType.clone(), fFlags);
+}
+
+
+//! Assign operator
+TypeSlot&
+TypeSlot::operator=(const TypeSlot& other)
+{
+  fName = other.fName;
+  fType = other.fType;
+  fFlags = other.fFlags;
+
+  return *this;
+}
+
+
+//! Compare operator.
+bool
+TypeSlot::operator==(const TypeSlot& other) const
+{
+  return fName == other.fName && fType == other.fType && fFlags == other.fFlags;
+}
+
+
+//! Compare operator
+bool
+TypeSlot::operator!=(const TypeSlot& other) const
+{
+  return !(operator==(other));
+}
+
+
+void
+TypeSlot::replaceGenerics(const TypeCtx& typeMap)
+{
+  fType = fType.replaceGenerics(typeMap);
+}
+
+
+namespace herschel
+{
+  static String flagsToStr(unsigned int flags)
+  {
+    StringBuffer buf;
+    if ((flags & kTransientSlot) != 0)
+      buf << "transient ";
+    if ((flags & kReadonlySlot) != 0)
+      buf << "readonly ";
+
+    if ((flags & kPublicSlot) != 0)
+      buf << "public ";
+    else if ((flags & kOuterSlot) != 0)
+      buf << "outer ";
+    else if ((flags & kInnerSlot) != 0)
+      buf << "inner ";
+
+    if ((flags & kAutoSlot) != 0)
+      buf << "auto ";
+
+    return buf.toString();
+  }
+};
+
+
+String
+TypeSlot::toString() const
+{
+  StringBuffer buf;
+  buf << "<ty:slot k='" << flagsToStr(fFlags) << "' "
+      << "nm='" << fName << "'>"
+      << fType.toString()
+      << "</ty:slot>\n";
+  return buf.toString();
+}
+
+
+String
+TypeSlot::name() const
+{
+  return fName;
+}
+
+
+Type
+TypeSlot::type() const
+{
+  return fType;
+}
+
+
+unsigned int
+TypeSlot::flags() const
+{
+  return fFlags;
 }
 
 

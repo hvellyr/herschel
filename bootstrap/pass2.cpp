@@ -807,6 +807,7 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
   std::vector<PrimeTuple> primeTuples;
   NodeList slotDefs;
   NodeList onExprs;
+  TypeSlotList slotTypes;
 
   if (ofs < seq.size() &&
       seq[ofs].isNested() && seq[ofs].leftToken() == kBraceOpen)
@@ -825,6 +826,17 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
           NodeList nl = parseExpr(defs[i]);
           appendNodes(slotDefs, nl);
+
+          for (size_t i = 0; i < slotDefs.size(); i++) {
+            if (slotDefs[i] != NULL) {
+              SlotdefNode* slotDef = dynamic_cast<SlotdefNode*>(slotDefs[i].obj());
+              if (slotDef != NULL) {
+                slotTypes.push_back(TypeSlot(slotDef->name(),
+                                             slotDef->type(),
+                                             slotDef->flags()));
+              }
+            }
+          }
         }
         else {
           errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
@@ -920,7 +932,8 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
       genGenerics.push_back(genericTypeRef(generics[i].typeName(), K(isValue)));
     }
 
-    defType = Type::newClass(fullTypeName, generics, inheritsFrom, sign);
+    defType = Type::newClass(fullTypeName, generics, inheritsFrom, sign,
+                             slotTypes);
   }
   else {
     defType = Type::newType(fullTypeName, generics, inheritsFrom);
