@@ -39,10 +39,11 @@ namespace herschel
     CodegenTools(CodeGenerator* generator);
 
     enum Typeid {
-      //kAtomAny    = 'A',
-      kAtomBool   = 'b',
-      kAtomInt32  = 'i',
-      kAtomChar   = 'c'
+      //kAtomAny   = 'A',
+      kAtomBool    = 'b',
+      kAtomInt32   = 'i',
+      kAtomChar    = 'c',
+      kAtomKeyword = 'k',
     };
 
     void setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value);
@@ -60,6 +61,8 @@ namespace herschel
     llvm::Value* makeIntAtom(llvm::Value* val, Typeid atomTypeId);
     llvm::Value* makeBoolAtom(llvm::Value* val);
     llvm::Value* makeBoolAtom(bool val);
+
+    llvm::Value* makeKeywordAtom(const String& keyword);
 
     llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
                                              const String& name,

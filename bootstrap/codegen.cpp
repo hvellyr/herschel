@@ -465,8 +465,7 @@ CodeGenerator::codegen(const CharNode* node)
 llvm::Value*
 CodeGenerator::codegen(const KeywordNode* node)
 {
-  logf(kError, "Not supported yet: %s", typeid(node).name());
-  return NULL;
+  return fTools->makeKeywordAtom(node->value());
 }
 
 

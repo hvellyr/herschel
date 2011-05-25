@@ -80,6 +80,8 @@ namespace herschel
 
     void makeMethodRegisterCall(const MethodImpl& impl) const;
 
+    llvm::Value* registerKeyword(const String& keyword);
+
   private:
     friend class ClassInitStrategy;
     friend class MethodInitStrategy;
@@ -89,6 +91,7 @@ namespace herschel
     void emitModuleInitFunction();
 
     void emitRuntimeInitFunc();
+    void emitKeywordInitFunc();
     void emitGlobalVarInitFunc();
 
     void emitCtorList(const CtorList &fns, const char *globalName);
@@ -118,6 +121,9 @@ namespace herschel
     std::vector<const VardefNode*>  fGlobalInitVars;
     std::vector<const FuncDefNode*> fGenericsInitFuncs;
     std::vector<MethodImpl>         fMethodInitFuncs;
+
+    typedef std::map<String, llvm::GlobalVariable*> KeywordMap;
+    KeywordMap fKeywords;
   };
 
 

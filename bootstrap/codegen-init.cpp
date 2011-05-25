@@ -258,6 +258,7 @@ ModuleRuntimeInitializer::emitModuleInitFunction()
   emitEntityInitFunc(fClassInitFuncs, ClassInitStrategy());
   emitEntityInitFunc(fGenericsInitFuncs, GenericsInitStrategy());
   emitEntityInitFunc(fMethodInitFuncs, MethodInitStrategy());
+  emitKeywordInitFunc();
   emitGlobalVarInitFunc();
 
   builder().CreateRetVoid();
@@ -385,36 +386,68 @@ ModuleRuntimeInitializer::createGlobalInitOrDtorFunction(const llvm::FunctionTyp
 
 
 void
+ModuleRuntimeInitializer::emitKeywordInitFunc()
+{
+  llvm::Function* regFunc = module()->getFunction(llvm::StringRef("keyword_register"));
+  if (regFunc == NULL) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(llvm::Type::getInt8PtrTy(context()));
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(context()),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    regFunc = llvm::Function::Create(ft,
+                                     llvm::Function::ExternalLinkage,
+                                     llvm::Twine("keyword_register"),
+                                     module());
+  }
+
+  for (KeywordMap::const_iterator it = fKeywords.begin(),
+         end = fKeywords.end();
+       it != end;
+       it++)
+  {
+    std::vector<llvm::Value*> argv;
+    argv.push_back(builder().CreateGlobalStringPtr(StrHelper(it->first),
+                                                   llvm::Twine(StrHelper(it->first + "_kw"))));
+
+    llvm::Value* val = builder().CreateCall(regFunc, argv.begin(), argv.end(),
+                                            "keyw_init");
+
+    builder().CreateStore(val, it->second);
+  }
+}
+
+
+void
 ModuleRuntimeInitializer::emitGlobalVarInitFunc()
 {
-  if (!fGlobalInitVars.empty())
-  {
-    for (size_t i = 0; i < fGlobalInitVars.size(); i++) {
-      const VardefNode* varnode = fGlobalInitVars[i];
+  for (size_t i = 0; i < fGlobalInitVars.size(); i++) {
+    const VardefNode* varnode = fGlobalInitVars[i];
 
-      String varnm = herschel::mangleToC(varnode->name());
+    String varnm = herschel::mangleToC(varnode->name());
 
-      llvm::Value* initval = NULL;
-      if (varnode->initExpr() != NULL) {
-        initval = fGenerator->codegenNode(varnode->initExpr());
-      }
-      else {
-        hr_invalid("no initval");
-        // TODO: init the temporary value.  We shouldn't really have to care about
-        // this here, since this can be better done in the AST analysis.
-        // initval = llvm::ConstantInt::get(context(),
-        //                                  llvm::APInt(32, 1011, true));
-      }
-
-      std::map<String, llvm::GlobalVariable*>::iterator it =
-      fGenerator->fGlobalVariables.find(varnode->name());
-      hr_assert(it != fGenerator->fGlobalVariables.end());
-
-      llvm::Value* val = tools()->emitPackCode(varnode->initExpr()->dstType(),
-                                               varnode->initExpr()->typeConv(),
-                                               initval, varnode->initExpr()->type());
-      builder().CreateStore(val, it->second);
+    llvm::Value* initval = NULL;
+    if (varnode->initExpr() != NULL) {
+      initval = fGenerator->codegenNode(varnode->initExpr());
     }
+    else {
+      hr_invalid("no initval");
+      // TODO: init the temporary value.  We shouldn't really have to care about
+      // this here, since this can be better done in the AST analysis.
+      // initval = llvm::ConstantInt::get(context(),
+      //                                  llvm::APInt(32, 1011, true));
+    }
+
+    std::map<String, llvm::GlobalVariable*>::iterator it =
+      fGenerator->fGlobalVariables.find(varnode->name());
+    hr_assert(it != fGenerator->fGlobalVariables.end());
+
+    llvm::Value* val = tools()->emitPackCode(varnode->initExpr()->dstType(),
+                                             varnode->initExpr()->typeConv(),
+                                             initval, varnode->initExpr()->type());
+    builder().CreateStore(val, it->second);
   }
 }
 
@@ -739,6 +772,38 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
   }
 
   builder().CreateCall(regFunc, argv.begin(), argv.end());
+}
+
+
+//----------------------------------------------------------------------------
+
+llvm::Value*
+ModuleRuntimeInitializer::registerKeyword(const String& keyword)
+{
+  KeywordMap::iterator it = fKeywords.find(keyword);
+
+  if (it == fKeywords.end()) {
+    String varnm = herschel::mangleToC(String("keyw$") + keyword);
+    const llvm::Type* constTy = llvm::Type::getInt8PtrTy(context());
+    llvm::Constant* initConst = llvm::Constant::getNullValue(constTy);
+
+    llvm::GlobalVariable* gv =
+      new llvm::GlobalVariable(constTy,
+                               !K(isConstant),
+                               llvm::GlobalValue::PrivateLinkage,
+                               initConst,
+                               llvm::Twine(varnm),
+                               !K(threadLocal),
+                               0);    // AddressSpace
+    hr_assert(gv != NULL);
+    module()->getGlobalList().push_back(gv);
+
+    fKeywords.insert(std::make_pair(keyword, gv));
+
+    return gv;
+  }
+
+  return it->second;
 }
 
 

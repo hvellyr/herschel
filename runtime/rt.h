@@ -75,6 +75,12 @@ struct Method {
 };
 
 
+typedef struct Keyword Keyword;
+struct Keyword {
+  const char* name;             /* utf8 repr of keyword string */
+};
+
+
 extern void runtime_init();
 
 void type_init();
@@ -113,5 +119,10 @@ ATOM allocate_float_array(Type* ty, float init_value, size_t items);
 ATOM allocate_double_array(Type* ty, double init_value, size_t items);
 
 size_t type_slot_get(Type* ty, const char* slot_name);
+
+
+/* register a keyword as string value and return a normalized handle.  Each
+ * keyword is registered only once. */
+void* keyword_register(const char* keyword);
 
 #endif                          // runtime_rt_h

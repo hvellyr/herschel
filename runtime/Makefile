@@ -13,6 +13,7 @@ CFLAGS += -I$(top_srcdir) -I$(top_srcdir)/runtime
 
 SOURCES =         \
 	hash.c          \
+	keyword.c       \
 	list.c          \
 	method.c        \
 	rt.c            \

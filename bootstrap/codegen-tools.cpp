@@ -115,6 +115,20 @@ CodegenTools::makeBoolAtom(bool val)
 }
 
 
+llvm::Value*
+CodegenTools::makeKeywordAtom(const String& keyword)
+{
+  llvm::Function *curFunction = builder().GetInsertBlock()->getParent();
+  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, keyword + "_kw",
+                                                  fGenerator->fTypes->getAtomType());
+
+  setAtom(atom, kAtomKeyword,
+          builder().CreateLoad(fGenerator->fInitializer->registerKeyword(keyword)));
+
+  return atom;
+}
+
+
 //------------------------------------------------------------------------------
 
 llvm::Function*
@@ -144,12 +158,12 @@ CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
   llvm::Value* typidSlot = builder().CreateStructGEP(atom, 0);
   llvm::Value* typeIdValue = NULL;
   if (fGenerator->is64Bit())
-    typeIdValue =llvm::ConstantInt::get(fGenerator->context(),
-                                        llvm::APInt(64, (int)typid, !K(isSigned)));
+    typeIdValue = llvm::ConstantInt::get(fGenerator->context(),
+                                         llvm::APInt(64, (int)typid, !K(isSigned)));
   else
-    typeIdValue =llvm::ConstantInt::get(fGenerator->context(),
-                                        llvm::APInt(32, (int)typid, !K(isSigned)));
-
+    typeIdValue = llvm::ConstantInt::get(fGenerator->context(),
+                                         llvm::APInt(32, (int)typid, !K(isSigned)));
+  
   builder().CreateStore(typeIdValue, typidSlot);
 
   llvm::Value* payload = builder().CreateStructGEP(atom, 1);
@@ -167,6 +181,16 @@ CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
                                                    K(isSigned),
                                                    "tmp")
                          : value );
+    builder().CreateStore(val, slot);
+  }
+  else if (typid == kAtomKeyword) {
+    llvm::Value* val = ( fGenerator->is64Bit()
+                         ? builder().CreatePtrToInt(value,
+                                                    llvm::Type::getInt64Ty(context()),
+                                                    "tmp")
+                         : builder().CreatePtrToInt(value,
+                                                    llvm::Type::getInt32Ty(context()),
+                                                    "tmp") );
     builder().CreateStore(val, slot);
   }
   else

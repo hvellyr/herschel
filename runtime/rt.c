@@ -121,6 +121,7 @@ atom_2_float64(struct ATOM a)
    ------------------------------------------------------------------------ */
 extern void type_init();
 extern void methods_init();
+extern void keywords_init();
 
 void
 runtime_init()
@@ -139,5 +140,6 @@ runtime_init()
 
     type_init();
     methods_init();
+    keywords_init();
   }
 }

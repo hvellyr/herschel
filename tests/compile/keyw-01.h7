@@ -1,0 +1,16 @@
+;; check that keywords are properly initialized
+
+def foo(keyw)
+  keyw
+
+def app|main()
+  let a = #orange
+  foo(a)
+
+  let b = #apple
+  foo(b)
+
+  let c = #banana
+  foo(c)
+
+  0
