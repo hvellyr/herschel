@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='a' type='pos' alloc='shared'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos' alloc='shared'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='n' alloc='shared'>
+<init>
+<symbol  refer='param'>a</symbol>
+</init>
+</vardef>
+</let>
+<let>
+<func sym='pythagoras'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='y' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t1'>
+<init>
+<binary op='*'>
+<symbol  refer='local' acc='shared'>n</symbol>
+<symbol  refer='param'>x</symbol>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='t2'>
+<init>
+<binary op='**'>
+<symbol  refer='param'>y</symbol>
+<int ty='lang|Int32'>2</int>
+</binary>
+</init>
+</vardef>
+</let>
+<binary op='+'>
+<symbol  refer='local'>t1</symbol>
+<symbol  refer='local'>t2</symbol>
+</binary>
+</block>
+</body>
+</func>
+</let>
+<function>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<apply>
+<symbol  refer='function'>pythagoras</symbol>
+<args>
+<symbol  refer='param' acc='shared'>a</symbol>
+<symbol  refer='param' acc='shared'>b</symbol>
+</args>
+</apply>
+</body>
+</function>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

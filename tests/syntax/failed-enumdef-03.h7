@@ -1,0 +1,7 @@
+def enum I1 : Int
+{
+  %a = 1
+  %a = 42
+}
+
+def const a = %a

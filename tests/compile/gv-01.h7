@@ -1,0 +1,23 @@
+import "clang/types.h7"
+
+extern ("C")
+{
+  int putchar(int c);
+}
+
+
+def foo(c)
+  putchar(c)
+  c
+
+def o = 6fh
+def const nl = 10
+
+def app|main()
+  let b = 66
+  foo(b)
+  foo(111)
+  foo(o)
+  foo(nl)
+  0
+

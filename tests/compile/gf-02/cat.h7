@@ -1,0 +1,6 @@
+module xi
+export public (*)
+
+def type Cat
+
+def generic tame?(o @ Cat) ...

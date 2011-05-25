@@ -1,0 +1,4 @@
+;; problem generic with parameters but without specialization
+def generic f0(a : String, b : String)
+  outln("hello world: %s %s" % #[a, b])
+

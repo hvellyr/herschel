@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='Temperature'>
+<isa>
+<ty:measure nm='Temperature' unit='K'>
+<ty:isa>
+<ty:ref nm='lang|Float32'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</isa>
+</class>
+</def>
+<def>
+<class nm='Frequency'>
+<isa>
+<ty:measure nm='Frequency' unit='Hz'>
+<ty:isa>
+<ty:ref nm='lang|Float32'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</isa>
+</class>
+</def>
+<def>
+<vardef sym='a1'>
+<init>
+<uvalue unit='oC'>
+<type>
+<ty:measure nm='Temperature' unit='K'>
+<ty:isa>
+<ty:ref nm='lang|Float32'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</type>
+<int ty='lang|Int32'>12</int>
+</uvalue>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='a2'>
+<init>
+<uvalue unit='koC'>
+<type>
+<ty:measure nm='Temperature' unit='K'>
+<ty:isa>
+<ty:ref nm='lang|Float32'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</type>
+<int ty='lang|Int32'>23</int>
+</uvalue>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='b'>
+<init>
+<uvalue unit='kHz'>
+<type>
+<ty:measure nm='Frequency' unit='Hz'>
+<ty:isa>
+<ty:ref nm='lang|Float32'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</type>
+<int ty='lang|Int32'>42</int>
+</uvalue>
+</init>
+</vardef>
+</def>
+</compile-unit>

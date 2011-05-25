@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>RandomAccessPort</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+<punct type=':'/>
+<nested left='(' right=')'>
+<seq>
+<id>InPort</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+</seq>
+<punct type=','/>
+<seq>
+<id>OutPort</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+</seq>
+<punct type=','/>
+<seq>
+<id>SeekablePort</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+</seq>
+</nested>
+<seq>
+<id>where</id>
+<seq>
+<id>T</id>
+<punct type='isa'/>
+<id>Referencable</id>
+</seq>
+</seq>
+</seq>
+</seq>

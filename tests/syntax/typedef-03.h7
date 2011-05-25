@@ -1,0 +1,12 @@
+def type Collection<T>
+
+def generic add-all!(cltn @ 'C, other @ 'X) : 'C
+    where C isa Collection<'T> ...
+
+
+def type OrderedCollection<T> : Collection<T>
+
+def generic first(cltn @ 'C) : 'T
+    where C isa OrderedCollection<'T> ...
+def generic last(cltn @ 'C) : 'T
+    where C isa OrderedCollection<'T> ...

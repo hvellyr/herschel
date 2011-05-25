@@ -1,0 +1,2 @@
+5 ; error ; 4107 ; Bad method binding type (referred symbol is not a generic function).
+3 ; error ; 4107 ; Referred symbol definition was here

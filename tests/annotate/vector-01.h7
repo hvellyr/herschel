@@ -1,0 +1,7 @@
+def ints = #(1, 2, 3)
+
+def strs = #("abc", "xyz", "def")
+
+def anys = #("abc", #xyz, true)
+
+def empty = #()

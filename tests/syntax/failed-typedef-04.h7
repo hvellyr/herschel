@@ -1,0 +1,5 @@
+def type OrdinalOrEof : &(Ordinal, Eof)
+
+def type OrdinalOrFalse : &(Ordinal, Bool = false)
+
+def type StringOrUri : &(String, Uri)

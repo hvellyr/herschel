@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<vardef sym='v1'>
+<init>
+<apply>
+<symbol>lang|Vector|init</symbol>
+<args>
+<apply>
+<symbol>lang|allocate</symbol>
+<args>
+<type  ty='lang|Vector&lt;lang|Int32>'/>
+</args>
+</apply>
+</args>
+</apply>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='v2'>
+<init>
+<apply>
+<symbol>MyStruct</symbol>
+<args>
+</args>
+</apply>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='m1'>
+<init>
+<type  ty='lang|Map&lt;lang|String, &amp;(Boolean, lang|Eof)>'/>
+</init>
+</vardef>
+</def>
+</compile-unit>

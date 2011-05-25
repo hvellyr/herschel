@@ -1,0 +1,19 @@
+module xi
+
+def type Animal
+def type Dog : Animal
+def type Cat : Animal
+
+def generic make-noise(obj @ Animal) ...
+
+
+def make-noise(obj @ Dog) : Animal
+  obj
+
+
+def make-noise(obj @ Cat) : Animal
+  obj
+
+
+def app|main()
+  42

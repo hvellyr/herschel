@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>module</id>
+<id>samba</id>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>HelloWorld</id>
+<punct type=':'/>
+<id>Object</id>
+</seq>
+<seq>
+<id>def</id>
+<id>alias</id>
+<id>dlroWolleH</id>
+<punct type='='/>
+<id>Int</id>
+</seq>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>bar</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<punct type='...'/>
+</seq>
+</seq>
+

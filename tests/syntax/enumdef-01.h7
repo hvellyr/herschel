@@ -1,0 +1,34 @@
+def enum PortCursorWhenceType : Int
+{
+  current = -1
+  begin   = 0
+  end     = 1
+}
+
+
+def enum Colors : Keyword
+{
+  none   = #transparent
+  red    = #red
+  orange = #orange
+  blue   = #blue
+  green  = #green
+  yellow = #yellow
+}
+
+
+;; effective type: Int in #[0, 1, 2, 3, 127]
+def enum MidiController : Int
+{
+  bank-select    = 0
+  modulation     = 1
+  breath         = 2
+  foot-pedal     = 3
+  ;; ...
+  poly-operation = 127
+}
+
+
+def a0 : PortCursorWhenceType = begin
+def a1 : Colors = orange
+def a2 : MidiController = foot-pedal

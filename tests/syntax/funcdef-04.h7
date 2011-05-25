@@ -1,0 +1,16 @@
+;; some pathological tests in recursive definitions
+
+def frec(x: a : Int = { 
+                        let inner(y: b : Int = {
+                                                 let snd(z: c : Int = {
+                                                                        on sync ()
+                                                                          11
+                                                                      })
+                                                   c
+                                                 snd(z: b)
+                                               })
+                          b
+                        inner(y: a)
+                      })
+  a
+

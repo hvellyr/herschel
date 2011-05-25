@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>a</id>
+<punct type=':'/>
+<seq>
+<id>String</id>
+<nested left='[' right=']'/>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>b</id>
+<punct type=':'/>
+<nested left='(' right=')'>
+<id>A</id>
+<punct type=','/>
+<id>B</id>
+<punct type=','/>
+<id>C</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>c</id>
+<punct type=':'/>
+<nested left='&amp;(' right=')'>
+<id>A</id>
+<punct type=','/>
+<id>B</id>
+<punct type=','/>
+<id>C</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>d</id>
+<punct type=':'/>
+<nested left='&amp;(' right=')'>
+<nested left='&amp;(' right=')'>
+<id>A</id>
+<punct type=','/>
+<id>B</id>
+</nested>
+<punct type=','/>
+<nested left='&amp;(' right=')'>
+<id>C</id>
+</nested>
+<punct type=','/>
+<nested left='(' right=')'>
+<id>A</id>
+<punct type=','/>
+<seq>
+<id>B</id>
+<nested left='[' right=']'/>
+</seq>
+<punct type=','/>
+<id>C</id>
+</nested>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>e</id>
+<punct type=':'/>
+<seq>
+<nested left='&amp;(' right=')'>
+<id>A</id>
+<punct type=','/>
+<id>B</id>
+<punct type=','/>
+<id>C</id>
+</nested>
+<nested left='[' right=']'/>
+</seq>
+</seq>
+</seq>

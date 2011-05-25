@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<vardef sym='a'>
+<init>
+<function>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='bool'>
+</ty:ref>
+</rettype>
+<body>
+<symbol>a</symbol>
+</body>
+</function>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='b'>
+<init>
+<function>
+<params>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='bool'>
+</ty:ref>
+</rettype>
+<body>
+<symbol>b</symbol>
+</body>
+</function>
+</init>
+</vardef>
+</def>
+</compile-unit>
