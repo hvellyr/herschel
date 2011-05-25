@@ -123,6 +123,22 @@ hashtable_get(HashTable* table, void* key)
 }
 
 
+HashNode*
+hashtable_get_impl(HashTable* table, void* key)
+{
+  HashNode* node = table->fNodes[hashtable_func(key, table->fSize - 1)];
+
+  while (node != NULL) {
+    if (node->fKey == key)
+      return node;
+
+    node = node->fTail;
+  }
+
+  return NULL;
+}
+
+
 void
 hashtable_remove(HashTable* table, void* key)
 {
