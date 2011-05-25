@@ -418,7 +418,10 @@ Transformator::transform(RangeNode* node)
 AptNode*
 Transformator::transform(TypeDefNode* node)
 {
-  // TODO
+  transformNodeList(node->params());
+  transformNodeList(node->slots());
+  transformNodeList(node->onExprs());
+
   return node;
 }
 
