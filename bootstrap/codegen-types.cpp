@@ -173,53 +173,54 @@ CodegenTypeUtils::getMethodType() const
 const llvm::Type*
 CodegenTypeUtils::getType(const Type& type) const
 {
-  if (type.typeName() == String("clang|int")) {
+  String typeName = type.typeName();
+  if (typeName == String("clang|int")) {
     return llvm::Type::getInt32Ty(context());
   }
-  else if (type.typeName() == String("clang|char")) {
+  else if (typeName == String("clang|char")) {
     return llvm::Type::getInt8Ty(context());
   }
 
-  else if (type.typeName() == String("lang|Int8")) {
+  else if (typeName == String("lang|Int8")) {
     return llvm::Type::getInt8Ty(context());
   }
-  else if (type.typeName() == String("lang|Int16")) {
+  else if (typeName == String("lang|Int16")) {
     return llvm::Type::getInt16Ty(context());
   }
-  else if (type.typeName() == String("lang|Int32")) {
+  else if (typeName == String("lang|Int32")) {
     return llvm::Type::getInt32Ty(context());
   }
-  else if (type.typeName() == String("lang|Int64")) {
+  else if (typeName == String("lang|Int64")) {
     return llvm::Type::getInt64Ty(context());
   }
 
-  else if (type.typeName() == String("lang|UInt8")) {
+  else if (typeName == String("lang|UInt8")) {
     return llvm::Type::getInt8Ty(context());
   }
-  else if (type.typeName() == String("lang|UInt16")) {
+  else if (typeName == String("lang|UInt16")) {
     return llvm::Type::getInt16Ty(context());
   }
-  else if (type.typeName() == String("lang|UInt32")) {
+  else if (typeName == String("lang|UInt32")) {
     return llvm::Type::getInt32Ty(context());
   }
-  else if (type.typeName() == String("lang|UInt64")) {
+  else if (typeName == String("lang|UInt64")) {
     return llvm::Type::getInt64Ty(context());
   }
 
-  else if (type.typeName() == String("lang|Char")) {
+  else if (typeName == String("lang|Char")) {
     return llvm::Type::getInt32Ty(context());
   }
-  else if (type.typeName() == String("lang|Bool")) {
+  else if (typeName == String("lang|Bool")) {
     return llvm::Type::getInt1Ty(context());
   }
 
-  else if (type.typeName() == String("lang|Float32")) {
+  else if (typeName == String("lang|Float32")) {
     return llvm::Type::getFloatTy(context());
   }
-  else if (type.typeName() == String("lang|Float64")) {
+  else if (typeName == String("lang|Float64")) {
     return llvm::Type::getDoubleTy(context());
   }
-  // else if (type.typeName() == String("lang|Float128")) {
+  // else if (typeName == String("lang|Float128")) {
   //   return llvm::Type::getInt1Ty(context());
   // }
 

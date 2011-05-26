@@ -184,14 +184,7 @@ CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
     builder().CreateStore(val, slot);
   }
   else if (typid == kAtomKeyword) {
-    llvm::Value* val = ( fGenerator->is64Bit()
-                         ? builder().CreatePtrToInt(value,
-                                                    llvm::Type::getInt64Ty(context()),
-                                                    "tmp")
-                         : builder().CreatePtrToInt(value,
-                                                    llvm::Type::getInt32Ty(context()),
-                                                    "tmp") );
-    builder().CreateStore(val, slot);
+    builder().CreateStore(createCastPtrToNativeInt(value), slot);
   }
   else
     builder().CreateStore(value, slot);
@@ -251,8 +244,8 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
 }
 
 
-static const char*
-getConvFuncNameByType(const Type& type)
+const char*
+CodegenTools::getConvFuncNameByType(const Type& type) const
 {
   if (type.typeName() == String("lang|Int32"))
     return "atom_2_int32";
@@ -279,6 +272,9 @@ getConvFuncNameByType(const Type& type)
   else if (type.typeName() == String("lang|Bool"))
     return "atom_2_bool";
 
+  else if (type.typeName() == String("lang|Keyword"))
+    return "atom_2_keyword";
+
   if (type.typeName() == String("clang|int")) // TODO
     return "atom_2_int32";
 
@@ -287,8 +283,18 @@ getConvFuncNameByType(const Type& type)
 }
 
 
+const llvm::Type*
+CodegenTools::getConvTypeByType(const Type& type) const
+{
+  if (type.typeName() == String("lang|Keyword"))
+    return llvm::Type::getInt8PtrTy(context());
+
+  return types()->getType(type);
+}
+
+
 llvm::Value*
-CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType)
+CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) const
 {
   const char* funcName = getConvFuncNameByType(dstType);
 
@@ -297,7 +303,7 @@ CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType)
     std::vector<const llvm::Type*> sign;
     sign.push_back(types()->getAtomType());
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(types()->getType(dstType),
+    llvm::FunctionType *ft = llvm::FunctionType::get(getConvTypeByType(dstType),
                                                      sign,
                                                      false);
 
@@ -357,5 +363,15 @@ CodegenTools::createEntryBlockAlloca(llvm::Function *func, const String& name,
   return tmp.CreateAlloca(type, 0, llvm::Twine(name));
 }
 
+
+llvm::Value*
+CodegenTools::createCastPtrToNativeInt(llvm::Value* value) const
+{
+  return ( fGenerator->is64Bit()
+           ? builder().CreatePtrToInt(value,
+                                      llvm::Type::getInt64Ty(context()))
+           : builder().CreatePtrToInt(value,
+                                      llvm::Type::getInt32Ty(context())) );
+}
 
 
