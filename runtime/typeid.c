@@ -49,6 +49,8 @@ tag_id_for_type(const Type* type)
     return (int)'c';
   else if (strcmp(type->name, "__QN4lang3Any") == 0)
     return (int)'A';
+  else if (strcmp(type->name, "__QN4lang7Keyword") == 0)
+    return (int)'k';
 
   type_tag_id_counter++;
   return type_tag_id_counter;

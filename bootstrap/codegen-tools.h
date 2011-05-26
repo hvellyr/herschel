@@ -68,11 +68,22 @@ namespace herschel
                                              const String& name,
                                              const llvm::Type* type);
 
+    //! Create code snippet to extract the plain value from an atom.  This
+    //! snippet may contain an external function call which includes type
+    //! checking etc.
     llvm::Value* makeTypeCastAtomToPlain(llvm::Value* val,
-                                         const Type& dstType);
+                                         const Type& dstType) const;
     llvm::Value* emitPackCode(const Type& dstType, TypeConvKind convKind,
                               llvm::Value* value,
                               const Type& valType);
+
+    //! create a ptr-to-int cast using the integer type which is large
+    //! enough to fit to the pointer.
+    llvm::Value* createCastPtrToNativeInt(llvm::Value* value) const;
+
+  private:
+    const char* getConvFuncNameByType(const Type& type) const;
+    const llvm::Type* getConvTypeByType(const Type& type) const;
   };
 
 };                              // namespace

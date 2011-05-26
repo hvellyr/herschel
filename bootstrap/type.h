@@ -130,6 +130,7 @@ namespace herschel
     static Type newFloat32(bool isValue = true);
     static Type newString(bool isValue = true);
     static Type newBool(bool isValue = true);
+    static Type newKeyword(bool isValue = true);
 
     //! Creates a new Type type-instance.  This represents a specific type,
     //! not the type template/definition.  Therefore all (possible) type

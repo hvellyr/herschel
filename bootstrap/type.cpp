@@ -1085,6 +1085,13 @@ Type::newBool(bool isValue)
 
 
 Type
+Type::newKeyword(bool isValue)
+{
+  return newTypeRef(Names::kKeywordTypeName, isValue);
+}
+
+
+Type
 Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit)
 {

@@ -71,9 +71,10 @@ CodegenBinaryNode::emit(const BinaryNode* node) const
     atom -> call operator(), dsttype is plain -> make_plain
   */
 
-  if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt()) {
+  if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt())
     return codegenOpIntInt(node, left, right);
-  }
+  if (node->left()->type().isKeyword() && node->right()->type().isKeyword())
+    return codegenOpKeywKeyw(node, left, right);
 
   tyerror(node->left()->type(), "unsupported type in binary operator");
   tyerror(node->right()->type(), "unsupported type in binary operator");
@@ -116,6 +117,8 @@ CodegenBinaryNode::wrapBool(llvm::Value* value, const Type& type) const
   return tools()->makeBoolAtom(value);
 }
 
+
+//------------------------------------------------------------------------------
 
 bool
 CodegenBinaryNode::isPlainInt(const Type& type) const
@@ -211,3 +214,37 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
 
   return NULL;
 }
+
+
+//------------------------------------------------------------------------------
+
+llvm::Value*
+CodegenBinaryNode::codegenOpKeywKeyw(const BinaryNode* node,
+                                     llvm::Value* left,
+                                     llvm::Value* right) const
+{
+  llvm::Value* plainLeft = tools()->makeTypeCastAtomToPlain(left,
+                                                            Type::newKeyword());
+  llvm::Value* plainRight = tools()->makeTypeCastAtomToPlain(right,
+                                                             Type::newKeyword());
+
+  llvm::Value* leftAsInt = tools()->createCastPtrToNativeInt(plainLeft);
+  llvm::Value* rightAsInt = tools()->createCastPtrToNativeInt(plainRight);
+
+  switch (node->op()) {
+  case kOpEqual:
+    return wrapBool(builder().CreateICmpEQ(leftAsInt, rightAsInt, "eqkw"),
+                    node->dstType());
+  case kOpUnequal:
+    return wrapBool(builder().CreateICmpNE(leftAsInt, rightAsInt, "nekw"),
+                    node->dstType());
+
+  default:
+    fprintf(stderr, "invalid binary operator for keyword: %d", node->op());
+    return NULL;
+  }
+
+  return NULL;
+}
+
+

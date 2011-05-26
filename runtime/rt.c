@@ -17,7 +17,7 @@
 int8_t
 atom_2_int8(struct ATOM a)
 {
-  // TODO: assert that a.typeid refers to int8
+  /* TODO: assert that a.typeid refers to int8 */
   return (int8_t)a.u.v_int;
 }
 
@@ -25,7 +25,7 @@ atom_2_int8(struct ATOM a)
 int16_t
 atom_2_int16(struct ATOM a)
 {
-  // TODO: assert that a.typeid refers to int16
+  /* TODO: assert that a.typeid refers to int16 */
   return (int16_t)a.u.v_int;
 }
 
@@ -33,7 +33,7 @@ atom_2_int16(struct ATOM a)
 int32_t
 atom_2_int32(struct ATOM a)
 {
-  // TODO: assert that a.typeid refers to int32
+  /* TODO: assert that a.typeid refers to int32 */
   return (int32_t)a.u.v_int;
 }
 
@@ -41,7 +41,7 @@ atom_2_int32(struct ATOM a)
 uint8_t
 atom_2_uint8(struct ATOM a)
 {
-  // TODO: assert that a.typeid refers to uint8
+  /* TODO: assert that a.typeid refers to uint8 */
   return (uint8_t)a.u.v_int;
 }
 
@@ -49,7 +49,7 @@ atom_2_uint8(struct ATOM a)
 uint16_t
 atom_2_uint16(struct ATOM a)
 {
-  // TODO: assert that a.typeid refers to uint16
+  /* TODO: assert that a.typeid refers to uint16 */
   return (uint16_t)a.u.v_int;
 }
 
@@ -57,7 +57,7 @@ atom_2_uint16(struct ATOM a)
 uint32_t
 atom_2_uint32(struct ATOM a)
 {
-  // TODO: assert that a.typeid refers to uint32
+  /* TODO: assert that a.typeid refers to uint32 */
   return (uint32_t)a.u.v_int;
 }
 
@@ -113,6 +113,14 @@ atom_2_float64(struct ATOM a)
 
   /* TODO: doubles are not allocated inline, but on heap */
   return 0.0;
+}
+
+
+void*
+atom_2_keyword(struct ATOM a)
+{
+  /* TODO: assert that a.typeid == 'k' */
+  return (void*)a.u.v_obj;
 }
 
 
