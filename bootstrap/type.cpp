@@ -1526,8 +1526,7 @@ Type::typeId() const
 
   switch (fKind) {
   case kType_Undefined:
-    hr_invalid("");
-    break;
+    return String("<undefined>");
 
   case kType_Ref:
     {
