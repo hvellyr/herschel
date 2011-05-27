@@ -75,7 +75,8 @@ Compiler::Compiler(bool isParsingInterface)
              new CharRegistry,
              new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
              type::newRootScope())),
-    fIsParsingInterface(isParsingInterface)
+    fIsParsingInterface(isParsingInterface),
+    fReferredFunctionCache(new Scope(kScopeL_CompileUnit))
 {
 }
 
@@ -97,6 +98,13 @@ Scope*
 Compiler::scope() const
 {
   return fState.fScope;
+}
+
+
+Scope*
+Compiler::referredFunctionCache() const
+{
+  return fReferredFunctionCache;
 }
 
 
@@ -176,7 +184,7 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
       nodePass = new TransformPass(3);
       apt = nodePass->apply(apt.release(), doTrace);
 
-      nodePass = new AnnotatePass(4, fState.fScope);
+      nodePass = new AnnotatePass(4, fState.fScope, this);
       apt = nodePass->apply(apt.release(), doTrace);
 
       nodePass = new TypifyPass(5);
@@ -399,7 +407,7 @@ namespace herschel
             String outFile = makeOutputFileName(Properties::outdir(),
                                                 outfileName, file, outExt);
 
-            Ptr<CodeGenerator> codegen = new CodeGenerator();
+            Ptr<CodeGenerator> codegen = new CodeGenerator(compiler);
             codegen->compileToCode(unit, outFile);
           }
 

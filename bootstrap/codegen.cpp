@@ -54,8 +54,9 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-CodeGenerator::CodeGenerator()
-  : fContext(llvm::getGlobalContext()),
+CodeGenerator::CodeGenerator(Compiler* compiler)
+  : fCompiler(compiler),
+    fContext(llvm::getGlobalContext()),
     fModule(NULL),
     // fDIBuilder(NULL),
     fBuilder(context()),
@@ -66,6 +67,8 @@ CodeGenerator::CodeGenerator()
     fTools(new CodegenTools(this)),
     fHasMainFunc(false)
 {
+  hr_assert(fCompiler != NULL);
+
   llvm::InitializeNativeTarget();
 
   fModule = new llvm::Module("compile-unit", fContext);

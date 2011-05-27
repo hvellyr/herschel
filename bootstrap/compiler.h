@@ -72,6 +72,8 @@ namespace herschel
                     Scope* currentScope);
     String lookupFile(const String& srcName, bool isPublic);
 
+    Scope* referredFunctionCache() const;
+
     // predefined symbol tokens to speed up parsing
     static const Token aliasToken;
     static const Token allocToken;
@@ -157,6 +159,8 @@ namespace herschel
     CompilerState            fState;
     std::list<CompilerState> fCompilerStates;
     bool                     fIsParsingInterface;
+
+    Ptr<Scope>               fReferredFunctionCache;
   };
 
 

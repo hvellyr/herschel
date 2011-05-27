@@ -20,6 +20,8 @@
 #include "codegen-apply.h"
 #include "codegen-types.h"
 #include "codegen-tools.h"
+#include "codegen-func.h"
+#include "compiler.h"
 
 #include <vector>
 
@@ -70,6 +72,20 @@ CodegenApply::emitTypeNameForAllocate(const AptNode* node) const
 }
 
 
+llvm::Function*
+CodegenApply::lazyDeclareExternFunction(const SymbolNode* symNode) const
+{
+  Scope* scope = generator()->fCompiler->referredFunctionCache();
+  const AptNode* node = scope->lookupFunction(symNode->name(),
+                                              !K(showAmbiguousSymDef));
+  const FuncDefNode* funcdef = dynamic_cast<const FuncDefNode*>(node);
+  if (funcdef != NULL)
+    return CodegenFuncDef(generator()).emitExternFuncDef(funcdef);
+
+  return NULL;
+}
+
+
 llvm::Value*
 CodegenApply::emit(const ApplyNode* node) const
 {
@@ -100,9 +116,12 @@ CodegenApply::emit(const ApplyNode* node) const
 
     calleeFunc = module()->getFunction(llvm::StringRef(funcnm));
     if (calleeFunc == NULL) {
-      errorf(node->srcpos(), 0, "Unknown function referenced: %s",
-             (const char*)StrHelper(funcnm));
-      return NULL;
+      calleeFunc = lazyDeclareExternFunction(symNode);
+      if (calleeFunc == NULL) {
+        errorf(node->srcpos(), 0, "Unknown function referenced: %s",
+               (const char*)StrHelper(funcnm));
+        return NULL;
+      }
     }
   }
   else {
