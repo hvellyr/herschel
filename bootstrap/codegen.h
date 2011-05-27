@@ -47,6 +47,7 @@ namespace herschel
   class BoolNode;
   class CastNode;
   class CharNode;
+  class Compiler;
   class CompileUnitNode;
   class DefNode;
   class DictNode;
@@ -95,7 +96,7 @@ namespace herschel
   class CodeGenerator : public RefCountable
   {
   public:
-    CodeGenerator();
+    CodeGenerator(Compiler* compiler);
     ~CodeGenerator();
 
     bool compileToCode(const CompileUnitNode* node, const String& outputFile);
@@ -173,6 +174,7 @@ namespace herschel
 
     //-------- data members
 
+    Compiler*                  fCompiler;
     llvm::LLVMContext&         fContext;
     llvm::Module*              fModule;
     // llvm::DIBuilder*        fDIBuilder;

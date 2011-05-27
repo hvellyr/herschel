@@ -74,6 +74,15 @@ CodegenFuncDef::emit(const FuncDefNode* node, bool isLocal) const
 }
 
 
+llvm::Function*
+CodegenFuncDef::emitExternFuncDef(const FuncDefNode* node) const
+{
+  FuncPair func = createFunction(node, String(), !K(isGeneric));
+  return func.fFunc;
+}
+
+
+
 llvm::FunctionType*
 CodegenFuncDef::createFunctionSignature(const FunctionNode* node, bool inlineRetv,
                                         const Type& retty,

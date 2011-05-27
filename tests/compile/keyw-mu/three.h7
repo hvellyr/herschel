@@ -1,0 +1,22 @@
+import "lang/assert.h7"
+
+import "clang/types.h7"
+
+
+extern ("C") {
+  void exit(int retv);
+}
+
+import "one.h7"
+import "two.h7"
+
+def apple2() : Keyword
+  #apple
+
+def app|main()
+  assert(apple() == apple2())
+  assert(apple() <> orange())
+  assert(apple2() <> orange())
+  assert(orange() == orange())
+  0
+

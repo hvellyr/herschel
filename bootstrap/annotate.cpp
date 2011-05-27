@@ -31,17 +31,20 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-AnnotatePass::AnnotatePass(int level, Scope* scope)
+AnnotatePass::AnnotatePass(int level, Scope* scope, Compiler* compiler)
   : AptNodeCompilePass(level),
-    fScope(scope)
-{}
+    fScope(scope),
+    fCompiler(compiler)
+{
+  hr_assert(fCompiler != NULL);
+}
 
 
 AptNode*
 AnnotatePass::doApply(AptNode* src)
 {
   Ptr<AptNode> node = src;
-  Ptr<Annotator> an = new Annotator(fScope);
+  Ptr<Annotator> an = new Annotator(fScope, fCompiler);
   an->annotateRecursively(node);
   return node.release();
 }
@@ -49,10 +52,12 @@ AnnotatePass::doApply(AptNode* src)
 
 //----------------------------------------------------------------------------
 
-Annotator::Annotator(Scope* scope)
+Annotator::Annotator(Scope* scope, Compiler* compiler)
   : fScope(scope),
-    fPhase(kRegister)
+    fPhase(kRegister),
+    fCompiler(compiler)
 {
+  hr_assert(fCompiler != NULL);
 }
 
 
@@ -148,6 +153,19 @@ Annotator::annotate(SymbolNode* node)
           node->setRefersTo(kGeneric, !K(isShared));
         else
           node->setRefersTo(kFunction, !K(isShared));
+
+        // keep an additional link to this function (which is obviously
+        // referenced), such that the codegen can produce extern declaration
+        // for it if needed
+        SrcPos srcpos;
+        if (!fCompiler->referredFunctionCache()->hasName(Scope::kNormal,
+                                                         node->name(),
+                                                         &srcpos))
+        {
+          fCompiler->referredFunctionCache()->registerFunction(funcdef->srcpos(),
+                                                               node->name(),
+                                                               funcdef->clone());
+        }
       }
       else if (dynamic_cast<const ParamNode*>(var) != NULL) {
         bool isShared = updateAllocType(node, var);

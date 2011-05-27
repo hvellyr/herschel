@@ -36,7 +36,17 @@ namespace herschel
   public:
     CodegenFuncDef(CodeGenerator* generator);
 
+    //! emit function declaration, implementation, lookup and/or
+    //! boilerplate code for \p node, depending on the kind of function
+    //! definition.
     llvm::Value* emit(const FuncDefNode* node, bool isLocal) const;
+
+    //! emit a function definition for \p node.  This generates only a
+    //! extern forward declaration and should be used only for functions
+    //! which are to be linked in from other compile units.
+    //!
+    //! It returns the function
+    llvm::Function* emitExternFuncDef(const FuncDefNode* node) const;
 
   private:
     struct FuncPair

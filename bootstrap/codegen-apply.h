@@ -20,14 +20,16 @@ namespace llvm
 {
   class Module;
   class Value;
+  class Function;
 };
 
 
 namespace herschel
 {
+  class BinaryNode;
   class CodeGenerator;
   class CodegenTypeUtils;
-  class BinaryNode;
+  class SymbolNode;
   class Type;
 
 
@@ -41,6 +43,8 @@ namespace herschel
   private:
     llvm::Value* emitTypeNameForAllocate(const AptNode* node) const;
     llvm::Value* emitAllocateApply(const ApplyNode* node) const;
+
+    llvm::Function* lazyDeclareExternFunction(const SymbolNode* symNode) const;
   };
 };                              // namespace
 

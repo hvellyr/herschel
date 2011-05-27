@@ -29,6 +29,7 @@ namespace herschel
   class BoolNode;
   class CastNode;
   class CharNode;
+  class Compiler;
   class CompileUnitNode;
   class DefNode;
   class DictNode;
@@ -77,7 +78,7 @@ namespace herschel
       kLookup
     };
 
-    Annotator(Scope* scope);
+    Annotator(Scope* scope, Compiler* compiler);
 
     void annotateRecursively(AptNode* node);
 
@@ -137,6 +138,7 @@ namespace herschel
 
     Ptr<Scope> fScope;
     Phase      fPhase;
+    Compiler*  fCompiler;       // backlink to owning compiler
   };
 
 
@@ -145,11 +147,12 @@ namespace herschel
   class AnnotatePass : public AptNodeCompilePass
   {
   public:
-    AnnotatePass(int level, Scope* scope);
+    AnnotatePass(int level, Scope* scope, Compiler* compiler);
     virtual AptNode* doApply(AptNode* src);
 
   private:
     Ptr<Scope> fScope;
+    Compiler*  fCompiler;       // backlink to owning compiler
   };
 
 };                              // namespace
