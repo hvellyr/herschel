@@ -1,11 +1,6 @@
 ;; test 1 ordinary, 2 spec'ed arity parameter
 
-import "clang/types.h7"
-
-extern ("C") {
-  int putchar(int c);
-}
-
+import "lang/stdlib.h7"
 
 module xi
 
