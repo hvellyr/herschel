@@ -6,12 +6,7 @@
 ;; account, but depend on the order of the method definition for 'bar @
 ;; Sour' and 'bar @ Sweet'.
 
-import "clang/types.h7"
-
-extern ("C") {
-  int putchar(int c);
-}
-
+import "lang/stdlib.h7"
 
 def type lang|Any
 

@@ -1,12 +1,5 @@
 import "lang/assert.h7"
 
-import "clang/types.h7"
-
-
-extern ("C") {
-  void exit(int retv);
-}
-
 import "one.h7"
 import "two.h7"
 
