@@ -18,3 +18,16 @@
     def foo()
       assert(1 == 1)
       0
+
+- macros don't save their context.  Macros should be hygienic
+  by saving the bindings visibile at their declaration point.
+  
+    module X
+    export public (y)
+
+    import "something.h7"
+
+    def macro y { { y() } -> { symbol-from-something() } }
+
+  In this example the site using the macro y must also import
+  something.h7, otherwise symbol-from-something is unknown
