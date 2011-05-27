@@ -1,0 +1,29 @@
+import "clang/types.h7"
+
+extern ("C") {
+  int putchar(int c);
+}
+
+
+module xi
+
+def foo(c)
+  putchar(c)
+  c
+
+
+def class Dog
+{
+}
+
+
+def generic make-noise(obj @ Dog, x : Int)
+  foo(x)
+  foo(10)
+  obj
+
+
+def app|main()
+  let d = Dog()
+  make-noise(d, 67)
+  0

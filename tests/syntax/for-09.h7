@@ -1,0 +1,5 @@
+def fx0(k, n)
+  for (i : Int in (if (n == #do) 100 else 99) .. { let x = n ** 2
+                                                   x - 1 } by k * 2) {
+    outln(i)
+  }

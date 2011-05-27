@@ -1,0 +1,4 @@
+;; types in generics can't have default types
+def class Atlas2<T1 = Int, T2 = Float> : (Persona, Copyable)
+{
+}

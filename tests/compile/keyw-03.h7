@@ -1,0 +1,11 @@
+import "clang/types.h7"
+import "lang/assert.h7"
+
+extern ("C") {
+  void exit(int retv);
+}
+
+def app|main()
+  assert(#red <> #green)
+  assert(#red == #red)
+  0

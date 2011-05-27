@@ -1,0 +1,24 @@
+def const b = 42
+
+;; what out.  Multiple var assignment must not be applied in funcall lists!
+def foo(a = b, c = 11)
+  a + c
+
+;; ... nor in static area lists.
+def foo2(a, c)
+  #[a = b, c = 11]
+
+
+def foo3(c)
+  let r, g, b = #[0, 0, 0]
+
+  ;; mulit var assign is detected in for bodies
+  for (a = 0 then a + 3 while a < c.size)
+    r, g, b = c[a .. a + 2]
+
+  ;; and in select and match statements
+  select (c) {
+    | #red   -> r, g, b = #[255, 0, 0]
+    | #green -> r, g, b = #[0, 255, 0]
+    | #blue  -> r, g, b = #[0, 0, 255]
+  }

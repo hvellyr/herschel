@@ -1,0 +1,27 @@
+def class Y(n)
+{
+  def slot _n = n
+}
+
+
+def class Z(n = 42)
+{
+  def slot _n = n
+}
+
+
+def class X : (Y, Z)
+{
+  def slot a
+  def slot b
+
+  on alloc(self) {
+    Y(11)
+    Z(n: 1234)
+  }
+
+  on init() {
+    a = 5
+    b = 7
+  }
+}

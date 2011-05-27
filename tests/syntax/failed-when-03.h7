@@ -1,0 +1,5 @@
+when abc
+when xyz
+def a = 11
+
+when [a] def m = 27

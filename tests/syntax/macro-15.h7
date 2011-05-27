@@ -1,0 +1,9 @@
+def macro abc
+{
+  { def abc ?a:name       } -> { def _tmp_ ## ?a:name = nil }
+  { def abc const ?a:name } -> { def const _tmp_ ## ?a:name ## _const = nil }
+}
+
+
+def abc xyz
+def abc const nmo

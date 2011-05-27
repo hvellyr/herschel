@@ -1,0 +1,108 @@
+.\".\" Copyright (c) 2011 Gregor Klinke. All Rights Reserved.
+.\" The following commands are required for all man pages.
+.Dd January 26, 2011
+.Os "Mac OS X"
+.Dt HERSCHEL 1
+.Sh NAME
+.Nm herschel
+.Nd compiler frontend for the herschel programming language
+.Sh SYNOPSIS
+.Nm
+.Op Fl Pcs
+.Op Fl O | On
+.Op Fl o Ar outfile
+.Op Fl d Ar outdir
+.Op Fl I Ar inputdir
+.Op Fl D Ar var Ns = Ns Ar value
+.Bk
+.Ar FileName ...
+.Ek
+.Sh DESCRIPTION
+.Nm
+is compiler frontend for
+.Em herschel
+, a general purpose, multi-paradigm programming language.  In normal
+operation it takes herschel source files and compiles and links them into a
+standalone executable or a library which can be linked to other source
+files later.  When invoked with not special options
+.Em herschel
+will process all the steps compiling, assembling, post-compilation
+optimizing, and linking.  The major options
+.Op -c,
+.Op -s, and
+.Op -P
+will stop the process at a certain stage leaving intermediate files for you
+further work.
+.Pp
+.Bl -tag -width flag
+.It Fl c
+Compile and (byte code) assemble the source files, but do not link.  The
+linking stage simply is not done.  The ultimate output is in the form of an
+byte code file for each source file.
+.Pp
+By default, the output file name is made by replacing the source suffix by
+.Pa .bc.
+.It Fl s
+Compile the source files into llvm IR file, and do not link.  The
+linking and assembling stage is not done.
+.Pp
+By default, the output file name is made by appending the suffix
+.Pa .ll
+to the source file name.
+.It Fl P
+Only parse the source file.  If a tracing options
+.Op T
+is given the internal AST tree is printed to stdout.
+.El
+.Pp
+.Pp
+Further options are available:
+.Bl -tag -width flag
+.It Fl o Ar outfile
+Set the name of the resulting executable or library.  The default name for
+an executable is formed by replacing the source file suffix with
+.Pa .out.
+.It Fl d Ar outdir
+Output all generated files to
+.Ar outdir
+.\"
+.It Fl I Ar inputdir
+Add
+.Ar inputdir
+to the input searchlist
+.\"
+.It Fl D Ar var Ns = Ns Ar value
+Define config
+.Ar var
+to be
+.Ar value
+.El
+.\"
+.Ss Optimization options
+.Bl -tag -width flag
+.It Fl O
+Optimize code more
+.\"
+.It Fl On
+Turn off any (even basic) optimization
+.El
+.\" The following commands should be uncommented and
+.\" used where appropriate.
+.\" .Sh IMPLEMENTATION NOTES
+.\" This next command is for sections 2, 3 and 9 function
+.\" return values only.
+.\" .Sh RETURN VALUES
+.\" This next command is for sections 1, 6, 7 and 8 only.
+.\" .Sh ENVIRONMENT
+.\" .Sh FILES
+.\" .Sh EXAMPLES
+.\" This next command is for sections 1, 6, 7, 8 and 9 only
+.\"     (command return values (to shell) and
+.\"     fprintf/stderr type diagnostics).
+.Sh DIAGNOSTICS
+.Ex -std hrc
+.Sh SEE ALSO
+.Xr herschel 7
+.Sh AUTHORS
+.An "Gregor Klinke" Aq gck@eyestep.org
+.\" .Sh BUGS

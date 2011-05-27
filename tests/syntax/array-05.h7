@@ -1,0 +1,6 @@
+def foo(a @ 'T[],
+        new-size : Ordinal,
+        init-value : 'T = class-of(a.base-type).null-value) : 'T[]
+  let t = class-of(a)(new-size)
+  t.init(init-value)
+  t

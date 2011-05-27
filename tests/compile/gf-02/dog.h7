@@ -1,0 +1,6 @@
+module xi
+export public (*)
+
+def type Dog
+
+def generic colour(o @ Dog) ...

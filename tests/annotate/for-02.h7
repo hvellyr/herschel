@@ -1,0 +1,26 @@
+def to-string(a : Int) : String ...
+
+def foo1()
+  for (i in 0 .. 100)
+    i.to-string
+
+
+def foo2()
+  for (i in 0 .. 100)
+    i.to-string
+  else
+    "42"
+
+
+def foo3()
+  for (i in 0 .. 100)
+    i.to-string
+  0
+
+
+def foo4()
+  for (i in 0 .. 100)
+    i.to-string
+  else
+    "true"
+  4

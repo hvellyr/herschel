@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='fx0'>
+<params>
+<param sym='k' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='n' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='__step_0'>
+<init>
+<binary op='*'>
+<symbol>k</symbol>
+<int ty='lang|Int32'>2</int>
+</binary>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__end_1'>
+<init>
+<if>
+<test>
+<binary op='=='>
+<symbol>n</symbol>
+<keyw>do</keyw>
+</binary>
+</test>
+<then>
+<int ty='lang|Int32'>100</int>
+</then>
+<else>
+<int ty='lang|Int32'>99</int>
+</else>
+</if>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__end_2'>
+<init>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<binary op='**'>
+<symbol>n</symbol>
+<int ty='lang|Int32'>2</int>
+</binary>
+</init>
+</vardef>
+</let>
+<binary op='-'>
+<symbol>x</symbol>
+<int ty='lang|Int32'>1</int>
+</binary>
+</block>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='i'>
+<init>
+<symbol>__end_1</symbol>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__abs_i_4'>
+<init>
+<if>
+<test>
+<binary op='&lt;'>
+<symbol>i</symbol>
+<symbol>__end_2</symbol>
+</binary>
+</test>
+<then>
+<symbol>i</symbol>
+</then>
+<else>
+<symbol>__end_2</symbol>
+</else>
+</if>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__abs_end_3'>
+<init>
+<if>
+<test>
+<binary op='&lt;'>
+<symbol>i</symbol>
+<symbol>__end_2</symbol>
+</binary>
+</test>
+<then>
+<symbol>__end_2</symbol>
+</then>
+<else>
+<symbol>i</symbol>
+</else>
+</if>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__abs_step_5'>
+<init>
+<if>
+<test>
+<binary op='&lt;'>
+<symbol>__step_0</symbol>
+<symbol>__end_2</symbol>
+</binary>
+</test>
+<then>
+<neg>
+<symbol>__step_0</symbol>
+</neg>
+</then>
+<else>
+<symbol>__step_0</symbol>
+</else>
+</if>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='__return_6'>
+<type>
+<ty:union>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+<ty:ref nm='lang|Unspecified'>
+</ty:ref>
+</ty:union>
+</type>
+<init>
+<symbol>lang|unspecified</symbol>
+</init>
+</vardef>
+</let>
+<while>
+<test>
+<binary op='&lt;='>
+<symbol>__abs_i_4</symbol>
+<symbol>__abs_end_3</symbol>
+</binary>
+</test>
+<body>
+<block>
+<assign>
+<symbol>__return_6</symbol>
+<apply>
+<symbol>outln</symbol>
+<args>
+<symbol>i</symbol>
+</args>
+</apply>
+</assign>
+<assign>
+<symbol>i</symbol>
+<binary op='+'>
+<symbol>i</symbol>
+<symbol>__step_0</symbol>
+</binary>
+</assign>
+<assign>
+<symbol>__abs_i_4</symbol>
+<binary op='+'>
+<symbol>__abs_i_4</symbol>
+<symbol>__abs_step_5</symbol>
+</binary>
+</assign>
+</block>
+</body>
+</while>
+<symbol>__return_6</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

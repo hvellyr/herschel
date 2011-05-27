@@ -1,0 +1,177 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>module</id>
+<id>abc</id>
+</seq>
+<seq>
+<id>export</id>
+<nested left='(' right=')'>
+<id>*</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>xyz</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<nested left='(' right=')'>
+<id>*</id>
+</nested>
+<punct type='as'/>
+<id>final</id>
+</seq>
+<seq>
+<id>export</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>xyz</id>
+</nested>
+<punct type='as'/>
+<id>final</id>
+</seq>
+<seq>
+<id>export</id>
+<id>outer</id>
+<nested left='(' right=')'>
+<id>*</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>outer</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>xyz</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>outer</id>
+<nested left='(' right=')'>
+<id>*</id>
+</nested>
+<punct type='as'/>
+<id>final</id>
+</seq>
+<seq>
+<id>export</id>
+<id>outer</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>xyz</id>
+</nested>
+<punct type='as'/>
+<id>final</id>
+</seq>
+<seq>
+<id>export</id>
+<id>inner</id>
+<nested left='(' right=')'>
+<id>*</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>inner</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>xyz</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>inner</id>
+<nested left='(' right=')'>
+<id>*</id>
+</nested>
+<punct type='as'/>
+<id>final</id>
+</seq>
+<seq>
+<id>export</id>
+<id>inner</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>xyz</id>
+</nested>
+<punct type='as'/>
+<id>final</id>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>*</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>abc</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>xyz</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>mno</id>
+<punct type=','/>
+<id>xyz</id>
+</nested>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>*</id>
+</nested>
+<punct type='as'/>
+<id>final</id>
+</seq>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>abc</id>
+<punct type=','/>
+<id>mno</id>
+<punct type=','/>
+<id>xyz</id>
+</nested>
+<punct type='as'/>
+<id>final</id>
+</seq>
+<seq>
+<id>def</id>
+<id>f0</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<lit type='bool'>true</lit>
+</nested>
+</seq>
+</seq>

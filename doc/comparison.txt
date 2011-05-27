@@ -1,0 +1,128 @@
+Language Feature Comparison Table
+
+Feature                                     D   Hr
+  Garbage Collection                        y   y
+
+Functions
+  Function delegates                        y   n
+  Function overloading                      y   n
+  Out function parameters                   y   y
+  Nested functions                          y   y
+  Function literals / Anonymous functions   y   y
+  Closures                                  y   y
+  Typesafe variadic arguments               y   y
+  Lazy function argument evaluation         y
+  Compile time function evaluation          y   n
+
+Arrays
+  Lightweight arrays                        y   n
+  Resizeable arrays                         y   n
+  Built-in strings                          y   y
+  Array slicing                             y   y
+  Array bounds checking                     y   y
+  Array literals                            y   y
+  Associative arrays                        y   y
+  Strong typedefs                           y   y
+  String switches                           y   y
+  Aliases                                   y   y
+
+OOP
+  Object Oriented                           y   y
+  Multiple Inheritance                      No  y
+  Interfaces                                y   y
+  Operator overloading                      y   y
+  Modules                                   y   y
+  Dynamic class loading                     No  No
+  Nested classes                            y   No
+  Inner (adaptor) classes                   y   No
+  Covariant return types                    y
+  Properties                                y   y
+
+Class specific features
+  value type                                y   y
+  reference type                            y   y
+  data members                              y   y
+  hidden members                            y   No
+  static members                            y   No
+  default member initializers               y   y
+  bit fields                                No  No
+  non-virtual member functions              y   No
+  virtual member functions                  y   y
+  multiple dispatch                         No  y
+  constructors                              y   y
+  postblit/copy constructors                y
+  destructors / finalization                y   y
+  shared static constructors                y   No
+  shared static destructors                 y   No
+  RAII                                      y   No
+  assign overload                           y   No
+  literals                                  y   No
+  operator overloading                      y   y
+  inheritance                               y   y
+  invariants                                y   y
+  unit tests                                y
+  synchronizable                            y   y
+  parameterizable                           y   y
+  alignment control                         y   No
+  member protection                         y   No
+  default public                            y   --
+  tag name space                            y   --
+  anonymous                                 y   --
+  static constructor                        y   No
+  static destructor                         y   No
+  const/immutable/shared                    y   No
+  inner nesting                             y   No
+
+
+Performance
+  Inline assembler                          y   No
+  Direct access to hardware                 y   No
+  Lightweight objects                       y   No
+  Explicit memory allocation control        y   No
+  Independent of VM                         y   y
+  Direct native code gen                    y   y
+
+Generic Programming
+  Class Templates                           y   No
+  Function Templates                        y   No
+  Implicit Function Template Instantiation  y   No
+  Partial and Explicit Specialization       y   No
+  Value Template Parameters                 y   No
+  Template Template Parameters              y   No
+  Variadic Template Parameters              y   No
+  Template Constraints                      y   No
+  Mixins                                    y   No
+  static if                                 y   No
+  is expressions                            y   No
+  typeof                                    y
+  foreach                                   y   y
+  Implicit Type Inference                   y   y
+
+Reliability
+  Contract Programming                      y   y
+  Unit testing                              y
+  Static construction order                 y
+  Guaranteed initialization                 y   y
+  RAII (automatic destructors)              y   No
+  Exception handling                        y   y
+  Scope guards / on-exit handler            y   y
+  try-catch-finally blocks                  y   y
+  Thread synchronization primitives         y   y
+
+Compatibility
+  C-style syntax                            y   No
+  Enumerated types                          y   y
+  Support all C types                       y
+  80 bit floating point                     y   y
+  Complex and Imaginary                     y   y
+  Direct access to C                        y
+  Use existing debuggers                    y
+  Struct member alignment control           y   --
+  Generates standard object files           y   y
+  Macro text preprocessor                   No  No
+  Hygienic macros                           No  y
+
+Other
+  Conditional compilation                   y   y
+  Unicode source text                       y   y
+  Documentation comments                    y   y

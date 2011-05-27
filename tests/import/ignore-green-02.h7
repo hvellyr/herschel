@@ -1,0 +1,8 @@
+;; imported file
+
+export public (*)
+
+def macro abc
+{
+  { def abc ?x:name = ?y:expr } -> { def x- ## ?x = ?y }
+}

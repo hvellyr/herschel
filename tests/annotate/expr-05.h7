@@ -1,0 +1,32 @@
+;; binary operations are possible with untyped expressions (for rapid prototyping)
+def f0(a : Float32, b : Float64)
+  let t0 = a + b
+  let t1 = a - b
+  let t2 = a * b
+  let t3 = a / b
+  let t4 = a ** b
+  let t5 = a mod b
+
+def f1(a : Float32, b : Float64)
+  let t0 = a == b
+  let t1 = a <> b
+  let t2 = a < b
+  let t3 = a > b
+  let t4 = a >= b
+  let t5 = a <= b
+  let t6 = a <=> b
+  let t7 = a in b
+
+def f4(a : Float128, b)
+  let t0 = a isa Int
+  let t1 = a isa b
+
+def f5(a : Float32, b : Float128)
+  ;; logical and/or operators requires booleans; so for Any operands this
+  ;; makes explicit true comparasions necessary
+  let t0 =
+    (a == 3.1415) and
+    (b == 42.00001 : Float64)
+  let t1 =
+    (a == b) or
+    (b == a)

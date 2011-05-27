@@ -1,0 +1,24 @@
+- Calling extern-C function with wrong argument number crash hrc
+
+    extern ("C") {
+      void exit(int retv);
+    }
+
+
+    def foo()
+      exit()
+
+
+- macros with empty replacement list are not registered?
+
+    def macro assert {
+      { assert(?expr:expr) } -> { }
+    }
+
+    def foo()
+      assert(1 == 1)
+      0
+
+
+- functions from one compile units are not extern declared in another
+  compile unit.

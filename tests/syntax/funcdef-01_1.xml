@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>f0</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>outln</id>
+<nested left='(' right=')'>
+<lit type='str'>hello world</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>
