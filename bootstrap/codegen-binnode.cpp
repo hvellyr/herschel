@@ -109,7 +109,6 @@ CodegenBinaryNode::wrapInt(llvm::Value* value, const Type& type) const
 llvm::Value*
 CodegenBinaryNode::wrapBool(llvm::Value* value, const Type& type) const
 {
-
   if (type.isPlainType())
     return value;
 
@@ -135,22 +134,41 @@ CodegenBinaryNode::isPlainInt(const Type& type) const
 
 
 llvm::Value*
+CodegenBinaryNode::convertToPlainInt(const AptNode* dst,
+                                     const AptNode* right,
+                                     llvm::Value* value) const
+{
+  switch (right->typeConv()) {
+  case kNoConv:
+    return coerceIntOperand(dst->type(), right->type(), value);
+  case kAtom2PlainConv:
+    return tools()->makeTypeCastAtomToPlain(value, dst->type());
+  case kPlain2AtomConv:
+  case kTypeCheckConv:
+    hr_invalid("");
+  }
+
+  return NULL;
+}
+
+
+llvm::Value*
 CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
                                    llvm::Value* left,
                                    llvm::Value* right) const
 {
-  llvm::Value* coleft = NULL;
-  llvm::Value* coright = NULL;
+  llvm::Value* coleft = convertToPlainInt(node->left(), node->left(), left);
+  llvm::Value* coright = convertToPlainInt(node->left(), node->right(), right);
 
-  if (isPlainInt(node->left()->type()))
-    coleft = coerceIntOperand(node->left()->type(), node->left()->type(), left);
-  else if (node->left()->type().isAnyInt())
-    coleft = tools()->makeTypeCastAtomToPlain(left, node->left()->type());
+  // if (isPlainInt(node->left()->type()))
+  //   coleft = coerceIntOperand(node->left()->type(), node->left()->type(), left);
+  // else if (node->left()->type().isAnyInt())
+  //   coleft = tools()->makeTypeCastAtomToPlain(left, node->left()->type());
 
-  if (isPlainInt(node->left()->type()) && isPlainInt(node->right()->type()))
-    coright = coerceIntOperand(node->left()->type(), node->right()->type(), right);
-  else if (node->right()->type().isAnyInt())
-    coright = tools()->makeTypeCastAtomToPlain(right, node->left()->type());
+  // if (isPlainInt(node->left()->type()) && isPlainInt(node->right()->type()))
+  //   coright = coerceIntOperand(node->left()->type(), node->right()->type(), right);
+  // else if (node->right()->type().isAnyInt())
+  //   coright = tools()->makeTypeCastAtomToPlain(right, node->left()->type());
 
   switch (node->op()) {
   case kOpPlus:
