@@ -14,6 +14,33 @@
 #include "runtime/trace.h"
 
 
+static const char*
+atom_type_name(long typeid)
+{
+  static char buffer[256];
+
+  switch (typeid) {
+  case 'i': return "lang|Int32";
+  case 'b': return "lang|Bool";
+  case 'c': return "lang|Char";
+  case 'A': return "lang|Any";
+  case 'k': return "lang|Keyword";
+  }
+
+  sprintf(buffer, "unknown(%ld)", typeid);
+
+  return buffer;
+}
+
+
+static void
+unexpected_atom_type(long expected_id, long found_id)
+{
+  fprintf(stderr, "Unexpected type. Expected '%s', actually found '%s'\n",
+          atom_type_name(expected_id), atom_type_name(found_id));
+  exit(1);
+}
+
 int8_t
 atom_2_int8(struct ATOM a)
 {
@@ -33,7 +60,9 @@ atom_2_int16(struct ATOM a)
 int32_t
 atom_2_int32(struct ATOM a)
 {
-  /* TODO: assert that a.typeid refers to int32 */
+  if (a.typeid != 'i')
+    unexpected_atom_type('i', a.typeid);
+
   return (int32_t)a.u.v_int;
 }
 
@@ -65,7 +94,9 @@ atom_2_uint32(struct ATOM a)
 uint32_t
 atom_2_char(struct ATOM a)
 {
-  /* TODO: assert that a.typeid refers to char */
+  if (a.typeid != 'c')
+    unexpected_atom_type('c', a.typeid);
+
   return (uint32_t)a.u.v_int;
 }
 
@@ -73,7 +104,9 @@ atom_2_char(struct ATOM a)
 int
 atom_2_bool(struct ATOM a)
 {
-  /* TODO: assert that a.typeid refers to bool */
+  if (a.typeid != 'b')
+    unexpected_atom_type('b', a.typeid);
+
   return a.u.v_int;
 }
 
@@ -119,7 +152,9 @@ atom_2_float64(struct ATOM a)
 void*
 atom_2_keyword(struct ATOM a)
 {
-  /* TODO: assert that a.typeid == 'k' */
+  if (a.typeid != 'k')
+    unexpected_atom_type('k', a.typeid);
+
   return (void*)a.u.v_obj;
 }
 
