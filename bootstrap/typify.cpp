@@ -1036,12 +1036,14 @@ Typifier::typify(BinaryNode* node)
         node->setType(Type::newAny());
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
+        annotateTypeConv(node, node->type());
         return;
       }
       if (leftty.isNumber() || rightty.isNumber()) {
         node->setType(Type::newTypeRef(Names::kNumberTypeName, K(isValue)));
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
+        annotateTypeConv(node, node->type());
         return;
       }
 
@@ -1049,6 +1051,7 @@ Typifier::typify(BinaryNode* node)
         node->setType(Type::newTypeRef(Names::kComplexTypeName, K(isValue)));
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
+        annotateTypeConv(node, node->type());
         return;
       }
 
@@ -1059,6 +1062,7 @@ Typifier::typify(BinaryNode* node)
           node->setType(leftty);
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
+        annotateTypeConv(node, node->type());
         return;
       }
       if (rightty.isAnyFloat()) {
@@ -1068,6 +1072,7 @@ Typifier::typify(BinaryNode* node)
           node->setType(rightty);
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
+        annotateTypeConv(node, node->type());
         return;
       }
 
@@ -1076,6 +1081,7 @@ Typifier::typify(BinaryNode* node)
                                        K(isValue)));
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
+        annotateTypeConv(node, node->type());
         return;
       }
 
@@ -1083,6 +1089,7 @@ Typifier::typify(BinaryNode* node)
         node->setType(maxIntType(leftty, rightty));
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
+        annotateTypeConv(node, node->type());
         return;
       }
 
@@ -1098,6 +1105,7 @@ Typifier::typify(BinaryNode* node)
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible types in binary operation");
       node->setType(Type::newAny());
+      annotateTypeConv(node, node->type());
       break;
 
     case kOpEqual:
@@ -1120,6 +1128,7 @@ Typifier::typify(BinaryNode* node)
         node->setType(Type::newBool());
         annotateTypeConv(node->left(), leftty);
         annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node, node->type());
         return;
       }
 
@@ -1127,6 +1136,7 @@ Typifier::typify(BinaryNode* node)
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible types in binary comparison");
       node->setType(Type::newAny());
+      annotateTypeConv(node, node->type());
       break;
 
     case kOpCompare:
@@ -1134,6 +1144,7 @@ Typifier::typify(BinaryNode* node)
       node->setType(Type::newInt32());
       annotateTypeConv(node->left(), leftty);
       annotateTypeConv(node->right(), leftty);
+      annotateTypeConv(node, node->type());
       break;
 
     case kOpIsa:
@@ -1141,6 +1152,7 @@ Typifier::typify(BinaryNode* node)
         node->setType(Type::newBool());
         annotateTypeConv(node->left(), node->type());
         annotateTypeConv(node->right(), node->type());
+        annotateTypeConv(node, node->type());
         return;
       }
       // TODO: try to lookup a method which enables isa(leftty, rightty) and
@@ -1148,6 +1160,7 @@ Typifier::typify(BinaryNode* node)
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible right side type in isa operation");
       node->setType(Type::newAny());
+      annotateTypeConv(node, node->type());
       break;
 
     case kOpAppend:
@@ -1156,6 +1169,7 @@ Typifier::typify(BinaryNode* node)
           node->setType(leftty);
           annotateTypeConv(node->left(), leftty);
           annotateTypeConv(node->right(), leftty);
+          annotateTypeConv(node, node->type());
           return;
         }
       }
@@ -1164,6 +1178,7 @@ Typifier::typify(BinaryNode* node)
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible types in append() operation");
       node->setType(Type::newAny());
+      annotateTypeConv(node, node->type());
       break;
 
     case kOpFold:
@@ -1172,6 +1187,7 @@ Typifier::typify(BinaryNode* node)
         node->setType(leftty);
         annotateTypeConv(node->left(), leftty);
         annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node, node->type());
         return;
       }
       // TODO: try to lookup a method which enables fold(leftty, rightty) and
@@ -1179,6 +1195,7 @@ Typifier::typify(BinaryNode* node)
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible types in fold() operation");
       node->setType(Type::newAny());
+      annotateTypeConv(node, node->type());
       break;
 
     case kOpRemove:
@@ -1187,6 +1204,7 @@ Typifier::typify(BinaryNode* node)
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible types in remove() operation");
       node->setType(Type::newAny());
+      annotateTypeConv(node, node->type());
       break;
 
     case kOpLogicalAnd:
@@ -1195,11 +1213,13 @@ Typifier::typify(BinaryNode* node)
         node->setType(Type::newBool());
         annotateTypeConv(node->left(), leftty);
         annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node, node->type());
         return;
       }
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "bool types required in logical 'and'/'or' operations");
       node->setType(Type::newAny());
+      annotateTypeConv(node, node->type());
       break;
 
     case kOpBitAnd:
@@ -1216,6 +1236,7 @@ Typifier::typify(BinaryNode* node)
                "AND, OR, XOR operations require unsigned integer types on both sides");
         node->setType(Type::newAny());
       }
+      annotateTypeConv(node, node->type());
       break;
 
     case kOpShiftLeft:
@@ -1237,6 +1258,7 @@ Typifier::typify(BinaryNode* node)
                "bit operations require unsigned integer types on left side");
         node->setType(Type::newAny());
       }
+      annotateTypeConv(node, node->type());
       break;
 
     case kOpMapTo:
