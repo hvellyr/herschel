@@ -698,17 +698,6 @@ namespace herschel
   };
 
 
-  enum SlotFlags {
-    kSimpleSlot     = 0,
-    kTransientSlot  = 1 << 0,
-    kReadonlySlot   = 1 << 1,
-    kPublicSlot     = 1 << 2,
-    kOuterSlot      = 1 << 3,
-    kInnerSlot      = 1 << 4,
-    kAutoSlot       = 1 << 5,
-  };
-
-
   class SlotdefNode : public BindingNode
   {
   public:
@@ -1269,9 +1258,14 @@ namespace herschel
     const String& name() const;
     const Type& defType() const;
     bool isClass() const;
+
     const NodeList& params() const;
     const NodeList& slots() const;
     const NodeList& onExprs() const;
+
+    NodeList& params();
+    NodeList& slots();
+    NodeList& onExprs();
 
   private:
     String fTypeName;

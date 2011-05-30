@@ -101,6 +101,10 @@ CodegenApply::emit(const ApplyNode* node) const
 
     if (symNode->name() == Names::kLangAllocate)
       return emitAllocateApply(node);
+    else if (symNode->name() == Names::kLangSlot)
+      return emitGetSlotApply(node);
+    else if (symNode->name() == Names::kLangSlotX)
+      return emitSetSlotApply(node);
 
     if (symNode->hasCLinkage()) {
       // generic functions are not allowed to have C linkage
@@ -232,4 +236,83 @@ CodegenApply::emitAllocateApply(const ApplyNode* node) const
 
   // TODO: if in tail position enforce ATOM return type?
   return retv;
+}
+
+
+llvm::Value*
+CodegenApply::emitPtrToSlot(const ApplyNode* node) const
+{
+  String slotFuncName = String("instance_slot");
+
+  llvm::Function *slotFunc = module()->getFunction(llvm::StringRef(slotFuncName));
+  if (slotFunc == NULL) {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(types()->getAtomType()->getPointerTo());
+    sign.push_back(llvm::Type::getInt8PtrTy(context()));
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(context()),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    slotFunc = llvm::Function::Create(ft,
+                                      llvm::Function::ExternalLinkage,
+                                      llvm::Twine("instance_slot"),
+                                      module());
+  }
+
+  const NodeList& args = node->children();
+  if (args.size() == 2) {
+    errorf(node->srcpos(), 0, "Incorrect # arguments passed");
+    return NULL;
+  }
+
+#if 0
+  std::vector<llvm::Value*> argv;
+  llvm::Function* curFunction = builder().GetInsertBlock()->getParent();
+  llvm::AllocaInst* retv = tools()->createEntryBlockAlloca(curFunction,
+                                                           String("local_retv"),
+                                                           types()->getAtomType());
+  hr_assert(retv != NULL);
+  argv.push_back(retv);
+
+  for (size_t i = 0, e = args.size(); i != e; ++i) {
+    llvm::Value* val = emitTypeNameForAllocate(args[i]);
+    hr_assert(val != NULL);
+    argv.push_back(val);
+  }
+
+  hr_assert(allocFunc != NULL);
+  builder().CreateCall(allocFunc, argv.begin(), argv.end());
+
+  // TODO: if in tail position enforce ATOM return type?
+  return retv;
+#endif
+
+  return NULL;
+}
+
+
+llvm::Value*
+CodegenApply::emitGetSlotApply(const ApplyNode* node) const
+{
+  const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->base());
+  hr_assert(symNode->name() == Names::kLangSlot);
+  hr_assert(symNode->refersTo() == kGeneric);
+
+  llvm::Value* addr = emitPtrToSlot(node);
+  // get value out of casted addr and store it into the retv
+  return addr;
+}
+
+
+llvm::Value*
+CodegenApply::emitSetSlotApply(const ApplyNode* node) const
+{
+  const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->base());
+  hr_assert(symNode->name() == Names::kLangSlotX);
+  hr_assert(symNode->refersTo() == kGeneric);
+
+  llvm::Value* addr = emitPtrToSlot(node);
+  // store value into casted *addr
+  return addr;
 }

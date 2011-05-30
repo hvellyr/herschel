@@ -115,18 +115,6 @@ Function contracts
 
 
 
-Better slot properties
-----------------------
-
-  Current syntax:
-
-    def slot name = "N.N." ; auto
-
-  Better syntax:
-
-    def slot(auto) name = "N.N."
-
-
 Used character of Ascii
 -----------------------
 
@@ -155,7 +143,6 @@ $   identifier                          [----------]
 -   identifier                          operator (-)
     operator (-)
     negative numbers
-    comment starter (--)
 .   function call                       struct member
     float notation                      float notation
     operator (..)
@@ -167,6 +154,7 @@ $   identifier                          [----------]
 :   keyword arguments                   ternary operator
     type separator
 ;   Extended slot params                stmt terminator
+    comment starter (;;)
 <>  operator (<, >, <=, >=, <>, ->)     operator(...)
     parametrization
 =   operator (==, <=, >=)               operator(==)

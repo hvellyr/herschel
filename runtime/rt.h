@@ -119,6 +119,7 @@ ATOM allocate_float_array(Type* ty, float init_value, size_t items);
 ATOM allocate_double_array(Type* ty, double init_value, size_t items);
 
 size_t type_slot_get(Type* ty, const char* slot_name);
+void* instance_slot(ATOM* instance, const char* slot_name);
 
 
 /* register a keyword as string value and return a normalized handle.  Each

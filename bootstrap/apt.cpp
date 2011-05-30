@@ -2248,6 +2248,26 @@ TypeDefNode::onExprs() const
 }
 
 
+NodeList&
+TypeDefNode::params()
+{
+  return fParams;
+}
+
+
+NodeList&
+TypeDefNode::slots()
+{
+  return fSlots;
+}
+
+
+NodeList&
+TypeDefNode::onExprs()
+{
+  return fOnExprs;
+}
+
 DEF_RENDER(TypeDefNode)
 DEF_CODEGEN(TypeDefNode)
 DEF_ANNOTATE(TypeDefNode)
