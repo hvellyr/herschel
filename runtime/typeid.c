@@ -210,6 +210,10 @@ type_isa(Type* one, Type* two)
 }
 
 
+/* ---------------------------------------------------------------------------
+   access to instance slots
+   ------------------------------------------------------------------------ */
+
 size_t
 type_slot_get(Type* ty, const char* slot_name)
 {
@@ -223,7 +227,26 @@ type_slot_get(Type* ty, const char* slot_name)
 }
 
 
+void*
+instance_slot(ATOM* instance, const char* slot_name)
+{
+  Type* ty = type_lookup_by_tag(instance->typeid);
+
+  if (ty->slots_offsets != NULL) {
+    HashNode* node = hashtable_get_impl(ty->slots_offsets, (void*)slot_name);
+    if (node != NULL)
+      return (void*)((unsigned char*)instance->u.v_obj + (size_t)node->fValue);
+  }
+
+  fprintf(stderr, "No slot '%s' defined. Abort\n", slot_name);
+  exit(1);
+
+  return NULL;
+}
+
+
 /* ---------------------------------------------------------------------------
+   allocating instances
    ------------------------------------------------------------------------ */
 
 void
@@ -356,7 +379,5 @@ allocate_double_array(Type* ty, double init_value, size_t items)
 
   return obj;
 }
-
-
 
 
