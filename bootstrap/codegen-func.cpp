@@ -245,7 +245,7 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
   }
 
   llvm::CallInst* method = builder().CreateCall(lookupFunc,
-                                               lookupArgv.begin(), lookupArgv.end());
+                                                lookupArgv.begin(), lookupArgv.end());
   if (method == NULL)
     return NULL;
 
@@ -343,6 +343,7 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
                                          bool isLocal,
                                          bool forceAtomReturnType) const
 {
+  // fprintf(stderr, "In function def: %s\n", (const char*)StrHelper(node->name()));
   hr_assert(!node->isAbstract());
 
   if (node->body() != NULL) {
@@ -375,14 +376,16 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
     const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->body());
     llvm::Value* retv = NULL;
     if (blockNode != NULL) {
+      // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
+      // out->render(const_cast<BlockNode*>(blockNode));
       retv = fGenerator->codegen(blockNode->children());
     }
     else {
-      llvm::Value* val = fGenerator->codegenNode(node->body());
-      if (val == NULL)
-        return NULL;
-      retv = val;
+      retv = fGenerator->codegenNode(node->body());
     }
+    hr_assert(retv != NULL);
+    if (retv == NULL)
+      return NULL;
 
     if (!node->hasCLinkage()) {
       if (node->isAppMain()) {

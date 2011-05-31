@@ -240,14 +240,15 @@ CodegenApply::emitAllocateApply(const ApplyNode* node) const
 
 
 llvm::Value*
-CodegenApply::emitPtrToSlot(const ApplyNode* node) const
+CodegenApply::emitPtrToSlot(const ApplyNode* node, bool isStore) const
 {
-  String slotFuncName = String("instance_slot");
+  const char* slotFuncName = "instance_slot";
 
   llvm::Function *slotFunc = module()->getFunction(llvm::StringRef(slotFuncName));
   if (slotFunc == NULL) {
+    // void* instance_slot(ATOM* instance, const char* slot_name);
     std::vector<const llvm::Type*> sign;
-    sign.push_back(types()->getAtomType()->getPointerTo());
+    sign.push_back(types()->getAtomType()); //->getPointerTo());
     sign.push_back(llvm::Type::getInt8PtrTy(context()));
 
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(context()),
@@ -256,39 +257,38 @@ CodegenApply::emitPtrToSlot(const ApplyNode* node) const
 
     slotFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
-                                      llvm::Twine("instance_slot"),
+                                      llvm::Twine(slotFuncName),
                                       module());
   }
 
+  const size_t expectedArgs = isStore ? 3 : 2;
   const NodeList& args = node->children();
-  if (args.size() == 2) {
-    errorf(node->srcpos(), 0, "Incorrect # arguments passed");
+  if (args.size() != expectedArgs) {
+    errorf(node->srcpos(), 0, "Incorrect # arguments passed [%d]",
+           args.size());
     return NULL;
   }
 
-#if 0
   std::vector<llvm::Value*> argv;
-  llvm::Function* curFunction = builder().GetInsertBlock()->getParent();
-  llvm::AllocaInst* retv = tools()->createEntryBlockAlloca(curFunction,
-                                                           String("local_retv"),
-                                                           types()->getAtomType());
-  hr_assert(retv != NULL);
-  argv.push_back(retv);
 
-  for (size_t i = 0, e = args.size(); i != e; ++i) {
-    llvm::Value* val = emitTypeNameForAllocate(args[i]);
-    hr_assert(val != NULL);
-    argv.push_back(val);
-  }
+  // TODO: can we assert that the instance is actually ATOM typed
+  llvm::Value* val = tools()->wrapLoad(generator()->codegenNode(args[0]));
+  val = tools()->emitPackCode(args[1]->dstType(),
+                                args[1]->typeConv(),
+                                val,
+                                args[1]->type());
+  // val->dump();
+  if (val == NULL)
+    return NULL;
+  argv.push_back(val);
 
-  hr_assert(allocFunc != NULL);
-  builder().CreateCall(allocFunc, argv.begin(), argv.end());
+  llvm::Value* keyw = tools()->wrapLoad(generator()->codegenNode(args[1]));
+  llvm::Value* keyw2 = tools()->makeTypeCastAtomToPlain(keyw,
+                                                        Type::newKeyword());
+  argv.push_back(keyw2);
 
-  // TODO: if in tail position enforce ATOM return type?
-  return retv;
-#endif
-
-  return NULL;
+  hr_assert(slotFunc != NULL);
+  return builder().CreateCall(slotFunc, argv.begin(), argv.end());
 }
 
 
@@ -299,9 +299,12 @@ CodegenApply::emitGetSlotApply(const ApplyNode* node) const
   hr_assert(symNode->name() == Names::kLangSlot);
   hr_assert(symNode->refersTo() == kGeneric);
 
-  llvm::Value* addr = emitPtrToSlot(node);
-  // get value out of casted addr and store it into the retv
-  return addr;
+  llvm::Value* addr = emitPtrToSlot(node, !K(isStore));
+
+  const llvm::Type* slotType = types()->getType(node->children()[0]->type())->getPointerTo();
+  llvm::Value* slotAddr = builder().CreatePointerCast(addr, slotType);
+
+  return builder().CreateLoad(slotAddr);
 }
 
 
@@ -312,7 +315,17 @@ CodegenApply::emitSetSlotApply(const ApplyNode* node) const
   hr_assert(symNode->name() == Names::kLangSlotX);
   hr_assert(symNode->refersTo() == kGeneric);
 
-  llvm::Value* addr = emitPtrToSlot(node);
-  // store value into casted *addr
-  return addr;
+  llvm::Value* addr = emitPtrToSlot(node, K(isStore));
+
+  const llvm::Type* slotType = types()->getType(node->children()[0]->type())->getPointerTo();
+  llvm::Value* slotAddr = builder().CreatePointerCast(addr, slotType);
+
+  const AptNode* slotRvalue = node->children()[2];
+  llvm::Value* rvalue = tools()->wrapLoad(generator()->codegenNode(slotRvalue));
+  rvalue = tools()->emitPackCode(slotRvalue->dstType(),
+                                 slotRvalue->typeConv(),
+                                 rvalue,
+                                 slotRvalue->type());
+
+  return builder().CreateStore(rvalue, slotAddr);
 }
