@@ -24,7 +24,9 @@ static HashTable* keyword_table = NULL; /* hash<char*, Keyword*> */
 void
 keywords_init()
 {
-  keyword_table = hashtable_alloc(27);
+  keyword_table = hashtable_alloc(27,
+                                  hashtable_cstr_func,
+                                  hashtable_cstr_cmp_func);
 }
 
 

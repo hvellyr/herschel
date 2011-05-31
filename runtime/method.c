@@ -25,7 +25,9 @@ static HashTable* generic_functions = NULL; /* hash<char*, GenericFunction*> */
 void
 methods_init()
 {
-  generic_functions = hashtable_alloc(27);
+  generic_functions = hashtable_alloc(27,
+                                      hashtable_cstr_func,
+                                      hashtable_cstr_cmp_func);
 }
 
 

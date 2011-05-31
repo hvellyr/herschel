@@ -29,7 +29,9 @@ static size_t types_tag_size = 0;
 void
 type_init()
 {
-  types_name_to_type_map = hashtable_alloc(27);
+  types_name_to_type_map = hashtable_alloc(27,
+                                           hashtable_cstr_func,
+                                           hashtable_cstr_cmp_func);
   /* types_tag_to_type_map = hashtable_alloc(27); */
 
   types_tag_size = 256;
@@ -90,7 +92,7 @@ type_setup_dispatch_table(Type* ty, va_list vp)
   size_t i = 0;
 
   ty->isa = malloc(ty->isa_size * sizeof(Type*));
-  ty->isa_set = hashtable_alloc(11);
+  ty->isa_set = hashtable_alloc(11, hashtable_sizet_func, hashtable_sizet_cmp_func);
 
   for (i = 0; i < ty->isa_size; i++) {
     Type* isa = va_arg(vp, Type*);
@@ -165,7 +167,7 @@ class_alloc(const char* nm,
 
   if (slots != NULL && slots->name != NULL)
   {
-    ty->slots_offsets = hashtable_alloc(11);
+    ty->slots_offsets = hashtable_alloc(11, hashtable_sizet_func, hashtable_sizet_cmp_func);
 
     const TypeSlotPair* p = slots;
     for ( ; p->name != NULL; p++) {

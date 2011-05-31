@@ -15,7 +15,9 @@
 
 
 HashTable*
-hashtable_alloc(size_t size)
+hashtable_alloc(size_t size,
+                hashtable_hash_func hashFunc,
+                hashtable_cmp_func cmpFunc)
 {
   HashTable* table = (HashTable*)malloc(sizeof(HashTable));
   memset(table, 0, sizeof(HashTable));
@@ -25,6 +27,8 @@ hashtable_alloc(size_t size)
 
   table->fSize = size;
   table->fItems = 0;
+  table->fHashFunc = hashFunc;
+  table->fKeyCmp = cmpFunc;
 
   return table;
 }
@@ -51,19 +55,15 @@ hashtable_free(HashTable* table)
 }
 
 
-#define hashtable_func(_key, _mask) \
-  ((size_t)(((size_t)_key / sizeof (void *)) & (_mask)))
-
-
 void
 hashtable_add(HashTable* table, void* key, void* value)
 {
-  size_t idx = hashtable_func(key, table->fSize - 1);
+  size_t idx = (size_t)(table->fHashFunc(key) & (table->fSize - 1));
   HashNode* node;
 
   HashNode* n = table->fNodes[idx];
   while (n) {
-    if (n->fKey == key) {
+    if (table->fKeyCmp(n->fKey, key) == 0) {
       n->fValue = value;
       return;
     }
@@ -92,7 +92,7 @@ hashtable_add(HashTable* table, void* key, void* value)
       while (n) {
         HashNode* next = n->fTail;
 
-        size_t new_idx = hashtable_func(n->fKey, mask);
+        size_t new_idx = (size_t)(table->fHashFunc(n->fKey) & mask);
         n->fTail = new_nodes[new_idx];
         new_nodes[idx] = n;
 
@@ -110,10 +110,10 @@ hashtable_add(HashTable* table, void* key, void* value)
 void*
 hashtable_get(HashTable* table, void* key)
 {
-  HashNode* node = table->fNodes[hashtable_func(key, table->fSize - 1)];
+  HashNode* node = table->fNodes[(size_t)(table->fHashFunc(key) & (table->fSize - 1))];
 
   while (node != NULL) {
-    if (node->fKey == key)
+    if (table->fKeyCmp(node->fKey, key) == 0)
       return node->fValue;
 
     node = node->fTail;
@@ -126,11 +126,11 @@ hashtable_get(HashTable* table, void* key)
 void
 hashtable_remove(HashTable* table, void* key)
 {
-  size_t idx = hashtable_func(key, table->fSize - 1);
+  size_t idx = (size_t)(table->fHashFunc(key) & (table->fSize - 1));
   HashNode* node = table->fNodes[idx];
 
   if (node) {
-    if (node->fKey == key) {
+    if (table->fKeyCmp(node->fKey, key) == 0) {
       table->fNodes[idx] = node->fTail;
       free(node);
       table->fItems--;
@@ -140,7 +140,7 @@ hashtable_remove(HashTable* table, void* key)
       HashNode* prev = node;
       node = node->fTail;
       while (node) {
-        if (node->fKey == key) {
+        if (table->fKeyCmp(node->fKey, key) == 0) {
           prev->fTail = node->fTail;
           free(node);
           table->fItems--;
@@ -172,3 +172,39 @@ hashtable_add_all(HashTable* table, HashTable* other)
     }
   }
 }
+
+
+unsigned int
+hashtable_sizet_func(void* key)
+{
+  return (unsigned int)((size_t)key / sizeof (void *));
+}
+
+
+int
+hashtable_sizet_cmp_func(void* one, void* two)
+{
+  return (size_t)one - (size_t)two;
+}
+
+
+unsigned int
+hashtable_cstr_func(void* key)
+{
+  unsigned int hash = 0x9e3779b9;
+  const unsigned char* p = (const unsigned char*)key;
+
+  for ( ; *p; p++)
+    hash = (hash << 4) ^ (hash >> 28) ^ *p;
+
+  return (hash ^ (hash >> 10) ^ (hash >> 20));
+}
+
+
+int
+hashtable_cstr_cmp_func(void* one, void* two)
+{
+  return strcmp((char*)one, (char*)two);
+}
+
+
