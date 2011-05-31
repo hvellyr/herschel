@@ -1,0 +1,215 @@
+numeric for loop:
+----------------------------------------------------------------------
+
+for (i in 0 .. 100)
+  <body>
+
+
+::
+{
+  let i = 0
+  let _end = 100
+  let _result = unspecified
+
+  while (i <= _end) {
+    _result = <body>
+
+    i = i + 1
+  }
+  _result
+}
+
+
+numeric for loop (2):
+----------------------------------------------------------------------
+
+for (i in 0 .. 100 by 2)
+  <body>
+
+
+::
+{
+  let i = 0
+  let _end = 100
+  let _step = 2
+  let _result = unspecified
+
+  while (i <= _end) {
+    _result = <body>
+
+    i = i + _step
+  }
+  _result
+}
+
+
+numeric for loop (3):
+----------------------------------------------------------------------
+
+for (i in 100 .. 0 by -1)
+  <body>
+
+
+::
+{
+  let i = 100
+  let _end = 0
+  let _step = -1
+
+  let _abs_end = if (i < _end) _end else i             -- max(i, _end)
+  let _i = if (i < _end) i else _end                   -- min(i, _end)
+  let __abs_step = if (_step < 0) - _step else _step   -- abs(_step)
+
+  let _result = unspecified
+
+  while (_i <= _abs_end) {
+    _result = <body>
+
+    i = i + _step
+    _i = _i + _abs_step
+  }
+  _result
+}
+
+
+collection for loop:
+----------------------------------------------------------------------
+
+for (e in my-vector)
+  <body>
+
+::
+{
+  let _seq = my-vector.iterator
+  let _result = unspecified
+  let e = unspecified
+
+  while({ if (_seq.end?)
+            false
+          else {
+            e = _seq.next
+            true
+          } } )
+  {
+    _result = <body>
+  }
+  _result
+}
+
+
+
+explicit for loop:
+----------------------------------------------------------------------
+
+for (e = 5 then e + 1)
+  <body>
+
+::
+{
+  let e = 5
+
+  while (true) {
+    <body>
+    e = e + 1
+  }
+}
+
+
+----------
+
+for (e = 5 then sys.next-value(e) while e < 10)
+  <body>
+
+::
+{
+  let e = 5
+  let _result = unspecified
+
+  while (e < 10) {
+    _result = <body>
+    e = sys.next-value(e)
+  }
+  _result
+}
+
+
+----------
+
+for (count in 0 .. 100,
+     e = root() then e.cdr(),
+     name in names,
+     not e.nil?,
+     name.empty?)
+{
+  <body>
+}
+
+
+::
+{
+  let count = 0
+  let e = root()
+  let _seq = names.iterator
+  let name = unspecified
+  let _result = unspecified
+
+  while ({ if (_seq.end?)
+             false
+           else {
+             name = _seq.next
+             true
+           }
+         } and
+         not e.nil? and
+         name.empty?)
+  {
+    _result = <body>
+
+    count = count + 1
+    e = e.cdr
+  }
+
+  _result
+}
+
+
+Optional else branch
+--------------------
+
+for (e = root() then e.cdr while e <> nil)
+  <body>
+else
+  <alternate>
+
+::
+{
+  let e = root()
+
+  if (e <> nil) {
+    let _result = unspecified
+
+    while (e <> nil) {
+      _result = <body>
+      e = e.cdr
+    }
+    _result
+  }
+  else
+    <alternate>
+}
+
+::
+{
+  let e = root()
+  let t = e <> nil
+  if (t) {
+    let _result = unspecified
+    while (t)
+      _result = <body>
+      e = e.cdr
+      t = e <> nil
+    }
+    _result
+  }
+  else
+    <alternate>

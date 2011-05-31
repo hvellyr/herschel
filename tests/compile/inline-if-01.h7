@@ -1,0 +1,21 @@
+module noodle
+
+def foo(a : Int, b : Int)
+  a - b
+
+
+def bar()
+  2
+
+
+def goo(x : Int, n : Int)
+  foo(if (n < 6)
+        x + 110
+      else
+        x + 22,
+      bar())
+
+def app|main()
+ goo(5, 7) + goo(7, 5)
+
+

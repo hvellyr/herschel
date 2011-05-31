@@ -1,0 +1,7 @@
+def f(a, x)
+  select (a) {
+    | #number -> select (x) {
+                   | 1, 2, 3 -> outln("< 4")
+                   | 4, 5, 6 -> outln("< 7")
+                 }
+  }

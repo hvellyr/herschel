@@ -1,0 +1,6 @@
+def macro xyz {
+  「def xyz ?n:name = ?body:expr」 -> 「 def ?n = ?body 」
+}
+
+def xyz f = true
+

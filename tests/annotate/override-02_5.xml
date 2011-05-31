@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<type nm='Vehicle'>
+<isa>
+<ty:type nm='Vehicle'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='Car'>
+<isa>
+<ty:type nm='Car'>
+<ty:isa>
+<ty:ref nm='Vehicle'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='Truck'>
+<isa>
+<ty:type nm='Truck'>
+<ty:isa>
+<ty:ref nm='Car'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='Bike'>
+<isa>
+<ty:type nm='Bike'>
+<ty:isa>
+<ty:ref nm='Vehicle'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<generic sym='foo' abstract='true'>
+<params>
+<param sym='a' type='spec'>
+<type>
+<ty:type nm='lang|Integer'>
+<ty:isa>
+<ty:ref nm='lang|Number'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='Car'>
+<ty:isa>
+<ty:ref nm='Vehicle'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='Car'>
+<ty:isa>
+<ty:ref nm='Vehicle'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</rettype>
+</generic>
+</def>
+<def>
+<method sym='foo'>
+<params>
+<param sym='a' type='spec'>
+<type>
+<ty:type nm='lang|UInt32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='Vehicle'>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='Truck'>
+<ty:isa>
+<ty:ref nm='Car'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t'>
+<type>
+<ty:type nm='Truck'>
+<ty:isa>
+<ty:ref nm='Car'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+</vardef>
+</let>
+<symbol  ty='Truck' refer='local'>t</symbol>
+</block>
+</body>
+</method>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='Truck'>
+<ty:isa>
+<ty:ref nm='Car'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

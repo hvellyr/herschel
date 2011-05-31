@@ -1,0 +1,2 @@
+2 ; error ; 0003 ; Unexpected top expression: from
+2 ; error ; 1002 ; expected STRING

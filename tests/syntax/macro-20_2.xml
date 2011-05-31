@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<method sym='foo'>
+<params>
+<param sym='a' type='spec'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</rettype>
+<body>
+<binary op='*'>
+<symbol>a</symbol>
+<int ty='lang|Int32'>2</int>
+</binary>
+</body>
+</method>
+</def>
+</compile-unit>

@@ -1,0 +1,8 @@
+{
+  'retc': 1,
+  'stdout': [ 'Bark A',
+              'Meow A',
+              'Bark B',
+              'Meow B' ]
+}
+

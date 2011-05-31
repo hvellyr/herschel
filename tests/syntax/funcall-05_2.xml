@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='f'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<apply>
+<apply>
+<symbol>slice</symbol>
+<args>
+<apply>
+<symbol>b</symbol>
+<args>
+<symbol>a</symbol>
+</args>
+</apply>
+<int ty='lang|Int32'>1</int>
+</args>
+</apply>
+<args>
+</args>
+</apply>
+</body>
+</func>
+</def>
+</compile-unit>

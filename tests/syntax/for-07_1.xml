@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>for</id>
+<nested left='(' right=')'>
+<seq>
+<id>count</id>
+<punct type='in'/>
+<seq>
+<lit type='int'>0</lit>
+<punct type='..'/>
+<lit type='int'>100</lit>
+<punct type='by'/>
+<lit type='int'>2</lit>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id>idx</id>
+<punct type='in'/>
+<seq>
+<lit type='int'>0</lit>
+<punct type='..'/>
+<lit type='int'>100</lit>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id>e</id>
+<punct type='='/>
+<seq>
+<seq>
+<id>root</id>
+<nested left='(' right=')'/>
+</seq>
+<id>then</id>
+<seq>
+<id>cdr</id>
+<nested left='(' right=')'>
+<id>e</id>
+</nested>
+</seq>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id>n</id>
+<punct type='='/>
+<seq>
+<seq>
+<id>names</id>
+<nested left='(' right=')'/>
+</seq>
+<id>then</id>
+<seq>
+<id>cdr</id>
+<nested left='(' right=')'>
+<id>n</id>
+</nested>
+</seq>
+<id>while</id>
+<seq>
+<id>n</id>
+<punct type='&lt;>'/>
+<id>nil</id>
+</seq>
+</seq>
+</seq>
+<punct type=','/>
+<seq>
+<id>name</id>
+<punct type='in'/>
+<id>names</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>not</id>
+<nested left='(' right=')'>
+<seq>
+<id>nil?</id>
+<nested left='(' right=')'>
+<id>e</id>
+</nested>
+</seq>
+</nested>
+</seq>
+<punct type=','/>
+<seq>
+<id>empty?</id>
+<nested left='(' right=')'>
+<id>name</id>
+</nested>
+</seq>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<id>outln</id>
+<nested left='(' right=')'>
+<id>count</id>
+</nested>
+</seq>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>

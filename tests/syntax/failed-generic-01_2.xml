@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<type nm='Container'>
+<isa>
+<ty:type nm='Container'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</type>
+</def>
+</compile-unit>

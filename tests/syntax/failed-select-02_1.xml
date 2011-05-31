@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>foo</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>select</id>
+<nested left='(' right=')'>
+<id>n</id>
+</nested>
+<nested left='{' right='}'>
+<seq>
+<punct type='|'/>
+<lit type='int'>0</lit>
+<punct type='->'/>
+<lit type='str'>0</lit>
+</seq>
+<seq>
+<punct type='|'/>
+<id>else</id>
+<lit type='str'>else</lit>
+</seq>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>
+

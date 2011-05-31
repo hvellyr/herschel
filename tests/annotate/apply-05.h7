@@ -1,0 +1,14 @@
+def type Container<A> : Object
+
+;; test that the return value of foo() is really a Container<Int>, not a
+;; Container<A>
+def foo(x : Container<'T>) : Container<'T>
+  x
+
+
+def item(x : Container<'T>) : 'T ...
+
+
+def bar()
+  let y : Container<Int>
+  item(foo(y))

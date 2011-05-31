@@ -1,0 +1,7 @@
+def foo(n : Int)
+  5 rem n
+
+
+def app|main()
+  foo(3)
+

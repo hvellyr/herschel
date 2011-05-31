@@ -1,0 +1,4 @@
+;; problem generic without specialization
+def generic f0()
+  outln("hello world: %s" % #[a])
+

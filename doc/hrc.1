@@ -1,0 +1,79 @@
+.\".\" Copyright (c) 2011 Gregor Klinke. All Rights Reserved.
+.\" The following commands are required for all man pages.
+.Dd January 26, 2011
+.Os "Mac OS X"
+.Dt HRC 1
+.Sh NAME
+.Nm hrc
+.Nd compiler for the herschel programming language
+.Sh SYNOPSIS
+.Nm
+.Op Fl Pcsb
+.Op Fl O | On
+.Op Fl d Ar outdir
+.Op Fl I Ar inputdir
+.Op Fl D Ar var Ns = Ns Ar value
+.Bk
+.Ar FileName ...
+.Ek
+.Sh DESCRIPTION
+.Nm
+is a compiler for
+.Em herschel
+, a general purpose, multi-paradigm programming
+language.  It takes filenames and compiles it into platform specific object
+files which can be linked into standalone executables.
+.Pp
+The following options are available:
+.Bl -tag -width flag
+.It Fl d Ar outdir
+Output all generated files to
+.Ar outdir
+.\"
+.It Fl I Ar inputdir
+Add
+.Ar inputdir
+to the input searchlist
+.\"
+.It Fl D Ar var Ns = Ns Ar value
+Define config
+.Ar var
+to be
+.Ar value
+.El
+.\"
+.Ss Optimization options
+.Bl -tag -width flag
+.It Fl O
+Optimize code more
+.\"
+.It Fl On
+Turn off any (even basic) optimization
+.El
+.\" The following commands should be uncommented and
+.\" used where appropriate.
+.\" .Sh IMPLEMENTATION NOTES
+.\" This next command is for sections 2, 3 and 9 function
+.\" return values only.
+.\" .Sh RETURN VALUES
+.\" This next command is for sections 1, 6, 7 and 8 only.
+.\" .Sh ENVIRONMENT
+.\" .Sh FILES
+.\" .Sh EXAMPLES
+.\" This next command is for sections 1, 6, 7, 8 and 9 only
+.\"     (command return values (to shell) and
+.\"     fprintf/stderr type diagnostics).
+.Sh DIAGNOSTICS
+.Ex -std hrc
+.\" .Sh COMPATIBILITY
+.\" This next command is for sections 2, 3 and 9 error
+.\"     and signal handling only.
+.\" .Sh ERRORS
+.Sh SEE ALSO
+.Xr herschel 1
+.Xr herschel 7
+.\" .Sh STANDARDS
+.\" .Sh HISTORY
+.Sh AUTHORS
+.An "Gregor Klinke" Aq gck@eyestep.org
+.\" .Sh BUGS

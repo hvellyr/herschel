@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='Abc'>
+<params>
+<param sym='k' type='pos'>
+<type>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<slots>
+<def>
+<slot sym='a'>
+<init>
+<int ty='lang|Int32'>45</int>
+</init>
+</slot>
+</def>
+</slots>
+<isa>
+<ty:type nm='Abc' inst='t'>
+<ty:isa>
+<ty:ref nm='lang|Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+<ty:ref gen='t' nm='Z'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='V'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='Abc|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='Abc' inst='t'>
+<ty:isa>
+<ty:ref nm='lang|Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+<ty:ref gen='t' nm='Z'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='V'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</type>
+</param>
+<param sym='k' type='pos'>
+<type>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='Abc' inst='t'>
+<ty:isa>
+<ty:ref nm='lang|Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+<ty:ref gen='t' nm='Z'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='V'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</rettype>
+<body>
+<block>
+<apply>
+<symbol>lang|slot!</symbol>
+<args>
+<symbol>__obj_0</symbol>
+<keyw>a</keyw>
+<int ty='lang|Int32'>45</int>
+</args>
+</apply>
+<symbol>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

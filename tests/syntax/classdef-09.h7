@@ -1,0 +1,19 @@
+def class Z(n = 42)
+{
+  def slot _n = n
+}
+
+
+def class X : Z
+{
+  def slot a
+  def slot b
+
+  on alloc()
+    Z(n: 1234)
+
+  on init(self) {
+    self.a = 5
+    self.b = 7
+  }
+}

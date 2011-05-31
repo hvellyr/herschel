@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>x</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<lit type='int'>7</lit>
+<punct type='+'/>
+<lit type='int'>11</lit>
+</seq>
+<punct type='*'/>
+<lit type='int'>24</lit>
+</seq>
+</nested>
+</seq>
+</seq>

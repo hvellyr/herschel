@@ -1,0 +1,28 @@
+def class Y(n)
+{
+  def slot _n = n
+}
+
+
+def class Z(n = 42)
+{
+  def slot _n = n
+}
+
+
+def class X(_a, _b) : (Y, Z)
+{
+  def slot a = _a
+  def slot b = _b
+
+  on alloc() {
+    Y(11)
+    Z(n: 1234)
+
+    ;; expression we don't expect in 'on alloc'
+    if (_a < 0)
+      a = 0
+    if (_b < 0)
+      b = 0
+  }
+}

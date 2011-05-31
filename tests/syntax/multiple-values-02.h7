@@ -1,0 +1,5 @@
+def bar2()
+  let a ... = foo(1)
+  let b, c ... = foo(2)
+  true
+

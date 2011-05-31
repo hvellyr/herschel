@@ -1,0 +1,11 @@
+{
+  'retc': 42,
+  'runtime-options': 'register',
+  'stderr': [ 'Register type:.*QN2xi6Animal',
+              'Register type:.*QN2xi3Dog',
+              'Register type:.*QN2xi3Cat',
+              'Register generic function:.*QN2xi12make/2dnoise',
+              'Register method:.*QN2xi12make/2dnoise',
+              'Register method:.*QN2xi12make/2dnoise' ]
+}
+

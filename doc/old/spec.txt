@@ -1,0 +1,1029 @@
+                                  Heather
+
+                      A general programming language
+
+                               Specification
+                                  vr. 0.4
+
+
+
+Global Definitions
+==================
+
+There are x possible toplevel definitions, each introduced with the keyword
+'def':
+
+Functions
+---------
+
+Function are standalone function not bound to any particular type.
+Functions are resolved by "name" only.  There's nothing like
+type-overwriting, etc.
+
+  def name()
+    ...
+
+Methods in contrast are generic functions bound by one or multiple
+parameters to certain types.  Methods are resolved by name and specialized
+parameters.  Parameters are specialized by adding the @ to their type
+declaration.  Only positional parameters can be specialized.  Specialized
+parameters' type can not be infert:
+
+  def meth name(self : @ My-Something, value : @Int)
+    ...
+
+Generics must be defined at least once.  Multiple generic definition must
+be compatible.  Specialization of a generic not definedb before as such is
+an error.
+
+
+Types:
+------
+
+  def type Name(Derivestmt)
+  {
+    <slot definitions>
+  }
+
+
+Types are orthogonal to namespaces.  Generics and functions therefore are
+not bound to types by namespace but only by specialized parameters.
+
+Slots are defined as variables inside the block of a type declaration using
+the special "slot" define form:
+
+  def type Point(Object)
+  {
+    slot x : Int = 0
+    slot y : Int = 0
+  }
+
+The assign value is the slot's default value which is used when an instance
+of the type is created.
+
+There are no constructors in Heather and they are seldomly needed (since
+slots are initialized by default).  If one needs additional initialization
+code it is possible to add a init hook to the type using the "on init()"
+directive:
+
+  def type ProxyBridge(Object)
+  {
+    on init(self)
+    {
+    }
+  }
+
+This directive is run *after* the slots has been initialized.
+
+By default Heather creates the necessary apply() implementation for each
+type.  Slots can be flagged in way that they appear as keyed parameters in
+an appropriate generic apply function:
+
+  def type SenseOfLife(Object)
+  {
+    slot x : Int = 6, key-init: 'x
+    slot y : Int = 7, key-init: 'y
+  }
+
+  =>
+  def meth apply(self : @Point, x : Int = 6, y : Int = 7)
+    ...
+
+Instances of SenseOfLife can be created now like:
+
+  SenseOfLive(x: 6, y: 7)
+  SenseOfLive(y: 7)
+  SenseOfLive()
+
+It also possible to flag slots to appear as positional arguments in the
+apply generic:
+
+  def type SenseOfLife(Object)
+  {
+    slot x : Int = 6, init: 1
+    slot y : Int = 7, init: 0
+  }
+
+  =>
+  def meth apply(self : @Point, y : Int, x : Int)
+    ...
+
+Slots appear than in the apply function signature in the order as specified
+by the numerical 0-based index parameter to the "init:" flag.
+
+For special constructors you can define and implement your own "apply"
+generic for your type of course.  Heather will only create apply()
+functions if you don't do it yourself.
+
+
+It is possible to add special finalization code inside the type declaration
+using the "on delete()" directive.  Not that this is not a real
+destructor (which is not necessary in Heather), but a kind of finalization
+which is only necessary to free (mostly external) resources.
+
+  def type ProxyBridge(Object)
+  {
+    on delete(self)
+    {
+    }
+  }
+
+
+
+Variables & constants
+---------------------
+
+  def const %page-width% = 21'cm
+
+  def port = *stdout*
+
+Fluid variables (which ignore lexical scoping):
+
+  def fluid *stdin* = <io>Cport(0)
+  def fluid *stdout* = <io>Cport(1)
+  def fluid *stderr* = <io>Cport(2)
+
+Such fluid variables can be set later with "let fluid x" to change
+temporarily their value:
+
+  def fluid x = 5
+
+  def g()
+    outln(x)
+
+  def f()
+    outln(x)
+    {
+      let fluid x = 11
+      g()
+    }
+    outln(x)
+
+  => 5
+     11
+     5
+
+
+Function calls
+==============
+
+Function calls:
+
+  f(a, b, c)
+
+Even if calling a generic function this pattern is kept.  To enhance
+readability (and remove parantheses chains) the following form
+
+  a.f(b, c)
+
+is rewritten into
+
+  f(a, b, c)
+
+Additional functions without parameter don't need the parantheses.
+Therefore
+
+  f(g(h(i, j)))
+
+is identical to
+
+  h(i, j).g.f
+
+Or
+
+  self.name.empty?('force)
+
+is identical to
+
+  empty?(name(self), 'force)         by:    self.name.empty?('force)
+                                         => name(self).empty?('force)
+                                         => empty?(name(self), 'force)
+
+
+Access to type slots
+====================
+
+Since methods/functions are not bound to type, access is always to be done
+explicitly to a typed reference:
+
+  def type Point(x = 0, y = 0)
+
+  def add(self : @Point, val : @Int)
+    self.x += val
+    self.y += val
+    self
+
+  def add(self : @Point, val : @Point)
+    self.x += val.x
+    self.y += val.y
+    self
+
+How is this .x and .y implemented?  By default the compiler generates the
+relevant access code.  You can overwrite accessors and modifiers by
+functions.  To access the slots you have to use the slot() and slot!()
+special forms:
+
+  def x(self : @Point)
+    self.slot(x)
+    -- identical to slot(self, 'x)
+
+  def x!(self : @Point, val)
+    self.slot(x) = val
+    -- identical to slot!(self, 'x, val)
+
+The "self.x" and "self.x =" syntax forms are translated into
+
+    self.x      ->   x(self)
+    self.x = 5  ->   x!(self, 5)
+
+
+Namespace
+=========
+
+Declare and use the namespace of a "compile unit":
+
+  namespace heather("eyestep/heather 1.0:core")
+
+This defines in which namespace functions, types, macros, and variables are
+defined.  It is valid until the end of the source file or the next
+namespace declaration.
+
+Namespaces have two names, the short (or "tag") name and the full id (the
+"full name").  The full name is any identifying string; for the default
+heather libraries this is a kind of public id, other projects may use URLs,
+etc.  Namespaces are compared by full id only, but since this can be clumsy
+in code normally the tag name is used.  The common tag <io> is actually
+defined as:
+
+  namespace io("eyestep/heather 1.0:input-output")
+
+If names are unique throughout all namespaces visible in a certain portion
+of code there's no need to indicate the namespace.  If there are multiple
+equally named functions or types in different namespaces however the fully
+qualified name has to be used:
+
+  <io>Input-Port()
+  <zip>Input-Port()
+
+gives the Input-Port type from the io and the zip namespace respectively.
+
+The namespace have to be given inside of method call chains also if
+necessary:
+
+  self.<io>write()
+
+
+A namespace statement without full id data like
+
+  namespace io
+
+simply switches the current governing namespace to io.  It requires a
+previous full namespace declaration, and is therefore usefull for source
+files with multiple namespaces.
+
+Namespace defines (i.e. tag name to full id mapping) are imported from
+loaded files; the namespace defined in the file does not extend, however,
+into the importing file.
+
+
+Import
+======
+
+Importing external modules.  The statement
+
+  import(io)
+
+will try to look for a module (file) "io" in the search path and load it.
+
+
+Blocks
+======
+
+Code blocks are sequences of statements.  The last statement's return value
+gives the return value of the complete block.  Blocks are atomic and
+therefore can be put whereever a single expression is expected (i.e. even
+in default parameter init value places):
+
+  def f(x = { let p = Properties()
+              while (p.next?) {
+                if (not p.nil?)
+                  p.value
+              }
+              else
+                #f
+            })
+    ...
+
+Whether this is readable, is another question ...
+
+
+LOOPS
+=====
+
+  for (base, conditions) expr
+  while (test) expr
+  until (test) expr
+
+The returnvalue of expr's last statement gives the return value of the
+complete loop statement.  Each loop form takes an optional "else"
+branch, which is evaluated if the loop's body is never entered:
+
+  let first-name = for (n in values, not n.nil?)
+                     break(n)
+                   else
+                     #nil
+
+if no "else" branch is given the return value of such is a loop is #f.
+
+
+IF & SELECT
+===========
+
+  if (test) expr
+  if (test) expr else expr
+
+
+  select (test) {
+    test -> expr
+    test -> expr
+    otherwise expr
+  }
+
+Example:
+
+  select (a) {
+    \a -> if (not done)
+            do-it
+          else
+            do-something-different
+    otherwise outln("nothing applies")
+  }
+
+If the parameter list for select is empty each test is expected to be a
+conditional expr:
+
+  select () {
+    (c == \a or
+     c == \b or
+     c == \c)            -> ...
+    (c in #[\a, \b, \c]) -> ...
+  }
+
+
+
+RANGES & Slices
+===============
+
+Basic ranges are exclusive, so the range [5, 100) is written as:
+
+  5 .. 100
+
+Whereas [5, 100] is written as:
+
+  5 ... 100
+
+Give the step parameter:
+
+  5 .. 100 by 5
+  => 5, 10, 15, ..., 95
+
+
+Ranges are used for instance to slice vectors and strings:
+
+  "hello world"[3 .. 6]
+  => "lo "
+
+  "hello world"[3 ... 6]
+  => "lo w"
+
+  "hello world"[3 .. 8 by 2]
+  => "l o"
+
+
+On the fly iterators
+====================
+
+The then-while operators are used to express iterators on the fly:
+
+   for (i : Int = 0 then i + 1 while i < 10) ...
+
+   def value-iterators(values : Int[])
+     let i = 0
+     values[i] then values[i.incr!] while i + 1 < values.num-items
+  
+
+
+Conditions
+==========
+
+It's possible to add a hook to a block which is called whenever the block
+is left, either by unroll or by "normal" code flow:
+
+  on exit(value) expr
+
+Value is the return value of the block's last statement.  Normally the exit
+handler will return this without modification.
+
+Not that the "on exit" declaration is actually inside the block for which
+it is declared.  It can therefore access local bindings etc.  On the other
+side in examples like this:
+
+  let stream = File-Input-Port(name)
+  for (i = 0 .. 100) {
+    on exit(v) { stream.close }
+  }
+
+The exit hook would be called for each loop step.  The author mostly likely
+meant this:
+
+  let stream = File-Input-Port(name)
+  on exit(v) { stream.close }
+
+  for (i = 0 .. 100) {
+  }
+
+
+Similar to "on exit" conditions can be trapped:
+
+  on signal(value : <type>) expr
+
+This declares a condition handler for a condition of type "<type>".
+Whenever a condition raised (using raise()) the first matching condition
+handler is called.  During evaluation of signal-expr two special functions
+are available: "continue(val)" and "raise()" without parameter.
+
+continue(val) returns to the place from which raise() was called injecting
+"val" as new returnvalue to the raise expression.
+
+raise() without parameter propagates condition handling to the next
+matching condition handler.  There's a difference between raise(cond) and
+raise.  "raise" without parameter does not start a new condition signal
+chain, but passed controll upwards.  raise(cond) however starts a new
+signal chain, which can be handled inside the control handler.
+
+If the condition handle is neither left early with continue() or raise()
+its return value becomes the return value of the block in which the
+condition handler has been declared.  If both exit and condition handler
+had been declared, the condition handler is called first and therefore its
+return value is passed as input to the exit handler.
+
+
+
+Anonymous functions and Closures
+--------------------------------
+
+#function(a : Real, b : Real) : Int { }
+
+
+
+LITERALS
+========
+
+Symbols
+-------
+
+*stdout*
+%some-constant%
+-a-string-
+_a_string_
+_a/string_
+
+
+Chars
+-----
+\a
+\space
+\u41h
+\nl
+
+
+String
+------
+"abc"
+"hello world"
+"Usage: cmd OPTIONS\nl;"
+"a string"
+"a \nl;string"
+"a \tab;string"
+"a \\string"
+"a \"string"
+"a \A;string"
+"a \u41h;string"
+
+
+Keywords
+--------
+
+'symbol
+'hello-world
+
+
+Arrays
+------
+
+type declaration for arrays: Byte[]
+
+a constant arrays: #[1, 2, 3, 4, 5]
+
+Vector
+------
+
+type declaration for vectors: Vector*()
+def alias Vector = Vector*(Any)
+
+#(1, 2, 3)
+
+
+Dictionary:
+-----------
+
+HashMap*(<Key>, <Value>)
+def alias HashMap = HashMap*(Any, Any)
+
+
+#("abc" -> #[1, 2, 3],
+  "def" -> 'symbol,            -- symbol
+  "xyz" -> \a,                 -- char
+  "mmm" -> \u41h,              -- char
+  "ch1" -> \space              -- char
+)
+
+
+Numbers
+-------
+
+1234
+100h
+-100y
+100t
+
+
+Basic constants
+---------------
+
+#nil
+#true #t #false #f
+#eof
+
+
+----------------------------------------------------------------------
+
+Parameters
+==========
+
+
+Positional, keywords and optional arguments:
+
+Positional parameters:
+---------------------
+
+  def f(a, b, c) {}
+
+Used as:
+
+  f(1, 2, 3)
+
+
+Keyword arguments:
+-----------------
+
+  def f(a = 5, b = "hello world", c = { let x = 5
+                                        x * x }) {}
+
+Used as:
+
+  f(a: 11, b: "N.N.", c: 255) ...
+  => a -> 11
+     b -> "N.N."
+     c -> 255
+
+  f()
+  => a -> 5
+     b -> "hello world"
+     c -> 25
+
+  f(c: 7, a: 0)
+
+  => a -> 0
+     b -> "hello world"
+     c -> 7
+
+
+It is possible to change the key name from the parameter name:
+
+  def f(fst: a = 5, snd: b = "hello world", trd: c = { let x = 5
+                                                        x * x })
+  {}
+
+
+Optional parameters
+-------------------
+
+  def f(args ...)
+
+Used as:
+
+  f()
+  => args -> #[]
+
+  f(1, 2, 3, 4)
+  => args -> #[1, 2, 3, 4]
+
+  f(#[1, 2, 3, 4])
+  => args -> #[#[1, 2, 3, 4]]
+
+
+Mixture of all three
+--------------------
+
+The rule is: first positional, then keyword, and following optional.
+
+  def f(a, b, c, d = #t, e = 25, f ...)
+
+Used as:
+
+  f(1, 2, 3)
+  => a -> 1
+     b -> 2
+     c -> 3
+     d -> #t
+     e -> 25
+     f -> #[]
+
+  f(4, 5, 6, e: 127, "hello world", "sic est")
+  => a -> 4
+     b -> 5
+     c -> 6
+     d -> #t
+     e -> 127
+     f -> #["hello world", "sic est"]
+
+  f(1, 2, 3, f: 1, g: 2, h: 3)
+  => a -> 1
+     b -> 2
+     c -> 3
+     d -> #t
+     e -> 25
+     f -> #['f, 1, 'g, 2, 'h, 3]
+
+
+
+
+----------------------------------------------------------------------
+
+Type declarations
+
+Basic types:
+
+  Int
+  Real
+  String
+
+Parametrized types:
+
+  Vector*(Int)
+  Tuple*(Int, String, Real)
+
+
+Array types:
+
+  Int[]
+  String[]
+  Char[]                   -- <> String !
+
+
+Union types ("any of the types"):
+
+  (Copyable, Serializable)
+
+
+----------------------------------------------------------------------
+
+MACROS
+======
+
+different kind of macro styles:
+
+FUNCTION MACROS.
+
+Look exactly and are called like functions:
+
+  def macro min {
+     { min (?a:*, ?b:*) } -> { { let tmp-a = ?a tmp-b = ?b
+                                 if (tmp-a > tmp2) tmp-b else tmp-a } }
+  }
+
+or in a local scope:
+
+  let macro min {
+     { min (?a:*, ?b:*) } -> { { let tmp-a = ?a tmp-b = ?b
+                                 if (tmp-a > tmp2) tmp-b else tmp-a } }
+  }
+
+usage:
+
+  min(100, 200)
+
+
+DEFINITION MACROS
+
+Look like a define and/or let:
+
+  def macro functional-variable {
+      { def functional-variable ?name:id = ?e:expr } ->
+        { def ?name ## -var = ?e
+          def ?name () ?name ## -var
+          def ?name (value) { ?name ##-var = value
+                                 value } }
+      { let functional-variable ?name:id = ?e:expr } ->
+        { let ?name ## -var = ?e
+          let ?name () ?name ## -var
+          let ?name (value) { ?name ##-var = value
+                              value } }
+  }
+
+STATEMENT MACROS
+
+Look like a statement like for, while, etc.
+
+  def macro unless {
+      { unless (?test:expr) ?b:body } -> { if (not(?test)) ?b }
+  }
+
+
+  def macro with-open-file {
+    { with-open-file (?stream:id, ?name:string) ?e:expr } ->
+      {
+        let ?stream = FileInputPort(?name, 'read)
+        on exit(value) {
+          if (?stream.nil?) close(?stream)
+          value
+        }
+
+        ?e
+      }
+  }
+
+
+Multiple variant patterns and subpatterns:
+
+  def macro funcvar {
+    { def funcvar ?name:id } -> { def ?name ## -var = #nil
+                                  def ?name () ?name ## -var
+                                  def ?name (value) { ?name ## -var = value
+                                                      value } }
+    { def funcvar ?name:id = ?e:expr } ->
+                                { def ?name ## -var = ?e
+                                  def ?name () ?name ## -var
+                                  def ?name (value) { ?name ## -var = value
+                                                      value } }
+  }
+
+is identical to:
+
+  def macro funcvar {
+    { def funcvar ?name:id #?opt-expr } ->
+                      { def ?name ## -var = ?opt-expr
+                        def ?name () ?name ## -var
+                        def ?name (value) { ?name ## -var = value
+                                            value } }
+
+  opt-expr:
+    { } -> { }
+    { = ?e:expr } ->  { ?e }
+  }
+
+
+Conditional evaluation of macros (meta programming):
+
+  def macro compile-only-if {
+    { compile-only-if(?test:bool) ?e:expr } ->
+      {
+        #if (?test)
+          ?e
+      }
+  }
+
+
+  basic constructs like if, else, let can be set and evaluated during
+  macro-expansion time.  The form is then called: #if, #else, #let.  For
+  the example above ?test **must** be a constant (or another macro
+  expanding to a constant), since runtime code is not evaluated during
+  macro expansion of course.
+
+
+Optional macro parameters:
+
+  def macro xxx {
+    { xxx(x: ?a = 5, y: ?b = 6) } -> { yyy(m: ?a, n: ?b) }
+    { xxx(args ...) } -> { yyy(args) }
+  }
+
+
+Measures
+--------
+
+21'cm     -> Measure(21, 'cm)
+12.15'ft  -> Measure(12.15, 'ft)
+21'm/s
+
+def measure cm(Length)
+def meth transform(from : @cm, to : @mm)
+  from * 100
+
+
+
+
+
+Reserved keywords:
+------------------
+
+and
+by
+const
+def
+else
+fluid
+for
+if
+in
+let
+macro
+meth
+mod
+namespace
+or
+otherwise
+select
+slot
+slot!
+type
+until
+while
+
+
+
+
+
+
+================================================================================
+Example
+================================================================================
+
+namespace heather
+
+----------------------------------------------------------------------
+-- a pair class
+
+def type Pair(Object,
+    car = #nil
+    cdr = #nil ) : (Serializable, Copyable)
+
+def meth init(self : @Pair, car = 0, cdr = 0)
+  self.car = car
+  self.cdr = cdr
+
+
+def meth ->string(self : @Pair) : String
+  Stringbuffer().append("#<pair ",
+                        self.car.->string,
+                        " . ",
+                        self.cdr.->string,
+                        ">").->string
+
+-- can be instantiated with
+-- Pair(car: "hello", cdr: "world")
+
+
+----------------------------------------------------------------------
+-- a point class
+
+def type Point(Object>,
+    x : Int
+    y : Int)
+
+def meth distance(p1 : @Point, p2 : @Point) : Real
+  let square(n) n ^ 2
+
+  sqrt(square(p2.x - p1.x) + square(p2.y - p1.y))
+
+
+def distance(x1, y1, x2, y2)
+  let square(n) n ^ 2
+
+  sqrt(square(x2 - x1) + square(y2 - y1))
+
+
+-- can be instantiated with
+-- Point(0, 127)
+
+
+----------------------------------------------------------------------
+-- standalone function:
+
+def with-open-input-file(name, proc)
+  let stream = File-Input-Port(name)
+  on exit(value) {
+    if (stream is nil)
+      close(stream)
+    value
+  }
+
+  proc(stream)
+
+
+
+
+
+----------------------------------------------------------------------
+-- parameterized vector?
+
+def type TwoTuple*(Object, T1 = Int, T2 = Int)
+{
+  slot fst : First, key-init: first
+  slot snd : Second, key-init: second
+}
+
+
+def meth apply(self : @TwoTuple*(Real, Real), x : @Real, y : @Real)
+    : TwoTuple*(Real, Real)
+  TwoTuple*()(first: x, second: y)
+
+
+def meth ->point(self : @TwoTuple*(Int, Int)) : Point
+  Point(fst, snd)
+
+
+def meth ->pair(self : @TwoTuple*()) : Pair
+  Pair(fst, snd)
+
+def meth ->pair(self : @TwoTuple*(Int, Int)) : Pair(Int, Int)
+  Pait(Int, Int)(fst, snd)
+
+
+usage:
+  TwoTuple*(first: 10, second: 20)
+  TwoTuple*(Real, Real)(1.0f, 5.0f)
+
+
+It is convention to add a * to a parametrized class name to show that it is
+parametrized.  To refer to a concrete type instance of a parametrized type
+() **must** be added.
+
+
+
+
+----------------------------------------------------------------------
+
+Multiple returnvalues:
+
+   def f()
+     (1, 2, 3, 4)
+   (a, b, c, d) = b.<io>Port().read(4)
+
+
+----------------------------------------------------------------------
+
+-- form ::= identifier
+-- form ::= literal
+-- form ::= '(' elements ')'
+-- form ::= '{' elements ')'
+-- form ::= 'def' modifiers name parameters body
+-- form ::= 'def' modifiers name '=' form
+-- form ::= 'if' parameters form 'else' form
+-- modifiers ::=
+--
+-- elements ::= [ form | punctuation ]*
+--
+--
+--
+--
+-- if (t) t else f
+-- for (c) b
+-- while (c) b
+-- until (c) b
+-- class(sc, p) b
+-- method(p) b
+-- on n(p) b
+--
+-- def mod n(p) b
+-- def mod n = b
+--
+-- let mod n(p) b
+-- let mod n = b
+
+
+
+
+
+
+def func(a @ <real>, b @ <int>,
+         c : <int> = 1, d : <int> = 2, args ...) : <string>
+  ...
+
+make(<vector>)
+
+
+   func(5.0, 7, c: 10, d: 56, "hello", "world", "and so on")
+
+
