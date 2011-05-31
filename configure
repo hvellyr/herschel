@@ -434,7 +434,7 @@ abs_llvm_config_path=$(cd "$llvm_config_dir" && pwd)/"$llvm_config_file"
 
 
 llvm_version=$("$abs_llvm_config_path" --version 2>/dev/null)
-if test "x$llvm_version" = x"2.8"; then
+if test "x$llvm_version" = x"2.9"; then
   echo "${ECHO_T}$llvm_version"
 else
   echo "${ECHO_T}no matching installation found"
