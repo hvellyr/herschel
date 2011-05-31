@@ -280,14 +280,17 @@ test_slots()
 {
   ATOM x1;
 
+  Keyword keyw_s1 = { "s1" };
+  Keyword keyw_s2 = { "s2" };
+
   allocate(&x1, ty_D);
-  ATOM* s1 = (ATOM*)instance_slot(&x1, s1_key);
+  ATOM* s1 = (ATOM*)instance_slot(x1, &keyw_s1);
   assert(s1 != NULL);
 
   s1->typeid = 'i';
   s1->u.v_int = 0xdeadface;
 
-  short* s2 = (short*)instance_slot(&x1, s2_key);
+  short* s2 = (short*)instance_slot(x1, &keyw_s2);
   assert(s2 != NULL);
 
   *s2 = 0x4711;

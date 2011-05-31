@@ -228,14 +228,20 @@ type_slot_get(Type* ty, const char* slot_name)
 
 
 void*
-instance_slot(ATOM* instance, const char* slot_name)
+instance_slot(ATOM instance, const Keyword* keyw)
 {
-  Type* ty = type_lookup_by_tag(instance->typeid);
+  const char* slot_name = keyw->name;
+  Type* ty = type_lookup_by_tag(instance.typeid);
+
+#if defined(UNITTESTS)
+  hr_trace("slot", "Lookup slot '%s' for instance of type '%s'",
+           slot_name, ty->name, ty->instance_size);
+#endif
 
   if (ty->slots_offsets != NULL) {
     HashNode* node = hashtable_get_impl(ty->slots_offsets, (void*)slot_name);
     if (node != NULL)
-      return (void*)((unsigned char*)instance->u.v_obj + (size_t)node->fValue);
+      return (void*)((unsigned char*)instance.u.v_obj + (size_t)node->fValue);
   }
 
   fprintf(stderr, "No slot '%s' defined. Abort\n", slot_name);
