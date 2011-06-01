@@ -1336,7 +1336,7 @@ Slots are defined as variables inside the block of a class declaration
 using the special @code{slot} definition form:
 
 @example
-def slot @var{slot-name} [ : @var{type} ] [ = @var{init-value} ] [ ; @var{annotations} ]
+def slot @var{slot-name} [ : @var{type} ] [ = @var{init-value} ] [ , @var{annotations} ]
 @end example
 
 @var{init-value} is the slot's default value which is used when an
@@ -1347,7 +1347,7 @@ Note that the slot name is not visible in @var{init-value}.
 
 Slots can be controlled by a number of additional @var{annotations}.
 These comma separated symbols are put after the definition line
-separated by a @code{;}.  The following annotations are defined:
+separated by a comma (@code{,}).  The following annotations are defined:
 
 @findex transient
 @findex public
@@ -1389,7 +1389,7 @@ An example of an annotated slot:
 @example
 def class Button : Widget
 @{
-  def slot state : ButtonState = ButtonState.down ; transient
+  def slot state : ButtonState = ButtonState.down, transient
 @}
 @end example
 @end deffn
@@ -1436,7 +1436,7 @@ def class Person
 @{
   def slot name = "N."
   def slot surname = "N."
-  def slot display ; transient
+  def slot display, transient
 
   on init(self) @{
     self.display = self.surname + ", " + self.name
@@ -1460,7 +1460,7 @@ def class Person(_name, _surname)
 @{
   def slot name = _name
   def slot surname = _surname
-  def slot display ; transient
+  def slot display, transient
 
   on init(self) @{
     self.display = _surname + ", " + _name
@@ -1484,9 +1484,9 @@ automatically created:
 @example
 def class Person
 @{
-  def slot name = "N." ; auto
-  def slot surname = "N." ; auto
-  def slot display ; transient
+  def slot name = "N.", auto
+  def slot surname = "N.", auto
+  def slot display, transient
 
   on init(self) @{
     self.display = self.surname + ", " + self.name
@@ -1509,8 +1509,8 @@ def class Person(_name, _surname)
 @{
   def slot name = _name
   def slot surname = _surname
-  def slot birthday ; auto
-  def slot gender ; auto
+  def slot birthday, auto
+  def slot gender, auto
 @}
 @end example
 
@@ -4333,10 +4333,10 @@ def class Pair<Car, Cdr>(car: _car : Car = nil,
 
 def slot car : Car
     ~ The left side of a cell. ~
-    = _car ; public
+    = _car, public
 def slot cdr : Cdr
     ~ The right side of a cell. ~
-    = _cdr ; public
+    = _cdr, public
 
 def alias StringCell
     ~ A Pair defined for string lists.
@@ -4597,7 +4597,7 @@ generics-param  := type-name
 @verbatim
 slot-def        := `def' `slot' slot-name [ `:' type-clause ]
                    [ DOCSTRING ]
-                   [ `=' slotinit-value ] [ `;' slot-annos ]
+                   [ `=' slotinit-value ] [ `,' slot-annos ]
 slot-name       := SYMBOL
 slotinit-value  := expression
 

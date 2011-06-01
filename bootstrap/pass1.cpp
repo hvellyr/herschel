@@ -3354,13 +3354,12 @@ FirstPass::parseSlotDef(const Token& defToken)
       errorf(pos, E_MissingRHExpr, "no value in var init");
   }
 
-  Token semiToken;
+  Token delayedComma;
   TokenVector annotations;
-  if (fToken == kSemicolon) {
-    semiToken = fToken;
+  if (fToken == kComma) {
+    delayedComma = fToken;
     nextToken();
 
-    Token delayedComma;
     while (fToken != kEOF) {
       if (fToken == kSymbol) {
         if (delayedComma.isSet())
@@ -3393,8 +3392,8 @@ FirstPass::parseSlotDef(const Token& defToken)
     slotDefToken << docString;
   if (assignToken.isSet() && initExpr.isSet())
     slotDefToken << assignToken << initExpr;
-  if (semiToken.isSet() && !annotations.empty())
-    slotDefToken << semiToken << annotations;
+  if (!annotations.empty())
+    slotDefToken << annotations;
 
   return slotDefToken;
 }

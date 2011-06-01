@@ -112,6 +112,24 @@ namespace herschel
     void emitEntityGetterFunc(const std::vector<NodeT>& entities,
                               StrategyT strategy);
 
+    struct SlotAndClassSpecs
+    {
+      llvm::Constant* fTypeSlotSpecs;
+      size_t          fInstanceSize;
+    };
+    SlotAndClassSpecs computeTypeSlotAndClassSpecs(const Type& ty) const;
+
+    struct OrderedTypeSlots
+    {
+      std::vector<String> fSlotNames;
+      std::vector<size_t> fSlotOffsets;
+      size_t              fTotalSize;
+    };
+    OrderedTypeSlots orderTypeSlots(const TypeSlotList& typeSlots) const;
+
+    llvm::Constant* createTypeSlotSpec(const String& slotName,
+                                       size_t slotOffset) const;
+
     //-------- data members
 
     CtorList fGlobalCtors;

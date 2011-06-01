@@ -86,9 +86,10 @@ register_type(Type* type)
 }
 
 
-void
+size_t
 type_setup_dispatch_table(Type* ty, va_list vp)
 {
+  size_t acc_size = 0;
   size_t i = 0;
 
   ty->isa = malloc(ty->isa_size * sizeof(Type*));
@@ -102,8 +103,12 @@ type_setup_dispatch_table(Type* ty, va_list vp)
       hashtable_add(ty->isa_set, (void*)isa, (void*)isa);
       if (isa->isa_set != NULL)
         hashtable_add_all(ty->isa_set, isa->isa_set);
+
+      acc_size += isa->acc_instance_size;
     }
   }
+
+  return acc_size;
 }
 
 
@@ -118,7 +123,8 @@ type_base_alloc(const char* nm, size_t isa_size,
   ty->isa_size = isa_size;
   ty->tag_id = 0;
   ty->isa_set = NULL;
-  ty->instance_size = instance_size; /* 0 = not allocatable */
+  ty->instance_size = instance_size;
+  ty->acc_instance_size = 0;    /* to be set later */
   ty->slots_offsets = NULL;
   ty->slots = slots;
 
@@ -146,6 +152,24 @@ type_alloc(const char* nm, size_t isa_size, ...)
 }
 
 
+void
+class_add_super_slots_and_rewrite_offsets(HashTable* table, HashTable* other,
+                                          size_t base_offset)
+{
+  size_t i;
+
+  for (i = 0; i < other->fSize; i++) {
+    HashNode* node = other->fNodes[i];
+
+    while (node != NULL) {
+      size_t offset = (size_t)node->fValue + base_offset;
+      hashtable_add(table, node->fKey, (void*)offset);
+      node = node->fTail;
+    }
+  }
+}
+
+
 Type*
 class_alloc(const char* nm,
             size_t instance_size,
@@ -154,27 +178,78 @@ class_alloc(const char* nm,
 {
   Type* ty = type_base_alloc(nm, isa_size, instance_size, slots);
 
+#if defined(UNITTESTS)
+  hr_trace("register", "Alloc class '%s' [instance-size=%d]",
+           nm, instance_size);
+#endif
+
+  size_t acc_super_size = 0;
   if (isa_size > 0) {
     va_list vp;
     va_start(vp, isa_size);
 
-    type_setup_dispatch_table(ty, vp);
+    acc_super_size = type_setup_dispatch_table(ty, vp);
 
     va_end(vp);
   }
   else
     ty->isa = NULL;
 
-  if (slots != NULL && slots->name != NULL)
-  {
-    ty->slots_offsets = hashtable_alloc(11, hashtable_sizet_func, hashtable_sizet_cmp_func);
+  ty->acc_instance_size = ty->instance_size + acc_super_size;
 
-    const TypeSlotPair* p = slots;
-    for ( ; p->name != NULL; p++) {
-      hashtable_add(ty->slots_offsets, (void*)p->name, (void*)p->offset);
+#if defined(UNITTESTS)
+  hr_trace("register", "            [acc_instance-size=%ld, super=%ld]",
+           ty->acc_instance_size, acc_super_size);
+#endif
+
+  ty->slots_offsets = hashtable_alloc(11, hashtable_sizet_func, hashtable_sizet_cmp_func);
+
+  size_t acc_offset = 0;
+  if (ty->isa_size > 0) {
+    size_t i;
+    for (i = 0; i < ty->isa_size; i++) {
+      if (ty->isa[i]->slots_offsets != NULL) {
+        class_add_super_slots_and_rewrite_offsets(ty->slots_offsets,
+                                                  ty->isa[i]->slots_offsets,
+                                                  acc_offset);
+        acc_offset += ty->isa[i]->acc_instance_size;
+      }
     }
   }
 
+  if (slots != NULL && slots->name != NULL)
+  {
+    const TypeSlotPair* p = slots;
+    for ( ; p->name != NULL; p++) {
+#if defined(UNITTESTS)
+      hr_trace("register", "Register slot '%s' with offset '%d'",
+               p->name, p->offset);
+#endif
+      size_t offset = acc_offset + p->offset;
+      hashtable_add(ty->slots_offsets, (void*)p->name, (void*)offset);
+    }
+  }
+
+#if defined(UNITTESTS)
+  {
+    HashNode* node;
+    size_t i;
+
+    for (i = 0; i < ty->slots_offsets->fSize; i++) {
+      node = ty->slots_offsets->fNodes[i];
+      while (node != NULL) {
+        hr_trace("instancelayout", "Slot offset: '%s::%s' @ '%ld'",
+                 nm, (char*)node->fKey, (size_t)node->fValue);
+        node = node->fTail;
+      }
+    }
+  }
+#endif
+
+  // TODO: shouldn't the class slot table be extended by the slots of the
+  // super classes?  It seems that slot() and slot!() are not really private
+  // to the class at all; so from the outside it is otherwise rather diffcult
+  // to find the right class to ask for the offset of the member.
   return ty;
 }
 
@@ -212,6 +287,10 @@ type_isa(Type* one, Type* two)
 }
 
 
+/* ---------------------------------------------------------------------------
+   access to instance slots
+   ------------------------------------------------------------------------ */
+
 size_t
 type_slot_get(Type* ty, const char* slot_name)
 {
@@ -225,7 +304,32 @@ type_slot_get(Type* ty, const char* slot_name)
 }
 
 
+void*
+instance_slot(ATOM instance, const Keyword* keyw)
+{
+  const char* slot_name = keyw->name;
+  Type* ty = type_lookup_by_tag(instance.typeid);
+
+#if defined(UNITTESTS)
+  hr_trace("slot", "Lookup slot '%s' for instance of type '%s'",
+           slot_name, ty->name);
+#endif
+
+  if (ty->slots_offsets != NULL) {
+    HashNode* node = hashtable_get_impl(ty->slots_offsets, (void*)slot_name);
+    if (node != NULL)
+      return (void*)((unsigned char*)instance.u.v_obj + (size_t)node->fValue);
+  }
+
+  fprintf(stderr, "No slot '%s' defined. Abort\n", slot_name);
+  exit(1);
+
+  return NULL;
+}
+
+
 /* ---------------------------------------------------------------------------
+   allocating instances
    ------------------------------------------------------------------------ */
 
 void
@@ -233,13 +337,13 @@ allocate(ATOM* instance, Type* ty)
 {
 #if defined(UNITTESTS)
   hr_trace("allocate", "Create instance of type '%s', size: %ld",
-           ty->name, ty->instance_size);
+           ty->name, ty->acc_instance_size);
 #endif
 
   instance->typeid = ty->tag_id;
-  if (ty->instance_size > 0) {
-    instance->u.v_obj = malloc(ty->instance_size);
-    memset(instance->u.v_obj, 0, ty->instance_size);
+  if (ty->acc_instance_size > 0) {
+    instance->u.v_obj = malloc(ty->acc_instance_size);
+    memset(instance->u.v_obj, 0, ty->acc_instance_size);
   }
   else
     instance->u.v_obj = NULL;
@@ -358,7 +462,5 @@ allocate_double_array(Type* ty, double init_value, size_t items)
 
   return obj;
 }
-
-
 
 

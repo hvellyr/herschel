@@ -807,6 +807,7 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
   std::vector<PrimeTuple> primeTuples;
   NodeList slotDefs;
   NodeList onExprs;
+  TypeSlotList slotTypes;
 
   if (ofs < seq.size() &&
       seq[ofs].isNested() && seq[ofs].leftToken() == kBraceOpen)
@@ -825,6 +826,24 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
           NodeList nl = parseExpr(defs[i]);
           appendNodes(slotDefs, nl);
+
+          for (size_t i = 0; i < slotDefs.size(); i++) {
+            if (slotDefs[i] != NULL) {
+              const BaseDefNode* basedef =
+                dynamic_cast<const BaseDefNode*>(slotDefs[i].obj());
+              hr_assert(basedef != NULL);
+
+              const SlotdefNode* slotDef =
+                dynamic_cast<const SlotdefNode*>(basedef->defNode());
+              hr_assert(slotDef != NULL);
+
+              if (slotDef != NULL) {
+                slotTypes.push_back(TypeSlot(slotDef->name(),
+                                             slotDef->type(),
+                                             slotDef->flags()));
+              }
+            }
+          }
         }
         else {
           errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
@@ -920,7 +939,8 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
       genGenerics.push_back(genericTypeRef(generics[i].typeName(), K(isValue)));
     }
 
-    defType = Type::newClass(fullTypeName, generics, inheritsFrom, sign);
+    defType = Type::newClass(fullTypeName, generics, inheritsFrom, sign,
+                             slotTypes);
   }
   else {
     defType = Type::newType(fullTypeName, generics, inheritsFrom);
@@ -1310,7 +1330,7 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
   }
 
   unsigned int slotFlags = kSimpleSlot;
-  if (ofs < seq.size() && seq[ofs] == kSemicolon) {
+  if (ofs < seq.size() && seq[ofs] == kComma) {
     ofs++;
     for ( ; ofs < seq.size(); ofs++) {
       if (seq[ofs] == kComma)
