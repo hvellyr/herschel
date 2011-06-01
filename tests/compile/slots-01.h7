@@ -1,0 +1,12 @@
+def type Person
+
+def class Student : Person
+{
+  def slot a : Int = 42
+}
+
+
+def app|main()
+  let t = Student()
+  slot(t, #a) as Int32
+
