@@ -129,7 +129,7 @@ hashtable_get_impl(HashTable* table, void* key)
   HashNode* node = table->fNodes[(size_t)(table->fHashFunc(key) & (table->fSize - 1))];
 
   while (node != NULL) {
-    if (node->fKey == key)
+    if (table->fKeyCmp(node->fKey, key) == 0)
       return node;
 
     node = node->fTail;
