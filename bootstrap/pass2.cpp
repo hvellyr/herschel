@@ -829,7 +829,14 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
           for (size_t i = 0; i < slotDefs.size(); i++) {
             if (slotDefs[i] != NULL) {
-              SlotdefNode* slotDef = dynamic_cast<SlotdefNode*>(slotDefs[i].obj());
+              const BaseDefNode* basedef =
+                dynamic_cast<const BaseDefNode*>(slotDefs[i].obj());
+              hr_assert(basedef != NULL);
+
+              const SlotdefNode* slotDef =
+                dynamic_cast<const SlotdefNode*>(basedef->defNode());
+              hr_assert(slotDef != NULL);
+
               if (slotDef != NULL) {
                 slotTypes.push_back(TypeSlot(slotDef->name(),
                                              slotDef->type(),

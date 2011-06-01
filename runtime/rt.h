@@ -48,6 +48,8 @@ struct Type {
   TagId       tag_id;
 
   size_t      instance_size;
+  size_t      acc_instance_size; /* accumulated instance size for this class
+                                  * and all superclasses. */
   HashTable*  slots_offsets;    /* hash<char*, size_t> */
   const TypeSlotPair* slots;
 };

@@ -1,0 +1,11 @@
+{
+  'retc': 42,
+  'runtime-options': 'register',
+  'stderr': [ 'Register type:.*QN6Person',
+              'Alloc class.*QN7Student.*instance-size=.*',
+              "Register slot 'a' with offset '0'",
+              'Register type:.*QN7Student',
+              'Register keyword: a' ]
+}
+
+
