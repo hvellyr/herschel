@@ -3,7 +3,7 @@ Requirements
   for the code itself:
     - c and c++ (tested with gcc 4.0.1 and 4.2.1 on Mac OS X, 4.5.0 on
       mingw/linux; clang 2.8 on Mac OS X)
-    - llvm 2.8 (http://www.llvm.org)
+    - llvm 2.9 (http://www.llvm.org)
 
   for building and testing:
     - a shell (posix compliant shell)
