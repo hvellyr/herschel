@@ -31,11 +31,13 @@ namespace herschel
   class TypeEnumMaker;
   class Scope;
   class SrcPos;
+  class TypeSlot;
 
   typedef std::vector<Type> TypeVector;
   typedef std::vector<TypeConstraint> TypeConstVector;
   typedef std::vector<FunctionParameter> FunctionParamVector;
   typedef std::map<String, Token> StringTokenMap;
+  typedef std::vector<TypeSlot> TypeSlotList;
 
 
   //--------------------------------------------------------------------------
@@ -139,7 +141,8 @@ namespace herschel
                         const Type& inherit);
 
     static Type newClass(const String& name, const TypeVector& generics,
-                         const Type& inherit, const FunctionSignature& applySign);
+                         const Type& inherit, const FunctionSignature& applySign,
+                         const TypeSlotList& slots);
 
     static Type newAlias(const String& name, const TypeVector& generics,
                          const Type& isa);
@@ -205,6 +208,7 @@ namespace herschel
 
     //!@ custom types
     bool isClass() const;
+    const TypeSlotList& slots() const;
 
     //!@ custom types
     bool isType() const;
@@ -289,6 +293,57 @@ namespace herschel
     bool          fIsValue;
     bool          fIsImaginary;
     Ptr<TypeImpl> fImpl;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  //! Various slot annotations
+  enum SlotFlags {
+    kSimpleSlot     = 0,
+    kTransientSlot  = 1 << 0,
+    kReadonlySlot   = 1 << 1,
+    kPublicSlot     = 1 << 2,
+    kOuterSlot      = 1 << 3,
+    kInnerSlot      = 1 << 4,
+    kAutoSlot       = 1 << 5,
+  };
+
+
+  //! Encodes the slots defined on classes
+
+  class TypeSlot
+  {
+  public:
+    TypeSlot(const String& name, const Type& type, unsigned int flags);
+    TypeSlot(const TypeSlot& other);
+
+    TypeSlot clone() const;
+
+    //! Assign operator
+    TypeSlot& operator=(const TypeSlot& other);
+
+    //! Compare operator.
+    bool operator==(const TypeSlot& other) const;
+    //! Compare operator
+    bool operator!=(const TypeSlot& other) const;
+
+    void replaceGenerics(const TypeCtx& typeMap);
+    String toString() const;
+
+    //! Return the slot's name
+    String name() const;
+
+    //! Return the slot's type
+    Type type() const;
+
+    //! Return the bitfields of flags
+    unsigned int flags() const;
+
+  private:
+    String       fName;
+    Type         fType;
+    unsigned int fFlags;
   };
 
 

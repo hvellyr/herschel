@@ -532,6 +532,102 @@ ModuleRuntimeInitializer::makeTypeRegisterCall(llvm::Value* newType) const
 }
 
 
+llvm::Constant*
+ModuleRuntimeInitializer::createTypeSlotSpec(const String& slotName,
+                                             size_t slotOffset) const
+{
+  std::vector<llvm::Constant*> slotSpecItems;
+  llvm::Value* slotStrValue =
+    builder().CreateGlobalStringPtr((const char*)StrHelper(slotName),
+                                    (const char*)StrHelper(slotName + "_str"));
+
+  slotSpecItems.push_back(static_cast<llvm::Constant*>(slotStrValue));
+  slotSpecItems.push_back(llvm::ConstantInt::get(context(),
+                                                 llvm::APInt(32, slotOffset,
+                                                             !K(isSigned))));
+
+  return llvm::ConstantStruct::get(types()->getTypeSlotPairType(), slotSpecItems);
+}
+
+
+ModuleRuntimeInitializer::OrderedTypeSlots
+ModuleRuntimeInitializer::orderTypeSlots(const TypeSlotList& typeSlots) const
+{
+  OrderedTypeSlots retv;
+  retv.fTotalSize = 0;
+
+  if (!typeSlots.empty()) {
+    std::map<size_t, std::set<String> > slotsGroupedBySize;
+
+    //---- group slots by size
+    for (size_t i = 0; i < typeSlots.size(); i++) {
+      size_t slotSize = types()->getSlotSize(typeSlots[i].type());
+
+      // should not have any types larger than 16 bytes
+      hr_assert(slotSize == 1 || slotSize == 2 ||
+                slotSize == 4 || slotSize == 8 ||
+                slotSize == 16);
+
+      slotsGroupedBySize[slotSize].insert(typeSlots[i].name());
+    }
+
+    //---- arrange them best fitting in order 16, 8, 4, 2, 1,
+    size_t offset = 0;
+    for (size_t i = 16; i > 0; i = i / 2) {
+      std::set<String> slotNames = slotsGroupedBySize[i];
+      for (std::set<String>::const_iterator it = slotNames.begin(),
+             end = slotNames.end();
+           it != end;
+           it++)
+      {
+        retv.fSlotNames.push_back(*it);
+        retv.fSlotOffsets.push_back(offset);
+
+        offset += i;
+      }
+    }
+
+    const size_t quantizeSize = generator()->is64Bit()
+      ? 8
+      : 4;
+    retv.fTotalSize = (offset % quantizeSize != 0
+                       ? (offset / quantizeSize + 1) * quantizeSize
+                       : offset);
+  }
+
+  hr_assert(retv.fSlotNames.size() == retv.fSlotOffsets.size());
+
+  return retv;
+}
+
+
+ModuleRuntimeInitializer::SlotAndClassSpecs
+ModuleRuntimeInitializer::computeTypeSlotAndClassSpecs(const Type& ty) const
+{
+  OrderedTypeSlots orderedSlots = orderTypeSlots(ty.slots());
+  hr_assert(orderedSlots.fSlotNames.size() == orderedSlots.fSlotOffsets.size());
+  hr_assert(implies(ty.slots().empty(), orderedSlots.fTotalSize == 0));
+  hr_assert(implies(!ty.slots().empty(), orderedSlots.fTotalSize > 0));
+
+  std::vector<llvm::Constant*> slotSpecs;
+  for (size_t i = 0; i < orderedSlots.fSlotNames.size(); i++) {
+    llvm::Constant* slotSpec = createTypeSlotSpec(orderedSlots.fSlotNames[i],
+                                                  orderedSlots.fSlotOffsets[i]);
+    slotSpecs.push_back(slotSpec);
+  }
+  slotSpecs.push_back(llvm::Constant::getNullValue(types()->getTypeSlotPairType()));
+
+  const llvm::ArrayType* arrayType = llvm::ArrayType::get(types()->getTypeSlotPairType(),
+                                                          slotSpecs.size());
+
+  SlotAndClassSpecs retv;
+  retv.fInstanceSize = orderedSlots.fTotalSize;
+  retv.fTypeSlotSpecs = llvm::ConstantArray::get(arrayType, slotSpecs);
+
+  return retv;
+}
+
+
 llvm::Value*
 ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
 {
@@ -542,7 +638,7 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
     std::vector<const llvm::Type*> sign;
     sign.push_back(llvm::Type::getInt8PtrTy(context())); // typename
     sign.push_back(llvm::Type::getInt32Ty(context()));   // instance size
-    sign.push_back(types()->getTypeSlotPairType());      // const TypeSlotPair*
+    sign.push_back(types()->getTypeSlotPairType()->getPointerTo()); // const TypeSlotPair*
     sign.push_back(llvm::Type::getInt32Ty(context()));   // isa_size
 
     llvm::FunctionType *ft = llvm::FunctionType::get(types()->getTypeType(),
@@ -555,25 +651,46 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
                                      module());
   }
 
-  size_t instance_size = 0;
+  // get the class layout and instance size
+  SlotAndClassSpecs specs = computeTypeSlotAndClassSpecs(ty);
 
   std::vector<llvm::Value*> argv;
+  // arg 1: the class name
   argv.push_back(builder().CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("classname")));
+  // arg 2: the instance size
   argv.push_back(llvm::ConstantInt::get(context(),
-                                        llvm::APInt(32, instance_size, true)));
-  // TODO
-  argv.push_back(llvm::Constant::getNullValue(types()->getTypeSlotPairType()));
+                                        llvm::APInt(32, specs.fInstanceSize, true)));
 
+  // arg 3: the list of slot specifications
+  llvm::GlobalVariable *gv =
+    new llvm::GlobalVariable(specs.fTypeSlotSpecs->getType(),
+                             K(isConstant),
+                             llvm::GlobalValue::InternalLinkage,
+                             specs.fTypeSlotSpecs,
+                             llvm::Twine(StrHelper(typeName + "_slot_specs")),
+                             !K(isThreadLocal),
+                             0);
+  hr_assert(gv != NULL);
+  module()->getGlobalList().push_back(gv);
+
+  llvm::Value* v2 = builder().CreateConstGEP1_32(gv, 0);
+  llvm::Value* v3 = builder().CreatePointerCast(v2,
+                                                types()->getTypeSlotPairType()->getPointerTo());
+  argv.push_back(v3);
+
+  // arg 4: the number of inherited classes/types
   Type isa = ty.typeInheritance();
   if (isa.isSequence()) {
     argv.push_back(llvm::ConstantInt::get(context(),
                                           llvm::APInt(32, isa.seqTypes().size(), true)));
+    // arg 5-n: the inherited classes/types
     for (size_t i = 0; i < isa.seqTypes().size(); i++)
       argv.push_back(makeGetTypeLookupCall(isa.seqTypes()[i]));
   }
   else if (isa.isDef()) {
     argv.push_back(llvm::ConstantInt::get(context(),
                                           llvm::APInt(32, 1, true)));
+    // arg 5: the inherited classes/types
     argv.push_back(makeGetTypeLookupCall(isa));
   }
   else {

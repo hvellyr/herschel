@@ -123,6 +123,22 @@ hashtable_get(HashTable* table, void* key)
 }
 
 
+HashNode*
+hashtable_get_impl(HashTable* table, void* key)
+{
+  HashNode* node = table->fNodes[(size_t)(table->fHashFunc(key) & (table->fSize - 1))];
+
+  while (node != NULL) {
+    if (node->fKey == key)
+      return node;
+
+    node = node->fTail;
+  }
+
+  return NULL;
+}
+
+
 void
 hashtable_remove(HashTable* table, void* key)
 {
@@ -158,17 +174,13 @@ void
 hashtable_add_all(HashTable* table, HashTable* other)
 {
   HashNode* node;
-  HashNode* next;
   size_t i;
 
   for (i = 0; i < other->fSize; i++) {
     node = other->fNodes[i];
-    while (node) {
-      next = node->fTail;
-
+    while (node != NULL) {
       hashtable_add(table, node->fKey, node->fValue);
-
-      node = next;
+      node = node->fTail;
     }
   }
 }

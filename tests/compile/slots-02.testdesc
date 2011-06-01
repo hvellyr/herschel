@@ -1,0 +1,24 @@
+{
+  'retc': 42,
+  'runtime-options': 'register,instancelayout',
+  'stderr': [ "Alloc class.*QN1A",
+              "Alloc class.*QN1B",
+              "Alloc class.*QN2AB",
+              "Register slot 'a' with offset '0'",
+              "Register slot 'b' with offset '0'",
+              "Register slot 'c' with offset '0'",
+              "Register slot 'd' with offset '[^0]?[0-9]*'",
+              "Slot offset: '.*QN1A::a' @ '0'",
+              "Slot offset: '.*QN1B::b' @ '0'",
+              "Slot offset: '.*QN2AB::a' @ '0'",
+              "Slot offset: '.*QN2AB::b' @ '[^0]?[0-9]*'",
+              "Slot offset: '.*QN2AB::c' @ '[^0]?[0-9]*'",
+              "Slot offset: '.*QN2AB::d' @ '[^0]?[0-9]*'",
+              "Register keyword: a",
+              "Register keyword: b",
+              "Register keyword: c",
+              "Register keyword: d",
+              ]
+}
+
+
