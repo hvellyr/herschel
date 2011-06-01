@@ -543,7 +543,8 @@ ModuleRuntimeInitializer::createTypeSlotSpec(const String& slotName,
 
   slotSpecItems.push_back(static_cast<llvm::Constant*>(slotStrValue));
   slotSpecItems.push_back(llvm::ConstantInt::get(context(),
-                                                 llvm::APInt(32, slotOffset,
+                                                 llvm::APInt(32,
+                                                             (uint64_t)slotOffset,
                                                              !K(isSigned))));
 
   return llvm::ConstantStruct::get(types()->getTypeSlotPairType(), slotSpecItems);
