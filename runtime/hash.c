@@ -174,17 +174,13 @@ void
 hashtable_add_all(HashTable* table, HashTable* other)
 {
   HashNode* node;
-  HashNode* next;
   size_t i;
 
   for (i = 0; i < other->fSize; i++) {
     node = other->fNodes[i];
-    while (node) {
-      next = node->fTail;
-
+    while (node != NULL) {
       hashtable_add(table, node->fKey, node->fValue);
-
-      node = next;
+      node = node->fTail;
     }
   }
 }
