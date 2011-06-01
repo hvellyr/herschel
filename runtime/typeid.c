@@ -202,7 +202,9 @@ class_alloc(const char* nm,
            ty->acc_instance_size, acc_super_size);
 #endif
 
-  ty->slots_offsets = hashtable_alloc(11, hashtable_sizet_func, hashtable_sizet_cmp_func);
+  ty->slots_offsets = hashtable_alloc(11,
+                                      hashtable_cstr_func,
+                                      hashtable_cstr_cmp_func);
 
   size_t acc_offset = 0;
   if (ty->isa_size > 0) {
