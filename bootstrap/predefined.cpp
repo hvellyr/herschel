@@ -67,8 +67,6 @@ const String herschel::Names::kLangAllocate        = String(MID_lang_allocate);
 const String herschel::Names::kLangAllocateArray   = String(MID_lang_allocate_array);
 const String herschel::Names::kLangNil             = String(MID_lang_nil);
 const String herschel::Names::kLangInitFunctor     = String(MID_core_ns "|" "init-functor");
-const String herschel::Names::kLangSlot            = String(MID_core_ns "|" "slot");
-const String herschel::Names::kLangSlotX           = String(MID_core_ns "|" "slot!");
 const String herschel::Names::kLangEndp            = String(MID_core_ns "|" "end?");
 const String herschel::Names::kLangNext            = String(MID_core_ns "|" "next");
 

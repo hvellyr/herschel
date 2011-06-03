@@ -180,30 +180,24 @@
 </rettype>
 <body>
 <block>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+<assign>
+<slotref  nm='x'>
 <symbol>__obj_0</symbol>
-<keyw>x</keyw>
+</slotref>
 <symbol>a</symbol>
-</args>
-</apply>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+</assign>
+<assign>
+<slotref  nm='y'>
 <symbol>__obj_0</symbol>
-<keyw>y</keyw>
+</slotref>
 <symbol>b</symbol>
-</args>
-</apply>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+</assign>
+<assign>
+<slotref  nm='z'>
 <symbol>__obj_0</symbol>
-<keyw>z</keyw>
+</slotref>
 <symbol>lang|nil</symbol>
-</args>
-</apply>
+</assign>
 <symbol>__obj_0</symbol>
 </block>
 </body>

@@ -8,5 +8,4 @@ def class Student : Person
 
 def app|main()
   let t = Student()
-  slot(t, #a) as Int32
-
+  t^a
