@@ -19,6 +19,9 @@ Documentation
 
 Bootstrap compiler
 
+  - slotrefnode: typify
+                 slotrefnode & assign node
+
   - test multiple inheritance
 
   - review possibilities for warnings about ambiguous multiple method

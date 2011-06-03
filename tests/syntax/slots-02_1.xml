@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>set-address</id>
+<nested left='(' right=')'>
+<seq>
+<id>t</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>city</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>postalcode</id>
+<punct type=':'/>
+<id>Any</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<seq>
+<id>t</id>
+<punct type='^'/>
+<id>address</id>
+</seq>
+<punct type='^'/>
+<id>city</id>
+</seq>
+<punct type='='/>
+<id>city</id>
+</seq>
+<seq>
+<seq>
+<seq>
+<id>t</id>
+<punct type='^'/>
+<id>address</id>
+</seq>
+<punct type='^'/>
+<id>postalcode</id>
+</seq>
+<punct type='='/>
+<id>postalcode</id>
+</seq>
+<seq>
+<seq>
+<seq>
+<id>t</id>
+<punct type='^'/>
+<id>address</id>
+</seq>
+<punct type='^'/>
+<id>city</id>
+</seq>
+<punct type='+'/>
+<seq>
+<seq>
+<id>t</id>
+<punct type='^'/>
+<id>address</id>
+</seq>
+<punct type='^'/>
+<id>postalcode</id>
+</seq>
+</seq>
+</nested>
+</seq>
+</seq>
+

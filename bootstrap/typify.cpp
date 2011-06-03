@@ -1275,12 +1275,21 @@ Typifier::typify(BinaryNode* node)
 
 
 void
+Typifier::typify(SlotRefNode* node)
+{
+  typifyNode(node->base());
+
+  // TODO: get type from node->base(), find slotName in that type, get type
+  // for the slot.
+}
+
+
+void
 Typifier::typify(NegateNode* node)
 {
   typifyNode(node->base());
-  if (fPhase == kTypify) {
+  if (fPhase == kTypify)
     node->setType(node->base()->type());
-  }
 }
 
 

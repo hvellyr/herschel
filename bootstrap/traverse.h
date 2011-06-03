@@ -46,6 +46,7 @@ namespace herschel
   class RealNode;
   class SelectNode;
   class SlotdefNode;
+  class SlotRefNode;
   class StringNode;
   class SymbolNode;
   class TypeDefNode;
@@ -112,6 +113,7 @@ namespace herschel
     void traverse(RealNode* node);
     void traverse(SelectNode* node);
     void traverse(SlotdefNode* node);
+    void traverse(SlotRefNode* node);
     void traverse(StringNode* node);
     void traverse(TypeDefNode* node);
     void traverse(TypeNode* node);
