@@ -3316,6 +3316,23 @@ SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
 
 //------------------------------------------------------------------------------
 
+AptNode*
+SecondPass::parseSlotAccess(const Token& expr)
+{
+  hr_assert(expr.count() == 3);
+  hr_assert(expr[1] == kReference);
+  hr_assert(expr[2] == kSymbol);
+
+  Ptr<AptNode> baseExpr = singletonNodeListOrNull(parseExpr(expr[0]));
+  if (baseExpr == NULL)
+    return NULL;
+
+  return new SlotRefNode(expr.srcpos(), baseExpr, expr[2].idValue());
+}
+
+
+//------------------------------------------------------------------------------
+
 NodeList
 SecondPass::parseTokenVector(const TokenVector& seq)
 {
@@ -3423,6 +3440,9 @@ SecondPass::parseSeq(const Token& expr)
     }
     else if (expr[1] == kRange) {
       return newNodeList(parseBinary(expr));
+    }
+    else if (expr[1] == kReference && expr[2] == kSymbol) {
+      return newNodeList(parseSlotAccess(expr));
     }
     else {
       fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",

@@ -682,3 +682,14 @@ CodeGenerator::codegen(const UndefNode* node)
   hr_invalid("You shouldn't be here");
   return NULL;
 }
+
+
+//----------------------------------------------------------------------------
+
+llvm::Value*
+CodeGenerator::codegen(const SlotRefNode* node)
+{
+  logf(kError, "Not supported yet: %s", typeid(node).name());
+  // TODO
+  return NULL;
+}

@@ -49,6 +49,7 @@ namespace herschel
   class RealNode;
   class SelectNode;
   class SlotdefNode;
+  class SlotRefNode;
   class StringNode;
   class SymbolNode;
   class TypeDefNode;
@@ -139,6 +140,8 @@ namespace herschel
     void typify(SelectNode* node);
     //! Typify implementation for SlotdefNodes (cf. TypifyPass)
     void typify(SlotdefNode* node);
+    //! Typify implementation for SlotRefNodes (cf. TypifyPass)
+    void typify(SlotRefNode* node);
     //! Typify implementation for StringNodes (cf. TypifyPass)
     void typify(StringNode* node);
     //! Typify implementation for TypeDefNodes (cf. TypifyPass)
