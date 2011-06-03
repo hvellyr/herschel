@@ -209,6 +209,12 @@ namespace herschel
     //!@ custom types
     bool isClass() const;
     const TypeSlotList& slots() const;
+    //! lookup the type for slot \p slotName.  If no such slot is defined for
+    //! the receiver (or any of its superclasses) this function returns an
+    //! undefined type (check isDef()).  The \p scope is required for
+    //! normalizing the superclasses which are normally kept as reference
+    //! types only.
+    Type slotType(const String& slotName, Scope* scope) const;
 
     //!@ custom types
     bool isType() const;
@@ -613,6 +619,8 @@ namespace herschel
   Type degeneralizeType(const SrcPos& srcpos, const Type& type,
                         const TypeVector& srcGenerics);
 
+
+  Type resolveType(const Type& type, Scope* scope);
 };                              // namespace
 
 

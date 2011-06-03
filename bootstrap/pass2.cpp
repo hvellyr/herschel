@@ -985,21 +985,28 @@ SecondPass::defaultSlotInitValue(const SlotdefNode* slot)
   if (slot->initExpr() != NULL)
     return slot->initExpr()->clone();
   else if (slot->type().isDef()) {
-    if (slot->type().isAnyInt())
-      return new IntNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
-    else if (slot->type().isAnyFloat())
-      return new RealNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
-    else if (slot->type().isRational())
-      return new RationalNode(slot->srcpos(), Rational(0, 1),
-                              slot->type().isImaginary(), slot->type());
-    else if (slot->type().isString())
-      return new StringNode(slot->srcpos(), String());
-    else if (slot->type().isBool())
-      return new BoolNode(slot->srcpos(), false);
-    else if (slot->type().isChar())
-      return new CharNode(slot->srcpos(), Char(0));
-    else if (slot->type().isKeyword())
-      return new KeywordNode(slot->srcpos(), String());
+    if (slot->type().isArray()) {
+      AptNode* node = new ArrayNode(slot->srcpos());
+      node->setType(slot->type());
+      return node;
+    }
+    else {
+      if (slot->type().isAnyInt())
+        return new IntNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
+      else if (slot->type().isAnyFloat())
+        return new RealNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
+      else if (slot->type().isRational())
+        return new RationalNode(slot->srcpos(), Rational(0, 1),
+                                slot->type().isImaginary(), slot->type());
+      else if (slot->type().isString())
+        return new StringNode(slot->srcpos(), String());
+      else if (slot->type().isBool())
+        return new BoolNode(slot->srcpos(), false);
+      else if (slot->type().isChar())
+        return new CharNode(slot->srcpos(), Char(0));
+      else if (slot->type().isKeyword())
+        return new KeywordNode(slot->srcpos(), String());
+    }
   }
 
   // TODO
@@ -1039,13 +1046,12 @@ SecondPass::generateConstructor(const Token& typeExpr,
     const SlotdefNode* slot = dynamic_cast<const SlotdefNode*>(basedef->defNode());
     hr_assert(slot != NULL);
 
-    Ptr<ApplyNode> slotInit = new ApplyNode(srcpos,
-                                            new SymbolNode(srcpos,
-                                                           Names::kLangSlotX));
-
-    slotInit->appendNode(new SymbolNode(srcpos, selfParamSym));
-    slotInit->appendNode(new KeywordNode(srcpos, slot->name()));
-    slotInit->appendNode(defaultSlotInitValue(slot));
+    Ptr<AptNode> slotInit = new AssignNode(srcpos,
+                                           new SlotRefNode(srcpos,
+                                                           new SymbolNode(srcpos,
+                                                                          selfParamSym),
+                                                           slot->name()),
+                                           defaultSlotInitValue(slot));
 
     body->appendNode(slotInit);
   }
