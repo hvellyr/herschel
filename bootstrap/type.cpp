@@ -425,6 +425,15 @@ namespace herschel
         buf << "</ty:gen>\n";
       }
 
+#if 0
+      if (!fSlots.empty()) {
+        buf << "<ty:slots>\n";
+        for (size_t i = 0; i < fSlots.size(); i++)
+          buf << fSlots[i].toString();
+        buf << "</ty:slots>\n";
+      }
+#endif
+
       buf << "</ty:type>\n";
       return buf.toString();
     }
@@ -1617,6 +1626,37 @@ Type::slots() const
   hr_assert(isClass());
   const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
   return tyimpl->slots();
+}
+
+
+Type
+Type::slotType(const String& slotName, Scope* scope) const
+{
+  hr_assert(isClass());
+  const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
+  const TypeSlotList& slotList = tyimpl->slots();
+
+  for (size_t i = 0; i < slotList.size(); i++) {
+    if (slotList[i].name() == slotName)
+      return ( slotList[i].type().isDef()
+               ? slotList[i].type()
+               : Type::newAny() );
+  }
+
+  Type inherits = typeInheritance();
+  if (inherits.isSequence()) {
+    const TypeVector& inheritedTypes = inherits.seqTypes();
+    for (size_t i = 0; i < inheritedTypes.size(); i++) {
+      Type normalizedType = herschel::resolveType(inheritedTypes[i], scope);
+
+      if (normalizedType.isClass()) {
+        Type sty = normalizedType.slotType(slotName, scope);
+        if (sty.isDef())
+          return sty;
+      }
+    }
+  }
+  return Type();
 }
 
 

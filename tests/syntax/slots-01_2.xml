@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='set-name'>
+<params>
+<param sym='t' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='n' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<assign>
+<slotref  nm='name'>
+<symbol>t</symbol>
+</slotref>
+<symbol>n</symbol>
+</assign>
+<slotref  nm='name'>
+<symbol>t</symbol>
+</slotref>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

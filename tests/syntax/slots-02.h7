@@ -1,0 +1,5 @@
+def set-address(t, city, postalcode) 
+  t^address^city = city
+  t^address^postalcode = postalcode
+
+  t^address^city + t^address^postalcode

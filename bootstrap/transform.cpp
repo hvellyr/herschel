@@ -533,3 +533,9 @@ Transformator::transform(UndefNode* node)
 }
 
 
+AptNode*
+Transformator::transform(SlotRefNode* node)
+{
+  node->setBase(transformNode(node->base()));
+  return node;
+}

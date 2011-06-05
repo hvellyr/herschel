@@ -129,25 +129,21 @@
 </rettype>
 <body>
 <block>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+<assign>
+<slotref  nm='a'>
 <symbol>__obj_0</symbol>
-<keyw>a</keyw>
+</slotref>
 <symbol>x</symbol>
-</args>
-</apply>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+</assign>
+<assign>
+<slotref  nm='b'>
 <symbol>__obj_0</symbol>
-<keyw>b</keyw>
+</slotref>
 <binary op='*'>
 <symbol>x</symbol>
 <int ty='lang|Int32'>2</int>
 </binary>
-</args>
-</apply>
+</assign>
 <symbol>__obj_0</symbol>
 </block>
 </body>

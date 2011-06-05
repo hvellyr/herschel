@@ -219,6 +219,9 @@ namespace herschel
 
     AptNode* constructWhileTestNode(const Token& expr, NodeList& testExprs);
 
+    AptNode* parseSlotAccess(const Token& expr);
+
+
     typedef std::map<String, Type> TSharedGenericTable;
     class TSharedGenericScopeHelper
     {
