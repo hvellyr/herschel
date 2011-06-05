@@ -244,9 +244,6 @@ CodegenTypeUtils::getType(const Type& type) const
 size_t
 CodegenTypeUtils::getSlotSize(const Type& type) const
 {
-  // TODO: disable specific slot size for now.  The slot assignment/access
-  // does not distinguish properly between plain and ATOM types.
-#if 0
   String typeName = type.typeName();
   if (typeName == String("clang|int"))
     // TODO: shouldn't this be 32/64 depending on host platform?
@@ -298,7 +295,6 @@ CodegenTypeUtils::getSlotSize(const Type& type) const
   // else if (typeName == String("lang|Float128"))
   //   return llvm::Type::getInt1Ty(context());
   // }
-#endif
 
   const llvm::StructLayout* layout = generator()->targetData()
     ->getStructLayout((const llvm::StructType*)getAtomType());
