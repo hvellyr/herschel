@@ -184,6 +184,7 @@ class TestRunner:
     def reset_status_count(self):
         self.test_run = 0
         self.test_succeeded = 0
+        self.column_count = 0
 
 
     def report_summary(self, title, run, succeeded):
