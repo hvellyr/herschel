@@ -19,6 +19,8 @@ Documentation
 
 Bootstrap compiler
 
+  - implement/fix 'not' operator
+
   - auto create accessor/modifier functions for slots
 
   - support 'auto', 'public', 'outer', 'inner', slots in ctor construction.
