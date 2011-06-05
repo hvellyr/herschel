@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>foo</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>select</id>
+<nested left='(' right=')'>
+<id>n</id>
+</nested>
+<nested left='{' right='}'/>
+</seq>
+</nested>
+</seq>
+</seq>
+

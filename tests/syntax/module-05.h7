@@ -1,0 +1,28 @@
+module core
+
+def f()
+  1
+
+module red
+{
+  def f()
+    2
+}
+
+module blue
+{
+  def f()
+    3
+
+  module violet
+  {
+    def f()
+      4
+  }
+
+  module pink
+  {
+    def f()
+      5
+  }
+}

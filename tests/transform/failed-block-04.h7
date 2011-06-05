@@ -1,0 +1,18 @@
+;; blocks with a single "on exit" member can inlined completely.  The
+;; parameter of the on exit expresion is initialized to 'unspecified'
+;; (since this the return value of an empty block).
+
+def foo()
+  let a = 0
+  {
+    on exit(r) r
+  }
+  a
+
+
+def foo2()
+  let a = 0
+  {
+    on exit(r = true) r
+  }
+  a

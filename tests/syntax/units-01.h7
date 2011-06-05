@@ -1,0 +1,9 @@
+def measure Inch (in) : Float
+def measure Centimer (cm) : Float
+def measure Speed (m/s) : Float
+def measure Pixel (px) : Int
+
+def x = 12'in
+def y = 12.34'cm
+def z = 12/33'm/s
+def a = #[1'px, 20'px]

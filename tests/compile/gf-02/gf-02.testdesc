@@ -1,0 +1,10 @@
+{
+  'retc': 42,
+  'runtime-options': 'register',
+  'stderr': [ 'Register generic function:.*QN2xi12make/2dnoise.*[arity 1]',
+              'Register generic function:.*QN2xi7like/3f.*[arity 2]',
+              'Register type:.*QN2xi3Dog',
+              'Register generic function:.*QN2xi6colour.*[arity 1]',
+              'Register type:.*QN2xi3Cat',
+              'Register generic function:.*QN2xi7tame/3f.*[arity 1]' ]
+}

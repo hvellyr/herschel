@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<int ty='lang|Int32'>42</int>
+</init>
+</vardef>
+</let>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<int ty='lang|Int32'>5</int>
+</init>
+</vardef>
+</let>
+</block>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='bar'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<binary op='+'>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<int ty='lang|Int32'>42</int>
+</init>
+</vardef>
+</let>
+</block>
+<int ty='lang|Int32'>11</int>
+</binary>
+</body>
+</func>
+</def>
+<def>
+<func sym='foo2'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<int ty='lang|Int32'>42</int>
+</init>
+</vardef>
+</let>
+<binary op='+'>
+<block>
+<let>
+<vardef sym='x'>
+<init>
+<int ty='lang|Int32'>5</int>
+</init>
+</vardef>
+</let>
+</block>
+<int ty='lang|Int32'>11</int>
+</binary>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

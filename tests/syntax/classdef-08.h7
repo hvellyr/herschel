@@ -1,0 +1,30 @@
+def class Y<T>(n : T)
+{
+  def slot _n = n
+}
+
+
+def class Z<K>(n = 42)
+{
+  def slot _n = n
+}
+
+
+def class X<T, K> : (Y<T>, Z<K>)
+    where T isa Int,
+          K isa String
+    ~ some comment ~
+{
+  def slot a
+  def slot b
+
+  on alloc() {
+    Y<T>(11)
+    Z<K>(n: 1234)
+  }
+
+  on init(self) {
+    self.a = 5
+    self.b = 7
+  }
+}

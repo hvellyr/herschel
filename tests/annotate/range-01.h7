@@ -1,0 +1,10 @@
+def foo(x : 'T) : Range<'T>
+  x .. 100 as 'T
+
+def bar(x : 'T, y : 'T, z : 'T) : Range<'T>
+  x .. y by z
+
+
+def goo()
+  let r0 = foo(5)
+  let r1 = bar(\a, \z, 1 : Char)

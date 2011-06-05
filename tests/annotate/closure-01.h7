@@ -1,0 +1,10 @@
+def foo(a, b)
+  let n = a
+  let pythagoras(x, y) {
+    let t1 = n * x
+    let t2 = y ** 2
+
+    t1 + t2
+  }
+
+  function () pythagoras(a, b)

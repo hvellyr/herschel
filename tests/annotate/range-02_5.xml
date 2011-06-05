@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:ref gen='t' nm='T'>
+<ty:const k='isa'>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+<ty:const k='isa'>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</rettype>
+<body>
+<range  ty='lang|Range&lt;&apos;T>'>
+<symbol  ty='&apos;T' refer='param'>x</symbol>
+<cast>
+<base>
+<int ty='lang|Int32'>100</int>
+</base>
+<as>
+<ty:ref gen='t' nm='T'>
+<ty:const k='isa'>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</as>
+</cast>
+</range>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref gen='t' nm='T'>
+<ty:const k='isa'>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Range'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+<ty:const k='isa'>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

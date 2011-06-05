@@ -1,0 +1,7 @@
+def foo(a : 'T) : 'T
+  let x = Person()[]
+  x
+
+def foo2(a : 'T) : 'T
+  let x = 'T()[]
+  x

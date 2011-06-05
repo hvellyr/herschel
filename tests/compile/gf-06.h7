@@ -1,0 +1,37 @@
+import "lang/stdlib.h7"
+
+module xi
+
+def foo(c)
+  putchar(c)
+  c
+
+
+def type Antique
+
+def class Davenport : Antique
+{
+}
+
+
+def class Chaiselongue : Antique
+{
+}
+
+
+def generic age(obj @ Antique) : Int ...
+
+def age(obj @ Davenport) : Int
+  65
+
+def age(obj @ Chaiselongue) : Int
+  66
+
+
+def app|main()
+  let t = Davenport().age
+  foo(t) foo(10)
+
+  foo(Chaiselongue().age) foo(10)
+
+  1

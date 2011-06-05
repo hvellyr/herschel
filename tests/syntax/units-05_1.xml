@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>module</id>
+<id>red</id>
+<nested left='{' right='}'>
+<seq>
+<id>export</id>
+<id>public</id>
+<nested left='(' right=')'>
+<id>Xyz</id>
+<punct type=','/>
+<seq>
+<id>xyz</id>
+<punct type=':'/>
+<id>unit</id>
+</seq>
+<punct type=','/>
+<id>Abc</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>measure</id>
+<id>Xyz</id>
+<nested left='(' right=')'>
+<id>xyz</id>
+</nested>
+<punct type=':'/>
+<id>Float</id>
+</seq>
+<seq>
+<id>def</id>
+<id>measure</id>
+<id>Abc</id>
+<nested left='(' right=')'>
+<id>abc</id>
+</nested>
+<punct type=':'/>
+<id>Float</id>
+</seq>
+<seq>
+<id>def</id>
+<id>xyz</id>
+<punct type='='/>
+<lit type='int'>1234</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>abc</id>
+<punct type='='/>
+<lit type='int'>512</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>a0</id>
+<punct type='='/>
+<seq>
+<lit type='int'>12</lit>
+<punct type='&apos;'/>
+<id>xyz</id>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>a1</id>
+<punct type='='/>
+<seq>
+<lit type='int'>12</lit>
+<punct type='&apos;'/>
+<id>abc</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>measure</id>
+<id>Xyz</id>
+<nested left='(' right=')'>
+<id>xyz</id>
+</nested>
+<punct type=':'/>
+<id>Int</id>
+</seq>
+<seq>
+<id>def</id>
+<id>measure</id>
+<id>Abc</id>
+<nested left='(' right=')'>
+<id>abc</id>
+</nested>
+<punct type=':'/>
+<id>Int</id>
+</seq>
+<seq>
+<id>def</id>
+<id>b0</id>
+<punct type='='/>
+<seq>
+<lit type='int'>12</lit>
+<punct type='&apos;'/>
+<id>red|xyz</id>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>b1</id>
+<punct type='='/>
+<seq>
+<lit type='int'>12</lit>
+<punct type='&apos;'/>
+<id>|xyz</id>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>b2</id>
+<punct type='='/>
+<seq>
+<lit type='int'>12</lit>
+<punct type='&apos;'/>
+<id>abc</id>
+</seq>
+</seq>
+</seq>

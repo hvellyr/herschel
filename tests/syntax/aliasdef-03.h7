@@ -1,0 +1,4 @@
+def f0()
+  let alias Ints = Vector<Int>
+  let a : Ints
+  a

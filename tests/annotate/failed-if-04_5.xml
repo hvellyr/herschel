@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<vardef sym='x'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+<init>
+<if  ty='lang|Any'>
+<test>
+<binary op='>' ty='lang|Bool'>
+<int ty='lang|Int32'>5</int>
+<int ty='lang|Int32'>4</int>
+</binary>
+</test>
+<then>
+<str>hello</str>
+</then>
+<else>
+<keyw>keyword</keyw>
+</else>
+</if>
+</init>
+</vardef>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

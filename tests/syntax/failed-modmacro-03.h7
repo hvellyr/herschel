@@ -1,0 +1,23 @@
+module core
+{
+  module cool
+  export public (abc)
+
+  def macro abc
+  {
+    { abc() } -> { "hello" }
+  }
+
+  def f()
+    abc()
+
+}
+
+def macro abc
+{
+  { abc() } -> { "world" }
+}
+
+def f2()
+  abc()
+

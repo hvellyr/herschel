@@ -1,0 +1,5 @@
+{ 'retc': 0,
+  'runtime-options': 'register',
+  'stderr': [ 'Register keyword: orange.*0',
+              'Register keyword: apple.*0' ]
+ }

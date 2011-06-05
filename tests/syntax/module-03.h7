@@ -1,0 +1,15 @@
+module core
+{
+
+def f()
+  1
+
+module cool
+
+def f()
+  2
+}
+
+
+def f()
+  3

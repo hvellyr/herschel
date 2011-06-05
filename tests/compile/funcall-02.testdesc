@@ -1,0 +1,5 @@
+{
+  'retc': 10,
+  'stdout': [ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+              '0123456789' ]
+}

@@ -1,0 +1,11 @@
+module core
+
+def f0(a) a
+
+extend module a|b
+{
+  def f1() : Bool 0
+  def f2(a) a ** 2
+}
+
+def f3(a) a * a
