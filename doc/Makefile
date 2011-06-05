@@ -21,19 +21,6 @@ DISTFILES = Makefile       \
 	artwork/herschel-logo.eps \
 	artwork/herschel-logo.png \
 	artwork/herschel.jpg      \
-	fonts/Makefile           \
-	fonts/OcrB.afm           \
-	fonts/OcrB.map           \
-	fonts/fobr.tfm           \
-	fonts/fobr.vf            \
-	fonts/fobr.vpl           \
-	fonts/fobro.tfm          \
-	fonts/fobro.vf           \
-	fonts/fobro.vpl          \
-	fonts/ocrb.sfd           \
-	fonts/ocrb.ttf           \
-	fonts/rfobr.tfm          \
-	fonts/rfobro.tfm         \
 	CHANGES
 
 include $(top_srcdir)/build/pre.mk
