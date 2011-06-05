@@ -1275,12 +1275,60 @@ Typifier::typify(BinaryNode* node)
 
 
 void
+Typifier::typify(SlotRefNode* node)
+{
+  typifyNode(node->base());
+
+  Type basety = ( node->base()->type().isDef()
+                  ? node->scope()->lookupType(node->base()->type())
+                  : node->scope()->lookupType(Names::kAnyTypeName,
+                                              K(showAmbiguousSymDef)) );
+
+  if (!basety.isDef()) {
+    String typenm = ( node->base()->type().isDef()
+                      ? node->base()->type().typeName()
+                      : Names::kAnyTypeName );
+    errorf(node->srcpos(), E_UndefinedType,
+           "undefined type '%s'",
+           (const char*)StrHelper(typenm));
+
+    node->setType(Type::newAny());
+    node->setDstType(Type::newAny());
+    annotateTypeConv(node, node->type());
+  }
+  else {
+    if (basety.isClass()) {
+      Type slotType = basety.slotType(node->slotName(), node->scope());
+      if (slotType.isDef()) {
+        node->setType(slotType);
+        node->setDstType(slotType);
+        annotateTypeConv(node, node->type());
+      }
+      else {
+        error(node->srcpos(), E_UnknownSlot,
+              String("reference to unknown slot '") + node->slotName() + "'");
+        node->setType(Type::newAny());
+        node->setDstType(Type::newAny());
+        annotateTypeConv(node, node->type());
+      }
+    }
+    else {
+      errorf(node->srcpos(), E_SlotRefToNonClass,
+             "slot reference to non-class type");
+      node->setType(Type::newAny());
+      node->setDstType(Type::newAny());
+      annotateTypeConv(node, node->type());
+    }
+  }
+}
+
+
+void
 Typifier::typify(NegateNode* node)
 {
   typifyNode(node->base());
-  if (fPhase == kTypify) {
+  if (fPhase == kTypify)
     node->setType(node->base()->type());
-  }
 }
 
 

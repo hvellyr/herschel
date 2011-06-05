@@ -985,21 +985,28 @@ SecondPass::defaultSlotInitValue(const SlotdefNode* slot)
   if (slot->initExpr() != NULL)
     return slot->initExpr()->clone();
   else if (slot->type().isDef()) {
-    if (slot->type().isAnyInt())
-      return new IntNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
-    else if (slot->type().isAnyFloat())
-      return new RealNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
-    else if (slot->type().isRational())
-      return new RationalNode(slot->srcpos(), Rational(0, 1),
-                              slot->type().isImaginary(), slot->type());
-    else if (slot->type().isString())
-      return new StringNode(slot->srcpos(), String());
-    else if (slot->type().isBool())
-      return new BoolNode(slot->srcpos(), false);
-    else if (slot->type().isChar())
-      return new CharNode(slot->srcpos(), Char(0));
-    else if (slot->type().isKeyword())
-      return new KeywordNode(slot->srcpos(), String());
+    if (slot->type().isArray()) {
+      AptNode* node = new ArrayNode(slot->srcpos());
+      node->setType(slot->type());
+      return node;
+    }
+    else {
+      if (slot->type().isAnyInt())
+        return new IntNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
+      else if (slot->type().isAnyFloat())
+        return new RealNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
+      else if (slot->type().isRational())
+        return new RationalNode(slot->srcpos(), Rational(0, 1),
+                                slot->type().isImaginary(), slot->type());
+      else if (slot->type().isString())
+        return new StringNode(slot->srcpos(), String());
+      else if (slot->type().isBool())
+        return new BoolNode(slot->srcpos(), false);
+      else if (slot->type().isChar())
+        return new CharNode(slot->srcpos(), Char(0));
+      else if (slot->type().isKeyword())
+        return new KeywordNode(slot->srcpos(), String());
+    }
   }
 
   // TODO
@@ -1039,13 +1046,12 @@ SecondPass::generateConstructor(const Token& typeExpr,
     const SlotdefNode* slot = dynamic_cast<const SlotdefNode*>(basedef->defNode());
     hr_assert(slot != NULL);
 
-    Ptr<ApplyNode> slotInit = new ApplyNode(srcpos,
-                                            new SymbolNode(srcpos,
-                                                           Names::kLangSlotX));
-
-    slotInit->appendNode(new SymbolNode(srcpos, selfParamSym));
-    slotInit->appendNode(new KeywordNode(srcpos, slot->name()));
-    slotInit->appendNode(defaultSlotInitValue(slot));
+    Ptr<AptNode> slotInit = new AssignNode(srcpos,
+                                           new SlotRefNode(srcpos,
+                                                           new SymbolNode(srcpos,
+                                                                          selfParamSym),
+                                                           slot->name()),
+                                           defaultSlotInitValue(slot));
 
     body->appendNode(slotInit);
   }
@@ -3316,6 +3322,23 @@ SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
 
 //------------------------------------------------------------------------------
 
+AptNode*
+SecondPass::parseSlotAccess(const Token& expr)
+{
+  hr_assert(expr.count() == 3);
+  hr_assert(expr[1] == kReference);
+  hr_assert(expr[2] == kSymbol);
+
+  Ptr<AptNode> baseExpr = singletonNodeListOrNull(parseExpr(expr[0]));
+  if (baseExpr == NULL)
+    return NULL;
+
+  return new SlotRefNode(expr.srcpos(), baseExpr, expr[2].idValue());
+}
+
+
+//------------------------------------------------------------------------------
+
 NodeList
 SecondPass::parseTokenVector(const TokenVector& seq)
 {
@@ -3423,6 +3446,9 @@ SecondPass::parseSeq(const Token& expr)
     }
     else if (expr[1] == kRange) {
       return newNodeList(parseBinary(expr));
+    }
+    else if (expr[1] == kReference && expr[2] == kSymbol) {
+      return newNodeList(parseSlotAccess(expr));
     }
     else {
       fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",

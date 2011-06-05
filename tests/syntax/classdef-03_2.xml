@@ -126,22 +126,18 @@
 </rettype>
 <body>
 <block>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+<assign>
+<slotref  nm='x'>
 <symbol>__obj_0</symbol>
-<keyw>x</keyw>
+</slotref>
 <symbol>lang|nil</symbol>
-</args>
-</apply>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+</assign>
+<assign>
+<slotref  nm='y'>
 <symbol>__obj_0</symbol>
-<keyw>y</keyw>
+</slotref>
 <symbol>lang|nil</symbol>
-</args>
-</apply>
+</assign>
 <apply>
 <function>
 <params>

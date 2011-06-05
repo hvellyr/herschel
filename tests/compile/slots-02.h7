@@ -17,4 +17,4 @@ def class AB : (A, B)
 
 def app|main()
   let t = AB()
-  slot(t, #c) as Int32 + slot(t, #a) as Int32 + slot(t, #d) as Int32
+  t^c + t^a + t^d

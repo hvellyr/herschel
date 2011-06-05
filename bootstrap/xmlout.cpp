@@ -851,6 +851,24 @@ XmlRenderer::renderNode(const AssignNode* node)
 
 
 void
+XmlRenderer::renderNode(const SlotRefNode* node)
+{
+  StringBuffer attrs;
+  attrs << " nm='" << xmlEncode(node->slotName()) << "'";
+
+  if (fShowNodeType && node->type().isDef()) {
+    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
+                                           node->type()));
+  }
+
+  displayOpenTagAttrs("slotref", StrHelper(attrs.toString()));
+  displayNode(NULL, node->base());
+  displayCloseTag("slotref");
+}
+
+
+void
 XmlRenderer::renderNode(const IfNode* node)
 {
   StringBuffer attrs;

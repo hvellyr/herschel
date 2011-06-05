@@ -2317,6 +2317,53 @@ DEF_TYPIFY(CastNode)
 
 //--------------------------------------------------------------------------------
 
+SlotRefNode::SlotRefNode(const SrcPos& srcpos,
+                         AptNode* base, const String& slotName)
+  : AptNode(srcpos),
+    fBase(base),
+    fSlotName(slotName)
+{ }
+
+
+SlotRefNode*
+SlotRefNode::clone() const
+{
+  return cloneScope(this,
+                    new SlotRefNode(fSrcPos, nodeClone(fBase), fSlotName));
+}
+
+
+AptNode*
+SlotRefNode::base() const
+{
+  return fBase;
+}
+
+
+void
+SlotRefNode::setBase(AptNode* base)
+{
+  fBase = base;
+}
+
+
+String
+SlotRefNode::slotName() const
+{
+  return fSlotName;
+}
+
+
+DEF_RENDER(SlotRefNode)
+DEF_CODEGEN(SlotRefNode)
+DEF_ANNOTATE(SlotRefNode)
+DEF_TRAVERSE(SlotRefNode)
+DEF_TRANSFORM(SlotRefNode)
+DEF_TYPIFY(SlotRefNode)
+
+
+//--------------------------------------------------------------------------------
+
 NodeList
 herschel::newNodeList()
 {

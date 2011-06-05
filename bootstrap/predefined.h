@@ -167,8 +167,6 @@ namespace herschel
     const static String kLangAllocateArray;
     const static String kLangNil;
     const static String kLangInitFunctor;
-    const static String kLangSlot;
-    const static String kLangSlotX;
     const static String kLangEndp;
     const static String kLangNext;
 

@@ -1301,6 +1301,32 @@ namespace herschel
   private:
     Ptr<AptNode> fBase;
   };
+
+
+  //--------------------------------------------------------------------------
+
+  class SlotRefNode : public AptNode
+  {
+  public:
+    SlotRefNode(const SrcPos& srcpos, AptNode* base, const String& slotName);
+
+    virtual SlotRefNode* clone() const;
+
+    AptNode* base() const;
+    void setBase(AptNode* base);
+    String slotName() const;
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
+    virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
+
+  private:
+    Ptr<AptNode> fBase;
+    String       fSlotName;
+  };
 };
 
 

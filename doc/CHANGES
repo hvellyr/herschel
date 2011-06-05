@@ -114,6 +114,86 @@ Function contracts
   Pre and post conditions are normally not compiled in release versions.
 
 
+Accessing slots
+---------------
+
+Slot access using the slot() and slot!() function doesn't seem to be the
+right approach.  Esp.: how can we make this type safe?  There's no way to
+bind the slot() function's type to the slot definition.
+
+  def class Xi
+  {
+    def slot name : String
+  }
+
+  let t : Xi
+
+
+So how to access and assign slots to 't' now?
+
+  t.slot(#name)
+  t.slot(#name) = "N.N."
+
+  => problem is that this tedious to type, not really nice, and is
+     difficult to do type safe if slot() is really treated as a function.
+
+An abbreviated form?:
+
+  t[name]
+  t[name] = "N.N."
+
+  => Problem is that this is not distinguishable from array access.
+
+
+So I guess we need a special access syntax?  One which is hopefully usefull
+for a struct extension later, too.  What's about this:
+
+   t^name
+   t^name = "N.N."
+
+(In text books the '^' should be printed as a proper arrow up.)  Since the
+^ is between an expression ('t') and a symbol ('name'), it can't be
+confused with the reference syntax.
+
+
+
+Rethink referencable types
+--------------------------
+
+This complete idea about pass-by-value vs. pass-by-reference is somewhat
+strange.  Most likely it will result in lot's of bugs (e.g. you expect to
+modify the passed value, where you actually modify a copy of it, since you
+forgot the ^ on the type declaration...).  So what we really need is the
+const/immutable thing.
+
+All values passed to functions are by default const.  If a parameter is to
+be modifiable it is to be declared as 'var':
+
+  def foo(var a : Int) var : Int
+
+- you can't modify slots on const parameters
+
+- you can't assign values to const parameters (like you can't do with const
+  variables)
+
+- you can't pass constant values to functions which take a variable value
+
+- you can't return constant values from functions which has a variable
+  return value
+
+
+
+
+Du hast Dir doch immer ein Haustier gewünscht, oder?
+
+
+Less obscur syntax for union types
+----------------------------------
+
+Instead of &(String, Eof) use (String or Eof)
+
+   def alias StringOrEof = (String or Eof)
+
 
 Used character of Ascii
 -----------------------
@@ -153,8 +233,7 @@ $   identifier                          [----------]
     identifier                          identifier
 :   keyword arguments                   ternary operator
     type separator
-;   Extended slot params                stmt terminator
-    comment starter (;;)
+;   comment starter (;;)                stmt terminator
 <>  operator (<, >, <=, >=, <>, ->)     operator(...)
     parametrization
 =   operator (==, <=, >=)               operator(==)
@@ -169,6 +248,7 @@ A-Z digits                              digits
     arrays
 \   char constants                      escaping
 ^   call-by-reference                   operator (xor)
+    slot reference
 _   identifier                          identifier
     current type notifier
 `   [----------]                        [----------]
