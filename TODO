@@ -19,16 +19,14 @@ Documentation
 
 Bootstrap compiler
 
-  - slot reference: documentation
+  - auto create accessor/modifier functions for slots
+
+  - support 'auto', 'public', 'outer', 'inner', slots in ctor construction.
 
   - test multiple inheritance
 
   - review possibilities for warnings about ambiguous multiple method
     dispatch.
-
-  - auto create accessor/modifier functions for slots
-
-  - support 'auto', 'public', 'outer', 'inner', slots in ctor construction.
 
   - check that left hand variables are not const.
 
