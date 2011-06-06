@@ -1,0 +1,18 @@
+{
+  'retc': 1,
+  'runtime-options': 'register',
+  'stdout': [ '=red',
+              '=h',
+              '=i',
+              '=j',
+              '=green' ],
+  'stderr': [ 'Register type:.*__QN4lang3Any.*',
+              'Register type:.*__QN4lang5Int32.*',
+              'Register type:.*__QN4lang7Keyword.*',
+              'Register type:.*__QN2xi3Foo.*',
+              'Register generic function:.*__QN2xi3bar.*',
+              'Register method:.*__QN2xi3bar.*',
+              'Register keyword:.*red.*',
+              'Register keyword:.*green.*' ]
+}
+
