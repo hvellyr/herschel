@@ -40,7 +40,7 @@ namespace herschel
   class KeywordNode;
   class LetNode;
   class MatchNode;
-  class NegateNode;
+  class UnaryNode;
   class OnNode;
   class ParamNode;
   class RangeNode;
@@ -96,7 +96,7 @@ namespace herschel
     AptNode* transform(KeyargNode* node);
     AptNode* transform(KeywordNode* node);
     AptNode* transform(MatchNode* node);
-    AptNode* transform(NegateNode* node);
+    AptNode* transform(UnaryNode* node);
     AptNode* transform(OnNode* node);
     AptNode* transform(RangeNode* node);
     AptNode* transform(RationalNode* node);

@@ -484,7 +484,7 @@ Annotator::annotate(BinaryNode* node)
 
 
 void
-Annotator::annotate(NegateNode* node)
+Annotator::annotate(UnaryNode* node)
 {
   annotateNode(node->base());
 }

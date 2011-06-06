@@ -1,0 +1,2 @@
+def foo(a : Bool) : Bool
+  not a

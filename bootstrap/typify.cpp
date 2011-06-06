@@ -1275,11 +1275,42 @@ Typifier::typify(BinaryNode* node)
 
 
 void
-Typifier::typify(NegateNode* node)
+Typifier::typify(UnaryNode* node)
 {
   typifyNode(node->base());
+
   if (fPhase == kTypify) {
-    node->setType(node->base()->type());
+    switch (node->op()) {
+    case kUnaryOpNegate:
+      node->setType(node->base()->type());
+      break;
+
+    case kUnaryOpNot:
+      if (!node->base()->type().isDef()) {
+        errorf(node->srcpos(), E_BoolTypeExpected,
+               "bool expected for not operator");
+        node->setType(Type::newAny());
+      }
+      else if (node->base()->type().isBool())
+      {
+        node->setType(node->base()->type());
+      }
+      else if (node->base()->type().isAny())
+      {
+        node->setType(Type::newBool());
+      }
+      else {
+        errorf(node->srcpos(), E_BoolTypeExpected,
+               "bool expected for not operator");
+        node->setType(Type::newAny());
+      }
+      annotateTypeConv(node->base(), Type::newBool());
+      break;
+
+    case kUnaryOpInvalid:
+      hr_invalid("unhandled unary operator");
+      break;
+    }
   }
 }
 

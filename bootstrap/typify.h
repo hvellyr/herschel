@@ -41,7 +41,7 @@ namespace herschel
   class KeywordNode;
   class LetNode;
   class MatchNode;
-  class NegateNode;
+  class UnaryNode;
   class OnNode;
   class ParamNode;
   class RangeNode;
@@ -125,8 +125,8 @@ namespace herschel
     void typify(KeywordNode* node);
     //! Typify implementation for MatchNodes (cf. TypifyPass)
     void typify(MatchNode* node);
-    //! Typify implementation for NegateNodes (cf. TypifyPass)
-    void typify(NegateNode* node);
+    //! Typify implementation for UnaryNodes (cf. TypifyPass)
+    void typify(UnaryNode* node);
     //! Typify implementation for OnNodes (cf. TypifyPass)
     void typify(OnNode* node);
     //! Typify implementation for RangeNodes (cf. TypifyPass)

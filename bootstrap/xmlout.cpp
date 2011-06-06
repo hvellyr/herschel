@@ -799,9 +799,27 @@ XmlRenderer::renderNode(const BinaryNode* node)
 }
 
 
-void
-XmlRenderer::renderNode(const NegateNode* node)
+static const char*
+unary_operator_name(UnaryOperatorType op)
 {
+  switch (op) {
+  case kUnaryOpNegate:
+    return "neg";
+  case kUnaryOpNot:
+    return "not";
+  case kUnaryOpInvalid:
+    hr_invalid("unhandled unary operator");
+    break;
+  }
+
+  return "?";
+}
+
+
+void
+XmlRenderer::renderNode(const UnaryNode* node)
+{
+  const char* op_nm = unary_operator_name(node->op());
   StringBuffer attrs;
   if (fShowNodeType && node->type().isDef()) {
     attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
@@ -809,9 +827,9 @@ XmlRenderer::renderNode(const NegateNode* node)
                                            node->type()));
   }
 
-  displayOpenTagAttrs("neg", StrHelper(attrs.toString()));
+  displayOpenTagAttrs(op_nm, StrHelper(attrs.toString()));
   displayNode(NULL, node->base());
-  displayCloseTag("neg");
+  displayCloseTag(op_nm);
 }
 
 

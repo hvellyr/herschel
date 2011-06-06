@@ -591,16 +591,26 @@ CodeGenerator::codegen(const BinaryNode* node)
 
 
 llvm::Value*
-CodeGenerator::codegen(const NegateNode* node)
+CodeGenerator::codegen(const UnaryNode* node)
 {
   llvm::Value *base = fTools->wrapLoad(codegenNode(node->base()));
   if (base == NULL)
     return NULL;
 
-  return fBuilder.CreateMul(base,
-                            llvm::ConstantInt::get(context(),
-                                                   llvm::APInt(32, (uint64_t)-1, true)),
-                            "negtmp");
+  switch (node->op()) {
+  case kUnaryOpNegate:
+    return fBuilder.CreateMul(base,
+                              llvm::ConstantInt::get(context(),
+                                                     llvm::APInt(32, (uint64_t)-1, true)),
+                              "negtmp");
+  case kUnaryOpNot:
+    return fBuilder.CreateNot(base, "nottmp");
+
+  case kUnaryOpInvalid:
+    hr_invalid("");
+  }
+
+  return NULL;
 }
 
 
