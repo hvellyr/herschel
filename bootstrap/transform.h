@@ -48,6 +48,7 @@ namespace herschel
   class RealNode;
   class SelectNode;
   class SlotdefNode;
+  class SlotRefNode;
   class StringNode;
   class SymbolNode;
   class TypeDefNode;
@@ -103,6 +104,7 @@ namespace herschel
     AptNode* transform(RealNode* node);
     AptNode* transform(SelectNode* node);
     AptNode* transform(SlotdefNode* node);
+    AptNode* transform(SlotRefNode* node);
     AptNode* transform(StringNode* node);
     AptNode* transform(TypeDefNode* node);
     AptNode* transform(TypeNode* node);

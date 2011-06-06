@@ -115,14 +115,12 @@
 </rettype>
 <body>
 <block>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+<assign>
+<slotref  nm='a'>
 <symbol>__obj_0</symbol>
-<keyw>a</keyw>
+</slotref>
 <int ty='lang|Int32'>45</int>
-</args>
-</apply>
+</assign>
 <symbol>__obj_0</symbol>
 </block>
 </body>

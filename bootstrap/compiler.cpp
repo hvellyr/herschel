@@ -66,10 +66,6 @@ const Token Compiler::unitToken      = Token(SrcPos(), kSymbol, "unit");
 
 //----------------------------------------------------------------------------
 
-
-
-//----------------------------------------------------------------------------
-
 Compiler::Compiler(bool isParsingInterface)
   : fState(CompilerState(
              new CharRegistry,
@@ -79,6 +75,7 @@ Compiler::Compiler(bool isParsingInterface)
     fReferredFunctionCache(new Scope(kScopeL_CompileUnit))
 {
 }
+
 
 CharRegistry*
 Compiler::charRegistry() const
@@ -157,11 +154,9 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
   try {
     Ptr<AptNode> apt;
     Token parsedExprs;
-    Ptr<TokenCompilePass> tokenPass;
-    Ptr<Token2AptNodeCompilePass> t2nPass;
-    Ptr<AptNodeCompilePass> nodePass;
 
-    tokenPass = new ExprPass(1, this, fState.fToken, fState.fScope);
+    Ptr<TokenCompilePass> tokenPass = new ExprPass(1, this,
+                                                   fState.fToken, fState.fScope);
     parsedExprs = tokenPass->apply(Token(), doTrace);
 
     // let all following passes run beneath the same root-scope.
@@ -180,6 +175,8 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
       // must not simply export it back to the original fState.fScope, since
       // the symbols may not be exportable at all).
       fState.fScope = nodifyPass->currentScope();
+
+      Ptr<AptNodeCompilePass> nodePass;
 
       nodePass = new TransformPass(3);
       apt = nodePass->apply(apt.release(), doTrace);
