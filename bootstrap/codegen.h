@@ -130,6 +130,7 @@ namespace herschel
     llvm::Value* codegen(const RealNode* node);
     llvm::Value* codegen(const SelectNode* node);
     llvm::Value* codegen(const SlotdefNode* node);
+    llvm::Value* codegen(const SlotRefNode* node);
     llvm::Value* codegen(const StringNode* node);
     llvm::Value* codegen(const SymbolNode* node);
     llvm::Value* codegen(const TypeDefNode* node);

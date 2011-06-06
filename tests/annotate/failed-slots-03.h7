@@ -1,0 +1,23 @@
+;; test: double slot dereferencing (t^c^value) finds the proper type for
+;; the referenced slot
+
+import "lang/assert.h7"
+
+
+def class Name
+{
+  def slot value : Bool = false
+}
+
+
+def class AB
+{
+  def slot c : Name = Name()
+}
+
+
+def app|main()
+  let t = AB()
+  assert(t^c^value == #Unknown)
+
+  0
