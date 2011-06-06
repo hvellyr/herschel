@@ -1,0 +1,9 @@
+def class A(a0 : Int)
+{
+  def slot a = a0
+  def slot b : Int, auto
+
+;;  on init(self) {
+;;    self^a = b
+;;  }
+}

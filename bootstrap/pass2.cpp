@@ -1015,6 +1015,40 @@ SecondPass::defaultSlotInitValue(const SlotdefNode* slot)
 }
 
 
+static String
+findAutoParamName(const NodeList& params, const String& slotName)
+{
+  String resultingSlotName = slotName;
+
+  for (size_t i = 0; i < params.size(); i++) {
+    const ParamNode* prm = dynamic_cast<const ParamNode*>(params[i].obj());
+    if (prm->name() == resultingSlotName) {
+      warningf(prm->srcpos(), E_CtorArgNameConflict,
+               "conflict names in class init and auto slot configuration: %s",
+               (const char*)StrHelper(slotName));
+      resultingSlotName = resultingSlotName + "-1";
+    }
+  }
+
+  return resultingSlotName;
+}
+
+
+static void
+insertKeyedArg(NodeList& params, ParamNode* prm)
+{
+  for (size_t i = 0; i < params.size(); i++) {
+    ParamNode* nl = dynamic_cast<ParamNode*>(params[i].obj());
+    if (nl->isRestArg()) {
+      params.insert(params.begin() + i, prm);
+      return;
+    }
+  }
+
+  params.push_back(prm);
+}
+
+
 AptNode*
 SecondPass::generateConstructor(const Token& typeExpr,
                                 const String& fullTypeName,
@@ -1046,14 +1080,32 @@ SecondPass::generateConstructor(const Token& typeExpr,
     const SlotdefNode* slot = dynamic_cast<const SlotdefNode*>(basedef->defNode());
     hr_assert(slot != NULL);
 
-    Ptr<AptNode> slotInit = new AssignNode(srcpos,
-                                           new SlotRefNode(srcpos,
-                                                           new SymbolNode(srcpos,
-                                                                          selfParamSym),
-                                                           slot->name()),
-                                           defaultSlotInitValue(slot));
+    if (slot->isAuto()) {
+      String autoPrmName = findAutoParamName(params, slot->name());
 
-    body->appendNode(slotInit);
+      Ptr<ParamNode> prm = new ParamNode(srcpos, slot->name(), autoPrmName,
+                                         kNamedArg, slot->type(),
+                                         defaultSlotInitValue(slot));
+
+      Ptr<AptNode> slotInit = new AssignNode(srcpos,
+                                             new SlotRefNode(srcpos,
+                                                             new SymbolNode(srcpos,
+                                                                            selfParamSym),
+                                                             slot->name()),
+                                             new SymbolNode(srcpos, autoPrmName));
+      body->appendNode(slotInit);
+
+      insertKeyedArg(params, prm);
+    }
+    else {
+      Ptr<AptNode> slotInit = new AssignNode(srcpos,
+                                             new SlotRefNode(srcpos,
+                                                             new SymbolNode(srcpos,
+                                                                            selfParamSym),
+                                                             slot->name()),
+                                             defaultSlotInitValue(slot));
+      body->appendNode(slotInit);
+    }
   }
 
   // inline a possible on init expr.

@@ -716,6 +716,7 @@ namespace herschel
     virtual void typify(Typifier* typifier);
 
     unsigned int flags() const;
+    bool isAuto() const;
 
   private:
     unsigned int fFlags;
