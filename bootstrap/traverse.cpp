@@ -166,7 +166,7 @@ Traversator::traverse(BinaryNode* node)
 
 
 void
-Traversator::traverse(NegateNode* node)
+Traversator::traverse(UnaryNode* node)
 {
   traverseNode(node->base());
 }

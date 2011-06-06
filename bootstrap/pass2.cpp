@@ -2625,8 +2625,9 @@ SecondPass::transformRangeForClause(const Token& token,
                                                stepValueNode->clone(),
                                                kOpLess,
                                                endRangeNode->clone()),
-                                new NegateNode(srcpos,
-                                               stepValueNode->clone()),
+                                new UnaryNode(srcpos,
+                                              kUnaryOpNegate,
+                                              stepValueNode->clone()),
                                 stepValueNode->clone()));
     Ptr<AptNode> absStepVarNode = new LetNode(absStepVarSymVardef);
     loopDefines->push_back(absStepVarNode);
@@ -3360,7 +3361,12 @@ SecondPass::parseSeq(const Token& expr)
   else if (first == kMinus) {
     hr_assert(expr.count() == 2);
     Ptr<AptNode> exprNode = singletonNodeListOrNull(parseExpr(expr[1]));
-    return newNodeList(new NegateNode(expr.srcpos(), exprNode));
+    return newNodeList(new UnaryNode(expr.srcpos(), kUnaryOpNegate, exprNode));
+  }
+  else if (first == kNotId) {
+    hr_assert(expr.count() == 2);
+    Ptr<AptNode> exprNode = singletonNodeListOrNull(parseExpr(expr[1]));
+    return newNodeList(new UnaryNode(expr.srcpos(), kUnaryOpNot, exprNode));
   }
   else if (expr.count() == 2) {
     if (expr[1].isNested()) {

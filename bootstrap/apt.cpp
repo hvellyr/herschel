@@ -1257,39 +1257,49 @@ DEF_TYPIFY(BinaryNode)
 
 //----------------------------------------------------------------------------
 
-NegateNode::NegateNode(const SrcPos& srcpos, AptNode* base)
+UnaryNode::UnaryNode(const SrcPos& srcpos,
+                     UnaryOperatorType op,
+                     AptNode* base)
   : AptNode(srcpos),
-    fBase(base)
+    fBase(base),
+    fOp(op)
 { }
 
 
 AptNode*
-NegateNode::base() const
+UnaryNode::base() const
 {
   return fBase;
 }
 
 
 void
-NegateNode::setBase(AptNode* base)
+UnaryNode::setBase(AptNode* base)
 {
   fBase = base;
 }
 
 
-NegateNode*
-NegateNode::clone() const
+UnaryOperatorType
+UnaryNode::op() const
 {
-  return cloneScope(this, new NegateNode(fSrcPos, nodeClone(fBase)));
+  return fOp;
 }
 
 
-DEF_RENDER(NegateNode)
-DEF_CODEGEN(NegateNode)
-DEF_ANNOTATE(NegateNode)
-DEF_TRAVERSE(NegateNode)
-DEF_TRANSFORM(NegateNode)
-DEF_TYPIFY(NegateNode)
+UnaryNode*
+UnaryNode::clone() const
+{
+  return cloneScope(this, new UnaryNode(fSrcPos, fOp, nodeClone(fBase)));
+}
+
+
+DEF_RENDER(UnaryNode)
+DEF_CODEGEN(UnaryNode)
+DEF_ANNOTATE(UnaryNode)
+DEF_TRAVERSE(UnaryNode)
+DEF_TRANSFORM(UnaryNode)
+DEF_TYPIFY(UnaryNode)
 
 
 //------------------------------------------------------------------------------

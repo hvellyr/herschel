@@ -41,7 +41,7 @@ namespace herschel
   class KeywordNode;
   class LetNode;
   class MatchNode;
-  class NegateNode;
+  class UnaryNode;
   class OnNode;
   class ParamNode;
   class RangeNode;
@@ -109,7 +109,7 @@ namespace herschel
     void annotate(KeyargNode* node);
     void annotate(KeywordNode* node);
     void annotate(MatchNode* node);
-    void annotate(NegateNode* node);
+    void annotate(UnaryNode* node);
     void annotate(OnNode* node);
     void annotate(RangeNode* node);
     void annotate(RationalNode* node);

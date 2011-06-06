@@ -59,7 +59,7 @@ namespace herschel
   class KeywordNode;
   class LetNode;
   class MatchNode;
-  class NegateNode;
+  class UnaryNode;
   class OnNode;
   class ParamNode;
   class RangeNode;
@@ -122,7 +122,7 @@ namespace herschel
     llvm::Value* codegen(const KeywordNode* node);
     llvm::Value* codegen(const LetNode* node);
     llvm::Value* codegen(const MatchNode* node);
-    llvm::Value* codegen(const NegateNode* node);
+    llvm::Value* codegen(const UnaryNode* node);
     llvm::Value* codegen(const OnNode* node);
     llvm::Value* codegen(const ParamNode* node);
     llvm::Value* codegen(const RangeNode* node);

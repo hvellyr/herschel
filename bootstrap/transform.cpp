@@ -337,7 +337,7 @@ Transformator::transform(BinaryNode* node)
 
 
 AptNode*
-Transformator::transform(NegateNode* node)
+Transformator::transform(UnaryNode* node)
 {
   node->setBase(transformNode(node->base()));
   return node;

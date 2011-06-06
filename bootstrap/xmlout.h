@@ -42,7 +42,7 @@ namespace herschel
   class KeywordNode;
   class LetNode;
   class MatchNode;
-  class NegateNode;
+  class UnaryNode;
   class OnNode;
   class ParamNode;
   class RangeNode;
@@ -94,7 +94,7 @@ namespace herschel
     void renderNode(const KeywordNode* node);
     void renderNode(const LetNode* node);
     void renderNode(const MatchNode* node);
-    void renderNode(const NegateNode* node);
+    void renderNode(const UnaryNode* node);
     void renderNode(const OnNode* node);
     void renderNode(const ParamNode* node);
     void renderNode(const RangeNode* node);

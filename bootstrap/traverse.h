@@ -38,7 +38,7 @@ namespace herschel
   class KeywordNode;
   class LetNode;
   class MatchNode;
-  class NegateNode;
+  class UnaryNode;
   class OnNode;
   class ParamNode;
   class RangeNode;
@@ -105,7 +105,7 @@ namespace herschel
     void traverse(KeyargNode* node);
     void traverse(KeywordNode* node);
     void traverse(MatchNode* node);
-    void traverse(NegateNode* node);
+    void traverse(UnaryNode* node);
     void traverse(OnNode* node);
     void traverse(RangeNode* node);
     void traverse(RationalNode* node);

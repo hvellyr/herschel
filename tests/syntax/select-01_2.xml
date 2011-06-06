@@ -26,12 +26,9 @@
 <cons>
 <if>
 <test>
-<apply>
-<symbol>not</symbol>
-<args>
+<not>
 <symbol>done</symbol>
-</args>
-</apply>
+</not>
 </test>
 <then>
 <symbol>do-it</symbol>

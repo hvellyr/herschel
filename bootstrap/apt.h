@@ -824,15 +824,25 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  class NegateNode : public AptNode
+  enum UnaryOperatorType
+  {
+    kUnaryOpInvalid,
+
+    kUnaryOpNegate,
+    kUnaryOpNot
+  };
+
+  class UnaryNode : public AptNode
   {
   public:
-    NegateNode(const SrcPos& srcpos, AptNode* base);
+    UnaryNode(const SrcPos& srcpos, UnaryOperatorType op, AptNode* base);
 
     AptNode* base() const;
     void setBase(AptNode* base);
 
-    virtual NegateNode* clone() const;
+    UnaryOperatorType op() const;
+
+    virtual UnaryNode* clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
@@ -843,6 +853,7 @@ namespace herschel
 
   private:
     Ptr<AptNode> fBase;
+    UnaryOperatorType fOp;
   };
 
 
