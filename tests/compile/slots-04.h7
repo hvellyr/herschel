@@ -44,8 +44,6 @@ def app|main()
   assert(t^c^value == #green)
 
   t^d = false
-  ;; the not operator is not working yet
-  if (t^d)
-    assert(false)
+  assert(not t^d)
 
   0
