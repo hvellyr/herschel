@@ -1093,6 +1093,13 @@ SlotdefNode::flags() const
 }
 
 
+bool
+SlotdefNode::isAuto() const
+{
+  return (fFlags & kAutoSlot) != 0;
+}
+
+
 DEF_RENDER(SlotdefNode)
 DEF_CODEGEN(SlotdefNode)
 DEF_ANNOTATE(SlotdefNode)

@@ -125,6 +125,7 @@ namespace herschel
     E_NoGenericFunction   = 0x4106,
     E_BadGenericReferrer  = 0x4107,
     E_BadFunctionArity    = 0x4108,
+    E_CtorArgNameConflict = 0x4109,
 
     // loops
     E_BadForLoopClause    = 0x4200,

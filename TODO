@@ -19,6 +19,13 @@ Documentation
 
 Bootstrap compiler
 
+  - support auto flags for slots
+    
+    - in 'on init(self) { }' access to self^a fails, since self is not a
+      class type.  a) Shouldn't we allow access to all slots (like special
+      role to Any types?)  b) shouldn't be the 'self' infered to the
+      hosting class?
+
   - auto create accessor/modifier functions for slots
 
   - support 'auto', 'public', 'outer', 'inner', slots in ctor construction.

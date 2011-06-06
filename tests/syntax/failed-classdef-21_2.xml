@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='A'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</type>
+</param>
+</params>
+<slots>
+<def>
+<slot sym='a' auto='t'>
+<init>
+<symbol>a</symbol>
+</init>
+</slot>
+</def>
+<def>
+<slot sym='b' auto='t'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+</slot>
+</def>
+</slots>
+<isa>
+<ty:type nm='A' inst='t'>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='A|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='A' inst='t'>
+</ty:type>
+</type>
+</param>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</type>
+</param>
+<param sym='a-1' type='key' key='a'>
+<init>
+<symbol>a</symbol>
+</init>
+</param>
+<param sym='b' type='key' key='b'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+<init>
+<int ty='lang|Int32'>0</int>
+</init>
+</param>
+</params>
+<rettype>
+<ty:type nm='A' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<assign>
+<slotref  nm='a'>
+<symbol>__obj_0</symbol>
+</slotref>
+<symbol>a-1</symbol>
+</assign>
+<assign>
+<slotref  nm='b'>
+<symbol>__obj_0</symbol>
+</slotref>
+<symbol>b</symbol>
+</assign>
+<symbol>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>
