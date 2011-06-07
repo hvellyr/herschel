@@ -859,23 +859,23 @@ Typifier::typify(ApplyNode* node)
       }
     }
     else {
-      ArrayTypeNode* typeNode = dynamic_cast<ArrayTypeNode*>(node->base());
-      if (typeNode != NULL) {
+      if (ArrayTypeNode* typeNode = dynamic_cast<ArrayTypeNode*>(node->base())) {
         node->setType(typeNode->type());
       }
+      else if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->base())) {
+        node->setType(symNode->type());
+      }
+      else if (TypeNode* typeNode = dynamic_cast<TypeNode*>(node->base())) {
+        node->setType(typeNode->type());
+      }
+      else if (FunctionNode* funNode = dynamic_cast<FunctionNode*>(node->base())) {
+        node->setType(funNode->type());
+      }
       else {
-        if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->base())) {
-          node->setType(symNode->type());
-        }
-        else if (TypeNode* typeNode = dynamic_cast<TypeNode*>(node->base())) {
-          node->setType(typeNode->type());
-        }
-        else {
-          // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->base()->type().toString()));
-          // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
-          // out->render(node->base());
-          hr_invalid("Unhandled apply base node");
-        }
+        // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->base()->type().toString()));
+        // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
+        // out->render(node->base());
+        hr_invalid("Unhandled apply base node");
       }
     }
     // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->type().toString()));

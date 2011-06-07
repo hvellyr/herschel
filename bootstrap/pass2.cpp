@@ -1112,7 +1112,15 @@ SecondPass::generateConstructor(const Token& typeExpr,
   for (unsigned int i = 0; i < onExprs.size(); i++) {
     const OnNode* onNode = dynamic_cast<const OnNode*>(onExprs[i].obj());
     if (onNode != NULL && onNode->key() == Compiler::initToken.idValue()) {
-      Ptr<AptNode> func = new FunctionNode(srcpos, copyNodes(onNode->params()),
+      NodeList onNodeParams = copyNodes(onNode->params());
+      hr_assert(onNodeParams.size() == 1);
+      if (!onNodeParams[0]->type().isDef() ||
+          onNodeParams[0]->type().isAny())
+      {
+        onNodeParams[0]->setType(defType);
+      }
+
+      Ptr<AptNode> func = new FunctionNode(srcpos, onNodeParams,
                                            Type(),
                                            onNode->body()->clone());
       Ptr<ApplyNode> initCall = new ApplyNode(srcpos, func);
