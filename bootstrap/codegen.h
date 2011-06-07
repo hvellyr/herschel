@@ -149,14 +149,15 @@ namespace herschel
     llvm::TargetData* targetData() const;
 
   private:
-    friend class ModuleRuntimeInitializer;
-    friend class CodegenTypeUtils;
-    friend class CodegenTools;
-    friend class CodegenBinaryNode;
-    friend class CodegenFuncDef;
     friend class CodeGeneratorProxy;
     friend class CodegenApply;
+    friend class CodegenBinaryNode;
+    friend class CodegenFuncDef;
+    friend class CodegenSlot;
+    friend class CodegenTools;
+    friend class CodegenTypeUtils;
     friend class CodegenVardef;
+    friend class ModuleRuntimeInitializer;
 
     void setupOptPassManager();
 

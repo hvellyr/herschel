@@ -119,10 +119,9 @@ CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
     return NULL;
   argv.push_back(val);
 
-  llvm::Value* keyw = tools()->wrapLoad(tools()->makeKeywordAtom(node->slotName()));
-  llvm::Value* keyw2 = tools()->makeTypeCastAtomToPlain(keyw,
-                                                        Type::newKeyword());
-  argv.push_back(keyw2);
+  llvm::Value* keywgv = generator()->fInitializer->registerKeyword(node->slotName());
+  llvm::Value* keyw = builder().CreateLoad(keywgv);
+  argv.push_back(keyw);
 
   hr_assert(slotFunc != NULL);
   return builder().CreateCall(slotFunc, argv.begin(), argv.end());
