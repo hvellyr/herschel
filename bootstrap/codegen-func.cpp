@@ -177,7 +177,7 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
 {
   hr_assert(fGenerator->fNamedValues.empty());
 
-  fGenerator->fInitializer->addGenericFunctionDef(node);
+  initializer()->addGenericFunctionDef(node);
 
   FuncPair func = createFunction(node, String(), K(isGeneric));
 
@@ -305,7 +305,7 @@ CodegenFuncDef::compileMethodDef(const FuncDefNode* node) const
   }
 
   String methodNameSuffix = msgbuf.toString();
-  fGenerator->fInitializer->addMethodDef(node, makeFunctionName(node, methodNameSuffix));
+  initializer()->addMethodDef(node, makeFunctionName(node, methodNameSuffix));
 
   FuncPair func = createFunction(node, methodNameSuffix, K(isGeneric));
 

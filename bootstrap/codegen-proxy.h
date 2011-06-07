@@ -69,6 +69,11 @@ namespace herschel
       return fGenerator->fTools;
     }
 
+    ModuleRuntimeInitializer* initializer() const
+    {
+      return fGenerator->fInitializer;
+    }
+
   protected:
     Ptr<CodeGenerator> fGenerator;
   };
