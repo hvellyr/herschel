@@ -1304,10 +1304,10 @@ FirstPass::parseSlice(const Token& expr)
 Token
 FirstPass::parseAccess(const Token& expr)
 {
-  TokenVector args;
-
   if (fToken == kParanOpen) {
     nextToken();
+
+    TokenVector args;
     return parseAccess(parseParamCall(expr, args, K(shouldParseParams)));
   }
   else if (fToken == kBracketOpen) {
@@ -1322,6 +1322,8 @@ FirstPass::parseAccess(const Token& expr)
     Token symToken = fToken;
 
     nextToken();
+
+    TokenVector args;
     args.push_back(expr);
     if (fToken == kParanOpen) {
       nextToken();
@@ -1333,6 +1335,19 @@ FirstPass::parseAccess(const Token& expr)
                                         !K(shouldParseParams)));
     else
       return parseParamCall(symToken, args, !K(shouldParseParams));
+  }
+  else if (fToken == kReference) {
+    Token refToken = fToken;
+    nextToken();
+    if (fToken != kSymbol) {
+      errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL for slot reference");
+      return scanUntilTopExprAndResume();
+    }
+    Token symToken = fToken;
+
+    nextToken();
+
+    return parseAccess(Token() << expr << refToken << symToken);
   }
 
   return expr;
@@ -3353,13 +3368,12 @@ FirstPass::parseSlotDef(const Token& defToken)
       errorf(pos, E_MissingRHExpr, "no value in var init");
   }
 
-  Token semiToken;
+  Token delayedComma;
   TokenVector annotations;
-  if (fToken == kSemicolon) {
-    semiToken = fToken;
+  if (fToken == kComma) {
+    delayedComma = fToken;
     nextToken();
 
-    Token delayedComma;
     while (fToken != kEOF) {
       if (fToken == kSymbol) {
         if (delayedComma.isSet())
@@ -3392,8 +3406,8 @@ FirstPass::parseSlotDef(const Token& defToken)
     slotDefToken << docString;
   if (assignToken.isSet() && initExpr.isSet())
     slotDefToken << assignToken << initExpr;
-  if (semiToken.isSet() && !annotations.empty())
-    slotDefToken << semiToken << annotations;
+  if (!annotations.empty())
+    slotDefToken << annotations;
 
   return slotDefToken;
 }

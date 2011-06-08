@@ -23,9 +23,6 @@ def generic type-of(obj @ 'T) : Class<'T> ...
     ~ Returns the type of an object @var{obj}. ~
 
 
-def generic slot(obj @ 'T, slot-name : Keyword) : 'K ...
-def generic slot!(obj @ 'T, slot-name : Keyword, value : 'K) : 'K ...
-
 
 ------------------------------------------------------------------------------
 -- Default value

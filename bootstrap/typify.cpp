@@ -859,23 +859,23 @@ Typifier::typify(ApplyNode* node)
       }
     }
     else {
-      ArrayTypeNode* typeNode = dynamic_cast<ArrayTypeNode*>(node->base());
-      if (typeNode != NULL) {
+      if (ArrayTypeNode* typeNode = dynamic_cast<ArrayTypeNode*>(node->base())) {
         node->setType(typeNode->type());
       }
+      else if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->base())) {
+        node->setType(symNode->type());
+      }
+      else if (TypeNode* typeNode = dynamic_cast<TypeNode*>(node->base())) {
+        node->setType(typeNode->type());
+      }
+      else if (FunctionNode* funNode = dynamic_cast<FunctionNode*>(node->base())) {
+        node->setType(funNode->type());
+      }
       else {
-        if (SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->base())) {
-          node->setType(symNode->type());
-        }
-        else if (TypeNode* typeNode = dynamic_cast<TypeNode*>(node->base())) {
-          node->setType(typeNode->type());
-        }
-        else {
-          // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->base()->type().toString()));
-          // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
-          // out->render(node->base());
-          hr_invalid("Unhandled apply base node");
-        }
+        // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->base()->type().toString()));
+        // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
+        // out->render(node->base());
+        hr_invalid("Unhandled apply base node");
       }
     }
     // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->type().toString()));
@@ -1259,6 +1259,55 @@ Typifier::typify(BinaryNode* node)
     case kOpThen:
     case kOpWhile:
       hr_invalid("not handled operators?");
+    }
+  }
+}
+
+
+void
+Typifier::typify(SlotRefNode* node)
+{
+  typifyNode(node->base());
+
+  Type basety = ( node->base()->type().isDef()
+                  ? node->scope()->lookupType(node->base()->type())
+                  : node->scope()->lookupType(Names::kAnyTypeName,
+                                              K(showAmbiguousSymDef)) );
+
+  if (!basety.isDef()) {
+    String typenm = ( node->base()->type().isDef()
+                      ? node->base()->type().typeName()
+                      : Names::kAnyTypeName );
+    errorf(node->srcpos(), E_UndefinedType,
+           "undefined type '%s'",
+           (const char*)StrHelper(typenm));
+
+    node->setType(Type::newAny());
+    node->setDstType(Type::newAny());
+    annotateTypeConv(node, node->type());
+  }
+  else {
+    if (basety.isClass()) {
+      Type slotType = basety.slotType(node->slotName(), node->scope());
+      if (slotType.isDef()) {
+        node->setType(slotType);
+        node->setDstType(slotType);
+        annotateTypeConv(node, node->type());
+      }
+      else {
+        error(node->srcpos(), E_UnknownSlot,
+              String("reference to unknown slot '") + node->slotName() + "'");
+        node->setType(Type::newAny());
+        node->setDstType(Type::newAny());
+        annotateTypeConv(node, node->type());
+      }
+    }
+    else {
+      errorf(node->srcpos(), E_SlotRefToNonClass,
+             "slot reference to non-class type");
+      node->setType(Type::newAny());
+      node->setDstType(Type::newAny());
+      annotateTypeConv(node, node->type());
     }
   }
 }

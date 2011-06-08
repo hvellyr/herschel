@@ -21,6 +21,7 @@ namespace llvm
   class LLVMContext;
   class Module;
   class Type;
+  class StructType;
 };
 
 namespace herschel
@@ -39,10 +40,13 @@ namespace herschel
     const llvm::Type* getAtomType() const;
     const llvm::Type* getTagIdType() const;
     const llvm::Type* getTypeType() const;
-    const llvm::Type* getTypeSlotPairType() const;
+    const llvm::StructType* getTypeSlotPairType() const;
     const llvm::Type* getGenericFuncType() const;
     const llvm::Type* getMethodType() const;
+
     const llvm::Type* getType(const Type& type) const;
+    size_t getSlotSize(const Type& type) const;
+
   };
 };                              // namespace
 

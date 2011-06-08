@@ -185,9 +185,11 @@ CodegenApply::emit(const ApplyNode* node) const
 llvm::Value*
 CodegenApply::emitAllocateApply(const ApplyNode* node) const
 {
+#if defined(IS_DEBUG)
   const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->base());
   hr_assert(symNode->name() == Names::kLangAllocate);
   hr_assert(symNode->refersTo() == kGeneric);
+#endif
 
   String funcnm = String("allocate");
 

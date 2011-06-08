@@ -8,6 +8,9 @@ failure=no
 verbose=no
 srcdir=
 
+default_cc=cc
+default_cxx=c++
+
 pkgname=herschel
 default_prefix=/usr/local
 
@@ -48,12 +51,17 @@ Configure the build
   --disable-FEATURE        do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]   include FEATURE [ARG=yes]
 
+  --enable-opt             configure for optimized build.
   --enable-dist-release    configure for distribution release.  Turns off
-                           'unittests'
+                           'unittests' and implies '--enable-opt'
   --enable-unittests       include unittest code [yes]
   --enable-traces          include traces for debug code [yes]
 
   --with-llvm-config=PATH  path to llvm-config [auto]
+  --with-clang[=DIR]       use clang and clang++ as compile.  If the dir
+                           to the tools is not specified look in the current
+                           path for it
+
 
 Environment variables which can be set:
   CC          C compiler command
@@ -74,12 +82,14 @@ esac
 # initialize variables
 enable_dist_release=no
 enable_unittests=yes
+enable_opt=no
 enable_traces=yes
 llvm_config_path=auto
 target_arch=auto
 target_os=auto
 target_osver=
 compile_inplace=no
+clang_dir=no
 
 # paths
 prefix=NONE
@@ -241,6 +251,15 @@ while test $# -gt 0 ; do
       shift
       ;;
 
+    --disable-opt|--enable-opt=no)
+      enable_opt=no
+      shift
+      ;;
+    --enable-opt=yes|--enable-opt)
+      enable_opt=yes
+      shift
+      ;;
+
     --disable-traces|--enable-traces=no)
       enable_traces=no
       shift;;
@@ -250,6 +269,14 @@ while test $# -gt 0 ; do
 
     --with-llvm-config=*)
       llvm_config_path=$(expr "x$1" : 'x[^=]*=\(.*\)')
+      shift;;
+
+    --with-clang)
+      clang_dir=auto
+      shift;;
+
+    --with-clang=*)
+      clang_dir=$(expr "x$1" : 'x[^=]*=\(.*\)')
       shift;;
 
     -*)                         # unknown option
@@ -289,8 +316,14 @@ buildstyle_flag=debug
 unittests_flag=
 traces_flag=
 
+if test "x$enable_opt" = xyes; then
+  buildstyle_flag=release
+  echo "Enable optimized build... yes"
+fi
+
 if test "x$enable_dist_release" = xyes; then
   enable_unittests=no
+  enable_opt=yes
   enable_traces=no
   buildstyle_flag=dist-release
   echo "Build for external release"
@@ -335,13 +368,19 @@ echo "${ECHO_T}$base_rep_revision"
 # check c compiler
 
 echo $ECHO_N "Testing C compiler... $ECHO_C"
+if test x"$clang_dir" == xauto; then
+  CC=$(which clang)
+elif test x"$clang_dir" != xno; then
+  CC=$clang_dir/clang
+fi
 if test -z "$CC"; then
-  CC=cc
+  CC=$default_cc
 fi
 
 if test "$(cd "$(dirname "$CC")" && pwd)" != "$(pwd)"; then
   CC=$(cd "$(dirname "$CC")" && pwd)/"$(basename $CC)"
 fi
+
 
 cc_failure=no
 current_dir=$(pwd)
@@ -373,8 +412,13 @@ fi
 
 
 echo $ECHO_N "Testing C++ compiler... $ECHO_C"
+if test x"$clang_dir" == xauto; then
+  CXX=$(which clang++)
+elif test x"$clang_dir" != xno; then
+  CXX=$clang_dir/clang++
+fi
 if test -z "$CXX"; then
-  CXX=c++
+  CXX=$default_cxx
 fi
 
 if test "$(cd "$(dirname "$CXX")" && pwd)" != "$(pwd)"; then
@@ -423,14 +467,14 @@ fi
 
 #----------------------------------------------------------------------
 
+echo $ECHO_N "Check llvm version... $ECHO_C"
 if test "x$llvm_config_path" = xauto; then
-  llvm_config_path="$(pwd)"/llvm-config
+  llvm_config_path=$(which llvm-config)
 fi
 
-echo $ECHO_N "Check llvm version... $ECHO_C"
-llvm_config_dir=$(dirname "$llvm_config_path")
-llvm_config_file=$(basename "$llvm_config_path")
-abs_llvm_config_path=$(cd "$llvm_config_dir" && pwd)/"$llvm_config_file"
+llvm_config_dir=$(dirname "$llvm_config_path" 2>/dev/null)
+llvm_config_file=$(basename "$llvm_config_path" 2>/dev/null)
+abs_llvm_config_path=$(cd "$llvm_config_dir" && pwd 2>/dev/null)/"$llvm_config_file"
 
 
 llvm_version=$("$abs_llvm_config_path" --version 2>/dev/null)

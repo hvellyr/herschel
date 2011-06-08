@@ -326,3 +326,10 @@ Traversator::traverse(UnitConstNode* node)
 {
   traverseNode(node->value());
 }
+
+
+void
+Traversator::traverse(SlotRefNode* node)
+{
+  traverseNode(node->base());
+}

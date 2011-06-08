@@ -674,3 +674,10 @@ Annotator::annotate(UndefNode* node)
 {
   // Nothing to annotate here
 }
+
+
+void
+Annotator::annotate(SlotRefNode* node)
+{
+  annotateNode(node->base());
+}

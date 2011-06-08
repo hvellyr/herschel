@@ -75,6 +75,8 @@ CodegenBinaryNode::emit(const BinaryNode* node) const
     return codegenOpIntInt(node, left, right);
   if (node->left()->type().isKeyword() && node->right()->type().isKeyword())
     return codegenOpKeywKeyw(node, left, right);
+  if (node->left()->type().isBool() && node->right()->type().isBool())
+    return codegenOpBoolBool(node, left, right);
 
   tyerror(node->left()->type(), "unsupported type in binary operator");
   tyerror(node->right()->type(), "unsupported type in binary operator");
@@ -159,16 +161,6 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
 {
   llvm::Value* coleft = convertToPlainInt(node->left(), node->left(), left);
   llvm::Value* coright = convertToPlainInt(node->left(), node->right(), right);
-
-  // if (isPlainInt(node->left()->type()))
-  //   coleft = coerceIntOperand(node->left()->type(), node->left()->type(), left);
-  // else if (node->left()->type().isAnyInt())
-  //   coleft = tools()->makeTypeCastAtomToPlain(left, node->left()->type());
-
-  // if (isPlainInt(node->left()->type()) && isPlainInt(node->right()->type()))
-  //   coright = coerceIntOperand(node->left()->type(), node->right()->type(), right);
-  // else if (node->right()->type().isAnyInt())
-  //   coright = tools()->makeTypeCastAtomToPlain(right, node->left()->type());
 
   switch (node->op()) {
   case kOpPlus:
@@ -259,6 +251,61 @@ CodegenBinaryNode::codegenOpKeywKeyw(const BinaryNode* node,
 
   default:
     fprintf(stderr, "invalid binary operator for keyword: %d", node->op());
+    return NULL;
+  }
+
+  return NULL;
+}
+
+
+//------------------------------------------------------------------------------
+
+llvm::Value*
+CodegenBinaryNode::coerceBoolOperand(const Type& dstType,
+                                     llvm::Value* value) const
+{
+  return builder().CreateTruncOrBitCast(value,
+                                        types()->getType(dstType));
+}
+
+
+llvm::Value*
+CodegenBinaryNode::convertToPlainBool(const AptNode* dst,
+                                      const AptNode* right,
+                                      llvm::Value* value) const
+{
+  switch (right->typeConv()) {
+  case kNoConv:
+    return coerceBoolOperand(dst->type(), value);
+  case kAtom2PlainConv:
+    return tools()->makeTypeCastAtomToPlain(value, dst->type());
+  case kPlain2AtomConv:
+  case kTypeCheckConv:
+    hr_invalid("");
+  }
+
+  return NULL;
+}
+
+
+llvm::Value*
+CodegenBinaryNode::codegenOpBoolBool(const BinaryNode* node,
+                                     llvm::Value* left,
+                                     llvm::Value* right) const
+{
+  llvm::Value* coleft = convertToPlainBool(node->left(), node->left(), left);
+  llvm::Value* coright = convertToPlainBool(node->left(), node->right(), right);
+
+  switch (node->op()) {
+  case kOpEqual:
+    return wrapBool(builder().CreateICmpEQ(coleft, coright, "eqbool"),
+                    node->dstType());
+  case kOpUnequal:
+    return wrapBool(builder().CreateICmpNE(coleft, coright, "nebool"),
+                    node->dstType());
+
+  default:
+    fprintf(stderr, "invalid binary operator for bool: %d", node->op());
     return NULL;
   }
 

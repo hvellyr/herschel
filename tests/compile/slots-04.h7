@@ -1,0 +1,49 @@
+-- test: test assigning values to mixed plain and atomic type slots;
+-- additionally double slot dereferencing (t^c^value)
+
+import "lang/assert.h7"
+
+
+def class Name(v)
+{
+  def slot value : Keyword = v
+}
+
+
+def class A
+{
+  def slot a : Int = 29
+}
+
+def class B
+{
+  def slot b : Keyword = #red
+}
+
+def class AB : (A, B)
+{
+  def slot c : Name = Name(#Unknown)
+  def slot d : Bool = true
+}
+
+
+def app|main()
+  let t = AB()
+  assert(t^d)
+  assert(t^a == 29)
+  assert(t^b == #red)
+  assert(t^c^value == #Unknown)
+
+  t^a = 4711
+  assert(t^a == 4711)
+
+  t^b = #yellow
+  assert(t^b == #yellow)
+
+  t^c = Name(#green)
+  assert(t^c^value == #green)
+
+  t^d = false
+  assert(not t^d)
+
+  0

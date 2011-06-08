@@ -1,6 +1,10 @@
 import "lang/assert.h7"
 
+def foo(n : Bool)
+  n
+
 def app|main()
   let t = false
   assert(not t)
+  assert(not not foo(true))
   0

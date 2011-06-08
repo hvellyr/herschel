@@ -1,0 +1,171 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='Student'>
+<slots>
+<def>
+<slot sym='name'>
+<type>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</type>
+</slot>
+</def>
+<def>
+<slot sym='subjects'>
+<type>
+<ty:array ind='0'>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</ty:array>
+</type>
+</slot>
+</def>
+</slots>
+<isa>
+<ty:type nm='Student' inst='t'>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='Student|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='Student' inst='t'>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='Student' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<assign  ty='lang|String'>
+<slotref  nm='name' ty='lang|String'>
+<symbol  ty='Student' refer='param'>__obj_0</symbol>
+</slotref>
+<str></str>
+</assign>
+<assign  ty='lang|Any[]'>
+<slotref  nm='subjects' ty='lang|String[]'>
+<symbol  ty='Student' refer='param'>__obj_0</symbol>
+</slotref>
+<array  ty='lang|Any[]'>
+</array>
+</assign>
+<symbol  ty='Student' refer='param'>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='to-string'>
+<params>
+<param sym='s' type='pos'>
+<type>
+<ty:type nm='Student' inst='t'>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<binary op='+' ty='lang|String'>
+<slotref  nm='name' ty='lang|String'>
+<symbol  ty='Student' refer='param'>s</symbol>
+</slotref>
+<binary op='+' ty='lang|String'>
+<str> [</str>
+<binary op='+' ty='lang|String'>
+<apply  ty='lang|String'>
+<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
+<args>
+<slotref  nm='subjects' ty='lang|String[]'>
+<symbol  ty='Student' refer='param'>s</symbol>
+</slotref>
+<int ty='lang|Int32'>0</int>
+</args>
+</apply>
+<str>]</str>
+</binary>
+</binary>
+</binary>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='Student' inst='t'>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:array ind='0'>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:array>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:array ind='0'>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</ty:array>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Sliceable'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>
