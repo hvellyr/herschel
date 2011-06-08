@@ -60,7 +60,6 @@ namespace herschel
     kOpMultiply,
     kOpPlus,
     kOpRange,
-    kOpRemove,
     kOpShiftLeft,
     kOpShiftRight,
     kOpThen,

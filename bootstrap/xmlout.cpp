@@ -765,7 +765,6 @@ XmlRenderer::operatorName(OperatorType type)
   case kOpMultiply:     return "*";
   case kOpPlus:         return "+";
   case kOpRange:        return "..";
-  case kOpRemove:       return "--";
   case kOpShiftLeft:    return "<<";
   case kOpShiftRight:   return ">>";
   case kOpUnequal:      return "<>";

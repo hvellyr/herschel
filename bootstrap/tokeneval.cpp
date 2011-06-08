@@ -526,9 +526,6 @@ TokenEvalContext::evalBinaryToken(const Token& lexpr,
   case kOpAppend:
     return evalAppend(lexpr, rexpr);
 
-  case kOpRemove:
-    // TODO
-
   case kOpRange:
     // TODO
   case kOpBy:
