@@ -1,8 +1,8 @@
-;; a method refers to another method as generic function
+-- a method refers to another method as generic function
 
-;; (this is actually a no test; method are not registered, and therefore
-;; the error message actually shows, that "no generic function" is found at
-;; all).
+-- (this is actually a no test; method are not registered, and therefore
+-- the error message actually shows, that "no generic function" is found at
+-- all).
 
 def foo(b @ Int) : Int
   b

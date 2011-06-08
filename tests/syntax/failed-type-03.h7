@@ -1,6 +1,6 @@
-;; can't refer (and allocate!) to a generic type in a function's body.
-;; Since the function is compiled as 'T == lang|Any (unless reified of
-;; course) we would allocate 'T (i.e. Any) all the time.
+-- can't refer (and allocate!) to a generic type in a function's body.
+-- Since the function is compiled as 'T == lang|Any (unless reified of
+-- course) we would allocate 'T (i.e. Any) all the time.
 
 def foo(a : 'T) : 'T
   'T() + a

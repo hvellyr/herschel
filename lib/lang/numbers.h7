@@ -1,18 +1,18 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 module lang
 
 export public (*)
 
 
-;;----------------------------------------------------------------------------
-;; general type specifications
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- general type specifications
+------------------------------------------------------------------------------
 
 def type Number : Object
     ~ Any number. ~
@@ -31,9 +31,9 @@ def type Integer : Number
     ~ Whole numbers, positive or negative. ~
 
 
-;;----------------------------------------------------------------------------
-;; Marker types
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Marker types
+------------------------------------------------------------------------------
 
 def type Exact
     ~ Marker typer to declare a number type as being an (arbitrary) exact
@@ -57,9 +57,9 @@ def type Unsigned
     representing signed numbers. ~
 
 
-;;----------------------------------------------------------------------------
-;; Real data types
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Real data types
+------------------------------------------------------------------------------
 
 def type Int8 : (Integer, Exact, Bounded)
     ~ Signed 8bit integer, range is -2^7 .. 2^7-1 ~
@@ -103,13 +103,13 @@ def type BigReal : (Real, Exact)
     limited by system resources. ~
 
 
-;;----------------------------------------------------------------------------
-;; derived types
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- derived types
+------------------------------------------------------------------------------
 
-;;----------------------------------------------------------------------------
-;; Other names for the more technical names
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Other names for the more technical names
+------------------------------------------------------------------------------
 
 def alias Byte   = Int8
 def alias UByte  = UInt8
@@ -130,9 +130,9 @@ def alias Double     = Float64
 def alias LongDouble = Float128
 
 
-;;--------------------------------------------------------------------
-;; actions
-;;--------------------------------------------------------------------
+----------------------------------------------------------------------
+-- actions
+----------------------------------------------------------------------
 
 def generic add(left @ 'T, right @ 'T) : 'T ...
     ~ Computes the addition of @var{left} and @var{right}. ~
@@ -147,4 +147,4 @@ def generic divide(dividend @ 'T, divisor @ 'T) : 'T ...
     ~ Computes the quotient of @var{dividend} and @var{divisor}.  If
     @var{divisor} is 0 an @type{DivisionByZero} exception is raised. ~
 
-;; end of lang/numbers
+-- end of lang/numbers

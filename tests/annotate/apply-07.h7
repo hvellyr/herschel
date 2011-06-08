@@ -1,5 +1,5 @@
-;; test that the return value of foo() is really a Int[], not a
-;; Int (!) or a T[]
+-- test that the return value of foo() is really a Int[], not a
+-- Int (!) or a T[]
 def foo(x : (Int, String, Bool)) : (Int, String, Bool)
   x
 

@@ -1,9 +1,9 @@
-;; This file is part of the herschel package 
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package 
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 module lang
 export public(*)
@@ -28,4 +28,4 @@ def generic realloc(array @ 'T[],
            values. ~
 
 
-;; end of array.h7
+-- end of array.h7

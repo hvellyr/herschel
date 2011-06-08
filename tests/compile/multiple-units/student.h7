@@ -2,7 +2,7 @@ import "person.h7"
 
 def class Student : Person
 {
-;;  def slot name : String
+--  def slot name : String
 }
 
 

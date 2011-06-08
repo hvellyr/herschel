@@ -14,10 +14,10 @@ def class Foo { }
 def generic bar(one @ Any) ...
 
 def bar(one @ Foo)
-  foo(3dh) foo(46h) foo(10)    ;; =F
+  foo(3dh) foo(46h) foo(10)    -- =F
 
 def bar(one @ Int)
-  foo(3dh) foo(one) foo(10)    ;; =i
+  foo(3dh) foo(one) foo(10)    -- =i
 
 
 def app|main()

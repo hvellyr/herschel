@@ -4,7 +4,7 @@ def g()
   let px : ^Int = nil
   let qx : ^Int = nil
 
-  qx = x   ;; qx now points to x
-  qx = y   ;; qx now points to y
-  qx = 11  ;; qx now point to a (free floating object) 11
-  px = qx  ;; px points to the same value a qx
+  qx = x   -- qx now points to x
+  qx = y   -- qx now points to y
+  qx = 11  -- qx now point to a (free floating object) 11
+  px = qx  -- px points to the same value a qx

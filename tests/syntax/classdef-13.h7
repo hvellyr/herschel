@@ -1,5 +1,5 @@
-;; check that super class initializations (primes) are added even when no
-;; 'on alloc' section exists
+-- check that super class initializations (primes) are added even when no
+-- 'on alloc' section exists
 
 def class Y<T>(n : T = 11)
 {

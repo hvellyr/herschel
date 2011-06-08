@@ -1,4 +1,4 @@
-;; check that recursive macro expansion is after ## concatination
+-- check that recursive macro expansion is after ## concatination
 def macro xname
 {
   { xname () } -> { "abc" }

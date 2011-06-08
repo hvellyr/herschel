@@ -1,6 +1,6 @@
-;; check that super class initializations (primes) are put in the order of
-;; the super class initialization, even if specified in different order in
-;; the 'on alloc' section.
+-- check that super class initializations (primes) are put in the order of
+-- the super class initialization, even if specified in different order in
+-- the 'on alloc' section.
 
 def class Y<T>(n : T)
 {

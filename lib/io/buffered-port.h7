@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 import "io/port.h7"
 
@@ -11,7 +11,7 @@ module io
 export public (*)
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def class BufferedInPort<T>(port : InPort<T>,
                             buffer-size : Ordinal = 4096) : InPort<T>
@@ -19,7 +19,7 @@ def class BufferedInPort<T>(port : InPort<T>,
 }
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def class BufferedOutPort<T>(port : OutPort<T>,
                              buffer-size : Ordinal = 4096) : OutPort<T>
@@ -27,7 +27,7 @@ def class BufferedOutPort<T>(port : OutPort<T>,
 }
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def class BufferedPort<T>(port : RandomAccessPort<T>,
                           buffer-size : Ordinal = 4096) : RandomAccessPort<T>
@@ -35,4 +35,4 @@ def class BufferedPort<T>(port : RandomAccessPort<T>,
 }
 
 
-;; end of buffered-port
+-- end of buffered-port

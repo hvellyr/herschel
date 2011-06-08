@@ -1,4 +1,4 @@
-;; compare keywords
+-- compare keywords
 import "lang/assert.h7"
 
 def app|main()

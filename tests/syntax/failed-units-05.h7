@@ -4,7 +4,7 @@ module red
 
   def measure Xyz (xyz) : Float
 
-  ;; units and symbol don't share the same namespace
+  -- units and symbol don't share the same namespace
   def xyz = 1234
 
   def a0 = 12'xyz
@@ -14,6 +14,6 @@ def measure Xyz (xyz) : Int
 
 def b0 = 12'red|xyz
 
-;; xyz conflicts with red|xyz
+-- xyz conflicts with red|xyz
 def b1 = 12'xyz
 
