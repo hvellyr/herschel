@@ -343,8 +343,38 @@
 <params>
 <param sym='self' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='Y'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+<ty:const k='isa'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
+</ty:const>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+<ty:ref nm='Z'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+</ty:gen>
+</ty:type>
 </type>
 </param>
 </params>

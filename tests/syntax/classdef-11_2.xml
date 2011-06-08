@@ -243,8 +243,16 @@
 <params>
 <param sym='self' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='A|Y'>
 </ty:ref>
+<ty:ref nm='B|Z'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
 </type>
 </param>
 </params>
