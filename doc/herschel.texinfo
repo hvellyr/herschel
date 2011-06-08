@@ -1353,7 +1353,6 @@ symbols are put after the definition line separated by a comma
 @findex public
 @findex outer
 @findex inner
-@findex slot!
 @findex auto
 @table @code
 @item auto
