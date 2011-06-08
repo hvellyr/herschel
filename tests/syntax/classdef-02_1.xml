@@ -66,7 +66,7 @@
 <id>Int</id>
 <punct type='='/>
 <id>a</id>
-<punct type=';'/>
+<punct type=','/>
 <id>readonly</id>
 </seq>
 <seq>
@@ -77,7 +77,7 @@
 <id>Int</id>
 <punct type='='/>
 <id>b</id>
-<punct type=';'/>
+<punct type=','/>
 <id>readonly</id>
 <punct type=','/>
 <id>transient</id>
@@ -88,7 +88,7 @@
 <id>z</id>
 <punct type=':'/>
 <id>Cache</id>
-<punct type=';'/>
+<punct type=','/>
 <id>transient</id>
 </seq>
 </nested>

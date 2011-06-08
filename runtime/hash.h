@@ -44,6 +44,7 @@ void hashtable_free(HashTable* table);
 void hashtable_add(HashTable* table, void* key, void* value);
 void hashtable_add_all(HashTable* table, HashTable* other);
 void* hashtable_get(HashTable* table, void* key);
+HashNode* hashtable_get_impl(HashTable* table, void* key);
 void hashtable_remove(HashTable* table, void* key);
 
 unsigned int hashtable_sizet_func(void* key);

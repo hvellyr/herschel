@@ -51,8 +51,9 @@ Configure the build
   --disable-FEATURE        do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]   include FEATURE [ARG=yes]
 
+  --enable-opt             configure for optimized build.
   --enable-dist-release    configure for distribution release.  Turns off
-                           'unittests'
+                           'unittests' and implies '--enable-opt'
   --enable-unittests       include unittest code [yes]
   --enable-traces          include traces for debug code [yes]
 
@@ -81,6 +82,7 @@ esac
 # initialize variables
 enable_dist_release=no
 enable_unittests=yes
+enable_opt=no
 enable_traces=yes
 llvm_config_path=auto
 target_arch=auto
@@ -249,6 +251,15 @@ while test $# -gt 0 ; do
       shift
       ;;
 
+    --disable-opt|--enable-opt=no)
+      enable_opt=no
+      shift
+      ;;
+    --enable-opt=yes|--enable-opt)
+      enable_opt=yes
+      shift
+      ;;
+
     --disable-traces|--enable-traces=no)
       enable_traces=no
       shift;;
@@ -305,8 +316,14 @@ buildstyle_flag=debug
 unittests_flag=
 traces_flag=
 
+if test "x$enable_opt" = xyes; then
+  buildstyle_flag=release
+  echo "Enable optimized build... yes"
+fi
+
 if test "x$enable_dist_release" = xyes; then
   enable_unittests=no
+  enable_opt=yes
   enable_traces=no
   buildstyle_flag=dist-release
   echo "Build for external release"

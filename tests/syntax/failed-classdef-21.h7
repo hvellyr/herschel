@@ -1,0 +1,5 @@
+def class A(a : String)
+{
+  def slot a = a, auto
+  def slot b : Int, auto
+}

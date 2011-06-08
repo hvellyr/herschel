@@ -1,0 +1,209 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='A'>
+<params>
+<param sym='a0' type='pos'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+</param>
+</params>
+<slots>
+<def>
+<slot sym='a'>
+<init>
+<symbol>a0</symbol>
+</init>
+</slot>
+</def>
+<def>
+<slot sym='b' auto='t'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+</slot>
+</def>
+</slots>
+<on>
+<on key='init'>
+<params>
+<param sym='self' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<body>
+<assign>
+<slotref  nm='a'>
+<symbol>self</symbol>
+</slotref>
+<symbol>b</symbol>
+</assign>
+</body>
+</on>
+</on>
+<isa>
+<ty:type nm='A' inst='t'>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='A|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='A' inst='t'>
+</ty:type>
+</type>
+</param>
+<param sym='a0' type='pos'>
+<type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='key' key='b' alloc='shared'>
+<type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<int ty='lang|Int32'>0</int>
+</init>
+</param>
+</params>
+<rettype>
+<ty:type nm='A' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<assign  ty='lang|Int32'>
+<slotref  nm='a' ty='lang|Any'>
+<symbol  ty='A' refer='param'>__obj_0</symbol>
+</slotref>
+<symbol  ty='lang|Int32' refer='param'>a0</symbol>
+</assign>
+<assign  ty='lang|Int32'>
+<slotref  nm='b' ty='lang|Int32'>
+<symbol  ty='A' refer='param'>__obj_0</symbol>
+</slotref>
+<symbol  ty='lang|Int32' refer='param'>b</symbol>
+</assign>
+<apply  ty='lambda(A):lang|Int32'>
+<function>
+<params>
+<param sym='self' type='pos'>
+<type>
+<ty:type nm='A' inst='t'>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<assign  ty='lang|Int32'>
+<slotref  nm='a' ty='lang|Any'>
+<symbol  ty='A' refer='param'>self</symbol>
+</slotref>
+<symbol  ty='lang|Int32' refer='param' acc='shared'>b</symbol>
+</assign>
+</body>
+</function>
+<args>
+<symbol  ty='A' refer='param'>__obj_0</symbol>
+</args>
+</apply>
+<symbol  ty='A' refer='param'>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='A' inst='t'>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:type nm='A' inst='t'>
+</ty:type>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

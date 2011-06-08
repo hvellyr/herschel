@@ -50,6 +50,7 @@ namespace herschel
   class RealNode;
   class SelectNode;
   class SlotdefNode;
+  class SlotRefNode;
   class StringNode;
   class SymbolNode;
   class TypeDefNode;
@@ -102,6 +103,7 @@ namespace herschel
     void renderNode(const RealNode* node);
     void renderNode(const SelectNode* node);
     void renderNode(const SlotdefNode* node);
+    void renderNode(const SlotRefNode* node);
     void renderNode(const StringNode* node);
     void renderNode(const SymbolNode* node);
     void renderNode(const TypeDefNode* node);
