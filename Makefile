@@ -36,7 +36,7 @@ build: $(curdir)version.h $(curdir)config-local.h $(BUILDDIR) $(BUILDDIR)/$(BUIL
 tests: build
 	(cd tests/ && $(MAKE) all)
 
-docs: doc/version.texinfo $(BUILDDIR)
+docs: $(curdir)doc/version.texinfo $(BUILDDIR)
 	(cd doc/ && $(MAKE) all)
 
 ifeq ($(BUILDSTYLE),dist-release)
