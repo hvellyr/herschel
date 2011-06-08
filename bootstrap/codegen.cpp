@@ -15,6 +15,7 @@
 #include "codegen-func.h"
 #include "codegen-if.h"
 #include "codegen-init.h"
+#include "codegen-slot.h"
 #include "codegen-tools.h"
 #include "codegen-types.h"
 #include "codegen-vardef.h"
@@ -355,8 +356,9 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 llvm::Value*
 CodeGenerator::codegen(const AssignNode* node)
 {
-  const SymbolNode* lsym = dynamic_cast<const SymbolNode*>(node->lvalue());
-  if (lsym != NULL) {
+  const AptNode* lvalue = node->lvalue();
+
+  if (const SymbolNode* lsym = dynamic_cast<const SymbolNode*>(lvalue)) {
     llvm::Value* rvalue = codegenNode(node->rvalue());
     if (rvalue == NULL)
       return NULL;
@@ -375,6 +377,9 @@ CodeGenerator::codegen(const AssignNode* node)
     fBuilder.CreateStore(val, var);
 
     return rvalue;
+  }
+  else if (const SlotRefNode* lslot = dynamic_cast<const SlotRefNode*>(lvalue)) {
+    return CodegenSlot(this).emitSlotRefAssignment(lslot, node->rvalue());
   }
 
   logf(kError, "Not supported yet: %s", typeid(node).name());
@@ -691,4 +696,13 @@ CodeGenerator::codegen(const UndefNode* node)
 {
   hr_invalid("You shouldn't be here");
   return NULL;
+}
+
+
+//----------------------------------------------------------------------------
+
+llvm::Value*
+CodeGenerator::codegen(const SlotRefNode* node)
+{
+  return CodegenSlot(this).emitSlotRefAccess(node);
 }

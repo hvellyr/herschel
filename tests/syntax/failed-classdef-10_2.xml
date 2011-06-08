@@ -47,14 +47,12 @@
 </rettype>
 <body>
 <block>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+<assign>
+<slotref  nm='_n'>
 <symbol>__obj_0</symbol>
-<keyw>_n</keyw>
+</slotref>
 <symbol>n</symbol>
-</args>
-</apply>
+</assign>
 <symbol>__obj_0</symbol>
 </block>
 </body>
@@ -113,14 +111,12 @@
 </rettype>
 <body>
 <block>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+<assign>
+<slotref  nm='_n'>
 <symbol>__obj_1</symbol>
-<keyw>_n</keyw>
+</slotref>
 <symbol>n</symbol>
-</args>
-</apply>
+</assign>
 <symbol>__obj_1</symbol>
 </block>
 </body>
@@ -225,22 +221,18 @@
 </arg>
 </args>
 </apply>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+<assign>
+<slotref  nm='a'>
 <symbol>__obj_2</symbol>
-<keyw>a</keyw>
+</slotref>
 <symbol>_a</symbol>
-</args>
-</apply>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+</assign>
+<assign>
+<slotref  nm='b'>
 <symbol>__obj_2</symbol>
-<keyw>b</keyw>
+</slotref>
 <symbol>_b</symbol>
-</args>
-</apply>
+</assign>
 <symbol>__obj_2</symbol>
 </block>
 </body>

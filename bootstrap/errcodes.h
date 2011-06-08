@@ -98,6 +98,8 @@ namespace herschel
     E_BadGenericType      = 0x403f,
     E_BadClassOnAlloc     = 0x4040,
     E_UnknownType         = 0x4041,
+    E_SlotRefToNonClass   = 0x4042,
+    E_UnknownSlot         = 0x4043,
 
     // enums
     E_BadEnumItemList     = 0x4050,
@@ -123,6 +125,7 @@ namespace herschel
     E_NoGenericFunction   = 0x4106,
     E_BadGenericReferrer  = 0x4107,
     E_BadFunctionArity    = 0x4108,
+    E_CtorArgNameConflict = 0x4109,
 
     // loops
     E_BadForLoopClause    = 0x4200,

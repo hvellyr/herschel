@@ -185,6 +185,7 @@ class TestRunner:
         self.failures = []
         self.test_run = 0
         self.test_succeeded = 0
+        self.column_count = 0
 
 
     def report_summary(self, title, run, succeeded):
@@ -454,10 +455,11 @@ class TestRunner:
         return None
 
 
-    def check_contains_patterns(self, text, patterns):
+    def check_contains_patterns(self, text, patterns, what_tag):
         for p in patterns:
             repattern = re.compile(p)
             if repattern.search(text) is None:
+                self.report_failure("%s: exp pattern '%s' not found in output" % (what_tag, p))
                 return False
         # all patterns match
         return True
@@ -473,7 +475,7 @@ class TestRunner:
 
     def check_output(self, compiledesc, key, output, what_tag):
         if compiledesc.has_key(key):
-            if not self.check_contains_patterns(output, compiledesc[key]):
+            if not self.check_contains_patterns(output, compiledesc[key], what_tag):
                 print "BIN%s: <%s>" % (key, output)
                 print "EXP%s: <%s>" % (key, compiledesc[key])
                 self.report_failure("%s: differs from expected %s output" % (what_tag, key))

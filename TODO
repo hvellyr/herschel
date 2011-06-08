@@ -19,14 +19,24 @@ Documentation
 
 Bootstrap compiler
 
-  - test multiple inheritance
+  - support of arrays
 
-  - review possibilities for warnings about ambiguous multiple method
-    dispatch.
+  - gc
+
+  - closures (nested functions, firstclass functions)
+
+  - exceptions
+
+  - keyed arguments
+
+  - rest arguments
 
   - auto create accessor/modifier functions for slots
 
   - support 'auto', 'public', 'outer', 'inner', slots in ctor construction.
+
+  - review possibilities for warnings about ambiguous multiple method
+    dispatch.
 
   - check that left hand variables are not const.
 
@@ -69,8 +79,6 @@ Bootstrap compiler
      - match
      - select
      - on
-     - slotdef
-     - typedef
      - UnitConst
 
   - replace the UnitConstant node by a proper Measure() ctor call.  Apply
@@ -86,8 +94,6 @@ Bootstrap compiler
 
   - array access
 
-  - vardef parameters
-
   - enum:
     - construct proper enum constraint type
     - check that init values match the base type
@@ -99,19 +105,27 @@ Bootstrap compiler
 
   - continue with pexpreval (add the missing operators)
 
+
+Other tools
+
   - docstrings in pass2 -> extracted documentation
 
 
 Language and ideas:
 
-  - remove function signature overwriting.  We do not support multiple
-    functions with the same base name but different parameter counts?
-
-      def generic init(a @ Int) ...
-      def generic init(a @ Int, b @ String) ...
-
   - structs ?  Contrary to classes do not support inheritance, but provide
-    fixed, controlled, and fast slot layout.
+    fixed, controlled, and fast slot layout.  Structs will use the same
+    syntax for member access:
+
+    def struct Element {
+      def slot a : Int
+      def slot b : String
+    }
+
+    let e : Element
+    e^a = 42
+    e^b = "The question"
+
 
   - Think about non-gc objects.
 

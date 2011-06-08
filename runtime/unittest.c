@@ -29,6 +29,11 @@ static Type* ty_XYZ = NULL;
 static Type* ty_D = NULL;
 static Type* ty_E = NULL;
 
+static const char* s1_key = "s1";
+static const char* s2_key = "s2";
+static const char* s3_key = "s3";
+static const char* s4_key = "s4";
+
 static void
 prepare()
 {
@@ -56,9 +61,9 @@ prepare()
   register_type(ty_X);
 
   {
-    static TypeSlotPair D_slots[] = {
-      { "s1", 0},               /* ATOM */
-      { "s2", sizeof(ATOM) },   /* short */
+    TypeSlotPair D_slots[] = {
+      { s1_key, 0},               /* ATOM */
+      { s2_key, sizeof(ATOM) },   /* short */
       { NULL, 0 }               /* sentinel */
     };
 
@@ -71,16 +76,16 @@ prepare()
     assert(ty_D->slots_offsets != NULL);
     assert(ty_D->slots_offsets->fItems == 2);
     assert(ty_D->slots == D_slots);
-    assert(type_slot_get(ty_D, "s1") == 0);
-    assert(type_slot_get(ty_D, "s2") == sizeof(ATOM));
+    assert(type_slot_get(ty_D, s1_key) == 0);
+    assert(type_slot_get(ty_D, s2_key) == sizeof(ATOM));
   }
 
   {
-    static TypeSlotPair E_slots[] = {
-      { "s1", 0},                                            /* ATOM */
-      { "s2", sizeof(ATOM) },                                /* short */
-      { "s3", sizeof(ATOM) + sizeof(short) },                /* char */
-      { "s4", sizeof(ATOM) + sizeof(short) + sizeof(char) }, /* int */
+    TypeSlotPair E_slots[] = {
+      { s1_key, 0},                                            /* ATOM */
+      { s2_key, sizeof(ATOM) },                                /* short */
+      { s3_key, sizeof(ATOM) + sizeof(short) },                /* char */
+      { s4_key, sizeof(ATOM) + sizeof(short) + sizeof(char) }, /* int */
       { NULL, 0 }                                            /* sentinel */
     };
     size_t instance_size = sizeof(ATOM) + sizeof(short) + sizeof(char) + sizeof(int);
@@ -93,10 +98,10 @@ prepare()
     assert(ty_E->slots_offsets != NULL);
     assert(ty_E->slots_offsets->fItems == 4);
     assert(ty_E->slots == E_slots);
-    assert(type_slot_get(ty_E, "s2") == sizeof(ATOM));
-    assert(type_slot_get(ty_E, "s1") == 0);
-    assert(type_slot_get(ty_E, "s4") == sizeof(ATOM) + sizeof(short) + sizeof(char));
-    assert(type_slot_get(ty_E, "s3") == sizeof(ATOM) + sizeof(short));
+    assert(type_slot_get(ty_E, s2_key) == sizeof(ATOM));
+    assert(type_slot_get(ty_E, s1_key) == 0);
+    assert(type_slot_get(ty_E, s4_key) == sizeof(ATOM) + sizeof(short) + sizeof(char));
+    assert(type_slot_get(ty_E, s3_key) == sizeof(ATOM) + sizeof(short));
   }
 }
 
@@ -207,7 +212,7 @@ test_func2()
   {
     /* method not understood, n4 is more specifiy than ty_AB */
     Method* _m = lookup_func2(n4, ty_AB->tag_id, ty_XY->tag_id);
-    assert(_m == NULL);
+    assert(_m != NULL);
   }
 
   {
@@ -219,7 +224,7 @@ test_func2()
 
   {
     Method* _m = lookup_func2(n6, ty_AC->tag_id, ty_X->tag_id);
-    assert(_m == NULL);
+    assert(_m != NULL);
   }
 
   {
@@ -230,7 +235,7 @@ test_func2()
 
   {
     Method* _m = lookup_func2(n6, ty_X->tag_id, ty_X->tag_id);
-    assert(_m == NULL);
+    assert(_m != NULL);
   }
 
   {
@@ -251,7 +256,7 @@ test_func3()
 
   {
     Method* _m = lookup_func3(t1, ty_AC->tag_id, ty_XYZ->tag_id, ty_ABC->tag_id);
-    assert(_m == NULL);
+    assert(_m != NULL);
   }
 }
 
@@ -270,6 +275,31 @@ test_allocate1()
 }
 
 
+static void
+test_slots()
+{
+  ATOM x1;
+
+  Keyword keyw_s1 = { "s1" };
+  Keyword keyw_s2 = { "s2" };
+
+  allocate(&x1, ty_D);
+  ATOM* s1 = (ATOM*)instance_slot(x1, &keyw_s1);
+  assert(s1 != NULL);
+
+  s1->typeid = 'i';
+  s1->u.v_int = 0xdeadface;
+
+  short* s2 = (short*)instance_slot(x1, &keyw_s2);
+  assert(s2 != NULL);
+
+  *s2 = 0x4711;
+
+  assert(x1.u.v_obj == (void*)s1);
+  assert(x1.u.v_obj + sizeof(ATOM) == (void*)s2);
+}
+
+
 int main(int args, char** argv)
 {
   prepare();
@@ -279,6 +309,7 @@ int main(int args, char** argv)
   test_func3();
 
   test_allocate1();
+  test_slots();
 
   return 0;
 }

@@ -49,6 +49,7 @@ namespace herschel
   class RealNode;
   class SelectNode;
   class SlotdefNode;
+  class SlotRefNode;
   class StringNode;
   class SymbolNode;
   class TypeDefNode;
@@ -116,6 +117,7 @@ namespace herschel
     void annotate(RealNode* node);
     void annotate(SelectNode* node);
     void annotate(SlotdefNode* node);
+    void annotate(SlotRefNode* node);
     void annotate(StringNode* node);
     void annotate(TypeDefNode* node);
     void annotate(TypeNode* node);

@@ -84,7 +84,7 @@
 <id>T</id>
 <punct type='='/>
 <id>a</id>
-<punct type=';'/>
+<punct type=','/>
 <id>readonly</id>
 </seq>
 <seq>
@@ -95,7 +95,7 @@
 <id>T</id>
 <punct type='='/>
 <id>a</id>
-<punct type=';'/>
+<punct type=','/>
 <id>transient</id>
 </seq>
 <seq>
@@ -106,7 +106,7 @@
 <id>T</id>
 <punct type='='/>
 <id>a</id>
-<punct type=';'/>
+<punct type=','/>
 <id>public</id>
 </seq>
 <seq>
@@ -117,7 +117,7 @@
 <id>T</id>
 <punct type='='/>
 <id>a</id>
-<punct type=';'/>
+<punct type=','/>
 <id>readonly</id>
 <punct type=','/>
 <id>transient</id>
@@ -130,7 +130,7 @@
 <id>T</id>
 <punct type='='/>
 <id>a</id>
-<punct type=';'/>
+<punct type=','/>
 <id>readonly</id>
 <punct type=','/>
 <id>transient</id>
@@ -143,7 +143,7 @@
 <id>a8</id>
 <punct type=':'/>
 <id>T</id>
-<punct type=';'/>
+<punct type=','/>
 <id>readonly</id>
 </seq>
 <seq>
@@ -152,7 +152,7 @@
 <id>a9</id>
 <punct type=':'/>
 <id>T</id>
-<punct type=';'/>
+<punct type=','/>
 <id>transient</id>
 </seq>
 <seq>
@@ -161,7 +161,7 @@
 <id>a10</id>
 <punct type=':'/>
 <id>T</id>
-<punct type=';'/>
+<punct type=','/>
 <id>public</id>
 </seq>
 <seq>
@@ -170,7 +170,7 @@
 <id>a11</id>
 <punct type=':'/>
 <id>T</id>
-<punct type=';'/>
+<punct type=','/>
 <id>readonly</id>
 <punct type=','/>
 <id>transient</id>
@@ -181,7 +181,7 @@
 <id>a12</id>
 <punct type=':'/>
 <id>T</id>
-<punct type=';'/>
+<punct type=','/>
 <id>readonly</id>
 <punct type=','/>
 <id>transient</id>
@@ -198,7 +198,7 @@
 <punct type=','/>
 <id>Bool</id>
 </nested>
-<punct type=';'/>
+<punct type=','/>
 <id>outer</id>
 </seq>
 </nested>

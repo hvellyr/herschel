@@ -126,7 +126,7 @@ CodegenVardef::codegenForGlobalVars(const VardefNode* node) const
   hr_assert(gv != NULL);
   module()->getGlobalList().push_back(gv);
 
-  generator()->fInitializer->addGlobalVariable(node);
+  initializer()->addGlobalVariable(node);
 
   hr_assert(generator()->fGlobalVariables.find(node->name()) == generator()->fGlobalVariables.end());
   generator()->fGlobalVariables[node->name()] = gv;

@@ -85,6 +85,7 @@ HRC_SOURCES =         \
 	codegen-if.cpp      \
 	codegen-init.cpp    \
 	codegen-func.cpp    \
+	codegen-slot.cpp    \
 	codegen-tools.cpp   \
 	codegen-types.cpp   \
 	codegen-vardef.cpp  \
@@ -127,6 +128,7 @@ HRC_HEADERS =         \
 	codegen-if.h        \
 	codegen-init.h      \
 	codegen-proxy.h     \
+	codegen-slot.h      \
 	codegen-tools.h     \
 	codegen-types.h     \
 	codegen-vardef.h    \
