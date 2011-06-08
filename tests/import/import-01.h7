@@ -1,4 +1,4 @@
-;; test to import ignore-green-01.h7
+-- test to import ignore-green-01.h7
 
 import "import/ignore-green-01.h7"
 

@@ -1,5 +1,5 @@
-;; check that explicit super initializer (primes) to unknown/undeclared
-;; super classes are not generated
+-- check that explicit super initializer (primes) to unknown/undeclared
+-- super classes are not generated
 
 def class Y(n)
 {
@@ -19,11 +19,11 @@ def class X(_a, _b) : (Y, Z)
   def slot b = _b
 
   on alloc() {
-    ;; even if we have a bad prime, keep the proper order here:
+    -- even if we have a bad prime, keep the proper order here:
     Z(n: 1234)
     Y(11)
 
-    ;; unknown super class
+    -- unknown super class
     M(1, 2)
   }
 }

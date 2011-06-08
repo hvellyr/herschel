@@ -1,16 +1,16 @@
-;; This file is part of the herschel package 
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package 
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 module lang
 export public (*)
 
-;;----------------------------------------------------------------------------
-;; Common Union types
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Common Union types
+------------------------------------------------------------------------------
 
 def type OrdinalOrEof : &(Ordinal, Eof)
     ~ A union type as typically used to either return the number of
@@ -42,4 +42,4 @@ def type OrdinalOrFalse : &(Ordinal, Bool == false)
     return the index of an element or indicate failure.~
 
 
-;; end of types.h7
+-- end of types.h7

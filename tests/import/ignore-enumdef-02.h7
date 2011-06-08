@@ -1,4 +1,4 @@
-;; effective type: Int in #[0, 1, 2, 3, 127]
+-- effective type: Int in #[0, 1, 2, 3, 127]
 module midi
 {
   export public (MidiController)
@@ -11,7 +11,7 @@ module midi
     modulation     = 1
     breath         = 2
     foot-pedal     = 3
-    ;; ...
+    -- ...
     poly-operation = 127
   }
 }

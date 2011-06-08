@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 module io
 
@@ -11,7 +11,7 @@ export public(*)
 
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def type Port<T>
     ~ A generic input-ouput port.
@@ -43,7 +43,7 @@ def type RandomAccessPort<T> : (InPort<T>, OutPort<T>, SeekablePort<T>)
     setting. ~
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def generic open?(port @ Port<'T>) : Bool ...
     ~ Indicate whether @var{port} is open for reading or writing.~
@@ -174,4 +174,4 @@ def generic truncate(port @ ^RandomAccessPort<'T>,
 }
 
 
-;; end of port
+-- end of port

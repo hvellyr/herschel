@@ -19,7 +19,7 @@ def class X(_a, _b) : (Y, Z)
     Y(11)
     Z(n: 1234)
 
-    ;; expression we don't expect in 'on alloc'
+    -- expression we don't expect in 'on alloc'
     if (_a < 0)
       a = 0
     if (_b < 0)

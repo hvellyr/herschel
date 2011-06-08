@@ -151,7 +151,7 @@
 (modify-syntax-entry ?\% "w"    herschel-mode-syntax-table)
 (modify-syntax-entry ?\/ "w"    herschel-mode-syntax-table)
 (modify-syntax-entry ?\+ "."    herschel-mode-syntax-table)
-(modify-syntax-entry ?\- "."    herschel-mode-syntax-table)
+;(modify-syntax-entry ?\- "."    herschel-mode-syntax-table)
 (modify-syntax-entry ?\* "."    herschel-mode-syntax-table)
 (modify-syntax-entry ?\: "."    herschel-mode-syntax-table)
 (modify-syntax-entry ?\! "w"    herschel-mode-syntax-table)
@@ -172,7 +172,8 @@
 (modify-syntax-entry ?\~ "!"    herschel-mode-syntax-table)
 
 ;; 'real' line comments start with ;;
-(modify-syntax-entry ?\; ". 12" herschel-mode-syntax-table)
+(modify-syntax-entry ?\- ". 12" herschel-mode-syntax-table)
+;;(modify-syntax-entry ?\; ". 12" herschel-mode-syntax-table)
 (modify-syntax-entry ?\n ">"    herschel-mode-syntax-table)
 
 
@@ -235,8 +236,8 @@ Key bindings:
   (set-syntax-table herschel-mode-syntax-table)
 
   ;; set local variables
-  (set (make-local-variable 'comment-start-skip) "\\(;;[!]?\\) *")
-  (set (make-local-variable 'comment-start) ";;")
+  (set (make-local-variable 'comment-start-skip) "\\(--[!]?\\) *")
+  (set (make-local-variable 'comment-start) "--")
   (set (make-local-variable 'comment-end) "")
   (set (make-local-variable 'comment-column) 40)
   (set (make-local-variable 'comment-indent-function) 'c-comment-indent) ;; TODO

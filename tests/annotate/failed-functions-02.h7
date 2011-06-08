@@ -1,4 +1,4 @@
-;; generic functions must not be redefined.
+-- generic functions must not be redefined.
 
 def generic crash-into(object1 @ 'T, object2 @ 'T) ...
 

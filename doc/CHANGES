@@ -134,17 +134,17 @@ Used character of Ascii
     Herschel                            C
 -------------------------------------------------------------
 !   identifier                          not
-    modifable function marker
-"   string separator                    string
+    modifier function marker
+"   string delimiter                    string delimiter
 #   keyword notation                    preproc
     constant array notation
 $   identifier                          [----------]
 %   identifier                          operator (mod)
     operator (fold)
-&   Complex type notation               operator (&, &&)
+&   complex type notation               operator (&, &&)
                                         pointer ref op.
-'   Implicit type generics              char
-    Units
+'   implicit type generics              char
+    units
 ()  arguments                           arguments
     grouping
 *   operator (*, **)                    operator(*)
@@ -152,10 +152,10 @@ $   identifier                          [----------]
 +   operator (+, ++)                    operator(+)
     identifier
 ,   parameter separator                 prm separator
+    slot annotations
 -   identifier                          operator (-)
     operator (-)
     negative numbers
-    comment starter (--)
 .   function call                       struct member
     float notation                      float notation
     operator (..)
@@ -166,29 +166,31 @@ $   identifier                          [----------]
     identifier                          identifier
 :   keyword arguments                   ternary operator
     type separator
-;   Extended slot params                stmt terminator
+;   comment starter (;;)                stmt terminator
 <>  operator (<, >, <=, >=, <>, ->)     operator(...)
     parametrization
 =   operator (==, <=, >=)               operator(==)
     assignment                          assignment
     parameter default
 ?   identifier                          ternary operator
+    predicat function marker
     macro variable marker
 @   specialize marker                   [----------]
-A-Z digits                              digits
-    identifier                          identifier
+A-Z identifier                          identifier
+    digits (A-F)                        digits (A-F)
 []  slicing                             array
     arrays
 \   char constants                      escaping
 ^   call-by-reference                   operator (xor)
+    slot ref notation
 _   identifier                          identifier
-    current type notifier
 `   [----------]                        [----------]
-a-z digits                              digits
-    identifier                          identifier
+a-z identifier                          identifier
+    digits (a-f)                        digits (a-f)
 {}  code block                          code block
-|   modname separator                   operator (|, ||)
+    macro block
+    switch/match block
+    class/type slot block
+|   module name separator               operator (|, ||)
     select/match case marker
 ~   docstring limiter                   operator (bit not)
-
-

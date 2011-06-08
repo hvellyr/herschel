@@ -1,5 +1,5 @@
-;; a function macro must not be resolved in a definition where a definition
-;; symbol is expected.
+-- a function macro must not be resolved in a definition where a definition
+-- symbol is expected.
 
 def macro foo
 {

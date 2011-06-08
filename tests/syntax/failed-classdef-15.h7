@@ -1,5 +1,5 @@
-;; check that 'def generics' must not occur inside 'def class'.  Make sure
-;; the last 'def slot' is actually parsed
+-- check that 'def generics' must not occur inside 'def class'.  Make sure
+-- the last 'def slot' is actually parsed
 
 def class Abc<K, V>(k : K) : Collection<K, 'Z>
     where K isa Comparable,

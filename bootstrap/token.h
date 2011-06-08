@@ -123,7 +123,6 @@ namespace herschel
     kShiftLeft,
     kShiftRight,
     kAppend,
-    kRemove,
     kComma,
     kSemicolon,
     kColon,

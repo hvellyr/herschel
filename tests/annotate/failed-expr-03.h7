@@ -1,6 +1,6 @@
 def f5(a : Int8, b : Int8)
-  ;; logical and/or operators requires booleans; so for Any operands this
-  ;; makes explicit true comparasions necessary
+  -- logical and/or operators requires booleans; so for Any operands this
+  -- makes explicit true comparasions necessary
   let t0 =
     (a == true)
        and

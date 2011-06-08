@@ -32,7 +32,3 @@
 
   In this example the site using the macro y must also import
   something.h7, otherwise symbol-from-something is unknown
-
-
-- functions from one compile units are not extern declared in another
-  compile unit.

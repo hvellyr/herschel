@@ -16,8 +16,8 @@ def class X(_a, _b) : (Y, Z)
   def slot b = _b
 
   on alloc() {
-    ;; forgotten super class call
-    ;; Y(11)
+    -- forgotten super class call
+    -- Y(11)
     Z(n: 1234)
   }
 }

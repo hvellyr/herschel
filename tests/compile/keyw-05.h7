@@ -1,4 +1,4 @@
-;; return Keyword from generic functions
+-- return Keyword from generic functions
 
 import "lang/assert.h7"
 
