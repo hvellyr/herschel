@@ -698,17 +698,6 @@ namespace herschel
   };
 
 
-  enum SlotFlags {
-    kSimpleSlot     = 0,
-    kTransientSlot  = 1 << 0,
-    kReadonlySlot   = 1 << 1,
-    kPublicSlot     = 1 << 2,
-    kOuterSlot      = 1 << 3,
-    kInnerSlot      = 1 << 4,
-    kAutoSlot       = 1 << 5,
-  };
-
-
   class SlotdefNode : public BindingNode
   {
   public:
@@ -727,6 +716,7 @@ namespace herschel
     virtual void typify(Typifier* typifier);
 
     unsigned int flags() const;
+    bool isAuto() const;
 
   private:
     unsigned int fFlags;
@@ -1280,9 +1270,14 @@ namespace herschel
     const String& name() const;
     const Type& defType() const;
     bool isClass() const;
+
     const NodeList& params() const;
     const NodeList& slots() const;
     const NodeList& onExprs() const;
+
+    NodeList& params();
+    NodeList& slots();
+    NodeList& onExprs();
 
   private:
     String fTypeName;
@@ -1317,6 +1312,32 @@ namespace herschel
 
   private:
     Ptr<AptNode> fBase;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  class SlotRefNode : public AptNode
+  {
+  public:
+    SlotRefNode(const SrcPos& srcpos, AptNode* base, const String& slotName);
+
+    virtual SlotRefNode* clone() const;
+
+    AptNode* base() const;
+    void setBase(AptNode* base);
+    String slotName() const;
+
+    virtual void render(XmlRenderer* renderer) const;
+    virtual llvm::Value* codegen(CodeGenerator* generator) const;
+    virtual void annotate(Annotator* annotator);
+    virtual void traverse(Traversator* traversator);
+    virtual AptNode* transform(Transformator* annotator);
+    virtual void typify(Typifier* typifier);
+
+  private:
+    Ptr<AptNode> fBase;
+    String       fSlotName;
   };
 };
 

@@ -59,14 +59,12 @@
 </rettype>
 <body>
 <block>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+<assign>
+<slotref  nm='_n'>
 <symbol>__obj_0</symbol>
-<keyw>_n</keyw>
+</slotref>
 <symbol>n</symbol>
-</args>
-</apply>
+</assign>
 <symbol>__obj_0</symbol>
 </block>
 </body>
@@ -137,14 +135,12 @@
 </rettype>
 <body>
 <block>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+<assign>
+<slotref  nm='_n'>
 <symbol>__obj_1</symbol>
-<keyw>_n</keyw>
+</slotref>
 <symbol>n</symbol>
-</args>
-</apply>
+</assign>
 <symbol>__obj_1</symbol>
 </block>
 </body>
@@ -330,29 +326,55 @@
 </arg>
 </args>
 </apply>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+<assign>
+<slotref  nm='a'>
 <symbol>__obj_2</symbol>
-<keyw>a</keyw>
+</slotref>
 <symbol>lang|nil</symbol>
-</args>
-</apply>
-<apply>
-<symbol>lang|slot!</symbol>
-<args>
+</assign>
+<assign>
+<slotref  nm='b'>
 <symbol>__obj_2</symbol>
-<keyw>b</keyw>
+</slotref>
 <symbol>lang|nil</symbol>
-</args>
-</apply>
+</assign>
 <apply>
 <function>
 <params>
 <param sym='self' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='Y'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+<ty:const k='isa'>
+<ty:ref nm='lang|Int32'>
 </ty:ref>
+</ty:const>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+<ty:ref nm='Z'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='lang|String'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+</ty:gen>
+</ty:type>
 </type>
 </param>
 </params>

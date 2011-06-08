@@ -113,7 +113,7 @@ CodegenTools::makeKeywordAtom(const String& keyword)
                                                   fGenerator->fTypes->getAtomType());
 
   setAtom(atom, kAtomKeyword,
-          builder().CreateLoad(fGenerator->fInitializer->registerKeyword(keyword)));
+          builder().CreateLoad(initializer()->registerKeyword(keyword)));
 
   return atom;
 }

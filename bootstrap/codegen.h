@@ -130,6 +130,7 @@ namespace herschel
     llvm::Value* codegen(const RealNode* node);
     llvm::Value* codegen(const SelectNode* node);
     llvm::Value* codegen(const SlotdefNode* node);
+    llvm::Value* codegen(const SlotRefNode* node);
     llvm::Value* codegen(const StringNode* node);
     llvm::Value* codegen(const SymbolNode* node);
     llvm::Value* codegen(const TypeDefNode* node);
@@ -148,14 +149,15 @@ namespace herschel
     llvm::TargetData* targetData() const;
 
   private:
-    friend class ModuleRuntimeInitializer;
-    friend class CodegenTypeUtils;
-    friend class CodegenTools;
-    friend class CodegenBinaryNode;
-    friend class CodegenFuncDef;
     friend class CodeGeneratorProxy;
     friend class CodegenApply;
+    friend class CodegenBinaryNode;
+    friend class CodegenFuncDef;
+    friend class CodegenSlot;
+    friend class CodegenTools;
+    friend class CodegenTypeUtils;
     friend class CodegenVardef;
+    friend class ModuleRuntimeInitializer;
 
     void setupOptPassManager();
 

@@ -1,0 +1,3 @@
+def set-name(t, n) 
+  t^name = n
+  t^name
