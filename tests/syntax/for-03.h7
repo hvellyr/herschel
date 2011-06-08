@@ -1,0 +1,7 @@
+def count-until(root : Node, element : Node) : OrdinalOrEof
+  for (n : Node = root then n.tail while n <> nil,
+       i : Ordinal = 0 then i + 1,
+       n <> element)
+    i
+  else
+    eof

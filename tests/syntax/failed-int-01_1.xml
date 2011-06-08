@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>a</id>
+<punct type='='/>
+<lit type='float'>12.340000</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>b</id>
+<punct type='='/>
+<lit type='float'>12.340000</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>c</id>
+<punct type='='/>
+<lit type='float'>0.012340</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>d</id>
+<punct type='='/>
+<lit type='float'>12.340000</lit>
+</seq>
+<seq>
+<id>def</id>
+<id>e</id>
+<punct type='='/>
+<lit type='float'>12340.000000</lit>
+</seq>
+</seq>

@@ -1,0 +1,2 @@
+7 ; error ; 4413 ; type mismatch for generic parameter
+7 ; error ; 4413 ; type mismatch for argument 1

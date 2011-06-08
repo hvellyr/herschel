@@ -1,0 +1,24 @@
+def class RefO<T>(p : ^T)
+{
+  def slot base : ^T = p    ;; base takes p (ref to calling side)
+}
+
+def class RefO2<T>(p : T)
+{
+  def slot base : ^T = p    ;; base takes ref to p (without effect to
+                            ;; outside).  This is the only way to set
+                            ;; base to nil !
+}
+
+def class RefO3<T>(p : ^T)
+{
+  def slot base : T = p     ;; base takes copy of p
+}
+
+
+;; this should result in a ctor signature of (base: _x : ^T = nil)
+def class RefO4<T>
+{
+  def slot base : ^T = nil ; auto
+}
+

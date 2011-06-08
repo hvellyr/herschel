@@ -1,0 +1,218 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='Abc'>
+<params>
+<param sym='k' type='pos'>
+<type>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<isa>
+<ty:type nm='Abc' inst='t'>
+<ty:isa>
+<ty:ref nm='lang|Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+<ty:ref gen='t' nm='Z'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='V'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='Abc|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='Abc' inst='t'>
+<ty:isa>
+<ty:ref nm='lang|Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+<ty:ref gen='t' nm='Z'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='V'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</type>
+</param>
+<param sym='k' type='pos'>
+<type>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='Abc' inst='t'>
+<ty:isa>
+<ty:ref nm='lang|Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='Comparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+<ty:ref gen='t' nm='Z'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='V'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</rettype>
+<body>
+<block>
+<symbol>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<generic sym='item' abstract='true'>
+<params>
+<param sym='k' type='spec'>
+<type>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='V'>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+<def>
+<generic sym='itemx' abstract='true'>
+<params>
+<param sym='k' type='spec'>
+<type>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='X'>
+<ty:const k='isa'>
+<ty:ref nm='VeryComparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:array>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='Y'>
+<ty:const k='isa'>
+<ty:ref nm='NearlySlotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+<def>
+<generic sym='itemy' abstract='true'>
+<params>
+<param sym='k' type='spec'>
+<type>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='K'>
+<ty:const k='isa'>
+<ty:ref nm='VeryComparable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:array>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='NearlySlotable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+<def>
+<generic sym='itemz' abstract='true'>
+<params>
+<param sym='k' type='spec'>
+<type>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='V'>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+<def>
+<generic sym='itemf' abstract='true'>
+<params>
+<param sym='k' type='spec'>
+<type>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref gen='t' nm='V'>
+<ty:const k='isa'>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+</compile-unit>

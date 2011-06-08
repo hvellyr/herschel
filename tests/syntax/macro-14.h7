@@ -1,0 +1,14 @@
+;; check that recursive macro expansion is after ## concatination
+def macro xname
+{
+  { xname () } -> { "abc" }
+}
+
+def macro abc
+{
+  { abc (?a:name) } -> { x ## name () }
+}
+
+
+def f()
+  abc(name)

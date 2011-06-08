@@ -1,0 +1,11 @@
+module core
+
+module cool
+
+def macro abc
+{
+  { abc() } -> { "abc" }
+}
+
+def f()
+  abc()

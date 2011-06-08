@@ -1,0 +1,3 @@
+;; abstract method is not allowed.
+
+def foo(a @ Int) : String ...

@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>enum</id>
+<id>I1</id>
+<punct type=':'/>
+<id>Int</id>
+<nested  left='{' right='}'>
+<id>%int-a</id>
+<id>%int-b</id>
+<id>%int-c</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>a1</id>
+<punct type='='/>
+<nested  left='#[' right=']'>
+<id>%int-a</id>
+<punct type=','/>
+<id>%int-b</id>
+<punct type=','/>
+<id>%int-c</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>enum</id>
+<id>I2</id>
+<punct type=':'/>
+<id>Int</id>
+<nested  left='{' right='}'>
+<seq>
+<id>%int2-a</id>
+<punct type='='/>
+<lit type='int'>-42</lit>
+</seq>
+<seq>
+<id>%int2-b</id>
+<punct type='='/>
+<lit type='int'>0</lit>
+</seq>
+<id>%int2-c</id>
+<seq>
+<id>%int2-d</id>
+<punct type='='/>
+<lit type='int'>127</lit>
+</seq>
+<id>%int2-e</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>a2</id>
+<punct type='='/>
+<nested  left='#[' right=']'>
+<id>%int2-a</id>
+<punct type=','/>
+<id>%int2-b</id>
+<punct type=','/>
+<id>%int2-c</id>
+<punct type=','/>
+<id>%int2-d</id>
+<punct type=','/>
+<id>%int2-e</id>
+</nested>
+</seq>
+</seq>
+

@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='red|Xyz'>
+<isa>
+<ty:measure nm='red|Xyz' unit='red|xyz'>
+<ty:isa>
+<ty:ref nm='lang|Float32'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</isa>
+</class>
+</def>
+<def>
+<vardef sym='red|xyz'>
+<init>
+<int ty='lang|Int32'>1234</int>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='red|a0'>
+<init>
+<uvalue unit='red|xyz'>
+<type>
+<ty:measure nm='red|Xyz' unit='red|xyz'>
+<ty:isa>
+<ty:ref nm='lang|Float32'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</type>
+<int ty='lang|Int32'>12</int>
+</uvalue>
+</init>
+</vardef>
+</def>
+<def>
+<class nm='Xyz'>
+<isa>
+<ty:measure nm='Xyz' unit='xyz'>
+<ty:isa>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</isa>
+</class>
+</def>
+<def>
+<vardef sym='b0'>
+<init>
+<uvalue unit='red|xyz'>
+<type>
+<ty:measure nm='red|Xyz' unit='red|xyz'>
+<ty:isa>
+<ty:ref nm='lang|Float32'>
+</ty:ref>
+</ty:isa>
+</ty:measure>
+</type>
+<int ty='lang|Int32'>12</int>
+</uvalue>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='b1'>
+</vardef>
+</def>
+</compile-unit>

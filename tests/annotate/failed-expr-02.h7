@@ -1,0 +1,22 @@
+def f1(a : Int8, b : Int8)
+  let t0 = a AND b    ;; wrong
+  let t1 = a OR b     ;; wrong
+  let t2 = a XOR b    ;; wrong
+  let t3 = a << b     ;; wrong
+  let t4 = a >> b     ;; wrong
+
+
+def f2(a : UInt8, b : Int8)
+  let t0 = a AND b    ;; wrong
+  let t1 = a OR b     ;; wrong
+  let t2 = a XOR b    ;; wrong
+  let t3 = a << b
+  let t4 = a >> b
+
+
+def f3(a : Int8, b : UInt8)
+  let t0 = a AND b    ;; wrong
+  let t1 = a OR b     ;; wrong
+  let t2 = a XOR b    ;; wrong
+  let t3 = a << b     ;; wrong
+  let t4 = a >> b     ;; wrong

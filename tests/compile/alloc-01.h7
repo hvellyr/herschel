@@ -1,0 +1,11 @@
+module xi
+
+def class Dog
+{
+}
+
+
+def app|main()
+  let d = Dog()
+
+  11

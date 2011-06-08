@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<vardef sym='ints'>
+<type>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+<init>
+<vector  ty='lang|Vector&lt;lang|Vector&lt;lang|String>>'>
+<vector  ty='lang|Vector&lt;lang|String>'>
+<str>abc</str>
+<str>xyz</str>
+</vector>
+<vector  ty='lang|Vector&lt;lang|String>'>
+<str>hello</str>
+<str>world</str>
+</vector>
+</vector>
+</init>
+</vardef>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

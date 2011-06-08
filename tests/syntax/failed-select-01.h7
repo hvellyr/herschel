@@ -1,0 +1,5 @@
+def f()
+  select (a) {
+    | else outln("x")
+    | 5 -> outln(a)
+  }
