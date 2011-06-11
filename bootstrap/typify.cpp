@@ -502,7 +502,7 @@ Typifier::typify(FuncDefNode* node)
     setupFunctionNodeType(node);
     if (node->name() == String("app|main")) {
       if (!node->retType().isAny()) {
-        if (node->retType().typeName() != String("lang|Int32"))
+        if (node->retType().typeId() != String("lang|Int32"))
         {
           errorf(node->srcpos(), E_TypeMismatch,
                  "return type of app|main() must be lang|Int32");
@@ -1286,7 +1286,7 @@ Typifier::typify(SlotRefNode* node)
 
   if (!basety.isDef()) {
     String typenm = ( node->base()->type().isDef()
-                      ? node->base()->type().typeName()
+                      ? node->base()->type().typeId()
                       : Names::kAnyTypeName );
     errorf(node->srcpos(), E_UndefinedType,
            "undefined type '%s'",
