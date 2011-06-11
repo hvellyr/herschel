@@ -43,6 +43,7 @@ namespace herschel
     const llvm::StructType* getTypeSlotPairType() const;
     const llvm::Type* getGenericFuncType() const;
     const llvm::Type* getMethodType() const;
+    const llvm::Type* getSizeTTy() const;
 
     const llvm::Type* getType(const Type& type) const;
     size_t getSlotSize(const Type& type) const;

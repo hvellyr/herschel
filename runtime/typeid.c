@@ -17,6 +17,18 @@
 #include "runtime/trace.h"
 
 
+#define TYPE_TAG_ANY     (int)'a'
+#define TYPE_TAG_BOOL    (int)'b'
+#define TYPE_TAG_CHAR    (int)'c'
+#define TYPE_TAG_INT32   (int)'i'
+#define TYPE_TAG_KEYW    (int)'k'
+
+#define TYPE_TAG_ANY_ARRAY     (int)'A'
+#define TYPE_TAG_BOOL_ARRAY    (int)'B'
+#define TYPE_TAG_CHAR_ARRAY    (int)'C'
+#define TYPE_TAG_INT32_ARRAY   (int)'I'
+#define TYPE_TAG_KEYW_ARRAY    (int)'K'
+
 
 static HashTable* types_name_to_type_map = NULL; /* hash<char*, Type*> */
 /*static HashTable* types_tag_to_type_map = NULL;*/  /* hash<int, Type*> */
@@ -50,9 +62,20 @@ tag_id_for_type(const Type* type)
   else if (strcmp(type->name, "__QN4lang4Char") == 0)
     return (int)'c';
   else if (strcmp(type->name, "__QN4lang3Any") == 0)
-    return (int)'A';
+    return (int)'a';
   else if (strcmp(type->name, "__QN4lang7Keyword") == 0)
     return (int)'k';
+
+  else if (strcmp(type->name, "__QN4lang5Int32[]") == 0)
+    return (int)'I';
+  else if (strcmp(type->name, "__QN4lang4Bool[]") == 0)
+    return (int)'B';
+  else if (strcmp(type->name, "__QN4lang4Char[]") == 0)
+    return (int)'C';
+  else if (strcmp(type->name, "__QN4lang3Any[]") == 0)
+    return (int)'A';
+  else if (strcmp(type->name, "__QN4lang7Keyword[]") == 0)
+    return (int)'K';
 
   type_tag_id_counter++;
   return type_tag_id_counter;
@@ -352,117 +375,109 @@ allocate(ATOM* instance, Type* ty)
 }
 
 
-ATOM
-allocate_array(Type* ty, ATOM init_value, size_t items)
+void
+allocate_array(ATOM* instance, Type* ty, ATOM init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(ATOM));
-  *((size_t*)obj.u.v_obj) = items;
+#if defined(UNITTESTS)
+  hr_trace("allocate", "Create instance of type '%s'x%ld, size: %ld",
+           ty->name, items, ty->acc_instance_size);
+#endif
+
+  instance->typeid = ty->tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(ATOM));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    ATOM* p = (ATOM*)(obj.u.v_obj + sizeof(size_t));
+    ATOM* p = (ATOM*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 
-ATOM
-allocate_char_array(Type* ty, char init_value, size_t items)
+void
+allocate_int32_array(ATOM* instance, TypeTag tag_id, int init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(char));
-  *((size_t*)obj.u.v_obj) = items;
+#if defined(UNITTESTS)
+  hr_trace("allocate", "Create instance of type 'lang|Int32'x%ld (%d), size: %ld",
+           items, tag_id, sizeof(int));
+#endif
+
+  instance->typeid = tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(int));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    char* p = (char*)(obj.u.v_obj + sizeof(size_t));
+    int* p = (int*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 
-ATOM
-allocate_short_array(Type* ty, short init_value, size_t items)
+void
+allocate_char_array(ATOM* instance, Type* ty, char init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(short));
-  *((size_t*)obj.u.v_obj) = items;
+  instance->typeid = ty->tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(char));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    short* p = (short*)(obj.u.v_obj + sizeof(size_t));
+    char* p = (char*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 
-ATOM
-allocate_int_array(Type* ty, int init_value, size_t items)
+void
+allocate_short_array(ATOM* instance, Type* ty, short init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(int));
-  *((size_t*)obj.u.v_obj) = items;
+  instance->typeid = ty->tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(short));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    int* p = (int*)(obj.u.v_obj + sizeof(size_t));
+    short* p = (short*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 
-ATOM
-allocate_float_array(Type* ty, float init_value, size_t items)
+void
+allocate_float_array(ATOM* instance, Type* ty, float init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(float));
-  *((size_t*)obj.u.v_obj) = items;
+  instance->typeid = ty->tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(float));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    float* p = (float*)(obj.u.v_obj + sizeof(size_t));
+    float* p = (float*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 
-ATOM
-allocate_double_array(Type* ty, double init_value, size_t items)
+void
+allocate_double_array(ATOM* instance, Type* ty, double init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(double));
-  *((size_t*)obj.u.v_obj) = items;
+  instance->typeid = ty->tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(double));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    double* p = (double*)(obj.u.v_obj + sizeof(size_t));
+    double* p = (double*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 
