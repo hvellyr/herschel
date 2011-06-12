@@ -1,0 +1,12 @@
+def type C
+def type D
+def type E
+def type F
+
+def class X<A, B>(a, b) : (C, D, E, F<B>)
+{
+  def slot x : Int = a, readonly
+  def slot y : Int = b, readonly, transient
+
+  def slot z : Cache, transient
+}

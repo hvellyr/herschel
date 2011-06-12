@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>class</id>
+<id>Abc</id>
+<nested left='&lt;' right='>'>
+<id>X</id>
+</nested>
+<nested left='(' right=')'>
+<seq>
+<id>x</id>
+<punct type=':'/>
+<id>X</id>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<id>Collection</id>
+<nested left='&lt;' right='>'>
+<id>X</id>
+</nested>
+</seq>
+<seq>
+<id>where</id>
+<seq>
+<id>X</id>
+<punct type='isa'/>
+<id>Copyable</id>
+</seq>
+</seq>
+<nested left='{' right='}'>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>a</id>
+<punct type=':'/>
+<id>X</id>
+<punct type='='/>
+<id>x</id>
+<punct type=','/>
+<id>readonly</id>
+</seq>
+<seq>
+<id>def</id>
+<id>slot</id>
+<id>b</id>
+<punct type=':'/>
+<id>X</id>
+<punct type='='/>
+<seq>
+<id>x</id>
+<punct type='*'/>
+<lit type='int'>2</lit>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>req</id>
+<nested left='(' right=')'>
+<seq>
+<id>x</id>
+<punct type='@'/>
+<seq>
+<id>Abc</id>
+<nested left='&lt;' right='>'>
+<seq>
+<punct type='&apos;'/>
+<id>X</id>
+</seq>
+</nested>
+</seq>
+</seq>
+</nested>
+<punct type=':'/>
+<seq>
+<id>Abc</id>
+<nested left='&lt;' right='>'>
+<seq>
+<punct type='&apos;'/>
+<id>X</id>
+</seq>
+</nested>
+</seq>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>Y</id>
+<punct type=':'/>
+<id>Z</id>
+</seq>
+<seq>
+<id>def</id>
+<id>f0</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>type</id>
+<id>Y2</id>
+<punct type=':'/>
+<id>Z2</id>
+</seq>
+<seq>
+<id>def</id>
+<id>generic</id>
+<id>f3</id>
+<nested left='(' right=')'>
+<seq>
+<id>t</id>
+<punct type='@'/>
+<id>Y2</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Any</id>
+<punct type='...'/>
+</seq>
+<seq>
+<id>def</id>
+<id>alias</id>
+<id>StringList</id>
+<punct type='='/>
+<seq>
+<id>List</id>
+<nested left='&lt;' right='>'>
+<id>String</id>
+</nested>
+</seq>
+</seq>
+<seq>
+<id>def</id>
+<id>alias</id>
+<id>SortableList</id>
+<nested left='&lt;' right='>'>
+<id>T</id>
+</nested>
+<seq>
+<id>where</id>
+<seq>
+<id>T</id>
+<punct type='isa'/>
+<id>Comparable</id>
+</seq>
+</seq>
+<punct type='='/>
+<seq>
+<id>List</id>
+<nested left='&lt;' right='>'>
+<id>String</id>
+</nested>
+</seq>
+</seq>
+</seq>
+

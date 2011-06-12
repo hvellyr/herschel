@@ -1,0 +1,10 @@
+;; test for importing and modules
+
+module a1
+
+import "import/ignore-green-06.h7"
+import "import/ignore-green-06.h7"
+import "import/ignore-green-06b.h7"
+
+def a : MyNumber = 12
+def b : MyString = "abc"

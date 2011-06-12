@@ -1,0 +1,655 @@
+Memory model and Allocation
+===========================
+
+Objects must be created in herschel.  This is true for complex objects but
+also for base ones, like integers or strings.  This object creation however
+is mostly covered by the syntax.  For example
+
+  1234
+  \space
+  "Hello world"
+  #something
+
+all create new objects (an instance of class Int, Char, String, and
+Keyword, resp.).  Whether this object 'exist' in heap or on stack is up to
+the compiler and runtime.  The same applies for complex objects.
+
+With the following class definition:
+
+  def class Person
+  {
+    def slot name ; param
+    def slot surname ; param
+  }
+
+we can say:
+
+  let p = Person(name: "Gustav", surname: "Adolf")
+
+this creates an object of type Person with the proper parameters.  This
+object will be created most likely on the heap, but the user can't really
+know (and he shouldn't know actually).
+
+If you pass an object (either base or complex) to a function, say:
+
+  def foo(p)
+    p.outln
+
+then 'p' is *always* passed as a contant value into the function, i.e. p is
+immutable from inside 'foo'.  Technically complex objects will be passed as
+refcounted objects for efficiency reasons.  To the user however this feels
+like a value only.
+
+If you need to modify 'p' clone and return it.  You clone it by putting and
+'&' in front of the name.  'p' is cloned in the scope once only, i.e. every
+occurance of '&p' actually refers to the same cloned instance of 'p'.
+
+  def generic reset(p @ Person)
+    &p.name = 'N.'
+    &p.surname = 'N.'
+    &p
+
+If you don't want to copy an instance and want to modify in the function
+though?  In oop it is common pratice to have modifier functions.  In that
+case you can explicitely declare a parameter to be a reference parameter:
+
+  def generic names!(p @ ^Person, n : String, sn : String) : Person
+    p.name = n
+    p.surname = sn
+    p
+
+Here 'p' has the type of a "Reference to a Person object".  This make 'p' a
+in-out reference, i.e. the function 'name!' and 'surname!' modify the
+object passed as 'p'.
+
+What happen now in case that you pass in a 'local' variable definition?
+Take the following code:
+
+  def generic properties!(p @ ^Person, props)
+    p.properties = props
+    p
+
+  def lookup-user(database, name, surname) : &(Person, Bool == false)
+    let p = Person(name: name, surname: surname)   -- [1]
+    let props = database.properties-for-person(p)
+    if (props <> nil)
+      ^p.properties!(props)                        -- [4]
+    else
+      false
+
+In line [1] 'p' could be allocated on stack; at list at line [4] however
+the object is passed as a reference to a function.  The function returns
+'p' (as we see in 'properties!') and therefore leaves the scope of
+'lookup-user'.  If the compiler can proof that a value will never leave a
+certain scope it is free to allocate a instance on the stack (and avoid GC
+completely).
+
+Note: Passing a value to a reference parameter requires to pass it as
+reference (put '^' before the name, unless it is a reference already).  To
+access (and modify) the value of a reference dereference the name (by
+adding a '^' after the name).  The later is not necessary when setting
+members of classes, since slot access is wrapped in the slot!() methods
+which explicitely take a reference as first parameter:
+
+  def generic name!(p @ ^Person, n : String)
+    p.slot!(#name, n)
+
+  =>  slot!(p, #name, n)
+
+  -- with slot! declared as:
+
+  def generic slot!(o @ ^'T, key : Keyword, val : 'V) : ^'T ...
+
+
+Pass by value.  It could happen actually that passing a complex object to a
+function will really copy the object.  This normally happens when the
+compiler finds out that the object is crossing a thread border.  Objects
+will always be passed as copies into other threads, unless they are passed
+explicitely as references.
+
+
+What is nil than?
+-----------------
+
+When we normally never deal with references, what is the dubious 'nil'
+value about than?  First, nil is always a reference, i.e. you can pass it
+to any function expecting a reference.  Inside of the function you must
+make sure of course that nobody tries to access nil, otherwise you will get
+a NilException (or a Segfault if runtime checks are turned off).
+
+Secondly, you can't pass nil to non-reference parameters.
+I.e. non-reference parameters always have a value.  This is important since
+every variable you define must be initialized:
+
+  let x : Person
+
+'x' is not nil as it may have been expected; in fact a new instance of
+Person (with some default values) is created.  You can't avoid this by
+e.g.:
+
+  let x : Person = nil
+
+This won't compile; you rather have to say:
+
+  let x : ^Person
+
+The 'nil' initializing here is the default.
+
+
+        The result of notating a type 'Person' as '^Person' is comparable
+        to the 'Maybe' type in Haskell.  'Person' only denotes Person
+        instances, but never nil.  '^Person' uses actually the type
+        denotation of '&(Person, Nil)'.  Reference types therefore can be
+        matched simply as:
+
+          match (arg) {
+            |   : Nil -> outln("No person set")
+            | p : Person -> outln(p.to-string)
+          }
+
+
+Aren't references (pointers) dangerous (again)?
+-----------------------------------------------
+
+Yep.  They are of course more dangerous than operating with immutable
+objects passed by value.  Since herschel on the other uses garbage
+collection with no explicitly free() or dispose() function you can't
+(easily) create dangling pointers.  What you can get are nil references of
+course.
+
+
+References to array slots?
+--------------------------
+
+References to single arrays slots are not possible.  You can either have a
+reference to the complete array or you need to use slicing views.  The
+normal Slice from the standard library is however not referencing, i.e. it
+uses a copy-on-write metaphor to refer to an array.  The RefSlice type
+however allows transparent write through, it has to apply a write-barrier
+however to detect changes (reallocations) to the underlying array.
+
+
+
+Review ^ again
+--------------
+
+- call-by-reference and call-by-value? vs. call-by-ref and call-by-const-ref?
+
+  def foo(a : ^Person)
+    let b : Person = a                  -- make a copy of a
+    let c : ^Person = a                 -- ref to a (a and c ref to same object)
+    a.name!("xxx")                      -- modify passed in object
+    b.name!("xxx")                      -- modify b
+    c.name!("xxx")                      -- modify passed in object (i.e. a)
+
+    c = b                               -- c refs to object of b now
+    c.name!("xxx")                      -- c and b changed now
+
+    let d : ^Person = b                 -- d refs to obj of b
+    d = c                               -- d and c ref to same obj
+    d = a                               -- d and a ref to same obj
+
+    let e : Person = b                  -- make a copy of b
+    e = c                               -- make a copy of obj ref by c
+
+    a = b                               -- a refers to obj of b now.  HAS
+                                        -- NO INFLUENCE ON PASSED-IN VALUE!
+
+  def bar()
+    let a0 : Person
+    foo(a0)                             -- ref to local a0 is passed to foo
+                                        -- on return a0 has changed
+
+  To summarize:
+
+  - Nonreference types (normal types) are always call-by-value,
+    copy-assign.  The implementation is free to implement proper
+    copy-on-write mechanisms
+
+  - objects passed by value are not immutable, they are really value types
+
+  - variables of reference type refer transparently to objects.
+    - modify objects (call *! functions) modify the object
+
+    - assign values to a ref-type vars resets the reference only (point
+      the ref-type var to a different object).  You can't have
+      reference-out variables ('double-pointer variables'):
+
+        def foo(a : ^Person)
+          let b : Person = Person("Heinz")
+          a = b
+
+        def bar()
+          let n : Person = Person("Jakob")
+          foo(n)
+          outln(n)
+
+        => "Jakob"
+
+      i.e. 'a' is changed in foo only.  On the other hand
+
+        def foo(a : ^Person)
+          a.name!("Heinz")
+
+        def bar()
+          let n : Person = Person("Jakob")
+          foo(n)
+          outln(n)
+
+        => "Heinz"
+
+      here 'a' is modified 'in place' inside foo.
+
+====> we don't need the special 'clone in place' syntax with '&...'
+====> we don't need the 'dereference a reference' syntax with 'var^'
+====> we don't need the 'take a reference' syntax with '^var'
+
+Only the 'reference type' syntax with '^type' is required
+
+A consequence of this is that references to immutable types like Int, Bool,
+Char etc. are useless.
+
+
+How is the copy-on-write implemented?
+-------------------------------------
+
+Problem:  We would like to do as less copying of objects as possible, and
+probably as late as possible.  We must make sure however that the copying
+is precise.  The the following example
+
+  def foo(a : ^Person)
+    let b : Person = a
+    let c : Person = a
+
+here both 'b' and 'c' are supposed to take a copy of 'a'.  Naively one
+could do a lazy copy (i.e. a ref-counted copy) only.  If 'a' is however
+changed from somewhere else (it is a reference from the outside of foo(),
+e.g. it can be changed from a different thread, too), we would have to copy
+'b' and 'c' really.  This sounds like technical overkill.
+
+So as simple rules for assigning:
+
+      to     | ref type         value type
+  -----------+---------------------------------
+  ref type   | A update ref     C copy immediately
+  value type | B unshare value  D copy lazy
+
+En detail
+
+A: ref to ref:     only the reference is updated
+
+B: value to ref:   the value is unshared (i.e. copied if not the only
+                   referer) and the ref is updated.  Value *must not be*
+                   immediate (the compiler has to ensure this).
+
+C: ref to value:   the value referred to by ref is copied and the new
+                   instance is given to value.  ref keeps its old
+                   reference.  Value may be immediated.
+
+D: value to value: value(1) is set as shared to value(2)
+
+
+-> all objects which should be referable must bear a ref-count.  But how to
+   do this with base types like integers, chars, bools, etc.?  Isn't it
+   that base types can always be simply copied in the cases C and D?
+
+????
+
+
+Note:
+
+  let x : ^Int = 5         (1)
+
+and
+
+  let y = 5                (2)
+  let z = y
+  let x : ^Int = y
+
+is different.  In (1) x points to an "anonymous" object '5'.  In (2) x
+takes the address of 'y' and points to it.  If you do now:
+
+  let y = 6;
+
+'x' gives you 5, still, since 'x' refers to the former value of 'y', not to
+the variable 'y' itself.  z however stays a 5.
+
+
+
+
+
+
+
+
+
+Allocation and initialization of class based object
+===================================================
+
+The expression:
+
+  Person(name: "Gustav", surname: "Adolf")
+
+runs specially code, which allocates a new instance (in heap or on stack,
+see above), and maps the parameters according to slot options to the
+appropriate slots.  The init expression of other slots are evaluated in the
+notated order and assigned to those slots.  Than, if defined, the class'
+'on init()' hook is run.
+
+Are there constructors than?  No, at least no User specified.  Construction
+of objects is really only about constructing.  The following ways of
+defining values for an object exit however:
+
+a) No parameter at construction at all:
+
+    def class Person {
+      def slot name = "N."
+      def slot surname = "N."
+      def slot display ; transient
+
+      on init(self) {
+        self.display = self.surname + ", " + self.name
+      }
+    }
+
+  Slots are either initialized by slot init expressions or through the 'on
+  init' hook.
+
+  An instance of the above example would be created as:
+
+    Person()
+
+
+b) Specify an explicit class signature:
+
+    def class Person(_name, _surname)
+    {
+      def slot name = _name
+      def slot surname = _surname
+      def slot display ; transient
+
+      on init(self) {
+        self.display = _surname + ", " + _name
+      }
+    }
+
+  Note that the parameters to the class are visible in the 'on init'
+  function also.
+
+  An instance of the above example would be created as:
+
+    Person("Gustav", "Adolf")
+
+c) Automatic map class parameters to slots:
+
+    def class Person
+    {
+      def slot name = "N." ; auto
+      def slot surname = "N." ; auto
+
+      on init(self) {
+        self.display = self.surname + ", " + self.name
+      }
+    }
+
+  An instance of the above example would be created as:
+
+    Person(name: "Gustav", surname: "Adolf")
+
+Possibilities b) and c) can be combined of course.  This gives the
+possibility to define mandatory and optional parameters.  E.g.:
+
+  def class Person(_name, _surname)
+  {
+    def slot name = _name
+    def slot surname = _surname
+    def slot birthday ; auto
+    def slot gender ; auto
+  }
+
+Here two parameters (name and surname) are fixed and mandatory; the other
+two (birthday and gender) are optional named parameters.
+
+
+
+Ctors of superclasses with specific arguments
+---------------------------------------------
+
+  def class Y(n) : ...
+  def class Z(n = 42) : ...
+
+  def class X : (Y, Z)
+  {
+    def slot a
+    def slot b
+
+    on super Y(11),
+             Z(n: 1234)    ;; not necessary but possible
+
+    on init() {
+      a = 5
+      b = 7
+    }
+  }
+
+
+Or?
+
+  def class X : (Y, Z)
+      prime Y(11),
+            Z(n: 1234)
+  {
+    def slot a
+    def slot b
+
+    on init() {
+      a = 5
+      b = 7
+    }
+  }
+
+
+Or?
+
+  def class X : (Y, Z)
+  {
+    def slot a
+    def slot b
+
+    on alloc() {
+      X(11)
+      Z(n: 1234)
+    }
+
+    on init() {
+      a = 5
+      b = 7
+    }
+
+    on assert() {
+      assert(a <> 0)
+      assert(b <> 0)
+    }
+  }
+
+
+
+Allocation and initialization of array objects
+----------------------------------------------
+
+The expression:
+
+  Int[](42)
+
+allocated an array of Ints with 42 slots.
+
+For variable declaration the expression:
+
+  let x : Int[] = Int[](42)
+
+can be short notated as:
+
+  let x : Int[42]
+
+
+
+Allocation of base types
+------------------------
+
+To create a base type like integers, chars, keywords, etc.  simply write
+the external representation of that type:
+
+  1234
+  \space
+  "Hello world"
+  #something
+  nil
+
+You can create such types from the normal apply syntax also.  What you get
+than is the **default** value of the particular type:
+
+  Int()        -> 0
+  Char()       -> \nul
+  String()     -> ""
+  Keyword()    -> #keyword
+  Nil()        -> nil
+
+
+
+The meta class type
+-------------------
+
+Every type has a meta type.  The common notation for this
+
+  Class<T>
+
+where T is the respective type, i.e. Class<Int>, Class<Person>, etc.
+
+Generic functions can be typed on this, which makes them effectively class
+methods.
+
+
+
+
+Implementation details for the runtime
+--------------------------------------
+
+MODEL A:
+
+- The compiler will handle base types (like Int, Char, Bool) different to
+  complex types (like Strings, Person).
+
+
+- base types are kept in place as long as the compiler can prove that it
+  knows the types statically.  Once the type gets blurry (e.g. add Any to
+  Int), base types are wrapped in a CELL object.
+
+
+- Complex objects' payload is held on heap.  They are based otherwise in a
+  CELL object, too.
+
+  struct ComplexObject {
+    Class* class;
+    Size_t refCount;
+    ...                   // payload
+  }
+
+  refcount is the reference counter required for the write-barrier.
+
+
+- The CONS object is a struct of the base form:
+
+  struct CELL {
+    TypeId typeId;
+    union {
+      int32 i_int32;
+      octet i_int8;
+      float i_float32;
+      uchar i_char;
+      void* obj;
+    } payload;
+  }
+
+  TypeId an integer identifying the type of the value.  The typeid does not
+  need to be a pointer to the real class struct since it is mostly used for
+  method lookup.  Additionally the typeid is an index into a type table.
+
+  The minimum struct is therefore 8 octets on a 32bit system resp. 16
+  octets on a 64bit system.
+
+  Note that this only applies to wrapped and complex objects.
+
+  Wrapped base types which fit into the platform register size are stored
+  in the payload members i_int32, i_int8, etc. directly, without heap
+  allocation.  Only larger types are heap allocated.
+
+
+  PRO:
+  - base types never require heap allocation (unless shared by closures)
+  - wrapping is cheap
+  - access to type is cheap and direct
+
+  CONTRA:
+  - a lot of ugly code (struct copying, initialization)
+  - typeid is stored in every CELL
+  - a lot of copying work
+
+
+Model B: why not the following implementation?
+
+- unwrapped object stay as they are (immediate).
+
+- complex wrapped objects:
+
+  typedef void* Complex;
+
+  struct ComplexObj {
+    TypeId typeid;
+    size_t refcount;
+    ....                    // payload
+  }
+
+
+  PRO:
+  - code will become much easier (no struct gehampel)
+  - the typeid is stored only once in the system and not with every
+    reference.
+  - less copy work on value assignment.
+  - shared objects for closures are easier to implement.
+
+  CONTRA:
+  - wrapping is expensive (requires heap access)
+  - method lookup requires indirection to heap object to get typeid.
+
+
+Lookup functions on base types
+------------------------------
+
+ - how is method lookup for base types done?  Does the compiler have to
+   generate something like:
+
+     call(lookup("add_2", typeid("UInt32"), typeid("UInt32")), 5, 8)
+
+   for a call
+
+     add(5, 8)
+
+
+   For a wrapped int this would be:
+
+     call(lookup("add_2", %a->typeId, %b->typeId), (int)%a->payload, (int)%b->payload)
+
+
+
+
+Auto Typechecks
+---------------
+
+Whenever the compiler does some default type acceptance (like pass an
+lang|Any to a lang|UInt32 parameter) it has to generate some type check
+code:
+
+    call ass_isa(%a->typeid, typeid("UInt32"))
+
+This will throw a TypeMismatchException if %a is not an "UInt32".
+
+

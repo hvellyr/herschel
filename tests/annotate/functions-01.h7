@@ -1,0 +1,21 @@
+def outln(str) ...
+
+def type Vehicle
+def type Car : Vehicle
+def type Ufo : Vehicle
+
+
+;; There can be multiple methods for one generic function
+
+def generic crash-into(object1 @ Any, object2 @ Any) ...
+
+def crash-into(o1 @ Car, o2 @ Car)
+  outln("Car crashed into car")
+
+def crash-into(o1 @ Ufo, o2 @ Car)
+  outln("Ufo crashed into car")
+
+
+def bar()
+  crash-into(5, 8)
+  true

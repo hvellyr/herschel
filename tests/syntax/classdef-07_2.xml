@@ -1,0 +1,287 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='Y'>
+<params>
+<param sym='n' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<slots>
+<def>
+<slot sym='_n'>
+<init>
+<symbol>n</symbol>
+</init>
+</slot>
+</def>
+</slots>
+<isa>
+<ty:type nm='Y' inst='t'>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='Y|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='Y' inst='t'>
+</ty:type>
+</type>
+</param>
+<param sym='n' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='Y' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<assign>
+<slotref  nm='_n'>
+<symbol>__obj_0</symbol>
+</slotref>
+<symbol>n</symbol>
+</assign>
+<symbol>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<class nm='Z'>
+<params>
+<param sym='n' type='key' key='n'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+<init>
+<int ty='lang|Int32'>42</int>
+</init>
+</param>
+</params>
+<slots>
+<def>
+<slot sym='_n'>
+<init>
+<symbol>n</symbol>
+</init>
+</slot>
+</def>
+</slots>
+<isa>
+<ty:type nm='Z' inst='t'>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='Z|init'>
+<params>
+<param sym='__obj_1' type='pos'>
+<type>
+<ty:type nm='Z' inst='t'>
+</ty:type>
+</type>
+</param>
+<param sym='n' type='key' key='n'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+<init>
+<int ty='lang|Int32'>42</int>
+</init>
+</param>
+</params>
+<rettype>
+<ty:type nm='Z' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<assign>
+<slotref  nm='_n'>
+<symbol>__obj_1</symbol>
+</slotref>
+<symbol>n</symbol>
+</assign>
+<symbol>__obj_1</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<class nm='X'>
+<slots>
+<def>
+<slot sym='a'>
+</slot>
+</def>
+<def>
+<slot sym='b'>
+</slot>
+</def>
+</slots>
+<on>
+<on key='init'>
+<params>
+<param sym='self' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<body>
+<block>
+<apply>
+<symbol>a!</symbol>
+<args>
+<symbol>self</symbol>
+<int ty='lang|Int32'>5</int>
+</args>
+</apply>
+<apply>
+<symbol>b!</symbol>
+<args>
+<symbol>self</symbol>
+<int ty='lang|Int32'>7</int>
+</args>
+</apply>
+</block>
+</body>
+</on>
+</on>
+<isa>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='Y'>
+</ty:ref>
+<ty:ref nm='Z'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='X|init'>
+<params>
+<param sym='__obj_2' type='pos'>
+<type>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='Y'>
+</ty:ref>
+<ty:ref nm='Z'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='Y'>
+</ty:ref>
+<ty:ref nm='Z'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<block>
+<apply>
+<symbol>Y|init</symbol>
+<args>
+<symbol>__obj_2</symbol>
+<int ty='lang|Int32'>11</int>
+</args>
+</apply>
+<apply>
+<symbol>Z|init</symbol>
+<args>
+<symbol>__obj_2</symbol>
+<arg key='n'>
+<int ty='lang|Int32'>1234</int>
+</arg>
+</args>
+</apply>
+<assign>
+<slotref  nm='a'>
+<symbol>__obj_2</symbol>
+</slotref>
+<symbol>lang|nil</symbol>
+</assign>
+<assign>
+<slotref  nm='b'>
+<symbol>__obj_2</symbol>
+</slotref>
+<symbol>lang|nil</symbol>
+</assign>
+<apply>
+<function>
+<params>
+<param sym='self' type='pos'>
+<type>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='Y'>
+</ty:ref>
+<ty:ref nm='Z'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<body>
+<block>
+<apply>
+<symbol>a!</symbol>
+<args>
+<symbol>self</symbol>
+<int ty='lang|Int32'>5</int>
+</args>
+</apply>
+<apply>
+<symbol>b!</symbol>
+<args>
+<symbol>self</symbol>
+<int ty='lang|Int32'>7</int>
+</args>
+</apply>
+</block>
+</body>
+</function>
+<args>
+<symbol>__obj_2</symbol>
+</args>
+</apply>
+<symbol>__obj_2</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

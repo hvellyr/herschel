@@ -1,0 +1,22 @@
+def type Ixable<T>
+def type Wexable<T>
+
+def class X<T, Y>(a : T, b : Y) : (Ixable<T>, Wexable<Y>)
+{
+  def slot a0
+  def slot a1 : T
+  def slot a2 : T = a
+  def slot a3 : T = a, readonly
+  def slot a4 : T = a, transient
+  def slot a5 : T = a, public
+  def slot a6 : T = a, readonly, transient
+  def slot a7 : T = a, readonly, transient, inner
+
+  def slot a8 : T, readonly
+  def slot a9 : T, transient
+  def slot a10 : T, public
+  def slot a11 : T, readonly, transient
+  def slot a12 : T, readonly, transient, inner
+
+  def slot a13 : &(T, Bool), outer
+}

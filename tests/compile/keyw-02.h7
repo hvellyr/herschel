@@ -1,0 +1,13 @@
+;; compare keywords returned from a function to be equal
+
+def foo()
+  #blue
+
+def bar()
+  #blue
+
+def app|main()
+  if (foo() == bar())
+    42
+  else
+    0

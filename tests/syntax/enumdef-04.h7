@@ -1,0 +1,18 @@
+def enum K1 : Keyword
+{
+  apple
+  orange
+  pear
+}
+
+def const k1 = #[apple, orange, pear]
+
+
+def enum K2 : Keyword
+{
+  apple2 = #apfel
+  orange2
+  pear2 = #birne
+}
+
+def const k2 = #[apple2, orange2, pear2]

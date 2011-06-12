@@ -1,0 +1,11 @@
+import "lang/assert.h7"
+
+def class Student
+{
+  def slot name : Int, auto
+}
+
+def app|main()
+  let t = Student[](16)
+
+  42

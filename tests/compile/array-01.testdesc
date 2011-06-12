@@ -1,0 +1,6 @@
+{
+  'retc': 42,
+  'runtime-options': 'allocate',
+  'stderr': [ "Create instance of type '.*QN7Student'x16.*" ]
+}
+

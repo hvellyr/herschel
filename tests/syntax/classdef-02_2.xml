@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<type nm='C'>
+<isa>
+<ty:type nm='C'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='D'>
+<isa>
+<ty:type nm='D'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='E'>
+<isa>
+<ty:type nm='E'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='F'>
+<isa>
+<ty:type nm='F'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<class nm='X'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<slots>
+<def>
+<slot sym='x' readonly='t'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+<init>
+<symbol>a</symbol>
+</init>
+</slot>
+</def>
+<def>
+<slot sym='y' readonly='t' transient='t'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+<init>
+<symbol>b</symbol>
+</init>
+</slot>
+</def>
+<def>
+<slot sym='z' transient='t'>
+<type>
+<ty:ref nm='Cache'>
+</ty:ref>
+</type>
+</slot>
+</def>
+</slots>
+<isa>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='C'>
+</ty:ref>
+<ty:ref nm='D'>
+</ty:ref>
+<ty:ref nm='E'>
+</ty:ref>
+<ty:ref nm='F'>
+<ty:gen>
+<ty:ref gen='t' nm='B'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='A'>
+</ty:ref>
+<ty:ref gen='t' nm='B'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='X|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='C'>
+</ty:ref>
+<ty:ref nm='D'>
+</ty:ref>
+<ty:ref nm='E'>
+</ty:ref>
+<ty:ref nm='F'>
+<ty:gen>
+<ty:ref gen='t' nm='B'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='A'>
+</ty:ref>
+<ty:ref gen='t' nm='B'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</type>
+</param>
+<param sym='a' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='X' inst='t'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='C'>
+</ty:ref>
+<ty:ref nm='D'>
+</ty:ref>
+<ty:ref nm='E'>
+</ty:ref>
+<ty:ref nm='F'>
+<ty:gen>
+<ty:ref gen='t' nm='B'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='A'>
+</ty:ref>
+<ty:ref gen='t' nm='B'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</rettype>
+<body>
+<block>
+<assign>
+<slotref  nm='x'>
+<symbol>__obj_0</symbol>
+</slotref>
+<symbol>a</symbol>
+</assign>
+<assign>
+<slotref  nm='y'>
+<symbol>__obj_0</symbol>
+</slotref>
+<symbol>b</symbol>
+</assign>
+<assign>
+<slotref  nm='z'>
+<symbol>__obj_0</symbol>
+</slotref>
+<symbol>lang|nil</symbol>
+</assign>
+<symbol>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

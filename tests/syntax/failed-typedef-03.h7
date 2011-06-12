@@ -1,0 +1,10 @@
+;; check that def type does not take a {} and that we properly continue
+;; scanning afterwards
+
+def type Abc
+{
+  def generic hello() ...
+}
+
+def type Xyz
+

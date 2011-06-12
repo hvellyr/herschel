@@ -1,0 +1,224 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='Abc'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:ref gen='t' nm='X'>
+<ty:const k='isa'>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<slots>
+<def>
+<slot sym='a' readonly='t'>
+<type>
+<ty:ref gen='t' nm='X'>
+<ty:const k='isa'>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+<init>
+<symbol>x</symbol>
+</init>
+</slot>
+</def>
+<def>
+<slot sym='b'>
+<type>
+<ty:ref gen='t' nm='X'>
+<ty:const k='isa'>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+<init>
+<binary op='*'>
+<symbol>x</symbol>
+<int ty='lang|Int32'>2</int>
+</binary>
+</init>
+</slot>
+</def>
+</slots>
+<isa>
+<ty:type nm='Abc' inst='t'>
+<ty:isa>
+<ty:ref nm='lang|Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+<ty:const k='isa'>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='Abc|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='Abc' inst='t'>
+<ty:isa>
+<ty:ref nm='lang|Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+<ty:const k='isa'>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</type>
+</param>
+<param sym='x' type='pos'>
+<type>
+<ty:ref gen='t' nm='X'>
+<ty:const k='isa'>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='Abc' inst='t'>
+<ty:isa>
+<ty:ref nm='lang|Collection'>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+<ty:const k='isa'>
+<ty:ref nm='Copyable'>
+</ty:ref>
+</ty:const>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:isa>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</rettype>
+<body>
+<block>
+<assign>
+<slotref  nm='a'>
+<symbol>__obj_0</symbol>
+</slotref>
+<symbol>x</symbol>
+</assign>
+<assign>
+<slotref  nm='b'>
+<symbol>__obj_0</symbol>
+</slotref>
+<binary op='*'>
+<symbol>x</symbol>
+<int ty='lang|Int32'>2</int>
+</binary>
+</assign>
+<symbol>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<generic sym='req' abstract='true'>
+<params>
+<param sym='x' type='spec'>
+<type>
+<ty:ref nm='Abc'>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='Abc'>
+<ty:gen>
+<ty:ref gen='t' nm='X'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+<def>
+<type nm='Y'>
+<isa>
+<ty:type nm='Y'>
+<ty:isa>
+<ty:ref nm='Z'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<func sym='f0' abstract='true'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+</func>
+</def>
+<def>
+<type nm='Y2'>
+<isa>
+<ty:type nm='Y2'>
+<ty:isa>
+<ty:ref nm='Z2'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<generic sym='f3' abstract='true'>
+<params>
+<param sym='t' type='spec'>
+<type>
+<ty:ref nm='Y2'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+</generic>
+</def>
+</compile-unit>

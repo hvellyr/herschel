@@ -1,0 +1,16 @@
+def f0(k, m)
+  for (k > m)
+    do-something(k, m)
+  else
+    eof
+
+
+def f1(k, m)
+  for (i = 0 then i + 1,
+       i mod 211 <> m)
+    if (k == m)
+      outln("+")
+    else
+      outln("-")
+  else
+    eof

@@ -1,0 +1,8 @@
+module core
+{
+  def i = 0
+}
+
+module xyz
+
+  def e = 2

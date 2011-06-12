@@ -1,0 +1,10 @@
+def a = f[1]
+def b = f[1][2]
+def c = f[1].g()
+def d = f[1][2].g()
+def e = f[g[1]]
+def k = f[1](2)[3]
+def l = f().g[1]
+def lx = slice(g(f()), 1)
+
+

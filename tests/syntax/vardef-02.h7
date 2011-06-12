@@ -1,0 +1,2 @@
+def const a = 5
+def const name = "hello, world!"

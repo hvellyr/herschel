@@ -1,0 +1,70 @@
+Ok, we need to do the parser again.
+
+1) a first pass parser which translates the token from the tokenizer into
+   the basic language patterns seq, nested, id, lit, punct.  The basic
+   language patterns are:
+
+   in this first pass identify extract macros and put them aside.  Identify
+   possible macro calls and wrap the relevant ast-parts into a macro-call
+   wrapper (see above).  Expand the macro call until the relevant code has
+   no further macro-calls; replace the original code with the replacement.
+
+2) In a second pass build real syntax trees from the language pattern
+   classes.  These are used for the further compilation.  Identify
+   expressions, function calls, loops, etc.
+
+
+
+Example
+-------
+
+Source:
+
+def macro exp {
+  { exp(?n:expr, ?m:expr) } -> { ?n ** ?m }
+}
+
+def a(ofs : Int, args ...)
+  exp(args[0], args[1])
+
+
+first pass scan without macro expansion:
+
+(seq (id "def")
+     (id "a")
+     (nested "(" ")" (seq (id "ofs")
+                          (punct ":")
+                          (id "Int"))
+                     (punct ",")
+                     (id "args") (id "..."))
+     (macro-call "exp"
+        (nested "(" ")" (seq (id "args")
+                             (nested "[" "]" (lit 0)))
+                        (punct ",")
+                        (seq (id "args")
+                             (nested "[" "]" (lit 1))) )) )
+
+
+Macroexansion: 
+
+(seq (id "def")
+     (id "a")
+     (nested "(" ")" (seq (id "ofs")
+                          (punct ":")
+                          (id "Int"))
+                     (punct ",")
+                     (id "args") (id "..."))
+     (seq (seq (id "args")
+               (nested "[" "]" (lit 0)))
+          (id "**")
+          (seq (id "args")
+               (nested "[" "]" (lit 1))) ))
+
+
+Syntax tree:
+
+(function-def "a" params: #( (ofs type: Int)
+                             (args rest))
+                  body: (binary "**"
+                                (apply "slice" "args" 0)
+                                (apply "slice" "args" 1)))

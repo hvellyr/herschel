@@ -1,0 +1,262 @@
+Lazy evaluation
+---------------
+
+  The typical log problem.  The string is created before we decide whether
+  we should log.  Either use macros:
+
+    def macro log
+    {
+      { log(?level:expr, ?msg:expr) } -> { if (should-log(?level))
+                                             log-impl(?msg)
+                                         }
+    }
+
+  Or support lazy evaluation.  Since we will have the notion of "promises"
+  anyway (for spawn and synchronization), this can be made first class:
+
+    def log(level : Keyword, lazy msg : String)
+      if (should-log(level))
+        do-whatever-is-necessary(msg)
+
+  Technically this can be done by the compiler as such.  The following
+  example:
+
+    log(#debug, StringBuffer().append("error ")
+                              .append(exc.to-string)
+                              .append("(").append(exc.details).append(")")
+                              .to-string)
+
+  can be compiled as:
+
+    log(#debug, {
+                  let msg = nil
+
+                  function() : String {
+                    if (msg.nil?)
+                      msg = StringBuffer().append("error ")
+                                          .append(exc.to-string)
+                                          .append("(").append(exc.details).append(")")
+                                          .to-string
+                    msg
+                  }
+                })
+
+  The log-implementation would look like:
+
+    def log(level : Keyword, lazy msg : String)
+      if (should-log(level))
+        do-whatever-is-necessary(msg())
+
+
+  Some better notation for this.  Lazy evaluation is probably important
+  enough to have "real" syntax for it.  Some ideas:
+
+    def log(level : Keyword, lazy msg : String) ...
+    def log(level : Keyword, &lazy msg : String) ...
+
+  Is being lazy a quality of the variable 'msg'?  or of the type?  Since
+  being lazy and a reference is semantically strange we can declare them
+  mutual exclusive and use the same prefix notation space for this:
+
+    def log(level : Keyword, msg : String) ...      -- call by value
+    def log(level : Keyword, msg : ^String) ...     -- call by reference
+    def log(level : Keyword, msg : ,String) ...     -- call by lazy value (1)
+    def log(level : Keyword, msg : *(String)) ...   -- call by lazy value (2)
+    def log(level : Keyword, msg : (*)String) ...   -- call by lazy value (3)
+    def log(level : Keyword, msg : =>String) ...    -- call by lazy value (4)
+
+
+
+Function contracts
+------------------
+
+  Functions can be annotated by pre and post conditions.  These are
+  actually part of the function signature and can be specified for abstract
+  functions only.  Specialization must at least fulfill these contracts:
+
+    def generic register-foo(reg @ Registry, foo @ 'T) : Registry
+        where T isa Copyable
+        on in foo <> nil
+        on out(r) reg.key?(foo.name) and r == reg
+     reg.put(foo.name, foo)
+     reg
+
+  These "on in" and "on out" statements are evaluated on entrance and exit
+  of the function resp.  Only if both evaluate to true the contract is
+  fulfilled, otherwise and AssertException is thrown.
+
+  The "on out" statement is run after an "on exit" statement, where the
+  function body's return value is passed in as 'r'.
+
+  Another way to put pre and post conditions to functions is to declare an
+  "on assert" statement in a class.  Such class invariants are run if a
+  class instance is passed to the "assert" function:
+
+    def class Date(d : Int, h : Int)
+    {
+      def slot day : Int = d
+      def slot hour : Int = h
+
+      on assert (c) {
+        assert(1 <= day and <= 31)
+        assert(0 <= hour and hour < 24)
+      }
+    }
+
+    def generic add-day(date @ Date, day : Int) : Date
+        on in assert(date)
+        on out(r) r <> date and assert(r)
+      Date(date.day + day, date.hour)
+
+  The "on assert" statement is automatically called as last command from
+  the class constructor, i.e. even after an "on init" statement.
+
+  Pre and post conditions are normally not compiled in release versions.
+
+
+Accessing slots
+---------------
+
+Slot access using the slot() and slot!() function doesn't seem to be the
+right approach.  Esp.: how can we make this type safe?  There's no way to
+bind the slot() function's type to the slot definition.
+
+  def class Xi
+  {
+    def slot name : String
+  }
+
+  let t : Xi
+
+
+So how to access and assign slots to 't' now?
+
+  t.slot(#name)
+  t.slot(#name) = "N.N."
+
+  => problem is that this tedious to type, not really nice, and is
+     difficult to do type safe if slot() is really treated as a function.
+
+An abbreviated form?:
+
+  t[name]
+  t[name] = "N.N."
+
+  => Problem is that this is not distinguishable from array access.
+
+
+So I guess we need a special access syntax?  One which is hopefully usefull
+for a struct extension later, too.  What's about this:
+
+   t^name
+   t^name = "N.N."
+
+(In text books the '^' should be printed as a proper arrow up.)  Since the
+^ is between an expression ('t') and a symbol ('name'), it can't be
+confused with the reference syntax.
+
+
+
+Rethink referencable types
+--------------------------
+
+This complete idea about pass-by-value vs. pass-by-reference is somewhat
+strange.  Most likely it will result in lot's of bugs (e.g. you expect to
+modify the passed value, where you actually modify a copy of it, since you
+forgot the ^ on the type declaration...).  So what we really need is the
+const/immutable thing.
+
+All values passed to functions are by default const.  If a parameter is to
+be modifiable it is to be declared as 'var':
+
+  def foo(var a : Int) var : Int
+
+- you can't modify slots on const parameters
+
+- you can't assign values to const parameters (like you can't do with const
+  variables)
+
+- you can't pass constant values to functions which take a variable value
+
+- you can't return constant values from functions which has a variable
+  return value
+
+
+
+
+Du hast Dir doch immer ein Haustier gewünscht, oder?
+
+
+Less obscur syntax for union types
+----------------------------------
+
+Instead of &(String, Eof) use (String or Eof)
+
+   def alias StringOrEof = (String or Eof)
+
+
+Used character of Ascii
+-----------------------
+
+
+    Herschel                            C
+-------------------------------------------------------------
+!   identifier                          not
+    modifable function marker
+"   string separator                    string
+#   keyword notation                    preproc
+    constant array notation
+$   identifier                          [----------]
+%   identifier                          operator (mod)
+    operator (fold)
+&   Complex type notation               operator (&, &&)
+                                        pointer ref op.
+'   Implicit type generics              char
+    Units
+()  arguments                           arguments
+    grouping
+*   operator (*, **)                    operator(*)
+    identifier                          pointer ref op.
++   operator (+, ++)                    operator(+)
+    identifier
+,   parameter separator                 prm separator
+-   identifier                          operator (-)
+    operator (-)
+    negative numbers
+.   function call                       struct member
+    float notation                      float notation
+    operator (..)
+    vararg notation (...)               vararg notation (...)
+/   operator (div)                      operator(div)
+    identifier
+0-9 digits                              digits
+    identifier                          identifier
+:   keyword arguments                   ternary operator
+    type separator
+;   comment starter (;;)                stmt terminator
+<>  operator (<, >, <=, >=, <>, ->)     operator(...)
+    parametrization
+=   operator (==, <=, >=)               operator(==)
+    assignment                          assignment
+    parameter default
+?   identifier                          ternary operator
+    macro variable marker
+@   specialize marker                   [----------]
+A-Z digits                              digits
+    identifier                          identifier
+[]  slicing                             array
+    arrays
+\   char constants                      escaping
+^   call-by-reference                   operator (xor)
+    slot reference
+_   identifier                          identifier
+    current type notifier
+`   [----------]                        [----------]
+a-z digits                              digits
+    identifier                          identifier
+{}  code block                          code block
+|   modname separator                   operator (|, ||)
+    select/match case marker
+~   docstring limiter                   operator (bit not)
+
+

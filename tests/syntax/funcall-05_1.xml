@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>f</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>slice</id>
+<nested left='(' right=')'>
+<seq>
+<id>b</id>
+<nested left='(' right=')'>
+<id>a</id>
+</nested>
+</seq>
+<punct type=','/>
+<lit type='int'>1</lit>
+</nested>
+</seq>
+<nested left='(' right=')'/>
+</seq>
+</nested>
+</seq>
+</seq>

@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='value-iterators'>
+<params>
+<param sym='root' type='pos'>
+<type>
+<ty:ref nm='Pair'>
+<ty:gen>
+<ty:ref nm='lang|String'>
+</ty:ref>
+<ty:ref nm='_'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<symbol>lang|unspecified</symbol>
+</body>
+</func>
+</def>
+</compile-unit>

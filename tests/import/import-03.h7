@@ -1,0 +1,11 @@
+;; test for importing and modules
+
+;; ignore-green-03 imports ignore-green-03b which declares MyNumber
+;; **inside** of its module definition.  The imported MyNumber declaration
+;; is therefore not visible here (i.e. a is of type 'MyNumber', not 'lang|Float').
+
+module a1
+
+import "import/ignore-green-03.h7"
+
+def a : MyNumber = 12

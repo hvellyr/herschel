@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>xyz</id>
+<punct type=':'/>
+<seq>
+<seq>
+<id>Vector</id>
+<nested left='&lt;' right='>'>
+<seq>
+<id>Byte</id>
+<nested left='[' right=']'/>
+</seq>
+</nested>
+</seq>
+<nested left='[' right=']'>
+<lit type='int'>100</lit>
+</nested>
+</seq>
+<punct type='='/>
+<id>nil</id>
+</seq>
+<seq>
+<id>def</id>
+<id>buffer</id>
+<punct type=':'/>
+<seq>
+<id>Byte</id>
+<nested left='[' right=']'>
+<lit type='int'>256</lit>
+</nested>
+</seq>
+</seq>
+</seq>

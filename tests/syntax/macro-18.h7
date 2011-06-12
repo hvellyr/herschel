@@ -1,0 +1,11 @@
+def macro stringfy
+{
+  { stringfy(?a:expr) } -> { ?"a" }
+}
+
+
+def f(a, b, c, proc)
+  stringfy(for (i : Int in a .. b)
+             proc(i, c)
+           else
+             nil)

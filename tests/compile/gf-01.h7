@@ -1,0 +1,9 @@
+module xi
+
+def type Dog
+
+def generic make-noise(o @ Dog) ...
+
+
+def app|main()
+  42

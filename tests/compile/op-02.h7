@@ -1,0 +1,10 @@
+def foo(n : Int) : Bool
+  5 rem n == 0
+
+
+def app|main()
+  if (foo(3))
+    1
+  else
+    0
+

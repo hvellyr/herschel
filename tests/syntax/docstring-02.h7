@@ -1,0 +1,41 @@
+def class Abc<X>(x : X) : Collection<X>
+    where X isa Copyable
+    ~ Some X for a U ~
+{
+def slot a : X
+    ~ The a of X ~
+    = x, readonly
+def slot b : X
+    ~ X's b ~
+    = x * 2
+}
+
+def generic req(x @ Abc<'X>) : Abc<'X> ...
+    ~ required! ~
+
+
+def type Y : Z
+    ~ Another Y ~
+
+def f0() ...
+    ~ Some f0 ~
+
+def type Y2 : Z2
+    ~ Some Y2 ~
+
+def generic f3(t @ Y2) ...
+    ~ more on that ~
+
+
+def alias StringList 
+    ~ A list of strings ~
+    = List<String>
+
+def alias SortableList<T>
+    where T isa Comparable
+    ~ A list of strings ~
+    = List<String>
+
+;; def x : SortableList<Char>
+
+
