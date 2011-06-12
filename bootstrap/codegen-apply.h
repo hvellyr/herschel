@@ -41,6 +41,10 @@ namespace herschel
     llvm::Value* emit(const ApplyNode* node) const;
 
   private:
+    friend class ArrayAllocateStrategy;
+    friend class AtomArrayAllocateStrategy;
+    friend class Int32ArrayAllocateStrategy;
+
     llvm::Value* emitTypeNameForAllocate(const AptNode* node) const;
     llvm::Value* emitAllocateApply(const ApplyNode* node) const;
     llvm::Value* emitAllocateArrayApply(const ApplyNode* node) const;
@@ -51,9 +55,6 @@ namespace herschel
     llvm::Value* emitPtrToSlot(const ApplyNode* node, bool isStore) const;
 
     llvm::Function* lazyDeclareExternFunction(const SymbolNode* symNode) const;
-
-    llvm::Value* emitAllocateAtomArrayApply(const ApplyNode* node) const;
-    llvm::Value* emitAllocateInt32ArrayApply(const ApplyNode* node) const;
   };
 };                              // namespace
 
