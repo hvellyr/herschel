@@ -64,7 +64,8 @@ displayHelp()
   printf("     --define=VAR=VALUE\n");
   printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
   printf("                               {tokenizer|pass1|pass2|annotate|\n");
-  printf("                                transform|typify|import|macro}\n");
+  printf("                                transform|typify|import|macro|\n");
+  printf("                                codedump|typeconv}\n");
   printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
   printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
   printf("  -O                           Optimize code more\n");
