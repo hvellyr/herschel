@@ -175,6 +175,8 @@ namespace herschel
     void displayType(Port<Octet>* port, const char* tagName, const Type& type);
     void displayTypeVector(Port<Octet>* port,
                            const char* tagName, const TypeVector& types);
+
+    String displayTypeConv(const AptNode* node);
   };
 };                              // namespace
 

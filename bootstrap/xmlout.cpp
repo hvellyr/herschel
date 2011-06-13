@@ -14,6 +14,7 @@
 #include "port.h"
 #include "apt.h"
 #include "strbuf.h"
+#include "properties.h"
 
 #include "string.h"
 #include <typeinfo>
@@ -177,6 +178,28 @@ herschel::xml::displayTypeVector(Port<Octet>* port, const char* tagName, const T
       herschel::display(port, types[i].toString());
     displayCloseTag(port, tagName);
   }
+}
+
+
+//----------------------------------------------------------------------------
+
+String
+herschel::xml::displayTypeConv(const AptNode* node)
+{
+  StringBuffer attrs;
+
+  switch (node->typeConv())
+  {
+  case kNoConv:         attrs << " conv='none'"; break;
+  case kTypeCheckConv:  attrs << " conv='check'"; break;
+  case kAtom2PlainConv: attrs << " conv='atom2plain'"; break;
+  case kPlain2AtomConv: attrs << " conv='plain2atom'"; break;
+  };
+
+  if (node->type() != node->dstType())
+    attrs << " dstty='" << node->dstType().typeId() << "'";
+
+  return attrs.toString();
 }
 
 
@@ -1020,6 +1043,9 @@ XmlRenderer::renderNode(const ApplyNode* node)
 
   if (fShowNodeType && node->type().isDef())
     attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+
+  if (Properties::isTypeConvDump())
+    attrs << xml::displayTypeConv(node);
 
   displayOpenTagAttrs("apply", StrHelper(attrs.toString()));
   displayNode(NULL, node->base());
