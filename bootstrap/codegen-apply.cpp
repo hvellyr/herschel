@@ -175,6 +175,15 @@ CodegenApply::emit(const ApplyNode* node) const
   if (inlineRetv) {
     builder().CreateCall(calleeFunc, argv.begin(), argv.end());
 
+    if (alwaysPassAtom &&
+        node->dstType().isPlainType() && node->typeConv() == kNoConv)
+    {
+      llvm::Value* val = tools()->wrapLoad(retv);
+      return tools()->emitPackCode(node->dstType(),
+                                   kAtom2PlainConv,
+                                   val, node->type());
+    }
+
     // TODO: if in tail position enforce ATOM return type?
     return retv;
   }
