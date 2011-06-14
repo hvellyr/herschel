@@ -142,18 +142,24 @@ CodegenTools::getMemCpyFn(const llvm::Type* dstType,
 
 //------------------------------------------------------------------------------
 
+llvm::Value*
+CodegenTools::emitTypeId(Typeid typid) const
+{
+  if (fGenerator->is64Bit())
+    return llvm::ConstantInt::get(fGenerator->context(),
+                                  llvm::APInt(64, (int)typid, !K(isSigned)));
+  else
+    return llvm::ConstantInt::get(fGenerator->context(),
+                                  llvm::APInt(32, (int)typid, !K(isSigned)));
+}
+
+
 void
 CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
 {
   llvm::Value* typidSlot = builder().CreateStructGEP(atom, 0);
-  llvm::Value* typeIdValue = NULL;
-  if (fGenerator->is64Bit())
-    typeIdValue = llvm::ConstantInt::get(fGenerator->context(),
-                                         llvm::APInt(64, (int)typid, !K(isSigned)));
-  else
-    typeIdValue = llvm::ConstantInt::get(fGenerator->context(),
-                                         llvm::APInt(32, (int)typid, !K(isSigned)));
-  
+  llvm::Value* typeIdValue = emitTypeId(typid);
+
   builder().CreateStore(typeIdValue, typidSlot);
 
   llvm::Value* payload = builder().CreateStructGEP(atom, 1);
@@ -367,3 +373,20 @@ CodegenTools::createCastPtrToNativeInt(llvm::Value* value) const
 }
 
 
+
+//----------------------------------------------------------------------------------------
+
+llvm::Value*
+CodegenTools::emitSizeTValue(size_t value) const
+{
+  if (fGenerator->is64Bit())
+    return llvm::ConstantInt::get(fGenerator->context(),
+                                  llvm::APInt(64,
+                                              value,
+                                              !K(isSigned)));
+  else
+    return llvm::ConstantInt::get(fGenerator->context(),
+                                  llvm::APInt(32,
+                                              value,
+                                              !K(isSigned)));
+}

@@ -86,6 +86,10 @@ namespace herschel
     //! enough to fit to the pointer.
     llvm::Value* createCastPtrToNativeInt(llvm::Value* value) const;
 
+    llvm::Value* emitTypeId(Typeid typid) const;
+
+    llvm::Value* emitSizeTValue(size_t value) const;
+
   private:
     const char* getConvFuncNameByType(const Type& type) const;
     const llvm::Type* getConvTypeByType(const Type& type) const;

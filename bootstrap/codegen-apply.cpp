@@ -347,10 +347,7 @@ CodegenApply::emitAllocateAtomArrayApply(const ApplyNode* node) const
   // llvm::Value* itemsVal = tools()->wrapLoad(generator()->codegenNode(sizeNode));
   // itemsVal = tools()->emitPackCode(sizeNode->dstType(), sizeNode->typeConv(),
   //                                  itemsVal, sizeNode->type());
-  llvm::Value* itemsVal = llvm::ConstantInt::get(context(),
-                                                 llvm::APInt(64,
-                                                             sizeNode->value(),
-                                                             K(IsSigned)));
+  llvm::Value* itemsVal = tools()->emitSizeTValue(sizeNode->value());
 
   hr_assert(itemsVal != NULL);
   argv.push_back(itemsVal);
@@ -439,10 +436,7 @@ CodegenApply::emitAllocateInt32ArrayApply(const ApplyNode* node) const
     return NULL;
   }
 
-  argv.push_back(llvm::ConstantInt::get(context(),
-                                        llvm::APInt(64,
-                                                    (uint64_t)CodegenTools::kAtomInt32Array,
-                                                    !K(IsSigned))));
+  argv.push_back(tools()->emitTypeId(CodegenTools::kAtomInt32Array));
 
   argv.push_back(initValue);
 
@@ -450,10 +444,7 @@ CodegenApply::emitAllocateInt32ArrayApply(const ApplyNode* node) const
   // llvm::Value* itemsVal = tools()->wrapLoad(generator()->codegenNode(sizeNode));
   // itemsVal = tools()->emitPackCode(sizeNode->dstType(), sizeNode->typeConv(),
   //                                  itemsVal, sizeNode->type());
-  llvm::Value* itemsVal = llvm::ConstantInt::get(context(),
-                                                 llvm::APInt(64,
-                                                             sizeNode->value(),
-                                                             K(IsSigned)));
+  llvm::Value* itemsVal = tools()->emitSizeTValue(sizeNode->value());
 
   hr_assert(itemsVal != NULL);
   argv.push_back(itemsVal);
