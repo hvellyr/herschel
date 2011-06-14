@@ -355,10 +355,7 @@ public:
 
   virtual llvm::Value* typeTagArgument(const ApplyNode* node) const
   {
-    return llvm::ConstantInt::get(fApply->context(),
-                                  llvm::APInt(64,
-                                              (uint64_t)CodegenTools::kAtomInt32Array,
-                                              !K(IsSigned)));
+    return fApply->tools()->emitTypeId(CodegenTools::kAtomInt32Array);
   }
 };
 };
@@ -454,10 +451,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   // llvm::Value* itemsVal = tools()->wrapLoad(generator()->codegenNode(sizeNode));
   // itemsVal = tools()->emitPackCode(sizeNode->dstType(), sizeNode->typeConv(),
   //                                  itemsVal, sizeNode->type());
-  llvm::Value* itemsVal = llvm::ConstantInt::get(context(),
-                                                 llvm::APInt(64,
-                                                             sizeNode->value(),
-                                                             K(IsSigned)));
+  llvm::Value* itemsVal = tools()->emitSizeTValue(sizeNode->value());
 
   hr_assert(itemsVal != NULL);
   argv.push_back(itemsVal);
