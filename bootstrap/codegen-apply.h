@@ -55,6 +55,8 @@ namespace herschel
     llvm::Value* emitPtrToSlot(const ApplyNode* node, bool isStore) const;
 
     llvm::Function* lazyDeclareExternFunction(const SymbolNode* symNode) const;
+
+    llvm::Value* emitSliceSingleSlot(const ApplyNode* node) const;
   };
 };                              // namespace
 
