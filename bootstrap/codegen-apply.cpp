@@ -111,6 +111,11 @@ CodegenApply::emit(const ApplyNode* node) const
       return emitAllocateApply(node);
     else if (symNode->name() == Names::kLangAllocateArray)
       return emitAllocateArrayApply(node);
+    else if (symNode->name() == Names::kLangSlice) {
+      const NodeList& args = node->children();
+      if (args.size() == 2 && args[0]->type().isArray())
+        return emitSliceSingleSlot(node);
+    }
 
     if (symNode->hasCLinkage()) {
       // generic functions are not allowed to have C linkage
@@ -463,4 +468,31 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
 
   // TODO: if in tail position enforce ATOM return type?
   return retv;
+}
+
+
+//----------------------------------------------------------------------------------------
+
+llvm::Value*
+CodegenApply::emitSliceSingleSlot(const ApplyNode* node) const
+{
+  const NodeList& args = node->children();
+  hr_assert(args.size() == 2);
+  hr_assert(args[0]->type().isArray());
+
+  const IntNode* idxNode = dynamic_cast<const IntNode*>(args[1].obj());
+  hr_assert(idxNode != NULL);
+
+  llvm::Value* array = generator()->codegenNode(args[0]);
+
+  llvm::Value* arrayPayload = builder().CreateStructGEP(array, 1);
+  llvm::Value* arraySlot = builder().CreateStructGEP(arrayPayload, 0);
+
+  const llvm::Type* arrayType = llvm::ArrayType::get(types()->getType(node->type()),
+                                                     0)->getPointerTo();
+  llvm::Value* typedArray = builder().CreatePointerCast(arraySlot, arrayType);
+
+  llvm::Value* val = builder().CreateStructGEP(typedArray, idxNode->value());
+
+  return builder().CreateLoad(val);
 }
