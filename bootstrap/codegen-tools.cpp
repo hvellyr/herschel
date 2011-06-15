@@ -312,8 +312,6 @@ CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) con
   std::vector<llvm::Value*> argv;
   argv.push_back(val);
 
-  convFunc->dump();
-  val->dump();
   return builder().CreateCall(convFunc, argv.begin(), argv.end());
 }
 
