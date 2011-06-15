@@ -170,7 +170,6 @@ CodegenApply::emit(const ApplyNode* node) const
     val = tools()->emitPackCode(args[i]->dstType(), args[i]->typeConv(),
                                 val, args[i]->type());
 
-    // val->dump();
     if (val == NULL)
       return NULL;
 
@@ -193,8 +192,7 @@ CodegenApply::emit(const ApplyNode* node) const
     return retv;
   }
   else {
-    llvm::Value* funcVal = builder().CreateCall(calleeFunc, argv.begin(), argv.end(),
-                                               "xxx");
+    llvm::Value* funcVal = builder().CreateCall(calleeFunc, argv.begin(), argv.end());
     if (node->isInTailPos()) {
       // TODO: return type id
       tools()->setAtom(retv, CodegenTools::kAtomInt32, funcVal);
@@ -415,6 +413,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
     typeNode = dynamic_cast<const SymbolNode*>(args[0].obj());
     hr_assert(typeNode != NULL);
 
+    // TODO: the size can be passed as expression!
     sizeNode = dynamic_cast<const IntNode*>(args[1].obj());
     hr_assert(sizeNode != NULL);
 
@@ -432,6 +431,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
     initValue = tools()->emitPackCode(valueNode->dstType(), valueNode->typeConv(),
                                       initValue, valueNode->type());
 
+    // TODO: the size can be passed as expression!
     sizeNode = dynamic_cast<const IntNode*>(args[2].obj());
     hr_assert(sizeNode != NULL);
   }
@@ -474,19 +474,40 @@ CodegenApply::emitSliceSingleSlot(const ApplyNode* node) const
   hr_assert(args.size() == 2);
   hr_assert(args[0]->type().isArray());
 
-  const IntNode* idxNode = dynamic_cast<const IntNode*>(args[1].obj());
-  hr_assert(idxNode != NULL);
-
   llvm::Value* array = generator()->codegenNode(args[0]);
 
   llvm::Value* arrayPayload = builder().CreateStructGEP(array, 1);
   llvm::Value* arraySlot = builder().CreateStructGEP(arrayPayload, 0);
 
   const llvm::Type* arrayType = llvm::ArrayType::get(types()->getType(node->type()),
-                                                     0)->getPointerTo();
+                                                     0)->getPointerTo()
+                                                       ->getPointerTo();
   llvm::Value* typedArray = builder().CreatePointerCast(arraySlot, arrayType);
 
-  llvm::Value* val = builder().CreateStructGEP(typedArray, idxNode->value());
+  llvm::Value* val;
+  if (const IntNode* idxNode = dynamic_cast<const IntNode*>(args[1].obj())) {
+    val = builder().CreateStructGEP(builder().CreateLoad(typedArray),
+                                    idxNode->value());
+  }
+  else {
+    llvm::Value* idxValue = tools()->wrapLoad(generator()->codegenNode(args[1]));
+    llvm::Value* idxValue2 = ( (args[1]->type().isPlainType())
+                               ? idxValue
+                               : tools()->convertToPlainInt(idxValue,
+                                                            Type::newInt32(),
+                                                            kAtom2PlainConv) );
 
-  return builder().CreateLoad(val);
+    std::vector<llvm::Value*> argv;
+    argv.push_back(tools()->emitSizeTValue(0));
+    argv.push_back(idxValue2);
+
+    val = builder().CreateGEP(builder().CreateLoad(typedArray),
+                              argv.begin(), argv.end());
+  }
+
+  llvm::Value* arraySliceVal = builder().CreateLoad(val);
+
+  llvm::Value* v = tools()->emitPackCode(node->dstType(), node->typeConv(),
+                                         arraySliceVal, node->type());
+  return v;
 }

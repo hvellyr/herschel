@@ -94,6 +94,14 @@ Typifier::isNodeCallToGenericFunction(const AptNode* node) const
 {
   if (const ApplyNode* applyNode = dynamic_cast<const ApplyNode*>(node)) {
     if (applyNode->isSimpleCall()) {
+
+      // special case lang|slice(array, idx)
+      if (applyNode->simpleCallName() == Names::kLangSlice) {
+        const NodeList& args = applyNode->children();
+        if (args.size() == 2 && args[0]->type().isArray())
+          return false;
+      }
+
       const FunctionNode* funcNode = (
         dynamic_cast<const FunctionNode*>(applyNode->scope()
                                           ->lookupFunction(applyNode->simpleCallName(),
@@ -293,7 +301,7 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
     return;
 
   String typenm = ( node->type().isDef()
-                    ? node->type().typeName()
+                    ? node->type().typeId()
                     : Names::kAnyTypeName );
   Type bindty = ( node->type().isDef()
                   ? node->scope()->lookupType(node->type())
@@ -407,7 +415,7 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
   }
   else if (!node->retType().isOpen()) {
     String typenm = ( node->retType().isDef()
-                      ? node->retType().typeName()
+                      ? node->retType().typeId()
                       : Names::kAnyTypeName );
     Type retty = ( node->retType().isDef()
                    ? node->scope()->lookupType(node->retType())
@@ -872,13 +880,13 @@ Typifier::typify(ApplyNode* node)
         node->setType(funNode->type());
       }
       else {
-        // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->base()->type().toString()));
         // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
         // out->render(node->base());
         hr_invalid("Unhandled apply base node");
       }
     }
-    // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->type().toString()));
+
+    annotateTypeConv(node, node->type());
   }
 }
 
