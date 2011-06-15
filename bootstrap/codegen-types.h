@@ -45,6 +45,22 @@ namespace herschel
     const llvm::Type* getMethodType() const;
     const llvm::Type* getSizeTTy() const;
 
+    //! returns a struct type which can be used to access array data.  This
+    //! denotes to
+    //!
+    //! struct {
+    //!   size_t array_size;
+    //!   void* data;
+    //! }
+    //!
+    //! NOTE however that the array payload is actually allocated as:
+    //!
+    //!  payload = malloc(sizeof(size_t) + array_size);
+    //!
+    //! To successfully access an array value the data member has to be casted
+    //! into the appropriate array base type.
+    const llvm::Type* getArrayPayloadType() const;
+
     const llvm::Type* getType(const Type& type) const;
     size_t getSlotSize(const Type& type) const;
 
