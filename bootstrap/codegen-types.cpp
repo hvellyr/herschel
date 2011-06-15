@@ -195,6 +195,26 @@ CodegenTypeUtils::getSizeTTy() const
 
 
 const llvm::Type*
+CodegenTypeUtils::getArrayPayloadType() const
+{
+  llvm::StringRef typeName("struct.ArrayPayload");
+
+  const llvm::Type* arrayPLType = module()->getTypeByName(typeName);
+  if (arrayPLType == NULL) {
+    arrayPLType =
+      llvm::StructType::get(context(),
+                            newLlvmTypeVector(getSizeTTy(),
+                                              llvm::Type::getInt8PtrTy(context())),
+                            !K(isPacked));
+
+    module()->addTypeName(typeName, arrayPLType);
+  }
+
+  return arrayPLType;
+}
+
+
+const llvm::Type*
 CodegenTypeUtils::getType(const Type& type) const
 {
   String typeId = type.typeId();

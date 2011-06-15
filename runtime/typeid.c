@@ -400,8 +400,8 @@ void
 allocate_int32_array(ATOM* instance, TypeTag tag_id, int init_value, size_t items)
 {
 #if defined(UNITTESTS)
-  hr_trace("allocate", "Create instance of type 'lang|Int32'x%ld (%d), size: %ld",
-           items, tag_id, sizeof(int));
+  hr_trace("allocate", "Create instance of type 'lang|Int32'x%ld (%d), size: %ld a %ld",
+           items, tag_id, sizeof(size_t) + items * sizeof(int), sizeof(int));
 #endif
 
   instance->typeid = tag_id;

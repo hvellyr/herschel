@@ -6,8 +6,8 @@ def app|main()
   ;; check that every slot is really 0.  Remember that in the first size_t
   ;; elements of the allocated heap for the array is store the size of the
   ;; array.
-  ;; for (i = 0 then i + 1 while i < 15)
-  ;;   assert(t[i] == 0)
+  for (i = 0 then i + 1 while i < 15)
+    assert(t[i] == 0)
 
   assert(t[5] == 0)
 

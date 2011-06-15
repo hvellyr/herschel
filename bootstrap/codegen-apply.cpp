@@ -474,19 +474,25 @@ CodegenApply::emitSliceSingleSlot(const ApplyNode* node) const
   hr_assert(args.size() == 2);
   hr_assert(args[0]->type().isArray());
 
-  llvm::Value* array = generator()->codegenNode(args[0]);
+  llvm::Value* arrayAtom = generator()->codegenNode(args[0]);
 
-  llvm::Value* arrayPayload = builder().CreateStructGEP(array, 1);
-  llvm::Value* arraySlot = builder().CreateStructGEP(arrayPayload, 0);
+  llvm::Value* arrayAtomPayload = builder().CreateStructGEP(arrayAtom, 1);
 
+  const llvm::Type* payloadType = types()->getArrayPayloadType()->getPointerTo()
+                                         ->getPointerTo();
+  llvm::Value* arrayPayloadTyped = builder().CreatePointerCast(arrayAtomPayload,
+                                                               payloadType);
+
+  // access the data member in the array struct
+  llvm::Value* loadedPayload = builder().CreateLoad(arrayPayloadTyped);
+  llvm::Value* arrayData = builder().CreateStructGEP(loadedPayload, 1);
   const llvm::Type* arrayType = llvm::ArrayType::get(types()->getType(node->type()),
-                                                     0)->getPointerTo()
-                                                       ->getPointerTo();
-  llvm::Value* typedArray = builder().CreatePointerCast(arraySlot, arrayType);
+                                                     0)->getPointerTo();
+  llvm::Value* typedArray = builder().CreatePointerCast(arrayData, arrayType);
 
   llvm::Value* val;
   if (const IntNode* idxNode = dynamic_cast<const IntNode*>(args[1].obj())) {
-    val = builder().CreateStructGEP(builder().CreateLoad(typedArray),
+    val = builder().CreateStructGEP(typedArray,
                                     idxNode->value());
   }
   else {
@@ -501,7 +507,7 @@ CodegenApply::emitSliceSingleSlot(const ApplyNode* node) const
     argv.push_back(tools()->emitSizeTValue(0));
     argv.push_back(idxValue2);
 
-    val = builder().CreateGEP(builder().CreateLoad(typedArray),
+    val = builder().CreateGEP(typedArray,
                               argv.begin(), argv.end());
   }
 
