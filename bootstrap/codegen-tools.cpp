@@ -311,7 +311,10 @@ CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) con
 
   std::vector<llvm::Value*> argv;
   argv.push_back(val);
-  return builder().CreateCall(convFunc, argv.begin(), argv.end(), "calltmp");
+
+  convFunc->dump();
+  val->dump();
+  return builder().CreateCall(convFunc, argv.begin(), argv.end());
 }
 
 
@@ -390,3 +393,33 @@ CodegenTools::emitSizeTValue(size_t value) const
                                               value,
                                               !K(isSigned)));
 }
+
+
+llvm::Value*
+CodegenTools::coerceIntOperand(llvm::Value* value, const Type& dstType) const
+{
+  return builder().CreateIntCast(value,
+                                 types()->getType(dstType),
+                                 dstType.isSigned());
+}
+
+
+llvm::Value*
+CodegenTools::convertToPlainInt(llvm::Value* value,
+                                const Type& dstType,
+                                TypeConvKind typeConv) const
+{
+  switch (typeConv) {
+  case kNoConv:
+    return coerceIntOperand(value, dstType);
+  case kAtom2PlainConv:
+    return makeTypeCastAtomToPlain(value, dstType);
+  case kPlain2AtomConv:
+  case kTypeCheckConv:
+    hr_invalid("");
+  }
+
+  return NULL;
+}
+
+

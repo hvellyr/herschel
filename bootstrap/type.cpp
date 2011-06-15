@@ -1252,10 +1252,12 @@ Type::isBaseType() const
 bool
 Type::isPlainType() const
 {
+  if (isArray())
+    return false;
+
   String nm;
-  if (isRef() || isType() || isClass()) {
+  if (isRef() || isType() || isClass())
     nm = typeName();
-  }
 
   if (!nm.isEmpty()) {
     return (nm == Names::kBoolTypeName ||

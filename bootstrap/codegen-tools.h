@@ -90,6 +90,11 @@ namespace herschel
 
     llvm::Value* emitSizeTValue(size_t value) const;
 
+    llvm::Value* coerceIntOperand(llvm::Value* value, const Type& dstType) const;
+    llvm::Value* convertToPlainInt(llvm::Value* value,
+                                   const Type& dstType,
+                                   TypeConvKind typeConv) const;
+
   private:
     const char* getConvFuncNameByType(const Type& type) const;
     const llvm::Type* getConvTypeByType(const Type& type) const;
