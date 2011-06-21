@@ -114,7 +114,12 @@ CodegenApply::emit(const ApplyNode* node) const
     else if (symNode->name() == Names::kLangSlice) {
       const NodeList& args = node->children();
       if (args.size() == 2 && args[0]->type().isArray())
-        return emitSliceSingleSlot(node);
+        return emitArraySliceAccess(node);
+    }
+    else if (symNode->name() == Names::kLangSliceX) {
+      const NodeList& args = node->children();
+      if (args.size() == 3 && args[0]->type().isArray())
+        return emitArraySliceSet(node);
     }
 
     if (symNode->hasCLinkage()) {
@@ -467,12 +472,14 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
 
 //----------------------------------------------------------------------------------------
 
-llvm::Value*
-CodegenApply::emitSliceSingleSlot(const ApplyNode* node) const
+CodegenApply::ArraySliceAccessData
+CodegenApply::emitArraySliceAddress(const ApplyNode* node) const
 {
   const NodeList& args = node->children();
-  hr_assert(args.size() == 2);
+  hr_assert(args.size() >= 2);
   hr_assert(args[0]->type().isArray());
+
+  Type arrayBaseType = args[0]->type().arrayBaseType();
 
   llvm::Value* arrayAtom = generator()->codegenNode(args[0]);
 
@@ -486,14 +493,14 @@ CodegenApply::emitSliceSingleSlot(const ApplyNode* node) const
   // access the data member in the array struct
   llvm::Value* loadedPayload = builder().CreateLoad(arrayPayloadTyped);
   llvm::Value* arrayData = builder().CreateStructGEP(loadedPayload, 1);
-  const llvm::Type* arrayType = llvm::ArrayType::get(types()->getType(node->type()),
+  const llvm::Type* arrayType = llvm::ArrayType::get(types()->getType(arrayBaseType),
                                                      0)->getPointerTo();
   llvm::Value* typedArray = builder().CreatePointerCast(arrayData, arrayType);
 
-  llvm::Value* val;
+  llvm::Value* addr;
   if (const IntNode* idxNode = dynamic_cast<const IntNode*>(args[1].obj())) {
-    val = builder().CreateStructGEP(typedArray,
-                                    idxNode->value());
+    addr = builder().CreateStructGEP(typedArray,
+                                     idxNode->value());
   }
   else {
     llvm::Value* idxValue = tools()->wrapLoad(generator()->codegenNode(args[1]));
@@ -507,13 +514,53 @@ CodegenApply::emitSliceSingleSlot(const ApplyNode* node) const
     argv.push_back(tools()->emitSizeTValue(0));
     argv.push_back(idxValue2);
 
-    val = builder().CreateGEP(typedArray,
+    addr = builder().CreateGEP(typedArray,
                               argv.begin(), argv.end());
   }
 
-  llvm::Value* arraySliceVal = builder().CreateLoad(val);
+  ArraySliceAccessData retv;
+  retv.fArray = arrayAtom;
+  retv.fAddr = addr;
+
+  return retv;
+}
+
+
+llvm::Value*
+CodegenApply::emitArraySliceAccess(const ApplyNode* node) const
+{
+  const NodeList& args = node->children();
+  hr_assert(args.size() == 2);
+  hr_assert(args[0]->type().isArray());
+
+  ArraySliceAccessData arrayAccces = emitArraySliceAddress(node);
+  llvm::Value* arraySliceVal = builder().CreateLoad(arrayAccces.fAddr);
 
   llvm::Value* v = tools()->emitPackCode(node->dstType(), node->typeConv(),
                                          arraySliceVal, node->type());
   return v;
+}
+
+
+llvm::Value*
+CodegenApply::emitArraySliceSet(const ApplyNode* node) const
+{
+  const NodeList& args = node->children();
+  hr_assert(args.size() == 3);
+  hr_assert(args[0]->type().isArray());
+
+  llvm::Value* newVal = tools()->wrapLoad(generator()->codegenNode(args[2]));
+  // llvm::Value* newVal2 = tools()->emitPackCode(args[2]->dstType(),
+  //                                              args[2]->typeConv(),
+  //                                              newVal, args[2]->type());
+
+  ArraySliceAccessData arrayAccces = emitArraySliceAddress(node);
+
+  const llvm::Type* ptrType = types()->getType(args[0]->type().arrayBaseType())->getPointerTo();
+  llvm::Value* ptrAddr = builder().CreatePointerCast(arrayAccces.fAddr, ptrType);
+
+  builder().CreateStore(newVal, ptrAddr);
+
+  // the lang|slice! method returns the array itself, not the new set value.
+  return arrayAccces.fArray;
 }
