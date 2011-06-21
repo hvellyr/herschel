@@ -56,7 +56,17 @@ namespace herschel
 
     llvm::Function* lazyDeclareExternFunction(const SymbolNode* symNode) const;
 
-    llvm::Value* emitSliceSingleSlot(const ApplyNode* node) const;
+    llvm::Value* emitArraySliceAccess(const ApplyNode* node) const;
+    llvm::Value* emitArraySliceSet(const ApplyNode* node) const;
+
+    struct ArraySliceAccessData
+    {
+      llvm::Value* fArray;
+      llvm::Value* fAddr;
+    };
+
+    ArraySliceAccessData emitArraySliceAddress(const ApplyNode* node) const;
+
   };
 };                              // namespace
 

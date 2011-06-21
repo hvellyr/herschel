@@ -101,6 +101,12 @@ Typifier::isNodeCallToGenericFunction(const AptNode* node) const
         if (args.size() == 2 && args[0]->type().isArray())
           return false;
       }
+      // special case lang|slice!(array, idx, value)
+      else if (applyNode->simpleCallName() == Names::kLangSliceX) {
+        const NodeList& args = applyNode->children();
+        if (args.size() == 3 && args[0]->type().isArray())
+          return false;
+      }
 
       const FunctionNode* funcNode = (
         dynamic_cast<const FunctionNode*>(applyNode->scope()
