@@ -58,6 +58,7 @@ namespace herschel
 
     llvm::Value* emitArraySliceAccess(const ApplyNode* node) const;
     llvm::Value* emitArraySliceSet(const ApplyNode* node) const;
+    llvm::Value* emitArrayNumItems(const ApplyNode* node) const;
 
     struct ArraySliceAccessData
     {
@@ -66,6 +67,7 @@ namespace herschel
     };
 
     ArraySliceAccessData emitArraySliceAddress(const ApplyNode* node) const;
+    llvm::Value* emitArraySize(const ApplyNode* node) const;
 
   };
 };                              // namespace

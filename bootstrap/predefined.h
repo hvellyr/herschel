@@ -169,6 +169,7 @@ namespace herschel
     const static String kLangInitFunctor;
     const static String kLangEndp;
     const static String kLangNext;
+    const static String kLangNumItems;
 
     // known keywords
     const static String kExitKeyword;

@@ -1,12 +1,14 @@
 import "lang/assert.h7"
 
 def app|main()
-  let t = Int[](16)
+  let t = Int[](32)
 
-  for (i = 0 then i + 1 while i < 15)
+  for (i = 0 then i + 1 while i < 32)
     t[i] = i
 
-  for (i = 0 then i + 1 while i < 15)
+  for (i = 0 then i + 1 while i < 32)
     assert(t[i] == i)
+
+  assert(t.num-items == 32u)
 
   42

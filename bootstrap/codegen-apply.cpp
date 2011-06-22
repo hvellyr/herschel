@@ -121,6 +121,11 @@ CodegenApply::emit(const ApplyNode* node) const
       if (args.size() == 3 && args[0]->type().isArray())
         return emitArraySliceSet(node);
     }
+    else if (symNode->name() == Names::kLangNumItems) {
+      const NodeList& args = node->children();
+      if (args.size() == 1 && args[0]->type().isArray())
+        return emitArrayNumItems(node);
+    }
 
     if (symNode->hasCLinkage()) {
       // generic functions are not allowed to have C linkage
@@ -410,7 +415,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   argv.push_back(retv);
 
   const SymbolNode* typeNode = NULL;
-  const IntNode* sizeNode = NULL;
+  const AptNode* sizeNode = NULL;
   llvm::Value* initValue = NULL;
 
   const NodeList& args = node->children();
@@ -418,10 +423,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
     typeNode = dynamic_cast<const SymbolNode*>(args[0].obj());
     hr_assert(typeNode != NULL);
 
-    // TODO: the size can be passed as expression!
-    sizeNode = dynamic_cast<const IntNode*>(args[1].obj());
-    hr_assert(sizeNode != NULL);
-
+    sizeNode = args[1];
     initValue = strategy->initValue(node);
   }
   else if (args.size() == 3) {
@@ -436,8 +438,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
     initValue = tools()->emitPackCode(valueNode->dstType(), valueNode->typeConv(),
                                       initValue, valueNode->type());
 
-    // TODO: the size can be passed as expression!
-    sizeNode = dynamic_cast<const IntNode*>(args[2].obj());
+    sizeNode = args[2];
     hr_assert(sizeNode != NULL);
   }
   else {
@@ -456,7 +457,18 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   // llvm::Value* itemsVal = tools()->wrapLoad(generator()->codegenNode(sizeNode));
   // itemsVal = tools()->emitPackCode(sizeNode->dstType(), sizeNode->typeConv(),
   //                                  itemsVal, sizeNode->type());
-  llvm::Value* itemsVal = tools()->emitSizeTValue(sizeNode->value());
+  llvm::Value* itemsVal = NULL;
+  if (const IntNode* intNode = dynamic_cast<const IntNode*>(sizeNode)) {
+    itemsVal = tools()->emitSizeTValue(intNode->value());
+  }
+  else {
+    itemsVal = tools()->wrapLoad(generator()->codegenNode(sizeNode));
+    itemsVal = ( (sizeNode->type().isPlainType())
+                 ? itemsVal
+                 : tools()->convertToPlainInt(itemsVal,
+                                              Type::newInt32(),
+                                              kAtom2PlainConv) );
+  }
 
   hr_assert(itemsVal != NULL);
   argv.push_back(itemsVal);
@@ -471,6 +483,34 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
 
 
 //----------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------
+
+llvm::Value*
+CodegenApply::emitArraySize(const ApplyNode* node) const
+{
+  const NodeList& args = node->children();
+  hr_assert(args.size() == 1);
+  hr_assert(args[0]->type().isArray());
+
+  Type arrayBaseType = args[0]->type().arrayBaseType();
+
+  llvm::Value* arrayAtom = generator()->codegenNode(args[0]);
+
+  llvm::Value* arrayAtomPayload = builder().CreateStructGEP(arrayAtom, 1);
+
+  const llvm::Type* payloadType = types()->getArrayPayloadType()->getPointerTo()
+                                         ->getPointerTo();
+  llvm::Value* arrayPayloadTyped = builder().CreatePointerCast(arrayAtomPayload,
+                                                               payloadType);
+
+  // access the size slot in the array struct
+  llvm::Value* loadedPayload = builder().CreateLoad(arrayPayloadTyped);
+  llvm::Value* numItems = builder().CreateStructGEP(loadedPayload, 0);
+
+  return builder().CreatePointerCast(numItems, llvm::Type::getInt32Ty(context())->getPointerTo());
+}
+
 
 CodegenApply::ArraySliceAccessData
 CodegenApply::emitArraySliceAddress(const ApplyNode* node) const
@@ -536,9 +576,8 @@ CodegenApply::emitArraySliceAccess(const ApplyNode* node) const
   ArraySliceAccessData arrayAccces = emitArraySliceAddress(node);
   llvm::Value* arraySliceVal = builder().CreateLoad(arrayAccces.fAddr);
 
-  llvm::Value* v = tools()->emitPackCode(node->dstType(), node->typeConv(),
-                                         arraySliceVal, node->type());
-  return v;
+  return tools()->emitPackCode(node->dstType(), node->typeConv(),
+                               arraySliceVal, node->type());
 }
 
 
@@ -563,4 +602,18 @@ CodegenApply::emitArraySliceSet(const ApplyNode* node) const
 
   // the lang|slice! method returns the array itself, not the new set value.
   return arrayAccces.fArray;
+}
+
+
+llvm::Value*
+CodegenApply::emitArrayNumItems(const ApplyNode* node) const
+{
+  const NodeList& args = node->children();
+  hr_assert(args.size() == 1);
+  hr_assert(args[0]->type().isArray());
+
+  llvm::Value* numItems = emitArraySize(node);
+  llvm::Value* numItemsVal = builder().CreateLoad(numItems);
+
+  return tools()->wrapLoad(tools()->makeIntAtom(numItemsVal, CodegenTools::kAtomInt32));
 }
