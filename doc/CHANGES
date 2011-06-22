@@ -1,3 +1,12 @@
+Rest parameters are slices
+--------------------------
+
+Rest parameters should have the types sliceable (not array or vector).  The
+should be created lazy only.  i.e. if nobody access the rest arguments in a
+function, they are not constructed at all; only if the rest parameter is
+taken as first class entity a slice object is created.
+
+
 Lazy evaluation
 ---------------
 
@@ -114,46 +123,41 @@ Function contracts
   Pre and post conditions are normally not compiled in release versions.
 
 
-Accessing slots
----------------
+Structures
+----------
 
-Slot access using the slot() and slot!() function doesn't seem to be the
-right approach.  Esp.: how can we make this type safe?  There's no way to
-bind the slot() function's type to the slot definition.
+We want to have structs.  Structs compared to classes:
 
-  def class Xi
+  - struct have no inheritance, they are as such
+
+  - structs allow precise layout of members; it would be very cool if the
+    layout is compatible to the local C ABI.
+
+  - structs are always value types, i.e. in assignment they are copied and
+    never referenced.
+
+Syntax:
+
+  def struct ValuePair
   {
-    def slot name : String
+    def key : String
+    def value
   }
 
-  let t : Xi
+structs can be parametrized:
 
+  def struct ValuePair<T>
+  {
+    def key : String
+    def value : T
+  }
 
-So how to access and assign slots to 't' now?
+Accessing the data members is like accessing slots on class instances:
 
-  t.slot(#name)
-  t.slot(#name) = "N.N."
+ let v : ValuePair
+ v^key
 
-  => problem is that this tedious to type, not really nice, and is
-     difficult to do type safe if slot() is really treated as a function.
-
-An abbreviated form?:
-
-  t[name]
-  t[name] = "N.N."
-
-  => Problem is that this is not distinguishable from array access.
-
-
-So I guess we need a special access syntax?  One which is hopefully usefull
-for a struct extension later, too.  What's about this:
-
-   t^name
-   t^name = "N.N."
-
-(In text books the '^' should be printed as a proper arrow up.)  Since the
-^ is between an expression ('t') and a symbol ('name'), it can't be
-confused with the reference syntax.
+structs can be used for specialization of methods.
 
 
 
@@ -169,22 +173,67 @@ const/immutable thing.
 All values passed to functions are by default const.  If a parameter is to
 be modifiable it is to be declared as 'var':
 
-  def foo(var a : Int) var : Int
+  def foo(var a : Int) var : Int ...
 
-- you can't modify slots on const parameters
+This has the following effects:
 
-- you can't assign values to const parameters (like you can't do with const
-  variables)
+  - you can't modify slots on const parameters
 
-- you can't pass constant values to functions which take a variable value
+  - you can't assign values to const parameters (like you can't do with
+    const variables)
 
-- you can't return constant values from functions which has a variable
-  return value
+  - you can't pass constant values to functions which take a variable value
+
+  - you can't return constant values from functions which has a variable
+    return value
+
+Syntax for more complex parameters:
+
+  def foo(var a : Int, name: var nm : String = "") var : Int ...
 
 
+Nullable types
+--------------
 
+nil is the singleton value of the lang|Nil type.  It is different to all
+other types, except for Any (which contains all types).  This means that
+you can't bind nil to a name of different type:
 
-Du hast Dir doch immer ein Haustier gewünscht, oder?
+  let t : String = nil   ;; <-- WRONG
+
+To allow this use nil-unions:
+
+  let t : &(String, Nil) = nil
+
+As a convention append a '?' to type alias for such a nullable type union
+(cf. the tart syntax):
+
+  def alias String? = &(String, Nil)
+
+so that the above binding looks like this:
+
+  let t : String? = nil
+
+Should we support auto de-nullification?
+
+  def foo2(a : String) ...
+
+  def foo(a : String?)
+    if (a <> nil) {
+      foo2(a)           ;;<-- without special syntax this is WRONG
+      foo2(a as String) ;;<-- this would be correct
+    }
+
+other expressions for this:
+
+  a.unless-nil(foo2(a))
+
+  match (a) {
+    | Nil -> ...
+    | s : String -> foo2(s)
+  }
+
+  if (a isa String) foo2(a)
 
 
 Less obscur syntax for union types
@@ -235,7 +284,7 @@ $   identifier                          [----------]
     type separator
 ;   comment starter (;;)                stmt terminator
 <>  operator (<, >, <=, >=, <>, ->)     operator(...)
-    parametrization
+    type parametrization
 =   operator (==, <=, >=)               operator(==)
     assignment                          assignment
     parameter default
