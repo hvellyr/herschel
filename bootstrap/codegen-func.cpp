@@ -77,7 +77,7 @@ CodegenFuncDef::emit(const FuncDefNode* node, bool isLocal) const
 llvm::Function*
 CodegenFuncDef::emitExternFuncDef(const FuncDefNode* node) const
 {
-  FuncPair func = createFunction(node, String(), !K(isGeneric));
+  FuncPair func = createFunction(node, String(), node->isGeneric());
   return func.fFunc;
 }
 
@@ -318,7 +318,7 @@ CodegenFuncDef::compileAbstractFuncDef(const FuncDefNode* node) const
 {
   hr_assert(fGenerator->fNamedValues.empty());
 
-  FuncPair func = createFunction(node, String(), !K(isGeneric));
+  FuncPair func = createFunction(node, String(), node->isGeneric());
 
   hr_assert(node->body() == NULL);
 
