@@ -453,10 +453,6 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   argv.push_back(initValue);
 
   // arg 3: the element count
-  // TODO: if sizeNode is not constant int, codegen it here, cast it to size_t
-  // llvm::Value* itemsVal = tools()->wrapLoad(generator()->codegenNode(sizeNode));
-  // itemsVal = tools()->emitPackCode(sizeNode->dstType(), sizeNode->typeConv(),
-  //                                  itemsVal, sizeNode->type());
   llvm::Value* itemsVal = NULL;
   if (const IntNode* intNode = dynamic_cast<const IntNode*>(sizeNode)) {
     itemsVal = tools()->emitSizeTValue(intNode->value());
@@ -466,8 +462,11 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
     itemsVal = ( (sizeNode->type().isPlainType())
                  ? itemsVal
                  : tools()->convertToPlainInt(itemsVal,
-                                              Type::newInt32(),
-                                              kAtom2PlainConv) );
+                                              Type::newInt32(), // why no convert to
+                                                                // size_t directly?
+                                              kAtom2PlainConv));
+    itemsVal = builder().CreateIntCast(itemsVal, types()->getSizeTTy(),
+                                       !K(isSigned));
   }
 
   hr_assert(itemsVal != NULL);
@@ -589,9 +588,6 @@ CodegenApply::emitArraySliceSet(const ApplyNode* node) const
   hr_assert(args[0]->type().isArray());
 
   llvm::Value* newVal = tools()->wrapLoad(generator()->codegenNode(args[2]));
-  // llvm::Value* newVal2 = tools()->emitPackCode(args[2]->dstType(),
-  //                                              args[2]->typeConv(),
-  //                                              newVal, args[2]->type());
 
   ArraySliceAccessData arrayAccces = emitArraySliceAddress(node);
 
