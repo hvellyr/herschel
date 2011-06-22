@@ -21,22 +21,34 @@ Bootstrap compiler
 
   - support of arrays
 
+  - basic String class
+
+  - basic IO classes (such to allow displaying info from test files)
+
+  - other types (char, bool, int8, uint8, int16, uint16, uint32, int64,
+    uint64, float, double)
+
   - gc
 
   - closures (nested functions, firstclass functions)
 
-  - exceptions
-
   - keyed arguments
 
   - rest arguments
+    - builtin slice support for arrays (required for fast rest parameter handling)
+
+  - exceptions
 
   - auto create accessor/modifier functions for slots
 
-  - support 'auto', 'public', 'outer', 'inner', slots in ctor construction.
+  - support 'public', 'outer', 'inner', slots in ctor construction.
+
+  - variable/const types
+
+  - nullable types
 
   - review possibilities for warnings about ambiguous multiple method
-    dispatch.
+    dispatch.  better method dispatch algorithm.
 
   - check that left hand variables are not const.
 
