@@ -151,7 +151,8 @@ main(int argc, char** argv)
 
       case kOptOutput:
         outputFileName = option.fArgument;
-        // don't pass outdir to hrc.  We handle it outselves
+        // don't pass outdir to hrc here.  Depending on the compile mode We
+        // handle it outselves
         break;
 
       case kOptVerbose:
@@ -236,6 +237,11 @@ main(int argc, char** argv)
   case kParseFiles:
   case kCompileFilesToIR:
   case kCompileFiles:
+    if (!outputFileName.isEmpty())
+    {
+      hrcOptions.push_back(String("-o"));
+      hrcOptions.push_back(outputFileName);
+    }
     startProcess(setup.fHrcPath, hrcOptions);
     break;
 
