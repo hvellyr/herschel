@@ -366,6 +366,42 @@ public:
     return fApply->tools()->emitTypeId(CodegenTools::kAtomInt32Array);
   }
 };
+
+
+class CharArrayAllocateStrategy : public ArrayAllocateStrategy
+{
+public:
+  CharArrayAllocateStrategy(const CodegenApply* apply)
+    : ArrayAllocateStrategy(apply)
+  {}
+
+  virtual String allocateFuncName() const
+  {
+    return String("allocate_char_array");
+  }
+
+  virtual std::vector<const llvm::Type*> allocateFuncSignature() const
+  {
+    std::vector<const llvm::Type*> sign;
+
+    sign.push_back(fApply->types()->getAtomType()->getPointerTo());
+    sign.push_back(fApply->types()->getTagIdType());
+    sign.push_back(llvm::Type::getInt32Ty(fApply->context()));
+    sign.push_back(fApply->types()->getSizeTTy());
+
+    return sign;
+  }
+
+  virtual llvm::Value* initValue(const ApplyNode* node) const
+  {
+    return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(fApply->context()));
+  }
+
+  virtual llvm::Value* typeTagArgument(const ApplyNode* node) const
+  {
+    return fApply->tools()->emitTypeId(CodegenTools::kAtomCharArray);
+  }
+};
 };
 
 
@@ -383,6 +419,9 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   // TODO: use type specialed array functions allocate_int_array, etc.
   if (node->type().typeId() == String("lang|Int32[]")) {
     strategy = new Int32ArrayAllocateStrategy(this);
+  }
+  else if (node->type().typeId() == String("lang|Char[]")) {
+    strategy = new CharArrayAllocateStrategy(this);
   }
   else {
     strategy = new AtomArrayAllocateStrategy(this);
@@ -480,8 +519,6 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   return retv;
 }
 
-
-//----------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------
 

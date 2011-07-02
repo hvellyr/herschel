@@ -117,8 +117,8 @@ void allocate(ATOM* instance, Type* ty);
 
 void allocate_array(ATOM* instance, Type* ty, ATOM init_value, size_t items);
 void allocate_int32_array(ATOM* instance, TypeTag tag_id, int init_value, size_t items);
+void allocate_int8_array(ATOM* instance, TypeTag tag_id, char init_value, size_t items);
 
-void allocate_char_array(ATOM* instance, Type* ty, char init_value, size_t items);
 void allocate_short_array(ATOM* instance, Type* ty, short init_value, size_t items);
 void allocate_float_array(ATOM* instance, Type* ty, float init_value, size_t items);
 void allocate_double_array(ATOM* instance, Type* ty, double init_value, size_t items);
