@@ -276,8 +276,9 @@ CodegenTypeUtils::getType(const Type& type) const
 
   else if (typeId == String("lang|Int32[]")) {
     return getAtomType();
-    // return llvm::ArrayType::get(llvm::Type::getInt32Ty(context()),
-    //                             0);
+  }
+  else if (typeId == String("lang|Char[]")) {
+    return getAtomType();
   }
 
   return getAtomType();

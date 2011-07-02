@@ -418,9 +418,14 @@ allocate_int32_array(ATOM* instance, TypeTag tag_id, int init_value, size_t item
 
 
 void
-allocate_char_array(ATOM* instance, Type* ty, char init_value, size_t items)
+allocate_int8_array(ATOM* instance, TypeTag tag_id, char init_value, size_t items)
 {
-  instance->typeid = ty->tag_id;
+#if defined(UNITTESTS)
+  hr_trace("allocate", "Create instance of type 'lang|Int8'x%ld (%d), size: %ld a %ld",
+           items, tag_id, sizeof(size_t) + items * sizeof(int), sizeof(int));
+#endif
+
+  instance->typeid = tag_id;
   instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(char));
   *((size_t*)instance->u.v_obj) = items;
 

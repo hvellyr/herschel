@@ -251,6 +251,7 @@ CodegenTools::getConvFuncNameByType(const Type& type) const
     return "atom_2_int16";
   else if (type.typeId() == String("lang|Int8"))
     return "atom_2_int8";
+
   else if (type.typeId() == String("lang|UInt32"))
     return "atom_2_uint32";
   else if (type.typeId() == String("lang|UInt64"))

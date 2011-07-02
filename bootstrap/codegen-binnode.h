@@ -64,6 +64,15 @@ namespace herschel
     llvm::Value* codegenOpBoolBool(const BinaryNode* node,
                                    llvm::Value* left,
                                    llvm::Value* right) const;
+
+    llvm::Value* coerceCharOperand(const Type& dstType,
+                                   llvm::Value* value) const;
+    llvm::Value* convertToPlainChar(const AptNode* dst,
+                                    const AptNode* right,
+                                    llvm::Value* value) const;
+    llvm::Value* codegenOpCharChar(const BinaryNode* node,
+                                   llvm::Value* left,
+                                   llvm::Value* right) const;
   };
 };                              // namespace
 
