@@ -93,6 +93,7 @@ HRC_SOURCES =         \
 	compilepass.cpp     \
 	compiler.cpp        \
 	externc.cpp         \
+	gdb.cpp              \
 	hrc.cpp             \
 	macro.cpp           \
 	numbers.cpp         \
