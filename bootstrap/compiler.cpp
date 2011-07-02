@@ -208,33 +208,41 @@ Compiler::importFile(const SrcPos& srcpos,
 }
 
 
-void
-Compiler::importSystemHeader(const String& header, const String& avoidPath)
+bool
+Compiler::importSystemHeader(const String& header, const String& fullAvoidPath)
 {
   String absPath = lookupFile(header, !K(isPublic));
 
-  String fullAvoidPath = file::canonicalPathName(avoidPath);
   if (Properties::isTraceImportFile())
     log(kDebug, String("Load: ") + absPath + String(" while loading ") + fullAvoidPath);
 
   if (absPath == fullAvoidPath) {
     if (Properties::isTraceImportFile())
       logf(kDebug, "Don't preload '%s'", (const char*)StrHelper(header));
-    return;
+    return false;
   }
 
   if (Properties::isTraceImportFile())
     logf(kDebug, "Preload '%s'", (const char*)StrHelper(header));
   importFileImpl(SrcPos(), header, absPath, fState.fScope, !K(preload));
+
+  return true;
 }
 
 
 void
 Compiler::importSystemHeaders(const String& avoidPath)
 {
-  importSystemHeader(String("builtin:lang/numbers.h7"), avoidPath);
-  importSystemHeader(String("builtin:lang/runtime.h7"), avoidPath);
-  importSystemHeader(String("builtin:lang/sliceable.h7"),   avoidPath);
+  String fullAvoidPath = file::canonicalPathName(avoidPath);
+
+  if (!importSystemHeader(String("builtin:lang/numbers.h7"), fullAvoidPath))
+    return;
+
+  if (!importSystemHeader(String("builtin:lang/runtime.h7"), fullAvoidPath))
+    return;
+
+  if (!importSystemHeader(String("builtin:lang/sliceable.h7"), fullAvoidPath))
+    return;
 }
 
 
