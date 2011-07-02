@@ -106,7 +106,8 @@ fastMangleSymPart(StringBuffer& result, const String& sym)
 //!   __QN..sym..sym..sym
 //!
 //! where .. is the length of the following sym in decimal digits.  Special
-//! characters (other than a-zA-Z0-9 and _) are translated as /2two-hexdigit.
+//! characters (other than a-zA-Z0-9 and _) are translated as /xy with xy
+//! being hexdigits.
 String
 herschel::mangleToC(const String& qualId)
 {
