@@ -21,6 +21,9 @@ Bootstrap compiler
 
   - support of arrays
 
+    - char binary operators
+    - char arrays
+
   - basic String class
 
   - basic IO classes (such to allow displaying info from test files)
