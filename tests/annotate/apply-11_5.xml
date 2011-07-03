@@ -52,10 +52,6 @@
 </params>
 <rettype>
 <ty:type nm='lang|Keyword'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </rettype>
 </func>
@@ -172,10 +168,6 @@
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|Keyword'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
@@ -226,10 +218,6 @@
 </ty:prms>
 <ty:ret>
 <ty:type nm='lang|Keyword'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:ret>
 </ty:fun>

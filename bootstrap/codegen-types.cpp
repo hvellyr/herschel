@@ -274,7 +274,9 @@ CodegenTypeUtils::getType(const Type& type) const
 
   //-------------------- array types
 
-  else if (typeId == String("lang|Int32[]")) {
+  else if (typeId == String("lang|Int32[]") ||
+           typeId == String("lang|UInt32[]"))
+  {
     return getAtomType();
   }
   else if (typeId == String("lang|Char[]")) {
@@ -340,6 +342,7 @@ CodegenTypeUtils::getSlotSize(const Type& type) const
   //   return llvm::Type::getInt1Ty(context());
   // }
 
+  // all other types are atoms
   const llvm::StructLayout* layout = generator()->targetData()
     ->getStructLayout((const llvm::StructType*)getAtomType());
   return layout->getSizeInBytes();

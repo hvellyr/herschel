@@ -5,8 +5,8 @@
 <params>
 <param sym='str' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>
@@ -53,14 +53,14 @@
 <params>
 <param sym='object1' type='spec'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 <param sym='object2' type='spec'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>
@@ -150,10 +150,6 @@
 <func sym='bar'>
 <rettype>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </rettype>
 <body>
@@ -177,10 +173,6 @@
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
@@ -201,8 +193,8 @@
 <ty:fun nm=''>
 <ty:prms>
 <ty:prm is='pos'>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:prm>
 </ty:prms>
 <ty:ret>
@@ -215,12 +207,12 @@
 <ty:fun nm=''>
 <ty:prms>
 <ty:prm is='pos' spec='t'>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:prm>
 <ty:prm is='pos' spec='t'>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:prm>
 </ty:prms>
 <ty:ret>

@@ -48,10 +48,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:union>
 </ty:array>
@@ -125,10 +121,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:union>
 </ty:used-type>
@@ -142,10 +134,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:union>
 </ty:array>

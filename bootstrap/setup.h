@@ -32,6 +32,9 @@ namespace herschel
     //! additional flags to the linker
     StringVector fLdFlags;
 
+    //! path to the langkit library
+    String fLangKit;
+
     //! path to runtime library
     String fRuntimeLib;
   };

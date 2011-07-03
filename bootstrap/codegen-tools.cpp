@@ -337,6 +337,8 @@ CodegenTools::emitPackCode(const Type& dstType, TypeConvKind convKind,
     case kPlain2AtomConv:
       if (valType.typeId() == String("lang|Int32"))
         return wrapLoad(makeIntAtom(value, CodegenTools::kAtomInt32));
+      else if (valType.typeId() == String("lang|UInt32"))
+        return wrapLoad(makeIntAtom(value, CodegenTools::kAtomUInt32));
       else if (valType.typeId() == String("lang|Bool"))
         return wrapLoad(makeBoolAtom(value));
       else {

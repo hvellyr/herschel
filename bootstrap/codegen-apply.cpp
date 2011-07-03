@@ -417,7 +417,9 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   Ptr<ArrayAllocateStrategy> strategy;
 
   // TODO: use type specialed array functions allocate_int_array, etc.
-  if (node->type().typeId() == String("lang|Int32[]")) {
+  if (node->type().typeId() == String("lang|Int32[]") ||
+      node->type().typeId() == String("lang|UInt32[]"))
+  {
     strategy = new Int32ArrayAllocateStrategy(this);
   }
   else if (node->type().typeId() == String("lang|Char[]")) {

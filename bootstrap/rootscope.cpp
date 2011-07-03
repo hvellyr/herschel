@@ -28,30 +28,29 @@ herschel::type::newRootScope(bool forUnitTests)
   Ptr<Scope> root = new Scope(kScopeL_CompileUnit);
   SrcPos sp;
 
-  //-------- lang|Any
-  root->registerType(sp, Names::kAnyTypeName, Type::newAny(K(isValue)));
-
-  //-------- lang|Object
-  root->registerType(sp, Names::kObjectTypeName,
-                     Type::newType(Names::kObjectTypeName, TypeVector(), Type()));
-
-
-  //-------- lang|Bool
-  root->registerType(sp, Names::kBoolTypeName,
-                     Type::newType(Names::kBoolTypeName,
-                                   TypeVector(),
-                                   Type::newTypeRef(Names::kObjectTypeName,
-                                                    K(isValue))));
-
-  //-------- lang|Char
-  root->registerType(sp, Names::kCharTypeName,
-                     Type::newType(Names::kCharTypeName,
-                                   TypeVector(),
-                                   Type::newTypeRef(Names::kObjectTypeName,
-                                                    K(isValue))));
-
-
   if (forUnitTests) {
+    //-------- lang|Any
+    root->registerType(sp, Names::kAnyTypeName, Type::newAny(K(isValue)));
+
+    //-------- lang|Object
+    root->registerType(sp, Names::kObjectTypeName,
+                       Type::newType(Names::kObjectTypeName, TypeVector(), Type()));
+
+
+    //-------- lang|Bool
+    root->registerType(sp, Names::kBoolTypeName,
+                       Type::newType(Names::kBoolTypeName,
+                                     TypeVector(),
+                                     Type::newTypeRef(Names::kObjectTypeName,
+                                                      K(isValue))));
+
+    //-------- lang|Char
+    root->registerType(sp, Names::kCharTypeName,
+                       Type::newType(Names::kCharTypeName,
+                                     TypeVector(),
+                                     Type::newTypeRef(Names::kObjectTypeName,
+                                                      K(isValue))));
+
     //------------------------------
     // Number types
 
@@ -67,6 +66,11 @@ herschel::type::newRootScope(bool forUnitTests)
                                      TypeVector(),
                                      Type::newTypeRef(Names::kNumberTypeName,
                                                       K(isValue))));
+    root->registerType(sp, Names::kUInt32TypeName,
+                       Type::newType(Names::kUInt32TypeName,
+                                     TypeVector(),
+                                     Type::newTypeRef(Names::kNumberTypeName,
+                                                      K(isValue))));
   }
 
 
@@ -78,12 +82,13 @@ herschel::type::newRootScope(bool forUnitTests)
                                    Type::newTypeRef(Names::kObjectTypeName,
                                                     K(isValue))));
 
-  root->registerType(sp, Names::kKeywordTypeName,
-                     Type::newType(Names::kKeywordTypeName,
-                                   TypeVector(),
-                                   Type::newTypeRef(Names::kObjectTypeName,
-                                                    K(isValue))));
-
+  if (forUnitTests) {
+    root->registerType(sp, Names::kKeywordTypeName,
+                       Type::newType(Names::kKeywordTypeName,
+                                     TypeVector(),
+                                     Type::newTypeRef(Names::kObjectTypeName,
+                                                      K(isValue))));
+  }
 
   //------------------------------
   // Other basic types and constants

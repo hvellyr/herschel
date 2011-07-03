@@ -143,7 +143,7 @@
 <symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
 <args>
 <symbol  ty='Seq&lt;lang|Int32>[]' refer='local'>x</symbol>
-<int ty='lang|Int32'>34</int>
+<int ty='lang|UInt32'>34</int>
 </args>
 </apply>
 </block>
@@ -157,20 +157,6 @@
 <ty:ref gen='t' nm='T'>
 </ty:ref>
 </ty:gen>
-</ty:type>
-</ty:used-type>
-<ty:used-type>
-<ty:type nm='lang|Int32'>
-<ty:isa>
-<ty:seq>
-<ty:ref nm='lang|Integer'>
-</ty:ref>
-<ty:ref nm='lang|Exact'>
-</ty:ref>
-<ty:ref nm='lang|Bounded'>
-</ty:ref>
-</ty:seq>
-</ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
@@ -269,8 +255,8 @@
 </ty:ref>
 </ty:prm>
 <ty:prm is='rest'>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:prm>
 </ty:prms>
 <ty:ret>

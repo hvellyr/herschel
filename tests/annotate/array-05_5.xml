@@ -5,7 +5,7 @@
 <rettype>
 <ty:ref ref='t' nm='lang|Sliceable!'>
 <ty:gen>
-<ty:ref nm='lang|Int32'>
+<ty:ref nm='lang|UInt32'>
 </ty:ref>
 <ty:type nm='lang|Int32'>
 <ty:isa>
@@ -73,19 +73,19 @@
 </type>
 </vardef>
 </let>
-<apply  ty='lang|Sliceable!&lt;lang|Int32, lang|Int32>'>
+<apply  ty='lang|Sliceable!&lt;lang|UInt32, lang|Int32>'>
 <symbol  ty='lambda(lang|Sliceable!&lt;&apos;K, &apos;E>, &apos;K, &apos;E):lang|Sliceable!&lt;&apos;K, &apos;E>' refer='generic'>lang|slice!</symbol>
 <args>
 <symbol  ty='lang|Int32[]' refer='local'>x</symbol>
-<int ty='lang|Int32'>0</int>
+<int ty='lang|UInt32'>0</int>
 <int ty='lang|Int32'>42</int>
 </args>
 </apply>
-<apply  ty='lang|Sliceable!&lt;lang|Int32, lang|Int32>'>
+<apply  ty='lang|Sliceable!&lt;lang|UInt32, lang|Int32>'>
 <symbol  ty='lambda(lang|Sliceable!&lt;&apos;K, &apos;E>, &apos;K, &apos;E):lang|Sliceable!&lt;&apos;K, &apos;E>' refer='generic'>lang|slice!</symbol>
 <args>
 <symbol  ty='lang|Int32[]' refer='local'>y</symbol>
-<int ty='lang|Int32'>1</int>
+<int ty='lang|UInt32'>1</int>
 <int ty='lang|Int32'>4711</int>
 </args>
 </apply>
@@ -141,7 +141,7 @@
 <ty:used-type>
 <ty:ref ref='t' nm='lang|Sliceable!'>
 <ty:gen>
-<ty:ref nm='lang|Int32'>
+<ty:ref nm='lang|UInt32'>
 </ty:ref>
 <ty:type nm='lang|Int32'>
 <ty:isa>
@@ -174,8 +174,8 @@
 </ty:ref>
 </ty:prm>
 <ty:prm is='rest'>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:prm>
 </ty:prms>
 <ty:ret>
