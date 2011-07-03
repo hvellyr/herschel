@@ -5,8 +5,8 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>
@@ -76,10 +76,6 @@
 <param sym='b' type='pos'>
 <type>
 <ty:type nm='lang|Number'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </type>
 </param>
@@ -143,10 +139,6 @@
 </params>
 <rettype>
 <ty:type nm='lang|Number'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </rettype>
 <body>
@@ -156,10 +148,6 @@
 </base>
 <as>
 <ty:type nm='lang|Number'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </as>
 </cast>
@@ -168,8 +156,8 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|Int32'>
@@ -187,10 +175,6 @@
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|Number'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:used-type>
 </ty:node-types>

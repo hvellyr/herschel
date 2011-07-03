@@ -21,12 +21,14 @@
 #define TYPE_TAG_BOOL    (int)'b'
 #define TYPE_TAG_CHAR    (int)'c'
 #define TYPE_TAG_INT32   (int)'i'
+#define TYPE_TAG_UINT32  (int)'u'
 #define TYPE_TAG_KEYW    (int)'k'
 
 #define TYPE_TAG_ANY_ARRAY     (int)'A'
 #define TYPE_TAG_BOOL_ARRAY    (int)'B'
 #define TYPE_TAG_CHAR_ARRAY    (int)'C'
 #define TYPE_TAG_INT32_ARRAY   (int)'I'
+#define TYPE_TAG_UINT32_ARRAY  (int)'U'
 #define TYPE_TAG_KEYW_ARRAY    (int)'K'
 
 
@@ -56,26 +58,30 @@ int
 tag_id_for_type(const Type* type)
 {
   if (strcmp(type->name, "__QN4lang5Int32") == 0)
-    return (int)'i';
+    return (int)TYPE_TAG_INT32;
+  else if (strcmp(type->name, "__QN4lang6UInt32") == 0)
+    return (int)TYPE_TAG_UINT32;
   else if (strcmp(type->name, "__QN4lang4Bool") == 0)
-    return (int)'b';
+    return (int)TYPE_TAG_BOOL;
   else if (strcmp(type->name, "__QN4lang4Char") == 0)
-    return (int)'c';
+    return (int)TYPE_TAG_CHAR;
   else if (strcmp(type->name, "__QN4lang3Any") == 0)
-    return (int)'a';
+    return (int)TYPE_TAG_ANY;
   else if (strcmp(type->name, "__QN4lang7Keyword") == 0)
-    return (int)'k';
+    return (int)TYPE_TAG_KEYW;
 
   else if (strcmp(type->name, "__QN4lang5Int32[]") == 0)
-    return (int)'I';
+    return (int)TYPE_TAG_INT32_ARRAY;
+  else if (strcmp(type->name, "__QN4lang6UInt32[]") == 0)
+    return (int)TYPE_TAG_UINT32_ARRAY;
   else if (strcmp(type->name, "__QN4lang4Bool[]") == 0)
-    return (int)'B';
+    return (int)TYPE_TAG_BOOL_ARRAY;
   else if (strcmp(type->name, "__QN4lang4Char[]") == 0)
-    return (int)'C';
+    return (int)TYPE_TAG_CHAR_ARRAY;
   else if (strcmp(type->name, "__QN4lang3Any[]") == 0)
-    return (int)'A';
+    return (int)TYPE_TAG_ANY_ARRAY;
   else if (strcmp(type->name, "__QN4lang7Keyword[]") == 0)
-    return (int)'K';
+    return (int)TYPE_TAG_KEYW_ARRAY;
 
   type_tag_id_counter++;
   return type_tag_id_counter;

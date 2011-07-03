@@ -124,6 +124,8 @@ SetupUnix::findSysResources(const char* exeName) const
       setup.fHrcPath = file::appendFile(file::makeDir(paths.fLibExec),
                                         String("hrc"));
       setup.fLdPath = paths.fLlvmLdPath;
+      setup.fLangKit = file::appendFile(file::makeDir(paths.fRtLib),
+                                        String("langkit.hlib"));
       setup.fRuntimeLib = file::appendFile(file::makeDir(paths.fRtLib),
                                            String("libhr.a"));
     }
@@ -138,6 +140,8 @@ SetupUnix::findSysResources(const char* exeName) const
       setup.fLdPath = file::appendFile(file::makeDir(basePkgPath),
                                        String("llvm-ld"));
 
+      setup.fLangKit = file::appendFile(file::makeDir(basePkgPath),
+                                        String("langkit.hlib"));
       setup.fRuntimeLib = file::appendFile(file::makeDir(basePkgPath),
                                            String("libhr.a"));
     }

@@ -14,7 +14,7 @@ export public (*)
 ;; general type specifications
 ;;----------------------------------------------------------------------------
 
-def type Number : Object
+def type Number
     ~ Any number. ~
 
 def type Complex : Number

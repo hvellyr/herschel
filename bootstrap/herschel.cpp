@@ -271,6 +271,7 @@ main(int argc, char** argv)
                                                              outputFileName, String("bc")));
       ldOptions.insert(ldOptions.end(),
                        outFiles.begin(), outFiles.end());
+      ldOptions.push_back(setup.fLangKit);
       ldOptions.push_back(setup.fRuntimeLib);
       startProcess(setup.fLdPath, ldOptions);
     }
@@ -280,9 +281,10 @@ main(int argc, char** argv)
   if (verbose) {
     printf("------------------------------\n");
     printf("Setup:\n");
-    printf("  hrc:    %s\n", (const char*)StrHelper(setup.fHrcPath));
-    printf("  linker: %s\n", (const char*)StrHelper(setup.fLdPath));
-    printf("  rtlib:  %s\n", (const char*)StrHelper(setup.fRuntimeLib));
+    printf("  hrc:     %s\n", (const char*)StrHelper(setup.fHrcPath));
+    printf("  linker:  %s\n", (const char*)StrHelper(setup.fLdPath));
+    printf("  langkit: %s\n", (const char*)StrHelper(setup.fLangKit));
+    printf("  rtlib:   %s\n", (const char*)StrHelper(setup.fRuntimeLib));
   }
 
   return 0;

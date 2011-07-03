@@ -96,7 +96,7 @@ namespace herschel
 
     static String getterFunctionName(const Type& ty)
     {
-      return String() + "get_" + ty.typeName() + "_type";
+      return String() + "get_" + ty.typeId() + "_type";
     }
 
 
@@ -108,7 +108,7 @@ namespace herschel
 
     virtual String entityGetterGlobalVarName() const
     {
-      return fType.typeName() + "_type";
+      return fType.typeId() + "_type";
     }
 
 
@@ -632,7 +632,7 @@ ModuleRuntimeInitializer::computeTypeSlotAndClassSpecs(const Type& ty) const
 llvm::Value*
 ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
 {
-  const String& typeName = herschel::mangleToC(ty.typeName());
+  const String& typeName = herschel::mangleToC(ty.typeId());
 
   llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("class_alloc"));
   if (allocFunc == NULL) {

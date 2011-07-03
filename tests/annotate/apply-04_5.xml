@@ -22,10 +22,6 @@
 <param sym='b' type='pos'>
 <type>
 <ty:type nm='lang|Char'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </type>
 </param>
@@ -63,8 +59,8 @@
 </param>
 <param sym='r' type='rest'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>
@@ -135,10 +131,6 @@
 <ty:node-types>
 <ty:used-type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
@@ -188,10 +180,6 @@
 </ty:prm>
 <ty:prm is='pos'>
 <ty:type nm='lang|Char'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:prm>
 <ty:prm is='named' key='c'>
@@ -217,8 +205,8 @@
 </ty:type>
 </ty:prm>
 <ty:prm is='rest'>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:prm>
 </ty:prms>
 <ty:ret>

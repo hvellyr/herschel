@@ -6,4 +6,4 @@ def class Student
 
 
 def to-string(s : Student) : String
-  s^name + " [" + s^subjects[0] + "]"
+  s^name + " [" + s^subjects[0u] + "]"

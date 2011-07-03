@@ -42,11 +42,13 @@ namespace herschel
       //kAtomAny   = 'A',
       kAtomBool    = 'b',
       kAtomInt32   = 'i',
+      kAtomUInt32  = 'u',
       kAtomChar    = 'c',
       kAtomKeyword = 'k',
 
       kAtomBoolArray    = 'B',
       kAtomInt32Array   = 'I',
+      kAtomUInt32Array  = 'U',
       kAtomCharArray    = 'C',
       kAtomKeywordArray = 'K',
     };

@@ -79,10 +79,6 @@
 <ty:ref nm='lang|Range'>
 <ty:gen>
 <ty:type nm='lang|Char'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:gen>
 </ty:ref>
@@ -125,10 +121,6 @@
 <ty:ref nm='lang|Range'>
 <ty:gen>
 <ty:type nm='lang|Char'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:gen>
 </ty:ref>
@@ -156,10 +148,6 @@
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|Char'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:used-type>
 <ty:used-type>
@@ -188,10 +176,6 @@
 <ty:ref nm='lang|Range'>
 <ty:gen>
 <ty:type nm='lang|Char'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:gen>
 </ty:ref>

@@ -68,6 +68,10 @@ $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(DYOEXT) : %.cpp
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
 	$(CXX) $(PIC) $(CXXFLAGS) -c -o $@ $<
 
+$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%.bc : %.h7
+	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
+	$(BUILDDIR)/$(BUILDSTYLE)/herschel$(APPEXT) -c -o $@ $<
+
 $(DEPS_DIR)/%.d: %.c $(PRE_DEPS)
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
 	@($(CC) -MM $(CFLAGS) $< > $@.$$$$; \

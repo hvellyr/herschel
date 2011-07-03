@@ -180,8 +180,8 @@
 </ty:ref>
 </ty:prm>
 <ty:prm is='rest'>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:prm>
 </ty:prms>
 <ty:ret>

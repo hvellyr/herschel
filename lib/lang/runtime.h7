@@ -9,6 +9,7 @@ module lang
 export public(*)
 
 import "lang/numbers.h7"
+import "lang/types.h7"
 
 
 def type Class<T>

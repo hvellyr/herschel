@@ -85,10 +85,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:seq>
 </type>
@@ -153,10 +149,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:seq>
 </ty:used-type>

@@ -822,7 +822,7 @@ namespace herschel
         // otherwise not first class entities.
         if (name() == Names::kSliceableTypeName || name() == Names::kSliceableXTypeName) {
           if (fGenerics.size() == 2) {
-            localCtx.registerType(fGenerics[0].typeName(), Type::newInt32());
+            localCtx.registerType(fGenerics[0].typeName(), Type::newUInt32());
             localCtx.registerType(fGenerics[1].typeName(), right0.arrayBaseType());
 
             return true;
@@ -3453,11 +3453,19 @@ namespace herschel
       if (right.isType() && (right.typeName() == Names::kSliceableTypeName ||
                              right.typeName() == Names::kSliceableXTypeName) &&
           right.generics().size() == 2 &&
-          isSameType(right.generics()[0], Type::newInt32(), scope,
+          isSameType(right.generics()[0], Type::newUInt32(), scope,
                      srcpos, reportErrors) &&
           isSameType(left.arrayBaseType(), right.generics()[1],
                      scope, srcpos, reportErrors))
+      {
         return true;
+      }
+      else if (right.isArray() && right.arrayBaseType().isOpenSelf())
+      {
+        // a generic open type is covariant to Any.  This needs special treatment
+        // in the compiler though
+        return isCovariant(left.arrayBaseType(), Type::newAny(), scope, srcpos, reportErrors);
+      }
       return isSameType(left, right, scope, srcpos, reportErrors);
     }
     else if (left.isUnion()) {
@@ -4228,21 +4236,21 @@ SUITE(Type_Covariance)
     CHECK(herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), K(isValue)),
                                                0, K(isValue)),
                                 Type::newType(Names::kSliceableTypeName,
-                                              newTypeVector(Type::newInt32(),
+                                              newTypeVector(Type::newUInt32(),
                                                             Type::newTypeRef("Ultra")),
                                               Type()),
                                 scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Special"), K(isValue)),
                                                 0, K(isValue)),
                                  Type::newType(Names::kSliceableTypeName,
-                                               newTypeVector(Type::newInt32(),
+                                               newTypeVector(Type::newUInt32(),
                                                              Type::newTypeRef("Ultra")),
                                                Type()),
                                  scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), K(isValue)),
                                                 0, K(isValue)),
                                  Type::newType(Names::kSliceableTypeName,
-                                               newTypeVector(Type::newInt32(),
+                                               newTypeVector(Type::newUInt32(),
                                                              Type::newTypeRef("Special")),
                                                Type()),
                                  scope, SrcPos(), !K(reportError)));
