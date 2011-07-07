@@ -39,18 +39,17 @@ namespace herschel
     CodegenTools(CodeGenerator* generator);
 
     enum Typeid {
-      //kAtomAny   = 'A',
-      kAtomBool    = 'b',
-      kAtomInt32   = 'i',
-      kAtomUInt32  = 'u',
-      kAtomChar    = 'c',
-      kAtomKeyword = 'k',
+      kAtomAny     = 0x01,
+      kAtomBool    = 0x02,
+      kAtomChar    = 0x03,
+      kAtomInt32   = 0x04,
+      kAtomUInt32  = 0x05,
+      kAtomKeyword = 0x06,
 
-      kAtomBoolArray    = 'B',
-      kAtomInt32Array   = 'I',
-      kAtomUInt32Array  = 'U',
-      kAtomCharArray    = 'C',
-      kAtomKeywordArray = 'K',
+      kAtomInt32Array   = kAtomInt32 + 0x40,
+      kAtomUInt32Array  = kAtomUInt32 + 0x40,
+      kAtomCharArray    = kAtomChar + 0x40,
+      kAtomKeywordArray = kAtomKeyword + 0x40,
     };
 
     void setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value);

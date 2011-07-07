@@ -1024,7 +1024,7 @@ LazyCodeInitializingEmitter::emit()
 //============================================================================
 
 llvm::Value*
-CodeGenerator::makeGetTypeLookupCall(const Type& ty) const
+CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
 {
   String typeClassLookupFuncName =
     TypeLazyCodeInitializingEmitter::getterFunctionName(ty);
@@ -1047,6 +1047,46 @@ CodeGenerator::makeGetTypeLookupCall(const Type& ty) const
 
   std::vector<llvm::Value*> argv;
   return builder().CreateCall(typeFunc, argv.begin(), argv.end());
+}
+
+
+llvm::Value*
+CodeGenerator::makeGetArrayTypeLookupCall(const Type& ty) const
+{
+  llvm::Value* baseTyValue = makeGetTypeLookupCall(ty.arrayBaseType());
+
+  String funcName = String("type_lookup_array_type");
+  llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
+
+  if (typeFunc == NULL)
+  {
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(fTypes->getTypeType());
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getTypeType(),
+                                                     sign,
+                                                     !K(isVarArg));
+    typeFunc = llvm::Function::Create(ft,
+                                      llvm::Function::ExternalLinkage,
+                                      llvm::Twine(funcName),
+                                      fModule);
+  }
+
+  std::vector<llvm::Value*> argv;
+  argv.push_back(baseTyValue);
+  return builder().CreateCall(typeFunc, argv.begin(), argv.end());
+}
+
+
+llvm::Value*
+CodeGenerator::makeGetTypeLookupCall(const Type& ty) const
+{
+  if (ty.isArray())
+    return makeGetArrayTypeLookupCall(ty);
+
+  // TODO: union and sequence type, function types, etc.
+  else
+    return makeGetBaseTypeLookupCall(ty);
 }
 
 

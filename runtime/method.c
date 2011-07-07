@@ -175,6 +175,9 @@ lookup_func1(GenericFunction* gf, TagId ty0_id)
   Type* ty0 = type_lookup_by_tag(ty0_id);
   List* l = gf->methods;
 
+  //printf("ty0_id %c %p\n", ty0_id, ty0);
+
+
   assert(gf->argc == 1);
 
   while (l) {

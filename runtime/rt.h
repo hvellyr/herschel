@@ -48,6 +48,7 @@ struct Type {
   size_t      isa_size;
   HashTable*  isa_set;          /* hash<Type*, Type*> i.e. a Set */
   TagId       tag_id;
+  int         is_array;
 
   size_t      instance_size;
   size_t      acc_instance_size; /* accumulated instance size for this class
@@ -99,6 +100,8 @@ Type* class_alloc(const char* nm,
 
 Type* type_lookup_by_name(const char* nm);
 Type* type_lookup_by_tag(int tag_id);
+
+Type* type_lookup_array_type(Type* base_type);
 
 /* checks whether one isa two */
 int type_isa(Type* one, Type* two);
