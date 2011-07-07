@@ -174,6 +174,9 @@ namespace herschel
     llvm::Value* makeGetTypeLookupCall(const Type& ty) const;
     llvm::Value* makeGetGenericFuncLookupCall(const FuncDefNode* node) const;
 
+    llvm::Value* makeGetBaseTypeLookupCall(const Type& ty) const;
+    llvm::Value* makeGetArrayTypeLookupCall(const Type& ty) const;
+
     //-------- data members
 
     Compiler*                  fCompiler;
