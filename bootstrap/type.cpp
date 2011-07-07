@@ -3450,8 +3450,9 @@ namespace herschel
 #endif
 
     if (left.isArray()) {
-      if (right.isType() && (right.typeName() == Names::kSliceableTypeName ||
-                             right.typeName() == Names::kSliceableXTypeName) &&
+      String rightTypeName = right.typeName();
+      if (right.isType() && (rightTypeName == Names::kSliceableTypeName ||
+                             rightTypeName == Names::kSliceableXTypeName) &&
           right.generics().size() == 2 &&
           isSameType(right.generics()[0], Type::newUInt32(), scope,
                      srcpos, reportErrors) &&
