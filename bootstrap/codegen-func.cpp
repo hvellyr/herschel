@@ -390,8 +390,12 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
     if (!node->hasCLinkage()) {
       if (node->isAppMain()) {
         hr_assert(!node->isMethod());
+
         // the app|main function always returns lang|Int32
-        if (node->body()->type().isPlainType()) {
+        if (node->body()->type().isPlainType() &&
+            (node->body()->typeConv() == kTypeCheckConv ||
+             node->body()->typeConv() == kNoConv))
+        {
           builder().CreateStore(builder().CreateIntCast(tools()->wrapLoad(retv),
                                                       llvm::Type::getInt32Ty(context()),
                                                       true),
