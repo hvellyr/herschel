@@ -5,9 +5,7 @@ def generic foo(a @ 'T[]) : 'T ...
 
 def foo(a @ Int[]) : Int
   assert(a[0u] == 0)
-  0
+  42
 
 def app|main()
   foo(Int[](12))
-
-  42
