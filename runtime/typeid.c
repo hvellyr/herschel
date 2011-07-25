@@ -418,7 +418,7 @@ allocate(ATOM* instance, Type* ty)
 
 
 void
-allocate_array(ATOM* instance, Type* ty, ATOM init_value, size_t items)
+allocate_array(ATOM* instance, Type* ty, size_t items)
 {
 #if defined(UNITTESTS)
   hr_trace("allocate", "Create instance of type '%s'x%ld, size: %ld",
@@ -429,12 +429,8 @@ allocate_array(ATOM* instance, Type* ty, ATOM init_value, size_t items)
   instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(ATOM));
   *((size_t*)instance->u.v_obj) = items;
 
-  {
-    ATOM* p = (ATOM*)(instance->u.v_obj + sizeof(size_t));
-    size_t i;
-    for (i = 0; i < items; i++, p++)
-      *p = init_value;
-  }
+  /* initialization can only be done from outside.  We can't call
+     allocates/initializers from here */
 }
 
 

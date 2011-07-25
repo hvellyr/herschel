@@ -24,6 +24,27 @@ Bootstrap compiler
     - char binary operators
     - char arrays
 
+    Generic array initialization.  Allocation of plain type arrays seems to
+    work somehow; but allocation of Xyz[](16) fails since after allocation
+    all array slots contain zeros.
+
+    The allocate_array(type, init_value, ...) signature works only for
+    plain type.  For complex object instances, we need more something like
+
+      a = allocate_array(type, size)
+      for (i in 0 .. size)
+        a[i] = Xyz()
+
+    For the case that an init value is give in Xyz[](16, Xyz("hello")) we
+    have do something like this:
+
+      a = allocate_array(type, size)
+      t = Xyz("hello")
+      a[0] = t
+      for (i in 1 .. size)
+        a[i] = t.copy
+    
+
   - basic String class
 
   - basic IO classes (such to allow displaying info from test files)

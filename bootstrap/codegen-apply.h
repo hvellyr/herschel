@@ -47,6 +47,7 @@ namespace herschel
 
     llvm::Value* emitTypeNameForAllocate(const AptNode* node) const;
     llvm::Value* emitAllocateApply(const ApplyNode* node) const;
+    llvm::Value* emitAllocateApplyImpl(const AptNode* typeNode) const;
     llvm::Value* emitAllocateArrayApply(const ApplyNode* node) const;
 
     llvm::Value* emitGetSlotApply(const ApplyNode* node) const;
@@ -67,8 +68,11 @@ namespace herschel
     };
 
     ArraySliceAccessData emitArraySliceAddress(const ApplyNode* node) const;
-    llvm::Value* emitArraySize(const ApplyNode* node) const;
+    ArraySliceAccessData emitArraySliceAddress(llvm::Value* arrayAtom,
+                                               const Type& arrayBaseType,
+                                               llvm::Value* idxValue) const;
 
+    llvm::Value* emitArraySize(const ApplyNode* node) const;
   };
 };                              // namespace
 
