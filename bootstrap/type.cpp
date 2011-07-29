@@ -3760,6 +3760,20 @@ namespace herschel
 
     return Type();
   }
+
+
+  String
+  arrayTypeName(const String& baseName)
+  {
+    return baseName + "[]";
+  }
+
+
+  String
+  arrayTypeName(const char* baseName)
+  {
+    return arrayTypeName(String(baseName));
+  }
 };
 
 
