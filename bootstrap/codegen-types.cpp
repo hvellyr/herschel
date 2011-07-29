@@ -222,53 +222,53 @@ CodegenTypeUtils::getType(const Type& type) const
   // tyerror(type, "Other type");
   // fprintf(stderr, " ---> %s\n", (const char*)StrHelper(typeId));
 
-  if (typeId == String("clang|int")) {
+  if (typeId == Names::kClangIntTypeName) {
     return llvm::Type::getInt32Ty(context());
   }
-  else if (typeId == String("clang|char")) {
+  else if (typeId == Names::kClangCharTypeName) {
     return llvm::Type::getInt8Ty(context());
   }
 
-  else if (typeId == String("lang|Int8")) {
+  else if (typeId == Names::kInt8TypeName) {
     return llvm::Type::getInt8Ty(context());
   }
-  else if (typeId == String("lang|Int16")) {
+  else if (typeId == Names::kInt16TypeName) {
     return llvm::Type::getInt16Ty(context());
   }
-  else if (typeId == String("lang|Int32")) {
+  else if (typeId == Names::kInt32TypeName) {
     return llvm::Type::getInt32Ty(context());
   }
-  else if (typeId == String("lang|Int64")) {
+  else if (typeId == Names::kInt64TypeName) {
     return llvm::Type::getInt64Ty(context());
   }
 
-  else if (typeId == String("lang|UInt8")) {
+  else if (typeId == Names::kUInt8TypeName) {
     return llvm::Type::getInt8Ty(context());
   }
-  else if (typeId == String("lang|UInt16")) {
+  else if (typeId == Names::kUInt16TypeName) {
     return llvm::Type::getInt16Ty(context());
   }
-  else if (typeId == String("lang|UInt32")) {
+  else if (typeId == Names::kUInt32TypeName) {
     return llvm::Type::getInt32Ty(context());
   }
-  else if (typeId == String("lang|UInt64")) {
+  else if (typeId == Names::kUInt64TypeName) {
     return llvm::Type::getInt64Ty(context());
   }
 
-  else if (typeId == String("lang|Char")) {
+  else if (typeId == Names::kCharTypeName) {
     return llvm::Type::getInt32Ty(context());
   }
-  else if (typeId == String("lang|Bool")) {
+  else if (typeId == Names::kBoolTypeName) {
     return llvm::Type::getInt1Ty(context());
   }
 
-  else if (typeId == String("lang|Float32")) {
+  else if (typeId == Names::kFloat32TypeName) {
     return llvm::Type::getFloatTy(context());
   }
-  else if (typeId == String("lang|Float64")) {
+  else if (typeId == Names::kFloat64TypeName) {
     return llvm::Type::getDoubleTy(context());
   }
-  // else if (typeId == String("lang|Float128")) {
+  // else if (typeId == Names::kFloat128TypeName) {
   //   return llvm::Type::getInt1Ty(context());
   // }
 
@@ -291,54 +291,54 @@ size_t
 CodegenTypeUtils::getSlotSize(const Type& type) const
 {
   String typeId = type.typeId();
-  if (typeId == String("clang|int"))
+  if (typeId == Names::kClangIntTypeName)
     // TODO: shouldn't this be 32/64 depending on host platform?
     return 4; // llvm::Type::getInt32Ty(context());
 
-  else if (typeId == String("clang|char"))
+  else if (typeId == Names::kClangCharTypeName)
     return 1; // llvm::Type::getInt8Ty(context());
 
 
-  else if (typeId == String("lang|Int8"))
+  else if (typeId == Names::kInt8TypeName)
     return 1; // llvm::Type::getInt8Ty(context());
 
-  else if (typeId == String("lang|Int16"))
+  else if (typeId == Names::kInt16TypeName)
     return 2; // llvm::Type::getInt16Ty(context());
 
-  else if (typeId == String("lang|Int32"))
+  else if (typeId == Names::kInt32TypeName)
     return 4; // llvm::Type::getInt32Ty(context());
 
-  else if (typeId == String("lang|Int64"))
+  else if (typeId == Names::kInt64TypeName)
     return 8; // llvm::Type::getInt64Ty(context());
 
 
-  else if (typeId == String("lang|UInt8"))
+  else if (typeId == Names::kUInt8TypeName)
     return 1; // llvm::Type::getInt8Ty(context());
 
-  else if (typeId == String("lang|UInt16"))
+  else if (typeId == Names::kUInt16TypeName)
     return 2; // llvm::Type::getInt16Ty(context());
 
-  else if (typeId == String("lang|UInt32"))
+  else if (typeId == Names::kUInt32TypeName)
     return 4; // llvm::Type::getInt32Ty(context());
 
-  else if (typeId == String("lang|UInt64"))
+  else if (typeId == Names::kUInt64TypeName)
     return 8; // llvm::Type::getInt64Ty(context());
 
 
-  else if (typeId == String("lang|Char"))
+  else if (typeId == Names::kCharTypeName)
     return 4; // llvm::Type::getInt32Ty(context());
 
-  else if (typeId == String("lang|Bool"))
+  else if (typeId == Names::kBoolTypeName)
     return 1; // llvm::Type::getInt1Ty(context());
 
 
-  else if (typeId == String("lang|Float32"))
+  else if (typeId == Names::kFloat32TypeName)
     return 4; // llvm::Type::getFloatTy(context());
 
-  else if (typeId == String("lang|Float64"))
+  else if (typeId == Names::kFloat64TypeName)
     return 8; // llvm::Type::getDoubleTy(context());
 
-  // else if (typeId == String("lang|Float128"))
+  // else if (typeId == Names::kFloat128TypeName)
   //   return llvm::Type::getInt1Ty(context());
   // }
 

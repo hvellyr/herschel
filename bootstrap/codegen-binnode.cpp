@@ -126,14 +126,14 @@ CodegenBinaryNode::wrapBool(llvm::Value* value, const Type& type) const
 bool
 CodegenBinaryNode::isPlainInt(const Type& type) const
 {
-  return ( type.typeName() == String("lang|Int64")  ||
-           type.typeName() == String("lang|Int32")  ||
-           type.typeName() == String("lang|Int16")  ||
-           type.typeName() == String("lang|Int8")   ||
-           type.typeName() == String("lang|UInt64") ||
-           type.typeName() == String("lang|UInt32") ||
-           type.typeName() == String("lang|UInt16") ||
-           type.typeName() == String("lang|UInt8") );
+  return ( type.typeName() == Names::kInt64TypeName  ||
+           type.typeName() == Names::kInt32TypeName  ||
+           type.typeName() == Names::kInt16TypeName  ||
+           type.typeName() == Names::kInt8TypeName   ||
+           type.typeName() == Names::kUInt64TypeName ||
+           type.typeName() == Names::kUInt32TypeName ||
+           type.typeName() == Names::kUInt16TypeName ||
+           type.typeName() == Names::kUInt8TypeName );
 }
 
 

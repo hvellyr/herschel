@@ -517,14 +517,14 @@ Typifier::typify(FuncDefNode* node)
 
     if (node->name() == Names::kAppMain) {
       if (!node->retType().isAny()) {
-        if (node->retType().typeId() != String("lang|Int32"))
+        if (node->retType().typeId() != Names::kInt32TypeName)
         {
           errorf(node->srcpos(), E_TypeMismatch,
-                 "return type of " MID_app_main "() must be lang|Int32");
+                 "return type of " MID_app_main "() must be " MID_Int32TypeName);
         }
       }
 
-      node->setRetType(Type::newTypeRef("lang|Int32"));
+      node->setRetType(Type::newTypeRef(MID_Int32TypeName));
     }
 
     if (node->body() != NULL) {

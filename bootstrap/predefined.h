@@ -54,6 +54,8 @@ namespace herschel
   // names of predefined types
 #define MID_core_ns             "lang"
 
+#define MID_clang_ns            "clang"
+
 #define MID_AnyTypeName         MID_core_ns "|" "Any"
 
 #define MID_BoolTypeName        MID_core_ns "|" "Bool"
@@ -97,6 +99,9 @@ namespace herschel
 #define MID_AssocCollectionTypeName MID_core_ns "|" "AssocCollection"
 #define MID_AssocTypeName       MID_core_ns "|" "Assoc"
 #define MID_MapTypeName         MID_core_ns "|" "Map"
+
+#define MID_clang_IntTypeName   MID_clang_ns "|" "int"
+#define MID_clang_CharTypeName  MID_clang_ns "|" "char"
 
 
   //--------------------------------------------------------------------------
@@ -176,6 +181,10 @@ namespace herschel
 
     const static String kAppMain;
 
+
+
+    const static String kClangIntTypeName;
+    const static String kClangCharTypeName;
 
     // known keywords
     const static String kExitKeyword;

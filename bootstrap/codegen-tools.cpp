@@ -243,36 +243,36 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
 const char*
 CodegenTools::getConvFuncNameByType(const Type& type) const
 {
-  if (type.typeId() == String("lang|Int32"))
+  if (type.typeId() == Names::kInt32TypeName)
     return "atom_2_int32";
-  else if (type.typeId() == String("lang|Int64"))
+  else if (type.typeId() == Names::kInt64TypeName)
     return "atom_2_int64";
-  else if (type.typeId() == String("lang|Int16"))
+  else if (type.typeId() == Names::kInt16TypeName)
     return "atom_2_int16";
-  else if (type.typeId() == String("lang|Int8"))
+  else if (type.typeId() == Names::kInt8TypeName)
     return "atom_2_int8";
 
-  else if (type.typeId() == String("lang|UInt32"))
+  else if (type.typeId() == Names::kUInt32TypeName)
     return "atom_2_uint32";
-  else if (type.typeId() == String("lang|UInt64"))
+  else if (type.typeId() == Names::kUInt64TypeName)
     return "atom_2_uint64";
-  else if (type.typeId() == String("lang|UInt16"))
+  else if (type.typeId() == Names::kUInt16TypeName)
     return "atom_2_uint16";
-  else if (type.typeId() == String("lang|UInt8"))
+  else if (type.typeId() == Names::kUInt8TypeName)
     return "atom_2_uint8";
-  else if (type.typeId() == String("lang|Float32"))
+  else if (type.typeId() == Names::kFloat32TypeName)
     return "atom_2_float32";
-  else if (type.typeId() == String("lang|Float64"))
+  else if (type.typeId() == Names::kFloat64TypeName)
     return "atom_2_float64";
-  else if (type.typeId() == String("lang|Char"))
+  else if (type.typeId() == Names::kCharTypeName)
     return "atom_2_char";
-  else if (type.typeId() == String("lang|Bool"))
+  else if (type.typeId() == Names::kBoolTypeName)
     return "atom_2_bool";
 
-  else if (type.typeId() == String("lang|Keyword"))
+  else if (type.typeId() == Names::kKeywordTypeName)
     return "atom_2_keyword";
 
-  if (type.typeId() == String("clang|int")) // TODO
+  if (type.typeId() == Names::kClangIntTypeName) // TODO
     return "atom_2_int32";
 
   hr_invalid((const char*)StrHelper(String("unhandled type: ") + type.typeId()));
@@ -335,11 +335,11 @@ CodegenTools::emitPackCode(const Type& dstType, TypeConvKind convKind,
     case kAtom2PlainConv:
       return makeTypeCastAtomToPlain(value, dstType);
     case kPlain2AtomConv:
-      if (valType.typeId() == String("lang|Int32"))
+      if (valType.typeId() == Names::kInt32TypeName)
         return wrapLoad(makeIntAtom(value, CodegenTools::kAtomInt32));
-      else if (valType.typeId() == String("lang|UInt32"))
+      else if (valType.typeId() == Names::kUInt32TypeName)
         return wrapLoad(makeIntAtom(value, CodegenTools::kAtomUInt32));
-      else if (valType.typeId() == String("lang|Bool"))
+      else if (valType.typeId() == Names::kBoolTypeName)
         return wrapLoad(makeBoolAtom(value));
       else {
         hr_invalid("unhandled type");
