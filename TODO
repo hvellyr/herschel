@@ -29,10 +29,8 @@ Documentation
 
 Bootstrap compiler
 
-  - support of arrays
-
-    - char binary operators
-    - char arrays
+  - char binary operators
+  - char arrays
 
   - basic String class
 
@@ -116,8 +114,6 @@ Bootstrap compiler
     - detect whether nested functions can simply be inlined
 
     - otherwise lambda lift functions to outside.
-
-  - array access
 
   - enum:
     - construct proper enum constraint type
