@@ -803,7 +803,8 @@ namespace herschel
         }
 
         if (localCtx.hasType(name())) {
-          if (!isSameType(localCtx.lookupType(name()), right0, scope, srcpos))
+          if (!isContravariant(localCtx.lookupType(name()), right0, scope, srcpos) &&
+              !isSameType(localCtx.lookupType(name()), right0, scope, srcpos) )
           {
             errorf(srcpos, E_TypeMismatch, "type mismatch for generic parameter");
             return false;
