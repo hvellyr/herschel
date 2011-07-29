@@ -595,9 +595,12 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
 
     const AptNode* valueNode = valueParam->value();
 
+    // TODO: strange.  the valueNode (so the real value of a keyarg node) does
+    // not have its dstType() and typeConv() properly set.  These values are
+    // only set on the KeyArg node itself.
     initValue = tools()->wrapLoad(generator()->codegenNode(valueNode));
-    initValue = tools()->emitPackCode(valueNode->dstType(), valueNode->typeConv(),
-                                      initValue, valueNode->type());
+    initValue = tools()->emitPackCode(valueParam->dstType(), valueParam->typeConv(),
+                                      initValue, valueParam->type());
 
     sizeNode = args[2];
     hr_assert(sizeNode != NULL);
@@ -634,7 +637,6 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
 
   hr_assert(elementCountValue != NULL);
   argv.push_back(elementCountValue);
-
 
   hr_assert(allocFunc != NULL);
   builder().CreateCall(allocFunc, argv.begin(), argv.end());
