@@ -71,6 +71,8 @@ const String herschel::Names::kLangEndp            = String(MID_core_ns "|" "end
 const String herschel::Names::kLangNext            = String(MID_core_ns "|" "next");
 const String herschel::Names::kLangNumItems        = String(MID_core_ns "|" "num-items");
 
+const String herschel::Names::kAppMain             = String(MID_app_main);
+
 const String herschel::Names::kExitKeyword         = String(MID_exitKeyword);
 const String herschel::Names::kSignalKeyword       = String(MID_signalKeyword);
 

@@ -515,12 +515,12 @@ Typifier::typify(FuncDefNode* node)
   if (fPhase == kTypify) {
     setupFunctionNodeType(node);
 
-    if (node->name() == String("app|main")) {
+    if (node->name() == Names::kAppMain) {
       if (!node->retType().isAny()) {
         if (node->retType().typeId() != String("lang|Int32"))
         {
           errorf(node->srcpos(), E_TypeMismatch,
-                 "return type of app|main() must be lang|Int32");
+                 "return type of " MID_app_main "() must be lang|Int32");
         }
       }
 

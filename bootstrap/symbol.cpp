@@ -12,6 +12,7 @@
 #include "str.h"
 #include "symbol.h"
 #include "strbuf.h"
+#include "predefined.h"
 
 #include "stdio.h"
 
@@ -136,7 +137,7 @@ herschel::mangleToC(const String& qualId)
 TEST(SymbolMangling)
 {
   CHECK_EQUAL(String("__QN13hello/2dworld"), mangleToC(String("hello-world")));
-  CHECK_EQUAL(String("__QN3app4main"), mangleToC(String("app|main")));
+  CHECK_EQUAL(String("__QN3app4main"), mangleToC(Names::kAppMain));
   CHECK_EQUAL(String("__QN4core2io12/2astdout/2a"), mangleToC(String("core|io|*stdout*")));
   CHECK_EQUAL(String("__QN9call/2fcc"), mangleToC(String("call/cc")));
 }
