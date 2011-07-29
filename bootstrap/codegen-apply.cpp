@@ -298,7 +298,8 @@ public:
   virtual llvm::Value* postInit(const ApplyNode* node,
                                 llvm::Value* retv,
                                 const Type& arrayBaseType,
-                                llvm::Value* sizeVal) const = 0;
+                                llvm::Value* sizeVal,
+                                llvm::Value* eplicitInitValue) const = 0;
 
 protected:
   const CodegenApply* fApply;
@@ -350,7 +351,8 @@ public:
   virtual llvm::Value* postInit(const ApplyNode* node,
                                 llvm::Value* retv,
                                 const Type& arrayBaseType,
-                                llvm::Value* sizeVal) const
+                                llvm::Value* sizeVal,
+                                llvm::Value* explicitInitValue) const
   {
     llvm::Function *curFunction = fApply->builder().GetInsertBlock()->getParent();
     llvm::AllocaInst* counter = fApply->tools()->createEntryBlockAlloca(
@@ -389,15 +391,17 @@ public:
     // Start insertion in loopBB.
     fApply->builder().SetInsertPoint(loopBB);
 
-    CodegenApply::ArraySliceAccessData arrayAccces = 
-    fApply->emitArraySliceAddress(retv,
-                                  arrayBaseType,
-                                  counter);
+    CodegenApply::ArraySliceAccessData arrayAccces =
+      fApply->emitArraySliceAddress(retv,
+                                    arrayBaseType,
+                                    counter);
     const llvm::Type* ptrType = fApply->types()->getType(arrayBaseType)->getPointerTo();
     llvm::Value* ptrAddr = fApply->builder().CreatePointerCast(arrayAccces.fAddr, ptrType);
 
-    llvm::Value* initVal = initValue(node);
-    fApply->builder().CreateStore(fApply->builder().CreateLoad(initVal), ptrAddr);
+    llvm::Value* initVal = ( explicitInitValue != NULL
+                             ? explicitInitValue
+                             : fApply->builder().CreateLoad(initValue(node)) );
+    fApply->builder().CreateStore(initVal, ptrAddr);
 
     llvm::Value* newCounter = fApply->builder().CreateAdd(
       fApply->builder().CreateLoad(counter),
@@ -459,7 +463,8 @@ public:
   virtual llvm::Value* postInit(const ApplyNode* node,
                                 llvm::Value* retv,
                                 const Type& arrayBaseType,
-                                llvm::Value* sizeVal) const
+                                llvm::Value* sizeVal,
+                                llvm::Value* explicitInitValue) const
   {
     return retv;
   }
@@ -508,7 +513,8 @@ public:
   virtual llvm::Value* postInit(const ApplyNode* node,
                                 llvm::Value* retv,
                                 const Type& arrayBaseType,
-                                llvm::Value* sizeVal) const
+                                llvm::Value* sizeVal,
+                                llvm::Value* explicitInitValue) const
   {
     return retv;
   }
@@ -583,9 +589,11 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
     typeNode = dynamic_cast<const SymbolNode*>(args[0].obj());
     hr_assert(typeNode != NULL);
 
-    const KeyargNode* valueNode = dynamic_cast<const KeyargNode*>(args[1].obj());
-    hr_assert(valueNode != NULL);
-    hr_assert(valueNode->key() == String("value"));
+    const KeyargNode* valueParam = dynamic_cast<const KeyargNode*>(args[1].obj());
+    hr_assert(valueParam != NULL);
+    hr_assert(valueParam->key() == String("value"));
+
+    const AptNode* valueNode = valueParam->value();
 
     initValue = tools()->wrapLoad(generator()->codegenNode(valueNode));
     initValue = tools()->emitPackCode(valueNode->dstType(), valueNode->typeConv(),
@@ -607,24 +615,25 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
     argv.push_back(initValue);
 
   // arg 3: the element count
-  llvm::Value* itemsVal = NULL;
+  llvm::Value* elementCountValue = NULL;
   if (const IntNode* intNode = dynamic_cast<const IntNode*>(sizeNode)) {
-    itemsVal = tools()->emitSizeTValue(intNode->value());
+    elementCountValue = tools()->emitSizeTValue(intNode->value());
   }
   else {
-    itemsVal = tools()->wrapLoad(generator()->codegenNode(sizeNode));
-    itemsVal = ( (sizeNode->type().isPlainType())
-                 ? itemsVal
-                 : tools()->convertToPlainInt(itemsVal,
-                                              Type::newInt32(), // why no convert to
-                                                                // size_t directly?
-                                              kAtom2PlainConv));
-    itemsVal = builder().CreateIntCast(itemsVal, types()->getSizeTTy(),
-                                       !K(isSigned));
+    elementCountValue = tools()->wrapLoad(generator()->codegenNode(sizeNode));
+    elementCountValue = ( (sizeNode->type().isPlainType())
+                          ? elementCountValue
+                          : tools()->convertToPlainInt(elementCountValue,
+                                                       // why no convert to size_t directly?
+                                                       Type::newInt32(),
+                                                       kAtom2PlainConv));
+    elementCountValue = builder().CreateIntCast(elementCountValue,
+                                                types()->getSizeTTy(),
+                                                !K(isSigned));
   }
 
-  hr_assert(itemsVal != NULL);
-  argv.push_back(itemsVal);
+  hr_assert(elementCountValue != NULL);
+  argv.push_back(elementCountValue);
 
 
   hr_assert(allocFunc != NULL);
@@ -633,7 +642,8 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   llvm::Value* retv2 = strategy->postInit(node,
                                           retv,
                                           node->type().arrayBaseType(),
-                                          itemsVal);
+                                          elementCountValue,
+                                          initValue);
 
 
   // TODO: if in tail position enforce ATOM return type?
