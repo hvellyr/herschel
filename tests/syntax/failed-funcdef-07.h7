@@ -1,4 +1,4 @@
-;; redefinition of generic functions are not allowed.
+-- redefinition of generic functions are not allowed.
 
 def generic foo(a @ Any) : Any ...
 

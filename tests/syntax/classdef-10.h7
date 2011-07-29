@@ -1,5 +1,5 @@
-;; check that the Z<K>() super inititialization (prime) is automatically
-;; added to the generated X|init function.
+-- check that the Z<K>() super inititialization (prime) is automatically
+-- added to the generated X|init function.
 
 def class Y<T>(n : T)
 {

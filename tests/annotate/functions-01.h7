@@ -5,7 +5,7 @@ def type Car : Vehicle
 def type Ufo : Vehicle
 
 
-;; There can be multiple methods for one generic function
+-- There can be multiple methods for one generic function
 
 def generic crash-into(object1 @ Any, object2 @ Any) ...
 

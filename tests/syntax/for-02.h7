@@ -3,8 +3,8 @@ def f0()
      outln(i)
 
 
-;; NOTE: the following is an endless loop without while statement.  This
-;; results in a compilation without return variable.
+-- NOTE: the following is an endless loop without while statement.  This
+-- results in a compilation without return variable.
 def f1()
   for (i : Int = 0 then i + 3)
      cont-count(i)

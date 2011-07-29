@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 module io
 export public (*)
@@ -12,7 +12,7 @@ import "core/core.h7"
 import "io/io.h7"
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def class StringInPort(str : String,
                        offset : Ordinal = 0,
@@ -21,7 +21,7 @@ def class StringInPort(str : String,
 }
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def class StringOutPort(str : String = nil,
                         offset : Ordinal = 0,
@@ -30,4 +30,4 @@ def class StringOutPort(str : String = nil,
 }
 
 
-;; end of string-port
+-- end of string-port

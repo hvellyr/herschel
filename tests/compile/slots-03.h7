@@ -1,5 +1,5 @@
-;; test: mixed plain and atomic types in slots; additionally double slot
-;; dereferencing (t^c^value)
+-- test: mixed plain and atomic types in slots; additionally double slot
+-- dereferencing (t^c^value)
 
 import "lang/assert.h7"
 

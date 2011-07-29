@@ -6,7 +6,7 @@ def foo(n : Int)
   25
 
 
-def foo2(n : Int) ;; : &(Any, Union)
+def foo2(n : Int) -- : &(Any, Union)
   let k = 0
   for (i in 0 .. n)
     if (i rem 2 == 0)

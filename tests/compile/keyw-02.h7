@@ -1,4 +1,4 @@
-;; compare keywords returned from a function to be equal
+-- compare keywords returned from a function to be equal
 
 def foo()
   #blue
