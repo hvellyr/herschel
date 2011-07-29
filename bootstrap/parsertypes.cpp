@@ -49,7 +49,6 @@ herschel::tokenTypeToOperator(TokenType type)
   case kShiftRight:    return kOpShiftRight;
   case kRange:         return kOpRange;
   case kAppend:        return kOpAppend;
-  case kRemove:        return kOpRemove;
   case kThenId:        return kOpThen;
   case kWhileId:       return kOpWhile;
 
@@ -92,7 +91,6 @@ herschel::operatorToTokenType(OperatorType op)
   case kOpShiftRight:    return kShiftRight;
   case kOpRange:         return kRange;
   case kOpAppend:        return kAppend;
-  case kOpRemove:        return kRemove;
   case kOpThen:          return kThenId;
   case kOpWhile:         return kWhileId;
 

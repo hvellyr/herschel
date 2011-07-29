@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 module lang
 export public(*)
@@ -25,9 +25,9 @@ def generic type-of(obj @ 'T) : Class<'T> ...
 
 
 
-;;----------------------------------------------------------------------------
-;; Default value
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Default value
+------------------------------------------------------------------------------
 
 def generic null-value(ty @ Class<'T>) : 'T ...
   ~ Returns the default null value for type @type{T}.
@@ -41,9 +41,9 @@ def generic max-value(ty @ Class<'T>) : 'T ...
 
 
 
-;;----------------------------------------------------------------------------
-;; allocation
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- allocation
+------------------------------------------------------------------------------
 
 def generic allocate(ty @ Class<'T>) : 'T ...
     ~ Allocate a new instance of type @var{ty}.  Note that the allocated
@@ -59,7 +59,7 @@ def generic allocate*(ty @ Class<'T>,
     in (three dimensional) array of 231 slots. ~
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def type Range<T>
 
@@ -71,4 +71,4 @@ module Range
 }
 
 
-;; end of runtime
+-- end of runtime

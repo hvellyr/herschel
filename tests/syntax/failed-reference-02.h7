@@ -1,10 +1,10 @@
-;; can't derive from reference type
+-- can't derive from reference type
 def type X : ^String
 
-;; can't derive from ref type
+-- can't derive from ref type
 def measure Ixwick(iw) : ^Float
 
-;; can't derive from ref type
+-- can't derive from ref type
 def enum Color : ^Keyword
 {
   orange
@@ -13,7 +13,7 @@ def enum Color : ^Keyword
 }
 
 
-;; Constraints can't be ref types
+-- Constraints can't be ref types
 def foo(x : ^'T)
     where T isa ^String
 

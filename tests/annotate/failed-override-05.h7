@@ -6,8 +6,8 @@ def type Bike : Vehicle
 
 def generic foo(a @ Int, b : Car) : Car ...
 
-;; error here: methods' parameters must be covariant to their generic
-;; functions
+-- error here: methods' parameters must be covariant to their generic
+-- functions
 def foo(a @ Int, b : Truck) : Car
   let t : Car
   t

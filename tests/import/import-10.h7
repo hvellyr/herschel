@@ -1,6 +1,6 @@
-;; test: - import ignore-green-10.h7
-;;       - check that types are correct
-;;       - check that function (types) are correct
+-- test: - import ignore-green-10.h7
+--       - check that types are correct
+--       - check that function (types) are correct
 
 import "import/ignore-green-10.h7"
 

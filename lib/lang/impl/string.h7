@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 module lang
 
@@ -17,9 +17,9 @@ def class StringImpl : String
 }
 
 
-;;----------------------------------------------------------------------------
-;; Slice special for string
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Slice special for string
+------------------------------------------------------------------------------
 
 def class StringSlice(_str : StringImpl,
                       _from : Ordinal,
@@ -48,9 +48,9 @@ def core|slice(sl @ StringSlice, from @ Ordinal, to @ Ordinal)
   sl.str.slice(sl.from + from, sl.from + to)
 
 
-;;----------------------------------------------------------------------------
-;; String implementation
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- String implementation
+------------------------------------------------------------------------------
 
 def length(str @ StringImpl) : Ordinal
   str.data.num-items
@@ -74,4 +74,4 @@ def core|slice(str @ StringImpl, from @ Ordinal, to @ Ordinal)
 def compare(one @ StringImpl, two @ StringImpl) : Int
   one.data <=> two.data
 
-;; end of impl/string
+-- end of impl/string

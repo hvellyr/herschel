@@ -221,9 +221,9 @@ statement) the file extension is typically not specified (see
 @c ....................................................................
 @section Comments
 
-@findex ;;
+@findex --
 
-Comments start with the character sequence @code{;;} and continue
+Comments start with the character sequence @code{--} and continue
 through the next newline.  There are no block comments.
 
 @c ....................................................................
@@ -289,12 +289,14 @@ unit
 The following identifiers are reserved and handled as operators:
 
 @verbatim
-%    *    **   +    -    --   ->   ..   ...  /    ++   <    >
-<<   >>   <=   <>   ==   >=   <=>  and  by   in   mod  or   AND
-OR   XOR  isa  as
+%    *    **   +    -    ->   ..   /    ++   <    >    <<   >>
+<=   <>   ==   >=   <=>  and  by   in   mod  or   AND  OR   XOR
+isa  as   =
 @end verbatim
 
-Note that operators are really identifiers @emph{not} delimiters.
+Note that operators are really identifiers and @emph{not} delimiters,
+i.e.@ most of the time it needs whitespace or other delimiters to
+separate them from other identifiers.
 
 
 @c ....................................................................
@@ -465,21 +467,21 @@ octal writing.  To distinguish a corresponding letter is
 @emph{appended} to the number:
 
 @example
-100                     ;; decimal
-100h                    ;; hexadecimal
-100y                    ;; binary
-100t                    ;; octal
+100                     -- decimal
+100h                    -- hexadecimal
+100y                    -- binary
+100t                    -- octal
 @end example
 
 More notations exist for literal complex and rational numbers:
 
 @example
-1234                    ;; integer
-123.4                   ;; real
-12/34                   ;; rational
-12 + 34i                ;; complex
-12.3+34j                ;; complex
-1.23e-45                ;; integer (exp.@ not.)
+1234                    -- integer
+123.4                   -- real
+12/34                   -- rational
+12 + 34i                -- complex
+12.3+34j                -- complex
+1.23e-45                -- integer (exp.@ not.)
 @end example
 
 By default literal integer numbers are of type @code{Int32}.  By
@@ -487,10 +489,10 @@ appending an @code{u} they can be specified to be @emph{unsigned}, by
 appending an @code{l} or @code{L} they can be specified to be of type @emph{Int64}:
 
 @example
-1234u                   ;; type: UInt32
-0ffhu                   ;; type: UInt32
-9223372036854775807L    ;; type: Int64
-727379968ul             ;; type: UInt64
+1234u                   -- type: UInt32
+0ffhu                   -- type: UInt32
+9223372036854775807L    -- type: Int64
+727379968ul             -- type: UInt64
 @end example
 
 Literal floats numbers are by default of type @code{Float}.  Similarly
@@ -498,8 +500,8 @@ to literal integers floats can be typed to be @code{Float64} by
 appending an @code{l} or @code{L}:
 
 @example
--3.1415                 ;; type: Float32
--3.1415L                ;; type: Float64
+-3.1415                 -- type: Float32
+-3.1415L                -- type: Float64
 @end example
 
 An literal number can be typed to a specific type by declaring its type:
@@ -531,8 +533,8 @@ constant to the associated type (see @ref{Measure types} for details).
 The tags are user definable and are notated using a quote:
 
 @example
-12'px      ;; 12 pixel
-56.4'cm    ;; 56.4 centimeter
+12'px      -- 12 pixel
+56.4'cm    -- 56.4 centimeter
 @end example
 
 
@@ -1582,7 +1584,7 @@ def class PersistenObject(id = 0) @{ ... @}
 def class Student(name) : (Person, PersistentObject)
 @{
   on alloc() @{
-    ;; init, even if not necessary:
+    -- init, even if not necessary:
     PersistentObject(newObjectId())
     Person(name)
   @}
@@ -1854,10 +1856,10 @@ leading @emph{quote}.  All quoted types with the same name refer to
 the same type.
 
 @example
-;; for all type @@var@{T@} copies all elements from @@var@{src@} into
-;; @@var@{dst@} and returns the last elements copied.  Only those
-;; elements in the range @@code@{src[offset .. offset + items]@}
-;; are copied.
+-- for all type @@var@{T@} copies all elements from @@var@{src@} into
+-- @@var@{dst@} and returns the last elements copied.  Only those
+-- elements in the range @@code@{src[offset .. offset + items]@}
+-- are copied.
 def add-from-vector(dst @@ Container<'T>,
                     src @@ Vector<'T>,
                     offset : 'K, items : 'K) : 'T ...
@@ -2053,7 +2055,7 @@ def enum MidiController : Ordinal
   modulation     = 1
   breath         = 2
   foot-pedal     = 3
-  ;; ...
+  -- ...
   poly-operation = 127
 @}
 
@@ -2079,9 +2081,9 @@ assigned.  The first enumeration item is @code{0}:
 @example
 def enum Slot
 @{
-  first-slot      ;; -> 0
-  second-slot     ;; -> 1
-  third-slot      ;; -> 2
+  first-slot      -- -> 0
+  second-slot     -- -> 1
+  third-slot      -- -> 2
 @}
 @end example
 
@@ -2449,7 +2451,6 @@ methods.
 @findex +
 @findex ++
 @findex -
-@findex --
 @findex /
 @findex *
 @findex **
@@ -2471,8 +2472,6 @@ methods.
 @code{append}
 @item -
 @code{subtract}
-@item --
-@code{remove}
 @item /
 @code{divide}
 @item *
@@ -2589,11 +2588,6 @@ Return @var{op1} transformed into type @var{type} (cast operator).  If
 @deftypefn Method @var{type} append (@var{op1}, @var{op2})
 Append @var{op2} to @var{op1}.  As such the @code{++} operator returns a
 new and modified copy of @var{op1}.
-@end deftypefn
-
-@deftypefn Method @var{type} remove (@var{op1}, @var{op2})
-Remove @var{op2} from @var{op1}.  As such the @code{--} operator
-returns a new and modified copy of @var{op1}.
 @end deftypefn
 
 
@@ -3791,10 +3785,10 @@ The @code{when} expression can replace typical applications of
 @example
 when (os == "linux") @{
   when (cpu == "LittleEndian") @{
-    ;; little endian specific code
+    -- little endian specific code
   @}
   else when (cpu == "BigEndian") @{
-    ;; big endian specific code
+    -- big endian specific code
   @}
   else @{
   @}
@@ -5093,7 +5087,7 @@ bitw-op         := `<<' | `>>' | `AND' | `OR' | `XOR'
 compare-op      := `==' | `<>' | `<' | `>' | `<=' | `>='
                 |  `<=>' | `in'
 misc-op         := `%' | `isa'
-set-op          := `++' | `--'
+set-op          := `++'
 
 range-op        := `..'
 map-op          := `->'
@@ -5104,7 +5098,7 @@ map-op          := `->'
 
 @smallformat
 @verbatim
-comment         := `;;' { any char until end-of-line }
+comment         := `--' { any char until end-of-line }
 @end verbatim
 @end smallformat
 

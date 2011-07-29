@@ -3,9 +3,9 @@ import "lang/assert.h7"
 def app|main()
   let t = Int[](16)
 
-  ;; check that every slot is really 0.  Remember that in the first size_t
-  ;; elements of the allocated heap for the array is store the size of the
-  ;; array.
+  -- check that every slot is really 0.  Remember that in the first size_t
+  -- elements of the allocated heap for the array is store the size of the
+  -- array.
   for (i = 0u then i + 1 while i <= 15u)
     assert(t[i] == 0)
 

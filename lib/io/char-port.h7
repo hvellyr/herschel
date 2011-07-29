@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 import "io/port.h7"
 
@@ -11,7 +11,7 @@ module io
 export public (*)
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def class CharInPort(port : InPort<Char>,
                      encoding : String = "auto") : InPort<Char>
@@ -30,7 +30,7 @@ def class CharInPort(port : InPort<Char>,
 }
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def class CharOutPort(port : OutPort<Char>,
                       encoding : String = "auto") : OutPort<Char>
@@ -38,4 +38,4 @@ def class CharOutPort(port : OutPort<Char>,
 }
 
 
-;; end of char-port
+-- end of char-port

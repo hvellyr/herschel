@@ -1,6 +1,6 @@
-;; it is not allowed to construct arrays without explicit initializervalue
-;; for type base types.  Rationale: we can't run a ctor for new objects
-;; (since types don't have ctors).
+-- it is not allowed to construct arrays without explicit initializervalue
+-- for type base types.  Rationale: we can't run a ctor for new objects
+-- (since types don't have ctors).
 
 import "lang/assert.h7"
 

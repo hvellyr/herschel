@@ -4,7 +4,7 @@ def foo(x : MutualString) : String
   {
     let y : String
 
-    ;; the return in the nested function is checked against bar only.
+    -- the return in the nested function is checked against bar only.
     let bar(z : Int) : Number
       return(z)
 

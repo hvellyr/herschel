@@ -1,13 +1,13 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
-;; this import should be private inside of the following "lang" module.
-;; Since macros don't save the context yet, we still have to import the
-;; stdlib into the public here.
+-- this import should be private inside of the following "lang" module.
+-- Since macros don't save the context yet, we still have to import the
+-- stdlib into the public here.
 import "lang/stdlib.h7"
 
 module lang

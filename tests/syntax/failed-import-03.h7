@@ -1,2 +1,2 @@
-;; this is not herschel, but python
+-- this is not herschel, but python
 from core import *

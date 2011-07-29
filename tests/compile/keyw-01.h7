@@ -1,4 +1,4 @@
-;; check that keywords are properly initialized
+-- check that keywords are properly initialized
 
 def foo(keyw)
   keyw

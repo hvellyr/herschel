@@ -2,4 +2,4 @@ import "import/ignore-green-04b.h7"
 
 module xyz
 
-;; def alias MyNumber = Float
+-- def alias MyNumber = Float
