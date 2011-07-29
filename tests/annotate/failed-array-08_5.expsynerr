@@ -1,0 +1,1 @@
+10 ; error ; 410a ; Can't create array of Type base type without explicit initializer
