@@ -803,7 +803,8 @@ namespace herschel
         }
 
         if (localCtx.hasType(name())) {
-          if (!isSameType(localCtx.lookupType(name()), right0, scope, srcpos))
+          if (!isContravariant(localCtx.lookupType(name()), right0, scope, srcpos) &&
+              !isSameType(localCtx.lookupType(name()), right0, scope, srcpos) )
           {
             errorf(srcpos, E_TypeMismatch, "type mismatch for generic parameter");
             return false;
@@ -822,7 +823,7 @@ namespace herschel
         // otherwise not first class entities.
         if (name() == Names::kSliceableTypeName || name() == Names::kSliceableXTypeName) {
           if (fGenerics.size() == 2) {
-            localCtx.registerType(fGenerics[0].typeName(), Type::newInt32());
+            localCtx.registerType(fGenerics[0].typeName(), Type::newUInt32());
             localCtx.registerType(fGenerics[1].typeName(), right0.arrayBaseType());
 
             return true;
@@ -1252,10 +1253,12 @@ Type::isBaseType() const
 bool
 Type::isPlainType() const
 {
+  if (isArray())
+    return false;
+
   String nm;
-  if (isRef() || isType() || isClass()) {
+  if (isRef() || isType() || isClass())
     nm = typeName();
-  }
 
   if (!nm.isEmpty()) {
     return (nm == Names::kBoolTypeName ||
@@ -3448,14 +3451,23 @@ namespace herschel
 #endif
 
     if (left.isArray()) {
-      if (right.isType() && (right.typeName() == Names::kSliceableTypeName ||
-                             right.typeName() == Names::kSliceableXTypeName) &&
+      String rightTypeName = right.typeName();
+      if (right.isType() && (rightTypeName == Names::kSliceableTypeName ||
+                             rightTypeName == Names::kSliceableXTypeName) &&
           right.generics().size() == 2 &&
-          isSameType(right.generics()[0], Type::newInt32(), scope,
+          isSameType(right.generics()[0], Type::newUInt32(), scope,
                      srcpos, reportErrors) &&
           isSameType(left.arrayBaseType(), right.generics()[1],
                      scope, srcpos, reportErrors))
+      {
         return true;
+      }
+      else if (right.isArray() && right.arrayBaseType().isOpenSelf())
+      {
+        // a generic open type is covariant to Any.  This needs special treatment
+        // in the compiler though
+        return isCovariant(left.arrayBaseType(), Type::newAny(), scope, srcpos, reportErrors);
+      }
       return isSameType(left, right, scope, srcpos, reportErrors);
     }
     else if (left.isUnion()) {
@@ -3747,6 +3759,20 @@ namespace herschel
     }
 
     return Type();
+  }
+
+
+  String
+  arrayTypeName(const String& baseName)
+  {
+    return baseName + "[]";
+  }
+
+
+  String
+  arrayTypeName(const char* baseName)
+  {
+    return arrayTypeName(String(baseName));
   }
 };
 
@@ -4226,21 +4252,21 @@ SUITE(Type_Covariance)
     CHECK(herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), K(isValue)),
                                                0, K(isValue)),
                                 Type::newType(Names::kSliceableTypeName,
-                                              newTypeVector(Type::newInt32(),
+                                              newTypeVector(Type::newUInt32(),
                                                             Type::newTypeRef("Ultra")),
                                               Type()),
                                 scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Special"), K(isValue)),
                                                 0, K(isValue)),
                                  Type::newType(Names::kSliceableTypeName,
-                                               newTypeVector(Type::newInt32(),
+                                               newTypeVector(Type::newUInt32(),
                                                              Type::newTypeRef("Ultra")),
                                                Type()),
                                  scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), K(isValue)),
                                                 0, K(isValue)),
                                  Type::newType(Names::kSliceableTypeName,
-                                               newTypeVector(Type::newInt32(),
+                                               newTypeVector(Type::newUInt32(),
                                                              Type::newTypeRef("Special")),
                                                Type()),
                                  scope, SrcPos(), !K(reportError)));

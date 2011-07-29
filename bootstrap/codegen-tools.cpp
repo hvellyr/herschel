@@ -142,18 +142,24 @@ CodegenTools::getMemCpyFn(const llvm::Type* dstType,
 
 //------------------------------------------------------------------------------
 
+llvm::Value*
+CodegenTools::emitTypeId(Typeid typid) const
+{
+  if (fGenerator->is64Bit())
+    return llvm::ConstantInt::get(fGenerator->context(),
+                                  llvm::APInt(64, (int)typid, !K(isSigned)));
+  else
+    return llvm::ConstantInt::get(fGenerator->context(),
+                                  llvm::APInt(32, (int)typid, !K(isSigned)));
+}
+
+
 void
 CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
 {
   llvm::Value* typidSlot = builder().CreateStructGEP(atom, 0);
-  llvm::Value* typeIdValue = NULL;
-  if (fGenerator->is64Bit())
-    typeIdValue = llvm::ConstantInt::get(fGenerator->context(),
-                                         llvm::APInt(64, (int)typid, !K(isSigned)));
-  else
-    typeIdValue = llvm::ConstantInt::get(fGenerator->context(),
-                                         llvm::APInt(32, (int)typid, !K(isSigned)));
-  
+  llvm::Value* typeIdValue = emitTypeId(typid);
+
   builder().CreateStore(typeIdValue, typidSlot);
 
   llvm::Value* payload = builder().CreateStructGEP(atom, 1);
@@ -237,35 +243,36 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
 const char*
 CodegenTools::getConvFuncNameByType(const Type& type) const
 {
-  if (type.typeName() == String("lang|Int32"))
+  if (type.typeId() == Names::kInt32TypeName)
     return "atom_2_int32";
-  else if (type.typeName() == String("lang|Int64"))
+  else if (type.typeId() == Names::kInt64TypeName)
     return "atom_2_int64";
-  else if (type.typeName() == String("lang|Int16"))
+  else if (type.typeId() == Names::kInt16TypeName)
     return "atom_2_int16";
-  else if (type.typeName() == String("lang|Int8"))
+  else if (type.typeId() == Names::kInt8TypeName)
     return "atom_2_int8";
-  else if (type.typeName() == String("lang|UInt32"))
+
+  else if (type.typeId() == Names::kUInt32TypeName)
     return "atom_2_uint32";
-  else if (type.typeName() == String("lang|UInt64"))
+  else if (type.typeId() == Names::kUInt64TypeName)
     return "atom_2_uint64";
-  else if (type.typeName() == String("lang|UInt16"))
+  else if (type.typeId() == Names::kUInt16TypeName)
     return "atom_2_uint16";
-  else if (type.typeName() == String("lang|UInt8"))
+  else if (type.typeId() == Names::kUInt8TypeName)
     return "atom_2_uint8";
-  else if (type.typeName() == String("lang|Float32"))
+  else if (type.typeId() == Names::kFloat32TypeName)
     return "atom_2_float32";
-  else if (type.typeName() == String("lang|Float64"))
+  else if (type.typeId() == Names::kFloat64TypeName)
     return "atom_2_float64";
-  else if (type.typeName() == String("lang|Char"))
+  else if (type.typeId() == Names::kCharTypeName)
     return "atom_2_char";
-  else if (type.typeName() == String("lang|Bool"))
+  else if (type.typeId() == Names::kBoolTypeName)
     return "atom_2_bool";
 
-  else if (type.typeName() == String("lang|Keyword"))
+  else if (type.typeId() == Names::kKeywordTypeName)
     return "atom_2_keyword";
 
-  if (type.typeName() == String("clang|int")) // TODO
+  if (type.typeId() == Names::kClangIntTypeName) // TODO
     return "atom_2_int32";
 
   hr_invalid((const char*)StrHelper(String("unhandled type: ") + type.typeId()));
@@ -276,7 +283,7 @@ CodegenTools::getConvFuncNameByType(const Type& type) const
 const llvm::Type*
 CodegenTools::getConvTypeByType(const Type& type) const
 {
-  if (type.typeName() == String("lang|Keyword"))
+  if (type.typeId() == String("lang|Keyword"))
     return llvm::Type::getInt8PtrTy(context());
 
   return types()->getType(type);
@@ -305,7 +312,8 @@ CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) con
 
   std::vector<llvm::Value*> argv;
   argv.push_back(val);
-  return builder().CreateCall(convFunc, argv.begin(), argv.end(), "calltmp");
+
+  return builder().CreateCall(convFunc, argv.begin(), argv.end());
 }
 
 
@@ -327,11 +335,15 @@ CodegenTools::emitPackCode(const Type& dstType, TypeConvKind convKind,
     case kAtom2PlainConv:
       return makeTypeCastAtomToPlain(value, dstType);
     case kPlain2AtomConv:
-      if (valType.typeName() == String("lang|Int32"))
+      if (valType.typeId() == Names::kInt32TypeName)
         return wrapLoad(makeIntAtom(value, CodegenTools::kAtomInt32));
-      else if (valType.typeName() == String("lang|Bool"))
+      else if (valType.typeId() == Names::kUInt32TypeName)
+        return wrapLoad(makeIntAtom(value, CodegenTools::kAtomUInt32));
+      else if (valType.typeId() == Names::kBoolTypeName)
         return wrapLoad(makeBoolAtom(value));
-      // TODO
+      else {
+        hr_invalid("unhandled type");
+      }
       //return value;
 
     case kTypeCheckConv:
@@ -362,6 +374,53 @@ CodegenTools::createCastPtrToNativeInt(llvm::Value* value) const
                                       llvm::Type::getInt64Ty(context()))
            : builder().CreatePtrToInt(value,
                                       llvm::Type::getInt32Ty(context())) );
+}
+
+
+
+//----------------------------------------------------------------------------------------
+
+llvm::Value*
+CodegenTools::emitSizeTValue(size_t value) const
+{
+  if (fGenerator->is64Bit())
+    return llvm::ConstantInt::get(fGenerator->context(),
+                                  llvm::APInt(64,
+                                              value,
+                                              !K(isSigned)));
+  else
+    return llvm::ConstantInt::get(fGenerator->context(),
+                                  llvm::APInt(32,
+                                              value,
+                                              !K(isSigned)));
+}
+
+
+llvm::Value*
+CodegenTools::coerceIntOperand(llvm::Value* value, const Type& dstType) const
+{
+  return builder().CreateIntCast(value,
+                                 types()->getType(dstType),
+                                 dstType.isSigned());
+}
+
+
+llvm::Value*
+CodegenTools::convertToPlainInt(llvm::Value* value,
+                                const Type& dstType,
+                                TypeConvKind typeConv) const
+{
+  switch (typeConv) {
+  case kNoConv:
+    return coerceIntOperand(value, dstType);
+  case kAtom2PlainConv:
+    return makeTypeCastAtomToPlain(value, dstType);
+  case kPlain2AtomConv:
+  case kTypeCheckConv:
+    hr_invalid("");
+  }
+
+  return NULL;
 }
 
 

@@ -22,8 +22,8 @@
 </ty:seq>
 </ty:isa>
 </ty:type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:union>
 </type>
 <init>
@@ -95,8 +95,8 @@
 </ty:seq>
 </ty:isa>
 </ty:type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:union>
 </rettype>
 <body>
@@ -158,8 +158,8 @@
 </ty:seq>
 </ty:isa>
 </ty:type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:union>
 </ty:used-type>
 </ty:node-types>

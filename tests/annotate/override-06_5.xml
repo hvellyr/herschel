@@ -37,15 +37,15 @@
 <params>
 <param sym='a' type='spec'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 <param sym='b' type='pos'>
 <type>
 <ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 <ty:type nm='lang|String'>
 <ty:isa>
 <ty:ref nm='lang|Object'>

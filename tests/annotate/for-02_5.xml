@@ -34,8 +34,8 @@
 <func sym='foo1'>
 <rettype>
 <ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 <ty:type nm='lang|Unspecified'>
 <ty:isa>
 <ty:ref nm='lang|Object'>
@@ -71,8 +71,8 @@
 <vardef sym='__return_0'>
 <type>
 <ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 <ty:type nm='lang|Unspecified'>
 <ty:isa>
 <ty:ref nm='lang|Object'>
@@ -171,10 +171,6 @@
 <vardef sym='__test_3'>
 <type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </type>
 <init>
@@ -350,10 +346,6 @@
 <vardef sym='__test_7'>
 <type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </type>
 <init>
@@ -453,8 +445,8 @@
 </ty:used-type>
 <ty:used-type>
 <ty:union>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 <ty:type nm='lang|Unspecified'>
 <ty:isa>
 <ty:ref nm='lang|Object'>

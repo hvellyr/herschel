@@ -77,7 +77,7 @@ CodegenFuncDef::emit(const FuncDefNode* node, bool isLocal) const
 llvm::Function*
 CodegenFuncDef::emitExternFuncDef(const FuncDefNode* node) const
 {
-  FuncPair func = createFunction(node, String(), !K(isGeneric));
+  FuncPair func = createFunction(node, String(), node->isGeneric());
   return func.fFunc;
 }
 
@@ -318,7 +318,7 @@ CodegenFuncDef::compileAbstractFuncDef(const FuncDefNode* node) const
 {
   hr_assert(fGenerator->fNamedValues.empty());
 
-  FuncPair func = createFunction(node, String(), !K(isGeneric));
+  FuncPair func = createFunction(node, String(), node->isGeneric());
 
   hr_assert(node->body() == NULL);
 
@@ -390,8 +390,12 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
     if (!node->hasCLinkage()) {
       if (node->isAppMain()) {
         hr_assert(!node->isMethod());
+
         // the app|main function always returns lang|Int32
-        if (node->body()->type().isPlainType()) {
+        if (node->body()->type().isPlainType() &&
+            (node->body()->typeConv() == kTypeCheckConv ||
+             node->body()->typeConv() == kNoConv))
+        {
           builder().CreateStore(builder().CreateIntCast(tools()->wrapLoad(retv),
                                                       llvm::Type::getInt32Ty(context()),
                                                       true),

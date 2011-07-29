@@ -94,7 +94,7 @@
 <slotref  nm='subjects' ty='lang|String[]'>
 <symbol  ty='Student' refer='param'>s</symbol>
 </slotref>
-<int ty='lang|Int32'>0</int>
+<int ty='lang|UInt32'>0</int>
 </args>
 </apply>
 <str>]</str>
@@ -116,7 +116,15 @@
 </ty:array>
 </ty:used-type>
 <ty:used-type>
-<ty:type nm='lang|Int32'>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|UInt32'>
 <ty:isa>
 <ty:seq>
 <ty:ref nm='lang|Integer'>
@@ -125,15 +133,9 @@
 </ty:ref>
 <ty:ref nm='lang|Bounded'>
 </ty:ref>
-</ty:seq>
-</ty:isa>
-</ty:type>
-</ty:used-type>
-<ty:used-type>
-<ty:type nm='lang|String'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:ref nm='lang|Unsigned'>
 </ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>

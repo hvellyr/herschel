@@ -1,11 +1,5 @@
 import "lang/assert.h7"
 
-
-def type lang|Any
-def type lang|Int32
-def type lang|Keyword
-
-
 module xi
 
 def generic foo(obj @ Any) : Int ...

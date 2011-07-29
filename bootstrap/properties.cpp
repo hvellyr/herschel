@@ -42,6 +42,7 @@ static bool sIsAnnotateTracing = false;
 static bool sIsTransformTracing = false;
 static bool sIsTokenizerTracing = false;
 static bool sIsTypifyTracing = false;
+static bool sIsTypeConvDump = false;
 #if defined(UNITTESTS)
 static int sPassLevel = 5;
 #endif
@@ -125,6 +126,8 @@ Properties::setTrace(const String& key, bool value)
     sIsMacroTracing = value;
   else if (key == String("codedump"))
     sIsCodeDump = value;
+  else if (key == String("typeconv"))
+    sIsTypeConvDump = value;
 }
 
 
@@ -220,6 +223,13 @@ bool
 Properties::isCodeDump()
 {
   return sIsCodeDump;
+}
+
+
+bool
+Properties::isTypeConvDump()
+{
+  return sIsTypeConvDump;
 }
 
 

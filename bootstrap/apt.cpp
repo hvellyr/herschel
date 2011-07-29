@@ -15,6 +15,7 @@
 #include "annotate.h"
 #include "apt.h"
 #include "codegen.h"
+#include "predefined.h"
 #include "scope.h"
 #include "strbuf.h"
 #include "transform.h"
@@ -1991,7 +1992,7 @@ FuncDefNode::name() const
 bool
 FuncDefNode::isAppMain() const
 {
-  return name() == String("app|main");
+  return name() == Names::kAppMain;
 }
 
 

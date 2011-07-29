@@ -77,6 +77,8 @@ CodegenBinaryNode::emit(const BinaryNode* node) const
     return codegenOpKeywKeyw(node, left, right);
   if (node->left()->type().isBool() && node->right()->type().isBool())
     return codegenOpBoolBool(node, left, right);
+  if (node->left()->type().isChar() && node->right()->type().isChar())
+    return codegenOpCharChar(node, left, right);
 
   tyerror(node->left()->type(), "unsupported type in binary operator");
   tyerror(node->right()->type(), "unsupported type in binary operator");
@@ -124,14 +126,14 @@ CodegenBinaryNode::wrapBool(llvm::Value* value, const Type& type) const
 bool
 CodegenBinaryNode::isPlainInt(const Type& type) const
 {
-  return ( type.typeName() == String("lang|Int64")  ||
-           type.typeName() == String("lang|Int32")  ||
-           type.typeName() == String("lang|Int16")  ||
-           type.typeName() == String("lang|Int8")   ||
-           type.typeName() == String("lang|UInt64") ||
-           type.typeName() == String("lang|UInt32") ||
-           type.typeName() == String("lang|UInt16") ||
-           type.typeName() == String("lang|UInt8") );
+  return ( type.typeName() == Names::kInt64TypeName  ||
+           type.typeName() == Names::kInt32TypeName  ||
+           type.typeName() == Names::kInt16TypeName  ||
+           type.typeName() == Names::kInt8TypeName   ||
+           type.typeName() == Names::kUInt64TypeName ||
+           type.typeName() == Names::kUInt32TypeName ||
+           type.typeName() == Names::kUInt16TypeName ||
+           type.typeName() == Names::kUInt8TypeName );
 }
 
 
@@ -313,3 +315,68 @@ CodegenBinaryNode::codegenOpBoolBool(const BinaryNode* node,
 }
 
 
+//------------------------------------------------------------------------------
+
+llvm::Value*
+CodegenBinaryNode::coerceCharOperand(const Type& dstType,
+                                     llvm::Value* value) const
+{
+  return builder().CreateIntCast(value, types()->getType(dstType), !K(isSigned));
+}
+
+
+llvm::Value*
+CodegenBinaryNode::convertToPlainChar(const AptNode* dst,
+                                      const AptNode* right,
+                                      llvm::Value* value) const
+{
+  switch (right->typeConv()) {
+  case kNoConv:
+    return coerceCharOperand(dst->type(), value);
+  case kAtom2PlainConv:
+    return tools()->makeTypeCastAtomToPlain(value, dst->type());
+  case kPlain2AtomConv:
+  case kTypeCheckConv:
+    hr_invalid("");
+  }
+
+  return NULL;
+}
+
+
+llvm::Value*
+CodegenBinaryNode::codegenOpCharChar(const BinaryNode* node,
+                                     llvm::Value* left,
+                                     llvm::Value* right) const
+{
+  llvm::Value* coleft = convertToPlainChar(node->left(), node->left(), left);
+  llvm::Value* coright = convertToPlainChar(node->left(), node->right(), right);
+
+  switch (node->op()) {
+  case kOpEqual:
+    return wrapBool(builder().CreateICmpEQ(coleft, coright, "eqchr"),
+                    node->dstType());
+  case kOpUnequal:
+    return wrapBool(builder().CreateICmpNE(coleft, coright, "nechr"),
+                    node->dstType());
+
+  case kOpLess:
+    return wrapBool(builder().CreateICmpULT(coleft, coright, "ltchr"),
+                    node->dstType());
+  case kOpLessEqual:
+    return wrapBool(builder().CreateICmpULE(coleft, coright, "lechr"),
+                    node->dstType());
+  case kOpGreater:
+    return wrapBool(builder().CreateICmpUGT(coleft, coright, "gtchr"),
+                    node->dstType());
+  case kOpGreaterEqual:
+    return wrapBool(builder().CreateICmpUGE(coleft, coright, "gechr"),
+                    node->dstType());
+
+  default:
+    fprintf(stderr, "invalid binary operator for char: %d", node->op());
+    return NULL;
+  }
+
+  return NULL;
+}

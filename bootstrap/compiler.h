@@ -135,7 +135,7 @@ namespace herschel
                         bool preload);
 
     void importSystemHeaders(const String& avoidPath);
-    void importSystemHeader(const String& header, const String& avoidPath);
+    bool importSystemHeader(const String& header, const String& avoidPath);
 
     class CompilerState
     {

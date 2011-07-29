@@ -39,11 +39,17 @@ namespace herschel
     CodegenTools(CodeGenerator* generator);
 
     enum Typeid {
-      //kAtomAny   = 'A',
-      kAtomBool    = 'b',
-      kAtomInt32   = 'i',
-      kAtomChar    = 'c',
-      kAtomKeyword = 'k',
+      kAtomAny     = 0x01,
+      kAtomBool    = 0x02,
+      kAtomChar    = 0x03,
+      kAtomInt32   = 0x04,
+      kAtomUInt32  = 0x05,
+      kAtomKeyword = 0x06,
+
+      kAtomInt32Array   = kAtomInt32 + 0x40,
+      kAtomUInt32Array  = kAtomUInt32 + 0x40,
+      kAtomCharArray    = kAtomChar + 0x40,
+      kAtomKeywordArray = kAtomKeyword + 0x40,
     };
 
     void setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value);
@@ -80,6 +86,15 @@ namespace herschel
     //! create a ptr-to-int cast using the integer type which is large
     //! enough to fit to the pointer.
     llvm::Value* createCastPtrToNativeInt(llvm::Value* value) const;
+
+    llvm::Value* emitTypeId(Typeid typid) const;
+
+    llvm::Value* emitSizeTValue(size_t value) const;
+
+    llvm::Value* coerceIntOperand(llvm::Value* value, const Type& dstType) const;
+    llvm::Value* convertToPlainInt(llvm::Value* value,
+                                   const Type& dstType,
+                                   TypeConvKind typeConv) const;
 
   private:
     const char* getConvFuncNameByType(const Type& type) const;

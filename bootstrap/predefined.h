@@ -54,6 +54,8 @@ namespace herschel
   // names of predefined types
 #define MID_core_ns             "lang"
 
+#define MID_clang_ns            "clang"
+
 #define MID_AnyTypeName         MID_core_ns "|" "Any"
 
 #define MID_BoolTypeName        MID_core_ns "|" "Bool"
@@ -98,6 +100,9 @@ namespace herschel
 #define MID_AssocTypeName       MID_core_ns "|" "Assoc"
 #define MID_MapTypeName         MID_core_ns "|" "Map"
 
+#define MID_clang_IntTypeName   MID_clang_ns "|" "int"
+#define MID_clang_CharTypeName  MID_clang_ns "|" "char"
+
 
   //--------------------------------------------------------------------------
   // names of predefined functions
@@ -108,6 +113,9 @@ namespace herschel
 #define MID_lang_allocate       MID_core_ns "|" "allocate"
 #define MID_lang_allocate_array MID_core_ns "|" "allocate*"
 #define MID_lang_nil            MID_core_ns "|" "nil"
+
+
+#define MID_app_main            "app|main"
 
 
   class Names
@@ -169,6 +177,14 @@ namespace herschel
     const static String kLangInitFunctor;
     const static String kLangEndp;
     const static String kLangNext;
+    const static String kLangNumItems;
+
+    const static String kAppMain;
+
+
+
+    const static String kClangIntTypeName;
+    const static String kClangCharTypeName;
 
     // known keywords
     const static String kExitKeyword;

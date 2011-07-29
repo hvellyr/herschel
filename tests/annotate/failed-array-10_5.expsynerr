@@ -1,0 +1,2 @@
+12 ; error ; 4413 ; type mismatch for generic parameter
+12 ; error ; 4413 ; type mismatch for argument 1

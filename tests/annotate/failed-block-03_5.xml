@@ -81,10 +81,6 @@
 <param sym='r' type='pos'>
 <type>
 <ty:type nm='lang|Keyword'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </type>
 </param>
@@ -109,10 +105,6 @@
 </ty:used-type>
 <ty:used-type>
 <ty:type nm='lang|Keyword'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:used-type>
 </ty:node-types>

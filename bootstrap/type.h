@@ -621,6 +621,9 @@ namespace herschel
 
 
   Type resolveType(const Type& type, Scope* scope);
+
+  String arrayTypeName(const String& baseName);
+  String arrayTypeName(const char* baseName);
 };                              // namespace
 
 

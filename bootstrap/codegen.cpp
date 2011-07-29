@@ -305,6 +305,8 @@ CodeGenerator::codegen(const SymbolNode* node)
     val = fGlobalVariables[node->name()];
     break;
   default:
+    logf(kError, "Unexpected symbol reference '%s' (%d)",
+         (const char*)StrHelper(node->name()), node->refersTo());
     hr_invalid("unexpected symbol reference");
   }
 

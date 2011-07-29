@@ -1,10 +1,5 @@
 import "lang/stdlib.h7"
 
-def type lang|Any
-def type lang|Int32
-def type lang|Keyword
-
-
 module xi
 
 def foo(c)

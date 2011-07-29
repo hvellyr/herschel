@@ -94,6 +94,20 @@ Typifier::isNodeCallToGenericFunction(const AptNode* node) const
 {
   if (const ApplyNode* applyNode = dynamic_cast<const ApplyNode*>(node)) {
     if (applyNode->isSimpleCall()) {
+
+      // special case lang|slice(array, idx)
+      if (applyNode->simpleCallName() == Names::kLangSlice) {
+        const NodeList& args = applyNode->children();
+        if (args.size() == 2 && args[0]->type().isArray())
+          return false;
+      }
+      // special case lang|slice!(array, idx, value)
+      else if (applyNode->simpleCallName() == Names::kLangSliceX) {
+        const NodeList& args = applyNode->children();
+        if (args.size() == 3 && args[0]->type().isArray())
+          return false;
+      }
+
       const FunctionNode* funcNode = (
         dynamic_cast<const FunctionNode*>(applyNode->scope()
                                           ->lookupFunction(applyNode->simpleCallName(),
@@ -293,7 +307,7 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
     return;
 
   String typenm = ( node->type().isDef()
-                    ? node->type().typeName()
+                    ? node->type().typeId()
                     : Names::kAnyTypeName );
   Type bindty = ( node->type().isDef()
                   ? node->scope()->lookupType(node->type())
@@ -407,7 +421,7 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
   }
   else if (!node->retType().isOpen()) {
     String typenm = ( node->retType().isDef()
-                      ? node->retType().typeName()
+                      ? node->retType().typeId()
                       : Names::kAnyTypeName );
     Type retty = ( node->retType().isDef()
                    ? node->scope()->lookupType(node->retType())
@@ -500,16 +514,17 @@ Typifier::typify(FuncDefNode* node)
 
   if (fPhase == kTypify) {
     setupFunctionNodeType(node);
-    if (node->name() == String("app|main")) {
+
+    if (node->name() == Names::kAppMain) {
       if (!node->retType().isAny()) {
-        if (node->retType().typeName() != String("lang|Int32"))
+        if (node->retType().typeId() != Names::kInt32TypeName)
         {
           errorf(node->srcpos(), E_TypeMismatch,
-                 "return type of app|main() must be lang|Int32");
+                 "return type of " MID_app_main "() must be " MID_Int32TypeName);
         }
       }
 
-      node->setRetType(Type::newTypeRef("lang|Int32"));
+      node->setRetType(Type::newTypeRef(MID_Int32TypeName));
     }
 
     if (node->body() != NULL) {
@@ -841,6 +856,35 @@ Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
 
 
 void
+Typifier::checkAllocateArraySignature(ApplyNode* node)
+{
+  const NodeList& args = node->children();
+  if (args.size() == 2) {
+    hr_assert(node->type().isArray());
+
+    Type arrayBaseType = node->type().arrayBaseType();
+    if (arrayBaseType.isBaseType())
+    {
+      // this is always ok.
+    }
+    else if (arrayBaseType.isClass())
+    {
+      if (node->type().arrayBaseType().applySignature().hasPositionalParam())
+        errorf(node->srcpos(), E_ArrayReqDefaultCtor,
+               "array allocation requires default constructor");
+    }
+    else if (arrayBaseType.isType())
+    {
+      // TODO: when we distinguish nullable types, this is only allowed if the
+      // type is nullable
+      errorf(node->srcpos(), E_ArrayReqDefaultCtor,
+             "Can't create array of Type base type without explicit initializer");
+    }
+  }
+}
+
+
+void
 Typifier::typify(ApplyNode* node)
 {
   typifyNode(node->base());
@@ -856,6 +900,11 @@ Typifier::typify(ApplyNode* node)
         // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
         // out->render(const_cast<FunctionNode*>(funcNode));
         typifyMatchAndCheckParameters(node, funcNode);
+
+        if (node->simpleCallName() == Names::kLangAllocateArray)
+        {
+          checkAllocateArraySignature(node);
+        }
       }
     }
     else {
@@ -872,13 +921,13 @@ Typifier::typify(ApplyNode* node)
         node->setType(funNode->type());
       }
       else {
-        // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->base()->type().toString()));
         // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
         // out->render(node->base());
         hr_invalid("Unhandled apply base node");
       }
     }
-    // fprintf(stderr, "APPLY: %s\n", (const char*)StrHelper(node->type().toString()));
+
+    annotateTypeConv(node, node->type());
   }
 }
 
@@ -1286,7 +1335,7 @@ Typifier::typify(SlotRefNode* node)
 
   if (!basety.isDef()) {
     String typenm = ( node->base()->type().isDef()
-                      ? node->base()->type().typeName()
+                      ? node->base()->type().typeId()
                       : Names::kAnyTypeName );
     errorf(node->srcpos(), E_UndefinedType,
            "undefined type '%s'",
