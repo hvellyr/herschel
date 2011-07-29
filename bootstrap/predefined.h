@@ -110,6 +110,9 @@ namespace herschel
 #define MID_lang_nil            MID_core_ns "|" "nil"
 
 
+#define MID_app_main            "app|main"
+
+
   class Names
   {
   public:
@@ -170,6 +173,9 @@ namespace herschel
     const static String kLangEndp;
     const static String kLangNext;
     const static String kLangNumItems;
+
+    const static String kAppMain;
+
 
     // known keywords
     const static String kExitKeyword;

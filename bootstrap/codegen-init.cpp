@@ -1141,7 +1141,7 @@ CodeGenerator::createDefaultCMainFunc()
                                                   "entry", func);
   fBuilder.SetInsertPoint(bb);
 
-  String appMainFuncNm = herschel::mangleToC(String("app|main"));
+  String appMainFuncNm = herschel::mangleToC(Names::kAppMain);
   llvm::Function* appMainFunc = fModule->getFunction(llvm::StringRef(appMainFuncNm));
   hr_assert(appMainFunc != NULL);
 
