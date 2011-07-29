@@ -41,8 +41,14 @@ namespace herschel
     llvm::Value* emit(const ApplyNode* node) const;
 
   private:
+    friend class ArrayAllocateStrategy;
+    friend class AtomArrayAllocateStrategy;
+    friend class Int32ArrayAllocateStrategy;
+
     llvm::Value* emitTypeNameForAllocate(const AptNode* node) const;
     llvm::Value* emitAllocateApply(const ApplyNode* node) const;
+    llvm::Value* emitAllocateApplyImpl(const AptNode* typeNode) const;
+    llvm::Value* emitAllocateArrayApply(const ApplyNode* node) const;
 
     llvm::Value* emitGetSlotApply(const ApplyNode* node) const;
     llvm::Value* emitSetSlotApply(const ApplyNode* node) const;
@@ -50,6 +56,23 @@ namespace herschel
     llvm::Value* emitPtrToSlot(const ApplyNode* node, bool isStore) const;
 
     llvm::Function* lazyDeclareExternFunction(const SymbolNode* symNode) const;
+
+    llvm::Value* emitArraySliceAccess(const ApplyNode* node) const;
+    llvm::Value* emitArraySliceSet(const ApplyNode* node) const;
+    llvm::Value* emitArrayNumItems(const ApplyNode* node) const;
+
+    struct ArraySliceAccessData
+    {
+      llvm::Value* fArray;
+      llvm::Value* fAddr;
+    };
+
+    ArraySliceAccessData emitArraySliceAddress(const ApplyNode* node) const;
+    ArraySliceAccessData emitArraySliceAddress(llvm::Value* arrayAtom,
+                                               const Type& arrayBaseType,
+                                               llvm::Value* idxValue) const;
+
+    llvm::Value* emitArraySize(const ApplyNode* node) const;
   };
 };                              // namespace
 

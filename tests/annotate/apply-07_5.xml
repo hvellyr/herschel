@@ -25,10 +25,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:seq>
 </type>
@@ -55,10 +51,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:seq>
 </rettype>
@@ -90,10 +82,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:seq>
 </rettype>
@@ -122,10 +110,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:seq>
 </type>
@@ -163,10 +147,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:seq>
 </ty:used-type>
@@ -194,10 +174,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:seq>
 </ty:prm>
@@ -223,10 +199,6 @@
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:seq>
 </ty:ret>

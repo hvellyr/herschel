@@ -5,14 +5,14 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>
@@ -115,14 +115,14 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>
@@ -253,28 +253,28 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>
 <rettype>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </rettype>
 <body>
 <block>
 <let>
 <vardef sym='t0'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 <init>
 <binary op='%' ty='lang|Any'>
@@ -287,8 +287,8 @@
 <let>
 <vardef sym='t1'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 <init>
 <binary op='++' ty='lang|Any'>
@@ -307,28 +307,28 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>
 <rettype>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </rettype>
 <body>
 <block>
 <let>
 <vardef sym='t0'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 <init>
 <binary op='AND' ty='lang|Any'>
@@ -341,8 +341,8 @@
 <let>
 <vardef sym='t1'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 <init>
 <binary op='OR' ty='lang|Any'>
@@ -355,8 +355,8 @@
 <let>
 <vardef sym='t2'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 <init>
 <binary op='XOR' ty='lang|Any'>
@@ -369,8 +369,8 @@
 <let>
 <vardef sym='t3'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 <init>
 <binary op='&lt;&lt;' ty='lang|Any'>
@@ -383,8 +383,8 @@
 <let>
 <vardef sym='t4'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 <init>
 <binary op='>>' ty='lang|Any'>
@@ -403,14 +403,14 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>
@@ -457,14 +457,14 @@
 <params>
 <param sym='a' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>

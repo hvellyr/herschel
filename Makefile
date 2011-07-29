@@ -11,9 +11,9 @@ include $(top_srcdir)/config.mk
 
 #----------------------------------------------------------------------
 
-SUBDIRS = external bootstrap runtime build doc tests
+SUBDIRS = external bootstrap runtime lib build doc tests
 
-ALL_SUBDIRS = external bootstrap runtime
+ALL_SUBDIRS = external bootstrap runtime lib
 
 DISTFILES = \
 	AUTHORS   \

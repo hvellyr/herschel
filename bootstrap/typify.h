@@ -182,6 +182,10 @@ namespace herschel
     //! setupFunctionNodeType() has been successfully run before.
     void checkFunctionReturnType(FunctionNode* node);
 
+    //! Check that an allocate* function call without explicit "value:"
+    //! argument works on types without positional ctor parameters.
+    void checkAllocateArraySignature(ApplyNode* node);
+
     //! Determine the proper type for a binding node \p node and set it on \p
     //! node.  \p errdesc is used as a context name to be shown in possible
     //! error messages.

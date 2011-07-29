@@ -1,0 +1,31 @@
+;; passing an init value for a complex object to an array ctor makes all
+;; array slots point to the same object.
+
+import "lang/assert.h7"
+
+def class XYZ(v : Int)
+{
+  def slot x : Int = v
+}
+
+def x(o : XYZ) : Int
+  o ^ x
+
+def x!(o : XYZ, v : Int) : XYZ
+  o ^ x = v
+  o
+
+
+def app|main()
+  let t = XYZ[](16, value: XYZ(1764))
+
+  assert(t[0u].x == 1764)
+  assert(t[5u].x == 1764)
+  assert(t[15u].x == 1764)
+
+  t[5u].x = 42
+  assert(t[0u].x == 42)
+  assert(t[5u].x == 42)
+  assert(t[15u].x == 42)
+
+  0

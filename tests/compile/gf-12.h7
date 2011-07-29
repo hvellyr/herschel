@@ -8,8 +8,6 @@
 
 import "lang/stdlib.h7"
 
-def type lang|Any
-
 module xi
 
 def foo(c)

@@ -46,10 +46,6 @@
 <vardef sym='a1|a10'>
 <type>
 <ty:type nm='lang|Keyword'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </type>
 <init>
@@ -61,10 +57,6 @@
 <vardef sym='a1|a11'>
 <type>
 <ty:type nm='lang|Keyword'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </type>
 <init>

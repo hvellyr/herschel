@@ -78,7 +78,7 @@ def generic compare(one @ Sliceable<Ordinal, 'T>,
 
 ;;--------------------------------------------------------------------
 
-def generic num-items(obj @ 'T[]) : (Int >= 0) ...
+def generic num-items(obj @ 'T[]) : Ordinal ...
     ~ return the number of items @var{obj} (an array of 'T). ~
 
 ;; end of sliceable.h7

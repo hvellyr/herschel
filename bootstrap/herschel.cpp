@@ -57,7 +57,7 @@ displayHelp()
   printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
   printf("                               {tokenizer|pass1|pass2|annotate|\n");
   printf("                                transform|typify|import|macro|\n");
-  printf("                                codedump}\n");
+  printf("                                codedump|typeconv}\n");
   printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
   printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
   printf("  -O                           Optimize code more\n");
@@ -151,7 +151,8 @@ main(int argc, char** argv)
 
       case kOptOutput:
         outputFileName = option.fArgument;
-        // don't pass outdir to hrc.  We handle it outselves
+        // don't pass outdir to hrc here.  Depending on the compile mode We
+        // handle it outselves
         break;
 
       case kOptVerbose:
@@ -236,6 +237,11 @@ main(int argc, char** argv)
   case kParseFiles:
   case kCompileFilesToIR:
   case kCompileFiles:
+    if (!outputFileName.isEmpty())
+    {
+      hrcOptions.push_back(String("-o"));
+      hrcOptions.push_back(outputFileName);
+    }
     startProcess(setup.fHrcPath, hrcOptions);
     break;
 
@@ -265,6 +271,7 @@ main(int argc, char** argv)
                                                              outputFileName, String("bc")));
       ldOptions.insert(ldOptions.end(),
                        outFiles.begin(), outFiles.end());
+      ldOptions.push_back(setup.fLangKit);
       ldOptions.push_back(setup.fRuntimeLib);
       startProcess(setup.fLdPath, ldOptions);
     }
@@ -274,9 +281,10 @@ main(int argc, char** argv)
   if (verbose) {
     printf("------------------------------\n");
     printf("Setup:\n");
-    printf("  hrc:    %s\n", (const char*)StrHelper(setup.fHrcPath));
-    printf("  linker: %s\n", (const char*)StrHelper(setup.fLdPath));
-    printf("  rtlib:  %s\n", (const char*)StrHelper(setup.fRuntimeLib));
+    printf("  hrc:     %s\n", (const char*)StrHelper(setup.fHrcPath));
+    printf("  linker:  %s\n", (const char*)StrHelper(setup.fLdPath));
+    printf("  langkit: %s\n", (const char*)StrHelper(setup.fLangKit));
+    printf("  rtlib:   %s\n", (const char*)StrHelper(setup.fRuntimeLib));
   }
 
   return 0;

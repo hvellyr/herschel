@@ -15,7 +15,7 @@
 #include "runtime/rt.h"
 #include "runtime/hash.h"
 #include "runtime/trace.h"
-
+#include "runtime/typeid.h"
 
 
 static HashTable* types_name_to_type_map = NULL; /* hash<char*, Type*> */
@@ -24,6 +24,9 @@ static int type_tag_id_counter = 127;
 
 static Type** types_tag_vector = NULL;
 static size_t types_tag_size = 0;
+
+static size_t arraytype_reference_size = 0;
+static TypeTag* arraytype_reference = NULL;
 
 
 void
@@ -37,22 +40,45 @@ type_init()
   types_tag_size = 256;
   types_tag_vector = malloc(types_tag_size * sizeof(Type*));
   memset(types_tag_vector, 0, types_tag_size * sizeof(Type*));
+
+  arraytype_reference_size = 256;
+  arraytype_reference = malloc(arraytype_reference_size * sizeof(TypeTag));
+  memset(arraytype_reference, 0,
+         arraytype_reference_size * sizeof(TypeTag));
 }
 
 
-int
+static int
 tag_id_for_type(const Type* type)
 {
+  /* int is_array = type->is_array; */
+  /* printf("Typeid: %s\n", type->name); */
+
   if (strcmp(type->name, "__QN4lang5Int32") == 0)
-    return (int)'i';
+    return TYPE_TAG_INT32;
+  else if (strcmp(type->name, "__QN4lang6UInt32") == 0)
+    return TYPE_TAG_UINT32;
   else if (strcmp(type->name, "__QN4lang4Bool") == 0)
-    return (int)'b';
+    return TYPE_TAG_BOOL;
   else if (strcmp(type->name, "__QN4lang4Char") == 0)
-    return (int)'c';
+    return TYPE_TAG_CHAR;
   else if (strcmp(type->name, "__QN4lang3Any") == 0)
-    return (int)'A';
+    return TYPE_TAG_ANY;
   else if (strcmp(type->name, "__QN4lang7Keyword") == 0)
-    return (int)'k';
+    return TYPE_TAG_KEYW;
+
+  if (strcmp(type->name, "__QN4lang5Int32[]") == 0)
+    return TYPE_TAG_INT32 + TYPE_ARRAY_OFFSET;
+  else if (strcmp(type->name, "__QN4lang6UInt32[]") == 0)
+    return TYPE_TAG_UINT32 + TYPE_ARRAY_OFFSET;
+  else if (strcmp(type->name, "__QN4lang4Bool[]") == 0)
+    return TYPE_TAG_BOOL + TYPE_ARRAY_OFFSET;
+  else if (strcmp(type->name, "__QN4lang4Char[]") == 0)
+    return TYPE_TAG_CHAR + TYPE_ARRAY_OFFSET;
+  else if (strcmp(type->name, "__QN4lang3Any[]") == 0)
+    return TYPE_TAG_ANY + TYPE_ARRAY_OFFSET;
+  else if (strcmp(type->name, "__QN4lang7Keyword[]") == 0)
+    return TYPE_TAG_KEYW + TYPE_ARRAY_OFFSET;
 
   type_tag_id_counter++;
   return type_tag_id_counter;
@@ -115,18 +141,21 @@ type_setup_dispatch_table(Type* ty, va_list vp)
 static Type*
 type_base_alloc(const char* nm, size_t isa_size,
                 size_t instance_size,
-                const TypeSlotPair* slots)
+                const TypeSlotPair* slots,
+                int is_array)
 {
   Type* ty = malloc(sizeof(Type));
 
   ty->name = nm;
   ty->isa_size = isa_size;
+  ty->isa = NULL;
   ty->tag_id = 0;
   ty->isa_set = NULL;
   ty->instance_size = instance_size;
   ty->acc_instance_size = 0;    /* to be set later */
   ty->slots_offsets = NULL;
   ty->slots = slots;
+  ty->is_array = is_array;
 
   return ty;
 }
@@ -135,7 +164,7 @@ type_base_alloc(const char* nm, size_t isa_size,
 Type*
 type_alloc(const char* nm, size_t isa_size, ...)
 {
-  Type* ty = type_base_alloc(nm, isa_size, 0, NULL);
+  Type* ty = type_base_alloc(nm, isa_size, 0, NULL, 0);
 
   if (isa_size > 0) {
     va_list vp;
@@ -145,8 +174,6 @@ type_alloc(const char* nm, size_t isa_size, ...)
 
     va_end(vp);
   }
-  else
-    ty->isa = NULL;
 
   return ty;
 }
@@ -176,7 +203,7 @@ class_alloc(const char* nm,
             const TypeSlotPair* slots,
             size_t isa_size, ...)
 {
-  Type* ty = type_base_alloc(nm, isa_size, instance_size, slots);
+  Type* ty = type_base_alloc(nm, isa_size, instance_size, slots, 0);
 
 #if defined(UNITTESTS)
   hr_trace("register", "Alloc class '%s' [instance-size=%d]",
@@ -192,8 +219,6 @@ class_alloc(const char* nm,
 
     va_end(vp);
   }
-  else
-    ty->isa = NULL;
 
   ty->acc_instance_size = ty->instance_size + acc_super_size;
 
@@ -248,10 +273,6 @@ class_alloc(const char* nm,
   }
 #endif
 
-  // TODO: shouldn't the class slot table be extended by the slots of the
-  // super classes?  It seems that slot() and slot!() are not really private
-  // to the class at all; so from the outside it is otherwise rather diffcult
-  // to find the right class to ask for the offset of the member.
   return ty;
 }
 
@@ -286,6 +307,50 @@ type_isa(Type* one, Type* two)
   }
 
   return 0;
+}
+
+
+/* ---------------------------------------------------------------------------
+   special array type support
+   ------------------------------------------------------------------------ */
+
+Type*
+type_lookup_array_type(Type* base_type)
+{
+  if (base_type->tag_id >= arraytype_reference_size) {
+    int old_array_size = arraytype_reference_size;
+
+    arraytype_reference_size *= 2;
+    arraytype_reference = realloc(arraytype_reference,
+                                  arraytype_reference_size * sizeof(TypeTag));
+
+    memset(arraytype_reference + old_array_size, 0,
+           (arraytype_reference_size - old_array_size) * sizeof(TypeTag));
+  }
+
+  TypeTag typeTag = arraytype_reference[base_type->tag_id];
+  if (typeTag == 0) {
+    // HACK: make the array name heap allocated.  This leaks ...
+    char tmp[256];
+    sprintf(tmp, "%s[]", base_type->name);
+
+    Type* array_type = type_base_alloc(strdup(tmp),
+                                       0,    /* isa-size */
+                                       0,    /* instance-size */
+                                       NULL, /* slots */
+                                       1);   /* is_array */
+#if defined(UNITTESTS)
+  hr_trace("register", "Allocate array type for %s [tag: %ld]",
+           base_type->name, array_type->tag_id);
+#endif
+
+    register_type(array_type);
+    arraytype_reference[base_type->tag_id] = array_type->tag_id;
+
+    return array_type;
+  }
+
+  return types_tag_vector[typeTag];
 }
 
 
@@ -352,117 +417,110 @@ allocate(ATOM* instance, Type* ty)
 }
 
 
-ATOM
-allocate_array(Type* ty, ATOM init_value, size_t items)
+void
+allocate_array(ATOM* instance, Type* ty, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(ATOM));
-  *((size_t*)obj.u.v_obj) = items;
+#if defined(UNITTESTS)
+  hr_trace("allocate", "Create instance of type '%s'x%ld, size: %ld",
+           ty->name, items, ty->acc_instance_size);
+#endif
 
-  {
-    ATOM* p = (ATOM*)(obj.u.v_obj + sizeof(size_t));
-    size_t i;
-    for (i = 0; i < items; i++, p++)
-      *p = init_value;
-  }
+  instance->typeid = ty->tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(ATOM));
+  *((size_t*)instance->u.v_obj) = items;
 
-  return obj;
+  /* initialization can only be done from outside.  We can't call
+     allocates/initializers from here */
 }
 
 
-ATOM
-allocate_char_array(Type* ty, char init_value, size_t items)
+void
+allocate_int32_array(ATOM* instance, TypeTag tag_id, int init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(char));
-  *((size_t*)obj.u.v_obj) = items;
+#if defined(UNITTESTS)
+  hr_trace("allocate", "Create instance of type 'lang|Int32'x%ld (%d), size: %ld a %ld",
+           items, tag_id, sizeof(size_t) + items * sizeof(int), sizeof(int));
+#endif
+
+  instance->typeid = tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(int));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    char* p = (char*)(obj.u.v_obj + sizeof(size_t));
+    int* p = (int*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 
-ATOM
-allocate_short_array(Type* ty, short init_value, size_t items)
+void
+allocate_int8_array(ATOM* instance, TypeTag tag_id, char init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(short));
-  *((size_t*)obj.u.v_obj) = items;
+#if defined(UNITTESTS)
+  hr_trace("allocate", "Create instance of type 'lang|Int8'x%ld (%d), size: %ld a %ld",
+           items, tag_id, sizeof(size_t) + items * sizeof(int), sizeof(int));
+#endif
+
+  instance->typeid = tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(char));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    short* p = (short*)(obj.u.v_obj + sizeof(size_t));
+    char* p = (char*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 
-ATOM
-allocate_int_array(Type* ty, int init_value, size_t items)
+void
+allocate_short_array(ATOM* instance, Type* ty, short init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(int));
-  *((size_t*)obj.u.v_obj) = items;
+  instance->typeid = ty->tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(short));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    int* p = (int*)(obj.u.v_obj + sizeof(size_t));
+    short* p = (short*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 
-ATOM
-allocate_float_array(Type* ty, float init_value, size_t items)
+void
+allocate_float_array(ATOM* instance, Type* ty, float init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(float));
-  *((size_t*)obj.u.v_obj) = items;
+  instance->typeid = ty->tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(float));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    float* p = (float*)(obj.u.v_obj + sizeof(size_t));
+    float* p = (float*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 
-ATOM
-allocate_double_array(Type* ty, double init_value, size_t items)
+void
+allocate_double_array(ATOM* instance, Type* ty, double init_value, size_t items)
 {
-  ATOM obj;
-  obj.typeid = ty->tag_id;
-  obj.u.v_obj = malloc(sizeof(size_t) + items * sizeof(double));
-  *((size_t*)obj.u.v_obj) = items;
+  instance->typeid = ty->tag_id;
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(double));
+  *((size_t*)instance->u.v_obj) = items;
 
   {
-    double* p = (double*)(obj.u.v_obj + sizeof(size_t));
+    double* p = (double*)(instance->u.v_obj + sizeof(size_t));
     size_t i;
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
-
-  return obj;
 }
 
 

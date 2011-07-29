@@ -6,10 +6,6 @@
 <ty:ref nm='lang|Map'>
 <ty:gen>
 <ty:type nm='lang|Char'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 <ty:type nm='lang|String'>
 <ty:isa>
@@ -44,10 +40,6 @@
 <ty:ref nm='lang|Map'>
 <ty:gen>
 <ty:type nm='lang|Keyword'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 <ty:ref nm='lang|Any'>
 </ty:ref>
@@ -91,10 +83,6 @@
 <ty:ref nm='lang|Map'>
 <ty:gen>
 <ty:type nm='lang|Char'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 <ty:type nm='lang|String'>
 <ty:isa>
@@ -109,10 +97,6 @@
 <ty:ref nm='lang|Map'>
 <ty:gen>
 <ty:type nm='lang|Keyword'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 <ty:ref nm='lang|Any'>
 </ty:ref>

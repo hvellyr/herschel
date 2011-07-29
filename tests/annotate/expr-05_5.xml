@@ -379,8 +379,8 @@
 </param>
 <param sym='b' type='pos'>
 <type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </type>
 </param>
 </params>
@@ -510,8 +510,8 @@
 </def>
 <ty:node-types>
 <ty:used-type>
-<ty:ref nm='lang|Any'>
-</ty:ref>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:ref nm='lang|Bool'>

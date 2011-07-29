@@ -24,7 +24,8 @@ HEADERS =         \
 	hash.h          \
 	list.h          \
 	rt.h            \
-	trace.h
+	trace.h         \
+  typeid.h
 
 
 C_OBJS =  $(SOURCES:%.c=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))

@@ -4,10 +4,6 @@
 <vardef sym='t'>
 <type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </type>
 <init>
@@ -19,10 +15,6 @@
 <vardef sym='n'>
 <type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </type>
 <init>
@@ -33,10 +25,6 @@
 <ty:node-types>
 <ty:used-type>
 <ty:type nm='lang|Bool'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </ty:used-type>
 </ty:node-types>

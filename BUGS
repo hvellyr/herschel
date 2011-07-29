@@ -34,5 +34,12 @@
   something.h7, otherwise symbol-from-something is unknown
 
 
-- functions from one compile units are not extern declared in another
-  compile unit.
+- size of array must be constant expression.  Ex.:
+
+    let t : Char[buffer.num-items]
+
+  this produces the totally unusable error message:
+
+    error: Parse error: Bad expression: 566
+
+

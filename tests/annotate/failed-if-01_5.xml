@@ -99,10 +99,6 @@
 </params>
 <rettype>
 <ty:type nm='lang|Keyword'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
 </ty:type>
 </rettype>
 <body>
