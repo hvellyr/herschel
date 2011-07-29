@@ -514,6 +514,7 @@ Typifier::typify(FuncDefNode* node)
 
   if (fPhase == kTypify) {
     setupFunctionNodeType(node);
+
     if (node->name() == String("app|main")) {
       if (!node->retType().isAny()) {
         if (node->retType().typeId() != String("lang|Int32"))
@@ -855,6 +856,35 @@ Typifier::typifyMatchAndCheckParameters(ApplyNode* node,
 
 
 void
+Typifier::checkAllocateArraySignature(ApplyNode* node)
+{
+  const NodeList& args = node->children();
+  if (args.size() == 2) {
+    hr_assert(node->type().isArray());
+
+    Type arrayBaseType = node->type().arrayBaseType();
+    if (arrayBaseType.isBaseType())
+    {
+      // this is always ok.
+    }
+    else if (arrayBaseType.isClass())
+    {
+      if (node->type().arrayBaseType().applySignature().hasPositionalParam())
+        errorf(node->srcpos(), E_ArrayReqDefaultCtor,
+               "array allocation requires default constructor");
+    }
+    else if (arrayBaseType.isType())
+    {
+      // TODO: when we distinguish nullable types, this is only allowed if the
+      // type is nullable
+      errorf(node->srcpos(), E_ArrayReqDefaultCtor,
+             "Can't create array of Type base type without explicit initializer");
+    }
+  }
+}
+
+
+void
 Typifier::typify(ApplyNode* node)
 {
   typifyNode(node->base());
@@ -870,6 +900,11 @@ Typifier::typify(ApplyNode* node)
         // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
         // out->render(const_cast<FunctionNode*>(funcNode));
         typifyMatchAndCheckParameters(node, funcNode);
+
+        if (node->simpleCallName() == Names::kLangAllocateArray)
+        {
+          checkAllocateArraySignature(node);
+        }
       }
     }
     else {
