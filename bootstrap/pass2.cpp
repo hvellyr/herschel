@@ -2360,7 +2360,7 @@ SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
   }
 
   if (argc > 1) {
-    errorf(expr[1].srcpos(), E_BadArgNumber, "Too much arguments for array allocation");
+    errorf(expr[1].srcpos(), E_BadArgNumber, "Too many arguments for array allocation");
     return NULL;
   }
   else if (argc < 1) {
