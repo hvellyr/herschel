@@ -4260,14 +4260,14 @@ It is not possible to call herschel from C.
 
 Code can be documentated in multiple ways; one way is to put comments
 into the source and header files.  These comments are ignored by the
-compiler however and are normally only useful for the maintainers or
+compiler, however, and are normally only useful for the maintainers or
 developers of the source code.  Users of a particular API expect a
 distilled and probably nicely formated documentation.
 
 In Herschel definitions can be annotated by @dfn{document strings}.
 This inline documentation is parsed and checked for validity in normal
 compiler runs, but ignored for code generation.  It can be extracted
-however into a format which secondary tools can format into online or
+into a format which secondary tools can process to produce online or
 printed documentation.
 
 Document strings can be attached to the following definitions and
