@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 import "lang/uri.h7"
 
@@ -16,4 +16,4 @@ def type StringOrUri : &(String, Uri)
     or URLs.~
 
 
-;; end of io-types
+-- end of io-types

@@ -1,5 +1,5 @@
-;; passing an init value for a complex object to an array ctor makes all
-;; array slots point to the same object.
+-- passing an init value for a complex object to an array ctor makes all
+-- array slots point to the same object.
 
 import "lang/assert.h7"
 

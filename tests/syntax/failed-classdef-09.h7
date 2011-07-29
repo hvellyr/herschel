@@ -19,7 +19,7 @@ def class X(_a, _b) : (Y, Z)
     Y(11)
     Z(n: 1234)
 
-    ;; unknown super class
+    -- unknown super class
     M(1, 2)
   }
 }

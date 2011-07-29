@@ -1,4 +1,4 @@
-;; generic functions must specialize at list one parameter
+-- generic functions must specialize at list one parameter
 
 def generic foo(a : Int) : String ...
 

@@ -1,4 +1,4 @@
-;; the 'on init' hooks require exactly one argument
+-- the 'on init' hooks require exactly one argument
 
 def class Y(n)
 {

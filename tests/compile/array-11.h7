@@ -1,4 +1,4 @@
-;; it is ok to create arrays of types when giving an explicit init value.
+-- it is ok to create arrays of types when giving an explicit init value.
 
 import "lang/assert.h7"
 

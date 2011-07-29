@@ -1,5 +1,5 @@
-;; it is not possible to allocate arrays of complex objects which have
-;; explicit constructor paraemeters
+-- it is not possible to allocate arrays of complex objects which have
+-- explicit constructor paraemeters
 
 import "lang/assert.h7"
 

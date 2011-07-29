@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 module lang
 export public(*)
@@ -11,7 +11,7 @@ export public(*)
 import "lang/numbers.h7"
 
 
-;;--------------------------------------------------------------------
+----------------------------------------------------------------------
 
 def type Sliceable<K, E>
     ~ A @type{Sliceable} represents types which support single-key slice
@@ -24,7 +24,7 @@ def generic slice(obj @ Sliceable<'K, 'E>, key @ 'K) : 'E ...
     (depending on the implementing class) is out of bounds of @var{obj}. ~
 
 
-;;--------------------------------------------------------------------
+----------------------------------------------------------------------
 
 def type OrderedSliceable<K, E> : Sliceable<K, E>
     ~ An @type{OrderedSliceable} represents types which support
@@ -55,7 +55,7 @@ def generic slice-rest(obj @ OrderedSliceable<'K, 'E>,
     @end example ~
 
 
-;;--------------------------------------------------------------------
+----------------------------------------------------------------------
 
 def type Sliceable!<K, E> : Sliceable<K, E>
     ~ @type{Sliceable!} represents mutable types with index-access.~
@@ -67,7 +67,7 @@ def generic slice!(obj @ ^Sliceable!<'K, 'E>,
     @returns @var{obj}. ~
 
 
-;;--------------------------------------------------------------------
+----------------------------------------------------------------------
 
 def generic compare(one @ Sliceable<Ordinal, 'T>,
                     two @ Sliceable<Ordinal, 'T>) : Int ...
@@ -76,10 +76,10 @@ def generic compare(one @ Sliceable<Ordinal, 'T>,
     elements.  Zero-length arrays are always identical. ~
 
 
-;;--------------------------------------------------------------------
+----------------------------------------------------------------------
 
 def generic num-items(obj @ 'T[]) : Ordinal ...
     ~ return the number of items @var{obj} (an array of 'T). ~
 
-;; end of sliceable.h7
+-- end of sliceable.h7
 

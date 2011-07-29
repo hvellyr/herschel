@@ -1,5 +1,5 @@
-;; parameters to a functions must match somehow the generic scheme.  Here
-;; 'T can't be Int and String at the same time.
+-- parameters to a functions must match somehow the generic scheme.  Here
+-- 'T can't be Int and String at the same time.
 
 def foo(a : 'T, b : 'T) : 'T ...
 
