@@ -1,4 +1,4 @@
-;; check that explicit primes are accepted for non-class super class type
+-- check that explicit primes are accepted for non-class super class type
 
 def class Y<T>(n : T = 11)
 {

@@ -1,4 +1,4 @@
-;; passing an init value of a non matching types fails.
+-- passing an init value of a non matching types fails.
 
 import "lang/assert.h7"
 

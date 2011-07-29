@@ -2,7 +2,7 @@ def a = \u
 def b = (\u)
 def c = \u-1234
 def d = \u1234
-;; 안녕
+-- 안녕
 안녕
 def e = \xyz
 

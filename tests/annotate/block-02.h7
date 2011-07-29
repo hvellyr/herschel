@@ -1,5 +1,5 @@
-;; the following tests must even valid if single expression blocks are
-;; eliminated
+-- the following tests must even valid if single expression blocks are
+-- eliminated
 
 def foo()
   let x = 42

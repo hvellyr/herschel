@@ -1,5 +1,5 @@
-;; test: double slot dereferencing (t^c^value) finds the proper type for
-;; the referenced slot
+-- test: double slot dereferencing (t^c^value) finds the proper type for
+-- the referenced slot
 
 import "lang/assert.h7"
 

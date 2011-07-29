@@ -1,5 +1,5 @@
-;; check that super class initializations (primes) are not generated for
-;; non-class type
+-- check that super class initializations (primes) are not generated for
+-- non-class type
 
 def class Y<T>(n : T = 11)
 {

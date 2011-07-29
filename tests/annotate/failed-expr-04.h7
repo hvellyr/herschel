@@ -1,4 +1,4 @@
-;; can't compare unsigned and signed integer value
+-- can't compare unsigned and signed integer value
 
 def f5(a : UInt16, b : Int16)
   let t0 =

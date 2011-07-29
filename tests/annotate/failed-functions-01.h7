@@ -1,4 +1,4 @@
-;; normal function can not be redefined
+-- normal function can not be redefined
 
 def foo(a, b)
   a + b

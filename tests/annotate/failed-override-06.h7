@@ -6,7 +6,7 @@ def type Bike : Vehicle
 
 def generic foo(a @ Int, b : Car) : Car ...
 
-;; error here: methods' return values must be contravariant to their
-;; generic functions'
+-- error here: methods' return values must be contravariant to their
+-- generic functions'
 def foo(a @ Int, b : Vehicle) : Vehicle
   b

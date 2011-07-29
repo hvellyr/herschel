@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 module core
 export public(*)
@@ -80,4 +80,4 @@ def generic to-string(obj @ Any) : String ...
   return value's sole purpose may be debugging. ~
 
 
-;; end of string
+-- end of string

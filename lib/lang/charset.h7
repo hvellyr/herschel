@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 module lang
 export public(*)
@@ -42,13 +42,13 @@ def class Charset(name: _name : String = "")
      much these (const) representations. ~
 {
   def slot name : String = _name
-  ;; TODO
+  -- TODO
 }
 
 
-;;----------------------------------------------------------------------------
-;; loading and managing char sets
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- loading and managing char sets
+------------------------------------------------------------------------------
 
 def charset-for-name(name : String) : Charset ...
     ~ Returns a character set described by the name @var{name}.  If no such
@@ -56,9 +56,9 @@ def charset-for-name(name : String) : Charset ...
     @type{CharsetException} is thrown. ~
 
 
-;;----------------------------------------------------------------------------
-;; Creating new Standard Character Set
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Creating new Standard Character Set
+------------------------------------------------------------------------------
 
 def alphanumeric-charset() : Charset ...
     ~ Returns a character set containing the uppercase and lowercase
@@ -132,9 +132,9 @@ def interpunct-charset() : Charset ...
     ~ Returns a character set containing interpunctuation characters. ~
 
 
-;;----------------------------------------------------------------------------
-;; Creating a Custom Character Set
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Creating a Custom Character Set
+------------------------------------------------------------------------------
 
 def charset-with-chars-in-string(str : String) : Charset ...
     ~ Returns a character set containing the characters in <prm>aString</>.
@@ -146,20 +146,20 @@ def charset-with-range(rng : Range<Char>) : Charset
      given by @var{rng}. ~
 
 
-;;----------------------------------------------------------------------------
-;; Testing Set Membership
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Testing Set Membership
+------------------------------------------------------------------------------
 
 def generic contains?(cs @ Charset, c : Char) : Bool ...
     ~ Indicates whether char @var{c} is in charset @var{cs}. ~
 
 
-;;----------------------------------------------------------------------------
-;; Inverting a Character Set
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- Inverting a Character Set
+------------------------------------------------------------------------------
 
 def generic inverted-set(cs @ Charset) : Charset ...
     ~ Returns a character set containing only characters that @em{don't}
      exist in the receiver. ~
 
-;; end of charset.h7
+-- end of charset.h7

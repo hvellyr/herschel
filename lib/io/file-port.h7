@@ -1,9 +1,9 @@
-;; This file is part of the herschel package
-;;
-;; Copyright (c) 2010-2011 Gregor Klinke
-;; All rights reserved.
-;;
-;; This source code is released under the BSD License.
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
 
 import "io/port.h7"
 import "io/io-types.h7"
@@ -12,7 +12,7 @@ module io
 export public (*)
 
 
-;;----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 def enum FileModeType : UInt32
 {
@@ -34,4 +34,4 @@ def class FilePort(file : StringOrUri = "",
 }
 
 
-;; end of file-port
+-- end of file-port

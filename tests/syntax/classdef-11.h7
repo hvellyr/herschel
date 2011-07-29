@@ -1,5 +1,5 @@
-;; check that super class initialization (prime) works with classes from
-;; various modules.
+-- check that super class initialization (prime) works with classes from
+-- various modules.
 
 module A
 {
