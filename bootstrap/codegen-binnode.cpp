@@ -123,20 +123,6 @@ CodegenBinaryNode::wrapBool(llvm::Value* value, const Type& type) const
 
 //------------------------------------------------------------------------------
 
-bool
-CodegenBinaryNode::isPlainInt(const Type& type) const
-{
-  return ( type.typeName() == Names::kInt64TypeName  ||
-           type.typeName() == Names::kInt32TypeName  ||
-           type.typeName() == Names::kInt16TypeName  ||
-           type.typeName() == Names::kInt8TypeName   ||
-           type.typeName() == Names::kUInt64TypeName ||
-           type.typeName() == Names::kUInt32TypeName ||
-           type.typeName() == Names::kUInt16TypeName ||
-           type.typeName() == Names::kUInt8TypeName );
-}
-
-
 llvm::Value*
 CodegenBinaryNode::convertToPlainInt(const AptNode* dst,
                                      const AptNode* right,
