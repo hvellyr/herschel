@@ -492,7 +492,7 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenTy
         if (baseType.isArray())
         {
           errorf(expr.srcpos(), E_MultiDimenArray,
-                 "Multi-dimensional array types are not supported");
+                 "Multi-dimensional array types are not defined");
           return baseType;
         }
 
