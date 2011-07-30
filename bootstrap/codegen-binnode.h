@@ -50,8 +50,6 @@ namespace herschel
                                    const AptNode* right,
                                    llvm::Value* value) const;
 
-    bool isPlainInt(const Type& type) const;
-
     llvm::Value* codegenOpKeywKeyw(const BinaryNode* node,
                                    llvm::Value* left,
                                    llvm::Value* right) const;
