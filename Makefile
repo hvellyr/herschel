@@ -39,6 +39,9 @@ tests: build
 docs: $(curdir)doc/version.texinfo $(BUILDDIR)
 	(cd doc/ && $(MAKE) all)
 
+doxygen: doc/Doxyfile $(BUILDDIR)
+	doxygen doc/Doxyfile
+
 ifeq ($(BUILDSTYLE),dist-release)
 RUN_UNITTEST_TARGET = no-unittest-in-release
 else
