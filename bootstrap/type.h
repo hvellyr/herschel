@@ -61,50 +61,92 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! specifying the type of TypeImpl instance.
   enum TypeKind
   {
-    kType_Undefined,
+    kType_Undefined,            //!< just as default value for undefined kind
 
-    kType_Ref,
+    kType_Ref,                  //!< specifies a type reference
 
-    kType_Array,
+    kType_Array,                //!< specifies an array kind
 
-    kType_Function,
-    kType_Measure,
-    kType_Class,
-    kType_Type,
-    kType_Alias,
+    kType_Function,             //!< specifies a function kind
+    kType_Measure,              //!< specifies a measure kind
+    kType_Class,                //!< specifies a class kind
+    kType_Type,                 //!< specifies a type kind
+    kType_Alias,                //!< specifies an type alias kind
 
-    kType_Union,
-    kType_Sequence,
+    kType_Union,                //!< specifies an union type kind
+    kType_Sequence,             //!< specifies an sequence type kind
   };
+
+
+  //! Base class for the implementation of types.  This defines the base
+  //! interface a type implementation must provide.
 
   class TypeImpl : public RefCountable
   {
   public:
+    //! Make a deep copy of the receiver.  Note that even the base type Type
+    //! must be cloned.
     virtual TypeImpl* clone() const = 0;
+
+    //! Indicates whether the receiver is equal to \p other.
     virtual bool isEqual(const TypeImpl* other) const = 0;
 
+    //! Indicates whether the receiver is an "open" type, i.e. whether it has
+    //! or is a generic (parameterized) type, which is not specified
+    //! (e.g. takes the form 'T).  This predicate is recursive, i.e. if the
+    //! receiver is a complex type then any descendant being "open" make the
+    //! receiver "open", too.
     virtual bool isOpen() const = 0;
+
+    //! Indicates whether the receiver itself is an "open" type, i.e. whether
+    //! it has or is a generic (parameterized) type, which is not specified
+    //! (e.g. takes the form 'T).
     virtual bool isOpenSelf() const = 0;
 
+    //! Replace generics types (or subtypes) with their full form according to
+    //! the type context \p typeMap.  Note that this function solely is to
+    //! allow recursion into subtypes hold by the receiving TypeImpl.  The
+    //! real replacement should be handled by Type::replaceGenerics.
     virtual void replaceGenerics(const TypeCtx& typeMap) = 0;
 
-    virtual String toString(bool isValue) const = 0;
-
+    //! Indicates whether the type \p right0 matches the receiver in regard to
+    //! its generics in the type context \p localCtx.  The intended usage of
+    //! this function is that \p right0 is a concrete type (with possible
+    //! concrete type parameters) which is checked against the "open" receiver
+    //! type.  The \p scope is required for looking up type references, the \p
+    //! srcpos for possible error messages.
+    //!
+    //! Note that this function is needed for recursion into complex types;
+    //! the public API for this is Type::matchGenerics().
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                                Scope* scope, const SrcPos& srcpos) const = 0;
+
+    //! Return a string representation, mostly useful for debugging purposes.
+    //! \p isValue indicates whether the type is actually a value type (this
+    //! information is kept in the outer Type instance, and not in the
+    //! TypeImpl).
+    virtual String toString(bool isValue) const = 0;
   };
 
 
+  //! Represents a type in the compiler.  All type kinds (base, array, union,
+  //! etc.) are all represented by this single type.  To distinguish between
+  //! the various kinds either use the predicate functions (isClass(),
+  //! isArray(), isInt32(), etc.) or the kind() function.
+  //!
+  //! The type class is intended to be uses as const immutable value object.
   class Type
   {
   public:
     Type(const Type& other);
     Type();
 
+    //@{ Factory functions
 
-    //! creates a new type ref.  Covers the following example: xyz<a, b> <> nil
+    //! Creates a new type ref.  Covers the following example: xyz<a, b> <> nil
     static Type newTypeRef(const String& name, const TypeVector& genericArgs,
                            const TypeConstVector& constraints,
                            bool isValue);
@@ -116,61 +158,103 @@ namespace herschel
                            const TypeConstVector& constraints, bool isValue);
     static Type newTypeRef(const String& name, bool isOpen, bool isValue);
 
-    //! rewrite \p old to a new typeref with name.
+    //! Rewrite \p old to a new typeref taking the typename \p name.
     static Type newTypeRef(const String& name, const Type& old);
 
-    //! creates a lang|Class<type>
+    //! Creates a new lang|Class<'T> type instance with 'T being \p type.
     static Type newClassOf(const Type& type, bool isValue = true);
 
+    //! Creates a new 'T[] array type with \p base being the array base type
+    //! 'T.  The \p sizeIndicator is informational, since the size is not
+    //! essential part of an array type in herschel.
     static Type newArray(const Type& base, int sizeIndicator, bool isValue);
 
+    //! Creates a new lang|Any type instance.
     static Type newAny(bool isValue = true);
 
+    //! Creates a new lang|Int32 type instance.
     static Type newInt32(bool isValue = true);
+    //! Creates a new lang|UInt32 type instance.
     static Type newUInt32(bool isValue = true);
+    //! Creates a new lang|Rational type instance.
     static Type newRational(bool isValue = true);
+    //! Creates a new lang|Float32 type instance.
     static Type newFloat32(bool isValue = true);
+    //! Creates a new lang|String type instance.
     static Type newString(bool isValue = true);
+    //! Creates a new lang|Bool type instance.
     static Type newBool(bool isValue = true);
+    //! Creates a new lang|Keyword type instance.
     static Type newKeyword(bool isValue = true);
 
-    //! Creates a new Type type-instance.  This represents a specific type,
-    //! not the type template/definition.  Therefore all (possible) type
-    //! parameters must be fill in (in generics).
+    //! Creates a new Type type instance named \p name.  This represents a
+    //! specific type, not the type template/definition.  Therefore all
+    //! (possible) type parameters must be specified and given in \p generics,
+    //! i.e. \p generics is not allowed to contain "open" types.  QUESTION: Is
+    //! this true?  As far as I can see in the code this can happen anyway.
     static Type newType(const String& name, const TypeVector& generics,
                         const Type& inherit);
 
+    //! Creates a new Class type instance named \p inheriting from \p inherit.
+    //! \p applySign specifies the signatures of the ctor apply call, and \p
+    //! slots specifies the list of slots.  If the class is parameterized the
+    //! parameter types are to be specifies in \p generics.
+    //!
+    //! \pre \p applySign must a valid signature; \p name must not be empty
     static Type newClass(const String& name, const TypeVector& generics,
                          const Type& inherit, const FunctionSignature& applySign,
                          const TypeSlotList& slots);
 
+    //! Creates a new type alias named \p name for type \p isa.  If the alias
+    //! itself is parameterized the type parameters have to be specified in \p
+    //! generics.
+
+    //! \pre \p name must not be empty; \p isa must be a valid type instance
     static Type newAlias(const String& name, const TypeVector& generics,
                          const Type& isa);
 
     static Type newMeasure(const String& name, const Type& baseType,
                            const String& defUnit);
 
+    //! Create a new function type instance using the function signature \p
+    //! sign.
     static Type newFunction(const FunctionSignature& sign);
+
+    //! Creates a new union type instance for the types \p types.  Note that
+    //! even if \p types is given as vector the order of \p types is not
+    //! relevant.
     static Type newUnion(const TypeVector& types, bool isValue);
+
+    //! Creates a new sequence type instance for the types \p types.
     static Type newSeq(const TypeVector& types, bool isValue);
 
+    //@}
+
+
+    //! Make a deep copy of the receiver.  Since copying can be expensive this
+    //! is not implemented via the normal copying ctor.
     Type clone() const;
 
-    //! assign operator
+    //! Assign operator
     Type& operator=(const Type& other);
 
-    //! Compare operator.  Indicates true if *this and other are fully
-    //! identical.
+    //! Compare operator.  Indicates true if *this and \p other are fully
+    //! identical.  For logical comparison of types use the isSameType()
+    //! function.
     bool operator==(const Type& other) const;
-    //! Compare operator
+    //! Compare operator.  For logical comparison of types use the
+    //! isSameType() function.
     bool operator!=(const Type& other) const;
 
-
+    //! Indicates whether the receiver is an initialized instance (i.e. not
+    //! constructed by the Type() ctor).
     bool isDef() const;
 
+    //! Return the type's internal implementation kind.
     TypeKind kind() const;
 
-    //!@ base and builtin types
+    //! @{ Base and builtin types
+
     //! indicates whether the type is a base type
     bool isBaseType() const;
 
@@ -195,10 +279,14 @@ namespace herschel
     bool isBool() const;
     bool isKeyword() const;
 
+    //! Indicates whether the receiver is any kind of number (isInt32(),
+    //! isFloat32(), etc.).
     bool isAnyNumber() const;
 
+    //! Indicates whether the receiver is a signed number.
     bool isSigned() const;
 
+    //! Indicates whether the receiver is a lang|Class<'T> type instance.
     bool isClassOf() const;
 
     bool isImaginary() const;
@@ -206,45 +294,67 @@ namespace herschel
 
     TypeEnumMaker* newBaseTypeEnumMaker() const;
 
-    //!@ custom types
+    //@}
+
+    //@{ Custom types
+
+    //! Indicates whether the receiver is a Class type instance.
     bool isClass() const;
+
+    //! Return the defined slots.
+    //!
+    //! \pre Only allowed when \c isClass() returns true.
     const TypeSlotList& slots() const;
-    //! lookup the type for slot \p slotName.  If no such slot is defined for
+    //! Lookup the type for slot \p slotName.  If no such slot is defined for
     //! the receiver (or any of its superclasses) this function returns an
-    //! undefined type (check isDef()).  The \p scope is required for
+    //! undefined type (check \c isDef()).  The \p scope is required for
     //! normalizing the superclasses which are normally kept as reference
     //! types only.
+    //!
+    //! \pre Only allowed if \c isClass() returns true.
     Type slotType(const String& slotName, Scope* scope) const;
 
-    //!@ custom types
     bool isType() const;
     const Type& typeInheritance() const;
     const FunctionSignature& applySignature() const;
 
+    //@}
 
-    //@ is anything on this type is generic (i.e. a variable type
-    //expression).  For references the type itself must be marked as generic
-    //(e.g. 'T); for complex type any subtype (generics, parameters, etc.)
-    //must be a Generic type reference (e.g. 'T[], List<'T>, &('T, Bool = false))
+
+    //! Indicates whether the receiver is an "open" type, i.e. whether it has
+    //! or is a generic (parameterized) type, which is not specified
+    //! (e.g. takes the form 'T).  This predicate is recursive, i.e. if the
+    //! receiver is a complex type then any descendant being "open" make the
+    //! receiver "open", too.
     bool isOpen() const;
+
+    //! Indicates whether the receiver itself is an "open" type, i.e. whether
+    //! it has or is a generic (parameterized) type, which is not specified
+    //! (e.g. takes the form 'T).
     bool isOpenSelf() const;
 
+    //! Indicates whether the type \p right0 matches the receiver in regard to
+    //! its generics in the type context \p localCtx.  The intended usage of
+    //! this function is that \p right0 is a concrete type (with possible
+    //! concrete type parameters) which is checked against the "open" receiver
+    //! type.  The \p scope is required for looking up type references, the \p
+    //! srcpos for possible error messages.
     bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                        Scope* scope, const SrcPos& srcpos) const;
 
 
-    //!@ alias types
+    //@{ alias types
     bool isAlias() const;
     const Type& aliasReplaces() const;
+    //@}
 
-
-    //!@ function types
+    //@{ function types
     //! Indicates whether the type is a function type
     bool isFunction() const;
     const FunctionSignature& functionSignature() const;
+    //@}
 
-
-    //!@ array types
+    //@{ array types
     bool isArray() const;
     const Type& arrayBaseType() const;
     int arraySizeIndicator() const;
@@ -252,31 +362,36 @@ namespace herschel
     //! arrayBaseType().
     Type arrayRootType() const;
     Type rebase(const Type& newBaseType) const;
+    //@}
 
-
-    //!@ union types
+    //@{ Union types
     bool isUnion() const;
     const TypeVector& unionTypes() const;
+    //@}
 
-
-    //!@ sequence types
+    //@{ Sequence types
     bool isSequence() const;
     const TypeVector& seqTypes() const;
     bool containsType(const Type& type) const;
+    //@}
 
-    //!@ measure types
+    //@{ Measure types
     bool isMeasure() const;
     const Type& measureBaseType() const;
     String measureUnit() const;
+    //@}
 
-    //!@ has constraints?
+    //@{ Has constraints?
     bool hasConstraints() const;
     const TypeConstVector& constraints() const;
     Type setConstraints(const TypeConstVector& constraints) const;
+    //@}
 
+    //@{ Has Generics?
     bool hasGenerics() const;
     const TypeVector& generics() const;
     Type replaceGenerics(const TypeCtx& typeMap) const;
+    //@}
 
     bool isRef() const;
     String typeName() const;
