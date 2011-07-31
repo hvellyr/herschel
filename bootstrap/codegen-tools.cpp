@@ -19,6 +19,7 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "typeprops.h"
 
 #include <vector>
 #include <typeinfo>
@@ -243,17 +244,13 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
 const char*
 CodegenTools::getConvFuncNameByType(const Type& type) const
 {
-  if (type.typeId() == Names::kInt32TypeName)
-    return "atom_2_int32";
-  else if (type.typeId() == Names::kInt64TypeName)
+  if (type.typeId() == Names::kInt64TypeName)
     return "atom_2_int64";
   else if (type.typeId() == Names::kInt16TypeName)
     return "atom_2_int16";
   else if (type.typeId() == Names::kInt8TypeName)
     return "atom_2_int8";
 
-  else if (type.typeId() == Names::kUInt32TypeName)
-    return "atom_2_uint32";
   else if (type.typeId() == Names::kUInt64TypeName)
     return "atom_2_uint64";
   else if (type.typeId() == Names::kUInt16TypeName)
@@ -272,11 +269,11 @@ CodegenTools::getConvFuncNameByType(const Type& type) const
   else if (type.typeId() == Names::kKeywordTypeName)
     return "atom_2_keyword";
 
-  if (type.typeId() == Names::kClangIntTypeName) // TODO
+  else if (type.typeId() == Names::kClangIntTypeName) // TODO
     return "atom_2_int32";
 
-  hr_invalid((const char*)StrHelper(String("unhandled type: ") + type.typeId()));
-  return NULL;
+  const TypeProperty& prop = type.typeProperty();
+  return prop.convFuncName();
 }
 
 
@@ -335,16 +332,11 @@ CodegenTools::emitPackCode(const Type& dstType, TypeConvKind convKind,
     case kAtom2PlainConv:
       return makeTypeCastAtomToPlain(value, dstType);
     case kPlain2AtomConv:
-      if (valType.typeId() == Names::kInt32TypeName)
-        return wrapLoad(makeIntAtom(value, CodegenTools::kAtomInt32));
-      else if (valType.typeId() == Names::kUInt32TypeName)
-        return wrapLoad(makeIntAtom(value, CodegenTools::kAtomUInt32));
-      else if (valType.typeId() == Names::kBoolTypeName)
+      if (valType.typeId() == Names::kBoolTypeName)
         return wrapLoad(makeBoolAtom(value));
-      else {
-        hr_invalid("unhandled type");
-      }
-      //return value;
+
+      return valType.typeProperty().emitPackCode(this, value);
+
 
     case kTypeCheckConv:
       // fprintf(stderr, "Not implemented yet\n");
