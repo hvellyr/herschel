@@ -32,6 +32,7 @@ namespace herschel
   class Scope;
   class SrcPos;
   class TypeSlot;
+  class TypeProperty;
 
   typedef std::vector<Type> TypeVector;
   typedef std::vector<TypeConstraint> TypeConstVector;
@@ -293,6 +294,12 @@ namespace herschel
     void setIsImaginary(bool value);
 
     TypeEnumMaker* newBaseTypeEnumMaker() const;
+
+    //! Return the typeProperty specication for the receiver.  Check \c
+    //! isValid() on the return value before using it.  If \p mustExist is
+    //! true requesting the typeproperty for a non-predefined type will
+    //! assert.
+    const TypeProperty& typeProperty(bool mustExist = true) const;
 
     //@}
 

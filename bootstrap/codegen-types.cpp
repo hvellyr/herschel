@@ -16,6 +16,7 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "typeprops.h"
 
 #include <vector>
 
@@ -235,9 +236,6 @@ CodegenTypeUtils::getType(const Type& type) const
   else if (typeId == Names::kInt16TypeName) {
     return llvm::Type::getInt16Ty(context());
   }
-  else if (typeId == Names::kInt32TypeName) {
-    return llvm::Type::getInt32Ty(context());
-  }
   else if (typeId == Names::kInt64TypeName) {
     return llvm::Type::getInt64Ty(context());
   }
@@ -247,9 +245,6 @@ CodegenTypeUtils::getType(const Type& type) const
   }
   else if (typeId == Names::kUInt16TypeName) {
     return llvm::Type::getInt16Ty(context());
-  }
-  else if (typeId == Names::kUInt32TypeName) {
-    return llvm::Type::getInt32Ty(context());
   }
   else if (typeId == Names::kUInt64TypeName) {
     return llvm::Type::getInt64Ty(context());
@@ -283,6 +278,10 @@ CodegenTypeUtils::getType(const Type& type) const
     return getAtomType();
   }
 
+  const TypeProperty& prop = type.typeProperty(!K(mustExist));
+  if (prop.isValid())
+    return prop.getLLVMType();
+
   return getAtomType();
 }
 
@@ -305,9 +304,6 @@ CodegenTypeUtils::getSlotSize(const Type& type) const
   else if (typeId == Names::kInt16TypeName)
     return 2; // llvm::Type::getInt16Ty(context());
 
-  else if (typeId == Names::kInt32TypeName)
-    return 4; // llvm::Type::getInt32Ty(context());
-
   else if (typeId == Names::kInt64TypeName)
     return 8; // llvm::Type::getInt64Ty(context());
 
@@ -317,9 +313,6 @@ CodegenTypeUtils::getSlotSize(const Type& type) const
 
   else if (typeId == Names::kUInt16TypeName)
     return 2; // llvm::Type::getInt16Ty(context());
-
-  else if (typeId == Names::kUInt32TypeName)
-    return 4; // llvm::Type::getInt32Ty(context());
 
   else if (typeId == Names::kUInt64TypeName)
     return 8; // llvm::Type::getInt64Ty(context());
@@ -341,6 +334,10 @@ CodegenTypeUtils::getSlotSize(const Type& type) const
   // else if (typeId == Names::kFloat128TypeName)
   //   return llvm::Type::getInt1Ty(context());
   // }
+
+  const TypeProperty& prop = type.typeProperty(!K(mustExist));
+  if (prop.isValid())
+    return prop.getSlotSize();
 
   // all other types are atoms
   const llvm::StructLayout* layout = generator()->targetData()

@@ -161,8 +161,10 @@ HRC_HEADERS =         \
 	transform.h         \
 	traverse.h          \
 	type.h              \
-	typeenum.h          \
 	typectx.h           \
+	typeenum.h          \
+	typeprops.h         \
+	typeprops-int.h     \
 	typify.h            \
 	xmlout.h
 
