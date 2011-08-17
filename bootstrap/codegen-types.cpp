@@ -230,16 +230,10 @@ CodegenTypeUtils::getType(const Type& type) const
     return llvm::Type::getInt8Ty(context());
   }
 
-  else if (typeId == Names::kInt8TypeName) {
-    return llvm::Type::getInt8Ty(context());
-  }
   else if (typeId == Names::kInt64TypeName) {
     return llvm::Type::getInt64Ty(context());
   }
 
-  else if (typeId == Names::kUInt8TypeName) {
-    return llvm::Type::getInt8Ty(context());
-  }
   else if (typeId == Names::kUInt64TypeName) {
     return llvm::Type::getInt64Ty(context());
   }
@@ -289,15 +283,9 @@ CodegenTypeUtils::getSlotSize(const Type& type) const
     return 1; // llvm::Type::getInt8Ty(context());
 
 
-  else if (typeId == Names::kInt8TypeName)
-    return 1; // llvm::Type::getInt8Ty(context());
-
   else if (typeId == Names::kInt64TypeName)
     return 8; // llvm::Type::getInt64Ty(context());
 
-
-  else if (typeId == Names::kUInt8TypeName)
-    return 1; // llvm::Type::getInt8Ty(context());
 
   else if (typeId == Names::kUInt64TypeName)
     return 8; // llvm::Type::getInt64Ty(context());

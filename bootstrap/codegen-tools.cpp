@@ -246,13 +246,9 @@ CodegenTools::getConvFuncNameByType(const Type& type) const
 {
   if (type.typeId() == Names::kInt64TypeName)
     return "atom_2_int64";
-  else if (type.typeId() == Names::kInt8TypeName)
-    return "atom_2_int8";
 
   else if (type.typeId() == Names::kUInt64TypeName)
     return "atom_2_uint64";
-  else if (type.typeId() == Names::kUInt8TypeName)
-    return "atom_2_uint8";
   else if (type.typeId() == Names::kFloat32TypeName)
     return "atom_2_float32";
   else if (type.typeId() == Names::kFloat64TypeName)

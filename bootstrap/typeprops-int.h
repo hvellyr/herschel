@@ -190,6 +190,86 @@ namespace herschel
       return new UInt16TypeEnumMaker;
     }
   };
+
+
+  // -----------------------------------------------------------------------------
+
+  //! TypeProperty implementation for the int8 type.
+  class Int8TypeProperty : public TypeProperty
+  {
+  public:
+    virtual const char* convFuncName() const { return "atom_2_int8"; }
+
+    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    {
+      return tools->wrapLoad(tools->makeIntAtom(value,
+                                                CodegenTools::kAtomInt8));
+    }
+
+    virtual const llvm::Type* getLLVMType() const
+    {
+      return llvm::Type::getInt8Ty(llvm::getGlobalContext());
+    }
+
+    virtual size_t getSlotSize() const { return 1; }
+
+    virtual bool isBaseType() const { return true; }
+
+    virtual bool isPlainType() const { return true; }
+
+    virtual bool isSigned() const { return true; }
+
+    virtual bool isAnyNumber() const { return true; }
+
+    virtual bool isAnyInt() const { return true; }
+
+    virtual int intTypeBitsize() const { return 8; }
+
+    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    {
+      return new Int8TypeEnumMaker;
+    }
+  };
+
+
+  // -----------------------------------------------------------------------------
+
+  //! TypeProperty implementation for the uint8 type.
+  class UInt8TypeProperty : public TypeProperty
+  {
+  public:
+    virtual const char* convFuncName() const { return "atom_2_uint8"; }
+
+    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    {
+      return tools->wrapLoad(tools->makeIntAtom(value,
+                                                CodegenTools::kAtomUInt8));
+    }
+
+    virtual const llvm::Type* getLLVMType() const
+    {
+      return llvm::Type::getInt8Ty(llvm::getGlobalContext());
+    }
+
+    virtual size_t getSlotSize() const { return 1; }
+
+    virtual bool isBaseType() const { return true; }
+
+    virtual bool isPlainType() const { return true; }
+
+    virtual bool isSigned() const { return false; }
+
+    virtual bool isAnyNumber() const { return true; }
+
+    virtual bool isAnyInt() const { return true; }
+
+    virtual int intTypeBitsize() const { return 8; }
+
+    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    {
+      return new UInt8TypeEnumMaker;
+    }
+  };
 };                              // namespace
 
 #endif                          // bootstrap_typeprops_int_h
