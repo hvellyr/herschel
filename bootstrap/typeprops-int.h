@@ -26,11 +26,7 @@ namespace herschel
   class Int32TypeProperty : public TypeProperty
   {
   public:
-    virtual const char* convFuncName() const
-    {
-      return "atom_2_int32";
-    }
-
+    virtual const char* convFuncName() const { return "atom_2_int32"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -38,53 +34,27 @@ namespace herschel
                                                 CodegenTools::kAtomInt32));
     }
 
-
     virtual const llvm::Type* getLLVMType() const
     {
       return llvm::Type::getInt32Ty(llvm::getGlobalContext());
     }
-
 
     virtual size_t getSlotSize() const
     {
       return 4; // llvm::Type::getInt32Ty(llvm::getGlobalContext());
     }
 
+    virtual bool isBaseType() const { return true; }
 
-    virtual bool isBaseType() const
-    {
-      return true;
-    }
+    virtual bool isPlainType() const { return true; }
 
+    virtual bool isSigned() const { return true; }
 
-    virtual bool isPlainType() const
-    {
-      return true;
-    }
+    virtual bool isAnyNumber() const { return true; }
 
+    virtual bool isAnyInt() const { return true; }
 
-    virtual bool isSigned() const
-    {
-      return true;
-    }
-
-
-    virtual bool isAnyNumber() const
-    {
-      return true;
-    }
-
-
-    virtual bool isAnyInt() const
-    {
-      return true;
-    }
-
-
-    virtual int intTypeBitsize() const
-    {
-      return 32;
-    }
+    virtual int intTypeBitsize() const { return 32; }
 
     virtual TypeEnumMaker* newBaseTypeEnumMaker() const
     {
@@ -99,11 +69,7 @@ namespace herschel
   class UInt32TypeProperty : public TypeProperty
   {
   public:
-    virtual const char* convFuncName() const
-    {
-      return "atom_2_uint32";
-    }
-
+    virtual const char* convFuncName() const { return "atom_2_uint32"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -111,53 +77,27 @@ namespace herschel
                                                 CodegenTools::kAtomUInt32));
     }
 
-
     virtual const llvm::Type* getLLVMType() const
     {
       return llvm::Type::getInt32Ty(llvm::getGlobalContext());
     }
-
 
     virtual size_t getSlotSize() const
     {
       return 4; // llvm::Type::getInt32Ty(llvm::getGlobalContext());
     }
 
+    virtual bool isBaseType() const { return true; }
 
-    virtual bool isBaseType() const
-    {
-      return true;
-    }
+    virtual bool isPlainType() const { return true; }
 
+    virtual bool isSigned() const { return false; }
 
-    virtual bool isPlainType() const
-    {
-      return true;
-    }
+    virtual bool isAnyNumber() const { return true; }
 
+    virtual bool isAnyInt() const { return true; }
 
-    virtual bool isSigned() const
-    {
-      return false;
-    }
-
-
-    virtual bool isAnyNumber() const
-    {
-      return true;
-    }
-
-
-    virtual bool isAnyInt() const
-    {
-      return true;
-    }
-
-
-    virtual int intTypeBitsize() const
-    {
-      return 32;
-    }
+    virtual int intTypeBitsize() const { return 32; }
 
     virtual TypeEnumMaker* newBaseTypeEnumMaker() const
     {
@@ -172,11 +112,7 @@ namespace herschel
   class Int16TypeProperty : public TypeProperty
   {
   public:
-    virtual const char* convFuncName() const
-    {
-      return "atom_2_int16";
-    }
-
+    virtual const char* convFuncName() const { return "atom_2_int16"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -184,53 +120,27 @@ namespace herschel
                                                 CodegenTools::kAtomInt16));
     }
 
-
     virtual const llvm::Type* getLLVMType() const
     {
       return llvm::Type::getInt16Ty(llvm::getGlobalContext());
     }
-
 
     virtual size_t getSlotSize() const
     {
       return 2; // llvm::Type::getInt16Ty(llvm::getGlobalContext());
     }
 
+    virtual bool isBaseType() const { return true; }
 
-    virtual bool isBaseType() const
-    {
-      return true;
-    }
+    virtual bool isPlainType() const { return true; }
 
+    virtual bool isSigned() const { return true; }
 
-    virtual bool isPlainType() const
-    {
-      return true;
-    }
+    virtual bool isAnyNumber() const { return true; }
 
+    virtual bool isAnyInt() const { return true; }
 
-    virtual bool isSigned() const
-    {
-      return true;
-    }
-
-
-    virtual bool isAnyNumber() const
-    {
-      return true;
-    }
-
-
-    virtual bool isAnyInt() const
-    {
-      return true;
-    }
-
-
-    virtual int intTypeBitsize() const
-    {
-      return 16;
-    }
+    virtual int intTypeBitsize() const { return 16; }
 
     virtual TypeEnumMaker* newBaseTypeEnumMaker() const
     {
@@ -245,11 +155,7 @@ namespace herschel
   class UInt16TypeProperty : public TypeProperty
   {
   public:
-    virtual const char* convFuncName() const
-    {
-      return "atom_2_uint16";
-    }
-
+    virtual const char* convFuncName() const { return "atom_2_uint16"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -257,53 +163,27 @@ namespace herschel
                                                 CodegenTools::kAtomUInt16));
     }
 
-
     virtual const llvm::Type* getLLVMType() const
     {
       return llvm::Type::getInt16Ty(llvm::getGlobalContext());
     }
-
 
     virtual size_t getSlotSize() const
     {
       return 2; // llvm::Type::getInt16Ty(llvm::getGlobalContext());
     }
 
+    virtual bool isBaseType() const { return true; }
 
-    virtual bool isBaseType() const
-    {
-      return true;
-    }
+    virtual bool isPlainType() const { return true; }
 
+    virtual bool isSigned() const { return false; }
 
-    virtual bool isPlainType() const
-    {
-      return true;
-    }
+    virtual bool isAnyNumber() const { return true; }
 
+    virtual bool isAnyInt() const { return true; }
 
-    virtual bool isSigned() const
-    {
-      return false;
-    }
-
-
-    virtual bool isAnyNumber() const
-    {
-      return true;
-    }
-
-
-    virtual bool isAnyInt() const
-    {
-      return true;
-    }
-
-
-    virtual int intTypeBitsize() const
-    {
-      return 16;
-    }
+    virtual int intTypeBitsize() const { return 16; }
 
     virtual TypeEnumMaker* newBaseTypeEnumMaker() const
     {
