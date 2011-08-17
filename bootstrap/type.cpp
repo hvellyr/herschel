@@ -1236,9 +1236,7 @@ Type::isBaseType() const
         nm == Names::kKeywordTypeName ||
         nm == Names::kNilTypeName ||
         nm == Names::kRationalTypeName ||
-        nm == Names::kStringTypeName ||
-        nm == Names::kInt64TypeName ||
-        nm == Names::kUInt64TypeName)
+        nm == Names::kStringTypeName)
       return true;
 
     const TypeProperty& prop = typeProperty(!K(mustExist));
@@ -1265,8 +1263,6 @@ Type::isPlainType() const
         nm == Names::kFloat32TypeName ||
         nm == Names::kFloat64TypeName ||
         nm == Names::kFloat128TypeName ||
-        nm == Names::kInt64TypeName ||
-        nm == Names::kUInt64TypeName ||
         nm == String("clang|int"))
       return true;
 
@@ -1301,10 +1297,6 @@ Type::newBaseTypeEnumMaker() const
     else if (nm == Names::kRationalTypeName) return new RationalTypeEnumMaker;
     else if (nm == Names::kStringTypeName)   return new StringTypeEnumMaker;
 
-    else if (nm == Names::kInt64TypeName)    return new Int64TypeEnumMaker;
-
-    else if (nm == Names::kUInt64TypeName)   return new UInt64TypeEnumMaker;
-
     const TypeProperty& prop = typeProperty();
     if (prop.isValid())
       return prop.newBaseTypeEnumMaker();
@@ -1324,6 +1316,8 @@ Type::typeProperty(bool mustExist) const
   static const UInt16TypeProperty  uint16Property;
   static const Int32TypeProperty   int32Property;
   static const UInt32TypeProperty  uint32Property;
+  static const Int64TypeProperty   int64Property;
+  static const UInt64TypeProperty  uint64Property;
   static const BoolTypeProperty    boolProperty;
 
   String nm = typeName();
@@ -1339,6 +1333,10 @@ Type::typeProperty(bool mustExist) const
     return int8Property;
   else if (nm == Names::kUInt8TypeName)
     return uint8Property;
+  else if (nm == Names::kInt64TypeName)
+    return int64Property;
+  else if (nm == Names::kUInt64TypeName)
+    return uint64Property;
 
   else if (nm == Names::kBoolTypeName)
     return boolProperty;
@@ -1363,7 +1361,6 @@ Type::isSigned() const
   if ( isBuiltinType(Names::kNumberTypeName) ||
        isBuiltinType(Names::kComplexTypeName) ||
        isBuiltinType(Names::kRationalTypeName) ||
-       isBuiltinType(Names::kInt64TypeName) ||
        isBuiltinType(Names::kFloat32TypeName) ||
        isBuiltinType(Names::kFloat64TypeName) ||
        isBuiltinType(Names::kFloat128TypeName) )
@@ -1382,8 +1379,6 @@ Type::isAnyNumber() const
   if ( isBuiltinType(Names::kNumberTypeName) ||
        isBuiltinType(Names::kComplexTypeName) ||
        isBuiltinType(Names::kRationalTypeName) ||
-       isBuiltinType(Names::kInt64TypeName) ||
-       isBuiltinType(Names::kUInt64TypeName) ||
        isBuiltinType(Names::kFloat32TypeName) ||
        isBuiltinType(Names::kFloat64TypeName) ||
        isBuiltinType(Names::kFloat128TypeName) )
@@ -1485,9 +1480,6 @@ Type::isAnyInt() const
 bool
 Type::isAnySignedInt() const
 {
-  if (isBuiltinType(Names::kInt64TypeName) )
-    return true;
-
   const TypeProperty& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return prop.isSigned() && prop.isAnyInt();
@@ -1498,9 +1490,6 @@ Type::isAnySignedInt() const
 bool
 Type::isAnyUInt() const
 {
-  if (isBuiltinType(Names::kUInt64TypeName) )
-    return true;
-
   const TypeProperty& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return !prop.isSigned() && prop.isAnyInt();
@@ -3713,10 +3702,6 @@ namespace herschel
   int
   intTypeBitsize(const Type& ty)
   {
-    if (ty.isBuiltinType(Names::kInt64TypeName) ||
-        ty.isBuiltinType(Names::kUInt64TypeName))
-      return 64;
-
     return ty.typeProperty().intTypeBitsize();
   }
 

@@ -244,12 +244,7 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
 const char*
 CodegenTools::getConvFuncNameByType(const Type& type) const
 {
-  if (type.typeId() == Names::kInt64TypeName)
-    return "atom_2_int64";
-
-  else if (type.typeId() == Names::kUInt64TypeName)
-    return "atom_2_uint64";
-  else if (type.typeId() == Names::kFloat32TypeName)
+  if (type.typeId() == Names::kFloat32TypeName)
     return "atom_2_float32";
   else if (type.typeId() == Names::kFloat64TypeName)
     return "atom_2_float64";
