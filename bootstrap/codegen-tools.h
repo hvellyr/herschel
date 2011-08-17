@@ -52,6 +52,8 @@ namespace herschel
       kAtomInt64   = 0x0b,
       kAtomUInt64  = 0x0c,
 
+      kAtomFloat32 = 0x0d,
+
       kAtomInt32Array   = kAtomInt32 + 0x40,
       kAtomUInt32Array  = kAtomUInt32 + 0x40,
       kAtomInt16Array   = kAtomInt16 + 0x40,
@@ -77,6 +79,7 @@ namespace herschel
 
     llvm::Value* makeInt32Atom(int val);
     llvm::Value* makeIntAtom(llvm::Value* val, Typeid atomTypeId);
+    llvm::Value* makeFloatAtom(llvm::Value* val, Typeid atomTypeId);
     llvm::Value* makeBoolAtom(llvm::Value* val);
     llvm::Value* makeBoolAtom(bool val);
 

@@ -68,8 +68,11 @@ namespace herschel
     //! Indicates whether this type is any integer.
     virtual bool isAnyInt() const = 0;
 
+    //! Indicates whether this type is any float.
+    virtual bool isAnyFloat() const = 0;
+
     //! Return the bitsize for this type.  Returns \c 0 if not a number.
-    virtual int  intTypeBitsize() const = 0;
+    virtual int  typeBitsize() const = 0;
 
     //@}
 
@@ -103,8 +106,9 @@ namespace herschel
     virtual bool isAnyNumber() const { return false; }
 
     virtual bool isAnyInt() const { return false; }
+    virtual bool isAnyFloat() const { return false; }
 
-    virtual int  intTypeBitsize() const { return 0; }
+    virtual int  typeBitsize() const { return 0; }
 
     virtual TypeEnumMaker* newBaseTypeEnumMaker() const { return NULL; }
   };

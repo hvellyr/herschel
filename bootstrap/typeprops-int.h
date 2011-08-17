@@ -40,8 +40,9 @@ namespace herschel
     virtual bool isAnyNumber() const { return true; }
 
     virtual bool isAnyInt() const { return true; }
+    virtual bool isAnyFloat() const { return false; }
 
-    virtual int intTypeBitsize() const { return bitsize; }
+    virtual int typeBitsize() const { return bitsize; }
 
     virtual TypeEnumMaker* newBaseTypeEnumMaker() const
     {

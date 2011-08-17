@@ -26,64 +26,33 @@ namespace herschel
   class BoolTypeProperty : public TypeProperty
   {
   public:
-    virtual const char* convFuncName() const
-    {
-      return "atom_2_bool";
-    }
-
+    virtual const char* convFuncName() const { return "atom_2_bool"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
       return tools->wrapLoad(tools->makeBoolAtom(value));
     }
 
-
     virtual const llvm::Type* getLLVMType() const
     {
       return llvm::Type::getInt1Ty(llvm::getGlobalContext());
     }
 
+    virtual size_t getSlotSize() const { return 1; }
 
-    virtual size_t getSlotSize() const
-    {
-      return 1; // llvm::Type::getInt1Ty(llvm::getGlobalContext());
-    }
+    virtual bool isBaseType() const { return true; }
 
+    virtual bool isPlainType() const { return true; }
 
-    virtual bool isBaseType() const
-    {
-      return true;
-    }
+    virtual bool isSigned() const { return false; }
 
+    virtual bool isAnyNumber() const { return false; }
 
-    virtual bool isPlainType() const
-    {
-      return true;
-    }
+    virtual bool isAnyInt() const { return false; }
 
+    virtual bool isAnyFloat() const { return false; }
 
-    virtual bool isSigned() const
-    {
-      return false;
-    }
-
-
-    virtual bool isAnyNumber() const
-    {
-      return false;
-    }
-
-
-    virtual bool isAnyInt() const
-    {
-      return false;
-    }
-
-
-    virtual int intTypeBitsize() const
-    {
-      return 0;
-    }
+    virtual int typeBitsize() const { return 0; }
 
     virtual TypeEnumMaker* newBaseTypeEnumMaker() const
     {

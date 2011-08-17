@@ -165,6 +165,7 @@ HRC_HEADERS =         \
 	typeenum.h          \
 	typeprops.h         \
 	typeprops-bool.h    \
+	typeprops-float.h   \
 	typeprops-int.h     \
 	typify.h            \
 	xmlout.h

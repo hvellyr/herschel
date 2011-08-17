@@ -84,6 +84,19 @@ CodegenTools::makeIntAtom(llvm::Value* val, Typeid atomTypeId)
 
 
 llvm::Value*
+CodegenTools::makeFloatAtom(llvm::Value* val, Typeid atomTypeId)
+{
+  llvm::Function *curFunction = builder().GetInsertBlock()->getParent();
+  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("float"),
+                                                  fGenerator->fTypes->getAtomType());
+
+  setAtom(atom, atomTypeId, val);
+
+  return atom;
+}
+
+
+llvm::Value*
 CodegenTools::makeBoolAtom(llvm::Value* val)
 {
   llvm::Function *curFunction = builder().GetInsertBlock()->getParent();
@@ -180,6 +193,31 @@ CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
                          : value );
     builder().CreateStore(val, slot);
   }
+  else if (typid == kAtomUInt32) {
+    hr_invalid("code missing");
+  }
+  else if (typid == kAtomInt16) {
+    hr_invalid("code missing");
+  }
+  else if (typid == kAtomUInt16) {
+    hr_invalid("code missing");
+  }
+  else if (typid == kAtomInt8) {
+    hr_invalid("code missing");
+  }
+  else if (typid == kAtomUInt8) {
+    hr_invalid("code missing");
+  }
+  else if (typid == kAtomInt64) {
+    hr_invalid("code missing");
+  }
+  else if (typid == kAtomUInt64) {
+    hr_invalid("code missing");
+  }
+  else if (typid == kAtomFloat32) {
+    hr_invalid("code missing");
+  }
+
   else if (typid == kAtomKeyword) {
     builder().CreateStore(createCastPtrToNativeInt(value), slot);
   }
@@ -244,11 +282,7 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
 const char*
 CodegenTools::getConvFuncNameByType(const Type& type) const
 {
-  if (type.typeId() == Names::kFloat32TypeName)
-    return "atom_2_float32";
-  else if (type.typeId() == Names::kFloat64TypeName)
-    return "atom_2_float64";
-  else if (type.typeId() == Names::kCharTypeName)
+  if (type.typeId() == Names::kCharTypeName)
     return "atom_2_char";
 
   else if (type.typeId() == Names::kKeywordTypeName)
