@@ -156,6 +156,42 @@ namespace herschel
       return llvm::Type::getInt8Ty(llvm::getGlobalContext());
     }
   };
+
+
+  // -----------------------------------------------------------------------------
+
+  //! TypeProperty implementation for the int8 type.
+  class Int64TypeProperty : public BaseIntTypeProperty<Int64TypeEnumMaker,
+                                                       64,
+                                                       K(issigned),
+                                                       CodegenTools::kAtomInt64>
+  {
+  public:
+    virtual const char* convFuncName() const { return "atom_2_int64"; }
+
+    virtual const llvm::Type* getLLVMType() const
+    {
+      return llvm::Type::getInt64Ty(llvm::getGlobalContext());
+    }
+  };
+
+
+  // -----------------------------------------------------------------------------
+
+  //! TypeProperty implementation for the uint8 type.
+  class UInt64TypeProperty : public BaseIntTypeProperty<UInt64TypeEnumMaker,
+                                                        64,
+                                                        !K(issigned),
+                                                        CodegenTools::kAtomUInt64>
+  {
+  public:
+    virtual const char* convFuncName() const { return "atom_2_uint64"; }
+
+    virtual const llvm::Type* getLLVMType() const
+    {
+      return llvm::Type::getInt64Ty(llvm::getGlobalContext());
+    }
+  };
 };                              // namespace
 
 #endif                          // bootstrap_typeprops_int_h
