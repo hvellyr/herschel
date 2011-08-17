@@ -20,6 +20,8 @@
 
 namespace herschel
 {
+  // -----------------------------------------------------------------------------
+
   //! TypeProperty implementation for the int32 type.
   class Int32TypeProperty : public TypeProperty
   {
@@ -91,6 +93,8 @@ namespace herschel
   };
 
 
+  // -----------------------------------------------------------------------------
+
   //! TypeProperty implementation for the int32 type.
   class UInt32TypeProperty : public TypeProperty
   {
@@ -158,6 +162,152 @@ namespace herschel
     virtual TypeEnumMaker* newBaseTypeEnumMaker() const
     {
       return new UInt32TypeEnumMaker;
+    }
+  };
+
+
+  // -----------------------------------------------------------------------------
+
+  //! TypeProperty implementation for the int16 type.
+  class Int16TypeProperty : public TypeProperty
+  {
+  public:
+    virtual const char* convFuncName() const
+    {
+      return "atom_2_int16";
+    }
+
+
+    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    {
+      return tools->wrapLoad(tools->makeIntAtom(value,
+                                                CodegenTools::kAtomInt16));
+    }
+
+
+    virtual const llvm::Type* getLLVMType() const
+    {
+      return llvm::Type::getInt16Ty(llvm::getGlobalContext());
+    }
+
+
+    virtual size_t getSlotSize() const
+    {
+      return 2; // llvm::Type::getInt16Ty(llvm::getGlobalContext());
+    }
+
+
+    virtual bool isBaseType() const
+    {
+      return true;
+    }
+
+
+    virtual bool isPlainType() const
+    {
+      return true;
+    }
+
+
+    virtual bool isSigned() const
+    {
+      return true;
+    }
+
+
+    virtual bool isAnyNumber() const
+    {
+      return true;
+    }
+
+
+    virtual bool isAnyInt() const
+    {
+      return true;
+    }
+
+
+    virtual int intTypeBitsize() const
+    {
+      return 16;
+    }
+
+    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    {
+      return new Int16TypeEnumMaker;
+    }
+  };
+
+
+  // -----------------------------------------------------------------------------
+
+  //! TypeProperty implementation for the uint16 type.
+  class UInt16TypeProperty : public TypeProperty
+  {
+  public:
+    virtual const char* convFuncName() const
+    {
+      return "atom_2_uint16";
+    }
+
+
+    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    {
+      return tools->wrapLoad(tools->makeIntAtom(value,
+                                                CodegenTools::kAtomUInt16));
+    }
+
+
+    virtual const llvm::Type* getLLVMType() const
+    {
+      return llvm::Type::getInt16Ty(llvm::getGlobalContext());
+    }
+
+
+    virtual size_t getSlotSize() const
+    {
+      return 2; // llvm::Type::getInt16Ty(llvm::getGlobalContext());
+    }
+
+
+    virtual bool isBaseType() const
+    {
+      return true;
+    }
+
+
+    virtual bool isPlainType() const
+    {
+      return true;
+    }
+
+
+    virtual bool isSigned() const
+    {
+      return false;
+    }
+
+
+    virtual bool isAnyNumber() const
+    {
+      return true;
+    }
+
+
+    virtual bool isAnyInt() const
+    {
+      return true;
+    }
+
+
+    virtual int intTypeBitsize() const
+    {
+      return 16;
+    }
+
+    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    {
+      return new UInt16TypeEnumMaker;
     }
   };
 };                              // namespace

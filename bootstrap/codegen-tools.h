@@ -45,9 +45,13 @@ namespace herschel
       kAtomInt32   = 0x04,
       kAtomUInt32  = 0x05,
       kAtomKeyword = 0x06,
+      kAtomInt16   = 0x07,
+      kAtomUInt16  = 0x08,
 
       kAtomInt32Array   = kAtomInt32 + 0x40,
       kAtomUInt32Array  = kAtomUInt32 + 0x40,
+      kAtomInt16Array   = kAtomInt16 + 0x40,
+      kAtomUInt16Array  = kAtomUInt16 + 0x40,
       kAtomCharArray    = kAtomChar + 0x40,
       kAtomKeywordArray = kAtomKeyword + 0x40,
     };
