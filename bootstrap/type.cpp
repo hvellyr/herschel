@@ -15,13 +15,14 @@
 #include "errcodes.h"
 #include "log.h"
 #include "predefined.h"
+#include "rootscope.h"
 #include "scope.h"
 #include "strbuf.h"
 #include "type.h"
 #include "typectx.h"
 #include "typeenum.h"
+#include "typeprops-bool.h"
 #include "typeprops-int.h"
-#include "rootscope.h"
 
 
 using namespace herschel;
@@ -1227,8 +1228,7 @@ Type::isBaseType() const
   }
 
   if (!nm.isEmpty()) {
-    if (nm == Names::kBoolTypeName ||
-        nm == Names::kCharTypeName ||
+    if (nm == Names::kCharTypeName ||
         nm == Names::kEofTypeName ||
         nm == Names::kFloat32TypeName ||
         nm == Names::kFloat64TypeName ||
@@ -1239,8 +1239,6 @@ Type::isBaseType() const
         nm == Names::kStringTypeName ||
         nm == Names::kInt8TypeName ||
         nm == Names::kUInt8TypeName ||
-        nm == Names::kInt16TypeName ||
-        nm == Names::kUInt16TypeName ||
         nm == Names::kInt64TypeName ||
         nm == Names::kUInt64TypeName)
       return true;
@@ -1265,15 +1263,12 @@ Type::isPlainType() const
     nm = typeName();
 
   if (!nm.isEmpty()) {
-    if (nm == Names::kBoolTypeName ||
-        nm == Names::kCharTypeName ||
+    if (nm == Names::kCharTypeName ||
         nm == Names::kFloat32TypeName ||
         nm == Names::kFloat64TypeName ||
         nm == Names::kFloat128TypeName ||
         nm == Names::kInt8TypeName ||
         nm == Names::kUInt8TypeName ||
-        nm == Names::kInt16TypeName ||
-        nm == Names::kUInt16TypeName ||
         nm == Names::kInt64TypeName ||
         nm == Names::kUInt64TypeName ||
         nm == String("clang|int"))
@@ -1300,8 +1295,7 @@ Type::newBaseTypeEnumMaker() const
 {
   if (fKind == kType_Ref) {
     String nm = typeName();
-    if      (nm == Names::kBoolTypeName)     return new BoolTypeEnumMaker;
-    else if (nm == Names::kCharTypeName)     return new CharTypeEnumMaker;
+    if      (nm == Names::kCharTypeName)     return new CharTypeEnumMaker;
     else if (nm == Names::kFloat32TypeName)  return new Float32TypeEnumMaker;
     else if (nm == Names::kFloat64TypeName)  return new Float64TypeEnumMaker;
     else if (nm == Names::kFloat128TypeName) return new Float128TypeEnumMaker;
@@ -1312,11 +1306,9 @@ Type::newBaseTypeEnumMaker() const
     else if (nm == Names::kStringTypeName)   return new StringTypeEnumMaker;
 
     else if (nm == Names::kInt8TypeName)     return new Int8TypeEnumMaker;
-    else if (nm == Names::kInt16TypeName)    return new Int16TypeEnumMaker;
     else if (nm == Names::kInt64TypeName)    return new Int64TypeEnumMaker;
 
     else if (nm == Names::kUInt8TypeName)    return new UInt8TypeEnumMaker;
-    else if (nm == Names::kUInt16TypeName)   return new UInt16TypeEnumMaker;
     else if (nm == Names::kUInt64TypeName)   return new UInt64TypeEnumMaker;
 
     const TypeProperty& prop = typeProperty();
@@ -1332,14 +1324,23 @@ const TypeProperty&
 Type::typeProperty(bool mustExist) const
 {
   static const InvalidTypeProperty invalidProperty;
+  static const Int16TypeProperty   int16Property;
+  static const UInt16TypeProperty  uint16Property;
   static const Int32TypeProperty   int32Property;
   static const UInt32TypeProperty  uint32Property;
+  static const BoolTypeProperty    boolProperty;
 
   String nm = typeName();
   if (nm == Names::kInt32TypeName)
     return int32Property;
   else if (nm == Names::kUInt32TypeName)
     return uint32Property;
+  else if (nm == Names::kInt16TypeName)
+    return int16Property;
+  else if (nm == Names::kUInt16TypeName)
+    return uint16Property;
+  else if (nm == Names::kBoolTypeName)
+    return boolProperty;
 
   if (mustExist) {
     hr_invalid((const char*)StrHelper(String("unhandled type: ") + typeId()));
@@ -1362,7 +1363,6 @@ Type::isSigned() const
        isBuiltinType(Names::kComplexTypeName) ||
        isBuiltinType(Names::kRationalTypeName) ||
        isBuiltinType(Names::kInt8TypeName) ||
-       isBuiltinType(Names::kInt16TypeName) ||
        isBuiltinType(Names::kInt64TypeName) ||
        isBuiltinType(Names::kFloat32TypeName) ||
        isBuiltinType(Names::kFloat64TypeName) ||
@@ -1384,8 +1384,6 @@ Type::isAnyNumber() const
        isBuiltinType(Names::kRationalTypeName) ||
        isBuiltinType(Names::kInt8TypeName) ||
        isBuiltinType(Names::kUInt8TypeName) ||
-       isBuiltinType(Names::kInt16TypeName) ||
-       isBuiltinType(Names::kUInt16TypeName) ||
        isBuiltinType(Names::kInt64TypeName) ||
        isBuiltinType(Names::kUInt64TypeName) ||
        isBuiltinType(Names::kFloat32TypeName) ||
@@ -1490,7 +1488,6 @@ bool
 Type::isAnySignedInt() const
 {
   if ( isBuiltinType(Names::kInt8TypeName) ||
-       isBuiltinType(Names::kInt16TypeName) ||
        isBuiltinType(Names::kInt64TypeName) )
     return true;
 
@@ -1505,7 +1502,6 @@ bool
 Type::isAnyUInt() const
 {
   if ( isBuiltinType(Names::kUInt8TypeName) ||
-       isBuiltinType(Names::kUInt16TypeName) ||
        isBuiltinType(Names::kUInt64TypeName) )
     return true;
 
@@ -3724,9 +3720,6 @@ namespace herschel
     if (ty.isBuiltinType(Names::kInt8TypeName) ||
         ty.isBuiltinType(Names::kUInt8TypeName))
       return 8;
-    else if (ty.isBuiltinType(Names::kInt16TypeName) ||
-             ty.isBuiltinType(Names::kUInt16TypeName))
-      return 16;
     else if (ty.isBuiltinType(Names::kInt64TypeName) ||
              ty.isBuiltinType(Names::kUInt64TypeName))
       return 64;

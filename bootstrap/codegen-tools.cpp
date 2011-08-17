@@ -246,15 +246,11 @@ CodegenTools::getConvFuncNameByType(const Type& type) const
 {
   if (type.typeId() == Names::kInt64TypeName)
     return "atom_2_int64";
-  else if (type.typeId() == Names::kInt16TypeName)
-    return "atom_2_int16";
   else if (type.typeId() == Names::kInt8TypeName)
     return "atom_2_int8";
 
   else if (type.typeId() == Names::kUInt64TypeName)
     return "atom_2_uint64";
-  else if (type.typeId() == Names::kUInt16TypeName)
-    return "atom_2_uint16";
   else if (type.typeId() == Names::kUInt8TypeName)
     return "atom_2_uint8";
   else if (type.typeId() == Names::kFloat32TypeName)
@@ -263,8 +259,6 @@ CodegenTools::getConvFuncNameByType(const Type& type) const
     return "atom_2_float64";
   else if (type.typeId() == Names::kCharTypeName)
     return "atom_2_char";
-  else if (type.typeId() == Names::kBoolTypeName)
-    return "atom_2_bool";
 
   else if (type.typeId() == Names::kKeywordTypeName)
     return "atom_2_keyword";
@@ -332,11 +326,7 @@ CodegenTools::emitPackCode(const Type& dstType, TypeConvKind convKind,
     case kAtom2PlainConv:
       return makeTypeCastAtomToPlain(value, dstType);
     case kPlain2AtomConv:
-      if (valType.typeId() == Names::kBoolTypeName)
-        return wrapLoad(makeBoolAtom(value));
-
       return valType.typeProperty().emitPackCode(this, value);
-
 
     case kTypeCheckConv:
       // fprintf(stderr, "Not implemented yet\n");
