@@ -22,6 +22,7 @@
 #include "typectx.h"
 #include "typeenum.h"
 #include "typeprops-bool.h"
+#include "typeprops-float.h"
 #include "typeprops-int.h"
 
 
@@ -1230,9 +1231,6 @@ Type::isBaseType() const
   if (!nm.isEmpty()) {
     if (nm == Names::kCharTypeName ||
         nm == Names::kEofTypeName ||
-        nm == Names::kFloat32TypeName ||
-        nm == Names::kFloat64TypeName ||
-        nm == Names::kFloat128TypeName ||
         nm == Names::kKeywordTypeName ||
         nm == Names::kNilTypeName ||
         nm == Names::kRationalTypeName ||
@@ -1260,9 +1258,6 @@ Type::isPlainType() const
 
   if (!nm.isEmpty()) {
     if (nm == Names::kCharTypeName ||
-        nm == Names::kFloat32TypeName ||
-        nm == Names::kFloat64TypeName ||
-        nm == Names::kFloat128TypeName ||
         nm == String("clang|int"))
       return true;
 
@@ -1288,9 +1283,6 @@ Type::newBaseTypeEnumMaker() const
   if (fKind == kType_Ref) {
     String nm = typeName();
     if      (nm == Names::kCharTypeName)     return new CharTypeEnumMaker;
-    else if (nm == Names::kFloat32TypeName)  return new Float32TypeEnumMaker;
-    else if (nm == Names::kFloat64TypeName)  return new Float64TypeEnumMaker;
-    else if (nm == Names::kFloat128TypeName) return new Float128TypeEnumMaker;
     else if (nm == Names::kEofTypeName)      return new EofTypeEnumMaker;
     else if (nm == Names::kKeywordTypeName)  return new KeywordTypeEnumMaker;
     else if (nm == Names::kNilTypeName)      return new NilTypeEnumMaker;
@@ -1319,6 +1311,9 @@ Type::typeProperty(bool mustExist) const
   static const Int64TypeProperty   int64Property;
   static const UInt64TypeProperty  uint64Property;
   static const BoolTypeProperty    boolProperty;
+  static const Float32TypeProperty float32Property;
+  static const Float64TypeProperty float64Property;
+  static const Float128TypeProperty float128Property;
 
   String nm = typeName();
   if (nm == Names::kInt32TypeName)
@@ -1337,6 +1332,12 @@ Type::typeProperty(bool mustExist) const
     return int64Property;
   else if (nm == Names::kUInt64TypeName)
     return uint64Property;
+  else if (nm == Names::kFloat32TypeName)
+    return float32Property;
+  else if (nm == Names::kFloat64TypeName)
+    return float64Property;
+  else if (nm == Names::kFloat128TypeName)
+    return float128Property;
 
   else if (nm == Names::kBoolTypeName)
     return boolProperty;
@@ -1360,10 +1361,7 @@ Type::isSigned() const
 {
   if ( isBuiltinType(Names::kNumberTypeName) ||
        isBuiltinType(Names::kComplexTypeName) ||
-       isBuiltinType(Names::kRationalTypeName) ||
-       isBuiltinType(Names::kFloat32TypeName) ||
-       isBuiltinType(Names::kFloat64TypeName) ||
-       isBuiltinType(Names::kFloat128TypeName) )
+       isBuiltinType(Names::kRationalTypeName) )
     return true;
 
   const TypeProperty& prop = typeProperty(!K(mustExist));
@@ -1378,10 +1376,7 @@ Type::isAnyNumber() const
 {
   if ( isBuiltinType(Names::kNumberTypeName) ||
        isBuiltinType(Names::kComplexTypeName) ||
-       isBuiltinType(Names::kRationalTypeName) ||
-       isBuiltinType(Names::kFloat32TypeName) ||
-       isBuiltinType(Names::kFloat64TypeName) ||
-       isBuiltinType(Names::kFloat128TypeName) )
+       isBuiltinType(Names::kRationalTypeName) )
     return true;
 
   const TypeProperty& prop = typeProperty(!K(mustExist));
@@ -1464,9 +1459,10 @@ Type::isBool() const
 bool
 Type::isAnyFloat() const
 {
-  return ( isBuiltinType(Names::kFloat32TypeName) ||
-           isBuiltinType(Names::kFloat64TypeName) ||
-           isBuiltinType(Names::kFloat128TypeName) );
+  const TypeProperty& prop = typeProperty(!K(mustExist));
+  if (prop.isValid())
+    return prop.isAnyFloat();
+  return false;
 }
 
 
@@ -3677,15 +3673,7 @@ namespace herschel
   int
   floatTypeBitsize(const Type& ty)
   {
-    if (ty.isBuiltinType(Names::kFloat32TypeName))
-      return 32;
-    else if (ty.isBuiltinType(Names::kFloat64TypeName))
-      return 64;
-    else if (ty.isBuiltinType(Names::kFloat128TypeName))
-      return 128;
-
-    hr_invalid("unhandled floating type");
-    return 0;
+    return ty.typeProperty().typeBitsize();
   }
 
 
@@ -3702,7 +3690,7 @@ namespace herschel
   int
   intTypeBitsize(const Type& ty)
   {
-    return ty.typeProperty().intTypeBitsize();
+    return ty.typeProperty().typeBitsize();
   }
 
 

@@ -234,16 +234,6 @@ CodegenTypeUtils::getType(const Type& type) const
     return llvm::Type::getInt32Ty(context());
   }
 
-  else if (typeId == Names::kFloat32TypeName) {
-    return llvm::Type::getFloatTy(context());
-  }
-  else if (typeId == Names::kFloat64TypeName) {
-    return llvm::Type::getDoubleTy(context());
-  }
-  // else if (typeId == Names::kFloat128TypeName) {
-  //   return llvm::Type::getInt1Ty(context());
-  // }
-
   //-------------------- array types
 
   else if (typeId == String("lang|Int32[]") ||
@@ -274,23 +264,9 @@ CodegenTypeUtils::getSlotSize(const Type& type) const
   else if (typeId == Names::kClangCharTypeName)
     return 1; // llvm::Type::getInt8Ty(context());
 
-
   else if (typeId == Names::kCharTypeName)
     return 4; // llvm::Type::getInt32Ty(context());
 
-  else if (typeId == Names::kBoolTypeName)
-    return 1; // llvm::Type::getInt1Ty(context());
-
-
-  else if (typeId == Names::kFloat32TypeName)
-    return 4; // llvm::Type::getFloatTy(context());
-
-  else if (typeId == Names::kFloat64TypeName)
-    return 8; // llvm::Type::getDoubleTy(context());
-
-  // else if (typeId == Names::kFloat128TypeName)
-  //   return llvm::Type::getInt1Ty(context());
-  // }
 
   const TypeProperty& prop = type.typeProperty(!K(mustExist));
   if (prop.isValid())
