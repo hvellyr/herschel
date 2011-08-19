@@ -404,7 +404,7 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
         else {
           llvm::Value* convertedRetv =
             tools()->makeTypeCastAtomToPlain(tools()->wrapLoad(retv),
-                                            Type::newTypeRef("clang|int"));
+                                            Type::newTypeRef(MID_clang_IntTypeName));
           builder().CreateStore(convertedRetv, func.fFunc->arg_begin());
         }
       }
