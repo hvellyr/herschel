@@ -299,7 +299,7 @@ CodegenTools::getConvFuncNameByType(const Type& type) const
 const llvm::Type*
 CodegenTools::getConvTypeByType(const Type& type) const
 {
-  if (type.typeId() == String("lang|Keyword"))
+  if (type.typeId() == Names::kKeywordTypeName)
     return llvm::Type::getInt8PtrTy(context());
 
   return types()->getType(type);
