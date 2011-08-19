@@ -69,6 +69,23 @@ namespace herschel
   };
 
 
+  //! TypeProperty implementation for the clang|int type.  TODO: shouldn't
+  //! this be 32/64 depending on host platform?
+  class ClangIntTypeProperty : public BaseIntTypeProperty<Int32TypeEnumMaker,
+                                                          32,
+                                                          K(issigned),
+                                                          CodegenTools::kAtomInt32>
+  {
+  public:
+    virtual const char* convFuncName() const { return "atom_2_int32"; }
+
+    virtual const llvm::Type* getLLVMType() const
+    {
+      return llvm::Type::getInt32Ty(llvm::getGlobalContext());
+    }
+  };
+
+
   // -----------------------------------------------------------------------------
 
   //! TypeProperty implementation for the int32 type.

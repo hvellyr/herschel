@@ -223,21 +223,10 @@ CodegenTypeUtils::getType(const Type& type) const
   // tyerror(type, "Other type");
   // fprintf(stderr, " ---> %s\n", (const char*)StrHelper(typeId));
 
-  if (typeId == Names::kClangIntTypeName) {
-    return llvm::Type::getInt32Ty(context());
-  }
-  else if (typeId == Names::kClangCharTypeName) {
-    return llvm::Type::getInt8Ty(context());
-  }
-
-  else if (typeId == Names::kCharTypeName) {
-    return llvm::Type::getInt32Ty(context());
-  }
-
   //-------------------- array types
 
-  else if (typeId == String("lang|Int32[]") ||
-           typeId == String("lang|UInt32[]"))
+  if (typeId == String("lang|Int32[]") ||
+      typeId == String("lang|UInt32[]"))
   {
     return getAtomType();
   }
@@ -256,18 +245,6 @@ CodegenTypeUtils::getType(const Type& type) const
 size_t
 CodegenTypeUtils::getSlotSize(const Type& type) const
 {
-  String typeId = type.typeId();
-  if (typeId == Names::kClangIntTypeName)
-    // TODO: shouldn't this be 32/64 depending on host platform?
-    return 4; // llvm::Type::getInt32Ty(context());
-
-  else if (typeId == Names::kClangCharTypeName)
-    return 1; // llvm::Type::getInt8Ty(context());
-
-  else if (typeId == Names::kCharTypeName)
-    return 4; // llvm::Type::getInt32Ty(context());
-
-
   const TypeProperty& prop = type.typeProperty(!K(mustExist));
   if (prop.isValid())
     return prop.getSlotSize();

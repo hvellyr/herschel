@@ -22,6 +22,7 @@
 #include "typectx.h"
 #include "typeenum.h"
 #include "typeprops-bool.h"
+#include "typeprops-char.h"
 #include "typeprops-float.h"
 #include "typeprops-int.h"
 
@@ -1229,8 +1230,7 @@ Type::isBaseType() const
   }
 
   if (!nm.isEmpty()) {
-    if (nm == Names::kCharTypeName ||
-        nm == Names::kEofTypeName ||
+    if (nm == Names::kEofTypeName ||
         nm == Names::kKeywordTypeName ||
         nm == Names::kNilTypeName ||
         nm == Names::kRationalTypeName ||
@@ -1252,19 +1252,9 @@ Type::isPlainType() const
   if (isArray())
     return false;
 
-  String nm;
-  if (isRef() || isType() || isClass())
-    nm = typeName();
-
-  if (!nm.isEmpty()) {
-    if (nm == Names::kCharTypeName ||
-        nm == String("clang|int"))
-      return true;
-
-    const TypeProperty& prop = typeProperty(!K(mustExist));
-    if (prop.isValid())
-      return prop.isPlainType();
-  }
+  const TypeProperty& prop = typeProperty(!K(mustExist));
+  if (prop.isValid())
+    return prop.isPlainType();
 
   return false;
 }
@@ -1282,8 +1272,7 @@ Type::newBaseTypeEnumMaker() const
 {
   if (fKind == kType_Ref) {
     String nm = typeName();
-    if      (nm == Names::kCharTypeName)     return new CharTypeEnumMaker;
-    else if (nm == Names::kEofTypeName)      return new EofTypeEnumMaker;
+    if (nm == Names::kEofTypeName)      return new EofTypeEnumMaker;
     else if (nm == Names::kKeywordTypeName)  return new KeywordTypeEnumMaker;
     else if (nm == Names::kNilTypeName)      return new NilTypeEnumMaker;
     else if (nm == Names::kRationalTypeName) return new RationalTypeEnumMaker;
@@ -1301,19 +1290,22 @@ Type::newBaseTypeEnumMaker() const
 const TypeProperty&
 Type::typeProperty(bool mustExist) const
 {
-  static const InvalidTypeProperty invalidProperty;
-  static const Int8TypeProperty    int8Property;
-  static const UInt8TypeProperty   uint8Property;
-  static const Int16TypeProperty   int16Property;
-  static const UInt16TypeProperty  uint16Property;
-  static const Int32TypeProperty   int32Property;
-  static const UInt32TypeProperty  uint32Property;
-  static const Int64TypeProperty   int64Property;
-  static const UInt64TypeProperty  uint64Property;
-  static const BoolTypeProperty    boolProperty;
-  static const Float32TypeProperty float32Property;
-  static const Float64TypeProperty float64Property;
-  static const Float128TypeProperty float128Property;
+  static const InvalidTypeProperty   invalidProperty;
+  static const Int8TypeProperty      int8Property;
+  static const UInt8TypeProperty     uint8Property;
+  static const Int16TypeProperty     int16Property;
+  static const UInt16TypeProperty    uint16Property;
+  static const Int32TypeProperty     int32Property;
+  static const UInt32TypeProperty    uint32Property;
+  static const Int64TypeProperty     int64Property;
+  static const UInt64TypeProperty    uint64Property;
+  static const BoolTypeProperty      boolProperty;
+  static const Float32TypeProperty   float32Property;
+  static const Float64TypeProperty   float64Property;
+  static const Float128TypeProperty  float128Property;
+  static const CharTypeProperty      charProperty;
+  static const ClangCharTypeProperty clangCharProperty;
+  static const ClangIntTypeProperty  clangIntProperty;
 
   String nm = typeName();
   if (nm == Names::kInt32TypeName)
@@ -1341,6 +1333,13 @@ Type::typeProperty(bool mustExist) const
 
   else if (nm == Names::kBoolTypeName)
     return boolProperty;
+  else if (nm == Names::kCharTypeName)
+    return charProperty;
+
+  else if (nm == Names::kClangCharTypeName)
+    return clangCharProperty;
+  else if (nm == Names::kClangIntTypeName)
+    return clangIntProperty;
 
   if (mustExist) {
     hr_invalid((const char*)StrHelper(String("unhandled type: ") + typeId()));
