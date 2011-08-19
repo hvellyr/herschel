@@ -133,6 +133,19 @@ CodegenTools::makeKeywordAtom(const String& keyword)
 }
 
 
+llvm::Value*
+CodegenTools::makeCharAtom(llvm::Value* val)
+{
+  llvm::Function *curFunction = builder().GetInsertBlock()->getParent();
+  llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("char"),
+                                                  fGenerator->fTypes->getAtomType());
+
+  setAtom(atom, kAtomChar, val);
+
+  return atom;
+}
+
+
 //------------------------------------------------------------------------------
 
 llvm::Function*
@@ -218,6 +231,15 @@ CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
     hr_invalid("code missing");
   }
 
+  else if (typid == kAtomChar) {
+    llvm::Value* val = ( fGenerator->is64Bit()
+                         ? builder().CreateIntCast(value,
+                                                   llvm::Type::getInt64Ty(context()),
+                                                   K(isSigned),
+                                                   "tmp")
+                         : value );
+    builder().CreateStore(val, slot);
+  }
   else if (typid == kAtomKeyword) {
     builder().CreateStore(createCastPtrToNativeInt(value), slot);
   }
@@ -282,14 +304,8 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
 const char*
 CodegenTools::getConvFuncNameByType(const Type& type) const
 {
-  if (type.typeId() == Names::kCharTypeName)
-    return "atom_2_char";
-
-  else if (type.typeId() == Names::kKeywordTypeName)
+  if (type.typeId() == Names::kKeywordTypeName)
     return "atom_2_keyword";
-
-  else if (type.typeId() == Names::kClangIntTypeName) // TODO
-    return "atom_2_int32";
 
   const TypeProperty& prop = type.typeProperty();
   return prop.convFuncName();

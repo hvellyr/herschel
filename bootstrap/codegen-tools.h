@@ -83,7 +83,10 @@ namespace herschel
     llvm::Value* makeBoolAtom(llvm::Value* val);
     llvm::Value* makeBoolAtom(bool val);
 
+    llvm::Value* makeCharAtom(llvm::Value* val);
+
     llvm::Value* makeKeywordAtom(const String& keyword);
+
 
     llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
                                              const String& name,
