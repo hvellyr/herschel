@@ -245,6 +245,9 @@ namespace herschel
     // a literal typed constructor for bool values
     Token(const SrcPos& where, TokenType type, bool value);
 
+    static Token newInt(const SrcPos& where, int bitwidth, int64_t value);
+    static Token newUInt(const SrcPos& where, int bitwidth, uint64_t value);
+
     // copy ctor
     Token(const Token& other);
     Token& operator=(const Token& other);
@@ -300,7 +303,8 @@ namespace herschel
     TokenType leftToken() const;
     TokenType rightToken() const;
     bool boolValue() const;
-    int intValue() const;
+    int64_t intValue() const;
+    int bitwidth() const;
     double floatValue() const;
     Rational rationalValue() const;
     String stringValue() const;

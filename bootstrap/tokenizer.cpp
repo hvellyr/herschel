@@ -332,6 +332,68 @@ Tokenizer::readIntNumberPart(bool acceptHex)
 
 
 Token
+Tokenizer::toInt(const SrcPos& startPos, const String& token,
+                 int radix, int bitwidth, bool isUnsigned, int sign)
+{
+  String tmptok;
+  if (!isUnsigned && sign < 0)
+    tmptok = String("-") + token;
+  else
+    tmptok = token;
+
+  if (isUnsigned) {
+    uint64_t tmp64 = tmptok.toUInt64(radix);
+
+    switch (bitwidth) {
+    case 8:
+      if (tmp64 > UINT8_MAX)
+        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+      return Token::newUInt(startPos, bitwidth, int64_t(uint8_t(tmp64)));
+
+    case 16:
+      if (tmp64 > UINT16_MAX)
+        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+      return Token::newUInt(startPos, bitwidth, int64_t(uint16_t(tmp64)));
+
+    case 32:
+      if (tmp64 > UINT32_MAX)
+        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+      return Token::newUInt(startPos, bitwidth, int64_t(uint32_t(tmp64)));
+
+    case 64:
+      return Token::newUInt(startPos, bitwidth, int64_t(tmp64));
+    }
+  }
+  else {
+    int64_t tmp64 = tmptok.toInt64(radix);
+
+    switch (bitwidth) {
+    case 8:
+      if (tmp64 < INT8_MIN || tmp64 > INT8_MAX)
+        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+      return Token::newInt(startPos, bitwidth, int64_t(int8_t(tmp64)));
+
+    case 16:
+      if (tmp64 < INT16_MIN || tmp64 > INT16_MAX)
+        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+      return Token::newInt(startPos, bitwidth, int64_t(int16_t(tmp64)));
+
+    case 32:
+      if (tmp64 < INT32_MIN || tmp64 > INT32_MAX)
+        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+      return Token::newInt(startPos, bitwidth, int64_t(int32_t(tmp64)));
+
+    case 64:
+      return Token::newInt(startPos, bitwidth, tmp64);
+    }
+  }
+
+  hr_invalid("bad number");
+  return Token();
+}
+
+
+Token
 Tokenizer::readNumber(const SrcPos& startPos, int sign)
 {
   TokenType type = kInt;
@@ -343,6 +405,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
   int radix = 10;
   bool isImaginary = false;
   bool isUnsigned = false;
+  int bitwidth = 32;
 
   hr_assert(!first.isEmpty());
 
@@ -379,7 +442,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
       radix = 16;
     nextChar();
   }
-  else if (fCC == 't' || fCC == 'T') {
+  else if (fCC == 'q' || fCC == 'Q') {
     if (type != kInt)
       errorf(srcpos(), E_BadNumberNotation,
              "hexadecimal notation for unappropriate number type");
@@ -390,7 +453,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
   if (fCC == 'y' || fCC == 'Y') {
     if (type != kInt)
       errorf(srcpos(), E_BadNumberNotation,
-             "hexadecimal notation for unappropriate number type");
+             "binary notation for unappropriate number type");
     else
       radix = 2;
     nextChar();
@@ -398,11 +461,41 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
 
   if (fCC == 'u' || fCC == 'U') {
     nextChar();
-    if (type != kInt)
+    if (type != kInt) {
       errorf(srcpos(), E_BadNumberNotation,
              "unsigned notation for unappropriate number type");
-    else
+    }
+    else {
       isUnsigned = true;
+      if (sign < 0)
+        errorf(srcpos(), E_BadNumberNotation,
+               "negative unsigned number.  Sign ignored");
+    }
+  }
+
+  if (fCC == 'l' || fCC == 'L') {
+    nextChar();
+    if (type == kInt || type == kFloat)
+      bitwidth = 64;
+    else
+      errorf(srcpos(), E_BadNumberNotation,
+             "long number notation for unappropriate number type");
+  }
+  else if (fCC == 's' || fCC == 'S') {
+    nextChar();
+    if (type == kInt)
+      bitwidth = 16;
+    else
+      errorf(srcpos(), E_BadNumberNotation,
+             "long number notation for unappropriate number type");
+  }
+  else if (fCC == 't' || fCC == 'T') {
+    nextChar();
+    if (type == kInt)
+      bitwidth = 8;
+    else
+      errorf(srcpos(), E_BadNumberNotation,
+             "long number notation for unappropriate number type");
   }
 
   if (fCC == 'i' || fCC == 'I') {
@@ -414,10 +507,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
   Token token;
   switch (type) {
   case kInt:
-    if (isUnsigned)
-      token = Token(startPos, kUInt, first.toInt(radix));
-    else
-      token = Token(startPos, kInt, first.toInt(radix) * sign);
+    token = toInt(startPos, first, radix, bitwidth, isUnsigned, sign);
     break;
 
   case kFloat:
@@ -427,6 +517,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
       if (!exponent.isEmpty())
         tmp << "e" << (expSign < 0 ? '-' : '+') << exponent;
 
+      // TODO bitwidth
       token = Token(startPos, kFloat, tmp.toString().toDouble() * sign);
     }
     break;

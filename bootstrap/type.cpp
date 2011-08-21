@@ -1073,14 +1073,44 @@ Type::newAny(bool isValue)
 Type
 Type::newInt32(bool isValue)
 {
-  return newTypeRef(Names::kInt32TypeName, isValue);
+  return newInt(32, isValue);
 }
 
 
 Type
 Type::newUInt32(bool isValue)
 {
-  return newTypeRef(Names::kUInt32TypeName, isValue);
+  return newUInt(32, isValue);
+}
+
+
+Type
+Type::newInt(int bitwidth, bool isValue)
+{
+  switch (bitwidth) {
+  case  8: return newTypeRef(Names::kInt8TypeName, isValue);
+  case 16: return newTypeRef(Names::kInt16TypeName, isValue);
+  case 32: return newTypeRef(Names::kInt32TypeName, isValue);
+  case 64: return newTypeRef(Names::kInt64TypeName, isValue);
+  }
+
+  hr_invalid("");
+  return Type();
+}
+
+
+Type
+Type::newUInt(int bitwidth, bool isValue)
+{
+  switch (bitwidth) {
+  case  8: return newTypeRef(Names::kUInt8TypeName, isValue);
+  case 16: return newTypeRef(Names::kUInt16TypeName, isValue);
+  case 32: return newTypeRef(Names::kUInt32TypeName, isValue);
+  case 64: return newTypeRef(Names::kUInt64TypeName, isValue);
+  }
+
+  hr_invalid("");
+  return Type();
 }
 
 

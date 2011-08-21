@@ -92,6 +92,8 @@ namespace herschel
     Char mapCharNameToChar(const SrcPos& startPos, const String& charnm);
     String readIntNumberPart(bool acceptHex);
 
+    Token toInt(const SrcPos& startPos, const String& token,
+                int radix, int reqbitsize, bool isUnsigned, int sign);
 
 
     //-------- data member

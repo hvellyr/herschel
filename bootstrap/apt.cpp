@@ -600,10 +600,9 @@ BaseNumberNode::isImaginary() const
 
 //----------------------------------------------------------------------------
 
-IntNode::IntNode(const SrcPos& srcpos, int value,
-                 bool isImaginary,
+IntNode::IntNode(const SrcPos& srcpos, int64_t value, bool isImaginary,
                  const Type& type)
-  : NumberNode<int>(srcpos, value, isImaginary, type)
+  : NumberNode<int64_t>(srcpos, value, isImaginary, type)
 {
 }
 
