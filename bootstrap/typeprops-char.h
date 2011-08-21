@@ -14,6 +14,7 @@
 #include "typeprops.h"
 #include "typeenum.h"
 #include "codegen-tools.h"
+#include "codegen-types.h"
 
 #include "llvm/DerivedTypes.h"
 #include "llvm/LLVMContext.h"
@@ -33,12 +34,12 @@ namespace herschel
       return tools->wrapLoad(tools->makeCharAtom(value));
     }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt32Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt32Ty(typeUtils->context());
     }
 
-    virtual size_t getSlotSize() const { return 4; }
+    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const { return 4; }
 
     virtual bool isBaseType() const { return true; }
 
@@ -72,12 +73,12 @@ namespace herschel
       return tools->wrapLoad(tools->makeIntAtom(value, CodegenTools::kAtomInt8));
     }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt8Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt8Ty(typeUtils->context());
     }
 
-    virtual size_t getSlotSize() const { return 1; }
+    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const { return 1; }
 
     virtual bool isBaseType() const { return true; }
 

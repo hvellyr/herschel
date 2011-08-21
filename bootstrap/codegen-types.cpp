@@ -236,9 +236,19 @@ CodegenTypeUtils::getType(const Type& type) const
 
   const TypeProperty& prop = type.typeProperty(!K(mustExist));
   if (prop.isValid())
-    return prop.getLLVMType();
+    return prop.getLLVMType(this);
 
   return getAtomType();
+}
+
+
+size_t
+CodegenTypeUtils::getAtomTypeSize() const
+{
+  // all other types are atoms
+  const llvm::StructLayout* layout = generator()->targetData()
+    ->getStructLayout((const llvm::StructType*)getAtomType());
+  return layout->getSizeInBytes();
 }
 
 
@@ -247,12 +257,10 @@ CodegenTypeUtils::getSlotSize(const Type& type) const
 {
   const TypeProperty& prop = type.typeProperty(!K(mustExist));
   if (prop.isValid())
-    return prop.getSlotSize();
+    return prop.getSlotSize(this);
 
   // all other types are atoms
-  const llvm::StructLayout* layout = generator()->targetData()
-    ->getStructLayout((const llvm::StructType*)getAtomType());
-  return layout->getSizeInBytes();
+  return getAtomTypeSize();
 }
 
 

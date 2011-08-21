@@ -8,8 +8,8 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeprops_bool_h
-#define bootstrap_typeprops_bool_h
+#ifndef bootstrap_typeprops_keyword_h
+#define bootstrap_typeprops_keyword_h
 
 #include "typeprops.h"
 #include "typeenum.h"
@@ -24,26 +24,30 @@ namespace herschel
   // -----------------------------------------------------------------------------
 
   //! TypeProperty implementation for the bool type.
-  class BoolTypeProperty : public TypeProperty
+  class KeywordTypeProperty : public TypeProperty
   {
   public:
-    virtual const char* convFuncName() const { return "atom_2_bool"; }
+    virtual const char* convFuncName() const { return "atom_2_keyword"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
-      return tools->wrapLoad(tools->makeBoolAtom(value));
+      hr_invalid("keywords are atoms always");
+      return NULL;
     }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt1Ty(typeUtils->context());
+      return typeUtils->getAtomType();
     }
 
-    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const { return 1; }
+    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const
+    {
+      return typeUtils->getAtomTypeSize();
+    }
 
     virtual bool isBaseType() const { return true; }
 
-    virtual bool isPlainType() const { return true; }
+    virtual bool isPlainType() const { return false; }
 
     virtual bool isSigned() const { return false; }
 
@@ -57,9 +61,9 @@ namespace herschel
 
     virtual TypeEnumMaker* newBaseTypeEnumMaker() const
     {
-      return new BoolTypeEnumMaker;
+      return new KeywordTypeEnumMaker;
     }
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeprops_bool_h
+#endif                          // bootstrap_typeprops_keyword_h

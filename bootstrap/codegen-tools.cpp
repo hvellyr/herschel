@@ -304,9 +304,6 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
 const char*
 CodegenTools::getConvFuncNameByType(const Type& type) const
 {
-  if (type.typeId() == Names::kKeywordTypeName)
-    return "atom_2_keyword";
-
   const TypeProperty& prop = type.typeProperty();
   return prop.convFuncName();
 }

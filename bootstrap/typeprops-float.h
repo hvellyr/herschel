@@ -23,7 +23,7 @@ namespace herschel
   template<typename EnumMaker, int bitsize>
   class BaseFloatTypeProperty : public TypeProperty
   {
-    virtual size_t getSlotSize() const { return bitsize / 8; }
+    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const { return bitsize / 8; }
 
     virtual bool isBaseType() const { return true; }
 
@@ -61,9 +61,9 @@ namespace herschel
                                                   CodegenTools::kAtomFloat32));
     }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getFloatTy(llvm::getGlobalContext());
+      return llvm::Type::getFloatTy(typeUtils->context());
     }
   };
 
@@ -82,9 +82,9 @@ namespace herschel
       return NULL;
     }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getDoubleTy(llvm::getGlobalContext());
+      return llvm::Type::getDoubleTy(typeUtils->context());
     }
   };
 
@@ -103,9 +103,9 @@ namespace herschel
       return NULL;
     }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getFP128Ty(llvm::getGlobalContext());
+      return llvm::Type::getFP128Ty(typeUtils->context());
     }
   };
 };                              // namespace
