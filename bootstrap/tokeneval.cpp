@@ -30,8 +30,8 @@ TokenEvalContext::evalAdd(const Token& lexpr, const Token& rexpr) const
   if (left.isInt()) {
     int value = left.intValue();
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kInt, value + right.intValue());
+      return Token::newInt(left.srcpos(),
+                   left.bitwidth(), value + right.intValue());
     else if (right.isFloat())
       return Token(left.srcpos(),
                    kFloat, double(value) + right.floatValue());
@@ -83,8 +83,8 @@ TokenEvalContext::evalMinus(const Token& lexpr, const Token& rexpr) const
   if (left.isInt()) {
     int value = left.intValue();
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kInt, value - right.intValue());
+      return Token::newInt(left.srcpos(),
+                   left.bitwidth(), value - right.intValue());
     else if (right.isFloat())
       return Token(left.srcpos(),
                    kFloat, double(value) - right.floatValue());
@@ -136,8 +136,8 @@ TokenEvalContext::evalMultiply(const Token& lexpr, const Token& rexpr) const
   if (left.isInt()) {
     int value = left.intValue();
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kInt, value * right.intValue());
+      return Token::newInt(left.srcpos(),
+                           left.bitwidth(), value * right.intValue());
     else if (right.isFloat())
       return Token(left.srcpos(),
                    kFloat, double(value) * right.floatValue());
@@ -192,8 +192,8 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kInt, value / right.intValue());
+      return Token::newInt(left.srcpos(),
+                           left.bitwidth(), value / right.intValue());
     else if (right.isFloat())
       return Token(left.srcpos(),
                    kFloat, double(value) / right.floatValue());
@@ -278,8 +278,8 @@ TokenEvalContext::evalRemainder(const Token& lexpr, const Token& rexpr) const
       if (right.intValue() == 0)
         throw DivisionByZeroException();
 
-      return Token(left.srcpos(),
-                   kInt, left.intValue() % right.intValue());
+      return Token::newInt(left.srcpos(),
+                           left.bitwidth(), left.intValue() % right.intValue());
     }
   }
 
@@ -374,7 +374,8 @@ TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
       else
         return Token(left.srcpos(), kInt, -1);
     case kInt:
-      return Token(left.srcpos(), kInt, left.intValue() - right.intValue());
+      return Token::newInt(left.srcpos(),
+                           left.bitwidth(), left.intValue() - right.intValue());
     case kFloat:
       if (left.floatValue() < right.floatValue())
         return Token(left.srcpos(), kInt, -1);
@@ -390,8 +391,8 @@ TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
       else
         return Token(left.srcpos(), kInt, 0);
     case kChar:
-      return Token(left.srcpos(),
-                   kInt, left.intValue() - right.intValue());
+      return Token::newInt(left.srcpos(),
+                           left.bitwidth(), left.intValue() - right.intValue());
 
     default:
       throw BadExpressionException(fromInt(__LINE__));

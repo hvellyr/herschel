@@ -140,12 +140,13 @@ namespace herschel
   class NumberTokenImpl : public TokenImpl
   {
   public:
-    NumberTokenImpl(TokenType type, int value)
+    NumberTokenImpl(TokenType type, int bitwidth, int64_t value)
       : fType(type),
         fBoolValue(false),
         fIntValue(value),
         fDoubleValue(0.0),
-        fIsImaginary(false)
+        fIsImaginary(false),
+        fBitWidth(bitwidth)
     {
       hr_assert(type != kBool);
     }
@@ -156,17 +157,19 @@ namespace herschel
         fBoolValue(value),
         fIntValue(0),
         fDoubleValue(0.0),
-        fIsImaginary(false)
+        fIsImaginary(false),
+        fBitWidth(1)
     {
       hr_assert(type == kBool);
     }
 
-    NumberTokenImpl(TokenType type, double value)
+    NumberTokenImpl(TokenType type, int bitwidth, double value)
       : fType(type),
         fBoolValue(false),
         fIntValue(0),
         fDoubleValue(value),
-        fIsImaginary(false)
+        fIsImaginary(false),
+        fBitWidth(bitwidth)
     { }
 
     NumberTokenImpl(TokenType type, const Rational& rat)
@@ -175,7 +178,8 @@ namespace herschel
         fIntValue(0),
         fRationalValue(rat),
         fDoubleValue(0.0),
-        fIsImaginary(false)
+        fIsImaginary(false),
+        fBitWidth(0)
     { }
 
 
@@ -192,9 +196,11 @@ namespace herschel
         case kInt:
         case kUInt:
           return ( fIntValue == other.intValue() &&
+                   //fBitWidth == other.fBitWidth() &&
                    fIsImaginary == other.isImaginary() );
         case kFloat:
           return ( fDoubleValue == other.floatValue() &&
+                   //fBitWidth == other.fBitWidth() &&
                    fIsImaginary == other.isImaginary() );
         case kRational:
           return ( fRationalValue == other.rationalValue() &&
@@ -240,6 +246,40 @@ namespace herschel
     }
 
 
+    static const char* intTypeTag(int bitwidth)
+    {
+      switch (bitwidth) {
+      case 8:  return "type='int8'";
+      case 16: return "type='int16'";
+      case 32: return "type='int'";
+      case 64: return "type='int64'";
+      }
+      hr_invalid("");
+      return "";
+    }
+
+    static const char* uintTypeTag(int bitwidth)
+    {
+      switch (bitwidth) {
+      case 8:  return "type='uint8'";
+      case 16: return "type='uint16'";
+      case 32: return "type='uint'";
+      case 64: return "type='uint64'";
+      }
+      hr_invalid("");
+      return "";
+    }
+
+    static const char* floatTypeTag(int bitwidth)
+    {
+      switch (bitwidth) {
+      case 32:  return "type='float32'";
+      case 64: return "type='float'";
+      }
+      hr_invalid("");
+      return "";
+    }
+
     virtual void toPort(Port<Octet>* port) const
     {
       switch (fType) {
@@ -250,13 +290,13 @@ namespace herschel
         xml::displayTagAttr(port, "lit", "type='bool'", toString());
         break;
       case kInt:
-        xml::displayTagAttr(port, "lit", "type='int'", toString());
+        xml::displayTagAttr(port, "lit", intTypeTag(fBitWidth), toString());
         break;
       case kUInt:
-        xml::displayTagAttr(port, "lit", "type='uint'", toString());
+        xml::displayTagAttr(port, "lit", uintTypeTag(fBitWidth), toString());
         break;
       case kFloat:
-        xml::displayTagAttr(port, "lit", "type='float'", toString());
+        xml::displayTagAttr(port, "lit", floatTypeTag(fBitWidth), toString());
         break;
       case kRational:
         xml::displayTagAttr(port, "lit", "type='ratio'", toString());
@@ -275,10 +315,12 @@ namespace herschel
         return fBoolValue ? String("true") : String("false");
       case kInt:
       case kUInt:
+        // TODO 64bit
         return ( !fIsImaginary
                  ? fromInt(fIntValue)
                  : (fromInt(fIntValue) + "i") );
       case kFloat:
+        // TODO float/double
         return ( !fIsImaginary
                  ? fromDouble(fDoubleValue)
                  : (fromDouble(fDoubleValue) + "i") );
@@ -295,7 +337,7 @@ namespace herschel
       case kChar:
       {
         char buffer[32];
-        sprintf(buffer, "\\u0%x;", fIntValue);
+        sprintf(buffer, "\\u0%x;", int(fIntValue));
         return String(buffer);
       }
 
@@ -311,10 +353,11 @@ namespace herschel
 
     TokenType fType;
     bool      fBoolValue;
-    int       fIntValue;
+    int64_t   fIntValue;
     Rational  fRationalValue;
     double    fDoubleValue;
     bool      fIsImaginary;
+    int       fBitWidth;
   };
 
 
@@ -585,7 +628,7 @@ Token::Token(const SrcPos& where, TokenType ttype, const char* str)
 
 Token::Token(const SrcPos& where, TokenType ttype, int value)
   : fType(ttype),
-    fImpl(new NumberTokenImpl(ttype, value)),
+    fImpl(new NumberTokenImpl(ttype, 32, int64_t(value))),
     fSrcPos(where)
 {
   hr_assert(type() == kLit);
@@ -594,7 +637,7 @@ Token::Token(const SrcPos& where, TokenType ttype, int value)
 
 Token::Token(const SrcPos& where, TokenType ttype, double value)
   : fType(ttype),
-    fImpl(new NumberTokenImpl(ttype, value)),
+    fImpl(new NumberTokenImpl(ttype, 64, value)),
     fSrcPos(where)
 {
   hr_assert(type() == kLit);
@@ -624,6 +667,28 @@ Token::Token(const Token& other)
     fImpl(other.fImpl),
     fSrcPos(other.fSrcPos)
 { }
+
+
+Token
+Token::newInt(const SrcPos& where, int bitwidth, int64_t value)
+{
+  Token token;
+  token.fSrcPos = where;
+  token.fType = kInt;
+  token.fImpl = new NumberTokenImpl(kInt, bitwidth, value);
+  return token;
+}
+
+
+Token
+Token::newUInt(const SrcPos& where, int bitwidth, uint64_t value)
+{
+  Token token;
+  token.fSrcPos = where;
+  token.fType = kUInt;
+  token.fImpl = new NumberTokenImpl(kInt, bitwidth, int64_t(value));
+  return token;
+}
 
 
 Token&
@@ -1163,12 +1228,21 @@ Token::boolValue() const
 }
 
 
-int
+int64_t
 Token::intValue() const
 {
   if (fType != kInt && fType != kUInt)
     throw NotSupportedException(__FUNCTION__);
   return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIntValue;
+}
+
+
+int
+Token::bitwidth() const
+{
+  if (fType != kInt && fType != kUInt && fType != kFloat)
+    throw NotSupportedException(__FUNCTION__);
+  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fBitWidth;
 }
 
 

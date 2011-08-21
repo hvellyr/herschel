@@ -177,6 +177,12 @@ namespace herschel
     static Type newInt32(bool isValue = true);
     //! Creates a new lang|UInt32 type instance.
     static Type newUInt32(bool isValue = true);
+
+    //! Creates a new lang|IntX type instance with X being the bitwidth.
+    static Type newInt(int bitwidth, bool isValue = true);
+    //! Creates a new lang|UIntX type instance with X being the bitwidth.
+    static Type newUInt(int bitwidth, bool isValue = true);
+
     //! Creates a new lang|Rational type instance.
     static Type newRational(bool isValue = true);
     //! Creates a new lang|Float32 type instance.

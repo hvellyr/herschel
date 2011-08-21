@@ -73,11 +73,14 @@ CodegenBinaryNode::emit(const BinaryNode* node) const
 
   if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt())
     return codegenOpIntInt(node, left, right);
-  if (node->left()->type().isKeyword() && node->right()->type().isKeyword())
+
+  else if (node->left()->type().isKeyword() && node->right()->type().isKeyword())
     return codegenOpKeywKeyw(node, left, right);
-  if (node->left()->type().isBool() && node->right()->type().isBool())
+
+  else if (node->left()->type().isBool() && node->right()->type().isBool())
     return codegenOpBoolBool(node, left, right);
-  if (node->left()->type().isChar() && node->right()->type().isChar())
+
+  else if (node->left()->type().isChar() && node->right()->type().isChar())
     return codegenOpCharChar(node, left, right);
 
   tyerror(node->left()->type(), "unsupported type in binary operator");

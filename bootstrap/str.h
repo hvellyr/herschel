@@ -83,6 +83,8 @@ namespace herschel
 
     int toInt(int radix = 10) const;
     double toDouble() const;
+    int64_t toInt64(int radix = 10) const;
+    uint64_t toUInt64(int radix = 10) const;
 
     operator std::string() const;
 
@@ -97,6 +99,7 @@ namespace herschel
 
   String operator+(const String& one, const char* two);
   String operator+(const String& one, int value);
+  String operator+(const String& one, int64_t value);
   String operator+(const String& one, double value);
 
   String fromInt(int value);

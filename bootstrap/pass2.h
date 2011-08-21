@@ -221,6 +221,8 @@ namespace herschel
 
     AptNode* parseSlotAccess(const Token& expr);
 
+    Type getIntType(int bitwidth, bool isSigned) const;
+
 
     typedef std::map<String, Type> TSharedGenericTable;
     class TSharedGenericScopeHelper

@@ -42,6 +42,26 @@ _TypeName ## TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,          \
 }
 
 
+#define NUMBER_TYPE_ENUM_MAKER_INT(_TypeName, _ctor, _bitwidth)         \
+Token                                                                   \
+_TypeName ## TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,          \
+                                         const Token& enumItemSymbol,   \
+                                         const Token& lastInitToken) const \
+{                                                                       \
+  if (!lastInitToken.isSet()) {                                         \
+    return Token::new ## _ctor(srcpos, _bitwidth, 0);                   \
+  }                                                                     \
+  else if (lastInitToken == kInt) {                                     \
+    return Token::new ## _ctor(srcpos, _bitwidth,                       \
+                               lastInitToken.intValue() + 1);           \
+  }                                                                     \
+                                                                        \
+  errorf(srcpos, E_EnumInitTypeMismatch,                                \
+         "Init value does not match enum type");                        \
+  return Token();                                                       \
+}
+
+
 //                     _TypeName,  _kind,    _method, _init, _step
 NUMBER_TYPE_ENUM_MAKER(Float32,    Float,    float,   0.0,   1.0)
 NUMBER_TYPE_ENUM_MAKER(Float64,    Float,    float,   0.0,   1.0)
@@ -49,14 +69,16 @@ NUMBER_TYPE_ENUM_MAKER(Float128,   Float,    float,   0.0,   1.0)
 NUMBER_TYPE_ENUM_MAKER(Rational,   Rational, rational, Rational(), Rational(1, 1))
 NUMBER_TYPE_ENUM_MAKER(Char,       Char,     char,    0,     1)
 
-NUMBER_TYPE_ENUM_MAKER(Int8,       Int,      int,     0,     1)
-NUMBER_TYPE_ENUM_MAKER(UInt8,      Int,      int,     0,     1)
-NUMBER_TYPE_ENUM_MAKER(Int16,      Int,      int,     0,     1)
-NUMBER_TYPE_ENUM_MAKER(UInt16,     Int,      int,     0,     1)
-NUMBER_TYPE_ENUM_MAKER(Int32,      Int,      int,     0,     1)
-NUMBER_TYPE_ENUM_MAKER(UInt32,     Int,      int,     0,     1)
-NUMBER_TYPE_ENUM_MAKER(Int64,      Int,      int,     0,     1)
-NUMBER_TYPE_ENUM_MAKER(UInt64,     Int,      int,     0,     1)
+//                     _TypeName,  _bitwidth
+NUMBER_TYPE_ENUM_MAKER_INT(Int8,    Int, 8)
+NUMBER_TYPE_ENUM_MAKER_INT(Int16,   Int, 16)
+NUMBER_TYPE_ENUM_MAKER_INT(Int32,   Int, 32)
+NUMBER_TYPE_ENUM_MAKER_INT(Int64,   Int, 64)
+
+NUMBER_TYPE_ENUM_MAKER_INT(UInt8,  UInt, 8)
+NUMBER_TYPE_ENUM_MAKER_INT(UInt16, UInt, 16)
+NUMBER_TYPE_ENUM_MAKER_INT(UInt32, UInt, 32)
+NUMBER_TYPE_ENUM_MAKER_INT(UInt64, UInt, 64)
 
 Token
 BoolTypeEnumMaker::nextEnumItem(const SrcPos& srcpos,
