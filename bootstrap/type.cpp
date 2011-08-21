@@ -25,6 +25,7 @@
 #include "typeprops-char.h"
 #include "typeprops-float.h"
 #include "typeprops-int.h"
+#include "typeprops-keyword.h"
 
 
 using namespace herschel;
@@ -1231,7 +1232,6 @@ Type::isBaseType() const
 
   if (!nm.isEmpty()) {
     if (nm == Names::kEofTypeName ||
-        nm == Names::kKeywordTypeName ||
         nm == Names::kNilTypeName ||
         nm == Names::kRationalTypeName ||
         nm == Names::kStringTypeName)
@@ -1273,7 +1273,6 @@ Type::newBaseTypeEnumMaker() const
   if (fKind == kType_Ref) {
     String nm = typeName();
     if (nm == Names::kEofTypeName)      return new EofTypeEnumMaker;
-    else if (nm == Names::kKeywordTypeName)  return new KeywordTypeEnumMaker;
     else if (nm == Names::kNilTypeName)      return new NilTypeEnumMaker;
     else if (nm == Names::kRationalTypeName) return new RationalTypeEnumMaker;
     else if (nm == Names::kStringTypeName)   return new StringTypeEnumMaker;
@@ -1306,6 +1305,7 @@ Type::typeProperty(bool mustExist) const
   static const CharTypeProperty      charProperty;
   static const ClangCharTypeProperty clangCharProperty;
   static const ClangIntTypeProperty  clangIntProperty;
+  static const KeywordTypeProperty   keywIntProperty;
 
   String nm = typeName();
   if (nm == Names::kInt32TypeName)
@@ -1335,6 +1335,9 @@ Type::typeProperty(bool mustExist) const
     return boolProperty;
   else if (nm == Names::kCharTypeName)
     return charProperty;
+
+  else if (nm == Names::kKeywordTypeName)
+    return keywIntProperty;
 
   else if (nm == Names::kClangCharTypeName)
     return clangCharProperty;

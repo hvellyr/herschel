@@ -29,7 +29,7 @@ namespace herschel
                                                 (CodegenTools::Typeid)atominttype));
     }
 
-    virtual size_t getSlotSize() const { return bitsize / 8; }
+    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const { return bitsize / 8; }
 
     virtual bool isBaseType() const { return true; }
 
@@ -62,9 +62,9 @@ namespace herschel
   public:
     virtual const char* convFuncName() const { return "atom_2_int32"; }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt32Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt32Ty(typeUtils->context());
     }
   };
 
@@ -79,9 +79,9 @@ namespace herschel
   public:
     virtual const char* convFuncName() const { return "atom_2_int32"; }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt32Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt32Ty(typeUtils->context());
     }
   };
 
@@ -97,9 +97,9 @@ namespace herschel
   public:
     virtual const char* convFuncName() const { return "atom_2_uint32"; }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt32Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt32Ty(typeUtils->context());
     }
   };
 
@@ -115,9 +115,9 @@ namespace herschel
   public:
     virtual const char* convFuncName() const { return "atom_2_int16"; }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt16Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt16Ty(typeUtils->context());
     }
   };
 
@@ -133,9 +133,9 @@ namespace herschel
   public:
     virtual const char* convFuncName() const { return "atom_2_uint16"; }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt16Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt16Ty(typeUtils->context());
     }
   };
 
@@ -151,9 +151,9 @@ namespace herschel
   public:
     virtual const char* convFuncName() const { return "atom_2_int8"; }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt8Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt8Ty(typeUtils->context());
     }
   };
 
@@ -169,9 +169,9 @@ namespace herschel
   public:
     virtual const char* convFuncName() const { return "atom_2_uint8"; }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt8Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt8Ty(typeUtils->context());
     }
   };
 
@@ -187,9 +187,9 @@ namespace herschel
   public:
     virtual const char* convFuncName() const { return "atom_2_int64"; }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt64Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt64Ty(typeUtils->context());
     }
   };
 
@@ -205,9 +205,9 @@ namespace herschel
   public:
     virtual const char* convFuncName() const { return "atom_2_uint64"; }
 
-    virtual const llvm::Type* getLLVMType() const
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return llvm::Type::getInt64Ty(llvm::getGlobalContext());
+      return llvm::Type::getInt64Ty(typeUtils->context());
     }
   };
 };                              // namespace

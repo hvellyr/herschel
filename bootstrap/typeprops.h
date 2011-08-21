@@ -21,6 +21,7 @@ namespace herschel
 {
   class TypeEnumMaker;
   class CodegenTools;
+  class CodegenTypeUtils;
 
   //! Defines abstract properties of types as defined by the language
   //! specification.  This can only be used for predefined types like Int32,
@@ -44,10 +45,10 @@ namespace herschel
                                       llvm::Value* value) const = 0;
 
     //! Return the appropriate LLVM type for this type.
-    virtual const llvm::Type* getLLVMType() const = 0;
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const = 0;
 
     //! Return the required slot size in octets for an object of this type.
-    virtual size_t getSlotSize() const = 0;
+    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const = 0;
     //@}
 
     //@{ Type properties
@@ -93,9 +94,15 @@ namespace herschel
     virtual llvm::Value* emitPackCode(CodegenTools* tools,
                                       llvm::Value* value) const { return NULL; };
 
-    virtual const llvm::Type* getLLVMType() const { return NULL; };
+    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    {
+      return NULL;
+    };
 
-    virtual size_t getSlotSize() const { return 0; }
+    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const
+    {
+      return 0;
+    }
 
     virtual bool isBaseType() const { return false; }
 

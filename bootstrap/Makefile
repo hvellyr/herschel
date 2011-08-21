@@ -168,6 +168,7 @@ HRC_HEADERS =         \
 	typeprops-char.h    \
 	typeprops-float.h   \
 	typeprops-int.h     \
+	typeprops-keyword.h \
 	typify.h            \
 	xmlout.h
 

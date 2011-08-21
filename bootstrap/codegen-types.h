@@ -63,6 +63,8 @@ namespace herschel
 
     const llvm::Type* getType(const Type& type) const;
     size_t getSlotSize(const Type& type) const;
+    size_t getAtomTypeSize() const;
+
 
   };
 };                              // namespace
