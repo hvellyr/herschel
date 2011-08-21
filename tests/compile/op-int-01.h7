@@ -1,0 +1,36 @@
+import "lang/assert.h7"
+
+
+def assert-add(a : Int, b : Int, r : Int)
+  assert(a + b == r)
+  true
+
+def assert-add64(a : Int64, b : Int64, r : Int64)
+  assert(a + b == r)
+  true
+
+def test-add() : Any
+  assert(5 + 6 == 11)
+  assert-add(5, 6, 11)
+
+  let t = 21
+  let r = 42
+  assert(t + t == r)
+
+  assert-add(-127, 127, 0)
+  assert-add(-127, 127, 0)
+  assert-add(0, 0, 0)
+  assert-add(-10, 52, 42)
+
+  assert-add(-2147483647, 2147483647, 0)
+  assert-add(-2147483648, 2147483647, -1)
+
+  assert-add(2147483647, 1, -2147483648)
+  assert-add(-2147483648, -1, 2147483647)
+
+  assert-add64(-9223372036854775808l, 9223372036854775807l, -1l)
+
+def app|main()
+  test-add()
+
+  0
