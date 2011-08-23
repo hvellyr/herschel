@@ -20,10 +20,14 @@ when (NDEBUG == "true")
 {
   def macro assert
   {
-    { assert(?expr:expr) } -> { if (?expr) {
+    { assert(?expr:expr) } -> { if (not ?expr) {
+                                  exit(1)
+                                  -- even though we never come here, keep
+                                  -- the type checker calm
+                                  false
                                 }
                                 else {
-                                  exit(1)
+                                  true
                                 }
                               }
   }
