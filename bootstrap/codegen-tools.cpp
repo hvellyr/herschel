@@ -207,25 +207,34 @@ CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
     builder().CreateStore(val, slot);
   }
   else if (typid == kAtomUInt32) {
-    hr_invalid("code missing");
+    llvm::Value* val = ( fGenerator->is64Bit()
+                         ? builder().CreateIntCast(value,
+                                                   llvm::Type::getInt64Ty(context()),
+                                                   !K(isSigned),
+                                                   "tmp")
+                         : value );
+    builder().CreateStore(val, slot);
   }
-  else if (typid == kAtomInt16) {
-    hr_invalid("code missing");
+  else if (typid == kAtomInt16 || typid == kAtomInt8) {
+    llvm::Value* val = builder().CreateIntCast(value,
+                                               ( fGenerator->is64Bit()
+                                                 ? llvm::Type::getInt64Ty(context())
+                                                 : llvm::Type::getInt32Ty(context()) ),
+                                               K(isSigned),
+                                               "tmp");
+    builder().CreateStore(val, slot);
   }
-  else if (typid == kAtomUInt16) {
-    hr_invalid("code missing");
+  else if (typid == kAtomUInt16 || typid == kAtomUInt8) {
+    llvm::Value* val = builder().CreateIntCast(value,
+                                               ( fGenerator->is64Bit()
+                                                 ? llvm::Type::getInt64Ty(context())
+                                                 : llvm::Type::getInt32Ty(context()) ),
+                                               !K(isSigned),
+                                               "tmp");
+    builder().CreateStore(val, slot);
   }
-  else if (typid == kAtomInt8) {
-    hr_invalid("code missing");
-  }
-  else if (typid == kAtomUInt8) {
-    hr_invalid("code missing");
-  }
-  else if (typid == kAtomInt64) {
-    hr_invalid("code missing");
-  }
-  else if (typid == kAtomUInt64) {
-    hr_invalid("code missing");
+  else if (typid == kAtomInt64 || typid == kAtomUInt64) {
+    builder().CreateStore(value, slot);
   }
   else if (typid == kAtomFloat32) {
     hr_invalid("code missing");
