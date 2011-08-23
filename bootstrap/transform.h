@@ -65,6 +65,9 @@ namespace herschel
 
   //------------------------------------------------------------------------------
 
+  //! Compile step which applies various transformations to an \c AptNode
+  //! tree.
+
   class Transformator : public RefCountable
   {
   public:
@@ -125,6 +128,9 @@ namespace herschel
 
 
   //--------------------------------------------------------------------------
+
+  //! \c TokenCompilePass wrapper for the \c Transformator pass to be used in the
+  //! process pipeline as third pass.
 
   class TransformPass : public AptNodeCompilePass
   {

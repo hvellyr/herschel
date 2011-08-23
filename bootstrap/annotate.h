@@ -146,6 +146,9 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! \c TokenCompilePass wrapper for the \c Annotator pass to be used in the
+  //! process pipeline as fourth pass.
+
   class AnnotatePass : public AptNodeCompilePass
   {
   public:
