@@ -31,11 +31,21 @@ namespace herschel
 {
   //--------------------------------------------------------------------------
 
+  //! The second pass in a compile run take the token expressions as returned
+  //! from the \c FirstPass and translate it into a tree of \c AptNodes.
+  //! Complicated high level expressions (e.g. \c for()) are transformed into
+  //! simpler base forms, already.  Some types are assigned (if available).
+  //! Constructor and access functions for classes and types are generated.
+  //!
+  //! Note that on this level no macros exist anymore.
+
   class SecondPass : public AbstractPass
   {
   public:
     SecondPass(Compiler* compiler, Scope* scope);
 
+    //! Transforms the token expressions as returned by the \c FirstPass into
+    //! a tree of \AptNode nodes.
     AptNode* parse(const Token& exprs);
 
   private:
@@ -255,6 +265,9 @@ namespace herschel
 
 
   //--------------------------------------------------------------------------
+
+  //! \c TokenCompilePass wrapper for the \c SecondPass pass to be used in the
+  //! process pipeline as second pass.
 
   class NodifyPass : public Token2AptNodeCompilePass
   {
