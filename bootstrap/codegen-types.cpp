@@ -218,19 +218,8 @@ CodegenTypeUtils::getArrayPayloadType() const
 const llvm::Type*
 CodegenTypeUtils::getType(const Type& type) const
 {
-  String typeId = type.typeId();
-
-  // tyerror(type, "Other type");
-  // fprintf(stderr, " ---> %s\n", (const char*)StrHelper(typeId));
-
-  //-------------------- array types
-
-  if (typeId == String("lang|Int32[]") ||
-      typeId == String("lang|UInt32[]"))
+  if (type.isArray())
   {
-    return getAtomType();
-  }
-  else if (typeId == String("lang|Char[]")) {
     return getAtomType();
   }
 
