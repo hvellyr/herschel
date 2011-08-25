@@ -482,8 +482,8 @@ CodeGenerator::codegen(const KeywordNode* node)
 llvm::Value*
 CodeGenerator::codegen(const IntNode* node)
 {
-  return fBuilder.CreateIntCast(fBuilder.getInt32(node->value()),
-                                fTypes->getType(node->type()),
+  return llvm::ConstantInt::get(fTypes->getType(node->type()),
+                                node->value(),
                                 node->type().isSigned());
 }
 
