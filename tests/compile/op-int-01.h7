@@ -20,6 +20,9 @@ def assert-add64/16(a : Int64, b : Int16, r : Int64) : Bool
 def assert-add64/32(a : Int64, b : Int32, r : Int64) : Bool
   assert(a + b == r)
 
+def assert-add32/64(a : Int32, b : Int64, r : Int64) : Bool
+  assert(a + b == r)
+
 
 def assert-add16/16(a : Int16, b : Int16, r : Int16) : Bool
   assert(a + b == r)
@@ -75,6 +78,7 @@ def test-add() : Any
   assert-add64/8(-9223372036854775808L, -1t, 9223372036854775807L)
   assert-add64/16(-9223372036854775808L, -1s, 9223372036854775807L)
   assert-add64/32(-9223372036854775808L, -1, 9223372036854775807L)
+  assert-add32/64(-1, -9223372036854775808L, 9223372036854775807L)
   true
 
 def app|main()
