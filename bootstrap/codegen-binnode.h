@@ -46,7 +46,7 @@ namespace herschel
     llvm::Value* codegenOpIntInt(const BinaryNode* node,
                                  llvm::Value* left,
                                  llvm::Value* right) const;
-    llvm::Value* convertToPlainInt(const AptNode* dst,
+    llvm::Value* convertToPlainInt(const Type& dstType,
                                    const AptNode* right,
                                    llvm::Value* value) const;
 
