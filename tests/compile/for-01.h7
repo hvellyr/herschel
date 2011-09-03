@@ -1,19 +1,19 @@
-def foo()
+def foo(m : Int)
   let k = 0
-  for (i = 0 then i + 1 while i < 100)
+  for (i = 0 then i + 1 while i < m)
     k = k + 1
   else
     0
   k
 
-def foo2()
+def foo2(m : Int)
   let k = 0
-  for (i in 0 .. 100 - 1)
+  for (i in 0 .. m - 1)
     k = k + 1
   else
     0
   k
 
 def app|main()
-  foo() + foo2()
+  foo(100) + foo2(100)
 
