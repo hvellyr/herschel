@@ -1,6 +1,5 @@
 import "lang/assert.h7"
 
-
 def assert-add32/32(a : Int, b : Int, r : Int) : Bool
   assert(a + b == r)
 
@@ -12,8 +11,16 @@ def assert-add64/64(a : Int64, b : Int64, r : Int64) : Bool
 def assert-add64/8(a : Int64, b : Int8, r : Int64) : Bool
   assert(a + b == r)
 
+def assert-add8/64(a : Int8, b : Int64, r : Int64) : Bool
+  assert(a + b == r)
+
+def assert-add8/32(a : Int8, b : Int32, r : Int32) : Bool
+  assert(a + b == r)
 
 def assert-add64/16(a : Int64, b : Int16, r : Int64) : Bool
+  assert(a + b == r)
+
+def assert-add16/64(a : Int16, b : Int64, r : Int64) : Bool
   assert(a + b == r)
 
 
@@ -76,9 +83,18 @@ def test-add() : Any
 
   -- mixing types
   assert-add64/8(-9223372036854775808L, -1t, 9223372036854775807L)
+  assert-add8/64(-1t, -9223372036854775808L, 9223372036854775807L)
+
   assert-add64/16(-9223372036854775808L, -1s, 9223372036854775807L)
+  assert-add16/64(-1s, -9223372036854775808L, 9223372036854775807L)
+
   assert-add64/32(-9223372036854775808L, -1, 9223372036854775807L)
   assert-add32/64(-1, -9223372036854775808L, 9223372036854775807L)
+  assert-add32/64(16, 16L, 32L)
+
+  assert-add8/32(16t, 16, 32)
+  assert-add8/32(127t, 16, 143)  -- propagates to Int32
+
   true
 
 def app|main()
