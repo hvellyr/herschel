@@ -223,8 +223,11 @@ lookup_func2(GenericFunction* gf, TagId ty0_id, TagId ty1_id)
   }
 
 #if defined(UNITTESTS)
-  hr_trace("lookup", "lookup_func2: no method found for (%s, %s) in %s",
-           ty0->name, ty1->name, gf->name);
+  if (ty0 == NULL || ty1 == NULL)
+    hr_trace("lookup", "lookup_func2: no method found for types: %p %p", ty0, ty1);
+  else
+    hr_trace("lookup", "lookup_func2: no method found for (%s, %s) in %s",
+             ty0->name, ty1->name, gf->name);
 #endif
 
   static Method no_such_method;
