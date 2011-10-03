@@ -81,11 +81,14 @@ CodegenApply::emitTypeNameForAllocate(const AptNode* node) const
 
 
 llvm::Function*
-CodegenApply::lazyDeclareExternFunction(const SymbolNode* symNode) const
+CodegenApply::lazyDeclareExternFunction(const String& funcnm) const
 {
   Scope* scope = generator()->fCompiler->referredFunctionCache();
-  const AptNode* node = scope->lookupFunction(symNode->name(),
+
+  const AptNode* node = scope->lookupFunction(funcnm,
                                               !K(showAmbiguousSymDef));
+  //fprintf(stderr, "op: %s %p\n", (const char*)StrHelper(funcnm), node);
+
   const FuncDefNode* funcdef = dynamic_cast<const FuncDefNode*>(node);
   if (funcdef != NULL)
     return CodegenFuncDef(generator()).emitExternFuncDef(funcdef);
@@ -95,9 +98,88 @@ CodegenApply::lazyDeclareExternFunction(const SymbolNode* symNode) const
 
 
 llvm::Value*
+CodegenApply::emitFunctionCall(const SrcPos& srcpos,
+                               const String& clearFuncnm,
+                               const String& mangledFuncnm,
+                               const NodeList& args,
+                               const Type& funcRetType,
+                               const Type& dstType,
+                               TypeConvKind dstConvKind,
+                               bool isInTailPos,
+                               bool inlineRetv,
+                               bool alwaysPassAtom) const
+{
+  llvm::Function *calleeFunc = module()->getFunction(llvm::StringRef(mangledFuncnm));
+  if (calleeFunc == NULL) {
+    calleeFunc = lazyDeclareExternFunction(clearFuncnm);
+    if (calleeFunc == NULL) {
+      errorf(srcpos, 0, "Unknown function referenced: %s",
+             (const char*)StrHelper(clearFuncnm));
+      return NULL;
+    }
+  }
+
+  if (calleeFunc->arg_size() != args.size() + (inlineRetv ? 1 : 0)) {
+    errorf(srcpos, 0, "Incorrect # arguments passed");
+    return NULL;
+  }
+
+  llvm::AllocaInst* retv = NULL;
+  llvm::Function* curFunction = builder().GetInsertBlock()->getParent();
+  const llvm::Type* returnType = ( alwaysPassAtom
+                                   ? types()->getAtomType()
+                                   : types()->getType(funcRetType) );
+  retv = tools()->createEntryBlockAlloca(curFunction, String("local_retv"),
+                                         returnType);
+
+  std::vector<llvm::Value*> argv;
+  if (inlineRetv)
+    argv.push_back(retv);
+
+  for (unsigned i = 0, e = args.size(); i != e; ++i) {
+    llvm::Value* val = tools()->wrapLoad(generator()->codegenNode(args[i]));
+
+    // TODO: can we assert that spec args are ATOM typed.
+    // warningf(args[i]->srcpos(), 0, "emit pack code");
+    val = tools()->emitPackCode(args[i]->dstType(), args[i]->typeConv(),
+                                val, args[i]->type());
+
+    if (val == NULL)
+      return NULL;
+
+    argv.push_back(val);
+  }
+
+  if (inlineRetv) {
+    builder().CreateCall(calleeFunc, argv.begin(), argv.end());
+
+    if (alwaysPassAtom && dstType.isPlainType() && dstConvKind == kNoConv)
+    {
+      llvm::Value* val = tools()->wrapLoad(retv);
+      return tools()->emitPackCode(dstType,
+                                   kAtom2PlainConv,
+                                   val, funcRetType);
+    }
+
+    // TODO: if in tail position enforce ATOM return type?
+    return retv;
+  }
+  else {
+    llvm::Value* funcVal = builder().CreateCall(calleeFunc, argv.begin(), argv.end());
+    if (isInTailPos) {
+      // TODO: return type id
+      tools()->setAtom(retv, CodegenTools::kAtomInt32, funcVal);
+      return retv;
+    }
+    else
+      return funcVal;
+  }
+}
+
+
+llvm::Value*
 CodegenApply::emit(const ApplyNode* node) const
 {
-  llvm::Function *calleeFunc = NULL;
   bool inlineRetv = false;
   bool alwaysPassAtom = false;
 
@@ -139,77 +221,21 @@ CodegenApply::emit(const ApplyNode* node) const
       alwaysPassAtom = symNode->refersTo() == kGeneric;
     }
 
-    calleeFunc = module()->getFunction(llvm::StringRef(funcnm));
-    if (calleeFunc == NULL) {
-      calleeFunc = lazyDeclareExternFunction(symNode);
-      if (calleeFunc == NULL) {
-        errorf(node->srcpos(), 0, "Unknown function referenced: %s",
-               (const char*)StrHelper(funcnm));
-        return NULL;
-      }
-    }
+    return emitFunctionCall(node->srcpos(),
+                            symNode->name(),
+                            funcnm,
+                            node->children(),
+                            node->type(),
+                            node->dstType(),
+                            node->typeConv(),
+                            node->isInTailPos(),
+                            inlineRetv,
+                            alwaysPassAtom);
   }
   else {
     // TODO
     hr_invalid("apply(!symbol) -> TODO");
-  }
-
-  const NodeList& args = node->children();
-  if (calleeFunc->arg_size() != args.size() + (inlineRetv ? 1 : 0)) {
-    errorf(node->srcpos(), 0, "Incorrect # arguments passed");
     return NULL;
-  }
-
-  llvm::AllocaInst* retv = NULL;
-  llvm::Function* curFunction = builder().GetInsertBlock()->getParent();
-  const llvm::Type* returnType = ( alwaysPassAtom
-                                   ? types()->getAtomType()
-                                   : types()->getType(node->type()) );
-  retv = tools()->createEntryBlockAlloca(curFunction, String("local_retv"),
-                                         returnType);
-
-  std::vector<llvm::Value*> argv;
-  if (inlineRetv)
-    argv.push_back(retv);
-
-  for (unsigned i = 0, e = args.size(); i != e; ++i) {
-    llvm::Value* val = tools()->wrapLoad(generator()->codegenNode(args[i]));
-
-    // TODO: can we assert that spec args are ATOM typed.
-    // warningf(args[i]->srcpos(), 0, "emit pack code");
-    val = tools()->emitPackCode(args[i]->dstType(), args[i]->typeConv(),
-                                val, args[i]->type());
-
-    if (val == NULL)
-      return NULL;
-
-    argv.push_back(val);
-  }
-
-  if (inlineRetv) {
-    builder().CreateCall(calleeFunc, argv.begin(), argv.end());
-
-    if (alwaysPassAtom &&
-        node->dstType().isPlainType() && node->typeConv() == kNoConv)
-    {
-      llvm::Value* val = tools()->wrapLoad(retv);
-      return tools()->emitPackCode(node->dstType(),
-                                   kAtom2PlainConv,
-                                   val, node->type());
-    }
-
-    // TODO: if in tail position enforce ATOM return type?
-    return retv;
-  }
-  else {
-    llvm::Value* funcVal = builder().CreateCall(calleeFunc, argv.begin(), argv.end());
-    if (node->isInTailPos()) {
-      // TODO: return type id
-      tools()->setAtom(retv, CodegenTools::kAtomInt32, funcVal);
-      return retv;
-    }
-    else
-      return funcVal;
   }
 }
 
