@@ -371,16 +371,9 @@ ModuleRuntimeInitializer::createGlobalInitOrDtorFunction(const llvm::FunctionTyp
   llvm::Function* fn =
   llvm::Function::Create(ft, llvm::GlobalValue::InternalLinkage,
                          llvm::Twine(name), module());
+  fn->setSection("__TEXT,__StaticInit,regular,pure_instructions");
+  fn->setDoesNotThrow();
 
-  // clang adds the following __TEXT,__StaticInit, etc. section to static
-  // initializer functions.  Initialization however seems to work without
-  // also.(?)
-
-  // Set the section if needed.
-  // if (const char* section = context().Target.getStaticInitSectionSpecifier())
-  //   fn->setSection("__TEXT,__StaticInit,regular,pure_instructions");
-
-  // fn->setDoesNotThrow();
   return fn;
 }
 
