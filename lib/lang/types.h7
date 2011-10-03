@@ -49,4 +49,8 @@ def type Bool
 def type Char
 def type Keyword
 
+
+def generic equal?(left @ 'T, right @ 'V) : Bool ...
+    ~ Indicates whether @var{left} and @var{right} are equal. ~
+
 -- end of types.h7
