@@ -39,6 +39,11 @@ namespace herschel
     llvm::Value* emit(const BinaryNode* node) const;
 
   private:
+    llvm::Value* codegenOpDucktype(const BinaryNode* node) const;
+    llvm::Value* codegenOpDuckTypeBinary(const BinaryNode* node,
+                                         const String& funcnm,
+                                         const Type& funcRetType) const;
+
     llvm::Value* coerceIntOperand(const Type& dstType, const Type& isType,
                                   llvm::Value* value) const;
     llvm::Value* wrapInt(llvm::Value* value, const Type& type) const;

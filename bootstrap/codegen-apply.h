@@ -40,6 +40,17 @@ namespace herschel
 
     llvm::Value* emit(const ApplyNode* node) const;
 
+    llvm::Value* emitFunctionCall(const SrcPos& srcpos,
+                                  const String& clearFuncnm,
+                                  const String& mangledFuncnm,
+                                  const NodeList& args,
+                                  const Type& returnType,
+                                  const Type& dstType,
+                                  TypeConvKind dstConvKind,
+                                  bool isInTailPos,
+                                  bool inlineRetv,
+                                  bool alwaysPassAtom) const;
+
   private:
     friend class ArrayAllocateStrategy;
     friend class AtomArrayAllocateStrategy;
@@ -55,7 +66,8 @@ namespace herschel
 
     llvm::Value* emitPtrToSlot(const ApplyNode* node, bool isStore) const;
 
-    llvm::Function* lazyDeclareExternFunction(const SymbolNode* symNode) const;
+    //! take an unmangled function name (as written in herschel code)
+    llvm::Function* lazyDeclareExternFunction(const String& funcnm) const;
 
     llvm::Value* emitArraySliceAccess(const ApplyNode* node) const;
     llvm::Value* emitArraySliceSet(const ApplyNode* node) const;

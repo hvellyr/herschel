@@ -15,10 +15,12 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "codegen-apply.h"
 #include "codegen-init.h"
 #include "codegen-tools.h"
 #include "codegen-types.h"
 #include "codegen-binnode.h"
+#include "codegen-func.h"
 
 #include <vector>
 
@@ -58,10 +60,6 @@ CodegenBinaryNode::emit(const BinaryNode* node) const
   //         node->typeConv());
   // tyerror(node->type(), "type");
   // tyerror(node->dstType(), "dsttype");
-  llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
-  llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
-  if (left == NULL || right == NULL)
-    return NULL;
 
   /*
     int -> to plain int, op, dsttype is atom -> make_int_atom
@@ -71,21 +69,39 @@ CodegenBinaryNode::emit(const BinaryNode* node) const
     atom -> call operator(), dsttype is plain -> make_plain
   */
 
-  if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt())
+  if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt()) {
+    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
+    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    if (left == NULL || right == NULL)
+      return NULL;
     return codegenOpIntInt(node, left, right);
+  }
 
-  else if (node->left()->type().isKeyword() && node->right()->type().isKeyword())
+  else if (node->left()->type().isKeyword() && node->right()->type().isKeyword()) {
+    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
+    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    if (left == NULL || right == NULL)
+      return NULL;
     return codegenOpKeywKeyw(node, left, right);
+  }
 
-  else if (node->left()->type().isBool() && node->right()->type().isBool())
+  else if (node->left()->type().isBool() && node->right()->type().isBool()) {
+    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
+    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    if (left == NULL || right == NULL)
+      return NULL;
     return codegenOpBoolBool(node, left, right);
+  }
 
-  else if (node->left()->type().isChar() && node->right()->type().isChar())
+  else if (node->left()->type().isChar() && node->right()->type().isChar()) {
+    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
+    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    if (left == NULL || right == NULL)
+      return NULL;
     return codegenOpCharChar(node, left, right);
+  }
 
-  tyerror(node->left()->type(), "unsupported type in binary operator");
-  tyerror(node->right()->type(), "unsupported type in binary operator");
-  return NULL;
+  return codegenOpDucktype(node);
 }
 
 
@@ -399,4 +415,63 @@ CodegenBinaryNode::codegenOpCharChar(const BinaryNode* node,
   }
 
   return NULL;
+}
+
+
+//-----------------------------------------------------------------------------
+
+llvm::Value*
+CodegenBinaryNode::codegenOpDucktype(const BinaryNode* node) const
+{
+  switch (node->op()) {
+  case kOpPlus:
+    return codegenOpDuckTypeBinary(node, String("lang|add"), Type::newAny());
+  case kOpEqual:
+    return codegenOpDuckTypeBinary(node, String("lang|equal?"), Type::newBool());
+  default:
+    fprintf(stderr, "invalid binary operator: %d", node->op());
+    return NULL;
+  }
+
+  tyerror(node->left()->type(), "unsupported type in binary operator");
+  tyerror(node->right()->type(), "unsupported type in binary operator");
+  return NULL;
+}
+
+
+
+llvm::Value*
+CodegenBinaryNode::codegenOpDuckTypeBinary(const BinaryNode* node,
+                                           const String& funcnm,
+                                           const Type& funcRetType) const
+{
+  String mangledFuncNm = herschel::mangleToC(funcnm);
+  llvm::Function *calleeFunc = module()->getFunction(llvm::StringRef(mangledFuncNm));
+  if (calleeFunc == NULL) {
+    const AptNode* var = node->scope()->lookupVarOrFunc(funcnm,
+                                                        K(showAmbiguousSymDef));
+    if (const FuncDefNode* funcdef = dynamic_cast<const FuncDefNode*>(var)) {
+      calleeFunc = CodegenFuncDef(generator()).emitExternFuncDef(funcdef);
+      if (calleeFunc == NULL) {
+        errorf(node->srcpos(), 0, "Unknown function referenced: %s",
+               (const char*)StrHelper(funcnm));
+        return NULL;
+      }
+    }
+  }
+
+  NodeList args;
+  args.push_back(node->left());
+  args.push_back(node->right());
+
+  return CodegenApply(generator()).emitFunctionCall(node->srcpos(),
+                                                    funcnm,
+                                                    mangledFuncNm,
+                                                    args,
+                                                    Type::newAny(),
+                                                    funcRetType,
+                                                    kNoConv, // ???
+                                                    !K(isInTailPos),
+                                                    K(inlineRetv),
+                                                    K(alwaysPassAtom));
 }
