@@ -1855,7 +1855,7 @@ SecondPass::makeNormalFunction(const SrcPos& srcpos, const String& sym,
   hr_assert((data.fFlags & kFuncIsGeneric) == 0);
   hr_assert((data.fFlags & kFuncIsMethod) == 0);
 
-  String fullFuncName = ( isLocal
+  String fullFuncName = ( isLocal || linkage == String("C")
                           ? sym
                           : qualifyId(currentModuleName(), sym) );
 
@@ -1894,7 +1894,7 @@ SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
 
   hr_assert(expr[ofs] == kSymbol);
   String sym = expr[ofs].idValue();
-  if (isLocal && isQualified(sym)) {
+  if ((isLocal || linkage == String("C")) && isQualified(sym)) {
     errorf(expr[ofs].srcpos(), E_QualifiedLocalSym,
            "Local symbol in definition must not be qualified.  "
            "Ignore namespace");
