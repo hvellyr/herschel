@@ -17,7 +17,8 @@ LIBLANGKIT_SOURCES =  \
 	numbers.h7          \
 	types.h7            \
 	runtime.h7          \
-	sliceable.h7
+	sliceable.h7	\
+	impl/numbers.h7
 
 LIBLANGKIT_OBJS = $(LIBLANGKIT_SOURCES:%.h7=$(BUILDDIR)/$(BUILDSTYLE)/%.bc)
 
@@ -39,7 +40,8 @@ all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) LANGKIT_LIBX
 LANGKIT_LIBX: $(LANGKIT_LIB)
 
 $(LANGKIT_LIB): $(LIBLANGKIT_OBJS)
-	$(LLVM_EXE)/llvm-ar crus $@ $^
+	$(LLVM_EXE)/llvm-link -o $(BUILDDIR)/$(BUILDSTYLE)/langkit.bc $^
+	$(LLVM_EXE)/llvm-ar crus $@ $(BUILDDIR)/$(BUILDSTYLE)/langkit.bc
 
 
 
@@ -48,7 +50,7 @@ $(LANGKIT_LIB): $(LIBLANGKIT_OBJS)
 DISTFILES = Makefile $(SOURCES)
 
 clean-local:
-	rm -f $(BUILDDIR)/$(BUILDSTYLE)/*.bc $(LANGKIT_LIB)
+	rm -f $(BUILDDIR)/$(BUILDSTYLE)/*.bc $(BUILDDIR)/$(BUILDSTYLE)/impl/*.bc $(LANGKIT_LIB)
 
 distclean-local: clean-local
 	-rm -rf $(DEPS_DIR) TAGS

@@ -1,0 +1,20 @@
+-- This file is part of the herschel package 
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+module lang
+
+import "lang/types.h7"
+import "lang/numbers.h7"
+import "clang/types.h7"
+
+extern ("C") {
+  int __lang_equal(int one, int two);
+}
+
+
+def lang|equal?(left @ Int, right @ Int) : Bool
+    __lang_equal(left, right) <> 0
