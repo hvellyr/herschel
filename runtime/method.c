@@ -113,7 +113,7 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
   else
     m->args = NULL;
 
-  while (l) {
+  while (l != NULL) {
     Method* m0 = (Method*)l->fValue;
     size_t i;
     int ambiguous = 0;
