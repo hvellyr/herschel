@@ -13,8 +13,15 @@ import "clang/types.h7"
 
 extern ("C") {
   int __lang_equal(int one, int two);
+  int __lang_add(int one, int two);
 }
 
 
 def lang|equal?(left @ Int, right @ Int) : Bool
-    __lang_equal(left, right) <> 0
+--    __lang_equal(left, right) <> 0
+  left as Int == right as Int
+
+
+def lang|add(left @ Int, right @ Int) : Int
+--    __lang_add(left, right) as Int
+  left as Int + right as Int
