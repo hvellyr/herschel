@@ -147,6 +147,8 @@ SetupUnix::findSysResources(const char* exeName) const
     }
 
     setup.fLdFlags.push_back(String("-native"));
+    // setup.fLdFlags.push_back(String("-disable-inlining"));
+    // setup.fLdFlags.push_back(String("-disable-opt"));
   }
 
   return setup;
