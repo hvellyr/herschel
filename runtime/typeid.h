@@ -17,6 +17,14 @@
 #define TYPE_TAG_INT32   0x04
 #define TYPE_TAG_UINT32  0x05
 #define TYPE_TAG_KEYW    0x06
+#define TYPE_TAG_INT16   0x07
+#define TYPE_TAG_UINT16  0x08
+#define TYPE_TAG_INT8    0x09
+#define TYPE_TAG_UINT8   0x0a
+#define TYPE_TAG_INT64   0x0b
+#define TYPE_TAG_UINT64  0x0c
+
+#define TYPE_TAG_FLOAT32 0x0d
 
 #define TYPE_ARRAY_OFFSET 0x40
 
