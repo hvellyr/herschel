@@ -64,6 +64,8 @@ namespace herschel
       kAtomUInt64Array  = kAtomUInt64 + 0x40,
       kAtomCharArray    = kAtomChar + 0x40,
       kAtomKeywordArray = kAtomKeyword + 0x40,
+
+      kAtomFloat32Array = kAtomFloat32 + 0x40
     };
 
     void setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value);
