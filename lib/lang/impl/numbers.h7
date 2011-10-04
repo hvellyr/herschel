@@ -21,7 +21,19 @@ def lang|equal?(left @ Int, right @ Int) : Bool
 --    __lang_equal(left, right) <> 0
   left as Int == right as Int
 
+def lang|equal?(left @ UInt, right @ UInt) : Bool
+  left as UInt == right as UInt
+
+def lang|equal?(left @ Int8, right @ Int) : Bool
+  left as Int8 == right as Int
+
 
 def lang|add(left @ Int, right @ Int) : Int
 --    __lang_add(left, right) as Int
   left as Int + right as Int
+
+def lang|add(left @ UInt, right @ UInt) : UInt
+  left as UInt + right as UInt
+
+def lang|add(left @ Int8, right @ Int) : UInt
+  left as Int8 + right as Int

@@ -7,6 +7,10 @@ def assert-add(a, b, r) : Bool
 
 def test-add() : Any
   assert-add(32, 32, 64)
+
+  assert-add(32u, 32u, 64u)
+
+  assert-add(127t, 16, 143)
   true
 
 def app|main()
