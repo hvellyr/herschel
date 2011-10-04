@@ -93,11 +93,6 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
   m->argc = argc;
   m->func = func;
 
-#if defined(UNITTESTS)
-  hr_trace("register", "Register method: %s [%p, arity %d]",
-           gf->name, func, argc);
-#endif
-
   if (argc > 0) {
     va_list vp;
     size_t i = 0;
@@ -112,6 +107,18 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
   }
   else
     m->args = NULL;
+
+#if defined(UNITTESTS)
+  hr_trace("register", "Register method: %s [%p, arity %d]",
+           gf->name, func, argc);
+  {
+    size_t i;
+    for (i = 0; i < argc; i++) {
+      hr_trace("register", "    arg %d: %s", i, m->args[i]->name);
+    }
+  }
+#endif
+
 
   while (l != NULL) {
     Method* m0 = (Method*)l->fValue;
@@ -162,36 +169,39 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
 
 
 static void
-no_such_method_cb(ATOM* retv, ...)
+no_such_method_cb()
 {
   fprintf(stderr, "No such method. Abort\n");
   exit(1);
 }
 
 
+#define ty_name(_ty) \
+  ((_ty) != NULL ? (_ty)->name : "<unknown type>")
+
+
 Method*
 lookup_func1(GenericFunction* gf, TagId ty0_id)
 {
   Type* ty0 = type_lookup_by_tag(ty0_id);
-  List* l = gf->methods;
+  if (ty0 != NULL) {
+    List* l = gf->methods;
 
-  //printf("ty0_id %c %p\n", ty0_id, ty0);
+    assert(gf->argc == 1);
 
+    while (l) {
+      Method* m = (Method*)l->fValue;
+      assert(m->argc == 1);
 
-  assert(gf->argc == 1);
-
-  while (l) {
-    Method* m = (Method*)l->fValue;
-    assert(m->argc == 1);
-
-    if (type_isa(ty0, m->args[0]))
-      return m;
-    l = l->fTail;
+      if (type_isa(ty0, m->args[0]))
+        return m;
+      l = l->fTail;
+    }
   }
 
 #if defined(UNITTESTS)
   hr_trace("lookup", "lookup_func1: no method found for %s in %s",
-           ty0->name, gf->name);
+           ty_name(ty0), gf->name);
 #endif
 
   static Method no_such_method;
@@ -208,26 +218,26 @@ lookup_func2(GenericFunction* gf, TagId ty0_id, TagId ty1_id)
 {
   Type* ty0 = type_lookup_by_tag(ty0_id);
   Type* ty1 = type_lookup_by_tag(ty1_id);
-  List* l = gf->methods;
 
-  assert(gf->argc == 2);
+  if (ty0 != NULL && ty1 != NULL) {
+    List* l = gf->methods;
+    assert(gf->argc == 2);
 
-  while (l) {
-    Method* m = (Method*)l->fValue;
-    assert(m->argc == 2);
+    while (l) {
+      Method* m = (Method*)l->fValue;
+      assert(m != NULL && m->argc == 2);
 
-    if (type_isa(ty0, m->args[0]) &&
-        type_isa(ty1, m->args[1]))
-      return m;
-    l = l->fTail;
+      if (type_isa(ty0, m->args[0]) &&
+          type_isa(ty1, m->args[1]))
+        return m;
+
+      l = l->fTail;
+    }
   }
 
 #if defined(UNITTESTS)
-  if (ty0 == NULL || ty1 == NULL)
-    hr_trace("lookup", "lookup_func2: no method found for types: %p %p", ty0, ty1);
-  else
-    hr_trace("lookup", "lookup_func2: no method found for (%s, %s) in %s",
-             ty0->name, ty1->name, gf->name);
+  hr_trace("lookup", "lookup_func2: no method found for (%s, %s) in %s",
+           ty_name(ty0), ty_name(ty1), gf->name);
 #endif
 
   static Method no_such_method;
@@ -246,24 +256,26 @@ lookup_func3(GenericFunction* gf, TagId ty0_id, TagId ty1_id, TagId ty2_id)
   Type* ty1 = type_lookup_by_tag(ty1_id);
   Type* ty2 = type_lookup_by_tag(ty2_id);
 
-  List* l = gf->methods;
+  if (ty0 != NULL && ty1 != NULL && ty2 != NULL) {
+    List* l = gf->methods;
 
-  assert(gf->argc == 3);
+    assert(gf->argc == 3);
 
-  while (l) {
-    Method* m = (Method*)l->fValue;
-    assert(m->argc == 3);
+    while (l) {
+      Method* m = (Method*)l->fValue;
+      assert(m->argc == 3);
 
-    if (type_isa(ty0, m->args[0]) &&
-        type_isa(ty1, m->args[1]) &&
-        type_isa(ty2, m->args[2]))
-      return m;
-    l = l->fTail;
+      if (type_isa(ty0, m->args[0]) &&
+          type_isa(ty1, m->args[1]) &&
+          type_isa(ty2, m->args[2]))
+        return m;
+      l = l->fTail;
+    }
   }
 
 #if defined(UNITTESTS)
   hr_trace("lookup", "lookup_func3: no method found for (%s, %s, %s) in %s",
-           ty0->name, ty1->name, ty2->name, gf->name);
+           ty_name(ty0), ty_name(ty1), ty_name(ty2), gf->name);
 #endif
 
   static Method no_such_method;
