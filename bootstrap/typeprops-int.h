@@ -60,6 +60,8 @@ namespace herschel
                                                        CodegenTools::kAtomInt32>
   {
   public:
+    Int32TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_int32"; }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -77,6 +79,8 @@ namespace herschel
                                                           CodegenTools::kAtomInt32>
   {
   public:
+    ClangIntTypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_int32"; }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -95,6 +99,8 @@ namespace herschel
                                                        CodegenTools::kAtomUInt32>
   {
   public:
+    UInt32TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_uint32"; }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -113,6 +119,8 @@ namespace herschel
                                                        CodegenTools::kAtomInt16>
   {
   public:
+    Int16TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_int16"; }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -131,6 +139,8 @@ namespace herschel
                                                         CodegenTools::kAtomUInt16>
   {
   public:
+    UInt16TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_uint16"; }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -149,6 +159,8 @@ namespace herschel
                                                       CodegenTools::kAtomInt8>
   {
   public:
+    Int8TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_int8"; }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -167,6 +179,8 @@ namespace herschel
                                                        CodegenTools::kAtomUInt8>
   {
   public:
+    UInt8TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_uint8"; }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -185,6 +199,8 @@ namespace herschel
                                                        CodegenTools::kAtomInt64>
   {
   public:
+    Int64TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_int64"; }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -203,6 +219,8 @@ namespace herschel
                                                         CodegenTools::kAtomUInt64>
   {
   public:
+    UInt64TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_uint64"; }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const

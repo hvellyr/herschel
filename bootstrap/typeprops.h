@@ -87,6 +87,8 @@ namespace herschel
   class InvalidTypeProperty : public TypeProperty
   {
   public:
+    InvalidTypeProperty() {}
+
     virtual bool isValid() const { return false; }
 
     virtual const char* convFuncName() const { return NULL; };

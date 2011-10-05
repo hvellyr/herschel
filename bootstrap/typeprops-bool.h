@@ -27,6 +27,8 @@ namespace herschel
   class BoolTypeProperty : public TypeProperty
   {
   public:
+    BoolTypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_bool"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
