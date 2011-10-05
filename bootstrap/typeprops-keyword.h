@@ -27,6 +27,8 @@ namespace herschel
   class KeywordTypeProperty : public TypeProperty
   {
   public:
+    KeywordTypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_keyword"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const

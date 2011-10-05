@@ -52,6 +52,8 @@ namespace herschel
   class Float32TypeProperty : public BaseFloatTypeProperty<Float32TypeEnumMaker, 32>
   {
   public:
+    Float32TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_float32"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
@@ -74,6 +76,8 @@ namespace herschel
   class Float64TypeProperty : public BaseFloatTypeProperty<Float64TypeEnumMaker, 64>
   {
   public:
+    Float64TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_float64"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
@@ -95,6 +99,8 @@ namespace herschel
   class Float128TypeProperty : public BaseFloatTypeProperty<Float128TypeEnumMaker, 128>
   {
   public:
+    Float128TypeProperty() {}
+
     virtual const char* convFuncName() const { return "atom_2_float128"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
