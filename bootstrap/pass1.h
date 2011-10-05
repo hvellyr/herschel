@@ -244,11 +244,11 @@ namespace herschel
 
     //@{ Macro calls
 
-    Token parseMakeMacroCall(const Token& expr, const TokenVector& args,
-                             const Macro* macro,
-                             bool shouldParseParams,
-                             bool isLocal,
-                             ScopeType scopeType);
+    TokenVector parseMakeMacroCall(const Token& expr, const TokenVector& args,
+                                   const Macro* macro,
+                                   bool shouldParseParams,
+                                   bool isLocal,
+                                   ScopeType scopeType);
 
     bool parseDoMatchSyntaxDef(TokenVector* result,
                                const Token& expr, SyntaxTable* syntaxTable,

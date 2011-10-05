@@ -1,0 +1,616 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Float32</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Float32</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Float32</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Float32</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Float64</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Float64</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Float64</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Float64</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int8</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int8</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int8</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int8</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int8</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int16</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int8</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int16</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int8</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int32</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int8</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int32</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int8</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int64</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int8</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int64</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int16</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int8</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int16</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int8</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int16</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int16</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int16</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int16</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int16</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int32</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int16</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int32</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int16</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int64</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int16</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int64</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int32</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int8</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int32</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int8</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int32</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int16</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int32</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int16</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int32</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int32</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int32</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int32</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int32</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int64</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int32</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int64</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int64</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int8</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int64</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int8</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int64</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int16</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int64</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int16</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int64</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int32</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int64</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int32</id>
+</seq>
+</seq>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>lang|equal?</id>
+<nested left='(' right=')'>
+<seq>
+<id>l</id>
+<punct type='@'/>
+<id>Int64</id>
+</seq>
+<punct type=','/>
+<seq>
+<id>r</id>
+<punct type='@'/>
+<id>Int64</id>
+</seq>
+</nested>
+<punct type=':'/>
+<id>Bool</id>
+<nested left='{' right='}'>
+<seq>
+<seq>
+<id>l</id>
+<punct type='as'/>
+<id>Int64</id>
+</seq>
+<punct type='=='/>
+<seq>
+<id>r</id>
+<punct type='as'/>
+<id>Int64</id>
+</seq>
+</seq>
+</nested>
+</seq>
+</seq>
+
