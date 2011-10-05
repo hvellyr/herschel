@@ -4159,6 +4159,13 @@ FirstPass::replaceSangHashIds(TokenVector* result, const TokenVector& source)
                 idx += 2;
                 continue;
               }
+              else if (source[idx + 2] == kString) {
+                token = Token(token.srcpos(),
+                              token.idValue() + source[idx + 2].stringValue());
+                hasFreeToken = true;
+                idx += 2;
+                continue;
+              }
               else {
                 errorf(source[idx + 2].srcpos(), E_OrphanedSangHash,
                        "## requires right hand symbol");
