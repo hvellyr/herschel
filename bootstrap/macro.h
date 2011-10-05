@@ -114,7 +114,8 @@ namespace herschel
     kMacro_posParam,
     kMacro_namedParam,
     kMacro_restParam,
-    kMacro_paramlist
+    kMacro_paramlist,
+    kMacro_operator
   };
 
   MacroParamType macroParamType(const Token& token, String* paramName);

@@ -4373,6 +4373,30 @@ namespace herschel {
   };
 
 
+  struct OperatorParamSyntaxMatcher : public ParameterSyntaxMatcher
+  {
+    virtual bool match(FirstPass* pass,
+                       const String& paramName,
+                       NamedReplacementMap* bindings,
+                       SyntaxTreeNode* followSet)
+    {
+      OperatorType op = tokenTypeToOperator(pass->fToken.tokenType());
+      if (op != kOpInvalid) {
+        TokenVector tokens;
+        tokens.push_back(pass->fToken);
+        bindings->insert(std::make_pair(paramName, tokens));
+        pass->nextToken();
+        return true;
+      }
+
+      errorf(pass->fToken.srcpos(), E_MacroParamMismatch,
+             "Macro parameter %s requires operator",
+             (const char*)StrHelper(paramName));
+      return false;
+    }
+  };
+
+
   struct AnyParamParamSyntaxMatcher : public ParameterSyntaxMatcher
   {
     virtual bool match(FirstPass* pass,
@@ -4485,6 +4509,8 @@ FirstPass::matchParameter(const Token& macroParam,
                                     new SpecParamParamSyntaxMatcher(kNamed)));
     paramsMap.insert(std::make_pair(kMacro_restParam,
                                     new SpecParamParamSyntaxMatcher(kRest)));
+    paramsMap.insert(std::make_pair(kMacro_operator,
+                                    new OperatorParamSyntaxMatcher));
   }
 
   String paramName;

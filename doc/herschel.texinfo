@@ -4040,6 +4040,11 @@ replacement is a single token.
 Expects any valid expression.
 @end deffn
 
+@deffn {Macro type} :operator
+@deffnx {Macro type} :op
+Expects any valid operator (like @code{+}, @code{>=}, @code{**}, etc.).
+@end deffn
+
 @deffn {Macro type} :param
 Expects a single valid (function) parameter declaration.  The
 parameter can be a positional, named, or rest parameter.  The optional

@@ -78,6 +78,7 @@ namespace herschel
 
     friend struct ExprParamSyntaxMatcher;
     friend struct NameParamSyntaxMatcher;
+    friend struct OperatorParamSyntaxMatcher;
     friend struct AnyParamParamSyntaxMatcher;
     friend struct SpecParamParamSyntaxMatcher;
     friend struct ParamListParamSyntax;
