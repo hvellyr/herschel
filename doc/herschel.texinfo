@@ -4096,6 +4096,13 @@ but before recursive macro expansion.
 @example
 @{ let ?name ## -var = ?init @}
 @end example
+
+The right hand side of the @code{##} operator can also be a string,
+which is to be used if the right hand side does not form a symbol yet:
+
+@example
+@{ let ?name ## "42" = ?init @}
+@end example
 @end deffn
 
 
