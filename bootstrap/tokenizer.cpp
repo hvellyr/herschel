@@ -978,7 +978,7 @@ SUITE(Tokenizer)
 
     static const char* test =
       "true false\n"
-      "12345 0aaaah 0aBcDeFh 07123t 101101y 1y 2t 3h 4\n"
+      "12345 0aaaah 0aBcDeFh 07123q 101101y 1y 2t 3h 4\n"
       "12.34 0.12345e+10 123.45e+7 12.3456e-5 -3.1415\n"
       "2/3 120/33 1/1024\n"
       "5i  3.1415i\n";
