@@ -9,31 +9,169 @@ module lang
 
 import "lang/types.h7"
 import "lang/numbers.h7"
-import "clang/types.h7"
 
-extern ("C") {
-  int __lang_equal(int one, int two);
-  int __lang_add(int one, int two);
+
+------------------------------------------------------------------------------
+-- compare operators
+------------------------------------------------------------------------------
+
+def macro OPGF
+{
+ { def OPGF ?n:name(?t0:name, ?op:operator, ?t1:name) } ->
+   { def ?n(l @ ?t0, r @ ?t1) : Bool
+       l as ?t0 ?op r as ?t1
+   }
 }
 
+def macro INT_OP_1
+{
+ { def INT_OP_1 ?n:name(?t0:name, ?op:operator, ?basety:name) } ->
+   { def OPGF ?n(?t0, ?op, ?basety ## "8")
+     def OPGF ?n(?t0, ?op, ?basety ## "16")
+     def OPGF ?n(?t0, ?op, ?basety ## "32")
+     def OPGF ?n(?t0, ?op, ?basety ## "64")
+   }
+}
 
-def lang|equal?(left @ Int, right @ Int) : Bool
---    __lang_equal(left, right) <> 0
-  left as Int == right as Int
+def macro INT_OP_2
+{
+ { def INT_OP_2 ?basety:name ?n:name(?op:operator) } ->
+   { def INT_OP_1 ?n(?basety ## "8", ?op, ?basety)
+     def INT_OP_1 ?n(?basety ## "16", ?op, ?basety)
+     def INT_OP_1 ?n(?basety ## "32", ?op, ?basety)
+     def INT_OP_1 ?n(?basety ## "64", ?op, ?basety)
+   }
+}
 
-def lang|equal?(left @ UInt, right @ UInt) : Bool
-  left as UInt == right as UInt
+def INT_OP_2 Int lang|equal?(==)
+def INT_OP_2 Int lang|unequal?(<>)
+def INT_OP_2 Int lang|less-equal?(<=)
+def INT_OP_2 Int lang|greater-equal?(>=)
+def INT_OP_2 Int lang|less?(<)
+def INT_OP_2 Int lang|greater?(>)
 
-def lang|equal?(left @ Int8, right @ Int) : Bool
-  left as Int8 == right as Int
+def INT_OP_2 UInt lang|equal?(==)
+def INT_OP_2 UInt lang|unequal?(<>)
+def INT_OP_2 UInt lang|less-equal?(<=)
+def INT_OP_2 UInt lang|greater-equal?(>=)
+def INT_OP_2 UInt lang|less?(<)
+def INT_OP_2 UInt lang|greater?(>)
 
 
-def lang|add(left @ Int, right @ Int) : Int
---    __lang_add(left, right) as Int
-  left as Int + right as Int
+-- def OPGF lang|equal?(Float32, ==, Float32)
+-- def OPGF lang|equal?(Float32, ==, Float64)
+-- def OPGF lang|unequal?(Float32, <>, Float32)
+-- def OPGF lang|unequal?(Float32, <>, Float64)
+-- def OPGF lang|less?(Float32, <, Float32)
+-- def OPGF lang|less?(Float32, <, Float64)
+-- def OPGF lang|less-equal?(Float32, <=, Float32)
+-- def OPGF lang|less-equal?(Float32, <=, Float64)
+-- def OPGF lang|greater?(Float32, >, Float32)
+-- def OPGF lang|greater?(Float32, >, Float64)
+-- def OPGF lang|greater-equal?(Float32, >=, Float32)
+-- def OPGF lang|greater-equal?(Float32, >=, Float64)
+-- 
+-- def OPGF lang|equal?(Float64, ==, Float32)
+-- def OPGF lang|equal?(Float64, ==, Float64)
+-- def OPGF lang|unequal?(Float64, <>, Float32)
+-- def OPGF lang|unequal?(Float64, <>, Float64)
+-- def OPGF lang|less?(Float64, <, Float32)
+-- def OPGF lang|less?(Float64, <, Float64)
+-- def OPGF lang|less-equal?(Float64, <=, Float32)
+-- def OPGF lang|less-equal?(Float64, <=, Float64)
+-- def OPGF lang|greater?(Float64, >, Float32)
+-- def OPGF lang|greater?(Float64, >, Float64)
+-- def OPGF lang|greater-equal?(Float64, >=, Float32)
+-- def OPGF lang|greater-equal?(Float64, >=, Float64)
 
-def lang|add(left @ UInt, right @ UInt) : UInt
-  left as UInt + right as UInt
 
-def lang|add(left @ Int8, right @ Int) : UInt
-  left as Int8 + right as Int
+def OPGF lang|equal?(Bool, ==, Bool)
+def OPGF lang|unequal?(Bool, <>, Bool)
+
+def OPGF lang|equal?(Char, ==, Char)
+def OPGF lang|unequal?(Char, <>, Char)
+def OPGF lang|less?(Char, <, Char)
+def OPGF lang|less-equal?(Char, <=, Char)
+def OPGF lang|greater?(Char, >, Char)
+def OPGF lang|greater-equal?(Char, >=, Char)
+
+def OPGF lang|equal?(Keyword, ==, Keyword)
+def OPGF lang|unequal?(Keyword, <>, Keyword)
+
+------------------------------------------------------------------------------
+-- addition
+
+def macro OPXR
+{
+ { def OPXR ?n:name(?t0:name, ?op:operator, ?t1:name, ?retty:name) } ->
+   { def ?n(l @ ?t0, r @ ?t1) : ?retty
+       l as ?t0 ?op r as ?t1
+   }
+}
+
+def OPXR lang|add(Int8, +, Int8,  Int8)
+def OPXR lang|add(Int8, +, Int16, Int16)
+def OPXR lang|add(Int8, +, Int32, Int32)
+def OPXR lang|add(Int8, +, Int64, Int64)
+
+def OPXR lang|add(Int16, +, Int8,  Int16)
+def OPXR lang|add(Int16, +, Int16, Int16)
+def OPXR lang|add(Int16, +, Int32, Int32)
+def OPXR lang|add(Int16, +, Int64, Int64)
+
+def OPXR lang|add(Int32, +, Int8,  Int32)
+def OPXR lang|add(Int32, +, Int16, Int32)
+def OPXR lang|add(Int32, +, Int32, Int32)
+def OPXR lang|add(Int32, +, Int64, Int64)
+
+def OPXR lang|add(Int64, +, Int8,  Int64)
+def OPXR lang|add(Int64, +, Int16, Int64)
+def OPXR lang|add(Int64, +, Int32, Int64)
+def OPXR lang|add(Int64, +, Int64, Int64)
+
+
+def OPXR lang|add(UInt8, +, UInt8,  UInt8)
+def OPXR lang|add(UInt8, +, UInt16, UInt16)
+def OPXR lang|add(UInt8, +, UInt32, UInt32)
+def OPXR lang|add(UInt8, +, UInt64, UInt64)
+
+def OPXR lang|add(UInt16, +, UInt8,  UInt16)
+def OPXR lang|add(UInt16, +, UInt16, UInt16)
+def OPXR lang|add(UInt16, +, UInt32, UInt32)
+def OPXR lang|add(UInt16, +, UInt64, UInt64)
+
+def OPXR lang|add(UInt32, +, UInt8,  UInt32)
+def OPXR lang|add(UInt32, +, UInt16, UInt32)
+def OPXR lang|add(UInt32, +, UInt32, UInt32)
+def OPXR lang|add(UInt32, +, UInt64, UInt64)
+
+def OPXR lang|add(UInt64, +, UInt8,  UInt64)
+def OPXR lang|add(UInt64, +, UInt16, UInt64)
+def OPXR lang|add(UInt64, +, UInt32, UInt64)
+def OPXR lang|add(UInt64, +, UInt64, UInt64)
+
+
+
+-- unary
+-- not
+-- negate
+-- 
+-- binary
+-- add +
+-- append ++
+-- subtract -
+-- divide /
+-- multiply *
+-- exponent **
+-- modulo mod
+-- remainder rem
+-- and and
+-- or or
+-- fold %
+-- bitand AND
+-- bitor OR
+-- bitxor XOR
+-- shift-left <<
+-- shift-right >>
+-- isa? isa
+-- cast-to as
