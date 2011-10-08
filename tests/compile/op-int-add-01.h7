@@ -47,7 +47,6 @@ def test-add() : Any
   assert(t + t == r)
 
   assert-add32/32(-127, 127, 0)
-  assert-add32/32(-127, 127, 0)
   assert-add32/32(0, 0, 0)
   assert-add32/32(-10, 52, 42)
 
@@ -60,7 +59,6 @@ def test-add() : Any
   -- 64bit
   assert-add64/64(-9223372036854775808L, 9223372036854775807L, -1L)
   assert-add64/64(0L, 0L, 0L)
-  assert-add64/64(-9223372036854775808L, 9223372036854775807L, -1L)
 
   assert-add64/64(-2147483648L, -2147483648L, -4294967296L)
 
