@@ -5,15 +5,42 @@ import "lang/assert.h7"
 def assert-add(a, b, r) : Bool
   assert(a + b == r)
 
+def assert-sub(a, b, r) : Bool
+  assert(a - b == r)
+
+def x-sub(a, b) : Any
+  a - b
+
+
+
 def test-add() : Any
   assert-add(32, 32, 64)
-
   assert-add(32u, 32u, 64u)
-
   assert-add(127t, 16, 143)
+
+  assert-add(-9223372036854775808L, -1L, 9223372036854775807L)
   true
+
+
+def test-sub() : Any
+  assert-sub(32, 32, 0)
+  assert-sub(64u, 32u, 32u)
+  assert-sub(127t, -1, 128)
+
+  assert-sub(-9223372036854775808L, 1L, 9223372036854775807L)
+
+  assert-sub(32767s, -32768s, -1s)
+  assert-sub(-32768s, 32767s, 1s)
+
+  -- uumph?
+  assert-sub(127t, -1t, -128t)
+  assert-sub(127t, -1t, 128)
+  assert(-128t == 128)
+  true
+
 
 def app|main()
   test-add()
+  test-sub()
 
   0
