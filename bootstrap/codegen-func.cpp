@@ -397,14 +397,14 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
              node->body()->typeConv() == kNoConv))
         {
           builder().CreateStore(builder().CreateIntCast(tools()->wrapLoad(retv),
-                                                      llvm::Type::getInt32Ty(context()),
-                                                      true),
-                               func.fFunc->arg_begin());
+                                                        llvm::Type::getInt32Ty(context()),
+                                                        true),
+                                func.fFunc->arg_begin());
         }
         else {
           llvm::Value* convertedRetv =
             tools()->makeTypeCastAtomToPlain(tools()->wrapLoad(retv),
-                                            Type::newTypeRef(MID_clang_IntTypeName));
+                                             Type::newTypeRef(MID_clang_IntTypeName));
           builder().CreateStore(convertedRetv, func.fFunc->arg_begin());
         }
       }
@@ -412,9 +412,9 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
         if (node->body()->type().isPlainType()) {
           llvm::Value* tmpValue =
             tools()->emitPackCode(node->body()->dstType(),
-                                 node->body()->typeConv(),
-                                 tools()->wrapLoad(retv),
-                                 node->body()->type());
+                                  node->body()->typeConv(),
+                                  tools()->wrapLoad(retv),
+                                  node->body()->type());
           // mmh.  Don't know why a createstore does work here.  But it does ...?
           builder().CreateStore(tmpValue, func.fFunc->arg_begin());
           //assignAtom(tmpValue, func.fFunc->arg_begin());
@@ -424,7 +424,7 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
       }
       else if (func.fRetType.isPlainType()) {
         builder().CreateStore(tools()->wrapLoad(retv),
-                             func.fFunc->arg_begin());
+                              func.fFunc->arg_begin());
       }
       else {
         // no wrap-load!
