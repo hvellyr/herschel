@@ -133,8 +133,9 @@ atom_2_int64(struct ATOM a)
 {
   /* TODO: assert that a.typeid refers to int64 */
 
-  /* TODO: int64 are not allocated inline, but on heap */
-  return (int64_t)0;
+  /* TODO: on 32bit machines the int64 are not allocated inline, but on
+   * heap */
+  return a.u.v_int64;
 }
 
 
@@ -143,8 +144,9 @@ atom_2_uint64(struct ATOM a)
 {
   /* TODO: assert that a.typeid refers to uint64 */
 
-  /* TODO: uint64 are not allocated inline, but on heap */
-  return (uint64_t)0;
+  /* TODO: on 32bit machines the uint64 are not allocated inline, but on
+   * heap */
+  return (uint64_t)a.u.v_int64;
 }
 
 
@@ -153,7 +155,8 @@ atom_2_float64(struct ATOM a)
 {
   /* TODO: assert that a.typeid refers to float64 */
 
-  /* TODO: doubles are not allocated inline, but on heap */
+  /* TODO: on 32bit machines the doubles are not allocated inline, but on
+   * heap */
   return 0.0;
 }
 
