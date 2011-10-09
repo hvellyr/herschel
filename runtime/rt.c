@@ -21,11 +21,18 @@ atom_type_name(long typeid)
   static char buffer[256];
 
   switch (typeid) {
+  case TYPE_TAG_INT8:   return "lang|Int8";
+  case TYPE_TAG_INT16:  return "lang|Int16";
   case TYPE_TAG_INT32:  return "lang|Int32";
+  case TYPE_TAG_INT64:  return "lang|Int64";
+  case TYPE_TAG_UINT8:  return "lang|UInt8";
+  case TYPE_TAG_UINT16: return "lang|UInt16";
+  case TYPE_TAG_UINT32: return "lang|UInt32";
+  case TYPE_TAG_UINT64: return "lang|UInt64";
+
   case TYPE_TAG_BOOL:   return "lang|Bool";
   case TYPE_TAG_CHAR:   return "lang|Char";
   case TYPE_TAG_ANY:    return "lang|Any";
-  case TYPE_TAG_UINT32: return "lang|UInt32";
   case TYPE_TAG_KEYW: return "lang|Keyword";
   }
 
