@@ -431,7 +431,7 @@ CodegenBinaryNode::codegenOpDucktype(const BinaryNode* node) const
   case kOpEqual:
     return codegenOpDuckTypeBinary(node, String("lang|equal?"), Type::newBool());
   default:
-    fprintf(stderr, "invalid binary operator: %d", node->op());
+    fprintf(stderr, "binary operator not support in ducktyping yet: %d", node->op());
     return NULL;
   }
 
