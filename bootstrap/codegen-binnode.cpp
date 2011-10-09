@@ -426,6 +426,8 @@ CodegenBinaryNode::codegenOpDucktype(const BinaryNode* node) const
   switch (node->op()) {
   case kOpPlus:
     return codegenOpDuckTypeBinary(node, String("lang|add"), Type::newAny());
+  case kOpMinus:
+    return codegenOpDuckTypeBinary(node, String("lang|subtract"), Type::newAny());
   case kOpEqual:
     return codegenOpDuckTypeBinary(node, String("lang|equal?"), Type::newBool());
   default:
