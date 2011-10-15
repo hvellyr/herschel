@@ -19,6 +19,7 @@ namespace herschel
 
   //--------------------------------------------------------------------------
   // definitions of the reserved keywords
+#define MID_ById        "by"
 #define MID_DefId       "def"
 #define MID_ElseId      "else"
 #define MID_EofId       "eof"
@@ -42,6 +43,35 @@ namespace herschel
 #define MID_WhenId      "when"
 #define MID_WhereId     "where"
 #define MID_WhileId     "while"
+
+#define MID_EqualQ      "equal?"
+#define MID_GreaterQ    "greater?"
+#define MID_LessQ       "less?"
+#define MID_LessEqualQ  "less-equal?"
+#define MID_GreaterEqualQ "greater-equal?"
+#define MID_UnequalQ    "unequal?"
+
+#define MID_add         "add"
+#define MID_append      "append"
+#define MID_bitand      "bitand"
+#define MID_bitor       "bitor"
+#define MID_bitxor      "bitxor"
+#define MID_compare     "compare"
+#define MID_divide      "divide"
+#define MID_exponent    "exponent"
+#define MID_fold        "fold"
+#define MID_in          "in"
+#define MID_isaQ        "isa?"
+#define MID_logand      "logand"
+#define MID_logor       "logor"
+#define MID_mod         "mod"
+#define MID_multiply    "multiply"
+#define MID_rem         "rem"
+#define MID_shiftLeft   "shift-left"
+#define MID_shiftRight  "shift-right"
+#define MID_subtract    "subtract"
+#define MID_CastTo      "cast-to"
+#define MID_MapTo       "map-to"
 
 
   //--------------------------------------------------------------------------
@@ -114,6 +144,13 @@ namespace herschel
 #define MID_lang_allocate_array MID_core_ns "|" "allocate*"
 #define MID_lang_nil            MID_core_ns "|" "nil"
 
+#define MID_lang_equal_q         MID_core_ns "|" MID_EqualQ
+#define MID_lang_greater_q       MID_core_ns "|" MID_GreaterQ
+#define MID_lang_less_q          MID_core_ns "|" MID_LessQ
+#define MID_lang_less_equal_q    MID_core_ns "|" MID_LessEqualQ
+#define MID_lang_greater_equal_q MID_core_ns "|" MID_GreaterEqualQ
+#define MID_lang_unequal_q       MID_core_ns "|" MID_UnequalQ
+
 
 #define MID_app_main            "app|main"
 
@@ -178,6 +215,16 @@ namespace herschel
     const static String kLangEndp;
     const static String kLangNext;
     const static String kLangNumItems;
+
+    const static String kLangEqualQ;
+    const static String kLangUnequalq;
+    const static String kLangLessQ;
+    const static String kLangLessEqualQ;
+    const static String kLangGreaterQ;
+    const static String kLangGreaterEqualQ;
+
+    const static String kLangAdd;
+    const static String kLangSubtract;
 
     const static String kAppMain;
 

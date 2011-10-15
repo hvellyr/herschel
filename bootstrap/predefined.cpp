@@ -71,6 +71,16 @@ const String herschel::Names::kLangEndp            = String(MID_core_ns "|" "end
 const String herschel::Names::kLangNext            = String(MID_core_ns "|" "next");
 const String herschel::Names::kLangNumItems        = String(MID_core_ns "|" "num-items");
 
+const String herschel::Names::kLangEqualQ          = String(MID_lang_equal_q);
+const String herschel::Names::kLangUnequalq        = String(MID_lang_unequal_q);
+const String herschel::Names::kLangLessQ           = String(MID_lang_less_q);
+const String herschel::Names::kLangLessEqualQ      = String(MID_lang_equal_q);
+const String herschel::Names::kLangGreaterQ        = String(MID_lang_greater_q);
+const String herschel::Names::kLangGreaterEqualQ   = String(MID_lang_greater_equal_q);
+
+const String herschel::Names::kLangAdd             = String(MID_core_ns "|" MID_add);
+const String herschel::Names::kLangSubtract        = String(MID_core_ns "|" MID_subtract);
+
 const String herschel::Names::kAppMain             = String(MID_app_main);
 
 const String herschel::Names::kClangIntTypeName    = String(MID_clang_IntTypeName);
