@@ -15,10 +15,12 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "codegen-apply.h"
 #include "codegen-init.h"
 #include "codegen-tools.h"
 #include "codegen-types.h"
 #include "codegen-binnode.h"
+#include "codegen-func.h"
 
 #include <vector>
 
@@ -58,10 +60,6 @@ CodegenBinaryNode::emit(const BinaryNode* node) const
   //         node->typeConv());
   // tyerror(node->type(), "type");
   // tyerror(node->dstType(), "dsttype");
-  llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
-  llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
-  if (left == NULL || right == NULL)
-    return NULL;
 
   /*
     int -> to plain int, op, dsttype is atom -> make_int_atom
@@ -71,18 +69,39 @@ CodegenBinaryNode::emit(const BinaryNode* node) const
     atom -> call operator(), dsttype is plain -> make_plain
   */
 
-  if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt())
+  if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt()) {
+    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
+    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    if (left == NULL || right == NULL)
+      return NULL;
     return codegenOpIntInt(node, left, right);
-  if (node->left()->type().isKeyword() && node->right()->type().isKeyword())
-    return codegenOpKeywKeyw(node, left, right);
-  if (node->left()->type().isBool() && node->right()->type().isBool())
-    return codegenOpBoolBool(node, left, right);
-  if (node->left()->type().isChar() && node->right()->type().isChar())
-    return codegenOpCharChar(node, left, right);
+  }
 
-  tyerror(node->left()->type(), "unsupported type in binary operator");
-  tyerror(node->right()->type(), "unsupported type in binary operator");
-  return NULL;
+  else if (node->left()->type().isKeyword() && node->right()->type().isKeyword()) {
+    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
+    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    if (left == NULL || right == NULL)
+      return NULL;
+    return codegenOpKeywKeyw(node, left, right);
+  }
+
+  else if (node->left()->type().isBool() && node->right()->type().isBool()) {
+    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
+    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    if (left == NULL || right == NULL)
+      return NULL;
+    return codegenOpBoolBool(node, left, right);
+  }
+
+  else if (node->left()->type().isChar() && node->right()->type().isChar()) {
+    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
+    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    if (left == NULL || right == NULL)
+      return NULL;
+    return codegenOpCharChar(node, left, right);
+  }
+
+  return codegenOpDucktype(node);
 }
 
 
@@ -123,30 +142,16 @@ CodegenBinaryNode::wrapBool(llvm::Value* value, const Type& type) const
 
 //------------------------------------------------------------------------------
 
-bool
-CodegenBinaryNode::isPlainInt(const Type& type) const
-{
-  return ( type.typeName() == Names::kInt64TypeName  ||
-           type.typeName() == Names::kInt32TypeName  ||
-           type.typeName() == Names::kInt16TypeName  ||
-           type.typeName() == Names::kInt8TypeName   ||
-           type.typeName() == Names::kUInt64TypeName ||
-           type.typeName() == Names::kUInt32TypeName ||
-           type.typeName() == Names::kUInt16TypeName ||
-           type.typeName() == Names::kUInt8TypeName );
-}
-
-
 llvm::Value*
-CodegenBinaryNode::convertToPlainInt(const AptNode* dst,
+CodegenBinaryNode::convertToPlainInt(const Type& dstType,
                                      const AptNode* right,
                                      llvm::Value* value) const
 {
   switch (right->typeConv()) {
   case kNoConv:
-    return coerceIntOperand(dst->type(), right->type(), value);
+    return coerceIntOperand(dstType, right->type(), value);
   case kAtom2PlainConv:
-    return tools()->makeTypeCastAtomToPlain(value, dst->type());
+    return tools()->makeTypeCastAtomToPlain(value, dstType);
   case kPlain2AtomConv:
   case kTypeCheckConv:
     hr_invalid("");
@@ -161,30 +166,46 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
                                    llvm::Value* left,
                                    llvm::Value* right) const
 {
-  llvm::Value* coleft = convertToPlainInt(node->left(), node->left(), left);
-  llvm::Value* coright = convertToPlainInt(node->left(), node->right(), right);
+  llvm::Value* coleft = NULL;
+  llvm::Value* coright = NULL;
+  Type dstType;
 
   switch (node->op()) {
   case kOpPlus:
+    coleft = convertToPlainInt(node->dstType(), node->left(), left);
+    coright = convertToPlainInt(node->dstType(), node->right(), right);
     return wrapInt(builder().CreateAdd(coleft, coright, "addtmp"),
                    node->dstType());
   case kOpMinus:
+    coleft = convertToPlainInt(node->dstType(), node->left(), left);
+    coright = convertToPlainInt(node->dstType(), node->right(), right);
     return wrapInt(builder().CreateSub(coleft, coright, "subtmp"),
                    node->dstType());
   case kOpMultiply:
+    coleft = convertToPlainInt(node->dstType(), node->left(), left);
+    coright = convertToPlainInt(node->dstType(), node->right(), right);
     return wrapInt(builder().CreateMul(coleft, coright, "multmp"),
                    node->dstType());
   case kOpDivide:
+    coleft = convertToPlainInt(node->dstType(), node->left(), left);
+    coright = convertToPlainInt(node->dstType(), node->right(), right);
     return wrapInt(builder().CreateSDiv(coleft, coright, "divtmp"),
                    node->dstType());
   case kOpMod:
+    coleft = convertToPlainInt(node->dstType(), node->left(), left);
+    coright = convertToPlainInt(node->dstType(), node->right(), right);
     return wrapInt(builder().CreateSRem(coleft, coright, "modtmp"),
                    node->dstType());
   case kOpRem:
+    coleft = convertToPlainInt(node->dstType(), node->left(), left);
+    coright = convertToPlainInt(node->dstType(), node->right(), right);
     return wrapInt(builder().CreateURem(coleft, coright, "remtmp"),
                    node->dstType());
 
   case kOpLess:
+    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    coleft = convertToPlainInt(dstType, node->left(), left);
+    coright = convertToPlainInt(dstType, node->right(), right);
     if (node->left()->type().isSigned())
       return wrapBool(builder().CreateICmpSLT(coleft, coright, "lttmp"),
                       node->dstType());
@@ -192,6 +213,9 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
       return wrapBool(builder().CreateICmpULT(coleft, coright, "lttmp"),
                       node->dstType());
   case kOpLessEqual:
+    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    coleft = convertToPlainInt(dstType, node->left(), left);
+    coright = convertToPlainInt(dstType, node->right(), right);
     if (node->left()->type().isSigned())
       return wrapBool(builder().CreateICmpSLE(coleft, coright, "letmp"),
                       node->dstType());
@@ -199,12 +223,21 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
       return wrapBool(builder().CreateICmpULE(coleft, coright, "letmp"),
                       node->dstType());
   case kOpEqual:
+    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    coleft = convertToPlainInt(dstType, node->left(), left);
+    coright = convertToPlainInt(dstType, node->right(), right);
     return wrapBool(builder().CreateICmpEQ(coleft, coright, "eqtmp"),
                     node->dstType());
   case kOpUnequal:
+    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    coleft = convertToPlainInt(dstType, node->left(), left);
+    coright = convertToPlainInt(dstType, node->right(), right);
     return wrapBool(builder().CreateICmpNE(coleft, coright, "netmp"),
                     node->dstType());
   case kOpGreater:
+    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    coleft = convertToPlainInt(dstType, node->left(), left);
+    coright = convertToPlainInt(dstType, node->right(), right);
     if (node->left()->type().isSigned())
       return wrapBool(builder().CreateICmpSGT(coleft, coright, "gttmp"),
                       node->dstType());
@@ -212,6 +245,9 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
       return wrapBool(builder().CreateICmpUGT(coleft, coright, "gttmp"),
                       node->dstType());
   case kOpGreaterEqual:
+    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    coleft = convertToPlainInt(dstType, node->left(), left);
+    coright = convertToPlainInt(dstType, node->right(), right);
     if (node->left()->type().isSigned())
       return wrapBool(builder().CreateICmpSGE(coleft, coright, "getmp"),
                       node->dstType());
@@ -379,4 +415,65 @@ CodegenBinaryNode::codegenOpCharChar(const BinaryNode* node,
   }
 
   return NULL;
+}
+
+
+//-----------------------------------------------------------------------------
+
+llvm::Value*
+CodegenBinaryNode::codegenOpDucktype(const BinaryNode* node) const
+{
+  switch (node->op()) {
+  case kOpPlus:
+    return codegenOpDuckTypeBinary(node, String("lang|add"), Type::newAny());
+  case kOpMinus:
+    return codegenOpDuckTypeBinary(node, String("lang|subtract"), Type::newAny());
+  case kOpEqual:
+    return codegenOpDuckTypeBinary(node, String("lang|equal?"), Type::newBool());
+  default:
+    fprintf(stderr, "binary operator not support in ducktyping yet: %d", node->op());
+    return NULL;
+  }
+
+  tyerror(node->left()->type(), "unsupported type in binary operator");
+  tyerror(node->right()->type(), "unsupported type in binary operator");
+  return NULL;
+}
+
+
+
+llvm::Value*
+CodegenBinaryNode::codegenOpDuckTypeBinary(const BinaryNode* node,
+                                           const String& funcnm,
+                                           const Type& funcRetType) const
+{
+  String mangledFuncNm = herschel::mangleToC(funcnm);
+  llvm::Function *calleeFunc = module()->getFunction(llvm::StringRef(mangledFuncNm));
+  if (calleeFunc == NULL) {
+    const AptNode* var = node->scope()->lookupVarOrFunc(funcnm,
+                                                        K(showAmbiguousSymDef));
+    if (const FuncDefNode* funcdef = dynamic_cast<const FuncDefNode*>(var)) {
+      calleeFunc = CodegenFuncDef(generator()).emitExternFuncDef(funcdef);
+      if (calleeFunc == NULL) {
+        errorf(node->srcpos(), 0, "Unknown function referenced: %s",
+               (const char*)StrHelper(funcnm));
+        return NULL;
+      }
+    }
+  }
+
+  NodeList args;
+  args.push_back(node->left());
+  args.push_back(node->right());
+
+  return CodegenApply(generator()).emitFunctionCall(node->srcpos(),
+                                                    funcnm,
+                                                    mangledFuncNm,
+                                                    args,
+                                                    Type::newAny(),
+                                                    funcRetType,
+                                                    kNoConv, // ???
+                                                    !K(isInTailPos),
+                                                    K(inlineRetv),
+                                                    K(alwaysPassAtom));
 }

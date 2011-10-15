@@ -37,17 +37,28 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! The first pass in compiling.  It read the raw token stream and digests
+  //! it into token expressions.  Macros definitions are identified and
+  //! registered and calls to macros are resolved in this pass.  The result is
+  //! a list of a few well defined token expressions, which are translated
+  //! into the \c AptNode tree by the \c SecondPass.
+
   class FirstPass : public AbstractPass
   {
   public:
     FirstPass(Compiler* compiler, const Token& currentToken, Scope* scope);
 
+    //! Get the next token from the input stream and return it.
     Token nextToken();
+
+    //! Return the token which has been return last from \c nextToken().
     Token currentToken();
 
+    //! Push back \c token into the input stream.  \c token will be the next
+    //! token to returned by \c nextToken().
     void unreadToken(const Token& token);
 
-    //! first pass parse
+    //! Start the parse run.
     Token parse();
 
   private:
@@ -67,6 +78,7 @@ namespace herschel
 
     friend struct ExprParamSyntaxMatcher;
     friend struct NameParamSyntaxMatcher;
+    friend struct OperatorParamSyntaxMatcher;
     friend struct AnyParamParamSyntaxMatcher;
     friend struct SpecParamParamSyntaxMatcher;
     friend struct ParamListParamSyntax;
@@ -189,11 +201,12 @@ namespace herschel
     Token parseEnumDef(const Token& defToken, bool isLocal);
 
 
-    // resume functions after (syntax) error
+    //@{ resume functions after (syntax) error
     Token scanUntilTopExprAndResume();
     Token scanUntilNextParameter(TokenType endTokenType = kParanClose);
     Token scanUntilBrace();
     Token scanUntilEndOfParameters();
+    //@}
 
 
     Token parseGenericFunctionDef(const Token& defToken, bool isLocal);
@@ -229,13 +242,13 @@ namespace herschel
     MacroType determineMacroType(const Token& macroName,
                                  const MacroPatternVector& patterns);
 
-    //-------- macro calls
+    //@{ Macro calls
 
-    Token parseMakeMacroCall(const Token& expr, const TokenVector& args,
-                             const Macro* macro,
-                             bool shouldParseParams,
-                             bool isLocal,
-                             ScopeType scopeType);
+    TokenVector parseMakeMacroCall(const Token& expr, const TokenVector& args,
+                                   const Macro* macro,
+                                   bool shouldParseParams,
+                                   bool isLocal,
+                                   ScopeType scopeType);
 
     bool parseDoMatchSyntaxDef(TokenVector* result,
                                const Token& expr, SyntaxTable* syntaxTable,
@@ -260,6 +273,7 @@ namespace herschel
     const TokenVector& findReplaceToken(const Token& token,
                                         const NamedReplacementMap& bindings,
                                         bool& found);
+    //@}
 
     bool matchParameter(const Token& macroParam,
                         NamedReplacementMap* bindings,
@@ -278,6 +292,9 @@ namespace herschel
 
 
   //--------------------------------------------------------------------------
+
+  //! \c TokenCompilePass wrapper for the \c FirstPass pass to be used in the
+  //! process pipeline as very first pass.
 
   class ExprPass : public TokenCompilePass
   {

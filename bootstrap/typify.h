@@ -66,11 +66,11 @@ namespace herschel
   //------------------------------------------------------------------------------
 
   //! Implements a code annotation traversal which determines and checks types
-  //! for each node in the abstract syntax tree.  After an appliance of this
-  //! all nodes should have a proper type set which can be access via the
-  //! AptNode::type() method.
-  //!
-  //! The main entry point is typifyRecursively().
+  //! for each node in the abstract syntax tree.  After being applied all
+  //! nodes should have proper types and typeConversions set which can be
+  //! accessed via the \c AptNode::type(), \c AptNode::dstType(), and \c
+  //! AptNode::typeConv() methods.  The main entry point is
+  //! \c typifyRecursively().
 
   class Typifier : public RefCountable
   {
@@ -253,6 +253,7 @@ namespace herschel
   //--------------------------------------------------------------------------
 
   //! Compiler pass for determining and checking the types of APT nodes.
+
   class TypifyPass : public AptNodeCompilePass
   {
   public:

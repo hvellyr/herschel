@@ -1083,10 +1083,12 @@ FirstPass::parseOn(ScopeType scopeType)
 
   if (macro != NULL) {
     TokenVector dummyArgs;
-    Token expr= parseMakeMacroCall(macroName, dummyArgs, macro,
-                                   K(shouldParseParams), K(isLocal),
-                                   scopeType);
-    return expr;
+    TokenVector exprs = parseMakeMacroCall(macroName, dummyArgs, macro,
+                                           K(shouldParseParams), K(isLocal),
+                                           scopeType);
+    return (exprs.size() == 1
+            ? exprs[0]
+            : Token() << exprs);
   }
   else
   {
@@ -1261,10 +1263,12 @@ FirstPass::parseParamCall(const Token& expr,
     Token macroName = Token(expr.srcpos(), baseName(expr.idValue()));
 
     if (macro != NULL) {
-      Token expr= parseMakeMacroCall(macroName, preScannedArgs, macro,
-                                     shouldParseParams, K(isLocal),
-                                     kNonScopedDef);
-      return expr;
+      TokenVector exprs = parseMakeMacroCall(macroName, preScannedArgs, macro,
+                                             shouldParseParams, K(isLocal),
+                                             kNonScopedDef);
+      return (exprs.size() == 1
+              ? exprs[0]
+              : Token() << exprs);
     }
   }
 
@@ -3098,10 +3102,10 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal,
                "Unsupported linkage for macro appliance ignored");
 
       TokenVector dummyArgs;
-      Token expr= parseMakeMacroCall(macroName, dummyArgs, macro,
+      TokenVector exprs = parseMakeMacroCall(macroName, dummyArgs, macro,
                                      K(shouldParseParams), isLocal,
                                      kNonScopedDef);
-      return expr.toTokenVector();
+      return exprs;
     }
     // the macro is silently ignored here
   }
@@ -4159,6 +4163,13 @@ FirstPass::replaceSangHashIds(TokenVector* result, const TokenVector& source)
                 idx += 2;
                 continue;
               }
+              else if (source[idx + 2] == kString) {
+                token = Token(token.srcpos(),
+                              token.idValue() + source[idx + 2].stringValue());
+                hasFreeToken = true;
+                idx += 2;
+                continue;
+              }
               else {
                 errorf(source[idx + 2].srcpos(), E_OrphanedSangHash,
                        "## requires right hand symbol");
@@ -4373,6 +4384,30 @@ namespace herschel {
   };
 
 
+  struct OperatorParamSyntaxMatcher : public ParameterSyntaxMatcher
+  {
+    virtual bool match(FirstPass* pass,
+                       const String& paramName,
+                       NamedReplacementMap* bindings,
+                       SyntaxTreeNode* followSet)
+    {
+      OperatorType op = tokenTypeToOperator(pass->fToken.tokenType());
+      if (op != kOpInvalid) {
+        TokenVector tokens;
+        tokens.push_back(pass->fToken);
+        bindings->insert(std::make_pair(paramName, tokens));
+        pass->nextToken();
+        return true;
+      }
+
+      errorf(pass->fToken.srcpos(), E_MacroParamMismatch,
+             "Macro parameter %s requires operator",
+             (const char*)StrHelper(paramName));
+      return false;
+    }
+  };
+
+
   struct AnyParamParamSyntaxMatcher : public ParameterSyntaxMatcher
   {
     virtual bool match(FirstPass* pass,
@@ -4485,6 +4520,8 @@ FirstPass::matchParameter(const Token& macroParam,
                                     new SpecParamParamSyntaxMatcher(kNamed)));
     paramsMap.insert(std::make_pair(kMacro_restParam,
                                     new SpecParamParamSyntaxMatcher(kRest)));
+    paramsMap.insert(std::make_pair(kMacro_operator,
+                                    new OperatorParamSyntaxMatcher));
   }
 
   String paramName;
@@ -4656,7 +4693,7 @@ FirstPass::parseExprStream(TokenVector* result, bool isTopLevel,
 }
 
 
-Token
+TokenVector
 FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
                               const Macro* macro,
                               bool shouldParseParams,
@@ -4672,10 +4709,10 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
   switch (macro->type()) {
   case kMacro_Invalid:
     // hr_invalid("");
-    return Token();
+    return TokenVector();
 
   case kMacro_Any:
-    return Token();
+    return TokenVector();
 
   case kMacro_Def:
     parseDoMatchSyntaxDef(&filtered, expr, syntaxTable, isLocal);
@@ -4704,21 +4741,17 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
     // ... and store it in the current fToken
     fToken = filtered[0];
 
-    Token retval;
+    TokenVector retval;
     Ptr<InternalTokenPort> tempPort = new InternalTokenPort(follows);
 
     {
       Compiler::PortStackHelper portStack(fCompiler, tempPort);
 
       TokenVector result;
-      if (parseExprStream(&result, !isLocal, scopeType)) {
-        if (result.size() == 1)
-          retval = result[0];
-        else if (result.size() > 1)
-          retval = Token() << result;
-      }
+      if (parseExprStream(&result, !isLocal, scopeType))
+        retval = result;
       else
-        return Token();
+        return TokenVector();
     }
 
     fToken = lastCurrentToken;
@@ -4726,5 +4759,5 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
     return retval;
   }
 
-  return Token();
+  return filtered;
 }

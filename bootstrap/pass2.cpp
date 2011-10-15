@@ -992,9 +992,11 @@ SecondPass::defaultSlotInitValue(const SlotdefNode* slot)
     }
     else {
       if (slot->type().isAnyInt())
-        return new IntNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
+        return new IntNode(slot->srcpos(), 0, slot->type().isImaginary(),
+                           slot->type());
       else if (slot->type().isAnyFloat())
-        return new RealNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
+        return new RealNode(slot->srcpos(), 0, slot->type().isImaginary(),
+                            slot->type());
       else if (slot->type().isRational())
         return new RationalNode(slot->srcpos(), Rational(0, 1),
                                 slot->type().isImaginary(), slot->type());
@@ -1853,7 +1855,7 @@ SecondPass::makeNormalFunction(const SrcPos& srcpos, const String& sym,
   hr_assert((data.fFlags & kFuncIsGeneric) == 0);
   hr_assert((data.fFlags & kFuncIsMethod) == 0);
 
-  String fullFuncName = ( isLocal
+  String fullFuncName = ( isLocal || linkage == String("C")
                           ? sym
                           : qualifyId(currentModuleName(), sym) );
 
@@ -1892,7 +1894,7 @@ SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
 
   hr_assert(expr[ofs] == kSymbol);
   String sym = expr[ofs].idValue();
-  if (isLocal && isQualified(sym)) {
+  if ((isLocal || linkage == String("C")) && isQualified(sym)) {
     errorf(expr[ofs].srcpos(), E_QualifiedLocalSym,
            "Local symbol in definition must not be qualified.  "
            "Ignore namespace");
@@ -3692,17 +3694,26 @@ SecondPass::parseNested(const Token& expr)
 }
 
 
+Type
+SecondPass::getIntType(int bitwidth, bool isSigned) const
+{
+  switch (bitwidth) {
+  case 8:  return isSigned ? Type::newInt(8)  : Type::newUInt(8);
+  case 16: return isSigned ? Type::newInt(16) : Type::newUInt(16);
+  case 32: return isSigned ? Type::newInt(32) : Type::newUInt(32);
+  case 64: return isSigned ? Type::newInt(64) : Type::newUInt(64);
+  }
+
+  hr_invalid("");
+  return Type();
+}
+
+
 AptNode*
 SecondPass::parseIntNumber(const Token& expr)
 {
-  if (expr.tokenType() == kInt) {
-    Type type = Type::newInt32();
-    type.setIsImaginary(expr.isImaginary());
-    return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
-                       type);
-  }
-  else if (expr.tokenType() == kUInt) {
-    Type type = Type::newUInt32();
+  if (expr.tokenType() == kInt || expr.tokenType() == kUInt) {
+    Type type = getIntType(expr.bitwidth(), expr.tokenType() == kInt);
     type.setIsImaginary(expr.isImaginary());
     return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
                        type);

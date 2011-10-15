@@ -395,7 +395,6 @@ namespace herschel
       return fValue;
     }
 
-
   protected:
     T fValue;
   };
@@ -403,10 +402,10 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  class IntNode : public NumberNode<int>
+  class IntNode : public NumberNode<int64_t>
   {
   public:
-    IntNode(const SrcPos& srcpos, int value, bool isImaginary,
+    IntNode(const SrcPos& srcpos, int64_t value, bool isImaginary,
             const Type& type);
     virtual IntNode* clone() const;
 

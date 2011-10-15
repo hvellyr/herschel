@@ -21,11 +21,18 @@ atom_type_name(long typeid)
   static char buffer[256];
 
   switch (typeid) {
+  case TYPE_TAG_INT8:   return "lang|Int8";
+  case TYPE_TAG_INT16:  return "lang|Int16";
   case TYPE_TAG_INT32:  return "lang|Int32";
+  case TYPE_TAG_INT64:  return "lang|Int64";
+  case TYPE_TAG_UINT8:  return "lang|UInt8";
+  case TYPE_TAG_UINT16: return "lang|UInt16";
+  case TYPE_TAG_UINT32: return "lang|UInt32";
+  case TYPE_TAG_UINT64: return "lang|UInt64";
+
   case TYPE_TAG_BOOL:   return "lang|Bool";
   case TYPE_TAG_CHAR:   return "lang|Char";
   case TYPE_TAG_ANY:    return "lang|Any";
-  case TYPE_TAG_UINT32: return "lang|UInt32";
   case TYPE_TAG_KEYW: return "lang|Keyword";
   }
 
@@ -126,8 +133,9 @@ atom_2_int64(struct ATOM a)
 {
   /* TODO: assert that a.typeid refers to int64 */
 
-  /* TODO: int64 are not allocated inline, but on heap */
-  return (int64_t)0;
+  /* TODO: on 32bit machines the int64 are not allocated inline, but on
+   * heap */
+  return a.u.v_int64;
 }
 
 
@@ -136,8 +144,9 @@ atom_2_uint64(struct ATOM a)
 {
   /* TODO: assert that a.typeid refers to uint64 */
 
-  /* TODO: uint64 are not allocated inline, but on heap */
-  return (uint64_t)0;
+  /* TODO: on 32bit machines the uint64 are not allocated inline, but on
+   * heap */
+  return (uint64_t)a.u.v_int64;
 }
 
 
@@ -146,7 +155,8 @@ atom_2_float64(struct ATOM a)
 {
   /* TODO: assert that a.typeid refers to float64 */
 
-  /* TODO: doubles are not allocated inline, but on heap */
+  /* TODO: on 32bit machines the doubles are not allocated inline, but on
+   * heap */
   return 0.0;
 }
 

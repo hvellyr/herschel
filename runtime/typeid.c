@@ -66,6 +66,21 @@ tag_id_for_type(const Type* type)
     return TYPE_TAG_ANY;
   else if (strcmp(type->name, "__QN4lang7Keyword") == 0)
     return TYPE_TAG_KEYW;
+  else if (strcmp(type->name, "__QN4lang5Int16") == 0)
+    return TYPE_TAG_INT16;
+  else if (strcmp(type->name, "__QN4lang6UInt16") == 0)
+    return TYPE_TAG_UINT16;
+  else if (strcmp(type->name, "__QN4lang4Int8") == 0)
+    return TYPE_TAG_INT8;
+  else if (strcmp(type->name, "__QN4lang5UInt8") == 0)
+    return TYPE_TAG_UINT8;
+  else if (strcmp(type->name, "__QN4lang5Int64") == 0)
+    return TYPE_TAG_INT64;
+  else if (strcmp(type->name, "__QN4lang6UInt64") == 0)
+    return TYPE_TAG_UINT64;
+
+  else if (strcmp(type->name, "__QN4lang7Float32") == 0)
+    return TYPE_TAG_FLOAT32;
 
   if (strcmp(type->name, "__QN4lang5Int32[]") == 0)
     return TYPE_TAG_INT32 + TYPE_ARRAY_OFFSET;
@@ -79,6 +94,22 @@ tag_id_for_type(const Type* type)
     return TYPE_TAG_ANY + TYPE_ARRAY_OFFSET;
   else if (strcmp(type->name, "__QN4lang7Keyword[]") == 0)
     return TYPE_TAG_KEYW + TYPE_ARRAY_OFFSET;
+
+  else if (strcmp(type->name, "__QN4lang5Int16[]") == 0)
+    return TYPE_TAG_INT16 + TYPE_ARRAY_OFFSET;
+  else if (strcmp(type->name, "__QN4lang6UInt16[]") == 0)
+    return TYPE_TAG_UINT16 + TYPE_ARRAY_OFFSET;
+  else if (strcmp(type->name, "__QN4lang4Int8[]") == 0)
+    return TYPE_TAG_INT8 + TYPE_ARRAY_OFFSET;
+  else if (strcmp(type->name, "__QN4lang5UInt8[]") == 0)
+    return TYPE_TAG_UINT8 + TYPE_ARRAY_OFFSET;
+  else if (strcmp(type->name, "__QN4lang5Int64[]") == 0)
+    return TYPE_TAG_INT64 + TYPE_ARRAY_OFFSET;
+  else if (strcmp(type->name, "__QN4lang6UInt64[]") == 0)
+    return TYPE_TAG_UINT64 + TYPE_ARRAY_OFFSET;
+
+  else if (strcmp(type->name, "__QN4lang7Float32[]") == 0)
+    return TYPE_TAG_FLOAT32 + TYPE_ARRAY_OFFSET;
 
   type_tag_id_counter++;
   return type_tag_id_counter;

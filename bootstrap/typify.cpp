@@ -1768,6 +1768,7 @@ Typifier::typify(BoolNode* node)
   if (fPhase == kTypify) {
     typifyNodeType(node, Type(), Names::kBoolTypeName,
                    !K(maybeImaginary));
+    annotateTypeConv(node, node->type());
   }
 }
 

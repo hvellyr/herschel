@@ -13,8 +13,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #include "require.h"
+#include "log.h"
 #include "str.h"
 #include "strbuf.h"
 #include "refcountable.h"
@@ -136,6 +138,14 @@ namespace herschel
   {
     char tmp[32];
     sprintf(tmp, "%d", value);
+    return one + tmp;
+  }
+
+
+  String operator+(const String& one, int64_t value)
+  {
+    char tmp[64];
+    sprintf(tmp, "%lld", value);
     return one + tmp;
   }
 
@@ -484,9 +494,60 @@ String::toInt(int radix) const
 
   toUtf8(tmp, 128);
 
+  errno = 0;
+
   int val = strtol(tmp, &endptr, radix);
   if (endptr != NULL && strlen(endptr) > 0)
     throw NotANumberException(String("Is not a number: ") + tmp);
+
+  if (errno == ERANGE) {
+    logf(kWarn, "Number to large: %s", tmp);
+  }
+
+  return val;
+}
+
+
+int64_t
+String::toInt64(int radix) const
+{
+  char tmp[128];
+  char *endptr = NULL;
+
+  toUtf8(tmp, 128);
+
+  errno = 0;
+
+  int64_t val = strtoll(tmp, &endptr, radix);
+  if (endptr != NULL && strlen(endptr) > 0)
+    throw NotANumberException(String("Is not a number: ") + tmp);
+
+  if (errno == ERANGE) {
+    logf(kWarn, "Number to large: %s", tmp);
+  }
+
+  return val;
+}
+
+
+uint64_t
+String::toUInt64(int radix) const
+{
+  char tmp[128];
+  char *endptr = NULL;
+
+  toUtf8(tmp, 128);
+
+  errno = 0;
+
+  uint64_t val = strtoull(tmp, &endptr, radix);
+  if (endptr != NULL && strlen(endptr) > 0)
+    throw NotANumberException(String("Is not a number: ") + tmp);
+
+  if (errno == ERANGE) {
+    logf(kWarn, "Number to large: %s", tmp);
+  }
+
   return val;
 }
 
@@ -1025,6 +1086,14 @@ SUITE(String)
     CHECK_EQUAL(String("123456").toInt(16), 0x123456);
     CHECK_EQUAL(String("123456").toInt(8), 0123456);
     CHECK_EQUAL(String("0").toInt(), 0);
+  }
+
+  TEST(ConvertToInt64)
+  {
+    CHECK_EQUAL(String("-9223372036854775808").toInt64(), INT64_MIN);
+    CHECK_EQUAL(String("9223372036854775807").toInt64(), INT64_MAX);
+    CHECK_EQUAL(String("123456").toInt64(), 123456LL);
+    CHECK_EQUAL(String("0").toInt64(), 0);
   }
 
   TEST(ConvertToDouble)

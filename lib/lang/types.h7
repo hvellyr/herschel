@@ -49,4 +49,29 @@ def type Bool
 def type Char
 def type Keyword
 
+
+def generic equal?(left @ 'T, right @ 'V) : Bool ...
+    ~ Indicates whether @var{left} and @var{right} are equal. ~
+
+def generic unequal?(left @ 'T, right @ 'V) : Bool ...
+    ~ Indicates whether @var{left} and @var{right} are not equal. ~
+
+def generic less?(left @ 'T, right @ 'V) : Bool ...
+    ~ Indicates whether @var{left} is less than @var{right}. ~
+
+def generic greater?(left @ 'T, right @ 'V) : Bool ...
+    ~ Indicates whether @var{left} is greater than @var{right}. ~
+
+def generic less-equal?(left @ 'T, right @ 'V) : Bool ...
+    ~ Indicates whether @var{left} is less than or equal to @var{right}. ~
+
+def generic greater-equal?(left @ 'T, right @ 'V) : Bool ...
+    ~ Indicates whether @var{left} is greater than or equal to @var{right}. ~
+
+-- def generic compare(left @ 'T, right @ 'V) : Int ...
+--     ~ Compares @var{left} with @var{right} and returns a negative integer
+-- if @var{left} is less than @var{right}, a zero if it is equal and a
+-- positive integer if is greater. ~
+
+
 -- end of types.h7

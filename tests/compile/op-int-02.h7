@@ -1,0 +1,106 @@
+-- test operators on weakly typed values
+
+import "lang/assert.h7"
+
+def assert-add(a, b, r) : Bool
+  assert(a + b == r)
+
+def assert-sub(a, b, r) : Bool
+  assert(a - b == r)
+
+def x-sub(a, b) : Any
+  a - b
+
+
+
+def test-add() : Any
+  assert-add(32, 32, 64)
+  assert-add(32u, 32u, 64u)
+  assert-add(127t, 16, 143)
+
+  assert-add(-9223372036854775808L, -1L, 9223372036854775807L)
+
+  assert-add(-127, 127, 0)
+  assert-add(0, 0, 0)
+  assert-add(-10, 52, 42)
+
+  assert-add(-2147483647, 2147483647, 0)
+  assert-add(-2147483648, 2147483647, -1)
+
+  assert-add(2147483647, 1, -2147483648)
+  assert-add(-2147483648, -1, 2147483647)
+
+  -- 64bit
+  assert-add(-9223372036854775808L, 9223372036854775807L, -1L)
+  assert-add(0L, 0L, 0L)
+
+  assert-add(-2147483648L, -2147483648L, -4294967296L)
+
+  assert-add(2147483647, 2147483647, -2)
+  assert-add(2147483647L, 2147483647L, 4294967294L)
+
+  -- 16bit
+  assert-add(512s, 512s, 1024s)
+  assert-add(-512s, 512s, 0s)
+
+  assert-add(32767s, 1s, -32768s)
+  assert-add(-32768s, -1s, 32767s)
+
+  -- 8bit
+  assert-add(32t, 32t, 64t)
+  assert-add(-89t, 127t, 38t)
+
+  assert-add(127t, 1t, -128t)
+  assert-add(-128t, -1t, 127t)
+
+  -- mixing types
+  assert-add(-9223372036854775808L, -1t, 9223372036854775807L)
+  assert-add(-1t, -9223372036854775808L, 9223372036854775807L)
+
+  assert-add(-9223372036854775808L, -1s, 9223372036854775807L)
+  assert-add(-1s, -9223372036854775808L, 9223372036854775807L)
+
+  assert-add(-9223372036854775808L, -1, 9223372036854775807L)
+  assert-add(-1, -9223372036854775808L, 9223372036854775807L)
+  assert-add(16, 16L, 32L)
+
+  assert-add(16t, 16, 32)
+  assert-add(127t, 16, 143)  -- propagates to Int32
+  true
+
+
+def test-sub() : Any
+  assert-sub(32, 32, 0)
+  assert-sub(64u, 32u, 32u)
+  assert-sub(127t, -1, 128)
+
+  assert-sub(-9223372036854775808L, 1L, 9223372036854775807L)
+
+  assert-sub(32767s, -32768s, -1s)
+  assert-sub(-32768s, 32767s, 1s)
+
+  assert-sub(-9223372036854775808L, 1t, 9223372036854775807L)
+  assert-sub(1t, -9223372036854775808L, -9223372036854775807L)
+
+  assert-sub(-9223372036854775808L, 1s, 9223372036854775807L)
+  assert-sub(1s, -9223372036854775808L, -9223372036854775807L)
+
+  assert-sub(-9223372036854775808L, 1, 9223372036854775807L)
+  assert-sub(1, -9223372036854775808L, -9223372036854775807L)
+  assert-sub(16, 32L, -16L)
+
+  assert-sub(16t, 16, 0)
+  assert-sub(127t, -16, 143)  -- propagates to Int32
+
+  -- uumph?
+  assert-sub(127t, -1t, -128t)
+  assert-sub(127t, -1t, 128)
+  assert(-128t == 128)
+  true
+
+
+def app|main()
+  test-add()
+  test-sub()
+
+  0

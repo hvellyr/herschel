@@ -39,6 +39,11 @@ namespace herschel
     llvm::Value* emit(const BinaryNode* node) const;
 
   private:
+    llvm::Value* codegenOpDucktype(const BinaryNode* node) const;
+    llvm::Value* codegenOpDuckTypeBinary(const BinaryNode* node,
+                                         const String& funcnm,
+                                         const Type& funcRetType) const;
+
     llvm::Value* coerceIntOperand(const Type& dstType, const Type& isType,
                                   llvm::Value* value) const;
     llvm::Value* wrapInt(llvm::Value* value, const Type& type) const;
@@ -46,11 +51,9 @@ namespace herschel
     llvm::Value* codegenOpIntInt(const BinaryNode* node,
                                  llvm::Value* left,
                                  llvm::Value* right) const;
-    llvm::Value* convertToPlainInt(const AptNode* dst,
+    llvm::Value* convertToPlainInt(const Type& dstType,
                                    const AptNode* right,
                                    llvm::Value* value) const;
-
-    bool isPlainInt(const Type& type) const;
 
     llvm::Value* codegenOpKeywKeyw(const BinaryNode* node,
                                    llvm::Value* left,

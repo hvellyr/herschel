@@ -531,7 +531,8 @@ class TestRunner:
                 basename, ext = os.path.splitext(os.path.basename(test_file))
                 tmp_binary = os.path.abspath(basename + self.os_ext())
 
-                options = [ "-o", tmp_binary ]
+                options = [ "-Xl,On",            # disable link optimization
+                            "-o", tmp_binary ]
                 output, erroutput = self.run_herschel_on_test(abs_test_file, options)
                 what_tag = "[%s] %s" % (passid, test_file)
                 if erroutput:
@@ -618,6 +619,10 @@ The expected test data is expected in a test description file $test_dir/$f/$f.te
 
         #self.report_summary("SUMMARY", self.test_run, self.test_succeeded)
 
+        self.update_statistics()
+
+
+    def update_statistics(self):
         self.total_test_succeeded = self.total_test_succeeded + self.test_succeeded
         self.total_test_run = self.total_test_run + self.test_run
 
@@ -651,6 +656,9 @@ def main():
     parser.add_option("-t", "--temp-dir",
                       dest="temp_dir", default=None,
                       help="give a directory where temporary data can be stored")
+    parser.add_option("-T", "--test",
+                      dest="test", default=None,
+                      help="a comma separated list of test names")
     (options, args) = parser.parse_args()
 
     tr = TestRunner()
@@ -669,15 +677,29 @@ def main():
     if options.temp_dir:
         tr.temp_dir = options.temp_dir
 
-    for arg in args:
-        tr.reset_status_count()
+    if options.test is not None:
+        for test in options.test.split(','):
+            tr.reset_status_count()
 
-        if os.path.isdir(arg):
-            d, f = os.path.split(arg)
-            tr.run_all_tests(arg, f)
-        else:
-            d, f = os.path.split(arg)
-            tr.run_test(d, f, options.domain)
+            fullpath = os.path.abspath(test)
+            d, f = os.path.split(fullpath)
+            dummy, domain = os.path.split(d)
+
+            tr.open_report()
+            tr.run_test(d, f, domain)
+            tr.close_report()
+
+            tr.update_statistics()
+    else:
+        for arg in args:
+            tr.reset_status_count()
+
+            if os.path.isdir(arg):
+                d, f = os.path.split(arg)
+                tr.run_all_tests(arg, f)
+            else:
+                d, f = os.path.split(arg)
+                tr.run_test(d, f, options.domain)
 
     tr.report_summary("TOTAL", tr.total_test_run, tr.total_test_succeeded)
 

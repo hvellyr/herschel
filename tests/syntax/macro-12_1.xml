@@ -1,7 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <seq>
 <seq>
-<seq>
 <id>def</id>
 <id>print-driver</id>
 <nested left='(' right=')'>
@@ -49,4 +48,4 @@
 </seq>
 </seq>
 </seq>
-</seq>
+

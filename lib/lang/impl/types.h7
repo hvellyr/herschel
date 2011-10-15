@@ -7,89 +7,52 @@
 
 module lang
 
-
-------------------------------------------------------------------------------
-
-def null-value(ty @ Class<Int>) : Int
-  0
-
-def min-value(ty @ Class<Int>) : Int
-  -INFINITIY
-
-def max-value(ty @ Class<Int>) : Int
-  INFINITY
-
-
-------------------------------------------------------------------------------
-
-def null-value(ty @ Class<Real>) : Real
-  0.0
-
-def min-value(ty @ Class<Real>) : Real
-  -INFINITIY
-
-def max-value(ty @ Class<Real>) : Real
-  INFINITY
-
-
-------------------------------------------------------------------------------
-
-def null-value(ty @ Class<Ordinal>) : Ordinal
-  0
-
-def min-value(ty @ Class<Ordinal>) : Ordinal
-  0
-
-def max-value(ty @ Class<Ordinal>) : Ordinal
-  INFINITY
-
-
 ------------------------------------------------------------------------------
 
 def null-value(ty @ Class<Int8>) : Int8
-  0
+  0t
 
 def min-value(ty @ Class<Int8>) : Int8
-  -128
+  -128t
 
 def max-value(ty @ Class<Int8>) : Int8
-  127
+  127t
 
 
 ------------------------------------------------------------------------------
 
 def null-value(ty @ Class<UInt8>) : UInt8
-  0
+  0ut
 
 def min-value(ty @ Class<UInt8>) : UInt8
-  0
+  0ut
 
 def max-value(ty @ Class<UInt8>) : UInt8
-  255
+  255ut
 
 
 ------------------------------------------------------------------------------
 
 def null-value(ty @ Class<Int16>) : Int16
-  0
+  0s
 
 def min-value(ty @ Class<Int16>) : Int16
-  -32768
+  -32768s
 
 def max-value(ty @ Class<Int16>) : Int16
-  32767
+  32767s
 
 
 ------------------------------------------------------------------------------
 
 def null-value(ty @ Class<UInt16>) : UInt16
-  0
+  0us
 
 def min-value(ty @ Class<UInt16>) : UInt16
-  0
+  0us
 
 def max-value(ty @ Class<UInt16>) : UInt16
-  65535
+  65535us
 
 
 ------------------------------------------------------------------------------
@@ -107,49 +70,49 @@ def max-value(ty @ Class<Int32>) : Int32
 ------------------------------------------------------------------------------
 
 def null-value(ty @ Class<UInt32>) : UInt32
-  0
+  0u
 
 def min-value(ty @ Class<UInt32>) : UInt32
-  0
+  0u
 
 def max-value(ty @ Class<UInt32>) : UInt32
-  4294967295
+  4294967295ul
 
 
 ------------------------------------------------------------------------------
 
 def null-value(ty @ Class<Int64>) : Int64
-  0
+  0l
 
 def min-value(ty @ Class<Int64>) : Int64
-  -9223372036854775808
+  -9223372036854775808l
 
 def max-value(ty @ Class<Int64>) : Int64
-  9223372036854775807
+  9223372036854775807l
 
 
 ------------------------------------------------------------------------------
 
 def null-value(ty @ Class<UInt64>) : UInt64
-  0
+  0ul
 
 def min-value(ty @ Class<UInt64>) : UInt64
-  0
+  0ul
 
 def max-value(ty @ Class<UInt64>) : UInt64
-  18446744073709551615
+  18446744073709551615ul
 
 
 ------------------------------------------------------------------------------
 
-def null-value(ty @ Class<Char>) : Char
-  \nul
-
-def min-value(ty @ Class<Char>) : Char
-  \nul
-
-def max-value(ty @ Class<Char>) : Char
-  \u10ffffh
+-- def null-value(ty @ Class<Char>) : Char
+--   \nul
+-- 
+-- def min-value(ty @ Class<Char>) : Char
+--   \nul
+-- 
+-- def max-value(ty @ Class<Char>) : Char
+--   \u10ffffh
 
 
 ------------------------------------------------------------------------------
@@ -164,5 +127,6 @@ def min-value(ty @ Class<Object>) : Object
 def max-value(ty @ Class<Object>) : Object
   -- not defined
   nil
+
 
 -- end of types.h7
