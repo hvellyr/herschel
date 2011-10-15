@@ -145,8 +145,9 @@
 </init>
 </vardef>
 </let>
-<if  ty='lang|Any'>
+<if  ty='lang|Bool'>
 <test>
+<not  ty='lang|Bool'>
 <binary op='==' ty='lang|Any'>
 <slotref  nm='value' ty='lang|Bool'>
 <slotref  nm='c' ty='Name'>
@@ -155,17 +156,21 @@
 </slotref>
 <keyw>Unknown</keyw>
 </binary>
+</not>
 </test>
 <then>
-<symbol  ty='lang|Unspecified' refer='global' acc='shared'>lang|unspecified</symbol>
-</then>
-<else>
+<block>
 <apply  ty='clang|void'>
 <symbol  ty='lambda(lang|Int32):clang|void' refer='function'>exit</symbol>
 <args>
 <int ty='lang|Int32'>1</int>
 </args>
 </apply>
+<false  ty='lang|Bool'/>
+</block>
+</then>
+<else>
+<true  ty='lang|Bool'/>
 </else>
 </if>
 <int ty='lang|Int32'>0</int>
@@ -237,14 +242,6 @@
 </ty:type>
 </ty:gen>
 </ty:ref>
-</ty:used-type>
-<ty:used-type>
-<ty:type nm='lang|Unspecified'>
-<ty:isa>
-<ty:ref nm='lang|Object'>
-</ty:ref>
-</ty:isa>
-</ty:type>
 </ty:used-type>
 <ty:used-type>
 <ty:fun nm=''>

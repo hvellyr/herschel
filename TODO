@@ -29,15 +29,17 @@ Documentation
 
 Bootstrap compiler
 
+  - extend tests for the other intx types
+
+  - other types (char, bool, int8, uint8, int16, uint16, uint32, int64,
+    uint64, float, double)
+
   - char binary operators
   - char arrays
 
   - basic String class
 
   - basic IO classes (such to allow displaying info from test files)
-
-  - other types (char, bool, int8, uint8, int16, uint16, uint32, int64,
-    uint64, float, double)
 
   - gc
 

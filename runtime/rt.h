@@ -24,6 +24,7 @@ struct ATOM
   TypeTag typeid;
   union {
     long  v_int;
+    int64_t v_int64;
     float v_float;
     void* v_obj;                /* an heap allocated object */
   } u;

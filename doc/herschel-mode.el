@@ -393,7 +393,7 @@ Key bindings:
     (error t)))
 
 
-;;; ident: [a-zA-Z-_$?!&%<>]+[a-zA-Z0-9-_$?!&%*+<>]*
+;;; ident: [a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*
 
 (defvar herschel-font-lock-keywords
   (list
@@ -401,49 +401,49 @@ Key bindings:
    (list herschel-keywords-regexp 1 'font-lock-keyword-face)
 
    ;; highlight generics parameter (begining with ')
-   '("\\('[a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
+   '("\\('[a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)"
      (1 herschel-font-lock-type-def-face))
 
-   ;; highlight keywords (begining with ')
-   '("\\(#[a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
+   ;; highlight keywords (begining with #)
+   '("\\(#[a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)"
      (1 font-lock-constant-face))
 
    ;; highlight parameters and types
-   '("\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-+\\(:\\|@\\)\\s-*\\('\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
+   '("\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)\\s-+\\(:\\|@\\)\\s-*\\('\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)"
      (1 font-lock-variable-name-face)
      (4 font-lock-type-face))
    ;; highlight generics
-   '("`\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)"
+   '("`\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)"
      (1 font-lock-type-face))
 
    ;; highlight parameter names (ending with ':')
-   '("\\<\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\>:"
+   '("\\<\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)\\>:"
      (1 herschel-font-lock-param-name-face))
 
    ;; highlight function, method, hook declarations.
-   '("on\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*("
+   '("on\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)\\s-*("
      (2 font-lock-function-name-face))
 
-   '("def\\s-+\\(\\(final\\|abstract\\)\\s-+\\)?\\(\\(generic\\)\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*("
+   '("def\\s-+\\(\\(final\\|abstract\\)\\s-+\\)?\\(\\(generic\\)\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)\\s-*("
      (5 font-lock-function-name-face))
 
-   '("module\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)"
+   '("module\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)"
      (2 font-lock-function-name-face))
 
    ;; highlight type and class declarations.
-   '("def\\s-+\\(\\(final\\|abstract\\|singleton\\)\\s-+\\)?\\(type\\|class\\|alias\\|enum\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)"
+   '("def\\s-+\\(\\(final\\|abstract\\|singleton\\)\\s-+\\)?\\(type\\|class\\|alias\\|enum\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)"
      (4 herschel-font-lock-type-def-face))
 
    ;; highlight local declarations.
-   '("let\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*("
+   '("let\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)\\s-*("
      (1 font-lock-function-name-face))
 
 
    ;; highlight variable declarations.
-   '("\\(def\\|let\\)\\s-+\\(const\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+|]*\\)\\s-*\\(:\\|=\\)"
+   '("\\(def\\|let\\)\\s-+\\(const\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)\\s-*\\(:\\|=\\)"
      (4 font-lock-variable-name-face))
 
-   '("slot\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+]*\\)\\s-*"
+   '("slot\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)\\s-*"
      (1 font-lock-variable-name-face))
 
 
@@ -459,7 +459,7 @@ Key bindings:
 
    ;; highlight functions.  FIXME:
 ;;   '("[^:<>=+*/%-]\\s-+\\([a-zA-Z-$@?!%&_]+\\)[:)]"
-;;   '("[]!?)$&@%a-zA-Z0-9]\\s-+\\([a-zA-Z-$@?!%&_]+\\)[^|]"
+;;   '("[]!?)$&@%a-zA-Z0-9]\\s-+\\([a-zA-Z-$@?!%&_*+/]+\\)[^|]"
 ;;     1 font-lock-function-name-face)
    )
   "Regular expressions to highlight in Herschel Mode.")

@@ -16,6 +16,7 @@
 #include "symbol.h"
 #include "xmlout.h"
 #include "predefined.h"
+#include "typeprops.h"
 
 #include <vector>
 
@@ -217,135 +218,38 @@ CodegenTypeUtils::getArrayPayloadType() const
 const llvm::Type*
 CodegenTypeUtils::getType(const Type& type) const
 {
-  String typeId = type.typeId();
-
-  // tyerror(type, "Other type");
-  // fprintf(stderr, " ---> %s\n", (const char*)StrHelper(typeId));
-
-  if (typeId == Names::kClangIntTypeName) {
-    return llvm::Type::getInt32Ty(context());
-  }
-  else if (typeId == Names::kClangCharTypeName) {
-    return llvm::Type::getInt8Ty(context());
-  }
-
-  else if (typeId == Names::kInt8TypeName) {
-    return llvm::Type::getInt8Ty(context());
-  }
-  else if (typeId == Names::kInt16TypeName) {
-    return llvm::Type::getInt16Ty(context());
-  }
-  else if (typeId == Names::kInt32TypeName) {
-    return llvm::Type::getInt32Ty(context());
-  }
-  else if (typeId == Names::kInt64TypeName) {
-    return llvm::Type::getInt64Ty(context());
-  }
-
-  else if (typeId == Names::kUInt8TypeName) {
-    return llvm::Type::getInt8Ty(context());
-  }
-  else if (typeId == Names::kUInt16TypeName) {
-    return llvm::Type::getInt16Ty(context());
-  }
-  else if (typeId == Names::kUInt32TypeName) {
-    return llvm::Type::getInt32Ty(context());
-  }
-  else if (typeId == Names::kUInt64TypeName) {
-    return llvm::Type::getInt64Ty(context());
-  }
-
-  else if (typeId == Names::kCharTypeName) {
-    return llvm::Type::getInt32Ty(context());
-  }
-  else if (typeId == Names::kBoolTypeName) {
-    return llvm::Type::getInt1Ty(context());
-  }
-
-  else if (typeId == Names::kFloat32TypeName) {
-    return llvm::Type::getFloatTy(context());
-  }
-  else if (typeId == Names::kFloat64TypeName) {
-    return llvm::Type::getDoubleTy(context());
-  }
-  // else if (typeId == Names::kFloat128TypeName) {
-  //   return llvm::Type::getInt1Ty(context());
-  // }
-
-  //-------------------- array types
-
-  else if (typeId == String("lang|Int32[]") ||
-           typeId == String("lang|UInt32[]"))
+  if (type.isArray())
   {
     return getAtomType();
   }
-  else if (typeId == String("lang|Char[]")) {
-    return getAtomType();
-  }
+
+  const TypeProperty& prop = type.typeProperty(!K(mustExist));
+  if (prop.isValid())
+    return prop.getLLVMType(this);
 
   return getAtomType();
 }
 
 
 size_t
-CodegenTypeUtils::getSlotSize(const Type& type) const
+CodegenTypeUtils::getAtomTypeSize() const
 {
-  String typeId = type.typeId();
-  if (typeId == Names::kClangIntTypeName)
-    // TODO: shouldn't this be 32/64 depending on host platform?
-    return 4; // llvm::Type::getInt32Ty(context());
-
-  else if (typeId == Names::kClangCharTypeName)
-    return 1; // llvm::Type::getInt8Ty(context());
-
-
-  else if (typeId == Names::kInt8TypeName)
-    return 1; // llvm::Type::getInt8Ty(context());
-
-  else if (typeId == Names::kInt16TypeName)
-    return 2; // llvm::Type::getInt16Ty(context());
-
-  else if (typeId == Names::kInt32TypeName)
-    return 4; // llvm::Type::getInt32Ty(context());
-
-  else if (typeId == Names::kInt64TypeName)
-    return 8; // llvm::Type::getInt64Ty(context());
-
-
-  else if (typeId == Names::kUInt8TypeName)
-    return 1; // llvm::Type::getInt8Ty(context());
-
-  else if (typeId == Names::kUInt16TypeName)
-    return 2; // llvm::Type::getInt16Ty(context());
-
-  else if (typeId == Names::kUInt32TypeName)
-    return 4; // llvm::Type::getInt32Ty(context());
-
-  else if (typeId == Names::kUInt64TypeName)
-    return 8; // llvm::Type::getInt64Ty(context());
-
-
-  else if (typeId == Names::kCharTypeName)
-    return 4; // llvm::Type::getInt32Ty(context());
-
-  else if (typeId == Names::kBoolTypeName)
-    return 1; // llvm::Type::getInt1Ty(context());
-
-
-  else if (typeId == Names::kFloat32TypeName)
-    return 4; // llvm::Type::getFloatTy(context());
-
-  else if (typeId == Names::kFloat64TypeName)
-    return 8; // llvm::Type::getDoubleTy(context());
-
-  // else if (typeId == Names::kFloat128TypeName)
-  //   return llvm::Type::getInt1Ty(context());
-  // }
-
   // all other types are atoms
   const llvm::StructLayout* layout = generator()->targetData()
     ->getStructLayout((const llvm::StructType*)getAtomType());
   return layout->getSizeInBytes();
+}
+
+
+size_t
+CodegenTypeUtils::getSlotSize(const Type& type) const
+{
+  const TypeProperty& prop = type.typeProperty(!K(mustExist));
+  if (prop.isValid())
+    return prop.getSlotSize(this);
+
+  // all other types are atoms
+  return getAtomTypeSize();
 }
 
 

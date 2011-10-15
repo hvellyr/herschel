@@ -16,7 +16,10 @@
 
 
 #include "job.h"
+#include "log.h"
+#include "properties.h"
 #include "str.h"
+#include "strbuf.h"
 
 
 #if defined(OS_mac) || defined(OS_linux)
@@ -30,7 +33,8 @@
 using namespace herschel;
 
 int
-herschel::startProcess(const String& cmd, const std::vector<String>& args)
+herschel::startProcess(const String& cmd, const std::vector<String>& args,
+                       bool logCalls)
 {
   char buffer[16000];
   char* ptr = &buffer[0];
@@ -48,8 +52,16 @@ herschel::startProcess(const String& cmd, const std::vector<String>& args)
   }
   argv[++i] = NULL;
 
-  // for (int j = 0; j < argv.size(); j++)
-  //   printf(">>>>%s\n", argv[j]);
+  if (logCalls) {
+    StringBuffer buf;
+    buf << cmd;
+    for (int j = 0; j < argv.size(); j++) {
+      if (argv[j] != NULL)
+        buf << argv[j] << " ";
+    }
+
+    log(kInfo, buf.toString());
+  }
 
   int status = 0;
   pid_t pid;

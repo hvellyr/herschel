@@ -12,6 +12,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "runtime/rt.h"
 
@@ -93,15 +94,16 @@ prepare()
     ty_E = class_alloc("foo|E", instance_size, E_slots, 1, ty_D);
     register_type(ty_E);
 
+    size_t ofs = sizeof(ATOM) + sizeof(short);
     assert(ty_E->tag_id > 0);
     assert(ty_E->instance_size == instance_size);
     assert(ty_E->slots_offsets != NULL);
     assert(ty_E->slots_offsets->fItems == 4);
     assert(ty_E->slots == E_slots);
-    assert(type_slot_get(ty_E, s2_key) == sizeof(ATOM));
-    assert(type_slot_get(ty_E, s1_key) == 0);
-    assert(type_slot_get(ty_E, s4_key) == sizeof(ATOM) + sizeof(short) + sizeof(char));
-    assert(type_slot_get(ty_E, s3_key) == sizeof(ATOM) + sizeof(short));
+    assert(type_slot_get(ty_E, s2_key) == ofs + sizeof(ATOM));
+    assert(type_slot_get(ty_E, s1_key) == ofs + 0);
+    assert(type_slot_get(ty_E, s4_key) == ofs + sizeof(ATOM) + sizeof(short) + sizeof(char));
+    assert(type_slot_get(ty_E, s3_key) == ofs + sizeof(ATOM) + sizeof(short));
   }
 }
 

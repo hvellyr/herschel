@@ -1,0 +1,28 @@
+-- check macros on macros properly replace even multiline replacevalues
+
+def macro OPX
+{
+ { def OPX ?n:name(?t0:name, ?op:operator, ?t1:name) } ->
+   { def ?n(l @ ?t0, r @ ?t1) : Bool
+       l as ?t0 ?op r as ?t1
+   }
+}
+
+def macro OPX1
+{
+  { def OPX1 ?n:name(?t0:name, ?op:operator) } ->
+    {
+      def OPX ?n(?t0, ?op, Int8)
+      def OPX ?n(?t0, ?op, Int16)
+      def OPX ?n(?t0, ?op, Int32)
+      def OPX ?n(?t0, ?op, Int64)
+    }
+}
+
+def OPX lang|equal?(Float32, ==, Float32)
+def OPX lang|equal?(Float64, ==, Float64)
+
+def OPX1 lang|equal?(Int8, ==)
+def OPX1 lang|equal?(Int16, ==)
+def OPX1 lang|equal?(Int32, ==)
+def OPX1 lang|equal?(Int64, ==)

@@ -9,6 +9,8 @@ module lang
 
 export public (*)
 
+import "lang/types.h7"
+
 
 ------------------------------------------------------------------------------
 -- general type specifications
@@ -134,17 +136,18 @@ def alias LongDouble = Float128
 -- actions
 ----------------------------------------------------------------------
 
-def generic add(left @ 'T, right @ 'T) : 'T ...
+def generic add(left @ 'T, right @ 'V) : 'T ...
     ~ Computes the addition of @var{left} and @var{right}. ~
 
-def generic subtract(left @ 'T, right @ 'T) : 'T ...
+def generic subtract(left @ 'T, right @ 'V) : 'T ...
     ~ Computes the difference of @var{left} and @var{right}. ~
 
-def generic multiply(left @ 'T, right @ 'T) : 'T ...
+def generic multiply(left @ 'T, right @ 'V) : 'T ...
     ~ Computes the product of @var{left} and @var{right}. ~
 
-def generic divide(dividend @ 'T, divisor @ 'T) : 'T ...
+def generic divide(dividend @ 'T, divisor @ 'V) : 'T ...
     ~ Computes the quotient of @var{dividend} and @var{divisor}.  If
     @var{divisor} is 0 an @type{DivisionByZero} exception is raised. ~
+
 
 -- end of lang/numbers

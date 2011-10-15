@@ -22,79 +22,109 @@
 #include "log.h"
 #include "job.h"
 #include "filetool.h"
+#include "properties.h"
 
 #include "llvm/Config/config.h"
 
 using namespace herschel;
 
-static void
-displayVersion(bool verbose)
+namespace
 {
-  printf("%s %s - herschel compiler\n", "herschel", VERSION);
-  printf("Copyright (c) %s, %s\n", COPYRIGHTYEAR, COPYRIGHTOWNER);
-  printf("(base revision: %s)\n", HR_BASE_REVISION);
+  void
+  displayVersion(bool verbose)
+  {
+    printf("%s %s - herschel compiler\n", "herschel", VERSION);
+    printf("Copyright (c) %s, %s\n", COPYRIGHTYEAR, COPYRIGHTOWNER);
+    printf("(base revision: %s)\n", HR_BASE_REVISION);
 
-  if (verbose) {
-    printf("Using LLVM: %s (%s)\n", PACKAGE_STRING, LLVM_CONFIGTIME);
+    if (verbose) {
+      printf("Using LLVM: %s (%s)\n", PACKAGE_STRING, LLVM_CONFIGTIME);
+    }
   }
-}
 
 
-static void
-displayHelp()
-{
-  displayVersion(false);
-  /*      123456789012345678901234567890123456789012345678901234567890123456789012*/
-  /*               1         2         3         4         5         6         7  */
-  printf("\n");
-  printf("Usage: herschel [options] files...\n");
-  printf("Options:\n");
-  printf("  -h,      --help              Display this information\n");
-  printf("  -v,      --version           Display the version\n");
-  printf("           --verbose           Be verbose\n");
-  printf("  -D VAR=VALUE                 Define config VAR to be VALUE\n");
-  printf("     --define=VAR=VALUE\n");
-  printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
-  printf("                               {tokenizer|pass1|pass2|annotate|\n");
-  printf("                                transform|typify|import|macro|\n");
-  printf("                                codedump|typeconv}\n");
-  printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
-  printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
-  printf("  -O                           Optimize code more\n");
-  printf("  -On                          Turn off any (even basic) optimization\n");
-  printf("  -P,      --parse             Only parse the source files\n");
-  printf("  -c                           Only compile the source files, no link\n");
-  printf("  -s                           Compile to LLVM IR, no link\n");
-}
+  void
+  displayHelp()
+  {
+    displayVersion(false);
+    /*      123456789012345678901234567890123456789012345678901234567890123456789012*/
+    /*               1         2         3         4         5         6         7  */
+    printf("\n");
+    printf("Usage: herschel [options] files...\n");
+    printf("Options:\n");
+    printf("  -h,      --help              Display this information\n");
+    printf("  -v,      --version           Display the version\n");
+    printf("           --verbose           Be verbose\n");
+    printf("  -D VAR=VALUE                 Define config VAR to be VALUE\n");
+    printf("     --define=VAR=VALUE\n");
+    printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
+    printf("                               {tokenizer|pass1|pass2|annotate|\n");
+    printf("                                transform|typify|import|macro|\n");
+    printf("                                codedump|typeconv}\n");
+    printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
+    printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
+    printf("\n");
+    printf("  -P,      --parse             Only parse the source files\n");
+    printf("  -c                           Only compile the source files, no link\n");
+    printf("  -s                           Compile to LLVM IR, no link\n");
+    printf("\n");
+    printf("  -O                           Optimize code more\n");
+    printf("  -On                          Turn off any (even basic) optimization\n");
+    printf("\n");
+    printf("  -Xl,On                       disable (all) linker optimizations\n");
+    printf("  --Xlinker=OPTS               pass OPTS to the clang linker.  Multple\n");
+    printf("                               options can be comma separated\n");
+  }
 
 
-enum CompileFunction {
-  kDisplayHelp,
-  kDisplayVersion,
-  kParseFiles,
-  kCompileFiles,
-  kCompileFilesToIR,
-  kLinkAndCompileFiles,
-};
+  void
+  splitLinkerOptions(std::vector<String>& options, const String& arg)
+  {
+    String tmp = arg;
+    String lhs;
+
+    while (tmp.split(',', lhs, tmp) >= 0) {
+      if (!lhs.isEmpty())
+        options.push_back(lhs);
+    }
+
+    if (!tmp.isEmpty())
+      options.push_back(tmp);
+  }
 
 
-enum {
-  kOptHelp = 1,
-  kOptVersion,
-  kOptOutdir,
-  kOptOutput,
-  kOptVerbose,
-  kOptTrace,
-  kOptParse,
-  kOptDefine,
-  kOptInputDir,
-  kOptInputSysDir,
-  kOptCompile,
-  kOptCompileToBC,
-  kOptCompileToIR,
-  kOptOptimizeMore,
-  kOptOptimizeNone,
-};
+  enum CompileFunction {
+    kDisplayHelp,
+    kDisplayVersion,
+    kParseFiles,
+    kCompileFiles,
+    kCompileFilesToIR,
+    kLinkAndCompileFiles,
+  };
+
+
+  enum {
+    kOptHelp = 1,
+    kOptVersion,
+    kOptOutdir,
+    kOptOutput,
+    kOptVerbose,
+    kOptTrace,
+    kOptParse,
+    kOptDefine,
+    kOptInputDir,
+    kOptInputSysDir,
+    kOptCompile,
+    kOptCompileToBC,
+    kOptCompileToIR,
+    kOptOptimizeMore,
+    kOptOptimizeNone,
+    kOptLinkOptimizeNone,
+    kOptDebugJobs,
+    kOptLinkerOpt
+  };
+}                    // namespace end
+
 
 
 int
@@ -107,6 +137,7 @@ main(int argc, char** argv)
     { kOptOutput,       "-o",  "--output",          K(argument) },
     { kOptVerbose,      NULL,  "--verbose",        !K(argument) },
     { kOptTrace,        "-T",  "--trace",           K(argument) },
+    { kOptDebugJobs,    NULL,  "--jobs",           !K(argument) },
     { kOptParse,        "-P",  "--parse",          !K(argument) },
     { kOptDefine,       "-D",  "--define",          K(argument) },
     { kOptInputDir,     "-I",  "--input",           K(argument) },
@@ -116,12 +147,15 @@ main(int argc, char** argv)
     { kOptOptimizeMore, "-O",  NULL,               !K(argument) },
     { kOptOptimizeMore, "-O1", NULL,               !K(argument) },
     { kOptOptimizeNone, "-On", NULL,               !K(argument) },
+    { kOptLinkOptimizeNone, "-Xl,On", NULL,        !K(argument) },
+    { kOptLinkerOpt,    NULL,  "--Xl",              K(argument) },
     { 0,                NULL,  NULL,               !K(argument) } // sentinel
   };
 
   String outputFileName;
   String outdir;
   std::vector<String> hrcOptions;
+  std::vector<String> specLdOptions;
 
   CompileFunction func = kDisplayHelp;
   std::vector<String> files;
@@ -130,6 +164,8 @@ main(int argc, char** argv)
   OptionsParser optp(herschelOptions, argc, (const char**)argv);
 
   bool verbose = false;
+  bool doTraceJobCalls = false;
+
 
   while ((type = optp.nextOption(&option)) != OptionsParser::kNoMoreArgs) {
     switch (type) {
@@ -164,6 +200,13 @@ main(int argc, char** argv)
         hrcOptions.push_back(String("-T"));
         hrcOptions.push_back(option.fArgument);
         break;
+      case kOptDebugJobs:
+        doTraceJobCalls = true;
+        break;
+
+      case kOptLinkerOpt:
+        splitLinkerOptions(specLdOptions, option.fArgument);
+        break;
 
       case kOptParse:
         func = kParseFiles;
@@ -196,6 +239,10 @@ main(int argc, char** argv)
         break;
       case kOptOptimizeNone:
         hrcOptions.push_back(String("-On"));
+        break;
+      case kOptLinkOptimizeNone:
+        specLdOptions.push_back(String("-disable-inlining"));
+        specLdOptions.push_back(String("-disable-opt"));
         break;
       }
       break;
@@ -242,12 +289,12 @@ main(int argc, char** argv)
       hrcOptions.push_back(String("-o"));
       hrcOptions.push_back(outputFileName);
     }
-    startProcess(setup.fHrcPath, hrcOptions);
+    startProcess(setup.fHrcPath, hrcOptions, doTraceJobCalls);
     break;
 
   case kLinkAndCompileFiles:
     hrcOptions.insert(hrcOptions.begin(), String("-c"));
-    if (startProcess(setup.fHrcPath, hrcOptions) >= 0) {
+    if (startProcess(setup.fHrcPath, hrcOptions, doTraceJobCalls) >= 0) {
       std::vector<String> outFiles;
       for (size_t i = 0; i < files.size(); i++) {
         String outExt = makeCompileOutputFileExt(kLLVM_BC);
@@ -261,6 +308,9 @@ main(int argc, char** argv)
                        setup.fLdFlags.begin(),
                        setup.fLdFlags.end());
 
+      ldOptions.insert(ldOptions.end(),
+                       specLdOptions.begin(), specLdOptions.end());
+
       if (!outputFileName.isEmpty())
       {
         ldOptions.push_back(String("-o"));
@@ -273,7 +323,8 @@ main(int argc, char** argv)
                        outFiles.begin(), outFiles.end());
       ldOptions.push_back(setup.fLangKit);
       ldOptions.push_back(setup.fRuntimeLib);
-      startProcess(setup.fLdPath, ldOptions);
+
+      startProcess(setup.fLdPath, ldOptions, doTraceJobCalls);
     }
     break;
   }
@@ -289,4 +340,3 @@ main(int argc, char** argv)
 
   return 0;
 }
-

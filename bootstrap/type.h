@@ -32,6 +32,7 @@ namespace herschel
   class Scope;
   class SrcPos;
   class TypeSlot;
+  class TypeProperty;
 
   typedef std::vector<Type> TypeVector;
   typedef std::vector<TypeConstraint> TypeConstVector;
@@ -134,10 +135,9 @@ namespace herschel
 
   //! Represents a type in the compiler.  All type kinds (base, array, union,
   //! etc.) are all represented by this single type.  To distinguish between
-  //! the various kinds either use the predicate functions (isClass(),
-  //! isArray(), isInt32(), etc.) or the kind() function.
-  //!
-  //! The type class is intended to be uses as const immutable value object.
+  //! the various kinds either use the predicate functions (isClass(), \c
+  //! isArray(), \c isInt32(), etc.) or the \c kind() function.  The type
+  //! class is intended to be uses as const immutable value object.
   class Type
   {
   public:
@@ -176,6 +176,12 @@ namespace herschel
     static Type newInt32(bool isValue = true);
     //! Creates a new lang|UInt32 type instance.
     static Type newUInt32(bool isValue = true);
+
+    //! Creates a new lang|IntX type instance with X being the bitwidth.
+    static Type newInt(int bitwidth, bool isValue = true);
+    //! Creates a new lang|UIntX type instance with X being the bitwidth.
+    static Type newUInt(int bitwidth, bool isValue = true);
+
     //! Creates a new lang|Rational type instance.
     static Type newRational(bool isValue = true);
     //! Creates a new lang|Float32 type instance.
@@ -294,6 +300,12 @@ namespace herschel
 
     TypeEnumMaker* newBaseTypeEnumMaker() const;
 
+    //! Return the typeProperty specication for the receiver.  Check \c
+    //! isValid() on the return value before using it.  If \p mustExist is
+    //! true requesting the typeproperty for a non-predefined type will
+    //! assert.
+    const TypeProperty& typeProperty(bool mustExist = true) const;
+
     //@}
 
     //@{ Custom types
@@ -355,23 +367,46 @@ namespace herschel
     //@}
 
     //@{ array types
+
+    //! Indicates whether the type is an array type.  Use \c arrayBaseType()
+    //! to check the base array type.
     bool isArray() const;
+
+    //! Returns the receiver's base type.  Only valid if \c isArray() is true.
     const Type& arrayBaseType() const;
+
+    //! Returns the receiver's size indication.  If no size indication was
+    //! explicitely given returns \c 0.
     int arraySizeIndicator() const;
-    //! return the base type.  If *this is a single depth array identical to
-    //! arrayBaseType().
+
+    //! Returns the receiver's root base type.  If the receiver is a single
+    //! depth array the value is identical to \c arrayBaseType().
     Type arrayRootType() const;
+
+    //! Replace the receiver's base type with \p newBaseType.  Only valid if
+    //! \c isArray() is true.
     Type rebase(const Type& newBaseType) const;
     //@}
 
     //@{ Union types
+
+    //! Indicates whether the receiver is a union type.
     bool isUnion() const;
+
+    //! Returns the list of types in a union type.
     const TypeVector& unionTypes() const;
     //@}
 
     //@{ Sequence types
+
+    //! Indicates whether the receiver is a sequence type.
     bool isSequence() const;
+
+    //! Returns the list of types in a sequence type.
     const TypeVector& seqTypes() const;
+
+    //! Indicates whether the receiver, which must be a sequence type,
+    //! contains \p type as sequence type.
     bool containsType(const Type& type) const;
     //@}
 

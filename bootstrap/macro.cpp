@@ -290,6 +290,8 @@ herschel::macroParamType(const Token& token, String* paramName)
       return kMacro_paramlist;
     else if (type == String("body"))
       return kMacro_body;
+    else if (type == String("operator") || type == String("op"))
+      return kMacro_operator;
   }
   return kMacro_unknown;
 }

@@ -470,7 +470,7 @@ octal writing.  To distinguish a corresponding letter is
 100                     -- decimal
 100h                    -- hexadecimal
 100y                    -- binary
-100t                    -- octal
+100q                    -- octal
 @end example
 
 More notations exist for literal complex and rational numbers:
@@ -486,7 +486,10 @@ More notations exist for literal complex and rational numbers:
 
 By default literal integer numbers are of type @code{Int32}.  By
 appending an @code{u} they can be specified to be @emph{unsigned}, by
-appending an @code{l} or @code{L} they can be specified to be of type @emph{Int64}:
+appending an @code{l} or @code{L} they can be specified to be of type
+@emph{Int64}.  Appending a @code{s} (or @code{S}) specifies the number
+to be a @code{Int16}, appending a @code{t} (or @code{T}) specifies a
+@code{Int8}.
 
 @example
 1234u                   -- type: UInt32
@@ -522,6 +525,9 @@ In combination with different notations, the typing is always last:
 0fffffefeh : UInt32
 1.4675e-10 : Float64
 @end example
+
+The order of the notation and type suffixes is always: notation - type
+- imaginary.
 
 
 @c ....................................................................
@@ -4034,6 +4040,11 @@ replacement is a single token.
 Expects any valid expression.
 @end deffn
 
+@deffn {Macro type} :operator
+@deffnx {Macro type} :op
+Expects any valid operator (like @code{+}, @code{>=}, @code{**}, etc.).
+@end deffn
+
 @deffn {Macro type} :param
 Expects a single valid (function) parameter declaration.  The
 parameter can be a positional, named, or rest parameter.  The optional
@@ -4084,6 +4095,13 @@ but before recursive macro expansion.
 
 @example
 @{ let ?name ## -var = ?init @}
+@end example
+
+The right hand side of the @code{##} operator can also be a string,
+which is to be used if the right hand side does not form a symbol yet:
+
+@example
+@{ let ?name ## "42" = ?init @}
 @end example
 @end deffn
 
