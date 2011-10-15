@@ -17,7 +17,8 @@ namespace herschel
 {
   class String;
 
-  int startProcess(const String& cmd, const std::vector<String>& args);
+  int startProcess(const String& cmd, const std::vector<String>& args,
+                   bool logCalls = false);
 
 };                              // namespace
 
