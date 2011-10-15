@@ -425,11 +425,11 @@ CodegenBinaryNode::codegenOpDucktype(const BinaryNode* node) const
 {
   switch (node->op()) {
   case kOpPlus:
-    return codegenOpDuckTypeBinary(node, String("lang|add"), Type::newAny());
+    return codegenOpDuckTypeBinary(node, Names::kLangAdd, Type::newAny());
   case kOpMinus:
-    return codegenOpDuckTypeBinary(node, String("lang|subtract"), Type::newAny());
+    return codegenOpDuckTypeBinary(node, Names::kLangSubtract, Type::newAny());
   case kOpEqual:
-    return codegenOpDuckTypeBinary(node, String("lang|equal?"), Type::newBool());
+    return codegenOpDuckTypeBinary(node, Names::kLangEqualQ, Type::newBool());
   default:
     fprintf(stderr, "binary operator not support in ducktyping yet: %d", node->op());
     return NULL;

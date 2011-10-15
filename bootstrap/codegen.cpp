@@ -289,7 +289,7 @@ CodeGenerator::codegen(const NodeList& nl)
 llvm::Value*
 CodeGenerator::codegen(const SymbolNode* node)
 {
-  if (node->name() == String("lang|unspecified")) {
+  if (node->name() == Names::kLangUnspecified) {
     // TODO
     return llvm::Constant::getNullValue(fTypes->getType(node->type()));
   }

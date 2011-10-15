@@ -991,40 +991,40 @@ String
 Typifier::operatorNameByOp(OperatorType type) const
 {
   switch (type) {
-  case kOpAppend:       return String("append");
-  case kOpBitAnd:       return String("bitand");
-  case kOpBitOr:        return String("bitor");
-  case kOpBitXor:       return String("bitxor");
-  case kOpCompare:      return String("compare");
-  case kOpDivide:       return String("divide");
-  case kOpEqual:        return String("equal?");
-  case kOpExponent:     return String("exponent");
-  case kOpFold:         return String("fold");
-  case kOpGreater:      return String("greater?");
-  case kOpGreaterEqual: return String("greater-equal?");
-  case kOpIn:           return String("in");
-  case kOpIsa:          return String("isa?");
-  case kOpLess:         return String("less?");
-  case kOpLessEqual:    return String("less-equal?");
-  case kOpLogicalAnd:   return String("logand");
-  case kOpLogicalOr:    return String("logor");
-  case kOpMinus:        return String("subtract");
-  case kOpMod:          return String("mod");
-  case kOpRem:          return String("rem");
-  case kOpMultiply:     return String("multiply");
-  case kOpPlus:         return String("add");
-  case kOpShiftLeft:    return String("shift-left");
-  case kOpShiftRight:   return String("shift-right");
-  case kOpUnequal:      return String("unequal?");
+  case kOpAppend:       return String(MID_append);
+  case kOpBitAnd:       return String(MID_bitand);
+  case kOpBitOr:        return String(MID_bitor);
+  case kOpBitXor:       return String(MID_bitxor);
+  case kOpCompare:      return String(MID_compare);
+  case kOpDivide:       return String(MID_divide);
+  case kOpEqual:        return String(MID_EqualQ);
+  case kOpExponent:     return String(MID_exponent);
+  case kOpFold:         return String(MID_fold);
+  case kOpGreater:      return String(MID_GreaterQ);
+  case kOpGreaterEqual: return String(MID_GreaterEqualQ);
+  case kOpIn:           return String(MID_in);
+  case kOpIsa:          return String(MID_isaQ);
+  case kOpLess:         return String(MID_LessQ);
+  case kOpLessEqual:    return String(MID_LessEqualQ);
+  case kOpLogicalAnd:   return String(MID_logand);
+  case kOpLogicalOr:    return String(MID_logor);
+  case kOpMinus:        return String(MID_subtract);
+  case kOpMod:          return String(MID_mod);
+  case kOpRem:          return String(MID_rem);
+  case kOpMultiply:     return String(MID_multiply);
+  case kOpPlus:         return String(MID_add);
+  case kOpShiftLeft:    return String(MID_shiftLeft);
+  case kOpShiftRight:   return String(MID_shiftRight);
+  case kOpUnequal:      return String(MID_UnequalQ);
 
   case kOpInvalid:
   case kOpAssign:       return String("=");
-  case kOpAs:           return String("cast-to");
-  case kOpBy:           return String("by");
-  case kOpMapTo:        return String("map-to");
+  case kOpAs:           return String(MID_CastTo);
+  case kOpBy:           return String(MID_ById);
+  case kOpMapTo:        return String(MID_MapTo);
   case kOpRange:        return String("..");
-  case kOpThen:         return String("then");
-  case kOpWhile:        return String("while");
+  case kOpThen:         return String(MID_ThenId);
+  case kOpWhile:        return String(MID_WhileId);
     hr_invalid("");
   }
 
