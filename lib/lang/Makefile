@@ -22,6 +22,7 @@ LIBLANGKIT_SOURCES =  \
 
 LIBLANGKIT_OBJS = $(LIBLANGKIT_SOURCES:%.h7=$(BUILDDIR)/$(BUILDSTYLE)/%.bc)
 
+LANGKIT_BC = $(BUILDDIR)/$(BUILDSTYLE)/langkit.bc
 LANGKIT_LIB = $(BUILDDIR)/$(BUILDSTYLE)/langkit.hlib
 
 
@@ -39,10 +40,11 @@ all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) LANGKIT_LIBX
 #--------
 LANGKIT_LIBX: $(LANGKIT_LIB)
 
-$(LANGKIT_LIB): $(LIBLANGKIT_OBJS)
-	$(LLVM_EXE)/llvm-link -o $(BUILDDIR)/$(BUILDSTYLE)/langkit.bc $^
-	$(LLVM_EXE)/llvm-ar crus $@ $(BUILDDIR)/$(BUILDSTYLE)/langkit.bc
+$(LANGKIT_LIB): $(LANGKIT_BC)
+	$(LLVM_EXE)/llvm-ar crus $@ $^
 
+$(LANGKIT_BC): $(LIBLANGKIT_OBJS)
+	$(LLVM_EXE)/llvm-link -o $@ $^
 
 
 
