@@ -1,0 +1,6 @@
+def foo(x, m : Int) : Bool
+  match (x) {
+    |   : Bool -> false
+    | n : Int -> n == m
+    |   : Any -> true
+  }

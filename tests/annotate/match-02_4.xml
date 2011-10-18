@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</type>
+</param>
+<param sym='m' type='pos'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='__match_0'>
+<init>
+<symbol  refer='param'>x</symbol>
+</init>
+</vardef>
+</let>
+<if>
+<test>
+<apply>
+<symbol  refer='generic'>lang|isa?</symbol>
+<args>
+<symbol  refer='local'>__match_0</symbol>
+<type  ty='lang|Bool'/>
+</args>
+</apply>
+</test>
+<then>
+<block>
+<false/>
+</block>
+</then>
+<else>
+<if>
+<test>
+<apply>
+<symbol  refer='generic'>lang|isa?</symbol>
+<args>
+<symbol  refer='local'>__match_0</symbol>
+<type  ty='lang|Int32'/>
+</args>
+</apply>
+</test>
+<then>
+<block>
+<let>
+<vardef sym='n'>
+<type>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</type>
+<init>
+<cast>
+<base>
+<symbol  refer='local'>__match_0</symbol>
+</base>
+<as>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</as>
+</cast>
+</init>
+</vardef>
+</let>
+<binary op='=='>
+<symbol  refer='local'>n</symbol>
+<symbol  refer='param'>m</symbol>
+</binary>
+</block>
+</then>
+<else>
+<block>
+<true/>
+</block>
+</else>
+</if>
+</else>
+</if>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

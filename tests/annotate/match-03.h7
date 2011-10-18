@@ -1,0 +1,10 @@
+-- since there's no explicit Any branch the match will not compile; test
+-- for the implicit lang|unspecified value of the match for other types
+-- than Bool and Int.
+
+def foo(x, m : Int) : Bool
+  match (x) {
+    |   : Bool -> false
+    | n : Int -> n == m
+  }
+

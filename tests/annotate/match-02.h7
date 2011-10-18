@@ -1,0 +1,8 @@
+-- the location of the lang|Any branch does not matter.
+
+def foo(x, m : Int) : Bool
+  match (x) {
+    |   : Any -> true
+    |   : Bool -> false
+    | n : Int -> n == m
+  }
