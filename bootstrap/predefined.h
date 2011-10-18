@@ -97,6 +97,7 @@ namespace herschel
 #define MID_NumberTypeName      MID_core_ns "|" "Number"
 #define MID_ComplexTypeName     MID_core_ns "|" "Complex"
 #define MID_RationalTypeName    MID_core_ns "|" "Rational"
+#define MID_IntegerTypeName     MID_core_ns "|" "Integer"
 
 #define MID_Float32TypeName     MID_core_ns "|" "Float32"
 #define MID_Float64TypeName     MID_core_ns "|" "Float64"
@@ -170,6 +171,7 @@ namespace herschel
     const static String kNumberTypeName;
     const static String kComplexTypeName;
     const static String kRationalTypeName;
+    const static String kIntegerTypeName;
 
     const static String kFloat32TypeName;
     const static String kFloat64TypeName;
@@ -222,6 +224,8 @@ namespace herschel
     const static String kLangLessEqualQ;
     const static String kLangGreaterQ;
     const static String kLangGreaterEqualQ;
+
+    const static String kLangIsaQ;
 
     const static String kLangAdd;
     const static String kLangSubtract;

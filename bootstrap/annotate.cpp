@@ -515,11 +515,7 @@ Annotator::annotate(KeyargNode* node)
 void
 Annotator::annotate(MatchNode* node)
 {
-  // TODO : set tail node position
-  annotateNode(node->expr());
-  for (size_t i = 0; i < node->mappingCount(); i++) {
-    annotateNode(node->mappingAt(i).fConsequent);
-  }
+  hr_invalid("there should be no match mode anymore in this phase");
 }
 
 

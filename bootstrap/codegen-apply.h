@@ -73,6 +73,8 @@ namespace herschel
     llvm::Value* emitArraySliceSet(const ApplyNode* node) const;
     llvm::Value* emitArrayNumItems(const ApplyNode* node) const;
 
+    llvm::Value* emitIsaApply(const ApplyNode* applyNode) const;
+
     struct ArraySliceAccessData
     {
       llvm::Value* fArray;

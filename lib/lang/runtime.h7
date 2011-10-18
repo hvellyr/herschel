@@ -24,6 +24,11 @@ def generic type-of(obj @ 'T) : Class<'T> ...
     ~ Returns the type of an object @var{obj}. ~
 
 
+def generic isa?(obj @ 'T, ty @ Class<'V>) : Bool ...
+    ~ If @var{obj} is an instance, indicates whether @var{obj} is of type
+    @var{ty}.  If @var{obj} is a type or a class itself indicates whether
+    @var{obj} is a kind of @var{ty}. ~
+
 
 ------------------------------------------------------------------------------
 -- Default value
