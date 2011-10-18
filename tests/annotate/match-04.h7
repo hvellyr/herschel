@@ -1,0 +1,9 @@
+-- the mapping bindings n (Bool) and n (Int) are local to the respective
+-- consequent.  There must be no name/type clash of the n bindings.
+
+def foo(x, m : Int) : Bool
+  match (x) {
+    |   : Any -> true
+    | n : Bool -> n
+    | n : Int -> n == m
+  }
