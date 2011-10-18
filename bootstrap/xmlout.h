@@ -74,7 +74,7 @@ namespace herschel
   public:
     XmlRenderer(Port<Octet>* port, bool showNodeType = false);
 
-    void render(AptNode* node);
+    void render(const AptNode* node);
 
     void renderNode(const ApplyNode* node);
     void renderNode(const ArrayNode* node);
@@ -177,6 +177,9 @@ namespace herschel
                            const char* tagName, const TypeVector& types);
 
     String displayTypeConv(const AptNode* node);
+
+    void dump(const AptNode* node);
+
   };
 };                              // namespace
 
