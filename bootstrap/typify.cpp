@@ -107,6 +107,11 @@ Typifier::isNodeCallToGenericFunction(const AptNode* node) const
         if (args.size() == 3 && args[0]->type().isArray())
           return false;
       }
+      else if (applyNode->simpleCallName() == Names::kLangIsaQ) {
+        const NodeList& args = applyNode->children();
+        if (args.size() == 2)
+          return false;
+      }
 
       const FunctionNode* funcNode = (
         dynamic_cast<const FunctionNode*>(applyNode->scope()
@@ -1479,11 +1484,7 @@ Typifier::typify(KeyargNode* node)
 void
 Typifier::typify(MatchNode* node)
 {
-  // TODO
-  typifyNode(node->expr());
-  for (size_t i = 0; i < node->mappings().size(); i++) {
-    typifyNode(node->mappings()[i].fConsequent);
-  }
+  hr_invalid("there should be no match mode anymore in this phase");
 }
 
 

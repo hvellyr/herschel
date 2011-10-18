@@ -167,6 +167,7 @@ namespace herschel
     E_WhileTypeMismatch   = 0x441a,
     E_BinaryTypeMismatch  = 0x441b,
     E_BadArgKind          = 0x441c,
+    E_MatchAmbiguousType  = 0x441d,
 
     // module parsing
     E_MissingModName      = 0x4500,

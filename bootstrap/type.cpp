@@ -1393,7 +1393,8 @@ Type::isSigned() const
 {
   if ( isBuiltinType(Names::kNumberTypeName) ||
        isBuiltinType(Names::kComplexTypeName) ||
-       isBuiltinType(Names::kRationalTypeName) )
+       isBuiltinType(Names::kRationalTypeName) ||
+       isBuiltinType(Names::kIntegerTypeName))
     return true;
 
   const TypeProperty& prop = typeProperty(!K(mustExist));
@@ -1408,12 +1409,22 @@ Type::isAnyNumber() const
 {
   if ( isBuiltinType(Names::kNumberTypeName) ||
        isBuiltinType(Names::kComplexTypeName) ||
-       isBuiltinType(Names::kRationalTypeName) )
+       isBuiltinType(Names::kRationalTypeName) ||
+       isBuiltinType(Names::kIntegerTypeName))
     return true;
 
   const TypeProperty& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return prop.isAnyNumber();
+  return false;
+}
+
+
+bool
+Type::isInteger() const
+{
+  if ( isBuiltinType(Names::kIntegerTypeName))
+    return true;
   return false;
 }
 
@@ -1508,6 +1519,9 @@ Type::isAnyInt() const
 bool
 Type::isAnySignedInt() const
 {
+  if ( isBuiltinType(Names::kIntegerTypeName))
+    return true;
+
   const TypeProperty& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return prop.isSigned() && prop.isAnyInt();
@@ -1518,6 +1532,9 @@ Type::isAnySignedInt() const
 bool
 Type::isAnyUInt() const
 {
+  // if ( isBuiltinType(Names::kIntegerTypeName))
+  //   return true;
+
   const TypeProperty& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return !prop.isSigned() && prop.isAnyInt();

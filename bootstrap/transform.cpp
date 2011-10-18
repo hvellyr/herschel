@@ -370,7 +370,54 @@ Transformator::transform(MatchNode* node)
   for (size_t i = 0; i < node->mappingCount(); i++) {
     node->setConsequentAt(i, transformNode(node->mappingAt(i).fConsequent));
   }
-  return node;
+
+  Ptr<AptNode> rootIf;
+  Ptr<IfNode> lastIf;
+  Ptr<AptNode> elseAlternate;
+
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    if (node->mappingAt(i).fMatchType.isAny())
+    {
+      if (elseAlternate != NULL) {
+        errorf(node->mappingAt(i).fSrcPos, E_MatchAmbiguousType,
+               "redefinition of catch-all lang|Any branch in match");
+        errorf(elseAlternate->srcpos(), E_MatchAmbiguousType,
+               "previous Any branch was here");
+      }
+      else {
+        elseAlternate = node->mappingAt(i).fConsequent;
+      }
+    }
+    else {
+      Ptr<ApplyNode> isaCall = new ApplyNode(node->mappingAt(i).fSrcPos,
+                                             new SymbolNode(node->mappingAt(i).fSrcPos,
+                                                            Names::kLangIsaQ));
+      isaCall->appendNode(node->expr()->clone());
+      isaCall->appendNode(new TypeNode(node->mappingAt(i).fSrcPos,
+                                       node->mappingAt(i).fMatchType));
+
+      Ptr<IfNode> newIf = new IfNode(node->mappingAt(i).fSrcPos,
+                                     isaCall,
+                                     node->mappingAt(i).fConsequent, NULL);
+      if (lastIf != NULL) {
+        lastIf->setAlternate(newIf);
+        lastIf = newIf;
+      }
+      else
+        rootIf = lastIf = newIf;
+    }
+  }
+
+  if (elseAlternate == NULL)
+    elseAlternate = new SymbolNode(node->srcpos(),
+                                   Names::kLangUnspecified);
+
+  if (lastIf != NULL)
+    lastIf->setAlternate(elseAlternate);
+  else
+    rootIf = elseAlternate;
+
+  return rootIf.release();
 }
 
 

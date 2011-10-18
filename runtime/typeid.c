@@ -427,6 +427,23 @@ instance_slot(ATOM instance, const Keyword* keyw)
 
 
 /* ---------------------------------------------------------------------------
+   check instances for type
+   ------------------------------------------------------------------------ */
+
+int
+instance_isa(ATOM instance, Type* ty)
+{
+#if defined(UNITTESTS)
+  hr_trace("isa", "isa '%s'?", ty->name);
+#endif
+
+  Type* instty = type_lookup_by_tag(instance.typeid);
+
+  return type_isa(instty, ty);
+}
+
+
+/* ---------------------------------------------------------------------------
    allocating instances
    ------------------------------------------------------------------------ */
 
@@ -553,5 +570,3 @@ allocate_double_array(ATOM* instance, Type* ty, double init_value, size_t items)
       *p = init_value;
   }
 }
-
-

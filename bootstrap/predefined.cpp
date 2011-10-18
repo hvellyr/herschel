@@ -27,6 +27,7 @@ const String herschel::Names::kClassTypeName       = String(MID_ClassTypeName);
 const String herschel::Names::kNumberTypeName      = String(MID_NumberTypeName);
 const String herschel::Names::kComplexTypeName     = String(MID_ComplexTypeName);
 const String herschel::Names::kRationalTypeName    = String(MID_RationalTypeName);
+const String herschel::Names::kIntegerTypeName     = String(MID_IntegerTypeName);
 
 const String herschel::Names::kFloat32TypeName     = String(MID_Float32TypeName);
 const String herschel::Names::kFloat64TypeName     = String(MID_Float64TypeName);
@@ -77,6 +78,8 @@ const String herschel::Names::kLangLessQ           = String(MID_lang_less_q);
 const String herschel::Names::kLangLessEqualQ      = String(MID_lang_equal_q);
 const String herschel::Names::kLangGreaterQ        = String(MID_lang_greater_q);
 const String herschel::Names::kLangGreaterEqualQ   = String(MID_lang_greater_equal_q);
+
+const String herschel::Names::kLangIsaQ            = String(MID_core_ns "|" MID_isaQ);
 
 const String herschel::Names::kLangAdd             = String(MID_core_ns "|" MID_add);
 const String herschel::Names::kLangSubtract        = String(MID_core_ns "|" MID_subtract);

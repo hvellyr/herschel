@@ -631,8 +631,7 @@ CodeGenerator::codegen(const IfNode* node)
 llvm::Value*
 CodeGenerator::codegen(const MatchNode* node)
 {
-  logf(kError, "Not supported yet: %s", typeid(node).name());
-  // TODO
+  hr_invalid("there should be no match mode anymore in this phase");
   return NULL;
 }
 

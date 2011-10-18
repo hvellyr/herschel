@@ -208,6 +208,9 @@ CodegenApply::emit(const ApplyNode* node) const
       if (args.size() == 1 && args[0]->type().isArray())
         return emitArrayNumItems(node);
     }
+    else if (symNode->name() == Names::kLangIsaQ) {
+      return emitIsaApply(node);
+    }
 
     if (symNode->hasCLinkage()) {
       // generic functions are not allowed to have C linkage
@@ -297,6 +300,50 @@ CodegenApply::emitAllocateApplyImpl(const AptNode* typeNode) const
 
   // TODO: if in tail position enforce ATOM return type?
   return retv;
+}
+
+
+//------------------------------------------------------------------------------
+
+llvm::Value*
+CodegenApply::emitIsaApply(const ApplyNode* applyNode) const
+{
+  String funcnm = String("instance_isa");
+
+  llvm::Function *isaFunc = module()->getFunction(llvm::StringRef(funcnm));
+  if (isaFunc == NULL) {
+    // int instance_isa(ATOM, Type*)
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(types()->getAtomType());
+    sign.push_back(types()->getTypeType());
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt1Ty(context()),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    isaFunc = llvm::Function::Create(ft,
+                                     llvm::Function::ExternalLinkage,
+                                     llvm::Twine("instance_isa"),
+                                     module());
+  }
+
+  std::vector<llvm::Value*> argv;
+
+  const NodeList& args = applyNode->children();
+
+  llvm::Value* baseExpr = tools()->wrapLoad(generator()->codegenNode(args[0]));
+  baseExpr = tools()->emitPackCode(args[0]->dstType(), args[0]->typeConv(),
+                                   baseExpr, args[0]->type());
+  hr_assert(baseExpr != NULL);
+  argv.push_back(baseExpr);
+
+  llvm::Value* tyExpr = emitTypeNameForAllocate(args[1]);
+  hr_assert(tyExpr != NULL);
+  argv.push_back(tyExpr);
+
+  hr_assert(isaFunc != NULL);
+  // TODO: if in tail position enforce ATOM return type?
+  return builder().CreateCall(isaFunc, argv.begin(), argv.end());
 }
 
 
