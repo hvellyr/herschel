@@ -203,6 +203,16 @@ herschel::xml::displayTypeConv(const AptNode* node)
 }
 
 
+//------------------------------------------------------------------------------
+
+void
+herschel::xml::dump(const AptNode* node)
+{
+  Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
+  out->render(node);
+}
+
+
 //----------------------------------------------------------------------------
 
 XmlRenderer::XmlRenderer(Port<Octet>* port, bool showNodeType)
@@ -214,7 +224,7 @@ XmlRenderer::XmlRenderer(Port<Octet>* port, bool showNodeType)
 
 
 void
-XmlRenderer::render(AptNode* node)
+XmlRenderer::render(const AptNode* node)
 {
   node->render(this);
 }
