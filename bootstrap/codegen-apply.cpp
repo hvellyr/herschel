@@ -140,7 +140,6 @@ CodegenApply::emitFunctionCall(const SrcPos& srcpos,
     llvm::Value* val = tools()->wrapLoad(generator()->codegenNode(args[i]));
 
     // TODO: can we assert that spec args are ATOM typed.
-    // warningf(args[i]->srcpos(), 0, "emit pack code");
     val = tools()->emitPackCode(args[i]->dstType(), args[i]->typeConv(),
                                 val, args[i]->type());
 

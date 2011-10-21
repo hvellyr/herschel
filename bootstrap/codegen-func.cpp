@@ -426,10 +426,8 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
         builder().CreateStore(tools()->wrapLoad(retv),
                               func.fFunc->arg_begin());
       }
-      else {
-        // no wrap-load!
+      else
         tools()->assignAtom(retv, func.fFunc->arg_begin());
-      }
 
       builder().CreateRetVoid();
     }
