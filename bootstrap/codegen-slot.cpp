@@ -114,7 +114,6 @@ CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
                               node->base()->typeConv(),
                               val,
                               node->base()->type());
-  // val->dump();
   if (val == NULL)
     return NULL;
   argv.push_back(val);
