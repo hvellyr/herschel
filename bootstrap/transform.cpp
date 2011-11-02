@@ -18,6 +18,7 @@
 #include "properties.h"
 #include "scope.h"
 #include "symbol.h"
+#include "xmlout.h"
 
 
 #include <typeinfo>  //for 'typeid' to work
@@ -256,7 +257,7 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
 AptNode*
 Transformator::transform(BlockNode* node)
 {
-  NodeList& nodes = node->children();
+  const NodeList& nodes = node->children();
   if (nodes.size() == 1) {
     OnNode* onnd = dynamic_cast<OnNode*>(nodes[0].obj());
     if (onnd != NULL) {
@@ -277,7 +278,6 @@ Transformator::transform(BlockNode* node)
   }
 
   int idx = findBlockSplitIndex(nodes);
-//  fprintf(stderr, "SPLIT AT: %d\n", idx);
   if (idx > 0) {
     Ptr<BlockNode> newBlock = new BlockNode(nodes[idx]->srcpos());
     for (size_t i = idx; i < nodes.size(); i++)
@@ -384,9 +384,8 @@ Transformator::transform(MatchNode* node)
         errorf(elseAlternate->srcpos(), E_MatchAmbiguousType,
                "previous Any branch was here");
       }
-      else {
+      else
         elseAlternate = node->mappingAt(i).fConsequent;
-      }
     }
     else {
       Ptr<ApplyNode> isaCall = new ApplyNode(node->mappingAt(i).fSrcPos,
@@ -416,6 +415,9 @@ Transformator::transform(MatchNode* node)
     lastIf->setAlternate(elseAlternate);
   else
     rootIf = elseAlternate;
+
+  lastIf = NULL;
+  elseAlternate = NULL;
 
   return rootIf.release();
 }
