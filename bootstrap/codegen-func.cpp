@@ -416,11 +416,15 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
                                   tools()->wrapLoad(retv),
                                   node->body()->type());
           // mmh.  Don't know why a createstore does work here.  But it does ...?
-          builder().CreateStore(tmpValue, func.fFunc->arg_begin());
+          builder().CreateStore(tools()->wrapLoad(tmpValue),
+                                func.fFunc->arg_begin());
           //assignAtom(tmpValue, func.fFunc->arg_begin());
         }
-        else
-          tools()->assignAtom(retv, func.fFunc->arg_begin());
+        else {
+//          tools()->assignAtom(retv, func.fFunc->arg_begin());
+          builder().CreateStore(tools()->wrapLoad(retv),
+                                func.fFunc->arg_begin());
+        }
       }
       else if (func.fRetType.isPlainType()) {
         builder().CreateStore(tools()->wrapLoad(retv),
