@@ -548,7 +548,7 @@ ArrayTypeNode::typeNode() const
 ArrayTypeNode*
 ArrayTypeNode::clone() const
 {
-  return cloneScope(this, new ArrayTypeNode(fSrcPos, fTypeNode));
+  return cloneScope(this, new ArrayTypeNode(fSrcPos, nodeClone(fTypeNode)));
 }
 
 
@@ -570,7 +570,7 @@ TypeNode::TypeNode(const SrcPos& srcpos, const Type& type)
 TypeNode*
 TypeNode::clone() const
 {
-  return cloneScope(this, new TypeNode(fSrcPos, fType));
+  return cloneScope(this, new TypeNode(fSrcPos, fType.clone()));
 }
 
 
