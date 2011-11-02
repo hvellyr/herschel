@@ -146,7 +146,7 @@ CodegenApply::emitFunctionCall(const SrcPos& srcpos,
     if (val == NULL)
       return NULL;
 
-    argv.push_back(val);
+    argv.push_back(tools()->wrapLoad(val));
   }
 
   if (inlineRetv) {
