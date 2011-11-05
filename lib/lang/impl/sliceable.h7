@@ -7,6 +7,7 @@
 
 module lang
 
+import "lang/comparable.h7"
 import "lang/sliceable.h7"
 
 

@@ -16,6 +16,8 @@ include $(top_srcdir)/config.mk
 LIBLANGKIT_SOURCES =  \
 	numbers.h7          \
 	types.h7            \
+	copyable.h7         \
+	comparable.h7       \
 	runtime.h7          \
 	sliceable.h7	\
 	impl/numbers.h7

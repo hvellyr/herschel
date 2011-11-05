@@ -30,15 +30,17 @@
 -- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module core
-export public(Iterator, RewindableIterator)
+module lang
+export public(Iterator, RewindableIterator,
+              more?, next, rewind)
 
 def type Iterator<T>
 
-def generic end?(iter @ Iterator<'T>) : Bool ...
-    ~ Indicates whether @var{iter} is at the end.
+def generic more?(iter @ Iterator<'T>) : Bool ...
+    ~ Indicates whether there're more element in @var{iter} which can be
+    requested with @code{next}.
 
-    @returns @const{false} if there are more elements to be returned by
+    @returns @const{true} if there are more elements to be returned by
              @code{next}. ~
 
 def generic next(iter @ ^Iterator<'T>) : 'T ...

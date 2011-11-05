@@ -5,6 +5,7 @@
 --
 -- This source code is released under the BSD License.
 
+
 -- this import should be private inside of the following "lang" module.
 -- Since macros don't save the context yet, we still have to import the
 -- stdlib into the public here.
@@ -38,3 +39,5 @@ else {
     { assert(?expr:expr) } -> { true }
   }
 }
+
+-- end of assert.h7

@@ -8,7 +8,9 @@
 module core
 export public(*)
 
-import "core/common.h7"
+import "lang/comparable.h7"
+import "lang/copyable.h7"
+import "lang/sliceable.h7"
 
 
 def type String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)

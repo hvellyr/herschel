@@ -45,6 +45,9 @@ export public(ForEachVisitor,
               MultiMap, SortedMultiMap, MultiMap!, SortedMultiMap!)
 
 import "core/sliceable.h7"
+import "lang/iterable.h7"
+import "lang/iterator.h7"
+
 
 ------------------------------------------------------------------------------
 -- base of all collections
@@ -78,13 +81,6 @@ def generic contains?(cltn @ 'C, elt @ 'T) : Bool
     @example
     equal(contained-element, @var{elt})
     @end example ~
-
-def generic iterator(cltn @ 'C) : Iterator<'T>
-    where C isa Collection<'T> ...
-    ~ Returns an iterator over the contained elements in @var{cltn}
-
-    The order of elements delivered by the returned iterator dependants
-    on the algorithm used by @var{cltn}. ~
 
 
 def generic for-each(cltn @ 'C, func : ForEachVisitor<'T>) : 'C
