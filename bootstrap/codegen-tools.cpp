@@ -373,7 +373,13 @@ CodegenTools::emitPackCode(const Type& dstType, TypeConvKind convKind,
     case kAtom2PlainConv:
       return makeTypeCastAtomToPlain(value, dstType);
     case kPlain2AtomConv:
-      return valType.typeProperty().emitPackCode(this, value);
+      {
+         const TypeProperty& prop = valType.typeProperty(!K(mustExist));
+         llvm::Value* retval = prop.isValid()
+           ? prop.emitPackCode(this, value)
+           : value;
+         return retval;
+      }
 
     case kTypeCheckConv:
       // fprintf(stderr, "Not implemented yet\n");

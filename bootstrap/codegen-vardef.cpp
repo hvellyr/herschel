@@ -99,7 +99,7 @@ CodegenVardef::codegenForLocalVars(const VardefNode* node) const
                                                                types()->getType(node->type()));
 
   llvm::Value* val = tools()->emitPackCode(dstType, convKind, initval, type);
-  builder().CreateStore(val, stackSlot);
+  builder().CreateStore(tools()->wrapLoad(val), stackSlot);
 
   generator()->fNamedValues[node->name()] = stackSlot;
 

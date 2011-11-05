@@ -59,8 +59,7 @@ namespace herschel
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
       // TODO
-      return tools->wrapLoad(tools->makeFloatAtom(value,
-                                                  CodegenTools::kAtomFloat32));
+      return tools->makeFloatAtom(value, CodegenTools::kAtomFloat32);
     }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
