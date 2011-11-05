@@ -186,8 +186,19 @@ void
 Scope::registerScopeItem(const ScopeName& name, ScopeItem* item)
 {
   hr_assert(item != NULL);
-  hr_assert(lookupItemLocalImpl(SrcPos(), name,
-                                !K(showError), !K(doAutoMatch)).fItem == NULL);
+
+  Scope::LookupResult result = lookupItemLocalImpl(SrcPos(), name,
+                                                   K(showError),
+                                                   !K(doAutoMatch));
+  if (result.fItem != NULL)
+  {
+    errorf(item->srcpos(), E_SymbolRedefined, "redefinition of symbol '%s'",
+           (const char*)StrHelper(name.fName));
+    errorf(result.fItem->srcpos(), E_SymbolRedefined,
+           "symbol was defined here");
+
+    return;
+  }
 
   ScopeName base(name.fDomain, herschel::baseName(name.fName));
   String ns(herschel::nsName(name.fName));

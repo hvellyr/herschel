@@ -58,6 +58,7 @@ namespace herschel
     E_OnExprInType        = 0x1006,
 
     E_AmbiguousSym        = 0x2000,
+    E_SymbolRedefined     = 0x2001,
 
     E_UnknownLinkage      = 0x2100,
 
