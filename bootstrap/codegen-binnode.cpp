@@ -172,88 +172,88 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
 
   switch (node->op()) {
   case kOpPlus:
-    coleft = convertToPlainInt(node->dstType(), node->left(), left);
-    coright = convertToPlainInt(node->dstType(), node->right(), right);
+    coleft = convertToPlainInt(node->type(), node->left(), left);
+    coright = convertToPlainInt(node->type(), node->right(), right);
     return wrapInt(builder().CreateAdd(coleft, coright, "addtmp"),
-                   node->dstType());
+                   node->type());
   case kOpMinus:
-    coleft = convertToPlainInt(node->dstType(), node->left(), left);
-    coright = convertToPlainInt(node->dstType(), node->right(), right);
+    coleft = convertToPlainInt(node->type(), node->left(), left);
+    coright = convertToPlainInt(node->type(), node->right(), right);
     return wrapInt(builder().CreateSub(coleft, coright, "subtmp"),
-                   node->dstType());
+                   node->type());
   case kOpMultiply:
-    coleft = convertToPlainInt(node->dstType(), node->left(), left);
-    coright = convertToPlainInt(node->dstType(), node->right(), right);
+    coleft = convertToPlainInt(node->type(), node->left(), left);
+    coright = convertToPlainInt(node->type(), node->right(), right);
     return wrapInt(builder().CreateMul(coleft, coright, "multmp"),
-                   node->dstType());
+                   node->type());
   case kOpDivide:
-    coleft = convertToPlainInt(node->dstType(), node->left(), left);
-    coright = convertToPlainInt(node->dstType(), node->right(), right);
+    coleft = convertToPlainInt(node->type(), node->left(), left);
+    coright = convertToPlainInt(node->type(), node->right(), right);
     return wrapInt(builder().CreateSDiv(coleft, coright, "divtmp"),
-                   node->dstType());
+                   node->type());
   case kOpMod:
-    coleft = convertToPlainInt(node->dstType(), node->left(), left);
-    coright = convertToPlainInt(node->dstType(), node->right(), right);
+    coleft = convertToPlainInt(node->type(), node->left(), left);
+    coright = convertToPlainInt(node->type(), node->right(), right);
     return wrapInt(builder().CreateSRem(coleft, coright, "modtmp"),
-                   node->dstType());
+                   node->type());
   case kOpRem:
-    coleft = convertToPlainInt(node->dstType(), node->left(), left);
-    coright = convertToPlainInt(node->dstType(), node->right(), right);
+    coleft = convertToPlainInt(node->type(), node->left(), left);
+    coright = convertToPlainInt(node->type(), node->right(), right);
     return wrapInt(builder().CreateURem(coleft, coright, "remtmp"),
-                   node->dstType());
+                   node->type());
 
   case kOpLess:
-    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    dstType = maxIntType(node->left()->type(), node->right()->type());
     coleft = convertToPlainInt(dstType, node->left(), left);
     coright = convertToPlainInt(dstType, node->right(), right);
     if (node->left()->type().isSigned())
       return wrapBool(builder().CreateICmpSLT(coleft, coright, "lttmp"),
-                      node->dstType());
+                      node->type());
     else
       return wrapBool(builder().CreateICmpULT(coleft, coright, "lttmp"),
-                      node->dstType());
+                      node->type());
   case kOpLessEqual:
-    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    dstType = maxIntType(node->left()->type(), node->right()->type());
     coleft = convertToPlainInt(dstType, node->left(), left);
     coright = convertToPlainInt(dstType, node->right(), right);
     if (node->left()->type().isSigned())
       return wrapBool(builder().CreateICmpSLE(coleft, coright, "letmp"),
-                      node->dstType());
+                      node->type());
     else
       return wrapBool(builder().CreateICmpULE(coleft, coright, "letmp"),
-                      node->dstType());
+                      node->type());
   case kOpEqual:
-    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    dstType = maxIntType(node->left()->type(), node->right()->type());
     coleft = convertToPlainInt(dstType, node->left(), left);
     coright = convertToPlainInt(dstType, node->right(), right);
     return wrapBool(builder().CreateICmpEQ(coleft, coright, "eqtmp"),
-                    node->dstType());
+                    node->type());
   case kOpUnequal:
-    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    dstType = maxIntType(node->left()->type(), node->right()->type());
     coleft = convertToPlainInt(dstType, node->left(), left);
     coright = convertToPlainInt(dstType, node->right(), right);
     return wrapBool(builder().CreateICmpNE(coleft, coright, "netmp"),
-                    node->dstType());
+                    node->type());
   case kOpGreater:
-    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    dstType = maxIntType(node->left()->type(), node->right()->type());
     coleft = convertToPlainInt(dstType, node->left(), left);
     coright = convertToPlainInt(dstType, node->right(), right);
     if (node->left()->type().isSigned())
       return wrapBool(builder().CreateICmpSGT(coleft, coright, "gttmp"),
-                      node->dstType());
+                      node->type());
     else
       return wrapBool(builder().CreateICmpUGT(coleft, coright, "gttmp"),
-                      node->dstType());
+                      node->type());
   case kOpGreaterEqual:
-    dstType = maxIntType(node->left()->dstType(), node->right()->dstType());
+    dstType = maxIntType(node->left()->type(), node->right()->type());
     coleft = convertToPlainInt(dstType, node->left(), left);
     coright = convertToPlainInt(dstType, node->right(), right);
     if (node->left()->type().isSigned())
       return wrapBool(builder().CreateICmpSGE(coleft, coright, "getmp"),
-                      node->dstType());
+                      node->type());
     else
       return wrapBool(builder().CreateICmpUGE(coleft, coright, "getmp"),
-                      node->dstType());
+                      node->type());
 
   default:
     fprintf(stderr, "invalid binary operator: %d", node->op());
@@ -282,10 +282,10 @@ CodegenBinaryNode::codegenOpKeywKeyw(const BinaryNode* node,
   switch (node->op()) {
   case kOpEqual:
     return wrapBool(builder().CreateICmpEQ(leftAsInt, rightAsInt, "eqkw"),
-                    node->dstType());
+                    node->type());
   case kOpUnequal:
     return wrapBool(builder().CreateICmpNE(leftAsInt, rightAsInt, "nekw"),
-                    node->dstType());
+                    node->type());
 
   default:
     fprintf(stderr, "invalid binary operator for keyword: %d", node->op());
@@ -337,10 +337,10 @@ CodegenBinaryNode::codegenOpBoolBool(const BinaryNode* node,
   switch (node->op()) {
   case kOpEqual:
     return wrapBool(builder().CreateICmpEQ(coleft, coright, "eqbool"),
-                    node->dstType());
+                    node->type());
   case kOpUnequal:
     return wrapBool(builder().CreateICmpNE(coleft, coright, "nebool"),
-                    node->dstType());
+                    node->type());
 
   default:
     fprintf(stderr, "invalid binary operator for bool: %d", node->op());
@@ -391,23 +391,23 @@ CodegenBinaryNode::codegenOpCharChar(const BinaryNode* node,
   switch (node->op()) {
   case kOpEqual:
     return wrapBool(builder().CreateICmpEQ(coleft, coright, "eqchr"),
-                    node->dstType());
+                    node->type());
   case kOpUnequal:
     return wrapBool(builder().CreateICmpNE(coleft, coright, "nechr"),
-                    node->dstType());
+                    node->type());
 
   case kOpLess:
     return wrapBool(builder().CreateICmpULT(coleft, coright, "ltchr"),
-                    node->dstType());
+                    node->type());
   case kOpLessEqual:
     return wrapBool(builder().CreateICmpULE(coleft, coright, "lechr"),
-                    node->dstType());
+                    node->type());
   case kOpGreater:
     return wrapBool(builder().CreateICmpUGT(coleft, coright, "gtchr"),
-                    node->dstType());
+                    node->type());
   case kOpGreaterEqual:
     return wrapBool(builder().CreateICmpUGE(coleft, coright, "gechr"),
-                    node->dstType());
+                    node->type());
 
   default:
     fprintf(stderr, "invalid binary operator for char: %d", node->op());
@@ -463,8 +463,13 @@ CodegenBinaryNode::codegenOpDuckTypeBinary(const BinaryNode* node,
   }
 
   NodeList args;
-  args.push_back(node->left());
-  args.push_back(node->right());
+  Ptr<AptNode> p = node->left();
+  p->setTypeConv(kPlain2AtomConv);
+  args.push_back(p);
+
+  p = node->right();
+  p->setTypeConv(kPlain2AtomConv);
+  args.push_back(p);
 
   return CodegenApply(generator()).emitFunctionCall(node->srcpos(),
                                                     funcnm,

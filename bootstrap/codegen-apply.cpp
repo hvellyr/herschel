@@ -146,7 +146,7 @@ CodegenApply::emitFunctionCall(const SrcPos& srcpos,
     if (val == NULL)
       return NULL;
 
-    argv.push_back(val);
+    argv.push_back(tools()->wrapLoad(val));
   }
 
   if (inlineRetv) {
@@ -843,9 +843,11 @@ CodegenApply::emitArraySliceAddress(const ApplyNode* node) const
 llvm::Value*
 CodegenApply::emitArraySliceAccess(const ApplyNode* node) const
 {
+#if defined(IS_DEBUG)
   const NodeList& args = node->children();
   hr_assert(args.size() == 2);
   hr_assert(args[0]->type().isArray());
+#endif
 
   ArraySliceAccessData arrayAccces = emitArraySliceAddress(node);
   llvm::Value* arraySliceVal = builder().CreateLoad(arrayAccces.fAddr);
@@ -879,9 +881,11 @@ CodegenApply::emitArraySliceSet(const ApplyNode* node) const
 llvm::Value*
 CodegenApply::emitArrayNumItems(const ApplyNode* node) const
 {
+#if defined(IS_DEBUG)
   const NodeList& args = node->children();
   hr_assert(args.size() == 1);
   hr_assert(args[0]->type().isArray());
+#endif
 
   llvm::Value* numItems = emitArraySize(node);
   llvm::Value* numItemsVal = builder().CreateLoad(numItems);

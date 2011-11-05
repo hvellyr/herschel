@@ -1519,9 +1519,6 @@ Type::isAnyInt() const
 bool
 Type::isAnySignedInt() const
 {
-  if ( isBuiltinType(Names::kIntegerTypeName))
-    return true;
-
   const TypeProperty& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return prop.isSigned() && prop.isAnyInt();

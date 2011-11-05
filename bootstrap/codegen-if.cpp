@@ -65,7 +65,7 @@ CodegenIf::emit(const IfNode* node) const
                                                    node->test()->type());
 
   // Convert condition to a bool by comparing equal to 1
-  testValue = builder().CreateICmpEQ(extrTestVal,
+  testValue = builder().CreateICmpEQ(tools()->wrapLoad(extrTestVal),
                                     llvm::ConstantInt::get(context(),
                                                            llvm::APInt(1, 1, true)),
                                     "ifcond");
@@ -90,10 +90,12 @@ CodegenIf::emit(const IfNode* node) const
     tools()->wrapLoad(generator()->codegenNode(node->consequent()));
   if (thenValue == NULL)
     return NULL;
-  llvm::Value* thenValue2 = tools()->emitPackCode(node->consequent()->dstType(),
-                                                  node->consequent()->typeConv(),
-                                                  thenValue,
-                                                  node->consequent()->type());
+
+  llvm::Value* thenValue2 = tools()->wrapLoad(
+    tools()->emitPackCode(node->consequent()->dstType(),
+                          node->consequent()->typeConv(),
+                          thenValue,
+                          node->consequent()->type()));
 
   builder().CreateBr(mergeBB);
   // Get a reference to the current thenBB, since codegen of 'then' can change
@@ -111,10 +113,10 @@ CodegenIf::emit(const IfNode* node) const
       tools()->wrapLoad(generator()->codegenNode(node->alternate()));
     if (elseValue0 == NULL)
       return NULL;
-    elseValue = tools()->emitPackCode(node->alternate()->dstType(),
-                                      node->alternate()->typeConv(),
-                                      elseValue0,
-                                      node->alternate()->type());
+    elseValue = tools()->wrapLoad(tools()->emitPackCode(node->alternate()->dstType(),
+                                                        node->alternate()->typeConv(),
+                                                        elseValue0,
+                                                        node->alternate()->type()));
   }
   else
     elseValue = llvm::Constant::getNullValue(types()->getType(node->type()));

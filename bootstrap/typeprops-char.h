@@ -33,7 +33,7 @@ namespace herschel
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
-      return tools->wrapLoad(tools->makeCharAtom(value));
+      return tools->makeCharAtom(value);
     }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -74,7 +74,7 @@ namespace herschel
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
-      return tools->wrapLoad(tools->makeIntAtom(value, CodegenTools::kAtomInt8));
+      return tools->makeIntAtom(value, CodegenTools::kAtomInt8);
     }
 
     virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const

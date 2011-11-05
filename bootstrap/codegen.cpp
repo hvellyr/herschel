@@ -376,7 +376,7 @@ CodeGenerator::codegen(const AssignNode* node)
                                             node->rvalue()->typeConv(),
                                             fTools->wrapLoad(rvalue),
                                             node->rvalue()->type());
-    fBuilder.CreateStore(val, var);
+    fBuilder.CreateStore(fTools->wrapLoad(val), var);
 
     return rvalue;
   }

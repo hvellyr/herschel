@@ -25,8 +25,7 @@ namespace herschel
   {
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
-      return tools->wrapLoad(tools->makeIntAtom(value,
-                                                (CodegenTools::Typeid)atominttype));
+      return tools->makeIntAtom(value, (CodegenTools::Typeid)atominttype);
     }
 
     virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const { return bitsize / 8; }
