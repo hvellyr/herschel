@@ -50,6 +50,7 @@ def type Char
 def type Keyword
 
 
+when ignore {
 def generic equal?(left @ 'T, right @ 'V) : Bool ...
     ~ Indicates whether @var{left} and @var{right} are equal. ~
 
@@ -72,6 +73,6 @@ def generic greater-equal?(left @ 'T, right @ 'V) : Bool ...
 --     ~ Compares @var{left} with @var{right} and returns a negative integer
 -- if @var{left} is less than @var{right}, a zero if it is equal and a
 -- positive integer if is greater. ~
-
+}
 
 -- end of types.h7

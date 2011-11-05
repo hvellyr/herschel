@@ -37,16 +37,11 @@ import "core/common.h7"
 
 import "core/object.h7"
 
-import "core/string.h7"
 import "core/slice.h7"
 
 import "core/break.h7"
 
-import "core/iterator.h7"
 import "core/incr.h7"
-
-import "core/comparable.h7"
-import "core/copyable.h7"
 
 import "core/utils.h7"
 

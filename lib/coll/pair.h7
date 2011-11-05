@@ -94,7 +94,7 @@ def class PairIterator<T, Accessor<T>>(_root, acc)
 
 
 def core|next(self @ PairIterator<'Elt, 'AccType>) : 'Elt
-   if (not self.end?) {
+   if (self.more?) {
      let value = self.accessor(self.current)
      self.current = self.current.cdr
      value
@@ -103,8 +103,8 @@ def core|next(self @ PairIterator<'Elt, 'AccType>) : 'Elt
      eof
 
 
-def core|end?(pair @ PairIterator<'Elt, 'AccType>) : Bool
-   pair.current.nil? or not pair.current.kind-of?(Pair)
+def core|more?(pair @ PairIterator<'Elt, 'AccType>) : Bool
+   not pair.current.nil? and pair.current.kind-of?(Pair)
 
 
 
