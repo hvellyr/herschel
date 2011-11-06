@@ -10,6 +10,7 @@ export public(Comparable,
               compare,
               equal?, unequal?, less?, less-equal?, greater?, greater-equal?)
 
+import "lang/types.h7"
 import "lang/numbers.h7"
 
 
