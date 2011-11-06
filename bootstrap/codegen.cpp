@@ -499,8 +499,7 @@ CodeGenerator::codegen(const RealNode* node)
 llvm::Value*
 CodeGenerator::codegen(const StringNode* node)
 {
-  logf(kError, "Not supported yet: %s", typeid(node).name());
-  return NULL;
+  return fTools->makeStringAtom(node->value());
 }
 
 

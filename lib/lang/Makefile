@@ -19,8 +19,10 @@ LIBLANGKIT_SOURCES =  \
 	copyable.h7         \
 	comparable.h7       \
 	runtime.h7          \
-	sliceable.h7	\
-	impl/numbers.h7
+	sliceable.h7        \
+	string.h7           \
+	impl/numbers.h7     \
+	impl/string.h7
 
 LIBLANGKIT_OBJS = $(LIBLANGKIT_SOURCES:%.h7=$(BUILDDIR)/$(BUILDSTYLE)/%.bc)
 

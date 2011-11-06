@@ -7,10 +7,20 @@
 
 module lang
 
-import "lang.h7"
-import "string.h7"
+import "lang/string.h7"
+import "lang/stdlib.h7"
+import "lang/copyable.h7"
+
+extern ("C") {
+  int lang_string_equal(const struct ATOM one, const struct ATOM two);
+}
 
 
+def lang|equal?(one @ String, two @ String) : Bool
+  lang_string_equal(one, two) == 0
+
+
+when ignore {
 def class StringImpl : String
 {
   def slot data : Char[]
@@ -73,5 +83,8 @@ def core|slice(str @ StringImpl, from @ Ordinal, to @ Ordinal)
 
 def compare(one @ StringImpl, two @ StringImpl) : Int
   one.data <=> two.data
+
+}
+
 
 -- end of impl/string

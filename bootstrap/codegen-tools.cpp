@@ -134,6 +134,44 @@ CodegenTools::makeKeywordAtom(const String& keyword)
 
 
 llvm::Value*
+CodegenTools::makeStringAtom(const String& str)
+{
+  String funcnm = String("allocate_string");
+
+  llvm::Function *allocFunc = module()->getFunction(llvm::StringRef(funcnm));
+  if (allocFunc == NULL) {
+    // void allocate_array(ATOM* instance, Type* ty, size_t items);
+
+    std::vector<const llvm::Type*> sign;
+    sign.push_back(types()->getAtomType()->getPointerTo());
+    sign.push_back(llvm::Type::getInt8PtrTy(context()));
+
+    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
+                                                     sign,
+                                                     !K(isVarArg));
+
+    allocFunc = llvm::Function::Create(ft,
+                                       llvm::Function::ExternalLinkage,
+                                       llvm::Twine(StrHelper(funcnm)),
+                                       module());
+  }
+
+  std::vector<llvm::Value*> argv;
+  llvm::Function* curFunction = builder().GetInsertBlock()->getParent();
+  llvm::AllocaInst* retv = tools()->createEntryBlockAlloca(curFunction,
+                                                           String("string_retv"),
+                                                           types()->getAtomType());
+  hr_assert(retv != NULL);
+  argv.push_back(retv);
+  argv.push_back(builder().CreateGlobalStringPtr(StrHelper(str),
+                                                 llvm::Twine(StrHelper(str + "_str"))));
+
+  builder().CreateCall(allocFunc, argv.begin(), argv.end());
+  return retv;
+}
+
+
+llvm::Value*
 CodegenTools::makeCharAtom(llvm::Value* val)
 {
   llvm::Function *curFunction = builder().GetInsertBlock()->getParent();

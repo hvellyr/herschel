@@ -81,6 +81,11 @@ tag_id_for_type(const Type* type)
 
   else if (strcmp(type->name, "__QN4lang7Float32") == 0)
     return TYPE_TAG_FLOAT32;
+  else if (strcmp(type->name, "__QN4lang7Float64") == 0)
+    return TYPE_TAG_FLOAT64;
+
+  else if (strcmp(type->name, "__QN4lang6String") == 0)
+    return TYPE_TAG_STRING;
 
   if (strcmp(type->name, "__QN4lang5Int32[]") == 0)
     return TYPE_TAG_INT32 + TYPE_ARRAY_OFFSET;
