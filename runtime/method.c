@@ -37,6 +37,7 @@ generic_function_alloc(const char* name, size_t argc)
   GenericFunction* gf = malloc(sizeof(GenericFunction));
   gf->name = name;
   gf->argc = argc;
+  gf->methods = NULL;
   return gf;
 }
 
