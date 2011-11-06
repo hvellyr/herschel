@@ -83,6 +83,8 @@ const String herschel::Names::kLangIsaQ            = String(MID_core_ns "|" MID_
 
 const String herschel::Names::kLangAdd             = String(MID_core_ns "|" MID_add);
 const String herschel::Names::kLangSubtract        = String(MID_core_ns "|" MID_subtract);
+const String herschel::Names::kLangMultiply        = String(MID_core_ns "|" MID_multiply);
+const String herschel::Names::kLangDivide          = String(MID_core_ns "|" MID_divide);
 
 const String herschel::Names::kAppMain             = String(MID_app_main);
 

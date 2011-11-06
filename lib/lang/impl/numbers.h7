@@ -147,6 +147,9 @@ def lang|add(one @ Integer, two @ Integer) : Integer
 def lang|subtract(one @ Integer, two @ Integer) : Integer
   compute-integer(one, -, two)
 
+def lang|multiply(one @ Integer, two @ Integer) : Integer
+  compute-integer(one, *, two)
+
 
 
 

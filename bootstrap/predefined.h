@@ -229,6 +229,8 @@ namespace herschel
 
     const static String kLangAdd;
     const static String kLangSubtract;
+    const static String kLangMultiply;
+    const static String kLangDivide;
 
     const static String kAppMain;
 
