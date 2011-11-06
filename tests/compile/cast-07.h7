@@ -1,0 +1,12 @@
+import "lang/assert.h7"
+
+def generic bar(y @ Integer)
+  y as Int32 + y as Int32
+
+def generic foo(x @ Integer, y @ Integer)
+  (x as Int32 + 3) as Integer + bar(y)
+
+
+def app|main()
+  assert(foo(11, 7) == 28)
+  0
