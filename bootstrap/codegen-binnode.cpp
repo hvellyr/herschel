@@ -469,11 +469,11 @@ CodegenBinaryNode::codegenOpDuckTypeBinary(const BinaryNode* node,
 
   NodeList args;
   Ptr<AptNode> p = node->left();
-  p->setTypeConv(kPlain2AtomConv);
+  p->setTypeConv(p->type().isPlainType() ? kPlain2AtomConv : kNoConv);
   args.push_back(p);
 
   p = node->right();
-  p->setTypeConv(kPlain2AtomConv);
+  p->setTypeConv(p->type().isPlainType() ? kPlain2AtomConv : kNoConv);
   args.push_back(p);
 
   return CodegenApply(generator()).emitFunctionCall(node->srcpos(),
