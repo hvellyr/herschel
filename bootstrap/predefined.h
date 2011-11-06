@@ -238,6 +238,7 @@ namespace herschel
 
     const static String kClangIntTypeName;
     const static String kClangCharTypeName;
+    const static String kClangAtomTypeName;
 
     // known keywords
     const static String kExitKeyword;

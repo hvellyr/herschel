@@ -90,6 +90,7 @@ const String herschel::Names::kAppMain             = String(MID_app_main);
 
 const String herschel::Names::kClangIntTypeName    = String(MID_clang_IntTypeName);
 const String herschel::Names::kClangCharTypeName   = String(MID_clang_CharTypeName);
+const String herschel::Names::kClangAtomTypeName   = String(MID_clang_ns "|ATOM");
 
 const String herschel::Names::kExitKeyword         = String(MID_exitKeyword);
 const String herschel::Names::kSignalKeyword       = String(MID_signalKeyword);

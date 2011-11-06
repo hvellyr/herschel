@@ -76,6 +76,7 @@ ExternCParser::parseTypeSpec()
 {
   bool isSigned = true;
   bool isConst = false;
+  bool isStruct = false;
   SrcPos srcpos = fToken.srcpos();
 
   if (fToken != kSymbol) {
@@ -97,6 +98,10 @@ ExternCParser::parseTypeSpec()
     isConst = true;
     nextToken();
   }
+  if (fToken.idValue() == String("struct")) {
+    isStruct = true;
+    nextToken();
+  }
 
   String type = fToken.idValue();
   int ptrDepth = 0;
@@ -112,6 +117,8 @@ ExternCParser::parseTypeSpec()
   }
 
   if (type == String("void") || type == String("float") || type == String("double"))
+    return Token(srcpos, makeCTypeName(type, K(isSigned), ptrDepth));
+  else if (type == String("ATOM") && isStruct)
     return Token(srcpos, makeCTypeName(type, K(isSigned), ptrDepth));
   else if (type == String("char") || type == String("short") ||
            type == String("int") || type == String("long"))

@@ -170,7 +170,7 @@ Typifier::annotateTypeConv(AptNode* node, const Type& dstType)
       // req. wrap_atom
       node->setTypeConv(kPlain2AtomConv);
     }
-    else if (node->type().isAny()) {
+    else if (node->type().isAny() || node->type().isClangAtom()) {
       // requires type_check
       node->setTypeConv(kTypeCheckConv);
     }
@@ -201,7 +201,7 @@ Typifier::enforceAtomTypeConv(AptNode* node, const Type& dstType)
     // req. wrap_atom
     node->setTypeConv(kPlain2AtomConv);
   }
-  else if (node->type().isAny()) {
+  else if (node->type().isAny() || node->type().isClangAtom()) {
     // requires type_check
     node->setTypeConv(kTypeCheckConv);
   }
