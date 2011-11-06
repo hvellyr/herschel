@@ -1449,7 +1449,7 @@ SecondPass::nextEnumInitValue(const SrcPos& srcpos,
       initExpr = singletonNodeListOrNull(parseExpr(lastInitToken));
   }
   else {
-    errorf(srcpos, E_EnumNotBaseType, "Enum init value is not of base type");
+    errorf(srcpos, E_EnumNotBaseType, "Enum init value is not a base type");
     tyerror(baseType, "Enum Basetype");
   }
 
