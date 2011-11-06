@@ -26,6 +26,7 @@
 #include "typeprops-float.h"
 #include "typeprops-int.h"
 #include "typeprops-keyword.h"
+#include "typeprops-string.h"
 
 
 using namespace herschel;
@@ -1335,7 +1336,8 @@ Type::typeProperty(bool mustExist) const
   static const CharTypeProperty      charProperty;
   static const ClangCharTypeProperty clangCharProperty;
   static const ClangIntTypeProperty  clangIntProperty;
-  static const KeywordTypeProperty   keywIntProperty;
+  static const KeywordTypeProperty   keywordProperty;
+  static const StringTypeProperty    stringProperty;
 
   String nm = typeName();
   if (nm == Names::kInt32TypeName)
@@ -1367,7 +1369,9 @@ Type::typeProperty(bool mustExist) const
     return charProperty;
 
   else if (nm == Names::kKeywordTypeName)
-    return keywIntProperty;
+    return keywordProperty;
+  else if (nm == Names::kStringTypeName)
+    return stringProperty;
 
   else if (nm == Names::kClangCharTypeName)
     return clangCharProperty;

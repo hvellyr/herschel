@@ -25,6 +25,9 @@
 #define TYPE_TAG_UINT64  0x0c
 
 #define TYPE_TAG_FLOAT32 0x0d
+#define TYPE_TAG_FLOAT64 0x0e
+
+#define TYPE_TAG_STRING  0x10
 
 #define TYPE_ARRAY_OFFSET 0x40
 

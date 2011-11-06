@@ -1,0 +1,9 @@
+import "lang/assert.h7"
+import "lang/string.h7"
+
+def app|main()
+  let t = "hello world"
+  let m = "hello world"
+
+  assert(t == m)
+  0

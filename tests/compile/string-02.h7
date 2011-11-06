@@ -1,0 +1,19 @@
+-- check that clang|ATOM type ('struct ATOM') is treated covariant to
+-- lang|Any, and that generic types are passed properly
+
+import "lang/assert.h7"
+import "lang/string.h7"
+
+extern ("C") {
+  int lang_string_equal(struct ATOM one, struct ATOM two);
+}
+
+
+def foo(one : String, two : String) : Bool
+  lang_string_equal(one, two) == 0
+
+
+def app|main()
+  assert(foo("abc", "abc"))
+  assert(not foo("abc", "xabc"))
+  0

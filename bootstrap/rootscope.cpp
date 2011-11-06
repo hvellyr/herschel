@@ -75,14 +75,14 @@ herschel::type::newRootScope(bool forUnitTests)
 
 
   //------------------------------
-  // String and symbols
-  root->registerType(sp, Names::kStringTypeName,
-                     Type::newType(Names::kStringTypeName,
-                                   TypeVector(),
-                                   Type::newTypeRef(Names::kObjectTypeName,
-                                                    K(isValue))));
-
   if (forUnitTests) {
+    // String and symbols
+    root->registerType(sp, Names::kStringTypeName,
+                       Type::newType(Names::kStringTypeName,
+                                     TypeVector(),
+                                     Type::newTypeRef(Names::kObjectTypeName,
+                                                      K(isValue))));
+
     root->registerType(sp, Names::kKeywordTypeName,
                        Type::newType(Names::kKeywordTypeName,
                                      TypeVector(),

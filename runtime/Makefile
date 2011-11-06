@@ -9,7 +9,7 @@ top_srcdir=..
 
 include $(top_srcdir)/config.mk
 
-CFLAGS += -I$(top_srcdir) -I$(top_srcdir)/runtime 
+CFLAGS += -I$(top_srcdir) -I$(top_srcdir)/runtime
 
 SOURCES =         \
 	builtin.c       \
@@ -18,6 +18,7 @@ SOURCES =         \
 	list.c          \
 	method.c        \
 	rt.c            \
+	rtstr.c         \
 	trace.c         \
   typeid.c
 

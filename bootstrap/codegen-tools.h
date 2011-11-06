@@ -53,6 +53,9 @@ namespace herschel
       kAtomUInt64  = 0x0c,
 
       kAtomFloat32 = 0x0d,
+      kAtomFloat64 = 0x0e,
+
+      kAtomString  = 0x10,
 
       kAtomInt32Array   = kAtomInt32 + 0x40,
       kAtomUInt32Array  = kAtomUInt32 + 0x40,
@@ -64,8 +67,10 @@ namespace herschel
       kAtomUInt64Array  = kAtomUInt64 + 0x40,
       kAtomCharArray    = kAtomChar + 0x40,
       kAtomKeywordArray = kAtomKeyword + 0x40,
+      kAtomStringArray  = kAtomString + 0x40,
 
-      kAtomFloat32Array = kAtomFloat32 + 0x40
+      kAtomFloat32Array = kAtomFloat32 + 0x40,
+      kAtomFloat64Array = kAtomFloat64 + 0x40
     };
 
     void setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value);
@@ -88,6 +93,7 @@ namespace herschel
     llvm::Value* makeCharAtom(llvm::Value* val);
 
     llvm::Value* makeKeywordAtom(const String& keyword);
+    llvm::Value* makeStringAtom(const String& str);
 
 
     llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
