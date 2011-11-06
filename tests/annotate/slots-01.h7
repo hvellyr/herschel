@@ -1,0 +1,9 @@
+def class Student
+{
+  def slot name : String
+  def slot subjects : String[]
+}
+
+
+def to-string(s : Student) : String
+  s^name + " [" + s^subjects[0u] + "]"

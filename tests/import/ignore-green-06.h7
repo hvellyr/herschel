@@ -1,0 +1,7 @@
+import "import/ignore-green-06b.h7"
+
+module xyz
+
+import "import/ignore-green-06b.h7"
+
+def alias MyNumber = Float

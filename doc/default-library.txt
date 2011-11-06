@@ -1,0 +1,240 @@
+Some thoughts on a default library
+----------------------------------
+
+Base types
+
+  String (Unicode)
+
+  Bool
+  Char  (Unicode)
+  Octet = UInt8
+  Ordinal = Int >= 0
+
+  Numbers
+    Int
+    Real
+    Int8
+    Int16
+    Int32
+    Int64
+    UInt8
+    UInt16
+    UInt32
+    UInt64
+    Float32
+    Float64
+    Float128
+    Rational
+    Complex
+
+  CharSets              - check for Char properties, etc.
+
+  Observable
+
+
+Extended String support
+
+  MutableString
+  StringBuffer
+
+  Encoding support      - encode to and fro using Octet[]<->String
+
+  Date formating
+
+  Regex
+
+
+
+Extended data type support
+
+  PrettyPrinter
+  Math
+  Random
+
+
+Collection classes
+
+  Collection
+  OrderedCollection : Collection
+  Sequence : Collection, OrderedCollection
+  AssocCollection : Collection
+
+  Set : Collection
+  SortedSet : OrderedCollection
+  Bag : Collection
+  SortedBag : OrderedCollection
+  Vector : Sequence
+  List : Sequence
+  Deque : Sequence
+  HashMap : AssocCollection
+  Tree : AssocCollection, OrderedCollection
+  MultiMap : AssocCollection
+  SortedMultiMap : AssocCollection, OrderedCollection
+
+  Stack
+
+
+FileSystem interface
+
+  Uri                   - generic RFC-X conforming URI implementation
+  File                  - file descriptor; derives from Uri
+  SearchPath            - search path
+
+  Volume
+
+  FileCompare
+
+
+IO
+
+  Port
+  InPort
+  OutPort
+  InOutPort
+  RandomAccessPort
+
+  FilePort
+  ZipPort
+  GzipPort
+  CharPort
+  BufferedPort
+  DataPort
+  StringPort
+
+  EncodingPort
+
+  Codecs:
+    base64
+    uu
+    ascii85
+
+  UriResolver
+  Transport
+  HttpTransport
+  FileTransport
+  SshTransport
+  FtpTransport
+  WebDavTransport
+  ZipTransport
+
+
+Network
+
+  NetPort
+  lowlevel socket stuff: bind, etc.
+  server socket support: listen, accept, select
+  DNS (lookup) support
+
+
+Extended Network services
+
+  email
+  json
+  mimetypes
+  mimewriter
+  mimetools
+  rfc822 parser
+  json
+
+  pop3
+  imap
+  nntp
+  smtp
+  ftp
+  http
+  telnet
+
+  ssl
+
+  xmlrpc
+
+
+Time
+
+  TimeZone
+
+
+Logging
+
+
+Options / Configuration
+
+  ConfigParser
+  getopt
+  Properties (a la NeXT)
+
+
+Data persistancy
+
+
+GUI
+
+
+RMI
+
+
+Security
+
+  HashDigest
+  MD5Digest
+  SHADigest
+
+  current user support
+
+
+SQL
+
+
+Concurrency
+
+  Thread
+  Mutex
+  Semaphore
+  Process support (fork)
+  System signals
+
+
+Misc
+
+  UUID
+  readline
+
+
+Images
+
+
+Audiofiles
+
+  aifc                  - read/write AIFF/AIFC
+  wave                  - read/write WAVE
+  sunau                 - sun AU files
+  iff                   - read/write generic chunked IFF
+
+
+XML
+
+  SaxParser
+  Dom
+  Serialization
+
+
+Internationalization
+
+  Locale
+  gettext
+
+
+Platform specific wrappers:
+
+  posix
+  syslog
+  ResourceFile          - Mac HFS resource files
+
+  apple events
+
+  windows registry
+
+
+DLL
+
+

@@ -1,0 +1,8 @@
+-- type declarations and casts to generic types are allowed in function
+-- bodies.
+def class Person
+
+def foo(a : 'T) : 'T
+  let t : 'T = Person() as 'T
+  t
+

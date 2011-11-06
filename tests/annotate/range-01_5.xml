@@ -1,0 +1,246 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</rettype>
+<body>
+<range  ty='lang|Range&lt;&apos;T>'>
+<symbol  ty='&apos;T' refer='param'>x</symbol>
+<cast>
+<base>
+<int ty='lang|Int32'>100</int>
+</base>
+<as>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</as>
+</cast>
+</range>
+</body>
+</func>
+</def>
+<def>
+<func sym='bar'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+<param sym='y' type='pos'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+<param sym='z' type='pos'>
+<type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</type>
+</param>
+</params>
+<rettype>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</rettype>
+<body>
+<range  ty='lang|Range&lt;&apos;T>'>
+<symbol  ty='&apos;T' refer='param'>x</symbol>
+<symbol  ty='&apos;T' refer='param'>y</symbol>
+<symbol  ty='&apos;T' refer='param'>z</symbol>
+</range>
+</body>
+</func>
+</def>
+<def>
+<func sym='goo'>
+<rettype>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:type nm='lang|Char'>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='r0'>
+<type>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</type>
+<init>
+<apply  ty='lang|Range&lt;lang|Int32>'>
+<symbol  ty='lambda(&apos;T):lang|Range&lt;&apos;T>' refer='function'>foo</symbol>
+<args>
+<int ty='lang|Int32'>5</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='r1'>
+<type>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:type nm='lang|Char'>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</type>
+<init>
+<apply  ty='lang|Range&lt;lang|Char>'>
+<symbol  ty='lambda(&apos;T, &apos;T, &apos;T):lang|Range&lt;&apos;T>' refer='function'>bar</symbol>
+<args>
+<char>97</char>
+<char>122</char>
+<int ty='lang|Char'>1</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Char'>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Range'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:type nm='lang|Char'>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref nm='lang|Range'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

@@ -1,0 +1,6 @@
+-- a method refers to a variable definition as generic function
+
+def foo = 12
+
+def foo(a @ Int) : Int
+  a

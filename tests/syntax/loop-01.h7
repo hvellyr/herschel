@@ -1,0 +1,15 @@
+def f(i) 
+  for (i < 100)
+    i.incr!
+  
+
+def g(j)
+  for (j > 100)
+    j.incr!
+
+
+def h()
+  for (true)
+    for (false)
+      outln("hello world!")
+

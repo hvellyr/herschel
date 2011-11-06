@@ -1,0 +1,5 @@
+-- unit live in a different namespace and must not conflict with variables,
+-- types or measures
+
+def measure abc (den) : Float
+def measure den (abc) : Float

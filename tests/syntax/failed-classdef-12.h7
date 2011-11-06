@@ -1,0 +1,29 @@
+-- check that explicit primes are accepted for non-class super class type
+
+def class Y<T>(n : T = 11)
+{
+  def slot _n = n
+}
+
+
+def type Z<K>
+
+
+def class W(n = 5432)
+{
+  def slot _n = n
+}
+
+
+def class X<T, K> : (Y<T>, Z<K>, W)
+    where T isa Int,
+          K isa String
+    ~ some comment ~
+{
+  def slot a
+  def slot b
+
+  on alloc() {
+    Z<K>(234)
+  }
+}

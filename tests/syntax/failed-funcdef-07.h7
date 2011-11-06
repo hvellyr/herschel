@@ -1,0 +1,6 @@
+-- redefinition of generic functions are not allowed.
+
+def generic foo(a @ Any) : Any ...
+
+def generic foo(a @ Int) : Int
+  a * 2

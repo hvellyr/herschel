@@ -1,0 +1,6 @@
+{
+  'retc': 42,
+  'runtime-options': 'allocate',
+  'stderr': [ "Create instance of type 'lang|Int32'x16 (73), size: 4" ]
+}
+

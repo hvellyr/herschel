@@ -1,0 +1,76 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+module lang
+export public(*)
+
+import "lang/numbers.h7"
+
+
+----------------------------------------------------------------------
+
+def type Sliceable<K, E>
+    ~ A @type{Sliceable} represents types which support single-key slice
+    access, i.e. index access.  Typical candidates are containers, strings,
+    etc. ~
+
+def generic slice(obj @ Sliceable<'K, 'E>, key @ 'K) : 'E ...
+    ~ Returns the element from @var{obj} at position @var{key}.  It may be
+    an error if @var{key} points to an non-existing element or
+    (depending on the implementing class) is out of bounds of @var{obj}. ~
+
+
+----------------------------------------------------------------------
+
+def type OrderedSliceable<K, E> : Sliceable<K, E>
+    ~ An @type{OrderedSliceable} represents types which support
+    range-slices. ~
+
+def generic slice*(obj @ OrderedSliceable<'K, 'E>,
+                   from @ 'K, to @ 'K) : OrderedSliceable<'K, 'E> ...
+    ~ Returns a new ordered sliceable (probably of different type than
+    @var{obj}) containing the elements from @var{from} to @var{to}
+    exclusive, i.e. [@var{from}, @var{to}).
+
+    An @type{OutOfBoundsException} should be raised when either @var{from}
+    or @var{to} are too large.  When @var{from} is >= @var{to} the
+    resulting sliceable is empty. ~
+
+def generic slice-rest(obj @ OrderedSliceable<'K, 'E>,
+                       from @ 'K) : OrderedSliceable<'K, 'E> ...
+    ~ Returns a new ordered sliceable (probably of different type than
+    @var{obj}) containing all elements from @var{from} to the last element
+    in @var{obj} (inclusive).
+
+    If @var{obj} supports a @func{num-items} method this is can be
+    implemented as:
+
+    @example
+    def slice*(obj, from)
+      obj.slice(from, from + obj.num-items)
+    @end example ~
+
+
+----------------------------------------------------------------------
+
+def type Sliceable!<K, E> : Sliceable<K, E>
+    ~ @type{Sliceable!} represents mutable types with index-access.~
+
+def generic slice!(obj @ ^Sliceable!<'K, 'E>,
+                   key @ 'K, value @ 'E) : ^Sliceable!<'K, 'E> ...
+    ~ Sets @var{value} into @var{obj} at position @var{key}.
+
+    @returns @var{obj}. ~
+
+
+----------------------------------------------------------------------
+
+def generic num-items(obj @ 'T[]) : Ordinal ...
+    ~ return the number of items @var{obj} (an array of 'T). ~
+
+-- end of sliceable.h7
+

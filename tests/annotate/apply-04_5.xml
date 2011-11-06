@@ -1,0 +1,229 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='a' type='pos'>
+<type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+<param sym='b' type='pos'>
+<type>
+<ty:type nm='lang|Char'>
+</ty:type>
+</type>
+</param>
+<param sym='c' type='key' key='c'>
+<type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<str>hello world</str>
+</init>
+</param>
+<param sym='d' type='key' key='d'>
+<type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<real ty='lang|Float32'>0.123400</real>
+</init>
+</param>
+<param sym='r' type='rest'>
+<type>
+<ty:type nm='lang|Any'>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<symbol  ty='lang|Int32' refer='param'>a</symbol>
+</body>
+</func>
+</def>
+<def>
+<func sym='bar'>
+<rettype>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</rettype>
+<body>
+<block>
+<apply  ty='lang|Int32'>
+<symbol  ty='lambda(lang|Int32, lang|Char, lang|String, lang|Float32, lang|Any):lang|Int32' refer='function'>foo</symbol>
+<args>
+<int ty='lang|Int32'>5</int>
+<char>32</char>
+</args>
+</apply>
+<apply  ty='lang|Int32'>
+<symbol  ty='lambda(lang|Int32, lang|Char, lang|String, lang|Float32, lang|Any):lang|Int32' refer='function'>foo</symbol>
+<args>
+<int ty='lang|Int32'>6</int>
+<char>120</char>
+<arg key='c'>
+<str>goodbye</str>
+</arg>
+<arg key='d'>
+<real ty='lang|Float32'>3.141500</real>
+</arg>
+<int ty='lang|Int32'>11</int>
+<keyw>read</keyw>
+<true  ty='lang|Bool'/>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Bool'>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:prm>
+<ty:prm is='pos'>
+<ty:type nm='lang|Char'>
+</ty:type>
+</ty:prm>
+<ty:prm is='named' key='c'>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:prm>
+<ty:prm is='named' key='d'>
+<ty:type nm='lang|Float32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Real'>
+</ty:ref>
+<ty:ref nm='lang|Approximate'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:type nm='lang|Any'>
+</ty:type>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

@@ -1,0 +1,36 @@
+-- check that super class initializations (primes) are put in the order of
+-- the super class initialization, even if specified in different order in
+-- the 'on alloc' section.
+
+def class Y<T>(n : T)
+{
+  def slot _n = n
+}
+
+
+def class Z<K>(n = 42)
+{
+  def slot _n = n
+}
+
+
+def class W(n)
+{
+  def slot _n = n
+}
+
+
+def class X<T, K> : (Y<T>, Z<K>, W)
+    where T isa Int,
+          K isa String
+    ~ some comment ~
+{
+  def slot a
+  def slot b
+
+  on alloc() {
+    Z<K>(n: 5432)
+    W(123)
+    Y<T>(11)
+  }
+}

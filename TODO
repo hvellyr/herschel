@@ -1,0 +1,175 @@
+-*-org-*-
+
+Documentation
+
+  - Write assignment section.
+
+  - Document how to specify class functions:
+
+      def generic apply(self @ Class<Abc>) ... ???
+
+  - Mention explicitely: coercing.  Where?
+
+  - document call-by-value, reference types.
+
+  - rewrite the operator section
+
+  - document array allocation (i.e. document the allocate* function call,
+    and its special syntax):
+
+    Int[](16)                      -> allocate array of 16 Ints
+    Person[](4, value: Student())  -> explicit init value, all slots refer
+                                      to same object
+    Student[](5)                   -> allocates 5 student instances
+
+  Formating:
+
+    - Rewrite the "def xxx" to the new deffn-form-example style.
+
+
+Bootstrap compiler
+
+  - extend tests for the other intx types
+
+  - other types (char, bool, int8, uint8, int16, uint16, uint32, int64,
+    uint64, float, double)
+
+  - char binary operators
+  - char arrays
+
+  - basic String class
+
+  - basic IO classes (such to allow displaying info from test files)
+
+  - gc
+
+  - closures (nested functions, firstclass functions)
+
+  - keyed arguments
+
+  - rest arguments
+    - builtin slice support for arrays (required for fast rest parameter handling)
+
+  - exceptions
+
+  - auto create accessor/modifier functions for slots
+
+  - support 'public', 'outer', 'inner', slots in ctor construction.
+
+  - variable/const types
+
+  - nullable types
+
+  - review possibilities for warnings about ambiguous multiple method
+    dispatch.  better method dispatch algorithm.
+
+  - check that left hand variables are not const.
+
+  - review some kind of auto-number coercion?
+
+  - 'T are treated as Any inside of function body for direct comparison
+    and need type-check boundaries at runtime.  The type checker must make
+    sure that a 'T is only assigned to 'T and not 'K or 'V.
+
+  - reference types.
+     - type checks.  When is T = ^T allowed?
+     - do we need a special syntax for dereferencing references?
+     - review special construct to check whether a ^T is nil or not?
+       if (a as* T == nil)
+
+       def foo(a : ^String)
+         let x : String = enforce(a, "a is nil")    ;; throws an exception
+         let x : String = saferef(a, "n.n.")        ;; returns a or "n.n."
+
+     - how to express nil-ness with the normal type machine
+
+
+  - do an error counter and stop after xxx errors.  Generally don't go into
+    real compilation, when we found (severe) errors.  LLVM crashes too easily.
+
+  - constraints
+
+  - BUG: syntax errors from import files are not shown (handled) properly.
+
+  - BinaryNode: in case the builtin types are not recognized from the
+    compiler, lookup an add(), subtract(), multiply(), ... function and use
+    its type signature to check whether the binary operator is possible and
+    correct.
+
+    The same for binary compare operators.
+
+    The same for append(), fold()
+
+  - Missing node support:
+     - match
+     - select
+     - on
+     - UnitConst
+
+  - replace the UnitConstant node by a proper Measure() ctor call.  Apply
+    the unit transformation inplace (if simple enough).  Register
+    unit-transform calls as special functions.
+
+  - transform nested functions
+    - detect closure variable access
+
+    - detect whether nested functions can simply be inlined
+
+    - otherwise lambda lift functions to outside.
+
+  - enum:
+    - construct proper enum constraint type
+    - check that init values match the base type
+
+  - extend macro parameter types (like ?a:type-spec)
+
+  - macros
+    - subpatterns
+
+  - continue with pexpreval (add the missing operators)
+
+
+Other tools
+
+  - docstrings in pass2 -> extracted documentation
+
+
+Language and ideas:
+
+  - structs ?  Contrary to classes do not support inheritance, but provide
+    fixed, controlled, and fast slot layout.  Structs will use the same
+    syntax for member access:
+
+    def struct Element {
+      def slot a : Int
+      def slot b : String
+    }
+
+    let e : Element
+    e^a = 42
+    e^b = "The question"
+
+
+  - Think about non-gc objects.
+
+  - Think about lazy evaluation (generalize the 'promise' concept
+    introduced en passent with sync).  See x10 -> futures.  (cf. doc/CHANGES)
+
+  - checked exceptions.  Declare as
+
+      def generic f() : 'X
+          raises 'B
+          reify () : N, () : P
+          where B isa Throwable
+        ...
+
+    additionally
+
+      def generic f() : 'X
+          no-raise
+          reify ....
+
+    to document that a function does not pass exceptions.
+
+  - Function contracts (cf. doc/CHANGES)
+

@@ -1,0 +1,5 @@
+def foo(a : 'T[]) : 'T
+  let sum : 'T = 0
+  for (i in 0u .. a.num-items)
+    sum = sum + a[i]
+  sum

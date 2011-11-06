@@ -1,0 +1,30 @@
+def foo(n : Int)
+  let k = 0
+  for (i in 0 .. n)
+    if (i rem 2 == 0)
+       k = k + 1
+  25
+
+
+def foo2(n : Int) -- : &(Any, Union)
+  let k = 0
+  for (i in 0 .. n)
+    if (i rem 2 == 0)
+       k = k + 1
+    else
+       k = k + 5
+
+
+def foo3(n : Int)
+  let k = 0
+  for (i in 0 .. n) {
+    if (i rem 2 == 0)
+       k = k + 1
+    else
+       k = k + 3
+  }
+  else
+    k = k + 5
+
+def app|main()
+  foo(10) + foo2(10) as Int + foo3(10)

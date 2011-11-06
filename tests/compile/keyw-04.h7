@@ -1,0 +1,19 @@
+import "lang/assert.h7"
+
+module xi
+
+def generic foo(obj @ Any) : Int ...
+
+
+def foo(obj @ Int) : Int
+  29
+
+
+def foo(obj @ Keyword) : Int
+  42
+
+
+def app|main()
+  assert(foo(#red) == 42)
+  assert(foo(1234) == 29)
+  0

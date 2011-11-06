@@ -1,0 +1,7 @@
+-- a method refers to a "normal" function definition as generic function
+
+def foo(x : Int) : Int
+  x
+
+def foo(a @ Int) : Int
+  a * 2

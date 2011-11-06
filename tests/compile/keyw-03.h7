@@ -1,0 +1,7 @@
+-- compare keywords
+import "lang/assert.h7"
+
+def app|main()
+  assert(#red <> #green)
+  assert(#red == #red)
+  0

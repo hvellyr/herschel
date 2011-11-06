@@ -1,0 +1,21 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+import "io/port.h7"
+
+module io
+
+export public (*)
+
+
+def *stdout* : ^OutPort<Octet> = nil
+
+def *stderr* : ^OutPort<Octet> = nil
+
+def *stdin* : ^InPort<Octet> = nil
+
+-- end of stdio.h7

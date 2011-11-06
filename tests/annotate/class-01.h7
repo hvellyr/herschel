@@ -1,0 +1,10 @@
+def class Abc<X> 
+{
+}
+
+
+def g : Abc<String>
+
+def foo()
+  let v : Abc<Int>
+  v

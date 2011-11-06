@@ -1,0 +1,12 @@
+def type Vehicle
+def type Car : Vehicle
+def type Truck : Car
+def type Bike : Vehicle
+
+
+def generic foo(a @ Int, b : Car) : Car ...
+
+-- error here: methods' return values must be contravariant to their
+-- generic functions'
+def foo(a @ Int, b : Vehicle) : Vehicle
+  b

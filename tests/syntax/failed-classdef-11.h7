@@ -1,0 +1,29 @@
+-- check that explicit super initializer (primes) to unknown/undeclared
+-- super classes are not generated
+
+def class Y(n)
+{
+  def slot _n = n
+}
+
+
+def class Z(n = 42)
+{
+  def slot _n = n
+}
+
+
+def class X(_a, _b) : (Y, Z)
+{
+  def slot a = _a
+  def slot b = _b
+
+  on alloc() {
+    -- even if we have a bad prime, keep the proper order here:
+    Z(n: 1234)
+    Y(11)
+
+    -- unknown super class
+    M(1, 2)
+  }
+}

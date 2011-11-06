@@ -1,0 +1,17 @@
+import "lang/assert.h7"
+
+def app|main()
+  let t = Int[](16u)
+
+  -- for (i = 0 then i + 1 while i < 15)
+  --   assert(t[i] == i)
+
+  t[5u] = 42
+  assert(t[4u] == 0)
+  assert(t[5u] == 42)
+  assert(t[6u] == 0)
+
+  -- let i = 5u
+  -- assert(t[i] == 0)
+
+  t[5u]

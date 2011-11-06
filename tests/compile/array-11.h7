@@ -1,0 +1,23 @@
+-- it is ok to create arrays of types when giving an explicit init value.
+
+import "lang/assert.h7"
+
+def type Person
+
+def class Student : Person
+{
+  def slot x : Int = 42
+}
+
+def generic x(o @ Person) : Int ...
+
+def x(o @ Student) : Int
+  o ^ x
+
+
+def app|main()
+  let t = Person[](16, value: Student())
+
+  assert(t[0u].x == 42)
+
+  0

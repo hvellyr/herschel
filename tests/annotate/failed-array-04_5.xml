@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<type nm='Copyable'>
+<isa>
+<ty:type nm='Copyable'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='Serializable'>
+<isa>
+<ty:type nm='Serializable'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<type nm='Seq'>
+<isa>
+<ty:type nm='Seq'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<func sym='h'>
+<rettype>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<type>
+<ty:array ind='0'>
+<ty:union>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Bool'>
+</ty:type>
+</ty:union>
+</ty:array>
+</type>
+</vardef>
+</let>
+<let>
+<vardef sym='y'>
+<type>
+<ty:array ind='5'>
+<ty:seq>
+<ty:type nm='Copyable'>
+</ty:type>
+<ty:array ind='7'>
+<ty:type nm='Serializable'>
+</ty:type>
+</ty:array>
+<ty:type nm='Seq'>
+<ty:gen>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:gen>
+</ty:type>
+</ty:seq>
+</ty:array>
+</type>
+</vardef>
+</let>
+<apply  ty='&apos;E'>
+<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
+<args>
+<apply  ty='&amp;(lang|String, lang|Bool)'>
+<symbol  ty='lambda(lang|Sliceable&lt;&apos;K, &apos;E>, &apos;K):&apos;E' refer='generic'>lang|slice</symbol>
+<args>
+<symbol  ty='&amp;(lang|String, lang|Bool)[]' refer='local'>x</symbol>
+<int ty='lang|Int32'>34</int>
+</args>
+</apply>
+<int ty='lang|Int32'>2</int>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:union>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Bool'>
+</ty:type>
+</ty:union>
+</ty:used-type>
+<ty:used-type>
+<ty:array ind='0'>
+<ty:union>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+<ty:type nm='lang|Bool'>
+</ty:type>
+</ty:union>
+</ty:array>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Sliceable'>
+<ty:gen>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='K'>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='E'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

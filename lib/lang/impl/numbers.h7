@@ -1,0 +1,180 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+module lang
+
+import "lang/types.h7"
+import "lang/numbers.h7"
+
+
+------------------------------------------------------------------------------
+-- compare operators
+------------------------------------------------------------------------------
+
+def macro OPGF
+{
+ { def OPGF ?n:name(?t0:name, ?op:operator, ?t1:name) } ->
+   { def ?n(l @ ?t0, r @ ?t1) : Bool
+       l as ?t0 ?op r as ?t1
+   }
+}
+
+def macro INT_OP_1
+{
+ { def INT_OP_1 ?n:name(?t0:name, ?op:operator, ?basety:name) } ->
+   { def OPGF ?n(?t0, ?op, ?basety ## "8")
+     def OPGF ?n(?t0, ?op, ?basety ## "16")
+     def OPGF ?n(?t0, ?op, ?basety ## "32")
+     def OPGF ?n(?t0, ?op, ?basety ## "64")
+   }
+}
+
+def macro INT_OP_2
+{
+ { def INT_OP_2 ?basety:name ?n:name(?op:operator) } ->
+   { def INT_OP_1 ?n(?basety ## "8", ?op, ?basety)
+     def INT_OP_1 ?n(?basety ## "16", ?op, ?basety)
+     def INT_OP_1 ?n(?basety ## "32", ?op, ?basety)
+     def INT_OP_1 ?n(?basety ## "64", ?op, ?basety)
+   }
+}
+
+def INT_OP_2 Int lang|equal?(==)
+def INT_OP_2 Int lang|unequal?(<>)
+def INT_OP_2 Int lang|less-equal?(<=)
+def INT_OP_2 Int lang|greater-equal?(>=)
+def INT_OP_2 Int lang|less?(<)
+def INT_OP_2 Int lang|greater?(>)
+
+def INT_OP_2 UInt lang|equal?(==)
+def INT_OP_2 UInt lang|unequal?(<>)
+def INT_OP_2 UInt lang|less-equal?(<=)
+def INT_OP_2 UInt lang|greater-equal?(>=)
+def INT_OP_2 UInt lang|less?(<)
+def INT_OP_2 UInt lang|greater?(>)
+
+
+-- def OPGF lang|equal?(Float32, ==, Float32)
+-- def OPGF lang|equal?(Float32, ==, Float64)
+-- def OPGF lang|unequal?(Float32, <>, Float32)
+-- def OPGF lang|unequal?(Float32, <>, Float64)
+-- def OPGF lang|less?(Float32, <, Float32)
+-- def OPGF lang|less?(Float32, <, Float64)
+-- def OPGF lang|less-equal?(Float32, <=, Float32)
+-- def OPGF lang|less-equal?(Float32, <=, Float64)
+-- def OPGF lang|greater?(Float32, >, Float32)
+-- def OPGF lang|greater?(Float32, >, Float64)
+-- def OPGF lang|greater-equal?(Float32, >=, Float32)
+-- def OPGF lang|greater-equal?(Float32, >=, Float64)
+--
+-- def OPGF lang|equal?(Float64, ==, Float32)
+-- def OPGF lang|equal?(Float64, ==, Float64)
+-- def OPGF lang|unequal?(Float64, <>, Float32)
+-- def OPGF lang|unequal?(Float64, <>, Float64)
+-- def OPGF lang|less?(Float64, <, Float32)
+-- def OPGF lang|less?(Float64, <, Float64)
+-- def OPGF lang|less-equal?(Float64, <=, Float32)
+-- def OPGF lang|less-equal?(Float64, <=, Float64)
+-- def OPGF lang|greater?(Float64, >, Float32)
+-- def OPGF lang|greater?(Float64, >, Float64)
+-- def OPGF lang|greater-equal?(Float64, >=, Float32)
+-- def OPGF lang|greater-equal?(Float64, >=, Float64)
+
+
+def OPGF lang|equal?(Bool, ==, Bool)
+def OPGF lang|unequal?(Bool, <>, Bool)
+
+def OPGF lang|equal?(Char, ==, Char)
+def OPGF lang|unequal?(Char, <>, Char)
+def OPGF lang|less?(Char, <, Char)
+def OPGF lang|less-equal?(Char, <=, Char)
+def OPGF lang|greater?(Char, >, Char)
+def OPGF lang|greater-equal?(Char, >=, Char)
+
+def OPGF lang|equal?(Keyword, ==, Keyword)
+def OPGF lang|unequal?(Keyword, <>, Keyword)
+
+------------------------------------------------------------------------------
+-- addition
+
+def macro compute-integer-1
+{
+  { compute-integer-1(?retv:name, ?lhs:name, ?other:name, ?op:operator) } ->
+    { match (?other) {
+                | j : Int8   -> ?retv = ?lhs ?op j
+                | j : Int16  -> ?retv = ?lhs ?op j
+                | j : Int32  -> ?retv = ?lhs ?op j
+                | j : Int64  -> ?retv = ?lhs ?op j
+
+                | j : UInt8  -> ?retv = ?lhs ?op j
+                | j : UInt16 -> ?retv = ?lhs ?op j
+                | j : UInt32 -> ?retv = ?lhs ?op j
+                | j : UInt64 -> ?retv = ?lhs ?op j
+
+                |   : Any -> 0         -- raise TypeException
+                } }
+}
+
+def macro compute-integer
+{
+  { compute-integer(?lvalue:name, ?op:operator, ?rvalue:name) } ->
+    { {
+        let t : Integer = 0
+        match (?lvalue) {
+        | i : Int8  -> compute-integer-1(t, i, ?rvalue, ?op)
+        | i : Int16 -> compute-integer-1(t, i, ?rvalue, ?op)
+        | i : Int32 -> compute-integer-1(t, i, ?rvalue, ?op)
+        | i : Int64 -> compute-integer-1(t, i, ?rvalue, ?op)
+
+        | i : UInt8  -> compute-integer-1(t, i, ?rvalue, ?op)
+        | i : UInt16 -> compute-integer-1(t, i, ?rvalue, ?op)
+        | i : UInt32 -> compute-integer-1(t, i, ?rvalue, ?op)
+        | i : UInt64 -> compute-integer-1(t, i, ?rvalue, ?op)
+
+        |   : Any -> 0                        -- raise TypeException
+        }
+        t
+    } }
+}
+
+def lang|add(one @ Integer, two @ Integer) : Integer
+  compute-integer(one, +, two)
+
+def lang|subtract(one @ Integer, two @ Integer) : Integer
+  compute-integer(one, -, two)
+
+def lang|multiply(one @ Integer, two @ Integer) : Integer
+  compute-integer(one, *, two)
+
+
+
+
+
+
+-- unary
+-- not
+-- negate
+--
+-- binary
+-- add +
+-- append ++
+-- subtract -
+-- divide /
+-- multiply *
+-- exponent **
+-- modulo mod
+-- remainder rem
+-- and and
+-- or or
+-- fold %
+-- bitand AND
+-- bitor OR
+-- bitxor XOR
+-- shift-left <<
+-- shift-right >>
+-- isa? isa
+-- cast-to as

@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='g'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<type>
+<ty:array ind='0'>
+<ty:ref nm='lang|Vector'>
+<ty:gen>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:array>
+</type>
+<init>
+<apply>
+<symbol>lang|allocate*</symbol>
+<args>
+<type  ty='lang|Vector&lt;lang|Int32>'/>
+<int ty='lang|Int32'>1024</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<let>
+<vardef sym='y'>
+<type>
+<ty:array ind='12'>
+<ty:ref nm='lang|Map'>
+<ty:gen>
+<ty:ref nm='lang|String'>
+</ty:ref>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:array>
+</type>
+</vardef>
+</let>
+<apply>
+<symbol>slice</symbol>
+<args>
+<symbol>x</symbol>
+<int ty='lang|Int32'>34</int>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>

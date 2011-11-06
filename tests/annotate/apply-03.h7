@@ -1,0 +1,14 @@
+-- test: the return type of foo must be an Int in bar(), and a String in
+-- wiz()
+def type Container<A> : Object
+
+def foo(x : Container<'T>, y : 'T) : 'T
+  y
+
+def bar()
+  let y : Container<Int>
+  foo(y, 5)
+
+def wiz()
+  let z : Container<String>
+  foo(z, "hello world")

@@ -1,0 +1,10 @@
+-- a method refers to macro as generic function
+
+def macro foo
+{
+  { foo(?a:expr) } -> { ?a }
+}
+
+
+def foo(a @ Int) : Int
+  a * 2

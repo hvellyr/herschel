@@ -1,0 +1,21 @@
+-- a function macro must not be resolved in a definition where a definition
+-- symbol is expected.
+
+def macro foo
+{
+  { foo(?a:expr) } -> { ?a }
+}
+
+
+def bar(a : Int) : Int
+  let foo(b) {
+    b + b
+  }
+  foo(a)
+
+
+def bar2(a : Int) : String
+  let foo(b : String) {
+    b
+  }
+  foo(a.to-string)

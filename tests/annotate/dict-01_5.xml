@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<vardef sym='a'>
+<type>
+<ty:ref nm='lang|Map'>
+<ty:gen>
+<ty:type nm='lang|Char'>
+</ty:type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</type>
+<init>
+<dict  ty='lang|Map&lt;lang|Char, lang|String>'>
+<binary op='->'>
+<char>97</char>
+<str>alpha</str>
+</binary>
+<binary op='->'>
+<char>98</char>
+<str>beta</str>
+</binary>
+<binary op='->'>
+<char>103</char>
+<str>gamma</str>
+</binary>
+</dict>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='b'>
+<type>
+<ty:ref nm='lang|Map'>
+<ty:gen>
+<ty:type nm='lang|Keyword'>
+</ty:type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</type>
+<init>
+<dict  ty='lang|Map&lt;lang|Keyword, lang|Any>'>
+<binary op='->'>
+<keyw>name</keyw>
+<str>albert rice</str>
+</binary>
+<binary op='->'>
+<keyw>profession</keyw>
+<keyw>architect</keyw>
+</binary>
+<binary op='->'>
+<keyw>age</keyw>
+<int ty='lang|Int32'>39</int>
+</binary>
+</dict>
+</init>
+</vardef>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Map'>
+<ty:gen>
+<ty:type nm='lang|Char'>
+</ty:type>
+<ty:type nm='lang|String'>
+<ty:isa>
+<ty:ref nm='lang|Object'>
+</ty:ref>
+</ty:isa>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Map'>
+<ty:gen>
+<ty:type nm='lang|Keyword'>
+</ty:type>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

@@ -1,0 +1,196 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<class nm='abc|Person'>
+<isa>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</isa>
+</class>
+</def>
+<def>
+<func sym='abc|Person|init'>
+<params>
+<param sym='__obj_0' type='pos'>
+<type>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<symbol  ty='abc|Person' refer='param'>__obj_0</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='abc|foo'>
+<rettype>
+<ty:array ind='0'>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:array>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<type>
+<ty:array ind='0'>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:array>
+</type>
+<init>
+<apply  ty='abc|Person[]'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]' refer='generic'>lang|allocate*</symbol>
+<args>
+<symbol  ty='lang|Class&lt;abc|Person>'>abc|Person</symbol>
+<int ty='lang|UInt32'>12</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<symbol  ty='abc|Person[]' refer='local'>x</symbol>
+</block>
+</body>
+</func>
+</def>
+<def>
+<func sym='abc|bar'>
+<rettype>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='x'>
+<type>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</type>
+<init>
+<apply  ty='abc|Person'>
+<symbol  ty='lambda(abc|Person):abc|Person' refer='function'>abc|Person|init</symbol>
+<args>
+<apply  ty='abc|Person'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>):&apos;T' refer='generic'>lang|allocate</symbol>
+<args>
+<type  ty='lang|Class&lt;abc|Person>'/>
+</args>
+</apply>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<symbol  ty='abc|Person' refer='local'>x</symbol>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|UInt32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+<ty:ref nm='lang|Unsigned'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:array ind='0'>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:array>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos'>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:type nm='abc|Person' inst='t'>
+</ty:type>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+<ty:prm is='named' key='value'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:type nm='lang|Any'>
+</ty:type>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:array>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

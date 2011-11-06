@@ -1,0 +1,6 @@
+def g()
+  let x : Int[] = Int[](1024)
+  let y : Int[12]
+  x[34]
+
+

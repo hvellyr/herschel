@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>alias</id>
+<id>Abc</id>
+<punct type='='/>
+<id>Int</id>
+</seq>
+<seq>
+<id>def</id>
+<id>enum</id>
+<id>XKind</id>
+<punct type=':'/>
+<id>Abc</id>
+<nested left='{' right='}'>
+<id>%a</id>
+<id>%b</id>
+<id>%c</id>
+</nested>
+</seq>
+<seq>
+<id>def</id>
+<id>const</id>
+<id>a</id>
+<punct type=':'/>
+<id>XKind</id>
+<punct type='='/>
+<nested left='#[' right=']'>
+<id>%a</id>
+<punct type=','/>
+<id>%b</id>
+<punct type=','/>
+<id>%c</id>
+</nested>
+</seq>
+</seq>

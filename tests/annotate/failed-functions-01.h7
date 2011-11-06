@@ -1,0 +1,9 @@
+-- normal function can not be redefined
+
+def foo(a, b)
+  a + b
+
+
+def foo(c, d)
+  c + d
+

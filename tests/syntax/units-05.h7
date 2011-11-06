@@ -1,0 +1,28 @@
+-- measures and units are namespaces also.  Test that non-exported units
+-- don't interfere with globally defined ones.
+
+module red
+{
+  export public (Xyz, xyz : unit, Abc)
+
+  def measure Xyz (xyz) : Float
+  def measure Abc (abc) : Float
+
+  -- units and symbol don't share the same namespace
+  def xyz = 1234
+  def abc = 512
+
+  def a0 = 12'xyz
+  def a1 = 12'abc
+}
+
+def measure Xyz (xyz) : Int
+def measure Abc (abc) : Int
+
+
+def b0 = 12'red|xyz
+def b1 = 12'|xyz
+
+-- we can use abc directly here since abc is not exported from abc
+def b2 = 12'abc
+

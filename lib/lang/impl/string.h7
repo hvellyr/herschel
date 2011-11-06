@@ -1,0 +1,77 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+module lang
+
+import "lang.h7"
+import "string.h7"
+
+
+def class StringImpl : String
+{
+  def slot data : Char[]
+}
+
+
+------------------------------------------------------------------------------
+-- Slice special for string
+------------------------------------------------------------------------------
+
+def class StringSlice(_str : StringImpl,
+                      _from : Ordinal,
+                      _to : Ordinal) : Slice<Ordinal, Char>
+{
+  def slot str = _str
+  def slot from = _from
+  def slot to = _to
+}
+
+
+def num-items(sl @ StringSlice) : Ordinal
+  sl.to - sl.from
+
+
+def empty?(sl @ StringSlice) : Bool
+  sl.num-items == 0
+
+
+def core|slice(sl @ StringSlice, idx @ Ordinal) : Char
+  sl.str[sl.from + idx]
+
+
+def core|slice(sl @ StringSlice, from @ Ordinal, to @ Ordinal)
+    : Slice<Ordinal, Char>
+  sl.str.slice(sl.from + from, sl.from + to)
+
+
+------------------------------------------------------------------------------
+-- String implementation
+------------------------------------------------------------------------------
+
+def length(str @ StringImpl) : Ordinal
+  str.data.num-items
+
+
+def empty?(str @ StringImpl) : Bool
+  str.data.num-items == 0
+
+
+def core|slice(str @ StringImpl, n @ Ordinal) : Char
+  str.data[n]
+
+
+def core|slice(str @ StringImpl, from @ Ordinal, to @ Ordinal)
+    : Slice<Ordinal, Char>
+  if (from > str.data.num-items or to > str.data.num-items)
+    OutOfBoundsException(str.data.num-items, from, to).raise
+  StringSlice(str, from, to)
+
+
+def compare(one @ StringImpl, two @ StringImpl) : Int
+  one.data <=> two.data
+
+-- end of impl/string

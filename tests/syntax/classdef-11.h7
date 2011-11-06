@@ -1,0 +1,40 @@
+-- check that super class initialization (prime) works with classes from
+-- various modules.
+
+module A
+{
+  export public(*)
+
+  def class Y(n)
+  {
+    def slot _n = n
+  }
+}
+
+
+module B
+{
+  export public(*)
+
+  def class Z(n = 42)
+  {
+    def slot _n = n
+  }
+}
+
+
+def class X : (Y, Z)
+{
+  def slot a
+  def slot b
+
+  on alloc() {
+    Y(11)
+    Z(n: 1234)
+  }
+
+  on init(self) {
+    self.a = 5
+    self.b = 7
+  }
+}

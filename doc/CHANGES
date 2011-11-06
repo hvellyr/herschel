@@ -1,0 +1,313 @@
+Rest parameters are slices
+--------------------------
+
+Rest parameters should have the types sliceable (not array or vector).  The
+should be created lazy only.  i.e. if nobody access the rest arguments in a
+function, they are not constructed at all; only if the rest parameter is
+taken as first class entity a slice object is created.
+
+
+Lazy evaluation
+---------------
+
+  The typical log problem.  The string is created before we decide whether
+  we should log.  Either use macros:
+
+    def macro log
+    {
+      { log(?level:expr, ?msg:expr) } -> { if (should-log(?level))
+                                             log-impl(?msg)
+                                         }
+    }
+
+  Or support lazy evaluation.  Since we will have the notion of "promises"
+  anyway (for spawn and synchronization), this can be made first class:
+
+    def log(level : Keyword, lazy msg : String)
+      if (should-log(level))
+        do-whatever-is-necessary(msg)
+
+  Technically this can be done by the compiler as such.  The following
+  example:
+
+    log(#debug, StringBuffer().append("error ")
+                              .append(exc.to-string)
+                              .append("(").append(exc.details).append(")")
+                              .to-string)
+
+  can be compiled as:
+
+    log(#debug, {
+                  let msg = nil
+
+                  function() : String {
+                    if (msg.nil?)
+                      msg = StringBuffer().append("error ")
+                                          .append(exc.to-string)
+                                          .append("(").append(exc.details).append(")")
+                                          .to-string
+                    msg
+                  }
+                })
+
+  The log-implementation would look like:
+
+    def log(level : Keyword, lazy msg : String)
+      if (should-log(level))
+        do-whatever-is-necessary(msg())
+
+
+  Some better notation for this.  Lazy evaluation is probably important
+  enough to have "real" syntax for it.  Some ideas:
+
+    def log(level : Keyword, lazy msg : String) ...
+    def log(level : Keyword, &lazy msg : String) ...
+
+  Is being lazy a quality of the variable 'msg'?  or of the type?  Since
+  being lazy and a reference is semantically strange we can declare them
+  mutual exclusive and use the same prefix notation space for this:
+
+    def log(level : Keyword, msg : String) ...      -- call by value
+    def log(level : Keyword, msg : ^String) ...     -- call by reference
+    def log(level : Keyword, msg : ,String) ...     -- call by lazy value (1)
+    def log(level : Keyword, msg : *(String)) ...   -- call by lazy value (2)
+    def log(level : Keyword, msg : (*)String) ...   -- call by lazy value (3)
+    def log(level : Keyword, msg : =>String) ...    -- call by lazy value (4)
+
+
+
+Function contracts
+------------------
+
+  Functions can be annotated by pre and post conditions.  These are
+  actually part of the function signature and can be specified for abstract
+  functions only.  Specialization must at least fulfill these contracts:
+
+    def generic register-foo(reg @ Registry, foo @ 'T) : Registry
+        where T isa Copyable
+        on in foo <> nil
+        on out(r) reg.key?(foo.name) and r == reg
+     reg.put(foo.name, foo)
+     reg
+
+  These "on in" and "on out" statements are evaluated on entrance and exit
+  of the function resp.  Only if both evaluate to true the contract is
+  fulfilled, otherwise and AssertException is thrown.
+
+  The "on out" statement is run after an "on exit" statement, where the
+  function body's return value is passed in as 'r'.
+
+  Another way to put pre and post conditions to functions is to declare an
+  "on assert" statement in a class.  Such class invariants are run if a
+  class instance is passed to the "assert" function:
+
+    def class Date(d : Int, h : Int)
+    {
+      def slot day : Int = d
+      def slot hour : Int = h
+
+      on assert (c) {
+        assert(1 <= day and <= 31)
+        assert(0 <= hour and hour < 24)
+      }
+    }
+
+    def generic add-day(date @ Date, day : Int) : Date
+        on in assert(date)
+        on out(r) r <> date and assert(r)
+      Date(date.day + day, date.hour)
+
+  The "on assert" statement is automatically called as last command from
+  the class constructor, i.e. even after an "on init" statement.
+
+  Pre and post conditions are normally not compiled in release versions.
+
+
+Structures
+----------
+
+We want to have structs.  Structs compared to classes:
+
+  - struct have no inheritance, they are as such
+
+  - structs allow precise layout of members; it would be very cool if the
+    layout is compatible to the local C ABI.
+
+  - structs are always value types, i.e. in assignment they are copied and
+    never referenced.
+
+Syntax:
+
+  def struct ValuePair
+  {
+    def key : String
+    def value
+  }
+
+structs can be parametrized:
+
+  def struct ValuePair<T>
+  {
+    def key : String
+    def value : T
+  }
+
+Accessing the data members is like accessing slots on class instances:
+
+ let v : ValuePair
+ v^key
+
+structs can be used for specialization of methods.
+
+
+
+Rethink referencable types
+--------------------------
+
+This complete idea about pass-by-value vs. pass-by-reference is somewhat
+strange.  Most likely it will result in lot's of bugs (e.g. you expect to
+modify the passed value, where you actually modify a copy of it, since you
+forgot the ^ on the type declaration...).  So what we really need is the
+const/immutable thing.
+
+All values passed to functions are by default const.  If a parameter is to
+be modifiable it is to be declared as 'var':
+
+  def foo(var a : Int) var : Int ...
+
+This has the following effects:
+
+  - you can't modify slots on const parameters
+
+  - you can't assign values to const parameters (like you can't do with
+    const variables)
+
+  - you can't pass constant values to functions which take a variable value
+
+  - you can't return constant values from functions which has a variable
+    return value
+
+Syntax for more complex parameters:
+
+  def foo(var a : Int, name: var nm : String = "") var : Int ...
+
+
+Nullable types
+--------------
+
+nil is the singleton value of the lang|Nil type.  It is different to all
+other types, except for Any (which contains all types).  This means that
+you can't bind nil to a name of different type:
+
+  let t : String = nil   ;; <-- WRONG
+
+To allow this use nil-unions:
+
+  let t : &(String, Nil) = nil
+
+As a convention append a '?' to type alias for such a nullable type union
+(cf. the tart syntax):
+
+  def alias String? = &(String, Nil)
+
+so that the above binding looks like this:
+
+  let t : String? = nil
+
+Should we support auto de-nullification?
+
+  def foo2(a : String) ...
+
+  def foo(a : String?)
+    if (a <> nil) {
+      foo2(a)           ;;<-- without special syntax this is WRONG
+      foo2(a as String) ;;<-- this would be correct
+    }
+
+other expressions for this:
+
+  a.unless-nil(foo2(a))
+
+  match (a) {
+    | Nil -> ...
+    | s : String -> foo2(s)
+  }
+
+  if (a isa String) foo2(a)
+
+
+Less obscur syntax for union types
+----------------------------------
+
+Instead of &(String, Eof) use (String or Eof)
+
+   def alias StringOrEof = (String or Eof)
+
+
+Used character of Ascii
+-----------------------
+
+
+    Herschel                            C
+-------------------------------------------------------------
+!   identifier                          not
+    modifier function marker
+"   string delimiter                    string delimiter
+#   keyword notation                    preproc
+    constant array notation
+$   identifier                          [----------]
+%   identifier                          operator (mod)
+    operator (fold)
+&   complex type notation               operator (&, &&)
+                                        pointer ref op.
+'   implicit type generics              char
+    units
+()  arguments                           arguments
+    grouping
+*   operator (*, **)                    operator(*)
+    identifier                          pointer ref op.
++   operator (+, ++)                    operator(+)
+    identifier
+,   parameter separator                 prm separator
+    slot annotations
+-   identifier                          operator (-)
+    operator (-)
+    negative numbers
+.   function call                       struct member
+    float notation                      float notation
+    operator (..)
+    vararg notation (...)               vararg notation (...)
+/   operator (div)                      operator(div)
+    identifier
+0-9 digits                              digits
+    identifier                          identifier
+:   keyword arguments                   ternary operator
+    type separator
+;   comment starter (;;)                stmt terminator
+<>  operator (<, >, <=, >=, <>, ->)     operator(...)
+    type parametrization
+=   operator (==, <=, >=)               operator(==)
+    assignment                          assignment
+    parameter default
+?   identifier                          ternary operator
+    predicat function marker
+    macro variable marker
+@   specialize marker                   [----------]
+A-Z identifier                          identifier
+    digits (A-F)                        digits (A-F)
+[]  slicing                             array
+    arrays
+\   char constants                      escaping
+^   call-by-reference                   operator (xor)
+    slot ref notation
+_   identifier                          identifier
+`   [----------]                        [----------]
+a-z identifier                          identifier
+    digits (a-f)                        digits (a-f)
+{}  code block                          code block
+    macro block
+    switch/match block
+    class/type slot block
+|   module name separator               operator (|, ||)
+    select/match case marker
+~   docstring limiter                   operator (bit not)

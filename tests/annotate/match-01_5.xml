@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<params>
+<param sym='x' type='pos'>
+<type>
+<ty:type nm='lang|Any'>
+</ty:type>
+</type>
+</param>
+<param sym='m' type='pos'>
+<type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+</param>
+</params>
+<rettype>
+<ty:type nm='lang|Bool'>
+</ty:type>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='__match_0'>
+<type>
+<ty:type nm='lang|Any'>
+</ty:type>
+</type>
+<init>
+<symbol  ty='lang|Any' refer='param'>x</symbol>
+</init>
+</vardef>
+</let>
+<if  ty='lang|Bool'>
+<test>
+<apply  ty='lang|Bool'>
+<symbol  ty='lambda(&apos;T, lang|Class&lt;&apos;V>):lang|Bool' refer='generic'>lang|isa?</symbol>
+<args>
+<symbol  ty='lang|Any' refer='local'>__match_0</symbol>
+<type  ty='lang|Class&lt;lang|Bool>'/>
+</args>
+</apply>
+</test>
+<then>
+<block>
+<false  ty='lang|Bool'/>
+</block>
+</then>
+<else>
+<if  ty='lang|Bool'>
+<test>
+<apply  ty='lang|Bool'>
+<symbol  ty='lambda(&apos;T, lang|Class&lt;&apos;V>):lang|Bool' refer='generic'>lang|isa?</symbol>
+<args>
+<symbol  ty='lang|Any' refer='local'>__match_0</symbol>
+<type  ty='lang|Class&lt;lang|Int32>'/>
+</args>
+</apply>
+</test>
+<then>
+<block>
+<let>
+<vardef sym='n'>
+<type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<cast>
+<base>
+<symbol  ty='lang|Any' refer='local'>__match_0</symbol>
+</base>
+<as>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</as>
+</cast>
+</init>
+</vardef>
+</let>
+<binary op='==' ty='lang|Bool'>
+<symbol  ty='lang|Int32' refer='local'>n</symbol>
+<symbol  ty='lang|Int32' refer='param'>m</symbol>
+</binary>
+</block>
+</then>
+<else>
+<block>
+<true  ty='lang|Bool'/>
+</block>
+</else>
+</if>
+</else>
+</if>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Any'>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Bool'>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref nm='lang|Bool'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='V'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:type nm='lang|Bool'>
+</ty:type>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

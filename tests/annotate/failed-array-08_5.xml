@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<type nm='Person'>
+<isa>
+<ty:type nm='Person'>
+</ty:type>
+</isa>
+</type>
+</def>
+<def>
+<func sym='app|main'>
+<rettype>
+<ty:ref nm='lang|Int32'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<let>
+<vardef sym='t'>
+<type>
+<ty:array ind='0'>
+<ty:type nm='Person'>
+</ty:type>
+</ty:array>
+</type>
+<init>
+<apply  ty='Person[]'>
+<symbol  ty='lambda(lang|Class&lt;&apos;T>, &apos;T, lang|Any):&apos;T[]' refer='generic'>lang|allocate*</symbol>
+<args>
+<symbol  ty='lang|Class&lt;Person>'>Person</symbol>
+<int ty='lang|Int32'>16</int>
+</args>
+</apply>
+</init>
+</vardef>
+</let>
+<int ty='lang|Int32'>0</int>
+</block>
+</body>
+</func>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:array ind='0'>
+<ty:type nm='Person'>
+</ty:type>
+</ty:array>
+</ty:used-type>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+<ty:used-type>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:type nm='Person'>
+</ty:type>
+</ty:gen>
+</ty:ref>
+</ty:used-type>
+<ty:used-type>
+<ty:fun nm=''>
+<ty:prms>
+<ty:prm is='pos' spec='t'>
+<ty:ref nm='lang|Class'>
+<ty:gen>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
+</ty:prm>
+<ty:prm is='named' key='value'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:prm>
+<ty:prm is='rest'>
+<ty:type nm='lang|Any'>
+</ty:type>
+</ty:prm>
+</ty:prms>
+<ty:ret>
+<ty:array ind='0'>
+<ty:ref gen='t' nm='T'>
+</ty:ref>
+</ty:array>
+</ty:ret>
+</ty:fun>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

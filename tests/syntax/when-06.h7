@@ -1,0 +1,12 @@
+when include
+{
+  -- this char definition must be visible outside the when clause
+  def char test = 0afafh
+}
+else
+{
+  -- this char definition must not be visible outside the when clause
+  def char test = 0fefefh
+}
+
+def a = \test

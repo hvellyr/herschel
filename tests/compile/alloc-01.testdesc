@@ -1,0 +1,6 @@
+{
+  'retc': 11,
+  'runtime-options': 'allocate',
+  'stderr': [ 'Create instance.*QN2xi3Dog.*size.*0' ]
+}
+

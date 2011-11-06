@@ -1,0 +1,286 @@
+/* -*-c++-*-
+
+   This file is part of the herschel package
+
+   Copyright (c) 2010-2011 Gregor Klinke
+   All rights reserved.
+
+   This source code is released under the BSD License.
+*/
+
+#ifndef bootstrap_pass2_h
+#define bootstrap_pass2_h
+
+#include <set>
+#include <list>
+#include <map>
+
+#include "apt.h"
+#include "compilepass.h"
+#include "compiler.h"
+#include "pass.h"
+#include "port.h"
+#include "refcountable.h"
+#include "scope.h"
+#include "token.h"
+#include "tokenport.h"
+#include "type.h"
+#include "typectx.h"
+
+namespace herschel
+{
+  //--------------------------------------------------------------------------
+
+  //! The second pass in a compile run take the token expressions as returned
+  //! from the \c FirstPass and translate it into a tree of \c AptNodes.
+  //! Complicated high level expressions (e.g. \c for()) are transformed into
+  //! simpler base forms, already.  Some types are assigned (if available).
+  //! Constructor and access functions for classes and types are generated.
+  //!
+  //! Note that on this level no macros exist anymore.
+
+  class SecondPass : public AbstractPass
+  {
+  public:
+    SecondPass(Compiler* compiler, Scope* scope);
+
+    //! Transforms the token expressions as returned by the \c FirstPass into
+    //! a tree of \AptNode nodes.
+    AptNode* parse(const Token& exprs);
+
+  private:
+    struct PrimeTuple
+    {
+      Ptr<AptNode> fPrime;
+      Type         fType;
+    };
+
+    NodeList parseExpr(const Token& expr);
+    NodeList parseSeq(const Token& expr);
+
+    AptNode* parseModule(const Token& expr);
+    AptNode* parseExport(const Token& expr);
+    AptNode* parseImport(const Token& expr);
+
+
+    void parseTopExprlist(const Token& expr);
+
+    NodeList rewriteDefNode(AptNode* node, bool isLet);
+    NodeList rewriteDefNodes(const NodeList& nodes, bool isLet);
+
+    NodeList parseDef(const Token& expr, bool isLocal);
+    AptNode* parseIf(const Token& expr);
+    AptNode* parseOn(const Token& expr);
+    AptNode* parseFor(const Token& expr);
+    AptNode* parseSelect(const Token& expr);
+    AptNode* parseMatch(const Token& expr);
+    AptNode* parseClosure(const Token& expr);
+    AptNode* parseBinary(const Token& expr);
+    AptNode* parseFunCall(const Token& expr);
+    NodeList parseFunCallArgs(const TokenVector& args);
+    AptNode* parseTypeExpr(const Token& expr, bool inArrayType = false);
+
+    NodeList parseTokenVector(const TokenVector& seq);
+    void parseParameters(NodeList* parameters, const TokenVector& seq);
+
+    AptNode* parseParameter(const Token& expr);
+
+    NodeList parseTypeDef(const Token& expr, size_t ofs, bool isType,
+                          bool isLocal);
+    AptNode* generateConstructor(const Token& typeExpr,
+                                 const String& fullTypeName,
+                                 const Type& defType,
+                                 const NodeList& defaultApplyParams,
+                                 const NodeList& slotDefs,
+                                 const std::vector<PrimeTuple>& primes,
+                                 const NodeList& onExprs);
+    void generatePrimeInits(const SrcPos& srcpos,
+                            ListNode* body,
+                            const Type& defType,
+                            const std::vector<PrimeTuple>& primes,
+                            const String& selfParamSym);
+    AptNode* findPrimeForType(const Type& reqTypeInit,
+                              const std::vector<PrimeTuple>& primes);
+    AptNode* getPrimeForType(const Type& reqTypeInit,
+                             const std::vector<PrimeTuple>& primes,
+                             const String& selfParamSym);
+
+    AptNode* defaultSlotInitValue(const SlotdefNode* slot);
+    PrimeTuple parsePrime(const Token& primeToken);
+    std::vector<SecondPass::PrimeTuple> parseOnAllocExpr(const Token& expr);
+
+    AptNode* parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
+    AptNode* parseSlotDef(const Token& expr, size_t ofs);
+    AptNode* parseEnumDef(const Token& expr, size_t ofs, bool isLocal);
+    AptNode* nextEnumInitValue(const SrcPos& srcpos,
+                               const Token& enumItemSym,
+                               const Type& baseType, Token& lastInitToken);
+    AptNode* parseMeasureDef(const Token& expr, size_t ofs, bool isLocal);
+    AptNode* parseUnitDef(const Token& expr, size_t ofs, bool isLocal);
+    AptNode* parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
+                         bool isLocal, const String& linkage);
+    NodeList parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
+                              const String& linkage);
+
+    AptNode* parseLiteralArray(const Token& expr);
+    AptNode* parseLiteralVector(const Token& expr);
+    AptNode* parseLiteralDict(const Token& expr);
+
+    AptNode* newDefNode(AptNode* node, bool isLet);
+
+    AptNode* parseBlock(const Token& expr);
+    NodeList parseNested(const Token& expr);
+
+    AptNode* parseExtend(const Token& expr);
+
+    Type parseTypeSpec(const Token& expr, bool forceOpenType = false);
+    Type parseTypeSpecImpl(const Token& expr, bool forceOpenType);
+    Type parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenType);
+    Type parseGroupType(const Token& expr, bool isValue);
+    Type rephraseRefType(const SrcPos& srcpos, const Type& inType, bool isValue);
+
+    void parseExtendImpl(NodeList* functions, const Token& expr);
+
+
+    void transformCollForClause(const Token& token,
+                                NodeList* loopDefines,
+                                NodeList* testExprs);
+    void transformRangeForClause(const Token& token,
+                                 NodeList* loopDefines,
+                                 NodeList* testExprs,
+                                 NodeList* stepExprs);
+    void transformExplicitForClause(const Token& token,
+                                    NodeList* loopDefines,
+                                    NodeList* testExprs,
+                                    NodeList* stepExprs);
+
+    void parseTypeVector(TypeVector* generics, const Token& expr,
+                         bool forceOpenType = false);
+    void paramsNodeListToType(FunctionParamVector* funcParams,
+                              const NodeList& nl) const;
+
+    AptNode* parseIntNumber(const Token& expr);
+    AptNode* parseRationalNumber(const Token& expr);
+    AptNode* parseRealNumber(const Token& expr);
+
+    AptNode* parseChainSelect(const Token& expr);
+    AptNode* parseRealSelect(const Token& expr);
+
+    AptNode* parseUnitNumber(const Token& expr);
+
+    AptNode* generateArrayAlloc(const Token& expr, AptNode* typeNode);
+    AptNode* generateAlloc(const Token& expr, const Type& type);
+    AptNode* generateInitObjectCall(const SrcPos& srcpos,
+                                    AptNode* newObjAllocExpr,
+                                    const Type& type, const TokenVector& argTokens);
+
+
+    //@{ Parsing functions
+
+    struct FundefClauseData
+    {
+      FundefClauseData()
+        : fFlags(0)
+      { }
+
+      NodeList     fParams;
+      Type         fType;
+      Ptr<AptNode> fReify;
+      Ptr<AptNode> fWhere;
+      unsigned int fFlags;
+      Ptr<AptNode> fBody;
+    };
+    void parseFundefClause(const TokenVector& seq, size_t& ofs,
+                           FundefClauseData& data);
+
+    //! indicates whether the node list \p params (a list of ParamNodes)
+    //! contains a parameter which is specialized (isSpecArg()).
+    bool hasSpecParameters(const NodeList& params) const;
+
+    //! make and register a generic function declaration for name \p sym and
+    //! parsed function data \p data.  Since generic functions are never local
+    //! or may have a special linkage this can be passed here.
+    AptNode* makeGenericFunction(const SrcPos& srcpos,
+                                 const String& sym,
+                                 const FundefClauseData& data);
+
+    //! make a method (i.e. a generic function implementation) for the generic
+    //! function called \p sym with parsed function data \p data.
+    AptNode* makeMethod(const SrcPos& srcpos, const String& sym,
+                        const FundefClauseData& data);
+
+    //! make a normal function named \p sym with parsed function data \p
+    //! data.  The function data must not contain specialized parameters, nor
+    //! must the function be flagged as generic.
+    AptNode* makeNormalFunction(const SrcPos& srcpos, const String& sym,
+                                const FundefClauseData& data,
+                                bool isLocal,
+                                const String& linkage);
+    //@}
+
+    Type parseBinaryTypeSpec(const Token& expr, bool forceGeneric,
+                             bool isValue);
+    Type parseWhereConstraint(const Token& whereConstrSeq);
+    void parseWhereClause(const Token& whereSeq);
+
+    Type genericTypeRef(const String& id, bool isValue) const;
+    size_t getWhereOfs(const Token& expr) const;
+    size_t getWhereOfs(const TokenVector& seq, size_t ofs) const;
+
+    AptNode* constructWhileTestNode(const Token& expr, NodeList& testExprs);
+
+    AptNode* parseSlotAccess(const Token& expr);
+
+    Type getIntType(int bitwidth, bool isSigned) const;
+
+
+    typedef std::map<String, Type> TSharedGenericTable;
+    class TSharedGenericScopeHelper
+    {
+    public:
+      TSharedGenericScopeHelper(TSharedGenericTable& table)
+        : fOldTable(table),
+          fOldLoc(table)
+      {
+        // don't reset the old table.  We keep it as is and simply overwrite
+        // it with new values to get a simple read-through mechanism to deeper
+        // layers
+      }
+
+      ~TSharedGenericScopeHelper()
+      {
+        fOldLoc = fOldTable;
+      }
+
+      TSharedGenericTable fOldTable;
+      TSharedGenericTable& fOldLoc;
+    };
+
+    //-------- data member
+
+    std::set<String>    fCurrentGenericTypes;
+    TSharedGenericTable fSharedGenericTable;
+    Ptr<ListNode>       fRootNode;
+  };
+
+
+  //--------------------------------------------------------------------------
+
+  //! \c TokenCompilePass wrapper for the \c SecondPass pass to be used in the
+  //! process pipeline as second pass.
+
+  class NodifyPass : public Token2AptNodeCompilePass
+  {
+  public:
+    NodifyPass(int level, Compiler* compiler, Scope* scope);
+    virtual AptNode* doApply(const Token& src);
+    Scope* currentScope();
+
+  private:
+    Ptr<Scope>      fScope;
+    Ptr<Compiler>   fCompiler;
+    Ptr<SecondPass> fPass;
+  };
+};
+
+#endif  // bootstrap_pass2_h

@@ -1,0 +1,24 @@
+-- check that 'def generics' must not occur inside 'def class'.  Make sure
+-- the last 'def slot' is actually parsed
+
+def class Abc<K, V>(k : K) : Collection<K, 'Z>
+    where K isa Comparable,
+          V isa Slotable
+{
+  def generic item(k @ 'K) : 'V ...
+
+  def generic itemx(k @ 'X[]) : 'Y
+      where X isa VeryComparable,
+            Y isa NearlySlotable ...
+
+  def generic itemy(k @ 'K[]) : 'V
+      where K isa VeryComparable,
+            V isa NearlySlotable ...
+
+  def generic itemz(k @ 'K) : 'V ...
+
+  def generic itemf(k @ 'K) : 'V
+      where V isa Copyable ...
+
+  def slot a = 45
+}

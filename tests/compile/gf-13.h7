@@ -1,0 +1,25 @@
+import "lang/stdlib.h7"
+
+module xi
+
+def foo(c)
+  putchar(c)
+  c
+
+def class Foo { }
+
+def generic bar(one @ Any) ...
+
+def bar(one @ Foo)
+  foo(3dh) foo(46h) foo(10)    -- =F
+
+def bar(one @ Int)
+  foo(3dh) foo(one) foo(10)    -- =i
+
+
+def app|main()
+  for (i in 68h..6ah)
+    bar(i)
+  bar(Foo())
+
+  1

@@ -1,0 +1,2 @@
+7 ; error ; 4000 ; Redefinition of 'foo'.
+3 ; error ; 4000 ; 'foo' previously defined here.

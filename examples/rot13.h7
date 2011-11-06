@@ -1,0 +1,14 @@
+-- simple imperative rot13 implementation
+
+def rot13(buffer : Char[]) : Char[]
+  let t = Char[](buffer.num-items)
+
+  for (i in 0 .. buffer.num-items - 1) {
+    let c = buffer[i]
+    t[i] = select(c) {
+             | \a .. \m -> c + 13
+             | \n .. \z -> c - 13
+             | else c
+           }
+  }
+  t

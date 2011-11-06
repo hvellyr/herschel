@@ -1,0 +1,65 @@
+-- specialized parameter with multi inheritance
+--
+-- TODO: currently ambiguities in method definitions are neither detected
+-- by the compiler not the runtime.  Therefore dispatching on Orange and
+-- Lemon below does not take the order of multiple inheritance into
+-- account, but depend on the order of the method definition for 'bar @
+-- Sour' and 'bar @ Sweet'.
+
+import "lang/stdlib.h7"
+
+module xi
+
+def foo(c)
+  putchar(c)
+  c
+
+
+def type Fruit
+def type Taste
+
+def type Sour : Taste
+def type Sweet : Taste
+def type SweetAndSour : (Sweet, Sour)
+def type SourAndSweet : (Sour, Sweet)
+
+def class Apple : (Fruit, Sweet) { }
+def class Pear : (Fruit, Sweet) { }
+def class Orange : (Fruit, SweetAndSour) { }
+def class Lemon : (Fruit, SourAndSweet) { }
+
+
+
+def generic bar(one @ Any)
+  foo(3dh)
+  foo(77h) foo(68h) foo(61h) foo(74h) foo(3fh) foo(10) -- what?
+
+def bar(one @ Sour)
+  foo(3dh)
+  foo(73h) foo(6fh) foo(6dh) foo(65h) foo(77h) foo(68h) foo(61h) foo(74h)
+  foo(20h)
+  foo(73h) foo(6fh) foo(75h) foo(72h) foo(10) -- somewhat sour
+
+def bar(one @ Sweet)
+  foo(3dh)
+  foo(73h) foo(6fh) foo(6dh) foo(65h) foo(77h) foo(68h) foo(61h) foo(74h)
+  foo(20h)
+  foo(73h) foo(77h) foo(65h) foo(65h) foo(74h) foo(10) -- somewhat sweet
+
+def bar(one @ Apple)
+  foo(3dh)
+  foo(61h) foo(70h) foo(70h) foo(6ch) foo(65h) foo(10) -- apple
+
+
+def app|main()
+  let apple = Apple()
+  let pear = Pear()
+  let orange = Orange()
+  let lemon = Lemon()
+
+  apple.bar
+  pear.bar
+  orange.bar
+  lemon.bar
+
+  1

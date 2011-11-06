@@ -1,0 +1,6 @@
+import "person.h7"
+
+def class Employee : Person
+{
+--  def slot name : String
+}

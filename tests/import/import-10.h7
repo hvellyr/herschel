@@ -1,0 +1,19 @@
+-- test: - import ignore-green-10.h7
+--       - check that types are correct
+--       - check that function (types) are correct
+
+import "import/ignore-green-10.h7"
+
+def a : MyNumber = 12
+
+def foo(x : MyNumber, y : 'T)
+  y
+
+def bar()
+  let z : YourNumber
+  foo(a, z)
+
+
+def bar2()
+  let z : YourNumber
+  green|foo(a, z)

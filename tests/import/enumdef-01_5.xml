@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<vardef sym='a1|a0'>
+<type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<int ty='lang|Int32'>0</int>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='a1|a1'>
+<type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</type>
+<init>
+<int ty='lang|Int32'>1</int>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='a1|a10'>
+<type>
+<ty:type nm='lang|Keyword'>
+</ty:type>
+</type>
+<init>
+<keyw>orange</keyw>
+</init>
+</vardef>
+</def>
+<def>
+<vardef sym='a1|a11'>
+<type>
+<ty:type nm='lang|Keyword'>
+</ty:type>
+</type>
+<init>
+<keyw>red</keyw>
+</init>
+</vardef>
+</def>
+<ty:node-types>
+<ty:used-type>
+<ty:type nm='lang|Int32'>
+<ty:isa>
+<ty:seq>
+<ty:ref nm='lang|Integer'>
+</ty:ref>
+<ty:ref nm='lang|Exact'>
+</ty:ref>
+<ty:ref nm='lang|Bounded'>
+</ty:ref>
+</ty:seq>
+</ty:isa>
+</ty:type>
+</ty:used-type>
+</ty:node-types>
+</compile-unit>

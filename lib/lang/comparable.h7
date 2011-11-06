@@ -1,0 +1,45 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+module lang
+export public(Comparable,
+              compare,
+              equal?, unequal?, less?, less-equal?, greater?, greater-equal?)
+
+import "lang/types.h7"
+import "lang/numbers.h7"
+
+
+def type Comparable
+
+def generic compare(one @ 'S, two @ 'T) : Int ...
+    ~ Compare value @var{one} with @var{two}.
+
+    @returns 0 if @var{one} and @var{two} are equal; a value > 0 if
+             @var{one} is greater than @var{two}, and a value below 0 if
+             @var{one} is less. ~
+
+
+def generic equal?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is equal to @var{two}. ~
+
+def generic unequal?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is not equal to @var{two}. ~
+
+def generic less?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is less than @var{two}. ~
+
+def generic less-equal?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is less than or equal to @var{two}. ~
+
+def generic greater?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is greater than @var{two}. ~
+
+def generic greater-equal?(one @ 'S, two @ 'T) : Bool ...
+    ~ Indicates whether @var{one} is greater than or equal to @var{two}. ~
+
+-- end of comparable.h7
