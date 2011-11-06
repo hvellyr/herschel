@@ -23,7 +23,7 @@ namespace herschel
 {
   // -----------------------------------------------------------------------------
 
-  //! TypeProperty implementation for the bool type.
+  //! TypeProperty implementation for the keyword type.
   class KeywordTypeProperty : public TypeProperty
   {
   public:
