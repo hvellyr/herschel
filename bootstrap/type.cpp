@@ -1389,6 +1389,13 @@ Type::isAny() const
 
 
 bool
+Type::isClangAtom() const
+{
+  return isBuiltinType(Names::kClangAtomTypeName);
+}
+
+
+bool
 Type::isSigned() const
 {
   if ( isBuiltinType(Names::kNumberTypeName) ||
@@ -3168,8 +3175,8 @@ namespace herschel
       return false;
     }
 
-    if (left.isAny()) {
-      if (right.isAny())
+    if (left.isAny() || left.isClangAtom()) {
+      if (right.isAny() || right.isClangAtom())
         return true;
       return false;
     }
@@ -3429,7 +3436,7 @@ namespace herschel
       return false;
     }
 
-    if (left.isAny())
+    if (left.isAny() || left.isClangAtom())
       return true;
     if (left.isUnion()) {
       const TypeVector& vect = left.unionTypes();
@@ -3506,7 +3513,7 @@ namespace herschel
       return false;
     }
 
-    if (right.isAny()) {
+    if (right.isAny() || right.isClangAtom()) {
       // everything is covariant to lang|Any
       return true;
     }
@@ -3598,7 +3605,7 @@ namespace herschel
 
       return false;
     }
-    else if (left.isAny()) {
+    else if (left.isAny() || left.isClangAtom()) {
       return false;
     }
 

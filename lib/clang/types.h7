@@ -49,6 +49,9 @@ def type void**
 def type float**
 def type double**
 
+def type ATOM*
+def type ATOM
+
 -- end of clang/types.h7
 
 

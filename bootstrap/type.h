@@ -269,6 +269,7 @@ namespace herschel
     bool isPlainType() const;
 
     bool isAny() const;
+    bool isClangAtom() const;
 
     //! indicates whether the type is a generic lang|Integer type.
     bool isInteger() const;
