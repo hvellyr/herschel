@@ -241,6 +241,9 @@ Compiler::importSystemHeaders(const String& avoidPath)
   if (!importSystemHeader(String("builtin:lang/numbers.h7"), fullAvoidPath))
     return;
 
+  if (!importSystemHeader(String("builtin:lang/comparable.h7"), fullAvoidPath))
+    return;
+
   if (!importSystemHeader(String("builtin:lang/runtime.h7"), fullAvoidPath))
     return;
 
