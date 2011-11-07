@@ -50,6 +50,7 @@ namespace herschel
 #define MID_LessEqualQ  "less-equal?"
 #define MID_GreaterEqualQ "greater-equal?"
 #define MID_UnequalQ    "unequal?"
+#define MID_Compare     "compare"
 
 #define MID_add         "add"
 #define MID_append      "append"
@@ -151,6 +152,7 @@ namespace herschel
 #define MID_lang_less_equal_q    MID_core_ns "|" MID_LessEqualQ
 #define MID_lang_greater_equal_q MID_core_ns "|" MID_GreaterEqualQ
 #define MID_lang_unequal_q       MID_core_ns "|" MID_UnequalQ
+#define MID_lang_compare         MID_core_ns "|" MID_Compare
 
 
 #define MID_app_main            "app|main"
@@ -219,11 +221,12 @@ namespace herschel
     const static String kLangNumItems;
 
     const static String kLangEqualQ;
-    const static String kLangUnequalq;
+    const static String kLangUnequalQ;
     const static String kLangLessQ;
     const static String kLangLessEqualQ;
     const static String kLangGreaterQ;
     const static String kLangGreaterEqualQ;
+    const static String kLangCompare;
 
     const static String kLangIsaQ;
 

@@ -6,4 +6,13 @@ def app|main()
   let m = "hello world"
 
   assert(t == m)
+
+  assert("abc" < "xyz")
+  assert("xyz" > "abc")
+
+  assert("abc" < "abc1")
+  assert("abc2" > "abc")
+  assert("abc2" > "abc1")
+
+--  assert(("abc" <=> "xyz") < 0)
   0
