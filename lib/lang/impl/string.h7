@@ -12,12 +12,30 @@ import "lang/stdlib.h7"
 import "lang/copyable.h7"
 
 extern ("C") {
-  int lang_string_equal(const struct ATOM one, const struct ATOM two);
+  int lang_string_compare(const struct ATOM atom0, const struct ATOM atom1);
 }
 
 
 def lang|equal?(one @ String, two @ String) : Bool
-  lang_string_equal(one, two) == 0
+  lang_string_compare(one, two) == 0
+
+def lang|unequal?(one @ String, two @ String) : Bool
+  lang_string_compare(one, two) <> 0
+
+def lang|less?(one @ String, two @ String) : Bool
+  lang_string_compare(one, two) < 0
+
+def lang|greater?(one @ String, two @ String) : Bool
+  lang_string_compare(one, two) > 0
+
+def lang|less-equal?(one @ String, two @ String) : Bool
+  lang_string_compare(one, two) <= 0
+
+def lang|greater-equal?(one @ String, two @ String) : Bool
+  lang_string_compare(one, two) >= 0
+
+def lang|compare(one @ String, two @ String) : Int
+  lang_string_compare(one, two) as Int
 
 
 when ignore {
