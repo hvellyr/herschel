@@ -28,7 +28,7 @@
 <type>
 <ty:array ind='5'>
 <ty:seq>
-<ty:ref nm='Copyable'>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
 <ty:array ind='7'>
 <ty:ref nm='Serializable'>

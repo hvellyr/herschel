@@ -85,7 +85,7 @@
 <ty:seq ref='t'>
 <ty:ref nm='Slotable'>
 </ty:ref>
-<ty:ref nm='Copyable'>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
 </ty:seq>
 </type>
@@ -95,7 +95,7 @@
 <ty:seq ref='t'>
 <ty:ref nm='Slotable'>
 </ty:ref>
-<ty:ref nm='Copyable'>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
 </ty:seq>
 </rettype>
