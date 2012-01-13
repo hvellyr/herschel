@@ -1,6 +1,6 @@
 .\".\" Copyright (c) 2011 Gregor Klinke. All Rights Reserved.
 .\" The following commands are required for all man pages.
-.Dd January 26, 2011
+.Dd November 11, 2011
 .Os "Mac OS X"
 .Dt HERSCHEL 1
 .Sh NAME
@@ -51,8 +51,8 @@ By default, the output file name is made by appending the suffix
 to the source file name.
 .It Fl P
 Only parse the source file.  If a tracing options
-.Op T
-is given the internal AST tree is printed to stdout.
+.Op -T
+is given the internal AST tree is printed as XML to stdout.
 .El
 .Pp
 .Pp
@@ -100,7 +100,7 @@ Turn off any (even basic) optimization
 .\"     (command return values (to shell) and
 .\"     fprintf/stderr type diagnostics).
 .Sh DIAGNOSTICS
-.Ex -std hrc
+.Ex -std herschel
 .Sh SEE ALSO
 .Xr herschel 7
 .Sh AUTHORS
