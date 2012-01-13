@@ -9,6 +9,7 @@ module lang
 export public(*)
 
 import "lang/types.h7"
+import "lang/numbers.h7"
 import "lang/comparable.h7"
 import "lang/copyable.h7"
 import "lang/sliceable.h7"

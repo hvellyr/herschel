@@ -6,8 +6,12 @@
 <ty:union>
 <ty:type nm='lang|String'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
+<ty:ref nm='lang|Comparable'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Int32'>
@@ -36,8 +40,12 @@
 <rettype>
 <ty:type nm='lang|String'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
+<ty:ref nm='lang|Comparable'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </rettype>
@@ -79,8 +87,12 @@
 <ty:union>
 <ty:type nm='lang|String'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
+<ty:ref nm='lang|Comparable'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Int32'>
@@ -125,8 +137,12 @@
 <ty:used-type>
 <ty:type nm='lang|String'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
+<ty:ref nm='lang|Comparable'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 </ty:used-type>
@@ -142,8 +158,12 @@
 <ty:union>
 <ty:type nm='lang|String'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
+<ty:ref nm='lang|Comparable'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Int32'>

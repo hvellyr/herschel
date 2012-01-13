@@ -7,7 +7,7 @@
 <type>
 <ty:ref gen='t' nm='K'>
 <ty:const k='isa'>
-<ty:ref nm='Comparable'>
+<ty:ref nm='lang|Comparable'>
 </ty:ref>
 </ty:const>
 </ty:ref>
@@ -21,7 +21,7 @@
 <ty:gen>
 <ty:ref gen='t' nm='K'>
 <ty:const k='isa'>
-<ty:ref nm='Comparable'>
+<ty:ref nm='lang|Comparable'>
 </ty:ref>
 </ty:const>
 </ty:ref>
@@ -51,7 +51,7 @@
 <ty:gen>
 <ty:ref gen='t' nm='K'>
 <ty:const k='isa'>
-<ty:ref nm='Comparable'>
+<ty:ref nm='lang|Comparable'>
 </ty:ref>
 </ty:const>
 </ty:ref>
@@ -73,7 +73,7 @@
 <type>
 <ty:ref gen='t' nm='K'>
 <ty:const k='isa'>
-<ty:ref nm='Comparable'>
+<ty:ref nm='lang|Comparable'>
 </ty:ref>
 </ty:const>
 </ty:ref>
@@ -87,7 +87,7 @@
 <ty:gen>
 <ty:ref gen='t' nm='K'>
 <ty:const k='isa'>
-<ty:ref nm='Comparable'>
+<ty:ref nm='lang|Comparable'>
 </ty:ref>
 </ty:const>
 </ty:ref>
@@ -208,7 +208,7 @@
 <rettype>
 <ty:ref gen='t' nm='V'>
 <ty:const k='isa'>
-<ty:ref nm='Copyable'>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
 </ty:const>
 </ty:ref>

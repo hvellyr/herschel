@@ -249,6 +249,11 @@ Compiler::importSystemHeaders(const String& avoidPath)
 
   if (!importSystemHeader(String("builtin:lang/sliceable.h7"), fullAvoidPath))
     return;
+
+  if (!importSystemHeader(String("builtin:lang/copyable.h7"), fullAvoidPath))
+    return;
+  if (!importSystemHeader(String("builtin:lang/string.h7"), fullAvoidPath))
+    return;
 }
 
 

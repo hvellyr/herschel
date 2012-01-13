@@ -43,8 +43,12 @@
 <ty:union>
 <ty:type nm='lang|String'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
+<ty:ref nm='lang|Comparable'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
@@ -116,8 +120,12 @@
 <ty:union>
 <ty:type nm='lang|String'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
+<ty:ref nm='lang|Comparable'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
@@ -129,8 +137,12 @@
 <ty:union>
 <ty:type nm='lang|String'>
 <ty:isa>
-<ty:ref nm='lang|Object'>
+<ty:seq>
+<ty:ref nm='lang|Copyable'>
 </ty:ref>
+<ty:ref nm='lang|Comparable'>
+</ty:ref>
+</ty:seq>
 </ty:isa>
 </ty:type>
 <ty:type nm='lang|Bool'>
