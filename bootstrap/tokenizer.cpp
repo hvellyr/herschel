@@ -434,73 +434,100 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
     second = readIntNumberPart(K(acceptHex));
   }
 
-  if (fCC == 'h' || fCC == 'H') {
-    if (type != kInt)
-      errorf(srcpos(), E_BadNumberNotation,
-             "hexadecimal notation for unappropriate number type");
-    else
-      radix = 16;
-    nextChar();
+  Token suffix = readIdentifier(srcpos(), String(), kSymbol,
+                                !K(acceptGenerics));
+  if (suffix.type() != kId) {
+    errorf(startPos, E_BadNumberNotation, "unexpected number type annotation");
   }
-  else if (fCC == 'q' || fCC == 'Q') {
-    if (type != kInt)
-      errorf(srcpos(), E_BadNumberNotation,
-             "hexadecimal notation for unappropriate number type");
-    else
-      radix = 8;
-    nextChar();
-  }
-  if (fCC == 'y' || fCC == 'Y') {
-    if (type != kInt)
-      errorf(srcpos(), E_BadNumberNotation,
-             "binary notation for unappropriate number type");
-    else
-      radix = 2;
-    nextChar();
-  }
+  else {
+    String id = suffix.idValue();
+    int idx = 0;
+    int len = suffix.idValue().length();
 
-  if (fCC == 'u' || fCC == 'U') {
-    nextChar();
-    if (type != kInt) {
-      errorf(srcpos(), E_BadNumberNotation,
-             "unsigned notation for unappropriate number type");
+    if (idx < len) {
+      if (id[idx] == 'h' || id[idx] == 'H') {
+        if (type != kInt)
+          errorf(srcpos(), E_BadNumberNotation,
+                 "hexadecimal notation for unappropriate number type");
+        else
+          radix = 16;
+        idx++;
+      }
+      else if (id[idx] == 'q' || id[idx] == 'Q') {
+        if (type != kInt)
+          errorf(srcpos(), E_BadNumberNotation,
+                 "hexadecimal notation for unappropriate number type");
+        else
+          radix = 8;
+        idx++;
+      }
     }
-    else {
-      isUnsigned = true;
-      if (sign < 0)
-        errorf(srcpos(), E_BadNumberNotation,
-               "negative unsigned number.  Sign ignored");
+    if (idx < len) {
+      if (id[idx] == 'y' || id[idx] == 'Y') {
+        if (type != kInt)
+          errorf(srcpos(), E_BadNumberNotation,
+                 "binary notation for unappropriate number type");
+        else
+          radix = 2;
+        idx++;
+      }
     }
-  }
 
-  if (fCC == 'l' || fCC == 'L') {
-    nextChar();
-    if (type == kInt || type == kFloat)
-      bitwidth = 64;
-    else
-      errorf(srcpos(), E_BadNumberNotation,
-             "long number notation for unappropriate number type");
-  }
-  else if (fCC == 's' || fCC == 'S') {
-    nextChar();
-    if (type == kInt)
-      bitwidth = 16;
-    else
-      errorf(srcpos(), E_BadNumberNotation,
-             "long number notation for unappropriate number type");
-  }
-  else if (fCC == 't' || fCC == 'T') {
-    nextChar();
-    if (type == kInt)
-      bitwidth = 8;
-    else
-      errorf(srcpos(), E_BadNumberNotation,
-             "long number notation for unappropriate number type");
-  }
+    if (idx < len) {
+      if (id[idx] == 'u' || id[idx] == 'U') {
+        if (type != kInt) {
+          errorf(srcpos(), E_BadNumberNotation,
+                 "unsigned notation for unappropriate number type");
+        }
+        else {
+          isUnsigned = true;
+          if (sign < 0)
+            errorf(srcpos(), E_BadNumberNotation,
+                   "negative unsigned number.  Sign ignored");
+        }
+        idx++;
+      }
+    }
 
-  if (fCC == 'i' || fCC == 'I') {
-    nextChar();
-    isImaginary = true;
+    if (idx < len) {
+      if (id[idx] == 'l' || id[idx] == 'L') {
+        idx++;
+        if (type == kInt || type == kFloat)
+          bitwidth = 64;
+        else
+          errorf(srcpos(), E_BadNumberNotation,
+                 "long number notation for unappropriate number type");
+      }
+      else if (id[idx] == 's' || id[idx] == 'S') {
+        idx++;
+        if (type == kInt)
+          bitwidth = 16;
+        else
+          errorf(srcpos(), E_BadNumberNotation,
+                 "long number notation for unappropriate number type");
+      }
+      else if (id[idx] == 't' || id[idx] == 'T') {
+        idx++;
+        if (type == kInt)
+          bitwidth = 8;
+        else
+          errorf(srcpos(), E_BadNumberNotation,
+                 "long number notation for unappropriate number type");
+      }
+    }
+
+    if (idx < len) {
+      if (id[idx] == 'i' || id[idx] == 'I') {
+        idx++;
+        isImaginary = true;
+      }
+    }
+
+    if (idx < len) {
+      // there're more chars in the annotation than expected.
+      errorf(srcpos(), E_BadNumberNotation,
+             "unexpected number type annotation: %c", id[idx]);
+    }
   }
 
 

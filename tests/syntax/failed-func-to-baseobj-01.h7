@@ -1,0 +1,7 @@
+def foo()
+  -- the following should give a proper error message.  this is not
+  -- <5.0t><ostring> (as an old state passed), but would be
+  -- <5><.><tostring>, which would be ambiguous.
+  66.pelle
+  5.tostring
+  6.0.length

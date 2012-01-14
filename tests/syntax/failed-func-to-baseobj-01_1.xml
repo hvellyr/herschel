@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>foo</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<lit type='float'>66.000000</lit>
+<lit type='float'>5.000000</lit>
+<lit type='float'>6.000000</lit>
+</nested>
+</seq>
+</seq>
+

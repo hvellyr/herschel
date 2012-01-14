@@ -1,0 +1,5 @@
+6 ; error ; (0107) ; unexpected number type annotation: p
+7 ; error ; (0107) ; long number notation for unappropriate number type
+7 ; error ; (0107) ; unexpected number type annotation: o
+7 ; error ; (0003) ; unexpected token while scanning block: .
+
