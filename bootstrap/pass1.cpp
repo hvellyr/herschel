@@ -1963,6 +1963,30 @@ FirstPass::parseExplicitTypedNumber(const Token& token)
 
 
 Token
+FirstPass::parseAtomicExpr0()
+{
+  switch (fToken.tokenType()) {
+  case kBool:
+  case kString:
+  case kChar:
+  case kKeyword:
+  case kNilId:
+  case kEofId:
+  case kSeqExpr:
+  case kNestedExpr:
+    {
+      Token t = fToken;
+      nextToken();
+      return t;
+    }
+  default:
+    ;
+  }
+
+  return Token();
+}
+
+Token
 FirstPass::parseAtomicExpr()
 {
   switch (fToken.tokenType()) {
@@ -1980,11 +2004,7 @@ FirstPass::parseAtomicExpr()
   case kEofId:
   case kSeqExpr:
   case kNestedExpr:
-    {
-      Token t = fToken;
-      nextToken();
-      return t;
-    }
+    return parseAccess(parseAtomicExpr0());
 
   case kIfId:
     return parseIf();

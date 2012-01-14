@@ -117,6 +117,7 @@ namespace herschel
     Token parseFor();
 
     Token parseExpr(bool acceptComma);
+    Token parseAtomicExpr0();
     Token parseAtomicExpr();
     Token parseUnitNumber(const Token& token);
     Token parseExplicitTypedNumber(const Token& token);

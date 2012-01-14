@@ -1,0 +1,8 @@
+def foo()
+  \c.tostring()
+  true.tostring
+  nil.tostring
+  eof.tostring
+  "abc".length() == 3u
+  "abc".length == 3u
+  #keyw.tostring
