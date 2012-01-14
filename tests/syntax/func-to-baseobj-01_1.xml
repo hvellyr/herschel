@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='utf-8'?>
+<seq>
+<seq>
+<id>def</id>
+<id>foo</id>
+<nested left='(' right=')'/>
+<punct type=':'/>
+<id>Any</id>
+<nested left='{' right='}'>
+<seq>
+<id>tostring</id>
+<nested left='(' right=')'>
+<lit type='char'>\u063;</lit>
+</nested>
+</seq>
+<seq>
+<id>tostring</id>
+<nested left='(' right=')'>
+<lit type='bool'>true</lit>
+</nested>
+</seq>
+<seq>
+<id>tostring</id>
+<nested left='(' right=')'>
+<id>nil</id>
+</nested>
+</seq>
+<seq>
+<id>tostring</id>
+<nested left='(' right=')'>
+<id>eof</id>
+</nested>
+</seq>
+<seq>
+<seq>
+<id>length</id>
+<nested left='(' right=')'>
+<lit type='str'>abc</lit>
+</nested>
+</seq>
+<punct type='=='/>
+<lit type='int'>3</lit>
+</seq>
+<seq>
+<seq>
+<id>length</id>
+<nested left='(' right=')'>
+<lit type='str'>abc</lit>
+</nested>
+</seq>
+<punct type='=='/>
+<lit type='int'>3</lit>
+</seq>
+<seq>
+<id>tostring</id>
+<nested left='(' right=')'>
+<lit type='keyw'>#keyw</lit>
+</nested>
+</seq>
+</nested>
+</seq>
+</seq>
+

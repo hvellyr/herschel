@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='utf-8'?>
+<compile-unit xmlns:ty='http://herschel.eyestep.org/types'>
+<def>
+<func sym='foo'>
+<rettype>
+<ty:ref nm='lang|Any'>
+</ty:ref>
+</rettype>
+<body>
+<block>
+<apply>
+<symbol>tostring</symbol>
+<args>
+<char>99</char>
+</args>
+</apply>
+<apply>
+<symbol>tostring</symbol>
+<args>
+<true/>
+</args>
+</apply>
+<apply>
+<symbol>tostring</symbol>
+<args>
+<symbol>nil</symbol>
+</args>
+</apply>
+<apply>
+<symbol>tostring</symbol>
+<args>
+<symbol>eof</symbol>
+</args>
+</apply>
+<binary op='=='>
+<apply>
+<symbol>length</symbol>
+<args>
+<str>abc</str>
+</args>
+</apply>
+<int ty='lang|UInt32'>3</int>
+</binary>
+<binary op='=='>
+<apply>
+<symbol>length</symbol>
+<args>
+<str>abc</str>
+</args>
+</apply>
+<int ty='lang|UInt32'>3</int>
+</binary>
+<apply>
+<symbol>tostring</symbol>
+<args>
+<keyw>keyw</keyw>
+</args>
+</apply>
+</block>
+</body>
+</func>
+</def>
+</compile-unit>
