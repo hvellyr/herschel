@@ -13,6 +13,7 @@ import "lang/copyable.h7"
 
 extern ("C") {
   int lang_string_compare(const struct ATOM atom0, const struct ATOM atom1);
+  unsigned int lang_string_length(struct ATOM atom0);
 }
 
 
@@ -36,6 +37,13 @@ def lang|greater-equal?(one @ String, two @ String) : Bool
 
 def lang|compare(one @ String, two @ String) : Int
   lang_string_compare(one, two) as Int
+
+
+def lang|length(s @ String) : Ordinal
+    lang_string_length(s) as Ordinal
+
+def empty?(str @ String) : Bool
+  str.length == 0u
 
 
 when ignore {
@@ -102,7 +110,7 @@ def core|slice(str @ StringImpl, from @ Ordinal, to @ Ordinal)
 def compare(one @ StringImpl, two @ StringImpl) : Int
   one.data <=> two.data
 
-}
+} -- end of ignore
 
 
 -- end of impl/string

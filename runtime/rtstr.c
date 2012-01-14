@@ -81,3 +81,13 @@ int lang_string_compare(struct ATOM atom0, struct ATOM atom1)
 
   return -1;
 }
+
+
+unsigned int lang_string_length(struct ATOM atom0)
+{
+  if (atom0.typeid == TYPE_TAG_STRING) {
+    return *((size_t*)atom0.u.v_obj);
+  }
+
+  return 0;
+}
