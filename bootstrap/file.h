@@ -62,16 +62,31 @@ namespace herschel
     //! directories can have extensions.
     bool hasExtension(const String& path);
 
+    //! Appends a new path step \p name to \p path and returns the new path.
+    //! Note that this function works even if \p path is not a directory path.
     String append(const String& path, const String& name);
+    //! Appends \p dirName to \p path and makes a new directory path from it.
+    //! \p path must be a directory path.
     String appendDir(const String& path, const String& dirName);
+    //! Appends \p dirName and \p dirName2 to \p path and makes a new
+    //! directory path from it.  \p path must be a directory path.
     String appendDir(const String& path, const String& dirName,
                      const String& dirName2);
+    //! Appends \p dirName, \p dirName2, and \p dirName3 to \p path and makes
+    //! a new directory path from it.  \p path must be a directory path.
     String appendDir(const String& path, const String& dirName1,
                      const String& dirName2, const String& dirName3);
+    //! Appends \p dirName, \p dirName2, \p dirName3, and \p dirName4 to \p
+    //! path and makes a new directory path from it.  \p path must be a
+    //! directory path.
     String appendDir(const String& path, const String& dirName1,
                      const String& dirName2, const String& dirName3,
                      const String& dirName4);
+    //! Appends \p name to \p path and makes a new file path from it. \p path
+    //! must be a directory path.
     String appendFile(const String& path, const String& name);
+    //! Appends \p ext as extension to \p path.  An extension separator (\c .)
+    //! is inserted between \p path and \p ext.
     String appendExt(const String& path, const String& ext);
 
     //! Returns the name part of \p path, i.e. the last path component.  For
@@ -120,6 +135,28 @@ namespace herschel
     //! \c canonicalPathName().
     String canonicalPathName(const String& path);
 
+    //! Search for a existing file matches \p pattern in all directories in \p
+    //! searchPath.  If \p pattern has no extension it is tested with all
+    //! alternative extensions in \p altExtensions.
+    //!
+    //! With searchPath=<tt>['/usr/lib/', '/home/mfi/x/', '~/']</tt>,
+    //! altExtensions=<tt>['cpp', 'cxx', 'C']</tt>, and the pattern <tt>'n/m'</tt> the following
+    //! paths will be checked:
+    //!
+    //! <pre>
+    //! /usr/lib/n/m
+    //! /usr/lib/n/m.cpp
+    //! /usr/lib/n/m.cxx
+    //! /usr/lib/n/m.C
+    //! /home/mfi/x/n/m
+    //! /home/mfi/x/n/m.cpp
+    //! /home/mfi/x/n/m.cxx
+    //! /home/mfi/x/n/m.C
+    //! ~/n/m
+    //! ~/n/m.cpp
+    //! ~/n/m.cxx
+    //! ~/n/m.C
+    //! </pre>
     String lookupInPath(const String& pattern,
                         const StringVector& searchPath,
                         const StringVector& altExtensions);
