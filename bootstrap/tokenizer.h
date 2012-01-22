@@ -23,6 +23,10 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! An EofException which carries a detailed source position annotation.
+  //!
+  //! The source annotation should encode the position where EOF occured but
+  //! where a construct was started which was found to be unfinished at EOF.
   class AnnotatedEofException : public EofException
   {
   public:
@@ -31,6 +35,7 @@ namespace herschel
         fSrcPos(srcpos)
     { }
 
+    //! Returns the annotated source position.
     const SrcPos& srcpos() const
     {
       return fSrcPos;
@@ -43,6 +48,9 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! The type for the character registry.
+  //!
+  //! It lists characters (unicode code points) by their character names.
   typedef Registry<int> CharRegistry;
 
 
