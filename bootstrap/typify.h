@@ -61,6 +61,7 @@ namespace herschel
   class UndefNode;
 
 
+  //! A vector of AptNodes.
   typedef std::vector<Ptr<AptNode> > NodeList;
 
   //------------------------------------------------------------------------------
@@ -80,85 +81,85 @@ namespace herschel
     //! The main entry function, which starts a recursive processing on \p node.
     void typifyRecursively(AptNode* node);
 
-    //! Typify implementation for CompileUnitNodes (cf. TypifyPass)
+    //! Typify implementation for CompileUnitNodes (cf. \c TypifyPass)
     void typify(CompileUnitNode* node);
 
-    //! Typify implementation for SymbolNodes (cf. TypifyPass)
+    //! Typify implementation for SymbolNodes (cf. \c TypifyPass)
     void typify(SymbolNode* node);
 
-    //! Typify implementation for DefNodes (cf. TypifyPass)
+    //! Typify implementation for DefNodes (cf. \c TypifyPass)
     void typify(DefNode* node);
-    //! Typify implementation for LetNodes (cf. TypifyPass)
+    //! Typify implementation for LetNodes (cf. \c TypifyPass)
     void typify(LetNode* node);
-    //! Typify implementation for BlockNodes (cf. TypifyPass)
+    //! Typify implementation for BlockNodes (cf. \c TypifyPass)
     void typify(BlockNode* node);
 
-    //! Typify implementation for ParamNodes (cf. TypifyPass)
+    //! Typify implementation for ParamNodes (cf. \c TypifyPass)
     void typify(ParamNode* node);
 
-    //! Typify implementation for ApplyNodes (cf. TypifyPass)
+    //! Typify implementation for ApplyNodes (cf. \c TypifyPass)
     void typify(ApplyNode* node);
-    //! Typify implementation for ArrayNodes (cf. TypifyPass)
+    //! Typify implementation for ArrayNodes (cf. \c TypifyPass)
     void typify(ArrayNode* node);
-    //! Typify implementation for ArrayTypeNodes (cf. TypifyPass)
+    //! Typify implementation for ArrayTypeNodes (cf. \c TypifyPass)
     void typify(ArrayTypeNode* node);
-    //! Typify implementation for AssignNodes (cf. TypifyPass)
+    //! Typify implementation for AssignNodes (cf. \c TypifyPass)
     void typify(AssignNode* node);
-    //! Typify implementation for BinaryNodes (cf. TypifyPass)
+    //! Typify implementation for BinaryNodes (cf. \c TypifyPass)
     void typify(BinaryNode* node);
-    //! Typify implementation for BoolNodes (cf. TypifyPass)
+    //! Typify implementation for BoolNodes (cf. \c TypifyPass)
     void typify(BoolNode* node);
-    //! Typify implementation for CastNodes (cf. TypifyPass)
+    //! Typify implementation for CastNodes (cf. \c TypifyPass)
     void typify(CastNode* node);
-    //! Typify implementation for CharNodes (cf. TypifyPass)
+    //! Typify implementation for CharNodes (cf. \c TypifyPass)
     void typify(CharNode* node);
-    //! Typify implementation for DictNodes (cf. TypifyPass)
+    //! Typify implementation for DictNodes (cf. \c TypifyPass)
     void typify(DictNode* node);
-    //! Typify implementation for FunctionNodes (cf. TypifyPass)
+    //! Typify implementation for FunctionNodes (cf. \c TypifyPass)
     void typify(FunctionNode* node);
-    //! Typify implementation for IfNodes (cf. TypifyPass)
+    //! Typify implementation for IfNodes (cf. \c TypifyPass)
     void typify(IfNode* node);
-    //! Typify implementation for IntNodes (cf. TypifyPass)
+    //! Typify implementation for IntNodes (cf. \c TypifyPass)
     void typify(IntNode* node);
-    //! Typify implementation for KeyargNodes (cf. TypifyPass)
+    //! Typify implementation for KeyargNodes (cf. \c TypifyPass)
     void typify(KeyargNode* node);
-    //! Typify implementation for KeywordNodes (cf. TypifyPass)
+    //! Typify implementation for KeywordNodes (cf. \c TypifyPass)
     void typify(KeywordNode* node);
-    //! Typify implementation for MatchNodes (cf. TypifyPass)
+    //! Typify implementation for MatchNodes (cf. \c TypifyPass)
     void typify(MatchNode* node);
-    //! Typify implementation for UnaryNodes (cf. TypifyPass)
+    //! Typify implementation for UnaryNodes (cf. \c TypifyPass)
     void typify(UnaryNode* node);
-    //! Typify implementation for OnNodes (cf. TypifyPass)
+    //! Typify implementation for OnNodes (cf. \c TypifyPass)
     void typify(OnNode* node);
-    //! Typify implementation for RangeNodes (cf. TypifyPass)
+    //! Typify implementation for RangeNodes (cf. \c TypifyPass)
     void typify(RangeNode* node);
-    //! Typify implementation for RationalNodes (cf. TypifyPass)
+    //! Typify implementation for RationalNodes (cf. \c TypifyPass)
     void typify(RationalNode* node);
-    //! Typify implementation for RealNodes (cf. TypifyPass)
+    //! Typify implementation for RealNodes (cf. \c TypifyPass)
     void typify(RealNode* node);
-    //! Typify implementation for SelectNodes (cf. TypifyPass)
+    //! Typify implementation for SelectNodes (cf. \c TypifyPass)
     void typify(SelectNode* node);
-    //! Typify implementation for SlotdefNodes (cf. TypifyPass)
+    //! Typify implementation for SlotdefNodes (cf. \c TypifyPass)
     void typify(SlotdefNode* node);
-    //! Typify implementation for SlotRefNodes (cf. TypifyPass)
+    //! Typify implementation for SlotRefNodes (cf. \c TypifyPass)
     void typify(SlotRefNode* node);
-    //! Typify implementation for StringNodes (cf. TypifyPass)
+    //! Typify implementation for StringNodes (cf. \c TypifyPass)
     void typify(StringNode* node);
-    //! Typify implementation for TypeDefNodes (cf. TypifyPass)
+    //! Typify implementation for TypeDefNodes (cf. \c TypifyPass)
     void typify(TypeDefNode* node);
-    //! Typify implementation for TypeNodes (cf. TypifyPass)
+    //! Typify implementation for TypeNodes (cf. \c TypifyPass)
     void typify(TypeNode* node);
-    //! Typify implementation for UnitConstNodes (cf. TypifyPass)
+    //! Typify implementation for UnitConstNodes (cf. \c TypifyPass)
     void typify(UnitConstNode* node);
-    //! Typify implementation for VectorNodes (cf. TypifyPass)
+    //! Typify implementation for VectorNodes (cf. \c TypifyPass)
     void typify(VectorNode* node);
-    //! Typify implementation for WhileNodes (cf. TypifyPass)
+    //! Typify implementation for WhileNodes (cf. \c TypifyPass)
     void typify(WhileNode* node);
-    //! Typify implementation for VardefNodes (cf. TypifyPass)
+    //! Typify implementation for VardefNodes (cf. \c TypifyPass)
     void typify(VardefNode* node);
-    //! Typify implementation for FuncDefNodes (cf. TypifyPass)
+    //! Typify implementation for FuncDefNodes (cf. \c TypifyPass)
     void typify(FuncDefNode* node);
-    //! Typify implementation for UndefNodes (cf. TypifyPass)
+    //! Typify implementation for UndefNodes (cf. \c TypifyPass)
     void typify(UndefNode* node);
 
   private:
@@ -182,7 +183,7 @@ namespace herschel
     //! setupFunctionNodeType() has been successfully run before.
     void checkFunctionReturnType(FunctionNode* node);
 
-    //! Check that an allocate* function call without explicit "value:"
+    //! Check that an allocate* function call without explicit \c "value:"
     //! argument works on types without positional ctor parameters.
     void checkAllocateArraySignature(ApplyNode* node);
 
@@ -212,16 +213,16 @@ namespace herschel
                                        const NodeList& args,
                                        const FunctionNode* funcNode);
 
-    //! lookup up a matching function implementing the operator of the binary
-    //! node \p node and determine and set the types if appling the arguments
-    //! \p leftArg and \p rightArg to it.
+    //! Looks up up a matching function implementing the operator of the
+    //! binary node \p node and determine and set the types if appling the
+    //! arguments \p leftArg and \p rightArg to it.
     //!
-    //! @return true if such a function can be found and all types apply
+    //! @return \c true if such a function can be found and all types apply
     //!         properly.
     bool checkBinaryFunctionCall(BinaryNode* node,
                                  const String& funcName,
                                  AptNode* leftArg, AptNode* rightArg);
-    //! returns the builtin function name for the operator \p type.
+    //! Returns the builtin function name for the operator \p type.
     String operatorNameByOp(OperatorType type) const;
 
     //! Helper class for the findKeyedArg() function.
@@ -234,7 +235,7 @@ namespace herschel
     //! When determining function call types, this finds the matching argument
     //! for a keyed parameter named \p key from \p args starting at \p
     //! argidx.  If no matching argument can be found the returned structure
-    //! has the value ''{ NULL, 0 }'';
+    //! has the value <tt>{ NULL, 0 }</tt>;
     KeyargReturn findKeyedArg(const NodeList& args, size_t argidx,
                               const String& key);
 
