@@ -20,6 +20,11 @@ namespace herschel
 {
   //--------------------------------------------------------------------------
 
+  //! A typesafe registry.
+  //!
+  //! A registry is a heap (and refcounted) dictionary mapping string values
+  //! to a templated type.  Values are added (set) using \c registerValue()
+  //! and looked up with \c lookup().
   template<typename T>
   class Registry : public RefCountable
   {
@@ -29,6 +34,8 @@ namespace herschel
     typedef typename std::map<String, ValueType>::iterator ValueMapTypeIterator;
     typedef typename std::map<String, ValueType>::const_iterator ValueMapTypeConstIterator;
 
+    //! Bind a new value \p value to key \p name.  If \p name was bound before
+    //! the previous bound value is silently dropped.
     virtual void registerValue(const String& name, ValueType value)
     {
       ValueMapTypeIterator it = fMap.find(name);
@@ -38,6 +45,8 @@ namespace herschel
         it->second = value;
     }
 
+    //! Look up the value for \p name.  If \p name is bound returns \c true
+    //! and pass the value out in \p out.
     virtual bool lookup(const String& name, ValueType* out) const
     {
       ValueMapTypeConstIterator it = fMap.find(name);
