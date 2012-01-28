@@ -408,6 +408,10 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! Represents a reference to a type expression.
+  //!
+  //! This node is used when an expression refers to a Type as first-class
+  //! entity, e.g. in allocate expressions.
   class TypeNode : public AptNode
   {
   public:
@@ -425,12 +429,14 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! Base class for constant numbers
   class BaseNumberNode : public AptNode
   {
   protected:
     BaseNumberNode(const SrcPos& srcpos, bool isImaginary, const Type& type);
 
   public:
+    //! Indicates whether the number is an imaginary constant number.
     bool isImaginary() const;
 
   protected:
@@ -440,6 +446,7 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! Templated base class for constant numbers.
   template<typename T>
   class NumberNode : public BaseNumberNode
   {
@@ -451,6 +458,7 @@ namespace herschel
     { }
 
   public:
+    //! Return the value of the number constant.
     T value() const
     {
       return fValue;
@@ -462,6 +470,12 @@ namespace herschel
 
 
   //--------------------------------------------------------------------------
+
+  //! Represents a constant integer number.
+  //!
+  //! This node is used for all bit widths of integers (8, 16, 32, 64) and
+  //! both for signed and unsigned values.  The effective type is indicated by
+  //! \p type to the constructor.
 
   class IntNode : public NumberNode<int64_t>
   {
