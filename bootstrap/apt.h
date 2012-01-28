@@ -56,16 +56,17 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! Encodes the possible value conversion kinds.
   enum TypeConvKind
   {
-    kNoConv,
-    kTypeCheckConv,
-    kAtom2PlainConv,
-    kPlain2AtomConv,
+    kNoConv,                    //!< Requires no conversion
+    kTypeCheckConv,             //!< Prob. req. no conv., but runtime check
+    kAtom2PlainConv,            //!< Convert atom to plain value repr.
+    kPlain2AtomConv,            //!< Convert plain to atom value repr.
   };
 
-  //! AptNode is the base of all abstract part tree nodes.  Since it is a
-  //! refcounted object, keep it always in Ptr<>.
+  //! AptNode is the base of all abstract parse tree nodes.
+
   class AptNode : public RefCountable
   {
   public:
@@ -73,43 +74,70 @@ namespace herschel
     AptNode(const SrcPos& srcpos, const Type& type);
 
     //! Returns the source position where the code for this node was seen in
-    //! the source file.
+    //! the source file.  For synthesiyed nodes this may point to the nearest
+    //! likely position.
     const SrcPos& srcpos() const;
 
-    //! Returns the captured scope for this node.
+    //! Returns the captured scope for this node.  The scope is only available
+    //! after the \c Annotator pass has been applied.
     Scope* scope() const;
     //! Set the captured scope.
     AptNode* setScope(Scope* scope);
 
+    //! Returns the type of this node.  Only available after \c Typifier pass
+    //! has been applied.
     const Type& type() const;
+    //! Set the type of this node.
     void setType(const Type& type);
 
     const Type& dstType() const;
     void setDstType(const Type& type);
+
+    //! Returns the type conversion.  Only available after \c Typifier pass
+    //! has been applied.
     TypeConvKind typeConv() const;
+    //! Set the type conversion.
     void setTypeConv(TypeConvKind typeConv);
 
+    //! Indicates whether this node is in tail call position.  Only available
+    //! after \c Annotater pass has run.
     bool isInTailPos() const;
+    //! Set whether this node is in tail call position.
     void setIsInTailPos(bool value);
+    //! Indicates whether this node is in a position where an unambiguous
+    //! single type is required.  This is normally only required for types
+    //! with various evaluation branches in tail positions, where the compiler
+    //! can't decide which of the evaluation branches will be chosen at
+    //! runtime.  In positions where the return value is ignored this may not
+    //! be an issue.
+    //!
+    //! Only available after \c Annotater pass has run.
     bool isSingleTypeRequired() const;
+    //! Set whether this node is in a position where an unambiguous single
+    //! type is required.
     void setIsSingleTypeRequired(bool value);
 
     //! Returns a (deep) copy of this node.
     virtual AptNode* clone() const = 0;
 
-    //! Render a (debug) representation of this node using \p renderer.
+    //! Render a (debug) representation of this node using \p renderer.  For
+    //! details see \c XmlRenderer.
     virtual void render(XmlRenderer* renderer) const = 0;
 
     //! Generate (binary) code for this node using \p generator.  For details
     //! see \p CodeGenerator.
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
-    //! Annotate this node using \p annotator.  For details see \p Annotator.
+    //! Annotate this node using \p annotator.  For details see \c Annotator.
     virtual void annotate(Annotator* annotator) = 0;
+    //! Apply the \c Traversator pass to this node.  For details see \c
+    //! Traversator.
     virtual void traverse(Traversator* traversator) = 0;
 
     //! Transform this node using \p transformator.
     virtual AptNode* transform(Transformator* annotator) = 0;
+
+    //! Apply the \c Typifier pass to this node.
     virtual void typify(Typifier* typifier) = 0;
 
   protected:
@@ -125,9 +153,13 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  //! Mixin class to add support to AptNodes as being part of a loop
-  //! transformation.  All nodes having the same loopId belong to the same
-  //! compiled loop construct.
+  //! Mixin class to add support to \c AptNode subclasses as being part of a
+  //! loop transformation.  All nodes having the same loopId belong to the
+  //! same compiled loop construct.
+  //!
+  //! This is a kind of hack to help the \c Typifier identifier to find
+  //! temporary variables and assigns for decomposed loop expressions.
+
   class LoopAnnotatable
   {
   public:
@@ -141,10 +173,10 @@ namespace herschel
   };
 
 
-  //! Mixin class to add support for delayed type speciation.  This is used on
-  //! VardefNodes and AssignNodes to flag the variable type to be inferred not
-  //! from the (probably undefined init expression) but the first assign to
-  //! come.
+  //! Mixin class to add support for delayed type specification.  This is used
+  //! on \c VardefNode and \c AssignNode to flag the variable type to be
+  //! inferred not from the (probably undefined init expression) but the first
+  //! assign to come.
   class DelayTypeAnnotatable
   {
   public:
@@ -175,20 +207,25 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! Base APT class which adds children functionality to \c AptNode.
   class ListNode : public AptNode
   {
   public:
     ListNode(const SrcPos& srcpos);
 
-    //! Returns a changeable list of the receiver's children.  Node that the
-    //! notion 'children' depends on the specific subclass of this.
+    //! Returns a mutable list of the receiver's children.  Note that the
+    //! notion 'children' depends on the specific subclass.
     NodeList& children();
 
-    //! Returns a readonly list of the receiver's children.  Node that the
-    //! notion 'children' depends on the specific subclass of this.
+    //! Returns a readonly list of the receiver's children.  Note that the
+    //! notion 'children' depends on the specific subclass.
     const NodeList& children() const;
 
+    //! Appends a node to the end of children.  \p node should not be in the
+    //! list of children yet.
     virtual void appendNode(AptNode* node);
+    //! Appends a list of nodes to the end of children.  Neither of \p nodes
+    //! should be in the list of children yet.
     virtual void appendNodes(const NodeList& nodes);
 
   protected:
@@ -200,12 +237,12 @@ namespace herschel
 
   //! Represents an undefined value.
   //!
-  //!  This is only used for delayed variable initialization and marks that
-  //! the (local) variable is not to be initialized at all.  Normally this is
-  //! not desirable, but when the compiler can prove that the variable is not
-  //! accessed before an following assignment, it does not need to generate an
-  //! initialization.  Ultimatively this helps in delaying the type defering
-  //! for the variable.
+  //! This is only used for delayed variable initialization and marks that the
+  //! (local) variable is not to be initialized at all.  Normally this is not
+  //! desirable, but when the compiler can prove that the variable is not
+  //! accessed before an following assignment, it does not need to generate
+  //! any initialization code.  Ultimatively this helps in delaying the type
+  //! defering for the variable.  See \c DelayTypeAnnotatable.
   class UndefNode : public AptNode
   {
   public:
@@ -223,6 +260,7 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! Interface which adds a naming protocol.
   class NamedNode
   {
   public:
@@ -232,6 +270,8 @@ namespace herschel
 
 
   //--------------------------------------------------------------------------
+
+  //! Node representing a constant string.
 
   class StringNode : public AptNode
   {
@@ -246,6 +286,7 @@ namespace herschel
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
+    //! Returns the (unicode) string value.
     const String& value() const;
 
   private:
@@ -254,6 +295,8 @@ namespace herschel
 
 
   //--------------------------------------------------------------------------
+
+  //! Node representing a constant keyword.
 
   class KeywordNode : public AptNode
   {
@@ -268,6 +311,7 @@ namespace herschel
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
+    //! Returns the keyword value.
     const String& value() const;
 
   private:
@@ -277,18 +321,24 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! Encodes the various kinds of entities a symbol in the language can refer
+  //! to.
   enum SymReferType
   {
-    kFreeVar,
-    kGlobalVar,
-    kLocalVar,
-    kParam,
-    kSlot,
-    kFunction,
-    kGeneric,
-    kType,
+    kFreeVar,                   //!< A free (=undefined) variable
+    kGlobalVar,                 //!< A global variable
+    kLocalVar,                  //!< A local variable
+    kParam,                     //!< A (function) parameter
+    kSlot,                      //!< A (class) slot
+    kFunction,                  //!< A function
+    kGeneric,                   //!< A generic (=type parameter)
+    kType,                      //!< A type
   };
 
+  //! Represents a symbol.
+  //!
+  //! Symbols can be variable names, function names, language keywords, and
+  //! alike.  Check \c refersTo() to get the kind of symbol.
   class SymbolNode : public AptNode, public LoopAnnotatable,
                      public LinkableSymbol
   {
@@ -299,14 +349,25 @@ namespace herschel
 
     virtual SymbolNode* clone() const;
 
+    //! Set the symbol's name.
     void setName(const String& nm);
+    //! Return the symbol's name.
     const String& name() const;
+    //! Return the symbol's name as \c std::string.
     std::string string() const;
 
+    //! If the receiver refer's to a type returns a list of its type
+    //! parameters (generics).
     const TypeVector& generics() const;
 
+    //! Indicate to which entity this symbol refers.  See \c SymReferType for
+    //! details.  Only available after the \c Annotator pass has been applied.
     SymReferType refersTo() const;
+    //! Set the refer type and whether the symbol is refers to a variable
+    //! outside of the owning frame (=variable to be closed).
     void setRefersTo(SymReferType type, bool isShared);
+    //! Indicates whether this symbol refers to a variable outside of the
+    //! owning frame (i.e. is a variable which has to be closed in a closure).
     bool isShared() const;
 
     virtual void render(XmlRenderer* renderer) const;
