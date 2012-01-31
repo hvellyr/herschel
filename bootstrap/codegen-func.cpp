@@ -375,15 +375,12 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
 
     const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->body());
     llvm::Value* retv = NULL;
-    if (blockNode != NULL) {
-      // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
-      // out->render(const_cast<BlockNode*>(blockNode));
+    if (blockNode != NULL)
       retv = fGenerator->codegen(blockNode->children());
-    }
-    else {
+    else
       retv = fGenerator->codegenNode(node->body());
-    }
     hr_assert(retv != NULL);
+
     if (retv == NULL)
       return NULL;
 
