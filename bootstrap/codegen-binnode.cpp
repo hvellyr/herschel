@@ -255,6 +255,11 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
       return wrapBool(builder().CreateICmpUGE(coleft, coright, "getmp"),
                       node->type());
 
+  case kOpCompare:
+    coleft = convertToPlainInt(node->type(), node->left(), left);
+    coright = convertToPlainInt(node->type(), node->right(), right);
+    return wrapInt(builder().CreateSub(coleft, coright, "cmptmp"),
+                   node->type());
   default:
     fprintf(stderr, "invalid binary operator: %d", node->op());
     return NULL;
@@ -408,6 +413,9 @@ CodegenBinaryNode::codegenOpCharChar(const BinaryNode* node,
   case kOpGreaterEqual:
     return wrapBool(builder().CreateICmpUGE(coleft, coright, "gechr"),
                     node->type());
+  case kOpCompare:
+    return wrapInt(builder().CreateSub(coleft, coright, "cmpchr"),
+                   node->type());
 
   default:
     fprintf(stderr, "invalid binary operator for char: %d", node->op());
@@ -446,7 +454,7 @@ CodegenBinaryNode::codegenOpDucktype(const BinaryNode* node) const
   case kOpGreaterEqual:
     return codegenOpDuckTypeBinary(node, Names::kLangGreaterEqualQ, Type::newBool());
   case kOpCompare:
-    return codegenOpDuckTypeBinary(node, Names::kLangCompare, Type::newAny());
+    return codegenOpDuckTypeBinary(node, Names::kLangCompare, Type::newInt32());
 
   default:
     fprintf(stderr, "binary operator not supported in ducktyping yet: %d", node->op());

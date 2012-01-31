@@ -1193,10 +1193,25 @@ Typifier::typify(BinaryNode* node)
       break;
 
     case kOpCompare:
-      // TODO: check that left and right type are comparable
-      node->setType(Type::newInt32());
-      annotateTypeConv(node->left(), leftty);
-      annotateTypeConv(node->right(), leftty);
+      if ( leftty.isAny() || rightty.isAny() ||
+           (leftty.isAnySignedInt() && rightty.isAnySignedInt()) ||
+           (leftty.isAnyUInt() && rightty.isAnyUInt()) ||
+           (leftty.isAnyFloat() && rightty.isAnyFloat()) ||
+           (leftty.isRational() && rightty.isRational()) ||
+           (leftty.isComplex() && rightty.isComplex()) ||
+           (leftty.isNumber() && rightty.isNumber()) ||
+           isSameType(leftty, rightty, node->scope(), node->srcpos()) )
+      {
+        node->setType(Type::newInt32());
+        annotateTypeConv(node->left(), leftty);
+        annotateTypeConv(node->right(), leftty);
+        annotateTypeConv(node, node->type());
+        return;
+      }
+
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in binary comparison (compare)");
+      node->setType(Type::newAny());
       annotateTypeConv(node, node->type());
       break;
 
