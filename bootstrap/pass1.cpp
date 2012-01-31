@@ -2193,8 +2193,9 @@ FirstPass::weightOperator(OperatorType op1) const
   case kOpLess:
   case kOpLessEqual:
   case kOpGreater:
-  case kOpGreaterEqual:
-  case kOpCompare:        return  40;
+  case kOpGreaterEqual:   return  40;
+
+  case kOpCompare:        return  45;
 
   case kOpIn:             return  50;
 
