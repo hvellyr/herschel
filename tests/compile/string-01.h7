@@ -14,5 +14,5 @@ def app|main()
   assert("abc2" > "abc")
   assert("abc2" > "abc1")
 
---  assert(("abc" <=> "xyz") < 0)
+  assert("abc" <=> "xyz" < 0)
   0
