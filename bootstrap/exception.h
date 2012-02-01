@@ -19,6 +19,7 @@ namespace herschel
 {
   //--------------------------------------------------------------------------
 
+  //! Base class for message based exceptions
   class Exception
   {
   public:
@@ -38,6 +39,9 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! Exception denoting a bad number notation.
+  //!
+  //! This exception will be thrown by string to number conversions.
   class NotANumberException : public Exception
   {
   public:
@@ -49,6 +53,7 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  //! Exception denoting a function which is not (yet) implemented
   class NotSupportedException : public Exception
   {
   public:
