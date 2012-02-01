@@ -13,8 +13,8 @@
 
 namespace herschel
 {
-  // don't change the numeric values without good reason; you have to
-  // update the test descriptions otherwise
+  //! Don't change the numeric values without good reason; you have to update
+  //! the test descriptions otherwise.
   enum ErrCodes {
     // general punctuation error codes
     E_ParamMissParanClose = 0x0001,
