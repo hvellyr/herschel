@@ -22,6 +22,7 @@
 #include "codegen-tools.h"
 #include "codegen-func.h"
 #include "compiler.h"
+#include "utils.h"
 
 #include <vector>
 
@@ -92,21 +93,17 @@ CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
   llvm::Function *slotFunc = module()->getFunction(llvm::StringRef(slotFuncName));
   if (slotFunc == NULL) {
     // void* instance_slot(ATOM* instance, const char* slot_name);
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(types()->getAtomType()); //->getPointerTo());
-    sign.push_back(llvm::Type::getInt8PtrTy(context()));
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(context()),
-                                                     sign,
-                                                     !K(isVarArg));
+    llvm::FunctionType *ft = llvm::FunctionType::get(
+      llvm::Type::getInt8PtrTy(context()),
+      vector_of(types()->getAtomType())
+               (llvm::Type::getInt8PtrTy(context())),
+      !K(isVarArg));
 
     slotFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
                                       llvm::Twine(slotFuncName),
                                       module());
   }
-
-  std::vector<llvm::Value*> argv;
 
   // TODO: can we assert that the instance is actually ATOM typed
   llvm::Value* val = tools()->wrapLoad(generator()->codegenNode(node->base()));
@@ -116,12 +113,10 @@ CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
                               node->base()->type());
   if (val == NULL)
     return NULL;
-  argv.push_back(val);
-
   llvm::Value* keywgv = initializer()->registerKeyword(node->slotName());
   llvm::Value* keyw = builder().CreateLoad(keywgv);
-  argv.push_back(keyw);
 
+  std::vector<llvm::Value*> argv = vector_of(val)(keyw);
   hr_assert(slotFunc != NULL);
   return builder().CreateCall(slotFunc, argv.begin(), argv.end());
 }

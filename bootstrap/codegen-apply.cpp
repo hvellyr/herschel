@@ -22,6 +22,7 @@
 #include "codegen-tools.h"
 #include "codegen-func.h"
 #include "compiler.h"
+#include "utils.h"
 
 #include <vector>
 
@@ -268,14 +269,11 @@ CodegenApply::emitAllocateApplyImpl(const AptNode* typeNode) const
 
   llvm::Function *allocFunc = module()->getFunction(llvm::StringRef(funcnm));
   if (allocFunc == NULL) {
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(types()->getAtomType()->getPointerTo());
-    sign.push_back(types()->getTypeType()); // Type*
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                     sign,
-                                                     !K(isVarArg));
-
+    llvm::FunctionType *ft = llvm::FunctionType::get(
+      llvm::Type::getVoidTy(context()),
+      vector_of<const llvm::Type*>(types()->getAtomType()->getPointerTo())
+                                  (types()->getTypeType()), // Type*
+      !K(isVarArg));
     allocFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
                                      llvm::Twine("allocate"),
@@ -312,14 +310,10 @@ CodegenApply::emitIsaApply(const ApplyNode* applyNode) const
   llvm::Function *isaFunc = module()->getFunction(llvm::StringRef(funcnm));
   if (isaFunc == NULL) {
     // int instance_isa(ATOM, Type*)
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(types()->getAtomType());
-    sign.push_back(types()->getTypeType());
-
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt1Ty(context()),
-                                                     sign,
+                                                     vector_of(types()->getAtomType())
+                                                              (types()->getTypeType()),
                                                      !K(isVarArg));
-
     isaFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
                                      llvm::Twine("instance_isa"),
@@ -397,13 +391,9 @@ public:
 
   virtual std::vector<const llvm::Type*> allocateFuncSignature() const
   {
-    std::vector<const llvm::Type*> sign;
-
-    sign.push_back(fApply->types()->getAtomType()->getPointerTo());
-    sign.push_back(fApply->types()->getTypeType());
-    sign.push_back(fApply->types()->getSizeTTy());
-
-    return sign;
+    return vector_of<const llvm::Type*>(fApply->types()->getAtomType()->getPointerTo())
+                                       (fApply->types()->getTypeType())
+                                       (fApply->types()->getSizeTTy());
   }
 
   virtual llvm::Value* initValue(const ApplyNode* node) const
@@ -512,14 +502,10 @@ public:
 
   virtual std::vector<const llvm::Type*> allocateFuncSignature() const
   {
-    std::vector<const llvm::Type*> sign;
-
-    sign.push_back(fApply->types()->getAtomType()->getPointerTo());
-    sign.push_back(fApply->types()->getTagIdType());
-    sign.push_back(llvm::Type::getInt32Ty(fApply->context()));
-    sign.push_back(fApply->types()->getSizeTTy());
-
-    return sign;
+    return vector_of<const llvm::Type*>(fApply->types()->getAtomType()->getPointerTo())
+                                       (fApply->types()->getTagIdType())
+                                       (llvm::Type::getInt32Ty(fApply->context()))
+                                       (fApply->types()->getSizeTTy());
   }
 
   virtual llvm::Value* initValue(const ApplyNode* node) const
@@ -562,14 +548,10 @@ public:
 
   virtual std::vector<const llvm::Type*> allocateFuncSignature() const
   {
-    std::vector<const llvm::Type*> sign;
-
-    sign.push_back(fApply->types()->getAtomType()->getPointerTo());
-    sign.push_back(fApply->types()->getTagIdType());
-    sign.push_back(llvm::Type::getInt32Ty(fApply->context()));
-    sign.push_back(fApply->types()->getSizeTTy());
-
-    return sign;
+    return vector_of<const llvm::Type*>(fApply->types()->getAtomType()->getPointerTo())
+                                       (fApply->types()->getTagIdType())
+                                       (llvm::Type::getInt32Ty(fApply->context()))
+                                       (fApply->types()->getSizeTTy());
   }
 
   virtual llvm::Value* initValue(const ApplyNode* node) const
@@ -772,9 +754,8 @@ CodegenApply::emitArraySliceAddress(llvm::Value* arrayAtom,
                                                      0)->getPointerTo();
   llvm::Value* typedArray = builder().CreatePointerCast(arrayData, arrayType);
 
-  std::vector<llvm::Value*> argv;
-  argv.push_back(tools()->emitSizeTValue(0));
-  argv.push_back(builder().CreateLoad(idxValue));
+  std::vector<llvm::Value*> argv = vector_of(tools()->emitSizeTValue(0))
+                                            (builder().CreateLoad(idxValue));
 
   llvm::Value* addr = builder().CreateGEP(typedArray, argv.begin(), argv.end());
 
@@ -824,12 +805,9 @@ CodegenApply::emitArraySliceAddress(const ApplyNode* node) const
                                                             Type::newInt32(),
                                                             kAtom2PlainConv) );
 
-    std::vector<llvm::Value*> argv;
-    argv.push_back(tools()->emitSizeTValue(0));
-    argv.push_back(idxValue2);
-
-    addr = builder().CreateGEP(typedArray,
-                              argv.begin(), argv.end());
+    std::vector<llvm::Value*> argv = vector_of(tools()->emitSizeTValue(0))
+                                              (idxValue2);
+    addr = builder().CreateGEP(typedArray, argv.begin(), argv.end());
   }
 
   ArraySliceAccessData retv;

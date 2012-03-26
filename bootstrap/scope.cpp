@@ -18,6 +18,7 @@
 #include "errcodes.h"
 #include "log.h"
 #include "symbol.h"
+#include "utils.h"
 
 
 using namespace herschel;
@@ -985,10 +986,10 @@ SUITE(Scope)
   TEST(lookupType)
   {
     SrcPos sp;
-    TypeVector generics;
-    generics.push_back(Type::newTypeRef(String("Char"), K(isValue)));
-    TypeConstVector constraints;
-    Type t0 = Type::newTypeRef(String("Foo"), generics, constraints,
+    Type t0 = Type::newTypeRef(String("Foo"),
+                               vector_of(Type::newTypeRef(String("Char"),
+                                                          K(isValue))),
+                               TypeConstVector(),
                                K(isValue));
 
     Ptr<Scope> s0 = new Scope(kScopeL_CompileUnit);

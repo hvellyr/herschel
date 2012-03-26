@@ -17,6 +17,7 @@
 #include "xmlout.h"
 #include "predefined.h"
 #include "typeprops.h"
+#include "utils.h"
 
 #include <vector>
 
@@ -53,37 +54,6 @@ CodegenTypeUtils::CodegenTypeUtils(CodeGenerator* generator)
 
 //------------------------------------------------------------------------------
 
-static std::vector<const llvm::Type*>
-newLlvmTypeVector(const llvm::Type* ty)
-{
-  std::vector<const llvm::Type*> v;
-  v.push_back(ty);
-  return v;
-}
-
-
-static std::vector<const llvm::Type*>
-newLlvmTypeVector(const llvm::Type* ty1, const llvm::Type* ty2)
-{
-  std::vector<const llvm::Type*> v;
-  v.push_back(ty1);
-  v.push_back(ty2);
-  return v;
-}
-
-
-static std::vector<const llvm::Type*>
-newLlvmTypeVector(const llvm::Type* ty1, const llvm::Type* ty2,
-                  const llvm::Type* ty3)
-{
-  std::vector<const llvm::Type*> v;
-  v.push_back(ty1);
-  v.push_back(ty2);
-  v.push_back(ty3);
-  return v;
-}
-
-
 const llvm::Type*
 CodegenTypeUtils::getAtomType() const
 {
@@ -104,10 +74,11 @@ CodegenTypeUtils::getAtomType() const
     }
 
     const llvm::StructType* payloadStruct =
-      llvm::StructType::get(context(), newLlvmTypeVector(payloadType), false);
+      llvm::StructType::get(context(), vector_of(payloadType), false);
 
     atomType =
-      llvm::StructType::get(context(), newLlvmTypeVector(tagType, payloadStruct),
+      llvm::StructType::get(context(),
+                            vector_of(tagType)(payloadStruct),
                             false);
     module()->addTypeName(llvm::StringRef("union.AtomPayload"), payloadStruct);
     module()->addTypeName(typeName, atomType);
@@ -143,11 +114,11 @@ CodegenTypeUtils::getTypeSlotPairType() const
   const llvm::StructType* typeSlotPairType =
     (const llvm::StructType*)module()->getTypeByName(typeName);
   if (typeSlotPairType == NULL) {
-    typeSlotPairType =
-      llvm::StructType::get(context(),
-                            newLlvmTypeVector(llvm::Type::getInt8PtrTy(context()),
-                                              llvm::Type::getInt32Ty(context())),
-                            !K(isPacked));
+    typeSlotPairType = llvm::StructType::get(
+      context(),
+      vector_of<const llvm::Type*>(llvm::Type::getInt8PtrTy(context()))
+                                  (llvm::Type::getInt32Ty(context())),
+      !K(isPacked));
 
     module()->addTypeName(typeName, typeSlotPairType);
   }
@@ -171,12 +142,12 @@ CodegenTypeUtils::getMethodType() const
 
   const llvm::Type* methodType = module()->getTypeByName(typeName);
   if (methodType == NULL) {
-    methodType =
-      llvm::StructType::get(context(),
-                            newLlvmTypeVector(getTypeType()->getPointerTo(),
-                                              llvm::Type::getInt32Ty(context()),
-                                              llvm::Type::getInt8PtrTy(context())),
-                            !K(isPacked))->getPointerTo();
+    methodType = llvm::StructType::get(
+      context(),
+      vector_of<const llvm::Type*>(getTypeType()->getPointerTo())
+                                  (llvm::Type::getInt32Ty(context()))
+                                  (llvm::Type::getInt8PtrTy(context())),
+      !K(isPacked))->getPointerTo();
 
     module()->addTypeName(typeName, methodType);
   }
@@ -204,8 +175,8 @@ CodegenTypeUtils::getArrayPayloadType() const
   if (arrayPLType == NULL) {
     arrayPLType =
       llvm::StructType::get(context(),
-                            newLlvmTypeVector(getSizeTTy(),
-                                              llvm::Type::getInt8PtrTy(context())),
+                            vector_of(getSizeTTy())
+                                     (llvm::Type::getInt8PtrTy(context())),
                             !K(isPacked));
 
     module()->addTypeName(typeName, arrayPLType);

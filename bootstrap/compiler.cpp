@@ -28,6 +28,7 @@
 #include "transform.h"
 #include "typify.h"
 #include "filetool.h"
+#include "utils.h"
 
 using namespace herschel;
 
@@ -319,8 +320,7 @@ Compiler::importFileImpl(const SrcPos& srcpos,
 String
 Compiler::lookupFile(const String& srcName, bool isPublic)
 {
-  StringVector exts;
-  exts.push_back(String("hr"));
+  StringVector exts = vector_of(String("hr"));
 
   if (srcName.startsWith(String("builtin:")))
   {

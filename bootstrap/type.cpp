@@ -27,6 +27,7 @@
 #include "typeprops-int.h"
 #include "typeprops-keyword.h"
 #include "typeprops-string.h"
+#include "utils.h"
 
 
 using namespace herschel;
@@ -1052,7 +1053,7 @@ Type::newTypeRef(const String& name, const Type& old)
 Type
 Type::newClassOf(const Type& type, bool isValue)
 {
-  return newTypeRef(Names::kClassTypeName, newTypeVector(type), isValue);
+  return newTypeRef(Names::kClassTypeName, vector_of(type), isValue);
 }
 
 
@@ -3643,80 +3644,10 @@ namespace herschel
 
 namespace herschel
 {
-  TypeVector
-  newTypeVector()
-  {
-    return TypeVector();
-  }
-
-  TypeVector
-  newTypeVector(const Type& ty1)
-  {
-    TypeVector vector;
-    vector.push_back(ty1);
-    return vector;
-  }
-
-
-  TypeVector
-  newTypeVector(const Type& ty1, const Type& ty2)
-  {
-    TypeVector vector;
-    vector.push_back(ty1);
-    vector.push_back(ty2);
-    return vector;
-  }
-
-
-  TypeVector
-  newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3)
-  {
-    TypeVector vector;
-    vector.push_back(ty1);
-    vector.push_back(ty2);
-    vector.push_back(ty3);
-    return vector;
-  }
-
-
-  TypeVector
-  newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
-                const Type& ty4)
-  {
-    TypeVector vector;
-    vector.push_back(ty1);
-    vector.push_back(ty2);
-    vector.push_back(ty3);
-    vector.push_back(ty4);
-    return vector;
-  }
-
-
-  TypeVector
-  newTypeVector(const Type& ty1, const Type& ty2, const Type& ty3,
-                const Type& ty4, const Type& ty5)
-  {
-    TypeVector vector;
-    vector.push_back(ty1);
-    vector.push_back(ty2);
-    vector.push_back(ty3);
-    vector.push_back(ty4);
-    vector.push_back(ty5);
-    return vector;
-  }
-
-
-  TypeConstVector
-  newTypeConstVector()
-  {
-    return TypeConstVector();
-  }
-
-
   Type
   newRangeType(const Type& generic)
   {
-    return Type::newType(Names::kRangeTypeName, newTypeVector(generic), Type());
+    return Type::newType(Names::kRangeTypeName, vector_of(generic), Type());
   }
 
 
@@ -3917,9 +3848,8 @@ static Scope* testScopeSetup()
                                     generics,
                                     Type::newTypeRef("Abstract")));
 
-  TypeVector isa;
-  isa.push_back(Type::newTypeRef("Base"));
-  isa.push_back(Type::newTypeRef("Xyz"));
+  TypeVector isa = vector_of(Type::newTypeRef("Base"))
+                            (Type::newTypeRef("Xyz"));
   scope->registerType(SrcPos(), String("Special"),
                       Type::newType(String("Special"),
                                     generics,
@@ -4003,13 +3933,11 @@ SUITE(Type_IsSameType)
   {
     Ptr<Scope> scope = testScopeSetup();
 
-    TypeVector union0;
-    union0.push_back(Type::newTypeRef("Xyz"));
-    union0.push_back(Type::newTypeRef("Medium"));
+    TypeVector union0 = vector_of(Type::newTypeRef("Xyz"))
+                                 (Type::newTypeRef("Medium"));
 
-    TypeVector union1;
-    union1.push_back(Type::newTypeRef("Medium"));
-    union1.push_back(Type::newTypeRef("Xyz"));
+    TypeVector union1 = vector_of(Type::newTypeRef("Medium"))
+                                 (Type::newTypeRef("Xyz"));
 
     CHECK(herschel::isSameType(Type::newUnion(union0, K(isValue)),
                                Type::newUnion(union0, K(isValue)),
@@ -4018,10 +3946,9 @@ SUITE(Type_IsSameType)
                                 Type::newUnion(union1, K(isValue)),
                                 scope, SrcPos(), K(reportErrors)));
 
-    TypeVector union2;
-    union2.push_back(Type::newTypeRef("Medium"));
-    union2.push_back(Type::newTypeRef("Ultra"));
-    union2.push_back(Type::newTypeRef("Abstract"));
+    TypeVector union2 = vector_of(Type::newTypeRef("Medium"))
+                                 (Type::newTypeRef("Ultra"))
+                                 (Type::newTypeRef("Abstract"));
 
     CHECK(!herschel::isSameType(Type::newUnion(union0, K(isValue)),
                                 Type::newUnion(union2, K(isValue)),
@@ -4033,13 +3960,11 @@ SUITE(Type_IsSameType)
   {
     Ptr<Scope> scope = testScopeSetup();
 
-    TypeVector seq0;
-    seq0.push_back(Type::newTypeRef("Xyz"));
-    seq0.push_back(Type::newTypeRef("Medium"));
+    TypeVector seq0 = vector_of(Type::newTypeRef("Xyz"))
+                               (Type::newTypeRef("Medium"));
 
-    TypeVector seq1;
-    seq1.push_back(Type::newTypeRef("Medium"));
-    seq1.push_back(Type::newTypeRef("Xyz"));
+    TypeVector seq1 = vector_of(Type::newTypeRef("Medium"))
+                               (Type::newTypeRef("Xyz"));
 
     CHECK(herschel::isSameType(Type::newSeq(seq0, K(isValue)),
                                Type::newSeq(seq0, K(isValue)),
@@ -4048,10 +3973,9 @@ SUITE(Type_IsSameType)
                                 Type::newSeq(seq1, K(isValue)),
                                 scope, SrcPos(), K(reportErrors)));
 
-    TypeVector seq2;
-    seq2.push_back(Type::newTypeRef("Medium"));
-    seq2.push_back(Type::newTypeRef("Ultra"));
-    seq2.push_back(Type::newTypeRef("Abstract"));
+    TypeVector seq2 = vector_of(Type::newTypeRef("Medium"))
+                               (Type::newTypeRef("Ultra"))
+                               (Type::newTypeRef("Abstract"));
 
     CHECK(!herschel::isSameType(Type::newSeq(seq0, K(isValue)),
                                 Type::newSeq(seq2, K(isValue)),
@@ -4122,9 +4046,9 @@ SUITE(Type_IsSameType)
                                                     params0)),
                                 scope, SrcPos(), !K(reportErrors)));
 
-    FunctionParamVector params1;
-    params1.push_back(FunctionParameter(FunctionParameter::kParamPos, !K(isSpec),
-                                        String(), Type::newTypeRef("Medium")));
+    FunctionParamVector params1 = vector_of(
+      FunctionParameter(FunctionParameter::kParamPos, !K(isSpec),
+                        String(), Type::newTypeRef("Medium")));
     CHECK(herschel::isSameType(Type::newFunction(
                                  FunctionSignature(!K(isGeneric), String("foo"),
                                                    Type::newTypeRef("Xyz"),
@@ -4312,22 +4236,22 @@ SUITE(Type_Covariance)
     CHECK(herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), K(isValue)),
                                                0, K(isValue)),
                                 Type::newType(Names::kSliceableTypeName,
-                                              newTypeVector(Type::newUInt32(),
-                                                            Type::newTypeRef("Ultra")),
+                                              vector_of(Type::newUInt32())
+                                                       (Type::newTypeRef("Ultra")),
                                               Type()),
                                 scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Special"), K(isValue)),
                                                 0, K(isValue)),
                                  Type::newType(Names::kSliceableTypeName,
-                                               newTypeVector(Type::newUInt32(),
-                                                             Type::newTypeRef("Ultra")),
+                                               vector_of(Type::newUInt32())
+                                                        (Type::newTypeRef("Ultra")),
                                                Type()),
                                  scope, SrcPos(), !K(reportError)));
     CHECK(!herschel::isCovariant(Type::newArray(Type::newTypeRef(String("Ultra"), K(isValue)),
                                                 0, K(isValue)),
                                  Type::newType(Names::kSliceableTypeName,
-                                               newTypeVector(Type::newUInt32(),
-                                                             Type::newTypeRef("Special")),
+                                               vector_of(Type::newUInt32())
+                                                        (Type::newTypeRef("Special")),
                                                Type()),
                                  scope, SrcPos(), !K(reportError)));
   }
@@ -4439,11 +4363,11 @@ TEST(FunctionSignature)
   FunctionSignature fs0 = FunctionSignature(!K(isGeneric),
                                             String("abc"), Type::newInt32());
 
-  FunctionParamVector params1;
-  params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
-  params1.push_back(FunctionParameter::newPosParam(Type::newInt32()));
-  params1.push_back(FunctionParameter::newNamedParam(String("xyz"), Type::newFloat32()));
-  params1.push_back(FunctionParameter::newRestParam(Type::newAny()));
+  FunctionParamVector params1 = vector_of
+    (FunctionParameter::newSpecParam(Type::newString()))
+    (FunctionParameter::newPosParam(Type::newInt32()))
+    (FunctionParameter::newNamedParam(String("xyz"), Type::newFloat32()))
+    (FunctionParameter::newRestParam(Type::newAny()));
 
   FunctionSignature fs1 = FunctionSignature(K(isGeneric),
                                             String("man"), Type::newInt32(),
@@ -4479,10 +4403,10 @@ TEST(FunctionSignIsOpen)
                                             String("abc"), Type::newInt32());
   CHECK(!fs0.isOpen());
 
-  FunctionParamVector params1;
-  params1.push_back(FunctionParameter::newSpecParam(Type::newString()));
-  params1.push_back(FunctionParameter::newPosParam(Type::newTypeRef(String("x"),
-                                                                    K(isOpen), !K(isValue))));
+  FunctionParamVector params1 = vector_of
+    (FunctionParameter::newSpecParam(Type::newString()))
+    (FunctionParameter::newPosParam(Type::newTypeRef(String("x"),
+                                                     K(isOpen), !K(isValue))));
 
   FunctionSignature fs1 = FunctionSignature(K(isGeneric), String("man"),
                                             Type::newTypeRef(String("y"),

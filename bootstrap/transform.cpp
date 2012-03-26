@@ -18,6 +18,7 @@
 #include "properties.h"
 #include "scope.h"
 #include "symbol.h"
+#include "utils.h"
 #include "xmlout.h"
 
 
@@ -239,13 +240,13 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
                             ? onPrmNode->initExpr()
                             : new SymbolNode(onPrmNode->srcpos(),
                                              String("lang|unspecified")) );
-  NodeList nl;
-  nl.push_back(new LetNode(new VardefNode(onPrmNode->srcpos(),
-                                          onPrmNode->name(), kNormalVar,
-                                          K(isLocal),
-                                          onPrmNode->type(),
-                                          initExpr)));
-  nl.push_back(onnd->body());
+  NodeList nl = vector_of<Ptr<AptNode> >
+    (new LetNode(new VardefNode(onPrmNode->srcpos(),
+                                onPrmNode->name(), kNormalVar,
+                                K(isLocal),
+                                onPrmNode->type(),
+                                initExpr)))
+    (onnd->body());
 
   node->children().clear();
   node->appendNodes(nl);
