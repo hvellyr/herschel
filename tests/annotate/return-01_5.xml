@@ -12,6 +12,14 @@
 </ty:ref>
 <ty:ref nm='lang|Comparable'>
 </ty:ref>
+<ty:ref nm='lang|OrderedSliceable'>
+<ty:gen>
+<ty:ref nm='lang|UInt32'>
+</ty:ref>
+<ty:ref nm='lang|Char'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
 </ty:seq>
 </ty:isa>
 </ty:type>
@@ -25,6 +33,14 @@
 <ty:ref nm='lang|Copyable'>
 </ty:ref>
 <ty:ref nm='lang|Comparable'>
+</ty:ref>
+<ty:ref nm='lang|OrderedSliceable'>
+<ty:gen>
+<ty:ref nm='lang|UInt32'>
+</ty:ref>
+<ty:ref nm='lang|Char'>
+</ty:ref>
+</ty:gen>
 </ty:ref>
 </ty:seq>
 </ty:isa>
@@ -42,6 +58,14 @@
 <ty:ref nm='lang|Copyable'>
 </ty:ref>
 <ty:ref nm='lang|Comparable'>
+</ty:ref>
+<ty:ref nm='lang|OrderedSliceable'>
+<ty:gen>
+<ty:ref nm='lang|UInt32'>
+</ty:ref>
+<ty:ref nm='lang|Char'>
+</ty:ref>
+</ty:gen>
 </ty:ref>
 </ty:seq>
 </ty:isa>
@@ -87,6 +111,14 @@
 <ty:ref nm='lang|Copyable'>
 </ty:ref>
 <ty:ref nm='lang|Comparable'>
+</ty:ref>
+<ty:ref nm='lang|OrderedSliceable'>
+<ty:gen>
+<ty:ref nm='lang|UInt32'>
+</ty:ref>
+<ty:ref nm='lang|Char'>
+</ty:ref>
+</ty:gen>
 </ty:ref>
 </ty:seq>
 </ty:isa>
@@ -140,6 +172,14 @@
 </ty:ref>
 <ty:ref nm='lang|Comparable'>
 </ty:ref>
+<ty:ref nm='lang|OrderedSliceable'>
+<ty:gen>
+<ty:ref nm='lang|UInt32'>
+</ty:ref>
+<ty:ref nm='lang|Char'>
+</ty:ref>
+</ty:gen>
+</ty:ref>
 </ty:seq>
 </ty:isa>
 </ty:type>
@@ -156,6 +196,14 @@
 <ty:ref nm='lang|Copyable'>
 </ty:ref>
 <ty:ref nm='lang|Comparable'>
+</ty:ref>
+<ty:ref nm='lang|OrderedSliceable'>
+<ty:gen>
+<ty:ref nm='lang|UInt32'>
+</ty:ref>
+<ty:ref nm='lang|Char'>
+</ty:ref>
+</ty:gen>
 </ty:ref>
 </ty:seq>
 </ty:isa>
@@ -193,6 +241,14 @@
 <ty:ref nm='lang|Copyable'>
 </ty:ref>
 <ty:ref nm='lang|Comparable'>
+</ty:ref>
+<ty:ref nm='lang|OrderedSliceable'>
+<ty:gen>
+<ty:ref nm='lang|UInt32'>
+</ty:ref>
+<ty:ref nm='lang|Char'>
+</ty:ref>
+</ty:gen>
 </ty:ref>
 </ty:seq>
 </ty:isa>
