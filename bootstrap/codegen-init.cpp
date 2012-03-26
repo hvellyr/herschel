@@ -18,6 +18,7 @@
 #include "codegen-init.h"
 #include "codegen-tools.h"
 #include "codegen-types.h"
+#include "utils.h"
 
 #include <vector>
 
@@ -96,7 +97,12 @@ namespace herschel
 
     static String getterFunctionName(const Type& ty)
     {
-      return String() + "get_" + ty.typeId() + "_type";
+      if (ty.hasGenerics()) {
+        return String() + "get_" + ty.typeName() + "_type";
+      }
+      else {
+        return String() + "get_" + ty.typeId() + "_type";
+      }
     }
 
 
@@ -943,10 +949,8 @@ LazyCodeInitializingEmitter::emit()
 
   if (typeFunc == NULL)
   {
-    std::vector<const llvm::Type*> sign;
-
     llvm::FunctionType *ft = llvm::FunctionType::get(entityType(),
-                                                     sign,
+                                                     std::vector<const llvm::Type*>(),
                                                      !K(isVarArg));
     typeFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
@@ -1019,19 +1023,37 @@ LazyCodeInitializingEmitter::emit()
 llvm::Value*
 CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
 {
-  String typeClassLookupFuncName =
-    TypeLazyCodeInitializingEmitter::getterFunctionName(ty);
+  /*
+    if ty has no generics than we use a simple callback function:
+
+      get_base_type()
+
+    if ty has generics though, do the following:
+
+      lookup_derived_type(get_base_type(), "full-type-name")
+
+    This looks up a type for "full-type-name", which is a variation of
+    get_base_type().  If the full type has been looked up (and cached)
+    already, simply return that type instance, otherwise create a new one as
+    derivation of base type.
+  */
+  String typeClassLookupFuncName;
+
+  if (ty.hasGenerics()) {
+    typeClassLookupFuncName = String("get_") + ty.typeName() + "_type";
+    printf("+++ makeGetBaseTypeLookupCall: %s\n", (const char*)StrHelper(typeClassLookupFuncName));
+  }
+  else {
+    typeClassLookupFuncName = TypeLazyCodeInitializingEmitter::getterFunctionName(ty);
+  }
+
   String funcName = herschel::mangleToC(typeClassLookupFuncName);
   llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
 
-  if (typeFunc == NULL)
-  {
-    std::vector<const llvm::Type*> sign;
-
+  if (typeFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getTypeType(),
-                                                     sign,
+                                                     std::vector<const llvm::Type*>(),
                                                      !K(isVarArg));
-
     typeFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
                                       llvm::Twine(funcName),
@@ -1039,7 +1061,33 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
   }
 
   std::vector<llvm::Value*> argv;
-  return builder().CreateCall(typeFunc, argv.begin(), argv.end());
+  llvm::Value* type_value = builder().CreateCall(typeFunc, argv.begin(), argv.end());
+
+  if (ty.hasGenerics()) {
+    llvm::Function* lookupTypeFunc = fModule->getFunction(llvm::StringRef(String("lookup_derived_type")));
+
+    if (lookupTypeFunc == NULL) {
+      llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getTypeType(),
+                                                       vector_of(fTypes->getTypeType())
+                                                                (llvm::Type::getInt8PtrTy(context())),
+                                                       !K(isVarArg));
+
+      lookupTypeFunc = llvm::Function::Create(ft,
+                                              llvm::Function::ExternalLinkage,
+                                              llvm::Twine(String("lookup_derived_type")),
+                                              fModule);
+    }
+    std::vector<llvm::Value*> lookup_argv = vector_of(type_value)
+                                                     (builder().CreateGlobalStringPtr(StrHelper(ty.typeId()),
+                                                                                    llvm::Twine("tyname")));
+
+    llvm::Value* lookup_type_value = builder().CreateCall(lookupTypeFunc,
+                                                          lookup_argv.begin(), lookup_argv.end());
+    return lookup_type_value;
+  }
+  else {
+    return type_value;
+  }
 }
 
 

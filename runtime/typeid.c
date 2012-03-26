@@ -215,6 +215,23 @@ type_alloc(const char* nm, size_t isa_size, ...)
 }
 
 
+Type*
+type_clone_with_other_name(const Type* base_type, const char* full_tag_name)
+{
+  Type* ty = type_base_alloc(full_tag_name, base_type->isa_size, 0, NULL, 0);
+
+  ty->isa               = base_type->isa;               /* shared ptr */
+  ty->isa_set           = base_type->isa_set;           /* shared ptr */
+  ty->instance_size     = base_type->instance_size;
+  ty->acc_instance_size = base_type->acc_instance_size;
+  ty->slots_offsets     = base_type->slots_offsets;
+  ty->slots             = base_type->slots;             /* shared ptr */
+  ty->is_array          = base_type->is_array;
+
+  return ty;
+}
+
+
 void
 class_add_super_slots_and_rewrite_offsets(HashTable* table, HashTable* other,
                                           size_t base_offset)
@@ -574,4 +591,19 @@ allocate_double_array(ATOM* instance, Type* ty, double init_value, size_t items)
     for (i = 0; i < items; i++, p++)
       *p = init_value;
   }
+}
+
+
+Type*
+lookup_derived_type(Type* base_type, const char* full_tag_name)
+{
+  Type* new_ty;
+  Type* ty = hashtable_get(types_name_to_type_map, (void*)full_tag_name);
+  if (ty != NULL)
+    return ty;
+
+  new_ty = type_clone_with_other_name(base_type, full_tag_name);
+  register_type(new_ty);
+
+  return new_ty;
 }

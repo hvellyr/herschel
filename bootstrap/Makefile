@@ -117,6 +117,7 @@ HRC_SOURCES =         \
 	typeenum.cpp        \
 	typectx.cpp         \
 	typify.cpp          \
+  utils.cpp           \
 	xmlout.cpp
 
 HRC_HEADERS =         \
@@ -171,6 +172,7 @@ HRC_HEADERS =         \
 	typeprops-keyword.h \
 	typeprops-string.h  \
 	typify.h            \
+	utils.h             \
 	xmlout.h
 
 
