@@ -15,6 +15,7 @@
 #include "str.h"
 #include "strbuf.h"
 #include "log.h"
+#include "utils.h"
 
 
 using namespace herschel;
@@ -211,12 +212,10 @@ ExternCParser::parseCFunction(const Token& sym, const Token& retType)
 TokenVector
 ExternCParser::makeExternDefHead(const SrcPos& srcpos)
 {
-  TokenVector retval;
-  retval.push_back(Token(srcpos, kDefId));
-  retval.push_back(Token() << Token(srcpos, kExternId)
+  return vector_of(Token(srcpos, kDefId))
+                  (Token() << Token(srcpos, kExternId)
                    << ( Token(srcpos, kParanOpen, kParanClose)
                         << Token(srcpos, kString, "C") ) );
-  return retval;
 }
 
 

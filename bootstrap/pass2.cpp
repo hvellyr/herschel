@@ -23,6 +23,7 @@
 #include "tokeneval.h"
 #include "tokenizer.h"
 #include "typeenum.h"
+#include "utils.h"
 #include "xmlout.h"
 
 
@@ -2951,10 +2952,9 @@ SecondPass::parseFor(const Token& expr)
 
     Ptr<AptNode> defaultRetVal;
     if (alternate == NULL) {
-      TypeVector unionTypes;
-      unionTypes.push_back(Type::newAny());
-      unionTypes.push_back(Type::newTypeRef(Names::kUnspecifiedTypeName,
-                                            K(isValue)));
+      TypeVector unionTypes = vector_of(Type::newAny())
+                                       (Type::newTypeRef(Names::kUnspecifiedTypeName,
+                                                         K(isValue)));
 
       retType = Type::newUnion(unionTypes, K(isValue));
       defaultRetVal = new SymbolNode(expr.srcpos(),

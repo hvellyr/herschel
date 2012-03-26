@@ -23,6 +23,7 @@
 #include "typify.h"
 #include "xmlout.h"
 #include "port.h"
+#include "utils.h"
 
 #include <set>
 
@@ -1654,8 +1655,8 @@ Typifier::typify(VectorNode* node)
     annotateTypeConv(nl[i], valueType);
 
   node->setType(Type::newTypeRef(Names::kVectorTypeName,
-                                 newTypeVector(valueType),
-                                 newTypeConstVector(),
+                                 vector_of(valueType),
+                                 TypeConstVector(),
                                  K(isValue)));
 }
 
@@ -1693,8 +1694,9 @@ Typifier::typify(DictNode* node)
   }
 
   node->setType(Type::newTypeRef(Names::kMapTypeName,
-                                 newTypeVector(keyType, valueType),
-                                 newTypeConstVector(),
+                                 vector_of(keyType)
+                                          (valueType),
+                                 TypeConstVector(),
                                  K(isValue)));
 }
 

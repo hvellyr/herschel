@@ -21,6 +21,7 @@
 #include "transform.h"
 #include "traverse.h"
 #include "typify.h"
+#include "utils.h"
 #include "xmlout.h"
 
 #include "llvm/Value.h"
@@ -1542,17 +1543,15 @@ SelectNode::addMapping(const NodeList& mappings, AptNode* consequent)
 void
 SelectNode::addMapping(AptNode* mapping, AptNode* consequent)
 {
-  NodeList nl;
-  nl.push_back(mapping);
-  fMappings.push_back(SelectMapping(nl, consequent));
+  fMappings.push_back(
+    SelectMapping(vector_of<Ptr<AptNode> >(mapping), consequent));
 }
 
 
 void
 SelectNode::addElseMapping(AptNode* alternate)
 {
-  NodeList nl;
-  fMappings.push_back(SelectMapping(nl, alternate));
+  fMappings.push_back(SelectMapping(NodeList(), alternate));
 }
 
 

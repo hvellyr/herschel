@@ -20,6 +20,7 @@
 #include "xmlout.h"
 #include "predefined.h"
 #include "typeprops.h"
+#include "utils.h"
 
 #include <vector>
 #include <typeinfo>
@@ -141,14 +142,11 @@ CodegenTools::makeStringAtom(const String& str)
   llvm::Function *allocFunc = module()->getFunction(llvm::StringRef(funcnm));
   if (allocFunc == NULL) {
     // void allocate_array(ATOM* instance, Type* ty, size_t items);
-
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(types()->getAtomType()->getPointerTo());
-    sign.push_back(llvm::Type::getInt8PtrTy(context()));
-
-    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                     sign,
-                                                     !K(isVarArg));
+    llvm::FunctionType *ft = llvm::FunctionType::get(
+      llvm::Type::getVoidTy(context()),
+      vector_of<const llvm::Type*>(types()->getAtomType()->getPointerTo())
+                                  (llvm::Type::getInt8PtrTy(context())),
+      !K(isVarArg));
 
     allocFunc = llvm::Function::Create(ft,
                                        llvm::Function::ExternalLinkage,
@@ -156,15 +154,16 @@ CodegenTools::makeStringAtom(const String& str)
                                        module());
   }
 
-  std::vector<llvm::Value*> argv;
   llvm::Function* curFunction = builder().GetInsertBlock()->getParent();
   llvm::AllocaInst* retv = tools()->createEntryBlockAlloca(curFunction,
                                                            String("string_retv"),
                                                            types()->getAtomType());
   hr_assert(retv != NULL);
-  argv.push_back(retv);
-  argv.push_back(builder().CreateGlobalStringPtr(StrHelper(str),
-                                                 llvm::Twine(StrHelper(str + "_str"))));
+
+  std::vector<llvm::Value*> argv =
+    vector_of<llvm::Value*>(retv)
+                           (builder().CreateGlobalStringPtr(StrHelper(str),
+                                                            llvm::Twine(StrHelper(str + "_str"))));
 
   builder().CreateCall(allocFunc, argv.begin(), argv.end());
   return retv;
@@ -321,24 +320,21 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
   const llvm::Type *srcBasePtr = llvm::Type::getInt8PtrTy(context());
   llvm::Value* src2 = builder().CreateBitCast(src, srcBasePtr, "src_tmp");
 
-  std::vector<llvm::Value*> argv;
-  argv.push_back(dst2);
-  argv.push_back(src2);
-  // number
-
-
   const llvm::StructLayout* layout = fGenerator->fTargetData
     ->getStructLayout((const llvm::StructType*)fGenerator->fTypes->getAtomType());
 
-  argv.push_back(llvm::ConstantInt::get(fGenerator->fContext,
-                                        llvm::APInt(32, layout->getSizeInBytes(),
-                                                    K(isSigned))));
-  // align
-  argv.push_back(llvm::ConstantInt::get(fGenerator->fContext,
-                                        llvm::APInt(32, layout->getAlignment(),
-                                                    K(isSigned))));
-  // is volatile
-  argv.push_back(llvm::ConstantInt::getFalse(context()));
+  std::vector<llvm::Value*> argv =
+    vector_of(dst2)
+             (src2)
+             (llvm::ConstantInt::get(fGenerator->fContext,
+                                     llvm::APInt(32, layout->getSizeInBytes(),
+                                                 K(isSigned))))
+             // align
+             (llvm::ConstantInt::get(fGenerator->fContext,
+                                     llvm::APInt(32, layout->getAlignment(),
+                                                 K(isSigned))))
+             // is volatile
+             (llvm::ConstantInt::getFalse(context()));
 
 
   builder().CreateCall(getMemCpyFn(dst2->getType(), src2->getType(),
@@ -373,11 +369,8 @@ CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) con
 
   llvm::Function* convFunc = module()->getFunction(llvm::StringRef(funcName));
   if (convFunc == NULL) {
-    std::vector<const llvm::Type*> sign;
-    sign.push_back(types()->getAtomType());
-
     llvm::FunctionType *ft = llvm::FunctionType::get(getConvTypeByType(dstType),
-                                                     sign,
+                                                     vector_of(types()->getAtomType()),
                                                      false);
 
     convFunc = llvm::Function::Create(ft,
@@ -386,9 +379,7 @@ CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) con
                                       module());
   }
 
-  std::vector<llvm::Value*> argv;
-  argv.push_back(val);
-
+  std::vector<llvm::Value*> argv = vector_of(val);
   return builder().CreateCall(convFunc, argv.begin(), argv.end());
 }
 

@@ -23,6 +23,7 @@
 #include "tokeneval.h"
 #include "tokenizer.h"
 #include "valuesaver.h"
+#include "utils.h"
 
 
 //----------------------------------------------------------------------------
@@ -1327,8 +1328,7 @@ FirstPass::parseAccess(const Token& expr)
 
     nextToken();
 
-    TokenVector args;
-    args.push_back(expr);
+    TokenVector args = vector_of(expr);
     if (fToken == kParanOpen) {
       nextToken();
       return parseAccess(parseParamCall(symToken, args,
@@ -4374,9 +4374,7 @@ namespace herschel {
         return false;
       }
 
-      TokenVector tokens;
-      tokens.push_back(expr);
-      bindings->insert(std::make_pair(paramName, tokens));
+      bindings->insert(std::make_pair(paramName, (TokenVector)vector_of(expr)));
       return true;
     }
   };
@@ -4390,9 +4388,7 @@ namespace herschel {
                        SyntaxTreeNode* followSet)
     {
       if (pass->fToken == kSymbol) {
-        TokenVector tokens;
-        tokens.push_back(pass->fToken);
-        bindings->insert(std::make_pair(paramName, tokens));
+        bindings->insert(std::make_pair(paramName, (TokenVector)vector_of(pass->fToken)));
         pass->nextToken();
         return true;
       }
@@ -4414,9 +4410,7 @@ namespace herschel {
     {
       OperatorType op = tokenTypeToOperator(pass->fToken.tokenType());
       if (op != kOpInvalid) {
-        TokenVector tokens;
-        tokens.push_back(pass->fToken);
-        bindings->insert(std::make_pair(paramName, tokens));
+        bindings->insert(std::make_pair(paramName, (TokenVector)vector_of(pass->fToken)));
         pass->nextToken();
         return true;
       }
@@ -4448,9 +4442,7 @@ namespace herschel {
         return false;
       }
 
-      TokenVector tokens;
-      tokens.push_back(param);
-      bindings->insert(std::make_pair(paramName, tokens));
+      bindings->insert(std::make_pair(paramName, (TokenVector)vector_of(param)));
       return true;
     }
   };
@@ -4481,9 +4473,7 @@ namespace herschel {
         return false;
       }
 
-      TokenVector tokens;
-      tokens.push_back(param);
-      bindings->insert(std::make_pair(paramName, tokens));
+      bindings->insert(std::make_pair(paramName, (TokenVector)vector_of(param)));
       return true;
     }
   };

@@ -1966,8 +1966,5 @@ SUITE(Token)
   }
 }
 
-
-
-
 #endif  // #if defined(UNITTESTS)
 

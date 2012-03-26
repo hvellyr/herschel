@@ -21,6 +21,7 @@
 #include "codegen-types.h"
 #include "codegen-binnode.h"
 #include "codegen-func.h"
+#include "utils.h"
 
 #include <vector>
 
@@ -488,19 +489,16 @@ CodegenBinaryNode::codegenOpDuckTypeBinary(const BinaryNode* node,
     }
   }
 
-  NodeList args;
-  Ptr<AptNode> p = node->left();
-  p->setTypeConv(p->type().isPlainType() ? kPlain2AtomConv : kNoConv);
-  args.push_back(p);
+  Ptr<AptNode> leftp = node->left();
+  leftp->setTypeConv(leftp->type().isPlainType() ? kPlain2AtomConv : kNoConv);
 
-  p = node->right();
-  p->setTypeConv(p->type().isPlainType() ? kPlain2AtomConv : kNoConv);
-  args.push_back(p);
+  Ptr<AptNode> rightp = node->right();
+  rightp->setTypeConv(rightp->type().isPlainType() ? kPlain2AtomConv : kNoConv);
 
   return CodegenApply(generator()).emitFunctionCall(node->srcpos(),
                                                     funcnm,
                                                     mangledFuncNm,
-                                                    args,
+                                                    vector_of(leftp)(rightp),
                                                     Type::newAny(),
                                                     funcRetType,
                                                     kNoConv, // ???
