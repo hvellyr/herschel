@@ -192,6 +192,8 @@ namespace herschel
     static Type newBool(bool isValue = true);
     //! Creates a new lang|Keyword type instance.
     static Type newKeyword(bool isValue = true);
+    //! Creates a new lang|Char type instance.
+    static Type newChar(bool isValue = true);
 
     //! Creates a new Type type instance named \p name.  This represents a
     //! specific type, not the type template/definition.  Therefore all
