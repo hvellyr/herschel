@@ -722,7 +722,7 @@ BoolNode::clone() const
 }
 
 
-Char
+bool
 BoolNode::value() const
 {
   return fValue;

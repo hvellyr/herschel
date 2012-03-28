@@ -16,6 +16,8 @@ A is covariant to B if it is narrower:
 
 2    T<>  -> T<>        if A == B || (A(generics) == B(generics) and A inherits B)        |
 
+2a   T    -> T<>        if A == B || A inherits B (which A' being T<> from B)             |
+
 3    T[]  -> T[]        if A == B                                                         |
 
 4    &(T) -> &(T)       if A == B || for every T in A -> T is covariant or invariant      |

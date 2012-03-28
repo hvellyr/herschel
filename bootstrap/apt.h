@@ -491,7 +491,7 @@ namespace herschel
     virtual AptNode* transform(Transformator* annotator);
     virtual void typify(Typifier* typifier);
 
-    Char value() const;
+    bool value() const;
 
   private:
     bool fValue;

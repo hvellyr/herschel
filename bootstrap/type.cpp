@@ -396,13 +396,9 @@ namespace herschel
       for (size_t i = 0; i < fGenerics.size(); i++) {
         hr_assert(fGenerics[i].isRef());
 
-        // fprintf(stderr, "REPLACE GENERIC: %s\n", (const char*)StrHelper(fGenerics[i].toString()));
-
         Type replacement = typeMap.lookupType(fGenerics[i].typeName());
-        if (replacement.isDef()) {
-          // fprintf(stderr, "FOUND STH: %s\n", (const char*)StrHelper(replacement.toString()));
+        if (replacement.isDef())
           fGenerics[i] = replacement;
-        }
       }
       fInherit = fInherit.replaceGenerics(typeMap);
 
@@ -449,13 +445,11 @@ namespace herschel
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                                Scope* scope, const SrcPos& srcpos) const
     {
-      // fprintf(stderr, "RIGHT in class: %s\n", (const char*)StrHelper(right0.toString()));
       if (right0.isType() || right0.isClass()) {
         if (fName == right0.typeName() &&
             fGenerics.size() == right0.generics().size())
         {
           for (size_t i = 0; i < fGenerics.size(); ++i) {
-            // fprintf(stderr, "CHECK GENERIC: %s\n", (const char*)StrHelper(fGenerics[i].toString()));
             if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
                                             scope, srcpos))
               return false;
@@ -782,30 +776,98 @@ namespace herschel
     }
 
 
+    bool matchGenericsForType(TypeCtx& localCtx, const Type& ty,
+                              Scope* scope, const SrcPos& srcpos) const
+    {
+      if (fGenerics.size() == ty.generics().size() &&
+          fName == ty.typeName())
+      {
+        for (size_t i = 0; i < fGenerics.size(); ++i) {
+          if (!fGenerics[i].matchGenerics(localCtx, ty.generics()[i],
+                                          scope, srcpos)) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      return false;
+    }
+
+
+    bool registerGenerics(TypeCtx& localCtx, const Type& ty, Scope* scope) const
+    {
+      if (ty.hasGenerics())
+      {
+        Type typespec = scope->lookupType(ty.typeName(),
+                                          K(showAmbiguousSymDef));
+        if (typespec.isDef() &&
+            typespec.generics().size() == ty.generics().size())
+        {
+          const TypeVector& genprms = typespec.generics();
+          const TypeVector& genargs = ty.generics();
+
+          for (size_t i = 0; i < genargs.size(); ++i) {
+            hr_assert(genprms[i].isOpenSelf());
+
+            if (!genargs[i].isOpenSelf()) {
+              if (localCtx.hasType(genprms[i].typeName())) {
+                // TODO
+              }
+              else {
+                localCtx.registerType(genprms[i].typeName(), genargs[i]);
+              }
+            }
+          }
+          return true;
+        }
+      }
+
+      return true; //false;
+    }
+
+
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                                Scope* scope, const SrcPos& srcpos) const
     {
-      // fprintf(stderr, "LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
-      // fprintf(stderr, "RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
       if (right0.isRef() || right0.isType() || right0.isClass()) {
         // if the reference has generics, it itself cannot be generic.  A
         // 'T<'Y'> is not allowed.
         if (!fGenerics.empty()) {
-          if (fGenerics.size() == right0.generics().size() &&
-              fName == right0.typeName())
-          {
-            for (size_t i = 0; i < fGenerics.size(); ++i) {
-              if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
-                                              scope, srcpos)) {
-                // fprintf(stderr, "<1>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
-                // fprintf(stderr, "<1>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
-                return false;
-              }
-            }
+          if (!registerGenerics(localCtx, right0, scope))
+            return false;
+
+          if (matchGenericsForType(localCtx, right0, scope, srcpos))
             return true;
+
+          Type right = scope->lookupType(right0.typeName(),
+                                         K(showAmbiguousSymDef));
+
+          Type inheritance;
+          if (right.isType() || right.isClass()) {
+            inheritance = right.typeInheritance();
           }
-          // fprintf(stderr, "<2>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
-          // fprintf(stderr, "<2>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
+          else if (right.isMeasure()) {
+            inheritance = right.measureBaseType();
+          }
+          else
+            return false;
+
+          if (!inheritance.isDef()) {
+            return false;
+          }
+
+          if (inheritance.isType() || inheritance.isClass() || inheritance.isRef()) {
+            if (matchGenerics(localCtx, inheritance, scope, srcpos))
+              return true;
+          }
+          else if (inheritance.isSequence()) {
+            const TypeVector& seq = inheritance.seqTypes();
+            for (size_t i = 0; i < seq.size(); ++i) {
+              if (matchGenerics(localCtx, seq[i], scope, srcpos))
+                return true;
+            }
+          }
           return false;
         }
 
@@ -819,8 +881,6 @@ namespace herschel
           return true;
         }
         else {
-          // fprintf(stderr, "MAP %s to %s\n", (const char*)StrHelper(name()),
-          //         (const char*)StrHelper(right0.toString()));
           localCtx.registerType(name(), right0);
           return true;
         }
@@ -838,8 +898,6 @@ namespace herschel
         }
       }
 
-      // fprintf(stderr, "<3>LEFT in typeref:  %s\n", (const char*)StrHelper(toString(true)));
-      // fprintf(stderr, "<3>RIGHT in typeref: %s\n", (const char*)StrHelper(right0.toString()));
       return false;
     }
 
@@ -926,9 +984,6 @@ namespace herschel
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                                Scope* scope, const SrcPos& srcpos) const
     {
-      // fprintf(stderr, "LEFT IS:  %s\n", (const char*)StrHelper(toString(true)));
-      // fprintf(stderr, "RIGHT IS: %s\n", (const char*)StrHelper(right0.toString()));
-
       if (right0.isArray())
         return fBase.matchGenerics(localCtx, right0.arrayBaseType(),
                                    scope, srcpos);
@@ -1148,6 +1203,13 @@ Type
 Type::newKeyword(bool isValue)
 {
   return newTypeRef(Names::kKeywordTypeName, isValue);
+}
+
+
+Type
+Type::newChar(bool isValue)
+{
+  return newTypeRef(Names::kCharTypeName, isValue);
 }
 
 
@@ -3459,9 +3521,6 @@ namespace herschel
   isCovariant(const Type& left0, const Type& right0, Scope* scope,
               const SrcPos& srcpos, bool reportErrors)
   {
-    // fprintf(stderr, "CONTRA-X: %s %s\n", (const char*)StrHelper(left0.toString()),
-    //        (const char*)StrHelper(right0.toString()));
-
     if (!left0.isDef() || !right0.isDef()) {
       if (reportErrors)
         errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
@@ -3595,8 +3654,10 @@ namespace herschel
       if (right.isType() || right.isClass()) {
         if (!inheritsFrom(left, right, scope, srcpos, reportErrors))
           return false;
-        return isSameType(left.generics(), right.generics(), scope, srcpos,
-                          reportErrors);
+        if (left.hasGenerics() && right.hasGenerics())
+          return isSameType(left.generics(), right.generics(), scope, srcpos,
+                            reportErrors);
+        return true;
       }
       else if (right.isSequence()) {
         return isCovariantToEveryTypeInSeq(left, right.seqTypes(), scope,
@@ -3807,12 +3868,10 @@ namespace herschel
 };
 
 
-static Scope* testScopeSetup()
+//----------------------------------------------------------------------------
+
+namespace
 {
-  Ptr<Scope> scope = herschel::type::newRootScope(K(forUnitTests));
-
-  TypeVector generics;
-
   // Test class tree:
   //
   // Obj <- Base     <- Medium  <- Top
@@ -3820,47 +3879,122 @@ static Scope* testScopeSetup()
   //     |               |
   //     |               v
   //     \- Abstract <- Xyz
+  Scope* testScopeSetup()
+  {
+    Ptr<Scope> scope = herschel::type::newRootScope(K(forUnitTests));
 
-  // scope->registerType(SrcPos(), Names::kAnyTypeName, Type::newAny(true));
+    scope->registerType(SrcPos(), String("Obj"),
+                        Type::newType(String("Obj"), TypeVector(), Type()));
+    scope->registerType(SrcPos(), String("Base"),
+                        Type::newType(String("Base"),
+                                      TypeVector(),
+                                      Type::newTypeRef("Obj")));
 
-  scope->registerType(SrcPos(), String("Obj"),
-                      Type::newType(String("Obj"), generics, Type()));
-  scope->registerType(SrcPos(), String("Base"),
-                      Type::newType(String("Base"),
-                                    generics,
-                                    Type::newTypeRef("Obj")));
+    scope->registerType(SrcPos(), String("Medium"),
+                        Type::newType(String("Medium"),
+                                      TypeVector(),
+                                      Type::newTypeRef("Base")));
+    scope->registerType(SrcPos(), String("Top"),
+                        Type::newType(String("Top"),
+                                      TypeVector(),
+                                      Type::newTypeRef("Medium")));
 
-  scope->registerType(SrcPos(), String("Medium"),
-                      Type::newType(String("Medium"),
-                                    generics,
-                                    Type::newTypeRef("Base")));
-  scope->registerType(SrcPos(), String("Top"),
-                      Type::newType(String("Top"),
-                                    generics,
-                                    Type::newTypeRef("Medium")));
+    scope->registerType(SrcPos(), String("Abstract"),
+                        Type::newType(String("Abstract"),
+                                      TypeVector(),
+                                      Type::newTypeRef("Obj")));
+    scope->registerType(SrcPos(), String("Xyz"),
+                        Type::newType(String("Xyz"),
+                                      TypeVector(),
+                                      Type::newTypeRef("Abstract")));
 
-  scope->registerType(SrcPos(), String("Abstract"),
-                      Type::newType(String("Abstract"),
-                                    generics,
-                                    Type::newTypeRef("Obj")));
-  scope->registerType(SrcPos(), String("Xyz"),
-                      Type::newType(String("Xyz"),
-                                    generics,
-                                    Type::newTypeRef("Abstract")));
+    TypeVector isa = vector_of(Type::newTypeRef("Base"))
+                              (Type::newTypeRef("Xyz"));
+    scope->registerType(SrcPos(), String("Special"),
+                        Type::newType(String("Special"),
+                                      TypeVector(),
+                                      Type::newSeq(isa, K(isValue))));
+    scope->registerType(SrcPos(), String("Ultra"),
+                        Type::newType(String("Ultra"),
+                                      TypeVector(),
+                                      Type::newTypeRef("Special")));
 
-  TypeVector isa = vector_of(Type::newTypeRef("Base"))
-                            (Type::newTypeRef("Xyz"));
-  scope->registerType(SrcPos(), String("Special"),
-                      Type::newType(String("Special"),
-                                    generics,
-                                    Type::newSeq(isa, K(isValue))));
-  scope->registerType(SrcPos(), String("Ultra"),
-                      Type::newType(String("Ultra"),
-                                    generics,
-                                    Type::newTypeRef("Special")));
+    return scope.release();
+  }
 
-  return scope.release();
-}
+  // Test class tree:
+  //
+  // Obj <- Mappable<'K, 'E> <- Full(:Mappable<Abc, Def>)
+  //     ^  ^                <- Partial<'Z>(:Mappable<Abc, 'Z>) <- Ultra(:Partial<Mno>)
+  //     |  |
+  //     |  \- OrdMap<'K, 'E> <- Multi(:OrdMap<Abc, Def>)
+  //     |                       |
+  //     \- Abc                  |
+  //     \- Def                  |
+  //     \- Mno <----------------/
+  Scope* testScopeSetupGenerics()
+  {
+    Ptr<Scope> scope = herschel::type::newRootScope(K(forUnitTests));
+
+    scope->registerType(SrcPos(), String("Obj"),
+                        Type::newType(String("Obj"), TypeVector(), Type()));
+    scope->registerType(SrcPos(), String("Abc"),
+                        Type::newType(String("Abc"), TypeVector(), Type()));
+    scope->registerType(SrcPos(), String("Def"),
+                        Type::newType(String("Def"), TypeVector(), Type()));
+    scope->registerType(SrcPos(), String("Mno"),
+                        Type::newType(String("Mno"), TypeVector(), Type()));
+
+    scope->registerType(SrcPos(), String("Mappable"),
+                        Type::newType(String("Mappable"),
+                                      vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                               (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                      Type::newTypeRef("Obj")));
+    scope->registerType(SrcPos(), String("OrdMap"),
+                        Type::newType(String("OrdMap"),
+                                      vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                               (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                      Type::newTypeRef(String("Mappable"),
+                                                       vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                                                (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                                       !K(isvalue))));
+
+    scope->registerType(SrcPos(), String("Full"),
+                        Type::newType(String("Full"),
+                                      TypeVector(),
+                                      Type::newTypeRef(String("Mappable"),
+                                                       vector_of(Type::newTypeRef("Abc"))
+                                                                (Type::newTypeRef("Def")),
+                                                       !K(isvalue))));
+
+    scope->registerType(SrcPos(), String("Partial"),
+                        Type::newType(String("Partial"),
+                                      vector_of(Type::newTypeRef(String("Z"), K(isopen), !K(isvalue))),
+                                      Type::newTypeRef(String("Mappable"),
+                                                       vector_of(Type::newTypeRef("Abc"))
+                                                                (Type::newTypeRef(String("Z"), K(isopen), !K(isvalue))),
+                                                       !K(isvalue))));
+
+    scope->registerType(SrcPos(), String("Ultra"),
+                        Type::newType(String("Ultra"),
+                                      TypeVector(),
+                                      Type::newTypeRef(String("Partial"),
+                                                       vector_of(Type::newTypeRef("Mno")),
+                                                       !K(isvalue))));
+
+    scope->registerType(SrcPos(), String("Multi"),
+                        Type::newType(String("Multi"),
+                                      TypeVector(),
+                                      Type::newSeq(vector_of(Type::newTypeRef("Mno"))
+                                                            (Type::newTypeRef(String("OrdMap"),
+                                                                              vector_of(Type::newTypeRef("Abc"))
+                                                                                       (Type::newTypeRef("Def")),
+                                                                              !K(isvalue))),
+                                                   !K(isvalue))));
+
+    return scope.release();
+  }
+} // end anon namespace
 
 
 SUITE(Type_IsSameType)
@@ -4090,6 +4224,45 @@ SUITE(Type_IsSameType)
                                scope, SrcPos(), !K(reportErrors)));
   }
 
+
+  TEST(generics)
+  {
+    // Test class tree:
+    //
+    // Obj <- Mappable<'K, 'E> <- Full(:Mappable<Abc, Def>)
+    //     ^                   <- Partial<'Z>(:Mappable<Abc, 'Z>) <- Ultra(:Partial<Mno>)
+    //     \- Abc
+    //     \- Def
+    //     \- Mno
+    Ptr<Scope> scope = testScopeSetupGenerics();
+
+    CHECK(!herschel::isSameType(Type::newTypeRef(String("Mappable"),
+                                                 vector_of(Type::newTypeRef("Abc"))
+                                                          (Type::newTypeRef("Def")),
+                                                 !K(isvalue)),
+                                Type::newTypeRef("Full"),
+                                scope, SrcPos(), !K(reportErrors)));
+
+    CHECK(herschel::isSameType(Type::newTypeRef(String("Mappable"),
+                                                vector_of(Type::newTypeRef("Abc"))
+                                                         (Type::newTypeRef("Def")),
+                                                !K(isvalue)),
+                               Type::newTypeRef(String("Mappable"),
+                                                vector_of(Type::newTypeRef("Abc"))
+                                                         (Type::newTypeRef("Def")),
+                                                !K(isvalue)),
+                               scope, SrcPos(), !K(reportErrors)));
+
+    CHECK(!herschel::isSameType(Type::newTypeRef(String("Mappable"),
+                                                 vector_of(Type::newTypeRef("Abc"))
+                                                          (Type::newTypeRef("Def")),
+                                                 !K(isvalue)),
+                               Type::newTypeRef(String("Mappable"),
+                                                vector_of(Type::newTypeRef("Abc"))
+                                                         (Type::newTypeRef("Mno")),
+                                                !K(isvalue)),
+                               scope, SrcPos(), !K(reportErrors)));
+  }
   // TODO check generic types
   // TODO check combinations of tests (arrays of generics, arrays of unions,
   // sequences of generics and function types, etc.)
@@ -4107,7 +4280,6 @@ SUITE(Type_Inheritance)
   //     |               |
   //     |               v
   //     \- Abstract <- Xyz
-
 
   TEST(basicTypes)
   {
@@ -4167,6 +4339,25 @@ SUITE(Type_Inheritance)
                                                    Type::newTypeRef("Abstract"),
                                                    String("to")),
                                   scope, SrcPos(), !K(reportError)));
+  }
+
+  TEST(generics)
+  {
+    // Test class tree:
+    //
+    // Obj <- Mappable<'K, 'E> <- Full(:Mappable<Abc, Def>)
+    //     ^                   <- Partial<'Z>(:Mappable<Abc, 'Z>) <- Ultra(:Partial<Mno>)
+    //     \- Abc
+    //     \- Def
+    //     \- Mno
+    Ptr<Scope> scope = testScopeSetupGenerics();
+
+    CHECK(herschel::inheritsFrom(Type::newTypeRef("Full"),
+                                 Type::newTypeRef(String("Mappable"),
+                                                  vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                                           (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                                  !K(isvalue)),
+                                 scope, SrcPos(), !K(reportErrors)));
   }
 }
 
@@ -4229,6 +4420,7 @@ SUITE(Type_Covariance)
                                 scope, SrcPos(), !K(reportError)));
   }
 
+
   TEST(SliceableArrays)
   {
     Ptr<Scope> scope = testScopeSetup();
@@ -4255,10 +4447,37 @@ SUITE(Type_Covariance)
                                                Type()),
                                  scope, SrcPos(), !K(reportError)));
   }
+
+
+  TEST(generics)
+  {
+    // Test class tree:
+    //
+    // Obj <- Mappable<'K, 'E> <- Full(:Mappable<Abc, Def>)
+    //     ^                   <- Partial<'Z>(:Mappable<Abc, 'Z>) <- Ultra(:Partial<Mno>)
+    //     \- Abc
+    //     \- Def
+    //     \- Mno
+    Ptr<Scope> scope = testScopeSetupGenerics();
+
+    CHECK(herschel::isCovariant(Type::newTypeRef("Full"),
+                                Type::newTypeRef(String("Mappable"),
+                                                 vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                                          (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                                 !K(isvalue)),
+                                scope, SrcPos(), !K(reportErrors)));
+    CHECK(herschel::isCovariant(Type::newTypeRef("Ultra"),
+                                Type::newTypeRef(String("Mappable"),
+                                                 vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                                          (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                                 !K(isvalue)),
+                                scope, SrcPos(), !K(reportErrors)));
+  }
 }
 
 
 //----------------------------------------------------------------------------
+
 SUITE(TypeConstraint)
 {
   TEST(construction)
@@ -4266,7 +4485,7 @@ SUITE(TypeConstraint)
     SrcPos sp;
     TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
                                                  Token(sp, kInt, 42));
-    CHECK_EQUAL(t0.constOp(), kConstOp_equal);
+    CHECK_EQUAL(kConstOp_equal, t0.constOp());
   }
 
 
@@ -4277,7 +4496,7 @@ SUITE(TypeConstraint)
                                                  Token(sp, kInt, 42));
     TypeConstraint t1 = TypeConstraint::newValue(kConstOp_equal,
                                                  Token(sp, kInt, 42));
-    CHECK_EQUAL(t0.constOp(), kConstOp_equal);
+    CHECK_EQUAL(kConstOp_equal, t0.constOp());
     CHECK_EQUAL(t0, t1);
   }
 
@@ -4292,13 +4511,13 @@ SUITE(TypeConstraint)
     TypeConstraint t2 = TypeConstraint::newAnd(t0, t1);
     TypeConstraint t3 = TypeConstraint::newOr(t0, t2);
 
-    CHECK_EQUAL(t2.constOp(), kConstOp_and);
-    CHECK_EQUAL(t2.leftConstraint(), t0);
-    CHECK_EQUAL(t2.rightConstraint(), t1);
+    CHECK_EQUAL(kConstOp_and, t2.constOp());
+    CHECK_EQUAL(t0, t2.leftConstraint());
+    CHECK_EQUAL(t1, t2.rightConstraint());
 
-    CHECK_EQUAL(t3.constOp(), kConstOp_or);
-    CHECK_EQUAL(t3.leftConstraint(), t0);
-    CHECK_EQUAL(t3.rightConstraint(), t2);
+    CHECK_EQUAL(kConstOp_or, t3.constOp());
+    CHECK_EQUAL(t0, t3.leftConstraint());
+    CHECK_EQUAL(t2, t3.rightConstraint());
   }
 
 
@@ -4307,8 +4526,8 @@ SUITE(TypeConstraint)
     SrcPos sp;
     TypeConstraint t0 = TypeConstraint::newType(kConstOp_isa,
                                                 Type::newInt32());
-    CHECK_EQUAL(t0.constOp(), kConstOp_isa);
-    CHECK_EQUAL(t0.typeConstraint(), Type::newInt32());
+    CHECK_EQUAL(kConstOp_isa, t0.constOp());
+    CHECK_EQUAL(Type::newInt32(), t0.typeConstraint());
   }
 }
 
@@ -4323,7 +4542,7 @@ SUITE(FunctionParameter)
     CHECK(p0.type().isInt32());
     CHECK(!p0.isSpecialized());
     CHECK(p0.key().isEmpty());
-    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamPos);
+    CHECK_EQUAL(FunctionParameter::kParamPos, p0.kind());
   }
 
   TEST(specParamCtor)
@@ -4332,7 +4551,7 @@ SUITE(FunctionParameter)
     CHECK(p0.type().isInt32());
     CHECK(p0.isSpecialized());
     CHECK(p0.key().isEmpty());
-    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamPos);
+    CHECK_EQUAL(FunctionParameter::kParamPos, p0.kind());
   }
 
   TEST(namedParamCtor)
@@ -4341,8 +4560,8 @@ SUITE(FunctionParameter)
                                                             Type::newInt32());
     CHECK(p0.type().isInt32());
     CHECK(!p0.isSpecialized());
-    CHECK_EQUAL(p0.key(), String("abc"));
-    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamNamed);
+    CHECK_EQUAL(String("abc"), p0.key());
+    CHECK_EQUAL(FunctionParameter::kParamNamed, p0.kind());
   }
 
   TEST(restParamCtor)
@@ -4351,7 +4570,7 @@ SUITE(FunctionParameter)
     CHECK(p0.type().isInt32());
     CHECK(!p0.isSpecialized());
     CHECK(p0.key().isEmpty());
-    CHECK_EQUAL(p0.kind(), FunctionParameter::kParamRest);
+    CHECK_EQUAL(FunctionParameter::kParamRest, p0.kind());
   }
 }
 
@@ -4374,26 +4593,26 @@ TEST(FunctionSignature)
                                             params1);
 
   CHECK(!fs0.isGeneric());
-  CHECK_EQUAL(fs0.methodName(), String("abc"));
-  CHECK_EQUAL(fs0.returnType(), Type::newInt32());
+  CHECK_EQUAL(String("abc"), fs0.methodName());
+  CHECK_EQUAL(Type::newInt32(), fs0.returnType());
   CHECK(fs0.parameters().empty());
 
   CHECK(fs1.isGeneric());
-  CHECK_EQUAL(fs1.methodName(), String("man"));
-  CHECK_EQUAL(fs1.returnType(), Type::newInt32());
-  CHECK_EQUAL(fs1.parameters().size(), (size_t)4);
+  CHECK_EQUAL(String("man"), fs1.methodName());
+  CHECK_EQUAL(Type::newInt32(), fs1.returnType());
+  CHECK_EQUAL((size_t)4, fs1.parameters().size());
   CHECK(fs1.parameters()[0].type().isString());
-  CHECK_EQUAL(fs1.parameters()[0].kind(), FunctionParameter::kParamPos);
+  CHECK_EQUAL(FunctionParameter::kParamPos, fs1.parameters()[0].kind());
   CHECK(fs1.parameters()[0].isSpecialized());
 
   CHECK(fs1.parameters()[1].type().isInt32());
-  CHECK_EQUAL(fs1.parameters()[1].kind(), FunctionParameter::kParamPos);
+  CHECK_EQUAL(FunctionParameter::kParamPos, fs1.parameters()[1].kind());
 
   CHECK(fs1.parameters()[2].type().isFloat32());
-  CHECK_EQUAL(fs1.parameters()[2].kind(), FunctionParameter::kParamNamed);
+  CHECK_EQUAL(FunctionParameter::kParamNamed, fs1.parameters()[2].kind());
 
   CHECK(fs1.parameters()[3].type().isAny());
-  CHECK_EQUAL(fs1.parameters()[3].kind(), FunctionParameter::kParamRest);
+  CHECK_EQUAL(FunctionParameter::kParamRest, fs1.parameters()[3].kind());
 }
 
 
@@ -4415,6 +4634,81 @@ TEST(FunctionSignIsOpen)
   CHECK(fs1.isOpen());
 }
 
+
+//----------------------------------------------------------------------------
+
+SUITE(matchGenerics)
+{
+  // Test class tree:
+  //
+  // Obj <- Mappable<'K, 'E> <- Full(:Mappable<Abc, Def>)
+  //     ^                   <- Partial<'Z>(:Mappable<Abc, 'Z>) <- Ultra(:Partial<Mno>)
+  //     |                   <- Multi(:Mappable<Abc, Def>)
+  //     \- Abc                  |
+  //     \- Def                  |
+  //     \- Mno <----------------/
+  TEST(simpleGenerics)
+  {
+    TypeCtx localCtx;
+    Ptr<Scope> scope = testScopeSetupGenerics();
+
+    Type mapGen = Type::newTypeRef(String("Mappable"),
+                                   vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                            (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                   !K(isvalue));
+    Type mapCon = Type::newTypeRef(String("Mappable"),
+                                   vector_of(Type::newTypeRef("Abc"))
+                                            (Type::newTypeRef("Def")),
+                                   !K(isvalue));
+    CHECK(mapGen.matchGenerics(localCtx, mapCon, scope, SrcPos()));
+
+    CHECK(localCtx.hasType(String("K")));
+    CHECK(localCtx.hasType(String("E")));
+    CHECK(!localCtx.hasType(String("T")));
+    CHECK_EQUAL(Type::newTypeRef("Abc"), localCtx.lookupType(String("K")));
+    CHECK_EQUAL(Type::newTypeRef("Def"), localCtx.lookupType(String("E")));
+  }
+
+
+  TEST(inheritedGenerics)
+  {
+    TypeCtx localCtx;
+    Ptr<Scope> scope = testScopeSetupGenerics();
+
+    Type mappable = Type::newTypeRef(String("Mappable"),
+                                     vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                              (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                     !K(isvalue));
+
+    CHECK(mappable.matchGenerics(localCtx, Type::newTypeRef("Full"), scope, SrcPos()));
+
+    CHECK(localCtx.hasType(String("K")));
+    CHECK(localCtx.hasType(String("E")));
+    CHECK(!localCtx.hasType(String("T")));
+    CHECK_EQUAL(Type::newTypeRef("Abc"), localCtx.lookupType(String("K")));
+    CHECK_EQUAL(Type::newTypeRef("Def"), localCtx.lookupType(String("E")));
+  }
+
+
+  TEST(inheritedGenericsIndirectMultiInheritance)
+  {
+    TypeCtx localCtx;
+    Ptr<Scope> scope = testScopeSetupGenerics();
+
+    Type mappable = Type::newTypeRef(String("Mappable"),
+                                     vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                              (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                     !K(isvalue));
+
+    CHECK(mappable.matchGenerics(localCtx, Type::newTypeRef("Multi"), scope, SrcPos()));
+
+    CHECK(localCtx.hasType(String("K")));
+    CHECK(localCtx.hasType(String("E")));
+    CHECK(!localCtx.hasType(String("T")));
+    CHECK_EQUAL(Type::newTypeRef("Abc"), localCtx.lookupType(String("K")));
+    CHECK_EQUAL(Type::newTypeRef("Def"), localCtx.lookupType(String("E")));
+  }
+}
 
 #endif  // #if defined(UNITTESTS)
 

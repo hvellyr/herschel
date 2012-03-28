@@ -183,6 +183,15 @@ CodegenTools::makeCharAtom(llvm::Value* val)
 }
 
 
+llvm::Value*
+CodegenTools::makeCharAtom(Char val)
+{
+  return makeCharAtom(llvm::ConstantInt::get(fGenerator->context(),
+                                             llvm::APInt(32, val, true)));
+}
+
+
+
 //------------------------------------------------------------------------------
 
 llvm::Function*

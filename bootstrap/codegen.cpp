@@ -466,9 +466,11 @@ CodeGenerator::codegen(const BoolNode* node)
 llvm::Value*
 CodeGenerator::codegen(const CharNode* node)
 {
-  logf(kError, "Not supported yet: %s", typeid(node).name());
-  // TODO
-  return NULL;
+  if (node->dstType().isPlainType()) {
+    return llvm::ConstantInt::get(context(),
+                                  llvm::APInt(32, node->value(), true));
+  }
+  return fTools->makeCharAtom(node->value());
 }
 
 

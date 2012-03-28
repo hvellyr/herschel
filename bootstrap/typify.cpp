@@ -675,6 +675,8 @@ Typifier::checkArgParamType(TypeCtx& localCtx,
   if (param->type().isOpen()) {
     if (!param->type().matchGenerics(localCtx, arg->type(),
                                      arg->scope(), arg->srcpos())) {
+      tyerror(param->type(), "param");
+      tyerror(arg->type(), "arg");
       errorf(arg->srcpos(), E_TypeMismatch,
              "type mismatch for argument %d", idx);
       return;
@@ -706,9 +708,8 @@ Typifier::findKeyedArg(const NodeList& args, size_t argidx, const String& key)
 
   for (size_t i = argidx; i < args.size(); i++) {
     const KeyargNode* keyarg = dynamic_cast<const KeyargNode*>(args[i].obj());
-    if (keyarg == NULL) {
+    if (keyarg == NULL)
       return retval;
-    }
 
     if (keyarg->key() == key) {
       retval.fKeyarg = keyarg;
@@ -1187,6 +1188,8 @@ Typifier::typify(BinaryNode* node)
       }
 
       // TODO: check that left and right type are comparable
+      tyerror(leftty, "compare left");
+      tyerror(rightty, "compare right");
       errorf(node->srcpos(), E_BinaryTypeMismatch,
              "incompatible types in binary comparison");
       node->setType(Type::newAny());
