@@ -1,0 +1,21 @@
+import "lang/assert.h7"
+
+def foo() : UInt
+  66u
+
+def generic bar(i @ Integer) : UInt
+  67u
+
+def app|main()
+  assert((65u).to-char == \A)
+
+  assert(foo().to-char == \B)
+
+  assert(bar(5) == 67u)
+
+  let t = bar(5)
+  assert(t.to-char == \C)
+
+  assert(bar(42).to-char == \C)
+
+  0

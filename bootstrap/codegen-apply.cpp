@@ -211,6 +211,9 @@ CodegenApply::emit(const ApplyNode* node) const
     else if (symNode->name() == Names::kLangIsaQ) {
       return emitIsaApply(node);
     }
+    else if (symNode->name() == Names::kLangToChar) {
+      return emitToCharApply(node);
+    }
 
     if (symNode->hasCLinkage()) {
       // generic functions are not allowed to have C linkage
@@ -337,6 +340,43 @@ CodegenApply::emitIsaApply(const ApplyNode* applyNode) const
   hr_assert(isaFunc != NULL);
   // TODO: if in tail position enforce ATOM return type?
   return builder().CreateCall(isaFunc, argv.begin(), argv.end());
+}
+
+
+//----------------------------------------------------------------------------
+
+llvm::Value*
+CodegenApply::convertToPlainInt(const Type& dstType,
+                               const AptNode* isNode,
+                               llvm::Value* value) const
+{
+  switch (isNode->typeConv()) {
+  case kNoConv:
+    return builder().CreateIntCast(value, types()->getType(dstType), isNode->type().isSigned());
+  case kAtom2PlainConv:
+    return tools()->makeTypeCastAtomToPlain(value, dstType);
+  case kPlain2AtomConv:
+  case kTypeCheckConv:
+    hr_invalid("");
+  }
+
+  return NULL;
+}
+
+
+llvm::Value*
+CodegenApply::emitToCharApply(const ApplyNode* applyNode) const
+{
+  const NodeList& args = applyNode->children();
+
+  llvm::Value *val = tools()->wrapLoad(generator()->codegenNode(args[0]));
+  if (val == NULL)
+    return NULL;
+
+  return tools()->emitPackCode(applyNode->dstType(),
+                               kTypeCheckConv,
+                               convertToPlainInt(Type::newUInt32(), args[0], val),
+                               applyNode->type());
 }
 
 

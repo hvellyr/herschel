@@ -74,6 +74,11 @@ namespace herschel
     llvm::Value* emitArrayNumItems(const ApplyNode* node) const;
 
     llvm::Value* emitIsaApply(const ApplyNode* applyNode) const;
+    llvm::Value* emitToCharApply(const ApplyNode* applyNode) const;
+
+    llvm::Value* convertToPlainInt(const Type& dstType,
+                                   const AptNode* isNode,
+                                   llvm::Value* value) const;
 
     struct ArraySliceAccessData
     {

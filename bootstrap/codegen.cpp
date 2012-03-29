@@ -468,7 +468,7 @@ CodeGenerator::codegen(const CharNode* node)
 {
   if (node->dstType().isPlainType()) {
     return llvm::ConstantInt::get(context(),
-                                  llvm::APInt(32, node->value(), true));
+                                  llvm::APInt(32, node->value(), !K(issigned)));
   }
   return fTools->makeCharAtom(node->value());
 }

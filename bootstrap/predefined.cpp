@@ -81,6 +81,7 @@ const String herschel::Names::kLangGreaterEqualQ   = String(MID_lang_greater_equ
 const String herschel::Names::kLangCompare         = String(MID_lang_compare);
 
 const String herschel::Names::kLangIsaQ            = String(MID_core_ns "|" MID_isaQ);
+const String herschel::Names::kLangToChar          = String(MID_core_ns "|to-char");
 
 const String herschel::Names::kLangAdd             = String(MID_core_ns "|" MID_add);
 const String herschel::Names::kLangSubtract        = String(MID_core_ns "|" MID_subtract);
