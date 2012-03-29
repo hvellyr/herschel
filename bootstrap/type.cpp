@@ -808,7 +808,7 @@ namespace herschel
           const TypeVector& genargs = ty.generics();
 
           for (size_t i = 0; i < genargs.size(); ++i) {
-            hr_assert(genprms[i].isOpenSelf());
+            //hr_assert(genprms[i].isOpenSelf());
 
             if (!genargs[i].isOpenSelf()) {
               if (localCtx.hasType(genprms[i].typeName())) {

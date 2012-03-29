@@ -229,6 +229,7 @@ namespace herschel
     const static String kLangCompare;
 
     const static String kLangIsaQ;
+    const static String kLangToChar;
 
     const static String kLangAdd;
     const static String kLangSubtract;

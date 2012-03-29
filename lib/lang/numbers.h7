@@ -150,4 +150,8 @@ def generic divide(dividend @ 'T, divisor @ 'V) : 'T ...
     @var{divisor} is 0 an @type{DivisionByZero} exception is raised. ~
 
 
+def to-char(i : UInt) : Char ...
+  ~ Creates a char instance from @var{i}.  @var{i} must a valid unicode
+  codepoint. ~
+
 -- end of lang/numbers
