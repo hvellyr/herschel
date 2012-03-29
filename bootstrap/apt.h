@@ -64,6 +64,10 @@ namespace herschel
     kPlain2AtomConv,
   };
 
+  const char* convkind2str(TypeConvKind kind);
+
+  //--------------------------------------------------------------------------
+
   //! AptNode is the base of all abstract part tree nodes.  Since it is a
   //! refcounted object, keep it always in Ptr<>.
   class AptNode : public RefCountable
@@ -111,6 +115,9 @@ namespace herschel
     //! Transform this node using \p transformator.
     virtual AptNode* transform(Transformator* annotator) = 0;
     virtual void typify(Typifier* typifier) = 0;
+
+    //! Dump an xml output to stderr.
+    virtual void dump() const;
 
   protected:
     SrcPos       fSrcPos;

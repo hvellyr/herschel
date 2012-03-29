@@ -73,6 +73,20 @@ herschel::copyNodes(const NodeList& src)
 }
 
 
+const char*
+herschel::convkind2str(TypeConvKind kind)
+{
+  switch (kind) {
+  case kNoConv:         return "no-conv";
+  case kTypeCheckConv:  return "type-check";
+  case kAtom2PlainConv: return "atom2plain";
+  case kPlain2AtomConv: return "plain2atom";
+  }
+
+  return "unknown-conv";
+}
+
+
 //----------------------------------------------------------------------------
 
 AptNode::AptNode(const SrcPos& srcpos)
@@ -190,6 +204,14 @@ void
 AptNode::setIsSingleTypeRequired(bool value)
 {
   fIsSingleTypeRequired = value;
+}
+
+
+void
+AptNode::dump() const
+{
+  Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
+  out->render(this);
 }
 
 
