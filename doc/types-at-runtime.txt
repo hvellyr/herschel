@@ -1,0 +1,152 @@
+Types at runtime
+----------------
+
+Problem:
+
+- parameterized types: map<int, string>
+
+- generic types: map<K, V>   -> map<Any, Any>  ??
+
+- array types: int[]
+
+- union/set types: &(Int, String)
+
+- we need a fast type representation at runtime for the generic method
+  lookup.  Best would be an integer type
+
+- cross module initialization/registration of types.  A type must be
+  registered only once.  Some types however can only be registered at
+  using/calling side (parametrized types).  Since we can't easily control
+  the order of linking, we need a lazy registration method.
+
+  we should not bloat generated bit code by rendundant type generation
+  code.  If 5 source files use a type map<int, string> we should not have 5
+  times lazy type generation code, of which on one is used.  Can the linker
+  help use?
+
+- don't register types which are never used.
+
+- don't register generic functions which are never used.
+
+
+- problem with generic type registration:
+
+  - does a generic (i.e. non-specialized type) has an instance?
+  - we may have generic functions specialized on generic types:
+
+      def generic foo(a @ X<T>) : Y<T> ...
+
+    isn't this identical to:
+
+      def generic foo(a @ X<Any>) : Y<Any> ...
+
+    at least at runtime?
+
+    This means we need to register a automatic specialized type instance
+    for each generic type form.
+
+  - specialization has to propagate in inheritance forms:
+
+      def class Y<T> : Z<T>
+      {
+        def slot b : Map<T>
+      }
+
+      def class X<T> : (Y<T>, C<Int>)
+      {
+        def slot a : T
+      }
+
+    Specializing X with N and M gives us the following type registrations:
+
+      X<N>         X<M>
+      Y<N>         Y<M>
+      C<Int>
+      Z<N>         Z<M>
+
+    If we save reflection info on slots we additionally would have to register
+
+      Map<N>       Map<M>
+
+
+- It would be nice if types etc. could be statically allocated, so that we
+  don't need startup code running.
+
+  Why is this problematic at all:
+
+  - We need a global type representation for generic method matching.
+
+  - two compile units compiled independantly need to use the same type id.
+
+
+  Define runtime::Type in data segment:
+
+    struct Type {
+      const char* name;               -> static
+      Type**      isa;                -> static
+      size_t      isa_size;           -> static
+      HashTable*  isa_set;            -> static **)
+      TagId       tag_id;             -> ???
+      int         is_array;           -> static
+
+      size_t      instance_size;      -> static
+      size_t      acc_instance_size;  -> static
+      HashTable*  slots_offsets;      -> static **)
+      const TypeSlotPair* slots;      -> static
+    };
+
+  **) Is it possible to come up with a hash set implementation which can be
+      statically defined in DS?
+
+      Cf.:
+
+        #include <stdio.h>
+
+
+        struct TestProp {
+          const char* prop;
+        };
+
+        struct Test {
+          int a;
+          const char* name;
+          struct TestProp* props;
+        };
+
+
+        static struct TestProp props1[] = {
+          { "owner" },
+          { "landlord" }
+        };
+
+        static struct TestProp props2[] = {
+          { "city" },
+          { "street" },
+          { "zip" }
+        };
+
+        static struct Test test = {
+          42,
+          "hello world",
+          props1
+        };
+
+
+        int main(int argc, char** argv)
+        {
+          printf("Test: %d %s\n", test.a, test.name);
+
+          return 0;
+        }
+
+
+   So the only thing missing is really the typeid. (Or analog the keyword
+   id, etc.)
+
+
+
+
+-> some idea: precompute hashkeys in compiler, store them with the real key
+   values, so that key lookup does not require hash key computation at
+   runtime
+   (cf. http://bitsquid.blogspot.de/2010/10/static-hash-values.html)
