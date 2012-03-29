@@ -91,3 +91,17 @@ unsigned int lang_string_length(struct ATOM atom0)
 
   return 0;
 }
+
+unsigned int lang_string_char_at_index(struct ATOM atom0,
+                                       unsigned int idx)
+{
+  if (atom0.typeid == TYPE_TAG_STRING) {
+    size_t len = *((size_t*)atom0.u.v_obj);
+    if (idx < len) {
+      Ucs2Char* p0 = (Ucs2Char*)(atom0.u.v_obj + sizeof(size_t));
+      return p0[idx];
+    }
+  }
+
+  return 0;
+}
