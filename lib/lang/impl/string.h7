@@ -10,10 +10,12 @@ module lang
 import "lang/string.h7"
 import "lang/stdlib.h7"
 import "lang/copyable.h7"
+import "lang/sliceable.h7"
 
 extern ("C") {
   int lang_string_compare(const struct ATOM atom0, const struct ATOM atom1);
   unsigned int lang_string_length(struct ATOM atom0);
+  unsigned int lang_string_char_at_index(struct ATOM atom0, unsigned int idx);
 }
 
 
@@ -44,6 +46,11 @@ def lang|length(s @ String) : Ordinal
 
 def empty?(str @ String) : Bool
   str.length == 0u
+
+
+def slice(s @ String, idx @ Ordinal) : Char
+  lang_string_char_at_index(s, idx).to-char
+
 
 
 when ignore {
@@ -78,7 +85,6 @@ def empty?(sl @ StringSlice) : Bool
 def core|slice(sl @ StringSlice, idx @ Ordinal) : Char
   sl.str[sl.from + idx]
 
-
 def core|slice(sl @ StringSlice, from @ Ordinal, to @ Ordinal)
     : Slice<Ordinal, Char>
   sl.str.slice(sl.from + from, sl.from + to)
@@ -94,10 +100,6 @@ def length(str @ StringImpl) : Ordinal
 
 def empty?(str @ StringImpl) : Bool
   str.data.num-items == 0
-
-
-def core|slice(str @ StringImpl, n @ Ordinal) : Char
-  str.data[n]
 
 
 def core|slice(str @ StringImpl, from @ Ordinal, to @ Ordinal)
