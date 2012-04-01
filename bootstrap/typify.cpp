@@ -558,6 +558,9 @@ Typifier::typify(FuncDefNode* node)
         if (!isContravariant(genericDef->type(), node->type(),
                              node->scope(), node->srcpos()))
         {
+          // tyerror(genericDef->type(), "genericdef type");
+          // tyerror(node->type(), "node type");
+
           errorf(node->srcpos(), E_TypeMismatch,
                  "method does not match generic function definition");
           // tyerror(genericDef->type(), "Generic");

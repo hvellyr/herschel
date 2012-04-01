@@ -741,10 +741,16 @@ namespace herschel
 
   bool isSameType(const Type& left, const Type& right, Scope* scope,
                   const SrcPos& srcpos, bool reportErrors = true);
+  //! Indicates whether the type @var{right} is covariant to (i.e. "narrower"
+  //! than) the type @var{left}.
   bool isCovariant(const Type& left, const Type& right, Scope* scope,
                    const SrcPos& srcpos, bool reportErrors = true);
+  //! Indicates whether the type @var{right} is contravariant to (i.e. "wider"
+  //! than) the type @var{left}.
   bool isContravariant(const Type& left, const Type& right, Scope* scope,
                        const SrcPos& srcpos, bool reportErrors = true);
+  //! Indicates whether the type @var{right} is invariant to the type
+  //! @var{left}, i.e. there's no relation between @var{left} and @var{right}.
   bool isInvariant(const Type& left, const Type& right, Scope* scope,
                    const SrcPos& srcpos, bool reportErrors = true);
   bool containsAny(const Type& left, const SrcPos& srcpos,
