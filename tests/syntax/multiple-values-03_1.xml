@@ -110,7 +110,7 @@
 <id>c</id>
 <punct type='='/>
 <seq>
-<id>slice*</id>
+<id>slice-rest</id>
 <nested left='(' right=')'>
 <id>__value_1</id>
 <punct type=','/>

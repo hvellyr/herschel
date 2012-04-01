@@ -320,6 +320,143 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
+  namespace
+  {
+    bool matchGenericsForType(TypeCtx& localCtx,
+                              const String& typeName, const TypeVector& generics,
+                              const Type& ty,
+                              Scope* scope, const SrcPos& srcpos)
+    {
+      if (generics.size() == ty.generics().size() &&
+          typeName == ty.typeName())
+      {
+        for (size_t i = 0; i < generics.size(); ++i) {
+          if (!generics[i].matchGenerics(localCtx, ty.generics()[i],
+                                         scope, srcpos)) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      return false;
+    }
+
+
+    bool registerGenerics(TypeCtx& localCtx, const Type& ty, Scope* scope)
+    {
+      if (ty.hasGenerics())
+      {
+        Type typespec = scope->lookupType(ty.typeName(),
+                                          K(showAmbiguousSymDef));
+        if (typespec.isDef() &&
+            typespec.generics().size() == ty.generics().size())
+        {
+          const TypeVector& genprms = typespec.generics();
+          const TypeVector& genargs = ty.generics();
+
+          for (size_t i = 0; i < genargs.size(); ++i) {
+            //hr_assert(genprms[i].isOpenSelf());
+
+            if (!genargs[i].isOpenSelf()) {
+              if (localCtx.hasType(genprms[i].typeName())) {
+                // TODO
+              }
+              else {
+                localCtx.registerType(genprms[i].typeName(), genargs[i]);
+              }
+            }
+          }
+          return true;
+        }
+      }
+
+      return true; //false;
+    }
+
+
+    bool matchGenericsImpl(TypeCtx& localCtx,
+                           const String& typeName, const TypeVector& generics,
+                           const Type& right0,
+                           Scope* scope, const SrcPos& srcpos)
+    {
+      if (right0.isRef() || right0.isType() || right0.isClass()) {
+        // if the reference has generics, it itself cannot be generic.  A
+        // 'T<'Y'> is not allowed.
+        if (!generics.empty()) {
+          if (!registerGenerics(localCtx, right0, scope))
+            return false;
+
+          if (matchGenericsForType(localCtx, typeName, generics, right0,
+                                   scope, srcpos))
+            return true;
+
+          Type right = scope->lookupType(right0.typeName(),
+                                         K(showAmbiguousSymDef));
+
+          Type inheritance;
+          if (right.isType() || right.isClass()) {
+            inheritance = right.typeInheritance();
+          }
+          else if (right.isMeasure()) {
+            inheritance = right.measureBaseType();
+          }
+          else
+            return false;
+
+          if (!inheritance.isDef()) {
+            return false;
+          }
+
+          if (inheritance.isType() || inheritance.isClass() || inheritance.isRef()) {
+            if (matchGenericsImpl(localCtx, typeName, generics, inheritance,
+                                  scope, srcpos))
+              return true;
+          }
+          else if (inheritance.isSequence()) {
+            const TypeVector& seq = inheritance.seqTypes();
+            for (size_t i = 0; i < seq.size(); ++i) {
+              if (matchGenericsImpl(localCtx, typeName, generics, seq[i], scope, srcpos))
+                return true;
+            }
+          }
+          return false;
+        }
+
+        if (localCtx.hasType(typeName)) {
+          if (!isContravariant(localCtx.lookupType(typeName), right0, scope, srcpos) &&
+              !isSameType(localCtx.lookupType(typeName), right0, scope, srcpos) )
+          {
+            errorf(srcpos, E_TypeMismatch, "type mismatch for generic parameter");
+            return false;
+          }
+          return true;
+        }
+        else {
+          localCtx.registerType(typeName, right0);
+          return true;
+        }
+      }
+      else if (right0.isArray()) {
+        // special case: Make lang/sliceable<K, E> match arrays, which are
+        // otherwise not first class entities.
+        if (typeName == Names::kSliceableTypeName || typeName == Names::kSliceableXTypeName) {
+          if (generics.size() == 2) {
+            localCtx.registerType(generics[0].typeName(), Type::newUInt32());
+            localCtx.registerType(generics[1].typeName(), right0.arrayBaseType());
+
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
+  } // end anon namespace
+
+
+  //--------------------------------------------------------------------------
+
   class TypeTypeImpl : public TypeImpl
   {
   public:
@@ -445,19 +582,7 @@ namespace herschel
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                                Scope* scope, const SrcPos& srcpos) const
     {
-      if (right0.isType() || right0.isClass()) {
-        if (fName == right0.typeName() &&
-            fGenerics.size() == right0.generics().size())
-        {
-          for (size_t i = 0; i < fGenerics.size(); ++i) {
-            if (!fGenerics[i].matchGenerics(localCtx, right0.generics()[i],
-                                            scope, srcpos))
-              return false;
-          }
-          return true;
-        }
-      }
-      return false;
+      return matchGenericsImpl(localCtx, fName, fGenerics, right0, scope, srcpos);
     }
 
 
@@ -776,129 +901,10 @@ namespace herschel
     }
 
 
-    bool matchGenericsForType(TypeCtx& localCtx, const Type& ty,
-                              Scope* scope, const SrcPos& srcpos) const
-    {
-      if (fGenerics.size() == ty.generics().size() &&
-          fName == ty.typeName())
-      {
-        for (size_t i = 0; i < fGenerics.size(); ++i) {
-          if (!fGenerics[i].matchGenerics(localCtx, ty.generics()[i],
-                                          scope, srcpos)) {
-            return false;
-          }
-        }
-        return true;
-      }
-
-      return false;
-    }
-
-
-    bool registerGenerics(TypeCtx& localCtx, const Type& ty, Scope* scope) const
-    {
-      if (ty.hasGenerics())
-      {
-        Type typespec = scope->lookupType(ty.typeName(),
-                                          K(showAmbiguousSymDef));
-        if (typespec.isDef() &&
-            typespec.generics().size() == ty.generics().size())
-        {
-          const TypeVector& genprms = typespec.generics();
-          const TypeVector& genargs = ty.generics();
-
-          for (size_t i = 0; i < genargs.size(); ++i) {
-            //hr_assert(genprms[i].isOpenSelf());
-
-            if (!genargs[i].isOpenSelf()) {
-              if (localCtx.hasType(genprms[i].typeName())) {
-                // TODO
-              }
-              else {
-                localCtx.registerType(genprms[i].typeName(), genargs[i]);
-              }
-            }
-          }
-          return true;
-        }
-      }
-
-      return true; //false;
-    }
-
-
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
                                Scope* scope, const SrcPos& srcpos) const
     {
-      if (right0.isRef() || right0.isType() || right0.isClass()) {
-        // if the reference has generics, it itself cannot be generic.  A
-        // 'T<'Y'> is not allowed.
-        if (!fGenerics.empty()) {
-          if (!registerGenerics(localCtx, right0, scope))
-            return false;
-
-          if (matchGenericsForType(localCtx, right0, scope, srcpos))
-            return true;
-
-          Type right = scope->lookupType(right0.typeName(),
-                                         K(showAmbiguousSymDef));
-
-          Type inheritance;
-          if (right.isType() || right.isClass()) {
-            inheritance = right.typeInheritance();
-          }
-          else if (right.isMeasure()) {
-            inheritance = right.measureBaseType();
-          }
-          else
-            return false;
-
-          if (!inheritance.isDef()) {
-            return false;
-          }
-
-          if (inheritance.isType() || inheritance.isClass() || inheritance.isRef()) {
-            if (matchGenerics(localCtx, inheritance, scope, srcpos))
-              return true;
-          }
-          else if (inheritance.isSequence()) {
-            const TypeVector& seq = inheritance.seqTypes();
-            for (size_t i = 0; i < seq.size(); ++i) {
-              if (matchGenerics(localCtx, seq[i], scope, srcpos))
-                return true;
-            }
-          }
-          return false;
-        }
-
-        if (localCtx.hasType(name())) {
-          if (!isContravariant(localCtx.lookupType(name()), right0, scope, srcpos) &&
-              !isSameType(localCtx.lookupType(name()), right0, scope, srcpos) )
-          {
-            errorf(srcpos, E_TypeMismatch, "type mismatch for generic parameter");
-            return false;
-          }
-          return true;
-        }
-        else {
-          localCtx.registerType(name(), right0);
-          return true;
-        }
-      }
-      else if (right0.isArray()) {
-        // special case: Make lang/sliceable<K, E> match arrays, which are
-        // otherwise not first class entities.
-        if (name() == Names::kSliceableTypeName || name() == Names::kSliceableXTypeName) {
-          if (fGenerics.size() == 2) {
-            localCtx.registerType(fGenerics[0].typeName(), Type::newUInt32());
-            localCtx.registerType(fGenerics[1].typeName(), right0.arrayBaseType());
-
-            return true;
-          }
-        }
-      }
-
-      return false;
+      return matchGenericsImpl(localCtx, fName, fGenerics, right0, scope, srcpos);
     }
 
 
@@ -3446,8 +3452,8 @@ namespace herschel
     if (!isCovariant(leftsig.returnType(), rightsig.returnType(),
                      scope, srcpos, reportErrors))
     {
-      // tyerror(leftsig.returnType(), "leftsig returntype");
-      // tyerror(rightsig.returnType(), "rightsig returntype");
+      //tyerror(leftsig.returnType(), "leftsig returntype");
+      //tyerror(rightsig.returnType(), "rightsig returntype");
       return false;
     }
 
@@ -3464,7 +3470,11 @@ namespace herschel
         if (leftprm.isSpecialized() && rightprm.isSpecialized()) {
           if (!isCovariant(leftprm.type(), rightprm.type(), scope, srcpos,
                            reportErrors))
+          {
+            // tyerror(leftprm.type(), "leftprm type");
+            // tyerror(rightprm.type(), "rightprm type");
             return false;
+          }
         }
         else if (leftprm.isSpecialized()) {
           // parameters are not symmetrical specialized
@@ -4529,6 +4539,20 @@ SUITE(Type_Covariance)
                                 Type::newTypeRef(String("Mappable"),
                                                  vector_of(Type::newTypeRef("Abc"))
                                                           (Type::newTypeRef("Def")),
+                                                 !K(isvalue)),
+                                scope, SrcPos(), !K(reportErrors)));
+  }
+
+  TEST(generics4)
+  {
+    TypeCtx localCtx;
+    Ptr<Scope> scope = testScopeSetupGenerics();
+
+    CHECK(herschel::isCovariant(Type::newTypeRef("Multi"),
+                                Type::newTypeRef(String("OrdMap"),
+                                                 vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                                                           (Type::newTypeRef(String("E"), K(isopen),
+                                                                                             !K(isvalue))),
                                                  !K(isvalue)),
                                 scope, SrcPos(), !K(reportErrors)));
   }

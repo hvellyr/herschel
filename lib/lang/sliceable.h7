@@ -9,6 +9,7 @@ module lang
 export public(*)
 
 import "lang/numbers.h7"
+import "lang/types.h7"
 
 
 ----------------------------------------------------------------------
@@ -50,7 +51,7 @@ def generic slice-rest(obj @ OrderedSliceable<'K, 'E>,
     implemented as:
 
     @example
-    def slice*(obj, from)
+    def slice-rest(obj, from)
       obj.slice(from, from + obj.num-items)
     @end example ~
 
@@ -69,8 +70,13 @@ def generic slice!(obj @ ^Sliceable!<'K, 'E>,
 
 ----------------------------------------------------------------------
 
-def generic num-items(obj @ 'T[]) : Ordinal ...
-    ~ return the number of items @var{obj} (an array of 'T). ~
+def generic empty?(obj @ Any) : Bool ...
+  ~ Indicate whether @var{obj} is an empty object, which is any kind of
+  collection, e.g. an array, a slice, a container. ~
+
+def generic num-items(obj @ Any) : Ordinal ...
+    ~ return the number of items in @var{obj}, which is any kind of
+    collection, e.g. an array, a slice, a container. ~
 
 -- end of sliceable.h7
 

@@ -45,6 +45,7 @@ def lang|length(s @ String) : Ordinal
     lang_string_length(s) as Ordinal
 
 def empty?(str @ String) : Bool
+  ~ Indicate whether @var{str} is an empty string. ~
   str.length == 0u
 
 
@@ -53,41 +54,43 @@ def slice(s @ String, idx @ Ordinal) : Char
 
 
 
+------------------------------------------------------------------------------
+-- Slice special for string
+------------------------------------------------------------------------------
+
+def class StringSlice(_str : String,
+                      _from : Ordinal,
+                      _to : Ordinal) : OrderedSliceable<Ordinal, Char>
+{
+  def slot str : String = _str
+  def slot from : Ordinal = _from
+  def slot to : Ordinal = _to
+}
+
+
+def num-items(sl @ StringSlice) : Ordinal
+  sl^to - sl^from
+
+
+def empty?(sl @ StringSlice) : Bool
+  sl.num-items == 0u
+
+def slice(sl @ StringSlice, idx @ Ordinal) : Char
+  sl^str[sl^from + idx]
+
+def slice*(sl @ StringSlice, from @ Ordinal, to @ Ordinal) : OrderedSliceable<Ordinal, Char>
+  StringSlice(sl^str, sl^from + from, sl^from + to)
+
+
+def slice*(str @ String, from @ Ordinal, to @ Ordinal) : OrderedSliceable<Ordinal, Char>
+  StringSlice(str, from, to)
+
+
 when ignore {
 def class StringImpl : String
 {
   def slot data : Char[]
 }
-
-
-------------------------------------------------------------------------------
--- Slice special for string
-------------------------------------------------------------------------------
-
-def class StringSlice(_str : StringImpl,
-                      _from : Ordinal,
-                      _to : Ordinal) : Slice<Ordinal, Char>
-{
-  def slot str = _str
-  def slot from = _from
-  def slot to = _to
-}
-
-
-def num-items(sl @ StringSlice) : Ordinal
-  sl.to - sl.from
-
-
-def empty?(sl @ StringSlice) : Bool
-  sl.num-items == 0
-
-
-def core|slice(sl @ StringSlice, idx @ Ordinal) : Char
-  sl.str[sl.from + idx]
-
-def core|slice(sl @ StringSlice, from @ Ordinal, to @ Ordinal)
-    : Slice<Ordinal, Char>
-  sl.str.slice(sl.from + from, sl.from + to)
 
 
 ------------------------------------------------------------------------------

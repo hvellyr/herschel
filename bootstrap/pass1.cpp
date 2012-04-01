@@ -2092,7 +2092,7 @@ FirstPass::makeAssignToken(const TokenVector& exprs, const Token& expr2,
       const Token& expr = exprs[i];
 
       const char* funcName = ( i == exprs.size() - 1 && hasRest
-                               ? "slice*"
+                               ? "slice-rest"
                                : "slice" );
       Token sliceExpr = Token() << Token(op1Srcpos, funcName)
                                 << ( Token(op1Srcpos, kParanOpen, kParanClose)
@@ -2791,7 +2791,7 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
       hr_assert(initValueSym.isSet());
 
       const char* funcName = ( i == leftHands.size() - 1 && ellipsisToken.isSet()
-                               ? "slice*"
+                               ? "slice-rest"
                                : "slice" );
 
       effInitExpr << Token(vardefSym.srcpos(), funcName)

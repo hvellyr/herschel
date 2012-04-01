@@ -104,7 +104,7 @@
 <assign>
 <symbol>c</symbol>
 <apply>
-<symbol>slice*</symbol>
+<symbol>slice-rest</symbol>
 <args>
 <symbol>__value_1</symbol>
 <int ty='lang|UInt32'>2</int>
