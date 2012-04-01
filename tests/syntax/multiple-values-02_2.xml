@@ -49,7 +49,7 @@
 <vardef sym='c'>
 <init>
 <apply>
-<symbol>slice*</symbol>
+<symbol>slice-rest</symbol>
 <args>
 <symbol>__value_0</symbol>
 <int ty='lang|UInt32'>1</int>

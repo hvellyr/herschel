@@ -35,9 +35,6 @@ def type String : (Copyable, Comparable, OrderedSliceable<Ordinal, Char>)
 def generic length(str @ String) : Ordinal ...
   ~ Returns the length of @var{str} in characters. ~
 
-def generic empty?(str @ String) : Bool ...
-  ~ Indicate whether @var{str} is an empty string. ~
-
 def generic starts-with?(haystack @ String, needle @ String,
                          start-from : Ordinal = 0u) : Bool ...
 def generic ends-with?(haystack @ String, needle @ String,
