@@ -16,7 +16,7 @@ A is covariant to B if it is narrower:
 
 2    T<>  -> T<>        if A == B || (A(generics) == B(generics) and A inherits B)        |
 
-2a   T    -> T<>        if A == B || A inherits B (which A' being T<> from B)             |
+2a   T    -> T<>        if A == B || A inherits B (with A' being T<> from B)              |
 
 3    T[]  -> T[]        if A == B                                                         |
 
@@ -82,6 +82,18 @@ ad 13:
 
 - additional rule:  a type T[] is covariant to Sliceable<Int, T>
 
+----- generics:
+
+THINK ABOUT THE FOLLOWING:
+
+- is a type T<Abc, Def> covariant to T<'K, 'E> ?
+  is a type T<'K, 'E> covariant to T<Abc, Def> ?
+  are they the same types?
+
+
+  def generic foo(@T<'K, 'E>) : T<'K, 'E>
+  def foo(@T<Abc, String>) : T<Abc, String>                  <--- valid?
+  def foo(@T<Mno, MutualString>) : T<Abc, MutualString>      <--- valid?
 
 
 ------------------------------------------------------------------------------
