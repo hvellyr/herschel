@@ -50,7 +50,7 @@
 </type>
 <init>
 <apply  ty='lang|UInt32'>
-<symbol  ty='lambda(&apos;T[]):lang|UInt32' refer='generic'>lang|num-items</symbol>
+<symbol  ty='lambda(lang|Any):lang|UInt32' refer='generic'>lang|num-items</symbol>
 <args>
 <symbol  ty='&apos;T[]' refer='param'>a</symbol>
 </args>
@@ -177,10 +177,8 @@
 <ty:fun nm=''>
 <ty:prms>
 <ty:prm is='pos' spec='t'>
-<ty:array ind='0'>
-<ty:ref gen='t' nm='T'>
-</ty:ref>
-</ty:array>
+<ty:type nm='lang|Any'>
+</ty:type>
 </ty:prm>
 </ty:prms>
 <ty:ret>
