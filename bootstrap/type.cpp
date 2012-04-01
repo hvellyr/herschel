@@ -3330,22 +3330,17 @@ namespace herschel
     }
 
     Type inheritance;
-    if (left.isType() || left.isClass()) {
+    if (left.isType() || left.isClass())
       inheritance = left.typeInheritance();
-    }
-    else if (left.isMeasure()) {
+    else if (left.isMeasure())
       inheritance = left.measureBaseType();
-    }
     else
       return false;
 
-    if (!inheritance.isDef()) {
+    if (!inheritance.isDef())
       return false;
-    }
-    else if (inheritance.isRef()) {
-      inheritance = scope->lookupType(inheritance.typeName(),
-                                      K(showAmbiguousSymDef));
-    }
+    else if (inheritance.isRef())
+      inheritance = scope->lookupType(inheritance);
 
     if (!inheritance.isDef()) {
       if (reportErrors)
@@ -3356,6 +3351,12 @@ namespace herschel
     if (inheritance.isType() || inheritance.isClass()) {
       if (isSameType(inheritance, right, scope, srcpos, reportErrors))
         return true;
+
+      if (right.isOpen()) {
+        TypeCtx localCtx;
+        if (inheritance.matchGenerics(localCtx, right, scope, srcpos))
+          return true;
+      }
       return inheritsFrom(inheritance, right, scope, srcpos, reportErrors);
     }
 
@@ -3444,7 +3445,11 @@ namespace herschel
   {
     if (!isCovariant(leftsig.returnType(), rightsig.returnType(),
                      scope, srcpos, reportErrors))
+    {
+      // tyerror(leftsig.returnType(), "leftsig returntype");
+      // tyerror(rightsig.returnType(), "rightsig returntype");
       return false;
+    }
 
     if (leftsig.parameters().size() != rightsig.parameters().size())
       return false;
@@ -3471,7 +3476,9 @@ namespace herschel
               // special case: a function taking lang|Any types accepts
               // everything.
               !containsAny(rightprm.type(), srcpos, reportErrors))
+          {
             return false;
+          }
         }
 
         if (rightprm.type().isOpenSelf()) {
@@ -3481,10 +3488,17 @@ namespace herschel
           if (knownType.isDef()) {
             if (!isContravariant(leftprm.type(), knownType, scope, srcpos,
                                  reportErrors))
+            {
               return false;
+            }
           }
 
-          localCtx.registerType(genName, leftprm.type());
+          if (!localCtx.hasType(genName)) {
+            localCtx.registerType(genName, leftprm.type());
+          }
+          else {
+            // TODO
+          }
         }
       }
       else
@@ -3648,6 +3662,16 @@ namespace herschel
         return false;
     }
     else if (left.isType() || left.isClass()) {
+      if (left.isOpen()) {
+        TypeCtx localCtx;
+        if (left.matchGenerics(localCtx, right, scope, srcpos))
+          return true;
+      }
+      if (right.isOpen()) {
+        TypeCtx localCtx;
+        if (right.matchGenerics(localCtx, left, scope, srcpos))
+          return true;
+      }
       if (isSameType(left, right, scope, srcpos, reportErrors))
         return true;
 
@@ -4470,6 +4494,41 @@ SUITE(Type_Covariance)
                                 Type::newTypeRef(String("Mappable"),
                                                  vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
                                                           (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                                 !K(isvalue)),
+                                scope, SrcPos(), !K(reportErrors)));
+  }
+
+
+  TEST(generics2)
+  {
+    // Test class tree:
+    //
+    // Obj <- Mappable<'K, 'E> <- Full(:Mappable<Abc, Def>)
+    //     ^                   <- Partial<'Z>(:Mappable<Abc, 'Z>) <- Ultra(:Partial<Mno>)
+    //     \- Abc
+    //     \- Def
+    //     \- Mno
+    Ptr<Scope> scope = testScopeSetupGenerics();
+
+    CHECK(herschel::isCovariant(Type::newTypeRef("Full"),
+                                Type::newTypeRef(String("Mappable"),
+                                                 vector_of(Type::newTypeRef("Abc"))
+                                                          (Type::newTypeRef("Def")),
+                                                 !K(isvalue)),
+                                scope, SrcPos(), !K(reportErrors)));
+  }
+
+  TEST(generics3)
+  {
+    Ptr<Scope> scope = testScopeSetupGenerics();
+
+    CHECK(herschel::isCovariant(Type::newTypeRef(String("Mappable"),
+                                                 vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
+                                                          (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                                 !K(isvalue)),
+                                Type::newTypeRef(String("Mappable"),
+                                                 vector_of(Type::newTypeRef("Abc"))
+                                                          (Type::newTypeRef("Def")),
                                                  !K(isvalue)),
                                 scope, SrcPos(), !K(reportErrors)));
   }

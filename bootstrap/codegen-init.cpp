@@ -1017,7 +1017,6 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
 
   if (ty.hasGenerics()) {
     typeClassLookupFuncName = String("get_") + ty.typeName() + "_type";
-    printf("+++ makeGetBaseTypeLookupCall: %s\n", (const char*)StrHelper(typeClassLookupFuncName));
   }
   else {
     typeClassLookupFuncName = TypeLazyCodeInitializingEmitter::getterFunctionName(ty);
