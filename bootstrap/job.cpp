@@ -55,7 +55,7 @@ herschel::startProcess(const String& cmd, const std::vector<String>& args,
   if (logCalls) {
     StringBuffer buf;
     buf << cmd;
-    for (int j = 0; j < argv.size(); j++) {
+    for (size_t j = 0; j < argv.size(); j++) {
       if (argv[j] != NULL)
         buf << argv[j] << " ";
     }

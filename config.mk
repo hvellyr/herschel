@@ -9,7 +9,7 @@
 
 PACKAGE = herschel
 VERSION = 0.1
-COPYRIGHTYEAR = 2002, 2003, 2009-2011
+COPYRIGHTYEAR = 2002, 2003, 2009-2012
 COPYRIGHTOWNER = Gregor C. Klinke
 # human readable package name, used for Mac packages, etc.
 HR_PACKAGE = Herschel

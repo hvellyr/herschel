@@ -45,7 +45,7 @@ namespace herschel
     SecondPass(Compiler* compiler, Scope* scope);
 
     //! Transforms the token expressions as returned by the \c FirstPass into
-    //! a tree of \AptNode nodes.
+    //! a tree of \c AptNode nodes.
     AptNode* parse(const Token& exprs);
 
   private:

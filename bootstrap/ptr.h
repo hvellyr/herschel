@@ -18,10 +18,13 @@
 
 namespace herschel
 {
-  //! A ref-counting hub for RefCountable objects.  Ptr<> and RefCountable
-  //! form the basic of a simple ref-counted memory mechanism.  Always keep
-  //! RefCountable objects in Ptr<> variables to avoid leaks or dangling
-  //! pointers.
+  //! A ref-counting hub for reference counted objects.
+  //!
+  //! \c Ptr and \c RefCountable form the basic of a simple reference counted
+  //! memory mechanism.  Always keep \c RefCountable objects in \c Ptr
+  //! variables to avoid leaks or dangling pointers.
+  //!
+  //! Cf. \c RefCountable
   template<typename T>
   class Ptr
   {

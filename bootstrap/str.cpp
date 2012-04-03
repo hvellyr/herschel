@@ -326,14 +326,14 @@ String::isEmpty() const
 
 
 bool
-String::startsWith(const String& needle, int offset) const
+String::startsWith(const String& needle) const
 {
   return compare(needle, needle.length()) == 0;
 }
 
 
 bool
-String::endsWith(const String& needle, int offset) const
+String::endsWith(const String& needle) const
 {
   if (needle.length() <= length()) {
     return str_cmp(fImpl->dataFromEnd(needle.fImpl->fLength),
