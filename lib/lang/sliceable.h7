@@ -31,8 +31,8 @@ def type OrderedSliceable<K, E> : Sliceable<K, E>
     ~ An @type{OrderedSliceable} represents types which support
     range-slices. ~
 
-def generic slice*(obj @ OrderedSliceable<'K, 'E>,
-                   from @ 'K, to @ 'K) : OrderedSliceable<'K, 'E> ...
+def generic slice*(obj @ 'T, from @ 'K, to @ 'K) : 'T
+      where T isa OrderedSliceable<'K, 'E> ...
     ~ Returns a new ordered sliceable (probably of different type than
     @var{obj}) containing the elements from @var{from} to @var{to}
     exclusive, i.e. [@var{from}, @var{to}).
@@ -41,8 +41,8 @@ def generic slice*(obj @ OrderedSliceable<'K, 'E>,
     or @var{to} are too large.  When @var{from} is >= @var{to} the
     resulting sliceable is empty. ~
 
-def generic slice-rest(obj @ OrderedSliceable<'K, 'E>,
-                       from @ 'K) : OrderedSliceable<'K, 'E> ...
+def generic slice-rest(obj @ 'T, from @ 'K) : 'T
+      where T isa OrderedSliceable<'K, 'E> ...
     ~ Returns a new ordered sliceable (probably of different type than
     @var{obj}) containing all elements from @var{from} to the last element
     in @var{obj} (inclusive).
@@ -52,7 +52,7 @@ def generic slice-rest(obj @ OrderedSliceable<'K, 'E>,
 
     @example
     def slice-rest(obj, from)
-      obj.slice(from, from + obj.num-items)
+      obj.slice*(from, from + obj.num-items)
     @end example ~
 
 
@@ -61,8 +61,7 @@ def generic slice-rest(obj @ OrderedSliceable<'K, 'E>,
 def type Sliceable!<K, E> : Sliceable<K, E>
     ~ @type{Sliceable!} represents mutable types with index-access.~
 
-def generic slice!(obj @ ^Sliceable!<'K, 'E>,
-                   key @ 'K, value @ 'E) : ^Sliceable!<'K, 'E> ...
+def generic slice!(obj @ ^Sliceable!<'K, 'E>, key @ 'K, value @ 'E) : ^Sliceable!<'K, 'E> ...
     ~ Sets @var{value} into @var{obj} at position @var{key}.
 
     @returns @var{obj}. ~

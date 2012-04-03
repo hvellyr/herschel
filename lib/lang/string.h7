@@ -42,6 +42,8 @@ def generic ends-with?(haystack @ String, needle @ String,
 def generic contains?(haystack @ String, needle @ String,
                       start-from : Ordinal = 0u) : Bool ...
 
+
+
 when ignore {
 def generic index-of(haystack @ String, needle @ String,
                      start-from : Ordinal = 0u) : OrdinalOrFalse ...

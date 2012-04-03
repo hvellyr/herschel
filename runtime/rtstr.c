@@ -37,7 +37,7 @@ void allocate_string(ATOM* instance, const char* str)
 
   items = strlen(str);
 
-  instance->typeid = TYPE_TAG_STRING;
+  instance->typeid = TYPE_TAG_STRINGIMPL;
   instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(Ucs2Char));
 
   *((size_t*)instance->u.v_obj) = items;
@@ -54,7 +54,7 @@ void allocate_string(ATOM* instance, const char* str)
 
 int lang_string_compare(struct ATOM atom0, struct ATOM atom1)
 {
-  if (atom0.typeid == atom1.typeid && atom1.typeid == TYPE_TAG_STRING) {
+  if (atom0.typeid == atom1.typeid && atom1.typeid == TYPE_TAG_STRINGIMPL) {
     size_t items0 = *((size_t*)atom0.u.v_obj);
     size_t items1 = *((size_t*)atom1.u.v_obj);
     Ucs2Char* p0 = (Ucs2Char*)(atom0.u.v_obj + sizeof(size_t));
@@ -85,7 +85,7 @@ int lang_string_compare(struct ATOM atom0, struct ATOM atom1)
 
 unsigned int lang_string_length(struct ATOM atom0)
 {
-  if (atom0.typeid == TYPE_TAG_STRING) {
+  if (atom0.typeid == TYPE_TAG_STRINGIMPL) {
     return *((size_t*)atom0.u.v_obj);
   }
 
@@ -95,7 +95,7 @@ unsigned int lang_string_length(struct ATOM atom0)
 unsigned int lang_string_char_at_index(struct ATOM atom0,
                                        unsigned int idx)
 {
-  if (atom0.typeid == TYPE_TAG_STRING) {
+  if (atom0.typeid == TYPE_TAG_STRINGIMPL) {
     size_t len = *((size_t*)atom0.u.v_obj);
     if (idx < len) {
       Ucs2Char* p0 = (Ucs2Char*)(atom0.u.v_obj + sizeof(size_t));

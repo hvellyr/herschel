@@ -767,56 +767,11 @@ XmlRenderer::renderNode(const DictNode* node)
 }
 
 
-const char*
-XmlRenderer::operatorName(OperatorType type)
-{
-  switch (type) {
-  case kOpAppend:       return "++";
-  case kOpAs:           return "as";
-  case kOpAssign:       return "=";
-  case kOpBitAnd:       return "AND";
-  case kOpBitOr:        return "OR";
-  case kOpBitXor:       return "XOR";
-  case kOpBy:           return "by";
-  case kOpCompare:      return "<=>";
-  case kOpDivide:       return "/";
-  case kOpEqual:        return "==";
-  case kOpExponent:     return "**";
-  case kOpFold:         return "%";
-  case kOpGreater:      return ">";
-  case kOpGreaterEqual: return ">=";
-  case kOpIn:           return "in";
-  case kOpIsa:          return "isa";
-  case kOpLess:         return "<";
-  case kOpLessEqual:    return "<=";
-  case kOpLogicalAnd:   return "and";
-  case kOpLogicalOr:    return "or";
-  case kOpMapTo:        return "->";
-  case kOpMinus:        return "-";
-  case kOpMod:          return "mod";
-  case kOpRem:          return "rem";
-  case kOpMultiply:     return "*";
-  case kOpPlus:         return "+";
-  case kOpRange:        return "..";
-  case kOpShiftLeft:    return "<<";
-  case kOpShiftRight:   return ">>";
-  case kOpUnequal:      return "<>";
-  case kOpThen:         return "then";
-  case kOpWhile:        return "while";
-
-  case kOpInvalid:
-    hr_invalid("");
-  }
-
-  return NULL;
-}
-
-
 void
 XmlRenderer::renderNode(const BinaryNode* node)
 {
   StringBuffer attrs;
-  attrs << "op='" << xmlEncode(operatorName(node->op())) << "'";
+  attrs << "op='" << xmlEncode(herschel::operatorName(node->op())) << "'";
 
   if (fShowNodeType && node->type().isDef()) {
     attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";

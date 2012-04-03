@@ -67,6 +67,9 @@ namespace herschel
     kOpWhile,
   };
 
+  //! Returns a human readable name for operator \p type for debug and error
+  //! reporting.
+  const char* operatorName(OperatorType type);
 
 
   //--------------------------------------------------------------------------
