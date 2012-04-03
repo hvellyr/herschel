@@ -43,60 +43,60 @@ def macro INT_OP_2
    }
 }
 
-def INT_OP_2 Int lang|equal?(==)
-def INT_OP_2 Int lang|unequal?(<>)
-def INT_OP_2 Int lang|less-equal?(<=)
-def INT_OP_2 Int lang|greater-equal?(>=)
-def INT_OP_2 Int lang|less?(<)
-def INT_OP_2 Int lang|greater?(>)
+def INT_OP_2 Int equal?(==)
+def INT_OP_2 Int unequal?(<>)
+def INT_OP_2 Int less-equal?(<=)
+def INT_OP_2 Int greater-equal?(>=)
+def INT_OP_2 Int less?(<)
+def INT_OP_2 Int greater?(>)
 
-def INT_OP_2 UInt lang|equal?(==)
-def INT_OP_2 UInt lang|unequal?(<>)
-def INT_OP_2 UInt lang|less-equal?(<=)
-def INT_OP_2 UInt lang|greater-equal?(>=)
-def INT_OP_2 UInt lang|less?(<)
-def INT_OP_2 UInt lang|greater?(>)
+def INT_OP_2 UInt equal?(==)
+def INT_OP_2 UInt unequal?(<>)
+def INT_OP_2 UInt less-equal?(<=)
+def INT_OP_2 UInt greater-equal?(>=)
+def INT_OP_2 UInt less?(<)
+def INT_OP_2 UInt greater?(>)
 
 
--- def OPGF lang|equal?(Float32, ==, Float32)
--- def OPGF lang|equal?(Float32, ==, Float64)
--- def OPGF lang|unequal?(Float32, <>, Float32)
--- def OPGF lang|unequal?(Float32, <>, Float64)
--- def OPGF lang|less?(Float32, <, Float32)
--- def OPGF lang|less?(Float32, <, Float64)
--- def OPGF lang|less-equal?(Float32, <=, Float32)
--- def OPGF lang|less-equal?(Float32, <=, Float64)
--- def OPGF lang|greater?(Float32, >, Float32)
--- def OPGF lang|greater?(Float32, >, Float64)
--- def OPGF lang|greater-equal?(Float32, >=, Float32)
--- def OPGF lang|greater-equal?(Float32, >=, Float64)
+-- def OPGF equal?(Float32, ==, Float32)
+-- def OPGF equal?(Float32, ==, Float64)
+-- def OPGF unequal?(Float32, <>, Float32)
+-- def OPGF unequal?(Float32, <>, Float64)
+-- def OPGF less?(Float32, <, Float32)
+-- def OPGF less?(Float32, <, Float64)
+-- def OPGF less-equal?(Float32, <=, Float32)
+-- def OPGF less-equal?(Float32, <=, Float64)
+-- def OPGF greater?(Float32, >, Float32)
+-- def OPGF greater?(Float32, >, Float64)
+-- def OPGF greater-equal?(Float32, >=, Float32)
+-- def OPGF greater-equal?(Float32, >=, Float64)
 --
--- def OPGF lang|equal?(Float64, ==, Float32)
--- def OPGF lang|equal?(Float64, ==, Float64)
--- def OPGF lang|unequal?(Float64, <>, Float32)
--- def OPGF lang|unequal?(Float64, <>, Float64)
--- def OPGF lang|less?(Float64, <, Float32)
--- def OPGF lang|less?(Float64, <, Float64)
--- def OPGF lang|less-equal?(Float64, <=, Float32)
--- def OPGF lang|less-equal?(Float64, <=, Float64)
--- def OPGF lang|greater?(Float64, >, Float32)
--- def OPGF lang|greater?(Float64, >, Float64)
--- def OPGF lang|greater-equal?(Float64, >=, Float32)
--- def OPGF lang|greater-equal?(Float64, >=, Float64)
+-- def OPGF equal?(Float64, ==, Float32)
+-- def OPGF equal?(Float64, ==, Float64)
+-- def OPGF unequal?(Float64, <>, Float32)
+-- def OPGF unequal?(Float64, <>, Float64)
+-- def OPGF less?(Float64, <, Float32)
+-- def OPGF less?(Float64, <, Float64)
+-- def OPGF less-equal?(Float64, <=, Float32)
+-- def OPGF less-equal?(Float64, <=, Float64)
+-- def OPGF greater?(Float64, >, Float32)
+-- def OPGF greater?(Float64, >, Float64)
+-- def OPGF greater-equal?(Float64, >=, Float32)
+-- def OPGF greater-equal?(Float64, >=, Float64)
 
 
-def OPGF lang|equal?(Bool, ==, Bool)
-def OPGF lang|unequal?(Bool, <>, Bool)
+def OPGF equal?(Bool, ==, Bool)
+def OPGF unequal?(Bool, <>, Bool)
 
-def OPGF lang|equal?(Char, ==, Char)
-def OPGF lang|unequal?(Char, <>, Char)
-def OPGF lang|less?(Char, <, Char)
-def OPGF lang|less-equal?(Char, <=, Char)
-def OPGF lang|greater?(Char, >, Char)
-def OPGF lang|greater-equal?(Char, >=, Char)
+def OPGF equal?(Char, ==, Char)
+def OPGF unequal?(Char, <>, Char)
+def OPGF less?(Char, <, Char)
+def OPGF less-equal?(Char, <=, Char)
+def OPGF greater?(Char, >, Char)
+def OPGF greater-equal?(Char, >=, Char)
 
-def OPGF lang|equal?(Keyword, ==, Keyword)
-def OPGF lang|unequal?(Keyword, <>, Keyword)
+def OPGF equal?(Keyword, ==, Keyword)
+def OPGF unequal?(Keyword, <>, Keyword)
 
 ------------------------------------------------------------------------------
 -- addition
@@ -141,13 +141,13 @@ def macro compute-integer
     } }
 }
 
-def lang|add(one @ Integer, two @ Integer) : Integer
+def add(one @ Integer, two @ Integer) : Integer
   compute-integer(one, +, two)
 
-def lang|subtract(one @ Integer, two @ Integer) : Integer
+def subtract(one @ Integer, two @ Integer) : Integer
   compute-integer(one, -, two)
 
-def lang|multiply(one @ Integer, two @ Integer) : Integer
+def multiply(one @ Integer, two @ Integer) : Integer
   compute-integer(one, *, two)
 
 
@@ -201,7 +201,7 @@ def macro compare-integer
     } }
 }
 
-def lang|compare(one @ Integer, two @ Integer) : Int
+def compare(one @ Integer, two @ Integer) : Int
   compare-integer(one, <=>, two)
 
 
