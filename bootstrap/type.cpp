@@ -2073,24 +2073,35 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
       Type replacement = typeMap.lookupType(typeName());
       if (replacement.isDef()) {
         if (replacement.hasConstraints()) {
-          if (!constraints().empty())
-            throw TypeConstraintsConflictException(
-              *this,
-              String("type parameter constraints conflict "
-                     "with generics constraints"));
-          clonedTy = replacement;
+          // if (!constraints().empty())
+          //   throw TypeConstraintsConflictException(
+          //     *this,
+          //     String("type parameter constraints conflict "
+          //            "with generics constraints"));
+          TypeConstVector allConstraints;
+          allConstraints.insert(allConstraints.begin(), constraints().begin(), constraints().end());
+          allConstraints.insert(allConstraints.end(), replacement.constraints().begin(),
+                                replacement.constraints().end());
+
+          clonedTy = Type::newTypeRef(replacement.typeName(),
+                                      replacement.generics(),
+                                      allConstraints,
+                                      replacement.isValueType());
+          //clonedTy = replacement;
           clonedTy.setIsImaginary(fIsImaginary);
         }
         else if (hasConstraints()) {
-          if (!replacement.isRef())
+          if (replacement.isRef() || replacement.isClass() || replacement.isType()) {
+            clonedTy = Type::newTypeRef(replacement.typeName(),
+                                        replacement.generics(),
+                                        constraints(),
+                                        replacement.isValueType());
+            clonedTy.setIsImaginary(fIsImaginary);
+          }
+          else
             throw TypeConstraintsConflictException(
               *this,
               String("Constraints for non trivial type reference"));
-          clonedTy = Type::newTypeRef(replacement.typeName(),
-                                      replacement.generics(),
-                                      constraints(),
-                                      replacement.isValueType());
-          clonedTy.setIsImaginary(fIsImaginary);
         }
         else {
           clonedTy = replacement;

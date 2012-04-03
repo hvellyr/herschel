@@ -46,7 +46,8 @@ namespace herschel
 
     llvm::Value* coerceIntOperand(const Type& dstType, const Type& isType,
                                   llvm::Value* value) const;
-    llvm::Value* wrapInt(llvm::Value* value, const Type& type) const;
+    llvm::Value* wrapInt(llvm::Value* value, const Type& type,
+                         bool forceSigned = false) const;
     llvm::Value* wrapBool(llvm::Value* value, const Type& type) const;
     llvm::Value* codegenOpIntInt(const BinaryNode* node,
                                  llvm::Value* left,

@@ -18,49 +18,14 @@ extern ("C") {
   unsigned int lang_string_char_at_index(struct ATOM atom0, unsigned int idx);
 }
 
-
-def lang|equal?(one @ String, two @ String) : Bool
-  lang_string_compare(one, two) == 0
-
-def lang|unequal?(one @ String, two @ String) : Bool
-  lang_string_compare(one, two) <> 0
-
-def lang|less?(one @ String, two @ String) : Bool
-  lang_string_compare(one, two) < 0
-
-def lang|greater?(one @ String, two @ String) : Bool
-  lang_string_compare(one, two) > 0
-
-def lang|less-equal?(one @ String, two @ String) : Bool
-  lang_string_compare(one, two) <= 0
-
-def lang|greater-equal?(one @ String, two @ String) : Bool
-  lang_string_compare(one, two) >= 0
-
-def lang|compare(one @ String, two @ String) : Int
-  lang_string_compare(one, two) as Int
-
-
-def lang|length(s @ String) : Ordinal
-    lang_string_length(s) as Ordinal
-
-def empty?(str @ String) : Bool
-  ~ Indicate whether @var{str} is an empty string. ~
-  str.length == 0u
-
-
-def slice(s @ String, idx @ Ordinal) : Char
-  lang_string_char_at_index(s, idx).to-char
-
-
-
-------------------------------------------------------------------------------
--- Slice special for string
-------------------------------------------------------------------------------
+-- builtin strings are really instances of the class @type{StringImpl}.
+def class StringImpl : String
+{
+}
 
 def class StringSlice(_str : String,
                       _from : Ordinal,
-                      _to : Ordinal) : OrderedSliceable<Ordinal, Char>
+                      _to : Ordinal) : (Comparable, String)
 {
   def slot str : String = _str
   def slot from : Ordinal = _from
@@ -68,54 +33,86 @@ def class StringSlice(_str : String,
 }
 
 
+
+
+def equal?(one @ StringImpl, two @ StringImpl) : Bool
+  lang_string_compare(one, two) == 0
+
+def unequal?(one @ StringImpl, two @ StringImpl) : Bool
+  lang_string_compare(one, two) <> 0
+
+def less?(one @ StringImpl, two @ StringImpl) : Bool
+  lang_string_compare(one, two) < 0
+
+def greater?(one @ StringImpl, two @ StringImpl) : Bool
+  lang_string_compare(one, two) > 0
+
+def less-equal?(one @ StringImpl, two @ StringImpl) : Bool
+  lang_string_compare(one, two) <= 0
+
+def greater-equal?(one @ StringImpl, two @ StringImpl) : Bool
+  lang_string_compare(one, two) >= 0
+
+def compare(one @ StringImpl, two @ StringImpl) : Int
+  lang_string_compare(one, two) as Int
+
+
+def num-items(s @ StringImpl) : Ordinal
+    lang_string_length(s) as Ordinal
+
+
+def slice(s @ StringImpl, idx @ Ordinal) : Char
+  lang_string_char_at_index(s, idx).to-char
+
+
+def slice*(str @ StringImpl, from @ Ordinal, to @ Ordinal) : String
+  StringSlice(str, from, to)
+
+
+------------------------------------------------------------------------------
+-- Generic implementations for Strings
+------------------------------------------------------------------------------
+
+def compare(one @ String, two @ String) : Int
+  let result : Int = 0
+
+  for (i : UInt in 0u .. one.num-items - 1,
+       j : UInt in 0u .. two.num-items - 1,
+       result == 0) {
+    result = (one[i] <=> two[j])
+  }
+
+  if (result == 0)
+    one.num-items <=> two.num-items
+  else
+    result
+
+
+def empty?(str @ String) : Bool
+  ~ Indicate whether @var{str} is an empty string. ~
+  str.num-items == 0u
+
+def length(str @ String) : Ordinal
+    str.num-items
+
+
+
+
+------------------------------------------------------------------------------
+-- Slice special for string
+------------------------------------------------------------------------------
+
 def num-items(sl @ StringSlice) : Ordinal
   sl^to - sl^from
-
-
-def empty?(sl @ StringSlice) : Bool
-  sl.num-items == 0u
 
 def slice(sl @ StringSlice, idx @ Ordinal) : Char
   sl^str[sl^from + idx]
 
-def slice*(sl @ StringSlice, from @ Ordinal, to @ Ordinal) : OrderedSliceable<Ordinal, Char>
+def slice*(sl @ StringSlice, from @ Ordinal, to @ Ordinal) : String
+--  if (from > sl.num-items or to > sl.num-items)
+--    OutOfBoundsException(sl.num-items, from, to).raise
   StringSlice(sl^str, sl^from + from, sl^from + to)
 
-
-def slice*(str @ String, from @ Ordinal, to @ Ordinal) : OrderedSliceable<Ordinal, Char>
-  StringSlice(str, from, to)
-
-
-when ignore {
-def class StringImpl : String
-{
-  def slot data : Char[]
-}
-
-
-------------------------------------------------------------------------------
--- String implementation
-------------------------------------------------------------------------------
-
-def length(str @ StringImpl) : Ordinal
-  str.data.num-items
-
-
-def empty?(str @ StringImpl) : Bool
-  str.data.num-items == 0
-
-
-def core|slice(str @ StringImpl, from @ Ordinal, to @ Ordinal)
-    : Slice<Ordinal, Char>
-  if (from > str.data.num-items or to > str.data.num-items)
-    OutOfBoundsException(str.data.num-items, from, to).raise
-  StringSlice(str, from, to)
-
-
-def compare(one @ StringImpl, two @ StringImpl) : Int
-  one.data <=> two.data
-
-} -- end of ignore
 
 
 -- end of impl/string

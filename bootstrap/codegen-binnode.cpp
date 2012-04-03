@@ -57,7 +57,7 @@ CodegenBinaryNode::CodegenBinaryNode(CodeGenerator* generator)
 llvm::Value*
 CodegenBinaryNode::emit(const BinaryNode* node) const
 {
-  // fprintf(stderr, "BinaryNode: %s [%d]\n", XmlRenderer::operatorName(node->op()),
+  // fprintf(stderr, "BinaryNode: %s [%d]\n", herschel::operatorName(node->op()),
   //         node->typeConv());
   // tyerror(node->type(), "type");
   // tyerror(node->dstType(), "dsttype");
@@ -115,10 +115,15 @@ CodegenBinaryNode::coerceIntOperand(const Type& dstType, const Type& isType,
 
 
 llvm::Value*
-CodegenBinaryNode::wrapInt(llvm::Value* value, const Type& type) const
+CodegenBinaryNode::wrapInt(llvm::Value* value, const Type& type, bool forceSigned) const
 {
-  if (type.isPlainType())
-    return coerceIntOperand(type, type, value);
+  if (type.isPlainType()) {
+    if (forceSigned) {
+      return coerceIntOperand(type, Type::newInt32(), value);
+    }
+    else
+      return coerceIntOperand(type, type, value);
+  }
 
   hr_assert(type.isAnyInt());
   if (type.isInt32())
@@ -257,12 +262,14 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
                       node->type());
 
   case kOpCompare:
-    coleft = convertToPlainInt(node->type(), node->left(), left);
-    coright = convertToPlainInt(node->type(), node->right(), right);
+    dstType = maxIntType(node->left()->type(), node->right()->type());
+    coleft = convertToPlainInt(dstType, node->left(), left);
+    coright = convertToPlainInt(dstType, node->right(), right);
     return wrapInt(builder().CreateSub(coleft, coright, "cmptmp"),
-                   node->type());
+                   node->type(), K(isSigned));
   default:
-    fprintf(stderr, "invalid binary operator: %d", node->op());
+    fprintf(stderr, "invalid binary operator: %s",
+            herschel::operatorName(node->op()));
     return NULL;
   }
 
@@ -294,7 +301,8 @@ CodegenBinaryNode::codegenOpKeywKeyw(const BinaryNode* node,
                     node->type());
 
   default:
-    fprintf(stderr, "invalid binary operator for keyword: %d", node->op());
+    fprintf(stderr, "invalid binary operator for keyword: %s\n",
+            herschel::operatorName(node->op()));
     return NULL;
   }
 
@@ -348,8 +356,16 @@ CodegenBinaryNode::codegenOpBoolBool(const BinaryNode* node,
     return wrapBool(builder().CreateICmpNE(coleft, coright, "nebool"),
                     node->type());
 
+  case kOpLogicalAnd:
+    return wrapBool(builder().CreateAnd(coleft, coright, "andbool"),
+                    node->type());
+  case kOpLogicalOr:
+    return wrapBool(builder().CreateOr(coleft, coright, "orbool"),
+                    node->type());
+
   default:
-    fprintf(stderr, "invalid binary operator for bool: %d", node->op());
+    fprintf(stderr, "invalid binary operator for bool: %s\n",
+            herschel::operatorName(node->op()));
     return NULL;
   }
 
@@ -416,10 +432,11 @@ CodegenBinaryNode::codegenOpCharChar(const BinaryNode* node,
                     node->type());
   case kOpCompare:
     return wrapInt(builder().CreateSub(coleft, coright, "cmpchr"),
-                   node->type());
+                   node->type(), K(isSigned));
 
   default:
-    fprintf(stderr, "invalid binary operator for char: %d", node->op());
+    fprintf(stderr, "invalid binary operator for char: %s\n",
+            herschel::operatorName(node->op()));
     return NULL;
   }
 

@@ -56,6 +56,7 @@ namespace herschel
       kAtomFloat64 = 0x0e,
 
       kAtomString  = 0x10,
+      kAtomStringImpl = 0x11,
 
       kAtomInt32Array   = kAtomInt32 + 0x40,
       kAtomUInt32Array  = kAtomUInt32 + 0x40,
@@ -68,6 +69,7 @@ namespace herschel
       kAtomCharArray    = kAtomChar + 0x40,
       kAtomKeywordArray = kAtomKeyword + 0x40,
       kAtomStringArray  = kAtomString + 0x40,
+      kAtomStringImplArray  = kAtomStringImpl + 0x40,
 
       kAtomFloat32Array = kAtomFloat32 + 0x40,
       kAtomFloat64Array = kAtomFloat64 + 0x40
