@@ -30,6 +30,7 @@ using namespace herschel;
 
 namespace
 {
+  //! Displays the tool's version and copyright information
   void
   displayVersion(bool verbose)
   {
@@ -43,6 +44,7 @@ namespace
   }
 
 
+  //! Displays the tool's usage and (main) command line options.
   void
   displayHelp()
   {
@@ -72,11 +74,13 @@ namespace
     printf("  -On                          Turn off any (even basic) optimization\n");
     printf("\n");
     printf("  -Xl,On                       disable (all) linker optimizations\n");
-    printf("  --Xlinker=OPTS               pass OPTS to the clang linker.  Multple\n");
+    printf("  --Xlinker=OPTS               pass OPTS to the clang linker.  Multiple\n");
     printf("                               options can be comma separated\n");
   }
 
 
+  //! Splits the comma separated linker from \p arg options are returns as
+  //! separate tokens in \p options.
   void
   splitLinkerOptions(std::vector<String>& options, const String& arg)
   {
@@ -93,6 +97,7 @@ namespace
   }
 
 
+  //! The main functions which can be specified from the command line
   enum CompileFunction {
     kDisplayHelp,
     kDisplayVersion,
@@ -103,6 +108,7 @@ namespace
   };
 
 
+  //! Additional options which can specified from the command line
   enum {
     kOptHelp = 1,
     kOptVersion,
@@ -166,7 +172,9 @@ main(int argc, char** argv)
   bool verbose = false;
   bool doTraceJobCalls = false;
 
-
+  // Decode the options and collect the passed arguments in local variables.
+  // Options which are targeted for the subtool hrc are collected into \c
+  // hrcOptions, options for the llvm linker into \c specLdOptions.
   while ((type = optp.nextOption(&option)) != OptionsParser::kNoMoreArgs) {
     switch (type) {
     case OptionsParser::kOption:
@@ -268,8 +276,11 @@ main(int argc, char** argv)
   }
 
 
+  // Find system and installation specific setup information (i.e. where is
+  // the linker we should use, which are local linker settings, etc.).
   Setup setup = herschel::findResources("herschel");
 
+  // Pass all files to be compiled to the subtool hrc.
   for (size_t i = 0; i < files.size(); i++)
     hrcOptions.push_back(files[i]);
 

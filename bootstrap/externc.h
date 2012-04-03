@@ -22,7 +22,7 @@ namespace herschel
 {
   //! Simple parser for the C language subset, which is allowed in "extern
   //! (C)" statements.
-
+  //!
   //! The class is only functional as component to a \c FirstPass instance,
   //! and has to be called on the stream when an "extern C" is detected.  If
   //! this class returns vom \c parseBlock() the final closing brace of the

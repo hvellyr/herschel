@@ -26,14 +26,18 @@ typedef unsigned short Char;
 //! Macro which evaluates _condA IMP _condB
 #define implies(_condA, _condB)  (!(_condA) || ((_condA) && (_condB)))
 
+//! Macro for annotation boolean values
 
+//! Instead of writing <tt>a.setValue(true)</tt> use
+//! <tt>a.setValue(K(isReference))</tt> to document what is meant with true.
 #define K(_arg) true
 
 
+//! Enumeration of possible output formats for the compiler
 enum CompileOutFormat
 {
-  kLLVM_IR,
-  kLLVM_BC
+  kLLVM_IR,                     //!< Use LLVM textual intermediate representation
+  kLLVM_BC                      //!< Use LLVM binary intermediate representation
 };
 
 #endif

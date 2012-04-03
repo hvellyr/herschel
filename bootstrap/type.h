@@ -50,7 +50,7 @@ namespace herschel
   //! normaly Type References are used:
   //!
   //! <code>
-  //! def type XYZ<a, b> : (Abc<a>, Man<b>)
+  //! def type XYZ<a, b> : (Abc\<a>, Man\<b>)
   //!
   //! def v : XYZ<Int, Char> = 5
   //! </code>

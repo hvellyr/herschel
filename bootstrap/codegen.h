@@ -140,12 +140,19 @@ namespace herschel
     llvm::Value* codegen(const WhileNode* node);
     llvm::Value* codegen(const UndefNode* node);
 
+    //! Returns the current llvm context
     llvm::LLVMContext& context() const;
+    //! Returns the current llvm IRBuilder
     llvm::IRBuilder<>& builder() const;
+    //! Returns the current llvm module
     llvm::Module* module() const;
+    //! Returns the current llvm pass manager for optimizing functions
     llvm::FunctionPassManager* optPassManager() const;
 
+    //! Indicates whether we compile for a 64bit architecture.
     bool is64Bit() const;
+    //! Returns the current llvm target data describing the target
+    //! architecture of the current build
     llvm::TargetData* targetData() const;
 
   private:
@@ -159,6 +166,7 @@ namespace herschel
     friend class CodegenVardef;
     friend class ModuleRuntimeInitializer;
 
+    //! Set up the llvm pass manager for optimizing code
     void setupOptPassManager();
 
     llvm::Value* codegen(const FuncDefNode* node, bool isLocal);
@@ -166,6 +174,7 @@ namespace herschel
 
     llvm::Value* codegen(const NodeList& nl);
 
+    //! Create the C main entrance function
     void createDefaultCMainFunc();
 
 

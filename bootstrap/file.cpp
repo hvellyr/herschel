@@ -76,6 +76,7 @@ herschel::file::isDir(const String& path)
 bool
 herschel::file::isAbsolutePath(const String& path)
 {
+  // TODO: support drive letters and UNC notation for windows.
   return (!path.isEmpty() && (path[0] == '/' ||
                               path[0] == '~'));
 }
@@ -379,7 +380,7 @@ public:
   }
 
 
-  //! removes double slashs, empty path elements, etc.
+  // removes double slashs, empty path elements, etc.
   void removeDblPaths()
   {
     static const String sDot = String(".");

@@ -36,8 +36,8 @@ herschel::makeCompileOutputFileExt(CompileOutFormat format)
 
 String
 herschel::makeOutputFileName(const String& outdir, const String& outfileName,
-                   const String& file,
-                   const String& outExt)
+                             const String& file,
+                             const String& outExt)
 {
   if (!outfileName.isEmpty())
     return outfileName;
