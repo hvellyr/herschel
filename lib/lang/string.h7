@@ -42,7 +42,8 @@ def generic ends-with?(haystack @ String, needle @ String,
 def generic contains?(haystack @ String, needle @ String,
                       start-from : Ordinal = 0u) : Bool ...
 
-
+def generic append(left @ 'T, right @ 'V) : 'T ...
+    ~ Concats @var{left} and @var{right} and returns a new object. ~
 
 when ignore {
 def generic index-of(haystack @ String, needle @ String,
