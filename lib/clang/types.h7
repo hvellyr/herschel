@@ -52,6 +52,8 @@ def type double**
 def type ATOM*
 def type ATOM
 
+def alias Unichar = Char
+
 -- end of clang/types.h7
 
 

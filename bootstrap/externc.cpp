@@ -124,6 +124,9 @@ ExternCParser::parseTypeSpec()
   else if (type == String("char") || type == String("short") ||
            type == String("int") || type == String("long"))
     return Token(srcpos, makeCTypeName(type, isSigned, ptrDepth));
+  else if (type == String("Unichar"))
+    return Token(srcpos, makeCTypeName(type, !K(isSigned), ptrDepth));
+
   else if (type.endsWith(String("**")))
     return Token(srcpos, makeCTypeName(type.part(0, type.length() - 2),
                                        isSigned, ptrDepth + 2));
