@@ -169,18 +169,16 @@
 <id>__value_1</id>
 <punct type='='/>
 <seq>
-<id>slice</id>
+<id>slice*</id>
 <nested left='(' right=')'>
 <id>c</id>
 <punct type=','/>
-<seq>
 <id>a</id>
-<punct type='..'/>
+<punct type=','/>
 <seq>
 <id>a</id>
 <punct type='+'/>
 <lit type='int'>2</lit>
-</seq>
 </seq>
 </nested>
 </seq>

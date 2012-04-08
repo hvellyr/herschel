@@ -1297,11 +1297,20 @@ FirstPass::parseSlice(const Token& expr)
     else
       nextToken();
 
-    return Token() << Token(startPos, "slice")
-                   << ( Token(startPos, kParanOpen, kParanClose)
-                        << expr
-                        << Token(idx.srcpos(), kComma)
-                        << idx );
+    if (idx.isBinarySeq() && idx[1].tokenType() == kRange)
+      return Token() << Token(startPos, "slice*")
+                     << ( Token(startPos, kParanOpen, kParanClose)
+                          << expr
+                          << Token(idx.srcpos(), kComma)
+                          << idx[0]
+                          << Token(idx.srcpos(), kComma)
+                          << idx[2]);
+    else
+      return Token() << Token(startPos, "slice")
+                     << ( Token(startPos, kParanOpen, kParanClose)
+                          << expr
+                          << Token(idx.srcpos(), kComma)
+                          << idx );
   }
 }
 

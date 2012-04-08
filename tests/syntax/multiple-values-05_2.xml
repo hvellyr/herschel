@@ -185,16 +185,14 @@
 <vardef sym='__value_1'>
 <init>
 <apply>
-<symbol>slice</symbol>
+<symbol>slice*</symbol>
 <args>
 <symbol>c</symbol>
-<range>
 <symbol>a</symbol>
 <binary op='+'>
 <symbol>a</symbol>
 <int ty='lang|Int32'>2</int>
 </binary>
-</range>
 </args>
 </apply>
 </init>

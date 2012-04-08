@@ -231,15 +231,13 @@
 <id>__value_1</id>
 <punct type='='/>
 <seq>
-<id>slice</id>
+<id>slice*</id>
 <nested left='(' right=')'>
 <id>val</id>
 <punct type=','/>
-<seq>
 <lit type='int'>0</lit>
-<punct type='..'/>
+<punct type=','/>
 <lit type='int'>3</lit>
-</seq>
 </nested>
 </seq>
 </seq>
