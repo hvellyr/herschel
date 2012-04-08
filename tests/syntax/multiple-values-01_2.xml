@@ -243,13 +243,11 @@
 <vardef sym='__value_1'>
 <init>
 <apply>
-<symbol>slice</symbol>
+<symbol>slice*</symbol>
 <args>
 <symbol>val</symbol>
-<range>
 <int ty='lang|Int32'>0</int>
 <int ty='lang|Int32'>3</int>
-</range>
 </args>
 </apply>
 </init>
