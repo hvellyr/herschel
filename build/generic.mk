@@ -70,7 +70,7 @@ $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(DYOEXT) : %.cpp
 
 $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%.bc : %.h7
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
-	$(BUILDDIR)/$(BUILDSTYLE)/herschel$(APPEXT) -c -o $@ $<
+	$(BUILDDIR)/$(BUILDSTYLE)/herschel$(APPEXT) --isys=$(top_srcdir)/lib -c -o $@ $<
 
 $(DEPS_DIR)/%.d: %.c $(PRE_DEPS)
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
