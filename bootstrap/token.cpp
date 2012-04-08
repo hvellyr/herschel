@@ -32,7 +32,7 @@ namespace herschel
   {
     switch (type) {
     case kPlus:              return String("+");
-    case kAppend:            return String("++");
+    case kConcat:            return String("++");
     case kMinus:             return String("-");
     case kDivide:            return String("/");
     case kMultiply:          return String("*");
@@ -835,29 +835,29 @@ Token::toString() const
     case kKeyarg:
       return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + ":";
 
-    case kDefId:       return String(MID_DefId);
-    case kElseId:      return String(MID_ElseId);
-    case kEofId:       return String(MID_EofId);
-    case kExportId:    return String(MID_ExportId);
-    case kExtendId:    return String(MID_ExtendId);
-    case kExternId:    return String(MID_ExternId);
-    case kForId:       return String(MID_ForId);
-    case kFUNCTIONId:  return String(MID_FUNCTIONId);
-    case kFunctionId:  return String(MID_FunctionId);
-    case kIfId:        return String(MID_IfId);
-    case kImportId:    return String(MID_ImportId);
-    case kLetId:       return String(MID_LetId);
-    case kMatchId:     return String(MID_MatchId);
-    case kModuleId:    return String(MID_ModuleId);
-    case kNilId:       return String(MID_NilId);
-    case kNotId:       return String(MID_NotId);
-    case kOnId:        return String(MID_OnId);
-    case kReifyId:     return String(MID_ReifyId);
-    case kSelectId:    return String(MID_SelectId);
-    case kThenId:      return String(MID_ThenId);
-    case kWhenId:      return String(MID_WhenId);
-    case kWhereId:     return String(MID_WhereId);
-    case kWhileId:     return String(MID_WhileId);
+    case kDefId:       return String(MID_defid);
+    case kElseId:      return String(MID_elseid);
+    case kEofId:       return String(MID_eofid);
+    case kExportId:    return String(MID_exportid);
+    case kExtendId:    return String(MID_extendid);
+    case kExternId:    return String(MID_externid);
+    case kForId:       return String(MID_forid);
+    case kFUNCTIONId:  return String(MID_FUNCTIONid);
+    case kFunctionId:  return String(MID_functionid);
+    case kIfId:        return String(MID_ifid);
+    case kImportId:    return String(MID_importid);
+    case kLetId:       return String(MID_letid);
+    case kMatchId:     return String(MID_matchid);
+    case kModuleId:    return String(MID_moduleid);
+    case kNilId:       return String(MID_nilid);
+    case kNotId:       return String(MID_notid);
+    case kOnId:        return String(MID_onid);
+    case kReifyId:     return String(MID_reifyid);
+    case kSelectId:    return String(MID_selectid);
+    case kThenId:      return String(MID_thenid);
+    case kWhenId:      return String(MID_whenid);
+    case kWhereId:     return String(MID_whereid);
+    case kWhileId:     return String(MID_whileid);
 
     default:
       hr_invalid("");
@@ -908,7 +908,7 @@ Token::type() const
   case kBitXor:
   case kShiftLeft:
   case kShiftRight:
-  case kAppend:
+  case kConcat:
   case kParanOpen:
   case kParanClose:
   case kBracketOpen:
@@ -1726,7 +1726,7 @@ const char*
 herschel::operatorName(OperatorType type)
 {
   switch (type) {
-  case kOpAppend:       return "++";
+  case kOpConcat:       return "++";
   case kOpAs:           return "as";
   case kOpAssign:       return "=";
   case kOpBitAnd:       return "AND";

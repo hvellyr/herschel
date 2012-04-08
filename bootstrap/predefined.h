@@ -19,60 +19,58 @@ namespace herschel
 
   //--------------------------------------------------------------------------
   // definitions of the reserved keywords
-#define MID_ById        "by"
-#define MID_DefId       "def"
-#define MID_ElseId      "else"
-#define MID_EofId       "eof"
-#define MID_ExportId    "export"
-#define MID_ExtendId    "extend"
-#define MID_ExternId    "extern"
-#define MID_ForId       "for"
-#define MID_FUNCTIONId  "Function"
-#define MID_FunctionId  "function"
-#define MID_IfId        "if"
-#define MID_ImportId    "import"
-#define MID_LetId       "let"
-#define MID_MatchId     "match"
-#define MID_ModuleId    "module"
-#define MID_NilId       "nil"
-#define MID_NotId       "not"
-#define MID_OnId        "on"
-#define MID_ReifyId     "reify"
-#define MID_SelectId    "select"
-#define MID_ThenId      "then"
-#define MID_WhenId      "when"
-#define MID_WhereId     "where"
-#define MID_WhileId     "while"
-
-#define MID_EqualQ      "equal?"
-#define MID_GreaterQ    "greater?"
-#define MID_LessQ       "less?"
-#define MID_LessEqualQ  "less-equal?"
-#define MID_GreaterEqualQ "greater-equal?"
-#define MID_UnequalQ    "unequal?"
-#define MID_Compare     "compare"
-
+#define MID_FUNCTIONid  "Function"
 #define MID_add         "add"
 #define MID_append      "append"
 #define MID_bitand      "bitand"
 #define MID_bitor       "bitor"
 #define MID_bitxor      "bitxor"
+#define MID_byid        "by"
+#define MID_castto      "cast-to"
 #define MID_compare     "compare"
+#define MID_concat      "concat"
+#define MID_defid       "def"
 #define MID_divide      "divide"
+#define MID_elseid      "else"
+#define MID_eofid       "eof"
+#define MID_equalq      "equal?"
 #define MID_exponent    "exponent"
+#define MID_exportid    "export"
+#define MID_extendid    "extend"
+#define MID_externid    "extern"
 #define MID_fold        "fold"
+#define MID_forid       "for"
+#define MID_functionid  "function"
+#define MID_greaterequalq "greater-equal?"
+#define MID_greaterq    "greater?"
+#define MID_ifid        "if"
+#define MID_importid    "import"
 #define MID_in          "in"
 #define MID_isaQ        "isa?"
+#define MID_lessequalq  "less-equal?"
+#define MID_lessq       "less?"
+#define MID_letid       "let"
 #define MID_logand      "logand"
 #define MID_logor       "logor"
+#define MID_mapto       "map-to"
+#define MID_matchid     "match"
 #define MID_mod         "mod"
+#define MID_moduleid    "module"
 #define MID_multiply    "multiply"
+#define MID_nilid       "nil"
+#define MID_notid       "not"
+#define MID_onid        "on"
+#define MID_reifyid     "reify"
 #define MID_rem         "rem"
-#define MID_shiftLeft   "shift-left"
-#define MID_shiftRight  "shift-right"
+#define MID_selectid    "select"
+#define MID_shiftleft   "shift-left"
+#define MID_shiftright  "shift-right"
 #define MID_subtract    "subtract"
-#define MID_CastTo      "cast-to"
-#define MID_MapTo       "map-to"
+#define MID_thenid      "then"
+#define MID_unequalq    "unequal?"
+#define MID_whenid      "when"
+#define MID_whereid     "where"
+#define MID_whileid     "while"
 
 
   //--------------------------------------------------------------------------
@@ -146,14 +144,14 @@ namespace herschel
 #define MID_lang_allocate_array MID_core_ns "|" "allocate*"
 #define MID_lang_nil            MID_core_ns "|" "nil"
 
-#define MID_lang_equal_q         MID_core_ns "|" MID_EqualQ
-#define MID_lang_greater_q       MID_core_ns "|" MID_GreaterQ
-#define MID_lang_less_q          MID_core_ns "|" MID_LessQ
-#define MID_lang_less_equal_q    MID_core_ns "|" MID_LessEqualQ
-#define MID_lang_greater_equal_q MID_core_ns "|" MID_GreaterEqualQ
-#define MID_lang_unequal_q       MID_core_ns "|" MID_UnequalQ
-#define MID_lang_compare         MID_core_ns "|" MID_Compare
-
+#define MID_lang_equal_q         MID_core_ns "|" MID_equalq
+#define MID_lang_greater_q       MID_core_ns "|" MID_greaterq
+#define MID_lang_less_q          MID_core_ns "|" MID_lessq
+#define MID_lang_less_equal_q    MID_core_ns "|" MID_lessequalq
+#define MID_lang_greater_equal_q MID_core_ns "|" MID_greaterequalq
+#define MID_lang_unequal_q       MID_core_ns "|" MID_unequalq
+#define MID_lang_compare         MID_core_ns "|" MID_compare
+#define MID_lang_concat          MID_core_ns "|" MID_concat
 
 #define MID_app_main            "app|main"
 
@@ -227,6 +225,7 @@ namespace herschel
     const static String kLangGreaterQ;
     const static String kLangGreaterEqualQ;
     const static String kLangCompare;
+    const static String kLangConcat;
 
     const static String kLangIsaQ;
     const static String kLangToChar;

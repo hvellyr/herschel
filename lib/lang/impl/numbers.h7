@@ -215,7 +215,7 @@ def compare(one @ Integer, two @ Integer) : Int
 --
 -- binary
 -- add +
--- append ++
+-- concat ++
 -- subtract -
 -- divide /
 -- multiply *

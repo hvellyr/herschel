@@ -1,0 +1,14 @@
+import "lang/assert.h7"
+
+def app|main()
+--  assert("abc" ++ "def" == "      ")
+  assert("abc".concat("def") == "abcdef")
+
+  assert("".concat("") == "")
+  assert("".concat("abc") == "abc")
+  assert("abc".concat("") == "abc")
+
+  assert("abc".concat("hello world".slice*(3u, 7u)) == "abclo w")
+
+  assert("hello".concat(" ").concat("world").slice*(3u, 7u).concat("i") == "lo wi")
+  0

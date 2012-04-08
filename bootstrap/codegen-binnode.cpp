@@ -474,8 +474,12 @@ CodegenBinaryNode::codegenOpDucktype(const BinaryNode* node) const
   case kOpCompare:
     return codegenOpDuckTypeBinary(node, Names::kLangCompare, Type::newInt32());
 
+  case kOpConcat:
+    return codegenOpDuckTypeBinary(node, Names::kLangConcat, Type::newAny());
+
   default:
-    fprintf(stderr, "binary operator not supported in ducktyping yet: %d", node->op());
+    fprintf(stderr, "binary operator not supported in ducktyping yet: %s\n",
+            herschel::operatorName(node->op()));
     return NULL;
   }
 

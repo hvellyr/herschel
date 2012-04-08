@@ -97,7 +97,7 @@ def empty?(str @ String) : Bool
 def length(str @ String) : Ordinal
     str.num-items
 
-def append(left @ String, right @ String) : String
+def concat(left @ String, right @ String) : String
   let t = allocate_string_n(left.num-items + right.num-items, \space) as String
   let j = 0u
 

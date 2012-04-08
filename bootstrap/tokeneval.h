@@ -68,7 +68,7 @@ namespace herschel
     Token evalAnd(const Token& lexpr, const Token& rexpr) const;
     Token evalOr(const Token& lexpr, const Token& rexpr) const;
 
-    Token evalAppend(const Token& lexpr, const Token& rexpr) const;
+    Token evalConcat(const Token& lexpr, const Token& rexpr) const;
 
     Token evalBinaryToken(const Token& lexpr,
                           OperatorType op,

@@ -468,7 +468,7 @@ TokenEvalContext::evalOr(const Token& lexpr, const Token& rexpr) const
 
 
 Token
-TokenEvalContext::evalAppend(const Token& lexpr, const Token& rexpr) const
+TokenEvalContext::evalConcat(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
@@ -524,8 +524,8 @@ TokenEvalContext::evalBinaryToken(const Token& lexpr,
   case kOpLogicalOr:
     return evalOr(lexpr, rexpr);
 
-  case kOpAppend:
-    return evalAppend(lexpr, rexpr);
+  case kOpConcat:
+    return evalConcat(lexpr, rexpr);
 
   case kOpRange:
     // TODO
@@ -966,11 +966,19 @@ SUITE(TokenEvalContext)
   }
 
 
-  TEST_FIXTURE(TokenEvalContextFixture, OpAppend)
+  TEST_FIXTURE(TokenEvalContextFixture, OpConcat)
   {
-    t = ctx.evalToken(MAKE_BINARY_SEQ(kString, String("hello "), kAppend,
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kString, String("hello "), kConcat,
                                       kString, String("world")));
     CHECK(t.isString() && t.stringValue() == String("hello world"));
+
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kString, String("hello "), kConcat,
+                                      kString, String("")));
+    CHECK(t.isString() && t.stringValue() == String("hello "));
+
+    t = ctx.evalToken(MAKE_BINARY_SEQ(kString, String(""), kConcat,
+                                      kString, String("")));
+    CHECK(t.isString() && t.stringValue() == String(""));
   }
 }
 

@@ -278,30 +278,30 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       { String("isa"),           kIsa          },
       { String("as"),            kAs           },
       { String("by"),            kBy           },
-      { String("++"),            kAppend       },
-      { String(MID_DefId),       kDefId        },
-      { String(MID_ElseId),      kElseId       },
-      { String(MID_EofId),       kEofId        },
-      { String(MID_ExportId),    kExportId     },
-      { String(MID_ExtendId),    kExtendId     },
-      { String(MID_ExternId),    kExternId     },
-      { String(MID_FUNCTIONId),  kFUNCTIONId   },
-      { String(MID_ForId),       kForId        },
-      { String(MID_FunctionId),  kFunctionId   },
-      { String(MID_IfId),        kIfId         },
-      { String(MID_ImportId),    kImportId     },
-      { String(MID_LetId),       kLetId        },
-      { String(MID_MatchId),     kMatchId      },
-      { String(MID_ModuleId),    kModuleId     },
-      { String(MID_NilId),       kNilId        },
-      { String(MID_NotId),       kNotId        },
-      { String(MID_OnId),        kOnId         },
-      { String(MID_ReifyId),     kReifyId      },
-      { String(MID_SelectId),    kSelectId     },
-      { String(MID_ThenId),      kThenId       },
-      { String(MID_WhenId),      kWhenId       },
-      { String(MID_WhereId),     kWhereId      },
-      { String(MID_WhileId),     kWhileId      },
+      { String("++"),            kConcat       },
+      { String(MID_defid),       kDefId        },
+      { String(MID_elseid),      kElseId       },
+      { String(MID_eofid),       kEofId        },
+      { String(MID_exportid),    kExportId     },
+      { String(MID_extendid),    kExtendId     },
+      { String(MID_externid),    kExternId     },
+      { String(MID_FUNCTIONid),  kFUNCTIONId   },
+      { String(MID_forid),       kForId        },
+      { String(MID_functionid),  kFunctionId   },
+      { String(MID_ifid),        kIfId         },
+      { String(MID_importid),    kImportId     },
+      { String(MID_letid),       kLetId        },
+      { String(MID_matchid),     kMatchId      },
+      { String(MID_moduleid),    kModuleId     },
+      { String(MID_nilid),       kNilId        },
+      { String(MID_notid),       kNotId        },
+      { String(MID_onid),        kOnId         },
+      { String(MID_reifyid),     kReifyId      },
+      { String(MID_selectid),    kSelectId     },
+      { String(MID_thenid),      kThenId       },
+      { String(MID_whenid),      kWhenId       },
+      { String(MID_whereid),     kWhereId      },
+      { String(MID_whileid),     kWhileId      },
 
       { String(),  kInvalid },      // sentinel
     };
@@ -1297,7 +1297,7 @@ SUITE(Tokenizer)
       CHECK_EQUAL(tnz.nextToken(), Token(sp, String("b")));
 
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kString, String("a")));
-      CHECK_EQUAL(tnz.nextToken(), Token(sp, kAppend));
+      CHECK_EQUAL(tnz.nextToken(), Token(sp, kConcat));
       CHECK_EQUAL(tnz.nextToken(), Token(sp, kString, String("b")));
 
       CHECK_EQUAL(tnz.nextToken(), Token(sp, String("a")));
