@@ -33,7 +33,7 @@ namespace herschel
   {
     kOpInvalid,
 
-    kOpAppend,
+    kOpConcat,
     kOpAs,
     kOpAssign,
     kOpBitAnd,
@@ -124,7 +124,7 @@ namespace herschel
     kBitXor,
     kShiftLeft,
     kShiftRight,
-    kAppend,
+    kConcat,
     kComma,
     kSemicolon,
     kColon,

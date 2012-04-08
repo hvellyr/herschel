@@ -1001,21 +1001,21 @@ String
 Typifier::operatorNameByOp(OperatorType type) const
 {
   switch (type) {
-  case kOpAppend:       return String(MID_append);
   case kOpBitAnd:       return String(MID_bitand);
   case kOpBitOr:        return String(MID_bitor);
   case kOpBitXor:       return String(MID_bitxor);
   case kOpCompare:      return String(MID_compare);
+  case kOpConcat:       return String(MID_concat);
   case kOpDivide:       return String(MID_divide);
-  case kOpEqual:        return String(MID_EqualQ);
+  case kOpEqual:        return String(MID_equalq);
   case kOpExponent:     return String(MID_exponent);
   case kOpFold:         return String(MID_fold);
-  case kOpGreater:      return String(MID_GreaterQ);
-  case kOpGreaterEqual: return String(MID_GreaterEqualQ);
+  case kOpGreater:      return String(MID_greaterq);
+  case kOpGreaterEqual: return String(MID_greaterequalq);
   case kOpIn:           return String(MID_in);
   case kOpIsa:          return String(MID_isaQ);
-  case kOpLess:         return String(MID_LessQ);
-  case kOpLessEqual:    return String(MID_LessEqualQ);
+  case kOpLess:         return String(MID_lessq);
+  case kOpLessEqual:    return String(MID_lessequalq);
   case kOpLogicalAnd:   return String(MID_logand);
   case kOpLogicalOr:    return String(MID_logor);
   case kOpMinus:        return String(MID_subtract);
@@ -1023,18 +1023,18 @@ Typifier::operatorNameByOp(OperatorType type) const
   case kOpRem:          return String(MID_rem);
   case kOpMultiply:     return String(MID_multiply);
   case kOpPlus:         return String(MID_add);
-  case kOpShiftLeft:    return String(MID_shiftLeft);
-  case kOpShiftRight:   return String(MID_shiftRight);
-  case kOpUnequal:      return String(MID_UnequalQ);
+  case kOpShiftLeft:    return String(MID_shiftleft);
+  case kOpShiftRight:   return String(MID_shiftright);
+  case kOpUnequal:      return String(MID_unequalq);
 
   case kOpInvalid:
   case kOpAssign:       return String("=");
-  case kOpAs:           return String(MID_CastTo);
-  case kOpBy:           return String(MID_ById);
-  case kOpMapTo:        return String(MID_MapTo);
+  case kOpAs:           return String(MID_castto);
+  case kOpBy:           return String(MID_byid);
+  case kOpMapTo:        return String(MID_mapto);
   case kOpRange:        return String("..");
-  case kOpThen:         return String(MID_ThenId);
-  case kOpWhile:        return String(MID_WhileId);
+  case kOpThen:         return String(MID_thenid);
+  case kOpWhile:        return String(MID_whileid);
     hr_invalid("");
   }
 
@@ -1238,7 +1238,7 @@ Typifier::typify(BinaryNode* node)
       annotateTypeConv(node, node->type());
       break;
 
-    case kOpAppend:
+    case kOpConcat:
       if (leftty.isString() || leftty.isAny()) {
         if (rightty.isString() || rightty.isChar() || rightty.isAny()) {
           node->setType(leftty);

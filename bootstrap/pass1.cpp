@@ -2201,7 +2201,7 @@ FirstPass::weightOperator(OperatorType op1) const
 
   case kOpRange:
   case kOpBy:
-  case kOpAppend:         return  60;
+  case kOpConcat:         return  60;
 
   case kOpBitAnd:
   case kOpBitOr:
