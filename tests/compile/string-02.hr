@@ -4,12 +4,12 @@
 import "lang/assert.hr"
 
 extern ("C") {
-  int lang_string_compare(const struct ATOM atom0, const struct ATOM atom1);
+  int h7_lang_string_compare(const struct ATOM atom0, const struct ATOM atom1);
 }
 
 
 def foo(one : String, two : String) : Bool
-  lang_string_compare(one, two) == 0
+  h7_lang_string_compare(one, two) == 0
 
 
 def app|main()

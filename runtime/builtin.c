@@ -15,13 +15,13 @@
 #include "runtime/herschel.h"
 
 
-int __lang_equal(int one, int two)
+int __h7_lang_equal(int one, int two)
 {
   return one == two;
 }
 
 
-int __lang_add(int one, int two)
+int __h7_lang_add(int one, int two)
 {
   return one + two;
 }

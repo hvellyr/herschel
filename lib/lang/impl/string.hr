@@ -13,11 +13,11 @@ import "lang/copyable.hr"
 import "lang/sliceable.hr"
 
 extern ("C") {
-  struct ATOM allocate_string_n(unsigned int items, Unichar c);
-  int lang_string_compare(const struct ATOM atom0, const struct ATOM atom1);
-  unsigned int lang_string_length(struct ATOM atom0);
-  unsigned int lang_string_char_at_index(struct ATOM atom0, unsigned int idx);
-  void lang_string_set_char_at_index(struct ATOM atom0, unsigned int idx, Unichar c);
+  struct ATOM h7_allocate_string_n(unsigned int items, Unichar c);
+  int h7_lang_string_compare(const struct ATOM atom0, const struct ATOM atom1);
+  unsigned int h7_lang_string_length(struct ATOM atom0);
+  unsigned int h7_lang_string_char_at_index(struct ATOM atom0, unsigned int idx);
+  void h7_lang_string_set_char_at_index(struct ATOM atom0, unsigned int idx, Unichar c);
 }
 
 -- builtin strings are really instances of the class @type{StringImpl}.
@@ -38,33 +38,33 @@ def class StringSlice(_str : String,
 
 
 def equal?(one @ StringImpl, two @ StringImpl) : Bool
-  lang_string_compare(one, two) == 0
+  h7_lang_string_compare(one, two) == 0
 
 def unequal?(one @ StringImpl, two @ StringImpl) : Bool
-  lang_string_compare(one, two) <> 0
+  h7_lang_string_compare(one, two) <> 0
 
 def less?(one @ StringImpl, two @ StringImpl) : Bool
-  lang_string_compare(one, two) < 0
+  h7_lang_string_compare(one, two) < 0
 
 def greater?(one @ StringImpl, two @ StringImpl) : Bool
-  lang_string_compare(one, two) > 0
+  h7_lang_string_compare(one, two) > 0
 
 def less-equal?(one @ StringImpl, two @ StringImpl) : Bool
-  lang_string_compare(one, two) <= 0
+  h7_lang_string_compare(one, two) <= 0
 
 def greater-equal?(one @ StringImpl, two @ StringImpl) : Bool
-  lang_string_compare(one, two) >= 0
+  h7_lang_string_compare(one, two) >= 0
 
 def compare(one @ StringImpl, two @ StringImpl) : Int
-  lang_string_compare(one, two) as Int
+  h7_lang_string_compare(one, two) as Int
 
 
 def num-items(s @ StringImpl) : Ordinal
-    lang_string_length(s) as Ordinal
+    h7_lang_string_length(s) as Ordinal
 
 
 def slice(s @ StringImpl, idx @ Ordinal) : Char
-  lang_string_char_at_index(s, idx).to-char
+  h7_lang_string_char_at_index(s, idx).to-char
 
 
 def slice*(str @ StringImpl, from @ Ordinal, to @ Ordinal) : String
@@ -98,19 +98,19 @@ def length(str @ String) : Ordinal
     str.num-items
 
 def concat(left @ String, right @ String) : String
-  let t = allocate_string_n(left.num-items + right.num-items, \space) as String
+  let t = h7_allocate_string_n(left.num-items + right.num-items, \space) as String
   let j = 0u
 
   if (left.num-items > 0u) {
     for (i : UInt in 0u .. left.num-items - 1) {
-      lang_string_set_char_at_index(t, j, left[i])
+      h7_lang_string_set_char_at_index(t, j, left[i])
       j = j + 1u
     }
   }
 
   if (right.num-items > 0u) {
     for (i : UInt in 0u .. right.num-items - 1) {
-      lang_string_set_char_at_index(t, j, right[i])
+      h7_lang_string_set_char_at_index(t, j, right[i])
       j = j + 1u
     }
   }
