@@ -6,8 +6,8 @@ Howto compile herschel code to binary
 2. You need the little runtime addition rt.c, precompile it with clang or gcc
 
 3.
-../temp/debug/hrc -c -s compile/d.hea ; llc d.ll ; gcc -o d.out d.s rt.o
+../temp/debug/hrc -c -s compile/d.hr ; llc d.ll ; gcc -o d.out d.s rt.o
 
 and this is even faster:
 
-../temp/debug/hrc -c -b compile/d.hea ; llvm-ld -v -native -o d3.out d.bc rt.o
+../temp/debug/hrc -c -b compile/d.hr ; llvm-ld -v -native -o d3.out d.bc rt.o
