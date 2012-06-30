@@ -35,8 +35,8 @@ namespace herschel
       String fLibExec;
       String fLlvmLdPath;
 
-      // h7 header path
-      String fH7Includes;
+      // hr header path
+      String fHrIncludes;
 
       // runtime library path
       String fRtLib;

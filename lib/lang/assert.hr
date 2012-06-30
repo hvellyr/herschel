@@ -1,0 +1,44 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+
+-- this import should be private inside of the following "lang" module.
+-- Since macros don't save the context yet, we still have to import the
+-- stdlib into the public here.
+import "lang/stdlib.hr"
+
+module lang
+export public (NDEBUG, assert)
+
+import "lang/string.hr"
+
+def config NDEBUG = "true"
+
+when (NDEBUG == "true")
+{
+  def macro assert
+  {
+    { assert(?expr:expr) } -> { if (not ?expr) {
+                                  exit(1)
+                                  -- even though we never come here, keep
+                                  -- the type checker calm
+                                  false
+                                }
+                                else {
+                                  true
+                                }
+                              }
+  }
+}
+else {
+  def macro assert
+  {
+    { assert(?expr:expr) } -> { true }
+  }
+}
+
+-- end of assert.hr

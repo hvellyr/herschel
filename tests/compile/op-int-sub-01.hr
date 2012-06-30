@@ -1,0 +1,102 @@
+import "lang/assert.hr"
+
+def assert-sub32/32(a : Int, b : Int, r : Int) : Bool
+  assert(a - b == r)
+
+
+def assert-sub64/64(a : Int64, b : Int64, r : Int64) : Bool
+  assert(a - b == r)
+
+
+def assert-sub64/8(a : Int64, b : Int8, r : Int64) : Bool
+  assert(a - b == r)
+
+def assert-sub8/64(a : Int8, b : Int64, r : Int64) : Bool
+  assert(a - b == r)
+
+def assert-sub8/32(a : Int8, b : Int32, r : Int32) : Bool
+  assert(a - b == r)
+
+def assert-sub64/16(a : Int64, b : Int16, r : Int64) : Bool
+  assert(a - b == r)
+
+def assert-sub16/64(a : Int16, b : Int64, r : Int64) : Bool
+  assert(a - b == r)
+
+
+def assert-sub64/32(a : Int64, b : Int32, r : Int64) : Bool
+  assert(a - b == r)
+
+def assert-sub32/64(a : Int32, b : Int64, r : Int64) : Bool
+  assert(a - b == r)
+
+
+def assert-sub16/16(a : Int16, b : Int16, r : Int16) : Bool
+  assert(a - b == r)
+
+def assert-sub8/8(a : Int8, b : Int8, r : Int8) : Bool
+  assert(a - b == r)
+
+
+def test-sub() : Any
+  assert(5 - 6 == -1)
+  assert-sub32/32(5, 6, -1)
+
+  let t = 21
+  let r = 42
+  assert(r - t == t)
+
+  assert-sub32/32(127, 127, 0)
+  assert-sub32/32(0, 0, 0)
+  assert-sub32/32(42, -10, 52)
+
+  assert-sub32/32(2147483647, 2147483647, 0)
+  assert-sub32/32(-2147483648, -2147483647, -1)
+
+  assert-sub32/32(2147483647, 1, 2147483646)
+  assert-sub32/32(2147483647, -1, -2147483648)
+  assert-sub32/32(-2147483648, 1, 2147483647)
+
+  -- 64bit
+  assert-sub64/64(-9223372036854775808L, 1L, 9223372036854775807L)
+  assert-sub64/64(0L, 0L, 0L)
+
+  assert-sub64/64(-2147483648L, 2147483648L, -4294967296L)
+
+  assert-sub32/32(-2147483647, 2, 2147483647)
+  assert-sub64/64(-2147483647L, 2147483647L, -4294967294L)
+
+  -- 16bit
+  assert-sub16/16(512s, -512s, 1024s)
+  assert-sub16/16(512s, 512s, 0s)
+
+  assert-sub16/16(32767s, -32768s, -1s)
+  assert-sub16/16(-32768s, 32767s, 1s)
+
+  -- 8bit
+  assert-sub8/8(32t, -32t, 64t)
+  assert-sub8/8(127t, 38t, 89t)
+
+  assert-sub8/8(127t, -128t, -1t)
+  assert-sub8/8(-128t, 1t, 127t)
+
+  -- mixing types
+  assert-sub64/8(-9223372036854775808L, 1t, 9223372036854775807L)
+  assert-sub8/64(1t, -9223372036854775808L, -9223372036854775807L)
+
+  assert-sub64/16(-9223372036854775808L, 1s, 9223372036854775807L)
+  assert-sub16/64(1s, -9223372036854775808L, -9223372036854775807L)
+
+  assert-sub64/32(-9223372036854775808L, 1, 9223372036854775807L)
+  assert-sub32/64(1, -9223372036854775808L, -9223372036854775807L)
+  assert-sub32/64(16, 32L, -16L)
+
+  assert-sub8/32(16t, 16, 0)
+  assert-sub8/32(127t, -16, 143)  -- propagates to Int32
+
+  true
+
+def app|main()
+  test-sub()
+
+  0

@@ -3397,8 +3397,8 @@ expression does import explicitely only the definitions of the other
 code file; no implementations or global variable locations are taken over.
 
 @example
-import "stack.h7"
-import "lib/collection.h7"
+import "stack.hr"
+import "lib/collection.hr"
 @end example
 
 The @code{import} expression is only possible on module level (i.e.@

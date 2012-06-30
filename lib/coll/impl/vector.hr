@@ -1,0 +1,229 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+-- - Redistributions of source code must retain the above copyright notice,
+--   this list of conditions and the following disclaimer.
+--
+-- - Redistributions in binary form must reproduce the above copyright
+--   notice, this list of conditions and the following disclaimer in the
+--   documentation and/or other materials provided with the distribution.
+--
+-- - Neither the name of the author nor the names of other contributors may
+--   be used to endorse or promote products derived from this software
+--   without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+module coll
+
+
+
+def class VectorImpl<T>(size: prealloc-size : Ordinal = 8) : Vector<T>
+{
+  def slot data : T[] ; private
+  def slot items : Ordinal = 0
+
+  on init(self) {
+    self.data = T[](prealloc-size)
+  }
+}
+
+
+def adapt-preallocation(cltn @ ^Vector<'T>)
+  -- todo
+  cltn
+
+
+-- from collection
+
+def add-all!(cltn @ ^Vector<'T>, other-coll @ Collection<'T>) : ^Vector<'T>
+  let ni = other-coll.num-items
+  if (ni > 0) {
+    let old-ni = cltn.num-items
+    cltn.resize!(old-ni + ni)
+    for (e in other-coll,
+         i : Ordinal = old-ni then i + 1)
+      cltn[i] = e
+  cltn
+
+
+def num-items(cltn @ Vector<'T>) : Ordinal
+  cltn.items
+
+
+def empty?(cltn @ Vector<'T>) : Bool
+  cltn.items == 0
+
+
+def empty!(cltn @ ^Vector<'T>) : ^Vector<'T>
+  cltn.items = 0
+  cltn.adapt-preallocation
+  cltn
+
+
+def contains?(cltn @ Vector<'T>, elt @ 'T) : Bool
+  match (cltn.index-of(elt)) {
+    |   : Bool -> false
+    | n : Ordinal -> true
+  }
+
+
+  def generic add!(cltn @ ^Vector<'T>, elt @ 'T) : ^Vector<'T>
+      ~ Adds @var{elt} to @var{cltn}
+
+      It is implementation dependant what happens when @var{elt} is already
+      contained in @var{cltn}.
+
+      @returns @var{cltn} ~
+
+  def generic remove!(cltn @ ^Vector<'T>, elt @ 'T) : ^Vector<'T>
+      ~ Remove @var{elt} from @var{cltn}
+
+      The method ignores silently if @var{elt} is not contained in
+      @var{cltn} at all.
+
+      @returns @var{cltn} ~
+
+  def generic iterator(cltn @ Vector<'T>) : Iterator<'T>
+      ~ Returns an iterator over the contained elements in @var{cltn}
+
+      The order of elements delivered by the returned iterator dependants
+      on the algorithm used by @var{cltn}. ~
+
+
+
+
+-- from OrderedCollection
+
+def first(cltn @ Vector<'T>) : 'T
+  if (cltn.items <= 0)
+    OutOfBoundsException(obj.items, 0, 0).raise
+  cltn.data[0]
+
+
+def last(cltn @ Vector<'T>) : 'T
+  if (cltn.items <= 0)
+    OutOfBoundsException(obj.items, obj.items - 1, obj.items - 1).raise
+  cltn.data[cltn.items - 1]
+
+
+
+-- from sequence
+
+  def generic insert!(cltn @ 'S, value @ T, before-index : Ordinal) : 'S
+      where S isa Sequence<T> ...
+  def generic remove-at!(cltn @ 'S, index : Ordinal) : T
+      where S isa Sequence<T> ...
+
+  def generic swap!(cltn @ 'S, from-idx : Ordinal, to-idx : Ordinal) : 'S
+      where S isa Sequence<T> ...
+
+  def generic sort(cltn @ 'S) : 'S
+      where S isa Sequence<T> ...
+  def generic sort!(cltn @ 'S) : 'S
+      where S isa Sequence<T> ...
+  def generic reverse(cltn @ 'S) : 'S
+      where S isa Sequence<T> ...
+  def generic reverse!(cltn @ 'S) : 'S
+      where S isa Sequence<T> ...
+
+
+def index-of(cltn @ Vector<'T>, elt @ T) : OrdinalOrFalse
+  for (i : Ordinal = 0 .. cltn.items - 1) {
+    if (cltn[i] == e)
+      return(i)
+  }
+  false
+
+
+------------------------------------------------------------------------------
+-- from vector
+def generic resize!(cltn @ ^Vector<'T>,
+                    new-size : Ordinal,
+                    init-value : 'T = Class<'T>.null-value) : ^Vector<'T>
+--    on out(r) r.num-items == new-size
+
+    if (new-size <> cltn.data.size) {
+      cltn.data = cltn.data.realloc(new-size, init-value)
+      cltn.num-items = new-size
+    }
+    cltn
+
+
+def reserve!(cltn @ ^Vector<'T>, add-items : Ordinal) : ^Vector<'T>
+    if (add-items > 0)
+      cltn.data = cltn.data.realloc(cltn.data.size + add-items)
+    cltn
+
+
+------------------------------------------------------------------------------
+-- from Sliceable!
+
+def class VectorSlice<T>(_vector : Vector<T>,
+                         _from : Ordinal,
+                         _to : Ordinal)
+    : core|Slice<Ordinal, T>
+{
+  def slot vector = _vector
+  def slot from = _from
+  def slot to = _to
+}
+
+
+extend module core
+{
+  def num-items(vsl @ VectorSlice<'T>) : Ordinal
+    vsl.to - vsl.from
+
+
+  def empty?(vsl @ VectorSlice<'T>) : Bool
+    vsl.num-items == 0
+
+
+  def slice(vsl @ VectorSlice<'T>, idx @ Ordinal) : 'T
+    vsl.vector[vsl.from + idx]
+
+
+  def slice(vsl @ VectorSlice<'T>, from @ Ordinal, to @ Ordinal)
+      : Slice<Ordinal, 'T>
+    vsl.vector.slice(vsl.from + from, vsl.from + to)
+
+
+
+  def slice(obj @ Vector<'T>, n @ Ordinal) : 'T
+    if (n >= obj.items)
+      OutOfBoundsException(obj.items, n, n).raise
+    obj.data[n]
+
+
+  def slice!(obj @ Vector<'T>, n @ Ordinal, value @ 'T) : Vector<'T>
+    if (n >= obj.items)
+      OutOfBoundsException(obj.items, n, n).raise
+    obj.data[n] = value
+
+
+-- from OrderedSlicable
+
+  def slice(obj @ Vector<'T>, from @ Ordinal, to @ Ordinal) : Slice<Ordinal, 'T>
+    if (from > obj.items or to > obj.items)
+      OutOfBoundsException(obj.items, from, to).raise
+    VectorSlice<'T>(obj, from, to)
+}
+
+-- end of impl/vector.hr

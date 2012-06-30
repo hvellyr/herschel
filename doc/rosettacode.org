@@ -4,7 +4,7 @@ Better name for it
 Name            file extension      origin
 heather         .hea                (from the plant erica carnea)
 andle           .an                 The andle stone
-herschel        .h7                 After william herschel
+herschel        .hr                 After William Herschel
 
 
 

@@ -14,11 +14,11 @@ endif
 TESTDIR ?= $(BUILDTESTSDIR)
 APPNAME ?= gf
 
-.SUFFIXES: .bc .h7
+.SUFFIXES: .bc .hr
 
-TEST_SOURCES = main.h7 dog.h7 cat.h7
+TEST_SOURCES = main.hr dog.hr cat.hr
 
-TEST_OBJS = $(TEST_SOURCES:%.h7=$(TESTDIR)/%.bc)
+TEST_OBJS = $(TEST_SOURCES:%.hr=$(TESTDIR)/%.bc)
 
 
 all-local: $(TESTDIR)/$(APPNAME)$(APPEXT)
@@ -27,7 +27,7 @@ $(TESTDIR)/$(APPNAME)$(APPEXT): $(TEST_OBJS)
 	@$(LLVM_EXE)/llvm-ld -native -o $@ $^ $(BUILDDIR)/$(BUILDSTYLE)/libhr.a
 
 
-$(TESTDIR)/%.bc: %.h7
+$(TESTDIR)/%.bc: %.hr
 	@$(HERSCHEL_APPBINARY) --isys=$(RUNTIME_DIR) -d $(TESTDIR) -c $<
 
 clean-local:

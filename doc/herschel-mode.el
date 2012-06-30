@@ -53,7 +53,7 @@
 ;; (`.emacs'):
 ;;
 ;;   (autoload 'herschel-mode "herschel-mode" "Herschel Mode" t)
-;;   (setq auto-mode-alist (cons '("\\.h7\\'" . herschel-mode) auto-mode-alist))
+;;   (setq auto-mode-alist (cons '("\\.hr\\'" . herschel-mode) auto-mode-alist))
 
 
 ;; ---------------------------------------------------------------------------

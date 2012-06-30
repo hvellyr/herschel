@@ -14,18 +14,18 @@ include $(top_srcdir)/config.mk
 #------------------------------------------------------------------------------
 
 LIBLANGKIT_SOURCES =  \
-	comparable.h7       \
-	copyable.h7         \
-	numbers.h7          \
-	runtime.h7          \
-	sliceable.h7        \
-	string.h7           \
-	types.h7            \
-	impl/comparable.h7  \
-	impl/numbers.h7     \
-	impl/string.h7
+	comparable.hr       \
+	copyable.hr         \
+	numbers.hr          \
+	runtime.hr          \
+	sliceable.hr        \
+	string.hr           \
+	types.hr            \
+	impl/comparable.hr  \
+	impl/numbers.hr     \
+	impl/string.hr
 
-LIBLANGKIT_OBJS = $(LIBLANGKIT_SOURCES:%.h7=$(BUILDDIR)/$(BUILDSTYLE)/%.bc)
+LIBLANGKIT_OBJS = $(LIBLANGKIT_SOURCES:%.hr=$(BUILDDIR)/$(BUILDSTYLE)/%.bc)
 
 LANGKIT_BC = $(BUILDDIR)/$(BUILDSTYLE)/langkit.bc
 LANGKIT_LIB = $(BUILDDIR)/$(BUILDSTYLE)/langkit.hlib

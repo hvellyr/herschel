@@ -1,0 +1,9 @@
+module a1
+
+import "import/ignore-enumdef-01.hr"
+
+def a0 : PortCursorWhenceType = begin
+def a1 : PortCursorWhenceType = port|end
+
+def a10 : Colors = orange
+def a11 : Colors = colors|red

@@ -1,0 +1,6 @@
+import "lang/assert.hr"
+
+def app|main()
+  let t = Int[](16)
+
+  42

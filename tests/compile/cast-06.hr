@@ -1,0 +1,39 @@
+import "lang/assert.hr"
+
+def generic foo(one @ Integer, two @ Integer) : Integer ...
+
+def foo(one @ Integer, two @ Integer) : Integer
+  match (one) {
+  | i : Int8 -> match (two) {
+                | j : Int8  -> (i + j) as Integer
+                | j : Int16 -> (i + j) as Integer
+                | j : Int32 -> (i + j) as Integer
+                | j : Int64 -> (i + j) as Integer
+                |   : Any -> 0         -- raise TypeException
+                }
+  |   : Any -> 0
+  }
+
+def generic foo2(one @ Integer, two @ Integer) : Integer
+  if (one.isa?(Int8)) {
+    let i = one as Int8
+    if (two.isa?(Int8)) {
+      let j = two as Int8
+      (i + j) as Integer
+    }
+    else if (two.isa?(Int32)) {
+      let j = two as Int32
+      (i + j) as Integer
+    }
+    else
+      0
+  }
+  else {
+    0
+  }
+
+
+def app|main()
+  assert(foo(42t, 47) == 89 as Integer)
+  assert(foo2(42t, 47) == 89 as Integer)
+  0

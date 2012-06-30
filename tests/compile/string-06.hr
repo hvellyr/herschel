@@ -1,0 +1,22 @@
+-- checking strings and (string) slices
+import "lang/assert.hr"
+
+def app|main()
+  assert("abc".slice*(0u, 3u) == "abc")
+  assert("abc".slice*(0u, 3u) <> "xyz")
+
+  let t = "hello world".slice*(3u, 7u)
+  assert(t.num-items == 4u)
+
+  assert(t[0u] == \l)
+  assert(t[1u] == \o)
+  assert(t[2u] == \space)
+  assert(t[3u] == \w)
+
+  assert(t == "lo w")
+
+  -- create a slice from a slice(impl) from a string and compare it to a
+  -- string(impl)
+  assert("hello world".slice*(3u, 9u).slice*(3u, 5u) == "wo")
+
+  0

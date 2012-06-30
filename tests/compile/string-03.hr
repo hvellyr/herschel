@@ -1,0 +1,11 @@
+import "lang/assert.hr"
+
+def app|main()
+  assert("abc".length == 3u)
+  assert("".length == 0u)
+  assert("y".length == 1u)
+
+  assert("".empty? == true)
+  assert(not ("abc".empty? == true))
+
+  0

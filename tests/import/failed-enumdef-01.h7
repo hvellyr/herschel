@@ -1,6 +1,0 @@
-module a1
-
-import "import/ignore-enumdef-01.h7"
-
-def a2 : MidiController = foot-pedal
-def a3 : MidiController = midi|foot-pedal

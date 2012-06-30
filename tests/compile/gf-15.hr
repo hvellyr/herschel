@@ -1,0 +1,10 @@
+import "lang/assert.hr"
+
+def generic foo(a @ 'T) : 'T ...
+
+def foo(a @ Int) : Int
+  a
+
+def app|main()
+  let t = foo(12)
+  t

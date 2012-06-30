@@ -1,0 +1,5 @@
+module xyz
+
+import "import/ignore-green-03b.hr"
+
+-- def alias MyNumber = Float

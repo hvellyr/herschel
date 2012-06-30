@@ -26,12 +26,12 @@
     module X
     export public (y)
 
-    import "something.h7"
+    import "something.hr"
 
     def macro y { { y() } -> { symbol-from-something() } }
 
   In this example the site using the macro y must also import
-  something.h7, otherwise symbol-from-something is unknown
+  something.hr, otherwise symbol-from-something is unknown
 
 
 - size of array must be constant expression.  Ex.:

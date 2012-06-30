@@ -1,0 +1,36 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+module lang
+
+import "lang/comparable.hr"
+
+
+-- Default implementations for the standard compare operators in terms of
+-- the designated @fun{lang|compare} function of @type{lang|Comparable}.
+-- So types have to implement the @fun{lang|compare} function only to
+-- implement the full set of compare functions.
+
+def equal?(one @ Comparable, two @ Comparable) : Bool
+  (one <=> two) == 0
+
+def unequal?(one @ Comparable, two @ Comparable) : Bool
+  (one <=> two) <> 0
+
+def less?(one @ Comparable, two @ Comparable) : Bool
+  (one <=> two) < 0
+
+def less-equal?(one @ Comparable, two @ Comparable) : Bool
+  (one <=> two) <= 0
+
+def greater?(one @ Comparable, two @ Comparable) : Bool
+  (one <=> two) > 0
+
+def greater-equal?(one @ Comparable, two @ Comparable) : Bool
+  (one <=> two) >= 0
+
+-- end of comparable

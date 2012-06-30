@@ -1,0 +1,10 @@
+import "lang/assert.hr"
+
+def foo(n : Bool)
+  n
+
+def app|main()
+  let t = false
+  assert(not t)
+  assert(not not foo(true))
+  0

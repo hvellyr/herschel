@@ -68,7 +68,7 @@ $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(DYOEXT) : %.cpp
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
 	$(CXX) $(PIC) $(CXXFLAGS) -c -o $@ $<
 
-$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%.bc : %.h7
+$(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%.bc : %.hr
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
 	$(BUILDDIR)/$(BUILDSTYLE)/herschel$(APPEXT) --isys=$(top_srcdir)/lib -c -o $@ $<
 

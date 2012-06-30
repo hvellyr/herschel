@@ -1,0 +1,41 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+import "io/port.hr"
+
+module io
+export public (*)
+
+
+------------------------------------------------------------------------------
+
+def class CharInPort(port : InPort<Char>,
+                     encoding : String = "auto") : InPort<Char>
+    ~ Character based input port.
+
+    Typical usage:
+
+    @example
+    let port = CharInPort(BufferedInPort<Octet>(
+                            FilePort(file: fname, mode: FileModeType.read)),
+                          encoding: "utf-8")
+    for (c in port)
+      display(c)
+    @end example ~
+{
+}
+
+
+------------------------------------------------------------------------------
+
+def class CharOutPort(port : OutPort<Char>,
+                      encoding : String = "auto") : OutPort<Char>
+{
+}
+
+
+-- end of char-port

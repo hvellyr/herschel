@@ -1,0 +1,5 @@
+-- test to import ignore-green-01.hr
+
+import "import/ignore-green-01.hr"
+
+def a : MyNumber = 12

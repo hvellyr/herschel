@@ -599,7 +599,7 @@ The expected test data is expected in a test description file $test_dir/$f/$f.te
     def run_all_tests(self, test_dir, domain):
         print "Run tests in %s:" % (domain)
         for f in os.listdir(test_dir):
-            if f.endswith(".h7"):
+            if f.endswith(".hr") or f.endswith(".h7"):
                 self.open_report()
                 self.run_test(test_dir, f, domain)
                 self.close_report()

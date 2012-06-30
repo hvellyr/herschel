@@ -1,0 +1,33 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+module io
+export public (*)
+
+import "core/core.hr"
+import "io/io.hr"
+
+
+------------------------------------------------------------------------------
+
+def class StringInPort(str : String,
+                       offset : Ordinal = 0,
+                       items : Ordinal = 0) : InPort<Char>
+{
+}
+
+
+------------------------------------------------------------------------------
+
+def class StringOutPort(str : String = nil,
+                        offset : Ordinal = 0,
+                        max-items : Ordinal = 0) : OutPort<Char>
+{
+}
+
+
+-- end of string-port
