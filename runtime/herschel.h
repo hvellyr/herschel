@@ -109,4 +109,22 @@ H7_Type* h7_type_lookup_array_type(H7_Type* base_type);
 
 int h7_instance_isa(H7_ATOM instance, H7_Type* ty);
 
+
+/* string type */
+void h7_allocate_string(H7_ATOM* instance, const char* str);
+
+
+/* ----------------------------------------------------------------------
+
+   function called from herschel code directly
+   ---------------------------------------------------------------------- */
+
+H7_ATOM h7_allocate_string_n(size_t items, unsigned int c);
+int h7_lang_string_compare(H7_ATOM atom0, H7_ATOM atom1);
+unsigned int h7_lang_string_length(H7_ATOM atom0);
+unsigned int h7_lang_string_char_at_index(H7_ATOM atom0, unsigned int idx);
+void h7_lang_string_set_char_at_index(H7_ATOM atom0,
+                                      unsigned int idx,
+                                      unsigned int c);
+
 #endif

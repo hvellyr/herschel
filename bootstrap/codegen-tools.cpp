@@ -137,7 +137,7 @@ CodegenTools::makeKeywordAtom(const String& keyword)
 llvm::Value*
 CodegenTools::makeStringAtom(const String& str)
 {
-  String funcnm = String("allocate_string");
+  String funcnm = String("h7_allocate_string");
 
   llvm::Function *allocFunc = module()->getFunction(llvm::StringRef(funcnm));
   if (allocFunc == NULL) {
