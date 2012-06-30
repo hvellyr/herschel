@@ -37,8 +37,6 @@ Bootstrap compiler
   - char binary operators
   - char arrays
 
-  - basic String class
-
   - basic IO classes (such to allow displaying info from test files)
 
   - gc
