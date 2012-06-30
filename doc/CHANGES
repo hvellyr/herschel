@@ -233,15 +233,53 @@ other expressions for this:
     | s : String -> foo2(s)
   }
 
-  if (a isa String) foo2(a)
+  with (s = a unless nil)
+    foo2(s)
+
+  The 'unless' operator is like a special if operator:
+
+    x = y unless z   <=>   x = if y <> z y else x
+
+  In cases where there's no lefthand value (e.g. in function calls) an
+  exception is thrown:
+
+    foo(y unless z)  <=>   foo(if y <> z y else UnexpectedException(z).raise)
 
 
 Less obscur syntax for union types
 ----------------------------------
 
-Instead of &(String, Eof) use (String or Eof)
+Instead of &(String, Eof) use 
+
+   (String or Eof)
+   union(String, Eof)
 
    def alias StringOrEof = (String or Eof)
+
+
+   def alias String? = (String or Nil)
+
+
+with macro
+----------
+
+  with-break(outer-break)
+  {
+    for (k in collection.keys)
+    {
+      for (v in collection.values-for-key(k))
+      {
+        if (v.is-not-valid?)
+          outer-break(false)
+        else if (v.nil?)
+          break(false)
+      }
+    }
+  }
+
+
+  with (f = expr())
+    do something with f
 
 
 Used character of Ascii
