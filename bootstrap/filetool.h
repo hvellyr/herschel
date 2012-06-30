@@ -30,13 +30,13 @@ namespace herschel
   //! For example
   //!
   //! <pre>
-  //! outdir='', outfileName='', file='~/dev/abc.h7', outExt='bc'
+  //! outdir='', outfileName='', file='~/dev/abc.hr', outExt='bc'
   //! => '~/dev/abc.bc'
   //!
-  //! outdir='', outfileName='~/tmp/build/abc.bc', file='~/dev/abc.h7', outExt='ll'
+  //! outdir='', outfileName='~/tmp/build/abc.bc', file='~/dev/abc.hr', outExt='ll'
   //! => '~/tmp/build/abc.bc'
   //!
-  //! outdir='~/dev/_build', outfileName='', file='~/dev/abc.h7', outExt='bc'
+  //! outdir='~/dev/_build', outfileName='', file='~/dev/abc.hr', outExt='bc'
   //! => '~/dev/_build/abc.bc'
   //! </pre>
   String makeOutputFileName(const String& outdir,

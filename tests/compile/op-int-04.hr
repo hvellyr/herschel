@@ -1,0 +1,20 @@
+-- test add operator on weakly typed values
+
+import "lang/assert.hr"
+
+def assert-compare-less(a, b) : Bool
+  assert(a <=> b < 0)
+
+def assert-compare-less-int(a : Int, b : Int) : Bool
+  assert(a <=> b < 0)
+
+def test-compare() : Any
+  assert-compare-less-int(5, 6)
+  assert-compare-less(6, 15)
+  true
+
+
+def app|main()
+  test-compare()
+
+  0

@@ -1,0 +1,19 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+import "lang/uri.hr"
+
+module io
+export public (*)
+
+
+def type StringOrUri : &(String, Uri)
+    ~ A union type as typically used to refer to external resource as files
+    or URLs.~
+
+
+-- end of io-types

@@ -1,6 +1,0 @@
-import "lang/assert.h7"
-
-def app|main()
-  let t = Int[](16)
-
-  42

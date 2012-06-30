@@ -1,0 +1,10 @@
+import "lang/assert.hr"
+
+def generic foo(x @ Integer) : Integer
+  let t : Integer = 0
+  t = x as Int32 + 5
+  t
+
+def app|main()
+  assert(foo(42) == 47 as Integer)
+  0

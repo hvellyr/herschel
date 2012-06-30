@@ -1,0 +1,64 @@
+import "lang/stdlib.hr"
+
+module xi
+
+def foo(c)
+  putchar(c)
+  c
+
+
+def type Vehicle
+def type MotorVehicle : Vehicle
+
+def class Car : MotorVehicle { }
+
+def class Plane : Vehicle { }
+
+def class Bicycle : Vehicle { }
+
+def class Harvester : MotorVehicle { }
+
+
+def generic bump-into(one @ Vehicle, two @ Vehicle)
+  foo(3dh)
+  foo(77h) foo(68h) foo(61h) foo(74h) foo(3fh) foo(10) -- what?
+
+def bump-into(one @ Car, two @ Bicycle)
+  foo(3dh)
+  foo(32h) foo(6eh) foo(64h) foo(10)    -- 2nd
+
+def bump-into(one @ Bicycle, two @ Car)
+  foo(3dh)
+  foo(31h) foo(73h) foo(74h) foo(10)    -- 1st
+
+def bump-into(one @ Harvester, two @ Car)
+  foo(3dh)
+  foo(6dh) foo(6fh) foo(73h) foo(74h) foo(6ch) foo(79h) foo(20h)
+  foo(32h) foo(6eh) foo(64h) foo(10)    -- mostly 2nd
+
+def bump-into(one @ Car, two @ Car)
+  foo(3dh)
+  foo(62h) foo(6fh) foo(74h) foo(68h) foo(10) -- both
+
+def bump-into(one @ MotorVehicle, two @ MotorVehicle)
+  foo(3dh)
+  foo(73h) foo(6fh) foo(6dh) foo(65h) foo(68h)
+  foo(6fh) foo(77h) foo(20h)
+  foo(62h) foo(6fh) foo(74h) foo(68h) foo(10) -- somehow both
+
+
+def app|main()
+  let car = Car()
+  let bicycle = Bicycle()
+  let plane = Plane()
+  let harvester = Harvester()
+
+  car.bump-into(bicycle)
+  bicycle.bump-into(car)
+  plane.bump-into(car)
+  plane.bump-into(plane)
+  car.bump-into(car)
+  harvester.bump-into(car)
+  car.bump-into(harvester)
+
+  1

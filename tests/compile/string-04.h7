@@ -1,7 +1,0 @@
-import "lang/assert.h7"
-
-def app|main()
-  assert("abc"[0u] == \a)
-  assert("abc"[1u] == \b)
-  assert("abc"[2u] == \c)
-  0

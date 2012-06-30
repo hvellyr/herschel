@@ -50,7 +50,7 @@ SetupUnix::exeFromDevpath(const char* exeName, const String& exedir,
       String basepath = exedir.part(0, exedir.length() - fullpath.length() + 1);
 
       paths.fLibExec = exedir.part(0, exedir.length() - strlen(exeName));
-      paths.fH7Includes = file::appendDir(file::makeDir(basepath),
+      paths.fHrIncludes = file::appendDir(file::makeDir(basepath),
                                           String("lib"));
       paths.fRtLib = paths.fLibExec;
 
@@ -88,7 +88,7 @@ SetupUnix::exeFromRuntimeInstallation(const char* exeName,
       // a $(prefix)/lib/herschel/x.y.z folder
       if (file::isDir(basePkgPath)) {
         paths.fLibExec = basePkgPath;
-        paths.fH7Includes = file::appendDir(file::makeDir(basePkgPath),
+        paths.fHrIncludes = file::appendDir(file::makeDir(basePkgPath),
                                             String("include"));
         paths.fRtLib = basePkgPath;
 
@@ -120,7 +120,7 @@ SetupUnix::findSysResources(const char* exeName) const
     if (exeFromDevpath(exeName, exedir, paths) ||
         exeFromRuntimeInstallation(exeName, exedir, paths))
     {
-      setup.fSysPath.push_back(paths.fH7Includes);
+      setup.fSysPath.push_back(paths.fHrIncludes);
       setup.fHrcPath = file::appendFile(file::makeDir(paths.fLibExec),
                                         String("hrc"));
       setup.fLdPath = paths.fLlvmLdPath;

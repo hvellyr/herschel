@@ -1,0 +1,10 @@
+module xi
+
+import "cat.hr"
+import "dog.hr"
+
+def generic make-noise(o @ Cat) ...
+def generic like?(o @ Cat, two @ Cat) : Bool ...
+
+def app|main()
+  42

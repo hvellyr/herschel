@@ -1,0 +1,79 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+module lang
+export public(*)
+
+import "lang/numbers.hr"
+import "lang/types.hr"
+
+
+def type Class<T>
+    ~ The type of classes themselves. ~
+
+
+def generic init-functor(ty @ Class<'T>) : Function(o : 'T, rest-args ...) : 'T ...
+    ~ Returns the init function for type @var{ty}. ~
+
+
+def generic type-of(obj @ 'T) : Class<'T> ...
+    ~ Returns the type of an object @var{obj}. ~
+
+
+def generic isa?(obj @ 'T, ty @ Class<'V>) : Bool ...
+    ~ If @var{obj} is an instance, indicates whether @var{obj} is of type
+    @var{ty}.  If @var{obj} is a type or a class itself indicates whether
+    @var{obj} is a kind of @var{ty}. ~
+
+
+------------------------------------------------------------------------------
+-- Default value
+------------------------------------------------------------------------------
+
+def generic null-value(ty @ Class<'T>) : 'T ...
+  ~ Returns the default null value for type @type{T}.
+
+  For reference types this is normally always @val{nil}, for integers this
+  is @val{0}, for chars @val{#\\0000}, etc. ~
+
+
+def generic min-value(ty @ Class<'T>) : 'T ...
+def generic max-value(ty @ Class<'T>) : 'T ...
+
+
+
+------------------------------------------------------------------------------
+-- allocation
+------------------------------------------------------------------------------
+
+def generic allocate(ty @ Class<'T>) : 'T ...
+    ~ Allocate a new instance of type @var{ty}.  Note that the allocated
+    object is not initialized! ~
+
+
+def generic allocate*(ty @ Class<'T>,
+                      value : 'T = ty.null-value,
+                      sizes ...) : 'T[] ...
+    ~ Allocate an array of @var{ty} with @var{sizes} slots.  Each slot is
+    initialized to @var{value}.  The size is computed from all the product of
+    all values in @var{sizes}, i.e. three value @code{3, 7, 11} would result
+    in (three dimensional) array of 231 slots. ~
+
+
+------------------------------------------------------------------------------
+
+def type Range<T>
+
+module Range
+{
+  export public (init)
+
+  def init(range : Range<'T>, from : 'T, to : 'T, step : 'T) : Range<'T> ...
+}
+
+
+-- end of runtime

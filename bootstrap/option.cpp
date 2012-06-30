@@ -181,7 +181,7 @@ SUITE(OptionsParser)
                                   "--verbose",
                                   "-P", "8080",
                                   "-U",
-                                  "abc.h7", "xyz.h7" };
+                                  "abc.hr", "xyz.hr" };
 
     OptionsParser p(options, 10, args);
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kOption);
@@ -211,11 +211,11 @@ SUITE(OptionsParser)
 
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNotAnOption);
     CHECK(option.fOption.isEmpty());
-    CHECK_EQUAL(option.fArgument, String("abc.h7"));
+    CHECK_EQUAL(option.fArgument, String("abc.hr"));
 
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNotAnOption);
     CHECK(option.fOption.isEmpty());
-    CHECK_EQUAL(option.fArgument, String("xyz.h7"));
+    CHECK_EQUAL(option.fArgument, String("xyz.hr"));
 
     CHECK_EQUAL(p.nextOption(&option), OptionsParser::kNoMoreArgs);
   }

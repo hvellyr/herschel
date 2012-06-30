@@ -52,29 +52,29 @@ SUITE(SrcPos)
   TEST(AssignOp)
   {
     SrcPos pos;
-    pos = SrcPos("abc.h7", 1211);
+    pos = SrcPos("abc.hr", 1211);
     CHECK_EQUAL(pos.lineNumber(), 1211);
-    CHECK_EQUAL(pos.file(), String("abc.h7"));
-    CHECK_EQUAL(pos.toString(), String("abc.h7:1211"));
+    CHECK_EQUAL(pos.file(), String("abc.hr"));
+    CHECK_EQUAL(pos.toString(), String("abc.hr:1211"));
   }
 
   TEST(CopyCtor)
   {
-    SrcPos p("abc.h7", 1211);
+    SrcPos p("abc.hr", 1211);
     SrcPos q(p);
     CHECK_EQUAL(q.lineNumber(), 1211);
-    CHECK_EQUAL(q.file(), String("abc.h7"));
-    CHECK_EQUAL(q.toString(), String("abc.h7:1211"));
+    CHECK_EQUAL(q.file(), String("abc.hr"));
+    CHECK_EQUAL(q.toString(), String("abc.hr:1211"));
   }
 
 
   TEST(EqualOp)
   {
-    CHECK_EQUAL(SrcPos("abc.h7", 1211), SrcPos("abc.h7", 1211));
+    CHECK_EQUAL(SrcPos("abc.hr", 1211), SrcPos("abc.hr", 1211));
     CHECK_EQUAL(SrcPos(), SrcPos());
-    CHECK(SrcPos("abc.h7", 1211) != SrcPos("abc.h7", 1300));
-    CHECK(SrcPos("abc.h7", 1211) != SrcPos("abx.h7", 1211));
-    CHECK(SrcPos("abc.h7", 1211) != SrcPos("abx.h7", 1300));
+    CHECK(SrcPos("abc.hr", 1211) != SrcPos("abc.hr", 1300));
+    CHECK(SrcPos("abc.hr", 1211) != SrcPos("abx.hr", 1211));
+    CHECK(SrcPos("abc.hr", 1211) != SrcPos("abx.hr", 1300));
   }
 }
 

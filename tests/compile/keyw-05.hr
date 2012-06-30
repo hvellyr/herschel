@@ -1,0 +1,21 @@
+-- return Keyword from generic functions
+
+import "lang/assert.hr"
+
+module xi
+
+def generic foo(obj @ Any) : Keyword ...
+
+
+def foo(obj @ Int) : Keyword
+  #red
+
+
+def foo(obj @ Keyword) : Keyword
+  obj
+
+
+def app|main()
+  assert(foo(1234) == #red)
+  assert(foo(#blue) == #blue)
+  0

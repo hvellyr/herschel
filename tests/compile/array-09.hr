@@ -1,0 +1,9 @@
+import "lang/assert.hr"
+
+def app|main()
+  let t = Int[](16, value: 42)
+
+  assert(t[0u] == 42)
+
+  t[15u]
+

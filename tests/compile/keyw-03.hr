@@ -1,0 +1,7 @@
+-- compare keywords
+import "lang/assert.hr"
+
+def app|main()
+  assert(#red <> #green)
+  assert(#red == #red)
+  0

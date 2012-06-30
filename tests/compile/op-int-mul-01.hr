@@ -1,0 +1,102 @@
+import "lang/assert.hr"
+
+def assert-mul32/32(a : Int, b : Int, r : Int) : Bool
+  assert(a * b == r)
+
+
+def assert-mul64/64(a : Int64, b : Int64, r : Int64) : Bool
+  assert(a * b == r)
+
+def assert-mulu64/u64(a : UInt64, b : UInt64, r : UInt64) : Bool
+  assert(a * b == r)
+
+
+def assert-mul64/8(a : Int64, b : Int8, r : Int64) : Bool
+  assert(a * b == r)
+
+def assert-mul8/64(a : Int8, b : Int64, r : Int64) : Bool
+  assert(a * b == r)
+
+def assert-mul8/32(a : Int8, b : Int32, r : Int32) : Bool
+  assert(a * b == r)
+
+def assert-mul64/16(a : Int64, b : Int16, r : Int64) : Bool
+  assert(a * b == r)
+
+def assert-mul16/64(a : Int16, b : Int64, r : Int64) : Bool
+  assert(a * b == r)
+
+
+def assert-mul64/32(a : Int64, b : Int32, r : Int64) : Bool
+  assert(a * b == r)
+
+def assert-mul32/64(a : Int32, b : Int64, r : Int64) : Bool
+  assert(a * b == r)
+
+
+def assert-mul16/16(a : Int16, b : Int16, r : Int16) : Bool
+  assert(a * b == r)
+
+def assert-mul8/8(a : Int8, b : Int8, r : Int8) : Bool
+  assert(a * b == r)
+
+def assert-mulu8/u8(a : UInt8, b : UInt8, r : UInt8) : Bool
+  assert(a * b == r)
+
+
+def test-mul()
+  assert(5 * 4 == 20)
+
+  assert-mul32/32(5, 4, 20)
+
+  let t = 21
+  let r = 42
+  assert(r * t == 882)
+
+  assert-mul32/32(127, 1, 127)
+  assert-mul32/32(0, 0, 0)
+  assert-mul32/32(42, -10, -420)
+
+  assert-mul32/32(2147483647, 2, -2)    -- overflow
+  assert-mul32/32(-2147483647, -2147483647, 1)
+  assert-mul32/32(-2147483648, -2147483647, -2147483648)
+
+  assert-mul32/32(2147483647, 1, 2147483647)
+  assert-mul32/32(2147483647, -1, -2147483647)
+  assert-mul32/32(-2147483647, -1, 2147483647)
+
+  assert-mul64/32(2147483647l, 2, 4294967294l)
+
+
+  -- 64bit
+  assert-mul64/64(512L, 512L, 262144L)
+  assert-mul64/64(0L, 0L, 0L)
+  assert-mul64/64(262144L, 262144L, 68719476736L)
+
+
+  assert-mulu64/u64(2147483648uL, 2uL, 4294967296uL)
+
+  -- 16bit
+
+  assert-mul16/16(12s, 12s, 144s)
+  assert-mul16/16(32767s, 2s, -2s)
+  assert-mul16/16(32767s, -2s, 2s)
+
+
+  -- 8bit
+  assert-mul8/8(10t, 10t, 100t)
+  assert-mul8/8(-1t, -1t, 1t)
+
+  assert-mulu8/u8(16ut, 16ut, 0ut)
+
+
+  -- mixed
+  assert-mul8/64(1t, -9223372036854775808L, -9223372036854775808L)
+  assert-mul8/32(127t, 2, 254)  -- propagates to Int32
+
+  true
+
+def app|main()
+  test-mul()
+
+  0

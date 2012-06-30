@@ -1,0 +1,6 @@
+import "person.hr"
+
+def class Employee : Person
+{
+--  def slot name : String
+}

@@ -1,0 +1,31 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2010-2011 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+module lang
+export public(Copyable,
+              copy, deepen, deep-copy)
+
+
+def type Copyable
+
+def generic copy(obj @ 'T) : 'T
+    where T isa Copyable ...
+    ~ Returns a shallow copy of @var{obj}. ~
+
+def generic deepen(obj @ 'T) : 'T
+    where T isa Copyable ...
+    ~ Copies all child objects using @code{copy} and @code{deepen} on
+    them. ~
+
+
+def generic deep-copy(obj @ 'T) : 'T
+    where T isa Copyable ...
+    ~ Returns a deep copy of @var{obj}.~
+
+
+-- end of copyable.hr
+

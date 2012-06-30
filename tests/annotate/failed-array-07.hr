@@ -1,0 +1,24 @@
+-- it is not possible to allocate arrays of complex objects which have
+-- explicit constructor paraemeters
+
+import "lang/assert.hr"
+
+def class XYZ(v : Int)
+{
+  def slot x : Int = v
+}
+
+def x(o : XYZ) : Int
+  o ^ x
+
+def x!(o : XYZ, v : Int) : XYZ
+  o ^ x = v
+  o
+
+
+def app|main()
+  let t = XYZ[](16)
+
+  t[0u].x = 42
+
+  t[0u].x

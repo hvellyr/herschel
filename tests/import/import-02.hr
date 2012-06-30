@@ -1,0 +1,5 @@
+-- test to import ignore-green-02.hr
+
+import "import/ignore-green-02.hr"
+
+def abc a = 12

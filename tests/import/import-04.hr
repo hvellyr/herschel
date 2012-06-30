@@ -1,0 +1,14 @@
+-- test for importing and modules
+
+-- ignore-green-04 imports ignore-green-04b which declares MyNumber
+-- **outside** of its module definition.  The imported MyNumber declaration
+-- is therefore visible here.  The symbol "MyString" is however exported to
+-- 'outer' only in green-04b and therefore not visibile here (i.e. a is of
+-- type 'lang|Float', not 'MyNumber').
+
+module a1
+
+import "import/ignore-green-04.hr"
+
+def a : MyNumber = 12
+def b : MyString = "abc"

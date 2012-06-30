@@ -236,24 +236,24 @@ Compiler::importSystemHeaders(const String& avoidPath)
 {
   String fullAvoidPath = file::canonicalPathName(avoidPath);
 
-  if (!importSystemHeader(String("builtin:lang/types.h7"), fullAvoidPath))
+  if (!importSystemHeader(String("builtin:lang/types.hr"), fullAvoidPath))
     return;
 
-  if (!importSystemHeader(String("builtin:lang/numbers.h7"), fullAvoidPath))
+  if (!importSystemHeader(String("builtin:lang/numbers.hr"), fullAvoidPath))
     return;
 
-  if (!importSystemHeader(String("builtin:lang/comparable.h7"), fullAvoidPath))
+  if (!importSystemHeader(String("builtin:lang/comparable.hr"), fullAvoidPath))
     return;
 
-  if (!importSystemHeader(String("builtin:lang/runtime.h7"), fullAvoidPath))
+  if (!importSystemHeader(String("builtin:lang/runtime.hr"), fullAvoidPath))
     return;
 
-  if (!importSystemHeader(String("builtin:lang/sliceable.h7"), fullAvoidPath))
+  if (!importSystemHeader(String("builtin:lang/sliceable.hr"), fullAvoidPath))
     return;
 
-  if (!importSystemHeader(String("builtin:lang/copyable.h7"), fullAvoidPath))
+  if (!importSystemHeader(String("builtin:lang/copyable.hr"), fullAvoidPath))
     return;
-  if (!importSystemHeader(String("builtin:lang/string.h7"), fullAvoidPath))
+  if (!importSystemHeader(String("builtin:lang/string.hr"), fullAvoidPath))
     return;
 }
 
