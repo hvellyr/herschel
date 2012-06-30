@@ -14,18 +14,18 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-typedef struct List List;
-struct List
+typedef struct H7_List H7_List;
+struct H7_List
 {
-  List*     fTail;
-  void*     fValue;
+  H7_List* fTail;
+  void*    fValue;
 };
 
 
-List* list_insert(List* l, void* value);
-List* list_append(List* l, void* value);
-List* list_insert_before(List* l, void *ref, void *obj);
+H7_List* h7_list_insert(H7_List* l, void* value);
+H7_List* h7_list_append(H7_List* l, void* value);
+H7_List* h7_list_insert_before(H7_List* l, void *ref, void *obj);
 
-size_t list_items(List* l);
+size_t h7_list_items(H7_List* l);
 
 #endif  /* runtime_insert_h */

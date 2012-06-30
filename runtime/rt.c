@@ -10,9 +10,11 @@
 
 #include <stdio.h>
 
-#include "runtime/rt.h"
+#include "runtime/herschel.h"
 #include "runtime/trace.h"
 #include "runtime/typeid.h"
+#include "runtime/method.h"
+#include "runtime/keyword.h"
 
 
 static const char*
@@ -51,7 +53,7 @@ unexpected_atom_type(long expected_id, long found_id)
 }
 
 int8_t
-atom_2_int8(struct ATOM a)
+atom_2_int8(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to int8 */
   return (int8_t)a.u.v_int;
@@ -59,7 +61,7 @@ atom_2_int8(struct ATOM a)
 
 
 int16_t
-atom_2_int16(struct ATOM a)
+atom_2_int16(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to int16 */
   return (int16_t)a.u.v_int;
@@ -67,7 +69,7 @@ atom_2_int16(struct ATOM a)
 
 
 int32_t
-atom_2_int32(struct ATOM a)
+atom_2_int32(H7_ATOM a)
 {
   if (a.typeid != TYPE_TAG_INT32)
     unexpected_atom_type(TYPE_TAG_INT32, a.typeid);
@@ -77,7 +79,7 @@ atom_2_int32(struct ATOM a)
 
 
 uint8_t
-atom_2_uint8(struct ATOM a)
+atom_2_uint8(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to uint8 */
   return (uint8_t)a.u.v_int;
@@ -85,7 +87,7 @@ atom_2_uint8(struct ATOM a)
 
 
 uint16_t
-atom_2_uint16(struct ATOM a)
+atom_2_uint16(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to uint16 */
   return (uint16_t)a.u.v_int;
@@ -93,7 +95,7 @@ atom_2_uint16(struct ATOM a)
 
 
 uint32_t
-atom_2_uint32(struct ATOM a)
+atom_2_uint32(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to uint32 */
   return (uint32_t)a.u.v_int;
@@ -101,7 +103,7 @@ atom_2_uint32(struct ATOM a)
 
 
 uint32_t
-atom_2_char(struct ATOM a)
+atom_2_char(H7_ATOM a)
 {
   if (a.typeid != TYPE_TAG_CHAR)
     unexpected_atom_type(TYPE_TAG_CHAR, a.typeid);
@@ -111,7 +113,7 @@ atom_2_char(struct ATOM a)
 
 
 int
-atom_2_bool(struct ATOM a)
+atom_2_bool(H7_ATOM a)
 {
   if (a.typeid != TYPE_TAG_BOOL)
     unexpected_atom_type(TYPE_TAG_BOOL, a.typeid);
@@ -121,7 +123,7 @@ atom_2_bool(struct ATOM a)
 
 
 float
-atom_2_float32(struct ATOM a)
+atom_2_float32(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to float32 */
   return a.u.v_float;
@@ -129,7 +131,7 @@ atom_2_float32(struct ATOM a)
 
 
 int64_t
-atom_2_int64(struct ATOM a)
+atom_2_int64(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to int64 */
 
@@ -140,7 +142,7 @@ atom_2_int64(struct ATOM a)
 
 
 uint64_t
-atom_2_uint64(struct ATOM a)
+atom_2_uint64(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to uint64 */
 
@@ -151,7 +153,7 @@ atom_2_uint64(struct ATOM a)
 
 
 double
-atom_2_float64(struct ATOM a)
+atom_2_float64(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to float64 */
 
@@ -162,7 +164,7 @@ atom_2_float64(struct ATOM a)
 
 
 void*
-atom_2_keyword(struct ATOM a)
+atom_2_keyword(H7_ATOM a)
 {
   if (a.typeid != TYPE_TAG_KEYW)
     unexpected_atom_type(TYPE_TAG_KEYW, a.typeid);
@@ -174,12 +176,9 @@ atom_2_keyword(struct ATOM a)
 /* ------------------------------------------------------------------------
    class register
    ------------------------------------------------------------------------ */
-extern void type_init();
-extern void methods_init();
-extern void keywords_init();
 
 void
-runtime_init()
+h7_runtime_init()
 {
   static int is_initialized = 0;
 
@@ -187,14 +186,14 @@ runtime_init()
     is_initialized = 1;
 
 #if defined(UNITTESTS)
-  ATOM a;
-  hr_trace("platform", "Sizeof ATOM struct: %ld", sizeof(ATOM));
+  H7_ATOM a;
+  hr_trace("platform", "Sizeof ATOM struct: %ld", sizeof(H7_ATOM));
   hr_trace("platform", "Offset typeid:      %ld", (char*)&a.typeid - (char*)&a);
   hr_trace("platform", "Offset u.v_obj:     %ld", (char*)&a.u.v_obj - (char*)&a);
 #endif
 
-    type_init();
-    methods_init();
-    keywords_init();
+    h7_type_init();
+    h7_methods_init();
+    h7_keywords_init();
   }
 }

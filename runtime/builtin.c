@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "runtime/rt.h"
+#include "runtime/herschel.h"
 
 
 int __lang_equal(int one, int two)

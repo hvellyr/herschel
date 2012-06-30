@@ -14,27 +14,28 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "runtime/rt.h"
 #include "runtime/hash.h"
 #include "runtime/list.h"
+#include "runtime/method.h"
 #include "runtime/trace.h"
+#include "runtime/typeid.h"
 
-static HashTable* generic_functions = NULL; /* hash<char*, GenericFunction*> */
+static H7_HashTable* generic_functions = NULL; /* hash<char*, H7_GenericFunction*> */
 
 
 void
-methods_init()
+h7_methods_init()
 {
-  generic_functions = hashtable_alloc(27,
-                                      hashtable_cstr_func,
-                                      hashtable_cstr_cmp_func);
+  generic_functions = h7_hashtable_alloc(27,
+                                         h7_hashtable_cstr_func,
+                                         h7_hashtable_cstr_cmp_func);
 }
 
 
-GenericFunction*
-generic_function_alloc(const char* name, size_t argc)
+H7_GenericFunction*
+h7_generic_function_alloc(const char* name, size_t argc)
 {
-  GenericFunction* gf = malloc(sizeof(GenericFunction));
+  H7_GenericFunction* gf = malloc(sizeof(H7_GenericFunction));
   gf->name = name;
   gf->argc = argc;
   gf->methods = NULL;
@@ -43,9 +44,9 @@ generic_function_alloc(const char* name, size_t argc)
 
 
 void
-register_generic_function(GenericFunction* genfun)
+h7_register_generic_function(H7_GenericFunction* genfun)
 {
-  hashtable_add(generic_functions, (void*)genfun->name, (void*)genfun);
+  h7_hashtable_add(generic_functions, (void*)genfun->name, (void*)genfun);
 
 #if defined(UNITTESTS)
   hr_trace("register", "Register generic function: %s [arity %ld]",
@@ -55,7 +56,7 @@ register_generic_function(GenericFunction* genfun)
 
 
 static void
-print_method(const char* funname, Method* m)
+print_method(const char* funname, H7_Method* m)
 {
   int i;
 
@@ -71,13 +72,13 @@ print_method(const char* funname, Method* m)
 
 
 void
-print_generic_func(GenericFunction* gf)
+print_generic_func(H7_GenericFunction* gf)
 {
-  List *l = gf->methods;
-  fprintf(stderr, "-- %ld ----------------------------------------\n", list_items(l));
+  H7_List *l = gf->methods;
+  fprintf(stderr, "-- %ld ----------------------------------------\n", h7_list_items(l));
   while (l) {
     fprintf(stderr, "  ");
-    print_method(gf->name, (Method*)l->fValue);
+    print_method(gf->name, (H7_Method*)l->fValue);
     fprintf(stderr, "\n");
     l = l->fTail;
   }
@@ -85,11 +86,11 @@ print_generic_func(GenericFunction* gf)
 
 
 void
-register_method(GenericFunction* gf, void* func, size_t argc, ...)
+h7_register_method(H7_GenericFunction* gf, void* func, size_t argc, ...)
 {
-  Method* m = malloc(sizeof(Method));
-  List* insert_before = NULL;
-  List* l = gf->methods;
+  H7_Method* m = malloc(sizeof(H7_Method));
+  H7_List* insert_before = NULL;
+  H7_List* l = gf->methods;
 
   m->argc = argc;
   m->func = func;
@@ -98,11 +99,11 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
     va_list vp;
     size_t i = 0;
 
-    m->args = malloc(argc * sizeof(Type*));
+    m->args = malloc(argc * sizeof(H7_Type*));
 
     va_start(vp, argc);
     for (i = 0; i < argc; i++) {
-      m->args[i] = va_arg(vp, Type*);
+      m->args[i] = va_arg(vp, H7_Type*);
     }
     va_end(vp);
   }
@@ -122,7 +123,7 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
 
 
   while (l != NULL) {
-    Method* m0 = (Method*)l->fValue;
+    H7_Method* m0 = (H7_Method*)l->fValue;
     size_t i;
     int ambiguous = 0;
     int is_all_super = 0;
@@ -132,13 +133,13 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
       if (m0->args[i] == m->args[i]) {
         /* nop */
       }
-      else if (type_isa(m0->args[i], m->args[i])) {
+      else if (h7_type_isa(m0->args[i], m->args[i])) {
         if (is_all_sub)
           ambiguous = 1;
         else
           is_all_super = 1;
       }
-      else if (type_isa(m->args[i], m0->args[i])) {
+      else if (h7_type_isa(m->args[i], m0->args[i])) {
         if (is_all_super)
           ambiguous = 1;
         else
@@ -161,9 +162,9 @@ register_method(GenericFunction* gf, void* func, size_t argc, ...)
   }
 
   if (insert_before)
-    gf->methods = list_insert_before(gf->methods, insert_before->fValue, m);
+    gf->methods = h7_list_insert_before(gf->methods, insert_before->fValue, m);
   else
-    gf->methods = list_append(gf->methods, m);
+    gf->methods = h7_list_append(gf->methods, m);
 
   /* print_generic_func(gf); */
 }
@@ -181,20 +182,20 @@ no_such_method_cb()
   ((_ty) != NULL ? (_ty)->name : "<unknown type>")
 
 
-Method*
-lookup_func1(GenericFunction* gf, TagId ty0_id)
+H7_Method*
+h7_lookup_func1(H7_GenericFunction* gf, H7_TagId ty0_id)
 {
-  Type* ty0 = type_lookup_by_tag(ty0_id);
+  H7_Type* ty0 = h7_type_lookup_by_tag(ty0_id);
   if (ty0 != NULL) {
-    List* l = gf->methods;
+    H7_List* l = gf->methods;
 
     assert(gf->argc == 1);
 
     while (l) {
-      Method* m = (Method*)l->fValue;
+      H7_Method* m = (H7_Method*)l->fValue;
       assert(m->argc == 1);
 
-      if (type_isa(ty0, m->args[0]))
+      if (h7_type_isa(ty0, m->args[0]))
         return m;
       l = l->fTail;
     }
@@ -205,7 +206,7 @@ lookup_func1(GenericFunction* gf, TagId ty0_id)
            ty_name(ty0), gf->name);
 #endif
 
-  static Method no_such_method;
+  static H7_Method no_such_method;
   no_such_method.args = NULL;
   no_such_method.argc = 1;
   no_such_method.func = &no_such_method_cb;
@@ -214,22 +215,22 @@ lookup_func1(GenericFunction* gf, TagId ty0_id)
 }
 
 
-Method*
-lookup_func2(GenericFunction* gf, TagId ty0_id, TagId ty1_id)
+H7_Method*
+h7_lookup_func2(H7_GenericFunction* gf, H7_TagId ty0_id, H7_TagId ty1_id)
 {
-  Type* ty0 = type_lookup_by_tag(ty0_id);
-  Type* ty1 = type_lookup_by_tag(ty1_id);
+  H7_Type* ty0 = h7_type_lookup_by_tag(ty0_id);
+  H7_Type* ty1 = h7_type_lookup_by_tag(ty1_id);
 
   if (ty0 != NULL && ty1 != NULL) {
-    List* l = gf->methods;
+    H7_List* l = gf->methods;
     assert(gf->argc == 2);
 
     while (l) {
-      Method* m = (Method*)l->fValue;
+      H7_Method* m = (H7_Method*)l->fValue;
       assert(m != NULL && m->argc == 2);
 
-      if (type_isa(ty0, m->args[0]) &&
-          type_isa(ty1, m->args[1]))
+      if (h7_type_isa(ty0, m->args[0]) &&
+          h7_type_isa(ty1, m->args[1]))
         return m;
 
       l = l->fTail;
@@ -241,7 +242,7 @@ lookup_func2(GenericFunction* gf, TagId ty0_id, TagId ty1_id)
            ty_name(ty0), ty_name(ty1), gf->name);
 #endif
 
-  static Method no_such_method;
+  static H7_Method no_such_method;
   no_such_method.args = NULL;
   no_such_method.argc = 2;
   no_such_method.func = &no_such_method_cb;
@@ -250,25 +251,26 @@ lookup_func2(GenericFunction* gf, TagId ty0_id, TagId ty1_id)
 }
 
 
-Method*
-lookup_func3(GenericFunction* gf, TagId ty0_id, TagId ty1_id, TagId ty2_id)
+H7_Method*
+h7_lookup_func3(H7_GenericFunction* gf,
+                H7_TagId ty0_id, H7_TagId ty1_id, H7_TagId ty2_id)
 {
-  Type* ty0 = type_lookup_by_tag(ty0_id);
-  Type* ty1 = type_lookup_by_tag(ty1_id);
-  Type* ty2 = type_lookup_by_tag(ty2_id);
+  H7_Type* ty0 = h7_type_lookup_by_tag(ty0_id);
+  H7_Type* ty1 = h7_type_lookup_by_tag(ty1_id);
+  H7_Type* ty2 = h7_type_lookup_by_tag(ty2_id);
 
   if (ty0 != NULL && ty1 != NULL && ty2 != NULL) {
-    List* l = gf->methods;
+    H7_List* l = gf->methods;
 
     assert(gf->argc == 3);
 
     while (l) {
-      Method* m = (Method*)l->fValue;
+      H7_Method* m = (H7_Method*)l->fValue;
       assert(m->argc == 3);
 
-      if (type_isa(ty0, m->args[0]) &&
-          type_isa(ty1, m->args[1]) &&
-          type_isa(ty2, m->args[2]))
+      if (h7_type_isa(ty0, m->args[0]) &&
+          h7_type_isa(ty1, m->args[1]) &&
+          h7_type_isa(ty2, m->args[2]))
         return m;
       l = l->fTail;
     }
@@ -279,7 +281,7 @@ lookup_func3(GenericFunction* gf, TagId ty0_id, TagId ty1_id, TagId ty2_id)
            ty_name(ty0), ty_name(ty1), ty_name(ty2), gf->name);
 #endif
 
-  static Method no_such_method;
+  static H7_Method no_such_method;
   no_such_method.args = NULL;
   no_such_method.argc = 3;
   no_such_method.func = &no_such_method_cb;

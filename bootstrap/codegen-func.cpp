@@ -225,10 +225,10 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
 
   lookupArgv.insert(lookupArgv.begin(), gf);
 
-  String lookupFuncName = String("lookup_func") + fromInt(specArgCount);
+  String lookupFuncName = String("h7_lookup_func") + fromInt(specArgCount);
   llvm::Function* lookupFunc = module()->getFunction(llvm::StringRef(lookupFuncName));
   if (lookupFunc == NULL) {
-    // Method* m = lookup_func*(gf, ty0);
+    // Method* m = h7_lookup_func*(gf, ty0);
     std::vector<const llvm::Type*> sign;
     sign.push_back(types()->getGenericFuncType());
     // add a list of tagid arguments

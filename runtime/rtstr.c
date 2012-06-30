@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "runtime/rt.h"
+#include "runtime/herschel.h"
 #include "runtime/trace.h"
 #include "runtime/typeid.h"
 
@@ -27,7 +27,7 @@
 typedef unsigned short Ucs2Char;
 
 
-void allocate_string(struct ATOM* instance, const char* str)
+void allocate_string(H7_ATOM* instance, const char* str)
 {
   size_t items = 0;
 
@@ -53,9 +53,9 @@ void allocate_string(struct ATOM* instance, const char* str)
 }
 
 
-struct ATOM allocate_string_n(size_t items, unsigned int c)
+H7_ATOM allocate_string_n(size_t items, unsigned int c)
 {
-  struct ATOM instance;
+  H7_ATOM instance;
 
 #if defined(UNITTESTS)
   hr_trace("allocate",
@@ -83,7 +83,7 @@ struct ATOM allocate_string_n(size_t items, unsigned int c)
 }
 
 
-int lang_string_compare(struct ATOM atom0, struct ATOM atom1)
+int lang_string_compare(H7_ATOM atom0, H7_ATOM atom1)
 {
   if (atom0.typeid == atom1.typeid && atom1.typeid == TYPE_TAG_STRINGIMPL) {
     size_t items0 = *((size_t*)atom0.u.v_obj);
@@ -114,7 +114,7 @@ int lang_string_compare(struct ATOM atom0, struct ATOM atom1)
 }
 
 
-unsigned int lang_string_length(struct ATOM atom0)
+unsigned int lang_string_length(H7_ATOM atom0)
 {
   if (atom0.typeid == TYPE_TAG_STRINGIMPL) {
     return *((size_t*)atom0.u.v_obj);
@@ -123,7 +123,7 @@ unsigned int lang_string_length(struct ATOM atom0)
   return 0;
 }
 
-unsigned int lang_string_char_at_index(struct ATOM atom0,
+unsigned int lang_string_char_at_index(H7_ATOM atom0,
                                        unsigned int idx)
 {
   if (atom0.typeid == TYPE_TAG_STRINGIMPL) {
@@ -137,7 +137,7 @@ unsigned int lang_string_char_at_index(struct ATOM atom0,
   return 0;
 }
 
-void lang_string_set_char_at_index(struct ATOM atom0,
+void lang_string_set_char_at_index(H7_ATOM atom0,
                                    unsigned int idx, unsigned int c)
 {
   if (atom0.typeid == TYPE_TAG_STRINGIMPL) {
