@@ -141,7 +141,7 @@ CodegenTools::makeStringAtom(const String& str)
 
   llvm::Function *allocFunc = module()->getFunction(llvm::StringRef(funcnm));
   if (allocFunc == NULL) {
-    // void allocate_array(ATOM* instance, Type* ty, size_t items);
+    // void h7_allocate_array(ATOM* instance, Type* ty, size_t items);
     llvm::FunctionType *ft = llvm::FunctionType::get(
       llvm::Type::getVoidTy(context()),
       vector_of<const llvm::Type*>(types()->getAtomType()->getPointerTo())

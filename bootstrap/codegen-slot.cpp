@@ -88,11 +88,11 @@ CodegenSlot::emitSlotRefAssignment(const SlotRefNode* node,
 llvm::Value*
 CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
 {
-  const char* slotFuncName = "instance_slot";
+  const char* slotFuncName = "h7_instance_slot";
 
   llvm::Function *slotFunc = module()->getFunction(llvm::StringRef(slotFuncName));
   if (slotFunc == NULL) {
-    // void* instance_slot(ATOM* instance, const char* slot_name);
+    // void* h7_instance_slot(ATOM* instance, const char* slot_name);
     llvm::FunctionType *ft = llvm::FunctionType::get(
       llvm::Type::getInt8PtrTy(context()),
       vector_of(types()->getAtomType())

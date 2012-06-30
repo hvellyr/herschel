@@ -2,7 +2,7 @@
 
    This file is part of the herschel package
 
-   Copyright (c) 2010-2011 Gregor Klinke
+   Copyright (c) 2010-2012 Gregor Klinke
    All rights reserved.
 
    This source code is released under the BSD License.
@@ -10,6 +10,8 @@
 
 #ifndef runtime_typeid_h
 #define runtime_typeid_h
+
+#include "runtime/herschel.h"
 
 #define TYPE_TAG_ANY     0x01
 #define TYPE_TAG_BOOL    0x02
@@ -31,5 +33,15 @@
 #define TYPE_TAG_STRINGIMPL 0x11
 
 #define TYPE_ARRAY_OFFSET 0x40
+
+void h7_type_init();
+
+size_t h7_type_slot_get(H7_Type* ty, const char* slot_name);
+
+H7_Type* type_lookup_by_name(const char* nm);
+H7_Type* h7_type_lookup_by_tag(int tag_id);
+
+/* checks whether one isa two */
+int h7_type_isa(H7_Type* one, H7_Type* two);
 
 #endif

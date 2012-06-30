@@ -387,7 +387,7 @@ ModuleRuntimeInitializer::createGlobalInitOrDtorFunction(const llvm::FunctionTyp
 void
 ModuleRuntimeInitializer::emitKeywordInitFunc()
 {
-  llvm::Function* regFunc = module()->getFunction(llvm::StringRef("keyword_register"));
+  llvm::Function* regFunc = module()->getFunction(llvm::StringRef("h7_keyword_register"));
   if (regFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(context()),
                                                      vector_of<const llvm::Type*>(
@@ -395,7 +395,7 @@ ModuleRuntimeInitializer::emitKeywordInitFunc()
                                                      !K(isVarArg));
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
-                                     llvm::Twine("keyword_register"),
+                                     llvm::Twine("h7_keyword_register"),
                                      module());
   }
 
@@ -459,7 +459,7 @@ ModuleRuntimeInitializer::emitRuntimeInitFunc()
 
   llvm::Function* rtinitFunc = llvm::Function::Create(ft2,
                                                       llvm::Function::ExternalLinkage,
-                                                      llvm::Twine("runtime_init"),
+                                                      llvm::Twine("h7_runtime_init"),
                                                       module());
 
   std::vector<llvm::Value*> argv;
@@ -505,14 +505,14 @@ ModuleRuntimeInitializer::makeGetTypeLookupCall(const Type& ty) const
 llvm::Value*
 ModuleRuntimeInitializer::makeTypeRegisterCall(llvm::Value* newType) const
 {
-  llvm::Function* regFunc = module()->getFunction(llvm::StringRef("register_type"));
+  llvm::Function* regFunc = module()->getFunction(llvm::StringRef("h7_register_type"));
   if (regFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                      vector_of(types()->getTypeType()),
                                                      !K(isVarArg));
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
-                                     llvm::Twine("register_type"),
+                                     llvm::Twine("h7_register_type"),
                                      module());
   }
 
@@ -623,7 +623,7 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
 {
   const String& typeName = herschel::mangleToC(ty.typeId());
 
-  llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("class_alloc"));
+  llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("h7_class_alloc"));
   if (allocFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
       types()->getTypeType(),
@@ -635,7 +635,7 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
 
     allocFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
-                                     llvm::Twine("class_alloc"),
+                                     llvm::Twine("h7_class_alloc"),
                                      module());
   }
 
@@ -695,7 +695,7 @@ ModuleRuntimeInitializer::makeTypeAllocCall(const Type& ty) const
 {
   const String& typeName = herschel::mangleToC(ty.typeName());
 
-  llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("type_alloc"));
+  llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("h7_type_alloc"));
   if (allocFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
       types()->getTypeType(),
@@ -705,7 +705,7 @@ ModuleRuntimeInitializer::makeTypeAllocCall(const Type& ty) const
 
     allocFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
-                                     llvm::Twine("type_alloc"),
+                                     llvm::Twine("h7_type_alloc"),
                                      module());
   }
 
@@ -755,14 +755,15 @@ ModuleRuntimeInitializer::makeGetGenericFuncLookupCall(const FuncDefNode* node) 
 llvm::Value*
 ModuleRuntimeInitializer::makeGenericFuncRegisterCall(llvm::Value* newGF) const
 {
-  llvm::Function* regFunc = module()->getFunction(llvm::StringRef("register_generic_function"));
+  llvm::Function* regFunc =
+    module()->getFunction(llvm::StringRef("h7_register_generic_function"));
   if (regFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                      vector_of(types()->getGenericFuncType()),
                                                      !K(isVarArg));
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
-                                     llvm::Twine("register_generic_function"),
+                                     llvm::Twine("h7_register_generic_function"),
                                      module());
   }
 
@@ -778,7 +779,7 @@ ModuleRuntimeInitializer::makeGenericFuncAllocCall(const FuncDefNode* node) cons
 {
   const String& funcName = herschel::mangleToC(node->name());
 
-  llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("generic_function_alloc"));
+  llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("h7_generic_function_alloc"));
   if (allocFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
       types()->getGenericFuncType(),
@@ -787,7 +788,7 @@ ModuleRuntimeInitializer::makeGenericFuncAllocCall(const FuncDefNode* node) cons
       !K(isVarArg));
     allocFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
-                                     llvm::Twine("generic_function_alloc"),
+                                     llvm::Twine("h7_generic_function_alloc"),
                                      module());
   }
 
@@ -815,7 +816,7 @@ ModuleRuntimeInitializer::makeGenericFunctionRegistration(const FuncDefNode* nod
 void
 ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
 {
-  llvm::Function* regFunc = module()->getFunction(llvm::StringRef("register_method"));
+  llvm::Function* regFunc = module()->getFunction(llvm::StringRef("h7_register_method"));
   if (regFunc == NULL) {
     llvm::FunctionType* ft = llvm::FunctionType::get(
       llvm::Type::getVoidTy(context()),
@@ -826,7 +827,7 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
 
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
-                                     llvm::Twine("register_method"),
+                                     llvm::Twine("h7_register_method"),
                                      module());
   }
 
@@ -1071,7 +1072,7 @@ CodeGenerator::makeGetArrayTypeLookupCall(const Type& ty) const
 {
   llvm::Value* baseTyValue = makeGetTypeLookupCall(ty.arrayBaseType());
 
-  String funcName = String("type_lookup_array_type");
+  String funcName = String("h7_type_lookup_array_type");
   llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
 
   if (typeFunc == NULL) {

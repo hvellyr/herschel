@@ -24,8 +24,8 @@ SOURCES =         \
 
 HEADERS =         \
 	hash.h          \
+	herschel.h      \
 	list.h          \
-	rt.h            \
 	trace.h         \
   typeid.h
 

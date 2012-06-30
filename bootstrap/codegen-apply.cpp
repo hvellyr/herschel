@@ -268,7 +268,7 @@ CodegenApply::emitAllocateApply(const ApplyNode* node) const
 llvm::Value*
 CodegenApply::emitAllocateApplyImpl(const AptNode* typeNode) const
 {
-  String funcnm = String("allocate");
+  String funcnm = String("h7_allocate");
 
   llvm::Function *allocFunc = module()->getFunction(llvm::StringRef(funcnm));
   if (allocFunc == NULL) {
@@ -279,7 +279,7 @@ CodegenApply::emitAllocateApplyImpl(const AptNode* typeNode) const
       !K(isVarArg));
     allocFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
-                                     llvm::Twine("allocate"),
+                                     llvm::Twine("h7_allocate"),
                                      module());
   }
 
@@ -308,18 +308,18 @@ CodegenApply::emitAllocateApplyImpl(const AptNode* typeNode) const
 llvm::Value*
 CodegenApply::emitIsaApply(const ApplyNode* applyNode) const
 {
-  String funcnm = String("instance_isa");
+  String funcnm = String("h7_instance_isa");
 
   llvm::Function *isaFunc = module()->getFunction(llvm::StringRef(funcnm));
   if (isaFunc == NULL) {
-    // int instance_isa(ATOM, Type*)
+    // int h7_instance_isa(ATOM, Type*)
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt1Ty(context()),
                                                      vector_of(types()->getAtomType())
                                                               (types()->getTypeType()),
                                                      !K(isVarArg));
     isaFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
-                                     llvm::Twine("instance_isa"),
+                                     llvm::Twine("h7_instance_isa"),
                                      module());
   }
 
@@ -426,7 +426,7 @@ public:
 
   virtual String allocateFuncName() const
   {
-    return String("allocate_array");
+    return String("h7_allocate_array");
   }
 
   virtual std::vector<const llvm::Type*> allocateFuncSignature() const
@@ -537,7 +537,7 @@ public:
 
   virtual String allocateFuncName() const
   {
-    return String("allocate_int32_array");
+    return String("h7_allocate_int32_array");
   }
 
   virtual std::vector<const llvm::Type*> allocateFuncSignature() const
@@ -644,7 +644,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
 
   llvm::Function *allocFunc = module()->getFunction(llvm::StringRef(funcnm));
   if (allocFunc == NULL) {
-    // void allocate_array(ATOM* instance, Type* ty, size_t items);
+    // void h7_allocate_array(ATOM* instance, Type* ty, size_t items);
 
     std::vector<const llvm::Type*> sign = strategy->allocateFuncSignature();
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),

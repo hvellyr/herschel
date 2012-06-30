@@ -13,25 +13,25 @@
 #include "list.h"
 
 
-List*
-list_insert(List* l, void* value)
+H7_List*
+h7_list_insert(H7_List* l, void* value)
 {
-  List* nl = malloc(sizeof(List));
+  H7_List* nl = malloc(sizeof(H7_List));
   nl->fValue = value;
   nl->fTail = l;
   return nl;
 }
 
 
-List*
-list_append(List* l, void* value)
+H7_List*
+h7_list_append(H7_List* l, void* value)
 {
-  List *nl = malloc(sizeof(List));
+  H7_List *nl = malloc(sizeof(H7_List));
   nl->fValue = value;
   nl->fTail = NULL;
 
   if (l) {
-    List* p = l;
+    H7_List* p = l;
     while (p->fTail)
       p = p->fTail;
     p->fTail = nl;
@@ -42,18 +42,18 @@ list_append(List* l, void* value)
 }
 
 
-List*
-list_insert_before(List* l, void *ref, void *obj)
+H7_List*
+h7_list_insert_before(H7_List* l, void *ref, void *obj)
 {
-  List* root = l;
+  H7_List* root = l;
 
   if (l) {
-    List* p = l;
-    List* last = NULL;
+    H7_List* p = l;
+    H7_List* last = NULL;
 
     while (p != NULL) {
       if (p->fValue == ref) {
-        List* nl = malloc(sizeof(List));
+        H7_List* nl = malloc(sizeof(H7_List));
         nl->fValue = obj;
         nl->fTail = p;
 
@@ -75,10 +75,10 @@ list_insert_before(List* l, void *ref, void *obj)
 
 
 size_t
-list_items(List* l)
+h7_list_items(H7_List* l)
 {
   size_t count = 0;
-  List* p = l;
+  H7_List* p = l;
 
   while (p != NULL) {
     count++;

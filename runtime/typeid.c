@@ -12,44 +12,44 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "runtime/rt.h"
 #include "runtime/hash.h"
+#include "runtime/herschel.h"
 #include "runtime/trace.h"
 #include "runtime/typeid.h"
 
 
-static HashTable* types_name_to_type_map = NULL; /* hash<char*, Type*> */
-/*static HashTable* types_tag_to_type_map = NULL;*/  /* hash<int, Type*> */
+static H7_HashTable* types_name_to_type_map = NULL; /* hash<char*, Type*> */
+/*static H7_HashTable* types_tag_to_type_map = NULL;*/  /* hash<int, Type*> */
 static int type_tag_id_counter = 127;
 
-static Type** types_tag_vector = NULL;
+static H7_Type** types_tag_vector = NULL;
 static size_t types_tag_size = 0;
 
 static size_t arraytype_reference_size = 0;
-static TypeTag* arraytype_reference = NULL;
+static H7_TypeTag* arraytype_reference = NULL;
 
 
 void
-type_init()
+h7_type_init()
 {
-  types_name_to_type_map = hashtable_alloc(27,
-                                           hashtable_cstr_func,
-                                           hashtable_cstr_cmp_func);
-  /* types_tag_to_type_map = hashtable_alloc(27); */
+  types_name_to_type_map = h7_hashtable_alloc(27,
+                                              h7_hashtable_cstr_func,
+                                              h7_hashtable_cstr_cmp_func);
+  /* types_tag_to_type_map = h7_hashtable_alloc(27); */
 
   types_tag_size = 256;
-  types_tag_vector = malloc(types_tag_size * sizeof(Type*));
-  memset(types_tag_vector, 0, types_tag_size * sizeof(Type*));
+  types_tag_vector = malloc(types_tag_size * sizeof(H7_Type*));
+  memset(types_tag_vector, 0, types_tag_size * sizeof(H7_Type*));
 
   arraytype_reference_size = 256;
-  arraytype_reference = malloc(arraytype_reference_size * sizeof(TypeTag));
+  arraytype_reference = malloc(arraytype_reference_size * sizeof(H7_TypeTag));
   memset(arraytype_reference, 0,
-         arraytype_reference_size * sizeof(TypeTag));
+         arraytype_reference_size * sizeof(H7_TypeTag));
 }
 
 
 static int
-tag_id_for_type(const Type* type)
+tag_id_for_type(const H7_Type* type)
 {
   /* int is_array = type->is_array; */
   /* printf("Typeid: %s\n", type->name); */
@@ -124,23 +124,23 @@ tag_id_for_type(const Type* type)
 
 
 void
-register_type(Type* type)
+h7_register_type(H7_Type* type)
 {
   type->tag_id = tag_id_for_type(type);
 
-  if (hashtable_get(types_name_to_type_map, (void*)type->name) != NULL)
+  if (h7_hashtable_get(types_name_to_type_map, (void*)type->name) != NULL)
   {
     fprintf(stderr, "error: Multiple occurance of type '%s' clash.\n",
             type->name);
     return;
   }
 
-  hashtable_add(types_name_to_type_map, (void*)type->name, (void*)type);
-  /* hashtable_add(types_tag_to_type_map, (void*)type->tag_id, (void*)type); */
+  h7_hashtable_add(types_name_to_type_map, (void*)type->name, (void*)type);
+  /* h7_hashtable_add(types_tag_to_type_map, (void*)type->tag_id, (void*)type); */
 
   if (type->tag_id >= types_tag_size) {
     types_tag_size *= 2;
-    types_tag_vector = realloc(types_tag_vector, types_tag_size * sizeof(Type*));
+    types_tag_vector = realloc(types_tag_vector, types_tag_size * sizeof(H7_Type*));
   }
   types_tag_vector[type->tag_id] = type;
 
@@ -151,22 +151,24 @@ register_type(Type* type)
 
 
 size_t
-type_setup_dispatch_table(Type* ty, va_list vp)
+type_setup_dispatch_table(H7_Type* ty, va_list vp)
 {
   size_t acc_size = 0;
   size_t i = 0;
 
-  ty->isa = malloc(ty->isa_size * sizeof(Type*));
-  ty->isa_set = hashtable_alloc(11, hashtable_sizet_func, hashtable_sizet_cmp_func);
+  ty->isa = malloc(ty->isa_size * sizeof(H7_Type*));
+  ty->isa_set = h7_hashtable_alloc(11,
+                                   h7_hashtable_sizet_func,
+                                   h7_hashtable_sizet_cmp_func);
 
   for (i = 0; i < ty->isa_size; i++) {
-    Type* isa = va_arg(vp, Type*);
+    H7_Type* isa = va_arg(vp, H7_Type*);
     if (isa != NULL) {
       ty->isa[i] = isa;
 
-      hashtable_add(ty->isa_set, (void*)isa, (void*)isa);
+      h7_hashtable_add(ty->isa_set, (void*)isa, (void*)isa);
       if (isa->isa_set != NULL)
-        hashtable_add_all(ty->isa_set, isa->isa_set);
+        h7_hashtable_add_all(ty->isa_set, isa->isa_set);
 
       acc_size += isa->acc_instance_size;
     }
@@ -176,13 +178,13 @@ type_setup_dispatch_table(Type* ty, va_list vp)
 }
 
 
-static Type*
+static H7_Type*
 type_base_alloc(const char* nm, size_t isa_size,
                 size_t instance_size,
-                const TypeSlotPair* slots,
+                const H7_TypeSlotPair* slots,
                 int is_array)
 {
-  Type* ty = malloc(sizeof(Type));
+  H7_Type* ty = malloc(sizeof(H7_Type));
 
   ty->name = nm;
   ty->isa_size = isa_size;
@@ -199,10 +201,10 @@ type_base_alloc(const char* nm, size_t isa_size,
 }
 
 
-Type*
-type_alloc(const char* nm, size_t isa_size, ...)
+H7_Type*
+h7_type_alloc(const char* nm, size_t isa_size, ...)
 {
-  Type* ty = type_base_alloc(nm, isa_size, 0, NULL, 0);
+  H7_Type* ty = type_base_alloc(nm, isa_size, 0, NULL, 0);
 
   if (isa_size > 0) {
     va_list vp;
@@ -217,10 +219,11 @@ type_alloc(const char* nm, size_t isa_size, ...)
 }
 
 
-Type*
-type_clone_with_other_name(const Type* base_type, const char* full_tag_name)
+H7_Type*
+type_clone_with_other_name(const H7_Type* base_type,
+                           const char* full_tag_name)
 {
-  Type* ty = type_base_alloc(full_tag_name, base_type->isa_size, 0, NULL, 0);
+  H7_Type* ty = type_base_alloc(full_tag_name, base_type->isa_size, 0, NULL, 0);
 
   ty->isa               = base_type->isa;               /* shared ptr */
   ty->isa_set           = base_type->isa_set;           /* shared ptr */
@@ -235,30 +238,31 @@ type_clone_with_other_name(const Type* base_type, const char* full_tag_name)
 
 
 void
-class_add_super_slots_and_rewrite_offsets(HashTable* table, HashTable* other,
+class_add_super_slots_and_rewrite_offsets(H7_HashTable* table,
+                                          H7_HashTable* other,
                                           size_t base_offset)
 {
   size_t i;
 
   for (i = 0; i < other->fSize; i++) {
-    HashNode* node = other->fNodes[i];
+    H7_HashNode* node = other->fNodes[i];
 
     while (node != NULL) {
       size_t offset = (size_t)node->fValue + base_offset;
-      hashtable_add(table, node->fKey, (void*)offset);
+      h7_hashtable_add(table, node->fKey, (void*)offset);
       node = node->fTail;
     }
   }
 }
 
 
-Type*
-class_alloc(const char* nm,
-            size_t instance_size,
-            const TypeSlotPair* slots,
-            size_t isa_size, ...)
+H7_Type*
+h7_class_alloc(const char* nm,
+               size_t instance_size,
+               const H7_TypeSlotPair* slots,
+               size_t isa_size, ...)
 {
-  Type* ty = type_base_alloc(nm, isa_size, instance_size, slots, 0);
+  H7_Type* ty = type_base_alloc(nm, isa_size, instance_size, slots, 0);
 
 #if defined(UNITTESTS)
   hr_trace("register", "Alloc class '%s' [instance-size=%d]",
@@ -282,9 +286,9 @@ class_alloc(const char* nm,
            ty->acc_instance_size, acc_super_size);
 #endif
 
-  ty->slots_offsets = hashtable_alloc(11,
-                                      hashtable_cstr_func,
-                                      hashtable_cstr_cmp_func);
+  ty->slots_offsets = h7_hashtable_alloc(11,
+                                         h7_hashtable_cstr_func,
+                                         h7_hashtable_cstr_cmp_func);
 
   size_t acc_offset = 0;
   if (ty->isa_size > 0) {
@@ -301,20 +305,20 @@ class_alloc(const char* nm,
 
   if (slots != NULL && slots->name != NULL)
   {
-    const TypeSlotPair* p = slots;
+    const H7_TypeSlotPair* p = slots;
     for ( ; p->name != NULL; p++) {
 #if defined(UNITTESTS)
       hr_trace("register", "Register slot '%s' with offset '%d'",
                p->name, p->offset);
 #endif
       size_t offset = acc_offset + p->offset;
-      hashtable_add(ty->slots_offsets, (void*)p->name, (void*)offset);
+      h7_hashtable_add(ty->slots_offsets, (void*)p->name, (void*)offset);
     }
   }
 
 #if defined(UNITTESTS)
   {
-    HashNode* node;
+    H7_HashNode* node;
     size_t i;
 
     for (i = 0; i < ty->slots_offsets->fSize; i++) {
@@ -332,33 +336,33 @@ class_alloc(const char* nm,
 }
 
 
-Type*
+H7_Type*
 type_lookup_by_name(const char* nm)
 {
-  Type* ty = hashtable_get(types_name_to_type_map, (void*)nm);
+  H7_Type* ty = h7_hashtable_get(types_name_to_type_map, (void*)nm);
   if (ty == NULL)
     fprintf(stderr, "error: Type '%s' could not be resolved\n", nm);
   return ty;
 }
 
 
-Type*
-type_lookup_by_tag(int tag_id)
+H7_Type*
+h7_type_lookup_by_tag(int tag_id)
 {
-  /* return hashtable_get(types_tag_to_type_map, (void*)tag_id); */
+  /* return h7_hashtable_get(types_tag_to_type_map, (void*)tag_id); */
   return types_tag_vector[tag_id];
 }
 
 
 int
-type_isa(Type* one, Type* two)
+h7_type_isa(H7_Type* one, H7_Type* two)
 {
   if (one == two)
     return 1;
 
   if (one->isa_set != NULL) {
     /* fprintf(stderr, "Lookup %s in %s\n", one->name, two->name); */
-    return hashtable_get(one->isa_set, two) != NULL;
+    return h7_hashtable_get(one->isa_set, two) != NULL;
   }
 
   return 0;
@@ -369,37 +373,37 @@ type_isa(Type* one, Type* two)
    special array type support
    ------------------------------------------------------------------------ */
 
-Type*
-type_lookup_array_type(Type* base_type)
+H7_Type*
+h7_type_lookup_array_type(H7_Type* base_type)
 {
   if (base_type->tag_id >= arraytype_reference_size) {
     int old_array_size = arraytype_reference_size;
 
     arraytype_reference_size *= 2;
     arraytype_reference = realloc(arraytype_reference,
-                                  arraytype_reference_size * sizeof(TypeTag));
+                                  arraytype_reference_size * sizeof(H7_TypeTag));
 
     memset(arraytype_reference + old_array_size, 0,
-           (arraytype_reference_size - old_array_size) * sizeof(TypeTag));
+           (arraytype_reference_size - old_array_size) * sizeof(H7_TypeTag));
   }
 
-  TypeTag typeTag = arraytype_reference[base_type->tag_id];
+  H7_TypeTag typeTag = arraytype_reference[base_type->tag_id];
   if (typeTag == 0) {
     // HACK: make the array name heap allocated.  This leaks ...
     char tmp[256];
     sprintf(tmp, "%s[]", base_type->name);
 
-    Type* array_type = type_base_alloc(strdup(tmp),
-                                       0,    /* isa-size */
-                                       0,    /* instance-size */
-                                       NULL, /* slots */
-                                       1);   /* is_array */
+    H7_Type* array_type = type_base_alloc(strdup(tmp),
+                                          0,    /* isa-size */
+                                          0,    /* instance-size */
+                                          NULL, /* slots */
+                                          1);   /* is_array */
 #if defined(UNITTESTS)
   hr_trace("register", "Allocate array type for %s [tag: %ld]",
            base_type->name, array_type->tag_id);
 #endif
 
-    register_type(array_type);
+    h7_register_type(array_type);
     arraytype_reference[base_type->tag_id] = array_type->tag_id;
 
     return array_type;
@@ -414,12 +418,12 @@ type_lookup_array_type(Type* base_type)
    ------------------------------------------------------------------------ */
 
 size_t
-type_slot_get(Type* ty, const char* slot_name)
+h7_type_slot_get(H7_Type* ty, const char* slot_name)
 {
   if (ty->slots_offsets != NULL) {
     /* don't check whether the slot really exists.  This has to be done at
        compile time (realy?) */
-    return (size_t)hashtable_get(ty->slots_offsets, (void*)slot_name);
+    return (size_t)h7_hashtable_get(ty->slots_offsets, (void*)slot_name);
   }
 
   return 0;
@@ -427,10 +431,10 @@ type_slot_get(Type* ty, const char* slot_name)
 
 
 void*
-instance_slot(ATOM instance, const Keyword* keyw)
+h7_instance_slot(H7_ATOM instance, const H7_Keyword* keyw)
 {
   const char* slot_name = keyw->name;
-  Type* ty = type_lookup_by_tag(instance.typeid);
+  H7_Type* ty = h7_type_lookup_by_tag(instance.typeid);
 
 #if defined(UNITTESTS)
   hr_trace("slot", "Lookup slot '%s' for instance of type '%s'",
@@ -438,7 +442,7 @@ instance_slot(ATOM instance, const Keyword* keyw)
 #endif
 
   if (ty->slots_offsets != NULL) {
-    HashNode* node = hashtable_get_impl(ty->slots_offsets, (void*)slot_name);
+    H7_HashNode* node = h7_hashtable_get_impl(ty->slots_offsets, (void*)slot_name);
     if (node != NULL)
       return (void*)((unsigned char*)instance.u.v_obj + (size_t)node->fValue);
   }
@@ -455,15 +459,15 @@ instance_slot(ATOM instance, const Keyword* keyw)
    ------------------------------------------------------------------------ */
 
 int
-instance_isa(ATOM instance, Type* ty)
+h7_instance_isa(H7_ATOM instance, H7_Type* ty)
 {
 #if defined(UNITTESTS)
   hr_trace("isa", "isa '%s'?", ty->name);
 #endif
 
-  Type* instty = type_lookup_by_tag(instance.typeid);
+  H7_Type* instty = h7_type_lookup_by_tag(instance.typeid);
 
-  return type_isa(instty, ty);
+  return h7_type_isa(instty, ty);
 }
 
 
@@ -472,7 +476,7 @@ instance_isa(ATOM instance, Type* ty)
    ------------------------------------------------------------------------ */
 
 void
-allocate(ATOM* instance, Type* ty)
+h7_allocate(H7_ATOM* instance, H7_Type* ty)
 {
 #if defined(UNITTESTS)
   hr_trace("allocate", "Create instance of type '%s', size: %ld",
@@ -490,7 +494,7 @@ allocate(ATOM* instance, Type* ty)
 
 
 void
-allocate_array(ATOM* instance, Type* ty, size_t items)
+h7_allocate_array(H7_ATOM* instance, H7_Type* ty, size_t items)
 {
 #if defined(UNITTESTS)
   hr_trace("allocate", "Create instance of type '%s'x%ld, size: %ld",
@@ -498,7 +502,7 @@ allocate_array(ATOM* instance, Type* ty, size_t items)
 #endif
 
   instance->typeid = ty->tag_id;
-  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(ATOM));
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(H7_ATOM));
   *((size_t*)instance->u.v_obj) = items;
 
   /* initialization can only be done from outside.  We can't call
@@ -507,7 +511,8 @@ allocate_array(ATOM* instance, Type* ty, size_t items)
 
 
 void
-allocate_int32_array(ATOM* instance, TypeTag tag_id, int init_value, size_t items)
+h7_allocate_int32_array(H7_ATOM* instance,
+                     H7_TypeTag tag_id, int init_value, size_t items)
 {
 #if defined(UNITTESTS)
   hr_trace("allocate", "Create instance of type 'lang|Int32'x%ld (%d), size: %ld a %ld",
@@ -528,7 +533,8 @@ allocate_int32_array(ATOM* instance, TypeTag tag_id, int init_value, size_t item
 
 
 void
-allocate_int8_array(ATOM* instance, TypeTag tag_id, char init_value, size_t items)
+h7_allocate_int8_array(H7_ATOM* instance,
+                       H7_TypeTag tag_id, char init_value, size_t items)
 {
 #if defined(UNITTESTS)
   hr_trace("allocate", "Create instance of type 'lang|Int8'x%ld (%d), size: %ld a %ld",
@@ -549,7 +555,8 @@ allocate_int8_array(ATOM* instance, TypeTag tag_id, char init_value, size_t item
 
 
 void
-allocate_short_array(ATOM* instance, Type* ty, short init_value, size_t items)
+h7_allocate_short_array(H7_ATOM* instance,
+                        H7_Type* ty, short init_value, size_t items)
 {
   instance->typeid = ty->tag_id;
   instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(short));
@@ -565,7 +572,8 @@ allocate_short_array(ATOM* instance, Type* ty, short init_value, size_t items)
 
 
 void
-allocate_float_array(ATOM* instance, Type* ty, float init_value, size_t items)
+h7_allocate_float_array(H7_ATOM* instance,
+                        H7_Type* ty, float init_value, size_t items)
 {
   instance->typeid = ty->tag_id;
   instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(float));
@@ -581,7 +589,8 @@ allocate_float_array(ATOM* instance, Type* ty, float init_value, size_t items)
 
 
 void
-allocate_double_array(ATOM* instance, Type* ty, double init_value, size_t items)
+h7_allocate_double_array(H7_ATOM* instance,
+                         H7_Type* ty, double init_value, size_t items)
 {
   instance->typeid = ty->tag_id;
   instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(double));
@@ -596,16 +605,17 @@ allocate_double_array(ATOM* instance, Type* ty, double init_value, size_t items)
 }
 
 
-Type*
-lookup_derived_type(Type* base_type, const char* full_tag_name)
+H7_Type*
+lookup_derived_type(H7_Type* base_type, const char* full_tag_name)
 {
-  Type* new_ty;
-  Type* ty = hashtable_get(types_name_to_type_map, (void*)full_tag_name);
+  H7_Type* new_ty;
+  H7_Type* ty = h7_hashtable_get(types_name_to_type_map,
+                                 (void*)full_tag_name);
   if (ty != NULL)
     return ty;
 
   new_ty = type_clone_with_other_name(base_type, full_tag_name);
-  register_type(new_ty);
+  h7_register_type(new_ty);
 
   return new_ty;
 }
