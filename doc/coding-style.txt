@@ -59,6 +59,9 @@ Namespaces
   Namespace names are all lowercase (and since they should be short no
   camelcase is required anyway).
 
+  Don't use "use namespace".  The only exception is the "use namespace
+  herschel" statement.
+
 
 Braces
 
