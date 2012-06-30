@@ -16,13 +16,14 @@ export public(*)
 def type Port<T>
     ~ A generic input-ouput port.
 
-    Ports are parametrized to the basic object to be read or written.  Most
-    commonly these are Octets or Characters, but technical complex objects
-    are possible, too, of course.
+    Ports are parametrized to the base object to be read or written.  Most
+    commonly these are Octets or Characters, but technically complex
+    objects are possible, too, of course.
 
     Ports has a @dfn{cursor} pointing to the next element to be read or
-    written.  Operations like read, write, and skip implicitely move the
-    cursor; operations like cursor! or reset explicitely set the cursor. ~
+    written.  Operations like @fun{read}, @fun{write}, and @fun{skip}
+    implicitely move the cursor; operations like @fun{cursor!} or
+    @fun{reset} explicitely set the cursor. ~
 
 
 def type InPort<T> : Port<T>
@@ -46,28 +47,28 @@ def type RandomAccessPort<T> : (InPort<T>, OutPort<T>, SeekablePort<T>)
 ------------------------------------------------------------------------------
 
 def generic open?(port @ Port<'T>) : Bool ...
-    ~ Indicate whether @var{port} is open for reading or writing.~
+    ~ Indicates whether @var{port} is open for reading or writing.~
 
 
 def generic close(port @ ^Port<'T>) : ^Port<'T> ...
-    ~ Close @var{port} if open.
+    ~ Closes @var{port} if open.  Otherwise does nothing.
 
     @returns @var{port} ~
 
 
 def generic flush(port @ ^Port<'T>) : ^Port<'T> ...
-    ~ Flush any cached data to or from @var{port}.  If @var{port} is not
+    ~ Flushes any cached data to or from @var{port}.  If @var{port} is not
     a buffering port this is a no-op.
 
     @returns @var{port} ~
 
 
 def generic eof?(port @ InPort<'T>) : Bool ...
-    ~ Indicate whether @var{port} has reached its end. ~
+    ~ Indicates whether @var{port} has reached its end. ~
 
 
 def generic read(port @ ^InPort<'T>) : &('T, Eof) ...
-    ~ Read the next element from the current port cursor position.  If
+    ~ Reads the next element from the current port cursor position.  If
     successfull the cursor is moved to the next object which may be the
     @const{eof} end-of-file marker.
 
@@ -82,7 +83,7 @@ def generic read*(port @ ^InPort<'T>,
                   buffer @ ^'T[], offset : Ordinal,
                   num-items : Ordinal)
     : OrdinalOrEof ...
-    ~ Read @var{num-items} elements from @var{port} from the current port
+    ~ Reads @var{num-items} elements from @var{port} from the current port
     cursor position and store them into @var{buffer} beginning from offset
     @var{offset}.  @var{buffer} must be large enough to hold all read
     elements, otherwise an @type{OutOfBoundsException} is thrown.
@@ -94,7 +95,7 @@ def generic read*(port @ ^InPort<'T>,
 
 
 def generic skip(port @ ^InPort<'T>) : OrdinalOrEof ...
-    ~ Skip @var{num-items} elements from @var{port} beginning from the
+    ~ Skips @var{num-items} elements from @var{port} beginning from the
     current port cursor position.
 
     @returns the number of items skipped, 0 if no elements are (currently)
@@ -103,8 +104,10 @@ def generic skip(port @ ^InPort<'T>) : OrdinalOrEof ...
 
 
 def generic write(port @ ^OutPort<'T>, item @ 'T) : Ordinal ...
-    ~ Write one element @var{item} to @var{port} at the current port cursor
-    position.
+    ~ Writes one element @var{item} to @var{port} at the current port
+    cursor position.
+
+    The port cursor is moved ahead by the number of written elements.
 
     @returns the number of items written (i.e. always 1) ~
 
@@ -112,8 +115,10 @@ def generic write(port @ ^OutPort<'T>, item @ 'T) : Ordinal ...
 def generic write*(port @ ^OutPort<'T>,
                    buffer @ 'T[], offset : Ordinal,
                    num-items : Ordinal) : Ordinal ...
-    ~ Write @var{num-items} elements from @var{buffer} starting at offset
+    ~ Writes @var{num-items} elements from @var{buffer} starting at offset
     @var{offset} to @var{port}.
+
+    The port cursor is moved ahead by the number of written elements.
 
     @returns the number of items written.  Any value other than
              @var{num-items} may indicate an error. ~
@@ -143,7 +148,7 @@ def enum PortCursorWhenceType : Int
 def generic cursor!(port @ ^SeekablePort<'T>,
                     offset @ Ordinal,
                     whence : PortCursorWhenceType) : PortCursor<'T> ...
-    ~ Set the cursor of @var{port} to @var{offset}, where @var{offset} is
+    ~ Sets the cursor of @var{port} to @var{offset}, where @var{offset} is
     measured in elements T relative to the file start (for @var{whence} ==
     begin), relative to the file end (for @var{whence} == end), or relative
     to the current port cursor position (for @var{whence} == current).
@@ -153,7 +158,7 @@ def generic cursor!(port @ ^SeekablePort<'T>,
 
 def generic cursor!(port @ ^SeekablePort<'T>,
                     cursor @ PortCursor<'T>) : PortCursor<'T> ...
-    ~ Set the cursor of @var{port} to @var{cursor}. ~
+    ~ Sets the cursor of @var{port} to @var{cursor}. ~
 
 
 def generic cursor(port @ SeekablePort<'T>) : PortCursor<'T> ...
@@ -161,13 +166,13 @@ def generic cursor(port @ SeekablePort<'T>) : PortCursor<'T> ...
 
 
 def generic reset!(port @ ^SeekablePort<'T>) : PortCursor<'T> ...
-    ~ Reset the cursor of port @var{port} to the port start.  This is a
-    shortcut for @code{cursor!(port, 0, begin)}.~
+    ~ Resets the cursor of port @var{port} to the port start.  This is
+    equivalent to @code{cursor!(port, 0, begin)}.~
 
 
 def generic truncate(port @ ^RandomAccessPort<'T>,
                      num-items @ Ordinal) : RandomAccessPort<'T> ...
-    ~ Truncate @var{port}'s underlying representation to the first
+    ~ Truncates @var{port}'s underlying representation to the first
     @var{num-items} elements.
 
     @returns @var{port} ~
