@@ -84,7 +84,7 @@ def generic read*(port @ ^InPort<'T>,
                   num-items : Ordinal)
     : OrdinalOrEof ...
     ~ Reads @var{num-items} elements from @var{port} from the current port
-    cursor position and store them into @var{buffer} beginning from offset
+    cursor position and stores them into @var{buffer} beginning from offset
     @var{offset}.  @var{buffer} must be large enough to hold all read
     elements, otherwise an @type{OutOfBoundsException} is thrown.
 
