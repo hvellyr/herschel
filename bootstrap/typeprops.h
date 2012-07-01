@@ -34,7 +34,7 @@ namespace herschel
     //@{ Code generation
 
     //! Return the C function name used to convert an object of this type from
-    //! atom layout to the plain layout (e.g. "atom_2_int32").  C function
+    //! atom layout to the plain layout (e.g. "h7_atom_2_int32").  C function
     //! returned here must be implemented in the C runtime.
     virtual const char* convFuncName() const = 0;
 

@@ -114,6 +114,20 @@ int h7_instance_isa(H7_ATOM instance, H7_Type* ty);
 void h7_allocate_string(H7_ATOM* instance, const char* str);
 
 
+int8_t h7_atom_2_int8(H7_ATOM a);
+int16_t h7_atom_2_int16(H7_ATOM a);
+int32_t h7_atom_2_int32(H7_ATOM a);
+uint8_t h7_atom_2_uint8(H7_ATOM a);
+uint16_t h7_atom_2_uint16(H7_ATOM a);
+uint32_t h7_atom_2_uint32(H7_ATOM a);
+uint32_t h7_atom_2_char(H7_ATOM a);
+int h7_atom_2_bool(H7_ATOM a);
+float h7_atom_2_float32(H7_ATOM a);
+int64_t h7_atom_2_int64(H7_ATOM a);
+uint64_t h7_atom_2_uint64(H7_ATOM a);
+double h7_atom_2_float64(H7_ATOM a);
+void* h7_atom_2_keyword(H7_ATOM a);
+
 /* ----------------------------------------------------------------------
 
    function called from herschel code directly
@@ -126,5 +140,6 @@ unsigned int h7_lang_string_char_at_index(H7_ATOM atom0, unsigned int idx);
 void h7_lang_string_set_char_at_index(H7_ATOM atom0,
                                       unsigned int idx,
                                       unsigned int c);
+
 
 #endif

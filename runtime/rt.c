@@ -18,7 +18,7 @@
 
 
 static const char*
-atom_type_name(long typeid)
+h7_atom_type_name(long typeid)
 {
   static char buffer[256];
 
@@ -45,15 +45,15 @@ atom_type_name(long typeid)
 
 
 static void
-unexpected_atom_type(long expected_id, long found_id)
+h7_unexpected_atom_type(long expected_id, long found_id)
 {
   fprintf(stderr, "Unexpected type. Expected '%s', actually found '%s'\n",
-          atom_type_name(expected_id), atom_type_name(found_id));
+          h7_atom_type_name(expected_id), h7_atom_type_name(found_id));
   exit(1);
 }
 
 int8_t
-atom_2_int8(H7_ATOM a)
+h7_atom_2_int8(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to int8 */
   return (int8_t)a.u.v_int;
@@ -61,7 +61,7 @@ atom_2_int8(H7_ATOM a)
 
 
 int16_t
-atom_2_int16(H7_ATOM a)
+h7_atom_2_int16(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to int16 */
   return (int16_t)a.u.v_int;
@@ -69,17 +69,17 @@ atom_2_int16(H7_ATOM a)
 
 
 int32_t
-atom_2_int32(H7_ATOM a)
+h7_atom_2_int32(H7_ATOM a)
 {
   if (a.typeid != TYPE_TAG_INT32)
-    unexpected_atom_type(TYPE_TAG_INT32, a.typeid);
+    h7_unexpected_atom_type(TYPE_TAG_INT32, a.typeid);
 
   return (int32_t)a.u.v_int;
 }
 
 
 uint8_t
-atom_2_uint8(H7_ATOM a)
+h7_atom_2_uint8(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to uint8 */
   return (uint8_t)a.u.v_int;
@@ -87,7 +87,7 @@ atom_2_uint8(H7_ATOM a)
 
 
 uint16_t
-atom_2_uint16(H7_ATOM a)
+h7_atom_2_uint16(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to uint16 */
   return (uint16_t)a.u.v_int;
@@ -95,7 +95,7 @@ atom_2_uint16(H7_ATOM a)
 
 
 uint32_t
-atom_2_uint32(H7_ATOM a)
+h7_atom_2_uint32(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to uint32 */
   return (uint32_t)a.u.v_int;
@@ -103,27 +103,27 @@ atom_2_uint32(H7_ATOM a)
 
 
 uint32_t
-atom_2_char(H7_ATOM a)
+h7_atom_2_char(H7_ATOM a)
 {
   if (a.typeid != TYPE_TAG_CHAR)
-    unexpected_atom_type(TYPE_TAG_CHAR, a.typeid);
+    h7_unexpected_atom_type(TYPE_TAG_CHAR, a.typeid);
 
   return (uint32_t)a.u.v_int;
 }
 
 
 int
-atom_2_bool(H7_ATOM a)
+h7_atom_2_bool(H7_ATOM a)
 {
   if (a.typeid != TYPE_TAG_BOOL)
-    unexpected_atom_type(TYPE_TAG_BOOL, a.typeid);
+    h7_unexpected_atom_type(TYPE_TAG_BOOL, a.typeid);
 
   return a.u.v_int;
 }
 
 
 float
-atom_2_float32(H7_ATOM a)
+h7_atom_2_float32(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to float32 */
   return a.u.v_float;
@@ -131,7 +131,7 @@ atom_2_float32(H7_ATOM a)
 
 
 int64_t
-atom_2_int64(H7_ATOM a)
+h7_atom_2_int64(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to int64 */
 
@@ -142,7 +142,7 @@ atom_2_int64(H7_ATOM a)
 
 
 uint64_t
-atom_2_uint64(H7_ATOM a)
+h7_atom_2_uint64(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to uint64 */
 
@@ -153,7 +153,7 @@ atom_2_uint64(H7_ATOM a)
 
 
 double
-atom_2_float64(H7_ATOM a)
+h7_atom_2_float64(H7_ATOM a)
 {
   /* TODO: assert that a.typeid refers to float64 */
 
@@ -164,10 +164,10 @@ atom_2_float64(H7_ATOM a)
 
 
 void*
-atom_2_keyword(H7_ATOM a)
+h7_atom_2_keyword(H7_ATOM a)
 {
   if (a.typeid != TYPE_TAG_KEYW)
-    unexpected_atom_type(TYPE_TAG_KEYW, a.typeid);
+    h7_unexpected_atom_type(TYPE_TAG_KEYW, a.typeid);
 
   return (void*)a.u.v_obj;
 }
