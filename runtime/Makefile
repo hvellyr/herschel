@@ -12,7 +12,6 @@ include $(top_srcdir)/config.mk
 CFLAGS += -I$(top_srcdir) -I$(top_srcdir)/runtime
 
 SOURCES =         \
-	builtin.c       \
 	hash.c          \
 	keyword.c       \
 	list.c          \

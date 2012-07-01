@@ -49,14 +49,14 @@ h7_register_generic_function(H7_GenericFunction* genfun)
   h7_hashtable_add(generic_functions, (void*)genfun->name, (void*)genfun);
 
 #if defined(UNITTESTS)
-  hr_trace("register", "Register generic function: %s [arity %ld]",
+  h7_trace("register", "Register generic function: %s [arity %ld]",
            genfun->name, genfun->argc);
 #endif
 }
 
 
 static void
-print_method(const char* funname, H7_Method* m)
+h7_print_method(const char* funname, H7_Method* m)
 {
   int i;
 
@@ -78,7 +78,7 @@ print_generic_func(H7_GenericFunction* gf)
   fprintf(stderr, "-- %ld ----------------------------------------\n", h7_list_items(l));
   while (l) {
     fprintf(stderr, "  ");
-    print_method(gf->name, (H7_Method*)l->fValue);
+    h7_print_method(gf->name, (H7_Method*)l->fValue);
     fprintf(stderr, "\n");
     l = l->fTail;
   }
@@ -111,12 +111,12 @@ h7_register_method(H7_GenericFunction* gf, void* func, size_t argc, ...)
     m->args = NULL;
 
 #if defined(UNITTESTS)
-  hr_trace("register", "Register method: %s [%p, arity %d]",
+  h7_trace("register", "Register method: %s [%p, arity %d]",
            gf->name, func, argc);
   {
     size_t i;
     for (i = 0; i < argc; i++) {
-      hr_trace("register", "    arg %d: %s", i, m->args[i]->name);
+      h7_trace("register", "    arg %d: %s", i, m->args[i]->name);
     }
   }
 #endif
@@ -149,9 +149,9 @@ h7_register_method(H7_GenericFunction* gf, void* func, size_t argc, ...)
 
     if (ambiguous) {
       fprintf(stderr, "Ambiguous method registration: ");
-      print_method(gf->name, m);
+      h7_print_method(gf->name, m);
       fprintf(stderr, "  conflicts with: ");
-      print_method(gf->name, m0);
+      h7_print_method(gf->name, m0);
       fprintf(stderr, "\n");
     }
     else if (is_all_sub) {
@@ -171,14 +171,14 @@ h7_register_method(H7_GenericFunction* gf, void* func, size_t argc, ...)
 
 
 static void
-no_such_method_cb()
+h7_no_such_method_cb()
 {
   fprintf(stderr, "No such method. Abort\n");
   exit(1);
 }
 
 
-#define ty_name(_ty) \
+#define h7_ty_name(_ty) \
   ((_ty) != NULL ? (_ty)->name : "<unknown type>")
 
 
@@ -202,14 +202,14 @@ h7_lookup_func1(H7_GenericFunction* gf, H7_TagId ty0_id)
   }
 
 #if defined(UNITTESTS)
-  hr_trace("lookup", "lookup_func1: no method found for %s in %s",
-           ty_name(ty0), gf->name);
+  h7_trace("lookup", "lookup_func1: no method found for %s in %s",
+           h7_ty_name(ty0), gf->name);
 #endif
 
   static H7_Method no_such_method;
   no_such_method.args = NULL;
   no_such_method.argc = 1;
-  no_such_method.func = &no_such_method_cb;
+  no_such_method.func = &h7_no_such_method_cb;
 
   return &no_such_method;
 }
@@ -238,14 +238,14 @@ h7_lookup_func2(H7_GenericFunction* gf, H7_TagId ty0_id, H7_TagId ty1_id)
   }
 
 #if defined(UNITTESTS)
-  hr_trace("lookup", "lookup_func2: no method found for (%s, %s) in %s",
-           ty_name(ty0), ty_name(ty1), gf->name);
+  h7_trace("lookup", "lookup_func2: no method found for (%s, %s) in %s",
+           h7_ty_name(ty0), h7_ty_name(ty1), gf->name);
 #endif
 
   static H7_Method no_such_method;
   no_such_method.args = NULL;
   no_such_method.argc = 2;
-  no_such_method.func = &no_such_method_cb;
+  no_such_method.func = &h7_no_such_method_cb;
 
   return &no_such_method;
 }
@@ -277,14 +277,14 @@ h7_lookup_func3(H7_GenericFunction* gf,
   }
 
 #if defined(UNITTESTS)
-  hr_trace("lookup", "lookup_func3: no method found for (%s, %s, %s) in %s",
-           ty_name(ty0), ty_name(ty1), ty_name(ty2), gf->name);
+  h7_trace("lookup", "lookup_func3: no method found for (%s, %s, %s) in %s",
+           h7_ty_name(ty0), h7_ty_name(ty1), h7_ty_name(ty2), gf->name);
 #endif
 
   static H7_Method no_such_method;
   no_such_method.args = NULL;
   no_such_method.argc = 3;
-  no_such_method.func = &no_such_method_cb;
+  no_such_method.func = &h7_no_such_method_cb;
 
   return &no_such_method;
 }

@@ -187,9 +187,9 @@ h7_runtime_init()
 
 #if defined(UNITTESTS)
   H7_ATOM a;
-  hr_trace("platform", "Sizeof ATOM struct: %ld", sizeof(H7_ATOM));
-  hr_trace("platform", "Offset typeid:      %ld", (char*)&a.typeid - (char*)&a);
-  hr_trace("platform", "Offset u.v_obj:     %ld", (char*)&a.u.v_obj - (char*)&a);
+  h7_trace("platform", "Sizeof ATOM struct: %ld", sizeof(H7_ATOM));
+  h7_trace("platform", "Offset typeid:      %ld", (char*)&a.typeid - (char*)&a);
+  h7_trace("platform", "Offset u.v_obj:     %ld", (char*)&a.u.v_obj - (char*)&a);
 #endif
 
     h7_type_init();

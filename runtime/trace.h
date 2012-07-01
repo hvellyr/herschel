@@ -11,6 +11,6 @@
 #ifndef runtime_trace_h
 #define runtime_trace_h
 
-void hr_trace(const char* key, const char* format, ...);
+void h7_trace(const char* key, const char* format, ...);
 
 #endif

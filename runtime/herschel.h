@@ -108,6 +108,7 @@ void h7_register_type(H7_Type* type);
 H7_Type* h7_type_lookup_array_type(H7_Type* base_type);
 
 int h7_instance_isa(H7_ATOM instance, H7_Type* ty);
+H7_Type* h7_lookup_derived_type(H7_Type* base_type, const char* full_tag_name);
 
 
 /* string type */

@@ -18,7 +18,7 @@
 
 #if defined(UNITTESTS)
 static void
-traceImpl(const char* key, FILE* stream, const char* msg)
+h7_traceImpl(const char* key, FILE* stream, const char* msg)
 {
   if (key != NULL)
     fprintf(stream, "%s: %s\n", key, msg);
@@ -29,7 +29,7 @@ traceImpl(const char* key, FILE* stream, const char* msg)
 
 
 void
-hr_trace(const char* key, const char* format, ...)
+h7_trace(const char* key, const char* format, ...)
 {
 #if defined(UNITTESTS)
   static int checkedSetting = 0;
@@ -56,7 +56,7 @@ hr_trace(const char* key, const char* format, ...)
     vsnprintf(buffer, 2048, format, args);
     va_end(args);
 
-    traceImpl(key, stderr, buffer);
+    h7_traceImpl(key, stderr, buffer);
   }
 #endif
 }

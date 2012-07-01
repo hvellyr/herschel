@@ -38,7 +38,7 @@ void h7_type_init();
 
 size_t h7_type_slot_get(H7_Type* ty, const char* slot_name);
 
-H7_Type* type_lookup_by_name(const char* nm);
+H7_Type* h7_type_lookup_by_name(const char* nm);
 H7_Type* h7_type_lookup_by_tag(int tag_id);
 
 /* checks whether one isa two */

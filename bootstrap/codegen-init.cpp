@@ -1007,7 +1007,7 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
 
     if ty has generics though, do the following:
 
-      lookup_derived_type(get_base_type(), "full-type-name")
+      h7_lookup_derived_type(get_base_type(), "full-type-name")
 
     This looks up a type for "full-type-name", which is a variation of
     get_base_type().  If the full type has been looked up (and cached)
@@ -1040,7 +1040,8 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
   llvm::Value* type_value = builder().CreateCall(typeFunc, argv.begin(), argv.end());
 
   if (ty.hasGenerics()) {
-    llvm::Function* lookupTypeFunc = fModule->getFunction(llvm::StringRef(String("lookup_derived_type")));
+    llvm::Function* lookupTypeFunc =
+      fModule->getFunction(llvm::StringRef(String("h7_lookup_derived_type")));
 
     if (lookupTypeFunc == NULL) {
       llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getTypeType(),
@@ -1050,7 +1051,7 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
 
       lookupTypeFunc = llvm::Function::Create(ft,
                                               llvm::Function::ExternalLinkage,
-                                              llvm::Twine(String("lookup_derived_type")),
+                                              llvm::Twine(String("h7_lookup_derived_type")),
                                               fModule);
     }
     std::vector<llvm::Value*> lookup_argv = vector_of(type_value)

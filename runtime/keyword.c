@@ -35,7 +35,8 @@ h7_keywords_init()
    keywords
    ------------------------------------------------------------------------ */
 
-void* h7_keyword_register(const char* keyw_str)
+void*
+h7_keyword_register(const char* keyw_str)
 {
   H7_Keyword* key = (H7_Keyword*)h7_hashtable_get(keyword_table,
                                                   (void*)keyw_str);
@@ -46,7 +47,7 @@ void* h7_keyword_register(const char* keyw_str)
     h7_hashtable_add(keyword_table, (void*)keyw_str, (void*)key);
 
 #if defined(UNITTESTS)
-  hr_trace("register", "Register keyword: %s [id %p]", keyw_str, key);
+  h7_trace("register", "Register keyword: %s [id %p]", keyw_str, key);
 #endif
   }
 
