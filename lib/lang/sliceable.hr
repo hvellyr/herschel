@@ -47,7 +47,7 @@ def generic slice-rest(obj @ 'T, from @ 'K) : 'T
     @var{obj}) containing all elements from @var{from} to the last element
     in @var{obj} (inclusive).
 
-    If @var{obj} supports a @func{num-items} method this is can be
+    If @var{obj} supports a @func{num-items} method this can be
     implemented as:
 
     @example
@@ -70,11 +70,11 @@ def generic slice!(obj @ ^Sliceable!<'K, 'E>, key @ 'K, value @ 'E) : ^Sliceable
 ----------------------------------------------------------------------
 
 def generic empty?(obj @ Any) : Bool ...
-  ~ Indicate whether @var{obj} is an empty object, which is any kind of
+  ~ Indicates whether @var{obj} is an empty object, which is any kind of
   collection, e.g. an array, a slice, a container. ~
 
 def generic num-items(obj @ Any) : Ordinal ...
-    ~ return the number of items in @var{obj}, which is any kind of
+    ~ Returns the number of items in @var{obj}, which is any kind of
     collection, e.g. an array, a slice, a container. ~
 
 -- end of sliceable.hr
