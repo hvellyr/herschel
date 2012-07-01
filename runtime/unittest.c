@@ -38,7 +38,7 @@ static const char* s3_key = "s3";
 static const char* s4_key = "s4";
 
 static void
-prepare()
+h7_prepare()
 {
   h7_type_init();
   h7_methods_init();
@@ -111,7 +111,7 @@ prepare()
 
 
 static void
-test_func1()
+h7_test_func1()
 {
   H7_GenericFunction* m1 = h7_generic_function_alloc("m1", 1);
   H7_GenericFunction* m2 = h7_generic_function_alloc("m2", 1);
@@ -170,7 +170,7 @@ test_func1()
 
 
 static void
-test_func2()
+h7_test_func2()
 {
   H7_GenericFunction* n1 = h7_generic_function_alloc("n1", 2);
   H7_GenericFunction* n3 = h7_generic_function_alloc("n3", 2);
@@ -254,7 +254,7 @@ test_func2()
 
 
 static void
-test_func3()
+h7_test_func3()
 {
   H7_GenericFunction* t1 = h7_generic_function_alloc("t1", 3);
 
@@ -269,7 +269,7 @@ test_func3()
 
 
 static void
-test_allocate1()
+h7_test_allocate1()
 {
   H7_ATOM x1;
   H7_ATOM x2;
@@ -283,7 +283,7 @@ test_allocate1()
 
 
 static void
-test_slots()
+h7_test_slots()
 {
   H7_ATOM x1;
 
@@ -309,14 +309,14 @@ test_slots()
 
 int main(int args, char** argv)
 {
-  prepare();
+  h7_prepare();
 
-  test_func1();
-  test_func2();
-  test_func3();
+  h7_test_func1();
+  h7_test_func2();
+  h7_test_func3();
 
-  test_allocate1();
-  test_slots();
+  h7_test_allocate1();
+  h7_test_slots();
 
   return 0;
 }

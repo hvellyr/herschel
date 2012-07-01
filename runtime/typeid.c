@@ -49,7 +49,7 @@ h7_type_init()
 
 
 static int
-tag_id_for_type(const H7_Type* type)
+h7_tag_id_for_type(const H7_Type* type)
 {
   /* int is_array = type->is_array; */
   /* printf("Typeid: %s\n", type->name); */
@@ -126,7 +126,7 @@ tag_id_for_type(const H7_Type* type)
 void
 h7_register_type(H7_Type* type)
 {
-  type->tag_id = tag_id_for_type(type);
+  type->tag_id = h7_tag_id_for_type(type);
 
   if (h7_hashtable_get(types_name_to_type_map, (void*)type->name) != NULL)
   {
@@ -145,13 +145,13 @@ h7_register_type(H7_Type* type)
   types_tag_vector[type->tag_id] = type;
 
 #if defined(UNITTESTS)
-  hr_trace("register", "Register type: %s", type->name);
+  h7_trace("register", "Register type: %s", type->name);
 #endif
 }
 
 
-size_t
-type_setup_dispatch_table(H7_Type* ty, va_list vp)
+static size_t
+h7_type_setup_dispatch_table(H7_Type* ty, va_list vp)
 {
   size_t acc_size = 0;
   size_t i = 0;
@@ -179,10 +179,10 @@ type_setup_dispatch_table(H7_Type* ty, va_list vp)
 
 
 static H7_Type*
-type_base_alloc(const char* nm, size_t isa_size,
-                size_t instance_size,
-                const H7_TypeSlotPair* slots,
-                int is_array)
+h7_type_base_alloc(const char* nm, size_t isa_size,
+                   size_t instance_size,
+                   const H7_TypeSlotPair* slots,
+                   int is_array)
 {
   H7_Type* ty = malloc(sizeof(H7_Type));
 
@@ -204,13 +204,13 @@ type_base_alloc(const char* nm, size_t isa_size,
 H7_Type*
 h7_type_alloc(const char* nm, size_t isa_size, ...)
 {
-  H7_Type* ty = type_base_alloc(nm, isa_size, 0, NULL, 0);
+  H7_Type* ty = h7_type_base_alloc(nm, isa_size, 0, NULL, 0);
 
   if (isa_size > 0) {
     va_list vp;
     va_start(vp, isa_size);
 
-    type_setup_dispatch_table(ty, vp);
+    h7_type_setup_dispatch_table(ty, vp);
 
     va_end(vp);
   }
@@ -219,11 +219,13 @@ h7_type_alloc(const char* nm, size_t isa_size, ...)
 }
 
 
-H7_Type*
-type_clone_with_other_name(const H7_Type* base_type,
-                           const char* full_tag_name)
+static H7_Type*
+h7_type_clone_with_other_name(const H7_Type* base_type,
+                              const char* full_tag_name)
 {
-  H7_Type* ty = type_base_alloc(full_tag_name, base_type->isa_size, 0, NULL, 0);
+  H7_Type* ty = h7_type_base_alloc(full_tag_name,
+                                   base_type->isa_size,
+                                   0, NULL, 0);
 
   ty->isa               = base_type->isa;               /* shared ptr */
   ty->isa_set           = base_type->isa_set;           /* shared ptr */
@@ -237,10 +239,10 @@ type_clone_with_other_name(const H7_Type* base_type,
 }
 
 
-void
-class_add_super_slots_and_rewrite_offsets(H7_HashTable* table,
-                                          H7_HashTable* other,
-                                          size_t base_offset)
+static void
+h7_class_add_super_slots_and_rewrite_offsets(H7_HashTable* table,
+                                             H7_HashTable* other,
+                                             size_t base_offset)
 {
   size_t i;
 
@@ -262,10 +264,14 @@ h7_class_alloc(const char* nm,
                const H7_TypeSlotPair* slots,
                size_t isa_size, ...)
 {
-  H7_Type* ty = type_base_alloc(nm, isa_size, instance_size, slots, 0);
+  H7_Type* ty = h7_type_base_alloc(nm,
+                                   isa_size,
+                                   instance_size,
+                                   slots,
+                                   0);
 
 #if defined(UNITTESTS)
-  hr_trace("register", "Alloc class '%s' [instance-size=%d]",
+  h7_trace("register", "Alloc class '%s' [instance-size=%d]",
            nm, instance_size);
 #endif
 
@@ -274,7 +280,7 @@ h7_class_alloc(const char* nm,
     va_list vp;
     va_start(vp, isa_size);
 
-    acc_super_size = type_setup_dispatch_table(ty, vp);
+    acc_super_size = h7_type_setup_dispatch_table(ty, vp);
 
     va_end(vp);
   }
@@ -282,7 +288,7 @@ h7_class_alloc(const char* nm,
   ty->acc_instance_size = ty->instance_size + acc_super_size;
 
 #if defined(UNITTESTS)
-  hr_trace("register", "            [acc_instance-size=%ld, super=%ld]",
+  h7_trace("register", "            [acc_instance-size=%ld, super=%ld]",
            ty->acc_instance_size, acc_super_size);
 #endif
 
@@ -295,9 +301,9 @@ h7_class_alloc(const char* nm,
     size_t i;
     for (i = 0; i < ty->isa_size; i++) {
       if (ty->isa[i]->slots_offsets != NULL) {
-        class_add_super_slots_and_rewrite_offsets(ty->slots_offsets,
-                                                  ty->isa[i]->slots_offsets,
-                                                  acc_offset);
+        h7_class_add_super_slots_and_rewrite_offsets(ty->slots_offsets,
+                                                     ty->isa[i]->slots_offsets,
+                                                     acc_offset);
         acc_offset += ty->isa[i]->acc_instance_size;
       }
     }
@@ -308,7 +314,7 @@ h7_class_alloc(const char* nm,
     const H7_TypeSlotPair* p = slots;
     for ( ; p->name != NULL; p++) {
 #if defined(UNITTESTS)
-      hr_trace("register", "Register slot '%s' with offset '%d'",
+      h7_trace("register", "Register slot '%s' with offset '%d'",
                p->name, p->offset);
 #endif
       size_t offset = acc_offset + p->offset;
@@ -324,7 +330,7 @@ h7_class_alloc(const char* nm,
     for (i = 0; i < ty->slots_offsets->fSize; i++) {
       node = ty->slots_offsets->fNodes[i];
       while (node != NULL) {
-        hr_trace("instancelayout", "Slot offset: '%s::%s' @ '%ld'",
+        h7_trace("instancelayout", "Slot offset: '%s::%s' @ '%ld'",
                  nm, (char*)node->fKey, (size_t)node->fValue);
         node = node->fTail;
       }
@@ -337,7 +343,7 @@ h7_class_alloc(const char* nm,
 
 
 H7_Type*
-type_lookup_by_name(const char* nm)
+h7_type_lookup_by_name(const char* nm)
 {
   H7_Type* ty = h7_hashtable_get(types_name_to_type_map, (void*)nm);
   if (ty == NULL)
@@ -393,13 +399,13 @@ h7_type_lookup_array_type(H7_Type* base_type)
     char tmp[256];
     sprintf(tmp, "%s[]", base_type->name);
 
-    H7_Type* array_type = type_base_alloc(strdup(tmp),
-                                          0,    /* isa-size */
-                                          0,    /* instance-size */
-                                          NULL, /* slots */
-                                          1);   /* is_array */
+    H7_Type* array_type = h7_type_base_alloc(strdup(tmp),
+                                             0,    /* isa-size */
+                                             0,    /* instance-size */
+                                             NULL, /* slots */
+                                             1);   /* is_array */
 #if defined(UNITTESTS)
-  hr_trace("register", "Allocate array type for %s [tag: %ld]",
+  h7_trace("register", "Allocate array type for %s [tag: %ld]",
            base_type->name, array_type->tag_id);
 #endif
 
@@ -437,7 +443,7 @@ h7_instance_slot(H7_ATOM instance, const H7_Keyword* keyw)
   H7_Type* ty = h7_type_lookup_by_tag(instance.typeid);
 
 #if defined(UNITTESTS)
-  hr_trace("slot", "Lookup slot '%s' for instance of type '%s'",
+  h7_trace("slot", "Lookup slot '%s' for instance of type '%s'",
            slot_name, ty->name);
 #endif
 
@@ -462,7 +468,7 @@ int
 h7_instance_isa(H7_ATOM instance, H7_Type* ty)
 {
 #if defined(UNITTESTS)
-  hr_trace("isa", "isa '%s'?", ty->name);
+  h7_trace("isa", "isa '%s'?", ty->name);
 #endif
 
   H7_Type* instty = h7_type_lookup_by_tag(instance.typeid);
@@ -479,7 +485,7 @@ void
 h7_allocate(H7_ATOM* instance, H7_Type* ty)
 {
 #if defined(UNITTESTS)
-  hr_trace("allocate", "Create instance of type '%s', size: %ld",
+  h7_trace("allocate", "Create instance of type '%s', size: %ld",
            ty->name, ty->acc_instance_size);
 #endif
 
@@ -497,7 +503,7 @@ void
 h7_allocate_array(H7_ATOM* instance, H7_Type* ty, size_t items)
 {
 #if defined(UNITTESTS)
-  hr_trace("allocate", "Create instance of type '%s'x%ld, size: %ld",
+  h7_trace("allocate", "Create instance of type '%s'x%ld, size: %ld",
            ty->name, items, ty->acc_instance_size);
 #endif
 
@@ -515,7 +521,7 @@ h7_allocate_int32_array(H7_ATOM* instance,
                      H7_TypeTag tag_id, int init_value, size_t items)
 {
 #if defined(UNITTESTS)
-  hr_trace("allocate", "Create instance of type 'lang|Int32'x%ld (%d), size: %ld a %ld",
+  h7_trace("allocate", "Create instance of type 'lang|Int32'x%ld (%d), size: %ld a %ld",
            items, tag_id, sizeof(size_t) + items * sizeof(int), sizeof(int));
 #endif
 
@@ -537,7 +543,7 @@ h7_allocate_int8_array(H7_ATOM* instance,
                        H7_TypeTag tag_id, char init_value, size_t items)
 {
 #if defined(UNITTESTS)
-  hr_trace("allocate", "Create instance of type 'lang|Int8'x%ld (%d), size: %ld a %ld",
+  h7_trace("allocate", "Create instance of type 'lang|Int8'x%ld (%d), size: %ld a %ld",
            items, tag_id, sizeof(size_t) + items * sizeof(int), sizeof(int));
 #endif
 
@@ -606,7 +612,7 @@ h7_allocate_double_array(H7_ATOM* instance,
 
 
 H7_Type*
-lookup_derived_type(H7_Type* base_type, const char* full_tag_name)
+h7_lookup_derived_type(H7_Type* base_type, const char* full_tag_name)
 {
   H7_Type* new_ty;
   H7_Type* ty = h7_hashtable_get(types_name_to_type_map,
@@ -614,7 +620,7 @@ lookup_derived_type(H7_Type* base_type, const char* full_tag_name)
   if (ty != NULL)
     return ty;
 
-  new_ty = type_clone_with_other_name(base_type, full_tag_name);
+  new_ty = h7_type_clone_with_other_name(base_type, full_tag_name);
   h7_register_type(new_ty);
 
   return new_ty;

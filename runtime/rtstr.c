@@ -24,7 +24,7 @@
    strings
    ------------------------------------------------------------------------ */
 
-typedef unsigned short Ucs2Char;
+typedef unsigned short H7_Ucs2Char;
 
 
 void h7_allocate_string(H7_ATOM* instance, const char* str)
@@ -32,19 +32,19 @@ void h7_allocate_string(H7_ATOM* instance, const char* str)
   size_t items = 0;
 
 #if defined(UNITTESTS)
-  hr_trace("allocate", "Create instance of type 'lang|String': '%s'", str);
+  h7_trace("allocate", "Create instance of type 'lang|String': '%s'", str);
 #endif
 
   items = strlen(str);
 
   instance->typeid = TYPE_TAG_STRINGIMPL;
-  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(Ucs2Char));
+  instance->u.v_obj = malloc(sizeof(size_t) + items * sizeof(H7_Ucs2Char));
 
   *((size_t*)instance->u.v_obj) = items;
   if (items > 0)
   {
-    Ucs2Char* p = (Ucs2Char*)(instance->u.v_obj + sizeof(size_t));
-    memset(p, 0, items * sizeof(Ucs2Char));
+    H7_Ucs2Char* p = (H7_Ucs2Char*)(instance->u.v_obj + sizeof(size_t));
+    memset(p, 0, items * sizeof(H7_Ucs2Char));
 
     size_t i;
     for (i = 0; i < items; i++, p++)
@@ -60,7 +60,7 @@ h7_allocate_string_n(size_t items, unsigned int c)
   H7_ATOM instance;
 
 #if defined(UNITTESTS)
-  hr_trace("allocate",
+  h7_trace("allocate",
            "Create new instance of type 'lang|String' with length %ld: '%d'",
            items, c);
 #endif
@@ -68,13 +68,13 @@ h7_allocate_string_n(size_t items, unsigned int c)
 //  fprintf(stderr, "%p\n", instance);
 
   instance.typeid = TYPE_TAG_STRINGIMPL;
-  instance.u.v_obj = malloc(sizeof(size_t) + items * sizeof(Ucs2Char));
+  instance.u.v_obj = malloc(sizeof(size_t) + items * sizeof(H7_Ucs2Char));
 
   *((size_t*)instance.u.v_obj) = items;
   if (items > 0)
   {
-    Ucs2Char* p = (Ucs2Char*)(instance.u.v_obj + sizeof(size_t));
-    memset(p, 0, items * sizeof(Ucs2Char));
+    H7_Ucs2Char* p = (H7_Ucs2Char*)(instance.u.v_obj + sizeof(size_t));
+    memset(p, 0, items * sizeof(H7_Ucs2Char));
 
     size_t i;
     for (i = 0; i < items; i++, p++)
@@ -92,14 +92,14 @@ h7_lang_string_compare(H7_ATOM atom0, H7_ATOM atom1)
   if (atom0.typeid == atom1.typeid && atom1.typeid == TYPE_TAG_STRINGIMPL) {
     size_t items0 = *((size_t*)atom0.u.v_obj);
     size_t items1 = *((size_t*)atom1.u.v_obj);
-    Ucs2Char* p0 = (Ucs2Char*)(atom0.u.v_obj + sizeof(size_t));
-    Ucs2Char* p1 = (Ucs2Char*)(atom1.u.v_obj + sizeof(size_t));
+    H7_Ucs2Char* p0 = (H7_Ucs2Char*)(atom0.u.v_obj + sizeof(size_t));
+    H7_Ucs2Char* p1 = (H7_Ucs2Char*)(atom1.u.v_obj + sizeof(size_t));
     size_t i = 0;
     size_t n = items0 > items1 ? items1 : items0;
 
     while (i++ < n) {
-      Ucs2Char uc0 = *p0++;
-      Ucs2Char uc1 = *p1++;
+      H7_Ucs2Char uc0 = *p0++;
+      H7_Ucs2Char uc1 = *p1++;
 
       if (uc0 != uc1)
         return uc0 - uc1;
@@ -137,7 +137,7 @@ h7_lang_string_char_at_index(H7_ATOM atom0, unsigned int idx)
   if (atom0.typeid == TYPE_TAG_STRINGIMPL) {
     size_t len = *((size_t*)atom0.u.v_obj);
     if (idx < len) {
-      Ucs2Char* p0 = (Ucs2Char*)(atom0.u.v_obj + sizeof(size_t));
+      H7_Ucs2Char* p0 = (H7_Ucs2Char*)(atom0.u.v_obj + sizeof(size_t));
       return p0[idx];
     }
   }
@@ -154,7 +154,7 @@ h7_lang_string_set_char_at_index(H7_ATOM atom0,
   if (atom0.typeid == TYPE_TAG_STRINGIMPL) {
     size_t len = *((size_t*)atom0.u.v_obj);
     if (idx < len) {
-      Ucs2Char* p0 = (Ucs2Char*)(atom0.u.v_obj + sizeof(size_t));
+      H7_Ucs2Char* p0 = (H7_Ucs2Char*)(atom0.u.v_obj + sizeof(size_t));
       p0[idx] = c;
     }
   }
