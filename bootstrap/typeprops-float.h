@@ -15,8 +15,8 @@
 #include "typeenum.h"
 #include "codegen-tools.h"
 
-#include "llvm/DerivedTypes.h"
-#include "llvm/LLVMContext.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/LLVMContext.h"
 
 namespace herschel
 {
@@ -62,7 +62,7 @@ namespace herschel
       return tools->makeFloatAtom(value, CodegenTools::kAtomFloat32);
     }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getFloatTy(typeUtils->context());
     }
@@ -85,7 +85,7 @@ namespace herschel
       return NULL;
     }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getDoubleTy(typeUtils->context());
     }
@@ -108,7 +108,7 @@ namespace herschel
       return NULL;
     }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getFP128Ty(typeUtils->context());
     }

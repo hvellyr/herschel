@@ -26,6 +26,7 @@ namespace herschel
     Setup findSysResources(const char* exeName) const;
 
   protected:
+    //! Returns the directory where the current executable is located
     virtual String getExeLocation() const = 0;
 
   private:
@@ -33,7 +34,8 @@ namespace herschel
     {
       // path to where additional tools are installed (llvm-ld, hrc, etc.)
       String fLibExec;
-      String fLlvmLdPath;
+      String fLlvmLlcPath;
+      String fLdPath;
 
       // hr header path
       String fHrIncludes;

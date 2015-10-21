@@ -11,7 +11,7 @@
 #ifndef bootstrap_codegen_h
 #define bootstrap_codegen_h
 
-#include "llvm/Support/IRBuilder.h"
+#include "llvm/IR/IRBuilder.h"
 
 #include "refcountable.h"
 #include "ptr.h"
@@ -26,12 +26,18 @@ namespace llvm
   class AllocaInst;
   class BasicBlock;
   class Function;
-  class FunctionPassManager;
+//  template <typename T> class PassManager;
+//  typedef PassManager<Function> FunctionPassManager;
   class FunctionType;
   class LLVMContext;
   class Module;
-  class TargetData;
+  class DataLayout;
   class Value;
+
+  namespace legacy
+  {
+    class FunctionPassManager;
+  }
 };
 
 
@@ -147,13 +153,13 @@ namespace herschel
     //! Returns the current llvm module
     llvm::Module* module() const;
     //! Returns the current llvm pass manager for optimizing functions
-    llvm::FunctionPassManager* optPassManager() const;
+    llvm::legacy::FunctionPassManager* optPassManager() const;
 
     //! Indicates whether we compile for a 64bit architecture.
     bool is64Bit() const;
-    //! Returns the current llvm target data describing the target
+    //! Returns the current llvm target data layout describing the target
     //! architecture of the current build
-    llvm::TargetData* targetData() const;
+    const llvm::DataLayout* dataLayout() const;
 
   private:
     friend class CodeGeneratorProxy;
@@ -193,8 +199,8 @@ namespace herschel
     llvm::Module*              fModule;
     // llvm::DIBuilder*        fDIBuilder;
     llvm::IRBuilder<>          fBuilder;
-    llvm::FunctionPassManager* fOptPassManager;
-    llvm::TargetData*          fTargetData;
+    llvm::legacy::FunctionPassManager* fOptPassManager;
+    const llvm::DataLayout*    fDataLayout;
 
     Ptr<ModuleRuntimeInitializer> fInitializer;
     Ptr<CodegenTypeUtils>      fTypes;

@@ -486,7 +486,7 @@ abs_llvm_config_path=$(cd "$llvm_config_dir" && pwd 2>/dev/null)/"$llvm_config_f
 
 
 llvm_version=$("$abs_llvm_config_path" --version 2>/dev/null)
-if test "x$llvm_version" = x"2.9"; then
+if test "x$llvm_version" = x"3.7.0"; then
   echo "${ECHO_T}$llvm_version"
 else
   echo "${ECHO_T}no matching installation found"
@@ -504,7 +504,7 @@ if test "x$failure" = xno; then
   fi
 
   echo $ECHO_N "Get llvm cpp flags... $ECHO_C"
-  llvm_cppflags=$("$abs_llvm_config_path" --cppflags backend bitwriter 2>/dev/null)
+  llvm_cppflags="$("$abs_llvm_config_path" --cppflags core codegen bitwriter x86codegen 2>/dev/null)"
   if test "x$verbose" = xyes; then
     echo "${ECHO_T}$llvm_cppflags"
   else
@@ -512,7 +512,7 @@ if test "x$failure" = xno; then
   fi
 
   echo $ECHO_N "Get llvm linker flags... $ECHO_C"
-  llvm_ldflags=$("$abs_llvm_config_path" --ldflags backend bitwriter 2>/dev/null)
+  llvm_ldflags="$("$abs_llvm_config_path" --ldflags core codegen bitwriter x86codegen 2>/dev/null)"
   if test "x$verbose" = xyes; then
     echo "${ECHO_T}$llvm_ldflags"
   else
@@ -520,7 +520,7 @@ if test "x$failure" = xno; then
   fi
 
   echo $ECHO_N "Get llvm libraries... $ECHO_C"
-  llvm_libs=$("$abs_llvm_config_path" --libs backend bitwriter 2>/dev/null)
+  llvm_libs="$("$abs_llvm_config_path" --libs core codegen bitwriter x86codegen 2>/dev/null) -lz -lcurses"
   if test "x$verbose" = xyes; then
     echo "${ECHO_T}$llvm_libs"
   else

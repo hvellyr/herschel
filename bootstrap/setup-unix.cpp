@@ -33,7 +33,7 @@
 using namespace herschel;
 
 bool
-SetupUnix::exeFromDevpath(const char* exeName, const String& exedir,
+SetupUnix::exeFromDevpath(const char* /*exeName*/, const String& exedir,
                           Paths& paths) const
 {
   static const char* possible_paths[] = {
@@ -44,18 +44,19 @@ SetupUnix::exeFromDevpath(const char* exeName, const String& exedir,
   const char** p = possible_paths;
 
   for ( ; *p; p++) {
-    String fullpath = String(*p) + exeName;
+    String subpath(*p);
 
-    if (exedir.endsWith(fullpath)) {
-      String basepath = exedir.part(0, exedir.length() - fullpath.length() + 1);
+    if (exedir.endsWith(subpath)) {
+      String basepath = exedir.part(0, exedir.length() - subpath.length() + 1);
 
-      paths.fLibExec = exedir.part(0, exedir.length() - strlen(exeName));
+      paths.fLibExec = exedir;
       paths.fHrIncludes = file::appendDir(file::makeDir(basepath),
                                           String("lib"));
       paths.fRtLib = paths.fLibExec;
 
-      paths.fLlvmLdPath = file::appendFile(file::makeDir(String(HR_LLVM_EXE)),
-                                           String("llvm-ld"));
+      paths.fLlvmLlcPath = file::appendFile(file::makeDir(String(HR_LLVM_EXE)),
+                                            String("llc"));
+      paths.fLdPath = String("cc");
       return true;
     }
   }
@@ -77,9 +78,9 @@ SetupUnix::exeFromRuntimeInstallation(const char* exeName,
   const char** p = possible_paths;
 
   for ( ; *p; p++) {
-    String fullpath = String(*p) + exeName;
-    if (exedir.endsWith(fullpath)) {
-      String basepath = exedir.part(0, exedir.length() - fullpath.length() + 1);
+    String subpath(*p);
+    if (exedir.endsWith(subpath)) {
+      String basepath = exedir.part(0, exedir.length() - subpath.length() + 1);
 
       String basePkgPath = file::appendDir(file::makeDir(basepath),
                                            String("lib/herschel"),
@@ -92,8 +93,9 @@ SetupUnix::exeFromRuntimeInstallation(const char* exeName,
                                             String("include"));
         paths.fRtLib = basePkgPath;
 
-        paths.fLlvmLdPath = file::appendFile(file::makeDir(basePkgPath),
-                                             String("llvm-ld"));
+        paths.fLlvmLlcPath = file::appendFile(file::makeDir(basePkgPath),
+                                              String("llc"));
+        paths.fLdPath = String("cc");
         return true;
       }
     }
@@ -123,9 +125,10 @@ SetupUnix::findSysResources(const char* exeName) const
       setup.fSysPath.push_back(paths.fHrIncludes);
       setup.fHrcPath = file::appendFile(file::makeDir(paths.fLibExec),
                                         String("hrc"));
-      setup.fLdPath = paths.fLlvmLdPath;
+      setup.fLlcPath = paths.fLlvmLlcPath;
+      setup.fLdPath = paths.fLdPath;
       setup.fLangKit = file::appendFile(file::makeDir(paths.fRtLib),
-                                        String("langkit.hlib"));
+                                        String("langkit.a"));
       setup.fRuntimeLib = file::appendFile(file::makeDir(paths.fRtLib),
                                            String("libhr.a"));
     }
@@ -137,16 +140,15 @@ SetupUnix::findSysResources(const char* exeName) const
                                                String("include")));
       setup.fHrcPath = file::appendFile(file::makeDir(basePkgPath),
                                         String("hrc"));
-      setup.fLdPath = file::appendFile(file::makeDir(basePkgPath),
-                                       String("llvm-ld"));
+      setup.fLlcPath = file::appendFile(file::makeDir(basePkgPath),
+                                       String("llc"));
+      setup.fLdPath = String("cc");
 
       setup.fLangKit = file::appendFile(file::makeDir(basePkgPath),
-                                        String("langkit.hlib"));
+                                        String("langkit.a"));
       setup.fRuntimeLib = file::appendFile(file::makeDir(basePkgPath),
                                            String("libhr.a"));
     }
-
-    setup.fLdFlags.push_back(String("-native"));
   }
 
   return setup;

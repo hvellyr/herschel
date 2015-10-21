@@ -26,22 +26,21 @@
 
 #include <vector>
 
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/PassManager.h"
-#include "llvm/Support/IRBuilder.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetSelect.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/GlobalVariable.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Intrinsics.h"
+#include "llvm/Transforms/Scalar.h"
 
 
 //----------------------------------------------------------------------------
@@ -127,9 +126,9 @@ CodegenApply::emitFunctionCall(const SrcPos& srcpos,
 
   llvm::AllocaInst* retv = NULL;
   llvm::Function* curFunction = builder().GetInsertBlock()->getParent();
-  const llvm::Type* returnType = ( alwaysPassAtom
-                                   ? types()->getAtomType()
-                                   : types()->getType(funcRetType) );
+  llvm::Type* returnType = ( alwaysPassAtom
+                             ? types()->getAtomType()
+                             : types()->getType(funcRetType) );
   retv = tools()->createEntryBlockAlloca(curFunction, String("local_retv"),
                                          returnType);
 
@@ -151,7 +150,7 @@ CodegenApply::emitFunctionCall(const SrcPos& srcpos,
   }
 
   if (inlineRetv) {
-    builder().CreateCall(calleeFunc, argv.begin(), argv.end());
+    builder().CreateCall(calleeFunc, argv);
 
     if (alwaysPassAtom && dstType.isPlainType() && dstConvKind == kNoConv)
     {
@@ -165,7 +164,7 @@ CodegenApply::emitFunctionCall(const SrcPos& srcpos,
     return retv;
   }
   else {
-    llvm::Value* funcVal = builder().CreateCall(calleeFunc, argv.begin(), argv.end());
+    llvm::Value* funcVal = builder().CreateCall(calleeFunc, argv);
     if (isInTailPos) {
       // TODO: return type id
       tools()->setAtom(retv, CodegenTools::kAtomInt32, funcVal);
@@ -274,8 +273,8 @@ CodegenApply::emitAllocateApplyImpl(const AptNode* typeNode) const
   if (allocFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
       llvm::Type::getVoidTy(context()),
-      vector_of<const llvm::Type*>(types()->getAtomType()->getPointerTo())
-                                  (types()->getTypeType()), // Type*
+      std::vector<llvm::Type*>{ types()->getAtomType()->getPointerTo(),
+                                types()->getTypeType() }, // Type*
       !K(isVarArg));
     allocFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
@@ -296,7 +295,7 @@ CodegenApply::emitAllocateApplyImpl(const AptNode* typeNode) const
   argv.push_back(val);
 
   hr_assert(allocFunc != NULL);
-  builder().CreateCall(allocFunc, argv.begin(), argv.end());
+  builder().CreateCall(allocFunc, argv);
 
   // TODO: if in tail position enforce ATOM return type?
   return retv;
@@ -314,8 +313,9 @@ CodegenApply::emitIsaApply(const ApplyNode* applyNode) const
   if (isaFunc == NULL) {
     // int h7_instance_isa(ATOM, Type*)
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt1Ty(context()),
-                                                     vector_of(types()->getAtomType())
-                                                              (types()->getTypeType()),
+                                                     std::vector<llvm::Type*>{
+                                                       types()->getAtomType(),
+                                                       types()->getTypeType() },
                                                      !K(isVarArg));
     isaFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
@@ -339,7 +339,7 @@ CodegenApply::emitIsaApply(const ApplyNode* applyNode) const
 
   hr_assert(isaFunc != NULL);
   // TODO: if in tail position enforce ATOM return type?
-  return builder().CreateCall(isaFunc, argv.begin(), argv.end());
+  return builder().CreateCall(isaFunc, argv);
 }
 
 
@@ -395,7 +395,7 @@ public:
 
   virtual String allocateFuncName() const = 0;
 
-  virtual std::vector<const llvm::Type*> allocateFuncSignature() const = 0;
+  virtual std::vector<llvm::Type*> allocateFuncSignature() const = 0;
 
   virtual llvm::Value* initValue(const ApplyNode* node) const = 0;
 
@@ -429,11 +429,12 @@ public:
     return String("h7_allocate_array");
   }
 
-  virtual std::vector<const llvm::Type*> allocateFuncSignature() const
+  virtual std::vector<llvm::Type*> allocateFuncSignature() const
   {
-    return vector_of<const llvm::Type*>(fApply->types()->getAtomType()->getPointerTo())
-                                       (fApply->types()->getTypeType())
-                                       (fApply->types()->getSizeTTy());
+    return std::vector<llvm::Type*>{
+      fApply->types()->getAtomType()->getPointerTo(),
+      fApply->types()->getTypeType(),
+      fApply->types()->getSizeTTy() };
   }
 
   virtual llvm::Value* initValue(const ApplyNode* node) const
@@ -497,7 +498,7 @@ public:
       fApply->emitArraySliceAddress(retv,
                                     arrayBaseType,
                                     counter);
-    const llvm::Type* ptrType = fApply->types()->getType(arrayBaseType)->getPointerTo();
+    llvm::Type* ptrType = fApply->types()->getType(arrayBaseType)->getPointerTo();
     llvm::Value* ptrAddr = fApply->builder().CreatePointerCast(arrayAccces.fAddr, ptrType);
 
     llvm::Value* initVal = ( explicitInitValue != NULL
@@ -540,12 +541,13 @@ public:
     return String("h7_allocate_int32_array");
   }
 
-  virtual std::vector<const llvm::Type*> allocateFuncSignature() const
+  virtual std::vector<llvm::Type*> allocateFuncSignature() const
   {
-    return vector_of<const llvm::Type*>(fApply->types()->getAtomType()->getPointerTo())
-                                       (fApply->types()->getTagIdType())
-                                       (llvm::Type::getInt32Ty(fApply->context()))
-                                       (fApply->types()->getSizeTTy());
+    return std::vector<llvm::Type*>{
+      fApply->types()->getAtomType()->getPointerTo(),
+      fApply->types()->getTagIdType(),
+      llvm::Type::getInt32Ty(fApply->context()),
+      fApply->types()->getSizeTTy() };
   }
 
   virtual llvm::Value* initValue(const ApplyNode* node) const
@@ -586,12 +588,12 @@ public:
     return String("allocate_char_array");
   }
 
-  virtual std::vector<const llvm::Type*> allocateFuncSignature() const
+  virtual std::vector<llvm::Type*> allocateFuncSignature() const
   {
-    return vector_of<const llvm::Type*>(fApply->types()->getAtomType()->getPointerTo())
-                                       (fApply->types()->getTagIdType())
-                                       (llvm::Type::getInt32Ty(fApply->context()))
-                                       (fApply->types()->getSizeTTy());
+    return std::vector<llvm::Type*>{ fApply->types()->getAtomType()->getPointerTo(),
+                                     fApply->types()->getTagIdType(),
+                                     llvm::Type::getInt32Ty(fApply->context()),
+                                     fApply->types()->getSizeTTy() };
   }
 
   virtual llvm::Value* initValue(const ApplyNode* node) const
@@ -646,7 +648,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   if (allocFunc == NULL) {
     // void h7_allocate_array(ATOM* instance, Type* ty, size_t items);
 
-    std::vector<const llvm::Type*> sign = strategy->allocateFuncSignature();
+    std::vector<llvm::Type*> sign = strategy->allocateFuncSignature();
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                      sign,
                                                      !K(isVarArg));
@@ -733,7 +735,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   argv.push_back(elementCountValue);
 
   hr_assert(allocFunc != NULL);
-  builder().CreateCall(allocFunc, argv.begin(), argv.end());
+  builder().CreateCall(allocFunc, argv);
 
   llvm::Value* retv2 = strategy->postInit(node,
                                           retv,
@@ -760,16 +762,18 @@ CodegenApply::emitArraySize(const ApplyNode* node) const
 
   llvm::Value* arrayAtom = generator()->codegenNode(args[0]);
 
-  llvm::Value* arrayAtomPayload = builder().CreateStructGEP(arrayAtom, 1);
+  llvm::Value* arrayAtomPayload = builder().CreateStructGEP(types()->getAtomType(),
+                                                            arrayAtom, 1);
 
-  const llvm::Type* payloadType = types()->getArrayPayloadType()->getPointerTo()
-                                         ->getPointerTo();
+  llvm::Type* payloadType = types()->getArrayPayloadType()->getPointerTo()
+                                   ->getPointerTo();
   llvm::Value* arrayPayloadTyped = builder().CreatePointerCast(arrayAtomPayload,
                                                                payloadType);
 
   // access the size slot in the array struct
   llvm::Value* loadedPayload = builder().CreateLoad(arrayPayloadTyped);
-  llvm::Value* numItems = builder().CreateStructGEP(loadedPayload, 0);
+  llvm::Value* numItems = builder().CreateStructGEP(types()->getArrayPayloadType(),
+                                                    loadedPayload, 0);
 
   return builder().CreatePointerCast(numItems, llvm::Type::getInt32Ty(context())->getPointerTo());
 }
@@ -780,24 +784,26 @@ CodegenApply::emitArraySliceAddress(llvm::Value* arrayAtom,
                                     const Type& arrayBaseType,
                                     llvm::Value* idxValue) const
 {
-  llvm::Value* arrayAtomPayload = builder().CreateStructGEP(arrayAtom, 1);
+  llvm::Value* arrayAtomPayload = builder().CreateStructGEP(types()->getAtomType(),
+                                                            arrayAtom, 1);
 
-  const llvm::Type* payloadType = types()->getArrayPayloadType()->getPointerTo()
-                                         ->getPointerTo();
+  llvm::Type* payloadType = types()->getArrayPayloadType()->getPointerTo()
+                                   ->getPointerTo();
   llvm::Value* arrayPayloadTyped = builder().CreatePointerCast(arrayAtomPayload,
                                                                payloadType);
 
   // access the data member in the array struct
   llvm::Value* loadedPayload = builder().CreateLoad(arrayPayloadTyped);
-  llvm::Value* arrayData = builder().CreateStructGEP(loadedPayload, 1);
-  const llvm::Type* arrayType = llvm::ArrayType::get(types()->getType(arrayBaseType),
-                                                     0)->getPointerTo();
+  llvm::Value* arrayData = builder().CreateStructGEP(types()->getArrayPayloadType(),
+                                                     loadedPayload, 1);
+  llvm::Type* arrayType = llvm::ArrayType::get(types()->getType(arrayBaseType),
+                                               0)->getPointerTo();
   llvm::Value* typedArray = builder().CreatePointerCast(arrayData, arrayType);
 
   std::vector<llvm::Value*> argv = vector_of(tools()->emitSizeTValue(0))
                                             (builder().CreateLoad(idxValue));
 
-  llvm::Value* addr = builder().CreateGEP(typedArray, argv.begin(), argv.end());
+  llvm::Value* addr = builder().CreateGEP(typedArray, argv);
 
   ArraySliceAccessData retv;
   retv.fArray = arrayAtom;
@@ -818,23 +824,26 @@ CodegenApply::emitArraySliceAddress(const ApplyNode* node) const
 
   llvm::Value* arrayAtom = generator()->codegenNode(args[0]);
 
-  llvm::Value* arrayAtomPayload = builder().CreateStructGEP(arrayAtom, 1);
+  llvm::Value* arrayAtomPayload = builder().CreateStructGEP(types()->getAtomType(),
+                                                            arrayAtom, 1);
 
-  const llvm::Type* payloadType = types()->getArrayPayloadType()->getPointerTo()
-                                         ->getPointerTo();
+  llvm::Type* payloadType = types()->getArrayPayloadType()->getPointerTo()
+                                   ->getPointerTo();
   llvm::Value* arrayPayloadTyped = builder().CreatePointerCast(arrayAtomPayload,
                                                                payloadType);
 
   // access the data member in the array struct
   llvm::Value* loadedPayload = builder().CreateLoad(arrayPayloadTyped);
-  llvm::Value* arrayData = builder().CreateStructGEP(loadedPayload, 1);
-  const llvm::Type* arrayType = llvm::ArrayType::get(types()->getType(arrayBaseType),
-                                                     0)->getPointerTo();
-  llvm::Value* typedArray = builder().CreatePointerCast(arrayData, arrayType);
+  llvm::Value* arrayData = builder().CreateStructGEP(types()->getArrayPayloadType(),
+                                                     loadedPayload, 1);
+  llvm::Type* arrayType = llvm::ArrayType::get(types()->getType(arrayBaseType), 0);
+  llvm::Type* arrayPtrType = arrayType->getPointerTo();
+  llvm::Value* typedArray = builder().CreatePointerCast(arrayData, arrayPtrType);
 
   llvm::Value* addr;
   if (const IntNode* idxNode = dynamic_cast<const IntNode*>(args[1].obj())) {
-    addr = builder().CreateStructGEP(typedArray,
+    addr = builder().CreateStructGEP(arrayType,
+                                     typedArray,
                                      idxNode->value());
   }
   else {
@@ -847,7 +856,7 @@ CodegenApply::emitArraySliceAddress(const ApplyNode* node) const
 
     std::vector<llvm::Value*> argv = vector_of(tools()->emitSizeTValue(0))
                                               (idxValue2);
-    addr = builder().CreateGEP(typedArray, argv.begin(), argv.end());
+    addr = builder().CreateGEP(typedArray, argv);
   }
 
   ArraySliceAccessData retv;
@@ -886,7 +895,7 @@ CodegenApply::emitArraySliceSet(const ApplyNode* node) const
 
   ArraySliceAccessData arrayAccces = emitArraySliceAddress(node);
 
-  const llvm::Type* ptrType = types()->getType(args[0]->type().arrayBaseType())->getPointerTo();
+  llvm::Type* ptrType = types()->getType(args[0]->type().arrayBaseType())->getPointerTo();
   llvm::Value* ptrAddr = builder().CreatePointerCast(arrayAccces.fAddr, ptrType);
 
   builder().CreateStore(newVal, ptrAddr);

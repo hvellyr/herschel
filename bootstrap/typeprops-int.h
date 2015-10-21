@@ -15,8 +15,8 @@
 #include "typeenum.h"
 #include "codegen-tools.h"
 
-#include "llvm/DerivedTypes.h"
-#include "llvm/LLVMContext.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/LLVMContext.h"
 
 namespace herschel
 {
@@ -63,7 +63,7 @@ namespace herschel
 
     virtual const char* convFuncName() const { return "h7_atom_2_int32"; }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt32Ty(typeUtils->context());
     }
@@ -82,7 +82,7 @@ namespace herschel
 
     virtual const char* convFuncName() const { return "h7_atom_2_int32"; }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt32Ty(typeUtils->context());
     }
@@ -102,7 +102,7 @@ namespace herschel
 
     virtual const char* convFuncName() const { return "h7_atom_2_uint32"; }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt32Ty(typeUtils->context());
     }
@@ -122,7 +122,7 @@ namespace herschel
 
     virtual const char* convFuncName() const { return "h7_atom_2_int16"; }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt16Ty(typeUtils->context());
     }
@@ -142,7 +142,7 @@ namespace herschel
 
     virtual const char* convFuncName() const { return "h7_atom_2_uint16"; }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt16Ty(typeUtils->context());
     }
@@ -162,7 +162,7 @@ namespace herschel
 
     virtual const char* convFuncName() const { return "h7_atom_2_int8"; }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt8Ty(typeUtils->context());
     }
@@ -182,7 +182,7 @@ namespace herschel
 
     virtual const char* convFuncName() const { return "h7_atom_2_uint8"; }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt8Ty(typeUtils->context());
     }
@@ -202,7 +202,7 @@ namespace herschel
 
     virtual const char* convFuncName() const { return "h7_atom_2_int64"; }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt64Ty(typeUtils->context());
     }
@@ -222,7 +222,7 @@ namespace herschel
 
     virtual const char* convFuncName() const { return "h7_atom_2_uint64"; }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt64Ty(typeUtils->context());
     }

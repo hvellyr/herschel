@@ -10,7 +10,7 @@
 
 //----------------------------------------------------------------------------
 
-#include "Carbon/Carbon.h"
+#include <CoreFoundation/CoreFoundation.h>
 
 #include "common.h"
 
@@ -40,20 +40,22 @@ namespace herschel
   public:
     virtual String getExeLocation() const
     {
-      ProcessSerialNumber psn = { 0, kCurrentProcess };
-      char buffer[2048];
-      FSRef ref;
-      OSErr err;
+      String result;
 
-      if ((err = GetProcessBundleLocation(&psn, &ref)) != noErr) {
-        logf(kError, "Mac error: %d\n", err);
-        return String();
+      CFBundleRef bundleRef = CFBundleGetMainBundle();
+      if (bundleRef) {
+        CFURLRef urlRef = CFBundleCopyBundleURL(bundleRef);
+        if (urlRef) {
+          UInt8 bundlePath[PATH_MAX];
+          if (CFURLGetFileSystemRepresentation(urlRef, true, bundlePath, sizeof(bundlePath))) {
+            result = file::canonicalPathName(String((const char*)bundlePath) + "/");
+          }
+          CFRelease(urlRef);
+        }
+        CFRelease(bundleRef);
       }
 
-      if ((err = FSRefMakePath(&ref, (UInt8*)buffer, 2048)) == noErr)
-        return file::canonicalPathName(String(buffer));
-
-      return String();
+      return result;
     }
   };
 
@@ -65,5 +67,3 @@ namespace herschel
     return setup;
   }
 }
-
-

@@ -29,10 +29,9 @@ namespace herschel
   //--------------------------------------------------------------------------
 
   //! A unicode (wide character) enabled string implementation
-
-  //! Instances can be created from plain C strings, which are expected to 
+  //!
+  //! Instances can be created from plain C strings, which are expected to
   //! be utf8 encoded 8bit strings.
-
   class String
   {
   public:

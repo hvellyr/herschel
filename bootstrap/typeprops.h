@@ -45,7 +45,7 @@ namespace herschel
                                       llvm::Value* value) const = 0;
 
     //! Return the appropriate LLVM type for this type.
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const = 0;
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const = 0;
 
     //! Return the required slot size in octets for an object of this type.
     virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const = 0;
@@ -96,7 +96,7 @@ namespace herschel
     virtual llvm::Value* emitPackCode(CodegenTools* tools,
                                       llvm::Value* value) const { return NULL; };
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return NULL;
     };

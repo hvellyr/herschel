@@ -49,53 +49,53 @@ namespace herschel
 
       /* Read from /proc/self/exe (symlink) */
       buf_size = PATH_MAX - 1;
-      
+
       strncpy(path2, "/proc/self/exe", buf_size - 1);
-      
+
       while (true) {
         int i;
         ssize_t size;
         struct stat stat_buf;
-        
+
         size = readlink(path2, path, buf_size - 1);
         if (size == -1)
           break;
-        
+
         /* readlink() does not set a terminating 0 */
         path[size] = '\0';
-        
+
         /* when symlink's target is a symlink too, continue searching. */
         i = stat(path, &stat_buf);
         if (i == -1)
           break;
-        
+
         if (!S_ISLNK(stat_buf.st_mode)) {
           /* path is not a symlink. Done. */
           return String(path);
         }
-        
+
         /* break cyclic symlinks */
         if (loop_level > MAX_LOOP_LEVEL)
           break;
-        
+
         /* path is a symlink. Continue loop and resolve this. */
         strncpy(path, path2, buf_size - 1);
       }
 
       /* readlink() or stat() failed; this can happen when the program is
        * running in Valgrind 2.2. Read from /proc/self/maps as fallback. */
-      
+
       buf_size = PATH_MAX + 128;
       line = (char*)malloc(buf_size);
       strcpy(line, path);
 
       if (!(stream = fopen("/proc/self/maps", "r")))
         goto errhd;
-      
+
       /* The first entry should be the executable name. */
       if (!(result = fgets(line, (int)buf_size, stream)))
         goto errhd;
-      
+
       /* Get rid of newline characters */
       buf_size = strlen(line);
       if (buf_size <= 0) {
@@ -104,7 +104,7 @@ namespace herschel
       }
       if (line[buf_size - 1] == 10)
         line[buf_size - 1] = 0;
-      
+
       /* Extract the filename; it is always an absolute path. */
       abspath = strchr(line, '/');
 
@@ -119,7 +119,7 @@ namespace herschel
       if (stream)
         fclose(stream);
 
-      return file::canonicalPathName(retv);
+      return file::canonicalPathName(retv).dirPart();
     }
   };
 

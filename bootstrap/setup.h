@@ -27,7 +27,10 @@ namespace herschel
     //! path to hrc executable
     String fHrcPath;
 
-    //! path to linker executable
+    //! path to the llc executable (from LLVM)
+    String fLlcPath;
+
+    //! path to the system linker executable
     String fLdPath;
     //! additional flags to the linker
     StringVector fLdFlags;

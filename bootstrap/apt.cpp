@@ -24,7 +24,7 @@
 #include "utils.h"
 #include "xmlout.h"
 
-#include "llvm/Value.h"
+#include "llvm/IR/Value.h"
 
 #include <string>
 #include <map>
