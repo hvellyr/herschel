@@ -1,0 +1,6 @@
+auto-config-local.mk
+config-local.h
+doc/version.texinfo
+version.h
+temp/
+*.pyc
