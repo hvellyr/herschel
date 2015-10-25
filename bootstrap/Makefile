@@ -18,7 +18,6 @@ LIBHRCOMMON_SOURCES =  \
 	filetool.cpp         \
 	job.cpp              \
 	log.cpp              \
-	option.cpp           \
 	port.cpp             \
 	require.cpp          \
 	str.cpp              \
@@ -31,7 +30,6 @@ LIBHRCOMMON_HEADERS =  \
 	filetool.h           \
 	job.h                \
 	log.h                \
-	option.h             \
 	port.h               \
 	require.h            \
 	setup.h              \
