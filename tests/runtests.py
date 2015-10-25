@@ -531,7 +531,7 @@ class TestRunner:
                 basename, ext = os.path.splitext(os.path.basename(test_file))
                 tmp_binary = os.path.abspath(basename + self.os_ext())
 
-                options = [ "-Xl,On",            # disable link optimization
+                options = [ "--Xl,On",            # disable link optimization
                             "-o", tmp_binary ]
                 output, erroutput = self.run_herschel_on_test(abs_test_file, options)
                 what_tag = "[%s] %s" % (passid, test_file)

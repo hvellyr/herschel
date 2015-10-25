@@ -70,7 +70,9 @@ COMMON_LIB = $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 # LLVM_LIBS = $(shell $(LLVM_EXE)/llvm-config --libs backend bitwriter)
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src \
-	-I$(top_srcdir)/external/UnitTest++/src $(LLVM_CPPFLAGS)
+	-I$(top_srcdir)/external/cxxopts/src \
+	-I$(top_srcdir)/external/UnitTest++/src \
+	$(LLVM_CPPFLAGS)
 
 HRC_LDFLAGS = $(LDFLAGS) $(LLVM_LDFLAGS)
 
