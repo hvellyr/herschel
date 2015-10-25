@@ -30,8 +30,8 @@ namespace herschel
 
   //! A unicode (wide character) enabled string implementation
   //!
-  //! Instances can be created from plain C strings, which are expected to
-  //! be utf8 encoded 8bit strings.
+  //! Instances can be created from plain C strings and std::string, which are
+  //! expected to be utf8 encoded 8bit strings.
   class String
   {
   public:
@@ -45,6 +45,8 @@ namespace herschel
     //! string \p utf8.  After construction the caller is free to deallocate
     //! \p utf8.
     explicit String(const char* utf8);
+
+    explicit String(const std::string& utf8);
 
     //! Create a new instance from the first \p items characters of the utf8
     //! encoded plain string \p utf8.  When a null byte is found in \p utf8

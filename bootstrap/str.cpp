@@ -214,6 +214,14 @@ String::String(const char* utf8)
 }
 
 
+String::String(const std::string& utf8)
+  : fImpl(new StringImpl)
+{
+  fImpl->incRef();
+  fImpl->createFromUtf8(utf8.c_str(), utf8.length());
+}
+
+
 String::String(const char* utf8, int items)
   : fImpl(new StringImpl)
 {
