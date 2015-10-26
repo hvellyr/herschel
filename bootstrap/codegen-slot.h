@@ -11,7 +11,7 @@
 #ifndef bootstrap_codegen_slot_h
 #define bootstrap_codegen_slot_h
 
-#include "llvm/Support/IRBuilder.h"
+#include "llvm/IR/IRBuilder.h"
 
 #include "codegen-proxy.h"
 

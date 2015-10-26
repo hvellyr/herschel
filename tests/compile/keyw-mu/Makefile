@@ -12,11 +12,16 @@ endif
 
 
 TESTDIR ?= $(BUILDTESTSDIR)
+APPNAME ?= keyw
+
+TEST_SOURCES = one.hr two.hr three.hr
+TEST_BCS = $(TEST_SOURCES:%.hr=$(TESTDIR)/%.bc)
 
 all-local: $(TESTDIR)/$(APPNAME)$(APPEXT)
 
-$(TESTDIR)/$(APPNAME)$(APPEXT): $(TESTDIR)/one.bc $(TESTDIR)/two.bc $(TESTDIR)/three.bc
-	@$(LLVM_EXE)/llvm-ld -native -o $@ $^ $(BUILDDIR)/$(BUILDSTYLE)/libhr.a
+$(TESTDIR)/$(APPNAME)$(APPEXT): $(TEST_BCS)
+	@$(LLVM_EXE)/llvm-link $^ | $(LLVM_EXE)/llc -filetype=obj -o $(TESTDIR)/tmp-$(APPNAME)$(OBJEXT)
+	@$(CC) -o $@ $(TESTDIR)/tmp-$(APPNAME)$(OBJEXT) $(BUILDDIR)/$(BUILDSTYLE)/libhr.a
 
 
 $(TESTDIR)/%.bc: %.hr

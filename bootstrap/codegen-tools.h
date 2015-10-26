@@ -11,7 +11,7 @@
 #ifndef bootstrap_codegen_tools_h
 #define bootstrap_codegen_tools_h
 
-#include "llvm/Support/IRBuilder.h"
+#include "llvm/IR/IRBuilder.h"
 
 #include "refcountable.h"
 #include "codegen-proxy.h"
@@ -79,10 +79,10 @@ namespace herschel
 
     void assignAtom(llvm::Value* src, llvm::Value* dst);
     llvm::Function* getIntrinsic(unsigned int iid,
-                                 const llvm::Type** tys, unsigned int numTys);
-    llvm::Function* getMemCpyFn(const llvm::Type* dstType,
-                                const llvm::Type* srcType,
-                                const llvm::Type* sizeType);
+                                 const std::vector<llvm::Type*>& tys);
+    llvm::Function* getMemCpyFn(llvm::Type* dstType,
+                                llvm::Type* srcType,
+                                llvm::Type* sizeType);
 
     llvm::Value* wrapLoad(llvm::Value* val);
 
@@ -101,7 +101,7 @@ namespace herschel
 
     llvm::AllocaInst* createEntryBlockAlloca(llvm::Function *func,
                                              const String& name,
-                                             const llvm::Type* type);
+                                             llvm::Type* type);
 
     //! Create code snippet to extract the plain value from an atom.  This
     //! snippet may contain an external function call which includes type
@@ -127,7 +127,7 @@ namespace herschel
 
   private:
     const char* getConvFuncNameByType(const Type& type) const;
-    const llvm::Type* getConvTypeByType(const Type& type) const;
+    llvm::Type* getConvTypeByType(const Type& type) const;
   };
 
 };                              // namespace

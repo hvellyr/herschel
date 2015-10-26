@@ -11,7 +11,7 @@
 #ifndef bootstrap_proxy_h
 #define bootstrap_proxy_h
 
-#include "llvm/Support/IRBuilder.h"
+#include "llvm/IR/IRBuilder.h"
 
 #include "codegen.h"
 

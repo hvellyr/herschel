@@ -28,26 +28,30 @@
 #include "xmlout.h"
 
 #include <vector>
+#include <system_error>
 #include <typeinfo>
 
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/PassManager.h"
-#include "llvm/Support/IRBuilder.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetSelect.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm/ADT/StringRef.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
-#include "llvm/Support/raw_ostream.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/Support/Host.h"
-#include "llvm/GlobalVariable.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Intrinsics.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/TargetRegistry.h"
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetRegistry.h"
+#include "llvm/Target/TargetOptions.h"
+#include "llvm/Transforms/Scalar.h"
 //#include "llvm/DIBuilder.h"
 
 using namespace herschel;
@@ -62,7 +66,7 @@ CodeGenerator::CodeGenerator(Compiler* compiler)
     // fDIBuilder(NULL),
     fBuilder(context()),
     fOptPassManager(NULL),
-    fTargetData(NULL),
+    fDataLayout(NULL),
     fInitializer(new ModuleRuntimeInitializer(this)),
     fTypes(new CodegenTypeUtils(this)),
     fTools(new CodegenTools(this)),
@@ -73,7 +77,7 @@ CodeGenerator::CodeGenerator(Compiler* compiler)
   llvm::InitializeNativeTarget();
 
   fModule = new llvm::Module("compile-unit", fContext);
-  fModule->setTargetTriple(llvm::sys::getHostTriple());
+  fModule->setTargetTriple(llvm::sys::getDefaultTargetTriple());
 
   std::string error;
   const llvm::Target* target =
@@ -84,17 +88,21 @@ CodeGenerator::CodeGenerator(Compiler* compiler)
   }
 
   llvm::TargetMachine* machine = target->createTargetMachine(fModule->getTargetTriple(),
-                                                             "");
+                                                             "", // CPU
+                                                             "", // Features
+                                                             llvm::TargetOptions() );
   if (machine == NULL) {
     logf(kError, "Compile setup failure: no matching TargetMachine found");
     exit(1);
   }
-  fTargetData = const_cast<llvm::TargetData*>(machine->getTargetData());
+  fDataLayout = machine->getDataLayout();
+
+  fModule->setDataLayout(machine->createDataLayout());
 
   // logf(kInfo, "Host triple: %s", fModule->getTargetTriple().c_str());
-  // logf(kInfo, "PointerSize: %d", fTargetData->getPointerSize());
+  // logf(kInfo, "PointerSize: %d", fDataLayout->getPointerSize());
 
-  fOptPassManager = new llvm::FunctionPassManager(fModule);
+  fOptPassManager = new llvm::legacy::FunctionPassManager(fModule);
 
   setupOptPassManager();
 }
@@ -104,9 +112,6 @@ void
 CodeGenerator::setupOptPassManager()
 {
   if (Properties::optimizeLevel() > kOptLevelNone) {
-    // Set up the optimizer pipeline.  Start with registering info about how the
-    // target lays out data structures.
-    fOptPassManager->add(fTargetData);
     // Promote allocas to registers.
     fOptPassManager->add(llvm::createPromoteMemoryToRegisterPass());
 
@@ -170,14 +175,14 @@ CodeGenerator::~CodeGenerator()
 bool
 CodeGenerator::is64Bit() const
 {
-  return fTargetData->getPointerSize() == 8;
+  return fDataLayout->getPointerSize() == 8;
 }
 
 
-llvm::TargetData*
-CodeGenerator::targetData() const
+const llvm::DataLayout*
+CodeGenerator::dataLayout() const
 {
-  return fTargetData;
+  return fDataLayout;
 }
 
 
@@ -202,7 +207,7 @@ CodeGenerator::module() const
 }
 
 
-llvm::FunctionPassManager*
+llvm::legacy::FunctionPassManager*
 CodeGenerator::optPassManager() const
 {
   return fOptPassManager;
@@ -221,11 +226,12 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
 
   hr_assert(!outputFile.isEmpty());
 
-  std::string errInfo;
-  llvm::raw_fd_ostream outstream(StrHelper(outputFile), errInfo, 0);
-  if (!errInfo.empty()) {
+  std::error_code errInfo;
+  llvm::raw_fd_ostream outstream(llvm::StringRef(StrHelper(outputFile)),
+                                 errInfo, llvm::sys::fs::OpenFlags::F_RW);
+  if (errInfo) {
     logf(kError, "Failed to open output file '%s': %s",
-         (const char*)StrHelper(outputFile), errInfo.c_str());
+         (const char*)StrHelper(outputFile), errInfo.message().c_str());
     return false;
   }
 

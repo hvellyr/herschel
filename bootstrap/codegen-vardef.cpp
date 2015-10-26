@@ -23,22 +23,21 @@
 
 #include <vector>
 
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/PassManager.h"
-#include "llvm/Support/IRBuilder.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetSelect.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/GlobalVariable.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Intrinsics.h"
+#include "llvm/Transforms/Scalar.h"
 
 
 //----------------------------------------------------------------------------
@@ -111,7 +110,7 @@ llvm::Value*
 CodegenVardef::codegenForGlobalVars(const VardefNode* node) const
 {
   String varnm = herschel::mangleToC(node->name());
-  const llvm::Type* constTy = types()->getType(node->type());
+  llvm::Type* constTy = types()->getType(node->type());
   llvm::Constant* initConst = llvm::Constant::getNullValue(constTy);
 
   // TODO: base type if possible
@@ -121,7 +120,7 @@ CodegenVardef::codegenForGlobalVars(const VardefNode* node) const
                              llvm::GlobalValue::ExternalLinkage,
                              initConst,
                              llvm::Twine(varnm),
-                             false, // ThreadLocal
+                             llvm::GlobalVariable::NotThreadLocal,
                              0);    // AddressSpace
   hr_assert(gv != NULL);
   module()->getGlobalList().push_back(gv);

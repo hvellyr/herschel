@@ -10,7 +10,7 @@ top_srcdir = ../..
 include $(top_srcdir)/config.mk
 
 #------------------------------------------------------------------------------
-# langkit.hlib - the base runtime library
+# langkit.a - the base runtime library
 #------------------------------------------------------------------------------
 
 LIBLANGKIT_SOURCES =  \
@@ -27,8 +27,8 @@ LIBLANGKIT_SOURCES =  \
 
 LIBLANGKIT_OBJS = $(LIBLANGKIT_SOURCES:%.hr=$(BUILDDIR)/$(BUILDSTYLE)/%.bc)
 
-LANGKIT_BC = $(BUILDDIR)/$(BUILDSTYLE)/langkit.bc
-LANGKIT_LIB = $(BUILDDIR)/$(BUILDSTYLE)/langkit.hlib
+LANGKIT_OBJ = $(BUILDDIR)/$(BUILDSTYLE)/langkit.o
+LANGKIT_LIB = $(BUILDDIR)/$(BUILDSTYLE)/langkit.a
 
 
 #------------------------------------------------------------------------------
@@ -45,11 +45,11 @@ all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) LANGKIT_LIBX
 #--------
 LANGKIT_LIBX: $(LANGKIT_LIB)
 
-$(LANGKIT_LIB): $(LANGKIT_BC)
-	$(LLVM_EXE)/llvm-ar crus $@ $^
+$(LANGKIT_LIB): $(LANGKIT_OBJ)
+	$(AR) crus $@ $^
 
-$(LANGKIT_BC): $(LIBLANGKIT_OBJS)
-	$(LLVM_EXE)/llvm-link -o $@ $^
+$(LANGKIT_OBJ): $(LIBLANGKIT_OBJS)
+	$(LLVM_EXE)/llvm-link $^ | $(LLVM_EXE)/llc -filetype=obj -o $@
 
 
 

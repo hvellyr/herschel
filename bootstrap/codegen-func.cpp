@@ -23,22 +23,21 @@
 
 #include <vector>
 
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/PassManager.h"
-#include "llvm/Support/IRBuilder.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetSelect.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/GlobalVariable.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Intrinsics.h"
+#include "llvm/Transforms/Scalar.h"
 
 
 //----------------------------------------------------------------------------
@@ -88,9 +87,9 @@ CodegenFuncDef::createFunctionSignature(const FunctionNode* node, bool inlineRet
                                         const Type& retty,
                                         bool isGeneric) const
 {
-  std::vector<const llvm::Type*> sign;
+  std::vector<llvm::Type*> sign;
 
-  const llvm::Type* llvmRetty = NULL;
+  llvm::Type* llvmRetty = NULL;
   if (isGeneric) {
     sign.push_back(types()->getAtomType()->getPointerTo());
     llvmRetty = llvm::Type::getVoidTy(context());
@@ -187,7 +186,7 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
   // start with the first real argument.  The first is the return value
   aiter++;
 
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", func.fFunc);
+  llvm::BasicBlock* bb = llvm::BasicBlock::Create(context(), "entry", func.fFunc);
   builder().SetInsertPoint(bb);
 
   std::vector<llvm::Value*> realFuncArgv;
@@ -202,12 +201,12 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
 
     // TODO: enforce ATOM types for spec args and returnvalue in generic functions
     // TODO ende name
-    llvm::AllocaInst *stackSlot =
+    llvm::AllocaInst* stackSlot =
       tools()->createEntryBlockAlloca(func.fFunc, param->name(),
-                                     types()->getType(param->type()));
+                                      types()->getType(param->type()));
     llvm::Value* tmpValue = tools()->emitPackCode(param->dstType(),
-                                                 param->typeConv(),
-                                                 aiter, param->type());
+                                                  param->typeConv(),
+                                                  aiter, param->type());
     builder().CreateStore(tmpValue, stackSlot);
 
     realFuncArgv.push_back(stackSlot);
@@ -215,7 +214,8 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
     if (param->isSpecArg()) {
       specArgCount++;
 
-      llvm::Value* typeidSlot = builder().CreateStructGEP(stackSlot, 0, "typeid");
+      llvm::Value* typeidSlot = builder().CreateStructGEP(types()->getAtomType(),
+                                                          stackSlot, 0, "typeid");
       lookupArgv.push_back(builder().CreateLoad(typeidSlot));
     }
   }
@@ -229,8 +229,9 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
   llvm::Function* lookupFunc = module()->getFunction(llvm::StringRef(lookupFuncName));
   if (lookupFunc == NULL) {
     // Method* m = h7_lookup_func*(gf, ty0);
-    std::vector<const llvm::Type*> sign;
+    std::vector<llvm::Type*> sign;
     sign.push_back(types()->getGenericFuncType());
+
     // add a list of tagid arguments
     for (size_t i = 0; i < specArgCount; i++)
       sign.push_back(types()->getTagIdType());
@@ -244,27 +245,26 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
                                         module());
   }
 
-  llvm::CallInst* method = builder().CreateCall(lookupFunc,
-                                                lookupArgv.begin(), lookupArgv.end());
+  llvm::CallInst* method = builder().CreateCall(lookupFunc, lookupArgv);
   if (method == NULL)
     return NULL;
 
   // the function pointer in the Method* structure is the third member
-  llvm::Value* realFuncPtr = builder().CreateLoad(builder().CreateStructGEP(method,
-                                                                          2,
-                                                                          "method"));
+  llvm::Value* realFuncPtr = builder().CreateLoad(
+    builder().CreateStructGEP(types()->getMethodStructType(),
+                              method, 2, "method"));
 
   for (size_t i = 0; i < realFuncArgv.size(); i++)
     realFuncArgv[i] = builder().CreateLoad(realFuncArgv[i]);
 
   // insert the return value into the argument list
   llvm::AllocaInst *retv = tools()->createEntryBlockAlloca(func.fFunc,
-                                                          String("retv"),
-                                                          types()->getAtomType());
+                                                           String("retv"),
+                                                           types()->getAtomType());
   realFuncArgv.insert(realFuncArgv.begin(), retv); //func.fFunc->arg_begin());
 
   llvm::Value* f = builder().CreateBitCast(realFuncPtr, func.fType->getPointerTo());
-  builder().CreateCall(f, realFuncArgv.begin(), realFuncArgv.end());
+  builder().CreateCall(f, realFuncArgv);
 
   // no wrap-load!  The generic function always returns as ATOM.
   tools()->assignAtom(retv, func.fFunc->arg_begin());

@@ -16,8 +16,8 @@
 #include "codegen-tools.h"
 #include "codegen-types.h"
 
-#include "llvm/DerivedTypes.h"
-#include "llvm/LLVMContext.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/LLVMContext.h"
 
 namespace herschel
 {
@@ -37,7 +37,7 @@ namespace herschel
       return NULL;
     }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return typeUtils->getAtomType();
     }

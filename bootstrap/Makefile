@@ -42,7 +42,7 @@ LIBHRCOMMON_HEADERS =  \
 ifeq ($(TARGET_OS),mac)
 # HRC_HEADERS +=
 LIBHRCOMMON_SOURCES += setup-unix.cpp setup-mac.cpp
-# HRC_LIBS = $(LIBS) -framework Carbon
+#HRC_LIBS = $(LIBS) -framework Foundation
 endif
 
 ifeq ($(TARGET_OS),linux)
@@ -178,7 +178,7 @@ HRC_HEADERS =         \
 
 ifeq ($(TARGET_OS),mac)
 # HRC_HEADERS +=
-HRC_LIBS += -framework Carbon
+HRC_LIBS += -framework CoreFoundation
 endif
 
 ifeq ($(TARGET_OS),linux)
@@ -205,7 +205,7 @@ HERSCHEL_LIBS = $(LIBS) $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 
 ifeq ($(TARGET_OS),mac)
 # HRC_HEADERS +=
-HERSCHEL_LIBS += -framework Carbon
+HERSCHEL_LIBS += -framework CoreFoundation
 endif
 
 ifeq ($(TARGET_OS),linux)

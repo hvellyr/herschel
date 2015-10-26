@@ -22,22 +22,21 @@
 
 #include <vector>
 
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/PassManager.h"
-#include "llvm/Support/IRBuilder.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetSelect.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/GlobalVariable.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Intrinsics.h"
+#include "llvm/Transforms/Scalar.h"
 
 
 //----------------------------------------------------------------------------
@@ -64,7 +63,7 @@ namespace herschel
     virtual ~LazyCodeInitializingEmitter()
     {}
 
-    virtual const llvm::Type* entityType() const = 0;
+    virtual llvm::Type* entityType() const = 0;
     virtual String entityGetterFunctionName() const = 0;
     virtual String entityGetterGlobalVarName() const = 0;
     virtual llvm::Value* makeEntity() const = 0;
@@ -89,7 +88,7 @@ namespace herschel
     { }
 
 
-    virtual const llvm::Type* entityType() const
+    virtual llvm::Type* entityType() const
     {
       return fInitializer->types()->getTypeType();
     }
@@ -141,7 +140,7 @@ namespace herschel
     { }
 
 
-    virtual const llvm::Type* entityType() const
+    virtual llvm::Type* entityType() const
     {
       return fInitializer->types()->getGenericFuncType();
     }
@@ -253,8 +252,8 @@ ModuleRuntimeInitializer::finish()
 void
 ModuleRuntimeInitializer::emitModuleInitFunction()
 {
-  const llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                         !K(isVarArg));
+  llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
+                                                   !K(isVarArg));
   llvm::Function *regFunc = createGlobalInitOrDtorFunction(ft, String("_module_init"));
 
   llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", regFunc);
@@ -340,24 +339,26 @@ ModuleRuntimeInitializer::emitCtorList(const CtorList &fns, const char *globalNa
 {
   // Ctor function type is void()*.
   llvm::FunctionType* ctorFTy = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                        std::vector<const llvm::Type*>(),
+                                                        std::vector<llvm::Type*>{},
                                                         false);
   llvm::Type* ctorPFTy = llvm::PointerType::getUnqual(ctorFTy);
 
   // Get the type of a ctor entry, { i32, void ()* }.
   llvm::StructType* ctorStructTy = llvm::StructType::get(context(),
-                                                         llvm::Type::getInt32Ty(context()),
-                                                         llvm::PointerType::getUnqual(ctorFTy),
-                                                         NULL);
+                                                         std::vector<llvm::Type*>{
+                                                           llvm::Type::getInt32Ty(context()),
+                                                             llvm::PointerType::getUnqual(ctorFTy)},
+                                                         !K(isPacked));
 
   // Construct the constructor and destructor arrays.
   std::vector<llvm::Constant*> ctors;
   for (CtorList::const_iterator i = fns.begin(), e = fns.end(); i != e; ++i) {
     ctors.push_back(llvm::ConstantStruct::get(
                       ctorStructTy,
-                      vector_of<llvm::Constant*>(llvm::ConstantInt::get(llvm::Type::getInt32Ty(context()),
-                                                                        i->second, false))
-                                                (llvm::ConstantExpr::getBitCast(i->first, ctorPFTy)) ));
+                      std::vector<llvm::Constant*>{
+                        llvm::ConstantInt::get(llvm::Type::getInt32Ty(context()),
+                                               i->second, false),
+                        llvm::ConstantExpr::getBitCast(i->first, ctorPFTy)} ));
   }
 
   if (!ctors.empty()) {
@@ -371,7 +372,7 @@ ModuleRuntimeInitializer::emitCtorList(const CtorList &fns, const char *globalNa
 
 
 llvm::Function*
-ModuleRuntimeInitializer::createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
+ModuleRuntimeInitializer::createGlobalInitOrDtorFunction(llvm::FunctionType *ft,
                                                          const String& name)
 {
   llvm::Function* fn =
@@ -390,8 +391,8 @@ ModuleRuntimeInitializer::emitKeywordInitFunc()
   llvm::Function* regFunc = module()->getFunction(llvm::StringRef("h7_keyword_register"));
   if (regFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(context()),
-                                                     vector_of<const llvm::Type*>(
-                                                       llvm::Type::getInt8PtrTy(context())),
+                                                     std::vector<llvm::Type*>{
+                                                       llvm::Type::getInt8PtrTy(context())},
                                                      !K(isVarArg));
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
@@ -405,11 +406,10 @@ ModuleRuntimeInitializer::emitKeywordInitFunc()
        it++)
   {
     std::vector<llvm::Value*> argv = vector_of(
-      builder().CreateGlobalStringPtr(StrHelper(it->first),
+      builder().CreateGlobalStringPtr(llvm::StringRef(StrHelper(it->first)),
                                       llvm::Twine(StrHelper(it->first + "_kw"))));
 
-    llvm::Value* val = builder().CreateCall(regFunc, argv.begin(), argv.end(),
-                                            "keyw_init");
+    llvm::Value* val = builder().CreateCall(regFunc, argv, "keyw_init");
 
     builder().CreateStore(val, it->second);
   }
@@ -451,10 +451,8 @@ ModuleRuntimeInitializer::emitGlobalVarInitFunc()
 void
 ModuleRuntimeInitializer::emitRuntimeInitFunc()
 {
-  std::vector<const llvm::Type*> sign;
-
   llvm::FunctionType *ft2 = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                    sign,
+                                                    std::vector<llvm::Type*>{},
                                                     !K(isVarArg));
 
   llvm::Function* rtinitFunc = llvm::Function::Create(ft2,
@@ -462,8 +460,7 @@ ModuleRuntimeInitializer::emitRuntimeInitFunc()
                                                       llvm::Twine("h7_runtime_init"),
                                                       module());
 
-  std::vector<llvm::Value*> argv;
-  builder().CreateCall(rtinitFunc, argv.begin(), argv.end());
+  builder().CreateCall(rtinitFunc, std::vector<llvm::Value*>{});
 }
 
 
@@ -508,7 +505,8 @@ ModuleRuntimeInitializer::makeTypeRegisterCall(llvm::Value* newType) const
   llvm::Function* regFunc = module()->getFunction(llvm::StringRef("h7_register_type"));
   if (regFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                     vector_of(types()->getTypeType()),
+                                                     std::vector<llvm::Type*>{
+                                                       types()->getTypeType()},
                                                      !K(isVarArg));
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
@@ -516,8 +514,7 @@ ModuleRuntimeInitializer::makeTypeRegisterCall(llvm::Value* newType) const
                                      module());
   }
 
-  std::vector<llvm::Value*> argv = vector_of(newType);
-  builder().CreateCall(regFunc, argv.begin(), argv.end());
+  builder().CreateCall(regFunc, std::vector<llvm::Value*>{ newType });
   return newType;
 }
 
@@ -532,11 +529,12 @@ ModuleRuntimeInitializer::createTypeSlotSpec(const String& slotName,
 
   return llvm::ConstantStruct::get(
     types()->getTypeSlotPairType(),
-    vector_of(static_cast<llvm::Constant*>(slotStrValue))
-             (llvm::ConstantInt::get(context(),
-                                     llvm::APInt(32,
-                                                 (uint64_t)slotOffset,
-                                                 !K(isSigned)))));
+    std::vector<llvm::Constant*>{
+      static_cast<llvm::Constant*>(slotStrValue),
+      llvm::ConstantInt::get(context(),
+                             llvm::APInt(32,
+                                         (uint64_t)slotOffset,
+                                         !K(isSigned))) });
 }
 
 
@@ -607,8 +605,8 @@ ModuleRuntimeInitializer::computeTypeSlotAndClassSpecs(const Type& ty) const
   }
   slotSpecs.push_back(llvm::Constant::getNullValue(types()->getTypeSlotPairType()));
 
-  const llvm::ArrayType* arrayType = llvm::ArrayType::get(types()->getTypeSlotPairType(),
-                                                          slotSpecs.size());
+  llvm::ArrayType* arrayType = llvm::ArrayType::get(types()->getTypeSlotPairType(),
+                                                    slotSpecs.size());
 
   SlotAndClassSpecs retv;
   retv.fInstanceSize = orderedSlots.fTotalSize;
@@ -627,16 +625,16 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
   if (allocFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
       types()->getTypeType(),
-      vector_of<const llvm::Type*>(llvm::Type::getInt8PtrTy(context())) // typename
-                                  (llvm::Type::getInt32Ty(context()))   // instance size
-                                  (types()->getTypeSlotPairType()->getPointerTo()) // const TypeSlotPair*
-                                  (llvm::Type::getInt32Ty(context())),   // isa_size
+      std::vector<llvm::Type*>{ llvm::Type::getInt8PtrTy(context()), // typename
+                                llvm::Type::getInt32Ty(context()),   // instance size
+                                types()->getTypeSlotPairType()->getPointerTo(), // const TypeSlotPair*
+                                llvm::Type::getInt32Ty(context())},   // isa_size
       K(isVarArg));
 
     allocFunc = llvm::Function::Create(ft,
-                                     llvm::Function::ExternalLinkage,
-                                     llvm::Twine("h7_class_alloc"),
-                                     module());
+                                       llvm::Function::ExternalLinkage,
+                                       llvm::Twine("h7_class_alloc"),
+                                       module());
   }
 
   // get the class layout and instance size
@@ -644,7 +642,8 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
 
   std::vector<llvm::Value*> argv;
   // arg 1: the class name
-  argv.push_back(builder().CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("classname")));
+  argv.push_back(builder().CreateGlobalStringPtr(
+                   llvm::StringRef(StrHelper(typeName)), llvm::Twine("classname")));
   // arg 2: the instance size
   argv.push_back(llvm::ConstantInt::get(context(),
                                         llvm::APInt(32, specs.fInstanceSize, true)));
@@ -656,7 +655,7 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
                              llvm::GlobalValue::InternalLinkage,
                              specs.fTypeSlotSpecs,
                              llvm::Twine(StrHelper(typeName + "_slot_specs")),
-                             !K(isThreadLocal),
+                             llvm::GlobalValue::NotThreadLocal,
                              0);
   hr_assert(gv != NULL);
   module()->getGlobalList().push_back(gv);
@@ -686,7 +685,7 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
                                           llvm::APInt(32, 0, true)));
   }
 
-  return builder().CreateCall(allocFunc, argv.begin(), argv.end(), "call_class_alloc");
+  return builder().CreateCall(allocFunc, argv, "call_class_alloc");
 }
 
 
@@ -699,18 +698,19 @@ ModuleRuntimeInitializer::makeTypeAllocCall(const Type& ty) const
   if (allocFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
       types()->getTypeType(),
-      vector_of<const llvm::Type*>(llvm::Type::getInt8PtrTy(context())) // typename
-                                  (llvm::Type::getInt32Ty(context())),   // isa_size
+      std::vector<llvm::Type*>{ llvm::Type::getInt8PtrTy(context()), // typename
+                                llvm::Type::getInt32Ty(context()) }, // isa_size
       K(isVarArg));
 
     allocFunc = llvm::Function::Create(ft,
-                                     llvm::Function::ExternalLinkage,
-                                     llvm::Twine("h7_type_alloc"),
-                                     module());
+                                       llvm::Function::ExternalLinkage,
+                                       llvm::Twine("h7_type_alloc"),
+                                       module());
   }
 
   std::vector<llvm::Value*> argv;
-  argv.push_back(builder().CreateGlobalStringPtr(StrHelper(typeName), llvm::Twine("typename")));
+  argv.push_back(builder().CreateGlobalStringPtr(llvm::StringRef(StrHelper(typeName)),
+                                                 llvm::Twine("typename")));
 
   Type isa = ty.typeInheritance();
   if (isa.isSequence()) {
@@ -729,7 +729,7 @@ ModuleRuntimeInitializer::makeTypeAllocCall(const Type& ty) const
                                           llvm::APInt(32, 0, true)));
   }
 
-  return builder().CreateCall(allocFunc, argv.begin(), argv.end(), "call_type_alloc");
+  return builder().CreateCall(allocFunc, argv, "call_type_alloc");
 }
 
 
@@ -759,7 +759,7 @@ ModuleRuntimeInitializer::makeGenericFuncRegisterCall(llvm::Value* newGF) const
     module()->getFunction(llvm::StringRef("h7_register_generic_function"));
   if (regFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                     vector_of(types()->getGenericFuncType()),
+                                                     std::vector<llvm::Type*>{types()->getGenericFuncType()},
                                                      !K(isVarArg));
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
@@ -767,9 +767,7 @@ ModuleRuntimeInitializer::makeGenericFuncRegisterCall(llvm::Value* newGF) const
                                      module());
   }
 
-  std::vector<llvm::Value*> argv = vector_of(newGF);
-
-  builder().CreateCall(regFunc, argv.begin(), argv.end());
+  builder().CreateCall(regFunc, std::vector<llvm::Value*>{newGF});
   return newGF;
 }
 
@@ -783,24 +781,24 @@ ModuleRuntimeInitializer::makeGenericFuncAllocCall(const FuncDefNode* node) cons
   if (allocFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
       types()->getGenericFuncType(),
-      vector_of<const llvm::Type*>(llvm::Type::getInt8PtrTy(context())) // typename,
-                                  (llvm::Type::getInt32Ty(context())), // argc
+      std::vector<llvm::Type*>{ llvm::Type::getInt8PtrTy(context()), // typename,
+                                llvm::Type::getInt32Ty(context()) }, // argc
       !K(isVarArg));
     allocFunc = llvm::Function::Create(ft,
-                                     llvm::Function::ExternalLinkage,
-                                     llvm::Twine("h7_generic_function_alloc"),
-                                     module());
+                                       llvm::Function::ExternalLinkage,
+                                       llvm::Twine("h7_generic_function_alloc"),
+                                       module());
   }
 
   std::vector<llvm::Value*> argv =
-    vector_of(builder().CreateGlobalStringPtr(StrHelper(funcName),
-                                              llvm::Twine("funname")))
-             (llvm::ConstantInt::get(context(),
-                                     llvm::APInt(32,
-                                                 node->specializedParamsCount(),
-                                                 true)));
+    std::vector<llvm::Value*>{ builder().CreateGlobalStringPtr(llvm::StringRef(StrHelper(funcName)),
+                                                               llvm::Twine("funname")),
+                               llvm::ConstantInt::get(context(),
+                                                      llvm::APInt(32,
+                                                                  node->specializedParamsCount(),
+                                                                  true)) };
 
-  return builder().CreateCall(allocFunc, argv.begin(), argv.end(), "call_gf_alloc");
+  return builder().CreateCall(allocFunc, argv, "call_gf_alloc");
 }
 
 
@@ -820,9 +818,9 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
   if (regFunc == NULL) {
     llvm::FunctionType* ft = llvm::FunctionType::get(
       llvm::Type::getVoidTy(context()),
-      vector_of(types()->getGenericFuncType()) // GenericFunction*,
-               (types()->getMethodType())      // void*
-               (llvm::Type::getInt32Ty(context())), // argc
+      std::vector<llvm::Type*>{ types()->getGenericFuncType(),       // GenericFunction*,
+                                types()->getMethodType(),            // void*
+                                llvm::Type::getInt32Ty(context()) }, // argc
       K(isVarArg));
 
     regFunc = llvm::Function::Create(ft,
@@ -865,7 +863,7 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
     }
   }
 
-  builder().CreateCall(regFunc, argv.begin(), argv.end());
+  builder().CreateCall(regFunc, argv);
 }
 
 
@@ -878,7 +876,7 @@ ModuleRuntimeInitializer::registerKeyword(const String& keyword)
 
   if (it == fKeywords.end()) {
     String varnm = herschel::mangleToC(String("keyw$") + keyword);
-    const llvm::Type* constTy = llvm::Type::getInt8PtrTy(context());
+    llvm::Type* constTy = llvm::Type::getInt8PtrTy(context());
     llvm::Constant* initConst = llvm::Constant::getNullValue(constTy);
 
     llvm::GlobalVariable* gv =
@@ -887,7 +885,7 @@ ModuleRuntimeInitializer::registerKeyword(const String& keyword)
                                llvm::GlobalValue::PrivateLinkage,
                                initConst,
                                llvm::Twine(varnm),
-                               !K(threadLocal),
+                               llvm::GlobalValue::NotThreadLocal,
                                0);    // AddressSpace
     hr_assert(gv != NULL);
     module()->getGlobalList().push_back(gv);
@@ -907,7 +905,7 @@ void
 LazyCodeInitializingEmitter::emit()
 {
   String gvNm = herschel::mangleToC(entityGetterGlobalVarName());
-  const llvm::Type* gvTy = entityType();
+  llvm::Type* gvTy = entityType();
   llvm::Constant* initGv = llvm::Constant::getNullValue(gvTy);
 
   llvm::GlobalVariable* gv = new llvm::GlobalVariable(gvTy,
@@ -915,7 +913,7 @@ LazyCodeInitializingEmitter::emit()
                                                       llvm::GlobalValue::InternalLinkage,
                                                       initGv,
                                                       llvm::Twine(gvNm),
-                                                      !K(threadLocal),
+                                                      llvm::GlobalVariable::NotThreadLocal,
                                                       0);    // AddressSpace
   hr_assert(gv != NULL);
   fGenerator->module()->getGlobalList().push_back(gv);
@@ -927,7 +925,7 @@ LazyCodeInitializingEmitter::emit()
   if (typeFunc == NULL)
   {
     llvm::FunctionType *ft = llvm::FunctionType::get(entityType(),
-                                                     std::vector<const llvm::Type*>(),
+                                                     std::vector<llvm::Type*>{},
                                                      !K(isVarArg));
     typeFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
@@ -978,7 +976,7 @@ LazyCodeInitializingEmitter::emit()
   typeFunc->getBasicBlockList().push_back(mergeBB);
   fGenerator->builder().SetInsertPoint(mergeBB);
 
-  llvm::PHINode *pn = fGenerator->builder().CreatePHI(entityType(), "iftmp");
+  llvm::PHINode *pn = fGenerator->builder().CreatePHI(entityType(), 0, "iftmp");
 
   pn->addIncoming(thenValue2, thenBB);
   pn->addIncoming(elseValue, elseBB);
@@ -1028,7 +1026,7 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
 
   if (typeFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getTypeType(),
-                                                     std::vector<const llvm::Type*>(),
+                                                     std::vector<llvm::Type*>{},
                                                      !K(isVarArg));
     typeFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
@@ -1036,8 +1034,7 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
                                       fModule);
   }
 
-  std::vector<llvm::Value*> argv;
-  llvm::Value* type_value = builder().CreateCall(typeFunc, argv.begin(), argv.end());
+  llvm::Value* type_value = builder().CreateCall(typeFunc, std::vector<llvm::Value*>{});
 
   if (ty.hasGenerics()) {
     llvm::Function* lookupTypeFunc =
@@ -1045,8 +1042,9 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
 
     if (lookupTypeFunc == NULL) {
       llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getTypeType(),
-                                                       vector_of(fTypes->getTypeType())
-                                                                (llvm::Type::getInt8PtrTy(context())),
+                                                       std::vector<llvm::Type*>{
+                                                         fTypes->getTypeType(),
+                                                         llvm::Type::getInt8PtrTy(context()) },
                                                        !K(isVarArg));
 
       lookupTypeFunc = llvm::Function::Create(ft,
@@ -1054,12 +1052,12 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
                                               llvm::Twine(String("h7_lookup_derived_type")),
                                               fModule);
     }
-    std::vector<llvm::Value*> lookup_argv = vector_of(type_value)
-                                                     (builder().CreateGlobalStringPtr(StrHelper(ty.typeId()),
-                                                                                    llvm::Twine("tyname")));
+    std::vector<llvm::Value*> lookup_argv =
+      std::vector<llvm::Value*>{ type_value,
+                                 builder().CreateGlobalStringPtr(llvm::StringRef(StrHelper(ty.typeId())),
+                                                                 llvm::Twine("tyname")) };
 
-    llvm::Value* lookup_type_value = builder().CreateCall(lookupTypeFunc,
-                                                          lookup_argv.begin(), lookup_argv.end());
+    llvm::Value* lookup_type_value = builder().CreateCall(lookupTypeFunc, lookup_argv);
     return lookup_type_value;
   }
   else {
@@ -1077,8 +1075,8 @@ CodeGenerator::makeGetArrayTypeLookupCall(const Type& ty) const
   llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
 
   if (typeFunc == NULL) {
-    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getTypeType(),
-                                                     vector_of(fTypes->getTypeType()),
+    llvm::FunctionType* ft = llvm::FunctionType::get(fTypes->getTypeType(),
+                                                     std::vector<llvm::Type*>{ fTypes->getTypeType() },
                                                      !K(isVarArg));
     typeFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
@@ -1086,8 +1084,7 @@ CodeGenerator::makeGetArrayTypeLookupCall(const Type& ty) const
                                       fModule);
   }
 
-  std::vector<llvm::Value*> argv = vector_of(baseTyValue);
-  return builder().CreateCall(typeFunc, argv.begin(), argv.end());
+  return builder().CreateCall(typeFunc, std::vector<llvm::Value*>{baseTyValue});
 }
 
 
@@ -1113,10 +1110,8 @@ CodeGenerator::makeGetGenericFuncLookupCall(const FuncDefNode* node) const
 
   if (gfFunc == NULL)
   {
-    std::vector<const llvm::Type*> sign;
-
     llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getGenericFuncType(),
-                                                     sign,
+                                                     std::vector<llvm::Type*>{},
                                                      !K(isVarArg));
 
     gfFunc = llvm::Function::Create(ft,
@@ -1125,8 +1120,7 @@ CodeGenerator::makeGetGenericFuncLookupCall(const FuncDefNode* node) const
                                     fModule);
   }
 
-  std::vector<llvm::Value*> argv;
-  return builder().CreateCall(gfFunc, argv.begin(), argv.end());
+  return builder().CreateCall(gfFunc, std::vector<llvm::Value*>{});
 }
 
 
@@ -1138,10 +1132,10 @@ CodeGenerator::createDefaultCMainFunc()
   llvm::FunctionType *ft =
     llvm::FunctionType::get(
       llvm::Type::getInt32Ty(context()),
-      vector_of<const llvm::Type*>(llvm::Type::getInt32Ty(context()))
-                                  (llvm::Type::getInt8Ty(context())
-                                     ->getPointerTo()
-                                     ->getPointerTo()),
+      std::vector<llvm::Type*>{ llvm::Type::getInt32Ty(context()),
+                                llvm::Type::getInt8Ty(context())
+                                  ->getPointerTo()
+                                  ->getPointerTo() },
       false);
   hr_assert(ft != NULL);
 
@@ -1160,8 +1154,7 @@ CodeGenerator::createDefaultCMainFunc()
 
   llvm::AllocaInst* retv = fTools->createEntryBlockAlloca(func, String("tmp2"),
                                                           llvm::Type::getInt32Ty(context()));
-  std::vector<llvm::Value*> argv = vector_of<llvm::Value*>(retv);
-  fBuilder.CreateCall(appMainFunc, argv.begin(), argv.end());
+  fBuilder.CreateCall(appMainFunc, std::vector<llvm::Value*>{retv});
 
   llvm::Value* retv2 = fBuilder.CreateLoad(retv);
   fBuilder.CreateRet(retv2);
@@ -1171,5 +1164,3 @@ CodeGenerator::createDefaultCMainFunc()
   if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
     fOptPassManager->run(*func);
 }
-
-

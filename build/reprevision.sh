@@ -7,9 +7,8 @@
 #
 #  This source code is released under the BSD License.
 
-if [ -z "$HG" ]; then
-  HG=hg
+if [ -z "$GIT" ]; then
+  GIT=git
 fi
 
-# $HG id --debug | sed -e 's/\([a-zA-Z0-9]*\).*/\1/'
-expr "$($HG id --debug)" : '\([0-9a-zA-Z]*\)'
+expr "$($GIT log -1 --format="%H")"

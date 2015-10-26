@@ -16,8 +16,8 @@
 #include "codegen-tools.h"
 #include "codegen-types.h"
 
-#include "llvm/DerivedTypes.h"
-#include "llvm/LLVMContext.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/LLVMContext.h"
 
 namespace herschel
 {
@@ -36,7 +36,7 @@ namespace herschel
       return tools->makeCharAtom(value);
     }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt32Ty(typeUtils->context());
     }
@@ -77,7 +77,7 @@ namespace herschel
       return tools->makeIntAtom(value, CodegenTools::kAtomInt8);
     }
 
-    virtual const llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
       return llvm::Type::getInt8Ty(typeUtils->context());
     }

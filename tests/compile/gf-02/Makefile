@@ -18,17 +18,18 @@ APPNAME ?= gf
 
 TEST_SOURCES = main.hr dog.hr cat.hr
 
-TEST_OBJS = $(TEST_SOURCES:%.hr=$(TESTDIR)/%.bc)
+TEST_BCS = $(TEST_SOURCES:%.hr=$(TESTDIR)/%.bc)
 
 
 all-local: $(TESTDIR)/$(APPNAME)$(APPEXT)
 
-$(TESTDIR)/$(APPNAME)$(APPEXT): $(TEST_OBJS)
-	@$(LLVM_EXE)/llvm-ld -native -o $@ $^ $(BUILDDIR)/$(BUILDSTYLE)/libhr.a
-
+$(TESTDIR)/$(APPNAME)$(APPEXT): $(TEST_BCS)
+	@$(LLVM_EXE)/llvm-link $^ | $(LLVM_EXE)/llc -filetype=obj -o $(TESTDIR)/tmp-$(APPNAME)$(OBJEXT)
+	@$(CC) -o $@ $(TESTDIR)/tmp-$(APPNAME)$(OBJEXT) $(BUILDDIR)/$(BUILDSTYLE)/libhr.a
 
 $(TESTDIR)/%.bc: %.hr
 	@$(HERSCHEL_APPBINARY) --isys=$(RUNTIME_DIR) -d $(TESTDIR) -c $<
+
 
 clean-local:
 	rm -f $(TESTDIR)/*

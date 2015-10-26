@@ -39,7 +39,7 @@ namespace
     printf("(base revision: %s)\n", HR_BASE_REVISION);
 
     if (verbose) {
-      printf("Using LLVM: %s (%s)\n", PACKAGE_STRING, LLVM_CONFIGTIME);
+      printf("Using LLVM: %s\n", PACKAGE_STRING);
     }
   }
 
@@ -129,8 +129,79 @@ namespace
     kOptDebugJobs,
     kOptLinkerOpt
   };
-}                    // namespace end
 
+
+  std::vector<String>
+  callHrc(const Setup& setup, bool doTraceJobCalls, const String& outdir,
+          const std::vector<String>& files,
+          std::vector<String> hrcOptions)
+  {
+    std::vector<String> outFiles;
+
+    hrcOptions.insert(hrcOptions.end(), files.begin(), files.end());
+
+    if (startProcess(setup.fHrcPath, hrcOptions, doTraceJobCalls) >= 0) {
+      for (const String& file : files) {
+        String outExt = makeCompileOutputFileExt(kLLVM_BC);
+        String outFile = makeOutputFileName(outdir, String(), file, outExt);
+        outFiles.emplace_back(outFile);
+      }
+    }
+
+    return outFiles;
+  }
+
+
+  std::vector<String>
+  callLlc(const Setup& setup, bool doTraceJobCalls, const String& outdir,
+          const std::vector<String>& bcFiles,
+          std::vector<String> llcOptions)
+  {
+    std::vector<String> objFiles;
+
+    llcOptions.insert(llcOptions.begin(), String("-filetype=obj"));
+
+    for (const String& file : bcFiles) {
+      std::vector<String> options(llcOptions.begin(), llcOptions.end());
+
+      String outFile = makeOutputFileName(outdir, String(), file, String("o"));
+      options.push_back(String("-o"));
+      options.push_back(outFile);
+      options.push_back(file);
+
+      if (startProcess(setup.fLlcPath, options, doTraceJobCalls) >= 0) {
+        objFiles.emplace_back(outFile);
+      }
+    }
+
+    return objFiles;
+  }
+
+
+  void
+  callLink(const Setup& setup, bool doTraceJobCalls, const String& outputFileName,
+           const std::vector<String>& objFiles,
+           const std::vector<String>& linkOptions)
+  {
+    std::vector<String> options;
+
+    options.emplace_back(String("-o"));
+    options.emplace_back(outputFileName);
+
+    options.insert(options.end(),
+                   setup.fLdFlags.begin(),
+                   setup.fLdFlags.end());
+
+    options.insert(options.end(), linkOptions.begin(), linkOptions.end());
+
+    options.insert(options.end(), objFiles.begin(), objFiles.end());
+
+    options.emplace_back(setup.fLangKit);
+    options.emplace_back(setup.fRuntimeLib);
+
+    startProcess(setup.fLdPath, options, doTraceJobCalls);
+  }
+}                    // namespace end
 
 
 int
@@ -161,6 +232,8 @@ main(int argc, char** argv)
   String outputFileName;
   String outdir;
   std::vector<String> hrcOptions;
+  std::vector<String> llcOptions;
+  std::vector<String> linkOptions;
   std::vector<String> specLdOptions;
 
   CompileFunction func = kDisplayHelp;
@@ -249,8 +322,8 @@ main(int argc, char** argv)
         hrcOptions.push_back(String("-On"));
         break;
       case kOptLinkOptimizeNone:
-        specLdOptions.push_back(String("-disable-inlining"));
-        specLdOptions.push_back(String("-disable-opt"));
+        //specLdOptions.push_back(String("-disable-inlining"));
+        //specLdOptions.push_back(String("-disable-opt"));
         break;
       }
       break;
@@ -280,10 +353,6 @@ main(int argc, char** argv)
   // the linker we should use, which are local linker settings, etc.).
   Setup setup = herschel::findResources("herschel");
 
-  // Pass all files to be compiled to the subtool hrc.
-  for (size_t i = 0; i < files.size(); i++)
-    hrcOptions.push_back(files[i]);
-
   switch (func) {
   case kDisplayHelp:
     displayHelp();
@@ -300,42 +369,18 @@ main(int argc, char** argv)
       hrcOptions.push_back(String("-o"));
       hrcOptions.push_back(outputFileName);
     }
-    startProcess(setup.fHrcPath, hrcOptions, doTraceJobCalls);
+
+    callHrc(setup, doTraceJobCalls, outdir, files, hrcOptions);
     break;
 
   case kLinkAndCompileFiles:
-    hrcOptions.insert(hrcOptions.begin(), String("-c"));
-    if (startProcess(setup.fHrcPath, hrcOptions, doTraceJobCalls) >= 0) {
-      std::vector<String> outFiles;
-      for (size_t i = 0; i < files.size(); i++) {
-        String outExt = makeCompileOutputFileExt(kLLVM_BC);
-        String outFile = makeOutputFileName(outdir, String(),
-                                            files[i], outExt);
-        outFiles.push_back(outFile);
-      }
+    {
+      hrcOptions.insert(hrcOptions.begin(), String("-c"));
+      std::vector<String> bcFiles = callHrc(setup, doTraceJobCalls, outdir, files, hrcOptions);
 
-      std::vector<String> ldOptions;
-      ldOptions.insert(ldOptions.end(),
-                       setup.fLdFlags.begin(),
-                       setup.fLdFlags.end());
+      std::vector<String> objFiles = callLlc(setup, doTraceJobCalls, outdir, bcFiles, llcOptions);
 
-      ldOptions.insert(ldOptions.end(),
-                       specLdOptions.begin(), specLdOptions.end());
-
-      if (!outputFileName.isEmpty())
-      {
-        ldOptions.push_back(String("-o"));
-        ldOptions.push_back(outputFileName);
-      }
-
-      ldOptions.push_back(String("-b=") + makeOutputFileName(outdir, String(),
-                                                             outputFileName, String("bc")));
-      ldOptions.insert(ldOptions.end(),
-                       outFiles.begin(), outFiles.end());
-      ldOptions.push_back(setup.fLangKit);
-      ldOptions.push_back(setup.fRuntimeLib);
-
-      startProcess(setup.fLdPath, ldOptions, doTraceJobCalls);
+      callLink(setup, doTraceJobCalls, outputFileName, objFiles, linkOptions);
     }
     break;
   }

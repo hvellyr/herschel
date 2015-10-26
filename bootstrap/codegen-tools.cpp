@@ -25,15 +25,15 @@
 #include <vector>
 #include <typeinfo>
 
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/PassManager.h"
-#include "llvm/Support/IRBuilder.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/IR/Verifier.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Intrinsics.h"
 
 
 using namespace herschel;
@@ -144,8 +144,8 @@ CodegenTools::makeStringAtom(const String& str)
     // void h7_allocate_array(ATOM* instance, Type* ty, size_t items);
     llvm::FunctionType *ft = llvm::FunctionType::get(
       llvm::Type::getVoidTy(context()),
-      vector_of<const llvm::Type*>(types()->getAtomType()->getPointerTo())
-                                  (llvm::Type::getInt8PtrTy(context())),
+      std::vector<llvm::Type*>{ types()->getAtomType()->getPointerTo(),
+                                llvm::Type::getInt8PtrTy(context()) },
       !K(isVarArg));
 
     allocFunc = llvm::Function::Create(ft,
@@ -161,11 +161,11 @@ CodegenTools::makeStringAtom(const String& str)
   hr_assert(retv != NULL);
 
   std::vector<llvm::Value*> argv =
-    vector_of<llvm::Value*>(retv)
-                           (builder().CreateGlobalStringPtr(StrHelper(str),
-                                                            llvm::Twine(StrHelper(str + "_str"))));
+    std::vector<llvm::Value*>{retv,
+                              builder().CreateGlobalStringPtr(llvm::StringRef(StrHelper(str)),
+                                                              llvm::Twine(StrHelper(str + "_str"))) };
 
-  builder().CreateCall(allocFunc, argv.begin(), argv.end());
+  builder().CreateCall(allocFunc, argv);
   return retv;
 }
 
@@ -196,20 +196,20 @@ CodegenTools::makeCharAtom(Char val)
 
 llvm::Function*
 CodegenTools::getIntrinsic(unsigned int iid,
-                           const llvm::Type** tys, unsigned int numTys)
+                           const std::vector<llvm::Type*>& tys)
 {
   return llvm::Intrinsic::getDeclaration(fGenerator->fModule,
-                                         (llvm::Intrinsic::ID)iid, tys, numTys);
+                                         (llvm::Intrinsic::ID)iid, tys);
 }
 
 
 llvm::Function*
-CodegenTools::getMemCpyFn(const llvm::Type* dstType,
-                          const llvm::Type* srcType,
-                          const llvm::Type* sizeType)
+CodegenTools::getMemCpyFn(llvm::Type* dstType,
+                          llvm::Type* srcType,
+                          llvm::Type* sizeType)
 {
-  const llvm::Type* argTypes[3] = { dstType, srcType, sizeType };
-  return getIntrinsic(llvm::Intrinsic::memcpy, argTypes, 3);
+  return getIntrinsic(llvm::Intrinsic::memcpy,
+                      std::vector<llvm::Type*>{ dstType, srcType, sizeType });
 }
 
 
@@ -230,16 +230,19 @@ CodegenTools::emitTypeId(Typeid typid) const
 void
 CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
 {
-  llvm::Value* typidSlot = builder().CreateStructGEP(atom, 0);
+  llvm::Value* typidSlot = builder().CreateStructGEP(types()->getAtomType(),
+                                                     atom, 0);
   llvm::Value* typeIdValue = emitTypeId(typid);
 
   builder().CreateStore(typeIdValue, typidSlot);
 
-  llvm::Value* payload = builder().CreateStructGEP(atom, 1);
-  llvm::Value* slot = builder().CreateStructGEP(payload, 0);
+  llvm::Value* payload = builder().CreateStructGEP(types()->getAtomType(),
+                                                   atom, 1);
+  llvm::Value* slot = builder().CreateStructGEP(types()->getAtomPayloadType(),
+                                                payload, 0);
 
   if (typid == kAtomBool) {
-    const llvm::Type *dstBasePtr = llvm::Type::getInt1PtrTy(fGenerator->context());
+    llvm::Type *dstBasePtr = llvm::Type::getInt1PtrTy(fGenerator->context());
     slot = builder().CreateBitCast(slot, dstBasePtr, "tmp");
     builder().CreateStore(value, slot);
   }
@@ -312,11 +315,11 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
   // problems...  Performance wise it does not make any difference on x86_64
   // (with full optimization).
 
-  llvm::Value* dst_pl = builder().CreateStructGEP(dst, 1);
-  llvm::Value* dst_ty = builder().CreateStructGEP(dst, 0);
+  llvm::Value* dst_pl = builder().CreateStructGEP(types()->getAtomType(), dst, 1);
+  llvm::Value* dst_ty = builder().CreateStructGEP(types()->getAtomType(), dst, 0);
 
-  llvm::Value* src_pl = builder().CreateStructGEP(src, 1);
-  llvm::Value* src_ty = builder().CreateStructGEP(src, 0);
+  llvm::Value* src_pl = builder().CreateStructGEP(types()->getAtomType(), src, 1);
+  llvm::Value* src_ty = builder().CreateStructGEP(types()->getAtomType(), src, 0);
 
   builder().CreateStore(builder().CreateLoad(src_ty), dst_ty);
   builder().CreateStore(builder().CreateLoad(src_pl), dst_pl);
@@ -347,8 +350,7 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
 
 
   builder().CreateCall(getMemCpyFn(dst2->getType(), src2->getType(),
-                                   llvm::Type::getInt32Ty(context())),
-                       argv.begin(), argv.end());
+                                   llvm::Type::getInt32Ty(context())), argv);
 #endif
 }
 
@@ -361,7 +363,7 @@ CodegenTools::getConvFuncNameByType(const Type& type) const
 }
 
 
-const llvm::Type*
+llvm::Type*
 CodegenTools::getConvTypeByType(const Type& type) const
 {
   if (type.typeId() == Names::kKeywordTypeName)
@@ -379,7 +381,7 @@ CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) con
   llvm::Function* convFunc = module()->getFunction(llvm::StringRef(funcName));
   if (convFunc == NULL) {
     llvm::FunctionType *ft = llvm::FunctionType::get(getConvTypeByType(dstType),
-                                                     vector_of(types()->getAtomType()),
+                                                     std::vector<llvm::Type*>{types()->getAtomType()},
                                                      false);
 
     convFunc = llvm::Function::Create(ft,
@@ -388,8 +390,7 @@ CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) con
                                       module());
   }
 
-  std::vector<llvm::Value*> argv = vector_of(val);
-  return builder().CreateCall(convFunc, argv.begin(), argv.end());
+  return builder().CreateCall(convFunc, std::vector<llvm::Value*>{val});
 }
 
 
@@ -432,7 +433,7 @@ CodegenTools::emitPackCode(const Type& dstType, TypeConvKind convKind,
 
 llvm::AllocaInst*
 CodegenTools::createEntryBlockAlloca(llvm::Function *func, const String& name,
-                                     const llvm::Type* type)
+                                     llvm::Type* type)
 {
   llvm::IRBuilder<> tmp(&func->getEntryBlock(), func->getEntryBlock().begin());
   return tmp.CreateAlloca(type, 0, llvm::Twine(name));

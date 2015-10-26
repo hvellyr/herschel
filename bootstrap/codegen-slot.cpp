@@ -26,22 +26,21 @@
 
 #include <vector>
 
-#include "llvm/Analysis/Verifier.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/Module.h"
-#include "llvm/PassManager.h"
-#include "llvm/Support/IRBuilder.h"
-#include "llvm/Target/TargetData.h"
-#include "llvm/Target/TargetSelect.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/PassManager.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/GlobalVariable.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Intrinsics.h"
+#include "llvm/Transforms/Scalar.h"
 
 
 //----------------------------------------------------------------------------
@@ -59,7 +58,7 @@ CodegenSlot::emitSlotRefAccess(const SlotRefNode* node) const
 {
   llvm::Value* addr = emitPtrToSlot(node, !K(isStore));
 
-  const llvm::Type* slotType = types()->getType(node->type())->getPointerTo();
+  llvm::Type* slotType = types()->getType(node->type())->getPointerTo();
   llvm::Value* slotAddr = builder().CreatePointerCast(addr, slotType);
 
   return builder().CreateLoad(slotAddr);
@@ -72,7 +71,7 @@ CodegenSlot::emitSlotRefAssignment(const SlotRefNode* node,
 {
   llvm::Value* addr = emitPtrToSlot(node, K(isStore));
 
-  const llvm::Type* slotType = types()->getType(node->type())->getPointerTo();
+  llvm::Type* slotType = types()->getType(node->type())->getPointerTo();
   llvm::Value* slotAddr = builder().CreatePointerCast(addr, slotType);
 
   llvm::Value* slotRvalue = tools()->wrapLoad(generator()->codegenNode(rvalue));
@@ -95,8 +94,8 @@ CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
     // void* h7_instance_slot(ATOM* instance, const char* slot_name);
     llvm::FunctionType *ft = llvm::FunctionType::get(
       llvm::Type::getInt8PtrTy(context()),
-      vector_of(types()->getAtomType())
-               (llvm::Type::getInt8PtrTy(context())),
+      std::vector<llvm::Type*>{ types()->getAtomType(),
+                                llvm::Type::getInt8PtrTy(context()) },
       !K(isVarArg));
 
     slotFunc = llvm::Function::Create(ft,
@@ -116,9 +115,8 @@ CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
   llvm::Value* keywgv = initializer()->registerKeyword(node->slotName());
   llvm::Value* keyw = builder().CreateLoad(keywgv);
 
-  std::vector<llvm::Value*> argv = vector_of(val)(keyw);
   hr_assert(slotFunc != NULL);
-  return builder().CreateCall(slotFunc, argv.begin(), argv.end());
+  return builder().CreateCall(slotFunc, std::vector<llvm::Value*>{ val, keyw});
 }
 
 

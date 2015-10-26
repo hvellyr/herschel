@@ -11,7 +11,7 @@
 #ifndef bootstrap_codegen_init_h
 #define bootstrap_codegen_init_h
 
-#include "llvm/Support/IRBuilder.h"
+#include "llvm/IR/IRBuilder.h"
 
 #include "str.h"
 #include "refcountable.h"
@@ -96,7 +96,7 @@ namespace herschel
 
     void emitCtorList(const CtorList &fns, const char *globalName);
 
-    llvm::Function* createGlobalInitOrDtorFunction(const llvm::FunctionType *ft,
+    llvm::Function* createGlobalInitOrDtorFunction(llvm::FunctionType *ft,
                                                    const String& name);
 
     llvm::Value* makeTypeRegisterCall(llvm::Value* newType) const;
