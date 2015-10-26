@@ -10,15 +10,9 @@
 
 //----------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <vector>
-
 #include "common.h"
 #include "str.h"
 #include "setup.h"
-#include "option.h"
 #include "log.h"
 #include "job.h"
 #include "filetool.h"
@@ -26,59 +20,15 @@
 
 #include "llvm/Config/config.h"
 
+#include "cxxopts.hpp"
+
+#include <vector>
+
+
 using namespace herschel;
 
 namespace
 {
-  //! Displays the tool's version and copyright information
-  void
-  displayVersion(bool verbose)
-  {
-    printf("%s %s - herschel compiler\n", "herschel", VERSION);
-    printf("Copyright (c) %s, %s\n", COPYRIGHTYEAR, COPYRIGHTOWNER);
-    printf("(base revision: %s)\n", HR_BASE_REVISION);
-
-    if (verbose) {
-      printf("Using LLVM: %s\n", PACKAGE_STRING);
-    }
-  }
-
-
-  //! Displays the tool's usage and (main) command line options.
-  void
-  displayHelp()
-  {
-    displayVersion(false);
-    /*      123456789012345678901234567890123456789012345678901234567890123456789012*/
-    /*               1         2         3         4         5         6         7  */
-    printf("\n");
-    printf("Usage: herschel [options] files...\n");
-    printf("Options:\n");
-    printf("  -h,      --help              Display this information\n");
-    printf("  -v,      --version           Display the version\n");
-    printf("           --verbose           Be verbose\n");
-    printf("  -D VAR=VALUE                 Define config VAR to be VALUE\n");
-    printf("     --define=VAR=VALUE\n");
-    printf("  -T KEYS, --trace=KEYS        Trace various aspects:\n");
-    printf("                               {tokenizer|pass1|pass2|annotate|\n");
-    printf("                                transform|typify|import|macro|\n");
-    printf("                                codedump|typeconv}\n");
-    printf("  -d DIR,  --outdir=DIR        Output all generated files to DIR\n");
-    printf("  -I DIR,  --input=DIR         Add DIR to the input searchlist\n");
-    printf("\n");
-    printf("  -P,      --parse             Only parse the source files\n");
-    printf("  -c                           Only compile the source files, no link\n");
-    printf("  -s                           Compile to LLVM IR, no link\n");
-    printf("\n");
-    printf("  -O                           Optimize code more\n");
-    printf("  -On                          Turn off any (even basic) optimization\n");
-    printf("\n");
-    printf("  -Xl,On                       disable (all) linker optimizations\n");
-    printf("  --Xlinker=OPTS               pass OPTS to the clang linker.  Multiple\n");
-    printf("                               options can be comma separated\n");
-  }
-
-
   //! Splits the comma separated linker from \p arg options are returns as
   //! separate tokens in \p options.
   void
@@ -100,34 +50,10 @@ namespace
   //! The main functions which can be specified from the command line
   enum CompileFunction {
     kDisplayHelp,
-    kDisplayVersion,
     kParseFiles,
     kCompileFiles,
     kCompileFilesToIR,
     kLinkAndCompileFiles,
-  };
-
-
-  //! Additional options which can specified from the command line
-  enum {
-    kOptHelp = 1,
-    kOptVersion,
-    kOptOutdir,
-    kOptOutput,
-    kOptVerbose,
-    kOptTrace,
-    kOptParse,
-    kOptDefine,
-    kOptInputDir,
-    kOptInputSysDir,
-    kOptCompile,
-    kOptCompileToBC,
-    kOptCompileToIR,
-    kOptOptimizeMore,
-    kOptOptimizeNone,
-    kOptLinkOptimizeNone,
-    kOptDebugJobs,
-    kOptLinkerOpt
   };
 
 
@@ -207,28 +133,6 @@ namespace
 int
 main(int argc, char** argv)
 {
-  static const OptionsParser::OptionsDefine herschelOptions[] = {
-    { kOptHelp,         "-h",  "--help",           !K(argument) },
-    { kOptVersion,      "-v",  "--version",        !K(argument) },
-    { kOptOutdir,       "-d",  "--outdir",          K(argument) },
-    { kOptOutput,       "-o",  "--output",          K(argument) },
-    { kOptVerbose,      NULL,  "--verbose",        !K(argument) },
-    { kOptTrace,        "-T",  "--trace",           K(argument) },
-    { kOptDebugJobs,    NULL,  "--jobs",           !K(argument) },
-    { kOptParse,        "-P",  "--parse",          !K(argument) },
-    { kOptDefine,       "-D",  "--define",          K(argument) },
-    { kOptInputDir,     "-I",  "--input",           K(argument) },
-    { kOptInputSysDir,  NULL,  "--isys",            K(argument) },
-    { kOptCompileToIR,  "-s",  NULL,               !K(argument) },
-    { kOptCompile,      "-c",  NULL,               !K(argument) },
-    { kOptOptimizeMore, "-O",  NULL,               !K(argument) },
-    { kOptOptimizeMore, "-O1", NULL,               !K(argument) },
-    { kOptOptimizeNone, "-On", NULL,               !K(argument) },
-    { kOptLinkOptimizeNone, "-Xl,On", NULL,        !K(argument) },
-    { kOptLinkerOpt,    NULL,  "--Xl",              K(argument) },
-    { 0,                NULL,  NULL,               !K(argument) } // sentinel
-  };
-
   String outputFileName;
   String outdir;
   std::vector<String> hrcOptions;
@@ -238,136 +142,156 @@ main(int argc, char** argv)
 
   CompileFunction func = kDisplayHelp;
   std::vector<String> files;
-  OptionsParser::ArgumentType type;
-  OptionsParser::Option option;
-  OptionsParser optp(herschelOptions, argc, (const char**)argv);
 
   bool verbose = false;
   bool doTraceJobCalls = false;
 
-  // Decode the options and collect the passed arguments in local variables.
-  // Options which are targeted for the subtool hrc are collected into \c
-  // hrcOptions, options for the llvm linker into \c specLdOptions.
-  while ((type = optp.nextOption(&option)) != OptionsParser::kNoMoreArgs) {
-    switch (type) {
-    case OptionsParser::kOption:
-      switch (option.fId) {
-      case kOptHelp:
-        displayHelp();
-        exit(0);
+  const std::string prog_help = "a compiler for the herschel language";
+  const std::string prog_name = argv[0];
+  cxxopts::Options options(prog_name, std::string(" <inputs> - ") + prog_help);
+  options.add_options()
+    ("h;help", "Print help and exit")
+    ("V;version", "Print version and exit")
+    ("v;verbose", "Be verbose", cxxopts::value<bool>(verbose))
+    ("d;outdir", "Output all generated files to DIR", cxxopts::value<std::string>())
+    ("o;output", "", cxxopts::value<std::string>())
+    ("T;trace", "Trace various aspects: tokenizer pass1 pass2 annotate transform typify "
+                                        "import macro codedump typeconv",
+                cxxopts::value<std::string>())
+    ("jobs", "Trace process information", cxxopts::value<bool>(doTraceJobCalls))
+    ("D;define", "Define config VAR to be VALUE", cxxopts::value<std::vector<std::string>>())
+    ("I;input", "Add DIR to the input searchlist", cxxopts::value<std::vector<std::string>>())
+    ("isys", "Root to the system library", cxxopts::value<std::vector<std::string>>())
+    ("P;parse", "Only parse the source files")
+    ("s;emit-bc", "Only compile the source files, no link")
+    ("c;emit-llvm", "Compile to LLVM IR, no link")
+    ("O;optimize", "Optimize code more")
+    ("On;optimize-off", "Turn off any (even basic) optimization")
+    ("Xl,On", "disable (all) linker optimizations")
+    ("Xlinker", "pass OPTS to the clang linker.  Multiple options can be comma separated")
+    ("f;file", "", cxxopts::value<std::vector<std::string>>())
+    ;
 
-      case kOptVersion:
-        func = kDisplayVersion;
-        break;
+  try {
+    options.parse_positional("file");
+    options.parse(argc, argv);
+  }
+  catch (const std::exception& opt) {
+    logf(kError, "%s", opt.what());
+    return 1;
+  }
 
-      case kOptOutdir:
-        outdir = option.fArgument;
-        hrcOptions.push_back(String("-d"));
-        hrcOptions.push_back(option.fArgument);
-        break;
+  if (options.count("help")) {
+    std::cout << options.help({""}) << std::endl;
+    return 0;
+  }
+  if (options.count("version")) {
+    std::cout << prog_name << " - vr. " << VERSION << std::endl;
+    std::cout << "Copyright (c) " << COPYRIGHTYEAR << ", " << COPYRIGHTOWNER << std::endl;
+    std::cout << "(base revision: " << HR_BASE_REVISION << ")" << std::endl;
 
-      case kOptOutput:
-        outputFileName = option.fArgument;
-        // don't pass outdir to hrc here.  Depending on the compile mode We
-        // handle it outselves
-        break;
+    if (verbose) {
+      std::cout << "Using LLVM: " << PACKAGE_STRING << std::endl;
+    }
 
-      case kOptVerbose:
-        verbose = true;
-        hrcOptions.push_back(String("-v"));
-        break;
+    hrcOptions.emplace_back(String("-v"));
+    return 0;
+  }
 
-      case kOptTrace:
-        hrcOptions.push_back(String("-T"));
-        hrcOptions.push_back(option.fArgument);
-        break;
-      case kOptDebugJobs:
-        doTraceJobCalls = true;
-        break;
+  if (options.count("outdir")) {
+    outdir = String(options["outdir"].as<std::string>());
+    hrcOptions.emplace_back(String("-d"));
+    hrcOptions.emplace_back(outdir);
+  }
+  if (options.count("output")) {
+    outputFileName = String(options["output"].as<std::string>());
+  }
 
-      case kOptLinkerOpt:
-        splitLinkerOptions(specLdOptions, option.fArgument);
-        break;
+  if (options.count("trace")) {
+    hrcOptions.emplace_back(String("-T"));
+    hrcOptions.emplace_back(String(options["trace"].as<std::string>()));
+  }
 
-      case kOptParse:
-        func = kParseFiles;
-        hrcOptions.push_back(String("-P"));
-        break;
-      case kOptCompile:
-        hrcOptions.push_back(String("-c"));
-        func = kCompileFiles;
-        break;
-      case kOptCompileToIR:
-        hrcOptions.push_back(String("-s"));
-        func = kCompileFilesToIR;
-        break;
+  if (options.count("Xlinker")) {
+    splitLinkerOptions(specLdOptions, String(options["Xlinker"].as<std::string>()));
+  }
 
-      case kOptDefine:
-        hrcOptions.push_back(String("-D"));
-        hrcOptions.push_back(option.fArgument);
-        break;
+  if (options.count("parse")) {
+    func = kParseFiles;
+    hrcOptions.emplace_back(String("-P"));
+  }
+  if (options.count("emit-llvm")) {
+    func = kCompileFiles;
+    hrcOptions.emplace_back(String("-c"));
+  }
+  if (options.count("emit-bc")) {
+    func = kCompileFilesToIR;
+    hrcOptions.emplace_back(String("-s"));
+  }
 
-      case kOptInputDir:
-        hrcOptions.push_back(String("-I"));
-        hrcOptions.push_back(option.fArgument);
-        break;
-      case kOptInputSysDir:
-        hrcOptions.push_back(String("--isys=") + option.fArgument);
-        break;
-
-      case kOptOptimizeMore:
-        hrcOptions.push_back(String("-O"));
-        break;
-      case kOptOptimizeNone:
-        hrcOptions.push_back(String("-On"));
-        break;
-      case kOptLinkOptimizeNone:
-        //specLdOptions.push_back(String("-disable-inlining"));
-        //specLdOptions.push_back(String("-disable-opt"));
-        break;
-      }
-      break;
-
-    case OptionsParser::kUnknownOption:
-      logf(kError, "Unknown option: %s\n", (const char*)StrHelper(option.fOption));
-      break;
-
-    case OptionsParser::kMissingArgument:
-      logf(kError, "Missing value for option: %s\n",
-           (const char*)StrHelper(option.fOption));
-      break;
-
-    case OptionsParser::kNotAnOption:
-      files.push_back(option.fArgument);
-
-      if (func == kDisplayHelp)
-        func = kLinkAndCompileFiles;
-      break;
-
-    default: ;
+  if (options.count("define")) {
+    for (const auto& var : options["define"].as<std::vector<std::string>>()) {
+      hrcOptions.emplace_back(String("-D"));
+      hrcOptions.emplace_back(String(var));
+    }
+  }
+  if (options.count("input")) {
+    for (const auto& var : options["input"].as<std::vector<std::string>>()) {
+      hrcOptions.emplace_back(String("-I"));
+      hrcOptions.emplace_back(String(var));
+    }
+  }
+  if (options.count("isys")) {
+    for (const auto& var : options["isys"].as<std::vector<std::string>>()) {
+      hrcOptions.emplace_back(String("--isys=") + String(var));
     }
   }
 
+  if (options.count("optimize")) {
+    hrcOptions.emplace_back(String("-O"));
+  }
+  if (options.count("optimize-off")) {
+    hrcOptions.emplace_back(String("-On"));
+  }
+
+  if (options.count("Xl,On")) {
+    //specLdOptions.push_back(String("-disable-inlining"));
+    //specLdOptions.push_back(String("-disable-opt"));
+  }
+
+  if (options.count("file")) {
+    for (auto f : options["file"].as<std::vector<std::string>>())
+      files.emplace_back(String(f));
+
+    if (func == kDisplayHelp)
+      func = kLinkAndCompileFiles;
+  }
 
   // Find system and installation specific setup information (i.e. where is
   // the linker we should use, which are local linker settings, etc.).
   Setup setup = herschel::findResources("herschel");
 
+  if (verbose) {
+    std::cout << "Setup:" << std::endl
+              << "  hrc:     " << StrHelper(setup.fHrcPath) << std::endl
+              << "  llc:     " << StrHelper(setup.fLlcPath) << std::endl
+              << "  linker:  " << StrHelper(setup.fLdPath) << std::endl
+              << "  langkit: " << StrHelper(setup.fLangKit) << std::endl
+              << "  rtlib:   " << StrHelper(setup.fRuntimeLib) << std::endl;
+  }
+
   switch (func) {
   case kDisplayHelp:
-    displayHelp();
-    break;
-  case kDisplayVersion:
-    displayVersion(verbose);
-    exit(0);
+    std::cout << options.help({""}) << std::endl;
+    return 0;
 
   case kParseFiles:
   case kCompileFilesToIR:
   case kCompileFiles:
     if (!outputFileName.isEmpty())
     {
-      hrcOptions.push_back(String("-o"));
-      hrcOptions.push_back(outputFileName);
+      hrcOptions.emplace_back(String("-o"));
+      hrcOptions.emplace_back(outputFileName);
     }
 
     callHrc(setup, doTraceJobCalls, outdir, files, hrcOptions);
@@ -383,15 +307,6 @@ main(int argc, char** argv)
       callLink(setup, doTraceJobCalls, outputFileName, objFiles, linkOptions);
     }
     break;
-  }
-
-  if (verbose) {
-    printf("------------------------------\n");
-    printf("Setup:\n");
-    printf("  hrc:     %s\n", (const char*)StrHelper(setup.fHrcPath));
-    printf("  linker:  %s\n", (const char*)StrHelper(setup.fLdPath));
-    printf("  langkit: %s\n", (const char*)StrHelper(setup.fLangKit));
-    printf("  rtlib:   %s\n", (const char*)StrHelper(setup.fRuntimeLib));
   }
 
   return 0;
