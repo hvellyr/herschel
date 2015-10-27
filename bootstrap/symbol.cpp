@@ -126,21 +126,3 @@ herschel::mangleToC(const String& qualId)
 
   return result.toString();
 }
-
-
-#if defined(UNITTESTS)
-//----------------------------------------------------------------------------
-
-#include <UnitTest++.h>
-#include <iostream>
-
-TEST(SymbolMangling)
-{
-  CHECK_EQUAL(String("__QN13hello/2dworld"), mangleToC(String("hello-world")));
-  CHECK_EQUAL(String("__QN3app4main"), mangleToC(Names::kAppMain));
-  CHECK_EQUAL(String("__QN4core2io12/2astdout/2a"), mangleToC(String("core|io|*stdout*")));
-  CHECK_EQUAL(String("__QN9call/2fcc"), mangleToC(String("call/cc")));
-}
-
-#endif  // #if defined(UNITTESTS)
-

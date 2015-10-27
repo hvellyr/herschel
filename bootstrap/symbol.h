@@ -13,6 +13,8 @@
 
 namespace herschel
 {
+  class String;
+
   String qualifyId(const String& ns, const String& name);
   bool isQualified(const String& sym);
 

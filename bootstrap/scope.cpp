@@ -971,33 +971,3 @@ Scope::propagateImportedScopes(Scope* dstScope) const
       dstScope->addImportedScope(it->first, it->second);
   }
 }
-
-
-//============================================================================
-
-#if defined(UNITTESTS)
-//----------------------------------------------------------------------------
-
-#include <UnitTest++.h>
-#include <iostream>
-
-SUITE(Scope)
-{
-  TEST(lookupType)
-  {
-    SrcPos sp;
-    Type t0 = Type::newTypeRef(String("Foo"),
-                               vector_of(Type::newTypeRef(String("Char"),
-                                                          K(isValue))),
-                               TypeConstVector(),
-                               K(isValue));
-
-    Ptr<Scope> s0 = new Scope(kScopeL_CompileUnit);
-    Type t1 = s0->lookupType_unused(t0);
-    // printf("%s\n", (const char*)StrHelper(t1.toString()));
-    CHECK(t1.isDef());
-  }
-}
-
-#endif  // #if defined(UNITTESTS)
-

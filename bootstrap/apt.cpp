@@ -29,10 +29,6 @@
 #include <string>
 #include <map>
 
-#if defined(UNITTESTS)
-#  include <UnitTest++.h>
-#  include <iostream>
-#endif
 
 using namespace herschel;
 
@@ -2091,25 +2087,6 @@ DEF_ANNOTATE(ApplyNode)
 DEF_TRAVERSE(ApplyNode)
 DEF_TRANSFORM(ApplyNode)
 DEF_TYPIFY(ApplyNode)
-
-
-#if defined(UNITTESTS)
-
-TEST(ApplyNode)
-{
-  Ptr<ApplyNode> an = new ApplyNode(SrcPos(), new SymbolNode(SrcPos(), String("xyz")));
-  CHECK(an->isSimpleCall());
-  CHECK_EQUAL(an->simpleCallName(), String("xyz"));
-
-  Ptr<ApplyNode> an2 = new ApplyNode(SrcPos(),
-                                     new ApplyNode(SrcPos(),
-                                                   new SymbolNode(SrcPos(),
-                                                                  String("get-func"))));
-  CHECK(!an2->isSimpleCall());
-  CHECK_EQUAL(an2->simpleCallName(), String());
-}
-
-#endif  // #if defined(UNITTESTS)
 
 
 //----------------------------------------------------------------------------

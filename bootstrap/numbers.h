@@ -89,7 +89,6 @@ namespace herschel
 #if defined(UNITTESTS)
   std::ostream& operator<<(std::ostream& os, const Rational& rat);
 #endif
-
 };
 
 #endif  // bootstrap_numbers_h

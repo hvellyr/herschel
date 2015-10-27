@@ -10,6 +10,13 @@ top_srcdir=..
 include $(top_srcdir)/config.mk
 
 #------------------------------------------------------------------------------
+
+SUBDIRS = test
+
+ALL_SUBDIRS = test
+
+
+#------------------------------------------------------------------------------
 # libhrcommon - common library stuff
 #------------------------------------------------------------------------------
 
@@ -21,8 +28,7 @@ LIBHRCOMMON_SOURCES =  \
 	port.cpp             \
 	require.cpp          \
 	str.cpp              \
-	strbuf.cpp           \
-	valuesaver.cpp
+	strbuf.cpp
 
 LIBHRCOMMON_HEADERS =  \
 	common.h             \
@@ -112,7 +118,6 @@ LIBHRC_SOURCES =         \
 	typeenum.cpp        \
 	typectx.cpp         \
 	typify.cpp          \
-  utils.cpp           \
 	xmlout.cpp
 
 LIBHRC_HEADERS =         \
