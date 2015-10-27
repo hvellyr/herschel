@@ -1,0 +1,48 @@
+# This sets the default behaviour, overriding core.autocrlf
+*              -text
+
+AUTHORS        text
+BUGS           text
+CHANGES        text
+COPYING        text
+HOWTO          text
+LICENSE        text
+NEWS           text
+README         text
+TODO           text
+readme         text
+
+Doxyfile       text
+Makefile       text
+makefile       text
+mkinstalldirs  text
+
+*.1            text
+*.7            text
+*.bin          binary
+*.c            text
+*.cpp          text
+*.el           text
+*.expsynerr    text
+*.graffle      binary
+*.h            text
+*.hpp          text
+*.hr           text
+*.html         text
+*.ipp          text
+*.md           text
+*.mk           text
+*.mm           text
+*.org          text
+*.pdf          binary
+*.png          binary
+*.py           text
+*.sh           text eol=lf
+*.sln          text eol=crlf
+*.st           text
+*.svg          text
+*.testdesc     text
+*.texinfo      text
+*.txt          text
+*.vcproj       text eol=crlf
+*.xml          text
