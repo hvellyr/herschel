@@ -12,15 +12,9 @@ TEXINFO_FILES = herschel.texinfo
 
 DISTFILES = Makefile       \
 	herschel-mode.el          \
-	herschel-logo.eps         \
-	copyright.head           \
-	copyright.cpp            \
 	minimum-requirements.txt \
 	patterns.txt             \
 	texinfo.tex              \
-	artwork/herschel-logo.eps \
-	artwork/herschel-logo.png \
-	artwork/herschel.jpg      \
 	CHANGES
 
 include $(top_srcdir)/build/pre.mk

@@ -83,15 +83,6 @@ distclean-local: clean-local
 	-rm -rf $(DEPS_DIR) TAGS
 
 
-# dist-local:
-# 	for d in . lang sys; do \
-# 		mkdir $(top_distdir)/src/$$d ; \
-# 		for f in $$d/*.xxx; do \
-# 			cp -p $$f $(top_distdir)/src/$$f >/dev/null 2>&1; \
-# 		done; \
-# 	done
-
-
 rebuild: clean all
 
 

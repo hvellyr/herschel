@@ -103,11 +103,11 @@ mandir        ?= $(prefix)/man
 
 ifeq ($(curdir),)
 BUILDDIR = $(top_srcdir)/temp
-PKGDIR = $(top_srcdir)/packages
+PKGDIR = $(top_srcdir)/temp/packages
 BUILDTESTSDIR = $(top_srcdir)/temp/tests
 else
 BUILDDIR = $(curdir)/temp
-PKGDIR = $(curdir)/packages
+PKGDIR = $(curdir)/temp/packages
 BUILDTESTSDIR = $(curdir)/temp/tests
 CFLAGS += -I$(curdir)
 CXXFLAGS += -I$(curdir)
