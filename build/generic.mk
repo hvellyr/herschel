@@ -25,8 +25,8 @@ distdir: $(DISTFILES)
 	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
 	mkdir $(distdir)
 	for file in $(DISTFILES); do \
-	  d=$(srcdir); \
-	  if test -d $$d/$$file; then \
+	  d="."; \
+	  if test -d "$$d/$$file"; then \
 	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
@@ -35,7 +35,7 @@ distdir: $(DISTFILES)
 	  fi; \
 	done; \
 	for subdir in $(SUBDIRS); do \
-	  if test "$$subdir" = .; then :; else \
+	  if test "$$subdir" = "."; then :; else \
 	    test -d $(distdir)/$$subdir \
 	    || mkdir $(distdir)/$$subdir \
 	    || exit 1; \
