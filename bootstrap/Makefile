@@ -71,7 +71,6 @@ COMMON_LIB = $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src \
 	-I$(top_srcdir)/external/cxxopts/src \
-	-I$(top_srcdir)/external/UnitTest++/src \
 	$(LLVM_CPPFLAGS)
 
 LIBHRC_LDFLAGS = $(LDFLAGS) $(LLVM_LDFLAGS)
@@ -204,7 +203,6 @@ LIBHRC_LIB = $(BUILDDIR)/$(BUILDSTYLE)/libhrc$(LIBEXT)
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src \
 	-I$(top_srcdir)/external/cxxopts/src \
-	-I$(top_srcdir)/external/UnitTest++/src \
 	$(LLVM_CPPFLAGS)
 
 HRC_LDFLAGS = $(LDFLAGS) $(LLVM_LDFLAGS)
