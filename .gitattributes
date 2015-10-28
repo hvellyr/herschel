@@ -11,6 +11,8 @@ NEWS           text
 README         text
 TODO           text
 readme         text
+configure      text eol=lf
+.gitattributes text
 
 Doxyfile       text
 Makefile       text
