@@ -22,7 +22,7 @@ DISTFILES = \
 	INSTALL   \
 	NEWS      \
 	Makefile  \
-	README    \
+	README.md \
 	TODO      \
 	config.mk
 
