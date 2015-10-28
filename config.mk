@@ -77,8 +77,8 @@ endif
 # ----------------------------------------------------------------------
 # prepare the settings for the compiler
 
-LIBS += -lUnitTest++
-LDFLAGS += -L$(BUILDDIR)/$(BUILDSTYLE)/UnitTest++
+LIBS +=
+LDFLAGS +=
 
 CFLAGS += $(CBUILDFLAG) $(CWARNING) $(OS_FLAGS)
 CFLAGS += -I. -I$(top_srcdir)/build
@@ -121,5 +121,3 @@ pkg-name = $(PACKAGE)-$(VERSION)
 src-pkg-name = $(PACKAGE)-src-$(VERSION)
 pdf-doc-pkg-name = $(PACKAGE)-doc-pdf-$(VERSION)
 info-doc-pkg-name = $(PACKAGE)-doc-info-$(VERSION)
-
-

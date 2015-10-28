@@ -10,14 +10,6 @@
 
 //----------------------------------------------------------------------------
 
-
-#if defined(UNITTESTS)
-#  include <iostream>
-#  include <UnitTest++.h>
-#  include <TestReporterStdout.h>
-#  include <XmlTestReporter.h>
-#endif
-
 #include "apt.h"
 #include "common.h"
 #include "compiler.h"
@@ -34,15 +26,7 @@
 
 using namespace herschel;
 
-#if defined(UNITTESTS)
-static int runUnitTests();
-static String sUnitTestFormat;
-#endif
-
 enum CompileFunction {
-#if defined(UNITTESTS)
-  kRunUnitTests,
-#endif
   kParseFiles,
   kCompileFiles,
 };
@@ -82,8 +66,6 @@ main(int argc, char** argv)
     ("O;optimize", "Optimize code more")
     ("On;optimize-off", "Turn off any (even basic) optimization")
 #if defined(UNITTESTS)
-    ("U;run-unit-tests", "")
-    ("ut-format", "", cxxopts::value<std::string>())
     ("dont-import", "")
     ("parse-1", "")
     ("parse-2", "")
@@ -161,12 +143,6 @@ main(int argc, char** argv)
   }
 
 #if defined(UNITTESTS)
-  if (options.count("run-unit-tests")) {
-    func = kRunUnitTests;
-  }
-  if (options.count("ut-format")) {
-    sUnitTestFormat = String(options["ut-format"].as<std::string>());
-  }
   if (options.count("dont-import")) {
     Properties::test_setDontImport(true);
   }
@@ -190,11 +166,6 @@ main(int argc, char** argv)
   }
 
   switch (func) {
-#if defined(UNITTESTS)
-  case kRunUnitTests:
-    return runUnitTests();
-#endif
-
   case kParseFiles:
     parseFiles(files, outputFile);
     break;
@@ -221,30 +192,3 @@ herschel::setupDefaultPath()
       Properties::addSystemDir(*it);
   }
 }
-
-
-#if defined(UNITTESTS)
-static int
-runUnitTestsWithRunner(UnitTest::TestRunner& runner)
-{
-  return runner.RunTestsIf(UnitTest::Test::GetTestList(),
-                           NULL, UnitTest::True(), 0);
-}
-
-
-static int
-runUnitTests()
-{
-  // return UnitTest::RunAllTests();
-  if (sUnitTestFormat == String("xml")) {
-    UnitTest::XmlTestReporter reporter(std::cerr);
-    UnitTest::TestRunner runner(reporter);
-    return runUnitTestsWithRunner(runner);
-  }
-  else {
-    UnitTest::TestReporterStdout reporter;
-    UnitTest::TestRunner runner(reporter);
-    return runUnitTestsWithRunner(runner);
-  }
-}
-#endif

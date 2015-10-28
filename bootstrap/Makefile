@@ -10,6 +10,13 @@ top_srcdir=..
 include $(top_srcdir)/config.mk
 
 #------------------------------------------------------------------------------
+
+SUBDIRS = test
+
+ALL_SUBDIRS = test
+
+
+#------------------------------------------------------------------------------
 # libhrcommon - common library stuff
 #------------------------------------------------------------------------------
 
@@ -21,8 +28,7 @@ LIBHRCOMMON_SOURCES =  \
 	port.cpp             \
 	require.cpp          \
 	str.cpp              \
-	strbuf.cpp           \
-	valuesaver.cpp
+	strbuf.cpp
 
 LIBHRCOMMON_HEADERS =  \
 	common.h             \
@@ -60,23 +66,18 @@ COMMON_LIB = $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 
 
 #------------------------------------------------------------------------------
-# hrc - compiler
+# libhrc - compiler code
 #------------------------------------------------------------------------------
-
-# LLVM_CPPFLAGS = $(shell $(LLVM_EXE)/llvm-config --cppflags backend bitwriter)
-# LLVM_LDFLAGS = $(shell $(LLVM_EXE)/llvm-config --ldflags backend bitwriter)
-# LLVM_LIBS = $(shell $(LLVM_EXE)/llvm-config --libs backend bitwriter)
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src \
 	-I$(top_srcdir)/external/cxxopts/src \
-	-I$(top_srcdir)/external/UnitTest++/src \
 	$(LLVM_CPPFLAGS)
 
-HRC_LDFLAGS = $(LDFLAGS) $(LLVM_LDFLAGS)
+LIBHRC_LDFLAGS = $(LDFLAGS) $(LLVM_LDFLAGS)
 
-HRC_LIBS = $(LIBS) $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
+LIBHRC_LIBS = $(LIBS) $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 
-HRC_SOURCES =         \
+LIBHRC_SOURCES =         \
 	annotate.cpp        \
 	apt.cpp             \
 	codegen.cpp         \
@@ -93,8 +94,7 @@ HRC_SOURCES =         \
 	compilepass.cpp     \
 	compiler.cpp        \
 	externc.cpp         \
-	gdb.cpp              \
-	hrc.cpp             \
+	gdb.cpp             \
 	macro.cpp           \
 	numbers.cpp         \
 	parsertypes.cpp     \
@@ -117,10 +117,9 @@ HRC_SOURCES =         \
 	typeenum.cpp        \
 	typectx.cpp         \
 	typify.cpp          \
-  utils.cpp           \
 	xmlout.cpp
 
-HRC_HEADERS =         \
+LIBHRC_HEADERS =         \
 	annotate.h          \
 	apt.h               \
 	codegen.h           \
@@ -174,6 +173,45 @@ HRC_HEADERS =         \
 	typify.h            \
 	utils.h             \
 	xmlout.h
+
+
+ifeq ($(TARGET_OS),mac)
+# LIBHRC_HEADERS +=
+endif
+
+ifeq ($(TARGET_OS),linux)
+# LIBHRC_HEADERS +=
+endif
+
+ifeq ($(TARGET_OS),win)
+# LIBHRC_HEADERS +=
+endif
+
+LIBHRC_OBJS = $(LIBHRC_SOURCES:%.cpp=$(BUILDDIR)/$(BUILDSTYLE)/%$(OBJEXT))
+
+LIBHRC_LIB = $(BUILDDIR)/$(BUILDSTYLE)/libhrc$(LIBEXT)
+
+
+
+#------------------------------------------------------------------------------
+# hrc - compiler executable
+#------------------------------------------------------------------------------
+
+# LLVM_CPPFLAGS = $(shell $(LLVM_EXE)/llvm-config --cppflags backend bitwriter)
+# LLVM_LDFLAGS = $(shell $(LLVM_EXE)/llvm-config --ldflags backend bitwriter)
+# LLVM_LIBS = $(shell $(LLVM_EXE)/llvm-config --libs backend bitwriter)
+
+CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src \
+	-I$(top_srcdir)/external/cxxopts/src \
+	$(LLVM_CPPFLAGS)
+
+HRC_LDFLAGS = $(LDFLAGS) $(LLVM_LDFLAGS)
+
+HRC_LIBS = $(LIBS) $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
+
+HRC_SOURCES = hrc.cpp
+
+HRC_HEADERS =
 
 
 ifeq ($(TARGET_OS),mac)
@@ -231,7 +269,8 @@ HEADERS = $(HRC_HEADERS) $(LIBHRCOMMON_HEADERS) $(HERSCHEL_HEADERS)
 
 include $(top_srcdir)/build/pre.mk
 
-all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) COMMON_LIBX HRC_APPX HERSCHEL_APPX
+all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) \
+	COMMON_LIBX LIBHRC_LIBX HRC_APPX HERSCHEL_APPX
 
 
 #--------
@@ -242,9 +281,16 @@ $(COMMON_LIB): $(LIBHRCOMMON_OBJS)
 
 
 #--------
+LIBHRC_LIBX: $(LIBHRC_LIB)
+
+$(LIBHRC_LIB): $(LIBHRC_OBJS)
+	$(AR) cru $@ $^
+
+
+#--------
 HRC_APPX: $(HRC_APPBINARY)
 
-$(HRC_APPBINARY): $(HRC_OBJS) $(COMMON_LIB)
+$(HRC_APPBINARY): $(HRC_OBJS) $(COMMON_LIB) $(LIBHRC_LIB)
 	$(CXX) $(CXXFLAGS) $(HRC_LDFLAGS) -o $@ $^ $(HRC_LIBS) $(LLVM_LIBS)
 
 
@@ -260,7 +306,8 @@ DISTFILES = Makefile \
 	$(SOURCES) $(HEADERS)
 
 clean-local:
-	rm -f $(BUILDDIR)/$(BUILDSTYLE)/*$(OBJEXT) $(HRC_APPBINARY) $(COMMON_LIB)
+	rm -f $(BUILDDIR)/$(BUILDSTYLE)/*$(OBJEXT) $(HRC_APPBINARY)
+	rm -f $(HERSCHEL_APPBINARY) $(COMMON_LIB) $(LIBHRC_LIB)
 
 distclean-local: clean-local
 	-rm -rf $(DEPS_DIR) TAGS

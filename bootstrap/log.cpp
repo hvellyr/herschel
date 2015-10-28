@@ -37,30 +37,10 @@ LogSurpressor::~LogSurpressor()
 }
 
 
-#if defined(UNITTESTS)
-//----------------------------------------------------------------------------
-
-#include <UnitTest++.h>
-
-TEST(LogSurpressor)
+bool herschel::isSilent()
 {
-  CHECK(!sBeSilent);
-
-  {
-    LogSurpressor beSilent;
-    CHECK(sBeSilent);
-
-    {
-      LogSurpressor beSilent2;
-      CHECK(sBeSilent);
-    }
-    CHECK(sBeSilent);
-  }
-
-  CHECK(!sBeSilent);
+  return sBeSilent;
 }
-
-#endif  // #if defined(UNITTESTS)
 
 
 //------------------------------------------------------------------------------

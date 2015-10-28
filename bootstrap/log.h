@@ -36,6 +36,7 @@ namespace herschel
     bool fOldValue;
   };
 
+  bool isSilent();
 
   void log(const SrcPos& where, LogLevel level, const String& msg);
   void logf(const SrcPos& where, LogLevel level, const char* format, ...);

@@ -52,7 +52,7 @@ all-post: $(RUN_UNITTEST_TARGET)
 run-unittest:
 	@echo ""
 	@echo "**** Running unit tests **********"
-	$(BUILDDIR)/$(BUILDSTYLE)/hrc$(APPEXT) --run-unit-tests
+	$(BUILDDIR)/$(BUILDSTYLE)/bootstrap-test$(APPEXT)
 
 no-unittest-in-release:
 

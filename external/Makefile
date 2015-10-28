@@ -8,8 +8,6 @@ top_srcdir = ..
 
 include $(top_srcdir)/config.mk
 
-SUBDIRS = UnitTest++
-
 DISTFILES = \
 	Makefile
 
@@ -20,7 +18,7 @@ nop:
 all-local: nop
 
 dist-local:
-	for d in UnitTest++; do \
+	for d in catch cxxopts; do \
 		if [ ! -d "$(top_distdir)/build/$$d" ]; then \
 			echo "mkdir $(top_distdir)/build/$$d"; \
 			mkdir "$(top_distdir)/build/$$d" >/dev/null 2>&1; \
