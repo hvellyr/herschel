@@ -730,32 +730,32 @@ herschel::str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems)
     int len = 0;
 
     while (sp < end) {
-      int c = *sp++;
+      int c = *sp;
 
       if (!(c & 0x80)) {
         len++;
+        sp++;
       }
       else {
         if ((c & 0xE0) == 0xC0) {
           len++;
-          if (sp < end)
-            sp++;
-        }
-        else if ((c & 0xF0) == 0xE0) {
-          len += 2;
           sp += 2;
         }
-        else if ((c & 0xF8) == 0xF0) {
-          len += 3;
+        else if ((c & 0xF0) == 0xE0) {
+          len++;
           sp += 3;
         }
-        else if ((c & 0xFC) == 0xF8) {
-          len += 4;
+        else if ((c & 0xF8) == 0xF0) {
+          len++;
           sp += 4;
         }
-        else if ((c & 0xFE) == 0xFC) {
-          len += 5;
+        else if ((c & 0xFC) == 0xF8) {
+          len++;
           sp += 5;
+        }
+        else if ((c & 0xFE) == 0xFC) {
+          len++;
+          sp += 6;
         }
       }
     }

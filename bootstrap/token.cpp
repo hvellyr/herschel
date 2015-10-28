@@ -68,8 +68,8 @@ namespace herschel
     case kBraceClose:        return String("}");
     case kGenericOpen:       return String("<");
     case kGenericClose:      return String(">");
-    case kMacroOpen:         return String("\343\200\214");
-    case kMacroClose:        return String("\343\200\215");
+    case kMacroOpen:         return String("\343\200\214"); // U+300C
+    case kMacroClose:        return String("\343\200\215"); // U+300D
     case kComma:             return String(",");
     case kSemicolon:         return String(";");
     case kColon:             return String(":");
