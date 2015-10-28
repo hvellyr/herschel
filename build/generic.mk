@@ -25,26 +25,29 @@ distdir: $(DISTFILES)
 	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
 	mkdir $(distdir)
 	for file in $(DISTFILES); do \
-	  d=$(srcdir); \
-	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+		sd=$$(dirname $$file); \
+		test -d $(distdir)/$$sd \
+		|| mkdir $(distdir)/$$sd \
+		|| exit 1; \
+	  if test -d "$$file"; then \
+	    cp -pr $$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
-	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
-	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	    || ln $$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$file $(distdir)/$$file || :; \
 	  fi; \
 	done; \
 	for subdir in $(SUBDIRS); do \
-	  if test "$$subdir" = .; then :; else \
+	  if test "$$subdir" = "."; then :; else \
 	    test -d $(distdir)/$$subdir \
 	    || mkdir $(distdir)/$$subdir \
 	    || exit 1; \
 	    chmod 777 $(distdir)/$$subdir; \
 	    (cd $$subdir && $(MAKE) top_distdir=../$(distdir) \
-	 		 distdir=../$(distdir)/$$subdir distdir) \
+			 subdir=$$subdir \ distdir=../$(distdir)/$$subdir distdir) \
 	        || exit 1; \
 	    (cd $$subdir && $(MAKE) top_distdir=../$(distdir) \
-	 		 distdir=../$(distdir)/$$subdir dist-local) \
+	 		 subdir=$$subdir \ distdir=../$(distdir)/$$subdir dist-local) \
 	        || exit 1; \
 	  fi; \
 	done
