@@ -448,14 +448,15 @@ public:
   int m;
   std::vector<int> v;
   Abc() : m(42) { }
+  Abc(Abc&& other) : m(std::move(other.m)), v(std::move(other.v)) { }
 };
 
 int main(int argc, char** argv) {
-  Abc abc;
+  auto abc = Abc{};
   return abc.m - 42;
 }
 EOF
-  $CXX tmp.cpp 2>/dev/null
+  $CXX -std=c++11 tmp.cpp 2>/dev/null
   if test -f "./a.out"; then
     ./a.out >/dev/null
     echo "${ECHO_T}$CXX"
