@@ -21,9 +21,6 @@
 #include "strbuf.h"
 #include "tokenizer.h"
 
-#if defined(UNITTESTS)
-#  include <UnitTest++.h>
-#endif
 
 using namespace herschel;
 
