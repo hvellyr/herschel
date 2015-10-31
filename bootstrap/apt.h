@@ -141,7 +141,7 @@ namespace herschel
     virtual AptNode* transform(Transformator* annotator) = 0;
 
     //! Apply the \c Typifier pass to this node.
-    virtual void typify(Typifier* typifier) = 0;
+    virtual void typify(Typifier& typifier) = 0;
 
     //! Dump an xml output to stderr.
     virtual void dump() const;
@@ -260,7 +260,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -290,7 +290,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     //! Returns the (unicode) string value.
     const String& value() const;
@@ -315,7 +315,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     //! Returns the keyword value.
     const String& value() const;
@@ -381,7 +381,7 @@ namespace herschel
     virtual void annotate(Annotator* an);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   protected:
     String       fValue;
@@ -405,7 +405,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   private:
     Ptr<AptNode> fTypeNode;
@@ -429,7 +429,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -495,7 +495,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -513,7 +513,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -531,7 +531,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -548,7 +548,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     Char value() const;
 
@@ -570,7 +570,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     bool value() const;
 
@@ -593,7 +593,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     AptNode* value() const;
     void setValue(AptNode* node);
@@ -618,7 +618,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -648,7 +648,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -663,7 +663,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -727,7 +727,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   private:
     bool fIsLocal;
@@ -770,7 +770,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   private:
     String fKey;
@@ -793,7 +793,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     unsigned int flags() const;
     bool isAuto() const;
@@ -817,7 +817,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -835,7 +835,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -855,7 +855,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -883,7 +883,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   private:
     Ptr<AptNode> fLeft;
@@ -919,7 +919,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   private:
     Ptr<AptNode> fBase;
@@ -949,7 +949,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   private:
     Ptr<AptNode> fFrom;
@@ -980,7 +980,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   private:
     Ptr<AptNode> fLValue;
@@ -1003,7 +1003,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     AptNode* test() const;
     void setTest(AptNode* node);
@@ -1047,7 +1047,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     void addMapping(const NodeList& mappings, AptNode* consequent);
     void addMapping(AptNode* mapping, AptNode* consequent);
@@ -1101,7 +1101,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     void addMapping(const SrcPos& srcpos, const String& varName,
                     const Type& matchType,
@@ -1136,7 +1136,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     const String& key() const;
     AptNode* body() const;
@@ -1163,7 +1163,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
   };
 
 
@@ -1184,7 +1184,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     const Type& retType() const;
     void setRetType(const Type& type);
@@ -1233,7 +1233,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     bool isAppMain() const;
 
@@ -1264,7 +1264,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   private:
     Ptr<AptNode> fBase;
@@ -1286,7 +1286,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     const String& key() const;
     AptNode* value() const;
@@ -1312,7 +1312,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     AptNode* body() const;
     void setBody(AptNode* node);
@@ -1345,7 +1345,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
     const String& name() const;
     const Type& defType() const;
@@ -1388,7 +1388,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   private:
     Ptr<AptNode> fBase;
@@ -1413,7 +1413,7 @@ namespace herschel
     virtual void annotate(Annotator* annotator);
     virtual void traverse(Traversator* traversator);
     virtual AptNode* transform(Transformator* annotator);
-    virtual void typify(Typifier* typifier);
+    virtual void typify(Typifier& typifier);
 
   private:
     Ptr<AptNode> fBase;

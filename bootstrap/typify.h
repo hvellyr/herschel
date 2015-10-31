@@ -11,7 +11,6 @@
 #ifndef bootstrap_typify_h
 #define bootstrap_typify_h
 
-#include "refcountable.h"
 #include "ptr.h"
 #include "compilepass.h"
 
@@ -73,7 +72,7 @@ namespace herschel
   //! AptNode::typeConv() methods.  The main entry point is
   //! \c typifyRecursively().
 
-  class Typifier : public RefCountable
+  class Typifier
   {
   public:
     Typifier();

@@ -41,8 +41,8 @@ AptNode*
 TypifyPass::doApply(AptNode* src)
 {
   Ptr<AptNode> node = src;
-  Ptr<Typifier> ty = new Typifier;
-  ty->typifyRecursively(node);
+  auto ty = Typifier{};
+  ty.typifyRecursively(node);
   return node.release();
 }
 
@@ -69,7 +69,7 @@ Typifier::typifyRecursively(AptNode* node)
 void
 Typifier::typifyNode(AptNode* node)
 {
-  node->typify(this);
+  node->typify(*this);
 }
 
 

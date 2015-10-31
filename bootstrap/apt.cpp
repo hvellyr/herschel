@@ -354,9 +354,9 @@ _type::transform(Transformator* tr)             \
 
 #define DEF_TYPIFY(_type)                       \
 void                                            \
-_type::typify(Typifier* typifier)               \
+_type::typify(Typifier& typifier)               \
 {                                               \
-  typifier->typify(this);                       \
+  typifier.typify(this);                        \
 }
 
 
