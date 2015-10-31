@@ -13,9 +13,7 @@
 
 #include "common.h"
 
-#include "ptr.h"
 #include "exception.h"
-#include "refcountable.h"
 #include "srcpos.h"
 #include "str.h"
 #include "type.h"
@@ -157,7 +155,7 @@ namespace herschel
 
     //! register a unit \p unitName defined in terms of \p baseUnit, refering
     //! to the type \p baseType.  The unit \p unitName can be computed into \p
-    //! baseUnit by \p transformFunc.  If \p transformFunc is NULL this is a
+    //! baseUnit by \p transformFunc.  If \p transformFunc is nullptr this is a
     //! base unit.
     void registerUnit(const SrcPos& srcpos,
                       const String& unitName, const String& baseUnit,
@@ -219,7 +217,7 @@ namespace herschel
       kScopeItem_unit
     };
 
-    class ScopeItem : public RefCountable
+    class ScopeItem
     {
     public:
       ScopeItem(const SrcPos& srcpos)
@@ -240,11 +238,12 @@ namespace herschel
     };
 
   private:
-    void registerScopeItem(const ScopeName& name, ScopeItem* item);
+    void registerScopeItem(const ScopeName& name,
+                           std::shared_ptr<ScopeItem> item);
     struct LookupResult
     {
       LookupResult()
-        : fItem(NULL),
+        : fItem(nullptr),
           fInOuterFunc(false)
       { }
 
@@ -293,7 +292,7 @@ namespace herschel
 
     //-------- data members
 
-    typedef std::map<String, Ptr<ScopeItem> > BaseScopeMap;
+    using BaseScopeMap = std::map<String, std::shared_ptr<ScopeItem>>;
     typedef std::map<ScopeName, BaseScopeMap> NsScopeMap;
     using ImportedScope = std::map<String, std::shared_ptr<Scope>>;
     typedef std::set<String>                  AttachedSymbols;
