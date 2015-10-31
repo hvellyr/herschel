@@ -172,9 +172,9 @@ namespace herschel
     { }
 
 
-    virtual UnionTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new UnionTypeImpl(vectorClone(fTypes));
+      return std::make_shared<UnionTypeImpl>(vectorClone(fTypes));
     }
 
 
@@ -216,9 +216,9 @@ namespace herschel
       : GroupTypeImpl(types)
     { }
 
-    virtual SeqTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new SeqTypeImpl(vectorClone(fTypes));
+      return std::make_shared<SeqTypeImpl>(vectorClone(fTypes));
     }
 
 
@@ -261,9 +261,9 @@ namespace herschel
     { }
 
 
-    virtual FunctionTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new FunctionTypeImpl(fSign.clone());
+      return std::make_shared<FunctionTypeImpl>(fSign.clone());
     }
 
 
@@ -475,13 +475,13 @@ namespace herschel
     { }
 
 
-    virtual TypeTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new TypeTypeImpl(fName, fIsInstantiatable,
-                              vectorClone(fGenerics),
-                              fInherit.clone(),
-                              fApplySign.clone(),
-                              vectorClone(fSlots));
+      return std::make_shared<TypeTypeImpl>(fName, fIsInstantiatable,
+                                            vectorClone(fGenerics),
+                                            fInherit.clone(),
+                                            fApplySign.clone(),
+                                            vectorClone(fSlots));
     }
 
 
@@ -615,9 +615,11 @@ namespace herschel
     { }
 
 
-    virtual AliasTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new AliasTypeImpl(fName, vectorClone(fGenerics), fType.clone());
+      return std::make_shared<AliasTypeImpl>(fName,
+                                             vectorClone(fGenerics),
+                                             fType.clone());
     }
 
 
@@ -716,9 +718,10 @@ namespace herschel
     { }
 
 
-    virtual MeasureTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new MeasureTypeImpl(fName, fBaseType.clone(), fDefUnit);
+      return std::make_shared<MeasureTypeImpl>(fName, fBaseType.clone(),
+                                               fDefUnit);
     }
 
 
@@ -816,12 +819,12 @@ namespace herschel
     { }
 
 
-    virtual TypeRefTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new TypeRefTypeImpl(fName,
-                                 fIsOpen,
-                                 vectorClone(fGenerics),
-                                 vectorClone(fConstraints));
+      return std::make_shared<TypeRefTypeImpl>(fName,
+                                               fIsOpen,
+                                               vectorClone(fGenerics),
+                                               vectorClone(fConstraints));
     }
 
 
@@ -927,9 +930,9 @@ namespace herschel
     { }
 
 
-    virtual ArrayTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new ArrayTypeImpl(fBase.clone(), fSizeIndicator);
+      return std::make_shared<ArrayTypeImpl>(fBase.clone(), fSizeIndicator);
     }
 
 
@@ -1019,7 +1022,8 @@ Type::Type(const Type& other)
 }
 
 
-Type::Type(TypeKind kind, bool isValue, bool isImaginary, TypeImpl* impl)
+Type::Type(TypeKind kind, bool isValue, bool isImaginary,
+           std::shared_ptr<TypeImpl> impl)
   : fKind(kind),
     fIsValue(isValue),
     fIsImaginary(isImaginary),
@@ -1043,8 +1047,8 @@ Type::newTypeRef(const String& name, const TypeVector& genericArgs,
                  const TypeConstVector& constraints, bool isValue)
 {
   return Type(kType_Ref, isValue, !K(isImg),
-              new TypeRefTypeImpl(name, !K(isOpen), genericArgs,
-                                  constraints));
+              std::make_shared<TypeRefTypeImpl>(
+                name, !K(isOpen), genericArgs, constraints));
 }
 
 
@@ -1053,8 +1057,8 @@ Type::newTypeRef(const String& name, const TypeVector& genericArgs,
                  bool isValue)
 {
   return Type(kType_Ref, isValue, !K(isImg),
-              new TypeRefTypeImpl(name, !K(isOpen), genericArgs,
-                                  TypeConstVector()));
+              std::make_shared<TypeRefTypeImpl>(
+                name, !K(isOpen), genericArgs, TypeConstVector()));
 }
 
 
@@ -1064,8 +1068,8 @@ Type::newTypeRef(const String& name, bool isValue)
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
   return Type(kType_Ref, isValue, !K(isImg),
-              new TypeRefTypeImpl(name, !K(isOpen),
-                                  dummyGenerics, dummyConstraints));
+              std::make_shared<TypeRefTypeImpl>(
+                name, !K(isOpen), dummyGenerics, dummyConstraints));
 }
 
 
@@ -1082,8 +1086,8 @@ Type::newTypeRef(const String& name, bool isOpen,
 {
   TypeVector dummyGenerics;
   return Type(kType_Ref, isValue, !K(isImg),
-              new TypeRefTypeImpl(name, isOpen, dummyGenerics,
-                                  constraints));
+              std::make_shared<TypeRefTypeImpl>(
+                name, isOpen, dummyGenerics, constraints));
 }
 
 
@@ -1093,8 +1097,8 @@ Type::newTypeRef(const String& name, bool isOpen, bool isValue)
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
   return Type(kType_Ref, isValue, !K(isImg),
-              new TypeRefTypeImpl(name, isOpen, dummyGenerics,
-                                  dummyConstraints));
+              std::make_shared<TypeRefTypeImpl>(
+                name, isOpen, dummyGenerics, dummyConstraints));
 }
 
 
@@ -1104,10 +1108,11 @@ Type::newTypeRef(const String& name, const Type& old)
   hr_assert(old.isRef());
 
   return Type(kType_Ref, old.isValueType(), old.isImaginary(),
-              new TypeRefTypeImpl(name,
-                                  dynamic_cast<const TypeRefTypeImpl*>(old.fImpl.obj())->isOpenSelf(),
-                                  old.generics(),
-                                  old.constraints()));
+              std::make_shared<TypeRefTypeImpl>(
+                name,
+                std::dynamic_pointer_cast<TypeRefTypeImpl>(old.fImpl)->isOpenSelf(),
+                old.generics(),
+                old.constraints()));
 }
 
 
@@ -1122,7 +1127,7 @@ Type
 Type::newArray(const Type& base, int sizeIndicator, bool isValue)
 {
   return Type(kType_Array, isValue, !K(isImg),
-              new ArrayTypeImpl(base, sizeIndicator));
+              std::make_shared<ArrayTypeImpl>(base, sizeIndicator));
 }
 
 
@@ -1224,9 +1229,9 @@ Type::newType(const String& name, const TypeVector& generics,
               const Type& inherit)
 {
   return Type(kType_Type, K(isValue), !K(isImg),
-              new TypeTypeImpl(name, !K(isInstantiable), generics, inherit,
-                               FunctionSignature(),
-                               TypeSlotList()));
+              std::make_shared<TypeTypeImpl>(
+                name, !K(isInstantiable), generics, inherit,
+                FunctionSignature(), TypeSlotList()));
 }
 
 
@@ -1236,9 +1241,9 @@ Type::newClass(const String& name, const TypeVector& generics,
                const TypeSlotList& slots)
 {
   return Type(kType_Class, K(isValue), !K(isImg),
-              new TypeTypeImpl(name, K(isInstantiable),
-                               generics, inherit, applySign,
-                               slots));
+              std::make_shared<TypeTypeImpl>(
+                name, K(isInstantiable), generics, inherit, applySign,
+                slots));
 }
 
 
@@ -1247,7 +1252,7 @@ Type::newAlias(const String& name, const TypeVector& generics,
                const Type& isa)
 {
   return Type(kType_Alias, K(isValue), !K(isImg),
-              new AliasTypeImpl(name, generics, isa));
+              std::make_shared<AliasTypeImpl>(name, generics, isa));
 }
 
 
@@ -1256,7 +1261,7 @@ Type::newMeasure(const String& name, const Type& baseType,
                  const String& defUnit)
 {
   return Type(kType_Measure, K(isValue), !K(isImg),
-              new MeasureTypeImpl(name, baseType, defUnit));
+              std::make_shared<MeasureTypeImpl>(name, baseType, defUnit));
 }
 
 
@@ -1264,21 +1269,23 @@ Type
 Type::newFunction(const FunctionSignature& sign)
 {
   return Type(kType_Function, K(isValue), !K(isImg),
-              new FunctionTypeImpl(sign));
+              std::make_shared<FunctionTypeImpl>(sign));
 }
 
 
 Type
 Type::newUnion(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Union, isValue, !K(isImg), new UnionTypeImpl(types));
+  return Type(kType_Union, isValue, !K(isImg),
+              std::make_shared<UnionTypeImpl>(types));
 }
 
 
 Type
 Type::newSeq(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Sequence, isValue, !K(isImg), new SeqTypeImpl(types));
+  return Type(kType_Sequence, isValue, !K(isImg),
+              std::make_shared<SeqTypeImpl>(types));
 }
 
 
@@ -1286,7 +1293,7 @@ Type
 Type::clone() const
 {
   return Type(fKind, fIsValue, fIsImaginary,
-              (fImpl != NULL ? fImpl->clone() : NULL));
+              (fImpl != nullptr ? fImpl->clone() : nullptr));
 }
 
 
@@ -1304,7 +1311,7 @@ Type::operator==(const Type& other) const
     return false;
 
   hr_assert(fImpl != NULL);
-  return fImpl->isEqual(other.fImpl);
+  return fImpl->isEqual(other.fImpl.get());
 }
 
 
@@ -1676,18 +1683,18 @@ Type::typeName() const
     hr_invalid("");
 
   case kType_Ref:
-    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->name();
+    return std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->name();
 
   case kType_Array:
     return arrayBaseType().typeName();
   case kType_Class:
   case kType_Type:
-    return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->name();
+    return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->name();
   case kType_Alias:
-    return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->name();
+    return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->name();
 
   case kType_Measure:
-    return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name();
+    return std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->name();
   case kType_Union:
   case kType_Sequence:
   case kType_Function:
@@ -1709,7 +1716,7 @@ Type::typeId() const
 
   case kType_Ref:
     {
-      const TypeRefTypeImpl* tyimpl = dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj());
+      auto tyimpl = std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl);
       if (tyimpl->isOpenSelf())
         buffer << "'";
       if (fIsImaginary)
@@ -1732,7 +1739,7 @@ Type::typeId() const
   case kType_Class:
   case kType_Type:
     {
-      const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
+      auto tyimpl = std::dynamic_pointer_cast<TypeTypeImpl>(fImpl);
       if (fIsImaginary)
         buffer << "i<";
       buffer << tyimpl->name();
@@ -1744,23 +1751,23 @@ Type::typeId() const
     }
 
   case kType_Alias:
-    return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->name();
+    return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->name();
 
   case kType_Measure:
-    buffer << dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name()
-           << dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->defUnit();
+    buffer << std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->name()
+           << std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->defUnit();
     return buffer.toString();
 
   case kType_Union:
-    buffer << "&(" << dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->types() << ")";
+    buffer << "&(" << std::dynamic_pointer_cast<UnionTypeImpl>(fImpl)->types() << ")";
     return buffer.toString();
 
   case kType_Sequence:
-    buffer << "(" << dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->types() << ")";
+    buffer << "(" << std::dynamic_pointer_cast<SeqTypeImpl>(fImpl)->types() << ")";
     return buffer.toString();
 
   case kType_Function:
-    return dynamic_cast<const FunctionTypeImpl*>(fImpl.obj())->functionSignature().typeId();
+    return std::dynamic_pointer_cast<FunctionTypeImpl>(fImpl)->functionSignature().typeId();
   }
 
   return String();
@@ -1778,8 +1785,7 @@ const TypeSlotList&
 Type::slots() const
 {
   hr_assert(isClass());
-  const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
-  return tyimpl->slots();
+  return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->slots();
 }
 
 
@@ -1787,7 +1793,7 @@ Type
 Type::slotType(const String& slotName, Scope* scope) const
 {
   hr_assert(isClass());
-  const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
+  auto tyimpl = std::dynamic_pointer_cast<TypeTypeImpl>(fImpl);
   const TypeSlotList& slotList = tyimpl->slots();
 
   for (size_t i = 0; i < slotList.size(); i++) {
@@ -1825,7 +1831,7 @@ const Type&
 Type::typeInheritance() const
 {
   hr_assert(isType() || isClass());
-  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->inherit();
+  return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->inherit();
 }
 
 
@@ -1833,7 +1839,7 @@ const FunctionSignature&
 Type::applySignature() const
 {
   hr_assert(isClass());
-  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->applySignature();
+  return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->applySignature();
 }
 
 
@@ -1848,7 +1854,7 @@ const Type&
 Type::aliasReplaces() const
 {
   hr_assert(isAlias());
-  return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->inherit();
+  return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->inherit();
 }
 
 
@@ -1863,7 +1869,7 @@ const FunctionSignature&
 Type::functionSignature() const
 {
   hr_assert(isFunction());
-  return dynamic_cast<const FunctionTypeImpl*>(fImpl.obj())->functionSignature();
+  return std::dynamic_pointer_cast<FunctionTypeImpl>(fImpl)->functionSignature();
 }
 
 
@@ -1878,7 +1884,7 @@ const Type&
 Type::arrayBaseType() const
 {
   hr_assert(isArray());
-  return dynamic_cast<const ArrayTypeImpl*>(fImpl.obj())->baseType();
+  return std::dynamic_pointer_cast<ArrayTypeImpl>(fImpl)->baseType();
 }
 
 
@@ -1908,7 +1914,7 @@ int
 Type::arraySizeIndicator() const
 {
   hr_assert(isArray());
-  return dynamic_cast<const ArrayTypeImpl*>(fImpl.obj())->sizeIndicator();
+  return std::dynamic_pointer_cast<ArrayTypeImpl>(fImpl)->sizeIndicator();
 }
 
 
@@ -1923,7 +1929,7 @@ const TypeVector&
 Type::unionTypes() const
 {
   hr_assert(isUnion());
-  return dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->types();
+  return std::dynamic_pointer_cast<UnionTypeImpl>(fImpl)->types();
 }
 
 
@@ -1938,7 +1944,7 @@ const TypeVector&
 Type::seqTypes() const
 {
   hr_assert(isSequence());
-  return dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->types();
+  return std::dynamic_pointer_cast<SeqTypeImpl>(fImpl)->types();
 }
 
 
@@ -1946,9 +1952,9 @@ bool
 Type::containsType(const Type& type) const
 {
   if (isSequence())
-    return dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->containsType(type);
+    return std::dynamic_pointer_cast<SeqTypeImpl>(fImpl)->containsType(type);
   else if (isUnion())
-    return dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->containsType(type);
+    return std::dynamic_pointer_cast<UnionTypeImpl>(fImpl)->containsType(type);
 
   hr_invalid("no sequence or union type");
   return false;
@@ -1966,7 +1972,7 @@ const Type&
 Type::measureBaseType() const
 {
   hr_assert(isMeasure());
-  return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->inherit();
+  return std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->inherit();
 }
 
 
@@ -1974,7 +1980,7 @@ String
 Type::measureUnit() const
 {
   hr_assert(isMeasure());
-  return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->defUnit();
+  return std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->defUnit();
 }
 
 
@@ -1982,7 +1988,7 @@ bool
 Type::hasConstraints() const
 {
   if (fKind == kType_Ref)
-    return ( !dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())
+    return ( !std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)
              ->constraints().empty() );
 
   return false;
@@ -1993,7 +1999,7 @@ const TypeConstVector&
 Type::constraints() const
 {
   if (fKind == kType_Ref)
-    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->constraints();
+    return std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->constraints();
 
   static TypeConstVector dummy;
   return dummy;
@@ -2044,12 +2050,12 @@ Type::generics() const
   switch (fKind) {
   case kType_Undefined:
   case kType_Ref:
-    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->generics();
+    return std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->generics();
   case kType_Class:
   case kType_Type:
-    return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->generics();
+    return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->generics();
   case kType_Alias:
-    return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->generics();
+    return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->generics();
 
   case kType_Array:
   case kType_Function:
@@ -2069,7 +2075,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
   Type clonedTy;
   switch (fKind) {
   case kType_Ref:
-    if (dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->isOpen()) {
+    if (std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->isOpen()) {
       Type replacement = typeMap.lookupType(typeName());
       if (replacement.isDef()) {
         if (replacement.hasConstraints()) {
@@ -2307,9 +2313,10 @@ namespace herschel
     { }
 
 
-    virtual BaseTypeConstraintImpl* clone() const
+    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const
     {
-      return new LogicalConstraintImpl(fOp, fLeft.clone(), fRight.clone());
+      return std::make_shared<LogicalConstraintImpl>(fOp, fLeft.clone(),
+                                                     fRight.clone());
     }
 
 
@@ -2389,9 +2396,9 @@ namespace herschel
     { }
 
 
-    virtual BaseTypeConstraintImpl* clone() const
+    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const
     {
-      return const_cast<ValueConstraintImpl*>(this);
+      return std::make_shared<ValueConstraintImpl>(fOp, fValue);
     }
 
 
@@ -2468,9 +2475,9 @@ namespace herschel
     { }
 
 
-    virtual BaseTypeConstraintImpl* clone() const
+    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const
     {
-      return new TypeConstraintImpl(fOp, fType.clone());
+      return std::make_shared<TypeConstraintImpl>(fOp, fType.clone());
     }
 
 
@@ -2521,8 +2528,8 @@ namespace herschel
 
 //----------------------------------------------------------------------------
 
-TypeConstraint::TypeConstraint(BaseTypeConstraintImpl* impl)
-  : fImpl(impl)
+TypeConstraint::TypeConstraint(std::shared_ptr<BaseTypeConstraintImpl> impl)
+  : fImpl(std::move(impl))
 { }
 
 
@@ -2536,7 +2543,8 @@ TypeConstraint
 TypeConstraint::newAnd(const TypeConstraint& left,
                        const TypeConstraint& right)
 {
-  return new LogicalConstraintImpl(kConstOp_and, left, right);
+  return TypeConstraint(
+    std::make_shared<LogicalConstraintImpl>(kConstOp_and, left, right));
 }
 
 
@@ -2544,21 +2552,23 @@ TypeConstraint
 TypeConstraint::newOr(const TypeConstraint& left,
                       const TypeConstraint& right)
 {
-  return new LogicalConstraintImpl(kConstOp_or, left, right);
+  return TypeConstraint(
+    std::make_shared<LogicalConstraintImpl>(kConstOp_or, left, right));
 }
 
 
 TypeConstraint
 TypeConstraint::newValue(TypeConstOperator op, const Token& value)
 {
-  return new ValueConstraintImpl(op, value);
+  return TypeConstraint(
+    std::make_shared<ValueConstraintImpl>(op, value));
 }
 
 
 TypeConstraint
 TypeConstraint::newType(TypeConstOperator op, const Type& type)
 {
-  return new TypeConstraintImpl(op, type);
+  return TypeConstraint(std::make_shared<TypeConstraintImpl>(op, type));
 }
 
 
@@ -2574,7 +2584,7 @@ bool
 TypeConstraint::operator==(const TypeConstraint& other) const
 {
   if (constOp() == other.constOp())
-    return fImpl->isEqual(other.fImpl);
+    return fImpl->isEqual(other.fImpl.get());
   return false;
 }
 
@@ -2636,7 +2646,7 @@ Token
 TypeConstraint::constraintValue() const
 {
   hr_assert(isValueConstraint());
-  return dynamic_cast<ValueConstraintImpl*>(fImpl.obj())->token();
+  return std::dynamic_pointer_cast<ValueConstraintImpl>(fImpl)->token();
 }
 
 
@@ -2668,7 +2678,7 @@ const TypeConstraint&
 TypeConstraint::leftConstraint() const
 {
   hr_assert(isLogicalConstraint());
-  return dynamic_cast<const LogicalConstraintImpl*>(fImpl.obj())->left();
+  return std::dynamic_pointer_cast<LogicalConstraintImpl>(fImpl)->left();
 }
 
 
@@ -2676,7 +2686,7 @@ const TypeConstraint&
 TypeConstraint::rightConstraint() const
 {
   hr_assert(isLogicalConstraint());
-  return dynamic_cast<const LogicalConstraintImpl*>(fImpl.obj())->right();
+  return std::dynamic_pointer_cast<LogicalConstraintImpl>(fImpl)->right();
 }
 
 
@@ -2708,7 +2718,7 @@ Type
 TypeConstraint::typeConstraint() const
 {
   hr_assert(isTypeConstraint());
-  return dynamic_cast<TypeConstraintImpl*>(fImpl.obj())->type();
+  return std::dynamic_pointer_cast<TypeConstraintImpl>(fImpl)->type();
 }
 
 

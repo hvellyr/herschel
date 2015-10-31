@@ -13,12 +13,12 @@
 
 #include "common.h"
 
-#include <vector>
-#include <map>
-
 #include "token.h"
 #include "refcountable.h"
-#include "ptr.h"
+
+#include <vector>
+#include <map>
+#include <memory>
 
 
 namespace herschel
@@ -90,7 +90,7 @@ namespace herschel
   public:
     //! Make a deep copy of the receiver.  Note that even the base type Type
     //! must be cloned.
-    virtual TypeImpl* clone() const = 0;
+    virtual std::shared_ptr<TypeImpl> clone() const = 0;
 
     //! Indicates whether the receiver is equal to \p other.
     virtual bool isEqual(const TypeImpl* other) const = 0;
@@ -449,12 +449,13 @@ namespace herschel
     bool isBuiltinType(const String& name) const;
 
   private:
-    Type(TypeKind kind, bool isValue, bool isImaginary, TypeImpl* impl);
+    Type(TypeKind kind, bool isValue, bool isImaginary,
+         std::shared_ptr<TypeImpl> impl);
 
     TypeKind      fKind;
     bool          fIsValue;
     bool          fIsImaginary;
-    Ptr<TypeImpl> fImpl;
+    std::shared_ptr<TypeImpl> fImpl;
   };
 
 
@@ -531,7 +532,7 @@ namespace herschel
   class BaseTypeConstraintImpl : public RefCountable
   {
   public:
-    virtual BaseTypeConstraintImpl* clone() const = 0;
+    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const = 0;
     virtual bool isEqual(const BaseTypeConstraintImpl* other) const = 0;
     virtual TypeConstOperator constOp() const = 0;
     virtual void replaceGenerics(const TypeCtx& typeMap) = 0;
@@ -587,9 +588,9 @@ namespace herschel
     String toString() const;
 
   private:
-    TypeConstraint(BaseTypeConstraintImpl* impl);
+    TypeConstraint(std::shared_ptr<BaseTypeConstraintImpl> impl);
 
-    Ptr<BaseTypeConstraintImpl> fImpl;
+    std::shared_ptr<BaseTypeConstraintImpl> fImpl;
   };
 
 
