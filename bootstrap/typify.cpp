@@ -118,7 +118,7 @@ Typifier::isNodeCallToGenericFunction(const AptNode* node) const
         dynamic_cast<const FunctionNode*>(applyNode->scope()
                                           ->lookupFunction(applyNode->simpleCallName(),
                                                            K(showAmbiguousSymDef))) );
-      if (funcNode != NULL)
+      if (funcNode)
         return funcNode->hasSpecializedParams();
     }
   }
@@ -234,7 +234,7 @@ Typifier::typify(SymbolNode* node)
   if (fPhase == kTypify) {
     const AptNode* var = node->scope()->lookupVarOrFunc(node->name(),
                                                         K(showAmbiguousSymDef));
-    if (var != NULL) {
+    if (var) {
       if (const FuncDefNode* fdn = dynamic_cast<const FuncDefNode*>(var))
         node->setLinkage(fdn->linkage());
 
@@ -259,7 +259,7 @@ Typifier::typify(ArrayTypeNode* node)
     typifyNode(node->typeNode());
 
     SymbolNode* symnd = dynamic_cast<SymbolNode*>(node->typeNode());
-    Type type = ( symnd != NULL
+    Type type = ( symnd
                   ? symnd->type()
                   : node->typeNode()->type() );
     Type type1 = node->scope()->normalizeType(type);
@@ -307,7 +307,7 @@ Typifier::typify(LetNode* node)
 void
 Typifier::setupBindingNodeType(BindingNode* node, zstring errdesc)
 {
-  hr_assert(node->scope() != NULL);
+  hr_assert(node->scope());
 
   if (node->type().isDef() && node->type().isOpen())
     return;
@@ -325,7 +325,7 @@ Typifier::setupBindingNodeType(BindingNode* node, zstring errdesc)
            (zstring)StrHelper(typenm),
            errdesc);
     node->setType(Type::newAny());
-    if (node->initExpr() != NULL) {
+    if (node->initExpr()) {
       node->initExpr()->setDstType(Type::newAny());
       annotateTypeConv(node->initExpr(), node->type());
     }
@@ -338,7 +338,7 @@ Typifier::setupBindingNodeType(BindingNode* node, zstring errdesc)
     // }
     node->setType(bindty);
 
-    if (node->initExpr() != NULL) {
+    if (node->initExpr()) {
       if (bindty.isAny()) {
         // infer the vardef type from the init expression
         node->setType(node->initExpr()->type());
@@ -367,7 +367,7 @@ Typifier::setupBindingNodeType(BindingNode* node, zstring errdesc)
 void
 Typifier::typify(VardefNode* node)
 {
-  if (node->initExpr() != NULL)
+  if (node->initExpr())
     typifyNode(node->initExpr());
 
   if (fPhase == kTypify) {
@@ -386,7 +386,7 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
   FunctionParamVector params;
   for (size_t i = 0; i < node->params().size(); i++) {
     ParamNode* prmnd = dynamic_cast<ParamNode*>(node->params()[i].obj());
-    hr_assert(prmnd != NULL);
+    hr_assert(prmnd);
 
     if (prmnd->flags() == kPosArg) {
       params.push_back(FunctionParameter(FunctionParameter::kParamPos,
@@ -415,7 +415,7 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
 
   if (!node->retType().isDef() || node->retType().isAny()) {
     // try to infer the return type from the body's type
-    if (node->body() != NULL) {
+    if (node->body()) {
       node->setRetType(node->body()->type());
     }
     else {
@@ -457,11 +457,11 @@ namespace herschel
     virtual bool preApply(AptNode* node)
     {
       // don't dive into nested functions
-      if (dynamic_cast<FunctionNode*>(node) != NULL)
+      if (dynamic_cast<FunctionNode*>(node))
         return false;
 
       ApplyNode* apply = dynamic_cast<ApplyNode*>(node);
-      if (apply != NULL && apply->isSimpleCall() &&
+      if (apply && apply->isSimpleCall() &&
           apply->simpleCallName() == Names::kLangReturn)
         fReturns.push_back(apply);
       return true;
@@ -479,7 +479,7 @@ namespace herschel
 void
 Typifier::checkFunctionReturnType(FunctionNode* node)
 {
-  if (node->body() != NULL) {
+  if (node->body()) {
     if (!isContravariant(node->retType(), node->body()->type(),
                          *node->scope(), node->srcpos()) &&
         !containsAny(node->body()->type(), node->srcpos()))
@@ -509,7 +509,7 @@ void
 Typifier::typify(FuncDefNode* node)
 {
   typifyNodeList(node->params());
-  if (node->body() != NULL) {
+  if (node->body()) {
     typifyNode(node->body());
 
     if (fPhase == kTypify) {
@@ -533,7 +533,7 @@ Typifier::typify(FuncDefNode* node)
       node->setRetType(Type::newTypeRef(MID_Int32TypeName));
     }
 
-    if (node->body() != NULL) {
+    if (node->body()) {
       if (node->isMethod())
         enforceAtomTypeConv(node->body(), node->retType());
       else
@@ -548,11 +548,11 @@ Typifier::typify(FuncDefNode* node)
       // for methods check that the function signature matches the generic
       // function implementation.  The following conditions are checked in
       // annotate.cpp already.
-      const FuncDefNode* genericDef = NULL;
+      const FuncDefNode* genericDef = nullptr;
       const AptNode* var = node->scope()->lookupVarOrFunc(node->name(),
                                                           K(showAmbiguousSymDef));
-      if (var != NULL &&
-          (genericDef = dynamic_cast<const FuncDefNode*>(var)) != NULL &&
+      if (var &&
+          (genericDef = dynamic_cast<const FuncDefNode*>(var)) &&
           genericDef->isGeneric())
       {
         if (!isContravariant(genericDef->type(), node->type(),
@@ -576,7 +576,7 @@ void
 Typifier::typify(FunctionNode* node)
 {
   typifyNodeList(node->params());
-  if (node->body() != NULL) {
+  if (node->body()) {
     typifyNode(node->body());
 
     if (!node->body()->type().isDef())
@@ -585,7 +585,7 @@ Typifier::typify(FunctionNode* node)
 
   if (fPhase == kTypify) {
     setupFunctionNodeType(node);
-    if (node->body() != NULL)
+    if (node->body())
       annotateTypeConv(node->body(), node->retType());
   }
   else if (fPhase == kCheck)
@@ -613,11 +613,11 @@ Typifier::typify(BlockNode* node)
     // look whether we have a on-exit handler; try to infer its parameter
     for (size_t i = 0; i < node->children().size(); ++i) {
       OnNode* onnd = dynamic_cast<OnNode*>(node->children()[i].obj());
-      if (onnd != NULL && onnd->key() == Names::kExitKeyword) {
+      if (onnd && onnd->key() == Names::kExitKeyword) {
         hr_assert(!onnd->params().empty());
 
         ParamNode* firstPrm = dynamic_cast<ParamNode*>(onnd->params()[0].obj());
-        hr_assert(firstPrm != NULL);
+        hr_assert(firstPrm);
 
         if (firstPrm->type().isAny()) {
           // infer parameters type from block type
@@ -632,7 +632,7 @@ Typifier::typify(BlockNode* node)
   else if (fPhase == kCheck) {
     for (size_t i = 0; i < node->children().size(); ++i) {
       OnNode* onnd = dynamic_cast<OnNode*>(node->children()[i].obj());
-      if (onnd != NULL && onnd->key() == Names::kExitKeyword) {
+      if (onnd && onnd->key() == Names::kExitKeyword) {
         if (!isContravariant(node->type(), onnd->body()->type(),
                              *node->scope(), onnd->body()->srcpos()))
         {
@@ -648,7 +648,7 @@ Typifier::typify(BlockNode* node)
 void
 Typifier::typify(ParamNode* node)
 {
-  if (node->initExpr() != NULL)
+  if (node->initExpr())
     typifyNode(node->initExpr());
 
   if (fPhase == kTypify) {
@@ -707,17 +707,15 @@ Typifier::checkArgParamType(TypeCtx& localCtx,
 Typifier::KeyargReturn
 Typifier::findKeyedArg(const NodeList& args, size_t argidx, const String& key)
 {
-  KeyargReturn retval = { NULL, 0 };
+  auto retval = KeyargReturn{nullptr, 0};
 
   for (size_t i = argidx; i < args.size(); i++) {
-    const KeyargNode* keyarg = dynamic_cast<const KeyargNode*>(args[i].obj());
-    if (keyarg == NULL)
+    auto keyarg = dynamic_cast<const KeyargNode*>(args[i].obj());
+    if (!keyarg)
       return retval;
 
     if (keyarg->key() == key) {
-      retval.fKeyarg = keyarg;
-      retval.fIdx = i;
-      return retval;
+      return KeyargReturn{keyarg, i};
     }
   }
   return retval;
@@ -781,7 +779,7 @@ Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos,
   for (size_t i = 0; i < funcParams.size(); ++i) {
     const ParamNode* param = dynamic_cast<const ParamNode*>(funcParams[i].obj());
 
-    if (param != NULL) {
+    if (param) {
       if (param->flags() == kPosArg || param->flags() == kSpecArg) {
         AptNode* arg = args[argidx].obj();
 
@@ -794,11 +792,11 @@ Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos,
       }
       else if (param->flags() == kNamedArg) {
         Typifier::KeyargReturn keyval = findKeyedArg(args, argidx, param->key());
-        if (keyval.fKeyarg == NULL) {
+        if (!keyval.fKeyarg) {
           // if the function prototype has been parsed as interface, the init
           // expressions are not passed and therefore we don't need to check
           // them here.
-          if (param->initExpr() != NULL)
+          if (param->initExpr())
             checkArgParamType(localCtx, param, param->initExpr(), i);
         }
         else {
@@ -906,7 +904,7 @@ Typifier::typify(ApplyNode* node)
         dynamic_cast<const FunctionNode*>(node->scope()
                                           ->lookupFunction(node->simpleCallName(),
                                                            K(showAmbiguousSymDef))) );
-      if (funcNode != NULL) {
+      if (funcNode) {
         // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
         // out->render(const_cast<FunctionNode*>(funcNode));
         typifyMatchAndCheckParameters(node, funcNode);
@@ -949,12 +947,12 @@ Typifier::typify(AssignNode* node)
 
   if (node->isTypeSpecDelayed()) {
     SymbolNode* symNode = dynamic_cast<SymbolNode*>(node->lvalue());
-    hr_assert(symNode != NULL);
+    hr_assert(symNode);
 
     const AptNode* var = node->scope()->lookupVarOrFunc(symNode->name(),
                                                         K(showAmbiguousSymDef));
     VardefNode* vardefNode = const_cast<VardefNode*>(dynamic_cast<const VardefNode*>(var));
-    hr_assert(vardefNode != NULL);
+    hr_assert(vardefNode);
 
     symNode->setType(node->rvalue()->type());
     vardefNode->setType(node->rvalue()->type());
@@ -1051,7 +1049,7 @@ Typifier::checkBinaryFunctionCall(BinaryNode* node,
     node->scope()->lookupFunction(funcName,
                                   K(showAmbiguousSymDef)));
 
-  if (funcNode != NULL) {
+  if (funcNode) {
     // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
     // out->render(const_cast<FunctionNode*>(funcNode));
     Type type = typifyMatchAndCheckParameters(node->srcpos(),
@@ -1441,7 +1439,7 @@ Typifier::typify(IfNode* node)
     typifyNode(node->alternate());
 
   if (fPhase == kTypify) {
-    if (node->alternate() != NULL) {
+    if (node->alternate()) {
       Type cotype = node->consequent()->type();
       Type alttype = node->alternate()->type();
 
@@ -1515,7 +1513,7 @@ Typifier::typify(SelectNode* node)
 {
   // TODO
   typifyNode(node->test());
-  if (node->comparator() != NULL)
+  if (node->comparator())
     typifyNode(node->comparator());
 
   for (size_t i = 0; i < node->mappings().size(); i++) {
@@ -1545,7 +1543,7 @@ Typifier::typify(RangeNode* node)
 {
   typifyNode(node->from());
   typifyNode(node->to());
-  if (node->by() != NULL) {
+  if (node->by()) {
     typifyNode(node->by());
   }
 
@@ -1570,7 +1568,7 @@ Typifier::typify(RangeNode* node)
       return;
     }
 
-    if (node->by() != NULL) {
+    if (node->by()) {
       Type byType = node->by()->type();
       bool byIsOpen= byType.isOpen();
 
@@ -1676,7 +1674,7 @@ Typifier::typify(DictNode* node)
   NodeList& nl = node->children();
   for (size_t i = 0; i < nl.size(); i++) {
     BinaryNode* pair = dynamic_cast<BinaryNode*>(nl[i].obj());
-    hr_assert(pair != NULL);
+    hr_assert(pair);
     hr_assert(pair->op() == kOpMapTo);
 
     typifyNode(pair->left());
@@ -1693,7 +1691,7 @@ Typifier::typify(DictNode* node)
 
   for (size_t i = 0; i < nl.size(); i++) {
     BinaryNode* pair = dynamic_cast<BinaryNode*>(nl[i].obj());
-    hr_assert(pair != NULL);
+    hr_assert(pair);
     hr_assert(pair->op() == kOpMapTo);
     annotateTypeConv(pair->right(), valueType);
     annotateTypeConv(pair->left(), keyType);
@@ -1780,7 +1778,7 @@ namespace herschel
     else {
       if (maybeImaginary && ty.isAnyNumber()) {
         BaseNumberNode* nnd = dynamic_cast<BaseNumberNode*>(node);
-        if (nnd != NULL)
+        if (nnd)
           ty.setIsImaginary(nnd->isImaginary());
       }
       node->setType(ty);

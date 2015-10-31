@@ -53,7 +53,7 @@ CodegenTools::CodegenTools(CodeGenerator* generator)
 llvm::Value*
 CodegenTools::wrapLoad(llvm::Value* val)
 {
-  if (val != NULL) {
+  if (val) {
     if (llvm::AllocaInst::classof(val) ||
         llvm::GlobalValue::classof(val))
       return builder().CreateLoad(val);
@@ -140,7 +140,7 @@ CodegenTools::makeStringAtom(const String& str)
   String funcnm = String("h7_allocate_string");
 
   llvm::Function *allocFunc = module()->getFunction(llvm::StringRef(funcnm));
-  if (allocFunc == NULL) {
+  if (!allocFunc) {
     // void h7_allocate_array(ATOM* instance, Type* ty, size_t items);
     llvm::FunctionType *ft = llvm::FunctionType::get(
       llvm::Type::getVoidTy(context()),
@@ -158,7 +158,7 @@ CodegenTools::makeStringAtom(const String& str)
   llvm::AllocaInst* retv = tools()->createEntryBlockAlloca(curFunction,
                                                            String("string_retv"),
                                                            types()->getAtomType());
-  hr_assert(retv != NULL);
+  hr_assert(retv);
 
   std::vector<llvm::Value*> argv =
     std::vector<llvm::Value*>{retv,
@@ -379,10 +379,10 @@ CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) con
   zstring funcName = getConvFuncNameByType(dstType);
 
   llvm::Function* convFunc = module()->getFunction(llvm::StringRef(funcName));
-  if (convFunc == NULL) {
-    llvm::FunctionType *ft = llvm::FunctionType::get(getConvTypeByType(dstType),
-                                                     std::vector<llvm::Type*>{types()->getAtomType()},
-                                                     false);
+  if (!convFunc) {
+    auto ft = llvm::FunctionType::get(getConvTypeByType(dstType),
+                                      std::vector<llvm::Type*>{types()->getAtomType()},
+                                      false);
 
     convFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
@@ -494,7 +494,7 @@ CodegenTools::convertToPlainInt(llvm::Value* value,
     hr_invalid("");
   }
 
-  return NULL;
+  return nullptr;
 }
 
 

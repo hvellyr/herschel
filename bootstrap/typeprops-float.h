@@ -82,7 +82,7 @@ namespace herschel
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
       // TODO.  Float64 do not fit into the atom payload structure?
-      return NULL;
+      return nullptr;
     }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -105,7 +105,7 @@ namespace herschel
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
       // TODO.  Float128 do not fit into the atom payload structure
-      return NULL;
+      return nullptr;
     }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const

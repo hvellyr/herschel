@@ -91,14 +91,14 @@ namespace herschel
 
     virtual bool isValid() const { return false; }
 
-    virtual zstring convFuncName() const { return NULL; };
+    virtual zstring convFuncName() const { return nullptr; };
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools,
-                                      llvm::Value* value) const { return NULL; };
+                                      llvm::Value* value) const { return nullptr; };
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return NULL;
+      return nullptr;
     };
 
     virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const
@@ -119,7 +119,7 @@ namespace herschel
 
     virtual int  typeBitsize() const { return 0; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const { return NULL; }
+    virtual TypeEnumMaker* newBaseTypeEnumMaker() const { return nullptr; }
   };
 };                              // namespace
 

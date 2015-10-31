@@ -43,7 +43,7 @@ namespace herschel
       char path2[PATH_MAX];
       char *line, *result, *abspath;
       size_t buf_size;
-      FILE *stream = NULL;
+      FILE *stream = nullptr;
       int loop_level = 0;
       String retv;
 
@@ -109,7 +109,7 @@ namespace herschel
       abspath = strchr(line, '/');
 
       /* Sanity check. */
-      if (strstr(line, " r-xp ") == NULL || !abspath)
+      if (strstr(line, " r-xp ") == nullptr || !abspath)
         goto errhd;
 
       retv = String(abspath);

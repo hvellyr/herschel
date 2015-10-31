@@ -12,6 +12,12 @@
 
 #include "common.h"
 
+#include "str.h"
+#include "file.h"
+#include "log.h"
+#include "setup.h"
+#include "setup-unix.h"
+
 #include <stdlib.h>
 #include <string.h>
 #if defined(HAVE_LIMITS_H)
@@ -22,12 +28,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <unistd.h>
-
-#include "str.h"
-#include "file.h"
-#include "log.h"
-#include "setup.h"
-#include "setup-unix.h"
+#include <vector>
 
 
 using namespace herschel;
@@ -36,16 +37,12 @@ bool
 SetupUnix::exeFromDevpath(zstring /*exeName*/, const String& exedir,
                           Paths& paths) const
 {
-  static zstring possible_paths[] = {
-    "/temp/debug/",
-    "/temp/release/",
-    NULL
+  static std::vector<String> possible_paths = {
+    String("/temp/debug/"),
+    String("/temp/release/"),
   };
-  zstring* p = possible_paths;
 
-  for ( ; *p; p++) {
-    String subpath(*p);
-
+  for (const auto& subpath : possible_paths) {
     if (exedir.endsWith(subpath)) {
       String basepath = exedir.part(0, exedir.length() - subpath.length() + 1);
 
@@ -69,15 +66,11 @@ bool
 SetupUnix::exeFromRuntimeInstallation(zstring exeName, const String& exedir,
                                       Paths& paths) const
 {
-  static zstring possible_paths[] = {
-    "/bin/",
-    "/sbin/",
-    NULL
+  static std::vector<String> possible_paths = {
+    String("/bin/"),
+    String("/sbin/"),
   };
-  zstring* p = possible_paths;
-
-  for ( ; *p; p++) {
-    String subpath(*p);
+  for (const auto& subpath : possible_paths) {
     if (exedir.endsWith(subpath)) {
       String basepath = exedir.part(0, exedir.length() - subpath.length() + 1);
 

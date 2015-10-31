@@ -87,7 +87,7 @@ StringBuffer&
 StringBuffer::operator<<(zstring utf8)
 {
   int utf8len = ::strlen(utf8);
-  int reqlen = str_utf8_to_wcs(utf8, utf8len, NULL, 0);
+  int reqlen = str_utf8_to_wcs(utf8, utf8len, nullptr, 0);
 
   int endidx = fBuffer.size();
   fBuffer.insert(fBuffer.end(), reqlen, ' ');
@@ -164,7 +164,7 @@ StringBuffer&
 StringBuffer::insertAt(int atIndex, zstring utf8)
 {
   int utf8len = ::strlen(utf8);
-  int reqlen = str_utf8_to_wcs(utf8, utf8len, NULL, 0);
+  int reqlen = str_utf8_to_wcs(utf8, utf8len, nullptr, 0);
 
   if (reqlen > 0) {
     fBuffer.insert(fBuffer.begin() + atIndex, reqlen, ' ');

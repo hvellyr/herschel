@@ -75,21 +75,21 @@ FileTokenPort::setTokenizer(Tokenizer* tokenizer)
 bool
 FileTokenPort::isOpen() const
 {
-  return fTokenizer != NULL;
+  return fTokenizer;
 }
 
 
 bool
 FileTokenPort::isEof() const
 {
-  return !hasUnreadData() && (fTokenizer == NULL || fTokenizer->isEof());
+  return !hasUnreadData() && (!fTokenizer || fTokenizer->isEof());
 }
 
 
 Token
 FileTokenPort::read()
 {
-  if (fTokenizer == NULL)
+  if (!fTokenizer)
     throw PortNotOpenException();
 
   Token value;

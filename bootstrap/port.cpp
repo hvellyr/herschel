@@ -39,10 +39,10 @@ PortNotOpenException::PortNotOpenException()
 
 FilePort::FilePort(const String& fileName, zstring mode)
   : fOwnsStream(true),
-    fStream(NULL)
+    fStream(nullptr)
 {
   fStream = ::fopen((zstring)StrHelper(fileName), mode);
-  if (fStream == NULL)
+  if (!fStream)
     throw IOException(String("Could not open file '") + fileName + "'", errno);
 }
 
@@ -62,9 +62,9 @@ FilePort::~FilePort()
 void
 FilePort::close()
 {
-  if (fStream != NULL && fOwnsStream) {
+  if (fStream && fOwnsStream) {
     ::fclose(fStream);
-    fStream = NULL;
+    fStream = nullptr;
   }
 }
 
@@ -72,14 +72,14 @@ FilePort::close()
 bool
 FilePort::isOpen() const
 {
-  return fStream != NULL;
+  return fStream;
 }
 
 
 bool
 FilePort::isEof() const
 {
-  if (fStream == NULL)
+  if (!fStream)
     throw PortNotOpenException();
 
   return !hasUnreadData() && ::feof(fStream) != 0;
@@ -89,7 +89,7 @@ FilePort::isEof() const
 size_t
 FilePort::write(const Octet* data, size_t items)
 {
-  if (fStream == NULL)
+  if (!fStream)
     throw PortNotOpenException();
 
   resetUnreadBuffer();
@@ -104,7 +104,7 @@ FilePort::write(const Octet* data, size_t items)
 int
 FilePort::write(Octet byte)
 {
-  if (fStream == NULL)
+  if (!fStream)
     throw PortNotOpenException();
 
   resetUnreadBuffer();
@@ -119,7 +119,7 @@ FilePort::write(Octet byte)
 size_t
 FilePort::read(Octet* buffer, size_t items)
 {
-  if (fStream == NULL)
+  if (!fStream)
     throw PortNotOpenException();
 
   size_t retval = readFromUnreadBuffer(buffer, items);
@@ -139,7 +139,7 @@ FilePort::read(Octet* buffer, size_t items)
 Octet
 FilePort::read()
 {
-  if (fStream == NULL)
+  if (!fStream)
     throw PortNotOpenException();
 
   Octet value;
@@ -160,7 +160,7 @@ FilePort::read()
 void
 FilePort::flush()
 {
-  if (fStream == NULL)
+  if (!fStream)
     throw PortNotOpenException();
   resetUnreadBuffer();
   ::fflush(fStream);
@@ -177,7 +177,7 @@ FilePort::canSetCursor() const
 void
 FilePort::setCursor(size_t cursor)
 {
-  if (fStream == NULL)
+  if (!fStream)
     throw PortNotOpenException();
 
   resetUnreadBuffer();
@@ -190,7 +190,7 @@ FilePort::setCursor(size_t cursor)
 long
 FilePort::cursor()
 {
-  if (fStream == NULL)
+  if (!fStream)
     throw PortNotOpenException();
 
   long pos = ftell(fStream);
@@ -205,7 +205,7 @@ FilePort::cursor()
 DataPort::DataPort()
   : fPos(0),
     fOwnsData(true),
-    fData(NULL),
+    fData(nullptr),
     fLength(0),
     fAllocated(0)
 { }
@@ -223,9 +223,9 @@ DataPort::DataPort(const Octet* buffer, size_t items)
 
 DataPort::~DataPort()
 {
-  if (fOwnsData && fData != NULL) {
+  if (fOwnsData && fData) {
     ::free(fData);
-    fData = NULL;
+    fData = nullptr;
   }
 }
 
@@ -375,7 +375,7 @@ DataPort::length() const
 CharPort::CharPort(Port<Octet>* slave)
   : fSlave(slave)
 {
-  hr_assert(fSlave != NULL);
+  hr_assert(fSlave);
 }
 
 
@@ -398,7 +398,7 @@ CharPort::write(const Char* data, size_t items)
 {
   resetUnreadBuffer();
 
-  int clen = str_wcs_to_utf8(data, items, NULL, items * 6 + 1);
+  int clen = str_wcs_to_utf8(data, items, nullptr, items * 6 + 1);
   fEncBuffer.reserve(clen + 1);
   clen = str_wcs_to_utf8(data, items, &fEncBuffer[0], clen + 1);
   fSlave->write(&fEncBuffer[0], clen);
@@ -501,7 +501,7 @@ CharPort::cursor()
 void
 herschel::display(Port<Octet>* port, zstring value)
 {
-  if (value != NULL)
+  if (value)
     port->write((const Octet*)value, strlen(value));
   else
     port->write((const Octet*)"(null)", 6);

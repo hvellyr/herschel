@@ -34,7 +34,7 @@ namespace herschel
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
       hr_invalid("keywords are atoms always");
-      return NULL;
+      return nullptr;
     }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const

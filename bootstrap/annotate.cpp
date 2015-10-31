@@ -36,7 +36,7 @@ AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler* co
     fScope(std::move(scope)),
     fCompiler(compiler)
 {
-  hr_assert(fCompiler != NULL);
+  hr_assert(fCompiler);
 }
 
 
@@ -57,7 +57,7 @@ Annotator::Annotator(std::shared_ptr<Scope> scope, Compiler* compiler)
     fPhase(kRegister),
     fCompiler(compiler)
 {
-  hr_assert(fCompiler != NULL);
+  hr_assert(fCompiler);
 }
 
 
@@ -108,7 +108,7 @@ void
 Annotator::takeFullNameFromNode(SymbolNode* node, const AptNode* otherNode)
 {
   const NamedNode* nn = dynamic_cast<const NamedNode*>(otherNode);
-  if (nn != NULL) {
+  if (nn) {
     node->setName(nn->name());
     return;
   }
@@ -124,7 +124,7 @@ Annotator::updateAllocType(SymbolNode* usingNode, const AptNode* referedNode)
 {
   if (usingNode->scope()->isVarInOuterFunction(usingNode->name())) {
     const BindingNode* bindNode = dynamic_cast<const BindingNode*>(referedNode);
-    hr_assert(bindNode != NULL);
+    hr_assert(bindNode);
 
     const_cast<BindingNode*>(bindNode)->setAllocType(kAlloc_Shared);
     return true;
@@ -139,11 +139,11 @@ Annotator::annotate(SymbolNode* node)
   if (fPhase == kLookup) {
     const AptNode* var = node->scope()->lookupVarOrFunc(node->name(),
                                                         K(showAmbiguousSymDef));
-    if (var != NULL) {
+    if (var) {
       takeFullNameFromNode(node, var);
 
       const VardefNode* vardef = dynamic_cast<const VardefNode*>(var);
-      if (vardef != NULL) {
+      if (vardef) {
         bool isShared = updateAllocType(node, vardef);
         node->setRefersTo(vardef->isLocal() ? kLocalVar : kGlobalVar,
                           isShared);
@@ -167,11 +167,11 @@ Annotator::annotate(SymbolNode* node)
                                                                funcdef->clone());
         }
       }
-      else if (dynamic_cast<const ParamNode*>(var) != NULL) {
+      else if (dynamic_cast<const ParamNode*>(var)) {
         bool isShared = updateAllocType(node, var);
         node->setRefersTo(kParam, isShared);
       }
-      else if (dynamic_cast<const SlotdefNode*>(var) != NULL) {
+      else if (dynamic_cast<const SlotdefNode*>(var)) {
         bool isShared = updateAllocType(node, var);
         node->setRefersTo(kSlot, isShared);
       }
@@ -220,7 +220,7 @@ void
 Annotator::annotate(DefNode* node)
 {
   VardefNode* vardefNode = dynamic_cast<VardefNode*>(node->defNode());
-  if (vardefNode != NULL) {
+  if (vardefNode) {
     if (fPhase == kRegister)
       vardefNode->setScope(fScope);
     annotate(vardefNode, !K(isLocal));
@@ -228,7 +228,7 @@ Annotator::annotate(DefNode* node)
   }
 
   FuncDefNode* funcNode = dynamic_cast<FuncDefNode*>(node->defNode());
-  if (funcNode != NULL) {
+  if (funcNode) {
     if (fPhase == kRegister)
       funcNode->setScope(fScope);
     annotate(funcNode, !K(isLocal));
@@ -243,7 +243,7 @@ void
 Annotator::annotate(LetNode* node)
 {
   VardefNode* vardefNode = dynamic_cast<VardefNode*>(node->defNode());
-  if (vardefNode != NULL) {
+  if (vardefNode) {
     if (fPhase == kRegister)
       vardefNode->setScope(fScope);
     annotate(vardefNode, K(isLocal));
@@ -251,7 +251,7 @@ Annotator::annotate(LetNode* node)
   }
 
   FuncDefNode* funcNode = dynamic_cast<FuncDefNode*>(node->defNode());
-  if (funcNode != NULL) {
+  if (funcNode) {
     if (fPhase == kRegister)
       funcNode->setScope(fScope);
     annotate(funcNode, K(isLocal));
@@ -273,7 +273,7 @@ Annotator::annotate(VardefNode* node, bool isLocal)
     }
   }
 
-  if (node->initExpr() != NULL) {
+  if (node->initExpr()) {
     node->initExpr()->setIsSingleTypeRequired(true);
     annotateNode(node->initExpr());
   }
@@ -290,7 +290,7 @@ Annotator::annotate(FuncDefNode* node, bool isLocal)
     else if (node->isMethod()) {
       const AptNode* var = node->scope()->lookupVarOrFunc(node->name(),
                                                           K(showAmbiguousSymDef));
-      if (var == NULL) {
+      if (!var) {
         errorf(node->srcpos(), E_NoGenericFunction,
                "No generic function definition found for method");
       }
@@ -315,7 +315,7 @@ Annotator::annotate(FuncDefNode* node, bool isLocal)
                           kScopeL_Function);
 
   annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
-  if (node->body() != NULL) {
+  if (node->body()) {
     node->body()->setIsInTailPos(true);
     annotateNode(node->body());
   }
@@ -329,7 +329,7 @@ Annotator::annotate(FunctionNode* node)
                           kScopeL_Function);
 
   annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
-  if (node->body() != NULL) {
+  if (node->body()) {
     node->body()->setIsInTailPos(true);
     annotateNode(node->body());
   }
@@ -442,7 +442,7 @@ Annotator::annotate(ParamNode* node)
       fScope->registerVar(node->srcpos(), node->name(), node);
   }
 
-  if (node->initExpr() != NULL) {
+  if (node->initExpr()) {
     node->initExpr()->setIsSingleTypeRequired(true);
     annotateNode(node->initExpr());
   }
@@ -524,7 +524,7 @@ Annotator::annotate(SelectNode* node)
 {
   // TODO : set tail node position
   annotateNode(node->test());
-  if (node->comparator() != NULL)
+  if (node->comparator())
     annotateNode(node->comparator());
 
   for (size_t i = 0; i < node->mappingCount(); i++) {
@@ -558,7 +558,7 @@ Annotator::annotate(RangeNode* node)
   // TODO : set tail node position
   annotateNode(node->from());
   annotateNode(node->to());
-  if (node->by() != NULL)
+  if (node->by())
     annotateNode(node->by());
 }
 

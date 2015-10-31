@@ -270,7 +270,7 @@ ModuleRuntimeInitializer::emitModuleInitFunction()
 
   verifyFunction(*regFunc);
 
-  if (fGenerator->fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+  if (fGenerator->fOptPassManager && Properties::optimizeLevel() > kOptLevelNone)
     fGenerator->fOptPassManager->run(*regFunc);
 
   addGlobalCtor(regFunc, K_NO_PRIORITY);
@@ -389,11 +389,11 @@ void
 ModuleRuntimeInitializer::emitKeywordInitFunc()
 {
   llvm::Function* regFunc = module()->getFunction(llvm::StringRef("h7_keyword_register"));
-  if (regFunc == NULL) {
-    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(context()),
-                                                     std::vector<llvm::Type*>{
-                                                       llvm::Type::getInt8PtrTy(context())},
-                                                     !K(isVarArg));
+  if (!regFunc) {
+    auto ft = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(context()),
+                                      std::vector<llvm::Type*>{
+                                        llvm::Type::getInt8PtrTy(context())},
+                                      !K(isVarArg));
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
                                      llvm::Twine("h7_keyword_register"),
@@ -424,8 +424,8 @@ ModuleRuntimeInitializer::emitGlobalVarInitFunc()
 
     String varnm = herschel::mangleToC(varnode->name());
 
-    llvm::Value* initval = NULL;
-    if (varnode->initExpr() != NULL) {
+    llvm::Value* initval = nullptr;
+    if (varnode->initExpr()) {
       initval = fGenerator->codegenNode(varnode->initExpr());
     }
     else {
@@ -503,11 +503,11 @@ llvm::Value*
 ModuleRuntimeInitializer::makeTypeRegisterCall(llvm::Value* newType) const
 {
   llvm::Function* regFunc = module()->getFunction(llvm::StringRef("h7_register_type"));
-  if (regFunc == NULL) {
-    llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                     std::vector<llvm::Type*>{
-                                                       types()->getTypeType()},
-                                                     !K(isVarArg));
+  if (!regFunc) {
+    auto ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
+                                      std::vector<llvm::Type*>{
+                                        types()->getTypeType()},
+                                      !K(isVarArg));
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
                                      llvm::Twine("h7_register_type"),
@@ -622,8 +622,8 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
   const String& typeName = herschel::mangleToC(ty.typeId());
 
   llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("h7_class_alloc"));
-  if (allocFunc == NULL) {
-    llvm::FunctionType *ft = llvm::FunctionType::get(
+  if (!allocFunc) {
+    auto ft = llvm::FunctionType::get(
       types()->getTypeType(),
       std::vector<llvm::Type*>{ llvm::Type::getInt8PtrTy(context()), // typename
                                 llvm::Type::getInt32Ty(context()),   // instance size
@@ -657,7 +657,7 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
                              llvm::Twine(StrHelper(typeName + "_slot_specs")),
                              llvm::GlobalValue::NotThreadLocal,
                              0);
-  hr_assert(gv != NULL);
+  hr_assert(gv);
   module()->getGlobalList().push_back(gv);
 
   llvm::Value* v2 = builder().CreateConstGEP1_32(gv, 0);
@@ -695,7 +695,7 @@ ModuleRuntimeInitializer::makeTypeAllocCall(const Type& ty) const
   const String& typeName = herschel::mangleToC(ty.typeName());
 
   llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("h7_type_alloc"));
-  if (allocFunc == NULL) {
+  if (!allocFunc) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
       types()->getTypeType(),
       std::vector<llvm::Type*>{ llvm::Type::getInt8PtrTy(context()), // typename
@@ -757,7 +757,7 @@ ModuleRuntimeInitializer::makeGenericFuncRegisterCall(llvm::Value* newGF) const
 {
   llvm::Function* regFunc =
     module()->getFunction(llvm::StringRef("h7_register_generic_function"));
-  if (regFunc == NULL) {
+  if (!regFunc) {
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                                      std::vector<llvm::Type*>{types()->getGenericFuncType()},
                                                      !K(isVarArg));
@@ -778,7 +778,7 @@ ModuleRuntimeInitializer::makeGenericFuncAllocCall(const FuncDefNode* node) cons
   const String& funcName = herschel::mangleToC(node->name());
 
   llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("h7_generic_function_alloc"));
-  if (allocFunc == NULL) {
+  if (!allocFunc) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
       types()->getGenericFuncType(),
       std::vector<llvm::Type*>{ llvm::Type::getInt8PtrTy(context()), // typename,
@@ -815,7 +815,7 @@ void
 ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
 {
   llvm::Function* regFunc = module()->getFunction(llvm::StringRef("h7_register_method"));
-  if (regFunc == NULL) {
+  if (!regFunc) {
     llvm::FunctionType* ft = llvm::FunctionType::get(
       llvm::Type::getVoidTy(context()),
       std::vector<llvm::Type*>{ types()->getGenericFuncType(),       // GenericFunction*,
@@ -830,12 +830,12 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
   }
 
   llvm::Value* gfFuncCall = makeGetGenericFuncLookupCall(impl.fNode);
-  hr_assert(gfFuncCall != NULL);
+  hr_assert(gfFuncCall);
 
   llvm::Function* method = module()->getFunction(llvm::StringRef(StrHelper(impl.fMethodImplName)));
   // we should have registered the function before otherwise we wouldn't
   // had the name of the method in the list of methods to register.
-  hr_assert(method != NULL);
+  hr_assert(method);
 
   size_t countOfSpecs = impl.fNode->specializedParamsCount();
 
@@ -887,7 +887,7 @@ ModuleRuntimeInitializer::registerKeyword(const String& keyword)
                                llvm::Twine(varnm),
                                llvm::GlobalValue::NotThreadLocal,
                                0);    // AddressSpace
-    hr_assert(gv != NULL);
+    hr_assert(gv);
     module()->getGlobalList().push_back(gv);
 
     fKeywords.insert(std::make_pair(keyword, gv));
@@ -915,18 +915,18 @@ LazyCodeInitializingEmitter::emit()
                                                       llvm::Twine(gvNm),
                                                       llvm::GlobalVariable::NotThreadLocal,
                                                       0);    // AddressSpace
-  hr_assert(gv != NULL);
+  hr_assert(gv);
   fGenerator->module()->getGlobalList().push_back(gv);
 
 
   String funcName = herschel::mangleToC(entityGetterFunctionName());
   llvm::Function* typeFunc = fGenerator->module()->getFunction(llvm::StringRef(funcName));
 
-  if (typeFunc == NULL)
+  if (!typeFunc)
   {
-    llvm::FunctionType *ft = llvm::FunctionType::get(entityType(),
-                                                     std::vector<llvm::Type*>{},
-                                                     !K(isVarArg));
+    auto ft = llvm::FunctionType::get(entityType(),
+                                      std::vector<llvm::Type*>{},
+                                      !K(isVarArg));
     typeFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
                                       llvm::Twine(funcName),
@@ -988,7 +988,7 @@ LazyCodeInitializingEmitter::emit()
 
   verifyFunction(*typeFunc);
 
-  if (fGenerator->optPassManager() != NULL && Properties::optimizeLevel() > kOptLevelNone)
+  if (fGenerator->optPassManager() && Properties::optimizeLevel() > kOptLevelNone)
     fGenerator->optPassManager()->run(*typeFunc);
 }
 
@@ -1024,7 +1024,7 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
   String funcName = herschel::mangleToC(typeClassLookupFuncName);
   llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
 
-  if (typeFunc == NULL) {
+  if (!typeFunc) {
     llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getTypeType(),
                                                      std::vector<llvm::Type*>{},
                                                      !K(isVarArg));
@@ -1040,7 +1040,7 @@ CodeGenerator::makeGetBaseTypeLookupCall(const Type& ty) const
     llvm::Function* lookupTypeFunc =
       fModule->getFunction(llvm::StringRef(String("h7_lookup_derived_type")));
 
-    if (lookupTypeFunc == NULL) {
+    if (!lookupTypeFunc) {
       llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getTypeType(),
                                                        std::vector<llvm::Type*>{
                                                          fTypes->getTypeType(),
@@ -1074,10 +1074,10 @@ CodeGenerator::makeGetArrayTypeLookupCall(const Type& ty) const
   String funcName = String("h7_type_lookup_array_type");
   llvm::Function* typeFunc = fModule->getFunction(llvm::StringRef(funcName));
 
-  if (typeFunc == NULL) {
-    llvm::FunctionType* ft = llvm::FunctionType::get(fTypes->getTypeType(),
-                                                     std::vector<llvm::Type*>{ fTypes->getTypeType() },
-                                                     !K(isVarArg));
+  if (!typeFunc) {
+    auto ft = llvm::FunctionType::get(fTypes->getTypeType(),
+                                      std::vector<llvm::Type*>{ fTypes->getTypeType() },
+                                      !K(isVarArg));
     typeFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
                                       llvm::Twine(funcName),
@@ -1108,11 +1108,11 @@ CodeGenerator::makeGetGenericFuncLookupCall(const FuncDefNode* node) const
   String funcName = herschel::mangleToC(gfLookupFuncName);
   llvm::Function* gfFunc = module()->getFunction(llvm::StringRef(funcName));
 
-  if (gfFunc == NULL)
+  if (!gfFunc)
   {
-    llvm::FunctionType *ft = llvm::FunctionType::get(fTypes->getGenericFuncType(),
-                                                     std::vector<llvm::Type*>{},
-                                                     !K(isVarArg));
+    auto ft = llvm::FunctionType::get(fTypes->getGenericFuncType(),
+                                      std::vector<llvm::Type*>{},
+                                      !K(isVarArg));
 
     gfFunc = llvm::Function::Create(ft,
                                     llvm::Function::ExternalLinkage,
@@ -1137,20 +1137,19 @@ CodeGenerator::createDefaultCMainFunc()
                                   ->getPointerTo()
                                   ->getPointerTo() },
       false);
-  hr_assert(ft != NULL);
+  hr_assert(ft);
 
-  llvm::Function *func = llvm::Function::Create(ft,
-                                                llvm::Function::ExternalLinkage,
-                                                std::string("main"),
-                                                fModule);
+  auto func = llvm::Function::Create(ft,
+                                     llvm::Function::ExternalLinkage,
+                                     std::string("main"),
+                                     fModule);
 
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(),
-                                                  "entry", func);
+  auto bb = llvm::BasicBlock::Create(context(), "entry", func);
   fBuilder.SetInsertPoint(bb);
 
   String appMainFuncNm = herschel::mangleToC(Names::kAppMain);
-  llvm::Function* appMainFunc = fModule->getFunction(llvm::StringRef(appMainFuncNm));
-  hr_assert(appMainFunc != NULL);
+  auto appMainFunc = fModule->getFunction(llvm::StringRef(appMainFuncNm));
+  hr_assert(appMainFunc);
 
   llvm::AllocaInst* retv = fTools->createEntryBlockAlloca(func, String("tmp2"),
                                                           llvm::Type::getInt32Ty(context()));
@@ -1161,6 +1160,6 @@ CodeGenerator::createDefaultCMainFunc()
 
   verifyFunction(*func);
 
-  if (fOptPassManager != NULL && Properties::optimizeLevel() > kOptLevelNone)
+  if (fOptPassManager && Properties::optimizeLevel() > kOptLevelNone)
     fOptPassManager->run(*func);
 }

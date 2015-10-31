@@ -14,14 +14,15 @@
 
 #include <Windows.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
-
 #include "str.h"
 #include "file.h"
 #include "log.h"
 #include "setup.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <vector>
 
 
 using namespace herschel;
@@ -33,7 +34,7 @@ namespace herschel
   getExeLocation()
   {
     char buf[MAX_PATH];
-    DWORD len = ::GetModuleFileName(NULL, buf, sizeof(buf));
+    DWORD len = ::GetModuleFileName(nullptr, buf, sizeof(buf));
     hr_assert(len > 0 && "GetModuleFileName failed");
 
     return file::canonicalPathName(String(buf));
@@ -44,15 +45,12 @@ namespace herschel
   exeFromDevpath(zstring exeName, const String& exedir,
                  String& syspath, String& binpath)
   {
-    static zstring possible_paths[] = {
-      "/temp/debug/",
-      "/temp/release/",
-      NULL
+    static std::vector<String> possible_paths = {
+      String("/temp/debug/"),
+      String("/temp/release/"),
     };
-    zstring* p = possible_paths;
-
-    for ( ; *p; p++) {
-      String fullpath = String(*p) + exeName + ".exe";
+    for (const auto& p : possible_paths) {
+      String fullpath = p + exeName + ".exe";
       if (exedir.endsWith(fullpath)) {
         binpath = exedir.part(0, exedir.length() - (strlen(exeName) + 4));
         syspath = exedir.part(0, exedir.length() - fullpath.length() + 1);

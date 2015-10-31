@@ -89,7 +89,7 @@ CodegenFuncDef::createFunctionSignature(const FunctionNode* node, bool inlineRet
 {
   std::vector<llvm::Type*> sign;
 
-  llvm::Type* llvmRetty = NULL;
+  llvm::Type* llvmRetty = nullptr;
   if (isGeneric) {
     sign.push_back(types()->getAtomType()->getPointerTo());
     llvmRetty = llvm::Type::getVoidTy(context());
@@ -148,7 +148,7 @@ CodegenFuncDef::createFunction(const FuncDefNode* node,
   String funcnm = makeFunctionName(node, methodNameSuffix);
 
   llvm::Function* func = module()->getFunction(llvm::StringRef(funcnm));
-  if (func != NULL)
+  if (func)
     logf(kError, "Redefinition of method: %s", (zstring)StrHelper(funcnm));
 
   Type retty;
@@ -161,7 +161,7 @@ CodegenFuncDef::createFunction(const FuncDefNode* node,
 
   p.fType = createFunctionSignature(node, inlineRetv,
                                     p.fRetType, isGeneric);
-  hr_assert(p.fType != NULL);
+  hr_assert(p.fType);
 
   p.fFunc = llvm::Function::Create(p.fType,
                                    llvm::Function::ExternalLinkage,
@@ -221,13 +221,13 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
   }
 
   llvm::Value* gf = fGenerator->makeGetGenericFuncLookupCall(node);
-  hr_assert(gf != NULL);
+  hr_assert(gf);
 
   lookupArgv.insert(lookupArgv.begin(), gf);
 
   String lookupFuncName = String("h7_lookup_func") + fromInt(specArgCount);
   llvm::Function* lookupFunc = module()->getFunction(llvm::StringRef(lookupFuncName));
-  if (lookupFunc == NULL) {
+  if (!lookupFunc) {
     // Method* m = h7_lookup_func*(gf, ty0);
     std::vector<llvm::Type*> sign;
     sign.push_back(types()->getGenericFuncType());
@@ -246,8 +246,8 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
   }
 
   llvm::CallInst* method = builder().CreateCall(lookupFunc, lookupArgv);
-  if (method == NULL)
-    return NULL;
+  if (!method)
+    return nullptr;
 
   // the function pointer in the Method* structure is the third member
   llvm::Value* realFuncPtr = builder().CreateLoad(
@@ -277,7 +277,7 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
 
   verifyFunction(*func.fFunc);
 
-  if (fGenerator->fOptPassManager != NULL &&
+  if (fGenerator->fOptPassManager &&
       Properties::optimizeLevel() > kOptLevelNone)
     fGenerator->fOptPassManager->run(*func.fFunc);
 
@@ -320,7 +320,7 @@ CodegenFuncDef::compileAbstractFuncDef(const FuncDefNode* node) const
 
   FuncPair func = createFunction(node, String(), node->isGeneric());
 
-  hr_assert(node->body() == NULL);
+  hr_assert(!node->body());
 
   return func.fFunc;
 }
@@ -346,7 +346,7 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
   // fprintf(stderr, "In function def: %s\n", (zstring)StrHelper(node->name()));
   hr_assert(!node->isAbstract());
 
-  if (node->body() != NULL) {
+  if (node->body()) {
     llvm::Function::arg_iterator aiter = func.fFunc->arg_begin();
     llvm::Function::arg_iterator aiter_e = func.fFunc->arg_end();
 
@@ -374,15 +374,15 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
     }
 
     const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->body());
-    llvm::Value* retv = NULL;
-    if (blockNode != NULL)
+    llvm::Value* retv = nullptr;
+    if (blockNode)
       retv = fGenerator->codegen(blockNode->children());
     else
       retv = fGenerator->codegenNode(node->body());
-    hr_assert(retv != NULL);
+    hr_assert(retv);
 
-    if (retv == NULL)
-      return NULL;
+    if (!retv)
+      return nullptr;
 
     if (!node->hasCLinkage()) {
       if (node->isAppMain()) {
@@ -440,7 +440,7 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
 
     verifyFunction(*func.fFunc);
 
-    if (fGenerator->fOptPassManager != NULL &&
+    if (fGenerator->fOptPassManager &&
         Properties::optimizeLevel() > kOptLevelNone)
       fGenerator->fOptPassManager->run(*func.fFunc);
 

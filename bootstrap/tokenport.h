@@ -39,9 +39,9 @@ namespace herschel
   {
   public:
     FileTokenPort(Port<Octet>* port, const String& srcName,
-                  CharRegistry* charRegistry = NULL);
+                  CharRegistry* charRegistry = nullptr);
     FileTokenPort(Port<Char>* port, const String& srcName,
-                  CharRegistry* charRegistry = NULL);
+                  CharRegistry* charRegistry = nullptr);
 
     virtual bool isOpen() const;
     virtual bool isEof() const;

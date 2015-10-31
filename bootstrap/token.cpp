@@ -721,7 +721,7 @@ Token::operator<(const Token& other) const
     case kSeq:
     case kNested:
     case kLit:
-      hr_assert(fImpl != NULL);
+      hr_assert(fImpl);
       return fImpl->operator<(other);
       break;
     case kId:
@@ -822,7 +822,7 @@ Token::toString() const
   case kSeq:
   case kNested:
   case kLit:
-    hr_assert(fImpl != NULL);
+    hr_assert(fImpl);
     return fImpl->toString();
 
   case kId:
@@ -1003,21 +1003,21 @@ Token::isEmpty() const
 bool
 Token::isSeq() const
 {
-  return fType == kSeqExpr && fImpl != NULL;
+  return fType == kSeqExpr && fImpl;
 }
 
 
 bool
 Token::isNested() const
 {
-  return fType == kNestedExpr && fImpl != NULL;
+  return fType == kNestedExpr && fImpl;
 }
 
 
 bool
 Token::isLit() const
 {
-  return type() == kLit && fImpl != NULL;
+  return type() == kLit && fImpl;
 }
 
 
@@ -1026,7 +1026,7 @@ Token::isNumber() const
 {
   return ( (fType == kInt || fType == kUInt ||
             fType == kFloat || fType == kRational)
-           && fImpl != NULL );
+           && fImpl );
 }
 
 
@@ -1071,7 +1071,7 @@ Token::children() const
   switch (type()) {
   case kSeq:
   case kNested:
-    hr_assert(fImpl != NULL);
+    hr_assert(fImpl);
     return dynamic_cast<const SeqTokenImpl*>(fImpl.obj())->fChildren;
 
   default:
@@ -1086,7 +1086,7 @@ Token::children()
   switch (type()) {
   case kSeq:
   case kNested:
-    hr_assert(fImpl != NULL);
+    hr_assert(fImpl);
     unshare();
     return dynamic_cast<SeqTokenImpl*>(fImpl.obj())->fChildren;
 
@@ -1100,7 +1100,7 @@ void
 Token::unshare()
 {
   // Write barrier
-  if (fImpl != NULL && fImpl->refCount() > 1)
+  if (fImpl && fImpl->refCount() > 1)
     fImpl = fImpl->unshare();
 }
 
@@ -1534,7 +1534,7 @@ Token::toPort(Port<Octet>* port) const
   case kSeq:
   case kNested:
   case kLit:
-    hr_assert(fImpl != NULL);
+    hr_assert(fImpl);
     fImpl->toPort(port);
     break;
   case kId:
@@ -1763,7 +1763,7 @@ herschel::operatorName(OperatorType type)
     hr_invalid("");
   }
 
-  return NULL;
+  return nullptr;
 }
 
 

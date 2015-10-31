@@ -90,7 +90,7 @@ CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
   zstring slotFuncName = "h7_instance_slot";
 
   llvm::Function *slotFunc = module()->getFunction(llvm::StringRef(slotFuncName));
-  if (slotFunc == NULL) {
+  if (!slotFunc) {
     // void* h7_instance_slot(ATOM* instance, zstring slot_name);
     llvm::FunctionType *ft = llvm::FunctionType::get(
       llvm::Type::getInt8PtrTy(context()),
@@ -110,12 +110,12 @@ CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
                               node->base()->typeConv(),
                               val,
                               node->base()->type());
-  if (val == NULL)
-    return NULL;
+  if (!val)
+    return nullptr;
   llvm::Value* keywgv = initializer()->registerKeyword(node->slotName());
   llvm::Value* keyw = builder().CreateLoad(keywgv);
 
-  hr_assert(slotFunc != NULL);
+  hr_assert(slotFunc);
   return builder().CreateCall(slotFunc, std::vector<llvm::Value*>{ val, keyw});
 }
 

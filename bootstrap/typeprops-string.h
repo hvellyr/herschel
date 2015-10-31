@@ -29,12 +29,12 @@ namespace herschel
   public:
     StringTypeProperty() {}
 
-    virtual zstring convFuncName() const { return NULL; }
+    virtual zstring convFuncName() const { return nullptr; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
       hr_invalid("strings are always atoms");
-      return NULL;
+      return nullptr;
     }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -63,7 +63,7 @@ namespace herschel
 
     virtual TypeEnumMaker* newBaseTypeEnumMaker() const
     {
-      return NULL;
+      return nullptr;
     }
   };
 };                              // namespace

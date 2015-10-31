@@ -123,7 +123,7 @@ Transformator::transform(LetNode* node)
 AptNode*
 Transformator::transform(VardefNode* node)
 {
-  if (node->initExpr() != NULL)
+  if (node->initExpr())
     node->setInitExpr(transformNode(node->initExpr()));
   return node;
 }
@@ -133,7 +133,7 @@ AptNode*
 Transformator::transform(FuncDefNode* node)
 {
   transformNodeList(node->params());
-  if (node->body() != NULL) {
+  if (node->body()) {
     node->setBody(transformNode(node->body()));
   }
   return node;
@@ -172,7 +172,7 @@ Transformator::findBlockSplitIndex(const NodeList& nodes)
 
   for (size_t i = 0; i < nodes.size(); i++) {
     const LetNode* letnd = dynamic_cast<const LetNode*>(nodes[i].obj());
-    if (letnd != NULL) {
+    if (letnd) {
       switch (mode) {
       case kMode_begin:
         mode = kMode_let;
@@ -188,7 +188,7 @@ Transformator::findBlockSplitIndex(const NodeList& nodes)
     }
     else {
       const OnNode* onnd = dynamic_cast<const OnNode*>(nodes[i].obj());
-      if (onnd != NULL) {
+      if (onnd) {
         switch (mode) {
         case kMode_begin:
         case kMode_let:
@@ -234,9 +234,9 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
            "orphaned 'on exit' handler parameter");
   hr_assert(onnd->params().size() == 1);
   ParamNode* onPrmNode = dynamic_cast<ParamNode*>(onnd->params()[0].obj());
-  hr_assert(onPrmNode != NULL);
+  hr_assert(onPrmNode);
 
-  Ptr<AptNode> initExpr = ( onPrmNode->initExpr() != NULL
+  Ptr<AptNode> initExpr = ( onPrmNode->initExpr()
                             ? onPrmNode->initExpr()
                             : new SymbolNode(onPrmNode->srcpos(),
                                              String("lang|unspecified")) );
@@ -261,7 +261,7 @@ Transformator::transform(BlockNode* node)
   const NodeList& nodes = node->children();
   if (nodes.size() == 1) {
     OnNode* onnd = dynamic_cast<OnNode*>(nodes[0].obj());
-    if (onnd != NULL) {
+    if (onnd) {
       if (onnd->key() == Names::kSignalKeyword) {
         // if a block contains a single "on signal" node we can drop the
         // complete block, since there's no code in the scope which could
@@ -269,7 +269,7 @@ Transformator::transform(BlockNode* node)
         // warning though.
         warningf(onnd->srcpos(), E_UnreachableCode,
                  "unreachable code in orphaned 'on signal' handler");
-        return NULL;
+        return nullptr;
       }
       else if (onnd->key() == Names::kExitKeyword) {
         transformSingleOnExitBlock(node, onnd);
@@ -296,7 +296,7 @@ Transformator::transform(BlockNode* node)
 AptNode*
 Transformator::transform(ParamNode* node)
 {
-  if (node->initExpr() != NULL)
+  if (node->initExpr())
     node->setInitExpr(transformNode(node->initExpr()));
   return node;
 }
@@ -379,7 +379,7 @@ Transformator::transform(MatchNode* node)
   for (size_t i = 0; i < node->mappingCount(); i++) {
     if (node->mappingAt(i).fMatchType.isAny())
     {
-      if (elseAlternate != NULL) {
+      if (elseAlternate) {
         errorf(node->mappingAt(i).fSrcPos, E_MatchAmbiguousType,
                "redefinition of catch-all lang|Any branch in match");
         errorf(elseAlternate->srcpos(), E_MatchAmbiguousType,
@@ -398,8 +398,8 @@ Transformator::transform(MatchNode* node)
 
       Ptr<IfNode> newIf = new IfNode(node->mappingAt(i).fSrcPos,
                                      isaCall,
-                                     node->mappingAt(i).fConsequent, NULL);
-      if (lastIf != NULL) {
+                                     node->mappingAt(i).fConsequent, nullptr);
+      if (lastIf) {
         lastIf->setAlternate(newIf);
         lastIf = newIf;
       }
@@ -408,17 +408,17 @@ Transformator::transform(MatchNode* node)
     }
   }
 
-  if (elseAlternate == NULL)
+  if (!elseAlternate)
     elseAlternate = new SymbolNode(node->srcpos(),
                                    Names::kLangUnspecified);
 
-  if (lastIf != NULL)
+  if (lastIf)
     lastIf->setAlternate(elseAlternate);
   else
     rootIf = elseAlternate;
 
-  lastIf = NULL;
-  elseAlternate = NULL;
+  lastIf = nullptr;
+  elseAlternate = nullptr;
 
   return rootIf.release();
 }
@@ -428,7 +428,7 @@ AptNode*
 Transformator::transform(SelectNode* node)
 {
   node->setTest(transformNode(node->test()));
-  if (node->comparator() != NULL)
+  if (node->comparator())
     node->setComparator(transformNode(node->comparator()));
 
   for (size_t i = 0; i < node->mappingCount(); i++) {
@@ -459,7 +459,7 @@ Transformator::transform(RangeNode* node)
 {
   node->setFrom(transformNode(node->from()));
   node->setTo(transformNode(node->to()));
-  if (node->by() != NULL)
+  if (node->by())
     node->setBy(transformNode(node->by()));
   return node;
 }

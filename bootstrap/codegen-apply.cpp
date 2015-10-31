@@ -75,7 +75,7 @@ CodegenApply::emitTypeNameForAllocate(const AptNode* node) const
   else {
     // llvm::Value* val = wrapLoad(codegenNode(args[i]));
     hr_invalid("todo");
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -90,10 +90,10 @@ CodegenApply::lazyDeclareExternFunction(const String& funcnm) const
   //fprintf(stderr, "op: %s %p\n", (zstring)StrHelper(funcnm), node);
 
   const FuncDefNode* funcdef = dynamic_cast<const FuncDefNode*>(node);
-  if (funcdef != NULL)
+  if (funcdef)
     return CodegenFuncDef(generator()).emitExternFuncDef(funcdef);
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -110,21 +110,21 @@ CodegenApply::emitFunctionCall(const SrcPos& srcpos,
                                bool alwaysPassAtom) const
 {
   llvm::Function *calleeFunc = module()->getFunction(llvm::StringRef(mangledFuncnm));
-  if (calleeFunc == NULL) {
+  if (!calleeFunc) {
     calleeFunc = lazyDeclareExternFunction(clearFuncnm);
-    if (calleeFunc == NULL) {
+    if (!calleeFunc) {
       errorf(srcpos, 0, "Unknown function referenced: %s",
              (zstring)StrHelper(clearFuncnm));
-      return NULL;
+      return nullptr;
     }
   }
 
   if (calleeFunc->arg_size() != args.size() + (inlineRetv ? 1 : 0)) {
     errorf(srcpos, 0, "Incorrect # arguments passed");
-    return NULL;
+    return nullptr;
   }
 
-  llvm::AllocaInst* retv = NULL;
+  llvm::AllocaInst* retv = nullptr;
   llvm::Function* curFunction = builder().GetInsertBlock()->getParent();
   llvm::Type* returnType = ( alwaysPassAtom
                              ? types()->getAtomType()
@@ -143,8 +143,8 @@ CodegenApply::emitFunctionCall(const SrcPos& srcpos,
     val = tools()->emitPackCode(args[i]->dstType(), args[i]->typeConv(),
                                 val, args[i]->type());
 
-    if (val == NULL)
-      return NULL;
+    if (!val)
+      return nullptr;
 
     argv.push_back(tools()->wrapLoad(val));
   }
@@ -183,7 +183,7 @@ CodegenApply::emit(const ApplyNode* node) const
   bool alwaysPassAtom = false;
 
   const SymbolNode* symNode = dynamic_cast<const SymbolNode*>(node->base());
-  if (symNode != NULL) {
+  if (symNode) {
     hr_assert(symNode->refersTo() == kFunction || symNode->refersTo() == kGeneric);
 
     String funcnm;
@@ -240,7 +240,7 @@ CodegenApply::emit(const ApplyNode* node) const
   else {
     // TODO
     hr_invalid("apply(!symbol) -> TODO");
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -257,7 +257,7 @@ CodegenApply::emitAllocateApply(const ApplyNode* node) const
   const NodeList& args = node->children();
   if (args.size() != 1) {
     errorf(node->srcpos(), 0, "Incorrect # arguments passed");
-    return NULL;
+    return nullptr;
   }
 
   return emitAllocateApplyImpl(args[0]);
@@ -270,7 +270,7 @@ CodegenApply::emitAllocateApplyImpl(const AptNode* typeNode) const
   String funcnm = String("h7_allocate");
 
   llvm::Function *allocFunc = module()->getFunction(llvm::StringRef(funcnm));
-  if (allocFunc == NULL) {
+  if (!allocFunc) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
       llvm::Type::getVoidTy(context()),
       std::vector<llvm::Type*>{ types()->getAtomType()->getPointerTo(),
@@ -287,14 +287,14 @@ CodegenApply::emitAllocateApplyImpl(const AptNode* typeNode) const
   llvm::AllocaInst* retv = tools()->createEntryBlockAlloca(curFunction,
                                                            String("local_retv"),
                                                            types()->getAtomType());
-  hr_assert(retv != NULL);
+  hr_assert(retv);
   argv.push_back(retv);
 
   llvm::Value* val = emitTypeNameForAllocate(typeNode);
-  hr_assert(val != NULL);
+  hr_assert(val);
   argv.push_back(val);
 
-  hr_assert(allocFunc != NULL);
+  hr_assert(allocFunc);
   builder().CreateCall(allocFunc, argv);
 
   // TODO: if in tail position enforce ATOM return type?
@@ -310,7 +310,7 @@ CodegenApply::emitIsaApply(const ApplyNode* applyNode) const
   String funcnm = String("h7_instance_isa");
 
   llvm::Function *isaFunc = module()->getFunction(llvm::StringRef(funcnm));
-  if (isaFunc == NULL) {
+  if (!isaFunc) {
     // int h7_instance_isa(ATOM, Type*)
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getInt1Ty(context()),
                                                      std::vector<llvm::Type*>{
@@ -330,14 +330,14 @@ CodegenApply::emitIsaApply(const ApplyNode* applyNode) const
   llvm::Value* baseExpr = tools()->wrapLoad(generator()->codegenNode(args[0]));
   baseExpr = tools()->emitPackCode(args[0]->dstType(), args[0]->typeConv(),
                                    baseExpr, args[0]->type());
-  hr_assert(baseExpr != NULL);
+  hr_assert(baseExpr);
   argv.push_back(baseExpr);
 
   llvm::Value* tyExpr = emitTypeNameForAllocate(args[1]);
-  hr_assert(tyExpr != NULL);
+  hr_assert(tyExpr);
   argv.push_back(tyExpr);
 
-  hr_assert(isaFunc != NULL);
+  hr_assert(isaFunc);
   // TODO: if in tail position enforce ATOM return type?
   return builder().CreateCall(isaFunc, argv);
 }
@@ -360,7 +360,7 @@ CodegenApply::convertToPlainInt(const Type& dstType,
     hr_invalid("");
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -370,8 +370,8 @@ CodegenApply::emitToCharApply(const ApplyNode* applyNode) const
   const NodeList& args = applyNode->children();
 
   llvm::Value *val = tools()->wrapLoad(generator()->codegenNode(args[0]));
-  if (val == NULL)
-    return NULL;
+  if (!val)
+    return nullptr;
 
   return tools()->emitPackCode(applyNode->dstType(),
                                kTypeCheckConv,
@@ -447,7 +447,7 @@ public:
   {
     const NodeList& args = node->children();
     llvm::Value* val = fApply->emitTypeNameForAllocate(args[0]);
-    hr_assert(val != NULL);
+    hr_assert(val);
     return val;
   }
 
@@ -501,7 +501,7 @@ public:
     llvm::Type* ptrType = fApply->types()->getType(arrayBaseType)->getPointerTo();
     llvm::Value* ptrAddr = fApply->builder().CreatePointerCast(arrayAccces.fAddr, ptrType);
 
-    llvm::Value* initVal = ( explicitInitValue != NULL
+    llvm::Value* initVal = ( explicitInitValue
                              ? explicitInitValue
                              : fApply->builder().CreateLoad(initValue(node)) );
     fApply->builder().CreateStore(initVal, ptrAddr);
@@ -645,7 +645,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   String funcnm = strategy->allocateFuncName();
 
   llvm::Function *allocFunc = module()->getFunction(llvm::StringRef(funcnm));
-  if (allocFunc == NULL) {
+  if (!allocFunc) {
     // void h7_allocate_array(ATOM* instance, Type* ty, size_t items);
 
     std::vector<llvm::Type*> sign = strategy->allocateFuncSignature();
@@ -665,17 +665,17 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
                                                            String("local_retv"),
                                                            types()->getAtomType());
 
-  hr_assert(retv != NULL);
+  hr_assert(retv);
   argv.push_back(retv);
 
-  const SymbolNode* typeNode = NULL;
-  const AptNode* sizeNode = NULL;
-  llvm::Value* initValue = NULL;
+  const SymbolNode* typeNode = nullptr;
+  const AptNode* sizeNode = nullptr;
+  llvm::Value* initValue = nullptr;
 
   const NodeList& args = node->children();
   if (args.size() == 2) {
     typeNode = dynamic_cast<const SymbolNode*>(args[0].obj());
-    hr_assert(typeNode != NULL);
+    hr_assert(typeNode);
 
     sizeNode = args[1];
     if (strategy->passInitValueToAllocateCall())
@@ -683,10 +683,10 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   }
   else if (args.size() == 3) {
     typeNode = dynamic_cast<const SymbolNode*>(args[0].obj());
-    hr_assert(typeNode != NULL);
+    hr_assert(typeNode);
 
     const KeyargNode* valueParam = dynamic_cast<const KeyargNode*>(args[1].obj());
-    hr_assert(valueParam != NULL);
+    hr_assert(valueParam);
     hr_assert(valueParam->key() == String("value"));
 
     const AptNode* valueNode = valueParam->value();
@@ -699,11 +699,11 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
                                       initValue, valueParam->type());
 
     sizeNode = args[2];
-    hr_assert(sizeNode != NULL);
+    hr_assert(sizeNode);
   }
   else {
     errorf(node->srcpos(), 0, "Incorrect # arguments passed");
-    return NULL;
+    return nullptr;
   }
 
   // arg1: tag id / type
@@ -714,7 +714,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
     argv.push_back(initValue);
 
   // arg 3: the element count
-  llvm::Value* elementCountValue = NULL;
+  llvm::Value* elementCountValue = nullptr;
   if (const IntNode* intNode = dynamic_cast<const IntNode*>(sizeNode)) {
     elementCountValue = tools()->emitSizeTValue(intNode->value());
   }
@@ -731,10 +731,10 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
                                                 !K(isSigned));
   }
 
-  hr_assert(elementCountValue != NULL);
+  hr_assert(elementCountValue);
   argv.push_back(elementCountValue);
 
-  hr_assert(allocFunc != NULL);
+  hr_assert(allocFunc);
   builder().CreateCall(allocFunc, argv);
 
   llvm::Value* retv2 = strategy->postInit(node,

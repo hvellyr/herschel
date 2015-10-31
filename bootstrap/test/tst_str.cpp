@@ -145,7 +145,7 @@ TEST_CASE("String convert to utf8", "[string]")
 {
   String t("hello, world!");
   char tmp[128];
-  REQUIRE(t.toUtf8(NULL, 128) == 13);
+  REQUIRE(t.toUtf8(nullptr, 128) == 13);
   REQUIRE(t.toUtf8(tmp, 128) == 13);
   REQUIRE(tmp[13] == '\0');
   REQUIRE(strcmp(tmp, "hello, world!") == 0);
@@ -156,7 +156,7 @@ TEST_CASE("String convert to utf8 limit", "[string]")
 {
   String t("hello, world!");
   char tmp[128];
-  REQUIRE(t.toUtf8(NULL, 6) == 5);
+  REQUIRE(t.toUtf8(nullptr, 6) == 5);
   REQUIRE(t.toUtf8(tmp, 6) == 5);
   REQUIRE(tmp[5] == '\0');
   REQUIRE(strcmp(tmp, "hello") == 0);
@@ -167,7 +167,7 @@ TEST_CASE("String convert empty string to utf8", "[string]")
 {
   String t;
   char tmp[128];
-  REQUIRE(t.toUtf8(NULL, 128) == 0);
+  REQUIRE(t.toUtf8(nullptr, 128) == 0);
   REQUIRE(t.toUtf8(tmp, 128) == 0);
   REQUIRE(tmp[0] == '\0');
   REQUIRE(strcmp(tmp, "") == 0);
@@ -267,7 +267,7 @@ TEST_CASE("Macro specifier", "[string][macros]")
     String t("\343\200\214");
     char tmp[128];
 
-    REQUIRE(t.toUtf8(NULL, 6) == 3);
+    REQUIRE(t.toUtf8(nullptr, 6) == 3);
     REQUIRE(t.toUtf8(tmp, 6) == 3);
     REQUIRE(t[0] == 0x300C);
   }
@@ -277,7 +277,7 @@ TEST_CASE("Macro specifier", "[string][macros]")
     String t("\343\200\215");
     char tmp[128];
 
-    REQUIRE(t.toUtf8(NULL, 6) == 3);
+    REQUIRE(t.toUtf8(nullptr, 6) == 3);
     REQUIRE(t.toUtf8(tmp, 6) == 3);
     REQUIRE(t[0] == 0x300D);
   }

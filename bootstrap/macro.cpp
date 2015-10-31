@@ -46,7 +46,7 @@ SyntaxTreeNode::findNode(const Token& token) const
     if (it != fNodes.end())
       return it->second.obj();
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -64,7 +64,7 @@ SyntaxTreeNode::findMacroParam(Token* macroParam) const
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -148,7 +148,7 @@ SyntaxTable::findPattern(const String& name) const
   PatternMap::const_iterator it = fItems.find(name);
   if (it != fItems.end())
     return it->second.obj();
-  return NULL;
+  return nullptr;
 }
 
 void
@@ -174,14 +174,14 @@ SyntaxTable::mixinPatternPart(SyntaxTreeNode* patternTree,
   {
     Token patternToken = *srcit;
     Ptr<SyntaxTreeNode> step = node->findNode(patternToken);
-    if (step == NULL) {
+    if (!step) {
       step = new SyntaxTreeNode();
       node->setNode(patternToken, step);
     }
     node = step;
   }
 
-  hr_assert(node != NULL);
+  hr_assert(node);
   node->setEndNode(rplcmnt);
 }
 
@@ -192,7 +192,7 @@ SyntaxTable::mixinPattern(const String& macroName,
                           const TokenVector& rplcmnt)
 {
   SyntaxTreeNode* patternTree = findPattern(macroName);
-  if (patternTree == NULL) {
+  if (!patternTree) {
     patternTree = new SyntaxTreeNode();
     setPattern(macroName, patternTree);
   }

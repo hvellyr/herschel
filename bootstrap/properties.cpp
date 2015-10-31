@@ -243,7 +243,7 @@ Properties::setConfigVar(const String& keyValuePair)
     idx = keyValuePair.split(':', key, value);
 
   if (idx >= 0) {
-    if (sConfigVarRegistry == NULL)
+    if (!sConfigVarRegistry)
       sConfigVarRegistry = new ConfigVarRegistry;
     sConfigVarRegistry->registerValue(key, Token(SrcPos("<commandline>", 0),
                                                  kString, value));
@@ -256,7 +256,7 @@ Properties::setConfigVar(const String& keyValuePair)
 ConfigVarRegistry*
 Properties::globalConfigVarRegistry()
 {
-  if (sConfigVarRegistry == NULL)
+  if (!sConfigVarRegistry)
     sConfigVarRegistry = new ConfigVarRegistry;
   return sConfigVarRegistry;
 }

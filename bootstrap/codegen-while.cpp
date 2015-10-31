@@ -71,8 +71,8 @@ CodegenWhile::emit(const WhileNode* node) const
 
   llvm::Value *testValue =
     tools()->wrapLoad(generator()->codegenNode(node->test()));
-  if (testValue == NULL)
-    return NULL;
+  if (!testValue)
+    return nullptr;
 
   llvm::Value* extrTestVal = tools()->emitPackCode(node->test()->dstType(),
                                                    node->test()->typeConv(),
@@ -91,8 +91,8 @@ CodegenWhile::emit(const WhileNode* node) const
   builder().SetInsertPoint(loopBB);
 
   llvm::Value* bodyValue = generator()->codegenNode(node->body());
-  if (bodyValue == NULL)
-    return NULL;
+  if (!bodyValue)
+    return nullptr;
 
   // jump back to loop start
   builder().CreateBr(loopHeadBB);

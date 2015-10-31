@@ -63,11 +63,11 @@ CodegenVardef::emit(const VardefNode* node, bool isLocal) const
 llvm::Value*
 CodegenVardef::codegenForLocalVars(const VardefNode* node) const
 {
-  llvm::Value* initval = NULL;
+  llvm::Value* initval = nullptr;
   Type dstType;
   Type type;
   TypeConvKind convKind = kNoConv;
-  if (node->initExpr() != NULL) {
+  if (node->initExpr()) {
     if (dynamic_cast<UndefNode*>(node->initExpr())) {
       initval = llvm::Constant::getNullValue(types()->getType(node->type()));
 
@@ -122,7 +122,7 @@ CodegenVardef::codegenForGlobalVars(const VardefNode* node) const
                              llvm::Twine(varnm),
                              llvm::GlobalVariable::NotThreadLocal,
                              0);    // AddressSpace
-  hr_assert(gv != NULL);
+  hr_assert(gv);
   module()->getGlobalList().push_back(gv);
 
   initializer()->addGlobalVariable(node);

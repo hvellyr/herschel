@@ -56,7 +56,7 @@ Token2AptNodeCompilePass::apply(const Token& src, bool doTrace)
 
   if (doPass) {
     Ptr<AptNode> n = doApply(src);
-    if (doTrace && Properties::isTracePass(passLevel()) && n != NULL) {
+    if (doTrace && Properties::isTracePass(passLevel()) && n) {
       Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
       out->render(n);
     }
@@ -64,7 +64,7 @@ Token2AptNodeCompilePass::apply(const Token& src, bool doTrace)
     return n.release();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -80,7 +80,7 @@ AptNodeCompilePass::apply(AptNode* src, bool doTrace)
   if (doPass) {
     n = doApply(n);
 
-    if (doTrace && Properties::isTracePass(passLevel()) && n != NULL) {
+    if (doTrace && Properties::isTracePass(passLevel()) && n) {
       Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout),
                                              fShowNodeType);
       out->render(n);

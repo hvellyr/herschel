@@ -71,32 +71,32 @@ CodegenBinaryNode::emit(const BinaryNode* node) const
   if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt()) {
     llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
     llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
-    if (left == NULL || right == NULL)
-      return NULL;
+    if (!left || !right)
+      return nullptr;
     return codegenOpIntInt(node, left, right);
   }
 
   else if (node->left()->type().isKeyword() && node->right()->type().isKeyword()) {
     llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
     llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
-    if (left == NULL || right == NULL)
-      return NULL;
+    if (!left || !right)
+      return nullptr;
     return codegenOpKeywKeyw(node, left, right);
   }
 
   else if (node->left()->type().isBool() && node->right()->type().isBool()) {
     llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
     llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
-    if (left == NULL || right == NULL)
-      return NULL;
+    if (!left || !right)
+      return nullptr;
     return codegenOpBoolBool(node, left, right);
   }
 
   else if (node->left()->type().isChar() && node->right()->type().isChar()) {
     llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
     llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
-    if (left == NULL || right == NULL)
-      return NULL;
+    if (!left || !right)
+      return nullptr;
     return codegenOpCharChar(node, left, right);
   }
 
@@ -129,7 +129,7 @@ CodegenBinaryNode::wrapInt(llvm::Value* value, const Type& type, bool forceSigne
 
   hr_invalid("TODO unhandled int type");
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -161,7 +161,7 @@ CodegenBinaryNode::convertToPlainInt(const Type& dstType,
     hr_invalid("");
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -170,8 +170,8 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
                                    llvm::Value* left,
                                    llvm::Value* right) const
 {
-  llvm::Value* coleft = NULL;
-  llvm::Value* coright = NULL;
+  llvm::Value* coleft = nullptr;
+  llvm::Value* coright = nullptr;
   Type dstType;
 
   switch (node->op()) {
@@ -268,10 +268,10 @@ CodegenBinaryNode::codegenOpIntInt(const BinaryNode* node,
   default:
     fprintf(stderr, "invalid binary operator: %s",
             herschel::operatorName(node->op()));
-    return NULL;
+    return nullptr;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -301,10 +301,10 @@ CodegenBinaryNode::codegenOpKeywKeyw(const BinaryNode* node,
   default:
     fprintf(stderr, "invalid binary operator for keyword: %s\n",
             herschel::operatorName(node->op()));
-    return NULL;
+    return nullptr;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -334,7 +334,7 @@ CodegenBinaryNode::convertToPlainBool(const AptNode* dst,
     hr_invalid("");
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -364,10 +364,10 @@ CodegenBinaryNode::codegenOpBoolBool(const BinaryNode* node,
   default:
     fprintf(stderr, "invalid binary operator for bool: %s\n",
             herschel::operatorName(node->op()));
-    return NULL;
+    return nullptr;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -396,7 +396,7 @@ CodegenBinaryNode::convertToPlainChar(const AptNode* dst,
     hr_invalid("");
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -435,10 +435,10 @@ CodegenBinaryNode::codegenOpCharChar(const BinaryNode* node,
   default:
     fprintf(stderr, "invalid binary operator for char: %s\n",
             herschel::operatorName(node->op()));
-    return NULL;
+    return nullptr;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -478,12 +478,12 @@ CodegenBinaryNode::codegenOpDucktype(const BinaryNode* node) const
   default:
     fprintf(stderr, "binary operator not supported in ducktyping yet: %s\n",
             herschel::operatorName(node->op()));
-    return NULL;
+    return nullptr;
   }
 
   tyerror(node->left()->type(), "unsupported type in binary operator");
   tyerror(node->right()->type(), "unsupported type in binary operator");
-  return NULL;
+  return nullptr;
 }
 
 
@@ -495,15 +495,15 @@ CodegenBinaryNode::codegenOpDuckTypeBinary(const BinaryNode* node,
 {
   String mangledFuncNm = herschel::mangleToC(funcnm);
   llvm::Function *calleeFunc = module()->getFunction(llvm::StringRef(mangledFuncNm));
-  if (calleeFunc == NULL) {
+  if (!calleeFunc) {
     const AptNode* var = node->scope()->lookupVarOrFunc(funcnm,
                                                         K(showAmbiguousSymDef));
     if (const FuncDefNode* funcdef = dynamic_cast<const FuncDefNode*>(var)) {
       calleeFunc = CodegenFuncDef(generator()).emitExternFuncDef(funcdef);
-      if (calleeFunc == NULL) {
+      if (!calleeFunc) {
         errorf(node->srcpos(), 0, "Unknown function referenced: %s",
                (zstring)StrHelper(funcnm));
-        return NULL;
+        return nullptr;
       }
     }
   }

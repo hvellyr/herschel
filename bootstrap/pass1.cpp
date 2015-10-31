@@ -1083,7 +1083,7 @@ FirstPass::parseOn(ScopeType scopeType)
                                            K(showAmbiguousSymDef));
   Token macroName = Token(keyToken.srcpos(), baseName(keyToken.idValue()));
 
-  if (macro != NULL) {
+  if (macro) {
     TokenVector dummyArgs;
     TokenVector exprs = parseMakeMacroCall(macroName, dummyArgs, macro,
                                            K(shouldParseParams), K(isLocal),
@@ -1264,7 +1264,7 @@ FirstPass::parseParamCall(const Token& expr,
                                              expr.idValue(), K(showAmbiguousSymDef));
     Token macroName = Token(expr.srcpos(), baseName(expr.idValue()));
 
-    if (macro != NULL) {
+    if (macro) {
       TokenVector exprs = parseMakeMacroCall(macroName, preScannedArgs, macro,
                                              shouldParseParams, K(isLocal),
                                              kNonScopedDef);
@@ -3124,7 +3124,7 @@ FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal,
   const Macro* macro = fScope->lookupMacro(symToken.srcpos(),
                                            symToken.idValue(),
                                            K(showAmbiguousSymDef));
-  if (macro != NULL) {
+  if (macro) {
     Token macroName = Token(symToken.srcpos(), baseName(symToken.idValue()));
 
     if (macro->type() == kMacro_Def) {
@@ -4566,13 +4566,13 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
 {
 
   SyntaxTreeNode* node = syntaxTable->rootNode();
-  hr_assert(node != NULL);
+  hr_assert(node);
 
   NamedReplacementMap bindings;
 
   for ( ; ; ) {
     SyntaxTreeNode* followSet = node->findNode(fToken);
-    if (followSet != NULL) {
+    if (followSet) {
       node = followSet;
       nextToken();
       continue;
@@ -4585,7 +4585,7 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
     else {
       Token macroParam;
       followSet = node->findMacroParam(&macroParam);
-      if (followSet != NULL) {
+      if (followSet) {
         if (matchParameter(macroParam, &bindings, followSet)) {
           node = followSet;
           continue;

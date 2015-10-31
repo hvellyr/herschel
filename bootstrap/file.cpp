@@ -199,8 +199,8 @@ herschel::file::workingDir()
   buffer.resize(256);
 
   while (1) {
-    char *value = ::getcwd(&buffer[0], size);
-    if (value != NULL)
+    zstring value = ::getcwd(&buffer[0], size);
+    if (value)
       return String(value, ::strlen(value)) + "/";
     else if (errno != ERANGE)
       return String();
@@ -218,7 +218,7 @@ String
 herschel::file::homeDir()
 {
   char *home = ::getenv("HOME");
-  if (home != NULL)
+  if (home)
     return String(home);
   return String();
 }

@@ -45,7 +45,7 @@ namespace herschel
 
 
 #define hr_invalid(_msg)                                                \
-  herschel::requireHandler(__FILE__, __LINE__, "Invalid", (_msg), NULL)
+  herschel::requireHandler(__FILE__, __LINE__, "Invalid", (_msg), nullptr)
 
 #endif /* end IS_DEBUG */
 

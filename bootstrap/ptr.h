@@ -29,9 +29,9 @@ namespace herschel
   class Ptr
   {
   public:
-    //! Create a pointer to NULL.
+    //! Create a pointer to nullptr.
     Ptr()
-      : fObject(NULL)
+      : fObject(nullptr)
     {
     }
 
@@ -41,28 +41,28 @@ namespace herschel
     Ptr(const Ptr<T>& other)
       : fObject(other.fObject)
     {
-      if (fObject != NULL)
+      if (fObject)
         fObject->incRef();
     }
 
 
-    //! Create a pointer to \p obj.  \p obj may be NULL.
+    //! Create a pointer to \p obj.  \p obj may be nullptr.
     Ptr(T* obj)
       : fObject(obj)
     {
-      if (fObject != NULL)
+      if (fObject)
         fObject->incRef();
     }
 
 
     //! If *this is destroyed decrease the ref-count of the referenced object
-    //! (unless NULL).  If this decreased the ref-count to 0, the object is
+    //! (unless nullptr).  If this decreased the ref-count to 0, the object is
     //! destroyed.
     ~Ptr()
     {
-      if (fObject != NULL) {
+      if (fObject) {
         fObject->decRef();
-        fObject = NULL;
+        fObject = nullptr;
       }
     }
 
@@ -71,10 +71,10 @@ namespace herschel
     //! referenced before is removed first, i.e. its ref-count is decreased.
     T* operator=(T* obj)
     {
-      if (obj != NULL)
+      if (obj)
         obj->incRef();
 
-      if (fObject != NULL)
+      if (fObject)
         fObject->decRef();
 
       fObject = obj;
@@ -86,10 +86,10 @@ namespace herschel
     //! Assign \p other's object to this.
     T* operator=(const Ptr<T>& other)
     {
-      if (other.fObject != NULL)
+      if (other.fObject)
         other.fObject->incRef();
 
-      if (fObject != NULL)
+      if (fObject)
         fObject->decRef();
 
       fObject = other.fObject;
@@ -113,7 +113,7 @@ namespace herschel
 
 
     //! Derefence the referenced object.  Requires (and most likely crashes) if
-    //! *this points to NULL.
+    //! *this points to nullptr.
     T* operator->() const
     {
       hr_assert(fObject);
@@ -123,8 +123,8 @@ namespace herschel
 
     //! Remove the referenced object from our control, i.e. decrease the
     //! object's ref-count <em>without</em> destroying, when reaching
-    //! ref-count 0, return it, and set *this to NULL.  This is mostly useful
-    //! from factory functions like this:
+    //! ref-count 0, return it, and set *this to nullptr.  This is mostly
+    //! useful from factory functions like this:
     //!
     //! <pre>
     //! Person* someFactory()
@@ -135,16 +135,16 @@ namespace herschel
     //! </pre>
     T* release()
     {
-      if (fObject != NULL) {
+      if (fObject) {
         T* temp = fObject;
 
         fObject->decRefWithoutDelete();
-        fObject = NULL;
+        fObject = nullptr;
 
         return temp;
       }
 
-      return NULL;
+      return nullptr;
     }
 
   private:

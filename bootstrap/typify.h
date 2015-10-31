@@ -229,13 +229,13 @@ namespace herschel
     struct KeyargReturn
     {
       const KeyargNode* fKeyarg;
-      int fIdx;
+      size_t fIdx;
     };
 
     //! When determining function call types, this finds the matching argument
     //! for a keyed parameter named \p key from \p args starting at \p
     //! argidx.  If no matching argument can be found the returned structure
-    //! has the value <tt>{ NULL, 0 }</tt>;
+    //! has the value <tt>{ nullptr, 0 }</tt>;
     KeyargReturn findKeyedArg(const NodeList& args, size_t argidx,
                               const String& key);
 

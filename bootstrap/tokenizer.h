@@ -60,7 +60,7 @@ namespace herschel
   {
   public:
     Tokenizer(Port<Char>* port, const String& srcName,
-              CharRegistry* charRegistry = NULL);
+              CharRegistry* charRegistry = nullptr);
 
     bool isEof() const;
 

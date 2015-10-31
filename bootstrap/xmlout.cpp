@@ -30,7 +30,7 @@ void
 herschel::xml::displayOpenTag(Port<Octet>* port,
                              zstring tagName, bool newline)
 {
-  if (tagName != NULL) {
+  if (tagName) {
     herschel::display(port, String() + "<" + tagName + ">");
     if (newline)
       herschel::display(port, String() + "\n");
@@ -43,9 +43,9 @@ herschel::xml::displayOpenTagAttrs(Port<Octet>* port,
                                   zstring tagName, zstring attrs,
                                   bool newline)
 {
-  if (tagName != NULL) {
+  if (tagName) {
     herschel::display(port, String() + "<" + tagName);
-    if (attrs != NULL && ::strlen(attrs) > 0)
+    if (attrs && ::strlen(attrs) > 0)
       herschel::display(port, String() + " " + attrs + ">");
     else
       herschel::display(port, ">");
@@ -59,7 +59,7 @@ void
 herschel::xml::displayCloseTag(Port<Octet>* port,
                               zstring tagName)
 {
-  if (tagName != NULL)
+  if (tagName)
     herschel::display(port, String() + "</" + tagName + ">\n");
 }
 
@@ -68,7 +68,7 @@ void
 herschel::xml::displayEmptyTag(Port<Octet>* port,
                               zstring tagName)
 {
-  if (tagName != NULL && ::strlen(tagName) > 0)
+  if (tagName && ::strlen(tagName) > 0)
     herschel::display(port, String() + "<" + tagName + "/>\n");
 }
 
@@ -77,7 +77,7 @@ void
 herschel::xml::displayEmptyTagAttrs(Port<Octet>* port,
                                    zstring tagName, zstring attrs)
 {
-  if (tagName != NULL && ::strlen(tagName) > 0)
+  if (tagName && ::strlen(tagName) > 0)
     herschel::display(port, String() + "<" + tagName + " " + attrs + "/>\n");
 }
 
@@ -306,7 +306,7 @@ XmlRenderer::displayStringStringMap(zstring outerTagName,
 void
 XmlRenderer::displayNode(zstring tagName, AptNode* node)
 {
-  if (node != NULL) {
+  if (node) {
     displayOpenTag(tagName);
     render(node);
     displayCloseTag(tagName);
@@ -325,7 +325,7 @@ XmlRenderer::displayNodeList(zstring tagName, const NodeList& nodelist)
          it++)
     {
       AptNode* n = (*it);
-      if (n != NULL)
+      if (n)
         render(n);
     }
 
@@ -373,7 +373,7 @@ XmlRenderer::renderNode(const SymbolNode* node)
 
   zstring referTag = nullptr;
   switch (node->refersTo()) {
-  case kFreeVar:   referTag = NULL; break;
+  case kFreeVar:   referTag = nullptr; break;
   case kGlobalVar: referTag = "global"; break;
   case kLocalVar:  referTag = "local"; break;
   case kParam:     referTag = "param"; break;
@@ -383,7 +383,7 @@ XmlRenderer::renderNode(const SymbolNode* node)
   case kType:      referTag = "type"; break;
   }
 
-  if (referTag != NULL)
+  if (referTag)
     attrs << " refer='" << referTag << "'";
 
   if (node->generics().empty()) {
@@ -540,7 +540,7 @@ XmlRenderer::renderNode(const UnitConstNode* node)
 
   displayOpenTagAttrs("uvalue", StrHelper(attrs.toString()));
   displayType("type", node->unit().effType());
-  displayNode(NULL, node->value());
+  displayNode(nullptr, node->value());
   displayCloseTag("uvalue");
 }
 
@@ -550,7 +550,7 @@ XmlRenderer::renderNode(const CompileUnitNode* node)
 {
   zstring attrs = "xmlns:ty='http://herschel.eyestep.org/types'";
   displayOpenTagAttrs("compile-unit", attrs);
-  displayNodeList(NULL, node->children());
+  displayNodeList(nullptr, node->children());
 
   if (fShowNodeType && !fReferencedTypes.empty()) {
     displayOpenTag("ty:node-types");
@@ -574,7 +574,7 @@ void
 XmlRenderer::renderNode(const LetNode* node)
 {
   displayOpenTag("let");
-  displayNode(NULL, node->defNode());
+  displayNode(nullptr, node->defNode());
   displayCloseTag("let");
 }
 
@@ -583,7 +583,7 @@ void
 XmlRenderer::renderNode(const DefNode* node)
 {
   displayOpenTag("def");
-  displayNode(NULL, node->defNode());
+  displayNode(nullptr, node->defNode());
   displayCloseTag("def");
 }
 
@@ -726,7 +726,7 @@ XmlRenderer::renderNode(const ArrayNode* node)
   }
 
   displayOpenTagAttrs("array", StrHelper(attrs.toString()));
-  displayNodeList(NULL, node->children());
+  displayNodeList(nullptr, node->children());
   displayCloseTag("array");
 }
 
@@ -743,7 +743,7 @@ XmlRenderer::renderNode(const VectorNode* node)
   }
 
   displayOpenTagAttrs("vector", StrHelper(attrs.toString()));
-  displayNodeList(NULL, node->children());
+  displayNodeList(nullptr, node->children());
   displayCloseTag("vector");
 }
 
@@ -760,7 +760,7 @@ XmlRenderer::renderNode(const DictNode* node)
   }
 
   displayOpenTagAttrs("dict", StrHelper(attrs.toString()));
-  displayNodeList(NULL, node->children());
+  displayNodeList(nullptr, node->children());
   displayCloseTag("dict");
 }
 
@@ -778,8 +778,8 @@ XmlRenderer::renderNode(const BinaryNode* node)
   }
 
   displayOpenTagAttrs("binary", StrHelper(attrs.toString()));
-  displayNode(NULL, node->left());
-  displayNode(NULL, node->right());
+  displayNode(nullptr, node->left());
+  displayNode(nullptr, node->right());
   displayCloseTag("binary");
 }
 
@@ -813,7 +813,7 @@ XmlRenderer::renderNode(const UnaryNode* node)
   }
 
   displayOpenTagAttrs(op_nm, StrHelper(attrs.toString()));
-  displayNode(NULL, node->base());
+  displayNode(nullptr, node->base());
   displayCloseTag(op_nm);
 }
 
@@ -829,9 +829,9 @@ XmlRenderer::renderNode(const RangeNode* node)
   }
 
   displayOpenTagAttrs("range", StrHelper(attrs.toString()));
-  displayNode(NULL, node->from());
-  displayNode(NULL, node->to());
-  displayNode(NULL, node->by());
+  displayNode(nullptr, node->from());
+  displayNode(nullptr, node->to());
+  displayNode(nullptr, node->by());
   displayCloseTag("range");
 }
 
@@ -847,8 +847,8 @@ XmlRenderer::renderNode(const AssignNode* node)
   }
 
   displayOpenTagAttrs("assign", StrHelper(attrs.toString()));
-  displayNode(NULL, node->lvalue());
-  displayNode(NULL, node->rvalue());
+  displayNode(nullptr, node->lvalue());
+  displayNode(nullptr, node->rvalue());
   displayCloseTag("assign");
 }
 
@@ -866,7 +866,7 @@ XmlRenderer::renderNode(const SlotRefNode* node)
   }
 
   displayOpenTagAttrs("slotref", StrHelper(attrs.toString()));
-  displayNode(NULL, node->base());
+  displayNode(nullptr, node->base());
   displayCloseTag("slotref");
 }
 
@@ -903,7 +903,7 @@ XmlRenderer::renderNode(const SelectNode* node)
       displayOpenTag("map");
       displayOpenTag("values");
       for (size_t j = 0; j < node->mappingAt(i).fTestValues.size(); j++) {
-        displayNode(NULL, node->mappingAt(i).fTestValues[j]);
+        displayNode(nullptr, node->mappingAt(i).fTestValues[j]);
       }
       displayCloseTag("values");
       displayNode("cons", node->mappingAt(i).fConsequent);
@@ -953,7 +953,7 @@ XmlRenderer::renderNode(const BlockNode* node)
   //   attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
 
   // displayOpenTagAttrs("block", StrHelper(attrs.toString()));
-  // displayNodeList(NULL, node->children());
+  // displayNodeList(nullptr, node->children());
   // displayCloseTag("block");
   displayNodeList("block", node->children());
 }
@@ -1010,9 +1010,9 @@ XmlRenderer::renderNode(const ApplyNode* node)
     attrs << xml::displayTypeConv(node);
 
   displayOpenTagAttrs("apply", StrHelper(attrs.toString()));
-  displayNode(NULL, node->base());
+  displayNode(nullptr, node->base());
   displayOpenTag("args");
-  displayNodeList(NULL, node->children());
+  displayNodeList(nullptr, node->children());
   displayCloseTag("args");
   displayCloseTag("apply");
 
@@ -1029,7 +1029,7 @@ XmlRenderer::renderNode(const KeyargNode* node)
   attrs << "key='" << node->key() << "'";
 
   displayOpenTagAttrs("arg", StrHelper(attrs.toString()));
-  displayNode(NULL, node->value());
+  displayNode(nullptr, node->value());
   displayCloseTag("arg");
 }
 

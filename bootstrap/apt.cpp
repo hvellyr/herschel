@@ -36,18 +36,18 @@ using namespace herschel;
 template<typename T>
 T* nodeClone(T* node)
 {
-  if (node != NULL)
+  if (node)
     return node->clone();
-  return NULL;
+  return nullptr;
 }
 
 
 template<typename T>
 T* nodeClone(const Ptr<T>& node)
 {
-  if (node != NULL)
+  if (node)
     return node->clone();
-  return NULL;
+  return nullptr;
 }
 
 
@@ -171,7 +171,7 @@ AptNode::setTypeConv(TypeConvKind typeConv)
 llvm::Value*
 AptNode::codegen(CodeGenerator* generator) const
 {
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1008,7 +1008,7 @@ llvm::Value*
 VardefNode::codegen(CodeGenerator* generator) const
 {
   hr_invalid("this should never be called directly.  See codegen::DefNode");
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1194,8 +1194,8 @@ DictNode::clone() const
 void
 DictNode::addPair(AptNode* key, AptNode* value)
 {
-  hr_assert(key != NULL);
-  hr_assert(value != NULL);
+  hr_assert(key);
+  hr_assert(value);
 
   appendNode(new BinaryNode(key->srcpos(), key, kOpMapTo, value));
 }
@@ -2016,7 +2016,7 @@ llvm::Value*
 FuncDefNode::codegen(CodeGenerator* generator) const
 {
   hr_invalid("this should never be called directly.  See codegen::DefNode");
-  return NULL;
+  return nullptr;
 }
 
 
@@ -2067,7 +2067,7 @@ bool
 ApplyNode::isSimpleCall() const
 {
   const SymbolNode* sym = dynamic_cast<const SymbolNode*>(base());
-  return sym != NULL && sym->generics().empty();
+  return sym && sym->generics().empty();
 }
 
 
@@ -2075,7 +2075,7 @@ String
 ApplyNode::simpleCallName() const
 {
   const SymbolNode* sym = dynamic_cast<const SymbolNode*>(base());
-  return (sym != NULL
+  return (sym
           ? sym->name()
           : String());
 }
@@ -2097,7 +2097,7 @@ KeyargNode::KeyargNode(const SrcPos& srcpos,
     fKey(key),
     fValue(value)
 {
-  hr_assert(fValue != NULL);
+  hr_assert(fValue);
 }
 
 
@@ -2390,7 +2390,7 @@ NodeList
 herschel::newNodeList(AptNode* n1)
 {
   NodeList nl;
-  if (n1 != NULL)
+  if (n1)
     nl.push_back(n1);
   return nl;
 }
@@ -2400,9 +2400,9 @@ NodeList
 herschel::newNodeList(AptNode* n1, AptNode* n2)
 {
   NodeList nl;
-  if (n1 != NULL)
+  if (n1)
     nl.push_back(n1);
-  if (n2 != NULL)
+  if (n2)
     nl.push_back(n2);
   return nl;
 }
@@ -2412,11 +2412,11 @@ NodeList
 herschel::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3)
 {
   NodeList nl;
-  if (n1 != NULL)
+  if (n1)
     nl.push_back(n1);
-  if (n2 != NULL)
+  if (n2)
     nl.push_back(n2);
-  if (n3 != NULL)
+  if (n3)
     nl.push_back(n3);
   return nl;
 }
@@ -2426,13 +2426,13 @@ NodeList
 herschel::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3, AptNode* n4)
 {
   NodeList nl;
-  if (n1 != NULL)
+  if (n1)
     nl.push_back(n1);
-  if (n2 != NULL)
+  if (n2)
     nl.push_back(n2);
-  if (n3 != NULL)
+  if (n3)
     nl.push_back(n3);
-  if (n4 != NULL)
+  if (n4)
     nl.push_back(n4);
   return nl;
 }
@@ -2453,5 +2453,5 @@ herschel::singletonNodeListOrNull(const NodeList& nl)
   hr_assert(nl.size() < 2);
   if (nl.size() == 1)
     return nl[0].obj();
-  return NULL;
+  return nullptr;
 }

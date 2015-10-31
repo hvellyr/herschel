@@ -146,7 +146,7 @@ herschel::type::newRootScope(bool forUnitTests)
                                            kPosArg,
                                            Type::newTypeRef(String("T"),
                                                             K(isOpen), K(isValue)),
-                                           NULL));
+                                           nullptr));
   root->registerFunction(sp, Names::kLangReturn,
                          new FuncDefNode(sp,
                                          Names::kLangReturn,
@@ -154,7 +154,7 @@ herschel::type::newRootScope(bool forUnitTests)
                                          params,
                                          Type::newTypeRef(String("T"),
                                                           K(isOpen), K(isValue)),
-                                         NULL));
+                                         nullptr));
 
   //------------------------------ collections
 

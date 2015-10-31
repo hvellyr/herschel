@@ -88,7 +88,7 @@ Traversator::traverse(LetNode* node)
 void
 Traversator::traverse(VardefNode* node)
 {
-  if (node->initExpr() != NULL)
+  if (node->initExpr())
     traverseNode(node->initExpr());
 }
 
@@ -97,7 +97,7 @@ void
 Traversator::traverse(FuncDefNode* node)
 {
   traverseNodeList(node->params());
-  if (node->body() != NULL)
+  if (node->body())
     traverseNode(node->body());
 }
 
@@ -106,7 +106,7 @@ void
 Traversator::traverse(FunctionNode* node)
 {
   traverseNodeList(node->params());
-  if (node->body() != NULL)
+  if (node->body())
     traverseNode(node->body());
 }
 
@@ -114,7 +114,7 @@ Traversator::traverse(FunctionNode* node)
 void
 Traversator::traverse(SlotdefNode* node)
 {
-  if (node->initExpr() != NULL)
+  if (node->initExpr())
     traverseNode(node->initExpr());
 }
 
@@ -129,7 +129,7 @@ Traversator::traverse(BlockNode* node)
 void
 Traversator::traverse(ParamNode* node)
 {
-  if (node->initExpr() != NULL)
+  if (node->initExpr())
     traverseNode(node->initExpr());
 }
 
@@ -203,7 +203,7 @@ void
 Traversator::traverse(SelectNode* node)
 {
   traverseNode(node->test());
-  if (node->comparator() != NULL)
+  if (node->comparator())
     traverseNode(node->comparator());
 
   for (size_t i = 0; i < node->mappingCount(); i++) {
@@ -232,7 +232,7 @@ Traversator::traverse(RangeNode* node)
 {
   traverseNode(node->from());
   traverseNode(node->to());
-  if (node->by() != NULL)
+  if (node->by())
     traverseNode(node->by());
 }
 

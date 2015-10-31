@@ -128,9 +128,9 @@ namespace herschel
 
     //! Transforms the receiver to a null terminated utf8 encoded string into
     //! \p dst and returns length of generated octets without terminating 0.
-    //! If \p dst is NULL returns only the required length of octets (without
-    //! terminating 0).  \p dst is maxItems octets large.  At maximum maxItems
-    //! - 1 octets (without terminatin 0) are copied.
+    //! If \p dst is nullptr returns only the required length of octets
+    //! (without terminating 0).  \p dst is maxItems octets large.  At maximum
+    //! maxItems - 1 octets (without terminatin 0) are copied.
     int toUtf8(char* dst, int maxItems) const;
 
     //! Splits the receiver at the first occurance of \p c and puts the
@@ -232,7 +232,7 @@ namespace herschel
     //! Construct an instance from a given String instance
     StrHelper(const String& str)
     {
-      int reqLen = str.toUtf8(NULL, str.length() * 5);
+      int reqLen = str.toUtf8(nullptr, str.length() * 5);
       fBuffer.resize(reqLen + 1);
       fLength = str.toUtf8(&fBuffer[0], reqLen + 1);
     }

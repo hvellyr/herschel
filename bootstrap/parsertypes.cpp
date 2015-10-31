@@ -117,7 +117,7 @@ ConfigVarRegistry::ConfigVarRegistry(ConfigVarRegistry* parent)
 bool
 ConfigVarRegistry::lookup(const String& name, Token* out) const
 {
-  if (fParent != NULL && fParent->lookup(name, out))
+  if (fParent && fParent->lookup(name, out))
     return true;
   return Registry<Token>::lookup(name, out);
 }

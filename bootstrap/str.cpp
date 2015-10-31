@@ -44,16 +44,16 @@ namespace herschel
   {
   public:
     StringImpl()
-      : fData(NULL),
+      : fData(nullptr),
         fLength(0)
     { }
 
     ~StringImpl()
     {
-      if (fData != NULL)
+      if (fData)
       {
         ::free(fData);
-        fData = NULL;
+        fData = nullptr;
       }
     }
 
@@ -67,7 +67,7 @@ namespace herschel
       else
       {
         ::free(fData);
-        fData = NULL;
+        fData = nullptr;
         fLength = 0;
       }
     }
@@ -96,7 +96,7 @@ namespace herschel
 
     void createFromUtf8(zstring utf8, int items)
     {
-      int reqlen = str_utf8_to_wcs(utf8, items, NULL, 0);
+      int reqlen = str_utf8_to_wcs(utf8, items, nullptr, 0);
 
       reallocate(reqlen);
       int reallen = str_utf8_to_wcs(utf8, items, fData, reqlen);
@@ -195,7 +195,7 @@ String::String()
 
 
 String::String(const String& other)
-  : fImpl(NULL)
+  : fImpl(nullptr)
 {
   other.fImpl->incRef();
   fImpl = other.fImpl;
@@ -435,8 +435,8 @@ String::operator[] (int atIndex) const
 int
 String::toUtf8(char* dst, int maxItems) const
 {
-  if (dst == NULL)
-    return str_wcs_to_utf8(fImpl->fData, fImpl->fLength, NULL, maxItems);
+  if (!dst)
+    return str_wcs_to_utf8(fImpl->fData, fImpl->fLength, nullptr, maxItems);
 
   int len = str_wcs_to_utf8(fImpl->fData, fImpl->fLength,
                             (Octet*)dst, maxItems);
@@ -494,14 +494,14 @@ int
 String::toInt(int radix) const
 {
   char tmp[128];
-  char *endptr = NULL;
+  char *endptr = nullptr;
 
   toUtf8(tmp, 128);
 
   errno = 0;
 
   int val = strtol(tmp, &endptr, radix);
-  if (endptr != NULL && strlen(endptr) > 0)
+  if (endptr && strlen(endptr) > 0)
     throw NotANumberException(String("Is not a number: ") + tmp);
 
   if (errno == ERANGE) {
@@ -516,14 +516,14 @@ int64_t
 String::toInt64(int radix) const
 {
   char tmp[128];
-  char *endptr = NULL;
+  char *endptr = nullptr;
 
   toUtf8(tmp, 128);
 
   errno = 0;
 
   int64_t val = strtoll(tmp, &endptr, radix);
-  if (endptr != NULL && strlen(endptr) > 0)
+  if (endptr && strlen(endptr) > 0)
     throw NotANumberException(String("Is not a number: ") + tmp);
 
   if (errno == ERANGE) {
@@ -538,14 +538,14 @@ uint64_t
 String::toUInt64(int radix) const
 {
   char tmp[128];
-  char *endptr = NULL;
+  char *endptr = nullptr;
 
   toUtf8(tmp, 128);
 
   errno = 0;
 
   uint64_t val = strtoull(tmp, &endptr, radix);
-  if (endptr != NULL && strlen(endptr) > 0)
+  if (endptr && strlen(endptr) > 0)
     throw NotANumberException(String("Is not a number: ") + tmp);
 
   if (errno == ERANGE) {
@@ -560,12 +560,12 @@ double
 String::toDouble() const
 {
   char tmp[128];
-  char *endptr = NULL;
+  char *endptr = nullptr;
 
   toUtf8(tmp, 128);
 
   double val = strtod(tmp, &endptr);
-  if (endptr != NULL && strlen(endptr) > 0)
+  if (endptr && strlen(endptr) > 0)
     throw NotANumberException(String("Is not a number: ") + tmp);
   return val;
 }
@@ -684,7 +684,7 @@ herschel::str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems)
   Octet* sp = (Octet*)src;
   const Octet* end = (Octet*)src + items;
 
-  if (dst != NULL) {
+  if (dst) {
     Char* dp = dst;
 
     while (sp < end) {

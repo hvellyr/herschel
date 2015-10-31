@@ -150,7 +150,7 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
 {
   fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
 
-  hr_assert(fState.fScope != NULL);
+  hr_assert(fState.fScope);
 
   try {
     Ptr<AptNode> apt;
@@ -195,7 +195,7 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
     logf(kError, "Parse error: %s", (zstring)StrHelper(e.message()));
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -415,10 +415,10 @@ namespace herschel
                                              file);
         if (doCompile) {
           hr_assert(apt);
-          CompileUnitNode* unit = dynamic_cast<CompileUnitNode*>(apt.obj());
-          hr_assert(unit != NULL);
+          auto unit = dynamic_cast<CompileUnitNode*>(apt.obj());
+          hr_assert(unit);
 
-          if (unit != NULL) {
+          if (unit) {
             String outExt = makeCompileOutputFileExt(Properties::compileOutFormat());
             String outFile = makeOutputFileName(Properties::outdir(),
                                                 outfileName, file, outExt);

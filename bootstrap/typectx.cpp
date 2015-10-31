@@ -62,7 +62,7 @@ TypeCtx::lookupType(const String& name) const
   if (type.isDef())
     return type;
 
-  if (fParent != NULL)
+  if (fParent)
     return fParent->lookupType(name);
 
   return type;

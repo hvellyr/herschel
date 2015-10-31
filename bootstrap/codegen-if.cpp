@@ -55,13 +55,13 @@ CodegenIf::emit(const IfNode* node) const
 {
   llvm::Value *testValue =
     tools()->wrapLoad(generator()->codegenNode(node->test()));
-  if (testValue == NULL)
-    return NULL;
+  if (!testValue)
+    return nullptr;
 
-  llvm::Value* extrTestVal = tools()->emitPackCode(node->test()->dstType(),
-                                                   node->test()->typeConv(),
-                                                   testValue,
-                                                   node->test()->type());
+  auto extrTestVal = tools()->emitPackCode(node->test()->dstType(),
+                                           node->test()->typeConv(),
+                                           testValue,
+                                           node->test()->type());
 
   // Convert condition to a bool by comparing equal to 1
   testValue = builder().CreateICmpEQ(tools()->wrapLoad(extrTestVal),
@@ -87,10 +87,10 @@ CodegenIf::emit(const IfNode* node) const
 
   llvm::Value *thenValue =
     tools()->wrapLoad(generator()->codegenNode(node->consequent()));
-  if (thenValue == NULL)
-    return NULL;
+  if (!thenValue)
+    return nullptr;
 
-  llvm::Value* thenValue2 = tools()->wrapLoad(
+  auto thenValue2 = tools()->wrapLoad(
     tools()->emitPackCode(node->consequent()->dstType(),
                           node->consequent()->typeConv(),
                           thenValue,
@@ -106,12 +106,12 @@ CodegenIf::emit(const IfNode* node) const
   curFunction->getBasicBlockList().push_back(elseBB);
   builder().SetInsertPoint(elseBB);
 
-  llvm::Value* elseValue = NULL;
-  if (node->alternate() != NULL) {
+  llvm::Value* elseValue = nullptr;
+  if (node->alternate()) {
     llvm::Value* elseValue0 =
       tools()->wrapLoad(generator()->codegenNode(node->alternate()));
-    if (elseValue0 == NULL)
-      return NULL;
+    if (!elseValue0)
+      return nullptr;
     elseValue = tools()->wrapLoad(tools()->emitPackCode(node->alternate()->dstType(),
                                                         node->alternate()->typeConv(),
                                                         elseValue0,
