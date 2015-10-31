@@ -21,12 +21,7 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-AbstractPass::AbstractPass()
-{
-}
-
-
-AbstractPass::AbstractPass(Compiler* compiler, std::shared_ptr<Scope> scope)
+AbstractPass::AbstractPass(Compiler& compiler, std::shared_ptr<Scope> scope)
   : fScope(std::move(scope)),
     fCompiler(compiler)
 {

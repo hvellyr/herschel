@@ -13,7 +13,6 @@
 
 #include "llvm/IR/IRBuilder.h"
 
-#include "refcountable.h"
 #include "codegen-proxy.h"
 
 namespace llvm
@@ -32,11 +31,10 @@ namespace herschel
   class CodeGenerator;
 
 
-  class CodegenTools : public RefCountable,
-                       public CodeGeneratorProxy
+  class CodegenTools : public CodeGeneratorProxy
   {
   public:
-    CodegenTools(CodeGenerator* generator);
+    CodegenTools(CodeGenerator& generator);
 
     enum Typeid {
       kAtomAny     = 0x01,
@@ -129,7 +127,6 @@ namespace herschel
     zstring getConvFuncNameByType(const Type& type) const;
     llvm::Type* getConvTypeByType(const Type& type) const;
   };
-
 };                              // namespace
 
 #endif                          // bootstrap_codegen_tools_h

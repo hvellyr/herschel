@@ -34,7 +34,7 @@ namespace herschel
   class CodegenIf : public CodeGeneratorProxy
   {
   public:
-    CodegenIf(CodeGenerator* generator);
+    CodegenIf(CodeGenerator& generator);
 
     llvm::Value* emit(const IfNode* node) const;
   };

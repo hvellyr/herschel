@@ -57,7 +57,7 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  class Compiler : public RefCountable
+  class Compiler
   {
   public:
     Compiler(bool isParsingInterface = false);
@@ -108,11 +108,11 @@ namespace herschel
     class PortStackHelper
     {
     public:
-      PortStackHelper(Compiler* compiler, TokenPort* port);
+      PortStackHelper(Compiler& compiler, TokenPort* port);
       ~PortStackHelper();
 
     private:
-      Compiler* fCompiler;
+      Compiler& fCompiler;
       bool fPortOnly;
     };
 

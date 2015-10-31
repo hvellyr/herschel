@@ -33,7 +33,7 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-ExprPass::ExprPass(int level, Compiler* compiler,
+ExprPass::ExprPass(int level, Compiler& compiler,
                    const Token& currentToken, std::shared_ptr<Scope> scope)
   : TokenCompilePass(level),
     fCurrentToken(currentToken),
@@ -52,7 +52,7 @@ ExprPass::doApply(const Token& src)
 
 //----------------------------------------------------------------------------
 
-FirstPass::FirstPass(Compiler* compiler, const Token& currentToken,
+FirstPass::FirstPass(Compiler& compiler, const Token& currentToken,
                      std::shared_ptr<Scope> scope)
   : AbstractPass(compiler, std::move(scope)),
     fToken(currentToken),
@@ -65,7 +65,7 @@ FirstPass::FirstPass(Compiler* compiler, const Token& currentToken,
 Token
 FirstPass::nextToken()
 {
-  fToken = fCompiler->nextToken();
+  fToken = fCompiler.nextToken();
   return fToken;
 }
 
@@ -80,7 +80,7 @@ FirstPass::currentToken()
 void
 FirstPass::unreadToken(const Token& token)
 {
-  fCompiler->unreadToken(token);
+  fCompiler.unreadToken(token);
 }
 
 
@@ -432,8 +432,8 @@ FirstPass::parseImport()
     try
     {
       String srcName = importFile.stringValue();
-      if (!fCompiler->importFile(importFile.srcpos(), srcName,
-                                 !K(isPublic), fScope))
+      if (!fCompiler.importFile(importFile.srcpos(), srcName,
+                                !K(isPublic), fScope))
         return Token();
     }
     catch (const Exception& e) {
@@ -2494,7 +2494,7 @@ FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
       nextToken();
 
     if (fEvaluateExprs) {
-      TokenEvalContext ctx(fCompiler->configVarRegistry());
+      TokenEvalContext ctx(fCompiler.configVarRegistry());
       Token p = ctx.evalToken(test);
       if (p.isBool()) {
         inclConsequent = p.boolValue();
@@ -2680,7 +2680,7 @@ FirstPass::parseVarDef(const Token& defToken, const Token& tagToken, bool isLoca
 Token
 FirstPass::evaluateConfigExpr(const Token& initExpr)
 {
-  TokenEvalContext ctx(fCompiler->configVarRegistry());
+  TokenEvalContext ctx(fCompiler.configVarRegistry());
   return ctx.evalToken(initExpr);
 }
 
@@ -2825,8 +2825,8 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
           if (!assignToken.isSet())
             assignToken = Token(vardefSym.srcpos(), kAssign);
         }
-        fCompiler->configVarRegistry()->registerValue(vardefSym.idValue(),
-                                                    evaluateConfigExpr(effInitExpr));
+        fCompiler.configVarRegistry()->registerValue(vardefSym.idValue(),
+                                                     evaluateConfigExpr(effInitExpr));
         // even if we have to evaluate the config var expression, we have to
         // keep the constructed expr since config-vars can be used like
         // normal const-vars by code
@@ -2890,8 +2890,8 @@ FirstPass::parseCharDef(const Token& defToken)
   }
 
   if (fEvaluateExprs) {
-    fCompiler->charRegistry()->registerValue(charNameToken.idValue(),
-                                             codePoint);
+    fCompiler.charRegistry()->registerValue(charNameToken.idValue(),
+                                            codePoint);
     return Token();
   }
   else {

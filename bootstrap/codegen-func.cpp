@@ -44,7 +44,7 @@
 
 using namespace herschel;
 
-CodegenFuncDef::CodegenFuncDef(CodeGenerator* generator)
+CodegenFuncDef::CodegenFuncDef(CodeGenerator& generator)
   : CodeGeneratorProxy(generator)
 {
 }
@@ -53,7 +53,7 @@ CodegenFuncDef::CodegenFuncDef(CodeGenerator* generator)
 llvm::Value*
 CodegenFuncDef::emit(const FuncDefNode* node, bool isLocal) const
 {
-  fGenerator->fNamedValues.clear();
+  fGenerator.fNamedValues.clear();
 
   if (node->isGeneric()) {
     hr_assert(!isLocal);
@@ -91,15 +91,15 @@ CodegenFuncDef::createFunctionSignature(const FunctionNode* node, bool inlineRet
 
   llvm::Type* llvmRetty = nullptr;
   if (isGeneric) {
-    sign.push_back(types()->getAtomType()->getPointerTo());
+    sign.push_back(types().getAtomType()->getPointerTo());
     llvmRetty = llvm::Type::getVoidTy(context());
   }
   else if (inlineRetv) {
-    sign.push_back(types()->getType(retty)->getPointerTo());
+    sign.push_back(types().getType(retty)->getPointerTo());
     llvmRetty = llvm::Type::getVoidTy(context());
   }
   else
-    llvmRetty = types()->getType(node->retType());
+    llvmRetty = types().getType(node->retType());
 
   bool isVarArgs = false;
   for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
@@ -108,9 +108,9 @@ CodegenFuncDef::createFunctionSignature(const FunctionNode* node, bool inlineRet
     if (param->isRestArg())
       isVarArgs = true;
     else if (param->isSpecArg())
-      sign.push_back(types()->getAtomType());
+      sign.push_back(types().getAtomType());
     else
-      sign.push_back(types()->getType(param->type()));
+      sign.push_back(types().getType(param->type()));
   }
 
   return llvm::FunctionType::get(llvmRetty, sign, isVarArgs);
@@ -174,9 +174,9 @@ CodegenFuncDef::createFunction(const FuncDefNode* node,
 llvm::Value*
 CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
 {
-  hr_assert(fGenerator->fNamedValues.empty());
+  hr_assert(fGenerator.fNamedValues.empty());
 
-  initializer()->addGenericFunctionDef(node);
+  initializer().addGenericFunctionDef(node);
 
   FuncPair func = createFunction(node, String(), K(isGeneric));
 
@@ -202,11 +202,11 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
     // TODO: enforce ATOM types for spec args and returnvalue in generic functions
     // TODO ende name
     llvm::AllocaInst* stackSlot =
-      tools()->createEntryBlockAlloca(func.fFunc, param->name(),
-                                      types()->getType(param->type()));
-    llvm::Value* tmpValue = tools()->emitPackCode(param->dstType(),
-                                                  param->typeConv(),
-                                                  aiter, param->type());
+      tools().createEntryBlockAlloca(func.fFunc, param->name(),
+                                     types().getType(param->type()));
+    llvm::Value* tmpValue = tools().emitPackCode(param->dstType(),
+                                                 param->typeConv(),
+                                                 aiter, param->type());
     builder().CreateStore(tmpValue, stackSlot);
 
     realFuncArgv.push_back(stackSlot);
@@ -214,13 +214,13 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
     if (param->isSpecArg()) {
       specArgCount++;
 
-      llvm::Value* typeidSlot = builder().CreateStructGEP(types()->getAtomType(),
+      llvm::Value* typeidSlot = builder().CreateStructGEP(types().getAtomType(),
                                                           stackSlot, 0, "typeid");
       lookupArgv.push_back(builder().CreateLoad(typeidSlot));
     }
   }
 
-  llvm::Value* gf = fGenerator->makeGetGenericFuncLookupCall(node);
+  llvm::Value* gf = fGenerator.makeGetGenericFuncLookupCall(node);
   hr_assert(gf);
 
   lookupArgv.insert(lookupArgv.begin(), gf);
@@ -230,13 +230,13 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
   if (!lookupFunc) {
     // Method* m = h7_lookup_func*(gf, ty0);
     std::vector<llvm::Type*> sign;
-    sign.push_back(types()->getGenericFuncType());
+    sign.push_back(types().getGenericFuncType());
 
     // add a list of tagid arguments
     for (size_t i = 0; i < specArgCount; i++)
-      sign.push_back(types()->getTagIdType());
+      sign.push_back(types().getTagIdType());
 
-    llvm::FunctionType *ft = llvm::FunctionType::get(types()->getMethodType(),
+    llvm::FunctionType *ft = llvm::FunctionType::get(types().getMethodType(),
                                                      sign,
                                                      !K(isVarArg));
     lookupFunc = llvm::Function::Create(ft,
@@ -251,23 +251,23 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
 
   // the function pointer in the Method* structure is the third member
   llvm::Value* realFuncPtr = builder().CreateLoad(
-    builder().CreateStructGEP(types()->getMethodStructType(),
+    builder().CreateStructGEP(types().getMethodStructType(),
                               method, 2, "method"));
 
   for (size_t i = 0; i < realFuncArgv.size(); i++)
     realFuncArgv[i] = builder().CreateLoad(realFuncArgv[i]);
 
   // insert the return value into the argument list
-  llvm::AllocaInst *retv = tools()->createEntryBlockAlloca(func.fFunc,
-                                                           String("retv"),
-                                                           types()->getAtomType());
+  llvm::AllocaInst *retv = tools().createEntryBlockAlloca(func.fFunc,
+                                                          String("retv"),
+                                                          types().getAtomType());
   realFuncArgv.insert(realFuncArgv.begin(), retv); //func.fFunc->arg_begin());
 
   llvm::Value* f = builder().CreateBitCast(realFuncPtr, func.fType->getPointerTo());
   builder().CreateCall(f, realFuncArgv);
 
   // no wrap-load!  The generic function always returns as ATOM.
-  tools()->assignAtom(retv, func.fFunc->arg_begin());
+  tools().assignAtom(retv, func.fFunc->arg_begin());
 
   builder().CreateRetVoid();
 
@@ -277,9 +277,9 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
 
   verifyFunction(*func.fFunc);
 
-  if (fGenerator->fOptPassManager &&
+  if (fGenerator.fOptPassManager &&
       Properties::optimizeLevel() > kOptLevelNone)
-    fGenerator->fOptPassManager->run(*func.fFunc);
+    fGenerator.fOptPassManager->run(*func.fFunc);
 
   return func.fFunc;
 }
@@ -288,7 +288,7 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
 llvm::Value*
 CodegenFuncDef::compileMethodDef(const FuncDefNode* node) const
 {
-  hr_assert(fGenerator->fNamedValues.empty());
+  hr_assert(fGenerator.fNamedValues.empty());
 
   StringBuffer msgbuf;
   msgbuf << "=method";
@@ -305,7 +305,7 @@ CodegenFuncDef::compileMethodDef(const FuncDefNode* node) const
   }
 
   String methodNameSuffix = msgbuf.toString();
-  initializer()->addMethodDef(node, makeFunctionName(node, methodNameSuffix));
+  initializer().addMethodDef(node, makeFunctionName(node, methodNameSuffix));
 
   FuncPair func = createFunction(node, methodNameSuffix, K(isGeneric));
 
@@ -316,7 +316,7 @@ CodegenFuncDef::compileMethodDef(const FuncDefNode* node) const
 llvm::Value*
 CodegenFuncDef::compileAbstractFuncDef(const FuncDefNode* node) const
 {
-  hr_assert(fGenerator->fNamedValues.empty());
+  hr_assert(fGenerator.fNamedValues.empty());
 
   FuncPair func = createFunction(node, String(), node->isGeneric());
 
@@ -330,7 +330,7 @@ llvm::Value*
 CodegenFuncDef::compileNormalFuncDef(const FuncDefNode* node,
                                      bool isLocal) const
 {
-  hr_assert(fGenerator->fNamedValues.empty());
+  hr_assert(fGenerator.fNamedValues.empty());
 
   FuncPair func = createFunction(node, String(), !K(isGeneric));
   return compileNormalFuncDefImpl(func, node, isLocal, !K(atomRetType));
@@ -362,23 +362,23 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
     {
       const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
       llvm::AllocaInst *stackSlot =
-        tools()->createEntryBlockAlloca(func.fFunc,
+        tools().createEntryBlockAlloca(func.fFunc,
                                        param->name(),
-                                       types()->getType(param->type()));
-      llvm::Value* tmpValue = tools()->emitPackCode(param->dstType(),
+                                       types().getType(param->type()));
+      llvm::Value* tmpValue = tools().emitPackCode(param->dstType(),
                                                    param->typeConv(),
                                                    aiter, param->type());
       builder().CreateStore(tmpValue, stackSlot);
 
-      fGenerator->fNamedValues[param->name()] = stackSlot;
+      fGenerator.fNamedValues[param->name()] = stackSlot;
     }
 
     const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->body());
     llvm::Value* retv = nullptr;
     if (blockNode)
-      retv = fGenerator->codegen(blockNode->children());
+      retv = fGenerator.codegen(blockNode->children());
     else
-      retv = fGenerator->codegenNode(node->body());
+      retv = fGenerator.codegenNode(node->body());
     hr_assert(retv);
 
     if (!retv)
@@ -393,59 +393,59 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
             (node->body()->typeConv() == kTypeCheckConv ||
              node->body()->typeConv() == kNoConv))
         {
-          builder().CreateStore(builder().CreateIntCast(tools()->wrapLoad(retv),
+          builder().CreateStore(builder().CreateIntCast(tools().wrapLoad(retv),
                                                         llvm::Type::getInt32Ty(context()),
                                                         true),
                                 func.fFunc->arg_begin());
         }
         else {
           llvm::Value* convertedRetv =
-            tools()->makeTypeCastAtomToPlain(tools()->wrapLoad(retv),
-                                             Type::newTypeRef(MID_clang_IntTypeName));
+            tools().makeTypeCastAtomToPlain(tools().wrapLoad(retv),
+                                            Type::newTypeRef(MID_clang_IntTypeName));
           builder().CreateStore(convertedRetv, func.fFunc->arg_begin());
         }
       }
       else if (forceAtomReturnType) {
         if (node->body()->type().isPlainType()) {
           llvm::Value* tmpValue =
-            tools()->emitPackCode(node->body()->dstType(),
-                                  node->body()->typeConv(),
-                                  tools()->wrapLoad(retv),
-                                  node->body()->type());
+            tools().emitPackCode(node->body()->dstType(),
+                                 node->body()->typeConv(),
+                                 tools().wrapLoad(retv),
+                                 node->body()->type());
           // mmh.  Don't know why a createstore does work here.  But it does ...?
-          builder().CreateStore(tools()->wrapLoad(tmpValue),
+          builder().CreateStore(tools().wrapLoad(tmpValue),
                                 func.fFunc->arg_begin());
           //assignAtom(tmpValue, func.fFunc->arg_begin());
         }
         else {
 //          tools()->assignAtom(retv, func.fFunc->arg_begin());
-          builder().CreateStore(tools()->wrapLoad(retv),
+          builder().CreateStore(tools().wrapLoad(retv),
                                 func.fFunc->arg_begin());
         }
       }
       else if (func.fRetType.isPlainType()) {
-        builder().CreateStore(tools()->wrapLoad(retv),
+        builder().CreateStore(tools().wrapLoad(retv),
                               func.fFunc->arg_begin());
       }
       else
-        tools()->assignAtom(retv, func.fFunc->arg_begin());
+        tools().assignAtom(retv, func.fFunc->arg_begin());
 
       builder().CreateRetVoid();
     }
     else
-      builder().CreateRet(tools()->wrapLoad(retv));
+      builder().CreateRet(tools().wrapLoad(retv));
 
     if (Properties::isCodeDump())
       func.fFunc->dump();
 
     verifyFunction(*func.fFunc);
 
-    if (fGenerator->fOptPassManager &&
+    if (fGenerator.fOptPassManager &&
         Properties::optimizeLevel() > kOptLevelNone)
-      fGenerator->fOptPassManager->run(*func.fFunc);
+      fGenerator.fOptPassManager->run(*func.fFunc);
 
     if (!isLocal && node->isAppMain())
-      fGenerator->fHasMainFunc = true;
+      fGenerator.fHasMainFunc = true;
   }
 
   return func.fFunc;

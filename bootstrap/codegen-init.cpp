@@ -53,10 +53,10 @@ namespace herschel
   class LazyCodeInitializingEmitter
   {
   protected:
-    Ptr<CodeGenerator> fGenerator;
+    CodeGenerator& fGenerator;
 
   public:
-    LazyCodeInitializingEmitter(CodeGenerator* generator)
+    LazyCodeInitializingEmitter(CodeGenerator& generator)
       : fGenerator(generator)
     {}
 
@@ -78,11 +78,11 @@ namespace herschel
   {
   public:
     Type fType;
-    ModuleRuntimeInitializer* fInitializer;
+    ModuleRuntimeInitializer& fInitializer;
 
     TypeLazyCodeInitializingEmitter(const Type& ty,
-                                    ModuleRuntimeInitializer* initializer)
-      : LazyCodeInitializingEmitter(initializer->generator()),
+                                    ModuleRuntimeInitializer& initializer)
+      : LazyCodeInitializingEmitter(initializer.generator()),
         fType(ty),
         fInitializer(initializer)
     { }
@@ -90,7 +90,7 @@ namespace herschel
 
     virtual llvm::Type* entityType() const
     {
-      return fInitializer->types()->getTypeType();
+      return fInitializer.types().getTypeType();
     }
 
 
@@ -119,7 +119,7 @@ namespace herschel
 
     virtual llvm::Value* makeEntity() const
     {
-      return fInitializer->makeTypeOrCallRegistration(fType);
+      return fInitializer.makeTypeOrCallRegistration(fType);
     }
   };
 
@@ -130,11 +130,11 @@ namespace herschel
   {
   public:
     const FuncDefNode* fNode;
-    ModuleRuntimeInitializer* fInitializer;
+    ModuleRuntimeInitializer& fInitializer;
 
     GenericsLazyCodeInitializingEmitter(const FuncDefNode* fd,
-                                        ModuleRuntimeInitializer* initializer)
-      : LazyCodeInitializingEmitter(initializer->generator()),
+                                        ModuleRuntimeInitializer& initializer)
+      : LazyCodeInitializingEmitter(initializer.generator()),
         fNode(fd),
         fInitializer(initializer)
     { }
@@ -142,7 +142,7 @@ namespace herschel
 
     virtual llvm::Type* entityType() const
     {
-      return fInitializer->types()->getGenericFuncType();
+      return fInitializer.types().getGenericFuncType();
     }
 
 
@@ -166,7 +166,7 @@ namespace herschel
 
     virtual llvm::Value* makeEntity() const
     {
-      return fInitializer->makeGenericFunctionRegistration(fNode);
+      return fInitializer.makeGenericFunctionRegistration(fNode);
     }
   };
 
@@ -177,14 +177,14 @@ namespace herschel
   {
   public:
     void emitInitCall(const TypeDefNode* tdnode,
-                      ModuleRuntimeInitializer* initializer)
+                      ModuleRuntimeInitializer& initializer)
     {
       Type ty = tdnode->defType();
-      initializer->makeGetTypeLookupCall(ty);
+      initializer.makeGetTypeLookupCall(ty);
     }
 
     void emitEntityGetter(const TypeDefNode* tdnode,
-                          ModuleRuntimeInitializer* initializer)
+                          ModuleRuntimeInitializer&initializer)
     {
       TypeLazyCodeInitializingEmitter emitter(tdnode->defType(), initializer);
       emitter.emit();
@@ -196,13 +196,13 @@ namespace herschel
   {
   public:
     void emitInitCall(const FuncDefNode* fd,
-                      ModuleRuntimeInitializer* initializer)
+                      ModuleRuntimeInitializer& initializer)
     {
-      initializer->makeGetGenericFuncLookupCall(fd);
+      initializer.makeGetGenericFuncLookupCall(fd);
     }
 
     void emitEntityGetter(const FuncDefNode* fd,
-                          ModuleRuntimeInitializer* initializer)
+                          ModuleRuntimeInitializer& initializer)
     {
       GenericsLazyCodeInitializingEmitter emitter(fd, initializer);
       emitter.emit();
@@ -214,13 +214,13 @@ namespace herschel
   {
   public:
     void emitInitCall(const ModuleRuntimeInitializer::MethodImpl& methImpl,
-                      ModuleRuntimeInitializer* initializer)
+                      ModuleRuntimeInitializer& initializer)
     {
-      initializer->makeMethodRegisterCall(methImpl);
+      initializer.makeMethodRegisterCall(methImpl);
     }
 
     void emitEntityGetter(const ModuleRuntimeInitializer::MethodImpl& methImpl,
-                         ModuleRuntimeInitializer* initializer)
+                         ModuleRuntimeInitializer& initializer)
     {
       // NOP.  This is not needed for method registration
     }
@@ -231,7 +231,7 @@ namespace herschel
 //------------------------------------------------------------------------------
 
 
-ModuleRuntimeInitializer::ModuleRuntimeInitializer(CodeGenerator* generator)
+ModuleRuntimeInitializer::ModuleRuntimeInitializer(CodeGenerator& generator)
   : CodeGeneratorProxy(generator)
 {
 }
@@ -270,8 +270,8 @@ ModuleRuntimeInitializer::emitModuleInitFunction()
 
   verifyFunction(*regFunc);
 
-  if (fGenerator->fOptPassManager && Properties::optimizeLevel() > kOptLevelNone)
-    fGenerator->fOptPassManager->run(*regFunc);
+  if (fGenerator.fOptPassManager && Properties::optimizeLevel() > kOptLevelNone)
+    fGenerator.fOptPassManager->run(*regFunc);
 
   addGlobalCtor(regFunc, K_NO_PRIORITY);
 
@@ -426,7 +426,7 @@ ModuleRuntimeInitializer::emitGlobalVarInitFunc()
 
     llvm::Value* initval = nullptr;
     if (varnode->initExpr()) {
-      initval = fGenerator->codegenNode(varnode->initExpr());
+      initval = fGenerator.codegenNode(varnode->initExpr());
     }
     else {
       hr_invalid("no initval");
@@ -437,12 +437,12 @@ ModuleRuntimeInitializer::emitGlobalVarInitFunc()
     }
 
     std::map<String, llvm::GlobalVariable*>::iterator it =
-      fGenerator->fGlobalVariables.find(varnode->name());
-    hr_assert(it != fGenerator->fGlobalVariables.end());
+      fGenerator.fGlobalVariables.find(varnode->name());
+    hr_assert(it != fGenerator.fGlobalVariables.end());
 
-    llvm::Value* val = tools()->emitPackCode(varnode->initExpr()->dstType(),
-                                             varnode->initExpr()->typeConv(),
-                                             initval, varnode->initExpr()->type());
+    llvm::Value* val = tools().emitPackCode(varnode->initExpr()->dstType(),
+                                            varnode->initExpr()->typeConv(),
+                                            initval, varnode->initExpr()->type());
     builder().CreateStore(val, it->second);
   }
 }
@@ -472,7 +472,7 @@ ModuleRuntimeInitializer::emitEntityInitFunc(const std::vector<NodeT>& entities,
   if (!entities.empty())
   {
     for (size_t i = 0; i < entities.size(); i++)
-      strategy.emitInitCall(entities[i], this);
+      strategy.emitInitCall(entities[i], *this);
   }
 }
 
@@ -485,7 +485,7 @@ ModuleRuntimeInitializer::emitEntityGetterFunc(const std::vector<NodeT>& entitie
   if (!entities.empty())
   {
     for (size_t i = 0; i < entities.size(); i++)
-      strategy.emitEntityGetter(entities[i], this);
+      strategy.emitEntityGetter(entities[i], *this);
   }
 }
 
@@ -495,7 +495,7 @@ ModuleRuntimeInitializer::emitEntityGetterFunc(const std::vector<NodeT>& entitie
 llvm::Value*
 ModuleRuntimeInitializer::makeGetTypeLookupCall(const Type& ty) const
 {
-  return fGenerator->makeGetTypeLookupCall(ty);
+  return fGenerator.makeGetTypeLookupCall(ty);
 }
 
 
@@ -506,7 +506,7 @@ ModuleRuntimeInitializer::makeTypeRegisterCall(llvm::Value* newType) const
   if (!regFunc) {
     auto ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
                                       std::vector<llvm::Type*>{
-                                        types()->getTypeType()},
+                                        types().getTypeType()},
                                       !K(isVarArg));
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
@@ -528,7 +528,7 @@ ModuleRuntimeInitializer::createTypeSlotSpec(const String& slotName,
                                     (zstring)StrHelper(slotName + "_str"));
 
   return llvm::ConstantStruct::get(
-    types()->getTypeSlotPairType(),
+    types().getTypeSlotPairType(),
     std::vector<llvm::Constant*>{
       static_cast<llvm::Constant*>(slotStrValue),
       llvm::ConstantInt::get(context(),
@@ -549,7 +549,7 @@ ModuleRuntimeInitializer::orderTypeSlots(const TypeSlotList& typeSlots) const
 
     //---- group slots by size
     for (size_t i = 0; i < typeSlots.size(); i++) {
-      size_t slotSize = types()->getSlotSize(typeSlots[i].type());
+      size_t slotSize = types().getSlotSize(typeSlots[i].type());
 
       // should not have any types larger than 16 bytes
       hr_assert(slotSize == 1 || slotSize == 2 ||
@@ -575,7 +575,7 @@ ModuleRuntimeInitializer::orderTypeSlots(const TypeSlotList& typeSlots) const
       }
     }
 
-    const size_t quantizeSize = generator()->is64Bit()
+    const size_t quantizeSize = generator().is64Bit()
       ? 8
       : 4;
     retv.fTotalSize = (offset % quantizeSize != 0
@@ -603,9 +603,9 @@ ModuleRuntimeInitializer::computeTypeSlotAndClassSpecs(const Type& ty) const
                                                   orderedSlots.fSlotOffsets[i]);
     slotSpecs.push_back(slotSpec);
   }
-  slotSpecs.push_back(llvm::Constant::getNullValue(types()->getTypeSlotPairType()));
+  slotSpecs.push_back(llvm::Constant::getNullValue(types().getTypeSlotPairType()));
 
-  llvm::ArrayType* arrayType = llvm::ArrayType::get(types()->getTypeSlotPairType(),
+  llvm::ArrayType* arrayType = llvm::ArrayType::get(types().getTypeSlotPairType(),
                                                     slotSpecs.size());
 
   SlotAndClassSpecs retv;
@@ -624,10 +624,10 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
   llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("h7_class_alloc"));
   if (!allocFunc) {
     auto ft = llvm::FunctionType::get(
-      types()->getTypeType(),
+      types().getTypeType(),
       std::vector<llvm::Type*>{ llvm::Type::getInt8PtrTy(context()), // typename
                                 llvm::Type::getInt32Ty(context()),   // instance size
-                                types()->getTypeSlotPairType()->getPointerTo(), // const TypeSlotPair*
+                                types().getTypeSlotPairType()->getPointerTo(), // const TypeSlotPair*
                                 llvm::Type::getInt32Ty(context())},   // isa_size
       K(isVarArg));
 
@@ -662,7 +662,7 @@ ModuleRuntimeInitializer::makeClassAllocCall(const Type& ty) const
 
   llvm::Value* v2 = builder().CreateConstGEP1_32(gv, 0);
   llvm::Value* v3 = builder().CreatePointerCast(v2,
-                                                types()->getTypeSlotPairType()->getPointerTo());
+                                                types().getTypeSlotPairType()->getPointerTo());
   argv.push_back(v3);
 
   // arg 4: the number of inherited classes/types
@@ -697,7 +697,7 @@ ModuleRuntimeInitializer::makeTypeAllocCall(const Type& ty) const
   llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("h7_type_alloc"));
   if (!allocFunc) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
-      types()->getTypeType(),
+      types().getTypeType(),
       std::vector<llvm::Type*>{ llvm::Type::getInt8PtrTy(context()), // typename
                                 llvm::Type::getInt32Ty(context()) }, // isa_size
       K(isVarArg));
@@ -748,7 +748,7 @@ ModuleRuntimeInitializer::makeTypeOrCallRegistration(const Type& ty) const
 llvm::Value*
 ModuleRuntimeInitializer::makeGetGenericFuncLookupCall(const FuncDefNode* node) const
 {
-  return fGenerator->makeGetGenericFuncLookupCall(node);
+  return fGenerator.makeGetGenericFuncLookupCall(node);
 }
 
 
@@ -759,7 +759,7 @@ ModuleRuntimeInitializer::makeGenericFuncRegisterCall(llvm::Value* newGF) const
     module()->getFunction(llvm::StringRef("h7_register_generic_function"));
   if (!regFunc) {
     llvm::FunctionType *ft = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
-                                                     std::vector<llvm::Type*>{types()->getGenericFuncType()},
+                                                     std::vector<llvm::Type*>{types().getGenericFuncType()},
                                                      !K(isVarArg));
     regFunc = llvm::Function::Create(ft,
                                      llvm::Function::ExternalLinkage,
@@ -780,7 +780,7 @@ ModuleRuntimeInitializer::makeGenericFuncAllocCall(const FuncDefNode* node) cons
   llvm::Function* allocFunc = module()->getFunction(llvm::StringRef("h7_generic_function_alloc"));
   if (!allocFunc) {
     llvm::FunctionType *ft = llvm::FunctionType::get(
-      types()->getGenericFuncType(),
+      types().getGenericFuncType(),
       std::vector<llvm::Type*>{ llvm::Type::getInt8PtrTy(context()), // typename,
                                 llvm::Type::getInt32Ty(context()) }, // argc
       !K(isVarArg));
@@ -818,8 +818,8 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
   if (!regFunc) {
     llvm::FunctionType* ft = llvm::FunctionType::get(
       llvm::Type::getVoidTy(context()),
-      std::vector<llvm::Type*>{ types()->getGenericFuncType(),       // GenericFunction*,
-                                types()->getMethodType(),            // void*
+      std::vector<llvm::Type*>{ types().getGenericFuncType(),       // GenericFunction*,
+                                types().getMethodType(),            // void*
                                 llvm::Type::getInt32Ty(context()) }, // argc
       K(isVarArg));
 
@@ -844,7 +844,7 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
   // push the function pointer as second argument.  This is the function to
   // be called for this method (properly casted to void*, as we need a
   // "general function signature" for all functions).
-  argv.push_back(llvm::ConstantExpr::getBitCast(method, types()->getMethodType()));
+  argv.push_back(llvm::ConstantExpr::getBitCast(method, types().getMethodType()));
   // push the number of specialized type arguments as third argument
   argv.push_back(llvm::ConstantInt::get(context(),
                                         llvm::APInt(32, countOfSpecs, true)));
@@ -916,11 +916,11 @@ LazyCodeInitializingEmitter::emit()
                                                       llvm::GlobalVariable::NotThreadLocal,
                                                       0);    // AddressSpace
   hr_assert(gv);
-  fGenerator->module()->getGlobalList().push_back(gv);
+  fGenerator.module()->getGlobalList().push_back(gv);
 
 
   String funcName = herschel::mangleToC(entityGetterFunctionName());
-  llvm::Function* typeFunc = fGenerator->module()->getFunction(llvm::StringRef(funcName));
+  llvm::Function* typeFunc = fGenerator.module()->getFunction(llvm::StringRef(funcName));
 
   if (!typeFunc)
   {
@@ -930,66 +930,66 @@ LazyCodeInitializingEmitter::emit()
     typeFunc = llvm::Function::Create(ft,
                                       llvm::Function::ExternalLinkage,
                                       llvm::Twine(funcName),
-                                      fGenerator->module());
+                                      fGenerator.module());
   }
 
-  llvm::BasicBlock *bb = llvm::BasicBlock::Create(fGenerator->context(), "entry", typeFunc);
-  fGenerator->builder().SetInsertPoint(bb);
+  llvm::BasicBlock *bb = llvm::BasicBlock::Create(fGenerator.context(), "entry", typeFunc);
+  fGenerator.builder().SetInsertPoint(bb);
 
   //-------- test
-  llvm::Value* testValue = fGenerator->builder()
-    .CreateIsNull(fGenerator->builder().CreateLoad(gv));
+  llvm::Value* testValue = fGenerator.builder()
+    .CreateIsNull(fGenerator.builder().CreateLoad(gv));
 
-  llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(fGenerator->context(),
+  llvm::BasicBlock *thenBB = llvm::BasicBlock::Create(fGenerator.context(),
                                                       "then",
                                                       typeFunc);
-  llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(fGenerator->context(),
+  llvm::BasicBlock *elseBB = llvm::BasicBlock::Create(fGenerator.context(),
                                                       "else");
-  llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(fGenerator->context(),
+  llvm::BasicBlock *mergeBB = llvm::BasicBlock::Create(fGenerator.context(),
                                                        "ifcont");
 
-  fGenerator->builder().CreateCondBr(testValue, thenBB, elseBB);
+  fGenerator.builder().CreateCondBr(testValue, thenBB, elseBB);
 
   //-------- then
-  fGenerator->builder().SetInsertPoint(thenBB);
+  fGenerator.builder().SetInsertPoint(thenBB);
 
   llvm::Value* thenValue = makeEntity();
-  fGenerator->builder().CreateStore(thenValue, gv);
-  llvm::Value* thenValue2 = fGenerator->builder().CreateLoad(gv);
+  fGenerator.builder().CreateStore(thenValue, gv);
+  llvm::Value* thenValue2 = fGenerator.builder().CreateLoad(gv);
 
-  fGenerator->builder().CreateBr(mergeBB);
+  fGenerator.builder().CreateBr(mergeBB);
   // Get a reference to the current thenBB, since codegen of 'then' can change
   // the current block, update thenBB for the PHI.
-  thenBB = fGenerator->builder().GetInsertBlock();
+  thenBB = fGenerator.builder().GetInsertBlock();
 
   //-------- else
   typeFunc->getBasicBlockList().push_back(elseBB);
-  fGenerator->builder().SetInsertPoint(elseBB);
+  fGenerator.builder().SetInsertPoint(elseBB);
 
-  llvm::Value* elseValue = fGenerator->builder().CreateLoad(gv);
+  llvm::Value* elseValue = fGenerator.builder().CreateLoad(gv);
 
-  fGenerator->builder().CreateBr(mergeBB);
+  fGenerator.builder().CreateBr(mergeBB);
 
-  elseBB = fGenerator->builder().GetInsertBlock();
+  elseBB = fGenerator.builder().GetInsertBlock();
 
   // Emit merge block.
   typeFunc->getBasicBlockList().push_back(mergeBB);
-  fGenerator->builder().SetInsertPoint(mergeBB);
+  fGenerator.builder().SetInsertPoint(mergeBB);
 
-  llvm::PHINode *pn = fGenerator->builder().CreatePHI(entityType(), 0, "iftmp");
+  llvm::PHINode *pn = fGenerator.builder().CreatePHI(entityType(), 0, "iftmp");
 
   pn->addIncoming(thenValue2, thenBB);
   pn->addIncoming(elseValue, elseBB);
 
-  fGenerator->builder().CreateRet(pn);
+  fGenerator.builder().CreateRet(pn);
 
   if (Properties::isCodeDump())
     typeFunc->dump();
 
   verifyFunction(*typeFunc);
 
-  if (fGenerator->optPassManager() && Properties::optimizeLevel() > kOptLevelNone)
-    fGenerator->optPassManager()->run(*typeFunc);
+  if (fGenerator.optPassManager() && Properties::optimizeLevel() > kOptLevelNone)
+    fGenerator.optPassManager()->run(*typeFunc);
 }
 
 

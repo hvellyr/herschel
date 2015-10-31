@@ -46,7 +46,7 @@
 
 using namespace herschel;
 
-CodegenBinaryNode::CodegenBinaryNode(CodeGenerator* generator)
+CodegenBinaryNode::CodegenBinaryNode(CodeGenerator& generator)
   : CodeGeneratorProxy(generator)
 {
 }
@@ -69,32 +69,32 @@ CodegenBinaryNode::emit(const BinaryNode* node) const
   */
 
   if (node->left()->type().isAnyInt() && node->right()->type().isAnyInt()) {
-    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
-    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    llvm::Value *left = tools().wrapLoad(generator().codegenNode(node->left()));
+    llvm::Value *right = tools().wrapLoad(generator().codegenNode(node->right()));
     if (!left || !right)
       return nullptr;
     return codegenOpIntInt(node, left, right);
   }
 
   else if (node->left()->type().isKeyword() && node->right()->type().isKeyword()) {
-    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
-    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    llvm::Value *left = tools().wrapLoad(generator().codegenNode(node->left()));
+    llvm::Value *right = tools().wrapLoad(generator().codegenNode(node->right()));
     if (!left || !right)
       return nullptr;
     return codegenOpKeywKeyw(node, left, right);
   }
 
   else if (node->left()->type().isBool() && node->right()->type().isBool()) {
-    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
-    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    llvm::Value *left = tools().wrapLoad(generator().codegenNode(node->left()));
+    llvm::Value *right = tools().wrapLoad(generator().codegenNode(node->right()));
     if (!left || !right)
       return nullptr;
     return codegenOpBoolBool(node, left, right);
   }
 
   else if (node->left()->type().isChar() && node->right()->type().isChar()) {
-    llvm::Value *left = tools()->wrapLoad(generator()->codegenNode(node->left()));
-    llvm::Value *right = tools()->wrapLoad(generator()->codegenNode(node->right()));
+    llvm::Value *left = tools().wrapLoad(generator().codegenNode(node->left()));
+    llvm::Value *right = tools().wrapLoad(generator().codegenNode(node->right()));
     if (!left || !right)
       return nullptr;
     return codegenOpCharChar(node, left, right);
@@ -108,7 +108,7 @@ llvm::Value*
 CodegenBinaryNode::coerceIntOperand(const Type& dstType, const Type& isType,
                                     llvm::Value* value) const
 {
-  return builder().CreateIntCast(value, types()->getType(dstType), isType.isSigned());
+  return builder().CreateIntCast(value, types().getType(dstType), isType.isSigned());
 }
 
 
@@ -125,7 +125,7 @@ CodegenBinaryNode::wrapInt(llvm::Value* value, const Type& type, bool forceSigne
 
   hr_assert(type.isAnyInt());
   if (type.isInt32())
-    return tools()->makeIntAtom(value, CodegenTools::kAtomInt32);
+    return tools().makeIntAtom(value, CodegenTools::kAtomInt32);
 
   hr_invalid("TODO unhandled int type");
 
@@ -140,7 +140,7 @@ CodegenBinaryNode::wrapBool(llvm::Value* value, const Type& type) const
     return value;
 
   hr_assert(type.isBool());
-  return tools()->makeBoolAtom(value);
+  return tools().makeBoolAtom(value);
 }
 
 
@@ -155,7 +155,7 @@ CodegenBinaryNode::convertToPlainInt(const Type& dstType,
   case kNoConv:
     return coerceIntOperand(dstType, right->type(), value);
   case kAtom2PlainConv:
-    return tools()->makeTypeCastAtomToPlain(value, dstType);
+    return tools().makeTypeCastAtomToPlain(value, dstType);
   case kPlain2AtomConv:
   case kTypeCheckConv:
     hr_invalid("");
@@ -282,13 +282,13 @@ CodegenBinaryNode::codegenOpKeywKeyw(const BinaryNode* node,
                                      llvm::Value* left,
                                      llvm::Value* right) const
 {
-  llvm::Value* plainLeft = tools()->makeTypeCastAtomToPlain(left,
+  llvm::Value* plainLeft = tools().makeTypeCastAtomToPlain(left,
                                                             Type::newKeyword());
-  llvm::Value* plainRight = tools()->makeTypeCastAtomToPlain(right,
+  llvm::Value* plainRight = tools().makeTypeCastAtomToPlain(right,
                                                              Type::newKeyword());
 
-  llvm::Value* leftAsInt = tools()->createCastPtrToNativeInt(plainLeft);
-  llvm::Value* rightAsInt = tools()->createCastPtrToNativeInt(plainRight);
+  llvm::Value* leftAsInt = tools().createCastPtrToNativeInt(plainLeft);
+  llvm::Value* rightAsInt = tools().createCastPtrToNativeInt(plainRight);
 
   switch (node->op()) {
   case kOpEqual:
@@ -315,7 +315,7 @@ CodegenBinaryNode::coerceBoolOperand(const Type& dstType,
                                      llvm::Value* value) const
 {
   return builder().CreateTruncOrBitCast(value,
-                                        types()->getType(dstType));
+                                        types().getType(dstType));
 }
 
 
@@ -328,7 +328,7 @@ CodegenBinaryNode::convertToPlainBool(const AptNode* dst,
   case kNoConv:
     return coerceBoolOperand(dst->type(), value);
   case kAtom2PlainConv:
-    return tools()->makeTypeCastAtomToPlain(value, dst->type());
+    return tools().makeTypeCastAtomToPlain(value, dst->type());
   case kPlain2AtomConv:
   case kTypeCheckConv:
     hr_invalid("");
@@ -377,7 +377,7 @@ llvm::Value*
 CodegenBinaryNode::coerceCharOperand(const Type& dstType,
                                      llvm::Value* value) const
 {
-  return builder().CreateIntCast(value, types()->getType(dstType), !K(isSigned));
+  return builder().CreateIntCast(value, types().getType(dstType), !K(isSigned));
 }
 
 
@@ -390,7 +390,7 @@ CodegenBinaryNode::convertToPlainChar(const AptNode* dst,
   case kNoConv:
     return coerceCharOperand(dst->type(), value);
   case kAtom2PlainConv:
-    return tools()->makeTypeCastAtomToPlain(value, dst->type());
+    return tools().makeTypeCastAtomToPlain(value, dst->type());
   case kPlain2AtomConv:
   case kTypeCheckConv:
     hr_invalid("");

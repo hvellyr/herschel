@@ -36,7 +36,7 @@ namespace herschel
   class CodegenApply : public CodeGeneratorProxy
   {
   public:
-    CodegenApply(CodeGenerator* generator);
+    CodegenApply(CodeGenerator& generator);
 
     llvm::Value* emit(const ApplyNode* node) const;
 

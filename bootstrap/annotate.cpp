@@ -31,12 +31,11 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler* compiler)
+AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler& compiler)
   : AptNodeCompilePass(level),
     fScope(std::move(scope)),
     fCompiler(compiler)
 {
-  hr_assert(fCompiler);
 }
 
 
@@ -52,12 +51,11 @@ AnnotatePass::doApply(AptNode* src)
 
 //----------------------------------------------------------------------------
 
-Annotator::Annotator(std::shared_ptr<Scope> scope, Compiler* compiler)
+Annotator::Annotator(std::shared_ptr<Scope> scope, Compiler& compiler)
   : fScope(std::move(scope)),
     fPhase(kRegister),
     fCompiler(compiler)
 {
-  hr_assert(fCompiler);
 }
 
 
@@ -158,13 +156,13 @@ Annotator::annotate(SymbolNode* node)
         // referenced), such that the codegen can produce extern declaration
         // for it if needed
         SrcPos srcpos;
-        if (!fCompiler->referredFunctionCache()->hasName(Scope::kNormal,
-                                                         node->name(),
-                                                         &srcpos))
+        if (!fCompiler.referredFunctionCache()->hasName(Scope::kNormal,
+                                                        node->name(),
+                                                        &srcpos))
         {
-          fCompiler->referredFunctionCache()->registerFunction(funcdef->srcpos(),
-                                                               node->name(),
-                                                               funcdef->clone());
+          fCompiler.referredFunctionCache()->registerFunction(funcdef->srcpos(),
+                                                              node->name(),
+                                                              funcdef->clone());
         }
       }
       else if (dynamic_cast<const ParamNode*>(var)) {

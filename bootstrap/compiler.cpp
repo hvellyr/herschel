@@ -156,9 +156,8 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
     Ptr<AptNode> apt;
     Token parsedExprs;
 
-    Ptr<TokenCompilePass> tokenPass = new ExprPass(1, this,
-                                                   fState.fToken, fState.fScope);
-    parsedExprs = tokenPass->apply(Token(), doTrace);
+    ExprPass tokenPass{1, *this, fState.fToken, fState.fScope};
+    parsedExprs = tokenPass.apply(Token(), doTrace);
 
     // let all following passes run beneath the same root-scope.
     {
@@ -167,26 +166,24 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
                               !K(isInnerScope),
                               kScopeL_CompileUnit);
 
-      Ptr<NodifyPass> nodifyPass = new NodifyPass(2, this, fState.fScope);
-      apt = nodifyPass->apply(parsedExprs, doTrace);
+      NodifyPass nodifyPass{2, *this, fState.fScope};
+      apt = nodifyPass.apply(parsedExprs, doTrace);
 
       // if the compileunit contains open-ended module declarations
       // (i.e. without {}) get the last valid scope back and make it the
       // current one.  It contains the complete upstream chain of scopes.  (We
       // must not simply export it back to the original fState.fScope, since
       // the symbols may not be exportable at all).
-      fState.fScope = nodifyPass->currentScope();
+      fState.fScope = nodifyPass.currentScope();
 
-      Ptr<AptNodeCompilePass> nodePass;
+      TransformPass nodePass1{3};
+      apt = nodePass1.apply(apt.release(), doTrace);
 
-      nodePass = new TransformPass(3);
-      apt = nodePass->apply(apt.release(), doTrace);
+      AnnotatePass nodePass2{4, fState.fScope, *this};
+      apt = nodePass2.apply(apt.release(), doTrace);
 
-      nodePass = new AnnotatePass(4, fState.fScope, this);
-      apt = nodePass->apply(apt.release(), doTrace);
-
-      nodePass = new TypifyPass(5);
-      apt = nodePass->apply(apt.release(), doTrace);
+      TypifyPass nodePass3{5};
+      apt = nodePass3.apply(apt.release(), doTrace);
     }
 
     return apt.release();
@@ -292,14 +289,14 @@ Compiler::importFileImpl(const SrcPos& srcpos,
     logf(kDebug, "Import '%s'", (zstring)StrHelper(srcName));
 
   try {
-    Ptr<Compiler> compiler = new Compiler(K(isParsingInterface));
+    auto compiler = Compiler{K(isParsingInterface)};
     if (preload)
-      compiler->importSystemHeaders(absPath);
+      compiler.importSystemHeaders(absPath);
 
-    Ptr<AptNode> apt = compiler->processImpl(new CharPort(
-                                               new FilePort(absPath, "rb")),
-                                             srcName, !K(doTrace));
-    auto scope = compiler->scope();
+    Ptr<AptNode> apt = compiler.processImpl(new CharPort(
+                                              new FilePort(absPath, "rb")),
+                                            srcName, !K(doTrace));
+    auto scope = compiler.scope();
 
     currentScope->addImportedScope(absPath, scope);
 
@@ -370,27 +367,27 @@ Compiler::CompilerState::operator=(const CompilerState& item)
 
 //==============================================================================
 
-Compiler::PortStackHelper::PortStackHelper(Compiler* compiler, TokenPort* port)
+Compiler::PortStackHelper::PortStackHelper(Compiler& compiler, TokenPort* port)
   : fCompiler(compiler),
     fPortOnly(true)
 {
-  fCompiler->fCompilerStates.push_front(fCompiler->fState);
-  fCompiler->fState = CompilerState(
-    compiler->charRegistry(),
-    new ConfigVarRegistry(compiler->configVarRegistry()),
-    compiler->fState.fScope);
+  fCompiler.fCompilerStates.push_front(fCompiler.fState);
+  fCompiler.fState = CompilerState(
+    compiler.charRegistry(),
+    new ConfigVarRegistry(compiler.configVarRegistry()),
+    compiler.fState.fScope);
 
-  fCompiler->fState.fPort = port;
+  fCompiler.fState.fPort = port;
 }
 
 
 Compiler::PortStackHelper::~PortStackHelper()
 {
-  hr_assert(!fCompiler->fCompilerStates.empty());
+  hr_assert(!fCompiler.fCompilerStates.empty());
 
-  CompilerState current = fCompiler->fState;
-  fCompiler->fState = fCompiler->fCompilerStates.front();
-  fCompiler->fCompilerStates.pop_front();
+  CompilerState current = fCompiler.fState;
+  fCompiler.fState = fCompiler.fCompilerStates.front();
+  fCompiler.fCompilerStates.pop_front();
 
   if (!fPortOnly) {
     // merge current.fScope into fCompiler->fState; same for configVarReg and
@@ -409,10 +406,10 @@ namespace herschel
   {
     try {
       if (doParse) {
-        Ptr<Compiler> compiler = new Compiler;
-        Ptr<AptNode> apt = compiler->process(new CharPort(
-                                               new FilePort(file, "rb")),
-                                             file);
+        Compiler compiler{};
+        Ptr<AptNode> apt = compiler.process(new CharPort(
+                                              new FilePort(file, "rb")),
+                                            file);
         if (doCompile) {
           hr_assert(apt);
           auto unit = dynamic_cast<CompileUnitNode*>(apt.obj());
@@ -423,8 +420,8 @@ namespace herschel
             String outFile = makeOutputFileName(Properties::outdir(),
                                                 outfileName, file, outExt);
 
-            Ptr<CodeGenerator> codegen = new CodeGenerator(compiler);
-            codegen->compileToCode(unit, outFile);
+            CodeGenerator codegen{compiler};
+            codegen.compileToCode(unit, outFile);
           }
 
           if (doLink) {

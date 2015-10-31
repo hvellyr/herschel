@@ -14,7 +14,6 @@
 #include "llvm/IR/IRBuilder.h"
 
 #include "str.h"
-#include "refcountable.h"
 #include "codegen-proxy.h"
 
 
@@ -42,8 +41,7 @@ namespace herschel
 
   //----------------------------------------------------------------------------
 
-  class ModuleRuntimeInitializer : public RefCountable,
-                                   public CodeGeneratorProxy
+  class ModuleRuntimeInitializer : public CodeGeneratorProxy
   {
   public:
     struct MethodImpl
@@ -58,7 +56,7 @@ namespace herschel
     };
 
 
-    ModuleRuntimeInitializer(CodeGenerator* generator);
+    ModuleRuntimeInitializer(CodeGenerator& generator);
 
     void finish();
 

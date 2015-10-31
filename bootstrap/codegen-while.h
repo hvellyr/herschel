@@ -34,7 +34,7 @@ namespace herschel
   class CodegenWhile : public CodeGeneratorProxy
   {
   public:
-    CodegenWhile(CodeGenerator* generator);
+    CodegenWhile(CodeGenerator& generator);
 
     llvm::Value* emit(const WhileNode* node) const;
   };

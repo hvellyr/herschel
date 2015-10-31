@@ -59,7 +59,7 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-CodeGenerator::CodeGenerator(Compiler* compiler)
+CodeGenerator::CodeGenerator(Compiler& compiler)
   : fCompiler(compiler),
     fContext(llvm::getGlobalContext()),
     fModule(nullptr),
@@ -67,13 +67,11 @@ CodeGenerator::CodeGenerator(Compiler* compiler)
     fBuilder(context()),
     fOptPassManager(nullptr),
     fDataLayout(nullptr),
-    fInitializer(new ModuleRuntimeInitializer(this)),
-    fTypes(new CodegenTypeUtils(this)),
-    fTools(new CodegenTools(this)),
+    fInitializer(new ModuleRuntimeInitializer(*this)),
+    fTypes(new CodegenTypeUtils(*this)),
+    fTools(new CodegenTools(*this)),
     fHasMainFunc(false)
 {
-  hr_assert(fCompiler);
-
   llvm::InitializeNativeTarget();
 
   fModule = new llvm::Module("compile-unit", fContext);
@@ -357,7 +355,7 @@ CodeGenerator::codegen(const SlotdefNode* node)
 llvm::Value*
 CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 {
-  return CodegenVardef(this).emit(node, isLocal);
+  return CodegenVardef(*this).emit(node, isLocal);
 }
 
 
@@ -387,7 +385,7 @@ CodeGenerator::codegen(const AssignNode* node)
     return rvalue;
   }
   else if (const SlotRefNode* lslot = dynamic_cast<const SlotRefNode*>(lvalue)) {
-    return CodegenSlot(this).emitSlotRefAssignment(lslot, node->rvalue());
+    return CodegenSlot(*this).emitSlotRefAssignment(lslot, node->rvalue());
   }
 
   logf(kError, "Not supported yet: %s", typeid(node).name());
@@ -559,7 +557,7 @@ CodeGenerator::codegen(const RangeNode* node)
 llvm::Value*
 CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 {
-  return CodegenFuncDef(this).emit(node, isLocal);
+  return CodegenFuncDef(*this).emit(node, isLocal);
 }
 
 
@@ -575,7 +573,7 @@ CodeGenerator::codegen(const FunctionNode* node)
 llvm::Value*
 CodeGenerator::codegen(const ApplyNode* node)
 {
-  return CodegenApply(this).emit(node);
+  return CodegenApply(*this).emit(node);
 }
 
 
@@ -600,7 +598,7 @@ CodeGenerator::codegen(const ParamNode* node)
 llvm::Value*
 CodeGenerator::codegen(const BinaryNode* node)
 {
-  return CodegenBinaryNode(this).emit(node);
+  return CodegenBinaryNode(*this).emit(node);
 }
 
 
@@ -631,7 +629,7 @@ CodeGenerator::codegen(const UnaryNode* node)
 llvm::Value*
 CodeGenerator::codegen(const IfNode* node)
 {
-  return CodegenIf(this).emit(node);
+  return CodegenIf(*this).emit(node);
 }
 
 
@@ -681,7 +679,7 @@ CodeGenerator::codegen(const UnitConstNode* node)
 llvm::Value*
 CodeGenerator::codegen(const WhileNode* node)
 {
-  return CodegenWhile(this).emit(node);
+  return CodegenWhile(*this).emit(node);
 }
 
 
@@ -712,5 +710,5 @@ CodeGenerator::codegen(const UndefNode* node)
 llvm::Value*
 CodeGenerator::codegen(const SlotRefNode* node)
 {
-  return CodegenSlot(this).emitSlotRefAccess(node);
+  return CodegenSlot(*this).emitSlotRefAccess(node);
 }

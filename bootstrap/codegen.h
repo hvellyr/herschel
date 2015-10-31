@@ -13,13 +13,14 @@
 
 #include "llvm/IR/IRBuilder.h"
 
-#include "refcountable.h"
 #include "ptr.h"
 #include "apt.h"
 
 #include <map>
-#include <vector>
+#include <memory>
 #include <string>
+#include <vector>
+
 
 namespace llvm
 {
@@ -97,10 +98,10 @@ namespace herschel
   //----------------------------------------------------------------------------
 
   //! The code generation pass.
-  class CodeGenerator : public RefCountable
+  class CodeGenerator
   {
   public:
-    CodeGenerator(Compiler* compiler);
+    CodeGenerator(Compiler& compiler);
     ~CodeGenerator();
 
     bool compileToCode(const CompileUnitNode* node, const String& outputFile);
@@ -192,7 +193,7 @@ namespace herschel
 
     //-------- data members
 
-    Compiler*                  fCompiler;
+    Compiler&                  fCompiler;
     llvm::LLVMContext&         fContext;
     llvm::Module*              fModule;
     // llvm::DIBuilder*        fDIBuilder;
@@ -200,9 +201,9 @@ namespace herschel
     llvm::legacy::FunctionPassManager* fOptPassManager;
     const llvm::DataLayout*    fDataLayout;
 
-    Ptr<ModuleRuntimeInitializer> fInitializer;
-    Ptr<CodegenTypeUtils>      fTypes;
-    Ptr<CodegenTools>          fTools;
+    std::unique_ptr<ModuleRuntimeInitializer> fInitializer;
+    std::unique_ptr<CodegenTypeUtils> fTypes;
+    std::unique_ptr<CodegenTools> fTools;
 
     bool fHasMainFunc;
 

@@ -25,8 +25,7 @@ namespace herschel
   class AbstractPass : public RefCountable
   {
   public:
-    AbstractPass();
-    AbstractPass(Compiler* compiler, std::shared_ptr<Scope> scope);
+    AbstractPass(Compiler& compiler, std::shared_ptr<Scope> scope);
 
     String currentModuleName() const;
     void pushModule(const String& name, bool setName);
@@ -58,7 +57,7 @@ namespace herschel
     std::list<String> fModuleNameStack;
 
     std::shared_ptr<Scope> fScope;
-    Ptr<Compiler>     fCompiler;
+    Compiler&         fCompiler;
   };
 };                              // namespace
 

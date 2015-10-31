@@ -46,7 +46,7 @@ namespace herschel
   class FirstPass : public AbstractPass
   {
   public:
-    FirstPass(Compiler* compiler, const Token& currentToken,
+    FirstPass(Compiler& compiler, const Token& currentToken,
               std::shared_ptr<Scope> scope);
 
     //! Get the next token from the input stream and return it.
@@ -301,14 +301,14 @@ namespace herschel
   class ExprPass : public TokenCompilePass
   {
   public:
-    ExprPass(int level, Compiler* compiler, const Token& currentToken,
+    ExprPass(int level, Compiler& compiler, const Token& currentToken,
              std::shared_ptr<Scope> scope);
     virtual Token doApply(const Token& src);
 
   private:
     Token         fCurrentToken;
     std::shared_ptr<Scope> fScope;
-    Ptr<Compiler> fCompiler;
+    Compiler&     fCompiler;
   };
 };
 

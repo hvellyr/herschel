@@ -31,7 +31,7 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-NodifyPass::NodifyPass(int level, Compiler* compiler,
+NodifyPass::NodifyPass(int level, Compiler& compiler,
                        std::shared_ptr<Scope> scope)
   : Token2AptNodeCompilePass(level),
     fScope(std::move(scope)),
@@ -56,7 +56,7 @@ NodifyPass::currentScope()
 
 //----------------------------------------------------------------------------
 
-SecondPass::SecondPass(Compiler* compiler, std::shared_ptr<Scope> scope)
+SecondPass::SecondPass(Compiler& compiler, std::shared_ptr<Scope> scope)
   : AbstractPass(compiler, std::move(scope))
 {
 }
@@ -203,7 +203,7 @@ SecondPass::parseImport(const Token& expr)
   if (canImport) {
     try
     {
-      fCompiler->importFile(expr.srcpos(), importFile, !K(isPublic), fScope);
+      fCompiler.importFile(expr.srcpos(), importFile, !K(isPublic), fScope);
     }
     catch (const Exception& e) {
       error(expr.srcpos(), E_UnknownInputFile, e.message());
@@ -480,7 +480,7 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenTy
 
         int sizeInd = 0;
         if (expr[1].count() > 0) {
-          TokenEvalContext ctx(fCompiler->configVarRegistry());
+          TokenEvalContext ctx(fCompiler.configVarRegistry());
           Token p = ctx.evalToken(expr[1][0]);
           if (p.isInt()) {
             sizeInd = p.intValue();
@@ -1716,7 +1716,7 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
 
   Ptr<AptNode> initExpr;
   if (ofs + 1 < expr.count() && seq[ofs] == kAssign) {
-    if (!fCompiler->isParsingInterface() ||
+    if (!fCompiler.isParsingInterface() ||
         flags == kConstVar || flags == kConfigVar)
     {
       initExpr = singletonNodeListOrNull(parseExpr(seq[ofs + 1]));
@@ -1782,7 +1782,7 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
   if (ofs < seq.size()) {
     if (seq[ofs] == kEllipsis)
       data.fFlags |= kFuncIsAbstract;
-    else if (!fCompiler->isParsingInterface())
+    else if (!fCompiler.isParsingInterface())
       data.fBody = singletonNodeListOrNull(parseExpr(seq[ofs]));
     ofs++;
   }
@@ -2112,7 +2112,7 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
 AptNode*
 SecondPass::parseIf(const Token& expr)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.count() >= 3);
   hr_assert(expr[0] == kIfId);
   hr_assert(expr[1].isNested());
@@ -2197,7 +2197,7 @@ SecondPass::parseParameter(const Token& expr)
     if (seq[ofs] == kAssign) {
       hr_assert(ofs + 1 < expr.count());
 
-      if (!fCompiler->isParsingInterface())
+      if (!fCompiler.isParsingInterface())
         initExpr = singletonNodeListOrNull(parseExpr(seq[ofs + 1]));
       ofs += 2;
 
@@ -2460,7 +2460,7 @@ SecondPass::parseFunCallArgs(const TokenVector& args)
 AptNode*
 SecondPass::parseFunCall(const Token& expr)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 2);
   hr_assert(expr[1].isNested());
@@ -2893,7 +2893,7 @@ SecondPass::constructWhileTestNode(const Token& expr, NodeList& testExprs)
 AptNode*
 SecondPass::parseFor(const Token& expr)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
 
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 3 || expr.count() == 5);
@@ -3047,7 +3047,7 @@ SecondPass::parseFor(const Token& expr)
 AptNode*
 SecondPass::parseSelect(const Token& expr)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
 
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 3);
@@ -3190,7 +3190,7 @@ SecondPass::parseChainSelect(const Token& expr)
 AptNode*
 SecondPass::parseMatch(const Token& expr)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
 
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 3);
@@ -3286,7 +3286,7 @@ SecondPass::parseMatch(const Token& expr)
 AptNode*
 SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 2);
 
@@ -3558,7 +3558,7 @@ namespace herschel
 AptNode*
 SecondPass::parseBlock(const Token& expr)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isNested());
   hr_assert(expr.leftToken() == kBraceOpen);
   hr_assert(expr.rightToken() == kBraceClose);
@@ -3592,7 +3592,7 @@ SecondPass::parseBlock(const Token& expr)
 AptNode*
 SecondPass::parseLiteralVector(const Token& expr)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isNested());
   hr_assert(expr.leftToken() == kLiteralVectorOpen);
   hr_assert(expr.rightToken() == kParanClose);
@@ -3614,7 +3614,7 @@ SecondPass::parseLiteralVector(const Token& expr)
 AptNode*
 SecondPass::parseLiteralArray(const Token& expr)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isNested());
   hr_assert(expr.leftToken() == kLiteralArrayOpen);
   hr_assert(expr.rightToken() == kBracketClose);
@@ -3636,7 +3636,7 @@ SecondPass::parseLiteralArray(const Token& expr)
 AptNode*
 SecondPass::parseLiteralDict(const Token& expr)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isNested());
   hr_assert(expr.leftToken() == kLiteralVectorOpen);
   hr_assert(expr.rightToken() == kParanClose);
@@ -3663,7 +3663,7 @@ SecondPass::parseLiteralDict(const Token& expr)
 NodeList
 SecondPass::parseNested(const Token& expr)
 {
-  hr_assert(!fCompiler->isParsingInterface());
+  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isNested());
 
   switch (expr.leftToken()) {

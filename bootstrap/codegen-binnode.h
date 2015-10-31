@@ -34,7 +34,7 @@ namespace herschel
   class CodegenBinaryNode : public CodeGeneratorProxy
   {
   public:
-    CodegenBinaryNode(CodeGenerator* generator);
+    CodegenBinaryNode(CodeGenerator& generator);
 
     llvm::Value* emit(const BinaryNode* node) const;
 

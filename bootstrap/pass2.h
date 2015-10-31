@@ -42,7 +42,7 @@ namespace herschel
   class SecondPass : public AbstractPass
   {
   public:
-    SecondPass(Compiler* compiler, std::shared_ptr<Scope> scope);
+    SecondPass(Compiler& compiler, std::shared_ptr<Scope> scope);
 
     //! Transforms the token expressions as returned by the \c FirstPass into
     //! a tree of \c AptNode nodes.
@@ -272,13 +272,13 @@ namespace herschel
   class NodifyPass : public Token2AptNodeCompilePass
   {
   public:
-    NodifyPass(int level, Compiler* compiler, std::shared_ptr<Scope> scope);
+    NodifyPass(int level, Compiler& compiler, std::shared_ptr<Scope> scope);
     virtual AptNode* doApply(const Token& src);
     std::shared_ptr<Scope> currentScope();
 
   private:
     std::shared_ptr<Scope> fScope;
-    Ptr<Compiler>   fCompiler;
+    Compiler&       fCompiler;
     Ptr<SecondPass> fPass;
   };
 };

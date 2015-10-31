@@ -44,7 +44,7 @@
 
 using namespace herschel;
 
-CodegenVardef::CodegenVardef(CodeGenerator* generator)
+CodegenVardef::CodegenVardef(CodeGenerator& generator)
   : CodeGeneratorProxy(generator)
 {
 }
@@ -69,14 +69,14 @@ CodegenVardef::codegenForLocalVars(const VardefNode* node) const
   TypeConvKind convKind = kNoConv;
   if (node->initExpr()) {
     if (dynamic_cast<UndefNode*>(node->initExpr())) {
-      initval = llvm::Constant::getNullValue(types()->getType(node->type()));
+      initval = llvm::Constant::getNullValue(types().getType(node->type()));
 
       dstType = node->type();
       type = node->type();
       convKind = kNoConv;
     }
     else {
-      initval = tools()->wrapLoad(generator()->codegenNode(node->initExpr()));
+      initval = tools().wrapLoad(generator().codegenNode(node->initExpr()));
 
       dstType = node->initExpr()->dstType();
       type = node->initExpr()->type();
@@ -93,14 +93,14 @@ CodegenVardef::codegenForLocalVars(const VardefNode* node) const
 
   llvm::Function *curFunction = builder().GetInsertBlock()->getParent();
 
-  llvm::AllocaInst* stackSlot = tools()->createEntryBlockAlloca(curFunction,
+  llvm::AllocaInst* stackSlot = tools().createEntryBlockAlloca(curFunction,
                                                                node->name(),
-                                                               types()->getType(node->type()));
+                                                               types().getType(node->type()));
 
-  llvm::Value* val = tools()->emitPackCode(dstType, convKind, initval, type);
-  builder().CreateStore(tools()->wrapLoad(val), stackSlot);
+  llvm::Value* val = tools().emitPackCode(dstType, convKind, initval, type);
+  builder().CreateStore(tools().wrapLoad(val), stackSlot);
 
-  generator()->fNamedValues[node->name()] = stackSlot;
+  generator().fNamedValues[node->name()] = stackSlot;
 
   return initval;
 }
@@ -110,7 +110,7 @@ llvm::Value*
 CodegenVardef::codegenForGlobalVars(const VardefNode* node) const
 {
   String varnm = herschel::mangleToC(node->name());
-  llvm::Type* constTy = types()->getType(node->type());
+  llvm::Type* constTy = types().getType(node->type());
   llvm::Constant* initConst = llvm::Constant::getNullValue(constTy);
 
   // TODO: base type if possible
@@ -125,10 +125,10 @@ CodegenVardef::codegenForGlobalVars(const VardefNode* node) const
   hr_assert(gv);
   module()->getGlobalList().push_back(gv);
 
-  initializer()->addGlobalVariable(node);
+  initializer().addGlobalVariable(node);
 
-  hr_assert(generator()->fGlobalVariables.find(node->name()) == generator()->fGlobalVariables.end());
-  generator()->fGlobalVariables[node->name()] = gv;
+  hr_assert(generator().fGlobalVariables.find(node->name()) == generator().fGlobalVariables.end());
+  generator().fGlobalVariables[node->name()] = gv;
 
   return gv;
 }

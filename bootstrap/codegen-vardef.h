@@ -32,7 +32,7 @@ namespace herschel
   class CodegenVardef : public CodeGeneratorProxy
   {
   public:
-    CodegenVardef(CodeGenerator* generator);
+    CodegenVardef(CodeGenerator& generator);
 
     llvm::Value* emit(const VardefNode* node, bool isLocal) const;
 

@@ -45,7 +45,7 @@ using namespace herschel;
 
 //------------------------------------------------------------------------------
 
-CodegenTypeUtils::CodegenTypeUtils(CodeGenerator* generator)
+CodegenTypeUtils::CodegenTypeUtils(CodeGenerator& generator)
   : CodeGeneratorProxy(generator)
 {
 }
@@ -63,7 +63,7 @@ CodegenTypeUtils::getAtomPayloadType() const
   if (!atomPayloadType) {
     llvm::Type* payloadType = nullptr;
 
-    if (fGenerator->is64Bit()) {
+    if (fGenerator.is64Bit()) {
       payloadType = llvm::Type::getInt64Ty(context());
     }
     else {
@@ -89,7 +89,7 @@ CodegenTypeUtils::getAtomType() const
   if (!atomType) {
     llvm::Type* tagType = nullptr;
 
-    if (fGenerator->is64Bit()) {
+    if (fGenerator.is64Bit()) {
       tagType = llvm::Type::getInt64Ty(context());
     }
     else {
@@ -110,7 +110,7 @@ CodegenTypeUtils::getAtomType() const
 llvm::Type*
 CodegenTypeUtils::getTagIdType() const
 {
-  if (fGenerator->is64Bit())
+  if (fGenerator.is64Bit())
     return llvm::Type::getInt64Ty(context());
   else
     return llvm::Type::getInt32Ty(context());
@@ -182,7 +182,7 @@ CodegenTypeUtils::getMethodType() const
 llvm::Type*
 CodegenTypeUtils::getSizeTTy() const
 {
-  if (fGenerator->is64Bit())
+  if (fGenerator.is64Bit())
     return llvm::Type::getInt64Ty(context());
   else
     return llvm::Type::getInt32Ty(context());
@@ -227,7 +227,7 @@ size_t
 CodegenTypeUtils::getAtomTypeSize() const
 {
   // all other types are atoms
-  const llvm::StructLayout* layout = generator()->dataLayout()
+  const llvm::StructLayout* layout = generator().dataLayout()
     ->getStructLayout((llvm::StructType*)getAtomType());
   return layout->getSizeInBytes();
 }

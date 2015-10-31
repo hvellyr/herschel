@@ -34,7 +34,7 @@ namespace herschel
   class CodegenFuncDef : public CodeGeneratorProxy
   {
   public:
-    CodegenFuncDef(CodeGenerator* generator);
+    CodegenFuncDef(CodeGenerator& generator);
 
     //! emit function declaration, implementation, lookup and/or
     //! boilerplate code for \p node, depending on the kind of function

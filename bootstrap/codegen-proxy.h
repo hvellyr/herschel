@@ -29,53 +29,53 @@ namespace herschel
   class CodeGeneratorProxy
   {
   public:
-    CodeGeneratorProxy(CodeGenerator* generator)
+    CodeGeneratorProxy(CodeGenerator& generator)
       : fGenerator(generator)
     {
     }
 
-    CodeGenerator* generator() const
+    CodeGenerator& generator() const
     {
       return fGenerator;
     }
 
     llvm::LLVMContext& context() const
     {
-      return fGenerator->context();
+      return fGenerator.context();
     }
 
     llvm::IRBuilder<>& builder() const
     {
-      return fGenerator->builder();
+      return fGenerator.builder();
     }
 
     llvm::Module* module() const
     {
-      return fGenerator->fModule;
+      return fGenerator.fModule;
     }
 
-    CodegenTypeUtils* types()
+    CodegenTypeUtils& types()
     {
-      return fGenerator->fTypes;
+      return *fGenerator.fTypes;
     }
 
-    const CodegenTypeUtils* types() const
+    const CodegenTypeUtils& types() const
     {
-      return fGenerator->fTypes;
+      return *fGenerator.fTypes;
     }
 
-    CodegenTools* tools() const
+    CodegenTools& tools() const
     {
-      return fGenerator->fTools;
+      return *fGenerator.fTools;
     }
 
-    ModuleRuntimeInitializer* initializer() const
+    ModuleRuntimeInitializer& initializer() const
     {
-      return fGenerator->fInitializer;
+      return *fGenerator.fInitializer;
     }
 
   protected:
-    Ptr<CodeGenerator> fGenerator;
+    CodeGenerator& fGenerator;
   };
 };                              // namespace
 

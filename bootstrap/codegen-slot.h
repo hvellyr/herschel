@@ -37,7 +37,7 @@ namespace herschel
   class CodegenSlot : public CodeGeneratorProxy
   {
   public:
-    CodegenSlot(CodeGenerator* generator);
+    CodegenSlot(CodeGenerator& generator);
 
     llvm::Value* emitSlotRefAccess(const SlotRefNode* node) const;
     llvm::Value* emitSlotRefAssignment(const SlotRefNode* node,

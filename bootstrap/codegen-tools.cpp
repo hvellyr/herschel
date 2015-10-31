@@ -42,7 +42,7 @@ using namespace herschel;
 #include "codegen-tools.h"
 
 
-CodegenTools::CodegenTools(CodeGenerator* generator)
+CodegenTools::CodegenTools(CodeGenerator& generator)
   : CodeGeneratorProxy(generator)
 {
 }
@@ -65,7 +65,7 @@ CodegenTools::wrapLoad(llvm::Value* val)
 llvm::Value*
 CodegenTools::makeInt32Atom(int val)
 {
-  return makeIntAtom(llvm::ConstantInt::get(fGenerator->context(),
+  return makeIntAtom(llvm::ConstantInt::get(fGenerator.context(),
                                             llvm::APInt(32, val, true)),
                      kAtomInt32);
 }
@@ -76,7 +76,7 @@ CodegenTools::makeIntAtom(llvm::Value* val, Typeid atomTypeId)
 {
   llvm::Function *curFunction = builder().GetInsertBlock()->getParent();
   llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("int"),
-                                                  fGenerator->fTypes->getAtomType());
+                                                  fGenerator.fTypes->getAtomType());
 
   setAtom(atom, atomTypeId, val);
 
@@ -89,7 +89,7 @@ CodegenTools::makeFloatAtom(llvm::Value* val, Typeid atomTypeId)
 {
   llvm::Function *curFunction = builder().GetInsertBlock()->getParent();
   llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("float"),
-                                                  fGenerator->fTypes->getAtomType());
+                                                  fGenerator.fTypes->getAtomType());
 
   setAtom(atom, atomTypeId, val);
 
@@ -102,7 +102,7 @@ CodegenTools::makeBoolAtom(llvm::Value* val)
 {
   llvm::Function *curFunction = builder().GetInsertBlock()->getParent();
   llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("bool"),
-                                                  fGenerator->fTypes->getAtomType());
+                                                  fGenerator.fTypes->getAtomType());
 
   setAtom(atom, kAtomBool, val);
 
@@ -114,9 +114,9 @@ llvm::Value*
 CodegenTools::makeBoolAtom(bool val)
 {
   if (val)
-    return makeBoolAtom(llvm::ConstantInt::getTrue(fGenerator->context()));
+    return makeBoolAtom(llvm::ConstantInt::getTrue(fGenerator.context()));
   else
-    return makeBoolAtom(llvm::ConstantInt::getFalse(fGenerator->context()));
+    return makeBoolAtom(llvm::ConstantInt::getFalse(fGenerator.context()));
 }
 
 
@@ -125,10 +125,10 @@ CodegenTools::makeKeywordAtom(const String& keyword)
 {
   llvm::Function *curFunction = builder().GetInsertBlock()->getParent();
   llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, keyword + "_kw",
-                                                  fGenerator->fTypes->getAtomType());
+                                                  fGenerator.fTypes->getAtomType());
 
   setAtom(atom, kAtomKeyword,
-          builder().CreateLoad(initializer()->registerKeyword(keyword)));
+          builder().CreateLoad(initializer().registerKeyword(keyword)));
 
   return atom;
 }
@@ -144,7 +144,7 @@ CodegenTools::makeStringAtom(const String& str)
     // void h7_allocate_array(ATOM* instance, Type* ty, size_t items);
     llvm::FunctionType *ft = llvm::FunctionType::get(
       llvm::Type::getVoidTy(context()),
-      std::vector<llvm::Type*>{ types()->getAtomType()->getPointerTo(),
+      std::vector<llvm::Type*>{ types().getAtomType()->getPointerTo(),
                                 llvm::Type::getInt8PtrTy(context()) },
       !K(isVarArg));
 
@@ -155,9 +155,9 @@ CodegenTools::makeStringAtom(const String& str)
   }
 
   llvm::Function* curFunction = builder().GetInsertBlock()->getParent();
-  llvm::AllocaInst* retv = tools()->createEntryBlockAlloca(curFunction,
-                                                           String("string_retv"),
-                                                           types()->getAtomType());
+  llvm::AllocaInst* retv = tools().createEntryBlockAlloca(curFunction,
+                                                          String("string_retv"),
+                                                          types().getAtomType());
   hr_assert(retv);
 
   std::vector<llvm::Value*> argv =
@@ -175,7 +175,7 @@ CodegenTools::makeCharAtom(llvm::Value* val)
 {
   llvm::Function *curFunction = builder().GetInsertBlock()->getParent();
   llvm::AllocaInst* atom = createEntryBlockAlloca(curFunction, String("char"),
-                                                  fGenerator->fTypes->getAtomType());
+                                                  fGenerator.fTypes->getAtomType());
 
   setAtom(atom, kAtomChar, val);
 
@@ -186,7 +186,7 @@ CodegenTools::makeCharAtom(llvm::Value* val)
 llvm::Value*
 CodegenTools::makeCharAtom(Char val)
 {
-  return makeCharAtom(llvm::ConstantInt::get(fGenerator->context(),
+  return makeCharAtom(llvm::ConstantInt::get(fGenerator.context(),
                                              llvm::APInt(32, val, !K(issigned))));
 }
 
@@ -198,7 +198,7 @@ llvm::Function*
 CodegenTools::getIntrinsic(unsigned int iid,
                            const std::vector<llvm::Type*>& tys)
 {
-  return llvm::Intrinsic::getDeclaration(fGenerator->fModule,
+  return llvm::Intrinsic::getDeclaration(fGenerator.fModule,
                                          (llvm::Intrinsic::ID)iid, tys);
 }
 
@@ -218,11 +218,11 @@ CodegenTools::getMemCpyFn(llvm::Type* dstType,
 llvm::Value*
 CodegenTools::emitTypeId(Typeid typid) const
 {
-  if (fGenerator->is64Bit())
-    return llvm::ConstantInt::get(fGenerator->context(),
+  if (fGenerator.is64Bit())
+    return llvm::ConstantInt::get(fGenerator.context(),
                                   llvm::APInt(64, (int)typid, !K(isSigned)));
   else
-    return llvm::ConstantInt::get(fGenerator->context(),
+    return llvm::ConstantInt::get(fGenerator.context(),
                                   llvm::APInt(32, (int)typid, !K(isSigned)));
 }
 
@@ -230,24 +230,24 @@ CodegenTools::emitTypeId(Typeid typid) const
 void
 CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
 {
-  llvm::Value* typidSlot = builder().CreateStructGEP(types()->getAtomType(),
+  llvm::Value* typidSlot = builder().CreateStructGEP(types().getAtomType(),
                                                      atom, 0);
   llvm::Value* typeIdValue = emitTypeId(typid);
 
   builder().CreateStore(typeIdValue, typidSlot);
 
-  llvm::Value* payload = builder().CreateStructGEP(types()->getAtomType(),
+  llvm::Value* payload = builder().CreateStructGEP(types().getAtomType(),
                                                    atom, 1);
-  llvm::Value* slot = builder().CreateStructGEP(types()->getAtomPayloadType(),
+  llvm::Value* slot = builder().CreateStructGEP(types().getAtomPayloadType(),
                                                 payload, 0);
 
   if (typid == kAtomBool) {
-    llvm::Type *dstBasePtr = llvm::Type::getInt1PtrTy(fGenerator->context());
+    llvm::Type *dstBasePtr = llvm::Type::getInt1PtrTy(fGenerator.context());
     slot = builder().CreateBitCast(slot, dstBasePtr, "tmp");
     builder().CreateStore(value, slot);
   }
   else if (typid == kAtomInt32) {
-    llvm::Value* val = ( fGenerator->is64Bit()
+    llvm::Value* val = ( fGenerator.is64Bit()
                          ? builder().CreateIntCast(value,
                                                    llvm::Type::getInt64Ty(context()),
                                                    K(isSigned),
@@ -256,7 +256,7 @@ CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
     builder().CreateStore(val, slot);
   }
   else if (typid == kAtomUInt32) {
-    llvm::Value* val = ( fGenerator->is64Bit()
+    llvm::Value* val = ( fGenerator.is64Bit()
                          ? builder().CreateIntCast(value,
                                                    llvm::Type::getInt64Ty(context()),
                                                    !K(isSigned),
@@ -266,7 +266,7 @@ CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
   }
   else if (typid == kAtomInt16 || typid == kAtomInt8) {
     llvm::Value* val = builder().CreateIntCast(value,
-                                               ( fGenerator->is64Bit()
+                                               ( fGenerator.is64Bit()
                                                  ? llvm::Type::getInt64Ty(context())
                                                  : llvm::Type::getInt32Ty(context()) ),
                                                K(isSigned),
@@ -275,7 +275,7 @@ CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
   }
   else if (typid == kAtomUInt16 || typid == kAtomUInt8) {
     llvm::Value* val = builder().CreateIntCast(value,
-                                               ( fGenerator->is64Bit()
+                                               ( fGenerator.is64Bit()
                                                  ? llvm::Type::getInt64Ty(context())
                                                  : llvm::Type::getInt32Ty(context()) ),
                                                !K(isSigned),
@@ -290,7 +290,7 @@ CodegenTools::setAtom(llvm::AllocaInst* atom, Typeid typid, llvm::Value* value)
   }
 
   else if (typid == kAtomChar) {
-    llvm::Value* val = ( fGenerator->is64Bit()
+    llvm::Value* val = ( fGenerator.is64Bit()
                          ? builder().CreateIntCast(value,
                                                    llvm::Type::getInt64Ty(context()),
                                                    K(isSigned),
@@ -315,11 +315,11 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
   // problems...  Performance wise it does not make any difference on x86_64
   // (with full optimization).
 
-  llvm::Value* dst_pl = builder().CreateStructGEP(types()->getAtomType(), dst, 1);
-  llvm::Value* dst_ty = builder().CreateStructGEP(types()->getAtomType(), dst, 0);
+  llvm::Value* dst_pl = builder().CreateStructGEP(types().getAtomType(), dst, 1);
+  llvm::Value* dst_ty = builder().CreateStructGEP(types().getAtomType(), dst, 0);
 
-  llvm::Value* src_pl = builder().CreateStructGEP(types()->getAtomType(), src, 1);
-  llvm::Value* src_ty = builder().CreateStructGEP(types()->getAtomType(), src, 0);
+  llvm::Value* src_pl = builder().CreateStructGEP(types().getAtomType(), src, 1);
+  llvm::Value* src_ty = builder().CreateStructGEP(types().getAtomType(), src, 0);
 
   builder().CreateStore(builder().CreateLoad(src_ty), dst_ty);
   builder().CreateStore(builder().CreateLoad(src_pl), dst_pl);
@@ -369,7 +369,7 @@ CodegenTools::getConvTypeByType(const Type& type) const
   if (type.typeId() == Names::kKeywordTypeName)
     return llvm::Type::getInt8PtrTy(context());
 
-  return types()->getType(type);
+  return types().getType(type);
 }
 
 
@@ -381,7 +381,7 @@ CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) con
   llvm::Function* convFunc = module()->getFunction(llvm::StringRef(funcName));
   if (!convFunc) {
     auto ft = llvm::FunctionType::get(getConvTypeByType(dstType),
-                                      std::vector<llvm::Type*>{types()->getAtomType()},
+                                      std::vector<llvm::Type*>{types().getAtomType()},
                                       false);
 
     convFunc = llvm::Function::Create(ft,
@@ -443,7 +443,7 @@ CodegenTools::createEntryBlockAlloca(llvm::Function *func, const String& name,
 llvm::Value*
 CodegenTools::createCastPtrToNativeInt(llvm::Value* value) const
 {
-  return ( fGenerator->is64Bit()
+  return ( fGenerator.is64Bit()
            ? builder().CreatePtrToInt(value,
                                       llvm::Type::getInt64Ty(context()))
            : builder().CreatePtrToInt(value,
@@ -457,13 +457,13 @@ CodegenTools::createCastPtrToNativeInt(llvm::Value* value) const
 llvm::Value*
 CodegenTools::emitSizeTValue(size_t value) const
 {
-  if (fGenerator->is64Bit())
-    return llvm::ConstantInt::get(fGenerator->context(),
+  if (fGenerator.is64Bit())
+    return llvm::ConstantInt::get(fGenerator.context(),
                                   llvm::APInt(64,
                                               value,
                                               !K(isSigned)));
   else
-    return llvm::ConstantInt::get(fGenerator->context(),
+    return llvm::ConstantInt::get(fGenerator.context(),
                                   llvm::APInt(32,
                                               value,
                                               !K(isSigned)));
@@ -474,7 +474,7 @@ llvm::Value*
 CodegenTools::coerceIntOperand(llvm::Value* value, const Type& dstType) const
 {
   return builder().CreateIntCast(value,
-                                 types()->getType(dstType),
+                                 types().getType(dstType),
                                  dstType.isSigned());
 }
 
