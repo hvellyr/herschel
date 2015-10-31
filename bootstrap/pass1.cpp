@@ -4518,7 +4518,7 @@ namespace herschel {
 };
 
 
-typedef std::map<MacroParamType, Ptr<ParameterSyntaxMatcher> > ParamFuncMap;
+using ParamFuncMap = std::map<MacroParamType, Ptr<ParameterSyntaxMatcher>>;
 
 bool
 FirstPass::matchParameter(const Token& macroParam,

@@ -285,7 +285,7 @@ private:
 class CanonicalPath
 {
 public:
-  typedef std::vector<CanonicalPathElt> CNEltVector;
+  using CNEltVector = std::vector<CanonicalPathElt>;
 
   CanonicalPath()
   { }

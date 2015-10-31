@@ -55,7 +55,7 @@ namespace herschel
     TokenVector fReplacement;
   };
 
-  typedef std::vector<MacroPattern> MacroPatternVector;
+  using MacroPatternVector = std::vector<MacroPattern>;
 
 
   //----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ namespace herschel
   class SyntaxTreeNode : public RefCountable
   {
   public:
-    typedef std::map<Token, Ptr<SyntaxTreeNode> > NodeMap;
+    using NodeMap = std::map<Token, Ptr<SyntaxTreeNode>>;
 
     SyntaxTreeNode();
 
@@ -125,7 +125,7 @@ namespace herschel
   class SyntaxTable : public RefCountable
   {
   public:
-    typedef std::map<String, Ptr<SyntaxTreeNode> > PatternMap;
+    using PatternMap = std::map<String, Ptr<SyntaxTreeNode>>;
 
     static SyntaxTable* compile(const String& macroName,
                                 const MacroPatternVector& patterns);

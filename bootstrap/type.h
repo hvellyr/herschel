@@ -34,11 +34,11 @@ namespace herschel
   class TypeSlot;
   class TypeProperty;
 
-  typedef std::vector<Type> TypeVector;
-  typedef std::vector<TypeConstraint> TypeConstVector;
-  typedef std::vector<FunctionParameter> FunctionParamVector;
-  typedef std::map<String, Token> StringTokenMap;
-  typedef std::vector<TypeSlot> TypeSlotList;
+  using TypeVector = std::vector<Type>;
+  using TypeConstVector = std::vector<TypeConstraint>;
+  using FunctionParamVector = std::vector<FunctionParameter>;
+  using StringTokenMap = std::map<String, Token>;
+  using TypeSlotList = std::vector<TypeSlot>;
 
 
   //--------------------------------------------------------------------------

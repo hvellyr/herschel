@@ -17,11 +17,11 @@
 #include "require.h"
 
 //! Type abstraction for a byte.
-typedef unsigned char Octet;
+using Octet = unsigned char;
 
 //! Type abstraction for a single unicode character.  Note that this type
 //! requires UTF-16 encoding for strings.
-typedef unsigned short Char;
+using Char = unsigned short;
 
 //! Macro which evaluates _condA IMP _condB
 #define implies(_condA, _condB)  (!(_condA) || ((_condA) && (_condB)))

@@ -62,7 +62,7 @@ namespace herschel
 
 
   //! A vector of AptNodes.
-  typedef std::vector<Ptr<AptNode> > NodeList;
+  using NodeList = std::vector<Ptr<AptNode>>;
 
   //------------------------------------------------------------------------------
 

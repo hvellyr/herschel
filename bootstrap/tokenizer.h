@@ -51,7 +51,7 @@ namespace herschel
   //! The type for the character registry.
   //!
   //! It lists characters (unicode code points) by their character names.
-  typedef Registry<int> CharRegistry;
+  using CharRegistry = Registry<int>;
 
 
   //--------------------------------------------------------------------------

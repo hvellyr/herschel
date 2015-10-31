@@ -18,7 +18,7 @@ namespace herschel
 {
   class String;
 
-  typedef std::vector<String> StringVector;
+  using StringVector = std::vector<String>;
 
   //! The \c herschel::file namespace contains functions for dealing with file
   //! system paths.

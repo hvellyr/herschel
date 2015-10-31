@@ -40,7 +40,7 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  typedef std::vector<Ptr<AptNode> > NodeList;
+  using NodeList = std::vector<Ptr<AptNode>>;
 
   NodeList newNodeList();
   NodeList newNodeList(AptNode* n1);
@@ -1034,7 +1034,7 @@ namespace herschel
       Ptr<AptNode> fConsequent;
     };
 
-    typedef std::vector<SelectMapping> SelectMappingVector;
+    using SelectMappingVector = std::vector<SelectMapping>;
 
 
     SelectNode(const SrcPos& srcpos,
@@ -1089,7 +1089,7 @@ namespace herschel
       Ptr<AptNode> fConsequent;
     };
 
-    typedef std::vector<MatchMapping> MatchMappingVector;
+    using MatchMappingVector = std::vector<MatchMapping>;
 
 
     MatchNode(const SrcPos& srcpos, AptNode* expr);

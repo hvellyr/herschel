@@ -57,7 +57,7 @@ namespace herschel
   class VectorNode;
   class WhileNode;
 
-  typedef std::vector<Ptr<AptNode> > NodeList;
+  using NodeList = std::vector<Ptr<AptNode>>;
 
 
   //--------------------------------------------------------------------------

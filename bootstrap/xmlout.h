@@ -62,8 +62,8 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  typedef std::list<String> StringList;
-  typedef std::map<String, String> StringStringMap;
+  using StringList = std::list<String>;
+  using StringStringMap = std::map<String, String>;
 
 
   //--------------------------------------------------------------------------

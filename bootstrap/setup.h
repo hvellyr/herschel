@@ -16,7 +16,7 @@
 
 namespace herschel
 {
-  typedef std::vector<String> StringVector;
+  using StringVector = std::vector<String>;
 
   class Setup
   {

@@ -26,8 +26,6 @@ namespace llvm
   class AllocaInst;
   class BasicBlock;
   class Function;
-//  template <typename T> class PassManager;
-//  typedef PassManager<Function> FunctionPassManager;
   class FunctionType;
   class LLVMContext;
   class Module;
@@ -93,7 +91,7 @@ namespace herschel
 
   class String;
 
-  typedef std::vector<Ptr<AptNode> > NodeList;
+  using NodeList = std::vector<Ptr<AptNode>>;
 
 
   //----------------------------------------------------------------------------

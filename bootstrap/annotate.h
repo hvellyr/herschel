@@ -64,7 +64,7 @@ namespace herschel
 
   class Scope;
 
-  typedef std::vector<Ptr<AptNode> > NodeList;
+  using NodeList = std::vector<Ptr<AptNode>>;
 
   //------------------------------------------------------------------------------
 

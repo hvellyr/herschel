@@ -213,8 +213,8 @@ namespace herschel
   };
 
 
-  typedef std::vector<Token>      TokenVector;
-  typedef std::map<String, Token> NamedTokenMap;
+  using TokenVector = std::vector<Token>;
+  using NamedTokenMap = std::map<String, Token>;
 
   class Token
   {

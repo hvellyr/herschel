@@ -293,9 +293,9 @@ namespace herschel
     //-------- data members
 
     using BaseScopeMap = std::map<String, std::shared_ptr<ScopeItem>>;
-    typedef std::map<ScopeName, BaseScopeMap> NsScopeMap;
+    using NsScopeMap = std::map<ScopeName, BaseScopeMap>;
     using ImportedScope = std::map<String, std::shared_ptr<Scope>>;
-    typedef std::set<String>                  AttachedSymbols;
+    using AttachedSymbols = std::set<String>;
 
     NsScopeMap fMap;
     std::shared_ptr<Scope> fParent;
@@ -307,7 +307,7 @@ namespace herschel
       AttachedSymbols fAttachedSymbols;
     };
 
-    typedef std::map<ScopeName, VisibilityPair> VizMap;
+    using VizMap = std::map<ScopeName, VisibilityPair>;
     VizMap fVisibility;
 
     ImportedScope fImportedScopes;

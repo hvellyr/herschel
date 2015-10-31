@@ -234,7 +234,7 @@ namespace herschel
     Type getIntType(int bitwidth, bool isSigned) const;
 
 
-    typedef std::map<String, Type> TSharedGenericTable;
+    using TSharedGenericTable = std::map<String, Type>;
     class TSharedGenericScopeHelper
     {
     public:

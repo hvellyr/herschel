@@ -29,10 +29,10 @@ namespace herschel
   class Registry : public RefCountable
   {
   public:
-    typedef T ValueType;
-    typedef typename std::map<String, ValueType> ValueMapType;
-    typedef typename std::map<String, ValueType>::iterator ValueMapTypeIterator;
-    typedef typename std::map<String, ValueType>::const_iterator ValueMapTypeConstIterator;
+    using ValueType = T;
+    using ValueMapType = typename std::map<String, ValueType>;
+    using ValueMapTypeIterator = typename std::map<String, ValueType>::iterator;
+    using ValueMapTypeConstIterator = typename std::map<String, ValueType>::const_iterator;
 
     //! Bind a new value \p value to key \p name.  If \p name was bound before
     //! the previous bound value is silently dropped.

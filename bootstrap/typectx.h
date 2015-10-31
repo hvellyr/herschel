@@ -62,7 +62,7 @@ namespace herschel
 
     //-------- data members
 
-    typedef std::map<String, Type> TypeMap;
+    using TypeMap = std::map<String, Type>;
 
     TypeMap      fMap;
     Ptr<TypeCtx> fParent;

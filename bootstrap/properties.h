@@ -21,7 +21,7 @@ namespace herschel
   class Token;
   class String;
 
-  typedef std::vector<String> StringVector;
+  using StringVector = std::vector<String>;
 
   enum OptimizeLevel
   {

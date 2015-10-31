@@ -86,7 +86,7 @@ namespace herschel
     friend class ClassInitStrategy;
     friend class MethodInitStrategy;
 
-    typedef std::vector<std::pair<llvm::Constant*, int> > CtorList;
+    using CtorList = std::vector<std::pair<llvm::Constant*, int>>;
 
     void emitModuleInitFunction();
 
@@ -140,7 +140,7 @@ namespace herschel
     std::vector<const FuncDefNode*> fGenericsInitFuncs;
     std::vector<MethodImpl>         fMethodInitFuncs;
 
-    typedef std::map<String, llvm::GlobalVariable*> KeywordMap;
+    using KeywordMap = std::map<String, llvm::GlobalVariable*>;
     KeywordMap fKeywords;
   };
 

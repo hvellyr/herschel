@@ -32,7 +32,7 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  typedef std::map<String, TokenVector> NamedReplacementMap;
+  using NamedReplacementMap = std::map<String, TokenVector>;
 
 
   //--------------------------------------------------------------------------
