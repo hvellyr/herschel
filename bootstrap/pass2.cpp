@@ -31,9 +31,10 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-NodifyPass::NodifyPass(int level, Compiler* compiler, Scope* scope)
+NodifyPass::NodifyPass(int level, Compiler* compiler,
+                       std::shared_ptr<Scope> scope)
   : Token2AptNodeCompilePass(level),
-    fScope(scope),
+    fScope(std::move(scope)),
     fCompiler(compiler),
     fPass(new SecondPass(fCompiler, fScope))
 { }
@@ -46,7 +47,7 @@ NodifyPass::doApply(const Token& src)
 }
 
 
-Scope*
+std::shared_ptr<Scope>
 NodifyPass::currentScope()
 {
   return fPass->scope();
@@ -55,8 +56,8 @@ NodifyPass::currentScope()
 
 //----------------------------------------------------------------------------
 
-SecondPass::SecondPass(Compiler* compiler, Scope* scope)
-  : AbstractPass(compiler, scope)
+SecondPass::SecondPass(Compiler* compiler, std::shared_ptr<Scope> scope)
+  : AbstractPass(compiler, std::move(scope))
 {
 }
 
@@ -98,7 +99,7 @@ SecondPass::parseModule(const Token& expr)
     }
   }
   else {
-    fScope = new Scope(kScopeL_Module, fScope);
+    fScope = makeScope(kScopeL_Module, fScope);
     fCurrentModuleName = qualifyId(fCurrentModuleName, modName);
   }
 
@@ -1160,7 +1161,7 @@ struct ReqTypeInitTuple
 
 
 static ReqTypeInitTuple
-reqTypeInitTupleForType(const Type& type, Scope* scope)
+reqTypeInitTupleForType(const Type& type, std::shared_ptr<Scope> scope)
 {
   Type superType = scope->lookupType(type.typeName(), K(showAmbiguousSymDef));
   if (!superType.isDef()) {
@@ -1187,7 +1188,7 @@ reqTypeInitTupleForType(const Type& type, Scope* scope)
 
 
 static std::vector<ReqTypeInitTuple>
-getDirectInheritedTypes(const Type& defType, Scope* scope)
+getDirectInheritedTypes(const Type& defType, std::shared_ptr<Scope> scope)
 {
   std::vector<ReqTypeInitTuple> reqTypeInits;
 

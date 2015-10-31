@@ -83,9 +83,9 @@ namespace herschel
 
     //! Returns the captured scope for this node.  The scope is only available
     //! after the \c Annotator pass has been applied.
-    Scope* scope() const;
+    std::shared_ptr<Scope> scope() const;
     //! Set the captured scope.
-    AptNode* setScope(Scope* scope);
+    AptNode* setScope(std::shared_ptr<Scope> scope);
 
     //! Returns the type of this node.  Only available after \c Typifier pass
     //! has been applied.
@@ -148,7 +148,7 @@ namespace herschel
 
   protected:
     SrcPos       fSrcPos;
-    Ptr<Scope>   fScope;
+    std::shared_ptr<Scope>   fScope;
     Type         fType;
     Type         fDstType;
     TypeConvKind fTypeConvKind;

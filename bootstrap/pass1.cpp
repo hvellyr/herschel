@@ -34,10 +34,10 @@ using namespace herschel;
 //----------------------------------------------------------------------------
 
 ExprPass::ExprPass(int level, Compiler* compiler,
-                   const Token& currentToken, Scope* scope)
+                   const Token& currentToken, std::shared_ptr<Scope> scope)
   : TokenCompilePass(level),
     fCurrentToken(currentToken),
-    fScope(scope),
+    fScope(std::move(scope)),
     fCompiler(compiler)
 { }
 
@@ -52,8 +52,9 @@ ExprPass::doApply(const Token& src)
 
 //----------------------------------------------------------------------------
 
-FirstPass::FirstPass(Compiler* compiler, const Token& currentToken, Scope* scope)
-  : AbstractPass(compiler, scope),
+FirstPass::FirstPass(Compiler* compiler, const Token& currentToken,
+                     std::shared_ptr<Scope> scope)
+  : AbstractPass(compiler, std::move(scope)),
     fToken(currentToken),
     fEvaluateExprs(true)
 { }
@@ -264,7 +265,7 @@ FirstPass::parseModule()
       modExpr << defines;
     }
     else {
-      fScope = new Scope(kScopeL_Module, fScope);
+      fScope = makeScope(kScopeL_Module, fScope);
       fCurrentModuleName = qualifyId(fCurrentModuleName, modName.idValue());
     }
   }

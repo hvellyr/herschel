@@ -26,8 +26,8 @@ AbstractPass::AbstractPass()
 }
 
 
-AbstractPass::AbstractPass(Compiler* compiler, Scope* scope)
-  : fScope(scope),
+AbstractPass::AbstractPass(Compiler* compiler, std::shared_ptr<Scope> scope)
+  : fScope(std::move(scope)),
     fCompiler(compiler)
 {
 }
@@ -57,7 +57,7 @@ AbstractPass::popModule()
 }
 
 
-Scope*
+std::shared_ptr<Scope>
 AbstractPass::scope()
 {
   return fScope;

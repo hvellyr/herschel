@@ -23,10 +23,10 @@
 using namespace herschel;
 
 
-Scope*
+std::shared_ptr<Scope>
 herschel::type::newRootScope(bool forUnitTests)
 {
-  Ptr<Scope> root = new Scope(kScopeL_CompileUnit);
+  auto root = makeScope(kScopeL_CompileUnit);
   SrcPos sp;
 
   if (forUnitTests) {
@@ -245,6 +245,6 @@ herschel::type::newRootScope(bool forUnitTests)
                                                     K(isValue))));
 
 
-  return root.release();
+  return root;
 }
 

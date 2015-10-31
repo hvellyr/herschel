@@ -189,12 +189,12 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope, const SrcPos& srcpos) const override
     {
       if (right0.isUnion() && types().size() == right0.unionTypes().size()) {
-        const TypeVector& ltypes = types();
-        const TypeVector& rtypes = right0.unionTypes();
+        const auto& ltypes = types();
+        const auto& rtypes = right0.unionTypes();
 
         for (size_t i = 0; i < ltypes.size(); ++i) {
           if (!ltypes[i].matchGenerics(localCtx, rtypes[i], scope, srcpos))
@@ -233,12 +233,13 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       if (right0.isSequence() && types().size() == right0.seqTypes().size()) {
-        const TypeVector& ltypes = types();
-        const TypeVector& rtypes = right0.seqTypes();
+        const auto& ltypes = types();
+        const auto& rtypes = right0.seqTypes();
 
         for (size_t i = 0; i < ltypes.size(); ++i) {
           if (!ltypes[i].matchGenerics(localCtx, rtypes[i], scope, srcpos))
@@ -286,8 +287,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       if (right0.isFunction())
         return fSign.matchGenerics(localCtx, right0.functionSignature(),
@@ -325,7 +327,7 @@ namespace herschel
     bool matchGenericsForType(TypeCtx& localCtx,
                               const String& typeName, const TypeVector& generics,
                               const Type& ty,
-                              Scope* scope, const SrcPos& srcpos)
+                              const Scope& scope, const SrcPos& srcpos)
     {
       if (generics.size() == ty.generics().size() &&
           typeName == ty.typeName())
@@ -343,12 +345,13 @@ namespace herschel
     }
 
 
-    bool registerGenerics(TypeCtx& localCtx, const Type& ty, Scope* scope)
+    bool registerGenerics(TypeCtx& localCtx, const Type& ty,
+                          const Scope& scope)
     {
       if (ty.hasGenerics())
       {
-        Type typespec = scope->lookupType(ty.typeName(),
-                                          K(showAmbiguousSymDef));
+        Type typespec = scope.lookupType(ty.typeName(),
+                                         K(showAmbiguousSymDef));
         if (typespec.isDef() &&
             typespec.generics().size() == ty.generics().size())
         {
@@ -378,7 +381,7 @@ namespace herschel
     bool matchGenericsImpl(TypeCtx& localCtx,
                            const String& typeName, const TypeVector& generics,
                            const Type& right0,
-                           Scope* scope, const SrcPos& srcpos)
+                           const Scope& scope, const SrcPos& srcpos)
     {
       if (right0.isRef() || right0.isType() || right0.isClass()) {
         // if the reference has generics, it itself cannot be generic.  A
@@ -391,8 +394,8 @@ namespace herschel
                                    scope, srcpos))
             return true;
 
-          Type right = scope->lookupType(right0.typeName(),
-                                         K(showAmbiguousSymDef));
+          Type right = scope.lookupType(right0.typeName(),
+                                        K(showAmbiguousSymDef));
 
           Type inheritance;
           if (right.isType() || right.isClass()) {
@@ -579,8 +582,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       return matchGenericsImpl(localCtx, fName, fGenerics, right0, scope, srcpos);
     }
@@ -646,8 +650,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       hr_invalid("when does this happen?");
       return false;
@@ -786,8 +791,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       if (right0.isMeasure())
         return fBaseType.matchGenerics(localCtx, right0.measureBaseType(),
@@ -904,8 +910,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+     bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                        const Scope& scope,
+                        const SrcPos& srcpos) const override
     {
       return matchGenericsImpl(localCtx, fName, fGenerics, right0, scope, srcpos);
     }
@@ -990,8 +997,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       if (right0.isArray())
         return fBase.matchGenerics(localCtx, right0.arrayBaseType(),
@@ -1790,7 +1798,7 @@ Type::slots() const
 
 
 Type
-Type::slotType(const String& slotName, Scope* scope) const
+Type::slotType(const String& slotName, const Scope& scope) const
 {
   hr_assert(isClass());
   auto tyimpl = std::dynamic_pointer_cast<TypeTypeImpl>(fImpl);
@@ -2170,7 +2178,7 @@ Type::toString() const
 
 bool
 Type::matchGenerics(TypeCtx& localCtx, const Type& right0,
-                    Scope* scope, const SrcPos& srcpos) const
+                    const Scope& scope, const SrcPos& srcpos) const
 {
   if (fImpl)
     return fImpl->matchGenerics(localCtx, right0, scope, srcpos);
@@ -3001,7 +3009,7 @@ FunctionSignature::parameters() const
 bool
 FunctionSignature::matchGenerics(TypeCtx& localCtx,
                                  const FunctionSignature& right0,
-                                 Scope* scope, const SrcPos& srcpos) const
+                                 const Scope& scope, const SrcPos& srcpos) const
 {
   if (fParameters.size() == right0.parameters().size()) {
     if (!fReturnType.matchGenerics(localCtx, right0.returnType(),
@@ -3146,22 +3154,22 @@ TypeUnit::operator=(const TypeUnit& other)
 namespace herschel
 {
   Type
-  resolveType(const Type& type, Scope* scope)
+  resolveType(const Type& type, const Scope& scope)
   {
     Type ty = ( type.isDef() && type.isRef()
-                ? scope->lookupType(type.typeName(), K(showAmbiguousSymDef))
+                ? scope.lookupType(type.typeName(), K(showAmbiguousSymDef))
                 : type );
     if (ty.isDef() && ty.isOpen()) {
       if (type.isDef())
-        return scope->normalizeType(ty, type);
+        return scope.normalizeType(ty, type);
     }
     return ty;
   }
 
 
   bool
-  isSameType(const TypeVector& vect0, const TypeVector& vect1, Scope* scope,
-             const SrcPos& srcpos, bool reportErrors)
+  isSameType(const TypeVector& vect0, const TypeVector& vect1,
+             const Scope& scope, const SrcPos& srcpos, bool reportErrors)
   {
     if (vect0.size() == vect1.size()) {
       for (size_t i = 0; i < vect0.size(); i++) {
@@ -3177,7 +3185,7 @@ namespace herschel
   bool
   isSameType(const FunctionSignature& leftsig,
              const FunctionSignature& rightsig,
-             Scope* scope, const SrcPos& srcpos, bool reportErrors)
+             const Scope& scope, const SrcPos& srcpos, bool reportErrors)
   {
     if (!isSameType(leftsig.returnType(), rightsig.returnType(),
                     scope, srcpos, reportErrors))
@@ -3199,7 +3207,7 @@ namespace herschel
 
 
   bool
-  isSameType(const Type& left0, const Type& right0, Scope* scope,
+  isSameType(const Type& left0, const Type& right0, const Scope& scope,
              const SrcPos& srcpos, bool reportErrors)
   {
     if (!left0.isDef() || !right0.isDef()) {
@@ -3332,7 +3340,7 @@ namespace herschel
   //! Indicates whether left0 is a subtype of right0.  This is tested by checking
   //! whether right0 is in left0's inheritance list.
   bool
-  inheritsFrom(const Type& left0, const Type& right0, Scope* scope,
+  inheritsFrom(const Type& left0, const Type& right0, const Scope& scope,
                const SrcPos& srcpos, bool reportErrors)
   {
     if (!left0.isDef() || !right0.isDef()) {
@@ -3361,7 +3369,7 @@ namespace herschel
     if (!inheritance.isDef())
       return false;
     else if (inheritance.isRef())
-      inheritance = scope->lookupType(inheritance);
+      inheritance = scope.lookupType(inheritance);
 
     if (!inheritance.isDef()) {
       if (reportErrors)
@@ -3398,8 +3406,8 @@ namespace herschel
   //----------------------------------------------------------------------------
 
   bool
-  isCovariant(const TypeVector& vect0, const TypeVector& vect1, Scope* scope,
-              const SrcPos& srcpos, bool reportErrors)
+  isCovariant(const TypeVector& vect0, const TypeVector& vect1,
+              const Scope& scope, const SrcPos& srcpos, bool reportErrors)
   {
     if (vect0.size() == vect1.size()) {
       for (size_t i = 0; i < vect0.size(); i++) {
@@ -3414,7 +3422,7 @@ namespace herschel
 
   bool
   isCovariantToEveryTypeInSeq(const Type& type, const TypeVector& vect0,
-                              Scope* scope,
+                              const Scope& scope,
                               const SrcPos& srcpos, bool reportErrors)
   {
     for (const auto& ty : vect0) {
@@ -3427,7 +3435,7 @@ namespace herschel
 
   bool
   isCoOrInvariantToEveryTypeInUnion(const Type& type, const TypeVector& vect0,
-                                    Scope* scope,
+                                    const Scope& scope,
                                     const SrcPos& srcpos, bool reportErrors)
   {
     auto hadOneCovariantType = false;
@@ -3445,7 +3453,7 @@ namespace herschel
 
   bool
   isCovariantForAllTypesInUnion(const TypeVector& vect0, const TypeVector& vect1,
-                                Scope* scope,
+                                const Scope& scope,
                                 const SrcPos& srcpos, bool reportErrors)
   {
     for (const auto& ty : vect0) {
@@ -3460,7 +3468,7 @@ namespace herschel
   bool
   isCovariant(const FunctionSignature& leftsig,
               const FunctionSignature& rightsig,
-              Scope* scope, const SrcPos& srcpos, bool reportErrors)
+              const Scope& scope, const SrcPos& srcpos, bool reportErrors)
   {
     if (!isCovariant(leftsig.returnType(), rightsig.returnType(),
                      scope, srcpos, reportErrors))
@@ -3555,7 +3563,7 @@ namespace herschel
 
 
   bool
-  isCovariant(const Type& left0, const Type& right0, Scope* scope,
+  isCovariant(const Type& left0, const Type& right0, const Scope& scope,
               const SrcPos& srcpos, bool reportErrors)
   {
     if (!left0.isDef() || !right0.isDef()) {
@@ -3730,7 +3738,7 @@ namespace herschel
 
 
   bool
-  isContravariant(const Type& left, const Type& right, Scope* scope,
+  isContravariant(const Type& left, const Type& right, const Scope& scope,
                   const SrcPos& srcpos, bool reportErrors)
   {
     return isCovariant(right, left,
@@ -3739,7 +3747,7 @@ namespace herschel
 
 
   bool
-  isInvariant(const Type& left, const Type& right, Scope* scope,
+  isInvariant(const Type& left, const Type& right, const Scope& scope,
               const SrcPos& srcpos, bool reportErrors)
   {
     return ( !isCovariant(left, right, scope, srcpos, reportErrors) &&

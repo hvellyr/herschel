@@ -123,7 +123,7 @@ namespace herschel
     //! Note that this function is needed for recursion into complex types;
     //! the public API for this is Type::matchGenerics().
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const = 0;
+                               const Scope& scope, const SrcPos& srcpos) const = 0;
 
     //! Return a string representation, mostly useful for debugging purposes.
     //! \p isValue indicates whether the type is actually a value type (this
@@ -330,7 +330,7 @@ namespace herschel
     //! types only.
     //!
     //! \pre Only allowed if \c isClass() returns true.
-    Type slotType(const String& slotName, Scope* scope) const;
+    Type slotType(const String& slotName, const Scope& scope) const;
 
     bool isType() const;
     const Type& typeInheritance() const;
@@ -358,7 +358,7 @@ namespace herschel
     //! type.  The \p scope is required for looking up type references, the \p
     //! srcpos for possible error messages.
     bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                       Scope* scope, const SrcPos& srcpos) const;
+                       const Scope& scope, const SrcPos& srcpos) const;
 
 
     //@{ alias types
@@ -680,7 +680,7 @@ namespace herschel
     bool isOpen() const;
 
     bool matchGenerics(TypeCtx& localCtx, const FunctionSignature& right0,
-                       Scope* scope, const SrcPos& srcpos) const;
+                       const Scope& scope, const SrcPos& srcpos) const;
 
     //! Returns the name of the method.  May be empty if the function is
     //! anonymous.
@@ -737,22 +737,22 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  bool inheritsFrom(const Type& left, const Type& right, Scope* scope,
+  bool inheritsFrom(const Type& left, const Type& right, const Scope& scope,
                     const SrcPos& srcpos, bool reportErrors = true);
 
-  bool isSameType(const Type& left, const Type& right, Scope* scope,
+  bool isSameType(const Type& left, const Type& right, const Scope& scope,
                   const SrcPos& srcpos, bool reportErrors = true);
   //! Indicates whether the type @var{right} is covariant to (i.e. "narrower"
   //! than) the type @var{left}.
-  bool isCovariant(const Type& left, const Type& right, Scope* scope,
+  bool isCovariant(const Type& left, const Type& right, const Scope& scope,
                    const SrcPos& srcpos, bool reportErrors = true);
   //! Indicates whether the type @var{right} is contravariant to (i.e. "wider"
   //! than) the type @var{left}.
-  bool isContravariant(const Type& left, const Type& right, Scope* scope,
+  bool isContravariant(const Type& left, const Type& right, const Scope& scope,
                        const SrcPos& srcpos, bool reportErrors = true);
   //! Indicates whether the type @var{right} is invariant to the type
   //! @var{left}, i.e. there's no relation between @var{left} and @var{right}.
-  bool isInvariant(const Type& left, const Type& right, Scope* scope,
+  bool isInvariant(const Type& left, const Type& right, const Scope& scope,
                    const SrcPos& srcpos, bool reportErrors = true);
   bool containsAny(const Type& left, const SrcPos& srcpos,
                    bool reportErrors = true);
@@ -772,7 +772,7 @@ namespace herschel
                         const TypeVector& srcGenerics);
 
 
-  Type resolveType(const Type& type, Scope* scope);
+  Type resolveType(const Type& type, const Scope& scope);
 
   String arrayTypeName(const String& baseName);
   String arrayTypeName(const char* baseName);

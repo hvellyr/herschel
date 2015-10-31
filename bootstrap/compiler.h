@@ -69,10 +69,10 @@ namespace herschel
 
     bool importFile(const SrcPos& srcpos,
                     const String& srcName, bool isPublic,
-                    Scope* currentScope);
+                    std::shared_ptr<Scope> currentScope);
     String lookupFile(const String& srcName, bool isPublic);
 
-    Scope* referredFunctionCache() const;
+    std::shared_ptr<Scope> referredFunctionCache() const;
 
     // predefined symbol tokens to speed up parsing
     static const Token aliasToken;
@@ -122,7 +122,7 @@ namespace herschel
     friend class SecondPass;
 
     bool isParsingInterface() const;
-    Scope* scope() const;
+    std::shared_ptr<Scope> scope() const;
 
     Token nextToken();
     void unreadToken(const Token& token);
@@ -131,7 +131,7 @@ namespace herschel
                          bool doTrace);
     bool importFileImpl(const SrcPos& srcpos,
                         const String& srcName, const String& absPath,
-                        Scope* currentScope,
+                        std::shared_ptr<Scope> currentScope,
                         bool preload);
 
     void importSystemHeaders(const String& avoidPath);
@@ -142,7 +142,7 @@ namespace herschel
     public:
       CompilerState(CharRegistry*      charReg,
                     ConfigVarRegistry* configReg,
-                    Scope*             scope);
+                    std::shared_ptr<Scope> scope);
       CompilerState(const CompilerState& item);
       CompilerState& operator=(const CompilerState& item);
 
@@ -150,7 +150,7 @@ namespace herschel
       Token                  fToken;
       Ptr<CharRegistry>      fCharRegistry;
       Ptr<ConfigVarRegistry> fConfigVarRegistry;
-      Ptr<Scope>             fScope;
+      std::shared_ptr<Scope> fScope;
     };
 
 
@@ -160,7 +160,7 @@ namespace herschel
     std::list<CompilerState> fCompilerStates;
     bool                     fIsParsingInterface;
 
-    Ptr<Scope>               fReferredFunctionCache;
+    std::shared_ptr<Scope>   fReferredFunctionCache;
   };
 
 

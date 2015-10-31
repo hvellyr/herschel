@@ -29,7 +29,7 @@ TEST_CASE("Scope lookup type", "[scope]")
                              TypeConstVector(),
                              K(isValue));
 
-  Ptr<Scope> s0 = new Scope(kScopeL_CompileUnit);
+  auto s0 = makeScope(kScopeL_CompileUnit);
   Type t1 = s0->lookupType_unused(t0);
   // printf("%s\n", (const char*)StrHelper(t1.toString()));
   REQUIRE(t1.isDef());

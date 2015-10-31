@@ -26,13 +26,13 @@ namespace herschel
   {
   public:
     AbstractPass();
-    AbstractPass(Compiler* compiler, Scope* scope);
+    AbstractPass(Compiler* compiler, std::shared_ptr<Scope> scope);
 
     String currentModuleName() const;
     void pushModule(const String& name, bool setName);
     void popModule();
 
-    Scope* scope();
+    std::shared_ptr<Scope> scope();
 
     friend class ModuleHelper;
     class ModuleHelper
@@ -57,7 +57,7 @@ namespace herschel
     String            fCurrentModuleName;
     std::list<String> fModuleNameStack;
 
-    Ptr<Scope>        fScope;
+    std::shared_ptr<Scope> fScope;
     Ptr<Compiler>     fCompiler;
   };
 };                              // namespace

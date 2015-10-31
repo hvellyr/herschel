@@ -111,7 +111,7 @@ AptNode::srcpos() const
 }
 
 
-Scope*
+std::shared_ptr<Scope>
 AptNode::scope() const
 {
   return fScope;
@@ -119,7 +119,7 @@ AptNode::scope() const
 
 
 AptNode*
-AptNode::setScope(Scope* scope)
+AptNode::setScope(std::shared_ptr<Scope> scope)
 {
   fScope = scope;
   return this;

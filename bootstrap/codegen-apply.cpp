@@ -83,7 +83,7 @@ CodegenApply::emitTypeNameForAllocate(const AptNode* node) const
 llvm::Function*
 CodegenApply::lazyDeclareExternFunction(const String& funcnm) const
 {
-  Scope* scope = generator()->fCompiler->referredFunctionCache();
+  auto scope = generator()->fCompiler->referredFunctionCache();
 
   const AptNode* node = scope->lookupFunction(funcnm,
                                               !K(showAmbiguousSymDef));

@@ -73,7 +73,7 @@ Compiler::Compiler(bool isParsingInterface)
              new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
              type::newRootScope())),
     fIsParsingInterface(isParsingInterface),
-    fReferredFunctionCache(new Scope(kScopeL_CompileUnit))
+    fReferredFunctionCache(makeScope(kScopeL_CompileUnit))
 {
 }
 
@@ -92,14 +92,14 @@ Compiler::configVarRegistry() const
 }
 
 
-Scope*
+std::shared_ptr<Scope>
 Compiler::scope() const
 {
   return fState.fScope;
 }
 
 
-Scope*
+std::shared_ptr<Scope>
 Compiler::referredFunctionCache() const
 {
   return fReferredFunctionCache;
@@ -139,7 +139,7 @@ Compiler::unreadToken(const Token& token)
 AptNode*
 Compiler::process(Port<Char>* port, const String& srcName)
 {
-  fState.fScope = new Scope(kScopeL_CompileUnit, fState.fScope);
+  fState.fScope = makeScope(kScopeL_CompileUnit, fState.fScope);
   importSystemHeaders(srcName);
   return processImpl(port, srcName, K(doTrace));
 }
@@ -202,7 +202,7 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
 bool
 Compiler::importFile(const SrcPos& srcpos,
                      const String& srcName, bool isPublic,
-                     Scope* currentScope)
+                     std::shared_ptr<Scope> currentScope)
 {
   String absPath = lookupFile(srcName, isPublic);
   return importFileImpl(srcpos, srcName, absPath, currentScope, K(preload));
@@ -261,10 +261,10 @@ Compiler::importSystemHeaders(const String& avoidPath)
 bool
 Compiler::importFileImpl(const SrcPos& srcpos,
                          const String& srcName, const String& absPath,
-                         Scope* currentScope,
+                         std::shared_ptr<Scope> currentScope,
                          bool preload)
 {
-  typedef std::map<String, Ptr<Scope> > ImportCache;
+  using ImportCache = std::map<String, std::shared_ptr<Scope>>;
   static ImportCache sImportCache;
 
   if (absPath.isEmpty()) {
@@ -299,7 +299,7 @@ Compiler::importFileImpl(const SrcPos& srcpos,
     Ptr<AptNode> apt = compiler->processImpl(new CharPort(
                                                new FilePort(absPath, "rb")),
                                              srcName, !K(doTrace));
-    Ptr<Scope> scope = compiler->scope();
+    auto scope = compiler->scope();
 
     currentScope->addImportedScope(absPath, scope);
 
@@ -341,10 +341,10 @@ Compiler::lookupFile(const String& srcName, bool isPublic)
 
 Compiler::CompilerState::CompilerState(CharRegistry* charReg,
                                        ConfigVarRegistry* configReg,
-                                       Scope* scope)
+                                       std::shared_ptr<Scope> scope)
   : fCharRegistry(charReg),
     fConfigVarRegistry(configReg),
-    fScope(scope)
+    fScope(std::move(scope))
 {
 }
 

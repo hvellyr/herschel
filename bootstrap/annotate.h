@@ -16,6 +16,8 @@
 #include "compilepass.h"
 
 #include <vector>
+#include <memory>
+
 
 namespace herschel
 {
@@ -79,7 +81,7 @@ namespace herschel
       kLookup
     };
 
-    Annotator(Scope* scope, Compiler* compiler);
+    Annotator(std::shared_ptr<Scope> scope, Compiler* compiler);
 
     void annotateRecursively(AptNode* node);
 
@@ -138,7 +140,7 @@ namespace herschel
 
     //-------- data members
 
-    Ptr<Scope> fScope;
+    std::shared_ptr<Scope> fScope;
     Phase      fPhase;
     Compiler*  fCompiler;       // backlink to owning compiler
   };
@@ -152,11 +154,11 @@ namespace herschel
   class AnnotatePass : public AptNodeCompilePass
   {
   public:
-    AnnotatePass(int level, Scope* scope, Compiler* compiler);
+    AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler* compiler);
     virtual AptNode* doApply(AptNode* src);
 
   private:
-    Ptr<Scope> fScope;
+    std::shared_ptr<Scope> fScope;
     Compiler*  fCompiler;       // backlink to owning compiler
   };
 

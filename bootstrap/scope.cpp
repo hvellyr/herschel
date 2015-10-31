@@ -161,15 +161,15 @@ Scope::Scope(ScopeLevel level)
 }
 
 
-Scope::Scope(ScopeLevel level, Scope* parent)
-  : fParent(parent),
+Scope::Scope(ScopeLevel level, std::shared_ptr<Scope> parent)
+  : fParent(std::move(parent)),
     fLevel(level)
 {
-  hr_assert(implies(level > kScopeL_CompileUnit, parent != NULL));
+  hr_assert(implies(level > kScopeL_CompileUnit, fParent));
 }
 
 
-Scope*
+std::shared_ptr<Scope>
 Scope::parent() const
 {
   return fParent;
@@ -280,15 +280,15 @@ Scope::lookupItem(const SrcPos& srcpos,
   const Scope* scope = this;
   bool crossedFuncLevel = false;
 
-  while (scope != NULL) {
+  while (scope) {
     LookupResult lv = scope->lookupItemLocalImpl(srcpos, name,
                                                  showError, K(doAutoMatch));
-    if (lv.fItem != NULL)
+    if (lv.fItem)
       return LookupResult(lv.fItem, crossedFuncLevel);
 
     if (scope->scopeLevel() == kScopeL_Function)
       crossedFuncLevel = true;
-    scope = scope->parent();
+    scope = scope->parent().get();
   }
 
   return LookupResult();
@@ -377,7 +377,7 @@ Scope::hasScopeForFile(const String& absPath) const
   while (scope != NULL) {
     if (scope->hasScopeForFileLocal(absPath))
       return true;
-    scope = scope->parent();
+    scope = scope->parent().get();
   }
 
   return false;
@@ -385,9 +385,9 @@ Scope::hasScopeForFile(const String& absPath) const
 
 
 void
-Scope::addImportedScope(const String& absPath, Scope* scope)
+Scope::addImportedScope(const String& absPath, std::shared_ptr<Scope> scope)
 {
-  ImportedScope::iterator it = fImportedScopes.find(absPath);
+  auto it = fImportedScopes.find(absPath);
   hr_assert(it == fImportedScopes.end());
   fImportedScopes.insert(std::make_pair(absPath, scope));
 }
@@ -716,11 +716,11 @@ Scope::dumpDebug(bool recursive) const
           scopeLevelName(scopeLevel()));
   dumpDebugImpl();
   if (recursive) {
-    Scope* sc0 = parent();
+    Scope* sc0 = parent().get();
     while (sc0) {
       fprintf(stderr, "----- [%p] - %s -----\n", sc0, scopeLevelName(sc0->scopeLevel()));
       sc0->dumpDebugImpl();
-      sc0 = sc0->parent();
+      sc0 = sc0->parent().get();
     }
   }
   fprintf(stderr, "]------- Scope Dump [%p] ----------------------\n", this);
@@ -864,16 +864,12 @@ Scope::reduceVizType(VizType in) const
 
 
 void
-Scope::exportAttachedSymbols(Scope* dstScope,
+Scope::exportAttachedSymbols(std::shared_ptr<Scope> dstScope,
                              const ScopeName& fullKey, VizType vizType,
                              bool isFinal) const
 {
-  const AttachedSymbols& attachedSyms = attachedExportSymbols(fullKey);
-  for (AttachedSymbols::const_iterator ait = attachedSyms.begin();
-       ait != attachedSyms.end();
-       ait++)
-  {
-    String attachedSym = *ait;
+  const auto& attachedSyms = attachedExportSymbols(fullKey);
+  for (const auto& attachedSym : attachedSyms) {
     dstScope->attachSymbolForExport(fullKey.fDomain, fullKey.fName,
                                     attachedSym);
   }
@@ -881,7 +877,8 @@ Scope::exportAttachedSymbols(Scope* dstScope,
 
 
 void
-Scope::exportAllSymbols(Scope* dstScope, bool propagateOuter) const
+Scope::exportAllSymbols(std::shared_ptr<Scope> dstScope,
+                        bool propagateOuter) const
 {
   // export all
   VizType vizAllType = exportSymbolVisibility(ScopeName(kNormal, String("*")));
@@ -919,7 +916,7 @@ Scope::exportAllSymbols(Scope* dstScope, bool propagateOuter) const
 
 
 void
-Scope::exportSymbols(Scope* dstScope, bool propagateOuter) const
+Scope::exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) const
 {
   if (shouldExportSymbol(ScopeName(kNormal, String("*"))))
   {
@@ -959,15 +956,13 @@ Scope::exportSymbols(Scope* dstScope, bool propagateOuter) const
 
 
 void
-Scope::propagateImportedScopes(Scope* dstScope) const
+Scope::propagateImportedScopes(std::shared_ptr<Scope> dstScope) const
 {
-  hr_assert(this != dstScope);
+  hr_assert(this != dstScope.get());
 
-  for (ImportedScope::const_iterator it = fImportedScopes.begin();
-       it != fImportedScopes.end();
-       it++)
+  for (const auto& impScope : fImportedScopes)
   {
-    if (!dstScope->hasScopeForFileLocal(it->first))
-      dstScope->addImportedScope(it->first, it->second);
+    if (!dstScope->hasScopeForFileLocal(impScope.first))
+      dstScope->addImportedScope(impScope.first, impScope.second);
   }
 }

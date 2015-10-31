@@ -31,9 +31,9 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-AnnotatePass::AnnotatePass(int level, Scope* scope, Compiler* compiler)
+AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler* compiler)
   : AptNodeCompilePass(level),
-    fScope(scope),
+    fScope(std::move(scope)),
     fCompiler(compiler)
 {
   hr_assert(fCompiler != NULL);
@@ -52,8 +52,8 @@ AnnotatePass::doApply(AptNode* src)
 
 //----------------------------------------------------------------------------
 
-Annotator::Annotator(Scope* scope, Compiler* compiler)
-  : fScope(scope),
+Annotator::Annotator(std::shared_ptr<Scope> scope, Compiler* compiler)
+  : fScope(std::move(scope)),
     fPhase(kRegister),
     fCompiler(compiler)
 {

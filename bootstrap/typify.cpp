@@ -351,7 +351,7 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
         node->initExpr()->setDstType(Type::newAny());
       }
       else if (!isContravariant(bindty, node->initExpr()->type(),
-                                node->scope(), node->srcpos())) {
+                                *node->scope(), node->srcpos())) {
         errorf(node->initExpr()->srcpos(), E_TypeMismatch,
                "type mismatch in %s initialization", errdesc);
         node->initExpr()->setDstType(Type::newAny());
@@ -481,7 +481,7 @@ Typifier::checkFunctionReturnType(FunctionNode* node)
 {
   if (node->body() != NULL) {
     if (!isContravariant(node->retType(), node->body()->type(),
-                         node->scope(), node->srcpos()) &&
+                         *node->scope(), node->srcpos()) &&
         !containsAny(node->body()->type(), node->srcpos()))
     {
       errorf(node->srcpos(), E_TypeMismatch,
@@ -494,7 +494,7 @@ Typifier::checkFunctionReturnType(FunctionNode* node)
 
     for (size_t i = 0; i < delegate.fReturns.size(); i++) {
       AptNode* ret = delegate.fReturns[i];
-      if (!isContravariant(node->retType(), ret->type(), ret->scope(),
+      if (!isContravariant(node->retType(), ret->type(), *ret->scope(),
                            ret->srcpos()))
       {
         errorf(ret->srcpos(), E_TypeMismatch,
@@ -556,7 +556,7 @@ Typifier::typify(FuncDefNode* node)
           genericDef->isGeneric())
       {
         if (!isContravariant(genericDef->type(), node->type(),
-                             node->scope(), node->srcpos()))
+                             *node->scope(), node->srcpos()))
         {
           // tyerror(genericDef->type(), "genericdef type");
           // tyerror(node->type(), "node type");
@@ -633,8 +633,8 @@ Typifier::typify(BlockNode* node)
     for (size_t i = 0; i < node->children().size(); ++i) {
       OnNode* onnd = dynamic_cast<OnNode*>(node->children()[i].obj());
       if (onnd != NULL && onnd->key() == Names::kExitKeyword) {
-        if (!isContravariant(node->type(), onnd->body()->type(), node->scope(),
-                             onnd->body()->srcpos()))
+        if (!isContravariant(node->type(), onnd->body()->type(),
+                             *node->scope(), onnd->body()->srcpos()))
         {
           errorf(onnd->body()->srcpos(), E_TypeMismatch,
                  "on-exit handler type does not match outer block type");
@@ -677,7 +677,7 @@ Typifier::checkArgParamType(TypeCtx& localCtx,
 {
   if (param->type().isOpen()) {
     if (!param->type().matchGenerics(localCtx, arg->type(),
-                                     arg->scope(), arg->srcpos())) {
+                                     *arg->scope(), arg->srcpos())) {
       tyerror(param->type(), "param");
       tyerror(arg->type(), "arg");
       errorf(arg->srcpos(), E_TypeMismatch,
@@ -686,7 +686,7 @@ Typifier::checkArgParamType(TypeCtx& localCtx,
     }
   }
   else {
-    if (!isContravariant(param->type(), arg->type(), arg->scope(),
+    if (!isContravariant(param->type(), arg->type(), *arg->scope(),
                          arg->srcpos()) &&
         !containsAny(arg->type(), arg->srcpos()))
     {
@@ -977,7 +977,7 @@ Typifier::typify(AssignNode* node)
       errorf(node->rvalue()->srcpos(), E_TypeMismatch,
              "Undefined type in assignment right hand value");
     }
-    else if (!isContravariant(ltype, rtype, node->scope(), node->srcpos()) &&
+    else if (!isContravariant(ltype, rtype, *node->scope(), node->srcpos()) &&
              !containsAny(rtype, node->srcpos()))
     {
       errorf(node->rvalue()->srcpos(), E_TypeMismatch,
@@ -1180,7 +1180,7 @@ Typifier::typify(BinaryNode* node)
            (leftty.isRational() && rightty.isRational()) ||
            (leftty.isComplex() && rightty.isComplex()) ||
            (leftty.isNumber() && rightty.isNumber()) ||
-           isSameType(leftty, rightty, node->scope(), node->srcpos()) )
+           isSameType(leftty, rightty, *node->scope(), node->srcpos()) )
       {
         // any is always ok.
         node->setType(Type::newBool());
@@ -1207,7 +1207,7 @@ Typifier::typify(BinaryNode* node)
            (leftty.isRational() && rightty.isRational()) ||
            (leftty.isComplex() && rightty.isComplex()) ||
            (leftty.isNumber() && rightty.isNumber()) ||
-           isSameType(leftty, rightty, node->scope(), node->srcpos()) )
+           isSameType(leftty, rightty, *node->scope(), node->srcpos()) )
       {
         node->setType(Type::newInt32());
         annotateTypeConv(node->left(), leftty);
@@ -1364,7 +1364,7 @@ Typifier::typify(SlotRefNode* node)
   }
   else {
     if (basety.isClass()) {
-      Type slotType = basety.slotType(node->slotName(), node->scope());
+      Type slotType = basety.slotType(node->slotName(), *node->scope());
       if (slotType.isDef()) {
         node->setType(slotType);
         node->setDstType(slotType);
@@ -1445,13 +1445,13 @@ Typifier::typify(IfNode* node)
       Type cotype = node->consequent()->type();
       Type alttype = node->alternate()->type();
 
-      if (isCovariant(cotype, alttype, node->scope(), node->srcpos())) {
+      if (isCovariant(cotype, alttype, *node->scope(), node->srcpos())) {
         node->setType(alttype);
         annotateTypeConv(node->consequent(), alttype);
         annotateTypeConv(node->alternate(), alttype);
         annotateTypeConv(node, alttype);
       }
-      else if (isCovariant(alttype, cotype, node->scope(), node->srcpos())) {
+      else if (isCovariant(alttype, cotype, *node->scope(), node->srcpos())) {
         node->setType(cotype);
         annotateTypeConv(node->consequent(), cotype);
         annotateTypeConv(node->alternate(), cotype);
@@ -1563,7 +1563,7 @@ Typifier::typify(RangeNode* node)
       return;
     }
 
-    if (!isSameType(fromType, toType, node->scope(), node->srcpos()))
+    if (!isSameType(fromType, toType, *node->scope(), node->srcpos()))
     {
       errorf(node->srcpos(), E_RangeTypeMismatch, "type of range is ambiguous");
       node->setType(newRangeType(Type::newAny(K(isValue))));
@@ -1581,7 +1581,7 @@ Typifier::typify(RangeNode* node)
         return;
       }
 
-      if (!isSameType(fromType, byType, node->scope(), node->by()->srcpos()))
+      if (!isSameType(fromType, byType, *node->scope(), node->by()->srcpos()))
       {
         errorf(node->srcpos(), E_RangeTypeMismatch,
                "step type does not match range type");
@@ -1632,7 +1632,7 @@ mapCommonType(Type& resultType, AptNode* node)
   if (!resultType.isDef()) {
     resultType = ty0;
   }
-  else if (!isSameType(ty0, resultType, node->scope(), node->srcpos())) {
+  else if (!isSameType(ty0, resultType, *node->scope(), node->srcpos())) {
     resultType = Type::newAny(K(isValue));
     return false;
   }
@@ -1744,7 +1744,9 @@ Typifier::typify(CastNode* node)
         node->setType(Type::newAny(K(isValue)));
       }
       else {
-        if (isInvariant(node->base()->type(), type, node->scope(), node->srcpos())) {
+        if (isInvariant(node->base()->type(), type,
+                        *node->scope(), node->srcpos()))
+        {
           errorf(node->srcpos(), E_InvariantType, "Cast to invariant type");
           node->setType(Type::newAny(K(isValue)));
         }

@@ -11,13 +11,16 @@
 #ifndef bootstrap_rootscope_h
 #define bootstrap_rootscope_h
 
+#include <memory>
+
+
 namespace herschel
 {
   class Scope;
 
   namespace type
   {
-    Scope* newRootScope(bool forUnitTests = false);
+    std::shared_ptr<Scope> newRootScope(bool forUnitTests = false);
   };
 };                              // namespace
 
