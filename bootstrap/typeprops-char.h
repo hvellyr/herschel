@@ -29,7 +29,7 @@ namespace herschel
   public:
     CharTypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_char"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_char"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -70,7 +70,7 @@ namespace herschel
   public:
     ClangCharTypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int8"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int8"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {

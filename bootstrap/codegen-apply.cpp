@@ -87,7 +87,7 @@ CodegenApply::lazyDeclareExternFunction(const String& funcnm) const
 
   const AptNode* node = scope->lookupFunction(funcnm,
                                               !K(showAmbiguousSymDef));
-  //fprintf(stderr, "op: %s %p\n", (const char*)StrHelper(funcnm), node);
+  //fprintf(stderr, "op: %s %p\n", (zstring)StrHelper(funcnm), node);
 
   const FuncDefNode* funcdef = dynamic_cast<const FuncDefNode*>(node);
   if (funcdef != NULL)
@@ -114,7 +114,7 @@ CodegenApply::emitFunctionCall(const SrcPos& srcpos,
     calleeFunc = lazyDeclareExternFunction(clearFuncnm);
     if (calleeFunc == NULL) {
       errorf(srcpos, 0, "Unknown function referenced: %s",
-             (const char*)StrHelper(clearFuncnm));
+             (zstring)StrHelper(clearFuncnm));
       return NULL;
     }
   }

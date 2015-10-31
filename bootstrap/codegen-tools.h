@@ -126,7 +126,7 @@ namespace herschel
                                    TypeConvKind typeConv) const;
 
   private:
-    const char* getConvFuncNameByType(const Type& type) const;
+    zstring getConvFuncNameByType(const Type& type) const;
     llvm::Type* getConvTypeByType(const Type& type) const;
   };
 

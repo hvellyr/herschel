@@ -335,7 +335,7 @@ ModuleRuntimeInitializer::addMethodDef(const FuncDefNode* node,
 //----------------------------------------------------------------------------
 
 void
-ModuleRuntimeInitializer::emitCtorList(const CtorList &fns, const char *globalName)
+ModuleRuntimeInitializer::emitCtorList(const CtorList &fns, zstring globalName)
 {
   // Ctor function type is void()*.
   llvm::FunctionType* ctorFTy = llvm::FunctionType::get(llvm::Type::getVoidTy(context()),
@@ -524,8 +524,8 @@ ModuleRuntimeInitializer::createTypeSlotSpec(const String& slotName,
                                              size_t slotOffset) const
 {
   llvm::Value* slotStrValue =
-    builder().CreateGlobalStringPtr((const char*)StrHelper(slotName),
-                                    (const char*)StrHelper(slotName + "_str"));
+    builder().CreateGlobalStringPtr((zstring)StrHelper(slotName),
+                                    (zstring)StrHelper(slotName + "_str"));
 
   return llvm::ConstantStruct::get(
     types()->getTypeSlotPairType(),

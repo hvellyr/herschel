@@ -57,7 +57,7 @@ namespace herschel
   class NotSupportedException : public Exception
   {
   public:
-    NotSupportedException(const char* functionName)
+    NotSupportedException(zstring functionName)
       : Exception(String("Method ") + functionName + " is not supported")
     { }
   };

@@ -37,11 +37,11 @@ PortNotOpenException::PortNotOpenException()
 
 //----------------------------------------------------------------------------
 
-FilePort::FilePort(const String& fileName, const char* mode)
+FilePort::FilePort(const String& fileName, zstring mode)
   : fOwnsStream(true),
     fStream(NULL)
 {
-  fStream = ::fopen((const char*)StrHelper(fileName), mode);
+  fStream = ::fopen((zstring)StrHelper(fileName), mode);
   if (fStream == NULL)
     throw IOException(String("Could not open file '") + fileName + "'", errno);
 }
@@ -499,7 +499,7 @@ CharPort::cursor()
 //----------------------------------------------------------------------------
 
 void
-herschel::display(Port<Octet>* port, const char* value)
+herschel::display(Port<Octet>* port, zstring value)
 {
   if (value != NULL)
     port->write((const Octet*)value, strlen(value));
@@ -509,7 +509,7 @@ herschel::display(Port<Octet>* port, const char* value)
 
 
 void
-herschel::displayln(Port<Octet>* port, const char* value)
+herschel::displayln(Port<Octet>* port, zstring value)
 {
   display(port, value);
   display(port, "\n");

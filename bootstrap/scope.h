@@ -99,8 +99,8 @@ namespace herschel
 
     std::shared_ptr<Scope> parent() const;
     ScopeLevel scopeLevel() const;
-    static const char* scopeLevelName(ScopeLevel level);
-    const char* scopeLevelName() const;
+    static zstring scopeLevelName(ScopeLevel level);
+    zstring scopeLevelName() const;
 
 
     //! Check whether a given symbol \p name is registered in this scope.  If

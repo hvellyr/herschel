@@ -448,7 +448,7 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenTy
         if (fCurrentGenericTypes.find(expr[0].idValue()) != fCurrentGenericTypes.end())
           errorf(expr[0].srcpos(), E_SuperGenericType,
                  "Generic type reference '%s' with parameters",
-                 (const char*)StrHelper(expr[0].idValue()));
+                 (zstring)StrHelper(expr[0].idValue()));
 
         TypeVector generics;
         TypeConstVector dummyConstraints;
@@ -904,7 +904,7 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
       if (!inheritsFrom.containsType(primeTuples[i].fType)) {
         errorf(primeTuples[i].fPrime->srcpos(), E_BadClassOnAlloc,
                "Super class initialization for unknown type %s",
-               (const char*)StrHelper(primeTuples[i].fType.typeId()));
+               (zstring)StrHelper(primeTuples[i].fType.typeId()));
       }
       else {
         primes.push_back(primeTuples[i]);
@@ -914,7 +914,7 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
       if (inheritsFrom.typeName() != primeTuples[i].fType.typeName()) {
         errorf(primeTuples[i].fPrime->srcpos(), E_BadClassOnAlloc,
                "Super class initialization for unknown type %s",
-               (const char*)StrHelper(primeTuples[i].fType.typeId()));
+               (zstring)StrHelper(primeTuples[i].fType.typeId()));
       }
       else {
         primes.push_back(primeTuples[i]);
@@ -1029,7 +1029,7 @@ findAutoParamName(const NodeList& params, const String& slotName)
     if (prm->name() == resultingSlotName) {
       warningf(prm->srcpos(), E_CtorArgNameConflict,
                "conflict names in class init and auto slot configuration: %s",
-               (const char*)StrHelper(slotName));
+               (zstring)StrHelper(slotName));
       resultingSlotName = resultingSlotName + "-1";
     }
   }
@@ -1166,7 +1166,7 @@ reqTypeInitTupleForType(const Type& type, std::shared_ptr<Scope> scope)
   Type superType = scope->lookupType(type.typeName(), K(showAmbiguousSymDef));
   if (!superType.isDef()) {
     errorf(SrcPos(), E_UnknownType, "Unknown super type: %s",
-           (const char*)StrHelper(type.typeId()));
+           (zstring)StrHelper(type.typeId()));
   }
   else if (superType.isClass()) {
     ReqTypeInitTuple tuple;
@@ -1270,7 +1270,7 @@ SecondPass::generatePrimeInits(const SrcPos& srcpos,
         if (apply == NULL) {
           errorf(srcpos, E_BadClassOnAlloc,
                  "No 'on alloc' prime call for super class '%s'",
-                 (const char*)StrHelper(reqTypeInits[i].fType.typeId()));
+                 (zstring)StrHelper(reqTypeInits[i].fType.typeId()));
         }
         else
           body->appendNode(apply);
@@ -1291,7 +1291,7 @@ SecondPass::generatePrimeInits(const SrcPos& srcpos,
       if (prime != NULL) {
         errorf(srcpos, E_BadClassOnAlloc,
                "Explicit 'on alloc' prime call for non allocable type '%s'",
-               (const char*)StrHelper(reqTypeInits[i].fType.typeId()));
+               (zstring)StrHelper(reqTypeInits[i].fType.typeId()));
       }
     }
   }
@@ -1427,7 +1427,7 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
         hr_assert(seq[ofs] == kSymbol);
         errorf(seq[ofs].srcpos(), E_UnknownSlotFlag,
                "Unknown slot flag '%s' ignored",
-               (const char*)StrHelper(seq[ofs].toString()));
+               (zstring)StrHelper(seq[ofs].toString()));
       }
     }
   }
@@ -2102,7 +2102,7 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
   }
 
   errorf(expr[ofs].srcpos(), 0, "Unexpected token: %s\n",
-         (const char*)StrHelper(expr[ofs].toString()));
+         (zstring)StrHelper(expr[ofs].toString()));
   hr_invalid("");
 
   return NodeList();
@@ -3377,7 +3377,7 @@ SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
   }
 
   fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
-          (const char*)StrHelper(expr.toString()),
+          (zstring)StrHelper(expr.toString()),
           __FILE__, __LINE__);
   hr_invalid("");
   return NULL;
@@ -3486,7 +3486,7 @@ SecondPass::parseSeq(const Token& expr)
         return newNodeList(parseTypeExpr(expr));
       else {
         fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
-                (const char*)StrHelper(expr.toString()),
+                (zstring)StrHelper(expr.toString()),
                 __FILE__, __LINE__);
         hr_invalid("");              // TODO
       }
@@ -3521,7 +3521,7 @@ SecondPass::parseSeq(const Token& expr)
     }
     else {
       fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
-              (const char*)StrHelper(expr.toString()),
+              (zstring)StrHelper(expr.toString()),
               __FILE__, __LINE__);
       hr_invalid("");              // TODO
     }
@@ -3687,7 +3687,7 @@ SecondPass::parseNested(const Token& expr)
   case kGenericOpen:
 
   default:
-    // printf("---> %s\n", (const char*)StrHelper(expr.toString()));
+    // printf("---> %s\n", (zstring)StrHelper(expr.toString()));
     hr_invalid("");                  // you should not be here.
   }
 
@@ -3835,7 +3835,7 @@ SecondPass::parseExpr(const Token& expr)
     return parseNested(expr);
 
   case kPunct:
-    // printf("{1} ---> %s\n", (const char*)StrHelper(expr.toString()));
+    // printf("{1} ---> %s\n", (zstring)StrHelper(expr.toString()));
     errorf(expr.srcpos(), E_UnexpectedToken,
            "Unexpected token");
     return NodeList();

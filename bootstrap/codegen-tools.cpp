@@ -355,7 +355,7 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
 }
 
 
-const char*
+zstring
 CodegenTools::getConvFuncNameByType(const Type& type) const
 {
   const TypeProperty& prop = type.typeProperty();
@@ -376,7 +376,7 @@ CodegenTools::getConvTypeByType(const Type& type) const
 llvm::Value*
 CodegenTools::makeTypeCastAtomToPlain(llvm::Value* val, const Type& dstType) const
 {
-  const char* funcName = getConvFuncNameByType(dstType);
+  zstring funcName = getConvFuncNameByType(dstType);
 
   llvm::Function* convFunc = module()->getFunction(llvm::StringRef(funcName));
   if (convFunc == NULL) {

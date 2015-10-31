@@ -14,7 +14,6 @@
 #include "config-local.h"
 #include "version.h"
 #include "sysconf.h"
-#include "require.h"
 
 //! Type abstraction for a byte.
 using Octet = unsigned char;
@@ -22,6 +21,9 @@ using Octet = unsigned char;
 //! Type abstraction for a single unicode character.  Note that this type
 //! requires UTF-16 encoding for strings.
 using Char = unsigned short;
+
+//! Type abstraction for a utf8 encoded character string.
+using zstring = const char*;
 
 //! Macro which evaluates _condA IMP _condB
 #define implies(_condA, _condB)  (!(_condA) || ((_condA) && (_condB)))
@@ -39,5 +41,7 @@ enum CompileOutFormat
   kLLVM_IR,                     //!< Use LLVM textual intermediate representation
   kLLVM_BC                      //!< Use LLVM binary intermediate representation
 };
+
+#include "require.h"
 
 #endif

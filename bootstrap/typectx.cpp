@@ -87,7 +87,7 @@ TypeCtx::dumpDebug()
        it != e; ++it)
   {
     fprintf(stderr, "TYPECTX: %s -> %s\n",
-            (const char*)StrHelper(it->first),
-            (const char*)StrHelper(it->second.toString()));
+            (zstring)StrHelper(it->first),
+            (zstring)StrHelper(it->second.toString()));
   }
 }

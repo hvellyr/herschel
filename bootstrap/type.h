@@ -153,7 +153,7 @@ namespace herschel
     static Type newTypeRef(const String& name, const TypeVector& genericArgs,
                            bool isValue);
     static Type newTypeRef(const String& name, bool isValue);
-    static Type newTypeRef(const char* name, bool isValue = true);
+    static Type newTypeRef(zstring name, bool isValue = true);
     static Type newTypeRef(const String& name, bool isOpen,
                            const TypeConstVector& constraints, bool isValue);
     static Type newTypeRef(const String& name, bool isOpen, bool isValue);
@@ -760,7 +760,7 @@ namespace herschel
   Type newRangeType(const Type& generic);
 
 
-  void tyerror(const Type& type, const char* msg);
+  void tyerror(const Type& type, zstring msg);
 
   int floatTypeBitsize(const Type& ty);
   int intTypeBitsize(const Type& ty);
@@ -775,7 +775,7 @@ namespace herschel
   Type resolveType(const Type& type, const Scope& scope);
 
   String arrayTypeName(const String& baseName);
-  String arrayTypeName(const char* baseName);
+  String arrayTypeName(zstring baseName);
 };                              // namespace
 
 

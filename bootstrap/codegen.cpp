@@ -231,7 +231,7 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
                                  errInfo, llvm::sys::fs::OpenFlags::F_RW);
   if (errInfo) {
     logf(kError, "Failed to open output file '%s': %s",
-         (const char*)StrHelper(outputFile), errInfo.message().c_str());
+         (zstring)StrHelper(outputFile), errInfo.message().c_str());
     return false;
   }
 
@@ -312,12 +312,12 @@ CodeGenerator::codegen(const SymbolNode* node)
     break;
   default:
     logf(kError, "Unexpected symbol reference '%s' (%d)",
-         (const char*)StrHelper(node->name()), node->refersTo());
+         (zstring)StrHelper(node->name()), node->refersTo());
     hr_invalid("unexpected symbol reference");
   }
 
   if (val == NULL) {
-    logf(kError, "Unknown symbol '%s'", (const char*)StrHelper(node->name()));
+    logf(kError, "Unknown symbol '%s'", (zstring)StrHelper(node->name()));
     return NULL;
   }
 
@@ -374,7 +374,7 @@ CodeGenerator::codegen(const AssignNode* node)
     // Look up the name.
     llvm::AllocaInst* var = fNamedValues[lsym->name()];
     if (var == NULL) {
-      logf(kError, "Unknown symbol '%s'", (const char*)StrHelper(lsym->name()));
+      logf(kError, "Unknown symbol '%s'", (zstring)StrHelper(lsym->name()));
       return NULL;
     }
 

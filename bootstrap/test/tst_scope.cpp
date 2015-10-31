@@ -31,6 +31,6 @@ TEST_CASE("Scope lookup type", "[scope]")
 
   auto s0 = makeScope(kScopeL_CompileUnit);
   Type t1 = s0->lookupType_unused(t0);
-  // printf("%s\n", (const char*)StrHelper(t1.toString()));
+  // printf("%s\n", (zstring)StrHelper(t1.toString()));
   REQUIRE(t1.isDef());
 }

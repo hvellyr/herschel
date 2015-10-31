@@ -36,7 +36,7 @@ namespace herschel
     //! Return the C function name used to convert an object of this type from
     //! atom layout to the plain layout (e.g. "h7_atom_2_int32").  C function
     //! returned here must be implemented in the C runtime.
-    virtual const char* convFuncName() const = 0;
+    virtual zstring convFuncName() const = 0;
 
     //! Emit the necessary LLVM instructions to convert a object of this type
     //! from plain layout to atom layout (when destination type conversion is
@@ -91,7 +91,7 @@ namespace herschel
 
     virtual bool isValid() const { return false; }
 
-    virtual const char* convFuncName() const { return NULL; };
+    virtual zstring convFuncName() const { return NULL; };
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools,
                                       llvm::Value* value) const { return NULL; };

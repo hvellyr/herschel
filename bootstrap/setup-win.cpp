@@ -41,15 +41,15 @@ namespace herschel
 
 
   static bool
-  exeFromDevpath(const char* exeName, const String& exedir,
+  exeFromDevpath(zstring exeName, const String& exedir,
                  String& syspath, String& binpath)
   {
-    static char* possible_paths[] = {
+    static zstring possible_paths[] = {
       "/temp/debug/",
       "/temp/release/",
       NULL
     };
-    char** p = possible_paths;
+    zstring* p = possible_paths;
 
     for ( ; *p; p++) {
       String fullpath = String(*p) + exeName + ".exe";
@@ -65,7 +65,7 @@ namespace herschel
 
 
   StringVector
-  findSysResources(const char* exeName)
+  findSysResources(zstring exeName)
   {
     Setup setup;
     String binspath;

@@ -65,7 +65,7 @@ namespace herschel
     kPlain2AtomConv,            //!< Convert plain to atom value repr.
   };
 
-  const char* convkind2str(TypeConvKind kind);
+  zstring convkind2str(TypeConvKind kind);
 
   //--------------------------------------------------------------------------
 

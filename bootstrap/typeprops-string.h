@@ -29,7 +29,7 @@ namespace herschel
   public:
     StringTypeProperty() {}
 
-    virtual const char* convFuncName() const { return NULL; }
+    virtual zstring convFuncName() const { return NULL; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {

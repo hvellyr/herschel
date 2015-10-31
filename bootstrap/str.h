@@ -44,7 +44,7 @@ namespace herschel
     //! Create a new instance from the null terminated utf8 encoded plain
     //! string \p utf8.  After construction the caller is free to deallocate
     //! \p utf8.
-    explicit String(const char* utf8);
+    explicit String(zstring utf8);
 
     explicit String(const std::string& utf8);
 
@@ -53,7 +53,7 @@ namespace herschel
     //! before \p items have reached only the part of \p utf8 until the null
     //! byte is copied.  After construction the caller is free to deallocate
     //! \p utf8.
-    explicit String(const char* utf8, int items);
+    explicit String(zstring utf8, int items);
 
     //! Create a new instance from the first \p items characters of the wide
     //! character arrays \p str.  When a null character is found in \p str
@@ -193,7 +193,7 @@ namespace herschel
   };
 
   //! Concatenates \p one and \p two into a new instance.
-  String operator+(const String& one, const char* two);
+  String operator+(const String& one, zstring two);
   //! Appends a string representation of \p value to \p one and returns it as
   //! new instance.
   String operator+(const String& one, int value);
@@ -215,7 +215,7 @@ namespace herschel
   String fromBool(bool value);
 
 
-  int str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems);
+  int str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems);
   int str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems);
 
   //! Returns a new symbol, which is unique throughout the application's life
@@ -251,7 +251,7 @@ namespace herschel
     }
 
     //! Returns the encoded C string.
-    const char* c_str() const
+    zstring c_str() const
     {
       return &fBuffer[0];
     }
@@ -267,7 +267,7 @@ namespace herschel
 
   //! Encode a given plain C string by escaping special XML characters like &,
   //! <, and '
-  String xmlEncode(const char* str);
+  String xmlEncode(zstring str);
 
 #if defined(UNITTESTS)
   std::ostream& operator<<(std::ostream& os, const String& str);

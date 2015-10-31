@@ -246,7 +246,7 @@ namespace herschel
     }
 
 
-    static const char* intTypeTag(int bitwidth)
+    static zstring intTypeTag(int bitwidth)
     {
       switch (bitwidth) {
       case 8:  return "type='int8'";
@@ -258,7 +258,7 @@ namespace herschel
       return "";
     }
 
-    static const char* uintTypeTag(int bitwidth)
+    static zstring uintTypeTag(int bitwidth)
     {
       switch (bitwidth) {
       case 8:  return "type='uint8'";
@@ -270,7 +270,7 @@ namespace herschel
       return "";
     }
 
-    static const char* floatTypeTag(int bitwidth)
+    static zstring floatTypeTag(int bitwidth)
     {
       switch (bitwidth) {
       case 32:  return "type='float32'";
@@ -561,7 +561,7 @@ namespace herschel
 using namespace herschel;
 
 Token
-Token::newUniqueSymbolToken(const SrcPos& where, const char* prefix)
+Token::newUniqueSymbolToken(const SrcPos& where, zstring prefix)
 {
   return Token(where, kSymbol, uniqueName(prefix));
 }
@@ -593,7 +593,7 @@ Token::Token(const SrcPos& where, const String& str)
 { }
 
 
-Token::Token(const SrcPos& where, const char* str)
+Token::Token(const SrcPos& where, zstring str)
   : fType(kSymbol),
     fImpl(new IdTokenImpl(String(str))),
     fSrcPos(where)
@@ -613,7 +613,7 @@ Token::Token(const SrcPos& where, TokenType ttype, const String& str)
 }
 
 
-Token::Token(const SrcPos& where, TokenType ttype, const char* str)
+Token::Token(const SrcPos& where, TokenType ttype, zstring str)
   : fType(ttype),
     fSrcPos(where)
 {
@@ -1722,7 +1722,7 @@ herschel::operator+(const String& one, const NamedTokenMap& bindings)
 }
 
 
-const char*
+zstring
 herschel::operatorName(OperatorType type)
 {
   switch (type) {
@@ -1774,7 +1774,7 @@ herschel::operatorName(OperatorType type)
 std::ostream& herschel::operator<<(std::ostream& os,const Token& token)
 {
   String s = token.toString();
-  os << "'" << (const char*)StrHelper(s) << "'";
+  os << "'" << (zstring)StrHelper(s) << "'";
   return os;
 }
 

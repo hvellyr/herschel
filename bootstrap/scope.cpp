@@ -194,7 +194,7 @@ Scope::registerScopeItem(const ScopeName& name, std::shared_ptr<ScopeItem> item)
   if (result.fItem)
   {
     errorf(item->srcpos(), E_SymbolRedefined, "redefinition of symbol '%s'",
-           (const char*)StrHelper(name.fName));
+           (zstring)StrHelper(name.fName));
     errorf(result.fItem->srcpos(), E_SymbolRedefined,
            "symbol was defined here");
 
@@ -237,7 +237,7 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
       }
       else if (showError) {
         errorf(srcpos, E_AmbiguousSym, "ambiguous symbol '%s' usage",
-               (const char*)StrHelper(base.fName));
+               (zstring)StrHelper(base.fName));
         for (BaseScopeMap::const_iterator vit = it->second.begin();
              vit != it->second.end();
              vit++)
@@ -245,7 +245,7 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
           String fullKey = qualifyId(vit->first, it->first.fName);
           errorf(vit->second->srcpos(), E_AmbiguousSym,
                  "symbol '%s' was defined here",
-                 (const char*)StrHelper(fullKey));
+                 (zstring)StrHelper(fullKey));
         }
       }
     }
@@ -339,10 +339,10 @@ Scope::checkForRedefinition(const SrcPos& srcpos,
   SrcPos firstSrcpos;
   if (hasNameLocal(domain, sym, &firstSrcpos, !K(doAutoMatch))) {
     errorf(srcpos, E_Redefinition,
-           "Redefinition of '%s'.", (const char*)StrHelper(sym));
+           "Redefinition of '%s'.", (zstring)StrHelper(sym));
     errorf(firstSrcpos, E_Redefinition,
            "'%s' previously defined here.",
-           (const char*)StrHelper(sym));
+           (zstring)StrHelper(sym));
     return true;
   }
 
@@ -692,7 +692,7 @@ Scope::isVarInOuterFunction(const String& name) const
 }
 
 
-const char*
+zstring
 Scope::scopeLevelName(ScopeLevel level)
 {
   switch (level) {
@@ -705,7 +705,7 @@ Scope::scopeLevelName(ScopeLevel level)
 }
 
 
-const char*
+zstring
 Scope::scopeLevelName() const
 {
   return scopeLevelName(scopeLevel());
@@ -741,7 +741,7 @@ Scope::dumpDebugImpl() const
          vit++)
     {
       String key = qualifyId(vit->first, it->first.fName);
-      fprintf(stderr, "%s\n", (const char*)StrHelper(key));
+      fprintf(stderr, "%s\n", (zstring)StrHelper(key));
     }
   }
 
@@ -751,7 +751,7 @@ Scope::dumpDebugImpl() const
          it != fImportedScopes.end();
          it++)
     {
-      fprintf(stderr, "[ATTACHED: %s]\n", (const char*)StrHelper(it->first));
+      fprintf(stderr, "[ATTACHED: %s]\n", (zstring)StrHelper(it->first));
       it->second->dumpDebugImpl();
     }
   }

@@ -36,7 +36,7 @@ namespace herschel
 
     //! Constructs a source position refering to \p file and line number \p
     //! lineno.
-    SrcPos(const char* file, int lineno)
+    SrcPos(zstring file, int lineno)
       : fFile(String(file)),
         fLineNo(lineno)
     { }

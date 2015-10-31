@@ -25,9 +25,8 @@ namespace herschel
 #else  /* IS_DEBUG */
 
   void setRequiresAreFatal(bool value);
-  void requireHandler(const char* file, int line,
-                      const char* title, const char* msg,
-                      const char* expr);
+  void requireHandler(zstring file, int line, zstring title, zstring msg,
+                      zstring expr);
 
 
 #define hr_assert(_expr)                                                \

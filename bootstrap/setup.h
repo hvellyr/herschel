@@ -42,7 +42,7 @@ namespace herschel
     String fRuntimeLib;
   };
 
-  extern Setup findResources(const char* exeName);
+  extern Setup findResources(zstring exeName);
 };                              // namespace
 
 #endif                          // bootstrap_setup_h

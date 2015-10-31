@@ -170,7 +170,7 @@ namespace herschel
   class FilePort : public Port<Octet>
   {
   public:
-    FilePort(const String& fileName, const char* mode);
+    FilePort(const String& fileName, zstring mode);
     FilePort(FILE* stream);
     ~FilePort();
 
@@ -263,8 +263,8 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  void display(Port<Octet>* port, const char* value);
-  void displayln(Port<Octet>* port, const char* value);
+  void display(Port<Octet>* port, zstring value);
+  void displayln(Port<Octet>* port, zstring value);
   void display(Port<Octet>* port, const String& value);
   void displayln(Port<Octet>* port, const String& value);
 

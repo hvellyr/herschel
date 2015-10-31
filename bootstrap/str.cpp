@@ -94,7 +94,7 @@ namespace herschel
     }
 
 
-    void createFromUtf8(const char* utf8, int items)
+    void createFromUtf8(zstring utf8, int items)
     {
       int reqlen = str_utf8_to_wcs(utf8, items, NULL, 0);
 
@@ -124,7 +124,7 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  String operator+(const String& one, const char* two)
+  String operator+(const String& one, zstring two)
   {
     return one + String(two);
   }
@@ -202,7 +202,7 @@ String::String(const String& other)
 }
 
 
-String::String(const char* utf8)
+String::String(zstring utf8)
   : fImpl(new StringImpl)
 {
   fImpl->incRef();
@@ -218,7 +218,7 @@ String::String(const std::string& utf8)
 }
 
 
-String::String(const char* utf8, int items)
+String::String(zstring utf8, int items)
   : fImpl(new StringImpl)
 {
   fImpl->incRef();
@@ -679,7 +679,7 @@ str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle, int nlen)
 
 
 int
-herschel::str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems)
+herschel::str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems)
 {
   Octet* sp = (Octet*)src;
   const Octet* end = (Octet*)src + items;
@@ -864,14 +864,14 @@ herschel::xmlEncode(const String& str)
 
 
 String
-herschel::xmlEncode(const char* str)
+herschel::xmlEncode(zstring str)
 {
   return xmlEncode(String(str));
 }
 
 
 String
-herschel::uniqueName(const char* prefix)
+herschel::uniqueName(zstring prefix)
 {
   static int counter = 0;
   StringBuffer buffer;
@@ -883,7 +883,7 @@ herschel::uniqueName(const char* prefix)
 #if defined(UNITTESTS)
 std::ostream& herschel::operator<<(std::ostream& os, const String& str)
 {
-  os << "\"" << (const char*)StrHelper(str) << "\"";
+  os << "\"" << (zstring)StrHelper(str) << "\"";
   return os;
 }
 

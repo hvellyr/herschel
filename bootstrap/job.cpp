@@ -85,7 +85,7 @@ herschel::startProcess(const String& cmd, const std::vector<String>& args,
     if (WIFEXITED(status))
       status = 0;
     else {
-      fprintf(stderr, "ERROR: subprocess '%s' crashed\n", (const char*)StrHelper(cmd));
+      fprintf(stderr, "ERROR: subprocess '%s' crashed\n", (zstring)StrHelper(cmd));
       status = -1;
     }
   }

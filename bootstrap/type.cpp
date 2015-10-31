@@ -1082,7 +1082,7 @@ Type::newTypeRef(const String& name, bool isValue)
 
 
 Type
-Type::newTypeRef(const char* name, bool isValue)
+Type::newTypeRef(zstring name, bool isValue)
 {
   return newTypeRef(String(name), isValue);
 }
@@ -1463,7 +1463,7 @@ Type::typeProperty(bool mustExist) const
     return clangIntProperty;
 
   if (mustExist) {
-    hr_invalid((const char*)StrHelper(String("unhandled type: ") + typeId()));
+    hr_invalid((zstring)StrHelper(String("unhandled type: ") + typeId()));
   }
   return invalidProperty;
 }
@@ -2363,7 +2363,7 @@ namespace herschel
     }
 
 
-    const char* optostr(TypeConstOperator op) const
+    zstring optostr(TypeConstOperator op) const
     {
       switch (op) {
       case kConstOp_and:           return "and";
@@ -2436,7 +2436,7 @@ namespace herschel
     }
 
 
-    const char* optostr(TypeConstOperator op) const
+    zstring optostr(TypeConstOperator op) const
     {
       switch (op) {
       case kConstOp_and:           hr_invalid("");
@@ -3231,7 +3231,7 @@ namespace herschel
         if (reportErrors)
           errorf(srcpos, E_UndefinedType,
                  "Undefined type: '%s' (%s:%d)",
-                 (const char*)StrHelper(right0.typeId()), __FILE__, __LINE__);
+                 (zstring)StrHelper(right0.typeId()), __FILE__, __LINE__);
         return false;
       }
       // if only one of both types is open is can not be the same type.
@@ -3243,7 +3243,7 @@ namespace herschel
         if (reportErrors)
           errorf(srcpos, E_UndefinedType,
                  "Undefined type: '%s' (%s:%d)",
-                 (const char*)StrHelper(left0.typeId()), __FILE__, __LINE__);
+                 (zstring)StrHelper(left0.typeId()), __FILE__, __LINE__);
         return false;
       }
       // if only one of both types is open is can not be the same type.
@@ -3260,14 +3260,14 @@ namespace herschel
       if (reportErrors)
         errorf(srcpos, E_UndefinedType,
                "Undefined type: '%s' (%s:%d)",
-               (const char*)StrHelper(left0.typeId()), __FILE__, __LINE__);
+               (zstring)StrHelper(left0.typeId()), __FILE__, __LINE__);
       return false;
     }
     if (!right.isDef()) {
       if (reportErrors)
         errorf(srcpos, E_UndefinedType,
                "Undefined type: '%s' (%s:%d)",
-               (const char*)StrHelper(right0.typeId()), __FILE__, __LINE__);
+               (zstring)StrHelper(right0.typeId()), __FILE__, __LINE__);
       return false;
     }
 
@@ -3330,8 +3330,8 @@ namespace herschel
       return false;
     }
 
-    fprintf(stderr, "LEFT: %s\n", (const char*)StrHelper(left.toString()));
-    fprintf(stderr, "RIGHT: %s\n", (const char*)StrHelper(right.toString()));
+    fprintf(stderr, "LEFT: %s\n", (zstring)StrHelper(left.toString()));
+    fprintf(stderr, "RIGHT: %s\n", (zstring)StrHelper(right.toString()));
     hr_invalid("unhandled type?");
     return false;
   }
@@ -3768,9 +3768,9 @@ namespace herschel
 
 
   void
-  tyerror(const Type& type, const char* msg)
+  tyerror(const Type& type, zstring msg)
   {
-    fprintf(stderr, "%s: %s\n", msg, (const char*)StrHelper(type.typeId()));
+    fprintf(stderr, "%s: %s\n", msg, (zstring)StrHelper(type.typeId()));
   }
 
 
@@ -3877,7 +3877,7 @@ namespace herschel
 
 
   String
-  arrayTypeName(const char* baseName)
+  arrayTypeName(zstring baseName)
   {
     return arrayTypeName(String(baseName));
   }

@@ -28,7 +28,7 @@ using namespace herschel;
 
 void
 herschel::xml::displayOpenTag(Port<Octet>* port,
-                             const char* tagName, bool newline)
+                             zstring tagName, bool newline)
 {
   if (tagName != NULL) {
     herschel::display(port, String() + "<" + tagName + ">");
@@ -40,7 +40,7 @@ herschel::xml::displayOpenTag(Port<Octet>* port,
 
 void
 herschel::xml::displayOpenTagAttrs(Port<Octet>* port,
-                                  const char* tagName, const char* attrs,
+                                  zstring tagName, zstring attrs,
                                   bool newline)
 {
   if (tagName != NULL) {
@@ -57,7 +57,7 @@ herschel::xml::displayOpenTagAttrs(Port<Octet>* port,
 
 void
 herschel::xml::displayCloseTag(Port<Octet>* port,
-                              const char* tagName)
+                              zstring tagName)
 {
   if (tagName != NULL)
     herschel::display(port, String() + "</" + tagName + ">\n");
@@ -66,7 +66,7 @@ herschel::xml::displayCloseTag(Port<Octet>* port,
 
 void
 herschel::xml::displayEmptyTag(Port<Octet>* port,
-                              const char* tagName)
+                              zstring tagName)
 {
   if (tagName != NULL && ::strlen(tagName) > 0)
     herschel::display(port, String() + "<" + tagName + "/>\n");
@@ -75,7 +75,7 @@ herschel::xml::displayEmptyTag(Port<Octet>* port,
 
 void
 herschel::xml::displayEmptyTagAttrs(Port<Octet>* port,
-                                   const char* tagName, const char* attrs)
+                                   zstring tagName, zstring attrs)
 {
   if (tagName != NULL && ::strlen(tagName) > 0)
     herschel::display(port, String() + "<" + tagName + " " + attrs + "/>\n");
@@ -84,7 +84,7 @@ herschel::xml::displayEmptyTagAttrs(Port<Octet>* port,
 
 void
 herschel::xml::displayTag(Port<Octet>* port,
-                         const char* tagName, const String& value)
+                         zstring tagName, const String& value)
 {
   displayOpenTag(port, tagName, !K(newline));
   herschel::display(port, xmlEncode(value));
@@ -94,8 +94,8 @@ herschel::xml::displayTag(Port<Octet>* port,
 
 void
 herschel::xml::displayTagAttr(Port<Octet>* port,
-                             const char* tagName,
-                             const char* attrs,
+                             zstring tagName,
+                             zstring attrs,
                              const String& value)
 {
   String encodedValue = xmlEncode(value);
@@ -111,7 +111,7 @@ herschel::xml::displayTagAttr(Port<Octet>* port,
 
 void
 herschel::xml::displayStringList(Port<Octet>* port,
-                                const char* outerTagName, const char* tagName,
+                                zstring outerTagName, zstring tagName,
                                 const StringList& strlist)
 {
   if (!strlist.empty())
@@ -134,10 +134,10 @@ herschel::xml::displayStringList(Port<Octet>* port,
 
 void
 herschel::xml::displayStringStringMap(Port<Octet>* port,
-                                     const char* outerTagName,
-                                     const char* tagName,
-                                     const char* firstPairTagName,
-                                     const char* secPairTagName,
+                                     zstring outerTagName,
+                                     zstring tagName,
+                                     zstring firstPairTagName,
+                                     zstring secPairTagName,
                                      const StringStringMap& strMap)
 {
   if (!strMap.empty())
@@ -159,7 +159,7 @@ herschel::xml::displayStringStringMap(Port<Octet>* port,
 
 
 void
-herschel::xml::displayType(Port<Octet>* port, const char* tagName, const Type& type)
+herschel::xml::displayType(Port<Octet>* port, zstring tagName, const Type& type)
 {
   if (type.isDef()) {
     displayOpenTag(port, tagName);
@@ -170,7 +170,7 @@ herschel::xml::displayType(Port<Octet>* port, const char* tagName, const Type& t
 
 
 void
-herschel::xml::displayTypeVector(Port<Octet>* port, const char* tagName, const TypeVector& types)
+herschel::xml::displayTypeVector(Port<Octet>* port, zstring tagName, const TypeVector& types)
 {
   if (!types.empty()) {
     displayOpenTag(port, tagName);
@@ -233,14 +233,14 @@ XmlRenderer::render(const AptNode* node)
 //----------------------------------------------------------------------------
 
 void
-XmlRenderer::displayOpenTag(const char* tagName, bool newline)
+XmlRenderer::displayOpenTag(zstring tagName, bool newline)
 {
   xml::displayOpenTag(fPort, tagName, newline);
 }
 
 
 void
-XmlRenderer::displayOpenTagAttrs(const char* tagName, const char* attrs,
+XmlRenderer::displayOpenTagAttrs(zstring tagName, zstring attrs,
                                  bool newline)
 {
   xml::displayOpenTagAttrs(fPort, tagName, attrs, newline);
@@ -248,44 +248,42 @@ XmlRenderer::displayOpenTagAttrs(const char* tagName, const char* attrs,
 
 
 void
-XmlRenderer::displayCloseTag(const char* tagName)
+XmlRenderer::displayCloseTag(zstring tagName)
 {
   xml::displayCloseTag(fPort, tagName);
 }
 
 
 void
-XmlRenderer::displayEmptyTag(const char* tagName)
+XmlRenderer::displayEmptyTag(zstring tagName)
 {
   xml::displayEmptyTag(fPort, tagName);
 }
 
 
 void
-XmlRenderer::displayEmptyTagAttrs(const char* tagName, const char* attrs)
+XmlRenderer::displayEmptyTagAttrs(zstring tagName, zstring attrs)
 {
   xml::displayEmptyTagAttrs(fPort, tagName, attrs);
 }
 
 
 void
-XmlRenderer::displayTag(const char* tagName, const String& value)
+XmlRenderer::displayTag(zstring tagName, const String& value)
 {
   xml::displayTag(fPort, tagName, value);
 }
 
 
 void
-XmlRenderer::displayTagAttr(const char* tagName,
-                            const char* attrs,
-                            const String& value)
+XmlRenderer::displayTagAttr(zstring tagName, zstring attrs, const String& value)
 {
   xml::displayTagAttr(fPort, tagName, attrs, value);
 }
 
 
 void
-XmlRenderer::displayStringList(const char* outerTagName, const char* tagName,
+XmlRenderer::displayStringList(zstring outerTagName, zstring tagName,
                                const StringList& strlist)
 {
   xml::displayStringList(fPort, outerTagName, tagName, strlist);
@@ -293,10 +291,10 @@ XmlRenderer::displayStringList(const char* outerTagName, const char* tagName,
 
 
 void
-XmlRenderer::displayStringStringMap(const char* outerTagName,
-                                    const char* tagName,
-                                    const char* firstPairTagName,
-                                    const char* secPairTagName,
+XmlRenderer::displayStringStringMap(zstring outerTagName,
+                                    zstring tagName,
+                                    zstring firstPairTagName,
+                                    zstring secPairTagName,
                                     const StringStringMap& strMap)
 {
   xml::displayStringStringMap(fPort, outerTagName,
@@ -306,7 +304,7 @@ XmlRenderer::displayStringStringMap(const char* outerTagName,
 
 
 void
-XmlRenderer::displayNode(const char* tagName, AptNode* node)
+XmlRenderer::displayNode(zstring tagName, AptNode* node)
 {
   if (node != NULL) {
     displayOpenTag(tagName);
@@ -317,7 +315,7 @@ XmlRenderer::displayNode(const char* tagName, AptNode* node)
 
 
 void
-XmlRenderer::displayNodeList(const char* tagName, const NodeList& nodelist)
+XmlRenderer::displayNodeList(zstring tagName, const NodeList& nodelist)
 {
   if (!nodelist.empty()) {
     displayOpenTag(tagName);
@@ -337,14 +335,14 @@ XmlRenderer::displayNodeList(const char* tagName, const NodeList& nodelist)
 
 
 void
-XmlRenderer::displayType(const char* tagName, const Type& type)
+XmlRenderer::displayType(zstring tagName, const Type& type)
 {
   xml::displayType(fPort, tagName, type);
 }
 
 
 void
-XmlRenderer::displayTypeVector(const char* tagName, const TypeVector& types)
+XmlRenderer::displayTypeVector(zstring tagName, const TypeVector& types)
 {
   xml::displayTypeVector(fPort, tagName, types);
 }
@@ -373,7 +371,7 @@ XmlRenderer::renderNode(const SymbolNode* node)
   if (fShowNodeType && node->type().isDef())
     attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
 
-  const char* referTag = NULL;
+  zstring referTag = nullptr;
   switch (node->refersTo()) {
   case kFreeVar:   referTag = NULL; break;
   case kGlobalVar: referTag = "global"; break;
@@ -550,7 +548,7 @@ XmlRenderer::renderNode(const UnitConstNode* node)
 void
 XmlRenderer::renderNode(const CompileUnitNode* node)
 {
-  const char* attrs = "xmlns:ty='http://herschel.eyestep.org/types'";
+  zstring attrs = "xmlns:ty='http://herschel.eyestep.org/types'";
   displayOpenTagAttrs("compile-unit", attrs);
   displayNodeList(NULL, node->children());
 
@@ -786,7 +784,7 @@ XmlRenderer::renderNode(const BinaryNode* node)
 }
 
 
-static const char*
+static zstring
 unary_operator_name(UnaryOperatorType op)
 {
   switch (op) {
@@ -806,7 +804,7 @@ unary_operator_name(UnaryOperatorType op)
 void
 XmlRenderer::renderNode(const UnaryNode* node)
 {
-  const char* op_nm = unary_operator_name(node->op());
+  zstring op_nm = unary_operator_name(node->op());
   StringBuffer attrs;
   if (fShowNodeType && node->type().isDef()) {
     attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
@@ -975,7 +973,7 @@ XmlRenderer::renderNode(const FunctionNode* node)
 void
 XmlRenderer::renderNode(const FuncDefNode* node)
 {
-  const char* tag = NULL;
+  zstring tag = nullptr;
   if (node->isGeneric())
     tag = "generic";
   else if (node->isMethod())
@@ -1057,7 +1055,7 @@ XmlRenderer::renderNode(const WhileNode* node)
 void
 XmlRenderer::renderNode(const TypeDefNode* node)
 {
-  const char* tagName = node->isClass() ? "class" : "type";
+  zstring tagName = node->isClass() ? "class" : "type";
 
   StringBuffer attrs;
   attrs << "nm='" << node->name() << "'";

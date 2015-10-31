@@ -94,7 +94,7 @@ namespace herschel
     void emitKeywordInitFunc();
     void emitGlobalVarInitFunc();
 
-    void emitCtorList(const CtorList &fns, const char *globalName);
+    void emitCtorList(const CtorList &fns, zstring globalName);
 
     llvm::Function* createGlobalInitOrDtorFunction(llvm::FunctionType *ft,
                                                    const String& name);

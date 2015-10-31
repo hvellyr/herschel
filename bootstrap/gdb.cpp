@@ -21,7 +21,7 @@ void gdb_ps(herschel::String str);
 
 void gdb_ps(herschel::String str)
 {
-  fprintf(stderr, "%s\n", (const char*)herschel::StrHelper(str));
+  fprintf(stderr, "%s\n", (zstring)herschel::StrHelper(str));
 }
 #endif
 

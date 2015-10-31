@@ -190,7 +190,7 @@ namespace herschel
     //! Determine the proper type for a binding node \p node and set it on \p
     //! node.  \p errdesc is used as a context name to be shown in possible
     //! error messages.
-    void setupBindingNodeType(BindingNode* node, const char* errdesc);
+    void setupBindingNodeType(BindingNode* node, zstring errdesc);
 
     void checkArgParamType(TypeCtx& localCtx, const ParamNode* param,
                            AptNode* arg, int idx);

@@ -739,7 +739,7 @@ Tokenizer::nextToken()
 {
   Token t = nextTokenImpl();
   if (Properties::isTraceTokenizer()) {
-    printf("%s ", (const char*)StrHelper(t.toString()));
+    printf("%s ", (zstring)StrHelper(t.toString()));
     fflush(stdout);
   }
   return t;

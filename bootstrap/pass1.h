@@ -225,7 +225,7 @@ namespace herschel
                        bool hasSeparator,
                        ErrCodes errorCode,
                        Token& result,
-                       const char* ctx,
+                       zstring ctx,
                        bool skipFirst = true,
                        bool eatLast = true);
 

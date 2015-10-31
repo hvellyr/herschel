@@ -23,7 +23,7 @@ namespace herschel
   public:
     virtual ~SetupUnix() { }
 
-    Setup findSysResources(const char* exeName) const;
+    Setup findSysResources(zstring exeName) const;
 
   protected:
     //! Returns the directory where the current executable is located
@@ -44,10 +44,10 @@ namespace herschel
       String fRtLib;
     };
 
-    bool exeFromRuntimeInstallation(const char* exeName,
+    bool exeFromRuntimeInstallation(zstring exeName,
                                     const String& exedir,
                                     Paths& paths) const;
-    bool exeFromDevpath(const char* exeName,
+    bool exeFromDevpath(zstring exeName,
                         const String& exedir, Paths& paths) const;
   };
 

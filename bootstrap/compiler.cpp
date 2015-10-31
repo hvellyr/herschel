@@ -192,7 +192,7 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
     return apt.release();
   }
   catch (const Exception& e) {
-    logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
+    logf(kError, "Parse error: %s", (zstring)StrHelper(e.message()));
   }
 
   return NULL;
@@ -219,12 +219,12 @@ Compiler::importSystemHeader(const String& header, const String& fullAvoidPath)
 
   if (absPath == fullAvoidPath) {
     if (Properties::isTraceImportFile())
-      logf(kDebug, "Don't preload '%s'", (const char*)StrHelper(header));
+      logf(kDebug, "Don't preload '%s'", (zstring)StrHelper(header));
     return false;
   }
 
   if (Properties::isTraceImportFile())
-    logf(kDebug, "Preload '%s'", (const char*)StrHelper(header));
+    logf(kDebug, "Preload '%s'", (zstring)StrHelper(header));
   importFileImpl(SrcPos(), header, absPath, fState.fScope, !K(preload));
 
   return true;
@@ -270,26 +270,26 @@ Compiler::importFileImpl(const SrcPos& srcpos,
   if (absPath.isEmpty()) {
     errorf(srcpos, E_UnknownInputFile,
            "import '%s' failed: Unknown file\n",
-           (const char*)StrHelper(srcName));
+           (zstring)StrHelper(srcName));
     return false;
   }
 
   if (currentScope->hasScopeForFile(absPath)) {
     if (Properties::isTraceImportFile())
-      logf(kDebug, "File '%s' already imported", (const char*)StrHelper(absPath));
+      logf(kDebug, "File '%s' already imported", (zstring)StrHelper(absPath));
     return true;
   }
 
   ImportCache::iterator it = sImportCache.find(absPath);
   if (it != sImportCache.end()) {
     if (Properties::isTraceImportFile())
-      logf(kDebug, "Reuse imported '%s'", (const char*)StrHelper(absPath));
+      logf(kDebug, "Reuse imported '%s'", (zstring)StrHelper(absPath));
     currentScope->addImportedScope(absPath, it->second);
     return true;
   }
 
   if (Properties::isTraceImportFile())
-    logf(kDebug, "Import '%s'", (const char*)StrHelper(srcName));
+    logf(kDebug, "Import '%s'", (zstring)StrHelper(srcName));
 
   try {
     Ptr<Compiler> compiler = new Compiler(K(isParsingInterface));
@@ -308,8 +308,8 @@ Compiler::importFileImpl(const SrcPos& srcpos,
   catch (const Exception& e) {
     errorf(srcpos, E_UnknownInputFile,
            "import '%s' failed: %s\n",
-           (const char*)StrHelper(absPath),
-           (const char*)StrHelper(e.message()));
+           (zstring)StrHelper(absPath),
+           (zstring)StrHelper(e.message()));
     return false;
   }
 
@@ -435,8 +435,8 @@ namespace herschel
     }
     catch (const Exception& e) {
       logf(kError, "compilation of '%s' failed: %s",
-           (const char*)StrHelper(file),
-           (const char*)StrHelper(e.message()));
+           (zstring)StrHelper(file),
+           (zstring)StrHelper(e.message()));
     }
   }
 

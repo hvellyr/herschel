@@ -305,7 +305,7 @@ Typifier::typify(LetNode* node)
 
 
 void
-Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
+Typifier::setupBindingNodeType(BindingNode* node, zstring errdesc)
 {
   hr_assert(node->scope() != NULL);
 
@@ -322,7 +322,7 @@ Typifier::setupBindingNodeType(BindingNode* node, const char* errdesc)
   if (!bindty.isDef()) {
     errorf(node->srcpos(), E_UndefinedType,
            "undefined type '%s' in %s",
-           (const char*)StrHelper(typenm),
+           (zstring)StrHelper(typenm),
            errdesc);
     node->setType(Type::newAny());
     if (node->initExpr() != NULL) {
@@ -436,7 +436,7 @@ Typifier::setupFunctionNodeType(FunctionNode* node)
     if (!retty.isDef()) {
       errorf(node->srcpos(), E_UndefinedType,
              "undefined return type '%s'",
-             (const char*)StrHelper(typenm));
+             (zstring)StrHelper(typenm));
       node->setRetType(Type::newAny());
     }
     else {
@@ -1356,7 +1356,7 @@ Typifier::typify(SlotRefNode* node)
                       : Names::kAnyTypeName );
     errorf(node->srcpos(), E_UndefinedType,
            "undefined type '%s'",
-           (const char*)StrHelper(typenm));
+           (zstring)StrHelper(typenm));
 
     node->setType(Type::newAny());
     node->setDstType(Type::newAny());
@@ -1740,7 +1740,7 @@ Typifier::typify(CastNode* node)
       Type type = node->scope()->lookupType(node->type());
       if (!type.isDef()) {
         errorf(node->srcpos(), E_UndefinedType,
-               "undefined type '%s'", (const char*)StrHelper(node->type().toString()));
+               "undefined type '%s'", (zstring)StrHelper(node->type().toString()));
         node->setType(Type::newAny(K(isValue)));
       }
       else {
@@ -1774,7 +1774,7 @@ namespace herschel
 
     if (!ty.isDef()) {
       errorf(node->srcpos(), E_UndefinedType,
-             "undefined type '%s'", (const char*)StrHelper(defaultTypeName));
+             "undefined type '%s'", (zstring)StrHelper(defaultTypeName));
       node->setType(Type::newAny(K(isValue)));
     }
     else {

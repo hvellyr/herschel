@@ -149,7 +149,7 @@ CodegenFuncDef::createFunction(const FuncDefNode* node,
 
   llvm::Function* func = module()->getFunction(llvm::StringRef(funcnm));
   if (func != NULL)
-    logf(kError, "Redefinition of method: %s", (const char*)StrHelper(funcnm));
+    logf(kError, "Redefinition of method: %s", (zstring)StrHelper(funcnm));
 
   Type retty;
   if (node->isAppMain()) {
@@ -343,7 +343,7 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
                                          bool isLocal,
                                          bool forceAtomReturnType) const
 {
-  // fprintf(stderr, "In function def: %s\n", (const char*)StrHelper(node->name()));
+  // fprintf(stderr, "In function def: %s\n", (zstring)StrHelper(node->name()));
   hr_assert(!node->isAbstract());
 
   if (node->body() != NULL) {

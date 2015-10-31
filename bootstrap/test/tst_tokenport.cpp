@@ -17,7 +17,7 @@ using namespace herschel;
 
 TEST_CASE("TokenPort file token port", "[port][data-port][token-port]")
 {
-  static const char* fTest =
+  static zstring fTest =
     "module zero (\"eyestep/zero 1.0:portables\")\n"
     "  export public(*)\n"
     "-- a simple portable class\n"

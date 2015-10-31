@@ -33,15 +33,15 @@
 using namespace herschel;
 
 bool
-SetupUnix::exeFromDevpath(const char* /*exeName*/, const String& exedir,
+SetupUnix::exeFromDevpath(zstring /*exeName*/, const String& exedir,
                           Paths& paths) const
 {
-  static const char* possible_paths[] = {
+  static zstring possible_paths[] = {
     "/temp/debug/",
     "/temp/release/",
     NULL
   };
-  const char** p = possible_paths;
+  zstring* p = possible_paths;
 
   for ( ; *p; p++) {
     String subpath(*p);
@@ -66,16 +66,15 @@ SetupUnix::exeFromDevpath(const char* /*exeName*/, const String& exedir,
 
 
 bool
-SetupUnix::exeFromRuntimeInstallation(const char* exeName,
-                                      const String& exedir,
+SetupUnix::exeFromRuntimeInstallation(zstring exeName, const String& exedir,
                                       Paths& paths) const
 {
-  static const char* possible_paths[] = {
+  static zstring possible_paths[] = {
     "/bin/",
     "/sbin/",
     NULL
   };
-  const char** p = possible_paths;
+  zstring* p = possible_paths;
 
   for ( ; *p; p++) {
     String subpath(*p);
@@ -106,7 +105,7 @@ SetupUnix::exeFromRuntimeInstallation(const char* exeName,
 
 
 Setup
-SetupUnix::findSysResources(const char* exeName) const
+SetupUnix::findSysResources(zstring exeName) const
 {
   Setup setup;
 
@@ -156,7 +155,7 @@ SetupUnix::findSysResources(const char* exeName) const
 
 
 Setup
-herschel::findResources(const char* exeName)
+herschel::findResources(zstring exeName)
 {
   return getSetupUnixSetup().findSysResources(exeName);
 }

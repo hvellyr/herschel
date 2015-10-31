@@ -48,7 +48,7 @@ namespace herschel
         if (urlRef) {
           UInt8 bundlePath[PATH_MAX];
           if (CFURLGetFileSystemRepresentation(urlRef, true, bundlePath, sizeof(bundlePath))) {
-            result = file::canonicalPathName(String((const char*)bundlePath) + "/");
+            result = file::canonicalPathName(String((zstring)bundlePath) + "/");
           }
           CFRelease(urlRef);
         }

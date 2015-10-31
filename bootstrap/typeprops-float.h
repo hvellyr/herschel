@@ -54,7 +54,7 @@ namespace herschel
   public:
     Float32TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_float32"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_float32"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -77,7 +77,7 @@ namespace herschel
   public:
     Float64TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_float64"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_float64"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -100,7 +100,7 @@ namespace herschel
   public:
     Float128TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "atom_2_float128"; }
+    virtual zstring convFuncName() const { return "atom_2_float128"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {

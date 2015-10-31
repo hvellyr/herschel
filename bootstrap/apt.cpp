@@ -69,7 +69,7 @@ herschel::copyNodes(const NodeList& src)
 }
 
 
-const char*
+zstring
 herschel::convkind2str(TypeConvKind kind)
 {
   switch (kind) {

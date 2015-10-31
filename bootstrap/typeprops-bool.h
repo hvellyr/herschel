@@ -29,7 +29,7 @@ namespace herschel
   public:
     BoolTypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_bool"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_bool"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {

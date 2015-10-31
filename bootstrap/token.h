@@ -69,7 +69,7 @@ namespace herschel
 
   //! Returns a human readable name for operator \p type for debug and error
   //! reporting.
-  const char* operatorName(OperatorType type);
+  zstring operatorName(OperatorType type);
 
 
   //--------------------------------------------------------------------------
@@ -230,11 +230,11 @@ namespace herschel
 
     // an id expression
     Token(const SrcPos& where, const String& str);
-    Token(const SrcPos& where, const char* str);
+    Token(const SrcPos& where, zstring str);
 
     // a literal typed constructor for string values
     Token(const SrcPos& where, TokenType type, const String& str);
-    Token(const SrcPos& where, TokenType type, const char* str);
+    Token(const SrcPos& where, TokenType type, zstring str);
 
     // a literal typed constructor for int values
     Token(const SrcPos& where, TokenType type, int value);
@@ -255,8 +255,7 @@ namespace herschel
     Token(const Token& other);
     Token& operator=(const Token& other);
 
-    static Token newUniqueSymbolToken(const SrcPos& where,
-                                      const char* prefix);
+    static Token newUniqueSymbolToken(const SrcPos& where, zstring prefix);
 
     bool operator==(const Token& other) const;
     bool operator!=(const Token& other) const;

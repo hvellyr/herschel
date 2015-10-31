@@ -202,7 +202,7 @@ TEST_CASE("FilePort test1", "[port][file-port]")
   catch (const EofException& ) {
     REQUIRE(!*p);
   }
-  int explen = strlen((const char*)tmp);
+  int explen = strlen((zstring)tmp);
   REQUIRE(port->cursor() == explen);
 
   port->setCursor(0);

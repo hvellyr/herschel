@@ -502,7 +502,7 @@ CodegenBinaryNode::codegenOpDuckTypeBinary(const BinaryNode* node,
       calleeFunc = CodegenFuncDef(generator()).emitExternFuncDef(funcdef);
       if (calleeFunc == NULL) {
         errorf(node->srcpos(), 0, "Unknown function referenced: %s",
-               (const char*)StrHelper(funcnm));
+               (zstring)StrHelper(funcnm));
         return NULL;
       }
     }

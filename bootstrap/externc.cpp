@@ -38,7 +38,7 @@ Token
 ExternCParser::nextToken()
 {
   fToken = fPass->nextToken();
-  //printf("[%s] ", (const char*)StrHelper(fToken.toString()));
+  //printf("[%s] ", (zstring)StrHelper(fToken.toString()));
   return fToken;
 }
 

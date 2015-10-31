@@ -152,7 +152,7 @@ FirstPass::parseSequence(ParseFunctor functor,
                          bool hasSeparator,
                          ErrCodes errorCode,
                          Token& result,
-                         const char* ctx,
+                         zstring ctx,
                          bool skipFirst,
                          bool eatLast)
 {
@@ -346,7 +346,7 @@ FirstPass::parseExport()
     }
     else
       errorf(fToken.srcpos(), E_ExportVisibility,
-             "unknown visibility type '%s'", (const char*)StrHelper(fToken.toString()));
+             "unknown visibility type '%s'", (zstring)StrHelper(fToken.toString()));
 
     nextToken();
   }
@@ -463,7 +463,7 @@ namespace herschel
       if (!type.isSet()) {
         errorf(pos, E_UnexpectedToken,
                "returntype expression expected, but found: %s",
-               (const char*)StrHelper(pass->fToken.toString()));
+               (zstring)StrHelper(pass->fToken.toString()));
         pass->scanUntilNextParameter(fEndToken);
         return true;
       }
@@ -799,7 +799,7 @@ namespace herschel
       else {
         errorf(pass->fToken.srcpos(), E_UnexpectedToken,
                "Unexpected token while parsing array: %s",
-               (const char*)StrHelper(pass->fToken.toString()));
+               (zstring)StrHelper(pass->fToken.toString()));
         return false;
       }
 
@@ -1189,7 +1189,7 @@ namespace herschel
         if (!val.isSet()) {
           errorf(pass->fToken.srcpos(), E_UnexpectedToken,
                  "Unexpected token while parsing function keyed argument's expr:",
-                 (const char*)StrHelper(pass->fToken.toString()));
+                 (zstring)StrHelper(pass->fToken.toString()));
           pass->scanUntilNextParameter();
           return true;
         }
@@ -1201,7 +1201,7 @@ namespace herschel
         if (!val.isSet()) {
           errorf(pass->fToken.srcpos(), E_UnexpectedToken,
                  "unexpected token while parsing function arguments: ",
-                 (const char*)StrHelper(pass->fToken.toString()));
+                 (zstring)StrHelper(pass->fToken.toString()));
           pass->scanUntilNextParameter();
           return true;
         }
@@ -2101,9 +2101,9 @@ FirstPass::makeAssignToken(const TokenVector& exprs, const Token& expr2,
     for (size_t i = 0; i < exprs.size(); i++) {
       const Token& expr = exprs[i];
 
-      const char* funcName = ( i == exprs.size() - 1 && hasRest
-                               ? "slice-rest"
-                               : "slice" );
+      zstring funcName = ( i == exprs.size() - 1 && hasRest
+                           ? "slice-rest"
+                           : "slice" );
       Token sliceExpr = Token() << Token(op1Srcpos, funcName)
                                 << ( Token(op1Srcpos, kParanOpen, kParanClose)
                                      << tempSymToken
@@ -2653,7 +2653,7 @@ FirstPass::parseExtern()
   }
 
   errorf(fToken.srcpos(), E_UnknownLinkage, "Unknown linkage type: '%s'",
-         (const char*)StrHelper(linkageType));
+         (zstring)StrHelper(linkageType));
   return scanUntilTopExprAndResume().toTokenVector();
 }
 
@@ -2800,9 +2800,9 @@ FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
     if (leftHands.size() > 1) {
       hr_assert(initValueSym.isSet());
 
-      const char* funcName = ( i == leftHands.size() - 1 && ellipsisToken.isSet()
-                               ? "slice-rest"
-                               : "slice" );
+      zstring funcName = ( i == leftHands.size() - 1 && ellipsisToken.isSet()
+                           ? "slice-rest"
+                           : "slice" );
 
       effInitExpr << Token(vardefSym.srcpos(), funcName)
                   << ( Token(vardefSym.srcpos(), kParanOpen, kParanClose)
@@ -3948,7 +3948,7 @@ FirstPass::parseMacroDef(const Token& defToken)
                             new Macro(synTable, mType));
 
       if (Properties::isTraceMacro()) {
-        fprintf(stderr, "%s\n", (const char*)StrHelper(synTable->toString()));
+        fprintf(stderr, "%s\n", (zstring)StrHelper(synTable->toString()));
       }
     }
   }
@@ -4093,7 +4093,7 @@ FirstPass::parseDef(bool isLocal, ScopeType scope)
     }
     else {
       errorf(fToken.srcpos(), E_DefInitUnexpToken,
-             "Bad init value: %s", (const char*)StrHelper(fToken.toString()));
+             "Bad init value: %s", (zstring)StrHelper(fToken.toString()));
       return scanUntilTopExprAndResume().toTokenVector();
     }
     break;
@@ -4138,7 +4138,7 @@ FirstPass::parseTop(ScopeType scope)
   else {
     errorf(fToken.srcpos(), E_UnexpectedToken,
            "Unexpected top expression: %s",
-           (const char*)StrHelper(fToken.toString()));
+           (zstring)StrHelper(fToken.toString()));
     return scanUntilTopExprAndResume().toTokenVector();
   }
 
@@ -4315,7 +4315,7 @@ FirstPass::replaceMatchBindings(TokenVector* result,
         else
           errorf(token.srcpos(), E_UnknownMacroParam,
                  "Undefined macro parameter %s",
-                 (const char*)StrHelper(token.toString()));
+                 (zstring)StrHelper(token.toString()));
       }
       else
         replacement.push_back(token);
@@ -4380,7 +4380,7 @@ namespace herschel {
       if (!expr.isSet()) {
         errorf(pos, E_MacroParamMismatch,
                "Macro parameter %s requires expression",
-               (const char*)StrHelper(paramName));
+               (zstring)StrHelper(paramName));
         return false;
       }
 
@@ -4405,7 +4405,7 @@ namespace herschel {
 
       errorf(pass->fToken.srcpos(), E_MacroParamMismatch,
              "Macro parameter %s requires identifier",
-             (const char*)StrHelper(paramName));
+             (zstring)StrHelper(paramName));
       return false;
     }
   };
@@ -4427,7 +4427,7 @@ namespace herschel {
 
       errorf(pass->fToken.srcpos(), E_MacroParamMismatch,
              "Macro parameter %s requires operator",
-             (const char*)StrHelper(paramName));
+             (zstring)StrHelper(paramName));
       return false;
     }
   };
@@ -4448,7 +4448,7 @@ namespace herschel {
       if (!param.isSet()) {
         errorf(pos, E_MacroParamMismatch,
                "Macro parameter %s requires parameter",
-               (const char*)StrHelper(paramName));
+               (zstring)StrHelper(paramName));
         return false;
       }
 
@@ -4479,7 +4479,7 @@ namespace herschel {
       if (expected != fReqType || !param.isSet()) {
         errorf(pos, E_MacroParamMismatch,
                "Macro parameter %s requires positional parameter",
-               (const char*)StrHelper(paramName));
+               (zstring)StrHelper(paramName));
         return false;
       }
 
@@ -4555,7 +4555,7 @@ FirstPass::matchParameter(const Token& macroParam,
   else {
     errorf(macroParam.srcpos(), E_MacroParamType,
            "Unknown macro parameter type: %s",
-           (const char*)StrHelper(macroParam.toString()));
+           (zstring)StrHelper(macroParam.toString()));
     return false;
   }
 }
@@ -4705,7 +4705,7 @@ FirstPass::parseExprStream(TokenVector* result, bool isTopLevel,
     else {
       errorf(pos, E_UnexpectedToken,
              "unexpected token while scanning macro replacement: %s",
-             (const char*)StrHelper(fToken.toString()));
+             (zstring)StrHelper(fToken.toString()));
       return false;
     }
   }

@@ -116,27 +116,27 @@ namespace herschel
     void renderNode(const UndefNode* node);
 
   private:
-    void displayOpenTag(const char* tagName, bool newline = true);
-    void displayOpenTagAttrs(const char* tagName, const char* attrs,
+    void displayOpenTag(zstring tagName, bool newline = true);
+    void displayOpenTagAttrs(zstring tagName, zstring attrs,
                              bool newline = true);
-    void displayCloseTag(const char* tagName);
-    void displayEmptyTag(const char* tagName);
-    void displayEmptyTagAttrs(const char* tagName, const char* attrs);
-    void displayTag(const char* tagName, const String& value);
-    void displayTagAttr(const char* tagName,
-                        const char* attrs,
+    void displayCloseTag(zstring tagName);
+    void displayEmptyTag(zstring tagName);
+    void displayEmptyTagAttrs(zstring tagName, zstring attrs);
+    void displayTag(zstring tagName, const String& value);
+    void displayTagAttr(zstring tagName,
+                        zstring attrs,
                         const String& value);
-    void displayStringList(const char* outerTagName, const char* tagName,
+    void displayStringList(zstring outerTagName, zstring tagName,
                            const StringList& strlist);
-    void displayStringStringMap(const char* outerTagName,
-                                const char* tagName,
-                                const char* firstPairTagName,
-                                const char* secPairTagName,
+    void displayStringStringMap(zstring outerTagName,
+                                zstring tagName,
+                                zstring firstPairTagName,
+                                zstring secPairTagName,
                                 const StringStringMap& strMap);
-    void displayNode(const char* tagName, AptNode* node);
-    void displayNodeList(const char* tagName, const NodeList& nodelist);
-    void displayType(const char* tagName, const Type& type);
-    void displayTypeVector(const char* tagName, const TypeVector& types);
+    void displayNode(zstring tagName, AptNode* node);
+    void displayNodeList(zstring tagName, const NodeList& nodelist);
+    void displayType(zstring tagName, const Type& type);
+    void displayTypeVector(zstring tagName, const TypeVector& types);
 
     //-------- data members
 
@@ -148,31 +148,31 @@ namespace herschel
 
   namespace xml
   {
-    void displayOpenTag(Port<Octet>* port, const char* tagName,
+    void displayOpenTag(Port<Octet>* port, zstring tagName,
                         bool newline = true);
     void displayOpenTagAttrs(Port<Octet>* port,
-                             const char* tagName, const char* attrs,
+                             zstring tagName, zstring attrs,
                              bool newline = true);
-    void displayCloseTag(Port<Octet>* port, const char* tagName);
-    void displayEmptyTag(Port<Octet>* port, const char* tagName);
-    void displayEmptyTagAttrs(Port<Octet>* port, const char* tagName,
-                              const char* attrs);
-    void displayTag(Port<Octet>* port, const char* tagName, const String& value);
-    void displayTagAttr(Port<Octet>* port, const char* tagName,
-                        const char* attrs,
+    void displayCloseTag(Port<Octet>* port, zstring tagName);
+    void displayEmptyTag(Port<Octet>* port, zstring tagName);
+    void displayEmptyTagAttrs(Port<Octet>* port, zstring tagName,
+                              zstring attrs);
+    void displayTag(Port<Octet>* port, zstring tagName, const String& value);
+    void displayTagAttr(Port<Octet>* port, zstring tagName,
+                        zstring attrs,
                         const String& value);
     void displayStringList(Port<Octet>* port,
-                           const char* outerTagName, const char* tagName,
+                           zstring outerTagName, zstring tagName,
                            const StringList& strlist);
     void displayStringStringMap(Port<Octet>* port,
-                                const char* outerTagName,
-                                const char* tagName,
-                                const char* firstPairTagName,
-                                const char* secPairTagName,
+                                zstring outerTagName,
+                                zstring tagName,
+                                zstring firstPairTagName,
+                                zstring secPairTagName,
                                 const StringStringMap& strMap);
-    void displayType(Port<Octet>* port, const char* tagName, const Type& type);
+    void displayType(Port<Octet>* port, zstring tagName, const Type& type);
     void displayTypeVector(Port<Octet>* port,
-                           const char* tagName, const TypeVector& types);
+                           zstring tagName, const TypeVector& types);
 
     String displayTypeConv(const AptNode* node);
 

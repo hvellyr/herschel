@@ -24,7 +24,7 @@ TEST_CASE("Tokenizer basic", "[tokenize]")
 {
   SrcPos sp;
 
-  static const char* test =
+  static zstring test =
     "module zero (\"eyestep/zero 1.0:portables\")\n"
     "  export public(*)\n"
     "-- a simple portable class\n"
@@ -91,7 +91,7 @@ TEST_CASE("Tokenizer numbers", "[tokenize][numbers]")
 {
   SrcPos sp;
 
-  static const char* test =
+  static zstring test =
     "true false\n"
     "12345 0aaaah 0aBcDeFh 07123q 101101y 1y 2t 3h 4\n"
     "12.34 0.12345e+10 123.45e+7 12.3456e-5 -3.1415\n"
@@ -135,7 +135,7 @@ TEST_CASE("Tokenizer chars", "[tokenize][chars]")
 {
   SrcPos sp;
 
-  static const char* test =
+  static zstring test =
     "\\space  \\u60h  \\( \\newline \\cr\n"
     "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n"
     "\\ga \\gong ";
@@ -168,7 +168,7 @@ TEST_CASE("Tokenizer function defs", "[tokenize][functions]")
 {
   SrcPos sp;
 
-  static const char* test =
+  static zstring test =
     "def f(args : &(String, Uri, Boolean)[] ...) ...\n"
     "  ~ Some function f, does not contain \\~ or similar Spuk.~\n"
     "def f(arg: _x = 0 .. 20 by 2)\n"
@@ -251,7 +251,7 @@ TEST_CASE("Tokenizer keyword static container", "[tokenize]")
 {
   SrcPos sp;
 
-  static const char* test =
+  static zstring test =
     "#abc #delft\n"
     "#[1, 2] #[]\n"
     "#(1 -> 2) #()\n"
@@ -297,7 +297,7 @@ TEST_CASE("Tokenizer generics", "[tokenize][generics]")
 {
   SrcPos sp;
 
-  static const char* test =
+  static zstring test =
     "Buffer<Int>()[i] < 10 and true or false\n"
     "T<S<Y>>  T<S<Y> >  a < b\n"
     "val << 5 val >> 2\n"
@@ -460,7 +460,7 @@ TEST_CASE("Tokenizer namespaces", "[tokenize][namespaces]")
 {
   SrcPos sp;
 
-  static const char* test =
+  static zstring test =
     "io|File  self.io|val.display\n"
     "f('T)  12'mm\n";
   Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
@@ -495,7 +495,7 @@ TEST_CASE("Tokenizer macro vars", "[tokenize][macros]")
 {
   SrcPos sp;
 
-  static const char* test =
+  static zstring test =
     "##  ?val:name ?\"abc\" ?\"\" ";
   Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                 String("n.n."));
@@ -521,7 +521,7 @@ TEST_CASE("Tokenizer special macro brackets", "[tokenize][macros]")
 {
   SrcPos sp;
 
-  static const char* test =
+  static zstring test =
     "\343\200\214 xyz \343\200\215 ";
   Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
                 String("n.n."));

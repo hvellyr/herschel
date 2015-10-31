@@ -61,7 +61,7 @@ namespace herschel
   public:
     Int32TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int32"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int32"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -80,7 +80,7 @@ namespace herschel
   public:
     ClangIntTypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int32"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int32"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -100,7 +100,7 @@ namespace herschel
   public:
     UInt32TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_uint32"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_uint32"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -120,7 +120,7 @@ namespace herschel
   public:
     Int16TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int16"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int16"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -140,7 +140,7 @@ namespace herschel
   public:
     UInt16TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_uint16"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_uint16"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -160,7 +160,7 @@ namespace herschel
   public:
     Int8TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int8"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int8"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -180,7 +180,7 @@ namespace herschel
   public:
     UInt8TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_uint8"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_uint8"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -200,7 +200,7 @@ namespace herschel
   public:
     Int64TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int64"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int64"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -220,7 +220,7 @@ namespace herschel
   public:
     UInt64TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_uint64"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_uint64"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
