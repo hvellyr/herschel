@@ -21,18 +21,14 @@ using namespace herschel;
 
 TEST_CASE("APT ApplyNode", "[apt][apply-node]")
 {
-  auto an = std::make_shared<ApplyNode>(SrcPos(),
-                                        std::make_shared<SymbolNode>(SrcPos(),
-                                                                     String("xyz")));
+  auto an = makeApplyNode(SrcPos(), makeSymbolNode(SrcPos(), String("xyz")));
   REQUIRE(an->isSimpleCall());
   REQUIRE(an->simpleCallName() == String("xyz"));
 
-  auto an2 = std::make_shared<ApplyNode>(SrcPos(),
-                                         std::make_shared<ApplyNode>(
-                                           SrcPos(),
-                                           std::make_shared<SymbolNode>(
-                                             SrcPos(),
-                                             String("get-func"))));
+  auto an2 = makeApplyNode(SrcPos(),
+                           makeApplyNode(SrcPos(),
+                                         makeSymbolNode(SrcPos(),
+                                                        String("get-func"))));
   REQUIRE(!an2->isSimpleCall());
   REQUIRE(an2->simpleCallName() == String());
 }

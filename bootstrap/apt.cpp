@@ -369,7 +369,7 @@ UndefNode::UndefNode()
 std::shared_ptr<AptNode>
 UndefNode::clone() const
 {
-  return std::make_shared<UndefNode>();
+  return makeUndefNode();
 }
 
 
@@ -407,8 +407,7 @@ StringNode::StringNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 StringNode::clone() const
 {
-  return herschel::cloneScope(this,
-                              std::make_shared<StringNode>(fSrcPos, fValue));
+  return herschel::cloneScope(this, makeStringNode(fSrcPos, fValue));
 }
 
 
@@ -440,7 +439,7 @@ KeywordNode::KeywordNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 KeywordNode::clone() const
 {
-  return cloneScope(this, std::make_shared<KeywordNode>(fSrcPos, fValue));
+  return cloneScope(this, makeKeywordNode(fSrcPos, fValue));
 }
 
 
@@ -485,7 +484,7 @@ SymbolNode::SymbolNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 SymbolNode::clone() const
 {
-  auto newnd = std::make_shared<SymbolNode>(fSrcPos, fValue);
+  auto newnd = makeSymbolNode(fSrcPos, fValue);
   newnd->setLinkage(linkage());
   return cloneScope(this, newnd);
 }
@@ -568,9 +567,7 @@ ArrayTypeNode::typeNode() const
 std::shared_ptr<AptNode>
 ArrayTypeNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<ArrayTypeNode>(fSrcPos,
-                                                    nodeClone(fTypeNode)));
+  return cloneScope(this, makeArrayTypeNode(fSrcPos, nodeClone(fTypeNode)));
 }
 
 
@@ -592,7 +589,7 @@ TypeNode::TypeNode(const SrcPos& srcpos, const Type& type)
 std::shared_ptr<AptNode>
 TypeNode::clone() const
 {
-  return cloneScope(this, std::make_shared<TypeNode>(fSrcPos, fType.clone()));
+  return cloneScope(this, makeTypeNode(fSrcPos, fType.clone()));
 }
 
 
@@ -632,9 +629,8 @@ IntNode::IntNode(const SrcPos& srcpos, int64_t value, bool isImaginary,
 std::shared_ptr<AptNode>
 IntNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<IntNode>(fSrcPos, fValue,
-                                              fIsImaginary, fType.clone()));
+  return cloneScope(this, makeIntNode(fSrcPos, fValue, fIsImaginary,
+                                      fType.clone()));
 }
 
 
@@ -659,9 +655,8 @@ RealNode::RealNode(const SrcPos& srcpos, double value,
 std::shared_ptr<AptNode>
 RealNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<RealNode>(fSrcPos, fValue,
-                                               fIsImaginary, fType.clone()));
+  return cloneScope(this, makeRealNode(fSrcPos, fValue, fIsImaginary,
+                                       fType.clone()));
 }
 
 
@@ -686,9 +681,8 @@ RationalNode::RationalNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 RationalNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<RationalNode>(fSrcPos, fValue,
-                                     fIsImaginary, fType.clone()));
+  return cloneScope(this, makeRationalNode(fSrcPos, fValue,
+                                           fIsImaginary, fType.clone()));
 }
 
 
@@ -711,7 +705,7 @@ CharNode::CharNode(const SrcPos& srcpos, Char value)
 std::shared_ptr<AptNode>
 CharNode::clone() const
 {
-  return cloneScope(this, std::make_shared<CharNode>(fSrcPos, fValue));
+  return cloneScope(this, makeCharNode(fSrcPos, fValue));
 }
 
 
@@ -741,7 +735,7 @@ BoolNode::BoolNode(const SrcPos& srcpos, bool value)
 std::shared_ptr<AptNode>
 BoolNode::clone() const
 {
-  return cloneScope(this, std::make_shared<BoolNode>(fSrcPos, fValue));
+  return cloneScope(this, makeBoolNode(fSrcPos, fValue));
 }
 
 
@@ -775,9 +769,7 @@ UnitConstNode::UnitConstNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 UnitConstNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<UnitConstNode>(fSrcPos, nodeClone(fValue),
-                                                    fUnit));
+  return cloneScope(this, makeUnitConstNode(fSrcPos, nodeClone(fValue), fUnit));
 }
 
 
@@ -820,7 +812,7 @@ CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
 std::shared_ptr<AptNode>
 CompileUnitNode::clone() const
 {
-  auto node = std::make_shared<CompileUnitNode>(fSrcPos);
+  auto node = makeCompileUnitNode(fSrcPos);
   copyNodes(&node->fChildren, &fChildren);
   return cloneScope(this, std::move(node));
 }
@@ -867,7 +859,7 @@ LetNode::LetNode(std::shared_ptr<AptNode> node)
 std::shared_ptr<AptNode>
 LetNode::clone() const
 {
-  return cloneScope(this, std::make_shared<LetNode>(nodeClone(fDefined)));
+  return cloneScope(this, makeLetNode(nodeClone(fDefined)));
 }
 
 
@@ -889,7 +881,7 @@ DefNode::DefNode(std::shared_ptr<AptNode> node)
 std::shared_ptr<AptNode>
 DefNode::clone() const
 {
-  return cloneScope(this, std::make_shared<DefNode>(nodeClone(fDefined)));
+  return cloneScope(this, makeDefNode(nodeClone(fDefined)));
 }
 
 
@@ -964,9 +956,8 @@ VardefNode::VardefNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 VardefNode::clone() const
 {
-  auto n = std::make_shared<VardefNode>(fSrcPos, fSymbolName, fFlags,
-                                        fIsLocal,
-                                        fType.clone(), nodeClone(fInitExpr));
+  auto n = makeVardefNode(fSrcPos, fSymbolName, fFlags, fIsLocal,
+                          fType.clone(), nodeClone(fInitExpr));
   n->setLinkage(fLinkage);
   return cloneScope(this, std::move(n));
 }
@@ -1045,10 +1036,9 @@ ParamNode::ParamNode(const SrcPos& srcpos, const String& keyName,
 std::shared_ptr<AptNode>
 ParamNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<ParamNode>(fSrcPos, fKey, fSymbolName,
-                                                fFlags, fType.clone(),
-                                                nodeClone(fInitExpr)));
+  return cloneScope(this, makeParamNode(fSrcPos, fKey, fSymbolName,
+                                        fFlags, fType.clone(),
+                                        nodeClone(fInitExpr)));
 }
 
 
@@ -1108,10 +1098,9 @@ SlotdefNode::SlotdefNode(const SrcPos& srcpos, const String& symbolName,
 std::shared_ptr<AptNode>
 SlotdefNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<SlotdefNode>(fSrcPos, fSymbolName,
-                                                  fFlags, fType.clone(),
-                                                  nodeClone(fInitExpr)));
+  return cloneScope(this, makeSlotdefNode(fSrcPos, fSymbolName, fFlags,
+                                          fType.clone(),
+                                          nodeClone(fInitExpr)));
 }
 
 
@@ -1147,7 +1136,7 @@ ArrayNode::ArrayNode(const SrcPos& srcpos)
 std::shared_ptr<AptNode>
 ArrayNode::clone() const
 {
-  auto an = std::make_shared<ArrayNode>(fSrcPos);
+  auto an = makeArrayNode(fSrcPos);
   copyNodes(&an->fChildren, &fChildren);
   return cloneScope(this, std::move(an));
 }
@@ -1171,7 +1160,7 @@ VectorNode::VectorNode(const SrcPos& srcpos)
 std::shared_ptr<AptNode>
 VectorNode::clone() const
 {
-  auto vect = std::make_shared<VectorNode>(fSrcPos);
+  auto vect = makeVectorNode(fSrcPos);
   copyNodes(&vect->fChildren, &fChildren);
   return cloneScope(this, std::move(vect));
 }
@@ -1195,7 +1184,7 @@ DictNode::DictNode(const SrcPos& srcpos)
 std::shared_ptr<AptNode>
 DictNode::clone() const
 {
-  auto dict = std::make_shared<DictNode>(fSrcPos);
+  auto dict = makeDictNode(fSrcPos);
   copyNodes(&dict->fChildren, &fChildren);
   return cloneScope(this, std::move(dict));
 }
@@ -1208,8 +1197,7 @@ DictNode::addPair(std::shared_ptr<AptNode> key,
   hr_assert(key);
   hr_assert(value);
 
-  appendNode(std::make_shared<BinaryNode>(key->srcpos(),
-                                          key, kOpMapTo, std::move(value)));
+  appendNode(makeBinaryNode(key->srcpos(), key, kOpMapTo, std::move(value)));
 }
 
 
@@ -1238,10 +1226,8 @@ BinaryNode::BinaryNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 BinaryNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<BinaryNode>(fSrcPos,
-                                                 nodeClone(fLeft), fOp,
-                                                 nodeClone(fRight)));
+  return cloneScope(this, makeBinaryNode(fSrcPos, nodeClone(fLeft), fOp,
+                                         nodeClone(fRight)));
 }
 
 
@@ -1330,8 +1316,7 @@ UnaryNode::op() const
 std::shared_ptr<AptNode>
 UnaryNode::clone() const
 {
-  return cloneScope(this, std::make_shared<UnaryNode>(fSrcPos, fOp,
-                                                      nodeClone(fBase)));
+  return cloneScope(this, makeUnaryNode(fSrcPos, fOp, nodeClone(fBase)));
 }
 
 
@@ -1359,11 +1344,9 @@ RangeNode::RangeNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 RangeNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<RangeNode>(fSrcPos,
-                                                nodeClone(fFrom),
-                                                nodeClone(fTo),
-                                                nodeClone(fBy)));
+  return cloneScope(this, makeRangeNode(fSrcPos, nodeClone(fFrom),
+                                        nodeClone(fTo),
+                                        nodeClone(fBy)));
 }
 
 
@@ -1431,10 +1414,8 @@ AssignNode::AssignNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 AssignNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<AssignNode>(fSrcPos,
-                                                 nodeClone(fLValue),
-                                                 nodeClone(fRValue)));
+  return cloneScope(this, makeAssignNode(fSrcPos, nodeClone(fLValue),
+                                         nodeClone(fRValue)));
 }
 
 
@@ -1490,10 +1471,9 @@ IfNode::IfNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 IfNode::clone() const
 {
-  return cloneScope(this, std::make_shared<IfNode>(fSrcPos,
-                                                   nodeClone(fTest),
-                                                   nodeClone(fConsequent),
-                                                   nodeClone(fAlternate)));
+  return cloneScope(this, makeIfNode(fSrcPos, nodeClone(fTest),
+                                     nodeClone(fConsequent),
+                                     nodeClone(fAlternate)));
 }
 
 
@@ -1562,9 +1542,8 @@ SelectNode::SelectNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 SelectNode::clone() const
 {
-  auto newNode = std::make_shared<SelectNode>(fSrcPos,
-                                              nodeClone(fTest),
-                                              nodeClone(fComparator));
+  auto newNode = makeSelectNode(fSrcPos, nodeClone(fTest),
+                                nodeClone(fComparator));
   for (auto& mapping : fMappings) {
     newNode->fMappings.push_back(SelectMapping(
                                    copyNodes(mapping.fTestValues),
@@ -1698,7 +1677,7 @@ MatchNode::MatchNode(const SrcPos& srcpos, std::shared_ptr<AptNode> expr)
 std::shared_ptr<AptNode>
 MatchNode::clone() const
 {
-  auto newNode = std::make_shared<MatchNode>(fSrcPos, nodeClone(fExpr));
+  auto newNode = makeMatchNode(fSrcPos, nodeClone(fExpr));
   for (auto& mapping : fMappings) {
     newNode->fMappings.push_back(MatchMapping(
                                    mapping.fSrcPos,
@@ -1808,9 +1787,8 @@ OnNode::OnNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 OnNode::clone() const
 {
-  return cloneScope(this, std::make_shared<OnNode>(fSrcPos, fKey,
-                                                   copyNodes(fChildren),
-                                                   nodeClone(fBody)));
+  return cloneScope(this, makeOnNode(fSrcPos, fKey, copyNodes(fChildren),
+                                     nodeClone(fBody)));
 }
 
 
@@ -1867,7 +1845,7 @@ BlockNode::BlockNode(const SrcPos& srcpos)
 std::shared_ptr<AptNode>
 BlockNode::clone() const
 {
-  auto block = std::make_shared<BlockNode>(fSrcPos);
+  auto block = makeBlockNode(fSrcPos);
   copyNodes(&block->fChildren, &fChildren);
   return cloneScope(this, std::move(block));
 }
@@ -1896,11 +1874,9 @@ FunctionNode::FunctionNode(const SrcPos& srcpos, const NodeList& params,
 std::shared_ptr<AptNode>
 FunctionNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<FunctionNode>(fSrcPos,
-                                                   copyNodes(fChildren),
-                                                   fRetType.clone(),
-                                                   nodeClone(fBody)));
+  return cloneScope(this, makeFunctionNode(fSrcPos, copyNodes(fChildren),
+                                           fRetType.clone(),
+                                           nodeClone(fBody)));
 }
 
 
@@ -1989,9 +1965,8 @@ FuncDefNode::FuncDefNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 FuncDefNode::clone() const
 {
-  auto n = std::make_shared<FuncDefNode>(fSrcPos, fSym, fFlags,
-                                         copyNodes(fChildren),
-                                         fRetType.clone(), nodeClone(fBody));
+  auto n = makeFuncDefNode(fSrcPos, fSym, fFlags, copyNodes(fChildren),
+                           fRetType.clone(), nodeClone(fBody));
   n->setLinkage(fLinkage);
   return cloneScope(this, std::move(n));
 }
@@ -2063,7 +2038,7 @@ ApplyNode::ApplyNode(const SrcPos& srcpos, std::shared_ptr<AptNode> base)
 std::shared_ptr<AptNode>
 ApplyNode::clone() const
 {
-  auto apply = std::make_shared<ApplyNode>(fSrcPos, nodeClone(fBase));
+  auto apply = makeApplyNode(fSrcPos, nodeClone(fBase));
   copyNodes(&apply->fChildren, &fChildren);
   return cloneScope(this, std::move(apply));
 }
@@ -2124,8 +2099,7 @@ KeyargNode::KeyargNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 KeyargNode::clone() const
 {
-  return cloneScope(this, std::make_shared<KeyargNode>(fSrcPos, fKey,
-                                                       nodeClone(fValue)));
+  return cloneScope(this, makeKeyargNode(fSrcPos, fKey, nodeClone(fValue)));
 }
 
 
@@ -2172,9 +2146,8 @@ WhileNode::WhileNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 WhileNode::clone() const
 {
-  return cloneScope(this, std::make_shared<WhileNode>(fSrcPos,
-                                                      nodeClone(fTest),
-                                                      nodeClone(fBody)));
+  return cloneScope(this, makeWhileNode(fSrcPos, nodeClone(fTest),
+                                        nodeClone(fBody)));
 }
 
 
@@ -2236,13 +2209,11 @@ TypeDefNode::TypeDefNode(const SrcPos&   srcpos,
 std::shared_ptr<AptNode>
 TypeDefNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<TypeDefNode>(fSrcPos, fTypeName,
-                                                  fIsClass,
-                                                  fIsa.clone(),
-                                                  copyNodes(fParams),
-                                                  copyNodes(fSlots),
-                                                  copyNodes(fOnExprs)));
+  return cloneScope(this, makeTypeDefNode(fSrcPos, fTypeName, fIsClass,
+                                          fIsa.clone(),
+                                          copyNodes(fParams),
+                                          copyNodes(fSlots),
+                                          copyNodes(fOnExprs)));
 }
 
 
@@ -2342,9 +2313,8 @@ CastNode::setBase(std::shared_ptr<AptNode> node)
 std::shared_ptr<AptNode>
 CastNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<CastNode>(fSrcPos, nodeClone(fBase),
-                                               fType.clone()));
+  return cloneScope(this, makeCastNode(fSrcPos, nodeClone(fBase),
+                                       fType.clone()));
 }
 
 
@@ -2369,9 +2339,7 @@ SlotRefNode::SlotRefNode(const SrcPos& srcpos,
 std::shared_ptr<AptNode>
 SlotRefNode::clone() const
 {
-  return cloneScope(this,
-                    std::make_shared<SlotRefNode>(fSrcPos, nodeClone(fBase),
-                                                  fSlotName));
+  return cloneScope(this, makeSlotRefNode(fSrcPos, nodeClone(fBase), fSlotName));
 }
 
 

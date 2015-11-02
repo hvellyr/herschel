@@ -365,7 +365,7 @@ namespace herschel
               // This is required to give the expression a concrete return
               // value.  Otherwise SSA compilation in codegen becomes more
               // complicated.
-              nl[i] = std::make_shared<SymbolNode>(nl[i]->srcpos(), Names::kLangUnspecified);
+              nl[i] = makeSymbolNode(nl[i]->srcpos(), Names::kLangUnspecified);
             }
           }
           else if (auto letNode = dynamic_cast<LetNode*>(nl[i].get())) {

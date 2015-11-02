@@ -114,54 +114,47 @@ herschel::type::newRootScope(bool forUnitTests)
   root->registerType(sp, Names::kUnspecifiedTypeName, unspecifiedType);
 
 
-  auto eof = std::make_shared<VardefNode>(sp, String("lang|eof"), kNormalVar,
-                                          !K(isLocal), eofType,
-                                          std::make_shared<ApplyNode>(
-                                            sp,
-                                            std::make_shared<SymbolNode>(
-                                              sp,
-                                              Names::kEofTypeName)));
+  auto eof = makeVardefNode(sp, String("lang|eof"), kNormalVar,
+                            !K(isLocal), eofType,
+                            makeApplyNode(sp,
+                                          makeSymbolNode(sp,
+                                                         Names::kEofTypeName)));
   root->registerVar(sp, String("lang|eof"), eof);
 
 
-  auto nil = std::make_shared<VardefNode>(sp, String("lang|nil"), kNormalVar,
-                                          !K(isLocal), nilType,
-                                          std::make_shared<ApplyNode>(
-                                            sp,
-                                            std::make_shared<SymbolNode>(
-                                              sp,
-                                              Names::kNilTypeName)));
+  auto nil = makeVardefNode(sp, String("lang|nil"), kNormalVar,
+                            !K(isLocal), nilType,
+                            makeApplyNode(sp,
+                                          makeSymbolNode(sp,
+                                                         Names::kNilTypeName)));
   root->registerVar(sp, String("lang|nil"), nil);
 
 
-  auto unspecified =
-    std::make_shared<VardefNode>(sp, String("lang|unspecified"), kNormalVar,
-                                 !K(isLocal), unspecifiedType,
-                                 std::make_shared<ApplyNode>(
-                                   sp,
-                                   std::make_shared<SymbolNode>(
-                                     sp,
-                                     Names::kUnspecifiedTypeName)));
+  auto unspecified = makeVardefNode(sp, String("lang|unspecified"), kNormalVar,
+                                    !K(isLocal), unspecifiedType,
+                                    makeApplyNode(
+                                      sp,
+                                      makeSymbolNode(sp,
+                                                     Names::kUnspecifiedTypeName)));
   root->registerVar(sp, String("lang|unspecified"), unspecified);
 
 
   //------------------------------ builtin functions
   NodeList params =
-    vector_of<std::shared_ptr<AptNode> >(std::make_shared<ParamNode>(
+    vector_of<std::shared_ptr<AptNode> >(makeParamNode(
                                            sp, String(), String("r"),
                                            kPosArg,
                                            Type::newTypeRef(String("T"),
                                                             K(isOpen), K(isValue)),
                                            nullptr));
   root->registerFunction(sp, Names::kLangReturn,
-                         std::make_shared<FuncDefNode>(
-                           sp,
-                           Names::kLangReturn,
-                           kFuncIsAbstract, // flags
-                           params,
-                           Type::newTypeRef(String("T"),
-                                            K(isOpen), K(isValue)),
-                           nullptr));
+                         makeFuncDefNode(sp,
+                                         Names::kLangReturn,
+                                         kFuncIsAbstract, // flags
+                                         params,
+                                         Type::newTypeRef(String("T"),
+                                                          K(isOpen), K(isValue)),
+                                         nullptr));
 
   //------------------------------ collections
 

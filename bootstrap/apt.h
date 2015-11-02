@@ -265,6 +265,12 @@ namespace herschel
     virtual void typify(Typifier& typifier);
   };
 
+  inline std::shared_ptr<UndefNode>
+  makeUndefNode()
+  {
+    return std::make_shared<UndefNode>();
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -302,6 +308,12 @@ namespace herschel
     String fValue;
   };
 
+  inline std::shared_ptr<StringNode>
+  makeStringNode(const SrcPos& srcpos, const String& value)
+  {
+    return std::make_shared<StringNode>(srcpos, value);
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -327,6 +339,12 @@ namespace herschel
   private:
     String fValue;
   };
+
+  inline std::shared_ptr<KeywordNode>
+  makeKeywordNode(const SrcPos& srcpos, const String& value)
+  {
+    return std::make_shared<KeywordNode>(srcpos, value);
+  }
 
 
   //--------------------------------------------------------------------------
@@ -396,6 +414,13 @@ namespace herschel
                                 // frame (= closed variable)
   };
 
+  inline std::shared_ptr<SymbolNode>
+  makeSymbolNode(const SrcPos& srcpos, const String& value,
+                 const TypeVector& generics = {})
+  {
+    return std::make_shared<SymbolNode>(srcpos, value, generics);
+  }
+
 
   class ArrayTypeNode : public AptNode
   {
@@ -416,6 +441,12 @@ namespace herschel
   private:
     std::shared_ptr<AptNode> fTypeNode;
   };
+
+  inline std::shared_ptr<ArrayTypeNode>
+  makeArrayTypeNode(const SrcPos& srcpos, std::shared_ptr<AptNode> typeNode)
+  {
+    return std::make_shared<ArrayTypeNode>(srcpos, std::move(typeNode));
+  }
 
 
   //--------------------------------------------------------------------------
@@ -438,6 +469,12 @@ namespace herschel
                                                std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
+
+  inline std::shared_ptr<TypeNode>
+  makeTypeNode(const SrcPos& srcpos, const Type& type)
+  {
+    return std::make_shared<TypeNode>(srcpos, type);
+  }
 
 
   //--------------------------------------------------------------------------
@@ -506,6 +543,13 @@ namespace herschel
     virtual void typify(Typifier& typifier);
   };
 
+  inline std::shared_ptr<IntNode>
+  makeIntNode(const SrcPos& srcpos, int64_t value, bool isImaginary,
+              const Type& type)
+  {
+    return std::make_shared<IntNode>(srcpos, value, isImaginary, type);
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -525,6 +569,13 @@ namespace herschel
     virtual void typify(Typifier& typifier);
   };
 
+  inline std::shared_ptr<RealNode>
+  makeRealNode(const SrcPos& srcpos, double value, bool isImaginary,
+               const Type& type)
+  {
+    return std::make_shared<RealNode>(srcpos, value, isImaginary, type);
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -543,6 +594,13 @@ namespace herschel
                                                std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
+
+  inline std::shared_ptr<RationalNode>
+  makeRationalNode(const SrcPos& srcpos, const Rational& value,
+                   bool isImaginary, const Type& type)
+  {
+    return std::make_shared<RationalNode>(srcpos, value, isImaginary, type);
+  }
 
 
   //--------------------------------------------------------------------------
@@ -567,6 +625,12 @@ namespace herschel
     Char fValue;
   };
 
+  inline std::shared_ptr<CharNode>
+  makeCharNode(const SrcPos& srcpos, Char value)
+  {
+    return std::make_shared<CharNode>(srcpos, value);
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -588,6 +652,12 @@ namespace herschel
   private:
     bool fValue;
   };
+
+  inline std::shared_ptr<BoolNode>
+  makeBoolNode(const SrcPos& srcpos, bool value)
+  {
+    return std::make_shared<BoolNode>(srcpos, value);
+  }
 
 
   //--------------------------------------------------------------------------
@@ -615,6 +685,13 @@ namespace herschel
     TypeUnit     fUnit;
   };
 
+  inline std::shared_ptr<UnitConstNode>
+  makeUnitConstNode(const SrcPos& srcpos, std::shared_ptr<AptNode> value,
+                    const TypeUnit& unit)
+  {
+    return std::make_shared<UnitConstNode>(srcpos, std::move(value), unit);
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -632,6 +709,12 @@ namespace herschel
                                                std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
+
+  inline std::shared_ptr<CompileUnitNode>
+  makeCompileUnitNode(const SrcPos& srcpos)
+  {
+    return std::make_shared<CompileUnitNode>(srcpos);
+  }
 
 
   //--------------------------------------------------------------------------
@@ -664,6 +747,12 @@ namespace herschel
     virtual void typify(Typifier& typifier);
   };
 
+  inline std::shared_ptr<LetNode>
+  makeLetNode(std::shared_ptr<AptNode> node)
+  {
+    return std::make_shared<LetNode>(std::move(node));
+  }
+
 
   class DefNode : public BaseDefNode
   {
@@ -679,6 +768,12 @@ namespace herschel
                                                std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
+
+  inline std::shared_ptr<DefNode>
+  makeDefNode(std::shared_ptr<AptNode> node)
+  {
+    return std::make_shared<DefNode>(std::move(node));
+  }
 
 
   //--------------------------------------------------------------------------
@@ -749,6 +844,15 @@ namespace herschel
     VardefFlags fFlags;
   };
 
+  inline std::shared_ptr<VardefNode>
+  makeVardefNode(const SrcPos& srcpos, const String& symbolName,
+                 VardefFlags flags, bool isLocal, const Type& type,
+                 std::shared_ptr<AptNode> initExpr)
+  {
+    return std::make_shared<VardefNode>(srcpos, symbolName, flags,
+                                        isLocal, type, std::move(initExpr));
+  }
+
 
   enum ParamFlags {
     kPosArg   = 1 << 0,
@@ -793,6 +897,15 @@ namespace herschel
     ParamFlags fFlags;
   };
 
+  inline std::shared_ptr<ParamNode>
+  makeParamNode(const SrcPos& srcpos, const String& keyName,
+                const String& symbolName, ParamFlags flags, const Type& type,
+                std::shared_ptr<AptNode> initExpr)
+  {
+    return std::make_shared<ParamNode>(srcpos, keyName, symbolName, flags,
+                                       type, std::move(initExpr));
+  }
+
 
   class SlotdefNode : public BindingNode
   {
@@ -819,6 +932,15 @@ namespace herschel
     unsigned int fFlags;
   };
 
+  inline std::shared_ptr<SlotdefNode>
+  makeSlotdefNode(const SrcPos& srcpos, const String& symbolName,
+                  unsigned int flags, const Type& type,
+                  std::shared_ptr<AptNode> initExpr)
+  {
+    return std::make_shared<SlotdefNode>(srcpos, symbolName, flags,
+                                         type, std::move(initExpr));
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -838,6 +960,12 @@ namespace herschel
     virtual void typify(Typifier& typifier);
   };
 
+  inline std::shared_ptr<ArrayNode>
+  makeArrayNode(const SrcPos& srcpos)
+  {
+    return std::make_shared<ArrayNode>(srcpos);
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -856,6 +984,12 @@ namespace herschel
                                                std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
+
+  inline std::shared_ptr<VectorNode>
+  makeVectorNode(const SrcPos& srcpos)
+  {
+    return std::make_shared<VectorNode>(srcpos);
+  }
 
 
   //--------------------------------------------------------------------------
@@ -877,6 +1011,12 @@ namespace herschel
                                                std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
+
+  inline std::shared_ptr<DictNode>
+  makeDictNode(const SrcPos& srcpos)
+  {
+    return std::make_shared<DictNode>(srcpos);
+  }
 
 
   //--------------------------------------------------------------------------
@@ -912,6 +1052,14 @@ namespace herschel
     std::shared_ptr<AptNode> fRight;
     OperatorType fOp;
   };
+
+  inline std::shared_ptr<BinaryNode>
+  makeBinaryNode(const SrcPos& srcpos, std::shared_ptr<AptNode> left,
+                 OperatorType op, std::shared_ptr<AptNode> right)
+  {
+    return std::make_shared<BinaryNode>(srcpos, std::move(left), op,
+                                        std::move(right));
+  }
 
 
   //--------------------------------------------------------------------------
@@ -950,6 +1098,13 @@ namespace herschel
     UnaryOperatorType fOp;
   };
 
+  inline std::shared_ptr<UnaryNode>
+  makeUnaryNode(const SrcPos& srcpos, UnaryOperatorType op,
+                std::shared_ptr<AptNode> base)
+  {
+    return std::make_shared<UnaryNode>(srcpos, op, std::move(base));
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -983,6 +1138,14 @@ namespace herschel
     std::shared_ptr<AptNode> fBy;
   };
 
+  inline std::shared_ptr<RangeNode>
+  makeRangeNode(const SrcPos& srcpos, std::shared_ptr<AptNode> from,
+                std::shared_ptr<AptNode> to, std::shared_ptr<AptNode> by)
+  {
+    return std::make_shared<RangeNode>(srcpos, std::move(from), std::move(to),
+                                       std::move(by));
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -1014,6 +1177,14 @@ namespace herschel
     std::shared_ptr<AptNode> fLValue;
     std::shared_ptr<AptNode> fRValue;
   };
+
+  inline std::shared_ptr<AssignNode>
+  makeAssignNode(const SrcPos& srcpos, std::shared_ptr<AptNode> lvalue,
+                 std::shared_ptr<AptNode> rvalue)
+  {
+    return std::make_shared<AssignNode>(srcpos, std::move(lvalue),
+                                        std::move(rvalue));
+  }
 
 
   //--------------------------------------------------------------------------
@@ -1048,6 +1219,17 @@ namespace herschel
     std::shared_ptr<AptNode> fConsequent;
     std::shared_ptr<AptNode> fAlternate;
   };
+
+  inline std::shared_ptr<IfNode>
+  makeIfNode(const SrcPos& srcpos,
+             std::shared_ptr<AptNode> test,
+             std::shared_ptr<AptNode> consequent,
+             std::shared_ptr<AptNode> alternate)
+  {
+    return std::make_shared<IfNode>(srcpos, std::move(test),
+                                    std::move(consequent),
+                                    std::move(alternate));
+  }
 
 
   //--------------------------------------------------------------------------
@@ -1106,6 +1288,15 @@ namespace herschel
     SelectMappingVector fMappings;
   };
 
+  inline std::shared_ptr<SelectNode>
+  makeSelectNode(const SrcPos& srcpos,
+                 std::shared_ptr<AptNode> test,
+                 std::shared_ptr<AptNode> comparator)
+  {
+    return std::make_shared<SelectNode>(srcpos, std::move(test),
+                                        std::move(comparator));
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -1157,6 +1348,13 @@ namespace herschel
     MatchMappingVector fMappings;
   };
 
+  inline std::shared_ptr<MatchNode>
+  makeMatchNode(const SrcPos& srcpos,
+                std::shared_ptr<AptNode> expr)
+  {
+    return std::make_shared<MatchNode>(srcpos, std::move(expr));
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -1188,6 +1386,13 @@ namespace herschel
     std::shared_ptr<AptNode> fBody;
   };
 
+  inline std::shared_ptr<OnNode>
+  makeOnNode(const SrcPos& srcpos, const String& key, const NodeList& params,
+             std::shared_ptr<AptNode> body)
+  {
+    return std::make_shared<OnNode>(srcpos, key, params, std::move(body));
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -1205,6 +1410,12 @@ namespace herschel
                                                std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
+
+  inline std::shared_ptr<BlockNode>
+  makeBlockNode(const SrcPos& srcpos)
+  {
+    return std::make_shared<BlockNode>(srcpos);
+  }
 
 
   //--------------------------------------------------------------------------
@@ -1242,6 +1453,14 @@ namespace herschel
     Type         fRetType;
     std::shared_ptr<AptNode> fBody;
   };
+
+  inline std::shared_ptr<FunctionNode>
+  makeFunctionNode(const SrcPos& srcpos, const NodeList& params,
+                   const Type& retType, std::shared_ptr<AptNode> body)
+  {
+    return std::make_shared<FunctionNode>(srcpos, params, retType,
+                                          std::move(body));
+  }
 
 
   enum {
@@ -1284,6 +1503,18 @@ namespace herschel
     unsigned int fFlags;
   };
 
+  inline std::shared_ptr<FuncDefNode>
+  makeFuncDefNode(const SrcPos& srcpos,
+                  const String&   sym,
+                  unsigned int    flags,
+                  const NodeList& params,
+                  const Type&     retType,
+                  std::shared_ptr<AptNode> body)
+  {
+    return std::make_shared<FuncDefNode>(srcpos, sym, flags, params,
+                                         retType, std::move(body));
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -1313,6 +1544,12 @@ namespace herschel
     std::shared_ptr<AptNode> fBase;
   };
 
+  inline std::shared_ptr<ApplyNode>
+  makeApplyNode(const SrcPos& srcpos, std::shared_ptr<AptNode> base)
+  {
+    return std::make_shared<ApplyNode>(srcpos, std::move(base));
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -1340,6 +1577,13 @@ namespace herschel
     String       fKey;
     std::shared_ptr<AptNode> fValue;
   };
+
+  inline std::shared_ptr<KeyargNode>
+  makeKeyargNode(const SrcPos& srcpos, const String& key,
+                 std::shared_ptr<AptNode> value)
+  {
+    return std::make_shared<KeyargNode>(srcpos, key, std::move(value));
+  }
 
 
   //--------------------------------------------------------------------------
@@ -1369,6 +1613,14 @@ namespace herschel
     std::shared_ptr<AptNode> fTest;
     std::shared_ptr<AptNode> fBody;
   };
+
+  inline std::shared_ptr<WhileNode>
+  makeWhileNode(const SrcPos& srcpos, std::shared_ptr<AptNode> test,
+                std::shared_ptr<AptNode> body)
+  {
+    return std::make_shared<WhileNode>(srcpos, std::move(test),
+                                       std::move(body));
+  }
 
 
   //--------------------------------------------------------------------------
@@ -1415,6 +1667,19 @@ namespace herschel
     Type     fIsa;
   };
 
+  inline std::shared_ptr<TypeDefNode>
+  makeTypeDefNode(const SrcPos&   srcpos,
+                  const String&   typeName,
+                  bool            isClass,
+                  const Type&     isa,
+                  const NodeList& params,
+                  const NodeList& slots,
+                  const NodeList& onExprs)
+  {
+    return std::make_shared<TypeDefNode>(srcpos, typeName, isClass, isa,
+                                         params, slots, onExprs);
+  }
+
 
   //--------------------------------------------------------------------------
 
@@ -1441,6 +1706,13 @@ namespace herschel
   private:
     std::shared_ptr<AptNode> fBase;
   };
+
+  inline std::shared_ptr<CastNode>
+  makeCastNode(const SrcPos& srcpos, std::shared_ptr<AptNode> base,
+               const Type& type)
+  {
+    return std::make_shared<CastNode>(srcpos, std::move(base), type);
+  }
 
 
   //--------------------------------------------------------------------------
@@ -1469,7 +1741,14 @@ namespace herschel
     std::shared_ptr<AptNode> fBase;
     String       fSlotName;
   };
-};
 
+  inline std::shared_ptr<SlotRefNode>
+  makeSlotRefNode(const SrcPos& srcpos, std::shared_ptr<AptNode> base,
+                  const String& slotName)
+  {
+    return std::make_shared<SlotRefNode>(srcpos, std::move(base), slotName);
+  }
+
+} // namespace herschel
 
 #endif  // bootstrap_apt_h

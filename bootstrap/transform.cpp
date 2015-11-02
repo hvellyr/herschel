@@ -236,15 +236,14 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
 
   auto initExpr = ( onPrmNode->initExpr()
                     ? onPrmNode->initExpr()
-                    : std::make_shared<SymbolNode>(onPrmNode->srcpos(),
-                                                   String("lang|unspecified")) );
+                    : makeSymbolNode(onPrmNode->srcpos(),
+                                     String("lang|unspecified")) );
   NodeList nl = vector_of<std::shared_ptr<AptNode> >
-    (std::make_shared<LetNode>(
-      std::make_shared<VardefNode>(onPrmNode->srcpos(),
-                                   onPrmNode->name(), kNormalVar,
-                                   K(isLocal),
-                                   onPrmNode->type(),
-                                   initExpr)))
+    (makeLetNode(makeVardefNode(onPrmNode->srcpos(),
+                                onPrmNode->name(), kNormalVar,
+                                K(isLocal),
+                                onPrmNode->type(),
+                                initExpr)))
     (onnd->body());
 
   node->children().clear();
@@ -279,7 +278,7 @@ Transformator::transform(std::shared_ptr<BlockNode> node)
 
   int idx = findBlockSplitIndex(nodes);
   if (idx > 0) {
-    auto newBlock = std::make_shared<BlockNode>(nodes[idx]->srcpos());
+    auto newBlock = makeBlockNode(nodes[idx]->srcpos());
     std::for_each(std::next(nodes.begin(), idx), nodes.end(),
                   [&](const NodeList::value_type& nd) {
                      newBlock->appendNode(nd);
@@ -390,16 +389,16 @@ Transformator::transform(std::shared_ptr<MatchNode> node)
         elseAlternate = node->mappingAt(i).fConsequent;
     }
     else {
-      auto isaCall = std::make_shared<ApplyNode>(node->mappingAt(i).fSrcPos,
-                                                 std::make_shared<SymbolNode>(node->mappingAt(i).fSrcPos,
-                                                                Names::kLangIsaQ));
+      auto isaCall = makeApplyNode(node->mappingAt(i).fSrcPos,
+                                   makeSymbolNode(node->mappingAt(i).fSrcPos,
+                                                  Names::kLangIsaQ));
       isaCall->appendNode(node->expr()->clone());
-      isaCall->appendNode(std::make_shared<TypeNode>(node->mappingAt(i).fSrcPos,
+      isaCall->appendNode(makeTypeNode(node->mappingAt(i).fSrcPos,
                                        node->mappingAt(i).fMatchType));
 
-      auto newIf = std::make_shared<IfNode>(node->mappingAt(i).fSrcPos,
-                                            isaCall,
-                                            node->mappingAt(i).fConsequent, nullptr);
+      auto newIf = makeIfNode(node->mappingAt(i).fSrcPos,
+                              isaCall,
+                              node->mappingAt(i).fConsequent, nullptr);
       if (lastIf) {
         lastIf->setAlternate(newIf);
         lastIf = newIf;
@@ -410,7 +409,7 @@ Transformator::transform(std::shared_ptr<MatchNode> node)
   }
 
   if (!elseAlternate)
-    elseAlternate = std::make_shared<SymbolNode>(node->srcpos(),
+    elseAlternate = makeSymbolNode(node->srcpos(),
                                    Names::kLangUnspecified);
 
   if (lastIf)
