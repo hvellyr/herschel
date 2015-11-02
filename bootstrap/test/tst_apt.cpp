@@ -13,6 +13,7 @@
 #include "../apt.h"
 #include "../str.h"
 
+#include <memory>
 #include <string>
 
 
@@ -20,14 +21,18 @@ using namespace herschel;
 
 TEST_CASE("APT ApplyNode", "[apt][apply-node]")
 {
-  Ptr<ApplyNode> an = new ApplyNode(SrcPos(), new SymbolNode(SrcPos(), String("xyz")));
+  auto an = std::make_shared<ApplyNode>(SrcPos(),
+                                        std::make_shared<SymbolNode>(SrcPos(),
+                                                                     String("xyz")));
   REQUIRE(an->isSimpleCall());
   REQUIRE(an->simpleCallName() == String("xyz"));
 
-  Ptr<ApplyNode> an2 = new ApplyNode(SrcPos(),
-                                     new ApplyNode(SrcPos(),
-                                                   new SymbolNode(SrcPos(),
-                                                                  String("get-func"))));
+  auto an2 = std::make_shared<ApplyNode>(SrcPos(),
+                                         std::make_shared<ApplyNode>(
+                                           SrcPos(),
+                                           std::make_shared<SymbolNode>(
+                                             SrcPos(),
+                                             String("get-func"))));
   REQUIRE(!an2->isSimpleCall());
   REQUIRE(an2->simpleCallName() == String());
 }

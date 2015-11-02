@@ -92,7 +92,7 @@ namespace herschel
 
   class String;
 
-  using NodeList = std::vector<Ptr<AptNode>>;
+  using NodeList = std::vector<std::shared_ptr<AptNode>>;
 
 
   //----------------------------------------------------------------------------
@@ -106,7 +106,7 @@ namespace herschel
 
     bool compileToCode(const CompileUnitNode* node, const String& outputFile);
 
-    llvm::Value* codegenNode(const AptNode* node, bool autoloadAllocInst = false);
+    llvm::Value* codegenNode(const AptNode& node, bool autoloadAllocInst = false);
 
     llvm::Value* codegen(const ApplyNode* node);
     llvm::Value* codegen(const ArrayNode* node);

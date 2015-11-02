@@ -426,7 +426,7 @@ ModuleRuntimeInitializer::emitGlobalVarInitFunc()
 
     llvm::Value* initval = nullptr;
     if (varnode->initExpr()) {
-      initval = fGenerator.codegenNode(varnode->initExpr());
+      initval = fGenerator.codegenNode(*varnode->initExpr());
     }
     else {
       hr_invalid("no initval");
@@ -850,12 +850,8 @@ ModuleRuntimeInitializer::makeMethodRegisterCall(const MethodImpl& impl) const
                                         llvm::APInt(32, countOfSpecs, true)));
   // now push type lookups as 4th, etc. argument for the specialized
   // arguments.
-  for (NodeList::const_iterator it = impl.fNode->params().begin(),
-                                e = impl.fNode->params().end();
-       it != e;
-       it++)
-  {
-    if (const ParamNode* prm = dynamic_cast<const ParamNode*>(it->obj())) {
+  for (auto& nd : impl.fNode->params()) {
+    if (auto prm = dynamic_cast<ParamNode*>(nd.get())) {
       if (prm->isSpecArg()) {
         llvm::Value* typeLookup = makeGetTypeLookupCall(prm->type());
         argv.push_back(typeLookup);

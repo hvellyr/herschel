@@ -46,7 +46,7 @@ TokenCompilePass::apply(const Token& src, bool doTrace)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 Token2AptNodeCompilePass::apply(const Token& src, bool doTrace)
 {
   bool doPass = true;
@@ -55,37 +55,39 @@ Token2AptNodeCompilePass::apply(const Token& src, bool doTrace)
 #endif
 
   if (doPass) {
-    Ptr<AptNode> n = doApply(src);
+    auto n = doApply(src);
     if (doTrace && Properties::isTracePass(passLevel()) && n) {
       Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
-      out->render(n);
+      out->render(*n);
     }
 
-    return n.release();
+    return n;
   }
 
   return nullptr;
 }
 
 
-AptNode*
-AptNodeCompilePass::apply(AptNode* src, bool doTrace)
+std::shared_ptr<AptNode>
+AptNodeCompilePass::apply(std::shared_ptr<AptNode> src, bool doTrace)
 {
-  Ptr<AptNode> n = src;
   bool doPass = true;
 #if defined(UNITTESTS)
   doPass = Properties::test_passLevel() >= passLevel();
 #endif
 
   if (doPass) {
-    n = doApply(n);
+    auto n = doApply(src);
 
     if (doTrace && Properties::isTracePass(passLevel()) && n) {
       Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout),
                                              fShowNodeType);
-      out->render(n);
+      out->render(*n);
     }
-  }
 
-  return n.release();
+    return n;
+  }
+  else {
+    return src;
+  }
 }

@@ -24,47 +24,47 @@ Traversator::Traversator(TraverseDelegate& delegate)
 
 
 void
-Traversator::traverseNode(AptNode* node)
+Traversator::traverseNode(AptNode& node)
 {
   if (fDelegate.preApply(node)) {
-    node->traverse(this);
+    node.traverse(this);
     fDelegate.postApply(node);
   }
 }
 
 
 void
-Traversator::traverse(CompileUnitNode* node)
+Traversator::traverse(CompileUnitNode& node)
 {
-  traverseNodeList(node->children());
+  traverseNodeList(node.children());
 }
 
 
 void
 Traversator::traverseNodeList(NodeList& nl)
 {
-  for (size_t i = 0; i < nl.size(); i++)
-    traverseNode(nl[i]);
+  for (auto& nd : nl)
+    traverseNode(*nd);
 }
 
 
 //------------------------------------------------------------------------------
 
 void
-Traversator::traverse(SymbolNode* node)
+Traversator::traverse(SymbolNode& node)
 {
 }
 
 
 void
-Traversator::traverse(ArrayTypeNode* node)
+Traversator::traverse(ArrayTypeNode& node)
 {
-  traverseNode(node->typeNode());
+  traverseNode(*node.typeNode());
 }
 
 
 void
-Traversator::traverse(TypeNode* node)
+Traversator::traverse(TypeNode& node)
 {
 }
 
@@ -72,264 +72,264 @@ Traversator::traverse(TypeNode* node)
 //------------------------------------------------------------------------------
 
 void
-Traversator::traverse(DefNode* node)
+Traversator::traverse(DefNode& node)
 {
-  traverseNode(node->defNode());
+  traverseNode(*node.defNode());
 }
 
 
 void
-Traversator::traverse(LetNode* node)
+Traversator::traverse(LetNode& node)
 {
-  traverseNode(node->defNode());
+  traverseNode(*node.defNode());
 }
 
 
 void
-Traversator::traverse(VardefNode* node)
+Traversator::traverse(VardefNode& node)
 {
-  if (node->initExpr())
-    traverseNode(node->initExpr());
+  if (node.initExpr())
+    traverseNode(*node.initExpr());
 }
 
 
 void
-Traversator::traverse(FuncDefNode* node)
+Traversator::traverse(FuncDefNode& node)
 {
-  traverseNodeList(node->params());
-  if (node->body())
-    traverseNode(node->body());
+  traverseNodeList(node.params());
+  if (node.body())
+    traverseNode(*node.body());
 }
 
 
 void
-Traversator::traverse(FunctionNode* node)
+Traversator::traverse(FunctionNode& node)
 {
-  traverseNodeList(node->params());
-  if (node->body())
-    traverseNode(node->body());
+  traverseNodeList(node.params());
+  if (node.body())
+    traverseNode(*node.body());
 }
 
 
 void
-Traversator::traverse(SlotdefNode* node)
+Traversator::traverse(SlotdefNode& node)
 {
-  if (node->initExpr())
-    traverseNode(node->initExpr());
+  if (node.initExpr())
+    traverseNode(*node.initExpr());
 }
 
 
 void
-Traversator::traverse(BlockNode* node)
+Traversator::traverse(BlockNode& node)
 {
-  traverseNodeList(node->children());
+  traverseNodeList(node.children());
 }
 
 
 void
-Traversator::traverse(ParamNode* node)
+Traversator::traverse(ParamNode& node)
 {
-  if (node->initExpr())
-    traverseNode(node->initExpr());
+  if (node.initExpr())
+    traverseNode(*node.initExpr());
 }
 
 
 void
-Traversator::traverse(ApplyNode* node)
+Traversator::traverse(ApplyNode& node)
 {
-  traverseNode(node->base());
-  traverseNodeList(node->children());
+  traverseNode(*node.base());
+  traverseNodeList(node.children());
 }
 
 
 void
-Traversator::traverse(ArrayNode* node)
+Traversator::traverse(ArrayNode& node)
 {
-  traverseNodeList(node->children());
+  traverseNodeList(node.children());
 }
 
 
 void
-Traversator::traverse(AssignNode* node)
+Traversator::traverse(AssignNode& node)
 {
-  traverseNode(node->lvalue());
-  traverseNode(node->rvalue());
+  traverseNode(*node.lvalue());
+  traverseNode(*node.rvalue());
 }
 
 
 void
-Traversator::traverse(BinaryNode* node)
+Traversator::traverse(BinaryNode& node)
 {
-  traverseNode(node->left());
-  traverseNode(node->right());
+  traverseNode(*node.left());
+  traverseNode(*node.right());
 }
 
 
 void
-Traversator::traverse(UnaryNode* node)
+Traversator::traverse(UnaryNode& node)
 {
-  traverseNode(node->base());
+  traverseNode(*node.base());
 }
 
 
 void
-Traversator::traverse(IfNode* node)
+Traversator::traverse(IfNode& node)
 {
-  traverseNode(node->test());
-  traverseNode(node->consequent());
-  if (node->alternate())
-    traverseNode(node->alternate());
+  traverseNode(*node.test());
+  traverseNode(*node.consequent());
+  if (node.alternate())
+    traverseNode(*node.alternate());
 }
 
 
 void
-Traversator::traverse(KeyargNode* node)
+Traversator::traverse(KeyargNode& node)
 {
-  traverseNode(node->value());
+  traverseNode(*node.value());
 }
 
 
 void
-Traversator::traverse(MatchNode* node)
+Traversator::traverse(MatchNode& node)
 {
-  traverseNode(node->expr());
-  for (size_t i = 0; i < node->mappingCount(); i++) {
-    traverseNode(node->mappingAt(i).fConsequent);
+  traverseNode(*node.expr());
+  for (size_t i = 0; i < node.mappingCount(); i++) {
+    traverseNode(*node.mappingAt(i).fConsequent);
   }
 }
 
 
 void
-Traversator::traverse(SelectNode* node)
+Traversator::traverse(SelectNode& node)
 {
-  traverseNode(node->test());
-  if (node->comparator())
-    traverseNode(node->comparator());
+  traverseNode(*node.test());
+  if (node.comparator())
+    traverseNode(*node.comparator());
 
-  for (size_t i = 0; i < node->mappingCount(); i++) {
-    if (node->mappingAt(i).fTestValues.empty()) {
-      traverseNode(node->mappingAt(i).fConsequent);
+  for (size_t i = 0; i < node.mappingCount(); i++) {
+    if (node.mappingAt(i).fTestValues.empty()) {
+      traverseNode(*node.mappingAt(i).fConsequent);
     }
     else {
-      for (size_t j = 0; j < node->mappingAt(i).fTestValues.size(); j++)
-        traverseNode(node->mappingAt(i).fTestValues[j]);
+      for (size_t j = 0; j < node.mappingAt(i).fTestValues.size(); j++)
+        traverseNode(*node.mappingAt(i).fTestValues[j]);
     }
-    traverseNode(node->mappingAt(i).fConsequent);
+    traverseNode(*node.mappingAt(i).fConsequent);
   }
 }
 
 
 void
-Traversator::traverse(OnNode* node)
+Traversator::traverse(OnNode& node)
 {
-  traverseNodeList(node->params());
-  traverseNode(node->body());
+  traverseNodeList(node.params());
+  traverseNode(*node.body());
 }
 
 
 void
-Traversator::traverse(RangeNode* node)
+Traversator::traverse(RangeNode& node)
 {
-  traverseNode(node->from());
-  traverseNode(node->to());
-  if (node->by())
-    traverseNode(node->by());
+  traverseNode(*node.from());
+  traverseNode(*node.to());
+  if (node.by())
+    traverseNode(*node.by());
 }
 
 
 void
-Traversator::traverse(TypeDefNode* node)
+Traversator::traverse(TypeDefNode& node)
 {
   // TODO
 }
 
 
 void
-Traversator::traverse(WhileNode* node)
+Traversator::traverse(WhileNode& node)
 {
-  traverseNode(node->test());
-  traverseNode(node->body());
+  traverseNode(*node.test());
+  traverseNode(*node.body());
 }
 
 
 void
-Traversator::traverse(VectorNode* node)
+Traversator::traverse(VectorNode& node)
 {
-  traverseNodeList(node->children());
+  traverseNodeList(node.children());
 }
 
 
 void
-Traversator::traverse(DictNode* node)
+Traversator::traverse(DictNode& node)
 {
-  traverseNodeList(node->children());
+  traverseNodeList(node.children());
 }
 
 
 void
-Traversator::traverse(CastNode* node)
+Traversator::traverse(CastNode& node)
 {
-  traverseNode(node->base());
+  traverseNode(*node.base());
 }
 
 
 void
-Traversator::traverse(BoolNode* node)
-{
-}
-
-
-void
-Traversator::traverse(CharNode* node)
+Traversator::traverse(BoolNode& node)
 {
 }
 
 
 void
-Traversator::traverse(StringNode* node)
+Traversator::traverse(CharNode& node)
 {
 }
 
 
 void
-Traversator::traverse(RationalNode* node)
+Traversator::traverse(StringNode& node)
 {
 }
 
 
 void
-Traversator::traverse(RealNode* node)
+Traversator::traverse(RationalNode& node)
 {
 }
 
 
 void
-Traversator::traverse(IntNode* node)
+Traversator::traverse(RealNode& node)
 {
 }
 
 
 void
-Traversator::traverse(KeywordNode* node)
+Traversator::traverse(IntNode& node)
 {
 }
 
 
 void
-Traversator::traverse(UndefNode* node)
+Traversator::traverse(KeywordNode& node)
 {
 }
 
 
 void
-Traversator::traverse(UnitConstNode* node)
+Traversator::traverse(UndefNode& node)
 {
-  traverseNode(node->value());
 }
 
 
 void
-Traversator::traverse(SlotRefNode* node)
+Traversator::traverse(UnitConstNode& node)
 {
-  traverseNode(node->base());
+  traverseNode(*node.value());
+}
+
+
+void
+Traversator::traverse(SlotRefNode& node)
+{
+  traverseNode(*node.base());
 }

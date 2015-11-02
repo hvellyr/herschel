@@ -11,14 +11,14 @@
 #ifndef bootstrap_compiler_h
 #define bootstrap_compiler_h
 
-#include "refcountable.h"
 #include "apt.h"
 #include "macro.h"
 #include "port.h"
 #include "scope.h"
-#include "tokenport.h"
 #include "token.h"
+#include "tokenport.h"
 
+#include <memory>
 
 namespace herschel
 {
@@ -62,7 +62,8 @@ namespace herschel
   public:
     Compiler(bool isParsingInterface = false);
 
-    virtual AptNode* process(Port<Char>* port, const String& srcName);
+    virtual std::shared_ptr<AptNode> process(Port<Char>* port,
+                                             const String& srcName);
 
     CharRegistry* charRegistry() const;
     ConfigVarRegistry* configVarRegistry() const;
@@ -72,7 +73,7 @@ namespace herschel
                     std::shared_ptr<Scope> currentScope);
     String lookupFile(const String& srcName, bool isPublic);
 
-    std::shared_ptr<Scope> referredFunctionCache() const;
+    std::shared_ptr<Scope>& referredFunctionCache();
 
     // predefined symbol tokens to speed up parsing
     static const Token aliasToken;
@@ -127,8 +128,8 @@ namespace herschel
     Token nextToken();
     void unreadToken(const Token& token);
 
-    AptNode* processImpl(Port<Char>* port, const String& srcName,
-                         bool doTrace);
+    std::shared_ptr<AptNode> processImpl(Port<Char>* port, const String& srcName,
+                                         bool doTrace);
     bool importFileImpl(const SrcPos& srcpos,
                         const String& srcName, const String& absPath,
                         std::shared_ptr<Scope> currentScope,
@@ -159,7 +160,6 @@ namespace herschel
     CompilerState            fState;
     std::list<CompilerState> fCompilerStates;
     bool                     fIsParsingInterface;
-
     std::shared_ptr<Scope>   fReferredFunctionCache;
   };
 

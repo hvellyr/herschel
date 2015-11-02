@@ -54,7 +54,7 @@ llvm::Value*
 CodegenIf::emit(const IfNode* node) const
 {
   llvm::Value *testValue =
-    tools().wrapLoad(generator().codegenNode(node->test()));
+    tools().wrapLoad(generator().codegenNode(*node->test()));
   if (!testValue)
     return nullptr;
 
@@ -86,7 +86,7 @@ CodegenIf::emit(const IfNode* node) const
   builder().SetInsertPoint(thenBB);
 
   llvm::Value *thenValue =
-    tools().wrapLoad(generator().codegenNode(node->consequent()));
+    tools().wrapLoad(generator().codegenNode(*node->consequent()));
   if (!thenValue)
     return nullptr;
 
@@ -109,7 +109,7 @@ CodegenIf::emit(const IfNode* node) const
   llvm::Value* elseValue = nullptr;
   if (node->alternate()) {
     llvm::Value* elseValue0 =
-      tools().wrapLoad(generator().codegenNode(node->alternate()));
+      tools().wrapLoad(generator().codegenNode(*node->alternate()));
     if (!elseValue0)
       return nullptr;
     elseValue = tools().wrapLoad(tools().emitPackCode(node->alternate()->dstType(),

@@ -40,7 +40,7 @@ NodifyPass::NodifyPass(int level, Compiler& compiler,
 { }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 NodifyPass::doApply(const Token& src)
 {
   return fPass->parse(src);
@@ -67,17 +67,12 @@ SecondPass::parseTopExprlist(const Token& expr)
 {
   hr_assert(fRootNode);
 
-  for (TokenVector::const_iterator it = expr.children().begin();
-       it != expr.children().end();
-       it++)
-  {
-    NodeList nl = parseExpr(*it);
-    fRootNode->appendNodes(nl);
-  }
+  for (auto& token : expr.children())
+    fRootNode->appendNodes(parseExpr(token));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseModule(const Token& expr)
 {
   hr_assert(expr.isSeq() && expr.count() >= 2);
@@ -107,7 +102,7 @@ SecondPass::parseModule(const Token& expr)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseExport(const Token& expr)
 {
   hr_assert(expr.isSeq() && expr.count() >= 2);
@@ -186,7 +181,7 @@ SecondPass::parseExport(const Token& expr)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseImport(const Token& expr)
 {
   hr_assert(expr.isSeq() && expr.count() >= 2);
@@ -230,17 +225,13 @@ SecondPass::parseExtendImpl(NodeList* functions, const Token& expr)
   {
     // temporarily change the current module name
     ModuleHelper modHelper(this, moduleName, K(setName));
-
-    const TokenVector& children = expr[3].children();
-    for (size_t i = 0; i < children.size(); i++) {
-      NodeList nl = parseExpr(children[i]);
-      appendNodes(*functions, nl);
-    }
+    for (auto& c : expr[3].children())
+      appendNodes(*functions, parseExpr(c));
   }
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseExtend(const Token& expr)
 {
   NodeList nodeList;
@@ -248,7 +239,7 @@ SecondPass::parseExtend(const Token& expr)
   parseExtendImpl(&nodeList, expr);
 
   for (size_t i = 0; i < nodeList.size(); i++) {
-    AptNode* n = nodeList[i];
+    auto n = nodeList[i];
     if (n)
       fRootNode->appendNode(n);
   }
@@ -265,10 +256,10 @@ SecondPass::parseTypeVector(TypeVector* generics, const Token& expr,
 {
   hr_assert(expr.isNested());
 
-  for (size_t i = 0; i < expr.children().size(); i++) {
-    if (expr[i] == kComma)
+  for (auto& c : expr.children()) {
+    if (c == kComma)
       continue;
-    Type ty = parseTypeSpec(expr[i], forceOpenType);
+    Type ty = parseTypeSpec(c, forceOpenType);
     if (ty.isDef())
       generics->push_back(ty);
   }
@@ -553,7 +544,7 @@ SecondPass::paramsNodeListToType(FunctionParamVector* funcParams,
                                  const NodeList& nl) const
 {
   for (size_t i = 0; i < nl.size(); i++) {
-    const ParamNode* pnd = dynamic_cast<const ParamNode*>(nl[i].obj());
+    auto pnd = dynamic_cast<ParamNode*>(nl[i].get());
     if (pnd) {
       switch (pnd->flags()) {
       case kPosArg:
@@ -679,8 +670,9 @@ SecondPass::parsePrime(const Token& primeToken)
 
       result.fType = referedType;
       result.fPrime = generateInitObjectCall(primeToken.srcpos(),
-                                             new SymbolNode(primeToken.srcpos(),
-                                                            String("self")),
+                                             std::make_shared<SymbolNode>(
+                                               primeToken.srcpos(),
+                                               String("self")),
                                              referedType, primeToken[1].children());
       return result;
     }
@@ -831,12 +823,10 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
           for (size_t i = 0; i < slotDefs.size(); i++) {
             if (slotDefs[i]) {
-              const BaseDefNode* basedef =
-                dynamic_cast<const BaseDefNode*>(slotDefs[i].obj());
+              auto basedef = dynamic_cast<BaseDefNode*>(slotDefs[i].get());
               hr_assert(basedef);
 
-              const SlotdefNode* slotDef =
-                dynamic_cast<const SlotdefNode*>(basedef->defNode());
+              auto slotDef = dynamic_cast<SlotdefNode*>(basedef->defNode().get());
               hr_assert(slotDef);
 
               if (slotDef) {
@@ -865,13 +855,13 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
         else if (defs[i].count() > 1 && defs[i][1] == Compiler::initToken) {
           NodeList nl = parseExpr(defs[i]);
           if (!nl.empty()) {
-            if (OnNode* onNode = dynamic_cast<OnNode*>(nl[0].obj())) {
+            if (auto onNode = dynamic_cast<OnNode*>(nl[0].get())) {
               if (onNode->params().size() != 1) {
                 errorf(onNode->srcpos(), E_BadFunctionArity,
                        "wrong number of parameters to 'on init' hook.  Expected 1, found %d",
                        onNode->params().size());
               }
-              else if (ParamNode* param = dynamic_cast<ParamNode*>(onNode->params()[0].obj())) {
+              else if (auto param = dynamic_cast<ParamNode*>(onNode->params()[0].get())) {
                 if (!param->isPositional()) {
                   errorf(param->srcpos(), E_BadFunctionArity,
                          "non-positional parameter detected in 'on init' hook");
@@ -958,22 +948,22 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
   fScope->registerType(expr.srcpos(), fullTypeName, defType);
 
   NodeList result;
-
-  result.push_back(newDefNode(new TypeDefNode(expr.srcpos(),
-                                              fullTypeName,
-                                              isClass,
-                                              defType,
-                                              defaultApplyParams,
-                                              slotDefs,
+  result.push_back(
+    newDefNode(std::make_shared<TypeDefNode>(expr.srcpos(),
+                                             fullTypeName,
+                                             isClass,
+                                             defType,
+                                             defaultApplyParams,
+                                             slotDefs,
                                               onExprs),
-                              isLocal));
+               isLocal));
 
   if (isClass) {
-    Ptr<AptNode> ctor = generateConstructor(expr, fullTypeName, defType,
-                                            defaultApplyParams,
-                                            slotDefs,
-                                            primes,
-                                            onExprs);
+    auto ctor = generateConstructor(expr, fullTypeName, defType,
+                                    defaultApplyParams,
+                                    slotDefs,
+                                    primes,
+                                    onExprs);
     result.push_back(ctor);
   }
 
@@ -981,41 +971,41 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::defaultSlotInitValue(const SlotdefNode* slot)
 {
   if (slot->initExpr())
     return slot->initExpr()->clone();
   else if (slot->type().isDef()) {
     if (slot->type().isArray()) {
-      AptNode* node = new ArrayNode(slot->srcpos());
+      auto node = std::make_shared<ArrayNode>(slot->srcpos());
       node->setType(slot->type());
       return node;
     }
     else {
       if (slot->type().isAnyInt())
-        return new IntNode(slot->srcpos(), 0, slot->type().isImaginary(),
-                           slot->type());
+        return std::make_shared<IntNode>(
+          slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
       else if (slot->type().isAnyFloat())
-        return new RealNode(slot->srcpos(), 0, slot->type().isImaginary(),
-                            slot->type());
+        return std::make_shared<RealNode>(
+          slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
       else if (slot->type().isRational())
-        return new RationalNode(slot->srcpos(), Rational(0, 1),
-                                slot->type().isImaginary(), slot->type());
+        return std::make_shared<RationalNode>(
+          slot->srcpos(), Rational(0, 1), slot->type().isImaginary(), slot->type());
       else if (slot->type().isString())
-        return new StringNode(slot->srcpos(), String());
+        return std::make_shared<StringNode>(slot->srcpos(), String());
       else if (slot->type().isBool())
-        return new BoolNode(slot->srcpos(), false);
+        return std::make_shared<BoolNode>(slot->srcpos(), false);
       else if (slot->type().isChar())
-        return new CharNode(slot->srcpos(), Char(0));
+        return std::make_shared<CharNode>(slot->srcpos(), Char(0));
       else if (slot->type().isKeyword())
-        return new KeywordNode(slot->srcpos(), String());
+        return std::make_shared<KeywordNode>(slot->srcpos(), String());
     }
   }
 
   // TODO
 
-  return new SymbolNode(slot->srcpos(), Names::kLangNil);
+  return std::make_shared<SymbolNode>(slot->srcpos(), Names::kLangNil);
 }
 
 
@@ -1024,8 +1014,8 @@ findAutoParamName(const NodeList& params, const String& slotName)
 {
   String resultingSlotName = slotName;
 
-  for (size_t i = 0; i < params.size(); i++) {
-    const ParamNode* prm = dynamic_cast<const ParamNode*>(params[i].obj());
+  for (auto& nd : params) {
+    auto prm = dynamic_cast<ParamNode*>(nd.get());
     if (prm->name() == resultingSlotName) {
       warningf(prm->srcpos(), E_CtorArgNameConflict,
                "conflict names in class init and auto slot configuration: %s",
@@ -1039,10 +1029,10 @@ findAutoParamName(const NodeList& params, const String& slotName)
 
 
 static void
-insertKeyedArg(NodeList& params, ParamNode* prm)
+insertKeyedArg(NodeList& params, std::shared_ptr<ParamNode> prm)
 {
   for (size_t i = 0; i < params.size(); i++) {
-    ParamNode* nl = dynamic_cast<ParamNode*>(params[i].obj());
+    auto nl = dynamic_cast<ParamNode*>(params[i].get());
     if (nl->isRestArg()) {
       params.insert(params.begin() + i, prm);
       return;
@@ -1053,7 +1043,7 @@ insertKeyedArg(NodeList& params, ParamNode* prm)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::generateConstructor(const Token& typeExpr,
                                 const String& fullTypeName,
                                 const Type& defType,
@@ -1069,52 +1059,54 @@ SecondPass::generateConstructor(const Token& typeExpr,
 
   NodeList params = copyNodes(defaultApplyParams);
   params.insert(params.begin(),
-                new ParamNode(srcpos, String(), selfParamSym,
-                              kPosArg, defType, nullptr));
+                std::make_shared<ParamNode>(srcpos, String(), selfParamSym,
+                                            kPosArg, defType, nullptr));
 
-  Ptr<ListNode> body = new BlockNode(srcpos);
+  auto body = std::make_shared<BlockNode>(srcpos);
 
   generatePrimeInits(srcpos, body, defType, primes, selfParamSym);
 
   // initialize slots
-  for (unsigned int i = 0; i < slotDefs.size(); i++) {
-    const BaseDefNode* basedef = dynamic_cast<const BaseDefNode*>(slotDefs[i].obj());
+  for (auto& slotDef : slotDefs) {
+    auto basedef = dynamic_cast<BaseDefNode*>(slotDef.get());
     hr_assert(basedef);
 
-    const SlotdefNode* slot = dynamic_cast<const SlotdefNode*>(basedef->defNode());
+    auto slot = dynamic_cast<SlotdefNode*>(basedef->defNode().get());
     hr_assert(slot);
 
     if (slot->isAuto()) {
-      String autoPrmName = findAutoParamName(params, slot->name());
+      auto autoPrmName = findAutoParamName(params, slot->name());
 
-      Ptr<ParamNode> prm = new ParamNode(srcpos, slot->name(), autoPrmName,
-                                         kNamedArg, slot->type(),
-                                         defaultSlotInitValue(slot));
+      auto prm = std::make_shared<ParamNode>(srcpos, slot->name(), autoPrmName,
+                                             kNamedArg, slot->type(),
+                                             defaultSlotInitValue(slot));
 
-      Ptr<AptNode> slotInit = new AssignNode(srcpos,
-                                             new SlotRefNode(srcpos,
-                                                             new SymbolNode(srcpos,
-                                                                            selfParamSym),
-                                                             slot->name()),
-                                             new SymbolNode(srcpos, autoPrmName));
+      auto slotInit = std::make_shared<AssignNode>(
+        srcpos,
+        std::make_shared<SlotRefNode>(srcpos,
+                                      std::make_shared<SymbolNode>(srcpos,
+                                                                   selfParamSym),
+                                      slot->name()),
+        std::make_shared<SymbolNode>(srcpos, autoPrmName));
       body->appendNode(slotInit);
 
       insertKeyedArg(params, prm);
     }
     else {
-      Ptr<AptNode> slotInit = new AssignNode(srcpos,
-                                             new SlotRefNode(srcpos,
-                                                             new SymbolNode(srcpos,
-                                                                            selfParamSym),
-                                                             slot->name()),
-                                             defaultSlotInitValue(slot));
+      auto slotInit = std::make_shared<AssignNode>(
+        srcpos,
+        std::make_shared<SlotRefNode>(srcpos,
+                                      std::make_shared<SymbolNode>(srcpos,
+                                                                   selfParamSym),
+                                      slot->name()),
+        defaultSlotInitValue(slot));
       body->appendNode(slotInit);
     }
   }
 
   // inline a possible on init expr.
-  for (unsigned int i = 0; i < onExprs.size(); i++) {
-    const OnNode* onNode = dynamic_cast<const OnNode*>(onExprs[i].obj());
+  for (auto& onExpr : onExprs) {
+    auto onNode = dynamic_cast<OnNode*>(onExpr.get());
     if (onNode && onNode->key() == Compiler::initToken.idValue()) {
       NodeList onNodeParams = copyNodes(onNode->params());
       hr_assert(onNodeParams.size() == 1);
@@ -1124,31 +1116,31 @@ SecondPass::generateConstructor(const Token& typeExpr,
         onNodeParams[0]->setType(defType);
       }
 
-      Ptr<AptNode> func = new FunctionNode(srcpos, onNodeParams,
-                                           Type(),
-                                           onNode->body()->clone());
-      Ptr<ApplyNode> initCall = new ApplyNode(srcpos, func);
-      initCall->appendNode(new SymbolNode(srcpos, selfParamSym));
+      auto func = std::make_shared<FunctionNode>(srcpos, onNodeParams,
+                                                 Type(),
+                                                 onNode->body()->clone());
+      auto initCall = std::make_shared<ApplyNode>(srcpos, func);
+      initCall->appendNode(std::make_shared<SymbolNode>(srcpos, selfParamSym));
 
       body->appendNode(initCall);
     }
   }
 
-  body->appendNode(new SymbolNode(srcpos, selfParamSym));
+  body->appendNode(std::make_shared<SymbolNode>(srcpos, selfParamSym));
 
 
   // register constructor function
-  Ptr<FuncDefNode> ctorFunc = new FuncDefNode(srcpos,
-                                              ctorFuncName,
-                                              0, // flags
-                                              params,
-                                              defType,
-                                              body);
+  auto ctorFunc = std::make_shared<FuncDefNode>(srcpos,
+                                                ctorFuncName,
+                                                0, // flags
+                                                params,
+                                                defType,
+                                                body);
   fScope->registerFunction(typeExpr.srcpos(), ctorFuncName, ctorFunc);
 
   fScope->attachSymbolForExport(Scope::kNormal, fullTypeName, ctorFuncName);
 
-  return newDefNode(ctorFunc.release(), !K(isLocal));
+  return newDefNode(ctorFunc, !K(isLocal));
 }
 
 
@@ -1213,7 +1205,7 @@ getDirectInheritedTypes(const Type& defType, std::shared_ptr<Scope> scope)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::findPrimeForType(const Type& reqTypeInit,
                              const std::vector<PrimeTuple>& primes)
 {
@@ -1230,21 +1222,21 @@ SecondPass::findPrimeForType(const Type& reqTypeInit,
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::getPrimeForType(const Type& reqTypeInit,
                             const std::vector<PrimeTuple>& primes,
                             const String& selfParamSym)
 {
-  Ptr<AptNode> prime0 = findPrimeForType(reqTypeInit, primes);
+  auto prime0 = findPrimeForType(reqTypeInit, primes);
   if (prime0) {
-    Ptr<AptNode> prime = prime0->clone();
-    ApplyNode* apply = dynamic_cast<ApplyNode*>(prime.obj());
+    auto prime = prime0->clone();
+    auto apply = dynamic_cast<ApplyNode*>(prime.get());
     hr_assert(apply);
     hr_assert(apply->children().size() > 0);
 
-    apply->children()[0] = new SymbolNode(apply->children()[0]->srcpos(),
-                                          selfParamSym);
-    return prime.release();
+    apply->children()[0] = std::make_shared<SymbolNode>(apply->children()[0]->srcpos(),
+                                                        selfParamSym);
+    return prime;
   }
 
   return nullptr;
@@ -1253,7 +1245,7 @@ SecondPass::getPrimeForType(const Type& reqTypeInit,
 
 void
 SecondPass::generatePrimeInits(const SrcPos& srcpos,
-                               ListNode* body,
+                               std::shared_ptr<ListNode> body,
                                const Type& defType,
                                const std::vector<PrimeTuple>& primes,
                                const String& selfParamSym)
@@ -1264,9 +1256,9 @@ SecondPass::generatePrimeInits(const SrcPos& srcpos,
     // does the super type requires an explicit prime?
     if (reqTypeInits[i].fIsClass) {
       if (reqTypeInits[i].fReqExplicitPrime) {
-        Ptr<AptNode> apply = getPrimeForType(reqTypeInits[i].fType,
-                                             primes,
-                                             selfParamSym);
+        auto apply = getPrimeForType(reqTypeInits[i].fType,
+                                     primes,
+                                     selfParamSym);
         if (!apply) {
           errorf(srcpos, E_BadClassOnAlloc,
                  "No 'on alloc' prime call for super class '%s'",
@@ -1276,18 +1268,19 @@ SecondPass::generatePrimeInits(const SrcPos& srcpos,
           body->appendNode(apply);
       }
       else {
-        Ptr<AptNode> apply = getPrimeForType(reqTypeInits[i].fType,
-                                             primes,
-                                             selfParamSym);
+        auto apply = getPrimeForType(reqTypeInits[i].fType,
+                                     primes,
+                                     selfParamSym);
         if (!apply)
           apply = generateInitObjectCall(SrcPos(),
-                                         new SymbolNode(SrcPos(), selfParamSym),
+                                         std::make_shared<SymbolNode>(SrcPos(),
+                                                                      selfParamSym),
                                          reqTypeInits[i].fType, TokenVector());
         body->appendNode(apply);
       }
     }
     else if (reqTypeInits[i].fType.isDef()) {
-      Ptr<AptNode> prime = findPrimeForType(reqTypeInits[i].fType, primes);
+      auto prime = findPrimeForType(reqTypeInits[i].fType, primes);
       if (prime) {
         errorf(srcpos, E_BadClassOnAlloc,
                "Explicit 'on alloc' prime call for non allocable type '%s'",
@@ -1298,7 +1291,7 @@ SecondPass::generatePrimeInits(const SrcPos& srcpos,
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseAliasDef(const Token& expr, size_t ofs, bool isLocal)
 {
   hr_assert(fCurrentGenericTypes.empty());
@@ -1368,7 +1361,7 @@ SecondPass::parseAliasDef(const Token& expr, size_t ofs, bool isLocal)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseSlotDef(const Token& expr, size_t ofs)
 {
   hr_assert(expr.isSeq());
@@ -1392,7 +1385,7 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
     ofs += 2;
   }
 
-  Ptr<AptNode> initExpr;
+  std::shared_ptr<AptNode> initExpr;
   if (ofs + 1 < seq.size() && seq[ofs] == kAssign) {
     NodeList nl = parseExpr(seq[ofs + 1]);
     initExpr = singletonNodeListOrNull(nl);
@@ -1432,17 +1425,17 @@ SecondPass::parseSlotDef(const Token& expr, size_t ofs)
     }
   }
 
-  return new SlotdefNode(expr.srcpos(), slotName, slotFlags, slotType,
-                         initExpr);
+  return std::make_shared<SlotdefNode>(expr.srcpos(), slotName,
+                                       slotFlags, slotType, initExpr);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::nextEnumInitValue(const SrcPos& srcpos,
                               const Token& enumItemSym,
                               const Type& baseType, Token& lastInitToken)
 {
-  Ptr<AptNode> initExpr;
+  std::shared_ptr<AptNode> initExpr;
 
   Ptr<TypeEnumMaker> maker = baseType.newBaseTypeEnumMaker();
   if (maker) {
@@ -1455,11 +1448,11 @@ SecondPass::nextEnumInitValue(const SrcPos& srcpos,
     tyerror(baseType, "Enum Basetype");
   }
 
-  return initExpr.release();
+  return initExpr;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
 {
   hr_assert(fCurrentGenericTypes.empty());
@@ -1507,12 +1500,9 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
 
   Token lastInitToken;
   SrcPos lastInitPos;
-  const TokenVector& enumValues = expr[ofs].children();
-  for (size_t i = 0; i < enumValues.size(); i++) {
-    const Token& enumVal = enumValues[i];
-
+  for (auto& enumVal : expr[ofs].children()) {
     String sym;
-    Ptr<AptNode> initExpr;
+    std::shared_ptr<AptNode> initExpr;
 
     if (enumVal.isSeq()) {
       hr_assert(enumVal.count() >= 3);
@@ -1540,16 +1530,16 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
       sym = baseName(sym);
     }
 
-    String fullSymName = ( isLocal
-                           ? sym
-                           : qualifyId(currentModuleName(), sym) );
+    auto fullSymName = ( isLocal
+                         ? sym
+                         : qualifyId(currentModuleName(), sym) );
     if (fScope->checkForRedefinition(enumVal.srcpos(),
                                      Scope::kNormal, fullSymName))
       return nullptr;
 
-    Ptr<AptNode> var = new VardefNode(enumVal.srcpos(),
-                                      fullSymName, kEnumVar, isLocal,
-                                      baseType, initExpr);
+    auto var = std::make_shared<VardefNode>(enumVal.srcpos(),
+                                            fullSymName, kEnumVar, isLocal,
+                                            baseType, initExpr);
     fScope->registerVar(enumVal.srcpos(), fullSymName, var);
 
     fScope->attachSymbolForExport(Scope::kNormal, fullEnumName, fullSymName);
@@ -1575,7 +1565,7 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseMeasureDef(const Token& expr, size_t ofs, bool isLocal)
 {
   hr_assert(fCurrentGenericTypes.empty());
@@ -1632,7 +1622,7 @@ SecondPass::parseMeasureDef(const Token& expr, size_t ofs, bool isLocal)
   NodeList dummySlotDefs;
   NodeList dummyOnExprs;
 
-  return new TypeDefNode(expr.srcpos(),
+  return std::make_shared<TypeDefNode>(expr.srcpos(),
                          fullTypeName,
                          K(isClass),
                          defMeasureType,
@@ -1642,7 +1632,7 @@ SecondPass::parseMeasureDef(const Token& expr, size_t ofs, bool isLocal)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseUnitDef(const Token& expr, size_t ofs, bool isLocal)
 {
   hr_assert(fCurrentGenericTypes.empty());
@@ -1677,8 +1667,8 @@ SecondPass::parseUnitDef(const Token& expr, size_t ofs, bool isLocal)
   FundefClauseData data;
   parseFundefClause(seq, ofs, data);
 
-  Ptr<AptNode> funcNode = new FunctionNode(expr.srcpos(), data.fParams,
-                                           data.fType, data.fBody);
+  auto funcNode = std::make_shared<FunctionNode>(expr.srcpos(), data.fParams,
+                                                 data.fType, data.fBody);
 
   if (fScope->checkForRedefinition(expr.srcpos(),
                                    Scope::kUnit, fullUnitName))
@@ -1690,7 +1680,7 @@ SecondPass::parseUnitDef(const Token& expr, size_t ofs, bool isLocal)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
                         bool isLocal, const String& linkage)
 {
@@ -1714,7 +1704,7 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
     ofs += 2;
   }
 
-  Ptr<AptNode> initExpr;
+  std::shared_ptr<AptNode> initExpr;
   if (ofs + 1 < expr.count() && seq[ofs] == kAssign) {
     if (!fCompiler.isParsingInterface() ||
         flags == kConstVar || flags == kConfigVar)
@@ -1732,13 +1722,13 @@ SecondPass::parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
                                    Scope::kNormal, fullSymName))
     return nullptr;
 
-  Ptr<VardefNode> var = new VardefNode(expr.srcpos(),
-                                       fullSymName, flags, isLocal,
-                                       type, initExpr);
+  auto var = std::make_shared<VardefNode>(expr.srcpos(),
+                                          fullSymName, flags, isLocal,
+                                          type, initExpr);
   var->setLinkage(linkage);
   fScope->registerVar(expr.srcpos(), fullSymName, var);
 
-  return var.release();
+  return var;
 }
 
 
@@ -1794,16 +1784,16 @@ SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
 bool
 SecondPass::hasSpecParameters(const NodeList& params) const
 {
-  for (size_t i = 0; i < params.size(); i++) {
-    const ParamNode* pParam = dynamic_cast<const ParamNode*>(params[i].obj());
-    if (pParam->isSpecArg())
+  for (auto& nd : params) {
+    auto param = dynamic_cast<ParamNode*>(nd.get());
+    if (param->isSpecArg())
       return true;
   }
   return false;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::makeGenericFunction(const SrcPos& srcpos,
                                 const String& sym,
                                 const FundefClauseData& data)
@@ -1815,20 +1805,20 @@ SecondPass::makeGenericFunction(const SrcPos& srcpos,
   if (fScope->checkForRedefinition(srcpos, Scope::kNormal, fullFuncName))
     return nullptr;
 
-  Ptr<FuncDefNode> func = new FuncDefNode(srcpos,
-                                          fullFuncName,
-                                          // force abstractedness
-                                          data.fFlags | kFuncIsAbstract,
-                                          data.fParams,
-                                          data.fType,
-                                          // no body for generic functions
-                                          nullptr);
+  auto func = std::make_shared<FuncDefNode>(srcpos,
+                                            fullFuncName,
+                                            // force abstractedness
+                                            data.fFlags | kFuncIsAbstract,
+                                            data.fParams,
+                                            data.fType,
+                                            // no body for generic functions
+                                            nullptr);
   fScope->registerFunction(srcpos, fullFuncName, func);
-  return func.release();
+  return func;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::makeMethod(const SrcPos& srcpos, const String& sym,
                        const FundefClauseData& data)
 {
@@ -1837,18 +1827,17 @@ SecondPass::makeMethod(const SrcPos& srcpos, const String& sym,
 
   String fullFuncName = qualifyId(currentModuleName(), sym);
 
-  Ptr<FuncDefNode> func = new FuncDefNode(srcpos,
-                                          fullFuncName,
-                                          // force abstractedness
-                                          data.fFlags | kFuncIsMethod,
-                                          data.fParams,
-                                          data.fType,
-                                          data.fBody);
-  return func.release();
+  return std::make_shared<FuncDefNode>(srcpos,
+                                       fullFuncName,
+                                       // force abstractedness
+                                       data.fFlags | kFuncIsMethod,
+                                       data.fParams,
+                                       data.fType,
+                                       data.fBody);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::makeNormalFunction(const SrcPos& srcpos, const String& sym,
                                const FundefClauseData& data,
                                bool isLocal,
@@ -1864,16 +1853,16 @@ SecondPass::makeNormalFunction(const SrcPos& srcpos, const String& sym,
   if (fScope->checkForRedefinition(srcpos, Scope::kNormal, fullFuncName))
     return nullptr;
 
-  Ptr<FuncDefNode> func = new FuncDefNode(srcpos,
-                                          fullFuncName,
-                                          data.fFlags,
-                                          data.fParams,
-                                          data.fType,
-                                          data.fBody);
+  auto func = std::make_shared<FuncDefNode>(srcpos,
+                                            fullFuncName,
+                                            data.fFlags,
+                                            data.fParams,
+                                            data.fType,
+                                            data.fBody);
   func->setLinkage(linkage);
   fScope->registerFunction(srcpos, fullFuncName, func);
 
-  return func.release();
+  return func;
 }
 
 
@@ -1957,18 +1946,18 @@ SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
 
 //------------------------------------------------------------------------------
 
-AptNode*
-SecondPass::newDefNode(AptNode* node, bool isLet)
+std::shared_ptr<AptNode>
+SecondPass::newDefNode(std::shared_ptr<AptNode> node, bool isLet)
 {
   if (isLet)
-    return new LetNode(node);
+    return std::make_shared<LetNode>(node);
   else
-    return new DefNode(node);
+    return std::make_shared<DefNode>(node);
 }
 
 
 NodeList
-SecondPass::rewriteDefNode(AptNode* node, bool isLet)
+SecondPass::rewriteDefNode(std::shared_ptr<AptNode> node, bool isLet)
 {
   if (node)
     return newNodeList(newDefNode(node, isLet));
@@ -1980,10 +1969,9 @@ NodeList
 SecondPass::rewriteDefNodes(const NodeList& nodes, bool isLet)
 {
   NodeList retval;
-  for (size_t i = 0; i < nodes.size(); i++) {
-    AptNode* node = nodes[i];
-    if (node)
-      retval.push_back(newDefNode(node, isLet));
+  for (auto& nd : nodes) {
+    if (nd)
+      retval.push_back(newDefNode(nd, isLet));
   }
   return retval;
 }
@@ -2109,7 +2097,7 @@ SecondPass::parseDef(const Token& expr, bool isLocal)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseIf(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -2119,8 +2107,8 @@ SecondPass::parseIf(const Token& expr)
   hr_assert(expr[1].count() > 0);
 
   NodeList test = parseTokenVector(expr[1].children());
-  Ptr<AptNode> consequent = singletonNodeListOrNull(parseExpr(expr[2]));
-  Ptr<AptNode> alternate;
+  auto consequent = singletonNodeListOrNull(parseExpr(expr[2]));
+  std::shared_ptr<AptNode> alternate;
 
   if (test.size() != 1) {
     errorf(expr.srcpos(), E_BadParameterList, "broken if-test");
@@ -2132,15 +2120,15 @@ SecondPass::parseIf(const Token& expr)
     alternate = singletonNodeListOrNull(parseExpr(expr[4]));
   }
 
-  return new IfNode(expr.srcpos(), test[0], consequent, alternate);
+  return std::make_shared<IfNode>(expr.srcpos(), test[0], consequent, alternate);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseParameter(const Token& expr)
 {
   if (expr == kSymbol)
-    return new ParamNode(expr.srcpos(),
+    return std::make_shared<ParamNode>(expr.srcpos(),
                          String(), expr.idValue(), kPosArg, Type(), nullptr);
   hr_assert(expr.isSeq());
   hr_assert(expr.count() > 0);
@@ -2192,7 +2180,7 @@ SecondPass::parseParameter(const Token& expr)
     }
   }
 
-  Ptr<AptNode> initExpr;
+  std::shared_ptr<AptNode> initExpr;
   if (ofs < expr.count()) {
     if (seq[ofs] == kAssign) {
       hr_assert(ofs + 1 < expr.count());
@@ -2213,7 +2201,7 @@ SecondPass::parseParameter(const Token& expr)
     }
   }
 
-  return new ParamNode(expr.srcpos(), key, sym, paramType, type, initExpr);
+  return std::make_shared<ParamNode>(expr.srcpos(), key, sym, paramType, type, initExpr);
 }
 
 
@@ -2224,14 +2212,14 @@ SecondPass::parseParameters(NodeList* parameters, const TokenVector& seq)
     if (seq[i] == kComma)
       continue;
 
-    Ptr<AptNode> param = parseParameter(seq[i]);
+    auto param = parseParameter(seq[i]);
     if (param)
       parameters->push_back(param);
   }
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseOn(const Token& expr)
 {
   hr_assert(expr.count() == 4);
@@ -2242,12 +2230,12 @@ SecondPass::parseOn(const Token& expr)
   NodeList params;
   parseParameters(&params, expr[2].children());
 
-  return new OnNode(expr.srcpos(), expr[1].idValue(), params,
+  return std::make_shared<OnNode>(expr.srcpos(), expr[1].idValue(), params,
                     singletonNodeListOrNull(parseExpr(expr[3])));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseClosure(const Token& expr)
 {
   hr_assert(expr.isSeq());
@@ -2271,13 +2259,13 @@ SecondPass::parseClosure(const Token& expr)
   }
 
   hr_assert(ofs < expr.count());
-  Ptr<AptNode> body = singletonNodeListOrNull(parseExpr(expr[ofs]));
+  auto body = singletonNodeListOrNull(parseExpr(expr[ofs]));
 
-  return new FunctionNode(expr.srcpos(), params, type, body);
+  return std::make_shared<FunctionNode>(expr.srcpos(), params, type, body);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseBinary(const Token& expr)
 {
   hr_assert(expr.count() >= 3);
@@ -2285,23 +2273,23 @@ SecondPass::parseBinary(const Token& expr)
   switch (expr[1].tokenType()) {
   case kAssign:
     {
-      Ptr<AptNode> lvalue = singletonNodeListOrNull(parseExpr(expr[0]));
-      Ptr<AptNode> rvalue = singletonNodeListOrNull(parseExpr(expr[2]));
-      return new AssignNode(expr.srcpos(), lvalue, rvalue);
+      auto lvalue = singletonNodeListOrNull(parseExpr(expr[0]));
+      auto rvalue = singletonNodeListOrNull(parseExpr(expr[2]));
+      return std::make_shared<AssignNode>(expr.srcpos(), lvalue, rvalue);
     }
 
   case kRange:
     if (expr.count() >= 5) {
       hr_assert(expr[3] == kBy);
-      Ptr<AptNode> from = singletonNodeListOrNull(parseExpr(expr[0]));
-      Ptr<AptNode> to   = singletonNodeListOrNull(parseExpr(expr[2]));
-      Ptr<AptNode> step = singletonNodeListOrNull(parseExpr(expr[4]));
-      return new RangeNode(expr.srcpos(), from, to, step);
+      auto from = singletonNodeListOrNull(parseExpr(expr[0]));
+      auto to   = singletonNodeListOrNull(parseExpr(expr[2]));
+      auto step = singletonNodeListOrNull(parseExpr(expr[4]));
+      return std::make_shared<RangeNode>(expr.srcpos(), from, to, step);
     }
     else {
-      Ptr<AptNode> from = singletonNodeListOrNull(parseExpr(expr[0]));
-      Ptr<AptNode> to   = singletonNodeListOrNull(parseExpr(expr[2]));
-      return new RangeNode(expr.srcpos(), from, to, nullptr);
+      auto from = singletonNodeListOrNull(parseExpr(expr[0]));
+      auto to   = singletonNodeListOrNull(parseExpr(expr[2]));
+      return std::make_shared<RangeNode>(expr.srcpos(), from, to, nullptr);
     }
 
   case kThenId:
@@ -2311,10 +2299,10 @@ SecondPass::parseBinary(const Token& expr)
 
   case kAs:
     {
-      Ptr<AptNode> base = singletonNodeListOrNull(parseExpr(expr[0]));
+      auto base = singletonNodeListOrNull(parseExpr(expr[0]));
       Type type = parseTypeSpec(expr[2]);
 
-      return new CastNode(expr.srcpos(), base, type);
+      return std::make_shared<CastNode>(expr.srcpos(), base, type);
     }
     break;
 
@@ -2322,24 +2310,24 @@ SecondPass::parseBinary(const Token& expr)
     ;
   }
 
-  Ptr<AptNode> left  = singletonNodeListOrNull(parseExpr(expr[0]));
-  Ptr<AptNode> right = singletonNodeListOrNull(parseExpr(expr[2]));
+  auto left  = singletonNodeListOrNull(parseExpr(expr[0]));
+  auto right = singletonNodeListOrNull(parseExpr(expr[2]));
 
   if (!left || !right)
     return nullptr;
-  return new BinaryNode(expr.srcpos(),
+  return std::make_shared<BinaryNode>(expr.srcpos(),
                         left,
                         tokenTypeToOperator(expr[1].tokenType()),
                         right);
 }
 
 
-AptNode*
-SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
+std::shared_ptr<AptNode>
+SecondPass::generateArrayAlloc(const Token& expr, std::shared_ptr<AptNode> typeNode)
 {
-  const ArrayTypeNode* n = dynamic_cast<const ArrayTypeNode*>(typeNode);
-  const AptNode* rootType = n->typeNode();
-  hr_assert(!dynamic_cast<const ArrayTypeNode*>(rootType));
+  auto n = dynamic_cast<ArrayTypeNode*>(typeNode.get());
+  std::shared_ptr<AptNode> rootType = n->typeNode();
+  hr_assert(!dynamic_cast<ArrayTypeNode*>(rootType.get()));
 
   NodeList args = parseFunCallArgs(expr[1].children());
 
@@ -2349,9 +2337,9 @@ SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
     return nullptr;
   }
 
-  Ptr<AptNode> initValue;
+  std::shared_ptr<AptNode> initValue;
   size_t argc = args.size();
-  if (KeyargNode* keyarg = dynamic_cast<KeyargNode*>(args[args.size() - 1].obj())) {
+  if (auto keyarg = std::dynamic_pointer_cast<KeyargNode>(args[args.size() - 1])) {
     if (keyarg->key() == Names::kValueKeyargName) {
       initValue = keyarg;
       argc--;
@@ -2373,9 +2361,10 @@ SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
   }
 
   //--------
-  Ptr<ApplyNode> newObjAllocExpr = new ApplyNode(expr.srcpos(),
-                                                 new SymbolNode(expr.srcpos(),
-                                                                Names::kLangAllocateArray));
+  auto newObjAllocExpr = std::make_shared<ApplyNode>(expr.srcpos(),
+                                                     std::make_shared<SymbolNode>(
+                                                       expr.srcpos(),
+                                                       Names::kLangAllocateArray));
   newObjAllocExpr->appendNode(rootType->clone());
   if (initValue)
     newObjAllocExpr->appendNode(initValue);
@@ -2384,47 +2373,49 @@ SecondPass::generateArrayAlloc(const Token& expr, AptNode* typeNode)
   for (size_t i = 0; i < argc; i++)
     newObjAllocExpr->appendNode(args[i]);
 
-  return newObjAllocExpr.release();
+  return newObjAllocExpr;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::generateInitObjectCall(const SrcPos& srcpos,
-                                   AptNode* newObjAllocExpr,
+                                   std::shared_ptr<AptNode> newObjAllocExpr,
                                    const Type& type, const TokenVector& argTokens)
 {
   //---
-  Ptr<AptNode> funcNode;
+  std::shared_ptr<AptNode> funcNode;
   if (type.isOpen()) {
-    Ptr<ApplyNode> apply = new ApplyNode(srcpos,
-                                         new SymbolNode(srcpos,
-                                                        Names::kLangInitFunctor));
-    apply->appendNode(new TypeNode(srcpos, type));
+    auto apply = std::make_shared<ApplyNode>(srcpos,
+                                             std::make_shared<SymbolNode>(
+                                               srcpos,
+                                               Names::kLangInitFunctor));
+    apply->appendNode(std::make_shared<TypeNode>(srcpos, type));
     funcNode = apply;
   }
   else {
     String initName = qualifyId(type.typeName(), Names::kInitFuncName);
-    funcNode = new SymbolNode(srcpos, initName);
+    funcNode = std::make_shared<SymbolNode>(srcpos, initName);
   }
 
-  Ptr<ApplyNode> initExpr = new ApplyNode(srcpos, funcNode);
+  auto initExpr = std::make_shared<ApplyNode>(srcpos, funcNode);
   initExpr->appendNode(newObjAllocExpr);
 
   //---
   NodeList args = parseFunCallArgs(argTokens);
   initExpr->appendNodes(args);
 
-  return initExpr.release();
+  return initExpr;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::generateAlloc(const Token& expr, const Type& type)
 {
-  Ptr<ApplyNode> newObjAllocExpr = new ApplyNode(expr.srcpos(),
-                                                 new SymbolNode(expr.srcpos(),
-                                                                Names::kLangAllocate));
-  newObjAllocExpr->appendNode(new TypeNode(expr.srcpos(), type));
+  auto newObjAllocExpr = std::make_shared<ApplyNode>(expr.srcpos(),
+                                                     std::make_shared<SymbolNode>(
+                                                       expr.srcpos(),
+                                                       Names::kLangAllocate));
+  newObjAllocExpr->appendNode(std::make_shared<TypeNode>(expr.srcpos(), type));
 
   return generateInitObjectCall(expr.srcpos(),
                                 newObjAllocExpr, type, expr[1].children());
@@ -2439,12 +2430,12 @@ SecondPass::parseFunCallArgs(const TokenVector& args)
     if (args[i] == kComma)
       continue;
 
-    Ptr<AptNode> arg;
+    std::shared_ptr<AptNode> arg;
     if (args[i] == kKeyarg) {
       hr_assert(i + 1 < args.size());
 
-      Ptr<AptNode> value = singletonNodeListOrNull(parseExpr(args[i + 1]));
-      arg = new KeyargNode(args[i].srcpos(), args[i].idValue(), value);
+      auto value = singletonNodeListOrNull(parseExpr(args[i + 1]));
+      arg = std::make_shared<KeyargNode>(args[i].srcpos(), args[i].idValue(), value);
       i++;
     }
     else
@@ -2457,7 +2448,7 @@ SecondPass::parseFunCallArgs(const TokenVector& args)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseFunCall(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -2467,18 +2458,18 @@ SecondPass::parseFunCall(const Token& expr)
   hr_assert(expr[1].leftToken() == kParanOpen);
   hr_assert(expr[1].rightToken() == kParanClose);
 
-  Ptr<AptNode> first = singletonNodeListOrNull(parseExpr(expr[0]));
+  auto first = singletonNodeListOrNull(parseExpr(expr[0]));
   if (!first)
     return nullptr;
 
-  if (dynamic_cast<ArrayTypeNode*>(first.obj())) {
+  if (dynamic_cast<ArrayTypeNode*>(first.get())) {
     return generateArrayAlloc(expr, first);
   }
-  else if (dynamic_cast<TypeNode*>(first.obj())) {
-    return generateAlloc(expr, dynamic_cast<TypeNode*>(first.obj())->type());
+  else if (dynamic_cast<TypeNode*>(first.get())) {
+    return generateAlloc(expr, dynamic_cast<TypeNode*>(first.get())->type());
   }
   else {
-    SymbolNode* symNode = dynamic_cast<SymbolNode*>(first.obj());
+    auto symNode = dynamic_cast<SymbolNode*>(first.get());
     if (symNode) {
       Type referedType = fScope->lookupType(symNode->name(),
                                             K(showAmbiguousSymDef));
@@ -2487,11 +2478,11 @@ SecondPass::parseFunCall(const Token& expr)
     }
   }
 
-  Ptr<ApplyNode> funcall = new ApplyNode(expr.srcpos(), first);
+  auto funcall = std::make_shared<ApplyNode>(expr.srcpos(), first);
   NodeList args = parseFunCallArgs(expr[1].children());
   funcall->appendNodes(args);
 
-  return funcall.release();
+  return funcall;
 }
 
 
@@ -2520,29 +2511,30 @@ SecondPass::transformExplicitForClause(const Token& token,
   hr_assert(thenWhileExpr.count() == 3 || thenWhileExpr.count() == 5);
   hr_assert(thenWhileExpr[1] == kThenId);
 
-  Ptr<AptNode> firstNode = singletonNodeListOrNull(parseExpr(thenWhileExpr[0]));
-  Ptr<AptNode> thenNode  = singletonNodeListOrNull(parseExpr(thenWhileExpr[2]));
+  auto firstNode = singletonNodeListOrNull(parseExpr(thenWhileExpr[0]));
+  auto thenNode  = singletonNodeListOrNull(parseExpr(thenWhileExpr[2]));
 
   Token iteratorVarSym = token[0].isSeq() ? token[0][0] : token[0];
 
-  Ptr<AptNode> vardef = new VardefNode(srcpos,
-                                       iteratorVarSym.idValue(), kNormalVar,
-                                       K(isLocal), Type(),
-                                       firstNode);
-  Ptr<AptNode> iteratorDefNode = new LetNode(vardef);
+  auto vardef = std::make_shared<VardefNode>(srcpos,
+                                             iteratorVarSym.idValue(), kNormalVar,
+                                             K(isLocal), Type(),
+                                             firstNode);
+  auto iteratorDefNode = std::make_shared<LetNode>(vardef);
   loopDefines->push_back(iteratorDefNode);
 
-  Ptr<AptNode> nextNode = new AssignNode(srcpos,
-                                         new SymbolNode(srcpos,
-                                                        iteratorVarSym.idValue()),
-                                         thenNode);
+  auto nextNode = std::make_shared<AssignNode>(srcpos,
+                                               std::make_shared<SymbolNode>(
+                                                 srcpos,
+                                                 iteratorVarSym.idValue()),
+                                               thenNode);
   stepExprs->push_back(nextNode);
 
 
   if (thenWhileExpr.count() == 5) {
     hr_assert(thenWhileExpr[3] == kWhileId);
 
-    Ptr<AptNode> whileNode = singletonNodeListOrNull(parseExpr(thenWhileExpr[4]));
+    auto whileNode = singletonNodeListOrNull(parseExpr(thenWhileExpr[4]));
     testExprs->push_back(whileNode);
   }
 }
@@ -2576,15 +2568,15 @@ SecondPass::transformRangeForClause(const Token& token,
 
   SrcPos srcpos = token.srcpos();
 
-  Ptr<AptNode> beginRangeNode;
-  Ptr<AptNode> endRangeNode;
+  std::shared_ptr<AptNode> beginRangeNode;
+  std::shared_ptr<AptNode> endRangeNode;
 
   // determine loop direction
-  Ptr<AptNode> stepValueNode;
+  std::shared_ptr<AptNode> stepValueNode;
   RangeForClauseCountDir direct = kRangeUnknown;
   if (token[2].count() == 3) {
     direct = kRangeUpwards;
-    stepValueNode = new IntNode(srcpos, 1, !K(isImg), Type::newInt32());
+    stepValueNode = std::make_shared<IntNode>(srcpos, 1, !K(isImg), Type::newInt32());
   }
   else if (token[2].count() == 5) {
     Token byToken = token[2][4];
@@ -2597,17 +2589,17 @@ SecondPass::transformRangeForClause(const Token& token,
     else {
       direct = kRangeUnknown;
 
-      Ptr<AptNode> tmpStepNode = singletonNodeListOrNull(parseExpr(byToken));
+      auto tmpStepNode = singletonNodeListOrNull(parseExpr(byToken));
       // let _step = 2
       Token tmpStepSym = Token::newUniqueSymbolToken(srcpos, "step");
-      Ptr<AptNode> vardef = new VardefNode(srcpos,
-                                           tmpStepSym.idValue(), kNormalVar,
-                                           K(isLocal), Type(),
-                                           tmpStepNode);
-      Ptr<AptNode> endStepNode = new LetNode(vardef);
+      auto vardef = std::make_shared<VardefNode>(srcpos,
+                                                 tmpStepSym.idValue(), kNormalVar,
+                                                 K(isLocal), Type(),
+                                                 tmpStepNode);
+      auto endStepNode = std::make_shared<LetNode>(vardef);
       loopDefines->push_back(endStepNode);
 
-      stepValueNode = new SymbolNode(srcpos, tmpStepSym.idValue());
+      stepValueNode = std::make_shared<SymbolNode>(srcpos, tmpStepSym.idValue());
     }
   }
 
@@ -2618,17 +2610,17 @@ SecondPass::transformRangeForClause(const Token& token,
     beginRangeNode = singletonNodeListOrNull(parseExpr(beginToken));
   }
   else {
-    Ptr<AptNode> tmpEndNode = singletonNodeListOrNull(parseExpr(beginToken));
+    auto tmpEndNode = singletonNodeListOrNull(parseExpr(beginToken));
 
     // let _end = 100
     Token tmpEndRangeSym = Token::newUniqueSymbolToken(srcpos, "end");
-    Ptr<AptNode> vardef = new VardefNode(srcpos,
-                                         tmpEndRangeSym.idValue(), kNormalVar,
-                                         K(isLocal), Type(), tmpEndNode);
-    Ptr<AptNode> endRangeDefNode = new LetNode(vardef);
+    auto vardef = std::make_shared<VardefNode>(srcpos,
+                                               tmpEndRangeSym.idValue(), kNormalVar,
+                                               K(isLocal), Type(), tmpEndNode);
+    auto endRangeDefNode = std::make_shared<LetNode>(vardef);
     loopDefines->push_back(endRangeDefNode);
 
-    beginRangeNode = new SymbolNode(srcpos, tmpEndRangeSym.idValue());
+    beginRangeNode = std::make_shared<SymbolNode>(srcpos, tmpEndRangeSym.idValue());
   }
 
 
@@ -2638,17 +2630,17 @@ SecondPass::transformRangeForClause(const Token& token,
     endRangeNode = singletonNodeListOrNull(parseExpr(endToken));
   }
   else {
-    Ptr<AptNode> tmpEndNode = singletonNodeListOrNull(parseExpr(endToken));
+    auto tmpEndNode = singletonNodeListOrNull(parseExpr(endToken));
 
     // let _end = 100
     Token tmpEndRangeSym = Token::newUniqueSymbolToken(srcpos, "end");
-    Ptr<AptNode> vardef = new VardefNode(srcpos,
-                                         tmpEndRangeSym.idValue(), kNormalVar,
-                                         K(isLocal), Type(), tmpEndNode);
-    Ptr<AptNode> endRangeDefNode = new LetNode(vardef);
+    auto vardef = std::make_shared<VardefNode>(srcpos,
+                                               tmpEndRangeSym.idValue(), kNormalVar,
+                                               K(isLocal), Type(), tmpEndNode);
+    auto endRangeDefNode = std::make_shared<LetNode>(vardef);
     loopDefines->push_back(endRangeDefNode);
 
-    endRangeNode = new SymbolNode(srcpos, tmpEndRangeSym.idValue());
+    endRangeNode = std::make_shared<SymbolNode>(srcpos, tmpEndRangeSym.idValue());
   }
 
 
@@ -2657,11 +2649,11 @@ SecondPass::transformRangeForClause(const Token& token,
   //------------------------------ generate known counter variable
   // let i = 0  |  let i = 100
   Type stepVarType;    // TODO
-  Ptr<AptNode> vardef = new VardefNode(srcpos,
-                                       iteratorVarSym.idValue(), kNormalVar,
-                                       K(isLocal), stepVarType,
-                                       beginRangeNode);
-  Ptr<AptNode> stepDefNode = new LetNode(vardef);
+  auto vardef = std::make_shared<VardefNode>(srcpos,
+                                             iteratorVarSym.idValue(), kNormalVar,
+                                             K(isLocal), stepVarType,
+                                             beginRangeNode);
+  auto stepDefNode = std::make_shared<LetNode>(vardef);
   loopDefines->push_back(stepDefNode);
 
   Token absMaxEndSym;
@@ -2675,51 +2667,59 @@ SecondPass::transformRangeForClause(const Token& token,
     absStepVarSym = Token::newUniqueSymbolToken(srcpos, "abs_step");
 
     // let __i = if (i < _end) i else _end    -- min(i, _end)
-    Ptr<AptNode> absVardef =
-      new VardefNode(srcpos,
-                     absItVarSym.idValue(), kNormalVar, K(isLocal), Type(),
-                     new IfNode(srcpos,
-                                new BinaryNode(srcpos,
-                                               new SymbolNode(srcpos,
-                                                              iteratorVarSym.idValue()),
-                                               kOpLess,
-                                               endRangeNode->clone()),
-                                new SymbolNode(srcpos,
-                                               iteratorVarSym.idValue()),
-                                endRangeNode->clone()));
-    Ptr<AptNode> absItVarNode = new LetNode(absVardef);
+    auto absVardef =
+      std::make_shared<VardefNode>(srcpos,
+                                   absItVarSym.idValue(), kNormalVar, K(isLocal), Type(),
+                                   std::make_shared<IfNode>(
+                                     srcpos,
+                                     std::make_shared<BinaryNode>(
+                                       srcpos,
+                                       std::make_shared<SymbolNode>(srcpos,
+                                                                    iteratorVarSym.idValue()),
+                                       kOpLess,
+                                       endRangeNode->clone()),
+                                     std::make_shared<SymbolNode>(srcpos,
+                                                                  iteratorVarSym.idValue()),
+                                     endRangeNode->clone()));
+    auto absItVarNode = std::make_shared<LetNode>(absVardef);
     loopDefines->push_back(absItVarNode);
 
     // let _abs_end = if (i < _end) _end else i   -- max(i, _end)
-    Ptr<AptNode> absMaxEndVardef =
-      new VardefNode(srcpos,
-                     absMaxEndSym.idValue(), kNormalVar, K(isLocal), Type(),
-                     new IfNode(srcpos,
-                                new BinaryNode(srcpos,
-                                               new SymbolNode(srcpos,
-                                                              iteratorVarSym.idValue()),
-                                               kOpLess,
-                                               endRangeNode->clone()),
-                                endRangeNode->clone(),
-                                new SymbolNode(srcpos,
-                                               iteratorVarSym.idValue())));
-    Ptr<AptNode> absMaxEndNode = new LetNode(absMaxEndVardef);
+    auto absMaxEndVardef =
+      std::make_shared<VardefNode>(srcpos,
+                                   absMaxEndSym.idValue(), kNormalVar, K(isLocal), Type(),
+                                   std::make_shared<IfNode>(
+                                     srcpos,
+                                     std::make_shared<BinaryNode>(
+                                       srcpos,
+                                       std::make_shared<SymbolNode>(srcpos,
+                                                                    iteratorVarSym.idValue()),
+                                       kOpLess,
+                                       endRangeNode->clone()),
+                                     endRangeNode->clone(),
+                                     std::make_shared<SymbolNode>(
+                                       srcpos,
+                                       iteratorVarSym.idValue())));
+    auto absMaxEndNode = std::make_shared<LetNode>(absMaxEndVardef);
     loopDefines->push_back(absMaxEndNode);
 
     // let __abs_step = if (_step < 0) - _step else _step   -- abs(_step)
-    Ptr<AptNode> absStepVarSymVardef =
-      new VardefNode(srcpos,
-                     absStepVarSym.idValue(), kNormalVar, K(isLocal), Type(),
-                     new IfNode(srcpos,
-                                new BinaryNode(srcpos,
-                                               stepValueNode->clone(),
-                                               kOpLess,
-                                               endRangeNode->clone()),
-                                new UnaryNode(srcpos,
-                                              kUnaryOpNegate,
-                                              stepValueNode->clone()),
-                                stepValueNode->clone()));
-    Ptr<AptNode> absStepVarNode = new LetNode(absStepVarSymVardef);
+    auto absStepVarSymVardef =
+      std::make_shared<VardefNode>(srcpos,
+                                   absStepVarSym.idValue(), kNormalVar, K(isLocal), Type(),
+                                   std::make_shared<IfNode>(
+                                     srcpos,
+                                     std::make_shared<BinaryNode>(
+                                       srcpos,
+                                       stepValueNode->clone(),
+                                       kOpLess,
+                                       endRangeNode->clone()),
+                                     std::make_shared<UnaryNode>(
+                                       srcpos,
+                                       kUnaryOpNegate,
+                                       stepValueNode->clone()),
+                                     stepValueNode->clone()));
+    auto absStepVarNode = std::make_shared<LetNode>(absStepVarSymVardef);
     loopDefines->push_back(absStepVarNode);
   }
 
@@ -2731,11 +2731,12 @@ SecondPass::transformRangeForClause(const Token& token,
     {
       OperatorType op = direct == kRangeUpwards ? kOpLessEqual : kOpGreaterEqual;
       // i <= _end  |  i >= _end
-      Ptr<AptNode> testExprNode = new BinaryNode(srcpos,
-                                                 new SymbolNode(srcpos,
-                                                                iteratorVarSym.idValue()),
-                                                 op,
-                                                 endRangeNode);
+      auto testExprNode = std::make_shared<BinaryNode>(
+        srcpos,
+        std::make_shared<SymbolNode>(srcpos,
+                                     iteratorVarSym.idValue()),
+        op,
+        endRangeNode);
       testExprs->push_back(testExprNode);
     }
     break;
@@ -2743,12 +2744,14 @@ SecondPass::transformRangeForClause(const Token& token,
   case kRangeUnknown:
     {
       // _abs_i <= _abs_end
-      Ptr<AptNode> testExprNode = new BinaryNode(srcpos,
-                                                 new SymbolNode(srcpos,
-                                                                absItVarSym.idValue()),
-                                                 kOpLessEqual,
-                                                 new SymbolNode(srcpos,
-                                                                absMaxEndSym.idValue()));
+      auto testExprNode = std::make_shared<BinaryNode>(srcpos,
+                                                       std::make_shared<SymbolNode>(
+                                                         srcpos,
+                                                         absItVarSym.idValue()),
+                                                       kOpLessEqual,
+                                                       std::make_shared<SymbolNode>(
+                                                         srcpos,
+                                                         absMaxEndSym.idValue()));
       testExprs->push_back(testExprNode);
     }
     break;
@@ -2757,27 +2760,29 @@ SecondPass::transformRangeForClause(const Token& token,
 
   //------------------------------ generate counter step increase
   // i = i + 1
-  Ptr<AptNode> stepVarNode = new SymbolNode(srcpos,
-                                            iteratorVarSym.idValue());
-  Ptr<AptNode> nextValueNode = new BinaryNode(srcpos,
-                                              new SymbolNode(srcpos,
-                                                             iteratorVarSym.idValue()),
-                                              kOpPlus,
-                                              stepValueNode);
-  Ptr<AptNode> incrStepNode = new AssignNode(srcpos,
-                                             stepVarNode, nextValueNode);
+  auto stepVarNode = std::make_shared<SymbolNode>(srcpos,
+                                                  iteratorVarSym.idValue());
+  auto nextValueNode = std::make_shared<BinaryNode>(srcpos,
+                                                    std::make_shared<SymbolNode>(
+                                                      srcpos,
+                                                      iteratorVarSym.idValue()),
+                                                    kOpPlus,
+                                                    stepValueNode);
+  auto incrStepNode = std::make_shared<AssignNode>(srcpos,
+                                                   stepVarNode, nextValueNode);
   stepExprs->push_back(incrStepNode);
 
   if (direct == kRangeUnknown) {
-    Ptr<AptNode> absStepVarNode = new SymbolNode(srcpos,
-                                                 absItVarSym.idValue());
-    Ptr<AptNode> absNextValueNode = new BinaryNode(srcpos,
-                                                   absStepVarNode->clone(),
-                                                   kOpPlus,
-                                                   new SymbolNode(srcpos,
-                                                                  absStepVarSym.idValue()));
-    Ptr<AptNode> absIncrStepNode = new AssignNode(srcpos,
-                                                  absStepVarNode, absNextValueNode);
+    auto absStepVarNode = std::make_shared<SymbolNode>(srcpos,
+                                                       absItVarSym.idValue());
+    auto absNextValueNode = std::make_shared<BinaryNode>(srcpos,
+                                                         absStepVarNode->clone(),
+                                                         kOpPlus,
+                                                         std::make_shared<SymbolNode>(
+                                                           srcpos,
+                                                           absStepVarSym.idValue()));
+    auto absIncrStepNode = std::make_shared<AssignNode>(srcpos,
+                                                        absStepVarNode, absNextValueNode);
     stepExprs->push_back(absIncrStepNode);
   }
 }
@@ -2805,12 +2810,12 @@ SecondPass::transformCollForClause(const Token& token,
 
   // ------------------------------ let _seq = names
   Type loopType;                // TODO
-  Ptr<AptNode> seqInitNode = singletonNodeListOrNull(parseExpr(token[2]));
-  Ptr<AptNode> seqInitVardef = new VardefNode(srcpos,
-                                              sym.idValue(), kNormalVar,
-                                              K(isLocal), loopType,
-                                              seqInitNode);
-  Ptr<AptNode> loopDefNode = new LetNode(seqInitVardef);
+  auto seqInitNode = singletonNodeListOrNull(parseExpr(token[2]));
+  auto seqInitVardef = std::make_shared<VardefNode>(srcpos,
+                                                    sym.idValue(), kNormalVar,
+                                                    K(isLocal), loopType,
+                                                    seqInitNode);
+  auto loopDefNode = std::make_shared<LetNode>(seqInitVardef);
   loopDefines->push_back(loopDefNode);
 
 
@@ -2818,79 +2823,83 @@ SecondPass::transformCollForClause(const Token& token,
   Token stepSym = token[0].isSeq() ? token[0][0] : token[0];
   hr_assert(stepSym == kSymbol);
   Type stepType;                // TODO
-  Ptr<AptNode> stepSymVardef = new VardefNode(srcpos,
-                                              stepSym.idValue(), kNormalVar,
-                                              K(isLocal), stepType,
-                                              new SymbolNode(srcpos,
-                                                             Names::kLangUnspecified));
-  Ptr<AptNode> stepDefNode = new LetNode(stepSymVardef);
+  auto stepSymVardef = std::make_shared<VardefNode>(srcpos,
+                                                    stepSym.idValue(), kNormalVar,
+                                                    K(isLocal), stepType,
+                                                    std::make_shared<SymbolNode>(
+                                                      srcpos,
+                                                      Names::kLangUnspecified));
+  auto stepDefNode = std::make_shared<LetNode>(stepSymVardef);
   loopDefines->push_back(stepDefNode);
 
   // ------------------------------ if (_seq.end?)
-  Ptr<ApplyNode> testNode = new ApplyNode(srcpos,
-                                          new SymbolNode(srcpos,
-                                                         Names::kLangEndp));
-  testNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
+  auto testNode = std::make_shared<ApplyNode>(srcpos,
+                                              std::make_shared<SymbolNode>(
+                                                srcpos,
+                                                Names::kLangEndp));
+  testNode->appendNode(std::make_shared<SymbolNode>(srcpos, sym.idValue()));
 
   // --- then false
-  Ptr<AptNode> consNode = new BoolNode(srcpos, false);
+  auto consNode = std::make_shared<BoolNode>(srcpos, false);
 
   // --- else { name = _seq.next true }
-  Ptr<BlockNode> altNode = new BlockNode(srcpos);
+  auto altNode = std::make_shared<BlockNode>(srcpos);
 
-  Ptr<AptNode> stepVarNode = new SymbolNode(srcpos, stepSym.idValue());
-  Ptr<ApplyNode> nextSeqNode = new ApplyNode(srcpos,
-                                             new SymbolNode(srcpos,
-                                                            Names::kLangNext));
-  nextSeqNode->appendNode(new SymbolNode(srcpos, sym.idValue()));
+  auto stepVarNode = std::make_shared<SymbolNode>(srcpos, stepSym.idValue());
+  auto nextSeqNode = std::make_shared<ApplyNode>(srcpos,
+                                                 std::make_shared<SymbolNode>(
+                                                   srcpos,
+                                                   Names::kLangNext));
+  nextSeqNode->appendNode(std::make_shared<SymbolNode>(srcpos, sym.idValue()));
 
-  Ptr<AptNode> stepNextNode = new AssignNode(srcpos,
-                                             stepVarNode, nextSeqNode);
+  auto stepNextNode = std::make_shared<AssignNode>(srcpos,
+                                                   stepVarNode, nextSeqNode);
   altNode->appendNode(stepNextNode);
-  altNode->appendNode(new BoolNode(srcpos, true));
+  altNode->appendNode(std::make_shared<BoolNode>(srcpos, true));
 
-  Ptr<AptNode> ifNode = new IfNode(srcpos, testNode, consNode, altNode);
+  auto ifNode = std::make_shared<IfNode>(srcpos, testNode, consNode, altNode);
 
   testExprs->push_back(ifNode);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::constructWhileTestNode(const Token& expr, NodeList& testExprs)
 {
-  Ptr<AptNode> testNode;
+  std::shared_ptr<AptNode> testNode;
 
   int nodeCount = 0;
-  for (size_t i = 0; i < testExprs.size(); i++) {
+  for (auto& tstExpr : testExprs) {
     if (nodeCount > 1) {
-      Ptr<BinaryNode> prevBin = dynamic_cast<BinaryNode*>(testNode.obj());
+      auto prevBin = dynamic_cast<BinaryNode*>(testNode.get());
       hr_assert(prevBin);
-      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
-                                            prevBin->right(),
-                                            kOpLogicalAnd, testExprs[i]);
+      auto binNode = std::make_shared<BinaryNode>(expr.srcpos(),
+                                                  prevBin->right(),
+                                                  kOpLogicalAnd, tstExpr);
       prevBin->setRight(binNode);
     }
     else if (nodeCount == 1) {
-      Ptr<AptNode> binNode = new BinaryNode(expr.srcpos(),
-                                            testNode, kOpLogicalAnd, testExprs[i]);
+      auto binNode = std::make_shared<BinaryNode>(expr.srcpos(),
+                                                  testNode, kOpLogicalAnd,
+                                                  tstExpr);
       testNode = binNode;
     }
     else
-      testNode = testExprs[i];
+      testNode = tstExpr;
     nodeCount++;
   }
 
   // if we don't have a test node yet all loop clauses are unconditional
   // ones.  Take a simple 'true' therefore.
   if (!testNode) {
-    testNode = new BoolNode(expr.srcpos(), true);
+    testNode = std::make_shared<BoolNode>(expr.srcpos(), true);
   }
 
-  return testNode.release();
+  return testNode;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseFor(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -2903,8 +2912,8 @@ SecondPass::parseFor(const Token& expr)
 
   ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
 
-  Ptr<AptNode> body = singletonNodeListOrNull(parseExpr(expr[2]));
-  Ptr<AptNode> alternate;
+  auto body = singletonNodeListOrNull(parseExpr(expr[2]));
+  std::shared_ptr<AptNode> alternate;
 
   if (expr.count() == 5)
     alternate = singletonNodeListOrNull(parseExpr(expr[4]));
@@ -2929,17 +2938,17 @@ SecondPass::parseFor(const Token& expr)
       transformCollForClause(seq[i], &loopDefines, &testExprs);
     }
     else {
-      Ptr<AptNode> exprNode = singletonNodeListOrNull(parseExpr(seq[i]));
+      auto exprNode = singletonNodeListOrNull(parseExpr(seq[i]));
       testExprs.push_back(exprNode);
     }
   }
 
 
   const bool requiresReturnValue = alternate || !testExprs.empty();
-  const bool hasAlternateBranch = alternate;
+  const bool hasAlternateBranch = alternate != nullptr;
 
-  Ptr<AptNode> testNode = constructWhileTestNode(expr, testExprs);
-  Ptr<AptNode> evalNextStepTestNode;
+  auto testNode = constructWhileTestNode(expr, testExprs);
+  std::shared_ptr<AptNode> evalNextStepTestNode;
 
   Token returnSym = Token::newUniqueSymbolToken(expr.srcpos(), "return");
   Token tmpTestSym = Token::newUniqueSymbolToken(expr.srcpos(), "test");
@@ -2951,61 +2960,62 @@ SecondPass::parseFor(const Token& expr)
   if (requiresReturnValue) {
     Type retType;
 
-    Ptr<AptNode> defaultRetVal;
+    std::shared_ptr<AptNode> defaultRetVal;
     if (!alternate) {
       TypeVector unionTypes = vector_of(Type::newAny())
                                        (Type::newTypeRef(Names::kUnspecifiedTypeName,
                                                          K(isValue)));
 
       retType = Type::newUnion(unionTypes, K(isValue));
-      defaultRetVal = new SymbolNode(expr.srcpos(),
+      defaultRetVal = std::make_shared<SymbolNode>(expr.srcpos(),
                                      Names::kLangUnspecified);
     }
     else {
-      defaultRetVal = new UndefNode();
+      defaultRetVal = std::make_shared<UndefNode>();
       delayTypeSpec = true;
     }
 
-    Ptr<VardefNode> returnVardef = new VardefNode(expr.srcpos(),
-                                                  returnSym.idValue(), kNormalVar,
-                                                  K(isLocal), retType,
-                                                  defaultRetVal);
+    auto returnVardef = std::make_shared<VardefNode>(expr.srcpos(),
+                                                     returnSym.idValue(), kNormalVar,
+                                                     K(isLocal), retType,
+                                                     defaultRetVal);
     returnVardef->setTypeSpecDelayed(delayTypeSpec);
 
-    Ptr<LetNode> defReturnNode = new LetNode(returnVardef);
+    auto defReturnNode = std::make_shared<LetNode>(returnVardef);
     defReturnNode->setLoopId(loopId);
-    loopDefines.push_back(defReturnNode.obj());
+    loopDefines.push_back(defReturnNode);
 
     if (hasAlternateBranch) {
       // evaluate the tests once into a temporary variable
-      Ptr<AptNode> tmpTestNode = new VardefNode(expr.srcpos(),
-                                                tmpTestSym.idValue(), kNormalVar,
-                                                K(isLocal), Type::newBool(),
-                                                testNode);
-      Ptr<AptNode> defTmpTestNode = new LetNode(tmpTestNode);
+      auto tmpTestNode = std::make_shared<VardefNode>(expr.srcpos(),
+                                                      tmpTestSym.idValue(), kNormalVar,
+                                                      K(isLocal), Type::newBool(),
+                                                      testNode);
+      auto defTmpTestNode = std::make_shared<LetNode>(tmpTestNode);
       loopDefines.push_back(defTmpTestNode);
 
       // construct the next step evaluation of the test variable
-      evalNextStepTestNode = new AssignNode(expr.srcpos(),
-                                            new SymbolNode(expr.srcpos(),
-                                                           tmpTestSym.idValue()),
-                                            testNode->clone());
+      evalNextStepTestNode = std::make_shared<AssignNode>(expr.srcpos(),
+                                                          std::make_shared<SymbolNode>(
+                                                            expr.srcpos(),
+                                                            tmpTestSym.idValue()),
+                                                          testNode->clone());
 
       // the test is actually to check the temporary test variable
-      testNode = new SymbolNode(expr.srcpos(), tmpTestSym.idValue());
+      testNode = std::make_shared<SymbolNode>(expr.srcpos(), tmpTestSym.idValue());
     }
   }
 
-  Ptr<BlockNode> block = new BlockNode(expr.srcpos());
+  auto block = std::make_shared<BlockNode>(expr.srcpos());
   block->appendNodes(loopDefines);
 
-  Ptr<BlockNode> bodyNode = new BlockNode(expr.srcpos());
+  auto bodyNode = std::make_shared<BlockNode>(expr.srcpos());
 
   if (requiresReturnValue) {
-    Ptr<AptNode> retNode = new SymbolNode(expr.srcpos(),
-                                          returnSym.idValue());
-    Ptr<AssignNode> saveRetNode = new AssignNode(expr.srcpos(),
-                                                 retNode, body);
+    auto retNode = std::make_shared<SymbolNode>(expr.srcpos(),
+                                                returnSym.idValue());
+    auto saveRetNode = std::make_shared<AssignNode>(expr.srcpos(),
+                                                    retNode, body);
     saveRetNode->setTypeSpecDelayed(delayTypeSpec);
     saveRetNode->setLoopId(loopId);
     bodyNode->appendNode(saveRetNode);
@@ -3017,18 +3027,21 @@ SecondPass::parseFor(const Token& expr)
   if (evalNextStepTestNode)
     bodyNode->appendNode(evalNextStepTestNode->clone());
 
-  Ptr<WhileNode> whileNode = new WhileNode(expr.srcpos(), testNode->clone(), bodyNode);
+  auto whileNode = std::make_shared<WhileNode>(expr.srcpos(), testNode->clone(),
+                                               bodyNode);
 
-  Ptr<SymbolNode> returnNode = new SymbolNode(expr.srcpos(), returnSym.idValue());
+  auto returnNode = std::make_shared<SymbolNode>(expr.srcpos(),
+                                                 returnSym.idValue());
   returnNode->setLoopId(loopId);
 
   if (hasAlternateBranch) {
-    Ptr<BlockNode> consequent = new BlockNode(expr.srcpos());
+    auto consequent = std::make_shared<BlockNode>(expr.srcpos());
     consequent->appendNode(whileNode);
     consequent->appendNode(returnNode);
 
-    Ptr<IfNode> ifNode = new IfNode(expr.srcpos(),
-                                    testNode->clone(), consequent, alternate);
+    auto ifNode = std::make_shared<IfNode>(expr.srcpos(),
+                                           testNode->clone(), consequent,
+                                           alternate);
     block->appendNode(ifNode);
   }
   else {
@@ -3038,13 +3051,13 @@ SecondPass::parseFor(const Token& expr)
       block->appendNode(returnNode);
   }
 
-  return block.release();
+  return block;
 }
 
 
 //----------------------------------------------------------------------------
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseSelect(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -3055,9 +3068,7 @@ SecondPass::parseSelect(const Token& expr)
   hr_assert(expr[1].isNested() && expr[1].leftToken() == kParanOpen);
   hr_assert(expr[2].isNested() && expr[2].leftToken() == kBraceOpen);
 
-  const TokenVector& args = expr[1].children();
-
-  if (args.size() > 0) {
+  if (expr[1].children().size() > 0) {
     return parseRealSelect(expr);
   }
   else {
@@ -3066,23 +3077,23 @@ SecondPass::parseSelect(const Token& expr)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseRealSelect(const Token& expr)
 {
   const TokenVector& args = expr[1].children();
   hr_assert(args.size() > 0);
 
-  Ptr<AptNode> testNode = singletonNodeListOrNull(parseExpr(args[0]));
-  Ptr<AptNode> comparatorNode;
+  auto testNode = singletonNodeListOrNull(parseExpr(args[0]));
+  std::shared_ptr<AptNode> comparatorNode;
 
   if (args.size() > 2) {
     hr_assert(args[1] == kComma);
     comparatorNode = singletonNodeListOrNull(parseExpr(args[2]));
   }
 
-  Ptr<SelectNode> selectNode = new SelectNode(expr.srcpos(),
-                                              testNode,
-                                              comparatorNode);
+  auto selectNode = std::make_shared<SelectNode>(expr.srcpos(),
+                                                 testNode,
+                                                 comparatorNode);
 
   const TokenVector& testMappings = expr[2].children();
   for (size_t i = 0; i < testMappings.size(); i++) {
@@ -3103,41 +3114,37 @@ SecondPass::parseRealSelect(const Token& expr)
         for (size_t j = 0; j < testValues.size(); j++) {
           if (testValues[j] == kComma)
             continue;
-          Ptr<AptNode> testValueNode = singletonNodeListOrNull(parseExpr(testValues[j]));
-          if (testValueNode)
+          if (auto testValueNode = singletonNodeListOrNull(parseExpr(testValues[j])))
             testValueNodes.push_back(testValueNode);
         }
       }
       else {
-        Ptr<AptNode> testValueNode = singletonNodeListOrNull(parseExpr(testToken[1]));
-        if (testValueNode)
+        if (auto testValueNode = singletonNodeListOrNull(parseExpr(testToken[1])))
           testValueNodes.push_back(testValueNode);
       }
 
-      Ptr<AptNode> consqExpr = singletonNodeListOrNull(parseExpr(testToken[3]));
-      if (consqExpr)
+      if (auto consqExpr = singletonNodeListOrNull(parseExpr(testToken[3])))
         selectNode->addMapping(testValueNodes, consqExpr);
     }
     else if (testToken.count() == 3) {
       hr_assert(testToken[1] == kElseId);
 
-      Ptr<AptNode> consqExpr = singletonNodeListOrNull(parseExpr(testToken[2]));
-      if (consqExpr)
+      if (auto consqExpr = singletonNodeListOrNull(parseExpr(testToken[2])))
         selectNode->addElseMapping(consqExpr);
     }
   }
 
-  return selectNode.release();
+  return selectNode;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseChainSelect(const Token& expr)
 {
   hr_assert(expr[1].count() == 0);
 
-  Ptr<AptNode> resultNode;
-  Ptr<IfNode> lastNode;
+  std::shared_ptr<AptNode> resultNode;
+  std::shared_ptr<IfNode> lastNode;
 
   const TokenVector& testMappings = expr[2].children();
   for (size_t i = 0; i < testMappings.size(); i++) {
@@ -3149,14 +3156,14 @@ SecondPass::parseChainSelect(const Token& expr)
     if (testToken.count() == 4) {
       hr_assert(testToken[2] == kMapTo);
 
-      Ptr<AptNode> testValueNode = singletonNodeListOrNull(parseExpr(testToken[1]));
+      auto testValueNode = singletonNodeListOrNull(parseExpr(testToken[1]));
       if (testValueNode) {
 
-        Ptr<AptNode> consqNode = singletonNodeListOrNull(parseExpr(testToken[3]));
+        auto consqNode = singletonNodeListOrNull(parseExpr(testToken[3]));
 
         if (consqNode) {
-          Ptr<IfNode> ifNode = new IfNode(testToken[1].srcpos(),
-                                          testValueNode, consqNode, nullptr);
+          auto ifNode = std::make_shared<IfNode>(testToken[1].srcpos(),
+                                                 testValueNode, consqNode, nullptr);
           if (lastNode) {
             lastNode->setAlternate(ifNode);
             lastNode = ifNode;
@@ -3169,7 +3176,7 @@ SecondPass::parseChainSelect(const Token& expr)
     else if (testToken.count() == 3) {
       hr_assert(testToken[1] == kElseId);
 
-      Ptr<AptNode> consqNode = singletonNodeListOrNull(parseExpr(testToken[2]));
+      auto consqNode = singletonNodeListOrNull(parseExpr(testToken[2]));
       if (consqNode) {
         if (lastNode)
           lastNode->setAlternate(consqNode);
@@ -3181,13 +3188,13 @@ SecondPass::parseChainSelect(const Token& expr)
     }
   }
 
-  return resultNode.release();
+  return resultNode;
 }
 
 
 //------------------------------------------------------------------------------
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseMatch(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -3203,25 +3210,25 @@ SecondPass::parseMatch(const Token& expr)
 
   ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
 
-  Ptr<BlockNode> block = new BlockNode(expr.srcpos());
+  auto block = std::make_shared<BlockNode>(expr.srcpos());
 
-  Ptr<AptNode> exprNode = singletonNodeListOrNull(parseExpr(args[0]));
+  auto exprNode = singletonNodeListOrNull(parseExpr(args[0]));
   Token tmpValueSym = Token::newUniqueSymbolToken(expr.srcpos(), "match");
   Type tempType;                // TODO?
-  Ptr<AptNode> tmpVarDef = new VardefNode(expr.srcpos(),
-                                          tmpValueSym.idValue(),
-                                          kNormalVar,
-                                          K(isLocal),
-                                          tempType,
-                                          exprNode);
-  Ptr<AptNode> tmpLetNode = new LetNode(tmpVarDef);
+  auto tmpVarDef = std::make_shared<VardefNode>(expr.srcpos(),
+                                                tmpValueSym.idValue(),
+                                                kNormalVar,
+                                                K(isLocal),
+                                                tempType,
+                                                exprNode);
+  auto tmpLetNode = std::make_shared<LetNode>(tmpVarDef);
   block->appendNode(tmpLetNode);
 
-  Ptr<AptNode> tmpValueNode = new SymbolNode(expr.srcpos(),
-                                             tmpValueSym.idValue());
+  auto tmpValueNode = std::make_shared<SymbolNode>(expr.srcpos(),
+                                                   tmpValueSym.idValue());
 
-  Ptr<MatchNode> matchNode = new MatchNode(expr.srcpos(),
-                                           tmpValueNode->clone());
+  auto matchNode = std::make_shared<MatchNode>(expr.srcpos(),
+                                               tmpValueNode->clone());
 
   const TokenVector& typeMappings = expr[2].children();
   for (size_t i = 0; i < typeMappings.size(); i++) {
@@ -3238,7 +3245,7 @@ SecondPass::parseMatch(const Token& expr)
                               !K(doExport), K(isInnerScope),
                               kScopeL_Local);
 
-      Ptr<BlockNode> localBlock = new BlockNode(typeMapping[3].srcpos());
+      auto localBlock = std::make_shared<BlockNode>(typeMapping[3].srcpos());
 
       String  varName;
       Type    varType;
@@ -3251,23 +3258,21 @@ SecondPass::parseMatch(const Token& expr)
         varName = typeMapping[1][0].idValue();
         varType = parseTypeSpec(typeMapping[1][2]);
 
-        Ptr<AptNode> initVal = new CastNode(typeMapping[0].srcpos(),
-                                            tmpValueNode->clone(),
-                                            varType);
-
-        Ptr<VardefNode> localVar = new VardefNode(sympos,
-                                                  varName, kNormalVar,
-                                                  K(isLocal),
-                                                  varType, initVal);
-        localBlock->appendNode(new LetNode(localVar));
+        auto initVal = std::make_shared<CastNode>(typeMapping[0].srcpos(),
+                                                  tmpValueNode->clone(),
+                                                  varType);
+        auto localVar = std::make_shared<VardefNode>(sympos,
+                                                     varName, kNormalVar,
+                                                     K(isLocal),
+                                                     varType, initVal);
+        localBlock->appendNode(std::make_shared<LetNode>(localVar));
       }
       else {
         hr_assert(typeMapping[1][0] == kColon);
         varType = parseTypeSpec(typeMapping[1][1]);
       }
 
-      Ptr<AptNode> consqNode = singletonNodeListOrNull(parseExpr(typeMapping[3]));
-      if (consqNode) {
+      if (auto consqNode = singletonNodeListOrNull(parseExpr(typeMapping[3]))) {
         localBlock->appendNode(consqNode);
         matchNode->addMapping(typeMapping[0].srcpos(),
                               varName, varType, localBlock);
@@ -3277,13 +3282,13 @@ SecondPass::parseMatch(const Token& expr)
 
   block->appendNode(matchNode);
 
-  return block.release();
+  return block;
 }
 
 
 //------------------------------------------------------------------------------
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -3300,20 +3305,20 @@ SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
       if (referedType.isDef()) {
         Type ty1 = degeneralizeType(expr.srcpos(), referedType, genericArgs);
         if (ty1.isDef())
-          return new TypeNode(expr.srcpos(), ty1);
+          return std::make_shared<TypeNode>(expr.srcpos(), ty1);
       }
-      return new SymbolNode(expr.srcpos(), symbol, genericArgs);
+      return std::make_shared<SymbolNode>(expr.srcpos(), symbol, genericArgs);
     }
     else if (expr[1].leftToken() == kBracketOpen) {
       if (inArrayType) {
         errorf(expr.srcpos(), E_MultiDimenArray,
                "Multi-dimensional array types are not supported");
         Type ty = genericTypeRef(symbol, K(isValue));
-        return new TypeNode(expr.srcpos(), ty);
+        return std::make_shared<TypeNode>(expr.srcpos(), ty);
       }
 
-      return new ArrayTypeNode(expr.srcpos(),
-                               new SymbolNode(expr.srcpos(), symbol));
+      return std::make_shared<ArrayTypeNode>(expr.srcpos(),
+                               std::make_shared<SymbolNode>(expr.srcpos(), symbol));
     }
     else if (expr[1].leftToken() == kParanOpen) {
       return parseFunCall(expr);
@@ -3335,25 +3340,25 @@ SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
       return nullptr;
     }
     else if (expr[1].leftToken() == kBracketOpen) {
-      Ptr<AptNode> typeNode;
+      std::shared_ptr<AptNode> typeNode;
       if (expr[0][0] == kQuote && expr[0][1] == kSymbol) {
         Type ty = genericTypeRef(expr[0][1].idValue(), K(isValue));
-        typeNode = new TypeNode(expr.srcpos(), ty);
+        typeNode = std::make_shared<TypeNode>(expr.srcpos(), ty);
       }
       else {
         hr_assert(expr[0][0] == kSymbol || expr[0][0].isSeq());
         typeNode = parseTypeExpr(expr[0], K(inArrayType));
       }
 
-      if (dynamic_cast<SymbolNode*>(typeNode.obj()) ||
-          dynamic_cast<TypeNode*>(typeNode.obj()))
+      if (dynamic_cast<SymbolNode*>(typeNode.get()) ||
+          dynamic_cast<TypeNode*>(typeNode.get()))
       {
         if (inArrayType) {
           errorf(expr.srcpos(), E_MultiDimenArray,
                  "Multi-dimensional array types are not supported");
           return typeNode;
         }
-        return new ArrayTypeNode(expr.srcpos(), typeNode);
+        return std::make_shared<ArrayTypeNode>(expr.srcpos(), typeNode);
       }
       else if (typeNode) {
         error(expr[1].srcpos(), E_BadType,
@@ -3372,7 +3377,7 @@ SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
     errorf(expr.srcpos(), E_BadGenericType,
            "Generic type is not allowed here");
     // Type ty = genericTypeRef(expr[1].idValue(), K(isValue));
-    // return new TypeNode(expr.srcpos(), ty);
+    // return std::make_shared<TypeNode>(expr.srcpos(), ty);
     return nullptr;
   }
 
@@ -3386,18 +3391,18 @@ SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
 
 //------------------------------------------------------------------------------
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseSlotAccess(const Token& expr)
 {
   hr_assert(expr.count() == 3);
   hr_assert(expr[1] == kReference);
   hr_assert(expr[2] == kSymbol);
 
-  Ptr<AptNode> baseExpr = singletonNodeListOrNull(parseExpr(expr[0]));
+  auto baseExpr = singletonNodeListOrNull(parseExpr(expr[0]));
   if (!baseExpr)
     return nullptr;
 
-  return new SlotRefNode(expr.srcpos(), baseExpr, expr[2].idValue());
+  return std::make_shared<SlotRefNode>(expr.srcpos(), baseExpr, expr[2].idValue());
 }
 
 
@@ -3412,19 +3417,19 @@ SecondPass::parseTokenVector(const TokenVector& seq)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseUnitNumber(const Token& expr)
 {
   hr_assert(expr.count() == 3);
   hr_assert(expr[1] == kQuote);
   hr_assert(expr[2] == kSymbol);
 
-  Ptr<AptNode> value = singletonNodeListOrNull(parseExpr(expr[0]));
+  auto value = singletonNodeListOrNull(parseExpr(expr[0]));
 
-  TypeUnit unit = fScope->lookupUnit(expr[2].idValue(),
-                                     K(showAmbiguousSymDef));
+  auto unit = fScope->lookupUnit(expr[2].idValue(),
+                                 K(showAmbiguousSymDef));
   if (unit.isDef()) {
-    return new UnitConstNode(expr.srcpos(), value, unit);
+    return std::make_shared<UnitConstNode>(expr.srcpos(), value, unit);
   }
   else {
     error(expr[2].srcpos(), E_UndefinedUnit,
@@ -3466,13 +3471,13 @@ SecondPass::parseSeq(const Token& expr)
     return newNodeList(parseBinary(expr));
   else if (first == kMinus) {
     hr_assert(expr.count() == 2);
-    Ptr<AptNode> exprNode = singletonNodeListOrNull(parseExpr(expr[1]));
-    return newNodeList(new UnaryNode(expr.srcpos(), kUnaryOpNegate, exprNode));
+    auto exprNode = singletonNodeListOrNull(parseExpr(expr[1]));
+    return newNodeList(std::make_shared<UnaryNode>(expr.srcpos(), kUnaryOpNegate, exprNode));
   }
   else if (first == kNotId) {
     hr_assert(expr.count() == 2);
-    Ptr<AptNode> exprNode = singletonNodeListOrNull(parseExpr(expr[1]));
-    return newNodeList(new UnaryNode(expr.srcpos(), kUnaryOpNot, exprNode));
+    auto exprNode = singletonNodeListOrNull(parseExpr(expr[1]));
+    return newNodeList(std::make_shared<UnaryNode>(expr.srcpos(), kUnaryOpNot, exprNode));
   }
   else if (expr.count() == 2) {
     if (expr[1].isNested()) {
@@ -3540,7 +3545,7 @@ namespace herschel
   static bool
   doesNodeNeedBlock(const AptNode* node)
   {
-    const OnNode* on = dynamic_cast<const OnNode*>(node);
+    auto on = dynamic_cast<const OnNode*>(node);
     if (on) {
       if (on->key() == Names::kExitKeyword ||
           on->key() == Names::kSignalKeyword)
@@ -3555,7 +3560,7 @@ namespace herschel
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseBlock(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -3575,21 +3580,21 @@ SecondPass::parseBlock(const Token& expr)
   }
 
   if (nodes.size() == 0) {
-    return new SymbolNode(expr.srcpos(), Names::kLangUnspecified);
+    return std::make_shared<SymbolNode>(expr.srcpos(), Names::kLangUnspecified);
   }
   else if (nodes.size() == 1) {
-    if (!doesNodeNeedBlock(nodes[0].obj()))
-      return nodes[0].release();
+    if (!doesNodeNeedBlock(nodes[0].get()))
+      return nodes[0];
   }
 
-  Ptr<BlockNode> block = new BlockNode(expr.srcpos());
+  auto block = std::make_shared<BlockNode>(expr.srcpos());
   block->appendNodes(nodes);
 
-  return block.release();
+  return block;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseLiteralVector(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -3597,21 +3602,21 @@ SecondPass::parseLiteralVector(const Token& expr)
   hr_assert(expr.leftToken() == kLiteralVectorOpen);
   hr_assert(expr.rightToken() == kParanClose);
 
-  Ptr<VectorNode> vector = new VectorNode(expr.srcpos());
+  auto vector = std::make_shared<VectorNode>(expr.srcpos());
   const TokenVector& seq = expr.children();
 
   for (size_t i = 0; i < seq.size(); i++) {
-    if (seq[i] == kComma)
-      continue;
-    NodeList nl = parseExpr(seq[i]);
-    vector->appendNodes(nl);
+    if (seq[i] != kComma) {
+      NodeList nl = parseExpr(seq[i]);
+      vector->appendNodes(nl);
+    }
   }
 
-  return vector.release();
+  return vector;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseLiteralArray(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -3619,21 +3624,21 @@ SecondPass::parseLiteralArray(const Token& expr)
   hr_assert(expr.leftToken() == kLiteralArrayOpen);
   hr_assert(expr.rightToken() == kBracketClose);
 
-  Ptr<ArrayNode> array = new ArrayNode(expr.srcpos());
+  auto array = std::make_shared<ArrayNode>(expr.srcpos());
   const TokenVector& seq = expr.children();
 
   for (size_t i = 0; i < seq.size(); i++) {
-    if (seq[i] == kComma)
-      continue;
-    NodeList nl = parseExpr(seq[i]);
-    array->appendNodes(nl);
+    if (seq[i] != kComma) {
+      NodeList nl = parseExpr(seq[i]);
+      array->appendNodes(nl);
+    }
   }
 
-  return array.release();
+  return array;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseLiteralDict(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -3641,22 +3646,20 @@ SecondPass::parseLiteralDict(const Token& expr)
   hr_assert(expr.leftToken() == kLiteralVectorOpen);
   hr_assert(expr.rightToken() == kParanClose);
 
-  Ptr<DictNode> dict = new DictNode(expr.srcpos());
+  auto dict = std::make_shared<DictNode>(expr.srcpos());
   const TokenVector& seq = expr.children();
 
   for (size_t i = 0; i < seq.size(); i++) {
-    if (seq[i] == kComma)
-      continue;
+    if (seq[i] != kComma) {
+      hr_assert(seq[i].isBinarySeq(kMapTo));
 
-    hr_assert(seq[i].isBinarySeq(kMapTo));
-
-    Ptr<AptNode> key   = singletonNodeListOrNull(parseExpr(seq[i][0]));
-    Ptr<AptNode> value = singletonNodeListOrNull(parseExpr(seq[i][2]));
-
-    dict->addPair(key, value);
+      dict->addPair(
+        singletonNodeListOrNull(parseExpr(seq[i][0])),
+        singletonNodeListOrNull(parseExpr(seq[i][2])));
+    }
   }
 
-  return dict.release();
+  return dict;
 }
 
 
@@ -3710,13 +3713,13 @@ SecondPass::getIntType(int bitwidth, bool isSigned) const
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseIntNumber(const Token& expr)
 {
   if (expr.tokenType() == kInt || expr.tokenType() == kUInt) {
     Type type = getIntType(expr.bitwidth(), expr.tokenType() == kInt);
     type.setIsImaginary(expr.isImaginary());
-    return new IntNode(expr.srcpos(), expr.intValue(), expr.isImaginary(),
+    return std::make_shared<IntNode>(expr.srcpos(), expr.intValue(), expr.isImaginary(),
                        type);
   }
   else if (expr.isSeq() && expr.count() == 3 &&
@@ -3726,7 +3729,7 @@ SecondPass::parseIntNumber(const Token& expr)
     Type type = parseTypeSpec(expr[2]);
     if (type.isDef())
       type.setIsImaginary(expr[0].isImaginary());
-    return new IntNode(expr.srcpos(), expr[0].intValue(),
+    return std::make_shared<IntNode>(expr.srcpos(), expr[0].intValue(),
                        expr[0].isImaginary(), type);
   }
 
@@ -3735,13 +3738,13 @@ SecondPass::parseIntNumber(const Token& expr)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseRationalNumber(const Token& expr)
 {
   if (expr.tokenType() == kRational) {
     Type type = Type::newRational();
     type.setIsImaginary(expr.isImaginary());
-    return new RationalNode(expr.srcpos(), expr.rationalValue(),
+    return std::make_shared<RationalNode>(expr.srcpos(), expr.rationalValue(),
                             expr.isImaginary(), type);
   }
   else if (expr.isSeq() && expr.count() == 3 &&
@@ -3752,7 +3755,7 @@ SecondPass::parseRationalNumber(const Token& expr)
     if (type.isDef())
       type.setIsImaginary(expr[0].isImaginary());
 
-    return new RationalNode(expr.srcpos(), expr[0].rationalValue(),
+    return std::make_shared<RationalNode>(expr.srcpos(), expr[0].rationalValue(),
                             expr[0].isImaginary(), type);
   }
 
@@ -3761,13 +3764,13 @@ SecondPass::parseRationalNumber(const Token& expr)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parseRealNumber(const Token& expr)
 {
   if (expr.tokenType() == kFloat) {
     Type type = Type::newFloat32();
     type.setIsImaginary(expr.isImaginary());
-    return new RealNode(expr.srcpos(), expr.floatValue(),
+    return std::make_shared<RealNode>(expr.srcpos(), expr.floatValue(),
                         expr.isImaginary(), type);
   }
   else if (expr.isSeq() && expr.count() == 3 &&
@@ -3778,7 +3781,7 @@ SecondPass::parseRealNumber(const Token& expr)
     if (type.isDef())
       type.setIsImaginary(expr[0].isImaginary());
 
-    return new RealNode(expr.srcpos(), expr[0].floatValue(),
+    return std::make_shared<RealNode>(expr.srcpos(), expr[0].floatValue(),
                         expr[0].isImaginary(), type);
   }
 
@@ -3793,18 +3796,18 @@ SecondPass::parseExpr(const Token& expr)
   switch (expr.type()) {
   case kId:
     {
-      const AptNode* var = fScope->lookupVar(expr.idValue(), K(showAmbiguousSymDef));
-      const VardefNode* vardef = dynamic_cast<const VardefNode*>(var);
+      auto var = fScope->lookupVar(expr.idValue(), K(showAmbiguousSymDef));
+      auto vardef = dynamic_cast<const VardefNode*>(var);
       if (vardef && vardef->isEnum() && vardef->initExpr()) {
         return newNodeList(vardef->initExpr()->clone());
       }
     }
-    return newNodeList(new SymbolNode(expr.srcpos(), expr.idValue()));
+    return newNodeList(std::make_shared<SymbolNode>(expr.srcpos(), expr.idValue()));
 
   case kLit:
     switch (expr.tokenType()) {
     case kBool:
-      return newNodeList(new BoolNode(expr.srcpos(), expr.boolValue()));
+      return newNodeList(std::make_shared<BoolNode>(expr.srcpos(), expr.boolValue()));
     case kInt:
     case kUInt:
       return newNodeList(parseIntNumber(expr));
@@ -3813,11 +3816,11 @@ SecondPass::parseExpr(const Token& expr)
     case kFloat:
       return newNodeList(parseRealNumber(expr));
     case kChar:
-      return newNodeList(new CharNode(expr.srcpos(), expr.charValue()));
+      return newNodeList(std::make_shared<CharNode>(expr.srcpos(), expr.charValue()));
     case kString:
-      return newNodeList(new StringNode(expr.srcpos(), expr.stringValue()));
+      return newNodeList(std::make_shared<StringNode>(expr.srcpos(), expr.stringValue()));
     case kKeyword:
-      return newNodeList(new KeywordNode(expr.srcpos(), expr.stringValue()));
+      return newNodeList(std::make_shared<KeywordNode>(expr.srcpos(), expr.stringValue()));
 
     case kDocString:
       // TODO
@@ -3845,13 +3848,13 @@ SecondPass::parseExpr(const Token& expr)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SecondPass::parse(const Token& exprs)
 {
   hr_assert(exprs.isSeq());
 
-  fRootNode = new CompileUnitNode(SrcPos());
+  fRootNode = std::make_shared<CompileUnitNode>(SrcPos());
   parseTopExprlist(exprs);
 
-  return fRootNode.release();
+  return fRootNode;
 }

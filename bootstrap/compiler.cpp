@@ -99,8 +99,8 @@ Compiler::scope() const
 }
 
 
-std::shared_ptr<Scope>
-Compiler::referredFunctionCache() const
+std::shared_ptr<Scope>&
+Compiler::referredFunctionCache()
 {
   return fReferredFunctionCache;
 }
@@ -136,7 +136,7 @@ Compiler::unreadToken(const Token& token)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 Compiler::process(Port<Char>* port, const String& srcName)
 {
   fState.fScope = makeScope(kScopeL_CompileUnit, fState.fScope);
@@ -145,7 +145,7 @@ Compiler::process(Port<Char>* port, const String& srcName)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
 {
   fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
@@ -153,7 +153,7 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
   hr_assert(fState.fScope);
 
   try {
-    Ptr<AptNode> apt;
+    std::shared_ptr<AptNode> apt;
     Token parsedExprs;
 
     ExprPass tokenPass{1, *this, fState.fToken, fState.fScope};
@@ -177,16 +177,16 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
       fState.fScope = nodifyPass.currentScope();
 
       TransformPass nodePass1{3};
-      apt = nodePass1.apply(apt.release(), doTrace);
+      apt = nodePass1.apply(apt, doTrace);
 
       AnnotatePass nodePass2{4, fState.fScope, *this};
-      apt = nodePass2.apply(apt.release(), doTrace);
+      apt = nodePass2.apply(apt, doTrace);
 
       TypifyPass nodePass3{5};
-      apt = nodePass3.apply(apt.release(), doTrace);
+      apt = nodePass3.apply(apt, doTrace);
     }
 
-    return apt.release();
+    return apt;
   }
   catch (const Exception& e) {
     logf(kError, "Parse error: %s", (zstring)StrHelper(e.message()));
@@ -293,9 +293,9 @@ Compiler::importFileImpl(const SrcPos& srcpos,
     if (preload)
       compiler.importSystemHeaders(absPath);
 
-    Ptr<AptNode> apt = compiler.processImpl(new CharPort(
-                                              new FilePort(absPath, "rb")),
-                                            srcName, !K(doTrace));
+    auto apt = compiler.processImpl(new CharPort(
+                                      new FilePort(absPath, "rb")),
+                                    srcName, !K(doTrace));
     auto scope = compiler.scope();
 
     currentScope->addImportedScope(absPath, scope);
@@ -407,12 +407,12 @@ namespace herschel
     try {
       if (doParse) {
         Compiler compiler{};
-        Ptr<AptNode> apt = compiler.process(new CharPort(
-                                              new FilePort(file, "rb")),
-                                            file);
+        auto apt = compiler.process(new CharPort(
+                                      new FilePort(file, "rb")),
+                                    file);
         if (doCompile) {
           hr_assert(apt);
-          auto unit = dynamic_cast<CompileUnitNode*>(apt.obj());
+          auto unit = dynamic_cast<CompileUnitNode*>(apt.get());
           hr_assert(unit);
 
           if (unit) {

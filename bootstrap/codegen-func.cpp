@@ -102,8 +102,8 @@ CodegenFuncDef::createFunctionSignature(const FunctionNode* node, bool inlineRet
     llvmRetty = types().getType(node->retType());
 
   bool isVarArgs = false;
-  for (size_t pidx = 0; pidx < node->params().size(); pidx++) {
-    const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
+  for (auto& nd : node->params()) {
+    auto param = dynamic_cast<ParamNode*>(nd.get());
     // TODO: restargs
     if (param->isRestArg())
       isVarArgs = true;
@@ -193,31 +193,31 @@ CodegenFuncDef::compileGenericFunctionDef(const FuncDefNode* node) const
   std::vector<llvm::Value*> lookupArgv;
   size_t specArgCount = 0;
 
-  for (size_t pidx = 0;
-       pidx < node->params().size() && aiter != aiter_e;
-       pidx++, ++aiter)
-  {
-    const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
+  for (auto& nd : node->params()) {
+    if (aiter != aiter_e) {
+      auto param = dynamic_cast<ParamNode*>(nd.get());
 
-    // TODO: enforce ATOM types for spec args and returnvalue in generic functions
-    // TODO ende name
-    llvm::AllocaInst* stackSlot =
-      tools().createEntryBlockAlloca(func.fFunc, param->name(),
-                                     types().getType(param->type()));
-    llvm::Value* tmpValue = tools().emitPackCode(param->dstType(),
-                                                 param->typeConv(),
-                                                 aiter, param->type());
-    builder().CreateStore(tmpValue, stackSlot);
+      // TODO: enforce ATOM types for spec args and returnvalue in generic functions
+      // TODO ende name
+      llvm::AllocaInst* stackSlot =
+        tools().createEntryBlockAlloca(func.fFunc, param->name(),
+                                       types().getType(param->type()));
+      llvm::Value* tmpValue = tools().emitPackCode(param->dstType(),
+                                                   param->typeConv(),
+                                                   aiter, param->type());
+      builder().CreateStore(tmpValue, stackSlot);
 
-    realFuncArgv.push_back(stackSlot);
+      realFuncArgv.push_back(stackSlot);
 
-    if (param->isSpecArg()) {
-      specArgCount++;
+      if (param->isSpecArg()) {
+        specArgCount++;
 
-      llvm::Value* typeidSlot = builder().CreateStructGEP(types().getAtomType(),
-                                                          stackSlot, 0, "typeid");
-      lookupArgv.push_back(builder().CreateLoad(typeidSlot));
+        llvm::Value* typeidSlot = builder().CreateStructGEP(types().getAtomType(),
+                                                            stackSlot, 0, "typeid");
+        lookupArgv.push_back(builder().CreateLoad(typeidSlot));
+      }
     }
+    aiter++;
   }
 
   llvm::Value* gf = fGenerator.makeGetGenericFuncLookupCall(node);
@@ -293,12 +293,9 @@ CodegenFuncDef::compileMethodDef(const FuncDefNode* node) const
   StringBuffer msgbuf;
   msgbuf << "=method";
 
-  for (NodeList::const_iterator it = node->params().begin(),
-                                e = node->params().end();
-       it != e;
-       it++)
+  for (auto& nd : node->params())
   {
-    if (const ParamNode* prm = dynamic_cast<const ParamNode*>(it->obj())) {
+    if (auto prm = dynamic_cast<ParamNode*>(nd.get())) {
       if (prm->isSpecArg())
         msgbuf << String(".") << prm->type().typeId();
     }
@@ -356,29 +353,30 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
     llvm::BasicBlock *bb = llvm::BasicBlock::Create(context(), "entry", func.fFunc);
     builder().SetInsertPoint(bb);
 
-    for (size_t pidx = 0;
-         pidx < node->params().size() && aiter != aiter_e;
-         pidx++, ++aiter)
+    for (auto& nd : node->params())
     {
-      const ParamNode* param = dynamic_cast<const ParamNode*>(node->params()[pidx].obj());
-      llvm::AllocaInst *stackSlot =
-        tools().createEntryBlockAlloca(func.fFunc,
-                                       param->name(),
-                                       types().getType(param->type()));
-      llvm::Value* tmpValue = tools().emitPackCode(param->dstType(),
-                                                   param->typeConv(),
-                                                   aiter, param->type());
-      builder().CreateStore(tmpValue, stackSlot);
+      if (aiter != aiter_e) {
+        auto param = dynamic_cast<ParamNode*>(nd.get());
+        auto stackSlot =
+          tools().createEntryBlockAlloca(func.fFunc,
+                                         param->name(),
+                                         types().getType(param->type()));
+        auto tmpValue = tools().emitPackCode(param->dstType(),
+                                             param->typeConv(),
+                                             aiter, param->type());
+        builder().CreateStore(tmpValue, stackSlot);
 
-      fGenerator.fNamedValues[param->name()] = stackSlot;
+        fGenerator.fNamedValues[param->name()] = stackSlot;
+      }
+      ++aiter;
     }
 
-    const BlockNode* blockNode = dynamic_cast<const BlockNode*>(node->body());
+    auto blockNode = dynamic_cast<BlockNode*>(node->body().get());
     llvm::Value* retv = nullptr;
     if (blockNode)
       retv = fGenerator.codegen(blockNode->children());
     else
-      retv = fGenerator.codegenNode(node->body());
+      retv = fGenerator.codegenNode(*node->body());
     hr_assert(retv);
 
     if (!retv)

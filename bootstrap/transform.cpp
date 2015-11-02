@@ -35,13 +35,12 @@ TransformPass::TransformPass(int level)
 {}
 
 
-AptNode*
-TransformPass::doApply(AptNode* src)
+std::shared_ptr<AptNode>
+TransformPass::doApply(std::shared_ptr<AptNode> src)
 {
-  Ptr<AptNode> node = src;
   Ptr<Transformator> tr = new Transformator;
-  tr->transformNode(node);
-  return node.release();
+  tr->transformNode(src);
+  return src;
 }
 
 
@@ -52,15 +51,15 @@ Transformator::Transformator()
 }
 
 
-AptNode*
-Transformator::transformNode(AptNode* node)
+std::shared_ptr<AptNode>
+Transformator::transformNode(std::shared_ptr<AptNode> node)
 {
-  return node->transform(this);
+  return node->transform(this, node);
 }
 
 
-AptNode*
-Transformator::transform(CompileUnitNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<CompileUnitNode> node)
 {
   transformNodeList(node->children());
   return node;
@@ -70,32 +69,31 @@ Transformator::transform(CompileUnitNode* node)
 void
 Transformator::transformNodeList(NodeList& nl)
 {
-  for (size_t i = 0; i < nl.size(); i++) {
-    nl[i] = transformNode(nl[i]);
-  }
+  for (auto& nd : nl)
+    nd = transformNode(nd);
 }
 
 
 //------------------------------------------------------------------------------
 
-AptNode*
-Transformator::transform(SymbolNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<SymbolNode> node)
 {
   // nothing to transform
   return node;
 }
 
 
-AptNode*
-Transformator::transform(ArrayTypeNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<ArrayTypeNode> node)
 {
   // nothing to transform
   return node;
 }
 
 
-AptNode*
-Transformator::transform(TypeNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<TypeNode> node)
 {
   // nothing to transform
   return node;
@@ -104,24 +102,24 @@ Transformator::transform(TypeNode* node)
 
 //------------------------------------------------------------------------------
 
-AptNode*
-Transformator::transform(DefNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<DefNode> node)
 {
   node->setDefNode(transformNode(node->defNode()));
   return node;
 }
 
 
-AptNode*
-Transformator::transform(LetNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<LetNode> node)
 {
   node->setDefNode(transformNode(node->defNode()));
   return node;
 }
 
 
-AptNode*
-Transformator::transform(VardefNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<VardefNode> node)
 {
   if (node->initExpr())
     node->setInitExpr(transformNode(node->initExpr()));
@@ -129,8 +127,8 @@ Transformator::transform(VardefNode* node)
 }
 
 
-AptNode*
-Transformator::transform(FuncDefNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<FuncDefNode> node)
 {
   transformNodeList(node->params());
   if (node->body()) {
@@ -140,8 +138,8 @@ Transformator::transform(FuncDefNode* node)
 }
 
 
-AptNode*
-Transformator::transform(FunctionNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<FunctionNode> node)
 {
   transformNodeList(node->params());
   node->setBody(transformNode(node->body()));
@@ -149,8 +147,8 @@ Transformator::transform(FunctionNode* node)
 }
 
 
-AptNode*
-Transformator::transform(SlotdefNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<SlotdefNode> node)
 {
   // TODO
   return node;
@@ -171,7 +169,7 @@ Transformator::findBlockSplitIndex(const NodeList& nodes)
   NodeMode mode = kMode_begin;
 
   for (size_t i = 0; i < nodes.size(); i++) {
-    const LetNode* letnd = dynamic_cast<const LetNode*>(nodes[i].obj());
+    auto letnd = dynamic_cast<LetNode*>(nodes[i].get());
     if (letnd) {
       switch (mode) {
       case kMode_begin:
@@ -187,7 +185,7 @@ Transformator::findBlockSplitIndex(const NodeList& nodes)
       }
     }
     else {
-      const OnNode* onnd = dynamic_cast<const OnNode*>(nodes[i].obj());
+      auto onnd = dynamic_cast<OnNode*>(nodes[i].get());
       if (onnd) {
         switch (mode) {
         case kMode_begin:
@@ -233,19 +231,20 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
   warningf(onnd->srcpos(), E_OrphanedOnExit,
            "orphaned 'on exit' handler parameter");
   hr_assert(onnd->params().size() == 1);
-  ParamNode* onPrmNode = dynamic_cast<ParamNode*>(onnd->params()[0].obj());
+  auto onPrmNode = dynamic_cast<ParamNode*>(onnd->params()[0].get());
   hr_assert(onPrmNode);
 
-  Ptr<AptNode> initExpr = ( onPrmNode->initExpr()
-                            ? onPrmNode->initExpr()
-                            : new SymbolNode(onPrmNode->srcpos(),
-                                             String("lang|unspecified")) );
-  NodeList nl = vector_of<Ptr<AptNode> >
-    (new LetNode(new VardefNode(onPrmNode->srcpos(),
-                                onPrmNode->name(), kNormalVar,
-                                K(isLocal),
-                                onPrmNode->type(),
-                                initExpr)))
+  auto initExpr = ( onPrmNode->initExpr()
+                    ? onPrmNode->initExpr()
+                    : std::make_shared<SymbolNode>(onPrmNode->srcpos(),
+                                                   String("lang|unspecified")) );
+  NodeList nl = vector_of<std::shared_ptr<AptNode> >
+    (std::make_shared<LetNode>(
+      std::make_shared<VardefNode>(onPrmNode->srcpos(),
+                                   onPrmNode->name(), kNormalVar,
+                                   K(isLocal),
+                                   onPrmNode->type(),
+                                   initExpr)))
     (onnd->body());
 
   node->children().clear();
@@ -255,12 +254,12 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
 }
 
 
-AptNode*
-Transformator::transform(BlockNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<BlockNode> node)
 {
   const NodeList& nodes = node->children();
   if (nodes.size() == 1) {
-    OnNode* onnd = dynamic_cast<OnNode*>(nodes[0].obj());
+    auto onnd = dynamic_cast<OnNode*>(nodes[0].get());
     if (onnd) {
       if (onnd->key() == Names::kSignalKeyword) {
         // if a block contains a single "on signal" node we can drop the
@@ -272,7 +271,7 @@ Transformator::transform(BlockNode* node)
         return nullptr;
       }
       else if (onnd->key() == Names::kExitKeyword) {
-        transformSingleOnExitBlock(node, onnd);
+        transformSingleOnExitBlock(node.get(), onnd);
         return node;
       }
     }
@@ -280,9 +279,11 @@ Transformator::transform(BlockNode* node)
 
   int idx = findBlockSplitIndex(nodes);
   if (idx > 0) {
-    Ptr<BlockNode> newBlock = new BlockNode(nodes[idx]->srcpos());
-    for (size_t i = idx; i < nodes.size(); i++)
-      newBlock->appendNode(nodes[i]);
+    auto newBlock = std::make_shared<BlockNode>(nodes[idx]->srcpos());
+    std::for_each(std::next(nodes.begin(), idx), nodes.end(),
+                  [&](const NodeList::value_type& nd) {
+                     newBlock->appendNode(nd);
+                  });
 
     node->children().resize(idx);
     node->appendNode(newBlock);
@@ -293,8 +294,8 @@ Transformator::transform(BlockNode* node)
 }
 
 
-AptNode*
-Transformator::transform(ParamNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<ParamNode> node)
 {
   if (node->initExpr())
     node->setInitExpr(transformNode(node->initExpr()));
@@ -302,8 +303,8 @@ Transformator::transform(ParamNode* node)
 }
 
 
-AptNode*
-Transformator::transform(ApplyNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<ApplyNode> node)
 {
   node->setBase(transformNode(node->base()));
   transformNodeList(node->children());
@@ -311,16 +312,16 @@ Transformator::transform(ApplyNode* node)
 }
 
 
-AptNode*
-Transformator::transform(ArrayNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<ArrayNode> node)
 {
   transformNodeList(node->children());
   return node;
 }
 
 
-AptNode*
-Transformator::transform(AssignNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<AssignNode> node)
 {
   node->setLvalue(transformNode(node->lvalue()));
   node->setRvalue(transformNode(node->rvalue()));
@@ -328,8 +329,8 @@ Transformator::transform(AssignNode* node)
 }
 
 
-AptNode*
-Transformator::transform(BinaryNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<BinaryNode> node)
 {
   node->setLeft(transformNode(node->left()));
   node->setRight(transformNode(node->right()));
@@ -337,16 +338,16 @@ Transformator::transform(BinaryNode* node)
 }
 
 
-AptNode*
-Transformator::transform(UnaryNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<UnaryNode> node)
 {
   node->setBase(transformNode(node->base()));
   return node;
 }
 
 
-AptNode*
-Transformator::transform(IfNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<IfNode> node)
 {
   node->setTest(transformNode(node->test()));
   node->setConsequent(transformNode(node->consequent()));
@@ -356,25 +357,25 @@ Transformator::transform(IfNode* node)
 }
 
 
-AptNode*
-Transformator::transform(KeyargNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<KeyargNode> node)
 {
   node->setValue(transformNode(node->value()));
   return node;
 }
 
 
-AptNode*
-Transformator::transform(MatchNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<MatchNode> node)
 {
   node->setExpr(transformNode(node->expr()));
   for (size_t i = 0; i < node->mappingCount(); i++) {
     node->setConsequentAt(i, transformNode(node->mappingAt(i).fConsequent));
   }
 
-  Ptr<AptNode> rootIf;
-  Ptr<IfNode> lastIf;
-  Ptr<AptNode> elseAlternate;
+  std::shared_ptr<AptNode> rootIf;
+  std::shared_ptr<IfNode> lastIf;
+  std::shared_ptr<AptNode> elseAlternate;
 
   for (size_t i = 0; i < node->mappingCount(); i++) {
     if (node->mappingAt(i).fMatchType.isAny())
@@ -389,16 +390,16 @@ Transformator::transform(MatchNode* node)
         elseAlternate = node->mappingAt(i).fConsequent;
     }
     else {
-      Ptr<ApplyNode> isaCall = new ApplyNode(node->mappingAt(i).fSrcPos,
-                                             new SymbolNode(node->mappingAt(i).fSrcPos,
-                                                            Names::kLangIsaQ));
+      auto isaCall = std::make_shared<ApplyNode>(node->mappingAt(i).fSrcPos,
+                                                 std::make_shared<SymbolNode>(node->mappingAt(i).fSrcPos,
+                                                                Names::kLangIsaQ));
       isaCall->appendNode(node->expr()->clone());
-      isaCall->appendNode(new TypeNode(node->mappingAt(i).fSrcPos,
+      isaCall->appendNode(std::make_shared<TypeNode>(node->mappingAt(i).fSrcPos,
                                        node->mappingAt(i).fMatchType));
 
-      Ptr<IfNode> newIf = new IfNode(node->mappingAt(i).fSrcPos,
-                                     isaCall,
-                                     node->mappingAt(i).fConsequent, nullptr);
+      auto newIf = std::make_shared<IfNode>(node->mappingAt(i).fSrcPos,
+                                            isaCall,
+                                            node->mappingAt(i).fConsequent, nullptr);
       if (lastIf) {
         lastIf->setAlternate(newIf);
         lastIf = newIf;
@@ -409,7 +410,7 @@ Transformator::transform(MatchNode* node)
   }
 
   if (!elseAlternate)
-    elseAlternate = new SymbolNode(node->srcpos(),
+    elseAlternate = std::make_shared<SymbolNode>(node->srcpos(),
                                    Names::kLangUnspecified);
 
   if (lastIf)
@@ -420,12 +421,12 @@ Transformator::transform(MatchNode* node)
   lastIf = nullptr;
   elseAlternate = nullptr;
 
-  return rootIf.release();
+  return rootIf;
 }
 
 
-AptNode*
-Transformator::transform(SelectNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<SelectNode> node)
 {
   node->setTest(transformNode(node->test()));
   if (node->comparator())
@@ -445,8 +446,8 @@ Transformator::transform(SelectNode* node)
 }
 
 
-AptNode*
-Transformator::transform(OnNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<OnNode> node)
 {
   transformNodeList(node->params());
   node->setBody(transformNode(node->body()));
@@ -454,8 +455,8 @@ Transformator::transform(OnNode* node)
 }
 
 
-AptNode*
-Transformator::transform(RangeNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<RangeNode> node)
 {
   node->setFrom(transformNode(node->from()));
   node->setTo(transformNode(node->to()));
@@ -465,8 +466,8 @@ Transformator::transform(RangeNode* node)
 }
 
 
-AptNode*
-Transformator::transform(TypeDefNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<TypeDefNode> node)
 {
   transformNodeList(node->params());
   transformNodeList(node->slots());
@@ -476,8 +477,8 @@ Transformator::transform(TypeDefNode* node)
 }
 
 
-AptNode*
-Transformator::transform(WhileNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<WhileNode> node)
 {
   node->setTest(transformNode(node->test()));
   node->setBody(transformNode(node->body()));
@@ -485,24 +486,24 @@ Transformator::transform(WhileNode* node)
 }
 
 
-AptNode*
-Transformator::transform(VectorNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<VectorNode> node)
 {
   transformNodeList(node->children());
   return node;
 }
 
 
-AptNode*
-Transformator::transform(DictNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<DictNode> node)
 {
   transformNodeList(node->children());
   return node;
 }
 
 
-AptNode*
-Transformator::transform(CastNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<CastNode> node)
 {
   node->setBase(transformNode(node->base()));
   return node;
@@ -511,80 +512,80 @@ Transformator::transform(CastNode* node)
 
 //------------------------------------------------------------------------------
 
-AptNode*
-Transformator::transform(BoolNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<BoolNode> node)
 {
   // Nothing to transform here
   return node;
 }
 
 
-AptNode*
-Transformator::transform(CharNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<CharNode> node)
 {
   // Nothing to transform here
   return node;
 }
 
 
-AptNode*
-Transformator::transform(StringNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<StringNode> node)
 {
   // Nothing to transform here
   return node;
 }
 
 
-AptNode*
-Transformator::transform(RationalNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<RationalNode> node)
 {
   // Nothing to transform here
   return node;
 }
 
 
-AptNode*
-Transformator::transform(RealNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<RealNode> node)
 {
   // Nothing to transform here
   return node;
 }
 
 
-AptNode*
-Transformator::transform(IntNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<IntNode> node)
 {
   // Nothing to transform here
   return node;
 }
 
 
-AptNode*
-Transformator::transform(KeywordNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<KeywordNode> node)
 {
   // Nothing to transform here
   return node;
 }
 
 
-AptNode*
-Transformator::transform(UnitConstNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<UnitConstNode> node)
 {
   node->setValue(transformNode(node->value()));
   return node;
 }
 
 
-AptNode*
-Transformator::transform(UndefNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<UndefNode> node)
 {
   // Nothing to transform here
   return node;
 }
 
 
-AptNode*
-Transformator::transform(SlotRefNode* node)
+std::shared_ptr<AptNode>
+Transformator::transform(std::shared_ptr<SlotRefNode> node)
 {
   node->setBase(transformNode(node->base()));
   return node;

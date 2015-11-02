@@ -248,9 +248,9 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
 //------------------------------------------------------------------------------
 
 llvm::Value*
-CodeGenerator::codegenNode(const AptNode* node, bool autoloadAllocInst)
+CodeGenerator::codegenNode(const AptNode& node, bool autoloadAllocInst)
 {
-  llvm::Value* val = node->codegen(this);
+  auto val = node.codegen(this);
   if (autoloadAllocInst && llvm::AllocaInst::classof(val)) {
     val = fBuilder.CreateLoad(val);
   }
@@ -263,7 +263,7 @@ CodeGenerator::codegen(const CompileUnitNode* node)
 {
   const NodeList& nl = node->children();
   for (size_t i = 0; i < nl.size(); i++)
-    codegenNode(nl[i].obj());
+    codegenNode(*nl[i]);
 
   if (fHasMainFunc) {
     createDefaultCMainFunc();
@@ -279,7 +279,7 @@ CodeGenerator::codegen(const NodeList& nl)
   llvm::Value* lastVal = nullptr;
 
   for (size_t bidx = 0; bidx < nl.size(); bidx++) {
-    llvm::Value* val = codegenNode(nl[bidx]);
+    llvm::Value* val = codegenNode(*nl[bidx]);
     if (!val)
       return nullptr;
     lastVal = val;
@@ -362,10 +362,10 @@ CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 llvm::Value*
 CodeGenerator::codegen(const AssignNode* node)
 {
-  const AptNode* lvalue = node->lvalue();
+  auto lvalue = node->lvalue().get();
 
-  if (const SymbolNode* lsym = dynamic_cast<const SymbolNode*>(lvalue)) {
-    llvm::Value* rvalue = codegenNode(node->rvalue());
+  if (auto lsym = dynamic_cast<SymbolNode*>(lvalue)) {
+    auto rvalue = codegenNode(*node->rvalue());
     if (!rvalue)
       return nullptr;
 
@@ -385,7 +385,7 @@ CodeGenerator::codegen(const AssignNode* node)
     return rvalue;
   }
   else if (const SlotRefNode* lslot = dynamic_cast<const SlotRefNode*>(lvalue)) {
-    return CodegenSlot(*this).emitSlotRefAssignment(lslot, node->rvalue());
+    return CodegenSlot(*this).emitSlotRefAssignment(lslot, node->rvalue().get());
   }
 
   logf(kError, "Not supported yet: %s", typeid(node).name());
@@ -396,15 +396,15 @@ CodeGenerator::codegen(const AssignNode* node)
 llvm::Value*
 CodeGenerator::codegen(const DefNode* node)
 {
-  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->defNode());
+  auto vardefNode = dynamic_cast<VardefNode*>(node->defNode().get());
   if (vardefNode)
     return codegen(vardefNode, !K(isLocal));
 
-  const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->defNode());
+  auto func = dynamic_cast<const FuncDefNode*>(node->defNode().get());
   if (func)
     return codegen(func, !K(isLocal));
 
-  const TypeDefNode* type = dynamic_cast<const TypeDefNode*>(node->defNode());
+  auto type = dynamic_cast<TypeDefNode*>(node->defNode().get());
   if (type)
     return codegen(type);
 
@@ -416,13 +416,14 @@ CodeGenerator::codegen(const DefNode* node)
 llvm::Value*
 CodeGenerator::codegen(const LetNode* node)
 {
-  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->defNode());
+  auto vardefNode = dynamic_cast<VardefNode*>(node->defNode().get());
   if (vardefNode)
     return codegen(vardefNode, K(isLocal));
 
-  const FuncDefNode* funcDefNode = dynamic_cast<const FuncDefNode*>(node->defNode());
+  auto funcDefNode = dynamic_cast<FuncDefNode*>(node->defNode().get());
   if (funcDefNode) {
-    logf(kError, "Compiling local functions not supported yet: %s", typeid(node).name());
+    logf(kError, "Compiling local functions not supported yet: %s",
+         typeid(node).name());
     return nullptr;
   }
 
@@ -605,7 +606,7 @@ CodeGenerator::codegen(const BinaryNode* node)
 llvm::Value*
 CodeGenerator::codegen(const UnaryNode* node)
 {
-  llvm::Value *base = fTools->wrapLoad(codegenNode(node->base()));
+  auto base = fTools->wrapLoad(codegenNode(*node->base()));
   if (!base)
     return nullptr;
 
@@ -613,7 +614,8 @@ CodeGenerator::codegen(const UnaryNode* node)
   case kUnaryOpNegate:
     return fBuilder.CreateMul(base,
                               llvm::ConstantInt::get(context(),
-                                                     llvm::APInt(32, (uint64_t)-1, true)),
+                                                     llvm::APInt(32, (uint64_t)-1,
+                                                                 true)),
                               "negtmp");
   case kUnaryOpNot:
     return fBuilder.CreateNot(base, "nottmp");
@@ -686,7 +688,7 @@ CodeGenerator::codegen(const WhileNode* node)
 llvm::Value*
 CodeGenerator::codegen(const CastNode* node)
 {
-  llvm::Value *val = fTools->wrapLoad(codegenNode(node->base()));
+  auto val = fTools->wrapLoad(codegenNode(*node->base()));
   if (!val)
     return nullptr;
 

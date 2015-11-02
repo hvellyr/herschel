@@ -39,8 +39,8 @@ namespace herschel
     llvm::Value* emit(const BinaryNode* node) const;
 
   private:
-    llvm::Value* codegenOpDucktype(const BinaryNode* node) const;
-    llvm::Value* codegenOpDuckTypeBinary(const BinaryNode* node,
+    llvm::Value* codegenOpDucktype(const BinaryNode& node) const;
+    llvm::Value* codegenOpDuckTypeBinary(const BinaryNode& node,
                                          const String& funcnm,
                                          const Type& funcRetType) const;
 
@@ -49,32 +49,32 @@ namespace herschel
     llvm::Value* wrapInt(llvm::Value* value, const Type& type,
                          bool forceSigned = false) const;
     llvm::Value* wrapBool(llvm::Value* value, const Type& type) const;
-    llvm::Value* codegenOpIntInt(const BinaryNode* node,
+    llvm::Value* codegenOpIntInt(const BinaryNode& node,
                                  llvm::Value* left,
                                  llvm::Value* right) const;
     llvm::Value* convertToPlainInt(const Type& dstType,
-                                   const AptNode* right,
+                                   const AptNode& right,
                                    llvm::Value* value) const;
 
-    llvm::Value* codegenOpKeywKeyw(const BinaryNode* node,
+    llvm::Value* codegenOpKeywKeyw(const BinaryNode& node,
                                    llvm::Value* left,
                                    llvm::Value* right) const;
 
     llvm::Value* coerceBoolOperand(const Type& dstType,
                                    llvm::Value* value) const;
-    llvm::Value* convertToPlainBool(const AptNode* dst,
-                                    const AptNode* right,
+    llvm::Value* convertToPlainBool(const AptNode& dst,
+                                    const AptNode& right,
                                     llvm::Value* value) const;
-    llvm::Value* codegenOpBoolBool(const BinaryNode* node,
+    llvm::Value* codegenOpBoolBool(const BinaryNode& node,
                                    llvm::Value* left,
                                    llvm::Value* right) const;
 
     llvm::Value* coerceCharOperand(const Type& dstType,
                                    llvm::Value* value) const;
-    llvm::Value* convertToPlainChar(const AptNode* dst,
-                                    const AptNode* right,
+    llvm::Value* convertToPlainChar(const AptNode& dst,
+                                    const AptNode& right,
                                     llvm::Value* value) const;
-    llvm::Value* codegenOpCharChar(const BinaryNode* node,
+    llvm::Value* codegenOpCharChar(const BinaryNode& node,
                                    llvm::Value* left,
                                    llvm::Value* right) const;
   };

@@ -64,7 +64,7 @@ namespace herschel
 
   class Scope;
 
-  using NodeList = std::vector<Ptr<AptNode>>;
+  using NodeList = std::vector<std::shared_ptr<AptNode>>;
 
   //------------------------------------------------------------------------------
 
@@ -83,56 +83,56 @@ namespace herschel
 
     Annotator(std::shared_ptr<Scope> scope, Compiler& compiler);
 
-    void annotateRecursively(AptNode* node);
+    void annotateRecursively(std::shared_ptr<AptNode> node);
 
-    void annotateNode(AptNode* node);
+    void annotateNode(std::shared_ptr<AptNode> node);
 
-    void annotate(CompileUnitNode* node);
+    void annotate(std::shared_ptr<CompileUnitNode> node);
 
-    void annotate(SymbolNode* node);
+    void annotate(std::shared_ptr<SymbolNode> node);
 
-    void annotate(DefNode* node);
-    void annotate(LetNode* node);
-    void annotate(BlockNode* node);
+    void annotate(std::shared_ptr<DefNode> node);
+    void annotate(std::shared_ptr<LetNode> node);
+    void annotate(std::shared_ptr<BlockNode> node);
 
-    void annotate(ParamNode* node);
+    void annotate(std::shared_ptr<ParamNode> node);
 
-    void annotate(ApplyNode* node);
-    void annotate(ArrayNode* node);
-    void annotate(ArrayTypeNode* node);
-    void annotate(AssignNode* node);
-    void annotate(BinaryNode* node);
-    void annotate(BoolNode* node);
-    void annotate(CastNode* node);
-    void annotate(CharNode* node);
-    void annotate(DictNode* node);
-    void annotate(FunctionNode* node);
-    void annotate(IfNode* node);
-    void annotate(IntNode* node);
-    void annotate(KeyargNode* node);
-    void annotate(KeywordNode* node);
-    void annotate(MatchNode* node);
-    void annotate(UnaryNode* node);
-    void annotate(OnNode* node);
-    void annotate(RangeNode* node);
-    void annotate(RationalNode* node);
-    void annotate(RealNode* node);
-    void annotate(SelectNode* node);
-    void annotate(SlotdefNode* node);
-    void annotate(SlotRefNode* node);
-    void annotate(StringNode* node);
-    void annotate(TypeDefNode* node);
-    void annotate(TypeNode* node);
-    void annotate(UnitConstNode* node);
-    void annotate(VectorNode* node);
-    void annotate(WhileNode* node);
-    void annotate(UndefNode* node);
+    void annotate(std::shared_ptr<ApplyNode> node);
+    void annotate(std::shared_ptr<ArrayNode> node);
+    void annotate(std::shared_ptr<ArrayTypeNode> node);
+    void annotate(std::shared_ptr<AssignNode> node);
+    void annotate(std::shared_ptr<BinaryNode> node);
+    void annotate(std::shared_ptr<BoolNode> node);
+    void annotate(std::shared_ptr<CastNode> node);
+    void annotate(std::shared_ptr<CharNode> node);
+    void annotate(std::shared_ptr<DictNode> node);
+    void annotate(std::shared_ptr<FunctionNode> node);
+    void annotate(std::shared_ptr<IfNode> node);
+    void annotate(std::shared_ptr<IntNode> node);
+    void annotate(std::shared_ptr<KeyargNode> node);
+    void annotate(std::shared_ptr<KeywordNode> node);
+    void annotate(std::shared_ptr<MatchNode> node);
+    void annotate(std::shared_ptr<UnaryNode> node);
+    void annotate(std::shared_ptr<OnNode> node);
+    void annotate(std::shared_ptr<RangeNode> node);
+    void annotate(std::shared_ptr<RationalNode> node);
+    void annotate(std::shared_ptr<RealNode> node);
+    void annotate(std::shared_ptr<SelectNode> node);
+    void annotate(std::shared_ptr<SlotdefNode> node);
+    void annotate(std::shared_ptr<SlotRefNode> node);
+    void annotate(std::shared_ptr<StringNode> node);
+    void annotate(std::shared_ptr<TypeDefNode> node);
+    void annotate(std::shared_ptr<TypeNode> node);
+    void annotate(std::shared_ptr<UnitConstNode> node);
+    void annotate(std::shared_ptr<VectorNode> node);
+    void annotate(std::shared_ptr<WhileNode> node);
+    void annotate(std::shared_ptr<UndefNode> node);
 
   private:
     void annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype);
 
-    void annotate(VardefNode* node, bool isLocal);
-    void annotate(FuncDefNode* node, bool isLocal);
+    void annotate(std::shared_ptr<VardefNode> node, bool isLocal);
+    void annotate(std::shared_ptr<FuncDefNode> node, bool isLocal);
 
     void takeFullNameFromNode(SymbolNode* node, const AptNode* otherNode);
     bool updateAllocType(SymbolNode* usingNode, const AptNode* referedNode);
@@ -155,7 +155,7 @@ namespace herschel
   {
   public:
     AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler& compiler);
-    virtual AptNode* doApply(AptNode* src);
+    virtual std::shared_ptr<AptNode> doApply(std::shared_ptr<AptNode> src);
 
   private:
     std::shared_ptr<Scope> fScope;

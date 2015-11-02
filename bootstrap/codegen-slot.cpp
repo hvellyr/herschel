@@ -74,7 +74,7 @@ CodegenSlot::emitSlotRefAssignment(const SlotRefNode* node,
   llvm::Type* slotType = types().getType(node->type())->getPointerTo();
   llvm::Value* slotAddr = builder().CreatePointerCast(addr, slotType);
 
-  llvm::Value* slotRvalue = tools().wrapLoad(generator().codegenNode(rvalue));
+  llvm::Value* slotRvalue = tools().wrapLoad(generator().codegenNode(*rvalue));
   slotRvalue = tools().emitPackCode(rvalue->dstType(),
                                     rvalue->typeConv(),
                                     slotRvalue,
@@ -105,7 +105,7 @@ CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
   }
 
   // TODO: can we assert that the instance is actually ATOM typed
-  llvm::Value* val = tools().wrapLoad(generator().codegenNode(node->base()));
+  llvm::Value* val = tools().wrapLoad(generator().codegenNode(*node->base()));
   val = tools().emitPackCode(node->base()->dstType(),
                              node->base()->typeConv(),
                              val,

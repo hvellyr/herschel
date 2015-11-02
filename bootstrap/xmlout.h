@@ -74,46 +74,46 @@ namespace herschel
   public:
     XmlRenderer(Port<Octet>* port, bool showNodeType = false);
 
-    void render(const AptNode* node);
+    void render(const AptNode& node);
 
-    void renderNode(const ApplyNode* node);
-    void renderNode(const ArrayNode* node);
-    void renderNode(const ArrayTypeNode* node);
-    void renderNode(const AssignNode* node);
-    void renderNode(const BinaryNode* node);
-    void renderNode(const BlockNode* node);
-    void renderNode(const BoolNode* node);
-    void renderNode(const CharNode* node);
-    void renderNode(const CompileUnitNode* node);
-    void renderNode(const DefNode* node);
-    void renderNode(const DictNode* node);
-    void renderNode(const FuncDefNode* node);
-    void renderNode(const FunctionNode* node);
-    void renderNode(const IfNode* node);
-    void renderNode(const IntNode* node);
-    void renderNode(const KeyargNode* node);
-    void renderNode(const KeywordNode* node);
-    void renderNode(const LetNode* node);
-    void renderNode(const MatchNode* node);
-    void renderNode(const UnaryNode* node);
-    void renderNode(const OnNode* node);
-    void renderNode(const ParamNode* node);
-    void renderNode(const RangeNode* node);
-    void renderNode(const RationalNode* node);
-    void renderNode(const RealNode* node);
-    void renderNode(const SelectNode* node);
-    void renderNode(const SlotdefNode* node);
-    void renderNode(const SlotRefNode* node);
-    void renderNode(const StringNode* node);
-    void renderNode(const SymbolNode* node);
-    void renderNode(const TypeDefNode* node);
-    void renderNode(const TypeNode* node);
-    void renderNode(const UnitConstNode* node);
-    void renderNode(const VardefNode* node);
-    void renderNode(const VectorNode* node);
-    void renderNode(const WhileNode* node);
-    void renderNode(const CastNode* node);
-    void renderNode(const UndefNode* node);
+    void renderNode(const ApplyNode& node);
+    void renderNode(const ArrayNode& node);
+    void renderNode(const ArrayTypeNode& node);
+    void renderNode(const AssignNode& node);
+    void renderNode(const BinaryNode& node);
+    void renderNode(const BlockNode& node);
+    void renderNode(const BoolNode& node);
+    void renderNode(const CharNode& node);
+    void renderNode(const CompileUnitNode& node);
+    void renderNode(const DefNode& node);
+    void renderNode(const DictNode& node);
+    void renderNode(const FuncDefNode& node);
+    void renderNode(const FunctionNode& node);
+    void renderNode(const IfNode& node);
+    void renderNode(const IntNode& node);
+    void renderNode(const KeyargNode& node);
+    void renderNode(const KeywordNode& node);
+    void renderNode(const LetNode& node);
+    void renderNode(const MatchNode& node);
+    void renderNode(const UnaryNode& node);
+    void renderNode(const OnNode& node);
+    void renderNode(const ParamNode& node);
+    void renderNode(const RangeNode& node);
+    void renderNode(const RationalNode& node);
+    void renderNode(const RealNode& node);
+    void renderNode(const SelectNode& node);
+    void renderNode(const SlotdefNode& node);
+    void renderNode(const SlotRefNode& node);
+    void renderNode(const StringNode& node);
+    void renderNode(const SymbolNode& node);
+    void renderNode(const TypeDefNode& node);
+    void renderNode(const TypeNode& node);
+    void renderNode(const UnitConstNode& node);
+    void renderNode(const VardefNode& node);
+    void renderNode(const VectorNode& node);
+    void renderNode(const WhileNode& node);
+    void renderNode(const CastNode& node);
+    void renderNode(const UndefNode& node);
 
   private:
     void displayOpenTag(zstring tagName, bool newline = true);
@@ -174,9 +174,9 @@ namespace herschel
     void displayTypeVector(Port<Octet>* port,
                            zstring tagName, const TypeVector& types);
 
-    String displayTypeConv(const AptNode* node);
+    String displayTypeConv(const AptNode& node);
 
-    void dump(const AptNode* node);
+    void dump(const AptNode& node);
 
   };
 };                              // namespace

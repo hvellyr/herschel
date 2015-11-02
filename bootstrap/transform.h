@@ -61,7 +61,7 @@ namespace herschel
 
   class Scope;
 
-  using NodeList = std::vector<Ptr<AptNode>>;
+  using NodeList = std::vector<std::shared_ptr<AptNode>>;
 
   //------------------------------------------------------------------------------
 
@@ -73,50 +73,50 @@ namespace herschel
   public:
     Transformator();
 
-    AptNode* transformNode(AptNode* node);
+    std::shared_ptr<AptNode> transformNode(std::shared_ptr<AptNode> node);
 
-    AptNode* transform(CompileUnitNode* node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<CompileUnitNode> node);
 
-    AptNode* transform(SymbolNode* node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<SymbolNode> node);
 
-    AptNode* transform(DefNode* node);
-    AptNode* transform(LetNode* node);
-    AptNode* transform(BlockNode* node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<DefNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<LetNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<BlockNode> node);
 
-    AptNode* transform(ParamNode* node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<ParamNode> node);
 
-    AptNode* transform(ApplyNode* node);
-    AptNode* transform(ArrayNode* node);
-    AptNode* transform(ArrayTypeNode* node);
-    AptNode* transform(AssignNode* node);
-    AptNode* transform(BinaryNode* node);
-    AptNode* transform(BoolNode* node);
-    AptNode* transform(CastNode* node);
-    AptNode* transform(CharNode* node);
-    AptNode* transform(DictNode* node);
-    AptNode* transform(FunctionNode* node);
-    AptNode* transform(IfNode* node);
-    AptNode* transform(IntNode* node);
-    AptNode* transform(KeyargNode* node);
-    AptNode* transform(KeywordNode* node);
-    AptNode* transform(MatchNode* node);
-    AptNode* transform(UnaryNode* node);
-    AptNode* transform(OnNode* node);
-    AptNode* transform(RangeNode* node);
-    AptNode* transform(RationalNode* node);
-    AptNode* transform(RealNode* node);
-    AptNode* transform(SelectNode* node);
-    AptNode* transform(SlotdefNode* node);
-    AptNode* transform(SlotRefNode* node);
-    AptNode* transform(StringNode* node);
-    AptNode* transform(TypeDefNode* node);
-    AptNode* transform(TypeNode* node);
-    AptNode* transform(UnitConstNode* node);
-    AptNode* transform(VectorNode* node);
-    AptNode* transform(WhileNode* node);
-    AptNode* transform(VardefNode* node);
-    AptNode* transform(FuncDefNode* node);
-    AptNode* transform(UndefNode* node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<ApplyNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<ArrayNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<ArrayTypeNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<AssignNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<BinaryNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<BoolNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<CastNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<CharNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<DictNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<FunctionNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<IfNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<IntNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<KeyargNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<KeywordNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<MatchNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<UnaryNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<OnNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<RangeNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<RationalNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<RealNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<SelectNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<SlotdefNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<SlotRefNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<StringNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<TypeDefNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<TypeNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<UnitConstNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<VectorNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<WhileNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<VardefNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<FuncDefNode> node);
+    std::shared_ptr<AptNode> transform(std::shared_ptr<UndefNode> node);
 
   private:
     void transformNodeList(NodeList& nl);
@@ -136,7 +136,7 @@ namespace herschel
   {
   public:
     TransformPass(int level);
-    virtual AptNode* doApply(AptNode* src);
+    virtual std::shared_ptr<AptNode> doApply(std::shared_ptr<AptNode> src);
   };
 };                              // namespace
 

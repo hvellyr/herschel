@@ -70,7 +70,7 @@ CodegenWhile::emit(const WhileNode* node) const
   builder().SetInsertPoint(loopHeadBB);
 
   llvm::Value *testValue =
-    tools().wrapLoad(generator().codegenNode(node->test()));
+    tools().wrapLoad(generator().codegenNode(*node->test()));
   if (!testValue)
     return nullptr;
 
@@ -90,7 +90,7 @@ CodegenWhile::emit(const WhileNode* node) const
   // Start insertion in loopBB.
   builder().SetInsertPoint(loopBB);
 
-  llvm::Value* bodyValue = generator().codegenNode(node->body());
+  llvm::Value* bodyValue = generator().codegenNode(*node->body());
   if (!bodyValue)
     return nullptr;
 

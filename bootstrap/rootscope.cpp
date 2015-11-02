@@ -35,7 +35,8 @@ herschel::type::newRootScope(bool forUnitTests)
 
     //-------- lang|Object
     root->registerType(sp, Names::kObjectTypeName,
-                       Type::newType(Names::kObjectTypeName, TypeVector(), Type()));
+                       Type::newType(Names::kObjectTypeName, TypeVector(),
+                                     Type()));
 
 
     //-------- lang|Bool
@@ -94,67 +95,73 @@ herschel::type::newRootScope(bool forUnitTests)
   //------------------------------
   // Other basic types and constants
 
-  Type eofType = Type::newType(Names::kEofTypeName,
+  auto eofType = Type::newType(Names::kEofTypeName,
                                TypeVector(),
                                Type::newTypeRef(Names::kObjectTypeName,
                                                 K(isValue)));
   root->registerType(sp, Names::kEofTypeName, eofType);
 
-  Type nilType = Type::newType(Names::kNilTypeName,
+  auto nilType = Type::newType(Names::kNilTypeName,
                                TypeVector(),
                                Type::newTypeRef(Names::kObjectTypeName,
                                                 K(isValue)));
   root->registerType(sp, Names::kNilTypeName, nilType);
 
-  Type unspecifiedType = Type::newType(Names::kUnspecifiedTypeName,
+  auto unspecifiedType = Type::newType(Names::kUnspecifiedTypeName,
                                        TypeVector(),
                                        Type::newTypeRef(Names::kObjectTypeName,
                                                         K(isValue)));
   root->registerType(sp, Names::kUnspecifiedTypeName, unspecifiedType);
 
 
-  Ptr<AptNode> eof =
-    new VardefNode(sp, String("lang|eof"), kNormalVar,
-                   !K(isLocal), eofType,
-                   new ApplyNode(sp,
-                                 new SymbolNode(sp,
-                                                Names::kEofTypeName)));
+  auto eof = std::make_shared<VardefNode>(sp, String("lang|eof"), kNormalVar,
+                                          !K(isLocal), eofType,
+                                          std::make_shared<ApplyNode>(
+                                            sp,
+                                            std::make_shared<SymbolNode>(
+                                              sp,
+                                              Names::kEofTypeName)));
   root->registerVar(sp, String("lang|eof"), eof);
 
 
-  Ptr<AptNode> nil =
-    new VardefNode(sp, String("lang|nil"), kNormalVar,
-                   !K(isLocal), nilType,
-                   new ApplyNode(sp,
-                                 new SymbolNode(sp,
-                                                Names::kNilTypeName)));
+  auto nil = std::make_shared<VardefNode>(sp, String("lang|nil"), kNormalVar,
+                                          !K(isLocal), nilType,
+                                          std::make_shared<ApplyNode>(
+                                            sp,
+                                            std::make_shared<SymbolNode>(
+                                              sp,
+                                              Names::kNilTypeName)));
   root->registerVar(sp, String("lang|nil"), nil);
 
 
-  Ptr<AptNode> unspecified =
-    new VardefNode(sp, String("lang|unspecified"), kNormalVar,
-                   !K(isLocal), unspecifiedType,
-                   new ApplyNode(sp,
-                                 new SymbolNode(sp,
-                                                Names::kUnspecifiedTypeName)));
+  auto unspecified =
+    std::make_shared<VardefNode>(sp, String("lang|unspecified"), kNormalVar,
+                                 !K(isLocal), unspecifiedType,
+                                 std::make_shared<ApplyNode>(
+                                   sp,
+                                   std::make_shared<SymbolNode>(
+                                     sp,
+                                     Names::kUnspecifiedTypeName)));
   root->registerVar(sp, String("lang|unspecified"), unspecified);
 
 
   //------------------------------ builtin functions
   NodeList params =
-    vector_of<Ptr<AptNode> >(new ParamNode(sp, String(), String("r"),
+    vector_of<std::shared_ptr<AptNode> >(std::make_shared<ParamNode>(
+                                           sp, String(), String("r"),
                                            kPosArg,
                                            Type::newTypeRef(String("T"),
                                                             K(isOpen), K(isValue)),
                                            nullptr));
   root->registerFunction(sp, Names::kLangReturn,
-                         new FuncDefNode(sp,
-                                         Names::kLangReturn,
-                                         kFuncIsAbstract, // flags
-                                         params,
-                                         Type::newTypeRef(String("T"),
-                                                          K(isOpen), K(isValue)),
-                                         nullptr));
+                         std::make_shared<FuncDefNode>(
+                           sp,
+                           Names::kLangReturn,
+                           kFuncIsAbstract, // flags
+                           params,
+                           Type::newTypeRef(String("T"),
+                                            K(isOpen), K(isValue)),
+                           nullptr));
 
   //------------------------------ collections
 
@@ -173,19 +180,21 @@ herschel::type::newRootScope(bool forUnitTests)
                      Type::newType(Names::kOrderedCollectionTypeName,
                                    vector_of(Type::newTypeRef(String("T"),
                                                               K(isOpen), K(isValue))),
-                                   Type::newTypeRef(Names::kCollectionTypeName,
-                                                    vector_of(Type::newTypeRef(String("T"),
-                                                                               K(isOpen), K(isValue))),
-                                                    TypeConstVector(),
-                                                    K(isValue))));
+                                   Type::newTypeRef(
+                                     Names::kCollectionTypeName,
+                                     vector_of(Type::newTypeRef(String("T"),
+                                                                K(isOpen), K(isValue))),
+                                     TypeConstVector(),
+                                     K(isValue))));
 
   root->registerType(sp, Names::kSequenceTypeName,
                      Type::newType(Names::kSequenceTypeName,
                                    vector_of(Type::newTypeRef(String("T"),
                                                               K(isOpen), K(isValue))),
                                    Type::newTypeRef(Names::kOrderedCollectionTypeName,
-                                                    vector_of(Type::newTypeRef(String("T"),
-                                                                               K(isOpen), K(isValue))),
+                                                    vector_of(
+                                                      Type::newTypeRef(String("T"),
+                                                                       K(isOpen), K(isValue))),
                                                     TypeConstVector(),
                                                     K(isValue))));
 
@@ -194,8 +203,9 @@ herschel::type::newRootScope(bool forUnitTests)
                                    vector_of(Type::newTypeRef(String("T"),
                                                               K(isOpen), K(isValue))),
                                    Type::newTypeRef(Names::kSequenceTypeName,
-                                                    vector_of(Type::newTypeRef(String("T"),
-                                                                               K(isOpen), K(isValue))),
+                                                    vector_of(
+                                                      Type::newTypeRef(String("T"),
+                                                                       K(isOpen), K(isValue))),
                                                     TypeConstVector(),
                                                     K(isValue))));
 
@@ -208,43 +218,42 @@ herschel::type::newRootScope(bool forUnitTests)
                      Type::newType(Names::kAssocTypeName,
                                    vector_of(Type::newTypeRef(String("K"),
                                                               K(isOpen), K(isValue)))
-                                            (Type::newTypeRef(String("V"),
-                                                              K(isOpen), K(isValue))),
+                                   (Type::newTypeRef(String("V"),
+                                                     K(isOpen), K(isValue))),
                                    Type::newTypeRef(Names::kObjectTypeName, K(isValue))));
 
   root->registerType(
     sp, Names::kAssocCollectionTypeName,
     Type::newType(Names::kAssocCollectionTypeName,
                   vector_of(Type::newTypeRef(String("K"), K(isOpen), K(isValue)))
-                           (Type::newTypeRef(String("V"), K(isOpen), K(isValue))),
+                  (Type::newTypeRef(String("V"), K(isOpen), K(isValue))),
                   Type::newTypeRef(
                     Names::kCollectionTypeName,
                     vector_of(Type::newTypeRef(
                                 Names::kAssocTypeName,
                                 vector_of(Type::newTypeRef(String("K"),
                                                            K(isOpen), K(isValue)))
-                                         (Type::newTypeRef(String("V"),
-                                                           K(isOpen), K(isValue))),
+                                (Type::newTypeRef(String("V"),
+                                                  K(isOpen), K(isValue))),
                                 TypeConstVector(),
                                 K(isValue))),
                     TypeConstVector(),
                     K(isValue))));
 
-  root->registerType(sp, Names::kMapTypeName,
-                     Type::newType(Names::kMapTypeName,
+  root->registerType(
+    sp, Names::kMapTypeName,
+    Type::newType(Names::kMapTypeName,
+                  vector_of(Type::newTypeRef(String("K"),
+                                             K(isOpen), K(isValue)))
+                  (Type::newTypeRef(String("V"),
+                                    K(isOpen), K(isValue))),
+                  Type::newTypeRef(Names::kAssocCollectionTypeName,
                                    vector_of(Type::newTypeRef(String("K"),
                                                               K(isOpen), K(isValue)))
-                                            (Type::newTypeRef(String("V"),
-                                                              K(isOpen), K(isValue))),
-                                   Type::newTypeRef(Names::kAssocCollectionTypeName,
-                                                    vector_of(Type::newTypeRef(String("K"),
-                                                                               K(isOpen), K(isValue)))
-                                                             (Type::newTypeRef(String("V"),
-                                                                               K(isOpen), K(isValue))),
-                                                    TypeConstVector(),
-                                                    K(isValue))));
-
+                                   (Type::newTypeRef(String("V"),
+                                                     K(isOpen), K(isValue))),
+                                   TypeConstVector(),
+                                   K(isValue))));
 
   return root;
 }
-

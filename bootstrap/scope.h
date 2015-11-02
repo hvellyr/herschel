@@ -160,14 +160,14 @@ namespace herschel
     void registerUnit(const SrcPos& srcpos,
                       const String& unitName, const String& baseUnit,
                       const Type& baseType,
-                      AptNode* transformFunc);
+                      std::shared_ptr<AptNode> transformFunc);
 
     TypeUnit lookupUnit(const String& name, bool showAmbiguousSymDef) const;
 
     //-------- macros
 
     void registerMacro(const SrcPos& srcpos,
-                       const String& name, Macro* macro);
+                       const String& name, std::shared_ptr<Macro> macro);
     const Macro* lookupMacro(const SrcPos& srcpos,
                              const String& name, bool showAmbiguousSymDef) const;
 
@@ -175,14 +175,14 @@ namespace herschel
     //-------- functions
 
     void registerFunction(const SrcPos& srcpos,
-                          const String& name, AptNode* node);
+                          const String& name, std::shared_ptr<AptNode> node);
     const AptNode* lookupFunction(const String& name, bool showAmbiguousSymDef) const;
 
 
     //-------- variables
 
     void registerVar(const SrcPos& srcpos,
-                     const String& name, AptNode* macro);
+                     const String& name, std::shared_ptr<AptNode> macro);
     const AptNode* lookupVar(const String& name, bool showAmbiguousSymDef) const;
 
     const AptNode* lookupVarOrFunc(const String& name,

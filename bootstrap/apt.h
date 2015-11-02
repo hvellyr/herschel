@@ -15,7 +15,6 @@
 #include <vector>
 #include <map>
 
-#include "refcountable.h"
 #include "port.h"
 #include "ptr.h"
 #include "numbers.h"
@@ -40,16 +39,18 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  using NodeList = std::vector<Ptr<AptNode>>;
+  using NodeList = std::vector<std::shared_ptr<AptNode>>;
 
   NodeList newNodeList();
-  NodeList newNodeList(AptNode* n1);
-  NodeList newNodeList(AptNode* n1, AptNode* n2);
-  NodeList newNodeList(AptNode* n1, AptNode* n2, AptNode* n3);
-  NodeList newNodeList(AptNode* n1, AptNode* n2, AptNode* n3, AptNode* n4);
+  NodeList newNodeList(std::shared_ptr<AptNode> n1);
+  NodeList newNodeList(std::shared_ptr<AptNode> n1, std::shared_ptr<AptNode> n2);
+  NodeList newNodeList(std::shared_ptr<AptNode> n1, std::shared_ptr<AptNode> n2,
+                       std::shared_ptr<AptNode> n3);
+  NodeList newNodeList(std::shared_ptr<AptNode> n1, std::shared_ptr<AptNode> n2,
+                       std::shared_ptr<AptNode> n3, std::shared_ptr<AptNode> n4);
 
   NodeList& appendNodes(NodeList& dst, const NodeList& nl);
-  AptNode* singletonNodeListOrNull(const NodeList& nl);
+  std::shared_ptr<AptNode> singletonNodeListOrNull(const NodeList& nl);
 
   void copyNodes(NodeList* dst, const NodeList* src);
   NodeList copyNodes(const NodeList& src);
@@ -70,11 +71,13 @@ namespace herschel
   //--------------------------------------------------------------------------
 
   //! AptNode is the base of all abstract parse tree nodes.
-  class AptNode : public RefCountable
+  class AptNode
   {
   public:
     AptNode(const SrcPos& srcpos);
     AptNode(const SrcPos& srcpos, const Type& type);
+
+    virtual ~AptNode();
 
     //! Returns the source position where the code for this node was seen in
     //! the source file.  For synthesiyed nodes this may point to the nearest
@@ -85,7 +88,7 @@ namespace herschel
     //! after the \c Annotator pass has been applied.
     std::shared_ptr<Scope> scope() const;
     //! Set the captured scope.
-    AptNode* setScope(std::shared_ptr<Scope> scope);
+    void setScope(std::shared_ptr<Scope> scope);
 
     //! Returns the type of this node.  Only available after \c Typifier pass
     //! has been applied.
@@ -121,7 +124,7 @@ namespace herschel
     void setIsSingleTypeRequired(bool value);
 
     //! Returns a (deep) copy of this node.
-    virtual AptNode* clone() const = 0;
+    virtual std::shared_ptr<AptNode> clone() const = 0;
 
     //! Render a (debug) representation of this node using \p renderer.  For
     //! details see \c XmlRenderer.
@@ -132,13 +135,14 @@ namespace herschel
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
 
     //! Annotate this node using \p annotator.  For details see \c Annotator.
-    virtual void annotate(Annotator* annotator) = 0;
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd) = 0;
     //! Apply the \c Traversator pass to this node.  For details see \c
     //! Traversator.
     virtual void traverse(Traversator* traversator) = 0;
 
     //! Transform this node using \p transformator.
-    virtual AptNode* transform(Transformator* annotator) = 0;
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd) = 0;
 
     //! Apply the \c Typifier pass to this node.
     virtual void typify(Typifier& typifier) = 0;
@@ -229,7 +233,7 @@ namespace herschel
 
     //! Appends a node to the end of children.  \p node should not be in the
     //! list of children yet.
-    virtual void appendNode(AptNode* node);
+    virtual void appendNode(std::shared_ptr<AptNode> node);
     //! Appends a list of nodes to the end of children.  Neither of \p nodes
     //! should be in the list of children yet.
     virtual void appendNodes(const NodeList& nodes);
@@ -254,12 +258,13 @@ namespace herschel
   public:
     UndefNode();
 
-    virtual UndefNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -284,12 +289,13 @@ namespace herschel
   public:
     StringNode(const SrcPos& srcpos, const String& value);
 
-    virtual StringNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     //! Returns the (unicode) string value.
@@ -309,12 +315,13 @@ namespace herschel
   public:
     KeywordNode(const SrcPos& srcpos, const String& value);
 
-    virtual KeywordNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     //! Returns the keyword value.
@@ -353,7 +360,7 @@ namespace herschel
     SymbolNode(const SrcPos& srcpos, const String& value,
                const TypeVector& generics);
 
-    virtual SymbolNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     //! Set the symbol's name.
     void setName(const String& nm);
@@ -378,9 +385,10 @@ namespace herschel
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* an);
+    virtual void annotate(Annotator* an, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   protected:
@@ -395,20 +403,21 @@ namespace herschel
   class ArrayTypeNode : public AptNode
   {
   public:
-    ArrayTypeNode(const SrcPos& srcpos, AptNode* typeNode);
+    ArrayTypeNode(const SrcPos& srcpos, std::shared_ptr<AptNode> typeNode);
 
-    AptNode* typeNode() const;
+    std::shared_ptr<AptNode> typeNode() const;
 
-    virtual ArrayTypeNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   private:
-    Ptr<AptNode> fTypeNode;
+    std::shared_ptr<AptNode> fTypeNode;
   };
 
 
@@ -423,12 +432,13 @@ namespace herschel
   public:
     TypeNode(const SrcPos& srcpos, const Type& type);
 
-    virtual TypeNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -488,13 +498,14 @@ namespace herschel
   public:
     IntNode(const SrcPos& srcpos, int64_t value, bool isImaginary,
             const Type& type);
-    virtual IntNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -506,13 +517,14 @@ namespace herschel
   public:
     RealNode(const SrcPos& srcpos, double value,
              bool isImaginary, const Type& type);
-    virtual RealNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -524,13 +536,14 @@ namespace herschel
   public:
     RationalNode(const SrcPos& srcpos, const Rational& value, bool isImaginary,
                  const Type& type);
-    virtual RationalNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -541,13 +554,14 @@ namespace herschel
   {
   public:
     CharNode(const SrcPos& srcpos, Char value);
-    virtual CharNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     Char value() const;
@@ -563,13 +577,13 @@ namespace herschel
   {
   public:
     BoolNode(const SrcPos& srcpos, bool value);
-    virtual BoolNode* clone() const;
-
+    virtual std::shared_ptr<AptNode> clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     bool value() const;
@@ -584,23 +598,23 @@ namespace herschel
   class UnitConstNode : public AptNode
   {
   public:
-    UnitConstNode(const SrcPos& srcpos, AptNode* value,
+    UnitConstNode(const SrcPos& srcpos, std::shared_ptr<AptNode> value,
                   const TypeUnit& unit);
-    virtual UnitConstNode* clone() const;
-
+    virtual std::shared_ptr<AptNode> clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
-    AptNode* value() const;
-    void setValue(AptNode* node);
+    std::shared_ptr<AptNode> value() const;
+    void setValue(std::shared_ptr<AptNode> node);
     TypeUnit unit() const;
 
   private:
-    Ptr<AptNode> fValue;
+    std::shared_ptr<AptNode> fValue;
     TypeUnit     fUnit;
   };
 
@@ -611,13 +625,14 @@ namespace herschel
   {
   public:
     CompileUnitNode(const SrcPos& srcpos);
-    virtual CompileUnitNode* clone() const;
 
+    virtual std::shared_ptr<AptNode> clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -627,27 +642,28 @@ namespace herschel
   class BaseDefNode : public AptNode
   {
   public:
-    BaseDefNode(const SrcPos& srcpos, AptNode* defined);
+    BaseDefNode(const SrcPos& srcpos, std::shared_ptr<AptNode> defined);
 
-    AptNode* defNode() const;
-    void setDefNode(AptNode* val);
+    std::shared_ptr<AptNode> defNode() const;
+    void setDefNode(std::shared_ptr<AptNode> val);
 
   protected:
-    Ptr<AptNode> fDefined;
+    std::shared_ptr<AptNode> fDefined;
   };
 
 
   class LetNode : public BaseDefNode, public LoopAnnotatable
   {
   public:
-    LetNode(AptNode* node);
-    virtual LetNode* clone() const;
+    LetNode(std::shared_ptr<AptNode> node);
 
+    virtual std::shared_ptr<AptNode> clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -655,14 +671,15 @@ namespace herschel
   class DefNode : public BaseDefNode
   {
   public:
-    DefNode(AptNode* node);
-    virtual DefNode* clone() const;
+    DefNode(std::shared_ptr<AptNode> node);
 
+    virtual std::shared_ptr<AptNode> clone() const;
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -680,10 +697,10 @@ namespace herschel
   public:
     BindingNode(const SrcPos& srcpos,
                 const String& symbolName, const Type& type,
-                AptNode* initExpr);
+                std::shared_ptr<AptNode> initExpr);
 
-    AptNode* initExpr() const;
-    void setInitExpr(AptNode* val);
+    std::shared_ptr<AptNode> initExpr() const;
+    void setInitExpr(std::shared_ptr<AptNode> val);
     virtual const String& name() const;
 
     void setAllocType(BindingAllocType type);
@@ -691,7 +708,7 @@ namespace herschel
 
   protected:
     String       fSymbolName;
-    Ptr<AptNode> fInitExpr;
+    std::shared_ptr<AptNode> fInitExpr;
     BindingAllocType fAllocType;
   };
 
@@ -711,9 +728,9 @@ namespace herschel
     VardefNode(const SrcPos& srcpos,
                const String& symbolName, VardefFlags flags,
                bool isLocal,
-               const Type& type, AptNode* initExpr);
+               const Type& type, std::shared_ptr<AptNode> initExpr);
 
-    virtual VardefNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     bool isEnum() const;
     bool isConst() const;
@@ -724,9 +741,10 @@ namespace herschel
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   private:
@@ -749,9 +767,9 @@ namespace herschel
     ParamNode(const SrcPos& srcpos,
               const String& keyName,
               const String& symbolName, ParamFlags flags,
-              const Type& type, AptNode* initExpr);
+              const Type& type, std::shared_ptr<AptNode> initExpr);
 
-    virtual ParamNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     ParamFlags flags() const;
     const String& key() const;
@@ -767,9 +785,10 @@ namespace herschel
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   private:
@@ -784,15 +803,16 @@ namespace herschel
     SlotdefNode(const SrcPos& srcpos,
                 const String& symbolName,
                 unsigned int flags,
-                const Type& type, AptNode* initExpr);
+                const Type& type, std::shared_ptr<AptNode> initExpr);
 
-    virtual SlotdefNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     unsigned int flags() const;
@@ -810,13 +830,14 @@ namespace herschel
   public:
     ArrayNode(const SrcPos& srcpos);
 
-    virtual ArrayNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -828,13 +849,14 @@ namespace herschel
   public:
     VectorNode(const SrcPos& srcpos);
 
-    virtual VectorNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -846,15 +868,16 @@ namespace herschel
   public:
     DictNode(const SrcPos& srcpos);
 
-    void addPair(AptNode* key, AptNode* value);
+    void addPair(std::shared_ptr<AptNode> key, std::shared_ptr<AptNode> value);
 
-    virtual DictNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -865,29 +888,31 @@ namespace herschel
   {
   public:
     BinaryNode(const SrcPos& srcpos,
-               AptNode* left, OperatorType op, AptNode* right);
+               std::shared_ptr<AptNode> left, OperatorType op,
+               std::shared_ptr<AptNode> right);
 
     OperatorType op() const;
-    AptNode* left() const;
-    AptNode* right() const;
+    std::shared_ptr<AptNode> left() const;
+    std::shared_ptr<AptNode> right() const;
 
-    void setLeft(AptNode* node);
-    void setRight(AptNode* node);
+    void setLeft(std::shared_ptr<AptNode> node);
+    void setRight(std::shared_ptr<AptNode> node);
 
     bool isMapTo() const;
 
-    virtual BinaryNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   private:
-    Ptr<AptNode> fLeft;
-    Ptr<AptNode> fRight;
+    std::shared_ptr<AptNode> fLeft;
+    std::shared_ptr<AptNode> fRight;
     OperatorType fOp;
   };
 
@@ -905,24 +930,26 @@ namespace herschel
   class UnaryNode : public AptNode
   {
   public:
-    UnaryNode(const SrcPos& srcpos, UnaryOperatorType op, AptNode* base);
+    UnaryNode(const SrcPos& srcpos, UnaryOperatorType op,
+              std::shared_ptr<AptNode> base);
 
-    AptNode* base() const;
-    void setBase(AptNode* base);
+    std::shared_ptr<AptNode> base() const;
+    void setBase(std::shared_ptr<AptNode> base);
 
     UnaryOperatorType op() const;
 
-    virtual UnaryNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   private:
-    Ptr<AptNode> fBase;
+    std::shared_ptr<AptNode> fBase;
     UnaryOperatorType fOp;
   };
 
@@ -933,28 +960,30 @@ namespace herschel
   {
   public:
     RangeNode(const SrcPos& srcpos,
-              AptNode* from, AptNode* to, AptNode* by);
+              std::shared_ptr<AptNode> from, std::shared_ptr<AptNode> to,
+              std::shared_ptr<AptNode> by);
 
-    AptNode* from() const;
-    void setFrom(AptNode* node);
-    AptNode* to() const;
-    void setTo(AptNode* node);
-    AptNode* by() const;
-    void setBy(AptNode* node);
+    std::shared_ptr<AptNode> from() const;
+    void setFrom(std::shared_ptr<AptNode> node);
+    std::shared_ptr<AptNode> to() const;
+    void setTo(std::shared_ptr<AptNode> node);
+    std::shared_ptr<AptNode> by() const;
+    void setBy(std::shared_ptr<AptNode> node);
 
-    virtual RangeNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   private:
-    Ptr<AptNode> fFrom;
-    Ptr<AptNode> fTo;
-    Ptr<AptNode> fBy;
+    std::shared_ptr<AptNode> fFrom;
+    std::shared_ptr<AptNode> fTo;
+    std::shared_ptr<AptNode> fBy;
   };
 
 
@@ -966,25 +995,27 @@ namespace herschel
   {
   public:
     AssignNode(const SrcPos& srcpos,
-               AptNode* lvalue, AptNode* rvalue);
+               std::shared_ptr<AptNode> lvalue,
+               std::shared_ptr<AptNode> rvalue);
 
-    AptNode* lvalue() const;
-    AptNode* rvalue() const;
-    void setLvalue(AptNode*);
-    void setRvalue(AptNode* );
+    std::shared_ptr<AptNode> lvalue() const;
+    std::shared_ptr<AptNode> rvalue() const;
+    void setLvalue(std::shared_ptr<AptNode>);
+    void setRvalue(std::shared_ptr<AptNode> );
 
-    virtual AssignNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   private:
-    Ptr<AptNode> fLValue;
-    Ptr<AptNode> fRValue;
+    std::shared_ptr<AptNode> fLValue;
+    std::shared_ptr<AptNode> fRValue;
   };
 
 
@@ -994,28 +1025,31 @@ namespace herschel
   {
   public:
     IfNode(const SrcPos& srcpos,
-           AptNode* test, AptNode* consequent, AptNode* alternate);
+           std::shared_ptr<AptNode> test,
+           std::shared_ptr<AptNode> consequent,
+           std::shared_ptr<AptNode> alternate);
 
-    virtual IfNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
-    AptNode* test() const;
-    void setTest(AptNode* node);
-    AptNode* consequent() const;
-    void setConsequent(AptNode* node);
-    AptNode* alternate() const;
-    void setAlternate(AptNode* node);
+    std::shared_ptr<AptNode> test() const;
+    void setTest(std::shared_ptr<AptNode> node);
+    std::shared_ptr<AptNode> consequent() const;
+    void setConsequent(std::shared_ptr<AptNode> node);
+    std::shared_ptr<AptNode> alternate() const;
+    void setAlternate(std::shared_ptr<AptNode> node);
 
   private:
-    Ptr<AptNode> fTest;
-    Ptr<AptNode> fConsequent;
-    Ptr<AptNode> fAlternate;
+    std::shared_ptr<AptNode> fTest;
+    std::shared_ptr<AptNode> fConsequent;
+    std::shared_ptr<AptNode> fAlternate;
   };
 
 
@@ -1026,47 +1060,52 @@ namespace herschel
   public:
     struct SelectMapping
     {
-      SelectMapping(const NodeList& values, AptNode* consequent);
+      SelectMapping(const NodeList& values,
+                    std::shared_ptr<AptNode> consequent);
       SelectMapping(const SelectMapping& other);
 
       // if fTestValues is empty this is an else branch
       NodeList     fTestValues;
-      Ptr<AptNode> fConsequent;
+      std::shared_ptr<AptNode> fConsequent;
     };
 
     using SelectMappingVector = std::vector<SelectMapping>;
 
 
     SelectNode(const SrcPos& srcpos,
-               AptNode* test, AptNode* comparator);
+               std::shared_ptr<AptNode> test,
+               std::shared_ptr<AptNode> comparator);
 
-    virtual SelectNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
-    void addMapping(const NodeList& mappings, AptNode* consequent);
-    void addMapping(AptNode* mapping, AptNode* consequent);
-    void addElseMapping(AptNode* alternate);
+    void addMapping(const NodeList& mappings,
+                    std::shared_ptr<AptNode> consequent);
+    void addMapping(std::shared_ptr<AptNode> mapping,
+                    std::shared_ptr<AptNode> consequent);
+    void addElseMapping(std::shared_ptr<AptNode> alternate);
 
-    AptNode* test() const;
-    void setTest(AptNode* nd);
-    AptNode* comparator() const;
-    void setComparator(AptNode* nd);
+    std::shared_ptr<AptNode> test() const;
+    void setTest(std::shared_ptr<AptNode> nd);
+    std::shared_ptr<AptNode> comparator() const;
+    void setComparator(std::shared_ptr<AptNode> nd);
     SelectMappingVector& mappings();
     size_t mappingCount() const;
     const SelectMapping& mappingAt(size_t i) const;
 
-    void setConsequentAt(size_t i, AptNode* consq);
-    void setTestValueAt(size_t i, size_t j, AptNode* value);
+    void setConsequentAt(size_t i, std::shared_ptr<AptNode> consq);
+    void setTestValueAt(size_t i, size_t j, std::shared_ptr<AptNode> value);
 
   private:
-    Ptr<AptNode>        fTest;
-    Ptr<AptNode>        fComparator;
+    std::shared_ptr<AptNode>        fTest;
+    std::shared_ptr<AptNode>        fComparator;
     SelectMappingVector fMappings;
   };
 
@@ -1080,43 +1119,44 @@ namespace herschel
     {
       MatchMapping(const SrcPos& srcpos, const String& varName,
                    const Type& matchType,
-                   AptNode* consequent);
+                   std::shared_ptr<AptNode> consequent);
       MatchMapping(const MatchMapping& other);
 
       SrcPos fSrcPos;
       String fVarName;
       Type   fMatchType;
-      Ptr<AptNode> fConsequent;
+      std::shared_ptr<AptNode> fConsequent;
     };
 
     using MatchMappingVector = std::vector<MatchMapping>;
 
 
-    MatchNode(const SrcPos& srcpos, AptNode* expr);
+    MatchNode(const SrcPos& srcpos, std::shared_ptr<AptNode> expr);
 
-    virtual MatchNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     void addMapping(const SrcPos& srcpos, const String& varName,
                     const Type& matchType,
-                    AptNode* consequent);
+                    std::shared_ptr<AptNode> consequent);
 
-    AptNode* expr() const;
-    void setExpr(AptNode* nd);
+    std::shared_ptr<AptNode> expr() const;
+    void setExpr(std::shared_ptr<AptNode> nd);
     MatchMappingVector& mappings();
     size_t mappingCount() const;
     const MatchMapping& mappingAt(size_t i) const;
 
-    void setConsequentAt(size_t i, AptNode* consq);
+    void setConsequentAt(size_t i, std::shared_ptr<AptNode> consq);
 
   private:
-    Ptr<AptNode>       fExpr;
+    std::shared_ptr<AptNode>       fExpr;
     MatchMappingVector fMappings;
   };
 
@@ -1127,26 +1167,28 @@ namespace herschel
   {
   public:
     OnNode(const SrcPos& srcpos,
-           const String& key, const NodeList& params, AptNode* body);
+           const String& key, const NodeList& params,
+           std::shared_ptr<AptNode> body);
 
-    virtual OnNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     const String& key() const;
-    AptNode* body() const;
-    void setBody(AptNode* node);
+    std::shared_ptr<AptNode> body() const;
+    void setBody(std::shared_ptr<AptNode> node);
     const NodeList& params() const;
     NodeList& params();
 
   private:
     String       fKey;
-    Ptr<AptNode> fBody;
+    std::shared_ptr<AptNode> fBody;
   };
 
 
@@ -1156,13 +1198,14 @@ namespace herschel
   {
   public:
     BlockNode(const SrcPos& srcpos);
-    virtual BlockNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
   };
 
@@ -1175,22 +1218,23 @@ namespace herschel
     FunctionNode(const SrcPos&   srcpos,
                  const NodeList& params,
                  const Type&     retType,
-                 AptNode*        body);
+                 std::shared_ptr<AptNode>        body);
 
-    virtual FunctionNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     const Type& retType() const;
     void setRetType(const Type& type);
 
-    AptNode* body() const;
-    void setBody(AptNode* node);
+    std::shared_ptr<AptNode> body() const;
+    void setBody(std::shared_ptr<AptNode> node);
     const NodeList& params() const;
     NodeList& params();
 
@@ -1199,7 +1243,7 @@ namespace herschel
 
   protected:
     Type         fRetType;
-    Ptr<AptNode> fBody;
+    std::shared_ptr<AptNode> fBody;
   };
 
 
@@ -1219,9 +1263,9 @@ namespace herschel
                 unsigned int    flags,
                 const NodeList& params,
                 const Type&     retType,
-                AptNode*        body);
+                std::shared_ptr<AptNode> body);
 
-    virtual FuncDefNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual const String& name() const;
     bool isGeneric() const;
@@ -1230,9 +1274,10 @@ namespace herschel
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     bool isAppMain() const;
@@ -1248,26 +1293,27 @@ namespace herschel
   class ApplyNode : public ListNode
   {
   public:
-    ApplyNode(const SrcPos& srcpos, AptNode* base);
+    ApplyNode(const SrcPos& srcpos, std::shared_ptr<AptNode> base);
 
-    AptNode* base() const;
-    void setBase(AptNode* node);
+    std::shared_ptr<AptNode> base() const;
+    void setBase(std::shared_ptr<AptNode> node);
 
     //! indicates whether base is a SymbolNode
     bool isSimpleCall() const;
     String simpleCallName() const;
 
-    virtual ApplyNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   private:
-    Ptr<AptNode> fBase;
+    std::shared_ptr<AptNode> fBase;
   };
 
 
@@ -1277,24 +1323,25 @@ namespace herschel
   {
   public:
     KeyargNode(const SrcPos& srcpos,
-               const String& key, AptNode* value);
+               const String& key, std::shared_ptr<AptNode> value);
 
-    virtual KeyargNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     const String& key() const;
-    AptNode* value() const;
-    void setValue(AptNode* node);
+    std::shared_ptr<AptNode> value() const;
+    void setValue(std::shared_ptr<AptNode> node);
 
   private:
     String       fKey;
-    Ptr<AptNode> fValue;
+    std::shared_ptr<AptNode> fValue;
   };
 
 
@@ -1303,25 +1350,27 @@ namespace herschel
   class WhileNode : public AptNode
   {
   public:
-    WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body);
+    WhileNode(const SrcPos& srcpos, std::shared_ptr<AptNode> test,
+              std::shared_ptr<AptNode> body);
 
-    virtual WhileNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
-    AptNode* body() const;
-    void setBody(AptNode* node);
-    AptNode* test() const;
-    void setTest(AptNode* node);
+    std::shared_ptr<AptNode> body() const;
+    void setBody(std::shared_ptr<AptNode> node);
+    std::shared_ptr<AptNode> test() const;
+    void setTest(std::shared_ptr<AptNode> node);
 
   private:
-    Ptr<AptNode> fTest;
-    Ptr<AptNode> fBody;
+    std::shared_ptr<AptNode> fTest;
+    std::shared_ptr<AptNode> fBody;
   };
 
 
@@ -1338,13 +1387,14 @@ namespace herschel
                 const NodeList& slots,
                 const NodeList& onExprs);
 
-    virtual TypeDefNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
     const String& name() const;
@@ -1375,23 +1425,24 @@ namespace herschel
   {
   public:
     CastNode(const SrcPos& srcpos,
-             AptNode* base,
+             std::shared_ptr<AptNode> base,
              const Type& type);
 
-    virtual CastNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
-    AptNode* base() const;
-    void setBase(AptNode* node);
+    std::shared_ptr<AptNode> base() const;
+    void setBase(std::shared_ptr<AptNode> node);
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   private:
-    Ptr<AptNode> fBase;
+    std::shared_ptr<AptNode> fBase;
   };
 
 
@@ -1400,23 +1451,25 @@ namespace herschel
   class SlotRefNode : public AptNode
   {
   public:
-    SlotRefNode(const SrcPos& srcpos, AptNode* base, const String& slotName);
+    SlotRefNode(const SrcPos& srcpos, std::shared_ptr<AptNode> base,
+                const String& slotName);
 
-    virtual SlotRefNode* clone() const;
+    virtual std::shared_ptr<AptNode> clone() const;
 
-    AptNode* base() const;
-    void setBase(AptNode* base);
+    std::shared_ptr<AptNode> base() const;
+    void setBase(std::shared_ptr<AptNode> base);
     String slotName() const;
 
     virtual void render(XmlRenderer* renderer) const;
     virtual llvm::Value* codegen(CodeGenerator* generator) const;
-    virtual void annotate(Annotator* annotator);
+    virtual void annotate(Annotator* annotator, std::shared_ptr<AptNode> nd);
     virtual void traverse(Traversator* traversator);
-    virtual AptNode* transform(Transformator* annotator);
+    virtual std::shared_ptr<AptNode> transform(Transformator* annotator,
+                                               std::shared_ptr<AptNode> nd);
     virtual void typify(Typifier& typifier);
 
   private:
-    Ptr<AptNode> fBase;
+    std::shared_ptr<AptNode> fBase;
     String       fSlotName;
   };
 };

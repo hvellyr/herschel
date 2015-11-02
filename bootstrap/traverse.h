@@ -57,7 +57,7 @@ namespace herschel
   class VectorNode;
   class WhileNode;
 
-  using NodeList = std::vector<Ptr<AptNode>>;
+  using NodeList = std::vector<std::shared_ptr<AptNode>>;
 
 
   //--------------------------------------------------------------------------
@@ -67,8 +67,8 @@ namespace herschel
   public:
     virtual ~TraverseDelegate() { }
 
-    virtual bool preApply(AptNode* node) = 0;
-    virtual void postApply(AptNode* node) = 0;
+    virtual bool preApply(AptNode& node) = 0;
+    virtual void postApply(AptNode& node) = 0;
   };
 
 
@@ -79,50 +79,50 @@ namespace herschel
   public:
     Traversator(TraverseDelegate& delegate);
 
-    void traverseNode(AptNode* node);
+    void traverseNode(AptNode& node);
 
-    void traverse(CompileUnitNode* node);
+    void traverse(CompileUnitNode& node);
 
-    void traverse(SymbolNode* node);
+    void traverse(SymbolNode& node);
 
-    void traverse(DefNode* node);
-    void traverse(LetNode* node);
-    void traverse(BlockNode* node);
+    void traverse(DefNode& node);
+    void traverse(LetNode& node);
+    void traverse(BlockNode& node);
 
-    void traverse(ParamNode* node);
+    void traverse(ParamNode& node);
 
-    void traverse(ApplyNode* node);
-    void traverse(ArrayNode* node);
-    void traverse(ArrayTypeNode* node);
-    void traverse(AssignNode* node);
-    void traverse(BinaryNode* node);
-    void traverse(BoolNode* node);
-    void traverse(CastNode* node);
-    void traverse(CharNode* node);
-    void traverse(DictNode* node);
-    void traverse(FunctionNode* node);
-    void traverse(IfNode* node);
-    void traverse(IntNode* node);
-    void traverse(KeyargNode* node);
-    void traverse(KeywordNode* node);
-    void traverse(MatchNode* node);
-    void traverse(UnaryNode* node);
-    void traverse(OnNode* node);
-    void traverse(RangeNode* node);
-    void traverse(RationalNode* node);
-    void traverse(RealNode* node);
-    void traverse(SelectNode* node);
-    void traverse(SlotdefNode* node);
-    void traverse(SlotRefNode* node);
-    void traverse(StringNode* node);
-    void traverse(TypeDefNode* node);
-    void traverse(TypeNode* node);
-    void traverse(UnitConstNode* node);
-    void traverse(VectorNode* node);
-    void traverse(WhileNode* node);
-    void traverse(VardefNode* node);
-    void traverse(FuncDefNode* node);
-    void traverse(UndefNode* node);
+    void traverse(ApplyNode& node);
+    void traverse(ArrayNode& node);
+    void traverse(ArrayTypeNode& node);
+    void traverse(AssignNode& node);
+    void traverse(BinaryNode& node);
+    void traverse(BoolNode& node);
+    void traverse(CastNode& node);
+    void traverse(CharNode& node);
+    void traverse(DictNode& node);
+    void traverse(FunctionNode& node);
+    void traverse(IfNode& node);
+    void traverse(IntNode& node);
+    void traverse(KeyargNode& node);
+    void traverse(KeywordNode& node);
+    void traverse(MatchNode& node);
+    void traverse(UnaryNode& node);
+    void traverse(OnNode& node);
+    void traverse(RangeNode& node);
+    void traverse(RationalNode& node);
+    void traverse(RealNode& node);
+    void traverse(SelectNode& node);
+    void traverse(SlotdefNode& node);
+    void traverse(SlotRefNode& node);
+    void traverse(StringNode& node);
+    void traverse(TypeDefNode& node);
+    void traverse(TypeNode& node);
+    void traverse(UnitConstNode& node);
+    void traverse(VectorNode& node);
+    void traverse(WhileNode& node);
+    void traverse(VardefNode& node);
+    void traverse(FuncDefNode& node);
+    void traverse(UndefNode& node);
 
   private:
     void traverseNodeList(NodeList& nl);

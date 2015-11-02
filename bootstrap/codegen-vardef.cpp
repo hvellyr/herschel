@@ -68,7 +68,7 @@ CodegenVardef::codegenForLocalVars(const VardefNode* node) const
   Type type;
   TypeConvKind convKind = kNoConv;
   if (node->initExpr()) {
-    if (dynamic_cast<UndefNode*>(node->initExpr())) {
+    if (dynamic_cast<UndefNode*>(node->initExpr().get())) {
       initval = llvm::Constant::getNullValue(types().getType(node->type()));
 
       dstType = node->type();
@@ -76,7 +76,7 @@ CodegenVardef::codegenForLocalVars(const VardefNode* node) const
       convKind = kNoConv;
     }
     else {
-      initval = tools().wrapLoad(generator().codegenNode(node->initExpr()));
+      initval = tools().wrapLoad(generator().codegenNode(*node->initExpr()));
 
       dstType = node->initExpr()->dstType();
       type = node->initExpr()->type();

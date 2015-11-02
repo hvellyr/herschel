@@ -3945,7 +3945,7 @@ FirstPass::parseMacroDef(const Token& defToken)
       Ptr<SyntaxTable> synTable = SyntaxTable::compile(String(""), patterns);
       fScope->registerMacro(defToken.srcpos(),
                             fullMacroName,
-                            new Macro(synTable, mType));
+                            std::make_shared<Macro>(synTable, mType));
 
       if (Properties::isTraceMacro()) {
         fprintf(stderr, "%s\n", (zstring)StrHelper(synTable->toString()));

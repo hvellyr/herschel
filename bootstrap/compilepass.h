@@ -13,6 +13,8 @@
 
 #include "refcountable.h"
 
+#include <memory>
+
 
 namespace herschel
 {
@@ -71,7 +73,8 @@ namespace herschel
   //!
   //! Subclasses have to provide at least the \c CompilePass::doApply().
 
-  class Token2AptNodeCompilePass : public CompilePass<const Token&, AptNode*>
+  class Token2AptNodeCompilePass : public CompilePass<const Token&,
+                                                      std::shared_ptr<AptNode>>
   {
   public:
     Token2AptNodeCompilePass(int level)
@@ -80,7 +83,7 @@ namespace herschel
 
     ~Token2AptNodeCompilePass() { }
 
-    virtual AptNode* apply(const Token& src, bool doTrace);
+    virtual std::shared_ptr<AptNode> apply(const Token& src, bool doTrace);
 
     virtual int passLevel() const { return fLevel; }
 
@@ -93,7 +96,8 @@ namespace herschel
   //!
   //! Subclasses have to provide at least the \c CompilePass::doApply().
 
-  class AptNodeCompilePass : public CompilePass<AptNode*, AptNode*>
+  class AptNodeCompilePass : public CompilePass<std::shared_ptr<AptNode>,
+                                                std::shared_ptr<AptNode>>
   {
   public:
     AptNodeCompilePass(int level, bool showNodeType = false)
@@ -103,7 +107,8 @@ namespace herschel
 
     ~AptNodeCompilePass() { }
 
-    virtual AptNode* apply(AptNode* src, bool doTrace);
+    virtual std::shared_ptr<AptNode> apply(std::shared_ptr<AptNode> src,
+                                           bool doTrace);
 
     virtual int passLevel() const { return fLevel; }
 

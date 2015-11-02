@@ -646,17 +646,21 @@ TEST_CASE("Covariance for generics", "[type]")
   {
     REQUIRE(herschel::isCovariant(Type::newTypeRef("Full"),
                                   Type::newTypeRef(String("Mappable"),
-                                                   vector_of(Type::newTypeRef(String("K"), K(isopen),
+                                                   vector_of(Type::newTypeRef(String("K"),
+                                                                              K(isopen),
                                                                               !K(isvalue)))
-                                                            (Type::newTypeRef(String("E"), K(isopen),
+                                                            (Type::newTypeRef(String("E"),
+                                                                              K(isopen),
                                                                               !K(isvalue))),
                                                    !K(isvalue)),
                                   *scope, SrcPos(), !K(reportErrors)));
     REQUIRE(herschel::isCovariant(Type::newTypeRef("Ultra"),
                                   Type::newTypeRef(String("Mappable"),
-                                                   vector_of(Type::newTypeRef(String("K"), K(isopen),
+                                                   vector_of(Type::newTypeRef(String("K"),
+                                                                              K(isopen),
                                                                               !K(isvalue)))
-                                                            (Type::newTypeRef(String("E"), K(isopen),
+                                                            (Type::newTypeRef(String("E"),
+                                                                              K(isopen),
                                                                               !K(isvalue))),
                                                    !K(isvalue)),
                                   *scope, SrcPos(), !K(reportErrors)));
@@ -675,9 +679,11 @@ TEST_CASE("Covariance for generics", "[type]")
   SECTION("Case 3")
   {
     REQUIRE(herschel::isCovariant(Type::newTypeRef(String("Mappable"),
-                                                   vector_of(Type::newTypeRef(String("K"), K(isopen),
+                                                   vector_of(Type::newTypeRef(String("K"),
+                                                                              K(isopen),
                                                                               !K(isvalue)))
-                                                            (Type::newTypeRef(String("E"), K(isopen),
+                                                            (Type::newTypeRef(String("E"),
+                                                                              K(isopen),
                                                                               !K(isvalue))),
                                                    !K(isvalue)),
                                   Type::newTypeRef(String("Mappable"),
@@ -693,9 +699,11 @@ TEST_CASE("Covariance for generics", "[type]")
 
     REQUIRE(herschel::isCovariant(Type::newTypeRef("Multi"),
                                   Type::newTypeRef(String("OrdMap"),
-                                                   vector_of(Type::newTypeRef(String("K"), K(isopen),
+                                                   vector_of(Type::newTypeRef(String("K"),
+                                                                              K(isopen),
                                                                               !K(isvalue)))
-                                                            (Type::newTypeRef(String("E"), K(isopen),
+                                                            (Type::newTypeRef(String("E"),
+                                                                              K(isopen),
                                                                               !K(isvalue))),
                                                    !K(isvalue)),
                                   *scope, SrcPos(), !K(reportErrors)));
@@ -877,8 +885,10 @@ TEST_CASE("Match generics for simple generics", "[type]")
   auto scope = testScopeSetupGenerics();
 
   Type mapGen = Type::newTypeRef(String("Mappable"),
-                                 vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
-                                          (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                 vector_of(Type::newTypeRef(String("K"), K(isopen),
+                                                            !K(isvalue)))
+                                          (Type::newTypeRef(String("E"), K(isopen),
+                                                            !K(isvalue))),
                                  !K(isvalue));
   Type mapCon = Type::newTypeRef(String("Mappable"),
                                  vector_of(Type::newTypeRef("Abc"))
@@ -900,8 +910,10 @@ TEST_CASE("Match generic for inherited generics", "[type]")
   auto scope = testScopeSetupGenerics();
 
   Type mappable = Type::newTypeRef(String("Mappable"),
-                                   vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
-                                            (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                   vector_of(Type::newTypeRef(String("K"), K(isopen),
+                                                              !K(isvalue)))
+                                            (Type::newTypeRef(String("E"), K(isopen),
+                                                              !K(isvalue))),
                                    !K(isvalue));
 
   REQUIRE(mappable.matchGenerics(localCtx, Type::newTypeRef("Full"), *scope, SrcPos()));
@@ -920,11 +932,14 @@ TEST_CASE("Match generics for inherited generics with indirect multi inheritance
   auto scope = testScopeSetupGenerics();
 
   Type mappable = Type::newTypeRef(String("Mappable"),
-                                   vector_of(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)))
-                                            (Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                                   vector_of(Type::newTypeRef(String("K"), K(isopen),
+                                                              !K(isvalue)))
+                                            (Type::newTypeRef(String("E"), K(isopen),
+                                                              !K(isvalue))),
                                    !K(isvalue));
 
-  REQUIRE(mappable.matchGenerics(localCtx, Type::newTypeRef("Multi"), *scope, SrcPos()));
+  REQUIRE(mappable.matchGenerics(localCtx, Type::newTypeRef("Multi"),
+                                 *scope, SrcPos()));
 
   REQUIRE(localCtx.hasType(String("K")));
   REQUIRE(localCtx.hasType(String("E")));
