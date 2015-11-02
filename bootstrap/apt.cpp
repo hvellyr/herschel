@@ -2407,14 +2407,14 @@ DEF_TYPIFY(SlotRefNode)
 //--------------------------------------------------------------------------------
 
 NodeList
-herschel::newNodeList()
+herschel::makeNodeList()
 {
   return NodeList();
 }
 
 
 NodeList
-herschel::newNodeList(std::shared_ptr<AptNode> n1)
+herschel::makeNodeList(std::shared_ptr<AptNode> n1)
 {
   NodeList nl;
   if (n1)
@@ -2424,48 +2424,10 @@ herschel::newNodeList(std::shared_ptr<AptNode> n1)
 
 
 NodeList
-herschel::newNodeList(std::shared_ptr<AptNode> n1, std::shared_ptr<AptNode> n2)
+herschel::makeNodeList(std::initializer_list<std::shared_ptr<AptNode>> l)
 {
   NodeList nl;
-  if (n1)
-    nl.push_back(n1);
-  if (n2)
-    nl.push_back(n2);
-  return nl;
-}
-
-
-NodeList
-herschel::newNodeList(std::shared_ptr<AptNode> n1,
-                      std::shared_ptr<AptNode> n2,
-                      std::shared_ptr<AptNode> n3)
-{
-  NodeList nl;
-  if (n1)
-    nl.push_back(n1);
-  if (n2)
-    nl.push_back(n2);
-  if (n3)
-    nl.push_back(n3);
-  return nl;
-}
-
-
-NodeList
-herschel::newNodeList(std::shared_ptr<AptNode> n1,
-                      std::shared_ptr<AptNode> n2,
-                      std::shared_ptr<AptNode> n3,
-                      std::shared_ptr<AptNode> n4)
-{
-  NodeList nl;
-  if (n1)
-    nl.push_back(n1);
-  if (n2)
-    nl.push_back(n2);
-  if (n3)
-    nl.push_back(n3);
-  if (n4)
-    nl.push_back(n4);
+  nl.insert(nl.end(), l.begin(), l.end());
   return nl;
 }
 

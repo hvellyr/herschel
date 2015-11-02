@@ -1050,7 +1050,7 @@ Typifier::checkBinaryFunctionCall(BinaryNode& node,
     // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
     // out->render(const_cast<FunctionNode*>(funcNode));
     Type type = typifyMatchAndCheckParameters(node.srcpos(),
-                                              newNodeList(leftArg, rightArg),
+                                              makeNodeList({leftArg, rightArg}),
                                               *funcNode);
     if (type.isDef()) {
       node.setType(type);

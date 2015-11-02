@@ -1960,7 +1960,7 @@ NodeList
 SecondPass::rewriteDefNode(std::shared_ptr<AptNode> node, bool isLet)
 {
   if (node)
-    return newNodeList(newDefNode(node, isLet));
+    return makeNodeList(newDefNode(node, isLet));
   return NodeList();
 }
 
@@ -3448,47 +3448,51 @@ SecondPass::parseSeq(const Token& expr)
 
   Token first = expr[0];
   if (first == kModuleId)
-    return newNodeList(parseModule(expr));
+    return makeNodeList(parseModule(expr));
   else if (first == kExportId)
-    return newNodeList(parseExport(expr));
+    return makeNodeList(parseExport(expr));
   else if (first == kImportId)
-    return newNodeList(parseImport(expr));
+    return makeNodeList(parseImport(expr));
   else if (first == kDefId || first == kLetId)
     return parseDef(expr, first == kLetId);
   else if (first == kIfId)
-    return newNodeList(parseIf(expr));
+    return makeNodeList(parseIf(expr));
   else if (first == kOnId)
-    return newNodeList(parseOn(expr));
+    return makeNodeList(parseOn(expr));
   else if (first == kFunctionId)
-    return newNodeList(parseClosure(expr));
+    return makeNodeList(parseClosure(expr));
   else if (first == kForId)
-    return newNodeList(parseFor(expr));
+    return makeNodeList(parseFor(expr));
   else if (first == kSelectId)
-    return newNodeList(parseSelect(expr));
+    return makeNodeList(parseSelect(expr));
   else if (first == kMatchId)
-    return newNodeList(parseMatch(expr));
+    return makeNodeList(parseMatch(expr));
   else if (expr.isBinarySeq() || expr.isTernarySeq())
-    return newNodeList(parseBinary(expr));
+    return makeNodeList(parseBinary(expr));
   else if (first == kMinus) {
     hr_assert(expr.count() == 2);
     auto exprNode = singletonNodeListOrNull(parseExpr(expr[1]));
-    return newNodeList(std::make_shared<UnaryNode>(expr.srcpos(), kUnaryOpNegate, exprNode));
+    return makeNodeList(std::make_shared<UnaryNode>(expr.srcpos(),
+                                                    kUnaryOpNegate,
+                                                    exprNode));
   }
   else if (first == kNotId) {
     hr_assert(expr.count() == 2);
     auto exprNode = singletonNodeListOrNull(parseExpr(expr[1]));
-    return newNodeList(std::make_shared<UnaryNode>(expr.srcpos(), kUnaryOpNot, exprNode));
+    return makeNodeList(std::make_shared<UnaryNode>(expr.srcpos(),
+                                                    kUnaryOpNot,
+                                                    exprNode));
   }
   else if (expr.count() == 2) {
     if (expr[1].isNested()) {
       if (expr[1].leftToken() == kParanOpen)
-        return newNodeList(parseFunCall(expr));
+        return makeNodeList(parseFunCall(expr));
       else if (expr[0] == kSymbol &&
                expr[1].leftToken() == kGenericOpen)
-        return newNodeList(parseTypeExpr(expr));
+        return makeNodeList(parseTypeExpr(expr));
       else if ((expr[0] == kSymbol || expr[0].isSeq()) &&
                expr[1].leftToken() == kBracketOpen)
-        return newNodeList(parseTypeExpr(expr));
+        return makeNodeList(parseTypeExpr(expr));
       else {
         fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
                 (zstring)StrHelper(expr.toString()),
@@ -3497,18 +3501,18 @@ SecondPass::parseSeq(const Token& expr)
       }
     }
     else if (expr[0] == kQuote && expr[1] == kSymbol)
-      return newNodeList(parseTypeExpr(expr));
+      return makeNodeList(parseTypeExpr(expr));
   }
   else if (expr.count() == 3) {
     if (expr[0].isNumber() && expr[1] == kColon) {
       switch (expr[0].tokenType()) {
       case kInt:
       case kUInt:
-        return newNodeList(parseIntNumber(expr));
+        return makeNodeList(parseIntNumber(expr));
       case kRational:
-        return newNodeList(parseRationalNumber(expr));
+        return makeNodeList(parseRationalNumber(expr));
       case kFloat:
-        return newNodeList(parseRealNumber(expr));
+        return makeNodeList(parseRealNumber(expr));
       default:
         fprintf(stderr, "%d\n", expr.tokenType());
         hr_invalid("");
@@ -3516,13 +3520,13 @@ SecondPass::parseSeq(const Token& expr)
       }
     }
     else if (expr[0].isNumber() && expr[1] == kQuote) {
-      return newNodeList(parseUnitNumber(expr));
+      return makeNodeList(parseUnitNumber(expr));
     }
     else if (expr[1] == kRange) {
-      return newNodeList(parseBinary(expr));
+      return makeNodeList(parseBinary(expr));
     }
     else if (expr[1] == kReference && expr[2] == kSymbol) {
-      return newNodeList(parseSlotAccess(expr));
+      return makeNodeList(parseSlotAccess(expr));
     }
     else {
       fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
@@ -3533,7 +3537,7 @@ SecondPass::parseSeq(const Token& expr)
   }
   else if (expr.count() == 4) {
     if (expr[0] == kExtendId)
-      return newNodeList(parseExtend(expr));
+      return makeNodeList(parseExtend(expr));
   }
 
   return parseExpr(expr[0]);
@@ -3671,16 +3675,16 @@ SecondPass::parseNested(const Token& expr)
 
   switch (expr.leftToken()) {
   case kBraceOpen:
-    return newNodeList(parseBlock(expr));
+    return makeNodeList(parseBlock(expr));
 
   case kLiteralVectorOpen:
     if (expr.count() > 0 && expr[0].isBinarySeq(kMapTo))
-      return newNodeList(parseLiteralDict(expr));
+      return makeNodeList(parseLiteralDict(expr));
     else
-      return newNodeList(parseLiteralVector(expr));
+      return makeNodeList(parseLiteralVector(expr));
 
   case kLiteralArrayOpen:
-    return newNodeList(parseLiteralArray(expr));
+    return makeNodeList(parseLiteralArray(expr));
 
   case kParanOpen:
     hr_assert(expr.count() == 1);
@@ -3799,28 +3803,30 @@ SecondPass::parseExpr(const Token& expr)
       auto var = fScope->lookupVar(expr.idValue(), K(showAmbiguousSymDef));
       auto vardef = dynamic_cast<const VardefNode*>(var);
       if (vardef && vardef->isEnum() && vardef->initExpr()) {
-        return newNodeList(vardef->initExpr()->clone());
+        return makeNodeList(vardef->initExpr()->clone());
       }
     }
-    return newNodeList(std::make_shared<SymbolNode>(expr.srcpos(), expr.idValue()));
+    return makeNodeList(std::make_shared<SymbolNode>(expr.srcpos(),
+                                                     expr.idValue()));
 
   case kLit:
     switch (expr.tokenType()) {
     case kBool:
-      return newNodeList(std::make_shared<BoolNode>(expr.srcpos(), expr.boolValue()));
+      return makeNodeList(std::make_shared<BoolNode>(expr.srcpos(),
+                                                     expr.boolValue()));
     case kInt:
     case kUInt:
-      return newNodeList(parseIntNumber(expr));
+      return makeNodeList(parseIntNumber(expr));
     case kRational:
-      return newNodeList(parseRationalNumber(expr));
+      return makeNodeList(parseRationalNumber(expr));
     case kFloat:
-      return newNodeList(parseRealNumber(expr));
+      return makeNodeList(parseRealNumber(expr));
     case kChar:
-      return newNodeList(std::make_shared<CharNode>(expr.srcpos(), expr.charValue()));
+      return makeNodeList(std::make_shared<CharNode>(expr.srcpos(), expr.charValue()));
     case kString:
-      return newNodeList(std::make_shared<StringNode>(expr.srcpos(), expr.stringValue()));
+      return makeNodeList(std::make_shared<StringNode>(expr.srcpos(), expr.stringValue()));
     case kKeyword:
-      return newNodeList(std::make_shared<KeywordNode>(expr.srcpos(), expr.stringValue()));
+      return makeNodeList(std::make_shared<KeywordNode>(expr.srcpos(), expr.stringValue()));
 
     case kDocString:
       // TODO

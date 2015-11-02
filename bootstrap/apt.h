@@ -11,16 +11,17 @@
 #ifndef bootstrap_apt_h
 #define bootstrap_apt_h
 
-#include <list>
-#include <vector>
-#include <map>
-
-#include "port.h"
-#include "ptr.h"
 #include "numbers.h"
 #include "parsertypes.h"
-#include "type.h"
+#include "port.h"
+#include "ptr.h"
 #include "scope.h"
+#include "type.h"
+
+#include <initializer_list>
+#include <list>
+#include <map>
+#include <vector>
 
 namespace llvm
 {
@@ -41,13 +42,9 @@ namespace herschel
 
   using NodeList = std::vector<std::shared_ptr<AptNode>>;
 
-  NodeList newNodeList();
-  NodeList newNodeList(std::shared_ptr<AptNode> n1);
-  NodeList newNodeList(std::shared_ptr<AptNode> n1, std::shared_ptr<AptNode> n2);
-  NodeList newNodeList(std::shared_ptr<AptNode> n1, std::shared_ptr<AptNode> n2,
-                       std::shared_ptr<AptNode> n3);
-  NodeList newNodeList(std::shared_ptr<AptNode> n1, std::shared_ptr<AptNode> n2,
-                       std::shared_ptr<AptNode> n3, std::shared_ptr<AptNode> n4);
+  NodeList makeNodeList();
+  NodeList makeNodeList(std::shared_ptr<AptNode> n1);
+  NodeList makeNodeList(std::initializer_list<std::shared_ptr<AptNode>> l);
 
   NodeList& appendNodes(NodeList& dst, const NodeList& nl);
   std::shared_ptr<AptNode> singletonNodeListOrNull(const NodeList& nl);
