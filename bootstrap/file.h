@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_file_h
-#define bootstrap_file_h
+#pragma once
 
 #include <vector>
 
@@ -161,7 +160,5 @@ namespace herschel
                         const StringVector& searchPath,
                         const StringVector& altExtensions);
 
-  };                            // namespace
-};                              // namespace
-
-#endif                          // bootstrap_file_h
+  } // namespace
+} // namespace

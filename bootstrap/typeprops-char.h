@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeprops_char_h
-#define bootstrap_typeprops_char_h
+#pragma once
 
 #include "typeprops.h"
 #include "typeenum.h"
@@ -105,4 +104,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeprops_char_h

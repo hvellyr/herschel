@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_scope_h
-#define bootstrap_scope_h
+#pragma once
 
 #include "common.h"
 
@@ -380,5 +379,3 @@ namespace herschel
     bool fIsInnerScope;
   };
 };                              // namespace
-
-#endif                          // bootstrap_scope_h

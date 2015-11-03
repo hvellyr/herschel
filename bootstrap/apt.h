@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_apt_h
-#define bootstrap_apt_h
+#pragma once
 
 #include "numbers.h"
 #include "parsertypes.h"
@@ -1750,5 +1749,3 @@ namespace herschel
   }
 
 } // namespace herschel
-
-#endif  // bootstrap_apt_h

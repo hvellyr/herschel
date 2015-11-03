@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_binnode_h
-#define bootstrap_codegen_binnode_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -78,6 +77,5 @@ namespace herschel
                                    llvm::Value* left,
                                    llvm::Value* right) const;
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_binnode_h
+} // namespace

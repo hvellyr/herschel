@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_externc_h
-#define bootstrap_externc_h
+#pragma once
 
 #include "token.h"
 #include "pass1.h"
@@ -53,6 +52,5 @@ namespace herschel
     Token fToken;
     Ptr<FirstPass> fPass;
   };
-};                              // namespace
 
-#endif                          // bootstrap_externc_h
+} // namespace

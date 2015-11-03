@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_setup_h
-#define bootstrap_setup_h
+#pragma once
 
 #include <vector>
 #include "str.h"
@@ -44,5 +43,3 @@ namespace herschel
 
   extern Setup findResources(zstring exeName);
 };                              // namespace
-
-#endif                          // bootstrap_setup_h

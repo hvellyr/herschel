@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeenum_h
-#define bootstrap_typeenum_h
+#pragma once
 
 #include "refcountable.h"
 
@@ -238,4 +237,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeenum_h

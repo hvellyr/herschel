@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeprops_h
-#define bootstrap_typeprops_h
+#pragma once
 
 namespace llvm
 {
@@ -123,4 +122,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeprops_h

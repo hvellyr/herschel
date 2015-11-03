@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typectx_h
-#define bootstrap_typectx_h
+#pragma once
 
 #include "common.h"
 
@@ -88,4 +87,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif                          // bootstrap_typectx_h

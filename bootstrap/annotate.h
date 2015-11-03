@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_annotate_h
-#define bootstrap_annotate_h
+#pragma once
 
 #include "refcountable.h"
 #include "ptr.h"
@@ -162,6 +161,4 @@ namespace herschel
     Compiler&  fCompiler;       // backlink to owning compiler
   };
 
-};                              // namespace
-
-#endif                          // bootstrap_annotate_h
+} // namespace

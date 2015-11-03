@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_h
-#define bootstrap_codegen_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -211,6 +210,5 @@ namespace herschel
     std::map<String, llvm::AllocaInst*> fNamedValues;
     std::map<String, llvm::GlobalVariable*> fGlobalVariables;
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_h
+} // namespace

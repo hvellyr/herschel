@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_require_h
-#define bootstrap_require_h
+#pragma once
 
 namespace herschel
 {
@@ -49,6 +48,4 @@ namespace herschel
 
 #endif /* end IS_DEBUG */
 
-};                              // namespace
-
-#endif                          // bootstrap_require_h
+}                               // namespace

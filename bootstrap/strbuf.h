@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_strbuf_h
-#define bootstrap_strbuf_h
+#pragma once
 
 #include <vector>
 
@@ -51,4 +50,3 @@ namespace herschel
   };
 };
 
-#endif  // bootstrap_strbuf_h

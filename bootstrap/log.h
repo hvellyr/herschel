@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_log_h
-#define bootstrap_log_h
+#pragma once
 
 #include "str.h"
 #include "srcpos.h"
@@ -49,6 +48,5 @@ namespace herschel
 
   void warning(const SrcPos& where, int errorCode, const String& msg);
   void warningf(const SrcPos& where, int errorCode, zstring format, ...);
-};
 
-#endif  // bootstrap_log_h
+} // namespace

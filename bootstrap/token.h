@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_token_h
-#define bootstrap_token_h
+#pragma once
 
 #include <vector>
 #include <map>
@@ -394,4 +393,3 @@ namespace herschel
 };
 
 
-#endif  // bootstrap_token_h

@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_str_h
-#define bootstrap_str_h
+#pragma once
 
 #include "common.h"
 
@@ -275,4 +274,3 @@ namespace herschel
 #endif
 };
 
-#endif  // bootstrap_str_h

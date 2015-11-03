@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_properties_h
-#define bootstrap_properties_h
+#pragma once
 
 #include <vector>
 
@@ -81,6 +80,4 @@ namespace herschel
     static bool shouldIgnoreDocStrings();
     static void setShouldIgnoreDocStrings(bool value);
   };
-};                              // namespace
-
-#endif   // bootstrap_properties_h
+} // namespace

@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_registry_h
-#define bootstrap_registry_h
+#pragma once
 
 #include <map>
 
@@ -61,7 +60,4 @@ namespace herschel
     ValueMapType fMap;
   };
 
-};
-
-
-#endif  // bootstrap_registry_h
+}

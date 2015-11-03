@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_port_h
-#define bootstrap_port_h
+#pragma once
 
 #include <stdio.h>
 
@@ -268,6 +267,4 @@ namespace herschel
   void display(Port<Octet>* port, const String& value);
   void displayln(Port<Octet>* port, const String& value);
 
-};                              // namespace
-
-#endif                          // bootstrap_port_h
+} // namespace

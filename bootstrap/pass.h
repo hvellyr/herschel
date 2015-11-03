@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_pass_h
-#define bootstrap_pass_h
+#pragma once
 
 #include <list>
 
@@ -59,6 +58,5 @@ namespace herschel
     std::shared_ptr<Scope> fScope;
     Compiler&         fCompiler;
   };
-};                              // namespace
 
-#endif                          // bootstrap_pass_h
+} // namespace

@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_compilepass_h
-#define bootstrap_compilepass_h
+#pragma once
 
 #include "refcountable.h"
 
@@ -116,6 +115,5 @@ namespace herschel
     int fLevel;
     bool fShowNodeType;
   };
-};                              // namespace
 
-#endif                          // bootstrap_compilepass_h
+} // namespace

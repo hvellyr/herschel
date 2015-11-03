@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_transform_h
-#define bootstrap_transform_h
+#pragma once
 
 #include "refcountable.h"
 #include "ptr.h"
@@ -140,4 +139,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif                          // bootstrap_transform_h

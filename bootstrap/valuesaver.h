@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_valuesaver_h
-#define bootstrap_valuesaver_h
+#pragma once
 
 namespace herschel
 {
@@ -41,4 +40,3 @@ namespace herschel
 };                              // namespace
 
 
-#endif  // bootstrap_valuesaver_h

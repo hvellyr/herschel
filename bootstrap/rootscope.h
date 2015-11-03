@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_rootscope_h
-#define bootstrap_rootscope_h
+#pragma once
 
 #include <memory>
 
@@ -22,6 +21,4 @@ namespace herschel
   {
     std::shared_ptr<Scope> newRootScope(bool forUnitTests = false);
   };
-};                              // namespace
-
-#endif                          // bootstrap_rootscope_h
+}                              // namespace

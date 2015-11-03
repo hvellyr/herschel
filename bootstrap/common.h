@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_common_h
-#define bootstrap_common_h
+#pragma once
 
 #include "config-local.h"
 #include "version.h"
@@ -43,5 +42,3 @@ enum CompileOutFormat
 };
 
 #include "require.h"
-
-#endif

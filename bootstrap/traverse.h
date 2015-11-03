@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_traverse_h
-#define bootstrap_traverse_h
+#pragma once
 
 #include <vector>
 #include "ptr.h"
@@ -133,4 +132,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif                          // bootstrap_traverse_h

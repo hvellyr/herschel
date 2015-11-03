@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_parsertypes_h
-#define bootstrap_parsertypes_h
+#pragma once
 
 #include "token.h"
 #include "registry.h"
@@ -46,7 +45,4 @@ namespace herschel
   OperatorType tokenTypeToOperator(TokenType type);
   TokenType operatorToTokenType(OperatorType op);
 
-};                              // namespace
-
-
-#endif  // bootstrap_parsertypes_h
+} // namespace

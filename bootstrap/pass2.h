@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_pass2_h
-#define bootstrap_pass2_h
+#pragma once
 
 #include "apt.h"
 #include "compilepass.h"
@@ -284,6 +283,5 @@ namespace herschel
     Compiler& fCompiler;
     std::shared_ptr<SecondPass> fPass;
   };
-};
 
-#endif  // bootstrap_pass2_h
+} // namespace

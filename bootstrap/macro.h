@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_macro_h
-#define bootstrap_macro_h
+#pragma once
 
 #include <map>
 #include <vector>
@@ -174,6 +173,5 @@ namespace herschel
     Ptr<SyntaxTable> fSyntaxTable;
     MacroType        fMacroType;
   };
-};                              // namespace
 
-#endif                          // macro
+} // namespace

@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_types_h
-#define bootstrap_codegen_types_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -66,6 +65,5 @@ namespace herschel
     size_t getSlotSize(const Type& type) const;
     size_t getAtomTypeSize() const;
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_types_h
+} // namespace

@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_init_h
-#define bootstrap_codegen_init_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -142,7 +141,4 @@ namespace herschel
     KeywordMap fKeywords;
   };
 
-
-};                              // namespace
-
-#endif                          // bootstrap_codegen_init_h
+} // namespace

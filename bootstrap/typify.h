@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typify_h
-#define bootstrap_typify_h
+#pragma once
 
 #include "ptr.h"
 #include "compilepass.h"
@@ -263,4 +262,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif                          // bootstrap_typify_h

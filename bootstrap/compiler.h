@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_compiler_h
-#define bootstrap_compiler_h
+#pragma once
 
 #include "apt.h"
 #include "macro.h"
@@ -175,6 +174,5 @@ namespace herschel
 
   void compileFiles(const std::vector<String>& files,
                     const String& outputfile);
-};
 
-#endif  // bootstrap_compiler_h
+} // namespace

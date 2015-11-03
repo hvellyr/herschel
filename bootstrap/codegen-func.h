@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_func_h
-#define bootstrap_codegen_func_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -74,6 +73,5 @@ namespace herschel
                                           bool isLocal,
                                           bool forceAtomReturnType) const;
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_func_h
+} // namespace

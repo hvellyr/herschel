@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_job_h
-#define bootstrap_job_h
+#pragma once
 
 #include <vector>
 
@@ -20,6 +19,5 @@ namespace herschel
   int startProcess(const String& cmd, const std::vector<String>& args,
                    bool logCalls = false);
 
-};                              // namespace
+} // namespace
 
-#endif                          // bootstrap_job_h

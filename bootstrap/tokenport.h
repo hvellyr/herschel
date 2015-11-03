@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_tokenport_h
-#define bootstrap_tokenport_h
+#pragma once
 
 #include <list>
 
@@ -74,4 +73,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif  // bootstrap_tokenport_h

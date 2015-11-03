@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_symbol_h
-#define bootstrap_symbol_h
+#pragma once
 
 namespace herschel
 {
@@ -24,4 +23,3 @@ namespace herschel
   String mangleToC(const String& qualId);
 };                              // namespace
 
-#endif                          // bootstrap_symbol_h

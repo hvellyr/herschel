@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_tokenizer_h
-#define bootstrap_tokenizer_h
+#pragma once
 
 #include "port.h"
 #include "numbers.h"
@@ -115,4 +114,3 @@ namespace herschel
   };
 };
 
-#endif // bootstrap_tokenizer_h

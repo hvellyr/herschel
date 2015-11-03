@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_ptr_h
-#define bootstrap_ptr_h
+#pragma once
 
 #include "common.h"
 
@@ -150,6 +149,4 @@ namespace herschel
   private:
     T* fObject;
   };
-};
-
-#endif
+} // namespace

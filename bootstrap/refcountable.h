@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_refcountable_h
-#define bootstrap_refcountable_h
+#pragma once
 
 #include "common.h"
 #include "require.h"
@@ -81,6 +80,4 @@ namespace herschel
     int fRefCount;
   };
 
-};                              // namespace
-
-#endif                          // bootstrap_refcountable_h
+} // namespace

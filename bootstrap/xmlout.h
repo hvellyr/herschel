@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_xmlout_h
-#define bootstrap_xmlout_h
+#pragma once
 
 #include "refcountable.h"
 #include "port.h"
@@ -179,6 +178,5 @@ namespace herschel
     void dump(const AptNode& node);
 
   };
-};                              // namespace
 
-#endif                          // bootstrap_xmlout_h
+} // namespace

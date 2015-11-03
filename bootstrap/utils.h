@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_utils_h
-#define bootstrap_utils_h
+#pragma once
 
 #include <vector>
 
@@ -29,4 +28,3 @@ namespace herschel
   }
 }                               // namespace
 
-#endif                          // bootstrap_utils_h

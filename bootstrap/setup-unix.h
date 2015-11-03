@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_setup_unix_h
-#define bootstrap_setup_unix_h
+#pragma once
 
 #include "str.h"
 #include "file.h"
@@ -53,5 +52,3 @@ namespace herschel
 
   extern const SetupUnix& getSetupUnixSetup();
 };                              // namespace
-
-#endif                          // bootstrap_setup_unix_h

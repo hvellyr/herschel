@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_tokeneval_h
-#define bootstrap_tokeneval_h
+#pragma once
 
 #include "token.h"
 #include "compiler.h"
@@ -79,4 +78,3 @@ namespace herschel
   };
 };
 
-#endif  // bootstrap_tokeneval_h

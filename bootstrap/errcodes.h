@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_errcodes_h
-#define bootstrap_errcodes_h
+#pragma once
 
 namespace herschel
 {
@@ -185,6 +184,5 @@ namespace herschel
     E_BadCSyntax          = 0xe000,
     E_UnexpLinkage        = 0xe001,
   };
-};
 
-#endif  // bootstrap_errcodes_h
+} // namespace

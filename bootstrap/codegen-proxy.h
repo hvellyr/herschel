@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_proxy_h
-#define bootstrap_proxy_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -77,6 +76,5 @@ namespace herschel
   protected:
     CodeGenerator& fGenerator;
   };
-};                              // namespace
 
-#endif                          // bootstrap_proxy_h
+} // namespace

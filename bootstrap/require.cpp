@@ -44,4 +44,4 @@ herschel::requireHandler(zstring file, int line, zstring title, zstring msg,
     abort();
 }
 
-#endif
+#endif // if defined(IS_DEBUG)

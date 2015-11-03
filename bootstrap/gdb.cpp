@@ -23,5 +23,6 @@ void gdb_ps(herschel::String str)
 {
   fprintf(stderr, "%s\n", (zstring)herschel::StrHelper(str));
 }
-#endif
+
+#endif // if IS_DEBUG
 
