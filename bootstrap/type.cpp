@@ -1127,7 +1127,7 @@ Type::newTypeRef(const String& name, const Type& old)
 Type
 Type::newClassOf(const Type& type, bool isValue)
 {
-  return newTypeRef(Names::kClassTypeName, vector_of(type), isValue);
+  return newTypeRef(Names::kClassTypeName, makeVector(type), isValue);
 }
 
 
@@ -3763,7 +3763,7 @@ namespace herschel
   Type
   newRangeType(const Type& generic)
   {
-    return Type::newType(Names::kRangeTypeName, vector_of(generic), Type());
+    return Type::newType(Names::kRangeTypeName, makeVector(generic), Type());
   }
 
 

@@ -238,13 +238,13 @@ Transformator::transformSingleOnExitBlock(BlockNode* node, OnNode* onnd)
                     ? onPrmNode->initExpr()
                     : makeSymbolNode(onPrmNode->srcpos(),
                                      String("lang|unspecified")) );
-  NodeList nl = vector_of<std::shared_ptr<AptNode> >
-    (makeLetNode(makeVardefNode(onPrmNode->srcpos(),
-                                onPrmNode->name(), kNormalVar,
-                                K(isLocal),
-                                onPrmNode->type(),
-                                initExpr)))
-    (onnd->body());
+  NodeList nl = makeVector<std::shared_ptr<AptNode>>(
+    makeLetNode(makeVardefNode(onPrmNode->srcpos(),
+                               onPrmNode->name(), kNormalVar,
+                               K(isLocal),
+                               onPrmNode->type(),
+                               initExpr)),
+    onnd->body());
 
   node->children().clear();
   node->appendNodes(nl);

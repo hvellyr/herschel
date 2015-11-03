@@ -215,10 +215,10 @@ ExternCParser::parseCFunction(const Token& sym, const Token& retType)
 TokenVector
 ExternCParser::makeExternDefHead(const SrcPos& srcpos)
 {
-  return vector_of(Token(srcpos, kDefId))
-                  (Token() << Token(srcpos, kExternId)
-                   << ( Token(srcpos, kParanOpen, kParanClose)
-                        << Token(srcpos, kString, "C") ) );
+  return makeVector(Token(srcpos, kDefId),
+                    Token() << Token(srcpos, kExternId)
+                            << ( Token(srcpos, kParanOpen, kParanClose)
+                                 << Token(srcpos, kString, "C") ) );
 }
 
 

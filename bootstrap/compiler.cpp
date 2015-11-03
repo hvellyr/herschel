@@ -317,7 +317,7 @@ Compiler::importFileImpl(const SrcPos& srcpos,
 String
 Compiler::lookupFile(const String& srcName, bool isPublic)
 {
-  StringVector exts = vector_of(String("hr"));
+  auto exts = makeVector(String("hr"));
 
   if (srcName.startsWith(String("builtin:")))
   {

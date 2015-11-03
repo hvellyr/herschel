@@ -2934,9 +2934,9 @@ SecondPass::parseFor(const Token& expr)
 
     std::shared_ptr<AptNode> defaultRetVal;
     if (!alternate) {
-      TypeVector unionTypes = vector_of(Type::newAny())
-                                       (Type::newTypeRef(Names::kUnspecifiedTypeName,
-                                                         K(isValue)));
+      TypeVector unionTypes = makeVector(Type::newAny(),
+                                         Type::newTypeRef(Names::kUnspecifiedTypeName,
+                                                          K(isValue)));
 
       retType = Type::newUnion(unionTypes, K(isValue));
       defaultRetVal = makeSymbolNode(expr.srcpos(), Names::kLangUnspecified);

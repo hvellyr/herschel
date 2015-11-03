@@ -140,13 +140,13 @@ herschel::type::newRootScope(bool forUnitTests)
 
 
   //------------------------------ builtin functions
-  NodeList params =
-    vector_of<std::shared_ptr<AptNode> >(makeParamNode(
-                                           sp, String(), String("r"),
-                                           kPosArg,
-                                           Type::newTypeRef(String("T"),
-                                                            K(isOpen), K(isValue)),
-                                           nullptr));
+  auto params = makeVector<std::shared_ptr<AptNode>>(
+    makeParamNode(
+      sp, String(), String("r"),
+      kPosArg,
+      Type::newTypeRef(String("T"),
+                       K(isOpen), K(isValue)),
+      nullptr));
   root->registerFunction(sp, Names::kLangReturn,
                          makeFuncDefNode(sp,
                                          Names::kLangReturn,
@@ -164,43 +164,50 @@ herschel::type::newRootScope(bool forUnitTests)
   //                OrderedCollection<T>)
 
   root->registerType(sp, Names::kCollectionTypeName,
-                     Type::newType(Names::kCollectionTypeName,
-                                   vector_of(Type::newTypeRef(String("T"),
-                                                              K(isOpen), K(isValue))),
-                                   Type::newTypeRef(Names::kObjectTypeName, K(isValue))));
+                     Type::newType(
+                       Names::kCollectionTypeName,
+                       makeVector(Type::newTypeRef(String("T"),
+                                                   K(isOpen), K(isValue))),
+                       Type::newTypeRef(Names::kObjectTypeName, K(isValue))));
 
   root->registerType(sp, Names::kOrderedCollectionTypeName,
                      Type::newType(Names::kOrderedCollectionTypeName,
-                                   vector_of(Type::newTypeRef(String("T"),
-                                                              K(isOpen), K(isValue))),
+                                   makeVector(
+                                     Type::newTypeRef(String("T"),
+                                                      K(isOpen), K(isValue))),
                                    Type::newTypeRef(
                                      Names::kCollectionTypeName,
-                                     vector_of(Type::newTypeRef(String("T"),
-                                                                K(isOpen), K(isValue))),
+                                     makeVector(
+                                       Type::newTypeRef(String("T"),
+                                                        K(isOpen), K(isValue))),
                                      TypeConstVector(),
                                      K(isValue))));
 
   root->registerType(sp, Names::kSequenceTypeName,
                      Type::newType(Names::kSequenceTypeName,
-                                   vector_of(Type::newTypeRef(String("T"),
-                                                              K(isOpen), K(isValue))),
-                                   Type::newTypeRef(Names::kOrderedCollectionTypeName,
-                                                    vector_of(
-                                                      Type::newTypeRef(String("T"),
-                                                                       K(isOpen), K(isValue))),
-                                                    TypeConstVector(),
-                                                    K(isValue))));
+                                   makeVector(
+                                     Type::newTypeRef(String("T"),
+                                                      K(isOpen), K(isValue))),
+                                   Type::newTypeRef(
+                                     Names::kOrderedCollectionTypeName,
+                                     makeVector(
+                                       Type::newTypeRef(String("T"),
+                                                        K(isOpen), K(isValue))),
+                                     TypeConstVector(),
+                                     K(isValue))));
 
   root->registerType(sp, Names::kVectorTypeName,
                      Type::newType(Names::kVectorTypeName,
-                                   vector_of(Type::newTypeRef(String("T"),
-                                                              K(isOpen), K(isValue))),
-                                   Type::newTypeRef(Names::kSequenceTypeName,
-                                                    vector_of(
-                                                      Type::newTypeRef(String("T"),
-                                                                       K(isOpen), K(isValue))),
-                                                    TypeConstVector(),
-                                                    K(isValue))));
+                                   makeVector(
+                                     Type::newTypeRef(String("T"),
+                                                      K(isOpen), K(isValue))),
+                                   Type::newTypeRef(
+                                     Names::kSequenceTypeName,
+                                     makeVector(
+                                       Type::newTypeRef(String("T"),
+                                                        K(isOpen), K(isValue))),
+                                     TypeConstVector(),
+                                     K(isValue))));
 
 
   // Assoc<K, V>
@@ -209,42 +216,45 @@ herschel::type::newRootScope(bool forUnitTests)
 
   root->registerType(sp, Names::kAssocTypeName,
                      Type::newType(Names::kAssocTypeName,
-                                   vector_of(Type::newTypeRef(String("K"),
-                                                              K(isOpen), K(isValue)))
-                                   (Type::newTypeRef(String("V"),
-                                                     K(isOpen), K(isValue))),
-                                   Type::newTypeRef(Names::kObjectTypeName, K(isValue))));
+                                   makeVector(
+                                     Type::newTypeRef(String("K"),
+                                                      K(isOpen), K(isValue)),
+                                     Type::newTypeRef(String("V"),
+                                                      K(isOpen), K(isValue))),
+                                   Type::newTypeRef(Names::kObjectTypeName,
+                                                    K(isValue))));
 
   root->registerType(
     sp, Names::kAssocCollectionTypeName,
     Type::newType(Names::kAssocCollectionTypeName,
-                  vector_of(Type::newTypeRef(String("K"), K(isOpen), K(isValue)))
-                  (Type::newTypeRef(String("V"), K(isOpen), K(isValue))),
+                  makeVector(Type::newTypeRef(String("K"), K(isOpen), K(isValue)),
+                             Type::newTypeRef(String("V"), K(isOpen), K(isValue))),
                   Type::newTypeRef(
                     Names::kCollectionTypeName,
-                    vector_of(Type::newTypeRef(
-                                Names::kAssocTypeName,
-                                vector_of(Type::newTypeRef(String("K"),
-                                                           K(isOpen), K(isValue)))
-                                (Type::newTypeRef(String("V"),
-                                                  K(isOpen), K(isValue))),
-                                TypeConstVector(),
-                                K(isValue))),
+                    makeVector(Type::newTypeRef(
+                                 Names::kAssocTypeName,
+                                 makeVector(Type::newTypeRef(String("K"),
+                                                             K(isOpen), K(isValue)),
+                                            Type::newTypeRef(String("V"),
+                                                             K(isOpen), K(isValue))),
+                                 TypeConstVector(),
+                                 K(isValue))),
                     TypeConstVector(),
                     K(isValue))));
 
   root->registerType(
     sp, Names::kMapTypeName,
     Type::newType(Names::kMapTypeName,
-                  vector_of(Type::newTypeRef(String("K"),
-                                             K(isOpen), K(isValue)))
-                  (Type::newTypeRef(String("V"),
-                                    K(isOpen), K(isValue))),
+                  makeVector(Type::newTypeRef(String("K"),
+                                              K(isOpen), K(isValue)),
+                             Type::newTypeRef(String("V"),
+                                              K(isOpen), K(isValue))),
                   Type::newTypeRef(Names::kAssocCollectionTypeName,
-                                   vector_of(Type::newTypeRef(String("K"),
-                                                              K(isOpen), K(isValue)))
-                                   (Type::newTypeRef(String("V"),
-                                                     K(isOpen), K(isValue))),
+                                   makeVector(
+                                     Type::newTypeRef(String("K"),
+                                                      K(isOpen), K(isValue)),
+                                     Type::newTypeRef(String("V"),
+                                                      K(isOpen), K(isValue))),
                                    TypeConstVector(),
                                    K(isValue))));
 

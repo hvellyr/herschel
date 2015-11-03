@@ -405,7 +405,7 @@ ModuleRuntimeInitializer::emitKeywordInitFunc()
        it != end;
        it++)
   {
-    std::vector<llvm::Value*> argv = vector_of(
+    std::vector<llvm::Value*> argv = makeVector(
       builder().CreateGlobalStringPtr(llvm::StringRef(StrHelper(it->first)),
                                       llvm::Twine(StrHelper(it->first + "_kw"))));
 

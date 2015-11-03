@@ -801,8 +801,8 @@ CodegenApply::emitArraySliceAddress(llvm::Value* arrayAtom,
                                                0)->getPointerTo();
   llvm::Value* typedArray = builder().CreatePointerCast(arrayData, arrayType);
 
-  std::vector<llvm::Value*> argv = vector_of(tools().emitSizeTValue(0))
-                                            (builder().CreateLoad(idxValue));
+  std::vector<llvm::Value*> argv = makeVector(tools().emitSizeTValue(0),
+                                              builder().CreateLoad(idxValue));
 
   llvm::Value* addr = builder().CreateGEP(typedArray, argv);
 
@@ -855,8 +855,8 @@ CodegenApply::emitArraySliceAddress(const ApplyNode* node) const
                                                    Type::newInt32(),
                                                    kAtom2PlainConv) );
 
-    std::vector<llvm::Value*> argv = vector_of(tools().emitSizeTValue(0))
-                                              (idxValue2);
+    std::vector<llvm::Value*> argv = makeVector(tools().emitSizeTValue(0),
+                                                idxValue2);
     addr = builder().CreateGEP(typedArray, argv);
   }
 

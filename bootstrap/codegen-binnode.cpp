@@ -23,8 +23,6 @@
 #include "codegen-func.h"
 #include "utils.h"
 
-#include <vector>
-
 #include "llvm/Bitcode/BitstreamWriter.h"
 #include "llvm/Bitcode/ReaderWriter.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
@@ -40,6 +38,9 @@
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Scalar.h"
+
+#include <vector>
+#include <memory>
 
 
 //----------------------------------------------------------------------------
@@ -517,7 +518,7 @@ CodegenBinaryNode::codegenOpDuckTypeBinary(const BinaryNode& node,
   return CodegenApply(generator()).emitFunctionCall(node.srcpos(),
                                                     funcnm,
                                                     mangledFuncNm,
-                                                    vector_of(leftp)(rightp),
+                                                    makeVector(leftp, rightp),
                                                     Type::newAny(),
                                                     funcRetType,
                                                     kNoConv, // ???

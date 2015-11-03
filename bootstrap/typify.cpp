@@ -1656,9 +1656,9 @@ Typifier::typify(VectorNode& node)
     annotateTypeConv(*nd, valueType);
 
   node.setType(Type::newTypeRef(Names::kVectorTypeName,
-                                 vector_of(valueType),
-                                 TypeConstVector(),
-                                 K(isValue)));
+                                makeVector(valueType),
+                                TypeConstVector(),
+                                K(isValue)));
 }
 
 
@@ -1695,10 +1695,9 @@ Typifier::typify(DictNode& node)
   }
 
   node.setType(Type::newTypeRef(Names::kMapTypeName,
-                                 vector_of(keyType)
-                                          (valueType),
-                                 TypeConstVector(),
-                                 K(isValue)));
+                                makeVector(keyType, valueType),
+                                TypeConstVector(),
+                                K(isValue)));
 }
 
 

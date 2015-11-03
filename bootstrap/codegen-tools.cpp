@@ -335,19 +335,18 @@ CodegenTools::assignAtom(llvm::Value* src, llvm::Value* dst)
   const llvm::StructLayout* layout = fGenerator->fTargetData
     ->getStructLayout((const llvm::StructType*)fGenerator->fTypes->getAtomType());
 
-  std::vector<llvm::Value*> argv =
-    vector_of(dst2)
-             (src2)
-             (llvm::ConstantInt::get(fGenerator->fContext,
-                                     llvm::APInt(32, layout->getSizeInBytes(),
-                                                 K(isSigned))))
-             // align
-             (llvm::ConstantInt::get(fGenerator->fContext,
-                                     llvm::APInt(32, layout->getAlignment(),
-                                                 K(isSigned))))
-             // is volatile
-             (llvm::ConstantInt::getFalse(context()));
-
+  std::vector<llvm::Value*> argv = makeVector(
+    dst2,
+    src2,
+    llvm::ConstantInt::get(fGenerator->fContext,
+                           llvm::APInt(32, layout->getSizeInBytes(),
+                                       K(isSigned))),
+    // align
+    llvm::ConstantInt::get(fGenerator->fContext,
+                           llvm::APInt(32, layout->getAlignment(),
+                                       K(isSigned))),
+    // is volatile
+    llvm::ConstantInt::getFalse(context()));
 
   builder().CreateCall(getMemCpyFn(dst2->getType(), src2->getType(),
                                    llvm::Type::getInt32Ty(context())), argv);
@@ -496,5 +495,3 @@ CodegenTools::convertToPlainInt(llvm::Value* value,
 
   return nullptr;
 }
-
-

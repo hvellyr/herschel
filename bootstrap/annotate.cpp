@@ -31,7 +31,8 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler& compiler)
+AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope,
+                           Compiler& compiler)
   : AptNodeCompilePass(level),
     fScope(std::move(scope)),
     fCompiler(compiler)

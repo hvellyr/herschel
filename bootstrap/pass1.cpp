@@ -1338,7 +1338,7 @@ FirstPass::parseAccess(const Token& expr)
 
     nextToken();
 
-    TokenVector args = vector_of(expr);
+    TokenVector args = makeVector(expr);
     if (fToken == kParanOpen) {
       nextToken();
       return parseAccess(parseParamCall(symToken, args,
@@ -4384,7 +4384,7 @@ namespace herschel {
         return false;
       }
 
-      bindings->insert(std::make_pair(paramName, (TokenVector)vector_of(expr)));
+      bindings->insert(std::make_pair(paramName, (TokenVector)makeVector(expr)));
       return true;
     }
   };
@@ -4398,7 +4398,8 @@ namespace herschel {
                        SyntaxTreeNode* followSet)
     {
       if (pass->fToken == kSymbol) {
-        bindings->insert(std::make_pair(paramName, (TokenVector)vector_of(pass->fToken)));
+        bindings->insert(std::make_pair(paramName,
+                                        (TokenVector)makeVector(pass->fToken)));
         pass->nextToken();
         return true;
       }
@@ -4420,7 +4421,8 @@ namespace herschel {
     {
       OperatorType op = tokenTypeToOperator(pass->fToken.tokenType());
       if (op != kOpInvalid) {
-        bindings->insert(std::make_pair(paramName, (TokenVector)vector_of(pass->fToken)));
+        bindings->insert(std::make_pair(paramName,
+                                        (TokenVector)makeVector(pass->fToken)));
         pass->nextToken();
         return true;
       }
@@ -4452,7 +4454,8 @@ namespace herschel {
         return false;
       }
 
-      bindings->insert(std::make_pair(paramName, (TokenVector)vector_of(param)));
+      bindings->insert(std::make_pair(paramName,
+                                      (TokenVector)makeVector(param)));
       return true;
     }
   };
@@ -4483,7 +4486,8 @@ namespace herschel {
         return false;
       }
 
-      bindings->insert(std::make_pair(paramName, (TokenVector)vector_of(param)));
+      bindings->insert(std::make_pair(paramName,
+                                      (TokenVector)makeVector(param)));
       return true;
     }
   };
