@@ -23,8 +23,8 @@ using namespace herschel;
 TEST_CASE("Scope lookup type", "[scope]")
 {
   SrcPos sp;
-  Type t0 = Type::newTypeRef(String("Foo"),
-                             std::vector<Type>{Type::newTypeRef(String("Char"),
+  Type t0 = Type::makeTypeRef(String("Foo"),
+                             std::vector<Type>{Type::makeTypeRef(String("Char"),
                                                                 K(isValue))},
                              TypeConstVector(),
                              K(isValue));

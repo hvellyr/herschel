@@ -80,7 +80,7 @@ namespace herschel
 
     //! Return a new instance of the appropriate \c TypeEnumMaker to be used
     //! to determine auto assigned enumeration values.
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const = 0;
+    virtual TypeEnumMaker* makeBaseTypeEnumMaker() const = 0;
   };
 
 
@@ -119,7 +119,7 @@ namespace herschel
 
     virtual int  typeBitsize() const { return 0; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const { return nullptr; }
+    virtual TypeEnumMaker* makeBaseTypeEnumMaker() const { return nullptr; }
   };
 };                              // namespace
 

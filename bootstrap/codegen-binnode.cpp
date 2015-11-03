@@ -118,7 +118,7 @@ CodegenBinaryNode::wrapInt(llvm::Value* value, const Type& type, bool forceSigne
 {
   if (type.isPlainType()) {
     if (forceSigned) {
-      return coerceIntOperand(type, Type::newInt32(), value);
+      return coerceIntOperand(type, Type::makeInt32(), value);
     }
     else
       return coerceIntOperand(type, type, value);
@@ -284,9 +284,9 @@ CodegenBinaryNode::codegenOpKeywKeyw(const BinaryNode& node,
                                      llvm::Value* right) const
 {
   llvm::Value* plainLeft = tools().makeTypeCastAtomToPlain(left,
-                                                            Type::newKeyword());
+                                                            Type::makeKeyword());
   llvm::Value* plainRight = tools().makeTypeCastAtomToPlain(right,
-                                                             Type::newKeyword());
+                                                             Type::makeKeyword());
 
   llvm::Value* leftAsInt = tools().createCastPtrToNativeInt(plainLeft);
   llvm::Value* rightAsInt = tools().createCastPtrToNativeInt(plainRight);
@@ -450,31 +450,31 @@ CodegenBinaryNode::codegenOpDucktype(const BinaryNode& node) const
 {
   switch (node.op()) {
   case kOpPlus:
-    return codegenOpDuckTypeBinary(node, Names::kLangAdd, Type::newAny());
+    return codegenOpDuckTypeBinary(node, Names::kLangAdd, Type::makeAny());
   case kOpMinus:
-    return codegenOpDuckTypeBinary(node, Names::kLangSubtract, Type::newAny());
+    return codegenOpDuckTypeBinary(node, Names::kLangSubtract, Type::makeAny());
   case kOpMultiply:
-    return codegenOpDuckTypeBinary(node, Names::kLangMultiply, Type::newAny());
+    return codegenOpDuckTypeBinary(node, Names::kLangMultiply, Type::makeAny());
   case kOpDivide:
-    return codegenOpDuckTypeBinary(node, Names::kLangDivide, Type::newAny());
+    return codegenOpDuckTypeBinary(node, Names::kLangDivide, Type::makeAny());
 
   case kOpEqual:
-    return codegenOpDuckTypeBinary(node, Names::kLangEqualQ, Type::newBool());
+    return codegenOpDuckTypeBinary(node, Names::kLangEqualQ, Type::makeBool());
   case kOpUnequal:
-    return codegenOpDuckTypeBinary(node, Names::kLangUnequalQ, Type::newBool());
+    return codegenOpDuckTypeBinary(node, Names::kLangUnequalQ, Type::makeBool());
   case kOpLess:
-    return codegenOpDuckTypeBinary(node, Names::kLangLessQ, Type::newBool());
+    return codegenOpDuckTypeBinary(node, Names::kLangLessQ, Type::makeBool());
   case kOpGreater:
-    return codegenOpDuckTypeBinary(node, Names::kLangGreaterQ, Type::newBool());
+    return codegenOpDuckTypeBinary(node, Names::kLangGreaterQ, Type::makeBool());
   case kOpLessEqual:
-    return codegenOpDuckTypeBinary(node, Names::kLangLessEqualQ, Type::newBool());
+    return codegenOpDuckTypeBinary(node, Names::kLangLessEqualQ, Type::makeBool());
   case kOpGreaterEqual:
-    return codegenOpDuckTypeBinary(node, Names::kLangGreaterEqualQ, Type::newBool());
+    return codegenOpDuckTypeBinary(node, Names::kLangGreaterEqualQ, Type::makeBool());
   case kOpCompare:
-    return codegenOpDuckTypeBinary(node, Names::kLangCompare, Type::newInt32());
+    return codegenOpDuckTypeBinary(node, Names::kLangCompare, Type::makeInt32());
 
   case kOpConcat:
-    return codegenOpDuckTypeBinary(node, Names::kLangConcat, Type::newAny());
+    return codegenOpDuckTypeBinary(node, Names::kLangConcat, Type::makeAny());
 
   default:
     fprintf(stderr, "binary operator not supported in ducktyping yet: %s\n",
@@ -519,7 +519,7 @@ CodegenBinaryNode::codegenOpDuckTypeBinary(const BinaryNode& node,
                                                     funcnm,
                                                     mangledFuncNm,
                                                     makeVector(leftp, rightp),
-                                                    Type::newAny(),
+                                                    Type::makeAny(),
                                                     funcRetType,
                                                     kNoConv, // ???
                                                     !K(isInTailPos),

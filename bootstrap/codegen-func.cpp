@@ -154,7 +154,7 @@ CodegenFuncDef::createFunction(const FuncDefNode* node,
   Type retty;
   if (node->isAppMain()) {
     hr_assert(!isGeneric);
-    p.fRetType = Type::newTypeRef(Names::kInt32TypeName, K(isValue));
+    p.fRetType = Type::makeTypeRef(Names::kInt32TypeName, K(isValue));
   }
   else
     p.fRetType = node->retType();
@@ -399,7 +399,7 @@ CodegenFuncDef::compileNormalFuncDefImpl(const FuncPair& func,
         else {
           llvm::Value* convertedRetv =
             tools().makeTypeCastAtomToPlain(tools().wrapLoad(retv),
-                                            Type::newTypeRef(MID_clang_IntTypeName));
+                                            Type::makeTypeRef(MID_clang_IntTypeName));
           builder().CreateStore(convertedRetv, func.fFunc->arg_begin());
         }
       }

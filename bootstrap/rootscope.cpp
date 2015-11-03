@@ -31,26 +31,26 @@ herschel::type::newRootScope(bool forUnitTests)
 
   if (forUnitTests) {
     //-------- lang|Any
-    root->registerType(sp, Names::kAnyTypeName, Type::newAny(K(isValue)));
+    root->registerType(sp, Names::kAnyTypeName, Type::makeAny(K(isValue)));
 
     //-------- lang|Object
     root->registerType(sp, Names::kObjectTypeName,
-                       Type::newType(Names::kObjectTypeName, TypeVector(),
+                       Type::makeType(Names::kObjectTypeName, TypeVector(),
                                      Type()));
 
 
     //-------- lang|Bool
     root->registerType(sp, Names::kBoolTypeName,
-                       Type::newType(Names::kBoolTypeName,
+                       Type::makeType(Names::kBoolTypeName,
                                      TypeVector(),
-                                     Type::newTypeRef(Names::kObjectTypeName,
+                                     Type::makeTypeRef(Names::kObjectTypeName,
                                                       K(isValue))));
 
     //-------- lang|Char
     root->registerType(sp, Names::kCharTypeName,
-                       Type::newType(Names::kCharTypeName,
+                       Type::makeType(Names::kCharTypeName,
                                      TypeVector(),
-                                     Type::newTypeRef(Names::kObjectTypeName,
+                                     Type::makeTypeRef(Names::kObjectTypeName,
                                                       K(isValue))));
 
     //------------------------------
@@ -58,20 +58,20 @@ herschel::type::newRootScope(bool forUnitTests)
 
     //-------- Number, Int, Real, Rational, Complex
     root->registerType(sp, Names::kNumberTypeName,
-                       Type::newType(Names::kNumberTypeName,
+                       Type::makeType(Names::kNumberTypeName,
                                      TypeVector(),
-                                     Type::newTypeRef(Names::kObjectTypeName,
+                                     Type::makeTypeRef(Names::kObjectTypeName,
                                                       K(isValue))));
 
     root->registerType(sp, Names::kInt32TypeName,
-                       Type::newType(Names::kInt32TypeName,
+                       Type::makeType(Names::kInt32TypeName,
                                      TypeVector(),
-                                     Type::newTypeRef(Names::kNumberTypeName,
+                                     Type::makeTypeRef(Names::kNumberTypeName,
                                                       K(isValue))));
     root->registerType(sp, Names::kUInt32TypeName,
-                       Type::newType(Names::kUInt32TypeName,
+                       Type::makeType(Names::kUInt32TypeName,
                                      TypeVector(),
-                                     Type::newTypeRef(Names::kNumberTypeName,
+                                     Type::makeTypeRef(Names::kNumberTypeName,
                                                       K(isValue))));
   }
 
@@ -80,36 +80,36 @@ herschel::type::newRootScope(bool forUnitTests)
   if (forUnitTests) {
     // String and symbols
     root->registerType(sp, Names::kStringTypeName,
-                       Type::newType(Names::kStringTypeName,
+                       Type::makeType(Names::kStringTypeName,
                                      TypeVector(),
-                                     Type::newTypeRef(Names::kObjectTypeName,
+                                     Type::makeTypeRef(Names::kObjectTypeName,
                                                       K(isValue))));
 
     root->registerType(sp, Names::kKeywordTypeName,
-                       Type::newType(Names::kKeywordTypeName,
+                       Type::makeType(Names::kKeywordTypeName,
                                      TypeVector(),
-                                     Type::newTypeRef(Names::kObjectTypeName,
+                                     Type::makeTypeRef(Names::kObjectTypeName,
                                                       K(isValue))));
   }
 
   //------------------------------
   // Other basic types and constants
 
-  auto eofType = Type::newType(Names::kEofTypeName,
+  auto eofType = Type::makeType(Names::kEofTypeName,
                                TypeVector(),
-                               Type::newTypeRef(Names::kObjectTypeName,
+                               Type::makeTypeRef(Names::kObjectTypeName,
                                                 K(isValue)));
   root->registerType(sp, Names::kEofTypeName, eofType);
 
-  auto nilType = Type::newType(Names::kNilTypeName,
+  auto nilType = Type::makeType(Names::kNilTypeName,
                                TypeVector(),
-                               Type::newTypeRef(Names::kObjectTypeName,
+                               Type::makeTypeRef(Names::kObjectTypeName,
                                                 K(isValue)));
   root->registerType(sp, Names::kNilTypeName, nilType);
 
-  auto unspecifiedType = Type::newType(Names::kUnspecifiedTypeName,
+  auto unspecifiedType = Type::makeType(Names::kUnspecifiedTypeName,
                                        TypeVector(),
-                                       Type::newTypeRef(Names::kObjectTypeName,
+                                       Type::makeTypeRef(Names::kObjectTypeName,
                                                         K(isValue)));
   root->registerType(sp, Names::kUnspecifiedTypeName, unspecifiedType);
 
@@ -144,7 +144,7 @@ herschel::type::newRootScope(bool forUnitTests)
     makeParamNode(
       sp, String(), String("r"),
       kPosArg,
-      Type::newTypeRef(String("T"),
+      Type::makeTypeRef(String("T"),
                        K(isOpen), K(isValue)),
       nullptr));
   root->registerFunction(sp, Names::kLangReturn,
@@ -152,7 +152,7 @@ herschel::type::newRootScope(bool forUnitTests)
                                          Names::kLangReturn,
                                          kFuncIsAbstract, // flags
                                          params,
-                                         Type::newTypeRef(String("T"),
+                                         Type::makeTypeRef(String("T"),
                                                           K(isOpen), K(isValue)),
                                          nullptr));
 
@@ -164,47 +164,47 @@ herschel::type::newRootScope(bool forUnitTests)
   //                OrderedCollection<T>)
 
   root->registerType(sp, Names::kCollectionTypeName,
-                     Type::newType(
+                     Type::makeType(
                        Names::kCollectionTypeName,
-                       makeVector(Type::newTypeRef(String("T"),
+                       makeVector(Type::makeTypeRef(String("T"),
                                                    K(isOpen), K(isValue))),
-                       Type::newTypeRef(Names::kObjectTypeName, K(isValue))));
+                       Type::makeTypeRef(Names::kObjectTypeName, K(isValue))));
 
   root->registerType(sp, Names::kOrderedCollectionTypeName,
-                     Type::newType(Names::kOrderedCollectionTypeName,
+                     Type::makeType(Names::kOrderedCollectionTypeName,
                                    makeVector(
-                                     Type::newTypeRef(String("T"),
+                                     Type::makeTypeRef(String("T"),
                                                       K(isOpen), K(isValue))),
-                                   Type::newTypeRef(
+                                   Type::makeTypeRef(
                                      Names::kCollectionTypeName,
                                      makeVector(
-                                       Type::newTypeRef(String("T"),
+                                       Type::makeTypeRef(String("T"),
                                                         K(isOpen), K(isValue))),
                                      TypeConstVector(),
                                      K(isValue))));
 
   root->registerType(sp, Names::kSequenceTypeName,
-                     Type::newType(Names::kSequenceTypeName,
+                     Type::makeType(Names::kSequenceTypeName,
                                    makeVector(
-                                     Type::newTypeRef(String("T"),
+                                     Type::makeTypeRef(String("T"),
                                                       K(isOpen), K(isValue))),
-                                   Type::newTypeRef(
+                                   Type::makeTypeRef(
                                      Names::kOrderedCollectionTypeName,
                                      makeVector(
-                                       Type::newTypeRef(String("T"),
+                                       Type::makeTypeRef(String("T"),
                                                         K(isOpen), K(isValue))),
                                      TypeConstVector(),
                                      K(isValue))));
 
   root->registerType(sp, Names::kVectorTypeName,
-                     Type::newType(Names::kVectorTypeName,
+                     Type::makeType(Names::kVectorTypeName,
                                    makeVector(
-                                     Type::newTypeRef(String("T"),
+                                     Type::makeTypeRef(String("T"),
                                                       K(isOpen), K(isValue))),
-                                   Type::newTypeRef(
+                                   Type::makeTypeRef(
                                      Names::kSequenceTypeName,
                                      makeVector(
-                                       Type::newTypeRef(String("T"),
+                                       Type::makeTypeRef(String("T"),
                                                         K(isOpen), K(isValue))),
                                      TypeConstVector(),
                                      K(isValue))));
@@ -215,27 +215,27 @@ herschel::type::newRootScope(bool forUnitTests)
   // Map<K, V> : AssocCollection<K, V>
 
   root->registerType(sp, Names::kAssocTypeName,
-                     Type::newType(Names::kAssocTypeName,
+                     Type::makeType(Names::kAssocTypeName,
                                    makeVector(
-                                     Type::newTypeRef(String("K"),
+                                     Type::makeTypeRef(String("K"),
                                                       K(isOpen), K(isValue)),
-                                     Type::newTypeRef(String("V"),
+                                     Type::makeTypeRef(String("V"),
                                                       K(isOpen), K(isValue))),
-                                   Type::newTypeRef(Names::kObjectTypeName,
+                                   Type::makeTypeRef(Names::kObjectTypeName,
                                                     K(isValue))));
 
   root->registerType(
     sp, Names::kAssocCollectionTypeName,
-    Type::newType(Names::kAssocCollectionTypeName,
-                  makeVector(Type::newTypeRef(String("K"), K(isOpen), K(isValue)),
-                             Type::newTypeRef(String("V"), K(isOpen), K(isValue))),
-                  Type::newTypeRef(
+    Type::makeType(Names::kAssocCollectionTypeName,
+                  makeVector(Type::makeTypeRef(String("K"), K(isOpen), K(isValue)),
+                             Type::makeTypeRef(String("V"), K(isOpen), K(isValue))),
+                  Type::makeTypeRef(
                     Names::kCollectionTypeName,
-                    makeVector(Type::newTypeRef(
+                    makeVector(Type::makeTypeRef(
                                  Names::kAssocTypeName,
-                                 makeVector(Type::newTypeRef(String("K"),
+                                 makeVector(Type::makeTypeRef(String("K"),
                                                              K(isOpen), K(isValue)),
-                                            Type::newTypeRef(String("V"),
+                                            Type::makeTypeRef(String("V"),
                                                              K(isOpen), K(isValue))),
                                  TypeConstVector(),
                                  K(isValue))),
@@ -244,16 +244,16 @@ herschel::type::newRootScope(bool forUnitTests)
 
   root->registerType(
     sp, Names::kMapTypeName,
-    Type::newType(Names::kMapTypeName,
-                  makeVector(Type::newTypeRef(String("K"),
+    Type::makeType(Names::kMapTypeName,
+                  makeVector(Type::makeTypeRef(String("K"),
                                               K(isOpen), K(isValue)),
-                             Type::newTypeRef(String("V"),
+                             Type::makeTypeRef(String("V"),
                                               K(isOpen), K(isValue))),
-                  Type::newTypeRef(Names::kAssocCollectionTypeName,
+                  Type::makeTypeRef(Names::kAssocCollectionTypeName,
                                    makeVector(
-                                     Type::newTypeRef(String("K"),
+                                     Type::makeTypeRef(String("K"),
                                                       K(isOpen), K(isValue)),
-                                     Type::newTypeRef(String("V"),
+                                     Type::makeTypeRef(String("V"),
                                                       K(isOpen), K(isValue))),
                                    TypeConstVector(),
                                    K(isValue))));

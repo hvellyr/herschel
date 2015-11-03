@@ -375,7 +375,7 @@ CodegenApply::emitToCharApply(const ApplyNode* applyNode) const
 
   return tools().emitPackCode(applyNode->dstType(),
                               kTypeCheckConv,
-                              convertToPlainInt(Type::newUInt32(),
+                              convertToPlainInt(Type::makeUInt32(),
                                                 args[0].get(), val),
                               applyNode->type());
 }
@@ -725,7 +725,7 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
                           ? elementCountValue
                           : tools().convertToPlainInt(elementCountValue,
                                                        // why no convert to size_t directly?
-                                                       Type::newInt32(),
+                                                       Type::makeInt32(),
                                                        kAtom2PlainConv));
     elementCountValue = builder().CreateIntCast(elementCountValue,
                                                 types().getSizeTTy(),
@@ -852,7 +852,7 @@ CodegenApply::emitArraySliceAddress(const ApplyNode* node) const
     auto idxValue2 = ( (args[1]->type().isPlainType())
                        ? idxValue
                        : tools().convertToPlainInt(idxValue,
-                                                   Type::newInt32(),
+                                                   Type::makeInt32(),
                                                    kAtom2PlainConv) );
 
     std::vector<llvm::Value*> argv = makeVector(tools().emitSizeTValue(0),

@@ -440,7 +440,7 @@ Scope::normalizeType(const Type& type)
       // we normally don't want to have full types here (these would lead to
       // unnecessary data expansion and possible issues with recursive types).
       // Rewrite the typeref to have the fully qualified type name
-      return Type::newTypeRef(referedType.typeName(), type);
+      return Type::makeTypeRef(referedType.typeName(), type);
     }
   }
   else if (type.isAlias())
@@ -514,7 +514,7 @@ Type
 Scope::lookupType(const Type& type) const
 {
   if (type.isArray()) {
-    return Type::newArray(lookupType(type.arrayBaseType()),
+    return Type::makeArray(lookupType(type.arrayBaseType()),
                           type.arraySizeIndicator(),
                           type.isValueType());
   }
@@ -523,7 +523,7 @@ Scope::lookupType(const Type& type) const
     return type;
   }
   else if (type.isMeasure()) {
-    return Type::newMeasure(type.typeName(),
+    return Type::makeMeasure(type.typeName(),
                             lookupType(type.measureBaseType()),
                             type.measureUnit());
   }
@@ -544,14 +544,14 @@ Scope::lookupType(const Type& type) const
     for (size_t i = 0; i < type.unionTypes().size(); ++i) {
       types.push_back(lookupType(type.unionTypes()[i]));
     }
-    return Type::newUnion(types, type.isValueType());
+    return Type::makeUnion(types, type.isValueType());
   }
   else if (type.isSequence()) {
     TypeVector types;
     for (size_t i = 0; i < type.seqTypes().size(); ++i) {
       types.push_back(lookupType(type.seqTypes()[i]));
     }
-    return Type::newSeq(types, type.isValueType());
+    return Type::makeSeq(types, type.isValueType());
   }
 
   return Type();

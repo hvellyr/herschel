@@ -445,7 +445,7 @@ namespace herschel
         // otherwise not first class entities.
         if (typeName == Names::kSliceableTypeName || typeName == Names::kSliceableXTypeName) {
           if (generics.size() == 2) {
-            localCtx.registerType(generics[0].typeName(), Type::newUInt32());
+            localCtx.registerType(generics[0].typeName(), Type::makeUInt32());
             localCtx.registerType(generics[1].typeName(), right0.arrayBaseType());
 
             return true;
@@ -1051,7 +1051,7 @@ Type::operator=(const Type& other)
 
 
 Type
-Type::newTypeRef(const String& name, const TypeVector& genericArgs,
+Type::makeTypeRef(const String& name, const TypeVector& genericArgs,
                  const TypeConstVector& constraints, bool isValue)
 {
   return Type(kType_Ref, isValue, !K(isImg),
@@ -1061,7 +1061,7 @@ Type::newTypeRef(const String& name, const TypeVector& genericArgs,
 
 
 Type
-Type::newTypeRef(const String& name, const TypeVector& genericArgs,
+Type::makeTypeRef(const String& name, const TypeVector& genericArgs,
                  bool isValue)
 {
   return Type(kType_Ref, isValue, !K(isImg),
@@ -1071,7 +1071,7 @@ Type::newTypeRef(const String& name, const TypeVector& genericArgs,
 
 
 Type
-Type::newTypeRef(const String& name, bool isValue)
+Type::makeTypeRef(const String& name, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
@@ -1082,14 +1082,14 @@ Type::newTypeRef(const String& name, bool isValue)
 
 
 Type
-Type::newTypeRef(zstring name, bool isValue)
+Type::makeTypeRef(zstring name, bool isValue)
 {
-  return newTypeRef(String(name), isValue);
+  return makeTypeRef(String(name), isValue);
 }
 
 
 Type
-Type::newTypeRef(const String& name, bool isOpen,
+Type::makeTypeRef(const String& name, bool isOpen,
                  const TypeConstVector& constraints, bool isValue)
 {
   TypeVector dummyGenerics;
@@ -1100,7 +1100,7 @@ Type::newTypeRef(const String& name, bool isOpen,
 
 
 Type
-Type::newTypeRef(const String& name, bool isOpen, bool isValue)
+Type::makeTypeRef(const String& name, bool isOpen, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
@@ -1111,7 +1111,7 @@ Type::newTypeRef(const String& name, bool isOpen, bool isValue)
 
 
 Type
-Type::newTypeRef(const String& name, const Type& old)
+Type::makeTypeRef(const String& name, const Type& old)
 {
   hr_assert(old.isRef());
 
@@ -1125,14 +1125,14 @@ Type::newTypeRef(const String& name, const Type& old)
 
 
 Type
-Type::newClassOf(const Type& type, bool isValue)
+Type::makeClassOf(const Type& type, bool isValue)
 {
-  return newTypeRef(Names::kClassTypeName, makeVector(type), isValue);
+  return makeTypeRef(Names::kClassTypeName, makeVector(type), isValue);
 }
 
 
 Type
-Type::newArray(const Type& base, int sizeIndicator, bool isValue)
+Type::makeArray(const Type& base, int sizeIndicator, bool isValue)
 {
   return Type(kType_Array, isValue, !K(isImg),
               std::make_shared<ArrayTypeImpl>(base, sizeIndicator));
@@ -1140,34 +1140,34 @@ Type::newArray(const Type& base, int sizeIndicator, bool isValue)
 
 
 Type
-Type::newAny(bool isValue)
+Type::makeAny(bool isValue)
 {
-  return newTypeRef(Names::kAnyTypeName, isValue);
+  return makeTypeRef(Names::kAnyTypeName, isValue);
 }
 
 
 Type
-Type::newInt32(bool isValue)
+Type::makeInt32(bool isValue)
 {
-  return newInt(32, isValue);
+  return makeInt(32, isValue);
 }
 
 
 Type
-Type::newUInt32(bool isValue)
+Type::makeUInt32(bool isValue)
 {
-  return newUInt(32, isValue);
+  return makeUInt(32, isValue);
 }
 
 
 Type
-Type::newInt(int bitwidth, bool isValue)
+Type::makeInt(int bitwidth, bool isValue)
 {
   switch (bitwidth) {
-  case  8: return newTypeRef(Names::kInt8TypeName, isValue);
-  case 16: return newTypeRef(Names::kInt16TypeName, isValue);
-  case 32: return newTypeRef(Names::kInt32TypeName, isValue);
-  case 64: return newTypeRef(Names::kInt64TypeName, isValue);
+  case  8: return makeTypeRef(Names::kInt8TypeName, isValue);
+  case 16: return makeTypeRef(Names::kInt16TypeName, isValue);
+  case 32: return makeTypeRef(Names::kInt32TypeName, isValue);
+  case 64: return makeTypeRef(Names::kInt64TypeName, isValue);
   }
 
   hr_invalid("");
@@ -1176,13 +1176,13 @@ Type::newInt(int bitwidth, bool isValue)
 
 
 Type
-Type::newUInt(int bitwidth, bool isValue)
+Type::makeUInt(int bitwidth, bool isValue)
 {
   switch (bitwidth) {
-  case  8: return newTypeRef(Names::kUInt8TypeName, isValue);
-  case 16: return newTypeRef(Names::kUInt16TypeName, isValue);
-  case 32: return newTypeRef(Names::kUInt32TypeName, isValue);
-  case 64: return newTypeRef(Names::kUInt64TypeName, isValue);
+  case  8: return makeTypeRef(Names::kUInt8TypeName, isValue);
+  case 16: return makeTypeRef(Names::kUInt16TypeName, isValue);
+  case 32: return makeTypeRef(Names::kUInt32TypeName, isValue);
+  case 64: return makeTypeRef(Names::kUInt64TypeName, isValue);
   }
 
   hr_invalid("");
@@ -1191,49 +1191,49 @@ Type::newUInt(int bitwidth, bool isValue)
 
 
 Type
-Type::newRational(bool isValue)
+Type::makeRational(bool isValue)
 {
-  return newTypeRef(Names::kRationalTypeName, isValue);
+  return makeTypeRef(Names::kRationalTypeName, isValue);
 }
 
 
 Type
-Type::newFloat32(bool isValue)
+Type::makeFloat32(bool isValue)
 {
-  return newTypeRef(Names::kFloat32TypeName, isValue);
+  return makeTypeRef(Names::kFloat32TypeName, isValue);
 }
 
 
 Type
-Type::newString(bool isValue)
+Type::makeString(bool isValue)
 {
-  return newTypeRef(Names::kStringTypeName, isValue);
+  return makeTypeRef(Names::kStringTypeName, isValue);
 }
 
 
 Type
-Type::newBool(bool isValue)
+Type::makeBool(bool isValue)
 {
-  return newTypeRef(Names::kBoolTypeName, isValue);
+  return makeTypeRef(Names::kBoolTypeName, isValue);
 }
 
 
 Type
-Type::newKeyword(bool isValue)
+Type::makeKeyword(bool isValue)
 {
-  return newTypeRef(Names::kKeywordTypeName, isValue);
+  return makeTypeRef(Names::kKeywordTypeName, isValue);
 }
 
 
 Type
-Type::newChar(bool isValue)
+Type::makeChar(bool isValue)
 {
-  return newTypeRef(Names::kCharTypeName, isValue);
+  return makeTypeRef(Names::kCharTypeName, isValue);
 }
 
 
 Type
-Type::newType(const String& name, const TypeVector& generics,
+Type::makeType(const String& name, const TypeVector& generics,
               const Type& inherit)
 {
   return Type(kType_Type, K(isValue), !K(isImg),
@@ -1244,7 +1244,7 @@ Type::newType(const String& name, const TypeVector& generics,
 
 
 Type
-Type::newClass(const String& name, const TypeVector& generics,
+Type::makeClass(const String& name, const TypeVector& generics,
                const Type& inherit, const FunctionSignature& applySign,
                const TypeSlotList& slots)
 {
@@ -1256,7 +1256,7 @@ Type::newClass(const String& name, const TypeVector& generics,
 
 
 Type
-Type::newAlias(const String& name, const TypeVector& generics,
+Type::makeAlias(const String& name, const TypeVector& generics,
                const Type& isa)
 {
   return Type(kType_Alias, K(isValue), !K(isImg),
@@ -1265,7 +1265,7 @@ Type::newAlias(const String& name, const TypeVector& generics,
 
 
 Type
-Type::newMeasure(const String& name, const Type& baseType,
+Type::makeMeasure(const String& name, const Type& baseType,
                  const String& defUnit)
 {
   return Type(kType_Measure, K(isValue), !K(isImg),
@@ -1274,7 +1274,7 @@ Type::newMeasure(const String& name, const Type& baseType,
 
 
 Type
-Type::newFunction(const FunctionSignature& sign)
+Type::makeFunction(const FunctionSignature& sign)
 {
   return Type(kType_Function, K(isValue), !K(isImg),
               std::make_shared<FunctionTypeImpl>(sign));
@@ -1282,7 +1282,7 @@ Type::newFunction(const FunctionSignature& sign)
 
 
 Type
-Type::newUnion(const TypeVector& types, bool isValue)
+Type::makeUnion(const TypeVector& types, bool isValue)
 {
   return Type(kType_Union, isValue, !K(isImg),
               std::make_shared<UnionTypeImpl>(types));
@@ -1290,7 +1290,7 @@ Type::newUnion(const TypeVector& types, bool isValue)
 
 
 Type
-Type::newSeq(const TypeVector& types, bool isValue)
+Type::makeSeq(const TypeVector& types, bool isValue)
 {
   return Type(kType_Sequence, isValue, !K(isImg),
               std::make_shared<SeqTypeImpl>(types));
@@ -1383,7 +1383,7 @@ Type::isBuiltinType(const String& name) const
 
 
 TypeEnumMaker*
-Type::newBaseTypeEnumMaker() const
+Type::makeBaseTypeEnumMaker() const
 {
   if (fKind == kType_Ref) {
     auto nm = typeName();
@@ -1394,7 +1394,7 @@ Type::newBaseTypeEnumMaker() const
 
     const auto& prop = typeProperty();
     if (prop.isValid())
-      return prop.newBaseTypeEnumMaker();
+      return prop.makeBaseTypeEnumMaker();
   }
 
   return nullptr;
@@ -1807,7 +1807,7 @@ Type::slotType(const String& slotName, const Scope& scope) const
     if (slot.name() == slotName)
       return ( slot.type().isDef()
                ? slot.type()
-               : Type::newAny() );
+               : Type::makeAny() );
   }
 
   auto inherits = typeInheritance();
@@ -1909,7 +1909,7 @@ Type
 Type::rebase(const Type& newBaseType) const
 {
   if (arrayBaseType().isArray())
-    return Type::newArray(arrayBaseType().rebase(newBaseType),
+    return Type::makeArray(arrayBaseType().rebase(newBaseType),
                           arraySizeIndicator(),
                           arrayBaseType().isValueType());
 
@@ -2017,7 +2017,7 @@ Type
 Type::setConstraints(const TypeConstVector& newConstraints) const
 {
   if (fKind == kType_Ref) {
-    auto clonedTy = Type::newTypeRef(typeName(),
+    auto clonedTy = Type::makeTypeRef(typeName(),
                                      generics(),
                                      newConstraints,
                                      isValueType());
@@ -2096,7 +2096,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
           allConstraints.insert(allConstraints.end(), replacement.constraints().begin(),
                                 replacement.constraints().end());
 
-          clonedTy = Type::newTypeRef(replacement.typeName(),
+          clonedTy = Type::makeTypeRef(replacement.typeName(),
                                       replacement.generics(),
                                       allConstraints,
                                       replacement.isValueType());
@@ -2105,7 +2105,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
         }
         else if (hasConstraints()) {
           if (replacement.isRef() || replacement.isClass() || replacement.isType()) {
-            clonedTy = Type::newTypeRef(replacement.typeName(),
+            clonedTy = Type::makeTypeRef(replacement.typeName(),
                                         replacement.generics(),
                                         constraints(),
                                         replacement.isValueType());
@@ -2543,7 +2543,7 @@ TypeConstraint::TypeConstraint(const TypeConstraint& other)
 
 
 TypeConstraint
-TypeConstraint::newAnd(const TypeConstraint& left,
+TypeConstraint::makeAnd(const TypeConstraint& left,
                        const TypeConstraint& right)
 {
   return TypeConstraint(
@@ -2552,7 +2552,7 @@ TypeConstraint::newAnd(const TypeConstraint& left,
 
 
 TypeConstraint
-TypeConstraint::newOr(const TypeConstraint& left,
+TypeConstraint::makeOr(const TypeConstraint& left,
                       const TypeConstraint& right)
 {
   return TypeConstraint(
@@ -2561,7 +2561,7 @@ TypeConstraint::newOr(const TypeConstraint& left,
 
 
 TypeConstraint
-TypeConstraint::newValue(TypeConstOperator op, const Token& value)
+TypeConstraint::makeValue(TypeConstOperator op, const Token& value)
 {
   return TypeConstraint(
     std::make_shared<ValueConstraintImpl>(op, value));
@@ -2569,7 +2569,7 @@ TypeConstraint::newValue(TypeConstOperator op, const Token& value)
 
 
 TypeConstraint
-TypeConstraint::newType(TypeConstOperator op, const Type& type)
+TypeConstraint::makeType(TypeConstOperator op, const Type& type)
 {
   return TypeConstraint(std::make_shared<TypeConstraintImpl>(op, type));
 }
@@ -2750,28 +2750,28 @@ FunctionParameter::FunctionParameter(const FunctionParameter& other)
 
 
 FunctionParameter
-FunctionParameter::newPosParam(const Type& type)
+FunctionParameter::makePosParam(const Type& type)
 {
   return FunctionParameter(kParamPos, !K(isSpec), String(), type);
 }
 
 
 FunctionParameter
-FunctionParameter::newSpecParam(const Type& type)
+FunctionParameter::makeSpecParam(const Type& type)
 {
   return FunctionParameter(kParamPos, K(isSpec), String(), type);
 }
 
 
 FunctionParameter
-FunctionParameter::newNamedParam(const String& key, const Type& type)
+FunctionParameter::makeNamedParam(const String& key, const Type& type)
 {
   return FunctionParameter(kParamNamed, !K(isSpec), key, type);
 }
 
 
 FunctionParameter
-FunctionParameter::newRestParam(const Type& type)
+FunctionParameter::makeRestParam(const Type& type)
 {
   return FunctionParameter(kParamRest, !K(isSpec), String(), type);
 }
@@ -3585,7 +3585,7 @@ namespace herschel
           errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
         return false;
       }
-      if (isCovariant(right, Type::newAny(), scope, srcpos, reportErrors)) {
+      if (isCovariant(right, Type::makeAny(), scope, srcpos, reportErrors)) {
         // a generic open type is covariant to Any.  This needs special treatment
         // in the compiler though
         return true;
@@ -3600,7 +3600,7 @@ namespace herschel
         return false;
       }
 
-      if (isCovariant(left, Type::newAny(), scope, srcpos, reportErrors)) {
+      if (isCovariant(left, Type::makeAny(), scope, srcpos, reportErrors)) {
         // a generic open type is covariant to Any.  This needs special treatment
         // in the compiler though
         return true;
@@ -3642,7 +3642,7 @@ namespace herschel
       if (right.isType() && (rightTypeName == Names::kSliceableTypeName ||
                              rightTypeName == Names::kSliceableXTypeName) &&
           right.generics().size() == 2 &&
-          isSameType(right.generics()[0], Type::newUInt32(), scope,
+          isSameType(right.generics()[0], Type::makeUInt32(), scope,
                      srcpos, reportErrors) &&
           isSameType(left.arrayBaseType(), right.generics()[1],
                      scope, srcpos, reportErrors))
@@ -3653,7 +3653,7 @@ namespace herschel
       {
         // a generic open type is covariant to Any.  This needs special treatment
         // in the compiler though
-        return isCovariant(left.arrayBaseType(), Type::newAny(), scope, srcpos, reportErrors);
+        return isCovariant(left.arrayBaseType(), Type::makeAny(), scope, srcpos, reportErrors);
       }
       return isSameType(left, right, scope, srcpos, reportErrors);
     }
@@ -3761,9 +3761,9 @@ namespace herschel
 namespace herschel
 {
   Type
-  newRangeType(const Type& generic)
+  makeRangeType(const Type& generic)
   {
-    return Type::newType(Names::kRangeTypeName, makeVector(generic), Type());
+    return Type::makeType(Names::kRangeTypeName, makeVector(generic), Type());
   }
 
 
@@ -3806,13 +3806,13 @@ namespace herschel
       if (leftty.isAnyUInt()) {
         switch (righttysize) {
         case 8:
-          return Type::newTypeRef(Names::kUInt8TypeName, K(isValue));
+          return Type::makeTypeRef(Names::kUInt8TypeName, K(isValue));
         case 16:
-          return Type::newTypeRef(Names::kUInt16TypeName, K(isValue));
+          return Type::makeTypeRef(Names::kUInt16TypeName, K(isValue));
         case 32:
-          return Type::newTypeRef(Names::kUInt32TypeName, K(isValue));
+          return Type::makeTypeRef(Names::kUInt32TypeName, K(isValue));
         case 64:
-          return Type::newTypeRef(Names::kUInt64TypeName, K(isValue));
+          return Type::makeTypeRef(Names::kUInt64TypeName, K(isValue));
         default:
           hr_invalid("unhandled int type size");
         }

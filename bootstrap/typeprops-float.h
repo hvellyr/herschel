@@ -39,7 +39,7 @@ namespace herschel
 
     virtual int typeBitsize() const { return bitsize; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    virtual TypeEnumMaker* makeBaseTypeEnumMaker() const
     {
       return new EnumMaker;
     }

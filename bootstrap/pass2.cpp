@@ -296,14 +296,14 @@ SecondPass::parseBinaryTypeSpec(const Token& expr, bool forceGeneric,
       rightType.setIsValueType(true);
     }
 
-    constraints.push_back(TypeConstraint::newType(kConstOp_isa,
+    constraints.push_back(TypeConstraint::makeType(kConstOp_isa,
                                                   rightType));
 
     if (isGeneric || forceGeneric)
-      return Type::newTypeRef(expr[0].idValue(), K(isOpen),
+      return Type::makeTypeRef(expr[0].idValue(), K(isOpen),
                               constraints, isValue);
     else
-      return Type::newTypeRef(expr[0].idValue(),
+      return Type::makeTypeRef(expr[0].idValue(),
                               dummyGenerics, constraints, isValue);
   }
 
@@ -325,12 +325,12 @@ SecondPass::parseBinaryTypeSpec(const Token& expr, bool forceGeneric,
   else
     hr_invalid("");
 
-  constraints.push_back(TypeConstraint::newValue(op, expr[2]));
+  constraints.push_back(TypeConstraint::makeValue(op, expr[2]));
   if (isGeneric || forceGeneric)
-    return Type::newTypeRef(expr[0].idValue(), K(isOpen),
+    return Type::makeTypeRef(expr[0].idValue(), K(isOpen),
                             constraints, isValue);
 
-  return Type::newTypeRef(expr[0].idValue(),
+  return Type::makeTypeRef(expr[0].idValue(),
                           dummyGenerics, constraints, isValue);
 }
 
@@ -343,7 +343,7 @@ SecondPass::genericTypeRef(const String& id, bool isValue) const
     return it->second.clone().setIsValueType(isValue);
 
   TypeConstVector dummyConstraints;
-  return Type::newTypeRef(id, K(isOpen), dummyConstraints, isValue);
+  return Type::makeTypeRef(id, K(isOpen), dummyConstraints, isValue);
 }
 
 
@@ -394,9 +394,9 @@ SecondPass::parseGroupType(const Token& expr, bool isValue)
   }
 
   if (expr.leftToken() == kParanOpen)
-    return Type::newSeq(tyvect, isValue);
+    return Type::makeSeq(tyvect, isValue);
   else
-    return Type::newUnion(tyvect, isValue);
+    return Type::makeUnion(tyvect, isValue);
 }
 
 
@@ -421,9 +421,9 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenTy
     if (fCurrentGenericTypes.find(expr.idValue()) != fCurrentGenericTypes.end())
       return genericTypeRef(expr.idValue(), isValue);
     else if (forceOpenType)
-      return Type::newTypeRef(expr.idValue(), K(isOpen), TypeConstVector(), isValue);
+      return Type::makeTypeRef(expr.idValue(), K(isOpen), TypeConstVector(), isValue);
     else
-      return Type::newTypeRef(expr.idValue(), isValue);
+      return Type::makeTypeRef(expr.idValue(), isValue);
   }
   else if (expr.isSeq()) {
     if (expr.count() == 2) {
@@ -444,7 +444,7 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenTy
         TypeVector generics;
         TypeConstVector dummyConstraints;
         parseTypeVector(&generics, expr[1]);
-        return Type::newTypeRef(expr[0].idValue(), generics, dummyConstraints,
+        return Type::makeTypeRef(expr[0].idValue(), generics, dummyConstraints,
                                 isValue);
       }
       else if (expr[0] == kFUNCTIONId &&
@@ -461,7 +461,7 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenTy
         paramsNodeListToType(&funcParams, defaultApplyParams);
 
         FunctionSignature sign(!K(isGeneric), String(), Type(), funcParams);
-        return Type::newFunction(sign);
+        return Type::makeFunction(sign);
       }
       else if (expr.count() == 2 &&
                expr[1].isNested() && expr[1].leftToken() == kBracketOpen)
@@ -489,7 +489,7 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenTy
           return baseType;
         }
 
-        return Type::newArray(baseType, sizeInd, isValue);
+        return Type::makeArray(baseType, sizeInd, isValue);
       }
       else if (expr[0] == kQuote) {
         hr_assert(expr[1] == kSymbol);
@@ -520,7 +520,7 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenTy
         Type retType = parseTypeSpec(expr[3]);
 
         FunctionSignature sign(!K(isGeneric), String(), retType, funcParams);
-        return Type::newFunction(sign);
+        return Type::makeFunction(sign);
       }
     }
     else
@@ -666,7 +666,7 @@ SecondPass::parsePrime(const Token& primeToken)
 
       Type referedType = fScope->lookupType(primeName, K(showAmbiguousSymDef));
       if (!referedType.isDef())
-        referedType = Type::newTypeRef(primeName, K(isValue));
+        referedType = Type::makeTypeRef(primeName, K(isValue));
 
       result.fType = referedType;
       result.fPrime = generateInitObjectCall(primeToken.srcpos(),
@@ -920,7 +920,7 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
     FunctionSignature sign = FunctionSignature(!K(isGeneric),
                                                ctorFuncName, // func name
                                                // rettype
-                                               Type::newTypeRef(fullTypeName,
+                                               Type::makeTypeRef(fullTypeName,
                                                                 generics, K(isValue)),
                                                funcParams);
 
@@ -930,11 +930,11 @@ SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
       genGenerics.push_back(genericTypeRef(generics[i].typeName(), K(isValue)));
     }
 
-    defType = Type::newClass(fullTypeName, generics, inheritsFrom, sign,
+    defType = Type::makeClass(fullTypeName, generics, inheritsFrom, sign,
                              slotTypes);
   }
   else {
-    defType = Type::newType(fullTypeName, generics, inheritsFrom);
+    defType = Type::makeType(fullTypeName, generics, inheritsFrom);
   }
 
 
@@ -1346,7 +1346,7 @@ SecondPass::parseAliasDef(const Token& expr, size_t ofs, bool isLocal)
     return nullptr;
   }
 
-  Type aliasType = Type::newAlias(fullAliasName, generics, referedType);
+  Type aliasType = Type::makeAlias(fullAliasName, generics, referedType);
 
   fScope->registerType(expr.srcpos(), fullAliasName, aliasType);
 
@@ -1431,7 +1431,7 @@ SecondPass::nextEnumInitValue(const SrcPos& srcpos,
 {
   std::shared_ptr<AptNode> initExpr;
 
-  Ptr<TypeEnumMaker> maker = baseType.newBaseTypeEnumMaker();
+  Ptr<TypeEnumMaker> maker = baseType.makeBaseTypeEnumMaker();
   if (maker) {
     lastInitToken = maker->nextEnumItem(srcpos, enumItemSym, lastInitToken);
     if (lastInitToken.isSet())
@@ -1478,7 +1478,7 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
     ofs += 2;
   }
   else
-    baseType = Type::newInt32();
+    baseType = Type::makeInt32();
 
   if (!baseType.isBaseType()) {
     errorf(expr.srcpos(), E_EnumNotBaseType, "Enum base is not a base type.");
@@ -1549,7 +1549,7 @@ SecondPass::parseEnumDef(const Token& expr, size_t ofs, bool isLocal)
   // defined items.
   TypeVector dummyGenerics;
   TypeConstVector constraints;
-  Type enumType = Type::newTypeRef(baseType.typeName(),
+  Type enumType = Type::makeTypeRef(baseType.typeName(),
                                    dummyGenerics, constraints, K(isValue));
 
   fScope->registerType(expr.srcpos(), fullEnumName, enumType);
@@ -1599,7 +1599,7 @@ SecondPass::parseMeasureDef(const Token& expr, size_t ofs, bool isLocal)
 
   fCurrentGenericTypes.clear();
 
-  Type defMeasureType = Type::newMeasure(fullTypeName, isaFrom, fullUnitName);
+  Type defMeasureType = Type::makeMeasure(fullTypeName, isaFrom, fullUnitName);
 
   if (fScope->checkForRedefinition(expr.srcpos(),
                                    Scope::kNormal, fullTypeName))
@@ -2560,7 +2560,7 @@ SecondPass::transformRangeForClause(const Token& token,
   RangeForClauseCountDir direct = kRangeUnknown;
   if (token[2].count() == 3) {
     direct = kRangeUpwards;
-    stepValueNode = makeIntNode(srcpos, 1, !K(isImg), Type::newInt32());
+    stepValueNode = makeIntNode(srcpos, 1, !K(isImg), Type::makeInt32());
   }
   else if (token[2].count() == 5) {
     Token byToken = token[2][4];
@@ -2934,11 +2934,11 @@ SecondPass::parseFor(const Token& expr)
 
     std::shared_ptr<AptNode> defaultRetVal;
     if (!alternate) {
-      TypeVector unionTypes = makeVector(Type::newAny(),
-                                         Type::newTypeRef(Names::kUnspecifiedTypeName,
+      TypeVector unionTypes = makeVector(Type::makeAny(),
+                                         Type::makeTypeRef(Names::kUnspecifiedTypeName,
                                                           K(isValue)));
 
-      retType = Type::newUnion(unionTypes, K(isValue));
+      retType = Type::makeUnion(unionTypes, K(isValue));
       defaultRetVal = makeSymbolNode(expr.srcpos(), Names::kLangUnspecified);
     }
     else {
@@ -2960,7 +2960,7 @@ SecondPass::parseFor(const Token& expr)
       // evaluate the tests once into a temporary variable
       auto tmpTestNode = makeVardefNode(expr.srcpos(),
                                         tmpTestSym.idValue(), kNormalVar,
-                                        K(isLocal), Type::newBool(),
+                                        K(isLocal), Type::makeBool(),
                                         testNode);
       auto defTmpTestNode = makeLetNode(tmpTestNode);
       loopDefines.push_back(defTmpTestNode);
@@ -3669,10 +3669,10 @@ Type
 SecondPass::getIntType(int bitwidth, bool isSigned) const
 {
   switch (bitwidth) {
-  case 8:  return isSigned ? Type::newInt(8)  : Type::newUInt(8);
-  case 16: return isSigned ? Type::newInt(16) : Type::newUInt(16);
-  case 32: return isSigned ? Type::newInt(32) : Type::newUInt(32);
-  case 64: return isSigned ? Type::newInt(64) : Type::newUInt(64);
+  case 8:  return isSigned ? Type::makeInt(8)  : Type::makeUInt(8);
+  case 16: return isSigned ? Type::makeInt(16) : Type::makeUInt(16);
+  case 32: return isSigned ? Type::makeInt(32) : Type::makeUInt(32);
+  case 64: return isSigned ? Type::makeInt(64) : Type::makeUInt(64);
   }
 
   hr_invalid("");
@@ -3709,7 +3709,7 @@ std::shared_ptr<AptNode>
 SecondPass::parseRationalNumber(const Token& expr)
 {
   if (expr.tokenType() == kRational) {
-    Type type = Type::newRational();
+    Type type = Type::makeRational();
     type.setIsImaginary(expr.isImaginary());
     return makeRationalNode(expr.srcpos(), expr.rationalValue(),
                             expr.isImaginary(), type);
@@ -3735,7 +3735,7 @@ std::shared_ptr<AptNode>
 SecondPass::parseRealNumber(const Token& expr)
 {
   if (expr.tokenType() == kFloat) {
-    Type type = Type::newFloat32();
+    Type type = Type::makeFloat32();
     type.setIsImaginary(expr.isImaginary());
     return makeRealNode(expr.srcpos(), expr.floatValue(),
                         expr.isImaginary(), type);

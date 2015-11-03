@@ -147,61 +147,61 @@ namespace herschel
     //@{ Factory functions
 
     //! Creates a new type ref.  Covers the following example: xyz<a, b> <> nil
-    static Type newTypeRef(const String& name, const TypeVector& genericArgs,
+    static Type makeTypeRef(const String& name, const TypeVector& genericArgs,
                            const TypeConstVector& constraints,
                            bool isValue);
-    static Type newTypeRef(const String& name, const TypeVector& genericArgs,
+    static Type makeTypeRef(const String& name, const TypeVector& genericArgs,
                            bool isValue);
-    static Type newTypeRef(const String& name, bool isValue);
-    static Type newTypeRef(zstring name, bool isValue = true);
-    static Type newTypeRef(const String& name, bool isOpen,
+    static Type makeTypeRef(const String& name, bool isValue);
+    static Type makeTypeRef(zstring name, bool isValue = true);
+    static Type makeTypeRef(const String& name, bool isOpen,
                            const TypeConstVector& constraints, bool isValue);
-    static Type newTypeRef(const String& name, bool isOpen, bool isValue);
+    static Type makeTypeRef(const String& name, bool isOpen, bool isValue);
 
     //! Rewrite \p old to a new typeref taking the typename \p name.
-    static Type newTypeRef(const String& name, const Type& old);
+    static Type makeTypeRef(const String& name, const Type& old);
 
     //! Creates a new lang|Class<'T> type instance with 'T being \p type.
-    static Type newClassOf(const Type& type, bool isValue = true);
+    static Type makeClassOf(const Type& type, bool isValue = true);
 
     //! Creates a new 'T[] array type with \p base being the array base type
     //! 'T.  The \p sizeIndicator is informational, since the size is not
     //! essential part of an array type in herschel.
-    static Type newArray(const Type& base, int sizeIndicator, bool isValue);
+    static Type makeArray(const Type& base, int sizeIndicator, bool isValue);
 
     //! Creates a new lang|Any type instance.
-    static Type newAny(bool isValue = true);
+    static Type makeAny(bool isValue = true);
 
     //! Creates a new lang|Int32 type instance.
-    static Type newInt32(bool isValue = true);
+    static Type makeInt32(bool isValue = true);
     //! Creates a new lang|UInt32 type instance.
-    static Type newUInt32(bool isValue = true);
+    static Type makeUInt32(bool isValue = true);
 
     //! Creates a new lang|IntX type instance with X being the bitwidth.
-    static Type newInt(int bitwidth, bool isValue = true);
+    static Type makeInt(int bitwidth, bool isValue = true);
     //! Creates a new lang|UIntX type instance with X being the bitwidth.
-    static Type newUInt(int bitwidth, bool isValue = true);
+    static Type makeUInt(int bitwidth, bool isValue = true);
 
     //! Creates a new lang|Rational type instance.
-    static Type newRational(bool isValue = true);
+    static Type makeRational(bool isValue = true);
     //! Creates a new lang|Float32 type instance.
-    static Type newFloat32(bool isValue = true);
+    static Type makeFloat32(bool isValue = true);
     //! Creates a new lang|String type instance.
-    static Type newString(bool isValue = true);
+    static Type makeString(bool isValue = true);
     //! Creates a new lang|Bool type instance.
-    static Type newBool(bool isValue = true);
+    static Type makeBool(bool isValue = true);
     //! Creates a new lang|Keyword type instance.
-    static Type newKeyword(bool isValue = true);
+    static Type makeKeyword(bool isValue = true);
     //! Creates a new lang|Char type instance.
-    static Type newChar(bool isValue = true);
+    static Type makeChar(bool isValue = true);
 
     //! Creates a new Type type instance named \p name.  This represents a
     //! specific type, not the type template/definition.  Therefore all
     //! (possible) type parameters must be specified and given in \p generics,
     //! i.e. \p generics is not allowed to contain "open" types.  QUESTION: Is
     //! this true?  As far as I can see in the code this can happen anyway.
-    static Type newType(const String& name, const TypeVector& generics,
-                        const Type& inherit);
+    static Type makeType(const String& name, const TypeVector& generics,
+                         const Type& inherit);
 
     //! Creates a new Class type instance named \p inheriting from \p inherit.
     //! \p applySign specifies the signatures of the ctor apply call, and \p
@@ -209,32 +209,32 @@ namespace herschel
     //! parameter types are to be specifies in \p generics.
     //!
     //! \pre \p applySign must a valid signature; \p name must not be empty
-    static Type newClass(const String& name, const TypeVector& generics,
-                         const Type& inherit, const FunctionSignature& applySign,
-                         const TypeSlotList& slots);
+    static Type makeClass(const String& name, const TypeVector& generics,
+                          const Type& inherit, const FunctionSignature& applySign,
+                          const TypeSlotList& slots);
 
     //! Creates a new type alias named \p name for type \p isa.  If the alias
     //! itself is parameterized the type parameters have to be specified in \p
     //! generics.
 
     //! \pre \p name must not be empty; \p isa must be a valid type instance
-    static Type newAlias(const String& name, const TypeVector& generics,
-                         const Type& isa);
+    static Type makeAlias(const String& name, const TypeVector& generics,
+                          const Type& isa);
 
-    static Type newMeasure(const String& name, const Type& baseType,
-                           const String& defUnit);
+    static Type makeMeasure(const String& name, const Type& baseType,
+                            const String& defUnit);
 
     //! Create a new function type instance using the function signature \p
     //! sign.
-    static Type newFunction(const FunctionSignature& sign);
+    static Type makeFunction(const FunctionSignature& sign);
 
     //! Creates a new union type instance for the types \p types.  Note that
     //! even if \p types is given as vector the order of \p types is not
     //! relevant.
-    static Type newUnion(const TypeVector& types, bool isValue);
+    static Type makeUnion(const TypeVector& types, bool isValue);
 
     //! Creates a new sequence type instance for the types \p types.
-    static Type newSeq(const TypeVector& types, bool isValue);
+    static Type makeSeq(const TypeVector& types, bool isValue);
 
     //@}
 
@@ -304,7 +304,7 @@ namespace herschel
     bool isImaginary() const;
     void setIsImaginary(bool value);
 
-    TypeEnumMaker* newBaseTypeEnumMaker() const;
+    TypeEnumMaker* makeBaseTypeEnumMaker() const;
 
     //! Return the typeProperty specication for the receiver.  Check \c
     //! isValid() on the return value before using it.  If \p mustExist is
@@ -545,12 +545,12 @@ namespace herschel
   public:
     TypeConstraint(const TypeConstraint& other);
 
-    static TypeConstraint newAnd(const TypeConstraint& left,
+    static TypeConstraint makeAnd(const TypeConstraint& left,
                                  const TypeConstraint& right);
-    static TypeConstraint newOr(const TypeConstraint& left,
+    static TypeConstraint makeOr(const TypeConstraint& left,
                                 const TypeConstraint& right);
-    static TypeConstraint newValue(TypeConstOperator op, const Token& value);
-    static TypeConstraint newType(TypeConstOperator op, const Type& type);
+    static TypeConstraint makeValue(TypeConstOperator op, const Token& value);
+    static TypeConstraint makeType(TypeConstOperator op, const Type& type);
 
     TypeConstraint clone() const;
 
@@ -610,11 +610,11 @@ namespace herschel
                       const Type& type);
     FunctionParameter(const FunctionParameter& other);
 
-    static FunctionParameter newPosParam(const Type& type);
-    static FunctionParameter newSpecParam(const Type& type);
-    static FunctionParameter newNamedParam(const String& key,
-                                           const Type& type);
-    static FunctionParameter newRestParam(const Type& type);
+    static FunctionParameter makePosParam(const Type& type);
+    static FunctionParameter makeSpecParam(const Type& type);
+    static FunctionParameter makeNamedParam(const String& key,
+                                            const Type& type);
+    static FunctionParameter makeRestParam(const Type& type);
 
     FunctionParameter clone() const;
 
@@ -757,7 +757,7 @@ namespace herschel
   bool containsAny(const Type& left, const SrcPos& srcpos,
                    bool reportErrors = true);
 
-  Type newRangeType(const Type& generic);
+  Type makeRangeType(const Type& generic);
 
 
   void tyerror(const Type& type, zstring msg);

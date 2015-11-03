@@ -69,40 +69,40 @@ namespace
     auto scope = herschel::type::newRootScope(K(forUnitTests));
 
     scope->registerType(SrcPos(), String("Obj"),
-                        Type::newType(String("Obj"), TypeVector(), Type()));
+                        Type::makeType(String("Obj"), TypeVector(), Type()));
     scope->registerType(SrcPos(), String("Base"),
-                        Type::newType(String("Base"),
+                        Type::makeType(String("Base"),
                                       TypeVector(),
-                                      Type::newTypeRef("Obj")));
+                                      Type::makeTypeRef("Obj")));
 
     scope->registerType(SrcPos(), String("Medium"),
-                        Type::newType(String("Medium"),
+                        Type::makeType(String("Medium"),
                                       TypeVector(),
-                                      Type::newTypeRef("Base")));
+                                      Type::makeTypeRef("Base")));
     scope->registerType(SrcPos(), String("Top"),
-                        Type::newType(String("Top"),
+                        Type::makeType(String("Top"),
                                       TypeVector(),
-                                      Type::newTypeRef("Medium")));
+                                      Type::makeTypeRef("Medium")));
 
     scope->registerType(SrcPos(), String("Abstract"),
-                        Type::newType(String("Abstract"),
+                        Type::makeType(String("Abstract"),
                                       TypeVector(),
-                                      Type::newTypeRef("Obj")));
+                                      Type::makeTypeRef("Obj")));
     scope->registerType(SrcPos(), String("Xyz"),
-                        Type::newType(String("Xyz"),
+                        Type::makeType(String("Xyz"),
                                       TypeVector(),
-                                      Type::newTypeRef("Abstract")));
+                                      Type::makeTypeRef("Abstract")));
 
-    TypeVector isa = makeVector(Type::newTypeRef("Base"),
-                                Type::newTypeRef("Xyz"));
+    TypeVector isa = makeVector(Type::makeTypeRef("Base"),
+                                Type::makeTypeRef("Xyz"));
     scope->registerType(SrcPos(), String("Special"),
-                        Type::newType(String("Special"),
+                        Type::makeType(String("Special"),
                                       TypeVector(),
-                                      Type::newSeq(isa, K(isValue))));
+                                      Type::makeSeq(isa, K(isValue))));
     scope->registerType(SrcPos(), String("Ultra"),
-                        Type::newType(String("Ultra"),
+                        Type::makeType(String("Ultra"),
                                       TypeVector(),
-                                      Type::newTypeRef("Special")));
+                                      Type::makeTypeRef("Special")));
 
     return scope;
   }
@@ -122,74 +122,74 @@ namespace
     auto scope = herschel::type::newRootScope(K(forUnitTests));
 
     scope->registerType(SrcPos(), String("Obj"),
-                        Type::newType(String("Obj"), TypeVector(), Type()));
+                        Type::makeType(String("Obj"), TypeVector(), Type()));
     scope->registerType(SrcPos(), String("Abc"),
-                        Type::newType(String("Abc"), TypeVector(), Type()));
+                        Type::makeType(String("Abc"), TypeVector(), Type()));
     scope->registerType(SrcPos(), String("Def"),
-                        Type::newType(String("Def"), TypeVector(), Type()));
+                        Type::makeType(String("Def"), TypeVector(), Type()));
     scope->registerType(SrcPos(), String("Mno"),
-                        Type::newType(String("Mno"), TypeVector(), Type()));
+                        Type::makeType(String("Mno"), TypeVector(), Type()));
 
     scope->registerType(
       SrcPos(), String("Mappable"),
-      Type::newType(String("Mappable"),
+      Type::makeType(String("Mappable"),
                     makeVector(
-                      Type::newTypeRef(String("K"), K(isopen), !K(isvalue)),
-                      Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
-                    Type::newTypeRef("Obj")));
+                      Type::makeTypeRef(String("K"), K(isopen), !K(isvalue)),
+                      Type::makeTypeRef(String("E"), K(isopen), !K(isvalue))),
+                    Type::makeTypeRef("Obj")));
     scope->registerType(
       SrcPos(), String("OrdMap"),
-      Type::newType(String("OrdMap"),
+      Type::makeType(String("OrdMap"),
                     makeVector(
-                      Type::newTypeRef(String("K"), K(isopen), !K(isvalue)),
-                      Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
-                    Type::newTypeRef(
+                      Type::makeTypeRef(String("K"), K(isopen), !K(isvalue)),
+                      Type::makeTypeRef(String("E"), K(isopen), !K(isvalue))),
+                    Type::makeTypeRef(
                       String("Mappable"),
                       makeVector(
-                        Type::newTypeRef(String("K"), K(isopen), !K(isvalue)),
-                        Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+                        Type::makeTypeRef(String("K"), K(isopen), !K(isvalue)),
+                        Type::makeTypeRef(String("E"), K(isopen), !K(isvalue))),
                       !K(isvalue))));
 
     scope->registerType(
       SrcPos(), String("Full"),
-      Type::newType(String("Full"),
+      Type::makeType(String("Full"),
                     TypeVector(),
-                    Type::newTypeRef(String("Mappable"),
+                    Type::makeTypeRef(String("Mappable"),
                                      makeVector(
-                                       Type::newTypeRef("Abc"),
-                                       Type::newTypeRef("Def")),
+                                       Type::makeTypeRef("Abc"),
+                                       Type::makeTypeRef("Def")),
                                      !K(isvalue))));
 
     scope->registerType(
       SrcPos(), String("Partial"),
-      Type::newType(String("Partial"),
+      Type::makeType(String("Partial"),
                     makeVector(
-                      Type::newTypeRef(String("Z"), K(isopen), !K(isvalue))),
-                    Type::newTypeRef(
+                      Type::makeTypeRef(String("Z"), K(isopen), !K(isvalue))),
+                    Type::makeTypeRef(
                       String("Mappable"),
                       makeVector(
-                        Type::newTypeRef("Abc"),
-                        Type::newTypeRef(String("Z"), K(isopen), !K(isvalue))),
+                        Type::makeTypeRef("Abc"),
+                        Type::makeTypeRef(String("Z"), K(isopen), !K(isvalue))),
                       !K(isvalue))));
 
     scope->registerType(
       SrcPos(), String("Ultra"),
-      Type::newType(String("Ultra"),
+      Type::makeType(String("Ultra"),
                     TypeVector(),
-                    Type::newTypeRef(String("Partial"),
-                                     makeVector(Type::newTypeRef("Mno")),
+                    Type::makeTypeRef(String("Partial"),
+                                     makeVector(Type::makeTypeRef("Mno")),
                                      !K(isvalue))));
 
     scope->registerType(
       SrcPos(), String("Multi"),
-      Type::newType(String("Multi"),
+      Type::makeType(String("Multi"),
                     TypeVector(),
-                    Type::newSeq(
-                      makeVector(Type::newTypeRef("Mno"),
-                                 Type::newTypeRef(
+                    Type::makeSeq(
+                      makeVector(Type::makeTypeRef("Mno"),
+                                 Type::makeTypeRef(
                                    String("OrdMap"),
-                                   makeVector(Type::newTypeRef("Abc"),
-                                              Type::newTypeRef("Def")),
+                                   makeVector(Type::makeTypeRef("Abc"),
+                                              Type::makeTypeRef("Def")),
                                    !K(isvalue))),
                       !K(isvalue))));
 
@@ -202,18 +202,18 @@ TEST_CASE("Is same for basic types", "[type]")
 {
   auto scope = testScopeSetup();
 
-  REQUIRE(herschel::isSameType(Type::newTypeRef("Base"),
-                               Type::newTypeRef("Base"),
+  REQUIRE(herschel::isSameType(Type::makeTypeRef("Base"),
+                               Type::makeTypeRef("Base"),
                                *scope, SrcPos(), !K(reportError)));
-  REQUIRE(herschel::isSameType(Type::newTypeRef("Xyz"),
-                               Type::newTypeRef("Xyz"),
+  REQUIRE(herschel::isSameType(Type::makeTypeRef("Xyz"),
+                               Type::makeTypeRef("Xyz"),
                                *scope, SrcPos(), !K(reportError)));
-  REQUIRE(!herschel::isSameType(Type::newTypeRef("Base"),
-                                Type::newTypeRef("Medium"),
+  REQUIRE(!herschel::isSameType(Type::makeTypeRef("Base"),
+                                Type::makeTypeRef("Medium"),
                                 *scope, SrcPos(), !K(reportError)));
 
-  REQUIRE(!herschel::isSameType(Type::newTypeRef("Base"),
-                                Type::newTypeRef("Hello"),
+  REQUIRE(!herschel::isSameType(Type::makeTypeRef("Base"),
+                                Type::makeTypeRef("Hello"),
                                 *scope, SrcPos(), !K(reportError)));
 }
 
@@ -223,23 +223,23 @@ TEST_CASE("Is same for array types", "[type]")
   auto scope = testScopeSetup();
 
   REQUIRE(herschel::isSameType(
-            Type::newArray(Type::newTypeRef("Base"), 5, K(isValue)),
-            Type::newArray(Type::newTypeRef("Base"), 17, !K(isValue)),
+            Type::makeArray(Type::makeTypeRef("Base"), 5, K(isValue)),
+            Type::makeArray(Type::makeTypeRef("Base"), 17, !K(isValue)),
             *scope, SrcPos(), !K(reportErrors)));
 
   REQUIRE(!herschel::isSameType(
-            Type::newArray(Type::newTypeRef("Base"), 5, K(isValue)),
-            Type::newArray(Type::newTypeRef("Xyz"), 17, !K(isValue)),
+            Type::makeArray(Type::makeTypeRef("Base"), 5, K(isValue)),
+            Type::makeArray(Type::makeTypeRef("Xyz"), 17, !K(isValue)),
             *scope, SrcPos(), !K(reportErrors)));
 
   REQUIRE(herschel::isSameType(
-            Type::newArray(Type::newAny(K(isValue)), 5, K(isValue)),
-            Type::newArray(Type::newAny(K(isValue)), 17, !K(isValue)),
+            Type::makeArray(Type::makeAny(K(isValue)), 5, K(isValue)),
+            Type::makeArray(Type::makeAny(K(isValue)), 17, !K(isValue)),
             *scope, SrcPos(), !K(reportErrors)));
 
   REQUIRE(!herschel::isSameType(
-            Type::newArray(Type::newTypeRef("Base"), 5, K(isValue)),
-            Type::newTypeRef("Base"),
+            Type::makeArray(Type::makeTypeRef("Base"), 5, K(isValue)),
+            Type::makeTypeRef("Base"),
             *scope, SrcPos(), !K(reportErrors)));
 }
 
@@ -248,16 +248,16 @@ TEST_CASE("Is same for any type", "[type]")
 {
   auto scope = testScopeSetup();
 
-  REQUIRE(herschel::isSameType(Type::newAny(K(isValue)),
-                               Type::newAny(K(isValue)),
+  REQUIRE(herschel::isSameType(Type::makeAny(K(isValue)),
+                               Type::makeAny(K(isValue)),
                                *scope, SrcPos(), !K(reportErrors)));
 
-  REQUIRE(!herschel::isSameType(Type::newAny(K(isValue)),
-                                Type::newTypeRef("Medium"),
+  REQUIRE(!herschel::isSameType(Type::makeAny(K(isValue)),
+                                Type::makeTypeRef("Medium"),
                                 *scope, SrcPos(), !K(reportErrors)));
 
-  REQUIRE(!herschel::isSameType(Type::newTypeRef("Xyz"),
-                                Type::newAny(K(isValue)),
+  REQUIRE(!herschel::isSameType(Type::makeTypeRef("Xyz"),
+                                Type::makeAny(K(isValue)),
                                 *scope, SrcPos(), K(reportErrors)));
 }
 
@@ -266,25 +266,25 @@ TEST_CASE("Is same for union types", "[type]")
 {
   auto scope = testScopeSetup();
 
-  TypeVector union0 = makeVector(Type::newTypeRef("Xyz"),
-                                 Type::newTypeRef("Medium"));
+  TypeVector union0 = makeVector(Type::makeTypeRef("Xyz"),
+                                 Type::makeTypeRef("Medium"));
 
-  TypeVector union1 = makeVector(Type::newTypeRef("Medium"),
-                                 Type::newTypeRef("Xyz"));
+  TypeVector union1 = makeVector(Type::makeTypeRef("Medium"),
+                                 Type::makeTypeRef("Xyz"));
 
-  REQUIRE(herschel::isSameType(Type::newUnion(union0, K(isValue)),
-                               Type::newUnion(union0, K(isValue)),
+  REQUIRE(herschel::isSameType(Type::makeUnion(union0, K(isValue)),
+                               Type::makeUnion(union0, K(isValue)),
                                *scope, SrcPos(), K(reportErrors)));
-  REQUIRE(!herschel::isSameType(Type::newUnion(union0, K(isValue)),
-                                Type::newUnion(union1, K(isValue)),
+  REQUIRE(!herschel::isSameType(Type::makeUnion(union0, K(isValue)),
+                                Type::makeUnion(union1, K(isValue)),
                                 *scope, SrcPos(), K(reportErrors)));
 
-  TypeVector union2 = makeVector(Type::newTypeRef("Medium"),
-                                 Type::newTypeRef("Ultra"),
-                                 Type::newTypeRef("Abstract"));
+  TypeVector union2 = makeVector(Type::makeTypeRef("Medium"),
+                                 Type::makeTypeRef("Ultra"),
+                                 Type::makeTypeRef("Abstract"));
 
-  REQUIRE(!herschel::isSameType(Type::newUnion(union0, K(isValue)),
-                                Type::newUnion(union2, K(isValue)),
+  REQUIRE(!herschel::isSameType(Type::makeUnion(union0, K(isValue)),
+                                Type::makeUnion(union2, K(isValue)),
                                 *scope, SrcPos(), K(reportErrors)));
 }
 
@@ -293,25 +293,25 @@ TEST_CASE("Is same for seq types", "[type]")
 {
   auto scope = testScopeSetup();
 
-  TypeVector seq0 = makeVector(Type::newTypeRef("Xyz"),
-                               Type::newTypeRef("Medium"));
+  TypeVector seq0 = makeVector(Type::makeTypeRef("Xyz"),
+                               Type::makeTypeRef("Medium"));
 
-  TypeVector seq1 = makeVector(Type::newTypeRef("Medium"),
-                               Type::newTypeRef("Xyz"));
+  TypeVector seq1 = makeVector(Type::makeTypeRef("Medium"),
+                               Type::makeTypeRef("Xyz"));
 
-  REQUIRE(herschel::isSameType(Type::newSeq(seq0, K(isValue)),
-                               Type::newSeq(seq0, K(isValue)),
+  REQUIRE(herschel::isSameType(Type::makeSeq(seq0, K(isValue)),
+                               Type::makeSeq(seq0, K(isValue)),
                                *scope, SrcPos(), K(reportErrors)));
-  REQUIRE(!herschel::isSameType(Type::newSeq(seq0, K(isValue)),
-                                Type::newSeq(seq1, K(isValue)),
+  REQUIRE(!herschel::isSameType(Type::makeSeq(seq0, K(isValue)),
+                                Type::makeSeq(seq1, K(isValue)),
                                 *scope, SrcPos(), K(reportErrors)));
 
-  TypeVector seq2 = makeVector(Type::newTypeRef("Medium"),
-                               Type::newTypeRef("Ultra"),
-                               Type::newTypeRef("Abstract"));
+  TypeVector seq2 = makeVector(Type::makeTypeRef("Medium"),
+                               Type::makeTypeRef("Ultra"),
+                               Type::makeTypeRef("Abstract"));
 
-  REQUIRE(!herschel::isSameType(Type::newSeq(seq0, K(isValue)),
-                                Type::newSeq(seq2, K(isValue)),
+  REQUIRE(!herschel::isSameType(Type::makeSeq(seq0, K(isValue)),
+                                Type::makeSeq(seq2, K(isValue)),
                                 *scope, SrcPos(), K(reportErrors)));
 }
 
@@ -320,25 +320,25 @@ TEST_CASE("Is same for measure types", "[type]")
 {
   auto scope = testScopeSetup();
 
-  REQUIRE(herschel::isSameType(Type::newMeasure(String("Maiko"),
-                                                Type::newTypeRef("Xyz"),
-                                                String("mk")),
-                               Type::newMeasure(String("Maiko"),
-                                                Type::newTypeRef("Xyz"),
+  REQUIRE(herschel::isSameType(Type::makeMeasure(String("Maiko"),
+                                                 Type::makeTypeRef("Xyz"),
+                                                 String("mk")),
+                               Type::makeMeasure(String("Maiko"),
+                                                Type::makeTypeRef("Xyz"),
                                                 String("mk")),
                                *scope, SrcPos(), !K(reportError)));
 
-  REQUIRE(!herschel::isSameType(Type::newMeasure(String("Maiko"),
-                                                 Type::newTypeRef("Xyz"),
+  REQUIRE(!herschel::isSameType(Type::makeMeasure(String("Maiko"),
+                                                 Type::makeTypeRef("Xyz"),
                                                  String("mk")),
-                                Type::newTypeRef(String("Xyz"), K(isValue)),
+                                Type::makeTypeRef(String("Xyz"), K(isValue)),
                                 *scope, SrcPos(), !K(reportErrors)));
 
-  REQUIRE(!herschel::isSameType(Type::newMeasure(String("Maiko"),
-                                                 Type::newTypeRef("Xyz"),
+  REQUIRE(!herschel::isSameType(Type::makeMeasure(String("Maiko"),
+                                                 Type::makeTypeRef("Xyz"),
                                                  String("mk")),
-                                Type::newMeasure(String("Tomoko"),
-                                                 Type::newTypeRef("Xyz"),
+                                Type::makeMeasure(String("Tomoko"),
+                                                 Type::makeTypeRef("Xyz"),
                                                  String("to")),
                                 *scope, SrcPos(), !K(reportErrors)));
 }
@@ -349,76 +349,76 @@ TEST_CASE("Is same for function types", "[type]")
   auto scope = testScopeSetup();
 
   FunctionParamVector params0;
-  REQUIRE(herschel::isSameType(Type::newFunction(
+  REQUIRE(herschel::isSameType(Type::makeFunction(
                                  FunctionSignature(!K(isGeneric), String("foo"),
-                                                   Type::newTypeRef("Xyz"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    params0)),
-                               Type::newFunction(
+                               Type::makeFunction(
                                  FunctionSignature(!K(isGeneric), String("foo"),
-                                                   Type::newTypeRef("Xyz"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    params0)),
                                *scope, SrcPos(), !K(reportErrors)));
 
-  REQUIRE(herschel::isSameType(Type::newFunction(
+  REQUIRE(herschel::isSameType(Type::makeFunction(
                                  FunctionSignature(!K(isGeneric), String("foo"),
-                                                   Type::newTypeRef("Xyz"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    params0)),
-                               Type::newFunction(
+                               Type::makeFunction(
                                  FunctionSignature(!K(isGeneric), String("bar"),
-                                                   Type::newTypeRef("Xyz"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    params0)),
                                *scope, SrcPos(), !K(reportErrors)));
 
-  REQUIRE(!herschel::isSameType(Type::newFunction(
+  REQUIRE(!herschel::isSameType(Type::makeFunction(
                                   FunctionSignature(!K(isGeneric), String("foo"),
-                                                    Type::newTypeRef("Xyz"),
+                                                    Type::makeTypeRef("Xyz"),
                                                     params0)),
-                                Type::newFunction(
+                                Type::makeFunction(
                                   FunctionSignature(!K(isGeneric), String("bar"),
-                                                    Type::newTypeRef("Abstract"),
+                                                    Type::makeTypeRef("Abstract"),
                                                     params0)),
                                 *scope, SrcPos(), !K(reportErrors)));
 
   FunctionParamVector params1 = makeVector(
     FunctionParameter(FunctionParameter::kParamPos, !K(isSpec),
-                      String(), Type::newTypeRef("Medium")));
-  REQUIRE(herschel::isSameType(Type::newFunction(
+                      String(), Type::makeTypeRef("Medium")));
+  REQUIRE(herschel::isSameType(Type::makeFunction(
                                  FunctionSignature(!K(isGeneric), String("foo"),
-                                                   Type::newTypeRef("Xyz"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    params1)),
-                               Type::newFunction(
+                               Type::makeFunction(
                                  FunctionSignature(!K(isGeneric), String("bar"),
-                                                   Type::newTypeRef("Xyz"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    params1)),
                                *scope, SrcPos(), !K(reportErrors)));
 
-  REQUIRE(!herschel::isSameType(Type::newFunction(
+  REQUIRE(!herschel::isSameType(Type::makeFunction(
                                   FunctionSignature(!K(isGeneric), String("foo"),
-                                                    Type::newTypeRef("Xyz"),
+                                                    Type::makeTypeRef("Xyz"),
                                                     params1)),
-                                Type::newFunction(
+                                Type::makeFunction(
                                   FunctionSignature(!K(isGeneric), String("bar"),
-                                                    Type::newTypeRef("Xyz"),
+                                                    Type::makeTypeRef("Xyz"),
                                                     params0)),
                                 *scope, SrcPos(), !K(reportErrors)));
 
   params1.push_back(FunctionParameter(FunctionParameter::kParamNamed, !K(isSpec),
                                       String("na"),
-                                      Type::newTypeRef("Xyz")));
+                                      Type::makeTypeRef("Xyz")));
   params1.push_back(FunctionParameter(FunctionParameter::kParamNamed, !K(isSpec),
                                       String("nu"),
-                                      Type::newTypeRef("Abstract")));
+                                      Type::makeTypeRef("Abstract")));
   params1.push_back(FunctionParameter(FunctionParameter::kParamRest, !K(isSpec),
                                       String("rest"),
-                                      Type::newAny(K(isValue))));
+                                      Type::makeAny(K(isValue))));
 
-  REQUIRE(herschel::isSameType(Type::newFunction(
+  REQUIRE(herschel::isSameType(Type::makeFunction(
                                  FunctionSignature(!K(isGeneric), String("foo"),
-                                                   Type::newTypeRef("Xyz"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    params1)),
-                               Type::newFunction(
+                               Type::makeFunction(
                                  FunctionSignature(!K(isGeneric), String("bar"),
-                                                   Type::newTypeRef("Xyz"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    params1)),
                                *scope, SrcPos(), !K(reportErrors)));
 }
@@ -435,35 +435,35 @@ TEST_CASE("Is same for generics", "[type]")
   //     \- Mno
   auto scope = testScopeSetupGenerics();
 
-  REQUIRE(!herschel::isSameType(Type::newTypeRef(
+  REQUIRE(!herschel::isSameType(Type::makeTypeRef(
                                   String("Mappable"),
-                                  makeVector(Type::newTypeRef("Abc"),
-                                             Type::newTypeRef("Def")),
+                                  makeVector(Type::makeTypeRef("Abc"),
+                                             Type::makeTypeRef("Def")),
                                   !K(isvalue)),
-                                Type::newTypeRef("Full"),
+                                Type::makeTypeRef("Full"),
                                 *scope, SrcPos(), !K(reportErrors)));
 
-  REQUIRE(herschel::isSameType(Type::newTypeRef(
+  REQUIRE(herschel::isSameType(Type::makeTypeRef(
                                  String("Mappable"),
-                                 makeVector(Type::newTypeRef("Abc"),
-                                            Type::newTypeRef("Def")),
+                                 makeVector(Type::makeTypeRef("Abc"),
+                                            Type::makeTypeRef("Def")),
                                  !K(isvalue)),
-                               Type::newTypeRef(
+                               Type::makeTypeRef(
                                  String("Mappable"),
-                                 makeVector(Type::newTypeRef("Abc"),
-                                            Type::newTypeRef("Def")),
+                                 makeVector(Type::makeTypeRef("Abc"),
+                                            Type::makeTypeRef("Def")),
                                  !K(isvalue)),
                                *scope, SrcPos(), !K(reportErrors)));
 
-  REQUIRE(!herschel::isSameType(Type::newTypeRef(
+  REQUIRE(!herschel::isSameType(Type::makeTypeRef(
                                   String("Mappable"),
-                                  makeVector(Type::newTypeRef("Abc"),
-                                             Type::newTypeRef("Def")),
+                                  makeVector(Type::makeTypeRef("Abc"),
+                                             Type::makeTypeRef("Def")),
                                   !K(isvalue)),
-                                Type::newTypeRef(
+                                Type::makeTypeRef(
                                   String("Mappable"),
-                                  makeVector(Type::newTypeRef("Abc"),
-                                             Type::newTypeRef("Mno")),
+                                  makeVector(Type::makeTypeRef("Abc"),
+                                             Type::makeTypeRef("Mno")),
                                   !K(isvalue)),
                                 *scope, SrcPos(), !K(reportErrors)));
 }
@@ -487,24 +487,24 @@ TEST_CASE("Inheritance for basic types", "[type]")
   auto scope = testScopeSetup();
 
   // a type A does not inherit itself
-  REQUIRE(!herschel::inheritsFrom(Type::newTypeRef("Base"),
-                                  Type::newTypeRef("Base"),
+  REQUIRE(!herschel::inheritsFrom(Type::makeTypeRef("Base"),
+                                  Type::makeTypeRef("Base"),
                                   *scope, SrcPos(), !K(reportError)));
-  REQUIRE(herschel::inheritsFrom(Type::newTypeRef("Ultra"),
-                                 Type::newTypeRef("Obj"),
+  REQUIRE(herschel::inheritsFrom(Type::makeTypeRef("Ultra"),
+                                 Type::makeTypeRef("Obj"),
                                  *scope, SrcPos(), !K(reportError)));
-  REQUIRE(herschel::inheritsFrom(Type::newTypeRef("Special"),
-                                 Type::newTypeRef("Base"),
+  REQUIRE(herschel::inheritsFrom(Type::makeTypeRef("Special"),
+                                 Type::makeTypeRef("Base"),
                                  *scope, SrcPos(), !K(reportError)));
-  REQUIRE(herschel::inheritsFrom(Type::newTypeRef("Special"),
-                                 Type::newTypeRef("Abstract"),
+  REQUIRE(herschel::inheritsFrom(Type::makeTypeRef("Special"),
+                                 Type::makeTypeRef("Abstract"),
                                  *scope, SrcPos(), !K(reportError)));
 
-  REQUIRE(!herschel::inheritsFrom(Type::newTypeRef("Top"),
-                                  Type::newTypeRef("Abstract"),
+  REQUIRE(!herschel::inheritsFrom(Type::makeTypeRef("Top"),
+                                  Type::makeTypeRef("Abstract"),
                                   *scope, SrcPos(), !K(reportError)));
-  REQUIRE(!herschel::inheritsFrom(Type::newTypeRef("Xyz"),
-                                  Type::newTypeRef("Base"),
+  REQUIRE(!herschel::inheritsFrom(Type::makeTypeRef("Xyz"),
+                                  Type::makeTypeRef("Base"),
                                   *scope, SrcPos(), !K(reportError)));
 }
 
@@ -513,30 +513,30 @@ TEST_CASE("Inheritance for measure types", "[type]")
 {
   auto scope = testScopeSetup();
 
-  REQUIRE(!herschel::inheritsFrom(Type::newMeasure(String("Maiko"),
-                                                   Type::newTypeRef("Xyz"),
+  REQUIRE(!herschel::inheritsFrom(Type::makeMeasure(String("Maiko"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    String("mk")),
-                                  Type::newMeasure(String("Maiko"),
-                                                   Type::newTypeRef("Xyz"),
+                                  Type::makeMeasure(String("Maiko"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    String("mk")),
                                   *scope, SrcPos(), !K(reportError)));
 
-  REQUIRE(herschel::inheritsFrom(Type::newMeasure(String("Maiko"),
-                                                  Type::newTypeRef("Ultra"),
+  REQUIRE(herschel::inheritsFrom(Type::makeMeasure(String("Maiko"),
+                                                  Type::makeTypeRef("Ultra"),
                                                   String("mk")),
-                                 Type::newTypeRef(String("Abstract"), K(isValue)),
+                                 Type::makeTypeRef(String("Abstract"), K(isValue)),
                                  *scope, SrcPos(), !K(reportError)));
-  REQUIRE(!herschel::inheritsFrom(Type::newMeasure(String("Maiko"),
-                                                   Type::newTypeRef("Xyz"),
+  REQUIRE(!herschel::inheritsFrom(Type::makeMeasure(String("Maiko"),
+                                                   Type::makeTypeRef("Xyz"),
                                                    String("mk")),
-                                  Type::newTypeRef(String("Base"), K(isValue)),
+                                  Type::makeTypeRef(String("Base"), K(isValue)),
                                   *scope, SrcPos(), !K(reportError)));
 
-  REQUIRE(!herschel::inheritsFrom(Type::newMeasure(String("Maiko"),
-                                                   Type::newTypeRef("Ultra"),
+  REQUIRE(!herschel::inheritsFrom(Type::makeMeasure(String("Maiko"),
+                                                   Type::makeTypeRef("Ultra"),
                                                    String("mk")),
-                                  Type::newMeasure(String("Tomoko"),
-                                                   Type::newTypeRef("Abstract"),
+                                  Type::makeMeasure(String("Tomoko"),
+                                                   Type::makeTypeRef("Abstract"),
                                                    String("to")),
                                   *scope, SrcPos(), !K(reportError)));
 }
@@ -554,11 +554,11 @@ TEST_CASE("Inheritance for generics", "[type]")
   auto scope = testScopeSetupGenerics();
 
   REQUIRE(herschel::inheritsFrom(
-            Type::newTypeRef("Full"),
-            Type::newTypeRef(
+            Type::makeTypeRef("Full"),
+            Type::makeTypeRef(
               String("Mappable"),
-              makeVector(Type::newTypeRef(String("K"), K(isopen), !K(isvalue)),
-                         Type::newTypeRef(String("E"), K(isopen), !K(isvalue))),
+              makeVector(Type::makeTypeRef(String("K"), K(isopen), !K(isvalue)),
+                         Type::makeTypeRef(String("E"), K(isopen), !K(isvalue))),
               !K(isvalue)),
             *scope, SrcPos(), !K(reportErrors)));
 }
@@ -576,33 +576,33 @@ TEST_CASE("Covariance for basic types", "[type]")
 {
   auto scope = testScopeSetup();
 
-  REQUIRE(herschel::isCovariant(Type::newTypeRef("Base"),
-                                Type::newTypeRef("Base"),
+  REQUIRE(herschel::isCovariant(Type::makeTypeRef("Base"),
+                                Type::makeTypeRef("Base"),
                                 *scope, SrcPos(), !K(reportError)));
-  REQUIRE(herschel::isCovariant(Type::newTypeRef("Xyz"),
-                                Type::newTypeRef("Xyz"),
+  REQUIRE(herschel::isCovariant(Type::makeTypeRef("Xyz"),
+                                Type::makeTypeRef("Xyz"),
                                 *scope, SrcPos(), !K(reportError)));
-  REQUIRE(herschel::isCovariant(Type::newTypeRef("Medium"),
-                                Type::newTypeRef("Base"),
+  REQUIRE(herschel::isCovariant(Type::makeTypeRef("Medium"),
+                                Type::makeTypeRef("Base"),
                                 *scope, SrcPos(), !K(reportError)));
-  REQUIRE(!herschel::isCovariant(Type::newTypeRef("Base"),
-                                 Type::newTypeRef("Medium"),
+  REQUIRE(!herschel::isCovariant(Type::makeTypeRef("Base"),
+                                 Type::makeTypeRef("Medium"),
                                  *scope, SrcPos(), !K(reportError)));
-  REQUIRE(herschel::isContravariant(Type::newTypeRef("Base"),
-                                    Type::newTypeRef("Medium"),
+  REQUIRE(herschel::isContravariant(Type::makeTypeRef("Base"),
+                                    Type::makeTypeRef("Medium"),
                                     *scope, SrcPos(), !K(reportError)));
-  REQUIRE(!herschel::isContravariant(Type::newTypeRef("Medium"),
-                                     Type::newTypeRef("Base"),
+  REQUIRE(!herschel::isContravariant(Type::makeTypeRef("Medium"),
+                                     Type::makeTypeRef("Base"),
                                      *scope, SrcPos(), !K(reportError)));
 
-  REQUIRE(!herschel::isCovariant(Type::newTypeRef("Top"),
-                                 Type::newTypeRef("Xyz"),
+  REQUIRE(!herschel::isCovariant(Type::makeTypeRef("Top"),
+                                 Type::makeTypeRef("Xyz"),
                                  *scope, SrcPos(), !K(reportError)));
-  REQUIRE(!herschel::isContravariant(Type::newTypeRef("Top"),
-                                     Type::newTypeRef("Xyz"),
+  REQUIRE(!herschel::isContravariant(Type::makeTypeRef("Top"),
+                                     Type::makeTypeRef("Xyz"),
                                      *scope, SrcPos(), !K(reportError)));
-  REQUIRE(herschel::isInvariant(Type::newTypeRef("Top"),
-                                Type::newTypeRef("Xyz"),
+  REQUIRE(herschel::isInvariant(Type::makeTypeRef("Top"),
+                                Type::makeTypeRef("Xyz"),
                                 *scope, SrcPos(), !K(reportError)));
 }
 
@@ -611,11 +611,11 @@ TEST_CASE("Covariance for multiple inheritance for basic types", "[type]")
 {
   auto scope = testScopeSetup();
 
-  REQUIRE(herschel::isCovariant(Type::newTypeRef("Ultra"),
-                                Type::newTypeRef("Base"),
+  REQUIRE(herschel::isCovariant(Type::makeTypeRef("Ultra"),
+                                Type::makeTypeRef("Base"),
                                 *scope, SrcPos(), !K(reportError)));
-  REQUIRE(herschel::isCovariant(Type::newTypeRef("Ultra"),
-                                Type::newTypeRef("Abstract"),
+  REQUIRE(herschel::isCovariant(Type::makeTypeRef("Ultra"),
+                                Type::makeTypeRef("Abstract"),
                                 *scope, SrcPos(), !K(reportError)));
 }
 
@@ -625,27 +625,27 @@ TEST_CASE("Covariance for sliceable arrays", "[type]")
   auto scope = testScopeSetup();
 
   REQUIRE(herschel::isCovariant(
-            Type::newArray(Type::newTypeRef(String("Ultra"), K(isValue)),
+            Type::makeArray(Type::makeTypeRef(String("Ultra"), K(isValue)),
                            0, K(isValue)),
-            Type::newType(Names::kSliceableTypeName,
-                          makeVector(Type::newUInt32(),
-                                     Type::newTypeRef("Ultra")),
+            Type::makeType(Names::kSliceableTypeName,
+                          makeVector(Type::makeUInt32(),
+                                     Type::makeTypeRef("Ultra")),
                           Type()),
             *scope, SrcPos(), !K(reportError)));
   REQUIRE(!herschel::isCovariant(
-            Type::newArray(Type::newTypeRef(String("Special"), K(isValue)),
+            Type::makeArray(Type::makeTypeRef(String("Special"), K(isValue)),
                            0, K(isValue)),
-            Type::newType(Names::kSliceableTypeName,
-                          makeVector(Type::newUInt32(),
-                                     Type::newTypeRef("Ultra")),
+            Type::makeType(Names::kSliceableTypeName,
+                          makeVector(Type::makeUInt32(),
+                                     Type::makeTypeRef("Ultra")),
                           Type()),
             *scope, SrcPos(), !K(reportError)));
   REQUIRE(!herschel::isCovariant(
-            Type::newArray(Type::newTypeRef(String("Ultra"), K(isValue)),
+            Type::makeArray(Type::makeTypeRef(String("Ultra"), K(isValue)),
                            0, K(isValue)),
-            Type::newType(Names::kSliceableTypeName,
-                          makeVector(Type::newUInt32(),
-                                     Type::newTypeRef("Special")),
+            Type::makeType(Names::kSliceableTypeName,
+                          makeVector(Type::makeUInt32(),
+                                     Type::makeTypeRef("Special")),
                           Type()),
             *scope, SrcPos(), !K(reportError)));
 }
@@ -665,23 +665,23 @@ TEST_CASE("Covariance for generics", "[type]")
   SECTION("Case 1")
   {
     REQUIRE(herschel::isCovariant(
-              Type::newTypeRef("Full"),
-              Type::newTypeRef(String("Mappable"),
-                               makeVector(Type::newTypeRef(String("K"),
+              Type::makeTypeRef("Full"),
+              Type::makeTypeRef(String("Mappable"),
+                               makeVector(Type::makeTypeRef(String("K"),
                                                            K(isopen),
                                                            !K(isvalue)),
-                                          Type::newTypeRef(String("E"),
+                                          Type::makeTypeRef(String("E"),
                                                            K(isopen),
                                                            !K(isvalue))),
                                !K(isvalue)),
               *scope, SrcPos(), !K(reportErrors)));
     REQUIRE(herschel::isCovariant(
-              Type::newTypeRef("Ultra"),
-              Type::newTypeRef(String("Mappable"),
-                               makeVector(Type::newTypeRef(String("K"),
+              Type::makeTypeRef("Ultra"),
+              Type::makeTypeRef(String("Mappable"),
+                               makeVector(Type::makeTypeRef(String("K"),
                                                            K(isopen),
                                                            !K(isvalue)),
-                                          Type::newTypeRef(String("E"),
+                                          Type::makeTypeRef(String("E"),
                                                            K(isopen),
                                                            !K(isvalue))),
                                !K(isvalue)),
@@ -691,10 +691,10 @@ TEST_CASE("Covariance for generics", "[type]")
   SECTION("Case 2")
   {
     REQUIRE(herschel::isCovariant(
-              Type::newTypeRef("Full"),
-              Type::newTypeRef(String("Mappable"),
-                               makeVector(Type::newTypeRef("Abc"),
-                                          Type::newTypeRef("Def")),
+              Type::makeTypeRef("Full"),
+              Type::makeTypeRef(String("Mappable"),
+                               makeVector(Type::makeTypeRef("Abc"),
+                                          Type::makeTypeRef("Def")),
                                !K(isvalue)),
               *scope, SrcPos(), !K(reportErrors)));
   }
@@ -702,17 +702,17 @@ TEST_CASE("Covariance for generics", "[type]")
   SECTION("Case 3")
   {
     REQUIRE(herschel::isCovariant(
-              Type::newTypeRef(String("Mappable"),
-                               makeVector(Type::newTypeRef(String("K"),
+              Type::makeTypeRef(String("Mappable"),
+                               makeVector(Type::makeTypeRef(String("K"),
                                                            K(isopen),
                                                            !K(isvalue)),
-                                          Type::newTypeRef(String("E"),
+                                          Type::makeTypeRef(String("E"),
                                                            K(isopen),
                                                            !K(isvalue))),
                                !K(isvalue)),
-              Type::newTypeRef(String("Mappable"),
-                               makeVector(Type::newTypeRef("Abc"),
-                                          Type::newTypeRef("Def")),
+              Type::makeTypeRef(String("Mappable"),
+                               makeVector(Type::makeTypeRef("Abc"),
+                                          Type::makeTypeRef("Def")),
                                !K(isvalue)),
               *scope, SrcPos(), !K(reportErrors)));
   }
@@ -722,12 +722,12 @@ TEST_CASE("Covariance for generics", "[type]")
     TypeCtx localCtx;
 
     REQUIRE(herschel::isCovariant(
-              Type::newTypeRef("Multi"),
-              Type::newTypeRef(String("OrdMap"),
-                               makeVector(Type::newTypeRef(String("K"),
+              Type::makeTypeRef("Multi"),
+              Type::makeTypeRef(String("OrdMap"),
+                               makeVector(Type::makeTypeRef(String("K"),
                                                            K(isopen),
                                                            !K(isvalue)),
-                                          Type::newTypeRef(String("E"),
+                                          Type::makeTypeRef(String("E"),
                                                            K(isopen),
                                                            !K(isvalue))),
                                !K(isvalue)),
@@ -741,7 +741,7 @@ TEST_CASE("Covariance for generics", "[type]")
 TEST_CASE("Type constraints construction", "[type]")
 {
   SrcPos sp;
-  TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
+  TypeConstraint t0 = TypeConstraint::makeValue(kConstOp_equal,
                                                Token(sp, kInt, 42));
   REQUIRE(kConstOp_equal == t0.constOp());
 }
@@ -750,9 +750,9 @@ TEST_CASE("Type constraints construction", "[type]")
 TEST_CASE("Type constraints equal constraint", "[type]")
 {
   SrcPos sp;
-  TypeConstraint t0 = TypeConstraint::newValue(kConstOp_equal,
+  TypeConstraint t0 = TypeConstraint::makeValue(kConstOp_equal,
                                                Token(sp, kInt, 42));
-  TypeConstraint t1 = TypeConstraint::newValue(kConstOp_equal,
+  TypeConstraint t1 = TypeConstraint::makeValue(kConstOp_equal,
                                                Token(sp, kInt, 42));
   REQUIRE(kConstOp_equal == t0.constOp());
   REQUIRE(t0 == t1);
@@ -762,12 +762,12 @@ TEST_CASE("Type constraints equal constraint", "[type]")
 TEST_CASE("Type constraints and constraint", "[type]")
 {
   SrcPos sp;
-  TypeConstraint t0 = TypeConstraint::newValue(kConstOp_notEqual,
+  TypeConstraint t0 = TypeConstraint::makeValue(kConstOp_notEqual,
                                                Token(sp, kInt, 10));
-  TypeConstraint t1 = TypeConstraint::newValue(kConstOp_notEqual,
+  TypeConstraint t1 = TypeConstraint::makeValue(kConstOp_notEqual,
                                                Token(sp, kInt, 21));
-  TypeConstraint t2 = TypeConstraint::newAnd(t0, t1);
-  TypeConstraint t3 = TypeConstraint::newOr(t0, t2);
+  TypeConstraint t2 = TypeConstraint::makeAnd(t0, t1);
+  TypeConstraint t3 = TypeConstraint::makeOr(t0, t2);
 
   REQUIRE(kConstOp_and == t2.constOp());
   REQUIRE(t0 == t2.leftConstraint());
@@ -782,10 +782,10 @@ TEST_CASE("Type constraints and constraint", "[type]")
 TEST_CASE("Type constraints isa constraint", "[type]")
 {
   SrcPos sp;
-  TypeConstraint t0 = TypeConstraint::newType(kConstOp_isa,
-                                              Type::newInt32());
+  TypeConstraint t0 = TypeConstraint::makeType(kConstOp_isa,
+                                              Type::makeInt32());
   REQUIRE(kConstOp_isa == t0.constOp());
-  REQUIRE(Type::newInt32() == t0.typeConstraint());
+  REQUIRE(Type::makeInt32() == t0.typeConstraint());
 }
 
 
@@ -793,7 +793,7 @@ TEST_CASE("Type constraints isa constraint", "[type]")
 
 TEST_CASE("Function parameter posParamCtor", "[type]")
 {
-  FunctionParameter p0 = FunctionParameter::newPosParam(Type::newInt32());
+  FunctionParameter p0 = FunctionParameter::makePosParam(Type::makeInt32());
   REQUIRE(p0.type().isInt32());
   REQUIRE(!p0.isSpecialized());
   REQUIRE(p0.key().isEmpty());
@@ -803,7 +803,7 @@ TEST_CASE("Function parameter posParamCtor", "[type]")
 
 TEST_CASE("Function parameter specParamCtor", "[type]")
 {
-  FunctionParameter p0 = FunctionParameter::newSpecParam(Type::newInt32());
+  FunctionParameter p0 = FunctionParameter::makeSpecParam(Type::makeInt32());
   REQUIRE(p0.type().isInt32());
   REQUIRE(p0.isSpecialized());
   REQUIRE(p0.key().isEmpty());
@@ -813,8 +813,8 @@ TEST_CASE("Function parameter specParamCtor", "[type]")
 
 TEST_CASE("Function parameter namedParamCtor", "[type]")
 {
-  FunctionParameter p0 = FunctionParameter::newNamedParam(String("abc"),
-                                                          Type::newInt32());
+  FunctionParameter p0 = FunctionParameter::makeNamedParam(String("abc"),
+                                                          Type::makeInt32());
   REQUIRE(p0.type().isInt32());
   REQUIRE(!p0.isSpecialized());
   REQUIRE(String("abc") == p0.key());
@@ -823,7 +823,7 @@ TEST_CASE("Function parameter namedParamCtor", "[type]")
 
 TEST_CASE("Function parameter restParamCtor", "[type]")
 {
-  FunctionParameter p0 = FunctionParameter::newRestParam(Type::newInt32());
+  FunctionParameter p0 = FunctionParameter::makeRestParam(Type::makeInt32());
   REQUIRE(p0.type().isInt32());
   REQUIRE(!p0.isSpecialized());
   REQUIRE(p0.key().isEmpty());
@@ -836,26 +836,26 @@ TEST_CASE("Function parameter restParamCtor", "[type]")
 TEST_CASE("Function signature", "[type]")
 {
   FunctionSignature fs0 = FunctionSignature(!K(isGeneric),
-                                            String("abc"), Type::newInt32());
+                                            String("abc"), Type::makeInt32());
 
   FunctionParamVector params1 = makeVector(
-    FunctionParameter::newSpecParam(Type::newString()),
-    FunctionParameter::newPosParam(Type::newInt32()),
-    FunctionParameter::newNamedParam(String("xyz"), Type::newFloat32()),
-    FunctionParameter::newRestParam(Type::newAny()));
+    FunctionParameter::makeSpecParam(Type::makeString()),
+    FunctionParameter::makePosParam(Type::makeInt32()),
+    FunctionParameter::makeNamedParam(String("xyz"), Type::makeFloat32()),
+    FunctionParameter::makeRestParam(Type::makeAny()));
 
   FunctionSignature fs1 = FunctionSignature(K(isGeneric),
-                                            String("man"), Type::newInt32(),
+                                            String("man"), Type::makeInt32(),
                                             params1);
 
   REQUIRE(!fs0.isGeneric());
   REQUIRE(String("abc") == fs0.methodName());
-  REQUIRE(Type::newInt32() == fs0.returnType());
+  REQUIRE(Type::makeInt32() == fs0.returnType());
   REQUIRE(fs0.parameters().empty());
 
   REQUIRE(fs1.isGeneric());
   REQUIRE(String("man") == fs1.methodName());
-  REQUIRE(Type::newInt32() == fs1.returnType());
+  REQUIRE(Type::makeInt32() == fs1.returnType());
   REQUIRE((size_t)4 == fs1.parameters().size());
   REQUIRE(fs1.parameters()[0].type().isString());
   REQUIRE(FunctionParameter::kParamPos == fs1.parameters()[0].kind());
@@ -875,17 +875,17 @@ TEST_CASE("Function signature", "[type]")
 TEST_CASE("Function signature is open", "[type]")
 {
   FunctionSignature fs0 = FunctionSignature(!K(isGeneric),
-                                            String("abc"), Type::newInt32());
+                                            String("abc"), Type::makeInt32());
   REQUIRE(!fs0.isOpen());
 
   FunctionParamVector params1 = makeVector(
-    FunctionParameter::newSpecParam(Type::newString()),
-    FunctionParameter::newPosParam(Type::newTypeRef(String("x"),
+    FunctionParameter::makeSpecParam(Type::makeString()),
+    FunctionParameter::makePosParam(Type::makeTypeRef(String("x"),
                                                     K(isOpen),
                                                     !K(isValue))));
 
   FunctionSignature fs1 = FunctionSignature(K(isGeneric), String("man"),
-                                            Type::newTypeRef(String("y"),
+                                            Type::makeTypeRef(String("y"),
                                                              K(isOpen),
                                                              !K(isValue)),
                                             params1);
@@ -909,24 +909,24 @@ TEST_CASE("Match generics for simple generics", "[type]")
   TypeCtx localCtx;
   auto scope = testScopeSetupGenerics();
 
-  Type mapGen = ( Type::newTypeRef(
+  Type mapGen = ( Type::makeTypeRef(
                     String("Mappable"),
-                    makeVector(Type::newTypeRef(String("K"), K(isopen),
+                    makeVector(Type::makeTypeRef(String("K"), K(isopen),
                                                 !K(isvalue)),
-                               Type::newTypeRef(String("E"), K(isopen),
+                               Type::makeTypeRef(String("E"), K(isopen),
                                                 !K(isvalue))),
                     !K(isvalue)));
-  Type mapCon = Type::newTypeRef(String("Mappable"),
-                                 makeVector(Type::newTypeRef("Abc"),
-                                            Type::newTypeRef("Def")),
+  Type mapCon = Type::makeTypeRef(String("Mappable"),
+                                 makeVector(Type::makeTypeRef("Abc"),
+                                            Type::makeTypeRef("Def")),
                                  !K(isvalue));
   REQUIRE(mapGen.matchGenerics(localCtx, mapCon, *scope, SrcPos()));
 
   REQUIRE(localCtx.hasType(String("K")));
   REQUIRE(localCtx.hasType(String("E")));
   REQUIRE(!localCtx.hasType(String("T")));
-  REQUIRE(Type::newTypeRef("Abc") == localCtx.lookupType(String("K")));
-  REQUIRE(Type::newTypeRef("Def") == localCtx.lookupType(String("E")));
+  REQUIRE(Type::makeTypeRef("Abc") == localCtx.lookupType(String("K")));
+  REQUIRE(Type::makeTypeRef("Def") == localCtx.lookupType(String("E")));
 }
 
 
@@ -935,22 +935,22 @@ TEST_CASE("Match generic for inherited generics", "[type]")
   TypeCtx localCtx;
   auto scope = testScopeSetupGenerics();
 
-  Type mappable = ( Type::newTypeRef(
+  Type mappable = ( Type::makeTypeRef(
                       String("Mappable"),
-                      makeVector(Type::newTypeRef(String("K"), K(isopen),
+                      makeVector(Type::makeTypeRef(String("K"), K(isopen),
                                                   !K(isvalue)),
-                                 Type::newTypeRef(String("E"), K(isopen),
+                                 Type::makeTypeRef(String("E"), K(isopen),
                                                   !K(isvalue))),
                       !K(isvalue)) );
 
-  REQUIRE(mappable.matchGenerics(localCtx, Type::newTypeRef("Full"),
+  REQUIRE(mappable.matchGenerics(localCtx, Type::makeTypeRef("Full"),
                                  *scope, SrcPos()));
 
   REQUIRE(localCtx.hasType(String("K")));
   REQUIRE(localCtx.hasType(String("E")));
   REQUIRE(!localCtx.hasType(String("T")));
-  REQUIRE(Type::newTypeRef("Abc") == localCtx.lookupType(String("K")));
-  REQUIRE(Type::newTypeRef("Def") == localCtx.lookupType(String("E")));
+  REQUIRE(Type::makeTypeRef("Abc") == localCtx.lookupType(String("K")));
+  REQUIRE(Type::makeTypeRef("Def") == localCtx.lookupType(String("E")));
 }
 
 
@@ -959,20 +959,20 @@ TEST_CASE("Match generics for inherited generics with indirect multi inheritance
   TypeCtx localCtx;
   auto scope = testScopeSetupGenerics();
 
-  Type mappable = (Type::newTypeRef(
+  Type mappable = (Type::makeTypeRef(
                      String("Mappable"),
-                     makeVector(Type::newTypeRef(String("K"), K(isopen),
+                     makeVector(Type::makeTypeRef(String("K"), K(isopen),
                                                  !K(isvalue)),
-                                Type::newTypeRef(String("E"), K(isopen),
+                                Type::makeTypeRef(String("E"), K(isopen),
                                                  !K(isvalue))),
                      !K(isvalue)) );
 
-  REQUIRE(mappable.matchGenerics(localCtx, Type::newTypeRef("Multi"),
+  REQUIRE(mappable.matchGenerics(localCtx, Type::makeTypeRef("Multi"),
                                  *scope, SrcPos()));
 
   REQUIRE(localCtx.hasType(String("K")));
   REQUIRE(localCtx.hasType(String("E")));
   REQUIRE(!localCtx.hasType(String("T")));
-  REQUIRE(Type::newTypeRef("Abc") == localCtx.lookupType(String("K")));
-  REQUIRE(Type::newTypeRef("Def") == localCtx.lookupType(String("E")));
+  REQUIRE(Type::makeTypeRef("Abc") == localCtx.lookupType(String("K")));
+  REQUIRE(Type::makeTypeRef("Def") == localCtx.lookupType(String("E")));
 }
