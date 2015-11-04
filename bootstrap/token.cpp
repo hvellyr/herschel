@@ -118,7 +118,7 @@ namespace herschel
     }
 
 
-    virtual void toPort(Port<Octet>* port) const
+    virtual void toPort(Port<Octet>& port) const
     {
       xml::displayTag(port, "id", xmlEncode(fStr));
     }
@@ -280,7 +280,7 @@ namespace herschel
       return "";
     }
 
-    virtual void toPort(Port<Octet>* port) const
+    virtual void toPort(Port<Octet>& port) const
     {
       switch (fType) {
       case kChar:
@@ -385,7 +385,7 @@ namespace herschel
     }
 
 
-    virtual void toPort(Port<Octet>* port) const
+    virtual void toPort(Port<Octet>& port) const
     {
       switch (fType) {
       case kString:
@@ -457,7 +457,7 @@ namespace herschel
     }
 
 
-    virtual void toPort(Port<Octet>* port) const
+    virtual void toPort(Port<Octet>& port) const
     {
       xml::displayOpenTag(port, "seq");
       for (unsigned int i = 0; i < fChildren.size(); i++)
@@ -514,7 +514,7 @@ namespace herschel
     }
 
 
-    virtual void toPort(Port<Octet>* port) const
+    virtual void toPort(Port<Octet>& port) const
     {
       StringBuffer attrs;
       attrs << "left='" << xmlEncode(tokenTypeToString(fLeft)) << "'"
@@ -1528,7 +1528,7 @@ Token::nsName() const
 
 
 void
-Token::toPort(Port<Octet>* port) const
+Token::toPort(Port<Octet>& port) const
 {
   switch (type()) {
   case kSeq:

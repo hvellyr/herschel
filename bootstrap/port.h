@@ -262,9 +262,9 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  void display(Port<Octet>* port, zstring value);
-  void displayln(Port<Octet>* port, zstring value);
-  void display(Port<Octet>* port, const String& value);
-  void displayln(Port<Octet>* port, const String& value);
+  void display(Port<Octet>& port, zstring value);
+  void displayln(Port<Octet>& port, zstring value);
+  void display(Port<Octet>& port, const String& value);
+  void displayln(Port<Octet>& port, const String& value);
 
 } // namespace

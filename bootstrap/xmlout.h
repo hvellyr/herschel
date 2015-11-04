@@ -70,7 +70,7 @@ namespace herschel
   class XmlRenderer
   {
   public:
-    XmlRenderer(Port<Octet>* port, bool showNodeType = false);
+    XmlRenderer(std::shared_ptr<Port<Octet>> port, bool showNodeType = false);
 
     void render(const AptNode& node);
 
@@ -138,7 +138,7 @@ namespace herschel
 
     //-------- data members
 
-    Ptr<Port<Octet> > fPort;
+    std::shared_ptr<Port<Octet> > fPort;
     bool fShowNodeType;
     std::map<String, Type> fReferencedTypes;
   };
@@ -146,30 +146,30 @@ namespace herschel
 
   namespace xml
   {
-    void displayOpenTag(Port<Octet>* port, zstring tagName,
+    void displayOpenTag(Port<Octet>& port, zstring tagName,
                         bool newline = true);
-    void displayOpenTagAttrs(Port<Octet>* port,
+    void displayOpenTagAttrs(Port<Octet>& port,
                              zstring tagName, zstring attrs,
                              bool newline = true);
-    void displayCloseTag(Port<Octet>* port, zstring tagName);
-    void displayEmptyTag(Port<Octet>* port, zstring tagName);
-    void displayEmptyTagAttrs(Port<Octet>* port, zstring tagName,
+    void displayCloseTag(Port<Octet>& port, zstring tagName);
+    void displayEmptyTag(Port<Octet>& port, zstring tagName);
+    void displayEmptyTagAttrs(Port<Octet>& port, zstring tagName,
                               zstring attrs);
-    void displayTag(Port<Octet>* port, zstring tagName, const String& value);
-    void displayTagAttr(Port<Octet>* port, zstring tagName,
+    void displayTag(Port<Octet>& port, zstring tagName, const String& value);
+    void displayTagAttr(Port<Octet>& port, zstring tagName,
                         zstring attrs,
                         const String& value);
-    void displayStringList(Port<Octet>* port,
+    void displayStringList(Port<Octet>& port,
                            zstring outerTagName, zstring tagName,
                            const StringList& strlist);
-    void displayStringStringMap(Port<Octet>* port,
+    void displayStringStringMap(Port<Octet>& port,
                                 zstring outerTagName,
                                 zstring tagName,
                                 zstring firstPairTagName,
                                 zstring secPairTagName,
                                 const StringStringMap& strMap);
-    void displayType(Port<Octet>* port, zstring tagName, const Type& type);
-    void displayTypeVector(Port<Octet>* port,
+    void displayType(Port<Octet>& port, zstring tagName, const Type& type);
+    void displayTypeVector(Port<Octet>& port,
                            zstring tagName, const TypeVector& types);
 
     String displayTypeConv(const AptNode& node);

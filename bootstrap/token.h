@@ -207,7 +207,7 @@ namespace herschel
       return this;
     }
 
-    virtual void toPort(Port<Octet>* port) const = 0;
+    virtual void toPort(Port<Octet>& port) const = 0;
     virtual String toString() const { /* TODO */ return String(); }
   };
 
@@ -343,7 +343,7 @@ namespace herschel
     //! from, to, and step are constant literal values only
     bool isConstRange() const;
 
-    void toPort(Port<Octet>* port) const;
+    void toPort(Port<Octet>& port) const;
 
     String toString() const;
 

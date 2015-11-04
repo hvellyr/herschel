@@ -201,7 +201,7 @@ AptNode::setIsSingleTypeRequired(bool value)
 void
 AptNode::dump() const
 {
-  XmlRenderer out{new FilePort(stderr)};
+  XmlRenderer out{std::make_shared<FilePort>(stderr)};
   out.render(*this);
 }
 

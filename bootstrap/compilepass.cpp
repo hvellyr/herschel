@@ -35,7 +35,7 @@ TokenCompilePass::apply(const Token& src, bool doTrace)
     t = doApply(src);
 
     if (doTrace && Properties::isTracePass(passLevel())) {
-      Ptr<FilePort> stream = new FilePort(stdout);
+      FilePort stream{stdout};
       display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
       t.toPort(stream);
       displayln(stream, "");
@@ -57,7 +57,7 @@ Token2AptNodeCompilePass::apply(const Token& src, bool doTrace)
   if (doPass) {
     auto n = doApply(src);
     if (doTrace && Properties::isTracePass(passLevel()) && n) {
-      XmlRenderer out{new FilePort(stdout)};
+      XmlRenderer out{std::make_shared<FilePort>(stdout)};
       out.render(*n);
     }
 
@@ -80,7 +80,7 @@ AptNodeCompilePass::apply(std::shared_ptr<AptNode> src, bool doTrace)
     auto n = doApply(src);
 
     if (doTrace && Properties::isTracePass(passLevel()) && n) {
-      XmlRenderer out{new FilePort(stdout), fShowNodeType};
+      XmlRenderer out{std::make_shared<FilePort>(stdout), fShowNodeType};
       out.render(*n);
     }
 

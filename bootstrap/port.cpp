@@ -499,17 +499,17 @@ CharPort::cursor()
 //----------------------------------------------------------------------------
 
 void
-herschel::display(Port<Octet>* port, zstring value)
+herschel::display(Port<Octet>& port, zstring value)
 {
   if (value)
-    port->write((const Octet*)value, strlen(value));
+    port.write((const Octet*)value, strlen(value));
   else
-    port->write((const Octet*)"(null)", 6);
+    port.write((const Octet*)"(null)", 6);
 }
 
 
 void
-herschel::displayln(Port<Octet>* port, zstring value)
+herschel::displayln(Port<Octet>& port, zstring value)
 {
   display(port, value);
   display(port, "\n");
@@ -517,14 +517,14 @@ herschel::displayln(Port<Octet>* port, zstring value)
 
 
 void
-herschel::display(Port<Octet>* port, const String& value)
+herschel::display(Port<Octet>& port, const String& value)
 {
   display(port, StrHelper(value));
 }
 
 
 void
-herschel::displayln(Port<Octet>* port, const String& value)
+herschel::displayln(Port<Octet>& port, const String& value)
 {
   display(port, value);
   display(port, "\n");
