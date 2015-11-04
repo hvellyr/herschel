@@ -201,8 +201,8 @@ AptNode::setIsSingleTypeRequired(bool value)
 void
 AptNode::dump() const
 {
-  Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
-  out->render(*this);
+  XmlRenderer out{new FilePort(stderr)};
+  out.render(*this);
 }
 
 

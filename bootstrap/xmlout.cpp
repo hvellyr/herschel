@@ -208,8 +208,8 @@ herschel::xml::displayTypeConv(const AptNode& node)
 void
 herschel::xml::dump(const AptNode& node)
 {
-  Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
-  out->render(node);
+  XmlRenderer out{new FilePort(stderr)};
+  out.render(node);
 }
 
 

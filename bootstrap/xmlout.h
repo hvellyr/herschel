@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "refcountable.h"
 #include "port.h"
 #include "apt.h"
 
@@ -68,7 +67,7 @@ namespace herschel
   //--------------------------------------------------------------------------
 
   //! Visitor for xml output
-  class XmlRenderer : public RefCountable
+  class XmlRenderer
   {
   public:
     XmlRenderer(Port<Octet>* port, bool showNodeType = false);

@@ -901,8 +901,8 @@ Typifier::typify(ApplyNode& node)
         node.scope()->lookupFunction(node.simpleCallName(),
                                      K(showAmbiguousSymDef)));
       if (funcNode) {
-        // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
-        // out->render(const_cast<FunctionNode*>(funcNode));
+        // XmlRenderer out{new FilePort(stdout)};
+        // out.render(const_cast<FunctionNode*>(funcNode));
         typifyMatchAndCheckParameters(node, *funcNode);
 
         if (node.simpleCallName() == Names::kLangAllocateArray)
@@ -925,8 +925,8 @@ Typifier::typify(ApplyNode& node)
         node.setType(funNode->type());
       }
       else {
-        // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
-        // out->render(node.base());
+        // XmlRenderer out{new FilePort(stderr)};
+        // out.render(node.base());
         hr_invalid("Unhandled apply base node");
       }
     }
@@ -1047,8 +1047,8 @@ Typifier::checkBinaryFunctionCall(BinaryNode& node,
                                   K(showAmbiguousSymDef)));
 
   if (funcNode) {
-    // Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
-    // out->render(const_cast<FunctionNode*>(funcNode));
+    // XmlRenderer out{new FilePort(stdout)};
+    // out.render(const_cast<FunctionNode*>(funcNode));
     Type type = typifyMatchAndCheckParameters(node.srcpos(),
                                               makeNodeList({leftArg, rightArg}),
                                               *funcNode);
