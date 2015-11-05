@@ -252,21 +252,21 @@ namespace herschel
                                    ScopeType scopeType);
 
     bool parseDoMatchSyntaxDef(TokenVector* result,
-                               const Token& expr, SyntaxTable* syntaxTable,
+                               const Token& expr, SyntaxTable& syntaxTable,
                                bool isLocal);
     bool parseDoMatchSyntaxOn(TokenVector* filtered,
-                              const Token& expr, SyntaxTable* syntaxTable,
+                              const Token& expr, SyntaxTable& syntaxTable,
                               bool isLocal);
     bool parseDoMatchSyntaxFunc(TokenVector* filtered,
                                 const Token& expr,
                                 const TokenVector& args,
-                                SyntaxTable* syntaxTable,
+                                SyntaxTable& syntaxTable,
                                 bool shouldParseParams);
 
     bool parseExprStream(TokenVector* result, bool isTopLevel,
                          ScopeType scopeType);
 
-    bool matchSyntax(TokenVector* result, SyntaxTable* syntaxTable);
+    bool matchSyntax(TokenVector* result, SyntaxTable& syntaxTable);
     bool replaceMatchBindings(TokenVector* result,
                               const TokenVector& replacement,
                               const NamedReplacementMap& bindings);
@@ -278,7 +278,7 @@ namespace herschel
 
     bool matchParameter(const Token& macroParam,
                         NamedReplacementMap* bindings,
-                        SyntaxTreeNode* followSet);
+                        SyntaxTreeNode& followSet);
 
     Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 

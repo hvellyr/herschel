@@ -3942,7 +3942,7 @@ FirstPass::parseMacroDef(const Token& defToken)
         return Token();
 
 
-      Ptr<SyntaxTable> synTable = SyntaxTable::compile(String(""), patterns);
+      auto synTable = SyntaxTable::compile(String(""), patterns);
       fScope->registerMacro(defToken.srcpos(),
                             fullMacroName,
                             std::make_shared<Macro>(synTable, mType));
@@ -4360,7 +4360,7 @@ namespace herschel {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
                        NamedReplacementMap* bindings,
-                       SyntaxTreeNode* followSet)
+                       SyntaxTreeNode& followSet)
     {
       hr_invalid("");
       return false;
@@ -4373,7 +4373,7 @@ namespace herschel {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
                        NamedReplacementMap* bindings,
-                       SyntaxTreeNode* followSet)
+                       SyntaxTreeNode& followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
       Token expr = pass->parseExpr(!K(acceptComma));
@@ -4395,7 +4395,7 @@ namespace herschel {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
                        NamedReplacementMap* bindings,
-                       SyntaxTreeNode* followSet)
+                       SyntaxTreeNode& followSet)
     {
       if (pass->fToken == kSymbol) {
         bindings->insert(std::make_pair(paramName,
@@ -4417,7 +4417,7 @@ namespace herschel {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
                        NamedReplacementMap* bindings,
-                       SyntaxTreeNode* followSet)
+                       SyntaxTreeNode& followSet)
     {
       OperatorType op = tokenTypeToOperator(pass->fToken.tokenType());
       if (op != kOpInvalid) {
@@ -4440,7 +4440,7 @@ namespace herschel {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
                        NamedReplacementMap* bindings,
-                       SyntaxTreeNode* followSet)
+                       SyntaxTreeNode& followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
       FirstPass::ParamType expected = FirstPass::kPositional;
@@ -4472,7 +4472,7 @@ namespace herschel {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
                        NamedReplacementMap* bindings,
-                       SyntaxTreeNode* followSet)
+                       SyntaxTreeNode& followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
       FirstPass::ParamType expected = FirstPass::kPositional;
@@ -4498,7 +4498,7 @@ namespace herschel {
     virtual bool match(FirstPass* pass,
                        const String& paramName,
                        NamedReplacementMap* bindings,
-                       SyntaxTreeNode* followSet)
+                       SyntaxTreeNode& followSet)
     {
       SrcPos pos = pass->fToken.srcpos();
       TokenVector params;
@@ -4522,37 +4522,46 @@ namespace herschel {
 };
 
 
-using ParamFuncMap = std::map<MacroParamType, Ptr<ParameterSyntaxMatcher>>;
+namespace
+{
+  template <class T, class... Args>
+  auto makeMatcher(Args&&... args) -> std::unique_ptr<ParameterSyntaxMatcher>
+  {
+    return std::unique_ptr<ParameterSyntaxMatcher>{
+      new T(std::forward<Args>(args)...)};
+  }
+} // anon namespace
 
 bool
 FirstPass::matchParameter(const Token& macroParam,
                           NamedReplacementMap* bindings,
-                          SyntaxTreeNode* followSet)
+                          SyntaxTreeNode& followSet)
 {
+  using ParamFuncMap = std::map<MacroParamType,
+                                std::unique_ptr<ParameterSyntaxMatcher>>;
   static ParamFuncMap paramsMap;
-  if (paramsMap.empty()) {
-    paramsMap.insert(std::make_pair(kMacro_expr,
-                                    new ExprParamSyntaxMatcher));
-    paramsMap.insert(std::make_pair(kMacro_name,
-                                    new NameParamSyntaxMatcher));
+  if (paramsMap.empty())
+  {
+    paramsMap.insert(std::make_pair(kMacro_expr, makeMatcher<ExprParamSyntaxMatcher>()));
+    paramsMap.insert(std::make_pair(kMacro_name, makeMatcher<NameParamSyntaxMatcher>()));
     paramsMap.insert(std::make_pair(kMacro_param,
-                                    new AnyParamParamSyntaxMatcher));
+                                    makeMatcher<AnyParamParamSyntaxMatcher>()));
     paramsMap.insert(std::make_pair(kMacro_paramlist,
-                                    new ParamListParamSyntax));
+                                    makeMatcher<ParamListParamSyntax>()));
     paramsMap.insert(std::make_pair(kMacro_posParam,
-                                    new SpecParamParamSyntaxMatcher(kPositional)));
+                                    makeMatcher<SpecParamParamSyntaxMatcher>(kPositional)));
     paramsMap.insert(std::make_pair(kMacro_namedParam,
-                                    new SpecParamParamSyntaxMatcher(kNamed)));
+                                    makeMatcher<SpecParamParamSyntaxMatcher>(kNamed)));
     paramsMap.insert(std::make_pair(kMacro_restParam,
-                                    new SpecParamParamSyntaxMatcher(kRest)));
+                                    makeMatcher<SpecParamParamSyntaxMatcher>(kRest)));
     paramsMap.insert(std::make_pair(kMacro_operator,
-                                    new OperatorParamSyntaxMatcher));
+                                    makeMatcher<OperatorParamSyntaxMatcher>()));
   }
 
   String paramName;
   MacroParamType macroPrmType = macroParamType(macroParam, &paramName);
 
-  ParamFuncMap::iterator it = paramsMap.find(macroPrmType);
+  auto it = paramsMap.find(macroPrmType);
   if (it != paramsMap.end()) {
     return it->second->match(this, paramName, bindings, followSet);
   }
@@ -4566,16 +4575,16 @@ FirstPass::matchParameter(const Token& macroParam,
 
 
 bool
-FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
+FirstPass::matchSyntax(TokenVector* result, SyntaxTable& syntaxTable)
 {
 
-  SyntaxTreeNode* node = syntaxTable->rootNode();
+  auto node = syntaxTable.rootNode();
   hr_assert(node);
 
   NamedReplacementMap bindings;
 
   for ( ; ; ) {
-    SyntaxTreeNode* followSet = node->findNode(fToken);
+    auto followSet = node->findNode(fToken);
     if (followSet) {
       node = followSet;
       nextToken();
@@ -4590,7 +4599,7 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
       Token macroParam;
       followSet = node->findMacroParam(&macroParam);
       if (followSet) {
-        if (matchParameter(macroParam, &bindings, followSet)) {
+        if (matchParameter(macroParam, &bindings, *followSet)) {
           node = followSet;
           continue;
         }
@@ -4606,7 +4615,7 @@ FirstPass::matchSyntax(TokenVector* result, SyntaxTable* syntaxTable)
 
 bool
 FirstPass::parseDoMatchSyntaxDef(TokenVector* result,
-                                 const Token& expr, SyntaxTable* syntaxTable,
+                                 const Token& expr, SyntaxTable& syntaxTable,
                                  bool isLocal)
 {
   unreadToken(expr);
@@ -4622,7 +4631,7 @@ FirstPass::parseDoMatchSyntaxDef(TokenVector* result,
 
 bool
 FirstPass::parseDoMatchSyntaxOn(TokenVector* result,
-                                const Token& expr, SyntaxTable* syntaxTable,
+                                const Token& expr, SyntaxTable& syntaxTable,
                                 bool isLocal)
 {
   unreadToken(expr);
@@ -4635,7 +4644,7 @@ bool
 FirstPass::parseDoMatchSyntaxFunc(TokenVector* result,
                                   const Token& expr,
                                   const TokenVector& args,
-                                  SyntaxTable* syntaxTable,
+                                  SyntaxTable& syntaxTable,
                                   bool shouldParseParams)
 {
   Token oldCurrentToken = fToken;
@@ -4728,7 +4737,7 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
   hr_assert(expr == kSymbol);
   hr_assert(!isQualified(expr.idValue()));
 
-  Ptr<SyntaxTable> syntaxTable = macro->syntaxTable();
+  auto syntaxTable = macro->syntaxTable();
 
   TokenVector filtered;
   switch (macro->type()) {
@@ -4740,16 +4749,16 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
     return TokenVector();
 
   case kMacro_Def:
-    parseDoMatchSyntaxDef(&filtered, expr, syntaxTable, isLocal);
+    parseDoMatchSyntaxDef(&filtered, expr, *syntaxTable, isLocal);
     break;
 
   case kMacro_On:
-    parseDoMatchSyntaxOn(&filtered, expr, syntaxTable, isLocal);
+    parseDoMatchSyntaxOn(&filtered, expr, *syntaxTable, isLocal);
     break;
 
   case kMacro_Stmt:
   case kMacro_Function:
-    parseDoMatchSyntaxFunc(&filtered, expr, args, syntaxTable, shouldParseParams);
+    parseDoMatchSyntaxFunc(&filtered, expr, args, *syntaxTable, shouldParseParams);
     break;
   }
 
