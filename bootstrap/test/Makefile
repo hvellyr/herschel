@@ -77,7 +77,8 @@ all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) TEST_APPX
 TEST_APPX: $(TEST_APPBINARY)
 
 $(TEST_APPBINARY): $(TEST_OBJS)
-	$(CXX) $(CXXFLAGS) $(TEST_LDFLAGS) -o $@ $^ $(TEST_LIBS) $(LLVM_LIBS)
+	@echo "[LINK] $@"
+	@$(CXX) $(CXXFLAGS) $(TEST_LDFLAGS) -o $@ $^ $(TEST_LIBS) $(LLVM_LIBS)
 
 
 #------------------------------------------------------------------------------

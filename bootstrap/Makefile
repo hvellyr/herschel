@@ -277,28 +277,32 @@ all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) \
 COMMON_LIBX: $(COMMON_LIB)
 
 $(COMMON_LIB): $(LIBHRCOMMON_OBJS)
-	$(AR) cru $@ $^
+	@echo "[LIB] $@"
+	@$(AR) cru $@ $^
 
 
 #--------
 LIBHRC_LIBX: $(LIBHRC_LIB)
 
 $(LIBHRC_LIB): $(LIBHRC_OBJS)
-	$(AR) cru $@ $^
+	@echo "[LIB] $@"
+	@$(AR) cru $@ $^
 
 
 #--------
 HRC_APPX: $(HRC_APPBINARY)
 
 $(HRC_APPBINARY): $(HRC_OBJS) $(COMMON_LIB) $(LIBHRC_LIB)
-	$(CXX) $(CXXFLAGS) $(HRC_LDFLAGS) -o $@ $^ $(HRC_LIBS) $(LLVM_LIBS)
+	@echo "[LINK] $@"
+	@$(CXX) $(CXXFLAGS) $(HRC_LDFLAGS) -o $@ $^ $(HRC_LIBS) $(LLVM_LIBS)
 
 
 #--------
 HERSCHEL_APPX: $(HERSCHEL_APPBINARY)
 
 $(HERSCHEL_APPBINARY): $(HERSCHEL_OBJS) $(COMMON_LIB)
-	$(CXX) $(CXXFLAGS) $(HERSCHEL_LDFLAGS) -o $@ $^ $(HERSCHEL_LIBS)
+	@echo "[LINK] $@"
+	@$(CXX) $(CXXFLAGS) $(HERSCHEL_LDFLAGS) -o $@ $^ $(HERSCHEL_LIBS)
 
 
 #------------------------------------------------------------------------------
