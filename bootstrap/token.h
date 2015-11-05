@@ -17,10 +17,8 @@
 #  include <iostream>
 #endif
 
-#include "refcountable.h"
-#include "ptr.h"
-#include "port.h"
 #include "numbers.h"
+#include "port.h"
 #include "srcpos.h"
 
 
@@ -195,16 +193,16 @@ namespace herschel
   };
 
 
-  class TokenImpl : public RefCountable
+  class TokenImpl
   {
   public:
     virtual bool operator==(const Token& other) const = 0;
     virtual bool operator<(const Token& other) const = 0;
 
-    virtual TokenImpl* unshare()
+    virtual std::shared_ptr<TokenImpl> unshare(std::shared_ptr<TokenImpl> impl) const
     {
       // for immutable types unshare is a nop
-      return this;
+      return impl;
     }
 
     virtual void toPort(Port<Octet>& port) const = 0;
@@ -375,7 +373,7 @@ namespace herschel
 
     //-------- data members
     TokenType      fType;
-    Ptr<TokenImpl> fImpl;
+    std::shared_ptr<TokenImpl> fImpl;
     SrcPos         fSrcPos;
   };
 

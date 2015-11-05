@@ -114,7 +114,7 @@ namespace herschel
     virtual bool operator<(const Token& other) const
     {
       hr_assert(other.type() == kId);
-      return fStr < dynamic_cast<const IdTokenImpl*>(other.fImpl.obj())->fStr;
+      return fStr < static_cast<const IdTokenImpl&>(*other.fImpl).fStr;
     }
 
 
@@ -380,8 +380,8 @@ namespace herschel
 
     virtual bool operator<(const Token& other) const
     {
-      return fStrValue < dynamic_cast<const StringTokenImpl*>(
-        other.fImpl.obj())->fStrValue;
+      return fStrValue < static_cast<const StringTokenImpl&>(
+        *other.fImpl).fStrValue;
     }
 
 
@@ -449,11 +449,12 @@ namespace herschel
     }
 
 
-    virtual TokenImpl* unshare()
+    std::shared_ptr<TokenImpl> unshare(std::shared_ptr<TokenImpl> impl) const override
     {
-      Ptr<SeqTokenImpl> copy = new SeqTokenImpl;
-      copy->fChildren.assign(fChildren.begin(), fChildren.end());
-      return copy.release();
+      auto& seq = static_cast<SeqTokenImpl&>(*impl);
+      auto copy = std::make_shared<SeqTokenImpl>();
+      copy->fChildren.assign(seq.fChildren.begin(), seq.fChildren.end());
+      return copy;
     }
 
 
@@ -606,9 +607,9 @@ Token::Token(const SrcPos& where, TokenType ttype, const String& str)
 {
   if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam ||
       ttype == kMacroParamAsStr)
-    fImpl = new IdTokenImpl(str);
+    fImpl.reset(new IdTokenImpl(str));
   else
-    fImpl = new StringTokenImpl(ttype, str);
+    fImpl.reset(new StringTokenImpl(ttype, str));
   hr_assert(type() == kId || type() == kLit);
 }
 
@@ -619,9 +620,9 @@ Token::Token(const SrcPos& where, TokenType ttype, zstring str)
 {
   if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam ||
       ttype == kMacroParamAsStr)
-    fImpl = new IdTokenImpl(String(str));
+    fImpl.reset(new IdTokenImpl(String(str)));
   else
-    fImpl = new StringTokenImpl(ttype, String(str));
+    fImpl.reset(new StringTokenImpl(ttype, String(str)));
   hr_assert(type() == kId || type() == kLit);
 }
 
@@ -675,7 +676,7 @@ Token::newInt(const SrcPos& where, int bitwidth, int64_t value)
   Token token;
   token.fSrcPos = where;
   token.fType = kInt;
-  token.fImpl = new NumberTokenImpl(kInt, bitwidth, value);
+  token.fImpl.reset(new NumberTokenImpl(kInt, bitwidth, value));
   return token;
 }
 
@@ -686,7 +687,7 @@ Token::newUInt(const SrcPos& where, int bitwidth, uint64_t value)
   Token token;
   token.fSrcPos = where;
   token.fType = kUInt;
-  token.fImpl = new NumberTokenImpl(kInt, bitwidth, int64_t(value));
+  token.fImpl.reset(new NumberTokenImpl(kInt, bitwidth, int64_t(value)));
   return token;
 }
 
@@ -707,7 +708,7 @@ Token::operator==(const Token& other) const
   if (fType == other.fType) {
     if (fImpl == other.fImpl)
       return true;
-    return (*fImpl.obj()) == other;
+    return (*fImpl) == other;
   }
   return false;
 }
@@ -831,9 +832,9 @@ Token::toString() const
       return fImpl->toString();
     case kMacroParam:
     case kMacroParamAsStr:
-      return String("?") + dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr;
+      return String("?") + static_cast<const IdTokenImpl&>(*fImpl).fStr;
     case kKeyarg:
-      return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr + ":";
+      return static_cast<const IdTokenImpl&>(*fImpl).fStr + ":";
 
     case kDefId:       return String(MID_defid);
     case kElseId:      return String(MID_elseid);
@@ -1072,7 +1073,7 @@ Token::children() const
   case kSeq:
   case kNested:
     hr_assert(fImpl);
-    return dynamic_cast<const SeqTokenImpl*>(fImpl.obj())->fChildren;
+    return static_cast<const SeqTokenImpl&>(*fImpl).fChildren;
 
   default:
     throw NotSupportedException(__FUNCTION__);
@@ -1088,7 +1089,7 @@ Token::children()
   case kNested:
     hr_assert(fImpl);
     unshare();
-    return dynamic_cast<SeqTokenImpl*>(fImpl.obj())->fChildren;
+    return static_cast<SeqTokenImpl&>(*fImpl).fChildren;
 
   default:
     throw NotSupportedException(__FUNCTION__);
@@ -1100,8 +1101,8 @@ void
 Token::unshare()
 {
   // Write barrier
-  if (fImpl && fImpl->refCount() > 1)
-    fImpl = fImpl->unshare();
+  if (fImpl && fImpl.use_count() > 1)
+    fImpl = fImpl->unshare(fImpl);
 }
 
 
@@ -1112,7 +1113,7 @@ Token::addExpr(const Token& expr)
     throw NotSupportedException(__FUNCTION__);
 
   unshare();
-  dynamic_cast<SeqTokenImpl*>(fImpl.obj())->fChildren.push_back(expr);
+  static_cast<SeqTokenImpl&>(*fImpl).fChildren.push_back(expr);
 }
 
 
@@ -1132,12 +1133,9 @@ Token::operator<<(const TokenVector& exprs)
 
   unshare();
 
-  SeqTokenImpl* seq = dynamic_cast<SeqTokenImpl*>(fImpl.obj());
-  for (TokenVector::const_iterator it = exprs.begin();
-       it != exprs.end();
-       it++)
-  {
-    seq->fChildren.push_back(*it);
+  SeqTokenImpl& seq = static_cast<SeqTokenImpl&>(*fImpl);
+  for (const auto& tok : exprs) {
+    seq.fChildren.push_back(tok);
   }
 
   return *this;
@@ -1210,7 +1208,7 @@ Token::idValue() const
   case kMacroParam:
   case kMacroParamAsStr:
   case kKeyarg:
-    return dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr;
+    return static_cast<const IdTokenImpl&>(*fImpl).fStr;
   default:
     hr_invalid("");
   }
@@ -1224,7 +1222,7 @@ Token::boolValue() const
 {
   if (fType != kBool)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fBoolValue;
+  return static_cast<const NumberTokenImpl&>(*fImpl).fBoolValue;
 }
 
 
@@ -1233,7 +1231,7 @@ Token::intValue() const
 {
   if (fType != kInt && fType != kUInt)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIntValue;
+  return static_cast<const NumberTokenImpl&>(*fImpl).fIntValue;
 }
 
 
@@ -1242,7 +1240,7 @@ Token::bitwidth() const
 {
   if (fType != kInt && fType != kUInt && fType != kFloat)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fBitWidth;
+  return static_cast<const NumberTokenImpl&>(*fImpl).fBitWidth;
 }
 
 
@@ -1251,7 +1249,7 @@ Token::floatValue() const
 {
   if (fType != kFloat)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fDoubleValue;
+  return static_cast<const NumberTokenImpl&>(*fImpl).fDoubleValue;
 }
 
 
@@ -1260,7 +1258,7 @@ Token::rationalValue() const
 {
   if (fType != kRational)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fRationalValue;
+  return static_cast<const NumberTokenImpl&>(*fImpl).fRationalValue;
 }
 
 
@@ -1270,7 +1268,7 @@ Token::isImaginary() const
   if (type() != kLit &&
       fType != kString && fType != kKeyword && fType != kDocString)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIsImaginary;
+  return static_cast<const NumberTokenImpl&>(*fImpl).fIsImaginary;
 }
 
 
@@ -1280,7 +1278,7 @@ Token::setIsImaginary(bool value)
   if (type() != kLit &&
       fType != kString && fType != kKeyword && fType != kDocString)
     throw NotSupportedException(__FUNCTION__);
-  dynamic_cast<NumberTokenImpl*>(fImpl.obj())->fIsImaginary = value;
+  static_cast<NumberTokenImpl&>(*fImpl).fIsImaginary = value;
   return *this;
 }
 
@@ -1290,7 +1288,7 @@ Token::stringValue() const
 {
   if (fType != kString && fType != kKeyword && fType != kDocString)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const StringTokenImpl*>(fImpl.obj())->fStrValue;
+  return static_cast<const StringTokenImpl&>(*fImpl).fStrValue;
 }
 
 
@@ -1299,7 +1297,7 @@ Token::charValue() const
 {
   if (fType != kChar)
     throw NotSupportedException(__FUNCTION__);
-  return Char(dynamic_cast<const NumberTokenImpl*>(fImpl.obj())->fIntValue);
+  return Char(static_cast<const NumberTokenImpl&>(*fImpl).fIntValue);
 }
 
 
@@ -1308,7 +1306,7 @@ Token::leftToken() const
 {
   if (fType != kNestedExpr)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const NestedTokenImpl*>(fImpl.obj())->fLeft;
+  return static_cast<const NestedTokenImpl&>(*fImpl).fLeft;
 }
 
 
@@ -1317,7 +1315,7 @@ Token::rightToken() const
 {
   if (fType != kNestedExpr)
     throw NotSupportedException(__FUNCTION__);
-  return dynamic_cast<const NestedTokenImpl*>(fImpl.obj())->fRight;
+  return static_cast<const NestedTokenImpl&>(*fImpl).fRight;
 }
 
 
@@ -1543,15 +1541,15 @@ Token::toPort(Port<Octet>& port) const
       return fImpl->toPort(port);
     case kMacroParam:
       xml::displayTagAttr(port, "id", "type='macparm'",
-                          dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr);
+                          static_cast<const IdTokenImpl&>(*fImpl).fStr);
       break;
     case kMacroParamAsStr:
       xml::displayTagAttr(port, "id", "type='strparm'",
-                          dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr);
+                          static_cast<const IdTokenImpl&>(*fImpl).fStr);
       break;
     case kKeyarg:
       xml::displayTagAttr(port, "id", "type='keyarg'",
-                          dynamic_cast<const IdTokenImpl*>(fImpl.obj())->fStr);
+                          static_cast<const IdTokenImpl&>(*fImpl).fStr);
       break;
     case kDefId:
     case kElseId:
