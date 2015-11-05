@@ -12,7 +12,6 @@
 
 #include "llvm/IR/IRBuilder.h"
 
-#include "ptr.h"
 #include "apt.h"
 
 #include <map>

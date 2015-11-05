@@ -17,7 +17,6 @@
 
 #include "require.h"
 #include "str.h"
-#include "refcountable.h"
 #include "port.h"
 
 using namespace herschel;

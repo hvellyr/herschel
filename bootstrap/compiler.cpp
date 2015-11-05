@@ -20,7 +20,6 @@
 #include "pass2.h"
 #include "predefined.h"
 #include "properties.h"
-#include "ptr.h"
 #include "rootscope.h"
 #include "scope.h"
 #include "str.h"

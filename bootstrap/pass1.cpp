@@ -4353,7 +4353,7 @@ FirstPass::replaceMatchBindings(TokenVector* result,
 
 namespace herschel {
 
-  struct ParameterSyntaxMatcher : public RefCountable
+  struct ParameterSyntaxMatcher
   {
     virtual ~ParameterSyntaxMatcher() { }
 

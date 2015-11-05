@@ -10,7 +10,6 @@
 
 #include "catch/catch.hpp"
 
-#include "../ptr.h"
 #include "../scope.h"
 #include "../srcpos.h"
 #include "../type.h"

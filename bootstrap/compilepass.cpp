@@ -12,7 +12,6 @@
 #include "compilepass.h"
 #include "port.h"
 #include "properties.h"
-#include "ptr.h"
 #include "token.h"
 #include "xmlout.h"
 

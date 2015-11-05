@@ -15,7 +15,6 @@
 #include "properties.h"
 #include "log.h"
 #include "str.h"
-#include "ptr.h"
 #include "token.h"
 #include "parsertypes.h"
 #include "registry.h"

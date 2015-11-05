@@ -12,7 +12,6 @@
 
 #include <map>
 
-#include "refcountable.h"
 #include "str.h"
 
 namespace herschel
@@ -25,7 +24,7 @@ namespace herschel
   //! to a templated type.  Values are added (set) using \c registerValue()
   //! and looked up with \c lookup().
   template<typename T>
-  class Registry : public RefCountable
+  class Registry
   {
   public:
     using ValueType = T;

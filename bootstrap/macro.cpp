@@ -8,8 +8,6 @@
    This source code is released under the BSD License.
 */
 
-#include "refcountable.h"
-#include "ptr.h"
 #include "token.h"
 #include "macro.h"
 #include "strbuf.h"

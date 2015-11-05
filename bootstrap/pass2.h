@@ -15,7 +15,6 @@
 #include "compiler.h"
 #include "pass.h"
 #include "port.h"
-#include "refcountable.h"
 #include "scope.h"
 #include "token.h"
 #include "tokenport.h"

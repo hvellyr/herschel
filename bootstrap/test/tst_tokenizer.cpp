@@ -11,7 +11,6 @@
 #include "catch/catch.hpp"
 
 #include "../log.h"
-#include "../ptr.h"
 #include "../tokenizer.h"
 #include "../type.h"
 

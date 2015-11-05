@@ -10,8 +10,6 @@
 
 #pragma once
 
-#include "refcountable.h"
-#include "ptr.h"
 #include "compilepass.h"
 
 #include <vector>
@@ -67,7 +65,7 @@ namespace herschel
   //! Compile step which applies various transformations to an \c AptNode
   //! tree.
 
-  class Transformator : public RefCountable
+  class Transformator
   {
   public:
     Transformator();

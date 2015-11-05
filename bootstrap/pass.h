@@ -13,15 +13,13 @@
 #include <list>
 
 #include "compiler.h"
-#include "ptr.h"
-#include "refcountable.h"
 #include "scope.h"
 #include "str.h"
 
 
 namespace herschel
 {
-  class AbstractPass : public RefCountable
+  class AbstractPass
   {
   public:
     AbstractPass(Compiler& compiler, std::shared_ptr<Scope> scope);

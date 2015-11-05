@@ -13,7 +13,6 @@
 #include "common.h"
 
 #include "token.h"
-#include "refcountable.h"
 
 #include <vector>
 #include <map>
@@ -84,7 +83,7 @@ namespace herschel
   //! Base class for the implementation of types.  This defines the base
   //! interface a type implementation must provide.
 
-  class TypeImpl : public RefCountable
+  class TypeImpl
   {
   public:
     //! Make a deep copy of the receiver.  Note that even the base type Type
@@ -528,7 +527,7 @@ namespace herschel
   };
 
 
-  class BaseTypeConstraintImpl : public RefCountable
+  class BaseTypeConstraintImpl
   {
   public:
     virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const = 0;

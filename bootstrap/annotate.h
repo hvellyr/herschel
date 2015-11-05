@@ -10,8 +10,6 @@
 
 #pragma once
 
-#include "refcountable.h"
-#include "ptr.h"
 #include "compilepass.h"
 
 #include <vector>
@@ -71,7 +69,7 @@ namespace herschel
   //!
   //! Currently the annotate pass detects shared variable access (which is
   //! required for closure detection).
-  class Annotator : public RefCountable
+  class Annotator
   {
   public:
     enum Phase

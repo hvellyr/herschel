@@ -10,9 +10,8 @@
 
 #pragma once
 
-#include "token.h"
 #include "compiler.h"
-#include "ptr.h"
+#include "token.h"
 
 
 namespace herschel

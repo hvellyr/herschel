@@ -385,7 +385,7 @@ CodegenApply::emitToCharApply(const ApplyNode* applyNode) const
 
 namespace herschel
 {
-class ArrayAllocateStrategy : public RefCountable
+class ArrayAllocateStrategy
 {
 public:
   ArrayAllocateStrategy(const CodegenApply* apply)

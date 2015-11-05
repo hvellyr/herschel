@@ -147,8 +147,6 @@ LIBHRC_HEADERS =         \
 	pass2.h             \
 	predefined.h        \
 	properties.h        \
-	ptr.h               \
-	refcountable.h      \
 	registry.h          \
 	rootscope.h         \
 	scope.h             \

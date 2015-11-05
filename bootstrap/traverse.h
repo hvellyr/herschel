@@ -11,7 +11,6 @@
 #pragma once
 
 #include <vector>
-#include "ptr.h"
 
 
 namespace herschel

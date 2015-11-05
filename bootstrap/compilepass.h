@@ -10,8 +10,6 @@
 
 #pragma once
 
-#include "refcountable.h"
-
 #include <memory>
 
 
@@ -27,7 +25,7 @@ namespace herschel
   //! <tt>CompilePass\<const Token&, herschel::AptNode*><tt>.
 
   template<typename TIn, typename TOut>
-  class CompilePass : public RefCountable
+  class CompilePass
   {
   public:
     //! Apply the compile pass to \p src and return a transformed value.  If

@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "ptr.h"
 #include "compilepass.h"
 
 #include <vector>

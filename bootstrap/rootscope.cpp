@@ -10,7 +10,6 @@
 
 #include "apt.h"
 #include "predefined.h"
-#include "ptr.h"
 #include "rootscope.h"
 #include "scope.h"
 #include "srcpos.h"
