@@ -63,14 +63,16 @@ RTLIBX: $(RTLIB)
 RTTESTS_APPX: $(RTTESTS_APPBINARY)
 
 $(RTTESTS_APPBINARY): $(RTTESTS_OBJS) $(RTLIB)
-	$(CC) $(CFLAGS) $(RTTESTS_LDFLAGS) -o $@ $^ $(RTLIB)
+	@echo "[LINK] $@"
+	@$(CC) $(CFLAGS) $(RTTESTS_LDFLAGS) -o $@ $^ $(RTLIB)
 
 
 # %$(LIBEXT)(%$(OBJEXT)): %$(OBJEXT)
 # 	$(AR) cru $@ $%
 
 $(RTLIB): $(OBJS)
-	$(AR) cru $@ $^
+	@echo "[LIB] $@"
+	@$(AR) cru $@ $^
 
 # 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS) $(LLVM_LIBS)
 

@@ -46,10 +46,12 @@ all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) LANGKIT_LIBX
 LANGKIT_LIBX: $(LANGKIT_LIB)
 
 $(LANGKIT_LIB): $(LANGKIT_OBJ)
-	$(AR) crus $@ $^
+	@echo "[LIB] $@"
+	@$(AR) crus $@ $^
 
 $(LANGKIT_OBJ): $(LIBLANGKIT_OBJS)
-	$(LLVM_EXE)/llvm-link $^ | $(LLVM_EXE)/llc -filetype=obj -o $@
+	@echo "[LINK] $@"
+	@$(LLVM_EXE)/llvm-link $^ | $(LLVM_EXE)/llc -filetype=obj -o $@
 
 
 

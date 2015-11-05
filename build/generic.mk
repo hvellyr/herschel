@@ -57,23 +57,28 @@ distdir: $(DISTFILES)
 
 $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(OBJEXT) : %.c
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	@echo "[CC] $<"
+	@$(CC) $(CFLAGS) -c -o $@ $<
 
 $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(OBJEXT) : %.cpp
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	@echo "[CXX] $<"
+	@$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(DYOEXT) : %.c
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
-	$(CC) $(PIC) $(CFLAGS) -c -o $@ $<
+	@echo "[CC] $<"
+	@$(CC) $(PIC) $(CFLAGS) -c -o $@ $<
 
 $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%$(DYOEXT) : %.cpp
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
-	$(CXX) $(PIC) $(CXXFLAGS) -c -o $@ $<
+	@echo "[CXX] $<"
+	@$(CXX) $(PIC) $(CXXFLAGS) -c -o $@ $<
 
 $(BUILDDIR)/$(BUILDSTYLE)$(PKG)/%.bc : %.hr
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
-	$(BUILDDIR)/$(BUILDSTYLE)/herschel$(APPEXT) --isys=$(top_srcdir)/lib -c -o $@ $<
+	@echo "[HRC] $<"
+	@$(BUILDDIR)/$(BUILDSTYLE)/herschel$(APPEXT) --isys=$(top_srcdir)/lib -c -o $@ $<
 
 $(DEPS_DIR)/%.d: %.c $(PRE_DEPS)
 	@$(top_srcdir)/build/mkinstalldirs $(dir $@)
@@ -101,7 +106,8 @@ $(DEPS_DIR)/%.ld: %.cpp $(PRE_DEPS)
 
 
 %$(LIBEXT)(%$(OBJEXT)): %$(OBJEXT)
-	$(AR) cru $@ $%
+	@echo "[Lib] $"
+	@$(AR) cru $@ $%
 
 
 # -include $(ALL_DEPS)
