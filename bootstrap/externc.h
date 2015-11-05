@@ -12,8 +12,6 @@
 
 #include "token.h"
 #include "pass1.h"
-#include "refcountable.h"
-#include "ptr.h"
 #include "token.h"
 
 
@@ -28,10 +26,10 @@ namespace herschel
   //! extern block has been digested and the next token in the \c FirstPass
   //! instance is the next token in the herschel language.
 
-  class ExternCParser : public RefCountable
+  class ExternCParser
   {
   public:
-    ExternCParser(FirstPass* pass1);
+    ExternCParser(FirstPass& pass1);
 
     //! Parse the "extern (C)" block.  On return the final closing brace has
     //! been digested.
@@ -50,7 +48,7 @@ namespace herschel
     //-------- data members
 
     Token fToken;
-    Ptr<FirstPass> fPass;
+    FirstPass& fPass;
   };
 
 } // namespace

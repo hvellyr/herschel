@@ -38,8 +38,8 @@ TransformPass::TransformPass(int level)
 std::shared_ptr<AptNode>
 TransformPass::doApply(std::shared_ptr<AptNode> src)
 {
-  Ptr<Transformator> tr = new Transformator;
-  tr->transformNode(src);
+  Transformator tr;
+  tr.transformNode(src);
   return src;
 }
 

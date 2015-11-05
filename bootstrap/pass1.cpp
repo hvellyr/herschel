@@ -45,8 +45,8 @@ ExprPass::ExprPass(int level, Compiler& compiler,
 Token
 ExprPass::doApply(const Token& src)
 {
-  Ptr<FirstPass> fp = new FirstPass(fCompiler, fCurrentToken, fScope);
-  return fp->parse();
+  FirstPass fp{fCompiler, fCurrentToken, fScope};
+  return fp.parse();
 }
 
 
@@ -2648,8 +2648,8 @@ FirstPass::parseExtern()
   nextToken();
 
   if (linkageType == String("C")) {
-    Ptr<ExternCParser> externc = new ExternCParser(this);
-    return externc->parseBlock();
+    ExternCParser externc{*this};
+    return externc.parseBlock();
   }
 
   errorf(fToken.srcpos(), E_UnknownLinkage, "Unknown linkage type: '%s'",

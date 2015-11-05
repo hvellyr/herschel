@@ -27,17 +27,17 @@ public:
 };
 
 
-ExternCParser::ExternCParser(FirstPass* pass1)
+ExternCParser::ExternCParser(FirstPass& pass1)
   : fPass(pass1)
 {
-  fToken = fPass->currentToken();
+  fToken = fPass.currentToken();
 }
 
 
 Token
 ExternCParser::nextToken()
 {
-  fToken = fPass->nextToken();
+  fToken = fPass.nextToken();
   //printf("[%s] ", (zstring)StrHelper(fToken.toString()));
   return fToken;
 }
@@ -46,8 +46,8 @@ ExternCParser::nextToken()
 Token
 ExternCParser::scanUntilBrace()
 {
-  fPass->scanUntilBrace();
-  fToken = fPass->currentToken();
+  fPass.scanUntilBrace();
+  fToken = fPass.currentToken();
   return fToken;
 }
 

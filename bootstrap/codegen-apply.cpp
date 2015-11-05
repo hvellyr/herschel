@@ -628,19 +628,19 @@ CodegenApply::emitAllocateArrayApply(const ApplyNode* node) const
   hr_assert(symNode->refersTo() == kGeneric);
 #endif
 
-  Ptr<ArrayAllocateStrategy> strategy;
+  std::unique_ptr<ArrayAllocateStrategy> strategy;
 
   // TODO: use type specialed array functions allocate_int_array, etc.
   if (node->type().typeId() == arrayTypeName(Names::kInt32TypeName) ||
       node->type().typeId() == arrayTypeName(Names::kUInt32TypeName))
   {
-    strategy = new Int32ArrayAllocateStrategy(this);
+    strategy.reset(new Int32ArrayAllocateStrategy(this));
   }
   else if (node->type().typeId() == arrayTypeName(Names::kCharTypeName)) {
-    strategy = new CharArrayAllocateStrategy(this);
+    strategy.reset(new CharArrayAllocateStrategy(this));
   }
   else {
-    strategy = new AtomArrayAllocateStrategy(this);
+    strategy.reset(new AtomArrayAllocateStrategy(this));
   }
 
   String funcnm = strategy->allocateFuncName();

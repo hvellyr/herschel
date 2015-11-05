@@ -43,8 +43,8 @@ AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope,
 std::shared_ptr<AptNode>
 AnnotatePass::doApply(std::shared_ptr<AptNode> src)
 {
-  Ptr<Annotator> an = new Annotator(fScope, fCompiler);
-  an->annotateRecursively(src);
+  Annotator an{fScope, fCompiler};
+  an.annotateRecursively(src);
   return src;
 }
 
