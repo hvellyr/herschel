@@ -8,10 +8,9 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_compilepass_h
-#define bootstrap_compilepass_h
+#pragma once
 
-#include "refcountable.h"
+#include <memory>
 
 
 namespace herschel
@@ -26,7 +25,7 @@ namespace herschel
   //! <tt>CompilePass\<const Token&, herschel::AptNode*><tt>.
 
   template<typename TIn, typename TOut>
-  class CompilePass : public RefCountable
+  class CompilePass
   {
   public:
     //! Apply the compile pass to \p src and return a transformed value.  If
@@ -71,7 +70,8 @@ namespace herschel
   //!
   //! Subclasses have to provide at least the \c CompilePass::doApply().
 
-  class Token2AptNodeCompilePass : public CompilePass<const Token&, AptNode*>
+  class Token2AptNodeCompilePass : public CompilePass<const Token&,
+                                                      std::shared_ptr<AptNode>>
   {
   public:
     Token2AptNodeCompilePass(int level)
@@ -80,7 +80,7 @@ namespace herschel
 
     ~Token2AptNodeCompilePass() { }
 
-    virtual AptNode* apply(const Token& src, bool doTrace);
+    virtual std::shared_ptr<AptNode> apply(const Token& src, bool doTrace);
 
     virtual int passLevel() const { return fLevel; }
 
@@ -93,7 +93,8 @@ namespace herschel
   //!
   //! Subclasses have to provide at least the \c CompilePass::doApply().
 
-  class AptNodeCompilePass : public CompilePass<AptNode*, AptNode*>
+  class AptNodeCompilePass : public CompilePass<std::shared_ptr<AptNode>,
+                                                std::shared_ptr<AptNode>>
   {
   public:
     AptNodeCompilePass(int level, bool showNodeType = false)
@@ -103,7 +104,8 @@ namespace herschel
 
     ~AptNodeCompilePass() { }
 
-    virtual AptNode* apply(AptNode* src, bool doTrace);
+    virtual std::shared_ptr<AptNode> apply(std::shared_ptr<AptNode> src,
+                                           bool doTrace);
 
     virtual int passLevel() const { return fLevel; }
 
@@ -111,6 +113,5 @@ namespace herschel
     int fLevel;
     bool fShowNodeType;
   };
-};                              // namespace
 
-#endif                          // bootstrap_compilepass_h
+} // namespace

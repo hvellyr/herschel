@@ -44,7 +44,7 @@
 
 using namespace herschel;
 
-CodegenWhile::CodegenWhile(CodeGenerator* generator)
+CodegenWhile::CodegenWhile(CodeGenerator& generator)
   : CodeGeneratorProxy(generator)
 {
 }
@@ -70,14 +70,14 @@ CodegenWhile::emit(const WhileNode* node) const
   builder().SetInsertPoint(loopHeadBB);
 
   llvm::Value *testValue =
-    tools()->wrapLoad(generator()->codegenNode(node->test()));
-  if (testValue == NULL)
-    return NULL;
+    tools().wrapLoad(generator().codegenNode(*node->test()));
+  if (!testValue)
+    return nullptr;
 
-  llvm::Value* extrTestVal = tools()->emitPackCode(node->test()->dstType(),
-                                                   node->test()->typeConv(),
-                                                   testValue,
-                                                   node->test()->type());
+  llvm::Value* extrTestVal = tools().emitPackCode(node->test()->dstType(),
+                                                  node->test()->typeConv(),
+                                                  testValue,
+                                                  node->test()->type());
 
   // Convert condition to a bool by comparing equal to 1
   testValue = builder().CreateICmpEQ(extrTestVal,
@@ -90,9 +90,9 @@ CodegenWhile::emit(const WhileNode* node) const
   // Start insertion in loopBB.
   builder().SetInsertPoint(loopBB);
 
-  llvm::Value* bodyValue = generator()->codegenNode(node->body());
-  if (bodyValue == NULL)
-    return NULL;
+  llvm::Value* bodyValue = generator().codegenNode(*node->body());
+  if (!bodyValue)
+    return nullptr;
 
   // jump back to loop start
   builder().CreateBr(loopHeadBB);

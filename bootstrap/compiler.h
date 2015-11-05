@@ -8,17 +8,16 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_compiler_h
-#define bootstrap_compiler_h
+#pragma once
 
-#include "refcountable.h"
 #include "apt.h"
 #include "macro.h"
 #include "port.h"
 #include "scope.h"
-#include "tokenport.h"
 #include "token.h"
+#include "tokenport.h"
 
+#include <memory>
 
 namespace herschel
 {
@@ -57,22 +56,23 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  class Compiler : public RefCountable
+  class Compiler
   {
   public:
     Compiler(bool isParsingInterface = false);
 
-    virtual AptNode* process(Port<Char>* port, const String& srcName);
+    virtual std::shared_ptr<AptNode> process(std::shared_ptr<Port<Char>> port,
+                                             const String& srcName);
 
-    CharRegistry* charRegistry() const;
-    ConfigVarRegistry* configVarRegistry() const;
+    std::shared_ptr<CharRegistry> charRegistry() const;
+    std::shared_ptr<ConfigVarRegistry> configVarRegistry() const;
 
     bool importFile(const SrcPos& srcpos,
                     const String& srcName, bool isPublic,
-                    Scope* currentScope);
+                    std::shared_ptr<Scope> currentScope);
     String lookupFile(const String& srcName, bool isPublic);
 
-    Scope* referredFunctionCache() const;
+    std::shared_ptr<Scope>& referredFunctionCache();
 
     // predefined symbol tokens to speed up parsing
     static const Token aliasToken;
@@ -108,11 +108,11 @@ namespace herschel
     class PortStackHelper
     {
     public:
-      PortStackHelper(Compiler* compiler, TokenPort* port);
+      PortStackHelper(Compiler& compiler, std::shared_ptr<TokenPort> port);
       ~PortStackHelper();
 
     private:
-      Compiler* fCompiler;
+      Compiler& fCompiler;
       bool fPortOnly;
     };
 
@@ -122,16 +122,17 @@ namespace herschel
     friend class SecondPass;
 
     bool isParsingInterface() const;
-    Scope* scope() const;
+    std::shared_ptr<Scope> scope() const;
 
     Token nextToken();
     void unreadToken(const Token& token);
 
-    AptNode* processImpl(Port<Char>* port, const String& srcName,
-                         bool doTrace);
+    std::shared_ptr<AptNode> processImpl(std::shared_ptr<Port<Char>> port,
+                                         const String& srcName,
+                                         bool doTrace);
     bool importFileImpl(const SrcPos& srcpos,
                         const String& srcName, const String& absPath,
-                        Scope* currentScope,
+                        std::shared_ptr<Scope> currentScope,
                         bool preload);
 
     void importSystemHeaders(const String& avoidPath);
@@ -140,17 +141,17 @@ namespace herschel
     class CompilerState
     {
     public:
-      CompilerState(CharRegistry*      charReg,
-                    ConfigVarRegistry* configReg,
-                    Scope*             scope);
+      CompilerState(std::shared_ptr<CharRegistry> charReg,
+                    std::shared_ptr<ConfigVarRegistry> configReg,
+                    std::shared_ptr<Scope> scope);
       CompilerState(const CompilerState& item);
       CompilerState& operator=(const CompilerState& item);
 
-      Ptr<TokenPort>         fPort;
+      std::shared_ptr<TokenPort> fPort;
       Token                  fToken;
-      Ptr<CharRegistry>      fCharRegistry;
-      Ptr<ConfigVarRegistry> fConfigVarRegistry;
-      Ptr<Scope>             fScope;
+      std::shared_ptr<CharRegistry> fCharRegistry;
+      std::shared_ptr<ConfigVarRegistry> fConfigVarRegistry;
+      std::shared_ptr<Scope> fScope;
     };
 
 
@@ -159,8 +160,7 @@ namespace herschel
     CompilerState            fState;
     std::list<CompilerState> fCompilerStates;
     bool                     fIsParsingInterface;
-
-    Ptr<Scope>               fReferredFunctionCache;
+    std::shared_ptr<Scope>   fReferredFunctionCache;
   };
 
 
@@ -175,6 +175,5 @@ namespace herschel
 
   void compileFiles(const std::vector<String>& files,
                     const String& outputfile);
-};
 
-#endif  // bootstrap_compiler_h
+} // namespace

@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_slot_h
-#define bootstrap_codegen_slot_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -37,7 +36,7 @@ namespace herschel
   class CodegenSlot : public CodeGeneratorProxy
   {
   public:
-    CodegenSlot(CodeGenerator* generator);
+    CodegenSlot(CodeGenerator& generator);
 
     llvm::Value* emitSlotRefAccess(const SlotRefNode* node) const;
     llvm::Value* emitSlotRefAssignment(const SlotRefNode* node,
@@ -46,6 +45,5 @@ namespace herschel
   private:
     llvm::Value* emitPtrToSlot(const SlotRefNode* node, bool isStore) const;
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_slot_h
+} // namespace

@@ -25,8 +25,8 @@
 using namespace herschel;
 
 
-Tokenizer::Tokenizer(Port<Char>* port, const String& srcName,
-                     CharRegistry* charRegistry)
+Tokenizer::Tokenizer(std::shared_ptr<Port<Char>> port, const String& srcName,
+                     std::shared_ptr<CharRegistry> charRegistry)
   : fPort(port),
     fSrcName(srcName),
     fLineCount(1),
@@ -35,7 +35,7 @@ Tokenizer::Tokenizer(Port<Char>* port, const String& srcName,
     fInGenericContext(0),
     fCharRegistry(charRegistry)
 {
-  hr_assert(port != NULL);
+  hr_assert(port);
 
   nextChar();
 }
@@ -44,7 +44,7 @@ Tokenizer::Tokenizer(Port<Char>* port, const String& srcName,
 bool
 Tokenizer::isEof() const
 {
-  return fPort == NULL || fPort->isEof();
+  return !fPort || fPort->isEof();
 }
 
 
@@ -610,7 +610,7 @@ Tokenizer::mapCharNameToChar(const SrcPos& startPos, const String& charnm)
     return Char('\t');
   else if (charnm == String("esc") || charnm == String("escape"))
     return Char('\e');
-  else if (fCharRegistry != NULL) {
+  else if (fCharRegistry) {
     int cp;
     if (fCharRegistry->lookup(charnm, &cp)) {
       if (cp >= 0 && cp <= 0x10ffff)
@@ -739,7 +739,7 @@ Tokenizer::nextToken()
 {
   Token t = nextTokenImpl();
   if (Properties::isTraceTokenizer()) {
-    printf("%s ", (const char*)StrHelper(t.toString()));
+    printf("%s ", (zstring)StrHelper(t.toString()));
     fflush(stdout);
   }
   return t;

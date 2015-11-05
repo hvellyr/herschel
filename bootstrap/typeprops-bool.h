@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeprops_bool_h
-#define bootstrap_typeprops_bool_h
+#pragma once
 
 #include "typeprops.h"
 #include "typeenum.h"
@@ -29,7 +28,7 @@ namespace herschel
   public:
     BoolTypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_bool"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_bool"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -57,11 +56,10 @@ namespace herschel
 
     virtual int typeBitsize() const { return 0; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
     {
-      return new BoolTypeEnumMaker;
+      return std::unique_ptr<TypeEnumMaker>(new BoolTypeEnumMaker);
     }
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeprops_bool_h

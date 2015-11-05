@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_filetool_h
-#define bootstrap_filetool_h
+#pragma once
 
 #include "common.h"
 
@@ -44,6 +43,5 @@ namespace herschel
                             const String& file,
                             const String& outExt);
 
-};                              // namespace
+} // namespace
 
-#endif                          // bootstrap_filetool_h

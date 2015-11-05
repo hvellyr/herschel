@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_require_h
-#define bootstrap_require_h
+#pragma once
 
 namespace herschel
 {
@@ -25,9 +24,8 @@ namespace herschel
 #else  /* IS_DEBUG */
 
   void setRequiresAreFatal(bool value);
-  void requireHandler(const char* file, int line,
-                      const char* title, const char* msg,
-                      const char* expr);
+  void requireHandler(zstring file, int line, zstring title, zstring msg,
+                      zstring expr);
 
 
 #define hr_assert(_expr)                                                \
@@ -46,10 +44,8 @@ namespace herschel
 
 
 #define hr_invalid(_msg)                                                \
-  herschel::requireHandler(__FILE__, __LINE__, "Invalid", (_msg), NULL)
+  herschel::requireHandler(__FILE__, __LINE__, "Invalid", (_msg), nullptr)
 
 #endif /* end IS_DEBUG */
 
-};                              // namespace
-
-#endif                          // bootstrap_require_h
+}                               // namespace

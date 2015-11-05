@@ -8,13 +8,12 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_types_h
-#define bootstrap_codegen_types_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
-#include "refcountable.h"
 #include "codegen-proxy.h"
+
 
 namespace llvm
 {
@@ -31,11 +30,10 @@ namespace herschel
 
   //----------------------------------------------------------------------------
 
-  class CodegenTypeUtils : public RefCountable,
-                           public CodeGeneratorProxy
+  class CodegenTypeUtils : public CodeGeneratorProxy
   {
   public:
-    CodegenTypeUtils(CodeGenerator* generator);
+    CodegenTypeUtils(CodeGenerator& generator);
 
     llvm::Type* getAtomPayloadType() const;
     llvm::Type* getAtomType() const;
@@ -66,9 +64,6 @@ namespace herschel
     llvm::Type* getType(const Type& type) const;
     size_t getSlotSize(const Type& type) const;
     size_t getAtomTypeSize() const;
-
-
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_types_h
+} // namespace

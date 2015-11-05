@@ -59,21 +59,19 @@ using namespace herschel;
 
 //----------------------------------------------------------------------------
 
-CodeGenerator::CodeGenerator(Compiler* compiler)
+CodeGenerator::CodeGenerator(Compiler& compiler)
   : fCompiler(compiler),
     fContext(llvm::getGlobalContext()),
-    fModule(NULL),
-    // fDIBuilder(NULL),
+    fModule(nullptr),
+    // fDIBuilder(nullptr),
     fBuilder(context()),
-    fOptPassManager(NULL),
-    fDataLayout(NULL),
-    fInitializer(new ModuleRuntimeInitializer(this)),
-    fTypes(new CodegenTypeUtils(this)),
-    fTools(new CodegenTools(this)),
+    fOptPassManager(nullptr),
+    fDataLayout(nullptr),
+    fInitializer(new ModuleRuntimeInitializer(*this)),
+    fTypes(new CodegenTypeUtils(*this)),
+    fTools(new CodegenTools(*this)),
     fHasMainFunc(false)
 {
-  hr_assert(fCompiler != NULL);
-
   llvm::InitializeNativeTarget();
 
   fModule = new llvm::Module("compile-unit", fContext);
@@ -82,7 +80,7 @@ CodeGenerator::CodeGenerator(Compiler* compiler)
   std::string error;
   const llvm::Target* target =
     llvm::TargetRegistry::lookupTarget(fModule->getTargetTriple(), error);
-  if (target == NULL) {
+  if (!target) {
     logf(kError, "Compile setup failure: %s", error.c_str());
     exit(1);
   }
@@ -91,7 +89,7 @@ CodeGenerator::CodeGenerator(Compiler* compiler)
                                                              "", // CPU
                                                              "", // Features
                                                              llvm::TargetOptions() );
-  if (machine == NULL) {
+  if (!machine) {
     logf(kError, "Compile setup failure: no matching TargetMachine found");
     exit(1);
   }
@@ -161,13 +159,13 @@ CodeGenerator::setupOptPassManager()
 
 CodeGenerator::~CodeGenerator()
 {
-  if (fOptPassManager != NULL) {
+  if (fOptPassManager) {
     delete fOptPassManager;
-    fOptPassManager = NULL;
+    fOptPassManager = nullptr;
   }
-  if (fModule != NULL) {
+  if (fModule) {
     delete fModule;
-    fModule = NULL;
+    fModule = nullptr;
   }
 }
 
@@ -231,13 +229,13 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
                                  errInfo, llvm::sys::fs::OpenFlags::F_RW);
   if (errInfo) {
     logf(kError, "Failed to open output file '%s': %s",
-         (const char*)StrHelper(outputFile), errInfo.message().c_str());
+         (zstring)StrHelper(outputFile), errInfo.message().c_str());
     return false;
   }
 
   switch (Properties::compileOutFormat()) {
   case kLLVM_IR:
-    fModule->print(outstream, NULL);
+    fModule->print(outstream, nullptr);
     break;
   case kLLVM_BC:
     llvm::WriteBitcodeToFile(fModule, outstream);
@@ -250,9 +248,9 @@ CodeGenerator::compileToCode(const CompileUnitNode* node,
 //------------------------------------------------------------------------------
 
 llvm::Value*
-CodeGenerator::codegenNode(const AptNode* node, bool autoloadAllocInst)
+CodeGenerator::codegenNode(const AptNode& node, bool autoloadAllocInst)
 {
-  llvm::Value* val = node->codegen(this);
+  auto val = node.codegen(this);
   if (autoloadAllocInst && llvm::AllocaInst::classof(val)) {
     val = fBuilder.CreateLoad(val);
   }
@@ -265,25 +263,25 @@ CodeGenerator::codegen(const CompileUnitNode* node)
 {
   const NodeList& nl = node->children();
   for (size_t i = 0; i < nl.size(); i++)
-    codegenNode(nl[i].obj());
+    codegenNode(*nl[i]);
 
   if (fHasMainFunc) {
     createDefaultCMainFunc();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const NodeList& nl)
 {
-  llvm::Value* lastVal = NULL;
+  llvm::Value* lastVal = nullptr;
 
   for (size_t bidx = 0; bidx < nl.size(); bidx++) {
-    llvm::Value* val = codegenNode(nl[bidx]);
-    if (val == NULL)
-      return NULL;
+    llvm::Value* val = codegenNode(*nl[bidx]);
+    if (!val)
+      return nullptr;
     lastVal = val;
   }
   return lastVal;
@@ -300,7 +298,7 @@ CodeGenerator::codegen(const SymbolNode* node)
     return llvm::Constant::getNullValue(fTypes->getType(node->type()));
   }
 
-  llvm::Value* val = NULL;
+  llvm::Value* val = nullptr;
 
   switch (node->refersTo()) {
   case kLocalVar:
@@ -312,13 +310,13 @@ CodeGenerator::codegen(const SymbolNode* node)
     break;
   default:
     logf(kError, "Unexpected symbol reference '%s' (%d)",
-         (const char*)StrHelper(node->name()), node->refersTo());
+         (zstring)StrHelper(node->name()), node->refersTo());
     hr_invalid("unexpected symbol reference");
   }
 
-  if (val == NULL) {
-    logf(kError, "Unknown symbol '%s'", (const char*)StrHelper(node->name()));
-    return NULL;
+  if (!val) {
+    logf(kError, "Unknown symbol '%s'", (zstring)StrHelper(node->name()));
+    return nullptr;
   }
 
   return val;
@@ -331,7 +329,7 @@ CodeGenerator::codegen(const ArrayTypeNode* node)
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -341,7 +339,7 @@ CodeGenerator::codegen(const TypeNode* node)
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -350,32 +348,32 @@ CodeGenerator::codegen(const SlotdefNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const VardefNode* node, bool isLocal)
 {
-  return CodegenVardef(this).emit(node, isLocal);
+  return CodegenVardef(*this).emit(node, isLocal);
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const AssignNode* node)
 {
-  const AptNode* lvalue = node->lvalue();
+  auto lvalue = node->lvalue().get();
 
-  if (const SymbolNode* lsym = dynamic_cast<const SymbolNode*>(lvalue)) {
-    llvm::Value* rvalue = codegenNode(node->rvalue());
-    if (rvalue == NULL)
-      return NULL;
+  if (auto lsym = dynamic_cast<SymbolNode*>(lvalue)) {
+    auto rvalue = codegenNode(*node->rvalue());
+    if (!rvalue)
+      return nullptr;
 
     // Look up the name.
     llvm::AllocaInst* var = fNamedValues[lsym->name()];
-    if (var == NULL) {
-      logf(kError, "Unknown symbol '%s'", (const char*)StrHelper(lsym->name()));
-      return NULL;
+    if (!var) {
+      logf(kError, "Unknown symbol '%s'", (zstring)StrHelper(lsym->name()));
+      return nullptr;
     }
 
     llvm::Value* val = fTools->emitPackCode(node->rvalue()->dstType(),
@@ -387,48 +385,49 @@ CodeGenerator::codegen(const AssignNode* node)
     return rvalue;
   }
   else if (const SlotRefNode* lslot = dynamic_cast<const SlotRefNode*>(lvalue)) {
-    return CodegenSlot(this).emitSlotRefAssignment(lslot, node->rvalue());
+    return CodegenSlot(*this).emitSlotRefAssignment(lslot, node->rvalue().get());
   }
 
   logf(kError, "Not supported yet: %s", typeid(node).name());
-  return NULL;
+  return nullptr;
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const DefNode* node)
 {
-  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->defNode());
-  if (vardefNode != NULL)
+  auto vardefNode = dynamic_cast<VardefNode*>(node->defNode().get());
+  if (vardefNode)
     return codegen(vardefNode, !K(isLocal));
 
-  const FuncDefNode* func = dynamic_cast<const FuncDefNode*>(node->defNode());
-  if (func != NULL)
+  auto func = dynamic_cast<const FuncDefNode*>(node->defNode().get());
+  if (func)
     return codegen(func, !K(isLocal));
 
-  const TypeDefNode* type = dynamic_cast<const TypeDefNode*>(node->defNode());
-  if (type != NULL)
+  auto type = dynamic_cast<TypeDefNode*>(node->defNode().get());
+  if (type)
     return codegen(type);
 
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const LetNode* node)
 {
-  const VardefNode* vardefNode = dynamic_cast<const VardefNode*>(node->defNode());
-  if (vardefNode != NULL)
+  auto vardefNode = dynamic_cast<VardefNode*>(node->defNode().get());
+  if (vardefNode)
     return codegen(vardefNode, K(isLocal));
 
-  const FuncDefNode* funcDefNode = dynamic_cast<const FuncDefNode*>(node->defNode());
-  if (funcDefNode != NULL) {
-    logf(kError, "Compiling local functions not supported yet: %s", typeid(node).name());
-    return NULL;
+  auto funcDefNode = dynamic_cast<FuncDefNode*>(node->defNode().get());
+  if (funcDefNode) {
+    logf(kError, "Compiling local functions not supported yet: %s",
+         typeid(node).name());
+    return nullptr;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -516,7 +515,7 @@ CodeGenerator::codegen(const RationalNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
@@ -525,7 +524,7 @@ CodeGenerator::codegen(const ArrayNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
@@ -534,7 +533,7 @@ CodeGenerator::codegen(const DictNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
@@ -543,7 +542,7 @@ CodeGenerator::codegen(const VectorNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
@@ -552,14 +551,14 @@ CodeGenerator::codegen(const RangeNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const FuncDefNode* node, bool isLocal)
 {
-  return CodegenFuncDef(this).emit(node, isLocal);
+  return CodegenFuncDef(*this).emit(node, isLocal);
 }
 
 
@@ -568,14 +567,14 @@ CodeGenerator::codegen(const FunctionNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const ApplyNode* node)
 {
-  return CodegenApply(this).emit(node);
+  return CodegenApply(*this).emit(node);
 }
 
 
@@ -584,7 +583,7 @@ CodeGenerator::codegen(const KeyargNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
@@ -593,29 +592,30 @@ CodeGenerator::codegen(const ParamNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const BinaryNode* node)
 {
-  return CodegenBinaryNode(this).emit(node);
+  return CodegenBinaryNode(*this).emit(node);
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const UnaryNode* node)
 {
-  llvm::Value *base = fTools->wrapLoad(codegenNode(node->base()));
-  if (base == NULL)
-    return NULL;
+  auto base = fTools->wrapLoad(codegenNode(*node->base()));
+  if (!base)
+    return nullptr;
 
   switch (node->op()) {
   case kUnaryOpNegate:
     return fBuilder.CreateMul(base,
                               llvm::ConstantInt::get(context(),
-                                                     llvm::APInt(32, (uint64_t)-1, true)),
+                                                     llvm::APInt(32, (uint64_t)-1,
+                                                                 true)),
                               "negtmp");
   case kUnaryOpNot:
     return fBuilder.CreateNot(base, "nottmp");
@@ -624,14 +624,14 @@ CodeGenerator::codegen(const UnaryNode* node)
     hr_invalid("");
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const IfNode* node)
 {
-  return CodegenIf(this).emit(node);
+  return CodegenIf(*this).emit(node);
 }
 
 
@@ -639,7 +639,7 @@ llvm::Value*
 CodeGenerator::codegen(const MatchNode* node)
 {
   hr_invalid("there should be no match mode anymore in this phase");
-  return NULL;
+  return nullptr;
 }
 
 
@@ -648,7 +648,7 @@ CodeGenerator::codegen(const OnNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
@@ -657,7 +657,7 @@ CodeGenerator::codegen(const SelectNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
@@ -665,7 +665,7 @@ llvm::Value*
 CodeGenerator::codegen(const TypeDefNode* node)
 {
   fInitializer->addTypeDef(node);
-  return NULL;
+  return nullptr;
 }
 
 
@@ -674,23 +674,23 @@ CodeGenerator::codegen(const UnitConstNode* node)
 {
   logf(kError, "Not supported yet: %s", typeid(node).name());
   // TODO
-  return NULL;
+  return nullptr;
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const WhileNode* node)
 {
-  return CodegenWhile(this).emit(node);
+  return CodegenWhile(*this).emit(node);
 }
 
 
 llvm::Value*
 CodeGenerator::codegen(const CastNode* node)
 {
-  llvm::Value *val = fTools->wrapLoad(codegenNode(node->base()));
-  if (val == NULL)
-    return NULL;
+  auto val = fTools->wrapLoad(codegenNode(*node->base()));
+  if (!val)
+    return nullptr;
 
   return fTools->emitPackCode(node->base()->dstType(),
                               node->base()->typeConv(),
@@ -703,7 +703,7 @@ llvm::Value*
 CodeGenerator::codegen(const UndefNode* node)
 {
   hr_invalid("You shouldn't be here");
-  return NULL;
+  return nullptr;
 }
 
 
@@ -712,5 +712,5 @@ CodeGenerator::codegen(const UndefNode* node)
 llvm::Value*
 CodeGenerator::codegen(const SlotRefNode* node)
 {
-  return CodegenSlot(this).emitSlotRefAccess(node);
+  return CodegenSlot(*this).emitSlotRefAccess(node);
 }

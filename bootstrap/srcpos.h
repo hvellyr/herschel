@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_srcpos_h
-#define bootstrap_srcpos_h
+#pragma once
 
 #include "str.h"
 
@@ -36,7 +35,7 @@ namespace herschel
 
     //! Constructs a source position refering to \p file and line number \p
     //! lineno.
-    SrcPos(const char* file, int lineno)
+    SrcPos(zstring file, int lineno)
       : fFile(String(file)),
         fLineNo(lineno)
     { }
@@ -96,6 +95,3 @@ namespace herschel
     int fLineNo;
   };
 };
-
-
-#endif  // bootstrap_srcpos_h

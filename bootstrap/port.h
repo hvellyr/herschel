@@ -8,17 +8,15 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_port_h
-#define bootstrap_port_h
+#pragma once
 
 #include <stdio.h>
 
-#include <vector>
-#include <list>
-
-#include "refcountable.h"
 #include "exception.h"
-#include "ptr.h"
+
+#include <list>
+#include <memory>
+#include <vector>
 
 
 //----------------------------------------------------------------------------
@@ -69,7 +67,7 @@ namespace herschel
   //--------------------------------------------------------------------------
 
   template <typename T>
-  class Port : public RefCountable
+  class Port
   {
   public:
     virtual bool isOpen() const = 0;
@@ -170,7 +168,7 @@ namespace herschel
   class FilePort : public Port<Octet>
   {
   public:
-    FilePort(const String& fileName, const char* mode);
+    FilePort(const String& fileName, zstring mode);
     FilePort(FILE* stream);
     ~FilePort();
 
@@ -238,7 +236,7 @@ namespace herschel
   class CharPort : public Port<Char>
   {
   public:
-    CharPort(Port<Octet>* slave);
+    CharPort(std::shared_ptr<Port<Octet>> slave);
 
     virtual bool isOpen() const;
     virtual bool isEof() const;
@@ -256,18 +254,16 @@ namespace herschel
     virtual long cursor();
 
   private:
-    Ptr<Port<Octet> > fSlave;
+    std::shared_ptr<Port<Octet>> fSlave;
     std::vector<Octet> fEncBuffer;
   };
 
 
   //--------------------------------------------------------------------------
 
-  void display(Port<Octet>* port, const char* value);
-  void displayln(Port<Octet>* port, const char* value);
-  void display(Port<Octet>* port, const String& value);
-  void displayln(Port<Octet>* port, const String& value);
+  void display(Port<Octet>& port, zstring value);
+  void displayln(Port<Octet>& port, zstring value);
+  void display(Port<Octet>& port, const String& value);
+  void displayln(Port<Octet>& port, const String& value);
 
-};                              // namespace
-
-#endif                          // bootstrap_port_h
+} // namespace

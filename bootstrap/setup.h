@@ -8,15 +8,14 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_setup_h
-#define bootstrap_setup_h
+#pragma once
 
 #include <vector>
 #include "str.h"
 
 namespace herschel
 {
-  typedef std::vector<String> StringVector;
+  using StringVector = std::vector<String>;
 
   class Setup
   {
@@ -42,7 +41,5 @@ namespace herschel
     String fRuntimeLib;
   };
 
-  extern Setup findResources(const char* exeName);
+  extern Setup findResources(zstring exeName);
 };                              // namespace
-
-#endif                          // bootstrap_setup_h

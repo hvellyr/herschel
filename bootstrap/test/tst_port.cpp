@@ -21,10 +21,10 @@ using namespace herschel;
 
 TEST_CASE("DataPort string write", "[port][data-port]")
 {
-  Ptr<DataPort> dp = new DataPort;
-  dp->write((Octet*)"hello, world!", 14); // incl. terminating 0
-  REQUIRE(dp->length() == (size_t)14);
-  REQUIRE(strcmp((char*)dp->data(), "hello, world!") == 0);
+  DataPort dp;
+  dp.write((Octet*)"hello, world!", 14); // incl. terminating 0
+  REQUIRE(dp.length() == (size_t)14);
+  REQUIRE(strcmp((char*)dp.data(), "hello, world!") == 0);
 }
 
 
@@ -34,47 +34,47 @@ TEST_CASE("DataPort block init constructor", "[port][data-port]")
   for (int i = 0; i < BUFSIZE; i++)
     tmp[i] = i % 256;
 
-  Ptr<DataPort> dp = new DataPort(tmp, BUFSIZE);
+  DataPort dp{tmp, BUFSIZE};
   for (int i = 0; i < BUFSIZE; i++) {
-    REQUIRE(dp->read() == (i % 256));
+    REQUIRE(dp.read() == (i % 256));
   }
 }
 
 
 TEST_CASE("DataPort write", "[port][data-port]")
 {
-  Ptr<DataPort> dp = new DataPort;
+  DataPort dp;
 
   for (int i = 0; i < BUFSIZE; i++) {
-    int x = dp->write(i % 256);
+    int x = dp.write(i % 256);
     REQUIRE(x == 1);
   }
-  REQUIRE(dp->cursor() == BUFSIZE);
+  REQUIRE(dp.cursor() == BUFSIZE);
 
-  dp->setCursor(0);
+  dp.setCursor(0);
   for (int i = 0; i < BUFSIZE; i++) {
-    REQUIRE(dp->read() == (i % 256));
+    REQUIRE(dp.read() == (i % 256));
   }
 }
 
 
 TEST_CASE("DataPort block write", "[port][data-port]")
 {
-  Ptr<DataPort> dp = new DataPort;
+  DataPort dp;
 
   for (int p = 0; p < PAGENUM; p++) {
     Octet tmp[PAGESIZE];
     for (int i = 0; i < PAGESIZE; i++)
       tmp[i] = (p * PAGESIZE + i) % 256;
 
-    int x = dp->write(tmp, PAGESIZE);
+    int x = dp.write(tmp, PAGESIZE);
     REQUIRE(x == PAGESIZE);
   }
-  REQUIRE(dp->cursor() == BUFSIZE);
+  REQUIRE(dp.cursor() == BUFSIZE);
 
-  dp->setCursor(0);
+  dp.setCursor(0);
   for (int i = 0; i < BUFSIZE; i++) {
-    REQUIRE(dp->read() == (i % 256));
+    REQUIRE(dp.read() == (i % 256));
   }
 }
 
@@ -82,12 +82,12 @@ TEST_CASE("DataPort block write", "[port][data-port]")
 TEST_CASE("DataPort failing read", "[port][data-port]")
 {
   Octet tmp[] = { 'a', '\0' };
-  Ptr<DataPort> dp = new DataPort(tmp, strlen((char*)tmp));
+  DataPort dp{tmp, strlen((char*)tmp)};
 
-  REQUIRE(dp->read() == 'a');
+  REQUIRE(dp.read() == 'a');
 
   try {
-    dp->read();
+    dp.read();
     REQUIRE(false);             // must not come here
   }
   catch (const EofException& ) {
@@ -106,8 +106,8 @@ TEST_CASE("CharPort basic read and write", "[port][char-port]")
                  0xfb00,    // ef ac 80
                  0xac00,    // ea b0 80
                  0x4e57 };  // e4 b9 97
-  Ptr<DataPort> dp = new DataPort;
-  Ptr<CharPort> cp = new CharPort(dp);
+  auto dp = std::make_shared<DataPort>();
+  auto cp = std::make_shared<CharPort>(dp);
 
   for (int i = 0; i < 6; i++)
     cp->write(src[i]);
@@ -140,7 +140,8 @@ TEST_CASE("CharPort block read", "[port][char-port]")
   Octet tmp[] = { 'h', 'e', 'l', 'l', 'o', 0xd0, 0xa4, '-', '-',
                   0xec, 0x95, 0x88, 0x00 };
   Char cs[] = { 'h', 'e', 'l', 'l', 'o', 0x424, '-', '-', 0xc548 };
-  Ptr<CharPort> cp = new CharPort(new DataPort(tmp, strlen((char*)tmp)));
+  auto cp = std::make_shared<CharPort>(std::make_shared<DataPort>(tmp,
+                                                                  strlen((char*)tmp)));
   for (int i = 0; i < 9; i++) {
     int c = cp->read();
     REQUIRE(c == cs[i]);
@@ -158,7 +159,8 @@ TEST_CASE("CharPort block read", "[port][char-port]")
 TEST_CASE("CharPort illegal read", "[port][char-port]")
 {
   Octet tmp[] = { 'a', '\0' };
-  Ptr<CharPort> cp = new CharPort(new DataPort(tmp, strlen((char*)tmp)));
+  auto cp = std::make_shared<CharPort>(
+    std::make_shared<DataPort>(tmp, strlen((char*)tmp)));
 
   REQUIRE(cp->read() == 'a');
 
@@ -179,10 +181,10 @@ TEST_CASE("FilePort test1", "[port][file-port]")
     "thousand times, and now how abhorr'd in my imagination it is!\n"
     "My gorge rises at it.\n";
 
-  Ptr<FilePort> port;
+  std::shared_ptr<FilePort> port;
 
   try {
-    port = new FilePort(String("tests/raw/01.bin"), "rb");
+    port = std::make_shared<FilePort>(String("tests/raw/01.bin"), "rb");
   }
   catch (IOException e) {
     REQUIRE(false);
@@ -202,7 +204,7 @@ TEST_CASE("FilePort test1", "[port][file-port]")
   catch (const EofException& ) {
     REQUIRE(!*p);
   }
-  int explen = strlen((const char*)tmp);
+  int explen = strlen((zstring)tmp);
   REQUIRE(port->cursor() == explen);
 
   port->setCursor(0);
@@ -227,7 +229,8 @@ TEST_CASE("FilePort test1", "[port][file-port]")
 TEST_CASE("FilePort Test2", "[port][file-port]")
 {
   try {
-    Ptr<FilePort> port = new FilePort(String("tests/raw/does-not-exist.bin"), "rb");
+    auto port = std::make_shared<FilePort>(
+      String("tests/raw/does-not-exist.bin"), "rb");
     REQUIRE(false);
   }
   catch (const IOException& e) {

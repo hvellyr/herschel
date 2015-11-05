@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_exception_h
-#define bootstrap_exception_h
+#pragma once
 
 #include "str.h"
 
@@ -57,10 +56,9 @@ namespace herschel
   class NotSupportedException : public Exception
   {
   public:
-    NotSupportedException(const char* functionName)
+    NotSupportedException(zstring functionName)
       : Exception(String("Method ") + functionName + " is not supported")
     { }
   };
-};                              // namespace
 
-#endif                          // bootstrap_exception_h
+} // namespace

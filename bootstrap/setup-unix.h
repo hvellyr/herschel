@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_setup_unix_h
-#define bootstrap_setup_unix_h
+#pragma once
 
 #include "str.h"
 #include "file.h"
@@ -23,7 +22,7 @@ namespace herschel
   public:
     virtual ~SetupUnix() { }
 
-    Setup findSysResources(const char* exeName) const;
+    Setup findSysResources(zstring exeName) const;
 
   protected:
     //! Returns the directory where the current executable is located
@@ -44,14 +43,12 @@ namespace herschel
       String fRtLib;
     };
 
-    bool exeFromRuntimeInstallation(const char* exeName,
+    bool exeFromRuntimeInstallation(zstring exeName,
                                     const String& exedir,
                                     Paths& paths) const;
-    bool exeFromDevpath(const char* exeName,
+    bool exeFromDevpath(zstring exeName,
                         const String& exedir, Paths& paths) const;
   };
 
   extern const SetupUnix& getSetupUnixSetup();
 };                              // namespace
-
-#endif                          // bootstrap_setup_unix_h

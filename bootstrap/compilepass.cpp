@@ -12,7 +12,6 @@
 #include "compilepass.h"
 #include "port.h"
 #include "properties.h"
-#include "ptr.h"
 #include "token.h"
 #include "xmlout.h"
 
@@ -35,7 +34,7 @@ TokenCompilePass::apply(const Token& src, bool doTrace)
     t = doApply(src);
 
     if (doTrace && Properties::isTracePass(passLevel())) {
-      Ptr<FilePort> stream = new FilePort(stdout);
+      FilePort stream{stdout};
       display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
       t.toPort(stream);
       displayln(stream, "");
@@ -46,7 +45,7 @@ TokenCompilePass::apply(const Token& src, bool doTrace)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 Token2AptNodeCompilePass::apply(const Token& src, bool doTrace)
 {
   bool doPass = true;
@@ -55,37 +54,38 @@ Token2AptNodeCompilePass::apply(const Token& src, bool doTrace)
 #endif
 
   if (doPass) {
-    Ptr<AptNode> n = doApply(src);
-    if (doTrace && Properties::isTracePass(passLevel()) && n != NULL) {
-      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout));
-      out->render(n);
+    auto n = doApply(src);
+    if (doTrace && Properties::isTracePass(passLevel()) && n) {
+      XmlRenderer out{std::make_shared<FilePort>(stdout)};
+      out.render(*n);
     }
 
-    return n.release();
+    return n;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
-AptNode*
-AptNodeCompilePass::apply(AptNode* src, bool doTrace)
+std::shared_ptr<AptNode>
+AptNodeCompilePass::apply(std::shared_ptr<AptNode> src, bool doTrace)
 {
-  Ptr<AptNode> n = src;
   bool doPass = true;
 #if defined(UNITTESTS)
   doPass = Properties::test_passLevel() >= passLevel();
 #endif
 
   if (doPass) {
-    n = doApply(n);
+    auto n = doApply(src);
 
-    if (doTrace && Properties::isTracePass(passLevel()) && n != NULL) {
-      Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stdout),
-                                             fShowNodeType);
-      out->render(n);
+    if (doTrace && Properties::isTracePass(passLevel()) && n) {
+      XmlRenderer out{std::make_shared<FilePort>(stdout), fShowNodeType};
+      out.render(*n);
     }
-  }
 
-  return n.release();
+    return n;
+  }
+  else {
+    return src;
+  }
 }

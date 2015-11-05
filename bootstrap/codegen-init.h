@@ -8,13 +8,11 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_init_h
-#define bootstrap_codegen_init_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
 #include "str.h"
-#include "refcountable.h"
 #include "codegen-proxy.h"
 
 
@@ -42,8 +40,7 @@ namespace herschel
 
   //----------------------------------------------------------------------------
 
-  class ModuleRuntimeInitializer : public RefCountable,
-                                   public CodeGeneratorProxy
+  class ModuleRuntimeInitializer : public CodeGeneratorProxy
   {
   public:
     struct MethodImpl
@@ -58,7 +55,7 @@ namespace herschel
     };
 
 
-    ModuleRuntimeInitializer(CodeGenerator* generator);
+    ModuleRuntimeInitializer(CodeGenerator& generator);
 
     void finish();
 
@@ -86,7 +83,7 @@ namespace herschel
     friend class ClassInitStrategy;
     friend class MethodInitStrategy;
 
-    typedef std::vector<std::pair<llvm::Constant*, int> > CtorList;
+    using CtorList = std::vector<std::pair<llvm::Constant*, int>>;
 
     void emitModuleInitFunction();
 
@@ -94,7 +91,7 @@ namespace herschel
     void emitKeywordInitFunc();
     void emitGlobalVarInitFunc();
 
-    void emitCtorList(const CtorList &fns, const char *globalName);
+    void emitCtorList(const CtorList &fns, zstring globalName);
 
     llvm::Function* createGlobalInitOrDtorFunction(llvm::FunctionType *ft,
                                                    const String& name);
@@ -140,11 +137,8 @@ namespace herschel
     std::vector<const FuncDefNode*> fGenericsInitFuncs;
     std::vector<MethodImpl>         fMethodInitFuncs;
 
-    typedef std::map<String, llvm::GlobalVariable*> KeywordMap;
+    using KeywordMap = std::map<String, llvm::GlobalVariable*>;
     KeywordMap fKeywords;
   };
 
-
-};                              // namespace
-
-#endif                          // bootstrap_codegen_init_h
+} // namespace

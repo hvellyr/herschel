@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeprops_float_h
-#define bootstrap_typeprops_float_h
+#pragma once
 
 #include "typeprops.h"
 #include "typeenum.h"
@@ -39,9 +38,9 @@ namespace herschel
 
     virtual int typeBitsize() const { return bitsize; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
     {
-      return new EnumMaker;
+      return std::unique_ptr<TypeEnumMaker>(new EnumMaker);
     }
   };
 
@@ -54,7 +53,7 @@ namespace herschel
   public:
     Float32TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_float32"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_float32"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -77,12 +76,12 @@ namespace herschel
   public:
     Float64TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_float64"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_float64"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
       // TODO.  Float64 do not fit into the atom payload structure?
-      return NULL;
+      return nullptr;
     }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -100,12 +99,12 @@ namespace herschel
   public:
     Float128TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "atom_2_float128"; }
+    virtual zstring convFuncName() const { return "atom_2_float128"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
       // TODO.  Float128 do not fit into the atom payload structure
-      return NULL;
+      return nullptr;
     }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -115,4 +114,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeprops_float_h

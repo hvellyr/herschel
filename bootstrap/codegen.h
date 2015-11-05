@@ -8,26 +8,23 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_h
-#define bootstrap_codegen_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
-#include "refcountable.h"
-#include "ptr.h"
 #include "apt.h"
 
 #include <map>
-#include <vector>
+#include <memory>
 #include <string>
+#include <vector>
+
 
 namespace llvm
 {
   class AllocaInst;
   class BasicBlock;
   class Function;
-//  template <typename T> class PassManager;
-//  typedef PassManager<Function> FunctionPassManager;
   class FunctionType;
   class LLVMContext;
   class Module;
@@ -93,21 +90,21 @@ namespace herschel
 
   class String;
 
-  typedef std::vector<Ptr<AptNode> > NodeList;
+  using NodeList = std::vector<std::shared_ptr<AptNode>>;
 
 
   //----------------------------------------------------------------------------
 
   //! The code generation pass.
-  class CodeGenerator : public RefCountable
+  class CodeGenerator
   {
   public:
-    CodeGenerator(Compiler* compiler);
+    CodeGenerator(Compiler& compiler);
     ~CodeGenerator();
 
     bool compileToCode(const CompileUnitNode* node, const String& outputFile);
 
-    llvm::Value* codegenNode(const AptNode* node, bool autoloadAllocInst = false);
+    llvm::Value* codegenNode(const AptNode& node, bool autoloadAllocInst = false);
 
     llvm::Value* codegen(const ApplyNode* node);
     llvm::Value* codegen(const ArrayNode* node);
@@ -194,7 +191,7 @@ namespace herschel
 
     //-------- data members
 
-    Compiler*                  fCompiler;
+    Compiler&                  fCompiler;
     llvm::LLVMContext&         fContext;
     llvm::Module*              fModule;
     // llvm::DIBuilder*        fDIBuilder;
@@ -202,9 +199,9 @@ namespace herschel
     llvm::legacy::FunctionPassManager* fOptPassManager;
     const llvm::DataLayout*    fDataLayout;
 
-    Ptr<ModuleRuntimeInitializer> fInitializer;
-    Ptr<CodegenTypeUtils>      fTypes;
-    Ptr<CodegenTools>          fTools;
+    std::unique_ptr<ModuleRuntimeInitializer> fInitializer;
+    std::unique_ptr<CodegenTypeUtils> fTypes;
+    std::unique_ptr<CodegenTools> fTools;
 
     bool fHasMainFunc;
 
@@ -212,6 +209,5 @@ namespace herschel
     std::map<String, llvm::AllocaInst*> fNamedValues;
     std::map<String, llvm::GlobalVariable*> fGlobalVariables;
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_h
+} // namespace

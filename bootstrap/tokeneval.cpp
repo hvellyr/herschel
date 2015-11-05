@@ -15,7 +15,7 @@
 
 using namespace herschel;
 
-TokenEvalContext::TokenEvalContext(ConfigVarRegistry* registry)
+TokenEvalContext::TokenEvalContext(ConfigVarRegistry& registry)
   : fRegistry(registry)
 {
 }
@@ -588,7 +588,7 @@ TokenEvalContext::evalToken(const Token& expr) const
   case kId:
     {
       Token value;
-      if (!fRegistry->lookup(expr.idValue(), &value))
+      if (!fRegistry.lookup(expr.idValue(), &value))
         throw UndefinedSymbolException(expr.idValue());
       return value;
     }

@@ -8,8 +8,6 @@
    This source code is released under the BSD License.
 */
 
-#include "refcountable.h"
-#include "ptr.h"
 #include "token.h"
 #include "macro.h"
 #include "strbuf.h"
@@ -25,57 +23,50 @@ SyntaxTreeNode::SyntaxTreeNode()
 { }
 
 
-SyntaxTreeNode*
+std::shared_ptr<SyntaxTreeNode>
 SyntaxTreeNode::findNode(const Token& token) const
 {
-  if (token == kMacroParam ||
-      token == kMacroParamAsStr) {
-    for (NodeMap::const_iterator it = fNodes.begin();
-         it != fNodes.end();
-         it++)
-    {
-      if (it->first == kMacroParam ||
-          it->first == kMacroParamAsStr)
-        return it->second.obj();
-      else if (it->first == token)
-        return it->second.obj();
+  if (token == kMacroParam || token == kMacroParamAsStr) {
+    for (const auto& pair : fNodes) {
+      if (pair.first == kMacroParam || pair.first == kMacroParamAsStr)
+        return pair.second;
+      else if (pair.first == token)
+        return pair.second;
     }
   }
   else {
-    NodeMap::const_iterator it = fNodes.find(token);
+    auto it = fNodes.find(token);
     if (it != fNodes.end())
-      return it->second.obj();
+      return it->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 
-SyntaxTreeNode*
+std::shared_ptr<SyntaxTreeNode>
 SyntaxTreeNode::findMacroParam(Token* macroParam) const
 {
-  for (NodeMap::const_iterator it = fNodes.begin();
-       it != fNodes.end();
-       it++)
-  {
-    if (it->first == kMacroParam ||
-        it->first == kMacroParamAsStr) {
-      *macroParam = it->first;
-      return it->second.obj();
+  for (const auto& pair : fNodes) {
+    if (pair.first == kMacroParam ||
+        pair.first == kMacroParamAsStr) {
+      *macroParam = pair.first;
+      return pair.second;
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
 void
-SyntaxTreeNode::setNode(const Token& token, SyntaxTreeNode* node)
+SyntaxTreeNode::setNode(const Token& token,
+                        std::shared_ptr<SyntaxTreeNode> node)
 {
   NodeMap::iterator it = fNodes.find(token);
   if (it != fNodes.end())
-    it->second = node;
+    it->second = std::move(node);
   else
-    fNodes.insert(std::make_pair(token, node));
+    fNodes.insert(std::make_pair(token, std::move(node)));
 }
 
 
@@ -135,53 +126,54 @@ SyntaxTreeNode::toString() const
 
 //------------------------------------------------------------------------------
 
-SyntaxTreeNode*
+std::shared_ptr<SyntaxTreeNode>
 SyntaxTable::rootNode() const
 {
   return findPattern(String(""));
 }
 
 
-SyntaxTreeNode*
+std::shared_ptr<SyntaxTreeNode>
 SyntaxTable::findPattern(const String& name) const
 {
-  PatternMap::const_iterator it = fItems.find(name);
+  auto it = fItems.find(name);
   if (it != fItems.end())
-    return it->second.obj();
-  return NULL;
+    return it->second;
+  return nullptr;
 }
 
 void
-SyntaxTable::setPattern(const String& name, SyntaxTreeNode* node)
+SyntaxTable::setPattern(const String& name,
+                        std::shared_ptr<SyntaxTreeNode> node)
 {
-  PatternMap::iterator it = fItems.find(name);
+  auto it = fItems.find(name);
   if (it != fItems.end())
-    it->second = node;
+    it->second = std::move(node);
   else
     fItems.insert(std::make_pair(name, node));
 }
 
 
 void
-SyntaxTable::mixinPatternPart(SyntaxTreeNode* patternTree,
+SyntaxTable::mixinPatternPart(std::shared_ptr<SyntaxTreeNode> patternTree,
                               const TokenVector& pattern,
                               const TokenVector& rplcmnt)
 {
-  Ptr<SyntaxTreeNode> node = patternTree;
+  auto node = patternTree;
   for (TokenVector::const_iterator srcit = pattern.begin();
        srcit != pattern.end();
        srcit++)
   {
     Token patternToken = *srcit;
-    Ptr<SyntaxTreeNode> step = node->findNode(patternToken);
-    if (step == NULL) {
-      step = new SyntaxTreeNode();
+    auto step = node->findNode(patternToken);
+    if (!step) {
+      step = std::make_shared<SyntaxTreeNode>();
       node->setNode(patternToken, step);
     }
     node = step;
   }
 
-  hr_assert(node != NULL);
+  hr_assert(node);
   node->setEndNode(rplcmnt);
 }
 
@@ -191,9 +183,9 @@ SyntaxTable::mixinPattern(const String& macroName,
                           const TokenVector& pattern,
                           const TokenVector& rplcmnt)
 {
-  SyntaxTreeNode* patternTree = findPattern(macroName);
-  if (patternTree == NULL) {
-    patternTree = new SyntaxTreeNode();
+  auto patternTree = findPattern(macroName);
+  if (!patternTree) {
+    patternTree = std::make_shared<SyntaxTreeNode>();
     setPattern(macroName, patternTree);
   }
 
@@ -201,11 +193,11 @@ SyntaxTable::mixinPattern(const String& macroName,
 }
 
 
-SyntaxTable*
+std::shared_ptr<SyntaxTable>
 SyntaxTable::compile(const String& patternName,
                      const MacroPatternVector& patterns)
 {
-  Ptr<SyntaxTable> st = new SyntaxTable();
+  auto st = std::make_shared<SyntaxTable>();
 
   for (MacroPatternVector::const_iterator it = patterns.begin();
        it != patterns.end();
@@ -217,7 +209,7 @@ SyntaxTable::compile(const String& patternName,
     st->mixinPattern(patternName, pattern, rplcmnt);
   }
 
-  return st.release();
+  return st;
 }
 
 

@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeprops_char_h
-#define bootstrap_typeprops_char_h
+#pragma once
 
 #include "typeprops.h"
 #include "typeenum.h"
@@ -29,7 +28,7 @@ namespace herschel
   public:
     CharTypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_char"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_char"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -57,9 +56,9 @@ namespace herschel
 
     virtual int typeBitsize() const { return 32; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
     {
-      return new CharTypeEnumMaker;
+      return std::unique_ptr<TypeEnumMaker>(new CharTypeEnumMaker);
     }
   };
 
@@ -70,7 +69,7 @@ namespace herschel
   public:
     ClangCharTypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int8"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int8"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
@@ -98,11 +97,10 @@ namespace herschel
 
     virtual int typeBitsize() const { return 8; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
     {
-      return new Int8TypeEnumMaker;
+      return std::unique_ptr<TypeEnumMaker>(new Int8TypeEnumMaker);
     }
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeprops_char_h

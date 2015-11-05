@@ -8,12 +8,10 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_registry_h
-#define bootstrap_registry_h
+#pragma once
 
 #include <map>
 
-#include "refcountable.h"
 #include "str.h"
 
 namespace herschel
@@ -26,13 +24,13 @@ namespace herschel
   //! to a templated type.  Values are added (set) using \c registerValue()
   //! and looked up with \c lookup().
   template<typename T>
-  class Registry : public RefCountable
+  class Registry
   {
   public:
-    typedef T ValueType;
-    typedef typename std::map<String, ValueType> ValueMapType;
-    typedef typename std::map<String, ValueType>::iterator ValueMapTypeIterator;
-    typedef typename std::map<String, ValueType>::const_iterator ValueMapTypeConstIterator;
+    using ValueType = T;
+    using ValueMapType = typename std::map<String, ValueType>;
+    using ValueMapTypeIterator = typename std::map<String, ValueType>::iterator;
+    using ValueMapTypeConstIterator = typename std::map<String, ValueType>::const_iterator;
 
     //! Bind a new value \p value to key \p name.  If \p name was bound before
     //! the previous bound value is silently dropped.
@@ -61,7 +59,4 @@ namespace herschel
     ValueMapType fMap;
   };
 
-};
-
-
-#endif  // bootstrap_registry_h
+}

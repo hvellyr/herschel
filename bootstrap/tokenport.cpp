@@ -51,22 +51,25 @@ TokenPort::canSetCursor() const
 
 //----------------------------------------------------------------------------
 
-FileTokenPort::FileTokenPort(Port<Octet>* port, const String& srcName,
-                             CharRegistry* charRegistry)
+FileTokenPort::FileTokenPort(std::shared_ptr<Port<Octet>> port,
+                             const String& srcName,
+                             std::shared_ptr<CharRegistry> charRegistry)
 {
-  setTokenizer(new Tokenizer(new CharPort(port), srcName, charRegistry));
+  setTokenizer(std::make_shared<Tokenizer>(
+                 std::make_shared<CharPort>(port), srcName, charRegistry));
 }
 
 
-FileTokenPort::FileTokenPort(Port<Char>* port, const String& srcName,
-                             CharRegistry* charRegistry)
+FileTokenPort::FileTokenPort(std::shared_ptr<Port<Char>> port,
+                             const String& srcName,
+                             std::shared_ptr<CharRegistry> charRegistry)
 {
-  setTokenizer(new Tokenizer(port, srcName, charRegistry));
+  setTokenizer(std::make_shared<Tokenizer>(port, srcName, charRegistry));
 }
 
 
 void
-FileTokenPort::setTokenizer(Tokenizer* tokenizer)
+FileTokenPort::setTokenizer(std::shared_ptr<Tokenizer> tokenizer)
 {
   fTokenizer = tokenizer;
 }
@@ -75,21 +78,21 @@ FileTokenPort::setTokenizer(Tokenizer* tokenizer)
 bool
 FileTokenPort::isOpen() const
 {
-  return fTokenizer != NULL;
+  return fTokenizer != nullptr;
 }
 
 
 bool
 FileTokenPort::isEof() const
 {
-  return !hasUnreadData() && (fTokenizer == NULL || fTokenizer->isEof());
+  return !hasUnreadData() && (!fTokenizer || fTokenizer->isEof());
 }
 
 
 Token
 FileTokenPort::read()
 {
-  if (fTokenizer == NULL)
+  if (!fTokenizer)
     throw PortNotOpenException();
 
   Token value;

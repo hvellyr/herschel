@@ -50,12 +50,12 @@ herschel::startProcess(const String& cmd, const std::vector<String>& args,
     memcpy(ptr, helper.c_str(), len);
     ptr += len;
   }
-  argv[++i] = NULL;
+  argv[++i] = nullptr;
 
   if (logCalls) {
     StringBuffer buf;
     for (size_t j = 0; j < argv.size(); j++) {
-      if (argv[j] != NULL)
+      if (argv[j])
         buf << argv[j] << " ";
     }
 
@@ -85,7 +85,7 @@ herschel::startProcess(const String& cmd, const std::vector<String>& args,
     if (WIFEXITED(status))
       status = 0;
     else {
-      fprintf(stderr, "ERROR: subprocess '%s' crashed\n", (const char*)StrHelper(cmd));
+      fprintf(stderr, "ERROR: subprocess '%s' crashed\n", (zstring)StrHelper(cmd));
       status = -1;
     }
   }

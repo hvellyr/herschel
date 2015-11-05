@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeprops_string_h
-#define bootstrap_typeprops_string_h
+#pragma once
 
 #include "typeprops.h"
 #include "typeenum.h"
@@ -29,12 +28,12 @@ namespace herschel
   public:
     StringTypeProperty() {}
 
-    virtual const char* convFuncName() const { return NULL; }
+    virtual zstring convFuncName() const { return nullptr; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
       hr_invalid("strings are always atoms");
-      return NULL;
+      return nullptr;
     }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -61,11 +60,10 @@ namespace herschel
 
     virtual int typeBitsize() const { return 0; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
     {
-      return NULL;
+      return nullptr;
     }
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeprops_string_h

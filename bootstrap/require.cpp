@@ -33,9 +33,8 @@ setRequiresAreFatal(bool value)
 
 
 void
-herschel::requireHandler(const char* file, int line,
-                         const char* title, const char* msg,
-                         const char* expr)
+herschel::requireHandler(zstring file, int line, zstring title, zstring msg,
+                         zstring expr)
 {
   logf(kError, "%s:%d: %s: %s%s%s\n",
        file, line, title, msg,
@@ -45,4 +44,4 @@ herschel::requireHandler(const char* file, int line,
     abort();
 }
 
-#endif
+#endif // if defined(IS_DEBUG)

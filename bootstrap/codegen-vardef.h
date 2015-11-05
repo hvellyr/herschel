@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_vardef_h
-#define bootstrap_codegen_vardef_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -32,7 +31,7 @@ namespace herschel
   class CodegenVardef : public CodeGeneratorProxy
   {
   public:
-    CodegenVardef(CodeGenerator* generator);
+    CodegenVardef(CodeGenerator& generator);
 
     llvm::Value* emit(const VardefNode* node, bool isLocal) const;
 
@@ -40,6 +39,5 @@ namespace herschel
     llvm::Value* codegenForLocalVars(const VardefNode* node) const;
     llvm::Value* codegenForGlobalVars(const VardefNode* node) const;
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_vardef_h
+} // namespace

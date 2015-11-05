@@ -8,16 +8,13 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typectx_h
-#define bootstrap_typectx_h
+#pragma once
 
 #include "common.h"
 
 #include <map>
 
-#include "ptr.h"
 #include "exception.h"
-#include "refcountable.h"
 #include "str.h"
 #include "type.h"
 
@@ -42,18 +39,11 @@ namespace herschel
   };
 
 
-  class TypeCtx : public RefCountable
+  class TypeCtx
   {
   public:
-    TypeCtx();
-    TypeCtx(TypeCtx* parent);
-
-    TypeCtx* parent() const;
-
     void registerType(const String& name, const Type& type);
-
     bool hasType(const String& name) const;
-
     const Type& lookupType(const String& name) const;
 
     void dumpDebug();
@@ -62,30 +52,8 @@ namespace herschel
 
     //-------- data members
 
-    typedef std::map<String, Type> TypeMap;
-
+    using TypeMap = std::map<String, Type>;
     TypeMap      fMap;
-    Ptr<TypeCtx> fParent;
-  };
-
-
-  class TypeCtxHelper
-  {
-  public:
-    TypeCtxHelper(Ptr<TypeCtx>& typeCtx)
-      : fTypeCtxLoc(typeCtx)
-    {
-      fTypeCtxLoc = new TypeCtx(fTypeCtxLoc);
-    }
-
-    ~TypeCtxHelper()
-    {
-      fTypeCtxLoc = fTypeCtxLoc->parent();
-    }
-
-  private:
-    Ptr<TypeCtx>& fTypeCtxLoc;
   };
 };                              // namespace
 
-#endif                          // bootstrap_typectx_h

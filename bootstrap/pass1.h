@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_pass1_h
-#define bootstrap_pass1_h
+#pragma once
 
 #include <map>
 
@@ -20,7 +19,6 @@
 #include "compiler.h"
 #include "pass.h"
 #include "port.h"
-#include "refcountable.h"
 #include "scope.h"
 #include "token.h"
 #include "tokenport.h"
@@ -32,7 +30,7 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  typedef std::map<String, TokenVector> NamedReplacementMap;
+  using NamedReplacementMap = std::map<String, TokenVector>;
 
 
   //--------------------------------------------------------------------------
@@ -46,7 +44,8 @@ namespace herschel
   class FirstPass : public AbstractPass
   {
   public:
-    FirstPass(Compiler* compiler, const Token& currentToken, Scope* scope);
+    FirstPass(Compiler& compiler, const Token& currentToken,
+              std::shared_ptr<Scope> scope);
 
     //! Get the next token from the input stream and return it.
     Token nextToken();
@@ -224,7 +223,7 @@ namespace herschel
                        bool hasSeparator,
                        ErrCodes errorCode,
                        Token& result,
-                       const char* ctx,
+                       zstring ctx,
                        bool skipFirst = true,
                        bool eatLast = true);
 
@@ -252,21 +251,21 @@ namespace herschel
                                    ScopeType scopeType);
 
     bool parseDoMatchSyntaxDef(TokenVector* result,
-                               const Token& expr, SyntaxTable* syntaxTable,
+                               const Token& expr, SyntaxTable& syntaxTable,
                                bool isLocal);
     bool parseDoMatchSyntaxOn(TokenVector* filtered,
-                              const Token& expr, SyntaxTable* syntaxTable,
+                              const Token& expr, SyntaxTable& syntaxTable,
                               bool isLocal);
     bool parseDoMatchSyntaxFunc(TokenVector* filtered,
                                 const Token& expr,
                                 const TokenVector& args,
-                                SyntaxTable* syntaxTable,
+                                SyntaxTable& syntaxTable,
                                 bool shouldParseParams);
 
     bool parseExprStream(TokenVector* result, bool isTopLevel,
                          ScopeType scopeType);
 
-    bool matchSyntax(TokenVector* result, SyntaxTable* syntaxTable);
+    bool matchSyntax(TokenVector* result, SyntaxTable& syntaxTable);
     bool replaceMatchBindings(TokenVector* result,
                               const TokenVector& replacement,
                               const NamedReplacementMap& bindings);
@@ -278,7 +277,7 @@ namespace herschel
 
     bool matchParameter(const Token& macroParam,
                         NamedReplacementMap* bindings,
-                        SyntaxTreeNode* followSet);
+                        SyntaxTreeNode& followSet);
 
     Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 
@@ -300,15 +299,14 @@ namespace herschel
   class ExprPass : public TokenCompilePass
   {
   public:
-    ExprPass(int level, Compiler* compiler, const Token& currentToken,
-             Scope* scope);
+    ExprPass(int level, Compiler& compiler, const Token& currentToken,
+             std::shared_ptr<Scope> scope);
     virtual Token doApply(const Token& src);
 
   private:
     Token         fCurrentToken;
-    Ptr<Scope>    fScope;
-    Ptr<Compiler> fCompiler;
+    std::shared_ptr<Scope> fScope;
+    Compiler&     fCompiler;
   };
-};
 
-#endif  // bootstrap_pass1_h
+} // namespace

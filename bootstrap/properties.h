@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_properties_h
-#define bootstrap_properties_h
+#pragma once
 
 #include <vector>
 
@@ -21,7 +20,7 @@ namespace herschel
   class Token;
   class String;
 
-  typedef std::vector<String> StringVector;
+  using StringVector = std::vector<String>;
 
   enum OptimizeLevel
   {
@@ -62,7 +61,7 @@ namespace herschel
 
 
     static void setConfigVar(const String& keyValuePair);
-    static ConfigVarRegistry* globalConfigVarRegistry();
+    static std::shared_ptr<ConfigVarRegistry> globalConfigVarRegistry();
 
     static void addInputDir(const String& dir);
     static const StringVector& inputDirSearchPath();
@@ -81,6 +80,4 @@ namespace herschel
     static bool shouldIgnoreDocStrings();
     static void setShouldIgnoreDocStrings(bool value);
   };
-};                              // namespace
-
-#endif   // bootstrap_properties_h
+} // namespace

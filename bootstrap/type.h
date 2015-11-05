@@ -8,17 +8,15 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_type_h
-#define bootstrap_type_h
+#pragma once
 
 #include "common.h"
 
+#include "token.h"
+
 #include <vector>
 #include <map>
-
-#include "token.h"
-#include "refcountable.h"
-#include "ptr.h"
+#include <memory>
 
 
 namespace herschel
@@ -34,11 +32,11 @@ namespace herschel
   class TypeSlot;
   class TypeProperty;
 
-  typedef std::vector<Type> TypeVector;
-  typedef std::vector<TypeConstraint> TypeConstVector;
-  typedef std::vector<FunctionParameter> FunctionParamVector;
-  typedef std::map<String, Token> StringTokenMap;
-  typedef std::vector<TypeSlot> TypeSlotList;
+  using TypeVector = std::vector<Type>;
+  using TypeConstVector = std::vector<TypeConstraint>;
+  using FunctionParamVector = std::vector<FunctionParameter>;
+  using StringTokenMap = std::map<String, Token>;
+  using TypeSlotList = std::vector<TypeSlot>;
 
 
   //--------------------------------------------------------------------------
@@ -85,12 +83,12 @@ namespace herschel
   //! Base class for the implementation of types.  This defines the base
   //! interface a type implementation must provide.
 
-  class TypeImpl : public RefCountable
+  class TypeImpl
   {
   public:
     //! Make a deep copy of the receiver.  Note that even the base type Type
     //! must be cloned.
-    virtual TypeImpl* clone() const = 0;
+    virtual std::shared_ptr<TypeImpl> clone() const = 0;
 
     //! Indicates whether the receiver is equal to \p other.
     virtual bool isEqual(const TypeImpl* other) const = 0;
@@ -123,7 +121,7 @@ namespace herschel
     //! Note that this function is needed for recursion into complex types;
     //! the public API for this is Type::matchGenerics().
     virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const = 0;
+                               const Scope& scope, const SrcPos& srcpos) const = 0;
 
     //! Return a string representation, mostly useful for debugging purposes.
     //! \p isValue indicates whether the type is actually a value type (this
@@ -147,61 +145,61 @@ namespace herschel
     //@{ Factory functions
 
     //! Creates a new type ref.  Covers the following example: xyz<a, b> <> nil
-    static Type newTypeRef(const String& name, const TypeVector& genericArgs,
+    static Type makeTypeRef(const String& name, const TypeVector& genericArgs,
                            const TypeConstVector& constraints,
                            bool isValue);
-    static Type newTypeRef(const String& name, const TypeVector& genericArgs,
+    static Type makeTypeRef(const String& name, const TypeVector& genericArgs,
                            bool isValue);
-    static Type newTypeRef(const String& name, bool isValue);
-    static Type newTypeRef(const char* name, bool isValue = true);
-    static Type newTypeRef(const String& name, bool isOpen,
+    static Type makeTypeRef(const String& name, bool isValue);
+    static Type makeTypeRef(zstring name, bool isValue = true);
+    static Type makeTypeRef(const String& name, bool isOpen,
                            const TypeConstVector& constraints, bool isValue);
-    static Type newTypeRef(const String& name, bool isOpen, bool isValue);
+    static Type makeTypeRef(const String& name, bool isOpen, bool isValue);
 
     //! Rewrite \p old to a new typeref taking the typename \p name.
-    static Type newTypeRef(const String& name, const Type& old);
+    static Type makeTypeRef(const String& name, const Type& old);
 
     //! Creates a new lang|Class<'T> type instance with 'T being \p type.
-    static Type newClassOf(const Type& type, bool isValue = true);
+    static Type makeClassOf(const Type& type, bool isValue = true);
 
     //! Creates a new 'T[] array type with \p base being the array base type
     //! 'T.  The \p sizeIndicator is informational, since the size is not
     //! essential part of an array type in herschel.
-    static Type newArray(const Type& base, int sizeIndicator, bool isValue);
+    static Type makeArray(const Type& base, int sizeIndicator, bool isValue);
 
     //! Creates a new lang|Any type instance.
-    static Type newAny(bool isValue = true);
+    static Type makeAny(bool isValue = true);
 
     //! Creates a new lang|Int32 type instance.
-    static Type newInt32(bool isValue = true);
+    static Type makeInt32(bool isValue = true);
     //! Creates a new lang|UInt32 type instance.
-    static Type newUInt32(bool isValue = true);
+    static Type makeUInt32(bool isValue = true);
 
     //! Creates a new lang|IntX type instance with X being the bitwidth.
-    static Type newInt(int bitwidth, bool isValue = true);
+    static Type makeInt(int bitwidth, bool isValue = true);
     //! Creates a new lang|UIntX type instance with X being the bitwidth.
-    static Type newUInt(int bitwidth, bool isValue = true);
+    static Type makeUInt(int bitwidth, bool isValue = true);
 
     //! Creates a new lang|Rational type instance.
-    static Type newRational(bool isValue = true);
+    static Type makeRational(bool isValue = true);
     //! Creates a new lang|Float32 type instance.
-    static Type newFloat32(bool isValue = true);
+    static Type makeFloat32(bool isValue = true);
     //! Creates a new lang|String type instance.
-    static Type newString(bool isValue = true);
+    static Type makeString(bool isValue = true);
     //! Creates a new lang|Bool type instance.
-    static Type newBool(bool isValue = true);
+    static Type makeBool(bool isValue = true);
     //! Creates a new lang|Keyword type instance.
-    static Type newKeyword(bool isValue = true);
+    static Type makeKeyword(bool isValue = true);
     //! Creates a new lang|Char type instance.
-    static Type newChar(bool isValue = true);
+    static Type makeChar(bool isValue = true);
 
     //! Creates a new Type type instance named \p name.  This represents a
     //! specific type, not the type template/definition.  Therefore all
     //! (possible) type parameters must be specified and given in \p generics,
     //! i.e. \p generics is not allowed to contain "open" types.  QUESTION: Is
     //! this true?  As far as I can see in the code this can happen anyway.
-    static Type newType(const String& name, const TypeVector& generics,
-                        const Type& inherit);
+    static Type makeType(const String& name, const TypeVector& generics,
+                         const Type& inherit);
 
     //! Creates a new Class type instance named \p inheriting from \p inherit.
     //! \p applySign specifies the signatures of the ctor apply call, and \p
@@ -209,32 +207,32 @@ namespace herschel
     //! parameter types are to be specifies in \p generics.
     //!
     //! \pre \p applySign must a valid signature; \p name must not be empty
-    static Type newClass(const String& name, const TypeVector& generics,
-                         const Type& inherit, const FunctionSignature& applySign,
-                         const TypeSlotList& slots);
+    static Type makeClass(const String& name, const TypeVector& generics,
+                          const Type& inherit, const FunctionSignature& applySign,
+                          const TypeSlotList& slots);
 
     //! Creates a new type alias named \p name for type \p isa.  If the alias
     //! itself is parameterized the type parameters have to be specified in \p
     //! generics.
 
     //! \pre \p name must not be empty; \p isa must be a valid type instance
-    static Type newAlias(const String& name, const TypeVector& generics,
-                         const Type& isa);
+    static Type makeAlias(const String& name, const TypeVector& generics,
+                          const Type& isa);
 
-    static Type newMeasure(const String& name, const Type& baseType,
-                           const String& defUnit);
+    static Type makeMeasure(const String& name, const Type& baseType,
+                            const String& defUnit);
 
     //! Create a new function type instance using the function signature \p
     //! sign.
-    static Type newFunction(const FunctionSignature& sign);
+    static Type makeFunction(const FunctionSignature& sign);
 
     //! Creates a new union type instance for the types \p types.  Note that
     //! even if \p types is given as vector the order of \p types is not
     //! relevant.
-    static Type newUnion(const TypeVector& types, bool isValue);
+    static Type makeUnion(const TypeVector& types, bool isValue);
 
     //! Creates a new sequence type instance for the types \p types.
-    static Type newSeq(const TypeVector& types, bool isValue);
+    static Type makeSeq(const TypeVector& types, bool isValue);
 
     //@}
 
@@ -304,7 +302,7 @@ namespace herschel
     bool isImaginary() const;
     void setIsImaginary(bool value);
 
-    TypeEnumMaker* newBaseTypeEnumMaker() const;
+    std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const;
 
     //! Return the typeProperty specication for the receiver.  Check \c
     //! isValid() on the return value before using it.  If \p mustExist is
@@ -330,7 +328,7 @@ namespace herschel
     //! types only.
     //!
     //! \pre Only allowed if \c isClass() returns true.
-    Type slotType(const String& slotName, Scope* scope) const;
+    Type slotType(const String& slotName, const Scope& scope) const;
 
     bool isType() const;
     const Type& typeInheritance() const;
@@ -358,7 +356,7 @@ namespace herschel
     //! type.  The \p scope is required for looking up type references, the \p
     //! srcpos for possible error messages.
     bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                       Scope* scope, const SrcPos& srcpos) const;
+                       const Scope& scope, const SrcPos& srcpos) const;
 
 
     //@{ alias types
@@ -449,12 +447,13 @@ namespace herschel
     bool isBuiltinType(const String& name) const;
 
   private:
-    Type(TypeKind kind, bool isValue, bool isImaginary, TypeImpl* impl);
+    Type(TypeKind kind, bool isValue, bool isImaginary,
+         std::shared_ptr<TypeImpl> impl);
 
     TypeKind      fKind;
     bool          fIsValue;
     bool          fIsImaginary;
-    Ptr<TypeImpl> fImpl;
+    std::shared_ptr<TypeImpl> fImpl;
   };
 
 
@@ -528,10 +527,10 @@ namespace herschel
   };
 
 
-  class BaseTypeConstraintImpl : public RefCountable
+  class BaseTypeConstraintImpl
   {
   public:
-    virtual BaseTypeConstraintImpl* clone() const = 0;
+    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const = 0;
     virtual bool isEqual(const BaseTypeConstraintImpl* other) const = 0;
     virtual TypeConstOperator constOp() const = 0;
     virtual void replaceGenerics(const TypeCtx& typeMap) = 0;
@@ -544,12 +543,12 @@ namespace herschel
   public:
     TypeConstraint(const TypeConstraint& other);
 
-    static TypeConstraint newAnd(const TypeConstraint& left,
+    static TypeConstraint makeAnd(const TypeConstraint& left,
                                  const TypeConstraint& right);
-    static TypeConstraint newOr(const TypeConstraint& left,
+    static TypeConstraint makeOr(const TypeConstraint& left,
                                 const TypeConstraint& right);
-    static TypeConstraint newValue(TypeConstOperator op, const Token& value);
-    static TypeConstraint newType(TypeConstOperator op, const Type& type);
+    static TypeConstraint makeValue(TypeConstOperator op, const Token& value);
+    static TypeConstraint makeType(TypeConstOperator op, const Type& type);
 
     TypeConstraint clone() const;
 
@@ -587,9 +586,9 @@ namespace herschel
     String toString() const;
 
   private:
-    TypeConstraint(BaseTypeConstraintImpl* impl);
+    TypeConstraint(std::shared_ptr<BaseTypeConstraintImpl> impl);
 
-    Ptr<BaseTypeConstraintImpl> fImpl;
+    std::shared_ptr<BaseTypeConstraintImpl> fImpl;
   };
 
 
@@ -609,11 +608,11 @@ namespace herschel
                       const Type& type);
     FunctionParameter(const FunctionParameter& other);
 
-    static FunctionParameter newPosParam(const Type& type);
-    static FunctionParameter newSpecParam(const Type& type);
-    static FunctionParameter newNamedParam(const String& key,
-                                           const Type& type);
-    static FunctionParameter newRestParam(const Type& type);
+    static FunctionParameter makePosParam(const Type& type);
+    static FunctionParameter makeSpecParam(const Type& type);
+    static FunctionParameter makeNamedParam(const String& key,
+                                            const Type& type);
+    static FunctionParameter makeRestParam(const Type& type);
 
     FunctionParameter clone() const;
 
@@ -679,7 +678,7 @@ namespace herschel
     bool isOpen() const;
 
     bool matchGenerics(TypeCtx& localCtx, const FunctionSignature& right0,
-                       Scope* scope, const SrcPos& srcpos) const;
+                       const Scope& scope, const SrcPos& srcpos) const;
 
     //! Returns the name of the method.  May be empty if the function is
     //! anonymous.
@@ -736,30 +735,30 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  bool inheritsFrom(const Type& left, const Type& right, Scope* scope,
+  bool inheritsFrom(const Type& left, const Type& right, const Scope& scope,
                     const SrcPos& srcpos, bool reportErrors = true);
 
-  bool isSameType(const Type& left, const Type& right, Scope* scope,
+  bool isSameType(const Type& left, const Type& right, const Scope& scope,
                   const SrcPos& srcpos, bool reportErrors = true);
   //! Indicates whether the type @var{right} is covariant to (i.e. "narrower"
   //! than) the type @var{left}.
-  bool isCovariant(const Type& left, const Type& right, Scope* scope,
+  bool isCovariant(const Type& left, const Type& right, const Scope& scope,
                    const SrcPos& srcpos, bool reportErrors = true);
   //! Indicates whether the type @var{right} is contravariant to (i.e. "wider"
   //! than) the type @var{left}.
-  bool isContravariant(const Type& left, const Type& right, Scope* scope,
+  bool isContravariant(const Type& left, const Type& right, const Scope& scope,
                        const SrcPos& srcpos, bool reportErrors = true);
   //! Indicates whether the type @var{right} is invariant to the type
   //! @var{left}, i.e. there's no relation between @var{left} and @var{right}.
-  bool isInvariant(const Type& left, const Type& right, Scope* scope,
+  bool isInvariant(const Type& left, const Type& right, const Scope& scope,
                    const SrcPos& srcpos, bool reportErrors = true);
   bool containsAny(const Type& left, const SrcPos& srcpos,
                    bool reportErrors = true);
 
-  Type newRangeType(const Type& generic);
+  Type makeRangeType(const Type& generic);
 
 
-  void tyerror(const Type& type, const char* msg);
+  void tyerror(const Type& type, zstring msg);
 
   int floatTypeBitsize(const Type& ty);
   int intTypeBitsize(const Type& ty);
@@ -771,12 +770,11 @@ namespace herschel
                         const TypeVector& srcGenerics);
 
 
-  Type resolveType(const Type& type, Scope* scope);
+  Type resolveType(const Type& type, const Scope& scope);
 
   String arrayTypeName(const String& baseName);
-  String arrayTypeName(const char* baseName);
+  String arrayTypeName(zstring baseName);
 };                              // namespace
 
 
 
-#endif                          // bootstrap_type_h

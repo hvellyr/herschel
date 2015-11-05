@@ -27,10 +27,10 @@ using namespace herschel;
 //----------------------------------------------------------------------------
 
 void
-herschel::xml::displayOpenTag(Port<Octet>* port,
-                             const char* tagName, bool newline)
+herschel::xml::displayOpenTag(Port<Octet>& port,
+                             zstring tagName, bool newline)
 {
-  if (tagName != NULL) {
+  if (tagName) {
     herschel::display(port, String() + "<" + tagName + ">");
     if (newline)
       herschel::display(port, String() + "\n");
@@ -39,13 +39,13 @@ herschel::xml::displayOpenTag(Port<Octet>* port,
 
 
 void
-herschel::xml::displayOpenTagAttrs(Port<Octet>* port,
-                                  const char* tagName, const char* attrs,
+herschel::xml::displayOpenTagAttrs(Port<Octet>& port,
+                                  zstring tagName, zstring attrs,
                                   bool newline)
 {
-  if (tagName != NULL) {
+  if (tagName) {
     herschel::display(port, String() + "<" + tagName);
-    if (attrs != NULL && ::strlen(attrs) > 0)
+    if (attrs && ::strlen(attrs) > 0)
       herschel::display(port, String() + " " + attrs + ">");
     else
       herschel::display(port, ">");
@@ -56,35 +56,35 @@ herschel::xml::displayOpenTagAttrs(Port<Octet>* port,
 
 
 void
-herschel::xml::displayCloseTag(Port<Octet>* port,
-                              const char* tagName)
+herschel::xml::displayCloseTag(Port<Octet>& port,
+                              zstring tagName)
 {
-  if (tagName != NULL)
+  if (tagName)
     herschel::display(port, String() + "</" + tagName + ">\n");
 }
 
 
 void
-herschel::xml::displayEmptyTag(Port<Octet>* port,
-                              const char* tagName)
+herschel::xml::displayEmptyTag(Port<Octet>& port,
+                              zstring tagName)
 {
-  if (tagName != NULL && ::strlen(tagName) > 0)
+  if (tagName && ::strlen(tagName) > 0)
     herschel::display(port, String() + "<" + tagName + "/>\n");
 }
 
 
 void
-herschel::xml::displayEmptyTagAttrs(Port<Octet>* port,
-                                   const char* tagName, const char* attrs)
+herschel::xml::displayEmptyTagAttrs(Port<Octet>& port,
+                                   zstring tagName, zstring attrs)
 {
-  if (tagName != NULL && ::strlen(tagName) > 0)
+  if (tagName && ::strlen(tagName) > 0)
     herschel::display(port, String() + "<" + tagName + " " + attrs + "/>\n");
 }
 
 
 void
-herschel::xml::displayTag(Port<Octet>* port,
-                         const char* tagName, const String& value)
+herschel::xml::displayTag(Port<Octet>& port,
+                         zstring tagName, const String& value)
 {
   displayOpenTag(port, tagName, !K(newline));
   herschel::display(port, xmlEncode(value));
@@ -93,9 +93,9 @@ herschel::xml::displayTag(Port<Octet>* port,
 
 
 void
-herschel::xml::displayTagAttr(Port<Octet>* port,
-                             const char* tagName,
-                             const char* attrs,
+herschel::xml::displayTagAttr(Port<Octet>& port,
+                             zstring tagName,
+                             zstring attrs,
                              const String& value)
 {
   String encodedValue = xmlEncode(value);
@@ -110,8 +110,8 @@ herschel::xml::displayTagAttr(Port<Octet>* port,
 
 
 void
-herschel::xml::displayStringList(Port<Octet>* port,
-                                const char* outerTagName, const char* tagName,
+herschel::xml::displayStringList(Port<Octet>& port,
+                                zstring outerTagName, zstring tagName,
                                 const StringList& strlist)
 {
   if (!strlist.empty())
@@ -133,11 +133,11 @@ herschel::xml::displayStringList(Port<Octet>* port,
 
 
 void
-herschel::xml::displayStringStringMap(Port<Octet>* port,
-                                     const char* outerTagName,
-                                     const char* tagName,
-                                     const char* firstPairTagName,
-                                     const char* secPairTagName,
+herschel::xml::displayStringStringMap(Port<Octet>& port,
+                                     zstring outerTagName,
+                                     zstring tagName,
+                                     zstring firstPairTagName,
+                                     zstring secPairTagName,
                                      const StringStringMap& strMap)
 {
   if (!strMap.empty())
@@ -159,7 +159,7 @@ herschel::xml::displayStringStringMap(Port<Octet>* port,
 
 
 void
-herschel::xml::displayType(Port<Octet>* port, const char* tagName, const Type& type)
+herschel::xml::displayType(Port<Octet>& port, zstring tagName, const Type& type)
 {
   if (type.isDef()) {
     displayOpenTag(port, tagName);
@@ -170,7 +170,7 @@ herschel::xml::displayType(Port<Octet>* port, const char* tagName, const Type& t
 
 
 void
-herschel::xml::displayTypeVector(Port<Octet>* port, const char* tagName, const TypeVector& types)
+herschel::xml::displayTypeVector(Port<Octet>& port, zstring tagName, const TypeVector& types)
 {
   if (!types.empty()) {
     displayOpenTag(port, tagName);
@@ -184,11 +184,11 @@ herschel::xml::displayTypeVector(Port<Octet>* port, const char* tagName, const T
 //----------------------------------------------------------------------------
 
 String
-herschel::xml::displayTypeConv(const AptNode* node)
+herschel::xml::displayTypeConv(const AptNode& node)
 {
   StringBuffer attrs;
 
-  switch (node->typeConv())
+  switch (node.typeConv())
   {
   case kNoConv:         attrs << " conv='none'"; break;
   case kTypeCheckConv:  attrs << " conv='check'"; break;
@@ -196,8 +196,8 @@ herschel::xml::displayTypeConv(const AptNode* node)
   case kPlain2AtomConv: attrs << " conv='plain2atom'"; break;
   };
 
-  if (node->type() != node->dstType())
-    attrs << " dstty='" << node->dstType().typeId() << "'";
+  if (node.type() != node.dstType())
+    attrs << " dstty='" << node.dstType().typeId() << "'";
 
   return attrs.toString();
 }
@@ -206,129 +206,123 @@ herschel::xml::displayTypeConv(const AptNode* node)
 //------------------------------------------------------------------------------
 
 void
-herschel::xml::dump(const AptNode* node)
+herschel::xml::dump(const AptNode& node)
 {
-  Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
-  out->render(node);
+  XmlRenderer out{std::make_shared<FilePort>(stderr)};
+  out.render(node);
 }
 
 
 //----------------------------------------------------------------------------
 
-XmlRenderer::XmlRenderer(Port<Octet>* port, bool showNodeType)
+XmlRenderer::XmlRenderer(std::shared_ptr<Port<Octet>> port, bool showNodeType)
   : fPort(port),
     fShowNodeType(showNodeType)
 {
-  display(fPort, "<?xml version='1.0' encoding='utf-8'?>\n");
+  display(*fPort, "<?xml version='1.0' encoding='utf-8'?>\n");
 }
 
 
 void
-XmlRenderer::render(const AptNode* node)
+XmlRenderer::render(const AptNode& node)
 {
-  node->render(this);
+  node.render(this);
 }
 
 
 //----------------------------------------------------------------------------
 
 void
-XmlRenderer::displayOpenTag(const char* tagName, bool newline)
+XmlRenderer::displayOpenTag(zstring tagName, bool newline)
 {
-  xml::displayOpenTag(fPort, tagName, newline);
+  xml::displayOpenTag(*fPort, tagName, newline);
 }
 
 
 void
-XmlRenderer::displayOpenTagAttrs(const char* tagName, const char* attrs,
+XmlRenderer::displayOpenTagAttrs(zstring tagName, zstring attrs,
                                  bool newline)
 {
-  xml::displayOpenTagAttrs(fPort, tagName, attrs, newline);
+  xml::displayOpenTagAttrs(*fPort, tagName, attrs, newline);
 }
 
 
 void
-XmlRenderer::displayCloseTag(const char* tagName)
+XmlRenderer::displayCloseTag(zstring tagName)
 {
-  xml::displayCloseTag(fPort, tagName);
+  xml::displayCloseTag(*fPort, tagName);
 }
 
 
 void
-XmlRenderer::displayEmptyTag(const char* tagName)
+XmlRenderer::displayEmptyTag(zstring tagName)
 {
-  xml::displayEmptyTag(fPort, tagName);
+  xml::displayEmptyTag(*fPort, tagName);
 }
 
 
 void
-XmlRenderer::displayEmptyTagAttrs(const char* tagName, const char* attrs)
+XmlRenderer::displayEmptyTagAttrs(zstring tagName, zstring attrs)
 {
-  xml::displayEmptyTagAttrs(fPort, tagName, attrs);
+  xml::displayEmptyTagAttrs(*fPort, tagName, attrs);
 }
 
 
 void
-XmlRenderer::displayTag(const char* tagName, const String& value)
+XmlRenderer::displayTag(zstring tagName, const String& value)
 {
-  xml::displayTag(fPort, tagName, value);
+  xml::displayTag(*fPort, tagName, value);
 }
 
 
 void
-XmlRenderer::displayTagAttr(const char* tagName,
-                            const char* attrs,
-                            const String& value)
+XmlRenderer::displayTagAttr(zstring tagName, zstring attrs, const String& value)
 {
-  xml::displayTagAttr(fPort, tagName, attrs, value);
+  xml::displayTagAttr(*fPort, tagName, attrs, value);
 }
 
 
 void
-XmlRenderer::displayStringList(const char* outerTagName, const char* tagName,
+XmlRenderer::displayStringList(zstring outerTagName, zstring tagName,
                                const StringList& strlist)
 {
-  xml::displayStringList(fPort, outerTagName, tagName, strlist);
+  xml::displayStringList(*fPort, outerTagName, tagName, strlist);
 }
 
 
 void
-XmlRenderer::displayStringStringMap(const char* outerTagName,
-                                    const char* tagName,
-                                    const char* firstPairTagName,
-                                    const char* secPairTagName,
+XmlRenderer::displayStringStringMap(zstring outerTagName,
+                                    zstring tagName,
+                                    zstring firstPairTagName,
+                                    zstring secPairTagName,
                                     const StringStringMap& strMap)
 {
-  xml::displayStringStringMap(fPort, outerTagName,
+  xml::displayStringStringMap(*fPort, outerTagName,
                               tagName, firstPairTagName, secPairTagName,
                               strMap);
 }
 
 
 void
-XmlRenderer::displayNode(const char* tagName, AptNode* node)
+XmlRenderer::displayNode(zstring tagName, AptNode* node)
 {
-  if (node != NULL) {
+  if (node) {
     displayOpenTag(tagName);
-    render(node);
+    render(*node);
     displayCloseTag(tagName);
   }
 }
 
 
 void
-XmlRenderer::displayNodeList(const char* tagName, const NodeList& nodelist)
+XmlRenderer::displayNodeList(zstring tagName, const NodeList& nodelist)
 {
   if (!nodelist.empty()) {
     displayOpenTag(tagName);
 
-    for (NodeList::const_iterator it = nodelist.begin();
-         it != nodelist.end();
-         it++)
-    {
-      AptNode* n = (*it);
-      if (n != NULL)
-        render(n);
+    for (auto& nd : nodelist) {
+      if (nd)
+        render(*nd);
     }
 
     displayCloseTag(tagName);
@@ -337,45 +331,45 @@ XmlRenderer::displayNodeList(const char* tagName, const NodeList& nodelist)
 
 
 void
-XmlRenderer::displayType(const char* tagName, const Type& type)
+XmlRenderer::displayType(zstring tagName, const Type& type)
 {
-  xml::displayType(fPort, tagName, type);
+  xml::displayType(*fPort, tagName, type);
 }
 
 
 void
-XmlRenderer::displayTypeVector(const char* tagName, const TypeVector& types)
+XmlRenderer::displayTypeVector(zstring tagName, const TypeVector& types)
 {
-  xml::displayTypeVector(fPort, tagName, types);
+  xml::displayTypeVector(*fPort, tagName, types);
 }
 
 
 //----------------------------------------------------------------------------
 
 void
-XmlRenderer::renderNode(const KeywordNode* node)
+XmlRenderer::renderNode(const KeywordNode& node)
 {
-  displayTag("keyw", node->value());
+  displayTag("keyw", node.value());
 }
 
 
 void
-XmlRenderer::renderNode(const StringNode* node)
+XmlRenderer::renderNode(const StringNode& node)
 {
-  displayTag("str", node->value());
+  displayTag("str", node.value());
 }
 
 
 void
-XmlRenderer::renderNode(const SymbolNode* node)
+XmlRenderer::renderNode(const SymbolNode& node)
 {
   StringBuffer attrs;
-  if (fShowNodeType && node->type().isDef())
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+  if (fShowNodeType && node.type().isDef())
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
 
-  const char* referTag = NULL;
-  switch (node->refersTo()) {
-  case kFreeVar:   referTag = NULL; break;
+  zstring referTag = nullptr;
+  switch (node.refersTo()) {
+  case kFreeVar:   referTag = nullptr; break;
   case kGlobalVar: referTag = "global"; break;
   case kLocalVar:  referTag = "local"; break;
   case kParam:     referTag = "param"; break;
@@ -385,71 +379,72 @@ XmlRenderer::renderNode(const SymbolNode* node)
   case kType:      referTag = "type"; break;
   }
 
-  if (referTag != NULL)
+  if (referTag)
     attrs << " refer='" << referTag << "'";
 
-  if (node->generics().empty()) {
-    if (node->isShared())
+  if (node.generics().empty()) {
+    if (node.isShared())
       attrs << " acc='shared'";
-    displayTagAttr("symbol", StrHelper(attrs.toString()), node->name());
+    displayTagAttr("symbol", StrHelper(attrs.toString()), node.name());
   }
   else {
-    attrs << " nm='" << node->name() << "'";
-    if (node->isShared())
+    attrs << " nm='" << node.name() << "'";
+    if (node.isShared())
       attrs << " acc='shared'";
 
     displayOpenTagAttrs("symbol", StrHelper(attrs.toString()));
-    displayTypeVector("gen", node->generics());
+    displayTypeVector("gen", node.generics());
     displayCloseTag("symbol");
   }
 
-  if (fShowNodeType && node->type().isDef())
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef())
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
 }
 
 
 void
-XmlRenderer::renderNode(const ArrayTypeNode* node)
+XmlRenderer::renderNode(const ArrayTypeNode& node)
 {
-  const AptNode* rootType = node->typeNode();
+  auto rootType = node.typeNode();
 
-  if (const SymbolNode* sym = dynamic_cast<const SymbolNode*>(rootType)) {
+  if (auto sym = dynamic_cast<SymbolNode*>(rootType.get())) {
     StringBuffer attrs;
 
-    if (fShowNodeType && node->type().isDef()) {
-      attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-      fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                             node->type()));
+    if (fShowNodeType && node.type().isDef()) {
+      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                             node.type()));
     }
 
     attrs << " array='t'";
     displayTagAttr("symbol", StrHelper(attrs.toString()), sym->name());
   }
-  else if (const TypeNode* ty = dynamic_cast<const TypeNode*>(rootType)) {
+  else if (auto ty = dynamic_cast<TypeNode*>(rootType.get())) {
     StringBuffer attrs;
 
     attrs << " array='t'";
     attrs << " ty='" << xmlEncode(ty->type().typeId()) << "'";
     displayTagAttr("type", StrHelper(attrs.toString()), String());
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
   else if (rootType) {
-    fprintf(stderr, "Unexpected type node: %p %s\n", rootType, typeid(*rootType).name());
+    fprintf(stderr, "Unexpected type node: %p %s\n", rootType.get(),
+            typeid(*rootType).name());
     hr_invalid("unexpected type node");
   }
 }
 
 
 void
-XmlRenderer::renderNode(const TypeNode* node)
+XmlRenderer::renderNode(const TypeNode& node)
 {
   StringBuffer attrs;
-  if (node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayTagAttr("type", StrHelper(attrs.toString()), String());
@@ -457,102 +452,102 @@ XmlRenderer::renderNode(const TypeNode* node)
 
 
 void
-XmlRenderer::renderNode(const IntNode* node)
+XmlRenderer::renderNode(const IntNode& node)
 {
   StringBuffer attrs;
-  attrs << "ty='" << xmlEncode(node->type().typeId()) << "'";
+  attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
 
-  if (node->isImaginary())
+  if (node.isImaginary())
     attrs << " imag='t'";
 
   displayOpenTagAttrs("int", StrHelper(attrs.toString()), !K(newline));
-  herschel::display(fPort, xmlEncode(String() + node->value()));
+  herschel::display(*fPort, xmlEncode(String() + node.value()));
   displayCloseTag("int");
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
 }
 
 
 void
-XmlRenderer::renderNode(const RealNode* node)
+XmlRenderer::renderNode(const RealNode& node)
 {
   StringBuffer attrs;
-  attrs << "ty='" << xmlEncode(node->type().typeId()) << "'";
-  if (node->isImaginary())
+  attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
+  if (node.isImaginary())
     attrs << " imag='t'";
 
   displayTagAttr("real", StrHelper(attrs.toString()),
-                 String() + node->value());
+                 String() + node.value());
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
 }
 
 
 void
-XmlRenderer::renderNode(const RationalNode* node)
+XmlRenderer::renderNode(const RationalNode& node)
 {
   StringBuffer attrs;
-  attrs << "ty='" << xmlEncode(node->type().typeId()) << "'";
-  if (node->isImaginary())
+  attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
+  if (node.isImaginary())
     attrs << " imag='t'";
 
-  String val = String() + node->value().numerator() + "/" + node->value().denominator();
+  String val = String() + node.value().numerator() + "/" + node.value().denominator();
   displayTagAttr("real", StrHelper(attrs.toString()), val);
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
 }
 
 
 void
-XmlRenderer::renderNode(const CharNode* node)
+XmlRenderer::renderNode(const CharNode& node)
 {
-  displayTag("char", fromInt(int(node->value())));
+  displayTag("char", fromInt(int(node.value())));
 }
 
 
 void
-XmlRenderer::renderNode(const BoolNode* node)
+XmlRenderer::renderNode(const BoolNode& node)
 {
   if (fShowNodeType) {
     StringBuffer attrs;
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    displayEmptyTagAttrs(node->value() ? "true" : "false",
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    displayEmptyTagAttrs(node.value() ? "true" : "false",
                          StrHelper(attrs.toString()));
   }
   else
-    displayEmptyTag(node->value() ? "true" : "false");
+    displayEmptyTag(node.value() ? "true" : "false");
 
   if (fShowNodeType)
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
 }
 
 
 void
-XmlRenderer::renderNode(const UnitConstNode* node)
+XmlRenderer::renderNode(const UnitConstNode& node)
 {
   StringBuffer attrs;
-  attrs << "unit='" << node->unit().name() << "'";
+  attrs << "unit='" << node.unit().name() << "'";
 
   displayOpenTagAttrs("uvalue", StrHelper(attrs.toString()));
-  displayType("type", node->unit().effType());
-  displayNode(NULL, node->value());
+  displayType("type", node.unit().effType());
+  displayNode(nullptr, node.value().get());
   displayCloseTag("uvalue");
 }
 
 
 void
-XmlRenderer::renderNode(const CompileUnitNode* node)
+XmlRenderer::renderNode(const CompileUnitNode& node)
 {
-  const char* attrs = "xmlns:ty='http://herschel.eyestep.org/types'";
+  zstring attrs = "xmlns:ty='http://herschel.eyestep.org/types'";
   displayOpenTagAttrs("compile-unit", attrs);
-  displayNodeList(NULL, node->children());
+  displayNodeList(nullptr, node.children());
 
   if (fShowNodeType && !fReferencedTypes.empty()) {
     displayOpenTag("ty:node-types");
@@ -573,19 +568,19 @@ XmlRenderer::renderNode(const CompileUnitNode* node)
 
 
 void
-XmlRenderer::renderNode(const LetNode* node)
+XmlRenderer::renderNode(const LetNode& node)
 {
   displayOpenTag("let");
-  displayNode(NULL, node->defNode());
+  displayNode(nullptr, node.defNode().get());
   displayCloseTag("let");
 }
 
 
 void
-XmlRenderer::renderNode(const DefNode* node)
+XmlRenderer::renderNode(const DefNode& node)
 {
   displayOpenTag("def");
-  displayNode(NULL, node->defNode());
+  displayNode(nullptr, node.defNode().get());
   displayCloseTag("def");
 }
 
@@ -593,13 +588,13 @@ XmlRenderer::renderNode(const DefNode* node)
 
 
 void
-XmlRenderer::renderNode(const VardefNode* node)
+XmlRenderer::renderNode(const VardefNode& node)
 {
   StringBuffer attrs;
 
-  attrs << "sym='" << node->name() << "'";
+  attrs << "sym='" << node.name() << "'";
 
-  switch (node->flags()) {
+  switch (node.flags()) {
   case kNormalVar:
     break;
   case kConstVar:
@@ -613,10 +608,10 @@ XmlRenderer::renderNode(const VardefNode* node)
     break;
   }
 
-  if (!node->linkage().isEmpty())
-    attrs << " linkage='" << node->linkage() << "'";
+  if (!node.linkage().isEmpty())
+    attrs << " linkage='" << node.linkage() << "'";
 
-  switch (node->allocType()) {
+  switch (node.allocType()) {
   case kAlloc_Local:
     break;
   case kAlloc_Shared:
@@ -626,8 +621,8 @@ XmlRenderer::renderNode(const VardefNode* node)
 
   displayOpenTagAttrs("vardef", StrHelper(attrs.toString()));
 
-  displayType("type", node->type());
-  displayNode("init", node->initExpr());
+  displayType("type", node.type());
+  displayNode("init", node.initExpr().get());
 
   displayCloseTag("vardef");
 
@@ -636,13 +631,13 @@ XmlRenderer::renderNode(const VardefNode* node)
 
 
 void
-XmlRenderer::renderNode(const ParamNode* node)
+XmlRenderer::renderNode(const ParamNode& node)
 {
   StringBuffer attrs;
 
-  attrs << "sym='" << node->name() << "'";
+  attrs << "sym='" << node.name() << "'";
 
-  switch (node->flags()) {
+  switch (node.flags()) {
   case kPosArg:
     attrs << " type='pos'";
     break;
@@ -650,14 +645,14 @@ XmlRenderer::renderNode(const ParamNode* node)
     attrs << " type='spec'";
     break;
   case kNamedArg:
-    attrs << " type='key' key='" << node->key() << "'";
+    attrs << " type='key' key='" << node.key() << "'";
     break;
   case kRestArg:
     attrs << " type='rest'";
     break;
   }
 
-  switch (node->allocType()) {
+  switch (node.allocType()) {
   case kAlloc_Local:
     break;
   case kAlloc_Shared:
@@ -667,41 +662,41 @@ XmlRenderer::renderNode(const ParamNode* node)
 
   displayOpenTagAttrs("param", StrHelper(attrs.toString()));
 
-  displayType("type", node->type());
-  displayNode("init", node->initExpr());
+  displayType("type", node.type());
+  displayNode("init", node.initExpr().get());
 
   displayCloseTag("param");
 }
 
 
 void
-XmlRenderer::renderNode(const SlotdefNode* node)
+XmlRenderer::renderNode(const SlotdefNode& node)
 {
   StringBuffer attrs;
 
-  attrs << "sym='" << node->name() << "'";
+  attrs << "sym='" << node.name() << "'";
 
-  if ((node->flags() & kTransientSlot) != 0) {
+  if ((node.flags() & kTransientSlot) != 0) {
     attrs << " transient='t'";
   }
-  if ((node->flags() & kReadonlySlot) != 0) {
+  if ((node.flags() & kReadonlySlot) != 0) {
     attrs << " readonly='t'";
   }
-  if ((node->flags() & kAutoSlot) != 0) {
+  if ((node.flags() & kAutoSlot) != 0) {
     attrs << " auto='t'";
   }
 
-  if ((node->flags() & kPublicSlot) != 0) {
+  if ((node.flags() & kPublicSlot) != 0) {
     attrs << " viz='public'";
   }
-  else if ((node->flags() & kOuterSlot) != 0) {
+  else if ((node.flags() & kOuterSlot) != 0) {
     attrs << " viz='outer'";
   }
-  else if ((node->flags() & kInnerSlot) != 0) {
+  else if ((node.flags() & kInnerSlot) != 0) {
     attrs << " viz='inner'";
   }
 
-  switch (node->allocType()) {
+  switch (node.allocType()) {
   case kAlloc_Local:
     break;
   case kAlloc_Shared:
@@ -710,83 +705,83 @@ XmlRenderer::renderNode(const SlotdefNode* node)
   }
 
   displayOpenTagAttrs("slot", StrHelper(attrs.toString()));
-  displayType("type", node->type());
-  displayNode("init", node->initExpr());
+  displayType("type", node.type());
+  displayNode("init", node.initExpr().get());
   displayCloseTag("slot");
 }
 
 
 void
-XmlRenderer::renderNode(const ArrayNode* node)
+XmlRenderer::renderNode(const ArrayNode& node)
 {
   StringBuffer attrs;
 
-  if (fShowNodeType && node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayOpenTagAttrs("array", StrHelper(attrs.toString()));
-  displayNodeList(NULL, node->children());
+  displayNodeList(nullptr, node.children());
   displayCloseTag("array");
 }
 
 
 void
-XmlRenderer::renderNode(const VectorNode* node)
+XmlRenderer::renderNode(const VectorNode& node)
 {
   StringBuffer attrs;
 
-  if (fShowNodeType && node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayOpenTagAttrs("vector", StrHelper(attrs.toString()));
-  displayNodeList(NULL, node->children());
+  displayNodeList(nullptr, node.children());
   displayCloseTag("vector");
 }
 
 
 void
-XmlRenderer::renderNode(const DictNode* node)
+XmlRenderer::renderNode(const DictNode& node)
 {
   StringBuffer attrs;
 
-  if (fShowNodeType && node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayOpenTagAttrs("dict", StrHelper(attrs.toString()));
-  displayNodeList(NULL, node->children());
+  displayNodeList(nullptr, node.children());
   displayCloseTag("dict");
 }
 
 
 void
-XmlRenderer::renderNode(const BinaryNode* node)
+XmlRenderer::renderNode(const BinaryNode& node)
 {
   StringBuffer attrs;
-  attrs << "op='" << xmlEncode(herschel::operatorName(node->op())) << "'";
+  attrs << "op='" << xmlEncode(herschel::operatorName(node.op())) << "'";
 
-  if (fShowNodeType && node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayOpenTagAttrs("binary", StrHelper(attrs.toString()));
-  displayNode(NULL, node->left());
-  displayNode(NULL, node->right());
+  displayNode(nullptr, node.left().get());
+  displayNode(nullptr, node.right().get());
   displayCloseTag("binary");
 }
 
 
-static const char*
+static zstring
 unary_operator_name(UnaryOperatorType op)
 {
   switch (op) {
@@ -804,111 +799,111 @@ unary_operator_name(UnaryOperatorType op)
 
 
 void
-XmlRenderer::renderNode(const UnaryNode* node)
+XmlRenderer::renderNode(const UnaryNode& node)
 {
-  const char* op_nm = unary_operator_name(node->op());
+  zstring op_nm = unary_operator_name(node.op());
   StringBuffer attrs;
-  if (fShowNodeType && node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayOpenTagAttrs(op_nm, StrHelper(attrs.toString()));
-  displayNode(NULL, node->base());
+  displayNode(nullptr, node.base().get());
   displayCloseTag(op_nm);
 }
 
 
 void
-XmlRenderer::renderNode(const RangeNode* node)
+XmlRenderer::renderNode(const RangeNode& node)
 {
   StringBuffer attrs;
-  if (fShowNodeType && node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayOpenTagAttrs("range", StrHelper(attrs.toString()));
-  displayNode(NULL, node->from());
-  displayNode(NULL, node->to());
-  displayNode(NULL, node->by());
+  displayNode(nullptr, node.from().get());
+  displayNode(nullptr, node.to().get());
+  displayNode(nullptr, node.by().get());
   displayCloseTag("range");
 }
 
 
 void
-XmlRenderer::renderNode(const AssignNode* node)
+XmlRenderer::renderNode(const AssignNode& node)
 {
   StringBuffer attrs;
-  if (fShowNodeType && node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayOpenTagAttrs("assign", StrHelper(attrs.toString()));
-  displayNode(NULL, node->lvalue());
-  displayNode(NULL, node->rvalue());
+  displayNode(nullptr, node.lvalue().get());
+  displayNode(nullptr, node.rvalue().get());
   displayCloseTag("assign");
 }
 
 
 void
-XmlRenderer::renderNode(const SlotRefNode* node)
+XmlRenderer::renderNode(const SlotRefNode& node)
 {
   StringBuffer attrs;
-  attrs << " nm='" << xmlEncode(node->slotName()) << "'";
+  attrs << " nm='" << xmlEncode(node.slotName()) << "'";
 
-  if (fShowNodeType && node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayOpenTagAttrs("slotref", StrHelper(attrs.toString()));
-  displayNode(NULL, node->base());
+  displayNode(nullptr, node.base().get());
   displayCloseTag("slotref");
 }
 
 
 void
-XmlRenderer::renderNode(const IfNode* node)
+XmlRenderer::renderNode(const IfNode& node)
 {
   StringBuffer attrs;
-  if (fShowNodeType && node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayOpenTagAttrs("if", StrHelper(attrs.toString()));
-  displayNode("test", node->test());
-  displayNode("then", node->consequent());
-  displayNode("else", node->alternate());
+  displayNode("test", node.test().get());
+  displayNode("then", node.consequent().get());
+  displayNode("else", node.alternate().get());
   displayCloseTag("if");
 }
 
 
 void
-XmlRenderer::renderNode(const SelectNode* node)
+XmlRenderer::renderNode(const SelectNode& node)
 {
   displayOpenTag("select");
-  displayNode("test", node->test());
-  displayNode("comp", node->comparator());
-  for (size_t i = 0; i < node->mappingCount(); i++) {
-    if (node->mappingAt(i).fTestValues.empty()) {
-      displayNode("alternate", node->mappingAt(i).fConsequent);
+  displayNode("test", node.test().get());
+  displayNode("comp", node.comparator().get());
+  for (size_t i = 0; i < node.mappingCount(); i++) {
+    if (node.mappingAt(i).fTestValues.empty()) {
+      displayNode("alternate", node.mappingAt(i).fConsequent.get());
     }
     else {
       displayOpenTag("map");
       displayOpenTag("values");
-      for (size_t j = 0; j < node->mappingAt(i).fTestValues.size(); j++) {
-        displayNode(NULL, node->mappingAt(i).fTestValues[j]);
+      for (size_t j = 0; j < node.mappingAt(i).fTestValues.size(); j++) {
+        displayNode(nullptr, node.mappingAt(i).fTestValues[j].get());
       }
       displayCloseTag("values");
-      displayNode("cons", node->mappingAt(i).fConsequent);
+      displayNode("cons", node.mappingAt(i).fConsequent.get());
       displayCloseTag("map");
     }
   }
@@ -917,17 +912,17 @@ XmlRenderer::renderNode(const SelectNode* node)
 
 
 void
-XmlRenderer::renderNode(const MatchNode* node)
+XmlRenderer::renderNode(const MatchNode& node)
 {
   displayOpenTag("match");
-  displayNode("test", node->expr());
-  for (size_t i = 0; i < node->mappingCount(); i++) {
+  displayNode("test", node.expr().get());
+  for (size_t i = 0; i < node.mappingCount(); i++) {
     StringBuffer attrs;
-    if (!node->mappingAt(i).fVarName.isEmpty())
-      attrs << "nm='" << xmlEncode(node->mappingAt(i).fVarName) << "'";
+    if (!node.mappingAt(i).fVarName.isEmpty())
+      attrs << "nm='" << xmlEncode(node.mappingAt(i).fVarName) << "'";
     displayOpenTagAttrs("map", StrHelper(attrs.toString()));
-    displayType("type", node->mappingAt(i).fMatchType);
-    displayNode("cons", node->mappingAt(i).fConsequent);
+    displayType("type", node.mappingAt(i).fMatchType);
+    displayNode("cons", node.mappingAt(i).fConsequent.get());
     displayCloseTag("map");
   }
   displayCloseTag("match");
@@ -935,154 +930,154 @@ XmlRenderer::renderNode(const MatchNode* node)
 
 
 void
-XmlRenderer::renderNode(const OnNode* node)
+XmlRenderer::renderNode(const OnNode& node)
 {
   StringBuffer attrs;
-  attrs << "key='" << node->key() << "'";
+  attrs << "key='" << node.key() << "'";
   displayOpenTagAttrs("on", StrHelper(attrs.toString()));
-  displayNodeList("params", node->params());
-  displayNode("body", node->body());
+  displayNodeList("params", node.params());
+  displayNode("body", node.body().get());
   displayCloseTag("on");
 }
 
 
 void
-XmlRenderer::renderNode(const BlockNode* node)
+XmlRenderer::renderNode(const BlockNode& node)
 {
   // StringBuffer attrs;
 
-  // if (fShowNodeType && node->type().isDef())
-  //   attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+  // if (fShowNodeType && node.type().isDef())
+  //   attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
 
   // displayOpenTagAttrs("block", StrHelper(attrs.toString()));
-  // displayNodeList(NULL, node->children());
+  // displayNodeList(nullptr, node.children());
   // displayCloseTag("block");
-  displayNodeList("block", node->children());
+  displayNodeList("block", node.children());
 }
 
 
 void
-XmlRenderer::renderNode(const FunctionNode* node)
+XmlRenderer::renderNode(const FunctionNode& node)
 {
   displayOpenTag("function");
-  displayNodeList("params", node->params());
-  displayType("rettype", node->retType());
-  displayNode("body", node->body());
+  displayNodeList("params", node.params());
+  displayType("rettype", node.retType());
+  displayNode("body", node.body().get());
   displayCloseTag("function");
 }
 
 
 void
-XmlRenderer::renderNode(const FuncDefNode* node)
+XmlRenderer::renderNode(const FuncDefNode& node)
 {
-  const char* tag = NULL;
-  if (node->isGeneric())
+  zstring tag = nullptr;
+  if (node.isGeneric())
     tag = "generic";
-  else if (node->isMethod())
+  else if (node.isMethod())
     tag = "method";
   else
     tag = "func";
 
   StringBuffer attrs;
-  attrs << "sym='" << node->name() << "'";
+  attrs << "sym='" << node.name() << "'";
 
-  if (node->isAbstract())
+  if (node.isAbstract())
     attrs << " abstract='true'";
 
-  if (!node->linkage().isEmpty())
-    attrs << " linkage='" << node->linkage() << "'";
+  if (!node.linkage().isEmpty())
+    attrs << " linkage='" << node.linkage() << "'";
 
   displayOpenTagAttrs(tag, StrHelper(attrs.toString()));
-  displayNodeList("params", node->params());
-  displayType("rettype", node->retType());
-  displayNode("body", node->body());
+  displayNodeList("params", node.params());
+  displayType("rettype", node.retType());
+  displayNode("body", node.body().get());
   displayCloseTag(tag);
 }
 
 
 void
-XmlRenderer::renderNode(const ApplyNode* node)
+XmlRenderer::renderNode(const ApplyNode& node)
 {
   StringBuffer attrs;
 
-  if (fShowNodeType && node->type().isDef())
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
+  if (fShowNodeType && node.type().isDef())
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
 
   if (Properties::isTypeConvDump())
     attrs << xml::displayTypeConv(node);
 
   displayOpenTagAttrs("apply", StrHelper(attrs.toString()));
-  displayNode(NULL, node->base());
+  displayNode(nullptr, node.base().get());
   displayOpenTag("args");
-  displayNodeList(NULL, node->children());
+  displayNodeList(nullptr, node.children());
   displayCloseTag("args");
   displayCloseTag("apply");
 
-  if (fShowNodeType && node->type().isDef())
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef())
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
 }
 
 
 void
-XmlRenderer::renderNode(const KeyargNode* node)
+XmlRenderer::renderNode(const KeyargNode& node)
 {
   StringBuffer attrs;
-  attrs << "key='" << node->key() << "'";
+  attrs << "key='" << node.key() << "'";
 
   displayOpenTagAttrs("arg", StrHelper(attrs.toString()));
-  displayNode(NULL, node->value());
+  displayNode(nullptr, node.value().get());
   displayCloseTag("arg");
 }
 
 
 void
-XmlRenderer::renderNode(const WhileNode* node)
+XmlRenderer::renderNode(const WhileNode& node)
 {
   StringBuffer attrs;
 
-  if (fShowNodeType && node->type().isDef()) {
-    attrs << " ty='" << xmlEncode(node->type().typeId()) << "'";
-    fReferencedTypes.insert(std::make_pair(node->type().typeId(),
-                                           node->type()));
+  if (fShowNodeType && node.type().isDef()) {
+    attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    fReferencedTypes.insert(std::make_pair(node.type().typeId(),
+                                           node.type()));
   }
 
   displayOpenTagAttrs("while", StrHelper(attrs.toString()));
-  displayNode("test", node->test());
-  displayNode("body", node->body());
+  displayNode("test", node.test().get());
+  displayNode("body", node.body().get());
   displayCloseTag("while");
 }
 
 
 void
-XmlRenderer::renderNode(const TypeDefNode* node)
+XmlRenderer::renderNode(const TypeDefNode& node)
 {
-  const char* tagName = node->isClass() ? "class" : "type";
+  zstring tagName = node.isClass() ? "class" : "type";
 
   StringBuffer attrs;
-  attrs << "nm='" << node->name() << "'";
+  attrs << "nm='" << node.name() << "'";
 
   displayOpenTagAttrs(tagName, StrHelper(attrs.toString()));
-  displayNodeList("params", node->params());
-  displayNodeList("slots", node->slots());
-  displayNodeList("on", node->onExprs());
-  displayType("isa", node->defType());
+  displayNodeList("params", node.params());
+  displayNodeList("slots", node.slots());
+  displayNodeList("on", node.onExprs());
+  displayType("isa", node.defType());
   displayCloseTag(tagName);
 }
 
 
 void
-XmlRenderer::renderNode(const CastNode* node)
+XmlRenderer::renderNode(const CastNode& node)
 {
   displayOpenTag("cast");
-  displayNode("base", node->base());
-  displayType("as", node->type());
+  displayNode("base", node.base().get());
+  displayType("as", node.type());
   displayCloseTag("cast");
 }
 
 
 void
-XmlRenderer::renderNode(const UndefNode* node)
+XmlRenderer::renderNode(const UndefNode& node)
 {
   displayEmptyTag("undef");
 }

@@ -40,7 +40,7 @@ StringBuffer::StringBuffer(const String& other)
 }
 
 
-StringBuffer::StringBuffer(const char* c)
+StringBuffer::StringBuffer(zstring c)
 {
   fBuffer.reserve(64);
   *this << c;
@@ -84,10 +84,10 @@ StringBuffer::operator<<(const String& other)
 
 
 StringBuffer&
-StringBuffer::operator<<(const char* utf8)
+StringBuffer::operator<<(zstring utf8)
 {
   int utf8len = ::strlen(utf8);
-  int reqlen = str_utf8_to_wcs(utf8, utf8len, NULL, 0);
+  int reqlen = str_utf8_to_wcs(utf8, utf8len, nullptr, 0);
 
   int endidx = fBuffer.size();
   fBuffer.insert(fBuffer.end(), reqlen, ' ');
@@ -161,10 +161,10 @@ StringBuffer::insertAt(int atIndex, const String& other)
 
 
 StringBuffer&
-StringBuffer::insertAt(int atIndex, const char* utf8)
+StringBuffer::insertAt(int atIndex, zstring utf8)
 {
   int utf8len = ::strlen(utf8);
-  int reqlen = str_utf8_to_wcs(utf8, utf8len, NULL, 0);
+  int reqlen = str_utf8_to_wcs(utf8, utf8len, nullptr, 0);
 
   if (reqlen > 0) {
     fBuffer.insert(fBuffer.begin() + atIndex, reqlen, ' ');

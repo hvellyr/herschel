@@ -25,15 +25,14 @@ namespace
 struct TokenEvalContextFixture
 {
   TokenEvalContextFixture()
-    : reg(new ConfigVarRegistry),
-      ctx(reg)
+    : ctx(reg)
   {
   }
 
   ~TokenEvalContextFixture() {
   }
 
-  Ptr<ConfigVarRegistry> reg;
+  ConfigVarRegistry reg;
   TokenEvalContext ctx;
   SrcPos sp;
   Token t;

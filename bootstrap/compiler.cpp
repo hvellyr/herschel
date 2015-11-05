@@ -20,7 +20,6 @@
 #include "pass2.h"
 #include "predefined.h"
 #include "properties.h"
-#include "ptr.h"
 #include "rootscope.h"
 #include "scope.h"
 #include "str.h"
@@ -69,38 +68,39 @@ const Token Compiler::unitToken      = Token(SrcPos(), kSymbol, "unit");
 
 Compiler::Compiler(bool isParsingInterface)
   : fState(CompilerState(
-             new CharRegistry,
-             new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
+             std::make_shared<CharRegistry>(),
+             std::make_shared<ConfigVarRegistry>(
+               Properties::globalConfigVarRegistry()),
              type::newRootScope())),
     fIsParsingInterface(isParsingInterface),
-    fReferredFunctionCache(new Scope(kScopeL_CompileUnit))
+    fReferredFunctionCache(makeScope(kScopeL_CompileUnit))
 {
 }
 
 
-CharRegistry*
+std::shared_ptr<CharRegistry>
 Compiler::charRegistry() const
 {
   return fState.fCharRegistry;
 }
 
 
-ConfigVarRegistry*
+std::shared_ptr<ConfigVarRegistry>
 Compiler::configVarRegistry() const
 {
   return fState.fConfigVarRegistry;
 }
 
 
-Scope*
+std::shared_ptr<Scope>
 Compiler::scope() const
 {
   return fState.fScope;
 }
 
 
-Scope*
-Compiler::referredFunctionCache() const
+std::shared_ptr<Scope>&
+Compiler::referredFunctionCache()
 {
   return fReferredFunctionCache;
 }
@@ -136,29 +136,31 @@ Compiler::unreadToken(const Token& token)
 }
 
 
-AptNode*
-Compiler::process(Port<Char>* port, const String& srcName)
+std::shared_ptr<AptNode>
+Compiler::process(std::shared_ptr<Port<Char>> port, const String& srcName)
 {
-  fState.fScope = new Scope(kScopeL_CompileUnit, fState.fScope);
+  fState.fScope = makeScope(kScopeL_CompileUnit, fState.fScope);
   importSystemHeaders(srcName);
   return processImpl(port, srcName, K(doTrace));
 }
 
 
-AptNode*
-Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
+std::shared_ptr<AptNode>
+Compiler::processImpl(std::shared_ptr<Port<Char>> port,
+                      const String& srcName, bool doTrace)
 {
-  fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
+  fState.fPort = std::make_shared<FileTokenPort>(port,
+                                                 srcName,
+                                                 fState.fCharRegistry);
 
-  hr_assert(fState.fScope != NULL);
+  hr_assert(fState.fScope);
 
   try {
-    Ptr<AptNode> apt;
+    std::shared_ptr<AptNode> apt;
     Token parsedExprs;
 
-    Ptr<TokenCompilePass> tokenPass = new ExprPass(1, this,
-                                                   fState.fToken, fState.fScope);
-    parsedExprs = tokenPass->apply(Token(), doTrace);
+    ExprPass tokenPass{1, *this, fState.fToken, fState.fScope};
+    parsedExprs = tokenPass.apply(Token(), doTrace);
 
     // let all following passes run beneath the same root-scope.
     {
@@ -167,42 +169,40 @@ Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
                               !K(isInnerScope),
                               kScopeL_CompileUnit);
 
-      Ptr<NodifyPass> nodifyPass = new NodifyPass(2, this, fState.fScope);
-      apt = nodifyPass->apply(parsedExprs, doTrace);
+      NodifyPass nodifyPass{2, *this, fState.fScope};
+      apt = nodifyPass.apply(parsedExprs, doTrace);
 
       // if the compileunit contains open-ended module declarations
       // (i.e. without {}) get the last valid scope back and make it the
       // current one.  It contains the complete upstream chain of scopes.  (We
       // must not simply export it back to the original fState.fScope, since
       // the symbols may not be exportable at all).
-      fState.fScope = nodifyPass->currentScope();
+      fState.fScope = nodifyPass.currentScope();
 
-      Ptr<AptNodeCompilePass> nodePass;
+      TransformPass nodePass1{3};
+      apt = nodePass1.apply(apt, doTrace);
 
-      nodePass = new TransformPass(3);
-      apt = nodePass->apply(apt.release(), doTrace);
+      AnnotatePass nodePass2{4, fState.fScope, *this};
+      apt = nodePass2.apply(apt, doTrace);
 
-      nodePass = new AnnotatePass(4, fState.fScope, this);
-      apt = nodePass->apply(apt.release(), doTrace);
-
-      nodePass = new TypifyPass(5);
-      apt = nodePass->apply(apt.release(), doTrace);
+      TypifyPass nodePass3{5};
+      apt = nodePass3.apply(apt, doTrace);
     }
 
-    return apt.release();
+    return apt;
   }
   catch (const Exception& e) {
-    logf(kError, "Parse error: %s", (const char*)StrHelper(e.message()));
+    logf(kError, "Parse error: %s", (zstring)StrHelper(e.message()));
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
 bool
 Compiler::importFile(const SrcPos& srcpos,
                      const String& srcName, bool isPublic,
-                     Scope* currentScope)
+                     std::shared_ptr<Scope> currentScope)
 {
   String absPath = lookupFile(srcName, isPublic);
   return importFileImpl(srcpos, srcName, absPath, currentScope, K(preload));
@@ -219,12 +219,12 @@ Compiler::importSystemHeader(const String& header, const String& fullAvoidPath)
 
   if (absPath == fullAvoidPath) {
     if (Properties::isTraceImportFile())
-      logf(kDebug, "Don't preload '%s'", (const char*)StrHelper(header));
+      logf(kDebug, "Don't preload '%s'", (zstring)StrHelper(header));
     return false;
   }
 
   if (Properties::isTraceImportFile())
-    logf(kDebug, "Preload '%s'", (const char*)StrHelper(header));
+    logf(kDebug, "Preload '%s'", (zstring)StrHelper(header));
   importFileImpl(SrcPos(), header, absPath, fState.fScope, !K(preload));
 
   return true;
@@ -261,45 +261,45 @@ Compiler::importSystemHeaders(const String& avoidPath)
 bool
 Compiler::importFileImpl(const SrcPos& srcpos,
                          const String& srcName, const String& absPath,
-                         Scope* currentScope,
+                         std::shared_ptr<Scope> currentScope,
                          bool preload)
 {
-  typedef std::map<String, Ptr<Scope> > ImportCache;
+  using ImportCache = std::map<String, std::shared_ptr<Scope>>;
   static ImportCache sImportCache;
 
   if (absPath.isEmpty()) {
     errorf(srcpos, E_UnknownInputFile,
            "import '%s' failed: Unknown file\n",
-           (const char*)StrHelper(srcName));
+           (zstring)StrHelper(srcName));
     return false;
   }
 
   if (currentScope->hasScopeForFile(absPath)) {
     if (Properties::isTraceImportFile())
-      logf(kDebug, "File '%s' already imported", (const char*)StrHelper(absPath));
+      logf(kDebug, "File '%s' already imported", (zstring)StrHelper(absPath));
     return true;
   }
 
   ImportCache::iterator it = sImportCache.find(absPath);
   if (it != sImportCache.end()) {
     if (Properties::isTraceImportFile())
-      logf(kDebug, "Reuse imported '%s'", (const char*)StrHelper(absPath));
+      logf(kDebug, "Reuse imported '%s'", (zstring)StrHelper(absPath));
     currentScope->addImportedScope(absPath, it->second);
     return true;
   }
 
   if (Properties::isTraceImportFile())
-    logf(kDebug, "Import '%s'", (const char*)StrHelper(srcName));
+    logf(kDebug, "Import '%s'", (zstring)StrHelper(srcName));
 
   try {
-    Ptr<Compiler> compiler = new Compiler(K(isParsingInterface));
+    auto compiler = Compiler{K(isParsingInterface)};
     if (preload)
-      compiler->importSystemHeaders(absPath);
+      compiler.importSystemHeaders(absPath);
 
-    Ptr<AptNode> apt = compiler->processImpl(new CharPort(
-                                               new FilePort(absPath, "rb")),
-                                             srcName, !K(doTrace));
-    Ptr<Scope> scope = compiler->scope();
+    auto apt = compiler.processImpl(std::make_shared<CharPort>(
+                                      std::make_shared<FilePort>(absPath, "rb")),
+                                    srcName, !K(doTrace));
+    auto scope = compiler.scope();
 
     currentScope->addImportedScope(absPath, scope);
 
@@ -308,8 +308,8 @@ Compiler::importFileImpl(const SrcPos& srcpos,
   catch (const Exception& e) {
     errorf(srcpos, E_UnknownInputFile,
            "import '%s' failed: %s\n",
-           (const char*)StrHelper(absPath),
-           (const char*)StrHelper(e.message()));
+           (zstring)StrHelper(absPath),
+           (zstring)StrHelper(e.message()));
     return false;
   }
 
@@ -320,7 +320,7 @@ Compiler::importFileImpl(const SrcPos& srcpos,
 String
 Compiler::lookupFile(const String& srcName, bool isPublic)
 {
-  StringVector exts = vector_of(String("hr"));
+  auto exts = makeVector(String("hr"));
 
   if (srcName.startsWith(String("builtin:")))
   {
@@ -339,12 +339,12 @@ Compiler::lookupFile(const String& srcName, bool isPublic)
 
 //==============================================================================
 
-Compiler::CompilerState::CompilerState(CharRegistry* charReg,
-                                       ConfigVarRegistry* configReg,
-                                       Scope* scope)
-  : fCharRegistry(charReg),
-    fConfigVarRegistry(configReg),
-    fScope(scope)
+Compiler::CompilerState::CompilerState(std::shared_ptr<CharRegistry> charReg,
+                                       std::shared_ptr<ConfigVarRegistry> configReg,
+                                       std::shared_ptr<Scope> scope)
+  : fCharRegistry(std::move(charReg)),
+    fConfigVarRegistry(std::move(configReg)),
+    fScope(std::move(scope))
 {
 }
 
@@ -370,27 +370,28 @@ Compiler::CompilerState::operator=(const CompilerState& item)
 
 //==============================================================================
 
-Compiler::PortStackHelper::PortStackHelper(Compiler* compiler, TokenPort* port)
+Compiler::PortStackHelper::PortStackHelper(Compiler& compiler,
+                                           std::shared_ptr<TokenPort> port)
   : fCompiler(compiler),
     fPortOnly(true)
 {
-  fCompiler->fCompilerStates.push_front(fCompiler->fState);
-  fCompiler->fState = CompilerState(
-    compiler->charRegistry(),
-    new ConfigVarRegistry(compiler->configVarRegistry()),
-    compiler->fState.fScope);
+  fCompiler.fCompilerStates.push_front(fCompiler.fState);
+  fCompiler.fState = CompilerState(
+    compiler.charRegistry(),
+    std::make_shared<ConfigVarRegistry>(compiler.configVarRegistry()),
+    compiler.fState.fScope);
 
-  fCompiler->fState.fPort = port;
+  fCompiler.fState.fPort = port;
 }
 
 
 Compiler::PortStackHelper::~PortStackHelper()
 {
-  hr_assert(!fCompiler->fCompilerStates.empty());
+  hr_assert(!fCompiler.fCompilerStates.empty());
 
-  CompilerState current = fCompiler->fState;
-  fCompiler->fState = fCompiler->fCompilerStates.front();
-  fCompiler->fCompilerStates.pop_front();
+  CompilerState current = fCompiler.fState;
+  fCompiler.fState = fCompiler.fCompilerStates.front();
+  fCompiler.fCompilerStates.pop_front();
 
   if (!fPortOnly) {
     // merge current.fScope into fCompiler->fState; same for configVarReg and
@@ -409,22 +410,22 @@ namespace herschel
   {
     try {
       if (doParse) {
-        Ptr<Compiler> compiler = new Compiler;
-        Ptr<AptNode> apt = compiler->process(new CharPort(
-                                               new FilePort(file, "rb")),
-                                             file);
+        Compiler compiler{};
+        auto apt = compiler.process(std::make_shared<CharPort>(
+                                      std::make_shared<FilePort>(file, "rb")),
+                                    file);
         if (doCompile) {
           hr_assert(apt);
-          CompileUnitNode* unit = dynamic_cast<CompileUnitNode*>(apt.obj());
-          hr_assert(unit != NULL);
+          auto unit = dynamic_cast<CompileUnitNode*>(apt.get());
+          hr_assert(unit);
 
-          if (unit != NULL) {
+          if (unit) {
             String outExt = makeCompileOutputFileExt(Properties::compileOutFormat());
             String outFile = makeOutputFileName(Properties::outdir(),
                                                 outfileName, file, outExt);
 
-            Ptr<CodeGenerator> codegen = new CodeGenerator(compiler);
-            codegen->compileToCode(unit, outFile);
+            CodeGenerator codegen{compiler};
+            codegen.compileToCode(unit, outFile);
           }
 
           if (doLink) {
@@ -435,8 +436,8 @@ namespace herschel
     }
     catch (const Exception& e) {
       logf(kError, "compilation of '%s' failed: %s",
-           (const char*)StrHelper(file),
-           (const char*)StrHelper(e.message()));
+           (zstring)StrHelper(file),
+           (zstring)StrHelper(e.message()));
     }
   }
 

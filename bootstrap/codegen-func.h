@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_func_h
-#define bootstrap_codegen_func_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -34,7 +33,7 @@ namespace herschel
   class CodegenFuncDef : public CodeGeneratorProxy
   {
   public:
-    CodegenFuncDef(CodeGenerator* generator);
+    CodegenFuncDef(CodeGenerator& generator);
 
     //! emit function declaration, implementation, lookup and/or
     //! boilerplate code for \p node, depending on the kind of function
@@ -74,6 +73,5 @@ namespace herschel
                                           bool isLocal,
                                           bool forceAtomReturnType) const;
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_func_h
+} // namespace

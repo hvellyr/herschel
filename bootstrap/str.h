@@ -8,13 +8,14 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_str_h
-#define bootstrap_str_h
+#pragma once
 
 #include "common.h"
 
-#include <vector>
+#include <memory>
 #include <string>
+#include <vector>
+
 #if defined(UNITTESTS)
 #  include <iostream>
 #endif
@@ -44,7 +45,7 @@ namespace herschel
     //! Create a new instance from the null terminated utf8 encoded plain
     //! string \p utf8.  After construction the caller is free to deallocate
     //! \p utf8.
-    explicit String(const char* utf8);
+    explicit String(zstring utf8);
 
     explicit String(const std::string& utf8);
 
@@ -53,7 +54,7 @@ namespace herschel
     //! before \p items have reached only the part of \p utf8 until the null
     //! byte is copied.  After construction the caller is free to deallocate
     //! \p utf8.
-    explicit String(const char* utf8, int items);
+    explicit String(zstring utf8, int items);
 
     //! Create a new instance from the first \p items characters of the wide
     //! character arrays \p str.  When a null character is found in \p str
@@ -61,7 +62,6 @@ namespace herschel
     //! character is copied.  After construction the caller is free to
     //! deallocate \p str.
     String(const Char* str, int items);
-    ~String();
 
     //! Assign operator
     String& operator=(const String& other);
@@ -128,9 +128,9 @@ namespace herschel
 
     //! Transforms the receiver to a null terminated utf8 encoded string into
     //! \p dst and returns length of generated octets without terminating 0.
-    //! If \p dst is NULL returns only the required length of octets (without
-    //! terminating 0).  \p dst is maxItems octets large.  At maximum maxItems
-    //! - 1 octets (without terminatin 0) are copied.
+    //! If \p dst is nullptr returns only the required length of octets
+    //! (without terminating 0).  \p dst is maxItems octets large.  At maximum
+    //! maxItems - 1 octets (without terminatin 0) are copied.
     int toUtf8(char* dst, int maxItems) const;
 
     //! Splits the receiver at the first occurance of \p c and puts the
@@ -189,11 +189,11 @@ namespace herschel
     const Char* data() const;
 
     //-------- data member
-    StringImpl* fImpl;
+    std::shared_ptr<StringImpl> fImpl;
   };
 
   //! Concatenates \p one and \p two into a new instance.
-  String operator+(const String& one, const char* two);
+  String operator+(const String& one, zstring two);
   //! Appends a string representation of \p value to \p one and returns it as
   //! new instance.
   String operator+(const String& one, int value);
@@ -215,7 +215,7 @@ namespace herschel
   String fromBool(bool value);
 
 
-  int str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems);
+  int str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems);
   int str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems);
 
   //! Returns a new symbol, which is unique throughout the application's life
@@ -232,7 +232,7 @@ namespace herschel
     //! Construct an instance from a given String instance
     StrHelper(const String& str)
     {
-      int reqLen = str.toUtf8(NULL, str.length() * 5);
+      int reqLen = str.toUtf8(nullptr, str.length() * 5);
       fBuffer.resize(reqLen + 1);
       fLength = str.toUtf8(&fBuffer[0], reqLen + 1);
     }
@@ -251,7 +251,7 @@ namespace herschel
     }
 
     //! Returns the encoded C string.
-    const char* c_str() const
+    zstring c_str() const
     {
       return &fBuffer[0];
     }
@@ -267,7 +267,7 @@ namespace herschel
 
   //! Encode a given plain C string by escaping special XML characters like &,
   //! <, and '
-  String xmlEncode(const char* str);
+  String xmlEncode(zstring str);
 
 #if defined(UNITTESTS)
   std::ostream& operator<<(std::ostream& os, const String& str);
@@ -275,4 +275,3 @@ namespace herschel
 #endif
 };
 
-#endif  // bootstrap_str_h

@@ -8,13 +8,14 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_tokenizer_h
-#define bootstrap_tokenizer_h
+#pragma once
 
-#include "port.h"
 #include "numbers.h"
+#include "port.h"
 #include "registry.h"
 #include "token.h"
+
+#include <memory>
 
 
 namespace herschel
@@ -51,16 +52,16 @@ namespace herschel
   //! The type for the character registry.
   //!
   //! It lists characters (unicode code points) by their character names.
-  typedef Registry<int> CharRegistry;
+  using CharRegistry = Registry<int>;
 
 
   //--------------------------------------------------------------------------
 
-  class Tokenizer : public RefCountable
+  class Tokenizer
   {
   public:
-    Tokenizer(Port<Char>* port, const String& srcName,
-              CharRegistry* charRegistry = NULL);
+    Tokenizer(std::shared_ptr<Port<Char>> port, const String& srcName,
+              std::shared_ptr<CharRegistry> charRegistry = nullptr);
 
     bool isEof() const;
 
@@ -105,14 +106,13 @@ namespace herschel
 
 
     //-------- data member
-    Ptr<Port<Char> > fPort;
+    std::shared_ptr<Port<Char>> fPort;
     String fSrcName;
     int    fLineCount;
     int    fCC;
     bool   fNextCharIsGenericOpen;
     int    fInGenericContext;
-    Ptr<CharRegistry> fCharRegistry;
+    std::shared_ptr<CharRegistry> fCharRegistry;
   };
 };
 
-#endif // bootstrap_tokenizer_h

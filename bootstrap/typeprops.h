@@ -8,8 +8,10 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeprops_h
-#define bootstrap_typeprops_h
+#pragma once
+
+#include "typeenum.h"
+
 
 namespace llvm
 {
@@ -19,7 +21,6 @@ namespace llvm
 
 namespace herschel
 {
-  class TypeEnumMaker;
   class CodegenTools;
   class CodegenTypeUtils;
 
@@ -36,7 +37,7 @@ namespace herschel
     //! Return the C function name used to convert an object of this type from
     //! atom layout to the plain layout (e.g. "h7_atom_2_int32").  C function
     //! returned here must be implemented in the C runtime.
-    virtual const char* convFuncName() const = 0;
+    virtual zstring convFuncName() const = 0;
 
     //! Emit the necessary LLVM instructions to convert a object of this type
     //! from plain layout to atom layout (when destination type conversion is
@@ -80,7 +81,7 @@ namespace herschel
 
     //! Return a new instance of the appropriate \c TypeEnumMaker to be used
     //! to determine auto assigned enumeration values.
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const = 0;
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const = 0;
   };
 
 
@@ -91,14 +92,14 @@ namespace herschel
 
     virtual bool isValid() const { return false; }
 
-    virtual const char* convFuncName() const { return NULL; };
+    virtual zstring convFuncName() const { return nullptr; };
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools,
-                                      llvm::Value* value) const { return NULL; };
+                                      llvm::Value* value) const { return nullptr; };
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
-      return NULL;
+      return nullptr;
     };
 
     virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const
@@ -119,8 +120,10 @@ namespace herschel
 
     virtual int  typeBitsize() const { return 0; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const { return NULL; }
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
+    {
+      return nullptr;
+    }
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeprops_h

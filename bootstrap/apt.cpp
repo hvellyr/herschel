@@ -34,28 +34,19 @@ using namespace herschel;
 
 
 template<typename T>
-T* nodeClone(T* node)
+std::shared_ptr<T> nodeClone(std::shared_ptr<T> node)
 {
-  if (node != NULL)
+  if (node)
     return node->clone();
-  return NULL;
-}
-
-
-template<typename T>
-T* nodeClone(const Ptr<T>& node)
-{
-  if (node != NULL)
-    return node->clone();
-  return NULL;
+  return nullptr;
 }
 
 
 void
 herschel::copyNodes(NodeList* dst, const NodeList* src)
 {
-  for (NodeList::const_iterator it = src->begin(); it != src->end(); ++it) {
-    dst->push_back(nodeClone(it->obj()));
+  for (auto& s : *src) {
+    dst->push_back(nodeClone(s));
   }
 }
 
@@ -69,7 +60,7 @@ herschel::copyNodes(const NodeList& src)
 }
 
 
-const char*
+zstring
 herschel::convkind2str(TypeConvKind kind)
 {
   switch (kind) {
@@ -104,6 +95,11 @@ AptNode::AptNode(const SrcPos& srcpos, const Type& type)
 }
 
 
+AptNode::~AptNode()
+{
+}
+
+
 const SrcPos&
 AptNode::srcpos() const
 {
@@ -111,18 +107,17 @@ AptNode::srcpos() const
 }
 
 
-Scope*
+std::shared_ptr<Scope>
 AptNode::scope() const
 {
   return fScope;
 }
 
 
-AptNode*
-AptNode::setScope(Scope* scope)
+void
+AptNode::setScope(std::shared_ptr<Scope> scope)
 {
   fScope = scope;
-  return this;
 }
 
 
@@ -171,7 +166,7 @@ AptNode::setTypeConv(TypeConvKind typeConv)
 llvm::Value*
 AptNode::codegen(CodeGenerator* generator) const
 {
-  return NULL;
+  return nullptr;
 }
 
 
@@ -206,8 +201,8 @@ AptNode::setIsSingleTypeRequired(bool value)
 void
 AptNode::dump() const
 {
-  Ptr<XmlRenderer> out = new XmlRenderer(new FilePort(stderr));
-  out->render(this);
+  XmlRenderer out{std::make_shared<FilePort>(stderr)};
+  out.render(*this);
 }
 
 
@@ -299,7 +294,7 @@ ListNode::children() const
 
 
 void
-ListNode::appendNode(AptNode* node)
+ListNode::appendNode(std::shared_ptr<AptNode> node)
 {
   fChildren.push_back(node);
 }
@@ -317,7 +312,7 @@ ListNode::appendNodes(const NodeList& nodes)
 void                                            \
 _type::render(XmlRenderer* renderer) const      \
 {                                               \
-  renderer->renderNode(this);                   \
+  renderer->renderNode(*this);                  \
 }
 
 #define DEF_CODEGEN(_type)                      \
@@ -332,31 +327,35 @@ _type::codegen(CodeGenerator* generator) const  \
 void                                            \
 _type::traverse(Traversator* traversator)       \
 {                                               \
-  traversator->traverse(this);                  \
+  traversator->traverse(*this);                 \
 }
 
 
-#define DEF_ANNOTATE(_type)                     \
-void                                            \
-_type::annotate(Annotator* an)                  \
-{                                               \
-  an->annotate(this);                           \
+#define DEF_ANNOTATE(_type)                                       \
+void                                                              \
+_type::annotate(Annotator* an, std::shared_ptr<AptNode> nd)       \
+{                                                                 \
+  using ConcreteType = std::remove_pointer<decltype(this)>::type; \
+  return an->annotate(                                            \
+    std::dynamic_pointer_cast<ConcreteType>(nd));                 \
 }
 
 
-#define DEF_TRANSFORM(_type)                    \
-AptNode*                                        \
-_type::transform(Transformator* tr)             \
-{                                               \
-  return tr->transform(this);                   \
+#define DEF_TRANSFORM(_type)                                      \
+std::shared_ptr<AptNode>                                          \
+_type::transform(Transformator* tr, std::shared_ptr<AptNode> nd)  \
+{                                                                 \
+  using ConcreteType = std::remove_pointer<decltype(this)>::type; \
+  return tr->transform(                                           \
+    std::dynamic_pointer_cast<ConcreteType>(nd));                 \
 }
 
 
 #define DEF_TYPIFY(_type)                       \
 void                                            \
-_type::typify(Typifier* typifier)               \
+_type::typify(Typifier& typifier)               \
 {                                               \
-  typifier->typify(this);                       \
+  typifier.typify(*this);                       \
 }
 
 
@@ -367,10 +366,10 @@ UndefNode::UndefNode()
 { }
 
 
-UndefNode*
+std::shared_ptr<AptNode>
 UndefNode::clone() const
 {
-  return new UndefNode();
+  return makeUndefNode();
 }
 
 
@@ -386,7 +385,7 @@ DEF_TYPIFY(UndefNode)
 
 namespace herschel {
   template<typename T>
-  T* cloneScope(const T* src, T* dst)
+  std::shared_ptr<T> cloneScope(const T* src, std::shared_ptr<T> dst)
   {
     dst->setScope(src->scope());
     dst->setType(src->type());
@@ -405,10 +404,10 @@ StringNode::StringNode(const SrcPos& srcpos,
 }
 
 
-StringNode*
+std::shared_ptr<AptNode>
 StringNode::clone() const
 {
-  return herschel::cloneScope(this, new StringNode(fSrcPos, fValue));
+  return herschel::cloneScope(this, makeStringNode(fSrcPos, fValue));
 }
 
 
@@ -437,10 +436,10 @@ KeywordNode::KeywordNode(const SrcPos& srcpos,
 }
 
 
-KeywordNode*
+std::shared_ptr<AptNode>
 KeywordNode::clone() const
 {
-  return cloneScope(this, new KeywordNode(fSrcPos, fValue));
+  return cloneScope(this, makeKeywordNode(fSrcPos, fValue));
 }
 
 
@@ -482,10 +481,10 @@ SymbolNode::SymbolNode(const SrcPos& srcpos,
 { }
 
 
-SymbolNode*
+std::shared_ptr<AptNode>
 SymbolNode::clone() const
 {
-  SymbolNode* newnd = new SymbolNode(fSrcPos, fValue);
+  auto newnd = makeSymbolNode(fSrcPos, fValue);
   newnd->setLinkage(linkage());
   return cloneScope(this, newnd);
 }
@@ -551,23 +550,24 @@ DEF_TYPIFY(SymbolNode)
 
 //----------------------------------------------------------------------------
 
-ArrayTypeNode::ArrayTypeNode(const SrcPos& srcpos, AptNode* typeNode)
+ArrayTypeNode::ArrayTypeNode(const SrcPos& srcpos,
+                             std::shared_ptr<AptNode> typeNode)
   : AptNode(srcpos),
-    fTypeNode(typeNode)
+    fTypeNode(std::move(typeNode))
 { }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 ArrayTypeNode::typeNode() const
 {
   return fTypeNode;
 }
 
 
-ArrayTypeNode*
+std::shared_ptr<AptNode>
 ArrayTypeNode::clone() const
 {
-  return cloneScope(this, new ArrayTypeNode(fSrcPos, nodeClone(fTypeNode)));
+  return cloneScope(this, makeArrayTypeNode(fSrcPos, nodeClone(fTypeNode)));
 }
 
 
@@ -586,10 +586,10 @@ TypeNode::TypeNode(const SrcPos& srcpos, const Type& type)
 { }
 
 
-TypeNode*
+std::shared_ptr<AptNode>
 TypeNode::clone() const
 {
-  return cloneScope(this, new TypeNode(fSrcPos, fType.clone()));
+  return cloneScope(this, makeTypeNode(fSrcPos, fType.clone()));
 }
 
 
@@ -626,11 +626,11 @@ IntNode::IntNode(const SrcPos& srcpos, int64_t value, bool isImaginary,
 }
 
 
-IntNode*
+std::shared_ptr<AptNode>
 IntNode::clone() const
 {
-  return cloneScope(this,
-                    new IntNode(fSrcPos, fValue, fIsImaginary, fType.clone()));
+  return cloneScope(this, makeIntNode(fSrcPos, fValue, fIsImaginary,
+                                      fType.clone()));
 }
 
 
@@ -652,11 +652,11 @@ RealNode::RealNode(const SrcPos& srcpos, double value,
 }
 
 
-RealNode*
+std::shared_ptr<AptNode>
 RealNode::clone() const
 {
-  return cloneScope(this,
-                    new RealNode(fSrcPos, fValue, fIsImaginary, fType.clone()));
+  return cloneScope(this, makeRealNode(fSrcPos, fValue, fIsImaginary,
+                                       fType.clone()));
 }
 
 
@@ -678,12 +678,11 @@ RationalNode::RationalNode(const SrcPos& srcpos,
 }
 
 
-RationalNode*
+std::shared_ptr<AptNode>
 RationalNode::clone() const
 {
-  return cloneScope(this,
-                    new RationalNode(fSrcPos, fValue,
-                                     fIsImaginary, fType.clone()));
+  return cloneScope(this, makeRationalNode(fSrcPos, fValue,
+                                           fIsImaginary, fType.clone()));
 }
 
 
@@ -703,10 +702,10 @@ CharNode::CharNode(const SrcPos& srcpos, Char value)
 { }
 
 
-CharNode*
+std::shared_ptr<AptNode>
 CharNode::clone() const
 {
-  return cloneScope(this, new CharNode(fSrcPos, fValue));
+  return cloneScope(this, makeCharNode(fSrcPos, fValue));
 }
 
 
@@ -733,10 +732,10 @@ BoolNode::BoolNode(const SrcPos& srcpos, bool value)
 { }
 
 
-BoolNode*
+std::shared_ptr<AptNode>
 BoolNode::clone() const
 {
-  return cloneScope(this, new BoolNode(fSrcPos, fValue));
+  return cloneScope(this, makeBoolNode(fSrcPos, fValue));
 }
 
 
@@ -757,23 +756,24 @@ DEF_TYPIFY(BoolNode)
 
 //----------------------------------------------------------------------------
 
-UnitConstNode::UnitConstNode(const SrcPos& srcpos, AptNode* value,
+UnitConstNode::UnitConstNode(const SrcPos& srcpos,
+                             std::shared_ptr<AptNode> value,
                              const TypeUnit& unit)
   : AptNode(srcpos),
-    fValue(value),
+    fValue(std::move(value)),
     fUnit(unit)
 {
 }
 
 
-UnitConstNode*
+std::shared_ptr<AptNode>
 UnitConstNode::clone() const
 {
-  return cloneScope(this, new UnitConstNode(fSrcPos, nodeClone(fValue), fUnit));
+  return cloneScope(this, makeUnitConstNode(fSrcPos, nodeClone(fValue), fUnit));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 UnitConstNode::value() const
 {
   return fValue;
@@ -781,9 +781,9 @@ UnitConstNode::value() const
 
 
 void
-UnitConstNode::setValue(AptNode* node)
+UnitConstNode::setValue(std::shared_ptr<AptNode> node)
 {
-  fValue = node;
+  fValue = std::move(node);
 }
 
 
@@ -809,12 +809,12 @@ CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
 {}
 
 
-CompileUnitNode*
+std::shared_ptr<AptNode>
 CompileUnitNode::clone() const
 {
-  Ptr<CompileUnitNode> node = new CompileUnitNode(fSrcPos);
+  auto node = makeCompileUnitNode(fSrcPos);
   copyNodes(&node->fChildren, &fChildren);
-  return cloneScope(this, node.release());
+  return cloneScope(this, std::move(node));
 }
 
 
@@ -828,13 +828,14 @@ DEF_TYPIFY(CompileUnitNode)
 
 //----------------------------------------------------------------------------
 
-BaseDefNode::BaseDefNode(const SrcPos& srcpos, AptNode* defined)
+BaseDefNode::BaseDefNode(const SrcPos& srcpos,
+                         std::shared_ptr<AptNode> defined)
   : AptNode(srcpos),
-    fDefined(defined)
+    fDefined(std::move(defined))
 { }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 BaseDefNode::defNode() const
 {
   return fDefined;
@@ -842,23 +843,23 @@ BaseDefNode::defNode() const
 
 
 void
-BaseDefNode::setDefNode(AptNode* val)
+BaseDefNode::setDefNode(std::shared_ptr<AptNode> val)
 {
-  fDefined = val;
+  fDefined = std::move(val);
 }
 
 
 //----------------------------------------------------------------------------
 
-LetNode::LetNode(AptNode* node)
-  : BaseDefNode(node->srcpos(), node)
+LetNode::LetNode(std::shared_ptr<AptNode> node)
+  : BaseDefNode(node->srcpos(), std::move(node))
 { }
 
 
-LetNode*
+std::shared_ptr<AptNode>
 LetNode::clone() const
 {
-  return cloneScope(this, new LetNode(nodeClone(fDefined.obj())));
+  return cloneScope(this, makeLetNode(nodeClone(fDefined)));
 }
 
 
@@ -872,15 +873,15 @@ DEF_TYPIFY(LetNode)
 
 //----------------------------------------------------------------------------
 
-DefNode::DefNode(AptNode* node)
-  : BaseDefNode(node->srcpos(), node)
+DefNode::DefNode(std::shared_ptr<AptNode> node)
+  : BaseDefNode(node->srcpos(), std::move(node))
 { }
 
 
-DefNode*
+std::shared_ptr<AptNode>
 DefNode::clone() const
 {
-  return cloneScope(this, new DefNode(nodeClone(fDefined.obj())));
+  return cloneScope(this, makeDefNode(nodeClone(fDefined)));
 }
 
 
@@ -896,15 +897,15 @@ DEF_TYPIFY(DefNode)
 
 BindingNode::BindingNode(const SrcPos& srcpos,
                          const String& symbolName, const Type& type,
-                         AptNode* initExpr)
+                         std::shared_ptr<AptNode> initExpr)
   : AptNode(srcpos, type),
     fSymbolName(symbolName),
-    fInitExpr(initExpr),
+    fInitExpr(std::move(initExpr)),
     fAllocType(kAlloc_Local)
 { }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 BindingNode::initExpr() const
 {
   return fInitExpr;
@@ -912,9 +913,9 @@ BindingNode::initExpr() const
 
 
 void
-BindingNode::setInitExpr(AptNode* val)
+BindingNode::setInitExpr(std::shared_ptr<AptNode> val)
 {
-  fInitExpr = val;
+  fInitExpr = std::move(val);
 }
 
 
@@ -943,23 +944,22 @@ BindingNode::name() const
 
 VardefNode::VardefNode(const SrcPos& srcpos,
                        const String& symbolName, VardefFlags flags,
-                       bool isLocal,
-                       const Type& type, AptNode* initExpr)
-  : BindingNode(srcpos, symbolName, type, initExpr),
+                       bool isLocal, const Type& type,
+                       std::shared_ptr<AptNode> initExpr)
+  : BindingNode(srcpos, symbolName, type, std::move(initExpr)),
     fIsLocal(isLocal),
     fFlags(flags)
 {
 }
 
 
-VardefNode*
+std::shared_ptr<AptNode>
 VardefNode::clone() const
 {
-  Ptr<VardefNode> n = new VardefNode(fSrcPos, fSymbolName, fFlags,
-                                     fIsLocal,
-                                     fType.clone(), nodeClone(fInitExpr));
+  auto n = makeVardefNode(fSrcPos, fSymbolName, fFlags, fIsLocal,
+                          fType.clone(), nodeClone(fInitExpr));
   n->setLinkage(fLinkage);
-  return cloneScope(this, n.release());
+  return cloneScope(this, std::move(n));
 }
 
 
@@ -1008,12 +1008,12 @@ llvm::Value*
 VardefNode::codegen(CodeGenerator* generator) const
 {
   hr_invalid("this should never be called directly.  See codegen::DefNode");
-  return NULL;
+  return nullptr;
 }
 
 
 void
-VardefNode::annotate(Annotator* annotator)
+VardefNode::annotate(Annotator* annotator, std::shared_ptr<AptNode> nd)
 {
   hr_invalid("this should never be called directly.  See Annotator::DefNode");
 }
@@ -1021,11 +1021,11 @@ VardefNode::annotate(Annotator* annotator)
 
 //----------------------------------------------------------------------------
 
-ParamNode::ParamNode(const SrcPos& srcpos,
-                     const String& keyName,
-                     const String& symbolName, ParamFlags flags,
-                     const Type& type, AptNode* initExpr)
-  : BindingNode(srcpos, symbolName, type, initExpr),
+ParamNode::ParamNode(const SrcPos& srcpos, const String& keyName,
+                     const String& symbolName,
+                     ParamFlags flags, const Type& type,
+                     std::shared_ptr<AptNode> initExpr)
+  : BindingNode(srcpos, symbolName, type, std::move(initExpr)),
     fKey(keyName),
     fFlags(flags)
 {
@@ -1033,12 +1033,12 @@ ParamNode::ParamNode(const SrcPos& srcpos,
 }
 
 
-ParamNode*
+std::shared_ptr<AptNode>
 ParamNode::clone() const
 {
-  return cloneScope(this,
-                    new ParamNode(fSrcPos, fKey, fSymbolName, fFlags,
-                                  fType.clone(), nodeClone(fInitExpr)));
+  return cloneScope(this, makeParamNode(fSrcPos, fKey, fSymbolName,
+                                        fFlags, fType.clone(),
+                                        nodeClone(fInitExpr)));
 }
 
 
@@ -1087,21 +1087,20 @@ DEF_TYPIFY(ParamNode)
 
 //----------------------------------------------------------------------------
 
-SlotdefNode::SlotdefNode(const SrcPos& srcpos,
-                         const String& symbolName,
-                         unsigned int flags,
-                         const Type& type, AptNode* initExpr)
-  : BindingNode(srcpos, symbolName, type, initExpr),
+SlotdefNode::SlotdefNode(const SrcPos& srcpos, const String& symbolName,
+                         unsigned int flags, const Type& type,
+                         std::shared_ptr<AptNode> initExpr)
+  : BindingNode(srcpos, symbolName, type, std::move(initExpr)),
     fFlags(flags)
 { }
 
 
-SlotdefNode*
+std::shared_ptr<AptNode>
 SlotdefNode::clone() const
 {
-  return cloneScope(this,
-                    new SlotdefNode(fSrcPos, fSymbolName, fFlags,
-                                    fType.clone(), nodeClone(fInitExpr)));
+  return cloneScope(this, makeSlotdefNode(fSrcPos, fSymbolName, fFlags,
+                                          fType.clone(),
+                                          nodeClone(fInitExpr)));
 }
 
 
@@ -1134,12 +1133,12 @@ ArrayNode::ArrayNode(const SrcPos& srcpos)
 { }
 
 
-ArrayNode*
+std::shared_ptr<AptNode>
 ArrayNode::clone() const
 {
-  Ptr<ArrayNode> an = new ArrayNode(fSrcPos);
+  auto an = makeArrayNode(fSrcPos);
   copyNodes(&an->fChildren, &fChildren);
-  return cloneScope(this, an.release());
+  return cloneScope(this, std::move(an));
 }
 
 
@@ -1158,12 +1157,12 @@ VectorNode::VectorNode(const SrcPos& srcpos)
 { }
 
 
-VectorNode*
+std::shared_ptr<AptNode>
 VectorNode::clone() const
 {
-  Ptr<VectorNode> vect = new VectorNode(fSrcPos);
+  auto vect = makeVectorNode(fSrcPos);
   copyNodes(&vect->fChildren, &fChildren);
-  return cloneScope(this, vect.release());
+  return cloneScope(this, std::move(vect));
 }
 
 
@@ -1182,22 +1181,23 @@ DictNode::DictNode(const SrcPos& srcpos)
 { }
 
 
-DictNode*
+std::shared_ptr<AptNode>
 DictNode::clone() const
 {
-  Ptr<DictNode> dict = new DictNode(fSrcPos);
+  auto dict = makeDictNode(fSrcPos);
   copyNodes(&dict->fChildren, &fChildren);
-  return cloneScope(this, dict.release());
+  return cloneScope(this, std::move(dict));
 }
 
 
 void
-DictNode::addPair(AptNode* key, AptNode* value)
+DictNode::addPair(std::shared_ptr<AptNode> key,
+                  std::shared_ptr<AptNode> value)
 {
-  hr_assert(key != NULL);
-  hr_assert(value != NULL);
+  hr_assert(key);
+  hr_assert(value);
 
-  appendNode(new BinaryNode(key->srcpos(), key, kOpMapTo, value));
+  appendNode(makeBinaryNode(key->srcpos(), key, kOpMapTo, std::move(value)));
 }
 
 
@@ -1212,22 +1212,22 @@ DEF_TYPIFY(DictNode)
 //----------------------------------------------------------------------------
 
 BinaryNode::BinaryNode(const SrcPos& srcpos,
-                       AptNode* left, OperatorType op, AptNode* right)
+                       std::shared_ptr<AptNode> left, OperatorType op,
+                       std::shared_ptr<AptNode> right)
   : AptNode(srcpos),
-    fLeft(left),
-    fRight(right),
+    fLeft(std::move(left)),
+    fRight(std::move(right)),
     fOp(op)
 {
   hr_assert(fOp != kOpInvalid);
 }
 
 
-BinaryNode*
+std::shared_ptr<AptNode>
 BinaryNode::clone() const
 {
-  return cloneScope(this,
-                    new BinaryNode(fSrcPos, nodeClone(fLeft),
-                                   fOp, nodeClone(fRight)));
+  return cloneScope(this, makeBinaryNode(fSrcPos, nodeClone(fLeft), fOp,
+                                         nodeClone(fRight)));
 }
 
 
@@ -1238,7 +1238,7 @@ BinaryNode::op() const
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 BinaryNode::left() const
 {
   return fLeft;
@@ -1246,13 +1246,13 @@ BinaryNode::left() const
 
 
 void
-BinaryNode::setLeft(AptNode* node)
+BinaryNode::setLeft(std::shared_ptr<AptNode> node)
 {
-  fLeft = node;
+  fLeft = std::move(node);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 BinaryNode::right() const
 {
   return fRight;
@@ -1260,9 +1260,9 @@ BinaryNode::right() const
 
 
 void
-BinaryNode::setRight(AptNode* node)
+BinaryNode::setRight(std::shared_ptr<AptNode> node)
 {
-  fRight = node;
+  fRight = std::move(node);
 }
 
 
@@ -1285,14 +1285,14 @@ DEF_TYPIFY(BinaryNode)
 
 UnaryNode::UnaryNode(const SrcPos& srcpos,
                      UnaryOperatorType op,
-                     AptNode* base)
+                     std::shared_ptr<AptNode> base)
   : AptNode(srcpos),
-    fBase(base),
+    fBase(std::move(base)),
     fOp(op)
 { }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 UnaryNode::base() const
 {
   return fBase;
@@ -1300,9 +1300,9 @@ UnaryNode::base() const
 
 
 void
-UnaryNode::setBase(AptNode* base)
+UnaryNode::setBase(std::shared_ptr<AptNode> base)
 {
-  fBase = base;
+  fBase = std::move(base);
 }
 
 
@@ -1313,10 +1313,10 @@ UnaryNode::op() const
 }
 
 
-UnaryNode*
+std::shared_ptr<AptNode>
 UnaryNode::clone() const
 {
-  return cloneScope(this, new UnaryNode(fSrcPos, fOp, nodeClone(fBase)));
+  return cloneScope(this, makeUnaryNode(fSrcPos, fOp, nodeClone(fBase)));
 }
 
 
@@ -1331,24 +1331,26 @@ DEF_TYPIFY(UnaryNode)
 //------------------------------------------------------------------------------
 
 RangeNode::RangeNode(const SrcPos& srcpos,
-                     AptNode* from, AptNode* to, AptNode* by)
+                     std::shared_ptr<AptNode> from,
+                     std::shared_ptr<AptNode> to,
+                     std::shared_ptr<AptNode> by)
   : AptNode(srcpos),
-    fFrom(from),
-    fTo(to),
-    fBy(by)
+    fFrom(std::move(from)),
+    fTo(std::move(to)),
+    fBy(std::move(by))
 { }
 
 
-RangeNode*
+std::shared_ptr<AptNode>
 RangeNode::clone() const
 {
-  return cloneScope(this,
-                    new RangeNode(fSrcPos, nodeClone(fFrom),
-                                  nodeClone(fTo), nodeClone(fBy)));
+  return cloneScope(this, makeRangeNode(fSrcPos, nodeClone(fFrom),
+                                        nodeClone(fTo),
+                                        nodeClone(fBy)));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 RangeNode::from() const
 {
   return fFrom;
@@ -1356,13 +1358,13 @@ RangeNode::from() const
 
 
 void
-RangeNode::setFrom(AptNode* node)
+RangeNode::setFrom(std::shared_ptr<AptNode> node)
 {
-  fFrom = node;
+  fFrom = std::move(node);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 RangeNode::to() const
 {
   return fTo;
@@ -1370,13 +1372,13 @@ RangeNode::to() const
 
 
 void
-RangeNode::setTo(AptNode* node)
+RangeNode::setTo(std::shared_ptr<AptNode> node)
 {
-  fTo = node;
+  fTo = std::move(node);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 RangeNode::by() const
 {
   return fBy;
@@ -1384,9 +1386,9 @@ RangeNode::by() const
 
 
 void
-RangeNode::setBy(AptNode* node)
+RangeNode::setBy(std::shared_ptr<AptNode> node)
 {
-  fBy = node;
+  fBy = std::move(node);
 }
 
 
@@ -1401,30 +1403,30 @@ DEF_TYPIFY(RangeNode)
 //--------------------------------------------------------------------------
 
 AssignNode::AssignNode(const SrcPos& srcpos,
-                       AptNode* lvalue, AptNode* rvalue)
+                       std::shared_ptr<AptNode> lvalue,
+                       std::shared_ptr<AptNode> rvalue)
   : AptNode(srcpos),
-    fLValue(lvalue),
-    fRValue(rvalue)
+    fLValue(std::move(lvalue)),
+    fRValue(std::move(rvalue))
 { }
 
 
-AssignNode*
+std::shared_ptr<AptNode>
 AssignNode::clone() const
 {
-  return cloneScope(this, new AssignNode(fSrcPos,
-                                         nodeClone(fLValue),
+  return cloneScope(this, makeAssignNode(fSrcPos, nodeClone(fLValue),
                                          nodeClone(fRValue)));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 AssignNode::lvalue() const
 {
   return fLValue;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 AssignNode::rvalue() const
 {
   return fRValue;
@@ -1432,16 +1434,16 @@ AssignNode::rvalue() const
 
 
 void
-AssignNode::setLvalue(AptNode* val)
+AssignNode::setLvalue(std::shared_ptr<AptNode> val)
 {
-  fLValue = val;
+  fLValue = std::move(val);
 }
 
 
 void
-AssignNode::setRvalue(AptNode* val)
+AssignNode::setRvalue(std::shared_ptr<AptNode> val)
 {
-  fRValue = val;
+  fRValue = std::move(val);
 }
 
 
@@ -1456,39 +1458,40 @@ DEF_TYPIFY(AssignNode)
 //------------------------------------------------------------------------------
 
 IfNode::IfNode(const SrcPos& srcpos,
-               AptNode* test, AptNode* consequent, AptNode* alternate)
+               std::shared_ptr<AptNode> test,
+               std::shared_ptr<AptNode> consequent,
+               std::shared_ptr<AptNode> alternate)
   : AptNode(srcpos),
-    fTest(test),
-    fConsequent(consequent),
-    fAlternate(alternate)
+    fTest(std::move(test)),
+    fConsequent(std::move(consequent)),
+    fAlternate(std::move(alternate))
 { }
 
 
-IfNode*
+std::shared_ptr<AptNode>
 IfNode::clone() const
 {
-  return cloneScope(this, new IfNode(fSrcPos,
-                                     nodeClone(fTest),
+  return cloneScope(this, makeIfNode(fSrcPos, nodeClone(fTest),
                                      nodeClone(fConsequent),
                                      nodeClone(fAlternate)));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 IfNode::test() const
 {
   return fTest;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 IfNode::consequent() const
 {
   return fConsequent;
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 IfNode::alternate() const
 {
   return fAlternate;
@@ -1496,23 +1499,23 @@ IfNode::alternate() const
 
 
 void
-IfNode::setTest(AptNode* node)
+IfNode::setTest(std::shared_ptr<AptNode> node)
 {
-  fTest = node;
+  fTest = std::move(node);
 }
 
 
 void
-IfNode::setConsequent(AptNode* node)
+IfNode::setConsequent(std::shared_ptr<AptNode> node)
 {
-  fConsequent = node;
+  fConsequent = std::move(node);
 }
 
 
 void
-IfNode::setAlternate(AptNode* node)
+IfNode::setAlternate(std::shared_ptr<AptNode> node)
 {
-  fAlternate = node;
+  fAlternate = std::move(node);
 }
 
 
@@ -1527,53 +1530,56 @@ DEF_TYPIFY(IfNode)
 //------------------------------------------------------------------------------
 
 SelectNode::SelectNode(const SrcPos& srcpos,
-                       AptNode* test, AptNode* comparator)
+                       std::shared_ptr<AptNode> test,
+                       std::shared_ptr<AptNode> comparator)
   : AptNode(srcpos),
-    fTest(test),
-    fComparator(comparator)
+    fTest(std::move(test)),
+    fComparator(std::move(comparator))
 {
 }
 
 
-SelectNode*
+std::shared_ptr<AptNode>
 SelectNode::clone() const
 {
-  Ptr<SelectNode> newNode = new SelectNode(fSrcPos,
-                                           nodeClone(fTest),
-                                           nodeClone(fComparator));
-  for (size_t i = 0; i < fMappings.size(); i++) {
-    newNode->fMappings.push_back(
-      SelectMapping(copyNodes(fMappings[i].fTestValues),
-                    nodeClone(fMappings[i].fConsequent)));
+  auto newNode = makeSelectNode(fSrcPos, nodeClone(fTest),
+                                nodeClone(fComparator));
+  for (auto& mapping : fMappings) {
+    newNode->fMappings.push_back(SelectMapping(
+                                   copyNodes(mapping.fTestValues),
+                                   nodeClone(mapping.fConsequent)));
   }
 
-  return cloneScope(this, newNode.release());
+  return cloneScope(this, std::move(newNode));
 }
 
 
 void
-SelectNode::addMapping(const NodeList& mappings, AptNode* consequent)
+SelectNode::addMapping(const NodeList& mappings,
+                       std::shared_ptr<AptNode> consequent)
 {
-  fMappings.push_back(SelectMapping(mappings, consequent));
+  fMappings.push_back(SelectMapping(mappings, std::move(consequent)));
 }
 
 
 void
-SelectNode::addMapping(AptNode* mapping, AptNode* consequent)
+SelectNode::addMapping(std::shared_ptr<AptNode> mapping,
+                       std::shared_ptr<AptNode> consequent)
 {
   fMappings.push_back(
-    SelectMapping(vector_of<Ptr<AptNode> >(mapping), consequent));
+    SelectMapping(std::vector<NodeList::value_type>{mapping},
+                  std::move(consequent)));
 }
 
 
 void
-SelectNode::addElseMapping(AptNode* alternate)
+SelectNode::addElseMapping(std::shared_ptr<AptNode> alternate)
 {
-  fMappings.push_back(SelectMapping(NodeList(), alternate));
+  fMappings.push_back(SelectMapping(NodeList(), std::move(alternate)));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SelectNode::test() const
 {
   return fTest;
@@ -1581,13 +1587,13 @@ SelectNode::test() const
 
 
 void
-SelectNode::setTest(AptNode* nd)
+SelectNode::setTest(std::shared_ptr<AptNode> nd)
 {
-  fTest = nd;
+  fTest = std::move(nd);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SelectNode::comparator() const
 {
   return fComparator;
@@ -1595,9 +1601,9 @@ SelectNode::comparator() const
 
 
 void
-SelectNode::setComparator(AptNode* nd)
+SelectNode::setComparator(std::shared_ptr<AptNode> nd)
 {
-  fComparator = nd;
+  fComparator = std::move(nd);
 }
 
 
@@ -1623,23 +1629,23 @@ SelectNode::mappingAt(size_t i) const
 
 
 void
-SelectNode::setConsequentAt(size_t i, AptNode* consq)
+SelectNode::setConsequentAt(size_t i, std::shared_ptr<AptNode> consq)
 {
-  fMappings[i].fConsequent = consq;
+  fMappings[i].fConsequent = std::move(consq);
 }
 
 
 void
-SelectNode::setTestValueAt(size_t i, size_t j, AptNode* value)
+SelectNode::setTestValueAt(size_t i, size_t j, std::shared_ptr<AptNode> value)
 {
-  fMappings[i].fTestValues[j] = value;
+  fMappings[i].fTestValues[j] = std::move(value);
 }
 
 
 SelectNode::SelectMapping::SelectMapping(const NodeList& values,
-                                         AptNode* consequent)
+                                         std::shared_ptr<AptNode> consequent)
   : fTestValues(values),
-    fConsequent(consequent)
+    fConsequent(std::move(consequent))
 {
 }
 
@@ -1661,39 +1667,40 @@ DEF_TYPIFY(SelectNode)
 
 //------------------------------------------------------------------------------
 
-MatchNode::MatchNode(const SrcPos& srcpos, AptNode* expr)
+MatchNode::MatchNode(const SrcPos& srcpos, std::shared_ptr<AptNode> expr)
   : AptNode(srcpos),
-    fExpr(expr)
+    fExpr(std::move(expr))
 {
 }
 
 
-MatchNode*
+std::shared_ptr<AptNode>
 MatchNode::clone() const
 {
-  Ptr<MatchNode> newNode = new MatchNode(fSrcPos, nodeClone(fExpr));
-  for (size_t i = 0; i < fMappings.size(); i++) {
-    newNode->fMappings.push_back(
-      MatchMapping(fMappings[i].fSrcPos,
-                   fMappings[i].fVarName,
-                   fMappings[i].fMatchType.clone(),
-                   nodeClone(fMappings[i].fConsequent)));
+  auto newNode = makeMatchNode(fSrcPos, nodeClone(fExpr));
+  for (auto& mapping : fMappings) {
+    newNode->fMappings.push_back(MatchMapping(
+                                   mapping.fSrcPos,
+                                   mapping.fVarName,
+                                   mapping.fMatchType.clone(),
+                                   nodeClone(mapping.fConsequent)));
   }
 
-  return cloneScope(this, newNode.release());
+  return cloneScope(this, std::move(newNode));
 }
 
 
 void
 MatchNode::addMapping(const SrcPos& srcpos, const String& varName,
                       const Type& matchType,
-                      AptNode* consequent)
+                      std::shared_ptr<AptNode> consequent)
 {
-  fMappings.push_back(MatchMapping(srcpos, varName, matchType, consequent));
+  fMappings.push_back(MatchMapping(srcpos, varName, matchType,
+                                   std::move(consequent)));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 MatchNode::expr() const
 {
   return fExpr;
@@ -1701,9 +1708,9 @@ MatchNode::expr() const
 
 
 void
-MatchNode::setExpr(AptNode* nd)
+MatchNode::setExpr(std::shared_ptr<AptNode> nd)
 {
-  fExpr = nd;
+  fExpr = std::move(nd);
 }
 
 
@@ -1729,9 +1736,9 @@ MatchNode::mappingAt(size_t i) const
 
 
 void
-MatchNode::setConsequentAt(size_t i, AptNode* consq)
+MatchNode::setConsequentAt(size_t i, std::shared_ptr<AptNode> consq)
 {
-  fMappings[i].fConsequent = consq;
+  fMappings[i].fConsequent = std::move(consq);
 }
 
 
@@ -1746,11 +1753,11 @@ DEF_TYPIFY(MatchNode)
 MatchNode::MatchMapping::MatchMapping(const SrcPos& srcpos,
                                       const String& varName,
                                       const Type& matchType,
-                                      AptNode* consequent)
+                                      std::shared_ptr<AptNode> consequent)
   : fSrcPos(srcpos),
     fVarName(varName),
     fMatchType(matchType),
-    fConsequent(consequent)
+    fConsequent(std::move(consequent))
 {
 }
 
@@ -1767,20 +1774,20 @@ MatchNode::MatchMapping::MatchMapping(const MatchMapping& other)
 //------------------------------------------------------------------------------
 
 OnNode::OnNode(const SrcPos& srcpos,
-               const String& key, const NodeList& params, AptNode* body)
+               const String& key, const NodeList& params,
+               std::shared_ptr<AptNode> body)
   : ListNode(srcpos),
     fKey(key),
-    fBody(body)
+    fBody(std::move(body))
 {
   fChildren.assign(params.begin(), params.end());
 }
 
 
-OnNode*
+std::shared_ptr<AptNode>
 OnNode::clone() const
 {
-  return cloneScope(this, new OnNode(fSrcPos, fKey,
-                                     copyNodes(fChildren),
+  return cloneScope(this, makeOnNode(fSrcPos, fKey, copyNodes(fChildren),
                                      nodeClone(fBody)));
 }
 
@@ -1792,7 +1799,7 @@ OnNode::key() const
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 OnNode::body() const
 {
   return fBody;
@@ -1800,9 +1807,9 @@ OnNode::body() const
 
 
 void
-OnNode::setBody(AptNode* node)
+OnNode::setBody(std::shared_ptr<AptNode> node)
 {
-  fBody = node;
+  fBody = std::move(node);
 }
 
 
@@ -1835,12 +1842,12 @@ BlockNode::BlockNode(const SrcPos& srcpos)
 { }
 
 
-BlockNode*
+std::shared_ptr<AptNode>
 BlockNode::clone() const
 {
-  Ptr<BlockNode> block = new BlockNode(fSrcPos);
+  auto block = makeBlockNode(fSrcPos);
   copyNodes(&block->fChildren, &fChildren);
-  return cloneScope(this, block.release());
+  return cloneScope(this, std::move(block));
 }
 
 
@@ -1854,24 +1861,22 @@ DEF_TYPIFY(BlockNode)
 
 //----------------------------------------------------------------------------
 
-FunctionNode::FunctionNode(const SrcPos&   srcpos,
-                           const NodeList& params,
-                           const Type&     retType,
-                           AptNode*        body)
+FunctionNode::FunctionNode(const SrcPos& srcpos, const NodeList& params,
+                           const Type& retType, std::shared_ptr<AptNode> body)
   : ListNode(srcpos),
     fRetType(retType),
-    fBody(body)
+    fBody(std::move(body))
 {
   fChildren.assign(params.begin(), params.end());
 }
 
 
-FunctionNode*
+std::shared_ptr<AptNode>
 FunctionNode::clone() const
 {
-  return cloneScope(this,
-                    new FunctionNode(fSrcPos, copyNodes(fChildren),
-                                     fRetType.clone(), nodeClone(fBody)));
+  return cloneScope(this, makeFunctionNode(fSrcPos, copyNodes(fChildren),
+                                           fRetType.clone(),
+                                           nodeClone(fBody)));
 }
 
 
@@ -1899,11 +1904,11 @@ FunctionNode::retType() const
 void
 FunctionNode::setRetType(const Type& type)
 {
-  fRetType = type;
+  fRetType = std::move(type);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 FunctionNode::body() const
 {
   return fBody;
@@ -1911,28 +1916,20 @@ FunctionNode::body() const
 
 
 void
-FunctionNode::setBody(AptNode* node)
+FunctionNode::setBody(std::shared_ptr<AptNode> node)
 {
-  fBody = node;
+  fBody = std::move(node);
 }
 
 
 size_t
 FunctionNode::specializedParamsCount() const
 {
-  size_t specArgCount = 0;
-
-  for (NodeList::const_iterator it = params().begin(), e = params().end();
-       it != e;
-       it++)
-  {
-    if (const ParamNode* prm = dynamic_cast<const ParamNode*>(it->obj())) {
-      if (prm->isSpecArg())
-        specArgCount++;
-    }
-  }
-
-  return specArgCount;
+  return std::count_if(params().begin(), params().end(),
+                       [](const NodeList::value_type& nd) {
+                         auto prm = dynamic_cast<ParamNode*>(nd.get());
+                         return prm && prm->isSpecArg();
+                       });
 }
 
 
@@ -1959,21 +1956,19 @@ FuncDefNode::FuncDefNode(const SrcPos& srcpos,
                          unsigned int flags,
                          const NodeList& params,
                          const Type& retType,
-                         AptNode* body)
-  : FunctionNode(srcpos, params, retType, body),
+                         std::shared_ptr<AptNode> body)
+  : FunctionNode(srcpos, params, retType, std::move(body)),
     fSym(sym),
     fFlags(flags)
 { }
 
-
-FuncDefNode*
+std::shared_ptr<AptNode>
 FuncDefNode::clone() const
 {
-  Ptr<FuncDefNode> n = new FuncDefNode(fSrcPos, fSym, fFlags,
-                                       copyNodes(fChildren),
-                                       fRetType.clone(), nodeClone(fBody));
+  auto n = makeFuncDefNode(fSrcPos, fSym, fFlags, copyNodes(fChildren),
+                           fRetType.clone(), nodeClone(fBody));
   n->setLinkage(fLinkage);
-  return cloneScope(this, n.release());
+  return cloneScope(this, std::move(n));
 }
 
 
@@ -2016,12 +2011,12 @@ llvm::Value*
 FuncDefNode::codegen(CodeGenerator* generator) const
 {
   hr_invalid("this should never be called directly.  See codegen::DefNode");
-  return NULL;
+  return nullptr;
 }
 
 
 void
-FuncDefNode::annotate(Annotator* annotator)
+FuncDefNode::annotate(Annotator* annotator, std::shared_ptr<AptNode> nd)
 {
   hr_invalid("this should never be called directly.  See Annotator::DefNode");
 }
@@ -2034,22 +2029,22 @@ DEF_TYPIFY(FuncDefNode)
 
 //----------------------------------------------------------------------------
 
-ApplyNode::ApplyNode(const SrcPos& srcpos, AptNode* base)
+ApplyNode::ApplyNode(const SrcPos& srcpos, std::shared_ptr<AptNode> base)
   : ListNode(srcpos),
-    fBase(base)
+    fBase(std::move(base))
 { }
 
 
-ApplyNode*
+std::shared_ptr<AptNode>
 ApplyNode::clone() const
 {
-  Ptr<ApplyNode> apply = new ApplyNode(fSrcPos, nodeClone(fBase));
+  auto apply = makeApplyNode(fSrcPos, nodeClone(fBase));
   copyNodes(&apply->fChildren, &fChildren);
-  return cloneScope(this, apply.release());
+  return cloneScope(this, std::move(apply));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 ApplyNode::base() const
 {
   return fBase;
@@ -2057,25 +2052,25 @@ ApplyNode::base() const
 
 
 void
-ApplyNode::setBase(AptNode* node)
+ApplyNode::setBase(std::shared_ptr<AptNode> node)
 {
-  fBase = node;
+  fBase = std::move(node);
 }
 
 
 bool
 ApplyNode::isSimpleCall() const
 {
-  const SymbolNode* sym = dynamic_cast<const SymbolNode*>(base());
-  return sym != NULL && sym->generics().empty();
+  auto sym = dynamic_cast<SymbolNode*>(base().get());
+  return sym && sym->generics().empty();
 }
 
 
 String
 ApplyNode::simpleCallName() const
 {
-  const SymbolNode* sym = dynamic_cast<const SymbolNode*>(base());
-  return (sym != NULL
+  auto sym = dynamic_cast<SymbolNode*>(base().get());
+  return (sym
           ? sym->name()
           : String());
 }
@@ -2092,19 +2087,19 @@ DEF_TYPIFY(ApplyNode)
 //----------------------------------------------------------------------------
 
 KeyargNode::KeyargNode(const SrcPos& srcpos,
-                       const String& key, AptNode* value)
+                       const String& key, std::shared_ptr<AptNode> value)
   : AptNode(srcpos),
     fKey(key),
-    fValue(value)
+    fValue(std::move(value))
 {
-  hr_assert(fValue != NULL);
+  hr_assert(fValue);
 }
 
 
-KeyargNode*
+std::shared_ptr<AptNode>
 KeyargNode::clone() const
 {
-  return cloneScope(this, new KeyargNode(fSrcPos, fKey, nodeClone(fValue)));
+  return cloneScope(this, makeKeyargNode(fSrcPos, fKey, nodeClone(fValue)));
 }
 
 
@@ -2115,7 +2110,7 @@ KeyargNode::key() const
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 KeyargNode::value() const
 {
   return fValue;
@@ -2123,9 +2118,9 @@ KeyargNode::value() const
 
 
 void
-KeyargNode::setValue(AptNode* node)
+KeyargNode::setValue(std::shared_ptr<AptNode> node)
 {
-  fValue = node;
+  fValue = std::move(node);
 }
 
 
@@ -2139,23 +2134,24 @@ DEF_TYPIFY(KeyargNode)
 
 //----------------------------------------------------------------------------
 
-WhileNode::WhileNode(const SrcPos& srcpos, AptNode* test, AptNode* body)
+WhileNode::WhileNode(const SrcPos& srcpos,
+                     std::shared_ptr<AptNode> test,
+                     std::shared_ptr<AptNode> body)
   : AptNode(srcpos),
-    fTest(test),
-    fBody(body)
+    fTest(std::move(test)),
+    fBody(std::move(body))
 { }
 
 
-WhileNode*
+std::shared_ptr<AptNode>
 WhileNode::clone() const
 {
-  return cloneScope(this, new WhileNode(fSrcPos,
-                                        nodeClone(fTest),
+  return cloneScope(this, makeWhileNode(fSrcPos, nodeClone(fTest),
                                         nodeClone(fBody)));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 WhileNode::body() const
 {
   return fBody;
@@ -2163,13 +2159,13 @@ WhileNode::body() const
 
 
 void
-WhileNode::setBody(AptNode* node)
+WhileNode::setBody(std::shared_ptr<AptNode> node)
 {
-  fBody = node;
+  fBody = std::move(node);
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 WhileNode::test() const
 {
   return fTest;
@@ -2177,9 +2173,9 @@ WhileNode::test() const
 
 
 void
-WhileNode::setTest(AptNode* node)
+WhileNode::setTest(std::shared_ptr<AptNode> node)
 {
-  fTest = node;
+  fTest = std::move(node);
 }
 
 
@@ -2210,14 +2206,14 @@ TypeDefNode::TypeDefNode(const SrcPos&   srcpos,
 { }
 
 
-TypeDefNode*
+std::shared_ptr<AptNode>
 TypeDefNode::clone() const
 {
-  return cloneScope(this,
-                    new TypeDefNode(fSrcPos, fTypeName, fIsClass, fIsa.clone(),
-                                    copyNodes(fParams),
-                                    copyNodes(fSlots),
-                                    copyNodes(fOnExprs)));
+  return cloneScope(this, makeTypeDefNode(fSrcPos, fTypeName, fIsClass,
+                                          fIsa.clone(),
+                                          copyNodes(fParams),
+                                          copyNodes(fSlots),
+                                          copyNodes(fOnExprs)));
 }
 
 
@@ -2294,13 +2290,13 @@ DEF_TYPIFY(TypeDefNode)
 //----------------------------------------------------------------------------
 
 CastNode::CastNode(const SrcPos& srcpos,
-                   AptNode* base,
+                   std::shared_ptr<AptNode> base,
                    const Type& type)
   : AptNode(srcpos, type),
-    fBase(base)
+    fBase(std::move(base))
 { }
 
-AptNode*
+std::shared_ptr<AptNode>
 CastNode::base() const
 {
   return fBase;
@@ -2308,17 +2304,17 @@ CastNode::base() const
 
 
 void
-CastNode::setBase(AptNode* node)
+CastNode::setBase(std::shared_ptr<AptNode> node)
 {
-  fBase = node;
+  fBase = std::move(node);
 }
 
 
-CastNode*
+std::shared_ptr<AptNode>
 CastNode::clone() const
 {
-  return cloneScope(this,
-                    new CastNode(fSrcPos, nodeClone(fBase), fType.clone()));
+  return cloneScope(this, makeCastNode(fSrcPos, nodeClone(fBase),
+                                       fType.clone()));
 }
 
 
@@ -2333,22 +2329,21 @@ DEF_TYPIFY(CastNode)
 //--------------------------------------------------------------------------------
 
 SlotRefNode::SlotRefNode(const SrcPos& srcpos,
-                         AptNode* base, const String& slotName)
+                         std::shared_ptr<AptNode> base, const String& slotName)
   : AptNode(srcpos),
-    fBase(base),
+    fBase(std::move(base)),
     fSlotName(slotName)
 { }
 
 
-SlotRefNode*
+std::shared_ptr<AptNode>
 SlotRefNode::clone() const
 {
-  return cloneScope(this,
-                    new SlotRefNode(fSrcPos, nodeClone(fBase), fSlotName));
+  return cloneScope(this, makeSlotRefNode(fSrcPos, nodeClone(fBase), fSlotName));
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 SlotRefNode::base() const
 {
   return fBase;
@@ -2356,9 +2351,9 @@ SlotRefNode::base() const
 
 
 void
-SlotRefNode::setBase(AptNode* base)
+SlotRefNode::setBase(std::shared_ptr<AptNode> base)
 {
-  fBase = base;
+  fBase = std::move(base);
 }
 
 
@@ -2380,60 +2375,27 @@ DEF_TYPIFY(SlotRefNode)
 //--------------------------------------------------------------------------------
 
 NodeList
-herschel::newNodeList()
+herschel::makeNodeList()
 {
   return NodeList();
 }
 
 
 NodeList
-herschel::newNodeList(AptNode* n1)
+herschel::makeNodeList(std::shared_ptr<AptNode> n1)
 {
   NodeList nl;
-  if (n1 != NULL)
-    nl.push_back(n1);
+  if (n1)
+    nl.push_back(std::move(n1));
   return nl;
 }
 
 
 NodeList
-herschel::newNodeList(AptNode* n1, AptNode* n2)
+herschel::makeNodeList(std::initializer_list<std::shared_ptr<AptNode>> l)
 {
   NodeList nl;
-  if (n1 != NULL)
-    nl.push_back(n1);
-  if (n2 != NULL)
-    nl.push_back(n2);
-  return nl;
-}
-
-
-NodeList
-herschel::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3)
-{
-  NodeList nl;
-  if (n1 != NULL)
-    nl.push_back(n1);
-  if (n2 != NULL)
-    nl.push_back(n2);
-  if (n3 != NULL)
-    nl.push_back(n3);
-  return nl;
-}
-
-
-NodeList
-herschel::newNodeList(AptNode* n1, AptNode* n2, AptNode* n3, AptNode* n4)
-{
-  NodeList nl;
-  if (n1 != NULL)
-    nl.push_back(n1);
-  if (n2 != NULL)
-    nl.push_back(n2);
-  if (n3 != NULL)
-    nl.push_back(n3);
-  if (n4 != NULL)
-    nl.push_back(n4);
+  nl.insert(nl.end(), l.begin(), l.end());
   return nl;
 }
 
@@ -2447,11 +2409,11 @@ herschel::appendNodes(NodeList& dst, const NodeList& nl)
 }
 
 
-AptNode*
+std::shared_ptr<AptNode>
 herschel::singletonNodeListOrNull(const NodeList& nl)
 {
   hr_assert(nl.size() < 2);
   if (nl.size() == 1)
-    return nl[0].obj();
-  return NULL;
+    return nl[0];
+  return nullptr;
 }

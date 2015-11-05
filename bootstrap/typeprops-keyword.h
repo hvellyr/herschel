@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeprops_keyword_h
-#define bootstrap_typeprops_keyword_h
+#pragma once
 
 #include "typeprops.h"
 #include "typeenum.h"
@@ -29,12 +28,12 @@ namespace herschel
   public:
     KeywordTypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_keyword"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_keyword"; }
 
     virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
     {
       hr_invalid("keywords are atoms always");
-      return NULL;
+      return nullptr;
     }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
@@ -61,11 +60,10 @@ namespace herschel
 
     virtual int typeBitsize() const { return 0; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
     {
-      return new KeywordTypeEnumMaker;
+      return std::unique_ptr<TypeEnumMaker>(new KeywordTypeEnumMaker);
     }
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeprops_keyword_h

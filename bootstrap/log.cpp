@@ -45,7 +45,7 @@ bool herschel::isSilent()
 
 //------------------------------------------------------------------------------
 
-static const char* levelStr[] = {
+static zstring levelStr[] = {
   "debug",
   "info",
   "warning",
@@ -55,7 +55,7 @@ static const char* levelStr[] = {
 
 static void
 logImpl(const SrcPos& where, LogLevel level, int errorCode, FILE* stream,
-        const char* msg)
+        zstring msg)
 {
   if (sBeSilent)
     return;
@@ -63,13 +63,13 @@ logImpl(const SrcPos& where, LogLevel level, int errorCode, FILE* stream,
   if (where.isValid()) {
     if (errorCode == 0)
       fprintf(stream, "%s:%d: %s: %s\n",
-              (const char*)StrHelper(where.file()),
+              (zstring)StrHelper(where.file()),
               where.lineNumber(),
               levelStr[level],
               msg);
     else
       fprintf(stream, "%s:%d: %s: (%04x) %s\n",
-              (const char*)StrHelper(where.file()),
+              (zstring)StrHelper(where.file()),
               where.lineNumber(),
               levelStr[level],
               errorCode,
@@ -92,12 +92,12 @@ logImpl(const SrcPos& where, LogLevel level, int errorCode, FILE* stream,
 void
 herschel::log(const SrcPos& where, LogLevel level, const String& msg)
 {
-  logImpl(where, level, 0, stderr, (const char*)StrHelper(msg));
+  logImpl(where, level, 0, stderr, (zstring)StrHelper(msg));
 }
 
 
 void
-herschel::logf(const SrcPos& where, LogLevel level, const char* format, ...)
+herschel::logf(const SrcPos& where, LogLevel level, zstring format, ...)
 {
   char buffer[2048];
 
@@ -114,12 +114,12 @@ void
 herschel::log(LogLevel level, const String& msg)
 {
   static SrcPos sp;
-  logImpl(sp, level, 0, stderr, (const char*)StrHelper(msg));
+  logImpl(sp, level, 0, stderr, (zstring)StrHelper(msg));
 }
 
 
 void
-herschel::logf(LogLevel level, const char* format, ...)
+herschel::logf(LogLevel level, zstring format, ...)
 {
   static SrcPos sp;
   char buffer[2048];
@@ -136,12 +136,12 @@ herschel::logf(LogLevel level, const char* format, ...)
 void
 herschel::error(const SrcPos& where, int errorCode, const String& msg)
 {
-  logImpl(where, kError, errorCode, stderr, (const char*)StrHelper(msg));
+  logImpl(where, kError, errorCode, stderr, (zstring)StrHelper(msg));
 }
 
 
 void
-herschel::errorf(const SrcPos& where, int errorCode, const char* format, ...)
+herschel::errorf(const SrcPos& where, int errorCode, zstring format, ...)
 {
   char buffer[2048];
 
@@ -157,12 +157,12 @@ herschel::errorf(const SrcPos& where, int errorCode, const char* format, ...)
 void
 herschel::warning(const SrcPos& where, int errorCode, const String& msg)
 {
-  logImpl(where, kWarn, errorCode, stderr, (const char*)StrHelper(msg));
+  logImpl(where, kWarn, errorCode, stderr, (zstring)StrHelper(msg));
 }
 
 
 void
-herschel::warningf(const SrcPos& where, int errorCode, const char* format, ...)
+herschel::warningf(const SrcPos& where, int errorCode, zstring format, ...)
 {
   char buffer[2048];
 

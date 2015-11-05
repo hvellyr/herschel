@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_file_h
-#define bootstrap_file_h
+#pragma once
 
 #include <vector>
 
@@ -18,7 +17,7 @@ namespace herschel
 {
   class String;
 
-  typedef std::vector<String> StringVector;
+  using StringVector = std::vector<String>;
 
   //! The \c herschel::file namespace contains functions for dealing with file
   //! system paths.
@@ -161,7 +160,5 @@ namespace herschel
                         const StringVector& searchPath,
                         const StringVector& altExtensions);
 
-  };                            // namespace
-};                              // namespace
-
-#endif                          // bootstrap_file_h
+  } // namespace
+} // namespace

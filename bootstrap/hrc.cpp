@@ -15,7 +15,6 @@
 #include "compiler.h"
 #include "log.h"
 #include "properties.h"
-#include "ptr.h"
 #include "str.h"
 #include "setup.h"
 

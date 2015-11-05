@@ -15,7 +15,6 @@
 #include "properties.h"
 #include "log.h"
 #include "str.h"
-#include "ptr.h"
 #include "token.h"
 #include "parsertypes.h"
 #include "registry.h"
@@ -29,7 +28,7 @@ static bool sDontImport = false;
 
 static CompileOutFormat sCompileOutFormat = kLLVM_IR;
 static OptimizeLevel sOptLevel = kOptLevelBasic;
-static Ptr<ConfigVarRegistry> sConfigVarRegistry;
+static std::shared_ptr<ConfigVarRegistry> sConfigVarRegistry;
 static String sOutdir;
 static StringVector sInputSearchPath;
 static StringVector sSystemSearchPath;
@@ -243,8 +242,8 @@ Properties::setConfigVar(const String& keyValuePair)
     idx = keyValuePair.split(':', key, value);
 
   if (idx >= 0) {
-    if (sConfigVarRegistry == NULL)
-      sConfigVarRegistry = new ConfigVarRegistry;
+    if (!sConfigVarRegistry)
+      sConfigVarRegistry = std::make_shared<ConfigVarRegistry>();
     sConfigVarRegistry->registerValue(key, Token(SrcPos("<commandline>", 0),
                                                  kString, value));
   }
@@ -253,11 +252,11 @@ Properties::setConfigVar(const String& keyValuePair)
 }
 
 
-ConfigVarRegistry*
+std::shared_ptr<ConfigVarRegistry>
 Properties::globalConfigVarRegistry()
 {
-  if (sConfigVarRegistry == NULL)
-    sConfigVarRegistry = new ConfigVarRegistry;
+  if (!sConfigVarRegistry)
+    sConfigVarRegistry = std::make_shared<ConfigVarRegistry>();
   return sConfigVarRegistry;
 }
 

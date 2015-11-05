@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_predefined_h
-#define bootstrap_predefined_h
+#pragma once
 
 #include "str.h"
 
@@ -251,6 +250,5 @@ namespace herschel
     const static String kInitFuncName;
     const static String kValueKeyargName;
   };
-};                              // namespace
 
-#endif                          // bootstrap_predefined_h
+} // namespace

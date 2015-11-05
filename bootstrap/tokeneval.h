@@ -8,12 +8,10 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_tokeneval_h
-#define bootstrap_tokeneval_h
+#pragma once
 
-#include "token.h"
 #include "compiler.h"
-#include "ptr.h"
+#include "token.h"
 
 
 namespace herschel
@@ -45,7 +43,7 @@ namespace herschel
   class TokenEvalContext
   {
   public:
-    TokenEvalContext(ConfigVarRegistry* registry);
+    TokenEvalContext(ConfigVarRegistry& registry);
 
     Token evalToken(const Token& expr) const;
 
@@ -75,8 +73,7 @@ namespace herschel
                           const Token& rexpr) const;
 
     //-------- data members
-    Ptr<ConfigVarRegistry> fRegistry;
+    ConfigVarRegistry& fRegistry;
   };
 };
 
-#endif  // bootstrap_tokeneval_h

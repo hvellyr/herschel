@@ -8,20 +8,21 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_common_h
-#define bootstrap_common_h
+#pragma once
 
 #include "config-local.h"
 #include "version.h"
 #include "sysconf.h"
-#include "require.h"
 
 //! Type abstraction for a byte.
-typedef unsigned char Octet;
+using Octet = unsigned char;
 
 //! Type abstraction for a single unicode character.  Note that this type
 //! requires UTF-16 encoding for strings.
-typedef unsigned short Char;
+using Char = unsigned short;
+
+//! Type abstraction for a utf8 encoded character string.
+using zstring = const char*;
 
 //! Macro which evaluates _condA IMP _condB
 #define implies(_condA, _condB)  (!(_condA) || ((_condA) && (_condB)))
@@ -40,4 +41,4 @@ enum CompileOutFormat
   kLLVM_BC                      //!< Use LLVM binary intermediate representation
 };
 
-#endif
+#include "require.h"

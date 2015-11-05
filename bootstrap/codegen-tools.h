@@ -8,12 +8,10 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_tools_h
-#define bootstrap_codegen_tools_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
-#include "refcountable.h"
 #include "codegen-proxy.h"
 
 namespace llvm
@@ -32,11 +30,10 @@ namespace herschel
   class CodeGenerator;
 
 
-  class CodegenTools : public RefCountable,
-                       public CodeGeneratorProxy
+  class CodegenTools : public CodeGeneratorProxy
   {
   public:
-    CodegenTools(CodeGenerator* generator);
+    CodegenTools(CodeGenerator& generator);
 
     enum Typeid {
       kAtomAny     = 0x01,
@@ -126,10 +123,8 @@ namespace herschel
                                    TypeConvKind typeConv) const;
 
   private:
-    const char* getConvFuncNameByType(const Type& type) const;
+    zstring getConvFuncNameByType(const Type& type) const;
     llvm::Type* getConvTypeByType(const Type& type) const;
   };
 
-};                              // namespace
-
-#endif                          // bootstrap_codegen_tools_h
+} // namespace

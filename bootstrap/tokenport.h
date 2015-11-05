@@ -8,13 +8,13 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_tokenport_h
-#define bootstrap_tokenport_h
-
-#include <list>
+#pragma once
 
 #include "port.h"
 #include "tokenizer.h"
+
+#include <list>
+#include <memory>
 
 
 namespace herschel
@@ -38,10 +38,10 @@ namespace herschel
   class FileTokenPort : public TokenPort
   {
   public:
-    FileTokenPort(Port<Octet>* port, const String& srcName,
-                  CharRegistry* charRegistry = NULL);
-    FileTokenPort(Port<Char>* port, const String& srcName,
-                  CharRegistry* charRegistry = NULL);
+    FileTokenPort(std::shared_ptr<Port<Octet>> port, const String& srcName,
+                  std::shared_ptr<CharRegistry> charRegistry = nullptr);
+    FileTokenPort(std::shared_ptr<Port<Char>> port, const String& srcName,
+                  std::shared_ptr<CharRegistry> charRegistry = nullptr);
 
     virtual bool isOpen() const;
     virtual bool isEof() const;
@@ -49,10 +49,10 @@ namespace herschel
     virtual Token read();
 
   private:
-    void setTokenizer(Tokenizer* tokenizer);
+    void setTokenizer(std::shared_ptr<Tokenizer> tokenizer);
 
     String         fSrcName;
-    Ptr<Tokenizer> fTokenizer;
+    std::shared_ptr<Tokenizer> fTokenizer;
   };
 
 
@@ -74,4 +74,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif  // bootstrap_tokenport_h

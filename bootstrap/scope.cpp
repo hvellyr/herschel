@@ -61,7 +61,7 @@ namespace herschel
   {
   public:
     UnitScopeItem(const SrcPos& srcpos, const TypeUnit& unit,
-                  AptNode* transformFunc)
+                  std::shared_ptr<AptNode> transformFunc)
       : ScopeItem(srcpos),
         fUnit(unit),
         fTransformFunc(transformFunc)
@@ -90,7 +90,7 @@ namespace herschel
     //-------- data members
 
     TypeUnit fUnit;
-    Ptr<AptNode> fTransformFunc;
+    std::shared_ptr<AptNode> fTransformFunc;
   };
 
 
@@ -99,7 +99,7 @@ namespace herschel
   class MacroScopeItem : public Scope::ScopeItem
   {
   public:
-    MacroScopeItem(const SrcPos& srcpos, Macro* macro)
+    MacroScopeItem(const SrcPos& srcpos, std::shared_ptr<Macro> macro)
       : ScopeItem(srcpos),
         fMacro(macro)
     { }
@@ -112,12 +112,12 @@ namespace herschel
 
     const Macro* macro() const
     {
-      return fMacro;
+      return fMacro.get();
     }
 
     //-------- data members
 
-    Ptr<Macro> fMacro;
+    std::shared_ptr<Macro> fMacro;
   };
 
 
@@ -127,7 +127,7 @@ namespace herschel
   {
   public:
     NodeScopeItem(const SrcPos& srcpos,
-                  Scope::ScopeItemKind kind, AptNode* node)
+                  Scope::ScopeItemKind kind, std::shared_ptr<AptNode> node)
       : ScopeItem(srcpos),
         fKind(kind),
         fNode(node)
@@ -141,13 +141,13 @@ namespace herschel
 
     const AptNode* node() const
     {
-      return fNode;
+      return fNode.get();
     }
 
     //-------- data members
 
     Scope::ScopeItemKind fKind;
-    Ptr<AptNode>         fNode;
+    std::shared_ptr<AptNode> fNode;
   };
 };
 
@@ -161,15 +161,15 @@ Scope::Scope(ScopeLevel level)
 }
 
 
-Scope::Scope(ScopeLevel level, Scope* parent)
-  : fParent(parent),
+Scope::Scope(ScopeLevel level, std::shared_ptr<Scope> parent)
+  : fParent(std::move(parent)),
     fLevel(level)
 {
-  hr_assert(implies(level > kScopeL_CompileUnit, parent != NULL));
+  hr_assert(implies(level > kScopeL_CompileUnit, fParent));
 }
 
 
-Scope*
+std::shared_ptr<Scope>
 Scope::parent() const
 {
   return fParent;
@@ -184,17 +184,15 @@ Scope::scopeLevel() const
 
 
 void
-Scope::registerScopeItem(const ScopeName& name, ScopeItem* item)
+Scope::registerScopeItem(const ScopeName& name, std::shared_ptr<ScopeItem> item)
 {
-  hr_assert(item != NULL);
+  hr_assert(item);
 
-  Scope::LookupResult result = lookupItemLocalImpl(SrcPos(), name,
-                                                   K(showError),
-                                                   !K(doAutoMatch));
-  if (result.fItem != NULL)
+  auto result = lookupItemLocalImpl(SrcPos(), name, K(showError), !K(doAutoMatch));
+  if (result.fItem)
   {
     errorf(item->srcpos(), E_SymbolRedefined, "redefinition of symbol '%s'",
-           (const char*)StrHelper(name.fName));
+           (zstring)StrHelper(name.fName));
     errorf(result.fItem->srcpos(), E_SymbolRedefined,
            "symbol was defined here");
 
@@ -232,12 +230,12 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
   if (it != fMap.end()) {
     if (doAutoMatch && !isQualified(name.fName)) {
       if (it->second.size() == 1) {
-        return LookupResult(it->second.begin()->second.obj(),
+        return LookupResult(it->second.begin()->second.get(),
                             !K(inOuterFunc));
       }
       else if (showError) {
         errorf(srcpos, E_AmbiguousSym, "ambiguous symbol '%s' usage",
-               (const char*)StrHelper(base.fName));
+               (zstring)StrHelper(base.fName));
         for (BaseScopeMap::const_iterator vit = it->second.begin();
              vit != it->second.end();
              vit++)
@@ -245,14 +243,14 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
           String fullKey = qualifyId(vit->first, it->first.fName);
           errorf(vit->second->srcpos(), E_AmbiguousSym,
                  "symbol '%s' was defined here",
-                 (const char*)StrHelper(fullKey));
+                 (zstring)StrHelper(fullKey));
         }
       }
     }
     else {
       BaseScopeMap::const_iterator vit = it->second.find(ns.fName);
       if (vit != it->second.end()) {
-        return LookupResult(vit->second.obj(), !K(inOuterFunc));
+        return LookupResult(vit->second.get(), !K(inOuterFunc));
       }
     }
   }
@@ -261,10 +259,10 @@ Scope::lookupItemLocalImpl(const SrcPos& srcpos,
        it != fImportedScopes.end();
        it++)
   {
-    LookupResult lv = it->second->lookupItemLocalImpl(srcpos, name,
-                                                      showError,
-                                                      doAutoMatch);
-    if (lv.fItem != NULL)
+    auto lv = it->second->lookupItemLocalImpl(srcpos, name,
+                                              showError,
+                                              doAutoMatch);
+    if (lv.fItem)
       return lv;
   }
 
@@ -280,15 +278,15 @@ Scope::lookupItem(const SrcPos& srcpos,
   const Scope* scope = this;
   bool crossedFuncLevel = false;
 
-  while (scope != NULL) {
-    LookupResult lv = scope->lookupItemLocalImpl(srcpos, name,
-                                                 showError, K(doAutoMatch));
-    if (lv.fItem != NULL)
+  while (scope) {
+    auto lv = scope->lookupItemLocalImpl(srcpos, name,
+                                         showError, K(doAutoMatch));
+    if (lv.fItem)
       return LookupResult(lv.fItem, crossedFuncLevel);
 
     if (scope->scopeLevel() == kScopeL_Function)
       crossedFuncLevel = true;
-    scope = scope->parent();
+    scope = scope->parent().get();
   }
 
   return LookupResult();
@@ -298,9 +296,8 @@ Scope::lookupItem(const SrcPos& srcpos,
 bool
 Scope::hasName(ScopeDomain domain, const String& name, SrcPos* srcpos) const
 {
-  LookupResult lv = lookupItem(SrcPos(), ScopeName(domain, name),
-                               !K(showError));
-  if (lv.fItem != NULL) {
+  auto lv = lookupItem(SrcPos(), ScopeName(domain, name), !K(showError));
+  if (lv.fItem) {
     *srcpos = lv.fItem->srcpos();
     return true;
   }
@@ -312,9 +309,9 @@ bool
 Scope::hasNameLocal(ScopeDomain domain, const String& name, SrcPos* srcpos,
                     bool doAutoMatch) const
 {
-  LookupResult lv = lookupItemLocalImpl(SrcPos(), ScopeName(domain, name),
-                                        !K(showError), doAutoMatch);
-  if (lv.fItem != NULL) {
+  auto lv = lookupItemLocalImpl(SrcPos(), ScopeName(domain, name),
+                                !K(showError), doAutoMatch);
+  if (lv.fItem) {
     *srcpos = lv.fItem->srcpos();
     return true;
   }
@@ -339,10 +336,10 @@ Scope::checkForRedefinition(const SrcPos& srcpos,
   SrcPos firstSrcpos;
   if (hasNameLocal(domain, sym, &firstSrcpos, !K(doAutoMatch))) {
     errorf(srcpos, E_Redefinition,
-           "Redefinition of '%s'.", (const char*)StrHelper(sym));
+           "Redefinition of '%s'.", (zstring)StrHelper(sym));
     errorf(firstSrcpos, E_Redefinition,
            "'%s' previously defined here.",
-           (const char*)StrHelper(sym));
+           (zstring)StrHelper(sym));
     return true;
   }
 
@@ -374,10 +371,10 @@ Scope::hasScopeForFile(const String& absPath) const
 {
   const Scope* scope = this;
 
-  while (scope != NULL) {
+  while (scope) {
     if (scope->hasScopeForFileLocal(absPath))
       return true;
-    scope = scope->parent();
+    scope = scope->parent().get();
   }
 
   return false;
@@ -385,9 +382,9 @@ Scope::hasScopeForFile(const String& absPath) const
 
 
 void
-Scope::addImportedScope(const String& absPath, Scope* scope)
+Scope::addImportedScope(const String& absPath, std::shared_ptr<Scope> scope)
 {
-  ImportedScope::iterator it = fImportedScopes.find(absPath);
+  auto it = fImportedScopes.find(absPath);
   hr_assert(it == fImportedScopes.end());
   fImportedScopes.insert(std::make_pair(absPath, scope));
 }
@@ -403,17 +400,16 @@ Scope::registerType(const SrcPos& srcpos,
   hr_assert(type.isDef());
 
   registerScopeItem(ScopeName(kNormal, name),
-                    new TypeScopeItem(srcpos, type));
+                    std::make_shared<TypeScopeItem>(srcpos, type));
 }
 
 
 const Type&
 Scope::lookupType(const String& name, bool showAmbiguousSymDef) const
 {
-  LookupResult lv = lookupItem(SrcPos(),
-                               ScopeName(kNormal, name),
-                               showAmbiguousSymDef);
-  if (lv.fItem != NULL && lv.fItem->kind() == kScopeItem_type)
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name),
+                       showAmbiguousSymDef);
+  if (lv.fItem && lv.fItem->kind() == kScopeItem_type)
     return dynamic_cast<const TypeScopeItem*>(lv.fItem)->type();
 
   return sInvalidType;
@@ -423,10 +419,9 @@ Scope::lookupType(const String& name, bool showAmbiguousSymDef) const
 TypeUnit
 Scope::lookupUnit(const String& name, bool showAmbiguousSymDef) const
 {
-  LookupResult lv = lookupItem(SrcPos(),
-                               ScopeName(kUnit, name),
-                               showAmbiguousSymDef);
-  if (lv.fItem != NULL && lv.fItem->kind() == kScopeItem_unit)
+  auto lv = lookupItem(SrcPos(), ScopeName(kUnit, name),
+                       showAmbiguousSymDef);
+  if (lv.fItem && lv.fItem->kind() == kScopeItem_unit)
     return dynamic_cast<const UnitScopeItem*>(lv.fItem)->unit();
 
   return TypeUnit();
@@ -445,7 +440,7 @@ Scope::normalizeType(const Type& type)
       // we normally don't want to have full types here (these would lead to
       // unnecessary data expansion and possible issues with recursive types).
       // Rewrite the typeref to have the fully qualified type name
-      return Type::newTypeRef(referedType.typeName(), type);
+      return Type::makeTypeRef(referedType.typeName(), type);
     }
   }
   else if (type.isAlias())
@@ -519,7 +514,7 @@ Type
 Scope::lookupType(const Type& type) const
 {
   if (type.isArray()) {
-    return Type::newArray(lookupType(type.arrayBaseType()),
+    return Type::makeArray(lookupType(type.arrayBaseType()),
                           type.arraySizeIndicator(),
                           type.isValueType());
   }
@@ -528,7 +523,7 @@ Scope::lookupType(const Type& type) const
     return type;
   }
   else if (type.isMeasure()) {
-    return Type::newMeasure(type.typeName(),
+    return Type::makeMeasure(type.typeName(),
                             lookupType(type.measureBaseType()),
                             type.measureUnit());
   }
@@ -549,14 +544,14 @@ Scope::lookupType(const Type& type) const
     for (size_t i = 0; i < type.unionTypes().size(); ++i) {
       types.push_back(lookupType(type.unionTypes()[i]));
     }
-    return Type::newUnion(types, type.isValueType());
+    return Type::makeUnion(types, type.isValueType());
   }
   else if (type.isSequence()) {
     TypeVector types;
     for (size_t i = 0; i < type.seqTypes().size(); ++i) {
       types.push_back(lookupType(type.seqTypes()[i]));
     }
-    return Type::newSeq(types, type.isValueType());
+    return Type::makeSeq(types, type.isValueType());
   }
 
   return Type();
@@ -588,12 +583,12 @@ void
 Scope::registerUnit(const SrcPos& srcpos,
                     const String& unitName, const String& baseUnit,
                     const Type& baseType,
-                    AptNode* transformFunc)
+                    std::shared_ptr<AptNode> transformFunc)
 {
   registerScopeItem(ScopeName(kUnit, unitName),
-                    new UnitScopeItem(srcpos,
-                                      TypeUnit(unitName, baseUnit, baseType),
-                                      transformFunc));
+                    std::make_shared<UnitScopeItem>(
+                      srcpos, TypeUnit(unitName, baseUnit, baseType),
+                      transformFunc));
 }
 
 
@@ -601,10 +596,10 @@ Scope::registerUnit(const SrcPos& srcpos,
 
 void
 Scope::registerMacro(const SrcPos& srcpos,
-                     const String& name, Macro* macro)
+                     const String& name, std::shared_ptr<Macro> macro)
 {
   registerScopeItem(ScopeName(kNormal, name),
-                    new MacroScopeItem(srcpos, macro));
+                    std::make_shared<MacroScopeItem>(srcpos, macro));
 }
 
 
@@ -612,12 +607,10 @@ const Macro*
 Scope::lookupMacro(const SrcPos& srcpos,
                    const String& name, bool showAmbiguousSymDef) const
 {
-  LookupResult lv = lookupItem(srcpos,
-                               ScopeName(kNormal, name),
-                               showAmbiguousSymDef);
-  if (lv.fItem != NULL && lv.fItem->kind() == kScopeItem_macro)
+  auto lv = lookupItem(srcpos, ScopeName(kNormal, name), showAmbiguousSymDef);
+  if (lv.fItem && lv.fItem->kind() == kScopeItem_macro)
     return dynamic_cast<const MacroScopeItem*>(lv.fItem)->macro();
-  return NULL;
+  return nullptr;
 }
 
 
@@ -625,22 +618,21 @@ Scope::lookupMacro(const SrcPos& srcpos,
 
 void
 Scope::registerFunction(const SrcPos& srcpos,
-                        const String& name, AptNode* node)
+                        const String& name, std::shared_ptr<AptNode> node)
 {
   registerScopeItem(ScopeName(kNormal, name),
-                    new NodeScopeItem(srcpos, kScopeItem_function, node));
+                    std::make_shared<NodeScopeItem>(
+                      srcpos, kScopeItem_function, node));
 }
 
 
 const AptNode*
 Scope::lookupFunction(const String& name, bool showAmbiguousSymDef) const
 {
-  LookupResult lv = lookupItem(SrcPos(),
-                               ScopeName(kNormal, name),
-                               showAmbiguousSymDef);
-  if (lv.fItem != NULL && lv.fItem->kind() == kScopeItem_function)
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
+  if (lv.fItem && lv.fItem->kind() == kScopeItem_function)
     return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
-  return NULL;
+  return nullptr;
 }
 
 
@@ -648,49 +640,45 @@ Scope::lookupFunction(const String& name, bool showAmbiguousSymDef) const
 
 void
 Scope::registerVar(const SrcPos& srcpos,
-                   const String& name, AptNode* node)
+                   const String& name, std::shared_ptr<AptNode> node)
 {
   registerScopeItem(ScopeName(kNormal, name),
-                    new NodeScopeItem(srcpos, kScopeItem_variable, node));
+                    std::make_shared<NodeScopeItem>(
+                      srcpos, kScopeItem_variable, node));
 }
 
 
 const AptNode*
 Scope::lookupVar(const String& name, bool showAmbiguousSymDef) const
 {
-  LookupResult lv = lookupItem(SrcPos(),
-                               ScopeName(kNormal, name),
-                               showAmbiguousSymDef);
-  if (lv.fItem != NULL && lv.fItem->kind() == kScopeItem_variable)
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name),
+                       showAmbiguousSymDef);
+  if (lv.fItem && lv.fItem->kind() == kScopeItem_variable)
     return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
-  return NULL;
+  return nullptr;
 }
 
 
 const AptNode*
 Scope::lookupVarOrFunc(const String& name, bool showAmbiguousSymDef) const
 {
-  LookupResult lv = lookupItem(SrcPos(),
-                               ScopeName(kNormal, name),
-                               showAmbiguousSymDef);
-  if (lv.fItem != NULL && ( lv.fItem->kind() == kScopeItem_variable ||
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
+  if (lv.fItem && ( lv.fItem->kind() == kScopeItem_variable ||
                             lv.fItem->kind() == kScopeItem_function ))
     return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
-  return NULL;
+  return nullptr;
 }
 
 
 bool
 Scope::isVarInOuterFunction(const String& name) const
 {
-  LookupResult lv = lookupItem(SrcPos(),
-                               ScopeName(kNormal, name),
-                               !K(showError));
-  return lv.fItem != NULL && lv.fInOuterFunc;
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), !K(showError));
+  return lv.fItem && lv.fInOuterFunc;
 }
 
 
-const char*
+zstring
 Scope::scopeLevelName(ScopeLevel level)
 {
   switch (level) {
@@ -703,7 +691,7 @@ Scope::scopeLevelName(ScopeLevel level)
 }
 
 
-const char*
+zstring
 Scope::scopeLevelName() const
 {
   return scopeLevelName(scopeLevel());
@@ -716,11 +704,11 @@ Scope::dumpDebug(bool recursive) const
           scopeLevelName(scopeLevel()));
   dumpDebugImpl();
   if (recursive) {
-    Scope* sc0 = parent();
+    Scope* sc0 = parent().get();
     while (sc0) {
       fprintf(stderr, "----- [%p] - %s -----\n", sc0, scopeLevelName(sc0->scopeLevel()));
       sc0->dumpDebugImpl();
-      sc0 = sc0->parent();
+      sc0 = sc0->parent().get();
     }
   }
   fprintf(stderr, "]------- Scope Dump [%p] ----------------------\n", this);
@@ -739,7 +727,7 @@ Scope::dumpDebugImpl() const
          vit++)
     {
       String key = qualifyId(vit->first, it->first.fName);
-      fprintf(stderr, "%s\n", (const char*)StrHelper(key));
+      fprintf(stderr, "%s\n", (zstring)StrHelper(key));
     }
   }
 
@@ -749,7 +737,7 @@ Scope::dumpDebugImpl() const
          it != fImportedScopes.end();
          it++)
     {
-      fprintf(stderr, "[ATTACHED: %s]\n", (const char*)StrHelper(it->first));
+      fprintf(stderr, "[ATTACHED: %s]\n", (zstring)StrHelper(it->first));
       it->second->dumpDebugImpl();
     }
   }
@@ -829,7 +817,7 @@ void
 Scope::attachSymbolForExport(ScopeDomain domain, const String& sym,
                              const String& attachedSym)
 {
-  VizMap::iterator it = fVisibility.find(ScopeName(domain, sym));
+  auto it = fVisibility.find(ScopeName(domain, sym));
   if (it == fVisibility.end()) {
     VisibilityPair vp;
     vp.fViz = kUnset;
@@ -864,16 +852,12 @@ Scope::reduceVizType(VizType in) const
 
 
 void
-Scope::exportAttachedSymbols(Scope* dstScope,
+Scope::exportAttachedSymbols(std::shared_ptr<Scope> dstScope,
                              const ScopeName& fullKey, VizType vizType,
                              bool isFinal) const
 {
-  const AttachedSymbols& attachedSyms = attachedExportSymbols(fullKey);
-  for (AttachedSymbols::const_iterator ait = attachedSyms.begin();
-       ait != attachedSyms.end();
-       ait++)
-  {
-    String attachedSym = *ait;
+  const auto& attachedSyms = attachedExportSymbols(fullKey);
+  for (const auto& attachedSym : attachedSyms) {
     dstScope->attachSymbolForExport(fullKey.fDomain, fullKey.fName,
                                     attachedSym);
   }
@@ -881,7 +865,8 @@ Scope::exportAttachedSymbols(Scope* dstScope,
 
 
 void
-Scope::exportAllSymbols(Scope* dstScope, bool propagateOuter) const
+Scope::exportAllSymbols(std::shared_ptr<Scope> dstScope,
+                        bool propagateOuter) const
 {
   // export all
   VizType vizAllType = exportSymbolVisibility(ScopeName(kNormal, String("*")));
@@ -919,7 +904,7 @@ Scope::exportAllSymbols(Scope* dstScope, bool propagateOuter) const
 
 
 void
-Scope::exportSymbols(Scope* dstScope, bool propagateOuter) const
+Scope::exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) const
 {
   if (shouldExportSymbol(ScopeName(kNormal, String("*"))))
   {
@@ -959,15 +944,13 @@ Scope::exportSymbols(Scope* dstScope, bool propagateOuter) const
 
 
 void
-Scope::propagateImportedScopes(Scope* dstScope) const
+Scope::propagateImportedScopes(std::shared_ptr<Scope> dstScope) const
 {
-  hr_assert(this != dstScope);
+  hr_assert(this != dstScope.get());
 
-  for (ImportedScope::const_iterator it = fImportedScopes.begin();
-       it != fImportedScopes.end();
-       it++)
+  for (const auto& impScope : fImportedScopes)
   {
-    if (!dstScope->hasScopeForFileLocal(it->first))
-      dstScope->addImportedScope(it->first, it->second);
+    if (!dstScope->hasScopeForFileLocal(impScope.first))
+      dstScope->addImportedScope(impScope.first, impScope.second);
   }
 }

@@ -8,19 +8,17 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_macro_h
-#define bootstrap_macro_h
+#pragma once
 
-#include <map>
-#include <vector>
-
-//#include "pass1.h"
-#include "ptr.h"
-#include "refcountable.h"
 #include "srcpos.h"
 #include "str.h"
 #include "token.h"
 #include "registry.h"
+
+#include <map>
+#include <memory>
+#include <vector>
+
 
 namespace herschel
 {
@@ -55,7 +53,7 @@ namespace herschel
     TokenVector fReplacement;
   };
 
-  typedef std::vector<MacroPattern> MacroPatternVector;
+  using MacroPatternVector = std::vector<MacroPattern>;
 
 
   //----------------------------------------------------------------------------
@@ -75,19 +73,19 @@ namespace herschel
 
   //----------------------------------------------------------------------------
 
-  class SyntaxTreeNode : public RefCountable
+  class SyntaxTreeNode
   {
   public:
-    typedef std::map<Token, Ptr<SyntaxTreeNode> > NodeMap;
+    using NodeMap = std::map<Token, std::shared_ptr<SyntaxTreeNode>>;
 
     SyntaxTreeNode();
 
-    SyntaxTreeNode* findNode(const Token& token) const;
+    std::shared_ptr<SyntaxTreeNode> findNode(const Token& token) const;
 
     //! find the first macro parameter's node and return the macro parameter
-    SyntaxTreeNode* findMacroParam(Token* macroParam) const;
+    std::shared_ptr<SyntaxTreeNode> findMacroParam(Token* macroParam) const;
 
-    void setNode(const Token& token, SyntaxTreeNode* node);
+    void setNode(const Token& token, std::shared_ptr<SyntaxTreeNode> node);
     void setEndNode(const TokenVector& replacement);
     bool hasEndSet() const;
 
@@ -122,19 +120,19 @@ namespace herschel
 
   //----------------------------------------------------------------------------
 
-  class SyntaxTable : public RefCountable
+  class SyntaxTable
   {
   public:
-    typedef std::map<String, Ptr<SyntaxTreeNode> > PatternMap;
+    using PatternMap = std::map<String, std::shared_ptr<SyntaxTreeNode>>;
 
-    static SyntaxTable* compile(const String& macroName,
-                                const MacroPatternVector& patterns);
+    static std::shared_ptr<SyntaxTable> compile(const String& macroName,
+                                                const MacroPatternVector& patterns);
 
-    SyntaxTreeNode* rootNode() const;
-    SyntaxTreeNode* findPattern(const String& name) const;
-    void setPattern(const String& name, SyntaxTreeNode* node);
+    std::shared_ptr<SyntaxTreeNode> rootNode() const;
+    std::shared_ptr<SyntaxTreeNode> findPattern(const String& name) const;
+    void setPattern(const String& name, std::shared_ptr<SyntaxTreeNode> node);
 
-    void mixinPatternPart(SyntaxTreeNode* patternTree,
+    void mixinPatternPart(std::shared_ptr<SyntaxTreeNode> patternTree,
                           const TokenVector& pattern,
                           const TokenVector& rplcmtn);
     void mixinPattern(const String& macroName,
@@ -150,15 +148,15 @@ namespace herschel
 
   //----------------------------------------------------------------------------
 
-  class Macro : public RefCountable
+  class Macro
   {
   public:
-    Macro(SyntaxTable* table, MacroType type)
-      : fSyntaxTable(table),
+    Macro(std::shared_ptr<SyntaxTable> table, MacroType type)
+      : fSyntaxTable(std::move(table)),
         fMacroType(type)
     { }
 
-    SyntaxTable* syntaxTable() const
+    std::shared_ptr<SyntaxTable> syntaxTable() const
     {
       return fSyntaxTable;
     }
@@ -171,9 +169,8 @@ namespace herschel
   private:
     //-------- data members
 
-    Ptr<SyntaxTable> fSyntaxTable;
+    std::shared_ptr<SyntaxTable> fSyntaxTable;
     MacroType        fMacroType;
   };
-};                              // namespace
 
-#endif                          // macro
+} // namespace

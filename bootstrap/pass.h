@@ -8,31 +8,27 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_pass_h
-#define bootstrap_pass_h
+#pragma once
 
 #include <list>
 
 #include "compiler.h"
-#include "ptr.h"
-#include "refcountable.h"
 #include "scope.h"
 #include "str.h"
 
 
 namespace herschel
 {
-  class AbstractPass : public RefCountable
+  class AbstractPass
   {
   public:
-    AbstractPass();
-    AbstractPass(Compiler* compiler, Scope* scope);
+    AbstractPass(Compiler& compiler, std::shared_ptr<Scope> scope);
 
     String currentModuleName() const;
     void pushModule(const String& name, bool setName);
     void popModule();
 
-    Scope* scope();
+    std::shared_ptr<Scope> scope();
 
     friend class ModuleHelper;
     class ModuleHelper
@@ -57,9 +53,8 @@ namespace herschel
     String            fCurrentModuleName;
     std::list<String> fModuleNameStack;
 
-    Ptr<Scope>        fScope;
-    Ptr<Compiler>     fCompiler;
+    std::shared_ptr<Scope> fScope;
+    Compiler&         fCompiler;
   };
-};                              // namespace
 
-#endif                          // bootstrap_pass_h
+} // namespace

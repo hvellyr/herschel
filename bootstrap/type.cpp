@@ -52,14 +52,13 @@ namespace herschel
 
 
   template<typename T>
-  T vectorClone(const T& v)
+  std::vector<T> vectorClone(const std::vector<T>& v)
   {
-    T result;
-    result.reserve(v.size());
+    std::vector<T> result;
 
-    for (size_t i = 0; i < v.size(); i++) {
-      result.push_back(v[i].clone());
-    }
+    std::transform(v.begin(), v.end(),
+                   std::back_inserter(result),
+                   [](const T& e){ return e.clone(); });
 
     return result;
   }
@@ -68,31 +67,35 @@ namespace herschel
   template<typename T>
   void replaceGenerics(std::vector<T>& v, const TypeCtx& typeMap)
   {
-    for (size_t i = 0; i < v.size(); i++) {
-      T replacement = v[i].replaceGenerics(typeMap);
-      if (replacement.isDef())
-        v[i] = replacement;
-    }
+    std::for_each(v.begin(), v.end(),
+                  [&](T& t) {
+                    T replacement = t.replaceGenerics(typeMap);
+                    if (replacement.isDef())
+                      t = replacement;
+                  });
   }
 
 
   template<typename T>
   bool isOpen(const std::vector<T>& v)
   {
-    for (size_t i = 0; i < v.size(); i++) {
-      if (v[i].isOpen())
-        return true;
-    }
-    return false;
+    return std::any_of(v.begin(), v.end(),
+                       [](const T& t) {
+                         return t.isOpen();
+                       });
   }
 
 
   StringBuffer& operator<<(StringBuffer& other, const TypeVector& tyve)
   {
-    for (size_t i = 0; i < tyve.size(); i++) {
-      if (i > 0)
-        other << ", ";
-      other << tyve[i].typeId();
+    if (!tyve.empty()) {
+      other << tyve.front().typeId();
+
+      std::for_each(std::next(tyve.begin()), tyve.end(),
+                    [&](const Type& t) {
+                      other << ", ";
+                      other << t.typeId();
+                    });
     }
     return other;
   }
@@ -110,20 +113,19 @@ namespace herschel
 
     virtual bool isEqual(const TypeImpl* other) const
     {
-      const GroupTypeImpl* o = dynamic_cast<const GroupTypeImpl*>(other);
+      auto o = dynamic_cast<const GroupTypeImpl*>(other);
 
-      return (o != NULL && typeid(this) == typeid(other) &&
+      return (o && typeid(this) == typeid(other) &&
               herschel::isEqual(fTypes, o->fTypes));
     }
 
 
     bool isOpen() const
     {
-      for (size_t i = 0; i < fTypes.size(); i++) {
-        if (fTypes[i].isOpen())
-          return true;
-      }
-      return false;
+      return std::any_of(fTypes.begin(), fTypes.end(),
+                         [](const Type& t) {
+                           return t.isOpen();
+                         });
     }
 
 
@@ -147,13 +149,11 @@ namespace herschel
 
     virtual bool containsType(const Type& type) const
     {
-      if (type.isDef()) {
-        for (size_t i = 0; i < fTypes.size(); i++) {
-          if (fTypes[i].typeName() == type.typeName())
-            return true;
-        }
-      }
-      return false;
+      return type.isDef() &&
+        std::any_of(fTypes.begin(), fTypes.end(),
+                    [&](const Type& t) {
+                      return t.typeName() == type.typeName();
+                    });
     }
 
 
@@ -172,9 +172,9 @@ namespace herschel
     { }
 
 
-    virtual UnionTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new UnionTypeImpl(vectorClone(fTypes));
+      return std::make_shared<UnionTypeImpl>(vectorClone(fTypes));
     }
 
 
@@ -182,19 +182,19 @@ namespace herschel
     {
       StringBuffer buf;
       buf << "<ty:union" << ( !isValue ? " ref='t'" : "") << ">\n";
-      for (size_t i = 0; i < fTypes.size(); i++)
-        buf << fTypes[i].toString();
+      for (const auto& t : fTypes)
+        buf << t.toString();
       buf << "</ty:union>\n";
       return buf.toString();
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope, const SrcPos& srcpos) const override
     {
       if (right0.isUnion() && types().size() == right0.unionTypes().size()) {
-        const TypeVector& ltypes = types();
-        const TypeVector& rtypes = right0.unionTypes();
+        const auto& ltypes = types();
+        const auto& rtypes = right0.unionTypes();
 
         for (size_t i = 0; i < ltypes.size(); ++i) {
           if (!ltypes[i].matchGenerics(localCtx, rtypes[i], scope, srcpos))
@@ -216,9 +216,9 @@ namespace herschel
       : GroupTypeImpl(types)
     { }
 
-    virtual SeqTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new SeqTypeImpl(vectorClone(fTypes));
+      return std::make_shared<SeqTypeImpl>(vectorClone(fTypes));
     }
 
 
@@ -226,19 +226,20 @@ namespace herschel
     {
       StringBuffer buf;
       buf << "<ty:seq" << ( !isValue ? " ref='t'" : "") << ">\n";
-      for (size_t i = 0; i < fTypes.size(); i++)
-        buf << fTypes[i].toString();
+      for (const auto& t : fTypes)
+        buf << t.toString();
       buf << "</ty:seq>\n";
       return buf.toString();
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       if (right0.isSequence() && types().size() == right0.seqTypes().size()) {
-        const TypeVector& ltypes = types();
-        const TypeVector& rtypes = right0.seqTypes();
+        const auto& ltypes = types();
+        const auto& rtypes = right0.seqTypes();
 
         for (size_t i = 0; i < ltypes.size(); ++i) {
           if (!ltypes[i].matchGenerics(localCtx, rtypes[i], scope, srcpos))
@@ -261,16 +262,16 @@ namespace herschel
     { }
 
 
-    virtual FunctionTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new FunctionTypeImpl(fSign.clone());
+      return std::make_shared<FunctionTypeImpl>(fSign.clone());
     }
 
 
     virtual bool isEqual(const TypeImpl* other) const
     {
-      const FunctionTypeImpl* o = dynamic_cast<const FunctionTypeImpl*>(other);
-      return (o != NULL && fSign == o->fSign);
+      auto o = dynamic_cast<const FunctionTypeImpl*>(other);
+      return (o && fSign == o->fSign);
     }
 
 
@@ -286,8 +287,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       if (right0.isFunction())
         return fSign.matchGenerics(localCtx, right0.functionSignature(),
@@ -325,7 +327,7 @@ namespace herschel
     bool matchGenericsForType(TypeCtx& localCtx,
                               const String& typeName, const TypeVector& generics,
                               const Type& ty,
-                              Scope* scope, const SrcPos& srcpos)
+                              const Scope& scope, const SrcPos& srcpos)
     {
       if (generics.size() == ty.generics().size() &&
           typeName == ty.typeName())
@@ -343,12 +345,13 @@ namespace herschel
     }
 
 
-    bool registerGenerics(TypeCtx& localCtx, const Type& ty, Scope* scope)
+    bool registerGenerics(TypeCtx& localCtx, const Type& ty,
+                          const Scope& scope)
     {
       if (ty.hasGenerics())
       {
-        Type typespec = scope->lookupType(ty.typeName(),
-                                          K(showAmbiguousSymDef));
+        Type typespec = scope.lookupType(ty.typeName(),
+                                         K(showAmbiguousSymDef));
         if (typespec.isDef() &&
             typespec.generics().size() == ty.generics().size())
         {
@@ -378,7 +381,7 @@ namespace herschel
     bool matchGenericsImpl(TypeCtx& localCtx,
                            const String& typeName, const TypeVector& generics,
                            const Type& right0,
-                           Scope* scope, const SrcPos& srcpos)
+                           const Scope& scope, const SrcPos& srcpos)
     {
       if (right0.isRef() || right0.isType() || right0.isClass()) {
         // if the reference has generics, it itself cannot be generic.  A
@@ -391,8 +394,8 @@ namespace herschel
                                    scope, srcpos))
             return true;
 
-          Type right = scope->lookupType(right0.typeName(),
-                                         K(showAmbiguousSymDef));
+          Type right = scope.lookupType(right0.typeName(),
+                                        K(showAmbiguousSymDef));
 
           Type inheritance;
           if (right.isType() || right.isClass()) {
@@ -415,8 +418,8 @@ namespace herschel
           }
           else if (inheritance.isSequence()) {
             const TypeVector& seq = inheritance.seqTypes();
-            for (size_t i = 0; i < seq.size(); ++i) {
-              if (matchGenericsImpl(localCtx, typeName, generics, seq[i], scope, srcpos))
+            for (const auto& s : seq) {
+              if (matchGenericsImpl(localCtx, typeName, generics, s, scope, srcpos))
                 return true;
             }
           }
@@ -442,7 +445,7 @@ namespace herschel
         // otherwise not first class entities.
         if (typeName == Names::kSliceableTypeName || typeName == Names::kSliceableXTypeName) {
           if (generics.size() == 2) {
-            localCtx.registerType(generics[0].typeName(), Type::newUInt32());
+            localCtx.registerType(generics[0].typeName(), Type::makeUInt32());
             localCtx.registerType(generics[1].typeName(), right0.arrayBaseType());
 
             return true;
@@ -475,13 +478,13 @@ namespace herschel
     { }
 
 
-    virtual TypeTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new TypeTypeImpl(fName, fIsInstantiatable,
-                              vectorClone(fGenerics),
-                              fInherit.clone(),
-                              fApplySign.clone(),
-                              vectorClone(fSlots));
+      return std::make_shared<TypeTypeImpl>(fName, fIsInstantiatable,
+                                            vectorClone(fGenerics),
+                                            fInherit.clone(),
+                                            fApplySign.clone(),
+                                            vectorClone(fSlots));
     }
 
 
@@ -490,7 +493,7 @@ namespace herschel
     {
       const TypeTypeImpl* o = dynamic_cast<const TypeTypeImpl*>(other);
 
-      return (o != NULL &&
+      return (o &&
               fName == o->fName &&
               fIsInstantiatable == o->fIsInstantiatable &&
               fInherit == o->fInherit &&
@@ -500,7 +503,7 @@ namespace herschel
 
     bool isOpen() const
     {
-      return ( fInherit.isOpen() || herschel::isOpen(fGenerics));
+      return (fInherit.isOpen() || herschel::isOpen(fGenerics));
     }
 
 
@@ -530,17 +533,17 @@ namespace herschel
 
     virtual void replaceGenerics(const TypeCtx& typeMap)
     {
-      for (size_t i = 0; i < fGenerics.size(); i++) {
-        hr_assert(fGenerics[i].isRef());
+      for (auto& gen : fGenerics) {
+        hr_assert(gen.isRef());
 
-        Type replacement = typeMap.lookupType(fGenerics[i].typeName());
+        Type replacement = typeMap.lookupType(gen.typeName());
         if (replacement.isDef())
-          fGenerics[i] = replacement;
+          gen = replacement;
       }
       fInherit = fInherit.replaceGenerics(typeMap);
 
-      for (size_t i = 0; i < fSlots.size(); i++)
-        fSlots[i].replaceGenerics(typeMap);
+      for (auto& s : fSlots)
+        s.replaceGenerics(typeMap);
     }
 
 
@@ -579,8 +582,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       return matchGenericsImpl(localCtx, fName, fGenerics, right0, scope, srcpos);
     }
@@ -615,17 +619,19 @@ namespace herschel
     { }
 
 
-    virtual AliasTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new AliasTypeImpl(fName, vectorClone(fGenerics), fType.clone());
+      return std::make_shared<AliasTypeImpl>(fName,
+                                             vectorClone(fGenerics),
+                                             fType.clone());
     }
 
 
     virtual bool isEqual(const TypeImpl* other) const
     {
-      const AliasTypeImpl* o = dynamic_cast<const AliasTypeImpl*>(other);
+      auto o = dynamic_cast<const AliasTypeImpl*>(other);
 
-      return (o != NULL &&
+      return (o &&
               fName == o->fName &&
               herschel::isEqual(fGenerics, o->fGenerics) &&
               fType == o->fType);
@@ -644,8 +650,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       hr_invalid("when does this happen?");
       return false;
@@ -684,8 +691,8 @@ namespace herschel
 
       if (!fGenerics.empty()) {
         buf << "<ty:gen>\n";
-        for (size_t i = 0; i < fGenerics.size(); i++)
-          buf << fGenerics[i].toString();
+        for (const auto& g : fGenerics)
+          buf << g.toString();
         buf << "</ty:gen>\n";
       }
 
@@ -716,17 +723,18 @@ namespace herschel
     { }
 
 
-    virtual MeasureTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new MeasureTypeImpl(fName, fBaseType.clone(), fDefUnit);
+      return std::make_shared<MeasureTypeImpl>(fName, fBaseType.clone(),
+                                               fDefUnit);
     }
 
 
     virtual bool isEqual(const TypeImpl* other) const
     {
-      const MeasureTypeImpl* o = dynamic_cast<const MeasureTypeImpl*>(other);
+      auto o = dynamic_cast<const MeasureTypeImpl*>(other);
 
-      return (o != NULL &&
+      return (o &&
               fName == o->fName &&
               fDefUnit == o->fDefUnit &&
               fBaseType == o->fBaseType);
@@ -783,8 +791,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       if (right0.isMeasure())
         return fBaseType.matchGenerics(localCtx, right0.measureBaseType(),
@@ -816,20 +825,20 @@ namespace herschel
     { }
 
 
-    virtual TypeRefTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new TypeRefTypeImpl(fName,
-                                 fIsOpen,
-                                 vectorClone(fGenerics),
-                                 vectorClone(fConstraints));
+      return std::make_shared<TypeRefTypeImpl>(fName,
+                                               fIsOpen,
+                                               vectorClone(fGenerics),
+                                               vectorClone(fConstraints));
     }
 
 
     virtual bool isEqual(const TypeImpl* other) const
     {
-      const TypeRefTypeImpl* o = dynamic_cast<const TypeRefTypeImpl*>(other);
+      auto o = dynamic_cast<const TypeRefTypeImpl*>(other);
 
-      return (o != NULL &&
+      return (o &&
               fName == o->fName &&
               fIsOpen == o->fIsOpen &&
               herschel::isEqual(fGenerics, o->fGenerics) &&
@@ -882,8 +891,8 @@ namespace herschel
           << " nm='" << fName << "'>\n";
       if (!fGenerics.empty()) {
         buf << "<ty:gen>\n";
-        for (size_t i = 0; i < fGenerics.size(); i++)
-          buf << fGenerics[i].toString();
+        for (const auto& g : fGenerics)
+          buf << g.toString();
         buf << "</ty:gen>\n";
       }
       if (!fConstraints.empty()) {
@@ -891,8 +900,8 @@ namespace herschel
           buf << fConstraints[0].toString();
         else {
           buf << "<ty:consts>\n";
-          for (size_t i = 0; i < fConstraints.size(); i++)
-            buf << fConstraints[i].toString();
+          for (const auto& c : fConstraints)
+            buf << c.toString();
           buf << "</ty:consts>\n";
         }
       }
@@ -901,8 +910,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+     bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                        const Scope& scope,
+                        const SrcPos& srcpos) const override
     {
       return matchGenericsImpl(localCtx, fName, fGenerics, right0, scope, srcpos);
     }
@@ -927,18 +937,18 @@ namespace herschel
     { }
 
 
-    virtual ArrayTypeImpl* clone() const
+    virtual std::shared_ptr<TypeImpl> clone() const
     {
-      return new ArrayTypeImpl(fBase.clone(), fSizeIndicator);
+      return std::make_shared<ArrayTypeImpl>(fBase.clone(), fSizeIndicator);
     }
 
 
     virtual bool
     isEqual(const TypeImpl* other) const
     {
-      const ArrayTypeImpl* o = dynamic_cast<const ArrayTypeImpl*>(other);
+      auto o = dynamic_cast<const ArrayTypeImpl*>(other);
 
-      return (o != NULL &&
+      return (o &&
               fBase == o->fBase &&
               fSizeIndicator == o->fSizeIndicator);
     }
@@ -987,8 +997,9 @@ namespace herschel
     }
 
 
-    virtual bool matchGenerics(TypeCtx& localCtx, const Type& right0,
-                               Scope* scope, const SrcPos& srcpos) const
+    bool matchGenerics(TypeCtx& localCtx, const Type& right0,
+                       const Scope& scope,
+                       const SrcPos& srcpos) const override
     {
       if (right0.isArray())
         return fBase.matchGenerics(localCtx, right0.arrayBaseType(),
@@ -1019,7 +1030,8 @@ Type::Type(const Type& other)
 }
 
 
-Type::Type(TypeKind kind, bool isValue, bool isImaginary, TypeImpl* impl)
+Type::Type(TypeKind kind, bool isValue, bool isImaginary,
+           std::shared_ptr<TypeImpl> impl)
   : fKind(kind),
     fIsValue(isValue),
     fIsImaginary(isImaginary),
@@ -1039,122 +1051,123 @@ Type::operator=(const Type& other)
 
 
 Type
-Type::newTypeRef(const String& name, const TypeVector& genericArgs,
+Type::makeTypeRef(const String& name, const TypeVector& genericArgs,
                  const TypeConstVector& constraints, bool isValue)
 {
   return Type(kType_Ref, isValue, !K(isImg),
-              new TypeRefTypeImpl(name, !K(isOpen), genericArgs,
-                                  constraints));
+              std::make_shared<TypeRefTypeImpl>(
+                name, !K(isOpen), genericArgs, constraints));
 }
 
 
 Type
-Type::newTypeRef(const String& name, const TypeVector& genericArgs,
+Type::makeTypeRef(const String& name, const TypeVector& genericArgs,
                  bool isValue)
 {
   return Type(kType_Ref, isValue, !K(isImg),
-              new TypeRefTypeImpl(name, !K(isOpen), genericArgs,
-                                  TypeConstVector()));
+              std::make_shared<TypeRefTypeImpl>(
+                name, !K(isOpen), genericArgs, TypeConstVector()));
 }
 
 
 Type
-Type::newTypeRef(const String& name, bool isValue)
+Type::makeTypeRef(const String& name, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
   return Type(kType_Ref, isValue, !K(isImg),
-              new TypeRefTypeImpl(name, !K(isOpen),
-                                  dummyGenerics, dummyConstraints));
+              std::make_shared<TypeRefTypeImpl>(
+                name, !K(isOpen), dummyGenerics, dummyConstraints));
 }
 
 
 Type
-Type::newTypeRef(const char* name, bool isValue)
+Type::makeTypeRef(zstring name, bool isValue)
 {
-  return newTypeRef(String(name), isValue);
+  return makeTypeRef(String(name), isValue);
 }
 
 
 Type
-Type::newTypeRef(const String& name, bool isOpen,
+Type::makeTypeRef(const String& name, bool isOpen,
                  const TypeConstVector& constraints, bool isValue)
 {
   TypeVector dummyGenerics;
   return Type(kType_Ref, isValue, !K(isImg),
-              new TypeRefTypeImpl(name, isOpen, dummyGenerics,
-                                  constraints));
+              std::make_shared<TypeRefTypeImpl>(
+                name, isOpen, dummyGenerics, constraints));
 }
 
 
 Type
-Type::newTypeRef(const String& name, bool isOpen, bool isValue)
+Type::makeTypeRef(const String& name, bool isOpen, bool isValue)
 {
   TypeVector dummyGenerics;
   TypeConstVector dummyConstraints;
   return Type(kType_Ref, isValue, !K(isImg),
-              new TypeRefTypeImpl(name, isOpen, dummyGenerics,
-                                  dummyConstraints));
+              std::make_shared<TypeRefTypeImpl>(
+                name, isOpen, dummyGenerics, dummyConstraints));
 }
 
 
 Type
-Type::newTypeRef(const String& name, const Type& old)
+Type::makeTypeRef(const String& name, const Type& old)
 {
   hr_assert(old.isRef());
 
   return Type(kType_Ref, old.isValueType(), old.isImaginary(),
-              new TypeRefTypeImpl(name,
-                                  dynamic_cast<const TypeRefTypeImpl*>(old.fImpl.obj())->isOpenSelf(),
-                                  old.generics(),
-                                  old.constraints()));
+              std::make_shared<TypeRefTypeImpl>(
+                name,
+                std::dynamic_pointer_cast<TypeRefTypeImpl>(old.fImpl)->isOpenSelf(),
+                old.generics(),
+                old.constraints()));
 }
 
 
 Type
-Type::newClassOf(const Type& type, bool isValue)
+Type::makeClassOf(const Type& type, bool isValue)
 {
-  return newTypeRef(Names::kClassTypeName, vector_of(type), isValue);
+  return makeTypeRef(Names::kClassTypeName, makeVector(type), isValue);
 }
 
 
 Type
-Type::newArray(const Type& base, int sizeIndicator, bool isValue)
+Type::makeArray(const Type& base, int sizeIndicator, bool isValue)
 {
   return Type(kType_Array, isValue, !K(isImg),
-              new ArrayTypeImpl(base, sizeIndicator));
+              std::make_shared<ArrayTypeImpl>(base, sizeIndicator));
 }
 
 
 Type
-Type::newAny(bool isValue)
+Type::makeAny(bool isValue)
 {
-  return newTypeRef(Names::kAnyTypeName, isValue);
+  return makeTypeRef(Names::kAnyTypeName, isValue);
 }
 
 
 Type
-Type::newInt32(bool isValue)
+Type::makeInt32(bool isValue)
 {
-  return newInt(32, isValue);
+  return makeInt(32, isValue);
 }
 
 
 Type
-Type::newUInt32(bool isValue)
+Type::makeUInt32(bool isValue)
 {
-  return newUInt(32, isValue);
+  return makeUInt(32, isValue);
 }
 
 
 Type
-Type::newInt(int bitwidth, bool isValue)
+Type::makeInt(int bitwidth, bool isValue)
 {
   switch (bitwidth) {
-  case  8: return newTypeRef(Names::kInt8TypeName, isValue);
-  case 16: return newTypeRef(Names::kInt16TypeName, isValue);
-  case 32: return newTypeRef(Names::kInt32TypeName, isValue);
-  case 64: return newTypeRef(Names::kInt64TypeName, isValue);
+  case  8: return makeTypeRef(Names::kInt8TypeName, isValue);
+  case 16: return makeTypeRef(Names::kInt16TypeName, isValue);
+  case 32: return makeTypeRef(Names::kInt32TypeName, isValue);
+  case 64: return makeTypeRef(Names::kInt64TypeName, isValue);
   }
 
   hr_invalid("");
@@ -1163,13 +1176,13 @@ Type::newInt(int bitwidth, bool isValue)
 
 
 Type
-Type::newUInt(int bitwidth, bool isValue)
+Type::makeUInt(int bitwidth, bool isValue)
 {
   switch (bitwidth) {
-  case  8: return newTypeRef(Names::kUInt8TypeName, isValue);
-  case 16: return newTypeRef(Names::kUInt16TypeName, isValue);
-  case 32: return newTypeRef(Names::kUInt32TypeName, isValue);
-  case 64: return newTypeRef(Names::kUInt64TypeName, isValue);
+  case  8: return makeTypeRef(Names::kUInt8TypeName, isValue);
+  case 16: return makeTypeRef(Names::kUInt16TypeName, isValue);
+  case 32: return makeTypeRef(Names::kUInt32TypeName, isValue);
+  case 64: return makeTypeRef(Names::kUInt64TypeName, isValue);
   }
 
   hr_invalid("");
@@ -1178,107 +1191,109 @@ Type::newUInt(int bitwidth, bool isValue)
 
 
 Type
-Type::newRational(bool isValue)
+Type::makeRational(bool isValue)
 {
-  return newTypeRef(Names::kRationalTypeName, isValue);
+  return makeTypeRef(Names::kRationalTypeName, isValue);
 }
 
 
 Type
-Type::newFloat32(bool isValue)
+Type::makeFloat32(bool isValue)
 {
-  return newTypeRef(Names::kFloat32TypeName, isValue);
+  return makeTypeRef(Names::kFloat32TypeName, isValue);
 }
 
 
 Type
-Type::newString(bool isValue)
+Type::makeString(bool isValue)
 {
-  return newTypeRef(Names::kStringTypeName, isValue);
+  return makeTypeRef(Names::kStringTypeName, isValue);
 }
 
 
 Type
-Type::newBool(bool isValue)
+Type::makeBool(bool isValue)
 {
-  return newTypeRef(Names::kBoolTypeName, isValue);
+  return makeTypeRef(Names::kBoolTypeName, isValue);
 }
 
 
 Type
-Type::newKeyword(bool isValue)
+Type::makeKeyword(bool isValue)
 {
-  return newTypeRef(Names::kKeywordTypeName, isValue);
+  return makeTypeRef(Names::kKeywordTypeName, isValue);
 }
 
 
 Type
-Type::newChar(bool isValue)
+Type::makeChar(bool isValue)
 {
-  return newTypeRef(Names::kCharTypeName, isValue);
+  return makeTypeRef(Names::kCharTypeName, isValue);
 }
 
 
 Type
-Type::newType(const String& name, const TypeVector& generics,
+Type::makeType(const String& name, const TypeVector& generics,
               const Type& inherit)
 {
   return Type(kType_Type, K(isValue), !K(isImg),
-              new TypeTypeImpl(name, !K(isInstantiable), generics, inherit,
-                               FunctionSignature(),
-                               TypeSlotList()));
+              std::make_shared<TypeTypeImpl>(
+                name, !K(isInstantiable), generics, inherit,
+                FunctionSignature(), TypeSlotList()));
 }
 
 
 Type
-Type::newClass(const String& name, const TypeVector& generics,
+Type::makeClass(const String& name, const TypeVector& generics,
                const Type& inherit, const FunctionSignature& applySign,
                const TypeSlotList& slots)
 {
   return Type(kType_Class, K(isValue), !K(isImg),
-              new TypeTypeImpl(name, K(isInstantiable),
-                               generics, inherit, applySign,
-                               slots));
+              std::make_shared<TypeTypeImpl>(
+                name, K(isInstantiable), generics, inherit, applySign,
+                slots));
 }
 
 
 Type
-Type::newAlias(const String& name, const TypeVector& generics,
+Type::makeAlias(const String& name, const TypeVector& generics,
                const Type& isa)
 {
   return Type(kType_Alias, K(isValue), !K(isImg),
-              new AliasTypeImpl(name, generics, isa));
+              std::make_shared<AliasTypeImpl>(name, generics, isa));
 }
 
 
 Type
-Type::newMeasure(const String& name, const Type& baseType,
+Type::makeMeasure(const String& name, const Type& baseType,
                  const String& defUnit)
 {
   return Type(kType_Measure, K(isValue), !K(isImg),
-              new MeasureTypeImpl(name, baseType, defUnit));
+              std::make_shared<MeasureTypeImpl>(name, baseType, defUnit));
 }
 
 
 Type
-Type::newFunction(const FunctionSignature& sign)
+Type::makeFunction(const FunctionSignature& sign)
 {
   return Type(kType_Function, K(isValue), !K(isImg),
-              new FunctionTypeImpl(sign));
+              std::make_shared<FunctionTypeImpl>(sign));
 }
 
 
 Type
-Type::newUnion(const TypeVector& types, bool isValue)
+Type::makeUnion(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Union, isValue, !K(isImg), new UnionTypeImpl(types));
+  return Type(kType_Union, isValue, !K(isImg),
+              std::make_shared<UnionTypeImpl>(types));
 }
 
 
 Type
-Type::newSeq(const TypeVector& types, bool isValue)
+Type::makeSeq(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Sequence, isValue, !K(isImg), new SeqTypeImpl(types));
+  return Type(kType_Sequence, isValue, !K(isImg),
+              std::make_shared<SeqTypeImpl>(types));
 }
 
 
@@ -1286,7 +1301,7 @@ Type
 Type::clone() const
 {
   return Type(fKind, fIsValue, fIsImaginary,
-              (fImpl != NULL ? fImpl->clone() : NULL));
+              (fImpl != nullptr ? fImpl->clone() : nullptr));
 }
 
 
@@ -1303,8 +1318,8 @@ Type::operator==(const Type& other) const
   if (fIsValue != other.fIsValue)
     return false;
 
-  hr_assert(fImpl != NULL);
-  return fImpl->isEqual(other.fImpl);
+  hr_assert(fImpl);
+  return fImpl->isEqual(other.fImpl.get());
 }
 
 
@@ -1337,7 +1352,7 @@ Type::isBaseType() const
         nm == Names::kStringTypeName)
       return true;
 
-    const TypeProperty& prop = typeProperty(!K(mustExist));
+    const auto& prop = typeProperty(!K(mustExist));
     if (prop.isValid())
       return prop.isBaseType();
   }
@@ -1352,7 +1367,7 @@ Type::isPlainType() const
   if (isArray())
     return false;
 
-  const TypeProperty& prop = typeProperty(!K(mustExist));
+  const auto& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return prop.isPlainType();
 
@@ -1367,22 +1382,26 @@ Type::isBuiltinType(const String& name) const
 }
 
 
-TypeEnumMaker*
-Type::newBaseTypeEnumMaker() const
+std::unique_ptr<TypeEnumMaker>
+Type::makeBaseTypeEnumMaker() const
 {
   if (fKind == kType_Ref) {
-    String nm = typeName();
-    if (nm == Names::kEofTypeName)      return new EofTypeEnumMaker;
-    else if (nm == Names::kNilTypeName)      return new NilTypeEnumMaker;
-    else if (nm == Names::kRationalTypeName) return new RationalTypeEnumMaker;
-    else if (nm == Names::kStringTypeName)   return new StringTypeEnumMaker;
+    auto nm = typeName();
+    if (nm == Names::kEofTypeName)
+      return std::unique_ptr<TypeEnumMaker>(new EofTypeEnumMaker);
+    else if (nm == Names::kNilTypeName)
+      return std::unique_ptr<TypeEnumMaker>(new NilTypeEnumMaker);
+    else if (nm == Names::kRationalTypeName)
+      return std::unique_ptr<TypeEnumMaker>(new RationalTypeEnumMaker);
+    else if (nm == Names::kStringTypeName)
+      return std::unique_ptr<TypeEnumMaker>(new StringTypeEnumMaker);
 
-    const TypeProperty& prop = typeProperty();
+    const auto& prop = typeProperty();
     if (prop.isValid())
-      return prop.newBaseTypeEnumMaker();
+      return prop.makeBaseTypeEnumMaker();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1408,7 +1427,7 @@ Type::typeProperty(bool mustExist) const
   static const KeywordTypeProperty   keywordProperty;
   static const StringTypeProperty    stringProperty;
 
-  String nm = typeName();
+  auto nm = typeName();
   if (nm == Names::kInt32TypeName)
     return int32Property;
   else if (nm == Names::kUInt32TypeName)
@@ -1448,7 +1467,7 @@ Type::typeProperty(bool mustExist) const
     return clangIntProperty;
 
   if (mustExist) {
-    hr_invalid((const char*)StrHelper(String("unhandled type: ") + typeId()));
+    hr_invalid((zstring)StrHelper(String("unhandled type: ") + typeId()));
   }
   return invalidProperty;
 }
@@ -1493,7 +1512,7 @@ Type::isAnyNumber() const
        isBuiltinType(Names::kIntegerTypeName))
     return true;
 
-  const TypeProperty& prop = typeProperty(!K(mustExist));
+  const auto& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return prop.isAnyNumber();
   return false;
@@ -1582,7 +1601,7 @@ Type::isBool() const
 bool
 Type::isAnyFloat() const
 {
-  const TypeProperty& prop = typeProperty(!K(mustExist));
+  const auto& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return prop.isAnyFloat();
   return false;
@@ -1599,7 +1618,7 @@ Type::isAnyInt() const
 bool
 Type::isAnySignedInt() const
 {
-  const TypeProperty& prop = typeProperty(!K(mustExist));
+  const auto& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return prop.isSigned() && prop.isAnyInt();
   return false;
@@ -1612,7 +1631,7 @@ Type::isAnyUInt() const
   // if ( isBuiltinType(Names::kIntegerTypeName))
   //   return true;
 
-  const TypeProperty& prop = typeProperty(!K(mustExist));
+  const auto& prop = typeProperty(!K(mustExist));
   if (prop.isValid())
     return !prop.isSigned() && prop.isAnyInt();
   return false;
@@ -1676,18 +1695,18 @@ Type::typeName() const
     hr_invalid("");
 
   case kType_Ref:
-    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->name();
+    return std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->name();
 
   case kType_Array:
     return arrayBaseType().typeName();
   case kType_Class:
   case kType_Type:
-    return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->name();
+    return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->name();
   case kType_Alias:
-    return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->name();
+    return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->name();
 
   case kType_Measure:
-    return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name();
+    return std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->name();
   case kType_Union:
   case kType_Sequence:
   case kType_Function:
@@ -1709,7 +1728,7 @@ Type::typeId() const
 
   case kType_Ref:
     {
-      const TypeRefTypeImpl* tyimpl = dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj());
+      auto tyimpl = std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl);
       if (tyimpl->isOpenSelf())
         buffer << "'";
       if (fIsImaginary)
@@ -1732,7 +1751,7 @@ Type::typeId() const
   case kType_Class:
   case kType_Type:
     {
-      const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
+      auto tyimpl = std::dynamic_pointer_cast<TypeTypeImpl>(fImpl);
       if (fIsImaginary)
         buffer << "i<";
       buffer << tyimpl->name();
@@ -1744,23 +1763,23 @@ Type::typeId() const
     }
 
   case kType_Alias:
-    return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->name();
+    return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->name();
 
   case kType_Measure:
-    buffer << dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->name()
-           << dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->defUnit();
+    buffer << std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->name()
+           << std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->defUnit();
     return buffer.toString();
 
   case kType_Union:
-    buffer << "&(" << dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->types() << ")";
+    buffer << "&(" << std::dynamic_pointer_cast<UnionTypeImpl>(fImpl)->types() << ")";
     return buffer.toString();
 
   case kType_Sequence:
-    buffer << "(" << dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->types() << ")";
+    buffer << "(" << std::dynamic_pointer_cast<SeqTypeImpl>(fImpl)->types() << ")";
     return buffer.toString();
 
   case kType_Function:
-    return dynamic_cast<const FunctionTypeImpl*>(fImpl.obj())->functionSignature().typeId();
+    return std::dynamic_pointer_cast<FunctionTypeImpl>(fImpl)->functionSignature().typeId();
   }
 
   return String();
@@ -1778,33 +1797,31 @@ const TypeSlotList&
 Type::slots() const
 {
   hr_assert(isClass());
-  const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
-  return tyimpl->slots();
+  return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->slots();
 }
 
 
 Type
-Type::slotType(const String& slotName, Scope* scope) const
+Type::slotType(const String& slotName, const Scope& scope) const
 {
   hr_assert(isClass());
-  const TypeTypeImpl* tyimpl = dynamic_cast<const TypeTypeImpl*>(fImpl.obj());
-  const TypeSlotList& slotList = tyimpl->slots();
+  auto tyimpl = std::dynamic_pointer_cast<TypeTypeImpl>(fImpl);
 
-  for (size_t i = 0; i < slotList.size(); i++) {
-    if (slotList[i].name() == slotName)
-      return ( slotList[i].type().isDef()
-               ? slotList[i].type()
-               : Type::newAny() );
+  for (const auto& slot : tyimpl->slots()) {
+    if (slot.name() == slotName)
+      return ( slot.type().isDef()
+               ? slot.type()
+               : Type::makeAny() );
   }
 
-  Type inherits = typeInheritance();
+  auto inherits = typeInheritance();
   if (inherits.isSequence()) {
-    const TypeVector& inheritedTypes = inherits.seqTypes();
-    for (size_t i = 0; i < inheritedTypes.size(); i++) {
-      Type normalizedType = herschel::resolveType(inheritedTypes[i], scope);
+    const auto& inheritedTypes = inherits.seqTypes();
+    for (const auto& ty : inheritedTypes) {
+      auto normalizedType = herschel::resolveType(ty, scope);
 
       if (normalizedType.isClass()) {
-        Type sty = normalizedType.slotType(slotName, scope);
+        auto sty = normalizedType.slotType(slotName, scope);
         if (sty.isDef())
           return sty;
       }
@@ -1825,7 +1842,7 @@ const Type&
 Type::typeInheritance() const
 {
   hr_assert(isType() || isClass());
-  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->inherit();
+  return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->inherit();
 }
 
 
@@ -1833,7 +1850,7 @@ const FunctionSignature&
 Type::applySignature() const
 {
   hr_assert(isClass());
-  return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->applySignature();
+  return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->applySignature();
 }
 
 
@@ -1848,7 +1865,7 @@ const Type&
 Type::aliasReplaces() const
 {
   hr_assert(isAlias());
-  return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->inherit();
+  return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->inherit();
 }
 
 
@@ -1863,7 +1880,7 @@ const FunctionSignature&
 Type::functionSignature() const
 {
   hr_assert(isFunction());
-  return dynamic_cast<const FunctionTypeImpl*>(fImpl.obj())->functionSignature();
+  return std::dynamic_pointer_cast<FunctionTypeImpl>(fImpl)->functionSignature();
 }
 
 
@@ -1878,14 +1895,14 @@ const Type&
 Type::arrayBaseType() const
 {
   hr_assert(isArray());
-  return dynamic_cast<const ArrayTypeImpl*>(fImpl.obj())->baseType();
+  return std::dynamic_pointer_cast<ArrayTypeImpl>(fImpl)->baseType();
 }
 
 
 Type
 Type::arrayRootType() const
 {
-  Type ty = *this;
+  auto ty = *this;
   while (ty.isArray())
     ty = ty.arrayBaseType();
   return ty;
@@ -1896,7 +1913,7 @@ Type
 Type::rebase(const Type& newBaseType) const
 {
   if (arrayBaseType().isArray())
-    return Type::newArray(arrayBaseType().rebase(newBaseType),
+    return Type::makeArray(arrayBaseType().rebase(newBaseType),
                           arraySizeIndicator(),
                           arrayBaseType().isValueType());
 
@@ -1908,7 +1925,7 @@ int
 Type::arraySizeIndicator() const
 {
   hr_assert(isArray());
-  return dynamic_cast<const ArrayTypeImpl*>(fImpl.obj())->sizeIndicator();
+  return std::dynamic_pointer_cast<ArrayTypeImpl>(fImpl)->sizeIndicator();
 }
 
 
@@ -1923,7 +1940,7 @@ const TypeVector&
 Type::unionTypes() const
 {
   hr_assert(isUnion());
-  return dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->types();
+  return std::dynamic_pointer_cast<UnionTypeImpl>(fImpl)->types();
 }
 
 
@@ -1938,7 +1955,7 @@ const TypeVector&
 Type::seqTypes() const
 {
   hr_assert(isSequence());
-  return dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->types();
+  return std::dynamic_pointer_cast<SeqTypeImpl>(fImpl)->types();
 }
 
 
@@ -1946,9 +1963,9 @@ bool
 Type::containsType(const Type& type) const
 {
   if (isSequence())
-    return dynamic_cast<const SeqTypeImpl*>(fImpl.obj())->containsType(type);
+    return std::dynamic_pointer_cast<SeqTypeImpl>(fImpl)->containsType(type);
   else if (isUnion())
-    return dynamic_cast<const UnionTypeImpl*>(fImpl.obj())->containsType(type);
+    return std::dynamic_pointer_cast<UnionTypeImpl>(fImpl)->containsType(type);
 
   hr_invalid("no sequence or union type");
   return false;
@@ -1966,7 +1983,7 @@ const Type&
 Type::measureBaseType() const
 {
   hr_assert(isMeasure());
-  return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->inherit();
+  return std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->inherit();
 }
 
 
@@ -1974,7 +1991,7 @@ String
 Type::measureUnit() const
 {
   hr_assert(isMeasure());
-  return dynamic_cast<const MeasureTypeImpl*>(fImpl.obj())->defUnit();
+  return std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->defUnit();
 }
 
 
@@ -1982,7 +1999,7 @@ bool
 Type::hasConstraints() const
 {
   if (fKind == kType_Ref)
-    return ( !dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())
+    return ( !std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)
              ->constraints().empty() );
 
   return false;
@@ -1993,7 +2010,7 @@ const TypeConstVector&
 Type::constraints() const
 {
   if (fKind == kType_Ref)
-    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->constraints();
+    return std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->constraints();
 
   static TypeConstVector dummy;
   return dummy;
@@ -2004,7 +2021,7 @@ Type
 Type::setConstraints(const TypeConstVector& newConstraints) const
 {
   if (fKind == kType_Ref) {
-    Type clonedTy = Type::newTypeRef(typeName(),
+    auto clonedTy = Type::makeTypeRef(typeName(),
                                      generics(),
                                      newConstraints,
                                      isValueType());
@@ -2019,14 +2036,14 @@ Type::setConstraints(const TypeConstVector& newConstraints) const
 bool
 Type::isOpen() const
 {
-  return (fImpl != NULL && fImpl->isOpen());
+  return (fImpl && fImpl->isOpen());
 }
 
 
 bool
 Type::isOpenSelf() const
 {
-  return fKind == kType_Ref && fImpl != NULL && fImpl->isOpenSelf();
+  return fKind == kType_Ref && fImpl && fImpl->isOpenSelf();
 }
 
 
@@ -2044,12 +2061,12 @@ Type::generics() const
   switch (fKind) {
   case kType_Undefined:
   case kType_Ref:
-    return dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->generics();
+    return std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->generics();
   case kType_Class:
   case kType_Type:
-    return dynamic_cast<const TypeTypeImpl*>(fImpl.obj())->generics();
+    return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->generics();
   case kType_Alias:
-    return dynamic_cast<const AliasTypeImpl*>(fImpl.obj())->generics();
+    return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->generics();
 
   case kType_Array:
   case kType_Function:
@@ -2069,8 +2086,8 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
   Type clonedTy;
   switch (fKind) {
   case kType_Ref:
-    if (dynamic_cast<const TypeRefTypeImpl*>(fImpl.obj())->isOpen()) {
-      Type replacement = typeMap.lookupType(typeName());
+    if (std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->isOpen()) {
+      auto replacement = typeMap.lookupType(typeName());
       if (replacement.isDef()) {
         if (replacement.hasConstraints()) {
           // if (!constraints().empty())
@@ -2083,7 +2100,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
           allConstraints.insert(allConstraints.end(), replacement.constraints().begin(),
                                 replacement.constraints().end());
 
-          clonedTy = Type::newTypeRef(replacement.typeName(),
+          clonedTy = Type::makeTypeRef(replacement.typeName(),
                                       replacement.generics(),
                                       allConstraints,
                                       replacement.isValueType());
@@ -2092,7 +2109,7 @@ Type::replaceGenerics(const TypeCtx& typeMap) const
         }
         else if (hasConstraints()) {
           if (replacement.isRef() || replacement.isClass() || replacement.isType()) {
-            clonedTy = Type::newTypeRef(replacement.typeName(),
+            clonedTy = Type::makeTypeRef(replacement.typeName(),
                                         replacement.generics(),
                                         constraints(),
                                         replacement.isValueType());
@@ -2165,9 +2182,9 @@ Type::toString() const
 
 bool
 Type::matchGenerics(TypeCtx& localCtx, const Type& right0,
-                    Scope* scope, const SrcPos& srcpos) const
+                    const Scope& scope, const SrcPos& srcpos) const
 {
-  if (fImpl != NULL)
+  if (fImpl)
     return fImpl->matchGenerics(localCtx, right0, scope, srcpos);
   return false;
 }
@@ -2307,9 +2324,10 @@ namespace herschel
     { }
 
 
-    virtual BaseTypeConstraintImpl* clone() const
+    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const
     {
-      return new LogicalConstraintImpl(fOp, fLeft.clone(), fRight.clone());
+      return std::make_shared<LogicalConstraintImpl>(fOp, fLeft.clone(),
+                                                     fRight.clone());
     }
 
 
@@ -2322,10 +2340,9 @@ namespace herschel
 
     virtual bool isEqual(const BaseTypeConstraintImpl* other) const
     {
-      const LogicalConstraintImpl* c =
-      dynamic_cast<const LogicalConstraintImpl*>(other);
+      auto c = dynamic_cast<const LogicalConstraintImpl*>(other);
 
-      return (c != NULL &&
+      return (c &&
               fOp == c->fOp &&
               fLeft == c->fLeft &&
               fRight == c->fRight);
@@ -2350,7 +2367,7 @@ namespace herschel
     }
 
 
-    const char* optostr(TypeConstOperator op) const
+    zstring optostr(TypeConstOperator op) const
     {
       switch (op) {
       case kConstOp_and:           return "and";
@@ -2389,9 +2406,9 @@ namespace herschel
     { }
 
 
-    virtual BaseTypeConstraintImpl* clone() const
+    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const
     {
-      return const_cast<ValueConstraintImpl*>(this);
+      return std::make_shared<ValueConstraintImpl>(fOp, fValue);
     }
 
 
@@ -2403,10 +2420,9 @@ namespace herschel
 
     virtual bool isEqual(const BaseTypeConstraintImpl* other) const
     {
-      const ValueConstraintImpl* c =
-      dynamic_cast<const ValueConstraintImpl*>(other);
+      auto c = dynamic_cast<const ValueConstraintImpl*>(other);
 
-      return (c != NULL &&
+      return (c &&
               fOp == c->fOp &&
               fValue == c->fValue);
     }
@@ -2424,7 +2440,7 @@ namespace herschel
     }
 
 
-    const char* optostr(TypeConstOperator op) const
+    zstring optostr(TypeConstOperator op) const
     {
       switch (op) {
       case kConstOp_and:           hr_invalid("");
@@ -2468,9 +2484,9 @@ namespace herschel
     { }
 
 
-    virtual BaseTypeConstraintImpl* clone() const
+    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const
     {
-      return new TypeConstraintImpl(fOp, fType.clone());
+      return std::make_shared<TypeConstraintImpl>(fOp, fType.clone());
     }
 
 
@@ -2482,11 +2498,9 @@ namespace herschel
 
     virtual bool isEqual(const BaseTypeConstraintImpl* other) const
     {
-      const TypeConstraintImpl* c =
-      dynamic_cast<const TypeConstraintImpl*>(other);
+      auto c = dynamic_cast<const TypeConstraintImpl*>(other);
 
-      return (c != NULL &&
-              fType == c->fType);
+      return (c && fType == c->fType);
     }
 
 
@@ -2521,8 +2535,8 @@ namespace herschel
 
 //----------------------------------------------------------------------------
 
-TypeConstraint::TypeConstraint(BaseTypeConstraintImpl* impl)
-  : fImpl(impl)
+TypeConstraint::TypeConstraint(std::shared_ptr<BaseTypeConstraintImpl> impl)
+  : fImpl(std::move(impl))
 { }
 
 
@@ -2533,32 +2547,35 @@ TypeConstraint::TypeConstraint(const TypeConstraint& other)
 
 
 TypeConstraint
-TypeConstraint::newAnd(const TypeConstraint& left,
+TypeConstraint::makeAnd(const TypeConstraint& left,
                        const TypeConstraint& right)
 {
-  return new LogicalConstraintImpl(kConstOp_and, left, right);
+  return TypeConstraint(
+    std::make_shared<LogicalConstraintImpl>(kConstOp_and, left, right));
 }
 
 
 TypeConstraint
-TypeConstraint::newOr(const TypeConstraint& left,
+TypeConstraint::makeOr(const TypeConstraint& left,
                       const TypeConstraint& right)
 {
-  return new LogicalConstraintImpl(kConstOp_or, left, right);
+  return TypeConstraint(
+    std::make_shared<LogicalConstraintImpl>(kConstOp_or, left, right));
 }
 
 
 TypeConstraint
-TypeConstraint::newValue(TypeConstOperator op, const Token& value)
+TypeConstraint::makeValue(TypeConstOperator op, const Token& value)
 {
-  return new ValueConstraintImpl(op, value);
+  return TypeConstraint(
+    std::make_shared<ValueConstraintImpl>(op, value));
 }
 
 
 TypeConstraint
-TypeConstraint::newType(TypeConstOperator op, const Type& type)
+TypeConstraint::makeType(TypeConstOperator op, const Type& type)
 {
-  return new TypeConstraintImpl(op, type);
+  return TypeConstraint(std::make_shared<TypeConstraintImpl>(op, type));
 }
 
 
@@ -2574,7 +2591,7 @@ bool
 TypeConstraint::operator==(const TypeConstraint& other) const
 {
   if (constOp() == other.constOp())
-    return fImpl->isEqual(other.fImpl);
+    return fImpl->isEqual(other.fImpl.get());
   return false;
 }
 
@@ -2636,7 +2653,7 @@ Token
 TypeConstraint::constraintValue() const
 {
   hr_assert(isValueConstraint());
-  return dynamic_cast<ValueConstraintImpl*>(fImpl.obj())->token();
+  return std::dynamic_pointer_cast<ValueConstraintImpl>(fImpl)->token();
 }
 
 
@@ -2668,7 +2685,7 @@ const TypeConstraint&
 TypeConstraint::leftConstraint() const
 {
   hr_assert(isLogicalConstraint());
-  return dynamic_cast<const LogicalConstraintImpl*>(fImpl.obj())->left();
+  return std::dynamic_pointer_cast<LogicalConstraintImpl>(fImpl)->left();
 }
 
 
@@ -2676,7 +2693,7 @@ const TypeConstraint&
 TypeConstraint::rightConstraint() const
 {
   hr_assert(isLogicalConstraint());
-  return dynamic_cast<const LogicalConstraintImpl*>(fImpl.obj())->right();
+  return std::dynamic_pointer_cast<LogicalConstraintImpl>(fImpl)->right();
 }
 
 
@@ -2708,7 +2725,7 @@ Type
 TypeConstraint::typeConstraint() const
 {
   hr_assert(isTypeConstraint());
-  return dynamic_cast<TypeConstraintImpl*>(fImpl.obj())->type();
+  return std::dynamic_pointer_cast<TypeConstraintImpl>(fImpl)->type();
 }
 
 
@@ -2737,28 +2754,28 @@ FunctionParameter::FunctionParameter(const FunctionParameter& other)
 
 
 FunctionParameter
-FunctionParameter::newPosParam(const Type& type)
+FunctionParameter::makePosParam(const Type& type)
 {
   return FunctionParameter(kParamPos, !K(isSpec), String(), type);
 }
 
 
 FunctionParameter
-FunctionParameter::newSpecParam(const Type& type)
+FunctionParameter::makeSpecParam(const Type& type)
 {
   return FunctionParameter(kParamPos, K(isSpec), String(), type);
 }
 
 
 FunctionParameter
-FunctionParameter::newNamedParam(const String& key, const Type& type)
+FunctionParameter::makeNamedParam(const String& key, const Type& type)
 {
   return FunctionParameter(kParamNamed, !K(isSpec), key, type);
 }
 
 
 FunctionParameter
-FunctionParameter::newRestParam(const Type& type)
+FunctionParameter::makeRestParam(const Type& type)
 {
   return FunctionParameter(kParamRest, !K(isSpec), String(), type);
 }
@@ -2965,12 +2982,10 @@ FunctionSignature::isOpen() const
   if (fReturnType.isOpen())
     return true;
 
-  for (size_t i = 0; i < fParameters.size(); ++i) {
-    if (fParameters[i].type().isOpen())
-      return true;
-  }
-
-  return false;
+  return std::any_of(fParameters.begin(), fParameters.end(),
+                     [](const FunctionParameter& p) {
+                       return p.type().isOpen();
+                     });
 }
 
 
@@ -2998,15 +3013,15 @@ FunctionSignature::parameters() const
 bool
 FunctionSignature::matchGenerics(TypeCtx& localCtx,
                                  const FunctionSignature& right0,
-                                 Scope* scope, const SrcPos& srcpos) const
+                                 const Scope& scope, const SrcPos& srcpos) const
 {
   if (fParameters.size() == right0.parameters().size()) {
     if (!fReturnType.matchGenerics(localCtx, right0.returnType(),
                                    scope, srcpos))
       return false;
     for (size_t i = 0; i < fParameters.size(); ++i) {
-      const FunctionParameter& lparam = fParameters[i];
-      const FunctionParameter& rparam = right0.parameters()[i];
+      const auto& lparam = fParameters[i];
+      const auto& rparam = right0.parameters()[i];
 
       if (lparam.kind() != rparam.kind())
         return false;
@@ -3028,8 +3043,8 @@ FunctionSignature::toString() const
 
   if (!fParameters.empty()) {
     buf << "<ty:prms>\n";
-    for (size_t i = 0; i < fParameters.size(); i++)
-      buf << fParameters[i].toString();
+    for (const auto& p : fParameters)
+      buf << p.toString();
     buf << "</ty:prms>\n";
   }
 
@@ -3042,12 +3057,10 @@ FunctionSignature::toString() const
 bool
 FunctionSignature::hasPositionalParam() const
 {
-  for (size_t i = 0; i < fParameters.size(); i++) {
-    if (fParameters[i].kind() == FunctionParameter::kParamPos)
-      return true;
-  }
-
-  return false;
+  return std::any_of(fParameters.begin(), fParameters.end(),
+                     [](const FunctionParameter& p) {
+                       return p.kind() == FunctionParameter::kParamPos;
+                     });
 }
 
 
@@ -3056,10 +3069,13 @@ namespace herschel
   StringBuffer&
   operator<<(StringBuffer& other, const FunctionParamVector& params)
   {
-    for (size_t i = 0; i < params.size(); i++) {
-      if (i > 0)
-        other << ", ";
-      other << params[i].type().typeId();
+    if (!params.empty()) {
+      other << params.front().type().typeId();
+      std::for_each(std::next(params.begin()), params.end(),
+                    [&](const FunctionParameter& p) {
+                      other << ", ";
+                      other << p.type().typeId();
+                    });
     }
     return other;
   }
@@ -3142,22 +3158,22 @@ TypeUnit::operator=(const TypeUnit& other)
 namespace herschel
 {
   Type
-  resolveType(const Type& type, Scope* scope)
+  resolveType(const Type& type, const Scope& scope)
   {
     Type ty = ( type.isDef() && type.isRef()
-                ? scope->lookupType(type.typeName(), K(showAmbiguousSymDef))
+                ? scope.lookupType(type.typeName(), K(showAmbiguousSymDef))
                 : type );
     if (ty.isDef() && ty.isOpen()) {
       if (type.isDef())
-        return scope->normalizeType(ty, type);
+        return scope.normalizeType(ty, type);
     }
     return ty;
   }
 
 
   bool
-  isSameType(const TypeVector& vect0, const TypeVector& vect1, Scope* scope,
-             const SrcPos& srcpos, bool reportErrors)
+  isSameType(const TypeVector& vect0, const TypeVector& vect1,
+             const Scope& scope, const SrcPos& srcpos, bool reportErrors)
   {
     if (vect0.size() == vect1.size()) {
       for (size_t i = 0; i < vect0.size(); i++) {
@@ -3173,7 +3189,7 @@ namespace herschel
   bool
   isSameType(const FunctionSignature& leftsig,
              const FunctionSignature& rightsig,
-             Scope* scope, const SrcPos& srcpos, bool reportErrors)
+             const Scope& scope, const SrcPos& srcpos, bool reportErrors)
   {
     if (!isSameType(leftsig.returnType(), rightsig.returnType(),
                     scope, srcpos, reportErrors))
@@ -3182,8 +3198,8 @@ namespace herschel
       return false;
 
     for (size_t i = 0; i < leftsig.parameters().size(); i++) {
-      const FunctionParameter& leftprm = leftsig.parameters()[i];
-      const FunctionParameter& rightprm = rightsig.parameters()[i];
+      const auto& leftprm = leftsig.parameters()[i];
+      const auto& rightprm = rightsig.parameters()[i];
 
       if (leftprm.kind() != rightprm.kind() ||
           !isSameType(leftprm.type(), rightprm.type(), scope, srcpos,
@@ -3195,7 +3211,7 @@ namespace herschel
 
 
   bool
-  isSameType(const Type& left0, const Type& right0, Scope* scope,
+  isSameType(const Type& left0, const Type& right0, const Scope& scope,
              const SrcPos& srcpos, bool reportErrors)
   {
     if (!left0.isDef() || !right0.isDef()) {
@@ -3219,7 +3235,7 @@ namespace herschel
         if (reportErrors)
           errorf(srcpos, E_UndefinedType,
                  "Undefined type: '%s' (%s:%d)",
-                 (const char*)StrHelper(right0.typeId()), __FILE__, __LINE__);
+                 (zstring)StrHelper(right0.typeId()), __FILE__, __LINE__);
         return false;
       }
       // if only one of both types is open is can not be the same type.
@@ -3231,7 +3247,7 @@ namespace herschel
         if (reportErrors)
           errorf(srcpos, E_UndefinedType,
                  "Undefined type: '%s' (%s:%d)",
-                 (const char*)StrHelper(left0.typeId()), __FILE__, __LINE__);
+                 (zstring)StrHelper(left0.typeId()), __FILE__, __LINE__);
         return false;
       }
       // if only one of both types is open is can not be the same type.
@@ -3248,14 +3264,14 @@ namespace herschel
       if (reportErrors)
         errorf(srcpos, E_UndefinedType,
                "Undefined type: '%s' (%s:%d)",
-               (const char*)StrHelper(left0.typeId()), __FILE__, __LINE__);
+               (zstring)StrHelper(left0.typeId()), __FILE__, __LINE__);
       return false;
     }
     if (!right.isDef()) {
       if (reportErrors)
         errorf(srcpos, E_UndefinedType,
                "Undefined type: '%s' (%s:%d)",
-               (const char*)StrHelper(right0.typeId()), __FILE__, __LINE__);
+               (zstring)StrHelper(right0.typeId()), __FILE__, __LINE__);
       return false;
     }
 
@@ -3318,8 +3334,8 @@ namespace herschel
       return false;
     }
 
-    fprintf(stderr, "LEFT: %s\n", (const char*)StrHelper(left.toString()));
-    fprintf(stderr, "RIGHT: %s\n", (const char*)StrHelper(right.toString()));
+    fprintf(stderr, "LEFT: %s\n", (zstring)StrHelper(left.toString()));
+    fprintf(stderr, "RIGHT: %s\n", (zstring)StrHelper(right.toString()));
     hr_invalid("unhandled type?");
     return false;
   }
@@ -3328,7 +3344,7 @@ namespace herschel
   //! Indicates whether left0 is a subtype of right0.  This is tested by checking
   //! whether right0 is in left0's inheritance list.
   bool
-  inheritsFrom(const Type& left0, const Type& right0, Scope* scope,
+  inheritsFrom(const Type& left0, const Type& right0, const Scope& scope,
                const SrcPos& srcpos, bool reportErrors)
   {
     if (!left0.isDef() || !right0.isDef()) {
@@ -3337,8 +3353,8 @@ namespace herschel
       return false;
     }
 
-    Type left = resolveType(left0, scope);
-    Type right = resolveType(right0, scope);
+    auto left = resolveType(left0, scope);
+    auto right = resolveType(right0, scope);
 
     if (!left.isDef() || !right.isDef()) {
       if (reportErrors)
@@ -3357,7 +3373,7 @@ namespace herschel
     if (!inheritance.isDef())
       return false;
     else if (inheritance.isRef())
-      inheritance = scope->lookupType(inheritance);
+      inheritance = scope.lookupType(inheritance);
 
     if (!inheritance.isDef()) {
       if (reportErrors)
@@ -3378,14 +3394,12 @@ namespace herschel
     }
 
     if (inheritance.isSequence()) {
-      const TypeVector& seq = inheritance.seqTypes();
-      for (size_t i = 0; i < seq.size(); ++i) {
-        if (isSameType(seq[i], right, scope, srcpos, reportErrors))
-          return true;
-        if (inheritsFrom(seq[i], right, scope, srcpos, reportErrors))
-          return true;
-      }
-      return false;
+      return std::any_of(inheritance.seqTypes().begin(),
+                         inheritance.seqTypes().end(),
+                         [&](const Type& t) {
+                           return isSameType(t, right, scope, srcpos, reportErrors)
+                             || inheritsFrom(t, right, scope, srcpos, reportErrors);
+                         });
     }
 
     hr_invalid("unexpected type kind");
@@ -3396,8 +3410,8 @@ namespace herschel
   //----------------------------------------------------------------------------
 
   bool
-  isCovariant(const TypeVector& vect0, const TypeVector& vect1, Scope* scope,
-              const SrcPos& srcpos, bool reportErrors)
+  isCovariant(const TypeVector& vect0, const TypeVector& vect1,
+              const Scope& scope, const SrcPos& srcpos, bool reportErrors)
   {
     if (vect0.size() == vect1.size()) {
       for (size_t i = 0; i < vect0.size(); i++) {
@@ -3412,11 +3426,11 @@ namespace herschel
 
   bool
   isCovariantToEveryTypeInSeq(const Type& type, const TypeVector& vect0,
-                              Scope* scope,
+                              const Scope& scope,
                               const SrcPos& srcpos, bool reportErrors)
   {
-    for (size_t i = 0; i < vect0.size(); i++) {
-      if (!isCovariant(type, vect0[i], scope, srcpos, reportErrors))
+    for (const auto& ty : vect0) {
+      if (!isCovariant(type, ty, scope, srcpos, reportErrors))
         return false;
     }
     return true;
@@ -3425,16 +3439,16 @@ namespace herschel
 
   bool
   isCoOrInvariantToEveryTypeInUnion(const Type& type, const TypeVector& vect0,
-                                    Scope* scope,
+                                    const Scope& scope,
                                     const SrcPos& srcpos, bool reportErrors)
   {
-    bool hadOneCovariantType = false;
-    for (size_t i = 0; i < vect0.size(); i++) {
-      if (isContravariant(type, vect0[i], scope, srcpos, reportErrors) &&
-          !isSameType(type, vect0[i], scope, srcpos, reportErrors))
+    auto hadOneCovariantType = false;
+    for (const auto& ty : vect0) {
+      if (isContravariant(type, ty, scope, srcpos, reportErrors) &&
+          !isSameType(type, ty, scope, srcpos, reportErrors))
         return false;
       if (!hadOneCovariantType &&
-          isCovariant(type, vect0[i], scope, srcpos, reportErrors))
+          isCovariant(type, ty, scope, srcpos, reportErrors))
         hadOneCovariantType = true;
     }
     return hadOneCovariantType;
@@ -3443,11 +3457,11 @@ namespace herschel
 
   bool
   isCovariantForAllTypesInUnion(const TypeVector& vect0, const TypeVector& vect1,
-                                Scope* scope,
+                                const Scope& scope,
                                 const SrcPos& srcpos, bool reportErrors)
   {
-    for (size_t i = 0; i < vect0.size(); i++) {
-      if (!isCoOrInvariantToEveryTypeInUnion(vect0[i], vect1, scope,
+    for (const auto& ty : vect0) {
+      if (!isCoOrInvariantToEveryTypeInUnion(ty, vect1, scope,
                                              srcpos, reportErrors))
         return false;
     }
@@ -3458,7 +3472,7 @@ namespace herschel
   bool
   isCovariant(const FunctionSignature& leftsig,
               const FunctionSignature& rightsig,
-              Scope* scope, const SrcPos& srcpos, bool reportErrors)
+              const Scope& scope, const SrcPos& srcpos, bool reportErrors)
   {
     if (!isCovariant(leftsig.returnType(), rightsig.returnType(),
                      scope, srcpos, reportErrors))
@@ -3474,8 +3488,8 @@ namespace herschel
     TypeCtx localCtx;
 
     for (size_t i = 0; i < leftsig.parameters().size(); i++) {
-      const FunctionParameter& leftprm = leftsig.parameters()[i];
-      const FunctionParameter& rightprm = rightsig.parameters()[i];
+      const auto& leftprm = leftsig.parameters()[i];
+      const auto& rightprm = rightsig.parameters()[i];
 
       if (leftprm.kind() == rightprm.kind()) {
         if (leftprm.isSpecialized() && rightprm.isSpecialized()) {
@@ -3503,9 +3517,9 @@ namespace herschel
         }
 
         if (rightprm.type().isOpenSelf()) {
-          String genName = rightprm.type().typeName();
+          auto genName = rightprm.type().typeName();
 
-          Type knownType = localCtx.lookupType(genName);
+          auto knownType = localCtx.lookupType(genName);
           if (knownType.isDef()) {
             if (!isContravariant(leftprm.type(), knownType, scope, srcpos,
                                  reportErrors))
@@ -3541,9 +3555,9 @@ namespace herschel
     if (left.isAny() || left.isClangAtom())
       return true;
     if (left.isUnion()) {
-      const TypeVector& vect = left.unionTypes();
-      for (size_t i = 0; i < vect.size(); i++) {
-        if (containsAny(vect[i], srcpos, reportErrors))
+      const auto& vect = left.unionTypes();
+      for (const auto& ty : vect) {
+        if (containsAny(ty, srcpos, reportErrors))
           return true;
       }
     }
@@ -3553,7 +3567,7 @@ namespace herschel
 
 
   bool
-  isCovariant(const Type& left0, const Type& right0, Scope* scope,
+  isCovariant(const Type& left0, const Type& right0, const Scope& scope,
               const SrcPos& srcpos, bool reportErrors)
   {
     if (!left0.isDef() || !right0.isDef()) {
@@ -3575,7 +3589,7 @@ namespace herschel
           errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
         return false;
       }
-      if (isCovariant(right, Type::newAny(), scope, srcpos, reportErrors)) {
+      if (isCovariant(right, Type::makeAny(), scope, srcpos, reportErrors)) {
         // a generic open type is covariant to Any.  This needs special treatment
         // in the compiler though
         return true;
@@ -3590,7 +3604,7 @@ namespace herschel
         return false;
       }
 
-      if (isCovariant(left, Type::newAny(), scope, srcpos, reportErrors)) {
+      if (isCovariant(left, Type::makeAny(), scope, srcpos, reportErrors)) {
         // a generic open type is covariant to Any.  This needs special treatment
         // in the compiler though
         return true;
@@ -3628,11 +3642,11 @@ namespace herschel
 #endif
 
     if (left.isArray()) {
-      String rightTypeName = right.typeName();
+      auto rightTypeName = right.typeName();
       if (right.isType() && (rightTypeName == Names::kSliceableTypeName ||
                              rightTypeName == Names::kSliceableXTypeName) &&
           right.generics().size() == 2 &&
-          isSameType(right.generics()[0], Type::newUInt32(), scope,
+          isSameType(right.generics()[0], Type::makeUInt32(), scope,
                      srcpos, reportErrors) &&
           isSameType(left.arrayBaseType(), right.generics()[1],
                      scope, srcpos, reportErrors))
@@ -3643,7 +3657,7 @@ namespace herschel
       {
         // a generic open type is covariant to Any.  This needs special treatment
         // in the compiler though
-        return isCovariant(left.arrayBaseType(), Type::newAny(), scope, srcpos, reportErrors);
+        return isCovariant(left.arrayBaseType(), Type::makeAny(), scope, srcpos, reportErrors);
       }
       return isSameType(left, right, scope, srcpos, reportErrors);
     }
@@ -3728,7 +3742,7 @@ namespace herschel
 
 
   bool
-  isContravariant(const Type& left, const Type& right, Scope* scope,
+  isContravariant(const Type& left, const Type& right, const Scope& scope,
                   const SrcPos& srcpos, bool reportErrors)
   {
     return isCovariant(right, left,
@@ -3737,7 +3751,7 @@ namespace herschel
 
 
   bool
-  isInvariant(const Type& left, const Type& right, Scope* scope,
+  isInvariant(const Type& left, const Type& right, const Scope& scope,
               const SrcPos& srcpos, bool reportErrors)
   {
     return ( !isCovariant(left, right, scope, srcpos, reportErrors) &&
@@ -3751,16 +3765,16 @@ namespace herschel
 namespace herschel
 {
   Type
-  newRangeType(const Type& generic)
+  makeRangeType(const Type& generic)
   {
-    return Type::newType(Names::kRangeTypeName, vector_of(generic), Type());
+    return Type::makeType(Names::kRangeTypeName, makeVector(generic), Type());
   }
 
 
   void
-  tyerror(const Type& type, const char* msg)
+  tyerror(const Type& type, zstring msg)
   {
-    fprintf(stderr, "%s: %s\n", msg, (const char*)StrHelper(type.typeId()));
+    fprintf(stderr, "%s: %s\n", msg, (zstring)StrHelper(type.typeId()));
   }
 
 
@@ -3791,18 +3805,18 @@ namespace herschel
   Type
   maxIntType(const Type& leftty, const Type& rightty)
   {
-    int righttysize = intTypeBitsize(rightty);
+    auto righttysize = intTypeBitsize(rightty);
     if (intTypeBitsize(leftty) < righttysize) {
       if (leftty.isAnyUInt()) {
         switch (righttysize) {
         case 8:
-          return Type::newTypeRef(Names::kUInt8TypeName, K(isValue));
+          return Type::makeTypeRef(Names::kUInt8TypeName, K(isValue));
         case 16:
-          return Type::newTypeRef(Names::kUInt16TypeName, K(isValue));
+          return Type::makeTypeRef(Names::kUInt16TypeName, K(isValue));
         case 32:
-          return Type::newTypeRef(Names::kUInt32TypeName, K(isValue));
+          return Type::makeTypeRef(Names::kUInt32TypeName, K(isValue));
         case 64:
-          return Type::newTypeRef(Names::kUInt64TypeName, K(isValue));
+          return Type::makeTypeRef(Names::kUInt64TypeName, K(isValue));
         default:
           hr_invalid("unhandled int type size");
         }
@@ -3833,10 +3847,10 @@ namespace herschel
 
         TypeCtx localCtx;
         for (size_t i = 0; i < type.generics().size(); i++) {
-          Type gen = type.generics()[i];
+          auto gen = type.generics()[i];
           hr_assert(gen.isRef());
 
-          String genName = gen.typeName();
+          auto genName = gen.typeName();
           localCtx.registerType(genName, srcGenerics[i]);
         }
 
@@ -3867,7 +3881,7 @@ namespace herschel
 
 
   String
-  arrayTypeName(const char* baseName)
+  arrayTypeName(zstring baseName)
   {
     return arrayTypeName(String(baseName));
   }

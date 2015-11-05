@@ -8,21 +8,19 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_scope_h
-#define bootstrap_scope_h
+#pragma once
 
 #include "common.h"
 
-#include <map>
-#include <set>
-
-#include "ptr.h"
 #include "exception.h"
-#include "refcountable.h"
 #include "srcpos.h"
 #include "str.h"
 #include "type.h"
 #include "parsertypes.h"
+
+#include <map>
+#include <memory>
+#include <set>
 
 
 namespace herschel
@@ -41,7 +39,7 @@ namespace herschel
     kScopeL_Local,
   };
 
-  class Scope : public RefCountable
+  class Scope
   {
   public:
     enum ScopeDomain
@@ -96,12 +94,12 @@ namespace herschel
 
 
     Scope(ScopeLevel level);
-    Scope(ScopeLevel level, Scope* parent);
+    Scope(ScopeLevel level, std::shared_ptr<Scope> parent);
 
-    Scope* parent() const;
+    std::shared_ptr<Scope> parent() const;
     ScopeLevel scopeLevel() const;
-    static const char* scopeLevelName(ScopeLevel level);
-    const char* scopeLevelName() const;
+    static zstring scopeLevelName(ScopeLevel level);
+    zstring scopeLevelName() const;
 
 
     //! Check whether a given symbol \p name is registered in this scope.  If
@@ -125,7 +123,7 @@ namespace herschel
 
     bool hasScopeForFileLocal(const String& absPath) const;
     bool hasScopeForFile(const String& absPath) const;
-    void addImportedScope(const String& absPath, Scope* scope);
+    void addImportedScope(const String& absPath, std::shared_ptr<Scope> scope);
 
 
     //-------- types
@@ -156,19 +154,19 @@ namespace herschel
 
     //! register a unit \p unitName defined in terms of \p baseUnit, refering
     //! to the type \p baseType.  The unit \p unitName can be computed into \p
-    //! baseUnit by \p transformFunc.  If \p transformFunc is NULL this is a
+    //! baseUnit by \p transformFunc.  If \p transformFunc is nullptr this is a
     //! base unit.
     void registerUnit(const SrcPos& srcpos,
                       const String& unitName, const String& baseUnit,
                       const Type& baseType,
-                      AptNode* transformFunc);
+                      std::shared_ptr<AptNode> transformFunc);
 
     TypeUnit lookupUnit(const String& name, bool showAmbiguousSymDef) const;
 
     //-------- macros
 
     void registerMacro(const SrcPos& srcpos,
-                       const String& name, Macro* macro);
+                       const String& name, std::shared_ptr<Macro> macro);
     const Macro* lookupMacro(const SrcPos& srcpos,
                              const String& name, bool showAmbiguousSymDef) const;
 
@@ -176,14 +174,14 @@ namespace herschel
     //-------- functions
 
     void registerFunction(const SrcPos& srcpos,
-                          const String& name, AptNode* node);
+                          const String& name, std::shared_ptr<AptNode> node);
     const AptNode* lookupFunction(const String& name, bool showAmbiguousSymDef) const;
 
 
     //-------- variables
 
     void registerVar(const SrcPos& srcpos,
-                     const String& name, AptNode* macro);
+                     const String& name, std::shared_ptr<AptNode> macro);
     const AptNode* lookupVar(const String& name, bool showAmbiguousSymDef) const;
 
     const AptNode* lookupVarOrFunc(const String& name,
@@ -203,8 +201,8 @@ namespace herschel
     void attachSymbolForExport(ScopeDomain domain, const String& sym,
                                const String& attachedSym);
 
-    void exportSymbols(Scope* dstScope, bool propagateOuter) const;
-    void propagateImportedScopes(Scope* dstScope) const;
+    void exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) const;
+    void propagateImportedScopes(std::shared_ptr<Scope> dstScope) const;
 
 
     //-------- global defs
@@ -218,7 +216,7 @@ namespace herschel
       kScopeItem_unit
     };
 
-    class ScopeItem : public RefCountable
+    class ScopeItem
     {
     public:
       ScopeItem(const SrcPos& srcpos)
@@ -239,11 +237,12 @@ namespace herschel
     };
 
   private:
-    void registerScopeItem(const ScopeName& name, ScopeItem* item);
+    void registerScopeItem(const ScopeName& name,
+                           std::shared_ptr<ScopeItem> item);
     struct LookupResult
     {
       LookupResult()
-        : fItem(NULL),
+        : fItem(nullptr),
           fInOuterFunc(false)
       { }
 
@@ -284,21 +283,21 @@ namespace herschel
 
     void dumpDebugImpl() const;
 
-    void exportAllSymbols(Scope* dstScope, bool propagateOuter) const;
-    void exportAttachedSymbols(Scope* dstScope,
+    void exportAllSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) const;
+    void exportAttachedSymbols(std::shared_ptr<Scope> dstScope,
                                const ScopeName& fullKey, VizType vizType,
                                bool isFinal) const;
 
 
     //-------- data members
 
-    typedef std::map<String, Ptr<ScopeItem> > BaseScopeMap;
-    typedef std::map<ScopeName, BaseScopeMap> NsScopeMap;
-    typedef std::map<String, Ptr<Scope> >     ImportedScope;
-    typedef std::set<String>                  AttachedSymbols;
+    using BaseScopeMap = std::map<String, std::shared_ptr<ScopeItem>>;
+    using NsScopeMap = std::map<ScopeName, BaseScopeMap>;
+    using ImportedScope = std::map<String, std::shared_ptr<Scope>>;
+    using AttachedSymbols = std::set<String>;
 
     NsScopeMap fMap;
-    Ptr<Scope> fParent;
+    std::shared_ptr<Scope> fParent;
 
     struct VisibilityPair
     {
@@ -307,12 +306,23 @@ namespace herschel
       AttachedSymbols fAttachedSymbols;
     };
 
-    typedef std::map<ScopeName, VisibilityPair> VizMap;
+    using VizMap = std::map<ScopeName, VisibilityPair>;
     VizMap fVisibility;
 
     ImportedScope fImportedScopes;
     ScopeLevel    fLevel;
   };
+
+  inline std::shared_ptr<Scope> makeScope(ScopeLevel level)
+  {
+    return std::make_shared<Scope>(level);
+  }
+
+  inline std::shared_ptr<Scope> makeScope(ScopeLevel level,
+                                          std::shared_ptr<Scope> parent)
+  {
+    return std::make_shared<Scope>(level, std::move(parent));
+  }
 
 
   //--------------------------------------------------------------------------
@@ -320,7 +330,7 @@ namespace herschel
   class ScopeHelper
   {
   public:
-    ScopeHelper(Ptr<Scope>& scope,
+    ScopeHelper(std::shared_ptr<Scope>& scope,
                 bool doExport,
                 bool isInnerScope,
                 ScopeLevel level)
@@ -329,7 +339,7 @@ namespace herschel
         fDoExport(doExport),
         fIsInnerScope(isInnerScope)
     {
-      fScopeLoc = new Scope(level, fScopeLoc);
+      fScopeLoc = makeScope(level, fScopeLoc);
     }
 
     ~ScopeHelper()
@@ -338,15 +348,16 @@ namespace herschel
     }
 
 
-    static void unrollScopes(Ptr<Scope>& scopeLoc, Scope* prevScope,
+    static void unrollScopes(std::shared_ptr<Scope>& scopeLoc,
+                             std::shared_ptr<Scope> prevScope,
                              bool doExport, bool isInnerScope)
     {
-      Scope* scope = scopeLoc;
-      while (scope != NULL && scope != prevScope) {
-        Scope* parent = scope->parent();
+      std::shared_ptr<Scope> scope = scopeLoc;
+      while (scope && scope != prevScope) {
+        auto parent = scope->parent();
         // printf("Export from %p to %p\n", scope, parent);
 
-        if (parent != NULL && doExport) {
+        if (parent && doExport) {
           scope->exportSymbols(parent, isInnerScope);
 
           if (!isInnerScope && parent == prevScope) {
@@ -362,11 +373,9 @@ namespace herschel
     }
 
   private:
-    Ptr<Scope>& fScopeLoc;
-    Ptr<Scope> fPrevScope;
+    std::shared_ptr<Scope>& fScopeLoc;
+    std::shared_ptr<Scope> fPrevScope;
     bool fDoExport;
     bool fIsInnerScope;
   };
 };                              // namespace
-
-#endif                          // bootstrap_scope_h

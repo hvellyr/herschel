@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_while_h
-#define bootstrap_codegen_while_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -34,10 +33,9 @@ namespace herschel
   class CodegenWhile : public CodeGeneratorProxy
   {
   public:
-    CodegenWhile(CodeGenerator* generator);
+    CodegenWhile(CodeGenerator& generator);
 
     llvm::Value* emit(const WhileNode* node) const;
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_while_h
+} // namespace

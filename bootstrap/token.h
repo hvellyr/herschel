@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_token_h
-#define bootstrap_token_h
+#pragma once
 
 #include <vector>
 #include <map>
@@ -18,10 +17,8 @@
 #  include <iostream>
 #endif
 
-#include "refcountable.h"
-#include "ptr.h"
-#include "port.h"
 #include "numbers.h"
+#include "port.h"
 #include "srcpos.h"
 
 
@@ -69,7 +66,7 @@ namespace herschel
 
   //! Returns a human readable name for operator \p type for debug and error
   //! reporting.
-  const char* operatorName(OperatorType type);
+  zstring operatorName(OperatorType type);
 
 
   //--------------------------------------------------------------------------
@@ -196,25 +193,25 @@ namespace herschel
   };
 
 
-  class TokenImpl : public RefCountable
+  class TokenImpl
   {
   public:
     virtual bool operator==(const Token& other) const = 0;
     virtual bool operator<(const Token& other) const = 0;
 
-    virtual TokenImpl* unshare()
+    virtual std::shared_ptr<TokenImpl> unshare(std::shared_ptr<TokenImpl> impl) const
     {
       // for immutable types unshare is a nop
-      return this;
+      return impl;
     }
 
-    virtual void toPort(Port<Octet>* port) const = 0;
+    virtual void toPort(Port<Octet>& port) const = 0;
     virtual String toString() const { /* TODO */ return String(); }
   };
 
 
-  typedef std::vector<Token>      TokenVector;
-  typedef std::map<String, Token> NamedTokenMap;
+  using TokenVector = std::vector<Token>;
+  using NamedTokenMap = std::map<String, Token>;
 
   class Token
   {
@@ -230,11 +227,11 @@ namespace herschel
 
     // an id expression
     Token(const SrcPos& where, const String& str);
-    Token(const SrcPos& where, const char* str);
+    Token(const SrcPos& where, zstring str);
 
     // a literal typed constructor for string values
     Token(const SrcPos& where, TokenType type, const String& str);
-    Token(const SrcPos& where, TokenType type, const char* str);
+    Token(const SrcPos& where, TokenType type, zstring str);
 
     // a literal typed constructor for int values
     Token(const SrcPos& where, TokenType type, int value);
@@ -255,8 +252,7 @@ namespace herschel
     Token(const Token& other);
     Token& operator=(const Token& other);
 
-    static Token newUniqueSymbolToken(const SrcPos& where,
-                                      const char* prefix);
+    static Token newUniqueSymbolToken(const SrcPos& where, zstring prefix);
 
     bool operator==(const Token& other) const;
     bool operator!=(const Token& other) const;
@@ -345,7 +341,7 @@ namespace herschel
     //! from, to, and step are constant literal values only
     bool isConstRange() const;
 
-    void toPort(Port<Octet>* port) const;
+    void toPort(Port<Octet>& port) const;
 
     String toString() const;
 
@@ -377,7 +373,7 @@ namespace herschel
 
     //-------- data members
     TokenType      fType;
-    Ptr<TokenImpl> fImpl;
+    std::shared_ptr<TokenImpl> fImpl;
     SrcPos         fSrcPos;
   };
 
@@ -395,4 +391,3 @@ namespace herschel
 };
 
 
-#endif  // bootstrap_token_h

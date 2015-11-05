@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_strbuf_h
-#define bootstrap_strbuf_h
+#pragma once
 
 #include <vector>
 
@@ -25,14 +24,14 @@ namespace herschel
     StringBuffer();
     StringBuffer(const StringBuffer& other);
     StringBuffer(const String& other);
-    StringBuffer(const char* other);
+    StringBuffer(zstring other);
 
     int length() const;
     bool isEmpty() const;
 
     StringBuffer& operator<<(const StringBuffer& other);
     StringBuffer& operator<<(const String& other);
-    StringBuffer& operator<<(const char* other);
+    StringBuffer& operator<<(zstring other);
     StringBuffer& operator<<(Char c);
 
     Char operator[] (int atIndex) const;
@@ -42,7 +41,7 @@ namespace herschel
 
     StringBuffer& insertAt(int atIndex, Char c);
     StringBuffer& insertAt(int atIndex, const String& other);
-    StringBuffer& insertAt(int atIndex, const char* utf8);
+    StringBuffer& insertAt(int atIndex, zstring utf8);
 
     String toString() const;
 
@@ -51,4 +50,3 @@ namespace herschel
   };
 };
 
-#endif  // bootstrap_strbuf_h

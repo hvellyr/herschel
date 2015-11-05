@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_codegen_apply_h
-#define bootstrap_codegen_apply_h
+#pragma once
 
 #include "llvm/IR/IRBuilder.h"
 
@@ -36,7 +35,7 @@ namespace herschel
   class CodegenApply : public CodeGeneratorProxy
   {
   public:
-    CodegenApply(CodeGenerator* generator);
+    CodegenApply(CodeGenerator& generator);
 
     llvm::Value* emit(const ApplyNode* node) const;
 
@@ -93,6 +92,5 @@ namespace herschel
 
     llvm::Value* emitArraySize(const ApplyNode* node) const;
   };
-};                              // namespace
 
-#endif                          // bootstrap_codegen_apply_h
+} // namespace

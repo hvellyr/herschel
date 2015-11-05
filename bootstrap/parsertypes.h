@@ -8,11 +8,12 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_parsertypes_h
-#define bootstrap_parsertypes_h
+#pragma once
 
 #include "token.h"
 #include "registry.h"
+
+#include <memory>
 
 
 namespace herschel
@@ -34,19 +35,16 @@ namespace herschel
   {
   public:
     ConfigVarRegistry();
-    ConfigVarRegistry(ConfigVarRegistry* parent);
+    ConfigVarRegistry(std::shared_ptr<ConfigVarRegistry> parent);
 
     virtual bool lookup(const String& name, Token* out) const;
 
   private:
-    Ptr<ConfigVarRegistry> fParent;
+    std::shared_ptr<ConfigVarRegistry> fParent;
   };
 
 
   OperatorType tokenTypeToOperator(TokenType type);
   TokenType operatorToTokenType(OperatorType op);
 
-};                              // namespace
-
-
-#endif  // bootstrap_parsertypes_h
+} // namespace

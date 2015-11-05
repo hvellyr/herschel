@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_numbers_h
-#define bootstrap_numbers_h
+#pragma once
 
 #if defined(UNITTESTS)
 #  include <iostream>
@@ -89,6 +88,5 @@ namespace herschel
 #if defined(UNITTESTS)
   std::ostream& operator<<(std::ostream& os, const Rational& rat);
 #endif
-};
 
-#endif  // bootstrap_numbers_h
+} // namespace

@@ -45,7 +45,7 @@ using namespace herschel;
 
 //------------------------------------------------------------------------------
 
-CodegenTypeUtils::CodegenTypeUtils(CodeGenerator* generator)
+CodegenTypeUtils::CodegenTypeUtils(CodeGenerator& generator)
   : CodeGeneratorProxy(generator)
 {
 }
@@ -60,10 +60,10 @@ CodegenTypeUtils::getAtomPayloadType() const
 
   llvm::StructType* atomPayloadType =
     (llvm::StructType*)module()->getTypeByName(typeName);
-  if (atomPayloadType == NULL) {
-    llvm::Type* payloadType = NULL;
+  if (!atomPayloadType) {
+    llvm::Type* payloadType = nullptr;
 
-    if (fGenerator->is64Bit()) {
+    if (fGenerator.is64Bit()) {
       payloadType = llvm::Type::getInt64Ty(context());
     }
     else {
@@ -86,10 +86,10 @@ CodegenTypeUtils::getAtomType() const
   llvm::StringRef typeName("struct.ATOM");
 
   llvm::Type* atomType = module()->getTypeByName(typeName);
-  if (atomType == NULL) {
-    llvm::Type* tagType = NULL;
+  if (!atomType) {
+    llvm::Type* tagType = nullptr;
 
-    if (fGenerator->is64Bit()) {
+    if (fGenerator.is64Bit()) {
       tagType = llvm::Type::getInt64Ty(context());
     }
     else {
@@ -110,7 +110,7 @@ CodegenTypeUtils::getAtomType() const
 llvm::Type*
 CodegenTypeUtils::getTagIdType() const
 {
-  if (fGenerator->is64Bit())
+  if (fGenerator.is64Bit())
     return llvm::Type::getInt64Ty(context());
   else
     return llvm::Type::getInt32Ty(context());
@@ -132,7 +132,7 @@ CodegenTypeUtils::getTypeSlotPairType() const
 
   llvm::StructType* typeSlotPairType =
     (llvm::StructType*)module()->getTypeByName(typeName);
-  if (typeSlotPairType == NULL) {
+  if (!typeSlotPairType) {
     auto typeSlotPairStructType = llvm::StructType::create(context(), typeName);
     typeSlotPairStructType->setBody(
       std::vector<llvm::Type*>{ llvm::Type::getInt8PtrTy(context()),
@@ -159,7 +159,7 @@ CodegenTypeUtils::getMethodStructType() const
   llvm::StringRef typeName("struct.Method");
 
   llvm::StructType* methodStructType = module()->getTypeByName(typeName);
-  if (methodStructType == NULL) {
+  if (!methodStructType) {
     methodStructType = llvm::StructType::create(context(), typeName);
     methodStructType->setBody(
       std::vector<llvm::Type*>{ getTypeType()->getPointerTo(),
@@ -182,7 +182,7 @@ CodegenTypeUtils::getMethodType() const
 llvm::Type*
 CodegenTypeUtils::getSizeTTy() const
 {
-  if (fGenerator->is64Bit())
+  if (fGenerator.is64Bit())
     return llvm::Type::getInt64Ty(context());
   else
     return llvm::Type::getInt32Ty(context());
@@ -195,7 +195,7 @@ CodegenTypeUtils::getArrayPayloadType() const
   llvm::StringRef typeName("struct.ArrayPayload");
 
   llvm::Type* arrayPLType = module()->getTypeByName(typeName);
-  if (arrayPLType == NULL) {
+  if (!arrayPLType) {
     auto arrayPLStructType = llvm::StructType::create(context(), typeName);
     arrayPLStructType->setBody(std::vector<llvm::Type*>{ getSizeTTy(),
                                                          llvm::Type::getInt8PtrTy(context()) },
@@ -227,7 +227,7 @@ size_t
 CodegenTypeUtils::getAtomTypeSize() const
 {
   // all other types are atoms
-  const llvm::StructLayout* layout = generator()->dataLayout()
+  const llvm::StructLayout* layout = generator().dataLayout()
     ->getStructLayout((llvm::StructType*)getAtomType());
   return layout->getSizeInBytes();
 }

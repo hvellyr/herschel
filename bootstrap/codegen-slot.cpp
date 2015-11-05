@@ -47,7 +47,7 @@
 
 using namespace herschel;
 
-CodegenSlot::CodegenSlot(CodeGenerator* generator)
+CodegenSlot::CodegenSlot(CodeGenerator& generator)
   : CodeGeneratorProxy(generator)
 {
 }
@@ -58,7 +58,7 @@ CodegenSlot::emitSlotRefAccess(const SlotRefNode* node) const
 {
   llvm::Value* addr = emitPtrToSlot(node, !K(isStore));
 
-  llvm::Type* slotType = types()->getType(node->type())->getPointerTo();
+  llvm::Type* slotType = types().getType(node->type())->getPointerTo();
   llvm::Value* slotAddr = builder().CreatePointerCast(addr, slotType);
 
   return builder().CreateLoad(slotAddr);
@@ -71,14 +71,14 @@ CodegenSlot::emitSlotRefAssignment(const SlotRefNode* node,
 {
   llvm::Value* addr = emitPtrToSlot(node, K(isStore));
 
-  llvm::Type* slotType = types()->getType(node->type())->getPointerTo();
+  llvm::Type* slotType = types().getType(node->type())->getPointerTo();
   llvm::Value* slotAddr = builder().CreatePointerCast(addr, slotType);
 
-  llvm::Value* slotRvalue = tools()->wrapLoad(generator()->codegenNode(rvalue));
-  slotRvalue = tools()->emitPackCode(rvalue->dstType(),
-                                     rvalue->typeConv(),
-                                     slotRvalue,
-                                     rvalue->type());
+  llvm::Value* slotRvalue = tools().wrapLoad(generator().codegenNode(*rvalue));
+  slotRvalue = tools().emitPackCode(rvalue->dstType(),
+                                    rvalue->typeConv(),
+                                    slotRvalue,
+                                    rvalue->type());
 
   return builder().CreateStore(slotRvalue, slotAddr);
 }
@@ -87,14 +87,14 @@ CodegenSlot::emitSlotRefAssignment(const SlotRefNode* node,
 llvm::Value*
 CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
 {
-  const char* slotFuncName = "h7_instance_slot";
+  zstring slotFuncName = "h7_instance_slot";
 
   llvm::Function *slotFunc = module()->getFunction(llvm::StringRef(slotFuncName));
-  if (slotFunc == NULL) {
-    // void* h7_instance_slot(ATOM* instance, const char* slot_name);
+  if (!slotFunc) {
+    // void* h7_instance_slot(ATOM* instance, zstring slot_name);
     llvm::FunctionType *ft = llvm::FunctionType::get(
       llvm::Type::getInt8PtrTy(context()),
-      std::vector<llvm::Type*>{ types()->getAtomType(),
+      std::vector<llvm::Type*>{ types().getAtomType(),
                                 llvm::Type::getInt8PtrTy(context()) },
       !K(isVarArg));
 
@@ -105,17 +105,17 @@ CodegenSlot::emitPtrToSlot(const SlotRefNode* node, bool isStore) const
   }
 
   // TODO: can we assert that the instance is actually ATOM typed
-  llvm::Value* val = tools()->wrapLoad(generator()->codegenNode(node->base()));
-  val = tools()->emitPackCode(node->base()->dstType(),
-                              node->base()->typeConv(),
-                              val,
-                              node->base()->type());
-  if (val == NULL)
-    return NULL;
-  llvm::Value* keywgv = initializer()->registerKeyword(node->slotName());
+  llvm::Value* val = tools().wrapLoad(generator().codegenNode(*node->base()));
+  val = tools().emitPackCode(node->base()->dstType(),
+                             node->base()->typeConv(),
+                             val,
+                             node->base()->type());
+  if (!val)
+    return nullptr;
+  llvm::Value* keywgv = initializer().registerKeyword(node->slotName());
   llvm::Value* keyw = builder().CreateLoad(keywgv);
 
-  hr_assert(slotFunc != NULL);
+  hr_assert(slotFunc);
   return builder().CreateCall(slotFunc, std::vector<llvm::Value*>{ val, keyw});
 }
 

@@ -18,30 +18,12 @@ using namespace herschel;
 
 static Type sInvalidType;
 
-
-TypeCtx::TypeCtx()
-{ }
-
-
-TypeCtx::TypeCtx(TypeCtx* parent)
- : fParent(parent)
-{
-}
-
-
-TypeCtx*
-TypeCtx::parent() const
-{
-  return fParent;
-}
-
-
 void
 TypeCtx::registerType(const String& name, const Type& type)
 {
   hr_assert(fMap.find(name) == fMap.end());
   // hr_assert(!type.isRef());
-//  hr_assert(!type.isArray());
+  // hr_assert(!type.isArray());
   hr_assert(type.isDef());
 
   fMap.insert(std::make_pair(name, type));
@@ -61,9 +43,6 @@ TypeCtx::lookupType(const String& name) const
   const Type& type = lookupTypeLocal(name);
   if (type.isDef())
     return type;
-
-  if (fParent != NULL)
-    return fParent->lookupType(name);
 
   return type;
 }
@@ -87,7 +66,7 @@ TypeCtx::dumpDebug()
        it != e; ++it)
   {
     fprintf(stderr, "TYPECTX: %s -> %s\n",
-            (const char*)StrHelper(it->first),
-            (const char*)StrHelper(it->second.toString()));
+            (zstring)StrHelper(it->first),
+            (zstring)StrHelper(it->second.toString()));
   }
 }

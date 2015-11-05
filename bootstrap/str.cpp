@@ -19,7 +19,6 @@
 #include "log.h"
 #include "str.h"
 #include "strbuf.h"
-#include "refcountable.h"
 #include "exception.h"
 
 #include <string>
@@ -40,20 +39,20 @@ static int str_rstr(const Char* haystack, int hslen, int ofs,
 
 namespace herschel
 {
-  class StringImpl : public RefCountable
+  class StringImpl
   {
   public:
     StringImpl()
-      : fData(NULL),
+      : fData(nullptr),
         fLength(0)
     { }
 
     ~StringImpl()
     {
-      if (fData != NULL)
+      if (fData)
       {
         ::free(fData);
-        fData = NULL;
+        fData = nullptr;
       }
     }
 
@@ -67,7 +66,7 @@ namespace herschel
       else
       {
         ::free(fData);
-        fData = NULL;
+        fData = nullptr;
         fLength = 0;
       }
     }
@@ -94,9 +93,9 @@ namespace herschel
     }
 
 
-    void createFromUtf8(const char* utf8, int items)
+    void createFromUtf8(zstring utf8, int items)
     {
-      int reqlen = str_utf8_to_wcs(utf8, items, NULL, 0);
+      int reqlen = str_utf8_to_wcs(utf8, items, nullptr, 0);
 
       reallocate(reqlen);
       int reallen = str_utf8_to_wcs(utf8, items, fData, reqlen);
@@ -124,7 +123,7 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  String operator+(const String& one, const char* two)
+  String operator+(const String& one, zstring two)
   {
     return one + String(two);
   }
@@ -188,58 +187,45 @@ namespace herschel
 //----------------------------------------------------------------------------
 
 String::String()
-  : fImpl(new StringImpl)
+  : fImpl(std::make_shared<StringImpl>())
 {
-  fImpl->incRef();
 }
 
 
 String::String(const String& other)
-  : fImpl(NULL)
 {
-  other.fImpl->incRef();
   fImpl = other.fImpl;
 }
 
 
-String::String(const char* utf8)
-  : fImpl(new StringImpl)
+String::String(zstring utf8)
+  : fImpl(std::make_shared<StringImpl>())
 {
-  fImpl->incRef();
   fImpl->createFromUtf8(utf8, ::strlen(utf8));
 }
 
 
 String::String(const std::string& utf8)
-  : fImpl(new StringImpl)
+  : fImpl(std::make_shared<StringImpl>())
 {
-  fImpl->incRef();
   fImpl->createFromUtf8(utf8.c_str(), utf8.length());
 }
 
 
-String::String(const char* utf8, int items)
-  : fImpl(new StringImpl)
+String::String(zstring utf8, int items)
+  : fImpl(std::make_shared<StringImpl>())
 {
-  fImpl->incRef();
   fImpl->createFromUtf8(utf8, items);
 }
 
 
 String::String(const Char* str, int items)
-  : fImpl(new StringImpl)
+  : fImpl(std::make_shared<StringImpl>())
 {
-  fImpl->incRef();
   if (items > 0) {
     fImpl->reallocate(items);
     fImpl->copyFromWcs(0, str, items);
   }
-}
-
-
-String::~String()
-{
-  fImpl->decRef();
 }
 
 
@@ -253,8 +239,6 @@ String::data() const
 String&
 String::operator=(const String& other)
 {
-  other.fImpl->incRef();
-  fImpl->decRef();
   fImpl = other.fImpl;
   return *this;
 }
@@ -435,8 +419,8 @@ String::operator[] (int atIndex) const
 int
 String::toUtf8(char* dst, int maxItems) const
 {
-  if (dst == NULL)
-    return str_wcs_to_utf8(fImpl->fData, fImpl->fLength, NULL, maxItems);
+  if (!dst)
+    return str_wcs_to_utf8(fImpl->fData, fImpl->fLength, nullptr, maxItems);
 
   int len = str_wcs_to_utf8(fImpl->fData, fImpl->fLength,
                             (Octet*)dst, maxItems);
@@ -494,14 +478,14 @@ int
 String::toInt(int radix) const
 {
   char tmp[128];
-  char *endptr = NULL;
+  char *endptr = nullptr;
 
   toUtf8(tmp, 128);
 
   errno = 0;
 
   int val = strtol(tmp, &endptr, radix);
-  if (endptr != NULL && strlen(endptr) > 0)
+  if (endptr && strlen(endptr) > 0)
     throw NotANumberException(String("Is not a number: ") + tmp);
 
   if (errno == ERANGE) {
@@ -516,14 +500,14 @@ int64_t
 String::toInt64(int radix) const
 {
   char tmp[128];
-  char *endptr = NULL;
+  char *endptr = nullptr;
 
   toUtf8(tmp, 128);
 
   errno = 0;
 
   int64_t val = strtoll(tmp, &endptr, radix);
-  if (endptr != NULL && strlen(endptr) > 0)
+  if (endptr && strlen(endptr) > 0)
     throw NotANumberException(String("Is not a number: ") + tmp);
 
   if (errno == ERANGE) {
@@ -538,14 +522,14 @@ uint64_t
 String::toUInt64(int radix) const
 {
   char tmp[128];
-  char *endptr = NULL;
+  char *endptr = nullptr;
 
   toUtf8(tmp, 128);
 
   errno = 0;
 
   uint64_t val = strtoull(tmp, &endptr, radix);
-  if (endptr != NULL && strlen(endptr) > 0)
+  if (endptr && strlen(endptr) > 0)
     throw NotANumberException(String("Is not a number: ") + tmp);
 
   if (errno == ERANGE) {
@@ -560,12 +544,12 @@ double
 String::toDouble() const
 {
   char tmp[128];
-  char *endptr = NULL;
+  char *endptr = nullptr;
 
   toUtf8(tmp, 128);
 
   double val = strtod(tmp, &endptr);
-  if (endptr != NULL && strlen(endptr) > 0)
+  if (endptr && strlen(endptr) > 0)
     throw NotANumberException(String("Is not a number: ") + tmp);
   return val;
 }
@@ -679,12 +663,12 @@ str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle, int nlen)
 
 
 int
-herschel::str_utf8_to_wcs(const char* src, int items, Char* dst, int maxItems)
+herschel::str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems)
 {
   Octet* sp = (Octet*)src;
   const Octet* end = (Octet*)src + items;
 
-  if (dst != NULL) {
+  if (dst) {
     Char* dp = dst;
 
     while (sp < end) {
@@ -864,14 +848,14 @@ herschel::xmlEncode(const String& str)
 
 
 String
-herschel::xmlEncode(const char* str)
+herschel::xmlEncode(zstring str)
 {
   return xmlEncode(String(str));
 }
 
 
 String
-herschel::uniqueName(const char* prefix)
+herschel::uniqueName(zstring prefix)
 {
   static int counter = 0;
   StringBuffer buffer;
@@ -883,7 +867,7 @@ herschel::uniqueName(const char* prefix)
 #if defined(UNITTESTS)
 std::ostream& herschel::operator<<(std::ostream& os, const String& str)
 {
-  os << "\"" << (const char*)StrHelper(str) << "\"";
+  os << "\"" << (zstring)StrHelper(str) << "\"";
   return os;
 }
 

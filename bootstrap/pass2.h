@@ -8,24 +8,24 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_pass2_h
-#define bootstrap_pass2_h
-
-#include <set>
-#include <list>
-#include <map>
+#pragma once
 
 #include "apt.h"
 #include "compilepass.h"
 #include "compiler.h"
 #include "pass.h"
 #include "port.h"
-#include "refcountable.h"
 #include "scope.h"
 #include "token.h"
 #include "tokenport.h"
 #include "type.h"
 #include "typectx.h"
+
+#include <set>
+#include <list>
+#include <map>
+#include <memory>
+
 
 namespace herschel
 {
@@ -42,96 +42,97 @@ namespace herschel
   class SecondPass : public AbstractPass
   {
   public:
-    SecondPass(Compiler* compiler, Scope* scope);
+    SecondPass(Compiler& compiler, std::shared_ptr<Scope> scope);
 
     //! Transforms the token expressions as returned by the \c FirstPass into
     //! a tree of \c AptNode nodes.
-    AptNode* parse(const Token& exprs);
+    std::shared_ptr<AptNode> parse(const Token& exprs);
 
   private:
     struct PrimeTuple
     {
-      Ptr<AptNode> fPrime;
-      Type         fType;
+      std::shared_ptr<AptNode> fPrime;
+      Type fType;
     };
 
     NodeList parseExpr(const Token& expr);
     NodeList parseSeq(const Token& expr);
 
-    AptNode* parseModule(const Token& expr);
-    AptNode* parseExport(const Token& expr);
-    AptNode* parseImport(const Token& expr);
+    std::shared_ptr<AptNode> parseModule(const Token& expr);
+    std::shared_ptr<AptNode> parseExport(const Token& expr);
+    std::shared_ptr<AptNode> parseImport(const Token& expr);
 
 
     void parseTopExprlist(const Token& expr);
 
-    NodeList rewriteDefNode(AptNode* node, bool isLet);
+    NodeList rewriteDefNode(std::shared_ptr<AptNode> node, bool isLet);
     NodeList rewriteDefNodes(const NodeList& nodes, bool isLet);
 
     NodeList parseDef(const Token& expr, bool isLocal);
-    AptNode* parseIf(const Token& expr);
-    AptNode* parseOn(const Token& expr);
-    AptNode* parseFor(const Token& expr);
-    AptNode* parseSelect(const Token& expr);
-    AptNode* parseMatch(const Token& expr);
-    AptNode* parseClosure(const Token& expr);
-    AptNode* parseBinary(const Token& expr);
-    AptNode* parseFunCall(const Token& expr);
+    std::shared_ptr<AptNode> parseIf(const Token& expr);
+    std::shared_ptr<AptNode> parseOn(const Token& expr);
+    std::shared_ptr<AptNode> parseFor(const Token& expr);
+    std::shared_ptr<AptNode> parseSelect(const Token& expr);
+    std::shared_ptr<AptNode> parseMatch(const Token& expr);
+    std::shared_ptr<AptNode> parseClosure(const Token& expr);
+    std::shared_ptr<AptNode> parseBinary(const Token& expr);
+    std::shared_ptr<AptNode> parseFunCall(const Token& expr);
     NodeList parseFunCallArgs(const TokenVector& args);
-    AptNode* parseTypeExpr(const Token& expr, bool inArrayType = false);
+    std::shared_ptr<AptNode> parseTypeExpr(const Token& expr, bool inArrayType = false);
 
     NodeList parseTokenVector(const TokenVector& seq);
     void parseParameters(NodeList* parameters, const TokenVector& seq);
 
-    AptNode* parseParameter(const Token& expr);
+    std::shared_ptr<AptNode> parseParameter(const Token& expr);
 
     NodeList parseTypeDef(const Token& expr, size_t ofs, bool isType,
                           bool isLocal);
-    AptNode* generateConstructor(const Token& typeExpr,
-                                 const String& fullTypeName,
-                                 const Type& defType,
-                                 const NodeList& defaultApplyParams,
-                                 const NodeList& slotDefs,
-                                 const std::vector<PrimeTuple>& primes,
-                                 const NodeList& onExprs);
+    std::shared_ptr<AptNode>
+    generateConstructor(const Token& typeExpr,
+                        const String& fullTypeName,
+                        const Type& defType,
+                        const NodeList& defaultApplyParams,
+                        const NodeList& slotDefs,
+                        const std::vector<PrimeTuple>& primes,
+                        const NodeList& onExprs);
     void generatePrimeInits(const SrcPos& srcpos,
-                            ListNode* body,
+                            std::shared_ptr<ListNode> body,
                             const Type& defType,
                             const std::vector<PrimeTuple>& primes,
                             const String& selfParamSym);
-    AptNode* findPrimeForType(const Type& reqTypeInit,
-                              const std::vector<PrimeTuple>& primes);
-    AptNode* getPrimeForType(const Type& reqTypeInit,
-                             const std::vector<PrimeTuple>& primes,
-                             const String& selfParamSym);
+    std::shared_ptr<AptNode> findPrimeForType(const Type& reqTypeInit,
+                                              const std::vector<PrimeTuple>& primes);
+    std::shared_ptr<AptNode> getPrimeForType(const Type& reqTypeInit,
+                                             const std::vector<PrimeTuple>& primes,
+                                             const String& selfParamSym);
 
-    AptNode* defaultSlotInitValue(const SlotdefNode* slot);
+    std::shared_ptr<AptNode> defaultSlotInitValue(const SlotdefNode* slot);
     PrimeTuple parsePrime(const Token& primeToken);
     std::vector<SecondPass::PrimeTuple> parseOnAllocExpr(const Token& expr);
 
-    AptNode* parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
-    AptNode* parseSlotDef(const Token& expr, size_t ofs);
-    AptNode* parseEnumDef(const Token& expr, size_t ofs, bool isLocal);
-    AptNode* nextEnumInitValue(const SrcPos& srcpos,
+    std::shared_ptr<AptNode> parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
+    std::shared_ptr<AptNode> parseSlotDef(const Token& expr, size_t ofs);
+    std::shared_ptr<AptNode> parseEnumDef(const Token& expr, size_t ofs, bool isLocal);
+    std::shared_ptr<AptNode> nextEnumInitValue(const SrcPos& srcpos,
                                const Token& enumItemSym,
                                const Type& baseType, Token& lastInitToken);
-    AptNode* parseMeasureDef(const Token& expr, size_t ofs, bool isLocal);
-    AptNode* parseUnitDef(const Token& expr, size_t ofs, bool isLocal);
-    AptNode* parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
+    std::shared_ptr<AptNode> parseMeasureDef(const Token& expr, size_t ofs, bool isLocal);
+    std::shared_ptr<AptNode> parseUnitDef(const Token& expr, size_t ofs, bool isLocal);
+    std::shared_ptr<AptNode> parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
                          bool isLocal, const String& linkage);
     NodeList parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
                               const String& linkage);
 
-    AptNode* parseLiteralArray(const Token& expr);
-    AptNode* parseLiteralVector(const Token& expr);
-    AptNode* parseLiteralDict(const Token& expr);
+    std::shared_ptr<AptNode> parseLiteralArray(const Token& expr);
+    std::shared_ptr<AptNode> parseLiteralVector(const Token& expr);
+    std::shared_ptr<AptNode> parseLiteralDict(const Token& expr);
 
-    AptNode* newDefNode(AptNode* node, bool isLet);
+    std::shared_ptr<AptNode> newDefNode(std::shared_ptr<AptNode> node, bool isLet);
 
-    AptNode* parseBlock(const Token& expr);
+    std::shared_ptr<AptNode> parseBlock(const Token& expr);
     NodeList parseNested(const Token& expr);
 
-    AptNode* parseExtend(const Token& expr);
+    std::shared_ptr<AptNode> parseExtend(const Token& expr);
 
     Type parseTypeSpec(const Token& expr, bool forceOpenType = false);
     Type parseTypeSpecImpl(const Token& expr, bool forceOpenType);
@@ -159,19 +160,19 @@ namespace herschel
     void paramsNodeListToType(FunctionParamVector* funcParams,
                               const NodeList& nl) const;
 
-    AptNode* parseIntNumber(const Token& expr);
-    AptNode* parseRationalNumber(const Token& expr);
-    AptNode* parseRealNumber(const Token& expr);
+    std::shared_ptr<AptNode> parseIntNumber(const Token& expr);
+    std::shared_ptr<AptNode> parseRationalNumber(const Token& expr);
+    std::shared_ptr<AptNode> parseRealNumber(const Token& expr);
 
-    AptNode* parseChainSelect(const Token& expr);
-    AptNode* parseRealSelect(const Token& expr);
+    std::shared_ptr<AptNode> parseChainSelect(const Token& expr);
+    std::shared_ptr<AptNode> parseRealSelect(const Token& expr);
 
-    AptNode* parseUnitNumber(const Token& expr);
+    std::shared_ptr<AptNode> parseUnitNumber(const Token& expr);
 
-    AptNode* generateArrayAlloc(const Token& expr, AptNode* typeNode);
-    AptNode* generateAlloc(const Token& expr, const Type& type);
-    AptNode* generateInitObjectCall(const SrcPos& srcpos,
-                                    AptNode* newObjAllocExpr,
+    std::shared_ptr<AptNode> generateArrayAlloc(const Token& expr, std::shared_ptr<AptNode> typeNode);
+    std::shared_ptr<AptNode> generateAlloc(const Token& expr, const Type& type);
+    std::shared_ptr<AptNode> generateInitObjectCall(const SrcPos& srcpos,
+                                    std::shared_ptr<AptNode> newObjAllocExpr,
                                     const Type& type, const TokenVector& argTokens);
 
 
@@ -183,12 +184,12 @@ namespace herschel
         : fFlags(0)
       { }
 
-      NodeList     fParams;
-      Type         fType;
-      Ptr<AptNode> fReify;
-      Ptr<AptNode> fWhere;
+      NodeList fParams;
+      Type fType;
+      std::shared_ptr<AptNode> fReify;
+      std::shared_ptr<AptNode> fWhere;
       unsigned int fFlags;
-      Ptr<AptNode> fBody;
+      std::shared_ptr<AptNode> fBody;
     };
     void parseFundefClause(const TokenVector& seq, size_t& ofs,
                            FundefClauseData& data);
@@ -200,19 +201,19 @@ namespace herschel
     //! make and register a generic function declaration for name \p sym and
     //! parsed function data \p data.  Since generic functions are never local
     //! or may have a special linkage this can be passed here.
-    AptNode* makeGenericFunction(const SrcPos& srcpos,
+    std::shared_ptr<AptNode> makeGenericFunction(const SrcPos& srcpos,
                                  const String& sym,
                                  const FundefClauseData& data);
 
     //! make a method (i.e. a generic function implementation) for the generic
     //! function called \p sym with parsed function data \p data.
-    AptNode* makeMethod(const SrcPos& srcpos, const String& sym,
+    std::shared_ptr<AptNode> makeMethod(const SrcPos& srcpos, const String& sym,
                         const FundefClauseData& data);
 
     //! make a normal function named \p sym with parsed function data \p
     //! data.  The function data must not contain specialized parameters, nor
     //! must the function be flagged as generic.
-    AptNode* makeNormalFunction(const SrcPos& srcpos, const String& sym,
+    std::shared_ptr<AptNode> makeNormalFunction(const SrcPos& srcpos, const String& sym,
                                 const FundefClauseData& data,
                                 bool isLocal,
                                 const String& linkage);
@@ -227,14 +228,14 @@ namespace herschel
     size_t getWhereOfs(const Token& expr) const;
     size_t getWhereOfs(const TokenVector& seq, size_t ofs) const;
 
-    AptNode* constructWhileTestNode(const Token& expr, NodeList& testExprs);
+    std::shared_ptr<AptNode> constructWhileTestNode(const Token& expr, NodeList& testExprs);
 
-    AptNode* parseSlotAccess(const Token& expr);
+    std::shared_ptr<AptNode> parseSlotAccess(const Token& expr);
 
     Type getIntType(int bitwidth, bool isSigned) const;
 
 
-    typedef std::map<String, Type> TSharedGenericTable;
+    using TSharedGenericTable = std::map<String, Type>;
     class TSharedGenericScopeHelper
     {
     public:
@@ -258,9 +259,9 @@ namespace herschel
 
     //-------- data member
 
-    std::set<String>    fCurrentGenericTypes;
+    std::set<String> fCurrentGenericTypes;
     TSharedGenericTable fSharedGenericTable;
-    Ptr<ListNode>       fRootNode;
+    std::shared_ptr<ListNode> fRootNode;
   };
 
 
@@ -272,15 +273,14 @@ namespace herschel
   class NodifyPass : public Token2AptNodeCompilePass
   {
   public:
-    NodifyPass(int level, Compiler* compiler, Scope* scope);
-    virtual AptNode* doApply(const Token& src);
-    Scope* currentScope();
+    NodifyPass(int level, Compiler& compiler, std::shared_ptr<Scope> scope);
+    virtual std::shared_ptr<AptNode> doApply(const Token& src);
+    std::shared_ptr<Scope> currentScope();
 
   private:
-    Ptr<Scope>      fScope;
-    Ptr<Compiler>   fCompiler;
-    Ptr<SecondPass> fPass;
+    std::shared_ptr<Scope> fScope;
+    Compiler& fCompiler;
+    std::shared_ptr<SecondPass> fPass;
   };
-};
 
-#endif  // bootstrap_pass2_h
+} // namespace

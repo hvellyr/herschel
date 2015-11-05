@@ -8,8 +8,7 @@
    This source code is released under the BSD License.
 */
 
-#ifndef bootstrap_typeprops_int_h
-#define bootstrap_typeprops_int_h
+#pragma once
 
 #include "typeprops.h"
 #include "typeenum.h"
@@ -43,9 +42,9 @@ namespace herschel
 
     virtual int typeBitsize() const { return bitsize; }
 
-    virtual TypeEnumMaker* newBaseTypeEnumMaker() const
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
     {
-      return new EnumMaker;
+      return std::unique_ptr<TypeEnumMaker>(new EnumMaker);
     }
   };
 
@@ -61,7 +60,7 @@ namespace herschel
   public:
     Int32TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int32"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int32"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -80,7 +79,7 @@ namespace herschel
   public:
     ClangIntTypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int32"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int32"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -100,7 +99,7 @@ namespace herschel
   public:
     UInt32TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_uint32"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_uint32"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -120,7 +119,7 @@ namespace herschel
   public:
     Int16TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int16"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int16"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -140,7 +139,7 @@ namespace herschel
   public:
     UInt16TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_uint16"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_uint16"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -160,7 +159,7 @@ namespace herschel
   public:
     Int8TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int8"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int8"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -180,7 +179,7 @@ namespace herschel
   public:
     UInt8TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_uint8"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_uint8"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -200,7 +199,7 @@ namespace herschel
   public:
     Int64TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_int64"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_int64"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -220,7 +219,7 @@ namespace herschel
   public:
     UInt64TypeProperty() {}
 
-    virtual const char* convFuncName() const { return "h7_atom_2_uint64"; }
+    virtual zstring convFuncName() const { return "h7_atom_2_uint64"; }
 
     virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
     {
@@ -229,4 +228,3 @@ namespace herschel
   };
 };                              // namespace
 
-#endif                          // bootstrap_typeprops_int_h
