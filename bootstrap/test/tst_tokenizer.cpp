@@ -34,7 +34,8 @@ TEST_CASE("Tokenizer basic", "[tokenize]")
     "  slot data : Octet[]\n"
     "}\n";
 
-  Tokenizer tnz(new CharPort(new DataPort((Octet*)test, ::strlen(test))),
+  Tokenizer tnz(std::make_shared<CharPort>(
+                  std::make_shared<DataPort>((Octet*)test, ::strlen(test))),
                 String("n.n."));
 
   REQUIRE(tnz.nextToken() == Token(sp, kModuleId));
@@ -97,7 +98,8 @@ TEST_CASE("Tokenizer numbers", "[tokenize][numbers]")
     "12.34 0.12345e+10 123.45e+7 12.3456e-5 -3.1415\n"
     "2/3 120/33 1/1024\n"
     "5i  3.1415i\n";
-  Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
+  Tokenizer tnz(std::make_shared<CharPort>(
+                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
                 String("n.n."));
 
   try {
@@ -140,7 +142,8 @@ TEST_CASE("Tokenizer chars", "[tokenize][chars]")
     "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n"
     "\\ga \\gong ";
   Ptr<CharRegistry> cr = new CharRegistry;
-  Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
+  Tokenizer tnz(std::make_shared<CharPort>(
+                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
                 String("n.n."), cr);
   cr->registerValue(String("ga"), 0xac00);
   cr->registerValue(String("gong"), 0xacf5);
@@ -174,7 +177,8 @@ TEST_CASE("Tokenizer function defs", "[tokenize][functions]")
     "def f(arg: _x = 0 .. 20 by 2)\n"
     "def g(a @ ^'T)\n"
     "def h(a : ^Repo) a^ = 5 &m = 4\n";
-  Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
+  Tokenizer tnz(std::make_shared<CharPort>(
+                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
                 String("n.n."));
 
   try {
@@ -256,7 +260,8 @@ TEST_CASE("Tokenizer keyword static container", "[tokenize]")
     "#[1, 2] #[]\n"
     "#(1 -> 2) #()\n"
     "&(1, 2)\n";
-  Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
+  Tokenizer tnz(std::make_shared<CharPort>(
+                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
                 String("n.n."));
 
   try {
@@ -306,7 +311,8 @@ TEST_CASE("Tokenizer generics", "[tokenize][generics]")
     "1 XOR 2  1 OR 2  1 AND 2\n"
     "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n"
     "|abc ->abc\n";
-  Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
+  Tokenizer tnz(std::make_shared<CharPort>(
+                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
                 String("n.n."));
 
   try {
@@ -463,7 +469,8 @@ TEST_CASE("Tokenizer namespaces", "[tokenize][namespaces]")
   static zstring test =
     "io|File  self.io|val.display\n"
     "f('T)  12'mm\n";
-  Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
+  Tokenizer tnz(std::make_shared<CharPort>(
+                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
                 String("n.n."));
 
   try {
@@ -497,7 +504,8 @@ TEST_CASE("Tokenizer macro vars", "[tokenize][macros]")
 
   static zstring test =
     "##  ?val:name ?\"abc\" ?\"\" ";
-  Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
+  Tokenizer tnz(std::make_shared<CharPort>(
+                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
                 String("n.n."));
 
   try {
@@ -523,7 +531,8 @@ TEST_CASE("Tokenizer special macro brackets", "[tokenize][macros]")
 
   static zstring test =
     "\343\200\214 xyz \343\200\215 ";
-  Tokenizer tnz(new CharPort(new DataPort((Octet*)test, strlen(test))),
+  Tokenizer tnz(std::make_shared<CharPort>(
+                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
                 String("n.n."));
 
   try {

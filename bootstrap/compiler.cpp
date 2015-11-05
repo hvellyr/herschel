@@ -137,7 +137,7 @@ Compiler::unreadToken(const Token& token)
 
 
 std::shared_ptr<AptNode>
-Compiler::process(Port<Char>* port, const String& srcName)
+Compiler::process(std::shared_ptr<Port<Char>> port, const String& srcName)
 {
   fState.fScope = makeScope(kScopeL_CompileUnit, fState.fScope);
   importSystemHeaders(srcName);
@@ -146,9 +146,12 @@ Compiler::process(Port<Char>* port, const String& srcName)
 
 
 std::shared_ptr<AptNode>
-Compiler::processImpl(Port<Char>* port, const String& srcName, bool doTrace)
+Compiler::processImpl(std::shared_ptr<Port<Char>> port,
+                      const String& srcName, bool doTrace)
 {
-  fState.fPort = new FileTokenPort(port, srcName, fState.fCharRegistry);
+  fState.fPort = std::make_shared<FileTokenPort>(port,
+                                                 srcName,
+                                                 fState.fCharRegistry);
 
   hr_assert(fState.fScope);
 
@@ -293,8 +296,8 @@ Compiler::importFileImpl(const SrcPos& srcpos,
     if (preload)
       compiler.importSystemHeaders(absPath);
 
-    auto apt = compiler.processImpl(new CharPort(
-                                      new FilePort(absPath, "rb")),
+    auto apt = compiler.processImpl(std::make_shared<CharPort>(
+                                      std::make_shared<FilePort>(absPath, "rb")),
                                     srcName, !K(doTrace));
     auto scope = compiler.scope();
 
@@ -367,7 +370,8 @@ Compiler::CompilerState::operator=(const CompilerState& item)
 
 //==============================================================================
 
-Compiler::PortStackHelper::PortStackHelper(Compiler& compiler, TokenPort* port)
+Compiler::PortStackHelper::PortStackHelper(Compiler& compiler,
+                                           std::shared_ptr<TokenPort> port)
   : fCompiler(compiler),
     fPortOnly(true)
 {
@@ -407,8 +411,8 @@ namespace herschel
     try {
       if (doParse) {
         Compiler compiler{};
-        auto apt = compiler.process(new CharPort(
-                                      new FilePort(file, "rb")),
+        auto apt = compiler.process(std::make_shared<CharPort>(
+                                      std::make_shared<FilePort>(file, "rb")),
                                     file);
         if (doCompile) {
           hr_assert(apt);

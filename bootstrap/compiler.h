@@ -61,7 +61,7 @@ namespace herschel
   public:
     Compiler(bool isParsingInterface = false);
 
-    virtual std::shared_ptr<AptNode> process(Port<Char>* port,
+    virtual std::shared_ptr<AptNode> process(std::shared_ptr<Port<Char>> port,
                                              const String& srcName);
 
     CharRegistry* charRegistry() const;
@@ -108,7 +108,7 @@ namespace herschel
     class PortStackHelper
     {
     public:
-      PortStackHelper(Compiler& compiler, TokenPort* port);
+      PortStackHelper(Compiler& compiler, std::shared_ptr<TokenPort> port);
       ~PortStackHelper();
 
     private:
@@ -127,7 +127,8 @@ namespace herschel
     Token nextToken();
     void unreadToken(const Token& token);
 
-    std::shared_ptr<AptNode> processImpl(Port<Char>* port, const String& srcName,
+    std::shared_ptr<AptNode> processImpl(std::shared_ptr<Port<Char>> port,
+                                         const String& srcName,
                                          bool doTrace);
     bool importFileImpl(const SrcPos& srcpos,
                         const String& srcName, const String& absPath,
@@ -146,7 +147,7 @@ namespace herschel
       CompilerState(const CompilerState& item);
       CompilerState& operator=(const CompilerState& item);
 
-      Ptr<TokenPort>         fPort;
+      std::shared_ptr<TokenPort> fPort;
       Token                  fToken;
       Ptr<CharRegistry>      fCharRegistry;
       Ptr<ConfigVarRegistry> fConfigVarRegistry;

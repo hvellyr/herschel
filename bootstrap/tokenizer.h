@@ -10,10 +10,12 @@
 
 #pragma once
 
-#include "port.h"
 #include "numbers.h"
+#include "port.h"
 #include "registry.h"
 #include "token.h"
+
+#include <memory>
 
 
 namespace herschel
@@ -55,10 +57,10 @@ namespace herschel
 
   //--------------------------------------------------------------------------
 
-  class Tokenizer : public RefCountable
+  class Tokenizer
   {
   public:
-    Tokenizer(Port<Char>* port, const String& srcName,
+    Tokenizer(std::shared_ptr<Port<Char>> port, const String& srcName,
               CharRegistry* charRegistry = nullptr);
 
     bool isEof() const;
@@ -104,7 +106,7 @@ namespace herschel
 
 
     //-------- data member
-    Ptr<Port<Char> > fPort;
+    std::shared_ptr<Port<Char>> fPort;
     String fSrcName;
     int    fLineCount;
     int    fCC;

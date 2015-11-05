@@ -28,8 +28,9 @@ TEST_CASE("TokenPort file token port", "[port][data-port][token-port]")
     "}\n";
 
   SrcPos sp;
-  Ptr<TokenPort> p = new FileTokenPort(new DataPort((Octet*)fTest, ::strlen(fTest)),
-                                       String("test"));
+  auto p = std::make_shared<FileTokenPort>(
+    std::make_shared<DataPort>((Octet*)fTest, ::strlen(fTest)),
+    String("test"));
   REQUIRE(p->read() == Token(sp, kModuleId));
   REQUIRE(p->read() == Token(sp, kSymbol, String("zero")));
   REQUIRE(p->read() == Token(sp, kParanOpen));
@@ -101,7 +102,7 @@ TEST_CASE("InternalTokenPort", "[port][data-port][token-port]")
   tokens.push_back(Token(sp, kAssign));
   tokens.push_back(Token(sp, kRational, Rational(2, 3)));
 
-  Ptr<TokenPort> p = new InternalTokenPort(tokens);
+  auto p = std::make_shared<InternalTokenPort>(tokens);
 
   REQUIRE(p->read() == Token(sp, kSymbol, String("def")));
   REQUIRE(p->read() == Token(sp, kSymbol, String("const")));

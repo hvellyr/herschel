@@ -4767,7 +4767,7 @@ FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
     fToken = filtered[0];
 
     TokenVector retval;
-    Ptr<InternalTokenPort> tempPort = new InternalTokenPort(follows);
+    auto tempPort = std::make_shared<InternalTokenPort>(follows);
 
     {
       Compiler::PortStackHelper portStack(fCompiler, tempPort);

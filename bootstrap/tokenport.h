@@ -10,10 +10,11 @@
 
 #pragma once
 
-#include <list>
-
 #include "port.h"
 #include "tokenizer.h"
+
+#include <list>
+#include <memory>
 
 
 namespace herschel
@@ -37,9 +38,9 @@ namespace herschel
   class FileTokenPort : public TokenPort
   {
   public:
-    FileTokenPort(Port<Octet>* port, const String& srcName,
+    FileTokenPort(std::shared_ptr<Port<Octet>> port, const String& srcName,
                   CharRegistry* charRegistry = nullptr);
-    FileTokenPort(Port<Char>* port, const String& srcName,
+    FileTokenPort(std::shared_ptr<Port<Char>> port, const String& srcName,
                   CharRegistry* charRegistry = nullptr);
 
     virtual bool isOpen() const;
@@ -48,10 +49,10 @@ namespace herschel
     virtual Token read();
 
   private:
-    void setTokenizer(Tokenizer* tokenizer);
+    void setTokenizer(std::shared_ptr<Tokenizer> tokenizer);
 
     String         fSrcName;
-    Ptr<Tokenizer> fTokenizer;
+    std::shared_ptr<Tokenizer> fTokenizer;
   };
 
 

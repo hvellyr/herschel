@@ -51,22 +51,25 @@ TokenPort::canSetCursor() const
 
 //----------------------------------------------------------------------------
 
-FileTokenPort::FileTokenPort(Port<Octet>* port, const String& srcName,
+FileTokenPort::FileTokenPort(std::shared_ptr<Port<Octet>> port,
+                             const String& srcName,
                              CharRegistry* charRegistry)
 {
-  setTokenizer(new Tokenizer(new CharPort(port), srcName, charRegistry));
+  setTokenizer(std::make_shared<Tokenizer>(
+                 std::make_shared<CharPort>(port), srcName, charRegistry));
 }
 
 
-FileTokenPort::FileTokenPort(Port<Char>* port, const String& srcName,
+FileTokenPort::FileTokenPort(std::shared_ptr<Port<Char>> port,
+                             const String& srcName,
                              CharRegistry* charRegistry)
 {
-  setTokenizer(new Tokenizer(port, srcName, charRegistry));
+  setTokenizer(std::make_shared<Tokenizer>(port, srcName, charRegistry));
 }
 
 
 void
-FileTokenPort::setTokenizer(Tokenizer* tokenizer)
+FileTokenPort::setTokenizer(std::shared_ptr<Tokenizer> tokenizer)
 {
   fTokenizer = tokenizer;
 }
@@ -75,7 +78,7 @@ FileTokenPort::setTokenizer(Tokenizer* tokenizer)
 bool
 FileTokenPort::isOpen() const
 {
-  return fTokenizer;
+  return fTokenizer != nullptr;
 }
 
 

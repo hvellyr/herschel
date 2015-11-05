@@ -372,7 +372,7 @@ DataPort::length() const
 
 //----------------------------------------------------------------------------
 
-CharPort::CharPort(Port<Octet>* slave)
+CharPort::CharPort(std::shared_ptr<Port<Octet>> slave)
   : fSlave(slave)
 {
   hr_assert(fSlave);
