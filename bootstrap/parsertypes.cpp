@@ -109,8 +109,8 @@ ConfigVarRegistry::ConfigVarRegistry()
 {}
 
 
-ConfigVarRegistry::ConfigVarRegistry(ConfigVarRegistry* parent)
-  : fParent(parent)
+ConfigVarRegistry::ConfigVarRegistry(std::shared_ptr<ConfigVarRegistry> parent)
+  : fParent(std::move(parent))
 {}
 
 

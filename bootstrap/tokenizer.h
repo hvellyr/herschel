@@ -61,7 +61,7 @@ namespace herschel
   {
   public:
     Tokenizer(std::shared_ptr<Port<Char>> port, const String& srcName,
-              CharRegistry* charRegistry = nullptr);
+              std::shared_ptr<CharRegistry> charRegistry = nullptr);
 
     bool isEof() const;
 
@@ -112,7 +112,7 @@ namespace herschel
     int    fCC;
     bool   fNextCharIsGenericOpen;
     int    fInGenericContext;
-    Ptr<CharRegistry> fCharRegistry;
+    std::shared_ptr<CharRegistry> fCharRegistry;
   };
 };
 

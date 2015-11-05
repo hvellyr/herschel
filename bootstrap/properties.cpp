@@ -29,7 +29,7 @@ static bool sDontImport = false;
 
 static CompileOutFormat sCompileOutFormat = kLLVM_IR;
 static OptimizeLevel sOptLevel = kOptLevelBasic;
-static Ptr<ConfigVarRegistry> sConfigVarRegistry;
+static std::shared_ptr<ConfigVarRegistry> sConfigVarRegistry;
 static String sOutdir;
 static StringVector sInputSearchPath;
 static StringVector sSystemSearchPath;
@@ -244,7 +244,7 @@ Properties::setConfigVar(const String& keyValuePair)
 
   if (idx >= 0) {
     if (!sConfigVarRegistry)
-      sConfigVarRegistry = new ConfigVarRegistry;
+      sConfigVarRegistry = std::make_shared<ConfigVarRegistry>();
     sConfigVarRegistry->registerValue(key, Token(SrcPos("<commandline>", 0),
                                                  kString, value));
   }
@@ -253,11 +253,11 @@ Properties::setConfigVar(const String& keyValuePair)
 }
 
 
-ConfigVarRegistry*
+std::shared_ptr<ConfigVarRegistry>
 Properties::globalConfigVarRegistry()
 {
   if (!sConfigVarRegistry)
-    sConfigVarRegistry = new ConfigVarRegistry;
+    sConfigVarRegistry = std::make_shared<ConfigVarRegistry>();
   return sConfigVarRegistry;
 }
 

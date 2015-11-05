@@ -53,7 +53,7 @@ TokenPort::canSetCursor() const
 
 FileTokenPort::FileTokenPort(std::shared_ptr<Port<Octet>> port,
                              const String& srcName,
-                             CharRegistry* charRegistry)
+                             std::shared_ptr<CharRegistry> charRegistry)
 {
   setTokenizer(std::make_shared<Tokenizer>(
                  std::make_shared<CharPort>(port), srcName, charRegistry));
@@ -62,7 +62,7 @@ FileTokenPort::FileTokenPort(std::shared_ptr<Port<Octet>> port,
 
 FileTokenPort::FileTokenPort(std::shared_ptr<Port<Char>> port,
                              const String& srcName,
-                             CharRegistry* charRegistry)
+                             std::shared_ptr<CharRegistry> charRegistry)
 {
   setTokenizer(std::make_shared<Tokenizer>(port, srcName, charRegistry));
 }

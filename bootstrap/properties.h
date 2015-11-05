@@ -61,7 +61,7 @@ namespace herschel
 
 
     static void setConfigVar(const String& keyValuePair);
-    static ConfigVarRegistry* globalConfigVarRegistry();
+    static std::shared_ptr<ConfigVarRegistry> globalConfigVarRegistry();
 
     static void addInputDir(const String& dir);
     static const StringVector& inputDirSearchPath();

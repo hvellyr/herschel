@@ -471,7 +471,7 @@ SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceOpenTy
 
         int sizeInd = 0;
         if (expr[1].count() > 0) {
-          TokenEvalContext ctx(fCompiler.configVarRegistry());
+          TokenEvalContext ctx(*fCompiler.configVarRegistry());
           Token p = ctx.evalToken(expr[1][0]);
           if (p.isInt()) {
             sizeInd = p.intValue();

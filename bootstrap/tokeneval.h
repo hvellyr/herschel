@@ -44,7 +44,7 @@ namespace herschel
   class TokenEvalContext
   {
   public:
-    TokenEvalContext(ConfigVarRegistry* registry);
+    TokenEvalContext(ConfigVarRegistry& registry);
 
     Token evalToken(const Token& expr) const;
 
@@ -74,7 +74,7 @@ namespace herschel
                           const Token& rexpr) const;
 
     //-------- data members
-    Ptr<ConfigVarRegistry> fRegistry;
+    ConfigVarRegistry& fRegistry;
   };
 };
 

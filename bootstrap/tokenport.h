@@ -39,9 +39,9 @@ namespace herschel
   {
   public:
     FileTokenPort(std::shared_ptr<Port<Octet>> port, const String& srcName,
-                  CharRegistry* charRegistry = nullptr);
+                  std::shared_ptr<CharRegistry> charRegistry = nullptr);
     FileTokenPort(std::shared_ptr<Port<Char>> port, const String& srcName,
-                  CharRegistry* charRegistry = nullptr);
+                  std::shared_ptr<CharRegistry> charRegistry = nullptr);
 
     virtual bool isOpen() const;
     virtual bool isEof() const;

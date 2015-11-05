@@ -69,8 +69,9 @@ const Token Compiler::unitToken      = Token(SrcPos(), kSymbol, "unit");
 
 Compiler::Compiler(bool isParsingInterface)
   : fState(CompilerState(
-             new CharRegistry,
-             new ConfigVarRegistry(Properties::globalConfigVarRegistry()),
+             std::make_shared<CharRegistry>(),
+             std::make_shared<ConfigVarRegistry>(
+               Properties::globalConfigVarRegistry()),
              type::newRootScope())),
     fIsParsingInterface(isParsingInterface),
     fReferredFunctionCache(makeScope(kScopeL_CompileUnit))
@@ -78,14 +79,14 @@ Compiler::Compiler(bool isParsingInterface)
 }
 
 
-CharRegistry*
+std::shared_ptr<CharRegistry>
 Compiler::charRegistry() const
 {
   return fState.fCharRegistry;
 }
 
 
-ConfigVarRegistry*
+std::shared_ptr<ConfigVarRegistry>
 Compiler::configVarRegistry() const
 {
   return fState.fConfigVarRegistry;
@@ -339,11 +340,11 @@ Compiler::lookupFile(const String& srcName, bool isPublic)
 
 //==============================================================================
 
-Compiler::CompilerState::CompilerState(CharRegistry* charReg,
-                                       ConfigVarRegistry* configReg,
+Compiler::CompilerState::CompilerState(std::shared_ptr<CharRegistry> charReg,
+                                       std::shared_ptr<ConfigVarRegistry> configReg,
                                        std::shared_ptr<Scope> scope)
-  : fCharRegistry(charReg),
-    fConfigVarRegistry(configReg),
+  : fCharRegistry(std::move(charReg)),
+    fConfigVarRegistry(std::move(configReg)),
     fScope(std::move(scope))
 {
 }
@@ -378,7 +379,7 @@ Compiler::PortStackHelper::PortStackHelper(Compiler& compiler,
   fCompiler.fCompilerStates.push_front(fCompiler.fState);
   fCompiler.fState = CompilerState(
     compiler.charRegistry(),
-    new ConfigVarRegistry(compiler.configVarRegistry()),
+    std::make_shared<ConfigVarRegistry>(compiler.configVarRegistry()),
     compiler.fState.fScope);
 
   fCompiler.fState.fPort = port;

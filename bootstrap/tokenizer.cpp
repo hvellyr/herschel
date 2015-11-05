@@ -26,7 +26,7 @@ using namespace herschel;
 
 
 Tokenizer::Tokenizer(std::shared_ptr<Port<Char>> port, const String& srcName,
-                     CharRegistry* charRegistry)
+                     std::shared_ptr<CharRegistry> charRegistry)
   : fPort(port),
     fSrcName(srcName),
     fLineCount(1),

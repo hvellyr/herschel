@@ -2494,7 +2494,7 @@ FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
       nextToken();
 
     if (fEvaluateExprs) {
-      TokenEvalContext ctx(fCompiler.configVarRegistry());
+      TokenEvalContext ctx(*fCompiler.configVarRegistry());
       Token p = ctx.evalToken(test);
       if (p.isBool()) {
         inclConsequent = p.boolValue();
@@ -2680,7 +2680,7 @@ FirstPass::parseVarDef(const Token& defToken, const Token& tagToken, bool isLoca
 Token
 FirstPass::evaluateConfigExpr(const Token& initExpr)
 {
-  TokenEvalContext ctx(fCompiler.configVarRegistry());
+  TokenEvalContext ctx(*fCompiler.configVarRegistry());
   return ctx.evalToken(initExpr);
 }
 

@@ -141,7 +141,7 @@ TEST_CASE("Tokenizer chars", "[tokenize][chars]")
     "\\space  \\u60h  \\( \\newline \\cr\n"
     "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n"
     "\\ga \\gong ";
-  Ptr<CharRegistry> cr = new CharRegistry;
+  auto cr = std::make_shared<CharRegistry>();
   Tokenizer tnz(std::make_shared<CharPort>(
                   std::make_shared<DataPort>((Octet*)test, strlen(test))),
                 String("n.n."), cr);

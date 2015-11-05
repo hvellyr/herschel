@@ -64,8 +64,8 @@ namespace herschel
     virtual std::shared_ptr<AptNode> process(std::shared_ptr<Port<Char>> port,
                                              const String& srcName);
 
-    CharRegistry* charRegistry() const;
-    ConfigVarRegistry* configVarRegistry() const;
+    std::shared_ptr<CharRegistry> charRegistry() const;
+    std::shared_ptr<ConfigVarRegistry> configVarRegistry() const;
 
     bool importFile(const SrcPos& srcpos,
                     const String& srcName, bool isPublic,
@@ -141,16 +141,16 @@ namespace herschel
     class CompilerState
     {
     public:
-      CompilerState(CharRegistry*      charReg,
-                    ConfigVarRegistry* configReg,
+      CompilerState(std::shared_ptr<CharRegistry> charReg,
+                    std::shared_ptr<ConfigVarRegistry> configReg,
                     std::shared_ptr<Scope> scope);
       CompilerState(const CompilerState& item);
       CompilerState& operator=(const CompilerState& item);
 
       std::shared_ptr<TokenPort> fPort;
       Token                  fToken;
-      Ptr<CharRegistry>      fCharRegistry;
-      Ptr<ConfigVarRegistry> fConfigVarRegistry;
+      std::shared_ptr<CharRegistry> fCharRegistry;
+      std::shared_ptr<ConfigVarRegistry> fConfigVarRegistry;
       std::shared_ptr<Scope> fScope;
     };
 
