@@ -19,7 +19,6 @@
 #include "log.h"
 #include "str.h"
 #include "strbuf.h"
-#include "refcountable.h"
 #include "exception.h"
 
 #include <string>
@@ -40,7 +39,7 @@ static int str_rstr(const Char* haystack, int hslen, int ofs,
 
 namespace herschel
 {
-  class StringImpl : public RefCountable
+  class StringImpl
   {
   public:
     StringImpl()
@@ -188,58 +187,45 @@ namespace herschel
 //----------------------------------------------------------------------------
 
 String::String()
-  : fImpl(new StringImpl)
+  : fImpl(std::make_shared<StringImpl>())
 {
-  fImpl->incRef();
 }
 
 
 String::String(const String& other)
-  : fImpl(nullptr)
 {
-  other.fImpl->incRef();
   fImpl = other.fImpl;
 }
 
 
 String::String(zstring utf8)
-  : fImpl(new StringImpl)
+  : fImpl(std::make_shared<StringImpl>())
 {
-  fImpl->incRef();
   fImpl->createFromUtf8(utf8, ::strlen(utf8));
 }
 
 
 String::String(const std::string& utf8)
-  : fImpl(new StringImpl)
+  : fImpl(std::make_shared<StringImpl>())
 {
-  fImpl->incRef();
   fImpl->createFromUtf8(utf8.c_str(), utf8.length());
 }
 
 
 String::String(zstring utf8, int items)
-  : fImpl(new StringImpl)
+  : fImpl(std::make_shared<StringImpl>())
 {
-  fImpl->incRef();
   fImpl->createFromUtf8(utf8, items);
 }
 
 
 String::String(const Char* str, int items)
-  : fImpl(new StringImpl)
+  : fImpl(std::make_shared<StringImpl>())
 {
-  fImpl->incRef();
   if (items > 0) {
     fImpl->reallocate(items);
     fImpl->copyFromWcs(0, str, items);
   }
-}
-
-
-String::~String()
-{
-  fImpl->decRef();
 }
 
 
@@ -253,8 +239,6 @@ String::data() const
 String&
 String::operator=(const String& other)
 {
-  other.fImpl->incRef();
-  fImpl->decRef();
   fImpl = other.fImpl;
   return *this;
 }

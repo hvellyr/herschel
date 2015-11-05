@@ -12,8 +12,10 @@
 
 #include "common.h"
 
-#include <vector>
+#include <memory>
 #include <string>
+#include <vector>
+
 #if defined(UNITTESTS)
 #  include <iostream>
 #endif
@@ -60,7 +62,6 @@ namespace herschel
     //! character is copied.  After construction the caller is free to
     //! deallocate \p str.
     String(const Char* str, int items);
-    ~String();
 
     //! Assign operator
     String& operator=(const String& other);
@@ -188,7 +189,7 @@ namespace herschel
     const Char* data() const;
 
     //-------- data member
-    StringImpl* fImpl;
+    std::shared_ptr<StringImpl> fImpl;
   };
 
   //! Concatenates \p one and \p two into a new instance.
