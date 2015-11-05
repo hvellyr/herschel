@@ -42,9 +42,9 @@ namespace herschel
 
     virtual int typeBitsize() const { return bitsize; }
 
-    virtual TypeEnumMaker* makeBaseTypeEnumMaker() const
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
     {
-      return new EnumMaker;
+      return std::unique_ptr<TypeEnumMaker>(new EnumMaker);
     }
   };
 

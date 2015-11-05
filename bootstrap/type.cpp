@@ -1382,15 +1382,19 @@ Type::isBuiltinType(const String& name) const
 }
 
 
-TypeEnumMaker*
+std::unique_ptr<TypeEnumMaker>
 Type::makeBaseTypeEnumMaker() const
 {
   if (fKind == kType_Ref) {
     auto nm = typeName();
-    if (nm == Names::kEofTypeName)      return new EofTypeEnumMaker;
-    else if (nm == Names::kNilTypeName)      return new NilTypeEnumMaker;
-    else if (nm == Names::kRationalTypeName) return new RationalTypeEnumMaker;
-    else if (nm == Names::kStringTypeName)   return new StringTypeEnumMaker;
+    if (nm == Names::kEofTypeName)
+      return std::unique_ptr<TypeEnumMaker>(new EofTypeEnumMaker);
+    else if (nm == Names::kNilTypeName)
+      return std::unique_ptr<TypeEnumMaker>(new NilTypeEnumMaker);
+    else if (nm == Names::kRationalTypeName)
+      return std::unique_ptr<TypeEnumMaker>(new RationalTypeEnumMaker);
+    else if (nm == Names::kStringTypeName)
+      return std::unique_ptr<TypeEnumMaker>(new StringTypeEnumMaker);
 
     const auto& prop = typeProperty();
     if (prop.isValid())

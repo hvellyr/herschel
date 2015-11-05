@@ -10,6 +10,9 @@
 
 #pragma once
 
+#include "typeenum.h"
+
+
 namespace llvm
 {
   class Value;
@@ -18,7 +21,6 @@ namespace llvm
 
 namespace herschel
 {
-  class TypeEnumMaker;
   class CodegenTools;
   class CodegenTypeUtils;
 
@@ -79,7 +81,7 @@ namespace herschel
 
     //! Return a new instance of the appropriate \c TypeEnumMaker to be used
     //! to determine auto assigned enumeration values.
-    virtual TypeEnumMaker* makeBaseTypeEnumMaker() const = 0;
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const = 0;
   };
 
 
@@ -118,7 +120,10 @@ namespace herschel
 
     virtual int  typeBitsize() const { return 0; }
 
-    virtual TypeEnumMaker* makeBaseTypeEnumMaker() const { return nullptr; }
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
+    {
+      return nullptr;
+    }
   };
 };                              // namespace
 

@@ -303,7 +303,7 @@ namespace herschel
     bool isImaginary() const;
     void setIsImaginary(bool value);
 
-    TypeEnumMaker* makeBaseTypeEnumMaker() const;
+    std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const;
 
     //! Return the typeProperty specication for the receiver.  Check \c
     //! isValid() on the return value before using it.  If \p mustExist is

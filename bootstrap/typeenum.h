@@ -10,14 +10,13 @@
 
 #pragma once
 
-#include "refcountable.h"
 
 namespace herschel
 {
   class SrcPos;
   class Token;
 
-  class TypeEnumMaker : public RefCountable
+  class TypeEnumMaker
   {
   public:
     ~TypeEnumMaker() { }

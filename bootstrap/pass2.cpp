@@ -1431,7 +1431,7 @@ SecondPass::nextEnumInitValue(const SrcPos& srcpos,
 {
   std::shared_ptr<AptNode> initExpr;
 
-  Ptr<TypeEnumMaker> maker = baseType.makeBaseTypeEnumMaker();
+  auto maker = baseType.makeBaseTypeEnumMaker();
   if (maker) {
     lastInitToken = maker->nextEnumItem(srcpos, enumItemSym, lastInitToken);
     if (lastInitToken.isSet())

@@ -60,7 +60,7 @@ namespace herschel
 
     virtual int typeBitsize() const { return 0; }
 
-    virtual TypeEnumMaker* makeBaseTypeEnumMaker() const
+    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
     {
       return nullptr;
     }
