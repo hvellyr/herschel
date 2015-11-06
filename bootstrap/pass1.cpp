@@ -4370,10 +4370,10 @@ namespace herschel {
 
   struct ExprParamSyntaxMatcher : public ParameterSyntaxMatcher
   {
-    virtual bool match(FirstPass* pass,
-                       const String& paramName,
-                       NamedReplacementMap* bindings,
-                       SyntaxTreeNode& followSet)
+    bool match(FirstPass* pass,
+               const String& paramName,
+               NamedReplacementMap* bindings,
+               SyntaxTreeNode& followSet) override
     {
       SrcPos pos = pass->fToken.srcpos();
       Token expr = pass->parseExpr(!K(acceptComma));
@@ -4392,10 +4392,10 @@ namespace herschel {
 
   struct NameParamSyntaxMatcher : public ParameterSyntaxMatcher
   {
-    virtual bool match(FirstPass* pass,
-                       const String& paramName,
-                       NamedReplacementMap* bindings,
-                       SyntaxTreeNode& followSet)
+    bool match(FirstPass* pass,
+               const String& paramName,
+               NamedReplacementMap* bindings,
+               SyntaxTreeNode& followSet) override
     {
       if (pass->fToken == kSymbol) {
         bindings->insert(std::make_pair(paramName,
@@ -4414,10 +4414,10 @@ namespace herschel {
 
   struct OperatorParamSyntaxMatcher : public ParameterSyntaxMatcher
   {
-    virtual bool match(FirstPass* pass,
-                       const String& paramName,
-                       NamedReplacementMap* bindings,
-                       SyntaxTreeNode& followSet)
+    bool match(FirstPass* pass,
+               const String& paramName,
+               NamedReplacementMap* bindings,
+               SyntaxTreeNode& followSet) override
     {
       OperatorType op = tokenTypeToOperator(pass->fToken.tokenType());
       if (op != kOpInvalid) {
@@ -4437,10 +4437,10 @@ namespace herschel {
 
   struct AnyParamParamSyntaxMatcher : public ParameterSyntaxMatcher
   {
-    virtual bool match(FirstPass* pass,
-                       const String& paramName,
-                       NamedReplacementMap* bindings,
-                       SyntaxTreeNode& followSet)
+    bool match(FirstPass* pass,
+               const String& paramName,
+               NamedReplacementMap* bindings,
+               SyntaxTreeNode& followSet) override
     {
       SrcPos pos = pass->fToken.srcpos();
       FirstPass::ParamType expected = FirstPass::kPositional;
@@ -4469,10 +4469,10 @@ namespace herschel {
       : fReqType(reqType)
     { }
 
-    virtual bool match(FirstPass* pass,
-                       const String& paramName,
-                       NamedReplacementMap* bindings,
-                       SyntaxTreeNode& followSet)
+    bool match(FirstPass* pass,
+               const String& paramName,
+               NamedReplacementMap* bindings,
+               SyntaxTreeNode& followSet) override
     {
       SrcPos pos = pass->fToken.srcpos();
       FirstPass::ParamType expected = FirstPass::kPositional;
@@ -4495,10 +4495,10 @@ namespace herschel {
 
   struct ParamListParamSyntax : public ParameterSyntaxMatcher
   {
-    virtual bool match(FirstPass* pass,
-                       const String& paramName,
-                       NamedReplacementMap* bindings,
-                       SyntaxTreeNode& followSet)
+    bool match(FirstPass* pass,
+               const String& paramName,
+               NamedReplacementMap* bindings,
+               SyntaxTreeNode& followSet) override
     {
       SrcPos pos = pass->fToken.srcpos();
       TokenVector params;

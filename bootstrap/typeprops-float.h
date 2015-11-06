@@ -22,23 +22,26 @@ namespace herschel
   template<typename EnumMaker, int bitsize>
   class BaseFloatTypeProperty : public TypeProperty
   {
-    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const { return bitsize / 8; }
+    size_t getSlotSize(const CodegenTypeUtils* typeUtils) const override
+    {
+      return bitsize / 8;
+    }
 
-    virtual bool isBaseType() const { return true; }
+    bool isBaseType() const override { return true; }
 
-    virtual bool isPlainType() const { return true; }
+    bool isPlainType() const override { return true; }
 
-    virtual bool isSigned() const { return true; }
+    bool isSigned() const override { return true; }
 
-    virtual bool isAnyNumber() const { return true; }
+    bool isAnyNumber() const override { return true; }
 
-    virtual bool isAnyInt() const { return false; }
+    bool isAnyInt() const override { return false; }
 
-    virtual bool isAnyFloat() const { return true; }
+    bool isAnyFloat() const override { return true; }
 
-    virtual int typeBitsize() const { return bitsize; }
+    int typeBitsize() const override { return bitsize; }
 
-    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
+    std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const override
     {
       return std::unique_ptr<TypeEnumMaker>(new EnumMaker);
     }
@@ -53,15 +56,15 @@ namespace herschel
   public:
     Float32TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_float32"; }
+    zstring convFuncName() const override { return "h7_atom_2_float32"; }
 
-    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const override
     {
       // TODO
       return tools->makeFloatAtom(value, CodegenTools::kAtomFloat32);
     }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getFloatTy(typeUtils->context());
     }
@@ -76,15 +79,15 @@ namespace herschel
   public:
     Float64TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_float64"; }
+    zstring convFuncName() const override { return "h7_atom_2_float64"; }
 
-    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const override
     {
       // TODO.  Float64 do not fit into the atom payload structure?
       return nullptr;
     }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getDoubleTy(typeUtils->context());
     }
@@ -99,15 +102,15 @@ namespace herschel
   public:
     Float128TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "atom_2_float128"; }
+    zstring convFuncName() const override { return "atom_2_float128"; }
 
-    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const override
     {
       // TODO.  Float128 do not fit into the atom payload structure
       return nullptr;
     }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getFP128Ty(typeUtils->context());
     }

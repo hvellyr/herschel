@@ -420,17 +420,17 @@ public:
     : ArrayAllocateStrategy(apply)
   {}
 
-  virtual bool passInitValueToAllocateCall() const
+  bool passInitValueToAllocateCall() const override
   {
     return false;
   }
 
-  virtual String allocateFuncName() const
+  String allocateFuncName() const override
   {
     return String("h7_allocate_array");
   }
 
-  virtual std::vector<llvm::Type*> allocateFuncSignature() const
+  std::vector<llvm::Type*> allocateFuncSignature() const override
   {
     return std::vector<llvm::Type*>{
       fApply->types().getAtomType()->getPointerTo(),
@@ -438,13 +438,13 @@ public:
       fApply->types().getSizeTTy() };
   }
 
-  virtual llvm::Value* initValue(const ApplyNode* node) const
+  llvm::Value* initValue(const ApplyNode* node) const override
   {
     const NodeList& args = node->children();
     return fApply->emitAllocateApplyImpl(args[0].get());
   }
 
-  virtual llvm::Value* typeTagArgument(const ApplyNode* node) const
+  llvm::Value* typeTagArgument(const ApplyNode* node) const override
   {
     const NodeList& args = node->children();
     llvm::Value* val = fApply->emitTypeNameForAllocate(args[0].get());
@@ -452,11 +452,11 @@ public:
     return val;
   }
 
-  virtual llvm::Value* postInit(const ApplyNode* node,
-                                llvm::Value* retv,
-                                const Type& arrayBaseType,
-                                llvm::Value* sizeVal,
-                                llvm::Value* explicitInitValue) const
+  llvm::Value* postInit(const ApplyNode* node,
+                        llvm::Value* retv,
+                        const Type& arrayBaseType,
+                        llvm::Value* sizeVal,
+                        llvm::Value* explicitInitValue) const override
   {
     llvm::Function *curFunction = fApply->builder().GetInsertBlock()->getParent();
     llvm::AllocaInst* counter = fApply->tools().createEntryBlockAlloca(
@@ -532,17 +532,17 @@ public:
     : ArrayAllocateStrategy(apply)
   {}
 
-  virtual bool passInitValueToAllocateCall() const
+  bool passInitValueToAllocateCall() const override
   {
     return true;
   }
 
-  virtual String allocateFuncName() const
+  String allocateFuncName() const override
   {
     return String("h7_allocate_int32_array");
   }
 
-  virtual std::vector<llvm::Type*> allocateFuncSignature() const
+  std::vector<llvm::Type*> allocateFuncSignature() const override
   {
     return std::vector<llvm::Type*>{
       fApply->types().getAtomType()->getPointerTo(),
@@ -551,21 +551,21 @@ public:
       fApply->types().getSizeTTy() };
   }
 
-  virtual llvm::Value* initValue(const ApplyNode* node) const
+  llvm::Value* initValue(const ApplyNode* node) const override
   {
     return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(fApply->context()));
   }
 
-  virtual llvm::Value* typeTagArgument(const ApplyNode* node) const
+  llvm::Value* typeTagArgument(const ApplyNode* node) const override
   {
     return fApply->tools().emitTypeId(CodegenTools::kAtomInt32Array);
   }
 
-  virtual llvm::Value* postInit(const ApplyNode* node,
-                                llvm::Value* retv,
-                                const Type& arrayBaseType,
-                                llvm::Value* sizeVal,
-                                llvm::Value* explicitInitValue) const
+  llvm::Value* postInit(const ApplyNode* node,
+                        llvm::Value* retv,
+                        const Type& arrayBaseType,
+                        llvm::Value* sizeVal,
+                        llvm::Value* explicitInitValue) const override
   {
     return retv;
   }
@@ -579,17 +579,17 @@ public:
     : ArrayAllocateStrategy(apply)
   {}
 
-  virtual bool passInitValueToAllocateCall() const
+  bool passInitValueToAllocateCall() const override
   {
     return true;
   }
 
-  virtual String allocateFuncName() const
+  String allocateFuncName() const override
   {
     return String("allocate_char_array");
   }
 
-  virtual std::vector<llvm::Type*> allocateFuncSignature() const
+  std::vector<llvm::Type*> allocateFuncSignature() const override
   {
     return std::vector<llvm::Type*>{ fApply->types().getAtomType()->getPointerTo(),
                                      fApply->types().getTagIdType(),
@@ -597,21 +597,21 @@ public:
                                      fApply->types().getSizeTTy() };
   }
 
-  virtual llvm::Value* initValue(const ApplyNode* node) const
+  llvm::Value* initValue(const ApplyNode* node) const override
   {
     return llvm::Constant::getNullValue(llvm::Type::getInt32Ty(fApply->context()));
   }
 
-  virtual llvm::Value* typeTagArgument(const ApplyNode* node) const
+  llvm::Value* typeTagArgument(const ApplyNode* node) const override
   {
     return fApply->tools().emitTypeId(CodegenTools::kAtomCharArray);
   }
 
-  virtual llvm::Value* postInit(const ApplyNode* node,
-                                llvm::Value* retv,
-                                const Type& arrayBaseType,
-                                llvm::Value* sizeVal,
-                                llvm::Value* explicitInitValue) const
+  llvm::Value* postInit(const ApplyNode* node,
+                        llvm::Value* retv,
+                        const Type& arrayBaseType,
+                        llvm::Value* sizeVal,
+                        llvm::Value* explicitInitValue) const override
   {
     return retv;
   }

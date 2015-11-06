@@ -152,7 +152,7 @@ namespace herschel
   {
   public:
     AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler& compiler);
-    virtual std::shared_ptr<AptNode> doApply(std::shared_ptr<AptNode> src);
+    std::shared_ptr<AptNode> doApply(std::shared_ptr<AptNode> src) override;
 
   private:
     std::shared_ptr<Scope> fScope;

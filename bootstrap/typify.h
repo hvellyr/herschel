@@ -257,7 +257,7 @@ namespace herschel
   {
   public:
     TypifyPass(int level);
-    virtual std::shared_ptr<AptNode> doApply(std::shared_ptr<AptNode> src);
+    std::shared_ptr<AptNode> doApply(std::shared_ptr<AptNode> src) override;
   };
 };                              // namespace
 
