@@ -301,7 +301,7 @@ namespace herschel
   public:
     ExprPass(int level, Compiler& compiler, const Token& currentToken,
              std::shared_ptr<Scope> scope);
-    virtual Token doApply(const Token& src);
+    Token doApply(const Token& src) override;
 
   private:
     Token         fCurrentToken;

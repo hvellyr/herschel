@@ -19,7 +19,7 @@ namespace herschel
   class TypeEnumMaker
   {
   public:
-    ~TypeEnumMaker() { }
+    virtual ~TypeEnumMaker() { }
 
     virtual Token nextEnumItem(const SrcPos& srcpos,
                                const Token& enumItemSymbol,
@@ -30,209 +30,170 @@ namespace herschel
   class BoolTypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~BoolTypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class CharTypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~CharTypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class KeywordTypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~KeywordTypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class RationalTypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~RationalTypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class StringTypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~StringTypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class EofTypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~EofTypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class NilTypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~NilTypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class UnspecifiedTypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~UnspecifiedTypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class Float32TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~Float32TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class Float64TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~Float64TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class Float128TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~Float128TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class Int8TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~Int8TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class UInt8TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~UInt8TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class Int16TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~Int16TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class UInt16TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~UInt16TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class Int32TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~Int32TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class UInt32TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~UInt32TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class Int64TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~Int64TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 
 
   class UInt64TypeEnumMaker : public TypeEnumMaker
   {
   public:
-    ~UInt64TypeEnumMaker() { }
-
-    virtual Token nextEnumItem(const SrcPos& srcpos,
-                               const Token& enumItemSymbol,
-                               const Token& lastInitToken) const;
+    Token nextEnumItem(const SrcPos& srcpos,
+                       const Token& enumItemSymbol,
+                       const Token& lastInitToken) const override;
   };
 };                              // namespace
-

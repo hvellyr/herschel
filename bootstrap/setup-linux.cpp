@@ -37,7 +37,7 @@ namespace herschel
   class SetupLinux : public SetupUnix
   {
   public:
-    virtual String getExeLocation() const
+    String getExeLocation() const override
     {
       char path[PATH_MAX];
       char path2[PATH_MAX];

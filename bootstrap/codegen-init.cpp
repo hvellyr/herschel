@@ -88,7 +88,7 @@ namespace herschel
     { }
 
 
-    virtual llvm::Type* entityType() const
+    llvm::Type* entityType() const override
     {
       return fInitializer.types().getTypeType();
     }
@@ -105,19 +105,19 @@ namespace herschel
     }
 
 
-    virtual String entityGetterFunctionName() const
+    String entityGetterFunctionName() const override
     {
       return getterFunctionName(fType);
     }
 
 
-    virtual String entityGetterGlobalVarName() const
+    String entityGetterGlobalVarName() const override
     {
       return fType.typeId() + "_type";
     }
 
 
-    virtual llvm::Value* makeEntity() const
+    llvm::Value* makeEntity() const override
     {
       return fInitializer.makeTypeOrCallRegistration(fType);
     }
@@ -140,7 +140,7 @@ namespace herschel
     { }
 
 
-    virtual llvm::Type* entityType() const
+    llvm::Type* entityType() const override
     {
       return fInitializer.types().getGenericFuncType();
     }
@@ -152,19 +152,19 @@ namespace herschel
     }
 
 
-    virtual String entityGetterFunctionName() const
+    String entityGetterFunctionName() const override
     {
       return getterFunctionName(fNode->name());
     }
 
 
-    virtual String entityGetterGlobalVarName() const
+    String entityGetterGlobalVarName() const override
     {
       return fNode->name() + "_generic_function";
     }
 
 
-    virtual llvm::Value* makeEntity() const
+    llvm::Value* makeEntity() const override
     {
       return fInitializer.makeGenericFunctionRegistration(fNode);
     }

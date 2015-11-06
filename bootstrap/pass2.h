@@ -274,7 +274,7 @@ namespace herschel
   {
   public:
     NodifyPass(int level, Compiler& compiler, std::shared_ptr<Scope> scope);
-    virtual std::shared_ptr<AptNode> doApply(const Token& src);
+    std::shared_ptr<AptNode> doApply(const Token& src) override;
     std::shared_ptr<Scope> currentScope();
 
   private:

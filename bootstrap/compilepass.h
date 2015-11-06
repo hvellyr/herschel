@@ -56,9 +56,9 @@ namespace herschel
 
     ~TokenCompilePass() { }
 
-    virtual Token apply(const Token& src, bool doTrace);
+    Token apply(const Token& src, bool doTrace) override;
 
-    virtual int passLevel() const { return fLevel; }
+    int passLevel() const override { return fLevel; }
 
   private:
     int fLevel;
@@ -80,9 +80,9 @@ namespace herschel
 
     ~Token2AptNodeCompilePass() { }
 
-    virtual std::shared_ptr<AptNode> apply(const Token& src, bool doTrace);
+    std::shared_ptr<AptNode> apply(const Token& src, bool doTrace) override;
 
-    virtual int passLevel() const { return fLevel; }
+    int passLevel() const override { return fLevel; }
 
   private:
     int fLevel;
@@ -104,10 +104,10 @@ namespace herschel
 
     ~AptNodeCompilePass() { }
 
-    virtual std::shared_ptr<AptNode> apply(std::shared_ptr<AptNode> src,
-                                           bool doTrace);
+    std::shared_ptr<AptNode> apply(std::shared_ptr<AptNode> src,
+                                   bool doTrace) override;
 
-    virtual int passLevel() const { return fLevel; }
+    int passLevel() const override { return fLevel; }
 
   private:
     int fLevel;

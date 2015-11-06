@@ -37,7 +37,7 @@ namespace herschel
     ConfigVarRegistry();
     ConfigVarRegistry(std::shared_ptr<ConfigVarRegistry> parent);
 
-    virtual bool lookup(const String& name, Token* out) const;
+    bool lookup(const String& name, Token* out) const override;
 
   private:
     std::shared_ptr<ConfigVarRegistry> fParent;

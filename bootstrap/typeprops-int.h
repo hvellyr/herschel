@@ -22,27 +22,30 @@ namespace herschel
   template<typename EnumMaker, int bitsize, bool issigned, int atominttype>
   class BaseIntTypeProperty : public TypeProperty
   {
-    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const override
     {
       return tools->makeIntAtom(value, (CodegenTools::Typeid)atominttype);
     }
 
-    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const { return bitsize / 8; }
+    size_t getSlotSize(const CodegenTypeUtils* typeUtils) const override
+    {
+      return bitsize / 8;
+    }
 
-    virtual bool isBaseType() const { return true; }
+    bool isBaseType() const override { return true; }
 
-    virtual bool isPlainType() const { return true; }
+    bool isPlainType() const override { return true; }
 
-    virtual bool isSigned() const { return issigned; }
+    bool isSigned() const override { return issigned; }
 
-    virtual bool isAnyNumber() const { return true; }
+    bool isAnyNumber() const override { return true; }
 
-    virtual bool isAnyInt() const { return true; }
-    virtual bool isAnyFloat() const { return false; }
+    bool isAnyInt() const override { return true; }
+    bool isAnyFloat() const override { return false; }
 
-    virtual int typeBitsize() const { return bitsize; }
+    int typeBitsize() const override { return bitsize; }
 
-    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
+    std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const override
     {
       return std::unique_ptr<TypeEnumMaker>(new EnumMaker);
     }
@@ -60,9 +63,9 @@ namespace herschel
   public:
     Int32TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_int32"; }
+    zstring convFuncName() const override { return "h7_atom_2_int32"; }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt32Ty(typeUtils->context());
     }
@@ -79,9 +82,9 @@ namespace herschel
   public:
     ClangIntTypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_int32"; }
+    zstring convFuncName() const override { return "h7_atom_2_int32"; }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt32Ty(typeUtils->context());
     }
@@ -99,9 +102,9 @@ namespace herschel
   public:
     UInt32TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_uint32"; }
+    zstring convFuncName() const override { return "h7_atom_2_uint32"; }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt32Ty(typeUtils->context());
     }
@@ -119,9 +122,9 @@ namespace herschel
   public:
     Int16TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_int16"; }
+    zstring convFuncName() const override { return "h7_atom_2_int16"; }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt16Ty(typeUtils->context());
     }
@@ -139,9 +142,9 @@ namespace herschel
   public:
     UInt16TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_uint16"; }
+    zstring convFuncName() const override { return "h7_atom_2_uint16"; }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt16Ty(typeUtils->context());
     }
@@ -159,9 +162,9 @@ namespace herschel
   public:
     Int8TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_int8"; }
+    zstring convFuncName() const override { return "h7_atom_2_int8"; }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt8Ty(typeUtils->context());
     }
@@ -179,9 +182,9 @@ namespace herschel
   public:
     UInt8TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_uint8"; }
+    zstring convFuncName() const override { return "h7_atom_2_uint8"; }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt8Ty(typeUtils->context());
     }
@@ -199,9 +202,9 @@ namespace herschel
   public:
     Int64TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_int64"; }
+    zstring convFuncName() const override { return "h7_atom_2_int64"; }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt64Ty(typeUtils->context());
     }
@@ -219,12 +222,11 @@ namespace herschel
   public:
     UInt64TypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_uint64"; }
+    zstring convFuncName() const override { return "h7_atom_2_uint64"; }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt64Ty(typeUtils->context());
     }
   };
 };                              // namespace
-

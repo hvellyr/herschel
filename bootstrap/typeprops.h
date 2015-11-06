@@ -90,37 +90,40 @@ namespace herschel
   public:
     InvalidTypeProperty() {}
 
-    virtual bool isValid() const { return false; }
+    bool isValid() const override { return false; }
 
-    virtual zstring convFuncName() const { return nullptr; };
+    zstring convFuncName() const override { return nullptr; };
 
-    virtual llvm::Value* emitPackCode(CodegenTools* tools,
-                                      llvm::Value* value) const { return nullptr; };
-
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Value* emitPackCode(CodegenTools* tools,
+                              llvm::Value* value) const override
     {
       return nullptr;
     };
 
-    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
+    {
+      return nullptr;
+    };
+
+    size_t getSlotSize(const CodegenTypeUtils* typeUtils) const override
     {
       return 0;
     }
 
-    virtual bool isBaseType() const { return false; }
+    bool isBaseType() const override { return false; }
 
-    virtual bool isPlainType() const { return false; }
+    bool isPlainType() const override { return false; }
 
-    virtual bool isSigned() const { return false; }
+    bool isSigned() const override { return false; }
 
-    virtual bool isAnyNumber() const { return false; }
+    bool isAnyNumber() const override { return false; }
 
-    virtual bool isAnyInt() const { return false; }
-    virtual bool isAnyFloat() const { return false; }
+    bool isAnyInt() const override { return false; }
+    bool isAnyFloat() const override { return false; }
 
-    virtual int  typeBitsize() const { return 0; }
+    int  typeBitsize() const override { return 0; }
 
-    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
+    std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const override
     {
       return nullptr;
     }

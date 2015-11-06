@@ -41,7 +41,7 @@ namespace herschel
     { }
 
 
-    virtual Scope::ScopeItemKind kind() const
+    Scope::ScopeItemKind kind() const override
     {
       return Scope::kScopeItem_type;
     }
@@ -67,7 +67,7 @@ namespace herschel
         fTransformFunc(transformFunc)
     { }
 
-    virtual Scope::ScopeItemKind kind() const
+    Scope::ScopeItemKind kind() const override
     {
       return Scope::kScopeItem_unit;
     }
@@ -105,7 +105,7 @@ namespace herschel
     { }
 
 
-    virtual Scope::ScopeItemKind kind() const
+    Scope::ScopeItemKind kind() const override
     {
       return Scope::kScopeItem_macro;
     }
@@ -134,7 +134,7 @@ namespace herschel
     { }
 
 
-    virtual Scope::ScopeItemKind kind() const
+    Scope::ScopeItemKind kind() const override
     {
       return fKind;
     }

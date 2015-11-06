@@ -38,7 +38,7 @@ namespace herschel
   class SetupMac : public SetupUnix
   {
   public:
-    virtual String getExeLocation() const
+    String getExeLocation() const override
     {
       String result;
 

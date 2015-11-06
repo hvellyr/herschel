@@ -105,26 +105,26 @@ namespace herschel
     { }
 
 
-    virtual bool operator==(const Token& other) const
+    bool operator==(const Token& other) const override
     {
       return fStr == other.idValue();
     }
 
 
-    virtual bool operator<(const Token& other) const
+    bool operator<(const Token& other) const override
     {
       hr_assert(other.type() == kId);
       return fStr < static_cast<const IdTokenImpl&>(*other.fImpl).fStr;
     }
 
 
-    virtual void toPort(Port<Octet>& port) const
+    void toPort(Port<Octet>& port) const override
     {
       xml::displayTag(port, "id", xmlEncode(fStr));
     }
 
 
-    virtual String toString() const
+    String toString() const override
     {
       return fStr;
     }
@@ -183,7 +183,7 @@ namespace herschel
     { }
 
 
-    virtual bool operator==(const Token& other) const
+    bool operator==(const Token& other) const override
     {
       if (fType == other.tokenType()) {
         switch (fType) {
@@ -214,7 +214,7 @@ namespace herschel
     }
 
 
-    virtual bool operator<(const Token& other) const
+    bool operator<(const Token& other) const override
     {
       if (fType == other.tokenType()) {
         switch (fType) {
@@ -280,7 +280,7 @@ namespace herschel
       return "";
     }
 
-    virtual void toPort(Port<Octet>& port) const
+    void toPort(Port<Octet>& port) const override
     {
       switch (fType) {
       case kChar:
@@ -308,7 +308,7 @@ namespace herschel
     }
 
 
-    virtual String toString() const
+    String toString() const override
     {
       switch (fType) {
       case kBool:
@@ -371,21 +371,21 @@ namespace herschel
         fStrValue(value)
     { }
 
-    virtual bool operator==(const Token& other) const
+    bool operator==(const Token& other) const override
     {
       return ( fType == other.tokenType() &&
                fStrValue == other.stringValue() );
     }
 
 
-    virtual bool operator<(const Token& other) const
+    bool operator<(const Token& other) const override
     {
       return fStrValue < static_cast<const StringTokenImpl&>(
         *other.fImpl).fStrValue;
     }
 
 
-    virtual void toPort(Port<Octet>& port) const
+    void toPort(Port<Octet>& port) const override
     {
       switch (fType) {
       case kString:
@@ -403,7 +403,7 @@ namespace herschel
     }
 
 
-    virtual String toString() const
+    String toString() const override
     {
       switch (fType) {
       case kString:     return String("\"") + fStrValue + "\"";
@@ -430,7 +430,7 @@ namespace herschel
     SeqTokenImpl()
     { }
 
-    virtual bool operator==(const Token& other) const
+    bool operator==(const Token& other) const override
     {
       if (fChildren.size() == other.children().size()) {
         for (size_t i = 0; i < fChildren.size(); i++) {
@@ -443,13 +443,14 @@ namespace herschel
     }
 
 
-    virtual bool operator<(const Token& other) const
+    bool operator<(const Token& other) const override
     {
       return toString() < other.stringValue();
     }
 
 
-    std::shared_ptr<TokenImpl> unshare(std::shared_ptr<TokenImpl> impl) const override
+    std::shared_ptr<TokenImpl>
+    unshare(std::shared_ptr<TokenImpl> impl) const override
     {
       auto& seq = static_cast<SeqTokenImpl&>(*impl);
       auto copy = std::make_shared<SeqTokenImpl>();
@@ -458,7 +459,7 @@ namespace herschel
     }
 
 
-    virtual void toPort(Port<Octet>& port) const
+    void toPort(Port<Octet>& port) const override
     {
       xml::displayOpenTag(port, "seq");
       for (unsigned int i = 0; i < fChildren.size(); i++)
@@ -467,7 +468,7 @@ namespace herschel
     }
 
 
-    virtual String toString() const
+    String toString() const override
     {
       String result;
 
@@ -500,7 +501,7 @@ namespace herschel
     { }
 
 
-    virtual bool operator==(const Token& other) const
+    bool operator==(const Token& other) const override
     {
       if (fLeft == other.leftToken() &&
           fRight == other.rightToken())
@@ -509,13 +510,13 @@ namespace herschel
     }
 
 
-    virtual bool operator<(const Token& other) const
+    bool operator<(const Token& other) const override
     {
       return toString() < other.stringValue();
     }
 
 
-    virtual void toPort(Port<Octet>& port) const
+    void toPort(Port<Octet>& port) const override
     {
       StringBuffer attrs;
       attrs << "left='" << xmlEncode(tokenTypeToString(fLeft)) << "'"
@@ -532,7 +533,7 @@ namespace herschel
     }
 
 
-    virtual String toString() const
+    String toString() const override
     {
       String result;
 

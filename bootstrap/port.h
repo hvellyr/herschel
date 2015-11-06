@@ -172,22 +172,22 @@ namespace herschel
     FilePort(FILE* stream);
     ~FilePort();
 
-    virtual void close();
+    void close() override;
 
-    virtual bool isOpen() const;
-    virtual bool isEof() const;
+    bool isOpen() const override;
+    bool isEof() const override;
 
-    virtual size_t write(const Octet* data, size_t items);
-    virtual int write(Octet byte);
+    size_t write(const Octet* data, size_t items) override;
+    int write(Octet byte) override;
 
-    virtual size_t read(Octet* buffer, size_t items);
-    virtual Octet read();
+    size_t read(Octet* buffer, size_t items) override;
+    Octet read() override;
 
-    virtual void flush();
+    void flush() override;
 
-    virtual bool canSetCursor() const;
-    virtual void setCursor(size_t cursor);
-    virtual long cursor();
+    bool canSetCursor() const override;
+    void setCursor(size_t cursor) override;
+    long cursor() override;
 
   private:
     bool fOwnsStream;
@@ -204,20 +204,20 @@ namespace herschel
     DataPort(const Octet* buffer, size_t items);
     ~DataPort();
 
-    virtual bool isOpen() const;
-    virtual bool isEof() const;
+    bool isOpen() const override;
+    bool isEof() const override;
 
-    virtual size_t write(const Octet* data, size_t items);
-    virtual int write(Octet byte);
+    size_t write(const Octet* data, size_t items) override;
+    int write(Octet byte) override;
 
-    virtual size_t read(Octet* buffer, size_t items);
-    virtual Octet read();
+    size_t read(Octet* buffer, size_t items) override;
+    Octet read() override;
 
-    virtual void flush();
+    void flush() override;
 
-    virtual bool canSetCursor() const;
-    virtual void setCursor(size_t cursor);
-    virtual long cursor();
+    bool canSetCursor() const override;
+    void setCursor(size_t cursor) override;
+    long cursor() override;
 
     const Octet* data() const;
     size_t length() const;
@@ -238,20 +238,20 @@ namespace herschel
   public:
     CharPort(std::shared_ptr<Port<Octet>> slave);
 
-    virtual bool isOpen() const;
-    virtual bool isEof() const;
+    bool isOpen() const override;
+    bool isEof() const override;
 
-    virtual size_t write(const Char* data, size_t items);
-    virtual int write(Char c);
+    size_t write(const Char* data, size_t items) override;
+    int write(Char c) override;
 
     using Port<Char>::read;
-    virtual Char read();
+    Char read() override;
 
-    virtual void flush();
+    void flush() override;
 
-    virtual bool canSetCursor() const;
-    virtual void setCursor(size_t cursor);
-    virtual long cursor();
+    bool canSetCursor() const override;
+    void setCursor(size_t cursor) override;
+    long cursor() override;
 
   private:
     std::shared_ptr<Port<Octet>> fSlave;

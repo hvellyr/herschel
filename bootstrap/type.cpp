@@ -111,7 +111,7 @@ namespace herschel
     { }
 
 
-    virtual bool isEqual(const TypeImpl* other) const
+    bool isEqual(const TypeImpl* other) const override
     {
       auto o = dynamic_cast<const GroupTypeImpl*>(other);
 
@@ -120,7 +120,7 @@ namespace herschel
     }
 
 
-    bool isOpen() const
+    bool isOpen() const override
     {
       return std::any_of(fTypes.begin(), fTypes.end(),
                          [](const Type& t) {
@@ -129,7 +129,7 @@ namespace herschel
     }
 
 
-    bool isOpenSelf() const
+    bool isOpenSelf() const override
     {
       return false;
     }
@@ -141,13 +141,13 @@ namespace herschel
     }
 
 
-    virtual void replaceGenerics(const TypeCtx& typeMap)
+    void replaceGenerics(const TypeCtx& typeMap) override
     {
       herschel::replaceGenerics(fTypes, typeMap);
     }
 
 
-    virtual bool containsType(const Type& type) const
+    bool containsType(const Type& type) const
     {
       return type.isDef() &&
         std::any_of(fTypes.begin(), fTypes.end(),
@@ -172,13 +172,13 @@ namespace herschel
     { }
 
 
-    virtual std::shared_ptr<TypeImpl> clone() const
+    std::shared_ptr<TypeImpl> clone() const override
     {
       return std::make_shared<UnionTypeImpl>(vectorClone(fTypes));
     }
 
 
-    virtual String toString(bool isValue) const
+    String toString(bool isValue) const override
     {
       StringBuffer buf;
       buf << "<ty:union" << ( !isValue ? " ref='t'" : "") << ">\n";
@@ -216,13 +216,13 @@ namespace herschel
       : GroupTypeImpl(types)
     { }
 
-    virtual std::shared_ptr<TypeImpl> clone() const
+    std::shared_ptr<TypeImpl> clone() const override
     {
       return std::make_shared<SeqTypeImpl>(vectorClone(fTypes));
     }
 
 
-    virtual String toString(bool isValue) const
+    String toString(bool isValue) const override
     {
       StringBuffer buf;
       buf << "<ty:seq" << ( !isValue ? " ref='t'" : "") << ">\n";
@@ -262,26 +262,26 @@ namespace herschel
     { }
 
 
-    virtual std::shared_ptr<TypeImpl> clone() const
+    std::shared_ptr<TypeImpl> clone() const override
     {
       return std::make_shared<FunctionTypeImpl>(fSign.clone());
     }
 
 
-    virtual bool isEqual(const TypeImpl* other) const
+    bool isEqual(const TypeImpl* other) const override
     {
       auto o = dynamic_cast<const FunctionTypeImpl*>(other);
       return (o && fSign == o->fSign);
     }
 
 
-    bool isOpen() const
+    bool isOpen() const override
     {
       return fSign.isOpen();
     }
 
 
-    bool isOpenSelf() const
+    bool isOpenSelf() const override
     {
       return false;
     }
@@ -304,13 +304,13 @@ namespace herschel
     }
 
 
-    virtual void replaceGenerics(const TypeCtx& typeMap)
+    void replaceGenerics(const TypeCtx& typeMap) override
     {
       fSign.replaceGenerics(typeMap);
     }
 
 
-    virtual String toString(bool isValue) const
+    String toString(bool isValue) const override
     {
       return fSign.toString();
     }
@@ -478,7 +478,7 @@ namespace herschel
     { }
 
 
-    virtual std::shared_ptr<TypeImpl> clone() const
+    std::shared_ptr<TypeImpl> clone() const override
     {
       return std::make_shared<TypeTypeImpl>(fName, fIsInstantiatable,
                                             vectorClone(fGenerics),
@@ -488,8 +488,7 @@ namespace herschel
     }
 
 
-    virtual bool
-    isEqual(const TypeImpl* other) const
+    bool isEqual(const TypeImpl* other) const override
     {
       const TypeTypeImpl* o = dynamic_cast<const TypeTypeImpl*>(other);
 
@@ -501,13 +500,13 @@ namespace herschel
     }
 
 
-    bool isOpen() const
+    bool isOpen() const override
     {
       return (fInherit.isOpen() || herschel::isOpen(fGenerics));
     }
 
 
-    bool isOpenSelf() const
+    bool isOpenSelf() const override
     {
       return false;
     }
@@ -531,7 +530,7 @@ namespace herschel
     }
 
 
-    virtual void replaceGenerics(const TypeCtx& typeMap)
+    void replaceGenerics(const TypeCtx& typeMap) override
     {
       for (auto& gen : fGenerics) {
         hr_assert(gen.isRef());
@@ -547,13 +546,13 @@ namespace herschel
     }
 
 
-    virtual const TypeSlotList& slots() const
+    const TypeSlotList& slots() const
     {
       return fSlots;
     }
 
 
-    virtual String toString(bool isValue) const
+    String toString(bool isValue) const override
     {
       StringBuffer buf;
       buf << "<ty:type nm='" << fName << "'"
@@ -619,7 +618,7 @@ namespace herschel
     { }
 
 
-    virtual std::shared_ptr<TypeImpl> clone() const
+    std::shared_ptr<TypeImpl> clone() const override
     {
       return std::make_shared<AliasTypeImpl>(fName,
                                              vectorClone(fGenerics),
@@ -627,7 +626,7 @@ namespace herschel
     }
 
 
-    virtual bool isEqual(const TypeImpl* other) const
+    bool isEqual(const TypeImpl* other) const override
     {
       auto o = dynamic_cast<const AliasTypeImpl*>(other);
 
@@ -638,13 +637,13 @@ namespace herschel
     }
 
 
-    bool isOpen() const
+    bool isOpen() const override
     {
       return fType.isOpen() || herschel::isOpen(fGenerics);
     }
 
 
-    bool isOpenSelf() const
+    bool isOpenSelf() const override
     {
       return false;
     }
@@ -677,14 +676,14 @@ namespace herschel
     }
 
 
-    virtual void replaceGenerics(const TypeCtx& typeMap)
+    void replaceGenerics(const TypeCtx& typeMap) override
     {
       // TODO
       hr_invalid("");
     }
 
 
-    virtual String toString(bool isValue) const
+    String toString(bool isValue) const override
     {
       StringBuffer buf;
       buf << "<ty:alias nm='" << fName << "'>\n";
@@ -723,14 +722,14 @@ namespace herschel
     { }
 
 
-    virtual std::shared_ptr<TypeImpl> clone() const
+    std::shared_ptr<TypeImpl> clone() const override
     {
       return std::make_shared<MeasureTypeImpl>(fName, fBaseType.clone(),
                                                fDefUnit);
     }
 
 
-    virtual bool isEqual(const TypeImpl* other) const
+    bool isEqual(const TypeImpl* other) const override
     {
       auto o = dynamic_cast<const MeasureTypeImpl*>(other);
 
@@ -741,13 +740,13 @@ namespace herschel
     }
 
 
-    bool isOpen() const
+    bool isOpen() const override
     {
       return fBaseType.isOpen();
     }
 
 
-    bool isOpenSelf() const
+    bool isOpenSelf() const override
     {
       return fBaseType.isOpenSelf();
     }
@@ -771,13 +770,13 @@ namespace herschel
     }
 
 
-    virtual void replaceGenerics(const TypeCtx& typeMap)
+    void replaceGenerics(const TypeCtx& typeMap) override
     {
       fBaseType.replaceGenerics(typeMap);
     }
 
 
-    virtual String toString(bool isValue) const
+    String toString(bool isValue) const override
     {
       StringBuffer buf;
       buf << "<ty:measure nm='" << fName << "' unit='"
@@ -825,7 +824,7 @@ namespace herschel
     { }
 
 
-    virtual std::shared_ptr<TypeImpl> clone() const
+    std::shared_ptr<TypeImpl> clone() const override
     {
       return std::make_shared<TypeRefTypeImpl>(fName,
                                                fIsOpen,
@@ -834,7 +833,7 @@ namespace herschel
     }
 
 
-    virtual bool isEqual(const TypeImpl* other) const
+    bool isEqual(const TypeImpl* other) const override
     {
       auto o = dynamic_cast<const TypeRefTypeImpl*>(other);
 
@@ -858,13 +857,13 @@ namespace herschel
     }
 
 
-    bool isOpen() const
+    bool isOpen() const override
     {
       return fIsOpen || herschel::isOpen(fGenerics);
     }
 
 
-    bool isOpenSelf() const
+    bool isOpenSelf() const override
     {
       return fIsOpen;
     }
@@ -876,14 +875,14 @@ namespace herschel
     }
 
 
-    virtual void replaceGenerics(const TypeCtx& typeMap)
+    void replaceGenerics(const TypeCtx& typeMap) override
     {
       herschel::replaceGenerics(fGenerics, typeMap);
       herschel::replaceGenerics(fConstraints, typeMap);
     }
 
 
-    virtual String toString(bool isValue) const
+    String toString(bool isValue) const override
     {
       StringBuffer buf;
       buf << "<ty:ref" << (fIsOpen ? " gen='t'" : "")
@@ -937,14 +936,13 @@ namespace herschel
     { }
 
 
-    virtual std::shared_ptr<TypeImpl> clone() const
+    std::shared_ptr<TypeImpl> clone() const override
     {
       return std::make_shared<ArrayTypeImpl>(fBase.clone(), fSizeIndicator);
     }
 
 
-    virtual bool
-    isEqual(const TypeImpl* other) const
+    bool isEqual(const TypeImpl* other) const override
     {
       auto o = dynamic_cast<const ArrayTypeImpl*>(other);
 
@@ -954,39 +952,37 @@ namespace herschel
     }
 
 
-    bool isOpen() const
+    bool isOpen() const override
     {
       return fBase.isOpen();
     }
 
 
-    bool isOpenSelf() const
+    bool isOpenSelf() const override
     {
       return fBase.isOpenSelf();
     }
 
 
-    const Type&
-    baseType() const
+    const Type& baseType() const
     {
       return fBase;
     }
 
 
-    int
-    sizeIndicator() const
+    int sizeIndicator() const
     {
       return fSizeIndicator;
     }
 
 
-    virtual void replaceGenerics(const TypeCtx& typeMap)
+    void replaceGenerics(const TypeCtx& typeMap) override
     {
       fBase = fBase.replaceGenerics(typeMap);
     }
 
 
-    virtual String toString(bool isValue) const
+    String toString(bool isValue) const override
     {
       StringBuffer buf;
       buf << "<ty:array ind='" << fromInt(fSizeIndicator) << "'"
@@ -2324,21 +2320,21 @@ namespace herschel
     { }
 
 
-    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const
+    std::shared_ptr<BaseTypeConstraintImpl> clone() const override
     {
       return std::make_shared<LogicalConstraintImpl>(fOp, fLeft.clone(),
                                                      fRight.clone());
     }
 
 
-    virtual void replaceGenerics(const TypeCtx& typeMap)
+    void replaceGenerics(const TypeCtx& typeMap) override
     {
       fLeft = fLeft.replaceGenerics(typeMap);
       fRight = fRight.replaceGenerics(typeMap);
     }
 
 
-    virtual bool isEqual(const BaseTypeConstraintImpl* other) const
+    bool isEqual(const BaseTypeConstraintImpl* other) const override
     {
       auto c = dynamic_cast<const LogicalConstraintImpl*>(other);
 
@@ -2349,7 +2345,7 @@ namespace herschel
     }
 
 
-    virtual TypeConstOperator constOp() const
+    TypeConstOperator constOp() const override
     {
       return fOp;
     }
@@ -2379,7 +2375,7 @@ namespace herschel
     }
 
 
-    virtual String toString() const
+    String toString() const override
     {
       StringBuffer buf;
       buf << "<ty:const k='" << optostr(fOp) << "'>"
@@ -2406,19 +2402,19 @@ namespace herschel
     { }
 
 
-    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const
+    std::shared_ptr<BaseTypeConstraintImpl> clone() const override
     {
       return std::make_shared<ValueConstraintImpl>(fOp, fValue);
     }
 
 
-    virtual void replaceGenerics(const TypeCtx& typeMap)
+    void replaceGenerics(const TypeCtx& typeMap) override
     {
       // NOP
     }
 
 
-    virtual bool isEqual(const BaseTypeConstraintImpl* other) const
+    bool isEqual(const BaseTypeConstraintImpl* other) const override
     {
       auto c = dynamic_cast<const ValueConstraintImpl*>(other);
 
@@ -2428,7 +2424,7 @@ namespace herschel
     }
 
 
-    virtual TypeConstOperator constOp() const
+    TypeConstOperator constOp() const override
     {
       return fOp;
     }
@@ -2458,7 +2454,7 @@ namespace herschel
     }
 
 
-    virtual String toString() const
+    String toString() const override
     {
       StringBuffer buf;
       buf << "<ty:const k='" << optostr(fOp) << "'>"
@@ -2484,19 +2480,19 @@ namespace herschel
     { }
 
 
-    virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const
+    std::shared_ptr<BaseTypeConstraintImpl> clone() const override
     {
       return std::make_shared<TypeConstraintImpl>(fOp, fType.clone());
     }
 
 
-    virtual void replaceGenerics(const TypeCtx& typeMap)
+    void replaceGenerics(const TypeCtx& typeMap) override
     {
       fType = fType.replaceGenerics(typeMap);
     }
 
 
-    virtual bool isEqual(const BaseTypeConstraintImpl* other) const
+    bool isEqual(const BaseTypeConstraintImpl* other) const override
     {
       auto c = dynamic_cast<const TypeConstraintImpl*>(other);
 
@@ -2504,7 +2500,7 @@ namespace herschel
     }
 
 
-    virtual TypeConstOperator constOp() const
+    TypeConstOperator constOp() const override
     {
       return fOp;
     }
@@ -2516,7 +2512,7 @@ namespace herschel
     }
 
 
-    virtual String toString() const
+    String toString() const override
     {
       StringBuffer buf;
       buf << "<ty:const k='isa'>\n"

@@ -28,35 +28,38 @@ namespace herschel
   public:
     CharTypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_char"; }
+    zstring convFuncName() const override { return "h7_atom_2_char"; }
 
-    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const override
     {
       return tools->makeCharAtom(value);
     }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt32Ty(typeUtils->context());
     }
 
-    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const { return 4; }
+    size_t getSlotSize(const CodegenTypeUtils* typeUtils) const override
+    {
+      return 4;
+    }
 
-    virtual bool isBaseType() const { return true; }
+    bool isBaseType() const override { return true; }
 
-    virtual bool isPlainType() const { return true; }
+    bool isPlainType() const override { return true; }
 
-    virtual bool isSigned() const { return false; }
+    bool isSigned() const override { return false; }
 
-    virtual bool isAnyNumber() const { return false; }
+    bool isAnyNumber() const override { return false; }
 
-    virtual bool isAnyInt() const { return false; }
+    bool isAnyInt() const override { return false; }
 
-    virtual bool isAnyFloat() const { return false; }
+    bool isAnyFloat() const override { return false; }
 
-    virtual int typeBitsize() const { return 32; }
+    int typeBitsize() const override { return 32; }
 
-    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
+    std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const override
     {
       return std::unique_ptr<TypeEnumMaker>(new CharTypeEnumMaker);
     }
@@ -69,35 +72,35 @@ namespace herschel
   public:
     ClangCharTypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_int8"; }
+    zstring convFuncName() const override { return "h7_atom_2_int8"; }
 
-    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const override
     {
       return tools->makeIntAtom(value, CodegenTools::kAtomInt8);
     }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return llvm::Type::getInt8Ty(typeUtils->context());
     }
 
-    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const { return 1; }
+    size_t getSlotSize(const CodegenTypeUtils* typeUtils) const override { return 1; }
 
-    virtual bool isBaseType() const { return true; }
+    bool isBaseType() const override { return true; }
 
-    virtual bool isPlainType() const { return true; }
+    bool isPlainType() const override { return true; }
 
-    virtual bool isSigned() const { return true; }
+    bool isSigned() const override { return true; }
 
-    virtual bool isAnyNumber() const { return false; }
+    bool isAnyNumber() const override { return false; }
 
-    virtual bool isAnyInt() const { return false; }
+    bool isAnyInt() const override { return false; }
 
-    virtual bool isAnyFloat() const { return false; }
+    bool isAnyFloat() const override { return false; }
 
-    virtual int typeBitsize() const { return 8; }
+    int typeBitsize() const override { return 8; }
 
-    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
+    std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const override
     {
       return std::unique_ptr<TypeEnumMaker>(new Int8TypeEnumMaker);
     }

@@ -24,12 +24,12 @@ namespace herschel
   class TokenPort : public Port<Token>
   {
   public:
-    virtual size_t write(const Token* data, size_t items);
-    virtual int write(Token item);
+    size_t write(const Token* data, size_t items) override;
+    int write(Token item) override;
 
-    virtual void flush();
+    void flush() override;
 
-    virtual bool canSetCursor() const;
+    bool canSetCursor() const override;
   };
 
 
@@ -43,10 +43,10 @@ namespace herschel
     FileTokenPort(std::shared_ptr<Port<Char>> port, const String& srcName,
                   std::shared_ptr<CharRegistry> charRegistry = nullptr);
 
-    virtual bool isOpen() const;
-    virtual bool isEof() const;
+    bool isOpen() const override;
+    bool isEof() const override;
 
-    virtual Token read();
+    Token read() override;
 
   private:
     void setTokenizer(std::shared_ptr<Tokenizer> tokenizer);
@@ -64,10 +64,10 @@ namespace herschel
     InternalTokenPort(const std::list<Token>& tokens);
     InternalTokenPort(const TokenVector& tokens);
 
-    virtual bool isOpen() const;
-    virtual bool isEof() const;
+    bool isOpen() const override;
+    bool isEof() const override;
 
-    virtual Token read();
+    Token read() override;
 
   private:
     std::list<Token> fTokens;

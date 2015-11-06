@@ -28,42 +28,41 @@ namespace herschel
   public:
     KeywordTypeProperty() {}
 
-    virtual zstring convFuncName() const { return "h7_atom_2_keyword"; }
+    zstring convFuncName() const override { return "h7_atom_2_keyword"; }
 
-    virtual llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const
+    llvm::Value* emitPackCode(CodegenTools* tools, llvm::Value* value) const override
     {
       hr_invalid("keywords are atoms always");
       return nullptr;
     }
 
-    virtual llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const
+    llvm::Type* getLLVMType(const CodegenTypeUtils* typeUtils) const override
     {
       return typeUtils->getAtomType();
     }
 
-    virtual size_t getSlotSize(const CodegenTypeUtils* typeUtils) const
+    size_t getSlotSize(const CodegenTypeUtils* typeUtils) const override
     {
       return typeUtils->getAtomTypeSize();
     }
 
-    virtual bool isBaseType() const { return true; }
+    bool isBaseType() const override { return true; }
 
-    virtual bool isPlainType() const { return false; }
+    bool isPlainType() const override { return false; }
 
-    virtual bool isSigned() const { return false; }
+    bool isSigned() const override { return false; }
 
-    virtual bool isAnyNumber() const { return false; }
+    bool isAnyNumber() const override { return false; }
 
-    virtual bool isAnyInt() const { return false; }
+    bool isAnyInt() const override { return false; }
 
-    virtual bool isAnyFloat() const { return false; }
+    bool isAnyFloat() const override { return false; }
 
-    virtual int typeBitsize() const { return 0; }
+    int typeBitsize() const override { return 0; }
 
-    virtual std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const
+    std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const override
     {
       return std::unique_ptr<TypeEnumMaker>(new KeywordTypeEnumMaker);
     }
   };
 };                              // namespace
-
