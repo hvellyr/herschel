@@ -46,3 +46,9 @@
 - char names are tested too early in Tokenizer::mapCharNameToChar; but
   imports are only included in FirstPass::parseImport().  Probably the
   CharNode resolution needs to be deferred.
+
+
+- def enum xxx : Int
+
+  doesn't work with type aliases.  (Int is not recognized as Alias of
+  Int32 and therefore not as a base type).
