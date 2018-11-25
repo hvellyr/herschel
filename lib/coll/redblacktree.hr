@@ -54,25 +54,27 @@ def class Node<K, V>(key : K, value : V, color : NodeColor,
 }
 
 
-def grandparent(self : Node<K, V>) -> Node<K, V>
+def grandparent(self : Node<K, V>) -> Node<K, V> {
   --  on enter(not self.parent.nil?)        -- Not the root node
   --  on enter(not self.parent.parent.nil?) -- Not child of root
   self ^ parent ^ parent
+}
 
 
-def sibling(self : Node<K, V>) -> Node<K, V>
+def sibling(self : Node<K, V>) -> Node<K, V> {
   -- on enter(not self.parent.nil?)  -- Root node has no sibling
   if (self == self ^ parent ^ left)
     self ^ parent ^ right
   else
     self ^ parent ^ left
+}
 
 
-def uncle(self : Node<K, V>) -> Node<K, V>
+def uncle(self : Node<K, V>) -> Node<K, V> {
   -- on enter(not self.parent.nil?) -- Root node has no uncle
   -- on enter(not self.parent.parent.nil?) -- Children of root have no uncle
   self ^ parent ^ sibling
-
+}
 
 
 ------------------------------------------------------------------------------
@@ -83,14 +85,15 @@ def class RedBlackTree<K, V>()
 }
 
 
-def node-color(node : Node<'K, 'V>) -> NodeColor
+def node-color(node : Node<'K, 'V>) -> NodeColor {
   if (node.nil?)
     BLACK
   else
     node ^ color
+}
 
 
-def lookup-node(tree @ RedBlackTree<'K, 'V>, key : 'K) -> Node<'K, 'V>
+def lookup-node(tree @ RedBlackTree<'K, 'V>, key : 'K) -> Node<'K, 'V> {
   let n = tree.root
 
   for (not n.nil?) {
@@ -104,17 +107,19 @@ def lookup-node(tree @ RedBlackTree<'K, 'V>, key : 'K) -> Node<'K, 'V>
   }
   else
     nil
+}
 
 
-def lookup(tree @ RedBlackTree<'K, 'V>, key : 'K) -> 'V
+def lookup(tree @ RedBlackTree<'K, 'V>, key : 'K) -> 'V {
   let n = tree.lookup-node(key)
   if (n.nil?)
     nil
   else
     n ^ value
+}
 
 
-def rotate-left(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
+def rotate-left(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>) {
   let r = n ^ right
   tree.replace-node(n, r)
   n ^ right = r ^ left
@@ -122,9 +127,10 @@ def rotate-left(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
     r ^ left ^ parent = n
   r ^ left = n
   n ^ parent = r
+}
 
 
-def rotate-right(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
+def rotate-right(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>) {
   let l = = n ^ left
   tree.replace-node(n, l)
   n ^ left = l ^ right
@@ -132,10 +138,11 @@ def rotate-right(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
     l ^ right ^ parent = n
   l ^ right = n
   n ^ parent = l
+}
 
 
 def replace-node(tree @ RedBlackTree<'K, 'V>,
-                 oldn : Node<'K, 'V>, newn : Node<'K, 'V>)
+                 oldn : Node<'K, 'V>, newn : Node<'K, 'V>) {
   if (nil?(oldn ^ parent))
     tree ^ root = newn
   else if (oldn == oldn ^ parent ^left)
@@ -145,11 +152,11 @@ def replace-node(tree @ RedBlackTree<'K, 'V>,
 
   if (not newn.nil?)
     newn ^ parent = oldn ^ parent
-
+}
 
 
 def insert(tree @ RedBlackTree<'K, 'V>,
-           key : 'K, value : 'V) -> RedBlackTree<'K, 'V>
+           key : 'K, value : 'V) -> RedBlackTree<'K, 'V> {
   let inserted-node = Node<'K, 'V>(key, value, RED, nil, nil)
 
   if (root.nil?)
@@ -187,26 +194,29 @@ def insert(tree @ RedBlackTree<'K, 'V>,
   tree.insert-case1(inserted-node)
   --verifyProperties()
   tree
+}
 
 
-def insert-case1(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
+def insert-case1(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>) {
   if (nil?(n ^ parent))
     n ^ color = BLACK
   else
     tree.insertCase2(n)
   unspecified
+}
 
 
-def insert-case2(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
+def insert-case2(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>) {
   if (n ^ parent.node-color == BLACK)
     -- Tree is still valid
     return(tree)
   else
       tree.insert-case3(n)
   unspecified
+}
 
 
-def insert-case3(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
+def insert-case3(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>) {
   if (n.uncle.node-color == RED) {
     n ^ parent ^ color = BLACK
     n.uncle ^ color = BLACK
@@ -215,9 +225,10 @@ def insert-case3(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
   }
   else
     tree.insert-case4(n)
+}
 
 
-def insert-case4(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
+def insert-case4(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>) {
   if (n == n ^ parent ^ right and n ^ parent == n.grandparent ^ left) {
     tree.rotate-left(n ^ parent)
     n = n ^ left
@@ -227,9 +238,10 @@ def insert-case4(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
     n = n ^ right
   }
   tree.insert-case5(n)
+}
 
 
-def insert-case5(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
+def insert-case5(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>) {
   n ^ parent ^ color = BLACK
   n.grandparent ^ color = RED
   if (n == n ^ parent ^ left and n ^ parent == n.grandparent ^ left) {
@@ -239,9 +251,10 @@ def insert-case5(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
     assert(n == n ^ parent ^ right and n ^ parent == n.grandparent ^ right)
     tree.rotate-left(n.grandparent)
   }
+}
 
 
-def delete(tree @ RedBlackTree<'K, 'V>, key : 'K) -> RedBlackTree<'K, 'V>
+def delete(tree @ RedBlackTree<'K, 'V>, key : 'K) -> RedBlackTree<'K, 'V> {
   let n = tree.lookup-node(key)
 
   if (n.nil?)
@@ -270,28 +283,29 @@ def delete(tree @ RedBlackTree<'K, 'V>, key : 'K) -> RedBlackTree<'K, 'V>
 
   -- verifyProperties
   tree
-
+}
 
 
 def maximum-node(tree @ RedBlackTree<'K, 'V>,
-                 n : Node<'K, 'V>) -> Node<'K, 'V>
+                 n : Node<'K, 'V>) -> Node<'K, 'V> {
   -- on enter(not n.nil?)
   let p = n
   for (not nil?(p ^ right))
     p = p ^ right
   p
+}
 
 
 def delete-case1(tree @ RedBlackTree<'K, 'V>,
-                 n : Node<'K, 'V>)
+                 n : Node<'K, 'V>) {
   if (not nil?(n ^ parent))
     tree.delete-case2(n)
   unspecified
-
+}
 
 
 def delete-case2(tree @ RedBlackTree<'K, 'V>,
-                 n : Node<'K, 'V>)
+                 n : Node<'K, 'V>) {
   if (n.sibling.node-color == RED) {
     n ^ parent ^ color = RED
     n.sibling ^ color = BLACK
@@ -301,10 +315,11 @@ def delete-case2(tree @ RedBlackTree<'K, 'V>,
       tree.rotate-right(n ^ parent)
   }
   tree.delete-case3(n)
+}
 
 
 def delete-case3(tree @ RedBlackTree<'K, 'V>,
-                 n : Node<'K, 'V>)
+                 n : Node<'K, 'V>) {
   if (n ^ parent.node-color == BLACK and
       n.sibling.node-color == BLACK and
       n.sibling ^ left.node-color == BLACK and
@@ -314,10 +329,11 @@ def delete-case3(tree @ RedBlackTree<'K, 'V>,
   }
   else
     tree.delete-case4(n)
+}
 
 
 def delete-case4(tree @ RedBlackTree<'K, 'V>,
-                 n : Node<'K, 'V>)
+                 n : Node<'K, 'V>) {
   if (n ^ parent.node-color == RED and
       n.sibling.node-color == BLACK and
       n.sibling ^ left.node-color == BLACK and
@@ -327,10 +343,11 @@ def delete-case4(tree @ RedBlackTree<'K, 'V>,
   }
   else
     tree.delete-case5(n)
+}
 
 
 def delete-case5(tree @ RedBlackTree<'K, 'V>,
-                 n : Node<'K, 'V>)
+                 n : Node<'K, 'V>) {
   if (n == n ^ parent ^ left and
       node-color(n.sibling) == BLACK and
       node-color(n.sibling ^ left) == RED and
@@ -348,10 +365,11 @@ def delete-case5(tree @ RedBlackTree<'K, 'V>,
     tree.rotate-left(n.sibling)
   }
   tree.delete-case6(n)
+}
 
 
 def delete-case6(tree @ RedBlackTree<'K, 'V>,
-                 n : Node<'K, 'V>)
+                 n : Node<'K, 'V>) {
   n.sibling ^ color = node-color(n ^ parent)
   n ^ parent ^ color = BLACK
   if (n == n ^ parent ^ left) {
@@ -364,5 +382,6 @@ def delete-case6(tree @ RedBlackTree<'K, 'V>,
     n.sibling ^ left ^ color = BLACK
     tree.rotate-right(n ^ parent)
   }
+}
 
 -- end of redblacktree.hr

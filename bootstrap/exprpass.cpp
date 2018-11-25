@@ -577,8 +577,8 @@ Token FirstPass::parseFunctionSignature()
       returnType = Token(fToken.srcpos(), kSymbol, "Any");
     }
 
-    return Token() << (Token(paranPos, kParanOpen, kParanClose) << params) << returnTyToken
-                   << returnType;
+    return Token() << (Token(paranPos, kParanOpen, kParanClose) << params)
+                   << returnTyToken << returnType;
   }
   return Token();
 }
@@ -1840,7 +1840,9 @@ Token FirstPass::parseAtomicExpr()
   case kMatchId: return parseMatch();
   case kForId: return parseFor();
 
-  case kLetId: hr_invalid("unexpected let token"); break;
+  case kLetId:
+    errorf(fToken.srcpos(), E_UnexpectedToken, "Unexpected let token");
+    break;
 
   case kSymbol:
   case kQuote: return parseAccess(parseSimpleType(fToken));
@@ -2756,8 +2758,7 @@ Token FirstPass::parseReifyClause()
 
 
 Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
-                                  const Token& symToken, bool isLocal,
-                                  const Token& linkage)
+                                  const Token& symToken, const Token& linkage)
 {
   hr_assert(fToken == kParanOpen);
   Token paranOpenToken = fToken;
@@ -2810,18 +2811,10 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
     else {
       docString = parseOptDocString();
 
-      if (isLocal) {
-        body = parseExpr(!K(acceptComma));
-        if (!body.isSet()) {
-          errorf(bodyPos, E_MissingBody, "expected function body");
-          return Token();
-        }
-      }
-      else {
-        TokenVector bodyExprs;
-        parseExprListUntilBrace(&bodyExprs, !isLocal, K(isLocal));
-
-        body = wrapInBlock(bodyPos, bodyExprs);
+      body = parseExpr(!K(acceptComma));
+      if (!body.isSet()) {
+        errorf(bodyPos, E_MissingBody, "expected function body");
+        return Token();
       }
     }
 
@@ -2874,8 +2867,7 @@ TokenVector FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal
 
   nextToken();
   if (fToken == kParanOpen)
-    return parseFunctionDef(defToken, Token(), symToken, isLocal, linkage)
-        .toTokenVector();
+    return parseFunctionDef(defToken, Token(), symToken, linkage).toTokenVector();
 
   return parseVarDef2(defToken, Token(), symToken, isLocal, linkage);
 }
@@ -2904,7 +2896,7 @@ Token FirstPass::parseGenericFunctionDef(const Token& defToken, bool isLocal)
     return scanUntilTopExprAndResume();
   }
 
-  return parseFunctionDef(defToken, tagToken, symToken, isLocal, Token());
+  return parseFunctionDef(defToken, tagToken, symToken, Token());
 }
 
 

@@ -41,3 +41,8 @@
   this produces the totally unusable error message:
 
     error: Parse error: Bad expression: 566
+
+
+- char names are tested too early in Tokenizer::mapCharNameToChar; but
+  imports are only included in FirstPass::parseImport().  Probably the
+  CharNode resolution needs to be deferred.

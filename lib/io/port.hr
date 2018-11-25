@@ -9,6 +9,7 @@ module io
 
 export public(*)
 
+import "lang/numbers.hr"
 
 
 ------------------------------------------------------------------------------
@@ -82,7 +83,7 @@ def generic read(port @ ^InPort<'T>) -> &('T, Eof) ...
 def generic read*(port @ ^InPort<'T>,
                   buffer @ ^'T[], offset : Ordinal,
                   num-items : Ordinal)
-    : OrdinalOrEof ...
+    -> OrdinalOrEof ...
     ~ Reads @var{num-items} elements from @var{port} from the current port
     cursor position and stores them into @var{buffer} beginning from offset
     @var{offset}.  @var{buffer} must be large enough to hold all read
@@ -137,7 +138,7 @@ def generic position(cursor @ PortCursor<'T>) -> Ordinal ...
     @code{'T == Octet} this is equal to @fun{octet-offset}. ~
 
 
-def enum PortCursorWhenceType : Int
+def enum PortCursorWhenceType : lang|Int32
 {
   current = 0
   begin   = 1
@@ -156,9 +157,11 @@ def generic cursor!(port @ ^SeekablePort<'T>,
     @returns the new cursor position ~
 
 
+when ignore {
 def generic cursor!(port @ ^SeekablePort<'T>,
                     cursor @ PortCursor<'T>) -> PortCursor<'T> ...
     ~ Sets the cursor of @var{port} to @var{cursor}. ~
+}
 
 
 def generic cursor(port @ SeekablePort<'T>) -> PortCursor<'T> ...
@@ -176,7 +179,7 @@ def generic truncate(port @ ^RandomAccessPort<'T>,
     @var{num-items} elements.
 
     @returns @var{port} ~
-}
+
 
 
 -- end of port

@@ -60,7 +60,7 @@ def compare(one @ StringImpl, two @ StringImpl) -> Int
 
 
 def num-items(s @ StringImpl) -> Ordinal
-    h7_lang_string_length(s) as Ordinal
+  h7_lang_string_length(s) as Ordinal
 
 
 def slice(s @ StringImpl, idx @ Ordinal) -> Char
@@ -76,6 +76,7 @@ def slice*(str @ StringImpl, from @ Ordinal, to @ Ordinal) -> String
 ------------------------------------------------------------------------------
 
 def compare(one @ String, two @ String) -> Int
+{
   let result : Int = 0
 
   for (i : UInt in 0u .. one.num-items - 1,
@@ -88,6 +89,7 @@ def compare(one @ String, two @ String) -> Int
     one.num-items <=> two.num-items
   else
     result
+}
 
 
 def empty?(str @ String) -> Bool
@@ -97,6 +99,7 @@ def length(str @ String) -> Ordinal
   str.num-items
 
 def concat(left @ String, right @ String) -> String
+{
   let t = h7_allocate_string_n(left.num-items + right.num-items, \space) as String
   let j = 0u
 
@@ -115,6 +118,7 @@ def concat(left @ String, right @ String) -> String
   }
 
   t
+}
 
 
 ------------------------------------------------------------------------------

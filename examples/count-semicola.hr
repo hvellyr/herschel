@@ -32,8 +32,8 @@
 
 module examples
 
-import "io.hr"
-import "app.hr"
+import "io/io.hr"
+--import "app.hr"
 
 def macro with-input-file
 {
@@ -54,13 +54,17 @@ def macro with-input-file
 }
 
 
-def count-semicola(fname : String) : Ordinal
+def char semi = 003bh
+
+def count-semicola(fname : String) -> Ordinal
+{
   let count = 0
   with-input-file(fname, c) {
     if (c == \semi)
       count.incr!
   }
   count
+}
 
 
 def app|main(args @ String[])

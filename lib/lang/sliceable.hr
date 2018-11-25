@@ -32,7 +32,7 @@ def type OrderedSliceable<K, E> : Sliceable<K, E>
     range-slices. ~
 
 def generic slice*(obj @ 'T, from @ 'K, to @ 'K) -> 'T
-      where T isa OrderedSliceable<'K, 'E> ...
+    where T isa OrderedSliceable<'K, 'E> ...
     ~ Returns a new ordered sliceable (probably of different type than
     @var{obj}) containing the elements from @var{from} to @var{to}
     exclusive, i.e. [@var{from}, @var{to}).
@@ -42,7 +42,7 @@ def generic slice*(obj @ 'T, from @ 'K, to @ 'K) -> 'T
     resulting sliceable is empty. ~
 
 def generic slice-rest(obj @ 'T, from @ 'K) -> 'T
-      where T isa OrderedSliceable<'K, 'E> ...
+    where T isa OrderedSliceable<'K, 'E> ...
     ~ Returns a new ordered sliceable (probably of different type than
     @var{obj}) containing all elements from @var{from} to the last element
     in @var{obj} (inclusive).

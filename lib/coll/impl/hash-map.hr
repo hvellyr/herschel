@@ -52,11 +52,14 @@ def class Triple<Key, Value, Tail>(_key : Key, _val : Value, _tail : Tail)
 }
 
 def generic key?(self @ Triple<'K, 'V, 'T>, other : 'K) -> Bool
+{
   self.key == other
+}
 
 def lang|to-string(self @ Triple<'K, 'V, 'T>) -> String
+{
   concat(self.key, "->", self.value)
-
+}
 
 
 ---------------------------------------------------------------------------
@@ -82,11 +85,14 @@ def empty?(self @ HashMap<'K, 'T>) -> Bool
   self.elts == 0
 
 def empty!(self @ HashMap<'K, 'T>) -> HashMap<'K, 'T>
+{
   self.table = Vector<HashMapTriple<'K, 'T>>(items: %default-size%)
   self.elts = 0
   self
+}
 
 def core|octet-size(self @ HashMap<'K, 'T>) -> Ordinal
+
   self.table.size
 
 def num-items(self @ HashMap<'K, 'T>) -> Ordinal
@@ -107,6 +113,7 @@ def value-iterator(self @ HashMap<'K, 'T>) -> Iterator<'T>
 --------------------------------------------------------------------
 
 def has-key?(self @ HashMap<'K, 'T>, key @ 'K) -> Bool
+{
   let loop(nl) {
       if (nl.nil?)
         false
@@ -116,9 +123,11 @@ def has-key?(self @ HashMap<'K, 'T>, key @ 'K) -> Bool
         loop(nl.tail)
     }
   loop(self.table[key.hash mod self.table.num-items])
+}
 
 
 def get(self @ HashMap<'K, 'T>, key @ 'K)
+{
   let loop(nl) {
       if (nl.nil?)
         nil
@@ -128,9 +137,11 @@ def get(self @ HashMap<'K, 'T>, key @ 'K)
         loop(nl.tail)
     }
   loop(self.table[key.hash mod self.table.num-items])
+}
 
 
 def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) -> HashMap
+{
   let hash = (key.hash mod self.table.num-items) as Ordinal
   let loop(nl) {
       if (nl.nil?) {
@@ -159,13 +170,17 @@ def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) -> HashMap
   }
 
   self
+}
 
 
 def put!(self @ HashMap<'K, 'T>, obj @ Assoc<'K, 'T>) -> HashMap<'K, 'T>
+{
   self.put!(obj.key, obj.value)
+}
 
 
 def remove!(self @ HashMap<'K, 'T>, key @ 'K) -> HashMap<'K, 'T>
+{
   let hash = (key.hash mod self.table.num-items) as Ordinal
   let np = self.table[hash]
 
@@ -203,20 +218,25 @@ def remove!(self @ HashMap<'K, 'T>, key @ 'K) -> HashMap<'K, 'T>
   }
 
   self
+}
 
 
 def keys(self @ HashMap<'K, 'T>) -> Vector<'K>
+{
   let keys = Vector<'K>(self.elts)
   for (k in self.key-iterator)
     keys.append!(k)
   keys
+}
 
 
 def values(self @ HashMap<'K, 'T>) -> Vector<'T>
+{
   let values = Vector<'T>(self.elts)
   for (v in self.value-iterator)
     values.append!(v)
   values
+}
 
 
 --  has-value?: obj(_ELT_) -> (BOOL) |
@@ -231,33 +251,41 @@ def values(self @ HashMap<'K, 'T>) -> Vector<'T>
 
 def add-all!(self @ HashMap<'K, 'T>,
              coll @ AssocCollection<'K, 'T>) -> HashMap<'K, 'T>
+{
   for (e in coll)
     self.put!(e.key, e.value)
   self
+}
 
 
 def has-all-keys?(self @ HashMap<'K, 'T>, keys @ Collection<'K>) -> Bool
+{
   for (k in keys) {
     if (not self.has?(k))
       return false
   }
   true
+}
 
 
 def remove-all-keys!(self @ HashMap<'K, 'T>,
                      keys @ Collection<'K>) -> HashMap<'K, 'T>
+{
   for (k in keys)
     self.remove!(k)
   self
+}
 
 
 def retain-all-keys!(self @ HashMap<'K, 'T>,
                      keys @ Collection<'K>) -> HashMap<'K, 'T>
+{
   for (k in keys) {
     if (not self.has?(k))
       self.remove!(k)
   }
   self
+}
 
 
 ----------------------------------------------------------------------
@@ -266,9 +294,11 @@ def retain-all-keys!(self @ HashMap<'K, 'T>,
 
 def table!(self : HashMap<'K, 'T>,
            new-table : Vector<HashMapTriple<'K, 'T> >)
+{
   slot!(self, #table, new-table)
   slot!(self, #elts, new-table.num-items)
   self
+}
 
 
 extend module core
@@ -278,8 +308,10 @@ def copy(self @ HashMap<'K, 'T>) -> HashMap<'K, 'T>
 
 
 def deepen(self @ HashMap<'K, 'T>) -> HashMap<'K, 'T>
+{
   self.table!(self.table.deep-copy)
   self
+}
 }
 
 
@@ -292,6 +324,7 @@ def deepen(self @ HashMap<'K, 'T>) -> HashMap<'K, 'T>
 
 def lang|to-string(map @ HashMap<'K, 'T>) -> String
     ~ Returns a string representation of @var{map}. ~
+{
   -- let sb = StringBuffer()
   -- sb ++ "#("
 
@@ -303,6 +336,7 @@ def lang|to-string(map @ HashMap<'K, 'T>) -> String
   -- sb.to-string
 
   concat("#(", join-concat(map, function(e) { e.to-string }, " "), ")")
+}
 
 
 ------------------------------------------------------------------------------

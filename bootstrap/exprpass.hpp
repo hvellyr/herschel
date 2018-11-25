@@ -93,7 +93,7 @@ private:
   TokenVector parseVarDef2(const Token& defToken, const Token& tagToken,
                            const Token& symbolToken, bool isLocal, const Token& linkage);
   Token parseFunctionDef(const Token& defToken, const Token& tagToken,
-                         const Token& symToken, bool isLocal, const Token& linkage);
+                         const Token& symToken, const Token& linkage);
   TokenVector parseFunctionOrVarDef(const Token& defToken, bool isLocal,
                                     const Token& linkage);
   Token parseSelect();
