@@ -52,7 +52,7 @@ def adapt-preallocation(cltn @ ^Vector<'T>)
 
 -- from collection
 
-def add-all!(cltn @ ^Vector<'T>, other-coll @ Collection<'T>) : ^Vector<'T>
+def add-all!(cltn @ ^Vector<'T>, other-coll @ Collection<'T>) -> ^Vector<'T>
   let ni = other-coll.num-items
   if (ni > 0) {
     let old-ni = cltn.num-items
@@ -63,28 +63,28 @@ def add-all!(cltn @ ^Vector<'T>, other-coll @ Collection<'T>) : ^Vector<'T>
   cltn
 
 
-def num-items(cltn @ Vector<'T>) : Ordinal
+def num-items(cltn @ Vector<'T>) -> Ordinal
   cltn.items
 
 
-def empty?(cltn @ Vector<'T>) : Bool
+def empty?(cltn @ Vector<'T>) -> Bool
   cltn.items == 0
 
 
-def empty!(cltn @ ^Vector<'T>) : ^Vector<'T>
+def empty!(cltn @ ^Vector<'T>) -> ^Vector<'T>
   cltn.items = 0
   cltn.adapt-preallocation
   cltn
 
 
-def contains?(cltn @ Vector<'T>, elt @ 'T) : Bool
+def contains?(cltn @ Vector<'T>, elt @ 'T) -> Bool
   match (cltn.index-of(elt)) {
     |   : Bool -> false
     | n : Ordinal -> true
   }
 
 
-  def generic add!(cltn @ ^Vector<'T>, elt @ 'T) : ^Vector<'T>
+  def generic add!(cltn @ ^Vector<'T>, elt @ 'T) -> ^Vector<'T>
       ~ Adds @var{elt} to @var{cltn}
 
       It is implementation dependant what happens when @var{elt} is already
@@ -92,7 +92,7 @@ def contains?(cltn @ Vector<'T>, elt @ 'T) : Bool
 
       @returns @var{cltn} ~
 
-  def generic remove!(cltn @ ^Vector<'T>, elt @ 'T) : ^Vector<'T>
+  def generic remove!(cltn @ ^Vector<'T>, elt @ 'T) -> ^Vector<'T>
       ~ Remove @var{elt} from @var{cltn}
 
       The method ignores silently if @var{elt} is not contained in
@@ -100,7 +100,7 @@ def contains?(cltn @ Vector<'T>, elt @ 'T) : Bool
 
       @returns @var{cltn} ~
 
-  def generic iterator(cltn @ Vector<'T>) : Iterator<'T>
+  def generic iterator(cltn @ Vector<'T>) -> Iterator<'T>
       ~ Returns an iterator over the contained elements in @var{cltn}
 
       The order of elements delivered by the returned iterator dependants
@@ -111,13 +111,13 @@ def contains?(cltn @ Vector<'T>, elt @ 'T) : Bool
 
 -- from OrderedCollection
 
-def first(cltn @ Vector<'T>) : 'T
+def first(cltn @ Vector<'T>) -> 'T
   if (cltn.items <= 0)
     OutOfBoundsException(obj.items, 0, 0).raise
   cltn.data[0]
 
 
-def last(cltn @ Vector<'T>) : 'T
+def last(cltn @ Vector<'T>) -> 'T
   if (cltn.items <= 0)
     OutOfBoundsException(obj.items, obj.items - 1, obj.items - 1).raise
   cltn.data[cltn.items - 1]
@@ -126,25 +126,25 @@ def last(cltn @ Vector<'T>) : 'T
 
 -- from sequence
 
-  def generic insert!(cltn @ 'S, value @ T, before-index : Ordinal) : 'S
+  def generic insert!(cltn @ 'S, value @ T, before-index : Ordinal) -> 'S
       where S isa Sequence<T> ...
-  def generic remove-at!(cltn @ 'S, index : Ordinal) : T
-      where S isa Sequence<T> ...
-
-  def generic swap!(cltn @ 'S, from-idx : Ordinal, to-idx : Ordinal) : 'S
+  def generic remove-at!(cltn @ 'S, index : Ordinal) -> T
       where S isa Sequence<T> ...
 
-  def generic sort(cltn @ 'S) : 'S
+  def generic swap!(cltn @ 'S, from-idx : Ordinal, to-idx : Ordinal) -> 'S
       where S isa Sequence<T> ...
-  def generic sort!(cltn @ 'S) : 'S
+
+  def generic sort(cltn @ 'S) -> 'S
       where S isa Sequence<T> ...
-  def generic reverse(cltn @ 'S) : 'S
+  def generic sort!(cltn @ 'S) -> 'S
       where S isa Sequence<T> ...
-  def generic reverse!(cltn @ 'S) : 'S
+  def generic reverse(cltn @ 'S) -> 'S
+      where S isa Sequence<T> ...
+  def generic reverse!(cltn @ 'S) -> 'S
       where S isa Sequence<T> ...
 
 
-def index-of(cltn @ Vector<'T>, elt @ T) : OrdinalOrFalse
+def index-of(cltn @ Vector<'T>, elt @ T) -> OrdinalOrFalse
   for (i : Ordinal = 0 .. cltn.items - 1) {
     if (cltn[i] == e)
       return(i)
@@ -156,7 +156,7 @@ def index-of(cltn @ Vector<'T>, elt @ T) : OrdinalOrFalse
 -- from vector
 def generic resize!(cltn @ ^Vector<'T>,
                     new-size : Ordinal,
-                    init-value : 'T = Class<'T>.null-value) : ^Vector<'T>
+                    init-value : 'T = Class<'T>.null-value) -> ^Vector<'T>
 --    on out(r) r.num-items == new-size
 
     if (new-size <> cltn.data.size) {
@@ -166,7 +166,7 @@ def generic resize!(cltn @ ^Vector<'T>,
     cltn
 
 
-def reserve!(cltn @ ^Vector<'T>, add-items : Ordinal) : ^Vector<'T>
+def reserve!(cltn @ ^Vector<'T>, add-items : Ordinal) -> ^Vector<'T>
     if (add-items > 0)
       cltn.data = cltn.data.realloc(cltn.data.size + add-items)
     cltn
@@ -188,15 +188,15 @@ def class VectorSlice<T>(_vector : Vector<T>,
 
 extend module core
 {
-  def num-items(vsl @ VectorSlice<'T>) : Ordinal
+  def num-items(vsl @ VectorSlice<'T>) -> Ordinal
     vsl.to - vsl.from
 
 
-  def empty?(vsl @ VectorSlice<'T>) : Bool
+  def empty?(vsl @ VectorSlice<'T>) -> Bool
     vsl.num-items == 0
 
 
-  def slice(vsl @ VectorSlice<'T>, idx @ Ordinal) : 'T
+  def slice(vsl @ VectorSlice<'T>, idx @ Ordinal) -> 'T
     vsl.vector[vsl.from + idx]
 
 
@@ -206,13 +206,13 @@ extend module core
 
 
 
-  def slice(obj @ Vector<'T>, n @ Ordinal) : 'T
+  def slice(obj @ Vector<'T>, n @ Ordinal) -> 'T
     if (n >= obj.items)
       OutOfBoundsException(obj.items, n, n).raise
     obj.data[n]
 
 
-  def slice!(obj @ Vector<'T>, n @ Ordinal, value @ 'T) : Vector<'T>
+  def slice!(obj @ Vector<'T>, n @ Ordinal, value @ 'T) -> Vector<'T>
     if (n >= obj.items)
       OutOfBoundsException(obj.items, n, n).raise
     obj.data[n] = value
@@ -220,7 +220,7 @@ extend module core
 
 -- from OrderedSlicable
 
-  def slice(obj @ Vector<'T>, from @ Ordinal, to @ Ordinal) : Slice<Ordinal, 'T>
+  def slice(obj @ Vector<'T>, from @ Ordinal, to @ Ordinal) -> Slice<Ordinal, 'T>
     if (from > obj.items or to > obj.items)
       OutOfBoundsException(obj.items, from, to).raise
     VectorSlice<'T>(obj, from, to)

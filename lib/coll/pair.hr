@@ -46,7 +46,7 @@ def class Pair<Car, Cdr>(car: _car : Car = nil,
   def slot cdr : Cdr = _cdr ; public
 }
 
-def alias NodePrinterFunc<L, R> = Function(node : Pair<L, R>) : Unspecified
+def alias NodePrinterFunc<L, R> = Function(node : Pair<L, R>) -> Unspecified
 
 def generic pair-cell-to-string(node @ Any, port,
                                 func : NodePrinterFunc<'L, 'R>)
@@ -60,12 +60,12 @@ def pair-cell-to-string(node @ Pair<'L, 'R>, port,
   func(node)
 
 
-def lang|to-string(self @ Pair<'L, 'R>) : String
+def lang|to-string(self @ Pair<'L, 'R>) -> String
   if (self.car.nil? and self.cdr.nil?)
     "()"
   else {
     let port = io|StringPort()
-    let printer(p : Pair<'L, 'R>) : Unspecified {
+    let printer(p : Pair<'L, 'R>) -> Unspecified {
       port.writes(p.car.to-string)
 
       let pcdr = p.cdr
@@ -83,7 +83,7 @@ def lang|to-string(self @ Pair<'L, 'R>) : String
 
 def alias LPair<T> = Pair<T, LPair<T>>
 
-def alias PairIteratorAccessorFunc<T> = Function(node : LPair<T>) : T
+def alias PairIteratorAccessorFunc<T> = Function(node : LPair<T>) -> T
 
 def class PairIterator<T, Accessor<T>>(_root, acc)
     : Iterator<T>
@@ -93,7 +93,7 @@ def class PairIterator<T, Accessor<T>>(_root, acc)
 }
 
 
-def core|next(self @ PairIterator<'Elt, 'AccType>) : 'Elt
+def core|next(self @ PairIterator<'Elt, 'AccType>) -> 'Elt
    if (self.more?) {
      let value = self.accessor(self.current)
      self.current = self.current.cdr
@@ -103,18 +103,18 @@ def core|next(self @ PairIterator<'Elt, 'AccType>) : 'Elt
      eof
 
 
-def core|more?(pair @ PairIterator<'Elt, 'AccType>) : Bool
+def core|more?(pair @ PairIterator<'Elt, 'AccType>) -> Bool
    not pair.current.nil? and pair.current.kind-of?(Pair)
 
 
 
-def value-iterator(pair @ LPair<'Elt>) : Iterator<'Elt>
+def value-iterator(pair @ LPair<'Elt>) -> Iterator<'Elt>
     ~ Returns an iterator over the car branches of @var{pair}. ~
   PairIterator<'Elt, PairIteratorAccessorFunc<'Elt>>(pair,
                                                      function(node) { node.car })
 
 
-def iterator(pair @ LPair<'Elt>) : Iterator<'Elt>
+def iterator(pair @ LPair<'Elt>) -> Iterator<'Elt>
     ~ Returns an iterator over all linked nodes of @var{pair} by following
     the cdr chain. ~
   PairIterator<'Elt, PairIteratorAccessorFunc<'Elt>>(pair,

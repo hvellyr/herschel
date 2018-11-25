@@ -10,7 +10,7 @@ module lang
 
 def realloc(array @ 'T[],
             new-size : Ordinal,
-            init-value : 'T = class<'T>.null-value) : 'T[]
+            init-value : 'T = class<'T>.null-value) -> 'T[]
   if (new-size > array.size) {
     let t = 'T[](new-size)
     for (i : 0 .. array.size - 1)

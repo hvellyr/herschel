@@ -34,14 +34,14 @@ module coll
 
 -- generic implementations for various Collection functions
 
-def add-all!(coll @ ^'C, other-coll @ 'X) : ^'C
+def add-all!(coll @ ^'C, other-coll @ 'X) -> ^'C
     where C isa Collection<'T>
   for (e in other-coll) 
     coll.add!(e)
   coll
 
 
-def has-all?(coll @ 'C, other-coll @ 'X) : Bool
+def has-all?(coll @ 'C, other-coll @ 'X) -> Bool
     where C isa Collection<'T>
   for (e in other-coll) {
     if (not coll.contains?(e))
@@ -50,7 +50,7 @@ def has-all?(coll @ 'C, other-coll @ 'X) : Bool
   true
 
 
-def retain-all!(coll @ ^'C, other-coll @ 'X) : ^'C
+def retain-all!(coll @ ^'C, other-coll @ 'X) -> ^'C
     where C isa Collection<'T>
   let tmp : Set<'T>
 
@@ -61,14 +61,14 @@ def retain-all!(coll @ ^'C, other-coll @ 'X) : ^'C
   coll.remove-all!(tmp)
 
 
-def remove-all!(coll @ ^'C, other-coll @ 'X) : ^'C
+def remove-all!(coll @ ^'C, other-coll @ 'X) -> ^'C
     where C isa Collection<'T>
   for (e in other-coll)
     coll.remove!(e)
   coll
 
 
-def for-each(coll @ 'C, func : ForEachVisitor<'T>) : 'C
+def for-each(coll @ 'C, func : ForEachVisitor<'T>) -> 'C
     where C isa Collection<'T>
   for (e in coll) {
     if (not func(e))

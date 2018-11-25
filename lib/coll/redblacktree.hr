@@ -54,13 +54,13 @@ def class Node<K, V>(key : K, value : V, color : NodeColor,
 }
 
 
-def grandparent(self : Node<K, V>) : Node<K, V>
+def grandparent(self : Node<K, V>) -> Node<K, V>
   --  on enter(not self.parent.nil?)        -- Not the root node
   --  on enter(not self.parent.parent.nil?) -- Not child of root
   self ^ parent ^ parent
 
 
-def sibling(self : Node<K, V>) : Node<K, V>
+def sibling(self : Node<K, V>) -> Node<K, V>
   -- on enter(not self.parent.nil?)  -- Root node has no sibling
   if (self == self ^ parent ^ left)
     self ^ parent ^ right
@@ -68,7 +68,7 @@ def sibling(self : Node<K, V>) : Node<K, V>
     self ^ parent ^ left
 
 
-def uncle(self : Node<K, V>) : Node<K, V>
+def uncle(self : Node<K, V>) -> Node<K, V>
   -- on enter(not self.parent.nil?) -- Root node has no uncle
   -- on enter(not self.parent.parent.nil?) -- Children of root have no uncle
   self ^ parent ^ sibling
@@ -83,14 +83,14 @@ def class RedBlackTree<K, V>()
 }
 
 
-def node-color(node : Node<'K, 'V>) : NodeColor
+def node-color(node : Node<'K, 'V>) -> NodeColor
   if (node.nil?)
     BLACK
   else
     node ^ color
 
 
-def lookup-node(tree @ RedBlackTree<'K, 'V>, key : 'K) : Node<'K, 'V>
+def lookup-node(tree @ RedBlackTree<'K, 'V>, key : 'K) -> Node<'K, 'V>
   let n = tree.root
 
   for (not n.nil?) {
@@ -106,7 +106,7 @@ def lookup-node(tree @ RedBlackTree<'K, 'V>, key : 'K) : Node<'K, 'V>
     nil
 
 
-def lookup(tree @ RedBlackTree<'K, 'V>, key : 'K) : 'V
+def lookup(tree @ RedBlackTree<'K, 'V>, key : 'K) -> 'V
   let n = tree.lookup-node(key)
   if (n.nil?)
     nil
@@ -149,7 +149,7 @@ def replace-node(tree @ RedBlackTree<'K, 'V>,
 
 
 def insert(tree @ RedBlackTree<'K, 'V>,
-           key : 'K, value : 'V) : RedBlackTree<'K, 'V>
+           key : 'K, value : 'V) -> RedBlackTree<'K, 'V>
   let inserted-node = Node<'K, 'V>(key, value, RED, nil, nil)
 
   if (root.nil?)
@@ -241,7 +241,7 @@ def insert-case5(tree @ RedBlackTree<'K, 'V>, n : Node<'K, 'V>)
   }
 
 
-def delete(tree @ RedBlackTree<'K, 'V>, key : 'K) : RedBlackTree<'K, 'V>
+def delete(tree @ RedBlackTree<'K, 'V>, key : 'K) -> RedBlackTree<'K, 'V>
   let n = tree.lookup-node(key)
 
   if (n.nil?)
@@ -274,7 +274,7 @@ def delete(tree @ RedBlackTree<'K, 'V>, key : 'K) : RedBlackTree<'K, 'V>
 
 
 def maximum-node(tree @ RedBlackTree<'K, 'V>,
-                 n : Node<'K, 'V>) : Node<'K, 'V>
+                 n : Node<'K, 'V>) -> Node<'K, 'V>
   -- on enter(not n.nil?)
   let p = n
   for (not nil?(p ^ right))

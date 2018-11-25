@@ -35,7 +35,7 @@ export public(*)
 
 import "core/core.hr"
 
-def generic octet-size(obj @ Any) : Ordinal ...
+def generic octet-size(obj @ Any) -> Ordinal ...
     ~ Returns the allocation size of @var{self} in octets.
 
     This method returns the sum of the allocations size of the base
@@ -44,6 +44,6 @@ def generic octet-size(obj @ Any) : Ordinal ...
 
     Note that this methods must never return 0. ~
 
-def generic hash-code(obj @ Any) : UInt32 ...
+def generic hash-code(obj @ Any) -> UInt32 ...
 
 -- end of object.hr

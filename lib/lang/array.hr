@@ -11,7 +11,7 @@ export public(*)
 
 def generic realloc(array @ 'T[],
                     new-size : Ordinal,
-                    init-value : 'T = class<'T>.null-value) : 'T[] ...
+                    init-value : 'T = class<'T>.null-value) -> 'T[] ...
   ~ Reallocates @var{array} by copying it into a new array of
   @var{new-size} items.
 

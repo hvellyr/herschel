@@ -40,7 +40,7 @@ import "coll/collection"
 
 ---------------------------------------------------------------------------
 
-def lang|to-string(self @ Assoc<'K, 'V>) : String
+def lang|to-string(self @ Assoc<'K, 'V>) -> String
   concat(self.key, "->", self.value)
 
 
@@ -51,10 +51,10 @@ def class Triple<Key, Value, Tail>(_key : Key, _val : Value, _tail : Tail)
   def slot tail : Tail = _tail
 }
 
-def generic key?(self @ Triple<'K, 'V, 'T>, other : 'K) : Bool
+def generic key?(self @ Triple<'K, 'V, 'T>, other : 'K) -> Bool
   self.key == other
 
-def lang|to-string(self @ Triple<'K, 'V, 'T>) : String
+def lang|to-string(self @ Triple<'K, 'V, 'T>) -> String
   concat(self.key, "->", self.value)
 
 
@@ -78,27 +78,27 @@ def class HashMap<Key, Elt>(items : Ordinal = %default-hash-map-size%)
 -- collection protocol
 --------------------------------------------------------------------
 
-def empty?(self @ HashMap<'K, 'T>) : Bool
+def empty?(self @ HashMap<'K, 'T>) -> Bool
   self.elts == 0
 
-def empty!(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
+def empty!(self @ HashMap<'K, 'T>) -> HashMap<'K, 'T>
   self.table = Vector<HashMapTriple<'K, 'T>>(items: %default-size%)
   self.elts = 0
   self
 
-def core|octet-size(self @ HashMap<'K, 'T>) : Ordinal
+def core|octet-size(self @ HashMap<'K, 'T>) -> Ordinal
   self.table.size
 
-def num-items(self @ HashMap<'K, 'T>) : Ordinal
+def num-items(self @ HashMap<'K, 'T>) -> Ordinal
   self.elts
 
-def iterator(self @ HashMap<'K, 'T>) : Iterator<Assoc<'K, 'T> >
+def iterator(self @ HashMap<'K, 'T>) -> Iterator<Assoc<'K, 'T> >
   HashMapIterator<'K, 'T>(self.table)
 
-def key-iterator(self @ HashMap<'K, 'T>) : Iterator<'K>
+def key-iterator(self @ HashMap<'K, 'T>) -> Iterator<'K>
   HashMapKeyIterator<'K>(self.table)
 
-def value-iterator(self @ HashMap<'K, 'T>) : Iterator<'T>
+def value-iterator(self @ HashMap<'K, 'T>) -> Iterator<'T>
   HashMapValueIterator<'T>(self.table)
 
 
@@ -106,7 +106,7 @@ def value-iterator(self @ HashMap<'K, 'T>) : Iterator<'T>
 -- adding, removing, finding
 --------------------------------------------------------------------
 
-def has-key?(self @ HashMap<'K, 'T>, key @ 'K) : Bool
+def has-key?(self @ HashMap<'K, 'T>, key @ 'K) -> Bool
   let loop(nl) {
       if (nl.nil?)
         false
@@ -130,7 +130,7 @@ def get(self @ HashMap<'K, 'T>, key @ 'K)
   loop(self.table[key.hash mod self.table.num-items])
 
 
-def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) : HashMap
+def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) -> HashMap
   let hash = (key.hash mod self.table.num-items) as Ordinal
   let loop(nl) {
       if (nl.nil?) {
@@ -161,11 +161,11 @@ def put!(self @ HashMap<'K, 'T>, key @ 'K, obj @ 'T) : HashMap
   self
 
 
-def put!(self @ HashMap<'K, 'T>, obj @ Assoc<'K, 'T>) : HashMap<'K, 'T>
+def put!(self @ HashMap<'K, 'T>, obj @ Assoc<'K, 'T>) -> HashMap<'K, 'T>
   self.put!(obj.key, obj.value)
 
 
-def remove!(self @ HashMap<'K, 'T>, key @ 'K) : HashMap<'K, 'T>
+def remove!(self @ HashMap<'K, 'T>, key @ 'K) -> HashMap<'K, 'T>
   let hash = (key.hash mod self.table.num-items) as Ordinal
   let np = self.table[hash]
 
@@ -205,38 +205,38 @@ def remove!(self @ HashMap<'K, 'T>, key @ 'K) : HashMap<'K, 'T>
   self
 
 
-def keys(self @ HashMap<'K, 'T>) : Vector<'K>
+def keys(self @ HashMap<'K, 'T>) -> Vector<'K>
   let keys = Vector<'K>(self.elts)
   for (k in self.key-iterator)
     keys.append!(k)
   keys
 
 
-def values(self @ HashMap<'K, 'T>) : Vector<'T>
+def values(self @ HashMap<'K, 'T>) -> Vector<'T>
   let values = Vector<'T>(self.elts)
   for (v in self.value-iterator)
     values.append!(v)
   values
 
 
---  has-value?: obj(_ELT_) : (BOOL) |
+--  has-value?: obj(_ELT_) -> (BOOL) |
 --    -- TODO
 --    false.
 
 
---  del-value: obj(_ELT_) : (self) |
+--  del-value: obj(_ELT_) -> (self) |
 --    -- TODO
 --    self.
 
 
 def add-all!(self @ HashMap<'K, 'T>,
-             coll @ AssocCollection<'K, 'T>) : HashMap<'K, 'T>
+             coll @ AssocCollection<'K, 'T>) -> HashMap<'K, 'T>
   for (e in coll)
     self.put!(e.key, e.value)
   self
 
 
-def has-all-keys?(self @ HashMap<'K, 'T>, keys @ Collection<'K>) : Bool
+def has-all-keys?(self @ HashMap<'K, 'T>, keys @ Collection<'K>) -> Bool
   for (k in keys) {
     if (not self.has?(k))
       return false
@@ -245,14 +245,14 @@ def has-all-keys?(self @ HashMap<'K, 'T>, keys @ Collection<'K>) : Bool
 
 
 def remove-all-keys!(self @ HashMap<'K, 'T>,
-                     keys @ Collection<'K>) : HashMap<'K, 'T>
+                     keys @ Collection<'K>) -> HashMap<'K, 'T>
   for (k in keys)
     self.remove!(k)
   self
 
 
 def retain-all-keys!(self @ HashMap<'K, 'T>,
-                     keys @ Collection<'K>) : HashMap<'K, 'T>
+                     keys @ Collection<'K>) -> HashMap<'K, 'T>
   for (k in keys) {
     if (not self.has?(k))
       self.remove!(k)
@@ -273,24 +273,24 @@ def table!(self : HashMap<'K, 'T>,
 
 extend module core
 {
-def copy(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
+def copy(self @ HashMap<'K, 'T>) -> HashMap<'K, 'T>
   self.Type()().table!(self.table)
 
 
-def deepen(self @ HashMap<'K, 'T>) : HashMap<'K, 'T>
+def deepen(self @ HashMap<'K, 'T>) -> HashMap<'K, 'T>
   self.table!(self.table.deep-copy)
   self
 }
 
 
--- def equal?(one : @ HashMap, two : @ HashMap) : Bool
+-- def equal?(one : @ HashMap, two : @ HashMap) -> Bool
 --   one == two
 
---  cmp: obj(lang.ANY) : (lang.INT) |
+--  cmp: obj(lang.ANY) -> (lang.INT) |
 --       -- TODO
 --    -1
 
-def lang|to-string(map @ HashMap<'K, 'T>) : String
+def lang|to-string(map @ HashMap<'K, 'T>) -> String
     ~ Returns a string representation of @var{map}. ~
   -- let sb = StringBuffer()
   -- sb ++ "#("

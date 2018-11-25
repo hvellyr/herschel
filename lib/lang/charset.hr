@@ -50,7 +50,7 @@ def class Charset(name: _name : String = "")
 -- loading and managing char sets
 ------------------------------------------------------------------------------
 
-def charset-for-name(name : String) : Charset ...
+def charset-for-name(name : String) -> Charset ...
     ~ Returns a character set described by the name @var{name}.  If no such
     character set is provided by the system an exception of kind
     @type{CharsetException} is thrown. ~
@@ -60,75 +60,75 @@ def charset-for-name(name : String) : Charset ...
 -- Creating new Standard Character Set
 ------------------------------------------------------------------------------
 
-def alphanumeric-charset() : Charset ...
+def alphanumeric-charset() -> Charset ...
     ~ Returns a character set containing the uppercase and lowercase
      alphabetic characters (a-z, A-Z, other alphabetic characters such as
      u0ddh, u089h, u0dbh, u087h, and so on) and the decimal digit
      characters (0-9). ~
 
 
-def control-charset() : Charset ...
+def control-charset() -> Charset ...
     ~ Returns a character set containing the control characters (characters
      with decimal Unicode values 0 to 31 and 127 to 159). ~
 
 
-def decimal-digit-charset() : Charset ...
+def decimal-digit-charset() -> Charset ...
     ~ Returns a character set containing only decimal digit characters
      (0-9). ~
 
 
-def hexadecimal-digit-charset() : Charset ...
+def hexadecimal-digit-charset() -> Charset ...
     ~ Returns a character set containing only decimal digit characters
      (0-9, a-f, A-F). ~
 
 
-def decomposable-charset() : Charset ...
+def decomposable-charset() -> Charset ...
     ~ Returns a character set containing all individual Unicode characters
      that can also be represented as composed character sequences. ~
 
 
-def illegal-charset() : Charset ...
+def illegal-charset() -> Charset ...
     ~ Returns a character set containing the illegal Unicode values. ~
 
 
-def letter-charset() : Charset ...
+def letter-charset() -> Charset ...
     ~ Returns a character set containing the uppercase and lowercase
      alphabetic characters (a&ndash;z, A&ndash;Z, other alphabetic characters
      such as u0ddh, u089h, u0dbh, u087h, and so on). ~
 
 
-def lowercase-letter-charset() : Charset ...
+def lowercase-letter-charset() -> Charset ...
     ~ Returns a character set containing only lowercase alphabetic characters
      (a-z, other alphabetic characters such as u0ddh, u0dbh, and so on). ~
 
 
-def nonbase-charset() : Charset ...
+def nonbase-charset() -> Charset ...
     ~ Returns a set containing all characters which are not defined to be base
      characters for purposes of dynamic character composition. ~
 
 
-def uppercase-letter-charset() : Charset ...
+def uppercase-letter-charset() -> Charset ...
     ~ Returns a character set containing only uppercase alphabetic characters
      (A-Z, other alphabetic characters such as u089h, u087h, and so on). ~
 
 
-def whitespace-and-newline-charset() : Charset ...
+def whitespace-and-newline-charset() -> Charset ...
     ~ Returns a character set containing only whitespace characters (space and
       tab) and the newline character. ~
 
 
-def whitespace-charset() : Charset ...
+def whitespace-charset() -> Charset ...
     ~ Returns a character set containing only in-line whitespace characters
      (space and tab). This set doesn't contain the newline or carriage return
      characters. ~
 
 
-def ascii-charset() : Charset ...
+def ascii-charset() -> Charset ...
     ~ Returns a character set containing ascii characters set used for path
      names, etc. ~
 
 
-def interpunct-charset() : Charset ...
+def interpunct-charset() -> Charset ...
     ~ Returns a character set containing interpunctuation characters. ~
 
 
@@ -136,12 +136,12 @@ def interpunct-charset() : Charset ...
 -- Creating a Custom Character Set
 ------------------------------------------------------------------------------
 
-def charset-with-chars-in-string(str : String) : Charset ...
+def charset-with-chars-in-string(str : String) -> Charset ...
     ~ Returns a character set containing the characters in <prm>aString</>.
      If @var{str} is empty, an empty character set is returned. ~
 
 
-def charset-with-range(rng : Range<Char>) : Charset
+def charset-with-range(rng : Range<Char>) -> Charset
     ~ Returns a character set containing characters whose Unicode values are
      given by @var{rng}. ~
 
@@ -150,7 +150,7 @@ def charset-with-range(rng : Range<Char>) : Charset
 -- Testing Set Membership
 ------------------------------------------------------------------------------
 
-def generic contains?(cs @ Charset, c : Char) : Bool ...
+def generic contains?(cs @ Charset, c : Char) -> Bool ...
     ~ Indicates whether char @var{c} is in charset @var{cs}. ~
 
 
@@ -158,7 +158,7 @@ def generic contains?(cs @ Charset, c : Char) : Bool ...
 -- Inverting a Character Set
 ------------------------------------------------------------------------------
 
-def generic inverted-set(cs @ Charset) : Charset ...
+def generic inverted-set(cs @ Charset) -> Charset ...
     ~ Returns a character set containing only characters that @em{don't}
      exist in the receiver. ~
 

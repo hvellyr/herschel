@@ -36,7 +36,7 @@ module coll
 export public(List)
 
 
-def find-last-node(node @ Pair<'L, 'R>) : Pair<'L, 'R>
+def find-last-node(node @ Pair<'L, 'R>) -> Pair<'L, 'R>
   let p = node
   if (p <> nil) {
     for (p.cdr <> nil)
@@ -60,7 +60,7 @@ def class List<Elt>(root: _root : ListPair<Elt> = nil)
 }
 
 
-def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
+def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) -> List<'T>
   select () {
     | (before-index == self.num-items) -> {
         let nl = ListPair<'T>(car: value)
@@ -103,7 +103,7 @@ def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) : List<'T>
   }
 
 
-def remove-at!(self @ List<'T>, index : Ordinal) : 'T
+def remove-at!(self @ List<'T>, index : Ordinal) -> 'T
   let p = self.root
   let prev = nil
   let n = 0
@@ -133,11 +133,11 @@ def remove-at!(self @ List<'T>, index : Ordinal) : 'T
                                                   self.num-items]).raise
 
 
-def add!(self @ List<'T>, elt @ 'T) : List<'T>
+def add!(self @ List<'T>, elt @ 'T) -> List<'T>
   self.insert!(elt, -1)
 
 
-def remove!(self @ List<'T>, elt @ 'T) : List<'T>
+def remove!(self @ List<'T>, elt @ 'T) -> List<'T>
   match (self.index-of(elt)) {
     | e : Bool      -> self
     | idx : Ordinal -> {
@@ -147,7 +147,7 @@ def remove!(self @ List<'T>, elt @ 'T) : List<'T>
   }
 
 
-def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrFalse
+def index-of(self @ List<'T>, elt @ 'T) -> OrdinalOrFalse
   let p = self.root
   let n : Ordinal = 0
 
@@ -160,41 +160,41 @@ def index-of(self @ List<'T>, elt @ 'T) : OrdinalOrFalse
   false
 
 
-def contains?(self @ List<'T>, elt @ 'T) : Bool
+def contains?(self @ List<'T>, elt @ 'T) -> Bool
   self.index-of(elt) isa Ordinal
 
 
-def core|size(self @ List<'T>) : Ordinal
+def core|size(self @ List<'T>) -> Ordinal
   let n : Ordinal = 0
   for (p = self.root then p.cdr while p <> nil)
     n.incr!(p.car.size)
   n
 
 
-def num-items(self @ List<'T>) : Ordinal
+def num-items(self @ List<'T>) -> Ordinal
   let n : Ordinal = 0
   for (p = self.root then p.cdr while p <> nil)
     n.incr!
   n
 
 
-def empty?(self @ List<'T>) : Bool
+def empty?(self @ List<'T>) -> Bool
   self.root.nil?
 
 
-def empty!(self @ List<'T>) : List<'T>
+def empty!(self @ List<'T>) -> List<'T>
   self.root = self.last = nil
   self
 
 
-def first(self @ List<'T>) : 'T
+def first(self @ List<'T>) -> 'T
   if (self.root <> nil)
     self.root.car
   else
     eof
 
 
-def last(self @ List<'T>) : 'T
+def last(self @ List<'T>) -> 'T
   if (self.last <> nil)
     self.last.car
   else
@@ -202,24 +202,24 @@ def last(self @ List<'T>) : 'T
 
 
 def for-each(self @ Collection<'T>,
-             func : ForEachVisitor<'T>) : List<'T>
+             func : ForEachVisitor<'T>) -> List<'T>
   for (p = self.root then p.cdr while p <> nil)
     func(p.car)
   self
 
 
-def iterator(self @ List<'T>) : Iterator<'T>
-  PairIterator<'T, Function(node : ListPair<'T>) : 'T>(
+def iterator(self @ List<'T>) -> Iterator<'T>
+  PairIterator<'T, Function(node : ListPair<'T>) -> 'T>(
     self.root, function(node) { node.car })
 
 
-def add-all!(self @ List<'T>, other @ Collection<'T>) : List<'T>
+def add-all!(self @ List<'T>, other @ Collection<'T>) -> List<'T>
   for (e = other.iterator)
     self.add!(e)
   self
 
 
-def has-all?(self @ List<'T>, other @ Collection<'T>) : Bool
+def has-all?(self @ List<'T>, other @ Collection<'T>) -> Bool
   for (e = other.iterator) {
     if (not self.contains?(e))
       return false
@@ -227,22 +227,22 @@ def has-all?(self @ List<'T>, other @ Collection<'T>) : Bool
   true
 
 
-def retain-all!(self @ List<'T>, other @ Collection<'T>) : List<'T> ...
+def retain-all!(self @ List<'T>, other @ Collection<'T>) -> List<'T> ...
   -- TODO
 
 
-def remove-all!(self @ List<'T>, other @ Collection<'T>) : List<'T>
+def remove-all!(self @ List<'T>, other @ Collection<'T>) -> List<'T>
   for (e = other.iterator) {
     self.remove!(e)
   }
   self
 
 
-def swap!(self @ List<'T>, from-idx : Ordinal, to-idx : Ordinal) : List<'T> ...
+def swap!(self @ List<'T>, from-idx : Ordinal, to-idx : Ordinal) -> List<'T> ...
   -- TODO
 
 
-def merge-split(nl : ListPair<'T>) : ListPair<'T>
+def merge-split(nl : ListPair<'T>) -> ListPair<'T>
   let split-h(nl, nl1, nl2) {
     if (nl.nil? or nl.cdr.nil?)
       Pair(car: nl2.reverse, cdr: nl1)
@@ -252,9 +252,9 @@ def merge-split(nl : ListPair<'T>) : ListPair<'T>
   split-h(nl, nl, Pair())
 
 
-def merge(pred : (Function(left, right) : Bool),
+def merge(pred : (Function(left, right) -> Bool),
           nl1 : ListPair<'T>,
-          nl2 : ListPair<'T>) : ListPair<'T>
+          nl2 : ListPair<'T>) -> ListPair<'T>
   select () {
     | (nl1.nil?) -> nl2
     | (nl2.nil?) -> nl1
@@ -266,7 +266,7 @@ def merge(pred : (Function(left, right) : Bool),
 
 
 def merge-sort(nl : ListPair<'T>,
-               pred : (Function(left, right) : Bool)) : ListPair<'T>
+               pred : (Function(left, right) -> Bool)) -> ListPair<'T>
   select () {
     | (nl.nil?)     -> nl
     | (nl.cdr.nil?) -> nl
@@ -279,24 +279,24 @@ def merge-sort(nl : ListPair<'T>,
 
 
 def sort(self @ List<'T>,
-         pred @ (Function(left, right) : Bool)) : List<'T>
+         pred @ (Function(left, right) -> Bool)) -> List<'T>
   List<'T>(root: merge-sort(self.root, less-equal?))
 
 
-def sort!(self @ List<'T>) : List<'T>
+def sort!(self @ List<'T>) -> List<'T>
   self.root = merge-sort(self.root, less-equal?)
   self.last = find-last-node(self.root)
   self
 
 
-def reverse(self @ List<'T>) : List<'T>
+def reverse(self @ List<'T>) -> List<'T>
   let newlist = List<'T>()
   for (p = self.root then p.cdr while p <> nil)
     newlist.insert!(p.car, 0)
   newlist
 
 
-def reverse!(self @ List<'T>) : List<'T>
+def reverse!(self @ List<'T>) -> List<'T>
   let newroot = nil
   if (self.root <> nil) {
     newroot = self.last = ListPair<'T>(car: self.root.car, cdr: nil)
@@ -309,7 +309,7 @@ def reverse!(self @ List<'T>) : List<'T>
 
 
 -- operators [] and [] =
-def slice(self @ List<'T>, index @ Ordinal) : 'T
+def slice(self @ List<'T>, index @ Ordinal) -> 'T
   let n : Ordinal = 0
   for (p = self.root then p.cdr while p <> nil) {
     if (n == index)
@@ -319,7 +319,7 @@ def slice(self @ List<'T>, index @ Ordinal) : 'T
   OutOfRangeException("index %d is beyond %d" % #[index, n]).raise
 
 
-def slice(self @ List<'T>, from @ Ordinal, to @ Ordinal) : Collection<'T>
+def slice(self @ List<'T>, from @ Ordinal, to @ Ordinal) -> Collection<'T>
   let n : Ordinal = 0
   let result = List<'T>()
 
@@ -337,7 +337,7 @@ def slice(self @ List<'T>, from @ Ordinal, to @ Ordinal) : Collection<'T>
 
 def slice!(self @ List<'T>,
            index @ Ordinal,
-           value @ 'T) : List<'T>
+           value @ 'T) -> List<'T>
   let n : Ordinal = 0
   for (p = self.root then p.cdr while p <> nil) {
     if (n == index) {
@@ -349,7 +349,7 @@ def slice!(self @ List<'T>,
                                                   self.num-items]).raise
 
 
-def lang|to-string(self @ List<'T>) : String
+def lang|to-string(self @ List<'T>) -> String
   if (self.root.nil?)
     "()"
   else

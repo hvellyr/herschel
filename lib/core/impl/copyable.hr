@@ -38,7 +38,7 @@ import "core/copyable.hr"
 
 -- Default implementation for @fun{deep-copy}
 
-def generic deep-copy(obj @ 'T) : 'T
+def generic deep-copy(obj @ 'T) -> 'T
     where T isa Copyable
   obj.copy.deepen
 

@@ -18,7 +18,7 @@ import "lang/numbers.hr"
 def macro OPGF
 {
  { def OPGF ?n:name(?t0:name, ?op:operator, ?t1:name) } ->
-   { def ?n(l @ ?t0, r @ ?t1) : Bool
+   { def ?n(l @ ?t0, r @ ?t1) -> Bool
        l as ?t0 ?op r as ?t1
    }
 }
@@ -141,13 +141,13 @@ def macro compute-integer
     } }
 }
 
-def add(one @ Integer, two @ Integer) : Integer
+def add(one @ Integer, two @ Integer) -> Integer
   compute-integer(one, +, two)
 
-def subtract(one @ Integer, two @ Integer) : Integer
+def subtract(one @ Integer, two @ Integer) -> Integer
   compute-integer(one, -, two)
 
-def multiply(one @ Integer, two @ Integer) : Integer
+def multiply(one @ Integer, two @ Integer) -> Integer
   compute-integer(one, *, two)
 
 
@@ -201,7 +201,7 @@ def macro compare-integer
     } }
 }
 
-def compare(one @ Integer, two @ Integer) : Int
+def compare(one @ Integer, two @ Integer) -> Int
   compare-integer(one, <=>, two)
 
 

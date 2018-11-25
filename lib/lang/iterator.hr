@@ -11,14 +11,14 @@ export public(Iterator, RewindableIterator,
 
 def type Iterator<T>
 
-def generic more?(iter @ Iterator<'T>) : Bool ...
+def generic more?(iter @ Iterator<'T>) -> Bool ...
     ~ Indicates whether there're more element in @var{iter} which can be
     requested with @code{next}.
 
     @returns @const{true} if there are more elements to be returned by
              @code{next}. ~
 
-def generic next(iter @ ^Iterator<'T>) : 'T ...
+def generic next(iter @ ^Iterator<'T>) -> 'T ...
     ~ Returns the next element from @var{iter}.
 
     @returns @const{eof} if all elements has been delivered.  Repeated
@@ -27,7 +27,7 @@ def generic next(iter @ ^Iterator<'T>) : 'T ...
 
 def type RewindableIterator<T> : Iterator<T>
 
-def generic rewind(iter @ ^'R) : ^'R
+def generic rewind(iter @ ^'R) -> ^'R
     where R isa RewindableIterator<'T> ...
     ~ Rewinds @var{iter} to restart with the first item.
 

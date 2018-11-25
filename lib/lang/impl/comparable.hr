@@ -15,22 +15,22 @@ import "lang/comparable.hr"
 -- So types have to implement the @fun{lang|compare} function only to
 -- implement the full set of compare functions.
 
-def equal?(one @ Comparable, two @ Comparable) : Bool
+def equal?(one @ Comparable, two @ Comparable) -> Bool
   (one <=> two) == 0
 
-def unequal?(one @ Comparable, two @ Comparable) : Bool
+def unequal?(one @ Comparable, two @ Comparable) -> Bool
   (one <=> two) <> 0
 
-def less?(one @ Comparable, two @ Comparable) : Bool
+def less?(one @ Comparable, two @ Comparable) -> Bool
   (one <=> two) < 0
 
-def less-equal?(one @ Comparable, two @ Comparable) : Bool
+def less-equal?(one @ Comparable, two @ Comparable) -> Bool
   (one <=> two) <= 0
 
-def greater?(one @ Comparable, two @ Comparable) : Bool
+def greater?(one @ Comparable, two @ Comparable) -> Bool
   (one <=> two) > 0
 
-def greater-equal?(one @ Comparable, two @ Comparable) : Bool
+def greater-equal?(one @ Comparable, two @ Comparable) -> Bool
   (one <=> two) >= 0
 
 -- end of comparable

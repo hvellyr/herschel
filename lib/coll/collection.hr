@@ -53,26 +53,26 @@ import "lang/iterator.hr"
 -- base of all collections
 ------------------------------------------------------------------------------
 
-def alias ForEachVisitor<T> = Function(elt : T) : Bool
+def alias ForEachVisitor<T> = Function(elt : T) -> Bool
 
 def type Collection<T>
     ~ Base type for all collection classes in the herschel collection
     framework.  It provides an API of implementation independant
     functionality available for each container class.~
 
-def generic has-all?(cltn @ 'C, coll @ 'X) : Bool
+def generic has-all?(cltn @ 'C, coll @ 'X) -> Bool
     where C isa Collection<'T> ...
 
-def generic num-items(cltn @ 'C) : Ordinal
+def generic num-items(cltn @ 'C) -> Ordinal
     where C isa Collection<'T> ...
     ~ Returns the number of contained elements of @var{cltn}.~
 
-def generic empty?(cltn @ 'C) : Bool
+def generic empty?(cltn @ 'C) -> Bool
     where C isa Collection<'T> ...
     ~ Indicates whether @var{cltn} is empty, i.e. does not contain
     any element.~
 
-def generic contains?(cltn @ 'C, elt @ 'T) : Bool
+def generic contains?(cltn @ 'C, elt @ 'T) -> Bool
     where C isa Collection<'T> ...
     ~ Indicates whether @var{cltn} contains the element @var{elt}.
 
@@ -83,7 +83,7 @@ def generic contains?(cltn @ 'C, elt @ 'T) : Bool
     @end example ~
 
 
-def generic for-each(cltn @ 'C, func : ForEachVisitor<'T>) : 'C
+def generic for-each(cltn @ 'C, func : ForEachVisitor<'T>) -> 'C
     where C isa Collection<'T> ...
     ~ Apply @var{functor} on ach contained element in @var{cltn}
 
@@ -93,20 +93,20 @@ def generic for-each(cltn @ 'C, func : ForEachVisitor<'T>) : 'C
 ------------------------------------------------------------------------------
 def type Collection!<T> : Collection<T>
 
-def generic add-all!(cltn @ ^'C, other @ 'X) : ^'C
+def generic add-all!(cltn @ ^'C, other @ 'X) -> ^'C
     where C isa Collection!<'T> ...
-def generic retain-all!(cltn @ ^'C, coll @ 'X) : ^'C
+def generic retain-all!(cltn @ ^'C, coll @ 'X) -> ^'C
     where C isa Collection!<'T> ...
-def generic remove-all!(cltn @ ^'C, coll @ 'X) : ^'C
+def generic remove-all!(cltn @ ^'C, coll @ 'X) -> ^'C
     where C isa Collection!<'T> ...
 
-def generic empty!(cltn @ ^'C) : ^'C
+def generic empty!(cltn @ ^'C) -> ^'C
     where C isa Collection!<'T> ...
     ~ Removes all contained elements from @var{self}
 
     @returns @var{cltn}~
 
-def generic add!(cltn @ ^'C, elt @ 'T) : ^'C
+def generic add!(cltn @ ^'C, elt @ 'T) -> ^'C
     where C isa Collection!<'T> ...
     ~ Adds @var{elt} to @var{cltn}
 
@@ -115,7 +115,7 @@ def generic add!(cltn @ ^'C, elt @ 'T) : ^'C
 
     @returns @var{cltn} ~
 
-def generic remove!(cltn @ ^'C, elt @ 'T) : ^'C
+def generic remove!(cltn @ ^'C, elt @ 'T) -> ^'C
     where C isa Collection!<'T> ...
     ~ Remove @var{elt} from @var{cltn}
 
@@ -124,7 +124,7 @@ def generic remove!(cltn @ ^'C, elt @ 'T) : ^'C
 
     @returns @var{cltn} ~
 
-def generic for-each!(cltn @ ^'C, func : ForEachVisitor<'T>) : ^'C
+def generic for-each!(cltn @ ^'C, func : ForEachVisitor<'T>) -> ^'C
     where C isa Collection!<'T> ...
     ~ Apply @var{functor} on ach contained element in @var{cltn}
 
@@ -137,9 +137,9 @@ def generic for-each!(cltn @ ^'C, func : ForEachVisitor<'T>) : ^'C
 ------------------------------------------------------------------------------
 def type OrderedCollection<T> : Collection<T>
 
-def generic first(cltn @ 'C) : 'T
+def generic first(cltn @ 'C) -> 'T
     where C isa OrderedCollection<'T> ...
-def generic last(cltn @ 'C) : 'T
+def generic last(cltn @ 'C) -> 'T
     where C isa OrderedCollection<'T> ...
 
 
@@ -150,12 +150,12 @@ def type Sequence<T> : (Collection<T>,
                         OrderedCollection<T>,
                         OrderedSliceable<Ordinal, T> )
 
-def generic sort(cltn @ 'S) : 'S
+def generic sort(cltn @ 'S) -> 'S
     where S isa Sequence<'T> ...
-def generic reverse(cltn @ 'S) : 'S
+def generic reverse(cltn @ 'S) -> 'S
     where S isa Sequence<'T> ...
 
-def generic index-of(cltn @ 'S, elt @ 'T) : OrdinalOrFalse
+def generic index-of(cltn @ 'S, elt @ 'T) -> OrdinalOrFalse
     where S isa Sequence<'T> ...
 
 
@@ -163,18 +163,18 @@ def type Sequence!<T> : (Sequence<T>,
                          Collection!<T>,
                          Sliceable!<Ordinal, T>)
 
-def generic sort!(cltn @ ^'S) : ^'S
+def generic sort!(cltn @ ^'S) -> ^'S
     where S isa Sequence!<'T> ...
 
-def generic insert!(cltn @ ^'S, value @ 'T, before-index : Ordinal) : ^'S
+def generic insert!(cltn @ ^'S, value @ 'T, before-index : Ordinal) -> ^'S
     where S isa Sequence!<'T> ...
-def generic remove-at!(cltn @ ^'S, index : Ordinal) : 'T
-    where S isa Sequence!<'T> ...
-
-def generic swap!(cltn @ ^'S, from-idx : Ordinal, to-idx : Ordinal) : ^'S
+def generic remove-at!(cltn @ ^'S, index : Ordinal) -> 'T
     where S isa Sequence!<'T> ...
 
-def generic reverse!(cltn @ ^'S) : ^'S
+def generic swap!(cltn @ ^'S, from-idx : Ordinal, to-idx : Ordinal) -> ^'S
+    where S isa Sequence!<'T> ...
+
+def generic reverse!(cltn @ ^'S) -> ^'S
     where S isa Sequence!<'T> ...
 
 
@@ -190,22 +190,22 @@ def class Assoc<K, V>(_key : K, _val : V)
 
 def type AssocCollection<K, V> : Collection<Assoc<K, V> >
 
-def generic key-iterator(cltn @ 'C) : Iterator<'K>
+def generic key-iterator(cltn @ 'C) -> Iterator<'K>
     where C isa AssocCollection<'K, 'V> ...
-def generic value-iterator(cltn @ 'C) : Iterator<'K>
-    where C isa AssocCollection<'K, 'V> ...
-
-def generic has-key?(cltn @ 'C, key @ 'K) : Bool
-    where C isa AssocCollection<'K, 'V> ...
-def generic get(cltn @ 'C, key @ 'K) : Value
+def generic value-iterator(cltn @ 'C) -> Iterator<'K>
     where C isa AssocCollection<'K, 'V> ...
 
-def generic keys(cltn @ 'C) : Collection<'K>
+def generic has-key?(cltn @ 'C, key @ 'K) -> Bool
     where C isa AssocCollection<'K, 'V> ...
-def generic values(cltn @ 'C) : Collection<'K>
+def generic get(cltn @ 'C, key @ 'K) -> Value
     where C isa AssocCollection<'K, 'V> ...
 
-def generic has-all-keys?(cltn @ 'A, keys @ Collection<'K>) : Bool
+def generic keys(cltn @ 'C) -> Collection<'K>
+    where C isa AssocCollection<'K, 'V> ...
+def generic values(cltn @ 'C) -> Collection<'K>
+    where C isa AssocCollection<'K, 'V> ...
+
+def generic has-all-keys?(cltn @ 'A, keys @ Collection<'K>) -> Bool
     where C isa AssocCollection<'K, 'V> ...
 
 
@@ -213,14 +213,14 @@ def generic has-all-keys?(cltn @ 'A, keys @ Collection<'K>) : Bool
 def type AssocCollection!<K, V> : (AssocCollection<K, V>,
                                    Collection!<Assoc<K, V> >)
 
-def generic put!(cltn @ ^'C, key @ 'K, value @ 'V) : ^'C
+def generic put!(cltn @ ^'C, key @ 'K, value @ 'V) -> ^'C
     where C isa AssocCollection!<'K, 'V> ...
-def generic remove!(cltn @ ^'C, key @ 'K) : ^'C
+def generic remove!(cltn @ ^'C, key @ 'K) -> ^'C
     where C isa AssocCollection!<'K, 'V> ...
 
-def generic remove-all-keys!(cltn @ ^'C, keys @ Collection<'K>) : ^'C
+def generic remove-all-keys!(cltn @ ^'C, keys @ Collection<'K>) -> ^'C
     where C isa AssocCollection!<'K, 'V> ...
-def generic retain-all-keys!(cltn @ ^'C, keys @ Collection<'K>) : ^'C
+def generic retain-all-keys!(cltn @ ^'C, keys @ Collection<'K>) -> ^'C
     where C isa AssocCollection!<'K, 'V> ...
 
 
@@ -288,7 +288,7 @@ def class Vector<T> : Sequence<T>
 def class Vector!<T> : (Vector<T>, Sequence!<T>)
 
 def generic resize!(cltn @ ^'C, new-size : Ordinal,
-                    new-value : 'T = Class<'T>.null-value) : ^'C ...
+                    new-value : 'T = Class<'T>.null-value) -> ^'C ...
     where C isa Vector<'T>
     ~ Resizes @var{cltn} to @var{new-size} slots.
 
@@ -299,7 +299,7 @@ def generic resize!(cltn @ ^'C, new-size : Ordinal,
     initialized to @var{new-value}. ~
 
 
-def generic reserve!(cltn @ ^'C, add-items : Ordinal) : ^'C ...
+def generic reserve!(cltn @ ^'C, add-items : Ordinal) -> ^'C ...
     where C isa Vector<'T>
     ~ Reserve space so that adds and inserts won't lead to reallocations.
 

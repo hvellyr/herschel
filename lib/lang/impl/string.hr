@@ -27,7 +27,7 @@ def class StringImpl : String
 
 def class StringSlice(_str : String,
                       _from : Ordinal,
-                      _to : Ordinal) : (Comparable, String)
+                      _to : Ordinal) -> (Comparable, String)
 {
   def slot str : String = _str
   def slot from : Ordinal = _from
@@ -37,37 +37,37 @@ def class StringSlice(_str : String,
 
 
 
-def equal?(one @ StringImpl, two @ StringImpl) : Bool
+def equal?(one @ StringImpl, two @ StringImpl) -> Bool
   h7_lang_string_compare(one, two) == 0
 
-def unequal?(one @ StringImpl, two @ StringImpl) : Bool
+def unequal?(one @ StringImpl, two @ StringImpl) -> Bool
   h7_lang_string_compare(one, two) <> 0
 
-def less?(one @ StringImpl, two @ StringImpl) : Bool
+def less?(one @ StringImpl, two @ StringImpl) -> Bool
   h7_lang_string_compare(one, two) < 0
 
-def greater?(one @ StringImpl, two @ StringImpl) : Bool
+def greater?(one @ StringImpl, two @ StringImpl) -> Bool
   h7_lang_string_compare(one, two) > 0
 
-def less-equal?(one @ StringImpl, two @ StringImpl) : Bool
+def less-equal?(one @ StringImpl, two @ StringImpl) -> Bool
   h7_lang_string_compare(one, two) <= 0
 
-def greater-equal?(one @ StringImpl, two @ StringImpl) : Bool
+def greater-equal?(one @ StringImpl, two @ StringImpl) -> Bool
   h7_lang_string_compare(one, two) >= 0
 
-def compare(one @ StringImpl, two @ StringImpl) : Int
+def compare(one @ StringImpl, two @ StringImpl) -> Int
   h7_lang_string_compare(one, two) as Int
 
 
-def num-items(s @ StringImpl) : Ordinal
+def num-items(s @ StringImpl) -> Ordinal
     h7_lang_string_length(s) as Ordinal
 
 
-def slice(s @ StringImpl, idx @ Ordinal) : Char
+def slice(s @ StringImpl, idx @ Ordinal) -> Char
   h7_lang_string_char_at_index(s, idx).to-char
 
 
-def slice*(str @ StringImpl, from @ Ordinal, to @ Ordinal) : String
+def slice*(str @ StringImpl, from @ Ordinal, to @ Ordinal) -> String
   StringSlice(str, from, to)
 
 
@@ -75,7 +75,7 @@ def slice*(str @ StringImpl, from @ Ordinal, to @ Ordinal) : String
 -- Generic implementations for Strings
 ------------------------------------------------------------------------------
 
-def compare(one @ String, two @ String) : Int
+def compare(one @ String, two @ String) -> Int
   let result : Int = 0
 
   for (i : UInt in 0u .. one.num-items - 1,
@@ -90,13 +90,13 @@ def compare(one @ String, two @ String) : Int
     result
 
 
-def empty?(str @ String) : Bool
+def empty?(str @ String) -> Bool
   str.num-items == 0u
 
-def length(str @ String) : Ordinal
+def length(str @ String) -> Ordinal
   str.num-items
 
-def concat(left @ String, right @ String) : String
+def concat(left @ String, right @ String) -> String
   let t = h7_allocate_string_n(left.num-items + right.num-items, \space) as String
   let j = 0u
 
@@ -121,13 +121,13 @@ def concat(left @ String, right @ String) : String
 -- Slice special for string
 ------------------------------------------------------------------------------
 
-def num-items(sl @ StringSlice) : Ordinal
+def num-items(sl @ StringSlice) -> Ordinal
   sl^to - sl^from
 
-def slice(sl @ StringSlice, idx @ Ordinal) : Char
+def slice(sl @ StringSlice, idx @ Ordinal) -> Char
   sl^str[sl^from + idx]
 
-def slice*(sl @ StringSlice, from @ Ordinal, to @ Ordinal) : String
+def slice*(sl @ StringSlice, from @ Ordinal, to @ Ordinal) -> String
 --  if (from > sl.num-items or to > sl.num-items)
 --    OutOfBoundsException(sl.num-items, from, to).raise
   StringSlice(sl^str, sl^from + from, sl^from + to)

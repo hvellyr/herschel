@@ -471,7 +471,7 @@ Type SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceO
     else if (expr.count() == 4) {
       if (expr[0] == kFUNCTIONId && expr[1].isNested() &&
           expr[1].leftToken() == kParanOpen) {
-        hr_assert(expr[2] == kColon);
+        hr_assert(expr[2] == kMapTo);
 
         if (!isValue)
           warning(expr.srcpos(), E_RefToFunc,
@@ -1606,7 +1606,7 @@ void SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
   ofs++;
 
   if (ofs < seq.size()) {
-    if (seq[ofs] == kColon) {
+    if (seq[ofs] == kMapTo) {
       data.fType = parseTypeSpec(seq[ofs + 1]);
       ofs += 2;
     }

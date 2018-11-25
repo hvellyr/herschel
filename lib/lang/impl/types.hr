@@ -9,122 +9,122 @@ module lang
 
 ------------------------------------------------------------------------------
 
-def null-value(ty @ Class<Int8>) : Int8
+def null-value(ty @ Class<Int8>) -> Int8
   0t
 
-def min-value(ty @ Class<Int8>) : Int8
+def min-value(ty @ Class<Int8>) -> Int8
   -128t
 
-def max-value(ty @ Class<Int8>) : Int8
+def max-value(ty @ Class<Int8>) -> Int8
   127t
 
 
 ------------------------------------------------------------------------------
 
-def null-value(ty @ Class<UInt8>) : UInt8
+def null-value(ty @ Class<UInt8>) -> UInt8
   0ut
 
-def min-value(ty @ Class<UInt8>) : UInt8
+def min-value(ty @ Class<UInt8>) -> UInt8
   0ut
 
-def max-value(ty @ Class<UInt8>) : UInt8
+def max-value(ty @ Class<UInt8>) -> UInt8
   255ut
 
 
 ------------------------------------------------------------------------------
 
-def null-value(ty @ Class<Int16>) : Int16
+def null-value(ty @ Class<Int16>) -> Int16
   0s
 
-def min-value(ty @ Class<Int16>) : Int16
+def min-value(ty @ Class<Int16>) -> Int16
   -32768s
 
-def max-value(ty @ Class<Int16>) : Int16
+def max-value(ty @ Class<Int16>) -> Int16
   32767s
 
 
 ------------------------------------------------------------------------------
 
-def null-value(ty @ Class<UInt16>) : UInt16
+def null-value(ty @ Class<UInt16>) -> UInt16
   0us
 
-def min-value(ty @ Class<UInt16>) : UInt16
+def min-value(ty @ Class<UInt16>) -> UInt16
   0us
 
-def max-value(ty @ Class<UInt16>) : UInt16
+def max-value(ty @ Class<UInt16>) -> UInt16
   65535us
 
 
 ------------------------------------------------------------------------------
 
-def null-value(ty @ Class<Int32>) : Int32
+def null-value(ty @ Class<Int32>) -> Int32
   0
 
-def min-value(ty @ Class<Int32>) : Int32
+def min-value(ty @ Class<Int32>) -> Int32
   -2147483648
 
-def max-value(ty @ Class<Int32>) : Int32
+def max-value(ty @ Class<Int32>) -> Int32
   2147483647
 
 
 ------------------------------------------------------------------------------
 
-def null-value(ty @ Class<UInt32>) : UInt32
+def null-value(ty @ Class<UInt32>) -> UInt32
   0u
 
-def min-value(ty @ Class<UInt32>) : UInt32
+def min-value(ty @ Class<UInt32>) -> UInt32
   0u
 
-def max-value(ty @ Class<UInt32>) : UInt32
+def max-value(ty @ Class<UInt32>) -> UInt32
   4294967295ul
 
 
 ------------------------------------------------------------------------------
 
-def null-value(ty @ Class<Int64>) : Int64
+def null-value(ty @ Class<Int64>) -> Int64
   0l
 
-def min-value(ty @ Class<Int64>) : Int64
+def min-value(ty @ Class<Int64>) -> Int64
   -9223372036854775808l
 
-def max-value(ty @ Class<Int64>) : Int64
+def max-value(ty @ Class<Int64>) -> Int64
   9223372036854775807l
 
 
 ------------------------------------------------------------------------------
 
-def null-value(ty @ Class<UInt64>) : UInt64
+def null-value(ty @ Class<UInt64>) -> UInt64
   0ul
 
-def min-value(ty @ Class<UInt64>) : UInt64
+def min-value(ty @ Class<UInt64>) -> UInt64
   0ul
 
-def max-value(ty @ Class<UInt64>) : UInt64
+def max-value(ty @ Class<UInt64>) -> UInt64
   18446744073709551615ul
 
 
 ------------------------------------------------------------------------------
 
--- def null-value(ty @ Class<Char>) : Char
+-- def null-value(ty @ Class<Char>) -> Char
 --   \nul
 -- 
--- def min-value(ty @ Class<Char>) : Char
+-- def min-value(ty @ Class<Char>) -> Char
 --   \nul
 -- 
--- def max-value(ty @ Class<Char>) : Char
+-- def max-value(ty @ Class<Char>) -> Char
 --   \u10ffffh
 
 
 ------------------------------------------------------------------------------
 
-def null-value(ty @ Class<Object>) : Object
+def null-value(ty @ Class<Object>) -> Object
   nil
 
-def min-value(ty @ Class<Object>) : Object
+def min-value(ty @ Class<Object>) -> Object
   -- not defined
   nil
 
-def max-value(ty @ Class<Object>) : Object
+def max-value(ty @ Class<Object>) -> Object
   -- not defined
   nil
 

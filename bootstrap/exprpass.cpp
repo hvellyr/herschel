@@ -559,11 +559,11 @@ Token FirstPass::parseFunctionSignature()
   SrcPos paranPos = fToken.srcpos();
   TokenVector params;
   if (parseFunctionsParams(&params)) {
-    Token colonToken;
+    Token returnTyToken;
     Token returnType;
 
-    if (fToken == kColon) {
-      colonToken = fToken;
+    if (fToken == kMapTo) {
+      returnTyToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
       returnType = parseTypeSpec(K(onlyNestedConstr));
@@ -573,11 +573,11 @@ Token FirstPass::parseFunctionSignature()
       }
     }
     else {
-      colonToken = Token(fToken.srcpos(), kColon);
+      returnTyToken = Token(fToken.srcpos(), kMapTo);
       returnType = Token(fToken.srcpos(), kSymbol, "Any");
     }
 
-    return Token() << (Token(paranPos, kParanOpen, kParanClose) << params) << colonToken
+    return Token() << (Token(paranPos, kParanOpen, kParanClose) << params) << returnTyToken
                    << returnType;
   }
   return Token();
@@ -1038,11 +1038,11 @@ Token FirstPass::parseAnonFun()
   SrcPos paranPos = fToken.srcpos();
   TokenVector params;
   if (parseFunctionsParams(&params)) {
-    Token colonToken;
+    Token returnTyToken;
     Token returnType;
 
-    if (fToken == kColon) {
-      colonToken = fToken;
+    if (fToken == kMapTo) {
+      returnTyToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
       returnType = parseTypeSpec(K(onlyNestedConstr));
@@ -1052,14 +1052,14 @@ Token FirstPass::parseAnonFun()
       }
     }
     else {
-      colonToken = Token(fToken.srcpos(), kColon);
+      returnTyToken = Token(fToken.srcpos(), kMapTo);
       returnType = Token(fToken.srcpos(), kSymbol, "Any");
     }
 
     Token body = parseExpr(!K(acceptComma));
     if (body.isSet())
       return Token() << funcToken << (Token(paranPos, kParanOpen, kParanClose) << params)
-                     << colonToken << returnType << body;
+                     << returnTyToken << returnType << body;
   }
   return Token();
 }
@@ -2772,13 +2772,13 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 
   TokenVector params;
   if (parseFunctionsParams(&params)) {
-    Token colonToken;
+    Token returnTyToken;
     Token returnType;
     Token reifyClause;
     Token whereClause;
 
-    if (fToken == kColon) {
-      colonToken = fToken;
+    if (fToken == kMapTo) {
+      returnTyToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
       returnType = parseTypeSpec(K(onlyNestedConstr));
@@ -2788,7 +2788,7 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       }
     }
     else {
-      colonToken = Token(fToken.srcpos(), kColon);
+      returnTyToken = Token(fToken.srcpos(), kMapTo);
       returnType = Token(fToken.srcpos(), kSymbol, "Any");
     }
 
@@ -2826,8 +2826,8 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
     }
 
     result << (Token(paranOpenToken.srcpos(), kParanOpen, kParanClose) << params);
-    if (colonToken.isSet())
-      result << colonToken << returnType;
+    if (returnTyToken.isSet())
+      result << returnTyToken << returnType;
 
     if (reifyClause.isSet())
       result << reifyClause;
