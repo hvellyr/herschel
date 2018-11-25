@@ -10,31 +10,29 @@
 
 //----------------------------------------------------------------------------
 
-#include <string.h>
+#include "job.hpp"
 
-#include <vector>
-
-
-#include "job.h"
-#include "log.h"
-#include "properties.h"
-#include "str.h"
-#include "strbuf.h"
+#include "log.hpp"
+#include "str.hpp"
+#include "strbuf.hpp"
 
 
 #if defined(OS_mac) || defined(OS_linux)
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#  include <vector>
+
+#  include <stdio.h>
+#  include <stdlib.h>
+#  include <string.h>
+#  include <sys/types.h>
+#  include <sys/wait.h>
+#  include <unistd.h>
+
 
 using namespace herschel;
 
-int
-herschel::startProcess(const String& cmd, const std::vector<String>& args,
-                       bool logCalls)
+int herschel::startProcess(const String& cmd, const std::vector<String>& args,
+                           bool logCalls)
 {
   char buffer[16000];
   char* ptr = &buffer[0];
@@ -42,7 +40,7 @@ herschel::startProcess(const String& cmd, const std::vector<String>& args,
   argv.resize(args.size() + 2);
 
   int i = -1;
-  for ( ; i < int(args.size()); i++) {
+  for (; i < int(args.size()); i++) {
     StrHelper helper(i == -1 ? cmd : args[i]);
     int len = strlen(helper.c_str()) + 1;
 
@@ -98,5 +96,5 @@ herschel::startProcess(const String& cmd, const std::vector<String>& args,
 
 
 #else
-# error Unsupported OS
+#  error Unsupported OS
 #endif

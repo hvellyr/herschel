@@ -8,22 +8,19 @@
    This source code is released under the BSD License.
 */
 
-#include "common.h"
-#include "str.h"
-#include "symbol.h"
-#include "strbuf.h"
-#include "predefined.h"
+#include "symbol.hpp"
+#include "common.hpp"
+#include "predefined.hpp"
+#include "str.hpp"
+#include "strbuf.hpp"
 
 #include "stdio.h"
 
 
-//----------------------------------------------------------------------------
-
-using namespace herschel;
+namespace herschel {
 
 
-String
-herschel::qualifyId(const String& ns, const String& name)
+String qualifyId(const String& ns, const String& name)
 {
   if (isQualified(name) || ns.isEmpty())
     return name;
@@ -32,15 +29,13 @@ herschel::qualifyId(const String& ns, const String& name)
 }
 
 
-bool
-herschel::isQualified(const String& sym)
+bool isQualified(const String& sym)
 {
   return (sym.lastIndexOf('|') >= 0);
 }
 
 
-String
-herschel::baseName(const String& sym)
+String baseName(const String& sym)
 {
   int idx = sym.lastIndexOf('|');
   if (idx >= 0)
@@ -49,8 +44,7 @@ herschel::baseName(const String& sym)
 }
 
 
-String
-herschel::nsName(const String& sym)
+String nsName(const String& sym)
 {
   int idx = sym.lastIndexOf('|');
   if (idx >= 0)
@@ -59,9 +53,7 @@ herschel::nsName(const String& sym)
 }
 
 
-namespace herschel {
-static void
-fastMangleSymPart(StringBuffer& result, const String& sym)
+static void fastMangleSymPart(StringBuffer& result, const String& sym)
 {
   bool hasToEncode = false;
 
@@ -69,9 +61,7 @@ fastMangleSymPart(StringBuffer& result, const String& sym)
 
   for (int i = 0; i < sym.length(); i++) {
     Char c = sym[i];
-    if ( (c >= 'a' && c <= 'z') ||
-         (c >= 'A' && c <= 'Z') ||
-         (c >= '0' && c <= '9') ) {
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
       if (hasToEncode)
         result << c;
     }
@@ -89,7 +79,7 @@ fastMangleSymPart(StringBuffer& result, const String& sym)
     }
   }
 
-  if (!hasToEncode) 
+  if (!hasToEncode)
     result << sym;
 
   int symLength = result.length() - startPos;
@@ -100,7 +90,6 @@ fastMangleSymPart(StringBuffer& result, const String& sym)
 
   result.insertAt(startPos, tmp);
 }
-}
 
 //! pattern:
 //!
@@ -109,8 +98,7 @@ fastMangleSymPart(StringBuffer& result, const String& sym)
 //! where .. is the length of the following sym in decimal digits.  Special
 //! characters (other than a-zA-Z0-9 and _) are translated as /xy with xy
 //! being hexdigits.
-String
-herschel::mangleToC(const String& qualId)
+String mangleToC(const String& qualId)
 {
   StringBuffer result;
   result << "__QN";
@@ -126,3 +114,5 @@ herschel::mangleToC(const String& qualId)
 
   return result.toString();
 }
+
+}  // namespace herschel

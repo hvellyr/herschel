@@ -11,9 +11,11 @@ include $(top_srcdir)/config.mk
 
 #----------------------------------------------------------------------
 
-SUBDIRS = external bootstrap runtime lib build doc tests
+# SUBDIRS = external bootstrap runtime lib build doc tests
+SUBDIRS = third-party bootstrap build
 
-ALL_SUBDIRS = external bootstrap runtime lib
+# ALL_SUBDIRS = external bootstrap runtime lib
+ALL_SUBDIRS = third-party bootstrap
 
 DISTFILES = \
 	AUTHORS   \
@@ -47,7 +49,8 @@ RUN_UNITTEST_TARGET = no-unittest-in-release
 else
 RUN_UNITTEST_TARGET = run-unittest
 endif
-all-post: $(RUN_UNITTEST_TARGET)
+# all-post: $(RUN_UNITTEST_TARGET)
+all-post: 
 
 run-unittest:
 	@echo ""

@@ -8,25 +8,21 @@
    This source code is released under the BSD License.
 */
 
-//----------------------------------------------------------------------------
+#include "filetool.hpp"
 
-#include "filetool.h"
-#include "file.h"
-#include "str.h"
-#include "common.h"
+#include "common.hpp"
+#include "file.hpp"
+#include "str.hpp"
 
 
 using namespace herschel;
 
 
-String
-herschel::makeCompileOutputFileExt(CompileOutFormat format)
+String herschel::makeCompileOutputFileExt(CompileOutFormat format)
 {
   switch (format) {
-  case kLLVM_IR:
-    return String("ll");
-  case kLLVM_BC:
-    return String("bc");
+  case kLLVM_IR: return String("ll");
+  case kLLVM_BC: return String("bc");
   }
 
   hr_invalid("invalid compile out format");
@@ -34,18 +30,15 @@ herschel::makeCompileOutputFileExt(CompileOutFormat format)
 }
 
 
-String
-herschel::makeOutputFileName(const String& outdir, const String& outfileName,
-                             const String& file,
-                             const String& outExt)
+String herschel::makeOutputFileName(const String& outdir, const String& outfileName,
+                                    const String& file, const String& outExt)
 {
   if (!outfileName.isEmpty())
     return outfileName;
 
   if (!outdir.isEmpty())
     return file::append(outdir,
-                        file::appendExt(file::baseName(file::namePart(file)),
-                                        outExt));
+                        file::appendExt(file::baseName(file::namePart(file)), outExt));
 
   return file::appendExt(file::baseName(file), outExt);
 }

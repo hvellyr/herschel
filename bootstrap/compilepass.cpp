@@ -8,20 +8,19 @@
    This source code is released under the BSD License.
 */
 
-#include "apt.h"
-#include "compilepass.h"
-#include "port.h"
-#include "properties.h"
-#include "token.h"
-#include "xmlout.h"
+#include "compilepass.hpp"
 
-//----------------------------------------------------------------------------
-
-using namespace herschel;
+#include "ast.hpp"
+#include "port.hpp"
+#include "properties.hpp"
+#include "token.hpp"
+//#include "xmlrenderer.hpp"
 
 
-Token
-TokenCompilePass::apply(const Token& src, bool doTrace)
+namespace herschel {
+
+
+Token TokenCompilePass::apply(const Token& src, bool doTrace)
 {
   bool doPass = true;
 #if defined(UNITTESTS)
@@ -33,20 +32,19 @@ TokenCompilePass::apply(const Token& src, bool doTrace)
   if (doPass) {
     t = doApply(src);
 
-    if (doTrace && Properties::isTracePass(passLevel())) {
-      FilePort stream{stdout};
-      display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
-      t.toPort(stream);
-      displayln(stream, "");
-    }
+    // if (doTrace && Properties::isTracePass(passLevel())) {
+    //   FilePort stream{ stdout };
+    //   display(stream, "<?xml version='1.0' encoding='utf-8'?>\n");
+    //   t.toPort(stream);
+    //   displayln(stream, "");
+    // }
   }
 
   return t;
 }
 
 
-std::shared_ptr<AptNode>
-Token2AptNodeCompilePass::apply(const Token& src, bool doTrace)
+std::shared_ptr<AstNode> Token2AstNodeCompilePass::apply(const Token& src, bool doTrace)
 {
   bool doPass = true;
 #if defined(UNITTESTS)
@@ -55,10 +53,10 @@ Token2AptNodeCompilePass::apply(const Token& src, bool doTrace)
 
   if (doPass) {
     auto n = doApply(src);
-    if (doTrace && Properties::isTracePass(passLevel()) && n) {
-      XmlRenderer out{std::make_shared<FilePort>(stdout)};
-      out.render(*n);
-    }
+    // if (doTrace && Properties::isTracePass(passLevel()) && n) {
+    //   XmlRenderer out{ std::make_shared<FilePort>(stdout) };
+    //   out.render(*n);
+    // }
 
     return n;
   }
@@ -67,8 +65,8 @@ Token2AptNodeCompilePass::apply(const Token& src, bool doTrace)
 }
 
 
-std::shared_ptr<AptNode>
-AptNodeCompilePass::apply(std::shared_ptr<AptNode> src, bool doTrace)
+std::shared_ptr<AstNode> AstNodeCompilePass::apply(std::shared_ptr<AstNode> src,
+                                                   bool doTrace)
 {
   bool doPass = true;
 #if defined(UNITTESTS)
@@ -78,10 +76,10 @@ AptNodeCompilePass::apply(std::shared_ptr<AptNode> src, bool doTrace)
   if (doPass) {
     auto n = doApply(src);
 
-    if (doTrace && Properties::isTracePass(passLevel()) && n) {
-      XmlRenderer out{std::make_shared<FilePort>(stdout), fShowNodeType};
-      out.render(*n);
-    }
+    // if (doTrace && Properties::isTracePass(passLevel()) && n) {
+    //   XmlRenderer out{ std::make_shared<FilePort>(stdout), fShowNodeType };
+    //   out.render(*n);
+    // }
 
     return n;
   }
@@ -89,3 +87,5 @@ AptNodeCompilePass::apply(std::shared_ptr<AptNode> src, bool doTrace)
     return src;
   }
 }
+
+}  // namespace herschel

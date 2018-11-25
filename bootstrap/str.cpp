@@ -8,18 +8,17 @@
    This source code is released under the BSD License.
 */
 
-#include "common.h"
+#include "str.hpp"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "exception.hpp"
+#include "log.hpp"
+#include "require.hpp"
+#include "strbuf.hpp"
+
 #include <errno.h>
-
-#include "require.h"
-#include "log.h"
-#include "str.h"
-#include "strbuf.h"
-#include "exception.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <string>
 
@@ -27,167 +26,161 @@
 using namespace herschel;
 
 static int str_cmp(const Char* s1, int len1, const Char* s2, int len2);
-static int str_ncmp(const Char* s1, int len1, const Char* s2, int len2,
-                    int maxItems);
+static int str_ncmp(const Char* s1, int len1, const Char* s2, int len2, int maxItems);
 static int str_chr(const Char* src, int len, Char c);
 static int str_rchr(const Char* src, int len, Char c);
-static int str_str(const Char* haystack, int hslen,
-                   const Char* needle, int nlen);
-static int str_rstr(const Char* haystack, int hslen, int ofs,
-                    const Char* needle, int nlen);
+static int str_str(const Char* haystack, int hslen, const Char* needle, int nlen);
+static int str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle,
+                    int nlen);
 
 
-namespace herschel
-{
-  class StringImpl
+namespace herschel {
+class StringImpl {
+public:
+  StringImpl()
+      : fData(nullptr)
+      , fLength(0)
   {
-  public:
-    StringImpl()
-      : fData(nullptr),
-        fLength(0)
-    { }
+  }
 
-    ~StringImpl()
-    {
-      if (fData)
-      {
-        ::free(fData);
-        fData = nullptr;
-      }
+  ~StringImpl()
+  {
+    if (fData) {
+      ::free(fData);
+      fData = nullptr;
     }
+  }
 
-    void reallocate(int size)
-    {
-      if (size > 0)
-      {
-        fData = (Char*)::realloc(fData, size * sizeof(Char));
-        fLength = size;
-      }
-      else
-      {
-        ::free(fData);
-        fData = nullptr;
-        fLength = 0;
-      }
+  void reallocate(int size)
+  {
+    if (size > 0) {
+      fData = (Char*)::realloc(fData, size * sizeof(Char));
+      fLength = size;
     }
-
-
-    Char* dataFromEnd(int offset)
-    {
-      hr_assert(offset >= 0 && offset <= fLength);
-      return &fData[fLength - offset];
+    else {
+      ::free(fData);
+      fData = nullptr;
+      fLength = 0;
     }
-
-
-    const Char* data(int offset) const
-    {
-      hr_assert(offset >= 0 && offset < fLength);
-      return &fData[offset];
-    }
-
-
-    Char* data(int offset)
-    {
-      hr_assert(offset >= 0 && offset < fLength);
-      return &fData[offset];
-    }
-
-
-    void createFromUtf8(zstring utf8, int items)
-    {
-      int reqlen = str_utf8_to_wcs(utf8, items, nullptr, 0);
-
-      reallocate(reqlen);
-      int reallen = str_utf8_to_wcs(utf8, items, fData, reqlen);
-      hr_assert(reallen == reqlen);
-
-      fLength = reallen;
-    }
-
-
-    void copyFromWcs(int offset, const Char* wcs, int items)
-    {
-      hr_assert(offset + items <= fLength);
-
-      Char* dp = &fData[offset];
-      const Char* sp = wcs;
-      for (int i = 0; i < items; i++, dp++, sp++)
-        *dp = *sp;
-    }
-
-    //-------- data members
-    Char* fData;
-    int fLength;
-  };
-
-
-  //--------------------------------------------------------------------------
-
-  String operator+(const String& one, zstring two)
-  {
-    return one + String(two);
   }
 
 
-  String operator+(const String& one, int value)
+  Char* dataFromEnd(int offset)
   {
-    char tmp[32];
-    sprintf(tmp, "%d", value);
-    return one + tmp;
+    hr_assert(offset >= 0 && offset <= fLength);
+    return &fData[fLength - offset];
   }
 
 
-  String operator+(const String& one, int64_t value)
+  const Char* data(int offset) const
   {
-    char tmp[64];
-    sprintf(tmp, "%lld", value);
-    return one + tmp;
+    hr_assert(offset >= 0 && offset < fLength);
+    return &fData[offset];
   }
 
 
-  String operator+(const String& one, double value)
+  Char* data(int offset)
   {
-    char tmp[32];
-    sprintf(tmp, "%lf", value);
-    return one + tmp;
+    hr_assert(offset >= 0 && offset < fLength);
+    return &fData[offset];
   }
 
 
-  String fromInt(int value)
+  void createFromUtf8(zstring utf8, int items)
   {
-    char tmp[32];
-    sprintf(tmp, "%d", value);
-    return String(tmp);
+    int reqlen = str_utf8_to_wcs(utf8, items, nullptr, 0);
+
+    reallocate(reqlen);
+    int reallen = str_utf8_to_wcs(utf8, items, fData, reqlen);
+    hr_assert(reallen == reqlen);
+
+    fLength = reallen;
   }
 
 
-  String fromFloat(float value)
+  void copyFromWcs(int offset, const Char* wcs, int items)
   {
-    char tmp[32];
-    sprintf(tmp, "%f", value);
-    return String(tmp);
+    hr_assert(offset + items <= fLength);
+
+    Char* dp = &fData[offset];
+    const Char* sp = wcs;
+    for (int i = 0; i < items; i++, dp++, sp++)
+      *dp = *sp;
   }
 
-
-  String fromDouble(double value)
-  {
-    char tmp[32];
-    sprintf(tmp, "%lf", value);
-    return String(tmp);
-  }
-
-
-  String fromBool(bool value)
-  {
-    return value ? String("true") : String("false");
-  }
+  //-------- data members
+  Char* fData;
+  int fLength;
 };
+
+
+//--------------------------------------------------------------------------
+
+String operator+(const String& one, zstring two)
+{
+  return one + String(two);
+}
+
+
+String operator+(const String& one, int value)
+{
+  char tmp[32];
+  sprintf(tmp, "%d", value);
+  return one + tmp;
+}
+
+
+String operator+(const String& one, int64_t value)
+{
+  char tmp[64];
+  sprintf(tmp, "%lld", value);
+  return one + tmp;
+}
+
+
+String operator+(const String& one, double value)
+{
+  char tmp[32];
+  sprintf(tmp, "%lf", value);
+  return one + tmp;
+}
+
+
+String fromInt(int value)
+{
+  char tmp[32];
+  sprintf(tmp, "%d", value);
+  return String(tmp);
+}
+
+
+String fromFloat(float value)
+{
+  char tmp[32];
+  sprintf(tmp, "%f", value);
+  return String(tmp);
+}
+
+
+String fromDouble(double value)
+{
+  char tmp[32];
+  sprintf(tmp, "%lf", value);
+  return String(tmp);
+}
+
+
+String fromBool(bool value)
+{
+  return value ? String("true") : String("false");
+}
+};  // namespace herschel
 
 
 //----------------------------------------------------------------------------
 
 String::String()
-  : fImpl(std::make_shared<StringImpl>())
+    : fImpl(std::make_shared<StringImpl>())
 {
 }
 
@@ -199,28 +192,28 @@ String::String(const String& other)
 
 
 String::String(zstring utf8)
-  : fImpl(std::make_shared<StringImpl>())
+    : fImpl(std::make_shared<StringImpl>())
 {
   fImpl->createFromUtf8(utf8, ::strlen(utf8));
 }
 
 
 String::String(const std::string& utf8)
-  : fImpl(std::make_shared<StringImpl>())
+    : fImpl(std::make_shared<StringImpl>())
 {
   fImpl->createFromUtf8(utf8.c_str(), utf8.length());
 }
 
 
 String::String(zstring utf8, int items)
-  : fImpl(std::make_shared<StringImpl>())
+    : fImpl(std::make_shared<StringImpl>())
 {
   fImpl->createFromUtf8(utf8, items);
 }
 
 
 String::String(const Char* str, int items)
-  : fImpl(std::make_shared<StringImpl>())
+    : fImpl(std::make_shared<StringImpl>())
 {
   if (items > 0) {
     fImpl->reallocate(items);
@@ -229,103 +222,88 @@ String::String(const Char* str, int items)
 }
 
 
-const Char*
-String::data() const
+const Char* String::data() const
 {
   return fImpl->data(0);
 }
 
 
-String&
-String::operator=(const String& other)
+String& String::operator=(const String& other)
 {
   fImpl = other.fImpl;
   return *this;
 }
 
 
-int
-String::compare(const String& other, int maxItems) const
+int String::compare(const String& other, int maxItems) const
 {
   if (maxItems >= 0)
-    return str_ncmp(fImpl->fData, fImpl->fLength,
-                    other.fImpl->fData, other.fImpl->fLength,
-                    maxItems);
+    return str_ncmp(fImpl->fData, fImpl->fLength, other.fImpl->fData,
+                    other.fImpl->fLength, maxItems);
   else
-    return str_cmp(fImpl->fData, fImpl->fLength,
-                   other.fImpl->fData, other.fImpl->fLength);
+    return str_cmp(fImpl->fData, fImpl->fLength, other.fImpl->fData,
+                   other.fImpl->fLength);
 }
 
 
-bool
-String::operator<(const String& other) const
+bool String::operator<(const String& other) const
 {
   return compare(other) < 0;
 }
 
 
-bool
-String::operator<=(const String& other) const
+bool String::operator<=(const String& other) const
 {
   return compare(other) <= 0;
 }
 
 
-bool
-String::operator>(const String& other) const
+bool String::operator>(const String& other) const
 {
   return compare(other) > 0;
 }
 
 
-bool
-String::operator>=(const String& other) const
+bool String::operator>=(const String& other) const
 {
   return compare(other) >= 0;
 }
 
 
-bool
-String::operator==(const String& other) const
+bool String::operator==(const String& other) const
 {
   return compare(other) == 0;
 }
 
 
-bool
-String::operator!=(const String& other) const
+bool String::operator!=(const String& other) const
 {
   return compare(other) != 0;
 }
 
 
-int
-String::length() const
+int String::length() const
 {
   return fImpl->fLength;
 }
 
 
-bool
-String::isEmpty() const
+bool String::isEmpty() const
 {
   return fImpl->fLength == 0;
 }
 
 
-bool
-String::startsWith(const String& needle) const
+bool String::startsWith(const String& needle) const
 {
   return compare(needle, needle.length()) == 0;
 }
 
 
-bool
-String::endsWith(const String& needle) const
+bool String::endsWith(const String& needle) const
 {
   if (needle.length() <= length()) {
-    return str_cmp(fImpl->dataFromEnd(needle.fImpl->fLength),
-                   needle.fImpl->fLength,
+    return str_cmp(fImpl->dataFromEnd(needle.fImpl->fLength), needle.fImpl->fLength,
                    needle.fImpl->fData, needle.fImpl->fLength) == 0;
   }
   else
@@ -333,43 +311,39 @@ String::endsWith(const String& needle) const
 }
 
 
-int
-String::indexOf(const String& needle, int offset) const
+int String::indexOf(const String& needle, int offset) const
 {
   if (needle.fImpl->fLength == 0)
     return offset;
 
-  int idx = str_str(fImpl->data(offset), fImpl->fLength - offset,
-                    needle.fImpl->fData, needle.fImpl->fLength);
+  int idx = str_str(fImpl->data(offset), fImpl->fLength - offset, needle.fImpl->fData,
+                    needle.fImpl->fLength);
   return idx >= 0 ? idx + offset : -1;
 }
 
 
-int
-String::indexOf(Char c, int offset) const
+int String::indexOf(Char c, int offset) const
 {
   int idx = str_chr(fImpl->data(offset), fImpl->fLength - offset, c);
   return idx >= 0 ? idx + offset : -1;
 }
 
 
-int
-String::lastIndexOf(const String& needle, int offset) const
+int String::lastIndexOf(const String& needle, int offset) const
 {
   int ofs = offset < 0 ? fImpl->fLength : offset;
 
   if (ofs >= needle.fImpl->fLength) {
     int rofs = ofs - needle.fImpl->fLength;
-    int idx = str_rstr(fImpl->fData, fImpl->fLength, rofs,
-                       needle.fImpl->fData, needle.fImpl->fLength);
+    int idx = str_rstr(fImpl->fData, fImpl->fLength, rofs, needle.fImpl->fData,
+                       needle.fImpl->fLength);
     return idx >= 0 ? idx : -1;
   }
   return -1;
 }
 
 
-int
-String::lastIndexOf(Char c, int offset) const
+int String::lastIndexOf(Char c, int offset) const
 {
   int ofs = offset < 0 ? fImpl->fLength - 1 : offset;
 
@@ -378,20 +352,17 @@ String::lastIndexOf(Char c, int offset) const
 }
 
 
-String
-String::operator+(const String &second) const
+String String::operator+(const String& second) const
 {
   String tmp;
   tmp.fImpl->reallocate(fImpl->fLength + second.fImpl->fLength);
   tmp.fImpl->copyFromWcs(0, fImpl->fData, fImpl->fLength);
-  tmp.fImpl->copyFromWcs(fImpl->fLength,
-                         second.fImpl->fData, second.fImpl->fLength);
+  tmp.fImpl->copyFromWcs(fImpl->fLength, second.fImpl->fData, second.fImpl->fLength);
   return tmp;
 }
 
 
-String
-String::operator+(Char c) const
+String String::operator+(Char c) const
 {
   String tmp;
   tmp.fImpl->reallocate(fImpl->fLength + 1);
@@ -401,36 +372,31 @@ String::operator+(Char c) const
 }
 
 
-String
-String::operator+(char c) const
+String String::operator+(char c) const
 {
   return operator+(Char(c));
 }
 
 
-Char
-String::operator[] (int atIndex) const
+Char String::operator[](int atIndex) const
 {
   hr_assert(atIndex >= 0 && atIndex < fImpl->fLength);
   return fImpl->fData[atIndex];
 }
 
 
-int
-String::toUtf8(char* dst, int maxItems) const
+int String::toUtf8(char* dst, int maxItems) const
 {
   if (!dst)
     return str_wcs_to_utf8(fImpl->fData, fImpl->fLength, nullptr, maxItems);
 
-  int len = str_wcs_to_utf8(fImpl->fData, fImpl->fLength,
-                            (Octet*)dst, maxItems);
+  int len = str_wcs_to_utf8(fImpl->fData, fImpl->fLength, (Octet*)dst, maxItems);
   dst[len] = '\0';
   return len;
 }
 
 
-int
-String::split(Char c, String& before, String& after) const
+int String::split(Char c, String& before, String& after) const
 {
   int idx = indexOf(c);
   if (idx >= 0) {
@@ -444,8 +410,7 @@ String::split(Char c, String& before, String& after) const
 }
 
 
-int
-String::split(const String& needle, String& before, String& after) const
+int String::split(const String& needle, String& before, String& after) const
 {
   int idx = indexOf(needle);
   if (idx >= 0) {
@@ -460,8 +425,7 @@ String::split(const String& needle, String& before, String& after) const
 }
 
 
-String
-String::part(int from, int to) const
+String String::part(int from, int to) const
 {
   if (from == 0 && to >= fImpl->fLength)
     return *this;
@@ -474,11 +438,10 @@ String::part(int from, int to) const
 }
 
 
-int
-String::toInt(int radix) const
+int String::toInt(int radix) const
 {
   char tmp[128];
-  char *endptr = nullptr;
+  char* endptr = nullptr;
 
   toUtf8(tmp, 128);
 
@@ -496,11 +459,10 @@ String::toInt(int radix) const
 }
 
 
-int64_t
-String::toInt64(int radix) const
+int64_t String::toInt64(int radix) const
 {
   char tmp[128];
-  char *endptr = nullptr;
+  char* endptr = nullptr;
 
   toUtf8(tmp, 128);
 
@@ -518,11 +480,10 @@ String::toInt64(int radix) const
 }
 
 
-uint64_t
-String::toUInt64(int radix) const
+uint64_t String::toUInt64(int radix) const
 {
   char tmp[128];
-  char *endptr = nullptr;
+  char* endptr = nullptr;
 
   toUtf8(tmp, 128);
 
@@ -540,11 +501,10 @@ String::toUInt64(int radix) const
 }
 
 
-double
-String::toDouble() const
+double String::toDouble() const
 {
   char tmp[128];
-  char *endptr = nullptr;
+  char* endptr = nullptr;
 
   toUtf8(tmp, 128);
 
@@ -563,8 +523,7 @@ String::operator std::string() const
 
 //----------------------------------------------------------------------------
 
-static int
-str_cmp(const Char* s1, int len1, const Char* s2, int len2)
+static int str_cmp(const Char* s1, int len1, const Char* s2, int len2)
 {
   if (len1 == len2) {
     for (int i = 0; i < len1; i++, s1++, s2++) {
@@ -581,14 +540,13 @@ str_cmp(const Char* s1, int len1, const Char* s2, int len2)
 }
 
 
-static int
-str_ncmp(const Char* s1, int len1, const Char* s2, int len2, int maxItems)
+static int str_ncmp(const Char* s1, int len1, const Char* s2, int len2, int maxItems)
 {
   if (maxItems == 0)
     return 0;
 
   int i = 0;
-  for ( ; i < len1 && i < len2 && i < maxItems; i++, s1++, s2++) {
+  for (; i < len1 && i < len2 && i < maxItems; i++, s1++, s2++) {
     if (*s1 < *s2)
       return -1;
     else if (*s1 > *s2)
@@ -602,8 +560,7 @@ str_ncmp(const Char* s1, int len1, const Char* s2, int len2, int maxItems)
 }
 
 
-static int
-str_chr(const Char* src, int len, Char c)
+static int str_chr(const Char* src, int len, Char c)
 {
   const Char* sp = src;
   for (int i = 0; i < len; i++, sp++) {
@@ -614,8 +571,7 @@ str_chr(const Char* src, int len, Char c)
 }
 
 
-static int
-str_rchr(const Char* src, int len, Char c)
+static int str_rchr(const Char* src, int len, Char c)
 {
   const Char* sp = src + len;
   for (int i = len; i >= 0; i--, sp--) {
@@ -626,17 +582,14 @@ str_rchr(const Char* src, int len, Char c)
 }
 
 
-static int
-str_str(const Char* haystack, int hslen, const Char* needle, int nlen)
+static int str_str(const Char* haystack, int hslen, const Char* needle, int nlen)
 {
   /* Check for the null needle case.  */
   if (nlen == 0)
     return 0;
 
-  for (int hsofs = 0;
-       (hsofs = str_chr(haystack + hsofs, hslen - hsofs, *needle)) >= 0;
-       hsofs++)
-  {
+  for (int hsofs = 0; (hsofs = str_chr(haystack + hsofs, hslen - hsofs, *needle)) >= 0;
+       hsofs++) {
     if (str_ncmp(haystack + hsofs, hslen + hsofs, needle, nlen, nlen) == 0)
       return hsofs;
   }
@@ -644,8 +597,8 @@ str_str(const Char* haystack, int hslen, const Char* needle, int nlen)
 }
 
 
-static int
-str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle, int nlen)
+static int str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle,
+                    int nlen)
 {
   if (nlen == 0)
     return ofs;
@@ -662,8 +615,7 @@ str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle, int nlen)
 }
 
 
-int
-herschel::str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems)
+int herschel::str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems)
 {
   Octet* sp = (Octet*)src;
   const Octet* end = (Octet*)src + items;
@@ -687,9 +639,8 @@ herschel::str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems)
         }
         else if ((c & 0xF0) == 0xE0) {
           if (end - sp >= 2) {
-            uc = (Char)(((c & 0x0F) << 12)
-                        | ((((int) sp[0]) & 0x3F) << 6)
-                        | (sp[1] & 0x3F));
+            uc = (Char)(((c & 0x0F) << 12) | ((((int)sp[0]) & 0x3F) << 6) |
+                        (sp[1] & 0x3F));
           }
           sp += 2;
         }
@@ -745,8 +696,7 @@ herschel::str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems)
 }
 
 
-int
-herschel::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
+int herschel::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
 {
   const Char* sp = src;
 
@@ -810,8 +760,7 @@ herschel::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
 }
 
 
-String
-herschel::xmlEncode(const String& str)
+String herschel::xmlEncode(const String& str)
 {
   std::vector<Char> buffer;
   buffer.reserve(str.length());
@@ -847,15 +796,13 @@ herschel::xmlEncode(const String& str)
 }
 
 
-String
-herschel::xmlEncode(zstring str)
+String herschel::xmlEncode(zstring str)
 {
   return xmlEncode(String(str));
 }
 
 
-String
-herschel::uniqueName(zstring prefix)
+String herschel::uniqueName(zstring prefix)
 {
   static int counter = 0;
   StringBuffer buffer;
@@ -874,7 +821,11 @@ std::ostream& herschel::operator<<(std::ostream& os, const String& str)
 
 std::ostream& herschel::operator<<(std::ostream& os, char c)
 {
-  os << "'" << c << "'";
+  char tmp[2];
+  tmp[0] = c;
+  tmp[1] = 0;
+
+  os << "'" << tmp << "'";
   return os;
 }
 #endif

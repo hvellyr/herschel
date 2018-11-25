@@ -11,9 +11,11 @@ include $(top_srcdir)/config.mk
 
 #------------------------------------------------------------------------------
 
-SUBDIRS = test
+# SUBDIRS = test
+SUBDIRS =
 
-ALL_SUBDIRS = test
+# ALL_SUBDIRS = test
+ALL_SUBDIRS =
 
 
 #------------------------------------------------------------------------------
@@ -28,20 +30,22 @@ LIBHRCOMMON_SOURCES =  \
 	port.cpp             \
 	require.cpp          \
 	str.cpp              \
-	strbuf.cpp
+	strbuf.cpp           \
+	xmlout.cpp
 
 LIBHRCOMMON_HEADERS =  \
-	common.h             \
-	file.h               \
-	filetool.h           \
-	job.h                \
-	log.h                \
-	port.h               \
-	require.h            \
-	setup.h              \
-	str.h                \
-	strbuf.h             \
-	valuesaver.h
+	common.hpp           \
+	file.hpp             \
+	filetool.hpp         \
+	job.hpp              \
+	log.hpp              \
+	port.hpp             \
+	require.hpp          \
+	setup.hpp            \
+	str.hpp              \
+	strbuf.hpp           \
+	valuesaver.hpp       \
+	xmlout.hpp
 
 ifeq ($(TARGET_OS),mac)
 # HRC_HEADERS +=
@@ -70,7 +74,7 @@ COMMON_LIB = $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 #------------------------------------------------------------------------------
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src \
-	-I$(top_srcdir)/external/cxxopts/src \
+	-I$(top_srcdir)/third-party/cxxopts/src \
 	$(LLVM_CPPFLAGS)
 
 LIBHRC_LDFLAGS = $(LDFLAGS) $(LLVM_LDFLAGS)
@@ -78,6 +82,68 @@ LIBHRC_LDFLAGS = $(LDFLAGS) $(LLVM_LDFLAGS)
 LIBHRC_LIBS = $(LIBS) $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 
 LIBHRC_SOURCES =         \
+	abstrpass.cpp       \
+	ast.cpp             \
+	compilepass.cpp     \
+	compiler.cpp        \
+	exprpass.cpp        \
+	macro.cpp           \
+	nodifypass.cpp      \
+	numbers.cpp         \
+	parsertypes.cpp     \
+	predefined.cpp      \
+	properties.cpp      \
+	rootscope.cpp       \
+	scope.cpp           \
+	srcpos.cpp          \
+	symbol.cpp          \
+	token.cpp           \
+	tokeneval.cpp       \
+	tokenizer.cpp       \
+	tokenport.cpp       \
+	type.cpp            \
+	typectx.cpp         \
+	typeenum.cpp        \
+	xmlrenderer.cpp
+
+
+LIBHRC_HEADERS =         \
+	abstrpass.hpp       \
+	ast.hpp             \
+	compilepass.hpp     \
+	compiler.hpp        \
+	errcodes.hpp        \
+	exception.hpp       \
+	exprpass.hpp        \
+	macro.hpp           \
+	nodifypass.hpp      \
+	numbers.hpp         \
+	parsertypes.hpp     \
+	predefined.hpp      \
+	properties.hpp      \
+	registry.hpp        \
+	rootscope.hpp       \
+	scope.hpp           \
+	srcpos.hpp          \
+	symbol.hpp          \
+	token.hpp           \
+	tokeneval.hpp       \
+	tokenizer.hpp       \
+	tokenport.hpp       \
+	type.hpp            \
+	typectx.hpp         \
+	typeenum.hpp        \
+	typeprops.hpp       \
+	typeprops-bool.hpp  \
+	typeprops-char.hpp  \
+	typeprops-float.hpp \
+	typeprops-int.hpp   \
+	typeprops-keyword.hpp \
+	typeprops-string.hpp \
+	xmlrenderer.hpp
+
+LIBHRC_SOURCES2 =        \
+	$(LIBHRC_SOURCES)   \
 	annotate.cpp        \
 	apt.cpp             \
 	codegen.cpp         \
@@ -91,86 +157,32 @@ LIBHRC_SOURCES =         \
 	codegen-types.cpp   \
 	codegen-vardef.cpp  \
 	codegen-while.cpp   \
-	compilepass.cpp     \
-	compiler.cpp        \
 	externc.cpp         \
-	gdb.cpp             \
-	macro.cpp           \
-	numbers.cpp         \
-	parsertypes.cpp     \
-	pass.cpp            \
-	pass1.cpp           \
-	pass2.cpp           \
-	predefined.cpp      \
-	properties.cpp      \
-	rootscope.cpp       \
-	scope.cpp           \
-	srcpos.cpp          \
-	symbol.cpp          \
-	token.cpp           \
-	tokeneval.cpp       \
-	tokenizer.cpp       \
-	tokenport.cpp       \
 	transform.cpp       \
 	traverse.cpp        \
-	type.cpp            \
-	typeenum.cpp        \
-	typectx.cpp         \
-	typify.cpp          \
-	xmlout.cpp
+	typify.cpp
 
-LIBHRC_HEADERS =         \
-	annotate.h          \
-	apt.h               \
-	codegen.h           \
-	codegen-apply.h     \
-	codegen-binnode.h   \
-	codegen-func.h      \
-	codegen-if.h        \
-	codegen-init.h      \
-	codegen-proxy.h     \
-	codegen-slot.h      \
-	codegen-tools.h     \
-	codegen-types.h     \
-	codegen-vardef.h    \
-	codegen-while.h     \
-	compilepass.h       \
-	compiler.h          \
-	errcodes.h          \
-	exception.h         \
-	externc.h           \
-	macro.h             \
-	numbers.h           \
-	parsertypes.h       \
-	pass.h              \
-	pass1.h             \
-	pass2.h             \
-	predefined.h        \
-	properties.h        \
-	registry.h          \
-	rootscope.h         \
-	scope.h             \
-	srcpos.h            \
-	symbol.h            \
-	token.h             \
-	tokeneval.h         \
-	tokenizer.h         \
-	tokenport.h         \
-	transform.h         \
-	traverse.h          \
-	type.h              \
-	typectx.h           \
-	typeenum.h          \
-	typeprops.h         \
-	typeprops-bool.h    \
-	typeprops-char.h    \
-	typeprops-float.h   \
-	typeprops-int.h     \
-	typeprops-keyword.h \
-	typeprops-string.h  \
-	typify.h            \
-	utils.h             \
-	xmlout.h
+LIBHRC_HEADERS2 =         \
+	$(LIBHRC_HEADERS)   \
+	annotate.hpp        \
+	apt.hpp             \
+	codegen.hpp         \
+	codegen-apply.hpp   \
+	codegen-binnode.hpp \
+	codegen-func.hpp    \
+	codegen-if.hpp      \
+	codegen-init.hpp    \
+	codegen-proxy.hpp   \
+	codegen-slot.hpp    \
+	codegen-tools.hpp   \
+	codegen-types.hpp   \
+	codegen-vardef.hpp  \
+	codegen-while.hpp   \
+	externc.hpp         \
+	transform.hpp       \
+	traverse.hpp        \
+	typify.hpp          \
+	utils.hpp
 
 
 ifeq ($(TARGET_OS),mac)
@@ -200,7 +212,7 @@ LIBHRC_LIB = $(BUILDDIR)/$(BUILDSTYLE)/libhrc$(LIBEXT)
 # LLVM_LIBS = $(shell $(LLVM_EXE)/llvm-config --libs backend bitwriter)
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/src \
-	-I$(top_srcdir)/external/cxxopts/src \
+	-I$(top_srcdir)/third-party/cxxopts/src \
 	$(LLVM_CPPFLAGS)
 
 HRC_LDFLAGS = $(LDFLAGS) $(LLVM_LDFLAGS)
@@ -267,8 +279,11 @@ HEADERS = $(HRC_HEADERS) $(LIBHRCOMMON_HEADERS) $(HERSCHEL_HEADERS)
 
 include $(top_srcdir)/build/pre.mk
 
+#all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) \
+#	COMMON_LIBX LIBHRC_LIBX HRC_APPX HERSCHEL_APPX
+
 all-local: $(BUILDDIR) $(BUILDDIR)/$(BUILDSTYLE) \
-	COMMON_LIBX LIBHRC_LIBX HRC_APPX HERSCHEL_APPX
+	COMMON_LIBX LIBHRC_LIBX HRC_APPX
 
 
 #--------

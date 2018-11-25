@@ -10,13 +10,14 @@
 
 //----------------------------------------------------------------------------
 
-#include "apt.h"
-#include "common.h"
-#include "compiler.h"
-#include "log.h"
-#include "properties.h"
-#include "str.h"
-#include "setup.h"
+#include "common.hpp"
+
+#include "ast.hpp"
+#include "compiler.hpp"
+#include "log.hpp"
+#include "properties.hpp"
+#include "setup.hpp"
+#include "str.hpp"
 
 #include "cxxopts.hpp"
 
@@ -31,14 +32,12 @@ enum CompileFunction {
 };
 
 
-namespace herschel
-{
-  static void setupDefaultPath();
+namespace herschel {
+static void setupDefaultPath();
 };
 
 
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
   String outputFile;
 
@@ -47,32 +46,26 @@ main(int argc, char** argv)
 
   std::string prog_name(argv[0]);
   cxxopts::Options options(prog_name, " <inputs> - herschel compiler");
-  options.add_options()
-    ("h;help", "Print help and exit")
-    ("V;version", "Print version and exit")
-    ("v;verbose", "Be verbose")
-    ("d;outdir", "Output all generated files to DIR", cxxopts::value<std::string>())
-    ("o;output", "", cxxopts::value<std::string>())
-    ("T;trace", "Trace various aspects: tokenizer pass1 pass2 annotate transform typify "
-                                        "import macro codedump typeconv",
-                cxxopts::value<std::string>())
-    ("D;define", "Define config VAR to be VALUE", cxxopts::value<std::vector<std::string>>())
-    ("I;input", "Add DIR to the input searchlist", cxxopts::value<std::vector<std::string>>())
-    ("isys", "Root to the system library", cxxopts::value<std::vector<std::string>>())
-    ("P;parse", "Only parse the source files")
-    ("s;emit-bc", "Only compile the source files, no link")
-    ("c;emit-llvm", "Compile to LLVM IR, no link")
-    ("O;optimize", "Optimize code more")
-    ("On;optimize-off", "Turn off any (even basic) optimization")
+  options.add_options()("h;help", "Print help and exit")(
+      "V;version", "Print version and exit")("v;verbose", "Be verbose")(
+      "d;outdir", "Output all generated files to DIR",
+      cxxopts::value<std::string>())("o;output", "", cxxopts::value<std::string>())(
+      "T;trace",
+      "Trace various aspects: tokenizer pass1 pass2 annotate transform typify "
+      "import macro codedump typeconv",
+      cxxopts::value<std::string>())("D;define", "Define config VAR to be VALUE",
+                                     cxxopts::value<std::vector<std::string>>())(
+      "I;input", "Add DIR to the input searchlist",
+      cxxopts::value<std::vector<std::string>>())(
+      "isys", "Root to the system library", cxxopts::value<std::vector<std::string>>())(
+      "P;parse", "Only parse the source files")("s;emit-bc",
+                                                "Only compile the source files, no link")(
+      "c;emit-llvm", "Compile to LLVM IR, no link")("O;optimize", "Optimize code more")(
+      "On;optimize-off", "Turn off any (even basic) optimization")
 #if defined(UNITTESTS)
-    ("dont-import", "")
-    ("parse-1", "")
-    ("parse-2", "")
-    ("parse-3", "")
-    ("parse-4", "")
+      ("dont-import", "")("parse-1", "")("parse-2", "")("parse-3", "")("parse-4", "")
 #endif
-    ("f;file", "Input file", cxxopts::value<std::vector<std::string>>())
-    ;
+          ("f;file", "Input file", cxxopts::value<std::vector<std::string>>());
 
   setupDefaultPath();
 
@@ -86,7 +79,7 @@ main(int argc, char** argv)
   }
 
   if (options.count("help")) {
-    std::cout << options.help({""}) << std::endl;
+    std::cout << options.help({ "" }) << std::endl;
     return 0;
   }
   if (options.count("version")) {
@@ -165,28 +158,21 @@ main(int argc, char** argv)
   }
 
   switch (func) {
-  case kParseFiles:
-    parseFiles(files, outputFile);
-    break;
+  case kParseFiles: parseFiles(files, outputFile); break;
 
-  case kCompileFiles:
-    compileFiles(files, outputFile);
-    break;
+  case kCompileFiles: compileFiles(files, outputFile); break;
   }
 
   return 0;
 }
 
 
-static void
-herschel::setupDefaultPath()
+static void herschel::setupDefaultPath()
 {
   Setup setup = findResources("hrc");
 
-  for (StringVector::iterator it = setup.fSysPath.begin(),
-         e = setup.fSysPath.end();
-       it != e; ++it)
-  {
+  for (StringVector::iterator it = setup.fSysPath.begin(), e = setup.fSysPath.end();
+       it != e; ++it) {
     if (!it->isEmpty())
       Properties::addSystemDir(*it);
   }

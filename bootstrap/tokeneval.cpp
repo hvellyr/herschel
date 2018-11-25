@@ -9,20 +9,20 @@
 */
 
 
-#include "token.h"
-#include "tokeneval.h"
+#include "tokeneval.hpp"
+
+#include "token.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 TokenEvalContext::TokenEvalContext(ConfigVarRegistry& registry)
-  : fRegistry(registry)
+    : fRegistry(registry)
 {
 }
 
 
-Token
-TokenEvalContext::evalAdd(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalAdd(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
@@ -30,42 +30,33 @@ TokenEvalContext::evalAdd(const Token& lexpr, const Token& rexpr) const
   if (left.isInt()) {
     int value = left.intValue();
     if (right.isInt())
-      return Token::newInt(left.srcpos(),
-                   left.bitwidth(), value + right.intValue());
+      return Token::newInt(left.srcpos(), left.bitwidth(), value + right.intValue());
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, double(value) + right.floatValue());
+      return Token(left.srcpos(), kFloat, double(value) + right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kRational, Rational(value, 1) + right.rationalValue());
+      return Token(left.srcpos(), kRational, Rational(value, 1) + right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isFloat()) {
     double value = left.floatValue();
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kFloat, value + double(right.intValue()));
+      return Token(left.srcpos(), kFloat, value + double(right.intValue()));
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, value + right.floatValue());
+      return Token(left.srcpos(), kFloat, value + right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kFloat, value + right.rationalValue().toFloat());
+      return Token(left.srcpos(), kFloat, value + right.rationalValue().toFloat());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRational()) {
     Rational value = left.rationalValue();
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kRational, value + Rational(right.intValue(), 1));
+      return Token(left.srcpos(), kRational, value + Rational(right.intValue(), 1));
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, value.toFloat() + right.floatValue());
+      return Token(left.srcpos(), kFloat, value.toFloat() + right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kRational, value + right.rationalValue());
+      return Token(left.srcpos(), kRational, value + right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -74,8 +65,7 @@ TokenEvalContext::evalAdd(const Token& lexpr, const Token& rexpr) const
 }
 
 
-Token
-TokenEvalContext::evalMinus(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalMinus(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
@@ -83,42 +73,33 @@ TokenEvalContext::evalMinus(const Token& lexpr, const Token& rexpr) const
   if (left.isInt()) {
     int value = left.intValue();
     if (right.isInt())
-      return Token::newInt(left.srcpos(),
-                   left.bitwidth(), value - right.intValue());
+      return Token::newInt(left.srcpos(), left.bitwidth(), value - right.intValue());
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, double(value) - right.floatValue());
+      return Token(left.srcpos(), kFloat, double(value) - right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kRational, Rational(value, 1) - right.rationalValue());
+      return Token(left.srcpos(), kRational, Rational(value, 1) - right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isFloat()) {
     double value = left.floatValue();
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kFloat, value - double(right.intValue()));
+      return Token(left.srcpos(), kFloat, value - double(right.intValue()));
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, value - right.floatValue());
+      return Token(left.srcpos(), kFloat, value - right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kFloat, value - right.rationalValue().toFloat());
+      return Token(left.srcpos(), kFloat, value - right.rationalValue().toFloat());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRational()) {
     Rational value = left.rationalValue();
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kRational, value - Rational(right.intValue(), 1));
+      return Token(left.srcpos(), kRational, value - Rational(right.intValue(), 1));
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, value.toFloat() - right.floatValue());
+      return Token(left.srcpos(), kFloat, value.toFloat() - right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kRational, value - right.rationalValue());
+      return Token(left.srcpos(), kRational, value - right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -127,8 +108,7 @@ TokenEvalContext::evalMinus(const Token& lexpr, const Token& rexpr) const
 }
 
 
-Token
-TokenEvalContext::evalMultiply(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalMultiply(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
@@ -136,42 +116,33 @@ TokenEvalContext::evalMultiply(const Token& lexpr, const Token& rexpr) const
   if (left.isInt()) {
     int value = left.intValue();
     if (right.isInt())
-      return Token::newInt(left.srcpos(),
-                           left.bitwidth(), value * right.intValue());
+      return Token::newInt(left.srcpos(), left.bitwidth(), value * right.intValue());
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, double(value) * right.floatValue());
+      return Token(left.srcpos(), kFloat, double(value) * right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kRational, Rational(value, 1) * right.rationalValue());
+      return Token(left.srcpos(), kRational, Rational(value, 1) * right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isFloat()) {
     double value = left.floatValue();
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kFloat, value * double(right.intValue()));
+      return Token(left.srcpos(), kFloat, value * double(right.intValue()));
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, value * right.floatValue());
+      return Token(left.srcpos(), kFloat, value * right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kFloat, value * right.rationalValue().toFloat());
+      return Token(left.srcpos(), kFloat, value * right.rationalValue().toFloat());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
   else if (left.isRational()) {
     Rational value = left.rationalValue();
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kRational, value * Rational(right.intValue(), 1));
+      return Token(left.srcpos(), kRational, value * Rational(right.intValue(), 1));
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, value.toFloat() * right.floatValue());
+      return Token(left.srcpos(), kFloat, value.toFloat() * right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kRational, value * right.rationalValue());
+      return Token(left.srcpos(), kRational, value * right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -180,8 +151,7 @@ TokenEvalContext::evalMultiply(const Token& lexpr, const Token& rexpr) const
 }
 
 
-Token
-TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
@@ -192,14 +162,11 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token::newInt(left.srcpos(),
-                           left.bitwidth(), value / right.intValue());
+      return Token::newInt(left.srcpos(), left.bitwidth(), value / right.intValue());
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, double(value) / right.floatValue());
+      return Token(left.srcpos(), kFloat, double(value) / right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kRational, Rational(value, 1) / right.rationalValue());
+      return Token(left.srcpos(), kRational, Rational(value, 1) / right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -209,14 +176,11 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kFloat, value / double(right.intValue()));
+      return Token(left.srcpos(), kFloat, value / double(right.intValue()));
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, value / right.floatValue());
+      return Token(left.srcpos(), kFloat, value / right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kFloat, value / right.rationalValue().toFloat());
+      return Token(left.srcpos(), kFloat, value / right.rationalValue().toFloat());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -226,14 +190,11 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kRational, value / Rational(right.intValue(), 1));
+      return Token(left.srcpos(), kRational, value / Rational(right.intValue(), 1));
     else if (right.isFloat())
-      return Token(left.srcpos(),
-                   kFloat, value.toFloat() / right.floatValue());
+      return Token(left.srcpos(), kFloat, value.toFloat() / right.floatValue());
     else if (right.isRational())
-      return Token(left.srcpos(),
-                   kRational, value / right.rationalValue());
+      return Token(left.srcpos(), kRational, value / right.rationalValue());
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -242,8 +203,7 @@ TokenEvalContext::evalDivide(const Token& lexpr, const Token& rexpr) const
 }
 
 
-Token
-TokenEvalContext::evalModulo(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalModulo(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
@@ -256,8 +216,7 @@ TokenEvalContext::evalModulo(const Token& lexpr, const Token& rexpr) const
         throw DivisionByZeroException();
 
       int value = left.intValue() % rvalue;
-      if ( (value > 0 && rvalue < 0) ||
-           (value < 0 && rvalue > 0) )
+      if ((value > 0 && rvalue < 0) || (value < 0 && rvalue > 0))
         value = value + rvalue;
       return Token(left.srcpos(), kInt, value);
     }
@@ -267,8 +226,7 @@ TokenEvalContext::evalModulo(const Token& lexpr, const Token& rexpr) const
 }
 
 
-Token
-TokenEvalContext::evalRemainder(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalRemainder(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
@@ -278,8 +236,8 @@ TokenEvalContext::evalRemainder(const Token& lexpr, const Token& rexpr) const
       if (right.intValue() == 0)
         throw DivisionByZeroException();
 
-      return Token::newInt(left.srcpos(),
-                           left.bitwidth(), left.intValue() % right.intValue());
+      return Token::newInt(left.srcpos(), left.bitwidth(),
+                           left.intValue() % right.intValue());
     }
   }
 
@@ -287,8 +245,7 @@ TokenEvalContext::evalRemainder(const Token& lexpr, const Token& rexpr) const
 }
 
 
-Token
-TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
@@ -297,8 +254,7 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
     int value = left.intValue();
 
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kInt, herschel::exponent(value, right.intValue()));
+      return Token(left.srcpos(), kInt, herschel::exponent(value, right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -308,8 +264,7 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kFloat, herschel::exponent(value, right.intValue()));
+      return Token(left.srcpos(), kFloat, herschel::exponent(value, right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -319,8 +274,7 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
       throw DivisionByZeroException();
 
     if (right.isInt())
-      return Token(left.srcpos(),
-                   kRational, value.exponent(right.intValue()));
+      return Token(left.srcpos(), kRational, value.exponent(right.intValue()));
     else
       throw BadExpressionException(fromInt(__LINE__));
   }
@@ -329,9 +283,8 @@ TokenEvalContext::evalExponent(const Token& lexpr, const Token& rexpr) const
 }
 
 
-Token
-TokenEvalContext::evalBitOp(const Token& lexpr, const Token& rexpr,
-                            OperatorType op) const
+Token TokenEvalContext::evalBitOp(const Token& lexpr, const Token& rexpr,
+                                  OperatorType op) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
@@ -342,13 +295,12 @@ TokenEvalContext::evalBitOp(const Token& lexpr, const Token& rexpr,
 
     int result = 0;
     switch (op) {
-    case kOpBitAnd:     result = lvalue & rvalue; break;
-    case kOpBitXor:     result = lvalue ^ rvalue; break;
-    case kOpBitOr:      result = lvalue | rvalue; break;
-    case kOpShiftLeft:  result = lvalue << rvalue; break;
+    case kOpBitAnd: result = lvalue & rvalue; break;
+    case kOpBitXor: result = lvalue ^ rvalue; break;
+    case kOpBitOr: result = lvalue | rvalue; break;
+    case kOpShiftLeft: result = lvalue << rvalue; break;
     case kOpShiftRight: result = lvalue >> rvalue; break;
-    default:
-      hr_invalid("");
+    default: hr_invalid("");
     }
     return Token(left.srcpos(), kInt, result);
   }
@@ -357,8 +309,7 @@ TokenEvalContext::evalBitOp(const Token& lexpr, const Token& rexpr,
 }
 
 
-Token
-TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
@@ -366,16 +317,15 @@ TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
   if (left.tokenType() == right.tokenType()) {
     switch (left.tokenType()) {
     case kString:
-      return Token(left.srcpos(),
-                   kInt, left.stringValue().compare(right.stringValue()));
+      return Token(left.srcpos(), kInt, left.stringValue().compare(right.stringValue()));
     case kBool:
       if (left.boolValue() == right.boolValue())
         return Token(left.srcpos(), kInt, 0);
       else
         return Token(left.srcpos(), kInt, -1);
     case kInt:
-      return Token::newInt(left.srcpos(),
-                           left.bitwidth(), left.intValue() - right.intValue());
+      return Token::newInt(left.srcpos(), left.bitwidth(),
+                           left.intValue() - right.intValue());
     case kFloat:
       if (left.floatValue() < right.floatValue())
         return Token(left.srcpos(), kInt, -1);
@@ -391,11 +341,10 @@ TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
       else
         return Token(left.srcpos(), kInt, 0);
     case kChar:
-      return Token::newInt(left.srcpos(),
-                           left.bitwidth(), left.intValue() - right.intValue());
+      return Token::newInt(left.srcpos(), left.bitwidth(),
+                           left.intValue() - right.intValue());
 
-    default:
-      throw BadExpressionException(fromInt(__LINE__));
+    default: throw BadExpressionException(fromInt(__LINE__));
     }
   }
 
@@ -403,23 +352,21 @@ TokenEvalContext::evalCompare(const Token& lexpr, const Token& rexpr) const
 }
 
 
-Token
-TokenEvalContext::evalLogical(const Token& lexpr, const Token& rexpr,
-                              OperatorType op) const
+Token TokenEvalContext::evalLogical(const Token& lexpr, const Token& rexpr,
+                                    OperatorType op) const
 {
   Token p = evalCompare(lexpr, rexpr);
   bool result = false;
 
   if (p.isInt()) {
     switch (op) {
-    case kOpEqual:      result = p.intValue() == 0; break;
-    case kOpUnequal:    result = p.intValue() != 0; break;
-    case kOpGreater:    result = p.intValue() > 0; break;
+    case kOpEqual: result = p.intValue() == 0; break;
+    case kOpUnequal: result = p.intValue() != 0; break;
+    case kOpGreater: result = p.intValue() > 0; break;
     case kOpGreaterEqual: result = p.intValue() >= 0; break;
-    case kOpLess:         result = p.intValue() < 0; break;
-    case kOpLessEqual:    result = p.intValue() <= 0; break;
-    default:
-      hr_invalid("");
+    case kOpLess: result = p.intValue() < 0; break;
+    case kOpLessEqual: result = p.intValue() <= 0; break;
+    default: hr_invalid("");
     }
   }
 
@@ -427,8 +374,7 @@ TokenEvalContext::evalLogical(const Token& lexpr, const Token& rexpr,
 }
 
 
-Token
-TokenEvalContext::evalAnd(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalAnd(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   if (left.isBool()) {
@@ -448,8 +394,7 @@ TokenEvalContext::evalAnd(const Token& lexpr, const Token& rexpr) const
 }
 
 
-Token
-TokenEvalContext::evalOr(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalOr(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   if (left.isBool()) {
@@ -467,65 +412,48 @@ TokenEvalContext::evalOr(const Token& lexpr, const Token& rexpr) const
 }
 
 
-Token
-TokenEvalContext::evalConcat(const Token& lexpr, const Token& rexpr) const
+Token TokenEvalContext::evalConcat(const Token& lexpr, const Token& rexpr) const
 {
   Token left = evalToken(lexpr);
   Token right = evalToken(rexpr);
 
   if (left.isString() && right.isString()) {
-    return Token(left.srcpos(),
-                 kString, left.stringValue() + right.stringValue());
+    return Token(left.srcpos(), kString, left.stringValue() + right.stringValue());
   }
   throw BadExpressionException(fromInt(__LINE__));
 }
 
 
-Token
-TokenEvalContext::evalBinaryToken(const Token& lexpr,
-                                  OperatorType op,
-                                  const Token& rexpr) const
+Token TokenEvalContext::evalBinaryToken(const Token& lexpr, OperatorType op,
+                                        const Token& rexpr) const
 {
   switch (op) {
-  case kOpPlus:
-    return evalAdd(lexpr, rexpr);
-  case kOpMinus:
-    return evalMinus(lexpr, rexpr);
-  case kOpMultiply:
-    return evalMultiply(lexpr, rexpr);
-  case kOpDivide:
-    return evalDivide(lexpr, rexpr);
-  case kOpMod:
-    return evalModulo(lexpr, rexpr);
-  case kOpRem:
-    return evalRemainder(lexpr, rexpr);
-  case kOpExponent:
-    return evalExponent(lexpr, rexpr);
+  case kOpPlus: return evalAdd(lexpr, rexpr);
+  case kOpMinus: return evalMinus(lexpr, rexpr);
+  case kOpMultiply: return evalMultiply(lexpr, rexpr);
+  case kOpDivide: return evalDivide(lexpr, rexpr);
+  case kOpMod: return evalModulo(lexpr, rexpr);
+  case kOpRem: return evalRemainder(lexpr, rexpr);
+  case kOpExponent: return evalExponent(lexpr, rexpr);
 
   case kOpBitAnd:
   case kOpBitOr:
   case kOpBitXor:
   case kOpShiftLeft:
-  case kOpShiftRight:
-    return evalBitOp(lexpr, rexpr, op);
+  case kOpShiftRight: return evalBitOp(lexpr, rexpr, op);
 
-  case kOpCompare:
-    return evalCompare(lexpr, rexpr);
+  case kOpCompare: return evalCompare(lexpr, rexpr);
   case kOpEqual:
   case kOpUnequal:
   case kOpGreater:
   case kOpGreaterEqual:
   case kOpLess:
-  case kOpLessEqual:
-    return evalLogical(lexpr, rexpr, op);
+  case kOpLessEqual: return evalLogical(lexpr, rexpr, op);
 
-  case kOpLogicalAnd:
-    return evalAnd(lexpr, rexpr);
-  case kOpLogicalOr:
-    return evalOr(lexpr, rexpr);
+  case kOpLogicalAnd: return evalAnd(lexpr, rexpr);
+  case kOpLogicalOr: return evalOr(lexpr, rexpr);
 
-  case kOpConcat:
-    return evalConcat(lexpr, rexpr);
+  case kOpConcat: return evalConcat(lexpr, rexpr);
 
   case kOpRange:
     // TODO
@@ -546,16 +474,14 @@ TokenEvalContext::evalBinaryToken(const Token& lexpr,
     // TODO
 
   case kOpMapTo:
-  default:
-    throw BadExpressionException(fromInt(__LINE__));
+  default: throw BadExpressionException(fromInt(__LINE__));
   }
 }
 
 
-Token
-TokenEvalContext::evalToken(const Token& expr) const
+Token TokenEvalContext::evalToken(const Token& expr) const
 {
-  switch(expr.type()) {
+  switch (expr.type()) {
   case kSeq:
     if (expr.isBinarySeq()) {
       return evalBinaryToken(expr[0], expr.binarySeqOperator(), expr[2]);
@@ -567,8 +493,7 @@ TokenEvalContext::evalToken(const Token& expr) const
     // TODO
     throw NotSupportedException(__FUNCTION__);
 
-  case kPunct:
-    throw BadExpressionException(expr.toString());
+  case kPunct: throw BadExpressionException(expr.toString());
 
   case kLit:
     switch (expr.tokenType()) {
@@ -578,22 +503,20 @@ TokenEvalContext::evalToken(const Token& expr) const
     case kBool:
     case kInt:
     case kFloat:
-    case kRational:
-      return expr;
-    default:
-      throw BadExpressionException(expr.toString());
+    case kRational: return expr;
+    default: throw BadExpressionException(expr.toString());
     }
     break;
 
-  case kId:
-    {
-      Token value;
-      if (!fRegistry.lookup(expr.idValue(), &value))
-        throw UndefinedSymbolException(expr.idValue());
-      return value;
-    }
-    break;
+  case kId: {
+    Token value;
+    if (!fRegistry.lookup(expr.idValue(), &value))
+      throw UndefinedSymbolException(expr.idValue());
+    return value;
+  } break;
   }
 
   return Token();
 }
+
+}  // namespace herschel

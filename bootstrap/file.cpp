@@ -8,26 +8,22 @@
    This source code is released under the BSD License.
 */
 
-//----------------------------------------------------------------------------
+#include "file.hpp"
 
-#include "common.h"
+#include "log.hpp"
+#include "str.hpp"
+#include "strbuf.hpp"
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <errno.h>
-#include <string.h>
 #include <stdlib.h>
-
-#include "file.h"
-#include "log.h"
-#include "str.h"
-#include "strbuf.h"
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 
-using namespace herschel;
+namespace herschel {
 
-String
-herschel::file::makeDir(const String& path)
+String file::makeDir(const String& path)
 {
   if (path.length() > 0) {
     if (path[path.length() - 1] == '/')
@@ -38,15 +34,13 @@ herschel::file::makeDir(const String& path)
 }
 
 
-bool
-herschel::file::isFilePath(const String& path)
+bool file::isFilePath(const String& path)
 {
   return (!path.isEmpty() && path[path.length() - 1] != '/');
 }
 
 
-bool
-herschel::file::isFile(const String& path)
+bool file::isFile(const String& path)
 {
   struct stat fstat;
 
@@ -59,8 +53,7 @@ herschel::file::isFile(const String& path)
 }
 
 
-bool
-herschel::file::isDir(const String& path)
+bool file::isDir(const String& path)
 {
   struct stat fstat;
 
@@ -73,17 +66,14 @@ herschel::file::isDir(const String& path)
 }
 
 
-bool
-herschel::file::isAbsolutePath(const String& path)
+bool file::isAbsolutePath(const String& path)
 {
   // TODO: support drive letters and UNC notation for windows.
-  return (!path.isEmpty() && (path[0] == '/' ||
-                              path[0] == '~'));
+  return (!path.isEmpty() && (path[0] == '/' || path[0] == '~'));
 }
 
 
-bool
-herschel::file::hasExtension(const String& path)
+bool file::hasExtension(const String& path)
 {
   String name = file::namePart(path);
   int idx = name.lastIndexOf('.');
@@ -91,8 +81,7 @@ herschel::file::hasExtension(const String& path)
 }
 
 
-String
-herschel::file::namePart(const String& path)
+String file::namePart(const String& path)
 {
   int idx = path.lastIndexOf('/');
   if (idx >= 0)
@@ -102,8 +91,7 @@ herschel::file::namePart(const String& path)
 }
 
 
-String
-herschel::file::dirPart(const String& path)
+String file::dirPart(const String& path)
 {
   int idx = path.lastIndexOf('/');
   if (idx >= 0)
@@ -113,8 +101,7 @@ herschel::file::dirPart(const String& path)
 }
 
 
-String
-herschel::file::baseName(const String& path)
+String file::baseName(const String& path)
 {
   String name = file::namePart(path);
   int idx = name.lastIndexOf('.');
@@ -125,64 +112,51 @@ herschel::file::baseName(const String& path)
 }
 
 
-String
-herschel::file::appendDir(const String& path, const String& dirName)
+String file::appendDir(const String& path, const String& dirName)
 {
   hr_assert(!isFilePath(path));
   return makeDir(path + dirName);
 }
 
 
-String
-herschel::file::appendDir(const String& path, const String& dirName,
-                         const String& dirName2)
+String file::appendDir(const String& path, const String& dirName, const String& dirName2)
 {
   hr_assert(!isFilePath(path));
   return appendDir(appendDir(path, dirName), dirName2);
 }
 
 
-String
-herschel::file::appendDir(const String& path, const String& dirName1,
-                         const String& dirName2, const String& dirName3)
+String file::appendDir(const String& path, const String& dirName1, const String& dirName2,
+                       const String& dirName3)
 {
   hr_assert(!isFilePath(path));
-  return appendDir(appendDir(appendDir(path, dirName1),
-                             dirName2),
-                   dirName3);
+  return appendDir(appendDir(appendDir(path, dirName1), dirName2), dirName3);
 }
 
 
-String
-herschel::file::appendDir(const String& path, const String& dirName1,
-                         const String& dirName2, const String& dirName3,
-                         const String& dirName4)
+String file::appendDir(const String& path, const String& dirName1, const String& dirName2,
+                       const String& dirName3, const String& dirName4)
 {
   hr_assert(!isFilePath(path));
-  return appendDir(appendDir(appendDir(appendDir(path, dirName1),
-                                       dirName2),
-                             dirName3),
+  return appendDir(appendDir(appendDir(appendDir(path, dirName1), dirName2), dirName3),
                    dirName4);
 }
 
 
-String
-herschel::file::appendFile(const String& path, const String& name)
+String file::appendFile(const String& path, const String& name)
 {
   hr_assert(!isFilePath(path));
   return path + name;
 }
 
 
-String
-herschel::file::appendExt(const String& path, const String& ext)
+String file::appendExt(const String& path, const String& ext)
 {
   return path + "." + ext;
 }
 
 
-String
-herschel::file::append(const String& path, const String& name)
+String file::append(const String& path, const String& name)
 {
   if (isFilePath(path))
     return path + "/" + name;
@@ -190,8 +164,7 @@ herschel::file::append(const String& path, const String& name)
 }
 
 
-String
-herschel::file::workingDir()
+String file::workingDir()
 {
   int size = 256;
   std::vector<char> buffer;
@@ -214,35 +187,33 @@ herschel::file::workingDir()
 }
 
 
-String
-herschel::file::homeDir()
+String file::homeDir()
 {
-  char *home = ::getenv("HOME");
+  char* home = ::getenv("HOME");
   if (home)
     return String(home);
   return String();
 }
 
 
-class CanonicalPathElt
-{
+class CanonicalPathElt {
 public:
   CanonicalPathElt()
-    : fIsPathElt(false)
-  { }
-
+      : fIsPathElt(false)
+  {
+  }
 
   CanonicalPathElt(const String& name, bool isPathElt)
-    : fName(name),
-      fIsPathElt(isPathElt)
-  { }
-
+      : fName(name)
+      , fIsPathElt(isPathElt)
+  {
+  }
 
   CanonicalPathElt(const CanonicalPathElt& other)
-    : fName(other.fName),
-      fIsPathElt(other.fIsPathElt)
-  { }
-
+      : fName(other.fName)
+      , fIsPathElt(other.fIsPathElt)
+  {
+  }
 
   CanonicalPathElt& operator=(const CanonicalPathElt& other)
   {
@@ -251,30 +222,10 @@ public:
     return *this;
   }
 
-
-  const String& name() const
-  {
-    return fName;
-  }
-
-
-  bool isPath() const
-  {
-    return fIsPathElt;
-  }
-
-
-  void setIsPath(bool value)
-  {
-    fIsPathElt = value;
-  }
-
-
-  bool isEmpty() const
-  {
-    return fName.isEmpty();
-  }
-
+  const String& name() const { return fName; }
+  bool isPath() const { return fIsPathElt; }
+  void setIsPath(bool value) { fIsPathElt = value; }
+  bool isEmpty() const { return fName.isEmpty(); }
 
 private:
   String fName;
@@ -282,23 +233,24 @@ private:
 };
 
 
-class CanonicalPath
-{
+class CanonicalPath {
 public:
   using CNEltVector = std::vector<CanonicalPathElt>;
 
-  CanonicalPath()
-  { }
+  CanonicalPath() {}
 
   CanonicalPath(const CanonicalPath& other)
-    : fElts(other.fElts)
-  { }
+      : fElts(other.fElts)
+  {
+  }
+
 
   CanonicalPath& operator=(const CanonicalPath& other)
   {
     fElts = other.fElts;
     return *this;
   }
+
 
   CanonicalPath(const String& path)
   {
@@ -332,10 +284,7 @@ public:
   {
     StringBuffer buf;
 
-    for (CNEltVector::const_iterator it = fElts.begin();
-         it != fElts.end();
-         it++)
-    {
+    for (CNEltVector::const_iterator it = fElts.begin(); it != fElts.end(); it++) {
       buf << it->name();
       if (it->isPath())
         buf << "/";
@@ -385,7 +334,7 @@ public:
   {
     static const String sDot = String(".");
 
-    for (size_t i = 1; i < fElts.size(); ) {
+    for (size_t i = 1; i < fElts.size();) {
       if (fElts[i].isEmpty() || fElts[i].name() == sDot)
         fElts.erase(fElts.begin() + i);
       else
@@ -399,10 +348,7 @@ public:
     CNEltVector newElts;
     static const String sDdot = String("..");
 
-    for (CNEltVector::const_iterator it = fElts.begin();
-         it != fElts.end();
-         it++)
-    {
+    for (CNEltVector::const_iterator it = fElts.begin(); it != fElts.end(); it++) {
       if (it->name() == sDdot && newElts.size() > 0) {
         if (newElts.back().name() != sDdot)
           newElts.erase(newElts.end() - 1);
@@ -422,8 +368,7 @@ private:
 };
 
 
-String
-herschel::file::canonicalPathName(const String& path, const String& baseDir)
+String file::canonicalPathName(const String& path, const String& baseDir)
 {
   CanonicalPath cn(path);
 
@@ -435,8 +380,7 @@ herschel::file::canonicalPathName(const String& path, const String& baseDir)
 }
 
 
-String
-herschel::file::canonicalPathName(const String& path)
+String file::canonicalPathName(const String& path)
 {
   return canonicalPathName(path, workingDir());
 }
@@ -444,18 +388,15 @@ herschel::file::canonicalPathName(const String& path)
 
 //----------------------------------------------------------------------------
 
-static String
-checkForFileWithExts(const String& fullPath,
-                     const StringVector& altExtensions)
+static String checkForFileWithExts(const String& fullPath,
+                                   const StringVector& altExtensions)
 {
   if (file::isFile(fullPath))
     return fullPath;
 
   if (!file::hasExtension(fullPath)) {
     for (StringVector::const_iterator eit = altExtensions.begin();
-         eit != altExtensions.end();
-         eit++)
-    {
+         eit != altExtensions.end(); eit++) {
       String extFullPath = file::appendExt(fullPath, *eit);
       if (file::isFile(extFullPath))
         return extFullPath;
@@ -466,26 +407,20 @@ checkForFileWithExts(const String& fullPath,
 }
 
 
-String
-herschel::file::lookupInPath(const String& pattern,
-                             const StringVector& searchPath,
-                             const StringVector& altExtensions)
+String file::lookupInPath(const String& pattern, const StringVector& searchPath,
+                          const StringVector& altExtensions)
 {
   if (file::isAbsolutePath(pattern)) {
-    String result = checkForFileWithExts(file::canonicalPathName(pattern),
-                                         altExtensions);
+    String result = checkForFileWithExts(file::canonicalPathName(pattern), altExtensions);
     if (!result.isEmpty())
       return result;
   }
   else {
-    for (StringVector::const_iterator it = searchPath.begin();
-         it != searchPath.end();
-         it++)
-    {
+    for (StringVector::const_iterator it = searchPath.begin(); it != searchPath.end();
+         it++) {
       String realPath = file::canonicalPathName(*it);
-      String result = checkForFileWithExts(file::canonicalPathName(pattern,
-                                                                   realPath),
-                                           altExtensions);
+      String result =
+          checkForFileWithExts(file::canonicalPathName(pattern, realPath), altExtensions);
       if (!result.isEmpty())
         return result;
     }
@@ -494,3 +429,4 @@ herschel::file::lookupInPath(const String& pattern,
   return String();
 }
 
+}  // namespace herschel

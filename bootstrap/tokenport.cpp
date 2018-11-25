@@ -8,42 +8,36 @@
    This source code is released under the BSD License.
 */
 
-#include "common.h"
+#include "tokenport.hpp"
 
-#include <string.h>
+#include "port.hpp"
+#include "token.hpp"
+#include "tokenizer.hpp"
 
-#include "tokenport.h"
-#include "port.h"
-#include "token.h"
-#include "tokenizer.h"
-
-using namespace herschel;
+#include <cstring>
 
 
-//----------------------------------------------------------------------------
+namespace herschel {
 
-size_t
-TokenPort::write(const Token* /* data */, size_t /* items */)
+
+size_t TokenPort::write(const Token* /* data */, size_t /* items */)
 {
   throw NotSupportedException(__FUNCTION__);
 }
 
 
-int
-TokenPort::write(Token item)
+int TokenPort::write(Token item)
 {
   throw NotSupportedException(__FUNCTION__);
 }
 
 
-void
-TokenPort::flush()
+void TokenPort::flush()
 {
   // NOP
 }
 
-bool
-TokenPort::canSetCursor() const
+bool TokenPort::canSetCursor() const
 {
   return false;
 }
@@ -51,46 +45,40 @@ TokenPort::canSetCursor() const
 
 //----------------------------------------------------------------------------
 
-FileTokenPort::FileTokenPort(std::shared_ptr<Port<Octet>> port,
-                             const String& srcName,
+FileTokenPort::FileTokenPort(std::shared_ptr<Port<Octet>> port, const String& srcName,
                              std::shared_ptr<CharRegistry> charRegistry)
 {
-  setTokenizer(std::make_shared<Tokenizer>(
-                 std::make_shared<CharPort>(port), srcName, charRegistry));
+  setTokenizer(std::make_shared<Tokenizer>(std::make_shared<CharPort>(port), srcName,
+                                           charRegistry));
 }
 
 
-FileTokenPort::FileTokenPort(std::shared_ptr<Port<Char>> port,
-                             const String& srcName,
+FileTokenPort::FileTokenPort(std::shared_ptr<Port<Char>> port, const String& srcName,
                              std::shared_ptr<CharRegistry> charRegistry)
 {
   setTokenizer(std::make_shared<Tokenizer>(port, srcName, charRegistry));
 }
 
 
-void
-FileTokenPort::setTokenizer(std::shared_ptr<Tokenizer> tokenizer)
+void FileTokenPort::setTokenizer(std::shared_ptr<Tokenizer> tokenizer)
 {
   fTokenizer = tokenizer;
 }
 
 
-bool
-FileTokenPort::isOpen() const
+bool FileTokenPort::isOpen() const
 {
   return fTokenizer != nullptr;
 }
 
 
-bool
-FileTokenPort::isEof() const
+bool FileTokenPort::isEof() const
 {
   return !hasUnreadData() && (!fTokenizer || fTokenizer->isEof());
 }
 
 
-Token
-FileTokenPort::read()
+Token FileTokenPort::read()
 {
   if (!fTokenizer)
     throw PortNotOpenException();
@@ -117,22 +105,19 @@ InternalTokenPort::InternalTokenPort(const TokenVector& tokens)
 }
 
 
-bool
-InternalTokenPort::isOpen() const
+bool InternalTokenPort::isOpen() const
 {
   return true;
 }
 
 
-bool
-InternalTokenPort::isEof() const
+bool InternalTokenPort::isEof() const
 {
   return !hasUnreadData() && fTokens.empty();
 }
 
 
-Token
-InternalTokenPort::read()
+Token InternalTokenPort::read()
 {
   Token value;
   if (readFromUnreadBuffer(&value, 1) == 1)
@@ -145,3 +130,5 @@ InternalTokenPort::read()
   fTokens.pop_front();
   return t;
 }
+
+}  // namespace herschel

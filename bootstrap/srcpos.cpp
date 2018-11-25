@@ -8,16 +8,15 @@
    This source code is released under the BSD License.
 */
 
-#include "common.h"
-#include "srcpos.h"
-#include "str.h"
-#include "strbuf.h"
+#include "srcpos.hpp"
+
+#include "str.hpp"
+#include "strbuf.hpp"
 
 
 using namespace herschel;
 
-String
-SrcPos::toString() const
+String SrcPos::toString() const
 {
   return (StringBuffer(fFile) << ':' << fromInt(fLineNo)).toString();
 }

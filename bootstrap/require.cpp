@@ -9,13 +9,12 @@
 */
 
 
-//----------------------------------------------------------------------------
+#include "require.hpp"
 
-#include "common.h"
-#include "require.h"
-#include "log.h"
+#include "log.hpp"
 
 #include <stdlib.h>
+
 
 using namespace herschel;
 
@@ -25,23 +24,20 @@ using namespace herschel;
 static bool areRequiresFatal = true;
 
 
-void
-setRequiresAreFatal(bool value)
+void setRequiresAreFatal(bool value)
 {
   areRequiresFatal = value;
 }
 
 
-void
-herschel::requireHandler(zstring file, int line, zstring title, zstring msg,
-                         zstring expr)
+void herschel::requireHandler(zstring file, int line, zstring title, zstring msg,
+                              zstring expr)
 {
-  logf(kError, "%s:%d: %s: %s%s%s\n",
-       file, line, title, msg,
-       expr ? ": " : "", expr ? expr : "");
+  logf(kError, "%s:%d: %s: %s%s%s\n", file, line, title, msg, expr ? ": " : "",
+       expr ? expr : "");
 
   if (areRequiresFatal)
     abort();
 }
 
-#endif // if defined(IS_DEBUG)
+#endif  // if defined(IS_DEBUG)

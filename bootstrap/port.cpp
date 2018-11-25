@@ -8,37 +8,38 @@
    This source code is released under the BSD License.
 */
 
-#include "common.h"
+#include "port.hpp"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "require.hpp"
+#include "str.hpp"
+
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "require.h"
-#include "str.h"
-#include "port.h"
 
 using namespace herschel;
 
 // ENOTSUP seem not to be defined on windows (xp)?
 #if !defined(ENOTSUP)
-#define ENOTSUP 0x0ffffffe
+#  define ENOTSUP 0x0ffffffe
 #endif
 
 
 //----------------------------------------------------------------------------
 
 PortNotOpenException::PortNotOpenException()
-  : IOException(String("port is not open"), EBADF)
-{ }
+    : IOException(String("port is not open"), EBADF)
+{
+}
 
 
 //----------------------------------------------------------------------------
 
 FilePort::FilePort(const String& fileName, zstring mode)
-  : fOwnsStream(true),
-    fStream(nullptr)
+    : fOwnsStream(true)
+    , fStream(nullptr)
 {
   fStream = ::fopen((zstring)StrHelper(fileName), mode);
   if (!fStream)
@@ -47,9 +48,10 @@ FilePort::FilePort(const String& fileName, zstring mode)
 
 
 FilePort::FilePort(FILE* stream)
-  : fOwnsStream(false),
-    fStream(stream)
-{ }
+    : fOwnsStream(false)
+    , fStream(stream)
+{
+}
 
 
 FilePort::~FilePort()
@@ -58,8 +60,7 @@ FilePort::~FilePort()
 }
 
 
-void
-FilePort::close()
+void FilePort::close()
 {
   if (fStream && fOwnsStream) {
     ::fclose(fStream);
@@ -68,15 +69,13 @@ FilePort::close()
 }
 
 
-bool
-FilePort::isOpen() const
+bool FilePort::isOpen() const
 {
   return fStream;
 }
 
 
-bool
-FilePort::isEof() const
+bool FilePort::isEof() const
 {
   if (!fStream)
     throw PortNotOpenException();
@@ -85,8 +84,7 @@ FilePort::isEof() const
 }
 
 
-size_t
-FilePort::write(const Octet* data, size_t items)
+size_t FilePort::write(const Octet* data, size_t items)
 {
   if (!fStream)
     throw PortNotOpenException();
@@ -100,8 +98,7 @@ FilePort::write(const Octet* data, size_t items)
 }
 
 
-int
-FilePort::write(Octet byte)
+int FilePort::write(Octet byte)
 {
   if (!fStream)
     throw PortNotOpenException();
@@ -115,8 +112,7 @@ FilePort::write(Octet byte)
 }
 
 
-size_t
-FilePort::read(Octet* buffer, size_t items)
+size_t FilePort::read(Octet* buffer, size_t items)
 {
   if (!fStream)
     throw PortNotOpenException();
@@ -135,8 +131,7 @@ FilePort::read(Octet* buffer, size_t items)
 }
 
 
-Octet
-FilePort::read()
+Octet FilePort::read()
 {
   if (!fStream)
     throw PortNotOpenException();
@@ -156,8 +151,7 @@ FilePort::read()
 }
 
 
-void
-FilePort::flush()
+void FilePort::flush()
 {
   if (!fStream)
     throw PortNotOpenException();
@@ -166,15 +160,13 @@ FilePort::flush()
 }
 
 
-bool
-FilePort::canSetCursor() const
+bool FilePort::canSetCursor() const
 {
   return true;
 }
 
 
-void
-FilePort::setCursor(size_t cursor)
+void FilePort::setCursor(size_t cursor)
 {
   if (!fStream)
     throw PortNotOpenException();
@@ -186,8 +178,7 @@ FilePort::setCursor(size_t cursor)
 }
 
 
-long
-FilePort::cursor()
+long FilePort::cursor()
 {
   if (!fStream)
     throw PortNotOpenException();
@@ -202,20 +193,21 @@ FilePort::cursor()
 //----------------------------------------------------------------------------
 
 DataPort::DataPort()
-  : fPos(0),
-    fOwnsData(true),
-    fData(nullptr),
-    fLength(0),
-    fAllocated(0)
-{ }
+    : fPos(0)
+    , fOwnsData(true)
+    , fData(nullptr)
+    , fLength(0)
+    , fAllocated(0)
+{
+}
 
 
 DataPort::DataPort(const Octet* buffer, size_t items)
-  : fPos(0),
-    fOwnsData(false),
-    fData((Octet*)buffer),
-    fLength(items),
-    fAllocated(items)
+    : fPos(0)
+    , fOwnsData(false)
+    , fData((Octet*)buffer)
+    , fLength(items)
+    , fAllocated(items)
 {
 }
 
@@ -229,22 +221,19 @@ DataPort::~DataPort()
 }
 
 
-bool
-DataPort::isOpen() const
+bool DataPort::isOpen() const
 {
   return true;
 }
 
 
-bool
-DataPort::isEof() const
+bool DataPort::isEof() const
 {
   return !hasUnreadData() && fPos == fLength;
 }
 
 
-size_t
-DataPort::write(const Octet* data, size_t items)
+size_t DataPort::write(const Octet* data, size_t items)
 {
   if (!fOwnsData)
     throw IOException(String("Can't write this port"), EPERM);
@@ -272,8 +261,7 @@ DataPort::write(const Octet* data, size_t items)
 }
 
 
-int
-DataPort::write(Octet byte)
+int DataPort::write(Octet byte)
 {
   if (!fOwnsData)
     throw IOException(String("Can't write this port"), EPERM);
@@ -284,8 +272,7 @@ DataPort::write(Octet byte)
 }
 
 
-size_t
-DataPort::read(Octet* buffer, size_t items)
+size_t DataPort::read(Octet* buffer, size_t items)
 {
   size_t bytesRead = 0;
   size_t noctets = items;
@@ -298,8 +285,7 @@ DataPort::read(Octet* buffer, size_t items)
   noctets -= retval;
   if (noctets > 0) {
     size_t avail2 = fLength - fPos;
-    if (avail2 > 0)
-    {
+    if (avail2 > 0) {
       size_t step = avail2 > noctets ? noctets : avail2;
 
       ::memcpy(buffer + retval, fData + fPos, step);
@@ -313,8 +299,7 @@ DataPort::read(Octet* buffer, size_t items)
 }
 
 
-Octet
-DataPort::read()
+Octet DataPort::read()
 {
   Octet value;
   if (readFromUnreadBuffer(&value, 1) == 1)
@@ -326,44 +311,38 @@ DataPort::read()
 }
 
 
-void
-DataPort::flush()
+void DataPort::flush()
 {
   resetUnreadBuffer();
 }
 
 
-bool
-DataPort::canSetCursor() const
+bool DataPort::canSetCursor() const
 {
   return true;
 }
 
 
-void
-DataPort::setCursor(size_t cursor)
+void DataPort::setCursor(size_t cursor)
 {
   resetUnreadBuffer();
   fPos = cursor;
 }
 
 
-long
-DataPort::cursor()
+long DataPort::cursor()
 {
   return fPos;
 }
 
 
-const Octet*
-DataPort::data() const
+const Octet* DataPort::data() const
 {
   return fData;
 }
 
 
-size_t
-DataPort::length() const
+size_t DataPort::length() const
 {
   return fLength;
 }
@@ -372,28 +351,25 @@ DataPort::length() const
 //----------------------------------------------------------------------------
 
 CharPort::CharPort(std::shared_ptr<Port<Octet>> slave)
-  : fSlave(slave)
+    : fSlave(slave)
 {
   hr_assert(fSlave);
 }
 
 
-bool
-CharPort::isOpen() const
+bool CharPort::isOpen() const
 {
   return fSlave->isOpen();
 }
 
 
-bool
-CharPort::isEof() const
+bool CharPort::isEof() const
 {
   return !hasUnreadData() && fSlave->isEof();
 }
 
 
-size_t
-CharPort::write(const Char* data, size_t items)
+size_t CharPort::write(const Char* data, size_t items)
 {
   resetUnreadBuffer();
 
@@ -405,8 +381,7 @@ CharPort::write(const Char* data, size_t items)
 }
 
 
-int
-CharPort::write(Char c)
+int CharPort::write(Char c)
 {
   resetUnreadBuffer();
 
@@ -418,8 +393,7 @@ CharPort::write(Char c)
 }
 
 
-Char
-CharPort::read()
+Char CharPort::read()
 {
   Char value;
   if (readFromUnreadBuffer(&value, 1) == 1)
@@ -441,21 +415,20 @@ CharPort::read()
     else if ((c0 & 0xf8) == 0xf0) {
       Octet tmp[3];
       fSlave->read(tmp, 3);
-      return ((c0 & 0x07) << 18) | ((tmp[0] & 0x3f) << 12)
-        | ((tmp[1] & 0x3f) << 6) | (tmp[2] & 0x3f);
+      return ((c0 & 0x07) << 18) | ((tmp[0] & 0x3f) << 12) | ((tmp[1] & 0x3f) << 6) |
+             (tmp[2] & 0x3f);
     }
     else if ((c0 & 0xfc) == 0xf8) {
       Octet tmp[4];
       fSlave->read(tmp, 4);
-      return ((c0 & 0x03) << 24) | ((tmp[0] & 0x3f) << 18)
-        | ((tmp[1] & 0x3f) << 12) | ((tmp[2] & 0x3f) << 6) | (tmp[3] & 0x3f);
+      return ((c0 & 0x03) << 24) | ((tmp[0] & 0x3f) << 18) | ((tmp[1] & 0x3f) << 12) |
+             ((tmp[2] & 0x3f) << 6) | (tmp[3] & 0x3f);
     }
     else if ((c0 & 0xfe) == 0xfc) {
       Octet tmp[5];
       fSlave->read(tmp, 5);
-      return ((c0 & 0x01) << 30) | ((tmp[0] & 0x3f) << 24)
-        | ((tmp[1] & 0x3f) << 18) | ((tmp[2] & 0x3f) << 12)
-        | ((tmp[3] & 0x3f) << 6) | (tmp[4] & 0x3f);
+      return ((c0 & 0x01) << 30) | ((tmp[0] & 0x3f) << 24) | ((tmp[1] & 0x3f) << 18) |
+             ((tmp[2] & 0x3f) << 12) | ((tmp[3] & 0x3f) << 6) | (tmp[4] & 0x3f);
     }
 
     return 0xffff;
@@ -465,31 +438,27 @@ CharPort::read()
 }
 
 
-void
-CharPort::flush()
+void CharPort::flush()
 {
   resetUnreadBuffer();
   fSlave->flush();
 }
 
 
-bool
-CharPort::canSetCursor() const
+bool CharPort::canSetCursor() const
 {
   return fSlave->canSetCursor();
 }
 
 
-void
-CharPort::setCursor(size_t cursor)
+void CharPort::setCursor(size_t cursor)
 {
   resetUnreadBuffer();
   fSlave->setCursor(cursor);
 }
 
 
-long
-CharPort::cursor()
+long CharPort::cursor()
 {
   return fSlave->cursor();
 }
@@ -497,8 +466,7 @@ CharPort::cursor()
 
 //----------------------------------------------------------------------------
 
-void
-herschel::display(Port<Octet>& port, zstring value)
+void herschel::display(Port<Octet>& port, zstring value)
 {
   if (value)
     port.write((const Octet*)value, strlen(value));
@@ -507,23 +475,20 @@ herschel::display(Port<Octet>& port, zstring value)
 }
 
 
-void
-herschel::displayln(Port<Octet>& port, zstring value)
+void herschel::displayln(Port<Octet>& port, zstring value)
 {
   display(port, value);
   display(port, "\n");
 }
 
 
-void
-herschel::display(Port<Octet>& port, const String& value)
+void herschel::display(Port<Octet>& port, const String& value)
 {
   display(port, StrHelper(value));
 }
 
 
-void
-herschel::displayln(Port<Octet>& port, const String& value)
+void herschel::displayln(Port<Octet>& port, const String& value)
 {
   display(port, value);
   display(port, "\n");

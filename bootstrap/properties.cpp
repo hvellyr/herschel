@@ -8,19 +8,18 @@
    This source code is released under the BSD License.
 */
 
-#include "common.h"
+#include "properties.hpp"
+
+#include "log.hpp"
+#include "parsertypes.hpp"
+#include "registry.hpp"
+#include "str.hpp"
+#include "token.hpp"
 
 #include <map>
 
-#include "properties.h"
-#include "log.h"
-#include "str.h"
-#include "token.h"
-#include "parsertypes.h"
-#include "registry.h"
 
-
-using namespace herschel;
+namespace herschel {
 
 #if defined(UNITTESTS)
 static bool sDontImport = false;
@@ -48,64 +47,56 @@ static int sPassLevel = 5;
 static bool sShouldIgnoreDocStrings = true;
 static bool sVerbose = false;
 
-void
-Properties::setIsVerbose(bool value)
+
+void Properties::setIsVerbose(bool value)
 {
   sVerbose = value;
 }
 
 
-bool
-Properties::isVerbose()
+bool Properties::isVerbose()
 {
   return sVerbose;
 }
 
 
-void
-Properties::setOutdir(const String& outdir)
+void Properties::setOutdir(const String& outdir)
 {
   sOutdir = outdir;
 }
 
 
-String
-Properties::outdir()
+String Properties::outdir()
 {
   return sOutdir;
 }
 
 
-void
-Properties::setCompileOutFormat(CompileOutFormat format)
+void Properties::setCompileOutFormat(CompileOutFormat format)
 {
   sCompileOutFormat = format;
 }
 
 
-CompileOutFormat
-Properties::compileOutFormat()
+CompileOutFormat Properties::compileOutFormat()
 {
   return sCompileOutFormat;
 }
 
 
-void
-Properties::setOptimizeLevel(OptimizeLevel optLevel)
+void Properties::setOptimizeLevel(OptimizeLevel optLevel)
 {
   sOptLevel = optLevel;
 }
 
 
-OptimizeLevel
-Properties::optimizeLevel()
+OptimizeLevel Properties::optimizeLevel()
 {
   return sOptLevel;
 }
 
 
-void
-Properties::setTrace(const String& key, bool value)
+void Properties::setTrace(const String& key, bool value)
 {
   if (key == String("tokenizer"))
     sIsTokenizerTracing = value;
@@ -130,8 +121,7 @@ Properties::setTrace(const String& key, bool value)
 }
 
 
-void
-Properties::setTraces(const String& argument)
+void Properties::setTraces(const String& argument)
 {
   String tmp = argument;
   String key;
@@ -145,15 +135,13 @@ Properties::setTraces(const String& argument)
 }
 
 
-bool
-Properties::isTraceTokenizer()
+bool Properties::isTraceTokenizer()
 {
   return sIsTokenizerTracing;
 }
 
 
-bool
-Properties::isTracePass(int level)
+bool Properties::isTracePass(int level)
 {
   switch (level) {
   case 0: return false;
@@ -162,78 +150,67 @@ Properties::isTracePass(int level)
   case 3: return sIsTransformTracing;
   case 4: return sIsAnnotateTracing;
   case 5: return sIsTypifyTracing;
-  default:
-    hr_invalid("Missing pass level setting");
+  default: hr_invalid("Missing pass level setting");
   }
   return false;
 }
 
 
-bool
-Properties::isTracePass1()
+bool Properties::isTracePass1()
 {
   return sIsPass1Tracing;
 }
 
 
-bool
-Properties::isTracePass2()
+bool Properties::isTracePass2()
 {
   return sIsPass2Tracing;
 }
 
 
-bool
-Properties::isTraceAnnotate()
+bool Properties::isTraceAnnotate()
 {
   return sIsAnnotateTracing;
 }
 
 
-bool
-Properties::isTraceTransform()
+bool Properties::isTraceTransform()
 {
   return sIsTransformTracing;
 }
 
 
-bool
-Properties::isTraceTypify()
+bool Properties::isTraceTypify()
 {
   return sIsTypifyTracing;
 }
 
 
-bool
-Properties::isTraceImportFile()
+bool Properties::isTraceImportFile()
 {
   return sIsImportFileTracing;
 }
 
 
-bool
-Properties::isTraceMacro()
+bool Properties::isTraceMacro()
 {
   return sIsMacroTracing;
 }
 
 
-bool
-Properties::isCodeDump()
+bool Properties::isCodeDump()
 {
   return sIsCodeDump;
 }
 
 
-bool
-Properties::isTypeConvDump()
+bool Properties::isTypeConvDump()
 {
   return sIsTypeConvDump;
 }
 
 
-void
-Properties::setConfigVar(const String& keyValuePair)
+void Properties::setConfigVar(const String& keyValuePair)
 {
   String key;
   String value;
@@ -244,16 +221,15 @@ Properties::setConfigVar(const String& keyValuePair)
   if (idx >= 0) {
     if (!sConfigVarRegistry)
       sConfigVarRegistry = std::make_shared<ConfigVarRegistry>();
-    sConfigVarRegistry->registerValue(key, Token(SrcPos("<commandline>", 0),
-                                                 kString, value));
+    sConfigVarRegistry->registerValue(key,
+                                      Token(SrcPos("<commandline>", 0), kString, value));
   }
   else
     logf(kError, "bad key-value pair for config key.  Ignored\n");
 }
 
 
-std::shared_ptr<ConfigVarRegistry>
-Properties::globalConfigVarRegistry()
+std::shared_ptr<ConfigVarRegistry> Properties::globalConfigVarRegistry()
 {
   if (!sConfigVarRegistry)
     sConfigVarRegistry = std::make_shared<ConfigVarRegistry>();
@@ -262,28 +238,24 @@ Properties::globalConfigVarRegistry()
 
 
 #if defined(UNITTESTS)
-void
-Properties::test_setDontImport(bool value)
+void Properties::test_setDontImport(bool value)
 {
   sDontImport = value;
 }
 
-bool
-Properties::test_dontImport()
+bool Properties::test_dontImport()
 {
   return sDontImport;
 }
 
 
-void
-Properties::test_setPassLevel(int level)
+void Properties::test_setPassLevel(int level)
 {
   sPassLevel = level;
 }
 
 
-int
-Properties::test_passLevel()
+int Properties::test_passLevel()
 {
   return sPassLevel;
 }
@@ -291,28 +263,24 @@ Properties::test_passLevel()
 #endif
 
 
-bool
-Properties::shouldIgnoreDocStrings()
+bool Properties::shouldIgnoreDocStrings()
 {
   return sShouldIgnoreDocStrings;
 }
 
-void
-Properties::setShouldIgnoreDocStrings(bool value)
+void Properties::setShouldIgnoreDocStrings(bool value)
 {
   sShouldIgnoreDocStrings = value;
 }
 
 
-void
-Properties::addInputDir(const String& dir)
+void Properties::addInputDir(const String& dir)
 {
   sInputSearchPath.push_back(dir);
 }
 
 
-const StringVector&
-Properties::inputDirSearchPath()
+const StringVector& Properties::inputDirSearchPath()
 {
   if (sInputSearchPath.empty())
     sInputSearchPath.push_back(String("."));
@@ -321,15 +289,15 @@ Properties::inputDirSearchPath()
 }
 
 
-void
-Properties::addSystemDir(const String& dir)
+void Properties::addSystemDir(const String& dir)
 {
   sSystemSearchPath.push_back(dir);
 }
 
 
-const StringVector&
-Properties::systemDirSearchPath()
+const StringVector& Properties::systemDirSearchPath()
 {
   return sSystemSearchPath;
 }
+
+}  // namespace herschel

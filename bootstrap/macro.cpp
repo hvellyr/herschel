@@ -8,23 +8,22 @@
    This source code is released under the BSD License.
 */
 
-#include "token.h"
-#include "macro.h"
-#include "strbuf.h"
+#include "macro.hpp"
+
+#include "strbuf.hpp"
+#include "token.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
-
-//------------------------------------------------------------------------------
 
 SyntaxTreeNode::SyntaxTreeNode()
-  : fHasEndPattern(false)
-{ }
+    : fHasEndPattern(false)
+{
+}
 
 
-std::shared_ptr<SyntaxTreeNode>
-SyntaxTreeNode::findNode(const Token& token) const
+std::shared_ptr<SyntaxTreeNode> SyntaxTreeNode::findNode(const Token& token) const
 {
   if (token == kMacroParam || token == kMacroParamAsStr) {
     for (const auto& pair : fNodes) {
@@ -43,12 +42,10 @@ SyntaxTreeNode::findNode(const Token& token) const
 }
 
 
-std::shared_ptr<SyntaxTreeNode>
-SyntaxTreeNode::findMacroParam(Token* macroParam) const
+std::shared_ptr<SyntaxTreeNode> SyntaxTreeNode::findMacroParam(Token* macroParam) const
 {
   for (const auto& pair : fNodes) {
-    if (pair.first == kMacroParam ||
-        pair.first == kMacroParamAsStr) {
+    if (pair.first == kMacroParam || pair.first == kMacroParamAsStr) {
       *macroParam = pair.first;
       return pair.second;
     }
@@ -58,9 +55,7 @@ SyntaxTreeNode::findMacroParam(Token* macroParam) const
 }
 
 
-void
-SyntaxTreeNode::setNode(const Token& token,
-                        std::shared_ptr<SyntaxTreeNode> node)
+void SyntaxTreeNode::setNode(const Token& token, std::shared_ptr<SyntaxTreeNode> node)
 {
   NodeMap::iterator it = fNodes.find(token);
   if (it != fNodes.end())
@@ -70,50 +65,40 @@ SyntaxTreeNode::setNode(const Token& token,
 }
 
 
-void
-SyntaxTreeNode::setEndNode(const TokenVector& replacement)
+void SyntaxTreeNode::setEndNode(const TokenVector& replacement)
 {
   fHasEndPattern = true;
   fEndReplacement = replacement;
 }
 
 
-bool
-SyntaxTreeNode::hasEndSet() const
+bool SyntaxTreeNode::hasEndSet() const
 {
   return fHasEndPattern;
 }
 
 
-const TokenVector&
-SyntaxTreeNode::replacement() const
+const TokenVector& SyntaxTreeNode::replacement() const
 {
   hr_assert(fHasEndPattern);
   return fEndReplacement;
 }
 
 
-String
-SyntaxTreeNode::toString() const
+String SyntaxTreeNode::toString() const
 {
   StringBuffer buf;
 
   buf << "<st:node>";
-  for (NodeMap::const_iterator it = fNodes.begin();
-       it != fNodes.end();
-       it++)
-  {
-    buf << "<st:map><st:tok>" << it->first.toString()
-        << "</st:tok>" << it->second->toString()
-        << "</st:map>";
+  for (NodeMap::const_iterator it = fNodes.begin(); it != fNodes.end(); it++) {
+    buf << "<st:map><st:tok>" << it->first.toString() << "</st:tok>"
+        << it->second->toString() << "</st:map>";
   }
 
   if (hasEndSet()) {
     buf << "<st:end>";
     for (TokenVector::const_iterator it = fEndReplacement.begin();
-         it != fEndReplacement.end();
-         it++)
-    {
+         it != fEndReplacement.end(); it++) {
       buf << "<st:tok>" << it->toString() << "</st:tok>";
     }
     buf << "</st:end>";
@@ -126,15 +111,13 @@ SyntaxTreeNode::toString() const
 
 //------------------------------------------------------------------------------
 
-std::shared_ptr<SyntaxTreeNode>
-SyntaxTable::rootNode() const
+std::shared_ptr<SyntaxTreeNode> SyntaxTable::rootNode() const
 {
   return findPattern(String(""));
 }
 
 
-std::shared_ptr<SyntaxTreeNode>
-SyntaxTable::findPattern(const String& name) const
+std::shared_ptr<SyntaxTreeNode> SyntaxTable::findPattern(const String& name) const
 {
   auto it = fItems.find(name);
   if (it != fItems.end())
@@ -142,9 +125,7 @@ SyntaxTable::findPattern(const String& name) const
   return nullptr;
 }
 
-void
-SyntaxTable::setPattern(const String& name,
-                        std::shared_ptr<SyntaxTreeNode> node)
+void SyntaxTable::setPattern(const String& name, std::shared_ptr<SyntaxTreeNode> node)
 {
   auto it = fItems.find(name);
   if (it != fItems.end())
@@ -154,16 +135,12 @@ SyntaxTable::setPattern(const String& name,
 }
 
 
-void
-SyntaxTable::mixinPatternPart(std::shared_ptr<SyntaxTreeNode> patternTree,
-                              const TokenVector& pattern,
-                              const TokenVector& rplcmnt)
+void SyntaxTable::mixinPatternPart(std::shared_ptr<SyntaxTreeNode> patternTree,
+                                   const TokenVector& pattern, const TokenVector& rplcmnt)
 {
   auto node = patternTree;
-  for (TokenVector::const_iterator srcit = pattern.begin();
-       srcit != pattern.end();
-       srcit++)
-  {
+  for (TokenVector::const_iterator srcit = pattern.begin(); srcit != pattern.end();
+       srcit++) {
     Token patternToken = *srcit;
     auto step = node->findNode(patternToken);
     if (!step) {
@@ -178,10 +155,8 @@ SyntaxTable::mixinPatternPart(std::shared_ptr<SyntaxTreeNode> patternTree,
 }
 
 
-void
-SyntaxTable::mixinPattern(const String& macroName,
-                          const TokenVector& pattern,
-                          const TokenVector& rplcmnt)
+void SyntaxTable::mixinPattern(const String& macroName, const TokenVector& pattern,
+                               const TokenVector& rplcmnt)
 {
   auto patternTree = findPattern(macroName);
   if (!patternTree) {
@@ -193,16 +168,13 @@ SyntaxTable::mixinPattern(const String& macroName,
 }
 
 
-std::shared_ptr<SyntaxTable>
-SyntaxTable::compile(const String& patternName,
-                     const MacroPatternVector& patterns)
+std::shared_ptr<SyntaxTable> SyntaxTable::compile(const String& patternName,
+                                                  const MacroPatternVector& patterns)
 {
   auto st = std::make_shared<SyntaxTable>();
 
-  for (MacroPatternVector::const_iterator it = patterns.begin();
-       it != patterns.end();
-       it++)
-  {
+  for (MacroPatternVector::const_iterator it = patterns.begin(); it != patterns.end();
+       it++) {
     TokenVector pattern = it->fPattern;
     TokenVector rplcmnt = it->fReplacement;
 
@@ -213,18 +185,13 @@ SyntaxTable::compile(const String& patternName,
 }
 
 
-String
-SyntaxTable::toString() const
+String SyntaxTable::toString() const
 {
   StringBuffer buf;
 
   buf << "<st:table xmlns:st='http://herschel.eyestep.org/syntax-table'>";
-  for (PatternMap::const_iterator it = fItems.begin();
-       it != fItems.end();
-       it++)
-  {
-    buf << "<st:pattern><st:name>" << it->first << "</st:name>"
-        << it->second->toString()
+  for (PatternMap::const_iterator it = fItems.begin(); it != fItems.end(); it++) {
+    buf << "<st:pattern><st:name>" << it->first << "</st:name>" << it->second->toString()
         << "</st:pattern>";
   }
   buf << "</st:table>";
@@ -233,18 +200,14 @@ SyntaxTable::toString() const
 }
 
 
-
-//------------------------------------------------------------------------------
-
-String
-herschel::toString(MacroType type)
+String toString(MacroType type)
 {
   switch (type) {
-  case kMacro_Invalid:  return String("--invalid--");
-  case kMacro_Any:      return String("Any");
-  case kMacro_Def:      return String("Def");
-  case kMacro_On:       return String("On");
-  case kMacro_Stmt:     return String("Stmt");
+  case kMacro_Invalid: return String("--invalid--");
+  case kMacro_Any: return String("Any");
+  case kMacro_Def: return String("Def");
+  case kMacro_On: return String("On");
+  case kMacro_Stmt: return String("Stmt");
   case kMacro_Function: return String("Function");
   }
 
@@ -252,13 +215,9 @@ herschel::toString(MacroType type)
 }
 
 
-//------------------------------------------------------------------------------
-
-MacroParamType
-herschel::macroParamType(const Token& token, String* paramName)
+MacroParamType macroParamType(const Token& token, String* paramName)
 {
-  hr_assert(token == kMacroParam ||
-         token == kMacroParamAsStr);
+  hr_assert(token == kMacroParam || token == kMacroParamAsStr);
 
   String str = token.idValue();
   String name;
@@ -287,3 +246,5 @@ herschel::macroParamType(const Token& token, String* paramName)
   }
   return kMacro_unknown;
 }
+
+}  // namespace herschel

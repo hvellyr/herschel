@@ -8,12 +8,11 @@
    This source code is released under the BSD License.
 */
 
-#include "common.h"
+#include "strbuf.hpp"
+
+#include "str.hpp"
 
 #include <string.h>
-
-#include "strbuf.h"
-#include "str.h"
 
 
 using namespace herschel;
@@ -48,30 +47,26 @@ StringBuffer::StringBuffer(zstring c)
 }
 
 
-int
-StringBuffer::length() const
+int StringBuffer::length() const
 {
   return fBuffer.size();
 }
 
 
-bool
-StringBuffer::isEmpty() const
+bool StringBuffer::isEmpty() const
 {
   return fBuffer.empty();
 }
 
 
-StringBuffer&
-StringBuffer::operator<<(const StringBuffer& other)
+StringBuffer& StringBuffer::operator<<(const StringBuffer& other)
 {
   fBuffer.insert(fBuffer.end(), other.fBuffer.begin(), other.fBuffer.end());
   return *this;
 }
 
 
-StringBuffer&
-StringBuffer::operator<<(const String& other)
+StringBuffer& StringBuffer::operator<<(const String& other)
 {
   size_t items = other.length();
   if (items > 0) {
@@ -83,8 +78,7 @@ StringBuffer::operator<<(const String& other)
 }
 
 
-StringBuffer&
-StringBuffer::operator<<(zstring utf8)
+StringBuffer& StringBuffer::operator<<(zstring utf8)
 {
   int utf8len = ::strlen(utf8);
   int reqlen = str_utf8_to_wcs(utf8, utf8len, nullptr, 0);
@@ -95,7 +89,7 @@ StringBuffer::operator<<(zstring utf8)
 #if defined(IS_DEBUG)
   int reallen =
 #endif
-    str_utf8_to_wcs(utf8, utf8len, &fBuffer[endidx], reqlen);
+      str_utf8_to_wcs(utf8, utf8len, &fBuffer[endidx], reqlen);
 
   hr_assert(reallen == reqlen);
   return *this;
@@ -109,31 +103,27 @@ StringBuffer& StringBuffer::operator<<(Char c)
 }
 
 
-String
-StringBuffer::toString() const
+String StringBuffer::toString() const
 {
   return String(&fBuffer[0], fBuffer.size());
 }
 
 
-Char
-StringBuffer::operator[] (int atIndex) const
+Char StringBuffer::operator[](int atIndex) const
 {
   hr_assert(atIndex >= 0 && atIndex < int(fBuffer.size()));
   return fBuffer[atIndex];
 }
 
 
-void
-StringBuffer::setAtIndex(int atIndex, Char c)
+void StringBuffer::setAtIndex(int atIndex, Char c)
 {
   hr_assert(atIndex >= 0 && atIndex < int(fBuffer.size()));
   fBuffer[atIndex] = c;
 }
 
 
-void
-StringBuffer::setAtIndex(int atIndex, const String& other)
+void StringBuffer::setAtIndex(int atIndex, const String& other)
 {
   hr_assert(atIndex >= 0 && atIndex + other.length() < int(fBuffer.size()));
   for (int i = 0; i < other.length(); i++)
@@ -141,15 +131,13 @@ StringBuffer::setAtIndex(int atIndex, const String& other)
 }
 
 
-StringBuffer&
-StringBuffer::insertAt(int atIndex, Char c)
+StringBuffer& StringBuffer::insertAt(int atIndex, Char c)
 {
   fBuffer.insert(fBuffer.begin() + atIndex, c);
   return *this;
 }
 
-StringBuffer&
-StringBuffer::insertAt(int atIndex, const String& other)
+StringBuffer& StringBuffer::insertAt(int atIndex, const String& other)
 {
   size_t items = other.length();
   if (items > 0) {
@@ -160,8 +148,7 @@ StringBuffer::insertAt(int atIndex, const String& other)
 }
 
 
-StringBuffer&
-StringBuffer::insertAt(int atIndex, zstring utf8)
+StringBuffer& StringBuffer::insertAt(int atIndex, zstring utf8)
 {
   int utf8len = ::strlen(utf8);
   int reqlen = str_utf8_to_wcs(utf8, utf8len, nullptr, 0);
@@ -172,7 +159,7 @@ StringBuffer::insertAt(int atIndex, zstring utf8)
 #if defined(IS_DEBUG)
     int reallen =
 #endif
-      str_utf8_to_wcs(utf8, utf8len, &fBuffer[atIndex], reqlen);
+        str_utf8_to_wcs(utf8, utf8len, &fBuffer[atIndex], reqlen);
     hr_assert(reallen == reqlen);
   }
   return *this;

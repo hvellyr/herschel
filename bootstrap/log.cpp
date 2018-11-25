@@ -8,14 +8,13 @@
    This source code is released under the BSD License.
 */
 
-#include "common.h"
+#include "log.hpp"
+
+#include "srcpos.hpp"
+#include "str.hpp"
 
 #include <stdarg.h>
 #include <stdio.h>
-
-#include "log.h"
-#include "str.h"
-#include "srcpos.h"
 
 
 using namespace herschel;
@@ -25,7 +24,7 @@ using namespace herschel;
 static bool sBeSilent = false;
 
 LogSurpressor::LogSurpressor()
-  : fOldValue(sBeSilent)
+    : fOldValue(sBeSilent)
 {
   sBeSilent = true;
 }
@@ -45,59 +44,39 @@ bool herschel::isSilent()
 
 //------------------------------------------------------------------------------
 
-static zstring levelStr[] = {
-  "debug",
-  "info",
-  "warning",
-  "error"
-};
+static zstring levelStr[] = { "debug", "info", "warning", "error" };
 
 
-static void
-logImpl(const SrcPos& where, LogLevel level, int errorCode, FILE* stream,
-        zstring msg)
+static void logImpl(const SrcPos& where, LogLevel level, int errorCode, FILE* stream,
+                    zstring msg)
 {
   if (sBeSilent)
     return;
 
   if (where.isValid()) {
     if (errorCode == 0)
-      fprintf(stream, "%s:%d: %s: %s\n",
-              (zstring)StrHelper(where.file()),
-              where.lineNumber(),
-              levelStr[level],
-              msg);
+      fprintf(stream, "%s:%d: %s: %s\n", (zstring)StrHelper(where.file()),
+              where.lineNumber(), levelStr[level], msg);
     else
-      fprintf(stream, "%s:%d: %s: (%04x) %s\n",
-              (zstring)StrHelper(where.file()),
-              where.lineNumber(),
-              levelStr[level],
-              errorCode,
-              msg);
+      fprintf(stream, "%s:%d: %s: (%04x) %s\n", (zstring)StrHelper(where.file()),
+              where.lineNumber(), levelStr[level], errorCode, msg);
   }
   else {
     if (errorCode == 0)
-      fprintf(stream, "%s: %s\n",
-              levelStr[level],
-              msg);
+      fprintf(stream, "%s: %s\n", levelStr[level], msg);
     else
-      fprintf(stream, "%s: (%04x) %s\n",
-              levelStr[level],
-              errorCode,
-              msg);
+      fprintf(stream, "%s: (%04x) %s\n", levelStr[level], errorCode, msg);
   }
 }
 
 
-void
-herschel::log(const SrcPos& where, LogLevel level, const String& msg)
+void herschel::log(const SrcPos& where, LogLevel level, const String& msg)
 {
   logImpl(where, level, 0, stderr, (zstring)StrHelper(msg));
 }
 
 
-void
-herschel::logf(const SrcPos& where, LogLevel level, zstring format, ...)
+void herschel::logf(const SrcPos& where, LogLevel level, zstring format, ...)
 {
   char buffer[2048];
 
@@ -110,16 +89,14 @@ herschel::logf(const SrcPos& where, LogLevel level, zstring format, ...)
 }
 
 
-void
-herschel::log(LogLevel level, const String& msg)
+void herschel::log(LogLevel level, const String& msg)
 {
   static SrcPos sp;
   logImpl(sp, level, 0, stderr, (zstring)StrHelper(msg));
 }
 
 
-void
-herschel::logf(LogLevel level, zstring format, ...)
+void herschel::logf(LogLevel level, zstring format, ...)
 {
   static SrcPos sp;
   char buffer[2048];
@@ -133,15 +110,13 @@ herschel::logf(LogLevel level, zstring format, ...)
 }
 
 
-void
-herschel::error(const SrcPos& where, int errorCode, const String& msg)
+void herschel::error(const SrcPos& where, int errorCode, const String& msg)
 {
   logImpl(where, kError, errorCode, stderr, (zstring)StrHelper(msg));
 }
 
 
-void
-herschel::errorf(const SrcPos& where, int errorCode, zstring format, ...)
+void herschel::errorf(const SrcPos& where, int errorCode, zstring format, ...)
 {
   char buffer[2048];
 
@@ -154,15 +129,13 @@ herschel::errorf(const SrcPos& where, int errorCode, zstring format, ...)
 }
 
 
-void
-herschel::warning(const SrcPos& where, int errorCode, const String& msg)
+void herschel::warning(const SrcPos& where, int errorCode, const String& msg)
 {
   logImpl(where, kWarn, errorCode, stderr, (zstring)StrHelper(msg));
 }
 
 
-void
-herschel::warningf(const SrcPos& where, int errorCode, zstring format, ...)
+void herschel::warningf(const SrcPos& where, int errorCode, zstring format, ...)
 {
   char buffer[2048];
 

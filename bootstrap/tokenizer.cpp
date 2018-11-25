@@ -8,32 +8,30 @@
    This source code is released under the BSD License.
 */
 
-#include "common.h"
+#include "tokenizer.hpp"
 
-#include <string.h>
+#include "errcodes.hpp"
+#include "log.hpp"
+#include "predefined.hpp"
+#include "properties.hpp"
+#include "registry.hpp"
+#include "str.hpp"
+#include "strbuf.hpp"
 
-#include "errcodes.h"
-#include "log.h"
-#include "predefined.h"
-#include "properties.h"
-#include "registry.h"
-#include "str.h"
-#include "strbuf.h"
-#include "tokenizer.h"
+#include <cstring>
 
-
-using namespace herschel;
+namespace herschel {
 
 
 Tokenizer::Tokenizer(std::shared_ptr<Port<Char>> port, const String& srcName,
                      std::shared_ptr<CharRegistry> charRegistry)
-  : fPort(port),
-    fSrcName(srcName),
-    fLineCount(1),
-    fCC(0xffff),
-    fNextCharIsGenericOpen(false),
-    fInGenericContext(0),
-    fCharRegistry(charRegistry)
+    : fPort(port)
+    , fSrcName(srcName)
+    , fLineCount(1)
+    , fCC(0xffff)
+    , fNextCharIsGenericOpen(false)
+    , fInGenericContext(0)
+    , fCharRegistry(charRegistry)
 {
   hr_assert(port);
 
@@ -41,90 +39,71 @@ Tokenizer::Tokenizer(std::shared_ptr<Port<Char>> port, const String& srcName,
 }
 
 
-bool
-Tokenizer::isEof() const
+bool Tokenizer::isEof() const
 {
   return !fPort || fPort->isEof();
 }
 
 
-bool
-Tokenizer::isInCharRange(Char c, Char from, Char to) const
+bool Tokenizer::isInCharRange(Char c, Char from, Char to) const
 {
   return c >= from && c <= to;
 }
 
 
-bool
-Tokenizer::isWhitespace(Char c) const
+bool Tokenizer::isWhitespace(Char c) const
 {
-  return ( c == ' ' || c == '\n' || c == '\r' || c == '\t' ||
-           c == '\f' || c == '\v' );
+  return (c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\f' || c == '\v');
 }
 
 
-bool
-Tokenizer::isDigit(Char c) const
+bool Tokenizer::isDigit(Char c) const
 {
   return isInCharRange(c, '0', '9');
 }
 
 
-bool
-Tokenizer::isHexDigit(Char c) const
+bool Tokenizer::isHexDigit(Char c) const
 {
-  return isInCharRange(c, '0', '9')
-    || isInCharRange(c, 'a', 'f')
-    || isInCharRange(c, 'A', 'F');
+  return isInCharRange(c, '0', '9') || isInCharRange(c, 'a', 'f') ||
+         isInCharRange(c, 'A', 'F');
 }
 
 
-bool
-Tokenizer::isAlpha(Char c) const
+bool Tokenizer::isAlpha(Char c) const
 {
   return isInCharRange(c, 'a', 'z') || isInCharRange(c, 'A', 'Z');
 }
 
 
-bool
-Tokenizer::isAlphaSpec(Char c) const
+bool Tokenizer::isAlphaSpec(Char c) const
 {
-  return ( c == '-' || c == '_' || c == '*' || c == '+' ||
-           c == '%' || c == '?' || c == '!' || c == '/' ||
-           c == '|');
+  return (c == '-' || c == '_' || c == '*' || c == '+' || c == '%' || c == '?' ||
+          c == '!' || c == '/' || c == '|');
 }
 
 
-bool
-Tokenizer::isSymbolChar(Char c) const
+bool Tokenizer::isSymbolChar(Char c) const
 {
   return isAlpha(c) || isDigit(c) || isAlphaSpec(c);
 }
 
 
-bool
-Tokenizer::isDelimiter(Char c) const
+bool Tokenizer::isDelimiter(Char c) const
 {
-  return ( isWhitespace(c) ||
-           c == '"' || c == '\'' ||
-           c == '(' || c == ')' ||
-           c == '[' || c == ']' ||
-           c == '{' || c == '}' ||
-           c == 0x300c || c == 0x300d ||
-           c == '.' || c == ',' || c == ';' || c == '#' || c == '@' ||
-           c == '^' );
+  return (isWhitespace(c) || c == '"' || c == '\'' || c == '(' || c == ')' || c == '[' ||
+          c == ']' || c == '{' || c == '}' || c == 0x300c || c == 0x300d || c == '.' ||
+          c == ',' || c == ';' || c == '#' || c == '@' || c == '^');
 }
 
 
-bool
-Tokenizer::isEOL(Char c) const
+bool Tokenizer::isEOL(Char c) const
 {
   return c == '\n' || c == '\r';
 }
 
 
-int
-Tokenizer::nextChar()
+int Tokenizer::nextChar()
 {
   if (fCC == EOF)
     throw AnnotatedEofException(srcpos());
@@ -135,40 +114,35 @@ Tokenizer::nextChar()
       fLineCount++;
     fCC = c;
   }
-  catch (const EofException& ) {
+  catch (const EofException&) {
     fCC = EOF;
   }
   return fCC;
 }
 
 
-void
-Tokenizer::scanUntilDelimiter()
+void Tokenizer::scanUntilDelimiter()
 {
   while (fCC != EOF && !isDelimiter(fCC))
     nextChar();
 }
 
 
-SrcPos
-Tokenizer::srcpos() const
+SrcPos Tokenizer::srcpos() const
 {
   return SrcPos(fSrcName, fLineCount);
 }
 
 
-void
-Tokenizer::readCommentLine()
+void Tokenizer::readCommentLine()
 {
   while (!isEOL(fCC))
     nextChar();
 }
 
 
-Token
-Tokenizer::readIdentifier(const SrcPos& startPos,
-                          const String& prefix, TokenType type,
-                          bool acceptGenerics)
+Token Tokenizer::readIdentifier(const SrcPos& startPos, const String& prefix,
+                                TokenType type, bool acceptGenerics)
 {
   StringBuffer idBuffer(prefix);
 
@@ -199,20 +173,18 @@ Tokenizer::readIdentifier(const SrcPos& startPos,
       nextChar();
     }
   }
-  catch (const EofException& ) {
+  catch (const EofException&) {
   }
 
   String identifier = idBuffer.toString();
   if (type == kSymbol && identifier.endsWith(String(":")))
-    return Token(startPos,
-                 kKeyarg, identifier.part(0, identifier.length() - 1));
+    return Token(startPos, kKeyarg, identifier.part(0, identifier.length() - 1));
   else
     return Token(startPos, type, identifier);
 }
 
 
-Token
-Tokenizer::makeTokenAndNext(const SrcPos& where, TokenType type)
+Token Tokenizer::makeTokenAndNext(const SrcPos& where, TokenType type)
 {
   Token t = Token(where, type);
   nextChar();
@@ -220,14 +192,12 @@ Tokenizer::makeTokenAndNext(const SrcPos& where, TokenType type)
 }
 
 
-struct ReservedId
-{
+struct ReservedId {
   String fName;
-  TokenType   fType;
+  TokenType fType;
 };
 
-Token
-Tokenizer::readSymbolOrOperator(bool acceptGenerics)
+Token Tokenizer::readSymbolOrOperator(bool acceptGenerics)
 {
   SrcPos startPos = srcpos();
   Char currentChar = fCC;
@@ -241,14 +211,11 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
     case '<': return Token(startPos, kLess);
     case '>': return Token(startPos, kGreater);
     case '=': return Token(startPos, kAssign);
-    default:
-      return Token(startPos, String() + currentChar);
+    default: return Token(startPos, String() + currentChar);
     }
   }
 
-  Token token = readIdentifier(startPos,
-                               String() + currentChar, kSymbol,
-                               acceptGenerics);
+  Token token = readIdentifier(startPos, String() + currentChar, kSymbol, acceptGenerics);
   if (token.tokenType() == kSymbol) {
     if (token.idValue() == String("true"))
       return Token(startPos, kBool, true);
@@ -256,51 +223,51 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
       return Token(startPos, kBool, false);
 
     static const ReservedId reservedIds[] = {
-      { String("**"),            kExponent     },
-      { String("<=>"),           kCompare      },
-      { String("=="),            kEqual        },
-      { String("<>"),            kUnequal      },
-      { String("<="),            kLessEqual    },
-      { String(">="),            kGreaterEqual },
-      { String("in"),            kIn           },
-      { String("and"),           kLogicalAnd   },
-      { String("or"),            kLogicalOr    },
-      { String("mod"),           kMod          },
-      { String("rem"),           kRem          },
-      { String("AND"),           kBitAnd       },
-      { String("OR"),            kBitOr        },
-      { String("XOR"),           kBitXor       },
-      { String("<<"),            kShiftLeft    },
-      { String(">>"),            kShiftRight   },
-      { String("isa"),           kIsa          },
-      { String("as"),            kAs           },
-      { String("by"),            kBy           },
-      { String("++"),            kConcat       },
-      { String(MID_defid),       kDefId        },
-      { String(MID_elseid),      kElseId       },
-      { String(MID_eofid),       kEofId        },
-      { String(MID_exportid),    kExportId     },
-      { String(MID_extendid),    kExtendId     },
-      { String(MID_externid),    kExternId     },
-      { String(MID_FUNCTIONid),  kFUNCTIONId   },
-      { String(MID_forid),       kForId        },
-      { String(MID_functionid),  kFunctionId   },
-      { String(MID_ifid),        kIfId         },
-      { String(MID_importid),    kImportId     },
-      { String(MID_letid),       kLetId        },
-      { String(MID_matchid),     kMatchId      },
-      { String(MID_moduleid),    kModuleId     },
-      { String(MID_nilid),       kNilId        },
-      { String(MID_notid),       kNotId        },
-      { String(MID_onid),        kOnId         },
-      { String(MID_reifyid),     kReifyId      },
-      { String(MID_selectid),    kSelectId     },
-      { String(MID_thenid),      kThenId       },
-      { String(MID_whenid),      kWhenId       },
-      { String(MID_whereid),     kWhereId      },
-      { String(MID_whileid),     kWhileId      },
+      { String("**"), kExponent },
+      { String("<=>"), kCompare },
+      { String("=="), kEqual },
+      { String("<>"), kUnequal },
+      { String("<="), kLessEqual },
+      { String(">="), kGreaterEqual },
+      { String("in"), kIn },
+      { String("and"), kLogicalAnd },
+      { String("or"), kLogicalOr },
+      { String("mod"), kMod },
+      { String("rem"), kRem },
+      { String("AND"), kBitAnd },
+      { String("OR"), kBitOr },
+      { String("XOR"), kBitXor },
+      { String("<<"), kShiftLeft },
+      { String(">>"), kShiftRight },
+      { String("isa"), kIsa },
+      { String("as"), kAs },
+      { String("by"), kBy },
+      { String("++"), kConcat },
+      { String(MID_defid), kDefId },
+      { String(MID_elseid), kElseId },
+      { String(MID_eofid), kEofId },
+      { String(MID_exportid), kExportId },
+      { String(MID_extendid), kExtendId },
+      { String(MID_externid), kExternId },
+      { String(MID_FUNCTIONid), kFUNCTIONId },
+      { String(MID_forid), kForId },
+      { String(MID_functionid), kFunctionId },
+      { String(MID_ifid), kIfId },
+      { String(MID_importid), kImportId },
+      { String(MID_letid), kLetId },
+      { String(MID_matchid), kMatchId },
+      { String(MID_moduleid), kModuleId },
+      { String(MID_nilid), kNilId },
+      { String(MID_notid), kNotId },
+      { String(MID_onid), kOnId },
+      { String(MID_reifyid), kReifyId },
+      { String(MID_selectid), kSelectId },
+      { String(MID_thenid), kThenId },
+      { String(MID_whenid), kWhenId },
+      { String(MID_whereid), kWhereId },
+      { String(MID_whileid), kWhileId },
 
-      { String(),  kInvalid },      // sentinel
+      { String(), kInvalid },  // sentinel
     };
 
     String tokenid = token.idValue();
@@ -313,13 +280,11 @@ Tokenizer::readSymbolOrOperator(bool acceptGenerics)
 }
 
 
-String
-Tokenizer::readIntNumberPart(bool acceptHex)
+String Tokenizer::readIntNumberPart(bool acceptHex)
 {
   StringBuffer result;
 
-  while ((acceptHex && isHexDigit(fCC)) ||
-         isDigit(fCC)) {
+  while ((acceptHex && isHexDigit(fCC)) || isDigit(fCC)) {
     result << Char(fCC);
     nextChar();
   }
@@ -328,9 +293,8 @@ Tokenizer::readIntNumberPart(bool acceptHex)
 }
 
 
-Token
-Tokenizer::toInt(const SrcPos& startPos, const String& token,
-                 int radix, int bitwidth, bool isUnsigned, int sign)
+Token Tokenizer::toInt(const SrcPos& startPos, const String& token, int radix,
+                       int bitwidth, bool isUnsigned, int sign)
 {
   String tmptok;
   if (!isUnsigned && sign < 0)
@@ -357,8 +321,7 @@ Tokenizer::toInt(const SrcPos& startPos, const String& token,
         errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
       return Token::newUInt(startPos, bitwidth, int64_t(uint32_t(tmp64)));
 
-    case 64:
-      return Token::newUInt(startPos, bitwidth, int64_t(tmp64));
+    case 64: return Token::newUInt(startPos, bitwidth, int64_t(tmp64));
     }
   }
   else {
@@ -380,8 +343,7 @@ Tokenizer::toInt(const SrcPos& startPos, const String& token,
         errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
       return Token::newInt(startPos, bitwidth, int64_t(int32_t(tmp64)));
 
-    case 64:
-      return Token::newInt(startPos, bitwidth, tmp64);
+    case 64: return Token::newInt(startPos, bitwidth, tmp64);
     }
   }
 
@@ -390,8 +352,7 @@ Tokenizer::toInt(const SrcPos& startPos, const String& token,
 }
 
 
-Token
-Tokenizer::readNumber(const SrcPos& startPos, int sign)
+Token Tokenizer::readNumber(const SrcPos& startPos, int sign)
 {
   TokenType type = kInt;
 
@@ -419,8 +380,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
         exponent = readIntNumberPart(!K(acceptHex));
       }
       else {
-        errorf(srcpos(), E_BadNumberNotation,
-               "bad scientific notation: \\u0%x;", fCC);
+        errorf(srcpos(), E_BadNumberNotation, "bad scientific notation: \\u0%x;", fCC);
         scanUntilDelimiter();
       }
     }
@@ -431,8 +391,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
     second = readIntNumberPart(K(acceptHex));
   }
 
-  Token suffix = readIdentifier(srcpos(), String(), kSymbol,
-                                !K(acceptGenerics));
+  Token suffix = readIdentifier(srcpos(), String(), kSymbol, !K(acceptGenerics));
   if (suffix.type() != kId) {
     errorf(startPos, E_BadNumberNotation, "unexpected number type annotation");
   }
@@ -522,40 +481,33 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
 
     if (idx < len) {
       // there're more chars in the annotation than expected.
-      errorf(srcpos(), E_BadNumberNotation,
-             "unexpected number type annotation: %c", id[idx]);
+      errorf(srcpos(), E_BadNumberNotation, "unexpected number type annotation: %c",
+             id[idx]);
     }
   }
 
 
   Token token;
   switch (type) {
-  case kInt:
-    token = toInt(startPos, first, radix, bitwidth, isUnsigned, sign);
-    break;
+  case kInt: token = toInt(startPos, first, radix, bitwidth, isUnsigned, sign); break;
 
-  case kFloat:
-    {
-      StringBuffer tmp(first);
-      tmp << "." << second;
-      if (!exponent.isEmpty())
-        tmp << "e" << (expSign < 0 ? '-' : '+') << exponent;
+  case kFloat: {
+    StringBuffer tmp(first);
+    tmp << "." << second;
+    if (!exponent.isEmpty())
+      tmp << "e" << (expSign < 0 ? '-' : '+') << exponent;
 
-      // TODO bitwidth
-      token = Token(startPos, kFloat, tmp.toString().toDouble() * sign);
-    }
-    break;
+    // TODO bitwidth
+    token = Token(startPos, kFloat, tmp.toString().toDouble() * sign);
+  } break;
 
-  case kRational:
-    {
-      int fval = first.toInt(10);
-      int sval = second.toInt(10);
-      token = Token(startPos, kRational, Rational(fval * sign, sval));
-    }
-    break;
+  case kRational: {
+    int fval = first.toInt(10);
+    int sval = second.toInt(10);
+    token = Token(startPos, kRational, Rational(fval * sign, sval));
+  } break;
 
-  default:
-    hr_invalid("");
+  default: hr_invalid("");
   }
 
   token.setIsImaginary(isImaginary);
@@ -564,8 +516,7 @@ Tokenizer::readNumber(const SrcPos& startPos, int sign)
 }
 
 
-Token
-Tokenizer::readNumericCharacter(const SrcPos& startPos, bool needsTerminator)
+Token Tokenizer::readNumericCharacter(const SrcPos& startPos, bool needsTerminator)
 {
   Token token = readNumber(startPos, 1);
   if (token.isInt()) {
@@ -597,8 +548,7 @@ Tokenizer::readNumericCharacter(const SrcPos& startPos, bool needsTerminator)
 }
 
 
-Char
-Tokenizer::mapCharNameToChar(const SrcPos& startPos, const String& charnm)
+Char Tokenizer::mapCharNameToChar(const SrcPos& startPos, const String& charnm)
 {
   if (charnm == String("sp") || charnm == String("space"))
     return Char(' ');
@@ -623,16 +573,14 @@ Tokenizer::mapCharNameToChar(const SrcPos& startPos, const String& charnm)
 }
 
 
-Token
-Tokenizer::translateChar(const SrcPos& startPos, const String& charnm)
+Token Tokenizer::translateChar(const SrcPos& startPos, const String& charnm)
 {
   Char c = mapCharNameToChar(startPos, charnm);
   return Token(startPos, kChar, c);
 }
 
 
-Token
-Tokenizer::readSymbolCharacter(const SrcPos& startPos, bool needsTerminator)
+Token Tokenizer::readSymbolCharacter(const SrcPos& startPos, bool needsTerminator)
 {
   Token sym = readIdentifier(startPos, String(), kSymbol, !K(acceptGenerics));
   if (sym.type() != kId) {
@@ -640,9 +588,8 @@ Tokenizer::readSymbolCharacter(const SrcPos& startPos, bool needsTerminator)
     return sym;
   }
 
-  Token ct = (sym.idValue().length() == 1
-              ? Token(startPos, kChar, sym.idValue()[0])
-              : translateChar(startPos, sym.idValue()));
+  Token ct = (sym.idValue().length() == 1 ? Token(startPos, kChar, sym.idValue()[0])
+                                          : translateChar(startPos, sym.idValue()));
   if (needsTerminator) {
     if (fCC == ';') {
       nextChar();
@@ -661,8 +608,7 @@ Tokenizer::readSymbolCharacter(const SrcPos& startPos, bool needsTerminator)
 }
 
 
-Token
-Tokenizer::readNamedCharacter(const SrcPos& startPos, bool needsTerminator)
+Token Tokenizer::readNamedCharacter(const SrcPos& startPos, bool needsTerminator)
 {
   if (isAlpha(fCC) || isDigit(fCC))
     return readSymbolCharacter(startPos, needsTerminator);
@@ -672,8 +618,7 @@ Tokenizer::readNamedCharacter(const SrcPos& startPos, bool needsTerminator)
 }
 
 
-Token
-Tokenizer::readCharacter(const SrcPos& startPos, bool needsTerminator)
+Token Tokenizer::readCharacter(const SrcPos& startPos, bool needsTerminator)
 {
   if (fCC == 'u') {
     nextChar();
@@ -697,14 +642,12 @@ Tokenizer::readCharacter(const SrcPos& startPos, bool needsTerminator)
 }
 
 
-
-Token
-Tokenizer::readString(const SrcPos& startPos, int endChar, TokenType type)
+Token Tokenizer::readString(const SrcPos& startPos, int endChar, TokenType type)
 {
   StringBuffer result;
 
   try {
-    for ( ; ; ) {
+    for (;;) {
       if (fCC == endChar) {
         nextChar();
         return Token(startPos, type, result.toString());
@@ -724,8 +667,7 @@ Tokenizer::readString(const SrcPos& startPos, int endChar, TokenType type)
   }
   catch (const AnnotatedEofException& ae) {
     errorf(ae.srcpos(), E_UnterminatedString,
-           "File ended before end of string.  Began on line %d",
-           startPos.lineNumber());
+           "File ended before end of string.  Began on line %d", startPos.lineNumber());
     errorf(startPos, 0, "String started here");
     throw;
   }
@@ -734,8 +676,7 @@ Tokenizer::readString(const SrcPos& startPos, int endChar, TokenType type)
 }
 
 
-Token
-Tokenizer::nextToken()
+Token Tokenizer::nextToken()
 {
   Token t = nextTokenImpl();
   if (Properties::isTraceTokenizer()) {
@@ -746,31 +687,35 @@ Tokenizer::nextToken()
 }
 
 
-Token
-Tokenizer::nextTokenImpl()
+Token Tokenizer::nextTokenImpl()
 {
   SrcPos beginSrcpos;
 
-  for ( ; ; ) {
+  for (;;) {
     if (fCC == EOF)
       return Token(srcpos(), kEOF);
 
     beginSrcpos = srcpos();
     switch (fCC) {
       // whitespace
-    case ' ': case '\n': case '\r': case '\t': case '\f': case '\v':
-      nextChar();
-      continue;
+    case ' ':
+    case '\n':
+    case '\r':
+    case '\t':
+    case '\f':
+    case '\v': nextChar(); continue;
 
     case '(': return makeTokenAndNext(srcpos(), kParanOpen);
     case ')': return makeTokenAndNext(srcpos(), kParanClose);
     case '[': return makeTokenAndNext(srcpos(), kBracketOpen);
     case ']': return makeTokenAndNext(srcpos(), kBracketClose);
     case '{': return makeTokenAndNext(srcpos(), kBraceOpen);
-    case '}': return makeTokenAndNext(srcpos(), kBraceClose);
+    case '}':
+      return makeTokenAndNext(srcpos(), kBraceClose);
 
       // utf8: e3 80 8c | 343 200 214
-    case 0x300c: return makeTokenAndNext(srcpos(), kMacroOpen);
+    case 0x300c:
+      return makeTokenAndNext(srcpos(), kMacroOpen);
       // utf8: e3 80 8d | 343 200 215
     case 0x300d: return makeTokenAndNext(srcpos(), kMacroClose);
 
@@ -783,8 +728,7 @@ Tokenizer::nextTokenImpl()
     case '|':
       nextChar();
       if (isSymbolChar(fCC))
-        return readIdentifier(beginSrcpos, String("|"), kSymbol,
-                              K(acceptGenerics));
+        return readIdentifier(beginSrcpos, String("|"), kSymbol, K(acceptGenerics));
       else
         return Token(beginSrcpos, kPipe);
 
@@ -797,8 +741,11 @@ Tokenizer::nextTokenImpl()
         return makeTokenAndNext(beginSrcpos, kUnionOpen);
       return Token(beginSrcpos, kAmpersand);
 
-    case '+': case '/': case '*': case '%': case '=':
-      return readSymbolOrOperator(K(acceptGenerics));
+    case '+':
+    case '/':
+    case '*':
+    case '%':
+    case '=': return readSymbolOrOperator(K(acceptGenerics));
     case '<':
       if (fNextCharIsGenericOpen) {
         fNextCharIsGenericOpen = false;
@@ -817,15 +764,12 @@ Tokenizer::nextTokenImpl()
     case '-':
       nextChar();
       switch (fCC) {
-      case '-':
-        readCommentLine();
-        continue;
+      case '-': readCommentLine(); continue;
 
       case '>':
         nextChar();
         if (isSymbolChar(fCC))
-          return readIdentifier(beginSrcpos, String("->"), kSymbol,
-                                K(acceptGenerics));
+          return readIdentifier(beginSrcpos, String("->"), kSymbol, K(acceptGenerics));
         else
           return Token(beginSrcpos, kMapTo);
       default:
@@ -839,8 +783,8 @@ Tokenizer::nextTokenImpl()
       nextChar();
       if (fCC == '"') {
         nextChar();
-        Token param = readIdentifier(beginSrcpos, String(), kMacroParamAsStr,
-                                     !K(acceptGenerics));
+        Token param =
+            readIdentifier(beginSrcpos, String(), kMacroParamAsStr, !K(acceptGenerics));
         if (fCC != '"') {
           errorf(srcpos(), E_MissingApos, "Missing \" in ?\"-notation");
         }
@@ -853,8 +797,7 @@ Tokenizer::nextTokenImpl()
 
         return param;
       }
-      return readIdentifier(beginSrcpos, String(), kMacroParam,
-                            !K(acceptGenerics));
+      return readIdentifier(beginSrcpos, String(), kMacroParam, !K(acceptGenerics));
 
     case '.':
       nextChar();
@@ -876,32 +819,25 @@ Tokenizer::nextTokenImpl()
       case '#': return makeTokenAndNext(beginSrcpos, kSangHash);
       default:
         if (isSymbolChar(fCC))
-          return readIdentifier(beginSrcpos, String(), kKeyword,
-                                !K(acceptGenerics));
+          return readIdentifier(beginSrcpos, String(), kKeyword, !K(acceptGenerics));
         else {
-          errorf(beginSrcpos, E_BadHashNotation,
-                 "Unknown #-notation: %C", Char(fCC));
+          errorf(beginSrcpos, E_BadHashNotation, "Unknown #-notation: %C", Char(fCC));
           continue;
         }
       }
       break;
 
-    case '"':
-      nextChar();
-      return readString(beginSrcpos, '"', kString);
+    case '"': nextChar(); return readString(beginSrcpos, '"', kString);
 
-    case '~':
-      nextChar();
-      return readString(beginSrcpos, '~', kDocString);
+    case '~': nextChar(); return readString(beginSrcpos, '~', kDocString);
 
-    case '\\':
-      {
-        nextChar();
-        Token ct = readCharacter(beginSrcpos, !K(needsTerminator));
-        if (ct.isSet())
-          return ct;
-        continue;
-      }
+    case '\\': {
+      nextChar();
+      Token ct = readCharacter(beginSrcpos, !K(needsTerminator));
+      if (ct.isSet())
+        return ct;
+      continue;
+    }
 
     default:
       if (isAlpha(fCC) || isAlphaSpec(fCC))
@@ -909,8 +845,7 @@ Tokenizer::nextTokenImpl()
       else if (isDigit(fCC))
         return readNumber(beginSrcpos, 1);
       else {
-        errorf(beginSrcpos, E_UnexpectedChar,
-               "unexpected char: \\u0%x", fCC);
+        errorf(beginSrcpos, E_UnexpectedChar, "unexpected char: \\u0%x", fCC);
         nextChar();
       }
     }
@@ -918,3 +853,5 @@ Tokenizer::nextTokenImpl()
 
   return Token();
 }
+
+}  // namespace herschel
