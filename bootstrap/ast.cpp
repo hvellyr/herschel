@@ -1002,12 +1002,6 @@ unsigned int SlotdefNode::flags() const
 }
 
 
-bool SlotdefNode::isAuto() const
-{
-  return (fFlags & kAutoSlot) != 0;
-}
-
-
 // DEF_RENDER(SlotdefNode)
 // DEF_CODEGEN(SlotdefNode)
 // DEF_ANNOTATE(SlotdefNode)
@@ -1910,15 +1904,12 @@ void WhileNode::setTest(std::shared_ptr<AstNode> node)
 
 //----------------------------------------------------------------------------
 
-TypeDefNode::TypeDefNode(const SrcPos& srcpos, const String& typeName, bool isClass,
-                         const Type& isa, const NodeList& params, const NodeList& slots,
-                         const NodeList& onExprs)
+TypeDefNode::TypeDefNode(const SrcPos& srcpos, const String& typeName, bool isRecord,
+                         const Type& isa, const NodeList& slots)
     : AstNode(srcpos)
     , fTypeName(typeName)
-    , fIsClass(isClass)
-    , fParams(params)
+    , fIsRecord(isRecord)
     , fSlots(slots)
-    , fOnExprs(onExprs)
     , fIsa(isa)
 {
 }
@@ -1926,9 +1917,8 @@ TypeDefNode::TypeDefNode(const SrcPos& srcpos, const String& typeName, bool isCl
 
 std::shared_ptr<AstNode> TypeDefNode::clone() const
 {
-  return cloneScope(this, makeTypeDefNode(fSrcPos, fTypeName, fIsClass, fIsa.clone(),
-                                          copyNodes(fParams), copyNodes(fSlots),
-                                          copyNodes(fOnExprs)));
+  return cloneScope(this, makeTypeDefNode(fSrcPos, fTypeName, fIsRecord, fIsa.clone(),
+                                          copyNodes(fSlots)));
 }
 
 
@@ -1944,15 +1934,9 @@ const Type& TypeDefNode::defType() const
 }
 
 
-bool TypeDefNode::isClass() const
+bool TypeDefNode::isRecord() const
 {
-  return fIsClass;
-}
-
-
-const NodeList& TypeDefNode::params() const
-{
-  return fParams;
+  return fIsRecord;
 }
 
 
@@ -1962,27 +1946,9 @@ const NodeList& TypeDefNode::slots() const
 }
 
 
-const NodeList& TypeDefNode::onExprs() const
-{
-  return fOnExprs;
-}
-
-
-NodeList& TypeDefNode::params()
-{
-  return fParams;
-}
-
-
 NodeList& TypeDefNode::slots()
 {
   return fSlots;
-}
-
-
-NodeList& TypeDefNode::onExprs()
-{
-  return fOnExprs;
 }
 
 // DEF_RENDER(TypeDefNode)

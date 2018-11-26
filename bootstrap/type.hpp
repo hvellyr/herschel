@@ -128,7 +128,7 @@ public:
 
 //! Represents a type in the compiler.  All type kinds (base, array, union,
 //! etc.) are all represented by this single type.  To distinguish between
-//! the various kinds either use the predicate functions (isClass(), \c
+//! the various kinds either use the predicate functions (isRecord(), \c
 //! isArray(), \c isInt32(), etc.) or the \c kind() function.  The type
 //! class is intended to be uses as const immutable value object.
 class Type {
@@ -152,8 +152,8 @@ public:
   //! Rewrite \p old to a new typeref taking the typename \p name.
   static Type makeTypeRef(const String& name, const Type& old);
 
-  //! Creates a new lang|Class<'T> type instance with 'T being \p type.
-  static Type makeClassOf(const Type& type, bool isValue = true);
+  //! Creates a new lang|Record<'T> type instance with 'T being \p type.
+  static Type makeRecordOf(const Type& type, bool isValue = true);
 
   //! Creates a new 'T[] array type with \p base being the array base type
   //! 'T.  The \p sizeIndicator is informational, since the size is not
@@ -288,8 +288,8 @@ public:
   //! Indicates whether the receiver is a signed number.
   bool isSigned() const;
 
-  //! Indicates whether the receiver is a lang|Class<'T> type instance.
-  bool isClassOf() const;
+  //! Indicates whether the receiver is a lang|Record<'T> type instance.
+  bool isRecordOf() const;
 
   bool isImaginary() const;
   void setIsImaginary(bool value);
@@ -306,12 +306,12 @@ public:
 
   //@{ Custom types
 
-  //! Indicates whether the receiver is a Class type instance.
-  bool isClass() const;
+  //! Indicates whether the receiver is a Record type instance.
+  bool isRecord() const;
 
   //! Return the defined slots.
   //!
-  //! \pre Only allowed when \c isClass() returns true.
+  //! \pre Only allowed when \c isRecord() returns true.
   const TypeSlotList& slots() const;
   //! Lookup the type for slot \p slotName.  If no such slot is defined for
   //! the receiver (or any of its superclasses) this function returns an
@@ -319,7 +319,7 @@ public:
   //! normalizing the superclasses which are normally kept as reference
   //! types only.
   //!
-  //! \pre Only allowed if \c isClass() returns true.
+  //! \pre Only allowed if \c isRecord() returns true.
   Type slotType(const String& slotName, const Scope& scope) const;
 
   bool isType() const;

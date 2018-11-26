@@ -22,7 +22,7 @@ const String Names::kBoolTypeName = String(MID_BoolTypeName);
 const String Names::kCharTypeName = String(MID_CharTypeName);
 
 const String Names::kObjectTypeName = String(MID_ObjectTypeName);
-const String Names::kClassTypeName = String(MID_ClassTypeName);
+const String Names::kRecordTypeName = String(MID_RecordTypeName);
 
 const String Names::kNumberTypeName = String(MID_NumberTypeName);
 const String Names::kComplexTypeName = String(MID_ComplexTypeName);

@@ -71,7 +71,6 @@ public:
   static const Token aliasToken;
   static const Token autoToken;
   static const Token charToken;
-  static const Token classToken;
   static const Token configToken;
   static const Token constToken;
   static const Token deleteToken;
@@ -88,6 +87,7 @@ public:
   static const Token privateToken;
   static const Token publicToken;
   static const Token readonlyToken;
+  static const Token recordToken;
   static const Token signalToken;
   static const Token slotToken;
   static const Token syncToken;

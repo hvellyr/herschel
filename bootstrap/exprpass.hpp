@@ -79,15 +79,13 @@ private:
 
   friend class ExternCParser;
 
-  enum ScopeType { kNonScopedDef, kInClassDef };
-
   enum ParamType { kPositional, kNamed, kRest };
 
-  TokenVector parseTop(ScopeType scope);
+  TokenVector parseTop();
   Token parseModule();
   Token parseExport();
   Token parseImport();
-  TokenVector parseDef(bool isLocal, ScopeType scope);
+  TokenVector parseDef(bool isLocal);
   Token parseCharDef(const Token& defToken);
   TokenVector parseVarDef(const Token& defToken, const Token& tagToken, bool isLocal);
   TokenVector parseVarDef2(const Token& defToken, const Token& tagToken,
@@ -148,8 +146,8 @@ private:
   int weightOperator(OperatorType op1) const;
 
   bool parseExprListUntilBrace(TokenVector* exprlist, bool endAtToplevelId, bool isLocal);
-  void parseTopExprUntilBrace(TokenVector* result, ScopeType scope);
-  TokenVector parseTopOrExprList(bool isTopLevel, ScopeType scope);
+  void parseTopExprUntilBrace(TokenVector* result);
+  TokenVector parseTopOrExprList(bool isTopLevel);
   Token multiExprsToBlock(const TokenVector& exprs);
   Token wrapInBlock(const SrcPos& srcpos, const TokenVector& exprs);
 
@@ -159,12 +157,12 @@ private:
   bool parseFunctionsParams(TokenVector* exprlist, bool autoCompleteType = true,
                             bool exceptEmptyList = true);
 
-  Token parseWhen(bool isTopLevel, ScopeType scope);
-  Token parseExtend(ScopeType scope);
+  Token parseWhen(bool isTopLevel);
+  Token parseExtend();
 
   TokenVector parseExtern();
 
-  bool scanBlock(bool isTopLevel, ScopeType scope);
+  bool scanBlock(bool isTopLevel);
 
   Token evaluateConfigExpr(const Token& initExpr);
 
@@ -189,7 +187,6 @@ private:
 
   Token parseAliasDef(const Token& defToken, bool isLocal);
   Token parseTypeDef(const Token& defToken, bool isClass, bool isLocal);
-  Token parseSlotDef(const Token& defToken);
 
   template <typename ParseFunctor>
   void parseSequence(ParseFunctor functor, TokenType startToken, TokenType endToken,
@@ -213,8 +210,7 @@ private:
   //@{ Macro calls
 
   TokenVector parseMakeMacroCall(const Token& expr, const TokenVector& args,
-                                 const Macro* macro, bool shouldParseParams, bool isLocal,
-                                 ScopeType scopeType);
+                                 const Macro* macro, bool shouldParseParams, bool isLocal);
 
   bool parseDoMatchSyntaxDef(TokenVector* result, const Token& expr,
                              SyntaxTable& syntaxTable, bool isLocal);
@@ -222,7 +218,7 @@ private:
                               const TokenVector& args, SyntaxTable& syntaxTable,
                               bool shouldParseParams);
 
-  bool parseExprStream(TokenVector* result, bool isTopLevel, ScopeType scopeType);
+  bool parseExprStream(TokenVector* result, bool isTopLevel);
 
   bool matchSyntax(TokenVector* result, SyntaxTable& syntaxTable);
   bool replaceMatchBindings(TokenVector* result, const TokenVector& replacement,

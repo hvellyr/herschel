@@ -95,9 +95,9 @@ namespace herschel {
 #define MID_ObjectTypeName \
   MID_core_ns "|"          \
               "Object"
-#define MID_ClassTypeName \
+#define MID_RecordTypeName \
   MID_core_ns "|"         \
-              "Class"
+              "Record"
 
 #define MID_NumberTypeName \
   MID_core_ns "|"          \
@@ -249,7 +249,7 @@ public:
   const static String kCharTypeName;
 
   const static String kObjectTypeName;
-  const static String kClassTypeName;
+  const static String kRecordTypeName;
 
   const static String kNumberTypeName;
   const static String kComplexTypeName;

@@ -8,7 +8,7 @@
 module lang
 export public(*)
 
-def class Charset(name: _name : String = "")
+def record Charset
     ~ @author: Gregor Klinke
       @version 1.0
 
@@ -40,10 +40,10 @@ def class Charset(name: _name : String = "")
      charsets are compressed bitmap representations, each charset uses an
      certain amount of memory.  It is therefore good practice to use as
      much these (const) representations. ~
-{
-  def slot name : String = _name
+(
+  name : String
   -- TODO
-}
+)
 
 
 ------------------------------------------------------------------------------

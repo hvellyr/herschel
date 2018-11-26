@@ -639,15 +639,13 @@ template <>
 struct NodeRenderer<const TypeDefNode&> {
   static void render(XmlRenderer* renderer, const TypeDefNode& node)
   {
-    zstring tagName = node.isClass() ? "class" : "type";
+    zstring tagName = node.isRecord() ? "record" : "type";
 
     StringBuffer attrs;
     attrs << "nm='" << node.name() << "'";
 
     renderer->displayOpenTagAttrs(tagName, StrHelper(attrs.toString()));
-    renderer->displayNodeList("params", node.params());
     renderer->displayNodeList("slots", node.slots());
-    renderer->displayNodeList("on", node.onExprs());
     renderer->displayType("isa", node.defType());
     renderer->displayCloseTag(tagName);
   }

@@ -819,7 +819,6 @@ public:
   // void typify(Typifier& typifier) override;
 
   unsigned int flags() const;
-  bool isAuto() const;
 
 private:
   unsigned int fFlags;
@@ -1395,8 +1394,8 @@ inline std::shared_ptr<WhileNode> makeWhileNode(const SrcPos& srcpos,
 
 class TypeDefNode : public AstNode {
 public:
-  TypeDefNode(const SrcPos& srcpos, const String& typeName, bool isClass, const Type& isa,
-              const NodeList& params, const NodeList& slots, const NodeList& onExprs);
+  TypeDefNode(const SrcPos& srcpos, const String& typeName, bool isRecord, const Type& isa,
+              const NodeList& slots);
 
   std::shared_ptr<AstNode> clone() const override;
 
@@ -1410,32 +1409,24 @@ public:
 
   const String& name() const;
   const Type& defType() const;
-  bool isClass() const;
+  bool isRecord() const;
 
-  const NodeList& params() const;
   const NodeList& slots() const;
-  const NodeList& onExprs() const;
 
-  NodeList& params();
   NodeList& slots();
-  NodeList& onExprs();
 
 private:
   String fTypeName;
-  bool fIsClass;
-  NodeList fParams;
+  bool fIsRecord;
   NodeList fSlots;
-  NodeList fOnExprs;
   Type fIsa;
 };
 
 inline std::shared_ptr<TypeDefNode>
-makeTypeDefNode(const SrcPos& srcpos, const String& typeName, bool isClass,
-                const Type& isa, const NodeList& params, const NodeList& slots,
-                const NodeList& onExprs)
+makeTypeDefNode(const SrcPos& srcpos, const String& typeName, bool isRecord,
+                const Type& isa, const NodeList& slots)
 {
-  return std::make_shared<TypeDefNode>(srcpos, typeName, isClass, isa, params, slots,
-                                       onExprs);
+  return std::make_shared<TypeDefNode>(srcpos, typeName, isRecord, isa, slots);
 }
 
 

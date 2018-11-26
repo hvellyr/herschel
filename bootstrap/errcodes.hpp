@@ -72,7 +72,7 @@ enum ErrCodes {
   // typedef parsing
   E_MissingType = 0x4013,
   E_LocalTypeDef = 0x4021,
-  E_CtorNotInTypes = 0x4022,
+  E_NoSlotsInTypeDef = 0x4022,
   E_NestedTypeDef = 0x4023,
   E_SlotNotInClassDef = 0x4024,
   E_UnexpDefInClass = 0x4025,

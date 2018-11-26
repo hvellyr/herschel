@@ -646,7 +646,82 @@ size_t SecondPass::getWhereOfs(const Token& expr) const
 }
 
 
-NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
+std::shared_ptr<AstNode> SecondPass::parseSlotParam(const Token& expr)
+{
+  if (expr == kSymbol)
+    return makeSlotdefNode(expr.srcpos(), expr.idValue(), 0, Type(), nullptr);
+  hr_assert(expr.isSeq());
+  hr_assert(expr.count() > 0);
+
+  size_t ofs = 0;
+  const TokenVector& seq = expr.children();
+
+  hr_assert(seq[ofs] == kSymbol);
+
+  String sym = seq[ofs].idValue();
+  if (isQualified(sym)) {
+    errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
+           "Slot names must not be qualified.  Ignore namespace");
+    sym = baseName(sym);
+  }
+  ofs++;
+
+  Type type;
+  if (ofs + 1 < expr.count()) {
+    if (seq[ofs] == kColon) {
+      type = parseTypeSpec(seq[ofs + 1]);
+      ofs += 2;
+    }
+    else
+      errorf(expr.srcpos(), E_SpecNamedParam, "Expect type declaration for slot");
+  }
+
+  std::shared_ptr<AstNode> initExpr;
+  if (ofs < expr.count()) {
+    if (seq[ofs] == kAssign) {
+      hr_assert(ofs + 1 < expr.count());
+
+      if (!fCompiler.isParsingInterface())
+        initExpr = singletonNodeListOrNull(parseExpr(seq[ofs + 1]));
+      ofs += 2;
+    }
+    // else
+    //   errorf(expr.srcpos(), E_SpecNamedParam, "Unexpected token");
+  }
+
+  return makeSlotdefNode(expr.srcpos(), sym, 0, type, initExpr);
+}
+
+
+void SecondPass::parseSlotParams(NodeList* parameters, const TokenVector& seq)
+{
+  for (size_t i = 0; i < seq.size(); i++) {
+    if (seq[i] == kComma)
+      continue;
+
+    auto param = parseSlotParam(seq[i]);
+    if (param)
+      parameters->push_back(param);
+  }
+}
+
+
+void SecondPass::paramsNodeListToSlotList(TypeSlotList* slotTypes,
+                                          FunctionParamVector* funcParams,
+                                          const NodeList& nl) const
+{
+  for (size_t i = 0; i < nl.size(); i++) {
+    auto sdnd = dynamic_cast<SlotdefNode*>(nl[i].get());
+    if (sdnd) {
+      slotTypes->push_back(TypeSlot(sdnd->name(), sdnd->type(), sdnd->flags()));
+      funcParams->push_back(FunctionParameter(FunctionParameter::kParamNamed, !K(isSpec),
+                                              sdnd->name(), sdnd->type()));
+    }
+  }
+}
+
+
+NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
                                   bool isLocal)
 {
   hr_assert(fCurrentGenericTypes.empty());
@@ -654,7 +729,7 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
   hr_assert(expr.isSeq());
   hr_assert(expr.count() >= ofs + 2);
-  hr_assert(expr[ofs] == Compiler::typeToken || expr[ofs] == Compiler::classToken);
+  hr_assert(expr[ofs] == Compiler::typeToken || expr[ofs] == Compiler::recordToken);
   hr_assert(expr[ofs + 1] == kSymbol);
 
   ofs++;
@@ -681,15 +756,6 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
     ofs++;
   }
 
-  NodeList defaultApplyParams;
-  if (ofs < seq.size() && seq[ofs].isNested() && seq[ofs].leftToken() == kParanOpen) {
-    // default apply signature
-    hr_assert(isClass);
-
-    parseParameters(&defaultApplyParams, seq[ofs].children());
-    ofs++;
-  }
-
   Type inheritsFrom;
   if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
     // inheritance type spec
@@ -709,50 +775,14 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
   std::vector<PrimeTuple> primeTuples;
   NodeList slotDefs;
-  TypeSlotList slotTypes;
+  //TypeSlotList slotTypes;
 
-  if (ofs < seq.size() && seq[ofs].isNested() && seq[ofs].leftToken() == kBraceOpen) {
-    const TokenVector& defs = seq[ofs].children();
-
-    for (size_t i = 0; i < defs.size(); i++) {
-      hr_assert(defs[i].isSeq() && defs[i].count() > 1);
-      hr_assert(defs[i][0] == kDefId || defs[i][0] == kExtendId);
-
-      if (defs[i][0] == kDefId) {
-        if (defs[i][1] == Compiler::slotToken) {
-          hr_assert(isClass);
-
-          NodeList nl = parseExpr(defs[i]);
-          appendNodes(slotDefs, nl);
-
-          for (size_t i = 0; i < slotDefs.size(); i++) {
-            if (slotDefs[i]) {
-              auto basedef = dynamic_cast<BaseDefNode*>(slotDefs[i].get());
-              hr_assert(basedef);
-
-              auto slotDef = dynamic_cast<SlotdefNode*>(basedef->defNode().get());
-              hr_assert(slotDef);
-
-              if (slotDef) {
-                slotTypes.push_back(
-                    TypeSlot(slotDef->name(), slotDef->type(), slotDef->flags()));
-              }
-            }
-          }
-        }
-        else {
-          errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
-                 "Unexpected definition in type body");
-        }
-      }
-      else {
-        errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
-               "Unexpected expression in type body");
-      }
-    }
-
+  NodeList slotParams;
+  if (ofs < seq.size() && seq[ofs].isNested() && seq[ofs].leftToken() == kParanOpen) {
+    parseSlotParams(&slotParams, seq[ofs].children());
     ofs++;
   }
+
 
   std::vector<PrimeTuple> primes;
   for (size_t i = 0; i < primeTuples.size(); i++) {
@@ -779,9 +809,10 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
   }
 
   Type defType;
-  if (isClass) {
+  if (isRecord) {
     FunctionParamVector funcParams;
-    paramsNodeListToType(&funcParams, defaultApplyParams);
+    TypeSlotList slotTypes;
+    paramsNodeListToSlotList(&slotTypes, &funcParams, slotParams);
 
     String ctorFuncName = qualifyId(fullTypeName, Names::kInitFuncName);
     FunctionSignature sign = FunctionSignature(
@@ -812,17 +843,24 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
   NodeList result;
   {
-    NodeList onExprs;  // TODO
-    result.push_back(
-        newDefNode(makeTypeDefNode(expr.srcpos(), fullTypeName, isClass, defType,
-                                   defaultApplyParams, slotDefs, onExprs),
-                   isLocal));
+    result.push_back(newDefNode(
+        makeTypeDefNode(expr.srcpos(), fullTypeName, isRecord, defType, slotParams),
+        isLocal));
   }
 
-  if (isClass) {
-    NodeList onExprs;  // TODO
+  if (isRecord) {
+    NodeList defaultApplyParams;
+    for (size_t i = 0; i < slotParams.size(); i++) {
+      auto sdnd = dynamic_cast<SlotdefNode*>(slotParams[i].get());
+      if (sdnd) {
+        defaultApplyParams.push_back(makeParamNode(sdnd->srcpos(), sdnd->name(), uniqueName("prm"),
+                                                   kNamedArg, sdnd->type(),
+                                                   sdnd->initExpr()));
+      }
+    }
+
     auto ctor = generateConstructor(expr, fullTypeName, defType, defaultApplyParams,
-                                    slotDefs, primes, onExprs);
+                                    slotParams, primes);
     result.push_back(ctor);
   }
 
@@ -830,78 +868,14 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 }
 
 
-std::shared_ptr<AstNode> SecondPass::defaultSlotInitValue(const SlotdefNode* slot)
+std::shared_ptr<AstNode>
+SecondPass::generateConstructor(const Token& typeExpr, const String& fullTypeName,
+                                const Type& defType, const NodeList& defaultApplyParams,
+                                const NodeList& slotDefs,
+                                const std::vector<PrimeTuple>& primes)
 {
-  if (slot->initExpr())
-    return slot->initExpr()->clone();
-  else if (slot->type().isDef()) {
-    if (slot->type().isArray()) {
-      auto node = makeArrayNode(slot->srcpos());
-      node->setType(slot->type());
-      return node;
-    }
-    else {
-      if (slot->type().isAnyInt())
-        return makeIntNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
-      else if (slot->type().isAnyFloat())
-        return makeRealNode(slot->srcpos(), 0, slot->type().isImaginary(), slot->type());
-      else if (slot->type().isRational())
-        return makeRationalNode(slot->srcpos(), Rational(0, 1),
-                                slot->type().isImaginary(), slot->type());
-      else if (slot->type().isString())
-        return makeStringNode(slot->srcpos(), String());
-      else if (slot->type().isBool())
-        return makeBoolNode(slot->srcpos(), false);
-      else if (slot->type().isChar())
-        return makeCharNode(slot->srcpos(), Char(0));
-      else if (slot->type().isKeyword())
-        return makeKeywordNode(slot->srcpos(), String());
-    }
-  }
+  hr_assert(defaultApplyParams.size() == slotDefs.size());
 
-  // TODO
-
-  return makeSymbolNode(slot->srcpos(), Names::kLangNil);
-}
-
-
-static String findAutoParamName(const NodeList& params, const String& slotName)
-{
-  String resultingSlotName = slotName;
-
-  for (auto& nd : params) {
-    auto prm = dynamic_cast<ParamNode*>(nd.get());
-    if (prm->name() == resultingSlotName) {
-      warningf(prm->srcpos(), E_CtorArgNameConflict,
-               "conflict names in class init and auto slot configuration: %s",
-               (zstring)StrHelper(slotName));
-      resultingSlotName = resultingSlotName + "-1";
-    }
-  }
-
-  return resultingSlotName;
-}
-
-
-static void insertKeyedArg(NodeList& params, std::shared_ptr<ParamNode> prm)
-{
-  for (size_t i = 0; i < params.size(); i++) {
-    auto nl = dynamic_cast<ParamNode*>(params[i].get());
-    if (nl->isRestArg()) {
-      params.insert(params.begin() + i, prm);
-      return;
-    }
-  }
-
-  params.push_back(prm);
-}
-
-
-std::shared_ptr<AstNode> SecondPass::generateConstructor(
-    const Token& typeExpr, const String& fullTypeName, const Type& defType,
-    const NodeList& defaultApplyParams, const NodeList& slotDefs,
-    const std::vector<PrimeTuple>& primes, const NodeList& onExprs)
-{
   const SrcPos& srcpos = typeExpr.srcpos();
 
   String ctorFuncName = qualifyId(fullTypeName, Names::kInitFuncName);
@@ -916,34 +890,18 @@ std::shared_ptr<AstNode> SecondPass::generateConstructor(
   generatePrimeInits(srcpos, body, defType, primes, selfParamSym);
 
   // initialize slots
-  for (auto& slotDef : slotDefs) {
-    auto basedef = dynamic_cast<BaseDefNode*>(slotDef.get());
-    hr_assert(basedef);
-
-    auto slot = dynamic_cast<SlotdefNode*>(basedef->defNode().get());
+  for (auto i = 0u; i < slotDefs.size(); ++i) {
+    auto slot = dynamic_cast<SlotdefNode*>(slotDefs[i].get());
     hr_assert(slot);
 
-    if (slot->isAuto()) {
-      auto autoPrmName = findAutoParamName(params, slot->name());
+    auto slotParam = dynamic_cast<ParamNode*>(defaultApplyParams[i].get());
+    hr_assert(slotParam);
 
-      auto prm = makeParamNode(srcpos, slot->name(), autoPrmName, kNamedArg, slot->type(),
-                               defaultSlotInitValue(slot));
-
-      auto slotInit = makeAssignNode(
-          srcpos,
-          makeSlotRefNode(srcpos, makeSymbolNode(srcpos, selfParamSym), slot->name()),
-          makeSymbolNode(srcpos, autoPrmName));
-      body->appendNode(slotInit);
-
-      insertKeyedArg(params, prm);
-    }
-    else {
-      auto slotInit = makeAssignNode(
-          srcpos,
-          makeSlotRefNode(srcpos, makeSymbolNode(srcpos, selfParamSym), slot->name()),
-          defaultSlotInitValue(slot));
-      body->appendNode(slotInit);
-    }
+    auto slotInit = makeAssignNode(
+                                   srcpos,
+                                   makeSlotRefNode(srcpos, makeSymbolNode(srcpos, selfParamSym), slot->name()),
+                                   makeSymbolNode(srcpos, slotParam->name()));
+    body->appendNode(slotInit);
   }
 
   body->appendNode(makeSymbolNode(srcpos, selfParamSym));
@@ -964,7 +922,7 @@ std::shared_ptr<AstNode> SecondPass::generateConstructor(
 struct ReqTypeInitTuple {
   Type fType;
   bool fReqExplicitPrime;
-  bool fIsClass;
+  bool fIsRecord;
 };
 
 
@@ -976,17 +934,17 @@ static ReqTypeInitTuple reqTypeInitTupleForType(const Type& type,
     errorf(SrcPos(), E_UnknownType, "Unknown super type: %s",
            (zstring)StrHelper(type.typeId()));
   }
-  else if (superType.isClass()) {
+  else if (superType.isRecord()) {
     ReqTypeInitTuple tuple;
     tuple.fType = type;
-    tuple.fIsClass = true;
+    tuple.fIsRecord = true;
     tuple.fReqExplicitPrime = superType.applySignature().hasPositionalParam();
     return tuple;
   }
   else {
     ReqTypeInitTuple tuple;
     tuple.fType = type;
-    tuple.fIsClass = false;
+    tuple.fIsRecord = false;
     tuple.fReqExplicitPrime = false;
     return tuple;
   }
@@ -1067,7 +1025,7 @@ void SecondPass::generatePrimeInits(const SrcPos& srcpos, std::shared_ptr<ListNo
 
   for (size_t i = 0; i < reqTypeInits.size(); i++) {
     // does the super type requires an explicit prime?
-    if (reqTypeInits[i].fIsClass) {
+    if (reqTypeInits[i].fIsRecord) {
       if (reqTypeInits[i].fReqExplicitPrime) {
         auto apply = getPrimeForType(reqTypeInits[i].fType, primes, selfParamSym);
         if (!apply) {
@@ -1409,11 +1367,9 @@ std::shared_ptr<AstNode> SecondPass::parseMeasureDef(const Token& expr, size_t o
   fScope->registerUnit(expr.srcpos(), fullUnitName, String(), defMeasureType, nullptr);
 
   NodeList dummyApplyParams;
-  NodeList dummySlotDefs;
-  NodeList dummyOnExprs;
 
-  return makeTypeDefNode(expr.srcpos(), fullTypeName, K(isClass), defMeasureType,
-                         dummyApplyParams, dummySlotDefs, dummyOnExprs);
+  return makeTypeDefNode(expr.srcpos(), fullTypeName, K(isRecord), defMeasureType,
+                         dummyApplyParams);
 }
 
 
@@ -1528,7 +1484,6 @@ void SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
       ofs += 2;
     }
   }
-
 
   if (ofs == whereOfs)
     ofs++;
@@ -1747,19 +1702,19 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
   if (expr[ofs] == Compiler::typeToken) {
     hr_assert(linkage.isEmpty());
     if (isLocal) {
-      errorf(expr.srcpos(), E_LocalTypeDef, "Local type definitions are not allowed");
+      errorf(expr.srcpos(), E_LocalTypeDef, "Local type definitions are not supported");
       return NodeList();
     }
-    return parseTypeDef(expr, ofs, !K(isClass), isLocal);
+    return parseTypeDef(expr, ofs, !K(isRecord), isLocal);
   }
 
-  else if (expr[ofs] == Compiler::classToken) {
+  else if (expr[ofs] == Compiler::recordToken) {
     hr_assert(linkage.isEmpty());
     if (isLocal) {
-      errorf(expr.srcpos(), E_LocalTypeDef, "Local type definitions are not allowed");
+      errorf(expr.srcpos(), E_LocalTypeDef, "Local type definitions are not supported");
       return NodeList();
     }
-    return parseTypeDef(expr, ofs, K(isType), isLocal);
+    return parseTypeDef(expr, ofs, K(isRecord), isLocal);
   }
 
   else if (expr[ofs] == Compiler::aliasToken) {

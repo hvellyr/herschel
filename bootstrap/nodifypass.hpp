@@ -85,8 +85,7 @@ private:
   std::shared_ptr<AstNode>
   generateConstructor(const Token& typeExpr, const String& fullTypeName,
                       const Type& defType, const NodeList& defaultApplyParams,
-                      const NodeList& slotDefs, const std::vector<PrimeTuple>& primes,
-                      const NodeList& onExprs);
+                      const NodeList& slotDefs, const std::vector<PrimeTuple>& primes);
   void generatePrimeInits(const SrcPos& srcpos, std::shared_ptr<ListNode> body,
                           const Type& defType, const std::vector<PrimeTuple>& primes,
                           const String& selfParamSym);
@@ -96,7 +95,6 @@ private:
                                            const std::vector<PrimeTuple>& primes,
                                            const String& selfParamSym);
 
-  std::shared_ptr<AstNode> defaultSlotInitValue(const SlotdefNode* slot);
   PrimeTuple parsePrime(const Token& primeToken);
 
   std::shared_ptr<AstNode> parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
@@ -142,6 +140,11 @@ private:
   void parseTypeVector(TypeVector* generics, const Token& expr,
                        bool forceOpenType = false);
   void paramsNodeListToType(FunctionParamVector* funcParams, const NodeList& nl) const;
+  void paramsNodeListToSlotList(TypeSlotList* slotTypes, FunctionParamVector* funcParams,
+                                const NodeList& nl) const;
+
+  std::shared_ptr<AstNode> parseSlotParam(const Token& expr);
+  void parseSlotParams(NodeList* parameters, const TokenVector& seq);
 
   std::shared_ptr<AstNode> parseIntNumber(const Token& expr);
   std::shared_ptr<AstNode> parseRationalNumber(const Token& expr);

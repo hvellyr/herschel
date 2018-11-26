@@ -197,7 +197,7 @@ namespace herschel {
 struct ModuleParser {
   bool operator()(FirstPass* pass, Token& result)
   {
-    TokenVector n = pass->parseTop(FirstPass::kNonScopedDef);
+    TokenVector n = pass->parseTop();
     if (!n.empty())
       result << n;
 
@@ -1090,8 +1090,8 @@ Token FirstPass::parseParamCall(const Token& expr, const TokenVector& preScanned
     Token macroName = Token(expr.srcpos(), baseName(expr.idValue()));
 
     if (macro) {
-      TokenVector exprs = parseMakeMacroCall(
-          macroName, preScannedArgs, macro, shouldParseParams, K(isLocal), kNonScopedDef);
+      TokenVector exprs = parseMakeMacroCall(macroName, preScannedArgs, macro,
+                                             shouldParseParams, K(isLocal));
       return (exprs.size() == 1 ? exprs[0] : Token() << exprs);
     }
   }
@@ -1211,11 +1211,11 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
     else if (fToken == kLetId) {
       if (!isLocal) {
         errorf(fToken.srcpos(), E_GlobalLet, "'let' is not allowed here");
-        parseDef(isLocal, kNonScopedDef);
+        parseDef(isLocal);
         continue;
       }
 
-      TokenVector exprs = parseDef(isLocal, kNonScopedDef);
+      TokenVector exprs = parseDef(isLocal);
       if (!exprs.empty())
         result->insert(result->end(), exprs.begin(), exprs.end());
     }
@@ -1226,7 +1226,7 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
       return true;
     }
     else if (fToken == kWhenId) {
-      Token expr = parseWhen(!isLocal, kNonScopedDef);
+      Token expr = parseWhen(!isLocal);
       if (expr.isSet())
         result->push_back(expr);
     }
@@ -1779,14 +1779,12 @@ Token FirstPass::parseAtomicExpr()
   case kMinus:  // unary negate
     return parseUnaryOp(fToken);
 
-  case kWhenId: return parseWhen(!K(isTopLevel), kNonScopedDef);
+  case kWhenId: return parseWhen(!K(isTopLevel));
   case kSelectId: return parseSelect();
   case kMatchId: return parseMatch();
   case kForId: return parseFor();
 
-  case kLetId:
-    errorf(fToken.srcpos(), E_UnexpectedToken, "Unexpected let token");
-    break;
+  case kLetId: errorf(fToken.srcpos(), E_UnexpectedToken, "Unexpected let token"); break;
 
   case kSymbol:
   case kQuote: return parseAccess(parseSimpleType(fToken));
@@ -2055,12 +2053,12 @@ Token FirstPass::parseExpr(bool acceptComma)
 }
 
 
-void FirstPass::parseTopExprUntilBrace(TokenVector* result, ScopeType scope)
+void FirstPass::parseTopExprUntilBrace(TokenVector* result)
 {
   while (fToken != kBraceClose) {
     if (fToken == kEOF)
       break;
-    TokenVector topexprs = parseTop(scope);
+    TokenVector topexprs = parseTop();
     if (!topexprs.empty())
       result->insert(result->end(), topexprs.begin(), topexprs.end());
   }
@@ -2070,7 +2068,7 @@ void FirstPass::parseTopExprUntilBrace(TokenVector* result, ScopeType scope)
 }
 
 
-TokenVector FirstPass::parseTopOrExprList(bool isTopLevel, ScopeType scope)
+TokenVector FirstPass::parseTopOrExprList(bool isTopLevel)
 {
   if (isTopLevel) {
     if (fToken == kBraceOpen) {
@@ -2078,12 +2076,12 @@ TokenVector FirstPass::parseTopOrExprList(bool isTopLevel, ScopeType scope)
       nextToken();
 
       TokenVector exprs;
-      parseTopExprUntilBrace(&exprs, scope);
+      parseTopExprUntilBrace(&exprs);
 
       return exprs;
     }
 
-    TokenVector exprs = parseTop(scope);
+    TokenVector exprs = parseTop();
     return exprs;
   }
   return parseExpr(!K(acceptComma)).toTokenVector();
@@ -2107,7 +2105,7 @@ Token FirstPass::wrapInBlock(const SrcPos& srcpos, const TokenVector& exprs)
 }
 
 
-bool FirstPass::scanBlock(bool isTopLevel, ScopeType scope)
+bool FirstPass::scanBlock(bool isTopLevel)
 {
   if (fToken == kBraceOpen) {
     SrcPos startPos = fToken.srcpos();
@@ -2138,14 +2136,14 @@ bool FirstPass::scanBlock(bool isTopLevel, ScopeType scope)
   }
 
   if (isTopLevel)
-    parseTop(scope);
+    parseTop();
   else
     parseExpr(K(acceptComma));
   return true;
 }
 
 
-Token FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
+Token FirstPass::parseWhen(bool isTopLevel)
 {
   Token result;
   result << fToken;
@@ -2227,10 +2225,10 @@ Token FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
 
   if (inclConsequent) {
     ValueSaver<bool> keep(fEvaluateExprs, inclConsequent);
-    consequent = multiExprsToBlock(parseTopOrExprList(isTopLevel, scope));
+    consequent = multiExprsToBlock(parseTopOrExprList(isTopLevel));
   }
   else {
-    if (!scanBlock(isTopLevel, scope))
+    if (!scanBlock(isTopLevel))
       return Token();
   }
 
@@ -2240,10 +2238,10 @@ Token FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
 
     if (inclAlternate) {
       ValueSaver<bool> keep(fEvaluateExprs, inclAlternate);
-      alternate = multiExprsToBlock(parseTopOrExprList(isTopLevel, scope));
+      alternate = multiExprsToBlock(parseTopOrExprList(isTopLevel));
     }
     else {
-      if (!scanBlock(isTopLevel, scope))
+      if (!scanBlock(isTopLevel))
         return Token();
     }
   }
@@ -2265,7 +2263,7 @@ Token FirstPass::parseWhen(bool isTopLevel, ScopeType scope)
 }
 
 
-Token FirstPass::parseExtend(ScopeType scope)
+Token FirstPass::parseExtend()
 {
   hr_assert(fToken == kExtendId);
   Token extendToken = fToken;
@@ -2296,7 +2294,7 @@ Token FirstPass::parseExtend(ScopeType scope)
   {
     ModuleHelper modHelper(this, modNameToken.idValue(), K(setName));
 
-    code = wrapInBlock(fToken.srcpos(), parseTopOrExprList(K(isTopLevel), scope));
+    code = wrapInBlock(fToken.srcpos(), parseTopOrExprList(K(isTopLevel)));
   }
 
   if (code.isSet())
@@ -2755,8 +2753,8 @@ TokenVector FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal
                "Unsupported linkage for macro appliance ignored");
 
       TokenVector dummyArgs;
-      TokenVector exprs = parseMakeMacroCall(
-          macroName, dummyArgs, macro, K(shouldParseParams), isLocal, kNonScopedDef);
+      TokenVector exprs =
+          parseMakeMacroCall(macroName, dummyArgs, macro, K(shouldParseParams), isLocal);
       return exprs;
     }
     // the macro is silently ignored here
@@ -2866,10 +2864,10 @@ Token FirstPass::parseOptDocString()
 }
 
 
-Token FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
+Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal)
 {
-  hr_assert((isClass && fToken == Compiler::classToken) ||
-            (!isClass && fToken == Compiler::typeToken));
+  hr_assert((isRecord && fToken == Compiler::recordToken) ||
+            (!isRecord && fToken == Compiler::typeToken));
 
   Token tagToken;
   if (isLocal) {
@@ -2895,23 +2893,6 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
                   E_GenericTypeList, generics, "typedef-params");
   }
 
-  Token ctorParams;
-  if (fToken == kParanOpen) {
-    SrcPos paranPos = fToken.srcpos();
-    if (isClass) {
-      TokenVector params;
-      if (!parseFunctionsParams(&params))
-        return scanUntilTopExprAndResume();
-
-      ctorParams = Token(paranPos, kParanOpen, kParanClose) << params;
-    }
-    else {
-      errorf(paranPos, E_CtorNotInTypes, "ctor parameters are not allowed in 'type' def");
-      nextToken();
-      scanUntilEndOfParameters();
-    }
-  }
-
   Token colonToken;
   Token isaType;
   if (fToken == kColon) {
@@ -2931,26 +2912,28 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
 
   Token docString = parseOptDocString();
 
-  TokenVector classInternals;
-  SrcPos bracePos;
-  if (fToken == kBraceOpen) {
-    if (isClass) {
-      bracePos = fToken.srcpos();
-      classInternals = parseTopOrExprList(K(isTopLevel), kInClassDef);
+  Token slotParams;
+  if (fToken == kParanOpen) {
+    SrcPos paranPos = fToken.srcpos();
+
+    if (isRecord) {
+      TokenVector params;
+      if (!parseFunctionsParams(&params))
+        return scanUntilTopExprAndResume();
+
+      slotParams = Token(paranPos, kParanOpen, kParanClose) << params;
     }
     else {
-      warningf(fToken.srcpos(), E_TypeHasNoBraces, "def type does not accept body");
-      scanUntilBrace();
-      // and furtheron remove the following }
+      errorf(paranPos, E_NoSlotsInTypeDef, "def type does not accept slots");
       nextToken();
+      scanUntilEndOfParameters();
     }
   }
+
 
   Token result = Token() << defToken << tagToken << symToken;
   if (generics.isSet())
     result << generics;
-  if (ctorParams.isSet())
-    result << ctorParams;
 
   if (colonToken.isSet() && isaType.isSet())
     result << colonToken << isaType;
@@ -2961,95 +2944,10 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isClass, bool isLocal)
   if (docString.isSet())
     result << docString;
 
-  if (!classInternals.empty())
-    result << wrapInBlock(bracePos, classInternals);
+  if (slotParams.isSet())
+    result << slotParams;
 
   return result;
-}
-
-
-Token FirstPass::parseSlotDef(const Token& defToken)
-{
-  hr_assert(fToken == Compiler::slotToken);
-  Token tagToken = fToken;
-  nextToken();
-
-  if (fToken != kSymbol) {
-    errorf(fToken.srcpos(), E_MissingDefName, "expected slot name");
-    return scanUntilTopExprAndResume();
-  }
-  Token symToken = fToken;
-  nextToken();
-
-  Token colonToken;
-  Token isaType;
-  if (fToken == kColon) {
-    colonToken = fToken;
-    nextToken();
-    SrcPos pos = fToken.srcpos();
-    isaType = parseTypeSpec(K(onlyNestedConstr));
-    if (!isaType.isSet()) {
-      errorf(pos, E_MissingType, "type expression expected");
-      isaType = Token(fToken.srcpos(), kSymbol, "Any");
-    }
-  }
-
-  Token docString = parseOptDocString();
-
-  Token assignToken;
-  Token initExpr;
-  if (fToken == kAssign) {
-    assignToken = fToken;
-    nextToken();
-
-    SrcPos pos = fToken.srcpos();
-    initExpr = parseExpr(!K(acceptComma));
-    if (!initExpr.isSet())
-      errorf(pos, E_MissingRHExpr, "no value in var init");
-  }
-
-  Token delayedComma;
-  TokenVector annotations;
-  if (fToken == kComma) {
-    delayedComma = fToken;
-    nextToken();
-
-    while (fToken != kEOF) {
-      if (fToken == kSymbol) {
-        if (delayedComma.isSet())
-          annotations.push_back(delayedComma);
-        annotations.push_back(fToken);
-        nextToken();
-
-        if (fToken == kComma) {
-          delayedComma = fToken;
-          nextToken();
-        }
-        else
-          break;
-      }
-      else if (!annotations.empty())
-        break;
-      else {
-        errorf(fToken.srcpos(), E_UnexpectedToken, "expected SYMBOL");
-        scanUntilTopExprAndResume();
-        break;
-      }
-    }
-  }
-
-
-  Token slotDefToken = Token() << defToken << tagToken << symToken;
-  if (colonToken.isSet() && isaType.isSet())
-    slotDefToken << colonToken << isaType;
-  if (docString.isSet())
-    slotDefToken << docString;
-  if (assignToken.isSet() && initExpr.isSet())
-    slotDefToken << assignToken << initExpr;
-  if (!annotations.empty())
-    slotDefToken << annotations;
-
-  return slotDefToken;
 }
 
 
@@ -3557,7 +3455,7 @@ Token FirstPass::parseLinkageType()
 }
 
 
-TokenVector FirstPass::parseDef(bool isLocal, ScopeType scope)
+TokenVector FirstPass::parseDef(bool isLocal)
 {
   Token defToken = fToken;
   nextToken();
@@ -3567,103 +3465,85 @@ TokenVector FirstPass::parseDef(bool isLocal, ScopeType scope)
     linkage = parseLinkageType();
   }
 
-  switch (scope) {
-  case kInClassDef:
-    if (fToken == Compiler::slotToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for slot definition ignored");
-      return parseSlotDef(defToken).toTokenVector();
-    }
-    else {
-      error(fToken.srcpos(), E_UnexpDefInClass,
-            (String("unexpected definition type '") + fToken.toString() + "' in class"));
-      return scanUntilTopExprAndResume().toTokenVector();
-    }
-    break;
-
-  case kNonScopedDef:
-    if (fToken == Compiler::typeToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for type definition ignored");
-      return parseTypeDef(defToken, !K(isClass), isLocal).toTokenVector();
-    }
-    else if (fToken == Compiler::classToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for class definition ignored");
-      return parseTypeDef(defToken, K(isClass), isLocal).toTokenVector();
-    }
-    else if (fToken == Compiler::aliasToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for alias definition ignored");
-      return parseAliasDef(defToken, isLocal).toTokenVector();
-    }
-    else if (fToken == Compiler::slotToken) {
-      errorf(fToken.srcpos(), E_SlotNotInClassDef,
-             "slot definitions only allowed in class defs.");
-      return scanUntilTopExprAndResume().toTokenVector();
-    }
-    else if (fToken == Compiler::enumToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for enum definition ignored");
-      return parseEnumDef(defToken, isLocal).toTokenVector();
-    }
-    else if (fToken == Compiler::measureToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for measure definition ignored");
-      return parseMeasure(defToken, isLocal).toTokenVector();
-    }
-    else if (fToken == Compiler::unitToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for unit definition ignored");
-      return parseUnit(defToken, isLocal).toTokenVector();
-    }
-    else if (fToken == Compiler::constToken || fToken == Compiler::configToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for special variable definition ignored");
-      return parseVarDef(defToken, fToken, isLocal);
-    }
-    else if (fToken == Compiler::genericToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for generic method ignored");
-      return parseGenericFunctionDef(defToken, isLocal).toTokenVector();
-    }
-    else if (fToken == Compiler::charToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for char definition ignored");
-      return parseCharDef(defToken).toTokenVector();
-    }
-    else if (fToken == Compiler::macroToken) {
-      if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for macro definition ignored");
-      return parseMacroDef(defToken).toTokenVector();
-    }
-    else if (fToken == kSymbol) {
-      return parseFunctionOrVarDef(defToken, isLocal, linkage);
-    }
-    else {
-      errorf(fToken.srcpos(), E_DefInitUnexpToken, "Bad init value: %s",
-             (zstring)StrHelper(fToken.toString()));
-      return scanUntilTopExprAndResume().toTokenVector();
-    }
-    break;
+  if (fToken == Compiler::typeToken) {
+    if (linkage.isSet())
+      errorf(linkage.srcpos(), E_UnexpLinkage,
+             "Unsupported linkage for type definition ignored");
+    return parseTypeDef(defToken, !K(isClass), isLocal).toTokenVector();
+  }
+  else if (fToken == Compiler::recordToken) {
+    if (linkage.isSet())
+      errorf(linkage.srcpos(), E_UnexpLinkage,
+             "Unsupported linkage for class definition ignored");
+    return parseTypeDef(defToken, K(isRecord), isLocal).toTokenVector();
+  }
+  else if (fToken == Compiler::aliasToken) {
+    if (linkage.isSet())
+      errorf(linkage.srcpos(), E_UnexpLinkage,
+             "Unsupported linkage for alias definition ignored");
+    return parseAliasDef(defToken, isLocal).toTokenVector();
+  }
+  else if (fToken == Compiler::slotToken) {
+    errorf(fToken.srcpos(), E_SlotNotInClassDef,
+           "slot definitions only allowed in class defs.");
+    return scanUntilTopExprAndResume().toTokenVector();
+  }
+  else if (fToken == Compiler::enumToken) {
+    if (linkage.isSet())
+      errorf(linkage.srcpos(), E_UnexpLinkage,
+             "Unsupported linkage for enum definition ignored");
+    return parseEnumDef(defToken, isLocal).toTokenVector();
+  }
+  else if (fToken == Compiler::measureToken) {
+    if (linkage.isSet())
+      errorf(linkage.srcpos(), E_UnexpLinkage,
+             "Unsupported linkage for measure definition ignored");
+    return parseMeasure(defToken, isLocal).toTokenVector();
+  }
+  else if (fToken == Compiler::unitToken) {
+    if (linkage.isSet())
+      errorf(linkage.srcpos(), E_UnexpLinkage,
+             "Unsupported linkage for unit definition ignored");
+    return parseUnit(defToken, isLocal).toTokenVector();
+  }
+  else if (fToken == Compiler::constToken || fToken == Compiler::configToken) {
+    if (linkage.isSet())
+      errorf(linkage.srcpos(), E_UnexpLinkage,
+             "Unsupported linkage for special variable definition ignored");
+    return parseVarDef(defToken, fToken, isLocal);
+  }
+  else if (fToken == Compiler::genericToken) {
+    if (linkage.isSet())
+      errorf(linkage.srcpos(), E_UnexpLinkage,
+             "Unsupported linkage for generic method ignored");
+    return parseGenericFunctionDef(defToken, isLocal).toTokenVector();
+  }
+  else if (fToken == Compiler::charToken) {
+    if (linkage.isSet())
+      errorf(linkage.srcpos(), E_UnexpLinkage,
+             "Unsupported linkage for char definition ignored");
+    return parseCharDef(defToken).toTokenVector();
+  }
+  else if (fToken == Compiler::macroToken) {
+    if (linkage.isSet())
+      errorf(linkage.srcpos(), E_UnexpLinkage,
+             "Unsupported linkage for macro definition ignored");
+    return parseMacroDef(defToken).toTokenVector();
+  }
+  else if (fToken == kSymbol) {
+    return parseFunctionOrVarDef(defToken, isLocal, linkage);
+  }
+  else {
+    errorf(fToken.srcpos(), E_DefInitUnexpToken, "Bad init value: %s",
+           (zstring)StrHelper(fToken.toString()));
+    return scanUntilTopExprAndResume().toTokenVector();
   }
 
   return TokenVector();
 }
 
 
-TokenVector FirstPass::parseTop(ScopeType scope)
+TokenVector FirstPass::parseTop()
 {
   if (fToken == kModuleId) {
     return parseModule().toTokenVector();
@@ -3675,13 +3555,13 @@ TokenVector FirstPass::parseTop(ScopeType scope)
     return parseImport().toTokenVector();
   }
   else if (fToken == kDefId) {
-    return parseDef(!K(isLocal), scope);
+    return parseDef(!K(isLocal));
   }
   else if (fToken == kWhenId) {
-    return parseWhen(K(isTopLevel), scope).toTokenVector();
+    return parseWhen(K(isTopLevel)).toTokenVector();
   }
   else if (fToken == kExtendId) {
-    return parseExtend(scope).toTokenVector();
+    return parseExtend().toTokenVector();
   }
   else if (fToken == kExternId) {
     return parseExtern();
@@ -3707,7 +3587,7 @@ Token FirstPass::parse()
 
     nextToken();
     while (fToken != kEOF) {
-      TokenVector n = parseTop(kNonScopedDef);
+      TokenVector n = parseTop();
       if (!n.empty())
         seq << n;
     }
@@ -4162,7 +4042,7 @@ bool FirstPass::parseDoMatchSyntaxFunc(TokenVector* result, const Token& expr,
 }
 
 
-bool FirstPass::parseExprStream(TokenVector* result, bool isTopLevel, ScopeType scopeType)
+bool FirstPass::parseExprStream(TokenVector* result, bool isTopLevel)
 {
   for (;;) {
     if (fToken == kEOF)
@@ -4177,7 +4057,7 @@ bool FirstPass::parseExprStream(TokenVector* result, bool isTopLevel, ScopeType 
     SrcPos pos = fToken.srcpos();
     TokenVector exprs;
     if (isTopLevel)
-      exprs = parseTop(scopeType);
+      exprs = parseTop();
     else
       exprs = parseExpr(K(acceptComma)).toTokenVector();
 
@@ -4197,7 +4077,7 @@ bool FirstPass::parseExprStream(TokenVector* result, bool isTopLevel, ScopeType 
 
 TokenVector FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& args,
                                           const Macro* macro, bool shouldParseParams,
-                                          bool isLocal, ScopeType scopeType)
+                                          bool isLocal)
 {
   hr_assert(expr == kSymbol);
   hr_assert(!isQualified(expr.idValue()));
@@ -4240,7 +4120,7 @@ TokenVector FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& 
       Compiler::PortStackHelper portStack(fCompiler, tempPort);
 
       TokenVector result;
-      if (parseExprStream(&result, !isLocal, scopeType))
+      if (parseExprStream(&result, !isLocal))
         retval = result;
       else
         return TokenVector();

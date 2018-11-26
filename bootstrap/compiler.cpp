@@ -40,7 +40,6 @@ namespace herschel {
 const Token Compiler::aliasToken = Token(SrcPos(), kSymbol, "alias");
 const Token Compiler::autoToken = Token(SrcPos(), kSymbol, "auto");
 const Token Compiler::charToken = Token(SrcPos(), kSymbol, "char");
-const Token Compiler::classToken = Token(SrcPos(), kSymbol, "class");
 const Token Compiler::configToken = Token(SrcPos(), kSymbol, "config");
 const Token Compiler::constToken = Token(SrcPos(), kSymbol, "const");
 const Token Compiler::deleteToken = Token(SrcPos(), kSymbol, "delete");
@@ -57,6 +56,7 @@ const Token Compiler::outerToken = Token(SrcPos(), kSymbol, "outer");
 const Token Compiler::privateToken = Token(SrcPos(), kSymbol, "private");
 const Token Compiler::publicToken = Token(SrcPos(), kSymbol, "public");
 const Token Compiler::readonlyToken = Token(SrcPos(), kSymbol, "readonly");
+const Token Compiler::recordToken = Token(SrcPos(), kSymbol, "record");
 const Token Compiler::signalToken = Token(SrcPos(), kSymbol, MID_signalKeyword);
 const Token Compiler::slotToken = Token(SrcPos(), kSymbol, "slot");
 const Token Compiler::syncToken = Token(SrcPos(), kSymbol, "sync");

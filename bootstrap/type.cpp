@@ -335,7 +335,7 @@ namespace {
                          const TypeVector& generics, const Type& right0,
                          const Scope& scope, const SrcPos& srcpos)
   {
-    if (right0.isRef() || right0.isType() || right0.isClass()) {
+    if (right0.isRef() || right0.isType() || right0.isRecord()) {
       // if the reference has generics, it itself cannot be generic.  A
       // 'T<'Y'> is not allowed.
       if (!generics.empty()) {
@@ -348,7 +348,7 @@ namespace {
         Type right = scope.lookupType(right0.typeName(), K(showAmbiguousSymDef));
 
         Type inheritance;
-        if (right.isType() || right.isClass()) {
+        if (right.isType() || right.isRecord()) {
           inheritance = right.typeInheritance();
         }
         else if (right.isMeasure()) {
@@ -361,7 +361,7 @@ namespace {
           return false;
         }
 
-        if (inheritance.isType() || inheritance.isClass() || inheritance.isRef()) {
+        if (inheritance.isType() || inheritance.isRecord() || inheritance.isRef()) {
           if (matchGenericsImpl(localCtx, typeName, generics, inheritance, scope, srcpos))
             return true;
         }
@@ -950,9 +950,9 @@ Type Type::makeTypeRef(const String& name, const Type& old)
 }
 
 
-Type Type::makeClassOf(const Type& type, bool isValue)
+Type Type::makeRecordOf(const Type& type, bool isValue)
 {
-  return makeTypeRef(Names::kClassTypeName, makeVector(type), isValue);
+  return makeTypeRef(Names::kRecordTypeName, makeVector(type), isValue);
 }
 
 
@@ -1133,7 +1133,7 @@ bool Type::isDef() const
 bool Type::isBaseType() const
 {
   String nm;
-  if (isRef() || isType() || isClass()) {
+  if (isRef() || isType() || isRecord()) {
     nm = typeName();
   }
 
@@ -1401,9 +1401,9 @@ bool Type::isAnyUInt() const
 }
 
 
-bool Type::isClassOf() const
+bool Type::isRecordOf() const
 {
-  return isBuiltinType(Names::kClassTypeName);
+  return isBuiltinType(Names::kRecordTypeName);
 }
 
 
@@ -1530,7 +1530,7 @@ String Type::typeId() const
 }
 
 
-bool Type::isClass() const
+bool Type::isRecord() const
 {
   return fKind == kType_Class;
 }
@@ -1538,14 +1538,14 @@ bool Type::isClass() const
 
 const TypeSlotList& Type::slots() const
 {
-  hr_assert(isClass());
+  hr_assert(isRecord());
   return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->slots();
 }
 
 
 Type Type::slotType(const String& slotName, const Scope& scope) const
 {
-  hr_assert(isClass());
+  hr_assert(isRecord());
   auto tyimpl = std::dynamic_pointer_cast<TypeTypeImpl>(fImpl);
 
   for (const auto& slot : tyimpl->slots()) {
@@ -1559,7 +1559,7 @@ Type Type::slotType(const String& slotName, const Scope& scope) const
     for (const auto& ty : inheritedTypes) {
       auto normalizedType = herschel::resolveType(ty, scope);
 
-      if (normalizedType.isClass()) {
+      if (normalizedType.isRecord()) {
         auto sty = normalizedType.slotType(slotName, scope);
         if (sty.isDef())
           return sty;
@@ -1578,14 +1578,14 @@ bool Type::isType() const
 
 const Type& Type::typeInheritance() const
 {
-  hr_assert(isType() || isClass());
+  hr_assert(isType() || isRecord());
   return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->inherit();
 }
 
 
 const FunctionSignature& Type::applySignature() const
 {
-  hr_assert(isClass());
+  hr_assert(isRecord());
   return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->applySignature();
 }
 
@@ -1810,7 +1810,7 @@ Type Type::replaceGenerics(const TypeCtx& typeMap) const
           clonedTy.setIsImaginary(fIsImaginary);
         }
         else if (hasConstraints()) {
-          if (replacement.isRef() || replacement.isClass() || replacement.isType()) {
+          if (replacement.isRef() || replacement.isRecord() || replacement.isType()) {
             clonedTy = Type::makeTypeRef(replacement.typeName(), replacement.generics(),
                                          constraints(), replacement.isValueType());
             clonedTy.setIsImaginary(fIsImaginary);
@@ -2882,7 +2882,7 @@ bool isSameType(const Type& left0, const Type& right0, const Scope& scope,
     }
     return false;
   }
-  else if (left.isType() || left.isClass()) {
+  else if (left.isType() || left.isRecord()) {
     if (left.kind() == right.kind()) {
       if (left.typeName() != right.typeName())
         return false;
@@ -2921,7 +2921,7 @@ bool inheritsFrom(const Type& left0, const Type& right0, const Scope& scope,
   }
 
   Type inheritance;
-  if (left.isType() || left.isClass())
+  if (left.isType() || left.isRecord())
     inheritance = left.typeInheritance();
   else if (left.isMeasure())
     inheritance = left.measureBaseType();
@@ -2939,7 +2939,7 @@ bool inheritsFrom(const Type& left0, const Type& right0, const Scope& scope,
     return false;
   }
 
-  if (inheritance.isType() || inheritance.isClass()) {
+  if (inheritance.isType() || inheritance.isRecord()) {
     if (isSameType(inheritance, right, scope, srcpos, reportErrors))
       return true;
 
@@ -3233,7 +3233,7 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
     else
       return false;
   }
-  else if (left.isType() || left.isClass()) {
+  else if (left.isType() || left.isRecord()) {
     if (left.isOpen()) {
       TypeCtx localCtx;
       if (left.matchGenerics(localCtx, right, scope, srcpos))
@@ -3247,7 +3247,7 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
     if (isSameType(left, right, scope, srcpos, reportErrors))
       return true;
 
-    if (right.isType() || right.isClass()) {
+    if (right.isType() || right.isRecord()) {
       if (!inheritsFrom(left, right, scope, srcpos, reportErrors))
         return false;
       if (left.hasGenerics() && right.hasGenerics())

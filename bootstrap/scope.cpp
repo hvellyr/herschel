@@ -438,7 +438,7 @@ Type Scope::lookupType(const Type& type) const
     return Type::makeArray(lookupType(type.arrayBaseType()), type.arraySizeIndicator(),
                            type.isValueType());
   }
-  else if (type.isType() || type.isClass()) {
+  else if (type.isType() || type.isRecord()) {
     // TODO: something to be done here?
     return type;
   }

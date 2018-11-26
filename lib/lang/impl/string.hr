@@ -21,18 +21,15 @@ extern ("C") {
 }
 
 -- builtin strings are really instances of the class @type{StringImpl}.
-def class StringImpl : String
-{
-}
+def record StringImpl : String
+()
 
-def class StringSlice(_str : String,
-                      _from : Ordinal,
-                      _to : Ordinal) -> (Comparable, String)
-{
-  def slot str : String = _str
-  def slot from : Ordinal = _from
-  def slot to : Ordinal = _to
-}
+def record StringSlice : (Comparable, String)
+(
+  str : String,
+  from : Ordinal,
+  to : Ordinal
+)
 
 
 
