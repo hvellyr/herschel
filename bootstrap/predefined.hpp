@@ -57,8 +57,6 @@ namespace herschel {
 #define MID_multiply "multiply"
 #define MID_nilid "nil"
 #define MID_notid "not"
-#define MID_onid "on"
-#define MID_reifyid "reify"
 #define MID_rem "rem"
 #define MID_selectid "select"
 #define MID_shiftleft "shift-left"

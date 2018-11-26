@@ -43,7 +43,6 @@ class KeywordNode;
 class LetNode;
 class MatchNode;
 class UnaryNode;
-class OnNode;
 class ParamNode;
 class RangeNode;
 class RationalNode;

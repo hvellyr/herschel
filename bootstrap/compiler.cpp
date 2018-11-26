@@ -38,7 +38,6 @@ namespace herschel {
 //----------------------------------------------------------------------------
 
 const Token Compiler::aliasToken = Token(SrcPos(), kSymbol, "alias");
-const Token Compiler::allocToken = Token(SrcPos(), kSymbol, "alloc");
 const Token Compiler::autoToken = Token(SrcPos(), kSymbol, "auto");
 const Token Compiler::charToken = Token(SrcPos(), kSymbol, "char");
 const Token Compiler::classToken = Token(SrcPos(), kSymbol, "class");
@@ -51,7 +50,6 @@ const Token Compiler::finalToken = Token(SrcPos(), kSymbol, "final");
 const Token Compiler::genericToken = Token(SrcPos(), kSymbol, "generic");
 const Token Compiler::ignoreToken = Token(SrcPos(), kSymbol, "ignore");
 const Token Compiler::includeToken = Token(SrcPos(), kSymbol, "include");
-const Token Compiler::initToken = Token(SrcPos(), kSymbol, "init");
 const Token Compiler::innerToken = Token(SrcPos(), kSymbol, "inner");
 const Token Compiler::macroToken = Token(SrcPos(), kSymbol, "macro");
 const Token Compiler::measureToken = Token(SrcPos(), kSymbol, "measure");

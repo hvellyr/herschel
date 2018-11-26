@@ -67,7 +67,6 @@ private:
 
   NodeList parseDef(const Token& expr, bool isLocal);
   std::shared_ptr<AstNode> parseIf(const Token& expr);
-  std::shared_ptr<AstNode> parseOn(const Token& expr);
   std::shared_ptr<AstNode> parseFor(const Token& expr);
   std::shared_ptr<AstNode> parseSelect(const Token& expr);
   std::shared_ptr<AstNode> parseMatch(const Token& expr);
@@ -99,7 +98,6 @@ private:
 
   std::shared_ptr<AstNode> defaultSlotInitValue(const SlotdefNode* slot);
   PrimeTuple parsePrime(const Token& primeToken);
-  std::vector<SecondPass::PrimeTuple> parseOnAllocExpr(const Token& expr);
 
   std::shared_ptr<AstNode> parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
   std::shared_ptr<AstNode> parseSlotDef(const Token& expr, size_t ofs);
@@ -172,7 +170,6 @@ private:
 
     NodeList fParams;
     Type fType;
-    std::shared_ptr<AstNode> fReify;
     std::shared_ptr<AstNode> fWhere;
     unsigned int fFlags;
     std::shared_ptr<AstNode> fBody;

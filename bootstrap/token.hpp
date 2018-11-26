@@ -183,8 +183,6 @@ namespace herschel
     kModuleId,
     kNilId,
     kNotId,
-    kOnId,
-    kReifyId,
     kSelectId,
     kThenId,
     kWhenId,

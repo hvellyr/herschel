@@ -404,20 +404,6 @@ struct NodeRenderer<const MatchNode&> {
 
 
 template <>
-struct NodeRenderer<const OnNode&> {
-  static void render(XmlRenderer* renderer, const OnNode& node)
-  {
-    StringBuffer attrs;
-    attrs << "key='" << node.key() << "'";
-    renderer->displayOpenTagAttrs("on", StrHelper(attrs.toString()));
-    renderer->displayNodeList("params", node.params());
-    renderer->displayNode("body", node.body().get());
-    renderer->displayCloseTag("on");
-  }
-};
-
-
-template <>
 struct NodeRenderer<const ParamNode&> {
   static void render(XmlRenderer* renderer, const ParamNode& node)
   {
@@ -928,9 +914,6 @@ void XmlRenderer::render(const AstNode& node)
   }
   else if (auto* unarynd = dynamic_cast<const UnaryNode*>(&node)) {
     NodeRenderer<decltype(*unarynd)>::render(this, *unarynd);
-  }
-  else if (auto* onnd = dynamic_cast<const OnNode*>(&node)) {
-    NodeRenderer<decltype(*onnd)>::render(this, *onnd);
   }
   else if (auto* paramnd = dynamic_cast<const ParamNode*>(&node)) {
     NodeRenderer<decltype(*paramnd)>::render(this, *paramnd);

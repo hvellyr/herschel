@@ -69,7 +69,6 @@ public:
 
   // predefined symbol tokens to speed up parsing
   static const Token aliasToken;
-  static const Token allocToken;
   static const Token autoToken;
   static const Token charToken;
   static const Token classToken;
@@ -82,7 +81,6 @@ public:
   static const Token genericToken;
   static const Token ignoreToken;
   static const Token includeToken;
-  static const Token initToken;
   static const Token innerToken;
   static const Token macroToken;
   static const Token measureToken;

@@ -1193,40 +1193,6 @@ inline std::shared_ptr<MatchNode> makeMatchNode(const SrcPos& srcpos,
 }
 
 
-class OnNode : public ListNode {
-public:
-  OnNode(const SrcPos& srcpos, const String& key, const NodeList& params,
-         std::shared_ptr<AstNode> body);
-
-  std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
-  const String& key() const;
-  std::shared_ptr<AstNode> body() const;
-  void setBody(std::shared_ptr<AstNode> node);
-  const NodeList& params() const;
-  NodeList& params();
-
-private:
-  String fKey;
-  std::shared_ptr<AstNode> fBody;
-};
-
-inline std::shared_ptr<OnNode> makeOnNode(const SrcPos& srcpos, const String& key,
-                                          const NodeList& params,
-                                          std::shared_ptr<AstNode> body)
-{
-  return std::make_shared<OnNode>(srcpos, key, params, std::move(body));
-}
-
-
 class BlockNode : public ListNode {
 public:
   BlockNode(const SrcPos& srcpos);

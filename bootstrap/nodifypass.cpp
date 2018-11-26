@@ -640,37 +640,6 @@ SecondPass::PrimeTuple SecondPass::parsePrime(const Token& primeToken)
 }
 
 
-std::vector<SecondPass::PrimeTuple> SecondPass::parseOnAllocExpr(const Token& expr)
-{
-  hr_assert(expr.count() == 4);
-  hr_assert(expr[0] == kOnId);
-  hr_assert(expr[1] == Compiler::allocToken);
-  hr_assert(expr[2].isNested());
-
-  if (expr[2].count() > 0) {
-    warningf(expr[2].srcpos(), E_BadFunctionArity, "'on alloc' takes no parameters");
-  }
-
-  std::vector<PrimeTuple> primeTuples;
-  if (expr[3].isNested() && expr[3].leftToken() == kBraceOpen) {
-    const TokenVector& primeTokens = expr[3].children();
-
-    for (size_t i = 0; i < primeTokens.size(); i++) {
-      PrimeTuple tuple = parsePrime(primeTokens[i]);
-      if (tuple.fPrime)
-        primeTuples.push_back(tuple);
-    }
-  }
-  else {
-    PrimeTuple tuple = parsePrime(expr[3]);
-    if (tuple.fPrime)
-      primeTuples.push_back(tuple);
-  }
-
-  return primeTuples;
-}
-
-
 size_t SecondPass::getWhereOfs(const Token& expr) const
 {
   return getWhereOfs(expr.children(), 0);
@@ -740,7 +709,6 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
   std::vector<PrimeTuple> primeTuples;
   NodeList slotDefs;
-  NodeList onExprs;
   TypeSlotList slotTypes;
 
   if (ofs < seq.size() && seq[ofs].isNested() && seq[ofs].leftToken() == kBraceOpen) {
@@ -748,7 +716,7 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
 
     for (size_t i = 0; i < defs.size(); i++) {
       hr_assert(defs[i].isSeq() && defs[i].count() > 1);
-      hr_assert(defs[i][0] == kDefId || defs[i][0] == kOnId || defs[i][0] == kExtendId);
+      hr_assert(defs[i][0] == kDefId || defs[i][0] == kExtendId);
 
       if (defs[i][0] == kDefId) {
         if (defs[i][1] == Compiler::slotToken) {
@@ -775,43 +743,6 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
         else {
           errorf(defs[i].srcpos(), E_UnexpectedDefExpr,
                  "Unexpected definition in type body");
-        }
-      }
-      else if (defs[i][0] == kOnId) {
-        if (!isClass) {
-          errorf(defs[i].srcpos(), E_OnExprInType,
-                 "Unexpected on expression in type body");
-        }
-        else if (defs[i].count() > 1 && defs[i][1] == Compiler::allocToken) {
-          std::vector<PrimeTuple> tuples = parseOnAllocExpr(defs[i]);
-          primeTuples.insert(primeTuples.begin(), tuples.begin(), tuples.end());
-        }
-        else if (defs[i].count() > 1 && defs[i][1] == Compiler::initToken) {
-          NodeList nl = parseExpr(defs[i]);
-          if (!nl.empty()) {
-            if (auto onNode = dynamic_cast<OnNode*>(nl[0].get())) {
-              if (onNode->params().size() != 1) {
-                errorf(
-                    onNode->srcpos(), E_BadFunctionArity,
-                    "wrong number of parameters to 'on init' hook.  Expected 1, found %d",
-                    onNode->params().size());
-              }
-              else if (auto param = dynamic_cast<ParamNode*>(onNode->params()[0].get())) {
-                if (!param->isPositional()) {
-                  errorf(param->srcpos(), E_BadFunctionArity,
-                         "non-positional parameter detected in 'on init' hook");
-                }
-                else
-                  appendNodes(onExprs, nl);
-              }
-              else
-                appendNodes(onExprs, nl);
-            }
-          }
-        }
-        else {
-          NodeList nl = parseExpr(defs[i]);
-          appendNodes(onExprs, nl);
         }
       }
       else {
@@ -880,12 +811,16 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isClass,
   fScope->registerType(expr.srcpos(), fullTypeName, defType);
 
   NodeList result;
-  result.push_back(
-      newDefNode(makeTypeDefNode(expr.srcpos(), fullTypeName, isClass, defType,
-                                 defaultApplyParams, slotDefs, onExprs),
-                 isLocal));
+  {
+    NodeList onExprs;  // TODO
+    result.push_back(
+        newDefNode(makeTypeDefNode(expr.srcpos(), fullTypeName, isClass, defType,
+                                   defaultApplyParams, slotDefs, onExprs),
+                   isLocal));
+  }
 
   if (isClass) {
+    NodeList onExprs;  // TODO
     auto ctor = generateConstructor(expr, fullTypeName, defType, defaultApplyParams,
                                     slotDefs, primes, onExprs);
     result.push_back(ctor);
@@ -1008,24 +943,6 @@ std::shared_ptr<AstNode> SecondPass::generateConstructor(
           makeSlotRefNode(srcpos, makeSymbolNode(srcpos, selfParamSym), slot->name()),
           defaultSlotInitValue(slot));
       body->appendNode(slotInit);
-    }
-  }
-
-  // inline a possible on init expr.
-  for (auto& onExpr : onExprs) {
-    auto onNode = dynamic_cast<OnNode*>(onExpr.get());
-    if (onNode && onNode->key() == Compiler::initToken.idValue()) {
-      NodeList onNodeParams = copyNodes(onNode->params());
-      hr_assert(onNodeParams.size() == 1);
-      if (!onNodeParams[0]->type().isDef() || onNodeParams[0]->type().isAny()) {
-        onNodeParams[0]->setType(defType);
-      }
-
-      auto func = makeFunctionNode(srcpos, onNodeParams, Type(), onNode->body()->clone());
-      auto initCall = makeApplyNode(srcpos, func);
-      initCall->appendNode(makeSymbolNode(srcpos, selfParamSym));
-
-      body->appendNode(initCall);
     }
   }
 
@@ -1612,12 +1529,6 @@ void SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
     }
   }
 
-  if (ofs < seq.size()) {
-    if (seq[ofs].isSeq() && seq[ofs].count() > 1 && seq[ofs][0] == kReifyId) {
-      // TODO: data.fReify =
-      ofs++;
-    }
-  }
 
   if (ofs == whereOfs)
     ofs++;
@@ -2041,21 +1952,6 @@ void SecondPass::parseParameters(NodeList* parameters, const TokenVector& seq)
     if (param)
       parameters->push_back(param);
   }
-}
-
-
-std::shared_ptr<AstNode> SecondPass::parseOn(const Token& expr)
-{
-  hr_assert(expr.count() == 4);
-  hr_assert(expr[0] == kOnId);
-  hr_assert(expr[1] == kSymbol);
-  hr_assert(expr[2].isNested());
-
-  NodeList params;
-  parseParameters(&params, expr[2].children());
-
-  return makeOnNode(expr.srcpos(), expr[1].idValue(), params,
-                    singletonNodeListOrNull(parseExpr(expr[3])));
 }
 
 
@@ -3119,8 +3015,6 @@ NodeList SecondPass::parseSeq(const Token& expr)
     return parseDef(expr, first == kLetId);
   else if (first == kIfId)
     return makeNodeList(parseIf(expr));
-  else if (first == kOnId)
-    return makeNodeList(parseOn(expr));
   else if (first == kFunctionId)
     return makeNodeList(parseClosure(expr));
   else if (first == kForId)
@@ -3198,12 +3092,7 @@ NodeList SecondPass::parseSeq(const Token& expr)
 
 static bool doesNodeNeedBlock(const AstNode* node)
 {
-  auto on = dynamic_cast<const OnNode*>(node);
-  if (on) {
-    if (on->key() == Names::kExitKeyword || on->key() == Names::kSignalKeyword)
-      return true;
-  }
-  else if (dynamic_cast<const LetNode*>(node) || dynamic_cast<const DefNode*>(node))
+  if (dynamic_cast<const LetNode*>(node) || dynamic_cast<const DefNode*>(node))
     return true;
 
   return false;

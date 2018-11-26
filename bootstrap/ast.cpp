@@ -1593,63 +1593,6 @@ MatchNode::MatchMapping::MatchMapping(const MatchMapping& other)
 }
 
 
-//------------------------------------------------------------------------------
-
-OnNode::OnNode(const SrcPos& srcpos, const String& key, const NodeList& params,
-               std::shared_ptr<AstNode> body)
-    : ListNode(srcpos)
-    , fKey(key)
-    , fBody(std::move(body))
-{
-  fChildren.assign(params.begin(), params.end());
-}
-
-
-std::shared_ptr<AstNode> OnNode::clone() const
-{
-  return cloneScope(this,
-                    makeOnNode(fSrcPos, fKey, copyNodes(fChildren), nodeClone(fBody)));
-}
-
-
-const String& OnNode::key() const
-{
-  return fKey;
-}
-
-
-std::shared_ptr<AstNode> OnNode::body() const
-{
-  return fBody;
-}
-
-
-void OnNode::setBody(std::shared_ptr<AstNode> node)
-{
-  fBody = std::move(node);
-}
-
-
-const NodeList& OnNode::params() const
-{
-  return fChildren;
-}
-
-
-NodeList& OnNode::params()
-{
-  return fChildren;
-}
-
-
-// DEF_RENDER(OnNode)
-// DEF_CODEGEN(OnNode)
-// DEF_ANNOTATE(OnNode)
-// DEF_TRAVERSE(OnNode)
-// DEF_TRANSFORM(OnNode)
-// DEF_TYPIFY(OnNode)
-
-
 //----------------------------------------------------------------------------
 
 BlockNode::BlockNode(const SrcPos& srcpos)

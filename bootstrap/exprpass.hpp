@@ -122,7 +122,6 @@ private:
   Token parseLiteralArray();
 
   Token parseIf();
-  Token parseOn(ScopeType scopeType);
 
   Token parseGroup();
   Token parseBlock();
@@ -170,7 +169,6 @@ private:
   Token evaluateConfigExpr(const Token& initExpr);
 
   Token parseWhereClause();
-  Token parseReifyClause();
 
   Token parseMeasure(const Token& defToken, bool isLocal);
   Token parseUnit(const Token& defToken, bool isLocal);
@@ -220,8 +218,6 @@ private:
 
   bool parseDoMatchSyntaxDef(TokenVector* result, const Token& expr,
                              SyntaxTable& syntaxTable, bool isLocal);
-  bool parseDoMatchSyntaxOn(TokenVector* filtered, const Token& expr,
-                            SyntaxTable& syntaxTable, bool isLocal);
   bool parseDoMatchSyntaxFunc(TokenVector* filtered, const Token& expr,
                               const TokenVector& args, SyntaxTable& syntaxTable,
                               bool shouldParseParams);

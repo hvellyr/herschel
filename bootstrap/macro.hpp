@@ -56,7 +56,6 @@ enum MacroType {
   kMacro_Invalid,
   kMacro_Any,
   kMacro_Def,
-  kMacro_On,
   kMacro_Stmt,
   kMacro_Function
 };

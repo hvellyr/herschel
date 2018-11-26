@@ -970,61 +970,6 @@ bool FirstPass::parseFunctionsParams(TokenVector* exprlist, bool autoCompleteTyp
 }
 
 
-Token FirstPass::parseOn(ScopeType scopeType)
-{
-  Token tagToken = fToken;
-  nextToken();
-
-  if (fToken != kSymbol) {
-    errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
-    return scanUntilTopExprAndResume();
-  }
-
-  Token keyToken = fToken;
-
-  const Macro* macro =
-      fScope->lookupMacro(keyToken.srcpos(), keyToken.idValue(), K(showAmbiguousSymDef));
-  Token macroName = Token(keyToken.srcpos(), baseName(keyToken.idValue()));
-
-  if (macro) {
-    TokenVector dummyArgs;
-    TokenVector exprs = parseMakeMacroCall(macroName, dummyArgs, macro,
-                                           K(shouldParseParams), K(isLocal), scopeType);
-    return (exprs.size() == 1 ? exprs[0] : Token() << exprs);
-  }
-  else {
-    bool ignoreStmt = false;
-
-    if (keyToken != Compiler::syncToken && keyToken != Compiler::allocToken &&
-        keyToken != Compiler::initToken && keyToken != Compiler::deleteToken &&
-        keyToken != Compiler::exitToken && keyToken != Compiler::signalToken) {
-      errorf(keyToken.srcpos(), E_UnknownOnKey, "unknown 'on'-keyword.");
-      ignoreStmt = true;
-    }
-
-    nextToken();
-    if (fToken != kParanOpen) {
-      errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
-      return scanUntilTopExprAndResume();
-    }
-    SrcPos paranPos = fToken.srcpos();
-
-    TokenVector params;
-    if (parseFunctionsParams(&params)) {
-      Token body = parseExpr(!K(acceptComma));
-
-      if (!ignoreStmt && body.isSet())
-        return Token() << tagToken << keyToken
-                       << (Token(paranPos, kParanOpen, kParanClose) << params) << body;
-      else
-        return Token() << Token(tagToken.srcpos(), "lang|unspecified");
-    }
-
-    return Token();
-  }
-}
-
-
 Token FirstPass::parseAnonFun()
 {
   Token funcToken = fToken;
@@ -1829,7 +1774,6 @@ Token FirstPass::parseAtomicExpr()
   case kNestedExpr: return parseAccess(parseAtomicExpr0());
 
   case kIfId: return parseIf();
-  case kOnId: return parseOn(kNonScopedDef);
   case kFunctionId: return parseAnonFun();
   case kNotId:  // unary not operator
   case kMinus:  // unary negate
@@ -2717,46 +2661,6 @@ Token FirstPass::parseWhereClause()
 }
 
 
-Token FirstPass::parseReifyClause()
-{
-  hr_assert(fToken == kReifyId);
-  Token reifyToken = fToken;
-
-  nextToken();
-
-  TokenVector funcDefs;
-  Token delayedCommaToken;
-
-  for (;;) {
-    if (fToken == kEOF) {
-      errorf(fToken.srcpos(), E_UnexpectedEOF,
-             "unexpected eof while scanning 'reify' clause");
-      return Token();
-    }
-
-    Token funcDefExpr = parseFunctionSignature();
-    if (funcDefExpr.isSet()) {
-      if (delayedCommaToken.isSet()) {
-        funcDefs.push_back(delayedCommaToken);
-        delayedCommaToken = Token();
-      }
-      funcDefs.push_back(funcDefExpr);
-    }
-
-    if (fToken == kComma) {
-      delayedCommaToken = fToken;
-      nextToken();
-    }
-    else
-      break;
-  }
-
-  if (!funcDefs.empty())
-    return Token() << reifyToken << funcDefs;
-  return Token();
-}
-
-
 Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
                                   const Token& symToken, const Token& linkage)
 {
@@ -2775,7 +2679,6 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
   if (parseFunctionsParams(&params)) {
     Token returnTyToken;
     Token returnType;
-    Token reifyClause;
     Token whereClause;
 
     if (fToken == kMapTo) {
@@ -2792,9 +2695,6 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       returnTyToken = Token(fToken.srcpos(), kMapTo);
       returnType = Token(fToken.srcpos(), kSymbol, "Any");
     }
-
-    if (fToken == kReifyId)
-      reifyClause = parseReifyClause();
 
     if (fToken == kWhereId)
       whereClause = parseWhereClause();
@@ -2821,9 +2721,6 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
     result << (Token(paranOpenToken.srcpos(), kParanOpen, kParanClose) << params);
     if (returnTyToken.isSet())
       result << returnTyToken << returnType;
-
-    if (reifyClause.isSet())
-      result << reifyClause;
 
     if (whereClause.isSet())
       result << whereClause;
@@ -3382,14 +3279,6 @@ MacroType FirstPass::dertermineMacroPatternType(const Token& macroName,
              "macro name and pattern mismatch");
       return kMacro_Invalid;
     }
-    else if (pattern[0] == kOnId) {
-      if (pattern[1] == macroName)
-        return kMacro_On;
-
-      errorf(pattern[1].srcpos(), E_PatternNameMismatch,
-             "macro name and pattern mismatch");
-      return kMacro_Invalid;
-    }
 
     TokenVector::const_iterator it = pattern.begin();
     if (*it != macroName) {
@@ -3796,14 +3685,6 @@ TokenVector FirstPass::parseTop(ScopeType scope)
   }
   else if (fToken == kExternId) {
     return parseExtern();
-  }
-  else if (fToken == kOnId) {
-    if (scope == kInClassDef)
-      return parseOn(kInClassDef).toTokenVector();
-    else {
-      errorf(fToken.srcpos(), E_UnexpectedToken, "Unexpected 'on' expr");
-      return scanUntilTopExprAndResume().toTokenVector();
-    }
   }
   else {
     errorf(fToken.srcpos(), E_UnexpectedToken, "Unexpected top expression: %s",
@@ -4235,15 +4116,6 @@ bool FirstPass::parseDoMatchSyntaxDef(TokenVector* result, const Token& expr,
 }
 
 
-bool FirstPass::parseDoMatchSyntaxOn(TokenVector* result, const Token& expr,
-                                     SyntaxTable& syntaxTable, bool isLocal)
-{
-  unreadToken(expr);
-  fToken = Token(expr.srcpos(), kOnId);
-  return matchSyntax(result, syntaxTable);
-}
-
-
 bool FirstPass::parseDoMatchSyntaxFunc(TokenVector* result, const Token& expr,
                                        const TokenVector& args, SyntaxTable& syntaxTable,
                                        bool shouldParseParams)
@@ -4341,8 +4213,6 @@ TokenVector FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& 
   case kMacro_Any: return TokenVector();
 
   case kMacro_Def: parseDoMatchSyntaxDef(&filtered, expr, *syntaxTable, isLocal); break;
-
-  case kMacro_On: parseDoMatchSyntaxOn(&filtered, expr, *syntaxTable, isLocal); break;
 
   case kMacro_Stmt:
   case kMacro_Function:
