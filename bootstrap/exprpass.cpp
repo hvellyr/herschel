@@ -3483,11 +3483,6 @@ TokenVector FirstPass::parseDef(bool isLocal)
              "Unsupported linkage for alias definition ignored");
     return parseAliasDef(defToken, isLocal).toTokenVector();
   }
-  else if (fToken == Compiler::slotToken) {
-    errorf(fToken.srcpos(), E_SlotNotInClassDef,
-           "slot definitions only allowed in class defs.");
-    return scanUntilTopExprAndResume().toTokenVector();
-  }
   else if (fToken == Compiler::enumToken) {
     if (linkage.isSet())
       errorf(linkage.srcpos(), E_UnexpLinkage,

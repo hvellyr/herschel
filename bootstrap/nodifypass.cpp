@@ -1122,72 +1122,6 @@ std::shared_ptr<AstNode> SecondPass::parseAliasDef(const Token& expr, size_t ofs
 }
 
 
-std::shared_ptr<AstNode> SecondPass::parseSlotDef(const Token& expr, size_t ofs)
-{
-  hr_assert(expr.isSeq());
-  hr_assert(expr.count() >= ofs + 2);
-  hr_assert(expr[ofs] == Compiler::slotToken);
-
-  ofs++;
-
-  const TokenVector& seq = expr.children();
-  String slotName = seq[ofs].idValue();
-  if (isQualified(slotName)) {
-    errorf(seq[ofs].srcpos(), E_QualifiedSlot,
-           "Slotnames must not be qualified.  Ignore namespace");
-    slotName = baseName(slotName);
-  }
-  ofs++;
-
-  Type slotType;
-  if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
-    slotType = parseTypeSpec(seq[ofs + 1]);
-    ofs += 2;
-  }
-
-  std::shared_ptr<AstNode> initExpr;
-  if (ofs + 1 < seq.size() && seq[ofs] == kAssign) {
-    NodeList nl = parseExpr(seq[ofs + 1]);
-    initExpr = singletonNodeListOrNull(nl);
-    ofs += 2;
-  }
-
-  unsigned int slotFlags = kSimpleSlot;
-  if (ofs < seq.size() && seq[ofs] == kComma) {
-    ofs++;
-    for (; ofs < seq.size(); ofs++) {
-      if (seq[ofs] == kComma)
-        continue;
-      if (seq[ofs] == Compiler::publicToken) {
-        slotFlags |= kPublicSlot;
-      }
-      else if (seq[ofs] == Compiler::outerToken) {
-        slotFlags |= kOuterSlot;
-      }
-      else if (seq[ofs] == Compiler::innerToken) {
-        slotFlags |= kInnerSlot;
-      }
-      else if (seq[ofs] == Compiler::transientToken) {
-        slotFlags |= kTransientSlot;
-      }
-      else if (seq[ofs] == Compiler::readonlyToken) {
-        slotFlags |= kReadonlySlot;
-      }
-      else if (seq[ofs] == Compiler::autoToken) {
-        slotFlags |= kAutoSlot;
-      }
-      else {
-        hr_assert(seq[ofs] == kSymbol);
-        errorf(seq[ofs].srcpos(), E_UnknownSlotFlag, "Unknown slot flag '%s' ignored",
-               (zstring)StrHelper(seq[ofs].toString()));
-      }
-    }
-  }
-
-  return makeSlotdefNode(expr.srcpos(), slotName, slotFlags, slotType, initExpr);
-}
-
-
 std::shared_ptr<AstNode> SecondPass::nextEnumInitValue(const SrcPos& srcpos,
                                                        const Token& enumItemSym,
                                                        const Type& baseType,
@@ -1720,12 +1654,6 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
   else if (expr[ofs] == Compiler::aliasToken) {
     hr_assert(linkage.isEmpty());
     return rewriteDefNode(parseAliasDef(expr, ofs, isLocal), isLocal);
-  }
-
-  else if (expr[ofs] == Compiler::slotToken) {
-    hr_assert(!isLocal);
-    hr_assert(linkage.isEmpty());
-    return rewriteDefNode(parseSlotDef(expr, ofs), isLocal);
   }
 
   else if (expr[ofs] == Compiler::enumToken) {

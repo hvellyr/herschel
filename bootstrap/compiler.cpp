@@ -58,7 +58,6 @@ const Token Compiler::publicToken = Token(SrcPos(), kSymbol, "public");
 const Token Compiler::readonlyToken = Token(SrcPos(), kSymbol, "readonly");
 const Token Compiler::recordToken = Token(SrcPos(), kSymbol, "record");
 const Token Compiler::signalToken = Token(SrcPos(), kSymbol, MID_signalKeyword);
-const Token Compiler::slotToken = Token(SrcPos(), kSymbol, "slot");
 const Token Compiler::syncToken = Token(SrcPos(), kSymbol, "sync");
 const Token Compiler::transientToken = Token(SrcPos(), kSymbol, "transient");
 const Token Compiler::typeToken = Token(SrcPos(), kSymbol, "type");

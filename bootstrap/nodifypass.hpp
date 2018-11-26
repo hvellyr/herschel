@@ -98,7 +98,6 @@ private:
   PrimeTuple parsePrime(const Token& primeToken);
 
   std::shared_ptr<AstNode> parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
-  std::shared_ptr<AstNode> parseSlotDef(const Token& expr, size_t ofs);
   std::shared_ptr<AstNode> parseEnumDef(const Token& expr, size_t ofs, bool isLocal);
   std::shared_ptr<AstNode> nextEnumInitValue(const SrcPos& srcpos,
                                              const Token& enumItemSym,

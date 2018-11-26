@@ -89,7 +89,6 @@ public:
   static const Token readonlyToken;
   static const Token recordToken;
   static const Token signalToken;
-  static const Token slotToken;
   static const Token syncToken;
   static const Token transientToken;
   static const Token typeToken;
