@@ -1,3 +1,5 @@
+def type SoundMaking
+
 def record Animal
 (
   classification : String
@@ -7,7 +9,7 @@ def record Mamal : Animal
 (
 )
 
-def record Dog : Mamal
+def record Dog : Mamal, SoundMaking
 (
  size : String
 )

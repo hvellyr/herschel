@@ -106,7 +106,7 @@ private:
   Token parseExprRec(const TokenVector& exprs, OperatorType op1, const SrcPos& op1Srcpos,
                      bool hasRest);
 
-  Token parseTypeSpec(bool onlyNestedConstraints);
+  Token parseTypeSpec(bool onlyNestedConstraints, bool needParans);
   Token parseSimpleType(const Token& baseType, bool nextIsParsedYet = false);
   Token parseUnionType();
   Token parseGroupType();

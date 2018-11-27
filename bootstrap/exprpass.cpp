@@ -419,12 +419,11 @@ struct TypeParser {
   bool operator()(FirstPass* pass, Token& result)
   {
     SrcPos pos = pass->fToken.srcpos();
-    Token type = pass->parseTypeSpec(!K(onlyNestedConstr));
+    Token type = pass->parseTypeSpec(!K(onlyNestedConstr), K(needParans));
     if (!type.isSet()) {
       errorf(pos, E_UnexpectedToken, "returntype expression expected, but found: %s",
              (zstring)StrHelper(pass->fToken.toString()));
       pass->scanUntilNextParameter(fEndToken);
-      return true;
     }
     else
       result << type;
@@ -566,7 +565,7 @@ Token FirstPass::parseFunctionSignature()
       returnTyToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
-      returnType = parseTypeSpec(K(onlyNestedConstr));
+      returnType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
       if (!returnType.isSet()) {
         errorf(pos, E_MissingType, "returntype expression expected");
         returnType = Token(pos, kSymbol, "Any");
@@ -614,7 +613,7 @@ Token FirstPass::parseQuotedType()
 }
 
 
-Token FirstPass::parseTypeSpec(bool onlyNestedConstraints)
+Token FirstPass::parseTypeSpec(bool onlyNestedConstraints, bool needParans)
 {
   Token isRefToken;
   if (fToken == kReference) {
@@ -623,28 +622,50 @@ Token FirstPass::parseTypeSpec(bool onlyNestedConstraints)
   }
 
   // TODO: pass the isRefType into the following functions
+  Token typeGroup = Token(fToken.srcpos(), kParanOpen, kParanClose);
+  bool isTypeGroupSet = false;
 
   Token retval;
-  if (fToken == kSymbol) {
-    retval = (onlyNestedConstraints
-                  ? parseArrayExtend(parseSimpleType(fToken))
-                  : parseConstraintExtend(parseArrayExtend(parseSimpleType(fToken))));
-  }
-  else if (fToken == kFUNCTIONId) {
-    retval = parseArrayExtend(parseFunctionType());
-  }
-  else if (fToken == kQuote) {
-    // no constraints for generics
-    retval = parseArrayExtend(parseQuotedType());
-  }
-  else if (fToken == kUnionOpen) {
-    // no constraints for union types
-    retval = parseArrayExtend(parseUnionType());
-  }
-  else if (fToken == kParanOpen) {
-    // no constraints for sequence types
-    retval = parseArrayExtend(parseGroupType());
-  }
+  bool tryNext = false;
+  do {
+    tryNext = false;
+
+    if (fToken == kSymbol) {
+      auto typeNode = parseArrayExtend(parseSimpleType(fToken));
+      retval = onlyNestedConstraints ? typeNode : parseConstraintExtend(typeNode);
+    }
+    else if (fToken == kFUNCTIONId) {
+      retval = parseArrayExtend(parseFunctionType());
+    }
+    else if (fToken == kQuote) {
+      // no constraints for generics
+      retval = parseArrayExtend(parseQuotedType());
+    }
+    else if (fToken == kUnionOpen) {
+      // no constraints for union types
+      retval = parseArrayExtend(parseUnionType());
+    }
+    else if (fToken == kParanOpen) {
+      // no constraints for sequence types
+      retval = parseArrayExtend(parseGroupType());
+    }
+    else {
+      errorf(fToken.srcpos(), E_UnexpectedToken,
+             "Unexpect token, type expression expected");
+    }
+
+    if (!needParans && fToken == kComma) {
+      typeGroup << retval << fToken;
+      isTypeGroupSet = true;
+
+      nextToken();
+      tryNext = true;
+    }
+    else if (isTypeGroupSet) {
+      typeGroup << retval;
+      retval = typeGroup;
+    }
+  } while (tryNext);
 
   if (isRefToken.isSet())
     return Token() << isRefToken << retval;
@@ -860,7 +881,7 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
         nextToken();
 
         SrcPos pos = fToken.srcpos();
-        Token type = parseTypeSpec(K(onlyNestedConstr));
+        Token type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
         if (!type.isSet()) {
           errorf(pos, E_MissingType, "type expression expected");
           if (autoCompleteTypes)
@@ -990,7 +1011,7 @@ Token FirstPass::parseAnonFun()
       returnTyToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
-      returnType = parseTypeSpec(K(onlyNestedConstr));
+      returnType = parseTypeSpec(K(onlyNestedConstr), K(needParans));
       if (!returnType.isSet()) {
         errorf(pos, E_MissingType, "returntype expression expected");
         returnType = Token(pos, kSymbol, "Any");
@@ -1465,7 +1486,7 @@ struct MatchPatternParser : public BasePatternParser {
     Token colonToken = pass->fToken;
     pass->nextToken();
 
-    Token matchType = pass->parseTypeSpec(K(onlyNestedConstr));
+    Token matchType = pass->parseTypeSpec(K(onlyNestedConstr), K(needParans));
     if (!matchType.isSet()) {
       pass->scanUntilBrace();
       return false;
@@ -1596,7 +1617,7 @@ struct ForClauseParser {
         colonToken = pass->fToken;
         pass->nextToken();
         SrcPos pos = pass->fToken.srcpos();
-        type = pass->parseTypeSpec(K(onlyNestedConstr));
+        type = pass->parseTypeSpec(K(onlyNestedConstr), K(needParans));
         if (!type.isSet()) {
           errorf(pos, E_MissingType, "type expression expected");
           type = Token(pos, kSymbol, "Any");
@@ -1709,7 +1730,7 @@ Token FirstPass::parseExplicitTypedNumber(const Token& token)
     nextToken();
 
     SrcPos typePos = fToken.srcpos();
-    Token type = parseTypeSpec(K(onlyNestedConstr));
+    Token type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
     if (!type.isSet()) {
       errorf(typePos, E_MissingType, "expected type specifier");
       return number;
@@ -1962,7 +1983,7 @@ Token FirstPass::parseExprRec(const TokenVector& exprs, OperatorType op1,
   Token expr2;
 
   if (op1 == kOpAs)
-    expr2 = parseTypeSpec(K(onlyNestedConstr));
+    expr2 = parseTypeSpec(K(onlyNestedConstr), K(needParans));
   else
     expr2 = parseAtomicExpr();
   OperatorType op2 = tokenTypeToOperator(fToken.tokenType());
@@ -2384,7 +2405,7 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
       colonToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
-      type = parseTypeSpec(K(onlyNestedConstr));
+      type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
       if (!type.isSet()) {
         errorf(pos, E_MissingType, "type expression expected");
         type = Token(pos, kSymbol, "Any");
@@ -2618,7 +2639,7 @@ Token FirstPass::parseWhereClause()
     else if (op1 == kOpIsa) {
       nextToken();
 
-      Token typeConstraint = parseTypeSpec(!K(onlyNestedConstr));
+      Token typeConstraint = parseTypeSpec(!K(onlyNestedConstr), K(needParans));
       if (delayedCommaToken.isSet()) {
         constraints.push_back(delayedCommaToken);
         delayedCommaToken = Token();
@@ -2669,7 +2690,7 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       returnTyToken = fToken;
       nextToken();
       SrcPos pos = fToken.srcpos();
-      returnType = parseTypeSpec(K(onlyNestedConstr));
+      returnType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
       if (!returnType.isSet()) {
         errorf(pos, E_MissingType, "type expression expected");
         returnType = Token(pos, kSymbol, "Any");
@@ -2816,7 +2837,7 @@ Token FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
   nextToken();
 
   SrcPos pos = fToken.srcpos();
-  Token type = parseTypeSpec(!K(onlyNestedConstr));
+  Token type = parseTypeSpec(!K(onlyNestedConstr), !K(needParans));
   if (!type.isSet()) {
     errorf(pos, E_MissingType, "type expression expected");
     return scanUntilTopExprAndResume();
@@ -2885,7 +2906,7 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
     colonToken = fToken;
     nextToken();
     SrcPos pos = fToken.srcpos();
-    isaType = parseTypeSpec(K(onlyNestedConstr));
+    isaType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
     if (!isaType.isSet()) {
       errorf(pos, E_MissingType, "type expression expected");
       isaType = Token(fToken.srcpos(), kSymbol, "Any");
@@ -2998,7 +3019,7 @@ Token FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
     colonToken = fToken;
     nextToken();
     SrcPos pos = fToken.srcpos();
-    isaType = parseTypeSpec(K(onlyNestedConstr));
+    isaType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
     if (!isaType.isSet()) {
       errorf(pos, E_MissingType, "type expression expected");
       isaType = Token(fToken.srcpos(), kSymbol, "Any");
