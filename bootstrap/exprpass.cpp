@@ -1573,35 +1573,6 @@ struct ForClauseParser {
   }
 
 
-  bool parseExplicitClause(FirstPass* pass, Token& result, const Token& symToken,
-                           const Token& colonToken, const Token& type)
-  {
-    hr_assert(pass->fToken == kAssign);
-    Token assignToken = pass->fToken;
-    pass->nextToken();
-
-    Token iterator = pass->parseExpr(!K(acceptComma));
-    if (!iterator.isSet()) {
-      error(pass->fToken.srcpos(), E_MissingRHExpr,
-            String("unexpected token: ") + pass->fToken.toString());
-      pass->scanUntilNextParameter();
-      return true;
-    }
-
-    Token varClause;
-    if (colonToken.isSet() && type.isSet())
-      varClause = Token() << symToken << colonToken << type;
-    else
-      varClause = symToken;
-
-    Token subexpr;
-    subexpr << varClause << assignToken << iterator;
-
-    result << subexpr;
-    return true;
-  }
-
-
   bool operator()(FirstPass* pass, Token& result)
   {
     if (pass->fToken == kSymbol) {
@@ -1628,51 +1599,23 @@ struct ForClauseParser {
       if (pass->fToken == kIn) {
         return parseInCollClause(pass, result, symToken, colonToken, type);
       }
-      else if (pass->fToken == kAssign) {
-        return parseExplicitClause(pass, result, symToken, colonToken, type);
-      }
       else {
-        Token first =
-            pass->parseAccess(pass->parseSimpleType(symToken, K(nextIsParsedYet)));
-        if (allowNormalExpr) {
-          OperatorType op1 = tokenTypeToOperator(pass->fToken.tokenType());
-          SrcPos op1Srcpos = pass->fToken.srcpos();
-
-          if (op1 != kOpInvalid) {
-            Token expr =
-                pass->parseExprRec(first.toTokenVector(), op1, op1Srcpos, !K(hasRest));
-            if (expr.isSet()) {
-              result << expr;
-              return true;
-            }
-          }
-          else {
-            result << first;
-            return true;
-          }
-        }
-
         error(pass->fToken.srcpos(), E_UnexpectedToken,
-              String("unexpected token in for clause (1): ") + pass->fToken.toString());
+              String("'in' keyword expected: ") + pass->fToken.toString());
         pass->scanUntilNextParameter();
       }
     }
     else {
-      Token expr = pass->parseExpr(!K(acceptComma));
-      if (expr.isSet()) {
-        result << expr;
-        return true;
-      }
-
       error(pass->fToken.srcpos(), E_UnexpectedToken,
-            String("unexpected token in for clause (2): ") + pass->fToken.toString());
+            String("Symbol expected in for clause: ") + pass->fToken.toString());
       pass->scanUntilNextParameter();
     }
 
     return true;
   }
 };
-};  // namespace herschel
+
+}  // namespace herschel
 
 
 Token FirstPass::parseFor()
