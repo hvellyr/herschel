@@ -44,31 +44,6 @@ public:
 };
 
 
-class UnitScopeItem : public Scope::ScopeItem {
-public:
-  UnitScopeItem(const SrcPos& srcpos, const TypeUnit& unit,
-                std::shared_ptr<AstNode> transformFunc)
-      : ScopeItem(srcpos)
-      , fUnit(unit)
-      , fTransformFunc(transformFunc)
-  {
-  }
-
-  Scope::ScopeItemKind kind() const override { return Scope::kScopeItem_unit; }
-
-  const TypeUnit& unit() const { return fUnit; }
-
-  const Type& type() const { return fUnit.effType(); }
-
-  const String& unitName() const { return fUnit.name(); }
-
-  //-------- data members
-
-  TypeUnit fUnit;
-  std::shared_ptr<AstNode> fTransformFunc;
-};
-
-
 //--------------------------------------------------------------------------
 
 class MacroScopeItem : public Scope::ScopeItem {
@@ -344,16 +319,6 @@ const Type& Scope::lookupType(const String& name, bool showAmbiguousSymDef) cons
 }
 
 
-TypeUnit Scope::lookupUnit(const String& name, bool showAmbiguousSymDef) const
-{
-  auto lv = lookupItem(SrcPos(), ScopeName(kUnit, name), showAmbiguousSymDef);
-  if (lv.fItem && lv.fItem->kind() == kScopeItem_unit)
-    return dynamic_cast<const UnitScopeItem*>(lv.fItem)->unit();
-
-  return TypeUnit();
-}
-
-
 Type Scope::normalizeType(const Type& type)
 {
   if (type.isRef()) {
@@ -442,10 +407,6 @@ Type Scope::lookupType(const Type& type) const
     // TODO: something to be done here?
     return type;
   }
-  else if (type.isMeasure()) {
-    return Type::makeMeasure(type.typeName(), lookupType(type.measureBaseType()),
-                             type.measureUnit());
-  }
   else if (type.isRef()) {
     Type resolvedType = lookupType(type.typeName(), K(showAmbiguousSymDef));
     if (resolvedType.isDef()) {
@@ -494,16 +455,6 @@ Type Scope::lookupType_unused(const Type& type) const
   }
 
   return type;
-}
-
-
-void Scope::registerUnit(const SrcPos& srcpos, const String& unitName,
-                         const String& baseUnit, const Type& baseType,
-                         std::shared_ptr<AstNode> transformFunc)
-{
-  registerScopeItem(ScopeName(kUnit, unitName),
-                    std::make_shared<UnitScopeItem>(
-                        srcpos, TypeUnit(unitName, baseUnit, baseType), transformFunc));
 }
 
 

@@ -135,9 +135,7 @@ std::shared_ptr<AstNode> SecondPass::parseExport(const Token& expr)
         hr_assert(symbolExprs[j][2] == kSymbol);
 
         Scope::ScopeDomain domain = Scope::kNormal;
-        if (symbolExprs[j][2] == Compiler::unitToken)
-          domain = Scope::kUnit;
-        else if (symbolExprs[j][2] == Compiler::charToken)
+        if (symbolExprs[j][2] == Compiler::charToken)
           domain = Scope::kChar;
         else {
           warning(symbolExprs[j][2].srcpos(), E_UnknownSymbolDomain,
@@ -1250,108 +1248,6 @@ std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
 }
 
 
-std::shared_ptr<AstNode> SecondPass::parseMeasureDef(const Token& expr, size_t ofs,
-                                                     bool isLocal)
-{
-  hr_assert(fCurrentGenericTypes.empty());
-
-  hr_assert(expr.isSeq());
-  hr_assert(expr.count() == ofs + 5);
-  hr_assert(expr[ofs] == Compiler::measureToken);
-  hr_assert(expr[ofs + 1] == kSymbol);
-  hr_assert(expr[ofs + 2].isNested());
-  hr_assert(expr[ofs + 2].count() == 1);
-  hr_assert(expr[ofs + 2][0] == kSymbol);
-  hr_assert(expr[ofs + 3] == kColon);
-
-  ofs++;
-
-  const TokenVector& seq = expr.children();
-  String typeName = seq[ofs].idValue();
-  String fullTypeName = qualifyId(currentModuleName(), typeName);
-  ofs++;
-
-  String unitName = seq[ofs][0].idValue();
-  String fullUnitName = qualifyId(currentModuleName(), unitName);
-  ofs++;
-
-  Type isaFrom;
-  if (ofs + 1 < seq.size() && seq[ofs] == kColon) {
-    isaFrom = parseTypeSpec(seq[ofs + 1]);
-
-    if (!isaFrom.isValueType()) {
-      errorf(seq[ofs + 1].srcpos(), E_InheritsRefType,
-             "Can't inherit from reference type.  Reference ignored.");
-      isaFrom.setIsValueType(true);
-    }
-
-    ofs += 2;
-  }
-
-  fCurrentGenericTypes.clear();
-
-  Type defMeasureType = Type::makeMeasure(fullTypeName, isaFrom, fullUnitName);
-
-  if (fScope->checkForRedefinition(expr.srcpos(), Scope::kNormal, fullTypeName))
-    return nullptr;
-  fScope->registerType(expr.srcpos(), fullTypeName, defMeasureType);
-
-  if (fScope->checkForRedefinition(expr.srcpos(), Scope::kUnit, fullUnitName))
-    return nullptr;
-  fScope->registerUnit(expr.srcpos(), fullUnitName, String(), defMeasureType, nullptr);
-
-  NodeList dummyApplyParams;
-
-  return makeTypeDefNode(expr.srcpos(), fullTypeName, K(isRecord), defMeasureType,
-                         dummyApplyParams);
-}
-
-
-std::shared_ptr<AstNode> SecondPass::parseUnitDef(const Token& expr, size_t ofs,
-                                                  bool isLocal)
-{
-  hr_assert(fCurrentGenericTypes.empty());
-
-  hr_assert(expr.isSeq());
-  hr_assert(expr.count() >= ofs + 6);
-  hr_assert(expr[ofs] == Compiler::unitToken);
-  hr_assert(expr[ofs + 1] == kSymbol);
-  hr_assert(expr[ofs + 2] == kMapTo);
-  hr_assert(expr[ofs + 4].isNested());
-  hr_assert(expr[ofs + 4].count() == 1);
-
-  ofs++;
-
-  const TokenVector& seq = expr.children();
-  String unitName = seq[ofs].idValue();
-  String fullUnitName = qualifyId(currentModuleName(), unitName);
-  ofs++;
-  hr_assert(seq[ofs] == kMapTo);
-  ofs++;
-
-  TypeUnit baseUnit = fScope->lookupUnit(seq[ofs].idValue(), K(showAmbiguousSymDef));
-  if (!baseUnit.isDef()) {
-    error(seq[ofs].srcpos(), E_UndefinedUnit,
-          String("Undefined unit: ") + seq[ofs].idValue());
-    return nullptr;
-  }
-  ofs++;
-  hr_assert(seq[ofs].isNested());
-
-  FundefClauseData data;
-  parseFundefClause(seq, ofs, data);
-
-  auto funcNode = makeFunctionNode(expr.srcpos(), data.fParams, data.fType, data.fBody);
-
-  if (fScope->checkForRedefinition(expr.srcpos(), Scope::kUnit, fullUnitName))
-    return nullptr;
-  fScope->registerUnit(expr.srcpos(), fullUnitName, baseUnit.name(), baseUnit.effType(),
-                       funcNode);
-
-  return nullptr;
-}
-
-
 std::shared_ptr<AstNode> SecondPass::parseVarDef(const Token& expr, VardefFlags flags,
                                                  size_t ofs, bool isLocal,
                                                  const String& linkage)
@@ -1659,15 +1555,6 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
   else if (expr[ofs] == Compiler::enumToken) {
     hr_assert(linkage.isEmpty());
     return rewriteDefNode(parseEnumDef(expr, ofs, isLocal), isLocal);
-  }
-  else if (expr[ofs] == Compiler::measureToken) {
-    hr_assert(linkage.isEmpty());
-    return rewriteDefNode(parseMeasureDef(expr, ofs, isLocal), isLocal);
-  }
-
-  else if (expr[ofs] == Compiler::unitToken) {
-    hr_assert(linkage.isEmpty());
-    return rewriteDefNode(parseUnitDef(expr, ofs, isLocal), isLocal);
   }
 
   else if (expr[ofs] == Compiler::constToken) {
@@ -2861,26 +2748,6 @@ NodeList SecondPass::parseTokenVector(const TokenVector& seq)
 }
 
 
-std::shared_ptr<AstNode> SecondPass::parseUnitNumber(const Token& expr)
-{
-  hr_assert(expr.count() == 3);
-  hr_assert(expr[1] == kQuote);
-  hr_assert(expr[2] == kSymbol);
-
-  auto value = singletonNodeListOrNull(parseExpr(expr[0]));
-
-  auto unit = fScope->lookupUnit(expr[2].idValue(), K(showAmbiguousSymDef));
-  if (unit.isDef()) {
-    return makeUnitConstNode(expr.srcpos(), value, unit);
-  }
-  else {
-    error(expr[2].srcpos(), E_UndefinedUnit,
-          String("Undefined unit: ") + expr[2].idValue());
-    return nullptr;
-  }
-}
-
-
 NodeList SecondPass::parseSeq(const Token& expr)
 {
   hr_assert(expr.isSeq());
@@ -2948,9 +2815,6 @@ NodeList SecondPass::parseSeq(const Token& expr)
         hr_invalid("");
         return NodeList();
       }
-    }
-    else if (expr[0].isNumber() && expr[1] == kQuote) {
-      return makeNodeList(parseUnitNumber(expr));
     }
     else if (expr[1] == kRange) {
       return makeNodeList(parseBinary(expr));

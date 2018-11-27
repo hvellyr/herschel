@@ -40,7 +40,6 @@ public:
   enum ScopeDomain {
     kNormal,
     kChar,
-    kUnit,
 
     kMaxScopeDomain
   };
@@ -142,15 +141,6 @@ public:
 
   //! Try to normalize \p type.  If it is an alias lookup the refered type.
   Type normalizeType(const Type& type);
-
-  //! register a unit \p unitName defined in terms of \p baseUnit, refering
-  //! to the type \p baseType.  The unit \p unitName can be computed into \p
-  //! baseUnit by \p transformFunc.  If \p transformFunc is nullptr this is a
-  //! base unit.
-  void registerUnit(const SrcPos& srcpos, const String& unitName, const String& baseUnit,
-                    const Type& baseType, std::shared_ptr<AstNode> transformFunc);
-
-  TypeUnit lookupUnit(const String& name, bool showAmbiguousSymDef) const;
 
   //-------- macros
 

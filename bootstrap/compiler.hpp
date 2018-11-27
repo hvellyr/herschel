@@ -82,7 +82,6 @@ public:
   static const Token includeToken;
   static const Token innerToken;
   static const Token macroToken;
-  static const Token measureToken;
   static const Token outerToken;
   static const Token privateToken;
   static const Token publicToken;
@@ -92,7 +91,6 @@ public:
   static const Token syncToken;
   static const Token transientToken;
   static const Token typeToken;
-  static const Token unitToken;
 
 
   class PortStackHelper {

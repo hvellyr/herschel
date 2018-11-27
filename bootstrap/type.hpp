@@ -40,7 +40,7 @@ using TypeSlotList = std::vector<TypeSlot>;
 
 
 //! Technically there are Type Instances and Type References.  Type
-//! Instances represent a fully defined type, class, alias, enum, measure,
+//! Instances represent a fully defined type, class, alias, enum,
 //! function type, or base type (like Int, String).  They are normally never
 //! used explicit in the code (when annotating variables, etc.); there're
 //! normaly Type References are used:
@@ -66,7 +66,6 @@ enum TypeKind {
   kType_Array,  //!< specifies an array kind
 
   kType_Function,  //!< specifies a function kind
-  kType_Measure,   //!< specifies a measure kind
   kType_Class,     //!< specifies a class kind
   kType_Type,      //!< specifies a type kind
   kType_Alias,     //!< specifies an type alias kind
@@ -210,9 +209,6 @@ public:
 
   //! \pre \p name must not be empty; \p isa must be a valid type instance
   static Type makeAlias(const String& name, const TypeVector& generics, const Type& isa);
-
-  static Type makeMeasure(const String& name, const Type& baseType,
-                          const String& defUnit);
 
   //! Create a new function type instance using the function signature \p
   //! sign.
@@ -404,12 +400,6 @@ public:
   //! Indicates whether the receiver, which must be a sequence type,
   //! contains \p type as sequence type.
   bool containsType(const Type& type) const;
-  //@}
-
-  //@{ Measure types
-  bool isMeasure() const;
-  const Type& measureBaseType() const;
-  String measureUnit() const;
   //@}
 
   //@{ Has constraints?

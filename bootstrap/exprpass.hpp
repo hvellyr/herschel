@@ -168,8 +168,6 @@ private:
 
   Token parseWhereClause();
 
-  Token parseMeasure(const Token& defToken, bool isLocal);
-  Token parseUnit(const Token& defToken, bool isLocal);
   Token parseEnumDef(const Token& defToken, bool isLocal);
 
 

@@ -102,8 +102,6 @@ private:
   std::shared_ptr<AstNode> nextEnumInitValue(const SrcPos& srcpos,
                                              const Token& enumItemSym,
                                              const Type& baseType, Token& lastInitToken);
-  std::shared_ptr<AstNode> parseMeasureDef(const Token& expr, size_t ofs, bool isLocal);
-  std::shared_ptr<AstNode> parseUnitDef(const Token& expr, size_t ofs, bool isLocal);
   std::shared_ptr<AstNode> parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
                                        bool isLocal, const String& linkage);
   NodeList parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
@@ -151,8 +149,6 @@ private:
 
   std::shared_ptr<AstNode> parseChainSelect(const Token& expr);
   std::shared_ptr<AstNode> parseRealSelect(const Token& expr);
-
-  std::shared_ptr<AstNode> parseUnitNumber(const Token& expr);
 
   std::shared_ptr<AstNode> generateArrayAlloc(const Token& expr,
                                               std::shared_ptr<AstNode> typeNode);

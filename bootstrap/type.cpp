@@ -351,9 +351,6 @@ namespace {
         if (right.isType() || right.isRecord()) {
           inheritance = right.typeInheritance();
         }
-        else if (right.isMeasure()) {
-          inheritance = right.measureBaseType();
-        }
         else
           return false;
 
@@ -607,83 +604,6 @@ protected:
   String fName;
   TypeVector fGenerics;
   Type fType;
-};
-
-
-//--------------------------------------------------------------------------
-
-class MeasureTypeImpl : public TypeImpl {
-public:
-  MeasureTypeImpl(const String& name, const Type& baseType, const String& defUnit)
-      : fName(name)
-      , fBaseType(baseType)
-      , fDefUnit(defUnit)
-  {
-  }
-
-
-  std::shared_ptr<TypeImpl> clone() const override
-  {
-    return std::make_shared<MeasureTypeImpl>(fName, fBaseType.clone(), fDefUnit);
-  }
-
-
-  bool isEqual(const TypeImpl* other) const override
-  {
-    auto o = dynamic_cast<const MeasureTypeImpl*>(other);
-
-    return (o && fName == o->fName && fDefUnit == o->fDefUnit &&
-            fBaseType == o->fBaseType);
-  }
-
-
-  bool isOpen() const override { return fBaseType.isOpen(); }
-
-
-  bool isOpenSelf() const override { return fBaseType.isOpenSelf(); }
-
-
-  const String& name() const { return fName; }
-
-
-  const Type& inherit() const { return fBaseType; }
-
-
-  const String& defUnit() const { return fDefUnit; }
-
-
-  void replaceGenerics(const TypeCtx& typeMap) override
-  {
-    fBaseType.replaceGenerics(typeMap);
-  }
-
-
-  String toString(bool isValue) const override
-  {
-    StringBuffer buf;
-    buf << "<ty:measure nm='" << fName << "' unit='" << fDefUnit << "'>\n";
-
-    if (fBaseType.isDef())
-      buf << "<ty:isa>\n" << fBaseType.toString() << "</ty:isa>\n";
-
-    buf << "</ty:measure>\n";
-    return buf.toString();
-  }
-
-
-  bool matchGenerics(TypeCtx& localCtx, const Type& right0, const Scope& scope,
-                     const SrcPos& srcpos) const override
-  {
-    if (right0.isMeasure())
-      return fBaseType.matchGenerics(localCtx, right0.measureBaseType(), scope, srcpos);
-    return false;
-  }
-
-
-protected:
-  String fName;
-  Type fBaseType;
-  String fDefUnit;
 };
 
 
@@ -1069,13 +989,6 @@ Type Type::makeAlias(const String& name, const TypeVector& generics, const Type&
 }
 
 
-Type Type::makeMeasure(const String& name, const Type& baseType, const String& defUnit)
-{
-  return Type(kType_Measure, K(isValue), !K(isImg),
-              std::make_shared<MeasureTypeImpl>(name, baseType, defUnit));
-}
-
-
 Type Type::makeFunction(const FunctionSignature& sign)
 {
   return Type(kType_Function, K(isValue), !K(isImg),
@@ -1456,7 +1369,6 @@ String Type::typeName() const
   case kType_Type: return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->name();
   case kType_Alias: return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->name();
 
-  case kType_Measure: return std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->name();
   case kType_Union:
   case kType_Sequence:
   case kType_Function: return String();
@@ -1506,11 +1418,6 @@ String Type::typeId() const
   }
 
   case kType_Alias: return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->name();
-
-  case kType_Measure:
-    buffer << std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->name()
-           << std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->defUnit();
-    return buffer.toString();
 
   case kType_Union:
     buffer << "&(" << std::dynamic_pointer_cast<UnionTypeImpl>(fImpl)->types() << ")";
@@ -1693,26 +1600,6 @@ bool Type::containsType(const Type& type) const
 }
 
 
-bool Type::isMeasure() const
-{
-  return fKind == kType_Measure;
-}
-
-
-const Type& Type::measureBaseType() const
-{
-  hr_assert(isMeasure());
-  return std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->inherit();
-}
-
-
-String Type::measureUnit() const
-{
-  hr_assert(isMeasure());
-  return std::dynamic_pointer_cast<MeasureTypeImpl>(fImpl)->defUnit();
-}
-
-
 bool Type::hasConstraints() const
 {
   if (fKind == kType_Ref)
@@ -1775,7 +1662,6 @@ const TypeVector& Type::generics() const
 
   case kType_Array:
   case kType_Function:
-  case kType_Measure:
   case kType_Union:
   case kType_Sequence: return sEmptyTypeVector;
   }
@@ -1858,7 +1744,6 @@ String Type::toString() const
   case kType_Ref:
   case kType_Array:
   case kType_Function:
-  case kType_Measure:
   case kType_Class:
   case kType_Type:
   case kType_Alias:
@@ -2869,12 +2754,6 @@ bool isSameType(const Type& left0, const Type& right0, const Scope& scope,
       return isSameType(left.seqTypes(), right.seqTypes(), scope, srcpos, reportErrors);
     return false;
   }
-  else if (left.isMeasure()) {
-    if (right.isMeasure())
-      if (left.typeName() == right.typeName())
-        return true;
-    return false;
-  }
   else if (left.isFunction()) {
     if (right.isFunction()) {
       return isSameType(left.functionSignature(), right.functionSignature(), scope,
@@ -2923,8 +2802,6 @@ bool inheritsFrom(const Type& left0, const Type& right0, const Scope& scope,
   Type inheritance;
   if (left.isType() || left.isRecord())
     inheritance = left.typeInheritance();
-  else if (left.isMeasure())
-    inheritance = left.measureBaseType();
   else
     return false;
 
@@ -3219,10 +3096,6 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
       return isCovariant(left.seqTypes(), right.seqTypes(), scope, srcpos, reportErrors);
     }
     return false;
-  }
-  else if (left.isMeasure()) {
-    return (isSameType(left, right, scope, srcpos, reportErrors) ||
-            isCovariant(left.measureBaseType(), right, scope, srcpos, reportErrors));
   }
   else if (left.isFunction()) {
     if (isSameType(left, right, scope, srcpos, reportErrors))

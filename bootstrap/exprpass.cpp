@@ -1696,20 +1696,6 @@ Token FirstPass::parseUnitNumber(const Token& token)
 {
   Token number = token;
   nextToken();
-  if (fToken == kQuote) {
-    Token bqToken = fToken;
-    nextToken();
-
-    if (!fToken.isCharOrUnitName()) {
-      errorf(fToken.srcpos(), E_UnitExpected, "unit name expected");
-      return number;
-    }
-    Token unitToken =
-        (fToken == kSymbol ? fToken : Token(fToken.srcpos(), kSymbol, fToken.toString()));
-    nextToken();
-
-    return Token() << number << bqToken << unitToken;
-  }
   return number;
 }
 
@@ -2951,122 +2937,6 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
 }
 
 
-Token FirstPass::parseMeasure(const Token& defToken, bool isLocal)
-{
-  hr_assert(fToken == Compiler::measureToken);
-  Token tagToken = fToken;
-  nextToken();
-
-  if (fToken != kSymbol) {
-    errorf(fToken.srcpos(), E_MissingDefName, "expected measure name");
-    return scanUntilTopExprAndResume();
-  }
-  Token symToken = fToken;
-  nextToken();
-
-  if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingUnitTag, "expected unit tag definition");
-    return scanUntilTopExprAndResume();
-  }
-  SrcPos paranPos = fToken.srcpos();
-  nextToken();
-
-  if (!fToken.isCharOrUnitName()) {
-    errorf(paranPos, E_MissingUnitTag, "empty unit parameter definition");
-    return scanUntilTopExprAndResume();
-  }
-  Token unitToken =
-      (fToken == kSymbol ? fToken : Token(fToken.srcpos(), kSymbol, fToken.toString()));
-  nextToken();
-
-  if (fToken != kParanClose) {
-    errorf(fToken.srcpos(), E_MissingParanClose, "expected ')'");
-  }
-  else
-    nextToken();
-
-
-  if (fToken != kColon) {
-    errorf(fToken.srcpos(), E_MissingBaseType, "expected base type for measure");
-    return scanUntilTopExprAndResume();
-  }
-
-  Token colonToken = fToken;
-  nextToken();
-
-  SrcPos pos = fToken.srcpos();
-  Token isaType = parseTypeSpec(K(onlyNestedConstr));
-  if (!isaType.isSet()) {
-    errorf(pos, E_MissingType, "type expression expected");
-    isaType = Token(fToken.srcpos(), kSymbol, "Any");
-  }
-
-  Token docString = parseOptDocString();
-
-  Token result = Token() << defToken << tagToken << symToken
-                         << (Token(paranPos, kParanOpen, kParanClose) << unitToken)
-                         << colonToken << isaType;
-  if (docString.isSet())
-    result << docString;
-
-  return result;
-}
-
-
-Token FirstPass::parseUnit(const Token& defToken, bool isLocal)
-{
-  hr_assert(fToken == Compiler::unitToken);
-  Token tagToken = fToken;
-  nextToken();
-
-  if (!fToken.isCharOrUnitName()) {
-    errorf(fToken.srcpos(), E_MissingDefName, "expected unit name");
-    return scanUntilTopExprAndResume();
-  }
-  Token newUnitToken =
-      (fToken == kSymbol ? fToken : Token(fToken.srcpos(), kSymbol, fToken.toString()));
-  nextToken();
-
-  if (fToken != kMapTo) {
-  }
-  Token mapToToken = fToken;
-  nextToken();
-
-  if (!fToken.isCharOrUnitName()) {
-    errorf(fToken.srcpos(), E_MissingDefName, "expected reference unit name");
-    return scanUntilTopExprAndResume();
-  }
-  Token refUnitToken =
-      (fToken == kSymbol ? fToken : Token(fToken.srcpos(), kSymbol, fToken.toString()));
-  nextToken();
-
-  SrcPos signPos = fToken.srcpos();
-  Token signature = parseFunctionSignature();
-  if (!signature.isSet()) {
-    errorf(signPos, E_MissingUnitSign, "expected function signature");
-    return scanUntilTopExprAndResume();
-  }
-
-  Token docString = parseOptDocString();
-
-  SrcPos bodyPos = fToken.srcpos();
-  Token body = parseExpr(!K(acceptComma));
-  if (!body.isSet()) {
-    errorf(bodyPos, E_MissingBody, "expected unit def function body");
-    return Token();
-  }
-
-  Token result = Token() << defToken << tagToken << newUnitToken << mapToToken
-                         << refUnitToken;
-  if (docString.isSet())
-    result << docString;
-
-  result << signature.children() << body;
-
-  return result;
-}
-
-
 namespace herschel {
 struct EnumItemParser {
   bool operator()(FirstPass* pass, Token& result)
@@ -3488,18 +3358,6 @@ TokenVector FirstPass::parseDef(bool isLocal)
       errorf(linkage.srcpos(), E_UnexpLinkage,
              "Unsupported linkage for enum definition ignored");
     return parseEnumDef(defToken, isLocal).toTokenVector();
-  }
-  else if (fToken == Compiler::measureToken) {
-    if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for measure definition ignored");
-    return parseMeasure(defToken, isLocal).toTokenVector();
-  }
-  else if (fToken == Compiler::unitToken) {
-    if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for unit definition ignored");
-    return parseUnit(defToken, isLocal).toTokenVector();
   }
   else if (fToken == Compiler::constToken || fToken == Compiler::configToken) {
     if (linkage.isSet())

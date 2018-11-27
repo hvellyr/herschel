@@ -51,7 +51,6 @@ const Token Compiler::ignoreToken = Token(SrcPos(), kSymbol, "ignore");
 const Token Compiler::includeToken = Token(SrcPos(), kSymbol, "include");
 const Token Compiler::innerToken = Token(SrcPos(), kSymbol, "inner");
 const Token Compiler::macroToken = Token(SrcPos(), kSymbol, "macro");
-const Token Compiler::measureToken = Token(SrcPos(), kSymbol, "measure");
 const Token Compiler::outerToken = Token(SrcPos(), kSymbol, "outer");
 const Token Compiler::privateToken = Token(SrcPos(), kSymbol, "private");
 const Token Compiler::publicToken = Token(SrcPos(), kSymbol, "public");
@@ -61,7 +60,6 @@ const Token Compiler::signalToken = Token(SrcPos(), kSymbol, MID_signalKeyword);
 const Token Compiler::syncToken = Token(SrcPos(), kSymbol, "sync");
 const Token Compiler::transientToken = Token(SrcPos(), kSymbol, "transient");
 const Token Compiler::typeToken = Token(SrcPos(), kSymbol, "type");
-const Token Compiler::unitToken = Token(SrcPos(), kSymbol, "unit");
 
 
 //----------------------------------------------------------------------------

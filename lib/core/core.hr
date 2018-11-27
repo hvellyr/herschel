@@ -31,7 +31,6 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import "core/charnm.hr"
-import "core/si-units.hr"
 
 import "core/common.hr"
 
