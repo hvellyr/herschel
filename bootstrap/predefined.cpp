@@ -106,5 +106,6 @@ const String Names::kSignalKeyword = String(MID_signalKeyword);
 const String Names::kInitFuncName = String("init");
 const String Names::kValueKeyargName = String("value");
 
+const String Names::kOnAllocFuncName = String("on-alloc");
 
 }  // namespace herschel

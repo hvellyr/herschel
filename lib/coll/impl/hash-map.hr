@@ -44,13 +44,6 @@ def lang|to-string(self @ Assoc<'K, 'V>) -> String
   concat(self.key, "->", self.value)
 
 
-def class Triple<Key, Value, Tail>(_key : Key, _val : Value, _tail : Tail)
-{
-  def slot key : Key = _key
-  def slot value : Value = _val
-  def slot tail : Tail = _tail
-}
-
 def generic key?(self @ Triple<'K, 'V, 'T>, other : 'K) -> Bool
 {
   self.key == other
@@ -64,17 +57,15 @@ def lang|to-string(self @ Triple<'K, 'V, 'T>) -> String
 
 ---------------------------------------------------------------------------
 
-def class HashMap<Key, Elt>(items : Ordinal = %default-hash-map-size%)
-    : (Comparable, AssocCollection<Key, Elt>)
-{
-  def slot table : Vector<HashMapTriple<Key, Elt>>
-  def slot elts : Ordinal = items
+def record HashMap<Key, Elt> : (Comparable, AssocCollection<Key, Elt>)
+(
+  table : Vector<HashMapTriple<Key, Elt>>,
+  elts : Ordinal = %default-hash-map-size%
+)
 
-  on init(self) {
-    if (elts > 0)
-      table = Vector<HashMapTriple<Key, Elt>>(items: elts)
-  }
-}
+def method on-alloc(self @ ^HashMap<'Key, 'Elt>) -> ^HashMap<'Key, 'Elt>
+  if (self.elts > 0)
+    self.table = Vector<HashMapTriple<Key, Elt>>(items: self.elts)
 
 
 --------------------------------------------------------------------

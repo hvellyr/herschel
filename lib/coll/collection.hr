@@ -182,11 +182,11 @@ def generic reverse!(cltn @ ^'S) -> ^'S
 -- associative collection (key -> value[s])
 ------------------------------------------------------------------------------
 
-def class Assoc<K, V>(_key : K, _val : V)
-{
-  def slot key : K = _key
-  def slot value : V = _val
-}
+def record Assoc<K, V>
+(
+  key : K,
+  value : V
+)
 
 def type AssocCollection<K, V> : Collection<Assoc<K, V> >
 
@@ -229,63 +229,45 @@ def generic retain-all-keys!(cltn @ ^'C, keys @ Collection<'K>) -> ^'C
 -- default implementations
 ------------------------------------------------------------------------------
 
-def class Set<T> : Collection<T>
-{
-}
+def record Set<T> : Collection<T> ()
 
-
-def class Set!<T> : (Set<T>, Collection!<T>)
-{
-}
-
+def record Set!<T> : (Set<T>, Collection!<T>) ()
 
 -- aka TreeSet
-def class SortedSet<T> : (OrderedCollection<T>,
-                          OrderedSliceable<T, T>)
-{
-}
+def record SortedSet<T> : (OrderedCollection<T>,
+                           OrderedSliceable<T, T>) ()
 
 
-def class SortedSet!<T> : (SortedSet<T>,
-                           Collection!<T>,
-                           Sliceable!<T, T>)
-{
-}
+def record SortedSet!<T> : (SortedSet<T>,
+                            Collection!<T>,
+                            Sliceable!<T, T>) ()
 
 
 -- aka MultiSet
-def class Bag<T> : Collection<T>
-{
-}
+def record Bag<T> : Collection<T> ()
 
 
-def class Bag!<T> : (Bag<T>, Collection!<T>)
-{
-}
+def record Bag!<T> : (Bag<T>, Collection!<T>) ()
 
 
 -- aka MultiTreeSet
-def class SortedBag<T> : (OrderedCollection<T>,
-                          OrderedSliceable<T, T>)
-{
-}
+def record SortedBag<T> : (OrderedCollection<T>,
+                           OrderedSliceable<T, T>) ()
+
+def record SortedBag!<T> : (SortedBag<T>,
+                            Collection!<T>,
+                            Sliceable!<T, T>)
+()
 
 
-def class SortedBag!<T> : (SortedBag<T>,
-                           Collection!<T>,
-                           Sliceable!<T, T>)
-{
-}
-
-
-def class Vector<T> : Sequence<T>
+def record Vector<T> : Sequence<T>
     ~ NOTE: Immutable vectors are the type of the static vector notation
     #[...]. ~
-{
-}
+()
 
 
-def class Vector!<T> : (Vector<T>, Sequence!<T>)
+def record Vector!<T> : (Vector<T>, Sequence!<T>)
+()
 
 def generic resize!(cltn @ ^'C, new-size : Ordinal,
                     new-value : 'T = Class<'T>.null-value) -> ^'C ...
@@ -315,28 +297,20 @@ def generic reserve!(cltn @ ^'C, add-items : Ordinal) -> ^'C ...
 
 
 
-def class List<T> : Sequence<T>
-{
-}
+def record List<T> : Sequence<T>
+()
 
+def record List!<T> : (List<T>, Sequence!<T>)
+()
 
-def class List!<T> : (List<T>, Sequence!<T>)
-{
-}
+def record Deque<T> : Sequence<T>
+()
 
-
-def class Deque<T> : Sequence<T>
-{
-}
-
-
-def class Deque!<T> : (Deque<T>, Sequence!<T>)
-{
-}
-
+def record Deque!<T> : (Deque<T>, Sequence!<T>)
+()
 
 def type Map<K, V> : (AssocCollection<K, V>,
-                           Sliceable<K, V>)
+                      Sliceable<K, V>)
 
 
 def type Map!<K, V> : (Map<K, V>,
@@ -344,52 +318,39 @@ def type Map!<K, V> : (Map<K, V>,
                        Sliceable!<K, V>)
 
 
-def class HashMap<K, V> : Map<K, V>
-{
-}
+def record HashMap<K, V> : Map<K, V>
+()
+
+def record HashMap!<K, V> : (HashMap<K, V>, Map!<K, V>)
+()
+
+def record Tree<K, V> : (Map<K, V>,
+                         OrderedCollection<K>,
+                         OrderedSliceable<K, V>)
+()
+
+def record Tree!<K, V> : (Tree<K, V>,
+                          Map!<K, V>)
+()
 
 
-def class HashMap!<K, V> : (HashMap<K, V>, Map!<K, V>)
-{
-}
+def record MultiMap<K, V> : Map<K, V>
+()
+
+def record MultiMap!<K, V> : (MultiMap<K, V>,
+                              Map!<K, V>)
+()
 
 
-def class Tree<K, V> : (Map<K, V>,
-                        OrderedCollection<K>,
-                        OrderedSliceable<K, V>)
-{
-}
+def record SortedMultiMap<K, V> : (AssocCollection<K, V>,
+                                   OrderedCollection<K, V>,
+                                   OrderedSliceable<K, V>)
+()
 
-
-def class Tree!<K, V> : (Tree<K, V>,
-                         Map!<K, V>)
-{
-}
-
-
-def class MultiMap<K, V> : Map<K, V>
-{
-}
-
-
-def class MultiMap!<K, V> : (MultiMap<K, V>,
-                             Map!<K, V>)
-{
-}
-
-
-def class SortedMultiMap<K, V> : (AssocCollection<K, V>,
-                                  OrderedCollection<K, V>,
-                                  OrderedSliceable<K, V>)
-{
-}
-
-
-def class SortedMultiMap!<K, V> : (SortedMultiMap<K, V>,
-                                   AssocCollection!<K, V>,
-                                   Sliceable!<K, V>)
-{
-}
+def record SortedMultiMap!<K, V> : (SortedMultiMap<K, V>,
+                                    AssocCollection!<K, V>,
+                                    Sliceable!<K, V>)
+()
 
 
 -- end of collection

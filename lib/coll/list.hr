@@ -47,17 +47,15 @@ def find-last-node(node @ Pair<'L, 'R>) -> Pair<'L, 'R> {
 
 def alias ListPair<Elt> = Pair<Elt, ListPair<Elt>>
 
-def class List<Elt>(root: _root : ListPair<Elt> = nil)
-    : Sequence<Elt>
-{
-  def slot root : ListPair<Elt> = _root
-  def slot last : ListPair<Elt> = nil
+def record List<Elt> : Sequence<Elt>
+(
+  root : ListPair<Elt>,
+  last : ListPair<Elt> = nil
+)
 
-  on init(self) {
-    -- set self.last to the last element in the list
-    self.last = find-last-node(self.root)
-  }
-}
+def method on-alloc(self @ ^List<'Elt>) -> ^List<'Elt>
+  -- set self.last to the last element in the list
+  self.last = find-last-node(self.root)
 
 
 def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) -> List<'T> {

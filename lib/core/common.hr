@@ -36,22 +36,12 @@ export public(*)
 import "core/core.hr"
 
 
-------------------------------------------------------------------------------
--- Common exceptions
-------------------------------------------------------------------------------
-
-def class OutOfBoundsException : Exception
-    ~ An @type{OutOfBoundsException} is typically raised when trying to
-    access (or writes) elements outside of the range of a container.~
+def generic on-alloc(self @ ^'T) -> Any
+    ~ Hook which is called after a record has been created.  This hook
+    is called by the system and is not expected to return anything
+    particular. ~
 {
+  unspecified
 }
-
-
-def class NilException : Exception
-    ~ A @type{NilException} is raised when code tries to dereference a
-    @const{nil} pointer.~
-{
-}
-
 
 -- end of common

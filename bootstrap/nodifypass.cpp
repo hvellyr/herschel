@@ -851,9 +851,9 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
     for (size_t i = 0; i < slotParams.size(); i++) {
       auto sdnd = dynamic_cast<SlotdefNode*>(slotParams[i].get());
       if (sdnd) {
-        defaultApplyParams.push_back(makeParamNode(sdnd->srcpos(), sdnd->name(), uniqueName("prm"),
-                                                   kNamedArg, sdnd->type(),
-                                                   sdnd->initExpr()));
+        defaultApplyParams.push_back(makeParamNode(sdnd->srcpos(), sdnd->name(),
+                                                   uniqueName("prm"), kNamedArg,
+                                                   sdnd->type(), sdnd->initExpr()));
       }
     }
 
@@ -896,10 +896,18 @@ SecondPass::generateConstructor(const Token& typeExpr, const String& fullTypeNam
     hr_assert(slotParam);
 
     auto slotInit = makeAssignNode(
-                                   srcpos,
-                                   makeSlotRefNode(srcpos, makeSymbolNode(srcpos, selfParamSym), slot->name()),
-                                   makeSymbolNode(srcpos, slotParam->name()));
+        srcpos,
+        makeSlotRefNode(srcpos, makeSymbolNode(srcpos, selfParamSym), slot->name()),
+        makeSymbolNode(srcpos, slotParam->name()));
     body->appendNode(slotInit);
+  }
+
+  {
+    auto funcNode = makeSymbolNode(srcpos, Names::kOnAllocFuncName);
+    auto initExpr = makeApplyNode(srcpos, funcNode);
+    initExpr->appendNode(makeSymbolNode(srcpos, selfParamSym));
+
+    body->appendNode(initExpr);
   }
 
   body->appendNode(makeSymbolNode(srcpos, selfParamSym));
