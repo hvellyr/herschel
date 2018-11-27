@@ -1,0 +1,9 @@
+def enum Color : lang|Ordinal (
+  yellow,
+  orange = 3,
+  red = 1 << 2,
+  green,
+  blue
+)
+
+def fill(gfxo : ^'T, co : Color) ...

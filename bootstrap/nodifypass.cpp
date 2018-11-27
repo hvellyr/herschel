@@ -1189,7 +1189,7 @@ std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
   }
 
   hr_assert(expr[ofs].isNested());
-  hr_assert(expr[ofs].leftToken() == kBraceOpen);
+  hr_assert(expr[ofs].leftToken() == kParanOpen);
 
   fCurrentGenericTypes.clear();
 
@@ -1215,6 +1215,9 @@ std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
     else if (enumVal == kSymbol) {
       sym = enumVal.idValue();
       initExpr = nextEnumInitValue(lastInitPos, enumVal, baseType, lastInitToken);
+    }
+    else if (enumVal == kComma) {
+      continue;
     }
     else
       hr_invalid("");

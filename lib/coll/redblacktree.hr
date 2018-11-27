@@ -29,10 +29,10 @@ export public (RedBlackTree, lookup, insert, delete)
 
 import "lang/assert.hr"
 
-def enum NodeColor : Bool {
-  RED   = false
+def enum NodeColor : Bool (
+  RED   = false,
   BLACK = true
-}
+)
 
 
 def class Node<K, V>(key : K, value : V, color : NodeColor,

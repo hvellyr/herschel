@@ -3007,13 +3007,13 @@ Token FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
 
   Token docString = parseOptDocString();
 
-  if (fToken != kBraceOpen) {
-    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '{'");
     return scanUntilTopExprAndResume();
   }
 
-  Token items = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
-  parseSequence(EnumItemParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
+  Token items = Token(fToken.srcpos(), kParanOpen, kParanClose);
+  parseSequence(EnumItemParser(), kParanOpen, kParanClose, K(hasSeparator),
                 E_BadEnumItemList, items, "enum-items");
 
   Token enumDefToken = Token() << defToken << tagToken << enumToken;
