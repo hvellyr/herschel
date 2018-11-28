@@ -190,6 +190,8 @@ private:
   void parseSequence(ParseFunctor functor, TokenType startToken, TokenType endToken,
                      bool hasSeparator, ErrCodes errorCode, Token& result, zstring ctx,
                      bool skipFirst = true, bool eatLast = true);
+  template <typename ParseFunctor>
+  void parseChoiceSequence(ParseFunctor functor, TokenType choiceToken, Token& result);
 
   bool isConstraintOperator(const Token& token) const;
 
@@ -208,7 +210,8 @@ private:
   //@{ Macro calls
 
   TokenVector parseMakeMacroCall(const Token& expr, const TokenVector& args,
-                                 const Macro* macro, bool shouldParseParams, bool isLocal);
+                                 const Macro* macro, bool shouldParseParams,
+                                 bool isLocal);
 
   bool parseDoMatchSyntaxDef(TokenVector* result, const Token& expr,
                              SyntaxTable& syntaxTable, bool isLocal);

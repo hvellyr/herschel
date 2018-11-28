@@ -1,0 +1,9 @@
+def f()
+  match (foo())
+    | t : One -> {
+                   match (t[0])
+                     | a : A -> outln("a")
+                     | b : B -> outln("b")
+                 }
+    | _ : Any -> "foo"
+

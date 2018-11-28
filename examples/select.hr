@@ -1,0 +1,20 @@
+def f1(a)
+  select (a)
+    | \a -> if (not done)
+              do-it
+            else
+              do-something-different()
+    | \b -> {
+              outln("x")
+              return(22)
+            }
+    | else outln("nothing applies")
+
+
+def f2(a, x)
+  select (a)
+    | #number -> {
+                   select (x)
+                     | 1, 2, 3 -> outln("< 4")
+                     | 4, 5, 6 -> outln("< 7")
+                 }

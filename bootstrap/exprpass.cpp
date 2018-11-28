@@ -191,6 +191,21 @@ void FirstPass::parseSequence(ParseFunctor functor, TokenType startToken,
 }
 
 
+template <typename ParseFunctor>
+void FirstPass::parseChoiceSequence(ParseFunctor functor, TokenType choiceToken,
+                                    Token& result)
+{
+  while (fToken == choiceToken) {
+    Token tmp;
+    if (!functor(this, tmp))
+      break;
+
+    if (tmp.isSet())
+      result << tmp.children();
+  }
+}
+
+
 //----------------------------------------------------------------------------
 
 namespace herschel {
@@ -1439,14 +1454,13 @@ Token FirstPass::parseSelect()
   TokenVector args;
   parseFuncallArgs(&args);
 
-  if (fToken != kBraceOpen) {
-    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+  if (fToken != kPipe) {
+    errorf(fToken.srcpos(), E_MissingPipe, "expected '|'");
     return scanUntilTopExprAndResume();
   }
 
   Token patterns = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
-  parseSequence(SelectPatternParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
-                E_BadPatternList, patterns, "select-pattern");
+  parseChoiceSequence(SelectPatternParser(), kPipe, patterns);
 
   return Token() << selectToken << (Token(paranPos, kParanOpen, kParanClose) << args)
                  << patterns;
@@ -1528,14 +1542,13 @@ Token FirstPass::parseMatch()
   TokenVector args;
   parseFuncallArgs(&args);
 
-  if (fToken != kBraceOpen) {
-    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+  if (fToken != kPipe) {
+    errorf(fToken.srcpos(), E_MissingPipe, "expected '|'");
     return scanUntilTopExprAndResume();
   }
 
   Token patterns = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
-  parseSequence(MatchPatternParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
-                E_BadPatternList, patterns, "match-pattern");
+  parseChoiceSequence(MatchPatternParser(), kPipe, patterns);
 
   return Token() << matchToken << (Token(paranPos, kParanOpen, kParanClose) << args)
                  << patterns;
