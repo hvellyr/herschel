@@ -16,25 +16,25 @@
 
 #include <iostream>
 
-using namespace herschel;
+
+namespace herschel {
 
 
 TEST_CASE("Tokenizer basic", "[tokenize]")
 {
   SrcPos sp;
 
-  static zstring test =
-    "module zero (\"eyestep/zero 1.0:portables\")\n"
-    "  export public(*)\n"
-    "-- a simple portable class\n"
-    "def class Portable<T>(x @ Int) : (Copyable, Comparable)\n"
-    "{\n"
-    "  slot first : T = x ;\n"
-    "  slot data : Octet[]\n"
-    "}\n";
+  static zstring test = "module zero (\"eyestep/zero 1.0:portables\")\n"
+                        "  export public(*)\n"
+                        "-- a simple portable class\n"
+                        "def class Portable<T>(x @ Int) : (Copyable, Comparable)\n"
+                        "{\n"
+                        "  slot first : T = x ;\n"
+                        "  slot data : Octet[]\n"
+                        "}\n";
 
   Tokenizer tnz(std::make_shared<CharPort>(
-                  std::make_shared<DataPort>((Octet*)test, ::strlen(test))),
+                    std::make_shared<DataPort>((Octet*)test, ::strlen(test))),
                 String("n.n."));
 
   REQUIRE(tnz.nextToken() == Token(sp, kModuleId));
@@ -91,15 +91,14 @@ TEST_CASE("Tokenizer numbers", "[tokenize][numbers]")
 {
   SrcPos sp;
 
-  static zstring test =
-    "true false\n"
-    "12345 0aaaah 0aBcDeFh 07123q 101101y 1y 2t 3h 4\n"
-    "12.34 0.12345e+10 123.45e+7 12.3456e-5 -3.1415\n"
-    "2/3 120/33 1/1024\n"
-    "5i  3.1415i\n";
-  Tokenizer tnz(std::make_shared<CharPort>(
-                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
-                String("n.n."));
+  static zstring test = "true false\n"
+                        "12345 0aaaah 0aBcDeFh 07123q 101101y 1y 2t 3h 4\n"
+                        "12.34 0.12345e+10 123.45e+7 12.3456e-5 -3.1415\n"
+                        "2/3 120/33 1/1024\n"
+                        "5i  3.1415i\n";
+  Tokenizer tnz(
+      std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
+      String("n.n."));
 
   try {
     REQUIRE(tnz.nextToken() == Token(sp, kBool, true));
@@ -116,8 +115,8 @@ TEST_CASE("Tokenizer numbers", "[tokenize][numbers]")
 
     REQUIRE(tnz.nextToken() == Token(sp, kFloat, 12.34));
     REQUIRE(tnz.nextToken() == Token(sp, kFloat, 0.12345e+10));
-    REQUIRE(tnz.nextToken() == Token(sp, kFloat, 0.12345e+10)); // normalized 123.45e+7
-    REQUIRE(tnz.nextToken() == Token(sp, kFloat, 0.000123456)); // normalized
+    REQUIRE(tnz.nextToken() == Token(sp, kFloat, 0.12345e+10));  // normalized 123.45e+7
+    REQUIRE(tnz.nextToken() == Token(sp, kFloat, 0.000123456));  // normalized
     REQUIRE(tnz.nextToken() == Token(sp, kFloat, -3.1415));
 
     REQUIRE(tnz.nextToken() == Token(sp, kRational, Rational(2, 3)));
@@ -136,14 +135,13 @@ TEST_CASE("Tokenizer chars", "[tokenize][chars]")
 {
   SrcPos sp;
 
-  static zstring test =
-    "\\space  \\u60h  \\( \\newline \\cr\n"
-    "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n"
-    "\\ga \\gong ";
+  static zstring test = "\\space  \\u60h  \\( \\newline \\cr\n"
+                        "\"hello,\\nl;world!\"  \"\\esc;\\u61h;\\(\\;;\"\n"
+                        "\\ga \\gong ";
   auto cr = std::make_shared<CharRegistry>();
-  Tokenizer tnz(std::make_shared<CharPort>(
-                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
-                String("n.n."), cr);
+  Tokenizer tnz(
+      std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
+      String("n.n."), cr);
   cr->registerValue(String("ga"), 0xac00);
   cr->registerValue(String("gong"), 0xacf5);
 
@@ -170,15 +168,14 @@ TEST_CASE("Tokenizer function defs", "[tokenize][functions]")
 {
   SrcPos sp;
 
-  static zstring test =
-    "def f(args : &(String, Uri, Boolean)[] ...) ...\n"
-    "  ~ Some function f, does not contain \\~ or similar Spuk.~\n"
-    "def f(arg: _x = 0 .. 20 by 2)\n"
-    "def g(a @ ^'T)\n"
-    "def h(a : ^Repo) a^ = 5 &m = 4\n";
-  Tokenizer tnz(std::make_shared<CharPort>(
-                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
-                String("n.n."));
+  static zstring test = "def f(args : &(String, Uri, Boolean)[] ...) ...\n"
+                        "  ~ Some function f, does not contain \\~ or similar Spuk.~\n"
+                        "def f(arg: _x = 0 .. 20 by 2)\n"
+                        "def g(a @ ^'T)\n"
+                        "def h(a : ^Repo) a^ = 5 &m = 4\n";
+  Tokenizer tnz(
+      std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
+      String("n.n."));
 
   try {
     REQUIRE(tnz.nextToken() == Token(sp, kDefId));
@@ -199,8 +196,9 @@ TEST_CASE("Tokenizer function defs", "[tokenize][functions]")
     REQUIRE(tnz.nextToken() == Token(sp, kParanClose));
     REQUIRE(tnz.nextToken() == Token(sp, kEllipsis));
 
-    REQUIRE(tnz.nextToken() == Token(sp, kDocString,
-                                       " Some function f, does not contain ~ or similar Spuk."));
+    REQUIRE(
+        tnz.nextToken() ==
+        Token(sp, kDocString, " Some function f, does not contain ~ or similar Spuk."));
 
     REQUIRE(tnz.nextToken() == Token(sp, kDefId));
     REQUIRE(tnz.nextToken() == Token(sp, String("f")));
@@ -254,14 +252,13 @@ TEST_CASE("Tokenizer keyword static container", "[tokenize]")
 {
   SrcPos sp;
 
-  static zstring test =
-    "#abc #delft\n"
-    "#[1, 2] #[]\n"
-    "#(1 -> 2) #()\n"
-    "&(1, 2)\n";
-  Tokenizer tnz(std::make_shared<CharPort>(
-                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
-                String("n.n."));
+  static zstring test = "#abc #delft\n"
+                        "#[1, 2] #[]\n"
+                        "#(1 -> 2) #()\n"
+                        "&(1, 2)\n";
+  Tokenizer tnz(
+      std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
+      String("n.n."));
 
   try {
     REQUIRE(tnz.nextToken() == Token(sp, kKeyword, String("abc")));
@@ -302,17 +299,17 @@ TEST_CASE("Tokenizer generics", "[tokenize][generics]")
   SrcPos sp;
 
   static zstring test =
-    "Buffer<Int>()[i] < 10 and true or false\n"
-    "T<S<Y>>  T<S<Y> >  a < b\n"
-    "val << 5 val >> 2\n"
-    "2 < 1  2 <= 1  2 > 1  2 >= 1  2 <=> 1  2 <> 1  2 == 1\n"
-    "a + b  \"a\" ++ \"b\" a - b  a * b  a / b  a ** 2  a mod 5  a rem 5\n"
-    "1 XOR 2  1 OR 2  1 AND 2\n"
-    "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n"
-    "|abc ->abc\n";
-  Tokenizer tnz(std::make_shared<CharPort>(
-                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
-                String("n.n."));
+      "Buffer<Int>()[i] < 10 and true or false\n"
+      "T<S<Y>>  T<S<Y> >  a < b\n"
+      "val << 5 val >> 2\n"
+      "2 < 1  2 <= 1  2 > 1  2 >= 1  2 <=> 1  2 <> 1  2 == 1\n"
+      "a + b  \"a\" ++ \"b\" a - b  a * b  a / b  a ** 2  a mod 5  a rem 5\n"
+      "1 XOR 2  1 OR 2  1 AND 2\n"
+      "1 % 2  1 -> 2  1 in 2  1 isa Number  1 as Octet\n"
+      "|abc ->abc\n";
+  Tokenizer tnz(
+      std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
+      String("n.n."));
 
   try {
     REQUIRE(tnz.nextToken() == Token(sp, String("Buffer")));
@@ -465,12 +462,11 @@ TEST_CASE("Tokenizer namespaces", "[tokenize][namespaces]")
 {
   SrcPos sp;
 
-  static zstring test =
-    "io|File  self.io|val.display\n"
-    "f('T)  12'mm\n";
-  Tokenizer tnz(std::make_shared<CharPort>(
-                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
-                String("n.n."));
+  static zstring test = "io|File  self.io|val.display\n"
+                        "f('T)  12'mm\n";
+  Tokenizer tnz(
+      std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
+      String("n.n."));
 
   try {
     REQUIRE(tnz.nextToken() == Token(sp, String("io|File")));
@@ -501,11 +497,10 @@ TEST_CASE("Tokenizer macro vars", "[tokenize][macros]")
 {
   SrcPos sp;
 
-  static zstring test =
-    "##  ?val:name ?\"abc\" ?\"\" ";
-  Tokenizer tnz(std::make_shared<CharPort>(
-                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
-                String("n.n."));
+  static zstring test = "##  ?val:name ?\"abc\" ?\"\" ";
+  Tokenizer tnz(
+      std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
+      String("n.n."));
 
   try {
     REQUIRE(tnz.nextToken() == Token(sp, kSangHash));
@@ -528,11 +523,10 @@ TEST_CASE("Tokenizer special macro brackets", "[tokenize][macros]")
 {
   SrcPos sp;
 
-  static zstring test =
-    "\343\200\214 xyz \343\200\215 ";
-  Tokenizer tnz(std::make_shared<CharPort>(
-                  std::make_shared<DataPort>((Octet*)test, strlen(test))),
-                String("n.n."));
+  static zstring test = "\343\200\214 xyz \343\200\215 ";
+  Tokenizer tnz(
+      std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
+      String("n.n."));
 
   try {
     REQUIRE(tnz.nextToken() == Token(sp, kMacroOpen));
@@ -543,3 +537,5 @@ TEST_CASE("Tokenizer special macro brackets", "[tokenize][macros]")
     logf(kError, StrHelper(ne.message()));
   }
 }
+
+}  // namespace herschel

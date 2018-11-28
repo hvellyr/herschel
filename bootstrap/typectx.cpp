@@ -13,7 +13,7 @@
 #include "strbuf.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 static Type sInvalidType;
 
@@ -61,3 +61,5 @@ void TypeCtx::dumpDebug()
             (zstring)StrHelper(it->second.toString()));
   }
 }
+
+}  // namespace herschel

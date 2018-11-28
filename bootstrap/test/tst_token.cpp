@@ -14,19 +14,19 @@
 #include "../token.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 TEST_CASE("Token simple tokens", "[token]")
 {
   SrcPos sp;
 
-  REQUIRE(Token(sp, kFloat,    3.1415) ==         Token(sp, kFloat,    3.1415));
-  REQUIRE(Token(sp, kInt,      12345) ==          Token(sp, kInt,      12345));
-  REQUIRE(Token(sp, kChar,     0xac00) ==         Token(sp, kChar,     0xac00));
-  REQUIRE(Token(sp, kString,   "abc") ==          Token(sp, kString,   "abc"));
-  REQUIRE(Token(sp, kDocString, "abc") ==         Token(sp, kDocString, "abc"));
-  REQUIRE(Token(sp, kSymbol,   "abc") ==          Token(sp, kSymbol,   "abc"));
-  REQUIRE(Token(sp, kDefId) ==                    Token(sp, kDefId));
+  REQUIRE(Token(sp, kFloat, 3.1415) == Token(sp, kFloat, 3.1415));
+  REQUIRE(Token(sp, kInt, 12345) == Token(sp, kInt, 12345));
+  REQUIRE(Token(sp, kChar, 0xac00) == Token(sp, kChar, 0xac00));
+  REQUIRE(Token(sp, kString, "abc") == Token(sp, kString, "abc"));
+  REQUIRE(Token(sp, kDocString, "abc") == Token(sp, kDocString, "abc"));
+  REQUIRE(Token(sp, kSymbol, "abc") == Token(sp, kSymbol, "abc"));
+  REQUIRE(Token(sp, kDefId) == Token(sp, kDefId));
   REQUIRE(Token(sp, kRational, Rational(7, 4)) == Token(sp, kRational, Rational(7, 4)));
 
   REQUIRE(Token(sp, kUnionOpen).type() == kPunct);
@@ -35,31 +35,31 @@ TEST_CASE("Token simple tokens", "[token]")
   REQUIRE(Token(sp, kParanOpen, kParanClose) == Token(sp, kParanOpen, kParanClose));
   REQUIRE(Token(sp, kMacroOpen, kMacroClose) == Token(sp, kMacroOpen, kMacroClose));
 
-  REQUIRE((Token() << Token(sp, kInt, 25)) ==     (Token() << Token(sp, kInt, 25)));
-  REQUIRE(( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ) ==
-          ( Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25) ));
-  REQUIRE(( Token(sp, kMacroOpen, kMacroClose) << Token(sp, kInt, 25) ) ==
-          ( Token(sp, kMacroOpen, kMacroClose) << Token(sp, kInt, 25) ));
+  REQUIRE((Token() << Token(sp, kInt, 25)) == (Token() << Token(sp, kInt, 25)));
+  REQUIRE((Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25)) ==
+          (Token(sp, kParanOpen, kParanClose) << Token(sp, kInt, 25)));
+  REQUIRE((Token(sp, kMacroOpen, kMacroClose) << Token(sp, kInt, 25)) ==
+          (Token(sp, kMacroOpen, kMacroClose) << Token(sp, kInt, 25)));
 
   REQUIRE(Token(sp, kFloat, 3.1415).floatValue() == 3.1415);
   REQUIRE(Token(sp, kFloat, 1.2345).tokenType() == kFloat);
-  REQUIRE(Token(sp, kBool, true).boolValue() ==   true);
-  REQUIRE(Token(sp, kInt, 0x10000).intValue() ==  0x10000);
+  REQUIRE(Token(sp, kBool, true).boolValue() == true);
+  REQUIRE(Token(sp, kInt, 0x10000).intValue() == 0x10000);
   REQUIRE(Token(sp, kRational, Rational(23, 27)).rationalValue() == Rational(23, 27));
 
-  REQUIRE(Token(sp, kSymbol, "abc").idValue() ==                  String("abc"));
-  REQUIRE(Token(sp, kMacroParam, String("abc")).idValue() ==      String("abc"));
+  REQUIRE(Token(sp, kSymbol, "abc").idValue() == String("abc"));
+  REQUIRE(Token(sp, kMacroParam, String("abc")).idValue() == String("abc"));
   REQUIRE(Token(sp, kMacroParamAsStr, String("abc")).idValue() == String("abc"));
-  REQUIRE(Token(sp, kString, String("abc")).stringValue() ==      String("abc"));
-  REQUIRE(Token(sp, kDocString, String("abc")).stringValue() ==   String("abc"));
-  REQUIRE(Token(sp, kKeyword, String("abc")).stringValue() ==     String("abc"));
+  REQUIRE(Token(sp, kString, String("abc")).stringValue() == String("abc"));
+  REQUIRE(Token(sp, kDocString, String("abc")).stringValue() == String("abc"));
+  REQUIRE(Token(sp, kKeyword, String("abc")).stringValue() == String("abc"));
 
-  REQUIRE(Token(sp, kSymbol, "abc").idValue() ==          String("abc"));
-  REQUIRE(Token(sp, kMacroParam, "abc").idValue() ==      String("abc"));
+  REQUIRE(Token(sp, kSymbol, "abc").idValue() == String("abc"));
+  REQUIRE(Token(sp, kMacroParam, "abc").idValue() == String("abc"));
   REQUIRE(Token(sp, kMacroParamAsStr, "abc").idValue() == String("abc"));
-  REQUIRE(Token(sp, kString, "abc").stringValue() ==      String("abc"));
-  REQUIRE(Token(sp, kDocString, "abc").stringValue() ==   String("abc"));
-  REQUIRE(Token(sp, kKeyword, "abc").stringValue() ==     String("abc"));
+  REQUIRE(Token(sp, kString, "abc").stringValue() == String("abc"));
+  REQUIRE(Token(sp, kDocString, "abc").stringValue() == String("abc"));
+  REQUIRE(Token(sp, kKeyword, "abc").stringValue() == String("abc"));
   REQUIRE(Token(sp, kKeyarg, "abc").isKeyArg());
 }
 
@@ -68,33 +68,29 @@ TEST_CASE("Token range tokens", "[token]")
 {
   SrcPos sp;
 
-#define MAKE_RANGE(_fromty, _fromv, _toty, _tov)  \
-    (Token() << Token(sp, _fromty, _fromv)        \
-             << Token(sp, kRange)                 \
-             << Token(sp, _toty, _tov))
-#define MAKE_RANGE_2(_fromty, _fromv, _toty, _tov, _stepty, _stepv) \
-    (Token() << Token(sp, _fromty, _fromv)                          \
-             << Token(sp, kRange)                                   \
-             << Token(sp, _toty, _tov)                              \
-             << Token(sp, kBy)                                      \
-             << Token(sp, _stepty, _stepv))
+#define MAKE_RANGE(_fromty, _fromv, _toty, _tov) \
+  (Token() << Token(sp, _fromty, _fromv) << Token(sp, kRange) << Token(sp, _toty, _tov))
+#define MAKE_RANGE_2(_fromty, _fromv, _toty, _tov, _stepty, _stepv)                     \
+  (Token() << Token(sp, _fromty, _fromv) << Token(sp, kRange) << Token(sp, _toty, _tov) \
+           << Token(sp, kBy) << Token(sp, _stepty, _stepv))
 
-  REQUIRE(MAKE_RANGE(kInt,     0,     kInt,      25).isConstRange());
-  REQUIRE(MAKE_RANGE(kFloat,   0.0,   kFloat,  25.0).isConstRange());
-  REQUIRE(MAKE_RANGE(kChar,    'a',   kChar,    'z').isConstRange());
-  REQUIRE(MAKE_RANGE(kBool,    false, kBool,   true).isConstRange());
-  REQUIRE(MAKE_RANGE(kString,  "a",   kString,  "z").isConstRange());
-  REQUIRE(MAKE_RANGE(kKeyword, "a",   kKeyword, "z").isConstRange());
+  REQUIRE(MAKE_RANGE(kInt, 0, kInt, 25).isConstRange());
+  REQUIRE(MAKE_RANGE(kFloat, 0.0, kFloat, 25.0).isConstRange());
+  REQUIRE(MAKE_RANGE(kChar, 'a', kChar, 'z').isConstRange());
+  REQUIRE(MAKE_RANGE(kBool, false, kBool, true).isConstRange());
+  REQUIRE(MAKE_RANGE(kString, "a", kString, "z").isConstRange());
+  REQUIRE(MAKE_RANGE(kKeyword, "a", kKeyword, "z").isConstRange());
 
-  REQUIRE(MAKE_RANGE_2(kInt,     0,     kInt,     25,   kInt,  2).isConstRange());
-  REQUIRE(MAKE_RANGE_2(kFloat,   0.0,   kFloat,  25.0, kFloat, 0.2).isConstRange());
-  REQUIRE(MAKE_RANGE_2(kChar,    'a',   kChar,    'z',  kInt,  1).isConstRange());
-  REQUIRE(MAKE_RANGE_2(kString,  "a",   kString,  "z",  kInt,  1).isConstRange());
-  REQUIRE(MAKE_RANGE_2(kKeyword, "a",   kKeyword, "z",  kInt,  2).isConstRange());
+  REQUIRE(MAKE_RANGE_2(kInt, 0, kInt, 25, kInt, 2).isConstRange());
+  REQUIRE(MAKE_RANGE_2(kFloat, 0.0, kFloat, 25.0, kFloat, 0.2).isConstRange());
+  REQUIRE(MAKE_RANGE_2(kChar, 'a', kChar, 'z', kInt, 1).isConstRange());
+  REQUIRE(MAKE_RANGE_2(kString, "a", kString, "z", kInt, 1).isConstRange());
+  REQUIRE(MAKE_RANGE_2(kKeyword, "a", kKeyword, "z", kInt, 2).isConstRange());
 
   REQUIRE(!(Token(sp, kInt, 5).isConstRange()));
-  REQUIRE(!(Token() << Token(sp, kSymbol, "abc") << Token(sp, kRange)
-            << Token(sp, kInt, 27)).isConstRange());
+  REQUIRE(
+      !(Token() << Token(sp, kSymbol, "abc") << Token(sp, kRange) << Token(sp, kInt, 27))
+           .isConstRange());
 }
 
 
@@ -102,11 +98,11 @@ TEST_CASE("Token assign operator", "[token]")
 {
   SrcPos sp;
 
-#define TEST_ASSIGNOP2(_type, _value, _member)              \
-  {                                                         \
-    Token t = Token(sp, _type, _value);                     \
-    REQUIRE(t.tokenType() == _type);                        \
-    REQUIRE(t._member() == _value);                         \
+#define TEST_ASSIGNOP2(_type, _value, _member) \
+  {                                            \
+    Token t = Token(sp, _type, _value);        \
+    REQUIRE(t.tokenType() == _type);           \
+    REQUIRE(t._member() == _value);            \
   }
 
   TEST_ASSIGNOP2(kFloat, 3.1415, floatValue);
@@ -122,11 +118,11 @@ TEST_CASE("Token copy constructor", "[token]")
 {
   SrcPos sp;
 
-#define TEST_COPYCTOR2(_type, _value, _member)              \
-  {                                                         \
-    Token t(Token(sp, _type, _value));                      \
-    REQUIRE(t.tokenType() == _type);                        \
-    REQUIRE(t._member() == _value);                         \
+#define TEST_COPYCTOR2(_type, _value, _member) \
+  {                                            \
+    Token t(Token(sp, _type, _value));         \
+    REQUIRE(t.tokenType() == _type);           \
+    REQUIRE(t._member() == _value);            \
   }
 
   TEST_COPYCTOR2(kFloat, 3.1415, floatValue);
@@ -187,8 +183,7 @@ TEST_CASE("Token unwrap singleton", "[token]")
   REQUIRE((Token() << Token(sp, kSymbol, "abc")).unwrapSingleton() ==
           Token(sp, kSymbol, "abc"));
 
-  Token t = Token() << Token(sp, kSymbol, "abc")
-                    << Token(sp, kInt, 27);
+  Token t = Token() << Token(sp, kSymbol, "abc") << Token(sp, kInt, 27);
   REQUIRE(t.unwrapSingleton() == t);
 
   REQUIRE(Token().unwrapSingleton() == Token());
@@ -234,3 +229,5 @@ TEST_CASE("Token macro name as string", "[token][string][macros]")
   REQUIRE(t.macroParamName() == String("abc"));
   REQUIRE(t.macroParamType() == String());
 }
+
+}  // namespace herschel

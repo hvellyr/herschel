@@ -15,10 +15,10 @@
 #include "str.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 
-String herschel::makeCompileOutputFileExt(CompileOutFormat format)
+String makeCompileOutputFileExt(CompileOutFormat format)
 {
   switch (format) {
   case kLLVM_IR: return String("ll");
@@ -30,8 +30,8 @@ String herschel::makeCompileOutputFileExt(CompileOutFormat format)
 }
 
 
-String herschel::makeOutputFileName(const String& outdir, const String& outfileName,
-                                    const String& file, const String& outExt)
+String makeOutputFileName(const String& outdir, const String& outfileName,
+                          const String& file, const String& outExt)
 {
   if (!outfileName.isEmpty())
     return outfileName;
@@ -42,3 +42,5 @@ String herschel::makeOutputFileName(const String& outdir, const String& outfileN
 
   return file::appendExt(file::baseName(file), outExt);
 }
+
+}  // namespace herschel

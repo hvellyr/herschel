@@ -15,7 +15,7 @@
 #include <string.h>
 
 
-using namespace herschel;
+namespace herschel {
 
 StringBuffer::StringBuffer()
 {
@@ -164,3 +164,5 @@ StringBuffer& StringBuffer::insertAt(int atIndex, zstring utf8)
   }
   return *this;
 }
+
+}  // namespace herschel

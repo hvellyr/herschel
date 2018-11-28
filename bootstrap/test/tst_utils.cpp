@@ -14,7 +14,7 @@
 #include "../utils.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 TEST_CASE("MakeVector", "[utils]")
 {
@@ -36,12 +36,12 @@ TEST_CASE("MakeVector", "[utils]")
 
   SECTION("MakeVector of complex type")
   {
-    std::vector<String> a = makeVector(String("hello"),
-                                       String(" "),
-                                       String("world"));
+    std::vector<String> a = makeVector(String("hello"), String(" "), String("world"));
     REQUIRE(a.size() == 3);
     REQUIRE(a[0] == String("hello"));
     REQUIRE(a[1] == String(" "));
     REQUIRE(a[2] == String("world"));
   }
 }
+
+}  // namespace herschel

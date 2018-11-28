@@ -17,7 +17,7 @@
 #include <string>
 
 
-using namespace herschel;
+namespace herschel {
 
 TEST_CASE("AST ApplyNode", "[ast][apply-node]")
 {
@@ -25,10 +25,10 @@ TEST_CASE("AST ApplyNode", "[ast][apply-node]")
   REQUIRE(an->isSimpleCall());
   REQUIRE(an->simpleCallName() == String("xyz"));
 
-  auto an2 = makeApplyNode(SrcPos(),
-                           makeApplyNode(SrcPos(),
-                                         makeSymbolNode(SrcPos(),
-                                                        String("get-func"))));
+  auto an2 = makeApplyNode(
+      SrcPos(), makeApplyNode(SrcPos(), makeSymbolNode(SrcPos(), String("get-func"))));
   REQUIRE(!an2->isSimpleCall());
   REQUIRE(an2->simpleCallName() == String());
 }
+
+}  // namespace herschel

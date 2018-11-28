@@ -19,15 +19,13 @@
 #include <string.h>
 
 
-using namespace herschel;
+namespace herschel {
 
 // ENOTSUP seem not to be defined on windows (xp)?
 #if !defined(ENOTSUP)
 #  define ENOTSUP 0x0ffffffe
 #endif
 
-
-//----------------------------------------------------------------------------
 
 PortNotOpenException::PortNotOpenException()
     : IOException(String("port is not open"), EBADF)
@@ -466,7 +464,7 @@ long CharPort::cursor()
 
 //----------------------------------------------------------------------------
 
-void herschel::display(Port<Octet>& port, zstring value)
+void display(Port<Octet>& port, zstring value)
 {
   if (value)
     port.write((const Octet*)value, strlen(value));
@@ -475,21 +473,23 @@ void herschel::display(Port<Octet>& port, zstring value)
 }
 
 
-void herschel::displayln(Port<Octet>& port, zstring value)
+void displayln(Port<Octet>& port, zstring value)
 {
   display(port, value);
   display(port, "\n");
 }
 
 
-void herschel::display(Port<Octet>& port, const String& value)
+void display(Port<Octet>& port, const String& value)
 {
   display(port, StrHelper(value));
 }
 
 
-void herschel::displayln(Port<Octet>& port, const String& value)
+void displayln(Port<Octet>& port, const String& value)
 {
   display(port, value);
   display(port, "\n");
 }
+
+}  // namespace herschel

@@ -12,25 +12,23 @@
 
 #include "../tokenport.hpp"
 
-using namespace herschel;
 
+namespace herschel {
 
 TEST_CASE("TokenPort file token port", "[port][data-port][token-port]")
 {
-  static zstring fTest =
-    "module zero (\"eyestep/zero 1.0:portables\")\n"
-    "  export public(*)\n"
-    "-- a simple portable class\n"
-    "def class Portable<T>(x @ Int) : (Copyable, Comparable)\n"
-    "{\n"
-    "  slot first : T = x ;\n"
-    "  slot data : Octet[]\n"
-    "}\n";
+  static zstring fTest = "module zero (\"eyestep/zero 1.0:portables\")\n"
+                         "  export public(*)\n"
+                         "-- a simple portable class\n"
+                         "def class Portable<T>(x @ Int) : (Copyable, Comparable)\n"
+                         "{\n"
+                         "  slot first : T = x ;\n"
+                         "  slot data : Octet[]\n"
+                         "}\n";
 
   SrcPos sp;
   auto p = std::make_shared<FileTokenPort>(
-    std::make_shared<DataPort>((Octet*)fTest, ::strlen(fTest)),
-    String("test"));
+      std::make_shared<DataPort>((Octet*)fTest, ::strlen(fTest)), String("test"));
   REQUIRE(p->read() == Token(sp, kModuleId));
   REQUIRE(p->read() == Token(sp, kSymbol, String("zero")));
   REQUIRE(p->read() == Token(sp, kParanOpen));
@@ -112,4 +110,6 @@ TEST_CASE("InternalTokenPort", "[port][data-port][token-port]")
 
   REQUIRE(p->isEof());
 }
+
+}  // namespace herschel
 

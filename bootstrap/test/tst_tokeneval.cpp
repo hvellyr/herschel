@@ -12,25 +12,23 @@
 
 #include "../tokeneval.hpp"
 
-using namespace herschel;
 
-namespace
-{
+namespace herschel {
+
+namespace {
   bool approxEqual(float a, float b, float epsilon)
   {
-    return fabs(a - b) <= ( (fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * epsilon);
+    return fabs(a - b) <= ((fabs(a) < fabs(b) ? fabs(b) : fabs(a)) * epsilon);
   }
-}
+}  // namespace
 
-struct TokenEvalContextFixture
-{
+struct TokenEvalContextFixture {
   TokenEvalContextFixture()
-    : ctx(reg)
+      : ctx(reg)
   {
   }
 
-  ~TokenEvalContextFixture() {
-  }
+  ~TokenEvalContextFixture() {}
 
   ConfigVarRegistry reg;
   TokenEvalContext ctx;
@@ -65,10 +63,9 @@ TEST_CASE("TokenEval basic", "[token-eval][token]")
 }
 
 
-#define MAKE_BINARY_SEQ(_ltype, _lvalue, _op, _rtype, _rvalue)  \
-  Token() << Token(f.sp, _ltype, _lvalue)                       \
-  << Token(f.sp, _op)                                           \
-  << Token(f.sp, _rtype, _rvalue)
+#define MAKE_BINARY_SEQ(_ltype, _lvalue, _op, _rtype, _rvalue) \
+  Token() << Token(f.sp, _ltype, _lvalue) << Token(f.sp, _op)  \
+          << Token(f.sp, _rtype, _rvalue)
 
 TEST_CASE("TokenEval add", "[token-eval][token]")
 {
@@ -95,7 +92,8 @@ TEST_CASE("TokenEval add", "[token-eval][token]")
   REQUIRE(f.t.isFloat());
   REQUIRE(int(f.t.floatValue() * 1000) == 6283);
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kPlus, kRational, Rational(3, 4)));
+  f.t =
+      f.ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kPlus, kRational, Rational(3, 4)));
   REQUIRE(f.t.isFloat());
   REQUIRE(f.t.floatValue() == 3.8915);
 
@@ -104,17 +102,18 @@ TEST_CASE("TokenEval add", "[token-eval][token]")
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(103, 4));
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kFloat, 3.1415));
+  f.t =
+      f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kFloat, 3.1415));
   REQUIRE(f.t.isFloat());
   REQUIRE(f.t.floatValue() == 3.8915);
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus,
-                                        kRational, Rational(3, 4)));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kRational, Rational(3, 4)));
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(6, 4));
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus,
-                                        kRational, Rational(2, 5)));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kRational, Rational(3, 4), kPlus, kRational, Rational(2, 5)));
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(23, 20));
 }
@@ -145,7 +144,8 @@ TEST_CASE("TokenEval minus", "[token-eval][token]")
   REQUIRE(f.t.isFloat());
   REQUIRE(int(f.t.floatValue() * 1000) == 0.0);
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kMinus, kRational, Rational(3, 4)));
+  f.t =
+      f.ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kMinus, kRational, Rational(3, 4)));
   REQUIRE(f.t.isFloat());
   REQUIRE(f.t.floatValue() == 2.3915);
 
@@ -154,17 +154,18 @@ TEST_CASE("TokenEval minus", "[token-eval][token]")
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(-97, 4));
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kFloat, 3.1415));
+  f.t =
+      f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kFloat, 3.1415));
   REQUIRE(f.t.isFloat());
   REQUIRE(f.t.floatValue() == -2.3915);
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus,
-                                        kRational, Rational(3, 4)));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kRational, Rational(3, 4)));
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(0, 4));
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus,
-                                        kRational, Rational(2, 5)));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMinus, kRational, Rational(2, 5)));
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(7, 20));
 }
@@ -195,7 +196,8 @@ TEST_CASE("TokenEval multiply", "[token-eval][token]")
   REQUIRE(f.t.isFloat());
   REQUIRE(int(f.t.floatValue() * 100000000) == 986902225);
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kMultiply, kRational, Rational(3, 4)));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kFloat, 3.1415, kMultiply, kRational, Rational(3, 4)));
   REQUIRE(f.t.isFloat());
   REQUIRE(int(f.t.floatValue() * 1000000) == 2356125);
 
@@ -204,17 +206,18 @@ TEST_CASE("TokenEval multiply", "[token-eval][token]")
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(75, 4));
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kFloat, 3.1415));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kFloat, 3.1415));
   REQUIRE(f.t.isFloat());
   REQUIRE(int(f.t.floatValue() * 1000000) == 2356125);
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply,
-                                        kRational, Rational(3, 4)));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kRational, Rational(3, 4)));
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(9, 16));
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply,
-                                        kRational, Rational(2, 5)));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kRational, Rational(3, 4), kMultiply, kRational, Rational(2, 5)));
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(6, 20));
 }
@@ -245,7 +248,8 @@ TEST_CASE("TokenEval divide", "[token-eval][token]")
   REQUIRE(f.t.isFloat());
   REQUIRE(f.t.floatValue() == 1.0);
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kFloat, 3.1415, kDivide, kRational, Rational(3, 4)));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kFloat, 3.1415, kDivide, kRational, Rational(3, 4)));
   REQUIRE(f.t.isFloat());
   REQUIRE(int(f.t.floatValue() * 100000000) == 418866666);
 
@@ -254,17 +258,18 @@ TEST_CASE("TokenEval divide", "[token-eval][token]")
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(3, 100));
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kFloat, 3.1415));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kFloat, 3.1415));
   REQUIRE(f.t.isFloat());
   REQUIRE(int(f.t.floatValue() * 100000000) == 23873945);
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide,
-                                        kRational, Rational(3, 4)));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kRational, Rational(3, 4)));
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(12, 12));
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide,
-                                        kRational, Rational(2, 5)));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kRational, Rational(3, 4), kDivide, kRational, Rational(2, 5)));
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(15, 8));
 }
@@ -302,8 +307,7 @@ TEST_CASE("TokenEval exponent", "[token-eval][token]")
   REQUIRE(f.t.isFloat());
   REQUIRE(int(f.t.floatValue() * 10000) == 973976);
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kExponent,
-                                        kInt, 4));
+  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kRational, Rational(3, 4), kExponent, kInt, 4));
   REQUIRE(f.t.isRational());
   REQUIRE(f.t.rationalValue() == Rational(81, 256));
 }
@@ -505,19 +509,20 @@ TEST_CASE("TokenEval concat operator", "[token-eval][token]")
 {
   TokenEvalContextFixture f;
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kString, String("hello "), kConcat,
-                                        kString, String("world")));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kString, String("hello "), kConcat, kString, String("world")));
   REQUIRE(f.t.isString());
   REQUIRE(f.t.stringValue() == String("hello world"));
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kString, String("hello "), kConcat,
-                                        kString, String("")));
+  f.t = f.ctx.evalToken(
+      MAKE_BINARY_SEQ(kString, String("hello "), kConcat, kString, String("")));
   REQUIRE(f.t.isString());
   REQUIRE(f.t.stringValue() == String("hello "));
 
-  f.t = f.ctx.evalToken(MAKE_BINARY_SEQ(kString, String(""), kConcat,
-                                        kString, String("")));
+  f.t =
+      f.ctx.evalToken(MAKE_BINARY_SEQ(kString, String(""), kConcat, kString, String("")));
   REQUIRE(f.t.isString());
   REQUIRE(f.t.stringValue() == String(""));
 }
 
+}  // namespace herschel

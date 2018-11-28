@@ -13,7 +13,7 @@
 #include "../valuesaver.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 TEST_CASE("ValueSaver", "[utils]")
 {
@@ -39,3 +39,5 @@ TEST_CASE("ValueSaver", "[utils]")
     REQUIRE(x == 11);
   }
 }
+
+}  // namespace herschel

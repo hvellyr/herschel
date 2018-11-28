@@ -13,7 +13,7 @@
 #include "../log.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 TEST_CASE("LogSurpressor", "[logging]")
 {
@@ -32,3 +32,5 @@ TEST_CASE("LogSurpressor", "[logging]")
 
   REQUIRE(!isSilent());
 }
+
+}  // namespace herschel

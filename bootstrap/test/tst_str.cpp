@@ -16,7 +16,7 @@
 #include <string>
 
 
-using namespace herschel;
+namespace herschel {
 
 
 TEST_CASE("String length", "[string]")
@@ -123,8 +123,7 @@ TEST_CASE("String find parts", "[string]")
 
 TEST_CASE("String append string and number", "[string]")
 {
-  REQUIRE(String("hello") +
-          String(", ") + String("world!") == String("hello, world!"));
+  REQUIRE(String("hello") + String(", ") + String("world!") == String("hello, world!"));
   REQUIRE(String() + "hello" + ", " + "world!" == String("hello, world!"));
   REQUIRE(String("midi: ") + 128 == String("midi: 128"));
   REQUIRE(String("midi: ") + fromInt(128) == String("midi: 128"));
@@ -282,3 +281,5 @@ TEST_CASE("Macro specifier", "[string][macros]")
     REQUIRE(t[0] == 0x300D);
   }
 }
+
+}  // namespace herschel

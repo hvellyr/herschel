@@ -16,7 +16,7 @@
 
 #include <iostream>
 
-using namespace herschel;
+namespace herschel {
 
 
 TEST_CASE("Scope lookup type", "[scope]")
@@ -32,4 +32,6 @@ TEST_CASE("Scope lookup type", "[scope]")
   Type t1 = s0->lookupType_unused(t0);
   // printf("%s\n", (zstring)StrHelper(t1.toString()));
   REQUIRE(t1.isDef());
+}
+
 }

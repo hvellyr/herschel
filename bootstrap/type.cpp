@@ -29,10 +29,8 @@
 #include <typeinfo>
 
 
-using namespace herschel;
-
-
 namespace herschel {
+
 template <typename T>
 static bool isEqual(const T& vect0, const T& vect1)
 {
@@ -104,7 +102,7 @@ public:
   {
     auto o = dynamic_cast<const GroupTypeImpl*>(other);
 
-    return (o && typeid(this) == typeid(other) && herschel::isEqual(fTypes, o->fTypes));
+    return (o && typeid(this) == typeid(other) && ::herschel::isEqual(fTypes, o->fTypes));
   }
 
 
@@ -123,7 +121,7 @@ public:
 
   void replaceGenerics(const TypeCtx& typeMap) override
   {
-    herschel::replaceGenerics(fTypes, typeMap);
+    ::herschel::replaceGenerics(fTypes, typeMap);
   }
 
 
@@ -133,7 +131,6 @@ public:
              return t.typeName() == type.typeName();
            });
   }
-
 
 protected:
   TypeVector fTypes;
@@ -434,13 +431,13 @@ public:
     const TypeTypeImpl* o = dynamic_cast<const TypeTypeImpl*>(other);
 
     return (o && fName == o->fName && fIsInstantiatable == o->fIsInstantiatable &&
-            fInherit == o->fInherit && herschel::isEqual(fGenerics, o->fGenerics));
+            fInherit == o->fInherit && ::herschel::isEqual(fGenerics, o->fGenerics));
   }
 
 
   bool isOpen() const override
   {
-    return (fInherit.isOpen() || herschel::isOpen(fGenerics));
+    return (fInherit.isOpen() || ::herschel::isOpen(fGenerics));
   }
 
 
@@ -546,12 +543,12 @@ public:
   {
     auto o = dynamic_cast<const AliasTypeImpl*>(other);
 
-    return (o && fName == o->fName && herschel::isEqual(fGenerics, o->fGenerics) &&
+    return (o && fName == o->fName && ::herschel::isEqual(fGenerics, o->fGenerics) &&
             fType == o->fType);
   }
 
 
-  bool isOpen() const override { return fType.isOpen() || herschel::isOpen(fGenerics); }
+  bool isOpen() const override { return fType.isOpen() || ::herschel::isOpen(fGenerics); }
 
 
   bool isOpenSelf() const override { return false; }
@@ -633,8 +630,8 @@ public:
     auto o = dynamic_cast<const TypeRefTypeImpl*>(other);
 
     return (o && fName == o->fName && fIsOpen == o->fIsOpen &&
-            herschel::isEqual(fGenerics, o->fGenerics) &&
-            herschel::isEqual(fConstraints, o->fConstraints));
+            ::herschel::isEqual(fGenerics, o->fGenerics) &&
+            ::herschel::isEqual(fConstraints, o->fConstraints));
   }
 
 
@@ -644,7 +641,7 @@ public:
   const TypeConstVector& constraints() const { return fConstraints; }
 
 
-  bool isOpen() const override { return fIsOpen || herschel::isOpen(fGenerics); }
+  bool isOpen() const override { return fIsOpen || ::herschel::isOpen(fGenerics); }
 
 
   bool isOpenSelf() const override { return fIsOpen; }
@@ -655,8 +652,8 @@ public:
 
   void replaceGenerics(const TypeCtx& typeMap) override
   {
-    herschel::replaceGenerics(fGenerics, typeMap);
-    herschel::replaceGenerics(fConstraints, typeMap);
+    ::herschel::replaceGenerics(fGenerics, typeMap);
+    ::herschel::replaceGenerics(fConstraints, typeMap);
   }
 
 
@@ -767,7 +764,6 @@ protected:
   Type fBase;
   int fSizeIndicator;
 };
-};  // namespace herschel
 
 
 //----------------------------------------------------------------------------
@@ -1464,7 +1460,7 @@ Type Type::slotType(const String& slotName, const Scope& scope) const
   if (inherits.isSequence()) {
     const auto& inheritedTypes = inherits.seqTypes();
     for (const auto& ty : inheritedTypes) {
-      auto normalizedType = herschel::resolveType(ty, scope);
+      auto normalizedType = resolveType(ty, scope);
 
       if (normalizedType.isRecord()) {
         auto sty = normalizedType.slotType(slotName, scope);
@@ -1824,7 +1820,6 @@ void TypeSlot::replaceGenerics(const TypeCtx& typeMap)
 }
 
 
-namespace herschel {
 static String flagsToStr(unsigned int flags)
 {
   StringBuffer buf;
@@ -1845,7 +1840,6 @@ static String flagsToStr(unsigned int flags)
 
   return buf.toString();
 }
-};  // namespace herschel
 
 
 String TypeSlot::toString() const
@@ -1877,7 +1871,6 @@ unsigned int TypeSlot::flags() const
 
 //----------------------------------------------------------------------------
 
-namespace herschel {
 class LogicalConstraintImpl : public BaseTypeConstraintImpl {
 public:
   LogicalConstraintImpl(TypeConstOperator op, const TypeConstraint& left,
@@ -2062,8 +2055,6 @@ private:
   TypeConstOperator fOp;
   Type fType;
 };
-
-};  // namespace herschel
 
 
 //----------------------------------------------------------------------------
@@ -2435,14 +2426,14 @@ bool FunctionSignature::operator!=(const FunctionSignature& other) const
 FunctionSignature FunctionSignature::clone() const
 {
   return FunctionSignature(fIsGeneric, fName, fReturnType.clone(),
-                           herschel::vectorClone(fParameters));
+                           vectorClone(fParameters));
 }
 
 
 FunctionSignature FunctionSignature::replaceGenerics(const TypeCtx& typeMap)
 {
   fReturnType = fReturnType.replaceGenerics(typeMap);
-  herschel::replaceGenerics(fParameters, typeMap);
+  ::herschel::replaceGenerics(fParameters, typeMap);
   return *this;
 }
 
@@ -2529,7 +2520,6 @@ bool FunctionSignature::hasPositionalParam() const
 }
 
 
-namespace herschel {
 StringBuffer& operator<<(StringBuffer& other, const FunctionParamVector& params)
 {
   if (!params.empty()) {
@@ -2542,7 +2532,7 @@ StringBuffer& operator<<(StringBuffer& other, const FunctionParamVector& params)
   }
   return other;
 }
-}  // namespace herschel
+
 
 String FunctionSignature::typeId() const
 {
@@ -2612,7 +2602,6 @@ TypeUnit& TypeUnit::operator=(const TypeUnit& other)
 
 //----------------------------------------------------------------------------
 
-namespace herschel {
 Type resolveType(const Type& type, const Scope& scope)
 {
   Type ty = (type.isDef() && type.isRef()
@@ -3162,12 +3151,10 @@ bool isInvariant(const Type& left, const Type& right, const Scope& scope,
   return (!isCovariant(left, right, scope, srcpos, reportErrors) &&
           !isContravariant(left, right, scope, srcpos, reportErrors));
 }
-};  // namespace herschel
 
 
 //----------------------------------------------------------------------------
 
-namespace herschel {
 Type makeRangeType(const Type& generic)
 {
   return Type::makeType(Names::kRangeTypeName, makeVector(generic), Type());
@@ -3272,4 +3259,5 @@ String arrayTypeName(zstring baseName)
 {
   return arrayTypeName(String(baseName));
 }
-};  // namespace herschel
+
+}  // namespace herschel

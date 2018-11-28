@@ -8,8 +8,6 @@
    This source code is released under the BSD License.
 */
 
-//----------------------------------------------------------------------------
-
 #include "job.hpp"
 
 #include "log.hpp"
@@ -29,10 +27,9 @@
 #  include <unistd.h>
 
 
-using namespace herschel;
+namespace herschel {
 
-int herschel::startProcess(const String& cmd, const std::vector<String>& args,
-                           bool logCalls)
+int startProcess(const String& cmd, const std::vector<String>& args, bool logCalls)
 {
   char buffer[16000];
   char* ptr = &buffer[0];
@@ -91,6 +88,7 @@ int herschel::startProcess(const String& cmd, const std::vector<String>& args,
   return status;
 }
 
+}  // namespace herschel
 
 #elif defined(OS_win)
 

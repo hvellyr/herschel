@@ -14,16 +14,13 @@
 
 #include <iostream>
 
-using namespace herschel;
 
-namespace herschel
+namespace herschel {
+std::ostream& operator<<(std::ostream& os, const SrcPos& pos)
 {
-  std::ostream& operator<<(std::ostream& os, const SrcPos& pos)
-  {
-    os << StrHelper(pos.toString());
-    return os;
-  }
-};
+  os << StrHelper(pos.toString());
+  return os;
+}
 
 
 TEST_CASE("SrcPos default constructor", "[srcpos]")
@@ -63,3 +60,5 @@ TEST_CASE("SrcPos equal operator", "[srcpos]")
   REQUIRE(SrcPos("abc.hr", 1211) != SrcPos("abx.hr", 1211));
   REQUIRE(SrcPos("abc.hr", 1211) != SrcPos("abx.hr", 1300));
 }
+
+}  // namespace herschel

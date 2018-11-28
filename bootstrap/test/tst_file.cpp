@@ -10,13 +10,13 @@
 
 #include "catch/catch.hpp"
 
-#include "../str.hpp"
 #include "../file.hpp"
+#include "../str.hpp"
 
 #include <string>
 
 
-using namespace herschel;
+namespace herschel {
 
 TEST_CASE("File relative paths", "[path]")
 {
@@ -100,3 +100,5 @@ TEST_CASE("has path extension", "[path]")
   REQUIRE(file::hasExtension(String("tests/raw/01.bin")));
   REQUIRE(!file::hasExtension(String("tests.all/raw/test")));
 }
+
+}  // namespace herschel

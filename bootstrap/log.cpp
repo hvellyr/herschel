@@ -17,9 +17,8 @@
 #include <stdio.h>
 
 
-using namespace herschel;
+namespace herschel {
 
-//------------------------------------------------------------------------------
 
 static bool sBeSilent = false;
 
@@ -36,7 +35,7 @@ LogSurpressor::~LogSurpressor()
 }
 
 
-bool herschel::isSilent()
+bool isSilent()
 {
   return sBeSilent;
 }
@@ -70,13 +69,13 @@ static void logImpl(const SrcPos& where, LogLevel level, int errorCode, FILE* st
 }
 
 
-void herschel::log(const SrcPos& where, LogLevel level, const String& msg)
+void log(const SrcPos& where, LogLevel level, const String& msg)
 {
   logImpl(where, level, 0, stderr, (zstring)StrHelper(msg));
 }
 
 
-void herschel::logf(const SrcPos& where, LogLevel level, zstring format, ...)
+void logf(const SrcPos& where, LogLevel level, zstring format, ...)
 {
   char buffer[2048];
 
@@ -89,14 +88,14 @@ void herschel::logf(const SrcPos& where, LogLevel level, zstring format, ...)
 }
 
 
-void herschel::log(LogLevel level, const String& msg)
+void log(LogLevel level, const String& msg)
 {
   static SrcPos sp;
   logImpl(sp, level, 0, stderr, (zstring)StrHelper(msg));
 }
 
 
-void herschel::logf(LogLevel level, zstring format, ...)
+void logf(LogLevel level, zstring format, ...)
 {
   static SrcPos sp;
   char buffer[2048];
@@ -110,13 +109,13 @@ void herschel::logf(LogLevel level, zstring format, ...)
 }
 
 
-void herschel::error(const SrcPos& where, int errorCode, const String& msg)
+void error(const SrcPos& where, int errorCode, const String& msg)
 {
   logImpl(where, kError, errorCode, stderr, (zstring)StrHelper(msg));
 }
 
 
-void herschel::errorf(const SrcPos& where, int errorCode, zstring format, ...)
+void errorf(const SrcPos& where, int errorCode, zstring format, ...)
 {
   char buffer[2048];
 
@@ -129,13 +128,13 @@ void herschel::errorf(const SrcPos& where, int errorCode, zstring format, ...)
 }
 
 
-void herschel::warning(const SrcPos& where, int errorCode, const String& msg)
+void warning(const SrcPos& where, int errorCode, const String& msg)
 {
   logImpl(where, kWarn, errorCode, stderr, (zstring)StrHelper(msg));
 }
 
 
-void herschel::warningf(const SrcPos& where, int errorCode, zstring format, ...)
+void warningf(const SrcPos& where, int errorCode, zstring format, ...)
 {
   char buffer[2048];
 
@@ -146,3 +145,5 @@ void herschel::warningf(const SrcPos& where, int errorCode, zstring format, ...)
 
   logImpl(where, kWarn, errorCode, stderr, buffer);
 }
+
+}  // namespace herschel

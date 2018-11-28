@@ -15,7 +15,7 @@
 #include <iostream>
 
 
-using namespace herschel;
+namespace herschel {
 
 TEST_CASE("Rational constructor", "[numbers]")
 {
@@ -109,3 +109,5 @@ TEST_CASE("Rational exponent", "[numbers]")
 
   REQUIRE(Rational(5, 4).exponent(-3) == Rational(64, 125));
 }
+
+}  // namespace herschel

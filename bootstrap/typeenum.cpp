@@ -17,7 +17,7 @@
 #include "type.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 
 #define NUMBER_TYPE_ENUM_MAKER(_TypeName, _kind, _method, _init, _step)            \
@@ -72,6 +72,7 @@ NUMBER_TYPE_ENUM_MAKER_INT(UInt16, UInt, 16)
 NUMBER_TYPE_ENUM_MAKER_INT(UInt32, UInt, 32)
 NUMBER_TYPE_ENUM_MAKER_INT(UInt64, UInt, 64)
 
+
 Token BoolTypeEnumMaker::nextEnumItem(const SrcPos& srcpos, const Token& enumItemSymbol,
                                       const Token& lastInitToken) const
 {
@@ -116,3 +117,5 @@ SIMPLE_TYPE_ENUM_MAKE(Unspecified, "lang|unspecified")
 
 STRING_TYPE_ENUM_MAKE(String, String);
 STRING_TYPE_ENUM_MAKE(Keyword, Keyword);
+
+}  // namespace herschel

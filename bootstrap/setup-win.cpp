@@ -24,10 +24,8 @@
 #  include <vector>
 
 
-using namespace herschel;
-
-
 namespace herschel {
+
 static String getExeLocation()
 {
   char buf[MAX_PATH];

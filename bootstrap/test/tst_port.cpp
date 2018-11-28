@@ -12,17 +12,17 @@
 
 #include "../port.hpp"
 
-using namespace herschel;
+namespace herschel {
 
 
-#define PAGESIZE 243            // take a odd number to test chunking
-#define PAGENUM    8
-#define BUFSIZE  PAGENUM * PAGESIZE
+#define PAGESIZE 243  // take a odd number to test chunking
+#define PAGENUM 8
+#define BUFSIZE PAGENUM* PAGESIZE
 
 TEST_CASE("DataPort string write", "[port][data-port]")
 {
   DataPort dp;
-  dp.write((Octet*)"hello, world!", 14); // incl. terminating 0
+  dp.write((Octet*)"hello, world!", 14);  // incl. terminating 0
   REQUIRE(dp.length() == (size_t)14);
   REQUIRE(strcmp((char*)dp.data(), "hello, world!") == 0);
 }
@@ -34,7 +34,7 @@ TEST_CASE("DataPort block init constructor", "[port][data-port]")
   for (int i = 0; i < BUFSIZE; i++)
     tmp[i] = i % 256;
 
-  DataPort dp{tmp, BUFSIZE};
+  DataPort dp{ tmp, BUFSIZE };
   for (int i = 0; i < BUFSIZE; i++) {
     REQUIRE(dp.read() == (i % 256));
   }
@@ -82,15 +82,15 @@ TEST_CASE("DataPort block write", "[port][data-port]")
 TEST_CASE("DataPort failing read", "[port][data-port]")
 {
   Octet tmp[] = { 'a', '\0' };
-  DataPort dp{tmp, strlen((char*)tmp)};
+  DataPort dp{ tmp, strlen((char*)tmp) };
 
   REQUIRE(dp.read() == 'a');
 
   try {
     dp.read();
-    REQUIRE(false);             // must not come here
+    REQUIRE(false);  // must not come here
   }
-  catch (const EofException& ) {
+  catch (const EofException&) {
   }
 }
 
@@ -112,14 +112,8 @@ TEST_CASE("CharPort basic read and write", "[port][char-port]")
   for (int i = 0; i < 6; i++)
     cp->write(src[i]);
 
-  Octet expected[] = {
-    'a',
-    0xd0, 0xa4,
-    0xec, 0x95, 0x88,
-    0xef, 0xac, 0x80,
-    0xea, 0xb0, 0x80,
-    0xe4, 0xb9, 0x97, 0x00
-  };
+  Octet expected[] = { 'a',  0xd0, 0xa4, 0xec, 0x95, 0x88, 0xef, 0xac,
+                       0x80, 0xea, 0xb0, 0x80, 0xe4, 0xb9, 0x97, 0x00 };
 
   REQUIRE(dp->length() == (size_t)15);
   REQUIRE(::memcmp(dp->data(), expected, 15) == 0);
@@ -137,11 +131,10 @@ TEST_CASE("CharPort basic read and write", "[port][char-port]")
 
 TEST_CASE("CharPort block read", "[port][char-port]")
 {
-  Octet tmp[] = { 'h', 'e', 'l', 'l', 'o', 0xd0, 0xa4, '-', '-',
-                  0xec, 0x95, 0x88, 0x00 };
+  Octet tmp[] = { 'h', 'e', 'l', 'l', 'o', 0xd0, 0xa4, '-', '-', 0xec, 0x95, 0x88, 0x00 };
   Char cs[] = { 'h', 'e', 'l', 'l', 'o', 0x424, '-', '-', 0xc548 };
-  auto cp = std::make_shared<CharPort>(std::make_shared<DataPort>(tmp,
-                                                                  strlen((char*)tmp)));
+  auto cp =
+      std::make_shared<CharPort>(std::make_shared<DataPort>(tmp, strlen((char*)tmp)));
   for (int i = 0; i < 9; i++) {
     int c = cp->read();
     REQUIRE(c == cs[i]);
@@ -159,27 +152,28 @@ TEST_CASE("CharPort block read", "[port][char-port]")
 TEST_CASE("CharPort illegal read", "[port][char-port]")
 {
   Octet tmp[] = { 'a', '\0' };
-  auto cp = std::make_shared<CharPort>(
-    std::make_shared<DataPort>(tmp, strlen((char*)tmp)));
+  auto cp =
+      std::make_shared<CharPort>(std::make_shared<DataPort>(tmp, strlen((char*)tmp)));
 
   REQUIRE(cp->read() == 'a');
 
   try {
     cp->read();
-    REQUIRE(false);             // must not come here
+    REQUIRE(false);  // must not come here
   }
-  catch (const EofException& ) {
+  catch (const EofException&) {
   }
 }
 
 
 TEST_CASE("FilePort test1", "[port][file-port]")
 {
-  static const Octet tmp[] = "Hamlet:\n"
-    "Alas, poor Yorick! I knew him, Horatio, a fellow of infinite\n"
-    "jest, of most excellent fancy. He hath bore me on his back a\n"
-    "thousand times, and now how abhorr'd in my imagination it is!\n"
-    "My gorge rises at it.\n";
+  static const Octet tmp[] =
+      "Hamlet:\n"
+      "Alas, poor Yorick! I knew him, Horatio, a fellow of infinite\n"
+      "jest, of most excellent fancy. He hath bore me on his back a\n"
+      "thousand times, and now how abhorr'd in my imagination it is!\n"
+      "My gorge rises at it.\n";
 
   std::shared_ptr<FilePort> port;
 
@@ -201,7 +195,7 @@ TEST_CASE("FilePort test1", "[port][file-port]")
     port->read();
     REQUIRE(false);
   }
-  catch (const EofException& ) {
+  catch (const EofException&) {
     REQUIRE(!*p);
   }
   int explen = strlen((zstring)tmp);
@@ -221,7 +215,7 @@ TEST_CASE("FilePort test1", "[port][file-port]")
     (void)port->isEof();
     REQUIRE(false);
   }
-  catch (const PortNotOpenException& ) {
+  catch (const PortNotOpenException&) {
   }
 }
 
@@ -229,11 +223,12 @@ TEST_CASE("FilePort test1", "[port][file-port]")
 TEST_CASE("FilePort Test2", "[port][file-port]")
 {
   try {
-    auto port = std::make_shared<FilePort>(
-      String("tests/raw/does-not-exist.bin"), "rb");
+    auto port = std::make_shared<FilePort>(String("tests/raw/does-not-exist.bin"), "rb");
     REQUIRE(false);
   }
   catch (const IOException& e) {
     REQUIRE(e.errCode() == ENOENT);
   }
 }
+
+}  // namespace herschel

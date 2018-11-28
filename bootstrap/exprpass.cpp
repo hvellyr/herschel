@@ -27,12 +27,7 @@
 #include <map>
 
 
-//----------------------------------------------------------------------------
-
-using namespace herschel;
-
-
-//----------------------------------------------------------------------------
+namespace herschel {
 
 ExprPass::ExprPass(int level, Compiler& compiler, const Token& currentToken,
                    std::shared_ptr<Scope> scope)
@@ -208,7 +203,6 @@ void FirstPass::parseChoiceSequence(ParseFunctor functor, TokenType choiceToken,
 
 //----------------------------------------------------------------------------
 
-namespace herschel {
 struct ModuleParser {
   bool operator()(FirstPass* pass, Token& result)
   {
@@ -219,7 +213,6 @@ struct ModuleParser {
     return true;
   }
 };
-};  // namespace herschel
 
 
 Token FirstPass::parseModule()
@@ -263,7 +256,6 @@ Token FirstPass::parseModule()
 }
 
 
-namespace herschel {
 struct ExportParser {
   bool operator()(FirstPass* pass, Token& result)
   {
@@ -301,7 +293,6 @@ struct ExportParser {
     return true;
   }
 };
-};  // namespace herschel
 
 
 Token FirstPass::parseExport()
@@ -422,7 +413,6 @@ Token FirstPass::parseImport()
 }
 
 
-namespace herschel {
 struct TypeParser {
   TokenType fEndToken;
 
@@ -446,7 +436,6 @@ struct TypeParser {
     return true;
   }
 };
-};  // namespace herschel
 
 
 Token FirstPass::parseSimpleType(const Token& baseToken, bool nextIsParsedYet)
@@ -689,7 +678,6 @@ Token FirstPass::parseTypeSpec(bool onlyNestedConstraints, bool needParans)
 }
 
 
-namespace herschel {
 struct LiteralVectorParser {
   LiteralVectorParser()
       : fIsDict(false)
@@ -742,7 +730,6 @@ struct LiteralVectorParser {
   bool fIsDict;
   bool fIsFirst;
 };
-}  // namespace herschel
 
 
 Token FirstPass::parseLiteralVector()
@@ -754,7 +741,6 @@ Token FirstPass::parseLiteralVector()
 }
 
 
-namespace herschel {
 struct LiteralArrayParser {
   bool operator()(FirstPass* pass, Token& result)
   {
@@ -771,7 +757,6 @@ struct LiteralArrayParser {
     return true;
   }
 };
-}  // namespace herschel
 
 
 Token FirstPass::parseLiteralArray()
@@ -957,7 +942,6 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
 }
 
 
-namespace herschel {
 struct ParseFuncParamsParser {
   FirstPass::ParamType fExpected;
   bool fAutoCompleteTypes;
@@ -976,7 +960,6 @@ struct ParseFuncParamsParser {
     return true;
   }
 };
-};  // namespace herschel
 
 
 bool FirstPass::parseFunctionsParamsFull(TokenVector* exprlist, TokenType startToken,
@@ -1046,7 +1029,6 @@ Token FirstPass::parseAnonFun()
 }
 
 
-namespace herschel {
 struct FuncallArgsParser {
   bool operator()(FirstPass* pass, Token& result)
   {
@@ -1080,7 +1062,6 @@ struct FuncallArgsParser {
     return true;
   }
 };
-};  // namespace herschel
 
 
 void FirstPass::parseFuncallArgs(TokenVector* argsVector)
@@ -1320,7 +1301,6 @@ Token FirstPass::parseUnaryOp(const Token& inOpToken)
 }
 
 
-namespace herschel {
 struct BasePatternParser {
 protected:
   TokenVector parseConsequent(FirstPass* pass, bool mapToReq)
@@ -1435,7 +1415,6 @@ struct SelectPatternParser : public BasePatternParser {
 
   bool fElseSeen;
 };
-};  // namespace herschel
 
 
 Token FirstPass::parseSelect()
@@ -1467,7 +1446,6 @@ Token FirstPass::parseSelect()
 }
 
 
-namespace herschel {
 struct MatchPatternParser : public BasePatternParser {
   bool operator()(FirstPass* pass, Token& result)
   {
@@ -1523,7 +1501,6 @@ struct MatchPatternParser : public BasePatternParser {
     return true;
   }
 };
-};  // namespace herschel
 
 
 Token FirstPass::parseMatch()
@@ -1555,7 +1532,6 @@ Token FirstPass::parseMatch()
 }
 
 
-namespace herschel {
 struct ForClauseParser {
   bool parseInCollClause(FirstPass* pass, Token& result, const Token& symToken,
                          const Token& colonToken, const Token& type)
@@ -1627,8 +1603,6 @@ struct ForClauseParser {
     return true;
   }
 };
-
-}  // namespace herschel
 
 
 Token FirstPass::parseFor()
@@ -2914,7 +2888,6 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
 }
 
 
-namespace herschel {
 struct EnumItemParser {
   bool operator()(FirstPass* pass, Token& result)
   {
@@ -2953,7 +2926,6 @@ struct EnumItemParser {
     return true;
   }
 };
-};  // namespace herschel
 
 
 Token FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
@@ -3591,8 +3563,6 @@ bool FirstPass::replaceMatchBindings(TokenVector* result, const TokenVector& tem
 
 //------------------------------------------------------------------------------
 
-namespace herschel {
-
 struct ParameterSyntaxMatcher {
   virtual ~ParameterSyntaxMatcher() {}
 
@@ -3726,15 +3696,14 @@ struct ParamListParamSyntax : public ParameterSyntaxMatcher {
     return true;
   }
 };
-};  // namespace herschel
 
 
 namespace {
-template <class T, class... Args>
-auto makeMatcher(Args&&... args) -> std::unique_ptr<ParameterSyntaxMatcher>
-{
-  return std::unique_ptr<ParameterSyntaxMatcher>{ new T(std::forward<Args>(args)...) };
-}
+  template <class T, class... Args>
+  auto makeMatcher(Args&&... args) -> std::unique_ptr<ParameterSyntaxMatcher>
+  {
+    return std::unique_ptr<ParameterSyntaxMatcher>{ new T(std::forward<Args>(args)...) };
+  }
 }  // namespace
 
 bool FirstPass::matchParameter(const Token& macroParam, NamedReplacementMap* bindings,
@@ -3963,3 +3932,5 @@ TokenVector FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& 
 
   return filtered;
 }
+
+}  // namespace herschel

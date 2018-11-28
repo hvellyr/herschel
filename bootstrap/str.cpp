@@ -23,7 +23,7 @@
 #include <string>
 
 
-using namespace herschel;
+namespace herschel {
 
 static int str_cmp(const Char* s1, int len1, const Char* s2, int len2);
 static int str_ncmp(const Char* s1, int len1, const Char* s2, int len2, int maxItems);
@@ -34,7 +34,6 @@ static int str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle
                     int nlen);
 
 
-namespace herschel {
 class StringImpl {
 public:
   StringImpl()
@@ -174,7 +173,6 @@ String fromBool(bool value)
 {
   return value ? String("true") : String("false");
 }
-};  // namespace herschel
 
 
 //----------------------------------------------------------------------------
@@ -615,7 +613,7 @@ static int str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle
 }
 
 
-int herschel::str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems)
+int str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems)
 {
   Octet* sp = (Octet*)src;
   const Octet* end = (Octet*)src + items;
@@ -696,7 +694,7 @@ int herschel::str_utf8_to_wcs(zstring src, int items, Char* dst, int maxItems)
 }
 
 
-int herschel::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
+int str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxItems)
 {
   const Char* sp = src;
 
@@ -760,7 +758,7 @@ int herschel::str_wcs_to_utf8(const Char* src, int items, Octet* dst, int maxIte
 }
 
 
-String herschel::xmlEncode(const String& str)
+String xmlEncode(const String& str)
 {
   std::vector<Char> buffer;
   buffer.reserve(str.length());
@@ -796,13 +794,13 @@ String herschel::xmlEncode(const String& str)
 }
 
 
-String herschel::xmlEncode(zstring str)
+String xmlEncode(zstring str)
 {
   return xmlEncode(String(str));
 }
 
 
-String herschel::uniqueName(zstring prefix)
+String uniqueName(zstring prefix)
 {
   static int counter = 0;
   StringBuffer buffer;
@@ -812,14 +810,14 @@ String herschel::uniqueName(zstring prefix)
 
 
 #if defined(UNITTESTS)
-std::ostream& herschel::operator<<(std::ostream& os, const String& str)
+std::ostream& operator<<(std::ostream& os, const String& str)
 {
   os << "\"" << (zstring)StrHelper(str) << "\"";
   return os;
 }
 
 
-std::ostream& herschel::operator<<(std::ostream& os, char c)
+std::ostream& operator<<(std::ostream& os, char c)
 {
   char tmp[2];
   tmp[0] = c;
@@ -829,3 +827,5 @@ std::ostream& herschel::operator<<(std::ostream& os, char c)
   return os;
 }
 #endif
+
+}  // namespace herschel

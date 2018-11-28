@@ -15,7 +15,7 @@
 #include "../symbol.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 TEST_CASE("Symbol mangling", "[symbol]")
 {
@@ -25,3 +25,4 @@ TEST_CASE("Symbol mangling", "[symbol]")
   REQUIRE(String("__QN9call/2fcc") == mangleToC(String("call/cc")));
 }
 
+}  // namespace herschel

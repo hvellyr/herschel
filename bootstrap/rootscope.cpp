@@ -18,10 +18,10 @@
 #include "utils.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 
-std::shared_ptr<Scope> herschel::type::newRootScope(bool forUnitTests)
+std::shared_ptr<Scope> type::newRootScope(bool forUnitTests)
 {
   auto root = makeScope(kScopeL_CompileUnit);
   SrcPos sp;
@@ -206,3 +206,5 @@ std::shared_ptr<Scope> herschel::type::newRootScope(bool forUnitTests)
 
   return root;
 }
+
+}  // namespace herschel

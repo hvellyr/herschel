@@ -13,8 +13,8 @@
 #include "../str.hpp"
 #include "../strbuf.hpp"
 
-using namespace herschel;
 
+namespace herschel {
 
 TEST_CASE("StringBuffer basic", "[string][string-buffer]")
 {
@@ -155,3 +155,5 @@ TEST_CASE("StringBuffer insert at", "[string][string-buffer]")
     REQUIRE(String("x__QN9core/2fcc!") == buf.toString());
   }
 }
+
+}  // namespace herschel

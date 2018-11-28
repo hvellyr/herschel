@@ -26,6 +26,7 @@
 
 
 namespace herschel {
+
 String tokenTypeToString(TokenType type)
 {
   switch (type) {
@@ -120,8 +121,6 @@ public:
 
   String toString() const override { return fStr; }
 
-
-  //-------- data members
   String fStr;
 };
 
@@ -315,9 +314,6 @@ public:
     return String();
   }
 
-
-  //-------- data members
-
   TokenType fType;
   bool fBoolValue;
   int64_t fIntValue;
@@ -372,8 +368,6 @@ public:
     return String();
   }
 
-
-  //-------- data members
   TokenType fType;
   String fStrValue;
 };
@@ -437,9 +431,6 @@ public:
     return result;
   }
 
-
-  //-------- data members
-
   TokenVector fChildren;
 };
 
@@ -501,18 +492,12 @@ public:
     return result;
   }
 
-
-  //-------- data members
-
   TokenType fLeft;
   TokenType fRight;
 };
-};  // namespace herschel
 
 
 //----------------------------------------------------------------------------
-
-using namespace herschel;
 
 Token Token::newUniqueSymbolToken(const SrcPos& where, zstring prefix)
 {
@@ -1454,8 +1439,8 @@ bool Token::isCharOrUnitName() const
           fType == kForId || fType == kFUNCTIONId || fType == kFunctionId ||
           fType == kIfId || fType == kImportId || fType == kLetId || fType == kMatchId ||
           fType == kModuleId || fType == kNilId || fType == kNotId ||
-          fType == kSelectId || fType == kThenId ||
-          fType == kWhenId || fType == kWhereId || fType == kWhileId);
+          fType == kSelectId || fType == kThenId || fType == kWhenId ||
+          fType == kWhereId || fType == kWhileId);
 }
 
 
@@ -1487,13 +1472,13 @@ String Token::macroParamType() const
 
 //----------------------------------------------------------------------------
 
-String herschel::operator+(const String& one, const Token& two)
+String operator+(const String& one, const Token& two)
 {
   return one + two.toString();
 }
 
 
-String herschel::operator+(const String& one, const TokenVector& vect)
+String operator+(const String& one, const TokenVector& vect)
 {
   StringBuffer buf;
   for (TokenVector::const_iterator it = vect.begin(); it != vect.end(); it++) {
@@ -1504,7 +1489,7 @@ String herschel::operator+(const String& one, const TokenVector& vect)
 }
 
 
-String herschel::operator+(const String& one, const NamedTokenMap& bindings)
+String operator+(const String& one, const NamedTokenMap& bindings)
 {
   StringBuffer buf;
   buf << "{";
@@ -1518,7 +1503,7 @@ String herschel::operator+(const String& one, const NamedTokenMap& bindings)
 }
 
 
-zstring herschel::operatorName(OperatorType type)
+zstring operatorName(OperatorType type)
 {
   switch (type) {
   case kOpConcat: return "++";
@@ -1565,7 +1550,7 @@ zstring herschel::operatorName(OperatorType type)
 
 #if defined(UNITTESTS)
 
-std::ostream& herschel::operator<<(std::ostream& os, const Token& token)
+std::ostream& operator<<(std::ostream& os, const Token& token)
 {
   String s = token.toString();
   os << "'" << (zstring)StrHelper(s) << "'";
@@ -1573,7 +1558,7 @@ std::ostream& herschel::operator<<(std::ostream& os, const Token& token)
 }
 
 
-std::ostream& herschel::operator<<(std::ostream& os, ExprType type)
+std::ostream& operator<<(std::ostream& os, ExprType type)
 {
   switch (type) {
   case kSeq: os << "ExprType::kSeq"; break;
@@ -1586,3 +1571,5 @@ std::ostream& herschel::operator<<(std::ostream& os, ExprType type)
 }
 
 #endif
+
+}  // namespace herschel

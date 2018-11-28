@@ -14,9 +14,11 @@
 #include "strbuf.hpp"
 
 
-using namespace herschel;
+namespace herschel {
 
 String SrcPos::toString() const
 {
   return (StringBuffer(fFile) << ':' << fromInt(fLineNo)).toString();
 }
+
+}  // namespace herschel

@@ -16,10 +16,10 @@
 #include <stdlib.h>
 
 
-using namespace herschel;
-
-
 #if defined(IS_DEBUG)
+
+namespace herschel {
+
 
 static bool areRequiresFatal = true;
 
@@ -30,8 +30,7 @@ void setRequiresAreFatal(bool value)
 }
 
 
-void herschel::requireHandler(zstring file, int line, zstring title, zstring msg,
-                              zstring expr)
+void requireHandler(zstring file, int line, zstring title, zstring msg, zstring expr)
 {
   logf(kError, "%s:%d: %s: %s%s%s\n", file, line, title, msg, expr ? ": " : "",
        expr ? expr : "");
@@ -39,5 +38,7 @@ void herschel::requireHandler(zstring file, int line, zstring title, zstring msg
   if (areRequiresFatal)
     abort();
 }
+
+}  // namespace herschel
 
 #endif  // if defined(IS_DEBUG)
