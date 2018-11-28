@@ -10,7 +10,7 @@
 
 #include "catch/catch.hpp"
 
-#include "../tokenport.h"
+#include "../tokenport.hpp"
 
 using namespace herschel;
 

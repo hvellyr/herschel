@@ -10,7 +10,7 @@
 
 #include "catch/catch.hpp"
 
-#include "../log.h"
+#include "../log.hpp"
 
 
 using namespace herschel;

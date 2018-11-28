@@ -10,7 +10,7 @@
 
 #include "catch/catch.hpp"
 
-#include "../port.h"
+#include "../port.hpp"
 
 using namespace herschel;
 

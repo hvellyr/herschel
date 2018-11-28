@@ -10,8 +10,8 @@
 
 #include "catch/catch.hpp"
 
-#include "../srcpos.h"
-#include "../token.h"
+#include "../srcpos.hpp"
+#include "../token.hpp"
 
 
 using namespace herschel;

@@ -10,7 +10,7 @@
 
 #include "catch/catch.hpp"
 
-#include "../valuesaver.h"
+#include "../valuesaver.hpp"
 
 
 using namespace herschel;

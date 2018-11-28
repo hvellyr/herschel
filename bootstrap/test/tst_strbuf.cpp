@@ -10,8 +10,8 @@
 
 #include "catch/catch.hpp"
 
-#include "../str.h"
-#include "../strbuf.h"
+#include "../str.hpp"
+#include "../strbuf.hpp"
 
 using namespace herschel;
 

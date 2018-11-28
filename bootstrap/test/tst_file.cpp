@@ -10,8 +10,8 @@
 
 #include "catch/catch.hpp"
 
-#include "../str.h"
-#include "../file.h"
+#include "../str.hpp"
+#include "../file.hpp"
 
 #include <string>
 

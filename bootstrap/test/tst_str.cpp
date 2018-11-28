@@ -10,7 +10,7 @@
 
 #include "catch/catch.hpp"
 
-#include "../str.h"
+#include "../str.hpp"
 
 #include <iostream>
 #include <string>

@@ -10,9 +10,9 @@
 
 #include "catch/catch.hpp"
 
-#include "../predefined.h"
-#include "../str.h"
-#include "../symbol.h"
+#include "../predefined.hpp"
+#include "../str.hpp"
+#include "../symbol.hpp"
 
 
 using namespace herschel;

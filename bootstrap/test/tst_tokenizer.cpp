@@ -10,9 +10,9 @@
 
 #include "catch/catch.hpp"
 
-#include "../log.h"
-#include "../tokenizer.h"
-#include "../type.h"
+#include "../log.hpp"
+#include "../tokenizer.hpp"
+#include "../type.hpp"
 
 #include <iostream>
 

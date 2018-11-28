@@ -10,7 +10,7 @@
 
 #include "catch/catch.hpp"
 
-#include "../numbers.h"
+#include "../numbers.hpp"
 
 #include <iostream>
 

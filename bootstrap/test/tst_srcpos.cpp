@@ -10,7 +10,7 @@
 
 #include "catch/catch.hpp"
 
-#include "../srcpos.h"
+#include "../srcpos.hpp"
 
 #include <iostream>
 

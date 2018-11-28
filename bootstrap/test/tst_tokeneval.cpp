@@ -10,7 +10,7 @@
 
 #include "catch/catch.hpp"
 
-#include "../tokeneval.h"
+#include "../tokeneval.hpp"
 
 using namespace herschel;
 

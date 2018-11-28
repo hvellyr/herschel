@@ -10,14 +10,14 @@
 
 #include "catch/catch.hpp"
 
-#include "../predefined.h"
-#include "../rootscope.h"
-#include "../scope.h"
-#include "../srcpos.h"
-#include "../str.h"
-#include "../type.h"
-#include "../typectx.h"
-#include "../utils.h"
+#include "../predefined.hpp"
+#include "../rootscope.hpp"
+#include "../scope.hpp"
+#include "../srcpos.hpp"
+#include "../str.hpp"
+#include "../type.hpp"
+#include "../typectx.hpp"
+#include "../utils.hpp"
 
 #include <iostream>
 
@@ -315,34 +315,6 @@ TEST_CASE("Is same for seq types", "[type]")
 }
 
 
-TEST_CASE("Is same for measure types", "[type]")
-{
-  auto scope = testScopeSetup();
-
-  REQUIRE(herschel::isSameType(Type::makeMeasure(String("Maiko"),
-                                                 Type::makeTypeRef("Xyz"),
-                                                 String("mk")),
-                               Type::makeMeasure(String("Maiko"),
-                                                Type::makeTypeRef("Xyz"),
-                                                String("mk")),
-                               *scope, SrcPos(), !K(reportError)));
-
-  REQUIRE(!herschel::isSameType(Type::makeMeasure(String("Maiko"),
-                                                 Type::makeTypeRef("Xyz"),
-                                                 String("mk")),
-                                Type::makeTypeRef(String("Xyz"), K(isValue)),
-                                *scope, SrcPos(), !K(reportErrors)));
-
-  REQUIRE(!herschel::isSameType(Type::makeMeasure(String("Maiko"),
-                                                 Type::makeTypeRef("Xyz"),
-                                                 String("mk")),
-                                Type::makeMeasure(String("Tomoko"),
-                                                 Type::makeTypeRef("Xyz"),
-                                                 String("to")),
-                                *scope, SrcPos(), !K(reportErrors)));
-}
-
-
 TEST_CASE("Is same for function types", "[type]")
 {
   auto scope = testScopeSetup();
@@ -504,39 +476,6 @@ TEST_CASE("Inheritance for basic types", "[type]")
                                   *scope, SrcPos(), !K(reportError)));
   REQUIRE(!herschel::inheritsFrom(Type::makeTypeRef("Xyz"),
                                   Type::makeTypeRef("Base"),
-                                  *scope, SrcPos(), !K(reportError)));
-}
-
-
-TEST_CASE("Inheritance for measure types", "[type]")
-{
-  auto scope = testScopeSetup();
-
-  REQUIRE(!herschel::inheritsFrom(Type::makeMeasure(String("Maiko"),
-                                                   Type::makeTypeRef("Xyz"),
-                                                   String("mk")),
-                                  Type::makeMeasure(String("Maiko"),
-                                                   Type::makeTypeRef("Xyz"),
-                                                   String("mk")),
-                                  *scope, SrcPos(), !K(reportError)));
-
-  REQUIRE(herschel::inheritsFrom(Type::makeMeasure(String("Maiko"),
-                                                  Type::makeTypeRef("Ultra"),
-                                                  String("mk")),
-                                 Type::makeTypeRef(String("Abstract"), K(isValue)),
-                                 *scope, SrcPos(), !K(reportError)));
-  REQUIRE(!herschel::inheritsFrom(Type::makeMeasure(String("Maiko"),
-                                                   Type::makeTypeRef("Xyz"),
-                                                   String("mk")),
-                                  Type::makeTypeRef(String("Base"), K(isValue)),
-                                  *scope, SrcPos(), !K(reportError)));
-
-  REQUIRE(!herschel::inheritsFrom(Type::makeMeasure(String("Maiko"),
-                                                   Type::makeTypeRef("Ultra"),
-                                                   String("mk")),
-                                  Type::makeMeasure(String("Tomoko"),
-                                                   Type::makeTypeRef("Abstract"),
-                                                   String("to")),
                                   *scope, SrcPos(), !K(reportError)));
 }
 

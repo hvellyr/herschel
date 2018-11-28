@@ -10,9 +10,9 @@
 
 #include "catch/catch.hpp"
 
-#include "../scope.h"
-#include "../srcpos.h"
-#include "../type.h"
+#include "../scope.hpp"
+#include "../srcpos.hpp"
+#include "../type.hpp"
 
 #include <iostream>
 

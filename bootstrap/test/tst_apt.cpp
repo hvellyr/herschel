@@ -10,8 +10,8 @@
 
 #include "catch/catch.hpp"
 
-#include "../apt.h"
-#include "../str.h"
+#include "../ast.hpp"
+#include "../str.hpp"
 
 #include <memory>
 #include <string>
@@ -19,7 +19,7 @@
 
 using namespace herschel;
 
-TEST_CASE("APT ApplyNode", "[apt][apply-node]")
+TEST_CASE("AST ApplyNode", "[ast][apply-node]")
 {
   auto an = makeApplyNode(SrcPos(), makeSymbolNode(SrcPos(), String("xyz")));
   REQUIRE(an->isSimpleCall());

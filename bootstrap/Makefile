@@ -11,11 +11,9 @@ include $(top_srcdir)/config.mk
 
 #------------------------------------------------------------------------------
 
-# SUBDIRS = test
-SUBDIRS =
+SUBDIRS = test
 
-# ALL_SUBDIRS = test
-ALL_SUBDIRS =
+ALL_SUBDIRS = test
 
 
 #------------------------------------------------------------------------------

@@ -14,8 +14,8 @@ include $(top_srcdir)/config.mk
 #------------------------------------------------------------------------------
 
 CXXFLAGS += -I$(top_srcdir) -I$(top_srcdir)/bootstrap \
-	-I$(top_srcdir)/external/catch/include \
-	-I$(top_srcdir)/external/cxxopts/src \
+	-I$(top_srcdir)/third-party/catch/include \
+	-I$(top_srcdir)/third-party/cxxopts/src \
 	$(LLVM_CPPFLAGS)
 
 TEST_SOURCES =         \
